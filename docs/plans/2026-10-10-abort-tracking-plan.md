@@ -5,9 +5,25 @@
 Status: revision 3 (2026-10-10). Reviewed in
 docs/sdd/2026-10-09-effects-plan/review-fx008-plan-result.md: round 1 was
 "ready with fixes", and round 2's fixes (ec1 by pattern, setup commands,
-the Task 7 design pre-review, the tamper-check note) are applied. Awaiting
-the user's approval and sign-off on P3, P5, P6, P7, P10 and P11, with P13
-for information. Not started.
+the Task 7 design pre-review, the tamper-check note) are applied. **Approved by
+the user 2026-10-10** (plan at 0d7cc27), with sign-off on P3, P5, P6, P7,
+P10 and P11, and P13 accepted:
+- P3: mark mismatches are E_TYPE in type comparison and E_EFFECT from the
+  mark check. Identical headline text under the two codes is acceptable,
+  and the notes distinguish the cause.
+- P5: opening applies only to function signatures in this milestone. The
+  constructor-field and operation-signature restriction is documented as
+  an expressiveness limitation, with examples (Task 12), and revisited
+  separately.
+- P6, P7: accepted as written.
+- P10: the wording is accepted. Pattern-gated messages stay provisional
+  until their first observed results are reported to the user and
+  approved.
+- P11: the two scale scenarios are described exactly as installations and
+  a function chain, never as 1,000 syntactically nested handlers.
+
+The user authorized setup and Task 1. Stop conditions and the
+report-before-pin rule stay in force.
 Execution (user's choice): subagent-driven. Sonnet implements every task;
 Opus reviews each (algorithm, invariants, counterexamples). Escalate to an
 Opus implementer on genuine ambiguity, any gate failure, or a second failed

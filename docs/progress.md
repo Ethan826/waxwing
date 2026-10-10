@@ -3529,3 +3529,12 @@ round 2 "ready with fixes" (one Important, the ec1 expected text). All
 fixes are applied. The reviewer ran 102 probes, and the plan's recorded
 outcomes match. The plan awaits the user's approval and sign-off on the
 P3, P5, P6, P7, P10 and P11 decisions. Nothing is implemented.
+
+User approval 2026-10-10: the FX008 plan (at 0d7cc27) is approved, with
+sign-off on P3, P5, P6, P7, P10 and P11 and P13 accepted. The user
+added:
+- P5 is documented as an expressiveness limitation;
+- P10 pattern-gated messages stay provisional until reported;
+- P11 is described precisely.
+
+Setup and Task 1 are authorized.
