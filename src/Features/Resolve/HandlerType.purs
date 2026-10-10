@@ -30,7 +30,11 @@ resolve effects variables ambient resolveType span arguments = case arguments of
     argumentRefs ← traverse typeReference effectArguments
     Resolved.THandler
       <$> label effects resolveType
-        { name: effectName, arguments: argumentRefs, span: effectSpan }
+        { name: effectName
+        , arguments: argumentRefs
+        , mark: Nothing
+        , span: effectSpan
+        }
       <*>
         ( uniformRows
             <$> resolveRow effects variables ambient resolveType Nothing

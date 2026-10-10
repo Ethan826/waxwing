@@ -10,15 +10,18 @@ import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
+import Features.Resolve.Marks (markVariableRefs, scopedMarkVariables)
 import Features.Resolve.Repeated (repeated)
 import Features.Resolve.Types (resolveTypeWith)
 
 -- What an annotation may name: the declared types, and the enclosing
--- signature's variables (rigid; FN001 design §2).
+-- signature's variables (rigid; FN001 design §2), mark variables included
+-- (FX008 design §3.2).
 type Annotations r =
   { types ∷ Array Resolved.TypeInfo
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , variables ∷ Array String
+  , markVariables ∷ Array String
   | r
   }
 
@@ -48,7 +51,10 @@ parameter
 parameter annotations syntax = boundOf <$> liftEither annotation
   <*> traverse issue syntax.name
   where
-  annotation = traverse
+  annotation = scoped *> written
+  scoped = scopedMarkVariables annotations.markVariables
+    (Array.concatMap markVariableRefs (Array.fromFoldable syntax.ty))
+  written = traverse
     ( resolveTypeWith annotations.types annotations.effects
         annotations.variables
         (Just (Resolved.VarId (Array.length annotations.variables - 1)))

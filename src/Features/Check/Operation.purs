@@ -151,7 +151,7 @@ operationUse env state span effect@(EffectId owner) index =
     (Array.index info.operations index)
   used info operation = Right
     ( withOrigin (Operation operation.name) Nothing
-        ( declarationUse state info.parameters
+        ( declarationUse state info.parameters []
             (map typeSort info.parameters)
             (map parameterType operation.parameters)
             operation.result

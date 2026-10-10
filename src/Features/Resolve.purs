@@ -13,6 +13,7 @@ import Domain.Syntax as Syntax
 import Features.Resolve.Expression (expression)
 import Features.Resolve.Fresh (runFresh)
 import Features.Resolve.Types (resolveTypeWith, typeTable)
+import Features.Resolve.Marks (signatureMarkVariables)
 import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Variables (sortedVariables)
@@ -22,6 +23,7 @@ import Domain.Resolved as Resolved
 
 type Signature =
   { variables ∷ Array String
+  , markVariables ∷ Array String
   , sorts ∷ Array Syntax.Sort
   , row ∷ TyRow Resolved.VarId
   , parameters ∷ Array Resolved.Parameter
@@ -98,8 +100,11 @@ resolveSignature types effects function = do
   parameters ← traverse (parameter resolved) function.parameters
   result ← resolved function.result
   row ← resolveRow effects variables ambient resolved function.row
-  pure { variables, sorts, parameters, result, row }
+  pure { variables, markVariables, sorts, parameters, result, row }
   where
+  markVariables = signatureMarkVariables
+    (Array.snoc (map parameterType function.parameters) function.result)
+    function.row
   references = Array.snoc (map parameterType function.parameters)
     function.result
   parameterType entry = entry.ty
@@ -174,6 +179,7 @@ resolveFunction globals tables effects effectInfos definition =
     , locals
     , types: tables.types
     , variables: definition.signature.variables
+    , markVariables: definition.signature.markVariables
     }
   parameters = definition.signature.parameters
   locals = Map.fromFoldable (Array.mapWithIndex parameterLocal parameters)
@@ -183,6 +189,7 @@ resolveFunction globals tables effects effectInfos definition =
     { id: Resolved.FunctionId definition.index
     , name: definition.function.name
     , variables: definition.signature.variables
+    , markVariables: definition.signature.markVariables
     , sorts: definition.signature.sorts
     , row: definition.signature.row
     , parameters: definition.signature.parameters

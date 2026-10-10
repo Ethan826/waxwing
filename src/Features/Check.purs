@@ -93,6 +93,7 @@ environment program function =
   , types: program.types
   , ctors: program.ctors
   , variables: function.variables
+  , markVariables: function.markVariables
   , locals: Map.fromFoldable
       (Array.mapWithIndex parameterLocal function.parameters)
   }

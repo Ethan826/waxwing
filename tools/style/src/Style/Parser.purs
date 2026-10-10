@@ -19,6 +19,7 @@ applicativeModules =
   , "Format.Parse.Type"
   , "Format.Parse.Lambda"
   , "Format.Parse.Block"
+  , "Format.Parse.Mark"
   ]
 
 applicativeMessage ∷ String

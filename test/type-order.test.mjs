@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { eqInt } from '../output/Data.Eq/index.js';
 import { ordInt } from '../output/Data.Ord/index.js';
-import { Just } from '../output/Data.Maybe/index.js';
+import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { closedRow } from '../output/Domain.Row/index.js';
 import { TBool, TData, TFun, TInt, TVar, eqTy, ordTy } from '../output/Domain.Type/index.js';
 import { ground } from '../output/Domain.Type.Parts/index.js';
@@ -96,8 +96,9 @@ test('order and equality agree with the derived instances on arrow-free types', 
 });
 
 const span = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 2, offset: 1 } };
-const name = { int: problem.IntName.value };
-const arrow = (parameter, result) => problem.FunctionName.create(parameter)(result);
+const name = { int: problem.IntName.value, unit: problem.UnitName.value };
+const arrow = (parameter, result, row = Nothing.value) =>
+  problem.FunctionName.create(parameter)(row)(result);
 const listOf = argument => problem.AppliedName.create('List')([argument]);
 
 test('arrow type names are right-associative, function parameters parenthesized', () => {
@@ -120,4 +121,18 @@ test('a 20,000-long arrow type name renders without deep recursion', () => {
   for (let index = 0; index < longSpine; index += 1) built = arrow(name.int, built);
   const text = wire({ problem: problem.NotComparable.create(built), span, related: [] }).message;
   assert.equal(text, `Type ${'Int -> '.repeat(longSpine)}Int is not comparable`);
+});
+
+// FX008 Task 3: an arrow's row text follows the segment it is written after,
+// as in the source `A -> B with r1 -> C with r2`.
+test('an arrow name shows its row after the segment it follows', () => {
+  const messageOf = built => wire({
+    problem: problem.NotComparable.create(built), span, related: [] }).message;
+  const single = arrow(name.unit, name.unit, Just.create('nofail Log'));
+  assert.equal(messageOf(single), 'Type Unit -> Unit with nofail Log is not comparable');
+  const curried = arrow(name.int, arrow(name.int, name.int, Just.create('R2')),
+    Just.create('R1'));
+  assert.equal(messageOf(curried), 'Type Int -> Int with R1 -> Int with R2 is not comparable');
+  const parameter = arrow(arrow(name.int, name.int, Just.create('R')), name.int);
+  assert.equal(messageOf(parameter), 'Type (Int -> Int with R) -> Int is not comparable');
 });

@@ -1,4 +1,4 @@
-module Domain.Syntax where
+module Domain.Syntax (module Domain.Syntax, module Domain.Note) where
 
 import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRec)
@@ -6,32 +6,12 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
+import Domain.Note (NoteReason(..))
 import Domain.Problem (Problem)
 
 type Position = { offset ∷ Int, line ∷ Int, column ∷ Int }
 type Span = { start ∷ Position, end ∷ Position }
 type Note = { span ∷ Span, reason ∷ NoteReason }
-
--- Why a note is attached (FX001 design §6); Format.Diagnostic.Note gives
--- each its text. `ContinuesInto` is internal: Features.Check replaces it,
--- before reporting, with the path through the named function's body.
-data NoteReason
-  = PerformedHere String
-  | FromCallOf String String
-  | FromFunctionValue String
-  | RaisedHere String
-  | ThroughFunction String
-  | MoreCalls Int
-  | SignatureForbids String String
-  | SignatureAmbient String
-  | MustBePureParameter
-  | HandledHere String
-  | MainOnlyConsole
-  | CleanupMustNotFail
-  | FailAlternatives
-  | DeclaredHere String
-  | InnermostHere String
-  | ContinuesInto String Int String
 
 type Diagnostic =
   { problem ∷ Problem, span ∷ Span, related ∷ Array Note }
@@ -108,7 +88,16 @@ derive instance ordSort ∷ Ord Sort
 
 data RowTail = Spread String | Pure
 data RowRef = RowRef Span (Array LabelRef) (Maybe RowTail)
-type LabelRef = { name ∷ String, arguments ∷ Array TypeRef, span ∷ Span }
+-- A written mark (FX008 design §3.2) spans `nofail` or `nofail(k)` alone;
+-- the label's own `span` stays the label's.
+data MarkRef = NofailRef Span | NofailVariableRef Span String
+
+type LabelRef =
+  { name ∷ String
+  , arguments ∷ Array TypeRef
+  , mark ∷ Maybe MarkRef
+  , span ∷ Span
+  }
 
 -- An arrow's parameters along its result side, and the final result.
 type RefSpine = { parameters ∷ Array TypeRef, result ∷ TypeRef }
@@ -223,6 +212,11 @@ typeRefSpine reference =
     FunRef _ parameter _ more → { accum: more, value: Just parameter }
     settled → { accum: settled, value: Nothing }
 
+markSpan ∷ MarkRef → Span
+markSpan = case _ of
+  NofailRef span → span
+  NofailVariableRef span _ → span
+
 patternSpan ∷ Pattern → Span
 patternSpan = case _ of
   PWildcard span → span
@@ -241,7 +235,12 @@ handlerLabelRef ∷ TypeRef → Maybe LabelRef
 handlerLabelRef = case _ of
   THandlerRef _ label _ → Just label
   NamedRef _ "Handler" [ TypeArgument (NamedRef span name arguments) ] →
-    Just { name, arguments: Array.mapMaybe typeArgument arguments, span }
+    Just
+      { name
+      , arguments: Array.mapMaybe typeArgument arguments
+      , mark: Nothing
+      , span
+      }
   _ → Nothing
   where
   typeArgument = case _ of

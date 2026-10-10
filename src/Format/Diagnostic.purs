@@ -69,6 +69,8 @@ code = case _ of
   HandlerOperation _ _ → Code.HandlerError
   FailNeedsConcrete → Code.TypeMismatch
   ExpectedHandler _ → Code.TypeMismatch
+  NofailOnFail → Code.TypeMismatch
+  MarkVariableOutsideSignature _ → Code.TypeMismatch
 
 codeName ∷ ErrorCode → String
 codeName = case _ of
@@ -146,6 +148,9 @@ message = case _ of
     <> effect
   FailNeedsConcrete → "Fail needs a concrete error family"
   ExpectedHandler _ → "Expected a handler"
+  NofailOnFail → "nofail does not apply to Fail"
+  MarkVariableOutsideSignature name → "nofail(" <> name
+    <> ") is allowed only in function signatures"
 
 wire ∷ Diagnostic → WireDiagnostic
 wire diagnostic =
@@ -210,6 +215,7 @@ unboundWord = case _ of
   UnboundConstructor → "constructor"
   UnboundType → "type"
   UnboundTypeVariable → "type variable"
+  UnboundMarkVariable → "mark variable"
 
 typeName ∷ TypeName → String
 typeName = Name.typeName

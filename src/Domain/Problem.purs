@@ -7,7 +7,8 @@ import Data.Maybe (Maybe)
 -- renders it, so a change of surface syntax changes only Format.
 
 -- `HoleName` is a type checking left open, rendered `_`. `FunctionName`
--- is one arrow, parameter then result, curried like `Ty`'s.
+-- is one arrow, parameter then result, curried like `Ty`'s; its row text is
+-- present only when the row holds a `nofail` label (FX008).
 data TypeName
   = IntName
   | BoolName
@@ -16,7 +17,7 @@ data TypeName
   | AppliedName String (Array TypeName)
   | VariableName String
   | HoleName
-  | FunctionName TypeName TypeName
+  | FunctionName TypeName (Maybe String) TypeName
 
 derive instance eqTypeName ∷ Eq TypeName
 
@@ -41,6 +42,7 @@ data UnboundKind
   | UnboundConstructor
   | UnboundType
   | UnboundTypeVariable
+  | UnboundMarkVariable
 
 data DuplicateKind
   = DuplicateType
@@ -106,3 +108,5 @@ data Problem
   | HandlerOperation String String
   | FailNeedsConcrete
   | ExpectedHandler TypeName
+  | NofailOnFail
+  | MarkVariableOutsideSignature String

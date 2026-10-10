@@ -65,8 +65,9 @@ payloadName shape ty = case ty of
   named info = applied info.name (map recur info.arguments)
   -- The spine is walked by a loop (IR.spine), then folded, so an arrow of
   -- thousands of parameters costs no stack.
-  arrow found = Array.foldr FunctionName (recur found.result)
+  arrow found = Array.foldr unmarked (recur found.result)
     (map recur found.parameters)
+  unmarked parameter rest = FunctionName parameter Nothing rest
   handler info = AppliedName "Handler"
     [ applied info.name (map recur info.arguments) ]
 

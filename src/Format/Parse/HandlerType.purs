@@ -19,13 +19,17 @@ import Domain.Syntax
   )
 import Format.Parse.Grammar
   ( Parser
+  , dispatch
   , expect
+  , ifSecond
   , nested
+  , on
   , optionalOn
   , refine
   , sepBy1
   , token
   )
+import Format.Parse.Mark (markedLabel, opensLabel)
 import Format.Parse.Row (rowArgument, rowRef)
 import Format.Lex (Token)
 
@@ -45,13 +49,23 @@ operand ∷ Parser Rowed → Parser TypeRef → Parser TypeRef
 operand rowed inner = build <$> token
   <*> optionalOn "(" (parseArguments inner)
   where
-  parseArguments parser = refine apply
-    ( expect "(" *>
-        ( parsed <$> sepBy1 "," (argument rowed parser)
-            <*> optionalOn "with" (rowRef parser)
-            <*> expect ")"
-        )
+  parseArguments parser = expect "(" *> dispatch
+    [ on "nofail" (ifSecond opensLabel (marked parser) (unmarked parser)) ]
+    (unmarked parser)
+  unmarked parser = refine apply
+    ( parsed <$> sepBy1 "," (argument rowed parser)
+        <*> optionalOn "with" (rowRef parser)
+        <*> expect ")"
     )
+  -- `Handler(nofail Log …)`: the handled label carries the mark, so this is
+  -- always the special form, with the ambient row when none is written.
+  marked parser = markedHandler <$> markedLabel parser
+    <*> optionalOn "with" (rowRef parser)
+    <*> expect ")"
+  markedHandler labelRef row close = THandlerRef
+    { start: labelRef.span.start, end: close.span.end }
+    labelRef
+    row
   parsed values row close =
     { arguments: map Tuple.fst values
     , argumentRows: Array.mapMaybe Tuple.snd values
@@ -86,7 +100,11 @@ operand rowed inner = build <$> token
     (traverse effectArgument labelArguments)
   handlerType found row labelSpan labelName argumentRefs = THandlerRef
     (applicationSpan found)
-    { name: labelName, arguments: argumentRefs, span: labelSpan }
+    { name: labelName
+    , arguments: argumentRefs
+    , mark: Nothing
+    , span: labelSpan
+    }
     (Just row)
   effectArgument = case _ of
     TypeArgument reference → Right reference
@@ -147,7 +165,7 @@ unexpectedRow (RowRef span _ _) =
 addFirst ∷ Span → String → Array TypeRef → RowRef → RowRef
 addFirst span name arguments (RowRef rest labels tail) = RowRef
   { start: span.start, end: rest.end }
-  (Array.cons { name, arguments, span } labels)
+  (Array.cons { name, arguments, mark: Nothing, span } labels)
   tail
 
 typeRefSpan ∷ TypeRef → Span

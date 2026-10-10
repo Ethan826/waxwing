@@ -43,6 +43,7 @@ type Env =
   , types ∷ Array Resolved.TypeInfo
   , ctors ∷ Array Resolved.CtorInfo
   , variables ∷ Array String
+  , markVariables ∷ Array String
   , locals ∷ Locals
   }
 

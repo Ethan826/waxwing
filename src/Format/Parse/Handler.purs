@@ -30,7 +30,7 @@ import Format.Parse.Grammar
   , spanned
   , token
   )
-import Format.Parse.Row (label)
+import Format.Parse.Mark (label)
 import Format.Parse.Type (typeRef)
 
 type Binder = { name ∷ Maybe String, span ∷ Span }
