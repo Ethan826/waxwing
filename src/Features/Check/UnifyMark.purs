@@ -1,5 +1,6 @@
 module Features.Check.UnifyMark
   ( pairMarks
+  , equateMarks
   , targetLabel
   , stageLabel
   , advanceTail
@@ -9,7 +10,7 @@ import Prelude
 import Prim hiding (Row)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, maybe')
-import Domain.Row (EffectRef(..), Label(..), Mark(..), normalMark)
+import Domain.Row (EffectRef(..), Label(..), Mark(..))
 import Domain.Type (Ty)
 import Features.Check.MarkStore
   ( EdgeReason(..)
@@ -39,7 +40,7 @@ pairMarks
   → Label (Ty Flex)
   → Either Failure Subst
 pairMarks mode subst occurrence stage target = case mode of
-  EqualMarks → maybe' clash Right (equated subst stageMark targetMark)
+  EqualMarks → maybe' clash Right (equateMarks subst stageMark targetMark)
   IgnoreMarks → Right subst
   Directional direction → Right
     ( recorded subst
@@ -109,28 +110,33 @@ advanceTail mode old new = case mode of
 markOf ∷ ∀ t. Label t → Mark
 markOf (Label _ _ mark) = mark
 
--- The same label with a fresh mark meta, counted down from the
--- substitution's `fresh` as row tails are. Console stays N and Fail
--- unmarked (design §3.3), which need no meta.
+-- The same label with a fresh mark meta, from the mark store's own
+-- counter. Console stays N and Fail unmarked (design §3.3), which need no
+-- meta.
 freshened ∷ Subst → Label (Ty Flex) → Maybe Made
 freshened (Subst bindings) (Label effect arguments _) = case effect of
   UserEffect _ → Just
-    { label: Label effect arguments
-        (normalMark effect (MarkMeta bindings.fresh))
-    , subst: Subst bindings { fresh = bindings.fresh - 1 }
+    { label: Label effect arguments (MarkMeta bindings.marks.fresh)
+    , subst: Subst bindings
+        { marks = bindings.marks { fresh = bindings.marks.fresh - 1 } }
     }
   _ → Nothing
 
--- A mark constraint between labels with a mark each; `Unmarked` has none.
+-- A mark constraint between labels with a mark each; `Unmarked` has none,
+-- and N ⊑ N (Console, mostly) holds always.
 recorded ∷ Subst → MarkEdge (Ty Flex) → Subst
 recorded subst@(Subst bindings) edge =
-  if edge.lower == Unmarked || edge.upper == Unmarked then subst
+  if skipped then subst
   else Subst bindings { marks = addEdge edge bindings.marks }
+  where
+  skipped = edge.lower == Unmarked || edge.upper == Unmarked
+    || (edge.lower == NoFail && edge.upper == NoFail)
 
--- Unifies two marks: a meta binds to the other mark (the larger meta to
--- the smaller), `Unmarked` equals everything, `Nothing` is a clash.
-equated ∷ Subst → Mark → Mark → Maybe Subst
-equated subst@(Subst bindings) one other =
+-- Unifies two marks (types compare marks so): a meta binds to the other
+-- mark (the larger meta to the smaller), `Unmarked` equals everything,
+-- `Nothing` is a clash.
+equateMarks ∷ Subst → Mark → Mark → Maybe Subst
+equateMarks subst@(Subst bindings) one other =
   case resolveMark store one, resolveMark store other of
     Unmarked, _ → Just subst
     _, Unmarked → Just subst

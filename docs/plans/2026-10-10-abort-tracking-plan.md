@@ -622,10 +622,11 @@ Edges recorded, not yet read. New rejections: only P3's.
   - `consumeIgnoring ∷ ∀ r. CheckEnv r → State → { origin ∷ Origin, stage ∷
     TyRow Open, target ∷ TyRow Open } → Either Diagnostic State`: stage as
     it stands into `target`, IgnoreMarks (R ≡ ρ at `with`; the hook).
-- Unify `THandler`: handled label args and mark EqualMarks; `inference` by
-  `unifyRowsIgnoring`; `clauseRow` of both sides by `unifyRows`, only when
-  either side's `clauses` is `Just`. Until Task 7 a literal's C is `Nothing`
-  too, so nothing is compared (R's marks are dead).
+- Unify `THandler`: handled label args and mark EqualMarks; when both
+  sides' `clauses` are `Nothing` (C is R), `inference` by `unifyRows`
+  (EqualMarks, so C's marks are compared, review I1); otherwise `inference`
+  by `unifyRowsIgnoring` and `clauseRow` of both sides by `unifyRows`. One
+  pass per level either way. Until Task 7 a literal's C is `Nothing` too.
 - MarkUse: `openHandlers ∷ State → Array (Ty Open) → Ty Open → Threaded {
   fields ∷ Array (Ty Open), result ∷ Ty Open }` (top-level parameter
   `THandler` with `Plain` m, and result `THandler` with `NoFail` m, get a

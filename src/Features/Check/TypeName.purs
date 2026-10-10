@@ -19,7 +19,7 @@ import Domain.Checked.Internal (Open(..))
 import Domain.Ids (EffectId(..))
 import Domain.Problem (LabelName, Problem(..), TypeName(..))
 import Domain.Resolved (EffectInfo, TypeInfo)
-import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), clauseRow)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TyRow, TypeId(..), VarId(..))
 import Domain.Type.Parts (rowsOf, spine)
@@ -48,7 +48,7 @@ typeName env span = case _ of
     (Array.index env.variables index)
   TVar (Hole _) → Right HoleName
   arrow@(TFun _ _ _) → arrowName env span arrow
-  THandler label _ → handlerName label
+  THandler label rows → handlerName label (clauseRow rows)
   where
   missing _ = Left (problemAt (Internal "Invalid resolved type") span)
   unnamed _ = Left (problemAt (Internal "Unnamed type variable") span)
@@ -56,9 +56,16 @@ typeName env span = case _ of
     | Array.null arguments = Right (DataName info.name)
     | otherwise = AppliedName info.name <$> traverse (typeName env span)
         arguments
-  handlerName label = do
+  handlerName label clauses = do
     view ← labelParts env span label
-    Right (AppliedName "Handler" [ applied view.effect view.arguments ])
+    shown ← arrowRowText env span (rowMarked clauses) clauses
+    Right
+      ( AppliedName "Handler"
+          [ withClauses shown (applied view.effect view.arguments) ]
+      )
+  -- A clause row holding a marked label prints, as an arrow's row does.
+  withClauses shown inner = maybe inner (clauseText inner) shown
+  clauseText inner text = DataName (rendered inner <> " with " <> text)
   applied name [] = DataName name
   applied name arguments = AppliedName name arguments
 

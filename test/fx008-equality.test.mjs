@@ -47,3 +47,33 @@ test('a lambda passed to a nofail callback compiles', () => {
     + 'fn main(): Int = 0;';
   assert.equal(checked(source), checked(unmarked(source)));
 });
+
+const tick = 'effect Tick { fn tick(): Unit; }; ';
+
+test('handler types with clause rows of different marks differ', () => {
+  const source = log + tick
+    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { log(1) }; '
+    + 'fn outer(h: Handler(Log with nofail Tick)): Unit with Tick = inner(h); '
+    + 'fn main(): Int = 0;';
+  const found = rejectedArgument(source, 'inner(h)', 'h');
+  assert.equal(found.message,
+    'Expected Handler(Log), found Handler(Log with nofail Tick)');
+});
+
+test('a clause row mark clash through a lambda annotation names the row', () => {
+  const source = log + tick + 'fn go(h: Handler(Log with Tick)): Unit = '
+    + '{ let f = fn(g: Handler(Log with nofail Tick)) => (); f(h) }; '
+    + 'fn main(): Int = 0;';
+  const found = rejectedArgument(source, 'f(h)', 'h');
+  assert.equal(found.message,
+    'Expected Handler(Log with nofail Tick), found Handler(Log)');
+});
+
+test('a result written M stays closed against a nofail parameter', () => {
+  const source = log
+    + 'fn run(h: Handler(nofail Log with pure)): Unit = with h { log(1) }; '
+    + 'fn mk(): Handler(Log with pure) = handler Log { log(n) => () }; '
+    + 'fn main(): Int = { run(mk()); 0 };';
+  const found = rejectedArgument(source, 'run(mk())', 'mk()');
+  assert.equal(found.message, 'Expected Handler(nofail Log), found Handler(Log)');
+});

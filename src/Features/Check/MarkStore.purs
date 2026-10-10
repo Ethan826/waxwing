@@ -12,6 +12,7 @@ module Features.Check.MarkStore
   , edgesOf
   ) where
 
+import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Map (Map)
 import Data.Map as Map
@@ -22,7 +23,8 @@ import Features.Check.Search (Stack(..), stackItems)
 
 -- `lower ⊑ upper`: lower is at least as strong as upper (N ⊑ M); the
 -- label is the one the edge is about, for the messages of later tasks
--- (FX008 design §3.4). Edges are recorded here and read by §3.5.
+-- (FX008 design §3.4): the stage's label for Assumed and Extended edges,
+-- the target's for Copied ones. Edges are recorded here, read by §3.5.
 type MarkEdge t =
   { lower ∷ Mark, upper ∷ Mark, label ∷ Label t, reason ∷ EdgeReason }
 
@@ -44,8 +46,12 @@ type AbortSite =
   { handler ∷ Span, clause ∷ Span, operation ∷ String, rigid ∷ Maybe String }
 
 -- Mark metas are bound by equality; edges are pushed in order and read
--- oldest first.
-type MarkStore t = { bindings ∷ Map Int Mark, edges ∷ Stack (MarkEdge t) }
+-- oldest first. `fresh` counts down from -1 for the metas unification
+-- makes: apart from row and type metas, so that making a mark does not
+-- renumber anything else (the checked IR of a program without `nofail`
+-- is unchanged), and from the checker's, which count up from 0.
+type MarkStore t =
+  { bindings ∷ Map Int Mark, edges ∷ Stack (MarkEdge t), fresh ∷ Int }
 
 -- How a row unification treats the marks of its labels. Types unify with
 -- `EqualMarks`; the inference row R of a handler with `IgnoreMarks`;
@@ -56,7 +62,7 @@ data RowMode = EqualMarks | IgnoreMarks | Directional Direction
 type Direction = { span ∷ Span, throwaway ∷ Maybe Int }
 
 emptyMarks ∷ ∀ t. MarkStore t
-emptyMarks = { bindings: Map.empty, edges: Bottom }
+emptyMarks = { bindings: Map.empty, edges: Bottom, fresh: -1 }
 
 -- The mark itself unless it is a bound meta, then the end of its chain, by
 -- a loop (only a meta enters it, as Subst `walk`).

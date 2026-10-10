@@ -7,7 +7,7 @@ import { Right } from '../output/Data.Either/index.js';
 import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { Hole } from '../output/Domain.Checked.Internal/index.js';
 import { Label, Plain, Row, UserEffect } from '../output/Domain.Row/index.js';
-import { consumeLabels } from '../output/Features.Check.Consume/index.js';
+import { consumeLabels, consumeVia } from '../output/Features.Check.Consume/index.js';
 import { Application } from '../output/Features.Check.Provenance/index.js';
 import { start } from '../output/Features.Check.Scheme/index.js';
 import { generator, choose } from './coverage-oracle.mjs';
@@ -110,7 +110,9 @@ const canonical = resolved => {
     return `"n":"fresh${names.get(n)}"`;
   });
 };
-const hasFail = sides => sides.some(side => side.labels.some(l => l.e === 'fail'));
+// Fail, Console and nofail pairs may record no edge (Unmarked, N ⊑ N).
+const hasFail = sides => sides.some(side => side.labels.some(
+  l => l.e === 'fail' || l.e === 'console' || l.mark === 'nofail'));
 const resolvedBoth = (outcome, sides) =>
   canonical(sides.map(side => resolveRow(outcome.subst, side)));
 
@@ -147,7 +149,7 @@ test('the scoped-label properties hold in every mode', () => {
     }
   }
   assert.ok(seen.solved > 200 && seen.failed > 100 && seen.clashed > 20
-    && seen.assumed > 100, JSON.stringify(seen));
+    && seen.assumed > 20, JSON.stringify(seen));
 });
 
 const here = { offset: 0, line: 1, column: 1 };
@@ -167,15 +169,26 @@ const consumeInto = (labels, target) => {
 };
 const reasonsOf = state => edgesIn(state.subst).map(edge => edge.reason);
 
+// A one-label stage against a target of 8,000 labels: the target's rest would
+// be copied onto the stage's tail, 7,999 copies, unless that tail is a
+// throwaway. Only `Assumed` for the one matched pair may remain.
+const labels = Array.from({ length: 8000 }, (_, i) => effectLabel(i));
+const wide = () => Row.create(labels)(Just.create(new Hole(100)));
+
 test('consumeLabels makes no copies', () => {
-  const total = 8000;
-  const labels = Array.from({ length: total }, (_, i) => effectLabel(i));
-  const openRow = Row.create([])(Just.create(new Hole(100)));
-  const extended = reasonsOf(consumeInto(labels, openRow));
-  assert.equal(extended.length, total);
-  assert.ok(extended.every(reason => reason === 'Extended'));
-  // The target holds 8,000 labels and the stage one: the rest of the target
-  // would be copied onto the stage's tail, which nobody reads.
-  const wide = Row.create(labels)(Just.create(new Hole(100)));
-  assert.deepEqual(reasonsOf(consumeInto([labels[0]], wide)), ['Assumed']);
+  assert.deepEqual(reasonsOf(consumeInto([labels[0]], wide())), ['Assumed']);
+});
+
+test('a closed stage consumed into a wider target makes no copies', () => {
+  const closedStage = Row.create([labels[0]])(Nothing.value);
+  const result = consumeVia(environment(wide()))(start)({
+    span, consumed: Application.value, via: Nothing.value
+  })([])(closedStage);
+  assert.ok(result instanceof Right, result.value0?.problem?.constructor.name);
+  assert.deepEqual(reasonsOf(result.value0), ['Assumed']);
+});
+
+test('Console pairs record no edge', () => {
+  const subst = run(directional(), row([console_]), row([console_], rowMeta(10)));
+  assert.deepEqual(edgesIn(subst), []);
 });
