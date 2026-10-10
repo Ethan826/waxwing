@@ -221,3 +221,150 @@ flag it.
   237 and Resolve/Types.purs at 243, still under the cap.
 - **Width:** the lines my byte count flagged are under 80 columns once
   Unicode punctuation is counted as one character. The gate passed.
+
+## Re-review: fix round 1 (c6af69f, on top of 66e4f5d)
+
+**Verdict.**
+- **Spec ✅** for Task 2.
+- **Quality: Approved with one fix.** The serial bound (b) must change
+  before merge.
+- **One plan edit is still missing:** Task 3's `localMarks` (c1). It does not
+  block Task 2, but must be fixed before Task 3 is dispatched.
+
+**What I ran:**
+- In scratch (`fix/`): a `git archive` copy of c6af69f, built with
+  0 warnings and 0 errors.
+- Depth timings for `waxwing emit` on the fix build, compared with base.
+- Four separate Strip mutants, each against
+  test/fx008-representation.test.mjs.
+- test/fx008-nesting.serial.test.mjs three times when the machine was idle.
+- The first-compile time at depths 20, 40 and 80 in a fresh process: three
+  runs idle, and five under load from 2 × ncpu busy-loop processes.
+
+**What I read:** the diff, and the whole plan for uses of `clauses` and C.
+
+### Earlier findings
+
+- **C1: ADDRESSED.**
+  - The fix build emits in 0.13 s at depths 20, 22 and 40, and 0.14 s at
+    depths 80 and 120. Base was 0.13–0.14 s at the same depths.
+  - The Go output is byte-identical to base at depths 20 and 40.
+  - At the limit the two builds behave the same: depth 124 compiles on
+    both, and depth 125 is a `RangeError` stack overflow on both (see d2).
+- **I1: ADDRESSED.** Each of the four Strip mutants makes the new test fail:
+  - body stripped with `retype identity`;
+  - operation result not stripped;
+  - operation parameter not stripped;
+  - constructor fields not stripped.
+- **M1: ADDRESSED.** `unifyClauses` compares C only when one side is `Just`.
+- **M2: ADDRESSED.** `markVariables` now has an order test; I checked that
+  `['b', 'a', 'c', 'd']` follows from `named`.
+- **M3: ADDRESSED.** The local type annotations were all removed, so the
+  where-block is consistent.
+- **M4: ADDRESSED.** The comment on `pureRows` says what it counts.
+
+### (a) The unplanned `handlerRowList` export
+
+Fine. It is the single place that decides which handler rows a structural
+pass enters, and Parts and Binding both use it. The plan's interfaces now
+list it, along with `clauseRow`.
+
+### (b) The serial guard's bound is not robust. Fix before merge.
+
+The timed compile is the first compile in its process, so its cost includes
+JIT warm-up. Measured times for the depth-40 program:
+
+| Condition | Time |
+|---|---|
+| Serial test, idle | about 13 ms |
+| First compile (depth 20), idle | 12–13 ms |
+| First compile (depth 20), under load | **41–73 ms** |
+| Depth-40 compile after warm-up, under load | 5–29 ms |
+
+Under load the first compile lands right at, or above, the 48.9 ms bound.
+That is the same failure mode as T003/T007, and bounds may not be relaxed
+afterwards.
+
+A ratio such as t40 / t20 is no better. At these sizes the timings are a few
+milliseconds and noisy: depth 80 took anywhere from 8.8 to 35.2 ms under
+load.
+
+Use instead a generous absolute bound after a warm-up. The gap justifies it:
+- With the defect, depth 20 took 2.1 s and depth 22 ran out of memory.
+  Doubling per level puts depth 40 at roughly 2^20 × 2 s, which never
+  finishes.
+- With the fix, depth 40 took at most 73 ms under heavy load, even cold.
+
+Exact form:
+```js
+// Bound: generous, not tight. With review C1's defect depth 20 took 2.1 s
+// and depth 22 ran out of memory (doubling per level); linear compiles of
+// depth 40 measured <= 73 ms cold under 2×ncpu load. A warm-up compile
+// keeps JIT start-up out of the measurement.
+const bound = 2000;
+test('a handler type nested 40 levels deep compiles within the bound', () => {
+  checked(nestedProgram(1));
+  const started = performance.now();
+  checked(nestedProgram(nestingDepth));
+  const elapsed = performance.now() - started;
+  assert.ok(elapsed < bound, `took ${elapsed} ms, bound ${bound} ms`);
+});
+```
+
+Optionally, add the same assertion at depth 120. That is base's working
+range, it costs 14 ms, and it would also catch a regression that is linear
+but has a large constant factor.
+
+### (c) The plan edits are correct but not complete
+
+These edits are right:
+- P2, with `Maybe C`, `handlerRowList` and `clauseRow`.
+- P4, with `clauses := Nothing`.
+- The Task 2 interfaces and Step 1.
+- Task 4 Unify: `clauseRow` is compared only when a side is `Just`.
+- Task 7 `checkClauses`: `Just C`.
+- Task 8 `install`: through `clauseRow`.
+
+The `ClauseEntry` and `InstallEntry` fields named `clauses ∷ TyRow` (plan
+l.769 and l.775), and the tail pass's "inference and clauses end in ϱ"
+(l.858), are fields of the settling entries. They are not `HandlerRows`, so
+they are fine as they are.
+
+**c1. Still missing: Task 3 `localMarks` (plan l.483–485).** The plan says
+"each `THandler`'s C → its labels, marks freshened, plus a fresh `Hole`
+tail". As written, every handler level inside a lambda annotation gets a
+`Just` C, including handlers nested in rows. That reintroduces the doubling
+per level for annotations, and C1 comes back through
+`fn(x: <nested 40>) => …`.
+
+Fix: amend the plan before Task 3. Choose one:
+- `Just` C only for a `THandler` that is not inside another handler type's
+  row. Nested levels stay `Nothing`, which is sound because their C is
+  never consumed.
+- Or C's copied labels keep `Nothing` in their nested handler types.
+
+Also add a Task 3 test: a 40-level nested handler type in a lambda annotation
+compiles within the same generous bound. Regression row `fx008-c-alias`
+(l.1103, "localMarks keeps C = R") should be reworded to match.
+
+**c2 (Minor). Risk for Task 7 to measure.** A handler literal's inferred
+type has a `Just` C. When literals nest through rows (an inferred row whose
+label argument is another literal's type), `resolve` and `substitute`
+rebuild C and R separately at each level. The depth is bounded by source
+nesting, but Task 7 should add a guard test with about 30 nested literals.
+
+**c3 (Minor).** Ty `Eq`/`Ord` compare `clauses` as a `Maybe`. From Task 7
+on, a `Just C` and a `Nothing` that mean the same row compare unequal inside
+Check. Stripping normalises this afterwards, so specialization is
+unaffected. Task 7 should note it.
+
+### (d) New breakage
+
+- **d1. None found.** The build has 0 warnings and 0 errors. With the
+  original Strip, test/fx008-representation.test.mjs and
+  test/fx008-nesting.test.mjs pass 5/5. Strip has 5 where-bindings.
+  `mapHandlerRows` keeps its signature.
+- **d2. Pre-existing, not new.** On both base and the fix, depth 125 ends in
+  an uncaught `RangeError` stack overflow, not the parser's `tooDeep`
+  diagnostic. Suggest the controller add a BACKLOG item with this
+  reproduction (`node gen.mjs 125`, handler types nested in rows).
