@@ -17,7 +17,14 @@ import Prim hiding (Row)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
-import Domain.Row (HandlerRows, Label(..), Row(..), TypeHead(..), closedRow)
+import Domain.Row
+  ( HandlerRows
+  , Label(..)
+  , Row(..)
+  , TypeHead(..)
+  , closedRow
+  , handlerRowList
+  )
 import Domain.Type (Stages, Ty(..), TyRow, foldStages, stagesThrough)
 
 -- An arrow's parameters, in order, and its final result, which is not an
@@ -73,11 +80,11 @@ children = case _ of
   spineParts found = Array.snoc found.parameters found.result
 
 -- The rows a structural pass enters beside `children`: an application's
--- row arguments, a handler's two rows, or each arrow's row along the spine.
+-- row arguments, a handler's rows, or each arrow's row along the spine.
 rowsOf ∷ ∀ v. Ty v → Array (TyRow v)
 rowsOf = case _ of
   TData _ _ rows → rows
-  THandler _ rows → [ rows.inference, rows.clauses ]
+  THandler _ rows → handlerRowList rows
   arrow@(TFun _ _ _) → Array.mapMaybe rowOf
     (stagesThrough identity arrow).arrows
   _ → []
@@ -136,7 +143,7 @@ groundRows
   → HandlerRows (Ty v) v
   → Maybe (HandlerRows (Ty Void) Void)
 groundRows rowGround rows = joined <$> rowGround rows.inference
-  <*> rowGround rows.clauses
+  <*> traverse rowGround rows.clauses
   where
   joined inference clauses = { inference, clauses }
 

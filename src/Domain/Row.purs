@@ -14,13 +14,15 @@ module Domain.Row
   , withMark
   , normalMark
   , mapHandlerRows
+  , clauseRow
+  , handlerRowList
   , uniformRows
   ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
-import Data.Maybe (Maybe(..), isNothing)
+import Data.Maybe (Maybe(..), fromMaybe, isNothing)
 import Domain.Ids (EffectId, TypeId)
 
 -- An effect row (FX001 design §2): labels in order, with multiplicity,
@@ -39,7 +41,10 @@ data Label t = Label EffectRef (Array t) Mark
 data Mark = NoFail | Plain | MarkVariable String | MarkMeta Int | Unmarked
 
 -- A handler type's two rows: the inference row R and the clause row C.
-type HandlerRows t v = { inference ∷ Row t v, clauses ∷ Row t v }
+-- `Nothing` means C is the inference row: a written type, and every type
+-- after Check. Only a handler literal has a distinct C, so a nested written
+-- type is one tree, not two per level.
+type HandlerRows t v = { inference ∷ Row t v, clauses ∷ Maybe (Row t v) }
 
 data EffectRef = UserEffect EffectId | FailEffect | ConsoleEffect
 
@@ -96,12 +101,20 @@ normalMark effect mark = case effect of
   FailEffect → Unmarked
   UserEffect _ → mark
 
--- Both rows the same: a handler literal or written type, until clauses
--- have rows of their own (FX008 Task 7).
+-- C the same as R: a written type, or a literal until clauses have rows of
+-- their own (FX008 Task 7).
 uniformRows ∷ ∀ t v. Row t v → HandlerRows t v
-uniformRows row = { inference: row, clauses: row }
+uniformRows row = { inference: row, clauses: Nothing }
+
+clauseRow ∷ ∀ t v. HandlerRows t v → Row t v
+clauseRow rows = fromMaybe rows.inference rows.clauses
+
+-- The rows a structural pass enters: C only when it is its own tree.
+handlerRowList ∷ ∀ t v. HandlerRows t v → Array (Row t v)
+handlerRowList rows = Array.cons rows.inference
+  (Array.fromFoldable rows.clauses)
 
 mapHandlerRows
   ∷ ∀ t v u w. (Row t v → Row u w) → HandlerRows t v → HandlerRows u w
 mapHandlerRows change rows =
-  { inference: change rows.inference, clauses: change rows.clauses }
+  { inference: change rows.inference, clauses: map change rows.clauses }

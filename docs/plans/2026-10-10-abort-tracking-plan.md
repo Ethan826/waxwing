@@ -144,8 +144,14 @@ docs/sdd/2026-10-09-effects-plan/).
   replaces it). `Unmarked` = Fail placeholder and every mark after Check.
   Mark variables are named (unique per signature).
 - **P2 (i)** `THandler (Label (Ty v)) (HandlerRows (Ty v) v)` with
-  `HandlerRows = { inference ∷ R, clauses ∷ C }`; the label's mark is m.
-  Record `Eq`/`Ord` keep Type.purs's instances unchanged.
+  `HandlerRows = { inference ∷ R, clauses ∷ Maybe C }`; the label's mark
+  is m. `Nothing` means C is R: written types and everything after Check
+  use it, and only handler literals (Task 7) and later tasks that need a
+  distinct C use `Just`. Every structural pass enters `clauses` only when
+  it is `Just` (`handlerRowList`), so a nested written handler type costs
+  one tree per level, not two (review C1: exponential time and memory
+  otherwise). `clauseRow` (= `fromMaybe inference clauses`) reads C. Record
+  `Eq`/`Ord` keep Type.purs's instances unchanged.
 - **P3 (ii, codes and texts)** Equality of marks (types, C ≡ C, handled
   label): metas bind; `Unmarked` skipped; two different non-meta marks fail
   as differing arguments, E_TYPE: `Expected Handler(nofail Log), found
@@ -157,7 +163,7 @@ docs/sdd/2026-10-09-effects-plan/).
   E_EFFECT (path check, `ExpectedNofail`).
 - **P4 (i)** Strip at the end of `Features.Check.check`, before
   `instantiationRule`: every mark → `Unmarked`, and every handler type's
-  `clauses := inference`, in bodies and tables. After Check, every
+  `clauses := Nothing`, in bodies and tables. After Check, every
   constructed label is `Unmarked` (e.g. Features/Specialize.purs:171).
 - **P5 (ii, acceptance)** Opening (§3.4) applies to function signatures
   only (top-level parameter and result types), not constructor fields or
@@ -402,16 +408,19 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Domain.Row: `data Mark = NoFail | Plain | MarkVariable String | MarkMeta
   Int | Unmarked` (Eq, Ord); `data Label t = Label EffectRef (Array t)
   Mark` (mark last, so derived Ord ranks by effect first); `type HandlerRows
-  t v = { inference ∷ Row t v, clauses ∷ Row t v }`; `labelMark ∷ ∀ t. Label
-  t → Mark`; `withMark ∷ ∀ t. Mark → Label t → Label t`; `normalMark ∷
+  t v = { inference ∷ Row t v, clauses ∷ Maybe (Row t v) }`; `labelMark ∷ ∀ t.
+  Label t → Mark`; `withMark ∷ ∀ t. Mark → Label t → Label t`; `normalMark ∷
   EffectRef → Mark → Mark` (Console → NoFail, Fail → Unmarked, else
   unchanged); `mapHandlerRows ∷ ∀ t v u w. (Row t v → Row u w) →
-  HandlerRows t v → HandlerRows u w`.
+  HandlerRows t v → HandlerRows u w` (maps `clauses` only when `Just`);
+  `clauseRow ∷ ∀ t v. HandlerRows t v → Row t v`; `uniformRows ∷ ∀ t v. Row
+  t v → HandlerRows t v` (`clauses: Nothing`); `handlerRowList ∷ ∀ t v.
+  HandlerRows t v → Array (Row t v)` (R, then C if `Just`).
 - Domain.Type: `THandler (Label (Ty v)) (HandlerRows (Ty v) v)`.
 - Domain.Type.Marks (spines by loop): `mapMarks ∷ ∀ v. (Mark → Mark) → Ty v
   → Ty v`; `mapRowMarks ∷ ∀ v. (Mark → Mark) → TyRow v → TyRow v`;
   `stripMarks ∷ ∀ v. Ty v → Ty v` (marks → Unmarked, `clauses :=
-  inference`); `markVariables ∷ ∀ v. Array (Ty v) → Array String` (distinct,
+  Nothing`); `markVariables ∷ ∀ v. Array (Ty v) → Array String` (distinct,
   first occurrence).
 - Strip: `stripProgram ∷ Checked.Program → Checked.Program` (bodies, function
   types, effect/type/ctor tables), applied in `check` before
@@ -419,11 +428,12 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Marks supplied: Resolve and Check builders `Plain` (Console `NoFail`, Fail
   `Unmarked`, via `normalMark`); every builder after Check (Specialize,
   Lower, Format.Go) `Unmarked`. Handler literals and written handler types:
-  `clauses = inference` (until Task 7). Unification ignores marks (`_`).
+  `clauses = Nothing` (literals until Task 7). Unification ignores marks (`_`).
 
 - [ ] **Step 1: Failing tests** (test/fx008-representation.test.mjs):
   `stripMarks erases every mark and C` (JS-built type with NoFail, Plain,
-  MarkMeta labels and a distinct C → every label `Unmarked`, C equal to R);
+  MarkMeta labels and a distinct `Just` C → every label `Unmarked`, C
+  `Nothing`);
   `stripMarks walks a 1,000-arrow spine` (no stack failure).
 - [ ] **Step 2: Run** `node --test test/fx008-representation.test.mjs` → FAIL
   (modules missing).
@@ -603,8 +613,9 @@ Edges recorded, not yet read. New rejections: only P3's.
     TyRow Open, target ∷ TyRow Open } → Either Diagnostic State`: stage as
     it stands into `target`, IgnoreMarks (R ≡ ρ at `with`; the hook).
 - Unify `THandler`: handled label args and mark EqualMarks; `inference` by
-  `unifyRowsIgnoring`; `clauses` by `unifyRows`. Until Task 7 a literal's
-  C is its R, so C ≡ C also equates those R marks (harmless: R is dead).
+  `unifyRowsIgnoring`; `clauseRow` of both sides by `unifyRows`, only when
+  either side's `clauses` is `Just`. Until Task 7 a literal's C is `Nothing`
+  too, so nothing is compared (R's marks are dead).
 - MarkUse: `openHandlers ∷ State → Array (Ty Open) → Ty Open → Threaded {
   fields ∷ Array (Ty Open), result ∷ Ty Open }` (top-level parameter
   `THandler` with `Plain` m, and result `THandler` with `NoFail` m, get a
@@ -808,7 +819,8 @@ implementer or reviewer asks; that change is recorded in the ledger.
   State → Span → Label (Ty Resolved.VarId) → Array Resolved.HandlerClause →
   Either Diagnostic (Threaded { clauses ∷ Array Checked.HandlerClause, rows
   ∷ HandlerRows (Ty Open) Open, own ∷ Mark })`: each clause against a fresh
-  row c; R, C fresh open rows; m a fresh `MarkMeta`; each c registered (new
+  row c; R, C fresh open rows (`rows = { inference: R, clauses: Just C }`); m a
+  fresh `MarkMeta`; each c registered (new
   group, `tail` = c's resolved tail, `signature = Nothing`, in `pending`),
   watched, and consumed into C by `consumeLabels` (Directional, Fail kept,
   origin the handler span). R is reached only through `sync`.
@@ -915,7 +927,7 @@ entries join settling; gate unchanged.
 - `install ∷ ∀ r. Infer (locals ∷ Locals | r) → HandlerEnv r → State → Span →
   Checked.Expr → Label (Ty Open) → HandlerRows (Ty Open) Open →
   Resolved.Expr → Either Diagnostic (Threaded Checked.Expr)`: R into
-  `env.current` by `consumeIgnoring`; C's labels into `env.current` by
+  `env.current` by `consumeIgnoring`; `clauseRow`'s labels into `env.current` by
   `consumeLabels` (Directional, Fail kept, origin the `with`); frame f =
   `NoFail` for Console, else a fresh `MarkMeta`; the body is checked against
   `withMark f label` prepended to the current row; registers an

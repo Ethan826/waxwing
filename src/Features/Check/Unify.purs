@@ -10,8 +10,9 @@ import Control.Monad.Rec.Class (Step(..), tailRec, tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Foldable (foldM)
+import Data.Maybe (isNothing)
 import Data.Tuple (Tuple(..))
-import Domain.Row (Label(..))
+import Domain.Row (HandlerRows, Label(..), clauseRow)
 import Domain.Type (Ty(..), TyRow)
 import Features.Check.Binding (exceedsLimit, inferredTypeLimit)
 import Features.Check.Binding as Binding
@@ -122,7 +123,7 @@ unifyHeads level subst left right = case left, right of
     | one == other && sameLength lefts rights →
         foldM unifyPair subst (Array.zip lefts rights)
           >>= unifyRowAt level leftRows.inference rightRows.inference
-          >>= unifyRowAt level leftRows.clauses rightRows.clauses
+          >>= unifyClauses level leftRows rightRows
   TFun _ _ _, TFun _ _ _ → unifyArrows level subst left right
   _, _ → mismatch subst left right
   where
@@ -132,6 +133,18 @@ unifyHeads level subst left right = case left, right of
   -- overflowed test/unify-arrow at 1,000 levels).
   unifyPair reached (Tuple leftArgument rightArgument) =
     unifyAt (level + 1) reached leftArgument rightArgument
+
+-- C is compared only when a side has one of its own; `Nothing` is R, which
+-- was just unified (a written type then costs one row, not two).
+unifyClauses
+  ∷ Int
+  → HandlerRows (Ty Flex) Flex
+  → HandlerRows (Ty Flex) Flex
+  → Subst
+  → Either Failure Subst
+unifyClauses level left right subst =
+  if isNothing left.clauses && isNothing right.clauses then Right subst
+  else unifyRowAt level (clauseRow left) (clauseRow right) subst
 
 -- Two rows at this level: their label arguments one level deeper.
 unifyRowAt

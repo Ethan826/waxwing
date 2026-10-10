@@ -87,6 +87,7 @@ topRowPure ty = case ty of
   TFun _ row _ → isPure row && pureRows ty == 1
   _ → false
 
+-- Counts every pure row, a literal's own clause row too.
 pureRows ∷ Ty Open → Int
 pureRows ty = Array.length (Array.filter isPure (rowsOf ty))
   + sum (map pureRows (children ty))

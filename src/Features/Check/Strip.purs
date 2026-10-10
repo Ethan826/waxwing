@@ -2,7 +2,6 @@ module Features.Check.Strip (stripProgram) where
 
 import Prelude
 import Domain.Checked.Internal as Checked
-import Domain.Resolved (CtorInfo, EffectInfo, OperationInfo)
 import Domain.Type.Marks (stripMarks, stripRowMarks)
 import Features.Check.Walk (retype)
 
@@ -18,17 +17,12 @@ stripProgram (Checked.Program program) = Checked.Program
     , functions = map function program.functions
     }
   where
-  effect ∷ EffectInfo → EffectInfo
   effect info = info { operations = map operation info.operations }
-
-  operation ∷ OperationInfo → OperationInfo
   operation info = info
     { parameters = map parameter info.parameters
     , result = stripMarks info.result
     }
   parameter declared = declared { ty = stripMarks declared.ty }
-
-  constructor ∷ CtorInfo → CtorInfo
   constructor info = info { fields = map stripMarks info.fields }
   function declared = declared
     { parameters = map stripMarks declared.parameters

@@ -9,6 +9,7 @@ module Domain.Type.Marks
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
+import Data.Maybe (Maybe(..))
 import Domain.Row
   ( HandlerRows
   , Label(..)
@@ -37,7 +38,7 @@ mapRowMarks ∷ ∀ v. (Mark → Mark) → TyRow v → TyRow v
 mapRowMarks change = editedRow { mark: change, handler: identity }
 
 -- After Check no mark means anything: all become `Unmarked`, and a
--- handler type's clause row C is dropped for its inference row R (P4).
+-- handler type's clause row C is dropped, meaning R (P4).
 stripMarks ∷ ∀ v. Ty v → Ty v
 stripMarks = edited stripping
 
@@ -47,7 +48,7 @@ stripRowMarks = editedRow stripping
 stripping ∷ ∀ v. Edit v
 stripping = { mark: const Unmarked, handler: onlyInference }
   where
-  onlyInference rows = rows { clauses = rows.inference }
+  onlyInference rows = rows { clauses = Nothing }
 
 edited ∷ ∀ v. Edit v → Ty v → Ty v
 edited edit = case _ of

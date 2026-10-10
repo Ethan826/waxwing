@@ -14,7 +14,7 @@ import Data.Either (Either(..))
 import Data.Foldable (foldl)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
-import Domain.Row (Label(..), Row(..), isPure)
+import Domain.Row (Label(..), Row(..), handlerRowList, isPure)
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
 import Features.Check.Search (Stack(..))
@@ -57,7 +57,7 @@ exceedsLimit subst ty = tailRec step (Push { ty, level: 1 } Bottom)
       parameter
     THandler (Label _ arguments _) rows → foldl (pushRow (level + 1))
       (foldl (pushAt (level + 1)) rest arguments)
-      [ rows.inference, rows.clauses ]
+      (handlerRowList rows)
     _ → rest
   pushRow level rest row
     | isPure row = rest
