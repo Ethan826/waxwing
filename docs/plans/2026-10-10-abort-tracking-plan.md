@@ -482,7 +482,11 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Check.MarkUse: `instantiateMarks ∷ Array String → State → Threaded (Mark →
   Mark)` (one fresh `MarkMeta` per name from `state.next`); `localMarks ∷
   State → Ty Open → Threaded (Ty Open)` (each `Plain` → fresh meta; each
-  `THandler`'s C → its labels, marks freshened, plus a fresh `Hole` tail).
+  `THandler`'s C → `Just` its labels, marks freshened, plus a fresh `Hole`
+  tail; only for a `THandler` not inside another handler type's row. Handler
+  types nested in a handler row keep `clauses: Nothing`, which is sound
+  because their C is never consumed, and keeps the type one tree per level
+  (Task 2 review C1; otherwise `fn(x: <nested 40>) => …` doubles per level).
 - CheckEnv and Infer.Env: `markVariables ∷ Array String`.
 - Use: `declarationUse ∷ State → Array String → Array String → Array
   Syntax.Sort → Array (Ty Resolved.VarId) → Ty Resolved.VarId → TyRow
@@ -527,6 +531,12 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
     performs nofail Log, which its signature does not allow`; a row error
     in `with nofail Console + Log` contains `Console`, never `nofail
     Console`.
+  - `a nested handler annotation stays linear` (review C1): a lambda
+    parameter annotated with a 40-level `Handler(Log with S(Handler(…)))`
+    is accepted (parallel, test/fx008-nesting.test.mjs) and checks within
+    the same 2000 ms warm bound at depths 40 and 120 (serial,
+    test/fx008-nesting.serial.test.mjs; a lambda-annotation program builder
+    is added to test/fx008-nesting.mjs).
   - `marks never reach Go`: specialization keys (test/poly-keys.mjs) of the
     marked and unmarked forms of the programs above and examples/answer.wxw
     are equal.
@@ -885,6 +895,15 @@ implementer or reviewer asks; that change is recorded in the ledger.
     (review I6).
   - `a late Fail reaching a clause through an argument binding is consumed`:
     witness/ec1 → its table outcome (review I7).
+  - `nested handler literals stay linear` (Task 2 review c2): about 30
+    handler literals nested through rows (an inferred row whose label
+    argument is another literal's type, each carrying a `Just` C) are
+    accepted (parallel) and check within the 2000 ms warm bound (serial,
+    test/fx008-nesting.serial.test.mjs).
+  - Note (review c3): inside Check a `Just C` and a `Nothing` denoting the
+    same row compare unequal under the derived `Eq`/`Ord`. Stripping
+    normalizes `clauses` to `Nothing` before Specialize, and no code
+    inside Check relies on that equality.
 - [ ] **Step 2: Run** with the gate → FAIL (gain1 rejected).
 - [ ] **Step 3: Implement.** Handler.purs keeps `handler` and `withHandler`.
 - [ ] **Step 4: Rows** (each one needle; probe passes healthy, fails mutant):
@@ -1100,7 +1119,7 @@ l4b, merge2 and q1 flip.
   | `fx008-extension` | UnifyMark.purs | Directional `targetLabel` returns the stage label | extb `12 0 9`; `/extension: rejected/` |
   | `fx008-local-plain` | MarkUse.purs | `localMarks` keeps `Plain` | annotb `1 2`; `/local marks: rejected/` |
   | `fx008-r-identity` | UnifyMark.purs | IgnoreMarks extension keeps the mark | merge1 `1 9`; `/R identity: rejected/` |
-  | `fx008-c-alias` | MarkUse.purs | `localMarks` keeps C = R | annotc `1 5 9`; `/C alias: rejected/` |
+  | `fx008-c-alias` | MarkUse.purs | `localMarks` keeps C = R (outermost handler types only) | annotc `1 5 9`; `/C alias: rejected/` |
   | `fx008-frame-m` | Install.purs | frame mark = own mark m | I2 with nofail `101 101 0 9`; `/frame: rejected/` |
   | `fx008-own-frame` | Frames.purs | no `own ⊑ frame` | pinned program rejected; `/own frame: accepted/` |
   | `fx008-outer-frame` | Frames.purs | no `FrameOuter` | forwarding-into-failing rejected; `/outer frame: accepted/` |
