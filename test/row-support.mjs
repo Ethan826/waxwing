@@ -22,8 +22,8 @@ export const unifyRows = (left, right, start = unifier.empty) => {
 };
 export const resolveRow = (subst, r) => fromRow(unifier.resolveRow(subst)(toRow(r)));
 // The same in a mode (FX008 `RowMode`), traced: the subst and its events.
-export const unifyIn = (mode, left, right, start = unifier.empty) => {
-  const result = rows.unifyRowsTraced(unifier.unify)(mode)(rows.untraced)(start)(
+export const unifyIn = (mode, left, right, start = unifier.empty, sides = rows.untraced) => {
+  const result = rows.unifyRowsTraced(unifier.unify)(mode)(sides)(start)(
     toRow(left))(toRow(right));
   return result instanceof Right ? { subst: result.value0.subst, traced: result.value0 }
     : { failure: result.value0 };

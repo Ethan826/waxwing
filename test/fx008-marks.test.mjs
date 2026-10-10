@@ -110,9 +110,24 @@ const canonical = resolved => {
     return `"n":"fresh${names.get(n)}"`;
   });
 };
-// Fail, Console and nofail pairs may record no edge (Unmarked, N ⊑ N).
-const hasFail = sides => sides.some(side => side.labels.some(
-  l => l.e === 'fail' || l.e === 'console' || l.mark === 'nofail'));
+// Where each side was written, so a matched pair's labels can be found.
+const at = offset => ({ offset, line: 1, column: offset + 1 });
+const placed = { left: { start: at(1), end: at(2) }, right: { start: at(3), end: at(4) } };
+// The mark a label has once built: Console is N and Fail unmarked.
+const builtMark = l => l.e === 'console' ? 'nofail' : l.e === 'fail' ? 'unmarked'
+  : l.mark ?? 'plain';
+// The mark of one end of a matched pair: an entry of a written row, or the
+// label a row meta was extended with.
+const endMark = (subst, sides, occurrence) => occurrence.constructor.name === 'Extended'
+  ? marksOfBinding(subst, occurrence.value0)[0]
+  : builtMark(sides[occurrence.value0.start.offset === placed.left.start.offset ? 0 : 1].labels[occurrence.value1]);
+// A matched pair records an edge unless a mark is unmarked or both are N.
+const edgeless = (one, other) => one === 'unmarked' || other === 'unmarked'
+  || (one === 'nofail' && other === 'nofail');
+const expectedAssumed = (found, sides) => found.traced.events
+  .filter(event => event.constructor.name === 'Matched')
+  .filter(event => !edgeless(endMark(found.subst, sides, event.value0),
+    endMark(found.subst, sides, event.value1))).length;
 const resolvedBoth = (outcome, sides) =>
   canonical(sides.map(side => resolveRow(outcome.subst, side)));
 
@@ -141,15 +156,15 @@ test('the scoped-label properties hold in every mode', () => {
         assert.deepEqual(edges, [], context);
         continue;
       }
-      if (hasFail(sides)) continue;
-      const matches = found.traced.events.filter(e => e.constructor.name === 'Matched');
-      assert.equal(edges.filter(edge => edge.reason === 'Assumed').length,
-        matches.length, context);
-      seen.assumed += matches.length;
+      // The same run with the sides placed, to name each matched pair.
+      const named = unifyIn(mode, ...sides, undefined, placed);
+      assert.equal(edgesIn(named.subst).filter(edge => edge.reason === 'Assumed').length,
+        expectedAssumed(named, sides), context);
+      seen.assumed += expectedAssumed(named, sides);
     }
   }
   assert.ok(seen.solved > 200 && seen.failed > 100 && seen.clashed > 20
-    && seen.assumed > 20, JSON.stringify(seen));
+    && seen.assumed > 100, JSON.stringify(seen));
 });
 
 const here = { offset: 0, line: 1, column: 1 };
