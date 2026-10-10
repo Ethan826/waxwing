@@ -115,15 +115,20 @@ declarationUse state variables markNames sorts fields result row =
   marked = instantiateMarks markNames scheme.state
   withMarks ty =
     if Array.null markNames then ty else mapMarks marked.value ty
-  instantiated = mapped (withMarks (at scheme.value (TFun TUnit row TUnit)))
-  mapped (TFun _ found _) = found
-  mapped _ = closedRow
+  instantiated = arrowRow (withMarks (at scheme.value (TFun TUnit row TUnit)))
   opened = openedRow marked.state instantiated
   staged = stages opened.state (Array.length fields) opened.value
   arguments = Array.catMaybes
-    (Array.zipWith argument sorts scheme.value.arguments)
-  argument Syntax.TypeSort ty = Just ty
-  argument Syntax.RowSort _ = Nothing
+    (Array.zipWith typeArgument sorts scheme.value.arguments)
+
+-- The row of a one-arrow type.
+arrowRow ∷ ∀ v. Ty v → TyRow v
+arrowRow (TFun _ found _) = found
+arrowRow _ = closedRow
+
+typeArgument ∷ Syntax.Sort → Ty Open → Maybe (Ty Open)
+typeArgument Syntax.TypeSort ty = Just ty
+typeArgument Syntax.RowSort _ = Nothing
 
 -- A constructor's scheme is its owner's parameters.
 ctorUse ∷ ∀ r. CheckEnv r → State → Span → CtorId → Used

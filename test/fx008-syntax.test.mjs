@@ -5,6 +5,9 @@ import assert from 'node:assert/strict';
 import { checked, rejected, rejectedAt, runGo } from './support.mjs';
 import { keyTexts } from './poly-keys.mjs';
 import { readFileSync } from 'node:fs';
+import { Right } from '../output/Data.Either/index.js';
+import { parse } from '../output/Format.Parse/index.js';
+import { resolve } from '../output/Features.Resolve/index.js';
 
 const log = 'effect Log { fn log(n: Int): Unit; }; ';
 const clock = 'effect Clock { fn now(): Int; }; ';
@@ -35,6 +38,12 @@ const positions = [
     + 'fn twice(): Unit with nofail Log = { each(fn(u) => log(1)); '
     + 'each(fn(u) => log(2)) }; '
     + `fn main(): Unit with Console = ${handled} { twice() };`],
+  ['a mark variable in a row argument', log
+    + 'type Box(...e) = Box(Unit -> Unit with ...e); '
+    + 'fn use(b: Box(nofail(k) Log)): Int = 0;' + main],
+  ['a mark variable on a handled label', log
+    + 'fn make(): Handler(nofail(k) Log with pure) = handler Log '
+    + '{ log(n) => () };' + main],
   ['a mark variable', log + 'fn work(f: Unit -> Unit with nofail(k) Log)'
     + ': Unit with nofail(k) Log = f(());' + main]
 ];
@@ -66,6 +75,16 @@ test('nofail on a row variable is E_SYNTAX', () => {
   const source = 'fn f(): Unit with nofail ...e = ();' + main;
   const found = rejectedAt(source, 'E_SYNTAX', 'nofail ...e');
   assert.equal(found.message, 'nofail ...e is not supported yet');
+});
+
+test('nofail ...e at the start of a row argument is E_SYNTAX', () => {
+  const box = log + 'type Box(...e) = Box(Unit -> Unit with ...e); '
+    + 'fn use(b: Box(nofail ...e)): Int = 0;' + main;
+  const handler = log + 'fn make(h: Handler(nofail ...e)): Int = 0;' + main;
+  for (const source of [box, handler]) {
+    const found = rejectedAt(source, 'E_SYNTAX', 'nofail ...e');
+    assert.equal(found.message, 'nofail ...e is not supported yet');
+  }
 });
 
 test('mark variables only in function signatures', () => {
@@ -142,6 +161,29 @@ test('an arrow prints its row only when it holds a mark', () => {
     + main;
   assert.equal(rejected(handler, 'E_TYPE').message,
     'Expected Int, found Handler(nofail Log)');
+});
+
+test('every arrow of a spine prints its row once one is shown', () => {
+  const source = log + 'fn f(k: Int -> Int with nofail Log -> Unit with Log)'
+    + ': Int = k;' + main;
+  assert.equal(rejected(source, 'E_TYPE').message,
+    'Expected Int, found Int -> Int with nofail Log -> Unit with Log');
+});
+
+test('a mark variable only on Console is not introduced', () => {
+  const names = source => {
+    const resolved = resolve(parse(source).value0);
+    assert.ok(resolved instanceof Right, JSON.stringify(resolved));
+    return resolved.value0.functions[0].markVariables;
+  };
+  const only = 'fn f(): Unit with nofail(k) Console = print(1);' + main;
+  assert.deepEqual(names(only), []);
+  const also = log + 'fn f(g: Unit -> Unit with nofail(k) Console + '
+    + 'nofail(j) Log): Unit = ();' + main;
+  assert.deepEqual(names(also), ['j']);
+  const elsewhere = log + 'fn f(g: Unit -> Unit with nofail(k) Console + '
+    + 'nofail(k) Log): Unit = ();' + main;
+  assert.deepEqual(names(elsewhere), ['k']);
 });
 
 test('marks never reach Go', () => {

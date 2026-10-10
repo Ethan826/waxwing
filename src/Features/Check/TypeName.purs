@@ -72,10 +72,11 @@ arrowName
 arrowName env span arrow = curried
   <$> traverse (typeName env span)
     found.parameters
-  <*> traverse (arrowRowText env span) (rowsOf arrow)
+  <*> traverse (arrowRowText env span (Array.any rowMarked rows)) rows
   <*> typeName env span found.result
   where
   found = spine arrow
+  rows = rowsOf arrow
   curried parameters texts result = Array.foldr joined result
     (Array.zip parameters texts)
   joined pair rest = FunctionName (fst pair) (snd pair) rest
@@ -113,26 +114,35 @@ markPrefix effect mark = case effect, mark of
   UserEffect _, MarkVariable name → "nofail(" <> name <> ") "
   _, _ → ""
 
--- An arrow's row is part of its name only when it holds a mark (so today's
--- texts are unchanged): `Unit -> Unit with nofail Log`. Its named tail
--- follows, as written; an ambient or unsolved tail has no name.
+-- Rows are part of a type's name only when some arrow of its spine holds a
+-- mark (so today's texts are unchanged): `Unit -> Unit with nofail Log`.
+-- Then every arrow shows its row, so none is silently dropped. A named
+-- tail follows, as written; an ambient or unsolved tail has no name, and a
+-- row with nothing to show shows nothing.
 arrowRowText
   ∷ ∀ r
   . Names (effects ∷ Array EffectInfo | r)
   → Span
+  → Boolean
   → TyRow Open
   → Either Diagnostic (Maybe String)
-arrowRowText env span (Row labels tail) =
-  if Array.any marked labels then Just <<< joined
-    <$> traverse (labelText env span) labels
+arrowRowText env span shown (Row labels tail) =
+  if shown then present <$> traverse (labelText env span) labels
   else Right Nothing
   where
-  marked (Label effect _ mark) = markPrefix effect mark /= ""
+  present parts = nonEmpty (joined parts)
+  nonEmpty text = if text == "" then Nothing else Just text
   joined parts = joinWith " + " (parts <> maybe [] tailPart tail)
   tailPart = case _ of
     Rigid (VarId index) → maybe [] ending (Array.index env.variables index)
     Hole _ → []
   ending name = if name == "" then [] else [ "..." <> name ]
+
+-- Whether a row holds a label that prints a mark.
+rowMarked ∷ TyRow Open → Boolean
+rowMarked (Row labels _) = Array.any marked labels
+  where
+  marked (Label effect _ mark) = markPrefix effect mark /= ""
 
 effectName
   ∷ ∀ r

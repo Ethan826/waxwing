@@ -60,10 +60,11 @@ markedLabel inner = refine identity
     { name: identifier.text, end: close.span.end }
   spread = Left <$> (expect "..." *> name)
 
--- What follows `nofail` opens a label: an uppercase name, or `(` of a mark
--- variable. Elsewhere in a type `nofail` is an ordinary type variable.
+-- What follows `nofail` opens a label: an uppercase name, `(` of a mark
+-- variable, or `...` of the refused `nofail ...e`. Elsewhere in a type
+-- `nofail` is an ordinary type variable.
 opensLabel ∷ String → Boolean
-opensLabel text = text == "(" || (isName text && isUpper text)
+opensLabel text = text == "(" || text == "..." || (isName text && isUpper text)
 
 lowerName ∷ Parser Token
 lowerName = dispatch [ onWhen lowercase token ]

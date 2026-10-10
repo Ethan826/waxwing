@@ -82,9 +82,11 @@ argumentRefs = case _ of
   Syntax.RowArgument row → rowMarkVariableRefs row
 
 labelRefs ∷ Syntax.LabelRef → Array MarkVariableRef
-labelRefs label = maybe [] ownRef label.mark
-  <> Array.concatMap markVariableRefs label.arguments
+labelRefs label = ownRefs <> Array.concatMap markVariableRefs label.arguments
   where
+  -- Console is N whatever is written (design §3.3), so its mark variable
+  -- names nothing.
+  ownRefs = if label.name == "Console" then [] else maybe [] ownRef label.mark
   ownRef = case _ of
     Syntax.NofailVariableRef span name → [ { name, span } ]
     Syntax.NofailRef _ → []

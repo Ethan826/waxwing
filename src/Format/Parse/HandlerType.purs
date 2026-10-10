@@ -50,22 +50,15 @@ operand rowed inner = build <$> token
   <*> optionalOn "(" (parseArguments inner)
   where
   parseArguments parser = expect "(" *> dispatch
-    [ on "nofail" (ifSecond opensLabel (marked parser) (unmarked parser)) ]
+    [ on "nofail"
+        (ifSecond opensLabel (markedHandlerType parser) (unmarked parser))
+    ]
     (unmarked parser)
   unmarked parser = refine apply
     ( parsed <$> sepBy1 "," (argument rowed parser)
         <*> optionalOn "with" (rowRef parser)
         <*> expect ")"
     )
-  -- `Handler(nofail Log …)`: the handled label carries the mark, so this is
-  -- always the special form, with the ambient row when none is written.
-  marked parser = markedHandler <$> markedLabel parser
-    <*> optionalOn "with" (rowRef parser)
-    <*> expect ")"
-  markedHandler labelRef row close = THandlerRef
-    { start: labelRef.span.start, end: close.span.end }
-    labelRef
-    row
   parsed values row close =
     { arguments: map Tuple.fst values
     , argumentRows: Array.mapMaybe Tuple.snd values
@@ -136,6 +129,19 @@ operand rowed inner = build <$> token
       effect
       row
     _ → found
+
+-- `Handler(nofail Log …)`, after the `(`: the handled label carries the
+-- mark, so this is always the special form, with the ambient row when none
+-- is written.
+markedHandlerType ∷ Parser TypeRef → Parser TypeRef
+markedHandlerType parser = built <$> markedLabel parser
+  <*> optionalOn "with" (rowRef parser)
+  <*> expect ")"
+  where
+  built labelRef row close = THandlerRef
+    { start: labelRef.span.start, end: close.span.end }
+    labelRef
+    row
 
 argument
   ∷ Parser Rowed → Parser TypeRef → Parser (Tuple TypeArgument (Maybe RowRef))
