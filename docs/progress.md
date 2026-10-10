@@ -3611,3 +3611,36 @@ Verify at 5ed5b0e (.build/task2-fix2-verify.log in the worktree): exit
 0, 1070/1070 parallel, 31/31 serial, 36 proofs. New BACKLOG G004
 (pre-existing): a depth-125 handler type ends in a RangeError instead of
 E_NESTING.
+
+### FX008 Task 3: `nofail` syntax, resolution and printing (2026-10-10)
+
+Sonnet implementer (f16c6b5; fix rounds 1f9f257 and e0580a4). Opus task
+review and re-review (review-fx008-task3-result.md): Spec ✅, Quality
+Approved. The second fix round was checked by the controller.
+
+What it adds:
+- `nofail` and `nofail(k)` parsing, contextual through a one-token
+  lookahead;
+- resolution of mark variables: their own namespace; L6 refusal in type
+  and effect declarations; scope checks in lambdas, handler literals and
+  `fail` clauses;
+- `instantiateMarks` and `localMarks`: nested handler types keep no clause
+  row (the c1 rule, with a nesting guard);
+- printing: `nofail L`; once one arrow of a spine prints its row, every
+  arrow does;
+- the approved P10 texts; the oracle ignores marks.
+
+The reviewer compared whole-compile outcomes between base and candidate
+on 3,371 harvested sources plus 23,029 mutated ones: 0 differences for
+programs without `nofail`. 45 adversarial grammar programs confirm
+`nofail` stays an ordinary name elsewhere.
+
+Rulings:
+- M2: every arrow prints its row once one does.
+- M4 and N1: a mark variable written only on Console is not collected
+  into a signature, but it is still refused and scope-checked like any
+  label.
+
+New BACKLOG E012 (pre-existing): closed and ambient rows print alike.
+Verify at e0580a4 (.build/task3-fix2-verify.log in the worktree): exit
+0, 1105/1105 parallel, 33/33 serial, 36 proofs; gate 107/107.
