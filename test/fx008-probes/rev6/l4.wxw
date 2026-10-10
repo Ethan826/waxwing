@@ -1,0 +1,8 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+fn main(): Unit with Console = {
+  let k = fn(u: Unit) => ();
+  let g = fn(u: Unit) => { k(()); defer log(0); () };
+  handle { with handler Log { log(n) => fail(E) } { k(()) } } { fail(error: E) => print(9) };
+  with handler Log { log(n) => print(n) } { g(()) }
+};

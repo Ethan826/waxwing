@@ -1,0 +1,8 @@
+effect Two { fn a(): Unit; fn b(): Unit; };
+effect Tick { fn tick(): Unit; };
+fn main(): Unit with Console = {
+  let k = fn(u: Unit) => ();
+  let h0 = handler Tick { tick() => () };
+  let h = handler Two { a() => k(()), b() => with h0 { k(()) } };
+  print(0)
+};

@@ -187,6 +187,14 @@ indexing rather than Array.snoc/uncons/drop per item, which copy the array.
 This is a review convention; only test/large-source.test.mjs (megabyte
 padding, 20,000 declarations) checks it, and only for the paths it drives.
 
+The FX008 probe gate (test/fx008-probes.test.mjs, data in test/fx008-probes/,
+table in test/fx008-probe-table*.mjs) pins the outcome of every review probe
+(code, text, span, Go SHA-256, stdout, stderr, status). A task may change an
+entry only where the FX008 plan lists that probe for that task; any other
+change stops the work, and a hash of the table without `flipped`
+(test/fx008-probe-hash.mjs) catches accidental edits only, so the reviewer's
+diff of the table is the real control.
+
 No coverage percentage is claimed. Properties use deterministic generators
 and explicit edge cases with no discarded inputs. Parsing tests compare with
 independent generated trees; executable comparisons use a BigInt interpreter.

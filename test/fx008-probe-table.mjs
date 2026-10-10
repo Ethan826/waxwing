@@ -1,0 +1,111 @@
+import { no, noPattern, ok, probe } from './fx008-probe-kit.mjs';
+import { rev6 } from './fx008-probe-table-rev6.mjs';
+import { rev78 } from './fx008-probe-table-rev78.mjs';
+import { rev910 } from './fx008-probe-table-rev910.mjs';
+
+const defer =
+  'defer must not fail, but it performs Log, whose handler may fail';
+
+const ec1Pattern = '^(Unhandled Fail\\(E\\) in main|Fail\\(E\\) \\+ Console '
+  + '\\+ \\.\\.\\. and Console \\+ \\.\\.\\. cannot be made equal: both end '
+  + 'in \\.\\.\\.)$';
+
+// Probe outcomes before FX008 ("today") and after it ("fx008"); see the
+// plan's Task 1. Top-level, facts and witness probes first.
+const own = [
+  probe('argbind-internal',
+    no('E_INTERNAL', 'Effect row consumption failed', 318, 335),
+    { slow: true }),
+  probe('argbind',
+    ok('', '674e9299b329013930959bed2c137dbed0ab367355cf83ffd2213de33756aaed'),
+    { slow: true }),
+  probe('cycle2',
+    ok('0\n7\n1\n', '5c29e08751576072980aaf5ccee5ce3004a6303acd51cf8bba52df676311322f'),
+    { slow: true }),
+  probe('cycle2open',
+    ok('', 'cab362ae545b154a4638a8837e3b3cc5e5c40f8ff1a8209f93dc3a60a3c2b89e'),
+    { slow: true }),
+  probe('dup',
+    ok('', 'ea6cc18f969afe35abe19f6eeeb90f993b5b7dfad44b8163c87ad76c3510ed1d'),
+    {
+      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 150, 160),
+      task: 5,
+      reason:
+        '§6: no finite solution; the deferral is its own self-loop cycle, ' +
+        'reported at the deferral span.',
+      slow: true
+    }),
+  probe('f1',
+    ok('1\n2\n', 'def746713e576103e28bacb31c833349fc6777871022b0d8b39be376ec024932')),
+  probe('f2',
+    ok('1\n2\n', '32bd2e77a75f62ad3ebb41ea82b1f1c64152e524be70d5a376b07e217d79a715')),
+  probe('f3',
+    ok('9\n', '32227e13aa66a0b2eaea7df378fe04fe9855c506236d34ad6e6d6dea85678d9c')),
+  probe('facts/cross',
+    ok('', 'a48f95c2afc97b947aa29650149107f0a41a0f7af074902ae0463857ea78b011', 'fail(E): E\n',
+      1),
+    {
+      fx008: no('E_EFFECT', defer, 79, 91),
+      task: 9,
+      reason: '§1 cross-function form.'
+    }),
+  probe('facts/lexical',
+    ok('2\n', '1464f76408a08e54998bab565d2fb461ebbd0e07986b4fb72514137e10377a37',
+      'fail(E): E\n', 1),
+    {
+      fx008: no('E_EFFECT', defer, 129, 141),
+      task: 9,
+      reason: '§1 pinned form.'
+    }),
+  probe('facts/pending',
+    ok('', 'a13f61db21218c39027e441178a206248d719599c0b9a1e6a06aad925d87aa4c',
+      'fail(F): F\ncleanup failed: fail(E): E\n', 1),
+    {
+      fx008: no('E_EFFECT', defer, 101, 113),
+      task: 9,
+      reason: '§1: work\'s Log is plain.'
+    }),
+  probe('failvar',
+    no('E_TYPE', 'Fail needs a concrete error family', 25, 32)),
+  probe('failvar2',
+    no('E_TYPE', 'Fail needs a concrete error family', 37, 44)),
+  probe('failvar3',
+    no('E_TYPE', 'Fail needs a concrete error family', 37, 44)),
+  probe('n1',
+    ok('', '11c749ce671b36700a70b66bbc533a6d5c138d92655f2bc07b7e188f9a0cf310'),
+    {
+      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 138, 148),
+      task: 5,
+      reason: '§6: same as dup.',
+      slow: true
+    }),
+  probe('rigid-ok',
+    no('E_EFFECT',
+      'Fail(E) + Console + ... and Console + ... cannot be made equal: both end in ...', 216,
+      236)),
+  probe('rigid',
+    no('E_TYPE', 'Expected Handler(Log), found Handler(Log)', 98, 128)),
+  probe('witness/ec1',
+    no('E_EFFECT', 'Unhandled Fail(E) in main', 284, 301),
+    {
+      fx008: noPattern(
+        'E_EFFECT', ec1Pattern, 161, 191),
+      task: 7,
+      reason:
+        'Review I7: late Fail(E) reaches the clause entry (P13). Observed ' +
+        'text is reported to the user before it is pinned.',
+      slow: true
+    }),
+  probe('witness/tp1',
+    no('E_EFFECT', 'f performs Console, which its signature does not allow', 266, 278),
+    {
+      fx008: noPattern('E_EFFECT', '^f performs ', 204, 219),
+      task: 7,
+      reason:
+        'Review I6: k1 tail rigid on retry; tail pass rejects R = ' +
+        '[Console] at the clause (P13).',
+      slow: true
+    }),
+];
+
+export const probes = [...own, ...rev6, ...rev78, ...rev910];

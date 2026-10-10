@@ -1,0 +1,11 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Get(a) { fn get(): a; };
+fn main(): Unit with Console = {
+  let k = fn(u: Unit) => ();
+  let h1 = handler Log { log(n) => k(()) };
+  let h2 = handler Log { log(n) => () };
+  handle with handler Get(E) { get() => E } { with h1 { () } } { fail(e: E) => () };
+  let g2 = fn(u: Unit) => with h2 { let v = get(); fail(v) };
+  print(0)
+};

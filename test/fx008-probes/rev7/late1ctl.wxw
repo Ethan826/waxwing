@@ -1,0 +1,9 @@
+effect Log { fn log(n: Int): Unit; };
+effect Get(a) { fn get(): a; };
+fn main(): Unit with Console = {
+  let k = fn(u: Unit) => ();
+  let h = handler Log { log(n) => () };
+  with handler Get(Handler(Log with Console)) { get() => handler Log { log(n) => print(n) } } { k(()) };
+  let g = fn(u: Unit) => with h { with get() { log(1) } };
+  print(0)
+};

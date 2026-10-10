@@ -1,0 +1,2 @@
+fn f(h: Handler(Console with pure)): Unit with Console = with h { print(1) };
+fn main(): Unit with Console = print(2);

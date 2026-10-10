@@ -1,0 +1,11 @@
+effect Log { fn log(n: Int): Unit; };
+effect Cell(a) { fn put(x: a): Bool; };
+fn main(): Unit with Console = {
+  let k = fn(u: Unit) => ();
+  let k2 = fn(u: Unit) => ();
+  let h = handler Log { log(n) => k2(()) };
+  let hc = handler Cell(Bool) { put(x) => true };
+  let g = fn(u: Unit) => { if put(true) then () else (); with h { log(1) } };
+  with hc { g(()); k(()) };
+  print(0)
+};

@@ -342,8 +342,10 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | `2\n1\n9\n` / `11\n9\n` / `101\n101\n0\n9\n` | design-review/p1 / p2 / q1 |
 
   Accepted with a defect report (empty stdout, status 1): rev6/hole,
-  design-review/c1, facts/cross, facts/lexical with stderr `fail(E): E\n`;
-  facts/pending with `fail(F): F\ncleanup failed: fail(E): E\n`.
+  design-review/c1, facts/cross with stderr `fail(E): E\n`; facts/lexical
+  with stdout `2\n` (it prints before the deferred `log(1)` aborts), status 1
+  and stderr `fail(E): E\n`; facts/pending with `fail(F): F\ncleanup
+  failed: fail(E): E\n`.
 - [ ] **Step 3: Mark the FX008 outcomes.** `fx008 = today` except:
 
   | Probe | FX008 outcome | Task | Reason |

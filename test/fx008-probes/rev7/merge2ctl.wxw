@@ -1,0 +1,10 @@
+type E = E;
+effect Tick { fn tick(): Unit; };
+fn main(): Unit with Console = handle {
+  let g1 = fn(u: Unit) => with handler Tick { tick() => () } { () };
+  let g2 = fn(u: Unit) => with handler Tick { tick() => () } { () };
+  let a = fn(u: Unit) => { g1(()); defer tick(); () };
+  let b = fn(u: Unit) => { g2(()); tick() };
+  with handler Tick { tick() => print(1) } { a(()) };
+  with handler Tick { tick() => fail(E) } { b(()) }
+} { fail(error: E) => print(9) };
