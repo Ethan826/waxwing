@@ -1,17 +1,25 @@
-module Features.Check.MarkUse (instantiateMarks, localMarks) where
+module Features.Check.MarkUse
+  ( instantiateMarks
+  , localMarks
+  , literalMark
+  , openHandlers
+  ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
-import Data.Traversable (traverse)
+import Data.Traversable (mapAccumL, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Row
-  ( HandlerRows
+  ( EffectRef(..)
+  , HandlerRows
   , Label(..)
   , Mark(..)
   , Row(..)
+  , normalMark
+  , withMark
   )
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (rowsOf, spine)
@@ -119,3 +127,42 @@ handlerRows outside rows =
   withClauses found copy hole =
     { inference: found, clauses: Just (clausesOf copy hole) }
   clausesOf (Row labels _) hole = Row labels (Just hole)
+
+-- A handler literal's handled label has a fresh mark meta m (design §3.4),
+-- so it unifies with whatever its context writes; Console stays N.
+literalMark ∷ Int → Label (Ty Open) → Label (Ty Open)
+literalMark meta label@(Label effect _ _) =
+  withMark (normalMark effect (MarkMeta meta)) label
+
+-- Opening at a function's use (design §3.4, P5), for handler types, which
+-- unify by equality: a handled label in a top-level parameter that is
+-- written M, and one in the top-level result written N, each become a fresh
+-- mark meta. Nothing deeper is opened, and Console and Fail stay as they
+-- are.
+openHandlers
+  ∷ State
+  → Array (Ty Open)
+  → Ty Open
+  → Threaded { fields ∷ Array (Ty Open), result ∷ Ty Open }
+openHandlers state fields result =
+  { value: { fields: opened.value, result: closing.value }
+  , state: state { next = closing.accum }
+  }
+  where
+  opened = mapAccumL (openAs Plain) state.next fields
+  closing = openAs NoFail opened.accum result
+
+-- The handler type's handled label opened if it carries `written`.
+openAs ∷ Mark → Int → Ty Open → { accum ∷ Int, value ∷ Ty Open }
+openAs written count = case _ of
+  THandler (Label effect arguments mark) rows
+    | isUser effect && mark == written →
+        { accum: count + 1
+        , value: THandler (Label effect arguments (MarkMeta count)) rows
+        }
+  other → { accum: count, value: other }
+
+isUser ∷ EffectRef → Boolean
+isUser = case _ of
+  UserEffect _ → true
+  _ → false

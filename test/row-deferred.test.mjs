@@ -6,6 +6,7 @@ import { Right } from '../output/Data.Either/index.js';
 import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { ground, groundErased } from '../output/Domain.Type.Parts/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
+import { EqualMarks } from '../output/Features.Check.MarkStore/index.js';
 import * as rows from '../output/Features.Check.UnifyRow/index.js';
 import { label, row, rowMeta, resolveRow, unifyRows } from './row-support.mjs';
 import { bindingsOf, bool, fromRow, fromTy, fun, int, list, meta,
@@ -70,7 +71,7 @@ test('postponement rolls back earlier type bindings, extensions and events', () 
   const start = substOf(new Map([[2, bool]]));
   const left = row([label(1, meta(1)), label(2), fail(meta(0))], rowMeta(10));
   const right = row([label(1, int)], rowMeta(11));
-  const result = rows.unifyRowsTraced(unifier.unify)(rows.untraced)(start)(
+  const result = rows.unifyRowsTraced(unifier.unify)(EqualMarks.value)(rows.untraced)(start)(
     toRow(left))(toRow(right));
   assert.ok(result instanceof Right);
   assert.equal(result.value0.postponed, true);

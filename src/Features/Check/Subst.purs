@@ -7,7 +7,6 @@ module Features.Check.Subst
   , isEmpty
   , substitute
   , substituteRow
-  , compose
   , postpone
   , linkTo
   , linkOf
@@ -37,6 +36,7 @@ import Domain.Type
   , stagesThrough
   )
 import Domain.Type as Type
+import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
 import Features.Check.Search (Stack(..), stackItems)
 
@@ -59,17 +59,22 @@ derive instance ordFlex ∷ Ord Flex
 -- order, to be retried by Features.Check.Unify `settleRows`. `links`
 -- (design §6): an occurrence and the occurrence it is the same label as,
 -- recorded by every row unification, the first per occurrence kept;
--- nothing in unification reads them.
+-- nothing in unification reads them. `marks` (FX008): the bindings of
+-- mark metas and the mark edges, kept with the substitution so that a
+-- postponed pair that reverts takes its edges with it.
 newtype Subst = Subst
   { types ∷ Map Int (Ty Flex)
   , rows ∷ Map Int (TyRow Flex)
   , fresh ∷ Int
   , postponed ∷ Array RowPair
   , links ∷ Map OccurrenceId OccurrenceId
+  , marks ∷ MarkStore (Ty Flex)
   }
 
--- A postponed pair keeps where its sides were written, for its retry.
-type RowPair = { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides }
+-- A postponed pair keeps where its sides were written and how it treats
+-- marks, for its retry.
+type RowPair =
+  { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides, mode ∷ RowMode }
 
 -- Types and rows are resolved under the substitution reached at the
 -- failure: a mismatch names the first pair of subterms that differ, left
@@ -103,9 +108,11 @@ empty = Subst
   , fresh: -1
   , postponed: []
   , links: Map.empty
+  , marks: emptyMarks
   }
 
--- No meta is bound, so resolving under it changes no type.
+-- No meta is bound, so resolving under it changes no type. (Mark bindings
+-- are not counted: Check strips every mark after resolving.)
 isEmpty ∷ Subst → Boolean
 isEmpty (Subst bindings) = Map.isEmpty bindings.types
   && Map.isEmpty bindings.rows
@@ -119,32 +126,24 @@ substitute subst = Type.substitute (substitution subst)
 substituteRow ∷ Subst → TyRow Flex → TyRow Flex
 substituteRow subst = Type.substituteRow (substitution subst)
 
--- `substitute (compose later earlier)` is `substitute later` after
--- `substitute earlier`; Map.union keeps the earlier side's bindings.
--- Precondition: `later` was made from `earlier` (or neither made fresh row
--- metas), so their fresh metas do not collide; the smaller counter is
--- kept. Postponed pairs are the earlier's, then the later's; of two links
--- from one occurrence the earlier's stays.
-compose ∷ Subst → Subst → Subst
-compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
-  { types: Map.union (map (substitute later) earlierBindings.types)
-      laterBindings.types
-  , rows: Map.union (map (substituteRow later) earlierBindings.rows)
-      laterBindings.rows
-  , fresh: min laterBindings.fresh earlierBindings.fresh
-  , postponed: earlierBindings.postponed <> laterBindings.postponed
-  , links: Map.union earlierBindings.links laterBindings.links
-  }
-
 -- The substitution with this row pair set aside, undecided.
 postpone
   ∷ ∀ r
   . Subst
-  → { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides | r }
+  → { left ∷ TyRow Flex
+    , right ∷ TyRow Flex
+    , sides ∷ Sides
+    , mode ∷ RowMode
+    | r
+    }
   → Subst
 postpone (Subst bindings) pair = Subst bindings
   { postponed = Array.snoc bindings.postponed
-      { left: pair.left, right: pair.right, sides: pair.sides }
+      { left: pair.left
+      , right: pair.right
+      , sides: pair.sides
+      , mode: pair.mode
+      }
   }
 
 -- `from` is the same label as `to`; an occurrence's first link stays.
@@ -222,8 +221,9 @@ resolveRow subst row
         tail
 
 resolveLabel ∷ Subst → Label (Ty Flex) → Label (Ty Flex)
-resolveLabel subst (Label effect arguments mark) =
-  Label effect (map (resolve subst) arguments) mark
+resolveLabel subst@(Subst bindings) (Label effect arguments mark) =
+  Label effect (map (resolve subst) arguments)
+    (resolveMark bindings.marks mark)
 
 substitution ∷ Subst → Substitution Flex Flex
 substitution (Subst bindings) = { types: replaced, rows: replacedRow }

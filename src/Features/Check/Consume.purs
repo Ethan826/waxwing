@@ -1,23 +1,31 @@
-module Features.Check.Consume (consumeAt, consumeVia) where
+module Features.Check.Consume
+  ( LabelConsumption
+  , consumeAt
+  , consumeVia
+  , consumeLabels
+  , consumeIgnoring
+  ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Foldable (foldl)
 import Data.Maybe (Maybe(..))
-import Domain.Checked.Internal (Open)
-import Domain.Row (Row(..))
+import Domain.Checked.Internal (Open(..))
+import Domain.Row (Label, Row(..))
 import Domain.Syntax (Diagnostic, Span)
-import Domain.Type (TyRow)
+import Domain.Type (Ty, TyRow)
 import Features.Check.Context (CheckEnv)
+import Features.Check.MarkStore (RowMode(..))
 import Features.Check.Occurrence (OccurrenceId(Written), Sides)
 import Features.Check.Origin (RowEvent(..), attributed, linked)
 import Features.Check.Provenance (Consumed, Origin, remember)
 import Features.Check.Reject (rejected, rightSpan, siteOccurrence)
-import Features.Check.Scheme (State, flexibleRow)
+import Features.Check.Scheme (Site, State, flexibleRow)
 import Features.Check.Subst (linkTo)
 import Features.Check.Unify (Failure, Flex(..), Subst(..), resolveRow, unify)
-import Features.Check.UnifyRow (Traced, unifyRowsTraced)
+import Features.Check.RowFinish (Traced)
+import Features.Check.UnifyRow (unifyRowsTraced)
 
 -- A row consumed into the current one at `span`, recording what was
 -- consumed there as the origin of each label occurrence it adds or
@@ -37,6 +45,7 @@ consumeAt env state span consumed =
 -- occurrence already (`sources`, by position: a deferred expression's
 -- labels, consumed into the enclosing row, are linked to where `e`
 -- performed them before the consumption's own links, which come second).
+-- The stage as it stands is consumed; a closed one gets a throwaway tail.
 consumeVia
   ∷ ∀ r
   . CheckEnv r
@@ -45,8 +54,66 @@ consumeVia
   → Array OccurrenceId
   → TyRow Open
   → Either Diagnostic State
-consumeVia env state origin sources row = either failed finished
-  (consume start sides (flexibleRow row) (flexibleRow env.current))
+consumeVia env state origin sources = consumeIn env state origin sources
+  (Directional { span: origin.span, throwaway: Nothing })
+
+-- Labels consumed into an explicit `target` (its `sites` say where its
+-- labels were written), with one fresh tail meta as the stage's throwaway:
+-- the tail is never read, so no copy lands on it. Every settling entry
+-- uses this (rev6 M9, review I4).
+type LabelConsumption =
+  { origin ∷ Origin
+  , sources ∷ Array OccurrenceId
+  , labels ∷ Array (Label (Ty Open))
+  , target ∷ TyRow Open
+  , sites ∷ Array Site
+  , ignoreMarks ∷ Boolean
+  }
+
+consumeLabels
+  ∷ ∀ r
+  . CheckEnv r
+  → State
+  → LabelConsumption
+  → Either Diagnostic State
+consumeLabels env state spec = consumeIn
+  (env { current = spec.target, sites = spec.sites })
+  (state { next = state.next + 1 })
+  spec.origin
+  spec.sources
+  mode
+  (Row spec.labels (Just (Hole state.next)))
+  where
+  mode =
+    if spec.ignoreMarks then IgnoreMarks
+    else Directional { span: spec.origin.span, throwaway: Just state.next }
+
+-- The stage as it stands into `target`, ignoring marks: R ≡ ρ at `with`
+-- and the hook (design §3.4).
+consumeIgnoring
+  ∷ ∀ r
+  . CheckEnv r
+  → State
+  → { origin ∷ Origin, stage ∷ TyRow Open, target ∷ TyRow Open }
+  → Either Diagnostic State
+consumeIgnoring env state spec = consumeIn (env { current = spec.target })
+  state
+  spec.origin
+  []
+  IgnoreMarks
+  spec.stage
+
+consumeIn
+  ∷ ∀ r
+  . CheckEnv r
+  → State
+  → Origin
+  → Array OccurrenceId
+  → RowMode
+  → TyRow Open
+  → Either Diagnostic State
+consumeIn env state origin sources mode row = either failed finished
+  (consume mode start sides (flexibleRow row) (flexibleRow env.current))
   where
   sides = { left: origin.span, right: rightSpan env }
   start = foldl linkSource state.subst (Array.mapWithIndex numbered sources)
@@ -76,12 +143,22 @@ consumeVia env state origin sources row = either failed finished
 -- one is consumed as it stands, so its labels keep the occurrences their
 -- meta bindings gave them.
 consume
-  ∷ Subst → Sides → TyRow Flex → TyRow Flex → Either Failure Traced
-consume subst sides stage current = case resolveRow subst stage of
-  Row labels Nothing → unifyRowsTraced unify sides fresh
+  ∷ RowMode
+  → Subst
+  → Sides
+  → TyRow Flex
+  → TyRow Flex
+  → Either Failure Traced
+consume mode subst sides stage current = case resolveRow subst stage of
+  Row labels Nothing → unifyRowsTraced unify (throwing mode) sides fresh
     (Row labels (Just (Meta bindings.fresh)))
     current
-  _ → unifyRowsTraced unify sides subst stage current
+  _ → unifyRowsTraced unify mode sides subst stage current
   where
   Subst bindings = subst
   fresh = Subst bindings { fresh = bindings.fresh - 1 }
+  -- The tail added to a closed stage is the one nobody reads.
+  throwing = case _ of
+    Directional direction → Directional
+      direction { throwaway = Just bindings.fresh }
+    other → other

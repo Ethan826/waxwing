@@ -25,7 +25,7 @@ import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type.Marks (mapMarks)
 import Features.Check.Context (CheckEnv)
-import Features.Check.MarkUse (instantiateMarks)
+import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
 import Features.Check.Tables (ownerType)
@@ -63,11 +63,13 @@ functionUse env state span (FunctionId index) =
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
   found function = Right
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
-        ( declarationUse state function.variables function.markVariables
-            function.sorts
-            (map parameterType function.parameters)
-            function.result
-            function.row
+        ( openedUse
+            ( declarationUse state function.variables function.markVariables
+                function.sorts
+                (map parameterType function.parameters)
+                function.result
+                function.row
+            )
         )
     )
   parameterType parameter = parameter.ty
@@ -80,6 +82,17 @@ functionUse env state span (FunctionId index) =
     }
   parameterSpans parameter =
     { span: parameter.span, rowSpan: parameter.rowSpan }
+
+-- The handler types in the signature opened (design §3.4, P5): only a
+-- function's use, not a constructor's, whose fields stay as written.
+openedUse ∷ Threaded Use → Threaded Use
+openedUse use =
+  { value: use.value
+      { fields = found.value.fields, result = found.value.result }
+  , state: found.state
+  }
+  where
+  found = openHandlers use.state use.value.fields use.value.result
 
 -- A use that consumes `consumed`, of this callee, if it is a named one.
 withOrigin ∷ Consumed → Maybe Callee → Threaded Use → Threaded Use

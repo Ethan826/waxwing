@@ -12,7 +12,8 @@ import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { ordInt } from '../output/Data.Ord/index.js';
 import { unfoldableArray } from '../output/Data.Unfoldable/index.js';
 import {
-  ConsoleEffect, FailEffect, Label, Plain, Row, UserEffect, normalMark
+  ConsoleEffect, FailEffect, Label, MarkMeta, MarkVariable, NoFail, Plain, Row,
+  Unmarked, UserEffect, normalMark
 } from '../output/Domain.Row/index.js';
 import { TBool, TData, TFun, TInt, TVar } from '../output/Domain.Type/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
@@ -40,10 +41,21 @@ const plainEffect = ref => ref instanceof UserEffect ? ref.value0
 
 export const toRow = r => Row.create(r.labels.map(toLabel))(
   r.tail === null ? Nothing.value : Just.create(flexOf(r.tail)));
-// Marks are ignored by unification (FX008 Task 2): every label is Plain
-// but Console (N) and Fail (placeholder), as Resolve builds them.
+// A label's `mark` (FX008): absent or 'plain' is M as written; 'nofail' is
+// N; a number is that mark meta; `{ variable }` a mark variable. Console (N)
+// and Fail (placeholder) are normalized, as Resolve builds them.
+export const markOf = mark => {
+  if (mark === undefined || mark === 'plain') return Plain.value;
+  if (mark === 'nofail') return NoFail.value;
+  if (mark === 'unmarked') return Unmarked.value;
+  return typeof mark === 'number' ? MarkMeta.create(mark) : MarkVariable.create(mark.variable);
+};
 export const toLabel = l => Label.create(effectOf(l.e))(l.args.map(toTy))(
-  normalMark(effectOf(l.e))(Plain.value));
+  normalMark(effectOf(l.e))(markOf(l.mark)));
+// The mark a built label carries, as `markOf` takes it.
+export const plainMark = mark => mark instanceof MarkMeta ? mark.value0
+  : mark instanceof MarkVariable ? { variable: mark.value0 }
+  : mark === NoFail.value ? 'nofail' : mark === Unmarked.value ? 'unmarked' : 'plain';
 export const fromLabel = l => ({ e: plainEffect(l.value0), args: l.value1.map(fromTy) });
 export const fromRow = row => ({
   labels: row.value0.map(fromLabel),

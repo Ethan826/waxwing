@@ -15,7 +15,8 @@ import Domain.Row (EffectRef(..), Label(..), Row(..), closedRow, uniformRows)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TyRow, VarId(..), substitute)
 import Features.Check.Context (CheckEnv, Infer, Locals)
-import Features.Check.Consume (consumeVia)
+import Features.Check.Consume (consumeIgnoring)
+import Features.Check.MarkUse (literalMark)
 import Features.Check.Provenance (Boundary(Installation), Consumed(Application))
 import Features.Check.Require (require, typeName)
 import Features.Check.RowName (labelName)
@@ -37,11 +38,12 @@ handler
 handler infer env state span label clauses = do
   let row = Row [] (Just (Hole state.next))
   checked ← threadAll (handlerClause infer env row label)
-    (state { next = state.next + 1 })
+    (state { next = state.next + 2 })
     clauses
   pure
     { value: Checked.Expr
-        { ty: THandler (openLabel label) (uniformRows row)
+        { ty: THandler (literalMark (state.next + 1) (openLabel label))
+            (uniformRows row)
         , span
         , node: Checked.Handler (effectId label) (labelArgs label)
             checked.value
@@ -120,10 +122,12 @@ withHandler infer env state span handlerExpr body = do
   where
   withValue handlerValue label row = do
     installed ← labelName env span (flexLabel label)
-    consumed ← consumeVia env handlerValue.state
-      { span, consumed: Application, via: Just (Installation installed) }
-      []
-      row
+    consumed ← consumeIgnoring env handlerValue.state
+      { origin:
+          { span, consumed: Application, via: Just (Installation installed) }
+      , stage: row
+      , target: env.current
+      }
     bodyValue ← infer (installing label) consumed body
     pure
       { value: Checked.Expr

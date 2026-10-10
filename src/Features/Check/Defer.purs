@@ -13,7 +13,7 @@ import Domain.Resolved as Resolved
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), openRow)
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty(..), TyRow, VarId(..))
-import Features.Check.Consume (consumeVia)
+import Features.Check.Consume (consumeLabels)
 import Features.Check.Context (CheckEnv, Infer, Locals)
 import Features.Check.DeferNotes (failureNotes, tailNotes)
 import Features.Check.Entry (resolvedRow)
@@ -55,14 +55,18 @@ checkDefer infer env state span value = do
   let Row labels _ = resolvedRow typed.subst row
   traverse_ (refuseFail env typed span inferred.value inferred.value)
     (placed typed labels row)
-  consumed ← consumeVia env typed (crossing span)
-    (occurrencesOf typed.subst (flexibleRow row))
-    (Row labels (Just (Hole typed.next)))
+  consumed ← consumeLabels env typed
+    { origin: crossing span
+    , sources: occurrencesOf typed.subst (flexibleRow row)
+    , labels
+    , target: env.current
+    , sites: env.sites
+    , ignoreMarks: false
+    }
   pure
     { value: inferred.value
     , state: consumed
-        { next = consumed.next + 1
-        , deferrals = Array.snoc consumed.deferrals
+        { deferrals = Array.snoc consumed.deferrals
             { span
             , row
             , current: env.current
@@ -104,16 +108,17 @@ settleDeferred env state whole = do
   pure finished.subst
   where
   judged found = judge env state whole found
-  later reached found = bumped <$> consumeVia
-    (env { current = found.current, sites = found.sites })
-    reached
-    (crossing found.span)
-    (map snd kept)
-    (Row (map fst kept) (Just (Hole reached.next)))
+  later reached found = consumeLabels env reached
+    { origin: crossing found.span
+    , sources: map snd kept
+    , labels: map fst kept
+    , target: found.current
+    , sites: found.sites
+    , ignoreMarks: false
+    }
     where
     kept = Array.filter (not <<< failing <<< fst)
       (placed reached (rowLabels reached found) found.row)
-  bumped reached = reached { next = reached.next + 1 }
   rowLabels reached found = case resolvedRow reached.subst found.row of
     Row labels _ → labels
 

@@ -116,13 +116,10 @@ extendBounded (Subst bindings) meta label resolved fresh =
     (Array.find (holdsRow meta) resolved)
   where
   extended _ = Right
-    { subst: Subst
-        { types: bindings.types
-        , rows: Map.insert meta (Row [ label ] (Just (Meta fresh)))
+    { subst: Subst bindings
+        { rows = Map.insert meta (Row [ label ] (Just (Meta fresh)))
             bindings.rows
-        , fresh: fresh - 1
-        , postponed: bindings.postponed
-        , links: bindings.links
+        , fresh = fresh - 1
         }
     , fresh
     }
