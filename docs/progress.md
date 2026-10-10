@@ -3414,3 +3414,20 @@ merged tree (.build/fx009-merge-verify.log): exit 0, 958/958 parallel,
 revision 9's F1/F2 procedure (termination, inference compatibility,
 scheduling). On no substantive issue, the user approves the written spec
 and the implementation plan follows, starting with the probe gate.
+
+## First-party Schema direction (2026-10-10)
+
+Recorded the user's requested Schema foundation as SCH001 in
+docs/plans/2026-10-10-schema-direction.md and the backlog, with links from
+language/tooling direction and a targeted LA001 comparison. Consulted Effect
+v4 Schema documentation and the supplied rae-hill/schemata-ts README/interface
+docs. Covers parse-into-domain boundaries, codecs, selectable interpreters,
+generators/shrinkers and independent properties. Library/compiler mechanism
+and v1 subset remain open. No implementation, tests, commit or verification
+run; preserves the user's request not to run checks during design discussion.
+
+SCH001 follow-up (2026-10-10): expanded schema-direction with capability
+overlap versus Effect, the direct io-ts Schema/Schemable precedent,
+tagless-final research and ZIO Schema's different representation. No major
+required capability exclusive to schemata established; interpreter encoding
+versus AST remains open. Documentation inspection only; no checks run.
