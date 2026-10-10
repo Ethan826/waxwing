@@ -3570,3 +3570,44 @@ mutation kinds, each caught. Verify at 71d6263
 (.build/task1-fix-verify.log in the worktree): exit 0, 1065/1065
 parallel, 29/29 serial, 36 regression proofs. Stopped before Task 2, as
 authorized.
+
+### FX008 Task 2: mark representation (2026-10-10)
+
+Sonnet implementer (66e4f5d; fix rounds c6af69f and 5ed5b0e). Opus task
+review and re-review (review-fx008-task2-result.md): Spec ✅, Quality
+Approved after the fixes. The second fix round (a test bound and plan
+text) was checked by the controller.
+
+What it adds:
+- a `Mark` on every `Label`;
+- `HandlerRows` on `THandler`;
+- Domain.Type.Marks (`mapMarks`, `stripMarks`, `markVariables`);
+- Features.Check.Strip, which applies before `instantiationRule`.
+
+Behaviour is preserved: the gate is green, and the Go text and
+bootstrap snapshots are unchanged.
+
+Review C1 (Critical): two handler rows doubled at every nested handler
+type. Depth 22 ran out of memory, where base accepts to 124.
+Ruling: `clauses ∷ Maybe Row`, where `Nothing` means the same as R.
+Passes visit C only when it is `Just`. Plan P2, P4 and the interfaces of
+Tasks 2, 4, 7 and 8 are updated. Timings now match base to depth 124,
+with identical Go.
+
+Guards:
+- depth 40 is accepted (parallel);
+- depth 40 and depth 120 each compile within 2,000 ms after a warm-up
+  (serial). This replaced a 48.9 ms bound that the reviewer measured
+  failing under load; the generous bound is justified by the exponential
+  gap.
+
+The strip test now covers bodies, operations and constructor fields,
+with four mutants caught. Plan updates for later tasks: Task 3's
+`localMarks` gives a `Just` C only to handler types that are not nested
+in a handler row, with a guard. Task 7 gets a 30-literal guard and a note
+on unequal derived Eq.
+
+Verify at 5ed5b0e (.build/task2-fix2-verify.log in the worktree): exit
+0, 1070/1070 parallel, 31/31 serial, 36 proofs. New BACKLOG G004
+(pre-existing): a depth-125 handler type ends in a RangeError instead of
+E_NESTING.
