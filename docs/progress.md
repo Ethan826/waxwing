@@ -3507,3 +3507,16 @@ the five programs and the 25/25 tests match. It is unchanged.
 Verify at the outline merge (3e24e21; .build/fx008-merge-outline-verify.log):
 `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0; 958/958
 parallel, 29/29 serial (timing bounds included), 36 regression proofs.
+
+History tidied before publication (2026-10-10, user-authorized):
+- fx008 was rewritten so SCH001 has its own commit (b20eab5). The FX008
+  revision 10 commits follow it, and the outline merge was redone (3e24e21).
+- The only content change is the removal of a note about the earlier
+  mixed commit.
+- Pushed with a lease.
+- Deleted after confirming they are contained: the remote and local
+  branches claude/optimistic-dijkstra-6i21jy and claude/vibrant-cerf-3km61i
+  (in fx008), and fx001 (in main).
+- Removed four stale $TMPDIR waxwing-* directories from 2026-10-09.
+
+The tree differs from the verified 207474b only in docs.

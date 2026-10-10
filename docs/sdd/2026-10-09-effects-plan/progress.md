@@ -164,3 +164,4 @@ FX008 F1/F2 focused review (opus): SUBSTANTIVE ISSUE — termination (cyc1 re-di
 User chose a focused re-check of revision 10's corrections (T, F1′, S); fresh opus dispatched → review-fx008-rev10-result.md. Rev9 probes kept in .build/fx008-probes/rev9.
 FX008 rev10 re-check (opus): no substantive issue (N1 class identity, N2 feed-graph row, N3 gain1, N4 φ closing; wording). Applied. Spec APPROVED by the user's stated condition. Next: writing-plans (probe gate first).
 FX008 plan: writing-plans; planner (opus) drafting docs/plans/2026-10-10-abort-tracking-plan.md (probe gate first; subagent-driven execution as chosen).
+History rewritten (SCH001 split, merge redone, 9824c1b), force-pushed with lease; merged branches deleted (remote+local): claude/optimistic-dijkstra-6i21jy, claude/vibrant-cerf-3km61i, fx001; stale TMPDIR dirs removed. Planner still drafting the FX008 plan.
