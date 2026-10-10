@@ -166,3 +166,33 @@ Task 9, so they are consistent.
   have them too, and the width is not enforced for JS.
 - Runtime fits the parallel phase: 6 s total, slow compiles under 0.7 s
   against a 20 s budget, and one batch build.
+
+## Re-review: fix round 1 (71d6263)
+
+Verdict: **all addressed. Spec ✅, Quality Approved.**
+
+Ran: the gate in a scratch copy at 71d6263. The baseline is 107/107. Each
+mutation below ran in that copy and was then restored.
+
+| Item | Status | How I confirmed it |
+|---|---|---|
+| **I1** | ADDRESSED | The kit is now `{…, flipped: false, ...change}`. I added `flipped: true` to dup's change, and `probe dup` FAILS (dup is still accepted today). Two new consistency tests also hold: `{ flipped: true }` on f2 with no change fails with `f2: no task`, and an fx008 change on f3 with no task fails with `f3: no task`. |
+| **I2** | ADDRESSED | test/fx008-probes.test.mjs:79 now requires a 64-hex hash before it compares. I flipped f1 to `fx008: ok('1\n2\n', null)` and `probe f1` FAILS with `Go hash not pinned`. The tamper test failed too, as expected. gain1 flipped while still rejected fails on `expected acceptance`. |
+| **r5 ruling** | ADDRESSED | The r5 entry is now: today `ok('', 11c749…)` (unchanged), fx008 the same pattern as n1 at 138-148, task 5, a reason that includes report-before-pin, and `slow: true` (which the controller accepted). The hash was updated. |
+| **M1** | ADDRESSED | engineering.md:162 lists the slow accepted probes under "Not batched", with the reason. |
+| **M2** | ADDRESSED | `predicted` is added for p5, r1, r2 and tp1. It is hashed, so a change to it is caught. The report-before-pin note is now in the reasons for dup, n1 and r5. |
+
+Plan diff (`git diff HEAD~1 -- docs/plans/…`): only r5 lines changed.
+- In the Task 1 flip table, the n1 row now reads `n1, design-review/r5`.
+- In Task 5, the intro, Files, Step 1 (a new `r5 has no finite solution`
+  test), Step 2 and Step 5 (report r5's message) now include r5.
+- Nothing else in the plan changed.
+
+New breakage: none.
+- Every file is at most 143 lines.
+- docs/progress.md, BACKLOG.md and docs/sdd are untouched, and the worktree
+  is clean.
+
+Two trivial nits, both optional:
+- Task 1 Step 6 still says "PASS (105 tests)"; it is now 107.
+- The new Step 1 line at plan:718 is longer than the surrounding wrap.

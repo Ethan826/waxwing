@@ -3538,3 +3538,35 @@ added:
 - P11 is described precisely.
 
 Setup and Task 1 are authorized.
+
+### FX008 Task 1: probe gate (2026-10-10)
+
+Worktree /Users/ethan/Desktop/waxwing-fx008-impl, branch fx008-impl,
+from 8fe4218. Sonnet implementer (58c3d61; fix round 71d6263), Opus task
+review and scoped re-review (review-fx008-task1-result.md): Spec ✅,
+Quality Approved.
+
+test/fx008-probes/ holds 104 programs: 102 review probes, deduplicated,
+plus the witnesses ec1 and tp1. The table pins each probe's outcome today:
+- for accepted probes, a SHA-256 of the emitted Go, stdout, stderr and
+  status (57 accepted, 4 of them defect reports);
+- for rejected probes, code, message and span (47 rejected).
+
+It also records each probe's FX008 outcome. 17 entries flip, each with a
+task, a reason and an exact outcome or a pattern with report-before-pin.
+14 slow probes run in child processes with a 20 s timeout. A tamper hash
+covers the table, and invariant tests check flips; a flipped accepted
+entry must pin its Go hash.
+
+Rulings:
+- facts/lexical prints `2` before its abort: the plan's "empty stdout"
+  was a transcription error, corrected.
+- design-review/r5.wxw is byte-identical to n1.wxw, because the original
+  was overwritten before it was copied. It flips with n1 in Task 5.
+
+The reviewer re-ran all 104 probes independently (0 mismatches), checked
+the timeout path (fails at 20,006 ms, no orphan process) and nine
+mutation kinds, each caught. Verify at 71d6263
+(.build/task1-fix-verify.log in the worktree): exit 0, 1065/1065
+parallel, 29/29 serial, 36 regression proofs. Stopped before Task 2, as
+authorized.
