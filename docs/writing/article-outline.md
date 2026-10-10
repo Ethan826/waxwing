@@ -363,7 +363,7 @@ part. Judge capabilities at the language level.
          review-fx008-termination-result.md; revision 5, 9b47e4b);
        - the one-way hook diverging on cycles
          (review-fx008-rev8-hook-result.md, c6fcbda);
-       - a self-renaming loop (review-fx008-rev9-f1f2-result.md, 4539150).
+       - a self-renaming loop (review-fx008-rev9-f1f2-result.md, 37b4129).
      - Rejections of previously accepted programs:
        - some intended: the unsound programs themselves, plus one test
          migrated to `with nofail Log`;
