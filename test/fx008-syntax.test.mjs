@@ -170,6 +170,21 @@ test('every arrow of a spine prints its row once one is shown', () => {
     'Expected Int, found Int -> Int with nofail Log -> Unit with Log');
 });
 
+test('nofail(k) Console is still refused or scoped like any label', () => {
+  const field = log + 'type T = T(Unit -> Unit with nofail(k) Console);' + main;
+  const operation = log + 'effect Op { fn op(f: Unit -> Unit with nofail(k) '
+    + 'Console): Unit; };' + main;
+  for (const source of [field, operation]) {
+    const found = rejectedAt(source, 'E_TYPE', 'nofail(k)');
+    assert.equal(found.message,
+      'nofail(k) is allowed only in function signatures');
+  }
+  const lambda = log + 'fn f(): Unit = { let g = fn(x: Unit -> Unit with '
+    + 'nofail(j) Console) => (); () };' + main;
+  const unbound = rejectedAt(lambda, 'E_UNBOUND', 'nofail(j)');
+  assert.equal(unbound.message, 'Unbound mark variable j');
+});
+
 test('a mark variable only on Console is not introduced', () => {
   const names = source => {
     const resolved = resolve(parse(source).value0);

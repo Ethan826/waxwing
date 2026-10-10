@@ -20,7 +20,11 @@ import Domain.Syntax as Syntax
 
 -- One written `nofail(k)`: the name and where the mark is (FX008 design
 -- §3.2). Mark variables are a sort of their own, apart from type variables.
-type MarkVariableRef = { name ∷ String, span ∷ Syntax.Span }
+-- `onConsole`: it marks a Console label, which is N whatever is written
+-- (design §3.3), so a signature does not collect it; the refusals and scope
+-- checks still apply to it.
+type MarkVariableRef =
+  { name ∷ String, span ∷ Syntax.Span, onConsole ∷ Boolean }
 
 -- Every `nofail(k)` in a written type, in the order its parts are read:
 -- an arrow's parameters, its result, then the rows of its arrows. Spines
@@ -42,10 +46,12 @@ rowMarkVariableRefs (Syntax.RowRef _ labels _) =
 -- occurrence: its parameters, its result, then its own row.
 signatureMarkVariables
   ∷ Array Syntax.TypeRef → Maybe Syntax.RowRef → Array String
-signatureMarkVariables types row = Array.nub (map named refs)
+signatureMarkVariables types row = Array.nub (map named collected)
   where
   refs = Array.concatMap markVariableRefs types
     <> maybe [] rowMarkVariableRefs row
+  collected = Array.filter (not <<< onConsole) refs
+  onConsole reference = reference.onConsole
   named reference = reference.name
 
 -- E_TYPE at the first mark variable where none may be written: type and
@@ -84,11 +90,10 @@ argumentRefs = case _ of
 labelRefs ∷ Syntax.LabelRef → Array MarkVariableRef
 labelRefs label = ownRefs <> Array.concatMap markVariableRefs label.arguments
   where
-  -- Console is N whatever is written (design §3.3), so its mark variable
-  -- names nothing.
-  ownRefs = if label.name == "Console" then [] else maybe [] ownRef label.mark
+  ownRefs = maybe [] ownRef label.mark
   ownRef = case _ of
-    Syntax.NofailVariableRef span name → [ { name, span } ]
+    Syntax.NofailVariableRef span name →
+      [ { name, span, onConsole: label.name == "Console" } ]
     Syntax.NofailRef _ → []
 
 -- An arrow chain's parameters, its final result, then each arrow's row.

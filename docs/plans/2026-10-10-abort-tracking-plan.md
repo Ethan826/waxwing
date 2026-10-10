@@ -1241,6 +1241,10 @@ if fx-programs.mjs would pass 250).
 `docs/findings.md`, `docs/next-session.md`. (BACKLOG, progress and ledger:
 the controller.)
 
+- [ ] **Amend design §3.4 "Labels in local annotations" (review M5):** a
+  local annotation's clause row C keeps the written `nofail` / `nofail(k)`
+  marks of R and gives its unmarked labels fresh mark metas (not "R's
+  written labels with fresh mark metas" throughout).
 - [ ] **Step 1:** Apply FX008 design §8 to the effects spec verbatim in
   substance, with the exact texts of Tasks 9-10 in §6; each edit names FX008
   and the date.
