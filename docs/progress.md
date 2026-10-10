@@ -3431,3 +3431,15 @@ overlap versus Effect, the direct io-ts Schema/Schemable precedent,
 tagless-final research and ZIO Schema's different representation. No major
 required capability exclusive to schemata established; interpreter encoding
 versus AST remains open. Documentation inspection only; no checks run.
+
+Focused F1/F2 review (review-fx008-rev9-f1f2-result.md): a
+substantive issue. Termination, inference compatibility and scheduling
+each failed as written (cyc1, ov1, set1, all accepted today). It found
+no unsound acceptance. Revision 10 applies the corrections:
+- T: process a clause row only on a signature change, and run `sync` to
+  a fixpoint;
+- F1′: a remainder meta per clause-tail class instead of R ≡ R;
+- S: the settling loop consumes clause rows the same way.
+A mapping argument in the review shows that no program accepted today is
+rejected. The user's approval condition (no substantive issue) is not
+met; awaiting the user.
