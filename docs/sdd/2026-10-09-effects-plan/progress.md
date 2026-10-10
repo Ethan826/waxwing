@@ -165,3 +165,4 @@ User chose a focused re-check of revision 10's corrections (T, F1′, S); fresh 
 FX008 rev10 re-check (opus): no substantive issue (N1 class identity, N2 feed-graph row, N3 gain1, N4 φ closing; wording). Applied. Spec APPROVED by the user's stated condition. Next: writing-plans (probe gate first).
 FX008 plan: writing-plans; planner (opus) drafting docs/plans/2026-10-10-abort-tracking-plan.md (probe gate first; subagent-driven execution as chosen).
 History rewritten (SCH001 split, merge redone, 9824c1b), force-pushed with lease; merged branches deleted (remote+local): claude/optimistic-dijkstra-6i21jy, claude/vibrant-cerf-3km61i, fx001; stale TMPDIR dirs removed. Planner still drafting the FX008 plan.
+FX008 plan draft (opus planner): docs/plans/2026-10-10-abort-tracking-plan.md, 9 tasks, 23 mutants assigned, decisions P1-P12; independent plan review (opus) dispatched → review-fx008-plan-result.md.
