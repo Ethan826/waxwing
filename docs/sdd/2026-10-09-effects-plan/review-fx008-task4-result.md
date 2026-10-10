@@ -199,3 +199,84 @@ spec §3.3–§3.5 and §5, rev6 I2/M9 and rev7 I2.
 - `isEmpty` ignores mark bindings; `stripProgram` erases them.
 - Failure.purs is unchanged: P3 reuses `RowPayload` and `Mismatch`.
 - There is no refactor commit; see m1.
+
+## Re-review (fix round 1, aa8db84)
+
+**Verdict: Spec ✅. Quality: Approved**, with one Minor test note (n1)
+and one text proposal that needs the user's sign-off.
+
+**Ran** (scratch `cand2/` = `git archive aa8db84`, built with exit 0):
+- My whole-compile comparator against base e0580a4 (Go text or full
+  diagnostic):
+  - harvested corpus: 3,427 sources, 0 differences without `nofail`; the
+    2 with `nofail` are the intended P3 rejections;
+  - generated programs: 7,489 sources, 0 differences.
+- `scripts/differential.mjs --corpus all`, every phase:
+  - harvested: 2 differences, the same 2 `nofail` programs;
+  - fuzz, isName, matches and mutations: 0 differences.
+  - The check-phase hole renumbering is gone.
+- Mutants on `mut2/`, each rebuilt; every one is now caught:
+  - closed-stage throwaway removed → "a closed stage consumed into a wider
+    target makes no copies";
+  - results written M opened → "a result written M stays closed …";
+  - C compared ignoring marks → "a clause row mark clash through a lambda
+    annotation …";
+  - I1 reverted (both `Nothing` → R ignoring marks) → "handler types with
+    clause rows of different marks differ";
+  - N ⊑ N skip removed → "Console pairs record no edge".
+
+| Item | Status | Note |
+|---|---|---|
+| I1 | ADDRESSED | Both `Nothing`: R unified with `EqualMarks`, one pass (Unify.purs `unifyInference`). The plan's interface is amended; c1 is now E_TYPE and tested; the mutant is killed. |
+| m1 | ADDRESSED | `MarkStore.fresh` counts down from -1, apart from row metas and the checker's upward count. Mark metas cannot collide, and a postponement reverts the counter with its substitution. 0 differences in every phase except the 2 `nofail` programs. |
+| m2 | PARTLY | The row now prints, but on one side only. See the text judgement below. |
+| m3 | ADDRESSED | Three tests added; all three surviving mutants are now killed. |
+| m4 | ADDRESSED | The vacuous first half is dropped; a comment states the 7,999-copy claim. |
+| m5 | ADDRESSED | `recorded` skips edges whose marks are both literally `NoFail`. Only literal N is skipped: a meta later bound to N keeps its edge, which is correct. Tested. |
+| m6 | ADDRESSED | The `compose` comment says it is test-only; `handledMarks` uses `equateMarks` directly, with no dummy occurrence. |
+
+**n1 (Minor, new).** The property test "the scoped-label properties hold
+in every mode" is weaker than before (fx008-marks.test.mjs:113-115, 152):
+- it now skips the Assumed-edge count for any pair containing a `nofail`
+  or Console label;
+- its threshold drops from `assumed > 100` to `> 20`.
+
+The behaviour change behind it (m5) is legitimate, but the skip is coarser
+than needed. Fix: expect one `Assumed` edge per matched pair whose two
+marks are not both `NoFail` and neither `Unmarked`, and keep the old
+threshold.
+
+**No new breakage found.**
+- `freshened` no longer calls `normalMark`. That is correct, because it
+  only ever freshens user effects.
+- Fresh marks on extension stay inside the mark store.
+
+**The I1 text.** `Expected Handler(Log), found Handler(Log with nofail Tick)`
+is misleading: it reads as "a row against no row". The P3 callback text,
+`Expected Unit -> Unit with nofail Log, found Unit -> Unit`, has the same
+defect (it reads as pure against effectful). The Task 3 arrow ruling
+settles printing within one type's spine; it does not settle a pair of
+types. Proposed rule (P3/P10, needs the user's sign-off):
+- **When either side of an E_TYPE type mismatch shows a handler clause row
+  or an arrow row, both sides show the row at the same position.**
+- An empty handler row prints `with pure`, the written syntax.
+- An empty arrow row prints nothing, since arrows written without `with`
+  are pure.
+- Ambient and unsolved tails stay omitted.
+- The decision is made once per mismatch, from both types, and passed to
+  `typeName` for both sides. The per-type spine rule still applies within
+  each side.
+
+Texts under the rule:
+- I1: `Expected Handler(Log with Tick), found Handler(Log with nofail Tick)`
+- lambda annotation: `Expected Handler(Log with nofail Tick), found
+  Handler(Log with Tick)`
+- P3 callback (an approved text; this changes it): `Expected Unit -> Unit
+  with nofail Log, found Unit -> Unit with Log`
+- Handled-label clash, unchanged (no marked row on either side):
+  `Expected Handler(nofail Log), found Handler(Log)`
+- Pure clause row: `Expected Handler(Log with nofail Tick), found
+  Handler(Log with pure)`
+
+If the user declines, the one-sided texts are at least consistent between
+handlers and arrows, and can be pinned as they are.

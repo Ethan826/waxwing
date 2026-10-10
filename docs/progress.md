@@ -3644,3 +3644,10 @@ Rulings:
 New BACKLOG E012 (pre-existing): closed and ambient rows print alike.
 Verify at e0580a4 (.build/task3-fix2-verify.log in the worktree): exit
 0, 1105/1105 parallel, 33/33 serial, 36 proofs; gate 107/107.
+
+User decision 2026-10-10 (FX008 Task 4): mismatch texts are symmetric.
+When either side of an E_TYPE mismatch shows a handler clause row or an
+arrow row, both sides show theirs. An empty handler row prints `with
+pure`, and ambient tails stay omitted. This amends the approved P3
+callback text to `Expected Unit -> Unit with nofail Log, found Unit ->
+Unit with Log`.
