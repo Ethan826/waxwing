@@ -183,3 +183,52 @@ None.
 - No imports cross layer or IR boundaries: MarkUse imports
   Domain.Checked.Internal, which is allowed for Check.
 - G001 lists are updated in engineering.md, the style tool and style.test.
+
+## Re-review (fix round 1, 1f9f257 on f16c6b5)
+
+**Verdict: Spec ✅ · Quality: Approved, with one new Minor (N1) for the
+controller to rule on.**
+
+Ran: `node --test` fx008-syntax and type-order, 30/30 pass. I rebuilt a
+scratch copy at 1f9f257 and ran four mutations, one rebuild each. Every
+mutation is killed:
+
+| Mutation | Tests that fail |
+|---|---|
+| `opensLabel` without `"..."` | `nofail ...e at the start of a row argument is E_SYNTAX` |
+| `opensLabel` without `"("` | the 2 new positions, plus `marks never reach Go` |
+| arrow rows decided per arrow again (`shown = rowMarked row`) | `every arrow of a spine prints its row once one is shown` |
+| Console filter removed from `labelRefs` | `a mark variable only on Console is not introduced` |
+
+| Finding | Status | How |
+|---|---|---|
+| I1 | ADDRESSED | `opensLabel` also accepts `...` (Mark.purs:67). `Box(nofail ...e)` and `Handler(nofail ...e)` now give the P10 text, spanning `nofail ...e`. Tested, and the mutation is killed. |
+| M1 | ADDRESSED | `Box(nofail(k) Log)` and `Handler(nofail(k) Log with pure)` are added to the positions (Go equal to the unmarked form). The mutation is killed. |
+| M2 | ADDRESSED | Implements the ruling: once any arrow of the spine has a marked row, every arrow prints its row (TypeName.purs:75, 128-140). An empty row prints nothing; ambient and unsolved tails are still omitted. `Int -> Int with nofail Log -> Unit with Log` is tested, and the mutation is killed. |
+| M3 | ADDRESSED | `markedHandlerType` is now a top-level production (HandlerType.purs:136). `declarationUse` is back to 7 `where` bindings (`arrowRow` and `typeArgument` lifted out). |
+| M4 | ADDRESSED as ruled | `labelRefs` drops a mark variable written on Console (Marks.purs:87-89). Tested, and the mutation is killed. Side effect: see N1. |
+
+**Base vs candidate (1f9f257), whole-compile outcome:**
+- 3,371 harvested sources plus examples/ and negative/: 0 differences.
+- 20,000 mutations, the targeted cases and 3,000 soups (23,029 in all): 0
+  differences.
+
+So the M2 change to printing leaves every program without `nofail`
+unchanged. On my adversarial set, only `rowArgSpread` (now I1's text) and
+`arrowMulti` (now M2's text) changed. Nothing else broke.
+
+**N1 (Minor, new, needs a ruling).** `labelRefs` feeds every mark-variable
+check, not just signature collection. So `nofail(k) Console` now escapes all
+of them:
+- the L6 refusal: `type T = T(Unit -> Unit with nofail(k) Console);` and an
+  operation parameter with it are now accepted. Before, they were E_TYPE
+  `nofail(k) is allowed only in function signatures`;
+- the lambda scope check: `fn(x: Unit -> Unit with nofail(j) Console) => …`
+  with no `j` in the signature is now accepted. Before, it was E_UNBOUND.
+
+This is semantically harmless, because Console normalizes to N. But it
+contradicts spec L6 ("not allowed in type or effect declarations") and
+§3.2's scope rule. If the ruling meant only "not introduced", apply the
+Console filter only in `signatureMarkVariables`. For example, have
+`labelRefs` tag each ref with whether it sits on Console, and filter there.
+Otherwise, record the relaxation in Task 12.
