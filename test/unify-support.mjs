@@ -12,7 +12,7 @@ import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { ordInt } from '../output/Data.Ord/index.js';
 import { unfoldableArray } from '../output/Data.Unfoldable/index.js';
 import {
-  ConsoleEffect, FailEffect, Label, Row, UserEffect
+  ConsoleEffect, FailEffect, Label, Plain, Row, UserEffect, normalMark
 } from '../output/Domain.Row/index.js';
 import { TBool, TData, TFun, TInt, TVar } from '../output/Domain.Type/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
@@ -40,7 +40,10 @@ const plainEffect = ref => ref instanceof UserEffect ? ref.value0
 
 export const toRow = r => Row.create(r.labels.map(toLabel))(
   r.tail === null ? Nothing.value : Just.create(flexOf(r.tail)));
-export const toLabel = l => Label.create(effectOf(l.e))(l.args.map(toTy));
+// Marks are ignored by unification (FX008 Task 2): every label is Plain
+// but Console (N) and Fail (placeholder), as Resolve builds them.
+export const toLabel = l => Label.create(effectOf(l.e))(l.args.map(toTy))(
+  normalMark(effectOf(l.e))(Plain.value));
 export const fromLabel = l => ({ e: plainEffect(l.value0), args: l.value1.map(fromTy) });
 export const fromRow = row => ({
   labels: row.value0.map(fromLabel),

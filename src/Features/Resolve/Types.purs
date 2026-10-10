@@ -10,6 +10,7 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
+import Domain.Row (uniformRows)
 import Features.Resolve.Row (label, resolveRow)
 import Features.Resolve.HandlerType as HandlerType
 import Features.Resolve.TypeValidation as TypeValidation
@@ -73,7 +74,7 @@ resolveTypeWith types effects variables ambient = resolved
       (Array.findIndex (named name) types)
     Syntax.THandlerRef _ reference row → Resolved.THandler
       <$> label effects resolved reference
-      <*> resolveRow effects variables ambient resolved row
+      <*> (uniformRows <$> resolveRow effects variables ambient resolved row)
     arrow@(Syntax.FunRef _ _ _ _) → spine arrow
   spine arrow = do
     parameters ← traverse resolved (Syntax.typeRefSpine arrow).parameters

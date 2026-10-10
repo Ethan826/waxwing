@@ -46,7 +46,7 @@ check env state definition
           _ → Row [] Nothing
       occurrences span = occurrencesAt span state.subst
         (flexibleRow env.current)
-      allowed (Tuple (Label ConsoleEffect _) _) = Right unit
+      allowed (Tuple (Label ConsoleEffect _ _) _) = Right unit
       allowed (Tuple label occurrence) = do
         name ← labelName env definition.span label
         rejection name (trail state.subst state.origins occurrence)

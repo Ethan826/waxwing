@@ -11,7 +11,7 @@ import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Row(..), closedRow)
+import Domain.Row (EffectRef(..), Label(..), Row(..), closedRow, uniformRows)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TyRow, VarId(..), substitute)
 import Features.Check.Context (CheckEnv, Infer, Locals)
@@ -41,7 +41,7 @@ handler infer env state span label clauses = do
     clauses
   pure
     { value: Checked.Expr
-        { ty: THandler (openLabel label) row
+        { ty: THandler (openLabel label) (uniformRows row)
         , span
         , node: Checked.Handler (effectId label) (labelArgs label)
             checked.value
@@ -115,7 +115,7 @@ withHandler
 withHandler infer env state span handlerExpr body = do
   handlerValue ← infer env state handlerExpr
   case headOf handlerValue.state (Checked.typeOf handlerValue.value) of
-    THandler label row → withValue handlerValue label row
+    THandler label rows → withValue handlerValue label rows.inference
     other → expectedHandler env span other
   where
   withValue handlerValue label row = do
@@ -206,23 +206,26 @@ argument args (VarId index) = maybe (TVar (Rigid (VarId index))) identity
   (Array.index args index)
 
 labelArgs ∷ Label (Ty Resolved.VarId) → Checked.Instantiation
-labelArgs (Label _ args) = map (map Rigid) args
+labelArgs (Label _ args _) = map (map Rigid) args
 
 openLabel ∷ Label (Ty Resolved.VarId) → Label (Ty Open)
-openLabel (Label effect args) = Label effect (map (map Rigid) args)
+openLabel (Label effect args mark) = Label effect (map (map Rigid) args)
+  mark
 
 effectId ∷ Label (Ty Resolved.VarId) → EffectId
-effectId (Label (UserEffect id) _) = id
+effectId (Label (UserEffect id) _ _) = id
 effectId _ = EffectId (-1)
 
 payloadType ∷ Label (Ty Resolved.VarId) → Ty Resolved.VarId
-payloadType (Label _ arguments) = maybe' noPayload identity
+payloadType (Label _ arguments _) = maybe' noPayload identity
   (Array.head arguments)
   where
   noPayload _ = TUnit
 
 flexLabel ∷ Label (Ty Open) → Label (Ty Flex)
-flexLabel (Label effect arguments) = Label effect (map flexible arguments)
+flexLabel (Label effect arguments mark) = Label effect
+  (map flexible arguments)
+  mark
 
 prepend ∷ Label (Ty Open) → TyRow Open → TyRow Open
 prepend label (Row labels tail) = Row (Array.cons label labels) tail

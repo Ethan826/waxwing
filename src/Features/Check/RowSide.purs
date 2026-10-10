@@ -72,7 +72,7 @@ tailOf = maybe Closed fromFlex
 -- its payloads are judged by their own family rules.
 mismatched ∷ Sides → Subst → Entry → Entry → Failure → Failure
 mismatched sides subst entry other failure = case failure, entry.label of
-  Mismatch _ _, Label FailEffect _ → failure
+  Mismatch _ _, Label FailEffect _ _ → failure
   Mismatch _ _, _ | sides.left /= nowhere → RowPayload
     (resolveLabel subst entry.label)
     (resolveLabel subst other.label)

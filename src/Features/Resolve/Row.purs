@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Traversable (traverse)
 import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
-import Domain.Row (EffectRef(..), Label(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), normalMark)
 import Domain.Syntax as Syntax
 import Domain.Type (Ty(..), TyRow, VarId(..))
 
@@ -52,9 +52,9 @@ concrete
   → Either Syntax.Diagnostic (Label (Ty VarId))
 concrete effect reference arguments = case effect, arguments of
   FailEffect, [ payload ] → toLabel <$> failFamily reference.span payload
-  _, _ → Right (Label effect arguments)
+  _, _ → Right (Label effect arguments (normalMark effect Plain))
   where
-  toLabel payload = Label effect [ payload ]
+  toLabel payload = Label effect [ payload ] Unmarked
 
 -- A Fail payload needs a family key: Int, Bool, Unit or a declared type.
 -- A type variable, a function or a handler type has none, so nothing it is

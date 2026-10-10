@@ -28,19 +28,22 @@ import Features.Check.Walk (retype)
 import Features.Check.Defer (settleDeferred)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Path (expandPath)
+import Features.Check.Strip (stripProgram)
 
 check ∷ Resolved.Program → Either Diagnostic Checked.Program
 check program = do
   printableEntry holders program
   functions ← traverse checkDefinition program.functions
   let
-    checked = Checked.Program
-      { effects: program.effects
-      , types: program.types
-      , ctors: program.ctors
-      , functions
-      , entry: program.entry
-      }
+    checked = stripProgram
+      ( Checked.Program
+          { effects: program.effects
+          , types: program.types
+          , ctors: program.ctors
+          , functions
+          , entry: program.entry
+          }
+      )
   -- The instantiation rule needs every body's final types; coverage runs
   -- last, on a program whose specialization is known to be finite.
   instantiationRule checked

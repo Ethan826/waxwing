@@ -55,9 +55,9 @@ exceedsLimit subst ty = tailRec step (Push { ty, level: 1 } Bottom)
     TFun parameter row result → pushAt (level + 1)
       (pushRow (level + 1) (pushAt level rest result) row)
       parameter
-    THandler (Label _ arguments) row → pushRow (level + 1)
+    THandler (Label _ arguments _) rows → foldl (pushRow (level + 1))
       (foldl (pushAt (level + 1)) rest arguments)
-      row
+      [ rows.inference, rows.clauses ]
     _ → rest
   pushRow level rest row
     | isPure row = rest
@@ -89,7 +89,7 @@ extendRow
   → Int
   → Label (Ty Flex)
   → Either Failure { subst ∷ Subst, fresh ∷ Int }
-extendRow subst@(Subst bindings) meta label@(Label _ arguments) =
+extendRow subst@(Subst bindings) meta label@(Label _ arguments _) =
   if Array.any (exceedsLimit subst) arguments then Left TooDeep
   else extendBounded subst meta label (map (resolve subst) arguments)
     bindings.fresh

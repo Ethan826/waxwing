@@ -154,8 +154,8 @@ present unify sides pending entry found =
     (Loop <<< matched)
     (foldM unifyPair pending.subst (Array.zip arguments others))
   where
-  Label _ arguments = entry.label
-  Label _ others = found.other.label
+  Label _ arguments _ = entry.label
+  Label _ others _ = found.other.label
   unifyPair subst (Tuple one other) = unify subst one other
   entries = pending.right.entries
   matched subst = pending

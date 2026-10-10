@@ -10,7 +10,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..))
 import Domain.Syntax as Syntax
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Handler as Handler
@@ -105,7 +105,7 @@ failureClause resolveExpression scope clause = do
   let locals = Map.insert clause.name local scope.locals
   body ← resolveExpression (scope { locals = locals }) clause.body
   pure
-    { label: Label FailEffect [ payload ]
+    { label: Label FailEffect [ payload ] Unmarked
     , local: Just local
     , body
     , span: clause.span

@@ -51,7 +51,7 @@ labelView
   → Span
   → Label (Ty Flex)
   → Either Diagnostic LabelName
-labelView env span (Label effect arguments) = do
+labelView env span (Label effect arguments _) = do
   name ← effectName effect
   parts ← traverse (typeName env span <<< opened) arguments
   pure { effect: name, arguments: parts }

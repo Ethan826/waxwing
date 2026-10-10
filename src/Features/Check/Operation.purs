@@ -16,7 +16,7 @@ import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Row(..), openRow)
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), openRow)
 import Domain.Syntax (Diagnostic, Span, Sort(..), problemAt)
 import Domain.Type (Ty(..), TyRow, VarId(..))
 import Features.Check.Call (named)
@@ -133,7 +133,7 @@ crashRef _ state span = Right
   value = Checked.Expr { ty: parameter, span, node: Checked.Local local }
 
 console ∷ TyRow Open
-console = Row [ Label ConsoleEffect [] ] Nothing
+console = Row [ Label ConsoleEffect [] NoFail ] Nothing
 
 operationUse
   ∷ ∀ r
@@ -158,6 +158,7 @@ operationUse env state span effect@(EffectId owner) index =
             ( Row
                 [ Label (UserEffect effect)
                     (Array.mapWithIndex variable info.parameters)
+                    Plain
                 ]
                 Nothing
             )

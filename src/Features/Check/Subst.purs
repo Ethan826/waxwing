@@ -27,7 +27,7 @@ import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Row (Label(..), Row(..), isPure, openRow)
+import Domain.Row (Label(..), Row(..), isPure, mapHandlerRows, openRow)
 import Domain.Type
   ( Substitution
   , Ty(..)
@@ -201,8 +201,8 @@ resolve ∷ Subst → Ty Flex → Ty Flex
 resolve subst ty = case walk subst ty of
   TData id arguments rows → TData id (map resolved arguments)
     (map (resolveRow subst) rows)
-  THandler label row → THandler (resolveLabel subst label)
-    (resolveRow subst row)
+  THandler label rows → THandler (resolveLabel subst label)
+    (mapHandlerRows (resolveRow subst) rows)
   arrow@(TFun _ _ _) → resolvedStages (stagesThrough (walk subst) arrow)
   settled → settled
   where
@@ -222,8 +222,8 @@ resolveRow subst row
         tail
 
 resolveLabel ∷ Subst → Label (Ty Flex) → Label (Ty Flex)
-resolveLabel subst (Label effect arguments) =
-  Label effect (map (resolve subst) arguments)
+resolveLabel subst (Label effect arguments mark) =
+  Label effect (map (resolve subst) arguments) mark
 
 substitution ∷ Subst → Substitution Flex Flex
 substitution (Subst bindings) = { types: replaced, rows: replacedRow }

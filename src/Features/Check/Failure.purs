@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (typeHead)
@@ -38,7 +38,7 @@ failExpression
 failExpression infer env state span value = do
   payload ← infer env state value
   consumed ← consumeAt env payload.state span (FailOf env.functionName)
-    (Row [ Label FailEffect [ Checked.typeOf payload.value ] ] Nothing)
+    (Row [ Label FailEffect [ Checked.typeOf payload.value ] Unmarked ] Nothing)
   pure
     { value: Checked.Expr
         { ty: TVar (Checked.Hole consumed.next)

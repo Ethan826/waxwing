@@ -10,7 +10,7 @@ import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Row(..), openRow)
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), openRow)
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty(..), TyRow, VarId(..))
 import Features.Check.Consume (consumeVia)
@@ -146,7 +146,7 @@ rigidTail env state found = case _ of
   spread index = "..." <> maybe "" identity (Array.index env.variables index)
 
 failing ∷ ∀ v. Label (Ty v) → Boolean
-failing (Label effect _) = effect == FailEffect
+failing (Label effect _ _) = effect == FailEffect
 
 refuseFail
   ∷ ∀ r
@@ -163,11 +163,11 @@ refuseFail
   span
   whole
   body
-  (Tuple label@(Label _ arguments) occurrence) =
+  (Tuple label@(Label _ arguments _) occurrence) =
   if failing label then named else Right unit
   where
   named = do
-    name ← labelName env span (Label FailEffect (map flexible payload))
+    name ← labelName env span (Label FailEffect (map flexible payload) Unmarked)
     Left
       { problem: DeferMayFail name
       , span

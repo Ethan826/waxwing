@@ -49,7 +49,7 @@ typeName env span = case _ of
   arrowName found = curried <$> traverse (typeName env span) found.parameters
     <*> typeName env span found.result
   curried parameters result = Array.foldr FunctionName result parameters
-  handlerName (Label effect arguments) = do
+  handlerName (Label effect arguments _) = do
     head ← effectName effect
     parts ← traverse (typeName env span) arguments
     Right (AppliedName "Handler" [ applied head parts ])

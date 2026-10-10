@@ -117,10 +117,12 @@ unifyHeads level subst left right = case left, right of
         && sameLength leftRows rightRows →
         foldM unifyPair subst (Array.zip lefts rights)
           >>= unifyRowsAt level leftRows rightRows
-  THandler (Label one lefts) leftRow, THandler (Label other rights) rightRow
+  THandler (Label one lefts _) leftRows,
+  THandler (Label other rights _) rightRows
     | one == other && sameLength lefts rights →
         foldM unifyPair subst (Array.zip lefts rights)
-          >>= unifyRowAt level leftRow rightRow
+          >>= unifyRowAt level leftRows.inference rightRows.inference
+          >>= unifyRowAt level leftRows.clauses rightRows.clauses
   TFun _ _ _, TFun _ _ _ → unifyArrows level subst left right
   _, _ → mismatch subst left right
   where
