@@ -31,6 +31,9 @@ export const rev910 = [
       'Console + ... and Log + Console + ... cannot be made equal: both end in ...', 163, 169),
     {
       fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 163, 169),
+      predicted:
+        'Console + Log + ... and Console + ... cannot be made equal: both end '
+        + 'in ...',
       task: 7,
       reason:
         '§3.4 F2: positive c->R self-loop reported by sync (P13); still ' +
@@ -50,6 +53,9 @@ export const rev910 = [
       'Console + ... and Log + Console + ... cannot be made equal: both end in ...', 180, 186),
     {
       fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 180, 186),
+      predicted:
+        'Console + Log + ... and Console + ... cannot be made equal: both end '
+        + 'in ...',
       task: 7,
       reason: '§3.4 F2: same as p5.'
     }),
@@ -58,6 +64,9 @@ export const rev910 = [
       'Console + ... and Log + Console + ... cannot be made equal: both end in ...', 194, 200),
     {
       fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 194, 200),
+      predicted:
+        'Console + Log + ... and Console + ... cannot be made equal: both end '
+        + 'in ...',
       task: 7,
       reason: '§3.4 F2: same as p5.'
     }),
@@ -66,7 +75,15 @@ export const rev910 = [
   probe('design-review/r4',
     no('E_EFFECT', 'Unhandled Log in main', 163, 167)),
   probe('design-review/r5',
-    ok('', '11c749ce671b36700a70b66bbc533a6d5c138d92655f2bc07b7e188f9a0cf310')),
+    ok('', '11c749ce671b36700a70b66bbc533a6d5c138d92655f2bc07b7e188f9a0cf310'),
+    {
+      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 138, 148),
+      task: 5,
+      reason:
+        'byte-identical to n1 (original r5 lost). Observed message is ' +
+        'reported to the user before it is pinned.',
+      slow: true
+    }),
   probe('rev10/gain1',
     no('E_EFFECT', 'Unhandled Cell(Bool) in main', 263, 268),
     {

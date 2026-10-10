@@ -159,7 +159,9 @@ adding a bypass allowlist.
   children (spawnSync cannot kill a process group); depth.test.mjs's timed
   builds group-kill because their timeout is an assertion. Self-tests:
   test/go-batch.test.mjs. Not batched: depth.test.mjs timing builds,
-  scripts/regression.mjs probes, and `goTest`; `runGo` remains as the
+  scripts/regression.mjs probes, `goTest`, and the slow accepted probes of
+  test/fx008-probes.test.mjs (the batch compiles in-process, which would
+  escape their child-process timeout); `runGo` remains as the
   self-tests' standalone reference;
 - scripts/strict-rebuild.mjs (run by verify after the build) copies the
   workspace to .build/strict-rebuild, checks the unmodified copy builds, adds

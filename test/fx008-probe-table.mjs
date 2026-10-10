@@ -32,7 +32,8 @@ const own = [
       task: 5,
       reason:
         '§6: no finite solution; the deferral is its own self-loop cycle, ' +
-        'reported at the deferral span.',
+        'reported at the deferral span. Observed message is reported to the ' +
+        'user before it is pinned.',
       slow: true
     }),
   probe('f1',
@@ -76,7 +77,8 @@ const own = [
     {
       fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 138, 148),
       task: 5,
-      reason: '§6: same as dup.',
+      reason: '§6: same as dup. Observed message is reported to the user ' +
+        'before it is pinned.',
       slow: true
     }),
   probe('rigid-ok',
@@ -100,6 +102,7 @@ const own = [
     no('E_EFFECT', 'f performs Console, which its signature does not allow', 266, 278),
     {
       fx008: noPattern('E_EFFECT', '^f performs ', 204, 219),
+      predicted: 'f performs Console, which its signature does not allow',
       task: 7,
       reason:
         'Review I6: k1 tail rigid on retry; tail pass rejects R = ' +

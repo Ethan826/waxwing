@@ -351,7 +351,7 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | Probe | FX008 outcome | Task | Reason |
   |---|---|---|---|
   | dup | E_EFFECT, pattern `/ cannot be made equal: both end in \.\.\.$/`, span 150-160 (`defer k(1)`) | 5 | §6: no finite solution; only deferrals are entries in Task 5, so the cycle is the deferral's self-loop, reported at `crossing deferral.span` |
-  | n1 | same pattern, span 138-148 | 5 | same |
+  | n1, design-review/r5 | same pattern, span 138-148 | 5 | same (r5.wxw is byte-identical to n1.wxw; its original content was lost) |
   | rev10/gain1 | accepted `0\n`, status 0 (Go hash pinned on first observation) | 7 | §6 sound gain (rev10 N3) |
   | design-review/p5, r1, r2 | E_EFFECT, same spans as today, predicted message `Console + Log + ... and Console + ... cannot be made equal: both end in ...`, pattern `/ cannot be made equal: both end in \.\.\.$/` | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
   | witness/ec1 | E_EFFECT at span 161-191 (`handler Log { log(n) => g(n) }`), message matching `/^(Unhandled Fail\(E\) in main|Fail\(E\) \+ Console \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.)$/`; the observed text is reported to the user before it is pinned | 7 | review I7, and plan review Round 2 N1: the late `Fail(E)` arrives in settling round 2 through the clause entry, whose origin is the handler literal (P13). The re-check's hand trace predicts the side-condition text, because the hook removes today's reverse link to the entry check |
@@ -663,7 +663,7 @@ Edges recorded, not yet read. New rejections: only P3's.
 
 Replaces `settleKeys` / `settleDeferred` / `settleFinal` (Check.purs:116-118)
 with the termination review's corrected loop over deferral entries; the
-defer judgement moves after it. dup and n1 flip.
+defer judgement moves after it. dup, n1 and r5 flip.
 
 **Files:**
 - Create: `src/Features/Check/Cycle.purs`, `Settle.purs`;
@@ -673,7 +673,7 @@ defer judgement moves after it. dup and n1 flip.
 - Modify: `src/Features/Check.purs`; `Defer.purs` (delete `settleDeferred`,
   export `judgeDeferrals`); `scripts/regression.mjs` (+1: `fx008Rows`);
   `test/regression.mjs` (import `externalProbes`; `compilerPath` in
-  `context`; net −2); probe table and hash (flip dup, n1);
+  `context`; net −2); probe table and hash (flip dup, n1, r5);
   `docs/engineering.md` (regression files).
 
 **Interfaces:**
@@ -715,20 +715,21 @@ defer judgement moves after it. dup and n1 flip.
 
 - [ ] **Step 1: Failing tests** (test/fx008-settle.test.mjs, child processes,
   20 s): `dup has no finite solution` (dup.wxw → E_EFFECT matching the
-  pattern, span 150-160); `n1 has no finite solution` (138-148); `a
+  pattern, span 150-160); `n1 has no finite solution` (138-148); `r5 has no finite solution` (same
+  source and span); `a
   satisfiable two-row cycle settles` (cycle2 prints `0\n7\n1\n`); `8,000
   defers settle` (main with 8,000 `defer print(i)` compiles; timed in
-  Task 9). Flip dup and n1. The existing fx-cleanup tests `a Fail reaching
+  Task 9). Flip dup, n1 and r5. The existing fx-cleanup tests `a Fail reaching
   a shared lambda meta later is rejected (P4)` and `a defer handling a Fail
   of a key settled later is accepted` must pass unchanged.
-- [ ] **Step 2: Run** → FAIL (dup, n1 accepted).
+- [ ] **Step 2: Run** → FAIL (dup, n1, r5 accepted).
 - [ ] **Step 3: Implement.**
 - [ ] **Step 4: Row `fx008-cycle-presence`** (Cycle.purs): weight = 1 when κ
   is in own_i but not target_i, else 0. Probe: dup.wxw within 20 s → the
   side-condition rejection; mutant `/cycle weight: timed out/`.
 - [ ] **Step 5: Run** tests and gate → PASS; verify → 0; `node
-  scripts/regression.mjs fx008-cycle-presence` → proof line. Report dup's
-  and n1's observed messages to the user (gate rule) before pinning them.
+  scripts/regression.mjs fx008-cycle-presence` → proof line. Report dup's,
+  n1's and r5's observed messages to the user (gate rule) before pinning them.
 - [ ] **Step 6: Commit** `feat: settle restricted rows in one loop (FX008)`.
 
 ---

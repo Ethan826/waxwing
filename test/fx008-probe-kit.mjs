@@ -13,4 +13,4 @@ export const noPattern = (code, pattern, start, end) =>
 // FX008 defaults to today's outcome; `change` carries fx008, task, reason
 // and slow for the entries a task is allowed to move.
 export const probe = (file, today, change = {}) =>
-  ({ file, today, fx008: today, ...change, flipped: false });
+  ({ file, today, fx008: today, flipped: false, ...change });

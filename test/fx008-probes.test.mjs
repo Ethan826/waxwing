@@ -74,7 +74,10 @@ const checkRejection = (expected, shown) => {
 
 const checkGo = (expected, shown) => {
   assert.equal(shown.accepted, true, 'expected acceptance');
-  if (expected.go !== null) assert.equal(sha256(shown.go), expected.go);
+  // A pinned hash is required whenever acceptance is asserted: an outcome
+  // with `go: null` (gain1 until Task 7) must not pass without a Go check.
+  assert.match(String(expected.go), /^[0-9a-f]{64}$/, 'Go hash not pinned');
+  assert.equal(sha256(shown.go), expected.go);
 };
 
 const checkRun = (expected, run) => {
@@ -117,6 +120,22 @@ const checkProbe = probe => {
 for (const probe of probes) {
   test(`probe ${probe.file}`, () => checkProbe(probe));
 }
+
+test('a flipped probe names its task and differs from today', () => {
+  const flipped = probes.filter(probe => probe.flipped);
+  for (const probe of flipped) {
+    assert.notEqual(probe.task, undefined, `${probe.file}: no task`);
+    assert.notDeepEqual(probe.fx008, probe.today, `${probe.file}: no change`);
+  }
+});
+
+test('a probe whose fx008 differs from today names its task', () => {
+  const changed = probes.filter(
+    probe => JSON.stringify(probe.fx008) !== JSON.stringify(probe.today));
+  for (const probe of changed) {
+    assert.notEqual(probe.task, undefined, `${probe.file}: no task`);
+  }
+});
 
 test('the probe table is untampered', () => {
   const text = JSON.stringify(probes.map(withoutFlipped));
