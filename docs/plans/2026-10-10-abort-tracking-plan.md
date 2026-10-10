@@ -2,8 +2,12 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-Status: revision 2 (2026-10-10), revised per
-docs/sdd/2026-10-09-effects-plan/review-fx008-plan-result.md; not started.
+Status: revision 3 (2026-10-10). Reviewed in
+docs/sdd/2026-10-09-effects-plan/review-fx008-plan-result.md: round 1 was
+"ready with fixes", and round 2's fixes (ec1 by pattern, setup commands,
+the Task 7 design pre-review, the tamper-check note) are applied. Awaiting
+the user's approval and sign-off on P3, P5, P6, P7, P10 and P11, with P13
+for information. Not started.
 Execution (user's choice): subagent-driven. Sonnet implements every task;
 Opus reviews each (algorithm, invariants, counterexamples). Escalate to an
 Opus implementer on genuine ambiguity, any gate failure, or a second failed
@@ -58,6 +62,9 @@ docs/sdd/2026-10-09-effects-plan/).
   reported to the user before it is pinned. Any other change (outcome, text,
   span, Go hash) stops the work and is reported; nothing is re-pinned to
   continue. A tamper check pins a hash of the table without `flipped`.
+  That hash changes in the same commit as the table, so it only catches
+  accidental edits. The real control is the reviewer's diff of the table,
+  which must touch only the entries listed for the task.
 - Every task: each new behavioural test seen failing first; `rm -rf output
   && npm run verify` exits 0 (timing bounds pass on the user's machine; a
   failure is reported, never relaxed or rerun away); `node
@@ -76,13 +83,20 @@ docs/sdd/2026-10-09-effects-plan/).
 
 - [ ] `git worktree add ../waxwing-fx008-impl -b fx008-impl fx008`, at
   execution start.
-- [ ] Copy from the main checkout (absolute paths; all gitignored):
+- [ ] From the worktree root (`cd ../waxwing-fx008-impl`), copy from the
+  main checkout. All of these are gitignored. The worktree is outside the
+  project directory, so a sandboxed session may need the user's
+  permission to write there.
   - `.build/fx008-probes/` without its duplicate directories
     `fx008facts/` and `termination/` (byte-identical to `facts/` and the
     top level): `rsync -a --exclude fx008facts --exclude termination
     /Users/ethan/Desktop/waxwing/.build/fx008-probes/ .build/fx008-probes/`
   - `.spago/` (scripts/regression.mjs compiles `.spago/p/*/src/**`),
-    `.build/home` (scripts/cache.mjs's spago home), `node_modules/`.
+    `.build/home` (scripts/cache.mjs's spago home) and `node_modules/`:
+    `cp -R /Users/ethan/Desktop/waxwing/.spago .spago`,
+    `mkdir -p .build && cp -R /Users/ethan/Desktop/waxwing/.build/home
+    .build/home`, and `cp -R /Users/ethan/Desktop/waxwing/node_modules
+    node_modules` if it exists.
   - `.build/go-cache` is not copied: scripts/waxwing.mjs and test/support.mjs
     set GOCACHE under `.build`; a cold cache is harmless.
 - [ ] Build once: `rm -rf output && npm run verify` in the worktree; exit 0.
@@ -322,7 +336,7 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | n1 | same pattern, span 138-148 | 5 | same |
   | rev10/gain1 | accepted `0\n`, status 0 (Go hash pinned on first observation) | 7 | §6 sound gain (rev10 N3) |
   | design-review/p5, r1, r2 | E_EFFECT, same spans as today, predicted message `Console + Log + ... and Console + ... cannot be made equal: both end in ...`, pattern `/ cannot be made equal: both end in \.\.\.$/` | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
-  | witness/ec1 | E_EFFECT `Unhandled Fail(E) in main`, span 161-191 (`handler Log { log(n) => g(n) }`) | 7 | review I7: the late `Fail(E)` reaches main's row only in settling round 2, through the clause entry, whose origin is the handler literal (P13) |
+  | witness/ec1 | E_EFFECT at span 161-191 (`handler Log { log(n) => g(n) }`), message matching `/^(Unhandled Fail\(E\) in main|Fail\(E\) \+ Console \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.)$/`; the observed text is reported to the user before it is pinned | 7 | review I7, and plan review Round 2 N1: the late `Fail(E)` arrives in settling round 2 through the clause entry, whose origin is the handler literal (P13). The re-check's hand trace predicts the side-condition text, because the hook removes today's reverse link to the entry check |
   | witness/tp1 | E_EFFECT, predicted `f performs Console, which its signature does not allow`, span 204-219 (`log(n) => k1(n)`); pattern `/^f performs /` | 7 | review I6: k1's tail becomes rigid only when the pair is retried in settling; the tail pass then rejects R = [Console] at the clause (P13) |
   | rev6/hole, design-review/c1, facts/cross | E_EFFECT `defer must not fail, but it performs Log, whose handler may fail`, span 79-91 (`defer log(1)`) | 9 | §1 cross-function form |
   | facts/lexical | same message, span 129-141 | 9 | §1 pinned form |
@@ -756,6 +770,13 @@ clause rows yet; gate unchanged.
 One switch-over: the hook without S breaks set1 (the `fx008-settle-phi`
 mutant), so these land together. gain1, p5, r1, r2, ec1, tp1 flip.
 
+Before any code, the Sonnet implementer writes a short design of Sync.purs
+and TailPass.purs: the functions, the data, and the order of F1′, F2 and
+consumption against the pseudo-code. Opus reviews that design first, and
+reviews the code after (plan review Round 2 (d)). The 10 regression rows
+may be split into a follow-on Task 7b with no behaviour change if the
+implementer or reviewer asks; that change is recorded in the ledger.
+
 **Files:**
 - Create: `src/Features/Check/Clauses.purs`, `Sync.purs`, `TailPass.purs`;
   `test/fx008-hook.test.mjs`.
@@ -847,7 +868,7 @@ mutant), so these land together. gain1, p5, r1, r2, ec1, tp1 flip.
   | `fx008-signature` | Sync.purs | signature comparison always "changed" | cyc1 prints `0` within 20 s; `/signature: timed out/` |
   | `fx008-settle-phi` | Settle.purs | c → R entries use `Fresh` | set1 prints `0`; `/settling φ: Ambiguous/` |
   | `fx008-r-consumed` | Handler.purs | R consumed with a fresh tail, not as it stands | meta2 compiles; `/R consumed: Ambiguous/` |
-  | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec1 rejected (`Unhandled Fail(E) in main`); `/exit test: accepted/` |
+  | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec1 rejected with E_EFFECT at 161-191 (either text above); `/exit test: accepted/` |
   | `fx008-tail-pass` | TailPass.purs | `tailPass` returns the state | tp1 rejected; `/tail pass: accepted/` |
 
   ec1 needs P14's order: the clause entries (line 6) precede the deferral

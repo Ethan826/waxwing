@@ -3520,3 +3520,12 @@ History tidied before publication (2026-10-10, user-authorized):
 - Removed four stale $TMPDIR waxwing-* directories from 2026-10-09.
 
 The tree differs from the verified 207474b only in docs.
+
+FX008 implementation plan (docs/plans/2026-10-10-abort-tracking-plan.md,
+revision 3, 1,228 lines, 12 tasks plus setup). Drafted by an Opus planner
+and reviewed twice by an independent Opus reviewer
+(review-fx008-plan-result.md): round 1 "ready with fixes" (8 Important),
+round 2 "ready with fixes" (one Important, the ec1 expected text). All
+fixes are applied. The reviewer ran 102 probes, and the plan's recorded
+outcomes match. The plan awaits the user's approval and sign-off on the
+P3, P5, P6, P7, P10 and P11 decisions. Nothing is implemented.

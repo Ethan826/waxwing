@@ -279,3 +279,99 @@ Split it as in I3. Task 6 is next, then Task 2 (≈100 sites, mechanical). Keep 
   - HEAD movement;
   - the tail-pass controls tp0–tp5 and the exit-count probe ec1 and its control ec3 on today's compiler.
 - **[read]:** every rev 10 and fixed-versus-mutant prediction in I6 and I7; the code-site claims (by grep); feasibility; the line budgets; the coverage mapping; the P classification.
+
+## Round 2 (plan revision 2, f140422: 1,211 lines, 12 tasks)
+
+### Verdict: Ready with fixes
+
+There is one Important fix: ec1's pinned text (N1 below). The rest are Minor.
+
+### Status of round 1
+
+| Item | Status | Note |
+|---|---|---|
+| I1 | ADDRESSED | Setup: worktree on `fx008-impl`, copies, one build, merge back, one writer of shared docs. |
+| I2 | ADDRESSED | 102 probes plus 2 witnesses. I checked that every today outcome in the tables matches my runs. |
+| I3 | ADDRESSED | Sonnet implements, with escalations. Tasks 2→2+3, 5→5+6+7, 6→8+9. `currentSignature`, `groupAt` and the `byTail` pruning are defined. Task 7's size: see (d). |
+| I4 | ADDRESSED | `consumeLabels` takes an explicit throwaway and target. A test checks that it makes no copies. |
+| I5 | ADDRESSED | TypeName, `FunctionName` row and Name.purs are in Task 3. The callback text is decided. |
+| I6 | ADDRESSED | The narrative is corrected; spans come from P13; pattern, then report, then pin. |
+| I7 | PARTLY | The witness is in the gate, but its exact text is probably wrong (N1). |
+| I8 | ADDRESSED | P4: `Unmarked` after Check, and `clauses := inference`. |
+| m1–m10 | ADDRESSED | m3's spans and m10's notes are now in the plan. |
+| m11 | n/a | It was a confirmation, not a fix. |
+| A | ADDRESSED | Both witnesses are in the gate and assigned to rows. ec1's text: see N1. |
+| B | ADDRESSED | Every P carries its class (i) or (ii). |
+| C | ADDRESSED | Except ec1 (N1). gain1's Go hash is pinned when first observed, which is acceptable. |
+| D | ADDRESSED | |
+| E | ADDRESSED | |
+| F | ADDRESSED | 1,828 → 1,211 lines, with no decision lost that I could find. |
+
+### New problems and the questions asked
+
+**N1 (Important). ec1's fixed outcome is probably a side-condition error, not `Unhandled Fail(E) in main`.** [read] main's row tail is flexible: `mainRow` turns its rigid tail into a Hole h.
+- With the hook, `with h` gives R = φ ≡ ρ_main, so φ := [Console | h].
+- In round 2, the c→R entry consumes the stage `[Fail(E) | φ]` = [Fail(E), Console | h] into R = [Console | h].
+- After Console is matched, `absent`'s shared-tail check fails on h. That is `RowSharedTail`, the same shape as today's rigid-ok.
+- The predicted text is `Fail(E) + Console + ... and Console + ... cannot be made equal: both end in ...`, at 161-191. That span is right (P13: the handler literal).
+- Today's "Unhandled" comes from the entry check, after Fail(E) has reached h through R = c ≡ ρ. Under the hook that path is gone.
+
+Fix:
+- Give ec1 a pattern (`/^Fail\(E\) \+ .* cannot be made equal|^Unhandled Fail\(E\) in main$/`) and follow report-then-pin. Do not pin the text exactly.
+- `fx008-exit-count`'s probe should require only "rejected E_EFFECT at 161-191". The mutant still accepts, so the row stays valid.
+
+**(a) P13 and P14.**
+- **P14 (order by span start) is consistent** with §3.5 "source position". Class (i) is correct.
+- **P13 (error span per entry kind) is consistent.** §3.5 (c) says "at that cycle's earliest row". P13 only names what a row's span is. Deferrals keep today's `crossing`. §3.6 governs only mark violations, and P6 handles those.
+- **But P13 is visible to users.** It fixes where new and moved rejections point (p5, r1, r2 at `say(2)`, ec1, tp1). Mark it (ii)-lite and report it to the user with P10. It needs no separate decision.
+
+**(b) p5, r1, r2: the prediction is plausible.** [read]
+- Under the hook, R ≡ ρ binds φ := [Console | h] (main, or f's tail in r1). The body's `say(2)` then copies `Log` into say's tail, giving c = [Console, Log | φ].
+- Under N1's rule, that extension starts a new group.
+- F2 then sees a self-loop. c→R has the tails c = φ and R = φ, with w(Log) = 1 > 0. So `sync` reports `RowSharedTail own target`, printed `Console + Log + ... and Console + ...`, at the call node `say(2)`. That span is unchanged.
+- This is consistent with rev 10:
+  - the programs are rejected today and stay rejected;
+  - F2's positive sum is by design "today's side-condition error";
+  - the compatibility argument (2a) concerns only programs accepted today.
+- The message order depends on `RowSharedTail own target` printing the own row first, which the plan fixes.
+- Gating by pattern with report-before-pin is acceptable: §6 lets texts move. p4's claim (unchanged, `run performs Log…` at `say(2)`) also holds by trace: run's tail is rigid ϱ, so there is no feed edge, and T's consumption of `[Console, Log] + ϱ` into R fails with `RowMissing`.
+
+**(c) The flips.** Every span below I recomputed from the probe sources [ran].
+
+Task 7:
+- gain1: exact (`0\n`, status 0), reason N3 ✓.
+- p5, r1, r2: pattern, reason F2 ✓.
+- ec1: see N1.
+- tp1: pattern `/^f performs /` at 204-219, reason I6 ✓. By trace, the tail pass's clause rule consumes `[| ...e]` into R = [Console] (closed). That is tp0's shape, so `f performs Console…` is plausible.
+
+Task 9 (all `defer must not fail, but it performs <L>, whose handler may fail`, each tied to §1, §6/L4 or I2 ✓):
+- hole, c1, cross: 79-91;
+- lexical: 129-141;
+- pending: 101-113 (work's Log is Plain);
+- l4b: 153-165;
+- merge2: Tick, 244-256;
+- q1: 203-215, in `run`, which is checked before `main`.
+
+The deferral span is the whole `defer …` expression: today's ext gives 227-241 = `defer inst(())`.
+
+dup and n1 at 150-160 and 138-148 ✓. These stay stable once clause entries arrive in Task 7: neither involves a clause row.
+
+**(d) Task 7 is sized for Sonnet only marginally.** The switch-over is irreducible: S, the hook and the tail pass must land together, or set1 or tp1 breaks the gate. Two ways to lighten it:
+- Move the 10 regression rows into a following task 7b. Adding rows changes no behaviour, and the gate is unchanged.
+- Have Opus review the Sync and TailPass design (the pseudocode against N1, N2 and N4) before Sonnet writes code, not only afterwards.
+
+**(e) Setup works.**
+- `git worktree add ../waxwing-fx008-impl -b fx008-impl fx008` is valid even though fx008 is checked out elsewhere: it creates a new branch.
+- The rsync excludes the duplicate directories correctly.
+- Two clarifications:
+  - Run the rsync, and the `.spago/`, `.build/home` and `node_modules/` copies, from the worktree root. Spell out the `cp -R` source paths.
+  - `../waxwing-fx008-impl` is outside the project directory, so sandboxed sessions may need permission for it.
+- One build (`rm -rf output && npm run verify`) is sufficient. Regression's healthy run then uses the worktree's `output/`.
+
+**Minor**
+- The tamper hash is updated by the same commit that edits the table, so it catches only accidental edits. Say that the reviewer's diff of the table, limited to the listed entries, is the real control.
+
+### Ran vs read
+
+- [ran]: every span in Task 1 Step 3 recomputed from the probe sources; that the deferral span is the `defer` expression (ext); the existence of Name.purs.
+- [read]: N1; (b)'s traces for p5, r1, r2 and p4; tp1's tail-pass trace.
