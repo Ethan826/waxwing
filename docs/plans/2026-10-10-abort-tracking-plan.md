@@ -378,7 +378,7 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
 - [ ] **Step 5: Prove the gate can fail** in a scratch copy: one changed
   stdout, one changed message and one changed `fx008` field → those tests
   and the tamper test FAIL. Not committed; recorded in the report.
-- [ ] **Step 6: Run** `node --test test/fx008-probes.test.mjs` → PASS (105
+- [ ] **Step 6: Run** `node --test test/fx008-probes.test.mjs` → PASS (107
   tests); `rm -rf output && npm run verify` → 0.
 - [ ] **Step 7: Commit** `test: FX008 probe gate`.
 
