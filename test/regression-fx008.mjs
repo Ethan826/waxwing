@@ -62,6 +62,8 @@ const cyclePresence = context => {
 // The settle order is linear in the number of deferrals. 16,000 `defer`s
 // compile in about 2 s; with the order's end computed eagerly at every step
 // (Task 5 review I1) they take about 26 s, so a 12 s timeout separates them.
+// The margin is machine-dependent: on a host about 2x faster than the one
+// measured, the defect could finish inside 12 s; re-measure there.
 const orderTimeoutMs = 12_000;
 const deferCount = 16_000;
 
