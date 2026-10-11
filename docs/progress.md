@@ -3741,3 +3741,32 @@ Verify at dd45b58 (.build/task5-fix-verify.log in the worktree): exit 0,
   code-bearing commit passed: 958/958 parallel, 29/29 serial, 36 proofs.
 - The FX008 implementation stays off main until it is complete and
   reviewed.
+
+### FX008 Task 6: tail watches and the restricted registry (2026-10-11)
+
+Sonnet implementer (01cbe77 refactor, 418cd38; fix round c8503f9). Opus
+review (review-fx008-task6-result.md): Spec ✅, Quality Needs fixes; the
+fix round was checked by the controller.
+
+What it adds, with no behaviour change:
+- Handle.purs: `handleFailure` and `failureClause` moved out of
+  Handler.purs (241 → 184 lines);
+- TailWatch/Watch: watched and dirty tail metas on Subst; binding or
+  extending a watched tail marks it dirty and moves the watch; a
+  postponed pair reverts it with its substitution;
+- Restricted: the clause, group and installation registry, on the
+  checker State; SettleEntry: Settle builds its entries through `entries`
+  (deferrals only until Task 7 registers clauses); Site.purs split out.
+
+Review fixes: I1, the revert test could not fail (a mutant keeping the
+progressed watch passed); it now watches both tails and fails on that
+mutant. M1 `compose` keeps the later watch. M2/M3 comment the invariants
+Task 7 relies on. The reviewer killed the other three mutants (one per
+test).
+
+Evidence:
+- differential against b5fab7c (at 418cd38): 0 differences in every
+  corpus and phase (3,421 harvested, fuzz, isName, matches, mutations);
+- gate 107/107, no table change;
+- verify at c8503f9 (.build/task6-fix-verify.log in the worktree): exit
+  0, 1146/1146 parallel, 34/34 serial, 38 proofs.

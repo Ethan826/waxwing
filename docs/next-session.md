@@ -1,21 +1,31 @@
-# Waxwing / FX008: implementation paused after Task 5 (2026-10-10)
+# Waxwing / FX008: Task 6 done; Task 7 next (2026-10-11)
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
-fx008-impl at b5fab7c, pushed to origin/fx008-impl as a backup at the
-user's request (2026-10-10). It is not merged anywhere: the FX008
+fx008-impl at c8503f9 (Task 6 done 2026-10-11; origin/fx008-impl holds
+the b5fab7c backup from 2026-10-10 and is not updated). It is not merged anywhere: the FX008
 implementation stays off main until Tasks 6-12 and the whole-branch review
 are done. main was fast-forwarded to fx008 (4f1b981): FX001 Task 10,
 FX009, and the design and review docs.
-Tasks 1-5 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
+Tasks 1-6 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
 and reviewed. The worktree copy of the plan is authoritative: it carries
 the rulings applied during Tasks 1-5. Tracking docs (progress, BACKLOG,
 ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
 in the main checkout. Only the controller writes them.
 
-Next: Task 6 (hook infrastructure, no behaviour change). Then:
-- Task 7, the switch-over. Before Task 7 code, Opus reviews the Sonnet
+Next: Task 7, the switch-over. Before Task 7 code, Opus reviews the Sonnet
   implementer's Sync/TailPass design.
 - Tasks 8-12.
+
+Task 6 carry-forward for Task 7 (review-fx008-task6-result.md):
+- Subst.purs is at 246 of 250 lines; Task 7 must not grow it.
+- `entries` already builds the clause entries (c to R ending in
+  Remainder φ, c to C Fresh); Settle's `remaining` assumes φ is a bare
+  tail when registered, and a missing group must never fall back to Fresh
+  (the fx008-settle-phi defect). Both are commented in the code.
+- Binding a watched tail moves the watch (removes m, watches the new
+  tail); `sync` re-watches resolved tails itself.
+- The disk had 3.7 GiB free on 2026-10-11; isolated mutant copies should
+  exclude .build.
 
 Execution: subagent-driven, as the user directed (2026-10-10). Sonnet
 implements each task, and Opus reviews each. Escalate to Opus on a
