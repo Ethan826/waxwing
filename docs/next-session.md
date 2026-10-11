@@ -1,17 +1,37 @@
-# Waxwing / FX008: design approved; implementation plan next (2026-10-10)
+# Waxwing / FX008: implementation paused after Task 5 (2026-10-10)
 
-Branch fx008 (local). FX009 is fixed and merged (26fefe3; verify green:
-958/958, 29/29, 36 proofs). The FX008 design note
-docs/plans/2026-10-10-abort-tracking-design.md is at revision 10 and was
-approved by the user on 2026-10-10, after focused reviews of the one-way
-hook's procedure (review-fx008-rev9-f1f2-result.md,
-review-fx008-rev10-result.md). The user's decisions D0-D7 are in §11.
+Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
+fx008-impl (local only; the plan says never push). Its HEAD is b5fab7c.
+Tasks 1-5 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
+and reviewed. The worktree copy of the plan is authoritative: it carries
+the rulings applied during Tasks 1-5. Tracking docs (progress, BACKLOG,
+ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
+in the main checkout. Only the controller writes them.
 
-Next: the implementation plan (superpowers writing-plans). Its first task
-is the probe gate: the probes in .build/fx008-probes/ and its rev6-rev10
-subdirectories go into the test tree, each recorded with today's outcome.
-Then test-first implementation, then FX001 Tasks 11-12. Open rows: FX010,
-FX011, FX012. Nothing of FX008 is implemented.
+Next: Task 6 (hook infrastructure, no behaviour change). Then:
+- Task 7, the switch-over. Before Task 7 code, Opus reviews the Sonnet
+  implementer's Sync/TailPass design.
+- Tasks 8-12.
+
+Execution: subagent-driven, as the user directed (2026-10-10). Sonnet
+implements each task, and Opus reviews each. Escalate to Opus on a
+genuine ambiguity, a gate failure, or a second failed review.
+
+Stop conditions still in force:
+- any probe change the gate table does not list (stop and report);
+- the first observed text of a pattern-gated probe (report to the user
+  before pinning): p5, r1, r2, ec1 and tp1 in Task 7;
+- user-facing text changes outside the approved P10 texts.
+
+Setup facts:
+- run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in the
+  worktree;
+- .spago and .build/home were copied in;
+- baseline for comparisons: `node scripts/differential.mjs --baseline
+  <build of the previous task's commit>`.
+
+Open BACKLOG items from this session: FX010, FX011, FX012, E012, G004,
+T008. FX009 is fixed and merged.
 
 # Waxwing / FX001: Task 10 done; FX008 design next (2026-10-10)
 

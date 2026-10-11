@@ -237,3 +237,64 @@ release graph state = maybe (Done (stackItems state.order)) released
     scripts/regression.mjs 246 (+1).
   - No lambdas, `let … in`, or anonymous transformations.
   - Breaches: I1 and M1 (eager `maybe`), and M2 (budgets).
+
+## Re-review: fix round 1 (dd45b58 on d9a0576)
+
+**Verdict: Spec ✅, Quality Approved.** No new breakage was found.
+
+[ran] = executed by the reviewer. The worktree's output/ matches dd45b58:
+the compiled FeedOrder uses `maybe$prime`, and it is newer than the
+source.
+
+| Finding | Status | Evidence |
+|---|---|---|
+| I1 | ADDRESSED | FeedOrder.purs `release` uses `maybe' finished`. Warm timings below are linear, about 1.3× base. Regression row added. |
+| M1 | ADDRESSED | Feed.purs `step` uses `maybe' (finished call below)` with a named helper. |
+| M2 | ADDRESSED | `cycleFor` now has 6 `where` bindings, with `componentEdges` split out. `condense` has 7, with `ownerMap` split out. |
+| M3 | PARTLY | `feedsOf` is built once per round and passed to both functions. `positionAt` and `snd'` are gone. Tarjan (`components`) still runs twice per round, once in `settleOrder` and once in `positiveCycle`. That is linear, so it is acceptable. |
+| M8 | ADDRESSED | The plan's T003 line now says one round, plus a key re-check. engineering.md was rewrapped; the remaining over-80 lines (93, 141, 281, 284) predate this change. |
+| M4 | Moved to BACKLOG T008 | Per the controller. |
+| M6, M7 | Recorded by the controller | Per the controller. |
+
+### Timings [ran]
+
+Warm, in-process, for `defer print(i)` × N, in ms:
+
+| N | base 84b684e | dd45b58 |
+|---|---|---|
+| 8,000 | 696 | 902 |
+| 16,000 | 1,507 | 1,990 |
+
+### Other checks [ran]
+
+- **Brute-force cycle check.** The 60,000-graph check, rerun against the
+  new signatures (`feedOrder rows (feedsOf rows)` and
+  `positiveCycle rows (feedsOf rows) starts`), gave 0 failures:
+  - 17,101 positives out of 20,000;
+  - 16,574 out of 20,000;
+  - 465 out of 20,000.
+- **Regression row.** `node scripts/regression.mjs
+  fx008-settle-order-linear` prints the proof line. It is a real proof:
+  - the needle is unique;
+  - the mutant restores exactly d9a0576's eager `maybe`;
+  - the mutant fails with `settle order: timed out`, the right reason
+    (the mutant takes about 26 s against the 12 s child timeout);
+  - the healthy child takes about 2.3 s idle and 4.1 s with all 10 cores
+    saturated by busy loops.
+  - One caveat: on a host about 2.2× faster than this one, the mutant
+    could finish inside 12 s. The constant's comment should say it is
+    machine-relative.
+- **Serial bound** (16,000 defers under 8,000 ms after warm-up). It
+  measured 2,053 ms idle (3.9× headroom) and 4,284 ms with all 10 cores
+  saturated (1.9× headroom). The quadratic version takes 26 s, so the
+  bound is load-robust for a serial test and still separates the two
+  versions by more than 3×.
+  - Nit: test/fx008-settle.serial.test.mjs has no purpose comment above
+    its imports, unlike the sibling serial tests.
+- **Tests.** fx008-cycle, fx008-settle, fx008-probes and fx-cleanup:
+  155/155 pass.
+- **Behaviour.**
+  - The whole-corpus differential (388 programs) against base still
+    differs only on r4, r5/n1 and dup.
+  - There are 0 differences from d9a0576.
+  - The cx/ counterexamples give the same outcomes as before.

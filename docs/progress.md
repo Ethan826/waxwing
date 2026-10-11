@@ -3692,3 +3692,43 @@ User decisions 2026-10-10 (FX008 Task 5 probe gate):
   `defer` span, the same cycle as n1. The plan had wrongly predicted it
   unchanged.
 - The observed texts for dup, n1, r5 and r4 are pinned exactly.
+
+### FX008 Task 5: the settling loop over deferred rows (2026-10-10)
+
+Sonnet implementer (d9a0576; fix round dd45b58; comment b5fab7c). Opus
+task review and re-review (review-fx008-task5-result.md): Spec ✅,
+Quality Approved.
+
+The corrected §3.5 loop (Features.Check.Settle, Feed, FeedOrder, Cycle):
+- `settleKeys` runs inside each round;
+- the feed graph links each row's own tail to its target's tail;
+- an iterative Tarjan pass and Kahn order the rows by SCC and source
+  position (P14);
+- a Bellman-Ford search per key reports a positive cycle as the existing
+  side-condition error;
+- the exit test counts label changes from any binding, with an idle round
+  (controller ruling);
+- leftover pairs go to `settleFinal`, and the defer judgement runs after
+  the loop.
+
+Probe gate, with the user's decisions: dup, n1 and r5 flip as planned,
+and design-review/r4 (wrongly predicted unchanged) is a fourth flip. All
+four texts are pinned exactly. The differential against 84b684e shows
+only those programs differ. A 60,000-graph brute-force check confirms
+cycle detection.
+
+The review found the settle order quadratic: an eager `maybe` fallback
+took 8,000 defers to 6.4 s against base's 0.8 s. It is fixed with
+`maybe'`. Now linear, at about 1.3x base. Guards:
+- a serial test: 16,000 defers within 8,000 ms after a warm-up, measured
+  2.1 s idle and 4.3 s under full load;
+- regression row fx008-settle-order-linear, plus fx008-cycle-presence.
+
+Recorded:
+- BACKLOG T008: the feed graph is over rows, so rows sharing a tail give
+  N² edges; base is already quadratic there.
+- An allowed text move: a program with a late `Fail` in a defer plus n1's
+  cycle now reports the cycle.
+
+Verify at dd45b58 (.build/task5-fix-verify.log in the worktree): exit 0,
+1142/1142 parallel, 34/34 serial, 38 proofs; gate 107/107.
