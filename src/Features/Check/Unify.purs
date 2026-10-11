@@ -32,6 +32,7 @@ import Features.Check.Subst
   , walkRow
   )
 import Features.Check.Origin (linked)
+import Features.Check.TailWatch (unionWatch)
 import Features.Check.UnifyMark (equateMarks)
 import Features.Check.UnifyRow (unifyRows, unifyRowsIgnoring, unifyRowsTraced)
 
@@ -92,6 +93,7 @@ compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
           laterBindings.marks.bindings
       , fresh = min laterBindings.marks.fresh earlierBindings.marks.fresh
       }
+  , watch: unionWatch earlierBindings.watch laterBindings.watch
   }
 
 unifyAt ∷ Int → Subst → Ty Flex → Ty Flex → Either Failure Subst

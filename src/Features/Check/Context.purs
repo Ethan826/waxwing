@@ -11,7 +11,8 @@ import Domain.Resolved (LocalId)
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty, TyRow)
-import Features.Check.Scheme (Site, State, Threaded)
+import Features.Check.Scheme (State, Threaded)
+import Features.Check.Site (Site)
 
 -- The type of each local in scope. LocalIds are unique per function, so
 -- a map by id needs no shadowing rule, and a block of 20,000 lets costs

@@ -31,7 +31,8 @@ import Features.Check.Lambda (checkLambda)
 import Features.Check.Pipe (checkPipe)
 import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
-import Features.Check.Scheme (Site, State, Threaded)
+import Features.Check.Scheme (State, Threaded)
+import Features.Check.Site (Site)
 
 type Env =
   { current ∷ TyRow Open

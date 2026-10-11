@@ -39,6 +39,7 @@ import Domain.Type as Type
 import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
 import Features.Check.Search (Stack(..), stackItems)
+import Features.Check.TailWatch (TailWatch, emptyWatch)
 
 -- A checker variable: a signature's own variable, which is fixed inside
 -- its function and unifies only with itself, or a meta, which stands for
@@ -61,7 +62,9 @@ derive instance ordFlex ∷ Ord Flex
 -- recorded by every row unification, the first per occurrence kept;
 -- nothing in unification reads them. `marks` (FX008): the bindings of
 -- mark metas and the mark edges, kept with the substitution so that a
--- postponed pair that reverts takes its edges with it.
+-- postponed pair that reverts takes its edges with it. `watch` (FX008):
+-- the tails the restricted registry watches, with those bound since it
+-- last looked; data, so it reverts the same way.
 newtype Subst = Subst
   { types ∷ Map Int (Ty Flex)
   , rows ∷ Map Int (TyRow Flex)
@@ -69,6 +72,7 @@ newtype Subst = Subst
   , postponed ∷ Array RowPair
   , links ∷ Map OccurrenceId OccurrenceId
   , marks ∷ MarkStore (Ty Flex)
+  , watch ∷ TailWatch
   }
 
 -- A postponed pair keeps where its sides were written and how it treats
@@ -109,6 +113,7 @@ empty = Subst
   , postponed: []
   , links: Map.empty
   , marks: emptyMarks
+  , watch: emptyWatch
   }
 
 -- No meta is bound, so resolving under it changes no type. (Mark bindings

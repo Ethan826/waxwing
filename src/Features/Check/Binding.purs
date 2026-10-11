@@ -26,6 +26,7 @@ import Features.Check.Subst
   , walk
   , walkRow
   )
+import Features.Check.Watch (noteBound)
 
 -- The deepest type checking may build (ruling R7, in the spirit of ADR 006).
 -- Unification, resolution and the occurs check recurse over a type's
@@ -77,8 +78,8 @@ bindType subst meta ty =
 
 -- A row meta bound to a row with no label: another tail, or closed.
 bindTail ∷ Subst → Int → TyRow Flex → Subst
-bindTail (Subst bindings) meta row =
-  Subst bindings { rows = Map.insert meta row bindings.rows }
+bindTail (Subst bindings) meta row@(Row _ tail) = noteBound meta tail
+  (Subst bindings { rows = Map.insert meta row bindings.rows })
 
 -- Leijen's extension `meta := label + fresh`: the label must be bounded
 -- and must not hold `meta` in a row of its arguments (an infinite row).
@@ -116,11 +117,13 @@ extendBounded (Subst bindings) meta label resolved fresh =
     (Array.find (holdsRow meta) resolved)
   where
   extended _ = Right
-    { subst: Subst bindings
-        { rows = Map.insert meta (Row [ label ] (Just (Meta fresh)))
-            bindings.rows
-        , fresh = fresh - 1
-        }
+    { subst: noteBound meta (Just (Meta fresh))
+        ( Subst bindings
+            { rows = Map.insert meta (Row [ label ] (Just (Meta fresh)))
+                bindings.rows
+            , fresh = fresh - 1
+            }
+        )
     , fresh
     }
 

@@ -1,4 +1,4 @@
-module Features.Check.Settle (Entry, settleRestricted) where
+module Features.Check.Settle (settleRestricted) where
 
 import Prelude
 import Prim hiding (Row)
@@ -7,57 +7,24 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
 import Data.Maybe (maybe)
-import Data.Tuple (Tuple(..), fst, snd)
-import Domain.Checked.Internal (Open)
+import Data.Tuple (fst, snd)
 import Domain.Checked.Internal as Checked
 import Domain.Row (Row(..))
 import Domain.Syntax (Diagnostic)
-import Domain.Type (TyRow)
-import Features.Check.Consume (consumeLabels)
+import Features.Check.Consume (consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
 import Features.Check.Cycle (feedOrder, positiveCycle)
-import Features.Check.Defer (crossing, failing, placed)
+import Features.Check.Defer (failing, placed)
 import Features.Check.Entry (resolvedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Feed (FeedRow, Feeds, feedsOf)
-import Features.Check.Provenance (Origin)
 import Features.Check.Reject (rejected)
-import Features.Check.Scheme (Deferral, Site, State, flexibleRow)
+import Features.Check.Scheme (State, flexibleRow)
+import Features.Check.SettleEntry (Entry, EntryTail(..))
+import Features.Check.SettleEntry as Entries
 import Features.Check.Unify (Failure(..), Subst(..))
 
 type Env r = CheckEnv (locals ∷ Locals | r)
-
--- A restricted row (design §3.5): `own` is consumed into `target` every
--- round, whose labels' sites are `sites`; `keepFail` says whether `Fail`
--- labels travel, `ignoreMarks` whether marks are left alone. `origin` is
--- where a failure is reported and `position` the span start rows settle
--- in (P14).
-type Entry =
-  { own ∷ TyRow Open
-  , target ∷ TyRow Open
-  , sites ∷ Array Site
-  , keepFail ∷ Boolean
-  , ignoreMarks ∷ Boolean
-  , origin ∷ Origin
-  , position ∷ Int
-  }
-
--- Task 5's entries: one per deferral, in source order (ties by the order
--- they were registered in; deferrals are stored post-order).
-deferralEntries ∷ Array Deferral → Array Entry
-deferralEntries deferrals = map entryOf (Array.sortWith start numbered)
-  where
-  numbered = Array.mapWithIndex Tuple deferrals
-  start (Tuple index found) = Tuple found.span.start.offset index
-  entryOf (Tuple _ found) =
-    { own: found.row
-    , target: found.current
-    , sites: found.sites
-    , keepFail: false
-    , ignoreMarks: false
-    , origin: crossing found.span
-    , position: found.span.start.offset
-    }
 
 -- The corrected §3.5 loop over every restricted row (the termination
 -- review's "Corrected procedure"). Each round settles keys (a), resolves
@@ -70,11 +37,11 @@ deferralEntries deferrals = map entryOf (Array.sortWith start numbered)
 settleRestricted
   ∷ ∀ r. Env r → State → Checked.Expr → Either Diagnostic State
 settleRestricted env state body = do
-  exited ← tailRecM (round env entries body) state
+  exited ← tailRecM (round env built body) state
   settled ← settleFinal env exited body
   pure exited { subst = settled }
   where
-  entries = deferralEntries state.deferrals
+  built = Entries.entries state.restricted state.deferrals
 
 round
   ∷ ∀ r
@@ -151,13 +118,24 @@ rejectCycle env state entries rows feeds = maybe (Right unit) reported
   indexOnly index _ = index
 
 -- (d): one entry's resolved labels consumed into its target with a fresh
--- tail. `Fail` stays out of a deferred row's labels, as it always has.
+-- tail (or, for a `Remainder` entry, the remainder's). `Fail` stays out of
+-- a deferred row's labels, as it always has.
 consume
   ∷ ∀ r. Env r → Array Entry → State → Int → Either Diagnostic State
 consume env entries state index = maybe (Right state) consumed
   (Array.index entries index)
   where
-  consumed entry = consumeLabels env state
+  consumed entry = case entry.tail of
+    Fresh → fresh entry
+    Remainder remainder → remaining entry remainder
+  -- A stage ending in the group's remainder (φ) consumes as it stands,
+  -- ignoring marks (Task 7 registers the first such entries).
+  remaining entry (Row _ tail) = consumeIgnoring env state
+    { origin: entry.origin
+    , stage: Row (map fst (kept entry)) tail
+    , target: entry.target
+    }
+  fresh entry = consumeLabels env state
     { origin: entry.origin
     , sources: map snd (kept entry)
     , labels: map fst (kept entry)
