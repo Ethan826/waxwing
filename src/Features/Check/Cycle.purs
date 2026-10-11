@@ -1,4 +1,4 @@
-module Features.Check.Cycle (feedOrder, positiveCycle) where
+module Features.Check.Cycle (counted, feedOrder, positiveCycle) where
 
 import Prelude
 import Prim hiding (Row)

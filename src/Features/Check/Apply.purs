@@ -19,6 +19,7 @@ import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Provenance (Consumed(Application))
 import Features.Check.Require (expectType, require, typeName)
 import Features.Check.Scheme (State, Threaded, headOf, resolved, threadAll)
+import Features.Check.Sync (sync)
 
 -- An application in progress: the checking state and the type still to
 -- be applied.
@@ -77,7 +78,8 @@ applyNext
   → Resolved.Expr
   → Either Diagnostic { value ∷ Checked.Expr, state ∷ Applying }
 applyNext infer env span applying argument = do
-  opened ← open env applying.state applying.ty (Resolved.exprSpan argument)
+  synced ← sync env applying.state (Resolved.exprSpan argument)
+  opened ← open env synced applying.ty (Resolved.exprSpan argument)
   checked ← infer env opened.state argument
   reached ← require env checked.state opened.value.parameter checked.value
   consumed ← consumeAt env reached span Application opened.value.row
@@ -96,7 +98,8 @@ applyValue
   → Checked.Expr
   → Either Diagnostic (Threaded (Ty Open))
 applyValue env state ty argument = do
-  opened ← open env state ty (Checked.spanOf argument)
+  synced ← sync env state (Checked.spanOf argument)
+  opened ← open env synced ty (Checked.spanOf argument)
   reached ← require env opened.state opened.value.parameter argument
   consumed ← consumeAt env reached (Checked.spanOf argument) Application
     opened.value.row

@@ -18,6 +18,7 @@ import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Stages (arrowType)
 import Features.Check.Consume (consumeAt)
 import Features.Check.Apply (applyAll, functionLike)
+import Features.Check.Sync (sync)
 import Features.Check.Argument (refused)
 import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Require (require)
@@ -120,11 +121,15 @@ overApplied
   → Array Resolved.Expr
   → Checked
 overApplied infer env span node use arguments = do
-  unless (functionLike use.state use.value.result) (arityAt span)
-  called ← supplied infer env span node use (Array.take arity arguments)
-  unless (functionLike called.state (Checked.typeOf called.value))
+  usable ← sync env use.state span
+  unless (functionLike usable use.value.result) (arityAt span)
+  called ← supplied infer env span node (use { state = usable })
+    (Array.take arity arguments)
+  reached ← sync env called.state span
+  unless (functionLike reached (Checked.typeOf called.value))
     (arityAt span)
-  applyAll infer env span called (Array.drop arity arguments)
+  applyAll infer env span (called { state = reached })
+    (Array.drop arity arguments)
   where
   arity = Array.length use.value.fields
 

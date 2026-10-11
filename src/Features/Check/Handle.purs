@@ -14,7 +14,7 @@ import Domain.Row (Label(..), Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TyRow)
 import Features.Check.Context (Infer, Locals)
-import Features.Check.Handler (HandlerEnv, openLabel)
+import Features.Check.Clauses (HandlerEnv, openLabel)
 import Features.Check.Require (require)
 import Features.Check.Scheme (State, Threaded, threadAll)
 

@@ -32,6 +32,7 @@ import Features.Check.Pipe (checkPipe)
 import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
 import Features.Check.Scheme (State, Threaded)
+import Features.Check.Sync (sync)
 import Features.Check.Site (Site)
 
 type Env =
@@ -57,9 +58,10 @@ type Inferred = Either Diagnostic (Threaded Checked.Expr)
 infer ∷ Env → State → Resolved.Expr → Inferred
 infer env state expression = do
   inferred ← inferNode env state expression
-  bounded inferred.state (Checked.typeOf inferred.value)
+  synced ← sync env inferred.state (Checked.spanOf inferred.value)
+  bounded synced (Checked.typeOf inferred.value)
     (Checked.spanOf inferred.value)
-  pure inferred
+  pure inferred { state = synced }
 
 -- Every type equality is a unification, in the order monomorphic checking
 -- compared types, so a monomorphic program's first error is unchanged.

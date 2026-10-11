@@ -4,6 +4,7 @@ module Features.Check.Consume
   , consumeVia
   , consumeLabels
   , consumeIgnoring
+  , closeTail
   ) where
 
 import Prelude
@@ -12,7 +13,7 @@ import Data.Either (Either(..), either)
 import Data.Foldable (foldl)
 import Data.Maybe (Maybe(..))
 import Domain.Checked.Internal (Open(..))
-import Domain.Row (Label, Row(..))
+import Domain.Row (Label, Row(..), closedRow)
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Context (CheckEnv)
@@ -26,7 +27,7 @@ import Features.Check.Site (Site)
 import Features.Check.Subst (linkTo)
 import Features.Check.Unify (Failure, Flex(..), Subst(..), resolveRow, unify)
 import Features.Check.RowFinish (Traced)
-import Features.Check.UnifyRow (unifyRowsTraced)
+import Features.Check.UnifyRow (unifyRowsIgnoring, unifyRowsTraced)
 
 -- A row consumed into the current one at `span`, recording what was
 -- consumed there as the origin of each label occurrence it adds or
@@ -103,6 +104,23 @@ consumeIgnoring env state spec = consumeIn (env { current = spec.target })
   []
   IgnoreMarks
   spec.stage
+
+-- The row unified with the closed row, ignoring marks. A remainder or a
+-- clause row whose tail is bound to nothing ends there for good; a row that
+-- still has labels to add is refused like any other consumption.
+closeTail
+  ∷ ∀ r
+  . CheckEnv r
+  → State
+  → Origin
+  → TyRow Open
+  → Either Diagnostic State
+closeTail env state origin row = either (rejected env state origin) closed
+  ( unifyRowsIgnoring unify state.subst (flexibleRow row)
+      (flexibleRow closedRow)
+  )
+  where
+  closed subst = Right (state { subst = subst })
 
 consumeIn
   ∷ ∀ r

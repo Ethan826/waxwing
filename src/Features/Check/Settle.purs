@@ -22,6 +22,8 @@ import Features.Check.Reject (rejected)
 import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.SettleEntry (Entry, EntryTail(..))
 import Features.Check.SettleEntry as Entries
+import Features.Check.Sync (sync)
+import Features.Check.TailPass (tailPass)
 import Features.Check.Unify (Failure(..), Subst(..))
 
 type Env r = CheckEnv (locals ∷ Locals | r)
@@ -37,36 +39,36 @@ type Env r = CheckEnv (locals ∷ Locals | r)
 settleRestricted
   ∷ ∀ r. Env r → State → Checked.Expr → Either Diagnostic State
 settleRestricted env state body = do
-  exited ← tailRecM (round env built body) state
+  exited ← tailRecM (round env body) state
   settled ← settleFinal env exited body
-  pure exited { subst = settled }
-  where
-  built = Entries.entries state.restricted state.deferrals
+  tailPass env (exited { subst = settled })
 
 round
   ∷ ∀ r
   . Env r
-  → Array Entry
   → Checked.Expr
   → State
   → Either Diagnostic (Step State State)
-round env entries body state = do
+round env body state = do
   subst ← settleKeys env state body
-  let keyed = state { subst = subst }
+  let settled = state { subst = subst }
+  keyed ← sync env settled (Checked.spanOf body)
+  let entries = Entries.entries keyed.restricted keyed.deferrals
   let rows = map (feedRow keyed.subst) entries
   let feeds = feedsOf rows
   rejectCycle env keyed entries rows feeds
   consumed ← foldM (consume env entries) keyed (feedOrder rows feeds)
   retried ← retry env body consumed
-  pure (continued keyed consumed retried)
+  pure (continued (decided settled) (changed entries consumed) retried consumed)
   where
-  continued keyed consumed retried =
-    if decided keyed || changed consumed || retried then Loop consumed
+  continued decidedNow changedNow retried consumed =
+    if decidedNow || changedNow || retried then Loop consumed
     else Done consumed
   -- (a) decided a pair: fewer are set aside than at the round's start.
   decided keyed = postponedCount keyed.subst < postponedCount state.subst
-  changed consumed = counts consumed.subst /= counts state.subst
-  counts subst = map (labelCount subst) entries
+  changed entries consumed = counts entries consumed.subst
+    /= counts entries state.subst
+  counts entries subst = map (labelCount subst) entries
 
 -- After (d): could a pair still set aside be decided now? The bindings of
 -- (d) may give a deferred `Fail` key its head, which only (a) sees, so the
