@@ -1,11 +1,17 @@
-module Features.Check.Defer (checkDefer, settleDeferred) where
+module Features.Check.Defer
+  ( checkDefer
+  , judgeDeferrals
+  , crossing
+  , placed
+  , failing
+  ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (foldM, traverse_)
+import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Tuple (Tuple(..), fst, snd)
+import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -26,7 +32,6 @@ import Features.Check.Provenance
 import Features.Check.RowName (labelName)
 import Features.Check.Require (require)
 import Features.Check.Scheme (Deferral, State, Threaded, flexible, flexibleRow)
-import Features.Check.Unify (Subst)
 
 type DeferEnv r = CheckEnv (locals ∷ Locals | r)
 
@@ -36,7 +41,7 @@ type DeferEnv r = CheckEnv (locals ∷ Locals | r)
 -- fresh tail), so the other effects of `e` are the function's own, but
 -- what `e` performs stays known apart from the rest. A `Fail` already
 -- there is E_EFFECT at the item. Anything that reaches the row later (a
--- shared meta, a deferred key) is judged by `settleDeferred`. Each label
+-- shared meta, a deferred key) is judged by `judgeDeferrals`. Each label
 -- consumed into the enclosing row is linked to the occurrence it has in
 -- the deferred row, through the `defer` boundary (design §6).
 checkDefer
@@ -95,32 +100,15 @@ crossing
     }
 crossing span = { span, consumed: Application, via: Just DeferItem }
 
--- After the function's keys are settled: each deferred row, resolved, may
--- hold no `Fail` and must not end in a rigid row variable, which a caller
--- may fill with one; an unsolved tail closes to empty. What reached a row
--- after its `defer` is consumed into the enclosing row now. The result is
--- the substitution to settle once more.
-settleDeferred
-  ∷ ∀ r. DeferEnv r → State → Checked.Expr → Either Diagnostic Subst
-settleDeferred env state whole = do
-  traverse_ judged state.deferrals
-  finished ← foldM later state state.deferrals
-  pure finished.subst
+-- After the settling loop: each deferred row, resolved, may hold no `Fail`
+-- and must not end in a rigid row variable, which a caller may fill with
+-- one; an unsolved tail closes to empty. Judged only now, so what reached
+-- a row after its `defer` is judged too.
+judgeDeferrals
+  ∷ ∀ r. DeferEnv r → State → Checked.Expr → Either Diagnostic Unit
+judgeDeferrals env state whole = traverse_ judged state.deferrals
   where
   judged found = judge env state whole found
-  later reached found = consumeLabels env reached
-    { origin: crossing found.span
-    , sources: map snd kept
-    , labels: map fst kept
-    , target: found.current
-    , sites: found.sites
-    , ignoreMarks: false
-    }
-    where
-    kept = Array.filter (not <<< failing <<< fst)
-      (placed reached (rowLabels reached found) found.row)
-  rowLabels reached found = case resolvedRow reached.subst found.row of
-    Row labels _ → labels
 
 judge
   ∷ ∀ r

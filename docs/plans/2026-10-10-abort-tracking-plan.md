@@ -362,8 +362,9 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
 
   | Probe | FX008 outcome | Task | Reason |
   |---|---|---|---|
-  | dup | E_EFFECT, pattern `/ cannot be made equal: both end in \.\.\.$/`, span 150-160 (`defer k(1)`) | 5 | §6: no finite solution; only deferrals are entries in Task 5, so the cycle is the deferral's self-loop, reported at `crossing deferral.span` |
-  | n1, design-review/r5 | same pattern, span 138-148 | 5 | same (r5.wxw is byte-identical to n1.wxw; its original content was lost) |
+  | dup | E_EFFECT, `Console + Log + Log + ... and Log + Console + ... cannot be made equal: both end in ...` (pinned by the user 2026-10-10), span 150-160 (`defer k(1)`) | 5 | §6: no finite solution; only deferrals are entries in Task 5, so the cycle is the deferral's self-loop, reported at `crossing deferral.span` |
+  | n1, design-review/r5 | E_EFFECT, `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (pinned 2026-10-10), span 138-148 | 5 | same (r5.wxw is byte-identical to n1.wxw; its original content was lost) |
+  | design-review/r4 | E_EFFECT, `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (pinned 2026-10-10), span 107-117 (`defer k(1)`) | 5 | user decision 2026-10-10: the same cycle as n1 (§3.5 (c)); rejected today as `Unhandled Log in main`, so the text and span move |
   | rev10/gain1 | accepted `0\n`, status 0 (Go hash pinned on first observation) | 7 | §6 sound gain (rev10 N3) |
   | design-review/p5, r1, r2 | E_EFFECT, same spans as today, predicted message `Console + Log + ... and Console + ... cannot be made equal: both end in ...`, pattern `/ cannot be made equal: both end in \.\.\.$/` | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
   | witness/ec1 | E_EFFECT at span 161-191 (`handler Log { log(n) => g(n) }`), message matching `/^(Unhandled Fail\(E\) in main|Fail\(E\) \+ Console \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.)$/`; the observed text is reported to the user before it is pinned | 7 | review I7, and plan review Round 2 N1: the late `Fail(E)` arrives in settling round 2 through the clause entry, whose origin is the handler literal (P13). The re-check's hand trace predicts the side-condition text, because the hook removes today's reverse link to the entry check |
@@ -375,9 +376,10 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | rev7/merge2 | `defer must not fail, but it performs Tick, whose handler may fail`, span 244-256 | 9 | L4 (§6) |
   | design-review/q1 | the Log message, span 203-215 (`defer log(0)`, in `run`) | 9 | I2: `run`'s `Log` is plain (§6) |
 
-  p4 and r4 stay unchanged: p4's `say` really needs `Log` in `run`'s closed
-  row, which the hook carries from c to R and reports at `say(2)` (P13); r4
-  involves no clause row. argbind-internal (FX010) and rev6/con (FX011) are
+  p4 stays unchanged: p4's `say` really needs `Log` in `run`'s closed
+  row, which the hook carries from c to R and reports at `say(2)` (P13). (r4
+  was predicted unchanged here; Task 5 found it is the n1 cycle at main
+  level, and the user moved it, above.) argbind-internal (FX010) and rev6/con (FX011) are
   unchanged by assumption; a change stops the work.
   `slow: true`: dup, n1, cycle2, cycle2open, argbind, argbind-internal,
   rev8/cyc1, cyc1ok, cyc2, cyc3, rev9/sh1, set1, witness/ec1, witness/tp1.
@@ -691,7 +693,8 @@ Edges recorded, not yet read. New rejections: only P3's.
 
 Replaces `settleKeys` / `settleDeferred` / `settleFinal` (Check.purs:116-118)
 with the termination review's corrected loop over deferral entries; the
-defer judgement moves after it. dup, n1 and r5 flip.
+defer judgement moves after it. dup, n1, r5 and r4 flip (exact texts in
+Task 1's table).
 
 **Files:**
 - Create: `src/Features/Check/Cycle.purs`, `Settle.purs`;
@@ -744,7 +747,7 @@ defer judgement moves after it. dup, n1 and r5 flip.
 - [ ] **Step 1: Failing tests** (test/fx008-settle.test.mjs, child processes,
   20 s): `dup has no finite solution` (dup.wxw → E_EFFECT matching the
   pattern, span 150-160); `n1 has no finite solution` (138-148); `r5 has no finite solution` (same
-  source and span); `a
+  source and span); `r4 has no finite solution` (107-117); `a
   satisfiable two-row cycle settles` (cycle2 prints `0\n7\n1\n`); `8,000
   defers settle` (main with 8,000 `defer print(i)` compiles; timed in
   Task 9). Flip dup, n1 and r5. The existing fx-cleanup tests `a Fail reaching

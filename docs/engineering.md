@@ -124,8 +124,12 @@ adding a bypass allowlist.
   `fun-compare` (Comparable ignores arrows), `functional-fixpoint`
   (Functional stops at its seeds), `value-edge` (bare references and
   lambda bodies are no instantiation edges) and `arrow-key` (arrows
-  interned without their parameter): twenty-two `Regression proof (…)`
-  lines in all (`node scripts/regression.mjs name…` proves only the named
+  interned without their parameter), and since FX008
+  `fx008-cycle-presence` (rows in scripts/regression-fx008.mjs, probes in
+  test/regression-fx008.mjs, all probe files aggregated by
+  test/regression-probes.mjs; Cycle.purs weighs a cycle by presence, so
+  dup.wxw never settles, caught by a child-process compile under a 20 s
+  timeout): twenty-three `Regression proof (…)` lines in all (`node scripts/regression.mjs name…` proves only the named
   rows); the A003 order and print tests also use an independent value
   oracle (test/value-oracle.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):

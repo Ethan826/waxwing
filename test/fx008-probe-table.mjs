@@ -28,12 +28,13 @@ const own = [
   probe('dup',
     ok('', 'ea6cc18f969afe35abe19f6eeeb90f993b5b7dfad44b8163c87ad76c3510ed1d'),
     {
-      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 150, 160),
+      fx008: no('E_EFFECT', 'Console + Log + Log + ... and Log + Console + ... cannot be made equal: both end in ...', 150, 160),
       task: 5,
+      flipped: true,
       reason:
         '§6: no finite solution; the deferral is its own self-loop cycle, ' +
-        'reported at the deferral span. Observed message is reported to the ' +
-        'user before it is pinned.',
+        'reported at the deferral span. Message pinned by the user ' +
+        'on 2026-10-10.',
       slow: true
     }),
   probe('f1',
@@ -75,10 +76,10 @@ const own = [
   probe('n1',
     ok('', '11c749ce671b36700a70b66bbc533a6d5c138d92655f2bc07b7e188f9a0cf310'),
     {
-      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 138, 148),
+      fx008: no('E_EFFECT', 'Console + Log + ... and Console + ... cannot be made equal: both end in ...', 138, 148),
       task: 5,
-      reason: '§6: same as dup. Observed message is reported to the user ' +
-        'before it is pinned.',
+      flipped: true,
+      reason: '§6: same as dup. Message pinned by the user on 2026-10-10.',
       slow: true
     }),
   probe('rigid-ok',

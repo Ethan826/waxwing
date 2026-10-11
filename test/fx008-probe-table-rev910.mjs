@@ -73,15 +73,26 @@ export const rev910 = [
   probe('design-review/r3',
     ok('', 'dcd7ac7a2d440632c8aa86955be9689e3d380451b083d3504672522c12b2ff41')),
   probe('design-review/r4',
-    no('E_EFFECT', 'Unhandled Log in main', 163, 167)),
+    no('E_EFFECT', 'Unhandled Log in main', 163, 167),
+    {
+      fx008: no('E_EFFECT',
+        'Console + Log + ... and Console + ... cannot be made equal: both end in ...', 107,
+        117),
+      task: 5,
+      flipped: true,
+      reason:
+        'same cycle as n1 (design §3.5 (c)): rejected today as Unhandled ' +
+        'Log in main; the text and span move to the deferral.'
+    }),
   probe('design-review/r5',
     ok('', '11c749ce671b36700a70b66bbc533a6d5c138d92655f2bc07b7e188f9a0cf310'),
     {
-      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 138, 148),
+      fx008: no('E_EFFECT', 'Console + Log + ... and Console + ... cannot be made equal: both end in ...', 138, 148),
       task: 5,
+      flipped: true,
       reason:
-        'byte-identical to n1 (original r5 lost). Observed message is ' +
-        'reported to the user before it is pinned.',
+        'byte-identical to n1 (original r5 lost). Message pinned by the ' +
+        'user on 2026-10-10.',
       slow: true
     }),
   probe('rev10/gain1',
