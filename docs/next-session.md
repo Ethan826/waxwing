@@ -1,7 +1,11 @@
 # Waxwing / FX008: implementation paused after Task 5 (2026-10-10)
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
-fx008-impl (local only; the plan says never push). Its HEAD is b5fab7c.
+fx008-impl at b5fab7c, pushed to origin/fx008-impl as a backup at the
+user's request (2026-10-10). It is not merged anywhere: the FX008
+implementation stays off main until Tasks 6-12 and the whole-branch review
+are done. main was fast-forwarded to fx008 (4f1b981): FX001 Task 10,
+FX009, and the design and review docs.
 Tasks 1-5 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
 and reviewed. The worktree copy of the plan is authoritative: it carries
 the rulings applied during Tasks 1-5. Tracking docs (progress, BACKLOG,

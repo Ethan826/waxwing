@@ -3732,3 +3732,12 @@ Recorded:
 
 Verify at dd45b58 (.build/task5-fix-verify.log in the worktree): exit 0,
 1142/1142 parallel, 34/34 serial, 38 proofs; gate 107/107.
+
+2026-10-10, at the user's request:
+- fx008-impl (b5fab7c, Tasks 1-5) is pushed to origin as a backup and is
+  not merged.
+- main is fast-forwarded to fx008 (4f1b981) and pushed: FX001 Task 10,
+  FX009, and the design and review docs. The verify of the last
+  code-bearing commit passed: 958/958 parallel, 29/29 serial, 36 proofs.
+- The FX008 implementation stays off main until it is complete and
+  reviewed.
