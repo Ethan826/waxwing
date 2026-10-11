@@ -129,7 +129,9 @@ consume env entries state index = maybe (Right state) consumed
     Fresh → fresh entry
     Remainder remainder → remaining entry remainder
   -- A stage ending in the group's remainder (φ) consumes as it stands,
-  -- ignoring marks (Task 7 registers the first such entries).
+  -- ignoring marks (Task 7 registers the first such entries). It relies
+  -- on φ being a bare tail when registered (no labels of its own), so only
+  -- its tail is read; `ignoreMarks` and `sites` do not apply here.
   remaining entry (Row _ tail) = consumeIgnoring env state
     { origin: entry.origin
     , stage: Row (map fst (kept entry)) tail

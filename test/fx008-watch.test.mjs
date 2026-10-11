@@ -37,10 +37,10 @@ test('a postponed pair reverts the watch', () => {
   const left = row([label(1, meta(1)), label(2), label('fail', meta(0))],
     rowMeta(10));
   const right = row([label(1, int)], rowMeta(11));
-  const subst = solved(unifyRows(left, right, watching(10)));
+  const subst = solved(unifyRows(left, right, watching(10, 11)));
   assert.equal(subst.postponed.length, 1);
   assert.deepEqual(dirty(subst), []);
-  assert.deepEqual(watched(subst), [10]);
+  assert.deepEqual(watched(subst), [10, 11]);
 });
 
 test('unwatched bindings mark nothing', () => {

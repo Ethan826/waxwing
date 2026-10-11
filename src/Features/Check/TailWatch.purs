@@ -3,7 +3,6 @@ module Features.Check.TailWatch
   , emptyWatch
   , watching
   , bound
-  , unionWatch
   , drained
   ) where
 
@@ -37,13 +36,6 @@ bound meta next watch
       , dirty: Set.insert meta watch.dirty
       }
   | otherwise = watch
-
--- Both sides' watches, as `compose` unions bindings.
-unionWatch ∷ TailWatch → TailWatch → TailWatch
-unionWatch one other =
-  { watched: Set.union one.watched other.watched
-  , dirty: Set.union one.dirty other.dirty
-  }
 
 -- The dirty metas, ascending, and the watch with none dirty.
 drained ∷ TailWatch → { dirty ∷ Array Int, watch ∷ TailWatch }

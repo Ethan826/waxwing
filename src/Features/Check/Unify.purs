@@ -32,7 +32,6 @@ import Features.Check.Subst
   , walkRow
   )
 import Features.Check.Origin (linked)
-import Features.Check.TailWatch (unionWatch)
 import Features.Check.UnifyMark (equateMarks)
 import Features.Check.UnifyRow (unifyRows, unifyRowsIgnoring, unifyRowsTraced)
 
@@ -77,7 +76,7 @@ settleRows = tailRecM pass
 -- metas), so their fresh metas do not collide; the smaller counter is
 -- kept. Postponed pairs are the earlier's, then the later's; of two links
 -- from one occurrence the earlier's stays; mark bindings likewise. The
--- edges are the later's alone, which hold the earlier's under the
+-- edges and the watch are the later's alone, which hold the earlier's under the
 -- precondition (made from it); nothing in src composes, tests only.
 compose ∷ Subst → Subst → Subst
 compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
@@ -93,7 +92,7 @@ compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
           laterBindings.marks.bindings
       , fresh = min laterBindings.marks.fresh earlierBindings.marks.fresh
       }
-  , watch: unionWatch earlierBindings.watch laterBindings.watch
+  , watch: laterBindings.watch
   }
 
 unifyAt ∷ Int → Subst → Ty Flex → Ty Flex → Either Failure Subst

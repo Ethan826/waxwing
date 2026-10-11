@@ -54,6 +54,8 @@ clauseEntries registry = Array.concatMap clauseEntry
     [ toInference found
     , toClauses found
     ]
+  -- A registered clause always has a group. Falling back to Fresh here
+  -- would be the fx008-settle-phi defect (c to R must end in φ).
   toInference found = clauseTo found found.inference true
     (maybe Fresh Remainder (remainderOf found))
   toClauses found = clauseTo found found.clauses false Fresh
