@@ -21,6 +21,9 @@ const accepted = source => {
   return found;
 };
 
+const exactly = text =>
+  new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+
 const rejectedAt = (source, start, end, pattern) => {
   const found = compiled(source);
   assert.equal(found.timedOut, false, 'timed out');
@@ -43,9 +46,11 @@ test('p5, r1 and r2 are rejected by the hook (F2)', () => {
 });
 
 test('cyc2, cyc3 and sh1 report the c -> R edge of their cycle', () => {
-  rejectedAt(probe('rev8/cyc2'), 174, 179, /^Tick \+ \.\.\. and \.\.\. cannot/);
-  rejectedAt(probe('rev8/cyc3'), 338, 344, /^Log \+ Tick \+ \.\.\. and \.\.\. cannot/);
-  rejectedAt(probe('rev9/sh1'), 192, 246, /^\.\.\. and Tick \+ \.\.\. cannot/);
+  const ends = ' cannot be made equal: both end in ...';
+  rejectedAt(probe('rev8/cyc2'), 174, 179, exactly(`Tick + ... and ...${ends}`));
+  rejectedAt(probe('rev8/cyc3'), 338, 344,
+    exactly(`Log + Tick + ... and ...${ends}`));
+  rejectedAt(probe('rev9/sh1'), 192, 246, exactly(`... and Tick + ...${ends}`));
 });
 
 const printsZero = [

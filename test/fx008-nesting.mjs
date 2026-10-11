@@ -21,8 +21,8 @@ export const lambdaProgram = depth => 'effect Log { fn log(): Unit; }; '
 // Handler literals nested through rows: `with h_i` makes the literal's
 // inference row R equal to a context row holding `Cell(type of h_{i-1})`,
 // and the type of h_{i-1} carries a clause row (`Just` C) beside its R. Each
-// level adds one tree, not two (Task 7: a pass that read R and C of every
-// level separately would double per level).
+// level adds one tree. This guards R-only nesting; C holds nothing here, so
+// it cannot see C doubling (clauseLiteralProgram below does).
 export const literalDepth = 30;
 
 export const literalProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
@@ -32,4 +32,16 @@ export const literalProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
     `let h${index + 1} = handler Log { log(n) => () }; `
     + `let g${index + 1} = fn(u: Unit) => with h${index + 1} `
     + `{ put(h${index}) }; `).join('')
+  + '0 };';
+
+// Task 2 c2 shape: each literal's clause performs `Cell(type of the previous
+// literal)`. The clause row C must not carry that label's argument a second
+// time beside R, or the type doubles per level (review of Task 7, C1).
+export const clauseLiteralDepth = 30;
+
+export const clauseLiteralProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
+  + 'effect Cell(a) { fn put(x: a): Unit; }; fn main(): Int = { '
+  + 'let h0 = handler Log { log(n) => () }; '
+  + Array.from({ length: depth }, (_, index) =>
+    `let h${index + 1} = handler Log { log(n) => put(h${index}) }; `).join('')
   + '0 };';

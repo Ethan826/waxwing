@@ -1,12 +1,19 @@
-module Features.Check.Walked (End(..), walkedRow, headedRow, endOf) where
+module Features.Check.Walked
+  ( End(..)
+  , walkedRow
+  , headedRow
+  , endOf
+  , bareLabel
+  ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Maybe (maybe)
 import Domain.Checked.Internal (Open(..))
-import Domain.Row (Label(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Row(..), TypeHead(..))
 import Domain.Type (Ty(..), TyRow, VarId)
-import Features.Check.Scheme (flexibleRow, opened)
+import Domain.Type.Parts (typeHead)
+import Features.Check.Scheme (flexible, flexibleRow, opened)
 import Features.Check.Subst (Flex, Subst, walk, walkRow)
 
 -- How a row ends once its tail's bindings are spliced in: an unbound meta, a
@@ -41,3 +48,22 @@ headedRow subst row = Row (map headed labels) tail
   Row labels tail = walkRow subst (flexibleRow row)
   headed (Label effect arguments mark) =
     Label effect (map (walk subst) arguments) mark
+
+-- A label as the clause row C keeps it (user ruling 2026-10-11, Task 2 C1
+-- again): its effect and mark, and no arguments, so a handler type nested in
+-- a label argument is held once, by R, not twice. A `Fail` label keeps its
+-- payload's head (a type with no arguments), which is its key; a payload
+-- whose head is not known yet stays as it is.
+bareLabel ∷ Subst → Label (Ty Open) → Label (Ty Open)
+bareLabel subst (Label effect arguments mark) = Label effect kept mark
+  where
+  kept = case effect of
+    FailEffect → map headOnly arguments
+    _ → []
+  headOnly argument = maybe argument headType
+    (typeHead (walk subst (flexible argument)))
+  headType = case _ of
+    HeadInt → TInt
+    HeadBool → TBool
+    HeadUnit → TUnit
+    HeadData id → TData id [] []

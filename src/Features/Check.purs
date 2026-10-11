@@ -118,6 +118,10 @@ checkFunction holders env function = do
   finished ← require env body.state (rigid function.result) body.value
   maybe (Right unit) tooDeepAt (firstTooDeep finished.subst body.value)
   restricted ← settleRestricted env finished body.value
+  -- Settling may allocate group ids and phi metas from `state.next`, but only
+  -- the settled substitution is kept: nothing allocates after settling today
+  -- (judgeDeferrals, Entry.check and `holes` only read). Tasks 8-9 must carry
+  -- `restricted.next` forward before they allocate here.
   let settledSubst = restricted.subst
   let ended = finished { subst = settledSubst }
   judgeDeferrals env ended body.value

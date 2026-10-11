@@ -837,10 +837,21 @@ consumption reported at the clause entry's handler literal. It skips the
 rigid branch (φ := ϱ), which stays with the tail pass after the loop (§3.5).
 The c to R entries are rebuilt each round, so they read the current group's
 φ. Hook code reads rows through `walkedRow` and `headedRow` (Walked.purs),
-which splice the tail but do not resolve label arguments. Limitation: a
-literal whose clause performs `Cell(type of another literal)` carries that
-type in both R and C, so such a chain grows as 2^depth (untested); nesting
-through `with` is linear.
+which splice the tail but do not resolve label arguments.
+
+**C keeps no label arguments of its own (user ruling 2026-10-11, option (a)
+of the Task 7 review's C1; Task 2 C1 again).** A literal whose clause
+performs `L(type of another literal)` would hold that type in both R and C
+and double per level of nesting. So per label C keeps only its effect, mark
+and count (and its own tail): the arguments are read from R, which holds
+every label of every c. A `Fail` label keeps its payload's head (a type with
+no arguments), which is its key. `consumeLabels` into C (filing, and the
+c to C entry of Settle) pass `bareLabel`s. Task 8 builds the labels it
+consumes into `env.current` from R's arguments (the label of R with the same
+key and position, by first occurrence), and Task 9's texts print C's labels
+from R. A mark comparison C ≡ C needs no arguments (marks and keys only).
+Guard: `clauseLiteralProgram` (30 literals chained through their clauses),
+red on 9358d79 (timed out at 20 s) and green after.
 
 Before any code, the Sonnet implementer writes a short design of Sync.purs
 and TailPass.purs: the functions, the data, and the order of F1′, F2 and
@@ -865,7 +876,7 @@ implementer or reviewer asks; that change is recorded in the ledger.
   fresh `MarkMeta`; each c registered (new
   group, `tail` = c's resolved tail, `signature = Nothing`, in `pending`),
   watched, and consumed into C by `consumeLabels` (Directional, Fail kept,
-  origin the handler span). R is reached only through `sync`.
+  origin the handler span) as bare labels (no arguments, Task 7 ruling). R is reached only through `sync`.
   `Handler.handler` builds `THandler (withMark own label) rows`.
 - Sync: `sync ∷ ∀ r. CheckEnv r → State → Span → Either Diagnostic State`
   (span per P13). Definitions on resolved rows: `currentSignature(e) = {
@@ -945,14 +956,23 @@ implementer or reviewer asks; that change is recorded in the ledger.
   |---|---|---|---|
   | `fx008-hook` | Sync.purs | `sync` returns the state | late1 prints `0`; `/hook: Expected a handler/` |
   | `fx008-phi` | Filing.purs | a clause that finds another group keeps its own φ (no join) | two1 prints `0`; `/remainder: Ambiguous/` |
+  | `fx008-phi-tail` | Sync.purs | T's stage ends in nothing (a fresh tail), not φ | two3 prints `0`; `/remainder tail: Expected a handler/` |
   | `fx008-phi-equal` | Filing.purs | φ step replaced by R ≡ R of the merged handlers | ov1 prints `0`; `/R≡R: rejected/` |
   | `fx008-f2` | Sync.purs | F2 call removed | cyc2's side-condition error within 20 s; `/F2: timed out/` |
-  | `fx008-new-labels` | Sync.purs | only labels past the recorded count consumed | one3 prints `0`; `/new labels: rejected/` (F2 rejects cyc2 before any consumption) |
-  | `fx008-signature` | Groups.purs | the signature carries no label counts | argbind accepted; `/signature: rejected/` (an always-"changed" comparison only repeats an idempotent push; cyc1 still ends) |
-  | `fx008-settle-phi` | Settle.purs | the round's `syncSettling` removed (with it present, `Fresh` entries do not change set1) | set1 prints `0`; `/settling φ: Ambiguous/` |
+  | `fx008-new-labels` | Sync.purs | only labels past the recorded count consumed | one3 prints `0`; `/new labels: rejected/` (cyc2 cannot show it: F2 rejects before any consumption) |
+  | `fx008-signature` | Groups.purs | the signature carries no label counts | argbind accepted; `/signature: rejected/` (an always-"changed" comparison cannot loop: `sync` ends when nothing is dirty or pending, and an unchanged push binds nothing; the signature's semantic part is `grew`) |
+  | `fx008-settle-phi` | Settle.purs | the round's `syncSettling` removed (with `syncSettling`, S's `Remainder φ` only affects ec2's span: `Fresh` gives 327-333, which the hook test pins) | set1 prints `0`; `/settling φ: Ambiguous/` |
   | `fx008-r-consumed` | Handler.purs | R consumed with a fresh tail, not as it stands | meta2 compiles; `/R consumed: Ambiguous/` |
   | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec2 rejected with E_EFFECT; `/exit test: accepted/` |
   | `fx008-tail-pass` | TailPass.purs | `tailPass` returns the state | tp1 rejected; `/tail pass: accepted/` |
+
+  No accepted program distinguishes F1′'s Join (a grown clause takes the
+  group already on its new tail) from a new group: a later sync that sees
+  both merges them by the second branch, so Join affects only cost and
+  order, and the six-orders test is its guard (a probe was tried, join1:
+  accepted with Join replaced by New). The closed-φ branch, the tail pass's
+  closing of C and A5's synced hint have no Task 7 observer either; Task 8
+  adds the C tests.
 
   ec2, not ec1, proves the exit count: ec1's `Fail(E)` arrives at check
   time, so both builds reject it.
@@ -980,7 +1000,8 @@ entries join settling; gate unchanged.
   Checked.Expr → Label (Ty Open) → HandlerRows (Ty Open) Open →
   Resolved.Expr → Either Diagnostic (Threaded Checked.Expr)`: R into
   `env.current` by `consumeIgnoring`; `clauseRow`'s labels into `env.current` by
-  `consumeLabels` (Directional, Fail kept, origin the `with`); frame f =
+  `consumeLabels` (Directional, Fail kept, origin the `with`), each label
+  taking its arguments from R (C keeps none, Task 7 ruling); frame f =
   `NoFail` for Console, else a fresh `MarkMeta`; the body is checked against
   `withMark f label` prepended to the current row; registers an
   `Installation`.
@@ -991,7 +1012,9 @@ entries join settling; gate unchanged.
 
 - [ ] **Step 1: Failing tests** (JS via the compiled checker or a debug
   export of edge counts): `an installation records frame ⊑ C edges` (one
-  `Assumed` edge per C label); `a Console frame is nofail`; `a late clause
+  `Assumed` edge per C label); `a literal whose clause row closed, and one
+  whose clause tail turned rigid, are installed correctly` (C closing and the
+  tail pass's rigid case, unobserved in Task 7); `a Console frame is nofail`; `a late clause
   label reaches the installing row` (f1.wxw and f2.wxw still print `1\n2\n`).
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement.** **Step 4: Run** with
   the gate → PASS; verify → 0.

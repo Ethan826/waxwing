@@ -23,7 +23,7 @@ import Features.Check.ClauseBody (HandlerEnv, handlerClause)
 import Features.Check.Consume (consumeLabels)
 import Features.Check.Context (Infer, Locals)
 import Features.Check.Defer (placed)
-import Features.Check.Walked (End(..), endOf, walkedRow)
+import Features.Check.Walked (End(..), bareLabel, endOf, walkedRow)
 import Features.Check.Provenance (Consumed(Application), Origin)
 import Features.Check.Restricted (registerClause)
 import Features.Check.Scheme (State, Threaded, threadAll)
@@ -117,9 +117,10 @@ operationName env (Label effect _ _) index = fromMaybe "" do
     _ → Nothing
 
 -- c's labels consumed into C (Directional, `Fail` kept, origin the handler
--- span), then c is registered as a clause of a new group and its tail
--- watched. Registered after the body, so the clause's own `sync`s do not
--- see it; the handler node's `sync` finds it pending.
+-- span) as bare labels: C keeps no arguments of its own, R holds them. Then
+-- c is registered as a clause of a new group and its tail watched.
+-- Registered after the body, so the clause's own `sync`s do not see it; the
+-- handler node's `sync` finds it pending.
 file
   ∷ ∀ r
   . HandlerEnv r
@@ -133,7 +134,7 @@ file env setup ids row clause state = do
   consumed ← consumeLabels env state
     { origin
     , sources: map snd kept
-    , labels: map fst kept
+    , labels: map (bareLabel state.subst <<< fst) kept
     , target: setup.clauses
     , sites: []
     , ignoreMarks: false

@@ -38,7 +38,9 @@ import Features.Check.Subst (Subst)
 
 -- What `sync` pushes for a clause: label counts per key of its resolved
 -- row, its group, and how its tail ends. Renaming the tail meta (which
--- every fresh-tail consumption does) changes none of these.
+-- every fresh-tail consumption does) changes none of these. A `Fail` label
+-- whose payload head is not known yet has no key and is not counted: `sync`
+-- leaves it to settling's c to R entry, as a postponed pair would be (A7).
 signatureOf ∷ Subst → ClauseEntry → ClauseSignature
 signatureOf subst found =
   { counts: counted true (headedRow subst found.row)

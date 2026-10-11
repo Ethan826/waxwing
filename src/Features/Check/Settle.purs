@@ -15,7 +15,7 @@ import Features.Check.Consume (consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
 import Features.Check.Cycle (feedOrder, positiveCycle)
 import Features.Check.Defer (failing, placed)
-import Features.Check.Walked (headedRow, walkedRow)
+import Features.Check.Walked (bareLabel, headedRow, walkedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Feed (FeedRow, Feeds, feedsOf)
 import Features.Check.Reject (rejected)
@@ -142,11 +142,14 @@ consume env entries state index = maybe (Right state) consumed
   fresh entry = consumeLabels env state
     { origin: entry.origin
     , sources: map snd (kept entry)
-    , labels: map fst (kept entry)
+    , labels: map (shown entry) (kept entry)
     , target: entry.target
     , sites: entry.sites
     , ignoreMarks: entry.ignoreMarks
     }
+  shown entry found
+    | entry.bare = bareLabel state.subst (fst found)
+    | otherwise = fst found
   kept entry = Array.filter (carried entry)
     (placed state (labelsOf entry) entry.own)
   labelsOf entry = case walkedRow state.subst entry.own of

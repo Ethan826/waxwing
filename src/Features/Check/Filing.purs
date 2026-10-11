@@ -82,6 +82,8 @@ filed env mode state id entry = case endOf state.subst entry.row of
   ended stage = case mode of
     Settling → Right loose
     Checking _ → ending env loose origin entry stage
+  -- A closed tail closes φ (N4). No Task 7 program observes this: C is read
+  -- only from Task 8 on, and R is closed by the same unification elsewhere.
   closed = remainder loose entry >>= closeTail env loose origin
 
 -- A rigid tail binds the group's remainder φ to it.

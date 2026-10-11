@@ -69,6 +69,16 @@ export const fx008Rows = [
     probe: 'fx008-new-labels', message: /new labels: rejected/
   },
   {
+    // F1' (rev10): T consumes a clause as `labels(c) + phi`. A stage that
+    // ends in nothing gets a fresh tail in `consume`, which leaves phi (and
+    // so the other handlers of the class) out of it; two3 then loses the
+    // handler head it needs.
+    name: 'fx008-phi-tail', file: 'src/Features/Check/Sync.purs',
+    needle: 'stage: Row (labelsOf entry) tail',
+    replacement: 'stage: Row (labelsOf entry) Nothing',
+    probe: 'fx008-phi-tail', message: /remainder tail: Expected a handler/
+  },
+  {
     // Correction T: the signature carries the label counts, so a clause
     // whose row grew is seen to have grown (a new class with its own phi,
     // rev10 N1). Without them argbind's late label meets the old phi and

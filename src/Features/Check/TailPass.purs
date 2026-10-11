@@ -23,7 +23,11 @@ import Features.Check.Scheme (State)
 -- rigid ϱ needs its handler's R and C to end in ϱ. It repeats while a
 -- binding is made, since binding one handler's tail can make another
 -- clause rigid; each binding turns a distinct unbound tail into ϱ for
--- good, so it ends. Then every clause row's C closes.
+-- good, so it ends. Then every clause row's C closes (no Task 7 program
+-- observes that; Task 8's `with` of a literal reads C). Each round rescans
+-- every clause, so a chain of n handlers installed in each other's clauses
+-- with rigid tails costs O(n^2); a worklist of the clauses ending in the meta
+-- just bound would make it linear (not needed for T003).
 tailPass ∷ ∀ r. CheckEnv r → State → Either Diagnostic State
 tailPass env state = do
   passed ← tailRecM (round env) state

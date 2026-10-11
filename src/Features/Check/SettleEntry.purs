@@ -23,13 +23,16 @@ import Domain.Type (TyRow)
 -- labels travel, `ignoreMarks` whether marks are left alone. `origin` is
 -- where a failure is reported and `position` the span start rows settle
 -- in (P14). `tail`: what ends the stage consumed, a fresh meta nobody
--- reads, or the remainder row of a clause group (φ).
+-- reads, or the remainder row of a clause group (φ). `bare`: the target is a
+-- clause row C, which keeps no label arguments of its own (Task 7, user
+-- ruling 2026-10-11): R holds them.
 type Entry =
   { own ∷ TyRow Open
   , target ∷ TyRow Open
   , sites ∷ Array Site
   , keepFail ∷ Boolean
   , ignoreMarks ∷ Boolean
+  , bare ∷ Boolean
   , tail ∷ EntryTail
   , origin ∷ Origin
   , position ∷ Int
@@ -56,19 +59,20 @@ clauseEntries registry = Array.concatMap clauseEntry
     ]
   -- A registered clause always has a group. Falling back to Fresh here
   -- would be the fx008-settle-phi defect (c to R must end in φ).
-  toInference found = clauseTo found found.inference true
+  toInference found = clauseTo found found.inference true false
     (maybe Fresh Remainder (remainderOf found))
-  toClauses found = clauseTo found found.clauses false Fresh
+  toClauses found = clauseTo found found.clauses false true Fresh
   remainderOf found = _.remainder <$> Map.lookup found.group registry.groups
 
 clauseTo
-  ∷ ClauseEntry → TyRow Open → Boolean → EntryTail → Entry
-clauseTo found target ignoreMarks tail =
+  ∷ ClauseEntry → TyRow Open → Boolean → Boolean → EntryTail → Entry
+clauseTo found target ignoreMarks bare tail =
   { own: found.row
   , target
   , sites: []
   , keepFail: true
   , ignoreMarks
+  , bare
   , tail
   , origin: { span: found.handler, consumed: Application, via: Nothing }
   , position: found.handler.start.offset
@@ -87,6 +91,7 @@ deferralEntries deferrals = map entryOf (Array.sortWith start numbered)
     , sites: found.sites
     , keepFail: false
     , ignoreMarks: false
+    , bare: false
     , tail: Fresh
     , origin: crossing found.span
     , position: found.span.start.offset

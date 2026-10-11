@@ -99,10 +99,15 @@ const accepts = (name, label, expected) => context => {
   console.log(`${context.probe} regression detects the defect`);
 };
 
-const rejects = (name, label) => context => {
+const cyc2Text = /^Tick \+ \.\.\. and \.\.\. cannot be made equal: both end in \.\.\.$/;
+
+const rejects = (name, label, pattern) => context => {
   const found = compileWithin(context, probeSource(name), probeTimeoutMs);
   if (found.timedOut) fail(`${label}: timed out`);
   if (found.diagnostic?.code !== 'E_EFFECT') fail(`${label}: accepted`);
+  if (!pattern.test(found.diagnostic.message)) {
+    fail(`${label}: wrong message ${found.diagnostic.message}`);
+  }
   console.log(`${context.probe} regression detects the defect`);
 };
 
@@ -111,12 +116,13 @@ export const fx008Probes = {
   'fx008-settle-order-linear': settleOrderLinear,
   'fx008-hook': accepts('rev7/late1', 'hook', '0\n'),
   'fx008-phi': accepts('rev8/two1', 'remainder', '0\n'),
+  'fx008-phi-tail': accepts('rev8/two3', 'remainder tail', '0\n'),
   'fx008-phi-equal': accepts('rev9/ov1', 'R≡R', '0\n'),
-  'fx008-f2': rejects('rev8/cyc2', 'F2'),
+  'fx008-f2': rejects('rev8/cyc2', 'F2', cyc2Text),
   'fx008-new-labels': accepts('rev8/one3', 'new labels', '0\n'),
   'fx008-signature': accepts('argbind', 'signature'),
   'fx008-settle-phi': accepts('rev9/set1', 'settling φ', '0\n'),
   'fx008-r-consumed': accepts('rev6/meta2', 'R consumed'),
-  'fx008-exit-count': rejects('witness/ec2', 'exit test'),
-  'fx008-tail-pass': rejects('witness/tp1', 'tail pass')
+  'fx008-exit-count': rejects('witness/ec2', 'exit test', /^Unhandled Fail\(E\) in main$/),
+  'fx008-tail-pass': rejects('witness/tp1', 'tail pass', /^f performs Console, which its signature/)
 };

@@ -50,7 +50,8 @@ require env state expected actual = either hint Right
   where
   -- The hint reads `headOf` of the expected type, which the hook may have
   -- solved (design §3.4: Hint is an eager decision). The synced state never
-  -- escapes: this branch returns `Left`.
+  -- escapes: this branch returns `Left`. No test observes the synced hint
+  -- (the gate's accepted programs never reach it).
   hint = Left <<< hinted env synced expected actual
   synced = either (const state) identity
     (sync env state (Checked.spanOf actual))
