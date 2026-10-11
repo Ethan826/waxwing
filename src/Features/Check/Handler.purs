@@ -1,11 +1,16 @@
-module Features.Check.Handler (handler, withHandler, handleFailure) where
+module Features.Check.Handler
+  ( HandlerEnv
+  , handler
+  , withHandler
+  , openLabel
+  ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (foldl, foldr)
+import Data.Foldable (foldl)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (Maybe(..), maybe)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
@@ -142,56 +147,6 @@ withHandler infer env state span handlerExpr body = do
     , sites = Array.cons { span, count: 1 } env.sites
     }
 
-handleFailure
-  ∷ ∀ r
-  . Infer (locals ∷ Locals | r)
-  → HandlerEnv r
-  → State
-  → Span
-  → Resolved.Expr
-  → Array Resolved.FailClause
-  → Checked
-handleFailure infer env state span body clauses = do
-  bodyValue ← infer failing state body
-  finished ← threadAll
-    (failureClause infer env (Checked.typeOf bodyValue.value))
-    bodyValue.state
-    clauses
-  pure
-    { value: Checked.Expr
-        { ty: Checked.typeOf bodyValue.value
-        , span
-        , node: Checked.Handle bodyValue.value finished.value
-        }
-    , state: finished.state
-    }
-  where
-  failing = env
-    { current = withFailures clauses env.current
-    , sites = Array.cons { span, count: Array.length clauses } env.sites
-    }
-
-failureClause
-  ∷ ∀ r
-  . Infer (locals ∷ Locals | r)
-  → HandlerEnv r
-  → Ty Open
-  → State
-  → Resolved.FailClause
-  → Either Diagnostic { value ∷ Checked.FailClause, state ∷ State }
-failureClause infer env expected state clause = do
-  local ← maybe' invalid Right clause.local
-  let payload = map Rigid (payloadType clause.label)
-  let scoped = env { locals = Map.insert local payload env.locals }
-  body ← infer scoped state clause.body
-  reached ← require scoped body.state expected body.value
-  pure
-    { value: { payload, local, body: body.value, span: clause.span }
-    , state: reached
-    }
-  where
-  invalid _ = Left (problemAt (Internal "Missing fail binder") clause.span)
-
 expectedHandler ∷ ∀ r. HandlerEnv r → Span → Ty Open → Checked
 expectedHandler env span ty = do
   name ← typeName env span ty
@@ -220,12 +175,6 @@ effectId ∷ Label (Ty Resolved.VarId) → EffectId
 effectId (Label (UserEffect id) _ _) = id
 effectId _ = EffectId (-1)
 
-payloadType ∷ Label (Ty Resolved.VarId) → Ty Resolved.VarId
-payloadType (Label _ arguments _) = maybe' noPayload identity
-  (Array.head arguments)
-  where
-  noPayload _ = TUnit
-
 flexLabel ∷ Label (Ty Open) → Label (Ty Flex)
 flexLabel (Label effect arguments mark) = Label effect
   (map flexible arguments)
@@ -233,9 +182,3 @@ flexLabel (Label effect arguments mark) = Label effect
 
 prepend ∷ Label (Ty Open) → TyRow Open → TyRow Open
 prepend label (Row labels tail) = Row (Array.cons label labels) tail
-
-withFailures ∷ Array Resolved.FailClause → TyRow Open → TyRow Open
-withFailures clauses row = foldr add row clauses
-  where
-  add clause (Row labels tail) =
-    Row (Array.cons (openLabel clause.label) labels) tail

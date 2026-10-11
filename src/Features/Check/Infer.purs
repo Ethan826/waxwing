@@ -22,6 +22,7 @@ import Features.Check.Operation
 import Features.Check.Apply (checkApply)
 import Features.Check.Arms (checkMatch)
 import Features.Check.Block (checkBlock)
+import Features.Check.Handle as Handle
 import Features.Check.Handler as Handler
 import Features.Check.Failure as Failure
 import Features.Check.Call (checkCall, checkConstruct)
@@ -110,7 +111,7 @@ inferNode env state expression = case expression of
   Resolved.With span handler body → Handler.withHandler infer env state span
     handler
     body
-  Resolved.Handle span body clauses → Handler.handleFailure infer env state
+  Resolved.Handle span body clauses → Handle.handleFailure infer env state
     span
     body
     clauses
