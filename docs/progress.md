@@ -3770,3 +3770,40 @@ Evidence:
 - gate 107/107, no table change;
 - verify at c8503f9 (.build/task6-fix-verify.log in the worktree): exit
   0, 1146/1146 parallel, 34/34 serial, 38 proofs.
+
+### FX008 Task 7: clause own rows, sync, correction S, tail pass (2026-10-11)
+
+Sonnet implementer (wip 8dd22be; 9358d79; fix rounds 95eac9e, 66f1eca).
+Opus design pre-review (review-fx008-task7-design-result.md, A1-A7, two
+Critical design defects fixed before code), gate diagnosis
+(review-fx008-task7-gate-diagnosis.md), code review and re-review
+(review-fx008-task7-result.md); round 2 checked by the controller.
+
+User decisions 2026-10-11:
+- argbind-internal flips to accepted (sound: Go and interpreter print
+  nothing, exit 0). FX010 is not fixed; a smaller reproducer remains.
+- p5, r1, r2 pinned as predicted; cyc2/cyc3 texts swapped (orientation
+  only); sh1 text unchanged at span 192-246 (handler literal, P13).
+- ec1 keeps today's outcome (the plan's prediction was wrong: checkDefer
+  consumes the deferred row at check time); witness ec2 added and proves
+  fx008-exit-count.
+- C keeps no label arguments (option (a)), fixing a 2^depth blow-up for
+  handler literals whose clauses carry other literals' types (depth 14:
+  1.8 s → 29 ms; depth 30: 71 ms; base linear). C rows pair by key with
+  an argument-ignoring unifier; R checks arguments.
+
+Controller ruling: F1′ also runs at the start of each settling round
+(a plan gap, not a workaround), skipping the rigid branch (the tail
+pass binds ϱ after the loop), reporting at the handler literal.
+
+Evidence:
+- gate 110 probes (ec2, famw, famw2 added); flips gain1,
+  argbind-internal, p5, r1, r2, tp1; cyc2/cyc3/sh1 re-pinned;
+- differential vs c8503f9: only those programs differ; vs 95eac9e: only
+  famw/famw2 (the round-1 regression, fixed);
+- 11 Task 7 regression rows, each proved;
+- verify at 66f1eca (.build/task7-fix2-verify.log in the worktree): exit
+  0, 1176/1176 parallel, 36/36 serial, 49 proof lines.
+
+Open: no probe distinguishes F1′'s join-group from a new group (cost
+only); Task 8 must build `env.current` labels from R and pair C by key.

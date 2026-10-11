@@ -317,3 +317,138 @@ unguardable.**
   p5/r1/r2, tp1, ec1 and ec2. Exceptions: M2.
 - **Nesting test shape:** see C1. The plan's c2 shape (each level carrying
   the nested type in a `Just` C) is not the committed one.
+
+## Re-review: fix round 1 (95eac9e on 9358d79)
+
+Copy: one `git worktree` of 95eac9e under /private/tmp/claude-501/fx008-t7rr,
+built with `node scripts/build.mjs` (`.spago` symlinked). "Today" is the
+build in /Users/ethan/Desktop/waxwing/output, and the fix is the worktree's
+own `output` (it contains `bareLabel`). Both were used read-only. The copy is
+deleted. The full verify was not rerun.
+
+### Verdict: Spec ❌, Quality Needs fixes
+
+The doubling is gone. But bare C as implemented rejects today-accepted
+programs: a literal whose clause raises a `Fail` of a *parameterized* family
+no longer unifies with a written handler type.
+
+### C1 (bare C): PARTLY
+
+**What holds:**
+- **Linearity** [ran], fix build, warm in-process:
+
+  | shape | depth 12 | 14 | 20 | 30 |
+  |---|---|---|---|---|
+  | clause (`put(h{i})`) | 23 ms | 19 ms | 28 ms | 50 ms |
+  | inline nested literals | 21 ms | 16 ms | 23 ms | 43 ms |
+  | `fail(Box(h{i}))` | 28 ms | 23 ms | 38 ms | 67 ms |
+
+- **No other path puts full arguments into C** [read]:
+  - A written type has `clauses: Nothing`.
+  - `localMarks` copies R's labels with arguments into a `Just` C, but only
+    for the outermost handler type (nested types get `Nothing`), so one
+    copy per annotation, which is linear.
+  - Opening (P5) changes marks only.
+- **Keys and counts:**
+  - Non-`Fail` keys are `EffectKey effect`, which already ignores
+    arguments. So `Cell(Int)` and `Cell(Bool)` were one key before this
+    round. Bare labels keep the count (two labels) and the order, so
+    keyed, positional pairing and the marks it relates are as before.
+  - F2 and the exit count read c, not C.
+  - `Fail` keeps its payload head, so `FailKey` (the family) is intact,
+    and distinct families stay distinct.
+
+**What breaks (Critical, new)** [ran]. The probes are saved in the session
+scratchpad as famw.wxw and famw2.wxw:
+
+```
+type Job(a) = Job(a);
+effect Log { fn log(n: Int): Unit; };
+fn use(h: Handler(Log with Fail(Job(Int)))): Int = 0;
+fn main(): Unit with Console = {
+  let h = handler Log { log(n) => fail(Job(n)) };
+  print(use(h))
+};
+```
+
+- Today: accepted. 95eac9e: E_TYPE `Expected Handler(Log), found
+  Handler(Log)` at 209-210.
+- With `bareLabel` neutralized to return its label, the copy accepts it
+  again. So bare C causes the failure.
+- famw2 is the same with a lambda annotation (`let use = fn(x:
+  Handler(Log with Fail(Job(Int)))) => 0`). It gives the same result (213-214).
+- **Cause** [read]. `bareLabel` turns the payload into `TData Job [] []`.
+  `Unify.unifyClauses` then unifies the literal's C with the other side's
+  `clauseRow`:
+  - for a written type that is R (full arguments);
+  - for a lambda annotation it is `localMarks`'s full copy.
+
+  The pairs are `Fail(Job)` against `Fail(Job(Int))`. `unifyHeads` requires
+  `sameLength` for `TData`, so they mismatch. Non-`Fail` labels escape only
+  because `UnifyRow.present` zips the argument arrays, which makes a bare
+  label a silent wildcard.
+- **The same hazard is latent in two more places:**
+  - Settling's c → C entry: a bare `Fail(Job)` against a C label stored
+    while its payload head was unknown (`headOnly` keeps the meta, which is
+    later bound to `Job(Int)`).
+  - Task 8's consumption of C into `env.current`.
+- The plan amendment's sentence "A mark comparison C ≡ C needs no
+  arguments (marks and keys only)" states the right rule. The code does
+  not implement it.
+
+**Fix (forward verbatim):**
+
+> Bare C must never unify label arguments. Pair C rows by key (as now) and
+> relate marks and tails only:
+> (1) Add an argument-ignoring unifier (`ignoringArguments subst _ _ = Right
+> subst`). Use it in `Unify.unifyClauses` (both sides, whatever
+> `clauseRow` returns), and for every consumption whose target is a clause
+> row C: `Clauses.file`'s `consumeLabels` and Settle's `bare` entries. Keys
+> already come from `labelKey (typeHead <<< walk subst)`, so the family
+> still pairs `Fail` labels. R keeps carrying and checking the arguments.
+> (2) In `bareLabel`, a `Fail` with an unknown payload head must not keep the
+> payload meta itself in C. With (1) no C pairing binds it, but write the
+> invariant down as a comment: "C's arguments are never unified".
+> (3) Make `localMarks`'s outermost C bare too (`bareLabel` on the copied
+> labels), so every `Just` C has one form.
+> (4) Add probes `witness/famw` and `witness/famw2` (texts above) to the gate
+> with today = fx008 = accepted (pin the Go hash on first observation). Add
+> a hook test, `a literal with a parameterized Fail family matches a
+> written handler type`, red on 95eac9e. Rerun the 114-file differential
+> against 9358d79: famw/famw2 must be the only additions, and they must be
+> accepted.
+> (5) The plan's Task 8 line ("each label taking its arguments from R")
+> stays. Add: "C's labels pair by key with an argument-ignoring unifier".
+
+### I1 (Join vs a new group): PARTLY
+
+- No distinguishing program is known. My join1 (two1 plus a later `if`
+  that ends k1's row in `[Tick | m]`) is accepted with Join and with New
+  [ran, first round]. The implementer's reason is plausible: a
+  consumption that ends t in `[L | m]` also binds m in the cases I tried,
+  which makes both clauses affected, and the Merge branch then joins them.
+  I accept the claim as unrefuted.
+- But the plan's new sentence "the six-orders test is its guard" is false.
+  The mutant `maybe New (const New) found` passed all 138 tests in round 1,
+  the six-orders test among them [ran].
+- Fix: "Replace 'and the six-orders test is its guard' with 'no test kills
+  it (the six-orders test passes with Join replaced by New); Join only
+  saves a later merge'."
+
+### Spot-checks
+
+- **fx008-phi-tail: ADDRESSED** [ran]. The mutant `stage: Row (labelsOf
+  entry) Nothing` fails the strict build (`tail` unused), but
+  scripts/regression.mjs builds with plain `purs compile`
+  (scripts/regression.mjs:235), so the row is valid. Under the mutant, two3
+  gives E_TYPE `Expected a handler` 409-430, which matches the row message.
+- **Exact texts: ADDRESSED.** cyc2, cyc3 and sh1 now have anchored full
+  texts. fx008-f2 checks cyc2's full text. exit-count is exact. tail-pass
+  is a prefix (acceptable).
+- **Nesting guards: ADDRESSED.** `clauseLiteralProgram` at depth 30 runs
+  in a child process with a 20 s timeout, in both the parallel and serial
+  files. The `literalProgram` comment is corrected.
+- **I2, I3, M1-M5: ADDRESSED** (rows, plan text, comments; the Task 8 Step
+  1 items added). The M5 comment at Check.purs:121-124 is accurate.
+- **Plan Tasks 7-9 text: ADDRESSED**, apart from C1's missing rule
+  ((5) above) and I1's sentence.

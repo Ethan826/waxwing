@@ -1,37 +1,25 @@
-# Waxwing / FX008: Task 7 stopped at the gate (2026-10-11)
+# Waxwing / FX008: Task 7 done; Task 8 next (2026-10-11)
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
-fx008-impl at c8503f9 (Task 6 done 2026-10-11; origin/fx008-impl holds
+fx008-impl at 66f1eca (Task 7 done 2026-10-11; origin/fx008-impl holds
 the b5fab7c backup from 2026-10-10 and is not updated). It is not merged anywhere: the FX008
-implementation stays off main until Tasks 6-12 and the whole-branch review
+implementation stays off main until Tasks 8-12 and the whole-branch review
 are done. main was fast-forwarded to fx008 (4f1b981): FX001 Task 10,
 FX009, and the design and review docs.
-Tasks 1-6 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
+Tasks 1-7 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
 and reviewed. The worktree copy of the plan is authoritative: it carries
-the rulings applied during Tasks 1-5. Tracking docs (progress, BACKLOG,
+the rulings applied during Tasks 1-7. Tracking docs (progress, BACKLOG,
 ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
 in the main checkout. Only the controller writes them.
 
-Task 7 status (2026-10-11): the design was pre-reviewed
-(review-fx008-task7-design-result.md, amendments A1-A7). The implementer
-stopped at the gate with wip 8dd22be: unlisted probe changes
-(argbind-internal accepted; cyc2/cyc3/sh1 texts) and ec1 not flipping;
-see the ledger. Awaiting the user's rulings before continuing.
+Next: Task 8 (installations, no new rejection), then Tasks 9-12 and the
+whole-branch review. Task 7 carry-forward: Task 8 builds `env.current`
+labels from R; C's labels carry no arguments and pair by key
+(UnifyRow.ignoringArguments), never the full unifier; closing C needs the
+Task 8 test the plan notes.
 
-Next: Task 7, the switch-over. Before Task 7 code, Opus reviews the Sonnet
-  implementer's Sync/TailPass design.
-- Tasks 8-12.
-
-Task 6 carry-forward for Task 7 (review-fx008-task6-result.md):
-- Subst.purs is at 246 of 250 lines; Task 7 must not grow it.
-- `entries` already builds the clause entries (c to R ending in
-  Remainder φ, c to C Fresh); Settle's `remaining` assumes φ is a bare
-  tail when registered, and a missing group must never fall back to Fresh
-  (the fx008-settle-phi defect). Both are commented in the code.
-- Binding a watched tail moves the watch (removes m, watches the new
-  tail); `sync` re-watches resolved tails itself.
-- The disk had 3.7 GiB free on 2026-10-11; isolated mutant copies should
-  exclude .build.
+Size and cost notes: Subst.purs 246 lines (do not grow); Unify.purs
+240. Agent copies for mutant proofs exclude .build and are deleted.
 
 Execution: subagent-driven, as the user directed (2026-10-10). Sonnet
 implements each task, and Opus reviews each. Escalate to Opus on a
@@ -40,7 +28,7 @@ genuine ambiguity, a gate failure, or a second failed review.
 Stop conditions still in force:
 - any probe change the gate table does not list (stop and report);
 - the first observed text of a pattern-gated probe (report to the user
-  before pinning): p5, r1, r2, ec1 and tp1 in Task 7;
+  before pinning);
 - user-facing text changes outside the approved P10 texts.
 
 Setup facts:
