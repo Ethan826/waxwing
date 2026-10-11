@@ -3,8 +3,9 @@
 Future milestone INF001 was defined at the user's request on 2026-10-11:
 [automatic requirement and error composition](plans/2026-10-11-requirement-and-error-inference-milestone.md).
 Includes setup/assembly errors and business-logic errors, automatic named
-function channels, partial provision and recovery. Requirements only;
-finish active FX008/FX001 work before its language design and plan.
+function channels, partial provision and recovery. Requirements brief only; independent and adversarial review complete.
+Ledger: `docs/sdd/2026-10-11-inference-milestone/progress.md`. Finish active
+FX008/FX001 work before its language design and plan.
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
 fx008-impl at b5fab7c, pushed to origin/fx008-impl as a backup at the

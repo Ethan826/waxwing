@@ -3760,3 +3760,20 @@ Documentation checks: A1-A10 present, tracking links resolve, and
 Build, strict rebuild proof and structural gates passed. Regression proofs
 were not reached. No retry or assertion change. Evidence:
 `.build/inf001-definition-verify.log`. This run verifies no INF001 behavior.
+
+INF001 main-integration review (2026-10-11): independent requirements and
+adversarial reviews approved the brief, with no blocking findings. Minor
+M1 addressed by individually named B1-B8 observations and a handler-site
+failure witness; scoped adversarial follow-up approved. Reports, process
+audit and dispositions: `docs/sdd/2026-10-11-inference-milestone/`.
+Fresh isolated full verify exited 1: 957/958 parallel tests; unchanged
+10,000-type inhabitation chain 7.196051 s against 5 s (T004), no retry.
+Unreached serial phase run separately: 29/29 passed. Compiler inputs are
+identical to main baseline d35edf2. The prior T007 failure remains recorded.
+This records a reviewed requirements brief, not an approved language design.
+
+User clarified that shipping documentation does not require compiler tests.
+Stopped the isolated regression run; partial proof output is not a full
+result. Documentation release checks and both reviews are complete; no
+compiler tests are a gate for this brief. All observed failures remain
+recorded. No other agent's checkout or processes were changed.
