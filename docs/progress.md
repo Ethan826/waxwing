@@ -3807,3 +3807,51 @@ Evidence:
 
 Open: no probe distinguishes F1′'s join-group from a new group (cost
 only); Task 8 must build `env.current` labels from R and pair C by key.
+
+## INF001 requirements recorded (2026-10-11)
+
+User requested a project milestone for automatic requirement inference,
+then explicitly required error composition during service assembly and
+business logic. Recorded A1-A10, design alternatives, current named-function
+inference gap, generic error-family questions, FX008 compatibility and
+completion evidence in
+[the milestone](plans/2026-10-11-requirement-and-error-inference-milestone.md).
+Status: requirements defined; language design and implementation plan remain.
+No compiler changes; active FX008 delivery is unchanged.
+
+Documentation checks: A1-A10 present, tracking links resolve, and
+`git diff --check` passed. Fresh `npm run verify` exited 1:
+958/958 parallel tests and 28/29 serial tests passed; partialFirst at
+20,000 parameters took 973.142 ms against its 930 ms bound (T007).
+Build, strict rebuild proof and structural gates passed. Regression proofs
+were not reached. No retry or assertion change. Evidence:
+`.build/inf001-definition-verify.log`. This run verifies no INF001 behavior.
+
+### FX008 Task 8: installations with frame marks (2026-10-11)
+
+Sonnet implementer (b30b8b8; fix round ff0c6d1). Opus review
+(review-fx008-task8-result.md): Spec ✅ given the deviation, Quality
+Needs fixes; the fix round was checked by the controller.
+
+What it adds, with no probe change: each `with` registers an
+installation with a frame mark (`NoFail` for Console, else a fresh mark
+meta); settling pairs the handler's clause row C with the installing row
+by key and position (`Lend.assume`), taking arguments from R, and records
+the frame ⊑ C edges; the tail pass gains an installation rule (a guard,
+unreachable while R ≡ current).
+
+Deviation, accepted by the controller: `install` does not consume C, as
+the plan said; consumption renamed row tails (442-449 check-phase IR
+differences, nothing later). The reviewer swapped the plan's consumption
+back in and found identical mark-edge sets over 3,151 sources (570 with
+installations), with the fallback never taken. The plan now describes
+`assume`.
+
+Review fixes: I1, 1,000 installations went from 3.97 s (base) to 11.6 s;
+now 5.2-6.3 s (eager `where` bindings recomputed pairing every round);
+serial guard 9.5 s. I2, edge endpoints and direction asserted (a
+reversed-edge mutant fails 2 of 6), plus a nested duplicate-key case.
+
+Evidence: gate 110/110, no change; differential 0 differences against
+66f1eca and b30b8b8; verify at ff0c6d1 (.build/task8-fix-verify.log in
+the worktree): exit 0, 1182/1182 parallel, 37/37 serial, 49 proof lines.
