@@ -3651,3 +3651,37 @@ arrow row, both sides show theirs. An empty handler row prints `with
 pure`, and ambient tails stay omitted. This amends the approved P3
 callback text to `Expected Unit -> Unit with nofail Log, found Unit ->
 Unit with Log`.
+
+### FX008 Task 4: directional consumption, copies, mark equality (2026-10-10)
+
+Sonnet implementer (3b0dd3e; fix rounds aa8db84, a43f56c, 84b684e). Opus
+task review and re-review (review-fx008-task4-result.md): Spec ✅,
+Quality Approved. Rounds 2 and 3 were checked by the controller.
+
+What it adds:
+- `RowMode`: equal, ignore marks, or directional;
+- MarkStore, with bindings, edges and its own meta counter;
+- RowFinish (split out of UnifyRow) and UnifyMark;
+- the directional mark relations: frame ⊑ assumption, a fresh t ⊑ s on
+  target extension, and frame ⊑ copy on stage-tail binding, with no
+  copies on throwaway tails (`consumeLabels`);
+- mark equality in types (P3), and opening of handler types at function
+  use only (P5).
+
+Review fixes:
+- I1: when neither handler type has a separate clause row, their rows are
+  compared with marks. Without this, signature handler types never
+  compared clause-row marks, a soundness hole.
+- m1: a separate mark-meta counter.
+- The property test's strength was restored.
+- The user's symmetric mismatch texts (see the decision above).
+
+Evidence:
+- `scripts/differential.mjs --corpus all` against e0580a4: 0 differences
+  in every phase (3,421 harvested, plus fuzz, isName, matches and
+  mutations).
+- The reviewer's whole-compile comparison: 0 differences for programs
+  without `nofail`.
+- Verify at 84b684e (.build/task4-fix3-verify.log in the worktree): exit
+  0, 1126/1126 parallel, 33/33 serial, 36 proofs; gate 107/107, no
+  change.
