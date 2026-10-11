@@ -92,3 +92,12 @@ code copied and no claims of a complete source/library audit.
 Effect SchemaAST and advanced-usage docs, ZIO Schema introduction and
 Kiselyov's tagless-final research overview. Recorded conceptual precedents
 and representation tradeoffs in schema-direction. No source code copied.
+
+## Automatic requirement and error composition (2026-10-11)
+
+INF001 derives its acceptance scenario from the user's pasted PureScript
+comparison and Effect route/provision example, plus their explicit requirement
+for error channels to compose during assembly and business logic. Official
+Effect Layer documentation is linked in the milestone. Conceptual influence
+only; no external implementation copied. Project brainstorming and
+verification-before-completion guidance used for the requirements brief.

@@ -3741,3 +3741,22 @@ Verify at dd45b58 (.build/task5-fix-verify.log in the worktree): exit 0,
   code-bearing commit passed: 958/958 parallel, 29/29 serial, 36 proofs.
 - The FX008 implementation stays off main until it is complete and
   reviewed.
+
+## INF001 requirements recorded (2026-10-11)
+
+User requested a project milestone for automatic requirement inference,
+then explicitly required error composition during service assembly and
+business logic. Recorded A1-A10, design alternatives, current named-function
+inference gap, generic error-family questions, FX008 compatibility and
+completion evidence in
+[the milestone](plans/2026-10-11-requirement-and-error-inference-milestone.md).
+Status: requirements defined; language design and implementation plan remain.
+No compiler changes; active FX008 delivery is unchanged.
+
+Documentation checks: A1-A10 present, tracking links resolve, and
+`git diff --check` passed. Fresh `npm run verify` exited 1:
+958/958 parallel tests and 28/29 serial tests passed; partialFirst at
+20,000 parameters took 973.142 ms against its 930 ms bound (T007).
+Build, strict rebuild proof and structural gates passed. Regression proofs
+were not reached. No retry or assertion change. Evidence:
+`.build/inf001-definition-verify.log`. This run verifies no INF001 behavior.
