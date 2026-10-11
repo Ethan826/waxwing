@@ -69,7 +69,8 @@ docs/sdd/2026-10-09-effects-plan/).
 - §3.5: the fallback "never extend a tail that ends any restricted row" is
   disqualified; never use it.
 - T003 linearity: `sync` cost ∝ dirty rows; F2 searches only from dirty
-  rows; no-feed-edge declarations settle in two rounds; settling consumes
+  rows; no-feed-edge declarations settle in one round (plus a key re-check
+  only when pairs are set aside); settling consumes
   with throwaway tails (no copies, rev6 M9); path check O(edges × atoms).
 - **Probe gate rule.** test/fx008-probes.test.mjs asserts every review
   probe. A task may change a probe's outcome only where this plan lists that

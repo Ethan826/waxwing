@@ -24,15 +24,15 @@ import Features.Check.Feed
   ( FeedRow
   , Feeds
   , components
-  , feedsOf
+  , positionOf
   , successors
   )
 import Features.Check.FeedOrder (settleOrder)
 import Features.Check.Subst (Flex)
 
 -- The rows in the order one settling round consumes them (§3.5 (b)).
-feedOrder ∷ Array FeedRow → Array Int
-feedOrder rows = settleOrder rows (feedsOf rows)
+feedOrder ∷ Array FeedRow → Feeds → Array Int
+feedOrder = settleOrder
 
 -- What a search reads: the rows, the graph and each row's weight per key.
 type Search =
@@ -47,22 +47,18 @@ type Search =
 -- positive weight for the key. A strongly connected component with an edge
 -- is searched per key by Bellman-Ford: a relaxation in round |S| proves a
 -- positive cycle.
-positiveCycle ∷ Array FeedRow → Array Int → Maybe Int
-positiveCycle rows starts = minimumBy (earlier rows)
+positiveCycle ∷ Array FeedRow → Feeds → Array Int → Maybe Int
+positiveCycle rows feeds starts = minimumBy (earlier rows)
   (Array.concatMap searched parts)
   where
   search = { rows, feeds, weights: map rowWeights rows }
-  feeds = feedsOf rows
   parts = Array.filter (looping feeds) (components feeds starts)
   searched part = Array.mapMaybe (cycleFor search part)
     (positiveKeys search part)
 
 earlier ∷ Array FeedRow → Int → Int → Ordering
-earlier rows left right = compare (Tuple (positionAt rows left) left)
-  (Tuple (positionAt rows right) right)
-
-positionAt ∷ Array FeedRow → Int → Int
-positionAt rows node = fromMaybe 0 (_.position <$> Array.index rows node)
+earlier rows left right = compare (Tuple (positionOf rows left) left)
+  (Tuple (positionOf rows right) right)
 
 -- A component can hold a cycle when it has two rows or a self-loop.
 looping ∷ Feeds → Array Int → Boolean
@@ -130,15 +126,20 @@ cycleFor search part key = onCycle =<< relaxed
   onCycle found = minimumBy (earlier search.rows)
     (Array.filter heavy (cycleOf found.before (landing found)))
   size = Array.length part
+  edges = componentEdges search key part
+  heavy node = weightOf search key node > 0
+  landing found = stepBack found.before size found.node
+  relaxed = tailRec (round size edges) { number: 1, pass: noPass }
+
+-- The edges inside a component, each with the weight of the row it leaves.
+componentEdges ∷ Search → LabelKey → Array Int → Array Edge
+componentEdges search key part = Array.concatMap leaving part
+  where
   members = Set.fromFoldable part
-  edges = Array.concatMap leaving part
   leaving node = map (edge node)
     (Array.filter (inside members) (successors search.feeds node))
   edge node target =
     { from: node, to: target, weight: weightOf search key node }
-  heavy node = weightOf search key node > 0
-  landing found = stepBack found.before size found.node
-  relaxed = tailRec (round size edges) { number: 1, pass: noPass }
 
 inside ∷ Set Int → Int → Boolean
 inside members node = Set.member node members

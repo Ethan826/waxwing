@@ -6,7 +6,7 @@ import Data.Array as Array
 import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe, maybe')
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
@@ -15,6 +15,7 @@ import Features.Check.Feed
   , Feeds
   , components
   , inSourceOrder
+  , positionOf
   , successors
   )
 import Features.Check.Search (Stack(..), stackItems)
@@ -52,17 +53,19 @@ condense rows feeds =
   parts = map (Array.sortWith positionKey)
     (components feeds (inSourceOrder rows))
   positionKey node = Tuple (positionOf rows node) node
-  owner = foldl placed Map.empty (Array.mapWithIndex Tuple parts)
-  placed found (Tuple part members) = foldl (place part) found members
-  place part found member = Map.insert member part found
+  owner = ownerMap parts
   leaving part members = Array.filter (differs part)
     (Array.mapMaybe ownerOf (Array.concatMap (successors feeds) members))
   differs part other = other /= part
   ownerOf node = Map.lookup node owner
   earliest members = fromMaybe 0 (positionOf rows <$> Array.head members)
 
-positionOf ∷ Array FeedRow → Int → Int
-positionOf rows node = fromMaybe 0 (_.position <$> Array.index rows node)
+-- The part each row is in.
+ownerMap ∷ Array (Array Int) → Map Int Int
+ownerMap parts = foldl placed Map.empty (Array.mapWithIndex Tuple parts)
+  where
+  placed found (Tuple part members) = foldl (place part) found members
+  place part found member = Map.insert member part found
 
 start ∷ Condensed → Release
 start graph = { ready: Set.fromFoldable unfed, degrees, order: Bottom }
@@ -74,9 +77,10 @@ start graph = { ready: Set.fromFoldable unfed, degrees, order: Bottom }
     if Map.member part degrees then Nothing else Just (Tuple first part)
 
 release ∷ Condensed → Release → Step Release (Array Int)
-release graph state = maybe (Done (stackItems state.order)) released
-  (Set.findMin state.ready)
+release graph state = maybe' finished released (Set.findMin state.ready)
   where
+  -- Lazy: the order is read once, not at every release.
+  finished _ = Done (stackItems state.order)
   released found@(Tuple _ part) = Loop
     (foldl (lower graph) (emitted found part) (partsAfter part))
   partsAfter part = fromMaybe [] (Array.index graph.later part)

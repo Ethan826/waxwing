@@ -129,7 +129,10 @@ adding a bypass allowlist.
   test/regression-fx008.mjs, all probe files aggregated by
   test/regression-probes.mjs; Cycle.purs weighs a cycle by presence, so
   dup.wxw never settles, caught by a child-process compile under a 20 s
-  timeout): twenty-three `Regression proof (…)` lines in all (`node scripts/regression.mjs name…` proves only the named
+  timeout) and `fx008-settle-order-linear` (the settle order stays linear
+  in the number of deferrals; 16,000 `defer`s compile under a 12 s
+  timeout): twenty-four `Regression proof (…)` lines in all
+  (`node scripts/regression.mjs name…` proves only the named
   rows); the A003 order and print tests also use an independent value
   oracle (test/value-oracle.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):

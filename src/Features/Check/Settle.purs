@@ -19,7 +19,7 @@ import Features.Check.Cycle (feedOrder, positiveCycle)
 import Features.Check.Defer (crossing, failing, placed)
 import Features.Check.Entry (resolvedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
-import Features.Check.Feed (FeedRow)
+import Features.Check.Feed (FeedRow, Feeds, feedsOf)
 import Features.Check.Provenance (Origin)
 import Features.Check.Reject (rejected)
 import Features.Check.Scheme (Deferral, Site, State, flexibleRow)
@@ -87,8 +87,9 @@ round env entries body state = do
   subst ← settleKeys env state body
   let keyed = state { subst = subst }
   let rows = map (feedRow keyed.subst) entries
-  rejectCycle env keyed entries rows
-  consumed ← foldM (consume env entries) keyed (feedOrder rows)
+  let feeds = feedsOf rows
+  rejectCycle env keyed entries rows feeds
+  consumed ← foldM (consume env entries) keyed (feedOrder rows feeds)
   retried ← retry env body consumed
   pure (continued keyed consumed retried)
   where
@@ -136,9 +137,10 @@ rejectCycle
   → State
   → Array Entry
   → Array FeedRow
+  → Feeds
   → Either Diagnostic Unit
-rejectCycle env state entries rows = maybe (Right unit) reported
-  (positiveCycle rows (Array.mapWithIndex indexOnly rows))
+rejectCycle env state entries rows feeds = maybe (Right unit) reported
+  (positiveCycle rows feeds (Array.mapWithIndex indexOnly rows))
   where
   reported index = maybe (Right unit) (rejectAt index)
     (Array.index entries index)

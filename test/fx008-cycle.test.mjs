@@ -3,7 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Just } from '../output/Data.Maybe/index.js';
-import { feedOrder, positiveCycle } from '../output/Features.Check.Cycle/index.js';
+import * as cycle from '../output/Features.Check.Cycle/index.js';
+import { feedsOf } from '../output/Features.Check.Feed/index.js';
 import { label, row, rowMeta } from './row-support.mjs';
 import { toRow } from './unify-support.mjs';
 
@@ -16,8 +17,9 @@ const entry = (own, ownTail, target, targetTail, position, keepFail = false) => 
   keepFail,
   position
 });
+const feedOrder = rows => cycle.feedOrder(rows)(feedsOf(rows));
 const cycleAt = (rows, starts = rows.map((_, index) => index)) => {
-  const found = positiveCycle(rows)(starts);
+  const found = cycle.positiveCycle(rows)(feedsOf(rows))(starts);
   return found instanceof Just ? found.value0 : null;
 };
 

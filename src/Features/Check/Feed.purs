@@ -5,6 +5,7 @@ module Features.Check.Feed
   , components
   , successors
   , inSourceOrder
+  , positionOf
   ) where
 
 import Prelude
@@ -14,7 +15,7 @@ import Data.Array as Array
 import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe, fromMaybe, maybe)
+import Data.Maybe (Maybe, fromMaybe, maybe, maybe')
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
@@ -51,10 +52,13 @@ tailMeta (Row _ tail) = metaOf =<< tail
 
 -- Row indices by source position, ties by index.
 inSourceOrder ∷ Array FeedRow → Array Int
-inSourceOrder rows = map snd' (Array.sort (Array.mapWithIndex keyed rows))
+inSourceOrder rows = map rowIndex (Array.sort (Array.mapWithIndex keyed rows))
   where
   keyed index row = Tuple row.position index
-  snd' (Tuple _ index) = index
+  rowIndex (Tuple _ index) = index
+
+positionOf ∷ Array FeedRow → Int → Int
+positionOf rows node = fromMaybe 0 (_.position <$> Array.index rows node)
 
 -- Tarjan's walk, by a loop: `calls` are the rows being walked, each with
 -- the index of its next successor; `open` the rows not yet in a component.
@@ -89,9 +93,11 @@ components feeds roots = tailRec (step feeds)
 step ∷ Feeds → Walk → Step Walk (Array (Array Int))
 step feeds walk = case walk.calls of
   Bottom → fromRoot walk
-  Push call below → maybe (Loop (finish walk call below))
+  Push call below → maybe' (finished call below)
     (Loop <<< follow walk call below)
     (Array.index (successors feeds call.node) call.next)
+  where
+  finished call below _ = Loop (finish walk call below)
 
 successors ∷ Feeds → Int → Array Int
 successors feeds node = fromMaybe [] (Array.index feeds node)

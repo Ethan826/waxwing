@@ -59,4 +59,25 @@ const cyclePresence = context => {
   console.log(`${context.probe} regression detects the defect`);
 };
 
-export const fx008Probes = { 'fx008-cycle-presence': cyclePresence };
+// The settle order is linear in the number of deferrals. 16,000 `defer`s
+// compile in about 2 s; with the order's end computed eagerly at every step
+// (Task 5 review I1) they take about 26 s, so a 12 s timeout separates them.
+const orderTimeoutMs = 12_000;
+const deferCount = 16_000;
+
+const settleOrderLinear = context => {
+  const deferred = Array.from({ length: deferCount },
+    (_, index) => `defer print(${index}); `).join('');
+  const source = `fn main(): Unit with Console = { ${deferred}() };`;
+  const found = compileWithin(context, source, orderTimeoutMs);
+  if (found.timedOut) fail('settle order: timed out');
+  if (found.diagnostic !== null) {
+    fail(`settle order: ${JSON.stringify(found.diagnostic)}`);
+  }
+  console.log(`${context.probe} regression detects the defect`);
+};
+
+export const fx008Probes = {
+  'fx008-cycle-presence': cyclePresence,
+  'fx008-settle-order-linear': settleOrderLinear
+};
