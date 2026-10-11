@@ -41,7 +41,7 @@ An atomic main reference update must reject a concurrently changed main.
   with B1-B8 and the handler-site witness, scoped re-review approved.
   Report: [adversarial-review.md](adversarial-review.md).
 - Finding disposition and documentation checks: complete.
-- Main integration: reviewed and authorized; awaiting guarded local ref update.
+- Main integration: complete locally; reviewed commit da1b4d0 is in main.
 
 ## Finding dispositions
 
@@ -99,3 +99,15 @@ review, resolved findings, ledger accuracy, link/placeholder checks,
 whitespace checks, exact documentation-only commit scope, and verification
 that local main contains the resulting commit. All pre-integration checks
 are complete. No tests, bounds or compiler implementation changed.
+
+## Integration receipt (2026-10-11)
+
+Local main advanced atomically from d35edf2 to da1b4d0 after confirming
+ancestry and that main was not checked out in another worktree. The
+expected-old-reference guard succeeded. Main contains the milestone, both
+review reports, the follow-up disposition and this ledger.
+
+Before/after checks confirm the shared checkout's HEAD, working status and
+index were unchanged. FX008 implementation and execution records were not
+imported or overwritten. No remote push. This receipt is a documentation
+follow-up to the already integrated reviewed commit.

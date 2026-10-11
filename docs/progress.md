@@ -3777,3 +3777,8 @@ Stopped the isolated regression run; partial proof output is not a full
 result. Documentation release checks and both reviews are complete; no
 compiler tests are a gate for this brief. All observed failures remain
 recorded. No other agent's checkout or processes were changed.
+
+INF001 requirements and reviews integrated into local main at da1b4d0
+with an atomic expected-reference guard. Shared checkout HEAD, index and
+working status unchanged; other agent's implementation worktree untouched.
+No remote push. Integration receipt: INF001 review ledger.
