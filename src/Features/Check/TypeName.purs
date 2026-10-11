@@ -1,6 +1,7 @@
 module Features.Check.TypeName
   ( Names
   , typeName
+  , typeNames
   , labelParts
   , labelText
   , markPrefix
@@ -11,10 +12,10 @@ module Features.Check.TypeName
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (Maybe(..), fromMaybe, maybe, maybe')
 import Data.String (joinWith)
 import Data.Traversable (traverse)
-import Data.Tuple (fst, snd)
+import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Ids (EffectId(..))
 import Domain.Problem (LabelName, Problem(..), TypeName(..))
@@ -22,7 +23,7 @@ import Domain.Resolved (EffectInfo, TypeInfo)
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), clauseRow)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TyRow, TypeId(..), VarId(..))
-import Domain.Type.Parts (rowsOf, spine)
+import Domain.Type.Parts (children, rowArguments, rowsOf, spine)
 
 type Names r =
   { types ∷ Array TypeInfo
@@ -38,7 +39,33 @@ typeName
   → Span
   → Ty Open
   → Either Diagnostic TypeName
-typeName env span = case _ of
+typeName env span ty = typeNameIn (markedType ty) env span ty
+
+-- The two types of one mismatch, named with one decision: when either shows
+-- a handler clause row or an arrow row (it holds a mark), both show theirs,
+-- so the difference is visible (user ruling 2026-10-10).
+typeNames
+  ∷ ∀ r
+  . Names (effects ∷ Array EffectInfo | r)
+  → Span
+  → Ty Open
+  → Ty Open
+  → Either Diagnostic (Tuple TypeName TypeName)
+typeNames env span one other = Tuple <$> typeNameIn shown env span one
+  <*> typeNameIn shown env span other
+  where
+  shown = markedType one || markedType other
+
+-- `shown`: rows are part of the name. A handler's clause row then prints
+-- even when empty (`with pure`); an arrow's row only when it has something.
+typeNameIn
+  ∷ ∀ r
+  . Boolean
+  → Names (effects ∷ Array EffectInfo | r)
+  → Span
+  → Ty Open
+  → Either Diagnostic TypeName
+typeNameIn shown env span = case _ of
   TInt → Right IntName
   TBool → Right BoolName
   TUnit → Right UnitName
@@ -47,40 +74,53 @@ typeName env span = case _ of
   TVar (Rigid (VarId index)) → maybe' unnamed (Right <<< VariableName)
     (Array.index env.variables index)
   TVar (Hole _) → Right HoleName
-  arrow@(TFun _ _ _) → arrowName env span arrow
+  arrow@(TFun _ _ _) → arrowName shown env span arrow
   THandler label rows → handlerName label (clauseRow rows)
   where
   missing _ = Left (problemAt (Internal "Invalid resolved type") span)
   unnamed _ = Left (problemAt (Internal "Unnamed type variable") span)
   named arguments info
     | Array.null arguments = Right (DataName info.name)
-    | otherwise = AppliedName info.name <$> traverse (typeName env span)
+    | otherwise = AppliedName info.name <$> traverse (typeNameIn shown env span)
         arguments
   handlerName label clauses = do
     view ← labelParts env span label
-    shown ← arrowRowText env span (rowMarked clauses) clauses
+    text ← arrowRowText env span shown clauses
     Right
       ( AppliedName "Handler"
-          [ withClauses shown (applied view.effect view.arguments) ]
+          [ withClauses text (applied view.effect view.arguments) ]
       )
-  -- A clause row holding a marked label prints, as an arrow's row does.
-  withClauses shown inner = maybe inner (clauseText inner) shown
-  clauseText inner text = DataName (rendered inner <> " with " <> text)
   applied name [] = DataName name
   applied name arguments = AppliedName name arguments
+  withClauses text inner
+    | shown = DataName (rendered inner <> " with " <> fromMaybe "pure" text)
+    | otherwise = inner
+
+-- Whether a type holds a mark in an arrow's row or a handler's clause row,
+-- anywhere in it. The handled label's own mark does not count.
+markedType ∷ Ty Open → Boolean
+markedType ty = Array.any rowMarked rows
+  || Array.any markedType (children ty)
+  || Array.any markedArguments rows
+  where
+  rows = case ty of
+    THandler _ handled → [ clauseRow handled ]
+    _ → rowsOf ty
+  markedArguments row = Array.any markedType (rowArguments row)
 
 -- Parameter by parameter, each arrow with the row text it shows, if any.
 arrowName
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Boolean
+  → Names (effects ∷ Array EffectInfo | r)
   → Span
   → Ty Open
   → Either Diagnostic TypeName
-arrowName env span arrow = curried
-  <$> traverse (typeName env span)
+arrowName shown env span arrow = curried
+  <$> traverse (typeNameIn shown env span)
     found.parameters
-  <*> traverse (arrowRowText env span (Array.any rowMarked rows)) rows
-  <*> typeName env span found.result
+  <*> traverse (arrowRowText env span shown) rows
+  <*> typeNameIn shown env span found.result
   where
   found = spine arrow
   rows = rowsOf arrow

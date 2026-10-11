@@ -157,8 +157,14 @@ docs/sdd/2026-10-09-effects-plan/).
   as differing arguments, E_TYPE: `Expected Handler(nofail Log), found
   Handler(Log)`; a row label `Expected nofail Log, found Log` (RowPayload →
   LabelMismatch); a callback type `Expected Unit -> Unit with nofail Log,
-  found Unit -> Unit` (a function type's row prints only when it holds a
-  `nofail`/`nofail(k)` label, so today's texts are unchanged). Note for the
+  found Unit -> Unit with Log`. Symmetric rule (user, 2026-10-10): when
+  either side of a mismatch holds a `nofail`/`nofail(k)` label in an arrow
+  row or a handler clause row, both sides show theirs at the same position
+  (decided once per mismatch): an empty handler clause row prints `with
+  pure`, an empty arrow row nothing, ambient and unsolved tails are
+  omitted; `Handler(Log with Tick)` against `Handler(Log with nofail Tick)`
+  reads `Expected Handler(Log with Tick), found Handler(Log with nofail
+  Tick)`. Types with no marked row label print as before. Note for the
   user: `Expected nofail Log, found Log` exists both as E_TYPE (P3) and as
   E_EFFECT (path check, `ExpectedNofail`).
 - **P4 (i)** Strip at the end of `Features.Check.check`, before
@@ -667,7 +673,7 @@ Edges recorded, not yet read. New rejections: only P3's.
   - `callback rows are invariant in marks`: `fn need(k: Unit -> Unit with
     nofail Log): Unit = (); fn give(k: Unit -> Unit with Log): Unit =
     need(k);` → E_TYPE `Expected Unit -> Unit with nofail Log, found Unit ->
-    Unit` at `k` in `need(k)` (P3).
+    Unit with Log` at `k` in `need(k)` (P3).
   - `a lambda passed to a nofail callback compiles`: `need(fn(u: Unit) =>
     log(1))` inside `with nofail Log`.
 - [ ] **Step 2: Run** both files → FAIL.

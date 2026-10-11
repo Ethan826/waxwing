@@ -38,7 +38,7 @@ test('callback rows are invariant in marks', () => {
     + 'fn main(): Int = 0;';
   const found = rejectedArgument(source, 'need(k)', 'k');
   assert.equal(found.message,
-    'Expected Unit -> Unit with nofail Log, found Unit -> Unit');
+    'Expected Unit -> Unit with nofail Log, found Unit -> Unit with Log');
 });
 
 test('a lambda passed to a nofail callback compiles', () => {
@@ -57,7 +57,7 @@ test('handler types with clause rows of different marks differ', () => {
     + 'fn main(): Int = 0;';
   const found = rejectedArgument(source, 'inner(h)', 'h');
   assert.equal(found.message,
-    'Expected Handler(Log), found Handler(Log with nofail Tick)');
+    'Expected Handler(Log with Tick), found Handler(Log with nofail Tick)');
 });
 
 test('a clause row mark clash through a lambda annotation names the row', () => {
@@ -66,7 +66,7 @@ test('a clause row mark clash through a lambda annotation names the row', () => 
     + 'fn main(): Int = 0;';
   const found = rejectedArgument(source, 'f(h)', 'h');
   assert.equal(found.message,
-    'Expected Handler(Log with nofail Tick), found Handler(Log)');
+    'Expected Handler(Log with nofail Tick), found Handler(Log with Tick)');
 });
 
 test('a result written M stays closed against a nofail parameter', () => {
@@ -76,4 +76,15 @@ test('a result written M stays closed against a nofail parameter', () => {
     + 'fn main(): Int = { run(mk()); 0 };';
   const found = rejectedArgument(source, 'run(mk())', 'mk()');
   assert.equal(found.message, 'Expected Handler(nofail Log), found Handler(Log)');
+});
+
+test('an empty clause row prints as pure beside a marked one', () => {
+  const state = 'effect State(s) { fn get(): s; fn put(v: s): Unit; }; ';
+  const source = state + tick
+    + 'fn inner(h: Handler(State(Int) with nofail Tick)): Unit = (); '
+    + 'fn outer(h: Handler(State(Bool) with pure)): Unit = inner(h); '
+    + 'fn main(): Int = 0;';
+  const found = rejectedArgument(source, 'inner(h)', 'h');
+  assert.equal(found.message, 'Expected Handler(State(Int) with nofail Tick), '
+    + 'found Handler(State(Bool) with pure)');
 });

@@ -10,6 +10,7 @@ module Features.Check.Require
 import Prelude
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -18,7 +19,7 @@ import Domain.Row (Row(..), isPure)
 import Features.Check.Provenance (trail)
 import Features.Check.Report (crossingNotes, originNotes)
 import Features.Check.RowName (labelName, rowConflict)
-import Features.Check.TypeName (Names, typeName)
+import Features.Check.TypeName (Names, typeName, typeNames)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
 import Features.Check.Hint (Declared, hinted)
@@ -94,8 +95,7 @@ expectType env state expected actual span = do
   mismatched _ = reported TypeMismatch (resolved state.subst expected)
     (resolved state.subst actual)
   reported problem one other = do
-    first ← typeName env span one
-    second ← typeName env span other
+    Tuple first second ← typeNames env span one other
     Left (problemAt (problem first second) span)
 
 -- A type, resolved under the state, may be at most `inferredTypeLimit`

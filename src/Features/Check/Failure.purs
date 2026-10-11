@@ -21,7 +21,7 @@ import Features.Check.Consume (consumeAt)
 import Features.Check.Provenance (Consumed(FailOf))
 import Features.Check.Reject (rejected)
 import Features.Check.Scheme (State, Threaded, opened, resolved)
-import Features.Check.TypeName (typeName)
+import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..), Flex, Subst(..), settleRows)
 
 type Result = Either Diagnostic (Threaded Checked.Expr)
@@ -92,8 +92,8 @@ failureDiagnostic env state body failure = case failure of
   origin = { span, consumed: FailOf env.functionName, via: Nothing }
   mismatch found expected = do
     let Tuple expectedPart foundPart = firstDifferent expected found
-    expectedName ← typeName env span (opened expectedPart)
-    foundName ← typeName env span (opened foundPart)
+    Tuple expectedName foundName ← typeNames env span (opened expectedPart)
+      (opened foundPart)
     Left (problemAt (TypeMismatch expectedName foundName) span)
 
 firstFail ∷ Checked.Expr → Maybe Span
