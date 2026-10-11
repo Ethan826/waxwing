@@ -3685,3 +3685,10 @@ Evidence:
 - Verify at 84b684e (.build/task4-fix3-verify.log in the worktree): exit
   0, 1126/1126 parallel, 33/33 serial, 36 proofs; gate 107/107, no
   change.
+
+User decisions 2026-10-10 (FX008 Task 5 probe gate):
+- design-review/r4 is a permitted fourth flip. It is rejected today and
+  stays rejected; its message moves to the side-condition text at the
+  `defer` span, the same cycle as n1. The plan had wrongly predicted it
+  unchanged.
+- The observed texts for dup, n1, r5 and r4 are pinned exactly.
