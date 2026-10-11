@@ -90,6 +90,7 @@ install infer env state span handlerValue label rows body = do
         , clauses: clauseRow rows
         , current: env.current
         , sites: env.sites
+        , matched: 0
         }
         framed.restricted
     }

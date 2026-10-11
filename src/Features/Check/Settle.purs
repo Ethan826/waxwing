@@ -6,8 +6,8 @@ import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
-import Data.Maybe (isNothing, maybe)
-import Data.Tuple (Tuple(..), fst, snd)
+import Data.Maybe (maybe, maybe')
+import Data.Tuple (Tuple, fst, snd)
 import Domain.Checked.Internal as Checked
 import Domain.Checked.Internal (Open)
 import Domain.Row (Label, Row(..))
@@ -21,13 +21,15 @@ import Features.Check.Walked (bareLabel, headedRow, walkedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Feed (FeedRow, Feeds, feedsOf)
 import Features.Check.Lend (assume, lend)
+import Features.Check.Occurrence (OccurrenceId)
 import Features.Check.Reject (rejected)
+import Features.Check.Restricted (matchedInstallation)
 import Features.Check.Scheme (State)
-import Features.Check.SettleEntry (Entry, EntryTail(..))
+import Features.Check.SettleEntry (Donor, Entry, EntryTail(..))
 import Features.Check.SettleEntry as Entries
 import Features.Check.Sync (syncSettling)
 import Features.Check.TailPass (tailPass)
-import Features.Check.Unify (Failure(..), Subst(..))
+import Features.Check.Unify (Failure(..), Flex, Subst(..))
 
 type Env r = CheckEnv (locals ∷ Locals | r)
 
@@ -60,7 +62,7 @@ round env body state = do
   let rows = map (feedRow keyed.subst) entries
   let feeds = feedsOf rows
   rejectCycle env keyed entries rows feeds
-  consumed ← foldM (consume env entries) keyed (feedOrder rows feeds)
+  consumed ← foldM (consume env entries rows) keyed (feedOrder rows feeds)
   retried ← retry env body consumed
   pure (continued (decided settled) (changed entries consumed) retried consumed)
   where
@@ -87,23 +89,11 @@ postponedCount ∷ Subst → Int
 postponedCount (Subst bindings) = Array.length bindings.postponed
 
 -- How many labels a row resolves to now: rows only grow at their tails,
--- so a change in the count is a change in the row. An installation's C
--- counts the labels it can already take arguments for, so R growing to hold
--- one it was waiting for is a change too.
+-- so a change in the count is a change in the row.
 labelCount ∷ Subst → Entry → Int
-labelCount subst entry = maybe (Array.length labels) lentCount entry.donor
+labelCount subst entry = Array.length labels
   where
   Row labels _ = walkedRow subst entry.own
-  lentCount donor = Array.length (lend subst donor (map unplaced labels))
-  unplaced label = Tuple label unit
-
-lent
-  ∷ ∀ a
-  . Subst
-  → Entry
-  → Array (Tuple (Label (Ty Open)) a)
-  → Array (Tuple (Label (Ty Open)) a)
-lent subst entry = maybe identity (lend subst) entry.donor
 
 feedRow ∷ Subst → Entry → FeedRow
 feedRow subst entry =
@@ -138,11 +128,24 @@ rejectCycle env state entries rows feeds = maybe (Right unit) reported
 -- tail (or, for a `Remainder` entry, the remainder's). `Fail` stays out of
 -- a deferred row's labels, as it always has.
 consume
-  ∷ ∀ r. Env r → Array Entry → State → Int → Either Diagnostic State
-consume env entries state index = maybe (Right state) consumed
+  ∷ ∀ r
+  . Env r
+  → Array Entry
+  → Array FeedRow
+  → State
+  → Int
+  → Either Diagnostic State
+consume env entries rows state index = maybe (Right state) consumed
   (Array.index entries index)
   where
-  consumed entry = case entry.tail of
+  consumed entry = maybe (ordinary entry) (installedFor entry) entry.donor
+  installedFor entry donor = installed env state entry donor
+    (targetLabels index)
+  -- The labels of the entry's target as the round began (the feed graph's).
+  targetLabels i = maybe [] labelsOfRow (Array.index rows i)
+  labelsOfRow row = case row.target of
+    Row labels _ → labels
+  ordinary entry = case entry.tail of
     Fresh → fresh entry
     Remainder remainder → remaining entry remainder
   -- A stage ending in the group's remainder (φ) consumes as it stands,
@@ -151,35 +154,84 @@ consume env entries state index = maybe (Right state) consumed
   -- its tail is read; `ignoreMarks` and `sites` do not apply here.
   remaining entry (Row _ tail) = consumeIgnoring env state
     { origin: entry.origin
-    , stage: Row (map fst (kept entry)) tail
+    , stage: Row (map fst (kept state entry)) tail
     , target: entry.target
     }
-  fresh entry = maybe (plain entry) (assumed entry) entry.donor
-  -- An installation's C meets labels the row already holds: only the mark
-  -- edges are recorded, so no tail is renamed. A label with no partner yet
-  -- is consumed in the usual way.
-  assumed entry _ = maybe (plain entry) (Right <<< marked)
-    (assume entry.origin.span state.subst entry.target (kept entry))
-  marked subst = state { subst = subst }
-  plain entry = consumer entry env state (spec entry)
-  spec entry =
+  fresh entry = consumer entry env state
     { origin: entry.origin
-    , sources: map snd (kept entry)
-    , labels: map (shown entry) (kept entry)
+    , sources: map snd (kept state entry)
+    , labels: map (shown entry) (kept state entry)
     , target: entry.target
     , sites: entry.sites
     , ignoreMarks: entry.ignoreMarks
     }
   shown entry found
-    | entry.bare && isNothing entry.donor = bareLabel state.subst (fst found)
+    | entry.bare = bareLabel state.subst (fst found)
     | otherwise = fst found
   consumer entry
     | entry.bare = consumeBare
     | otherwise = consumeLabels
-  kept entry = lent state.subst entry
-    ( Array.filter (carried entry)
-        (placed state (labelsOf entry) entry.own)
-    )
-  labelsOf entry = case walkedRow state.subst entry.own of
+
+-- The labels of an entry's own row that travel, with their occurrences.
+kept
+  ∷ State → Entry → Array (Tuple (Label (Ty Open)) OccurrenceId)
+kept state entry = Array.filter carried
+  (placed state labels entry.own)
+  where
+  Row labels _ = walkedRow state.subst entry.own
+  carried found = entry.keepFail || not (failing (fst found))
+
+-- An installation's C (design §3.4, `donor` its handler's R). Its labels
+-- meet the labels `current` already holds, and only the mark edges are
+-- recorded (`Lend.assume`), so no tail is renamed. The invariant is lent
+-- labels ⊆ R ⊆ `current` by key multiset, so the fallback is not reached: a
+-- label with no partner would be consumed here, taking its arguments from R,
+-- and a consumption only renames tails (no edge differs).
+installed
+  ∷ ∀ r
+  . Env r
+  → State
+  → Entry
+  → Donor
+  → Array (Label (Ty Flex))
+  → Either Diagnostic State
+installed env state entry donor began =
+  if labelCount state.subst entry == donor.matched then Right state
+  else paired env state entry donor began
+
+-- Where-bound values are computed on entry, so everything costly sits here,
+-- reached only when C has grown.
+paired
+  ∷ ∀ r
+  . Env r
+  → State
+  → Entry
+  → Donor
+  → Array (Label (Ty Flex))
+  → Either Diagnostic State
+paired env state entry donor began = maybe' again marked (meeting began)
+  where
+  found = kept state entry
+  meeting target = assume entry.origin.span state.subst target found
+  -- A label that reached `current` since the round began is found by
+  -- resolving it afresh; only then is nothing paired.
+  again _ = maybe' fallback marked (meeting (freshly unit))
+  freshly _ = case headedRow state.subst entry.target of
     Row labels _ → labels
-  carried entry found = entry.keepFail || not (failing (fst found))
+  marked subst = Right
+    ( state
+        { subst = subst
+        , restricted = matchedInstallation donor.id (Array.length found)
+            state.restricted
+        }
+    )
+  fallback _ = consumeBare env state
+    { origin: entry.origin
+    , sources: map snd lentFound
+    , labels: map fst lentFound
+    , target: entry.target
+    , sites: entry.sites
+    , ignoreMarks: entry.ignoreMarks
+    }
+    where
+    lentFound = lend state.subst donor.inference found

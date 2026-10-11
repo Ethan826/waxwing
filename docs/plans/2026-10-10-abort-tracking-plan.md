@@ -999,20 +999,23 @@ entries join settling; gate unchanged.
 - `install ∷ ∀ r. Infer (locals ∷ Locals | r) → HandlerEnv r → State → Span →
   Checked.Expr → Label (Ty Open) → HandlerRows (Ty Open) Open →
   Resolved.Expr → Either Diagnostic (Threaded Checked.Expr)`: R into
-  `env.current` by `consumeIgnoring`; `clauseRow`'s labels into `env.current` by
-  `consumeLabels` (Directional, Fail kept, origin the `with`), each label
-  taking its arguments from R (C keeps none, Task 7 ruling); C's labels pair
-  by key with an argument-ignoring unifier (`ignoringArguments`, as
-  `Unify.unifyClauses`, `Clauses.file` and Settle's bare entries do), never
-  with the full unifier: a bare `Fail(Job)` must not meet `Fail(Job(Int))`
-  (witness/famw, famw2); frame f =
-  `NoFail` for Console, else a fresh `MarkMeta`; the body is checked against
-  `withMark f label` prepended to the current row; registers an
-  `Installation`.
-- Settle: each installation adds an entry C → `current` (Directional,
-  `Fresh`, `keepFail`, origin the `with`). TailPass: an installation whose
-  resolved C tail is a rigid ϱ needs `current` to end in ϱ (origin the
-  `with`).
+  `env.current` by `consumeIgnoring`; frame f = `NoFail` for Console, else a
+  fresh `MarkMeta` (from the mark store's counter); the body is checked
+  against `withMark f label` prepended to the current row; registers an
+  `Installation` (numbered by the registry's size). `install` does not
+  consume C and allocates nothing from `state.next` (see the note below).
+- Settle: each installation adds an entry C → `current`, origin the `with`.
+  It is not a consumption: `Lend.assume` pairs C's labels with `current`'s by
+  key and position, as row unification does, with no unification, and
+  records each pair as the edge `current`'s mark ⊑ C's (Assumed). C keeps no
+  arguments (Task 7 ruling), so a bare `Fail(Job)` never meets
+  `Fail(Job(Int))` (witness/famw, famw2); the edge's label is the partner's.
+  A label with no partner yet falls back to `consumeBare` (Directional, Fail
+  kept) with its arguments lent by R (`Lend.lend`); the invariant lent ⊆ R ⊆
+  `current` makes that unreachable. The entry pairs again only when C has
+  grown (`Installation.matched`). TailPass: an installation whose resolved C
+  tail is a rigid ϱ needs `current` to end in ϱ (origin the `with`); a guard
+  that is unreachable while R ≡ `current`.
 
 - **Implementation note (Task 8).** `install` does not consume C itself, and
   settling's installation entries record the `Assumed` edges by pairing C's
@@ -1186,7 +1189,7 @@ l4b, merge2 and q1 flip.
   |---|---|---|---|
   | `fx008-directional` | UnifyMark.purs | Directional pairs bind as EqualMarks | p1 `2 1 9`; `/directional: rejected/` |
   | `fx008-copies` | UnifyMark.purs | Directional `stageLabel` returns the label | p1; `/copies: rejected/` |
-  | `fx008-c-unified` | Install.purs | C consumed as it stands (unified with ρ) | p2 `11 9`; `/C unified: rejected/` |
+  | `fx008-c-unified` | Lend.purs | `assume` pairs C under `EqualMarks` (C unified with ρ's marks) | p2 `11 9`; `/C unified: rejected/` |
   | `fx008-r-marks` | Consume.purs | `consumeIgnoring` uses EqualMarks | p2; `/R marks: rejected/` |
   | `fx008-extension` | UnifyMark.purs | Directional `targetLabel` returns the stage label | extb `12 0 9`; `/extension: rejected/` |
   | `fx008-local-plain` | MarkUse.purs | `localMarks` keeps `Plain` | annotb `1 2`; `/local marks: rejected/` |

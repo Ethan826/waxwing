@@ -458,7 +458,9 @@ and C fresh:
 row ρ:
 - R unifies with ρ as today, ignoring marks.
 - C is consumed into ρ as a restricted row (§3.5), so requirement edges
-  ρ ⊑ C come from that consumption.
+  ρ ⊑ C come from that consumption. (As implemented, settling pairs C with
+  ρ's labels and records those edges without consuming; see the plan's Task 8
+  note.)
 - The body checks against `f L + ρ`, where f is a fresh *frame mark* for
   this installation. Constraints:
   - m ⊑ f (an own-abort-capable handler gives an M frame);

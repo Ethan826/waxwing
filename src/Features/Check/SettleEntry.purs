@@ -1,6 +1,7 @@
 module Features.Check.SettleEntry
   ( Entry
   , EntryTail(..)
+  , Donor
   , entries
   ) where
 
@@ -34,11 +35,15 @@ type Entry =
   , keepFail ∷ Boolean
   , ignoreMarks ∷ Boolean
   , bare ∷ Boolean
-  , donor ∷ Maybe (TyRow Open)
+  , donor ∷ Maybe Donor
   , tail ∷ EntryTail
   , origin ∷ Origin
   , position ∷ Int
   }
+
+-- An installation's handler: its number, its R, and how many of C's labels
+-- were paired with `current`'s the last time.
+type Donor = { id ∷ Int, inference ∷ TyRow Open, matched ∷ Int }
 
 data EntryTail = Fresh | Remainder (TyRow Open)
 
@@ -56,16 +61,16 @@ entries registry deferrals = Array.sortWith _.position
 -- directionally, `Fail` kept, at the `with` (P13, design §3.5).
 installationEntries ∷ Restricted → Array Entry
 installationEntries registry = map installed
-  (Array.fromFoldable (Map.values registry.installations))
+  (Map.toUnfoldable registry.installations)
   where
-  installed found =
+  installed (Tuple id found) =
     { own: found.clauses
     , target: found.current
     , sites: found.sites
     , keepFail: true
     , ignoreMarks: false
     , bare: true
-    , donor: Just found.inference
+    , donor: Just { id, inference: found.inference, matched: found.matched }
     , tail: Fresh
     , origin: { span: found.span, consumed: Application, via: Nothing }
     , position: found.span.start.offset

@@ -8,6 +8,7 @@ module Features.Check.Restricted
   , emptyRestricted
   , registerClause
   , registerInstallation
+  , matchedInstallation
   ) where
 
 import Prelude
@@ -59,7 +60,8 @@ type Group = { representative ∷ Int, remainder ∷ TyRow Open }
 -- A `with` installation of a handler, for its abort-tracking obligations.
 -- `inference` is the handler's R, from which its C takes label arguments;
 -- `current` the row it is installed in, `frame` the mark of its body's
--- label.
+-- label. `matched`: how many of C's labels settling has already paired with
+-- `current`'s (it pairs again only when C has grown).
 type Installation =
   { span ∷ Span
   , label ∷ Label (Ty Open)
@@ -69,6 +71,7 @@ type Installation =
   , clauses ∷ TyRow Open
   , current ∷ TyRow Open
   , sites ∷ Array Site
+  , matched ∷ Int
   }
 
 -- `clauses`, `groups` and `installations` are keyed by ids the registrant
@@ -104,6 +107,12 @@ registerClause id group entry registry = registry
 registerInstallation ∷ Int → Installation → Restricted → Restricted
 registerInstallation id installation registry = registry
   { installations = Map.insert id installation registry.installations }
+
+matchedInstallation ∷ Int → Int → Restricted → Restricted
+matchedInstallation id count registry = registry
+  { installations = Map.update recorded id registry.installations }
+  where
+  recorded found = Just found { matched = count }
 
 appended ∷ Int → Maybe (Array Int) → Maybe (Array Int)
 appended id = Just <<< maybe [ id ] (flip Array.snoc id)

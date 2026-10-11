@@ -49,7 +49,11 @@ round env state = do
   pure (if changed then Loop passed else Done passed)
 
 -- An installed C ending in ϱ needs the row it is installed in to end in ϱ
--- (design §3.5), reported at the `with`.
+-- (design §3.5), reported at the `with`. Unreachable while R ≡ `current`:
+-- the clause rule above has bound R's tail to ϱ, and R is the same row as
+-- `current` after the `with`, so there is nothing left to bind or refuse (no
+-- program or test reaches it). It is kept as the design's guard, for a
+-- change that stops R and `current` sharing their tail.
 installed
   ∷ ∀ r
   . CheckEnv r

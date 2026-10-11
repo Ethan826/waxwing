@@ -53,9 +53,7 @@ check program = do
   holders = functional program.ctors
   checkDefinition definition = either explained (Right <<< _.function)
     (rechecked definition)
-  rechecked definition = checkFunction holders
-    (environment program definition)
-    definition
+  rechecked = recheck holders program
   -- A rejection's notes may end in a call: the callee's own check says
   -- where in its body the label arose (design §6).
   explained diagnostic = Left
@@ -74,10 +72,18 @@ checkedStates
 checkedStates program = traverse stated program.functions
   where
   holders = functional program.ctors
-  stated definition = named definition <$> checkFunction holders
-    (environment program definition)
-    definition
+  stated definition = named definition <$> recheck holders program definition
   named definition result = { name: definition.name, state: result.state }
+
+-- One function checked alone: its checked form and final state.
+recheck
+  ∷ Functional
+  → Resolved.Program
+  → Resolved.FunctionDecl
+  → Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
+recheck holders program definition = checkFunction holders
+  (environment program definition)
+  definition
 
 -- `main`'s result is printed, so it may hold no function, directly or
 -- through a declared type's fields (FN001 design §3). Resolve has already
