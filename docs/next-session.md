@@ -1,4 +1,4 @@
-# Waxwing / FX008: Task 6 done; Task 7 next (2026-10-11)
+# Waxwing / FX008: Task 7 stopped at the gate (2026-10-11)
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
 fx008-impl at c8503f9 (Task 6 done 2026-10-11; origin/fx008-impl holds
@@ -11,6 +11,12 @@ and reviewed. The worktree copy of the plan is authoritative: it carries
 the rulings applied during Tasks 1-5. Tracking docs (progress, BACKLOG,
 ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
 in the main checkout. Only the controller writes them.
+
+Task 7 status (2026-10-11): the design was pre-reviewed
+(review-fx008-task7-design-result.md, amendments A1-A7). The implementer
+stopped at the gate with wip 8dd22be: unlisted probe changes
+(argbind-internal accepted; cyc2/cyc3/sh1 texts) and ec1 not flipping;
+see the ledger. Awaiting the user's rulings before continuing.
 
 Next: Task 7, the switch-over. Before Task 7 code, Opus reviews the Sonnet
   implementer's Sync/TailPass design.
