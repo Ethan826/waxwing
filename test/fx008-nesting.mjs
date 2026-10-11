@@ -17,3 +17,19 @@ export const nestedProgram = depth => 'effect Log { fn log(): Unit; }; '
 export const lambdaProgram = depth => 'effect Log { fn log(): Unit; }; '
   + 'effect S(a) { fn get(): a; }; '
   + `fn main(): Int = { let f = fn(x: ${nested(depth)}) => 0; 0 };`;
+
+// Handler literals nested through rows: `with h_i` makes the literal's
+// inference row R equal to a context row holding `Cell(type of h_{i-1})`,
+// and the type of h_{i-1} carries a clause row (`Just` C) beside its R. Each
+// level adds one tree, not two (Task 7: a pass that read R and C of every
+// level separately would double per level).
+export const literalDepth = 30;
+
+export const literalProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
+  + 'effect Cell(a) { fn put(x: a): Unit; }; fn main(): Int = { '
+  + 'let h0 = handler Log { log(n) => () }; '
+  + Array.from({ length: depth }, (_, index) =>
+    `let h${index + 1} = handler Log { log(n) => () }; `
+    + `let g${index + 1} = fn(u: Unit) => with h${index + 1} `
+    + `{ put(h${index}) }; `).join('')
+  + '0 };';

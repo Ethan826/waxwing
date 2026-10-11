@@ -201,7 +201,8 @@ docs/sdd/2026-10-09-effects-plan/).
   handler literal (`ClauseEntry.handler`); the tail pass's clause rule →
   the clause (`ClauseEntry.clause`); installation entries and the
   installation rule → the `with`; deferrals → the deferral span (today's
-  `crossing`).
+  `crossing`). The `sync` inside a settling round reports each clause's
+  consumptions and F2 errors at that clause entry's handler literal.
 - **P14 (i, order)** Settling orders entries by span start, ties by
   registration index; deferrals are stored post-order and are sorted.
 
@@ -367,9 +368,14 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | n1, design-review/r5 | E_EFFECT, `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (pinned 2026-10-10), span 138-148 | 5 | same (r5.wxw is byte-identical to n1.wxw; its original content was lost) |
   | design-review/r4 | E_EFFECT, `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (pinned 2026-10-10), span 107-117 (`defer k(1)`) | 5 | user decision 2026-10-10: the same cycle as n1 (§3.5 (c)); rejected today as `Unhandled Log in main`, so the text and span move |
   | rev10/gain1 | accepted `0\n`, status 0 (Go hash pinned on first observation) | 7 | §6 sound gain (rev10 N3) |
-  | design-review/p5, r1, r2 | E_EFFECT, same spans as today, predicted message `Console + Log + ... and Console + ... cannot be made equal: both end in ...`, pattern `/ cannot be made equal: both end in \.\.\.$/` | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
-  | witness/ec1 | E_EFFECT at span 161-191 (`handler Log { log(n) => g(n) }`), message matching `/^(Unhandled Fail\(E\) in main|Fail\(E\) \+ Console \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.)$/`; the observed text is reported to the user before it is pinned | 7 | review I7, and plan review Round 2 N1: the late `Fail(E)` arrives in settling round 2 through the clause entry, whose origin is the handler literal (P13). The re-check's hand trace predicts the side-condition text, because the hook removes today's reverse link to the entry check |
-  | witness/tp1 | E_EFFECT, predicted `f performs Console, which its signature does not allow`, span 204-219 (`log(n) => k1(n)`); pattern `/^f performs /` | 7 | review I6: k1's tail becomes rigid only when the pair is retried in settling; the tail pass then rejects R = [Console] at the clause (P13) |
+  | design-review/p5, r1, r2 | E_EFFECT, same spans as today, message `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (observed and pinned 2026-10-11) | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
+  | witness/ec1 | unchanged: `Unhandled Fail(E) in main`, 284-301 | 7 | user 2026-10-11: ec1's `Fail(E)` arrives at check time (`checkDefer` consumes the deferred row at once, Defer.purs), not in settling, so the hook pushes it before settling and ec1 does not flip. It stays as a control |
+  | witness/ec2 | new probe, same on today's build and FX008: E_EFFECT `Unhandled Fail(E) in main`, 90-380 | 7 | the corrected witness: the deferred row gains `Cell(…)` through `w`'s call after `checkDefer`, as in argbind, so the `Fail(E)` arrives in settling. The `fx008-exit-count` row uses it (the exit-count mutant accepts it) |
+  | argbind-internal | accepted, empty stdout, Go hash `b524e7d7ebab4c06d2e9e54a13a8b127587c2d982a465d991ed76a5d82ace8c1` | 7 | sound gain (user 2026-10-11): the hook removes R = c, so f's row no longer ends in z's row and the occurs failure cannot arise here; no defer reaches h; Go and the oracle print nothing. FX010 itself stays open |
+  | rev8/cyc2 | E_EFFECT, `Tick + ... and ... cannot be made equal: both end in ...`, 174-179 | 7 | F2 reports the c to R edge of the same cycle, the clause row first, at the sync's node (P13); user 2026-10-11 |
+  | rev8/cyc3 | E_EFFECT, `Log + Tick + ... and ... cannot be made equal: both end in ...`, 338-344 | 7 | same |
+  | rev9/sh1 | E_EFFECT, same text as today, span 192-246 (the handler literal) | 7 | the first sync that sees both clauses is the one after the handler node (P13) |
+  | witness/tp1 | E_EFFECT, `f performs Console, which its signature does not allow`, span 204-219 (`log(n) => k1(n)`), observed and pinned 2026-10-11 | 7 | review I6: k1's tail becomes rigid only when the pair is retried in settling; the tail pass then rejects R = [Console] at the clause (P13) |
   | rev6/hole, design-review/c1, facts/cross | E_EFFECT `defer must not fail, but it performs Log, whose handler may fail`, span 79-91 (`defer log(1)`) | 9 | §1 cross-function form |
   | facts/lexical | same message, span 129-141 | 9 | §1 pinned form |
   | facts/pending | same message, span 101-113 | 9 | §1: `work`'s `Log` is plain |
@@ -819,7 +825,22 @@ clause rows yet; gate unchanged.
 ### Task 7: Clause own rows, `sync`, correction S and the tail pass
 
 One switch-over: the hook without S breaks set1 (the `fx008-settle-phi`
-mutant), so these land together. gain1, p5, r1, r2, ec1, tp1 flip.
+mutant), so these land together. gain1, argbind-internal (sound gains), p5,
+r1, r2, cyc2, cyc3, sh1 and tp1 flip; ec1 does not (see the Task 1 table).
+
+**F1′ runs in settling (controller ruling 2026-10-11).** Correction S consumes
+`labels(c) + φ_t` for the clause's current class, and a binding made in
+settling (a retried `fail`, a late label) extends or merges clause tails.
+The plan did not say who keeps the classes up to date there, so each
+settling round runs `syncSettling` after (a): F1′, F2 and T, each
+consumption reported at the clause entry's handler literal. It skips the
+rigid branch (φ := ϱ), which stays with the tail pass after the loop (§3.5).
+The c to R entries are rebuilt each round, so they read the current group's
+φ. Hook code reads rows through `walkedRow` and `headedRow` (Walked.purs),
+which splice the tail but do not resolve label arguments. Limitation: a
+literal whose clause performs `Cell(type of another literal)` carries that
+type in both R and C, so such a chain grows as 2^depth (untested); nesting
+through `with` is linear.
 
 Before any code, the Sonnet implementer writes a short design of Sync.purs
 and TailPass.purs: the functions, the data, and the order of F1′, F2 and
@@ -886,8 +907,8 @@ implementer or reviewer asks; that change is recorded in the ledger.
 
 - [ ] **Step 1: Failing tests** (test/fx008-hook.test.mjs, child processes,
   20 s):
-  - `gain1 is a sound gain` (prints `0\n`); flip gain1, p5, r1, r2, ec1,
-    tp1.
+  - `gain1 is a sound gain` (prints `0\n`); flip gain1, argbind-internal,
+    p5, r1, r2, cyc2, cyc3, sh1, tp1; ec1 keeps its outcome and ec2 is added.
   - `no-defer probes keep their outcomes under the hook`: late1, late2, two1,
     two2, two3, two1f, one1, one3, one1rev8, ov1, ov1f, set1, cyc1, cyc1ok,
     pair1 print `0\n`; two2's and hole2c's Go hashes equal the table's;
@@ -904,8 +925,9 @@ implementer or reviewer asks; that change is recorded in the ledger.
     through R; under the hook, R ≡ ρ_f binds only φ, the retry binds k1's
     tail to `...e`, the loop adds nothing, and only the tail pass rejects
     (review I6).
-  - `a late Fail reaching a clause through an argument binding is consumed`:
-    witness/ec1 → its table outcome (review I7).
+  - `a late Fail reaching a clause through an argument binding is rejected`:
+    witness/ec2 → its table outcome (review I7, corrected: ec1's Fail(E)
+    arrives at check time and ec1 keeps today's outcome).
   - `nested handler literals stay linear` (Task 2 review c2): about 30
     handler literals nested through rows (an inferred row whose label
     argument is another literal's type, each carrying a `Just` C) are
@@ -922,24 +944,24 @@ implementer or reviewer asks; that change is recorded in the ledger.
   | Row | File | Mutant | Probe; mutant message |
   |---|---|---|---|
   | `fx008-hook` | Sync.purs | `sync` returns the state | late1 prints `0`; `/hook: Expected a handler/` |
-  | `fx008-phi` | Sync.purs | fresh tail instead of φ | two1 prints `0`; `/remainder: Ambiguous/` |
-  | `fx008-phi-equal` | Sync.purs | φ step replaced by R ≡ R of the merged handlers | ov1 prints `0`; `/R≡R: rejected/` |
+  | `fx008-phi` | Filing.purs | a clause that finds another group keeps its own φ (no join) | two1 prints `0`; `/remainder: Ambiguous/` |
+  | `fx008-phi-equal` | Filing.purs | φ step replaced by R ≡ R of the merged handlers | ov1 prints `0`; `/R≡R: rejected/` |
   | `fx008-f2` | Sync.purs | F2 call removed | cyc2's side-condition error within 20 s; `/F2: timed out/` |
-  | `fx008-new-labels` | Sync.purs | only labels past the recorded count consumed | cyc2 within 20 s; `/new labels: timed out/` |
-  | `fx008-signature` | Sync.purs | signature comparison always "changed" | cyc1 prints `0` within 20 s; `/signature: timed out/` |
-  | `fx008-settle-phi` | Settle.purs | c → R entries use `Fresh` | set1 prints `0`; `/settling φ: Ambiguous/` |
+  | `fx008-new-labels` | Sync.purs | only labels past the recorded count consumed | one3 prints `0`; `/new labels: rejected/` (F2 rejects cyc2 before any consumption) |
+  | `fx008-signature` | Groups.purs | the signature carries no label counts | argbind accepted; `/signature: rejected/` (an always-"changed" comparison only repeats an idempotent push; cyc1 still ends) |
+  | `fx008-settle-phi` | Settle.purs | the round's `syncSettling` removed (with it present, `Fresh` entries do not change set1) | set1 prints `0`; `/settling φ: Ambiguous/` |
   | `fx008-r-consumed` | Handler.purs | R consumed with a fresh tail, not as it stands | meta2 compiles; `/R consumed: Ambiguous/` |
-  | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec1 rejected with E_EFFECT at 161-191 (either text above); `/exit test: accepted/` |
+  | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec2 rejected with E_EFFECT; `/exit test: accepted/` |
   | `fx008-tail-pass` | TailPass.purs | `tailPass` returns the state | tp1 rejected; `/tail pass: accepted/` |
 
-  ec1 needs P14's order: the clause entries (line 6) precede the deferral
-  (line 9); if they do not, both builds reject and the row cannot be proved
-  — stop and report.
+  ec2, not ec1, proves the exit count: ec1's `Fail(E)` arrives at check
+  time, so both builds reject it.
 - [ ] **Step 5: Run** tests and gate → PASS; verify → 0; `node
   scripts/regression.mjs fx008-hook fx008-phi fx008-phi-equal fx008-f2
   fx008-new-labels fx008-signature fx008-settle-phi fx008-r-consumed
   fx008-exit-count fx008-tail-pass` → 10 proof lines. Report the observed
-  texts of p5, r1, r2 and tp1 to the user before pinning them.
+  texts of p5, r1, r2 and tp1 to the user before pinning them (done
+  2026-10-11).
 - [ ] **Step 6: Commit** `feat: clause own rows and the one-way hook (FX008)`.
 
 ---

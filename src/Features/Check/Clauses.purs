@@ -1,16 +1,9 @@
-module Features.Check.Clauses
-  ( HandlerEnv
-  , checkClauses
-  , labelArgs
-  , openLabel
-  ) where
+module Features.Check.Clauses (checkClauses) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Foldable (foldl)
-import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (fst, snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
@@ -22,22 +15,19 @@ import Domain.Row
   , Mark(..)
   , EffectRef(..)
   , Row(..)
-  , closedRow
   , normalMark
   )
 import Domain.Syntax (Diagnostic, Span)
-import Domain.Type (Ty(..), TyRow, VarId(..), substitute)
+import Domain.Type (Ty, TyRow)
+import Features.Check.ClauseBody (HandlerEnv, handlerClause)
 import Features.Check.Consume (consumeLabels)
-import Features.Check.Context (CheckEnv, Infer, Locals)
+import Features.Check.Context (Infer, Locals)
 import Features.Check.Defer (placed)
-import Features.Check.Entry (resolvedRow)
+import Features.Check.Walked (End(..), endOf, walkedRow)
 import Features.Check.Provenance (Consumed(Application), Origin)
-import Features.Check.Require (require)
 import Features.Check.Restricted (registerClause)
 import Features.Check.Scheme (State, Threaded, threadAll)
 import Features.Check.Watch (watchTail)
-
-type HandlerEnv r = CheckEnv (locals ∷ Locals | r)
 
 -- What each clause of one handler literal shares: its label, the span, the
 -- rows R (inference) and C (clauses), and the handled label's mark m.
@@ -80,7 +70,8 @@ checkClauses infer env state span label clauses = do
     , state: checked.state
     }
   where
-  rows = { inference: openRow state.next, clauses: Just (openRow (state.next + 1)) }
+  rows =
+    { inference: openRow state.next, clauses: Just (openRow (state.next + 1)) }
   own = markOf label (state.next + 2)
   setup =
     { label
@@ -154,10 +145,10 @@ file env setup ids row clause state = do
   where
   origin ∷ Origin
   origin = { span: setup.span, consumed: Application, via: Nothing }
-  Row labels found = resolvedRow state.subst row
+  Row labels _ = walkedRow state.subst row
   kept = placed state labels row
-  tail = case found of
-    Just (Hole meta) → meta
+  tail = case endOf state.subst row of
+    Loose meta → meta
     _ → ids.tail
   group = { representative: tail, remainder: openRow ids.phi }
   entry =
@@ -172,77 +163,3 @@ file env setup ids row clause state = do
     , tail
     , signature: Nothing
     }
-
-handlerClause
-  ∷ ∀ r
-  . Infer (locals ∷ Locals | r)
-  → HandlerEnv r
-  → TyRow Open
-  → Label (Ty Resolved.VarId)
-  → State
-  → Resolved.HandlerClause
-  → Either Diagnostic { value ∷ Checked.HandlerClause, state ∷ State }
-handlerClause
-  infer
-  env
-  row
-  label
-  state
-  (clause ∷ Resolved.HandlerClause) = do
-  let checkedParameters = map (typedParameter label) clause.parameters
-  let
-    scoped = env
-      { current = row
-      , sites = []
-      , locals = bindParameters checkedParameters env.locals
-      }
-  checkedBody ← inferHandlerBody infer scoped state clause.body
-  reached ← require scoped checkedBody.state
-    (instantiateType label clause.result)
-    checkedBody.value
-  pure
-    { value:
-        { operation: clause.operation
-        , parameters: checkedParameters
-        , body: checkedBody.value
-        , span: clause.span
-        }
-    , state: reached
-    }
-  where
-  typedParameter effectLabel found =
-    { local: found.local, ty: instantiateType effectLabel found.ty }
-  bindParameters parameters locals =
-    foldl insertParameter locals parameters
-  insertParameter locals entry = maybe locals (insertLocal entry locals)
-    entry.local
-  insertLocal entry locals local = Map.insert local entry.ty locals
-
-inferHandlerBody
-  ∷ ∀ r
-  . Infer (locals ∷ Locals | r)
-  → HandlerEnv r
-  → State
-  → Resolved.Expr
-  → Either Diagnostic (Threaded Checked.Expr)
-inferHandlerBody infer env state body = infer env state body
-
-instantiateType ∷ Label (Ty Resolved.VarId) → Ty Resolved.VarId → Ty Open
-instantiateType label = substitute
-  { types: argument (labelArgs label)
-  , rows: closed
-  }
-  where
-  closed _ = closedRow
-
-argument ∷ Array (Ty Open) → VarId → Ty Open
-argument args (VarId index) = maybe (TVar (Rigid (VarId index))) identity
-  (Array.index args index)
-
-labelArgs ∷ Label (Ty Resolved.VarId) → Checked.Instantiation
-labelArgs (Label _ args _) = map (map Rigid) args
-
-openLabel ∷ Label (Ty Resolved.VarId) → Label (Ty Open)
-openLabel (Label effect args mark) = Label effect (map (map Rigid) args)
-  mark
-

@@ -22,7 +22,9 @@ import Features.Check.RowName (labelName, rowConflict)
 import Features.Check.TypeName (Names, typeName, typeNames)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
-import Features.Check.Hint (Declared, hinted)
+import Features.Check.Context (CheckEnv)
+import Features.Check.Hint (hinted)
+import Features.Check.Sync (sync)
 import Features.Check.Scheme (State, flexible, opened, resolved, tooDeep)
 import Features.Check.Unify (Failure(..), inferredTypeLimit, unify)
 
@@ -30,7 +32,7 @@ import Features.Check.Unify (Failure(..), inferredTypeLimit, unify)
 -- enclosing function's variables (`VarId i` is the i-th).
 
 -- What `require` needs: names for its message, declarations for its hint.
-type Requiring r = Names (effects ∷ Array EffectInfo | Declared r)
+type Requiring r = CheckEnv r
 
 -- The expression's type must unify with the expected one. A mismatch may
 -- gain the under-application hint (Features.Check.Hint).
@@ -46,7 +48,12 @@ require env state expected actual = either hint Right
       (Checked.spanOf actual)
   )
   where
-  hint = Left <<< hinted env state expected actual
+  -- The hint reads `headOf` of the expected type, which the hook may have
+  -- solved (design §3.4: Hint is an eager decision). The synced state never
+  -- escapes: this branch returns `Left`.
+  hint = Left <<< hinted env synced expected actual
+  synced = either (const state) identity
+    (sync env state (Checked.spanOf actual))
 
 -- A failure names the whole expected and found types, resolved under the
 -- substitution before this comparison, as monomorphic checking always did;

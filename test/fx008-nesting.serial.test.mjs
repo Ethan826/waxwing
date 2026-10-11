@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checked } from './support.mjs';
-import { lambdaProgram, nestedProgram, nestingDepth } from './fx008-nesting.mjs';
+import {
+  lambdaProgram, literalDepth, literalProgram, nestedProgram, nestingDepth
+} from './fx008-nesting.mjs';
 
 // Bound: generous, not tight. With review C1's defect depth 20 took 2.1 s
 // and depth 22 ran out of memory (doubling per level); linear compiles of
@@ -36,4 +38,10 @@ test('a lambda annotation nested 40 levels deep compiles within the bound', () =
 
 test('a lambda annotation nested 120 levels deep compiles within the bound', () => {
   within(baseDepth, lambdaProgram);
+});
+
+// Task 7: a handler literal's type carries a clause row beside its inference
+// row. About 30 literals nested through context rows stay linear.
+test('30 handler literals nested through rows compile within the bound', () => {
+  within(literalDepth, literalProgram);
 });

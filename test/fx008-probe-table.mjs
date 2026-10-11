@@ -1,4 +1,4 @@
-import { no, noPattern, ok, probe } from './fx008-probe-kit.mjs';
+import { no, ok, probe } from './fx008-probe-kit.mjs';
 import { rev6 } from './fx008-probe-table-rev6.mjs';
 import { rev78 } from './fx008-probe-table-rev78.mjs';
 import { rev910 } from './fx008-probe-table-rev910.mjs';
@@ -6,16 +6,22 @@ import { rev910 } from './fx008-probe-table-rev910.mjs';
 const defer =
   'defer must not fail, but it performs Log, whose handler may fail';
 
-const ec1Pattern = '^(Unhandled Fail\\(E\\) in main|Fail\\(E\\) \\+ Console '
-  + '\\+ \\.\\.\\. and Console \\+ \\.\\.\\. cannot be made equal: both end '
-  + 'in \\.\\.\\.)$';
-
 // Probe outcomes before FX008 ("today") and after it ("fx008"); see the
 // plan's Task 1. Top-level, facts and witness probes first.
 const own = [
   probe('argbind-internal',
     no('E_INTERNAL', 'Effect row consumption failed', 318, 335),
-    { slow: true }),
+    {
+      fx008: ok('', 'b524e7d7ebab4c06d2e9e54a13a8b127587c2d982a465d991ed76a5d82ace8c1'),
+      task: 7,
+      flipped: true,
+      reason:
+        'Sound gain (user 2026-10-11): the hook removes R = c, so f\'s row ' +
+        'no longer ends in z\'s row and the occurs failure (FX010) cannot ' +
+        'arise here; no defer reaches h. Go and the oracle print nothing, ' +
+        'exit 0. FX010 itself stays open.',
+      slow: true
+    }),
   probe('argbind',
     ok('', '674e9299b329013930959bed2c137dbed0ab367355cf83ffd2213de33756aaed'),
     { slow: true }),
@@ -90,21 +96,19 @@ const own = [
     no('E_TYPE', 'Expected Handler(Log), found Handler(Log)', 98, 128)),
   probe('witness/ec1',
     no('E_EFFECT', 'Unhandled Fail(E) in main', 284, 301),
-    {
-      fx008: noPattern(
-        'E_EFFECT', ec1Pattern, 161, 191),
-      task: 7,
-      reason:
-        'Review I7: late Fail(E) reaches the clause entry (P13). Observed ' +
-        'text is reported to the user before it is pinned.',
-      slow: true
-    }),
+    { slow: true }),
+  // ec1's Fail(E) arrives at check time (checkDefer), so ec1 is a control;
+  // ec2 delays it to settling (user 2026-10-11) and proves the exit count.
+  probe('witness/ec2',
+    no('E_EFFECT', 'Unhandled Fail(E) in main', 90, 380),
+    { slow: true }),
   probe('witness/tp1',
     no('E_EFFECT', 'f performs Console, which its signature does not allow', 266, 278),
     {
-      fx008: noPattern('E_EFFECT', '^f performs ', 204, 219),
-      predicted: 'f performs Console, which its signature does not allow',
+      fx008: no('E_EFFECT',
+        'f performs Console, which its signature does not allow', 204, 219),
       task: 7,
+      flipped: true,
       reason:
         'Review I6: k1 tail rigid on retry; tail pass rejects R = ' +
         '[Console] at the clause (P13).',

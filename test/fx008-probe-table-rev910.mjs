@@ -1,4 +1,4 @@
-import { no, noPattern, ok, probe } from './fx008-probe-kit.mjs';
+import { no, ok, probe } from './fx008-probe-kit.mjs';
 
 const defer =
   'defer must not fail, but it performs Log, whose handler may fail';
@@ -30,14 +30,12 @@ export const rev910 = [
     no('E_EFFECT',
       'Console + ... and Log + Console + ... cannot be made equal: both end in ...', 163, 169),
     {
-      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 163, 169),
-      predicted:
-        'Console + Log + ... and Console + ... cannot be made equal: both end '
-        + 'in ...',
+      fx008: no('E_EFFECT',
+        'Console + Log + ... and Console + ... cannot be made equal: both end in ...', 163, 169),
       task: 7,
+      flipped: true,
       reason:
-        '§3.4 F2: positive c->R self-loop reported by sync (P13); still ' +
-        'rejected, text may move.'
+        '§3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main\'s flexible tail is a positive c->R self-loop, reported by sync at the node (P13). Observed text pinned by the user 2026-10-11.'
     }),
   probe('design-review/q1',
     ok('101\n101\n0\n9\n', '457caffab02720935a2484bede539c0ad6fe929300394f41472ded166092aeca'),
@@ -52,23 +50,23 @@ export const rev910 = [
     no('E_EFFECT',
       'Console + ... and Log + Console + ... cannot be made equal: both end in ...', 180, 186),
     {
-      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 180, 186),
-      predicted:
-        'Console + Log + ... and Console + ... cannot be made equal: both end '
-        + 'in ...',
+      fx008: no('E_EFFECT',
+        'Console + Log + ... and Console + ... cannot be made equal: both end in ...', 180, 186),
       task: 7,
-      reason: '§3.4 F2: same as p5.'
+      flipped: true,
+      reason:
+        '§3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main\'s flexible tail is a positive c->R self-loop, reported by sync at the node (P13). Observed text pinned by the user 2026-10-11.'
     }),
   probe('design-review/r2',
     no('E_EFFECT',
       'Console + ... and Log + Console + ... cannot be made equal: both end in ...', 194, 200),
     {
-      fx008: noPattern('E_EFFECT', ' cannot be made equal: both end in \\.\\.\\.$', 194, 200),
-      predicted:
-        'Console + Log + ... and Console + ... cannot be made equal: both end '
-        + 'in ...',
+      fx008: no('E_EFFECT',
+        'Console + Log + ... and Console + ... cannot be made equal: both end in ...', 194, 200),
       task: 7,
-      reason: '§3.4 F2: same as p5.'
+      flipped: true,
+      reason:
+        '§3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main\'s flexible tail is a positive c->R self-loop, reported by sync at the node (P13). Observed text pinned by the user 2026-10-11.'
     }),
   probe('design-review/r3',
     ok('', 'dcd7ac7a2d440632c8aa86955be9689e3d380451b083d3504672522c12b2ff41')),
@@ -98,8 +96,9 @@ export const rev910 = [
   probe('rev10/gain1',
     no('E_EFFECT', 'Unhandled Cell(Bool) in main', 263, 268),
     {
-      fx008: ok('0\n', null),
+      fx008: ok('0\n', 'a0c048733fb46329c2c1245599002f0bb0f3091decc349483233543e74f8d035'),
       task: 7,
+      flipped: true,
       reason: '§6 sound gain (rev10 N3); Go hash pinned on first observation.'
     }),
   probe('rev10/gain1ctl',
@@ -125,5 +124,13 @@ export const rev910 = [
     no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 411, 412)),
   probe('rev9/sh1',
     no('E_EFFECT', '... and Tick + ... cannot be made equal: both end in ...', 237, 242),
-    { slow: true }),
+    {
+      fx008: no('E_EFFECT', '... and Tick + ... cannot be made equal: both end in ...', 192, 246),
+      task: 7,
+      flipped: true,
+      reason:
+        'Same text; the first sync that holds both clauses is the one after ' +
+        'the handler literal (P13); user 2026-10-11.',
+      slow: true
+    }),
 ];

@@ -1,8 +1,8 @@
-module Features.Check.Sync (sync) where
+module Features.Check.Sync (sync, syncSettling) where
 
 import Prelude
 import Prim hiding (Row)
-import Control.Monad.Rec.Class (Step(..), tailRec, tailRecM)
+import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM, foldl)
@@ -10,33 +10,16 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
-import Domain.Checked.Internal (Open(..))
-import Domain.Problem (Problem(..))
 import Domain.Row (Row(..))
-import Domain.Type (TyRow)
-import Domain.Syntax (Diagnostic, Span, problemAt)
-import Features.Check.Consume (closeTail, consumeIgnoring)
+import Domain.Syntax (Diagnostic, Span)
+import Features.Check.Consume (consumeIgnoring)
 import Features.Check.Context (CheckEnv)
-import Features.Check.Cycle (positiveCycle)
-import Features.Check.Entry (resolvedRow)
-import Features.Check.Feed (FeedRow, feedsOf)
-import Features.Check.Groups
-  ( grew
-  , groupAt
-  , placed
-  , remainderOf
-  , signatureOf
-  , signed
-  , started
-  , unfiled
-  )
-import Features.Check.Provenance (Consumed(Application), Origin)
-import Features.Check.Reject (rejected)
-import Features.Check.Restricted (ClauseEntry, ClauseSignature)
-import Features.Check.Scheme (State, flexibleRow)
-import Features.Check.Search (Stack(..), stackItems)
-import Features.Check.Unify (Failure(..), Subst)
-import Features.Check.Watch (takeDirty, watchTail)
+import Features.Check.Walked (walkedRow)
+import Features.Check.Filing (Mode(..), filing, originOf, remainder)
+import Features.Check.Groups (signatureOf, signed)
+import Features.Check.Scheme (State)
+import Features.Check.SyncCycle (cycleTest)
+import Features.Check.Watch (takeDirty)
 
 -- The one-way hook (design §3.4). Each round drains the watched tails that
 -- were bound or extended, then for the clauses they reach (and the pending
@@ -47,24 +30,28 @@ import Features.Check.Watch (takeDirty, watchTail)
 -- re-dirty tails, so rounds go on until nothing is dirty or pending. The
 -- cost is the dirty rows and what they reach, not the registry.
 sync ∷ ∀ r. CheckEnv r → State → Span → Either Diagnostic State
-sync env state span = tailRecM (round env origin) state
-  where
-  origin = { span, consumed: Application, via: Nothing }
+sync env state span = tailRecM (round env (Checking span)) state
+
+-- The same inside the settling loop (design §3.5): class upkeep for the
+-- bindings (a) and (d) make, reported at each clause's handler literal,
+-- with a rigid tail left to the tail pass.
+syncSettling ∷ ∀ r. CheckEnv r → State → Either Diagnostic State
+syncSettling env = tailRecM (round env Settling)
 
 round
   ∷ ∀ r
   . CheckEnv r
-  → Origin
+  → Mode
   → State
   → Either Diagnostic (Step State State)
-round env origin before = settle (affected before)
+round env mode before = settle (affected before)
   where
   settle (Tuple ids drained)
     | Array.null ids = Right (Done drained)
     | otherwise = do
-        refiled ← foldM (filing env origin) drained ids
-        cycleTest env origin refiled ids
-        pushed ← foldM (push env origin) refiled ids
+        refiled ← foldM (filing env mode) drained ids
+        cycleTest env mode refiled ids
+        pushed ← foldM (push env mode) refiled ids
         pure (Loop pushed)
 
 -- The clauses to look at, by handler position then id (P14), and the state
@@ -88,153 +75,16 @@ affected state = Tuple ordered state
   position id = Tuple (maybe 0 offset (Map.lookup id registry.clauses)) id
   offset entry = entry.handler.start.offset
 
--- F1′ for one clause.
-filing
-  ∷ ∀ r
-  . CheckEnv r
-  → Origin
-  → State
-  → Int
-  → Either Diagnostic State
-filing env origin state id = maybe (Right state) (filed env origin state id)
-  (Map.lookup id state.restricted.clauses)
-
-data Choice = New | Join Int | Merge Int | Stay
-
--- Filed under its resolved tail. An unbound one is a group member: when
--- its labels grew it joins the group already there or starts a new one
--- (rev10 N1; no merge of the old φ); otherwise it merges with a different
--- group found there, or stays. A rigid or closed tail ends φ (N4).
-filed
-  ∷ ∀ r
-  . CheckEnv r
-  → Origin
-  → State
-  → Int
-  → ClauseEntry
-  → Either Diagnostic State
-filed env origin state id entry = case tail of
-  Just (Hole meta) → unbound env origin loose id entry meta
-  Just rigid → ended (Row [] (Just rigid))
-  Nothing → closed
-  where
-  Row _ tail = resolvedRow state.subst entry.row
-  loose = state { restricted = unfiled id entry.tail state.restricted }
-  ended stage = do
-    phi ← remainder loose entry
-    consumeIgnoring env loose { origin, stage, target: phi }
-  closed = remainder loose entry >>= closeTail env loose origin
-
-unbound
-  ∷ ∀ r
-  . CheckEnv r
-  → Origin
-  → State
-  → Int
-  → ClauseEntry
-  → Int
-  → Either Diagnostic State
-unbound env origin state id entry meta = case choice of
-  New → Right (stay fresh state.next)
-  Join group → Right (stay state group)
-  Merge group → merged group
-  Stay → Right (stay state entry.group)
-  where
-  found = groupAt state.restricted meta
-  now = signatureOf state.subst entry
-  choice
-    | grownSince now entry = maybe New Join found
-    | otherwise = case found of
-        Just group | group /= entry.group → Merge group
-        _ → Stay
-  fresh = state
-    { next = state.next + 2
-    , restricted = started state.next (state.next + 1) meta state.restricted
-    }
-  stay from group = from
-    { subst = watchTail meta from.subst
-    , restricted = placed id group meta from.restricted
-    }
-  merged group = do
-    old ← remainder state entry
-    kept ← maybe (missing entry) Right (remainderOf state.restricted group)
-    consumed ← consumeIgnoring env state { origin, stage: old, target: kept }
-    pure (stay consumed (min entry.group group))
-
-remainder ∷ State → ClauseEntry → Either Diagnostic (TyRow Open)
-remainder state entry =
-  maybe (missing entry) Right (remainderOf state.restricted entry.group)
-
-missing ∷ ∀ a. ClauseEntry → Either Diagnostic a
-missing entry = Left (problemAt (Internal "Clause without a group") entry.handler)
-
-grownSince ∷ ClauseSignature → ClauseEntry → Boolean
-grownSince now entry = maybe false (flip grew now) entry.signature
-
--- F2: a positive cycle through the c to R edges of the rows reached from
--- `ids` is today's side-condition error, reported before any consumption.
--- The graph is the closure of those rows only (T003); `successors` finds
--- the clauses ending where a row's R ends.
-cycleTest
-  ∷ ∀ r
-  . CheckEnv r
-  → Origin
-  → State
-  → Array Int
-  → Either Diagnostic Unit
-cycleTest env origin state ids = maybe (Right unit) refuse
-  (positiveCycle rows (feedsOf rows) (Array.range 0 (Array.length ids - 1)))
-  where
-  entries = Array.mapMaybe (flip Map.lookup state.restricted.clauses)
-    (reachable state ids)
-  rows = map (feedRow state.subst) entries
-  refuse index = maybe (Right unit) (rejectAt) (Array.index rows index)
-  rejectAt row = rejected env state origin (RowSharedTail row.own row.target)
-
-feedRow ∷ Subst → ClauseEntry → FeedRow
-feedRow subst entry =
-  { own: flexibleRow (resolvedRow subst entry.row)
-  , target: flexibleRow (resolvedRow subst entry.inference)
-  , keepFail: true
-  , position: entry.handler.start.offset
-  }
-
--- `ids` first, then every clause reached through a row's R tail.
-reachable ∷ State → Array Int → Array Int
-reachable state ids = ids <> stackItems (tailRec walk
-  { seen: Set.fromFoldable ids, found: Bottom, stack: foldl pushed Bottom ids })
-  where
-  pushed stack id = Push id stack
-  walk found = case found.stack of
-    Bottom → Done found.found
-    Push id rest → Loop (visit found id rest)
-  visit found id rest = foldl add found { stack = rest } (successors id)
-  add found next
-    | Set.member next found.seen = found
-    | otherwise = found
-        { seen = Set.insert next found.seen
-        , found = Push next found.found
-        , stack = Push next found.stack
-        }
-  successors id = maybe [] filedUnder (tailOfInference id)
-  filedUnder meta = maybe [] identity (Map.lookup meta state.restricted.byTail)
-  tailOfInference id = do
-    entry ← Map.lookup id state.restricted.clauses
-    let Row _ tail = resolvedRow state.subst entry.inference
-    case tail of
-      Just (Hole meta) → Just meta
-      _ → Nothing
-
 -- T: a clause whose signature changed since last pushed is consumed into
 -- its handler's R as `labels(c) + φ`, ignoring marks.
 push
   ∷ ∀ r
   . CheckEnv r
-  → Origin
+  → Mode
   → State
   → Int
   → Either Diagnostic State
-push env origin state id = maybe (Right state) pushed
+push env mode state id = maybe (Right state) pushed
   (Map.lookup id state.restricted.clauses)
   where
   pushed entry
@@ -242,9 +92,12 @@ push env origin state id = maybe (Right state) pushed
     | otherwise = do
         Row _ tail ← remainder state entry
         consumed ← consumeIgnoring env state
-          { origin, stage: Row (labelsOf entry) tail, target: entry.inference }
+          { origin: originOf mode entry
+          , stage: Row (labelsOf entry) tail
+          , target: entry.inference
+          }
         pure consumed
           { restricted = signed id (now entry) consumed.restricted }
   now = signatureOf state.subst
-  labelsOf entry = case resolvedRow state.subst entry.row of
+  labelsOf entry = case walkedRow state.subst entry.row of
     Row labels _ → labels

@@ -25,7 +25,7 @@ import Features.Check.Reject (rejected, rightSpan, siteOccurrence)
 import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.Site (Site)
 import Features.Check.Subst (linkTo)
-import Features.Check.Unify (Failure, Flex(..), Subst(..), resolveRow, unify)
+import Features.Check.Unify (Failure, Flex(..), Subst(..), unify, walkRow)
 import Features.Check.RowFinish (Traced)
 import Features.Check.UnifyRow (unifyRowsIgnoring, unifyRowsTraced)
 
@@ -168,7 +168,7 @@ consume
   → TyRow Flex
   → TyRow Flex
   → Either Failure Traced
-consume mode subst sides stage current = case resolveRow subst stage of
+consume mode subst sides stage current = case walkRow subst stage of
   Row labels Nothing → unifyRowsTraced unify (throwing mode) sides fresh
     (Row labels (Just (Meta bindings.fresh)))
     current

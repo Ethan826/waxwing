@@ -39,10 +39,22 @@ export const rev78 = [
     { slow: true }),
   probe('rev8/cyc2',
     no('E_EFFECT', '... and Tick + ... cannot be made equal: both end in ...', 174, 179),
-    { slow: true }),
+    {
+      fx008: no('E_EFFECT', 'Tick + ... and ... cannot be made equal: both end in ...', 174, 179),
+      task: 7,
+      flipped: true,
+      reason: '§3.4 F2 reports the c->R edge of the same cycle, at the sync\'s node (P13); user 2026-10-11.',
+      slow: true
+    }),
   probe('rev8/cyc3',
     no('E_EFFECT', '... and Log + Tick + ... cannot be made equal: both end in ...', 338, 344),
-    { slow: true }),
+    {
+      fx008: no('E_EFFECT', 'Log + Tick + ... and ... cannot be made equal: both end in ...', 338, 344),
+      task: 7,
+      flipped: true,
+      reason: '§3.4 F2 reports the c->R edge of the same cycle, at the sync\'s node (P13); user 2026-10-11.',
+      slow: true
+    }),
   probe('rev8/one1',
     ok('0\n', 'f1385c8c30828aa3cf047737e2ffa49e574d4a54c121152e50eb59af4fb7f1bc')),
   probe('rev8/one1ctl',

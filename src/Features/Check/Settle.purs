@@ -15,14 +15,14 @@ import Features.Check.Consume (consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
 import Features.Check.Cycle (feedOrder, positiveCycle)
 import Features.Check.Defer (failing, placed)
-import Features.Check.Entry (resolvedRow)
+import Features.Check.Walked (headedRow, walkedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Feed (FeedRow, Feeds, feedsOf)
 import Features.Check.Reject (rejected)
-import Features.Check.Scheme (State, flexibleRow)
+import Features.Check.Scheme (State)
 import Features.Check.SettleEntry (Entry, EntryTail(..))
 import Features.Check.SettleEntry as Entries
-import Features.Check.Sync (sync)
+import Features.Check.Sync (syncSettling)
 import Features.Check.TailPass (tailPass)
 import Features.Check.Unify (Failure(..), Subst(..))
 
@@ -52,7 +52,7 @@ round
 round env body state = do
   subst ← settleKeys env state body
   let settled = state { subst = subst }
-  keyed ← sync env settled (Checked.spanOf body)
+  keyed ← syncSettling env settled
   let entries = Entries.entries keyed.restricted keyed.deferrals
   let rows = map (feedRow keyed.subst) entries
   let feeds = feedsOf rows
@@ -88,12 +88,12 @@ postponedCount (Subst bindings) = Array.length bindings.postponed
 labelCount ∷ Subst → Entry → Int
 labelCount subst entry = Array.length labels
   where
-  Row labels _ = resolvedRow subst entry.own
+  Row labels _ = walkedRow subst entry.own
 
 feedRow ∷ Subst → Entry → FeedRow
 feedRow subst entry =
-  { own: flexibleRow (resolvedRow subst entry.own)
-  , target: flexibleRow (resolvedRow subst entry.target)
+  { own: headedRow subst entry.own
+  , target: headedRow subst entry.target
   , keepFail: entry.keepFail
   , position: entry.position
   }
@@ -149,6 +149,6 @@ consume env entries state index = maybe (Right state) consumed
     }
   kept entry = Array.filter (carried entry)
     (placed state (labelsOf entry) entry.own)
-  labelsOf entry = case resolvedRow state.subst entry.own of
+  labelsOf entry = case walkedRow state.subst entry.own of
     Row labels _ → labels
   carried entry found = entry.keepFail || not (failing (fst found))

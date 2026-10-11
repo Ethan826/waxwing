@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runGo } from './support.mjs';
 import { compileWithin } from './regression-fx008.mjs';
+import { probes } from './fx008-probe-table.mjs';
 
 const context = { compilerPath: 'output/Program.Compile/index.js' };
 const timeoutMs = 20_000;
@@ -33,13 +34,18 @@ test('gain1 is a sound gain', () => {
   assert.equal(runGo(probe('rev10/gain1')), '0\n');
 });
 
-// The plan predicts the c -> R self-loop's text (P13); an observed text that
-// differs is reported to the user before it is pinned.
+// F2 reports the clause row first (c -> R), at the sync's node (P13).
 test('p5, r1 and r2 are rejected by the hook (F2)', () => {
-  const predicted = /^Console \+ Log \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.$/;
-  rejectedAt(probe('design-review/p5'), 163, 169, predicted);
-  rejectedAt(probe('design-review/r1'), 180, 186, predicted);
-  rejectedAt(probe('design-review/r2'), 194, 200, predicted);
+  const text = /^Console \+ Log \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.$/;
+  rejectedAt(probe('design-review/p5'), 163, 169, text);
+  rejectedAt(probe('design-review/r1'), 180, 186, text);
+  rejectedAt(probe('design-review/r2'), 194, 200, text);
+});
+
+test('cyc2, cyc3 and sh1 report the c -> R edge of their cycle', () => {
+  rejectedAt(probe('rev8/cyc2'), 174, 179, /^Tick \+ \.\.\. and \.\.\. cannot/);
+  rejectedAt(probe('rev8/cyc3'), 338, 344, /^Log \+ Tick \+ \.\.\. and \.\.\. cannot/);
+  rejectedAt(probe('rev9/sh1'), 192, 246, /^\.\.\. and Tick \+ \.\.\. cannot/);
 });
 
 const printsZero = [
@@ -55,16 +61,21 @@ for (const name of printsZero) {
 }
 
 const keepsText = [
-  ['rev7/rig1'], ['rev7/rig2'], ['rev9/sh1'], ['rev9/ov1ctl'],
-  ['rev9/set1ctl'], ['rev10/pair1ctl'], ['rev8/cyc2'], ['rev8/cyc3'],
-  ['design-review/p4']
+  'rev7/rig1', 'rev7/rig2', 'rev9/ov1ctl', 'rev9/set1ctl', 'rev10/pair1ctl',
+  'design-review/p4'
 ];
 
-test('rejections without defer keep their codes under the hook', () => {
-  for (const [name] of keepsText) {
+// The hook keeps the exact code, text and span of these rejections: the
+// expected outcome is the probe table's, not a looser check.
+test('rejections without defer keep their exact texts under the hook', () => {
+  for (const name of keepsText) {
+    const expected = probes.find(found => found.file === name).today;
     const found = compiled(probe(name));
     assert.equal(found.timedOut, false, `${name}: timed out`);
-    assert.notEqual(found.diagnostic, null, `${name}: accepted`);
+    assert.equal(found.diagnostic?.code, expected.code, name);
+    assert.equal(found.diagnostic.message, expected.message, name);
+    assert.deepEqual([found.diagnostic.span.start.offset,
+      found.diagnostic.span.end.offset], [expected.start, expected.end], name);
   }
 });
 
@@ -95,9 +106,21 @@ test('three handlers merging in settling agree in every order', () => {
 });
 
 test('a clause tail that turns rigid in settling is rejected by the tail pass', () => {
-  rejectedAt(probe('witness/tp1'), 204, 219, /^f performs /);
+  rejectedAt(probe('witness/tp1'), 204, 219,
+    /^f performs Console, which its signature does not allow$/);
 });
 
-test('a late Fail reaching a clause through an argument binding is consumed', () => {
-  rejectedAt(probe("witness/ec1"), 161, 191, /Fail\(E\)/);
+// ec1's Fail(E) arrives at check time (checkDefer), so it is a control with
+// today's outcome; ec2 delays it to settling and proves the exit count.
+test('ec1 keeps its outcome: its Fail(E) is not late', () => {
+  rejectedAt(probe('witness/ec1'), 284, 301, /^Unhandled Fail\(E\) in main$/);
 });
+
+test('a late Fail reaching a clause through an argument binding is rejected', () => {
+  rejectedAt(probe('witness/ec2'), 90, 380, /^Unhandled Fail\(E\) in main$/);
+});
+
+test('argbind-internal is accepted (sound gain)', () => {
+  accepted(probe('argbind-internal'));
+});
+

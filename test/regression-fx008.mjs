@@ -79,7 +79,44 @@ const settleOrderLinear = context => {
   console.log(`${context.probe} regression detects the defect`);
 };
 
+const probeSource = name => readFileSync(`test/fx008-probes/${name}.wxw`,
+  'utf8');
+
+// Task 7 probes. `accepts` expects the program to compile (and print
+// `expected` when given); `rejects` expects an E_EFFECT; a hang is reported
+// as `timed out` (ruling F17). The label is the row's message prefix.
+const accepts = (name, label, expected) => context => {
+  const source = probeSource(name);
+  const found = compileWithin(context, source, probeTimeoutMs);
+  if (found.timedOut) fail(`${label}: timed out`);
+  if (found.diagnostic !== null) {
+    const { code, message } = found.diagnostic;
+    fail(`${label}: ${code === 'E_EFFECT' ? 'rejected: ' : ''}${message}`);
+  }
+  if (expected !== undefined && context.printed(source) !== expected) {
+    fail(`${label}: wrong output`);
+  }
+  console.log(`${context.probe} regression detects the defect`);
+};
+
+const rejects = (name, label) => context => {
+  const found = compileWithin(context, probeSource(name), probeTimeoutMs);
+  if (found.timedOut) fail(`${label}: timed out`);
+  if (found.diagnostic?.code !== 'E_EFFECT') fail(`${label}: accepted`);
+  console.log(`${context.probe} regression detects the defect`);
+};
+
 export const fx008Probes = {
   'fx008-cycle-presence': cyclePresence,
-  'fx008-settle-order-linear': settleOrderLinear
+  'fx008-settle-order-linear': settleOrderLinear,
+  'fx008-hook': accepts('rev7/late1', 'hook', '0\n'),
+  'fx008-phi': accepts('rev8/two1', 'remainder', '0\n'),
+  'fx008-phi-equal': accepts('rev9/ov1', 'R≡R', '0\n'),
+  'fx008-f2': rejects('rev8/cyc2', 'F2'),
+  'fx008-new-labels': accepts('rev8/one3', 'new labels', '0\n'),
+  'fx008-signature': accepts('argbind', 'signature'),
+  'fx008-settle-phi': accepts('rev9/set1', 'settling φ', '0\n'),
+  'fx008-r-consumed': accepts('rev6/meta2', 'R consumed'),
+  'fx008-exit-count': rejects('witness/ec2', 'exit test'),
+  'fx008-tail-pass': rejects('witness/tp1', 'tail pass')
 };

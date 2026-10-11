@@ -20,14 +20,13 @@ import Domain.Checked.Internal (Open(..))
 import Domain.Row (LabelKey, Row(..))
 import Domain.Type (TyRow)
 import Features.Check.Cycle (counted)
-import Features.Check.Entry (resolvedRow)
+import Features.Check.Walked (End(..), endOf, headedRow)
 import Features.Check.Restricted
   ( ClauseEntry
   , ClauseSignature
   , Restricted
   , TailKind(..)
   )
-import Features.Check.Scheme (flexibleRow)
 import Features.Check.Subst (Subst)
 
 -- Group bookkeeping for `sync` (design §3.4, F1′). Group ids are not
@@ -42,16 +41,15 @@ import Features.Check.Subst (Subst)
 -- every fresh-tail consumption does) changes none of these.
 signatureOf ∷ Subst → ClauseEntry → ClauseSignature
 signatureOf subst found =
-  { counts: counted true (flexibleRow row)
+  { counts: counted true (headedRow subst found.row)
   , group: found.group
-  , kind: kindOf tail
+  , kind: kindOf (endOf subst found.row)
   }
   where
-  row@(Row _ tail) = resolvedRow subst found.row
   kindOf = case _ of
-    Just (Hole _) → UnboundTail
-    Just (Rigid variable) → RigidTail variable
-    Nothing → ClosedTail
+    Loose _ → UnboundTail
+    Fixed variable → RigidTail variable
+    Ended → ClosedTail
 
 -- Some label key has more occurrences now than when last pushed: the tail
 -- was extended, which starts a new class (rev10 N1).

@@ -1,0 +1,15 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Cell(a) { fn put(x: a): Unit; };
+fn main(): Unit with Console = {
+  let g = fn(n: Int) => ();
+  let h = handler Log { log(n) => g(n) };
+  let z = fn(u: Unit) => {
+    put(g);
+    let k = fn(v: Unit) => ();
+    defer k(());
+    let w = fn(v: Unit) => { put(fn(n: Int) => fail(E)); k(()) };
+    ()
+  };
+  with h { log(1) }
+};

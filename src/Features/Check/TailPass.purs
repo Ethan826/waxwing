@@ -14,7 +14,7 @@ import Domain.Syntax (Diagnostic)
 import Domain.Type (TyRow, VarId)
 import Features.Check.Consume (closeTail, consumeIgnoring)
 import Features.Check.Context (CheckEnv)
-import Features.Check.Entry (resolvedRow)
+import Features.Check.Walked (End(..), endOf, walkedRow)
 import Features.Check.Provenance (Consumed(Application), Origin)
 import Features.Check.Restricted (ClauseEntry)
 import Features.Check.Scheme (State)
@@ -45,14 +45,24 @@ rigid
   → Tuple Boolean State
   → ClauseEntry
   → Either Diagnostic (Tuple Boolean State)
-rigid env (Tuple changed state) entry = case tail of
-  Just (Rigid variable) → do
-    Tuple first inference ← ensure env origin variable entry.inference state
-    Tuple second clauses ← ensure env origin variable entry.clauses inference
-    pure (Tuple (changed || first || second) clauses)
+rigid env (Tuple changed state) entry = case endOf state.subst entry.row of
+  Fixed variable → both env changed state entry variable
   _ → Right (Tuple changed state)
+
+-- R and C of the clause's handler both end in ϱ.
+both
+  ∷ ∀ r
+  . CheckEnv r
+  → Boolean
+  → State
+  → ClauseEntry
+  → VarId
+  → Either Diagnostic (Tuple Boolean State)
+both env changed state entry variable = do
+  Tuple first inference ← ensure env origin variable entry.inference state
+  Tuple second clauses ← ensure env origin variable entry.clauses inference
+  pure (Tuple (changed || first || second) clauses)
   where
-  Row _ tail = resolvedRow state.subst entry.row
   origin = { span: entry.clause, consumed: Application, via: Nothing }
 
 -- `target` must end in ϱ. An unbound tail is bound to ϱ alone (review A2:
@@ -67,22 +77,21 @@ ensure
   → TyRow Open
   → State
   → Either Diagnostic (Tuple Boolean State)
-ensure env origin variable target state = case tail of
-  Just (Hole meta) → bind (Row [] (Just (Hole meta)))
-  Just (Rigid same) | same == variable → Right (Tuple false state)
+ensure env origin variable target state = case endOf state.subst target of
+  Loose meta → bind (Row [] (Just (Hole meta)))
+  Fixed same | same == variable → Right (Tuple false state)
   _ → whole
   where
-  Row _ tail = resolvedRow state.subst target
   stage = Row [] (Just (Rigid variable))
-  bind row = Tuple true <$> consumeIgnoring env state { origin, stage, target: row }
+  bind row = Tuple true <$> consumeIgnoring env state
+    { origin, stage, target: row }
   whole = Tuple false <$> consumeIgnoring env state
-    { origin, stage, target: resolvedRow state.subst target }
+    { origin, stage, target: walkedRow state.subst target }
 
 closing
   ∷ ∀ r. CheckEnv r → State → ClauseEntry → Either Diagnostic State
-closing env state entry = case tail of
-  Just (Hole meta) → closeTail env state origin (Row [] (Just (Hole meta)))
+closing env state entry = case endOf state.subst entry.clauses of
+  Loose meta → closeTail env state origin (Row [] (Just (Hole meta)))
   _ → Right state
   where
-  Row _ tail = resolvedRow state.subst entry.clauses
   origin = { span: entry.clause, consumed: Application, via: Nothing }
