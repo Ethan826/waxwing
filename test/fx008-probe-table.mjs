@@ -99,6 +99,12 @@ const own = [
     { slow: true }),
   // ec1's Fail(E) arrives at check time (checkDefer), so ec1 is a control;
   // ec2 delays it to settling (user 2026-10-11) and proves the exit count.
+  // A literal raising a parameterized Fail family against a written handler
+  // type: C keeps bare labels and never unifies their arguments (Task 7).
+  probe('witness/famw',
+    ok('0\n', '9e35e96ea8ae81e85bec8829f267fe67c47fcd4909cc7c74c17d1ca5acb5f937')),
+  probe('witness/famw2',
+    ok('0\n', '4070dfb73c4413cabc5c24e18f00fd279aab46c22cdbee64f83bf0681c46acae')),
   probe('witness/ec2',
     no('E_EFFECT', 'Unhandled Fail(E) in main', 90, 380),
     { slow: true }),

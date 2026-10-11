@@ -53,7 +53,9 @@ headedRow subst row = Row (map headed labels) tail
 -- again): its effect and mark, and no arguments, so a handler type nested in
 -- a label argument is held once, by R, not twice. A `Fail` label keeps its
 -- payload's head (a type with no arguments), which is its key; a payload
--- whose head is not known yet stays as it is.
+-- whose head is not known yet stays as it is. C's arguments are never
+-- unified (`ignoringArguments`): C rows pair by key and relate marks and
+-- tails only, so the kept payload is never bound.
 bareLabel ∷ Subst → Label (Ty Open) → Label (Ty Open)
 bareLabel subst (Label effect arguments mark) = Label effect kept mark
   where

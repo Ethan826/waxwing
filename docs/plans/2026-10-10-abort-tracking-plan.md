@@ -968,9 +968,9 @@ implementer or reviewer asks; that change is recorded in the ledger.
 
   No accepted program distinguishes F1′'s Join (a grown clause takes the
   group already on its new tail) from a new group: a later sync that sees
-  both merges them by the second branch, so Join affects only cost and
-  order, and the six-orders test is its guard (a probe was tried, join1:
-  accepted with Join replaced by New). The closed-φ branch, the tail pass's
+  both merges them by the second branch, so Join only saves a later
+  merge. No test kills it (a probe, join1, was accepted with Join replaced by
+  New, and the six-orders test passes too). The closed-φ branch, the tail pass's
   closing of C and A5's synced hint have no Task 7 observer either; Task 8
   adds the C tests.
 
@@ -1001,7 +1001,11 @@ entries join settling; gate unchanged.
   Resolved.Expr → Either Diagnostic (Threaded Checked.Expr)`: R into
   `env.current` by `consumeIgnoring`; `clauseRow`'s labels into `env.current` by
   `consumeLabels` (Directional, Fail kept, origin the `with`), each label
-  taking its arguments from R (C keeps none, Task 7 ruling); frame f =
+  taking its arguments from R (C keeps none, Task 7 ruling); C's labels pair
+  by key with an argument-ignoring unifier (`ignoringArguments`, as
+  `Unify.unifyClauses`, `Clauses.file` and Settle's bare entries do), never
+  with the full unifier: a bare `Fail(Job)` must not meet `Fail(Job(Int))`
+  (witness/famw, famw2); frame f =
   `NoFail` for Console, else a fresh `MarkMeta`; the body is checked against
   `withMark f label` prepended to the current row; registers an
   `Installation`.

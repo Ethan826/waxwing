@@ -24,6 +24,8 @@ import Domain.Row
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (rowsOf, spine)
 import Features.Check.Scheme (State, Threaded)
+import Features.Check.Subst (empty)
+import Features.Check.Walked (bareLabel)
 
 -- Marks in checking are metas for what a use leaves open (FX008 design
 -- §3.3, §3.4). A counter supplies their numbers: from the next unused meta
@@ -126,7 +128,10 @@ handlerRows outside rows =
   onlyInference found = rows { inference = found }
   withClauses found copy hole =
     { inference: found, clauses: Just (clausesOf copy hole) }
-  clausesOf (Row labels _) hole = Row labels (Just hole)
+  -- C keeps no label arguments (Task 7 ruling): a written type has no
+  -- bindings, so an empty substitution reads the `Fail` payload heads.
+  clausesOf (Row labels _) hole = Row (map (bareLabel empty) labels)
+    (Just hole)
 
 -- A handler literal's handled label has a fresh mark meta m (design §3.4),
 -- so it unifies with whatever its context writes; Console stays N.

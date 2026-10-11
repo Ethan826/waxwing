@@ -11,7 +11,7 @@ import Data.Tuple (fst, snd)
 import Domain.Checked.Internal as Checked
 import Domain.Row (Row(..))
 import Domain.Syntax (Diagnostic)
-import Features.Check.Consume (consumeIgnoring, consumeLabels)
+import Features.Check.Consume (consumeBare, consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
 import Features.Check.Cycle (feedOrder, positiveCycle)
 import Features.Check.Defer (failing, placed)
@@ -139,7 +139,7 @@ consume env entries state index = maybe (Right state) consumed
     , stage: Row (map fst (kept entry)) tail
     , target: entry.target
     }
-  fresh entry = consumeLabels env state
+  fresh entry = consumer entry env state
     { origin: entry.origin
     , sources: map snd (kept entry)
     , labels: map (shown entry) (kept entry)
@@ -150,6 +150,9 @@ consume env entries state index = maybe (Right state) consumed
   shown entry found
     | entry.bare = bareLabel state.subst (fst found)
     | otherwise = fst found
+  consumer entry
+    | entry.bare = consumeBare
+    | otherwise = consumeLabels
   kept entry = Array.filter (carried entry)
     (placed state (labelsOf entry) entry.own)
   labelsOf entry = case walkedRow state.subst entry.own of

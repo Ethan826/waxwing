@@ -76,10 +76,10 @@ test('a handler type inside a handler row keeps no clause row', () => {
   assert.ok(found.value1.clauses instanceof Just);
   const copy = found.value1.clauses.value0.value0[0];
   const nested = found.value1.inference.value0[0].value1[0];
-  for (const seen of [nested, copy.value1[0]]) {
-    assert.ok(seen.value1.clauses instanceof Nothing);
-    assert.ok(seen.value1.inference.value0[0].value2 instanceof MarkMeta);
-  }
+  assert.ok(nested.value1.clauses instanceof Nothing);
+  assert.ok(nested.value1.inference.value0[0].value2 instanceof MarkMeta);
+  // C keeps no label arguments (Task 7 ruling): its copy is bare.
+  assert.equal(copy.value1.length, 0);
 });
 
 test('a handler type among the handled label arguments is outside a row', () => {

@@ -3,6 +3,7 @@ module Features.Check.Consume
   , consumeAt
   , consumeVia
   , consumeLabels
+  , consumeBare
   , consumeIgnoring
   , closeTail
   ) where
@@ -27,7 +28,12 @@ import Features.Check.Site (Site)
 import Features.Check.Subst (linkTo)
 import Features.Check.Unify (Failure, Flex(..), Subst(..), unify, walkRow)
 import Features.Check.RowFinish (Traced)
-import Features.Check.UnifyRow (unifyRowsIgnoring, unifyRowsTraced)
+import Features.Check.UnifyRow
+  ( Unifier
+  , ignoringArguments
+  , unifyRowsIgnoring
+  , unifyRowsTraced
+  )
 
 -- A row consumed into the current one at `span`, recording what was
 -- consumed there as the origin of each label occurrence it adds or
@@ -56,7 +62,7 @@ consumeVia
   → Array OccurrenceId
   → TyRow Open
   → Either Diagnostic State
-consumeVia env state origin sources = consumeIn env state origin sources
+consumeVia env state origin sources = consumeIn unify env state origin sources
   (Directional { span: origin.span, throwaway: Nothing })
 
 -- Labels consumed into an explicit `target` (its `sites` say where its
@@ -78,7 +84,26 @@ consumeLabels
   → State
   → LabelConsumption
   → Either Diagnostic State
-consumeLabels env state spec = consumeIn
+consumeLabels = consumeLabelsWith unify
+
+-- The same into a clause row C: its labels pair by key and never unify
+-- arguments (the labels are bare).
+consumeBare
+  ∷ ∀ r
+  . CheckEnv r
+  → State
+  → LabelConsumption
+  → Either Diagnostic State
+consumeBare = consumeLabelsWith ignoringArguments
+
+consumeLabelsWith
+  ∷ ∀ r
+  . Unifier
+  → CheckEnv r
+  → State
+  → LabelConsumption
+  → Either Diagnostic State
+consumeLabelsWith unifier env state spec = consumeIn unifier
   (env { current = spec.target, sites = spec.sites })
   (state { next = state.next + 1 })
   spec.origin
@@ -98,7 +123,8 @@ consumeIgnoring
   → State
   → { origin ∷ Origin, stage ∷ TyRow Open, target ∷ TyRow Open }
   → Either Diagnostic State
-consumeIgnoring env state spec = consumeIn (env { current = spec.target })
+consumeIgnoring env state spec = consumeIn unify
+  (env { current = spec.target })
   state
   spec.origin
   []
@@ -124,15 +150,16 @@ closeTail env state origin row = either (rejected env state origin) closed
 
 consumeIn
   ∷ ∀ r
-  . CheckEnv r
+  . Unifier
+  → CheckEnv r
   → State
   → Origin
   → Array OccurrenceId
   → RowMode
   → TyRow Open
   → Either Diagnostic State
-consumeIn env state origin sources mode row = either failed finished
-  (consume mode start sides (flexibleRow row) (flexibleRow env.current))
+consumeIn unifier env state origin sources mode row = either failed finished
+  (consume unifier mode start sides (flexibleRow row) (flexibleRow env.current))
   where
   sides = { left: origin.span, right: rightSpan env }
   start = foldl linkSource state.subst (Array.mapWithIndex numbered sources)
@@ -162,17 +189,18 @@ consumeIn env state origin sources mode row = either failed finished
 -- one is consumed as it stands, so its labels keep the occurrences their
 -- meta bindings gave them.
 consume
-  ∷ RowMode
+  ∷ Unifier
+  → RowMode
   → Subst
   → Sides
   → TyRow Flex
   → TyRow Flex
   → Either Failure Traced
-consume mode subst sides stage current = case walkRow subst stage of
-  Row labels Nothing → unifyRowsTraced unify (throwing mode) sides fresh
+consume unifier mode subst sides stage current = case walkRow subst stage of
+  Row labels Nothing → unifyRowsTraced unifier (throwing mode) sides fresh
     (Row labels (Just (Meta bindings.fresh)))
     current
-  _ → unifyRowsTraced unify mode sides subst stage current
+  _ → unifyRowsTraced unifier mode sides subst stage current
   where
   Subst bindings = subst
   fresh = Subst bindings { fresh = bindings.fresh - 1 }

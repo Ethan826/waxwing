@@ -129,3 +129,10 @@ test('argbind-internal is accepted (sound gain)', () => {
   accepted(probe('argbind-internal'));
 });
 
+
+// Bare C must never unify label arguments: the payload head `Job` of the
+// literal's C would otherwise meet `Fail(Job(Int))` of the written type.
+test('a literal with a parameterized Fail family matches a written handler type', () => {
+  accepted(probe('witness/famw'));
+  accepted(probe('witness/famw2'));
+});

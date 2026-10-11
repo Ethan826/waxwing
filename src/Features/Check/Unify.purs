@@ -33,7 +33,12 @@ import Features.Check.Subst
   )
 import Features.Check.Origin (linked)
 import Features.Check.UnifyMark (equateMarks)
-import Features.Check.UnifyRow (unifyRows, unifyRowsIgnoring, unifyRowsTraced)
+import Features.Check.UnifyRow
+  ( ignoringArguments
+  , unifyRows
+  , unifyRowsIgnoring
+  , unifyRowsTraced
+  )
 
 -- Rigid matches only the same rigid; a meta binds to any type that does not
 -- properly contain it; applied types unify argument-wise, left to right,
@@ -153,7 +158,7 @@ unifyHeads level subst left right = case left, right of
         foldM unifyPair subst (Array.zip lefts rights)
           >>= handledMarks left right leftLabel rightLabel
           >>= unifyInference level leftRows rightRows
-          >>= unifyClauses level leftRows rightRows
+          >>= unifyClauses leftRows rightRows
   TFun _ _ _, TFun _ _ _ → unifyArrows level subst left right
   _, _ → mismatch subst left right
   where
@@ -197,14 +202,15 @@ unifyInference level left right subst =
 -- was just unified with marks if neither has one (a written type then costs
 -- one row, not two).
 unifyClauses
-  ∷ Int
-  → HandlerRows (Ty Flex) Flex
+  ∷ HandlerRows (Ty Flex) Flex
   → HandlerRows (Ty Flex) Flex
   → Subst
   → Either Failure Subst
-unifyClauses level left right subst =
+unifyClauses left right subst =
   if isNothing left.clauses && isNothing right.clauses then Right subst
-  else unifyRowAt level (clauseRow left) (clauseRow right) subst
+  else unifyRows ignoringArguments subst
+    (clauseRow left)
+    (clauseRow right)
 
 -- Two rows at this level: their label arguments one level deeper.
 unifyRowAt

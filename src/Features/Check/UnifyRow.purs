@@ -1,5 +1,6 @@
 module Features.Check.UnifyRow
   ( Unifier
+  , ignoringArguments
   , unifyRows
   , unifyRowsIgnoring
   , unifyRowsTraced
@@ -50,6 +51,12 @@ import Features.Check.Subst
 
 -- The type unifier, passed in: Features.Check.Unify calls this module.
 type Unifier = Subst → Ty Flex → Ty Flex → Either Failure Subst
+
+-- The unifier for a clause row C, which keeps no label arguments of its own
+-- (Task 7 ruling): C's labels pair by key and relate marks and tails only.
+-- C's arguments are never unified; R carries and checks them.
+ignoringArguments ∷ Unifier
+ignoringArguments subst _ _ = Right subst
 
 -- Leijen's scoped-label unification (2005, §7; design §2). Each left
 -- label, in order, matches the first right entry with its key, whose

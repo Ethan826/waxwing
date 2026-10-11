@@ -20,7 +20,7 @@ import Domain.Row
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty, TyRow)
 import Features.Check.ClauseBody (HandlerEnv, handlerClause)
-import Features.Check.Consume (consumeLabels)
+import Features.Check.Consume (consumeBare)
 import Features.Check.Context (Infer, Locals)
 import Features.Check.Defer (placed)
 import Features.Check.Walked (End(..), bareLabel, endOf, walkedRow)
@@ -131,7 +131,7 @@ file
   → State
   → Either Diagnostic State
 file env setup ids row clause state = do
-  consumed ← consumeLabels env state
+  consumed ← consumeBare env state
     { origin
     , sources: map snd kept
     , labels: map (bareLabel state.subst <<< fst) kept
