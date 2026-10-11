@@ -56,13 +56,16 @@ type ClauseEntry =
 -- row `remainder` that stands for what they may still add.
 type Group = { representative ∷ Int, remainder ∷ TyRow Open }
 
--- A `with` installation of a handler literal, for its abort-tracking
--- obligations.
+-- A `with` installation of a handler, for its abort-tracking obligations.
+-- `inference` is the handler's R, from which its C takes label arguments;
+-- `current` the row it is installed in, `frame` the mark of its body's
+-- label.
 type Installation =
   { span ∷ Span
   , label ∷ Label (Ty Open)
   , own ∷ Mark
   , frame ∷ Mark
+  , inference ∷ TyRow Open
   , clauses ∷ TyRow Open
   , current ∷ TyRow Open
   , sites ∷ Array Site

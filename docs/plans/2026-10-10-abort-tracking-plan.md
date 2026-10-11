@@ -1014,6 +1014,18 @@ entries join settling; gate unchanged.
   resolved C tail is a rigid ϱ needs `current` to end in ϱ (origin the
   `with`).
 
+- **Implementation note (Task 8).** `install` does not consume C itself, and
+  settling's installation entries record the `Assumed` edges by pairing C's
+  labels (arguments lent by R, `Lend.lend`) with the labels of `current`
+  (`Lend.assume`, the same key-and-position pairing, no unification) and
+  consume only a label with no partner yet. Reason: a consumption allocates
+  a throwaway tail and renames the row's tail, and the checked IR names an
+  unsolved function-row tail by its number (449 check-phase differences in
+  the differential corpus, none downstream). The installation is numbered by
+  the registry's size and its frame comes from the mark store's counter, so
+  `state.next` is not moved. `watchTail` is not called: nothing syncs on an
+  installation. The debug export is `Features.Check.checkedStates`.
+
 - [ ] **Step 1: Failing tests** (JS via the compiled checker or a debug
   export of edge counts): `an installation records frame ⊑ C edges` (one
   `Assumed` edge per C label); `a literal whose clause row closed, and one

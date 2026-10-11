@@ -25,7 +25,8 @@ import Domain.Type (TyRow)
 -- in (P14). `tail`: what ends the stage consumed, a fresh meta nobody
 -- reads, or the remainder row of a clause group (φ). `bare`: the target is a
 -- clause row C, which keeps no label arguments of its own (Task 7, user
--- ruling 2026-10-11): R holds them.
+-- ruling 2026-10-11): R holds them. `donor`: an installation's C takes its
+-- labels' arguments from the handler's R (`Lend.lend`) before consuming.
 type Entry =
   { own ∷ TyRow Open
   , target ∷ TyRow Open
@@ -33,6 +34,7 @@ type Entry =
   , keepFail ∷ Boolean
   , ignoreMarks ∷ Boolean
   , bare ∷ Boolean
+  , donor ∷ Maybe (TyRow Open)
   , tail ∷ EntryTail
   , origin ∷ Origin
   , position ∷ Int
@@ -41,11 +43,33 @@ type Entry =
 data EntryTail = Fresh | Remainder (TyRow Open)
 
 -- Every restricted row, by span start (P14): the registry's clause
--- entries, then the deferrals, which are stored post-order. Ties keep
--- this order, so a clause row settles before a deferral at the same place.
+-- entries, its installations' C, then the deferrals, which are stored
+-- post-order. Ties keep this order, so a clause row settles before a
+-- deferral at the same place.
 entries ∷ Restricted → Array Deferral → Array Entry
 entries registry deferrals = Array.sortWith _.position
-  (clauseEntries registry <> deferralEntries deferrals)
+  ( clauseEntries registry <> installationEntries registry
+      <> deferralEntries deferrals
+  )
+
+-- An installation's C is consumed into the row it is installed in,
+-- directionally, `Fail` kept, at the `with` (P13, design §3.5).
+installationEntries ∷ Restricted → Array Entry
+installationEntries registry = map installed
+  (Array.fromFoldable (Map.values registry.installations))
+  where
+  installed found =
+    { own: found.clauses
+    , target: found.current
+    , sites: found.sites
+    , keepFail: true
+    , ignoreMarks: false
+    , bare: true
+    , donor: Just found.inference
+    , tail: Fresh
+    , origin: { span: found.span, consumed: Application, via: Nothing }
+    , position: found.span.start.offset
+    }
 
 -- A clause row feeds the handler's inference row R, ignoring marks and
 -- ending in its group's remainder, and its clause row C directionally.
@@ -73,6 +97,7 @@ clauseTo found target ignoreMarks bare tail =
   , keepFail: true
   , ignoreMarks
   , bare
+  , donor: Nothing
   , tail
   , origin: { span: found.handler, consumed: Application, via: Nothing }
   , position: found.handler.start.offset
@@ -92,6 +117,7 @@ deferralEntries deferrals = map entryOf (Array.sortWith start numbered)
     , keepFail: false
     , ignoreMarks: false
     , bare: false
+    , donor: Nothing
     , tail: Fresh
     , origin: crossing found.span
     , position: found.span.start.offset

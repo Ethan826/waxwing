@@ -6,10 +6,12 @@ import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
-import Data.Maybe (maybe)
-import Data.Tuple (fst, snd)
+import Data.Maybe (isNothing, maybe)
+import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal as Checked
-import Domain.Row (Row(..))
+import Domain.Checked.Internal (Open)
+import Domain.Row (Label, Row(..))
+import Domain.Type (Ty)
 import Domain.Syntax (Diagnostic)
 import Features.Check.Consume (consumeBare, consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
@@ -18,6 +20,7 @@ import Features.Check.Defer (failing, placed)
 import Features.Check.Walked (bareLabel, headedRow, walkedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Feed (FeedRow, Feeds, feedsOf)
+import Features.Check.Lend (assume, lend)
 import Features.Check.Reject (rejected)
 import Features.Check.Scheme (State)
 import Features.Check.SettleEntry (Entry, EntryTail(..))
@@ -84,11 +87,23 @@ postponedCount ∷ Subst → Int
 postponedCount (Subst bindings) = Array.length bindings.postponed
 
 -- How many labels a row resolves to now: rows only grow at their tails,
--- so a change in the count is a change in the row.
+-- so a change in the count is a change in the row. An installation's C
+-- counts the labels it can already take arguments for, so R growing to hold
+-- one it was waiting for is a change too.
 labelCount ∷ Subst → Entry → Int
-labelCount subst entry = Array.length labels
+labelCount subst entry = maybe (Array.length labels) lentCount entry.donor
   where
   Row labels _ = walkedRow subst entry.own
+  lentCount donor = Array.length (lend subst donor (map unplaced labels))
+  unplaced label = Tuple label unit
+
+lent
+  ∷ ∀ a
+  . Subst
+  → Entry
+  → Array (Tuple (Label (Ty Open)) a)
+  → Array (Tuple (Label (Ty Open)) a)
+lent subst entry = maybe identity (lend subst) entry.donor
 
 feedRow ∷ Subst → Entry → FeedRow
 feedRow subst entry =
@@ -139,7 +154,15 @@ consume env entries state index = maybe (Right state) consumed
     , stage: Row (map fst (kept entry)) tail
     , target: entry.target
     }
-  fresh entry = consumer entry env state
+  fresh entry = maybe (plain entry) (assumed entry) entry.donor
+  -- An installation's C meets labels the row already holds: only the mark
+  -- edges are recorded, so no tail is renamed. A label with no partner yet
+  -- is consumed in the usual way.
+  assumed entry _ = maybe (plain entry) (Right <<< marked)
+    (assume entry.origin.span state.subst entry.target (kept entry))
+  marked subst = state { subst = subst }
+  plain entry = consumer entry env state (spec entry)
+  spec entry =
     { origin: entry.origin
     , sources: map snd (kept entry)
     , labels: map (shown entry) (kept entry)
@@ -148,13 +171,15 @@ consume env entries state index = maybe (Right state) consumed
     , ignoreMarks: entry.ignoreMarks
     }
   shown entry found
-    | entry.bare = bareLabel state.subst (fst found)
+    | entry.bare && isNothing entry.donor = bareLabel state.subst (fst found)
     | otherwise = fst found
   consumer entry
     | entry.bare = consumeBare
     | otherwise = consumeLabels
-  kept entry = Array.filter (carried entry)
-    (placed state (labelsOf entry) entry.own)
+  kept entry = lent state.subst entry
+    ( Array.filter (carried entry)
+        (placed state (labelsOf entry) entry.own)
+    )
   labelsOf entry = case walkedRow state.subst entry.own of
     Row labels _ → labels
   carried entry found = entry.keepFail || not (failing (fst found))

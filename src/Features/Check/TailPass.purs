@@ -16,16 +16,17 @@ import Features.Check.Consume (closeTail, consumeIgnoring)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Walked (End(..), endOf, walkedRow)
 import Features.Check.Provenance (Consumed(Application), Origin)
-import Features.Check.Restricted (ClauseEntry)
+import Features.Check.Restricted (ClauseEntry, Installation)
 import Features.Check.Scheme (State)
 
 -- The clause-tail pass (design §3.5, review T1). A clause row ending in a
 -- rigid ϱ needs its handler's R and C to end in ϱ. It repeats while a
 -- binding is made, since binding one handler's tail can make another
 -- clause rigid; each binding turns a distinct unbound tail into ϱ for
--- good, so it ends. Then every clause row's C closes (no Task 7 program
--- observes that; Task 8's `with` of a literal reads C). Each round rescans
--- every clause, so a chain of n handlers installed in each other's clauses
+-- good, so it ends. An installation whose C ends in a rigid ϱ needs the
+-- row it is installed in to end in ϱ too. Then every clause row's C closes
+-- (an installed literal's C is ended by then). Each round rescans every
+-- clause, so a chain of n handlers installed in each other's clauses
 -- with rigid tails costs O(n^2); a worklist of the clauses ending in the meta
 -- just bound would make it linear (not needed for T003).
 tailPass ∷ ∀ r. CheckEnv r → State → Either Diagnostic State
@@ -39,9 +40,29 @@ round
   → State
   → Either Diagnostic (Step State State)
 round env state = do
-  Tuple changed passed ← foldM (rigid env) (Tuple false state)
+  Tuple clausesChanged clausesPassed ← foldM (rigid env)
+    (Tuple false state)
     (Map.values state.restricted.clauses)
+  Tuple changed passed ← foldM (installed env)
+    (Tuple clausesChanged clausesPassed)
+    (Map.values state.restricted.installations)
   pure (if changed then Loop passed else Done passed)
+
+-- An installed C ending in ϱ needs the row it is installed in to end in ϱ
+-- (design §3.5), reported at the `with`.
+installed
+  ∷ ∀ r
+  . CheckEnv r
+  → Tuple Boolean State
+  → Installation
+  → Either Diagnostic (Tuple Boolean State)
+installed env (Tuple changed state) found =
+  case endOf state.subst found.clauses of
+    Fixed variable → merged <$> ensure env origin variable found.current state
+    _ → Right (Tuple changed state)
+  where
+  origin = { span: found.span, consumed: Application, via: Nothing }
+  merged (Tuple bound passed) = Tuple (changed || bound) passed
 
 rigid
   ∷ ∀ r

@@ -1,4 +1,4 @@
-module Features.Check (check) where
+module Features.Check (check, checkedStates) where
 
 import Prelude
 import Data.Array as Array
@@ -65,6 +65,19 @@ check program = do
   relocated definition = located definition <$> hush (rechecked definition)
   located definition result =
     { name: definition.name, span: definition.span, state: result.state }
+
+-- Every function's final checking state, for tests of what checking
+-- registered (installations, mark edges). Nothing in the compiler reads it.
+checkedStates
+  ∷ Resolved.Program
+  → Either Diagnostic (Array { name ∷ String, state ∷ State })
+checkedStates program = traverse stated program.functions
+  where
+  holders = functional program.ctors
+  stated definition = named definition <$> checkFunction holders
+    (environment program definition)
+    definition
+  named definition result = { name: definition.name, state: result.state }
 
 -- `main`'s result is printed, so it may hold no function, directly or
 -- through a declared type's fields (FN001 design §3). Resolve has already

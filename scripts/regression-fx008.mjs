@@ -103,10 +103,10 @@ export const fx008Rows = [
   {
     // The installation consumes R as it stands; a fresh tail drops the link
     // that meta2 needs.
-    name: 'fx008-r-consumed', file: 'src/Features/Check/Handler.purs',
-    needle: ', stage: row',
-    replacement: ', stage: (case row of Row ls _ → Row ls (Just '
-      + '(Checked.Hole (handlerValue.state.next + 1000000))))',
+    name: 'fx008-r-consumed', file: 'src/Features/Check/Install.purs',
+    needle: ', stage: rows.inference',
+    replacement: ', stage: (case rows.inference of Row ls _ → Row ls (Just '
+      + '(Checked.Hole (state.next + 1000000))))',
     probe: 'fx008-r-consumed', message: /R consumed: Ambiguous/
   },
   {
