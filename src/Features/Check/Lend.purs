@@ -3,8 +3,8 @@ module Features.Check.Lend (lend, assume, partners) where
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
-import Data.Either (either)
-import Data.Foldable (foldl)
+import Data.Either (Either)
+import Data.Foldable (foldl, foldM)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -17,7 +17,7 @@ import Domain.Type.Parts (typeHead)
 import Features.Check.MarkStore (RowMode(..))
 import Features.Check.Occurrence (OccurrenceId(Written))
 import Features.Check.Scheme (flexible)
-import Features.Check.Subst (Flex, Subst, walk)
+import Features.Check.Subst (Failure, Flex, Subst, walk)
 import Features.Check.UnifyMark (pairMarks)
 import Features.Check.Walked (walkedRow)
 
@@ -54,28 +54,26 @@ lend subst donor found = map given
 -- nothing but marks must not rename the row's tail (the checked IR names an
 -- unsolved tail by its number). The edge's label is the partner's, C having
 -- no arguments. `Nothing` when some label has no partner yet; the caller
--- consumes then.
+-- consumes then. A directional pairing cannot fail, but if it ever did, the
+-- failure is returned, never dropped with its edge.
 assume
   ∷ ∀ a
   . Span
   → Subst
   → Array (Label (Ty Flex))
   → Array (Tuple (Label (Ty Open)) a)
-  → Maybe Subst
+  → Maybe (Either Failure Subst)
 assume span subst target found =
   if Array.length pairs == Array.length found then Just
-    (foldl meeting subst (Array.mapWithIndex Tuple pairs))
+    (foldM meeting subst (Array.mapWithIndex Tuple pairs))
   else Nothing
   where
   pairs = paired (flexKey subst) (keyOf subst) target found
-  meeting reached (Tuple index (Tuple stage (Tuple partner _))) = either
-    (const reached)
-    identity
-    ( pairMarks (Directional { span, throwaway: Nothing }) reached
-        (Written span index)
-        (withMark (labelMark stage) partner)
-        partner
-    )
+  meeting reached (Tuple index (Tuple stage (Tuple partner _))) =
+    pairMarks (Directional { span, throwaway: Nothing }) reached
+      (Written span index)
+      (withMark (labelMark stage) partner)
+      partner
 
 -- Each label of C (non-`Fail` ones: their keys need no payload) with the
 -- label of `target` it meets, by key and position as `assume` pairs them.

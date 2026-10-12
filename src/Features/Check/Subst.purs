@@ -60,9 +60,11 @@ derive instance ordFlex ∷ Ord Flex
 -- order, to be retried by Features.Check.Unify `settleRows`. `links`
 -- (design §6): an occurrence and the occurrence it is the same label as,
 -- recorded by every row unification, the first per occurrence kept;
--- nothing in unification reads them. `marks` (FX008): the bindings of
--- mark metas and the mark edges, kept with the substitution so that a
--- postponed pair that reverts takes its edges with it. `watch` (FX008):
+-- nothing in unification reads them. `relays`: where a clause row's labels
+-- came from, followed only past a clause-row hop (Features.Check.Links).
+-- `marks` (FX008): the bindings of mark metas and the mark edges, kept with
+-- the substitution so that a postponed pair that reverts takes its edges
+-- with it. `watch` (FX008):
 -- the tails the restricted registry watches, with those bound since it
 -- last looked; data, so it reverts the same way.
 newtype Subst = Subst
@@ -71,6 +73,7 @@ newtype Subst = Subst
   , fresh ∷ Int
   , postponed ∷ Array RowPair
   , links ∷ Map OccurrenceId OccurrenceId
+  , relays ∷ Map OccurrenceId OccurrenceId
   , marks ∷ MarkStore (Ty Flex)
   , watch ∷ TailWatch
   , aliases ∷ Aliases
@@ -113,6 +116,7 @@ empty = Subst
   , fresh: -1
   , postponed: []
   , links: Map.empty
+  , relays: Map.empty
   , marks: emptyMarks
   , watch: emptyWatch
   , aliases: noAliases

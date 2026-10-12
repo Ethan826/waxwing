@@ -16,23 +16,27 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Set (Set)
 import Data.Set as Set
 import Domain.Syntax (Span)
 import Domain.Type (TyRow)
 import Features.Check.Occurrence (OccurrenceId, nowhere)
 import Features.Check.RowSide (expanded, written)
-import Features.Check.Links (linkOf)
+import Features.Check.Links (linkOf, relayOf)
 import Features.Check.Subst (Flex, Subst)
 
 -- What a label was consumed from (design §6): an operation, a call of a
 -- named function, an application of a function value, or a `fail`. The
--- strings name the operation, function or payload family.
+-- strings name the operation, function or payload family. `ClauseRow` is
+-- the checker's own consumption of a handler literal's clause row (into R,
+-- C or an installing row): the label arrives from elsewhere, so it names
+-- no consumer in a report and the trail continues past it.
 data Consumed
   = Operation String
   | CallOf String
   | Application
+  | ClauseRow
   | FailOf String
 
 -- The boundary a label crossed on its way to the rejection.
@@ -77,12 +81,22 @@ trail subst origins start = tailRec step
   visit pending occurrence =
     if Set.member occurrence pending.seen then Done pending.hops
     else Loop
-      { next: linkOf subst occurrence
+      { next: nextOf pending occurrence
       , seen: Set.insert occurrence pending.seen
       , hops: Array.snoc pending.hops (hopAt occurrence)
       }
   hopAt occurrence =
     { occurrence, origin: Map.lookup occurrence origins }
+  -- A clause row's relay is followed only straight past a clause-row hop.
+  nextOf pending occurrence =
+    maybe' (relaying pending occurrence) Just (linkOf subst occurrence)
+  relaying pending occurrence _ =
+    if relayed pending then relayOf subst occurrence else Nothing
+  relayed pending =
+    maybe false clauseRow (Array.last pending.hops >>= _.origin)
+  clauseRow origin = case origin.consumed of
+    ClauseRow → true
+    _ → false
 
 type Pending =
   { next ∷ Maybe OccurrenceId, seen ∷ Set OccurrenceId, hops ∷ Array Hop }

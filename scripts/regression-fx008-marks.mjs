@@ -27,8 +27,8 @@ export const fx008MarkRows = [
     // C is never unified with the row it is installed in (rev7 I3): it
     // pairs by key and relates marks directionally.
     name: 'fx008-c-unified', file: 'src/Features/Check/Lend.purs',
-    needle: '    ( pairMarks (Directional { span, throwaway: Nothing }) reached',
-    replacement: '    ( pairMarks EqualMarks reached',
+    needle: '    pairMarks (Directional { span, throwaway: Nothing }) reached',
+    replacement: '    pairMarks EqualMarks reached',
     probe: 'fx008-c-unified', message: /C unified: rejected/
   },
   {

@@ -12,7 +12,7 @@ import { wire } from '../output/Format.Diagnostic/index.js';
 import { runGoBatch } from './go-batch.mjs';
 import { probes } from './fx008-probe-table.mjs';
 import { tableHash } from './fx008-probe-hash.mjs';
-import { probeNotes } from './fx008-probe-notes.mjs';
+import { baseNotes, probeNotes } from './fx008-probe-notes.mjs';
 
 // The FX008 probe gate (plan docs/plans/2026-10-10-abort-tracking-plan.md,
 // Task 1). Each probe pins its observed outcome; a task changes only the
@@ -73,8 +73,14 @@ const checkRejection = (expected, shown) => {
   assert.deepEqual(spanOf(diagnostic), { start: expected.start, end: expected.end });
 };
 
-// Task 10: a flipped rejection carries the notes pinned beside the table.
+// Task 10: a flipped rejection carries the notes pinned beside the table;
+// a few unflipped ones pin their full notes with span (`baseNotes`).
 const checkNotes = (probe, diagnostic) => {
+  const full = diagnostic.related.map(note =>
+    [note.span.start.offset, note.span.end.offset, note.message]);
+  if (baseNotes[probe.file] !== undefined) {
+    assert.deepEqual(full, baseNotes[probe.file]);
+  }
   if (probeNotes[probe.file] === undefined) return;
   const source = sourceOf(probe);
   const shown = diagnostic.related.map(note =>

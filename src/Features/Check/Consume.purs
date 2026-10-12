@@ -5,6 +5,7 @@ module Features.Check.Consume
   , consumeLabels
   , consumeBare
   , consumeIgnoring
+  , consumeRelayed
   , closeTail
   ) where
 
@@ -25,7 +26,7 @@ import Features.Check.Provenance (Consumed, Origin, remember)
 import Features.Check.Reject (rejected, rightSpan, siteOccurrence)
 import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.Site (Site)
-import Features.Check.Links (linkTo)
+import Features.Check.Links (linkTo, relayTo)
 import Features.Check.Unify (Failure, Flex(..), Subst(..), unify, walkRow)
 import Features.Check.RowFinish (Traced)
 import Features.Check.UnifyRow
@@ -130,6 +131,30 @@ consumeIgnoring env state spec = consumeIn unify
   []
   IgnoreMarks
   spec.stage
+
+-- The same for a clause row relayed with its labels written out: `sources`
+-- are the occurrences those labels have in the clause row. They are
+-- recorded as relays, which a report follows only past a clause-row hop.
+consumeRelayed
+  ∷ ∀ r
+  . CheckEnv r
+  → State
+  → { origin ∷ Origin
+    , stage ∷ TyRow Open
+    , sources ∷ Array OccurrenceId
+    , target ∷ TyRow Open
+    }
+  → Either Diagnostic State
+consumeRelayed env state spec = relayed <$> consumeIgnoring env state
+  { origin: spec.origin, stage: spec.stage, target: spec.target }
+  where
+  relayed consumed = consumed
+    { subst = foldl relay consumed.subst
+        (Array.mapWithIndex numbered spec.sources)
+    }
+  numbered index source = { index, source }
+  relay subst found =
+    relayTo (Written spec.origin.span found.index) found.source subst
 
 -- The row unified with the closed row, ignoring marks. A remainder or a
 -- clause row whose tail is bound to nothing ends there for good; a row that

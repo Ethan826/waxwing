@@ -8,7 +8,7 @@ import { toUnfoldable } from '../output/Data.Map.Internal/index.js';
 import { unfoldableArray } from '../output/Data.Unfoldable/index.js';
 import { parse } from '../output/Format.Parse/index.js';
 import { resolve } from '../output/Features.Resolve/index.js';
-import { checkedStates } from '../output/Features.Check/index.js';
+import { checkedStates } from '../output/Features.Check.Inspect/index.js';
 import { MarkMeta } from '../output/Domain.Row/index.js';
 import { Ended, Fixed, endOf, walkedRow } from '../output/Features.Check.Walked/index.js';
 import { edgesOf, resolveMark } from '../output/Features.Check.MarkStore/index.js';

@@ -1027,7 +1027,7 @@ entries join settling; gate unchanged.
   the differential corpus, none downstream). The installation is numbered by
   the registry's size and its frame comes from the mark store's counter, so
   `state.next` is not moved. `watchTail` is not called: nothing syncs on an
-  installation. The debug export is `Features.Check.checkedStates`.
+  installation. The debug export is `Features.Check.Inspect.checkedStates`.
 
 - [ ] **Step 1: Failing tests** (JS via the compiled checker or a debug
   export of edge counts): `an installation records frame ⊑ C edges` (one
@@ -1407,6 +1407,55 @@ the 1,000 chain unchanged. Not covered: a chain of hops that carry labels
 (`extendRow`) is still walked hop by hop. Guards: the ratio test in
 `test/fx008-install.serial.test.mjs` (4.27 at 9a62014, 2.0 now, bound 3.2)
 and the mutant row `fx008-install-linear`.
+
+### Whole-branch review fixes (2026-10-12)
+
+Review: `docs/sdd/2026-10-09-effects-plan/review-fx008-branch-result.md`.
+User decisions of 2026-10-12, applied as one commit. Deviations from the
+review's proposed fixes:
+
+- **I1** (notes of rev6/amb2, rev6/around3, design-review/p3 and
+  rev9/ov1ctl restored to the base 8fe4218's). The review proposed a
+  `ClauseRow` variant that prints no note "and lets the trail continue past
+  it". That was not enough for p3: the clause-row `sync` (Sync.push) writes
+  the clause's labels into R as bare labels, so the trail ended at the
+  stage's own occurrence instead of the `fail(E)` that raised the label.
+  Giving those occurrences a plain link changed witness/ec2's diagnostic span
+  (a pinned probe), because it also lengthened trails the base never
+  followed. So the sources of that push are kept as `relays` in the
+  substitution (Features.Check.Links `relayTo`), which `trail` follows only
+  straight past a hop whose origin is `ClauseRow`. `Application` stays for
+  installations (`Install`) and applications; the FX008 texts and the
+  Tasks 9-10 pins are unchanged. Side effect, programs with `defer` only: one
+  program (the argbind rejection) changes its `Unhandled Fail(E) in main`
+  note from "Fail(E) comes from this function value" at the `put` call to
+  "Fail(E) is raised here" at the `fail(E)`; code, message and span are
+  unchanged, and another `defer` program returns to the base text.
+- **M3** (unreachable paths). Asserted guards, not deletions. TailPass's
+  installation rule is now a check that C's rigid variable ends the row it
+  is installed in (always true while R is `current`'s row) and an E_INTERNAL
+  otherwise; Settle's consumeBare fallback is an E_INTERNAL; Lend.assume
+  returns the failure of its directional `pairMarks` (never produced today)
+  and Settle reports it as E_INTERNAL, instead of the review's direct call
+  of `UnifyMark.recorded`, which would have orphaned the regression row
+  `fx008-c-unified` (its needle moves to the new `pairMarks` line). The
+  first two guards are forced by hand in test/fx008-guards.test.mjs through
+  `Features.Check.Inspect`; the third cannot be (a directional pairing
+  cannot fail).
+- **M4** registers p01, p02, p11 and q03 and their controls
+  (test/fx008-nofail-k.test.mjs); the generator shape is the controller's
+  BACKLOG item.
+- **M7** `checkedStates` moved to `Features.Check.Inspect` (with
+  `settledAgain` for the guard tests); `Features.Check` exports `check`
+  only. The per-function checker moved to `Features.Check.Function`.
+- **M1** re-measured: installations 7342 to 486 ms (bound 22026 to 1458 ms),
+  the install guard 9500 ms to 3 x 489 ms. **M2** not applied as the review wrote it:
+  `ended = restricted` changes diagnostics, not only registry fields.
+  Settling also records origins for its own clause-row consumptions, so
+  `Entry.check` moved witness/ec2's span (90-380 to 161-191) and argbind's
+  notes; the gate caught both. The state stays as it was (settled
+  substitution, pre-settle rest) and the stale comment is replaced by the
+  reason. **M6** untouched.
 
 ---
 

@@ -8,12 +8,16 @@ import { check } from '../output/Features.Check/index.js';
 // cost of the entries they add. Checking 1,000 sequential `with`s under one
 // handler took 3.97 s before installations (66f1eca), 11.6 s with the first
 // version of Task 8 (every round walked C's and R's long tail chains), and
-// 5.2 to 6.3 s now (the extra entries alone cost 5.1 s). The bound sits
-// between the old regression and the present cost, a warm-up check keeps
-// JIT start-up out, and only `check` is timed. Since T008 (33f9854) the check
-// takes about 0.5 s; this bound still separates the Task 8 regression, and
-// the ratio test below guards linearity.
-const bound = 9500;
+// 5.2 to 6.3 s with it (the extra entries alone cost 5.1 s). A warm-up
+// check keeps JIT start-up out, and only `check` is timed. Since T008
+// (33f9854) the check is linear and takes about 0.5 s, so the bound is three
+// times `MEASURED_MS`, the median of five runs of this check, one process
+// each, on the author's laptop (2026-10-12, load average 3.3): 489 ms. It
+// still separates the Task 8 regression by a wide margin, and the ratio test
+// below guards linearity.
+const MEASURED_MS = 489;
+const slack = 3;
+const bound = slack * MEASURED_MS;
 const count = 1000;
 
 const program = size => 'effect Log { fn log(n: Int): Unit; }; '

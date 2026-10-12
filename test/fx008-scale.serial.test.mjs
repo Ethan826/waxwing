@@ -11,11 +11,13 @@ import {
 // `check` is timed, after a warm-up on a small program (JIT start-up), and
 // each bound is three times the median of five runs of this test, one
 // process each, on the author's laptop (2026-10-11, load average 3.5).
-// `MEASURED_*` are those medians in milliseconds. The 200 variables take
+// `MEASURED_*` are those medians in milliseconds; the installations one was
+// measured again after T008 made settling linear (2026-10-12, load average
+// 3.3, median of five runs, 486 ms). The 200 variables take
 // 3 ms, too little to time against a ratio, so that test checks the program
 // `repeats` times.
 const MEASURED_DEFERS = 1001; // 8,000 defers
-const MEASURED_INSTALLATIONS = 7342; // 1,000 installations
+const MEASURED_INSTALLATIONS = 486; // 1,000 installations
 const MEASURED_CHAIN = 311; // a chain of 1,000 installing functions
 const MEASURED_VARIABLES = 115; // 200 mark variables
 const slack = 3;

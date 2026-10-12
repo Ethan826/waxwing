@@ -12,12 +12,13 @@ import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Domain.Row (Row(..))
 import Domain.Syntax (Diagnostic, Span)
-import Features.Check.Consume (consumeIgnoring)
+import Features.Check.Consume (consumeRelayed)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Walked (walkedRow)
 import Features.Check.Filing (Mode(..), filing, originOf, remainder)
 import Features.Check.Groups (signatureOf, signed)
-import Features.Check.Scheme (State)
+import Features.Check.Provenance (occurrencesOf)
+import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.SyncCycle (cycleTest)
 import Features.Check.Watch (takeDirty)
 
@@ -91,9 +92,10 @@ push env mode state id = maybe (Right state) pushed
     | entry.signature == Just (now entry) = Right state
     | otherwise = do
         Row _ tail ← remainder state entry
-        consumed ← consumeIgnoring env state
+        consumed ← consumeRelayed env state
           { origin: originOf mode entry
           , stage: Row (labelsOf entry) tail
+          , sources: occurrencesOf state.subst (flexibleRow entry.row)
           , target: entry.inference
           }
         pure consumed

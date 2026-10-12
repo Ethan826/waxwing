@@ -94,6 +94,7 @@ compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
   , fresh: min laterBindings.fresh earlierBindings.fresh
   , postponed: earlierBindings.postponed <> laterBindings.postponed
   , links: Map.union earlierBindings.links laterBindings.links
+  , relays: Map.union earlierBindings.relays laterBindings.relays
   , marks: laterBindings.marks
       { bindings = Map.union earlierBindings.marks.bindings
           laterBindings.marks.bindings

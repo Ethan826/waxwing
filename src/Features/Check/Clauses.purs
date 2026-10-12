@@ -24,7 +24,7 @@ import Features.Check.Consume (consumeBare)
 import Features.Check.Context (Infer, Locals)
 import Features.Check.Defer (placed)
 import Features.Check.Walked (End(..), bareLabel, endOf, walkedRow)
-import Features.Check.Provenance (Consumed(Application), Origin)
+import Features.Check.Provenance (Consumed(ClauseRow), Origin)
 import Features.Check.Restricted (registerClause)
 import Features.Check.Scheme (State, Threaded, threadAll)
 import Features.Check.Watch (watchTail)
@@ -145,7 +145,7 @@ file env setup ids row clause state = do
     }
   where
   origin ∷ Origin
-  origin = { span: setup.span, consumed: Application, via: Nothing }
+  origin = { span: setup.span, consumed: ClauseRow, via: Nothing }
   Row labels _ = walkedRow state.subst row
   kept = placed state labels row
   tail = case endOf state.subst row of

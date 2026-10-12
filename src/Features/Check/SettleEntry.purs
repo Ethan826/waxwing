@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
 import Features.Check.Defer (crossing)
-import Features.Check.Provenance (Consumed(Application), Origin)
+import Features.Check.Provenance (Consumed(ClauseRow), Origin)
 import Features.Check.Restricted (ClauseEntry, Restricted)
 import Features.Check.Scheme (Deferral)
 import Features.Check.Site (Site)
@@ -72,7 +72,7 @@ installationEntries registry = map installed
     , bare: true
     , donor: Just { id, inference: found.inference, matched: found.matched }
     , tail: Fresh
-    , origin: { span: found.span, consumed: Application, via: Nothing }
+    , origin: { span: found.span, consumed: ClauseRow, via: Nothing }
     , position: found.span.start.offset
     }
 
@@ -104,7 +104,7 @@ clauseTo found target ignoreMarks bare tail =
   , bare
   , donor: Nothing
   , tail
-  , origin: { span: found.handler, consumed: Application, via: Nothing }
+  , origin: { span: found.handler, consumed: ClauseRow, via: Nothing }
   , position: found.handler.start.offset
   }
 

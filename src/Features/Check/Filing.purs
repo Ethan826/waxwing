@@ -27,7 +27,7 @@ import Features.Check.Groups
   , started
   , unfiled
   )
-import Features.Check.Provenance (Consumed(Application), Origin)
+import Features.Check.Provenance (Consumed(ClauseRow), Origin)
 import Features.Check.Restricted (ClauseEntry, ClauseSignature)
 import Features.Check.Scheme (State)
 import Features.Check.Walked (End(..), endOf)
@@ -40,7 +40,7 @@ import Features.Check.Watch (watchTail)
 data Mode = Checking Span | Settling
 
 originOf ∷ Mode → ClauseEntry → Origin
-originOf mode entry = { span, consumed: Application, via: Nothing }
+originOf mode entry = { span, consumed: ClauseRow, via: Nothing }
   where
   span = case mode of
     Checking at → at

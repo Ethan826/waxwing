@@ -4,7 +4,7 @@ import Prelude
 import Prim hiding (Row)
 import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Foldable (foldM)
 import Data.Maybe (maybe, maybe')
 import Data.Tuple (Tuple, fst, snd)
@@ -12,7 +12,8 @@ import Domain.Checked.Internal as Checked
 import Domain.Checked.Internal (Open)
 import Domain.Row (Label, Row(..))
 import Domain.Type (Ty)
-import Domain.Syntax (Diagnostic)
+import Domain.Problem (Problem(Internal))
+import Domain.Syntax (Diagnostic, problemAt)
 import Features.Check.Consume (consumeBare, consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
 import Features.Check.Cycle (feedOrder, positiveCycle)
@@ -20,7 +21,7 @@ import Features.Check.Defer (failing, placed)
 import Features.Check.Walked (bareLabel, headedRow, walkedRow)
 import Features.Check.Failure (settleFinal, settleKeys)
 import Features.Check.Feed (FeedRow, Feeds, feedsOf)
-import Features.Check.Lend (assume, lend)
+import Features.Check.Lend (assume)
 import Features.Check.Occurrence (OccurrenceId)
 import Features.Check.Reject (rejected)
 import Features.Check.Restricted (matchedInstallation)
@@ -139,7 +140,7 @@ consume env entries rows state index = maybe (Right state) consumed
   (Array.index entries index)
   where
   consumed entry = maybe (ordinary entry) (installedFor entry) entry.donor
-  installedFor entry donor = installed env state entry donor
+  installedFor entry donor = installed state entry donor
     (targetLabels index)
   -- The labels of the entry's target as the round began (the feed graph's).
   targetLabels i = maybe [] labelsOfRow (Array.index rows i)
@@ -184,54 +185,56 @@ kept state entry = Array.filter carried
 -- An installation's C (design §3.4, `donor` its handler's R). Its labels
 -- meet the labels `current` already holds, and only the mark edges are
 -- recorded (`Lend.assume`), so no tail is renamed. The invariant is lent
--- labels ⊆ R ⊆ `current` by key multiset, so the fallback is not reached: a
--- label with no partner would be consumed here, taking its arguments from R,
--- and a consumption only renames tails (no edge differs).
+-- labels ⊆ R ⊆ `current` by key multiset, so every lent label has a
+-- partner: R holds every label C does, and `Install` consumed R into
+-- `current` at the `with`. A label without one would be consumed here,
+-- taking its arguments from R, which only renames tails; that fallback was
+-- measured never reached (0 of 570 sources, Task 8 review), so it is now
+-- an E_INTERNAL.
 installed
-  ∷ ∀ r
-  . Env r
-  → State
+  ∷ State
   → Entry
   → Donor
   → Array (Label (Ty Flex))
   → Either Diagnostic State
-installed env state entry donor began =
+installed state entry donor began =
   if labelCount state.subst entry == donor.matched then Right state
-  else paired env state entry donor began
+  else paired state entry donor began
 
 -- Where-bound values are computed on entry, so everything costly sits here,
 -- reached only when C has grown.
 paired
-  ∷ ∀ r
-  . Env r
-  → State
+  ∷ State
   → Entry
   → Donor
   → Array (Label (Ty Flex))
   → Either Diagnostic State
-paired env state entry donor began = maybe' again marked (meeting began)
+paired state entry donor began = maybe' again marked (meeting began)
   where
   found = kept state entry
   meeting target = assume entry.origin.span state.subst target found
   -- A label that reached `current` since the round began is found by
   -- resolving it afresh; only then is nothing paired.
-  again _ = maybe' fallback marked (meeting (freshly unit))
+  again _ = maybe' unpartnered marked (meeting (freshly unit))
   freshly _ = case headedRow state.subst entry.target of
     Row labels _ → labels
-  marked subst = Right
+  marked = either unpaired marksPaired
+  marksPaired subst = Right
     ( state
         { subst = subst
         , restricted = matchedInstallation donor.id (Array.length found)
             state.restricted
         }
     )
-  fallback _ = consumeBare env state
-    { origin: entry.origin
-    , sources: map snd lentFound
-    , labels: map fst lentFound
-    , target: entry.target
-    , sites: entry.sites
-    , ignoreMarks: entry.ignoreMarks
-    }
-    where
-    lentFound = lend state.subst donor.inference found
+  -- A directional pairing of marks cannot fail (`pairMarks`); a failure
+  -- would otherwise lose an edge silently.
+  unpaired _ = Left
+    ( problemAt (Internal "Installed clause marks could not be paired")
+        entry.origin.span
+    )
+  -- Unreachable (invariant below): reaching it is a checker defect, so it
+  -- is reported, never consumed past.
+  unpartnered _ = Left
+    ( problemAt (Internal "Installed clause label without a partner")
+        entry.origin.span
+    )
