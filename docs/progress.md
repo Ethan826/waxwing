@@ -3917,3 +3917,30 @@ Evidence: 12 assertions seen failing first; differential against 889ca99:
 23 differences, all notes only (code, message, span unchanged); verify
 at 52b9df8 (.build/task10-fix-verify.log in the worktree): exit 0,
 1226/1226 parallel, 41/41 serial.
+
+### FX008 Task 11: failing random clauses and the soundness differential (2026-10-12)
+
+Sonnet implementer (2ef711b; fix round 0a571d4). Opus review
+(review-fx008-task11-result.md): changes required; the fix round was
+checked by the controller. Test-side only; no compiler change.
+
+The generator now produces failing handler clauses in the default corpus
+(178 per 500 programs; 116 without the dedicated fragment), lifting FX001
+Task 10's fail-free restriction. The one-way soundness differential
+(test/fx008-soundness.serial.test.mjs, 300 programs whose cleanup ignores
+which handlers may fail) requires every escape the reference interpreter
+witnesses to be rejected with an FX008 headline, and every accepted
+program to agree with the interpreter and Go.
+
+The review found the first version's evidence covered one shape (73 of 77
+escapes lexical) and that random failing clauses never ran. After the
+fix, escapes by shape at the default seed, all rejected: lexical 24,
+forwarding 24, callee under a caller's handler (plain 9, nofail 9),
+handler value passed 12, returned 10, ambient callback 14, random clause
+18. Sensitivity: Task 8's compiler (ff0c6d1, no mark check) accepts 110 of
+the 120. Ten seeds: no accepted escape, no Go/interpreter disagreement.
+
+Evidence: serial run 15.5 s; verify at 0a571d4
+(.build/task11-fix-verify.log in the worktree): exit 0, 1226/1226
+parallel, 47/47 serial. Gap for the whole-branch review: the generator
+has no `nofail(k)` mark-variable shape.

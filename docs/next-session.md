@@ -1,4 +1,4 @@
-# Waxwing / FX008: Task 10 done; Task 11 next (2026-10-12)
+# Waxwing / FX008: Task 11 done; Task 12 next (2026-10-12)
 
 Future milestone INF001 was defined at the user's request on 2026-10-11:
 [automatic requirement and error composition](plans/2026-10-11-requirement-and-error-inference-milestone.md).
@@ -7,22 +7,21 @@ function channels, partial provision and recovery. Requirements only;
 finish active FX008/FX001 work before its language design and plan.
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
-fx008-impl at 52b9df8 (Task 10 done 2026-10-12; origin/fx008-impl holds
+fx008-impl at 0a571d4 (Task 11 done 2026-10-12; origin/fx008-impl holds
 the b5fab7c backup from 2026-10-10 and is not updated). It is not merged anywhere: the FX008
-implementation stays off main until Tasks 11-12, the T008 fix and the whole-branch review
+implementation stays off main until Task 12, the T008 fix and the whole-branch review
 are done. main was fast-forwarded to fx008 (4f1b981): FX001 Task 10,
 FX009, and the design and review docs.
-Tasks 1-10 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
+Tasks 1-11 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
 and reviewed. The worktree copy of the plan is authoritative: it carries
-the rulings applied during Tasks 1-10. Tracking docs (progress, BACKLOG,
+the rulings applied during Tasks 1-11. Tracking docs (progress, BACKLOG,
 ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
 in the main checkout. Only the controller writes them.
 
-Next: Task 11 (failing random
-clauses and the one-way soundness differential), Task 12 (spec, CF001
+Next: Task 12 (spec, CF001
 and plan amendments), then T008 (user decision 2026-10-11: remove the
 quadratic settling feed graph before merging), then the whole-branch
-review.
+review (note for it: the soundness generator has no `nofail(k)` shape).
 
 Size and cost notes: Subst.purs 246 lines (do not grow); Unify.purs
 240. Agent copies for mutant proofs exclude .build and are deleted.
