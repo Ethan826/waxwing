@@ -304,7 +304,8 @@ Functions (FN001; ADR 008; spec docs/plans/2026-10-08-functions-design.md).
 Decision record docs/adr/010-effects.md; spec
 docs/plans/2026-10-09-effects-design.md. Everything below is implemented
 and checked by test/fx-*.test.mjs, test/fx008-*.test.mjs and the
-regression rows of scripts/regression-fx*.mjs.
+regression rows of scripts/regression-fx*.mjs, except the limits at the
+end, which are stated, not tested.
 
 Syntax. Reserved words added: `effect handler handle with let defer Unit
 ctl resume`; `ctl` and `resume` are reserved everywhere and unsupported.
@@ -401,6 +402,11 @@ Limits, stated plainly.
 - A pending typed abort reaches its `handle` only if every cleanup on the
   way completes normally. A cleanup defect makes the abort head the report
   and its `handle` never runs; a cleanup that diverges never delivers it.
+- A callback parameter's written row must equal the caller's row label for
+  label: `fn a(q: Int -> Int with L, x: Int): Int with L + M = q(x)` is
+  rejected (`a performs M, which its signature does not allow`) although
+  the body never performs M (FX017). Workaround: write the callback's row
+  as the caller's full row (`q: Int -> Int with L + M`).
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
 - `let` is monomorphic. A local of type `A -> B with pure` is not accepted

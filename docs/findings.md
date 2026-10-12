@@ -585,6 +585,8 @@ Found while writing the acceptance scenario's effect-free baseline
    is unified into its caller's body row, not subsumed by it. A function
    `with L + M` that calls `q` is rejected at the call: `a performs M,
    which its signature does not allow`. The same happens with `L + Fail(E)`.
+   A written callback row must equal the caller's row label for label;
+   the headline is the wrong kind (BACKLOG FX017).
 2. A callback whose row is ambient or `with Console` cannot be deferred:
    `defer must not fail, but it may perform any effect of ...`. A written
    `with Console` on a parameter keeps a rigid tail, and no closed Console
@@ -592,8 +594,9 @@ Found while writing the acceptance scenario's effect-free baseline
 
 Together these forced the baseline's callbacks to `with pure`, and its log
 lambda cannot print, so the baseline is compared with the scenario by keys,
-not output, and the scenario carries no `Fail`. FX007 (BACKLOG) is the
-relaxation that would let cleanup call effect-polymorphic callbacks.
+not output, and the scenario carries no `Fail`. For item 2, FX007 (BACKLOG)
+is the relaxation that would let cleanup call effect-polymorphic callbacks;
+item 1 is FX017.
 
 ## FX001 Task 12: regression proofs (2026-10-12)
 

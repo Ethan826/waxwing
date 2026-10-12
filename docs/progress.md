@@ -4089,3 +4089,15 @@ FX002, FX003, FX005; FX006, FX007, CF001, D001, R001, STD001, PKG001, I001
 and FN006 updated; FN006 (1) only half closed); and docs/next-session.md.
 FX001 Tasks 1-12 are complete on branch fx001-finish, pending the
 whole-branch review, then the user's merge decision.
+
+Final whole-branch review (2026-10-12) and fix wave (docs and test regexes
+only, no compiler change): the review found the callback-row limit
+untracked (FX017: probes reproduced, workaround in docs/language.md
+Limits), eight documentation corrections in ADR 010, language.md,
+findings and BACKLOG, and seven row `message` regexes that matched only a
+prefix; they now match the observed detection and each of the seven rows
+prints `fixed compiler passes; restored defect fails.` T003 and FX001 gained
+notes (timing retune, timeout in `timedRun`, typed-failure scenario),
+recorded only. Verify: `rm -rf output &&
+GOTOOLCHAIN=go1.26.4 npm run verify` exit 0 (.build/final-fix-verify.log),
+81 regression proofs, no bound raised, no rerun.

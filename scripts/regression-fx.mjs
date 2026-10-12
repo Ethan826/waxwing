@@ -59,7 +59,7 @@ const checkRows = [
       + 'Array.cons\n    (offset + index)\n    (Array.concatMap recur arguments)',
     replacement: '  THandler (Label (UserEffect (EffectId index)) arguments _) _ → '
       + 'Array.concatMap recur arguments',
-    probe: 'fx-layout-edges', message: /layout edges: /
+    probe: 'fx-layout-edges', message: /layout edges: "accepted"/
   },
   {
     // Design §6: the origin of a label is the first expression that
@@ -76,7 +76,7 @@ const checkRows = [
     name: 'fx-abbreviation', file: 'src/Format/Diagnostic/Row.purs',
     needle: 'if total <= visibleLabels then map textOf row.labels',
     replacement: 'if true then map textOf row.labels',
-    probe: 'fx-abbreviation', message: /abbreviation: /
+    probe: 'fx-abbreviation', message: /abbreviation: bound exceeded/
   }
 ];
 

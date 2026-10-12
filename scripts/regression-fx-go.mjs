@@ -7,7 +7,7 @@ export const fxGoRows = [
     // `with`. Run in the handler's own, it reaches itself, not the outer one.
     name: 'fx-clause-context', file: 'src/Format/Go/Effect.purs',
     needle: '[ "frame.outer" ]', replacement: '[ "ctx" ]',
-    probe: 'fx-clause-context', message: /clause context: /
+    probe: 'fx-clause-context', message: /clause context: "7\\n"/
   },
   {
     // Design §3 "Targeted aborts": a `handle` recovers only its own markers.
@@ -15,7 +15,7 @@ export const fxGoRows = [
     name: 'fx-abort-target', file: 'src/Format/Go/Context.purs',
     needle: 'if ok && waxwingOwns(markers, abort.target) {',
     replacement: 'if ok {',
-    probe: 'fx-abort-target', message: /abort target: /
+    probe: 'fx-abort-target', message: /abort target: ""/
   },
   {
     // Task 7 review (Critical): the first clause of a family is innermost,
@@ -23,7 +23,7 @@ export const fxGoRows = [
     name: 'fx-clause-order', file: 'src/Format/Go/Handle.purs',
     needle: '(Array.reverse (Array.mapWithIndex Tuple branches))',
     replacement: '(Array.mapWithIndex Tuple branches)',
-    probe: 'fx-clause-order', message: /clause order: /
+    probe: 'fx-clause-order', message: /clause order: panic: interface conversion/
   },
   {
     // Design §3 "Cleanup context": a deferred expression runs in the
@@ -36,14 +36,14 @@ export const fxGoRows = [
       + ' handler: handler}"\n    , "\\t}"\n    , "\\tsaved := *outer"\n'
       + '    , "\\t*outer = waxwingCtx{key: key, handler: handler,'
       + ' outer: &saved}"\n    , "\\treturn outer"',
-    probe: 'fx-cleanup-context', message: /cleanup context: /
+    probe: 'fx-cleanup-context', message: /cleanup context: "101\\n9\\n"/
   },
   {
     // Design §3: the pending cause heads the report. Dropped, a cleanup
     // defect after a typed abort is reported without the abort.
     name: 'fx-cleanup-cause', file: 'src/Format/Go/Cleanup.purs',
     needle: 'causes = waxwingCauses(pending)', replacement: 'causes = nil',
-    probe: 'fx-cleanup-cause', message: /pending cause dropped: /
+    probe: 'fx-cleanup-cause', message: /pending cause dropped: "crash: Busy\\n"/
   },
   {
     // A pending typed abort reaches its `handle` only if every cleanup on

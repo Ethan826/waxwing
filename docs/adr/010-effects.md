@@ -1,8 +1,8 @@
 # ADR 010: effects, handlers and typed failures, with erased rows
 
-Accepted and implemented 2026-10-12 (milestone FX001, Tasks 1-12, branch
-fx001-finish; FX008's mark rule merged into main the same day, and is
-part of this decision as shipped). Binding spec:
+Implemented on fx001-finish 2026-10-12, pending merge (milestone FX001,
+Tasks 1-12; FX008's mark rule merged into main the same day, and is part of
+this decision as shipped). Binding spec:
 docs/plans/2026-10-09-effects-design.md (§1-§6 with the FX008 amendment of
 2026-10-12); plans docs/plans/2026-10-09-effects-plan.md and
 docs/plans/2026-10-10-abort-tracking-plan.md ("Task 9 as built");
@@ -50,23 +50,23 @@ the workaround).
 
 ### Row erasure (revises direction decision 1)
 
-Row structure is erased before specialization; types inside labels are
-not. Specialization keys are type keys, function keys and effect keys
-(effect, ground type arguments), built by the one worklist. Rows enter no
-key, so recursion that grows a row (`with h { loop(n + 1) }`) creates no
-new instance. The earlier idea of confining CPS by row-keyed specialization
-is not available; FX006 must establish a conservative reachability
-analysis or choose bounded row-aware re-specialization. Rejected: a
-uniform boxed operation ABI with typed adapters (stronger erasure at
-representation and conversion cost). Finiteness rests on two rules: ADR
-007's instantiation rule for function keys, and P001's nested-declaration
-rule extended to one reference graph over type and effect declarations
-(`effect Grow(a) { fn next(): Handler(Grow(Box(a))); }` is rejected,
-regression row `fx-layout-edges`). Only keys that carry type arguments
-count toward the 10,000-key limit (ruling F5: the limit is a guard on
-polymorphic keys; the spec's "every key" is read that way, a documentation
-mismatch only). An effect with no type arguments is a key but does not
-count.
+Row structure is erased before specialization; types inside labels are not.
+Specialization keys are type keys, function keys and effect keys (effect,
+ground type arguments), built by the one worklist. Rows enter no key, so
+recursion that grows a row (`with h { loop(n + 1) }`) creates no new
+instance. The earlier idea of confining CPS by row-keyed specialization is
+not available; FX006 must establish a conservative reachability analysis or
+choose bounded row-aware re-specialization. Rejected: a uniform boxed
+operation ABI with typed adapters (stronger erasure at representation and
+conversion cost). Finiteness rests on two rules: ADR 007's instantiation
+rule for function keys, and P001's nested-declaration rule extended to one
+reference graph over type and effect declarations (the mutually recursive
+pair A/B is rejected, regression row `fx-layout-edges`; the self-recursive
+`effect Grow(a) { fn next(): Handler(Grow(Box(a))); }` is rejected even
+without that edge). Only keys that carry type arguments count toward the
+10,000-key limit (ruling F5: the limit is a guard on polymorphic keys; the
+spec's "every key" is read that way, a documentation mismatch only). An
+effect with no type arguments is a key but does not count.
 
 ### Runtime evidence and keys
 
@@ -139,24 +139,23 @@ ambient row and is rejected there.
 ### FX008 refinement: marks
 
 The strict rule alone was unsound: an operation performed in a cleanup may
-reach a handler clause that fails, possibly a handler installed by a
-caller in another function, so the cleanup ends in a typed abort. User
-decision (2026-10-10): track it in the types. Every row label carries a
-mark: `nofail` (N) says the frame it runs under cannot end an operation in
-a typed abort; a plain label (M) promises nothing; `nofail(k)` is a mark
-variable per signature; Console is N; `Fail` labels carry no mark. A
-`defer` may perform an operation only where every frame it can meet is
-fail-free: every non-`Fail` label of the deferred row must be N, else
-E_EFFECT `defer must not fail, but it performs Log, whose handler may
-fail` (or the `nofail(k)` form). A handler type is internally
-`Handler(m L with R | C)`: R is the inference row, C the clause row
-carrying assumption marks; each installation has its own frame mark. The
-constraints form a graph over mark metas and the atoms N, M and the rigid
-variables, solved as a path check over a two-point lattice; unresolved
-marks close to M. Marks are erased before specialization, so Go, `ctx`
-mode and finiteness are unchanged, and programs without `defer` keep
-their acceptance. The shipped rule is conservative in these documented
-cases (all accept-before, reject-after and never unsound):
+reach a handler clause that fails, possibly a handler installed by a caller
+in another function, so the cleanup ends in a typed abort. User decision
+(2026-10-10): track it in the types. Every non-`Fail` label carries a mark:
+`nofail` (N) says the frame it runs under cannot end an operation in a typed
+abort; a plain label (M) promises nothing; `nofail(k)` is a mark variable
+per signature; Console is N; `Fail` labels carry no mark. A `defer` may
+perform an operation only where every frame it can meet is fail-free: every
+non-`Fail` label of the deferred row must be N, else E_EFFECT `defer must
+not fail, but it performs Log, whose handler may fail` (or the `nofail(k)`
+form). A handler type is internally `Handler(m L with R | C)`: R is the
+inference row, C the clause row carrying assumption marks; each installation
+has its own frame mark. The constraints form a graph over mark metas and the
+atoms N, M and the rigid variables, solved as a path check over a two-point
+lattice; unresolved marks close to M. Marks are erased before
+specialization, so Go, `ctx` mode and finiteness are unchanged, and programs
+without `defer` keep their acceptance. The shipped rule is conservative in
+these documented cases (all accept-before, reject-after and never unsound):
 - **L1 with P5** (FX013): marks nested in data, constructor fields,
   operation signatures or a callback's parameters are not opened (opening
   applies to function signatures only), so a handler stored in a field
@@ -200,8 +199,9 @@ Effect diagnostics are acceptance, not polish (spec §6): the row
 difference first, then origin, boundary and path notes in order from the
 demand back to the source (provenance, regression row `fx-provenance`),
 distinguished kinds, and bounded output (2,000 characters; long rows
-abbreviate, row `fx-abbreviation`). A closed parameter row is never opened
-by a consumption (`fx-closed-opened`).
+abbreviate, row `fx-abbreviation`). A `with pure` (closed) parameter row
+stays a demand when an argument is checked against it: a lambda that
+prints, given to a `with pure` parameter, is rejected (`fx-closed-opened`).
 
 ## Evidence (Task 11)
 
@@ -213,10 +213,10 @@ the same 6 function keys. Timings are whole-process wall time after a
 warm-up run, serial phase, five runs, bound 3x the median: 10^6 shallow
 installs 131 ms, 10^6 operations at context depth 100 141 ms, one fail
 across 1,000 `handle` frames 46 ms, 100,000 caught failures 38 ms, `go
-build` of the scenario 135 ms. The last two are close to the roughly 30 ms
-process start. A 1,000-label row compiles; the rejection prints 498
-characters. FX005 records the lookup cost (Task 1's hand-written Go at depth
-10,000: 11.8 s per 10^6 lookups).
+build` of the scenario 135 ms. The last two (unwinding and caught failures)
+are close to the roughly 30 ms process start. A 1,000-label row compiles;
+the rejection prints 498 characters. FX005 records the lookup cost (Task 1's
+hand-written Go at depth 10,000: 11.8 s per 10^6 lookups).
 
 ## Consequences and limits
 
