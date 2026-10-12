@@ -50,8 +50,17 @@ const fnText = fn => `fn ${fn.name}(${fn.params.map(([name, type]) =>
   + `${fn.rowText ? ` with ${fn.rowText}` : ''} = ${text(fn.body)};`;
 
 // The program text: the fixed prelude, then the functions, then main.
-export const render = ({ fns, main }) =>
-  [prelude, ...fns.map(fnText), fnText(main)].join(' ');
+// A program with no `defer` needs no mark, so it is written with plain
+// labels (M) as every program without `defer` is. A function's marks follow
+// its callees' (a plain label cannot call a `nofail` one), which the
+// generator does not track, so the choice is per program. The M frames of a
+// failing clause stay out of reach until Task 10's generator restriction is
+// lifted (BACKLOG FX008).
+export const render = ({ fns, main }) => plainWithoutDefer(
+  [prelude, ...fns.map(fnText), fnText(main)].join(' '));
+
+const plainWithoutDefer = source =>
+  (source.includes('defer') ? source : source.replace(/nofail /g, ''));
 
 // Focus scenarios by index: every scenario recurs, and a terminal one
 // (it ends the program with a defect) is paired with a regular one.

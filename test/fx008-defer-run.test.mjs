@@ -5,7 +5,7 @@ import { runGoBatch } from './go-batch.mjs';
 import { checked } from './support.mjs';
 import {
   aroundBoth, boxCrash, boxOwnFailure, boxPlain, clauseDefer, consoleCleanup,
-  copies, count, forwardingFailFree, pass, probe, q1Nofail, unmarked
+  a1Control, copies, count, forwardingFailFree, pass, probe, q1Nofail, unmarked
 } from './fx008-defer-programs.mjs';
 import { cases as cleanupCases } from './fx-cleanup-programs.mjs';
 
@@ -27,6 +27,7 @@ const runs = [
   ['a defer inside a clause follows the outer frame', clauseDefer, '2\n'],
   ['a recursive nofail function', count, '1\n2\n3\n'],
   ['a recursive nofail(k) function', pass, '0\n'],
+  ['a generic pass-through under a fail-free handler', a1Control, '5\n'],
   ['a local lambda takes copies of its first context', copies, '1\n5\n1\n'],
   ['a handler in a constructor field keeps its mark', boxPlain, '']
 ];

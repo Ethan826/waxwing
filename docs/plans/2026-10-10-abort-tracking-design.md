@@ -454,6 +454,11 @@ and C fresh:
   imposes M ⊑ m, so m cannot be N.
 - Requirement marks: C ⊑ c for each clause row c.
 
+*Task 9 refinement (user, 2026-10-11).* A written type in a signature
+gets its own C only for a top-level result handler type at a function's use,
+with R's tail kept when it occurs in a parameter or the own row. See the
+plan's P2 and "Task 9 as built".
+
 **`with h { body }`**, with `h : Handler(m L with R | C)`, under current
 row ρ:
 - R unifies with ρ as today, ignoring marks.

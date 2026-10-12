@@ -100,3 +100,55 @@ export const copies = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
   + 'with handler Tick { tick() => fail(E) } { '
   + 'with handler Log { log(n) => print(n) } { k(()) } } '
   + '} { fail(error: E) => print(9) };';
+
+// Task 9 review C1: a handler passed through a generic function and
+// installed from its result. The result type's C is its own (design §3.4),
+// so a clause that fails in the caller's context gives an M frame.
+const rest = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
+  + 'effect Tick { fn tick(): Unit; }; ';
+const identity = 'fn id(h: Handler(nofail Log with ...e)): '
+  + 'Handler(nofail Log with ...e) with pure = h; ';
+const under = (clause, body) => 'fn main(): Unit with Console = handle '
+  + `with handler Tick { tick() => ${clause} } { ${body} }`
+  + ' { fail(error: E) => print(9) };';
+const lambda = (parameter, use) => `let run = fn(${parameter}) => ${use}; `;
+const via = (parameter, handled) => 'fn main(): Unit with Console = handle { '
+  + lambda(parameter, `with ${handled} { defer log(1); () }`)
+  + 'with handler Tick { tick() => TICK } { run(handler Log { log(n) => tick() }) } }'
+  + ' { fail(error: E) => print(9) };';
+const failing = source => source.replace('TICK', 'fail(E)');
+export const a1 = rest + identity + via('x: Handler(nofail Log)', 'id(x)')
+  .replace('TICK', 'fail(E)');
+export const a1Control = rest + identity + via('x: Handler(nofail Log)', 'id(x)')
+  .replace('TICK', 'print(5)');
+export const a4 = rest + identity + failing(via('x', 'id(x)'));
+export const a6 = rest + identity + 'fn main(): Unit with Console = handle { '
+  + lambda('x: Handler(nofail Log)', 'with id(x) { defer log(1); () }')
+  + 'with handler Log { log(n) => fail(E) } { with handler Tick { tick() => log(5) } '
+  + '{ run(handler Log { log(n) => tick() }) } } } { fail(error: E) => print(9) };';
+export const a8 = rest + 'fn later(h: Handler(nofail Log with ...e)): '
+  + 'Unit -> Handler(nofail Log with ...e) with pure = fn(u: Unit) => h; '
+  + failing(via('x: Handler(nofail Log)', 'later(x)(())'));
+export const a9 = rest + 'type Box(a) = Box(a); '
+  + 'fn boxed(h: Handler(nofail Log with ...e)): '
+  + 'Box(Handler(nofail Log with ...e)) with pure = Box(h); '
+  + failing(via('x: Handler(nofail Log)', 'match boxed(x) { Box(h) => h }'));
+export const a3c = rest + 'type Box(a) = Box(a); '
+  + 'fn unbox(b: Box(Handler(nofail Log with ...e))): '
+  + 'Handler(nofail Log with ...e) with pure = match b { Box(h) => h }; '
+  + failing(via('x: Handler(nofail Log)', 'unbox(Box(x))'));
+export const a10 = rest + identity
+  + 'fn g(x: Handler(nofail Log with ...e)): Unit with ...e = { '
+  + lambda('y: Handler(nofail Log)', 'with id(y) { defer log(1); () }')
+  + 'run(x) }; fn main(): Unit with Console = handle with handler Tick '
+  + '{ tick() => fail(E) } { g(handler Log { log(n) => tick() }) } '
+  + '{ fail(error: E) => print(9) };';
+// The result's own row mentions the tail: a check of parameters alone
+// closes C and accepts this (review C1, "the own row matters").
+export const ownRow = rest + 'effect Get(a) { fn get(): a; }; '
+  + 'fn mk(): Handler(nofail Log with ...e) with '
+  + 'Get(Handler(nofail Log with ...e)) + ...e = get(); '
+  + 'fn main(): Unit with Console = handle with handler Tick '
+  + '{ tick() => fail(E) } { with handler Get(Handler(nofail Log with Tick '
+  + '+ Fail(E) + Console)) { get() => handler Log { log(n) => tick() } } '
+  + '{ with mk() { defer log(1); () } } } { fail(error: E) => print(9) };';

@@ -27,6 +27,7 @@ import Domain.Type.Marks (mapMarks)
 import Features.Check.Context (CheckEnv)
 import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
+import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
 import Features.Check.Tables (ownerType)
 
@@ -88,7 +89,10 @@ functionUse env state span (FunctionId index) =
 openedUse ∷ Threaded Use → Threaded Use
 openedUse use =
   { value: use.value
-      { fields = found.value.fields, result = found.value.result }
+      { fields = found.value.fields
+      , result = ownClauses found.value.fields use.value.row
+          found.value.result
+      }
   , state: found.state
   }
   where

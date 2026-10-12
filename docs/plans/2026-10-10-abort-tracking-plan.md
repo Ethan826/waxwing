@@ -1212,18 +1212,35 @@ l4b, merge2 and q1 flip.
   variable names (a `FrameRigid` edge names ϱ). Console's frame is `NoFail`
   by definition (§3.3), so an installation with that frame generates no
   frame edges.
-- A written handler type has no clause row of its own (`clauses = Nothing`,
-  P2), so C aliased R, and `with` binds R's tail to the installing row. The
-  installation therefore records C as a copy of R taken before that
-  consumption (`Install.clausesOf`): labels as they stand, the tail kept only
-  when it is a signature's own variable. Without it every `with prefix()`
-  under a rigid row had a rigid C and an M frame (the `around` program).
-  `ClauseEntry` gained `label`, the handled label of an `OwnAbort` edge.
+- **P2 refined (user, 2026-10-11, Task 9 review C1).** A written type has
+  no clause row of its own, so C aliases R, and `with` binds R's tail to the
+  installing row. Copying C at install (1649218) closed an unbound tail that
+  was bound later to a real C; six accepted programs ended a cleanup in a
+  typed abort. Instead, at a function's use (`Use.openedUse`,
+  `ResultClauses.ownClauses`) a top-level result handler type gets its own
+  bare C: R's labels, and R's tail only if that variable occurs in a
+  parameter type or in the function's own row (the own row matters:
+  parameters alone reopen a hole 1649218 rejects); otherwise closed. By
+  parametricity the callee's clauses reach a variable found nowhere else only
+  through a rigid tail, which already makes the handler's own mark M. The
+  other written types (fields, operation results, nested results) keep C = R
+  with the tail linked (`Install.clausesOf`): conservative. `ClauseEntry`
+  gained `label`, the handled label of an `OwnAbort` edge.
+- **New limitation, beside L1, L4 and P5.** A handler passed through a
+  generic function and installed from its result (or from a field, a
+  closure or an operation result) gives an M frame when the context's rest
+  is M or rigid. Design §3.4 points here.
+- Console frames: the NoFail guard in `Frames.framed` is unreachable (no
+  `Handler(Console …)` value, FX011) and must be revisited with D001.
+- Near the 250-line limit: Format/Diagnostic.purs 242.
 - `fx008-copies` uses a new probe (`copies`, test/fx008-defer-programs.mjs):
   p1 does not distinguish the mutant (no probe of the corpus did). `fx008-frame-m`
   uses p2: with q1's `prefix()` each call opens its own m.
 - The generator writes `nofail` on `fx-programs.mjs`'s user-effect row labels
-  and `fx-gen-fragments.mjs`'s stage and callback signatures.
+  and `fx-gen-fragments.mjs`'s stage and callback signatures, except in a
+  program with no `defer`, which is rendered with plain labels. Per label it
+  cannot vary: a plain label may call only plain callees, which the generator
+  does not track. M frames need failing random clauses (Task 11).
 
 ---
 

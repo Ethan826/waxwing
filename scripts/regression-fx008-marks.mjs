@@ -105,5 +105,22 @@ export const fx008MarkRows = [
     needle: 'atoms = Array.cons Plain (map MarkVariable variables)',
     replacement: 'atoms = [ Plain ]',
     probe: 'fx008-rigid-n', message: /rigid: accepted/
+  },
+  {
+    // Task 9 review C1: a top-level result handler type gets its own C at
+    // the function's use. Closing its tail (as a copy taken at install did)
+    // misses clause effects that reach R later: a1's cleanup would abort.
+    name: 'fx008-result-clauses', file: 'src/Features/Check/ResultClauses.purs',
+    needle: '    Hole meta | not (occurs meta) → Nothing',
+    replacement: '    Hole _ → Nothing',
+    probe: 'fx008-result-clauses', message: /result clauses: accepted/
+  },
+  {
+    // The tail may also occur in the function's own row (review C1).
+    name: 'fx008-result-own-row', file: 'src/Features/Check/ResultClauses.purs',
+    needle: 'occurs meta = foldHoles (found meta) false (TFun TUnit row TUnit)\n'
+      + '    || Array.any',
+    replacement: 'occurs meta = Array.any',
+    probe: 'fx008-result-own-row', message: /result own row: accepted/
   }
 ];

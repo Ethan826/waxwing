@@ -15,6 +15,7 @@ module Features.Check.Scheme
   , tooDeep
   , firstTooDeep
   , holes
+  , foldHoles
   ) where
 
 import Prelude

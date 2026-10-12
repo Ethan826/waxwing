@@ -95,21 +95,17 @@ install infer env state span handlerValue label rows body = do
         framed.restricted
     }
 
--- C as the handler's type holds it. A written type has no clause row of its
--- own (C is R): R is about to be bound to the installing row, which must not
--- reach C, so C is a copy of R as it stands, ending as R's tail does only if
--- that is a signature's own variable (`...e` may fail with what the caller
--- puts there); an open tail is closed. Instantiating a signature opened its
--- ambient variable, and a closed `Handler(L with R)` is a handler of R only.
+-- C as the handler's type holds it. A top-level result type got its own at
+-- the function's use (`ResultClauses`). The remaining written types (fields,
+-- operation results, nested results) have none: C is R, and `with` binds R's
+-- tail to the installing row, so C also covers that context. Sound and
+-- conservative: such a handler gives an M frame when the context's rest is M
+-- or rigid. Labels are bare; the tail stays linked.
 clausesOf ∷ State → HandlerRows (Ty Open) Open → TyRow Open
-clausesOf state rows = maybe' copied identity rows.clauses
+clausesOf state rows = maybe' linked identity rows.clauses
   where
-  copied _ = case walkedRow state.subst rows.inference of
-    Row labels found → Row (map (bareLabel state.subst) labels)
-      (found >>= signatureVariable)
-  signatureVariable = case _ of
-    variable@(Checked.Rigid _) → Just variable
-    _ → Nothing
+  linked _ = case walkedRow state.subst rows.inference of
+    Row labels tail → Row (map (bareLabel state.subst) labels) tail
 
 -- The frame's mark: N for Console, unmarked for Fail, else a fresh meta from
 -- the mark store's counter, which counts down apart from every other meta.

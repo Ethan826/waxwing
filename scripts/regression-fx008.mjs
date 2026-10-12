@@ -1,6 +1,8 @@
 // FX008 regression rows, imported by scripts/regression.mjs; their probes
 // are in test/regression-fx008.mjs. Each replacement still compiles.
-export const fx008Rows = [
+import { fx008MarkRows } from './regression-fx008-marks.mjs';
+
+const earlierRows = [
   {
     // §3.5 (c): a cycle's weight for a key is how many more labels of it the
     // row has than its target. A presence-only weight sees dup.wxw's extra
@@ -128,3 +130,5 @@ export const fx008Rows = [
     probe: 'fx008-tail-pass', message: /tail pass: accepted/
   }
 ];
+
+export const fx008Rows = [...earlierRows, ...fx008MarkRows];

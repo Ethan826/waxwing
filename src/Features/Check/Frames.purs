@@ -43,7 +43,9 @@ markConstraints variables state = state
 -- `own ⊑ frame`; each label of C meets the label of the installing row it
 -- is paired with, whose mark ⊑ the frame (the clauses reach those outer
 -- frames); a rigid tail of C makes the frame M. Console's frame is N by
--- definition (§3.3), so nothing constrains it.
+-- definition (§3.3), so nothing constrains it. This guard is unreachable
+-- today: no `Handler(Console …)` value can be built (FX011). It drops real
+-- demands, so D001 (user Console handlers) must revisit it.
 framed ∷ Array String → Subst → Installation → Array Edge
 framed variables subst found
   | found.frame == NoFail = []
@@ -113,6 +115,8 @@ demanded subst found = map demand
     , reason: DeferDemand found.span
     }
 
+-- The ambient variable's name is "", which the texts print as `...`; Task
+-- 10's notes must keep that.
 nameOf ∷ Array String → VarId → String
 nameOf variables (VarId index) = fromMaybe "" (Array.index variables index)
 
