@@ -625,3 +625,10 @@ Learned while retargeting mutants for the fifteen new rows
 6. FN006 (1): the zero-argument call gap in the oracle parsers is closed
    for `f()` but not for `make()(x)`, which still has no oracle row
    (BACKLOG FN006).
+7. `ctl` and `resume` are reserved everywhere, but the dedicated E_SYNTAX
+   `General control (ctl/resume) is not supported yet` appears only in
+   expression position (Format/Parse/Expression.purs). Probed with the CLI:
+   `resume(1)` gives that message; `effect E { ctl op(): Int; };` gives
+   `Expected '}'`; `with handler E { ctl op() => 1, } {...}` gives
+   `Expected an identifier`. Spec §1 asks for a dedicated diagnostic; the
+   code falls short in the two declaration positions (BACKLOG FX006).

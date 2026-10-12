@@ -307,8 +307,11 @@ and checked by test/fx-*.test.mjs, test/fx008-*.test.mjs and the
 regression rows of scripts/regression-fx*.mjs.
 
 Syntax. Reserved words added: `effect handler handle with let defer Unit
-ctl resume`; `ctl` and `resume` are rejected (E_SYNTAX `General control
-(ctl/resume) is not supported yet`). `pure` and `nofail` are contextual.
+ctl resume`; `ctl` and `resume` are reserved everywhere and unsupported.
+In expression position (`resume(1)`) the error is E_SYNTAX `General control
+(ctl/resume) is not supported yet`; in an effect declaration or a handler
+clause the parser gives a generic syntax error (`Expected '}'`, `Expected
+an identifier`; BACKLOG FX006). `pure` and `nofail` are contextual.
 An effect declares operations, `effect Clock { fn now(): Int; };` and
 `effect State(s) { fn get(): s; fn put(value: s): Unit; };`; an operation is
 a global name called like a function (a bare `now` is E_ARITY `Expected
