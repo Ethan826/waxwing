@@ -242,3 +242,68 @@ Whole-branch review (opus, review-fx008-branch-result.md): Ready after fixes, no
 User decisions 2026-10-12 (branch review): I1 restore base notes for programs without defer and pin full notes for amb2, around3, p3, ov1ctl; unreachable TailPass rule, Settle fallback and Lend Left kept as asserted guards (E_INTERNAL, not silent); register reviewer's nofail(k) programs p01, p02, p11, q03 as tests, generator shape to BACKLOG; accept linear constant factors (defers 1.5x, chain 4x), record on T009. Controller: M1 stale constants, M2 comment/order, M6 Type.purs, M7 checkedStates as review says. Branch fix round → fresh sonnet.
 Branch fix round: 6213f56 (I1: ClauseRow origin + Subst relays so trail follows clause-row hops; amb2, around3, p3, ov1ctl notes identical to 8fe4218; baseNotes pins fail on e54d869 (4); 5,534 sources: no no-defer program differs from base in notes. Guards: TailPass rule, Settle fallback, Lend Left → E_INTERNAL; two forced by test via Features.Check.Inspect; nofail(k) tests p01, p02, p11, q03 rejected + controls accepted, Go = interpreter. M1: installations 7342 → 486 ms median (bound 1458), install guard 9500 → 1467. M2 not applied (not behaviour-preserving; comment fixed). M6 untouched. M7: Features.Check exports only check; Inspect, Function modules.) Verify exit 0 (controller read .build/branch-fix-verify.log): 1243/1243, 48/48, 66 proofs. Differential vs e54d869: 19 notes-only diffs (restored sets; one defer program back to base; argbind 'Fail(E) comes from this function value' → 'Fail(E) is raised here', not pinned — asked the user). Ruling: no re-review — notes-only effect proven by the differential; relays touch provenance only — cost: low.
 User decisions 2026-10-12: accept the argbind-path note ('Fail(E) is raised here'), pinned in 98b153f (witness/ec1 full notes; verify exit 0); merge and push: fx008-impl → fx008 (--no-ff), verify, fast-forward main, push main and fx008-impl.
+
+## FX001 Tasks 11-12 (session 2026-10-12, appended from the local ledger)
+
+
+Session 2026-10-12: FX001 Tasks 11-12 (user: "Next work: FX001 Tasks 11-12").
+Tasks 1-10 complete per docs/progress.md. The committed snapshot
+docs/sdd/2026-10-09-effects-plan/progress.md records FX008's tasks under the
+same plan name; its "Task 11/12: complete" lines are FX008's, not FX001's.
+Worktree .worktrees/fx001-finish, branch fx001-finish from fx008 9d6952b
+(= main). Baseline verify: .build/fx001-baseline-verify.log (worktree).
+Execution: Sonnet implements, Opus reviews (user direction 2026-10-10).
+
+## Pre-flight scan
+| Rows | Produces / consumes | Finding |
+|---|---|---|
+| T11 → T12 | T11 key-count breakdown and timing medians; T12 ADR 010 cites them | consistent; T12 reads T11's progress entry |
+| T11 self | files: fx-services.test.mjs, fx-scale.serial.test.mjs, examples/services.wxw, bootstrap/services.go | consistent; global "bootstrap/*.go byte-identical" covers the existing five only; services.go is new |
+| T12 self | Files says probes go in test/regression-probes.mjs "not a new test/regression-fx.mjs"; Step 1 says "its probe in test/regression-fx.mjs" | conflict, ruled below |
+| T12 self | rows list vs existing rows (deferred-fail-effect, clause-fail, effect-free-ctx…) | possible duplicates, ruled below |
+| Global | "commit on branch claude/vibrant-cerf-3km61i" | stale, ruled below |
+| T12 self | scripts/regression.mjs 246 lines (+2 for import/spread = 248 ≤ 250) | fits; test/regression.mjs (247) needs no change |
+
+Ruling: commit on fx001-finish in .worktrees/fx001-finish, not claude/vibrant-cerf-3km61i — that branch is the old cloud branch; FX008 used the same worktree pattern — cost if wrong: a branch rename.
+Ruling: FX001 probes live in a new test/regression-fx*.mjs module (split as needed for the 250-line limit), aggregated by test/regression-probes.mjs like test/regression-fx008.mjs; test/regression.mjs is not modified — the amendment's purpose is not touching the 247-line test/regression.mjs, and the existing FX008 probes follow this pattern — cost if wrong: a file move.
+Ruling: a listed T12 row whose defect an existing row already restores (same file/needle) is cited, not duplicated, as the plan already does for effect-free-ctx — cost if wrong: one fewer row.
+User 2026-10-12: Task 11 dispatched (fresh sonnet), BASE 9d6952b. Implementer told: no src/ change; BLOCKED if the scenario needs one.
+Baseline verify at 9d6952b in the worktree: exit 0 (.build/fx001-baseline-verify.log).
+Task 11: implementer DONE_WITH_CONCERNS 3b51d21 (test-side + example/snapshot; no src; 9 keys = 6 fn + 3 effect vs baseline 6; dropped-Clock diagnostic exact; 1,000-label rejections 451/498 chars; medians ms: install 131, lookup 141, unwind 46, caught 38, go build 135 (warm-cache concern); specialize.test exclusion for services.wxw; scenario has no Fail (baseline can't express it); verify exit 0 1252/1252). Review (opus) dispatched.
+Task 11 review (opus): Spec ✅ substance, Needs fixes. I1 progress entry (timing evidence, Task 1 comparison) and findings (callback-row unification; `with Console` callback cannot be deferred) missing; test comment cites a nonexistent entry. ⚠️ TDD shown only for snapshot and diagnostic (characterization tests; accepted as such).
+Ruling: the implementer writes the docs/progress.md entry and docs/findings.md items in the fix round — my dispatch had reserved docs for the controller, but the brief requires the entry in the change and controller edits skip review — cost if wrong: none.
+Task 11: minor (deferred): M1 lookup/install "loop" is 10^6-deep native recursion (not stack-dominated: ~40 ms vs ~135 ms) — state in comment/FX005 observation.
+Task 11: minor (deferred): M2 caught-failure (38 ms) and unwind (46 ms) workloads barely exceed ~30 ms process start; bounds mostly guard spawn.
+Task 11: minor (deferred): M3 go build bound assumes warm .build/go-cache; note precondition.
+Task 11: minor (deferred): M4 polymorphicExamples now includes non-polymorphic services.wxw; rename.
+Task 11: minor (deferred): M5 redundant assert fx-services.test.mjs:701; M6 one 81-column line.
+Task 11: fix round 1/5 (1 addressed, 0 open; commits 3b51d21..3005d91). Re-review (sonnet): figures match report. Minor (deferred): findings section cites FX007 as relaxation, which fits the cleanup case but not finding 1.
+Task 11: complete (commits 9d6952b..3005d91, review clean)
+Ruling: split Task 12 into 12a (Steps 1+4: regression rows/probes, own review) and 12b (Steps 2+3: ADR 010, language Effects, architecture/engineering, BACKLOG, findings, progress, next-session) — different natures, each a coherent review surface; rows' names feed the docs — cost if wrong: one extra dispatch.
+Ruling: the controller appends this session's ledger to the committed snapshot docs/sdd/2026-10-09-effects-plan/progress.md at finish (it holds FX008's ledger under the same plan) — bookkeeping, not reviewed content — cost: none.
+Task 12a dispatched (fresh sonnet), BASE 3005d91: regression rows/probes per Step 1+4; layout and duplicate rulings carried.
+Task 12a: implementer DONE ab456fa (15 rows; 81 proofs; verify exit 0; files 83/68/129/79 lines; fx-cleanup-context mutant mutates ctx in place (also leaks installs); re-targeted fx-ctx-reachable, fx-closed-opened (RowFinish), fx-layout-edges (A/B pair); fx-defer-fail/fx-defer-unified probes overlap). Review (opus) dispatched.
+Task 12a review (opus): Spec ✅, Approved; all 15 rows faithful (fx-cleanup-context and fx-defer-unified strict justified supersets; fx-ctx-reachable coarser "entry body only" stand-in). Reviewer ran fx-closed-opened, fx-side-condition.
+Task 12a: minor (deferred): M1 seven row regexes match only the label prefix (e.g. /abbreviation: /) — a mutant failing for an unrelated reason would count; tighten to the named detection.
+Task 12a: minor (deferred): M2-M4 row comments: fx-ctx-reachable is entry-body-only and drops program.effects; fx-defer-unified subsumes fx-defer-fail; fx-cleanup-context also leaks installs past `with`.
+Task 12a: complete (commits 3005d91..ab456fa, review clean)
+Task 12b dispatched (fresh sonnet), BASE ab456fa: Steps 2-3 + architecture/engineering/findings/progress/next-session; FX008 BACKLOG status correction (merged 2026-10-12).
+Task 12b: implementer DONE_WITH_CONCERNS 46b9bed (ADR 010 new, language Effects wholly new, FX002/3/5 added, FX008 status corrected, FN006(1) left open: make()(x) uncovered; verify exit 0, 81 proofs). Review (opus) dispatched.
+Task 12b review (opus): Spec ✅, Needs fixes; 21/22 sampled claims verified by probes/source. I1 language.md:310 says ctl/resume get the dedicated E_SYNTAX message; only expression position does (effect decl: Expected '}'; handler clause: Expected an identifier) — code short of spec §1.
+Ruling: fix the doc and record the code-vs-spec gap in findings + BACKLOG (no compiler change in this docs task) — a dedicated diagnostic in declaration/clause positions is a small parser follow-up, not FX001 acceptance — cost if wrong: one parser fix later.
+Task 12b: minor (deferred): M1 ADR 010:62-65 Grow example attributed to fx-layout-edges, whose probe is the A/B pair.
+Task 12b: minor (deferred): M2 ADR 010:144-148 "every row label carries a mark" vs Fail labels unmarked.
+Task 12b: minor (deferred): M3 BACKLOG FX005 "1.4x that shape" ambiguous (depth 100 vs 10,000).
+Task 12b: minor (deferred): M4 language.md:383 report/exit-1 claim holds only for programs using defer/crash (usesDefects).
+Task 12b: minor (deferred): M5 engineering.md:87 over-long line.
+Task 12b: fix commit cda990f (language text corrected; findings item 7; FX006 note; ADR made no claim). Scoped re-review (sonnet) dispatched.
+Task 12b: fix round 1/5 (1 addressed, 0 open; commits 46b9bed..cda990f). Re-review (sonnet): approve.
+Task 12b: minor (deferred): findings.md:630 cites Format/Parse/Expression.purs for the dedicated message; it is defined in Format/Parse/Handler.purs:84 (unsupportedControl) — controller grep.
+Task 12: complete (commits 3005d91..cda990f: 12a ab456fa, 12b 46b9bed, cda990f; reviews clean)
+Final whole-branch review (opus) dispatched, range 9d6952b..cda990f.
+Final review (opus): With fixes; no Critical. All 15 mutants rebuilt and fail for the named defect. I1 callback-row limit (written callback row must equal caller's row; misleading "performs M, which its signature does not allow" headline instead of §6 side-condition text) untracked: BACKLOG row + language.md limit + scope findings' FX007 sentence. Minors 2-8 doc accuracy (Grow attribution, "last two" timing, fx-closed-opened wording, Fail mark, FX005 1.4x, ADR status, language "checked" claim); 9 no spawn timeout; 10 go build headroom; 11 ledger snapshot. Triage: fix T12a M1 regexes; T11 M2 → BACKLOG T003; others drop.
+Ruling: one fix wave covering I1, Minors 2-8, T12a M1 regexes, and a T003 note combining T11 M2, Minor 9 and Minor 10; recommendation 2 (Fail variant of the services scenario) becomes a BACKLOG note, not built now — spec §5 does not require typed failure in the scenario — cost if wrong: one more example later. Ledger snapshot by the controller.
+Final fix wave: e53cab9 (FX017 callback-row limit; minors 2-8; 7 regexes tightened, proofs pass; T003 and FX001 notes; verify exit 0 1252/53, 81 proofs, .build/final-fix-verify.log). Scoped re-review (sonnet) dispatched.
+Final fix wave re-review (sonnet): all findings addressed; ADR reflow lost no content (word-level comparison); regex escaping matches JSON.stringify output. Minor: progress addition ~11 lines vs 3-6 requested (accepted).
+Controller checked .build/final-fix-verify.log: exit=0, 1252/1252, 53/53, 81 proofs. Deleted .build/regression (2.6 GB mutant copies).
+Final review: complete (fix commit e53cab9, re-review clean). Next: user's merge decision.
