@@ -181,3 +181,12 @@ export const r5 = rest
   + 'fn g(x: Handler(nofail Log with ...e)): Unit with ...e = '
   + '{ let h = if true then mk() else x; with h { defer log(1); () } }; '
   + stdMain('g(handler Log { log(n) => tick() })');
+
+// Task 10: `count` let-bound lambdas, each installing a forwarding handler
+// and calling the previous one; the first defers, under a failing handler.
+export const chain = count => head + 'fn main(): Unit with Console = handle '
+  + 'with handler Log { log(n) => fail(E) } { '
+  + 'let f0 = fn(u: Unit) => { defer log(0); () }; '
+  + Array.from({ length: count }, (_, at) => `let f${at + 1} = fn(u: Unit) => `
+    + `with handler Log { log(n) => log(n) } { f${at}(()) }; `).join('')
+  + `f${count}(()) }` + handled + ';';

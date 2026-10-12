@@ -12,6 +12,7 @@ import { wire } from '../output/Format.Diagnostic/index.js';
 import { runGoBatch } from './go-batch.mjs';
 import { probes } from './fx008-probe-table.mjs';
 import { tableHash } from './fx008-probe-hash.mjs';
+import { probeNotes } from './fx008-probe-notes.mjs';
 
 // The FX008 probe gate (plan docs/plans/2026-10-10-abort-tracking-plan.md,
 // Task 1). Each probe pins its observed outcome; a task changes only the
@@ -72,6 +73,15 @@ const checkRejection = (expected, shown) => {
   assert.deepEqual(spanOf(diagnostic), { start: expected.start, end: expected.end });
 };
 
+// Task 10: a flipped rejection carries the notes pinned beside the table.
+const checkNotes = (probe, diagnostic) => {
+  if (probeNotes[probe.file] === undefined) return;
+  const source = sourceOf(probe);
+  const shown = diagnostic.related.map(note =>
+    [source.slice(note.span.start.offset, note.span.end.offset), note.message]);
+  assert.deepEqual(shown, probeNotes[probe.file]);
+};
+
 const checkGo = (expected, shown) => {
   assert.equal(shown.accepted, true, 'expected acceptance');
   // A pinned hash is required whenever acceptance is asserted: an outcome
@@ -111,7 +121,10 @@ const batch = runGoBatch(import.meta.url,
 const checkProbe = probe => {
   const expected = expectedOf(probe);
   const shown = probe.slow ? compileInChild(probe) : compileInProcess(probe);
-  if (!expected.accepted) return checkRejection(expected, shown);
+  if (!expected.accepted) {
+    checkRejection(expected, shown);
+    return checkNotes(probe, shown.diagnostic);
+  }
   checkGo(expected, shown);
   checkRun(expected, probe.slow ? runAlone(shown.go) : batch.result(probe.file));
   return undefined;

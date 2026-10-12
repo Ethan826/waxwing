@@ -8,6 +8,8 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.String as String
 import Data.Traversable (mapAccumL)
 import Domain.Syntax (Note, NoteReason(..), Span)
+import Format.Diagnostic.Mark as Mark
+import Format.Diagnostic.Name (typeName)
 import Format.Diagnostic.Row
   ( maxCharacters
   , maxNotes
@@ -109,3 +111,10 @@ noteText = case _ of
   DeclaredHere name → name <> " is declared here"
   InnermostHere label → "the innermost " <> shortLabel label <> " is here"
   ContinuesInto _ _ _ → ""
+  ClausesReach label → Mark.clausesReach (shortLabel label)
+  ClausesMayPerform tail → Mark.clausesMayPerform tail
+  ClauseAborts cause → Mark.clauseNote typeName cause
+  SignatureMayFail function label → Mark.signatureMayFail function
+    (shortLabel label)
+  MarkVariableHere variable label → Mark.markVariableHere variable
+    (shortLabel label)

@@ -4,25 +4,28 @@ import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe, fromMaybe, maybe, maybe')
-import Domain.Problem (AbortCause(..), Problem(..), TypeName(..))
+import Data.Maybe (Maybe, maybe, maybe')
+import Domain.Problem (AbortCause(..), Problem(..))
 import Domain.Row (Label, Mark(..), withMark)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Mark (Violation)
+import Features.Check.MarkNotes (clausePayload, pathNotes)
 import Features.Check.MarkStore (EdgeReason(..), MarkEdge, reasonSpan)
-import Features.Check.RowName (labelName, labelView)
+import Features.Check.RowName (labelName)
 import Features.Check.Scheme (State)
 import Features.Check.Subst (Flex, resolveLabel)
 
 -- A violation as a diagnostic (P6). The headline follows the path's last
 -- edge: a defer demand, a handler's own abort, else a call or a frame that
--- expected N. Notes are Task 10's.
+-- expected N. The notes are MarkNotes'.
 reportViolation
   ∷ ∀ r. CheckEnv r → State → Violation → Either Diagnostic Diagnostic
-reportViolation env state found = maybe unreachable headlined
-  (Array.last found.path)
+reportViolation env state found = do
+  headline ← maybe unreachable headlined (Array.last found.path)
+  notes ← pathNotes env state found
+  Right headline { related = notes }
   where
   unreachable = Left (problemAt (Internal "Empty mark path") env.functionSpan)
   headlined edge = case edge.reason of
@@ -58,14 +61,9 @@ abortHeadline env state label site = maybe' failed perform site.rigid
     ( noted site.handler
         (HandlerMayFail (ClauseMayPerform site.operation ("..." <> name)))
     )
-  failed _ = payloaded <$> labelView env site.handler
-    (resolveLabel state.subst label)
-  payloaded view = noted site.handler
-    ( HandlerMayFail
-        ( ClauseFails site.operation
-            (fromMaybe HoleName (Array.head view.arguments))
-        )
-    )
+  failed _ = payloaded <$> clausePayload env state label site.handler
+  payloaded payload = noted site.handler
+    (HandlerMayFail (ClauseFails site.operation payload))
 
 expectedHeadline
   ∷ ∀ r
