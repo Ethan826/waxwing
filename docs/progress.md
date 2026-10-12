@@ -3895,3 +3895,25 @@ Evidence:
   1,000 forwarding installations 0.31 s, 200 mark variables 3 ms;
 - verify at 889ca99 (.build/task9-fix2-verify.log in the worktree): exit
   0, 1221/1221 parallel, 41/41 serial.
+
+### FX008 Task 10: notes for mark rejections (2026-10-12)
+
+Sonnet implementer (d85a791; fix round 52b9df8). Opus review
+(review-fx008-task10-result.md): Approved, 4 Minor; the fix round was
+checked by the controller.
+
+Mark rejections now carry the approved P10 notes, from the demand back
+to the source: `<L> is handled here`, `this handler's clauses perform
+<L>, whose handler may fail`, `this handler's clauses may perform any
+effect of <r>`, `its clause for <op> fails with <E>` / `may perform any
+effect of <r>`, `the signature of <f> allows a failing <L> handler;
+write with nofail <L>`, and `nofail(<k>) <L> is fail-free only when the
+caller's handler is`. Every plan assertion matched on the first run,
+including merge2. A 1,000-hop path keeps its first three notes and its
+source within maxCharacters. Implementation decision: a path starting at
+Plain through a DeferDemand edge also gives the signature note (P1).
+
+Evidence: 12 assertions seen failing first; differential against 889ca99:
+23 differences, all notes only (code, message, span unchanged); verify
+at 52b9df8 (.build/task10-fix-verify.log in the worktree): exit 0,
+1226/1226 parallel, 41/41 serial.
