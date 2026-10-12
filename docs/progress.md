@@ -3972,3 +3972,25 @@ against 9a62014: 0 differences in every phase. Guards: a 2,000/1,000
 ratio test, two regression rows, and a property test comparing jumps with
 a naive walk (~500k checks). Verify at e54d869
 (.build/t008-fix-verify.log in the worktree): exit 0.
+
+INF001 main-integration review (2026-10-11): independent requirements and
+adversarial reviews approved the brief, with no blocking findings. Minor
+M1 addressed by individually named B1-B8 observations and a handler-site
+failure witness; scoped adversarial follow-up approved. Reports, process
+audit and dispositions: `docs/sdd/2026-10-11-inference-milestone/`.
+Fresh isolated full verify exited 1: 957/958 parallel tests; unchanged
+10,000-type inhabitation chain 7.196051 s against 5 s (T004), no retry.
+Unreached serial phase run separately: 29/29 passed. Compiler inputs are
+identical to main baseline d35edf2. The prior T007 failure remains recorded.
+This records a reviewed requirements brief, not an approved language design.
+
+User clarified that shipping documentation does not require compiler tests.
+Stopped the isolated regression run; partial proof output is not a full
+result. Documentation release checks and both reviews are complete; no
+compiler tests are a gate for this brief. All observed failures remain
+recorded. No other agent's checkout or processes were changed.
+
+INF001 requirements and reviews integrated into local main at da1b4d0
+with an atomic expected-reference guard. Shared checkout HEAD, index and
+working status unchanged; other agent's implementation worktree untouched.
+No remote push. Integration receipt: INF001 review ledger.
