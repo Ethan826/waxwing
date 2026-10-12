@@ -76,7 +76,7 @@ export const tickHandler = (ctx, depth, clauseBody, param = 'n') => handler('Tic
 
 const failures = ctx => families.filter(name => ctx.labels.has(name));
 const onward = ctx => [...ctx.failing].filter(name => ctx.labels.has(name));
-const forwarding = (label, target) => {
+export const forwarding = (label, target) => {
   const n = local('n');
   if (label === 'Log') return target === 'Log' ? log(n) : print(tick(n));
   return target === 'Tick' ? tick(n) : block([doItem(log(n))], n);
@@ -89,7 +89,7 @@ export const raising = (ctx, label, family) => ({
 // aborts of clauses with that parameter.
 export const randomClause = (ctx, label, depth) => {
   const { r } = ctx;
-  if (failures(ctx).length && r.chance(30)) {
+  if (failures(ctx).length && r.chance(45)) {
     return { kind: 'fail', param: 'w',
       body: raising(ctx, label, r.pick(failures(ctx))) };
   }
@@ -111,11 +111,25 @@ export const installed = (ctx, label, kind) => {
   return { ...extend(ctx, label), failing, lax };
 };
 
+// A failing clause is reachable: with no family in scope the `with` sits in
+// a `handle` (30%), and a clause that may fail ends the body with the
+// operation, after a cleanup registered under it (50%).
 const wrapUser = (ctx, depth, label) => {
+  const { r } = ctx;
+  if (failures(ctx).length === 0 && r.chance(50)) {
+    const family = r.pick(families);
+    const guarded = block([doItem(wrapUser(extend(ctx, family), depth, label))]);
+    return handle(guarded, [failureClause(ctx, family, 1)]);
+  }
   const clause = randomClause(ctx, label, 1);
   const make = label === 'Log' ? logHandler : tickHandler;
-  return withHandler(make(ctx, 1, clause.body, clause.param),
-    genBlock(installed(ctx, label, clause.kind), depth - 1, 'Unit'));
+  const inside = installed(ctx, label, clause.kind);
+  const body = genBlock(inside, depth - 1, 'Unit');
+  if (clause.kind === 'plain') return withHandler(make(ctx, 1, clause.body, clause.param), body);
+  const registered = r.chance(50) ? [deferItem(cleanupExpr(inside, 1))] : [];
+  const ended = block([...registered, ...body.items,
+    doItem(performing(calm(inside), label))]);
+  return withHandler(make(ctx, 1, clause.body, clause.param), ended);
 };
 export const wrapLog = (ctx, depth) => wrapUser(ctx, depth, 'Log');
 export const wrapTick = (ctx, depth) => wrapUser(ctx, depth, 'Tick');

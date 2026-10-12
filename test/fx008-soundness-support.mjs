@@ -38,12 +38,20 @@ export const deferExtents = source => {
 export const atDefer = (source, span) => deferExtents(source).some(
   ([start, end]) => span.start.offset >= start && span.end.offset <= end);
 
-const headlines = [/^defer must not fail, but it performs .+, whose handler may fail$/,
-  /^defer must not fail, but it performs nofail\(.+\) .+, whose handler is fail-free only when the caller's is$/,
+// A call or argument: a lowercase name and its parenthesised arguments (a
+// `nofail` callee refused where it is called).
+export const atCall = (source, span) => /^[a-z]\w*\(.*\)$/s.test(
+  source.slice(span.start.offset, span.end.offset));
+
+const headlines = [
+  /^defer must not fail, but it performs .+, whose handler may fail$/,
+  /^defer must not fail, but it performs nofail\(.+\) .+, whose handler is /,
   /^Expected (nofail|nofail\(.+\)) .+, found .+$/, /^This handler may fail here: /];
 const strict = [/^defer must not fail, but it performs Fail\(/,
   /^defer must not fail, but it may perform any effect of /];
 
-export const isHeadline = message => headlines.some(pattern => pattern.test(message));
-export const isStrictText = message => strict.some(pattern => pattern.test(message));
+export const isHeadline = message =>
+  headlines.some(pattern => pattern.test(message));
+export const isStrictText = message =>
+  strict.some(pattern => pattern.test(message));
 export const escaped = 'oracle error: typed abort escaped cleanup\n';

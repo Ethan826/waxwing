@@ -23,6 +23,7 @@ export const categories = [
   ['cleanup: registration context while unwinding',
     ['cleanup-registration-context'], cleanup],
   ['cleanup: unreached defer', ['unreached-defer'], cleanup],
+  // `w` is reserved for the parameter of generated failing clauses.
   ['failing random clause', ['clause-abort:w'], cleanup]
 ];
 

@@ -261,23 +261,32 @@ must change some of 50 programs). Both run in verify; the differential test
 is in the serial phase.
 
 Random clauses may fail (FX008 Task 11): a clause is fail-free, fails with a
-family handled outside its `with` (parameter `w`, which the census counts as
-`failing random clause`, at least 25 programs), or forwards to an outer
-operation whose handler may fail. The generator tracks the user labels whose
-innermost handler may fail (`ctx.failing`): constrained cleanup performs
-none and no function whose row names one is called under it, so every
-program compiles. The one-way soundness differential
+family handled outside its `with` (parameter `w`, reserved for generated
+failing clauses; the census counts the aborts of such clauses as `failing
+random clause`, at least 25 programs), or forwards to an outer operation
+whose handler may fail. A failing clause is reachable: the `with` may sit in
+its own `handle`, and its body ends with the operation. Designed failing
+frames (test/fx-gen-failing.mjs) add the shapes lexical, forward, callee,
+value and ambient; they are extras outside the focus rotation, and the
+random path alone meets the census row. The generator tracks the user
+labels whose innermost handler may fail (`ctx.failing`): constrained cleanup
+performs none and no function whose row names one is called under it, so
+every program compiles. The one-way soundness differential
 (test/fx008-soundness.serial.test.mjs, serial phase) generates 300 programs
 `generate(SEED + 100000 + i, i, { unconstrained: true })` whose cleanup
-ignores those frames. Rejected programs must carry an FX008 headline or a
-strict `defer` text at a `defer`. Accepted ones must never make the
-interpreter report `typed abort escaped cleanup` and must agree with Go
-exactly. Minimums: 50 accepted programs whose cleanup performs a user
-operation, 50 rejected by an FX008 headline, and 25 oracle-witnessed escapes
-(`oracle error: typed abort escaped cleanup`), every one rejected. Failures
-are saved to .build/fx008-soundness/. Sensitivity (ruling R1): with the mark
-check absent (Task 8's state) every witnessed escape is accepted and the
-test fails.
+ignores those frames. A rejected program must carry an FX008 headline at a
+`defer` or at a call, or a strict `defer` text at a `defer`; a witnessed
+escape must be rejected by an FX008 headline. An accepted program must never
+make the interpreter report `typed abort escaped cleanup` and must agree with
+Go exactly. Minimums: 50 accepted programs whose cleanup performs a user
+operation, 50 rejected by an FX008 headline, 25 oracle-witnessed escapes
+(`oracle error: typed abort escaped cleanup`), every one rejected, and at
+least 5 witnessed escapes in each shape (lexical, forward, callee-plain,
+callee-nofail, value-passed, value-returned, ambient, random). Failures are
+saved to .build/fx008-soundness/. Sensitivity (ruling R1), run on commit
+ff0c6d1 (Task 8, no mark check) with this corpus at the default seed: 110
+of the 120 witnessed escapes are accepted, every shape except value-returned
+(its 10 hit the strict `Fail` text), and the test fails.
 
 ## Definition of done and handoff
 
