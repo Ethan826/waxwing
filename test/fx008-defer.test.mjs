@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { expectDiagnostic } from './fx-diagnostics-support.mjs';
+import { expectDiagnostic, length, maxCharacters } from './fx-diagnostics-support.mjs';
 import { rejected } from './support.mjs';
 import {
   a1, a10, a3c, a4, a6, a8, a9, ownRow, r5,
@@ -189,4 +189,5 @@ test('a 1,000-hop mark path is bounded', () => {
       clauseFails('log(n) => fail(E)', 'log')]
   });
   assert.ok(found.related.length <= 4);
+  assert.ok(length(found) <= maxCharacters, `${length(found)} characters`);
 });

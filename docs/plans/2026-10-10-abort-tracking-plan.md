@@ -1268,6 +1268,9 @@ none except the source rule; `maxNotes`/`maxCharacters` apply.
 | `SignatureMayFail function label` | path from `Plain` through an `Assumed` edge (a constant `Plain` lower is the declaration's own row, P1) | `env.rowSpan`, else the function span | `the signature of <f> allows a failing <L> handler; write with nofail <L>` |
 | `MarkVariableHere variable label` | path from `MarkVariable k` | `env.rowSpan`, else the function span | `nofail(<k>) <L> is fail-free only when the caller's handler is` |
 
+- Implementation decision (Task 10 review M1): the origin note
+  `SignatureMayFail` also applies when a `Plain` path's first edge is a
+  `DeferDemand` on a label the signature wrote (no `Assumed` edge exists).
 - [ ] **Step 1: Failing assertions** (`[container, inner, text]`):
   - pinned (lexical): the `with` → `Log is handled here`; `log(n) =>
     fail(E)` → `its clause for log fails with E`.

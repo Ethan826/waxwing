@@ -4,14 +4,14 @@ import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe, maybe, maybe')
-import Domain.Problem (AbortCause(..), Problem(..))
+import Data.Maybe (Maybe, maybe)
+import Domain.Problem (Problem(..))
 import Domain.Row (Label, Mark(..), withMark)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Mark (Violation)
-import Features.Check.MarkNotes (clausePayload, pathNotes)
+import Features.Check.MarkNotes (abortCause, pathNotes)
 import Features.Check.MarkStore (EdgeReason(..), MarkEdge, reasonSpan)
 import Features.Check.RowName (labelName)
 import Features.Check.Scheme (State)
@@ -55,15 +55,10 @@ abortHeadline
   → Label (Ty Flex)
   → { handler ∷ Span, clause ∷ Span, operation ∷ String, rigid ∷ Maybe String }
   → Either Diagnostic Diagnostic
-abortHeadline env state label site = maybe' failed perform site.rigid
+abortHeadline env state label site = headline <$> abortCause env state label
+  site
   where
-  perform name = Right
-    ( noted site.handler
-        (HandlerMayFail (ClauseMayPerform site.operation ("..." <> name)))
-    )
-  failed _ = payloaded <$> clausePayload env state label site.handler
-  payloaded payload = noted site.handler
-    (HandlerMayFail (ClauseFails site.operation payload))
+  headline cause = noted site.handler (HandlerMayFail cause)
 
 expectedHeadline
   ∷ ∀ r

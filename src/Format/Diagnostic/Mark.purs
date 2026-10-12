@@ -30,13 +30,8 @@ expected wanted found = "Expected " <> wanted <> ", found " <> found
 
 -- `typeName` renders the payload of a failing clause.
 handlerFails ∷ (TypeName → String) → AbortCause → String
-handlerFails typeName cause = "This handler may fail here: its clause for "
-  <> case cause of
-    ClauseFails operation payload → operation <> " fails with "
-      <> typeName payload
-    ClauseMayPerform operation tail → operation
-      <> " may perform any effect of "
-      <> tail
+handlerFails typeName cause = "This handler may fail here: "
+  <> clauseNote typeName cause
 
 -- The notes along the path (FX008 design §3.6, plan Task 10).
 clausesReach ∷ String → String

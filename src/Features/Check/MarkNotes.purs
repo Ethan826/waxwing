@@ -1,4 +1,4 @@
-module Features.Check.MarkNotes (clausePayload, pathNotes) where
+module Features.Check.MarkNotes (abortCause, pathNotes) where
 
 import Prelude
 import Prim hiding (Row)
@@ -75,9 +75,10 @@ clausePayload env state label span = payload <$> labelView env span
   where
   payload view = fromMaybe HoleName (Array.head view.arguments)
 
--- A path from `Plain` that begins at the declaration's own row (P1: an
--- assumed edge, or a demand on a label the signature wrote), or from a
--- rigid mark variable.
+-- A path from `Plain` that begins at the declaration's own row (P1): an
+-- assumed edge, or (implementation decision, Task 10 review M1) a demand
+-- whose label the signature wrote, which has no assumed edge. Or a path from
+-- a rigid mark variable.
 originNote
   ∷ ∀ r
   . CheckEnv r
