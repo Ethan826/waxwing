@@ -528,3 +528,14 @@ It was split before publication. Independently, a second session recorded
 the FX008 hole as a new BACKLOG row on its own branch, duplicating this
 branch's record. In a shared checkout, stage explicit paths. Before adding
 a BACKLOG row, check the other active branches for one.
+
+## Requirement inference must include both error boundaries (2026-10-11)
+
+INF001 records the user's service-assembly and business-logic error
+composition requirement. Dependency provision does not remove operation
+errors; effectful assembly adds its own reachable setup errors. Handling
+errors must account for recovery's own errors and requirements. Local lambda
+inference does not establish named-function inference: today's rigid ambient
+signatures deliberately reject undeclared own effects. Generic `Fail(a)` and
+same-family payload keys are additional parity questions. See
+[the milestone](plans/2026-10-11-requirement-and-error-inference-milestone.md).
