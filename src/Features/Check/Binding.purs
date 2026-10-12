@@ -78,7 +78,8 @@ bindType subst meta ty =
   else if exceedsLimit subst ty then Left TooDeep
   else bindBounded subst meta ty
 
--- A row meta bound to a row with no label: another tail, or closed.
+-- A row meta bound to a row with no label: another tail, or closed. `meta`
+-- is unbound (see Features.Check.Aliases).
 bindTail ∷ Subst → Int → TyRow Flex → Subst
 bindTail (Subst bindings) meta row@(Row labels tail) = noteBound meta tail
   ( Subst bindings

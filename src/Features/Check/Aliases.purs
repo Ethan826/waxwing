@@ -1,7 +1,6 @@
 module Features.Check.Aliases
   ( Aliases
   , noAliases
-  , landing
   , aliased
   , jumped
   ) where
@@ -9,7 +8,7 @@ module Features.Check.Aliases
 import Prelude
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe, fromMaybe, maybe)
+import Data.Maybe (Maybe, fromMaybe, maybe, maybe')
 import Data.Tuple (Tuple(..))
 
 -- BACKLOG T008. A row meta bound to a bare tail (`m := ρ`, no label) is an
@@ -28,13 +27,16 @@ import Data.Tuple (Tuple(..))
 -- are plain data in the substitution, so a postponed pair reverts them.
 -- Nothing is merged unless one side is a lone meta; the unmerged case just
 -- keeps the old hop-by-hop walk, so the tables never need to be complete.
+--
+-- Precondition: only an unbound meta is ever bound (`bindTail`,
+-- `extendBounded`). The unifier binds only tails that `step` has just
+-- re-expanded, which are unbound. Rebinding a member would leave its jump
+-- pointing at the old end, and a walk would then miss the new binding's
+-- labels and tail (test/aliases.test.mjs shows it).
 type Aliases = { reach ∷ Map Int Int, ends ∷ Map Int Int }
 
 noAliases ∷ Aliases
 noAliases = { reach: Map.empty, ends: Map.empty }
-
-classOf ∷ Aliases → Int → Int
-classOf aliases meta = fromMaybe meta (Map.lookup meta aliases.reach)
 
 -- The meta that the label-free hops from `meta` end at. A meta outside
 -- every class (nearly all of them) costs one lookup.
@@ -60,10 +62,6 @@ aliased aliases meta next
       { reach = Map.insert meta (classOf aliases next) aliases.reach }
   | otherwise = aliases
 
--- A meta in no class.
-alone ∷ Aliases → Int → Boolean
-alone aliases one = not (Map.member one aliases.reach)
-
 -- The binding that bound meta `meta` leads to in `table`, with the meta that
 -- holds it. A bare binding (`bare`) may be a hop, which is jumped to the
 -- end of its class; if the hops end unbound, that end's own `open` row is
@@ -84,4 +82,13 @@ jumped aliases table bare open meta = reached <$> Map.lookup meta table
     | otherwise = Tuple meta row
   hop end row
     | end == meta = Tuple meta row
-    | otherwise = Tuple end (fromMaybe (open end) (Map.lookup end table))
+    | otherwise = Tuple end
+        (maybe' (unbound end) identity (Map.lookup end table))
+  unbound end _ = open end
+
+classOf ∷ Aliases → Int → Int
+classOf aliases meta = fromMaybe meta (Map.lookup meta aliases.reach)
+
+-- A meta in no class.
+alone ∷ Aliases → Int → Boolean
+alone aliases one = not (Map.member one aliases.reach)

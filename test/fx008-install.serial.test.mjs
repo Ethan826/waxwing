@@ -10,7 +10,9 @@ import { check } from '../output/Features.Check/index.js';
 // version of Task 8 (every round walked C's and R's long tail chains), and
 // 5.2 to 6.3 s now (the extra entries alone cost 5.1 s). The bound sits
 // between the old regression and the present cost, a warm-up check keeps
-// JIT start-up out, and only `check` is timed.
+// JIT start-up out, and only `check` is timed. Since T008 (33f9854) the check
+// takes about 0.5 s; this bound still separates the Task 8 regression, and
+// the ratio test below guards linearity.
 const bound = 9500;
 const count = 1000;
 
@@ -35,13 +37,14 @@ test('1,000 installations in one declaration check within the bound', () => {
 
 // BACKLOG T008: the settling cost is linear in the installations. Every
 // consumption used to walk the target row's chain of alias hops, one lookup
-// per hop, so doubling the installations multiplied the time by 4.5
-// (7.9 s then 35 s at 9a62014). `MEASURED_RATIO` is the median over five
+// per hop, so doubling the installations multiplied the time by 4.27
+// (best of 3; 7.9 s then 35 s as single runs at 9a62014). `MEASURED_RATIO` is the median over five
 // runs of time(2,000) / time(1,000), each the best of `runs` timings, on the
 // author's laptop (2026-10-12, load average 4.3); `MAX_RATIO` is 1.6 times
-// that. A linear check doubles and quadratic work lands at 4 or more (4.5
-// at 9a62014), so the bound sits between them. The warm-up keeps JIT start-up out of
-// the first timing, and the best of three keeps a load spike out of either.
+// that. A linear check doubles and quadratic work lands at 4 or more (4.27
+// at 9a62014), so the bound sits between them. The warm-up keeps JIT
+// start-up out of the first timing, and the best of three keeps a load
+// spike out of either.
 const MEASURED_RATIO = 2.0;
 const MAX_RATIO = 3.2;
 const runs = 3;
@@ -64,5 +67,6 @@ test('doubling the installations keeps the check time linear', t => {
   t.diagnostic(`${Math.round(small)} ms, ${Math.round(large)} ms, `
     + `ratio ${large / small}, measured ${MEASURED_RATIO}`);
   assert.ok(large / small <= MAX_RATIO,
-    `2,000 took ${large} ms against ${small} ms for 1,000, bound ${MAX_RATIO}x`);
+    `2,000 took ${large} ms against ${small} ms for 1,000, `
+    + `bound ${MAX_RATIO}x`);
 });

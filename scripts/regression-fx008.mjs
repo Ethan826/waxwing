@@ -34,6 +34,16 @@ const earlierRows = [
     probe: 'fx008-install-linear', message: /install order: timed out/
   },
   {
+    // T008 review I1: a labelled binding merged as an alias hop lets a
+    // walk jump over its labels. The unifier only binds bare tails, so the
+    // timing guard and the gate stay green; only the property test, which
+    // binds labelled rows too, sees the walk differ from the hop-by-hop one.
+    name: 'fx008-alias-jump', file: 'src/Features/Check/Binding.purs',
+    needle: 'if Array.null labels then',
+    replacement: 'if Array.length labels >= 0 then',
+    probe: 'fx008-alias-jump', message: /alias jump: walk mismatch/
+  },
+  {
     // Task 7: without the hook R never sees the clause rows, so a handler
     // head decided before settling (late1) finds no label.
     name: 'fx008-hook', file: 'src/Features/Check/Sync.purs',

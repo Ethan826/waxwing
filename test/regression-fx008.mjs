@@ -101,6 +101,16 @@ const installLinear = context => {
   console.log(`${context.probe} regression detects the defect`);
 };
 
+// T008 review I1: the property test of the alias jumps, run on the compiler
+// under test (a build of the mutated sources has its own output directory).
+const aliasJump = context => {
+  const output = resolve(dirname(context.compilerPath), '..');
+  const found = spawnSync('node', ['--test', 'test/aliases.test.mjs'],
+    { encoding: 'utf8', env: { ...process.env, WAXWING_OUTPUT: output } });
+  if (found.status !== 0) fail('alias jump: walk mismatch');
+  console.log(`${context.probe} regression detects the defect`);
+};
+
 const probeSource = name => readFileSync(`test/fx008-probes/${name}.wxw`,
   'utf8');
 
@@ -137,6 +147,7 @@ export const fx008Probes = {
   'fx008-cycle-presence': cyclePresence,
   'fx008-settle-order-linear': settleOrderLinear,
   'fx008-install-linear': installLinear,
+  'fx008-alias-jump': aliasJump,
   'fx008-hook': accepts('rev7/late1', 'hook', '0\n'),
   'fx008-phi': accepts('rev8/two1', 'remainder', '0\n'),
   'fx008-phi-tail': accepts('rev8/two3', 'remainder tail', '0\n'),
