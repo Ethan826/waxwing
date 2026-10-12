@@ -575,3 +575,22 @@ A closed result C failed to merge with a C that had more labels. Each
 became a regression row with a named mutant; the one-way soundness
 differential (compiler acceptance implies the oracle never reports
 `typed abort escaped cleanup`) found no unsound acceptance.
+
+## FX001 Task 11: callback rows (2026-10-12)
+
+Found while writing the acceptance scenario's effect-free baseline
+(test/fx-services-programs.mjs); both are existing behavior, not changed.
+
+1. A callback parameter with a written closed row (`q: Int -> Int with L`)
+   is unified into its caller's body row, not subsumed by it. A function
+   `with L + M` that calls `q` is rejected at the call: `a performs M,
+   which its signature does not allow`. The same happens with `L + Fail(E)`.
+2. A callback whose row is ambient or `with Console` cannot be deferred:
+   `defer must not fail, but it may perform any effect of ...`. A written
+   `with Console` on a parameter keeps a rigid tail, and no closed Console
+   row can be written on a callback, so only `with pure` callbacks defer.
+
+Together these forced the baseline's callbacks to `with pure`, and its log
+lambda cannot print, so the baseline is compared with the scenario by keys,
+not output, and the scenario carries no `Fail`. FX007 (BACKLOG) is the
+relaxation that would let cleanup call effect-polymorphic callbacks.

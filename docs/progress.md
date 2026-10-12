@@ -3994,3 +3994,54 @@ INF001 requirements and reviews integrated into local main at da1b4d0
 with an atomic expected-reference guard. Shared checkout HEAD, index and
 working status unchanged; other agent's implementation worktree untouched.
 No remote push. Integration receipt: INF001 review ledger.
+
+### FX001 Task 11: acceptance scenario and scale (2026-10-12)
+
+Sonnet implementer (3b51d21). Scenario examples/services.wxw: Database,
+Clock and Log, five service functions with only their own labels, cleanup
+by `defer` with `nofail Log` along the chain, real and stateless fake
+handlers built inline in `main` and selected there. Snapshot
+bootstrap/services.go (byte-compared; other snapshots unchanged). Real and
+fake outputs asserted. The scenario has no `Fail` (docs/findings.md, "FX001
+Task 11: callback rows"). Keys (F6): scenario 9 = 0 type + 6 function + 3
+effect (Log, Database, Clock); the baseline has the same 6 function keys;
+the extras are exactly the three effect keys.
+
+Dropped Clock handler: E_EFFECT `Unhandled Clock in main` at `report(1,
+2)`; notes `audited(first)` "through report", `stamp(id)` "through
+audited", `now()` "Clock is performed here", `main` "main may perform only
+Console"; as spec section 6, within 2,000 characters.
+
+Timings (serial; whole-process wall time after a warm-up run; five runs,
+load averages 1.54-1.59; bound 3x median):
+
+| Workload | Median ms (min-max) | Bound |
+|---|---|---|
+| 10^6 shallow installs | 131 (128-134) | 393 |
+| 10^6 operations, context 100 deep | 141 (137-144) | 423 |
+| one fail across 1,000 handle frames | 46 (45-47) | 138 |
+| 100,000 caught failures | 38 (35-39) | 114 |
+| go build of the scenario | 135 (134-142) | 405 |
+
+Installation and lookup are about 10^6-deep non-tail recursion in the
+emitted Go; the review measured about 40 ms without operations against
+about 135 ms with them, so recursion does not dominate. The unwinding and
+caught-failure figures are close to the roughly 30 ms process start and
+resolve little. The go build bound assumes the warm `.build/go-cache` that
+verify provides. Under verify (load 4.9) the build took 292 ms.
+
+FX005 observation against Task 1's hand-written Go (loops, not process
+time): installs 18.3 ms, lookup at depth 100 79.8 ms, 1,000-frame abort
+34.9 ms, 100,000 caught aborts 19.9 ms. Waxwing's installs cost about 5x
+and lookup about 1.4x (net of start), the others are within noise of start.
+Shapes differ, so these are upper bounds, not a like-for-like comparison.
+
+1,000-label row (CLI): `emit` compiles; rejecting a call of it prints 498
+characters (`Unhandled E1 in main`); a side-condition rejection of rows of
+999 and 1,000 labels prints 451 (limit 2,000).
+
+`rm -rf output && npm run verify` (.build/task11-verify.log in the
+worktree): the first run failed one parallel test, specialize.test.mjs
+(it assumes examples are identity-specialized; services.wxw declares
+effects), fixed by excluding it; the rerun exit 0, 1252/1252, serial and
+regression proofs passed.
