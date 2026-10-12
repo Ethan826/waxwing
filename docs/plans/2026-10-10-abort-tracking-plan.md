@@ -1220,7 +1220,9 @@ l4b, merge2 and q1 flip.
   `ResultClauses.ownClauses`) a top-level result handler type gets its own
   bare C: R's labels, and R's tail only if that variable occurs in a
   parameter type or in the function's own row (the own row matters:
-  parameters alone reopen a hole 1649218 rejects); otherwise closed. By
+  parameters alone reopen a hole 1649218 rejects); otherwise a fresh meta
+  (user, 2026-10-12: a closed C failed C ≡ C against a C with more labels
+  or a rigid tail, rejecting defer-free programs, §6). By
   parametricity the callee's clauses reach a variable found nowhere else only
   through a rigid tail, which already makes the handler's own mark M. The
   other written types (fields, operation results, nested results) keep C = R
@@ -1229,7 +1231,8 @@ l4b, merge2 and q1 flip.
 - **New limitation, beside L1, L4 and P5.** A handler passed through a
   generic function and installed from its result (or from a field, a
   closure or an operation result) gives an M frame when the context's rest
-  is M or rigid. Design §3.4 points here.
+  is M or rigid. (A result C whose tail variable occurs nowhere else gets a
+  fresh meta, otherwise it would reject merges, §6.) Design §3.4 points here.
 - Console frames: the NoFail guard in `Frames.framed` is unreachable (no
   `Handler(Console …)` value, FX011) and must be revisited with D001.
 - Near the 250-line limit: Format/Diagnostic.purs 242.

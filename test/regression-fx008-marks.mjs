@@ -4,7 +4,7 @@
 // meant to compile reports `rejected: <message>` when it does not, and one
 // meant to be rejected reports `accepted`.
 import {
-  a1, copies, ownRow, forwardingIntoFailing, probe as probeSource, rigidVariable
+  aroundBoth, copies, ownRow, r1, forwardingIntoFailing, probe as probeSource, rigidVariable
 } from './fx008-defer-programs.mjs';
 import { compileWithin } from './regression-fx008.mjs';
 
@@ -55,6 +55,7 @@ export const markProbes = {
     deferText),
   'fx008-outer-frame': rejects(forwardingIntoFailing, 'outer frame', deferText),
   'fx008-rigid-n': rejects(rigidVariable, 'rigid', deferText),
-  'fx008-result-clauses': rejects(a1, 'result clauses', deferText),
+  'fx008-result-clauses': accepts(aroundBoth, 'result clauses', '101\n9\n'),
+  'fx008-result-fresh': accepts(r1, 'result fresh', ''),
   'fx008-result-own-row': rejects(ownRow, 'result own row', deferText)
 };

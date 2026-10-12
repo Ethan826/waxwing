@@ -13,6 +13,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
+import Data.Tuple (fst, snd)
 import Domain.Row (closedRow)
 import Domain.Type (TyRow)
 import Domain.Syntax as Syntax
@@ -90,13 +91,14 @@ openedUse ∷ Threaded Use → Threaded Use
 openedUse use =
   { value: use.value
       { fields = found.value.fields
-      , result = ownClauses found.value.fields use.value.row
-          found.value.result
+      , result = snd owned
       }
-  , state: found.state
+  , state: found.state { next = fst owned }
   }
   where
   found = openHandlers use.state use.value.fields use.value.result
+  owned = ownClauses found.state.next found.value.fields use.value.row
+    found.value.result
 
 -- A use that consumes `consumed`, of this callee, if it is a named one.
 withOrigin ∷ Consumed → Maybe Callee → Threaded Use → Threaded Use

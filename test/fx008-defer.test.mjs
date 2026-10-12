@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { expectDiagnostic } from './fx-diagnostics-support.mjs';
 import { rejected } from './support.mjs';
 import {
-  a1, a10, a3c, a4, a6, a8, a9, ownRow,
+  a1, a10, a3c, a4, a6, a8, a9, ownRow, r5,
   ambientCallback, boxPlainParameter, clauseDeferFailing, deferLog,
   failFreeLiteral, forwardingIntoFailing, nofailCall, probe, rigidVariable
 } from './fx008-defer-programs.mjs';
@@ -79,7 +79,7 @@ test('a handler in a constructor field keeps its mark', () => {
 // installed from its result keeps the clauses it will run in the caller's
 // context. Each was accepted by 1649218 and died with `fail(E): E`.
 const passedThrough = {
-  a1, a4, a6, a8, a9, a3c, a10, 'a result whose own row holds the tail': ownRow
+  a1, a4, a6, a8, a9, a3c, a10, r5, 'a result whose own row holds the tail': ownRow
 };
 for (const [name, source] of Object.entries(passedThrough)) {
   test(`a handler passed through a generic function: ${name}`, () => {

@@ -152,3 +152,32 @@ export const ownRow = rest + 'effect Get(a) { fn get(): a; }; '
   + '{ tick() => fail(E) } { with handler Get(Handler(nofail Log with Tick '
   + '+ Fail(E) + Console)) { get() => handler Log { log(n) => tick() } } '
   + '{ with mk() { defer log(1); () } } } { fail(error: E) => print(9) };';
+
+// Round 2 (review C2): a result C closed at the use broke programs with no
+// `defer` that merge a handler result with another handler value (§6).
+// r1, r2 and r9 are accepted with the base build's output.
+const stdMain = (value, body) => 'fn main(): Unit with Console = handle with '
+  + `handler Tick { tick() => fail(E) } { ${value} } { fail(error: E) => print(9) };`;
+export const r1 = rest
+  + 'fn mk(): Handler(Log with ...e) with pure = handler Log { log(n) => () }; '
+  + 'fn pick(b: Bool, x: Handler(Log with ...e)): Handler(Log with ...e) '
+  + 'with pure = if b then mk() else x; '
+  + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
+  + '{ with pick(true, handler Log { log(n) => log(n + 1) }) { log(1) } };';
+export const r2 = rest
+  + 'fn mk(): Handler(Log with Tick + ...e) with pure = '
+  + 'handler Log { log(n) => tick() }; '
+  + 'fn run(x: Handler(Log with Tick + ...e)): Unit with Tick + ...e = '
+  + '{ let h = if true then mk() else x; with h { log(1) } }; '
+  + 'fn main(): Unit with Console = with handler Tick { tick() => print(3) } '
+  + '{ run(handler Log { log(n) => tick() }) };';
+export const r9 = rest
+  + 'fn mk(): Handler(Log with Tick) with pure = handler Log { log(n) => () }; '
+  + 'fn main(): Unit with Console = with handler Tick { tick() => print(3) } '
+  + '{ let h = if true then handler Log { log(n) => { tick(); print(n) } } '
+  + 'else mk(); with h { log(1) } };';
+export const r5 = rest
+  + 'fn mk(): Handler(nofail Log with ...e) with pure = handler Log { log(n) => () }; '
+  + 'fn g(x: Handler(nofail Log with ...e)): Unit with ...e = '
+  + '{ let h = if true then mk() else x; with h { defer log(1); () } }; '
+  + stdMain('g(handler Log { log(n) => tick() })');

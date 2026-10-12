@@ -108,12 +108,20 @@ export const fx008MarkRows = [
   },
   {
     // Task 9 review C1: a top-level result handler type gets its own C at
-    // the function's use. Closing its tail (as a copy taken at install did)
-    // misses clause effects that reach R later: a1's cleanup would abort.
+    // the function's use. Without it C aliases R, which `with` binds to the
+    // installing row, and aroundBoth's `with prefix()` gets an M frame.
     name: 'fx008-result-clauses', file: 'src/Features/Check/ResultClauses.purs',
-    needle: '    Hole meta | not (occurs meta) → Nothing',
-    replacement: '    Hole _ → Nothing',
-    probe: 'fx008-result-clauses', message: /result clauses: accepted/
+    needle: '    | isNothing rows.clauses → Tuple',
+    replacement: '    | false → Tuple',
+    probe: 'fx008-result-clauses', message: /result clauses: rejected/
+  },
+  {
+    // Round 2 (review C2): a tail only the callee holds is a fresh meta,
+    // not closed: C ≡ C with another value's C must be able to merge (§6).
+    name: 'fx008-result-fresh', file: 'src/Features/Check/ResultClauses.purs',
+    needle: '    Hole meta | not (occurs meta) → Just (Hole next)',
+    replacement: '    Hole meta | not (occurs meta) → Nothing',
+    probe: 'fx008-result-fresh', message: /result fresh: rejected/
   },
   {
     // The tail may also occur in the function's own row (review C1).
