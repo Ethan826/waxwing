@@ -3958,3 +3958,17 @@ function signatures). Limitations are BACKLOG FX013-FX016. Verify at
 
 FX008 Tasks 1-12 are complete. Before merging: T008 (user decision) and
 the whole-branch review.
+
+### T008: linear settling for shared tails (2026-10-12)
+
+Sonnet implementer (33f9854; fix round e54d869), Opus review
+(review-t008-result.md): approved with fixes, checked by the controller.
+Profiling showed the quadratic cost was not the feed graph: each settling
+consumption added a label-free alias hop to one shared row, and every
+walk crossed the whole chain. Features.Check.Aliases keeps classes of such
+hops and jumps to their end. 1,000 installations in one declaration: 7.9 s
+→ 0.5 s; 2,000: 35 s → 1.0 s; other scale cases unchanged. Differential
+against 9a62014: 0 differences in every phase. Guards: a 2,000/1,000
+ratio test, two regression rows, and a property test comparing jumps with
+a naive walk (~500k checks). Verify at e54d869
+(.build/t008-fix-verify.log in the worktree): exit 0.
