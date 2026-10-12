@@ -3,7 +3,9 @@ import { polyProbes } from './regression-poly.mjs';
 import { fnProbes } from './regression-fn.mjs';
 import { task5Probes } from './regression-task5.mjs';
 import { fx008Probes } from './regression-fx008.mjs';
+import { markProbes } from './regression-fx008-marks.mjs';
 
 export const externalProbes = {
-  ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes
+  ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes,
+  ...markProbes
 };

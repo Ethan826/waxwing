@@ -45,6 +45,7 @@ type ClauseEntry =
   , inference ∷ TyRow Open
   , clauses ∷ TyRow Open
   , own ∷ Mark
+  , label ∷ Label (Ty Open)
   , handler ∷ Span
   , clause ∷ Span
   , operation ∷ String

@@ -26,6 +26,9 @@ import Features.Check.Scheme (State, firstTooDeep, holes, resolved, start)
 import Features.Check.Unify (Subst, isEmpty)
 import Features.Check.Walk (retype)
 import Features.Check.Defer (judgeDeferrals)
+import Features.Check.Frames (markConstraints)
+import Features.Check.Mark (violation)
+import Features.Check.MarkReport (reportViolation)
 import Features.Check.Settle (settleRestricted)
 import Features.Check.Path (expandPath)
 import Features.Check.Strip (stripProgram)
@@ -144,6 +147,9 @@ checkFunction holders env function = do
   let settledSubst = restricted.subst
   let ended = finished { subst = settledSubst }
   judgeDeferrals env ended body.value
+  let marked = markConstraints env.variables ended
+  maybe (Right unit) (reportViolation env marked >=> Left)
+    (violation env.markVariables marked.subst)
   let settled = settle settledSubst body.value
   comparable holders env settled
   printable holders env settled
@@ -158,7 +164,7 @@ checkFunction holders env function = do
         , body: holes settled
         , span: function.span
         }
-    , state: ended
+    , state: marked
     }
   where
   parameterType parameter = rigid parameter.ty

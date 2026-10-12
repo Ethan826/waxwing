@@ -19,7 +19,7 @@ import Domain.Row
   )
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty, TyRow)
-import Features.Check.ClauseBody (HandlerEnv, handlerClause)
+import Features.Check.ClauseBody (HandlerEnv, handlerClause, openLabel)
 import Features.Check.Consume (consumeBare)
 import Features.Check.Context (Infer, Locals)
 import Features.Check.Defer (placed)
@@ -157,6 +157,7 @@ file env setup ids row clause state = do
     , inference: setup.inference
     , clauses: setup.clauses
     , own: setup.own
+    , label: openLabel setup.label
     , handler: setup.span
     , clause: clause.span
     , operation: operationName env setup.label clause.operation

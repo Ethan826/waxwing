@@ -55,6 +55,7 @@ const own = [
     {
       fx008: no('E_EFFECT', defer, 79, 91),
       task: 9,
+      flipped: true,
       reason: '§1 cross-function form.'
     }),
   probe('facts/lexical',
@@ -63,6 +64,7 @@ const own = [
     {
       fx008: no('E_EFFECT', defer, 129, 141),
       task: 9,
+      flipped: true,
       reason: '§1 pinned form.'
     }),
   probe('facts/pending',
@@ -71,6 +73,7 @@ const own = [
     {
       fx008: no('E_EFFECT', defer, 101, 113),
       task: 9,
+      flipped: true,
       reason: '§1: work\'s Log is plain.'
     }),
   probe('failvar',

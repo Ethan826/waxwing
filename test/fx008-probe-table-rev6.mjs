@@ -41,6 +41,7 @@ export const rev6 = [
     {
       fx008: no('E_EFFECT', defer, 79, 91),
       task: 9,
+      flipped: true,
       reason: '§1 cross-function form.'
     }),
   probe('rev6/hole1',
@@ -64,6 +65,7 @@ export const rev6 = [
     {
       fx008: no('E_EFFECT', defer, 153, 165),
       task: 9,
+      flipped: true,
       reason: 'L4 (§6).'
     }),
   probe('rev6/meta1',

@@ -28,7 +28,10 @@ const known = [
   { name: 'risky', params: [['n', 'Int']], ret: 'Int', row: new Set(['Err']) }
 ];
 
-const rowTexts = { Log: 'Log', Tick: 'Tick', Err: 'Fail(Err)', Oops: 'Fail(Oops)' };
+// A generated function's user effects are `nofail` (FX008): its body may
+// `defer` them, and the random clauses are fail-free.
+const rowTexts = { Log: 'nofail Log', Tick: 'nofail Tick', Err: 'Fail(Err)',
+  Oops: 'Fail(Oops)' };
 const rowText = labels => ['Console', ...[...labels].map(label => rowTexts[label])]
   .join(' + ');
 

@@ -4,6 +4,7 @@ module Features.Check.UnifyMark
   , targetLabel
   , stageLabel
   , advanceTail
+  , recorded
   ) where
 
 import Prelude

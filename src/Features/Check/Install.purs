@@ -4,7 +4,7 @@ import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe')
 import Data.Map as Map
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
@@ -15,7 +15,6 @@ import Domain.Row
   , Label(..)
   , Mark(..)
   , Row(..)
-  , clauseRow
   , normalMark
   , withMark
   )
@@ -29,6 +28,7 @@ import Features.Check.Restricted (registerInstallation)
 import Features.Check.RowName (labelName)
 import Features.Check.Scheme (State, Threaded, flexible)
 import Features.Check.Unify (Flex, Subst(..))
+import Features.Check.Walked (bareLabel, walkedRow)
 
 -- `with h { body }` (design §3.4), `h : Handler(m L with R | C)`, under the
 -- current row ρ. R is unified with ρ, ignoring marks. The body is checked
@@ -87,13 +87,29 @@ install infer env state span handlerValue label rows body = do
         , own
         , frame
         , inference: rows.inference
-        , clauses: clauseRow rows
+        , clauses: clausesOf state rows
         , current: env.current
         , sites: env.sites
         , matched: 0
         }
         framed.restricted
     }
+
+-- C as the handler's type holds it. A written type has no clause row of its
+-- own (C is R): R is about to be bound to the installing row, which must not
+-- reach C, so C is a copy of R as it stands, ending as R's tail does only if
+-- that is a signature's own variable (`...e` may fail with what the caller
+-- puts there); an open tail is closed. Instantiating a signature opened its
+-- ambient variable, and a closed `Handler(L with R)` is a handler of R only.
+clausesOf ∷ State → HandlerRows (Ty Open) Open → TyRow Open
+clausesOf state rows = maybe' copied identity rows.clauses
+  where
+  copied _ = case walkedRow state.subst rows.inference of
+    Row labels found → Row (map (bareLabel state.subst) labels)
+      (found >>= signatureVariable)
+  signatureVariable = case _ of
+    variable@(Checked.Rigid _) → Just variable
+    _ → Nothing
 
 -- The frame's mark: N for Console, unmarked for Fail, else a fresh meta from
 -- the mark store's counter, which counts down apart from every other meta.

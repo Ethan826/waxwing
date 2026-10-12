@@ -64,7 +64,9 @@ export const crossing = ctx => {
   return handle(wrapped, [failureClause(quiet, family, 1)]);
 };
 
-const ROW = { Console: 'Console', Log: 'Log + Console' };
+// Signature labels under a handler's frame are `nofail` (FX008): the random
+// clauses are fail-free.
+const ROW = { Console: 'Console', Log: 'nofail Log + Console' };
 const stageFn = (name, params, retText, rowText, body) => ({
   name, params: params.map(param => [param, 'Int']), ret: 'fn', retText,
   rowText, row: new Set(), body
@@ -116,7 +118,8 @@ const callbackFns = (ctx, effect) => {
   const make = fresh(ctx, 'make');
   const run = fresh(ctx, 'run');
   const tickEffect = effect === 'Tick';
-  const type = tickEffect ? 'Int -> Int with Tick' : 'Int -> Unit with Log';
+  const type = tickEffect ? 'Int -> Int with nofail Tick'
+    : 'Int -> Unit with nofail Log';
   const result = tickEffect ? 'Int' : 'Unit';
   const performed = tickEffect ? add(local('x'), tick(local('a')))
     : log(add(local('x'), local('a')));

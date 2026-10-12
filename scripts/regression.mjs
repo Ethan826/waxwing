@@ -3,6 +3,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { spawnSync } from 'node:child_process';
 import { fnRows } from './regression-fn.mjs';
 import { fx008Rows } from './regression-fx008.mjs';
+import { fx008MarkRows } from './regression-fx008-marks.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
 const rows = [
   {
@@ -218,7 +219,7 @@ const rows = [
 ];
 // `node scripts/regression.mjs [name…]` proves only the named rows.
 const chosen = process.argv.slice(2);
-const proved = [...rows, ...fnRows, ...fx008Rows]
+const proved = [...rows, ...fnRows, ...fx008Rows, ...fx008MarkRows]
   .filter(row => chosen.length === 0 || chosen.includes(row.name));
 const base = '.build/regression';
 const commandTimeoutMs = 180_000;

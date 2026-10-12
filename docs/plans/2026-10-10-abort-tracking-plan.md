@@ -1207,6 +1207,24 @@ l4b, merge2 and q1 flip.
   with the 12 rows → 12 proof lines.
 - [ ] **Step 6: Commit** `feat: the mark check makes defer sound (FX008)`.
 
+**Task 9 as built (deviations).**
+- `markConstraints ∷ Array String → State → State` takes the signature's
+  variable names (a `FrameRigid` edge names ϱ). Console's frame is `NoFail`
+  by definition (§3.3), so an installation with that frame generates no
+  frame edges.
+- A written handler type has no clause row of its own (`clauses = Nothing`,
+  P2), so C aliased R, and `with` binds R's tail to the installing row. The
+  installation therefore records C as a copy of R taken before that
+  consumption (`Install.clausesOf`): labels as they stand, the tail kept only
+  when it is a signature's own variable. Without it every `with prefix()`
+  under a rigid row had a rigid C and an M frame (the `around` program).
+  `ClauseEntry` gained `label`, the handled label of an `OwnAbort` edge.
+- `fx008-copies` uses a new probe (`copies`, test/fx008-defer-programs.mjs):
+  p1 does not distinguish the mutant (no probe of the corpus did). `fx008-frame-m`
+  uses p2: with q1's `prefix()` each call opens its own m.
+- The generator writes `nofail` on `fx-programs.mjs`'s user-effect row labels
+  and `fx-gen-fragments.mjs`'s stage and callback signatures.
+
 ---
 
 ### Task 10: Notes for mark rejections

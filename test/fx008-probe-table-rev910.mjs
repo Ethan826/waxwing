@@ -10,6 +10,7 @@ export const rev910 = [
     {
       fx008: no('E_EFFECT', defer, 79, 91),
       task: 9,
+      flipped: true,
       reason: '§1 cross-function form.'
     }),
   probe('design-review/c2',
@@ -42,6 +43,7 @@ export const rev910 = [
     {
       fx008: no('E_EFFECT', defer, 203, 215),
       task: 9,
+      flipped: true,
       reason: 'I2: run\'s Log is plain (§6).'
     }),
   probe('design-review/q2',

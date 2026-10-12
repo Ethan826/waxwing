@@ -65,6 +65,12 @@ data EntryKind
 -- a block whose trailing `;` made it Unit (FX001 design §1).
 data Hint = MissingArguments String Int | TrailingSemicolon
 
+-- Why a handler may fail (FX008 design §3.6): a clause fails with a payload,
+-- or its tail is a rigid row that may hold a `Fail` (its text: `...e`).
+data AbortCause
+  = ClauseFails String TypeName
+  | ClauseMayPerform String String
+
 -- The lexer and parser are Format, so their payloads may be text.
 data Problem
   = Lexical
@@ -110,3 +116,8 @@ data Problem
   | ExpectedHandler TypeName
   | NofailOnFail
   | MarkVariableOutsideSignature String
+  -- The mark check (FX008 Task 9): labels arrive printed, marks included.
+  | DeferHandlerMayFail String
+  | DeferHandlerVariable String String
+  | ExpectedNofail String String
+  | HandlerMayFail AbortCause

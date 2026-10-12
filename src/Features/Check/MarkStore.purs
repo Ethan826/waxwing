@@ -10,6 +10,7 @@ module Features.Check.MarkStore
   , bindMark
   , addEdge
   , edgesOf
+  , reasonSpan
   ) where
 
 import Prelude
@@ -85,3 +86,15 @@ addEdge edge store = store { edges = Push edge store.edges }
 -- Insertion order.
 edgesOf ∷ ∀ t. MarkStore t → Array (MarkEdge t)
 edgesOf store = stackItems store.edges
+
+-- Where an edge's reason arose; an abort site's is its handler (P13).
+reasonSpan ∷ EdgeReason → Span
+reasonSpan = case _ of
+  Assumed span → span
+  Copied span → span
+  Extended span → span
+  OwnAbort site → site.handler
+  FrameOwn span → span
+  FrameOuter span → span
+  FrameRigid span _ → span
+  DeferDemand span → span

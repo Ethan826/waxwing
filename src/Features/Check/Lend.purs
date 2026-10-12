@@ -1,4 +1,4 @@
-module Features.Check.Lend (lend, assume) where
+module Features.Check.Lend (lend, assume, partners) where
 
 import Prelude
 import Prim hiding (Row)
@@ -76,6 +76,19 @@ assume span subst target found =
         (withMark (labelMark stage) partner)
         partner
     )
+
+-- Each label of C (non-`Fail` ones: their keys need no payload) with the
+-- label of `target` it meets, by key and position as `assume` pairs them.
+partners
+  ∷ Subst
+  → Array (Label (Ty Flex))
+  → Array (Label (Ty Open))
+  → Array (Tuple (Label (Ty Open)) (Label (Ty Flex)))
+partners subst target found = map met
+  (paired (flexKey subst) (keyOf subst) target (map bare found))
+  where
+  bare label = Tuple label unit
+  met (Tuple label (Tuple partner _)) = Tuple label partner
 
 paired
   ∷ ∀ a d

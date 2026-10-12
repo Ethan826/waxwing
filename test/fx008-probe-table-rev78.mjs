@@ -23,6 +23,7 @@ export const rev78 = [
     {
       fx008: no('E_EFFECT', deferTick, 244, 256),
       task: 9,
+      flipped: true,
       reason: 'L4 (§6).'
     }),
   probe('rev7/merge2ctl',
