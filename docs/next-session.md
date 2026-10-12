@@ -1,40 +1,32 @@
-# Waxwing / FX008: Tasks 1-12 and T008 done; branch review next (2026-10-12)
+# Waxwing / FX008 merged into main; FX001 Tasks 11-12 next (2026-10-12)
 
 Future milestone INF001 was defined at the user's request on 2026-10-11:
 [automatic requirement and error composition](plans/2026-10-11-requirement-and-error-inference-milestone.md).
 Includes setup/assembly errors and business-logic errors, automatic named
-function channels, partial provision and recovery. Requirements only;
-finish active FX008/FX001 work before its language design and plan.
-
-Future milestone INF001 was defined at the user's request on 2026-10-11:
-[automatic requirement and error composition](plans/2026-10-11-requirement-and-error-inference-milestone.md).
-Includes setup/assembly errors and business-logic errors, automatic named
-function channels, partial provision and recovery. Requirements brief only; independent and adversarial review complete.
+function channels, partial provision and recovery. Requirements brief only;
+independent and adversarial review complete.
 Ledger: `docs/sdd/2026-10-11-inference-milestone/progress.md`. Finish active
 FX008/FX001 work before its language design and plan.
 
-Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
-fx008-impl at e54d869 (T008 done 2026-10-12; origin/fx008-impl holds
-the b5fab7c backup from 2026-10-10 and is not updated). It is not merged anywhere: the FX008
-implementation stays off main until the whole-branch review
-are done. main was fast-forwarded to fx008 (4f1b981): FX001 Task 10,
-FX009, and the design and review docs.
-Tasks 1-12 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
-and reviewed. The worktree copy of the plan is authoritative: it carries
-the rulings applied during Tasks 1-12. Tracking docs (progress, BACKLOG,
-ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
-in the main checkout. Only the controller writes them.
+FX008 (type-level tracking of handlers that may fail; `nofail` and
+`nofail(k)` marks; the mark check makes `defer` sound) is complete:
+Tasks 1-12 of docs/plans/2026-10-10-abort-tracking-plan.md, T008 (linear
+settling) and the whole-branch review with its fixes
+(docs/sdd/2026-10-09-effects-plan/review-fx008-branch-result.md). Merged
+from fx008-impl into fx008 (dd1efd6), with main's INF001 docs merged in
+(1331ae4), then main fast-forwarded and pushed with the user's approval
+(2026-10-12). The worktree's evidence logs are kept in the main checkout
+under .build/fx008-impl-evidence/ (gitignored); docs/progress.md cites
+them as "in the worktree".
 
-Next: the whole-branch review (T008 is fixed: settling alias chains
-compressed, 1,000 installations 7.9 s → 0.5 s) (note for it: the soundness generator has no `nofail(k)` shape).
-Then, with the user's approval: `git merge --no-ff fx008-impl` into fx008,
-remove the worktree, fast-forward main after a verify, push only if asked.
-After FX008: FX001 Task 11 (amended for `nofail`) and Task 12 (ADR 010,
-language Effects section, regression-fx rows). Verify at 9a62014: exit 0,
-1226/1226, 47/47; 64 regression proofs, 28 of them FX008.
+Next: FX001 Task 11 (amended for `nofail`) and Task 12 (ADR 010, language
+Effects section, regression-fx rows; see docs/plans/2026-10-09-effects-plan.md).
+Open FX008 follow-ups in BACKLOG: FX010 (narrowed), FX013-FX016
+(limitations), T009 (remaining alias shapes and accepted constant
+factors), T010 (`nofail(k)` generator shape), D002, E013.
 
-Size and cost notes: Subst.purs 246 lines (do not grow); Unify.purs
-240. Agent copies for mutant proofs exclude .build and are deleted.
+Size notes: Subst.purs 245 lines, Domain/Type.purs 250 (no headroom).
+Agent copies for mutant proofs exclude .build and are deleted.
 
 Execution: subagent-driven, as the user directed (2026-10-10). Sonnet
 implements each task, and Opus reviews each. Escalate to Opus on a
