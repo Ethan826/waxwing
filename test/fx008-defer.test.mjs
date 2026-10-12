@@ -191,3 +191,19 @@ test('a 1,000-hop mark path is bounded', () => {
   assert.ok(found.related.length <= 4);
   assert.ok(length(found) <= maxCharacters, `${length(found)} characters`);
 });
+
+// The user accepted this note on 2026-10-12 (FX008 branch review): ec1 (the
+// argbind rejection) now blames the fail(E) itself, not the put call's value.
+test('ec1: Unhandled Fail(E) names the raise, the handler and main', () => {
+  const source = probe('witness/ec1');
+  const main = source.slice(source.indexOf('fn main'),
+    source.lastIndexOf('};') + 2);
+  expectDiagnostic(source, {
+    code: 'E_EFFECT', message: 'Unhandled Fail(E) in main',
+    at: ['with h { log(1) }'],
+    notes: [
+      ['put(fn(n: Int) => fail(E))', 'fail(E', 'Fail(E) is raised here'],
+      ['with h { log(1) }', 'with h { log(1) }', 'Log is handled here'],
+      [main, main, 'main may perform only Console']]
+  });
+});
