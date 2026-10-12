@@ -528,3 +528,39 @@ It was split before publication. Independently, a second session recorded
 the FX008 hole as a new BACKLOG row on its own branch, duplicating this
 branch's record. In a shared checkout, stage explicit paths. Before adding
 a BACKLOG row, check the other active branches for one.
+
+## A `defer` can run under a handler that fails (FX008, 2026-10-12)
+
+The hole. FX001 rejected a `defer` that performs `Fail`, but allowed one
+that performs another effect such as `Log`. If the handler of that effect
+had a clause that fails, the cleanup ended in a typed abort, with a
+`fail(E): E` run-time error where the type system promised none. Neither
+rows nor the label check could see it: a row says which operations a
+computation performs, not whether the frame that handles them can abort.
+
+Its cause. The type of a handler value (`Handler(Log with R)`) records what
+the clauses perform, and `with` unified R with the context, so a clause's
+failure reached the context only as a `Fail` label, and only when the
+handler was installed in view. A function's signature said `Log`, and
+nothing said which Log handler it would meet.
+
+The rule. A label occurrence carries a mark (`nofail` or plain). A `defer`
+may perform an operation only if every frame it can meet is fail-free;
+each installation has its own frame mark, constrained by the handler's
+own-abort mark and by the outer frames its clauses reach; consumption
+imposes `context mark <= stage mark`; and the constraints are solved as a
+path check over a two-point lattice with rigid mark variables. Programs
+without `defer` keep their acceptance, by a one-way hook that keeps R in
+step with the clauses. Sound but imprecise cases are recorded as
+limitations (L1 with P5, L4, L6, and handlers passed through generic
+functions).
+
+Lessons from building it. Every simpler design failed on a probe: sharing
+marks through R, equating marks when R unified, consuming R, an R-to-R
+link, and an alias of R as the clause row all rejected safe programs or
+depended on the order of bindings. Letting C carry label arguments doubled
+the work at each level of literal nesting (30 chained literals timed out).
+A closed result C failed to merge with a C that had more labels. Each
+became a regression row with a named mutant; the one-way soundness
+differential (compiler acceptance implies the oracle never reports
+`typed abort escaped cleanup`) found no unsound acceptance.

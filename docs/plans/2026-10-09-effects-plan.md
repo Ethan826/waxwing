@@ -12,9 +12,12 @@ claude/vibrant-cerf-3km61i (cloud session, 2026-10-09; no worktree);
 Tasks 9-12 were amended 2026-10-09 after the CF001 design work and an
 Opus re-scan (ledger: rescan-9-12, rulings R1-R12). Task 10 is
 complete (2026-10-10). Before Task 11: FX008 (sound `defer` via
-`nofail` marks), design note docs/plans/2026-10-10-abort-tracking-design.md
-under review, awaiting the user's decision; Tasks 11-12 not started. Current evidence is in docs/progress.md and the local SDD
-ledger (.superpowers/sdd/, git-ignored).
+`nofail` marks), design note docs/plans/2026-10-10-abort-tracking-design.md,
+plan docs/plans/2026-10-10-abort-tracking-plan.md. FX008 amendment
+(2026-10-12): FX008 Tasks 1-12 are implemented on branch fx008-impl,
+pending the whole-branch review; Tasks 11 and 12 of this plan are not
+started and are amended below. Current evidence is in docs/progress.md and
+the local SDD ledger (.superpowers/sdd/, git-ignored).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -772,6 +775,21 @@ programs at `Features.Check.Unlowered` (Global Constraints).
   types, passed where the handler was installed. The test asserts equal type
   keys, equal function keys by declaration name, and that the extra keys are
   exactly the effect keys, and it prints the breakdown.
+  FX008 amendment (2026-10-12, FX008 design §10): the scenario is written
+  for the mark check, because a `defer` is accepted only where every
+  frame it can meet is fail-free (spec §2 "Marks").
+  - Every function whose cleanup performs an operation writes `nofail` on
+    that label, along every cleanup call chain, up to the declaration that
+    installs the handler (`nofail(k)` lets a wrapper pass the assumption
+    through without fixing it).
+  - The real and the fake handlers that `if` or `match` selects in `main`
+    share one mark, so each handler a cleanup reaches is fail-free in both
+    forms, or handles its own failures inside its clauses.
+  - No clause on a cleanup path calls a callback whose row is a rigid tail
+    (such a clause makes its handler's own mark M), and none performs a
+    label whose outer handler may fail.
+  - The dropped-handler diagnostic and the key-count baseline are
+    unaffected: marks are erased before specialization.
 - [ ] **Step 2: Write** serial timing tests of Waxwing-emitted programs,
   attributed separately (installation: repeated shallow `with`; lookup: one
   context of fixed depth 100 built once, then a measured loop of operations;
@@ -798,9 +816,10 @@ programs at `Features.Check.Unlowered` (Global Constraints).
 
 **Files:**
 - Create: `scripts/regression-fx.mjs` (rows, spread into
-  scripts/regression.mjs like `fnRows`), `test/regression-fx.mjs`
-  (probes, merged into test/regression.mjs's external probes like
-  `fnProbes`; ruling F17), `docs/adr/010-effects.md`
+  scripts/regression.mjs like `fnRows`), the FX001 probes
+  (added to test/regression-probes.mjs, the aggregator of external probes,
+  not a new test/regression-fx.mjs; FX008 amendment 2026-10-12; ruling
+  F17), `docs/adr/010-effects.md`
 - Modify: `scripts/regression.mjs`, `test/regression.mjs` (243 lines;
   import only), `docs/language.md` (Effects), `docs/architecture.md`
   (Check.Defer, provenance modules, Format.Go Context, Effect, Handle,
@@ -809,7 +828,11 @@ programs at `Features.Check.Unlowered` (Global Constraints).
   `docs/progress.md`, `docs/next-session.md`,
   `docs/sdd/2026-10-09-effects-plan/` (ledger snapshot)
 
-- [ ] **Step 1: Add regression rows** in scripts/regression-fx.mjs, each
+- [ ] **Step 1: Add regression rows** in scripts/regression-fx.mjs (beside
+  FX008's scripts/regression-fx008.mjs and scripts/regression-fx008-marks.mjs,
+  which are already spread into scripts/regression.mjs; the probes go in
+  test/regression-probes.mjs, which aggregates them; FX008 amendment,
+  2026-10-12), each
   restoring one defect in an isolated copy; its probe in
   test/regression-fx.mjs passes on the healthy compiler and fails on the
   mutant with a named message. Rows: side condition removed (the probe
@@ -826,11 +849,17 @@ programs at `Features.Check.Unlowered` (Global Constraints).
   (origin note missing); abbreviation disabled (bound exceeded). `ctx` emitted
   for effect-free programs is the existing row `effect-free-ctx` (Task 7), not
   duplicated.
-- [ ] **Step 2: Write** ADR 010 (as shipped: row erasure revising decision 1;
+- [ ] **Step 2: Write** ADR 010 and the language Effects section; both record
+  the FX008 rule (a `defer` may perform an operation only where every frame
+  it can meet is fail-free, tracked by `nofail` marks; spec §2 "Marks") and
+  the limitations L1 with P5, L4 (l4b, merge2), L6 and the handler-through-
+  a-generic-function limitation (FX008 amendment, 2026-10-12; plan
+  docs/plans/2026-10-10-abort-tracking-plan.md, "Task 9 as built").
+  ADR 010 (as shipped: row erasure revising decision 1;
   runtime keys, EffectId+1 for user effects and `Fail` by declared head; first
   clause innermost; ctx mode over the emitted IR; only keys with type
   arguments count toward the 10,000 limit (F5); the strict `defer` rule (CF
-  R0) and its accepted costs (FX007); report conventions: no pending cause
+  R0) and its accepted costs (FX007), as refined by FX008; report conventions: no pending cause
   gives an unprefixed first cleanup crash, Go runtime panics print `panic:
   <text>`; empty Handler(Console)/Handler(Fail(E)) structs (F3); Task 11's
   key-count and timing evidence) and the language Effects section, including

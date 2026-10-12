@@ -136,6 +136,13 @@ wording) `a par child may only fail, but it performs <L>` and `… but it
 may perform any effect of <r>`. Adopted 2026-10-09: this strictness,
 rather than an internal "lacks X" constraint checked at instantiation
 sites (that relaxation is BACKLOG FX007).
+FX008 amendment (2026-10-10, design D4): "performs no X" is a per-label
+predicate plus the rigid-tail rule. For `defer`, X is "a `Fail` label, or
+a label whose handler frame may fail" (the mark check, effects spec §2
+"Marks"; a `nofail` label qualifies only where every frame it can meet is
+fail-free). For a `par` child, X is
+"a label that is not `Fail`" (unchanged: a child performs no operation
+that reaches a parent frame). The rigid-tail rule is unchanged.
 Examples, both accepted by a labels-only check:
 
 ```
@@ -508,7 +515,7 @@ dump trigger, labels, names.
 |---|---|---|---|---|
 | Foreign import | Go `error` → typed Fail (I001); Go panic → defect `panic: …` (`waxwingCauses`); foreign handles not Shareable until I001 classifies them (B3); blocking calls get a `context.Context` cancelled with the task (C1); goroutines the library starts are outside the tree, their panics fatal | Fail in row | context bridge, adapter recovery | timeouts |
 | Scoped callback (during the foreign call, same goroutine) | may perform the caller's effects; no abort or defect unwinds through foreign frames: the adapter recovers at the callback boundary and re-raises after the foreign call returns (spec §4 I001 obligation); never unwind through C frames (cgo) | rows | adapter | none |
-| Escaping callback (stored; later or another goroutine) | Shareable and Fail-free (R0): its `handle` may have exited, task-local handlers may be dead; runs as a new root task with its own cleanup; defects go to its owning supervisor; unsupervised, they cancel `main`'s scope and `main`'s root reports them first, after its own cleanup, exit 1 (a forward across goroutines; the report still originates in `main`) | B3 + R0 at conversion | root, registry | owner |
+| Escaping callback (stored; later or another goroutine) | Shareable and abort-free (R0 as amended by FX008, 2026-10-10: no `Fail`, every label `nofail`, no rigid tail): its `handle` may have exited, task-local handlers may be dead; runs as a new root task with its own cleanup; defects go to its owning supervisor; unsupervised, they cancel `main`'s scope and `main`'s root reports them first, after its own cleanup, exit 1 (a forward across goroutines; the report still originates in `main`) | B3 + R0 at conversion | root, registry | owner |
 | Export (Go → Waxwing) | each call is a root task with handlers from host-supplied implementations; typed failure → Go `error`; defect → distinct error or re-panic, never `os.Exit`; concurrent calls share only Shareable capabilities; host `context.Context` → cancellation | closed row of host-provided effects | root, conversions | PKG001 convention |
 
 ```
@@ -534,7 +541,7 @@ Settle before FX002 (§10 item 9):
   task roots observe one; supervisors act by built-in policy only, no
   Waxwing code receives causes; supervisor-cancelled tasks record `X`;
   process exit is `main`'s root policy.
-- **O-2** Long-lived task boundaries (services, escaping callbacks) are Fail-free (R0); typed outcomes travel as values and replies.
+- **O-2** Long-lived task boundaries (services, escaping callbacks) are *abort-free* (FX008 amendment, 2026-10-10, D4): no `Fail` label, every label marked `nofail`, no rigid tail; typed outcomes travel as values and replies.
 - **O-3** One owner per mutable state; cross-task routes: façades to the
   owner or trusted Shareable built-ins; no user locks; communication is a
   built-in row-visible label (`Send`), so R0 keeps façades out of `par`

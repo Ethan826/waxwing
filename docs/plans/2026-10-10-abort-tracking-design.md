@@ -308,8 +308,11 @@ unchanged. A written `Handler(m L with R)` gets its own C, never an
 alias of R (review rev7 I3, annotc.wxw):
 - in a signature, a structural copy of R with the same written marks and
   the same closed or rigid tail;
-- in a local annotation, R's written labels with fresh mark metas and a
-  fresh tail meta.
+- in a local annotation, C keeps the written `nofail` / `nofail(k)` marks
+  of R, gives its unmarked labels fresh mark metas, and has a fresh tail
+  meta (review M5; amended in Task 12, 2026-10-12). Only a handler type
+  outside another handler type's rows gets its own C; a nested one keeps
+  C = R, which is never consumed.
 - R is the *inference row*. It behaves exactly as today: clause effects
   reach it, and `with` unifies it with the context ρ. So inference, and
   with it acceptance of programs without `defer` and Go output, are

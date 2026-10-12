@@ -12,6 +12,12 @@ unconfirmed. Implementation status lives in the plan
 rule was revised by the user on 2026-10-09 (section 3). Background: docs/plans/2026-10-08-language-direction.md
 (FX001 sections) and BACKLOG.md FX001.
 
+FX008 amendment (2026-10-12): `nofail` marks make `defer` sound against
+handlers that can fail. Sections 1, 2, 3, 5 and 6 carry the change; each
+edit names FX008. Design: docs/plans/2026-10-10-abort-tracking-design.md;
+the plan's rulings during implementation prevail over the design where
+they differ (docs/plans/2026-10-10-abort-tracking-plan.md).
+
 ## Direction decisions (user, 2026-10-09)
 
 1. **Family: Koka-style algebraic effects, restricted now, resume-ready.**
@@ -139,6 +145,34 @@ parameter. `Handler(Clock with Log)` is a Clock handler whose clauses
 perform Log; bare `Handler(Clock)` uses the ambient row in a signature and
 is `pure` in a field or operation type (no ambient row there).
 
+**Marks (FX008 amendment, 2026-10-12).** `nofail` is contextual, like
+`pure`: recognized directly before a label in a row (after `with`, after
+`+`, or at the start of a row argument) and as the handled label of
+`Handler(…)`; elsewhere it is an ordinary name. `nofail Log` is an
+assumption that the Log frame the code runs under cannot end an operation
+in a typed abort (section 2, "Marks"). `nofail(k) Log` writes a *mark
+variable* k, implicitly quantified per signature like a lowercase type
+variable but of its own sort (`x: k` beside `nofail(k)` names a type
+variable). It is allowed anywhere in a function signature (own rows,
+parameter rows, handler types, row arguments) and in the lambdas of its
+body, which may name the enclosing signature's k (rigid there). It is not
+allowed in a `type` or `effect` declaration (limitation L6). Special cases:
+- `nofail Fail(E)` and `nofail(k) Fail(E)` are E_TYPE `nofail does not
+  apply to Fail`;
+- `nofail Console` and `nofail(k) Console` are accepted and mean `Console`
+  (Console is always N: the runtime is its only handler);
+- `nofail ...e` is E_SYNTAX `nofail ...e is not supported yet`, reserved
+  for FX007;
+- `nofail(k)` in a field or operation type is E_TYPE `nofail(k) is allowed
+  only in function signatures`; a name `j` that is not the signature's is
+  E_UNBOUND `Unbound mark variable j`.
+
+Row display prints `nofail L`, `nofail(k) L` or a plain `L`; unsolved marks
+print plain. A trap: `Handler(nofail Log)` written without `with pure`
+ends in the callee's rigid ambient row, so every installation of it inside
+the callee is M; a parameter meant for fail-free installation is written
+`Handler(nofail Log with pure)` or with its clause row closed.
+
 Expressions:
 
 ```
@@ -263,9 +297,121 @@ error; eta-expansion `fn(x) => g(x)` is the workaround (recorded
 limitation, following Koka's distinction between instantiated bindings and
 lambda-bound parameters, Leijen 2014 §3.2).
 
+FX008 amendment (2026-10-12): consumption of a row into the current row is
+directional on marks (below), and the instantiation of a *function*
+reference opens mark positions of handler types, because types unify by
+equality: an unmarked (M) handled label in a top-level parameter type, and
+a `nofail` handled label in the top-level result type, each become a fresh
+mark meta. This applies to function signatures only (P5): constructor
+fields and operation signatures are not opened, nor are callback rows in
+parameters or locals (limitations L1, L2).
+
+**Marks (FX008 amendment, 2026-10-12).** A *mark* says whether a handler
+frame can end an operation in a typed abort, meaning one that escapes the
+clause. `nofail` (N) says it cannot; a plain label is may-fail (M) and
+promises nothing. A clause may fail and handle the failure inside itself.
+Defects and divergence remain possible everywhere (section 3).
+- *Roles.* On a row label a mark is an assumption: `with nofail Log` on a
+  computation assumes the Log frame it runs under is N, so its cleanup may
+  perform Log. On a handler type it is the handler's *own-abort* mark:
+  `Handler(nofail Log with R)` says the clauses cannot abort by
+  themselves (no escaping `fail`, no call through an unknown row); the
+  outer frames its clauses reach are added per installation.
+- *Invariant.* If an expression is checked under row ρ and the k-th
+  occurrence of key κ in ρ is N (for every value of the declaration's mark
+  variables), then whenever it runs the k-th frame for κ in its dynamic
+  context cannot end an operation in a typed abort.
+- *Sources.* Written labels in signatures are M unless written `nofail` or
+  `nofail(k)`; Console is N; `Fail` labels carry no mark. Unmarked labels
+  in local annotations (lambda parameters, `let` annotations) get fresh
+  mark metas, because locals are inferred from their uses; a written
+  `nofail` there is N. A declaration reference instantiates its mark
+  variables with one fresh meta each.
+- *Directional consumption.* Consuming a stage row s into the current row
+  ρ matches labels by first occurrence, as above, and for each matched pair
+  imposes ρ's mark ⊑ s's mark (N ⊑ M): the frames must be at least as
+  strong as the computation assumes. When consumption binds s's tail to
+  the rest of ρ, the labels bound are fresh copies of ρ's remaining
+  labels (same effect and arguments, a fresh mark meta c with ρ-mark ⊑ c);
+  ρ's tail stays shared. When consumption extends the target's tail with a
+  stage label, the new label gets a fresh mark t with t ⊑ the stage
+  label's mark. Rows inside types still unify with equality, marks
+  included (function types are invariant).
+- *Handler types.* Internally `Handler(m L with R | C)`; written syntax
+  is unchanged. R is the inference row and behaves as before: clause
+  effects reach it and `with` unifies it with the context, ignoring marks
+  (a label it adds gets a fresh mark with no edge, so R's marks are dead).
+  C is the *clause row*: exactly the clauses' effects with their
+  assumption marks, never unified with a context. C keeps no label
+  arguments (FX008 ruling, 2026-10-11): per label only its effect, mark and
+  count, with arguments read from R. Two handler types unify C with C,
+  marks included. A one-way hook keeps R in step with the clause rows as
+  checking proceeds and again in every settling round (FX008 rulings,
+  2026-10-11: F1′ runs in settling), so programs without `defer` keep
+  their acceptance and Go output.
+- *Written handler types and C.* A written type has no clause row of its
+  own, so C is R. At a function's use, a top-level result handler type gets
+  its own C: R's labels, and R's tail only if that variable occurs in a
+  parameter type or in the function's own row, otherwise a fresh tail meta
+  (FX008 ruling, 2026-10-11 and 2026-10-12). A local annotation's C keeps
+  the written marks of R, gives unmarked labels fresh mark metas and has a
+  fresh tail.
+- *Settling.* Restricted rows (deferred own rows, clause own rows,
+  installed C) settle in one loop with the per-key cycle test (the
+  side-condition error is unchanged), then a tail pass. A clause row or
+  installed C that ends in a rigid ϱ needs R and C, and the installing
+  row, to end in ϱ.
+- *The check.* Equalities are bindings. Inequalities x ⊑ y form a graph
+  over mark metas and the atoms N, M and the declaration's rigid mark
+  variables. The constraints are satisfiable for every value of the
+  variables exactly when no path runs from an atom a to a different atom
+  b, where a is not N and b is not M (M→N, M→k, k→N, k→k′). Each such path
+  is reported with its sources (section 6). Remaining mark metas close to
+  M. Marks are erased before specialization, so Go output, `ctx` mode and
+  finiteness are unchanged.
+
+Limitations (FX008 amendment, 2026-10-12):
+- **L1, with P5.** Marks nested inside data, fields, operation signatures
+  or a callback's parameters are not opened at a function's use, and
+  locals are not opened. Example: a `Handler(nofail Log with pure)` stored
+  in a constructor field keeps its mark and must be given one; a
+  `Handler(Log with pure)` is rejected there (E_TYPE `Expected
+  Handler(nofail Log), found Handler(Log)`).
+- **L2.** Callback rows in parameters are never opened. A rejection there
+  is sound.
+- **L3.** Bracket-style cleanup through `...e` stays rejected until FX007,
+  which is re-scoped to written abort-free row constraints (`nofail ...e`)
+  and deferred.
+- **L4.** Copies are made when a tail is bound. Labels that later reach a
+  *shared* tail are shared by identity, so their marks are equal: sound but
+  less precise. Two sources are pinned: a no-op lambda sharing a tail with
+  a function whose `defer` runs under a fail-free handler while the lambda
+  is also called under a failing one (l4b), and one handler value
+  installed by two lambdas, whose contexts share a tail through R (merge2).
+  Both are accepted before FX008 and rejected after it.
+- **L6.** Mark variables are not allowed in `type` or `effect`
+  declarations. Row arguments carry marks inside rows.
+- **Handlers through generic functions (new).** A handler passed through a
+  generic function and installed from its result (or from a field, a
+  closure or an operation result) gives an M frame when the context's rest
+  is M or rigid, because the result's C is built conservatively (a result
+  C whose tail variable occurs nowhere else gets a fresh meta, otherwise
+  it would reject merges).
+- **`ctl`.** Any `ctl` clause will make its handler's own mark M until
+  FX006 proves a finer rule (`ctl` is E_SYNTAX today, so nothing is
+  affected yet).
+- **Console.** A Console frame is N by definition. No `Handler(Console …)`
+  value can be built (FX011); the code path that would constrain such a
+  frame must be revisited with D001.
+
 **Expression rules.**
 - `handler L { op(x) => e, … }` performs nothing; clauses check against
   its row R; exactly one clause per operation of L; type `Handler(L with R)`.
+  FX008 amendment (2026-10-12): the type is `Handler(m L with R | C)`
+  with m, R and C fresh; each clause is checked against its own row c,
+  consumed into R (inference) and into C (marks); a `Fail` label, or a
+  rigid tail, in a clause row makes m M (own-abort constraint); and C ⊑ c
+  for each clause row c (requirement marks).
 - Handler types are neither comparable nor printable, directly or nested
   in a declared type, exactly like function types (FN001): comparison,
   `print`, `crash` and main's result reject them. Pointer or struct
@@ -273,6 +419,17 @@ lambda-bound parameters, Leijen 2014 §3.2).
   forbids observing. Required rejection tests for all four.
 - `with h { body }`, `h : Handler(L with R)`, current row ρ: body checks
   against `L + ρ`; R is unified with ρ (opened if closed, as consumption).
+  FX008 amendment (2026-10-12), with `h : Handler(m L with R | C)`: R is
+  unified with ρ as above, ignoring marks. C is not unified. The
+  installation is registered and settling pairs C's labels with ρ's by key
+  and position (`assume`, the pairing row unification uses, with no
+  unification), recording the edge ρ-mark ⊑ C-mark for each pair. The body
+  checks against `f L + ρ`, where f is a fresh *frame mark* for this
+  installation (N for Console). Constraints, generated after settling from
+  resolved rows: m ⊑ f; for each label of C, the mark of the ρ occurrence
+  it is paired with ⊑ f (the clauses reach those outer frames); and if C's
+  tail is a rigid ϱ then M ⊑ f and ρ must end in ϱ. So one handler value
+  can give an N frame in one installation and an M frame in another.
 - `handle body { fail(error: E1) => r1, … }`: body checks against
   `Fail(E1) + … + ρ`, clauses against ρ, one shared result type; families
   not mentioned stay in ρ.
@@ -297,6 +454,14 @@ lambda-bound parameters, Leijen 2014 §3.2).
   parameter must be `with pure`; a local lambda also called outside the
   `defer` in a non-`main` function shares that function's ambient row and
   is rejected in the `defer`.
+  FX008 amendment (2026-10-12): every other label the deferred expression
+  performs must be marked `nofail`, that is, every non-`Fail` label d of
+  its resolved own row imposes d ⊑ N. A cleanup that performs an operation
+  whose handler frame may fail is E_EFFECT `defer must not fail, but it
+  performs Log, whose handler may fail` at the `defer`, or, when the
+  frame is fail-free only if a mark variable is, `defer must not fail, but
+  it performs nofail(k) Log, whose handler is fail-free only when the
+  caller's is` (the exact texts and notes are in section 6).
 - `let x = e` is monomorphic in FX001; let-generalization would need its
   own effects-aware soundness treatment.
 
@@ -370,7 +535,9 @@ unresolved and left to that milestone.
 **Cleanup failures (revised by the user 2026-10-09).** A deferred
 expression cannot end in a typed abort: section 2 rejects a `defer` whose
 expression performs an unhandled `Fail` (or may, through an open row
-tail: Task 8 review ruling, adopted 2026-10-09; relaxation is FX007), so no typed cleanup
+tail: Task 8 review ruling, adopted 2026-10-09; relaxation is FX007) or
+performs an operation whose frame may fail (FX008 amendment, 2026-10-12),
+so no typed cleanup
 failure can replace, drop or convert a pending typed failure. A pending
 typed failure reaches its own `handle` if every deferred expression run on
 the way completes normally; if cleanup raises a recoverable defect, the
@@ -643,7 +810,14 @@ a named row stays shared; the eta-expansion limitation is pinned.
    abort is pending, and the abort then reaches its `handle`; an unreached
    `defer` never runs; a `defer` performing an unhandled `Fail` is
    rejected (E_EFFECT, exact text and span), also through a deferred Fail
-   key and through a called function.
+   key and through a called function. FX008 amendment (2026-10-12): the
+   proofs also cover a `defer` of an operation whose handler frame may fail
+   (the pinned program, a signature written without `nofail`, a forwarding
+   clause into a failing outer handler, a clause calling an ambient
+   callback, a rigid `nofail(k)`, and the L4 programs l4b and merge2), and
+   accepted programs that must stay accepted (a `nofail` signature under a
+   fail-free handler, one handler value under two rows, a local lambda under
+   two handlers, `around` with `nofail(k)`, a defer inside a clause).
 7. Cleanup invoking operations under nested handlers while an abort
    unwinds (registration context).
 8. Evaluation order traces (Console): interleaved arguments and stages,
@@ -757,6 +931,52 @@ generic row mismatch:
   annotation and at the operation inside the callback;
 - the scoped-labels side condition: `Clock + ...r and Log + ...r cannot be
   made equal: both end in ...r`.
+
+**Mark rejections (FX008 amendment, 2026-10-12; texts as implemented).**
+Every mark-check rejection is E_EFFECT. The primary span is the demand in
+the rejecting declaration's body. The headline is chosen by where the
+violating path ends: a `defer` demand, a handler's own mark, or a
+`nofail` assumption; of the violating paths the one with the earliest span
+is reported.
+- At a `defer`: `defer must not fail, but it performs Log, whose handler
+  may fail`; from a rigid mark variable, `defer must not fail, but it
+  performs nofail(k) Log, whose handler is fail-free only when the
+  caller's is`. A `Fail` label or a rigid tail keeps the texts above.
+- At a `nofail` assumption of a call: `Expected nofail Log, found Log`.
+- At a handler whose own mark is demanded N: `This handler may fail here:
+  its clause for log fails with E`, or `This handler may fail here: its
+  clause for log may perform any effect of ...e`.
+Notes, from the demand back to the source, bounded by the note and
+character limits, one per path edge of these kinds:
+
+- a frame, at the `with`: `Log is handled here`;
+- an outer frame reached by clauses, at the inner `with`: `this handler's
+  clauses perform Log, whose handler may fail`;
+- a rigid frame, at the `with`: `this handler's clauses may perform any
+  effect of <r>`;
+- an own abort, at the clause: `its clause for log fails with E` or `its
+  clause for log may perform any effect of <r>`;
+- a signature, at its `with` (else the function): `the signature of work
+  allows a failing Log handler; write with nofail Log`;
+- a mark variable, at the signature's `with`: `nofail(k) Log is fail-free
+  only when the caller's handler is`.
+
+Mark mismatches found by type comparison are E_TYPE with the same style of
+text: `Expected Handler(nofail Log), found Handler(Log)`, `Expected nofail
+State(Int), found State(Bool)`, and for a callback `Expected Unit -> Unit
+with nofail Log, found Unit -> Unit with Log`. Symmetric rule (user
+decision, 2026-10-10): when either side of a mismatch shows a
+`nofail` / `nofail(k)` label in an arrow row or a handler clause row,
+both sides show theirs at the same position, decided once per mismatch.
+An empty handler clause row prints `with pure`, an empty arrow row prints
+nothing, and ambient and unsolved tails are omitted; `Handler(Log with
+Tick)` against `Handler(Log with nofail Tick)` reads `Expected
+Handler(Log with Tick), found Handler(Log with nofail Tick)`. Types with
+no marked row label print as before. The headline `Expected nofail Log,
+found Log` therefore exists as E_TYPE (comparison) and as E_EFFECT (the
+path check); the notes tell them apart. Some exact texts of rejections
+without `defer` may differ from earlier ones because clause rows are
+checked separately; none is known to.
 
 **Abbreviation without losing relationships.** Differing labels print
 first, always with their effect name and the mismatch; their type

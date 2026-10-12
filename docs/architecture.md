@@ -7,7 +7,7 @@ an earlier layer; scripts/structure.mjs enforces it from `purs graph`.
 | Layer | Modules (src/) | Role |
 |---|---|---|
 | Domain | Syntax, Type, Resolved, Problem, Host, Checked.Internal, IR.Internal | syntax trees, spans, `Ty v`, resolved syntax, checked IR, monomorphic IR, `Problem` data, capability-port types |
-| Features | Resolve, Resolve.{Expression,Types,Pattern,Repeated,Fresh,Lambda}, Check, Check.{Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search}, Specialize, Specialize.{Seeds,Keys,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
+| Features | Resolve, Resolve.{Expression,Types,Pattern,Repeated,Fresh,Lambda}, Check, Check.{Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
 | Format | Lex, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,Usage}, Diagnostic, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
 | Runtime | Node (+ Node.js) | port implementations, argv/stdout/stderr/exit, JSON; the only FFI |
 | Program | Compile, Command, Main | pure `compile`, commands over any `Host`, entry point |
@@ -94,6 +94,37 @@ Format.Wire.
   E_INTERNAL for invalid
   local/function/type indices; its resolved-syntax input is a trusted phase
   interface, not a hostile-IR validator.
+- **Check, marks (FX008, 2026-10-12).** Every row label carries a mark
+  (Domain.Row `Mark`: N, plain, mark variable, mark meta; Domain.Type.Marks
+  maps and strips them) and a handler type carries a second row, the clause
+  row C, beside the inference row R. Marks live only in Check;
+  Features.Check.Strip erases them and C before Specialize, so Go output is
+  unchanged. Concepts and modules under Features.Check:
+  - *Store and equality:* MarkStore (bindings, edges, `RowMode`), UnifyMark
+    (equal and directional pairs, copies, extension labels), RowFinish (the
+    row unifier's end, moved), MarkUse (instantiation, fresh marks in local
+    annotations, opening of handler types at a function's use), ResultClauses
+    (a result handler type's own C), Walked (rows with their tail bindings
+    spliced in).
+  - *Settling:* Settle and SettleEntry (the one loop over the restricted
+    rows), Feed, FeedOrder and Cycle (the feed graph, its component order
+    and the per-key positive-cycle test), Restricted (the registry of
+    clause entries and installations), Watch and TailWatch (watched and
+    dirty row tails), Handle (`handleFailure`, moved).
+  - *The one-way hook:* Sync (F1′, F2 and T to a fixpoint, also called
+    each settling round), Filing and Groups (class bookkeeping and the
+    remainder φ), SyncCycle (the F2 test), Clauses and ClauseBody (a
+    handler literal's clause rows), TailPass (a rigid clause tail binds R,
+    C and the installing row, then unsolved C tails close).
+  - *Installation:* Install (`with`: frame mark, registration), Lend
+    (`assume`: pairing C with the current row by key and position, without
+    unification; arguments are lent by R).
+  - *The check and its texts:* Frames (the constraints from settled rows),
+    Mark (the path check over the two-point lattice), MarkReport and
+    MarkNotes (headline and notes; texts in Format.Diagnostic.Mark and
+    Domain.Note), Site (where a row's leading labels were written).
+  Syntax and resolution: Format.Parse.Mark (`nofail`, `nofail(k)`),
+  Features.Resolve.Marks (mark variables, L6).
 - **Coverage** (Features.Check.Coverage, Usefulness, Missing, Matrix,
   Signature, Inhabited) runs after the whole program type-checks:
   inhabitedness least fixed point (Inhabited, a worklist), Maranget
