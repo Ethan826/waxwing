@@ -2,7 +2,10 @@
 // (design §3). `state` is the interpreter's shared record: { program,
 // events, causes, caught, evaluate, lambdas (creation contexts of the
 // running closures), clauses (effects whose clause is running),
-// pendingAbort, options }.
+// pendingAbort, options }. A clause ending in an abort is observed as
+// `clause-abort:<parameters>` (the generator's failing random clauses name
+// their parameter `w`); an operation performed while a cleanup runs, as
+// `cleanup-operation`.
 import { Abort, Defect, OracleError, runCleanups } from './fx-oracle-cleanup.mjs';
 import { count, find } from './fx-oracle-context.mjs';
 import { isHandler } from './fx-oracle-values.mjs';
@@ -38,10 +41,16 @@ export const perform = (state, callee, args, ctx) => {
   clause.parameters.forEach((name, index) => {
     if (name !== null) bound.set(name, args[index]);
   });
+  if (state.pendingAbort.length > 0) state.events.add('cleanup-operation');
   state.clauses.push(callee.effect);
   try {
     return state.evaluate(clause.body, bound,
       state.options.clauseContext === 'inner' ? ctx : frame.outer);
+  } catch (thrown) {
+    if (thrown instanceof Abort) {
+      state.events.add(`clause-abort:${clause.parameters.join(',')}`);
+    }
+    throw thrown;
   } finally { state.clauses.pop(); }
 };
 

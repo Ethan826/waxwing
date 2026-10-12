@@ -126,11 +126,14 @@ type Parameter =
   { name ∷ String, ty ∷ Ty VarId, span ∷ Span, rowSpan ∷ Maybe Span }
 
 -- `VarId i` in a signature is `variables !! i`: the i-th distinct type
--- variable in first-occurrence order, parameters then result.
+-- variable in first-occurrence order, parameters then result. The mark
+-- variables (`nofail(k)`, FX008) are a separate sort: their names, in
+-- first-occurrence order.
 type FunctionDecl =
   { id ∷ FunctionId
   , name ∷ String
   , variables ∷ Array String
+  , markVariables ∷ Array String
   , sorts ∷ Array Sort
   , row ∷ TyRow VarId
   , parameters ∷ Array Parameter

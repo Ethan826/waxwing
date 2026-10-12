@@ -308,8 +308,11 @@ unchanged. A written `Handler(m L with R)` gets its own C, never an
 alias of R (review rev7 I3, annotc.wxw):
 - in a signature, a structural copy of R with the same written marks and
   the same closed or rigid tail;
-- in a local annotation, R's written labels with fresh mark metas and a
-  fresh tail meta.
+- in a local annotation, C keeps the written `nofail` / `nofail(k)` marks
+  of R, gives its unmarked labels fresh mark metas, and has a fresh tail
+  meta (review M5; amended in Task 12, 2026-10-12). Only a handler type
+  outside another handler type's rows gets its own C; a nested one keeps
+  C = R, which is never consumed.
 - R is the *inference row*. It behaves exactly as today: clause effects
   reach it, and `with` unifies it with the context ρ. So inference, and
   with it acceptance of programs without `defer` and Go output, are
@@ -454,11 +457,18 @@ and C fresh:
   imposes M ⊑ m, so m cannot be N.
 - Requirement marks: C ⊑ c for each clause row c.
 
+*Task 9 refinement (user, 2026-10-11).* A written type in a signature
+gets its own C only for a top-level result handler type at a function's use,
+with R's tail kept when it occurs in a parameter or the own row. See the
+plan's P2 and "Task 9 as built".
+
 **`with h { body }`**, with `h : Handler(m L with R | C)`, under current
 row ρ:
 - R unifies with ρ as today, ignoring marks.
 - C is consumed into ρ as a restricted row (§3.5), so requirement edges
-  ρ ⊑ C come from that consumption.
+  ρ ⊑ C come from that consumption. (As implemented, settling pairs C with
+  ρ's labels and records those edges without consuming; see the plan's Task 8
+  note.)
 - The body checks against `f L + ρ`, where f is a fresh *frame mark* for
   this installation. Constraints:
   - m ⊑ f (an own-abort-capable handler gives an M frame);

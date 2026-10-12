@@ -42,7 +42,7 @@ adding a bypass allowlist.
 - the same CST gate keeps parser productions applicative (G001;
   tools/style/src/Style/Parser.purs): in Format.Parse and
   Format.Parse.{Literal, Pattern, Expression, Declaration, Type, Lambda,
-  Block}
+  Block, Mark}
   it rejects every `do` block, the operators `>>=`, `=<<`, `>=>` and
   `<=<` (including sections such as `(>>=)`), and the names `bind`,
   `join`, `discard`, Prelude's `ap`, `ifM`, `whenM`, `unlessM` and
@@ -124,8 +124,15 @@ adding a bypass allowlist.
   `fun-compare` (Comparable ignores arrows), `functional-fixpoint`
   (Functional stops at its seeds), `value-edge` (bare references and
   lambda bodies are no instantiation edges) and `arrow-key` (arrows
-  interned without their parameter): twenty-two `Regression proof (…)`
-  lines in all (`node scripts/regression.mjs name…` proves only the named
+  interned without their parameter), and since FX008
+  `fx008-cycle-presence` (rows in scripts/regression-fx008.mjs, probes in
+  test/regression-fx008.mjs, all probe files aggregated by
+  test/regression-probes.mjs; Cycle.purs weighs a cycle by presence, so
+  dup.wxw never settles, caught by a child-process compile under a 20 s
+  timeout) and `fx008-settle-order-linear` (the settle order stays linear
+  in the number of deferrals; 16,000 `defer`s compile under a 12 s
+  timeout): twenty-four `Regression proof (…)` lines in all
+  (`node scripts/regression.mjs name…` proves only the named
   rows); the A003 order and print tests also use an independent value
   oracle (test/value-oracle.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):
@@ -159,7 +166,9 @@ adding a bypass allowlist.
   children (spawnSync cannot kill a process group); depth.test.mjs's timed
   builds group-kill because their timeout is an assertion. Self-tests:
   test/go-batch.test.mjs. Not batched: depth.test.mjs timing builds,
-  scripts/regression.mjs probes, and `goTest`; `runGo` remains as the
+  scripts/regression.mjs probes, `goTest`, and the slow accepted probes of
+  test/fx008-probes.test.mjs (the batch compiles in-process, which would
+  escape their child-process timeout); `runGo` remains as the
   self-tests' standalone reference;
 - scripts/strict-rebuild.mjs (run by verify after the build) copies the
   workspace to .build/strict-rebuild, checks the unmodified copy builds, adds
@@ -186,6 +195,14 @@ use `tailRecM` or a self tail call, and accumulate with Format.Stack or
 indexing rather than Array.snoc/uncons/drop per item, which copy the array.
 This is a review convention; only test/large-source.test.mjs (megabyte
 padding, 20,000 declarations) checks it, and only for the paths it drives.
+
+The FX008 probe gate (test/fx008-probes.test.mjs, data in test/fx008-probes/,
+table in test/fx008-probe-table*.mjs) pins the outcome of every review probe
+(code, text, span, Go SHA-256, stdout, stderr, status). A task may change an
+entry only where the FX008 plan lists that probe for that task; any other
+change stops the work, and a hash of the table without `flipped`
+(test/fx008-probe-hash.mjs) catches accidental edits only, so the reviewer's
+diff of the table is the real control.
 
 No coverage percentage is claimed. Properties use deterministic generators
 and explicit edge cases with no discarded inputs. Parsing tests compare with
@@ -234,12 +251,42 @@ seed. Knobs, outside verify: `WAXWING_FX_SEED` (default 20261010; program
 smaller count fails by design; larger counts build in more batches). A
 differing program's source, both outcomes and a shrunk source
 (test/fx-shrink.mjs) are written to .build/fx001-differential/. The 25
-rejection variants of strict `defer` are generated from the same seed.
+rejection variants of strict `defer` are generated from the same seed, and
+25 more reach a failing handler (FX008: directly, through a forwarding
+clause, through a clause calling an ambient callback).
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context
 must change some of 50 programs). Both run in verify; the differential test
 is in the serial phase.
+
+Random clauses may fail (FX008 Task 11): a clause is fail-free, fails with a
+family handled outside its `with` (parameter `w`, reserved for generated
+failing clauses; the census counts the aborts of such clauses as `failing
+random clause`, at least 25 programs), or forwards to an outer operation
+whose handler may fail. A failing clause is reachable: the `with` may sit in
+its own `handle`, and its body ends with the operation. Designed failing
+frames (test/fx-gen-failing.mjs) add the shapes lexical, forward, callee,
+value and ambient; they are extras outside the focus rotation, and the
+random path alone meets the census row. The generator tracks the user
+labels whose innermost handler may fail (`ctx.failing`): constrained cleanup
+performs none and no function whose row names one is called under it, so
+every program compiles. The one-way soundness differential
+(test/fx008-soundness.serial.test.mjs, serial phase) generates 300 programs
+`generate(SEED + 100000 + i, i, { unconstrained: true })` whose cleanup
+ignores those frames. A rejected program must carry an FX008 headline at a
+`defer` or at a call, or a strict `defer` text at a `defer`; a witnessed
+escape must be rejected by an FX008 headline. An accepted program must never
+make the interpreter report `typed abort escaped cleanup` and must agree with
+Go exactly. Minimums: 50 accepted programs whose cleanup performs a user
+operation, 50 rejected by an FX008 headline, 25 oracle-witnessed escapes
+(`oracle error: typed abort escaped cleanup`), every one rejected, and at
+least 5 witnessed escapes in each shape (lexical, forward, callee-plain,
+callee-nofail, value-passed, value-returned, ambient, random). Failures are
+saved to .build/fx008-soundness/. Sensitivity (ruling R1), run on commit
+ff0c6d1 (Task 8, no mark check) with this corpus at the default seed: 110
+of the 120 witnessed escapes are accepted, every shape except value-returned
+(its 10 hit the strict `Fail` text), and the test fails.
 
 ## Definition of done and handoff
 

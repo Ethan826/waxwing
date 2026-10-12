@@ -6,6 +6,7 @@
 // into trees (test/fx-oracle-lex.mjs) and mostly dropped. Shares no code
 // with the compiler.
 import { cursor, isUpper, tokenize, typeReader } from './fx-oracle-lex.mjs';
+import { withoutMarks } from './fx-oracle-marks.mjs';
 import { unit } from './poly-parse.mjs';
 
 const unitNode = { tag: 'value', value: unit };
@@ -173,7 +174,7 @@ const expressions = reader => {
 };
 
 export const parseProgram = source => {
-  const reader = cursor(tokenize(source));
+  const reader = cursor(withoutMarks(tokenize(source)));
   const { peek, take, list } = reader;
   const { expression, readType } = expressions(reader);
   const program = { ctors: new Map(), fields: new Map(), types: new Map(),

@@ -6,10 +6,11 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Control.Monad.Rec.Class (Step(..), tailRec)
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
+import Domain.Row (uniformRows)
+import Features.Resolve.Marks (arrowRows, markVariableRefs, refuseMarkVariables)
 import Features.Resolve.Row (label, resolveRow)
 import Features.Resolve.HandlerType as HandlerType
 import Features.Resolve.TypeValidation as TypeValidation
@@ -73,7 +74,7 @@ resolveTypeWith types effects variables ambient = resolved
       (Array.findIndex (named name) types)
     Syntax.THandlerRef _ reference row → Resolved.THandler
       <$> label effects resolved reference
-      <*> resolveRow effects variables ambient resolved row
+      <*> (uniformRows <$> resolveRow effects variables ambient resolved row)
     arrow@(Syntax.FunRef _ _ _ _) → spine arrow
   spine arrow = do
     parameters ← traverse resolved (Syntax.typeRefSpine arrow).parameters
@@ -136,6 +137,7 @@ resolveTypeWith types effects variables ambient = resolved
                 ( Syntax.RowRef referenceSpan
                     [ { name: effectName
                       , arguments: argumentTypes
+                      , mark: Nothing
                       , span: referenceSpan
                       }
                     ]
@@ -220,8 +222,9 @@ resolveCtor
   → Array { name ∷ String, arity ∷ Int }
   → Owned
   → Either Syntax.Diagnostic Resolved.CtorInfo
-resolveCtor types effects entry = withFields <$> traverse field
-  entry.decl.fields
+resolveCtor types effects entry = do
+  refuseMarkVariables (Array.concatMap markVariableRefs entry.decl.fields)
+  withFields <$> traverse field entry.decl.fields
   where
   field reference = resolveTypeWith types effects entry.parameters Nothing
     reference
@@ -232,11 +235,3 @@ resolveCtor types effects entry = withFields <$> traverse field
     , fieldSyntax: entry.decl.fields
     , span: entry.decl.span
     }
-
-arrowRows ∷ Syntax.TypeRef → Array (Maybe Syntax.RowRef)
-arrowRows reference = Array.reverse (tailRec step { rest: reference, rows: [] })
-  where
-  step found = case found.rest of
-    Syntax.FunRef _ _ row rest → Loop
-      { rest, rows: Array.cons row found.rows }
-    _ → Done found.rows

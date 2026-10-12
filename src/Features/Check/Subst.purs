@@ -7,16 +7,13 @@ module Features.Check.Subst
   , isEmpty
   , substitute
   , substituteRow
-  , compose
   , postpone
-  , linkTo
-  , linkOf
   , walk
   , walkRow
   , resolve
   , resolveRow
   , resolveLabel
-  , boundRow
+  , boundAt
   , metaOf
   ) where
 
@@ -27,7 +24,8 @@ import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Row (Label(..), Row(..), isPure, openRow)
+import Data.Tuple (Tuple, snd)
+import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
 import Domain.Type
   ( Substitution
   , Ty(..)
@@ -37,8 +35,11 @@ import Domain.Type
   , stagesThrough
   )
 import Domain.Type as Type
+import Features.Check.Aliases (Aliases, jumped, noAliases)
+import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
 import Features.Check.Search (Stack(..), stackItems)
+import Features.Check.TailWatch (TailWatch, emptyWatch)
 
 -- A checker variable: a signature's own variable, which is fixed inside
 -- its function and unifies only with itself, or a meta, which stands for
@@ -59,17 +60,29 @@ derive instance ordFlex ∷ Ord Flex
 -- order, to be retried by Features.Check.Unify `settleRows`. `links`
 -- (design §6): an occurrence and the occurrence it is the same label as,
 -- recorded by every row unification, the first per occurrence kept;
--- nothing in unification reads them.
+-- nothing in unification reads them. `relays`: where a clause row's labels
+-- came from, followed only past a clause-row hop (Features.Check.Links).
+-- `marks` (FX008): the bindings of mark metas and the mark edges, kept with
+-- the substitution so that a postponed pair that reverts takes its edges
+-- with it. `watch` (FX008):
+-- the tails the restricted registry watches, with those bound since it
+-- last looked; data, so it reverts the same way.
 newtype Subst = Subst
   { types ∷ Map Int (Ty Flex)
   , rows ∷ Map Int (TyRow Flex)
   , fresh ∷ Int
   , postponed ∷ Array RowPair
   , links ∷ Map OccurrenceId OccurrenceId
+  , relays ∷ Map OccurrenceId OccurrenceId
+  , marks ∷ MarkStore (Ty Flex)
+  , watch ∷ TailWatch
+  , aliases ∷ Aliases
   }
 
--- A postponed pair keeps where its sides were written, for its retry.
-type RowPair = { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides }
+-- A postponed pair keeps where its sides were written and how it treats
+-- marks, for its retry.
+type RowPair =
+  { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides, mode ∷ RowMode }
 
 -- Types and rows are resolved under the substitution reached at the
 -- failure: a mismatch names the first pair of subterms that differ, left
@@ -103,9 +116,14 @@ empty = Subst
   , fresh: -1
   , postponed: []
   , links: Map.empty
+  , relays: Map.empty
+  , marks: emptyMarks
+  , watch: emptyWatch
+  , aliases: noAliases
   }
 
--- No meta is bound, so resolving under it changes no type.
+-- No meta is bound, so resolving under it changes no type. (Mark bindings
+-- are not counted: Check strips every mark after resolving.)
 isEmpty ∷ Subst → Boolean
 isEmpty (Subst bindings) = Map.isEmpty bindings.types
   && Map.isEmpty bindings.rows
@@ -119,43 +137,25 @@ substitute subst = Type.substitute (substitution subst)
 substituteRow ∷ Subst → TyRow Flex → TyRow Flex
 substituteRow subst = Type.substituteRow (substitution subst)
 
--- `substitute (compose later earlier)` is `substitute later` after
--- `substitute earlier`; Map.union keeps the earlier side's bindings.
--- Precondition: `later` was made from `earlier` (or neither made fresh row
--- metas), so their fresh metas do not collide; the smaller counter is
--- kept. Postponed pairs are the earlier's, then the later's; of two links
--- from one occurrence the earlier's stays.
-compose ∷ Subst → Subst → Subst
-compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
-  { types: Map.union (map (substitute later) earlierBindings.types)
-      laterBindings.types
-  , rows: Map.union (map (substituteRow later) earlierBindings.rows)
-      laterBindings.rows
-  , fresh: min laterBindings.fresh earlierBindings.fresh
-  , postponed: earlierBindings.postponed <> laterBindings.postponed
-  , links: Map.union earlierBindings.links laterBindings.links
-  }
-
 -- The substitution with this row pair set aside, undecided.
 postpone
   ∷ ∀ r
   . Subst
-  → { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides | r }
+  → { left ∷ TyRow Flex
+    , right ∷ TyRow Flex
+    , sides ∷ Sides
+    , mode ∷ RowMode
+    | r
+    }
   → Subst
 postpone (Subst bindings) pair = Subst bindings
   { postponed = Array.snoc bindings.postponed
-      { left: pair.left, right: pair.right, sides: pair.sides }
+      { left: pair.left
+      , right: pair.right
+      , sides: pair.sides
+      , mode: pair.mode
+      }
   }
-
--- `from` is the same label as `to`; an occurrence's first link stays.
-linkTo ∷ OccurrenceId → OccurrenceId → Subst → Subst
-linkTo from to (Subst bindings) =
-  Subst bindings { links = Map.insertWith keepFirst from to bindings.links }
-  where
-  keepFirst first _ = first
-
-linkOf ∷ Subst → OccurrenceId → Maybe OccurrenceId
-linkOf (Subst bindings) from = Map.lookup from bindings.links
 
 -- The type itself if it is not a bound meta, else the end of its chain.
 -- Only a meta enters the loop: most types walked are not one, and the
@@ -169,10 +169,13 @@ walk (Subst bindings) start = case start of
     TVar (Meta meta) → maybe (Done ty) Loop (Map.lookup meta bindings.types)
     _ → Done ty
 
--- The binding of a row's tail, if the tail is a bound meta.
-boundRow ∷ Subst → Maybe Flex → Maybe (TyRow Flex)
-boundRow (Subst bindings) tail = flip Map.lookup bindings.rows =<<
-  (metaOf =<< tail)
+-- The binding a row's tail leads to, with the meta that holds it; alias
+-- hops are jumped (Features.Check.Aliases). Nothing unless the tail is bound.
+boundAt ∷ Subst → Maybe Flex → Maybe (Tuple Int (TyRow Flex))
+boundAt (Subst bindings) tail = (metaOf =<< tail) >>= jumped bindings.aliases
+  bindings.rows
+  isBare
+  (openRow <<< Meta)
 
 -- The row with its tail's bindings spliced in, by a loop, until the tail
 -- is closed, rigid or an unbound meta. Labels stay unresolved. Chunks are
@@ -180,7 +183,7 @@ boundRow (Subst bindings) tail = flip Map.lookup bindings.rows =<<
 -- bindings costs no copy per binding.
 walkRow ∷ Subst → TyRow Flex → TyRow Flex
 walkRow subst row@(Row labels tail) =
-  maybe row spliced (boundRow subst tail)
+  maybe row spliced (snd <$> boundAt subst tail)
   where
   spliced first = joined
     (tailRec step { chunks: Push labels Bottom, next: first })
@@ -188,7 +191,7 @@ walkRow subst row@(Row labels tail) =
   advance chunks (Row more rest) = maybe
     (Done { chunks: Push more chunks, tail: rest })
     (Loop <<< pushed chunks more)
-    (boundRow subst rest)
+    (snd <$> boundAt subst rest)
   pushed chunks more next = { chunks: Push more chunks, next }
   joined done = Row (Array.concat (stackItems done.chunks)) done.tail
 
@@ -201,8 +204,8 @@ resolve ∷ Subst → Ty Flex → Ty Flex
 resolve subst ty = case walk subst ty of
   TData id arguments rows → TData id (map resolved arguments)
     (map (resolveRow subst) rows)
-  THandler label row → THandler (resolveLabel subst label)
-    (resolveRow subst row)
+  THandler label rows → THandler (resolveLabel subst label)
+    (mapHandlerRows (resolveRow subst) rows)
   arrow@(TFun _ _ _) → resolvedStages (stagesThrough (walk subst) arrow)
   settled → settled
   where
@@ -222,8 +225,9 @@ resolveRow subst row
         tail
 
 resolveLabel ∷ Subst → Label (Ty Flex) → Label (Ty Flex)
-resolveLabel subst (Label effect arguments) =
+resolveLabel subst@(Subst bindings) (Label effect arguments mark) =
   Label effect (map (resolve subst) arguments)
+    (resolveMark bindings.marks mark)
 
 substitution ∷ Subst → Substitution Flex Flex
 substitution (Subst bindings) = { types: replaced, rows: replacedRow }

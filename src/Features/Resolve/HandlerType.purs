@@ -6,6 +6,7 @@ import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
+import Domain.Row (uniformRows)
 import Domain.Syntax as Syntax
 import Features.Resolve.Row (label, resolveRow)
 
@@ -29,8 +30,15 @@ resolve effects variables ambient resolveType span arguments = case arguments of
     argumentRefs ← traverse typeReference effectArguments
     Resolved.THandler
       <$> label effects resolveType
-        { name: effectName, arguments: argumentRefs, span: effectSpan }
-      <*> resolveRow effects variables ambient resolveType Nothing
+        { name: effectName
+        , arguments: argumentRefs
+        , mark: Nothing
+        , span: effectSpan
+        }
+      <*>
+        ( uniformRows
+            <$> resolveRow effects variables ambient resolveType Nothing
+        )
   typeReference = case _ of
     Syntax.TypeArgument reference → Right reference
     Syntax.RowArgument (Syntax.RowRef rowSpan _ _) → Left

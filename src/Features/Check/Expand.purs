@@ -20,7 +20,7 @@ import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open)
 import Domain.Problem (Problem(..))
 import Domain.Resolved (CtorId(..), CtorInfo, TypeId(..), TypeInfo)
-import Domain.Row (Label(..), closedRow)
+import Domain.Row (Label(..), closedRow, uniformRows)
 import Domain.Type (Ty(..), VarId(..))
 import Domain.Type.Parts (arrows, children, ground, spine)
 import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
@@ -85,13 +85,14 @@ substitute arguments = case _ of
   TUnit → Right TUnit
   TData id inner _ → rowless id <$> traverse (substitute arguments) inner
   TVar (VarId index) → maybe' missing Right (Array.index arguments index)
-  THandler (Label effect inner) _ → handler effect <$> traverse
+  THandler (Label effect inner mark) _ → handler effect mark <$> traverse
     (substitute arguments)
     inner
   arrow@(TFun _ _ _) → substituteSpine (spine arrow)
   where
   rowless id inner = TData id inner []
-  handler effect inner = THandler (Label effect inner) closedRow
+  handler effect mark inner = THandler (Label effect inner mark)
+    (uniformRows closedRow)
   missing _ = Left (Internal "Invalid type argument")
   substituteSpine found = arrows
     <$> traverse (substitute arguments) found.parameters

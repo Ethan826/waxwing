@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Traversable (traverse)
 import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
-import Domain.Row (EffectRef(..), Label(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), normalMark)
 import Domain.Syntax as Syntax
 import Domain.Type (Ty(..), TyRow, VarId(..))
 
@@ -51,10 +51,22 @@ concrete
   → Array (Ty VarId)
   → Either Syntax.Diagnostic (Label (Ty VarId))
 concrete effect reference arguments = case effect, arguments of
-  FailEffect, [ payload ] → toLabel <$> failFamily reference.span payload
-  _, _ → Right (Label effect arguments)
+  FailEffect, [ payload ] → refusedOnFail reference
+    *> (toLabel <$> failFamily reference.span payload)
+  _, _ → Right (Label effect arguments (normalMark effect written))
   where
-  toLabel payload = Label effect [ payload ]
+  toLabel payload = Label effect [ payload ] Unmarked
+  written = maybe Plain writtenMark reference.mark
+  writtenMark = case _ of
+    Syntax.NofailRef _ → NoFail
+    Syntax.NofailVariableRef _ name → MarkVariable name
+
+-- `nofail` says nothing about Fail, whose clauses are never run twice
+-- (design §3.2): E_TYPE at the label.
+refusedOnFail ∷ Syntax.LabelRef → Either Syntax.Diagnostic Unit
+refusedOnFail reference = maybe (Right unit) refused reference.mark
+  where
+  refused _ = Left (Syntax.problemAt NofailOnFail reference.span)
 
 -- A Fail payload needs a family key: Int, Bool, Unit or a declared type.
 -- A type variable, a function or a handler type has none, so nothing it is

@@ -1,0 +1,7 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+fn main(): Unit with Console = {
+  let mk = fn(g) => handler Log { log(n) => g(n) };
+  let h = mk(fn(n: Int) => fail(E));
+  with h { log(1) }
+};

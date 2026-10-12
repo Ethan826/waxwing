@@ -6,9 +6,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { polyProbes } from './regression-poly.mjs';
-import { fnProbes } from './regression-fn.mjs';
-import { task5Probes } from './regression-task5.mjs';
+import { externalProbes } from './regression-probes.mjs';
 const [compilerPath, outputDir, probe] = process.argv.slice(2);
 const { compile } = await import(pathToFileURL(resolve(compilerPath)));
 const load = name => import(pathToFileURL(resolve(outputDir, name, 'index.js')));
@@ -241,8 +239,8 @@ const probes = {
     'Cons(1, Cons(2, Nil))\n', 'printed value lost fields'),
   'state-thread': stateThread, capture
 };
-const context = { compile, Left, Right, wire, printed, ran, probe };
-const external = { ...polyProbes, ...fnProbes, ...task5Probes };
+const context = { compile, Left, Right, wire, printed, ran, probe, compilerPath };
+const external = externalProbes;
 const delegated = name => () => external[name](context);
 for (const name of Object.keys(external)) probes[name] = delegated(name);
 assert.ok(probe in probes, `unknown probe: ${probe}`);

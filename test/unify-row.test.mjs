@@ -7,6 +7,7 @@ import { Right } from '../output/Data.Either/index.js';
 import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { HeadData, labelKey } from '../output/Domain.Row/index.js';
 import { typeHead } from '../output/Domain.Type.Parts/index.js';
+import { EqualMarks } from '../output/Features.Check.MarkStore/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
 import * as rows from '../output/Features.Check.UnifyRow/index.js';
 import { generator } from './coverage-oracle.mjs';
@@ -173,7 +174,7 @@ test('traced unification reports matches and extensions by occurrence', () => {
   const at = n => ({ start: { line: 1, column: n, offset: n - 1 },
     end: { line: 1, column: n + 1, offset: n } });
   const sides = { left: at(1), right: at(9) };
-  const traced = (start, left, right) => rows.unifyRowsTraced(unifier.unify)(sides)(start)(
+  const traced = (start, left, right) => rows.unifyRowsTraced(unifier.unify)(EqualMarks.value)(sides)(start)(
     toRow(left))(toRow(right)).value0;
   const show = event => event.constructor.name === 'Matched'
     ? ['Matched', occurrence(event.value0), occurrence(event.value1)]

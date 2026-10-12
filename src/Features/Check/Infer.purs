@@ -22,6 +22,7 @@ import Features.Check.Operation
 import Features.Check.Apply (checkApply)
 import Features.Check.Arms (checkMatch)
 import Features.Check.Block (checkBlock)
+import Features.Check.Handle as Handle
 import Features.Check.Handler as Handler
 import Features.Check.Failure as Failure
 import Features.Check.Call (checkCall, checkConstruct)
@@ -30,7 +31,9 @@ import Features.Check.Lambda (checkLambda)
 import Features.Check.Pipe (checkPipe)
 import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
-import Features.Check.Scheme (Site, State, Threaded)
+import Features.Check.Scheme (State, Threaded)
+import Features.Check.Sync (sync)
+import Features.Check.Site (Site)
 
 type Env =
   { current ∷ TyRow Open
@@ -43,6 +46,7 @@ type Env =
   , types ∷ Array Resolved.TypeInfo
   , ctors ∷ Array Resolved.CtorInfo
   , variables ∷ Array String
+  , markVariables ∷ Array String
   , locals ∷ Locals
   }
 
@@ -54,9 +58,10 @@ type Inferred = Either Diagnostic (Threaded Checked.Expr)
 infer ∷ Env → State → Resolved.Expr → Inferred
 infer env state expression = do
   inferred ← inferNode env state expression
-  bounded inferred.state (Checked.typeOf inferred.value)
+  synced ← sync env inferred.state (Checked.spanOf inferred.value)
+  bounded synced (Checked.typeOf inferred.value)
     (Checked.spanOf inferred.value)
-  pure inferred
+  pure inferred { state = synced }
 
 -- Every type equality is a unification, in the order monomorphic checking
 -- compared types, so a monomorphic program's first error is unchanged.
@@ -109,7 +114,7 @@ inferNode env state expression = case expression of
   Resolved.With span handler body → Handler.withHandler infer env state span
     handler
     body
-  Resolved.Handle span body clauses → Handler.handleFailure infer env state
+  Resolved.Handle span body clauses → Handle.handleFailure infer env state
     span
     body
     clauses

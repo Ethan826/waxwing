@@ -13,6 +13,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
+import Data.Tuple (fst, snd)
 import Domain.Row (closedRow)
 import Domain.Type (TyRow)
 import Domain.Syntax as Syntax
@@ -23,8 +24,11 @@ import Domain.Problem (Problem(..))
 import Domain.Resolved (CtorId(..), FunctionId(..), Ty(..), TypeId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span, problemAt)
+import Domain.Type.Marks (mapMarks)
 import Features.Check.Context (CheckEnv)
+import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
+import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
 import Features.Check.Tables (ownerType)
 
@@ -61,10 +65,13 @@ functionUse env state span (FunctionId index) =
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
   found function = Right
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
-        ( declarationUse state function.variables function.sorts
-            (map parameterType function.parameters)
-            function.result
-            function.row
+        ( openedUse
+            ( declarationUse state function.variables function.markVariables
+                function.sorts
+                (map parameterType function.parameters)
+                function.result
+                function.row
+            )
         )
     )
   parameterType parameter = parameter.ty
@@ -78,24 +85,42 @@ functionUse env state span (FunctionId index) =
   parameterSpans parameter =
     { span: parameter.span, rowSpan: parameter.rowSpan }
 
+-- The handler types in the signature opened (design §3.4, P5): only a
+-- function's use, not a constructor's, whose fields stay as written.
+openedUse ∷ Threaded Use → Threaded Use
+openedUse use =
+  { value: use.value
+      { fields = found.value.fields
+      , result = snd owned
+      }
+  , state: found.state { next = fst owned }
+  }
+  where
+  found = openHandlers use.state use.value.fields use.value.result
+  owned = ownClauses found.state.next found.value.fields use.value.row
+    found.value.result
+
 -- A use that consumes `consumed`, of this callee, if it is a named one.
 withOrigin ∷ Consumed → Maybe Callee → Threaded Use → Threaded Use
 withOrigin consumed callee use = use
   { value = use.value { consumed = consumed, callee = callee } }
 
--- Type slots retain their ids; row slots never become type arguments.
+-- Type slots retain their ids; row slots never become type arguments. The
+-- mark variables (the second names) each become one meta shared across the
+-- signature (FX008 design §3.3).
 declarationUse
   ∷ State
+  → Array String
   → Array String
   → Array Syntax.Sort
   → Array (Ty Resolved.VarId)
   → Ty Resolved.VarId
   → TyRow Resolved.VarId
   → Threaded Use
-declarationUse state variables sorts fields result row =
+declarationUse state variables markNames sorts fields result row =
   { value:
-      { fields: map (at scheme.value) fields
-      , result: at scheme.value result
+      { fields: map (withMarks <<< at scheme.value) fields
+      , result: withMarks (at scheme.value result)
       , scheme: scheme.value { arguments = arguments }
       , row: opened.value
       , rows: staged.value
@@ -106,15 +131,23 @@ declarationUse state variables sorts fields result row =
   }
   where
   scheme = instantiate variables state
-  instantiated = mapped (at scheme.value (TFun TUnit row TUnit))
-  mapped (TFun _ found _) = found
-  mapped _ = closedRow
-  opened = openedRow scheme.state instantiated
+  marked = instantiateMarks markNames scheme.state
+  withMarks ty =
+    if Array.null markNames then ty else mapMarks marked.value ty
+  instantiated = arrowRow (withMarks (at scheme.value (TFun TUnit row TUnit)))
+  opened = openedRow marked.state instantiated
   staged = stages opened.state (Array.length fields) opened.value
   arguments = Array.catMaybes
-    (Array.zipWith argument sorts scheme.value.arguments)
-  argument Syntax.TypeSort ty = Just ty
-  argument Syntax.RowSort _ = Nothing
+    (Array.zipWith typeArgument sorts scheme.value.arguments)
+
+-- The row of a one-arrow type.
+arrowRow ∷ ∀ v. Ty v → TyRow v
+arrowRow (TFun _ found _) = found
+arrowRow _ = closedRow
+
+typeArgument ∷ Syntax.Sort → Ty Open → Maybe (Ty Open)
+typeArgument Syntax.TypeSort ty = Just ty
+typeArgument Syntax.RowSort _ = Nothing
 
 -- A constructor's scheme is its owner's parameters.
 ctorUse ∷ ∀ r. CheckEnv r → State → Span → CtorId → Used
@@ -128,7 +161,7 @@ ctorUse env state span (CtorId index) =
   ownerOf (TypeId owner) = Array.index env.types owner
   owned ctor info = Right
     ( withOrigin (CallOf ctor.name) Nothing
-        ( declarationUse state info.variables info.sorts
+        ( declarationUse state info.variables [] info.sorts
             ctor.fields
             (ownerType ctor.owner info)
             closedRow

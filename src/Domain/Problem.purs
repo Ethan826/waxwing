@@ -7,7 +7,8 @@ import Data.Maybe (Maybe)
 -- renders it, so a change of surface syntax changes only Format.
 
 -- `HoleName` is a type checking left open, rendered `_`. `FunctionName`
--- is one arrow, parameter then result, curried like `Ty`'s.
+-- is one arrow, parameter then result, curried like `Ty`'s; its row text is
+-- present only when the row holds a `nofail` label (FX008).
 data TypeName
   = IntName
   | BoolName
@@ -16,7 +17,7 @@ data TypeName
   | AppliedName String (Array TypeName)
   | VariableName String
   | HoleName
-  | FunctionName TypeName TypeName
+  | FunctionName TypeName (Maybe String) TypeName
 
 derive instance eqTypeName ∷ Eq TypeName
 
@@ -41,6 +42,7 @@ data UnboundKind
   | UnboundConstructor
   | UnboundType
   | UnboundTypeVariable
+  | UnboundMarkVariable
 
 data DuplicateKind
   = DuplicateType
@@ -62,6 +64,12 @@ data EntryKind
 -- of the named function or constructor, short of this many arguments; or
 -- a block whose trailing `;` made it Unit (FX001 design §1).
 data Hint = MissingArguments String Int | TrailingSemicolon
+
+-- Why a handler may fail (FX008 design §3.6): a clause fails with a payload,
+-- or its tail is a rigid row that may hold a `Fail` (its text: `...e`).
+data AbortCause
+  = ClauseFails String TypeName
+  | ClauseMayPerform String String
 
 -- The lexer and parser are Format, so their payloads may be text.
 data Problem
@@ -106,3 +114,10 @@ data Problem
   | HandlerOperation String String
   | FailNeedsConcrete
   | ExpectedHandler TypeName
+  | NofailOnFail
+  | MarkVariableOutsideSignature String
+  -- The mark check (FX008 Task 9): labels arrive printed, marks included.
+  | DeferHandlerMayFail String
+  | DeferHandlerVariable String String
+  | ExpectedNofail String String
+  | HandlerMayFail AbortCause

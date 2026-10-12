@@ -1,0 +1,10 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+fn prefix(): Handler(Log with Log) with pure = handler Log { log(n) => log(n + 100) };
+fn run(h: Handler(Log with Log + ...e)): Unit with Log + ...e = { defer log(0); with h { log(1) } };
+fn main(): Unit with Console =
+  handle {
+    with handler Log { log(n) => print(n) } { with prefix() { defer log(1); () } };
+    with handler Log { log(n) => print(n) } { run(prefix()) };
+    with handler Log { log(n) => fail(E) } { with prefix() { log(3) } }
+  } { fail(error: E) => print(9) };

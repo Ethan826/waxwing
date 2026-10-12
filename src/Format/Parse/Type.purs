@@ -19,7 +19,7 @@ import Domain.Syntax
   , TypeRef(..)
   , problemAt
   )
-import Format.Parse.Row (rowArgument, rowRef)
+import Format.Parse.Row (markedOr, rowArgument, rowRef)
 import Format.Parse.HandlerType as HandlerType
 import Format.Lex (Token, isName, isUpper)
 import Format.Parse.Grammar
@@ -93,6 +93,7 @@ operand inner = dispatch
   argument = dispatch
     [ on "..." (spreadArgument inner)
     , on "pure" pureArgument
+    , on "nofail" (markedOr inner (typeOrRow inner))
     ]
     (typeOrRow inner)
   pureRowArgument = spanned pureRow (expect "pure")
@@ -205,7 +206,7 @@ typeOrRow inner = refine makeArgument
 addFirst ∷ Span → String → Array TypeRef → RowRef → RowRef
 addFirst span name arguments (RowRef rest labels tail) = RowRef
   { start: span.start, end: rest.end }
-  (Array.cons { name, arguments, span } labels)
+  (Array.cons { name, arguments, mark: Nothing, span } labels)
   tail
 
 typeRefSpan ∷ TypeRef → Span

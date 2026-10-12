@@ -11,6 +11,7 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Maybe (maybe, maybe')
+import Data.Tuple (Tuple(..))
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span, problemAt)
 import Features.Check.Context (CheckEnv)
@@ -25,7 +26,7 @@ import Features.Check.Report
   )
 import Features.Check.RowName (labelName, labelView, rowConflict)
 import Features.Check.Scheme (State, opened)
-import Features.Check.TypeName (typeName)
+import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..))
 
 -- A consumption (or the retry of a postponed one) that failed, reported at
@@ -44,8 +45,8 @@ rejected env state origin failure = case failure of
   where
   span = origin.span
   mismatch expected found = do
-    expectedName ← typeName env span (opened expected)
-    foundName ← typeName env span (opened found)
+    Tuple expectedName foundName ← typeNames env span (opened expected)
+      (opened found)
     Left (problemAt (TypeMismatch expectedName foundName) span)
   notAllowed label occurrence = do
     name ← labelName env span label

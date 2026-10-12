@@ -17,7 +17,14 @@ import Prim hiding (Row)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
-import Domain.Row (Label(..), Row(..), TypeHead(..), closedRow)
+import Domain.Row
+  ( HandlerRows
+  , Label(..)
+  , Row(..)
+  , TypeHead(..)
+  , closedRow
+  , handlerRowList
+  )
 import Domain.Type (Stages, Ty(..), TyRow, foldStages, stagesThrough)
 
 -- An arrow's parameters, in order, and its final result, which is not an
@@ -66,18 +73,18 @@ groundErased = groundWith erased
 children ∷ ∀ v. Ty v → Array (Ty v)
 children = case _ of
   TData _ arguments _ → arguments
-  THandler (Label _ arguments) _ → arguments
+  THandler (Label _ arguments _) _ → arguments
   arrow@(TFun _ _ _) → spineParts (spine arrow)
   _ → []
   where
   spineParts found = Array.snoc found.parameters found.result
 
 -- The rows a structural pass enters beside `children`: an application's
--- row arguments, a handler's row, or each arrow's row along the spine.
+-- row arguments, a handler's rows, or each arrow's row along the spine.
 rowsOf ∷ ∀ v. Ty v → Array (TyRow v)
 rowsOf = case _ of
   TData _ _ rows → rows
-  THandler _ row → [ row ]
+  THandler _ rows → handlerRowList rows
   arrow@(TFun _ _ _) → Array.mapMaybe rowOf
     (stagesThrough identity arrow).arrows
   _ → []
@@ -92,7 +99,7 @@ rowOf = case _ of
 rowArguments ∷ ∀ v. TyRow v → Array (Ty v)
 rowArguments (Row labels _) = Array.concatMap labelArguments labels
   where
-  labelArguments (Label _ arguments) = arguments
+  labelArguments (Label _ arguments _) = arguments
 
 -- A type variable anywhere, inside rows' labels too; row tails are not
 -- type variables. Recurses only where `children` and `rowsOf` do.
@@ -122,13 +129,23 @@ groundWith rowGround = case _ of
   TData id arguments rows → TData id <$> traverse recur arguments
     <*> traverse rowGround rows
   TVar _ → Nothing
-  THandler (Label effect arguments) row → THandler
-    <$> (Label effect <$> traverse recur arguments)
-    <*> rowGround row
+  THandler (Label effect arguments mark) rows → THandler
+    <$> (Label effect <$> traverse recur arguments <*> pure mark)
+    <*> groundRows rowGround rows
   arrow@(TFun _ _ _) → groundStages recur rowGround
     (stagesThrough identity arrow)
   where
   recur ty = groundWith rowGround ty
+
+groundRows
+  ∷ ∀ v
+  . (TyRow v → Maybe (TyRow Void))
+  → HandlerRows (Ty v) v
+  → Maybe (HandlerRows (Ty Void) Void)
+groundRows rowGround rows = joined <$> rowGround rows.inference
+  <*> traverse rowGround rows.clauses
+  where
+  joined inference clauses = { inference, clauses }
 
 -- Right to left: each arrow rebuilt once its result is ground.
 groundStages
@@ -155,5 +172,6 @@ groundRow (Row labels tail) = maybe' closedLabels open tail
   open _ = Nothing
 
 groundLabel ∷ ∀ v. Label (Ty v) → Maybe (Label (Ty Void))
-groundLabel (Label effect arguments) = Label effect <$> traverse ground
-  arguments
+groundLabel (Label effect arguments mark) = Label effect
+  <$> traverse ground arguments
+  <*> pure mark

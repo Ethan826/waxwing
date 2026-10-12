@@ -10,6 +10,7 @@ module Features.Check.Require
 import Prelude
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -18,10 +19,12 @@ import Domain.Row (Row(..), isPure)
 import Features.Check.Provenance (trail)
 import Features.Check.Report (crossingNotes, originNotes)
 import Features.Check.RowName (labelName, rowConflict)
-import Features.Check.TypeName (Names, typeName)
+import Features.Check.TypeName (Names, typeName, typeNames)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
-import Features.Check.Hint (Declared, hinted)
+import Features.Check.Context (CheckEnv)
+import Features.Check.Hint (hinted)
+import Features.Check.Sync (sync)
 import Features.Check.Scheme (State, flexible, opened, resolved, tooDeep)
 import Features.Check.Unify (Failure(..), inferredTypeLimit, unify)
 
@@ -29,7 +32,7 @@ import Features.Check.Unify (Failure(..), inferredTypeLimit, unify)
 -- enclosing function's variables (`VarId i` is the i-th).
 
 -- What `require` needs: names for its message, declarations for its hint.
-type Requiring r = Names (effects ∷ Array EffectInfo | Declared r)
+type Requiring r = CheckEnv r
 
 -- The expression's type must unify with the expected one. A mismatch may
 -- gain the under-application hint (Features.Check.Hint).
@@ -45,7 +48,13 @@ require env state expected actual = either hint Right
       (Checked.spanOf actual)
   )
   where
-  hint = Left <<< hinted env state expected actual
+  -- The hint reads `headOf` of the expected type, which the hook may have
+  -- solved (design §3.4: Hint is an eager decision). The synced state never
+  -- escapes: this branch returns `Left`. No test observes the synced hint
+  -- (the gate's accepted programs never reach it).
+  hint = Left <<< hinted env synced expected actual
+  synced = either (const state) identity
+    (sync env state (Checked.spanOf actual))
 
 -- A failure names the whole expected and found types, resolved under the
 -- substitution before this comparison, as monomorphic checking always did;
@@ -94,8 +103,7 @@ expectType env state expected actual span = do
   mismatched _ = reported TypeMismatch (resolved state.subst expected)
     (resolved state.subst actual)
   reported problem one other = do
-    first ← typeName env span one
-    second ← typeName env span other
+    Tuple first second ← typeNames env span one other
     Left (problemAt (problem first second) span)
 
 -- A type, resolved under the state, may be at most `inferredTypeLimit`

@@ -13,10 +13,11 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
-import Domain.Row (Label(..), Row(..), isPure)
+import Data.Maybe (Maybe(..), maybe, maybe')
+import Domain.Row (Label(..), Row(..), handlerRowList, isPure)
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
+import Features.Check.Aliases (aliased)
 import Features.Check.Search (Stack(..))
 import Features.Check.Subst
   ( Failure(..)
@@ -24,8 +25,10 @@ import Features.Check.Subst
   , Subst(..)
   , resolve
   , walk
+  , metaOf
   , walkRow
   )
+import Features.Check.Watch (noteBound)
 
 -- The deepest type checking may build (ruling R7, in the spirit of ADR 006).
 -- Unification, resolution and the occurs check recurse over a type's
@@ -55,9 +58,9 @@ exceedsLimit subst ty = tailRec step (Push { ty, level: 1 } Bottom)
     TFun parameter row result → pushAt (level + 1)
       (pushRow (level + 1) (pushAt level rest result) row)
       parameter
-    THandler (Label _ arguments) row → pushRow (level + 1)
+    THandler (Label _ arguments _) rows → foldl (pushRow (level + 1))
       (foldl (pushAt (level + 1)) rest arguments)
-      row
+      (handlerRowList rows)
     _ → rest
   pushRow level rest row
     | isPure row = rest
@@ -75,10 +78,20 @@ bindType subst meta ty =
   else if exceedsLimit subst ty then Left TooDeep
   else bindBounded subst meta ty
 
--- A row meta bound to a row with no label: another tail, or closed.
+-- A row meta bound to a row with no label: another tail, or closed. `meta`
+-- is unbound (see Features.Check.Aliases).
 bindTail ∷ Subst → Int → TyRow Flex → Subst
-bindTail (Subst bindings) meta row =
-  Subst bindings { rows = Map.insert meta row bindings.rows }
+bindTail (Subst bindings) meta row@(Row labels tail) = noteBound meta tail
+  ( Subst bindings
+      { rows = Map.insert meta row bindings.rows
+      , aliases = aliasing
+      }
+  )
+  where
+  aliasing =
+    if Array.null labels then
+      maybe bindings.aliases (aliased bindings.aliases meta) (metaOf =<< tail)
+    else bindings.aliases
 
 -- Leijen's extension `meta := label + fresh`: the label must be bounded
 -- and must not hold `meta` in a row of its arguments (an infinite row).
@@ -89,7 +102,7 @@ extendRow
   → Int
   → Label (Ty Flex)
   → Either Failure { subst ∷ Subst, fresh ∷ Int }
-extendRow subst@(Subst bindings) meta label@(Label _ arguments) =
+extendRow subst@(Subst bindings) meta label@(Label _ arguments _) =
   if Array.any (exceedsLimit subst) arguments then Left TooDeep
   else extendBounded subst meta label (map (resolve subst) arguments)
     bindings.fresh
@@ -116,14 +129,13 @@ extendBounded (Subst bindings) meta label resolved fresh =
     (Array.find (holdsRow meta) resolved)
   where
   extended _ = Right
-    { subst: Subst
-        { types: bindings.types
-        , rows: Map.insert meta (Row [ label ] (Just (Meta fresh)))
-            bindings.rows
-        , fresh: fresh - 1
-        , postponed: bindings.postponed
-        , links: bindings.links
-        }
+    { subst: noteBound meta (Just (Meta fresh))
+        ( Subst bindings
+            { rows = Map.insert meta (Row [ label ] (Just (Meta fresh)))
+                bindings.rows
+            , fresh = fresh - 1
+            }
+        )
     , fresh
     }
 

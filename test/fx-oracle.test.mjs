@@ -137,3 +137,18 @@ test('running clauses in the inner context changes some of 50 programs', () => {
       !== JSON.stringify(seen(source, { clauseContext: 'inner' })));
   assert.ok(different.length >= 1, 'the flag was not detected');
 });
+
+// FX008 Task 3: a mark is checking's alone, so the interpreter reads a
+// program as if its `nofail` and `nofail(k)` were not written.
+test('the oracle ignores nofail marks', () => {
+  const marked = 'effect Log { fn log(n: Int): Unit; }; '
+    + 'fn each(f: Unit -> Unit with nofail(k) Log): Unit with nofail(k) Log '
+    + '= f(()); '
+    + 'fn work(): Unit with Console + nofail Log = each(fn(u) => log(1)); '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
+    + '{ work() };';
+  const plain = marked.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
+  assert.notEqual(marked, plain);
+  assert.deepEqual(seen(marked), { stdout: '1\n', stderr: '', status: 0 });
+  assert.deepEqual(seen(marked), seen(plain));
+});

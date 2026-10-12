@@ -59,7 +59,7 @@ resolveHandler types effects summaries variables span reference clauses = do
   pure { effect: effectId, label: labelValue, clauses: resolved }
 
 effectIdOf ∷ Label (Ty VarId) → Either Syntax.Diagnostic EffectId
-effectIdOf (Label (UserEffect id) _) = Right id
+effectIdOf (Label (UserEffect id) _ _) = Right id
 effectIdOf _ = Left
   (Syntax.problemAt (Internal "Invalid handler effect") originSpan)
   where

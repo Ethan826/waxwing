@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (typeHead)
@@ -21,7 +21,7 @@ import Features.Check.Consume (consumeAt)
 import Features.Check.Provenance (Consumed(FailOf))
 import Features.Check.Reject (rejected)
 import Features.Check.Scheme (State, Threaded, opened, resolved)
-import Features.Check.TypeName (typeName)
+import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..), Flex, Subst(..), settleRows)
 
 type Result = Either Diagnostic (Threaded Checked.Expr)
@@ -38,7 +38,7 @@ failExpression
 failExpression infer env state span value = do
   payload ← infer env state value
   consumed ← consumeAt env payload.state span (FailOf env.functionName)
-    (Row [ Label FailEffect [ Checked.typeOf payload.value ] ] Nothing)
+    (Row [ Label FailEffect [ Checked.typeOf payload.value ] Unmarked ] Nothing)
   pure
     { value: Checked.Expr
         { ty: TVar (Checked.Hole consumed.next)
@@ -92,8 +92,8 @@ failureDiagnostic env state body failure = case failure of
   origin = { span, consumed: FailOf env.functionName, via: Nothing }
   mismatch found expected = do
     let Tuple expectedPart foundPart = firstDifferent expected found
-    expectedName ← typeName env span (opened expectedPart)
-    foundName ← typeName env span (opened foundPart)
+    Tuple expectedName foundName ← typeNames env span (opened expectedPart)
+      (opened foundPart)
     Left (problemAt (TypeMismatch expectedName foundName) span)
 
 firstFail ∷ Checked.Expr → Maybe Span

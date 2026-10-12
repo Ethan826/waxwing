@@ -68,7 +68,7 @@ export const cases = [
     + '{ fail(error: E) => print(1) }; print(2) };',
   ok, '2\n1\n', ''],
   ['a defer performing a non-Fail effect', log,
-    'fn work(): Unit with Log = { defer log(1); log(2) }; '
+    'fn work(): Unit with nofail Log = { defer log(1); log(2) }; '
     + 'fn main(): Unit with Console = '
     + 'with handler Log { log(n) => print(n) } { work() };',
   ok, '2\n1\n', ''],

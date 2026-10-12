@@ -19,6 +19,7 @@ module Format.Parse.Cursor
   , leading
   , trailing
   , shifting
+  , foldAt
   ) where
 
 import Prelude
@@ -200,3 +201,17 @@ shifting limit operator state
   | peekText state /= operator = Right (Done state)
   | state.peak >= limit = tooDeep limit state
   | otherwise = Right (Loop (skip (deepen state)))
+
+-- The first item runs directly; then one item per step: tailRecM runs the
+-- steps as a loop, so lists of any length run in constant stack (BACKLOG
+-- E002), and a one-item list never enters it (fewer frames per nesting).
+foldAt ∷ ∀ a b. Continue → (a → b) → (b → a → b) → Run a → Run a → Run b
+foldAt next first combine head item state = head state >>= begin
+  where
+  begin parsed = next parsed.rest >>= resume (first parsed.value)
+  resume value (Loop rest) = tailRecM step { add: combine value, rest }
+  resume value (Done rest) = Right { value, rest }
+  step pending = item pending.rest >>= decide pending.add
+  decide add parsed = map (after (add parsed.value)) (next parsed.rest)
+  after value (Loop rest) = Loop { add: combine value, rest }
+  after value (Done rest) = Done { value, rest }

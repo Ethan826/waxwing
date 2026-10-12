@@ -1,0 +1,5 @@
+effect Log { fn log(n: Int): Unit; };
+fn main(): Unit with Console = {
+  let say = fn(n: Int) => print(n);
+  with handler Log { log(n) => say(n) } { defer log(1); say(2) }
+};

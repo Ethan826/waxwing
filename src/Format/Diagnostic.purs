@@ -19,6 +19,7 @@ import Domain.Problem
   )
 import Domain.Syntax (Diagnostic, ErrorCode, Span)
 import Domain.Syntax as Code
+import Format.Diagnostic.Mark as Mark
 import Format.Diagnostic.Name (listed)
 import Format.Diagnostic.Name as Name
 import Format.Diagnostic.Note (WireNote, wireNotes)
@@ -69,6 +70,12 @@ code = case _ of
   HandlerOperation _ _ → Code.HandlerError
   FailNeedsConcrete → Code.TypeMismatch
   ExpectedHandler _ → Code.TypeMismatch
+  NofailOnFail → Code.TypeMismatch
+  MarkVariableOutsideSignature _ → Code.TypeMismatch
+  DeferHandlerMayFail _ → Code.EffectError
+  DeferHandlerVariable _ _ → Code.EffectError
+  ExpectedNofail _ _ → Code.EffectError
+  HandlerMayFail _ → Code.EffectError
 
 codeName ∷ ErrorCode → String
 codeName = case _ of
@@ -146,6 +153,13 @@ message = case _ of
     <> effect
   FailNeedsConcrete → "Fail needs a concrete error family"
   ExpectedHandler _ → "Expected a handler"
+  NofailOnFail → "nofail does not apply to Fail"
+  MarkVariableOutsideSignature name → "nofail(" <> name
+    <> ") is allowed only in function signatures"
+  DeferHandlerMayFail label → Mark.deferFails label
+  DeferHandlerVariable name label → Mark.deferVariable name label
+  ExpectedNofail expected found → Mark.expected expected found
+  HandlerMayFail cause → Mark.handlerFails typeName cause
 
 wire ∷ Diagnostic → WireDiagnostic
 wire diagnostic =
@@ -171,6 +185,10 @@ noted = case _ of
   DeferMayFail _ → true
   DeferMayPerform _ → true
   FailNeedsConcrete → true
+  DeferHandlerMayFail _ → true
+  DeferHandlerVariable _ _ → true
+  ExpectedNofail _ _ → true
+  HandlerMayFail _ → true
   _ → false
 
 entryMessage ∷ EntryKind → String
@@ -210,6 +228,7 @@ unboundWord = case _ of
   UnboundConstructor → "constructor"
   UnboundType → "type"
   UnboundTypeVariable → "type variable"
+  UnboundMarkVariable → "mark variable"
 
 typeName ∷ TypeName → String
 typeName = Name.typeName

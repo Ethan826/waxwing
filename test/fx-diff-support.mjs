@@ -28,9 +28,9 @@ export const goOutcome = source => {
 export const same = (expected, actual) => ['stdout', 'stderr', 'status']
   .every(field => expected[field] === actual[field]);
 
-export const saveEvidence = (name, files) => {
-  mkdirSync(evidenceDirectory, { recursive: true });
+export const saveEvidence = (name, files, directory = evidenceDirectory) => {
+  mkdirSync(directory, { recursive: true });
   for (const [suffix, content] of Object.entries(files)) {
-    writeFileSync(join(evidenceDirectory, `${name}${suffix}`), content);
+    writeFileSync(join(directory, `${name}${suffix}`), content);
   }
 };

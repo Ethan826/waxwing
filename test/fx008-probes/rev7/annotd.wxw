@@ -1,0 +1,9 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Tick { fn tick(): Unit; };
+fn main(): Unit with Console = handle {
+  let h = handler Log { log(n) => print(n) };
+  let inst = fn(x: Handler(Log)) => { defer tick(); with x { log(1) } };
+  with handler Tick { tick() => print(5) } { inst(h) };
+  with handler Tick { tick() => fail(E) } { with h { tick() } }
+} { fail(error: E) => print(9) };

@@ -1,6 +1,5 @@
 module Features.Check.Scheme
   ( State
-  , Site
   , Deferral
   , Threaded
   , Scheme
@@ -16,6 +15,7 @@ module Features.Check.Scheme
   , tooDeep
   , firstTooDeep
   , holes
+  , foldHoles
   ) where
 
 import Prelude
@@ -34,6 +34,8 @@ import Domain.Type (Ty(..), TyRow, VarId(..))
 import Domain.Row (Row(..), isPure, openRow)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
 import Features.Check.Provenance (Origins, noOrigins)
+import Features.Check.Restricted (Restricted, emptyRestricted)
+import Features.Check.Site (Site)
 import Features.Check.Unify (Flex, Subst, exceedsLimit, resolve, walk)
 import Features.Check.Unify as Unify
 import Features.Check.Walk (foldTypes, retype)
@@ -44,19 +46,15 @@ import Features.Check.Walk (foldTypes, retype)
 -- `deferrals` are the rows of the `defer`ed expressions, for
 -- Features.Check.Defer to judge once the function's keys are settled.
 -- `origins`: where each label occurrence entered a row (design §6), read
--- only when a rejection is reported.
+-- only when a rejection is reported. `restricted`: the clause rows and
+-- installations of FX008's abort tracking (Features.Check.Restricted).
 type State =
   { subst ∷ Subst
   , next ∷ Int
   , deferrals ∷ Array Deferral
   , origins ∷ Origins
+  , restricted ∷ Restricted
   }
-
--- Where the leading labels of the current row were written (a signature,
--- a `with` installation, a `handle`): `count` labels from `span`, the
--- innermost site first. A label's occurrence is then the site's span and
--- its position within the site, whatever has been installed around it.
-type Site = { span ∷ Span, count ∷ Int }
 
 -- `current` is the row the `defer` was checked in, which later labels join,
 -- and `sites` where its own labels were written. `body` is the deferred
@@ -99,7 +97,13 @@ instance applicativeThread ∷ Applicative (Thread s) where
     threaded state = Right { value, state }
 
 start ∷ State
-start = { subst: Unify.empty, next: 0, deferrals: [], origins: noOrigins }
+start =
+  { subst: Unify.empty
+  , next: 0
+  , deferrals: []
+  , origins: noOrigins
+  , restricted: emptyRestricted
+  }
 
 threadAll
   ∷ ∀ s a b

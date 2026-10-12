@@ -69,7 +69,8 @@ docs/sdd/2026-10-09-effects-plan/).
 - §3.5: the fallback "never extend a tail that ends any restricted row" is
   disqualified; never use it.
 - T003 linearity: `sync` cost ∝ dirty rows; F2 searches only from dirty
-  rows; no-feed-edge declarations settle in two rounds; settling consumes
+  rows; no-feed-edge declarations settle in one round (plus a key re-check
+  only when pairs are set aside); settling consumes
   with throwaway tails (no copies, rev6 M9); path check O(edges × atoms).
 - **Probe gate rule.** test/fx008-probes.test.mjs asserts every review
   probe. A task may change a probe's outcome only where this plan lists that
@@ -144,20 +145,32 @@ docs/sdd/2026-10-09-effects-plan/).
   replaces it). `Unmarked` = Fail placeholder and every mark after Check.
   Mark variables are named (unique per signature).
 - **P2 (i)** `THandler (Label (Ty v)) (HandlerRows (Ty v) v)` with
-  `HandlerRows = { inference ∷ R, clauses ∷ C }`; the label's mark is m.
-  Record `Eq`/`Ord` keep Type.purs's instances unchanged.
+  `HandlerRows = { inference ∷ R, clauses ∷ Maybe C }`; the label's mark
+  is m. `Nothing` means C is R: written types and everything after Check
+  use it, and only handler literals (Task 7) and later tasks that need a
+  distinct C use `Just`. Every structural pass enters `clauses` only when
+  it is `Just` (`handlerRowList`), so a nested written handler type costs
+  one tree per level, not two (review C1: exponential time and memory
+  otherwise). `clauseRow` (= `fromMaybe inference clauses`) reads C. Record
+  `Eq`/`Ord` keep Type.purs's instances unchanged.
 - **P3 (ii, codes and texts)** Equality of marks (types, C ≡ C, handled
   label): metas bind; `Unmarked` skipped; two different non-meta marks fail
   as differing arguments, E_TYPE: `Expected Handler(nofail Log), found
   Handler(Log)`; a row label `Expected nofail Log, found Log` (RowPayload →
   LabelMismatch); a callback type `Expected Unit -> Unit with nofail Log,
-  found Unit -> Unit` (a function type's row prints only when it holds a
-  `nofail`/`nofail(k)` label, so today's texts are unchanged). Note for the
+  found Unit -> Unit with Log`. Symmetric rule (user, 2026-10-10): when
+  either side of a mismatch holds a `nofail`/`nofail(k)` label in an arrow
+  row or a handler clause row, both sides show theirs at the same position
+  (decided once per mismatch): an empty handler clause row prints `with
+  pure`, an empty arrow row nothing, ambient and unsolved tails are
+  omitted; `Handler(Log with Tick)` against `Handler(Log with nofail Tick)`
+  reads `Expected Handler(Log with Tick), found Handler(Log with nofail
+  Tick)`. Types with no marked row label print as before. Note for the
   user: `Expected nofail Log, found Log` exists both as E_TYPE (P3) and as
   E_EFFECT (path check, `ExpectedNofail`).
 - **P4 (i)** Strip at the end of `Features.Check.check`, before
   `instantiationRule`: every mark → `Unmarked`, and every handler type's
-  `clauses := inference`, in bodies and tables. After Check, every
+  `clauses := Nothing`, in bodies and tables. After Check, every
   constructed label is `Unmarked` (e.g. Features/Specialize.purs:171).
 - **P5 (ii, acceptance)** Opening (§3.4) applies to function signatures
   only (top-level parameter and result types), not constructor fields or
@@ -188,7 +201,8 @@ docs/sdd/2026-10-09-effects-plan/).
   handler literal (`ClauseEntry.handler`); the tail pass's clause rule →
   the clause (`ClauseEntry.clause`); installation entries and the
   installation rule → the `with`; deferrals → the deferral span (today's
-  `crossing`).
+  `crossing`). The `sync` inside a settling round reports each clause's
+  consumptions and F2 errors at that clause entry's handler literal.
 - **P14 (i, order)** Settling orders entries by span start, ties by
   registration index; deferrals are stored post-order and are sorted.
 
@@ -342,18 +356,26 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | `2\n1\n9\n` / `11\n9\n` / `101\n101\n0\n9\n` | design-review/p1 / p2 / q1 |
 
   Accepted with a defect report (empty stdout, status 1): rev6/hole,
-  design-review/c1, facts/cross, facts/lexical with stderr `fail(E): E\n`;
-  facts/pending with `fail(F): F\ncleanup failed: fail(E): E\n`.
+  design-review/c1, facts/cross with stderr `fail(E): E\n`; facts/lexical
+  with stdout `2\n` (it prints before the deferred `log(1)` aborts), status 1
+  and stderr `fail(E): E\n`; facts/pending with `fail(F): F\ncleanup
+  failed: fail(E): E\n`.
 - [ ] **Step 3: Mark the FX008 outcomes.** `fx008 = today` except:
 
   | Probe | FX008 outcome | Task | Reason |
   |---|---|---|---|
-  | dup | E_EFFECT, pattern `/ cannot be made equal: both end in \.\.\.$/`, span 150-160 (`defer k(1)`) | 5 | §6: no finite solution; only deferrals are entries in Task 5, so the cycle is the deferral's self-loop, reported at `crossing deferral.span` |
-  | n1 | same pattern, span 138-148 | 5 | same |
+  | dup | E_EFFECT, `Console + Log + Log + ... and Log + Console + ... cannot be made equal: both end in ...` (pinned by the user 2026-10-10), span 150-160 (`defer k(1)`) | 5 | §6: no finite solution; only deferrals are entries in Task 5, so the cycle is the deferral's self-loop, reported at `crossing deferral.span` |
+  | n1, design-review/r5 | E_EFFECT, `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (pinned 2026-10-10), span 138-148 | 5 | same (r5.wxw is byte-identical to n1.wxw; its original content was lost) |
+  | design-review/r4 | E_EFFECT, `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (pinned 2026-10-10), span 107-117 (`defer k(1)`) | 5 | user decision 2026-10-10: the same cycle as n1 (§3.5 (c)); rejected today as `Unhandled Log in main`, so the text and span move |
   | rev10/gain1 | accepted `0\n`, status 0 (Go hash pinned on first observation) | 7 | §6 sound gain (rev10 N3) |
-  | design-review/p5, r1, r2 | E_EFFECT, same spans as today, predicted message `Console + Log + ... and Console + ... cannot be made equal: both end in ...`, pattern `/ cannot be made equal: both end in \.\.\.$/` | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
-  | witness/ec1 | E_EFFECT at span 161-191 (`handler Log { log(n) => g(n) }`), message matching `/^(Unhandled Fail\(E\) in main|Fail\(E\) \+ Console \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.)$/`; the observed text is reported to the user before it is pinned | 7 | review I7, and plan review Round 2 N1: the late `Fail(E)` arrives in settling round 2 through the clause entry, whose origin is the handler literal (P13). The re-check's hand trace predicts the side-condition text, because the hook removes today's reverse link to the entry check |
-  | witness/tp1 | E_EFFECT, predicted `f performs Console, which its signature does not allow`, span 204-219 (`log(n) => k1(n)`); pattern `/^f performs /` | 7 | review I6: k1's tail becomes rigid only when the pair is retried in settling; the tail pass then rejects R = [Console] at the clause (P13) |
+  | design-review/p5, r1, r2 | E_EFFECT, same spans as today, message `Console + Log + ... and Console + ... cannot be made equal: both end in ...` (observed and pinned 2026-10-11) | 7 | §3.4 F2: the reverse link is gone, so the monomorphic `say` reaching main's flexible tail surfaces as a positive c→R self-loop, reported by `sync` at the node's span (P13); still rejected, text may move (§6) |
+  | witness/ec1 | unchanged: `Unhandled Fail(E) in main`, 284-301 | 7 | user 2026-10-11: ec1's `Fail(E)` arrives at check time (`checkDefer` consumes the deferred row at once, Defer.purs), not in settling, so the hook pushes it before settling and ec1 does not flip. It stays as a control |
+  | witness/ec2 | new probe, same on today's build and FX008: E_EFFECT `Unhandled Fail(E) in main`, 90-380 | 7 | the corrected witness: the deferred row gains `Cell(…)` through `w`'s call after `checkDefer`, as in argbind, so the `Fail(E)` arrives in settling. The `fx008-exit-count` row uses it (the exit-count mutant accepts it) |
+  | argbind-internal | accepted, empty stdout, Go hash `b524e7d7ebab4c06d2e9e54a13a8b127587c2d982a465d991ed76a5d82ace8c1` | 7 | sound gain (user 2026-10-11): the hook removes R = c, so f's row no longer ends in z's row and the occurs failure cannot arise here; no defer reaches h; Go and the oracle print nothing. FX010 itself stays open |
+  | rev8/cyc2 | E_EFFECT, `Tick + ... and ... cannot be made equal: both end in ...`, 174-179 | 7 | F2 reports the c to R edge of the same cycle, the clause row first, at the sync's node (P13); user 2026-10-11 |
+  | rev8/cyc3 | E_EFFECT, `Log + Tick + ... and ... cannot be made equal: both end in ...`, 338-344 | 7 | same |
+  | rev9/sh1 | E_EFFECT, same text as today, span 192-246 (the handler literal) | 7 | the first sync that sees both clauses is the one after the handler node (P13) |
+  | witness/tp1 | E_EFFECT, `f performs Console, which its signature does not allow`, span 204-219 (`log(n) => k1(n)`), observed and pinned 2026-10-11 | 7 | review I6: k1's tail becomes rigid only when the pair is retried in settling; the tail pass then rejects R = [Console] at the clause (P13) |
   | rev6/hole, design-review/c1, facts/cross | E_EFFECT `defer must not fail, but it performs Log, whose handler may fail`, span 79-91 (`defer log(1)`) | 9 | §1 cross-function form |
   | facts/lexical | same message, span 129-141 | 9 | §1 pinned form |
   | facts/pending | same message, span 101-113 | 9 | §1: `work`'s `Log` is plain |
@@ -361,9 +383,10 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | rev7/merge2 | `defer must not fail, but it performs Tick, whose handler may fail`, span 244-256 | 9 | L4 (§6) |
   | design-review/q1 | the Log message, span 203-215 (`defer log(0)`, in `run`) | 9 | I2: `run`'s `Log` is plain (§6) |
 
-  p4 and r4 stay unchanged: p4's `say` really needs `Log` in `run`'s closed
-  row, which the hook carries from c to R and reports at `say(2)` (P13); r4
-  involves no clause row. argbind-internal (FX010) and rev6/con (FX011) are
+  p4 stays unchanged: p4's `say` really needs `Log` in `run`'s closed
+  row, which the hook carries from c to R and reports at `say(2)` (P13). (r4
+  was predicted unchanged here; Task 5 found it is the n1 cycle at main
+  level, and the user moved it, above.) argbind-internal (FX010) and rev6/con (FX011) are
   unchanged by assumption; a change stops the work.
   `slow: true`: dup, n1, cycle2, cycle2open, argbind, argbind-internal,
   rev8/cyc1, cyc1ok, cyc2, cyc3, rev9/sh1, set1, witness/ec1, witness/tp1.
@@ -376,7 +399,7 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
 - [ ] **Step 5: Prove the gate can fail** in a scratch copy: one changed
   stdout, one changed message and one changed `fx008` field → those tests
   and the tamper test FAIL. Not committed; recorded in the report.
-- [ ] **Step 6: Run** `node --test test/fx008-probes.test.mjs` → PASS (105
+- [ ] **Step 6: Run** `node --test test/fx008-probes.test.mjs` → PASS (107
   tests); `rm -rf output && npm run verify` → 0.
 - [ ] **Step 7: Commit** `test: FX008 probe gate`.
 
@@ -400,16 +423,19 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Domain.Row: `data Mark = NoFail | Plain | MarkVariable String | MarkMeta
   Int | Unmarked` (Eq, Ord); `data Label t = Label EffectRef (Array t)
   Mark` (mark last, so derived Ord ranks by effect first); `type HandlerRows
-  t v = { inference ∷ Row t v, clauses ∷ Row t v }`; `labelMark ∷ ∀ t. Label
-  t → Mark`; `withMark ∷ ∀ t. Mark → Label t → Label t`; `normalMark ∷
+  t v = { inference ∷ Row t v, clauses ∷ Maybe (Row t v) }`; `labelMark ∷ ∀ t.
+  Label t → Mark`; `withMark ∷ ∀ t. Mark → Label t → Label t`; `normalMark ∷
   EffectRef → Mark → Mark` (Console → NoFail, Fail → Unmarked, else
   unchanged); `mapHandlerRows ∷ ∀ t v u w. (Row t v → Row u w) →
-  HandlerRows t v → HandlerRows u w`.
+  HandlerRows t v → HandlerRows u w` (maps `clauses` only when `Just`);
+  `clauseRow ∷ ∀ t v. HandlerRows t v → Row t v`; `uniformRows ∷ ∀ t v. Row
+  t v → HandlerRows t v` (`clauses: Nothing`); `handlerRowList ∷ ∀ t v.
+  HandlerRows t v → Array (Row t v)` (R, then C if `Just`).
 - Domain.Type: `THandler (Label (Ty v)) (HandlerRows (Ty v) v)`.
 - Domain.Type.Marks (spines by loop): `mapMarks ∷ ∀ v. (Mark → Mark) → Ty v
   → Ty v`; `mapRowMarks ∷ ∀ v. (Mark → Mark) → TyRow v → TyRow v`;
   `stripMarks ∷ ∀ v. Ty v → Ty v` (marks → Unmarked, `clauses :=
-  inference`); `markVariables ∷ ∀ v. Array (Ty v) → Array String` (distinct,
+  Nothing`); `markVariables ∷ ∀ v. Array (Ty v) → Array String` (distinct,
   first occurrence).
 - Strip: `stripProgram ∷ Checked.Program → Checked.Program` (bodies, function
   types, effect/type/ctor tables), applied in `check` before
@@ -417,11 +443,12 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Marks supplied: Resolve and Check builders `Plain` (Console `NoFail`, Fail
   `Unmarked`, via `normalMark`); every builder after Check (Specialize,
   Lower, Format.Go) `Unmarked`. Handler literals and written handler types:
-  `clauses = inference` (until Task 7). Unification ignores marks (`_`).
+  `clauses = Nothing` (literals until Task 7). Unification ignores marks (`_`).
 
 - [ ] **Step 1: Failing tests** (test/fx008-representation.test.mjs):
   `stripMarks erases every mark and C` (JS-built type with NoFail, Plain,
-  MarkMeta labels and a distinct C → every label `Unmarked`, C equal to R);
+  MarkMeta labels and a distinct `Just` C → every label `Unmarked`, C
+  `Nothing`);
   `stripMarks walks a 1,000-arrow spine` (no stack failure).
 - [ ] **Step 2: Run** `node --test test/fx008-representation.test.mjs` → FAIL
   (modules missing).
@@ -470,7 +497,11 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Check.MarkUse: `instantiateMarks ∷ Array String → State → Threaded (Mark →
   Mark)` (one fresh `MarkMeta` per name from `state.next`); `localMarks ∷
   State → Ty Open → Threaded (Ty Open)` (each `Plain` → fresh meta; each
-  `THandler`'s C → its labels, marks freshened, plus a fresh `Hole` tail).
+  `THandler`'s C → `Just` its labels, marks freshened, plus a fresh `Hole`
+  tail; only for a `THandler` not inside another handler type's row. Handler
+  types nested in a handler row keep `clauses: Nothing`, which is sound
+  because their C is never consumed, and keeps the type one tree per level
+  (Task 2 review C1; otherwise `fn(x: <nested 40>) => …` doubles per level).
 - CheckEnv and Infer.Env: `markVariables ∷ Array String`.
 - Use: `declarationUse ∷ State → Array String → Array String → Array
   Syntax.Sort → Array (Ty Resolved.VarId) → Ty Resolved.VarId → TyRow
@@ -515,6 +546,12 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
     performs nofail Log, which its signature does not allow`; a row error
     in `with nofail Console + Log` contains `Console`, never `nofail
     Console`.
+  - `a nested handler annotation stays linear` (review C1): a lambda
+    parameter annotated with a 40-level `Handler(Log with S(Handler(…)))`
+    is accepted (parallel, test/fx008-nesting.test.mjs) and checks within
+    the same 2000 ms warm bound at depths 40 and 120 (serial,
+    test/fx008-nesting.serial.test.mjs; a lambda-annotation program builder
+    is added to test/fx008-nesting.mjs).
   - `marks never reach Go`: specialization keys (test/poly-keys.mjs) of the
     marked and unmarked forms of the programs above and examples/answer.wxw
     are equal.
@@ -600,9 +637,11 @@ Edges recorded, not yet read. New rejections: only P3's.
   - `consumeIgnoring ∷ ∀ r. CheckEnv r → State → { origin ∷ Origin, stage ∷
     TyRow Open, target ∷ TyRow Open } → Either Diagnostic State`: stage as
     it stands into `target`, IgnoreMarks (R ≡ ρ at `with`; the hook).
-- Unify `THandler`: handled label args and mark EqualMarks; `inference` by
-  `unifyRowsIgnoring`; `clauses` by `unifyRows`. Until Task 7 a literal's
-  C is its R, so C ≡ C also equates those R marks (harmless: R is dead).
+- Unify `THandler`: handled label args and mark EqualMarks; when both
+  sides' `clauses` are `Nothing` (C is R), `inference` by `unifyRows`
+  (EqualMarks, so C's marks are compared, review I1); otherwise `inference`
+  by `unifyRowsIgnoring` and `clauseRow` of both sides by `unifyRows`. One
+  pass per level either way. Until Task 7 a literal's C is `Nothing` too.
 - MarkUse: `openHandlers ∷ State → Array (Ty Open) → Ty Open → Threaded {
   fields ∷ Array (Ty Open), result ∷ Ty Open }` (top-level parameter
   `THandler` with `Plain` m, and result `THandler` with `NoFail` m, get a
@@ -643,7 +682,7 @@ Edges recorded, not yet read. New rejections: only P3's.
   - `callback rows are invariant in marks`: `fn need(k: Unit -> Unit with
     nofail Log): Unit = (); fn give(k: Unit -> Unit with Log): Unit =
     need(k);` → E_TYPE `Expected Unit -> Unit with nofail Log, found Unit ->
-    Unit` at `k` in `need(k)` (P3).
+    Unit with Log` at `k` in `need(k)` (P3).
   - `a lambda passed to a nofail callback compiles`: `need(fn(u: Unit) =>
     log(1))` inside `with nofail Log`.
 - [ ] **Step 2: Run** both files → FAIL.
@@ -661,7 +700,8 @@ Edges recorded, not yet read. New rejections: only P3's.
 
 Replaces `settleKeys` / `settleDeferred` / `settleFinal` (Check.purs:116-118)
 with the termination review's corrected loop over deferral entries; the
-defer judgement moves after it. dup and n1 flip.
+defer judgement moves after it. dup, n1, r5 and r4 flip (exact texts in
+Task 1's table).
 
 **Files:**
 - Create: `src/Features/Check/Cycle.purs`, `Settle.purs`;
@@ -671,7 +711,7 @@ defer judgement moves after it. dup and n1 flip.
 - Modify: `src/Features/Check.purs`; `Defer.purs` (delete `settleDeferred`,
   export `judgeDeferrals`); `scripts/regression.mjs` (+1: `fx008Rows`);
   `test/regression.mjs` (import `externalProbes`; `compilerPath` in
-  `context`; net −2); probe table and hash (flip dup, n1);
+  `context`; net −2); probe table and hash (flip dup, n1, r5);
   `docs/engineering.md` (regression files).
 
 **Interfaces:**
@@ -713,20 +753,21 @@ defer judgement moves after it. dup and n1 flip.
 
 - [ ] **Step 1: Failing tests** (test/fx008-settle.test.mjs, child processes,
   20 s): `dup has no finite solution` (dup.wxw → E_EFFECT matching the
-  pattern, span 150-160); `n1 has no finite solution` (138-148); `a
+  pattern, span 150-160); `n1 has no finite solution` (138-148); `r5 has no finite solution` (same
+  source and span); `r4 has no finite solution` (107-117); `a
   satisfiable two-row cycle settles` (cycle2 prints `0\n7\n1\n`); `8,000
   defers settle` (main with 8,000 `defer print(i)` compiles; timed in
-  Task 9). Flip dup and n1. The existing fx-cleanup tests `a Fail reaching
+  Task 9). Flip dup, n1 and r5. The existing fx-cleanup tests `a Fail reaching
   a shared lambda meta later is rejected (P4)` and `a defer handling a Fail
   of a key settled later is accepted` must pass unchanged.
-- [ ] **Step 2: Run** → FAIL (dup, n1 accepted).
+- [ ] **Step 2: Run** → FAIL (dup, n1, r5 accepted).
 - [ ] **Step 3: Implement.**
 - [ ] **Step 4: Row `fx008-cycle-presence`** (Cycle.purs): weight = 1 when κ
   is in own_i but not target_i, else 0. Probe: dup.wxw within 20 s → the
   side-condition rejection; mutant `/cycle weight: timed out/`.
 - [ ] **Step 5: Run** tests and gate → PASS; verify → 0; `node
-  scripts/regression.mjs fx008-cycle-presence` → proof line. Report dup's
-  and n1's observed messages to the user (gate rule) before pinning them.
+  scripts/regression.mjs fx008-cycle-presence` → proof line. Report dup's,
+  n1's and r5's observed messages to the user (gate rule) before pinning them.
 - [ ] **Step 6: Commit** `feat: settle restricted rows in one loop (FX008)`.
 
 ---
@@ -784,7 +825,33 @@ clause rows yet; gate unchanged.
 ### Task 7: Clause own rows, `sync`, correction S and the tail pass
 
 One switch-over: the hook without S breaks set1 (the `fx008-settle-phi`
-mutant), so these land together. gain1, p5, r1, r2, ec1, tp1 flip.
+mutant), so these land together. gain1, argbind-internal (sound gains), p5,
+r1, r2, cyc2, cyc3, sh1 and tp1 flip; ec1 does not (see the Task 1 table).
+
+**F1′ runs in settling (controller ruling 2026-10-11).** Correction S consumes
+`labels(c) + φ_t` for the clause's current class, and a binding made in
+settling (a retried `fail`, a late label) extends or merges clause tails.
+The plan did not say who keeps the classes up to date there, so each
+settling round runs `syncSettling` after (a): F1′, F2 and T, each
+consumption reported at the clause entry's handler literal. It skips the
+rigid branch (φ := ϱ), which stays with the tail pass after the loop (§3.5).
+The c to R entries are rebuilt each round, so they read the current group's
+φ. Hook code reads rows through `walkedRow` and `headedRow` (Walked.purs),
+which splice the tail but do not resolve label arguments.
+
+**C keeps no label arguments of its own (user ruling 2026-10-11, option (a)
+of the Task 7 review's C1; Task 2 C1 again).** A literal whose clause
+performs `L(type of another literal)` would hold that type in both R and C
+and double per level of nesting. So per label C keeps only its effect, mark
+and count (and its own tail): the arguments are read from R, which holds
+every label of every c. A `Fail` label keeps its payload's head (a type with
+no arguments), which is its key. `consumeLabels` into C (filing, and the
+c to C entry of Settle) pass `bareLabel`s. Task 8 builds the labels it
+consumes into `env.current` from R's arguments (the label of R with the same
+key and position, by first occurrence), and Task 9's texts print C's labels
+from R. A mark comparison C ≡ C needs no arguments (marks and keys only).
+Guard: `clauseLiteralProgram` (30 literals chained through their clauses),
+red on 9358d79 (timed out at 20 s) and green after.
 
 Before any code, the Sonnet implementer writes a short design of Sync.purs
 and TailPass.purs: the functions, the data, and the order of F1′, F2 and
@@ -805,10 +872,11 @@ implementer or reviewer asks; that change is recorded in the ledger.
   State → Span → Label (Ty Resolved.VarId) → Array Resolved.HandlerClause →
   Either Diagnostic (Threaded { clauses ∷ Array Checked.HandlerClause, rows
   ∷ HandlerRows (Ty Open) Open, own ∷ Mark })`: each clause against a fresh
-  row c; R, C fresh open rows; m a fresh `MarkMeta`; each c registered (new
+  row c; R, C fresh open rows (`rows = { inference: R, clauses: Just C }`); m a
+  fresh `MarkMeta`; each c registered (new
   group, `tail` = c's resolved tail, `signature = Nothing`, in `pending`),
   watched, and consumed into C by `consumeLabels` (Directional, Fail kept,
-  origin the handler span). R is reached only through `sync`.
+  origin the handler span) as bare labels (no arguments, Task 7 ruling). R is reached only through `sync`.
   `Handler.handler` builds `THandler (withMark own label) rows`.
 - Sync: `sync ∷ ∀ r. CheckEnv r → State → Span → Either Diagnostic State`
   (span per P13). Definitions on resolved rows: `currentSignature(e) = {
@@ -850,8 +918,8 @@ implementer or reviewer asks; that change is recorded in the ledger.
 
 - [ ] **Step 1: Failing tests** (test/fx008-hook.test.mjs, child processes,
   20 s):
-  - `gain1 is a sound gain` (prints `0\n`); flip gain1, p5, r1, r2, ec1,
-    tp1.
+  - `gain1 is a sound gain` (prints `0\n`); flip gain1, argbind-internal,
+    p5, r1, r2, cyc2, cyc3, sh1, tp1; ec1 keeps its outcome and ec2 is added.
   - `no-defer probes keep their outcomes under the hook`: late1, late2, two1,
     two2, two3, two1f, one1, one3, one1rev8, ov1, ov1f, set1, cyc1, cyc1ok,
     pair1 print `0\n`; two2's and hole2c's Go hashes equal the table's;
@@ -868,8 +936,18 @@ implementer or reviewer asks; that change is recorded in the ledger.
     through R; under the hook, R ≡ ρ_f binds only φ, the retry binds k1's
     tail to `...e`, the loop adds nothing, and only the tail pass rejects
     (review I6).
-  - `a late Fail reaching a clause through an argument binding is consumed`:
-    witness/ec1 → its table outcome (review I7).
+  - `a late Fail reaching a clause through an argument binding is rejected`:
+    witness/ec2 → its table outcome (review I7, corrected: ec1's Fail(E)
+    arrives at check time and ec1 keeps today's outcome).
+  - `nested handler literals stay linear` (Task 2 review c2): about 30
+    handler literals nested through rows (an inferred row whose label
+    argument is another literal's type, each carrying a `Just` C) are
+    accepted (parallel) and check within the 2000 ms warm bound (serial,
+    test/fx008-nesting.serial.test.mjs).
+  - Note (review c3): inside Check a `Just C` and a `Nothing` denoting the
+    same row compare unequal under the derived `Eq`/`Ord`. Stripping
+    normalizes `clauses` to `Nothing` before Specialize, and no code
+    inside Check relies on that equality.
 - [ ] **Step 2: Run** with the gate → FAIL (gain1 rejected).
 - [ ] **Step 3: Implement.** Handler.purs keeps `handler` and `withHandler`.
 - [ ] **Step 4: Rows** (each one needle; probe passes healthy, fails mutant):
@@ -877,24 +955,33 @@ implementer or reviewer asks; that change is recorded in the ledger.
   | Row | File | Mutant | Probe; mutant message |
   |---|---|---|---|
   | `fx008-hook` | Sync.purs | `sync` returns the state | late1 prints `0`; `/hook: Expected a handler/` |
-  | `fx008-phi` | Sync.purs | fresh tail instead of φ | two1 prints `0`; `/remainder: Ambiguous/` |
-  | `fx008-phi-equal` | Sync.purs | φ step replaced by R ≡ R of the merged handlers | ov1 prints `0`; `/R≡R: rejected/` |
+  | `fx008-phi` | Filing.purs | a clause that finds another group keeps its own φ (no join) | two1 prints `0`; `/remainder: Ambiguous/` |
+  | `fx008-phi-tail` | Sync.purs | T's stage ends in nothing (a fresh tail), not φ | two3 prints `0`; `/remainder tail: Expected a handler/` |
+  | `fx008-phi-equal` | Filing.purs | φ step replaced by R ≡ R of the merged handlers | ov1 prints `0`; `/R≡R: rejected/` |
   | `fx008-f2` | Sync.purs | F2 call removed | cyc2's side-condition error within 20 s; `/F2: timed out/` |
-  | `fx008-new-labels` | Sync.purs | only labels past the recorded count consumed | cyc2 within 20 s; `/new labels: timed out/` |
-  | `fx008-signature` | Sync.purs | signature comparison always "changed" | cyc1 prints `0` within 20 s; `/signature: timed out/` |
-  | `fx008-settle-phi` | Settle.purs | c → R entries use `Fresh` | set1 prints `0`; `/settling φ: Ambiguous/` |
+  | `fx008-new-labels` | Sync.purs | only labels past the recorded count consumed | one3 prints `0`; `/new labels: rejected/` (cyc2 cannot show it: F2 rejects before any consumption) |
+  | `fx008-signature` | Groups.purs | the signature carries no label counts | argbind accepted; `/signature: rejected/` (an always-"changed" comparison cannot loop: `sync` ends when nothing is dirty or pending, and an unchanged push binds nothing; the signature's semantic part is `grew`) |
+  | `fx008-settle-phi` | Settle.purs | the round's `syncSettling` removed (with `syncSettling`, S's `Remainder φ` only affects ec2's span: `Fresh` gives 327-333, which the hook test pins) | set1 prints `0`; `/settling φ: Ambiguous/` |
   | `fx008-r-consumed` | Handler.purs | R consumed with a fresh tail, not as it stands | meta2 compiles; `/R consumed: Ambiguous/` |
-  | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec1 rejected with E_EFFECT at 161-191 (either text above); `/exit test: accepted/` |
+  | `fx008-exit-count` | Settle.purs | exit counts only labels (d) added to targets | ec2 rejected with E_EFFECT; `/exit test: accepted/` |
   | `fx008-tail-pass` | TailPass.purs | `tailPass` returns the state | tp1 rejected; `/tail pass: accepted/` |
 
-  ec1 needs P14's order: the clause entries (line 6) precede the deferral
-  (line 9); if they do not, both builds reject and the row cannot be proved
-  — stop and report.
+  No accepted program distinguishes F1′'s Join (a grown clause takes the
+  group already on its new tail) from a new group: a later sync that sees
+  both merges them by the second branch, so Join only saves a later
+  merge. No test kills it (a probe, join1, was accepted with Join replaced by
+  New, and the six-orders test passes too). The closed-φ branch, the tail pass's
+  closing of C and A5's synced hint have no Task 7 observer either; Task 8
+  adds the C tests.
+
+  ec2, not ec1, proves the exit count: ec1's `Fail(E)` arrives at check
+  time, so both builds reject it.
 - [ ] **Step 5: Run** tests and gate → PASS; verify → 0; `node
   scripts/regression.mjs fx008-hook fx008-phi fx008-phi-equal fx008-f2
   fx008-new-labels fx008-signature fx008-settle-phi fx008-r-consumed
   fx008-exit-count fx008-tail-pass` → 10 proof lines. Report the observed
-  texts of p5, r1, r2 and tp1 to the user before pinning them.
+  texts of p5, r1, r2 and tp1 to the user before pinning them (done
+  2026-10-11).
 - [ ] **Step 6: Commit** `feat: clause own rows and the one-way hook (FX008)`.
 
 ---
@@ -912,19 +999,41 @@ entries join settling; gate unchanged.
 - `install ∷ ∀ r. Infer (locals ∷ Locals | r) → HandlerEnv r → State → Span →
   Checked.Expr → Label (Ty Open) → HandlerRows (Ty Open) Open →
   Resolved.Expr → Either Diagnostic (Threaded Checked.Expr)`: R into
-  `env.current` by `consumeIgnoring`; C's labels into `env.current` by
-  `consumeLabels` (Directional, Fail kept, origin the `with`); frame f =
-  `NoFail` for Console, else a fresh `MarkMeta`; the body is checked against
-  `withMark f label` prepended to the current row; registers an
-  `Installation`.
-- Settle: each installation adds an entry C → `current` (Directional,
-  `Fresh`, `keepFail`, origin the `with`). TailPass: an installation whose
-  resolved C tail is a rigid ϱ needs `current` to end in ϱ (origin the
-  `with`).
+  `env.current` by `consumeIgnoring`; frame f = `NoFail` for Console, else a
+  fresh `MarkMeta` (from the mark store's counter); the body is checked
+  against `withMark f label` prepended to the current row; registers an
+  `Installation` (numbered by the registry's size). `install` does not
+  consume C and allocates nothing from `state.next` (see the note below).
+- Settle: each installation adds an entry C → `current`, origin the `with`.
+  It is not a consumption: `Lend.assume` pairs C's labels with `current`'s by
+  key and position, as row unification does, with no unification, and
+  records each pair as the edge `current`'s mark ⊑ C's (Assumed). C keeps no
+  arguments (Task 7 ruling), so a bare `Fail(Job)` never meets
+  `Fail(Job(Int))` (witness/famw, famw2); the edge's label is the partner's.
+  A label with no partner yet falls back to `consumeBare` (Directional, Fail
+  kept) with its arguments lent by R (`Lend.lend`); the invariant lent ⊆ R ⊆
+  `current` makes that unreachable. The entry pairs again only when C has
+  grown (`Installation.matched`). TailPass: an installation whose resolved C
+  tail is a rigid ϱ needs `current` to end in ϱ (origin the `with`); a guard
+  that is unreachable while R ≡ `current`.
+
+- **Implementation note (Task 8).** `install` does not consume C itself, and
+  settling's installation entries record the `Assumed` edges by pairing C's
+  labels (arguments lent by R, `Lend.lend`) with the labels of `current`
+  (`Lend.assume`, the same key-and-position pairing, no unification) and
+  consume only a label with no partner yet. Reason: a consumption allocates
+  a throwaway tail and renames the row's tail, and the checked IR names an
+  unsolved function-row tail by its number (449 check-phase differences in
+  the differential corpus, none downstream). The installation is numbered by
+  the registry's size and its frame comes from the mark store's counter, so
+  `state.next` is not moved. `watchTail` is not called: nothing syncs on an
+  installation. The debug export is `Features.Check.Inspect.checkedStates`.
 
 - [ ] **Step 1: Failing tests** (JS via the compiled checker or a debug
   export of edge counts): `an installation records frame ⊑ C edges` (one
-  `Assumed` edge per C label); `a Console frame is nofail`; `a late clause
+  `Assumed` edge per C label); `a literal whose clause row closed, and one
+  whose clause tail turned rigid, are installed correctly` (C closing and the
+  tail pass's rigid case, unobserved in Task 7); `a Console frame is nofail`; `a late clause
   label reaches the installing row` (f1.wxw and f2.wxw still print `1\n2\n`).
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement.** **Step 4: Run** with
   the gate → PASS; verify → 0.
@@ -1080,12 +1189,12 @@ l4b, merge2 and q1 flip.
   |---|---|---|---|
   | `fx008-directional` | UnifyMark.purs | Directional pairs bind as EqualMarks | p1 `2 1 9`; `/directional: rejected/` |
   | `fx008-copies` | UnifyMark.purs | Directional `stageLabel` returns the label | p1; `/copies: rejected/` |
-  | `fx008-c-unified` | Install.purs | C consumed as it stands (unified with ρ) | p2 `11 9`; `/C unified: rejected/` |
+  | `fx008-c-unified` | Lend.purs | `assume` pairs C under `EqualMarks` (C unified with ρ's marks) | p2 `11 9`; `/C unified: rejected/` |
   | `fx008-r-marks` | Consume.purs | `consumeIgnoring` uses EqualMarks | p2; `/R marks: rejected/` |
   | `fx008-extension` | UnifyMark.purs | Directional `targetLabel` returns the stage label | extb `12 0 9`; `/extension: rejected/` |
   | `fx008-local-plain` | MarkUse.purs | `localMarks` keeps `Plain` | annotb `1 2`; `/local marks: rejected/` |
   | `fx008-r-identity` | UnifyMark.purs | IgnoreMarks extension keeps the mark | merge1 `1 9`; `/R identity: rejected/` |
-  | `fx008-c-alias` | MarkUse.purs | `localMarks` keeps C = R | annotc `1 5 9`; `/C alias: rejected/` |
+  | `fx008-c-alias` | MarkUse.purs | `localMarks` keeps C = R (outermost handler types only) | annotc `1 5 9`; `/C alias: rejected/` |
   | `fx008-frame-m` | Install.purs | frame mark = own mark m | I2 with nofail `101 101 0 9`; `/frame: rejected/` |
   | `fx008-own-frame` | Frames.purs | no `own ⊑ frame` | pinned program rejected; `/own frame: accepted/` |
   | `fx008-outer-frame` | Frames.purs | no `FrameOuter` | forwarding-into-failing rejected; `/outer frame: accepted/` |
@@ -1097,6 +1206,44 @@ l4b, merge2 and q1 flip.
   generated program compiles, 0 differences); `node scripts/regression.mjs`
   with the 12 rows → 12 proof lines.
 - [ ] **Step 6: Commit** `feat: the mark check makes defer sound (FX008)`.
+
+**Task 9 as built (deviations).**
+- `markConstraints ∷ Array String → State → State` takes the signature's
+  variable names (a `FrameRigid` edge names ϱ). Console's frame is `NoFail`
+  by definition (§3.3), so an installation with that frame generates no
+  frame edges.
+- **P2 refined (user, 2026-10-11, Task 9 review C1).** A written type has
+  no clause row of its own, so C aliases R, and `with` binds R's tail to the
+  installing row. Copying C at install (1649218) closed an unbound tail that
+  was bound later to a real C; six accepted programs ended a cleanup in a
+  typed abort. Instead, at a function's use (`Use.openedUse`,
+  `ResultClauses.ownClauses`) a top-level result handler type gets its own
+  bare C: R's labels, and R's tail only if that variable occurs in a
+  parameter type or in the function's own row (the own row matters:
+  parameters alone reopen a hole 1649218 rejects); otherwise a fresh meta
+  (user, 2026-10-12: a closed C failed C ≡ C against a C with more labels
+  or a rigid tail, rejecting defer-free programs, §6). By
+  parametricity the callee's clauses reach a variable found nowhere else only
+  through a rigid tail, which already makes the handler's own mark M. The
+  other written types (fields, operation results, nested results) keep C = R
+  with the tail linked (`Install.clausesOf`): conservative. `ClauseEntry`
+  gained `label`, the handled label of an `OwnAbort` edge.
+- **New limitation, beside L1, L4 and P5.** A handler passed through a
+  generic function and installed from its result (or from a field, a
+  closure or an operation result) gives an M frame when the context's rest
+  is M or rigid. (A result C whose tail variable occurs nowhere else gets a
+  fresh meta, otherwise it would reject merges, §6.) Design §3.4 points here.
+- Console frames: the NoFail guard in `Frames.framed` is unreachable (no
+  `Handler(Console …)` value, FX011) and must be revisited with D001.
+- Near the 250-line limit: Format/Diagnostic.purs 242.
+- `fx008-copies` uses a new probe (`copies`, test/fx008-defer-programs.mjs):
+  p1 does not distinguish the mutant (no probe of the corpus did). `fx008-frame-m`
+  uses p2: with q1's `prefix()` each call opens its own m.
+- The generator writes `nofail` on `fx-programs.mjs`'s user-effect row labels
+  and `fx-gen-fragments.mjs`'s stage and callback signatures, except in a
+  program with no `defer`, which is rendered with plain labels. Per label it
+  cannot vary: a plain label may call only plain callees, which the generator
+  does not track. M frames need failing random clauses (Task 11).
 
 ---
 
@@ -1121,6 +1268,9 @@ none except the source rule; `maxNotes`/`maxCharacters` apply.
 | `SignatureMayFail function label` | path from `Plain` through an `Assumed` edge (a constant `Plain` lower is the declaration's own row, P1) | `env.rowSpan`, else the function span | `the signature of <f> allows a failing <L> handler; write with nofail <L>` |
 | `MarkVariableHere variable label` | path from `MarkVariable k` | `env.rowSpan`, else the function span | `nofail(<k>) <L> is fail-free only when the caller's handler is` |
 
+- Implementation decision (Task 10 review M1): the origin note
+  `SignatureMayFail` also applies when a `Plain` path's first edge is a
+  `DeferDemand` on a label the signature wrote (no `Assumed` edge exists).
 - [ ] **Step 1: Failing assertions** (`[container, inner, text]`):
   - pinned (lexical): the `with` → `Log is handled here`; `log(n) =>
     fail(E)` → `its clause for log fails with E`.
@@ -1207,6 +1357,10 @@ if fx-programs.mjs would pass 250).
 `docs/findings.md`, `docs/next-session.md`. (BACKLOG, progress and ledger:
 the controller.)
 
+- [ ] **Amend design §3.4 "Labels in local annotations" (review M5):** a
+  local annotation's clause row C keeps the written `nofail` / `nofail(k)`
+  marks of R and gives its unmarked labels fresh mark metas (not "R's
+  written labels with fresh mark metas" throughout).
 - [ ] **Step 1:** Apply FX008 design §8 to the effects spec verbatim in
   substance, with the exact texts of Tasks 9-10 in §6; each edit names FX008
   and the date.
@@ -1228,6 +1382,80 @@ the controller.)
   including 23 FX008 rows.
 - [ ] **Step 6: Commit** `docs: FX008 spec amendment, CF001 abort-free
   boundaries, FX001 plan amendments`.
+
+### T008: Linear settling for shared tails
+
+BACKLOG T008. The Task 5 review blamed the feed graph (N rows sharing a tail
+give N^2 edges); profiling 1,000 installations at 9a62014 (7.7 s; 2,000 took
+35 s) showed otherwise. The entries' own rows are short and the feed graph
+is not hot. The time was 14 million `boundRow` lookups: settling extends the
+shared target row by one bare-tail alias hop per consumption
+(`unifyTails`: `meta := Row [] tail`), so the chain from the target's head
+is as long as the declaration, and each of N consumptions, `feedRow`,
+`labelCount` and the unifier's `expanded` walked it hop by hop.
+
+Fix: `Features.Check.Aliases` keeps, in the substitution, classes of alias
+hops (a union-find that only grows at its far end: `reach` meta to class,
+`ends` class to end), maintained by `bindTail` and read by `boundAt`, which
+jumps from a hop to the end of its class. Only label-free hops are jumped,
+so every label, occurrence (`Extended meta`) and tail is unchanged; the
+settle order (P14), cycle detection and the probes do not read hop counts.
+A hop that cannot be merged (neither side a lone meta) is walked as before,
+so the tables never need to be complete. Measured (median of 3, 2026-10-12):
+1,000 installations 7.9 s to 0.5 s, 2,000 35 s to 1.0 s; 8,000 defers and
+the 1,000 chain unchanged. Not covered: a chain of hops that carry labels
+(`extendRow`) is still walked hop by hop. Guards: the ratio test in
+`test/fx008-install.serial.test.mjs` (4.27 at 9a62014, 2.0 now, bound 3.2)
+and the mutant row `fx008-install-linear`.
+
+### Whole-branch review fixes (2026-10-12)
+
+Review: `docs/sdd/2026-10-09-effects-plan/review-fx008-branch-result.md`.
+User decisions of 2026-10-12, applied as one commit. Deviations from the
+review's proposed fixes:
+
+- **I1** (notes of rev6/amb2, rev6/around3, design-review/p3 and
+  rev9/ov1ctl restored to the base 8fe4218's). The review proposed a
+  `ClauseRow` variant that prints no note "and lets the trail continue past
+  it". That was not enough for p3: the clause-row `sync` (Sync.push) writes
+  the clause's labels into R as bare labels, so the trail ended at the
+  stage's own occurrence instead of the `fail(E)` that raised the label.
+  Giving those occurrences a plain link changed witness/ec2's diagnostic span
+  (a pinned probe), because it also lengthened trails the base never
+  followed. So the sources of that push are kept as `relays` in the
+  substitution (Features.Check.Links `relayTo`), which `trail` follows only
+  straight past a hop whose origin is `ClauseRow`. `Application` stays for
+  installations (`Install`) and applications; the FX008 texts and the
+  Tasks 9-10 pins are unchanged. Side effect, programs with `defer` only: one
+  program (the argbind rejection) changes its `Unhandled Fail(E) in main`
+  note from "Fail(E) comes from this function value" at the `put` call to
+  "Fail(E) is raised here" at the `fail(E)`; code, message and span are
+  unchanged, and another `defer` program returns to the base text.
+- **M3** (unreachable paths). Asserted guards, not deletions. TailPass's
+  installation rule is now a check that C's rigid variable ends the row it
+  is installed in (always true while R is `current`'s row) and an E_INTERNAL
+  otherwise; Settle's consumeBare fallback is an E_INTERNAL; Lend.assume
+  returns the failure of its directional `pairMarks` (never produced today)
+  and Settle reports it as E_INTERNAL, instead of the review's direct call
+  of `UnifyMark.recorded`, which would have orphaned the regression row
+  `fx008-c-unified` (its needle moves to the new `pairMarks` line). The
+  first two guards are forced by hand in test/fx008-guards.test.mjs through
+  `Features.Check.Inspect`; the third cannot be (a directional pairing
+  cannot fail).
+- **M4** registers p01, p02, p11 and q03 and their controls
+  (test/fx008-nofail-k.test.mjs); the generator shape is the controller's
+  BACKLOG item.
+- **M7** `checkedStates` moved to `Features.Check.Inspect` (with
+  `settledAgain` for the guard tests); `Features.Check` exports `check`
+  only. The per-function checker moved to `Features.Check.Function`.
+- **M1** re-measured: installations 7342 to 486 ms (bound 22026 to 1458 ms),
+  the install guard 9500 ms to 3 x 489 ms. **M2** not applied as the review wrote it:
+  `ended = restricted` changes diagnostics, not only registry fields.
+  Settling also records origins for its own clause-row consumptions, so
+  `Entry.check` moved witness/ec2's span (90-380 to 161-191) and argbind's
+  notes; the gate caught both. The state stays as it was (settled
+  substitution, pre-settle rest) and the stale comment is replaced by the
+  reason. **M6** untouched.
 
 ---
 

@@ -1,0 +1,10 @@
+type Opt(a) = No | Some(a);
+effect Log { fn log(n: Int): Unit; };
+effect Cell(a) { fn put(x: a): Bool; };
+fn main(): Unit with Console = {
+  let k = fn(u: Unit) => ();
+  let h = handler Log { log(n) => k(()) };
+  let g1 = fn(u: Unit) => with h { let v = No; if put(v) then print(v == v) else () };
+  let g2 = fn(u: Unit) => { k(()); if put(Some(true)) then () else () };
+  print(0)
+};

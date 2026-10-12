@@ -19,7 +19,8 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
 import Domain.Ids (TypeId(..))
-import Domain.Row (Label(..), Row(..), closedRow, openRow)
+import Domain.Row (HandlerRows, Label(..), Row(..), closedRow, openRow)
+import Domain.Row as Row
 
 -- A type variable of a signature or declaration, numbered by Resolve.
 newtype VarId = VarId Int
@@ -45,7 +46,7 @@ data Ty v
   | TVar v
   | TFun (Ty v) (TyRow v) (Ty v)
   | TUnit
-  | THandler (Label (Ty v)) (TyRow v)
+  | THandler (Label (Ty v)) (HandlerRows (Ty v) v)
 
 type TyRow v = Row (Ty v) v
 
@@ -150,7 +151,7 @@ substitute substitution = case _ of
     (map (substituteRow substitution) rows)
   TVar variable → substitution.types variable
   THandler label row → THandler (substituteLabel substitution label)
-    (substituteRow substitution row)
+    (Row.mapHandlerRows (substituteRow substitution) row)
   arrow@(TFun _ _ _) → substitutedStages (stagesThrough identity arrow)
   where
   substituted part = substitute substitution part
@@ -173,8 +174,8 @@ substituteRow substitution (Row labels tail)
       appended (Row more rest) = Row (written <> more) rest
 
 substituteLabel ∷ ∀ v w. Substitution v w → Label (Ty v) → Label (Ty w)
-substituteLabel substitution (Label effect arguments) =
-  Label effect (map (substitute substitution) arguments)
+substituteLabel substitution (Label effect arguments mark) =
+  Label effect (map (substitute substitution) arguments) mark
 
 -- Two arrows' spines in step, by a loop, until a parameter or row differs
 -- or one side is no longer an arrow.

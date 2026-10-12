@@ -57,8 +57,7 @@ originNotesVia call primary label hops =
   noted = Array.mapMaybe note located
   note entry
     | entry.origin.span == primary = Nothing
-    | otherwise = Just
-        (noteAt entry.origin.span (reasonOf call label entry.origin))
+    | otherwise = noteAt entry.origin.span <$> reasonOf call label entry.origin
   marker entry = case entry.origin.consumed of
     CallOf callee → maybe [] (continues callee entry)
       (position entry.origin.span hops entry.index)
@@ -76,12 +75,14 @@ position span hops index = Array.findMap positioned
     Written at place | at == span → Just place
     _ → Nothing
 
-reasonOf ∷ (String → NoteReason) → String → Origin → NoteReason
+-- No reason for a clause-row consumption: it only carries the trail on.
+reasonOf ∷ (String → NoteReason) → String → Origin → Maybe NoteReason
 reasonOf call label origin = case origin.consumed of
-  Operation _ → PerformedHere label
-  CallOf callee → call callee
-  Application → FromFunctionValue label
-  FailOf _ → RaisedHere label
+  Operation _ → Just (PerformedHere label)
+  CallOf callee → Just (call callee)
+  Application → Just (FromFunctionValue label)
+  ClauseRow → Nothing
+  FailOf _ → Just (RaisedHere label)
 
 -- The boundaries a trail's origins crossed, where they were crossed.
 crossingNotes ∷ String → Array Hop → Array Note

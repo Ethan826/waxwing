@@ -12,4 +12,5 @@ type Scope =
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , effectInfos ∷ Array Resolved.EffectInfo
   , variables ∷ Array String
+  , markVariables ∷ Array String
   }

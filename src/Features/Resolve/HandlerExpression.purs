@@ -10,10 +10,15 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..))
 import Domain.Syntax as Syntax
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Handler as Handler
+import Features.Resolve.Marks
+  ( MarkVariableRef
+  , markVariableRefs
+  , scopedMarkVariables
+  )
 import Features.Resolve.Row (failFamily)
 import Features.Resolve.Scope (Scope)
 import Features.Resolve.Types as Types
@@ -28,6 +33,7 @@ handlerExpression
   → Array Syntax.Clause
   → Fresh Resolved.Expr
 handlerExpression resolveExpression scope span reference clauses = do
+  liftEither (scopedMarkVariables scope.markVariables (variableRefs reference))
   resolved ← liftEither
     ( Handler.resolveHandler scope.types scope.effectInfos scope.effects
         scope.variables
@@ -94,19 +100,25 @@ failureClause
   → Fresh Resolved.FailClause
 failureClause resolveExpression scope clause = do
   payload ← liftEither
-    ( Types.resolveTypeWith scope.types
-        scope.effects
-        scope.variables
-        Nothing
-        clause.ty
+    ( scopedMarkVariables scope.markVariables (markVariableRefs clause.ty)
+        *> Types.resolveTypeWith scope.types
+          scope.effects
+          scope.variables
+          Nothing
+          clause.ty
         >>= failFamily (Syntax.typeRefSpan clause.ty)
     )
   local ← fresh
   let locals = Map.insert clause.name local scope.locals
   body ← resolveExpression (scope { locals = locals }) clause.body
   pure
-    { label: Label FailEffect [ payload ]
+    { label: Label FailEffect [ payload ] Unmarked
     , local: Just local
     , body
     , span: clause.span
     }
+
+-- A handler literal's label arguments name only the signature's mark
+-- variables, as a lambda annotation's types do.
+variableRefs ∷ Syntax.LabelRef → Array MarkVariableRef
+variableRefs reference = Array.concatMap markVariableRefs reference.arguments

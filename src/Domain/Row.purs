@@ -1,19 +1,29 @@
 module Domain.Row
   ( Row(..)
   , Label(..)
+  , Mark(..)
+  , HandlerRows
   , EffectRef(..)
   , LabelKey(..)
   , TypeHead(..)
   , closedRow
   , openRow
   , isPure
+  , isBare
   , labelKey
+  , labelMark
+  , withMark
+  , normalMark
+  , mapHandlerRows
+  , clauseRow
+  , handlerRowList
+  , uniformRows
   ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
-import Data.Maybe (Maybe(..), isNothing)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
 import Domain.Ids (EffectId, TypeId)
 
 -- An effect row (FX001 design §2): labels in order, with multiplicity,
@@ -22,8 +32,20 @@ import Domain.Ids (EffectId, TypeId)
 -- Domain.Type can import this module rather than the other way round.
 data Row t v = Row (Array (Label t)) (Maybe v)
 
--- An effect applied to its type arguments: `State(Int)`, `Fail(DbError)`.
-data Label t = Label EffectRef (Array t)
+-- An effect applied to its type arguments, `State(Int)`, `Fail(DbError)`,
+-- and its mark (FX008 design §3.3), last so the derived order ranks by
+-- effect first. `Plain` is nothing written (M in signatures and data, a
+-- fresh meta in lambda annotations); `Unmarked` is Fail's placeholder and
+-- every mark once Check has stripped them.
+data Label t = Label EffectRef (Array t) Mark
+
+data Mark = NoFail | Plain | MarkVariable String | MarkMeta Int | Unmarked
+
+-- A handler type's two rows: the inference row R and the clause row C.
+-- `Nothing` means C is the inference row: a written type, and every type
+-- after Check. Only a handler literal has a distinct C, so a nested written
+-- type is one tree, not two per level.
+type HandlerRows t v = { inference ∷ Row t v, clauses ∷ Maybe (Row t v) }
 
 data EffectRef = UserEffect EffectId | FailEffect | ConsoleEffect
 
@@ -38,6 +60,8 @@ derive instance eqEffectRef ∷ Eq EffectRef
 derive instance ordEffectRef ∷ Ord EffectRef
 derive instance eqTypeHead ∷ Eq TypeHead
 derive instance ordTypeHead ∷ Ord TypeHead
+derive instance eqMark ∷ Eq Mark
+derive instance ordMark ∷ Ord Mark
 derive instance eqLabelKey ∷ Eq LabelKey
 derive instance ordLabelKey ∷ Ord LabelKey
 derive instance eqLabel ∷ Eq t ⇒ Eq (Label t)
@@ -58,9 +82,44 @@ openRow tail = Row [] (Just tail)
 isPure ∷ ∀ t v. Row t v → Boolean
 isPure (Row labels tail) = Array.null labels && isNothing tail
 
+-- No label, only a tail: an alias of the tail's row.
+isBare ∷ ∀ t v. Row t v → Boolean
+isBare (Row labels tail) = Array.null labels && isJust tail
+
 -- `Nothing` while a Fail payload's head is not a declared type (a
 -- variable): the key is deferred until the head is known.
 labelKey ∷ ∀ t. (t → Maybe TypeHead) → Label t → Maybe LabelKey
-labelKey headOf (Label effect arguments) = case effect of
+labelKey headOf (Label effect arguments _) = case effect of
   FailEffect → FailKey <$> (headOf =<< Array.head arguments)
   other → Just (EffectKey other)
+
+labelMark ∷ ∀ t. Label t → Mark
+labelMark (Label _ _ mark) = mark
+
+withMark ∷ ∀ t. Mark → Label t → Label t
+withMark mark (Label effect arguments _) = Label effect arguments mark
+
+-- Console is always N and Fail never compared (design §3.3).
+normalMark ∷ EffectRef → Mark → Mark
+normalMark effect mark = case effect of
+  ConsoleEffect → NoFail
+  FailEffect → Unmarked
+  UserEffect _ → mark
+
+-- C the same as R: a written type, or a literal until clauses have rows of
+-- their own (FX008 Task 7).
+uniformRows ∷ ∀ t v. Row t v → HandlerRows t v
+uniformRows row = { inference: row, clauses: Nothing }
+
+clauseRow ∷ ∀ t v. HandlerRows t v → Row t v
+clauseRow rows = fromMaybe rows.inference rows.clauses
+
+-- The rows a structural pass enters: C only when it is its own tree.
+handlerRowList ∷ ∀ t v. HandlerRows t v → Array (Row t v)
+handlerRowList rows = Array.cons rows.inference
+  (Array.fromFoldable rows.clauses)
+
+mapHandlerRows
+  ∷ ∀ t v u w. (Row t v → Row u w) → HandlerRows t v → HandlerRows u w
+mapHandlerRows change rows =
+  { inference: change rows.inference, clauses: map change rows.clauses }

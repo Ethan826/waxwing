@@ -15,15 +15,15 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.String (joinWith)
 import Data.Traversable (traverse)
-import Domain.Ids (EffectId(..))
-import Domain.Problem (LabelName, Problem(..), RowText, TypeName(..))
+import Domain.Problem (LabelName, Problem(..), RowText)
 import Domain.Resolved (EffectInfo, TypeInfo)
-import Domain.Row (EffectRef(..), Label(..), Row(..))
+import Domain.Row (Label(..), Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty, TyRow, VarId(..))
+import Domain.Checked.Internal (Open)
 import Features.Check.Scheme (opened)
 import Features.Check.Subst (Flex(..))
-import Features.Check.TypeName (typeName)
+import Features.Check.TypeName (labelParts, labelText)
 
 labelName
   ∷ ∀ r
@@ -35,9 +35,7 @@ labelName
   → Span
   → Label (Ty Flex)
   → Either Diagnostic String
-labelName env span label = printed <$> labelView env span label
-  where
-  printed view = view.effect <> listed (map rendered view.arguments)
+labelName env span label = labelText env span (openedLabel label)
 
 -- A label's effect and its arguments as names, for a diagnostic that
 -- elides the arguments off the path to a difference.
@@ -51,17 +49,11 @@ labelView
   → Span
   → Label (Ty Flex)
   → Either Diagnostic LabelName
-labelView env span (Label effect arguments) = do
-  name ← effectName effect
-  parts ← traverse (typeName env span <<< opened) arguments
-  pure { effect: name, arguments: parts }
-  where
-  effectName ConsoleEffect = Right "Console"
-  effectName FailEffect = Right "Fail"
-  effectName (UserEffect (EffectId index)) = maybe' missing named
-    (Array.index env.effects index)
-  named info = Right info.name
-  missing _ = Left (problemAt (Internal "Invalid effect id") span)
+labelView env span label = labelParts env span (openedLabel label)
+
+openedLabel ∷ Label (Ty Flex) → Label (Ty Open)
+openedLabel (Label effect arguments mark) =
+  Label effect (map opened arguments) mark
 
 rowName
   ∷ ∀ r
@@ -145,19 +137,3 @@ tailName ∷ ∀ r. { variables ∷ Array String | r } → Flex → String
 tailName env = case _ of
   Rigid (VarId index) → maybe "" identity (Array.index env.variables index)
   Meta _ → ""
-
-listed ∷ Array String → String
-listed parts =
-  if Array.null parts then "" else "(" <> joinWith ", " parts <> ")"
-
-rendered ∷ TypeName → String
-rendered = case _ of
-  IntName → "Int"
-  BoolName → "Bool"
-  UnitName → "Unit"
-  DataName name → name
-  AppliedName name arguments → name <> listed (map rendered arguments)
-  VariableName name → name
-  HoleName → "_"
-  FunctionName parameter result → rendered parameter <> " -> " <> rendered
-    result

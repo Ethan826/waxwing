@@ -13,6 +13,7 @@ module Format.Parse.Grammar
   , on
   , onWhen
   , dispatch
+  , ifSecond
   , optionalOn
   , sepBy1
   , sepByTrailing1
@@ -29,7 +30,6 @@ module Format.Parse.Grammar
   ) where
 
 import Prelude
-import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, maybe')
@@ -42,6 +42,7 @@ import Format.Parse.Cursor
   , advance
   , current
   , failAt
+  , foldAt
   , groupedAt
   , infixedAt
   , leading
@@ -51,6 +52,7 @@ import Format.Parse.Cursor
   , rightAt
   , separated
   , shifting
+  , skip
   , rootedAt
   , trailing
   )
@@ -114,6 +116,13 @@ onWhen accepts parser = { accepts, parser }
 -- input), else the fallback. Nothing is consumed before the choice.
 dispatch ∷ ∀ a. Array (Case a) → Parser a → Parser a
 dispatch cases fallback = Parser (dispatchAt cases fallback)
+
+-- Chooses on the token after the next, consuming nothing: a contextual
+-- keyword is one only when what follows it says so.
+ifSecond ∷ ∀ a. (String → Boolean) → Parser a → Parser a → Parser a
+ifSecond accepts (Parser yes) (Parser no) = Parser chosen
+  where
+  chosen state = (if accepts (peekText (skip state)) then yes else no) state
 
 optionalOn ∷ ∀ a. String → Parser a → Parser (Maybe a)
 optionalOn text parser = dispatch [ on text (Just <$> parser) ]
@@ -220,20 +229,6 @@ collect next item =
     (foldAt next single (flip Stack.push) (run item) (run item))
   where
   single first = Stack.push first Stack.empty
-
--- The first item runs directly; then one item per step: tailRecM runs the
--- steps as a loop, so lists of any length run in constant stack (BACKLOG
--- E002), and a one-item list never enters it (fewer frames per nesting).
-foldAt ∷ ∀ a b. Continue → (a → b) → (b → a → b) → Run a → Run a → Run b
-foldAt next first combine head item state = head state >>= begin
-  where
-  begin parsed = next parsed.rest >>= resume (first parsed.value)
-  resume value (Loop rest) = tailRecM step { add: combine value, rest }
-  resume value (Done rest) = Right { value, rest }
-  step pending = item pending.rest >>= decide pending.add
-  decide add parsed = map (after (add parsed.value)) (next parsed.rest)
-  after value (Loop rest) = Loop { add: combine value, rest }
-  after value (Done rest) = Done { value, rest }
 
 spannedAt ∷ ∀ a b. (Span → a → b) → Run a → Run b
 spannedAt build parser state = map withSpan (parser state)

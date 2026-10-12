@@ -12,6 +12,7 @@ import Domain.Type (Ty(..), TyRow, substitute)
 import Domain.Row (openRow)
 import Features.Check.Stages (arrowType, stages)
 import Features.Check.Context (CheckEnv, Infer, Locals, bindAll)
+import Features.Check.MarkUse (localMarks)
 import Features.Check.Match (Typed)
 import Features.Check.Scheme (State, Threaded, threadAll)
 
@@ -69,12 +70,11 @@ parameterType
 parameterType variables row state parameter = Right
   (maybe' fresh annotated parameter.ty)
   where
-  annotated ty =
-    { value:
-        { local: parameter.local
-        , ty: substitute { types: rigidType, rows: annotationRow } ty
-        }
-    , state
+  annotated ty = named
+    (localMarks state (substitute { types: rigidType, rows: annotationRow } ty))
+  named found =
+    { value: { local: parameter.local, ty: found.value }
+    , state: found.state
     }
   rigidType id = TVar (Rigid id)
   annotationRow id

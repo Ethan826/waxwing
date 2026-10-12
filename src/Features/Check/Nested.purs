@@ -94,7 +94,7 @@ layoutReferences ∷ ∀ v. Int → Ty v → Array Int
 layoutReferences offset = case _ of
   TData (TypeId index) arguments _ → Array.cons index
     (Array.concatMap recur arguments)
-  THandler (Label (UserEffect (EffectId index)) arguments) _ → Array.cons
+  THandler (Label (UserEffect (EffectId index)) arguments _) _ → Array.cons
     (offset + index)
     (Array.concatMap recur arguments)
   ty → Array.concatMap recur (children ty)
@@ -137,7 +137,7 @@ judgeField graph inside ty syntax = case ty, syntax of
   _, _ → Right unit
   where
   recur = judgeField graph inside
-  handler (Label effect arguments) written = case effect of
+  handler (Label effect arguments _) written = case effect of
     UserEffect (EffectId index) → reference written.span
       (graph.offset + index)
       arguments

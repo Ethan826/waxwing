@@ -1,0 +1,9 @@
+type Opt(a) = No | Some(a);
+effect Log { fn log(n: Int): Unit; };
+effect Cell(a) { fn put(x: a): Unit; };
+fn main(): Unit with Console = {
+  let h = handler Log { log(n) => () };
+  let g1 = fn(u: Unit) => with h { put(No) };
+  let g2 = fn(u: Unit) => with h { put(Some(1)) };
+  with handler Cell(Opt(Int)) { put(x) => print(7) } { g1(()) }
+};

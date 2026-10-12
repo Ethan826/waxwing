@@ -19,7 +19,7 @@ import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
 import Domain.Problem (Problem(..))
 import Domain.Resolved (FunctionId(..))
-import Domain.Row (Label(..), closedRow)
+import Domain.Row (Label(..), Mark(..), closedRow, uniformRows)
 import Domain.Syntax (Diagnostic, Span, origin, problemAt)
 import Domain.Type (Ty(..), TypeId(..))
 import Domain.Type.Parts (arrows)
@@ -168,7 +168,8 @@ groundType grounds span = case _ of
   missing _ = Left (problemAt (Internal "Invalid type id") span)
   missingEffect _ = Left (problemAt (Internal "Invalid effect key") span)
   groundHandler info = handlerOf info <$> traverse recur info.arguments
-  handlerOf info arguments = THandler (Label info.effect arguments) closedRow
+  handlerOf info arguments = THandler (Label info.effect arguments Unmarked)
+    (uniformRows closedRow)
   recur part = groundType grounds span part
   groundSpine found = arrows <$> traverse recur found.parameters
     <*> recur found.result

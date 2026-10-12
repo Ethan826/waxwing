@@ -1,0 +1,11 @@
+effect Log { fn log(n: Int): Unit; };
+effect Tick { fn tick(): Unit; };
+fn main(): Unit with Console = {
+  let g = fn(u: Unit) => {
+    let k = fn(n: Int) => print(n);
+    k(0);
+    let h = handler Log { log(n) => { defer k(n); tick() } };
+    with h { log(1) }
+  };
+  with handler Tick { tick() => print(7) } { g(()) }
+};

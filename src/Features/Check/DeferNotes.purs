@@ -51,6 +51,7 @@ failureNotes state span whole body label occurrence =
   viaCall origin = case origin.consumed of
     CallOf _ → true
     Application → true
+    ClauseRow → true
     _ → false
   bring application = noteAt (Checked.spanOf application)
     (FromFunctionValue label)

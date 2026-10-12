@@ -10,6 +10,11 @@ import Domain.Ids (EffectId(..))
 import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.Marks
+  ( markVariableRefs
+  , refuseMarkVariables
+  , rowMarkVariableRefs
+  )
 import Features.Resolve.Types (resolveTypeWith)
 import Features.Resolve.Repeated (laterRepeat)
 
@@ -30,10 +35,14 @@ effects types declarations = do
     (operation (map parameterName effect.parameters))
     effect.operations
   parameterName entry = entry.name
-  operation variables declaration = withSignature declaration
-    <$> traverse (parameter variables) declaration.parameters
-    <*> resolveTypeWith types (summaries declarations) variables Nothing
-      declaration.result
+  operation variables declaration = refusedIn declaration
+    *>
+      ( withSignature declaration
+          <$> traverse (parameter variables) declaration.parameters
+          <*> resolveTypeWith types (summaries declarations) variables
+            Nothing
+            declaration.result
+      )
   parameter variables declaration = withType declaration
     <$> resolveTypeWith types (summaries declarations) variables Nothing
       declaration.ty
@@ -65,6 +74,16 @@ globals found = Array.concat (Array.mapWithIndex owned found)
     , ref: Resolved.Operation effect index
         (Array.length info.parameters)
     }
+
+-- Mark variables belong to function signatures alone (FX008 L6).
+refusedIn ∷ Syntax.OperationDecl → Either Syntax.Diagnostic Unit
+refusedIn declaration = refuseMarkVariables
+  ( Array.concatMap markVariableRefs
+      (Array.snoc (map parameterType declaration.parameters) declaration.result)
+      <> maybe [] rowMarkVariableRefs declaration.row
+  )
+  where
+  parameterType parameter = parameter.ty
 
 uniqueEffects ∷ Array Syntax.EffectDecl → Either Syntax.Diagnostic Unit
 uniqueEffects declarations = do
