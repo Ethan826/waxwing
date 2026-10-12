@@ -3944,3 +3944,17 @@ Evidence: serial run 15.5 s; verify at 0a571d4
 (.build/task11-fix-verify.log in the worktree): exit 0, 1226/1226
 parallel, 47/47 serial. Gap for the whole-branch review: the generator
 has no `nofail(k)` mark-variable shape.
+
+### FX008 Task 12: spec, CF001 and FX001 plan amendments (2026-10-12)
+
+Sonnet implementer (9a62014), docs only; checked by the controller (the
+P10 headlines and notes appear in the spec; CF001 changed only §5 R0,
+§8A.6 and §8A.8). The effects spec now carries the FX008 rule, the
+`nofail` and `nofail(k)` syntax, the approved texts, and the rulings made
+during implementation (C carries no label arguments; F1′ in settling;
+installation by `assume`; a result handler type's own C; opening only at
+function signatures). Limitations are BACKLOG FX013-FX016. Verify at
+9a62014: exit 0, 1226/1226, 47/47; 64 regression proofs, 28 of them FX008.
+
+FX008 Tasks 1-12 are complete. Before merging: T008 (user decision) and
+the whole-branch review.
