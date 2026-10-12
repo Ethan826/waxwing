@@ -32,3 +32,37 @@ test('1,000 installations in one declaration check within the bound', () => {
   assert.equal(result.constructor.name, 'Right');
   assert.ok(elapsed < bound, `took ${elapsed} ms, bound ${bound} ms`);
 });
+
+// BACKLOG T008: the settling cost is linear in the installations. Every
+// consumption used to walk the target row's chain of alias hops, one lookup
+// per hop, so doubling the installations multiplied the time by 4.5
+// (7.9 s then 35 s at 9a62014). `MEASURED_RATIO` is the median over five
+// runs of time(2,000) / time(1,000), each the best of `runs` timings, on the
+// author's laptop (2026-10-12, load average 4.3); `MAX_RATIO` is 1.6 times
+// that. A linear check doubles and quadratic work lands at 4 or more (4.5
+// at 9a62014), so the bound sits between them. The warm-up keeps JIT start-up out of
+// the first timing, and the best of three keeps a load spike out of either.
+const MEASURED_RATIO = 2.0;
+const MAX_RATIO = 3.2;
+const runs = 3;
+
+const bestOf = source => {
+  let best = Infinity;
+  for (let run = 0; run < runs; run++) {
+    const started = performance.now();
+    const result = check(source);
+    best = Math.min(best, performance.now() - started);
+    assert.equal(result.constructor.name, 'Right');
+  }
+  return best;
+};
+
+test('doubling the installations keeps the check time linear', t => {
+  assert.equal(check(resolved(20)).constructor.name, 'Right');
+  const small = bestOf(resolved(count));
+  const large = bestOf(resolved(2 * count));
+  t.diagnostic(`${Math.round(small)} ms, ${Math.round(large)} ms, `
+    + `ratio ${large / small}, measured ${MEASURED_RATIO}`);
+  assert.ok(large / small <= MAX_RATIO,
+    `2,000 took ${large} ms against ${small} ms for 1,000, bound ${MAX_RATIO}x`);
+});

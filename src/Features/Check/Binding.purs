@@ -13,10 +13,11 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Domain.Row (Label(..), Row(..), handlerRowList, isPure)
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
+import Features.Check.Aliases (aliased)
 import Features.Check.Search (Stack(..))
 import Features.Check.Subst
   ( Failure(..)
@@ -24,6 +25,7 @@ import Features.Check.Subst
   , Subst(..)
   , resolve
   , walk
+  , metaOf
   , walkRow
   )
 import Features.Check.Watch (noteBound)
@@ -78,8 +80,17 @@ bindType subst meta ty =
 
 -- A row meta bound to a row with no label: another tail, or closed.
 bindTail ∷ Subst → Int → TyRow Flex → Subst
-bindTail (Subst bindings) meta row@(Row _ tail) = noteBound meta tail
-  (Subst bindings { rows = Map.insert meta row bindings.rows })
+bindTail (Subst bindings) meta row@(Row labels tail) = noteBound meta tail
+  ( Subst bindings
+      { rows = Map.insert meta row bindings.rows
+      , aliases = aliasing
+      }
+  )
+  where
+  aliasing =
+    if Array.null labels then
+      maybe bindings.aliases (aliased bindings.aliases meta) (metaOf =<< tail)
+    else bindings.aliases
 
 -- Leijen's extension `meta := label + fresh`: the label must be bounded
 -- and must not hold `meta` in a row of its arguments (an infinite row).

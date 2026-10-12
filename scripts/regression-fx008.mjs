@@ -25,6 +25,15 @@ const earlierRows = [
     probe: 'fx008-settle-order-linear', message: /settle order: timed out/
   },
   {
+    // T008: without the alias classes every walk of a row follows each hop
+    // of its tail chain, and 2,000 installations take 35 s to check.
+    name: 'fx008-install-linear', file: 'src/Features/Check/Aliases.purs',
+    needle: '  | landing aliases meta /= meta || landing aliases next == meta'
+      + ' = aliases\n',
+    replacement: '  | true = aliases\n',
+    probe: 'fx008-install-linear', message: /install order: timed out/
+  },
+  {
     // Task 7: without the hook R never sees the clause rows, so a handler
     // head decided before settling (late1) finds no label.
     name: 'fx008-hook', file: 'src/Features/Check/Sync.purs',

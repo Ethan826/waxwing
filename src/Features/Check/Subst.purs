@@ -8,14 +8,12 @@ module Features.Check.Subst
   , substitute
   , substituteRow
   , postpone
-  , linkTo
-  , linkOf
   , walk
   , walkRow
   , resolve
   , resolveRow
   , resolveLabel
-  , boundRow
+  , boundAt
   , metaOf
   ) where
 
@@ -26,7 +24,8 @@ import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Row (Label(..), Row(..), isPure, mapHandlerRows, openRow)
+import Data.Tuple (Tuple, snd)
+import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
 import Domain.Type
   ( Substitution
   , Ty(..)
@@ -36,6 +35,7 @@ import Domain.Type
   , stagesThrough
   )
 import Domain.Type as Type
+import Features.Check.Aliases (Aliases, jumped, noAliases)
 import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
 import Features.Check.Search (Stack(..), stackItems)
@@ -73,6 +73,7 @@ newtype Subst = Subst
   , links ∷ Map OccurrenceId OccurrenceId
   , marks ∷ MarkStore (Ty Flex)
   , watch ∷ TailWatch
+  , aliases ∷ Aliases
   }
 
 -- A postponed pair keeps where its sides were written and how it treats
@@ -114,6 +115,7 @@ empty = Subst
   , links: Map.empty
   , marks: emptyMarks
   , watch: emptyWatch
+  , aliases: noAliases
   }
 
 -- No meta is bound, so resolving under it changes no type. (Mark bindings
@@ -151,16 +153,6 @@ postpone (Subst bindings) pair = Subst bindings
       }
   }
 
--- `from` is the same label as `to`; an occurrence's first link stays.
-linkTo ∷ OccurrenceId → OccurrenceId → Subst → Subst
-linkTo from to (Subst bindings) =
-  Subst bindings { links = Map.insertWith keepFirst from to bindings.links }
-  where
-  keepFirst first _ = first
-
-linkOf ∷ Subst → OccurrenceId → Maybe OccurrenceId
-linkOf (Subst bindings) from = Map.lookup from bindings.links
-
 -- The type itself if it is not a bound meta, else the end of its chain.
 -- Only a meta enters the loop: most types walked are not one, and the
 -- loop's steps were a measurable share of checking a large body (T003).
@@ -173,10 +165,13 @@ walk (Subst bindings) start = case start of
     TVar (Meta meta) → maybe (Done ty) Loop (Map.lookup meta bindings.types)
     _ → Done ty
 
--- The binding of a row's tail, if the tail is a bound meta.
-boundRow ∷ Subst → Maybe Flex → Maybe (TyRow Flex)
-boundRow (Subst bindings) tail = flip Map.lookup bindings.rows =<<
-  (metaOf =<< tail)
+-- The binding a row's tail leads to, with the meta that holds it; alias
+-- hops are jumped (Features.Check.Aliases). Nothing unless the tail is bound.
+boundAt ∷ Subst → Maybe Flex → Maybe (Tuple Int (TyRow Flex))
+boundAt (Subst bindings) tail = (metaOf =<< tail) >>= jumped bindings.aliases
+  bindings.rows
+  isBare
+  (openRow <<< Meta)
 
 -- The row with its tail's bindings spliced in, by a loop, until the tail
 -- is closed, rigid or an unbound meta. Labels stay unresolved. Chunks are
@@ -184,7 +179,7 @@ boundRow (Subst bindings) tail = flip Map.lookup bindings.rows =<<
 -- bindings costs no copy per binding.
 walkRow ∷ Subst → TyRow Flex → TyRow Flex
 walkRow subst row@(Row labels tail) =
-  maybe row spliced (boundRow subst tail)
+  maybe row spliced (snd <$> boundAt subst tail)
   where
   spliced first = joined
     (tailRec step { chunks: Push labels Bottom, next: first })
@@ -192,7 +187,7 @@ walkRow subst row@(Row labels tail) =
   advance chunks (Row more rest) = maybe
     (Done { chunks: Push more chunks, tail: rest })
     (Loop <<< pushed chunks more)
-    (boundRow subst rest)
+    (snd <$> boundAt subst rest)
   pushed chunks more next = { chunks: Push more chunks, next }
   joined done = Row (Array.concat (stackItems done.chunks)) done.tail
 

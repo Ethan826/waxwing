@@ -16,6 +16,7 @@ import Data.Maybe (isNothing, maybe')
 import Data.Tuple (Tuple(..))
 import Domain.Row (HandlerRows, Label(..), clauseRow)
 import Domain.Type (Ty(..), TyRow)
+import Features.Check.Aliases (noAliases)
 import Features.Check.Binding (exceedsLimit, inferredTypeLimit)
 import Features.Check.Binding as Binding
 import Features.Check.Subst
@@ -98,6 +99,7 @@ compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
       , fresh = min laterBindings.marks.fresh earlierBindings.marks.fresh
       }
   , watch: laterBindings.watch
+  , aliases: noAliases
   }
 
 unifyAt ∷ Int → Subst → Ty Flex → Ty Flex → Either Failure Subst

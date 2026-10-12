@@ -1383,6 +1383,31 @@ the controller.)
 - [ ] **Step 6: Commit** `docs: FX008 spec amendment, CF001 abort-free
   boundaries, FX001 plan amendments`.
 
+### T008: Linear settling for shared tails
+
+BACKLOG T008. The Task 5 review blamed the feed graph (N rows sharing a tail
+give N^2 edges); profiling 1,000 installations at 9a62014 (7.7 s; 2,000 took
+35 s) showed otherwise. The entries' own rows are short and the feed graph
+is not hot. The time was 14 million `boundRow` lookups: settling extends the
+shared target row by one bare-tail alias hop per consumption
+(`unifyTails`: `meta := Row [] tail`), so the chain from the target's head
+is as long as the declaration, and each of N consumptions, `feedRow`,
+`labelCount` and the unifier's `expanded` walked it hop by hop.
+
+Fix: `Features.Check.Aliases` keeps, in the substitution, classes of alias
+hops (a union-find that only grows at its far end: `reach` meta to class,
+`ends` class to end), maintained by `bindTail` and read by `boundAt`, which
+jumps from a hop to the end of its class. Only label-free hops are jumped,
+so every label, occurrence (`Extended meta`) and tail is unchanged; the
+settle order (P14), cycle detection and the probes do not read hop counts.
+A hop that cannot be merged (neither side a lone meta) is walked as before,
+so the tables never need to be complete. Measured (median of 3, 2026-10-12):
+1,000 installations 7.9 s to 0.5 s, 2,000 35 s to 1.0 s; 8,000 defers and
+the 1,000 chain unchanged. Not covered: a chain of hops that carry labels
+(`extendRow`) is still walked hop by hop. Guards: the ratio test in
+`test/fx008-install.serial.test.mjs` (4.27 at 9a62014, 2.0 now, bound 3.2)
+and the mutant row `fx008-install-linear`.
+
 ---
 
 ## Coverage

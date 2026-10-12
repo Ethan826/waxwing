@@ -9,7 +9,8 @@ import Data.Foldable (foldl)
 import Features.Check.Occurrence (OccurrenceId, anonymous)
 import Features.Check.Occurrence as Occurrence
 import Features.Check.Provenance (Origin, Origins, remember)
-import Features.Check.Subst (Subst, linkTo)
+import Features.Check.Links (linkTo)
+import Features.Check.Subst (Subst)
 
 -- What unification did with each label (design §6): a left label matched
 -- an existing right entry (the right occurrence says through which

@@ -79,6 +79,28 @@ const settleOrderLinear = context => {
   console.log(`${context.probe} regression detects the defect`);
 };
 
+// T008: settling is linear in the installations. 2,000 `with`s in one
+// declaration compile in about 2 s; with every consumption walking the
+// target's whole chain of alias hops they took 35 s to check (7.9 s for
+// 1,000), so a 12 s timeout separates them. As for the settle order, the
+// margin is machine-dependent: re-measure on a host 3x faster.
+const installTimeoutMs = 12_000;
+const installCount = 2_000;
+
+const installLinear = context => {
+  const source = 'effect Log { fn log(n: Int): Unit; }; '
+    + 'effect Tick { fn tick(): Unit; }; '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
+    + '{ ' + 'with handler Tick { tick() => log(1) } { tick() }; '
+      .repeat(installCount) + '() };';
+  const found = compileWithin(context, source, installTimeoutMs);
+  if (found.timedOut) fail('install order: timed out');
+  if (found.diagnostic !== null) {
+    fail(`install order: ${JSON.stringify(found.diagnostic)}`);
+  }
+  console.log(`${context.probe} regression detects the defect`);
+};
+
 const probeSource = name => readFileSync(`test/fx008-probes/${name}.wxw`,
   'utf8');
 
@@ -114,6 +136,7 @@ const rejects = (name, label, pattern) => context => {
 export const fx008Probes = {
   'fx008-cycle-presence': cyclePresence,
   'fx008-settle-order-linear': settleOrderLinear,
+  'fx008-install-linear': installLinear,
   'fx008-hook': accepts('rev7/late1', 'hook', '0\n'),
   'fx008-phi': accepts('rev8/two1', 'remainder', '0\n'),
   'fx008-phi-tail': accepts('rev8/two3', 'remainder tail', '0\n'),

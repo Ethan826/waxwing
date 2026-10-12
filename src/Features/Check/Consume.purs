@@ -25,7 +25,7 @@ import Features.Check.Provenance (Consumed, Origin, remember)
 import Features.Check.Reject (rejected, rightSpan, siteOccurrence)
 import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.Site (Site)
-import Features.Check.Subst (linkTo)
+import Features.Check.Links (linkTo)
 import Features.Check.Unify (Failure, Flex(..), Subst(..), unify, walkRow)
 import Features.Check.RowFinish (Traced)
 import Features.Check.UnifyRow

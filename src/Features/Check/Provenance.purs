@@ -23,7 +23,8 @@ import Domain.Syntax (Span)
 import Domain.Type (TyRow)
 import Features.Check.Occurrence (OccurrenceId, nowhere)
 import Features.Check.RowSide (expanded, written)
-import Features.Check.Subst (Flex, Subst, linkOf)
+import Features.Check.Links (linkOf)
+import Features.Check.Subst (Flex, Subst)
 
 -- What a label was consumed from (design §6): an operation, a call of a
 -- named function, an application of a function value, or a `fail`. The

@@ -9,6 +9,7 @@ module Domain.Row
   , closedRow
   , openRow
   , isPure
+  , isBare
   , labelKey
   , labelMark
   , withMark
@@ -22,7 +23,7 @@ module Domain.Row
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
-import Data.Maybe (Maybe(..), fromMaybe, isNothing)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
 import Domain.Ids (EffectId, TypeId)
 
 -- An effect row (FX001 design §2): labels in order, with multiplicity,
@@ -80,6 +81,10 @@ openRow tail = Row [] (Just tail)
 -- passes over types test it first and skip the rest.
 isPure ∷ ∀ t v. Row t v → Boolean
 isPure (Row labels tail) = Array.null labels && isNothing tail
+
+-- No label, only a tail: an alias of the tail's row.
+isBare ∷ ∀ t v. Row t v → Boolean
+isBare (Row labels tail) = Array.null labels && isJust tail
 
 -- `Nothing` while a Fail payload's head is not a declared type (a
 -- variable): the key is deferred until the head is known.
