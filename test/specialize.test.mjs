@@ -85,8 +85,11 @@ const identical = source => {
 
 // examples/lists.wxw is polymorphic (P001 Task 7), so specialization
 // copies it rather than returning it; test/poly-run.test.mjs runs it. So
-// is examples/functions.wxw (FN001 Task 6; test/compiler.test.mjs).
-const polymorphicExamples = new Set(['functions.wxw', 'lists.wxw']);
+// is examples/functions.wxw (FN001 Task 6; test/compiler.test.mjs), and
+// examples/services.wxw declares effects, whose layouts specialization
+// rebuilds (FX001 Task 11; test/fx-services.test.mjs).
+const polymorphicExamples = new Set(['functions.wxw', 'lists.wxw',
+  'services.wxw']);
 const examples = readdirSync('examples').filter(name => name.endsWith('.wxw'))
   .filter(name => !polymorphicExamples.has(name))
   .sort().map(name => readFileSync(join('examples', name), 'utf8'));

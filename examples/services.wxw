@@ -1,0 +1,41 @@
+effect Database { fn query(id: Int): Int; };
+effect Clock { fn now(): Int; };
+effect Log { fn log(n: Int): Unit; };
+
+fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
+
+fn fetch(id: Int): Int with Database + Log = {
+  let row = query(id);
+  log(row);
+  row
+};
+
+fn stamp(id: Int): Int with Clock + Log = {
+  let at = now();
+  log(at + id);
+  at
+};
+
+fn audited(id: Int): Int with Database + Clock + nofail Log = {
+  defer closeLog(id);
+  defer log(id);
+  fetch(id) + stamp(id)
+};
+
+fn report(first: Int, second: Int): Int
+    with Database + Clock + nofail Log =
+  audited(first) + audited(second);
+
+fn main(): Unit with Console = {
+  let live = true;
+  let database = if live then handler Database { query(id) => id + id }
+    else handler Database { query(id) => 7 };
+  let clock = if live then handler Clock { now() => 100 }
+    else handler Clock { now() => 0 };
+  let logger = if live then handler Log { log(n) => print(n) }
+    else handler Log { log(n) => () };
+  with database { with clock { with logger {
+    print(report(1, 2));
+    print(report(3, 4))
+  } } }
+};
