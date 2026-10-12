@@ -47,3 +47,28 @@ export const rejection = (seed, index) => {
   return { source, text, message: 'defer must not fail, but it may perform '
     + `any effect of ${spread ? `...${spread}` : '...'}` };
 };
+
+// A `defer` of a user operation whose handler may fail (FX008): the clause
+// fails directly, forwards to an outer clause that fails, or calls a
+// callback with an ambient row. E_EFFECT, spanning the `defer` item `text`,
+// with the FX008 message. kind 0: directly, 1: forwarding, 2: ambient.
+export const failingHandlerRejection = (seed, index) => {
+  const r = rng(seed);
+  const kind = index % 3;
+  const family = r.pick(['Err', 'Oops']);
+  const text = `defer log(${r.number()})`;
+  const message = 'defer must not fail, but it performs Log, whose handler may fail';
+  if (kind === 2) {
+    const source = `${prelude} fn bracket(f: Unit -> Unit): Unit = `
+      + `with handler Log { log(n) => f(()) } { ${surround(r, text, true)} }; `
+      + 'fn main(): Unit = ();';
+    return { source, text, message };
+  }
+  const failing = `handler Log { log(n) => fail(${payloads[family](r.number())}) }`;
+  const inner = kind === 0 ? surround(r, text, false)
+    : `with handler Log { log(n) => log(n + 1) } { ${surround(r, text, false)} }`;
+  const source = `${prelude} fn work(): Unit with Console = handle with ${failing} `
+    + `{ ${inner} } { fail(error: ${family}) => print(${r.number()}) }; `
+    + 'fn main(): Unit = ();';
+  return { source, text, message };
+};

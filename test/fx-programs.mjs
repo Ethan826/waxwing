@@ -7,7 +7,9 @@
 import { block, doItem, text } from './fx-gen-ast.mjs';
 import { cleanupFragments } from './fx-gen-cleanup.mjs';
 import { genBlock, intExpr, unitExpr } from './fx-gen-expr.mjs';
-import { crossing, escaping, nested, stages } from './fx-gen-fragments.mjs';
+import {
+  crossing, escaping, failingFrame, nested, stages
+} from './fx-gen-fragments.mjs';
 import { rng } from './fx-gen-rng.mjs';
 
 export const fragments = [
@@ -15,6 +17,9 @@ export const fragments = [
   { name: 'stages', make: stages }, { name: 'escaping', make: escaping },
   ...cleanupFragments
 ];
+// Outside the rotation (it would dilute the scenarios counted by the
+// census): an extra in some programs, in most unconstrained ones.
+const failing = { name: 'failing-frame', make: failingFrame };
 const regular = fragments.filter(fragment => !fragment.terminal);
 
 export const prelude = 'type Err = Err1(Int) | Err2; type Oops = Oops(Int); '
@@ -40,7 +45,8 @@ const randomFn = (ctx, index) => {
     .filter(() => ctx.r.chance(35)));
   const params = ['a', 'b'].slice(0, ctx.r.int(3)).map(name => [name, 'Int']);
   const ret = ctx.r.pick(['Int', 'Unit']);
-  const inner = { ...ctx, labels: row, locals: params.map(([name]) => name) };
+  const inner = { ...ctx, labels: row, locals: params.map(([name]) => name),
+    failing: new Set(), lax: new Set() };
   return { name: `f${index}`, params, ret, retText: ret, row,
     rowText: rowText(row), body: genBlock(inner, 2, ret) };
 };
@@ -53,9 +59,10 @@ const fnText = fn => `fn ${fn.name}(${fn.params.map(([name, type]) =>
 // A program with no `defer` needs no mark, so it is written with plain
 // labels (M) as every program without `defer` is. A function's marks follow
 // its callees' (a plain label cannot call a `nofail` one), which the
-// generator does not track, so the choice is per program. The M frames of a
-// failing clause stay out of reach until Task 10's generator restriction is
-// lifted (BACKLOG FX008).
+// generator does not track, so the choice is per program. A random clause
+// may fail (Task 11): the generator then keeps cleanup, and every call of a
+// function whose row names the label, away from the frames that may fail
+// (`ctx.failing`, test/fx-gen-expr.mjs).
 export const render = ({ fns, main }) => plainWithoutDefer(
   [prelude, ...fns.map(fnText), fnText(main)].join(' '));
 
@@ -77,10 +84,13 @@ const mainItems = (ctx, focus, extras) => {
   return ctx.r.shuffle([...items, ...noise]);
 };
 
-export const generate = (seed, index = seed) => {
+// options.unconstrained: cleanup ignores the failing frames (the one-way
+// soundness differential, test/fx008-soundness.serial.test.mjs).
+export const generate = (seed, index = seed, options = {}) => {
   const r = rng(seed);
-  const shared = { counter: 0, extra: [] };
-  let ctx = { r, shared, labels: new Set(), locals: [], fns: [...known] };
+  const shared = { counter: 0, extra: [], unconstrained: !!options.unconstrained };
+  let ctx = { r, shared, labels: new Set(), locals: [], fns: [...known],
+    failing: new Set(), lax: new Set() };
   const own = [];
   for (let count = r.int(3), position = 0; position < count; position++) {
     const fn = randomFn(ctx, position);
@@ -89,6 +99,7 @@ export const generate = (seed, index = seed) => {
   }
   const focus = focusOf(index);
   const extras = r.chance(40) ? [r.pick(regular)] : [];
+  if (r.chance(shared.unconstrained ? 30 : 15)) extras.push(failing);
   const items = mainItems(ctx, focus, extras);
   const terminal = focus.find(fragment => fragment.terminal);
   const ret = !terminal && r.chance(25) ? 'Int' : 'Unit';

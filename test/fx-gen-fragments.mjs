@@ -5,12 +5,12 @@
 // needs are added to ctx.shared.extra. Fillers use `safe` contexts so the
 // scenario's own control flow is the only failure.
 import {
-  add, apply, block, call, doItem, fail, handle, lambda, letItem, lit, local,
-  log, print, tick, unit, withHandler
+  add, apply, block, call, deferItem, doItem, fail, handle, lambda, letItem,
+  lit, local, log, print, tick, unit, withHandler
 } from './fx-gen-ast.mjs';
 import {
-  extend, families, failureClause, fresh, genBlock, logHandler, payload, safe,
-  tickHandler
+  cleanupExpr, extend, families, failureClause, fresh, genBlock, installed,
+  logHandler, payload, performing, raising, safe, tickHandler
 } from './fx-gen-expr.mjs';
 
 const number = ctx => lit(ctx.r.number());
@@ -157,4 +157,27 @@ export const escaping = ctx => {
     block([doItem(shown(apply(local('f', 'fn'), [number(quiet)], result)))])));
   const kept = [letItem('f', made), under(), under()];
   return withHandler(outer, block(ctx.r.chance(50) ? [doItem(direct)] : kept));
+};
+
+// A handler whose clause fails with a family handled outside its `with`
+// (FX008): cleanups registered under it, then an operation that runs the
+// clause. Constrained, the cleanups avoid the label (the clause would abort
+// them); unconstrained, they may perform it and the compiler must refuse.
+export const failingFrame = ctx => {
+  const { r } = ctx;
+  const family = r.pick(families);
+  const label = r.pick(['Log', 'Tick']);
+  const outer = extend(safe(ctx), family);
+  const inside = installed(outer, label, 'fail');
+  const make = label === 'Log' ? logHandler : tickHandler;
+  const clause = make(outer, 0, raising(outer, label, family), 'w');
+  const trigger = label === 'Log' ? log(number(ctx)) : print(tick(number(ctx)));
+  const registered = Array.from({ length: 1 + r.int(2) },
+    () => deferItem(cleanupExpr(inside, 1)));
+  const items = [...registered, doItem(trigger), doItem(genBlock(inside, 1, 'Unit'))];
+  if (ctx.shared.unconstrained && r.chance(70)) {
+    items.unshift(deferItem(performing({ ...inside, lax: inside.failing }, label)));
+  }
+  return handle(withHandler(clause, block(items)),
+    [failureClause(safe(ctx), family, 1)]);
 };

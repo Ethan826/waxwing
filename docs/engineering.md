@@ -251,12 +251,33 @@ seed. Knobs, outside verify: `WAXWING_FX_SEED` (default 20261010; program
 smaller count fails by design; larger counts build in more batches). A
 differing program's source, both outcomes and a shrunk source
 (test/fx-shrink.mjs) are written to .build/fx001-differential/. The 25
-rejection variants of strict `defer` are generated from the same seed.
+rejection variants of strict `defer` are generated from the same seed, and
+25 more reach a failing handler (FX008: directly, through a forwarding
+clause, through a clause calling an ambient callback).
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context
 must change some of 50 programs). Both run in verify; the differential test
 is in the serial phase.
+
+Random clauses may fail (FX008 Task 11): a clause is fail-free, fails with a
+family handled outside its `with` (parameter `w`, which the census counts as
+`failing random clause`, at least 25 programs), or forwards to an outer
+operation whose handler may fail. The generator tracks the user labels whose
+innermost handler may fail (`ctx.failing`): constrained cleanup performs
+none and no function whose row names one is called under it, so every
+program compiles. The one-way soundness differential
+(test/fx008-soundness.serial.test.mjs, serial phase) generates 300 programs
+`generate(SEED + 100000 + i, i, { unconstrained: true })` whose cleanup
+ignores those frames. Rejected programs must carry an FX008 headline or a
+strict `defer` text at a `defer`. Accepted ones must never make the
+interpreter report `typed abort escaped cleanup` and must agree with Go
+exactly. Minimums: 50 accepted programs whose cleanup performs a user
+operation, 50 rejected by an FX008 headline, and 25 oracle-witnessed escapes
+(`oracle error: typed abort escaped cleanup`), every one rejected. Failures
+are saved to .build/fx008-soundness/. Sensitivity (ruling R1): with the mark
+check absent (Task 8's state) every witnessed escape is accepted and the
+test fails.
 
 ## Definition of done and handoff
 

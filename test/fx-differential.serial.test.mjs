@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { census, shortfalls, table } from './fx-census.mjs';
 import { goOutcome, same, saveEvidence } from './fx-diff-support.mjs';
-import { rejection } from './fx-gen-reject.mjs';
+import { failingHandlerRejection, rejection } from './fx-gen-reject.mjs';
 import { runGoBatch } from './go-batch.mjs';
 import { outcome } from './fx-oracle.mjs';
 import { generate, render } from './fx-programs.mjs';
@@ -45,6 +45,15 @@ test('the corpus meets the census minimums', t => {
 test(`${rejectionVariants} failing defers are rejected with the Task 8 texts`, () => {
   for (let index = 0; index < rejectionVariants; index++) {
     const variant = rejection(baseSeed + index, index);
+    const diagnostic = rejectedAt(variant.source, 'E_EFFECT', variant.text);
+    assert.equal(diagnostic.message, variant.message,
+      `seed ${baseSeed + index} index ${index}`);
+  }
+});
+
+test(`${rejectionVariants} defers reaching failing handlers are rejected with the FX008 text`, () => {
+  for (let index = 0; index < rejectionVariants; index++) {
+    const variant = failingHandlerRejection(baseSeed + index, index);
     const diagnostic = rejectedAt(variant.source, 'E_EFFECT', variant.text);
     assert.equal(diagnostic.message, variant.message,
       `seed ${baseSeed + index} index ${index}`);

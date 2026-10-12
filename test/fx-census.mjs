@@ -22,7 +22,8 @@ export const categories = [
     ['cleanup-own-fail-during-abort'], cleanup],
   ['cleanup: registration context while unwinding',
     ['cleanup-registration-context'], cleanup],
-  ['cleanup: unreached defer', ['unreached-defer'], cleanup]
+  ['cleanup: unreached defer', ['unreached-defer'], cleanup],
+  ['failing random clause', ['clause-abort:w'], cleanup]
 ];
 
 // outcomes: the interpreter outcomes of the run's programs.

@@ -4,6 +4,10 @@
 // the Int locals, and the named functions callable (their rows must be
 // within `labels`). `safe` drops the failure families: cleanup and the
 // filler of designed scenarios never fail by accident (strict `defer`).
+// `failing` holds the user labels whose innermost handler may fail (FX008):
+// a cleanup performs none of them, and no function whose row names one is
+// called under it. `lax` (cleanup of an unconstrained program) names the
+// failing labels a deferred expression may nevertheless perform.
 import {
   add, block, call, deferItem, doItem, err, fail, handle, handler, letItem,
   lit, local, log, match, oops, print, tick, unit, withHandler
@@ -17,11 +21,20 @@ export const extend = (ctx, ...labels) =>
   ({ ...ctx, labels: new Set([...ctx.labels, ...labels]) });
 export const safe = ctx => ({ ...ctx,
   labels: new Set([...ctx.labels].filter(label => !families.includes(label))) });
+// Without the labels whose innermost handler may fail.
+export const calm = ctx => {
+  const quiet = safe(ctx);
+  return { ...quiet, labels: new Set([...quiet.labels]
+    .filter(label => !ctx.failing.has(label))) };
+};
 export const bind = (ctx, ...names) =>
   ({ ...ctx, locals: [...ctx.locals, ...names] });
 
+const reachesFailing = (ctx, fn) => [...fn.row]
+  .some(label => ctx.failing.has(label) && !ctx.lax.has(label));
 const callable = (ctx, ret) => ctx.fns.filter(fn => fn.ret === ret
-  && [...fn.row].every(label => ctx.labels.has(label)));
+  && [...fn.row].every(label => ctx.labels.has(label))
+  && !reachesFailing(ctx, fn));
 
 export const intExpr = (ctx, depth) => {
   const options = [() => lit(ctx.r.number())];
@@ -48,21 +61,64 @@ export const unitExpr = (ctx, depth) => {
   return ctx.r.pick(options)();
 };
 
-// handler Log/Tick with a random clause; the clause runs in the outer
-// context, so it sees `ctx.labels` only. A random clause never fails: a
-// cleanup performing the operation would otherwise end in a typed abort
-// (the hole in the strict `defer` rule, see the Task 10 report).
-export const logHandler = (ctx, depth, clauseBody) => handler('Log', [{
-  op: 'log', params: ['n'], body: clauseBody ?? unitExpr(bind(safe(ctx), 'n'), depth)
+// handler Log/Tick with a clause; the clause runs in the outer context, so
+// it sees `ctx.labels` only. A random clause (`randomClause`) is fail-free,
+// fails with a family handled outside the `with`, or forwards to an outer
+// operation whose handler may fail.
+export const logHandler = (ctx, depth, clauseBody, param = 'n') => handler('Log', [{
+  op: 'log', params: [param],
+  body: clauseBody ?? unitExpr(bind(calm(ctx), 'n'), depth)
 }]);
-export const tickHandler = (ctx, depth, clauseBody) => handler('Tick', [{
-  op: 'tick', params: ['n'], body: clauseBody ?? intExpr(bind(safe(ctx), 'n'), depth)
+export const tickHandler = (ctx, depth, clauseBody, param = 'n') => handler('Tick', [{
+  op: 'tick', params: [param],
+  body: clauseBody ?? intExpr(bind(calm(ctx), 'n'), depth)
 }]);
 
-export const wrapLog = (ctx, depth) => withHandler(logHandler(ctx, 1),
-  genBlock(extend(ctx, 'Log'), depth - 1, 'Unit'));
-export const wrapTick = (ctx, depth) => withHandler(tickHandler(ctx, 1),
-  genBlock(extend(ctx, 'Tick'), depth - 1, 'Unit'));
+const failures = ctx => families.filter(name => ctx.labels.has(name));
+const onward = ctx => [...ctx.failing].filter(name => ctx.labels.has(name));
+const forwarding = (label, target) => {
+  const n = local('n');
+  if (label === 'Log') return target === 'Log' ? log(n) : print(tick(n));
+  return target === 'Tick' ? tick(n) : block([doItem(log(n))], n);
+};
+
+export const raising = (ctx, label, family) => ({
+  ...fail(payload(ctx, family)), ty: label === 'Log' ? 'Unit' : 'Int' });
+
+// The parameter `w` marks a failing random clause: the census counts the
+// aborts of clauses with that parameter.
+export const randomClause = (ctx, label, depth) => {
+  const { r } = ctx;
+  if (failures(ctx).length && r.chance(30)) {
+    return { kind: 'fail', param: 'w',
+      body: raising(ctx, label, r.pick(failures(ctx))) };
+  }
+  if (onward(ctx).length && r.chance(30)) {
+    return { kind: 'forward', param: 'n',
+      body: forwarding(label, r.pick(onward(ctx))) };
+  }
+  const quiet = bind(calm(ctx), 'n');
+  return { kind: 'plain', param: 'n',
+    body: label === 'Log' ? unitExpr(quiet, depth) : intExpr(quiet, depth) };
+};
+
+// The context of a `with` body: its handler is innermost for `label` and
+// may fail unless its clause is fail-free.
+export const installed = (ctx, label, kind) => {
+  const failing = new Set([...ctx.failing].filter(name => name !== label));
+  if (kind !== 'plain') failing.add(label);
+  const lax = new Set([...ctx.lax].filter(name => name !== label));
+  return { ...extend(ctx, label), failing, lax };
+};
+
+const wrapUser = (ctx, depth, label) => {
+  const clause = randomClause(ctx, label, 1);
+  const make = label === 'Log' ? logHandler : tickHandler;
+  return withHandler(make(ctx, 1, clause.body, clause.param),
+    genBlock(installed(ctx, label, clause.kind), depth - 1, 'Unit'));
+};
+export const wrapLog = (ctx, depth) => wrapUser(ctx, depth, 'Log');
+export const wrapTick = (ctx, depth) => wrapUser(ctx, depth, 'Tick');
 
 // `handle` of a family F around a block that may fail with F; the clause
 // reads the payload sometimes.
@@ -90,14 +146,23 @@ const failItem = ctx => {
   return doItem(fail(payload(ctx, family)));
 };
 
+// A deferred expression. Constrained, it performs no failing label; in an
+// unconstrained program it may (the compiler must then reject the program).
 export const cleanupExpr = (ctx, depth) => {
-  const quiet = safe(ctx);
+  const lax = ctx.shared.unconstrained;
+  const quiet = lax ? { ...safe(ctx), lax: new Set(ctx.failing) } : calm(ctx);
   const options = [() => print(intExpr(quiet, 1)), () => unitExpr(quiet, 1),
     () => genBlock(quiet, depth - 1, 'Unit')];
   if (quiet.labels.has('Log')) options.push(() => log(intExpr(quiet, 1)));
   if (depth > 0) options.push(() => ownFailure(quiet, depth));
+  if (lax && quiet.lax.size) {
+    options.push(() => performing(quiet, ctx.r.pick([...quiet.lax])),
+      () => performing(quiet, ctx.r.pick([...quiet.lax])));
+  }
   return ctx.r.pick(options)();
 };
+export const performing = (ctx, label) => (label === 'Log' ? log(intExpr(ctx, 1))
+  : print(tick(intExpr(ctx, 1))));
 
 // A cleanup that fails and handles its own failure: `handle fail(P) {..}`.
 export const ownFailure = (ctx, depth) => {
