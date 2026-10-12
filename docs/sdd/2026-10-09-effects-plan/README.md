@@ -12,3 +12,12 @@ diff packages are omitted; regenerate them from git with
 The live workspace stays authoritative while a task is in flight; refresh
 this snapshot when a task completes. docs/progress.md remains the durable
 evidence record.
+
+Pruned 2026-10-12: the cloud-session working files (task briefs,
+controller context notes and implementer reports for FX001 Tasks 6-10,
+the parser fix's brief and report, preflight-scan.md, rescan-9-12.md)
+were removed. Their substance is in progress.md and docs/progress.md;
+the ledger still names them. Recover any of them with
+`git show 883be7a:docs/sdd/2026-10-09-effects-plan/<file>`. The
+review and re-review results stay: BACKLOG, docs/progress.md and the
+plans cite them, and FX008's reviews were written here directly.
