@@ -3855,3 +3855,43 @@ reversed-edge mutant fails 2 of 6), plus a nested duplicate-key case.
 Evidence: gate 110/110, no change; differential 0 differences against
 66f1eca and b30b8b8; verify at ff0c6d1 (.build/task8-fix-verify.log in
 the worktree): exit 0, 1182/1182 parallel, 37/37 serial, 49 proof lines.
+
+### FX008 Task 9: the mark check makes defer sound (2026-10-11/12)
+
+Sonnet implementer (1649218; fix rounds 360f13e, 889ca99). Opus review
+and re-review (review-fx008-task9-result.md); round 2 checked by the
+controller.
+
+What it adds: after settling, `markConstraints` records frame, own-abort
+and defer-demand edges; `violation` searches paths from Plain and the
+declaration's mark variables to a fail-free atom (P7), and
+`reportViolation` chooses the headline by the last edge (P6), with the
+approved P10 texts. The pinned FX008 program is rejected with `defer must
+not fail, but it performs Log, whose handler may fail`. Exactly the 8
+listed probes flipped (lexical, hole, c1, cross, pending, l4b, merge2,
+q1). The fx-cleanup program and the generator were migrated (§6).
+
+Review findings and user decisions:
+- C1 (Critical): copying C at install closed tails later bound to a real
+  C; six accepted programs ended a cleanup in a typed abort at run time
+  (Go `fail(E): E`; interpreter "typed abort escaped cleanup"). User
+  decision: a function result's handler type gets its own C at each use,
+  keeping R's tail only when that variable occurs in a parameter or the
+  own row. New limitation (plan, beside L1, L4, P5): a handler passed
+  through a generic function and installed from its result gives an M
+  frame when the context's rest is M or rigid.
+- C2 (Critical, from that rule): closing C broke §6 (r1, r2, r9, no
+  defer, rejected). User decision 2026-10-12: a fresh tail meta instead.
+- I1: 1,000 installations take 7.3 s (2,000: 33 s), quadratic, from
+  T008; Task 8's 9.5 s guard failed at 10.15-10.35 s under load in the
+  reviewer's run. User decision: fix T008 before the whole-branch review.
+
+Evidence:
+- 17 adversarial counter-examples and controls (a, b, c, d sets) run
+  against Go and the reference interpreter: every accepted program agrees;
+  every unsound one is rejected;
+- 15 regression rows for Task 9, each proved;
+- scale: 8,000 defers 1.0 s, 1,000 installations 7.3-7.5 s, a chain of
+  1,000 forwarding installations 0.31 s, 200 mark variables 3 ms;
+- verify at 889ca99 (.build/task9-fix2-verify.log in the worktree): exit
+  0, 1221/1221 parallel, 41/41 serial.

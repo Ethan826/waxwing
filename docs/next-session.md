@@ -1,4 +1,4 @@
-# Waxwing / FX008: Task 8 done; Task 9 next (2026-10-11)
+# Waxwing / FX008: Task 9 done; Task 10 next (2026-10-12)
 
 Future milestone INF001 was defined at the user's request on 2026-10-11:
 [automatic requirement and error composition](plans/2026-10-11-requirement-and-error-inference-milestone.md).
@@ -7,24 +7,23 @@ function channels, partial provision and recovery. Requirements only;
 finish active FX008/FX001 work before its language design and plan.
 
 Implementation worktree: /Users/ethan/Desktop/waxwing-fx008-impl, branch
-fx008-impl at ff0c6d1 (Task 8 done 2026-10-11; origin/fx008-impl holds
+fx008-impl at 889ca99 (Task 9 done 2026-10-12; origin/fx008-impl holds
 the b5fab7c backup from 2026-10-10 and is not updated). It is not merged anywhere: the FX008
-implementation stays off main until Tasks 9-12 and the whole-branch review
+implementation stays off main until Tasks 10-12, the T008 fix and the whole-branch review
 are done. main was fast-forwarded to fx008 (4f1b981): FX001 Task 10,
 FX009, and the design and review docs.
-Tasks 1-8 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
+Tasks 1-9 of docs/plans/2026-10-10-abort-tracking-plan.md are complete
 and reviewed. The worktree copy of the plan is authoritative: it carries
-the rulings applied during Tasks 1-8. Tracking docs (progress, BACKLOG,
+the rulings applied during Tasks 1-9. Tracking docs (progress, BACKLOG,
 ledger docs/sdd/2026-10-09-effects-plan/progress.md) live on branch fx008
 in the main checkout. Only the controller writes them.
 
-Next: Task 9 (frames, the mark check, texts and migration), then Tasks
-10-12 and the whole-branch review. Task 9 carry-forward (Task 8 review):
-Installation.frame is a negative MarkMeta from the mark store or NoFail;
-settling re-records the same Assumed edges every round (duplicates follow
-their first copy, so BFS and P7 are unaffected); edges carry the partner
-label with arguments; the fx008-c-unified row now targets Lend.assume.
-Task 9's first observed texts are reported to the user before pinning.
+Next: Task 10 (notes for mark rejections), Task 11 (failing random
+clauses and the one-way soundness differential), Task 12 (spec, CF001
+and plan amendments), then T008 (user decision 2026-10-11: remove the
+quadratic settling feed graph before merging), then the whole-branch
+review. Task 10 carry-forward: the ambient variable's name `""` prints
+as `...` and must stay so in notes (Task 9 review M4).
 
 Size and cost notes: Subst.purs 246 lines (do not grow); Unify.purs
 240. Agent copies for mutant proofs exclude .build and are deleted.

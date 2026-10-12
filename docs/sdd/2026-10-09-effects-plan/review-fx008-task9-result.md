@@ -305,3 +305,149 @@ rule needs the user's sign-off on the rule and on the new limitation.
    margin under Task 8's 9.5 s guard), or land T008's fix before the
    merge.
 3. **M1, when D001 arrives.** Whether Console frames generate edges.
+
+## Re-review: fix round 1 (1649218..360f13e)
+
+**Verdict: not ready. C1's soundness hole is closed, but the closed result
+C (my own prototyped rule) breaks §6: programs with no `defer` and no
+`nofail`, accepted by the base build and by 1649218, are now rejected. A
+one-line change fixes it. I prototyped it and ran it against the suite.**
+
+The `output/` of 360f13e was used as built. I made one isolated copy for
+1649218 and for the prototype, under /private/tmp/claude-501/. It is
+deleted. There are no tracked edits.
+
+### Items
+
+**1. C1, the implementation: ADDRESSED, as specified.**
+- `ResultClauses.ownClauses` is called from `Use.openedUse`, which only
+  `functionUse` calls.
+- C is bare (`bareLabel empty`).
+- `foldHoles` covers parameter types and the opened own row, label
+  arguments included. It walks children and every row's tail and
+  arguments.
+- The `clausesOf` fallback keeps the tail linked.
+
+Counterexamples at 360f13e [ran]:
+- a1, a4, a6, a8, a9, a10, my original a3c (`HBox(...e)`) and the own-row
+  program are all rejected with the Log defer message at `defer log(1)`.
+- The a1 control prints `5` in Go and in the interpreter.
+- b1-b11 and c3/c4/c8/c9/d1-d4 give the same verdicts as at 1649218, and
+  the accepted ones agree with the interpreter.
+
+The rewritten tests keep the shapes that matter:
+- a6 is my program: Tick forwards to a failing Log.
+- The implementer's a3c uses a generic `Box(a)` with `unbox`. My `HBox(...e)`
+  row-parameter version is also rejected, so both routes are covered.
+
+**2. Can the closed tail miss a FrameRigid edge? ADDRESSED for soundness,
+but it exposed C2 below.**
+- I found no missed edge [ran]:
+  - r3: a generic caller annotates `y: Handler(nofail Log with ...e)`,
+    installs it under a `defer`, and passes `mk()`. It is accepted, and
+    soundly so: the only value installed is mk's, which performs nothing.
+  - r4 and r5 also pass the caller's `x` (into `run`, or through an
+    `if`). Both are rejected.
+- Why: a closed C cannot unify with C = [|e] at all. So every merge of a
+  result value with a rigid-tailed handler fails as a type error before
+  any frame is built. That is exactly the cause of C2.
+
+**3. q1Nofail's checked-IR change: ADDRESSED.**
+- Only a row tail in the checked IR changes (unsolved → closed).
+- Rows are erased before specialization, the Go is identical, and the
+  probe gate's Go hashes hold.
+- No meaning changes. With the C2 fix below, re-check the hash; it may
+  revert.
+
+**4. Plan text and M1–M4: ADDRESSED.**
+- Design §3.4 has a pointer; the plan has the P2 refinement, the new
+  limitation and the Console note.
+- M1 is taken as option (b): a comment tied to D001.
+- M2: a program with no `defer` is rendered with plain labels. This is
+  per program rather than per label, with the reason given — acceptable.
+- M3: scripts/regression.mjs is back to 245, and Diagnostic.purs is on the
+  near-limit list.
+- M4: comment added.
+- I1 (scale) is not touched in this diff. It stays a user decision for the
+  controller's T008 entry.
+- The plan text has to be updated for C2: "otherwise closed" becomes "a
+  fresh tail meta".
+
+### C2 (Critical, §6 compatibility): a closed result C rejects programs with no `defer` [ran]
+
+`ResultClauses.purs`, `Hole meta | not (occurs meta) → Nothing`. A
+handler-typed result unifies C ≡ C, marks included, with every value it
+meets. A closed C fails against a C with more labels, or against a rigid
+tail. All three programs below are accepted by the base build (main
+checkout) and by 1649218, and the Go agrees with the interpreter.
+360f13e rejects them. Prelude for each:
+`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`
+
+- **r1.** Rejected with E_TYPE `Expected Handler(Log), found Handler(Log)`
+  at `x`.
+  ```
+  fn mk(): Handler(Log with ...e) with pure = handler Log { log(n) => () };
+  fn pick(b: Bool, x: Handler(Log with ...e)): Handler(Log with ...e) with pure = if b then mk() else x;
+  fn main(): Unit with Console = with handler Log { log(n) => print(n) } { with pick(true, handler Log { log(n) => log(n + 1) }) { log(1) } };
+  ```
+- **r2.** Base output `3`. Rejected with E_TYPE, the same text, at `x`.
+  ```
+  fn mk(): Handler(Log with Tick + ...e) with pure = handler Log { log(n) => tick() };
+  fn run(x: Handler(Log with Tick + ...e)): Unit with Tick + ...e = { let h = if true then mk() else x; with h { log(1) } };
+  fn main(): Unit with Console = with handler Tick { tick() => print(3) } { run(handler Log { log(n) => tick() }) };
+  ```
+- **r9.** Base output `3 1`. Rejected with E_EFFECT `This function
+  performs Console, which its signature does not allow` at `mk()`.
+  ```
+  fn mk(): Handler(Log with Tick) with pure = handler Log { log(n) => () };
+  fn main(): Unit with Console = with handler Tick { tick() => print(3) } { let h = if true then handler Log { log(n) => { tick(); print(n) } } else mk(); with h { log(1) } };
+  ```
+
+The plan's differential missed this: no harvested program merges a
+handler result with another handler value. My review recommended the
+closed tail, so the defect is in my rule, not in the implementation.
+
+**Fix (forward verbatim).**
+
+> In `ResultClauses.ownClauses`, when R's tail does not occur in a
+> parameter or the own row, give C a fresh tail meta instead of closing
+> it: `Hole meta | not (occurs meta) → Just (Hole fresh)`. `fresh` is
+> `found.state.next`, and `openedUse` returns `state.next + 1`.
+>
+> The fresh meta is not R's, so `with`'s binding of R never reaches it.
+> It is bound only when this C is unified with another value's C, which
+> merges in what that value's clauses perform. Left unbound, it is closed
+> by the tail pass as before.
+>
+> Add tests seen failing first:
+> - r1, r2 and r9 compile with the base outputs: none, `3`, and `3 1`;
+> - r5 is rejected with the Log defer message at `defer log(1)`:
+>   ```
+>   fn mk(): Handler(nofail Log with ...e) with pure = handler Log { log(n) => () };
+>   fn g(x: Handler(nofail Log with ...e)): Unit with ...e = { let h = if true then mk() else x; with h { defer log(1); () } };
+>   ```
+>   with main as in a10.
+>
+> Retarget `fx008-result-clauses`: the mutant `Hole _ → Just (Hole fresh)`
+> still rejects a1. Update the plan text: "otherwise a fresh meta".
+
+**Prototype [ran].** I applied exactly this change to a copy of 360f13e:
+- r1, r2 and r9 are accepted with the base outputs.
+- r5 is rejected with the Log defer message, via a `FrameRigid` edge once
+  the fresh meta is bound to `e`.
+- a1, a4, a6, a8, a9, a10, a3c and the own-row program stay rejected.
+- Every plan acceptance program keeps its output.
+- The non-serial suite passes 1209/1210, probe gate and Go hashes included.
+- The generator differential passes, 7/7.
+
+The one failure is style.test, and it is environmental: my copy does not
+build tools/style (`Style.Check` missing). That also explains the style
+failure I reported in the first round, which I attributed to my prototype
+module. Full verify was not run.
+
+### Decisions that are the user's
+
+1. Whether the result C's tail becomes a fresh meta rather than closed.
+   This refines the rule they adopted, and its only effect is to restore
+   §6.
+2. I1 (scale) is unchanged and still pending.
