@@ -594,3 +594,34 @@ Together these forced the baseline's callbacks to `with pure`, and its log
 lambda cannot print, so the baseline is compared with the scenario by keys,
 not output, and the scenario carries no `Fail`. FX007 (BACKLOG) is the
 relaxation that would let cleanup call effect-polymorphic callbacks.
+
+## FX001 Task 12: regression proofs (2026-10-12)
+
+Learned while retargeting mutants for the fifteen new rows
+(scripts/regression-fx.mjs, scripts/regression-fx-go.mjs):
+
+1. `fx-cleanup-context` has no single-line restoration. The cleanup
+   closure captures its block's own `ctx`, so the exit-time context cannot
+   be restored by editing one expression. The mutant makes `waxwingInstall`
+   mutate the caller's context in place, which gives cleanup the context at
+   exit. It also leaks installs past their `with`; the probe observes only
+   the cleanup operation (`1,9` healthy, `101,9` mutant).
+2. `fx-ctx-reachable` is an entry-body-only stand-in. Effect layouts exist
+   for any operation an unused function uses, so the needle must remove the
+   `program.effects` test together with the function scan; the row then
+   restores "mode by what the entry function contains", not literally "by
+   reachability from `main`".
+3. A mutant must sit where the defect is raised. `fx-closed-opened` first
+   targeted UnifyRow `absent`, which the probe never reached: the
+   rejection of a `Console` lambda given to a `with pure` parameter arises
+   in RowFinish. `fx-layout-edges` needs the mutually recursive pair A/B;
+   the self-recursive `Grow` is rejected without the dropped edge.
+4. `fx-defer-fail` and `fx-defer-unified` overlap: both accept a late
+   `Fail` (a closure whose `Fail` arrives after the `defer`) when either
+   defect is restored. The rows differ in which line of Check.Defer is
+   restored (the `Fail` refusal, or checking against the current row).
+5. The regression runner leaves about 2 GB under `.build/regression` per
+   run; delete it afterwards (see the disk-hygiene rule).
+6. FN006 (1): the zero-argument call gap in the oracle parsers is closed
+   for `f()` but not for `make()(x)`, which still has no oracle row
+   (BACKLOG FN006).

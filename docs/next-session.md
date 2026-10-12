@@ -1,3 +1,35 @@
+# Waxwing / FX001 Tasks 1-12 complete; whole-branch review next (2026-10-12)
+
+FX001 Tasks 1-12 are complete on branch fx001-finish (worktree
+`.worktrees/fx001-finish`), pending the whole-branch review, then the
+user's merge decision. Nothing is pushed from the branch. Task 11 added the
+acceptance scenario (examples/services.wxw) and scale tests; Task 12 added
+fifteen regression rows (81 proofs in verify), ADR 010
+(docs/adr/010-effects.md), the language Effects section (docs/language.md)
+and the documentation updates (docs/progress.md, "FX001 Task 12"). The
+docs/sdd ledger snapshot is the controller's. Evidence logs are in the
+worktree's .build/ (task12a-verify.log, task12b-verify.log).
+
+Next: independent whole-branch review of fx001-finish against main, fixes,
+then the user's decision on merging.
+
+Open BACKLOG items after FX001: FX002 (concurrency, builds on CF001), FX003
+(local state, recording fakes), FX005 (`ctx` elimination, cached lookup),
+FX006 (general resume), FX007 (relax strict `defer`; `nofail ...e`), FX010,
+FX011, FX012, FX013-FX016 (FX008 limitations: L1 with P5, L4, L6, handler
+through a generic function), T009, T010, D002, E013, FN006 items (1) (a
+`make()(x)` oracle row) and (2), plus the notes added to D001, R001, STD001,
+PKG001, I001 and CF001. INF001 stays the next language milestone after
+FX001 merges. FX008 is merged into main and pushed (2026-10-12).
+
+Size notes: Subst.purs 245 lines, Domain/Type.purs 250 (no headroom),
+Format/Diagnostic.purs near the limit. Agent copies for mutant proofs
+exclude .build and are deleted; the regression runner leaves about 2 GB
+under .build/regression, delete it after a run.
+
+Setup facts: run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in
+the worktree; .spago and .build/home were copied in.
+
 # Waxwing / FX008 merged into main; FX001 Tasks 11-12 next (2026-10-12)
 
 Future milestone INF001 was defined at the user's request on 2026-10-11:

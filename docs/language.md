@@ -1,4 +1,4 @@
-# Waxwing language specification (stage 0, closed ADTs, comparison, polymorphism, functions)
+# Waxwing language specification (stage 0, closed ADTs, comparison, polymorphism, functions, effects)
 
 Waxwing source files use `.wxw`. A file is one program: type declarations and functions in
 any order, with required function signatures. Behavioral claims below name
@@ -299,6 +299,116 @@ Functions (FN001; ADR 008; spec docs/plans/2026-10-08-functions-design.md).
   parameters (fn-scale.serial). Functions are neither printed nor
   compared.
 
+## Effects (FX001, FX008)
+
+Decision record docs/adr/010-effects.md; spec
+docs/plans/2026-10-09-effects-design.md. Everything below is implemented
+and checked by test/fx-*.test.mjs, test/fx008-*.test.mjs and the
+regression rows of scripts/regression-fx*.mjs.
+
+Syntax. Reserved words added: `effect handler handle with let defer Unit
+ctl resume`; `ctl` and `resume` are rejected (E_SYNTAX `General control
+(ctl/resume) is not supported yet`). `pure` and `nofail` are contextual.
+An effect declares operations, `effect Clock { fn now(): Int; };` and
+`effect State(s) { fn get(): s; fn put(value: s): Unit; };`; an operation is
+a global name called like a function (a bare `now` is E_ARITY `Expected
+now()`). Built in: `Fail(e)` with `fail(error: e)`, `Console` with
+`print(value: a)`, handled only by the runtime at `main`, and `crash(value)`.
+A signature may end in `with L1 + L2`, `with L + ...e` (a named row
+variable) or `with pure`. Expressions: blocks `{ let x = e; e; e }`, `()`,
+`handler L { op(x) => e, ... }`, `with h { body }`, `handle body {
+fail(error: E) => r }` and block items `defer e;`. `{}` and `()` are Unit;
+a trailing `;` makes a block Unit; `let` is monomorphic.
+
+Rows. A row is an ordered list of labels and an optional tail. Matching
+takes the first occurrence of a label's key; a label's key is its effect,
+except `Fail`, keyed by its payload's declared head, so `Fail(DbError)` and
+`Fail(ValidationError)` are different and `Fail(Error(Int))` and
+`Fail(Error(Bool))` share a key. Omitting `with` is not a promise of
+purity: every signature has an ambient row through which a function passes
+what its callbacks perform. `with pure` demands an empty row of the
+callbacks it annotates. `main` may perform only `Console`; any other
+left-over label is E_EFFECT `Unhandled Database in main`, with notes naming
+the path from the call that needs it (test/fx-diagnostics.test.mjs,
+test/fx-services.test.mjs).
+
+Handlers. Handlers are deep and dynamically scoped: an operation goes to
+the innermost installed handler for its key at the moment it runs, and a
+closure keeps no handler. A clause runs in the context of its `with`,
+without that handler, so a logger's clause that logs reaches the next outer
+logger. `fail(e)` unwinds to the innermost `handle` for `e`'s family in the
+context where it runs; the clauses of one `handle` are frames with the
+first clause innermost. A handler value is neither comparable nor
+printable, nor may `crash` take it or `main` return it. A program that
+emits no effect construct generates the same Go as before; otherwise every
+function takes a context first (ADR 010).
+
+Cleanup. `defer e` registers when the block reaches it. At exit, by normal
+completion, typed abort or recoverable defect, the deferred expressions run
+last-in first-out, once, each evaluated in full then, in the context where
+it was registered. Block exits are those three; continuation discard
+(FX006) and cancellation (FX002, CF001) are future exit reasons.
+
+A `defer` must not fail. A `Fail` label in the deferred expression, or a
+rigid row tail that a caller could fill with `Fail`, is E_EFFECT `defer must
+not fail, but it performs Fail(E)` or `... may perform any effect of <r>`.
+Consequently a deferred callback parameter must be `with pure`, and a local
+lambda that is also called outside the `defer` in a non-`main` function
+is rejected there (FX007 records the relaxation). Since FX008 the rule also
+covers handlers: an operation performed in a `defer` must meet only
+fail-free handler frames. A label written `nofail Log` in a signature
+assumes the caller's Log handler cannot end an operation in a typed abort
+(a clause may fail internally and handle it); a plain label promises
+nothing, and `defer log(1)` under a plain `Log` is E_EFFECT `defer must not
+fail, but it performs Log, whose handler may fail`, with notes naming the
+signature or clause responsible. `nofail(k) Log` ties the assumption to a
+mark variable of the signature (usable in function signatures and their
+lambdas, not in `type` or `effect` declarations); `nofail Fail(E)` is
+E_TYPE; `nofail Console` means `Console`; `nofail ...e` is not supported.
+Marks are erased before code generation (test/fx008-*.test.mjs; the mark
+rows of scripts/regression-fx008*.mjs).
+
+Documented limits of the mark rule. All are conservative (a safe program
+may be rejected, an unsafe one never accepted): marks inside data,
+constructor fields, operation signatures or a callback's parameters are not
+opened at a function's use (L1 with P5, BACKLOG FX013); labels merged
+through one handler value, or through a shared row tail, share a mark (L4,
+FX014); mark variables are not allowed in `type` or `effect` declarations
+(L6, FX015); a handler passed through a generic function and installed from
+its result gives a may-fail frame when the context's rest is may-fail or
+rigid (FX016). A trap: `Handler(nofail Log)` written without `with pure`
+ends in the callee's rigid ambient row, so every installation of it inside
+the callee is may-fail; write `Handler(nofail Log with pure)`.
+
+Defects. A defect is a recoverable runtime panic that is not a typed
+abort: `crash(value)`, the missing-handler guard, a Go runtime panic. No
+handler catches one. Unwinding runs every deferred expression, then the
+program writes one report to stderr and exits 1: one cause per line in
+execution order, newlines escaped, the original cause first and each later
+cause prefixed `cleanup failed: `. A cause reads `crash: V`, `fail(T): V`
+for a typed abort (`<not printable>` for V when T holds a function or
+handler), `no handler for L`, or `panic: <text>`. With no earlier cause the
+first cleanup crash is the unprefixed first line.
+
+Limits, stated plainly.
+- `with pure` promises neither termination nor freedom from `crash` or other
+  recoverable defects.
+- Go fatal errors (stack exhaustion, out of memory) are not panics and skip
+  cleanup.
+- A pending typed abort reaches its `handle` only if every cleanup on the
+  way completes normally. A cleanup defect makes the abort head the report
+  and its `handle` never runs; a cleanup that diverges never delivers it.
+- There is no mutable state, so a fake handler is stateless (fixed clock,
+  canned results, a prefixing logger); recording fakes are FX003.
+- `let` is monomorphic. A local of type `A -> B with pure` is not accepted
+  where `A -> B with Log` is expected; `fn(x) => g(x)` is the workaround
+  (eta-expansion for pure locals).
+- No generic helper turns an arbitrary `Result(error, value)` into a
+  failing computation: a `Fail` payload needs a concrete family (E_TYPE
+  `Fail needs a concrete error family`), so helpers are per family or return
+  `Result` (STD001).
+- Handler types for `Console` and `Fail` are uninhabited (FX011).
+
 Nesting. One declaration body may nest at most 128 levels (ADR 006,
 Format.Parse.Grammar `nestingLimit`). A level is a parenthesized expression,
 an `if` condition or branch, a `match` scrutinee or arm body, a call or
@@ -320,5 +430,5 @@ the inner span. A diagnostic reports the first error in phase/traversal order.
 E_INTERNAL is a compiler invariant failure. Codes are a closed ADT: E_LEX,
 E_SYNTAX, E_INTEGER, E_ENTRY, E_DUPLICATE, E_UNBOUND, E_NOT_CALLABLE, E_TYPE,
 E_ARITY, E_REDUNDANT, E_NON_EXHAUSTIVE, E_NESTING, E_SPECIALIZATION,
-E_INTERNAL. The CLI adds
+E_EFFECT, E_HANDLER, E_INTERNAL. The CLI adds
 E_USAGE, E_IO and E_TOOL.

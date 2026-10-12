@@ -4045,3 +4045,47 @@ worktree): the first run failed one parallel test, specialize.test.mjs
 (it assumes examples are identity-specialized; services.wxw declares
 effects), fixed by excluding it; the rerun exit 0, 1252/1252, serial and
 regression proofs passed.
+
+### FX001 Task 12: regression proofs and documentation (2026-10-12)
+
+Part A (Sonnet implementer, ab456fa `test: FX001 regression proofs`,
+reviewed): fifteen new regression rows, each restoring one defect in an
+isolated copy, with probes that pass on the healthy compiler and fail on the
+mutant with a named message. Checker and diagnostics rows
+(scripts/regression-fx.mjs, probes in test/regression-fx.mjs):
+`fx-side-condition` (the probe compiles in a child process under its own
+20 s timeout and reports the timeout as the defect, so the runner's 180 s
+timeout never fires), `fx-defer-fail`, `fx-defer-rigid`, `fx-defer-unified`,
+`fx-closed-opened`, `fx-layout-edges`, `fx-provenance`, `fx-abbreviation`.
+Emitted-Go rows (scripts/regression-fx-go.mjs, probes in
+test/regression-fx-go.mjs): `fx-clause-context`, `fx-abort-target`,
+`fx-clause-order` (Task 7 Critical), `fx-cleanup-context`,
+`fx-cleanup-cause`, `fx-cleanup-defect`, `fx-ctx-reachable`. `ctx` for
+effect-free programs is the existing row `effect-free-ctx` (Task 7), not
+duplicated. test/regression.mjs is untouched; test/regression-probes.mjs
+and scripts/regression.mjs gained an import and a spread. The mutant
+re-targeting notes (no single-line restoration for `fx-cleanup-context`;
+`fx-ctx-reachable` is an entry-body-only stand-in) are in docs/findings.md.
+
+Verify after part A (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`,
+.build/task12a-verify.log in the worktree): exit 0, 81 regression proofs in
+all, each new one printing `fixed compiler passes; restored defect fails.`
+No bound raised, no rerun.
+
+Part B (documentation only, no code): ADR 010 (docs/adr/010-effects.md:
+row erasure revising direction decision 1; runtime keys; first clause
+innermost; `ctx` mode over the emitted IR; the 10,000-key count of keys with
+type arguments only, ruling F5; the strict `defer` rule, its accepted costs
+(FX007) and FX008's mark refinement with the limitations L1 with P5, L4, L6
+and the handler-through-a-generic-function case; report conventions; the
+empty `Handler(Console)`/`Handler(Fail(E))` structs, ruling F3; Task 11's
+key-count and timing evidence); the language Effects section
+(docs/language.md, with the documented limits and E_EFFECT/E_HANDLER added
+to the code list); docs/architecture.md (the FX001 modules); docs/
+engineering.md (the fifteen rows and the Task 11 timing convention, a
+review convention: median of five, bound 3x); docs/findings.md; BACKLOG
+(FX001 Done pending whole-branch review; FX008 corrected to merged; new
+FX002, FX003, FX005; FX006, FX007, CF001, D001, R001, STD001, PKG001, I001
+and FN006 updated; FN006 (1) only half closed); and docs/next-session.md.
+FX001 Tasks 1-12 are complete on branch fx001-finish, pending the
+whole-branch review, then the user's merge decision.

@@ -77,7 +77,14 @@ adding a bypass allowlist.
   load cannot fail them; user decision 2026-10-09, FN001 Task 8). A new
   test that builds large Go programs against a time bound takes the
   `.serial.test.mjs` suffix (review convention; the split by suffix is
-  automated in scripts/verify.mjs). FN006's 20,000-parameter timing suite
+  automated in scripts/verify.mjs). The FX001 Task 11 timing tests
+  (test/fx-scale.serial.test.mjs) follow one convention, a review
+  convention, not an enforced rule: time the whole process after a warm-up
+  run (which also checks the output), take the median of five runs on a
+  quiet host to choose the bound, and set the bound to 3x that median; the
+  `go build` test assumes the warm `.build/go-cache` that verify provides.
+  Under verify's load the measured figures stayed inside the bounds, but
+  they are not guaranteed to on a busy host (T003 exposure). FN006's 20,000-parameter timing suite
   is now test/fn-linear-timing.serial.test.mjs, separate from the existing
   fn-linear.serial.test.mjs; every workload, assertion and bound is
   unchanged. Repeated parallel-contention failures motivated this runner
@@ -131,9 +138,23 @@ adding a bypass allowlist.
   dup.wxw never settles, caught by a child-process compile under a 20 s
   timeout) and `fx008-settle-order-linear` (the settle order stays linear
   in the number of deferrals; 16,000 `defer`s compile under a 12 s
-  timeout): twenty-four `Regression proof (…)` lines in all
-  (`node scripts/regression.mjs name…` proves only the named
-  rows); the A003 order and print tests also use an independent value
+  timeout), and since FX001 Task 12 fifteen rows: the checker and
+  diagnostics rows in scripts/regression-fx.mjs (`fx-side-condition`,
+  `fx-defer-fail`, `fx-defer-rigid`, `fx-defer-unified`,
+  `fx-closed-opened`, `fx-layout-edges`, `fx-provenance`,
+  `fx-abbreviation`; probes in test/regression-fx.mjs) and the emitted-Go
+  rows in scripts/regression-fx-go.mjs (`fx-clause-context`,
+  `fx-abort-target`, `fx-clause-order`, `fx-cleanup-context`,
+  `fx-cleanup-cause`, `fx-cleanup-defect`, `fx-ctx-reachable`; probes in
+  test/regression-fx-go.mjs), both aggregated by
+  test/regression-probes.mjs. A probe that could loop (`fx-side-condition`)
+  compiles in a child process with its own 20 s timeout and reports the
+  timeout as the detected defect, so the runner's 180 s spawn timeout never
+  fires. Emitting `ctx` only for effect-using programs is the older row
+  `effect-free-ctx`, not duplicated. The Task 12 verify
+  (.build/task12a-verify.log in the worktree) printed 81 `Regression
+  proof (…)` lines in all (`node scripts/regression.mjs name…` proves
+  only the named rows); the A003 order and print tests also use an independent value
   oracle (test/value-oracle.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):
   `runGoBatch(import.meta.url, cases, label?)` takes an array of

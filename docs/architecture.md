@@ -167,6 +167,34 @@ Format.Wire.
   fn-oracle (+ poly-oracle's staging; generated programs against Go),
   fn-linear, fn-scale.serial; regression rows in
   scripts/regression-fn.mjs with probes in test/regression-fn.mjs.
+- **FX001 effects (ADR 010)**: rows are a separate sort in Domain.Row
+  (labels with `EffectRef` and `LabelKey`, tails, marks) and every arrow
+  carries one. Format.Parse and Features.Resolve add effects, handlers,
+  `with`, `handle`, blocks, `let` and `defer`, and Resolve gives each
+  signature its ambient row. Under Features.Check: UnifyRow (Leijen row
+  unification with the side condition), Consume and Origin (a stage row
+  consumed into the current row, recording what each label occurrence came
+  from), Operation, Failure (`Fail` keys decided late), Block, Handler and
+  Handle (handler literals, `with`, `handle`), **Defer** (`defer e` is
+  checked against a row of its own whose tail is never unified with the
+  current row; after settling, a `Fail` label or a rigid tail is rejected,
+  and since FX008 so is every label whose frame may fail) with DeferNotes,
+  and Entry (`main` may perform only Console). Provenance modules
+  (Provenance, Occurrence, Origin, Report, Reject, Path, Site) keep, per
+  label occurrence, what it was consumed from, so a rejection can name its
+  origin and boundary (design §6); Format.Diagnostic.{Row,Name,Note,Mark}
+  render rows (long rows abbreviate within the 2,000-character bound) and
+  notes. Specialize adds .Effects (effect keys and layouts) and .Handlers;
+  rows are erased there, so no key mentions one. Format.Go adds **Context**
+  (`ctx` mode over the emitted IR, runtime keys, the context and abort
+  runtime), **Effect** (layouts, perform functions, lifted clauses),
+  **Handle** (`with`, `handle`, `fail`), **Block** (lifted blocks, `let`,
+  `defer` registration), **Cleanup** (`waxwingCleanup` and the defect
+  runtime, emitted only when `defer` or `crash` occurs) and **Report**
+  (`crash` and the `fail(T): V` description). Regression rows:
+  scripts/regression-fx.mjs (checker and diagnostics) and
+  scripts/regression-fx-go.mjs (emitted Go), with probes in
+  test/regression-fx.mjs and test/regression-fx-go.mjs.
 - **P001 tests** (one file per concern): poly-syntax (grammar,
   resolution), unify (+ unify-oracle, union-find reference), poly-check
   (typing), poly-depth (inferred-type bound), poly-termination
@@ -234,7 +262,8 @@ target-neutral job (BACKLOG A002). Foreign values (FFI) need full-value
 validation of tag and payload consistency before they become closed sums
 (I001). No fake stages for absent features. ADR 002 set the polymorphism
 strategy; ADR 007 records the implemented specialization; ADR 008 the
-function values and their staged lowering.
+function values and their staged lowering; ADR 010 the effect rows,
+handlers, cleanup and their erased lowering.
 
 ## Known leak
 
