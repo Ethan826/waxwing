@@ -12,7 +12,8 @@ import { Right } from '../output/Data.Either/index.js';
 import { parse } from '../output/Format.Parse/index.js';
 import { resolve } from '../output/Features.Resolve/index.js';
 import { check } from '../output/Features.Check/index.js';
-import { markVariables, stripMarks } from '../output/Domain.Type.Marks/index.js';
+import { markVariables,
+  stripMarks } from '../output/Domain.Type.Marks/index.js';
 import { foldTypes } from '../output/Features.Check.Walk/index.js';
 
 const labelOf = (effect, mark) =>
@@ -81,7 +82,8 @@ const stripped = ty => {
 };
 const strippedRow = row => row.value0.every(label =>
   label.value2 === Unmarked.value && label.value1.every(stripped));
-const bodyTypes = body => foldTypes(found => _ => ty => [...found, ty])([])(body);
+const bodyTypes = body =>
+  foldTypes(found => _ => ty => [...found, ty])([])(body);
 
 test('Check strips marks from every body, operation and field', () => {
   const resolved = resolve(parse(source).value0);

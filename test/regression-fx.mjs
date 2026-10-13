@@ -1,5 +1,6 @@
 // FX001 Task 12 regression probes (checker and diagnostics), imported
-// through test/regression-probes.mjs; the rows are in scripts/regression-fx.mjs.
+// through test/regression-probes.mjs; the rows are in
+// scripts/regression-fx.mjs.
 // Each compiles with the compiler under test only. A probe that can hang
 // compiles in a child process with its own timeout (plan ruling F17).
 import { compileWithin } from './regression-fx008.mjs';
@@ -121,7 +122,8 @@ const callbackInstall = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
 const installMessage = 'q must allow every effect at this call (M + L + M), '
   + 'but its row is L; write q\'s row as `with M + L + M`; a callback\'s row '
   + 'must equal the row where it is called (FX018)';
-const callbackArgument = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
+const callbackArgument =
+  'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
   + 'fn take(f: Int -> Int with L + M): Int with L + M = f(1); '
   + 'fn a(q: Int -> Int with L): Int with L + M = take(q);' + main;
 const argumentMessage = 'q must allow every effect of take\'s parameter f '

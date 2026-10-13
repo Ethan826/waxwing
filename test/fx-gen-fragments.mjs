@@ -82,7 +82,8 @@ const stageCall = (ctx, effect) => {
   const mark = () => doItem(effect === 'Log' ? log(lit(r.int(9) + 1))
     : print(lit(r.int(9) + 1)));
   const name = fresh(ctx, 'stage');
-  const kind = r.pick(['one', 'one', 'one', 'two', 'two', 'two', 'partial', 'lambda']);
+  const kind =
+    r.pick(['one', 'one', 'one', 'two', 'two', 'two', 'partial', 'lambda']);
   if (kind === 'one' || kind === 'two') {
     const names = kind === 'one' ? ['x'] : ['x', 'y'];
     const total = names.map(param => local(param)).reduce(add);
@@ -125,12 +126,14 @@ const callbackFns = (ctx, effect) => {
     : log(add(local('x'), local('a')));
   const call = apply(local('f', 'fn'), [local('n')], result);
   const inside = tickEffect
-    ? withHandler(tickHandler(ctx, 0, add(local('n'), number(ctx))), block([], call))
+    ? withHandler(tickHandler(ctx, 0, add(local('n'), number(ctx))),
+      block([], call))
     : withHandler(logHandler(ctx, 0, unit), block([], call));
   ctx.shared.extra.push(
     { name: make, params: [['a', 'Int']], ret: 'fn', retText: type, rowText: '',
       row: new Set(), body: lambda(['x'], performed) },
-    { name: run, params: [['f', type], ['n', 'Int']], ret: result, retText: result,
+    { name: run, params: [['f', type], ['n', 'Int']], ret: result,
+      retText: result,
       rowText: '', row: new Set(), body: inside });
   return { make, run, result };
 };

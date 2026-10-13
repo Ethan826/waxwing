@@ -27,7 +27,8 @@ const failure = source => {
   const result = compile(source);
   return result instanceof Left ? wire(result.value0).message : null;
 };
-const hintOf = message => /write \S+'s row as `with ([^`]+)`/.exec(message)?.[1];
+const hintOf = message =>
+  /write \S+'s row as `with ([^`]+)`/.exec(message)?.[1];
 const unrelated = source => failure(source
   .replace(/fn a\(q: Int -> Int[^)]*\)/, 'fn a(z: Int)')
   .replace('take(q)', 'take(fn(y: Int) => y)')) !== null;
@@ -71,7 +72,8 @@ test('hints for an argument fix the call', () => {
   assert.ok(hints > 30, `hints printed: ${hints}`);
 });
 
-test('a callback used outside and inside a with is given no written hint', () => {
+test('a callback used outside and inside a with is given no written '
+  + 'hint', () => {
   const inside = 'with handler M { m() => 1 } { q(y) }';
   const forms = [`let y = q(x); ${inside}`,
     `let y = with handler M { m() => 1 } { q(x) }; q(y)`,

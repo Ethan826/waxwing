@@ -26,5 +26,6 @@ export const shape = value => {
     return `{${keys.map(key => `${key}: ${shape(value[key])}`).join(', ')}}`;
   }
   const fields = fieldsOf(value);
-  return fields.length === 0 ? name : `${name}(${fields.map(shape).join(', ')})`;
+  return fields.length === 0
+    ? name : `${name}(${fields.map(shape).join(', ')})`;
 };

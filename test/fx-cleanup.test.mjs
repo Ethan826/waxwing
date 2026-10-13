@@ -155,7 +155,8 @@ test('a block without defer emits no Go defer', () => {
   assert.ok(!go.includes('waxwingReport'), go);
 });
 
-test('handlers without defer or crash emit no cleanup or defect runtime', () => {
+test('handlers without defer or crash emit no cleanup or defect '
+  + 'runtime', () => {
   const go = checked(unit + 'fn main(): Unit with Console = '
     + 'handle fail(E) { fail(error: E) => print(1) };');
   assert.ok(go.includes('waxwingHandle'), go);

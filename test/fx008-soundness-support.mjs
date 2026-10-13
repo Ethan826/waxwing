@@ -46,7 +46,8 @@ export const atCall = (source, span) => /^[a-z]\w*\(.*\)$/s.test(
 const headlines = [
   /^defer must not fail, but it performs .+, whose handler may fail$/,
   /^defer must not fail, but it performs nofail\(.+\) .+, whose handler is /,
-  /^Expected (nofail|nofail\(.+\)) .+, found .+$/, /^This handler may fail here: /];
+  /^Expected (nofail|nofail\(.+\)) .+, found .+$/,
+    /^This handler may fail here: /];
 const strict = [/^defer must not fail, but it performs Fail\(/,
   /^defer must not fail, but it may perform any effect of /];
 

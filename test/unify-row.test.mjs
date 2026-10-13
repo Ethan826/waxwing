@@ -36,28 +36,36 @@ test('distinct keys commute; one key\'s entries keep their order', () => {
 test('a label matches the first entry with its key, never a later one', () => {
   const outcome = unifyRows(row([state(1, meta(0))], rowMeta(10)),
     row([state(1, int), state(1, bool)]));
-  assert.deepEqual(resolveRow(solved(outcome), row([state(1, meta(0))], rowMeta(10))),
+  assert.deepEqual(resolveRow(solved(outcome),
+    row([state(1, meta(0))], rowMeta(10))),
     row([state(1, int), state(1, bool)]));
   for (const tail of [null, rowMeta(11)]) {
-    const failure = unifyRows(row([state(1, bool)]), row([state(1, int), state(1, bool)], tail));
+    const failure =
+      unifyRows(row([state(1, bool)]),
+      row([state(1, int), state(1, bool)], tail));
     assert.equal(kind(failure), 'Mismatch');
   }
 });
 
 test('Fail labels are keyed by their payload\'s type identity', () => {
   const key = l => labelKey(typeHead)(toLabel(l));
-  const [ints, bools] = [key(label('fail', list(int))), key(label('fail', list(bool)))];
+  const [ints, bools] =
+    [key(label('fail', list(int))), key(label('fail', list(bool)))];
   assert.ok(ints instanceof Just && ints.value0.value0 instanceof HeadData);
   assert.deepEqual(ints, bools);
   assert.notDeepEqual(key(label('fail', int)), key(label('fail', bool)));
   assert.ok(key(label('fail', meta(0))) instanceof Nothing);
   assert.ok(key(label('fail', rigid(0))) instanceof Nothing);
-  const payload = unifyRows(row([label('fail', list(int))]), row([label('fail', list(bool))]));
+  const payload =
+    unifyRows(row([label('fail', list(int))]),
+    row([label('fail', list(bool))]));
   assert.equal(kind(payload), 'Mismatch');
   // Deferred keys retain their row equality for later constraints.
-  const deferred = unifyRows(row([label('fail', meta(0))]), row([label('fail', int)]));
+  const deferred =
+    unifyRows(row([label('fail', meta(0))]), row([label('fail', int)]));
   assert.equal(deferred.subst.postponed.length, 1);
-  const known = unifyRows(row([label('fail', meta(0))]), row([label('fail', int)]),
+  const known =
+    unifyRows(row([label('fail', meta(0))]), row([label('fail', int)]),
     solved(unifyRows(row([state(1, meta(0))]), row([state(1, int)]))));
   assert.equal(kind(known), 'Subst');
 });
@@ -77,7 +85,8 @@ test('Clock + ...r against Log + ...r fails with RowSharedTail', () => {
       [s.row([s.label(0)], r), s.row([s.label(3)], r)],
       [s.row([], r), s.row([s.label(0)], r)]
     ].map(([left, right]) => shown(s.unifyRows(left, right).failure))));`;
-  const child = spawnSync(process.execPath, ['--input-type=module', '-e', script],
+  const child =
+    spawnSync(process.execPath, ['--input-type=module', '-e', script],
     { encoding: 'utf8', timeout: sideConditionTimeout });
   assert.equal(child.signal, null, 'timed out: the side condition is missing');
   assert.equal(child.stderr, '');
@@ -102,24 +111,28 @@ test('missing, extra and mismatched tails are row failures', () => {
   for (const [left, right] of [[null, rigid(5)], [rigid(5), rigid(6)]]) {
     assert.equal(kind(unifyRows(row([], left), row([], right))), 'RowMismatch');
   }
-  assert.equal(kind(unifyRows(row([clock], rigid(5)), row([clock], rigid(5)))), 'Subst');
+  assert.equal(kind(unifyRows(row([clock], rigid(5)), row([clock], rigid(5)))),
+    'Subst');
 });
 
 const cases = 1500;
-test('generated pairs: sound, symmetric, acyclic, and as the oracle decides', () => {
+test('generated pairs: sound, symmetric, acyclic, and as the oracle '
+  + 'decides', () => {
   const next = generator(0x2f1);
   // Shared tails are generated: without the side condition this loop
   // would not end, so it fails at once instead (tests run in order).
   assert.ok(sideConditionHolds, 'the side condition test failed');
   const seen = { succeeded: 0, failed: 0, shared: 0 };
   for (let index = 0; index < cases; index += 1) {
-    const [left, right] = index % 2 === 0 ? unifiablePair(next, false) : anyPair(next, false);
+    const [left, right] = index % 2 === 0
+      ? unifiablePair(next, false) : anyPair(next, false);
     const context = JSON.stringify([left, right]);
     const outcome = unifyRows(left, right);
     const expected = oracleUnifyRows(left, right);
     if (index % 2 === 0) assert.equal(kind(outcome), 'Subst', context);
     assert.equal(outcome.subst !== undefined, expected !== null, context);
-    assert.equal(kind(unifyRows(right, left)) === 'Subst', expected !== null, context);
+    assert.equal(kind(unifyRows(right, left)) === 'Subst', expected !== null,
+      context);
     if (expected === null) {
       seen.failed += 1;
       if (kind(outcome) === 'RowSharedTail') seen.shared += 1;
@@ -132,7 +145,8 @@ test('generated pairs: sound, symmetric, acyclic, and as the oracle decides', ()
     assert.deepEqual(canonicalRows(resolved.map(normalRow)),
       canonicalRows(expected.map(normalRow)), context);
   }
-  assert.ok(seen.succeeded > cases / 4 && seen.failed > cases / 4 && seen.shared > 0,
+  assert.ok(seen.succeeded > cases / 4 && seen.failed > cases / 4 && seen.shared
+    > 0,
     JSON.stringify(seen));
 });
 
@@ -140,7 +154,8 @@ const many = 1000;
 test('1,000-label rows unify and resolve without stack failure', () => {
   const labels = Array.from({ length: many }, (_, n) => label(n + 10, int));
   assert.equal(kind(unifyRows(row(labels), row(labels))), 'Subst');
-  assert.equal(kind(unifyRows(row(labels), row([...labels].reverse()))), 'Subst');
+  assert.equal(kind(unifyRows(row(labels), row([...labels].reverse()))),
+    'Subst');
   const open = row([], rowMeta(10));
   const extended = unifyRows(open, row(labels));
   assert.deepEqual(resolveRow(solved(extended), open), row(labels));
@@ -159,14 +174,17 @@ test('an arrow\'s row unifies with its parameter and result', () => {
   assert.ok(s instanceof Right);
   assert.deepEqual(fromTy(unifier.resolve(s.value0)(toTy(left))),
     { ...fun(bool, int), row: row([clock, log]) });
-  const pure = unify(new Map(), fun(int, int), { ...fun(int, int), row: row([clock]) });
+  const pure =
+    unify(new Map(), fun(int, int), { ...fun(int, int), row: row([clock]) });
   assert.equal(pure.constructor.name, 'RowExtra');
   const inLabel = { ...fun(int, int), row: row([state(1, meta(0))]) };
   assert.equal(unify(new Map(), meta(0), inLabel).constructor.name, 'Occurs');
   const limit = unifier.inferredTypeLimit;
   const nest = depth => depth === 1 ? int : list(nest(depth - 1));
-  const deep = depth => ({ ...fun(int, int), row: row([state(1, nest(depth))]) });
-  assert.equal(unifier.exceedsLimit(unifier.empty)(toTy(deep(limit - 1))), false);
+  const deep = depth =>
+    ({ ...fun(int, int), row: row([state(1, nest(depth))]) });
+  assert.equal(unifier.exceedsLimit(unifier.empty)(toTy(deep(limit - 1))),
+    false);
   assert.equal(unifier.exceedsLimit(unifier.empty)(toTy(deep(limit))), true);
 });
 
@@ -174,18 +192,21 @@ test('traced unification reports matches and extensions by occurrence', () => {
   const at = n => ({ start: { line: 1, column: n, offset: n - 1 },
     end: { line: 1, column: n + 1, offset: n } });
   const sides = { left: at(1), right: at(9) };
-  const traced = (start, left, right) => rows.unifyRowsTraced(unifier.unify)(EqualMarks.value)(sides)(start)(
+  const traced = (start, left, right) =>
+    rows.unifyRowsTraced(unifier.unify)(EqualMarks.value)(sides)(start)(
     toRow(left))(toRow(right)).value0;
   const show = event => event.constructor.name === 'Matched'
     ? ['Matched', occurrence(event.value0), occurrence(event.value1)]
     : ['Extended', event.value0, occurrence(event.value1)];
   const occurrence = id => id.constructor.name === 'Written'
     ? ['Written', id.value0.start.column, id.value1] : ['Extended', id.value0];
-  const first = traced(unifier.empty, row([clock, log]), row([log], rowMeta(10)));
+  const first =
+    traced(unifier.empty, row([clock, log]), row([log], rowMeta(10)));
   assert.deepEqual(first.events.map(show), [
     ['Extended', 10, ['Written', 1, 0]],
     ['Matched', ['Written', 1, 1], ['Written', 9, 0]]
   ]);
   const second = traced(first.subst, row([clock]), row([], rowMeta(10)));
-  assert.deepEqual(second.events.map(show), [['Matched', ['Written', 1, 0], ['Extended', 10]]]);
+  assert.deepEqual(second.events.map(show),
+    [['Matched', ['Written', 1, 0], ['Extended', 10]]]);
 });

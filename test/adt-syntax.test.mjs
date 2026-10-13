@@ -21,14 +21,17 @@ test('type declarations parse with constructors, fields and spans', () => {
   assert.equal(types[0].span.start.offset, 0);
   assert.equal(types[0].span.end.offset, source.length);
   assert.deepEqual(types[0].ctors[0].span, spanAt(source, 'Nil'));
-  assert.deepEqual(types[0].ctors[1].span, spanAt(source, 'Cons(Int, IntList)'));
+  assert.deepEqual(types[0].ctors[1].span,
+    spanAt(source, 'Cons(Int, IntList)'));
 });
 
 test('mutually referring types parse in either order', () => {
   const tree = 'type Tree = Node(Int, Forest);';
   const forest = 'type Forest = Empty | More(Tree, Forest);';
-  assert.deepEqual(parsed(`${tree} ${forest}`).types.map(t => t.name), ['Tree', 'Forest']);
-  assert.deepEqual(parsed(`${forest} ${tree}`).types.map(t => t.name), ['Forest', 'Tree']);
+  assert.deepEqual(parsed(`${tree} ${forest}`).types.map(t => t.name),
+    ['Tree', 'Forest']);
+  assert.deepEqual(parsed(`${forest} ${tree}`).types.map(t => t.name),
+    ['Forest', 'Tree']);
 });
 
 test('declarations and functions interleave', () => {
@@ -58,5 +61,6 @@ test('a lone ! is a lexical error', () => {
 test('=> | { } lex as single tokens', () => {
   const result = lex('a=>b|{}');
   assert.ok(result instanceof Right);
-  assert.deepEqual(result.value0.map(token => token.text), ['a', '=>', 'b', '|', '{', '}']);
+  assert.deepEqual(result.value0.map(token => token.text),
+    ['a', '=>', 'b', '|', '{', '}']);
 });

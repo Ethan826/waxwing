@@ -2,14 +2,16 @@
 // Each probe uses only the compiler it is given, never the healthy build.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync,
+  writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { externalProbes } from './regression-probes.mjs';
 const [compilerPath, outputDir, probe] = process.argv.slice(2);
 const { compile } = await import(pathToFileURL(resolve(compilerPath)));
-const load = name => import(pathToFileURL(resolve(outputDir, name, 'index.js')));
+const load = name =>
+  import(pathToFileURL(resolve(outputDir, name, 'index.js')));
 const { Left, Right } = await load('Data.Either');
 const { wire } = await load('Format.Diagnostic');
 const goTestTimeoutMs = 120_000;
@@ -216,7 +218,8 @@ const stateThread = () => {
   const result = compile(readFileSync('examples/answer.wxw', 'utf8'));
   const expected = readFileSync('bootstrap/answer.go', 'utf8');
   if (!(result instanceof Right) || result.value0 !== expected) {
-    console.error(`parser state not threaded: ${JSON.stringify(result.value0)}`);
+    console.error('parser state not threaded: '
+      + JSON.stringify(result.value0));
     process.exit(1);
   }
   console.log('state-thread regression detects the defect');
@@ -239,9 +242,9 @@ const probes = {
     'Cons(1, Cons(2, Nil))\n', 'printed value lost fields'),
   'state-thread': stateThread, capture
 };
-const context = { compile, Left, Right, wire, printed, ran, probe, compilerPath };
-const external = externalProbes;
-const delegated = name => () => external[name](context);
-for (const name of Object.keys(external)) probes[name] = delegated(name);
+const context = {
+  compile, Left, Right, wire, printed, ran, probe, compilerPath };
+const delegated = name => () => externalProbes[name](context);
+for (const name of Object.keys(externalProbes)) probes[name] = delegated(name);
 assert.ok(probe in probes, `unknown probe: ${probe}`);
 probes[probe]();

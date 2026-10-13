@@ -42,7 +42,8 @@ test('1,000 installations in one declaration check within the bound', () => {
 // BACKLOG T008: the settling cost is linear in the installations. Every
 // consumption used to walk the target row's chain of alias hops, one lookup
 // per hop, so doubling the installations multiplied the time by 4.27
-// (best of 3; 7.9 s then 35 s as single runs at 9a62014). `MEASURED_RATIO` is the median over five
+// (best of 3; 7.9 s then 35 s as single runs at 9a62014). `MEASURED_RATIO` is
+// the median over five
 // runs of time(2,000) / time(1,000), each the best of `runs` timings, on the
 // author's laptop (2026-10-12, load average 4.3); `MAX_RATIO` is 1.6 times
 // that. A linear check doubles and quadratic work lands at 4 or more (4.27

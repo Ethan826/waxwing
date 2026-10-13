@@ -82,8 +82,10 @@ test('duplicates among many types are reported where they first occur', () => {
 
 // Duplicate detection sorts names instead of comparing every pair; the
 // clash is still reported at the first declaration of the name.
-test('a duplicate among many functions is reported where it first occurs', () => {
-  const source = `${declarationsFrom(' ')} fn f7(): Int = 0; fn main(): Int = 0;`;
+test('a duplicate among many functions is reported where it first '
+  + 'occurs', () => {
+  const source =
+    `${declarationsFrom(' ')} fn f7(): Int = 0; fn main(): Int = 0;`;
   rejectedAt(source, 'E_DUPLICATE', 'fn f7(): Int = 7;');
 });
 

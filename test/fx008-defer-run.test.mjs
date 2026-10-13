@@ -5,7 +5,8 @@ import { runGoBatch } from './go-batch.mjs';
 import { checked } from './support.mjs';
 import {
   aroundBoth, boxCrash, boxOwnFailure, boxPlain, clauseDefer, consoleCleanup,
-  a1Control, copies, count, r1, r2, r9, forwardingFailFree, pass, probe, q1Nofail, unmarked
+  a1Control, copies, count, r1, r2, r9, forwardingFailFree, pass, probe,
+    q1Nofail, unmarked
 } from './fx008-defer-programs.mjs';
 import { cases as cleanupCases } from './fx-cleanup-programs.mjs';
 
@@ -52,7 +53,8 @@ test('a constructor field handler may handle its own failure or crash', () => {
 // Review Focus 4: marks do not reach the Go. `pass` compiles to what its
 // unmarked program does; `count`'s unmarked program is rejected now (its
 // defer needs the mark), so its Go hash is the base commit ff0c6d1's.
-const unmarkedCount = '7645778dead1962466ca8154f8d9e3288148d00db418c17fe1671edbb022e061';
+const unmarkedCount =
+  '7645778dead1962466ca8154f8d9e3288148d00db418c17fe1671edbb022e061';
 test('recursive nofail(k) functions emit the unmarked Go', () => {
   assert.equal(checked(pass), checked(unmarked(pass)));
 });

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { expectedOutcome, forms, throughSpecialize } from './fn-linear-forms.mjs';
+import { expectedOutcome, forms,
+  throughSpecialize } from './fn-linear-forms.mjs';
 
 // FN001 Task 8 Step 1b: each function form at 20,000 parameters through
 // Specialize, bounded at three times its time measured 2026-10-09 on the

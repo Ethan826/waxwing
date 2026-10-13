@@ -35,12 +35,14 @@ const normal = ctx => layers(safe(ctx), ctx.r.int(3), []);
 // (a block activation of its own).
 const aborting = (ctx, items, family) => {
   const quiet = extend(safe(ctx), family);
-  const raise = [filler(quiet), doItem(fail(payload(ctx, family))), filler(quiet)];
+  const raise =
+    [filler(quiet), doItem(fail(payload(ctx, family))), filler(quiet)];
   const inner = layers(quiet, ctx.r.int(3), [...items, ...raise]);
   if (ctx.r.chance(50)) return guard(ctx, family, inner);
   const name = fresh(ctx, 'work');
   ctx.shared.extra.push({ name, params: [], ret: 'Unit', retText: 'Unit',
-    row: new Set([family]), rowText: `Fail(${family}) + Console`, body: inner });
+    row: new Set([family]), rowText: `Fail(${family}) + Console`,
+      body: inner });
   return guard(ctx, family, call(name, [], 'Unit'));
 };
 const abort = ctx => aborting(ctx, [], ctx.r.pick(families));
@@ -50,15 +52,18 @@ const abort = ctx => aborting(ctx, [], ctx.r.pick(families));
 const ownCleanup = (ctx, family) => {
   const quiet = safe(ctx);
   if (family === 'Err' && ctx.r.chance(30)) {
-    return deferItem(handle(block([doItem(call('risky', [number(ctx)], 'Int'))]),
+    return deferItem(handle(block([doItem(call('risky', [number(ctx)],
+      'Int'))]),
       [failureClause(quiet, 'Err', 0)]));
   }
   return deferItem(ownFailure(quiet, 1));
 };
 const ownFailureDuringAbort = ctx => {
   const family = ctx.r.pick(families);
-  const mine = ctx.r.chance(60) ? family : families.find(name => name !== family);
-  return aborting(ctx, tidy(ctx, [ownCleanup(ctx, mine), ...defers(ctx, 1)]), family);
+  const mine =
+    ctx.r.chance(60) ? family : families.find(name => name !== family);
+  return aborting(ctx, tidy(ctx, [ownCleanup(ctx, mine), ...defers(ctx, 1)]),
+    family);
 };
 
 // Cleanups registered under different handlers while an abort comes from

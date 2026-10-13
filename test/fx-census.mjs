@@ -16,7 +16,8 @@ export const categories = [
   ['cleanup: abort', ['cleanup-exit-abort'], cleanup],
   ['cleanup: defect', ['cleanup-exit-defect'], cleanup],
   ['cleanup: crash on normal exit', ['cleanup-crash-normal'], cleanup],
-  ['cleanup: crash while an abort is pending', ['cleanup-crash-abort'], cleanup],
+  ['cleanup: crash while an abort is pending', ['cleanup-crash-abort'],
+    cleanup],
   ['cleanup: several crashes', ['cleanup-multi-crash'], cleanup],
   ['cleanup: handles its own failure during an abort',
     ['cleanup-own-fail-during-abort'], cleanup],
@@ -34,7 +35,8 @@ export const census = outcomes => categories.map(([name, events, minimum]) => ({
     events.some(event => found.events.has(event))).length
 }));
 
-export const shortfalls = rows => rows.filter(row => row.programs < row.minimum);
+export const shortfalls = rows =>
+  rows.filter(row => row.programs < row.minimum);
 
 export const table = rows => rows.map(row =>
   `${row.name}: ${row.programs} (minimum ${row.minimum})`).join('\n');

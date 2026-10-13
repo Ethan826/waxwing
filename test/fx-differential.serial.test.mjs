@@ -18,7 +18,8 @@ import { checked, rejectedAt } from './support.mjs';
 // meet the census minimums and fail by design.
 const integer = (name, fallback) => {
   const value = Number(process.env[name] ?? fallback);
-  assert.ok(Number.isInteger(value) && value >= 0, `${name} must be an integer`);
+  assert.ok(Number.isInteger(value) && value
+    >= 0, `${name} must be an integer`);
   return value;
 };
 const baseSeed = integer('WAXWING_FX_SEED', 20261010);
@@ -42,7 +43,8 @@ test('the corpus meets the census minimums', t => {
   assert.deepEqual(shortfalls(rows), [], table(rows));
 });
 
-test(`${rejectionVariants} failing defers are rejected with the Task 8 texts`, () => {
+test(`${rejectionVariants} failing defers are rejected with the Task 8 texts`,
+  () => {
   for (let index = 0; index < rejectionVariants; index++) {
     const variant = rejection(baseSeed + index, index);
     const diagnostic = rejectedAt(variant.source, 'E_EFFECT', variant.text);
@@ -51,7 +53,8 @@ test(`${rejectionVariants} failing defers are rejected with the Task 8 texts`, (
   }
 });
 
-test(`${rejectionVariants} defers reaching failing handlers are rejected with the FX008 text`, () => {
+test(`${rejectionVariants} defers reaching failing handlers are rejected `
+  + 'with the FX008 text', () => {
   for (let index = 0; index < rejectionVariants; index++) {
     const variant = failingHandlerRejection(baseSeed + index, index);
     const diagnostic = rejectedAt(variant.source, 'E_EFFECT', variant.text);
@@ -61,7 +64,8 @@ test(`${rejectionVariants} defers reaching failing handlers are rejected with th
 });
 
 // A differing program: evidence on disk, a minimized source beside it, and
-// a failure naming the seed. Shrinking (at most 3 minutes) runs Go for every well-typed
+// a failure naming the seed. Shrinking (at most 3 minutes) runs Go for every
+// well-typed
 // candidate, so only the first few differences of a run are shrunk.
 const shrinkLimit = 3;
 const shrinkMs = 180_000;
@@ -80,7 +84,8 @@ const report = (found, index, expected, actual) => {
     const smallest = shrink(found.program, differs, 600, shrinkMs);
     saveEvidence(name, { '-min.wxw': render(smallest) });
   }
-  return `${label(found, index)} differs; see .build/fx001-differential/${name}`;
+  return `${label(found,
+    index)} differs; see .build/fx001-differential/${name}`;
 };
 
 const chunks = Array.from({ length: Math.ceil(total / chunkSize) },
@@ -88,7 +93,8 @@ const chunks = Array.from({ length: Math.ceil(total / chunkSize) },
 for (const chunk of chunks) {
   const start = chunk * chunkSize;
   const slice = programs.slice(start, start + chunkSize);
-  test(`programs ${start}-${start + slice.length - 1} agree with the interpreter`, () => {
+  test(`programs ${start}-${start + slice.length
+    - 1} agree with the interpreter`, () => {
     const batch = runGoBatch(import.meta.url, slice.map(({ source }, at) =>
       [`p${start + at}`, source]), `chunk${chunk}`);
     const differences = [];
@@ -102,7 +108,8 @@ for (const chunk of chunks) {
         assert.fail(`${label(found, index)}: the generator produced a `
           + `program the compiler rejects: ${error.message}\n${found.source}`);
       }
-      const seen = { stdout: actual.stdout, stderr: actual.stderr, status: actual.status };
+      const seen = {
+        stdout: actual.stdout, stderr: actual.stderr, status: actual.status };
       if (!same(expectations[index], seen)) {
         const { events, ...expected } = expectations[index];
         differences.push(report(found, index, expected, seen));

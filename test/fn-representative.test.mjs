@@ -15,7 +15,8 @@ import { programs } from './poly-programs.mjs';
 
 const specialized = (source, representative) => {
   const result = specializeWith(representative)(checkedPoly(source));
-  if (!(result instanceof Right)) assert.fail(`${source}\n${JSON.stringify(result)}`);
+  if (!(result instanceof Right))
+    assert.fail(`${source}\n${JSON.stringify(result)}`);
   return result.value0;
 };
 
@@ -70,8 +71,8 @@ const sameComputation = (left, right) => {
   }
 };
 
-test('representative independence on the IR with unused lambda parameters',
-  () => {
+test('representative independence on the IR with unused lambda '
+  + 'parameters', () => {
     programs.forEach(({ source }, index) => {
       const lambdas = withLambdas(source);
       const asInt = specialized(lambdas, TInt.value);

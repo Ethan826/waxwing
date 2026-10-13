@@ -60,7 +60,8 @@ test('coverage agrees with a brute-force first-match oracle', () => {
       const offset = built.offsets[want.arm];
       const width = print(patterns[want.arm]).length;
       assert.equal(got.diagnostic.span.start.offset, offset, built.source);
-      assert.equal(got.diagnostic.span.end.offset, offset + width, built.source);
+      assert.equal(got.diagnostic.span.end.offset, offset + width,
+        built.source);
     }
     if (want.code === 'E_NON_EXHAUSTIVE') {
       assert.equal(got.diagnostic.span.start.offset, built.start, built.source);
@@ -105,7 +106,8 @@ const inhabitedCtors = types => {
   for (let grown = true; grown;) {
     grown = false;
     for (const ctor of ctors) {
-      if (found.has(ctor.name) || !ctor.fields.every(f => live.has(f))) continue;
+      if (found.has(ctor.name) || !ctor.fields.every(f => live.has(f)))
+        continue;
       found.add(ctor.name);
       live.add(`T${ctor.owner}`);
       grown = true;

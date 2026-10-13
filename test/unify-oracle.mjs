@@ -57,7 +57,8 @@ const unifyInto = (state, left, right) => {
     if (l.k === 'data' && (l.id !== r.id || l.args.length !== r.args.length)) {
       return false;
     }
-    if (l.args) l.args.forEach((arg, index) => pending.push([arg, r.args[index]]));
+    if (l.args) l.args.forEach((arg, index) =>
+      pending.push([arg, r.args[index]]));
   }
   return true;
 };

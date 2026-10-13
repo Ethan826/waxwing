@@ -11,11 +11,16 @@ export const call = (name, args, ty) => ({ k: 'call', name, args, ty });
 export const apply = (callee, args, ty) => ({ k: 'app', callee, args, ty });
 export const add = (left, right) => ({ k: 'add', left, right, ty: 'Int' });
 export const lambda = (params, body) => ({ k: 'lam', params, body, ty: 'fn' });
-export const block = (items, value = null) => ({ k: 'blk', items, value, ty: value?.ty ?? 'Unit' });
-export const withHandler = (handler, body) => ({ k: 'with', handler, body, ty: body.ty });
-export const handler = (effect, clauses) => ({ k: 'handler', effect, clauses, ty: 'handler' });
-export const handle = (body, clauses) => ({ k: 'handle', body, clauses, ty: clauses[0].body.ty });
-export const match = (scrutinee, arms, ty) => ({ k: 'match', scrutinee, arms, ty });
+export const block = (items, value = null) =>
+  ({ k: 'blk', items, value, ty: value?.ty ?? 'Unit' });
+export const withHandler = (handler, body) =>
+  ({ k: 'with', handler, body, ty: body.ty });
+export const handler = (effect, clauses) =>
+  ({ k: 'handler', effect, clauses, ty: 'handler' });
+export const handle = (body, clauses) =>
+  ({ k: 'handle', body, clauses, ty: clauses[0].body.ty });
+export const match = (scrutinee, arms, ty) =>
+  ({ k: 'match', scrutinee, arms, ty });
 
 export const letItem = (name, value) => ({ k: 'let', name, value });
 export const doItem = value => ({ k: 'do', value });
@@ -32,12 +37,14 @@ export const oops = number => call('Oops', [lit(number)], 'Oops');
 
 const atomic = node => ['lit', 'var', 'call', 'app'].includes(node.k);
 const operand = node => (atomic(node) ? text(node) : `(${text(node)})`);
-const piece = item => (item.k === 'let' ? `let ${item.name} = ${text(item.value)};`
+const piece = item =>
+  (item.k === 'let' ? `let ${item.name} = ${text(item.value)};`
   : `${item.k === 'defer' ? 'defer ' : ''}${text(item.value)};`);
 const body = node => [...node.items.map(piece),
   ...(node.value ? [text(node.value)] : [])].join(' ');
 
-const clause = ({ op, params, body }) => `${op}(${params.join(', ')}) => ${text(body)}`;
+const clause =
+  ({ op, params, body }) => `${op}(${params.join(', ')}) => ${text(body)}`;
 const failure = ({ family, name, body }) =>
   `fail(${name}: ${family}) => ${text(body)}`;
 const arm = ({ pattern, body }) => `${pattern} => ${text(body)}`;
@@ -54,9 +61,15 @@ export const text = node => {
     case 'lam': return `fn(${node.params.join(', ')}) => ${text(node.body)}`;
     case 'blk': return body(node) === '' ? '{}' : `{ ${body(node)} }`;
     case 'with': return `with ${text(node.handler)} ${text(node.body)}`;
-    case 'handler': return `handler ${node.effect} { ${node.clauses.map(clause).join(', ')} }`;
-    case 'handle': return `handle ${text(node.body)} { ${node.clauses.map(failure).join(', ')} }`;
-    case 'match': return `match ${text(node.scrutinee)} { ${node.arms.map(arm).join(', ')} }`;
+    case 'handler':
+      return `handler ${node.effect} {`
+        + ` ${node.clauses.map(clause).join(', ')} }`;
+    case 'handle':
+      return `handle ${text(node.body)} {`
+        + ` ${node.clauses.map(failure).join(', ')} }`;
+    case 'match':
+      return `match ${text(node.scrutinee)} {`
+        + ` ${node.arms.map(arm).join(', ')} }`;
     default: throw new Error(`unknown node ${node.k}`);
   }
 };

@@ -121,11 +121,13 @@ const implied = order => [
 // Replaces one field somewhere in v, so pairs often share long prefixes.
 const mutate = (next, system, v, typeIndex, depth) => {
   const fields = system.types[typeIndex].ctors[v.ctor].fields;
-  if (fields.length === 0 || depth <= 0) return value(next, system, typeIndex, depth);
+  if (fields.length === 0 || depth <= 0)
+    return value(next, system, typeIndex, depth);
   const at = choose(next, fields.length);
   const copy = [...v.fields];
   const field = fields[at];
-  if (field === 'Int') copy[at] = choose(next, 2) ? copy[at] + 1 | 0 : next() | 0;
+  if (field === 'Int') copy[at] =
+    choose(next, 2) ? copy[at] + 1 | 0 : next() | 0;
   else if (field === 'Bool') copy[at] = !copy[at];
   else copy[at] = mutate(next, system, copy[at], field, depth - 1);
   return { ctor: v.ctor, fields: copy };

@@ -20,7 +20,8 @@ test('handler literals nested through rows are accepted', () => {
 });
 
 // A child process with a timeout, so a regression fails instead of hanging.
-test('handler literals whose clauses perform the previous literal are accepted', () => {
+test('handler literals whose clauses perform the previous literal are '
+  + 'accepted', () => {
   const context = { compilerPath: 'output/Program.Compile/index.js' };
   const found = compileWithin(context, clauseLiteralProgram(clauseLiteralDepth),
     20_000);

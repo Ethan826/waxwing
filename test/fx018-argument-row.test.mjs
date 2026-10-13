@@ -24,7 +24,8 @@ test('b1: q lacks M, which take\'s parameter writes', () => {
     at: ['take(q)', 'q'],
     notes: [qNote, fNote]
   });
-  applyHint(source, 'q: Int -> Int with L)', row => `q: Int -> Int with ${row})`);
+  applyHint(source, 'q: Int -> Int with L)',
+    row => `q: Int -> Int with ${row})`);
 });
 
 test('b2, b4, b5: accepted programs stay accepted', () => {
@@ -101,7 +102,8 @@ test('a Fail payload label in the parameter row', () => {
     notes: [qNote, ['f: Int -> Int with L + Fail(E))', 'with L + Fail(E)',
       'f\'s row is written here']]
   });
-  applyHint(source, 'q: Int -> Int with L)', row => `q: Int -> Int with ${row})`);
+  applyHint(source, 'q: Int -> Int with L)',
+    row => `q: Int -> Int with ${row})`);
 });
 
 test('a constructor field has no parameter name', () => {

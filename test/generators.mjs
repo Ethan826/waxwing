@@ -10,8 +10,10 @@ export const generator = seed => () => {
 export const tree = (next, depth) => {
   const choice = next() >>> 0;
   if (!depth || choice % 3 === 0) return { tag: 'int', value: next() };
-  if (choice % 3 === 1) return { tag: 'add', left: tree(next, depth - 1), right: tree(next, depth - 1) };
-  return { tag: 'if', flag: next() < 0, yes: tree(next, depth - 1), no: tree(next, depth - 1) };
+  if (choice % 3 === 1) return {
+    tag: 'add', left: tree(next, depth - 1), right: tree(next, depth - 1) };
+  return { tag: 'if', flag: next() < 0, yes: tree(next, depth - 1),
+    no: tree(next, depth - 1) };
 };
 export const print = node => {
   if (node.tag === 'int') return String(node.value);
@@ -40,7 +42,8 @@ const value = (next, depth) => {
   const choice = depth ? choose(next, 3) : choose(next, 2);
   if (choice === 0) return { tag: 'A' };
   if (choice === 1) return { tag: 'B', n: intValue(next) };
-  return { tag: 'C', left: value(next, depth - 1), right: value(next, depth - 1) };
+  return { tag: 'C', left: value(next, depth - 1),
+    right: value(next, depth - 1) };
 };
 const printValue = v => {
   if (v.tag === 'A') return 'A';
@@ -65,7 +68,8 @@ const ctorPattern = (next, depth, names) => {
 const tPattern = (next, depth, names) => {
   const choice = depth ? choose(next, 3) : choose(next, 2);
   if (choice === 0) return { tag: '_' };
-  if (choice === 1) return { tag: 'bind', name: `t${names.count++}`, int: false };
+  if (choice === 1) return {
+    tag: 'bind', name: `t${names.count++}`, int: false };
   return ctorPattern(next, depth, names);
 };
 const printPattern = p => {
@@ -130,7 +134,9 @@ const drawn = (seed, count, arms, print) => {
 };
 // The seed was chosen so the 12 programs include Int-binder arms, 32-bit
 // wraparound, and arms reached only through two or more nested matches.
-export const nestedCases = drawn(0x487, 12, next => 1 + choose(next, 4), printArms);
+export const nestedCases =
+  drawn(0x487, 12, next => 1 + choose(next, 4), printArms);
 // The seed was chosen so no generated arm is redundant (the compiler would
 // reject it), some inputs reach a third arm, and some reach the `_` tail.
-export const flatCases = drawn(0x6443, 8, next => 2 + choose(next, 3), printFlat);
+export const flatCases =
+  drawn(0x6443, 8, next => 2 + choose(next, 3), printFlat);

@@ -14,7 +14,8 @@ export { EqualMarks, IgnoreMarks };
 
 // Consumption at no place; `throwaway` is the stage tail meta nobody reads.
 export const directional = throwaway => Directional.create({
-  span: nowhere, throwaway: throwaway === undefined ? Nothing.value : Just.create(throwaway)
+  span: nowhere, throwaway: throwaway === undefined
+    ? Nothing.value : Just.create(throwaway)
 });
 
 // Every edge of a substitution, oldest first: marks as plain JS, the
@@ -35,5 +36,6 @@ export const markBinding = (subst, n) => {
 // The marks of the labels a row meta is bound to.
 export const marksOfBinding = (subst, n) => {
   const found = lookup(ordInt)(n)(subst.rows);
-  return found instanceof Just ? found.value0.value0.map(l => plainMark(l.value2)) : undefined;
+  return found instanceof Just
+    ? found.value0.value0.map(l => plainMark(l.value2)) : undefined;
 };

@@ -108,7 +108,8 @@ test('Format renders type names and witnesses from problem data', async () => {
   assert.equal(message(problem.NonExhaustive.create(literals)),
     'Missing pattern: Pair(-1, true)');
   const span = { start: position(0), end: position(1) };
-  assert.deepEqual(wire({ problem: problem.Internal.create('Broken'), span, related: [] }),
+  assert.deepEqual(wire({
+    problem: problem.Internal.create('Broken'), span, related: [] }),
     { code: 'E_INTERNAL', message: 'Broken', span, related: [] });
 });
 
@@ -146,20 +147,24 @@ test('a constructor field-count mismatch is E_INTERNAL', async () => {
   const box = TData.create(0)([])([]);
   const types = [{ name: 'Box', ctors: [0], span }];
   const ctors = [{ name: 'Wrap', owner: 0, fields: [TInt.value], span }];
-  const wild = ir.Pattern.create({ ty: TInt.value, span, shape: ir.Wildcard.value });
+  const wild =
+    ir.Pattern.create({ ty: TInt.value, span, shape: ir.Wildcard.value });
   const wrap = fields => ir.Pattern.create(
     { ty: box, span, shape: ir.Ctor.create(0)(fields) });
   const expr = (ty, node) => ir.Expr.create({ ty, span, node });
-  const arm = pattern => ({ pattern, body: expr(TInt.value, ir.Integer.create(0)), span });
+  const arm = pattern =>
+    ({ pattern, body: expr(TInt.value, ir.Integer.create(0)), span });
   const body = expr(TInt.value, ir.Match.create(expr(box, ir.Local.create(0)))(
     [arm(wrap([wild, wild])), arm(wrap([wild]))]));
   const covered = coverage({ types, ctors, entry: 0,
     functions: [{ id: 0, parameters: [], result: TInt.value, body, span }] });
   assert.equal(covered.constructor.name, 'Left', 'over-long row was accepted');
   assert.deepEqual(covered.value0.problem,
-    (await load('Domain.Problem')).Internal.create('Coverage field count mismatch'));
+    (await load('Domain.Problem')).Internal.create('Coverage field count ' +
+      'mismatch'));
   const short = resolved.Ctor.create(span)(0)([]);
   const pattern = checkPattern({ types, ctors })(box)(short);
   assert.equal(pattern.constructor.name, 'Left', 'short pattern was truncated');
-  assert.equal(pattern.value0.problem.value0, 'Resolved constructor arity mismatch');
+  assert.equal(pattern.value0.problem.value0,
+    'Resolved constructor arity mismatch');
 });

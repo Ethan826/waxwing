@@ -15,7 +15,8 @@ const hop = index => [
   `fn f${index}(): Int with Database = f${index + 1}();`, `f${index + 1}()`,
   `through f${index}`];
 
-test('a 30-deep call chain missing Database at main: path, origin, boundary', () => {
+test('a 30-deep call chain missing Database at main: path, origin, '
+  + 'boundary', () => {
   const source = chain(30);
   expectDiagnostic(source, {
     code: 'E_EFFECT', message: 'Unhandled Database in main', at: ['f1()'],
@@ -56,7 +57,8 @@ test('an operation in a lambda passed through three higher-order functions '
   const source = log + wrapper
     + `fn main(): Int = once(keep(keep(keep(${callback}))));`;
   expectDiagnostic(source, {
-    code: 'E_EFFECT', message: 'This function must be pure, but it performs Log',
+    code: 'E_EFFECT',
+      message: 'This function must be pure, but it performs Log',
     at: [`keep(keep(keep(${callback})))`],
     notes: [[callback, 'log(x)', 'Log is performed here'],
       ['fn once(f: Int -> Int with pure)', 'with pure',
@@ -77,7 +79,8 @@ const wideBoth = 'fn both(f: Int -> Int with '
 const wide = pair + effects + ` ${wideBoth} `
   + 'fn main(): Int = { let h = fn(x) => x; both(h, h) };';
 
-test('a 50-label row missing one label names it and the shared tail, bounded', () => {
+test('a 50-label row missing one label names it and the shared tail, '
+  + 'bounded', () => {
   const full = rows.unabbreviated(diagnose(wide).problem);
   assert.ok(full.length > maxCharacters,
     `unabbreviated is ${full.length} characters`);
@@ -100,7 +103,8 @@ test('the side condition names both rows and the shared tail', () => {
     + 'fn main(): Int = { let h = fn(x) => x; both(h, h) };';
   expectDiagnostic(source, {
     code: 'E_EFFECT',
-    message: 'Log + ...r and Clock + ...r cannot be made equal: both end in ...r',
+    message: 'Log + ...r and Clock + ...r cannot be made equal: both end in ' +
+      '...r',
     at: ['both(h, h)', 'h', 6],
     notes: [[both.trim(), both.trim(), '...r is declared here']]
   });
@@ -109,7 +113,8 @@ test('the side condition names both rows and the shared tail', () => {
 const handlers = 'get() => 1, put(v) => ()';
 const boolHandlers = 'get() => true, put(v) => ()';
 
-test('a same-key payload mismatch notes the innermost handler installation', () => {
+test('a same-key payload mismatch notes the innermost handler '
+  + 'installation', () => {
   const inner = `with handler State(Bool) { ${boolHandlers} } { useInt() }`;
   const source = state + 'fn useInt(): Int with State(Int) = get(); '
     + `fn main(): Int = with handler State(Int) { ${handlers} } { ${inner} };`;
@@ -131,12 +136,15 @@ test('a same-key payload mismatch notes the innermost signature entry', () => {
   });
 });
 
-test('a large payload mismatch elides the subterms off the differing path', () => {
-  const nest = 'type Pair(a, b) = Pair(a, b); type List(a) = Nil | Cons(a, List(a)); ';
+test('a large payload mismatch elides the subterms off the differing '
+  + 'path', () => {
+  const nest =
+    'type Pair(a, b) = Pair(a, b); type List(a) = Nil | Cons(a, List(a)); ';
   const bad = 'fn bad(): Pair(Pair(Int, Bool), List(Int)) '
     + 'with State(Pair(Pair(Int, Bool), List(Bool))) '
     + '= useInt();';
-  const source = nest + state + 'fn useInt(): Pair(Pair(Int, Bool), List(Int)) with '
+  const source = nest + state
+    + 'fn useInt(): Pair(Pair(Int, Bool), List(Int)) with '
     + 'State(Pair(Pair(Int, Bool), List(Int))) = get(); ' + bad
     + ' fn main(): Int = 0;';
   const { diagnostic } = diagnose(source);
@@ -145,9 +153,11 @@ test('a large payload mismatch elides the subterms off the differing path', () =
 });
 
 const longType = `T${'x'.repeat(2500)}`;
-const longEffect = `type ${longType} = ${longType}; effect E(a) { fn op(): a; }; `;
+const longEffect =
+  `type ${longType} = ${longType}; effect E(a) { fn op(): a; }; `;
 
-test('a label with a 2,500-character argument keeps the whole diagnostic bounded', () => {
+test('a label with a 2,500-character argument keeps the whole diagnostic ' +
+  'bounded', () => {
   const raise = `fn raise(): Int with E(${longType}) = { op(); 1 }; `;
   const { diagnostic } = diagnose(longEffect + raise
     + 'fn main(): Int = raise();');
@@ -155,7 +165,8 @@ test('a label with a 2,500-character argument keeps the whole diagnostic bounded
   assert.ok(length(diagnostic) <= maxCharacters, `${length(diagnostic)}`);
 });
 
-test('long labels in a row conflict still name the label and the shared tail', () => {
+test('long labels in a row conflict still name the label and the shared '
+  + 'tail', () => {
   const source = longEffect + log + 'fn both(f: Int -> Int with '
     + `E(${longType}) + ...r, g: Int -> Int with Log + ...r): Int = 0; `
     + 'fn main(): Int = { let h = fn(x) => x; both(h, h) };';
@@ -165,7 +176,8 @@ test('long labels in a row conflict still name the label and the shared tail', (
   assert.ok(length(diagnostic) <= maxCharacters, `${length(diagnostic)}`);
 });
 
-test('a closed written row that lacks a label names its with, not an ambient row', () => {
+test('a closed written row that lacks a label names its with, not an ambient ' +
+  'row', () => {
   const stamp = 'fn stamp(): Int with Log = tick(); ';
   expectDiagnostic(log + clock + 'fn tick(): Int with Clock = now(); ' + stamp
     + 'fn main(): Int = 0;', {

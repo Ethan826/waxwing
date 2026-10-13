@@ -5,13 +5,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Left } from '../output/Data.Either/index.js';
-import { empty, insert, toUnfoldable } from '../output/Data.Map.Internal/index.js';
+import { empty, insert,
+  toUnfoldable } from '../output/Data.Map.Internal/index.js';
 import { Nothing } from '../output/Data.Maybe/index.js';
 import { ordInt } from '../output/Data.Ord/index.js';
 import { unfoldableArray } from '../output/Data.Unfoldable/index.js';
 import { Row } from '../output/Domain.Row/index.js';
 import { resolve } from '../output/Features.Resolve/index.js';
-import { checkedStates, settledAgain } from '../output/Features.Check.Inspect/index.js';
+import { checkedStates,
+  settledAgain } from '../output/Features.Check.Inspect/index.js';
 import { tailPass } from '../output/Features.Check.TailPass/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
 import { parse } from '../output/Format.Parse/index.js';
@@ -36,7 +38,8 @@ const withInstallation = (state, id, installation) => ({
   ...state,
   restricted: {
     ...state.restricted,
-    installations: insert(ordInt)(id)(installation)(state.restricted.installations)
+    installations:
+      insert(ordInt)(id)(installation)(state.restricted.installations)
   }
 });
 const internal = result => {
@@ -51,16 +54,19 @@ const runState = () => {
   return checked.value0.find(found => found.name === 'run').state;
 };
 
-test('the tail pass accepts an installation row that ends in the variable', () => {
+test('the tail pass accepts an installation row that ends in the '
+  + 'variable', () => {
   const state = runState();
   const result = tailPass({})({ ...state, restricted: {
     ...state.restricted, clauses: empty } });
   assert.equal(result.constructor.name, 'Right');
 });
 
-test('an installation row that does not end in its clause row is internal', () => {
+test('an installation row that does not end in its clause row is '
+  + 'internal', () => {
   const state = runState();
-  const [{ value0: id, value1: found }] = entries(state.restricted.installations);
+  const [{ value0: id, value1: found }] =
+    entries(state.restricted.installations);
   const broken = withInstallation(
     { ...state, restricted: { ...state.restricted, clauses: empty } }, id,
     { ...found, current: new Row([], Nothing.value) });

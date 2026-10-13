@@ -29,6 +29,11 @@ export const batchId = (file, label = '') => {
     .replace(/[^A-Za-z0-9_-]/g, '-');
 };
 
+const mainPrefix = '^func main\\(\\) \\{ (defer waxwingReport\\(\\); )?';
+const printedMain = new RegExp(`${mainPrefix}fmt\\.Println\\(.*\\) \\}$`, 'gm');
+const unitMain = new RegExp(
+  `${mainPrefix}waxwingFn\\d+\\((nil)?\\) \\}$`, 'gm');
+
 // Checked, structural rewrite: the program must have exactly the emitted
 // shape (Format.Go's entryMain) or the case is refused by name.
 export const asCasePackage = (name, ident, go) => {
@@ -36,8 +41,7 @@ export const asCasePackage = (name, ident, go) => {
   const expected = count(/^package \w+$/gm) === 1
     && count(/^package main$/gm) === 1
     && count(/^func main\b/gm) === 1
-    && (count(/^func main\(\) \{ (defer waxwingReport\(\); )?fmt\.Println\(.*\) \}$/gm)
-      + count(/^func main\(\) \{ (defer waxwingReport\(\); )?waxwingFn\d+\((nil)?\) \}$/gm)) === 1
+    && (count(printedMain) + count(unitMain)) === 1
     && count(/^func Main\b/gm) === 0;
   if (!expected) {
     throw new assert.AssertionError({ message: `go batch: case `
@@ -143,7 +147,8 @@ const describe = ([name, spec], index) => ({
 });
 
 // cases: an array of [name, source | { source, transform }] pairs; an array
-// rather than an object, so a computed name collision cannot pass silently. transform (Go text → Go text) lets a self-test inject Go the
+// rather than an object, so a computed name collision cannot pass silently.
+// transform (Go text → Go text) lets a self-test inject Go the
 // compiler would not emit. Nothing is compiled or built until the first
 // run/result call, so a file's own timed compiles keep their place.
 export const runGoBatch = (file, cases, label = '') => {

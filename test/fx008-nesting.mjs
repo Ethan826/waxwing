@@ -39,7 +39,8 @@ export const literalProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
 // time beside R, or the type doubles per level (review of Task 7, C1).
 export const clauseLiteralDepth = 30;
 
-export const clauseLiteralProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
+export const clauseLiteralProgram = depth =>
+  'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Cell(a) { fn put(x: a): Unit; }; fn main(): Int = { '
   + 'let h0 = handler Log { log(n) => () }; '
   + Array.from({ length: depth }, (_, index) =>

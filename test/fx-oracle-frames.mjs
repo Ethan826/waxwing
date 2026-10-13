@@ -6,7 +6,8 @@
 // `clause-abort:<parameters>` (the generator's failing random clauses name
 // their parameter `w`); an operation performed while a cleanup runs, as
 // `cleanup-operation`.
-import { Abort, Defect, OracleError, runCleanups } from './fx-oracle-cleanup.mjs';
+import { Abort, Defect, OracleError,
+  runCleanups } from './fx-oracle-cleanup.mjs';
 import { count, find } from './fx-oracle-context.mjs';
 import { isHandler } from './fx-oracle-values.mjs';
 

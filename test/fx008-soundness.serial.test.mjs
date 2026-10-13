@@ -32,8 +32,10 @@ const indices = Array.from({ length: total }, (_, index) => index);
 const accepted = indices.filter(index => verdicts[index].accepted);
 const witnessed = indices.filter(index => expected[index].stderr === escaped);
 
-const save = (index, extra) => saveEvidence(`seed-${programs[index].seed}-index-${index}`,
-  { '.wxw': programs[index].source, '.json': JSON.stringify(extra, null, 2) }, directory);
+const save = (index, extra) =>
+  saveEvidence(`seed-${programs[index].seed}-index-${index}`,
+  { '.wxw': programs[index].source, '.json': JSON.stringify(extra, null, 2) },
+    directory);
 
 const shapeOf = index => programs[index].shapes[0] ?? 'random';
 const shapeNames = ['lexical', 'forward', 'callee-plain', 'callee-nofail',
@@ -43,8 +45,10 @@ const counts = list => Object.fromEntries(shapeNames.map(name =>
   [name, list.filter(index => shapeOf(index) === name).length]));
 
 test('the corpus meets the soundness minimums', t => {
-  const cleaning = accepted.filter(index => expected[index].events.has('cleanup-operation'));
-  const beside = cleaning.filter(index => expected[index].events.has('clause-abort:w'));
+  const cleaning =
+    accepted.filter(index => expected[index].events.has('cleanup-operation'));
+  const beside =
+    cleaning.filter(index => expected[index].events.has('clause-abort:w'));
   const headlined = indices.filter(index => verdicts[index].diagnostic
     && isHeadline(verdicts[index].diagnostic.message));
   const byShape = counts(witnessed);
@@ -54,15 +58,19 @@ test('the corpus meets the soundness minimums', t => {
     + `clause), ${headlined.length} rejected by an FX008 headline, `
     + `${witnessed.length} escapes witnessed`);
   t.diagnostic(`escapes by shape: ${JSON.stringify(byShape)}`);
-  assert.ok(cleaning.length >= 50, `accepted with a user operation in cleanup: ${cleaning.length}`);
-  assert.ok(headlined.length >= 50, `rejected by an FX008 headline: ${headlined.length}`);
+  assert.ok(cleaning.length
+    >= 50, `accepted with a user operation in cleanup: ${cleaning.length}`);
+  assert.ok(headlined.length
+    >= 50, `rejected by an FX008 headline: ${headlined.length}`);
   assert.ok(witnessed.length >= 25, `escapes witnessed: ${witnessed.length}`);
   const thin = shapeNames.filter(name => byShape[name] < shapeMinimum);
   assert.deepEqual(thin, [],
-    `shapes with fewer than ${shapeMinimum} escapes: ${JSON.stringify(byShape)}`);
+    `shapes with fewer than ${shapeMinimum} escapes: `
+    + JSON.stringify(byShape));
 });
 
-test('every escape the interpreter witnesses is rejected by an FX008 headline', () => {
+test('every escape the interpreter witnesses is rejected by an FX008 '
+  + 'headline', () => {
   const holes = witnessed.filter(index => verdicts[index].accepted);
   const strayText = witnessed.filter(index => verdicts[index].diagnostic
     && !isHeadline(verdicts[index].diagnostic.message));
@@ -70,10 +78,12 @@ test('every escape the interpreter witnesses is rejected by an FX008 headline', 
     'an escape rejected by something other than an FX008 headline');
   for (const index of holes) save(index, { expected: expected[index] });
   assert.deepEqual(holes.map(index => label(programs[index], index)), [],
-    `SOUNDNESS HOLE: accepted programs whose cleanup ends in a typed abort; see ${directory}`);
+    'SOUNDNESS HOLE: accepted programs whose cleanup ends in a typed abort; '
+    + `see ${directory}`);
 });
 
-test('every rejection is an FX008 headline (defer or call) or a strict text (defer)', () => {
+test('every rejection is an FX008 headline (defer or call) or a strict text ' +
+  '(defer)', () => {
   const stray = [];
   for (const index of indices) {
     const { diagnostic } = verdicts[index];
@@ -81,11 +91,13 @@ test('every rejection is an FX008 headline (defer or call) or a strict text (def
     const { source } = programs[index];
     const headline = isHeadline(diagnostic.message)
       && (atDefer(source, diagnostic.span) || atCall(source, diagnostic.span));
-    const strict = isStrictText(diagnostic.message) && atDefer(source, diagnostic.span);
+    const strict =
+      isStrictText(diagnostic.message) && atDefer(source, diagnostic.span);
     const good = diagnostic.code === 'E_EFFECT' && (headline || strict);
     if (!good) {
       save(index, { diagnostic });
-      stray.push(`${label(programs[index], index)}: ${diagnostic.code} ${diagnostic.message}`);
+      stray.push(`${label(programs[index],
+        index)}: ${diagnostic.code} ${diagnostic.message}`);
     }
   }
   assert.deepEqual(stray, []);
@@ -96,14 +108,17 @@ const chunks = Array.from({ length: Math.ceil(accepted.length / chunkSize) },
 for (const chunk of chunks) {
   const slice = accepted.slice(chunk * chunkSize, (chunk + 1) * chunkSize);
   const first = chunk * chunkSize;
-  test(`accepted programs ${first}-${first + slice.length - 1} agree with the interpreter`, () => {
+  test(`accepted programs ${first}-${first + slice.length
+    - 1} agree with the interpreter`, () => {
     const batch = runGoBatch(import.meta.url,
-      slice.map(index => [`p${index}`, programs[index].source]), `chunk${chunk}`);
+      slice.map(index => [`p${index}`, programs[index].source]),
+        `chunk${chunk}`);
     const differences = [];
     for (const index of slice) {
       const { events, ...want } = expected[index];
       const seen = batch.result(`p${index}`);
-      const actual = { stdout: seen.stdout, stderr: seen.stderr, status: seen.status };
+      const actual = {
+        stdout: seen.stdout, stderr: seen.stderr, status: seen.status };
       if (!same(want, actual)) {
         save(index, { expected: want, actual });
         differences.push(label(programs[index], index));

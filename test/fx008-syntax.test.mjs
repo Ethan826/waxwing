@@ -15,7 +15,8 @@ const main = ' fn main(): Int = 0;';
 const handled = 'with handler Log { log(n) => print(n) }';
 
 // The same source with every written mark removed.
-const unmarked = source => source.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
+const unmarked = source =>
+  source.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
 
 const positions = [
   ['with nofail Log', log + 'fn work(): Unit with nofail Log = log(1); '
@@ -133,7 +134,8 @@ test('nofail prints in label messages, Console never', () => {
   const state = 'effect State(s) { fn put(value: s): Unit; }; '
     + 'fn f(): Unit with nofail State(Int) = put(true);' + main;
   const mismatch = rejectedAt(state, 'E_TYPE', 'put(true)');
-  assert.equal(mismatch.message, 'Expected nofail State(Int), found State(Bool)');
+  assert.equal(mismatch.message,
+    'Expected nofail State(Int), found State(Bool)');
   const callback = log + clock + 'fn f(k: Unit -> Unit with nofail Log + ...e)'
     + ': Unit with Clock + ...e = k(());' + main;
   const performed = rejected(callback, 'E_EFFECT');
@@ -202,7 +204,8 @@ test('a mark variable only on Console is not introduced', () => {
 });
 
 test('marks never reach Go', () => {
-  const answer = readFileSync(new URL('../examples/answer.wxw', import.meta.url),
+  const answer =
+    readFileSync(new URL('../examples/answer.wxw', import.meta.url),
     'utf8');
   const sources = [...positions.map(([, source]) => source), answer];
   for (const source of sources) {

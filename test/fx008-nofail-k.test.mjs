@@ -13,7 +13,8 @@ import { accepted, rejected } from './fx008-nofail-k-programs.mjs';
 const deferLog = 'defer must not fail, but it performs Log, whose handler '
   + 'may fail';
 const failingLog = ['with handler Log { log(n) => fail(E) } { ',
-  'log(n) => fail(E)', 'Log is handled here', 'its clause for log fails with E'];
+  'log(n) => fail(E)', 'Log is handled here',
+    'its clause for log fails with E'];
 const expectations = {
   p01: { message: 'Expected nofail(k) Log, found Log', at: 'f(())',
     handler: `${failingLog[0]}f(()) }`, clause: failingLog[1] },

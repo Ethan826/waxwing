@@ -24,7 +24,8 @@ export const cases = [
     + '{ fail(error: DbError) => print(1) } } } '
     + '{ fail(error: DbError) => print(2) };',
   '2\n'],
-  ['a failure ends the body', db + 'fn boom(): Int with Fail(DbError) + Console = '
+  ['a failure ends the body', db
+    + 'fn boom(): Int with Fail(DbError) + Console = '
     + '{ print(1); fail(DbError); print(2); 3 }; '
     + 'fn main(): Int with Console = handle boom() '
     + '{ fail(error: DbError) => 9 };',
@@ -46,7 +47,8 @@ export const cases = [
   ['nested State(Int) and State(Bool)', state
     + 'fn main(): Unit with Console = with handler State(Int) '
     + '{ get() => 1, put(value) => print(value) } '
-    + '{ with handler State(Bool) { get() => true, put(value) => print(value) } '
+    + '{ with handler State(Bool) { get() => true, put(value) => ' +
+      'print(value) } '
     + '{ put(get()) }; put(get() + 10) };',
   'true\n11\n'],
   ['generic constant handler', state
@@ -88,7 +90,8 @@ export const cases = [
     + 'with handler Clock { now() => 10 } { f(5) }; '
     + 'fn main(): Int = with handler Clock { now() => 1 } { run(make()) };',
   '15\n'],
-  ['an operation is a function value', 'effect Add { fn add(x: Int, y: Int): Int; }; '
+  ['an operation is a function value',
+    'effect Add { fn add(x: Int, y: Int): Int; }; '
     + 'fn twice(f: Int -> Int -> Int, n: Int): Int = f(n, f(n, 1)); '
     + 'fn main(): Int = with handler Add { add(x, y) => x + y } '
     + '{ twice(add, 5) };',
@@ -119,7 +122,8 @@ export const cases = [
     + 'fn curried(x: Int): Int -> Int = fn(y) => x + y; '
     + 'fn main(): Int = with handler Clock { now() => 10 } { '
     + 'let k = now(); let xs = Cons(1, Cons(2, Nil)); '
-    + '(map(add(k), xs) |> sum) + sum(map(fn(z) => z + k, xs)) + curried(1)(2) };',
+    + '(map(add(k), xs) |> sum) + sum(map(fn(z) => z + k, xs)) + ' +
+      'curried(1)(2) };',
   '49\n'],
   ['two clauses of one family: the first is innermost (payload types)',
     'type Error(a) = Error(a); fn main(): Int = handle fail(Error(5)) '

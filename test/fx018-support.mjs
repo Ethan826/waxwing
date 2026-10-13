@@ -32,4 +32,5 @@ export const argument = (callee, target, row, own, hint = '') =>
   `${callee} ${tail} of ${target} (${row}), but its row ${own}; ${hint}`
   + (hint === '' ? 'a function value' : 'a function')
   + ' passed as an argument must have its parameter\'s row (FX018)';
-export const write = (callee, row) => `write ${callee}'s row as \`with ${row}\`; `;
+export const write =
+  (callee, row) => `write ${callee}'s row as \`with ${row}\`; `;

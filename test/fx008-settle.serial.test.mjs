@@ -11,7 +11,8 @@ const bound = 8000;
 const count = 16000;
 
 const deferred = size => 'fn main(): Unit with Console = { '
-  + Array.from({ length: size }, (_, index) => `defer print(${index}); `).join('')
+  + Array.from({ length: size },
+    (_, index) => `defer print(${index}); `).join('')
   + '() };';
 
 test('16,000 defers settle within the bound', () => {

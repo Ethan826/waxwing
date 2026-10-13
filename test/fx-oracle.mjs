@@ -43,7 +43,8 @@ export const interpret = (source, options = {}) => {
       const { effect, arity } = program.ops.get(name);
       return { kind: 'op', name, effect, arity, args: [] };
     }
-    if (builtins.has(name)) return { kind: 'builtin', name, arity: 1, args: [] };
+    if (builtins.has(name)) return {
+      kind: 'builtin', name, arity: 1, args: [] };
     throw new OracleError(`unknown name ${name}`);
   };
   const complete = (value, ctx) => (value?.args?.length === 0
@@ -84,7 +85,8 @@ export const interpret = (source, options = {}) => {
     const bound = new Map(callee.kind === 'lambda' ? callee.env : []);
     const names = callee.kind === 'lambda' ? callee.parameters
       : program.functions.get(callee.name).parameters;
-    names.forEach((name, index) => { if (name !== null) bound.set(name, args[index]); });
+    names.forEach((name, index) => {
+      if (name !== null) bound.set(name, args[index]); });
     if (callee.kind === 'fn') {
       return evaluate(program.functions.get(callee.name).body, bound, ctx);
     }
@@ -137,7 +139,8 @@ export const interpret = (source, options = {}) => {
     const value = evaluate(node.scrutinee, env, ctx);
     for (const arm of node.arms) {
       const bound = new Map(env);
-      if (matches(arm.pattern, value, bound)) return evaluate(arm.body, bound, ctx);
+      if (matches(arm.pattern, value, bound))
+        return evaluate(arm.body, bound, ctx);
     }
     throw new OracleError('no arm matched');
   };
@@ -152,7 +155,8 @@ export const interpret = (source, options = {}) => {
       if (!(thrown instanceof Defect)) throw thrown;
       const lines = causes.map((line, index) =>
         (index === 0 ? line : `cleanup failed: ${line}`));
-      return { stdout: stdout.join(''), stderr: `${lines.join('\n')}\n`, status: 1 };
+      return { stdout: stdout.join(''), stderr: `${lines.join('\n')}\n`,
+        status: 1 };
     }
   };
   return { ...finish(), events };
@@ -164,8 +168,10 @@ export const interpret = (source, options = {}) => {
 // reported as a difference.
 export const outcome = (source, options) => {
   try { return interpret(source, options); } catch (thrown) {
-    if (!(thrown instanceof OracleError || thrown instanceof RangeError)) throw thrown;
-    return { stdout: '', stderr: `oracle error: ${thrown.message}\n`, status: -1,
+    if (!(thrown instanceof OracleError || thrown instanceof RangeError))
+      throw thrown;
+    return { stdout: '', stderr: `oracle error: ${thrown.message}\n`, status:
+      -1,
       events: new Set() };
   }
 };

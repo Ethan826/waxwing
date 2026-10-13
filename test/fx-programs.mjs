@@ -38,7 +38,8 @@ const known = [
 // `defer` them, and the random clauses are fail-free.
 const rowTexts = { Log: 'nofail Log', Tick: 'nofail Tick', Err: 'Fail(Err)',
   Oops: 'Fail(Oops)' };
-const rowText = labels => ['Console', ...[...labels].map(label => rowTexts[label])]
+const rowText = labels =>
+  ['Console', ...[...labels].map(label => rowTexts[label])]
   .join(' + ');
 
 const randomFn = (ctx, index) => {
@@ -96,9 +97,11 @@ const made = (ctx, fragment) => {
 };
 
 const mainItems = (ctx, focus, extras) => {
-  const regulars = ctx.r.shuffle([...focus.filter(f => !f.terminal), ...extras]);
+  const regulars =
+    ctx.r.shuffle([...focus.filter(f => !f.terminal), ...extras]);
   const items = regulars.map(fragment => doItem(made(ctx, fragment)));
-  const noise = Array.from({ length: ctx.r.int(3) }, () => doItem(unitExpr(ctx, 2)));
+  const noise =
+    Array.from({ length: ctx.r.int(3) }, () => doItem(unitExpr(ctx, 2)));
   return ctx.r.shuffle([...items, ...noise]);
 };
 
@@ -106,7 +109,8 @@ const mainItems = (ctx, focus, extras) => {
 // soundness differential, test/fx008-soundness.serial.test.mjs).
 export const generate = (seed, index = seed, options = {}) => {
   const r = rng(seed);
-  const shared = { counter: 0, extra: [], shapes: [], unconstrained: !!options.unconstrained };
+  const shared = {
+    counter: 0, extra: [], shapes: [], unconstrained: !!options.unconstrained };
   let ctx = { r, shared, labels: new Set(), locals: [], fns: [...known],
     failing: new Set(), lax: new Set() };
   const own = [];

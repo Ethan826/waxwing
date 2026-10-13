@@ -128,7 +128,8 @@ test(`a match nested ${limit} deep builds and runs in under 10 s`,
       const binary = join(own, 'program');
       const built = await groupBuild(join(work, 'output.go'), binary,
         buildBudgetMs - (performance.now() - started));
-      assert.equal(built.signal, null, `go build killed at ${buildBudgetMs} ms`);
+      assert.equal(built.signal,
+        null, `go build killed at ${buildBudgetMs} ms`);
       assert.equal(built.status, 0, built.errors);
       const ran = spawnSync(binary, [], { encoding: 'utf8',
         timeout: buildBudgetMs });

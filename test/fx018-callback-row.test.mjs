@@ -23,7 +23,8 @@ test('a1: a callback lacking an installed label and the caller\'s M', () => {
     notes: [calleeNote('q: Int -> Int with L,', 'with L'), handled('M'),
       callerNote(': Int with L + M =', 'with L + M')]
   });
-  applyHint(source, 'q: Int -> Int with L,', row => `q: Int -> Int with ${row},`);
+  applyHint(source, 'q: Int -> Int with L,',
+    row => `q: Int -> Int with ${row},`);
 });
 
 test('a2: the caller\'s row alone is not enough under the installation', () => {
@@ -48,7 +49,8 @@ test('a4: a callback lacking the installed label', () => {
     notes: [calleeNote('q: Int -> Int with L,', 'with L'), handled('M'),
       callerNote(': Int with L =', 'with L')]
   });
-  applyHint(source, 'q: Int -> Int with L,', row => `q: Int -> Int with ${row},`);
+  applyHint(source, 'q: Int -> Int with L,',
+    row => `q: Int -> Int with ${row},`);
 });
 
 test('a3, a5: the rows the hint prints are accepted', () => {
@@ -57,7 +59,8 @@ test('a3, a5: the rows the hint prints are accepted', () => {
 });
 
 test('a handle installs Fail(E): its label and site are named', () => {
-  const source = 'type E = E; ' + effects + 'fn a(q: Int -> Int with L, x: Int): '
+  const source = 'type E = E; ' + effects
+    + 'fn a(q: Int -> Int with L, x: Int): '
     + 'Int with L = handle { q(x) } { fail(error: E) => 0 };' + main;
   const handle = 'handle { q(x) } { fail(error: E) => 0 }';
   expectDiagnostic(source, {
@@ -68,7 +71,8 @@ test('a handle installs Fail(E): its label and site are named', () => {
       [handle, handle, 'Fail(E) is handled here'],
       callerNote(': Int with L =', 'with L')]
   });
-  applyHint(source, 'q: Int -> Int with L,', row => `q: Int -> Int with ${row},`);
+  applyHint(source, 'q: Int -> Int with L,',
+    row => `q: Int -> Int with ${row},`);
 });
 
 test('nested withs: each installation is named, innermost first', () => {
@@ -84,7 +88,8 @@ test('nested withs: each installation is named, innermost first', () => {
       handled('N', inner), handled('M', outer),
       callerNote(': Int with L =', 'with L')]
   });
-  applyHint(source, 'q: Int -> Int with L,', row => `q: Int -> Int with ${row},`);
+  applyHint(source, 'q: Int -> Int with L,',
+    row => `q: Int -> Int with ${row},`);
 });
 
 test('a named tail stays in the hint; the ambient tail does not', () => {
@@ -102,7 +107,8 @@ test('a named tail stays in the hint; the ambient tail does not', () => {
 });
 
 test('an unannotated callback under an installation', () => {
-  expectDiagnostic(effects + `fn a(q: Int -> Int, x: Int): Int with L = { ${install}`
+  expectDiagnostic(effects
+    + `fn a(q: Int -> Int, x: Int): Int with L = { ${install}`
     + `with h { q(x) } };` + main, {
     code: 'E_EFFECT',
     message: here('q', 'M + L', 'has no labels', write('q', 'M + L')),
@@ -140,7 +146,8 @@ test('a payload holding a row: the hint is anonymous', () => {
 // One callback used both outside and inside a `with`: no one row serves
 // both calls, so the hint is left unwritten.
 const twice = (callee, caller, first, second) => effects
-  + `fn a(q: Int -> Int ${callee}, x: Int): Int ${caller} = { ${first} };` + main;
+  + `fn a(q: Int -> Int ${callee}, x: Int): Int ${caller} = { ${first} };`
+    + main;
 const withM = 'with handler M { m() => 1 }';
 const withoutHint = rowText => here('q', rowText, 'is L');
 test('a callback called outside and inside a with: no hint', () => {
@@ -167,12 +174,14 @@ test('the same with a named tail', () => {
     `let y = q(x); ${inside}`), {
     code: 'E_EFFECT', message: withoutHint('M + L'), at: ['q(y)'],
     notes: [calleeNote('q: Int -> Int with L + ...e,', 'with L + ...e'),
-      handled('M', inside), callerNote(': Int with L + ...e =', 'with L + ...e')]
+      handled('M', inside),
+        callerNote(': Int with L + ...e =', 'with L + ...e')]
   });
 });
 
 test('a nofail label prints with its mark; the hint compiles', () => {
-  const log = 'effect Log { fn log(n: Int): Unit; }; effect M { fn m(): Int; }; ';
+  const log = 'effect Log { fn log(n: Int): Unit; }; effect M { fn m(): Int; ' +
+    '}; ';
   const source = log + 'fn a(q: Int -> Int with nofail Log, x: Int): Int '
     + `with nofail Log = { ${install}with h { q(x) } };` + main;
   expectDiagnostic(source, {

@@ -92,7 +92,8 @@ const expressions = reader => {
     return left;
   };
   const item = () => {
-    if (peek('defer')) { take('defer'); return { tag: 'defer', value: expression() }; }
+    if (peek('defer')) {
+      take('defer'); return { tag: 'defer', value: expression() }; }
     if (!peek('let')) return { tag: 'discard', value: expression() };
     take('let');
     const name = take().text;
@@ -202,7 +203,8 @@ export const parseProgram = source => {
       ctors: [] };
     program.types.set(type.name, type);
     constructor(type, 0);
-    for (let position = 1; peek('|'); position++) { take('|'); constructor(type, position); }
+    for (let position = 1; peek('|'); position++) {
+      take('|'); constructor(type, position); }
   };
   const operation = effect => {
     take('fn');

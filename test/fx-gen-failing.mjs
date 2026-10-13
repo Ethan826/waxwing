@@ -37,10 +37,12 @@ const lexical = (ctx, family, label) => {
   const other = label === 'Log' ? 'Tick' : 'Log';
   const sibling = installed(outer, other, 'plain');
   const inside = installed(sibling, label, 'fail');
-  const clause = handlerOf(label)(sibling, 0, raising(sibling, label, family), 'w');
+  const clause =
+    handlerOf(label)(sibling, 0, raising(sibling, label, family), 'w');
   const items = [...registered(inside), doItem(trigger(ctx, label)),
     doItem(genBlock(inside, 1, 'Unit'))];
-  if (ctx.r.chance(60)) items.unshift(deferItem(performing(calm(inside), other)));
+  if (ctx.r.chance(60))
+    items.unshift(deferItem(performing(calm(inside), other)));
   if (ctx.shared.unconstrained && ctx.r.chance(70)) {
     items.unshift(violating(inside, label));
   }
@@ -65,7 +67,8 @@ const forward = (ctx, family) => {
 };
 
 const helper = (ctx, name, params, ret, rowText, body) =>
-  ctx.shared.extra.push({ name, params, ret: ret ?? 'Unit', retText: ret ?? 'Unit',
+  ctx.shared.extra.push({
+    name, params, ret: ret ?? 'Unit', retText: ret ?? 'Unit',
     row: new Set(), rowText, body });
 
 const callee = (ctx, family) => {
@@ -100,7 +103,8 @@ const ambient = (ctx, family) => {
   const name = fresh(ctx, 'bracket');
   const onward = apply(local('f', 'fn'), [unit], 'Unit');
   helper(ctx, name, [['f', 'Unit -> Unit']], null, '',
-    withHandler(logHandler(outer, 0, onward), block([deferItem(log(number(ctx)))])));
+    withHandler(logHandler(outer, 0, onward),
+      block([deferItem(log(number(ctx)))])));
   ctx.shared.shapes.push('ambient');
   const failing = lambda(['u'], raising(outer, 'Log', family));
   return guarded(ctx, family, call(name, [failing], 'Unit'));
@@ -113,7 +117,9 @@ export const failingFrame = ctx => {
   const shapes = ctx.shared.unconstrained
     ? [...open, 'callee', 'value', 'ambient'] : open;
   const shape = ctx.r.pick(shapes);
-  const made = { lexical: () => lexical(ctx, family, label), forward: () => forward(ctx, family),
+  const made = {
+    lexical: () => lexical(ctx, family, label), forward: () =>
+    forward(ctx, family),
     callee: () => callee(ctx, family), value: () => value(ctx, family),
     ambient: () => ambient(ctx, family) }[shape]();
   if (shape === 'lexical' || shape === 'forward') ctx.shared.shapes.push(shape);

@@ -76,7 +76,8 @@ test('a Log-performing clause is rejected under with pure', () => {
     + main;
   const found = rejection(source);
   assert.equal(found.code, 'E_EFFECT');
-  assert.equal(found.message, 'This function must be pure, but it performs Log');
+  assert.equal(found.message,
+    'This function must be pure, but it performs Log');
   assert.equal(spanText(source, found),
     'handler Tick { tick() => { log(); h } }');
 });
@@ -86,7 +87,8 @@ test('a Log handler is not a pure handler parameter', () => {
     + 'Int = 0; fn t(g: Handler(Clock with Log)): Int = run(g);' + main;
   const found = rejection(source);
   assert.equal(found.code, 'E_EFFECT');
-  assert.equal(found.message, 'This function must be pure, but it performs Log');
+  assert.equal(found.message,
+    'This function must be pure, but it performs Log');
   assert.equal(spanText(source, found), 'g');
 });
 

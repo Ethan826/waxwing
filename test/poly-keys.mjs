@@ -50,7 +50,8 @@ const kindOf = key => key.effect ? 'effect' : key.function ? 'fn' : 'type';
 export const namedKeys = source => {
   const program = checkedPoly(source);
   const result = specializationKeys(program);
-  if (!(result instanceof Right)) assert.fail(`${source}\n${JSON.stringify(result)}`);
+  if (!(result instanceof Right))
+    assert.fail(`${source}\n${JSON.stringify(result)}`);
   return result.value0.map(key => {
     const name = declarations(program, key)[key.declaration].name;
     const args = key.arguments.map(arg => groundText(program, arg));

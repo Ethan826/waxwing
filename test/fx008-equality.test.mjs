@@ -13,7 +13,8 @@ const rejectedArgument = (source, call, name) => {
     [offset, offset + name.length]);
   return found;
 };
-const unmarked = source => source.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
+const unmarked = source =>
+  source.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
 
 test('a fail-free handler parameter refuses a plain handler', () => {
   const source = log
@@ -21,11 +22,13 @@ test('a fail-free handler parameter refuses a plain handler', () => {
     + 'fn pass(h: Handler(Log with pure)): Unit = run(h); '
     + 'fn main(): Int = 0;';
   const found = rejectedArgument(source, 'run(h)', 'h');
-  assert.equal(found.message, 'Expected Handler(nofail Log), found Handler(Log)');
+  assert.equal(found.message,
+    'Expected Handler(nofail Log), found Handler(Log)');
 });
 
 test('handler types open at declaration use', () => {
-  const source = log + 'fn run(h: Handler(Log with pure)): Unit = with h { log(1) }; '
+  const source = log
+    + 'fn run(h: Handler(Log with pure)): Unit = with h { log(1) }; '
     + 'fn mk(): Handler(nofail Log with pure) = handler Log { log(n) => () }; '
     + 'fn main(): Int = { run(mk()); 0 };';
   assert.equal(runGo(source), '0\n');
@@ -52,7 +55,8 @@ const tick = 'effect Tick { fn tick(): Unit; }; ';
 
 test('handler types with clause rows of different marks differ', () => {
   const source = log + tick
-    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { log(1) }; '
+    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { log(1) ' +
+      '}; '
     + 'fn outer(h: Handler(Log with nofail Tick)): Unit with Tick = inner(h); '
     + 'fn main(): Int = 0;';
   const found = rejectedArgument(source, 'inner(h)', 'h');
@@ -60,7 +64,8 @@ test('handler types with clause rows of different marks differ', () => {
     'Expected Handler(Log with Tick), found Handler(Log with nofail Tick)');
 });
 
-test('a clause row mark clash through a lambda annotation names the row', () => {
+test('a clause row mark clash through a lambda annotation names the '
+  + 'row', () => {
   const source = log + tick + 'fn go(h: Handler(Log with Tick)): Unit = '
     + '{ let f = fn(g: Handler(Log with nofail Tick)) => (); f(h) }; '
     + 'fn main(): Int = 0;';
@@ -75,7 +80,8 @@ test('a result written M stays closed against a nofail parameter', () => {
     + 'fn mk(): Handler(Log with pure) = handler Log { log(n) => () }; '
     + 'fn main(): Int = { run(mk()); 0 };';
   const found = rejectedArgument(source, 'run(mk())', 'mk()');
-  assert.equal(found.message, 'Expected Handler(nofail Log), found Handler(Log)');
+  assert.equal(found.message,
+    'Expected Handler(nofail Log), found Handler(Log)');
 });
 
 test('an empty clause row prints as pure beside a marked one', () => {

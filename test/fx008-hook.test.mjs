@@ -39,7 +39,9 @@ test('gain1 is a sound gain', () => {
 
 // F2 reports the clause row first (c -> R), at the sync's node (P13).
 test('p5, r1 and r2 are rejected by the hook (F2)', () => {
-  const text = /^Console \+ Log \+ \.\.\. and Console \+ \.\.\. cannot be made equal: both end in \.\.\.$/;
+  const text =
+    new RegExp('^Console \\+ Log \\+ \\.\\.\\. and Console \\+ \\.\\.\\. '
+      + 'cannot be made equal: both end in \\.\\.\\.$');
   rejectedAt(probe('design-review/p5'), 163, 169, text);
   rejectedAt(probe('design-review/r1'), 180, 186, text);
   rejectedAt(probe('design-review/r2'), 194, 200, text);
@@ -47,7 +49,8 @@ test('p5, r1 and r2 are rejected by the hook (F2)', () => {
 
 test('cyc2, cyc3 and sh1 report the c -> R edge of their cycle', () => {
   const ends = ' cannot be made equal: both end in ...';
-  rejectedAt(probe('rev8/cyc2'), 174, 179, exactly(`Tick + ... and ...${ends}`));
+  rejectedAt(probe('rev8/cyc2'), 174, 179,
+    exactly(`Tick + ... and ...${ends}`));
   rejectedAt(probe('rev8/cyc3'), 338, 344,
     exactly(`Log + Tick + ... and ...${ends}`));
   rejectedAt(probe('rev9/sh1'), 192, 246, exactly(`... and Tick + ...${ends}`));
@@ -86,7 +89,8 @@ test('rejections without defer keep their exact texts under the hook', () => {
 
 const permutations = items => items.length <= 1 ? [items]
   : items.flatMap((item, at) => permutations(
-    [...items.slice(0, at), ...items.slice(at + 1)]).map(rest => [item, ...rest]));
+    [...items.slice(0, at), ...items.slice(at + 1)]).map(rest =>
+      [item, ...rest]));
 
 const three = order => [
   'type Opt(a) = No | Some(a);',
@@ -97,7 +101,8 @@ const three = order => [
   '  let k1 = fn(n: Int) => ();', '  let k2 = fn(n: Int) => ();',
   '  let k3 = fn(n: Int) => ();',
   ...order.map(n => `  let h${n} = handler Log { log(n) => k${n}(n) };`),
-  '  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == v) else () };',
+  '  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == ' +
+    'v) else () };',
   '  let g2 = fn(u: Unit) => with h2 { if put(Some(true)) then () else () };',
   '  let g3 = fn(u: Unit) => with h3 { if put(Some(true)) then () else () };',
   '  let r = fn(x) => { fail(Job(k1)); fail(Job(k3)); fail(x) };',
@@ -110,7 +115,8 @@ test('three handlers merging in settling agree in every order', () => {
   }
 });
 
-test('a clause tail that turns rigid in settling is rejected by the tail pass', () => {
+test('a clause tail that turns rigid in settling is rejected by the tail '
+  + 'pass', () => {
   rejectedAt(probe('witness/tp1'), 204, 219,
     /^f performs Console, which its signature does not allow$/);
 });
@@ -121,7 +127,8 @@ test('ec1 keeps its outcome: its Fail(E) is not late', () => {
   rejectedAt(probe('witness/ec1'), 284, 301, /^Unhandled Fail\(E\) in main$/);
 });
 
-test('a late Fail reaching a clause through an argument binding is rejected', () => {
+test('a late Fail reaching a clause through an argument binding is '
+  + 'rejected', () => {
   rejectedAt(probe('witness/ec2'), 90, 380, /^Unhandled Fail\(E\) in main$/);
 });
 
@@ -132,7 +139,8 @@ test('argbind-internal is accepted (sound gain)', () => {
 
 // Bare C must never unify label arguments: the payload head `Job` of the
 // literal's C would otherwise meet `Fail(Job(Int))` of the written type.
-test('a literal with a parameterized Fail family matches a written handler type', () => {
+test('a literal with a parameterized Fail family matches a written handler ' +
+  'type', () => {
   accepted(probe('witness/famw'));
   accepted(probe('witness/famw2'));
 });

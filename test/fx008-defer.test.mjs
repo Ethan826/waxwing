@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { expectDiagnostic, length, maxCharacters } from './fx-diagnostics-support.mjs';
+import { expectDiagnostic, length,
+  maxCharacters } from './fx-diagnostics-support.mjs';
 import { rejected } from './support.mjs';
 import {
   a1, a10, a3c, a4, a6, a8, a9, ownRow, r5,
   ambientCallback, boxPlainParameter, clauseDeferFailing, deferLog,
-  chain, failFreeLiteral, forwardingIntoFailing, nofailCall, probe, rigidVariable
+  chain, failFreeLiteral, forwardingIntoFailing, nofailCall, probe,
+    rigidVariable
 } from './fx008-defer-programs.mjs';
 
 // FX008 Tasks 9-10: the mark check makes `defer` sound (design §3.4), and
@@ -16,7 +18,8 @@ const effect = (source, message, at, notes) =>
 const handledHere = (container, label) => [container, container,
   `${label} is handled here`];
 const forwarded = "this handler's clauses perform Log, whose handler may fail";
-const chainWith = index => `with handler Log { log(n) => log(n) } { f${index - 1}(()) }`;
+const chainWith =
+  index => `with handler Log { log(n) => log(n) } { f${index - 1}(()) }`;
 const clauseFails = (container, operation) => [container, container,
   `its clause for ${operation} fails with E`];
 const allows = (container, name, label, inner = container) => [container, inner,
@@ -157,7 +160,8 @@ const passedThrough = {
     ...viaTick('with mk() { defer log(1); () }').slice(0, 1),
     handledHere('with handler Tick { tick() => fail(E) } { with handler Get'
       + '(Handler(nofail Log with Tick + Fail(E) + Console)) { get() => '
-      + 'handler Log { log(n) => tick() } } { with mk() { defer log(1); () } } }',
+      + 'handler Log { log(n) => tick() } } { with mk() { defer log(1); () } ' +
+        '} }',
     'Tick'), clauseFails('tick() => fail(E)', 'tick')]]
 };
 for (const [name, [source, notes]] of Object.entries(passedThrough)) {

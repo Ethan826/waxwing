@@ -11,7 +11,8 @@ import { toRow } from './unify-support.mjs';
 const [log, tick] = [0, 1];
 // A restricted row: the labels it holds and its tail meta, its target's
 // labels and tail meta, and its source position.
-const entry = (own, ownTail, target, targetTail, position, keepFail = false) => ({
+const entry = (own, ownTail, target, targetTail, position,
+  keepFail = false) => ({
   own: toRow(row(own.map(e => label(e)), rowMeta(ownTail))),
   target: toRow(row(target.map(e => label(e)), rowMeta(targetTail))),
   keepFail,
@@ -60,7 +61,8 @@ test('a cycle through two rows with a non-positive sum is allowed', () => {
   assert.equal(cycleAt(rows), null);
 });
 
-test('a positive cycle through two rows is reported at its earliest row', () => {
+test('a positive cycle through two rows is reported at its earliest '
+  + 'row', () => {
   const rows = [entry([log], 10, [], 11, 8), entry([log, tick], 11, [], 10, 2)];
   assert.equal(cycleAt(rows), 1);
 });

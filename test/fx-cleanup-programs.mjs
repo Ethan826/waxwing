@@ -1,4 +1,5 @@
-// FX001 Task 8's executable cleanup programs, shared by test/fx-cleanup.test.mjs
+// FX001 Task 8's executable cleanup programs, shared by
+// test/fx-cleanup.test.mjs
 // (Go) and test/fx-oracle.test.mjs (the reference interpreter):
 // [name, prelude, body, exit status, stdout, stderr].
 export const log = 'effect Log { fn log(n: Int): Unit; }; ';

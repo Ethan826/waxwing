@@ -139,6 +139,7 @@ test('blocks are lifted and numbered with matches', () => {
   const go = checked('type Box(a) = Box(a); fn main(): Int = '
     + '{ let b = Box(1); match b { Box(n) => { let m = n; m } } };');
   assert.match(go, /^func waxwingFn0Block0\(\) int32 \{$/m);
-  assert.match(go, /^func waxwingFn0Match1\(waxwingScrutinee waxwingTy0\) int32/m);
+  assert.match(go,
+    /^func waxwingFn0Match1\(waxwingScrutinee waxwingTy0\) int32/m);
   assert.match(go, /^func waxwingFn0Block2\(waxwingLocal1 int32\) int32 \{$/m);
 });

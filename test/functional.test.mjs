@@ -7,14 +7,16 @@ import { member } from '../output/Data.Set/index.js';
 import { ordTypeId } from '../output/Domain.Ids/index.js';
 import { closedRow } from '../output/Domain.Row/index.js';
 import { TData, TFun, TInt, TVar } from '../output/Domain.Type/index.js';
-import { containsFunction, functional } from '../output/Features.Check.Functional/index.js';
+import { containsFunction,
+  functional } from '../output/Features.Check.Functional/index.js';
 
 const int = TInt.value;
 const fun = (parameter, result) => TFun.create(parameter)(closedRow)(result);
 const variable = TVar.create(0);
 // TypeId and VarId are newtypes, so plain numbers at run time.
 const applied = (id, ...args) => TData.create(id)(args)([]);
-const ctor = (owner, fields) => ({ name: `C${owner}`, owner, fields, fieldSyntax: [], span: null });
+const ctor = (owner, fields) =>
+  ({ name: `C${owner}`, owner, fields, fieldSyntax: [], span: null });
 
 const [List, Box, A, B, Phantom, C, E, H, Plain] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 const ctors = [
@@ -34,8 +36,10 @@ const holds = (found, id) => member(ordTypeId)(id)(found);
 
 test('the functional types are the least fixed point through fields', () => {
   const found = functional(ctors);
-  for (const id of [Box, A, B, C, E]) assert.equal(holds(found, id), true, `type ${id}`);
-  for (const id of [List, Phantom, H, Plain]) assert.equal(holds(found, id), false, `type ${id}`);
+  for (const id of [Box, A, B, C, E])
+    assert.equal(holds(found, id), true, `type ${id}`);
+  for (const id of [List, Phantom, H, Plain])
+    assert.equal(holds(found, id), false, `type ${id}`);
 });
 
 test('a type contains a function directly or through a functional type', () => {
@@ -56,7 +60,8 @@ const chainBoundMs = 5000;
 test('a 50,000-type chain settles without stack failure', () => {
   // Type i holds type i + 1; only the last holds an arrow.
   const chain = Array.from({ length: chainLength }, (_, index) =>
-    ctor(index, [index + 1 < chainLength ? applied(index + 1) : fun(int, int)]));
+    ctor(index, [index + 1 < chainLength
+      ? applied(index + 1) : fun(int, int)]));
   const started = performance.now();
   const found = functional(chain);
   const elapsed = performance.now() - started;

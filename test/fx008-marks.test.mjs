@@ -7,13 +7,15 @@ import { Right } from '../output/Data.Either/index.js';
 import { Just, Nothing } from '../output/Data.Maybe/index.js';
 import { Hole } from '../output/Domain.Checked.Internal/index.js';
 import { Label, Plain, Row, UserEffect } from '../output/Domain.Row/index.js';
-import { consumeLabels, consumeVia } from '../output/Features.Check.Consume/index.js';
+import { consumeLabels,
+  consumeVia } from '../output/Features.Check.Consume/index.js';
 import { Application } from '../output/Features.Check.Provenance/index.js';
 import { start } from '../output/Features.Check.Scheme/index.js';
 import { generator, choose } from './coverage-oracle.mjs';
 import { directional, edgesIn, EqualMarks, IgnoreMarks, markBinding,
   marksOfBinding } from './fx008-mark-support.mjs';
-import { anyPair, kind, label, resolveRow, row, rowMeta, unifiablePair, unifyIn }
+import { anyPair, kind, label, resolveRow, row, rowMeta, unifiablePair,
+  unifyIn }
   from './row-support.mjs';
 
 const log = mark => ({ ...label(0), mark });
@@ -40,7 +42,8 @@ test('a label added to the target gets a fresh mark below the stage\'s', () => {
   assert.deepEqual(marksOfBinding(subst, 10), [edge.lower]);
 });
 
-test('a label copied into the stage tail gets a fresh mark above the frame\'s', () => {
+test('a label copied into the stage tail gets a fresh mark above the '
+  + 'frame\'s', () => {
   const subst = run(directional(), row([], rowMeta(11)), row([log(2)]));
   const [edge] = edgesIn(subst);
   assert.equal(edgesIn(subst).length, 1);
@@ -84,14 +87,17 @@ test('equality of two different written marks fails', () => {
     const found = unifyIn(EqualMarks.value, row([log(one)]), row([log(other)]));
     assert.equal(kind(found), 'RowPayload');
   }
-  const same = unifyIn(EqualMarks.value, row([log('nofail')]), row([log('nofail')]));
+  const same =
+    unifyIn(EqualMarks.value, row([log('nofail')]), row([log('nofail')]));
   assert.ok(same.subst);
 });
 
 test('ignoring marks gives fresh marks and no edge', () => {
-  const matched = run(IgnoreMarks.value, row([log('nofail')]), row([log('plain')]));
+  const matched =
+    run(IgnoreMarks.value, row([log('nofail')]), row([log('plain')]));
   assert.deepEqual(edgesIn(matched), []);
-  const added = run(IgnoreMarks.value, row([log('nofail')]), row([], rowMeta(10)));
+  const added =
+    run(IgnoreMarks.value, row([log('nofail')]), row([], rowMeta(10)));
   const [mark] = marksOfBinding(added, 10);
   assert.ok(typeof mark === 'number' && mark < 0, String(mark));
   assert.deepEqual(edgesIn(added), []);
@@ -112,15 +118,19 @@ const canonical = resolved => {
 };
 // Where each side was written, so a matched pair's labels can be found.
 const at = offset => ({ offset, line: 1, column: offset + 1 });
-const placed = { left: { start: at(1), end: at(2) }, right: { start: at(3), end: at(4) } };
+const placed = {
+  left: { start: at(1), end: at(2) }, right: { start: at(3), end: at(4) } };
 // The mark a label has once built: Console is N and Fail unmarked.
-const builtMark = l => l.e === 'console' ? 'nofail' : l.e === 'fail' ? 'unmarked'
+const builtMark = l => l.e === 'console' ? 'nofail' : l.e === 'fail'
+  ? 'unmarked'
   : l.mark ?? 'plain';
 // The mark of one end of a matched pair: an entry of a written row, or the
 // label a row meta was extended with.
-const endMark = (subst, sides, occurrence) => occurrence.constructor.name === 'Extended'
+const endMark = (subst, sides, occurrence) => occurrence.constructor.name
+  === 'Extended'
   ? marksOfBinding(subst, occurrence.value0)[0]
-  : builtMark(sides[occurrence.value0.start.offset === placed.left.start.offset ? 0 : 1].labels[occurrence.value1]);
+  : builtMark(sides[occurrence.value0.start.offset === placed.left.start.offset
+    ? 0 : 1].labels[occurrence.value1]);
 // A matched pair records an edge unless a mark is unmarked or both are N.
 const edgeless = (one, other) => one === 'unmarked' || other === 'unmarked'
   || (one === 'nofail' && other === 'nofail');
@@ -150,7 +160,8 @@ test('the scoped-label properties hold in every mode', () => {
       if (!found.subst) { seen.failed += 1; continue; }
       seen.solved += 1;
       if (found.traced.postponed) continue;
-      assert.equal(resolvedBoth(found, sides), resolvedBoth(baseline, pair), context);
+      assert.equal(resolvedBoth(found, sides), resolvedBoth(baseline, pair),
+        context);
       const edges = edgesIn(found.subst);
       if (mode.constructor.name !== 'Directional') {
         assert.deepEqual(edges, [], context);
@@ -158,7 +169,8 @@ test('the scoped-label properties hold in every mode', () => {
       }
       // The same run with the sides placed, to name each matched pair.
       const named = unifyIn(mode, ...sides, undefined, placed);
-      assert.equal(edgesIn(named.subst).filter(edge => edge.reason === 'Assumed').length,
+      assert.equal(edgesIn(named.subst).filter(edge => edge.reason
+        === 'Assumed').length,
         expectedAssumed(named, sides), context);
       seen.assumed += expectedAssumed(named, sides);
     }
@@ -171,12 +183,15 @@ const here = { offset: 0, line: 1, column: 1 };
 const span = { start: here, end: here };
 const effectLabel = i => Label.create(UserEffect.create(i))([])(Plain.value);
 const environment = current => ({
-  current, sites: [], functionName: 'f', functionSpan: span, rowSpan: Nothing.value,
-  effects: [], functions: [], types: [], ctors: [], variables: [], markVariables: []
+  current, sites: [], functionName: 'f', functionSpan: span,
+    rowSpan: Nothing.value,
+  effects: [], functions: [], types: [], ctors: [], variables: [],
+    markVariables: []
 });
 const consumeInto = (labels, target) => {
   const result = consumeLabels(environment(target))(start)({
-    origin: { span, consumed: new Application(Nothing.value), via: Nothing.value },
+    origin: { span, consumed: new Application(Nothing.value),
+      via: Nothing.value },
     sources: [], labels, target, sites: [], ignoreMarks: false
   });
   assert.ok(result instanceof Right, result.value0?.problem?.constructor.name);
@@ -204,6 +219,7 @@ test('a closed stage consumed into a wider target makes no copies', () => {
 });
 
 test('Console pairs record no edge', () => {
-  const subst = run(directional(), row([console_]), row([console_], rowMeta(10)));
+  const subst =
+    run(directional(), row([console_]), row([console_], rowMeta(10)));
   assert.deepEqual(edgesIn(subst), []);
 });

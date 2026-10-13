@@ -20,7 +20,8 @@ export const fresh = (ctx, prefix) => `${prefix}${ctx.shared.counter++}`;
 export const extend = (ctx, ...labels) =>
   ({ ...ctx, labels: new Set([...ctx.labels, ...labels]) });
 export const safe = ctx => ({ ...ctx,
-  labels: new Set([...ctx.labels].filter(label => !families.includes(label))) });
+  labels: new Set([...ctx.labels].filter(label =>
+    !families.includes(label))) });
 // Without the labels whose innermost handler may fail.
 export const calm = ctx => {
   const quiet = safe(ctx);
@@ -39,7 +40,8 @@ const callable = (ctx, ret) => ctx.fns.filter(fn => fn.ret === ret
 export const intExpr = (ctx, depth) => {
   const options = [() => lit(ctx.r.number())];
   if (ctx.locals.length) options.push(() => local(ctx.r.pick(ctx.locals)));
-  if (depth > 0) options.push(() => add(intExpr(ctx, depth - 1), intExpr(ctx, depth - 1)));
+  if (depth > 0)
+    options.push(() => add(intExpr(ctx, depth - 1), intExpr(ctx, depth - 1)));
   if (depth > 0 && ctx.labels.has('Tick')) {
     options.push(() => tick(intExpr(ctx, depth - 1)));
   }
@@ -65,11 +67,13 @@ export const unitExpr = (ctx, depth) => {
 // it sees `ctx.labels` only. A random clause (`randomClause`) is fail-free,
 // fails with a family handled outside the `with`, or forwards to an outer
 // operation whose handler may fail.
-export const logHandler = (ctx, depth, clauseBody, param = 'n') => handler('Log', [{
+export const logHandler = (ctx, depth, clauseBody, param = 'n') =>
+  handler('Log', [{
   op: 'log', params: [param],
   body: clauseBody ?? unitExpr(bind(calm(ctx), 'n'), depth)
 }]);
-export const tickHandler = (ctx, depth, clauseBody, param = 'n') => handler('Tick', [{
+export const tickHandler = (ctx, depth, clauseBody, param = 'n') =>
+  handler('Tick', [{
   op: 'tick', params: [param],
   body: clauseBody ?? intExpr(bind(calm(ctx), 'n'), depth)
 }]);
@@ -118,14 +122,16 @@ const wrapUser = (ctx, depth, label) => {
   const { r } = ctx;
   if (failures(ctx).length === 0 && r.chance(50)) {
     const family = r.pick(families);
-    const guarded = block([doItem(wrapUser(extend(ctx, family), depth, label))]);
+    const guarded =
+      block([doItem(wrapUser(extend(ctx, family), depth, label))]);
     return handle(guarded, [failureClause(ctx, family, 1)]);
   }
   const clause = randomClause(ctx, label, 1);
   const make = label === 'Log' ? logHandler : tickHandler;
   const inside = installed(ctx, label, clause.kind);
   const body = genBlock(inside, depth - 1, 'Unit');
-  if (clause.kind === 'plain') return withHandler(make(ctx, 1, clause.body, clause.param), body);
+  if (clause.kind === 'plain')
+    return withHandler(make(ctx, 1, clause.body, clause.param), body);
   const registered = r.chance(50) ? [deferItem(cleanupExpr(inside, 1))] : [];
   const ended = block([...registered, ...body.items,
     doItem(performing(calm(inside), label))]);
@@ -146,7 +152,8 @@ export const wrapHandle = (ctx, depth) => {
 export const failureClause = (ctx, family, depth) => {
   const reader = ctx.r.chance(50);
   const arms = family === 'Err'
-    ? [{ pattern: 'Err1(m)', body: print(add(local('m'), lit(ctx.r.number()))) },
+    ? [{ pattern: 'Err1(m)',
+      body: print(add(local('m'), lit(ctx.r.number()))) },
       { pattern: 'Err2', body: print(lit(ctx.r.number())) }]
     : [{ pattern: 'Oops(m)', body: print(local('m')) }];
   const body = reader ? match(local('error', family), arms, 'Unit')
@@ -175,7 +182,8 @@ export const cleanupExpr = (ctx, depth) => {
   }
   return ctx.r.pick(options)();
 };
-export const performing = (ctx, label) => (label === 'Log' ? log(intExpr(ctx, 1))
+export const performing = (ctx, label) =>
+  (label === 'Log' ? log(intExpr(ctx, 1))
   : print(tick(intExpr(ctx, 1))));
 
 // A cleanup that fails and handles its own failure: `handle fail(P) {..}`.

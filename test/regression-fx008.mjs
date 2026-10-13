@@ -131,7 +131,8 @@ const accepts = (name, label, expected) => context => {
   console.log(`${context.probe} regression detects the defect`);
 };
 
-const cyc2Text = /^Tick \+ \.\.\. and \.\.\. cannot be made equal: both end in \.\.\.$/;
+const cyc2Text =
+  /^Tick \+ \.\.\. and \.\.\. cannot be made equal: both end in \.\.\.$/;
 
 const rejects = (name, label, pattern) => context => {
   const found = compileWithin(context, probeSource(name), probeTimeoutMs);
@@ -157,6 +158,8 @@ export const fx008Probes = {
   'fx008-signature': accepts('argbind', 'signature'),
   'fx008-settle-phi': accepts('rev9/set1', 'settling φ', '0\n'),
   'fx008-r-consumed': accepts('rev6/meta2', 'R consumed'),
-  'fx008-exit-count': rejects('witness/ec2', 'exit test', /^Unhandled Fail\(E\) in main$/),
-  'fx008-tail-pass': rejects('witness/tp1', 'tail pass', /^f performs Console, which its signature/)
+  'fx008-exit-count': rejects('witness/ec2', 'exit test',
+    /^Unhandled Fail\(E\) in main$/),
+  'fx008-tail-pass': rejects('witness/tp1', 'tail pass',
+    /^f performs Console, which its signature/)
 };

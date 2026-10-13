@@ -10,8 +10,10 @@ import { parse } from '../output/Format.Parse/index.js';
 import { resolve } from '../output/Features.Resolve/index.js';
 import { checkedStates } from '../output/Features.Check.Inspect/index.js';
 import { MarkMeta } from '../output/Domain.Row/index.js';
-import { Ended, Fixed, endOf, walkedRow } from '../output/Features.Check.Walked/index.js';
-import { edgesOf, resolveMark } from '../output/Features.Check.MarkStore/index.js';
+import { Ended, Fixed, endOf,
+  walkedRow } from '../output/Features.Check.Walked/index.js';
+import { edgesOf,
+  resolveMark } from '../output/Features.Check.MarkStore/index.js';
 import { runGo } from './support.mjs';
 import { plainMark } from './unify-support.mjs';
 
@@ -77,12 +79,14 @@ test('an installation records frame <= C edges', () => {
 test('nested installations pair C with the outer frames, not their own', () => {
   const state = stateOf(nested, 'main');
   const [, tick, inner] = installationsOf(state);
-  const frames = installationsOf(state).map(found => markOf(state, found.frame));
+  const frames =
+    installationsOf(state).map(found => markOf(state, found.frame));
   assert.equal(new Set(frames).size, 3);
   const [cTick, cLog] = clauseMarks(state, inner);
   // The innermost Log handler's clause performs tick() then log(n): its
   // Tick pairs with the Tick frame and its Log with the OUTER Log frame.
-  assert.deepEqual(assumedAt(state, inner), [[frames[1], cTick], [frames[0], cLog]]);
+  assert.deepEqual(assumedAt(state, inner),
+    [[frames[1], cTick], [frames[0], cLog]]);
   assert.equal(frames[1], markOf(state, tick.frame));
 });
 

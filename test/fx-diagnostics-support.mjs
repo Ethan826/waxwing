@@ -49,5 +49,6 @@ export const expectDiagnostic = (source, shape) => {
 export const database = 'effect Database { fn query(): Int; }; ';
 export const log = 'effect Log { fn log(n: Int): Unit; }; ';
 export const clock = 'effect Clock { fn now(): Int; }; ';
-export const state = 'effect State(s) { fn get(): s; fn put(value: s): Unit; }; ';
+export const state =
+  'effect State(s) { fn get(): s; fn put(value: s): Unit; }; ';
 export const db = 'type DbError = DbError; ';

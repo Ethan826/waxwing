@@ -39,7 +39,8 @@ const runs = [
   ['take', withMain('List(Int)', `take(2, ${xs})`), 'Cons(1, Cons(2, Nil))'],
   ['drop', withMain('Pair(List(Int), List(Int))',
     `Pair(drop(2, ${xs}), drop(5, ${xs}))`), 'Pair(Cons(3, Nil), Nil)'],
-  ['fromMaybe', withMain('Int', 'fromMaybe(Nothing, 4) + fromMaybe(Just(5), 0)'),
+  ['fromMaybe',
+    withMain('Int', 'fromMaybe(Nothing, 4) + fromMaybe(Just(5), 0)'),
     '9'],
   ['fstSnd', withMain('Pair(Int, Bool)',
     'Pair(fst(Pair(1, true)), snd(Pair(1, true)))'), 'Pair(1, true)'],
@@ -141,7 +142,8 @@ const atLimit = [
   ...range(functionKeys).map(index => `fn g${index}(x: a): a = x;`),
   ...range(monomorphic).map(user), 'fn main(): Int = 0;'].join(' ');
 
-test('ten thousand polymorphic keys compile; one more of each kind fails', () => {
+test('ten thousand polymorphic keys compile; one more of each kind '
+  + 'fails', () => {
   assert.match(checked(atLimit), /func main\(\)/);
   const message = 'More than 10000 specializations';
   const overByFunction = `${atLimit} fn gx(x: a): a = x;`

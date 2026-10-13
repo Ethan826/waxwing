@@ -34,11 +34,13 @@ test('a handler type nested 120 levels deep compiles within the bound', () => {
 
 // A lambda parameter's annotation: each handler type outside a handler row
 // gets a clause row (Task 3), which must stay one tree per level.
-test('a lambda annotation nested 40 levels deep compiles within the bound', () => {
+test('a lambda annotation nested 40 levels deep compiles within the '
+  + 'bound', () => {
   within(nestingDepth, lambdaProgram);
 });
 
-test('a lambda annotation nested 120 levels deep compiles within the bound', () => {
+test('a lambda annotation nested 120 levels deep compiles within the '
+  + 'bound', () => {
   within(baseDepth, lambdaProgram);
 });
 
@@ -51,7 +53,8 @@ test('30 handler literals nested through rows compile within the bound', () => {
 // Task 2 c2: a clause performing `Cell(type of the previous literal)` keeps
 // one tree per level (C holds no label arguments of its own). Measured
 // through a child process, so a regression fails after 20 s, not never.
-test('30 handler literals chained through their clauses compile within the bound', () => {
+test('30 handler literals chained through their clauses compile within the ' +
+  'bound', () => {
   const context = { compilerPath: 'output/Program.Compile/index.js' };
   compileWithin(context, clauseLiteralProgram(1), 20_000);
   const started = performance.now();

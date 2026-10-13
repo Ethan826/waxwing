@@ -31,7 +31,8 @@ export const closed = { labels: [], tail: null };
 export const spine = (parameters, result) =>
   parameters.reduceRight((rest, parameter) => fun(parameter, rest), result);
 
-const flexOf = v => (v.k === 'rigid' ? unifier.Rigid : unifier.Meta).create(v.n);
+const flexOf = v =>
+  (v.k === 'rigid' ? unifier.Rigid : unifier.Meta).create(v.n);
 const plainFlex = flex =>
   (flex.constructor.name === 'Rigid' ? rigid : meta)(flex.value0);
 const effectOf = e => typeof e === 'number' ? UserEffect.create(e)
@@ -48,15 +49,18 @@ export const markOf = mark => {
   if (mark === undefined || mark === 'plain') return Plain.value;
   if (mark === 'nofail') return NoFail.value;
   if (mark === 'unmarked') return Unmarked.value;
-  return typeof mark === 'number' ? MarkMeta.create(mark) : MarkVariable.create(mark.variable);
+  return typeof mark === 'number'
+    ? MarkMeta.create(mark) : MarkVariable.create(mark.variable);
 };
 export const toLabel = l => Label.create(effectOf(l.e))(l.args.map(toTy))(
   normalMark(effectOf(l.e))(markOf(l.mark)));
 // The mark a built label carries, as `markOf` takes it.
 export const plainMark = mark => mark instanceof MarkMeta ? mark.value0
   : mark instanceof MarkVariable ? { variable: mark.value0 }
-  : mark === NoFail.value ? 'nofail' : mark === Unmarked.value ? 'unmarked' : 'plain';
-export const fromLabel = l => ({ e: plainEffect(l.value0), args: l.value1.map(fromTy) });
+  : mark === NoFail.value ? 'nofail' : mark === Unmarked.value
+    ? 'unmarked' : 'plain';
+export const fromLabel = l =>
+  ({ e: plainEffect(l.value0), args: l.value1.map(fromTy) });
 export const fromRow = row => ({
   labels: row.value0.map(fromLabel),
   tail: row.value1 instanceof Just ? plainFlex(row.value1.value0) : null
@@ -68,12 +72,14 @@ const isClosedEmpty = r => r.labels.length === 0 && r.tail === null;
 export const toTy = t => {
   if (t.k === 'int') return TInt.value;
   if (t.k === 'bool') return TBool.value;
-  if (t.k === 'data') return TData.create(t.id)(t.args.map(toTy))((t.rows ?? []).map(toRow));
+  if (t.k === 'data')
+    return TData.create(t.id)(t.args.map(toTy))((t.rows ?? []).map(toRow));
   if (t.k === 'fun') {
     const stages = [];
     let rest = t;
     while (rest.k === 'fun') { stages.push(rest); rest = rest.args[1]; }
-    return stages.reduceRight((built, stage) => TFun.create(toTy(stage.args[0]))(
+    return stages.reduceRight((built, stage) =>
+      TFun.create(toTy(stage.args[0]))(
       toRow(stage.row ?? closed))(built), toTy(rest));
   }
   return TVar.create(flexOf(t));
@@ -85,12 +91,14 @@ export const fromTy = ty => {
   if (tag === 'TBool') return bool;
   if (tag === 'TData') {
     const plain = { k: 'data', id: ty.value0, args: ty.value1.map(fromTy) };
-    return ty.value2.length === 0 ? plain : { ...plain, rows: ty.value2.map(fromRow) };
+    return ty.value2.length === 0 ? plain : {
+      ...plain, rows: ty.value2.map(fromRow) };
   }
   if (tag === 'TFun') {
     const stages = [];
     let rest = ty;
-    while (rest.constructor.name === 'TFun') { stages.push(rest); rest = rest.value2; }
+    while (rest.constructor.name === 'TFun') {
+      stages.push(rest); rest = rest.value2; }
     return stages.reduceRight((built, stage) => {
       const row = fromRow(stage.value1);
       const arrow = fun(fromTy(stage.value0), built);
@@ -107,11 +115,13 @@ const plainMap = (map, convert) => new Map(toUnfoldable(unfoldableArray)(map)
 
 // A substitution with these type bindings and, optionally, row bindings.
 export const substOf = (bindings, rowBindings = new Map()) => ({
-  ...unifier.empty, types: mapOf(bindings, toTy), rows: mapOf(rowBindings, toRow)
+  ...unifier.empty, types: mapOf(bindings, toTy),
+    rows: mapOf(rowBindings, toRow)
 });
 export const bindingsOf = subst => plainMap(subst.types, fromTy);
 export const rowBindingsOf = subst => plainMap(subst.rows, fromRow);
-export const substitute = (s, t) => fromTy(unifier.substitute(substOf(s))(toTy(t)));
+export const substitute = (s, t) =>
+  fromTy(unifier.substitute(substOf(s))(toTy(t)));
 export const resolve = (s, t) => fromTy(unifier.resolve(substOf(s))(toTy(t)));
 export const unify = (s, l, r) => {
   const result = unifier.unify(substOf(s))(toTy(l))(toTy(r));

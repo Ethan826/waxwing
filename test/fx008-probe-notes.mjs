@@ -3,7 +3,8 @@
 // They sit apart from the probe table: notes never change a probe's
 // outcome, so the table's hash does not pin them.
 const allows = (row, name) => [row,
-  `the signature of ${name} allows a failing Log handler; write with nofail Log`];
+  `the signature of ${name} allows a failing Log handler; `
+  + 'write with nofail Log'];
 const handled = (text, label) => [text, `${label} is handled here`];
 const fails = (text, operation) => [text,
   `its clause for ${operation} fails with E`];

@@ -70,7 +70,8 @@ const checkRejection = (expected, shown) => {
   } else {
     assert.match(diagnostic.message, new RegExp(expected.pattern));
   }
-  assert.deepEqual(spanOf(diagnostic), { start: expected.start, end: expected.end });
+  assert.deepEqual(spanOf(diagnostic), {
+    start: expected.start, end: expected.end });
 };
 
 // Task 10: a flipped rejection carries the notes pinned beside the table;
@@ -132,7 +133,8 @@ const checkProbe = probe => {
     return checkNotes(probe, shown.diagnostic);
   }
   checkGo(expected, shown);
-  checkRun(expected, probe.slow ? runAlone(shown.go) : batch.result(probe.file));
+  checkRun(expected, probe.slow
+    ? runAlone(shown.go) : batch.result(probe.file));
   return undefined;
 };
 

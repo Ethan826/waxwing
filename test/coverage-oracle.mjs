@@ -22,7 +22,8 @@ const head = (next, type, level, names) => {
   if (type === 'Bool') return { tag: 'bool', b: choose(next, 2) === 0 };
   const choice = choose(next, 3);
   if (choice === 0) return { tag: 'A' };
-  if (choice === 1) return { tag: 'B', fields: [pattern(next, 'Bool', level + 1, names)] };
+  if (choice === 1) return {
+    tag: 'B', fields: [pattern(next, 'Bool', level + 1, names)] };
   const left = pattern(next, 'T', level + 1, names);
   return { tag: 'C', fields: [left, pattern(next, 'Int', level + 1, names)] };
 };
@@ -76,7 +77,8 @@ export const matches = (p, v) => {
   if (p.tag !== v.tag) return false;
   if (p.tag === 'int') return p.n === v.n;
   if (p.tag === 'bool') return p.b === v.b;
-  return (p.fields ?? []).every((field, index) => matches(field, v.fields[index]));
+  return (p.fields ?? []).every((field, index) =>
+    matches(field, v.fields[index]));
 };
 
 // Witness text grammar: `_`, true, false, -?digits, Name, Name(w, ...).
@@ -92,7 +94,8 @@ export const parseWitness = text => {
   const parse = () => {
     const word = token();
     if (word === '_') return { tag: '_' };
-    if (word === 'true' || word === 'false') return { tag: 'bool', b: word === 'true' };
+    if (word === 'true' || word === 'false') return {
+      tag: 'bool', b: word === 'true' };
     if (/^-?\d/.test(word)) return { tag: 'int', n: Number(word) };
     const fields = [];
     if (peek() === '(') {
@@ -108,7 +111,8 @@ export const parseWitness = text => {
 
 // First-match semantics decide the expected outcome of a whole match.
 export const expected = (patterns, domain) => {
-  const firsts = new Set(domain.map(v => patterns.findIndex(p => matches(p, v))));
+  const firsts =
+    new Set(domain.map(v => patterns.findIndex(p => matches(p, v))));
   const redundant = patterns.findIndex((_, index) => !firsts.has(index));
   if (redundant !== -1) return { code: 'E_REDUNDANT', arm: redundant };
   if (firsts.has(-1)) return { code: 'E_NON_EXHAUSTIVE' };

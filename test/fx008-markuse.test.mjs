@@ -7,9 +7,11 @@ import { Hole } from '../output/Domain.Checked.Internal/index.js';
 import {
   Label, MarkMeta, MarkVariable, NoFail, Plain, Row, UserEffect
 } from '../output/Domain.Row/index.js';
-import { TFun, THandler, TInt, TUnit, TVar } from '../output/Domain.Type/index.js';
+import { TFun, THandler, TInt, TUnit,
+  TVar } from '../output/Domain.Type/index.js';
 import { start } from '../output/Features.Check.Scheme/index.js';
-import { instantiateMarks, localMarks } from '../output/Features.Check.MarkUse/index.js';
+import { instantiateMarks,
+  localMarks } from '../output/Features.Check.MarkUse/index.js';
 
 const labelOf = (effect, mark, args = []) =>
   Label.create(UserEffect.create(effect))(args)(mark);
@@ -47,7 +49,8 @@ test('localMarks replaces each Plain by its own fresh meta', () => {
   assert.equal(found.state.next, 12);
 });
 
-test('a handler type outside a handler row gets a clause row of its own', () => {
+test('a handler type outside a handler row gets a clause row of its '
+  + 'own', () => {
   const inference = rowOf([labelOf(1, Plain.value), labelOf(2, NoFail.value)],
     Just.create(new Hole(3)));
   const found = localMarks(at(10))(handlerOf(Plain.value, inference));
@@ -82,7 +85,8 @@ test('a handler type inside a handler row keeps no clause row', () => {
   assert.equal(copy.value1.length, 0);
 });
 
-test('a handler type among the handled label arguments is outside a row', () => {
+test('a handler type among the handled label arguments is outside a '
+  + 'row', () => {
   const inner = handlerOf(Plain.value, rowOf([labelOf(5, Plain.value)]));
   const outer = THandler.create(labelOf(9, Plain.value, [inner]))(
     { inference: rowOf([]), clauses: Nothing.value });

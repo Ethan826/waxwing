@@ -1,7 +1,8 @@
 import test from 'node:test';
 import { clock, db, expectDiagnostic, log } from './fx-diagnostics-support.mjs';
 
-test('repeated Fail families attribute each origin to its own occurrence', () => {
+test('repeated Fail families attribute each origin to its own '
+  + 'occurrence', () => {
   const types = 'type A = A; type B = B; ';
   const both = 'fn two(): Int with Fail(A) + Fail(B) = { fail(A); fail(B) }; ';
   const handled = 'fn main(): Int = handle two() { fail(error: A) => 0 };';
@@ -16,14 +17,16 @@ test('repeated Fail families attribute each origin to its own occurrence', () =>
   });
   const other = 'fn main(): Int = handle two() { fail(error: B) => 0 };';
   expectDiagnostic(types + both + other, {
-    code: 'E_EFFECT', message: 'Unhandled Fail(A) in main', at: [other, 'two()'],
+    code: 'E_EFFECT', message: 'Unhandled Fail(A) in main',
+      at: [other, 'two()'],
     notes: [['fn two(): Int with Fail(A) + Fail(B) = { fail(A); fail(B) };',
       'fail(A', 'Fail(A) is raised here'],
     [other, other, 'main may perform only Console']]
   });
 });
 
-test('a label consumed into a signature-written row gets an origin note', () => {
+test('a label consumed into a signature-written row gets an origin '
+  + 'note', () => {
   const twice = 'fn twice(): Int with Clock = now() + now(); ';
   const main = 'fn main(): Int with Clock = twice();';
   expectDiagnostic(clock + twice + main, {
@@ -33,7 +36,8 @@ test('a label consumed into a signature-written row gets an origin note', () => 
   });
 });
 
-test('a label consumed into an already-extended row keeps the first origin', () => {
+test('a label consumed into an already-extended row keeps the first '
+  + 'origin', () => {
   const first = 'fn first(): Int with Clock = now(); ';
   const second = 'fn second(): Int with Clock = now(); ';
   const main = 'fn main(): Int = { first(); second() };';
@@ -63,7 +67,8 @@ test('a direct operation in main notes only the boundary', () => {
   });
 });
 
-test('a closed signature that does not allow a label names the signature', () => {
+test('a closed signature that does not allow a label names the '
+  + 'signature', () => {
   const stamp = 'fn stamp(): Int with pure = tick(); ';
   const source = log + clock + 'fn tick(): Int with Clock = now(); '
     + stamp + 'fn main(): Int = 0;';
@@ -90,7 +95,8 @@ test('an ambient signature is named as such', () => {
 
 const unitFail = 'type E = E; ';
 
-test('defer performing a Fail through a called function: call and raise', () => {
+test('defer performing a Fail through a called function: call and '
+  + 'raise', () => {
   const risky = 'fn risky(): Unit with Fail(E) = fail(E); ';
   const work = 'fn work(): Unit with Fail(E) = { defer risky(); () }; ';
   expectDiagnostic(unitFail + risky + work + 'fn main(): Unit = ();', {
@@ -109,12 +115,14 @@ test('defer performing a Fail whose key settles after the defer', () => {
   expectDiagnostic(unitFail + work + 'fn main(): Unit = ();', {
     code: 'E_EFFECT', message: 'defer must not fail, but it performs Fail(E)',
     at: ['defer f(y)'],
-    notes: [[work, 'f(y)', 'Fail(E) comes from this function value', 'let g'.length],
+    notes: [[work, 'f(y)', 'Fail(E) comes from this function value',
+      'let g'.length],
       [work, 'fail(x', 'Fail(E) is raised here']]
   });
 });
 
-test('defer calling an ambient callback names the application and the row', () => {
+test('defer calling an ambient callback names the application and the '
+  + 'row', () => {
   const bracket = 'fn bracket(release: Unit -> Unit): Unit = '
     + '{ defer release(()); () }; ';
   expectDiagnostic(bracket + 'fn main(): Unit = ();', {
@@ -127,7 +135,8 @@ test('defer calling an ambient callback names the application and the row', () =
   });
 });
 
-test('defer calling a named-row callback names the application and the row', () => {
+test('defer calling a named-row callback names the application and the '
+  + 'row', () => {
   const bracket = 'fn bracket(release: Unit -> Unit with ...e): Unit with ...e '
     + '= { defer release(()); () }; ';
   expectDiagnostic(bracket + 'fn main(): Unit = ();', {
@@ -181,7 +190,8 @@ test('a nested row variable is declared at the parameter, not a with', () => {
 
 // The Fail note blames the call that brings in the reported label, not the
 // first call whose row holds some Fail.
-test('a late Fail key blames its own call, not an innocent identity call', () => {
+test('a late Fail key blames its own call, not an innocent identity '
+  + 'call', () => {
   const lambdas = 'let k = fn(u) => u; let a = fn(x) => fail(x); '
     + 'defer { k(()); a(A) }; ()';
   const work = `fn work(): Unit = handle { ${lambdas} } `
@@ -200,7 +210,8 @@ test('a late Fail key blames the call of the reported family', () => {
     + 'defer { b(B); a(A) }; ()';
   const work = `fn work(): Unit = handle { ${lambdas} } `
     + '{ fail(error: A) => (), fail(error: B) => () }; ';
-  expectDiagnostic('type A = A; type B = B; ' + work + 'fn main(): Unit = ();', {
+  expectDiagnostic('type A = A; type B = B; ' + work + 'fn main(): Unit = ();',
+    {
     code: 'E_EFFECT', message: 'defer must not fail, but it performs Fail(B)',
     at: ['defer { b(B); a(A) }'],
     notes: [[work, 'b(B)', 'Fail(B) comes from this function value'],

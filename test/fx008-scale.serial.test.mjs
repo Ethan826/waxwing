@@ -32,7 +32,8 @@ const within = (t, name, make, size, measuredMs, times = 1) => {
   let result;
   for (let run = 0; run < times; run++) result = check(program);
   const elapsedMs = performance.now() - started;
-  t.diagnostic(`${name}: ${Math.round(elapsedMs)} ms, bound ${slack * measuredMs}`);
+  t.diagnostic(`${name}: ${Math.round(elapsedMs)} ms, bound ${slack
+    * measuredMs}`);
   assert.equal(result.constructor.name, 'Right');
   assert.ok(elapsedMs <= slack * measuredMs,
     `took ${elapsedMs} ms, bound ${slack * measuredMs} ms`);

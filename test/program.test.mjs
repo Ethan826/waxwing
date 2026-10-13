@@ -16,12 +16,14 @@ const fakeHost = (results = {}) => {
   const calls = [];
   const port = (name, arity) => {
     const answer = results[name] ?? new Right(name === 'runProgram' ? '' : {});
-    const record = args => () => { calls.push([name, ...args]); return answer; };
+    const record = args => () => {
+      calls.push([name, ...args]); return answer; };
     return arity === 1 ? a => record([a]) : a => b => record([a, b]);
   };
   const host = {
     readSource: port('readSource', 1), writeText: port('writeText', 2),
-    buildExecutable: port('buildExecutable', 2), runProgram: port('runProgram', 1)
+    buildExecutable: port('buildExecutable', 2),
+      runProgram: port('runProgram', 1)
   };
   return { host, calls };
 };
@@ -67,7 +69,8 @@ test('a source diagnostic is status 1 with the wire fields and file', () => {
   const outcome = execute(host, ['build', 'bad.wxw', 'program']);
   const expected = { ...rejected(mistyped, 'E_TYPE'), file: 'bad.wxw' };
   assert.deepEqual(outcome, { status: 1, stdout: '', stderr: expected });
-  assert.deepEqual(keysOf(outcome.stderr), ['code', 'message', 'span', 'file', 'related']);
+  assert.deepEqual(keysOf(outcome.stderr),
+    ['code', 'message', 'span', 'file', 'related']);
   assert.deepEqual(calls, [['readSource', 'bad.wxw']]);
 });
 
@@ -87,13 +90,15 @@ test('a write failure during emit is E_IO with status 1', () => {
 });
 
 test('a build tool failure is E_TOOL with ok false and the command', () => {
-  const failure = new ToolFailure({ message: 'spawnSync go ENOENT', command: 'go' });
+  const failure =
+    new ToolFailure({ message: 'spawnSync go ENOENT', command: 'go' });
   const { host, calls } = fakeHost({ readSource: new Right(answer),
     buildExecutable: new Left(failure) });
   const outcome = execute(host, ['build', 'answer.wxw', 'answer']);
   assert.deepEqual(outcome, { status: 1, stdout: '', stderr: { ok: false,
     code: 'E_TOOL', message: 'spawnSync go ENOENT', command: 'go' } });
-  assert.deepEqual(keysOf(outcome.stderr), ['ok', 'code', 'message', 'command']);
+  assert.deepEqual(keysOf(outcome.stderr),
+    ['ok', 'code', 'message', 'command']);
   assert.deepEqual(calls, [['readSource', 'answer.wxw'],
     ['buildExecutable', checked(answer), 'answer']]);
 });
@@ -108,7 +113,8 @@ test('run prints the program output and never writes text', () => {
 });
 
 test('a run tool failure is E_TOOL with status 1 and no stdout', () => {
-  const failure = new ToolFailure({ message: 'exit 2', command: '/tmp/program' });
+  const failure =
+    new ToolFailure({ message: 'exit 2', command: '/tmp/program' });
   const { host } = fakeHost({ readSource: new Right(answer),
     runProgram: new Left(failure) });
   assert.deepEqual(execute(host, ['run', 'answer.wxw']), { status: 1,

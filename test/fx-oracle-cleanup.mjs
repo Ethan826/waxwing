@@ -6,7 +6,8 @@
 import { printable, show, typeOfValue, typeText } from './fx-oracle-values.mjs';
 
 export class Abort {
-  constructor(marker, payload, ctx) { Object.assign(this, { marker, payload, ctx }); }
+  constructor(marker, payload, ctx) {
+    Object.assign(this, { marker, payload, ctx }); }
 }
 export class Defect {}
 export class OracleError extends Error {}

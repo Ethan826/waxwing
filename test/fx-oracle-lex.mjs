@@ -58,7 +58,8 @@ export const typeReader = ({ peek, take, list }) => {
       const inner = list(type, ')');
       return inner.length === 1 ? inner[0] : { head: '()', args: inner };
     }
-    if (peek('...')) { take('...'); return { head: `...${take().text}`, args: [] }; }
+    if (peek('...')) {
+      take('...'); return { head: `...${take().text}`, args: [] }; }
     const head = take().text;
     const args = peek('(') ? (take('('), list(type, ')')) : [];
     return { head, args };

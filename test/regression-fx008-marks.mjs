@@ -1,10 +1,12 @@
 // FX008 Task 9 regression probes, registered through
-// test/regression-probes.mjs; the rows are in scripts/regression-fx008-marks.mjs.
+// test/regression-probes.mjs; the rows are in
+// scripts/regression-fx008-marks.mjs.
 // Each compiles one program with the compiler under test. A probe that is
 // meant to compile reports `rejected: <message>` when it does not, and one
 // meant to be rejected reports `accepted`.
 import {
-  aroundBoth, copies, ownRow, r1, forwardingIntoFailing, probe as probeSource, rigidVariable
+  aroundBoth, copies, ownRow, r1, forwardingIntoFailing, probe as probeSource,
+    rigidVariable
 } from './fx008-defer-programs.mjs';
 import { compileWithin } from './regression-fx008.mjs';
 
@@ -19,7 +21,8 @@ const fail = message => {
 const accepts = (source, label, expected) => context => {
   const found = compileWithin(context, source, timeoutMs);
   if (found.timedOut) fail(`${label}: timed out`);
-  if (found.diagnostic !== null) fail(`${label}: rejected: ${found.diagnostic.message}`);
+  if (found.diagnostic !== null)
+    fail(`${label}: rejected: ${found.diagnostic.message}`);
   if (context.printed(source) !== expected) fail(`${label}: wrong output`);
   console.log(`${context.probe} regression detects the defect`);
 };

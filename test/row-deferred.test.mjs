@@ -34,7 +34,8 @@ test('deferred Fail is reflexive with closed and open tails', () => {
   for (const tail of [null, rowMeta(10)]) {
     const same = row([fail(meta(0))], tail);
     const subst = pending(unifyRows(same, same));
-    assert.deepEqual(subst.postponed.map(pair => [fromRow(pair.left), fromRow(pair.right)]),
+    assert.deepEqual(subst.postponed.map(pair =>
+      [fromRow(pair.left), fromRow(pair.right)]),
       [[same, same]]);
     assert.deepEqual(bindingsOf(subst), new Map());
     assert.deepEqual(rowBindingsOf(subst), new Map());
@@ -52,13 +53,15 @@ test('deferred Fail settles without creating a duplicate', () => {
   assert.deepEqual(resolveRow(solution, left), resolveRow(solution, right));
 });
 
-test('a closed deferred right entry postpones before matching or rejecting', () => {
+test('a closed deferred right entry postpones before matching or '
+  + 'rejecting', () => {
   pending(unifyRows(row([fail(int)]), row([fail(meta(0))])));
   const left = row([fail(list(int))], rowMeta(10));
   const right = row([fail(meta(0)), fail(list(int))]);
   const subst = pending(unifyRows(left, right));
   assert.deepEqual(rowBindingsOf(subst), new Map());
-  assert.equal(unifier.settleRows(bind(subst, list(bool))).constructor.name, 'Left');
+  assert.equal(unifier.settleRows(bind(subst, list(bool))).constructor.name,
+    'Left');
 });
 
 test('a left-over deferred right entry also postpones', () => {
@@ -67,11 +70,13 @@ test('a left-over deferred right entry also postpones', () => {
   }
 });
 
-test('postponement rolls back earlier type bindings, extensions and events', () => {
+test('postponement rolls back earlier type bindings, extensions and '
+  + 'events', () => {
   const start = substOf(new Map([[2, bool]]));
   const left = row([label(1, meta(1)), label(2), fail(meta(0))], rowMeta(10));
   const right = row([label(1, int)], rowMeta(11));
-  const result = rows.unifyRowsTraced(unifier.unify)(EqualMarks.value)(rows.untraced)(start)(
+  const result =
+    rows.unifyRowsTraced(unifier.unify)(EqualMarks.value)(rows.untraced)(start)(
     toRow(left))(toRow(right));
   assert.ok(result instanceof Right);
   assert.equal(result.value0.postponed, true);
@@ -82,7 +87,8 @@ test('postponement rolls back earlier type bindings, extensions and events', () 
   assert.equal(subst.fresh, start.fresh);
 });
 
-test('settleRows distinguishes a solved pair, mismatch and still unknown key', () => {
+test('settleRows distinguishes a solved pair, mismatch and still unknown '
+  + 'key', () => {
   const left = row([fail(meta(0))]);
   const right = row([fail(int)]);
   const subst = pending(unifyRows(left, right));
@@ -95,18 +101,21 @@ test('settleRows distinguishes a solved pair, mismatch and still unknown key', (
   assert.deepEqual(unknown.value0, subst);
 });
 
-test('settleRows retries an earlier pair after a later pair solves its key', () => {
+test('settleRows retries an earlier pair after a later pair solves its '
+  + 'key', () => {
   const first = pending(unifyRows(row([fail(meta(0))]), row([fail(int)])));
   const second = pending(unifyRows(row([label(1, meta(0)), fail(meta(1))]),
     row([label(1, int), fail(bool)])));
-  const combined = { ...first, postponed: [...first.postponed, ...second.postponed] };
+  const combined = {
+    ...first, postponed: [...first.postponed, ...second.postponed] };
   const result = unifier.unify(combined)(toTy(meta(1)))(toTy(bool));
   assert.ok(result instanceof Right);
   const solution = settled(result.value0);
   assert.deepEqual(bindingsOf(solution), new Map([[0, int], [1, bool]]));
 });
 
-test('surrounding arrow parameters and results continue while a row postpones', () => {
+test('surrounding arrow parameters and results continue while a row '
+  + 'postpones', () => {
   const left = { ...fun(meta(1), meta(2)), row: row([fail(meta(0))]) };
   const right = { ...fun(bool, int), row: row([fail(int)]) };
   const result = unifier.unify(unifier.empty)(toTy(left))(toTy(right));
@@ -118,19 +127,23 @@ test('surrounding arrow parameters and results continue while a row postpones', 
 });
 
 test('groundErased erases open rows while strict ground rejects them', () => {
-  const effectOnly = { ...fun(int, int), row: row([fail(meta(0))], rowMeta(10)) };
+  const effectOnly = {
+    ...fun(int, int), row: row([fail(meta(0))], rowMeta(10)) };
   assert.ok(ground(toTy(effectOnly)) instanceof Nothing);
   const result = groundErased(toTy(effectOnly));
   assert.ok(result instanceof Just);
   assert.deepEqual(fromTy(result.value0), fun(int, int));
-  assert.ok(groundErased(toTy({ ...effectOnly, args: [meta(1), int] })) instanceof Nothing);
-  const applied = { k: 'data', id: 0, args: [int], rows: [row([], rowMeta(10))] };
+  assert.ok(groundErased(toTy({
+    ...effectOnly, args: [meta(1), int] })) instanceof Nothing);
+  const applied = {
+    k: 'data', id: 0, args: [int], rows: [row([], rowMeta(10))] };
   assert.ok(ground(toTy(applied)) instanceof Nothing);
   assert.deepEqual(fromTy(groundErased(toTy(applied)).value0),
     { ...applied, rows: [row([])] });
 });
 
-test('extending a row rejects an arrow argument containing that same row', () => {
+test('extending a row rejects an arrow argument containing that same '
+  + 'row', () => {
   const recursive = { ...fun(int, int), row: row([], rowMeta(10)) };
   const outcome = unifyRows(row([label(1, recursive)]), row([], rowMeta(10)));
   assert.equal(outcome.failure?.constructor.name, 'RowOccurs');

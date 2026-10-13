@@ -22,7 +22,8 @@ const seen = (source, options) => {
 
 for (const [name, source, expected] of runs) {
   test(`hand trace, blocks: ${name}`, () => {
-    assert.deepEqual(seen(source), { stdout: `${expected}\n`, stderr: '', status: 0 });
+    assert.deepEqual(seen(source), {
+      stdout: `${expected}\n`, stderr: '', status: 0 });
   });
 }
 for (const [name, source] of silent) {
@@ -75,7 +76,8 @@ test('a cleanup ending in a typed abort is an interpreter error', () => {
   assert.equal(result.stderr, 'oracle error: typed abort escaped cleanup\n');
 });
 
-test('a clause failing past an inner handle of its family reaches the outer', () => {
+test('a clause failing past an inner handle of its family reaches the '
+  + 'outer', () => {
   const source = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
     + 'fn main(): Unit with Console = handle with handler Log '
     + '{ log(n) => fail(E) } { handle log(1) { fail(error: E) => print(1) } } '
@@ -87,7 +89,8 @@ test('a clause failing past an inner handle of its family reaches the outer', ()
 test('generation is a pure function of the seed and index', () => {
   assert.equal(generate(7, 3).source, generate(7, 3).source);
   assert.notEqual(generate(7, 3).source, generate(8, 3).source);
-  for (const index of [0, 1, 2, 3, 4]) checked(generate(100 + index, index).source);
+  for (const index of [0, 1, 2, 3, 4])
+    checked(generate(100 + index, index).source);
 });
 
 // The shrinker, on a synthetic predicate: a distinctive print stays
@@ -124,7 +127,8 @@ test('the shrinker replaces subexpressions by literals', () => {
     return text(candidate.main.body).includes('print(');
   };
   const smallest = shrink({ fns: [], main }, keep);
-  assert.ok(render(smallest).endsWith('fn main(): Unit with Console = { print(0); };'),
+  assert.ok(render(smallest).endsWith('fn main(): Unit with Console = { ' +
+    'print(0); };'),
     render(smallest));
 });
 
@@ -132,7 +136,8 @@ test('the shrinker replaces subexpressions by literals', () => {
 // plausible interpreter mistake the corpus must catch: some of 50 programs
 // must give a different outcome.
 test('running clauses in the inner context changes some of 50 programs', () => {
-  const different = Array.from({ length: 50 }, (_, index) => generate(20261010 + index, index))
+  const different =
+    Array.from({ length: 50 }, (_, index) => generate(20261010 + index, index))
     .filter(({ source }) => JSON.stringify(seen(source))
       !== JSON.stringify(seen(source, { clauseContext: 'inner' })));
   assert.ok(different.length >= 1, 'the flag was not detected');

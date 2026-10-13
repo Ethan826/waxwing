@@ -10,8 +10,10 @@ export const specialized = [
   ['a handler over now()',
     clock + 'fn main(): Int = with handler Clock { now() => 1 } { now() };',
     '1\n'],
-  ['an unused effectful function', clock + 'fn unused(): Int with Clock = now();' + main, '0\n'],
-  ['a failure handled', 'fn main(): Int = handle fail(1) { fail(problem: Int) => 0 };', '0\n'],
+  ['an unused effectful function', clock
+    + 'fn unused(): Int with Clock = now();' + main, '0\n'],
+  ['a failure handled',
+    'fn main(): Int = handle fail(1) { fail(problem: Int) => 0 };', '0\n'],
   ['a lambda performing the handled effect', clock
     + 'fn f(c: Int -> Int with Clock): Int = 0; fn main(): Int = '
     + 'with handler Clock { now() => 1 } { f(fn(x) => now()) };', '0\n']

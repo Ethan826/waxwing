@@ -49,7 +49,8 @@ const rejectedAt = (source, code, message, fragment, occurrence = 0) => {
   });
 };
 const clock = 'effect Clock { fn now(): Int; }; ';
-const errors = 'type DbError = DbError; type ValidationError = ValidationError; ';
+const errors =
+  'type DbError = DbError; type ValidationError = ValidationError; ';
 const main = ' fn main(): Int = 0;';
 const state = 'effect State(s) { fn get(): s; fn put(v: s): Unit; }; ';
 
@@ -64,7 +65,8 @@ for (const [name, source] of [
   ['failure is answer-type independent', errors + 'fn main(): Int = '
     + 'handle fail(DbError) { fail(error: DbError) => 42 };'],
   ['Fail clause binder is not a reserved name', errors
-    + 'fn main(): Int = handle fail(DbError) { fail(problem: DbError) => 42 };'],
+    + 'fn main(): Int = handle fail(DbError) { fail(problem: DbError) => 42 ' +
+      '};'],
   ['different error families are separate keys', errors
     + 'fn main(): Int = handle handle fail(DbError) '
     + '{ fail(error: ValidationError) => 1 } { fail(error: DbError) => 2 };'],
@@ -82,11 +84,13 @@ for (const [name, source] of [
     + 'effect Log { fn log(n: Int): Unit; }; '
     + 'type Job(a, ...effects) = Job(Int -> a with ...effects); '
     + 'fn use(job: Job(Int, Log + Clock)): Int = 1;' + main],
-  ['row arguments include a bare label and pure', 'effect Log { fn log(): Unit; }; '
+  ['row arguments include a bare label and pure',
+    'effect Log { fn log(): Unit; }; '
     + 'type Job(a, ...effects) = Job(Int -> a with ...effects); '
     + 'fn use(job: Job(Int, Log)): Job(Int, Log) = job; '
     + 'fn empty(job: Job(Int, pure)): Job(Int, pure) = job;' + main],
-  ['multiple row parameters retain canonical type slots', 'effect Log { fn log(): Unit; }; '
+  ['multiple row parameters retain canonical type slots',
+    'effect Log { fn log(): Unit; }; '
     + 'effect Clock { fn now(): Int; }; '
     + 'type Job(...first, a, ...second) = Job(a -> a with ...first); '
     + 'fn use(job: Job(Log, Int, Clock)): Job(Log, Int, Clock) = job;' + main],
@@ -106,15 +110,18 @@ for (const [name, source, code, message] of [
   ['missing clause', clock + 'fn main(): Int = '
     + 'with handler Clock {} { 0 };', 'E_HANDLER', 'Missing clause for now'],
   ['duplicate clause', clock + 'fn main(): Int = with handler Clock '
-    + '{ now() => 1, now() => 2 } { 0 };', 'E_HANDLER', 'Duplicate clause for now'],
+    + '{ now() => 1, now() => 2 } { 0 };', 'E_HANDLER',
+      'Duplicate clause for now'],
   ['foreign operation', clock + 'fn main(): Int = with handler Clock '
     + '{ put() => 1 } { 0 };', 'E_HANDLER', 'put is not an operation of Clock'],
   ['generic failure family', 'fn raise(error: a): Int with Fail(a) = '
     + 'fail(error);' + main, 'E_TYPE', 'Fail needs a concrete error family'],
   ['same payload family arguments must unify', 'type Error(a) = Error(a); '
     + 'fn main(): Int = handle fail(Error(1)) '
-    + '{ fail(error: Error(Bool)) => 0 };', 'E_TYPE', 'Expected Bool, found Int'],
-  ['deferred failure mismatch keeps semantic diagnostic', 'type Error(a) = Error(a); '
+    + '{ fail(error: Error(Bool)) => 0 };', 'E_TYPE',
+      'Expected Bool, found Int'],
+  ['deferred failure mismatch keeps semantic diagnostic',
+    'type Error(a) = Error(a); '
     + 'fn main(): Int = { let raise = fn(error) => fail(error); '
     + 'handle raise(Error(1)) { fail(problem: Error(Bool)) => 0 } };',
     'E_TYPE', 'Expected Bool, found Int'],
@@ -157,7 +164,8 @@ for (const [name, source, code, message] of [
     'General control (ctl/resume) is not supported yet']
 ]) test(name, () => rejected(source, code, message));
 
-test('deferred missing Fail capability keeps effect diagnostic and span', () => {
+test('deferred missing Fail capability keeps effect diagnostic and '
+  + 'span', () => {
   const source = 'type DbError = DbError; fn f(): Int with pure = { '
     + 'let raise = fn(error) => fail(error); raise(DbError) };' + main;
   rejectedAt(source, 'E_EFFECT',
@@ -178,7 +186,8 @@ for (const [name, source, output] of checkedRuns) {
   test(name, () => assert.equal(runGo(source), output));
 }
 
-test('long function-type spines are lowered without recursive traversal', () => {
+test('long function-type spines are lowered without recursive '
+  + 'traversal', () => {
   const arrows = Array.from({ length: 20000 }, () => 'Int').join(' -> ');
   const result = compile(`fn f(x: Handler(Console with pure) -> ${arrows})`
     + `: Int = 0;${main}`);

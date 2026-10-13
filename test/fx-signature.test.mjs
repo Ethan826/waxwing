@@ -33,21 +33,25 @@ const acceptedCases = [
   ['declared operation', clock + 'fn main(): Int with Clock = now();', false],
   ['ambient callback', 'fn map(f: Int -> Int, x: Int): Int = f(x); '
     + 'fn main(): Int with Console = map(fn(x) => { print(x); x }, 3);'],
-  ['eta opens a pure local', log + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
+  ['eta opens a pure local', log
+    + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
     + 'fn adapt(g: Int -> Int with pure): Int with Log = use(fn(x) => g(x)); '
     + 'fn main(): Int = 0;'],
   ['named rows share', 'fn use(f: Int -> Int with ...e): Int with ...e = f(1); '
     + 'fn main(): Int with Console = use(fn(x) => { print(x); x });'],
-  ['partial leaves body latent', clock + 'fn take(x: Int, y: Int): Int with Clock = now(); '
+  ['partial leaves body latent', clock
+    + 'fn take(x: Int, y: Int): Int with Clock = now(); '
     + 'fn main(): Unit = { let f = take(1); (); };']
 ];
 for (const [name, source, valid = true] of acceptedCases) {
   test(name, () => valid ? accepted(source)
     : rejected(source, 'E_EFFECT', 'Unhandled Clock in main',
-      [['fn main(): Int with Clock = now();', 'main may perform only Console']]));
+      [['fn main(): Int with Clock = now();',
+        'main may perform only Console']]));
 }
 const rejectedCases = [
-  ['rigid ambient cannot invent effects', clock + 'fn f(): Int = now(); fn main(): Int = 0;',
+  ['rigid ambient cannot invent effects', clock
+    + 'fn f(): Int = now(); fn main(): Int = 0;',
     'E_EFFECT', 'f performs Clock, which its signature does not allow',
     [['fn f(): Int = now();', 'the signature of f has an ambient row']]],
   ['pure callback', 'fn use(f: Int -> Int with pure): Int = f(1); '
@@ -55,12 +59,15 @@ const rejectedCases = [
     'E_EFFECT', 'This function must be pure, but it performs Console',
     [['print(x)', 'Console is performed here'],
       ['with pure', 'this parameter must be pure']]],
-  ['closed local cannot widen', log + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
-    + 'fn adapt(g: Int -> Int with pure): Int with Log = use(g); fn main(): Int = 0;',
+  ['closed local cannot widen', log
+    + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
+    + 'fn adapt(g: Int -> Int with pure): Int with Log = use(g); fn main(): ' +
+      'Int = 0;',
     'E_EFFECT', 'This function must be pure, but it performs Log'],
   ['type then row sort', 'fn f(x: e): Int with ...e = 0; fn main(): Int = 0;',
     'E_TYPE', 'Expected an effect row, found a type'],
-  ['row then type sort', 'fn f(g: Int -> Int with ...e, x: e): Int = 0; fn main(): Int = 0;',
+  ['row then type sort',
+    'fn f(g: Int -> Int with ...e, x: e): Int = 0; fn main(): Int = 0;',
     'E_TYPE', 'Expected a type, found an effect row'],
   ['bare nullary operation', clock + 'fn main(): Int with Clock = now;',
     'E_ARITY', 'Expected now()'],
@@ -77,8 +84,10 @@ test('unused user effects pass the post-specialization guard', () => {
   assert.ok(result instanceof Right, JSON.stringify(result));
 });
 
-test('row variables erase from instantiations even before type variables', () => {
-  const result = phase('fn choose(f: Int -> Int with ...e, x: a): a with ...e = '
+test('row variables erase from instantiations even before type '
+  + 'variables', () => {
+  const result =
+    phase('fn choose(f: Int -> Int with ...e, x: a): a with ...e = '
     + '{ f(0); x }; fn main(): Int with Console = '
     + 'choose(fn(x) => { print(x); x }, 42);');
   assert.ok(result instanceof Right, JSON.stringify(result));

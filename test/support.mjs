@@ -62,7 +62,8 @@ export const rejectedAt = (source, code, text, nth = 0) => {
 // Records each Waxwing function's entry in waxwingTrace, in call order.
 export const traceCalls = goSource => goSource.replace(
   /func waxwingFn(\d+)\([^\n]*\) [^\n]* \{\n/g,
-  (header, index) => `${header}waxwingTrace = append(waxwingTrace, "${index}")\n`
+  (header, index) =>
+    `${header}waxwingTrace = append(waxwingTrace, "${index}")\n`
 );
 
 // FN001 timing probes: waxwingFn<index> panics with `waxwing-probe: <label>`

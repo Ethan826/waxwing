@@ -12,7 +12,8 @@ const literalOf = node => {
   return { Int: lit(0), Unit: unit, Bool: truth }[node.ty] ?? null;
 };
 const without = (list, index) => list.filter((_, at) => at !== index);
-const replaced = (list, index, value) => list.map((old, at) => (at === index ? value : old));
+const replaced = (list, index, value) =>
+  list.map((old, at) => (at === index ? value : old));
 
 // Each way to change one child of `node` (a list of children by key).
 function* inList(node, key, list, field) {
@@ -57,9 +58,11 @@ function* variants(node, replaceable = true) {
       yield* inList(node, 'clauses', node.clauses, 'body');
       yield* inChild(node, 'body');
       return;
-    case 'handler': yield* inList(node, 'clauses', node.clauses, 'body'); return;
+    case 'handler': yield* inList(node, 'clauses', node.clauses,
+      'body'); return;
     case 'call': yield* inList(node, 'args', node.args); return;
-    case 'app': yield* inChild(node, 'callee'); yield* inList(node, 'args', node.args); return;
+    case 'app': yield* inChild(node, 'callee'); yield* inList(node, 'args',
+      node.args); return;
     case 'add':
       yield node.left;
       yield node.right;
@@ -69,7 +72,8 @@ function* variants(node, replaceable = true) {
     case 'lam': yield* inChild(node, 'body'); return;
     case 'match':
       if (node.arms.length > 1) {
-        yield* node.arms.map((_, index) => ({ ...node, arms: without(node.arms, index) }));
+        yield* node.arms.map((_, index) =>
+          ({ ...node, arms: without(node.arms, index) }));
       }
       yield* inList(node, 'arms', node.arms, 'body');
       return;
