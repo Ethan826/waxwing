@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runGoBatch } from './go-batch.mjs';
-import { at, rejectedWith } from './text-spans.mjs';
+import { at, rejectedWith, spanOf } from './text-spans.mjs';
 
 // Text v1 design §1 "Raw and extended delimiters" and §6: `#"…"#` literals
 // at run time, and their termination errors with exact spans.
@@ -34,6 +34,7 @@ out('nested literal', 'a bc d\n');
 out('plain dollar', '$ $# $x ${y} $#\n');
 
 const head = 'fn main(): Text = ';
+const lineBreak = 'Text cannot contain a line break; use \\n or a """ block';
 const rows = [
   ['too many hashes', `${head}#"x"##;`, 'Expected "#, found "##',
     s => at(s, '"##')],
@@ -41,8 +42,12 @@ const rows = [
     'Expected "#, found "##', s => at(s, '"##')],
   ['quote at the end of the line', `${head}#"x"\n;`,
     'Expected "#, found "', s => at(s, '"', 1)],
-  ['quote then carriage return', `${head}#"x"\r;`,
+  ['quote then CRLF', `${head}#"x"\r\n;`,
     'Expected "#, found "', s => at(s, '"', 1)],
+  ['lone CR after a quote', `${head}#"x"\r;`, lineBreak,
+    s => spanOf(s, 18, s.indexOf('\r'))],
+  ['lone CR in a raw literal', `${head}#"x\ry"#;`, lineBreak,
+    s => spanOf(s, 18, s.indexOf('\r'))],
   ['quote at the end of the file', `${head}##"x"#`,
     'Expected "##, found "#', s => at(s, '"#')],
   ['the last of several quotes', `${head}##"a"#"b"`,

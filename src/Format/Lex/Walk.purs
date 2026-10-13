@@ -88,12 +88,18 @@ broken origin state =
   here = String.charAt state.at origin.source
   before = Stack.push (run origin state.from state.at) state.pieces
 
--- A line literal reaching the end of its line. Without `#`s that is the
--- line break error; with them, the unclosed-delimiter rules apply.
+-- A line literal reaching the end of its line, which only an LF or a CRLF
+-- is (§2). Without `#`s that is the line break error, and so is a lone CR
+-- in any literal; with `#`s the unclosed-delimiter rules apply.
 lineEnded ∷ ∀ a. Origin → Walk → Int → Either Diagnostic a
 lineEnded origin state at =
-  if origin.shape.hashes == 0 then lineBreak origin at
+  if origin.shape.hashes == 0 || not (endsLine origin.source at) then
+    lineBreak origin at
   else endOfFile origin state at
+
+endsLine ∷ String → Int → Boolean
+endsLine source at = String.charAt at source == Just '\n'
+  || String.slice at (at + 2) source == "\r\n"
 
 endOfFile ∷ ∀ a. Origin → Walk → Int → Either Diagnostic a
 endOfFile origin state stop = runOut origin stop (lastQuote origin state)
@@ -106,7 +112,7 @@ slashed origin state =
     Ended → endOfFile origin state body
     LineEnd →
       if origin.shape.block then
-        invalid origin state.at (body + 1) "Unknown escape "
+        invalid origin state.at body "Unknown escape "
       else lineEnded origin state body
     _ → map (resumed origin state) (escape origin state.at)
   where

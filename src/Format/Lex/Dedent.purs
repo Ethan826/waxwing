@@ -24,6 +24,9 @@ type Back = { rest ∷ Stack Token, kept ∷ Stack Token, depth ∷ Int }
 -- from the block's `TextClose`, which is on top of `tokens`, to its
 -- `TextOpen`, and scans each chunk of the block itself again with the
 -- indent: not those of the literals inside its holes, which closed earlier.
+-- Ordering: the first scan validates everything else, so any error from it
+-- (bad escape, unclosed hole, bad delimiter) wins over an under-indented
+-- line, which is found only here, once the block has closed.
 dedent
   ∷ String → Closing → Stack Token → Either Diagnostic (Stack Token)
 dedent source closing tokens = tailRecM (back source closing)

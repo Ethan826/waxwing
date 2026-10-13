@@ -93,8 +93,16 @@ runOut origin stop last =
   where
   plain _ = unterminated origin stop
   mismatched quote =
-    mismatch origin quote 1
+    mismatch origin (widened quote) (quotes quote)
       (hashesEnd origin.source (quote.index + 1) - quote.index - 1)
+  -- A block's last quote that ends a `"""` run is reported as the run.
+  ends quote = origin.shape.block
+    && String.slice (quote.index - 2) quote.index origin.source == "\"\""
+  quotes quote = if ends quote then 3 else 1
+  widened quote =
+    if ends quote then
+      { index: quote.index - 2, position: along quote.position (-2) }
+    else quote
 
 -- From the opening delimiter to the line break.
 lineBreak ∷ ∀ a. Origin → Int → Either Diagnostic a

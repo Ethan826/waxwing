@@ -21,6 +21,7 @@ import Format.Lex.Origin
   , Start
   , openSpan
   , openWidth
+  , unterminated
   , positionAt
   , run
   , spanOf
@@ -82,6 +83,8 @@ literal source index open enclosing =
 opening ∷ Origin → Either Diagnostic Int
 opening origin =
   if not origin.shape.block then Right after
+  else if after >= String.length origin.source then
+    unterminated origin after
   else if String.charAt after origin.source == Just '\n' then Right (after + 1)
   else if String.slice after (after + 2) origin.source == "\r\n" then
     Right (after + 2)
