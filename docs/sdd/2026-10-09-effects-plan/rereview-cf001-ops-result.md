@@ -1,10 +1,13 @@
 # Re-review: CF001 operational addendum fix round, 2026-10-10
 
 Scope: the fix diff (rereview-cf001-ops.diff) against
-review-cf001-ops-result.md, checked against the current doc, effects design §4
-(`with` rule, lines 264-271, 138-140), src/Features/Check/Handler.purs
-(withHandler) and src/Format/Go/Cleanup.purs (usesDefects). Line numbers below
-refer to the current docs/plans/2026-10-09-concurrency-foundations-design.md.
+review-cf001-ops-result.md,
+checked against the current doc, effects design §4 (`with` rule, lines 264-271,
+138-140),
+src/Features/Check/Handler.purs (withHandler) and src/Format/Go/Cleanup.purs
+(usesDefects).
+Line numbers below refer to the current
+docs/plans/2026-10-09-concurrency-foundations-design.md.
 
 ### Finding Verdicts
 

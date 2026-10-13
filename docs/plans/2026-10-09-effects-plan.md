@@ -114,7 +114,7 @@ direction decisions.
     same nodes in the monomorphic IR; tests call `specialize` directly.
   - Task 7 deletes the guard; Task 8 adds `defer` and `crash` through
     every phase in one task.
-    Each progress entry states how far its tests reach.
+  Each progress entry states how far its tests reach.
 - Every task: each new behavioral test seen failing before its code; `npm run
   verify` exits 0, or fails only in its serial phase on the BACKLOG T007
   timing set, named in the progress entry and failing identically at the
@@ -448,7 +448,7 @@ programs at `Features.Check.Unlowered` (Global Constraints).
 ### Task 6: Specialization: row erasure, effect keys and layout cycles
 
 **Files:**
-- Modify: `src/Features/Specialize.purs` (worklist),
+- Modify: `src/Features/Specialize.purs` (worklist), 
   `src/Features/Specialize/Keys.purs` (effect keys; split if over 250
   lines), `src/Features/Specialize/Body.purs`,
   `src/Features/Specialize/Lower.purs` (rows erased; `THandler` lowers
@@ -856,17 +856,18 @@ programs at `Features.Check.Unlowered` (Global Constraints).
   for effect-free programs is the existing row `effect-free-ctx` (Task 7), not
   duplicated.
 - [ ] **Step 2: Write** ADR 010 and the language Effects section; both record
-  the FX008 rule (a `defer` may perform an operation only where every frame it
-  can meet is fail-free, tracked by `nofail` marks; spec §2 "Marks") and the
-  limitations L1 with P5, L4 (l4b, merge2), L6 and the handler-through-
+  the FX008 rule (a `defer` may perform an operation only where every frame
+  it can meet is fail-free, tracked by `nofail` marks; spec §2 "Marks") and
+  the limitations L1 with P5, L4 (l4b, merge2), L6 and the handler-through-
   a-generic-function limitation (FX008 amendment, 2026-10-12; plan
-  docs/plans/2026-10-10-abort-tracking-plan.md, "Task 9 as built"). ADR 010 (as
-  shipped: row erasure revising decision 1; runtime keys, EffectId+1 for user
-  effects and `Fail` by declared head; first clause innermost; ctx mode over the
-  emitted IR; only keys with type arguments count toward the 10,000 limit (F5);
-  the strict `defer` rule (CF R0) and its accepted costs (FX007), as refined by
-  FX008; report conventions: no pending cause gives an unprefixed first cleanup
-  crash, Go runtime panics print `panic:
+  docs/plans/2026-10-10-abort-tracking-plan.md, "Task 9 as built").
+  ADR 010 (as shipped: row erasure revising decision 1;
+  runtime keys, EffectId+1 for user effects and `Fail` by declared head; first
+  clause innermost; ctx mode over the emitted IR; only keys with type
+  arguments count toward the 10,000 limit (F5); the strict `defer` rule (CF
+  R0) and its accepted costs (FX007), as refined by FX008; report conventions:
+  no pending cause
+  gives an unprefixed first cleanup crash, Go runtime panics print `panic:
   <text>`; empty Handler(Console)/Handler(Fail(E)) structs (F3); Task 11's
   key-count and timing evidence) and the language Effects section, including
   the documented limits: `with pure` promises neither termination nor freedom
@@ -882,22 +883,24 @@ programs at `Features.Check.Unlowered` (Global Constraints).
   reasons; no mutable state (stateless fakes; FX003); `let` is monomorphic;
   eta-expansion for pure locals; no generic Result-to-failure helper.
 - [ ] **Step 3: Update BACKLOG:** FX001 "Done pending whole-branch review";
-  FN002 stays Done. New rows: FX002 (concurrency: builds on CF001; first settle
-  CF §10 items 1-8, including R0 for `par`, B1 and cancellation C1-C4, and apply
-  CF §10 necessary changes 3, 5 and 6), FX003 (local state, recording fakes;
-  first B3: sharability as a transitive property of handler types plus the
-  capture check, CF §10.3), FX005 (`ctx` elimination and cached lookup; Task 1
-  lookup at depth 10,000 took 11.8 s per 10^6; caches are per task or immutable
-  at publication, never written into a node reachable from another goroutine, CF
-  §10.4; before FX002), FX006 (row added 2026-10-10 with design constraints;
-  extend it here: general resume `ctl`; continuation ownership C6 and discard as
-  an exit reason; multi-shot `defer` unresolved; no capture across a foreign
-  frame, I001; confining CPS without row-keyed specialization, since rows are
-  erased, spec §4). Update CF001 (state that FX002, FX003 and FX006 depend on
-  its §10 list) and FX007 (link ADR 010). Add notes to D001 (user Console
-  handlers; Handler(Console)/Handler(Fail(E)) are uninhabited, F3), R001
-  (value-level error sums; `Failure(A + B + ...)` as possible row sugar), STD001
-  (no generic Result-to-failure helper), I001 (callback boundary; injected
+  FN002 stays Done. New rows: FX002 (concurrency: builds on CF001; first
+  settle CF §10 items 1-8, including R0 for `par`, B1 and cancellation C1-C4,
+  and apply CF §10 necessary changes 3, 5 and 6), FX003 (local state,
+  recording fakes; first B3: sharability as a transitive property of handler
+  types plus the capture check, CF §10.3), FX005 (`ctx` elimination and cached
+  lookup; Task 1 lookup at depth 10,000 took 11.8 s per 10^6; caches are per
+  task or immutable at publication, never written into a node reachable from
+  another goroutine, CF §10.4; before FX002), FX006 (row added 2026-10-10 with
+  design
+  constraints; extend it here: general resume `ctl`;
+  continuation ownership C6 and discard as an exit reason; multi-shot `defer`
+  unresolved; no capture across a foreign frame, I001; confining CPS without
+  row-keyed specialization, since rows are erased, spec §4). Update CF001
+  (state that FX002, FX003 and FX006 depend on its §10 list) and FX007 (link
+  ADR 010). Add notes to D001 (user Console handlers;
+  Handler(Console)/Handler(Fail(E)) are uninhabited, F3), R001 (value-level
+  error sums; `Failure(A + B + ...)` as possible row sugar), STD001 (no
+  generic Result-to-failure helper), I001 (callback boundary; injected
   foreign-panic tests), PKG001 (export calling convention: `ctx *waxwingCtx`
   first in ctx mode), and FN006 (1) if Task 10's parser closed it. FX004 keeps
   the Task 5 row (F14).

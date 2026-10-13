@@ -42,10 +42,11 @@ and log names) verbatim because they name artifacts that existed; the prose
 language name changes.
 
 2026-10-07. The completed documentation/style audit is merged into main through
-1f760af. Fresh review found no blockers; merged verification passed. Baseline
-9624bec is preserved in history. Audit branch/worktree removed after retaining
-their evidence. Task 1 commit: 4410609. No publishing or push. The audit plan is
-docs/plans/2026-10-07-bootstrap-audit.md.
+1f760af.
+Fresh review found no blockers; merged verification passed. Baseline 9624bec
+is preserved in history. Audit branch/worktree removed after retaining their
+evidence. Task 1 commit: 4410609. No publishing or push.
+The audit plan is docs/plans/2026-10-07-bootstrap-audit.md.
 
 ## Historical pre-audit checkpoint
 
@@ -91,17 +92,18 @@ provenance, ADRs, engineering guidance, bootstrap roadmap, and local backlog.
 ## Current remaining actions
 
 Local integration is complete; proceed to a separate bounded ADT design/plan.
-Closed ADTs/exhaustive matching require a separate later design and plan. F001
-(fresh compiler-tool setup), F002 (unapplied external patch), E001/E002 and E003
-remain explicit.
+Closed ADTs/exhaustive
+matching require a separate later design and plan. F001 (fresh compiler-tool
+setup), F002 (unapplied external patch), E001/E002 and E003 remain explicit.
 
 ## Superpowers installation and backport
 
-Historical installation steering: install skills, migrate, then plan the run. 15
-skills installed project-locally via bunx at the revision in skills-lock.json;
-list command confirmed Codex/project scope. The unfinished audit is migrated to
-docs/plans/2026-10-07-bootstrap-audit.md with a durable historical ledger. At
-migration, no audit task or feature had run and Git had no HEAD. User
+Historical installation steering: install skills, migrate, then plan the run.
+15 skills installed project-locally via bunx at the revision in
+skills-lock.json;
+list command confirmed Codex/project scope. The unfinished audit is migrated
+to docs/plans/2026-10-07-bootstrap-audit.md with a durable historical ledger.
+At migration, no audit task or feature had run and Git had no HEAD. User
 subsequently approved inline execution/checkpoint/worktree. W001 is resolved;
 prior compiler evidence above is preserved.
 
@@ -144,10 +146,10 @@ in isolation. docs/findings.md retains the complete failed-attempt account.
 
 ## Audit execution: Task 2
 
-Handoff files now identify the real baseline, audit branch, completed tasks and
-final fresh review. Historical no-HEAD/no-commit statements are labeled as
-historical. Review is complete; final completion verification is recorded below.
-No ADT source or plan was added.
+Handoff files now identify the real baseline, audit branch, completed tasks
+and final fresh review. Historical no-HEAD/no-commit statements are labeled
+as historical. Review is complete; final completion verification is recorded
+below. No ADT source or plan was added.
 
 Task 2 pre-review `npm run verify` exited 0 on 2026-10-07: zero strict-build
 warnings/errors, 19/19 tests with no skips, style/layer gates and regression
@@ -162,12 +164,12 @@ in docs/plans/bootstrap-audit-review.md and bootstrap-audit-ledger.md.
 The server restart interrupted delivery; the same reviewer resumed, avoiding
 a second review or repeated implementation.
 
-Two separate actual CLI emit invocations produced byte-identical output, also
-equal to bootstrap/answer.go (cmp checks succeeded). The preserved MileAhead
-patch again passed git apply --check without being applied. Stage 0, locks,
-tests, example bytes and pure boundaries remain preserved. ADR 001/002 remain
-unchanged. At audit closure no language feature, merge, push or publication had
-occurred.
+Two separate actual CLI emit invocations produced byte-identical output,
+also equal to bootstrap/answer.go (cmp checks succeeded). The preserved
+MileAhead patch again passed git apply --check without being applied. Stage 0,
+locks, tests, example bytes and pure boundaries remain preserved. ADR 001/002
+remain unchanged. At audit closure no language feature, merge, push or
+publication had occurred.
 
 Raw failure evidence retained outside executor scratch:
 .build/audit-task-1-failed-alias.log, .build/alias-regression/failure.log,
@@ -180,7 +182,8 @@ zero warnings/errors; 19/19 tests, zero skips; format/CST/layer gates and
 isolated branch mutation proof passed. Raw final log: .build/audit-final.log.
 Tasks 1/2 and original bootstrap tasks 7/8 are complete; no blocking review
 finding remains. E004 minor titles are intentionally deferred. Integration into
-main was still pending at that checkpoint; it is now complete as recorded below.
+main was still pending at that checkpoint; it is now
+complete as recorded below.
 
 The installed task-done helper also verified Task 2 after commit f27b499:
 19/19 tests, zero skips, strict build/gates/regression proof passed; commit
@@ -228,21 +231,27 @@ Resolve maps NamedRef to E_UNBOUND transitionally. New test/adt-syntax.test.mjs
 exit 0 (26 tests, regression proof, answer.go unchanged).
 
 2026-10-07: closed-ADT Task 2 (types and construction) done. Ty moved to
-Resolved with TData; two-pass type table, shared global table, Construct through
-Check and Go (Go.Data). test/adt-types.test.mjs (6 tests) failed before the
-change (unbound-type errors), then passed. `npm run verify` exit 0 (32 tests,
-regression proof, answer.go unchanged).
+Resolved
+with TData; two-pass type table, shared global table, Construct through Check
+and Go (Go.Data). test/adt-types.test.mjs (6 tests) failed before the change
+(unbound-type errors), then passed. `npm run verify` exit 0 (32 tests,
+regression
+proof, answer.go unchanged).
 
 2026-10-07: closed-ADT Task 3 (patterns and match, no coverage) done.
-Parse.Literal and Parse.Pattern, Resolve.Pattern with pre-order LocalIds,
-Check.Match, Go.Match (depth-named IIFE, nil-guarded projections);
-examples/shapes.sprig with snapshot bootstrap/shapes.go. test/adt-match (12) and
-test/adt-properties (1) failed before the change (match was E_SYNTAX), then
-passed. Regression proof is a table: `branch` and new `nil-guard` both fail on
-their mutants. `npm run verify` exit 0. Fix round 1: pattern-constructor arity
-moved from Check.Match into Resolve.Pattern (E_ARITY in pattern pre-order,
-before body and later-function errors); two new rejection rows failed before
-(E_UNBOUND) and pass after. `npm run verify` exit 0.
+Parse.Literal
+and Parse.Pattern, Resolve.Pattern with pre-order LocalIds, Check.Match,
+Go.Match
+(depth-named IIFE, nil-guarded projections); examples/shapes.sprig with snapshot
+bootstrap/shapes.go. test/adt-match (12) and test/adt-properties (1) failed
+before
+the change (match was E_SYNTAX), then passed. Regression proof is a table:
+`branch`
+and new `nil-guard` both fail on their mutants. `npm run verify` exit 0.
+Fix round 1: pattern-constructor arity moved from Check.Match into
+Resolve.Pattern (E_ARITY in pattern pre-order, before body and later-function
+errors); two new rejection rows failed before (E_UNBOUND) and pass after.
+`npm run verify` exit 0.
 
 2026-10-07: closed-ADT Task 4 (coverage) done. Check.Usefulness (inhabitation
 fixed point, U(P,q), algorithm I) and Check.Coverage (E_REDUNDANT,
@@ -318,16 +327,16 @@ directories (F005).
 Reproduced in an isolated copy: with a shadowed name added to Domain.Host, the
 first `node scripts/build.mjs` failed with ShadowedName and the second exited
 0. scripts/build.mjs now removes the output directory of every module declared
-   under src and tools/style/src before building (dependencies stay cached); the
-   same copy then failed both builds. New scripts/strict-rebuild.mjs, run by
-   verify, automates that proof; with HEAD's build.mjs restored in an isolated
-   copy it fails with "second build accepted a strict warning"
-   (.build/f004-red.log). AGENTS.md no longer requires a clean output directory.
-   Clean `rm -rf output && npm run verify` (.build/f004-verify.log) and the
-   following incremental `npm run verify` (.build/f004-verify-incremental.log)
-   both exit 0: 0 warnings, 68 tests, 0 skips, strict rebuild proof and
-   regression proofs branch, nil-guard and exhaustive passed. The main item of
-   the milestone is not yet chosen.
+under src and tools/style/src before building (dependencies stay cached); the
+same copy then failed both builds. New scripts/strict-rebuild.mjs, run by
+verify, automates that proof; with HEAD's build.mjs restored in an isolated copy
+it fails with "second build accepted a strict warning" (.build/f004-red.log).
+AGENTS.md no longer requires a clean output directory. Clean
+`rm -rf output && npm run verify` (.build/f004-verify.log) and the following
+incremental `npm run verify` (.build/f004-verify-incremental.log) both exit 0:
+0 warnings, 68 tests, 0 skips, strict rebuild proof and regression proofs
+branch, nil-guard and exhaustive passed. The main item of the milestone is
+not yet chosen.
 
 ## Next milestone, main item: A003 (design, 2026-10-07)
 
@@ -387,29 +396,31 @@ Documentation only; no compiler source changed.
   `sed s/sprig/bumpus/g;s/Sprig/Bumpus/g` (cmp, exit 0). New
   docs/assets/bumpus.svg. `npm run verify` exit 0.
 - Task 3b (stack-safe lexing and declaration parsing, E002 part): Format.Lex
-  scans by index in a `tailRecM` loop (Control.Monad.Rec.Class, `tailrec` now a
-  direct dependency; spago.lock gains it), Format.Parse.declarations is a
-  `tailRecM` loop, Format.Parse.Core reads tokens by index, and Format.Stack
-  makes accumulation linear. Two quadratic resolver costs the 20,000-declaration
-  test exposed were fixed: globals are built once, and function-name duplicates
-  use a sort (Features.Resolve.Repeated). New test/large-source.test.mjs (5
-  tests: megabyte padding, 20,000 declarations run in Go, E_LEX at offset
-  1,000,020, megabyte lex under 5 s, duplicate among 20,000) all failed on the
-  old code with heap exhaustion (.build/task3b-red.log); now 0.09 s, 2.2 s, 0.26
-  s, 0.07 s, 0.08 s. The structure allowlist admits exactly
-  Control.Monad.Rec.Class (new structure test red first). Coverage-oracle
-  `choose` reads the LCG's high 16 bits (a new test showed 80 two-way draws
-  alternating `0101…`); seed-dependent preconditions then failed (adt-order
-  `seed 22: one T0 constructor`, adt-print `nested`), so seeds were reselected,
-  assertions unchanged. Dropping the backward neighbour check in Repeated fails
-  the diagnostics and large-source duplicate tests in an isolated copy.
-  bootstrap/*.go unchanged. `npm run verify` exit 0, 17 files, 96 tests, 0 skips
-  (.build/task3b-verify.log). 2026-10-07: logo. The README shows
-  assets/branding/bumpus-logo.png (1254 × 1254 PNG with alpha, a bluetick
-  coonhound with the stolen turkey above the wordmark), chosen by the user from
-  image-generator candidates; provenance and final prompt in
-  assets/branding/README.md. The Task 3a SVG icon was removed at the user's
-  request; no earlier image versions are kept. Documentation and assets only.
+  scans by index in a `tailRecM` loop (Control.Monad.Rec.Class, `tailrec`
+  now a direct dependency; spago.lock gains it), Format.Parse.declarations
+  is a `tailRecM` loop, Format.Parse.Core reads tokens by index, and
+  Format.Stack makes accumulation linear. Two quadratic resolver costs the
+  20,000-declaration test exposed were fixed: globals are built once, and
+  function-name duplicates use a sort (Features.Resolve.Repeated). New
+  test/large-source.test.mjs (5 tests: megabyte padding, 20,000
+  declarations run in Go, E_LEX at offset 1,000,020, megabyte lex under 5 s,
+  duplicate among 20,000) all failed on the old code with heap exhaustion
+  (.build/task3b-red.log); now 0.09 s, 2.2 s, 0.26 s, 0.07 s, 0.08 s. The
+  structure allowlist admits exactly Control.Monad.Rec.Class (new structure
+  test red first). Coverage-oracle `choose` reads the LCG's high 16 bits (a
+  new test showed 80 two-way draws alternating `0101…`); seed-dependent
+  preconditions then failed (adt-order `seed 22: one T0 constructor`,
+  adt-print `nested`), so seeds were reselected, assertions unchanged.
+  Dropping the backward neighbour check in Repeated fails the diagnostics
+  and large-source duplicate tests in an isolated copy. bootstrap/*.go
+  unchanged. `npm run verify` exit 0, 17 files, 96 tests, 0 skips
+  (.build/task3b-verify.log).
+2026-10-07: logo. The README shows assets/branding/bumpus-logo.png (1254 ×
+1254 PNG with alpha, a bluetick coonhound with the stolen turkey above the
+wordmark), chosen by the user from image-generator candidates; provenance and
+final prompt in assets/branding/README.md. The Task 3a SVG icon was removed at
+the user's request; no earlier image versions are kept. Documentation and
+assets only.
 - 2026-10-07 Task 4 (documentation and closure): language.md, ADR 005,
   architecture, engineering, README, BACKLOG (A003 In review, E002 extended
   with the quadratic `uniqueTypes`/`uniqueCtors`, new T001), findings and
@@ -797,9 +808,7 @@ check >=> specialize`, then `emit`).
 - Phase reached: every test runs the full pipeline on monomorphic programs;
   the CLI does not compile polymorphic programs (none parse yet).
 
-<h3>
-Task 2: type parameters and applied types, syntax and resolution (2026-10-08)
-</h3>
+### Task 2: type parameters and applied types, syntax and resolution (2026-10-08)
 
 Language change: `type List(a) = Nil | Cons(a, List(a));`, lowercase type
 variables, parenthesized application. Status: done.
@@ -1226,13 +1235,13 @@ Status: done.
   program; an uninstantiated polymorphic function and type are not
   emitted; the limit (compile only): 6,000 function keys + 4,000 type keys
   + 500 monomorphic functions and types compile, one more function key and
-    separately one more type key fail at `gx(1)` and `QX(1)`.
-    test/large-source.test.mjs: 3,000 distinct instantiations (3,000
-    function and 3,000 type keys) compile in about 0.6 s (bound 5 s); the
-    20,000-declaration programs are unchanged and pass.
-    test/compiler.test.mjs: bootstrap/lists.go snapshot and CLI run.
-    test/specialize.test.mjs: identity now skips the one polymorphic example
-    by name (its count assertion is unchanged).
+  separately one more type key fail at `gx(1)` and `QX(1)`.
+  test/large-source.test.mjs: 3,000 distinct instantiations (3,000
+  function and 3,000 type keys) compile in about 0.6 s (bound 5 s); the
+  20,000-declaration programs are unchanged and pass.
+  test/compiler.test.mjs: bootstrap/lists.go snapshot and CLI run.
+  test/specialize.test.mjs: identity now skips the one polymorphic example
+  by name (its count assertion is unchanged).
 - bootstrap/lists.go generated with `npm run bumpus -- emit
   examples/lists.bumpus bootstrap/lists.go` and reviewed (types numbered in
   discovery order, `Pair(Int, Bool)` first from `main`'s signature;
@@ -1341,8 +1350,8 @@ Language change: none (regression rows and documentation). Status: done.
     `Pair(1, 2)`. Mutant: Go build fails (`cannot use … (value of struct
     type bumpusTy1) as bumpusTy0 value`), probe fails `nested
     specialization keys collided`.
-    Evidence: .build/p001-task9-mutants.log (each probe exit 0 on the healthy
-    build, exit 1 with its message on its mutant).
+  Evidence: .build/p001-task9-mutants.log (each probe exit 0 on the healthy
+  build, exit 1 with its message on its mutant).
 - RED/GREEN for the rows is the regression script itself: each row asserts
   the healthy compiler passes and the isolated mutant fails with the row's
   message. `node scripts/regression.mjs`: twelve `Regression proof (…)`
@@ -1427,10 +1436,11 @@ issue and several minors; all were fixed in one commit on p001.
   P001 as implemented without branch status; docs/language.md places the
   occurs-check E_TYPE at the argument `t`.
 
-Verification: `rm -rf output && npm run verify` exits 0 in 90 s wall (97 s on an
-earlier run) with 318 tests (302 + 2 timing + 1 E_INTERNAL + 13 compile twins),
-zero warnings and twelve regression proofs (.build/p001-final-fix-verify.log).
-The eight files (`node --test test/unify.test.mjs test/poly-*.test.mjs
+Verification: `rm -rf output && npm run verify` exits 0 in 90 s wall
+(97 s on an earlier run) with 318 tests (302 + 2 timing + 1 E_INTERNAL +
+13 compile twins), zero warnings and twelve regression proofs
+(.build/p001-final-fix-verify.log). The eight files (`node --test
+test/unify.test.mjs test/poly-*.test.mjs
 test/diagnostics.test.mjs`, 153 tests) passed three sequential runs
 (.build/p001-final-fix-run{1,2,3}.log).
 
@@ -1762,17 +1772,18 @@ reach Specialize as `Internal "unlowered function"`.
   (calls there are ordinary edges); value references and lambda bodies are
   Task 5's. Specialize.Body returns `Internal "unlowered function"` for
   each new node.
-- Decisions not dictated by the plan: (1) `a |> g(b1…bk)` with k = n is the
-  over-application `g(b1…bk, a)`: E_ARITY at the right operand's span when g's
-  result is not a function; any other right side is applied to `a` (NotAFunction
-  at `a`). `a |> f()` keeps `f()`'s own E_ARITY. (2) The over-application
-  E_ARITY is checked before arguments when the declared result is Int, Bool or a
-  declared type, so those wrong counts keep their pre-FN001 order of errors.
-  (Corrected by the review: a result type variable cannot keep it; see the
-  review fixes below.) (3) Only a TypeMismatch is hinted (an occurs failure
-  never has a non-meta expected head). (4) The printable-entry check lives in
-  Features.Check (it needs Functional), not Check.Signature, which is the
-  coverage signature.
+- Decisions not dictated by the plan: (1) `a |> g(b1…bk)` with k = n is
+  the over-application `g(b1…bk, a)`: E_ARITY at the right operand's span
+  when g's result is not a function; any other right side is applied to
+  `a` (NotAFunction at `a`). `a |> f()` keeps `f()`'s own E_ARITY. (2) The
+  over-application E_ARITY is checked before arguments when the declared
+  result is Int, Bool or a declared type, so those wrong counts keep their
+  pre-FN001 order of errors. (Corrected by the review: a result type
+  variable cannot keep it; see the review fixes below.) (3) Only a TypeMismatch
+  is hinted (an occurs
+  failure never has a non-meta expected head). (4) The printable-entry
+  check lives in Features.Check (it needs Functional), not
+  Check.Signature, which is the coverage signature.
 - Changed rows (old → new):
   - test/diagnostics.test.mjs `fn f(): P = Pair;`: E_ARITY 37-41 `Pair`
     `Constructor Pair needs arguments` → E_TYPE 37-41 `Pair`
@@ -1789,8 +1800,8 @@ reach Specialize as `Internal "unlowered function"`.
   - test/adt-match.test.mjs `Cons(f, _) => f(1)`: E_NOT_CALLABLE at `f(1)`
     `Local is not callable: f` → E_TYPE at `1` (128-129)
     `Expected a function, found Int`.
-    The adt-types rows now also assert these messages. No other existing
-    assertion changed.
+  The adt-types rows now also assert these messages. No other existing
+  assertion changed.
 - Tests seen failing first (log .build/fn001-task4-red.log): 81 tests in
   test/fn-check.test.mjs, test/fn-hint.test.mjs, test/fn-rules.test.mjs;
   74 failed, 7 passed on arrival (comparison of `Int -> Int` and
@@ -2013,29 +2024,30 @@ workload and the test's place in verify are unchanged. Acceptance was a
 2× drop in the isolated median, or, if that needs a design change, the
 profile and the options.
 
-Profile (c120d48, built in an isolated copy). The measurement is committed as
-scripts/ladder-profile.mjs
-(`node scripts/ladder-profile.mjs --rounds 7 --baseline DIR`: cold compiles in
-fresh processes alternating with a built baseline tree, steady per-phase
-medians, load average); the CPU and allocation profiles below used
-`node --cpu-prof` and V8 allocation sampling on the same source. Steady state
-per phase (median of 15, in-process): parse 137 ms (lex 55), resolve 22, check
-134 (infer 61, coverage 36, firstTooDeep 9, holes 8, instantiation rule 9,
-retype 7, comparable 5), specialize 24, Go emission 46. One cold compile (fresh
-process, the test file's small program first, as in the test) was ~500 ms: about
-1.4× the steady sum, from JIT warm-up and GC. The compile allocates about 2.8 GB
-for the 150 KB source (`--trace-gc`: 149 scavenges, ~110 ms of GC). Hot spots:
-Format.Lex (per-character `tailRecM` steps over a copied character array,
-`Array.elem`, a fresh slice per two-character-token probe);
-`isName`/`decimalToken` copying each token into a character array;
-Format.Go.Capture's `union` (concat, sort, then `Array.nubBy`, which sorts
-again) at 26% of emission; coverage's per-arm redundancy query re-simplifying
-every earlier arm and `uncons`-copying every row a specialization drops
-(quadratic in arms by design, so the constant matters); `tooDeep`/`walk`
-entering their loops for Int, Bool and rigid types; `retype`/`holes` rebuilding
-a body that has no bound meta or hole. Everything else is a flat spread of
-combinator, Either and record overhead (no single function above 4% after these
-fixes).
+Profile (c120d48, built in an isolated copy). The measurement is
+committed as scripts/ladder-profile.mjs (`node scripts/ladder-profile.mjs
+--rounds 7 --baseline DIR`: cold compiles in fresh processes alternating
+with a built baseline tree, steady per-phase medians, load average); the
+CPU and allocation profiles below used `node --cpu-prof` and V8
+allocation sampling on the same source. Steady state per phase (median of 15,
+in-process): parse
+137 ms (lex 55), resolve 22, check 134 (infer 61, coverage 36,
+firstTooDeep 9, holes 8, instantiation rule 9, retype 7, comparable 5),
+specialize 24, Go emission 46. One cold compile (fresh process, the
+test file's small program first, as in the test) was ~500 ms: about
+1.4× the steady sum, from JIT warm-up and GC. The compile allocates about
+2.8 GB for the 150 KB source (`--trace-gc`: 149 scavenges, ~110 ms of
+GC). Hot spots: Format.Lex (per-character `tailRecM` steps over a copied
+character array, `Array.elem`, a fresh slice per two-character-token
+probe); `isName`/`decimalToken` copying each token into a character
+array; Format.Go.Capture's `union` (concat, sort, then `Array.nubBy`,
+which sorts again) at 26% of emission; coverage's per-arm redundancy
+query re-simplifying every earlier arm and `uncons`-copying every row a
+specialization drops (quadratic in arms by design, so the constant
+matters); `tooDeep`/`walk` entering their loops for Int, Bool and rigid
+types; `retype`/`holes` rebuilding a body that has no bound meta or
+hole. Everything else is a flat spread of combinator, Either and record
+overhead (no single function above 4% after these fixes).
 
 Changes (each keeps its semantics; no public formula is new):
 - Lex reads the source in place by code unit (`String.charAt`/`slice`),
@@ -2054,10 +2066,10 @@ Changes (each keeps its semantics; no public formula is new):
   and `holes` keeps a body with no hole.
 - Capture's `union`/`armFree` keep the first of each id in one fold over
   the sorted array instead of `Array.nubBy`.
-  Tried and reverted: a loop in place of `Array.find` in Grammar's
-  dispatch (no measurable gain, and Grammar would pass 250 lines); a
-  `tailRecM` `threadAll` in place of the Thread applicative (no measurable
-  gain; needed a new Foldable instance).
+Tried and reverted: a loop in place of `Array.find` in Grammar's
+dispatch (no measurable gain, and Grammar would pass 250 lines); a
+`tailRecM` `threadAll` in place of the Thread applicative (no measurable
+gain; needed a new Foldable instance).
 
 After (steady, median of 15, load average 9-11, alternating with the
 baseline): parse 124 → 92, resolve 19 → 19, check 125 → 78 (infer
@@ -2241,13 +2253,15 @@ compile, build and run. Design §13 rules 1-8 as adopted.
   count 10,000: 32,054 compared and 10,085 probes, 0 differences, 349
   skipped (.build/fn001-task6-differential{,-10k}.log).
 - GREEN: `rm -rf output && npm run verify` exit 0, 526 tests (487 at 97740c6,
-  minus the guard test with its 7 rows, plus 6 timing probes, 22 run tests, 1
-  scale, 1 snapshot and 10 CLI depth tests), zero failures or skips, twelve
-  regression proofs, the four bootstrap snapshots unchanged; the match ladder
-  542 ms; `twenty thousand parameters` 220 ms; the 5,000-parameter `go build`
-  6,799 ms against its 10 s bound (4.0 s alone; BACKLOG T003 records the
-  margin); load average 1.79 before, 6.71 after (.build/fn001-task6-verify3.log;
-  earlier green run .build/fn001-task6-verify2.log). Usage and Layout unchanged.
+  minus the guard test with its 7 rows, plus 6 timing probes, 22 run
+  tests, 1 scale, 1 snapshot and 10 CLI depth tests), zero failures or skips,
+  twelve
+  regression proofs, the four bootstrap snapshots unchanged; the match
+  ladder 542 ms; `twenty thousand parameters` 220 ms; the 5,000-parameter
+  `go build` 6,799 ms against its 10 s bound (4.0 s alone; BACKLOG T003
+  records the margin); load average 1.79 before, 6.71 after
+  (.build/fn001-task6-verify3.log; earlier green run
+  .build/fn001-task6-verify2.log). Usage and Layout unchanged.
 - Review follow-up (2026-10-08; the independent review found the
   lowering sound and accepted the deviations). Depth: the reviewer
   bisected the margin loss (ADR 006 "Functions emitted" now attributes
@@ -2766,12 +2780,13 @@ byte-identical (verify's snapshot tests).
   `unify` overflowed test/unify-arrow at 1,000 levels; the fold is back in
   `unifyHeads`. `compare` on applications compares row arguments before
   type arguments so the recursive comparison stays last.
-- Cost: fn-linear forms at 20,000 parameters through Specialize, alone, 5 runs
-  each, this build (before the final `compare` change) against an isolated build
-  of e110526 (ms, medians): value 415/403, over 605/534, lambda 542/539,
-  mismatch 181/161, partialFirst 423/396, partialAll 300/289, parenthesized
-  397/400, pipe 289/309. Minimum `--stack-size` for test/poly-depth's 1,000-deep
-  check: 575 KB (was 559).
+- Cost: fn-linear forms at 20,000 parameters through Specialize, alone,
+  5 runs each, this build (before the final `compare` change) against an
+  isolated build of e110526 (ms, medians): value 415/403, over 605/534, lambda
+  542/539, mismatch
+  181/161, partialFirst 423/396, partialAll 300/289, parenthesized
+  397/400, pipe 289/309. Minimum `--stack-size` for test/poly-depth's
+  1,000-deep check: 575 KB (was 559).
 - Differential: a scratch variant of scripts/differential.mjs comparing
   resolve and check by acceptance only (their types now carry rows by
   design) against the e110526 build: 0 differences over 2,486 harvested,
@@ -3512,9 +3527,9 @@ no unsound acceptance. Revision 10 applies the corrections:
   a fixpoint;
 - F1′: a remainder meta per clause-tail class instead of R ≡ R;
 - S: the settling loop consumes clause rows the same way.
-  A mapping argument in the review shows that no program accepted today is
-  rejected. The user's approval condition (no substantive issue) is not
-  met; awaiting the user.
+A mapping argument in the review shows that no program accepted today is
+rejected. The user's approval condition (no substantive issue) is not
+met; awaiting the user.
 
 FX008 revision 10 re-check (review-fx008-rev10-result.md): no
 substantive issue.
@@ -3531,19 +3546,19 @@ the probe gate. Probes are kept in .build/fx008-probes/ (rev6-rev10).
 
 ## FX006 constraints and FX008 hypothesis recorded (2026-10-10)
 
-Docs only, from a review of the draft Waxwing article outline. BACKLOG gains
-FX006 (general resume) ahead of FX001 Task 12, carrying the plan's scope plus
-the user's constraints: multiplicity decided on language terms, one-shot by
-default and declared per operation so multi-shot stays an additive, row-visible
-extension, reserved spelling, at-most-once assumptions stated in
-`defer`/FX003/CF001, and a double-resume regression. FX008 records an unverified
-hole in `defer must not fail` through a failing handler clause. (Merged
-2026-10-10 into branch fx008, which already tracked and verified this hole as
-FX008: the duplicate row was folded into that record. See "FX008 merge with the
-article-outline branch" below.) language-direction.md records the user's
-direction that the language (frontend, syntax, type system) outranks the Go
-target. No code changed; no build or verify ran (a parallel worktree was
-active).
+Docs only, from a review of the draft Waxwing article outline. BACKLOG
+gains FX006 (general resume) ahead of FX001 Task 12, carrying the plan's
+scope plus the user's constraints: multiplicity decided on language terms,
+one-shot by default and declared per operation so multi-shot stays an
+additive, row-visible extension, reserved spelling, at-most-once assumptions
+stated in `defer`/FX003/CF001, and a double-resume regression. FX008
+records an unverified hole in `defer must not fail` through a failing
+handler clause. (Merged 2026-10-10 into branch fx008, which already
+tracked and verified this hole as FX008: the duplicate row was folded into
+that record. See "FX008 merge with the article-outline branch" below.)
+language-direction.md records the user's direction that the
+language (frontend, syntax, type system) outranks the Go target. No code
+changed; no build or verify ran (a parallel worktree was active).
 
 ## FX008 merge with the article-outline branch (2026-10-10)
 
@@ -3991,10 +4006,7 @@ Evidence: 12 assertions seen failing first; differential against 889ca99:
 at 52b9df8 (.build/task10-fix-verify.log in the worktree): exit 0,
 1226/1226 parallel, 41/41 serial.
 
-<h3>
-FX008 Task 11: failing random clauses and the soundness differential
-(2026-10-12)
-</h3>
+### FX008 Task 11: failing random clauses and the soundness differential (2026-10-12)
 
 Sonnet implementer (2ef711b; fix round 0a571d4). Opus review
 (review-fx008-task11-result.md): changes required; the fix round was
@@ -4014,7 +4026,7 @@ fix, escapes by shape at the default seed, all rejected: lexical 24,
 forwarding 24, callee under a caller's handler (plain 9, nofail 9),
 handler value passed 12, returned 10, ambient callback 14, random clause
 18. Sensitivity: Task 8's compiler (ff0c6d1, no mark check) accepts 110 of
-    the 120. Ten seeds: no accepted escape, no Go/interpreter disagreement.
+the 120. Ten seeds: no accepted escape, no Go/interpreter disagreement.
 
 Evidence: serial run 15.5 s; verify at 0a571d4
 (.build/task11-fix-verify.log in the worktree): exit 0, 1226/1226
@@ -4226,9 +4238,7 @@ mutations sources. No bound raised, no rerun hiding a failure (the first
 verify attempts failed on an 80-column comment and a regression needle
 that the new `RowExtra` layout broke; both fixed, then one clean run).
 
-<h3>
-FX018: callback-row diagnostics in with/handle and argument passing (2026-10-13)
-</h3>
+### FX018: callback-row diagnostics in with/handle and argument passing (2026-10-13)
 
 Branch fx018 (from 0a23784, wording chosen in BACKLOG FX018). Diagnostic
 only: the accepted and rejected programs and the Go output are unchanged.

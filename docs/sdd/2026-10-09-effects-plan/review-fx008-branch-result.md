@@ -158,10 +158,12 @@ stays `check`.
 ## End-to-end soundness: adversarial programs
 
 Harness: candidate verdict; base verdict; reference interpreter
-(`test/fx-oracle.mjs` `outcome`); for accepted programs, `go build` and run,
-compared with the interpreter. All programs start with `type E = E; effect Log {
-fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`. Sources of the
-escape programs are listed at the end. "c" variants are the fail-free controls.
+(`test/fx-oracle.mjs` `outcome`); for accepted programs, `go build` and
+run, compared with the interpreter. All programs start with
+`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick():
+Unit; };`.
+Sources of the escape programs are listed at the end. "c" variants are the
+fail-free controls.
 
 | # | program | features combined | interpreter | e54d869 verdict |
 |---|---|---|---|---|

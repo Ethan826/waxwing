@@ -8,8 +8,9 @@ Subst.purs, Binding.purs, UnifyRow.purs, Unify.purs, Consume.purs,
 Handler.purs, Apply.purs, Scheme.purs and Check.purs. No repository file
 other than this one was changed.
 
-Tags: [ran] means run on the current compiler (`node scripts/waxwing.mjs run`).
-[read] means reasoning about rev 9, which is not implemented. New probes are in
+Tags: [ran] means run on the current compiler (`node scripts/waxwing.mjs
+run`). [read] means reasoning about rev 9, which is not implemented. New
+probes are in
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/rev9/.
 
 ## Verdict: substantive issue (three defects, each with a small correction)
@@ -121,8 +122,8 @@ effect Tick { fn tick(): Unit; };
 fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h0 = handler Tick { tick() => () };
-  // c1 = [| t], T = [Tick | t]
   let h1 = handler Log { log(n) => with h0 { k(()) } };
+    // c1 = [| t], T = [Tick | t]
   let h2 = handler Log { log(n) => k(()) };               // c2 = [Tick | t]
   with h1 { log(1) };
   print(0)

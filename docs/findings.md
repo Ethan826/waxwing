@@ -2,17 +2,17 @@
 
 ## Tooling
 
-Spago 1.0.4 uses env-paths and opens a SQLite cache database under the real user
-directory. The sandbox rejected that access. scripts/cache.mjs overrides Node's
-os.homedir in the Spago process only to .build/home; it does not modify HOME or
-the installed tool. On this macOS host the normal cache at
+Spago 1.0.4 uses env-paths and opens a SQLite cache database under the real
+user directory. The sandbox rejected that access. scripts/cache.mjs overrides
+Node's os.homedir in the Spago process only to .build/home; it does not modify
+HOME or the installed tool. On this macOS host the normal cache at
 ~/Library/Caches/spago-nodejs was copied to
-.build/home/Library/Caches/spago-nodejs to allow cached package resolution. That
-cache is ignored and is not part of the deliverable. No reference source was
-copied into this compiler. The adapter clears host
-XDG_CACHE_HOME/APPDATA/LOCALAPPDATA settings in the Spago process so env-paths
-uses the workspace home on other platforms too. Only macOS execution has been
-verified.
+.build/home/Library/Caches/spago-nodejs to allow cached package resolution.
+That cache is ignored and is not part of the deliverable. No reference source
+was copied into this compiler. The adapter clears host
+XDG_CACHE_HOME/APPDATA/LOCALAPPDATA settings in the
+Spago process so env-paths uses the workspace home on other platforms too.
+Only macOS execution has been verified.
 
 PureScript 0.15.16, Spago 1.0.4, purs-tidy 0.11.1, Go 1.26.4, and Node
 26.6.0 are installed here. Spago's package set 81.0.0 declares a 0.15.15
@@ -71,11 +71,11 @@ Fresh compiler prerequisite installation/cross-platform builds remain untested.
 All 15 pinned skills plus helper files are installed in .agents/skills.
 
 At migration, Git had no commits: git rev-parse --verify HEAD reported "Needed a
-single revision". task-start/task-done require HEAD/BASE and review-package
-requires commit ranges; do not invoke them until a real checkpoint exists
-(W001). Sandboxed git status also emitted xcrun temporary-cache permission
-errors; escalated Git inspection worked. Record this environment distinction
-(F003).
+single
+revision". task-start/task-done require HEAD/BASE and review-package requires
+commit ranges; do not invoke them until a real checkpoint exists (W001).
+Sandboxed git status also emitted xcrun temporary-cache permission errors;
+escalated Git inspection worked. Record this environment distinction (F003).
 
 The reviewed pinned writing-plans uses self-review rather than a plan-review
 subagent. At migration the audit plan was self-reviewed only; execution had not
@@ -96,12 +96,12 @@ structure. Documentation now states that exact contract. The CLI respects an
 existing GOCACHE; README now describes its default, rather than an override.
 
 The ten-arm (now twelve; see BACKLOG E003) codeName mapping exceeds the
-eight-branch review target; splitting a short exhaustive ADT tag mapping would
-obscure its wire contract. E003 records it explicitly. Other declaration budgets
-were reviewed manually; module/file limits remain automatically checked. The
-Spago no-files message for test/**/*.purs is informational: tests are Node .mjs
-files. Actual strict build tables report zero warnings/errors; no message was
-suppressed.
+eight-branch review target; splitting
+a short exhaustive ADT tag mapping would obscure its wire contract. E003
+records it explicitly. Other declaration budgets were reviewed manually;
+module/file limits remain automatically checked. The Spago no-files message
+for test/**/*.purs is informational: tests are Node .mjs files. Actual strict
+build tables report zero warnings/errors; no message was suppressed.
 
 A setup command accidentally ran an extra verification in the original root
 after worktree creation. It passed but is not the worktree baseline evidence.
@@ -277,11 +277,11 @@ resource/cancellation semantics. Documentation only; no feature implemented.
      the bound, and audited the compiled output of Features.Check* for
      other strict bindings that recurse over a type (all run on bounded
      types).
-     Lesson: in PureScript, a `where` binding is not lazy; anything a guard
-     must protect belongs in a helper function called from the guarded
-     branch (AGENTS.md's `maybe'` rule exists for the same reason). And a
-     bound is only as good as the deepest path that runs before it; review
-     each recursion, not each entry point.
+  Lesson: in PureScript, a `where` binding is not lazy; anything a guard
+  must protect belongs in a helper function called from the guarded
+  branch (AGENTS.md's `maybe'` rule exists for the same reason). And a
+  bound is only as good as the deepest path that runs before it; review
+  each recursion, not each entry point.
 - Whole-type keys hide quadratic and exponential costs: Task 6's coverage
   keys made a 3,000-type growing chain take 16.6 s, and argument-doubling
   chains give exponentially large keys. Specialize therefore hash-conses

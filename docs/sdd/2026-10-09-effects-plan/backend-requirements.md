@@ -5,8 +5,8 @@ running/planned tasks. Do not implement it now or expand the current milestone.
 Review direct string assembly in Format.Go, especially functions that mix layout
 calculations with long chains of punctuation, signatures, loops, switches, and
 calls. Assess whether a small Go syntax representation and composable renderer
-would improve readability, correctness, and future backend work. The proposal
-should:
+would improve readability, correctness, and future backend work.
+The proposal should:
 
 * Separate semantic/layout planning from target syntax construction and final
   rendering.
@@ -34,7 +34,7 @@ implementations. Keep target ASTs language-specific: Go, C, JavaScript, LLVM,
 and WASM should not be forced into a universal syntax tree. Identify genuinely
 reusable pieces such as document rendering, naming utilities, and
 source-location infrastructure. Explain where a future target-neutral lowered IR
-would help, without prematurely designing it. Recommend the smallest useful
-abstraction based on repeated patterns and actual failure risks. Record its
-priority relative to concurrency foundations and other planned work. Complete
-Task 8 and its handoff, then stop for user review.
+would help, without prematurely designing it.
+Recommend the smallest useful abstraction based on repeated patterns and actual
+failure risks. Record its priority relative to concurrency foundations and other
+planned work. Complete Task 8 and its handoff, then stop for user review.

@@ -18,7 +18,9 @@ Upstream MIT notice: `.agents/skills/SUPERPOWERS-LICENSE`.
 Installation command (from repository root):
 
 ```sh
-bunx skills add https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills --skill '*' --agent codex -y
+bunx skills add \
+  https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills \
+  --skill '*' --agent codex -y
 ```
 
 `bunx skills list --agent codex --json` confirmed 15 project-scoped skills.
@@ -51,15 +53,15 @@ restored in isolation. Keep durable evidence in docs even if scratch is deleted.
 
 User approved inline execution, a reviewed local checkpoint and isolation.
 Baseline 9624bec on main preserves the compiler/docs/tests and installed skills.
-Temporary IDE port and .worktrees are ignored; no cache was committed. Audit ran
-in .worktrees/bootstrap-audit on audit/bootstrap-docs. User approved the
-completed local merge into main; merged verification passed. The merged
+Temporary IDE port and .worktrees are ignored; no cache was committed.
+Audit ran in .worktrees/bootstrap-audit on audit/bootstrap-docs. User approved
+the completed local merge into main; merged verification passed. The merged
 worktree/branch were removed and raw evidence is in
-.build/merged-audit-evidence. The previous unborn-Git prerequisite W001 is
-resolved; real BASE/HEAD values are available. Task helpers and the final review
-package use that history. Worktree setup copied ignored Spago caches and built
-compiler output from scratch. No npm install was required because no local npm
-dependencies exist.
+.build/merged-audit-evidence.
+The previous unborn-Git prerequisite W001 is resolved; real BASE/HEAD values
+are available. Task helpers and the final review package use that history.
+Worktree setup copied ignored Spago caches and built compiler output from
+scratch. No npm install was required because no local npm dependencies exist.
 
 For inline execution, resolve the plan workspace with
 `.agents/skills/subagent-driven-development/scripts/sdd-workspace`, seed its

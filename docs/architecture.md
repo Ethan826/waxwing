@@ -123,8 +123,8 @@ Format.Wire.
     Mark (the path check over the two-point lattice), MarkReport and
     MarkNotes (headline and notes; texts in Format.Diagnostic.Mark and
     Domain.Note), Site (where a row's leading labels were written).
-    Syntax and resolution: Format.Parse.Mark (`nofail`, `nofail(k)`),
-    Features.Resolve.Marks (mark variables, L6).
+  Syntax and resolution: Format.Parse.Mark (`nofail`, `nofail(k)`),
+  Features.Resolve.Marks (mark variables, L6).
 - **Coverage** (Features.Check.Coverage, Usefulness, Missing, Matrix,
   Signature, Inhabited) runs after the whole program type-checks:
   inhabitedness least fixed point (Inhabited, a worklist), Maranget
@@ -210,24 +210,26 @@ Format.Wire.
   every phase (Operator is a closed Domain ADT); the checker requires equal
   operand types and yields Bool. No target detail enters IR.
 - **Go** (Format.Go*) emits one tagged struct per type, constructors, and
-  sequential first-match lowering with nil guards. Format.Go.Expression threads
-  a per-function match counter (Format.Go.Lowered) and Format.Go.Match lifts
-  each match to a top-level `waxwingFn{f}Match{k}` whose parameters are its
-  arms' free locals (computed bottom-up with the code; Format.Go.Capture), then
-  the scrutinee; lifted functions follow their function in number order (ADR 003
-  item 6, E005). Format.Go.Compare emits a `waxwingCmpN` per declared type (and
-  `waxwingCmpBool`, decided by Format.Go.Usage), Format.Go.Show a `waxwingShowN`
-  per type; `main` prints through the latter for declared results (ADR 005).
-  FN001 Task 6 lowers function values (design §13 rules 1-8): saturated calls
-  stay n-ary (Format.Go.Value); a value of arity n ≥ 2 is a staged wrapper
-  `{f}Value`/`{f}Stage{k}` over linked `waxwingNode{N}` environments ending in
-  `{f}Entry`, one n-ary call (Format.Go.Stage, .Entry); lambdas are lifted to
-  `waxwingFn{f}Lambda{k}` of their free locals then parameters
+  sequential first-match lowering with nil guards. Format.Go.Expression
+  threads a per-function match counter (Format.Go.Lowered) and
+  Format.Go.Match lifts each match to a top-level `waxwingFn{f}Match{k}` whose
+  parameters are its arms' free locals (computed bottom-up with the code;
+  Format.Go.Capture), then the scrutinee; lifted functions follow their function
+  in number order (ADR 003
+  item 6, E005). Format.Go.Compare emits a
+  `waxwingCmpN` per declared type (and `waxwingCmpBool`, decided by
+  Format.Go.Usage), Format.Go.Show a `waxwingShowN` per type; `main` prints
+  through the latter for declared results (ADR 005). FN001 Task 6 lowers
+  function values (design §13 rules 1-8): saturated calls stay n-ary
+  (Format.Go.Value); a value of arity n ≥ 2 is a staged wrapper
+  `{f}Value`/`{f}Stage{k}` over linked `waxwingNode{N}` environments ending
+  in `{f}Entry`, one n-ary call (Format.Go.Stage, .Entry); lambdas are
+  lifted to `waxwingFn{f}Lambda{k}` of their free locals then parameters
   (Format.Go.Lambda); applications beyond 64 arguments are split into
-  `waxwingFn{f}Apply{k}` helpers (Format.Go.Apply); a pipe whose left operand is
-  not a literal or local is lifted to `waxwingFn{f}Pipe{k}` (Format.Go.Pipe).
-  Matches, lambdas, pipes and helpers share one counter per function. Go
-  representation decisions live here, not in Features.
+  `waxwingFn{f}Apply{k}` helpers (Format.Go.Apply); a pipe whose left
+  operand is not a literal or local is lifted to `waxwingFn{f}Pipe{k}`
+  (Format.Go.Pipe). Matches, lambdas, pipes and helpers share one counter
+  per function. Go representation decisions live here, not in Features.
 
 Only `Features.Check*` and `Features.Specialize*` import
 `Domain.Checked.Internal`, and only `Features.Specialize*` and `Format.Go*`
@@ -245,13 +247,13 @@ canonical emitter output; gofmt copies are presentation only.
 
 Lexing and declaration parsing are index-based `tailRecM` loops
 (Control.Monad.Rec.Class is allowlisted), so long declaration sequences and
-whitespace do not overflow the stack. Since G001, long comma, constructor and
-match-arm lists inside one declaration do not either, and nesting deeper than
-128 levels is E_NESTING (ADR 006). Every later phase still recurses over the
-tree, which is why the limit exists (heap-based phases are BACKLOG H001;
-iterative operator chains O001). Format.Go computes a constructor layout
-(Format.Go.Layout) once, so Go emission never searches the type tables per
-constructor.
+whitespace do not overflow the stack. Since G001, long comma, constructor
+and match-arm lists inside one declaration do not either, and nesting
+deeper than 128 levels is E_NESTING (ADR 006). Every later phase still
+recurses over the tree, which is why the limit exists (heap-based phases
+are BACKLOG H001; iterative operator chains O001). Format.Go computes a
+constructor layout (Format.Go.Layout) once, so
+Go emission never searches the type tables per constructor.
 
 ## Future stages (proposed, not implemented)
 

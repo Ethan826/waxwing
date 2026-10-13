@@ -1,13 +1,12 @@
-User requirements: operational addendum to the concurrency-foundations
-assessment (2026-10-10, verbatim; Task 9 continues per the user's clarification)
-===
+# User requirements: operational addendum to the concurrency-foundations assessment (2026-10-10, verbatim; Task 9 continues per the user's clarification)
 
 Add the following to the concurrency-foundations assessment requested for the
 stopping point after Task 8. Keep this as design work and durable handoff; do
-not begin implementation. Consider Gleam/OTP's operational model alongside the
-CS-theory investigation. Types and effects may prevent invalid interactions, but
-Waxwing also needs an account of failure containment, recovery, overload, and
-debugging. In particular:
+not begin implementation.
+Consider Gleam/OTP's operational model alongside the CS-theory investigation.
+Types and effects may prevent invalid interactions, but Waxwing also needs an
+account of failure containment, recovery, overload, and debugging.
+In particular:
 
 * Structured concurrency versus supervision. Distinguish scoped child tasks from
   long-lived services that may restart. Consider restart dependencies, restart
@@ -38,8 +37,8 @@ debugging. In particular:
 Use Gleam/OTP as a conceptual comparison, not a mandate to adopt BEAM or
 reproduce OTP. Consult only a bounded set of primary sources, including:
 https://gleam-otp.hexdocs.pm/gleam/otp/actor.html
-https://gleam-otp.hexdocs.pm/gleam/otp/static_supervisor.html Connect these
-operational concerns to the earlier theory assessment. For each recommended
-abstraction, state what the type/effect system guarantees, what remains a
-runtime responsibility, and what remains an application policy. Identify which
-contracts deserve decisions now and which mechanisms can wait.
+https://gleam-otp.hexdocs.pm/gleam/otp/static_supervisor.html
+Connect these operational concerns to the earlier theory assessment. For each
+recommended abstraction, state what the type/effect system guarantees, what
+remains a runtime responsibility, and what remains an application policy.
+Identify which contracts deserve decisions now and which mechanisms can wait.

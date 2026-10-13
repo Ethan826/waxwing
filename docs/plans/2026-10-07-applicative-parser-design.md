@@ -44,12 +44,12 @@ as `failAt` does today).
 Choice is predictive, LL(1), on the next token's text:
 
 ```purescript
--- first matching case, else fallback
 dispatch ∷ Array (Case a) → Parser a → Parser a
+  -- first matching case, else fallback
 on ∷ String → Parser a → Case a                    -- exact token text
 when ∷ (String → Boolean) → Parser a → Case a      -- token predicate
--- parse iff next token is text
 optionalOn ∷ String → Parser a → Parser (Maybe a)
+  -- parse iff next token is text
 ```
 
 `Case` is a record of a predicate and a parser (Data.Tuple is not on the

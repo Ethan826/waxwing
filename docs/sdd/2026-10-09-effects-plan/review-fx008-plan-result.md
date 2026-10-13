@@ -1,5 +1,4 @@
-Review: FX008 implementation plan (docs/plans/2026-10-10-abort-tracking-plan.md)
-===
+# Review: FX008 implementation plan (docs/plans/2026-10-10-abort-tracking-plan.md)
 
 Reviewed against the approved spec (rev 10), the termination, rev9-F1/F2 and
 rev10 review procedures, the writing-plans skill, AGENTS.md and
@@ -507,8 +506,8 @@ Fix:
 - Under N1's rule, that extension starts a new group.
 - F2 then sees a self-loop. c→R has the tails c = φ and R = φ, with w(Log) = 1 >
   0. So `sync` reports `RowSharedTail own target`, printed
-     `Console + Log + ... and Console + ...`, at the call node `say(2)`. That
-     span is unchanged.
+  `Console + Log + ... and Console + ...`, at the call node `say(2)`. That span
+  is unchanged.
 - This is consistent with rev 10:
   - the programs are rejected today and stay rejected;
   - F2's positive sum is by design "today's side-condition error";

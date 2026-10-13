@@ -195,8 +195,8 @@ its plan-time amendments in section 10).
   - Struct `type sprigTy<n> struct {` with `tag uint32` and fields
     `c<ctor>f<i>`, one per line, unindented, `}`.
   - Constructor `func sprigCtor<k>(f0 …) sprigTy<n> { return sprigTy<n>{tag: t,
-    c<k>f0: f0, …} }`. ADT fields are stored as `&f<i>`; primitive fields
-    directly.
+    c<k>f0: f0, …} }`.
+    ADT fields are stored as `&f<i>`; primitive fields directly.
   - Declarations go after `sprigAdd`'s blank line and before the functions,
     each followed by one blank line.
 

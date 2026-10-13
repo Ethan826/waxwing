@@ -2,11 +2,11 @@
 
 Subject: docs/plans/2026-10-10-abort-tracking-design.md rev 6, read with
 AGENTS.md, spec §2/§3/§6, CF001 §5 R0 and O-2, BACKLOG FX007/FX008, the three
-earlier FX008 reviews, and Check.purs, Handler.purs, Consume.purs, Defer.purs,
-Use.purs, HandlerType.purs, Specialize/Lower.purs, Format/Go/Context.purs. No
-repository file other than this one was changed. [ran] = current compiler
-(`node scripts/waxwing.mjs run|emit`); [read] = reasoning about rev 6, which is
-not implemented. Probes:
+earlier FX008 reviews, and Check.purs, Handler.purs, Consume.purs,
+Defer.purs, Use.purs, HandlerType.purs, Specialize/Lower.purs,
+Format/Go/Context.purs. No repository file other than this one was changed.
+[ran] = current compiler (`node scripts/waxwing.mjs run|emit`); [read] =
+reasoning about rev 6, which is not implemented. Probes:
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/rev6/.
 
 ## Verdict: Accept with fixes

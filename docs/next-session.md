@@ -96,9 +96,9 @@ T008. FX009 is fixed and merged.
 
 Branch claude/vibrant-cerf-3km61i = main (PR Ethan826/waxwing#1, Tasks 1-9)
 + Task 10 (reference interpreter, generator, 500-program differential
-  corpus with 0 differences; test-side only) + docs. FX001 Tasks 1-10 are
-  complete and reviewed; Tasks 11-12 are amended in the plan (rulings
-  R1-R12) and not started. Work continues on the user's machine.
+corpus with 0 differences; test-side only) + docs. FX001 Tasks 1-10 are
+complete and reviewed; Tasks 11-12 are amended in the plan (rulings
+R1-R12) and not started. Work continues on the user's machine.
 
 Next, before Tasks 11-12: FX008 (BACKLOG), a soundness hole in the strict
 `defer must not fail` rule. Cleanup may perform an operation whose handler
@@ -179,9 +179,10 @@ implementer and reviewer per task, whole-branch review), branch fx001 in
 .worktrees/fx001; stop and report if Task 1 rejects a runtime shape.
 
 Earlier next steps (before FX001 was chosen): none authorized. Candidates, for
-the user to choose: C001 and R001 (review jointly; decide whether instances are
-ordinary records), FX001, FN001 follow-ups FN002-FN006, and the open
-timing/scale items T002-T005, G002, G003.
+the user to choose: C001
+and R001 (review jointly; decide whether instances are ordinary records),
+FX001, FN001 follow-ups FN002-FN006, and the open timing/scale items
+T002-T005, G002, G003.
 
 Long-term discussion is recorded in plans/2026-10-08-language-direction.md:
 row/service architecture, explicit effects design (FX001), inspectable

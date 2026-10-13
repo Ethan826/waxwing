@@ -53,8 +53,8 @@ installation below; docs/planning-skills.md records the adopted workflow.
 
 ## Installed third-party skills
 
-Explicitly requested Superpowers installation completed 2026-10-07 using bunx
-skills, project-local in .agents/skills. All 15 skills and their supporting
+Explicitly requested Superpowers installation completed 2026-10-07 using
+bunx skills, project-local in .agents/skills. All 15 skills and their supporting
 files are upstream material from obra/superpowers, pinned to
 8ca22dba9a94f28898bbce59f2537ff4d87c747d. Source paths/hashes are recorded in
 skills-lock.json; MIT copyright/license notice is preserved in

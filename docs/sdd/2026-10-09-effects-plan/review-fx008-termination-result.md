@@ -1,12 +1,12 @@
 # Focused review: FX008 §3.5 steps 1–3 (revision 4), termination and order
 
-Subject: docs/plans/2026-10-10-abort-tracking-design.md §3.5 steps 1–3, read
-with §3.4, §5, §6, §7, spec §2/§6, the two earlier reviews, and Check.purs,
-Defer.purs, Consume.purs, UnifyRow.purs, Unify.purs, Binding.purs, Failure.purs,
-Scheme.purs, Subst.purs. No repository file other than this one was changed.
-[ran] = current compiler (`node scripts/waxwing.mjs emit`, plus `go run` on the
-output); [read] = reasoning about revision 4, which is not implemented. Probes
-are in
+Subject: docs/plans/2026-10-10-abort-tracking-design.md §3.5 steps 1–3,
+read with §3.4, §5, §6, §7, spec §2/§6, the two earlier reviews, and
+Check.purs, Defer.purs, Consume.purs, UnifyRow.purs, Unify.purs,
+Binding.purs, Failure.purs, Scheme.purs, Subst.purs. No repository file
+other than this one was changed. [ran] = current compiler (`node
+scripts/waxwing.mjs emit`, plus `go run` on the output); [read] =
+reasoning about revision 4, which is not implemented. Probes are in
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/termination/.
 
 ## Verdict
@@ -99,13 +99,13 @@ effect Cell(a) { fn put(x: a): Unit; };
 fn main(): Unit with Console = {
   let z = fn(f) => {
     let h = handler Log { log(n) => f(n) };   // clause row C: tail = f's row ?r
-    // z's row Z = Cell(?a -> ?b with ?r) + ...
     put(f);
+      // z's row Z = Cell(?a -> ?b with ?r) + ...
     let k = fn(u: Unit) => ();
-    // X := k's row, empty when checked
     defer k(());
-    // late: X = Cell(G) + ω
+      // X := k's row, empty when checked
     let w = fn(u: Unit) => { put(fn(n: Int) => fail(E)); k(()) };
+      // late: X = Cell(G) + ω
     h
   };
   ()
@@ -130,9 +130,11 @@ compiler.
 - Every row pair that reaches it is set aside and silently dropped.
   `settleKeys` checks only `fail` expressions (Failure.purs
   `firstUnkeyed`), and settleRows leaves the pairs it cannot decide.
-- failvar2.wxw: `fn g(h: Int -> Unit with Fail(a)): Unit = h(1); fn main(): Unit
-  with Console = g(fn(n: Int) => fail(E));` is accepted today, and at run time
-  panics with `panic: no handler for Fail` [ran].
+- failvar2.wxw:
+  `fn g(h: Int -> Unit with Fail(a)): Unit = h(1); fn main(): Unit with Console
+  = g(fn(n: Int) => fail(E));`
+  is accepted today, and at run time panics with
+  `panic: no handler for Fail` [ran].
 - Spec §2 says a rigid payload is E_TYPE `Fail needs a concrete error
   family`. That is not enforced for rows inside types.
 - In the loop, a step (d) consumption that meets such a label is set
@@ -288,9 +290,7 @@ w_i(κ) = count_κ(X_i) − count_κ(T_i), over resolved labels.
 "harmless" verdict either needs no extension or loops (4a). Its defects
 are a hang (4a) and imprecision (4b).
 
-T1 (new, Critical). Consuming "with a fresh tail" drops a clause row's rigid
-tail
----
+## T1 (new, Critical). Consuming "with a fresh tail" drops a clause row's rigid tail
 
 §3.4 and §3.5 (d) consume only the labels of a clause row into R. A
 clause that calls a callback typed with the ambient row has a clause

@@ -189,29 +189,31 @@ whichever text is ruled).
 **2. `payloadName` recurses along arrow spines, and the compiler overflows the
 JS stack.** (src/Format/Go/Report.purs `payloadName`, the `arrow` branch.) The
 nesting limit (128) bounds nesting of type arguments; it does not bound arrow
-spines. Reproduced: `type Error(a) = Error(a); fn work(f: Int -> … (5,000
-arrows) … -> Int): Unit with Fail(Error(<same arrow>)) = { defer crash(1);
-fail(Error(f)) }; fn main(): Unit = ();` throws
-`RangeError: Maximum call stack size exceeded` (also at 20,000). The same
-program without `defer` compiles. AGENTS.md and the fn-scale targets (5,000
-parameters) require spines to be walked by a loop.
+spines. Reproduced:
+`type Error(a) = Error(a); fn work(f: Int -> … (5,000 arrows) … -> Int): Unit
+with Fail(Error(<same arrow>)) = { defer crash(1); fail(Error(f)) }; fn main():
+Unit = ();`
+throws `RangeError: Maximum call stack size exceeded` (also at 20,000). The
+same program without `defer` compiles. AGENTS.md and the fn-scale targets
+(5,000 parameters) require spines to be walked by a loop.
 
 Fix: collect the spine's parameter names in a loop (as Format.Diagnostic
 `arrowName` and IR `spine` do). Build `FunctionName` with a `foldr` over that
 array, and only recurse into arguments of type applications, which the
 nesting limit bounds. Add a 5,000-arrow payload test.
 
-**3. False positive: a `defer` that handles its own Fail with a still-unsettled
-key is rejected.** (src/Features/Check/Defer.purs `postponedPayloads`, which
-scans every postponed pair created during the defer, including those inside a
-handled `handle` body.) Reproduced: `type E = E; fn pick(): a = crash(0); fn
-main(): Unit with Console = { let p = pick(); defer handle fail(p) { fail(error:
-E) => print(1) }; match p { E => () } };` gives E_EFFECT
-`defer must not fail, but it performs Fail(E)`. The same expression as
-`let _ = …` compiles and runs. This contradicts §2's own example form
-(`defer handle … { fail(e: …) => () }`). The shape is rare (unannotated payload
-whose key is settled later), but it is a wrong rejection. Fix: use rule 1 above
-(judge resolved δ, not postponed pairs).
+**3. False positive: a `defer` that handles its own Fail with a
+still-unsettled key is rejected.** (src/Features/Check/Defer.purs
+`postponedPayloads`, which scans every postponed pair created during the
+defer, including those inside a handled `handle` body.) Reproduced:
+`type E = E; fn pick(): a = crash(0); fn main(): Unit with Console = { let p =
+pick(); defer handle fail(p) { fail(error: E) => print(1) }; match p { E => () }
+};`
+gives E_EFFECT `defer must not fail, but it performs Fail(E)`. The same
+expression as `let _ = …` compiles and runs. This contradicts §2's own
+example form (`defer handle … { fail(e: …) => () }`). The shape is rare
+(unannotated payload whose key is settled later), but it is a wrong
+rejection. Fix: use rule 1 above (judge resolved δ, not postponed pairs).
 
 #### Minor
 

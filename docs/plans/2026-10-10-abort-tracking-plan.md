@@ -386,13 +386,14 @@ fn main(): Unit with Console = f(fn(n: Int) => print(n));
   | rev7/merge2 | `defer must not fail, but it performs Tick, whose handler may fail`, span 244-256 | 9 | L4 (§6) |
   | design-review/q1 | the Log message, span 203-215 (`defer log(0)`, in `run`) | 9 | I2: `run`'s `Log` is plain (§6) |
 
-  p4 stays unchanged: p4's `say` really needs `Log` in `run`'s closed row, which
-  the hook carries from c to R and reports at `say(2)` (P13). (r4 was predicted
-  unchanged here; Task 5 found it is the n1 cycle at main level, and the user
-  moved it, above.) argbind-internal (FX010) and rev6/con (FX011) are unchanged
-  by assumption; a change stops the work. `slow: true`: dup, n1, cycle2,
-  cycle2open, argbind, argbind-internal, rev8/cyc1, cyc1ok, cyc2, cyc3,
-  rev9/sh1, set1, witness/ec1, witness/tp1.
+  p4 stays unchanged: p4's `say` really needs `Log` in `run`'s closed
+  row, which the hook carries from c to R and reports at `say(2)` (P13). (r4
+  was predicted unchanged here; Task 5 found it is the n1 cycle at main
+  level, and the user moved it, above.) argbind-internal (FX010) and rev6/con
+  (FX011) are
+  unchanged by assumption; a change stops the work.
+  `slow: true`: dup, n1, cycle2, cycle2open, argbind, argbind-internal,
+  rev8/cyc1, cyc1ok, cyc2, cyc3, rev9/sh1, set1, witness/ec1, witness/tp1.
 - [ ] **Step 4: Write test/fx008-probes.test.mjs**: one test per entry
   (`probe <file>`), expected `flipped ? fx008 : today`; slow probes compile in
   a child `node` process (imports `output/Program.Compile/index.js`, prints
@@ -417,8 +418,9 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 - Modify: `src/Domain/Row.purs`; `src/Domain/Type.purs` (net ≤ +1 line,
   qualified `import Domain.Row as Row` if needed); every `Label`/`THandler`
   construction and match (≈100 sites, compiler-listed);
-  `src/Features/Check.purs`; test helpers `test/unify-support.mjs`,
-  `test/row-support.mjs`, `test/poly-keys.mjs`, `test/fx-handler-type.test.mjs`.
+  `src/Features/Check.purs`;
+  test helpers `test/unify-support.mjs`, `test/row-support.mjs`,
+  `test/poly-keys.mjs`, `test/fx-handler-type.test.mjs`.
 - Create: `src/Domain/Type/Marks.purs`, `src/Features/Check/Strip.purs`,
   `test/fx008-representation.test.mjs`.
 
@@ -466,9 +468,9 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
 ### Task 3: `nofail` syntax, resolution and printing
 
 **Files:**
-- Modify: `src/Domain/Syntax.purs` (move `Note`/`NoteReason` to Domain.Note;
-  `module Domain.Syntax (module Domain.Syntax, module Domain.Note) where`);
-  `src/Domain/Problem.purs`; `src/Domain/Resolved.purs`;
+- Modify: `src/Domain/Syntax.purs` (move `Note`/`NoteReason` to
+  Domain.Note; `module Domain.Syntax (module Domain.Syntax, module
+  Domain.Note) where`); `src/Domain/Problem.purs`; `src/Domain/Resolved.purs`;
   `src/Format/Parse/Row.purs`, `HandlerType.purs`, `Type.purs` (`argument`
   dispatch, net 0-2 lines); `src/Features/Resolve/Row.purs`, `Resolve.purs`,
   `Types.purs`, `HandlerType.purs`, `Lambda.purs`, `Effect.purs`;
@@ -476,8 +478,9 @@ mark; strip runs. No syntax yet; snapshots and gate identical.
   `RowName.purs`, `TypeName.purs` (`handlerName`, arrow rows), `Context.purs`,
   `Infer.purs` (Env), `Check.purs`; `src/Format/Diagnostic.purs`,
   `Format/Diagnostic/Name.purs` (FunctionName row);
-  `tools/style/src/Style/Parser.purs` (add `"Format.Parse.Mark"`);
-  `docs/engineering.md` (G001 list); `test/fx-oracle-parse.mjs` (one import).
+  `tools/style/src/Style/Parser.purs`
+  (add `"Format.Parse.Mark"`); `docs/engineering.md` (G001 list);
+  `test/fx-oracle-parse.mjs` (one import).
 - Create: `src/Domain/Note.purs`, `src/Format/Parse/Mark.purs`,
   `src/Features/Resolve/Marks.purs`, `src/Features/Check/MarkUse.purs`,
   `test/fx-oracle-marks.mjs`, `test/fx008-syntax.test.mjs`.
@@ -592,12 +595,13 @@ Edges recorded, not yet read. New rejections: only P3's.
 - Create: `src/Features/Check/MarkStore.purs`, `RowFinish.purs`,
   `UnifyMark.purs`; `test/fx008-marks.test.mjs`, `test/fx008-equality.test.mjs`.
 - Modify: `UnifyRow.purs` (Step 0: move `Operands`, `Pending`, `postponed`,
-  `finish`, `unifyTails`, `shared` to RowFinish unchanged); `Subst.purs` (field
-  `marks`; move `compose` to Unify.purs — it is re-exported — so the file stays
-  ≤ 250); `Binding.purs` (`extendBounded` copies fields); `Unify.purs`
-  (`THandler` arm, `settleRows` modes); `Consume.purs`; `Use.purs` (opening);
-  `Handler.purs` (R via `consumeIgnoring`); `Defer.purs`, `Failure.purs`;
-  `test/unify-support.mjs`, `test/row-support.mjs`.
+  `finish`, `unifyTails`, `shared` to RowFinish unchanged); `Subst.purs`
+  (field `marks`; move `compose` to Unify.purs — it is re-exported — so the
+  file stays ≤ 250); `Binding.purs` (`extendBounded` copies fields);
+  `Unify.purs` (`THandler` arm, `settleRows` modes); `Consume.purs`;
+  `Use.purs` (opening); `Handler.purs` (R via `consumeIgnoring`);
+  `Defer.purs`, `Failure.purs`; `test/unify-support.mjs`,
+  `test/row-support.mjs`.
 
 **Interfaces:**
 - MarkStore: `type MarkEdge t = { lower ∷ Mark, upper ∷ Mark, label ∷ Label
@@ -758,16 +762,16 @@ Task 1's table).
   `compileWithin(context, source, ms) → { timedOut, diagnostic, go }`
   (child `node` with `context.compilerPath`).
 
-- [ ] **Step 1: Failing tests** (test/fx008-settle.test.mjs, child processes, 20
-  s): `dup has no finite solution` (dup.wxw → E_EFFECT matching the pattern,
-  span 150-160); `n1 has no finite solution` (138-148);
-  `r5 has no finite solution` (same source and span);
-  `r4 has no finite solution` (107-117); `a satisfiable two-row cycle settles`
-  (cycle2 prints `0\n7\n1\n`); `8,000 defers settle` (main with 8,000
-  `defer print(i)` compiles; timed in Task 9). Flip dup, n1 and r5. The existing
-  fx-cleanup tests `a Fail reaching a shared lambda meta later is rejected (P4)`
-  and `a defer handling a Fail of a key settled later is accepted` must pass
-  unchanged.
+- [ ] **Step 1: Failing tests** (test/fx008-settle.test.mjs, child processes,
+  20 s): `dup has no finite solution` (dup.wxw → E_EFFECT matching the
+  pattern, span 150-160); `n1 has no finite solution` (138-148);
+  `r5 has no finite solution` (same
+  source and span); `r4 has no finite solution` (107-117); `a
+  satisfiable two-row cycle settles` (cycle2 prints `0\n7\n1\n`); `8,000
+  defers settle` (main with 8,000 `defer print(i)` compiles; timed in
+  Task 9). Flip dup, n1 and r5. The existing fx-cleanup tests `a Fail reaching
+  a shared lambda meta later is rejected (P4)` and `a defer handling a Fail
+  of a key settled later is accepted` must pass unchanged.
 - [ ] **Step 2: Run** → FAIL (dup, n1, r5 accepted).
 - [ ] **Step 3: Implement.**
 - [ ] **Step 4: Row `fx008-cycle-presence`** (Cycle.purs): weight = 1 when κ
@@ -878,13 +882,14 @@ implementer or reviewer asks; that change is recorded in the ledger.
 **Interfaces:**
 - Clauses: `checkClauses ∷ ∀ r. Infer (locals ∷ Locals | r) → HandlerEnv r →
   State → Span → Label (Ty Resolved.VarId) → Array Resolved.HandlerClause →
-  Either Diagnostic (Threaded { clauses ∷ Array Checked.HandlerClause, rows ∷
-  HandlerRows (Ty Open) Open, own ∷ Mark })`: each clause against a fresh row c;
-  R, C fresh open rows (`rows = { inference: R, clauses: Just C }`); m a fresh
-  `MarkMeta`; each c registered (new group, `tail` = c's resolved tail,
-  `signature = Nothing`, in `pending`), watched, and consumed into C by
-  `consumeLabels` (Directional, Fail kept, origin the handler span) as bare
-  labels (no arguments, Task 7 ruling). R is reached only through `sync`.
+  Either Diagnostic (Threaded { clauses ∷ Array Checked.HandlerClause, rows
+  ∷ HandlerRows (Ty Open) Open, own ∷ Mark })`: each clause against a fresh
+  row c; R, C fresh open rows (`rows = { inference: R, clauses: Just C }`); m a
+  fresh `MarkMeta`; each c registered (new
+  group, `tail` = c's resolved tail, `signature = Nothing`, in `pending`),
+  watched, and consumed into C by `consumeLabels` (Directional, Fail kept,
+  origin the handler span) as bare labels (no arguments, Task 7 ruling). R is
+  reached only through `sync`.
   `Handler.handler` builds `THandler (withMark own label) rows`.
 - Sync: `sync ∷ ∀ r. CheckEnv r → State → Span → Either Diagnostic State`
   (span per P13). Definitions on resolved rows: `currentSignature(e) = {
@@ -907,11 +912,11 @@ implementer or reviewer asks; that change is recorded in the ledger.
           watchTail m; byTail[m] += e
         rigid ϱ: consumeIgnoring { stage: Row [] (Just ϱ), target: φ(e.group) }
         closed:  consumeIgnoring { stage: closedRow, target: φ(e.group) }
-    -- F2, N2
     positiveCycle (FeedRow own = c, target = R per clause entry) affected →
       side-condition error
-    -- T
+      -- F2, N2
     for e in affected with currentSignature(e) ≠ e.signature:
+      -- T
       consumeIgnoring { stage: Row labels(e.row) (Just φ(e.group)),
         target: e.inference }
       e.signature ← currentSignature(e)
@@ -1044,13 +1049,13 @@ entries join settling; gate unchanged.
   `state.next` is not moved. `watchTail` is not called: nothing syncs on an
   installation. The debug export is `Features.Check.Inspect.checkedStates`.
 
-- [ ] **Step 1: Failing tests** (JS via the compiled checker or a debug export
-  of edge counts): `an installation records frame ⊑ C edges` (one `Assumed` edge
-  per C label); `a literal whose clause row closed, and one whose clause tail
-  turned rigid, are installed correctly` (C closing and the tail pass's rigid
-  case, unobserved in Task 7); `a Console frame is nofail`;
-  `a late clause label reaches the installing row` (f1.wxw and f2.wxw still
-  print `1\n2\n`).
+- [ ] **Step 1: Failing tests** (JS via the compiled checker or a debug
+  export of edge counts): `an installation records frame ⊑ C edges` (one
+  `Assumed` edge per C label); `a literal whose clause row closed, and one
+  whose clause tail turned rigid, are installed correctly` (C closing and the
+  tail pass's rigid case, unobserved in Task 7); `a Console frame is nofail`; `a
+  late clause
+  label reaches the installing row` (f1.wxw and f2.wxw still print `1\n2\n`).
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement.** **Step 4: Run** with
   the gate → PASS; verify → 0.
 - [ ] **Step 5: Commit** `feat: installations with frame marks (FX008)`.
@@ -1256,8 +1261,9 @@ l4b, merge2 and q1 flip.
 - Console frames: the NoFail guard in `Frames.framed` is unreachable (no
   `Handler(Console …)` value, FX011) and must be revisited with D001.
 - Near the 250-line limit: Format/Diagnostic.purs 242.
-- `fx008-copies` uses a new probe (`copies`, test/fx008-defer-programs.mjs): p1
-  does not distinguish the mutant (no probe of the corpus did). `fx008-frame-m`
+- `fx008-copies` uses a new probe (`copies`, test/fx008-defer-programs.mjs):
+  p1 does not distinguish the mutant (no probe of the corpus did).
+  `fx008-frame-m`
   uses p2: with q1's `prefix()` each call opens its own m.
 - The generator writes `nofail` on `fx-programs.mjs`'s user-effect row labels
   and `fx-gen-fragments.mjs`'s stage and callback signatures, except in a
@@ -1349,12 +1355,12 @@ if fx-programs.mjs would pass 250).
   defers reaching failing handlers are rejected with the FX008 text`;
   test/fx008-soundness.serial.test.mjs: 300 programs `generate(SEED + 100000
   + i, i, { unconstrained: true })`; accepted → the oracle never reports
-    `oracle error: typed abort escaped cleanup` and Go equals the oracle
-    exactly; rejected → E_EFFECT, an FX008 headline or a Task 8 (FX001) text,
-    at a `defer` span; minimums: ≥ 50 accepted with a cleanup performing a
-    user operation, ≥ 50 rejected by an FX008 headline, ≥ 25 escapes
-    witnessed by the oracle, all rejected by the compiler; failures saved to
-    `.build/fx008-soundness/`.
+  `oracle error: typed abort escaped cleanup` and Go equals the oracle
+  exactly; rejected → E_EFFECT, an FX008 headline or a Task 8 (FX001) text,
+  at a `defer` span; minimums: ≥ 50 accepted with a cleanup performing a
+  user operation, ≥ 50 rejected by an FX008 headline, ≥ 25 escapes
+  witnessed by the oracle, all rejected by the compiler; failures saved to
+  `.build/fx008-soundness/`.
 - [ ] **Step 2: Run** `node --test --test-concurrency=1
   test/fx-differential.serial.test.mjs test/fx008-soundness.serial.test.mjs`
   → FAIL.
@@ -1388,9 +1394,9 @@ the controller.)
   the §8A.6 escaping-callback row. Nothing else.
 - [ ] **Step 3:** Amend the FX001 plan per FX008 design §10 (Task 11 Step
   1) and add: Task 12's ADR 010 and language Effects section record the
-     FX008 rule and L1/L4/L6; Task 12's rows go in scripts/regression-fx.mjs
-     beside scripts/regression-fx008.mjs, its probes in
-     test/regression-probes.mjs; update the status line.
+  FX008 rule and L1/L4/L6; Task 12's rows go in scripts/regression-fx.mjs
+  beside scripts/regression-fx008.mjs, its probes in
+  test/regression-probes.mjs; update the status line.
 - [ ] **Step 4:** architecture.md (the Check list gains the mark modules);
   findings (the hole, its cause, the rule); next-session handoff. Report to
   the controller the BACKLOG changes to make: FX008 done pending
@@ -1468,14 +1474,15 @@ review's proposed fixes:
 - **M7** `checkedStates` moved to `Features.Check.Inspect` (with
   `settledAgain` for the guard tests); `Features.Check` exports `check`
   only. The per-function checker moved to `Features.Check.Function`.
-- **M1** re-measured: installations 7342 to 486 ms (bound 22026 to 1458 ms), the
-  install guard 9500 ms to 3 x 489 ms. **M2** not applied as the review wrote
-  it: `ended = restricted` changes diagnostics, not only registry fields.
+- **M1** re-measured: installations 7342 to 486 ms (bound 22026 to 1458 ms),
+  the install guard 9500 ms to 3 x 489 ms. **M2** not applied as the review
+  wrote it:
+  `ended = restricted` changes diagnostics, not only registry fields.
   Settling also records origins for its own clause-row consumptions, so
   `Entry.check` moved witness/ec2's span (90-380 to 161-191) and argbind's
-  notes; the gate caught both. The state stays as it was (settled substitution,
-  pre-settle rest) and the stale comment is replaced by the reason. **M6**
-  untouched.
+  notes; the gate caught both. The state stays as it was (settled
+  substitution, pre-settle rest) and the stale comment is replaced by the
+  reason. **M6** untouched.
 
 ---
 

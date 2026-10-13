@@ -119,7 +119,8 @@ implementation. Direct FFI remains available when host-specific APIs are
 the intended dependency. Avoid forcing every foreign function through a
 service abstraction or flattening every AWS service into a universal API.
 
-Effect's [Platform introduction](https://effect.website/docs/v4/platform/introduction)
+Effect's [Platform
+introduction](https://effect.website/docs/v4/platform/introduction)
 is a conceptual precedent: abstract services are fulfilled by implementations
 selected for the runtime. Review its versioned sources in LA001; this is
 not adoption of Effect's specific layer, context or runtime mechanisms.

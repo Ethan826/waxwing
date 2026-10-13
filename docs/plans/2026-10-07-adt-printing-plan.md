@@ -308,9 +308,10 @@ verbatim, because they name artifacts that existed; the prose language name
 in those files still changes. Add one dated line at the top of
 docs/progress.md recording the rename and this exception.
 
-**Files:** everything listed by `grep -rIl -i sprig
---exclude-dir={.git,output,.spago,.build,.superpowers,.agents} .` plus the file
-renames above. New: `docs/assets/bumpus.svg`.
+**Files:** everything listed by
+`grep -rIl -i sprig
+--exclude-dir={.git,output,.spago,.build,.superpowers,.agents} .`
+plus the file renames above. New: `docs/assets/bumpus.svg`.
 
 - [ ] **Step 1: Mechanical rename** per the rule. Regenerate
   bootstrap/answer.go, shapes.go and tree.go with the CLI; each new file
@@ -347,13 +348,14 @@ in Task 2 (sources over roughly 2.5-3.5k characters crash `compile`).
 **Interfaces:** unchanged public signatures (`lex`, `parse`/`compile`); every
 token, span and diagnostic is identical for existing inputs.
 
-- [ ] **Step 1: Failing tests in test/large-source.test.mjs.** (a)
-  `fn main(): Int = 42;` followed by 1,000,000 spaces compiles; its Go equals
-  the Go of the program without the spaces. (b) 20,000 declarations
-  `fn f<i>(): Int = <i>;` plus `fn main(): Int = f19999();` compile and `runGo`
-  prints `19999`. (c) The same 1 MB padding followed by `@` is E_LEX at offset
-  1,000,020 (the program is 20 characters), line 1, column 1,000,021, span
-  length 1. (d) Lexing (a) finishes within 5 seconds (guards against the
+- [ ] **Step 1: Failing tests in test/large-source.test.mjs.**
+  (a) `fn main(): Int = 42;` followed by 1,000,000 spaces compiles; its Go
+  equals the Go of the program without the spaces. (b) 20,000 declarations
+  `fn f<i>(): Int = <i>;` plus `fn main(): Int = f19999();` compile and
+  `runGo` prints `19999`. (c) The same 1 MB padding followed by `@` is E_LEX
+  at offset 1,000,020 (the program is 20 characters), line 1, column
+  1,000,021, span length 1. (d) Lexing (a) finishes within 5 seconds (guards
+  against the
   quadratic `Array.uncons` copying). Each must fail on the current code
   (RangeError or timeout); record the RED output.
 - [ ] **Step 2: Structure gate.** A structure test case: a pure module

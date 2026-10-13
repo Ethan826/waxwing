@@ -1,6 +1,4 @@
-Review: FX008 Task 7 (clause own rows, `sync`, S, tail pass), fx008-impl 9358d79
-(wip 8dd22be, base c8503f9)
-===
+# Review: FX008 Task 7 (clause own rows, `sync`, S, tail pass), fx008-impl 9358d79 (wip 8dd22be, base c8503f9)
 
 [ran] = executed by the reviewer; [read] = from reading the code.
 Copies: a `git worktree` of c8503f9 and one of 9358d79, both under
@@ -25,14 +23,13 @@ The full verify was not rerun; the controller's log is taken as given.
   A1-A7 (§3 below). Three guards are missing or deviate (I1-I3). The rest
   is Minor.
 
-C1 (Critical): a literal whose clause performs `L(type of another literal)`
-doubles per level
----
+## C1 (Critical): a literal whose clause performs `L(type of another literal)` doubles per level
 
-**Measured** [ran]. The chain is `let h0 = handler Log { log(n) => () }; let
-h{i+1} = handler Log { log(n) => put(h{i}) };` inside `main`, with
-`effect Cell(a) { fn put(x: a): Unit; }`. Each figure is one warm in-process
-`compile`.
+**Measured** [ran]. The chain is
+`let h0 = handler Log { log(n) => () }; let h{i+1} = handler Log { log(n) =>
+put(h{i}) };`
+inside `main`, with `effect Cell(a) { fn put(x: a): Unit; }`. Each figure is
+one warm in-process `compile`.
 
 | depth | base c8503f9 | 9358d79 |
 |---|---|---|
@@ -153,9 +150,9 @@ to one pass cannot do it.
   - two3 → E_TYPE `Expected a handler` 409-430;
   - two1f → E_TYPE `Fail needs a concrete error family`;
   - rig1, rig2, sh1, rigid, and the exact-text and cyc tests.
-    Only two1, the plan's probe, still prints 0. So the implementer's
-    conclusion that the planned mutant did not reproduce is true of two1
-    only.
+  Only two1, the plan's probe, still prints 0. So the implementer's
+  conclusion that the planned mutant did not reproduce is true of two1
+  only.
 - The committed row guards a different defect: the merge branch (no join,
   no φ consumption). That defect is real and the row should stay.
 - Fix: "Add row `fx008-phi-tail`: Sync.purs, needle `stage: Row (labelsOf

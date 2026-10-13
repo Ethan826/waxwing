@@ -168,7 +168,8 @@ LA001/SCH001's focused design. No external code copied.
 - [schemata-ts Schema interface](https://schemata.jacob-alford.dev/schema/),
   linked documentation under its historical project domain.
 - [Effect SchemaAST](https://effect.website/docs/v4/api/effect/SchemaAST)
-  and [interpreter customization](https://effect.website/docs/v4/schema/advanced-usage).
+  and [interpreter
+  customization](https://effect.website/docs/v4/schema/advanced-usage).
 - [io-ts Schema](https://gcanti.github.io/io-ts/modules/Schema.ts.html)
   and [Schemable](https://gcanti.github.io/io-ts/modules/Schemable.ts.html).
 - [Kiselyov's tagless-final research overview](https://www.okmij.org/ftp/tagless-final/index.html).

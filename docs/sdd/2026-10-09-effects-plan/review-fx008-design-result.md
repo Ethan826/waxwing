@@ -1,6 +1,4 @@
-Review: FX008 abort-tracking design note
-(docs/plans/2026-10-10-abort-tracking-design.md)
-===
+# Review: FX008 abort-tracking design note (docs/plans/2026-10-10-abort-tracking-design.md)
 
 Reviewer: independent, adversarial. Date: 2026-10-10. Branch fx008.
 No repository file other than this one was changed.

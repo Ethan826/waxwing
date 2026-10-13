@@ -14,9 +14,9 @@ node probe against output/ for the named finiteness risks (results below).
   constructions, handler types (Handlers.purs:33-113, Lower.purs lowerType
   THandler).
 - ✅ Type keys reach field effect keys (`Handler(L …)` in a field: Lower.purs
-  lowerField/lowerHandler); effect keys reach operation param/result keys
-  (Lower.purs fillEffect/layout). Test "effect keys reach operation types;
-  handler fields reach effects".
+  lowerField/lowerHandler);
+  effect keys reach operation param/result keys (Lower.purs fillEffect/layout).
+  Test "effect keys reach operation types; handler fields reach effects".
 - ✅ Rows erased: lowerType/lowerField ignore TData rows and arrow rows; labels
   only in rows make no key (test "rows in data arguments give no extra type
   key"; probe `rowOnly` accepted).

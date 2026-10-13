@@ -88,8 +88,8 @@ Evidence:
   - Reference interpreter (test/fx-oracle.mjs `outcome`): `{stdout: "",
     stderr: "", status: 0}` [ran].
   - Wip Go, sha256
-    `b524e7d7ebab4c06d2e9e54a13a8b127587c2d982a465d991ed76a5d82ace8c1`, run with
-    `go run`: empty stdout, exit 0 [ran].
+    `b524e7d7ebab4c06d2e9e54a13a8b127587c2d982a465d991ed76a5d82ace8c1`,
+    run with `go run`: empty stdout, exit 0 [ran].
 - **Can any deferred cleanup reach a failing clause?** [read]
   - The only `defer` is `defer k(())`. Its row d is shared with k's row,
     and through `w`'s call `k(())` with w's row. So d holds only `Cell(Int

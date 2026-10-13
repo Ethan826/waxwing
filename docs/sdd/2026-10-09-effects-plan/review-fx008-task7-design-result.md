@@ -129,7 +129,7 @@ missing (A3), and the Hint site may not be dropped (item 5).
 9. **No Task 7b: accept.** scripts/regression-fx008.mjs is 25 lines and
    test/regression-fx008.mjs is 85, so both have room for ten rows under
    250. If a file passes 230 during implementation, report it and ask for
-        the 7b split; do not compress rows to fit.
+   the 7b split; do not compress rows to fit.
 
 ## Amendments to forward to the implementer
 
@@ -197,15 +197,17 @@ written but never used for lookup. On merge, set the winner's
 representative to m. Leave the loser's entry and do not relabel the other
 members: relabeling would cost the class size per merge.
 
-**A5 (Important: Hint site).** Keep the plan's site. Change `Require.require`'s
-env type to `CheckEnv` (extended with the `Declared` fields it already needs,
-which CheckEnv includes). Its callers (Apply, Arms, Call, Defer, Handle, Infer,
-Handler) are expected to hold a CheckEnv already. In the failure branch only,
-compute the hint from a synced state: `hint d = Left (hinted env (either (const
-state) identity (sync env state (Checked.spanOf actual))) expected actual d)`.
-The synced state never escapes, because the branch returns Left, so the success
-path, its cost and every accepted program are unchanged. If any caller of
-`require` lacks a CheckEnv, stop and report. Do not drop the site.
+**A5 (Important: Hint site).** Keep the plan's site. Change
+`Require.require`'s env type to `CheckEnv` (extended with the `Declared`
+fields it already needs, which CheckEnv includes). Its callers (Apply,
+Arms, Call, Defer, Handle, Infer, Handler) are expected to hold a CheckEnv
+already. In the failure branch only, compute the hint from a synced state:
+`hint d = Left (hinted env (either (const state) identity (sync env state
+(Checked.spanOf actual))) expected actual d)`.
+The synced state never escapes, because the branch returns Left, so the
+success path, its cost and every accepted program are unchanged. If any
+caller of `require` lacks a CheckEnv, stop and report. Do not drop the
+site.
 
 **A6 (Minor: byTail duplicates).** `registerClause` already appends the id
 to `byTail[t]`. In F1′, append e to `byTail[m]` only if `m ≠ e.tail` or

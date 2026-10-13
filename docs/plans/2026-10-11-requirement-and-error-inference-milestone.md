@@ -100,36 +100,37 @@ channels, not just compilation success or the first missing label.
 ## Composition requirements beyond the happy path
 
 - **B1. Transitive and public composition.** Independently defined named helpers
-  compose transitively, across source order and eventually module interfaces,
-  without copying their combined rows into callers. Public inferred interfaces
-  must expose both channels.
+  compose transitively, across source
+  order and eventually module interfaces, without copying their combined
+  rows into callers. Public inferred interfaces must expose both channels.
 - **B2. Higher-order and staged composition.** Higher-order forwarding preserves
-  relationships between callback requirements and errors. Partial application,
-  stored local functions and returning a function preserve the correct stage's
-  latent channels.
+  relationships between callback
+  requirements and errors. Partial application, stored local functions and
+  returning a function preserve the correct stage's latent channels.
 - **B3. Sharing and scoped multiplicity.** Repeated calls sharing one
-  capability/failure occurrence do not invent extra requirements. Nested scoped
-  handlers still preserve multiplicity and select the right occurrence. Do not
-  implement rows as plain sets.
+  capability/failure occurrence do not invent
+  extra requirements. Nested scoped handlers still preserve multiplicity
+  and select the right occurrence. Do not implement rows as plain sets.
 - **B4. Recovery and translation.** Error recovery and deliberate contextual
-  translation remain available. Translating one family replaces that family's
-  contribution; it does not require wrapping every unrelated error or erase
-  recovery's own failures.
+  translation remain available.
+  Translating one family replaces that family's contribution; it does not
+  require wrapping every unrelated error or erase recovery's own failures.
 - **B5. Open error rows and payload identity.** Generic composition must
-  preserve open error rows without enumerating their concrete families. Today's
-  prohibition on `Fail(a)` and today's shared key for `Fail(Error(Int))` /
-  `Fail(Error(Bool))` need explicit treatment. Specify which guarantees use
-  generic rows and which need a broader failure representation; do not claim
-  arbitrary error-union parity while leaving incompatible same-family payloads
-  unexamined.
+  preserve open error rows without enumerating
+  their concrete families. Today's prohibition on `Fail(a)` and today's
+  shared key for `Fail(Error(Int))` / `Fail(Error(Bool))` need explicit
+  treatment. Specify which guarantees use generic rows and which need a
+  broader failure representation; do not claim arbitrary error-union
+  parity while leaving incompatible same-family payloads unexamined.
 - **B6. Contracts and termination.** Explicit effect/error contracts remain
-  checkable. `with pure` keeps its meaning. Omitted/inferred contracts must have
-  unambiguous syntax and useful diagnostics; recursive inference must terminate
-  or reject with a source diagnostic, never silently drop a constraint.
+  checkable. `with pure` keeps its
+  meaning. Omitted/inferred contracts must have unambiguous syntax and
+  useful diagnostics; recursive inference must terminate or reject with
+  a source diagnostic, never silently drop a constraint.
 - **B7. Abort information.** Preserve FX008's abort information through
-  inference and provision. Error composition must not reopen the cleanup
-  soundness hole. This milestone does not assert that FX007's generic bracket
-  gap is fixed.
+  inference and provision.
+  Error composition must not reopen the cleanup soundness hole. This
+  milestone does not assert that FX007's generic bracket gap is fixed.
 
 - **B8. Handler-site failure scope.** A failure raised by an implementation
   clause must retain its installation context. Pin the existing witness:
@@ -171,13 +172,13 @@ Then use the project's writing-plans skill for a test-first plan grounded
 in those decisions. This requirements document is not that plan.
 
 The plan must assign A1-A10 and B1-B8 individually to exact compile-time
-observations and executable tests. No broader composition obligation may be
-discharged solely by incidental generated coverage. Include an independent
-reference model for composition, bounded generated cases across helper/handler
-boundaries, and regression proofs restoring defects that lose requirements or
-errors. Record residual limitations separately from established guarantees. Run
-`npm run verify` and the whole-branch review before declaring the implementation
-complete.
+observations and executable tests. No broader composition obligation may
+be discharged solely by incidental generated coverage. Include an independent
+reference model for composition,
+bounded generated cases across helper/handler boundaries, and regression
+proofs restoring defects that lose requirements or errors. Record residual
+limitations separately from established guarantees. Run `npm run verify`
+and the whole-branch review before declaring the implementation complete.
 
 Full Layer lifecycle, shared acquisition/memoization, cancellation, async
 execution, general resumable handlers and value-level extensible variants

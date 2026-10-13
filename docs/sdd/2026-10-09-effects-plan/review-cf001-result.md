@@ -1,6 +1,4 @@
-Review: CF001 concurrency-foundations design
-(docs/plans/2026-10-09-concurrency-foundations-design.md)
-===
+# Review: CF001 concurrency-foundations design (docs/plans/2026-10-09-concurrency-foundations-design.md)
 
 Reviewer: adversarial review, read-only. Line numbers refer to the document
 under review ("L") unless prefixed (D =
@@ -39,11 +37,11 @@ Cleanup.purs, Features/Check/Defer.purs; Task 8 is committed as 041cb31).
 
 **C1. L219-224, L248-255, L345, L379-381 — the sequential-equivalence claim (O4)
 is not achieved as stated; the exclusion of fatal errors is triggered by the
-parallel implementation itself.** Problem: the equivalence excludes Go fatal
-errors (stack, memory) "outside the semantics today", and L379 leaves
-goroutine-per-child versus pool to the runtime. But the parallel program
-executes code the sequential program never runs and holds resources the
-sequential one never holds:
+parallel implementation itself.**
+Problem: the equivalence excludes Go fatal errors (stack, memory) "outside the
+semantics today", and L379 leaves goroutine-per-child versus pool to the
+runtime. But the parallel program executes code the sequential program never
+runs and holds resources the sequential one never holds:
 - Discarded right siblings are not stopped (L248). After an abort is caught, the
   parent continues indefinitely, so a discarded child runs "until they finish"
   (L251), which for a divergent child is the program's lifetime, not "before the
@@ -59,69 +57,72 @@ sequential one never holds:
   error the sequential program cannot hit.
 - Stack depth differs in both directions: a child starts on a fresh goroutine
   stack, so a program that overflows sequentially (depth of parent plus child)
-  may complete in parallel. So "observably equal" holds only for runs in which
-  no goroutine, including discarded ones, hits a fatal error. That precondition
-  is not checkable and is violated by ordinary CF001 programs. Why it matters:
-  O4 is the headline guarantee, and under the stated freedom it is vacuous for
-  the motivating workload. Fix: (a) state O4 as a conditional refinement: "for
-  every run in which no goroutine, discarded ones included, incurs a Go fatal
-  error, the outcome equals the sequential outcome". Add a separate resource
-  clause naming the extra exposure. (b) Make bounded live tasks part of CF001's
-  contract, not a deferrable runtime choice: a child may run inline on the
-  forking goroutine when the worker budget is exhausted, which sequential
-  semantics permits. (c) Either require discarded children to stop at cheap
-  polls (for example at child-reachable function entries, or a flag checked by
-  the child root's nested `par`s), or document that a discarded divergent child
-  keeps running for the program's lifetime and can turn a terminating program
-  into a fatal one. Move this out of "can wait" (L379-382).
+  may complete in parallel.
+So "observably equal" holds only for runs in which no goroutine, including
+discarded ones, hits a fatal error. That precondition is not checkable and is
+violated by ordinary CF001 programs.
+Why it matters: O4 is the headline guarantee, and under the stated freedom it
+is vacuous for the motivating workload.
+Fix: (a) state O4 as a conditional refinement: "for every run in which no
+goroutine, discarded ones included, incurs a Go fatal error, the outcome
+equals the sequential outcome". Add a separate resource clause naming the
+extra exposure. (b) Make bounded live tasks part of CF001's contract, not a
+deferrable runtime choice: a child may run inline on the forking goroutine
+when the worker budget is exhausted, which sequential semantics permits. (c)
+Either require discarded children to stop at cheap polls (for example at
+child-reachable function entries, or a flag checked by the child root's nested
+`par`s), or document that a discarded divergent child keeps running for the
+program's lifetime and can turn a terminating program into a fatal one. Move
+this out of "can wait" (L379-382).
 
 ## Important
 
 **I1. L233-238, L304, L318-320 — the Fail-only check, specified "as Task 8's
-`defer` rule … inspect labels", is unsound for row tails.** Problem:
-Features/Check/Defer.purs inspects only the labels of the child's fresh row
-(`failures (Row labels _)`). A child whose effects reach it through a rigid
+`defer` rule … inspect labels", is unsound for row tails.**
+Problem: Features/Check/Defer.purs inspects only the labels of the child's fresh
+row (`failures (Row labels _)`). A child whose effects reach it through a rigid
 ambient tail or a `...e` variable has no non-Fail labels. Example:
 `fn both(f: Int -> Int, g: Int -> Int) = { par let a = f(1), b = g(2); a + b }`;
 the callers pass Console-printing `f` and `g`. A labels-only check accepts it,
 and the prints become racy and nondeterministic. A flexible tail left open at
 the `par` can also gain labels after the item is checked (for example, a lambda
-parameter whose row is solved later). Fix: specify that the check runs after
-solving, like `rejectDeferred`. The child row must be exactly Fail labels plus a
-tail that is empty after closing flexible holes. Reject any rigid or named row
-variable with its own diagnostic. Add the example above as a required rejection
-test.
+parameter whose row is solved later).
+Fix: specify that the check runs after solving, like `rejectDeferred`. The child
+row must be exactly Fail labels plus a tail that is empty after closing flexible
+holes. Reject any rigid or named row variable with its own diagnostic. Add the
+example above as a required rejection test.
 
 **I2. L96, L188-194, L342, L396-398 — "Fail-only rows" stops implying "no shared
 mutable state" once FX003 exists; CF001's check is FX001-relative and the doc
-does not say so.** Problem: a Fail-only child can capture a handler *value* from
-the parent and install it locally. Example:
+does not say so.**
+Problem: a Fail-only child can capture a handler *value* from the parent and
+install it locally. Example:
 `let c = counter(0); par let a = with c { tick() }, b = with c { tick() };`
 gives each child the row `Fail…`/pure, because Counter is handled inside the
 child, yet both children mutate one cell. O1's argument ("FX001 values and
 handlers are immutable") and L96 ("Fail-only code already satisfies 'no mutable
-state reachable'") stop holding as soon as FX003 lands. Fix: state O1 as
-FX001-relative. Make B3 part of CF001's check on the children's free variables
-(captured locals must be Shareable) from the start, or at least list "CF001
-check must add the B3 capture check" as a hard prerequisite of FX003 in
-L368-369.
+state reachable'") stop holding as soon as FX003 lands.
+Fix: state O1 as FX001-relative. Make B3 part of CF001's check on the children's
+free variables (captured locals must be Shareable) from the start, or at least
+list "CF001 check must add the B3 capture check" as a hard prerequisite of FX003
+in L368-369.
 
 **I3. L182-194, L305, L368-369 — B2/B3 per-effect Shareability misses effects
-performed by clauses in their handler-site context.** Problem: B2 runs inherited
-clauses on the child, in the handler-site context (D §3 "Clause context"). A
-clause's effects are discharged in that outer context and never appear in the
-child's row. Example (FX002/FX003 era):
+performed by clauses in their handler-site context.**
+Problem: B2 runs inherited clauses on the child, in the handler-site context (D
+§3 "Clause context"). A clause's effects are discharged in that outer context
+and never appear in the child's row. Example (FX002/FX003 era):
 `with counter(0) { with logToCounter { par let a = log("x"), b = log("y"); } }`.
 Log is a non-`local` effect, so the child rows contain only Log and pass a
 per-effect attribute check, yet both clauses `tick()` the same counter
 concurrently. The "per-effect declaration attribute" (L194, L305) classifies
-labels, not handler instances, and handlers are selected dynamically. Fix: make
-Shareability a property of handler *types*, derived transitively from the clause
-row: `Handler(L with R)` is Shareable only if every label in R is Shareable and
-R's tail is closed or Shareable-bounded. Alternatively, the `par` check must
-cover the rows of every handler reachable in the inherited context, which
-erasure and dynamic selection make impossible in general. Record this as handoff
-item 2's actual content.
+labels, not handler instances, and handlers are selected dynamically.
+Fix: make Shareability a property of handler *types*, derived transitively from
+the clause row: `Handler(L with R)` is Shareable only if every label in R is
+Shareable and R's tail is closed or Shareable-bounded. Alternatively, the `par`
+check must cover the rows of every handler reachable in the inherited context,
+which erasure and dynamic selection make impossible in general. Record this as
+handoff item 2's actual content.
 
 **I4. L344, L323-325, L349, L477 — ESTABLISHED labels overclaim.**
 - O3 "ESTABLISHED (DPJ, Bocchino et al. 2009) given O1": DPJ's theorem is for
@@ -140,52 +141,55 @@ item 2's actual content.
   ESTABLISHED. Otherwise mark it "trusted platform guarantee, unverified".
 
 **I5. L87 (and L291) — citation error: OCaml 5 does not discontinue unused
-continuations.** Problem: L87 says "OCaml 5 … one-shot continuations, unused
-ones discontinued". In OCaml 5, dropping a continuation leaks the resources of
-its captured frames; discontinuing is an explicit programmer obligation, and the
-paper and manual do not run finalisers for unresumed continuations. C6's rule
-(runtime discards unresumed continuations owned by a cancelled task) is a
-Waxwing proposal, not OCaml precedent. Fix: L87: "one-shot continuations;
-resuming or discontinuing is the programmer's obligation, and dropped
-continuations leak their frames' cleanup". Present C6's automatic discard as
-new, with its own proof obligation.
+continuations.**
+Problem: L87 says "OCaml 5 … one-shot continuations, unused ones discontinued".
+In OCaml 5, dropping a continuation leaks the resources of its captured frames;
+discontinuing is an explicit programmer obligation, and the paper and manual do
+not run finalisers for unresumed continuations. C6's rule (runtime discards
+unresumed continuations owned by a cancelled task) is a Waxwing proposal, not
+OCaml precedent.
+Fix: L87: "one-shot continuations; resuming or discontinuing is the programmer's
+obligation, and dropped continuations leak their frames' cleanup". Present C6's
+automatic discard as new, with its own proof obligation.
 
 **I6. L144-149, L125-132 — law-establishment policy is overbroad and not mapped
-per abstraction.** Problem: "a user-asserted law may affect *which value* a
-program computes … never type soundness, data-race freedom, cleanup or report
-integrity" omits termination and deadlock. With user lattices, a non-monotone
-join or threshold sets that are not pairwise incompatible can block a threshold
-read forever, or release it nondeterministically. User combiners that `crash`
-also make failure selection shape-dependent. In addition, §4.6's six rows name
-laws but not which tier of §4.7 establishes each (only `Int` add is placed). The
-requirement asks how each law is established. Fix: add "termination of threshold
-reads and which failure is reported" to what user laws may affect, or restrict
-LVar lattices to trusted built-ins. Add a "Established by" column to the §4.6
-table, for example: monoid, built-in `Int` add = compiler restriction plus
-proof; user monoid = user obligation plus PBT001; LVar lattice = trusted
-built-in only.
+per abstraction.**
+Problem: "a user-asserted law may affect *which value* a program computes …
+never type soundness, data-race freedom, cleanup or report integrity" omits
+termination and deadlock. With user lattices, a non-monotone join or threshold
+sets that are not pairwise incompatible can block a threshold read forever, or
+release it nondeterministically. User combiners that `crash` also make failure
+selection shape-dependent. In addition, §4.6's six rows name laws but not which
+tier of §4.7 establishes each (only `Int` add is placed). The requirement asks
+how each law is established.
+Fix: add "termination of threshold reads and which failure is reported" to what
+user laws may affect, or restrict LVar lattices to trusted built-ins. Add a
+"Established by" column to the §4.6 table, for example: monoid, built-in `Int`
+add = compiler restriction plus proof; user monoid = user obligation plus
+PBT001; LVar lattice = trusted built-in only.
 
-**I7. L80-87, L110-111, L338-360 — two requirement gaps.** (a) Indexed or
-parameterised monads (Atkey-style resource-state indices, for "resource access,
-and permitted composition") are not assessed. Add a row and a verdict, even if
-the verdict is "defer: needs K001; typestate for capabilities is subsumed by
-affine transfer (B3) later". (b) "For each proposed guarantee, explain its
-assumptions, what the compiler checks, what runtime machinery remains, and which
-programs it excludes" is done per approach, not for CF001's actual guarantees.
-Add a table for CF001 with one row per property (type/effect soundness, race
-freedom, determinism, deadlock freedom, cancellation safety: N/A) and columns
-assumptions / compiler check / runtime / excluded programs. The excluded
-programs include effectful children, row-polymorphic callbacks (I1) and Console
-in children.
+**I7. L80-87, L110-111, L338-360 — two requirement gaps.**
+(a) Indexed or parameterised monads (Atkey-style resource-state indices, for
+"resource access, and permitted composition") are not assessed. Add a row and a
+verdict, even if the verdict is "defer: needs K001; typestate for capabilities
+is subsumed by affine transfer (B3) later".
+(b) "For each proposed guarantee, explain its assumptions, what the compiler
+checks, what runtime machinery remains, and which programs it excludes" is done
+per approach, not for CF001's actual guarantees. Add a table for CF001 with one
+row per property (type/effect soundness, race freedom, determinism, deadlock
+freedom, cancellation safety: N/A) and columns assumptions / compiler check /
+runtime / excluded programs. The excluded programs include effectful children,
+row-polymorphic callbacks (I1) and Console in children.
 
 **I8. L158-160, L382, L402-403 — "cached lookup (FX005)" is listed as can-wait,
-but B1's race-freedom depends on it.** Problem: B1 and the Task 7 compatibility
-claim rest on context nodes never being mutated after publication. D:507-508
-names a cached index as a follow-up. A cache written into shared nodes, or into
-any structure reachable from Γ, introduces data races on the lookup path every
-child uses. Fix: move this to "settle before FX002": "lookup caches must be
-per-task or immutable-at-publication; no write into a node reachable from
-another goroutine".
+but B1's race-freedom depends on it.**
+Problem: B1 and the Task 7 compatibility claim rest on context nodes never being
+mutated after publication. D:507-508 names a cached index as a follow-up. A
+cache written into shared nodes, or into any structure reachable from Γ,
+introduces data races on the lookup path every child uses.
+Fix: move this to "settle before FX002": "lookup caches must be per-task or
+immutable-at-publication; no write into a node reachable from another
+goroutine".
 
 ## Minor
 

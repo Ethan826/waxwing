@@ -229,9 +229,11 @@ fix, limit lifted, two alternating rounds each, identical results:
 | call-argument | 315 | 326 |
 | parens | 522 | 522 |
 
-Behavior unchanged: scripts/differential.mjs, d2cf616 plus only this change
-against d2cf616, seed 6, count 10,000: 32,403 sources and 10,085 isName probes,
-0 differences. Minimum overflow now 283, 27 levels above twice the limit; limit
-128 unchanged. Recovering Task 3's ~24 levels by merging the operator layers is
-BACKLOG G002. The smallest FN001 form is annotation-types, 343. Rule: min 276,
-half 138, limit 128, unchanged.
+Behavior unchanged: scripts/differential.mjs, d2cf616 plus only this
+change against d2cf616, seed 6, count 10,000: 32,403 sources and 10,085
+isName probes, 0 differences. Minimum overflow now 283,
+27 levels above twice the limit; limit 128 unchanged. Recovering Task
+3's ~24 levels by merging the operator layers is BACKLOG G002. The smallest
+FN001
+form is annotation-types, 343. Rule: min 276, half 138, limit 128,
+unchanged.

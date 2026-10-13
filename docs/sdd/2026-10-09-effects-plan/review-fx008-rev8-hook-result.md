@@ -1,11 +1,11 @@
 # Review: FX008 revision 8, the one-way hook (§3.4)
 
-Subject: the one-way hook in docs/plans/2026-10-10-abort-tracking-design.md rev
-8, read with review-fx008-rev7-result.md and Handler.purs, Consume.purs,
-Unify.purs, UnifyRow.purs, Subst.purs, Binding.purs, Apply.purs, Failure.purs,
-Check.purs. No repository file other than this one was changed. [ran] = current
-compiler (`node scripts/waxwing.mjs run|emit`). [read] = reasoning about rev 8,
-which is not implemented. New probes are in
+Subject: the one-way hook in docs/plans/2026-10-10-abort-tracking-design.md
+rev 8, read with review-fx008-rev7-result.md and Handler.purs, Consume.purs,
+Unify.purs, UnifyRow.purs, Subst.purs, Binding.purs, Apply.purs,
+Failure.purs, Check.purs. No repository file other than this one was
+changed. [ran] = current compiler (`node scripts/waxwing.mjs run|emit`).
+[read] = reasoning about rev 8, which is not implemented. New probes are in
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/rev8/.
 
 ## Verdict: Accept with fixes

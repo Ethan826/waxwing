@@ -71,9 +71,10 @@ predates Task 8.
 ## Q2. The 449 IR differences
 
 **E1 result [ran].** Doing the plan's consumption in settling alone, with
-nothing at install, gives 442 check-phase differences and no difference in any
-later phase. The first case diffed is `effect Log …; fn main(): Unit with
-Console = { defer print(1); with handler Log { log(n) => () } { log(1) } };`.
+nothing at install, gives 442 check-phase differences and no difference in
+any later phase. The first case diffed is
+`effect Log …; fn main(): Unit with Console = { defer print(1); with handler Log
+{ log(n) => () } { log(1) } };`.
 The only change in its IR is `functions[0].row`'s tail: `Hole -4` against
 `Hole -5`.
 
@@ -128,10 +129,7 @@ consumes C. Options:
 
 ## Issues
 
-<h3>
-I1 (Important, T003): Task 8 roughly triples the check time of many
-installations in one declaration
-</h3>
+### I1 (Important, T003): Task 8 roughly triples the check time of many installations in one declaration
 
 Check times [ran]. Both builds are warm, in one process, timing `check` only:
 
@@ -167,10 +165,7 @@ at 3 × the measured median, so it would lock this cost in.
 > Report the 1,000-installation time beside 66f1eca's 3.97 s before pinning
 > Task 9's bound.
 
-<h3>
-I2 (Important): the tests do not pin the edges' direction or partners; the
-TailPass installation rule is untested
-</h3>
+### I2 (Important): the tests do not pin the edges' direction or partners; the TailPass installation rule is untested
 
 - **Edge test.** test/fx008-install.test.mjs:44-56 asserts only that there
   is one distinct Assumed edge at the `with`. A mutant that swaps
@@ -193,16 +188,17 @@ TailPass installation rule is untested
 > (1) In `an installation records frame <= C edges`, assert the edge's
 > endpoints. Its lower bound is the resolved mark of `run`'s signature Tick,
 > `plain`. Its upper bound is the mark of the C label resolved from
-> `installation.clauses`. Add a nested case, p10: `with handler Log { log(n) =>
-> print(n) } { with handler Tick { tick() => { log(1); log(2) } } { with handler
-> Log { log(n) => { tick(); log(n) } } { log(3) } } }`. The innermost
-> installation must have exactly the edges `frame(Tick) ⊑ c_tick` and
-> `frame(outer Log) ⊑ c_log`, never its own frame. This kills the direction
-> mutant and any wrong-partner mutant. (2) In TailPass.purs, comment the
-> installation rule as "unreachable while R ≡ current; kept as the design §3.5
-> guard". Change the rigid test's claim, or add a test that reaches the rule if
-> one can be found. Do not present the current assertion as evidence for the
-> rule.
+> `installation.clauses`. Add a nested case, p10:
+> `with handler Log { log(n) => print(n) } { with handler Tick { tick() => {
+> log(1); log(2) } } { with handler Log { log(n) => { tick(); log(n) } } {
+> log(3) } } }`.
+> The innermost installation must have exactly the edges `frame(Tick) ⊑ c_tick`
+> and `frame(outer Log) ⊑ c_log`, never its own frame. This kills the
+> direction mutant and any wrong-partner mutant.
+> (2) In TailPass.purs, comment the installation rule as "unreachable while
+> R ≡ current; kept as the design §3.5 guard". Change the rigid test's
+> claim, or add a test that reaches the rule if one can be found. Do not
+> present the current assertion as evidence for the rule.
 
 ### M1 (Minor): the fallback is unobservable
 

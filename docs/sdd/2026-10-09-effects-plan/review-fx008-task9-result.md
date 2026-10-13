@@ -15,10 +15,7 @@ tracked edits and no commits.
 
 ## Critical
 
-<h3>
-C1. A handler type's C, copied at install, misses clause effects that reach R's
-tail later: cleanups end in typed aborts [ran]
-</h3>
+### C1. A handler type's C, copied at install, misses clause effects that reach R's tail later: cleanups end in typed aborts [ran]
 
 **Where.** src/Features/Check/Install.purs:98-112 (`clausesOf`). A written
 handler type has `clauses = Nothing`. At `with`, C is taken as a copy of
@@ -34,10 +31,11 @@ value with a real C (a local annotation, or a literal) is unified with
 that meta. When the value only arrives later, for example as a lambda's
 argument, the copy has already closed the tail.
 
-**Counterexamples.** All are accepted by 1649218. Go exits 1 with `fail(E): E`,
-and the interpreter reports `oracle error: typed abort escaped cleanup`. Prelude
-for each: `type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn
-tick(): Unit; };`
+**Counterexamples.** All are accepted by 1649218. Go exits 1 with
+`fail(E): E`, and the interpreter reports `oracle error: typed abort
+escaped cleanup`. Prelude for each:
+`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick():
+Unit; };`
 
 - **a1.** Identity through a lambda.
   ```
@@ -54,12 +52,14 @@ tick(): Unit; };`
 - **a4.** a1 with an unannotated parameter, `fn(x) => with id(x) {…}`.
 - **a6.** A forwarding chain. The inner literal's `tick()` reaches a Tick
   handler `tick() => log(5)`, which reaches a failing Log handler.
-- **a8.** The handler returned inside a closure: `fn later(h: Handler(nofail Log
-  with ...e)): Unit -> Handler(nofail Log with ...e) with pure = fn(u: Unit) =>
-  h;` then `with later(x)(()) {…}`.
-- **a9.** The handler returned inside a data value: `type Box(a) = Box(a); fn
-  boxed(h: …): Box(Handler(nofail Log with ...e)) with pure = Box(h);` then
-  `match boxed(x) { Box(h) => with h {…} }`.
+- **a8.** The handler returned inside a closure:
+  `fn later(h: Handler(nofail Log with ...e)): Unit -> Handler(nofail Log with
+  ...e) with pure = fn(u: Unit) => h;`
+  then `with later(x)(()) {…}`.
+- **a9.** The handler returned inside a data value:
+  `type Box(a) = Box(a); fn boxed(h: …): Box(Handler(nofail Log with ...e)) with
+  pure = Box(h);`
+  then `match boxed(x) { Box(h) => with h {…} }`.
 - **a10.** The implementer's own concern: a missed `FrameRigid`. The defer
   is accepted inside a generic function, because the tail becomes rigid
   `e` only after the install.
@@ -149,10 +149,7 @@ rule needs the user's sign-off on the rule and on the new limitation.
 
 ## Important
 
-<h3>
-I1. Scale: 1,000 installations is quadratic, and Task 8's guard now has a 1.29×
-margin (user decision) [ran]
-</h3>
+### I1. Scale: 1,000 installations is quadratic, and Task 8's guard now has a 1.29× margin (user decision) [ran]
 
 - **The new bound.** test/fx008-scale.serial.test.mjs:20 sets
   `MEASURED_INSTALLATIONS = 7342`, so the bound is 22 s. I measured
@@ -384,15 +381,16 @@ but it exposed C2 below.**
 - The plan text has to be updated for C2: "otherwise closed" becomes "a
   fresh tail meta".
 
-<h3>C2 (Critical, §6 compatibility): a closed result C rejects programs with no
-<code>defer</code> [ran]</h3>
+### C2 (Critical, §6 compatibility): a closed result C rejects programs with no `defer` [ran]
 
-`ResultClauses.purs`, `Hole meta | not (occurs meta) → Nothing`. A handler-typed
-result unifies C ≡ C, marks included, with every value it meets. A closed C
-fails against a C with more labels, or against a rigid tail. All three programs
-below are accepted by the base build (main checkout) and by 1649218, and the Go
-agrees with the interpreter. 360f13e rejects them. Prelude for each: `type E =
-E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`
+`ResultClauses.purs`, `Hole meta | not (occurs meta) → Nothing`. A
+handler-typed result unifies C ≡ C, marks included, with every value it
+meets. A closed C fails against a C with more labels, or against a rigid
+tail. All three programs below are accepted by the base build (main
+checkout) and by 1649218, and the Go agrees with the interpreter.
+360f13e rejects them. Prelude for each:
+`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick():
+Unit; };`
 
 - **r1.** Rejected with E_TYPE `Expected Handler(Log), found Handler(Log)`
   at `x`.

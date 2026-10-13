@@ -97,20 +97,21 @@ test runner, Go 1.26.4. No new dependency.
   - Type names: `FunctionName parameter result`, rendered with
     right-associative ` -> ` and a function parameter parenthesized:
     `(Int -> Int) -> List(Int) -> List(Int)`.
-- Phase boundaries for tests, as in P001. Until Task 6 the CLI cannot emit a
-  program that uses a function type, lambda, function value, partial application
-  or pipe. Through Task 4, Check returns `Internal "unchecked function"` for
-  nodes it does not yet type and Specialize's `lowerType` returns
-  `Internal "unlowered function"` for an arrow. In Task 5 Specialize copies
-  everything, and Program.Compile calls a temporary guard,
-  `Features.Specialize.Unlowered.reject`, that returns the same Internal for any
-  program whose monomorphic IR holds an arrow type or a new node (Task 5 review
-  clarification: an arrow that is only a phantom type argument,
-  `Proxy(Int -> Int)`, is neither, so that program reaches Go; a generic
-  function never instantiated is not emitted); Task 6 deletes the guard. Task 3
-  tests through Parse → Resolve, Task 4 through Check, Task 5 through Specialize
-  (calling `specialize` directly); execution starts in Task 6. Each progress
-  entry states how far its tests reach.
+- Phase boundaries for tests, as in P001. Until Task 6 the CLI cannot emit
+  a program that uses a function type, lambda, function value, partial
+  application or pipe. Through Task 4, Check returns `Internal "unchecked
+  function"` for nodes it does not yet type and Specialize's `lowerType`
+  returns `Internal "unlowered function"` for an arrow. In Task 5
+  Specialize copies everything, and Program.Compile calls a temporary
+  guard, `Features.Specialize.Unlowered.reject`, that returns the same
+  Internal for any program whose monomorphic IR holds an arrow type or a
+  new node (Task 5 review clarification: an arrow that is only a phantom
+  type argument, `Proxy(Int -> Int)`, is neither, so that program reaches
+  Go; a generic function never instantiated is not emitted); Task 6
+  deletes the guard. Task 3 tests through Parse → Resolve, Task 4 through Check,
+  Task
+  5 through Specialize (calling `specialize` directly); execution starts
+  in Task 6. Each progress entry states how far its tests reach.
 - No existing row is reworded to an interim outcome: every resolution
   change that moves a row's outcome into Check (bare references, calls of
   locals) lands in Task 4 together with the checking that gives the row

@@ -1,11 +1,14 @@
 # Review: CF001 operational addendum (§8A), 2026-10-10
 
 Scope: docs/plans/2026-10-09-concurrency-foundations-design.md §8A (lines
-351-508) and the edits at 3-6, 22-23, 566-570, 588-589, 593, 630-635, 701-702,
-722-723. Checked against cc-requirements-ops.md, D §3 and decision 9,
-src/Format/Go/Cleanup.purs, Report.purs, plan Tasks 10 and 12, and the rest of
-CF001 (§2, §5, §6, §7). Sources re-fetched by curl on 2026-10-10: gleam-otp
-v1.3.0 `actor`, `static_supervisor`, `supervision`; pkg.go.dev/runtime.
+351-508)
+and the edits at 3-6, 22-23, 566-570, 588-589, 593, 630-635, 701-702, 722-723.
+Checked against cc-requirements-ops.md, D §3 and decision 9,
+src/Format/Go/Cleanup.purs,
+Report.purs, plan Tasks 10 and 12, and the rest of CF001 (§2, §5, §6, §7).
+Sources re-fetched by curl on 2026-10-10: gleam-otp v1.3.0 `actor`,
+`static_supervisor`,
+`supervision`; pkg.go.dev/runtime.
 
 ## Coverage
 
@@ -94,9 +97,9 @@ supervisor exposes is left open.**
   cleanup defect "only if that task is selected", and selection is defined only
   for `par` (§6). Undefined cases:
   - OneForAll or RestForOne terminating siblings whose cleanup defects;
-  - supervisor shutdown in reverse start order whose cleanups defect. For each,
-    it is not said whether such causes are dropped (the §6 `X` rule), count
-    toward intensity, or become the escalated cause.
+  - supervisor shutdown in reverse start order whose cleanups defect.
+  For each, it is not said whether such causes are dropped (the §6 `X` rule),
+  count toward intensity, or become the escalated cause.
 - Why: the requirement asks for cleanup, termination, notification and
   escalation together. "Compatible" is asserted without a rule.
 - Fix: one sentence. Recommend: "a task cancelled by its supervisor records `X`

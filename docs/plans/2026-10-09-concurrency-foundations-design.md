@@ -12,11 +12,11 @@ controller's `defer` ruling (§5 R0). All else is proposed.
 
 ## 1. Purpose, scope, non-goals
 
-Purpose: decide, before concurrency (FX002), local mutable state (FX003) and
-general resume (FX006; renumbered from the spec's former "FX004", §11), which
-guarantees types, effect rows, lawful abstractions and runtime boundaries can
-give, so that programmers do not manage synchronization and the runtime stays
-small.
+Purpose: decide, before concurrency (FX002), local mutable state (FX003)
+and general resume (FX006; renumbered from the spec's former "FX004", §11),
+which guarantees types,
+effect rows, lawful abstractions and runtime boundaries can give, so that
+programmers do not manage synchronization and the runtime stays small.
 
 Non-goals: no general scheduler, channels, async I/O, timeouts,
 supervision, mutable cells, user laws or new syntax; example syntax is
@@ -104,16 +104,17 @@ et al. 2011): convergence from semilattice state or commuting operations.
 `Int` addition wraps modulo 2^32 (docs/language.md): `(+, 0)` is a
 commutative monoid (ESTABLISHED); floats (D001) are not associative.
 
-**4.7 How laws are established.** Strongest first: compiler restriction; proof
-for a built-in; trusted built-in plus tests; user obligation plus property tests
-(PBT001). An instance declaration is never a proof (C001/STD001 must not treat
-`instance Monoid` as evidence). Policy: a user-asserted law may affect *which
-value* is computed and *which failure* is reported (a crashing combiner makes it
+**4.7 How laws are established.** Strongest first: compiler restriction;
+proof for a built-in; trusted built-in plus tests; user obligation plus
+property tests (PBT001). An instance declaration is never a proof
+(C001/STD001 must not treat `instance Monoid` as evidence). Policy: a
+user-asserted law may affect *which value* is
+computed and *which failure* is reported (a crashing combiner makes it
 shape-dependent); it must never affect type soundness, data-race freedom,
-cleanup, report integrity, or termination of the runtime's own waits. Hence
-lattices with blocking reads are trusted built-ins only: a user lattice with a
-non-monotone join or overlapping thresholds could block a read forever or
-release it nondeterministically.
+cleanup, report integrity, or termination of the runtime's own waits.
+Hence lattices with blocking reads are trusted built-ins only: a user
+lattice with a non-monotone join or overlapping thresholds could block a
+read forever or release it nondeterministically.
 
 ## 5. Task-boundary rules (proposed)
 
@@ -183,12 +184,13 @@ process dies without the parent's cleanup.
 **B2. Clauses run on the child**, in the handler-site context; their own
 effects never appear in the child's row; a clause's `fail` is B1.
 
-**B3. Sharing versus transfer.** Shareability is a property of *types*, derived
-transitively: immutable data and function values are Shareable;
-`Handler(L with R)` is Shareable only if L is not declared local and every label
-in R is Shareable, with R's tail closed (R0-style); bounded tails are a later
-alternative needing row constraints. Not Shareable: FX003 local-state handlers,
-captured continuations, foreign handles until I001 classifies them. A label-only
+**B3. Sharing versus transfer.** Shareability is a property of *types*,
+derived transitively: immutable data and function values are Shareable;
+`Handler(L with R)` is Shareable only if L is not declared local and
+every label in R is Shareable, with R's tail closed (R0-style); bounded
+tails are a later alternative needing row constraints. Not Shareable: FX003
+local-state handlers, captured
+continuations, foreign handles until I001 classifies them. A label-only
 check is not enough (B2):
 
 ```
@@ -253,14 +255,15 @@ polls reach it. The condition is not checkable statically.
   An inline child not yet started is skipped; a running one unwinds at its
   next poll to its root, which records "discarded" (`X`). So `par let a =
   fail(E), b = spin();` with `b` inline aborts, as sequentially.
-- *Propagation to nested `par`.* Each task record links its live children
-  (registered at fork). Discarding a task sets its flag and, transitively, its
-  live descendants' flags; a task forked by an already discarded task starts
-  discarded. Exception: a task forked while its parent is in cleanup (a `par`
-  inside `defer`) is shielded, together with every task it forks: propagation
-  skips that subtree, so the cleanup's `par` runs to its normal join (P4).
-  Example: `par let a = fail(E), b = { par let c = grow(nil), d = 1; c };`
-  discards `b`, hence `c`, which stops at its next call.
+- *Propagation to nested `par`.* Each task record links its live
+  children (registered at fork). Discarding a task sets its flag and,
+  transitively, its live descendants' flags; a task forked by an already
+  discarded task starts discarded. Exception: a task forked while its
+  parent is in cleanup (a `par` inside `defer`) is shielded, together with every
+  task it forks: propagation skips that
+  subtree, so the cleanup's `par` runs to its normal join (P4). Example: `par
+  let a = fail(E), b = { par let c = grow(nil),
+  d = 1; c };` discards `b`, hence `c`, which stops at its next call.
 - *Polls.* Function entry and every join are poll points. A poll is a
   nil-checked load of the task pointer plus an atomic load of its flag;
   it does not fire while the task runs deferred expressions. A discarded
@@ -274,28 +277,30 @@ polls reach it. The condition is not checkable statically.
   overflow may complete in parallel (excluded by the condition on the
   sequential run). Out-of-memory is process-wide: up to B live stacks and
   concurrent allocation can exhaust memory the sequential run would not.
-- *Residual exposure.* A discarded task's work until its next poll; a discarded
-  task's diverging pure cleanup keeps its goroutine until program exit.
+- *Residual exposure.* A discarded task's work until its next poll; a
+  discarded task's diverging pure cleanup keeps its goroutine until program
+  exit.
 
-**Discard runtime contract (extension of Task 8).** Discard unwinds with a
-distinct sentinel panic (`waxwingDiscard`), which `handle` re-panics as any
-non-owned panic; `waxwingCleanup` treats it as a pending non-defect: it runs the
-remaining cleanup, records no cause for it and re-panics the sentinel, even if a
-cleanup raised a defect meanwhile; those causes are dropped with the discarded
-outcome. A root records `X` for any panic it recovers while its task is flagged,
-sentinel or defect; no task identity is needed in the sentinel. Dropping loses
-nothing the sequential run has. A task is flagged only when a failure was
-recorded to its left, or to the left of one of its ancestors. In the sequential
-run that failure unwinds the enclosing `par` before this task's expression
-starts, so neither its work nor its cleanup defects exist there. The selected
-failure keeps all its causes (D §3). CF001 does not report dropped causes on any
-channel, because whether a discarded task reaches a failing cleanup depends on
-scheduling. FX002 decides whether discarded or cancelled siblings get secondary
-report lines. A per-task cleanup depth, owned by the task's goroutine, masks its
-polls while deferred expressions run, and children forked inside that cleanup
-are shielded (above), so each cleanup runs exactly once and, unless the process
-exits first (unobservable: a discarded task's cleanup is pure), to completion
-(O6, C4).
+**Discard runtime contract (extension of Task 8).** Discard unwinds with
+a distinct sentinel panic (`waxwingDiscard`), which `handle` re-panics as
+any non-owned panic; `waxwingCleanup` treats it as a pending non-defect:
+it runs the remaining cleanup, records no cause for it and re-panics the
+sentinel, even if a cleanup raised a defect meanwhile; those causes are
+dropped with the discarded outcome. A root records `X` for any panic it
+recovers while its task is flagged, sentinel or defect; no task identity
+is needed in the sentinel. Dropping loses nothing the sequential run has.
+A task is flagged only when a failure was recorded to its left, or to the
+left of one of its ancestors. In the sequential run that failure unwinds
+the enclosing `par` before this task's expression starts, so neither its
+work nor its cleanup defects exist there. The selected failure keeps all
+its causes (D §3). CF001 does not report dropped causes on any channel,
+because whether a discarded task reaches a failing cleanup depends on
+scheduling. FX002 decides whether discarded or cancelled siblings get
+secondary report lines. A per-task cleanup depth, owned by the task's
+goroutine, masks its polls while deferred expressions run, and children
+forked inside that cleanup are shielded (above), so each cleanup runs
+exactly once and, unless the process exits first (unobservable: a discarded
+task's cleanup is pure), to completion (O6, C4).
 
 **Failure selection (leftmost).** Let i be the least index whose child
 did not produce a value. The parent waits until children 1..i-1 recorded
@@ -304,9 +309,9 @@ outcome. If some child j < i diverges, the construct diverges, as
 sequentially (eager discard never stops a child left of a failure).
 
 Why rows are restricted: discarding equals never having run only if the
-discarded child did nothing observable, which holds for Fail-only rows (R0) with
-Shareable captures (B3); B3b explains why no clause effect hides from R0. Other
-labels' effects already happened.
+discarded child did nothing observable, which holds for Fail-only rows
+(R0) with Shareable captures (B3); B3b explains why no clause effect hides from
+R0. Other labels' effects already happened.
 
 ```
 // hypothetical
@@ -375,11 +380,13 @@ incompatibility, and it is already recorded (decision 1 revision).
 ## 8A. Operational model (addendum, 2026-10-10)
 
 Requirements: .superpowers/sdd/2026-10-09-effects-plan/cc-requirements-ops.md
-(user, 2026-10-10). Design only; nothing enters CF001's subset unless §9 says
-so. Gleam OTP is a comparison, not a target: BEAM processes have separate heaps,
-goroutines share one heap and one fatal-error domain, so Waxwing can contain
-recoverable defects only (§2). **T** types/effects guarantee, **R** runtime,
-**P** policy.
+(user, 2026-10-10).
+Design only; nothing enters CF001's subset unless §9 says so. Gleam OTP is a
+comparison, not a
+target: BEAM processes have separate heaps, goroutines share one heap and one
+fatal-error domain,
+so Waxwing can contain recoverable defects only (§2). **T** types/effects
+guarantee, **R** runtime, **P** policy.
 
 ### 8A.1 Scoped tasks versus supervised services
 
@@ -406,21 +413,24 @@ from an older one that has exited due to a failure"); callers then see a
 typed `Unavailable` during a restart.
 
 **Resources across restarts.** A restart is a fresh activation from the
-initializer, started only after the old activation's cleanup completed (exactly
-once, C3; Task 8's per-activation slice gives this per goroutine); its
-continuations are discarded (C6). If that cleanup exceeds the shutdown deadline,
-the child is abandoned (dump-visible), never restarted, and the supervisor
-escalates, so two activations never run together. A cleanup defect joins the one
-failure's cause list and counts once toward intensity; an initializer failure
-counts as a failure; the window and clock are later. What must survive (a
-listener, a pool) belongs to the supervisor scope, acquired and `defer`red
-there, passed as a Shareable capability. T: R0, B3, capability passing. R:
-restart loop, intensity, ordered shutdown, cleanup before restart. P: strategy,
-restart type, intensity/period, shutdown deadline, resource placement.
+initializer, started only after the old activation's cleanup completed
+(exactly once, C3; Task 8's per-activation slice gives this per
+goroutine); its continuations are discarded (C6). If that cleanup exceeds
+the shutdown deadline, the child is abandoned (dump-visible), never
+restarted, and the supervisor escalates, so two activations never run
+together. A cleanup defect joins the one failure's cause list and counts
+once toward intensity; an initializer failure counts as a failure; the
+window and clock are later. What must survive (a listener, a pool) belongs to
+the
+supervisor scope, acquired and `defer`red there, passed as a Shareable
+capability. T: R0, B3, capability passing. R: restart loop, intensity,
+ordered shutdown, cleanup before restart. P: strategy, restart type,
+intensity/period, shutdown deadline, resource placement.
 
 Exposed (not a CF001 correctness issue): a discarded task whose pure cleanup
-diverges holds its budget slot (§6) forever; long-lived programs lose
-parallelism (inline fallback stays correct).
+diverges holds
+its budget slot (§6) forever; long-lived programs lose parallelism (inline
+fallback stays correct).
 
 ### 8A.2 Defect boundaries
 
@@ -466,12 +476,12 @@ installed and whether its type is Shareable (B3).
 | Typed actor | a service installs the state handler; others hold a façade `Handler(Counter)` whose clauses send and await a one-shot reply | typed messages; façade Shareable; send/await are operations of a built-in non-Fail label (`Send`) in its clause row, so installing it in a `par` child puts `Send` in the child's row and R0 rejects it (B3b); state handler never crosses | mailbox, scheduling, replies, owner/caller death | capacity, timeouts | atomicity is per message: `get` then `put` loses updates, so offer `modify(f)` with pure `f`; commutative messages give an order-independent final state if each is applied exactly once (no timeout removal) and no reply exposes intermediate state; lattice state with threshold reads only as a trusted built-in (§4.7) |
 | Shared capability | trusted built-in (accumulator, LVar-like cell), Shareable | Shareable typing | per-operation atomicity, publication | which built-in | §4.6 laws, trusted only (§4.7) |
 
-Fit: evidence nodes are immutable (Task 7), so a façade node may reach any task;
-the mailbox is the only mutable object. Façade clauses run on the caller (B2),
-the state handler's on the owner. FX002-era
-`par let a = with c { tick() }, b = with c { tick() };` serializes both ticks at
-`c`, and is rejected in CF001 (R0 via `Send`, B3b): discarding `b` after its
-send is observable.
+Fit: evidence nodes are immutable (Task 7), so a façade node may reach
+any task; the mailbox is the only mutable object. Façade clauses run on
+the caller (B2), the state handler's on the owner. FX002-era `par let a =
+with c { tick() }, b = with c { tick() };` serializes both ticks at `c`, and
+is rejected in CF001 (R0 via `Send`, B3b): discarding `b` after its send is
+observable.
 
 ### 8A.4 Overload and communication
 
@@ -570,19 +580,21 @@ Settle before FX002 (§10 item 9):
   (send, receive, reply) is a cancellation point (extends C1).
 
 Later: strategies, intensity, mailboxes, overload/timeout APIs and defaults,
-dump trigger, pprof labels, secondary report lines, dynamic supervisors, syntax,
-layering check, `//line`, shared runtime.
+dump trigger,
+pprof labels, secondary report lines, dynamic supervisors, syntax, layering
+check, `//line`, shared runtime.
 
 ## 9. Recommendation: CF001
 
-**Subset.** One built-in structured fork-join item (hypothetical
-`par let x1 = e1, …, xn = en;`) whose children are Fail-only under R0 and
-capture only Shareable values (B3), with conditional sequential equivalence and
-leftmost selection (§6), bounded live tasks with inline fallback, a root for
-every child (inline included), eager discard, propagated to nested tasks and
-stopped at function-entry and join polls with the discard runtime contract (§6),
-abort transfer at the join (B1, B4), and the defect runtime emitted with `par`.
-No shared mutable state, no effectful children, no user laws.
+**Subset.** One built-in structured fork-join item (hypothetical `par let
+x1 = e1, …, xn = en;`) whose children are Fail-only under R0 and capture
+only Shareable values (B3), with conditional sequential equivalence and
+leftmost selection (§6), bounded live tasks with inline fallback, a
+root for every child (inline included), eager discard, propagated to nested
+tasks and stopped at function-entry and join polls with the discard runtime
+contract (§6), abort
+transfer at the join (B1, B4), and the defect runtime emitted with `par`. No
+shared mutable state, no effectful children, no user laws.
 
 **Core semantics sketch.** The parent blocks at `par` with outcomes
 `o1..on`, each ⊥ (running), `V v`, `A (m, p)` (abort to marker m) or
@@ -684,30 +696,35 @@ the operational mechanisms listed at the end of §8A.8.
    Lowering invariant (with a test): any future lowering that turns (tail)
    recursion or another construct into a Go loop keeps a poll in each
    iteration.
-6. Task 8 runtime contract: the discard sentinel, its non-defect treatment in
-   `waxwingCleanup` (cleanup defects of a discarded task are dropped, see §6; D
-   §3's rejection of "dropping the cleanup failure" is scoped to tasks whose
-   outcome can be selected), poll masking during cleanup, and discard
-   propagation to nested tasks with shielding of tasks forked in cleanup (§6).
-   No change is needed to row erasure, markers, the `defer`-must-not-fail
-   decision, or (for CF001) the report format, beyond change 6's scoping of D
-   §3; FX002 may change the format if sibling defects become secondary lines.
+6. Task 8 runtime contract: the discard sentinel, its non-defect
+   treatment in `waxwingCleanup` (cleanup defects of a discarded task are
+   dropped, see §6; D §3's rejection of "dropping the cleanup failure" is
+   scoped to tasks whose outcome can be selected), poll masking during
+   cleanup, and
+   discard propagation to nested tasks with shielding of tasks forked in
+   cleanup (§6).
+No change is needed to row erasure, markers, the `defer`-must-not-fail
+decision, or (for CF001) the report format, beyond change 6's scoping of D
+§3; FX002 may change the format
+if sibling defects become secondary lines.
 
-**Compatibility of Tasks 6-8.** Task 6: compatible (§8). Task 7: compatible;
-immutable nodes make inherited lookup race-free; the child root, re-raise and
-the task field on context nodes are additive, but the ctx-mode trigger and
-function-entry polls change §4 (change 5). Task 8: compatible at runtime after
-change 6 (per-activation cleanup state is goroutine-safe; `main`'s report needs
-the child root to forward defects); its `defer` check needs R0, as ruled. None
-of Tasks 6-8 needs to be undone. §8A.2 lists Task 8's compatibility points with
-supervision; none changes behaviour. Recommended for ADR 010 (plan Task 12,
-wording only): cause kinds are an open set; `cleanup failed: ` marks causes
-raised by cleanup (today every non-first cause: Task 10 unaffected); the report
-and exit 1 are `main`'s root policy, present only with `defer` or `crash` (from
-CF001 also `par`); failures Go reports itself follow GOTRACEBACK (default exit
-2): Go's behaviour, not a Waxwing guarantee. Deferred to FX002: D decision 9 and
-§3 "Defects" ("unwind to program exit") become "unwind to their task's root; for
-`main`, program exit".
+**Compatibility of Tasks 6-8.** Task 6: compatible (§8). Task 7:
+compatible; immutable nodes make inherited lookup race-free; the child
+root, re-raise and the task field on context nodes are additive, but the
+ctx-mode trigger and function-entry polls change §4 (change 5). Task 8:
+compatible at runtime after change 6 (per-activation cleanup state is
+goroutine-safe; `main`'s report needs the child root to forward defects);
+its `defer` check needs R0, as ruled. None of
+Tasks 6-8 needs to be undone. §8A.2 lists Task 8's compatibility points
+with supervision; none changes behaviour. Recommended for ADR 010 (plan
+Task 12, wording only): cause kinds are an open set; `cleanup failed: `
+marks causes raised by cleanup (today every non-first cause: Task 10
+unaffected); the report and exit 1 are `main`'s root policy, present only
+with `defer` or `crash` (from CF001 also `par`); failures Go reports itself
+follow GOTRACEBACK
+(default exit 2): Go's behaviour, not a Waxwing guarantee. Deferred to FX002: D
+decision 9 and §3 "Defects" ("unwind to program exit") become "unwind to
+their task's root; for `main`, program exit".
 
 ## 11. Documentation audit (corrections for the controller to apply)
 
@@ -780,8 +797,8 @@ fetched). Re-read theorem wording in full text before writing any proof.
   (MSR-TR-2017-21).
 - Sivaramakrishnan et al. Retrofitting effect handlers onto OCaml. PLDI
   2021. One-shot continuations that must be resumed or explicitly
-        discontinued: from an OCaml project announcement, not re-verified in the
-        paper or manual.
+  discontinued: from an OCaml project announcement, not re-verified in the
+  paper or manual.
 - Ahman, Pretnar. Asynchronous effects. PACMPL 5 (POPL 2021), article 24.
 - Shapiro, Preguiça, Baquero, Zawirski. Conflict-free replicated data types. SSS
   2011, LNCS 6976, 386-400.
@@ -819,9 +836,11 @@ all rounds: none.
 Round 4 (re-review 3 minors N1-N5): applied verbatim from the re-review.
 
 Addendum 2026-10-10 (cc-requirements-ops.md): §8A (contracts O-1 to O-7); §9
-impact note; §10 item 9, can-wait and Task 8/ADR 010 notes; Gleam OTP and Go
-sources. Addendum review (review-cf001-ops-result.md): C1 (B3b observation, O-3
-`Send` label; no CF001 conflict, since `with` consumes clause rows), I1-I6 (O-1,
-8A.2, O-4, O-5, O-7, §10 ADR note) and M1-M9 applied; declined: none. Addendum
-re-review (2026-10-10): B3b demoted to an observation (R0 already rejects via
-`with` consumption); minors applied verbatim.
+impact note;
+§10 item 9, can-wait and Task 8/ADR 010 notes; Gleam OTP and Go sources.
+Addendum review (review-cf001-ops-result.md): C1 (B3b observation, O-3 `Send`
+label; no CF001 conflict, since `with` consumes clause rows),
+I1-I6 (O-1, 8A.2, O-4, O-5, O-7, §10 ADR note) and M1-M9 applied; declined:
+none.
+Addendum re-review (2026-10-10): B3b demoted to an observation (R0 already
+rejects via `with` consumption); minors applied verbatim.

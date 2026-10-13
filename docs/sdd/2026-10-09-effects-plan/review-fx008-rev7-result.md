@@ -1,10 +1,10 @@
 # Review: FX008 design note, revision 7 (the R/C split)
 
-Subject: docs/plans/2026-10-10-abort-tracking-design.md rev 7, read with the rev
-6 review, spec §2-§3, and Handler.purs, Consume.purs, UnifyRow.purs, Unify.purs,
-Apply.purs, Check.purs. No repository file other than this one was changed.
-[ran] = current compiler (`node scripts/waxwing.mjs run|emit`); [read] =
-reasoning about rev 7, which is not implemented. New probes:
+Subject: docs/plans/2026-10-10-abort-tracking-design.md rev 7, read with the
+rev 6 review, spec §2-§3, and Handler.purs, Consume.purs, UnifyRow.purs,
+Unify.purs, Apply.purs, Check.purs. No repository file other than this one
+was changed. [ran] = current compiler (`node scripts/waxwing.mjs run|emit`);
+[read] = reasoning about rev 7, which is not implemented. New probes:
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/rev7/.
 
 ## Verdict: Accept with fixes
@@ -88,8 +88,8 @@ implementation shares marks by identity.** With identity:
   - g1's defer adds `Tick^t` to the class {R, ρ_g1};
   - g2's `R ≡ ρ_g2` copies `Tick^t` into ρ_g2 by identity;
   - so M → f_fail → t → d → N.
-    This is the I1 let-bound-handler class, which §6 says is no longer
-    rejected.
+  This is the I1 let-bound-handler class, which §6 says is no longer
+  rejected.
 - A signature-typed form is also rejected [read]:
   `fn f(h: Handler(Log with Tick)): Unit with nofail Tick = { let g =
   fn(u: Unit) => { with h { log(1) }; defer tick(); () }; g(()) }`.
@@ -127,7 +127,7 @@ with handler Tick { tick() => fail(E) } { with h { tick() } }
     same closed or rigid tail;
   - local annotations: the written labels with fresh mark metas and a
     fresh tail meta.
-    Add a mutant: "C aliased to R in local annotations ⇒ annotc rejected".
+  Add a mutant: "C aliased to R in local annotations ⇒ annotc rejected".
 
 **I4. R ≡ ρ1 ≡ ρ2 makes contexts share a tail, which rev 6 had
 separated. A safe program is newly rejected, and §6/L4 do not list it.**

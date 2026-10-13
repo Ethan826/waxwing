@@ -43,13 +43,14 @@ Go 1.26.4 (tested), Node >=22.5.0; installed pinned Superpowers skills.
 
 ## Execution Authorization
 
-User approved baseline checkpoint, isolated worktree and inline execution with a
-final fresh reviewer. Baseline: 9624bec; branch: audit/bootstrap-docs;
+User approved baseline checkpoint, isolated worktree and inline execution
+with a final fresh reviewer. Baseline: 9624bec; branch: audit/bootstrap-docs;
 historical worktree: .worktrees/bootstrap-audit. Migration evidence stays
 historical. Completed audit is merged into main after explicit user approval;
-merged verification passed, and the merged branch/worktree were removed. Both
-task implementations are complete; fresh review found no blockers. Final
-verification/commit evidence is in docs/progress.md and the durable ledger.
+merged verification passed, and the merged branch/worktree were removed.
+Both task implementations are complete; fresh review found no blockers.
+Final verification/commit evidence is in docs/progress.md and the durable
+ledger.
 
 ### Task 1: Audit contracts and source style
 

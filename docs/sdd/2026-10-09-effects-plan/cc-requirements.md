@@ -1,16 +1,15 @@
-User requirements for the concurrency-foundations design investigation
-(2026-10-09, verbatim)
-===
+# User requirements for the concurrency-foundations design investigation (2026-10-09, verbatim)
 
 Complete FX001 Task 8, then stop. Do not begin Task 9 or implement concurrency.
 Preserve the normal Task 8 review, verification, and durable handoff, reporting
-any failed checks accurately. At the stopping point, document a proposed,
-bounded design milestone for concurrency foundations. The user wants to invest
-now where established CS theory could let types, effects, lawful type classes,
-and abstractions eliminate programmer-managed synchronization or simplify the
-runtime. This is a design investigation, not authorization to build a scheduler
-or add speculative language features. Use a small set of primary research
-sources. Assess:
+any failed checks accurately.
+At the stopping point, document a proposed, bounded design milestone for
+concurrency foundations. The user wants to invest now where established CS
+theory could let types, effects, lawful type classes, and abstractions eliminate
+programmer-managed synchronization or simplify the runtime. This is a design
+investigation, not authorization to build a scheduler or add speculative
+language features.
+Use a small set of primary research sources. Assess:
 
 * Region/read-write effects and ownership or linear/affine capabilities for
   proving that parallel computations do not interfere.
@@ -31,7 +30,8 @@ Separate type/effect soundness, race freedom, determinism, deadlock freedom, and
 cancellation safety. For each proposed guarantee, explain its assumptions, what
 the compiler checks, what runtime machinery remains, and which programs it
 excludes. Recommend a small, defensible initial subset rather than trying to
-guarantee everything. Ground this assessment in the shipped implementation:
+guarantee everything.
+Ground this assessment in the shipped implementation:
 
 1. Tasks 6–7 erase rows and use immutable evidence-context lists, dynamically
    selected handlers, and targeted stack-unwinding aborts. Immutable context

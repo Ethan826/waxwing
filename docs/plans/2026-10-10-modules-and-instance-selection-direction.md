@@ -118,7 +118,8 @@ Sources consulted for the discussion; no implementation code copied:
   explicit instances and instance constructors.
 - [PureScript modules](https://github.com/purescript/documentation/blob/master/language/Modules.md).
 - [Rust visibility](https://doc.rust-lang.org/reference/visibility-and-privacy.html)
-  and [coherence](https://doc.rust-lang.org/reference/items/implementations.html#trait-implementation-coherence).
+  and
+  [coherence](https://doc.rust-lang.org/reference/items/implementations.html#trait-implementation-coherence).
 - [OCaml modules](https://ocaml.org/docs/modules): signatures, abstract types
   and functors; conceptual ML comparison.
 - [TypeScript module theory](https://www.typescriptlang.org/docs/handbook/modules/theory.html).

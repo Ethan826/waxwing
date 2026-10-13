@@ -1,10 +1,9 @@
-Waxwing language specification (stage 0, closed ADTs, comparison, polymorphism,
-functions, effects)
-===
+# Waxwing language specification (stage 0, closed ADTs, comparison, polymorphism, functions, effects)
 
 Waxwing source files use `.wxw`. A file is one program: type declarations and
-functions in any order, with required function signatures. Behavioral claims
-below name their verifying test file in test/.
+functions in
+any order, with required function signatures. Behavioral claims below name
+their verifying test file in test/.
 
 Identifiers: ASCII letters/underscore then letters/digits/underscore.
 Whitespace: space, tab, CR, LF. Reserved words: `fn if then else true false
@@ -101,26 +100,29 @@ Functions, below). `if` needs a Bool condition and equal branch types.
 Every function is checked, including unused ones and unreachable arms.
 
 Names. Types, and functions plus constructors (one global table), are distinct
-namespaces; locals are parameters, pattern binders and lambda parameters, and
-shadow globals. A bare name is a local, else a nullary constructor (a value),
-else a function or a constructor with fields, which is a function value; a bare
-zero-parameter function is E_ARITY `Expected f()`. Called with arguments, a
-function is a call, a constructor a construction, and a local or binder an
-application, checked by types. With no arguments, `x()` on a local and `N()` on
-a nullary constructor are E_NOT_CALLABLE, and `f()` on a function with
-parameters is E_ARITY `Wrong number of arguments` (fn-names, fn-check). A binder
-shadows a parameter within its own arm only; outside it is E_UNBOUND. A lambda
-parameter shadows anything of its name in the lambda body; named lambda
-parameters must be distinct (E_DUPLICATE `Duplicate parameter x`); `_` binds
-nothing and may repeat. A lambda annotation's lowercase names are the enclosing
-signature's variables; any other is E_UNBOUND `Unbound type variable b`
-(fn-names). Duplicate types, globals, parameters or binders (`Pair(a, a)` is
-never equality) are E_DUPLICATE at the first duplicated declaration in source
-order, whatever its kind (`fn A(): Int = 1; type T = A;` reports the function).
-A missing `main` is E_ENTRY with message `Expected fn main()`, and so is a
-`main` with parameters; `main` may return any ground type without a function in
-it, else E_ENTRY `Expected fn main() with a printable result type` (adt-print,
-fn-rules). Rejection fixtures: test/diagnostics.test.mjs, adt-types, adt-match.
+namespaces; locals are parameters, pattern binders and lambda parameters,
+and shadow globals. A bare name is a local, else a nullary constructor (a
+value), else a function or a constructor with fields, which is a function
+value; a bare zero-parameter function is E_ARITY `Expected f()`. Called
+with arguments, a function is a call, a constructor a construction, and a
+local or binder an application, checked by types. With no arguments, `x()`
+on a local and `N()` on a nullary constructor are E_NOT_CALLABLE, and
+`f()` on a function with parameters is E_ARITY `Wrong number of
+arguments` (fn-names, fn-check). A binder shadows a parameter within its
+own arm only; outside it is E_UNBOUND. A lambda parameter shadows anything
+of its name in the lambda body; named lambda parameters must be distinct
+(E_DUPLICATE `Duplicate parameter x`); `_` binds nothing and may repeat.
+A lambda annotation's lowercase names are the enclosing signature's
+variables; any other is E_UNBOUND `Unbound type variable b` (fn-names).
+Duplicate types, globals, parameters or binders
+(`Pair(a, a)` is never equality) are E_DUPLICATE at the first duplicated
+declaration in source order, whatever its kind (`fn A(): Int = 1; type T = A;`
+reports the function). A missing `main` is E_ENTRY with message
+`Expected fn main()`, and so is a `main` with parameters; `main` may return
+any ground type without a function in it, else E_ENTRY `Expected fn main()
+with a printable result type` (adt-print, fn-rules). Rejection fixtures:
+test/diagnostics.test.mjs,
+adt-types, adt-match.
 
 Patterns. `_` matches anything; a lowercase name binds; an uppercase name is a
 constructor with exactly its field count (E_ARITY); literals match their
@@ -157,18 +159,19 @@ the `ctor-order` and `first-field` regression rows).
 
 Printing. The executable prints `main`'s value plus LF; printing is a backend
 wrapper, not a source effect. Int prints decimal with a leading `-` when
-negative, Bool `true` or `false`, a declared value `Name` or `Name(f1, f2)` with
-`, ` separators: the coverage-witness format without `_`, so every printed value
-is valid Waxwing source that reproduces the value under the same declarations
-(adt-print round trip). Re-reading is bounded by the nesting limit below: a
-printed list `Cons(1, Cons(2, … Nil))` of more than 128 elements nests deeper
-than 128 levels, so it is rejected with E_NESTING rather than recompiled
-(heap-based phases, BACKLOG H001, would lift this). Malformed values, possible
-only from foreign code (I001), panic with `waxwing: malformed value` when a
-comparison or print visits a nil field pointer or unknown tag; comparison stops
-at the first difference, so later malformed fields can go unnoticed; total order
-is claimed only for well-formed values. Foreign (Go) values are not validated:
-Proposed, with I001.
+negative, Bool `true` or `false`, a declared value `Name` or
+`Name(f1, f2)` with `, ` separators: the coverage-witness format without `_`,
+so every printed value is valid Waxwing source that reproduces the value
+under the same declarations (adt-print round trip). Re-reading is bounded by
+the nesting limit below: a printed list `Cons(1, Cons(2, … Nil))` of more
+than 128 elements nests deeper than 128 levels, so it is rejected with
+E_NESTING rather than recompiled (heap-based phases, BACKLOG H001, would lift
+this). Malformed
+values, possible only from foreign code (I001), panic with `waxwing: malformed
+value` when a comparison or print visits a nil field pointer or unknown tag;
+comparison stops at the first difference, so later malformed fields can go
+unnoticed; total order is claimed only for well-formed values.
+Foreign (Go) values are not validated: Proposed, with I001.
 
 Polymorphism (P001; ADR 007; spec docs/plans/2026-10-08-polymorphism-design.md).
 
@@ -431,18 +434,18 @@ Limits, stated plainly.
   row lacks a label of the parameter's row reads `q must allow every effect
   of take's parameter f (L + M), but its row is L; write q's row as `with L
   + M`; a function passed as an argument must have its parameter's row
-    (FX018)`. Both keep the old text inside a lambda body, for a row nested
-    in a label's payload, and for the other direction. The `write …` part is
-    left out when the row it would write does not fix the call (a constructor
-    field's closed row, a caller wider than the callee), and, for a
-    callback, when the callback is read more than once in the function: one
-    row cannot serve a call outside and a call inside a `with`. The notes are
-    bounded as all notes are (at most four besides path lines), so with three
-    or more installations, or a `handle` with several clauses, some `is
-    handled here` notes are dropped. A hint is checked only inside its own
-    function, so applying it can expose a truthful (b) error in a caller, for
-    example `fn b(p: Int -> Int with L): Int with L = a(p, 1)` after the hint
-    rewrote `a`'s parameter.
+  (FX018)`. Both keep the old text inside a lambda body, for a row nested
+  in a label's payload, and for the other direction. The `write …` part is
+  left out when the row it would write does not fix the call (a constructor
+  field's closed row, a caller wider than the callee), and, for a
+  callback, when the callback is read more than once in the function: one
+  row cannot serve a call outside and a call inside a `with`. The notes are
+  bounded as all notes are (at most four besides path lines), so with three
+  or more installations, or a `handle` with several clauses, some `is
+  handled here` notes are dropped. A hint is checked only inside its own
+  function, so applying it can expose a truthful (b) error in a caller, for
+  example `fn b(p: Int -> Int with L): Int with L = a(p, 1)` after the hint
+  rewrote `a`'s parameter.
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
 - `let` is monomorphic. A local of type `A -> B with pure` is not accepted

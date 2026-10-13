@@ -151,9 +151,10 @@ None.
    the report's own admission. Amend it.
 
 ### Assessment
-**Task quality:** Needs fixes **Reasoning:** The interpreter, generator, census,
-rejections, chunking and shrinker are solid and faithful to the pinned
-semantics, and the interpreter found a genuine compiler/spec hole. However, the
-brief's requirement to import and hand-trace every inline Task 7 executable
-probe was knowingly skipped, and the verify gate failed outside the ruled set
-and needs a controller ruling and BACKLOG update.
+**Task quality:** Needs fixes
+**Reasoning:** The interpreter, generator, census, rejections, chunking and
+shrinker are solid and faithful to the pinned semantics, and the interpreter
+found a genuine compiler/spec hole. However, the brief's requirement to import
+and hand-trace every inline Task 7 executable probe was knowingly skipped, and
+the verify gate failed outside the ruled set and needs a controller ruling and
+BACKLOG update.

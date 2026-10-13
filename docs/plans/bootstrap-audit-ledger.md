@@ -23,14 +23,15 @@ ModuleNotFound; helper stderr-only assertion failed because diagnostic was
 on stdout. Fix applied only after inspecting combined evidence. No task
 completion recorded on failure.
 
-Ruling: Retain codeName as a ten-arm exhaustive wire-tag mapping despite the
-eight-branch review target; E003 records the exception. Cost if wrong: future
-diagnostics could make that dispatch harder to review; reassess on growth with
-exact tag tests. Task 1 changes verified before commit: npm run verify → 19/19,
-regression proof, zero warnings/errors; .build/audit-task-1-green.log. Task 1:
-complete (commits 9624bec..4410609, tests: npm run verify → Verified compiler,
-gates, executable programs, rejection diagnostics, properties, and regression
-proof.)
+Ruling: Retain codeName as a ten-arm exhaustive wire-tag mapping despite
+the eight-branch review target; E003 records the exception. Cost if wrong:
+future diagnostics could make that dispatch harder to review; reassess on
+growth with exact tag tests.
+Task 1 changes verified before commit: npm run verify → 19/19, regression
+proof, zero warnings/errors; .build/audit-task-1-green.log.
+Task 1: complete (commits 9624bec..4410609, tests: npm run verify → Verified
+compiler, gates, executable programs, rejection diagnostics, properties, and
+regression proof.)
 
 Task 2 implementation verified before review: npm run verify → 19/19 and
 regression proof, .build/audit-task-2-pre-review.log.
@@ -43,25 +44,28 @@ Todo: Task 1 complete; Task 2 final review pending.
 Final review: fresh reviewer, 9624bec..56cbde1; no Critical/Important findings.
 Final: minor (deferred): compiler.test.mjs:84 and style.test.mjs:21–22 have
 inaccurate pre-existing titles; narrow descriptions without weakening assertions
-(E004). Manual repeated CLI emissions agree with each other and snapshot. Final:
-Ruling: ADTs/polymorphism/self-hosting stay future milestones — bounded audit
-does not implement them — cost if wrong: desired feature delivery waits. Final:
-Ruling: Forged resolved entry/table validation stays outside the trusted phase
-contract, accurately documented — cost if wrong: unsupported direct API inputs
-can produce invalid Go; future external IR ingress needs validation. Final:
-Ruling: Large/deep input work stays E002 — no resource guarantee claimed for
-small initial programs — cost if wrong: oversized input may exhaust resources.
+(E004). Manual repeated CLI emissions agree with each other and snapshot.
+Final: Ruling: ADTs/polymorphism/self-hosting stay future milestones — bounded
+audit does not implement them — cost if wrong: desired feature delivery waits.
+Final: Ruling: Forged resolved entry/table validation stays outside the trusted
+phase contract, accurately documented — cost if wrong: unsupported direct API
+inputs can produce invalid Go; future external IR ingress needs validation.
+Final: Ruling: Large/deep input work stays E002 — no resource guarantee claimed
+for small initial programs — cost if wrong: oversized input may exhaust
+resources.
 Final: Ruling: Fresh install/cross-platform work stays F001 — cached macOS
 verification cannot prove those setups — cost if wrong: a new host may not
-build. Final: Ruling: External patch stays unapplied under F002 — prior approval
+build.
+Final: Ruling: External patch stays unapplied under F002 — prior approval
 rejection remains binding — cost if wrong: MileAhead guidance remains unchanged.
 Todo: Task 1 complete; Task 2 closure verification pending; review complete.
 
-Task 2 Step 3 done: one fresh reviewer, no blockers; E004 deferred. Final
-closure verify: npm run verify → exit 0,19/19,zero skips,regression proof,zero
-warnings/errors; .build/audit-final.log. Task 2: complete (commits
-4410609..f27b499, tests: npm run verify → Verified compiler, gates, executable
-programs, rejection diagnostics, properties, and regression proof.)
+Task 2 Step 3 done: one fresh reviewer, no blockers; E004 deferred.
+Final closure verify: npm run verify → exit 0,19/19,zero skips,regression
+proof,zero warnings/errors; .build/audit-final.log.
+Task 2: complete (commits 4410609..f27b499, tests: npm run verify → Verified
+compiler, gates, executable programs, rejection diagnostics, properties, and
+regression proof.)
 
 Todo: Task 1 complete; Task 2 complete; fresh review complete.
 Integration: pending user choice; main retains baseline; audit branch/worktree
