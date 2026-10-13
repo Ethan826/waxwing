@@ -36,8 +36,8 @@ derive instance ordVarId ∷ Ord VarId
 -- every pass here walks a spine by a loop and recurses only into
 -- parameters, type arguments and label arguments, whose depth the nesting
 -- limits bound (design §1, §3). An application's type arguments come
--- before its row arguments, each in declaration order. `TUnit` and
--- `THandler` come last so the order of the earlier ones is kept. A
+-- before its row arguments, each in declaration order. `TUnit`,
+-- `THandler` and `TText` come last so the order of the earlier ones is kept. A
 -- variable has one sort, type or row, by construction.
 data Ty v
   = TInt
@@ -47,6 +47,7 @@ data Ty v
   | TFun (Ty v) (TyRow v) (Ty v)
   | TUnit
   | THandler (Label (Ty v)) (HandlerRows (Ty v) v)
+  | TText
 
 type TyRow v = Row (Ty v) v
 
@@ -68,6 +69,7 @@ data Head
   | FunHead
   | UnitHead
   | HandlerHead
+  | TextHead
 
 derive instance eqHead ∷ Eq Head
 derive instance ordHead ∷ Ord Head
@@ -147,6 +149,7 @@ substitute substitution = case _ of
   TInt → TInt
   TBool → TBool
   TUnit → TUnit
+  TText → TText
   TData id arguments rows → TData id (map substituted arguments)
     (map (substituteRow substitution) rows)
   TVar variable → substitution.types variable
@@ -207,6 +210,7 @@ sameLeaf one other = case one, other of
   TInt, TInt → true
   TBool, TBool → true
   TUnit, TUnit → true
+  TText, TText → true
   TVar first, TVar second → first == second
   _, _ → false
 
@@ -224,3 +228,4 @@ headOf = case _ of
   TFun _ _ _ → FunHead
   TUnit → UnitHead
   THandler _ _ → HandlerHead
+  TText → TextHead

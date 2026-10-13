@@ -55,6 +55,7 @@ payloadName shape ty = case ty of
   TInt → IntName
   TBool → BoolName
   TUnit → UnitName
+  TText → TextName
   TData (TypeId index) → maybe unknown named (Array.index shape.types index)
   TFun _ → arrow (IR.spine shape.funTypes ty)
   THandler (EffectKey index) → maybe unknown handler

@@ -13,6 +13,7 @@ data TypeName
   = IntName
   | BoolName
   | UnitName
+  | TextName
   | DataName String
   | AppliedName String (Array TypeName)
   | VariableName String

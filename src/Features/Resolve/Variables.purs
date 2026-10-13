@@ -41,6 +41,7 @@ occurrences = case _ of
   Syntax.IntRef _ → []
   Syntax.BoolRef _ → []
   Syntax.UnitRef _ → []
+  Syntax.TextRef _ → []
   Syntax.VarRef _ name → [ name ]
   Syntax.NamedRef _ _ arguments → Array.concatMap argumentNames arguments
   Syntax.THandlerRef _ label row → labelOccurrences label

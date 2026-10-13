@@ -75,6 +75,8 @@ showField id position = case _ of
   TInt → appended
   TBool → appended
   TUnit → "out = " <> appendText "()"
+  -- Written raw for now; nested Text is quoted by the Text printing task.
+  TText → "out = append(out, " <> field <> "...)\n"
   -- Printing is rejected at a type holding an arrow (design §3), yet every
   -- declared type gets its printer; a function field is never printed.
   TFun _ → malformed <> "\n"

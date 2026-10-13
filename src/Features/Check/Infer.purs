@@ -71,6 +71,8 @@ inferNode env state expression = case expression of
   Resolved.Integer span value → typed state span TInt (Checked.Integer value)
   Resolved.Boolean span value → typed state span TBool
     (Checked.Boolean value)
+  Resolved.TextLiteral span value → typed state span TText
+    (Checked.Text value)
   Resolved.Local span id → checkLocal env state span id
   Resolved.FunctionRef span id → checkFunctionRef env state span id
   Resolved.CtorRef span id → checkCtorRef env state span id

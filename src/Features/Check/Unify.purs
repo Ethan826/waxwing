@@ -151,6 +151,7 @@ unifyHeads level subst left right = case left, right of
   TInt, TInt → Right subst
   TBool, TBool → Right subst
   TUnit, TUnit → Right subst
+  TText, TText → Right subst
   TData one lefts leftRows, TData other rights rightRows
     | one == other && sameLength lefts rights
         && sameLength leftRows rightRows →

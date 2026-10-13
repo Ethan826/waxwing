@@ -26,6 +26,7 @@ data Ty
   | TFun FunTypeId
   | TUnit
   | THandler EffectKey
+  | TText
 
 -- An arrow's number: its index in `funTypes`.
 newtype FunTypeId = FunTypeId Int
@@ -138,6 +139,7 @@ data Node
   | Install Expr Expr
   | Handle Expr (Array FailClause)
   | Abort TypeHead Expr
+  | Text String
 
 -- FX001 effect nodes (design §4): a bare operation; an invocation, partial
 -- as `Call` may be; a handler's construction, with one clause per

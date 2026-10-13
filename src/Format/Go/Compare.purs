@@ -113,6 +113,11 @@ fieldComparison field = case _ of
     <> right
     <> " { return 1 }\n"
   TBool → decide ("waxwingCmpBool(" <> left <> ", " <> right <> ")")
+  -- Go orders strings bytewise, which on valid UTF-8 is code-point order.
+  TText → "if " <> left <> " < " <> right <> " { return -1 }; if " <> left
+    <> " > "
+    <> right
+    <> " { return 1 }\n"
   -- Two Unit fields are always equal.
   TUnit → ""
   TData owner → "if " <> left <> " == nil || " <> right <> " == nil { "

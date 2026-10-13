@@ -67,12 +67,14 @@ exprSpan = case _ of
   With span _ _ → span
   Handle span _ _ → span
   Fail span _ → span
+  TextLiteral span _ → span
 
 typeRefSpan ∷ TypeRef → Span
 typeRefSpan = case _ of
   IntRef span → span
   BoolRef span → span
   UnitRef span → span
+  TextRef span → span
   VarRef span _ → span
   NamedRef span _ _ → span
   THandlerRef span _ _ → span

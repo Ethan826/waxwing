@@ -32,7 +32,6 @@ import {
   matchPrograms, mutations, nameProbes, random, soups, targeted
 } from './differential-corpus.mjs';
 
-const shownDifferences = 5;
 const mutationSourceLimit = 3000;
 const corpora = ['harvested', 'fuzz', 'matches', 'mutations'];
 
@@ -40,6 +39,12 @@ const option = (name, fallback) => {
   const index = process.argv.indexOf(name);
   return index === -1 ? fallback : process.argv[index + 1];
 };
+const shownDifferences = Number(option('--show', 5)); // per corpus
+// Tokens gained a `kind` (Text v1 Task 2); a Plain token is compared
+// without it, so a baseline without kinds agrees wherever the tokens do.
+const withoutPlain = tokens => Array.isArray(tokens)
+  ? tokens.map(token => token.kind?.constructor?.name === 'Plain'
+    ? { text: token.text, span: token.span } : token) : tokens;
 
 const compiler = async tree => {
   const load = name => import(pathToFileURL(
@@ -85,17 +90,18 @@ const textHash = text => createHash('sha1').update(text).digest('hex');
 // the first rejection.
 const outcome = (compiler, source) => {
   const phases = [];
-  const step = (name, run) => {
+  const step = (name, run, project = value => value) => {
     const result = run();
     if (result instanceof compiler.Left) {
       phases.push([name, `rejected ${JSON.stringify(
         compiler.wire(result.value0))}`]);
       return undefined;
     }
-    phases.push([name, digest(result.value0)]);
+    phases.push([name, digest(project(result.value0))]);
     return result.value0;
   };
-  if (step('lex', () => compiler.lex(source)) === undefined) return phases;
+  const lexed = step('lex', () => compiler.lex(source), withoutPlain);
+  if (lexed === undefined) return phases;
   const parsed = step('parse', () => compiler.parse(source));
   const resolved = parsed && step('resolve', () => compiler.resolve(parsed));
   const checked = resolved && step('check', () => compiler.check(resolved));

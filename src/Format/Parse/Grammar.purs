@@ -4,6 +4,7 @@ module Format.Parse.Grammar
   , Case
   , nestingLimit
   , token
+  , textLiteral
   , expect
   , name
   , upperName
@@ -53,6 +54,7 @@ import Format.Parse.Cursor
   , separated
   , shifting
   , skip
+  , takeText
   , rootedAt
   , trailing
   )
@@ -80,6 +82,10 @@ nestingLimit = 128
 
 token ∷ Parser Token
 token = Parser takeAt
+
+-- A whole text literal: its decoded text and its span.
+textLiteral ∷ Parser { text ∷ String, span ∷ Span }
+textLiteral = Parser takeText
 
 expect ∷ String → Parser Token
 expect text = dispatch [ on text token ]

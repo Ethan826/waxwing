@@ -171,6 +171,7 @@ tooDeep subst = case _ of
   TInt → false
   TBool → false
   TUnit → false
+  TText → false
   TVar (Checked.Rigid _) → false
   ty → exceedsLimit subst (flexible ty)
 

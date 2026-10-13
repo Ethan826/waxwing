@@ -55,6 +55,7 @@ candidates tables ty = case ty of
   TInt → Right []
   TBool → Right [ HBool true, HBool false ]
   TUnit → Right []
+  TText → Right []
   TData id _ _ → applied tables id ty
   TVar _ → Right []
   TFun _ _ _ → Right []

@@ -83,6 +83,7 @@ data Node
   | With Expr Expr
   | Handle Expr (Array FailClause)
   | Fail Expr
+  | Text String
 
 -- A block item (FX001): a monomorphic `let` of a local or `_`, a deferred
 -- expression of type Unit, or a discarded value.

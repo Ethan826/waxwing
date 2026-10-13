@@ -21,6 +21,7 @@ usesBoolOrdering ∷ IR.Expr → Boolean
 usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.Integer _ → false
   IR.Boolean _ → false
+  IR.Text _ → false
   IR.Local _ → false
   IR.Call _ arguments → anyOf arguments
   IR.Construct _ arguments → anyOf arguments
@@ -63,6 +64,7 @@ prints (IR.Expr expression) = case expression.node of
   IR.Crash _ → true
   IR.Integer _ → false
   IR.Boolean _ → false
+  IR.Text _ → false
   IR.Local _ → false
   IR.FunctionRef _ → false
   IR.CtorRef _ → false

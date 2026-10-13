@@ -7,7 +7,7 @@ import Domain.IR.Internal as IR
 import Domain.IR.Internal (Ty)
 import Format.Go.Block (lowerBlock)
 import Format.Go.Compare (comparison)
-import Format.Go.Data (boolean, goType, integer, localName)
+import Format.Go.Data (boolean, goTextLiteral, goType, integer, localName)
 import Format.Go.Capture (union)
 import Format.Go.Effect (lowerHandlerValue)
 import Format.Go.Handle (lowerAbort, lowerHandle, lowerInstall)
@@ -39,6 +39,7 @@ expression ∷ Scope → Int → IR.Expr → Lowered
 expression scope next whole@(IR.Expr term) = case term.node of
   IR.Integer value → leaf next (integer value)
   IR.Boolean value → leaf next (boolean value)
+  IR.Text value → leaf next (goTextLiteral value)
   IR.Local id → variable next (localName id) id term.ty
   IR.Call id arguments →
     named scope lower next (functionWrapper scope.shape id) whole arguments

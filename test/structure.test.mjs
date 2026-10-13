@@ -63,3 +63,16 @@ test('pure layers may use Data.Map, Data.Set and Data.Tuple only', () => {
     assert.equal(pure(dependency).length, 1, dependency);
   }
 });
+
+// Text v1 Task 2: a `\u{…}` escape names a code point by number, and the
+// only way to build one from an Int is Data.Enum's toEnum (package enums,
+// already a dependency of strings). Exactly Data.Enum is admitted; Data.Char
+// and the rest of the enum modules stay out.
+test('pure layers may use Data.Enum only', () => {
+  const pure = dependency => graphFindings(
+    { 'Format.Lex.Text': { path: 'src/t.purs', depends: [dependency] } });
+  assert.deepEqual(pure('Data.Enum'), []);
+  for (const dependency of ['Data.Char', 'Data.Enum.Gen', 'Data.EnumX']) {
+    assert.equal(pure(dependency).length, 1, dependency);
+  }
+});

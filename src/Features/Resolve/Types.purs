@@ -65,6 +65,7 @@ resolveTypeWith types effects variables ambient = resolved
     Syntax.IntRef _ → pure Resolved.TInt
     Syntax.BoolRef _ → pure Resolved.TBool
     Syntax.UnitRef _ → pure Resolved.TUnit
+    Syntax.TextRef _ → pure Resolved.TText
     Syntax.VarRef span name → maybe' (unbound UnboundTypeVariable span name)
       variable
       (Array.elemIndex name variables)

@@ -69,6 +69,7 @@ typeNameIn shown env span = case _ of
   TInt → Right IntName
   TBool → Right BoolName
   TUnit → Right UnitName
+  TText → Right TextName
   TData (TypeId index) arguments _ → maybe' missing (named arguments)
     (Array.index env.types index)
   TVar (Rigid (VarId index)) → maybe' unnamed (Right <<< VariableName)
@@ -216,6 +217,7 @@ rendered = case _ of
   IntName → "Int"
   BoolName → "Bool"
   UnitName → "Unit"
+  TextName → "Text"
   DataName name → name
   AppliedName name arguments → name <> listed (map rendered arguments)
   VariableName name → name

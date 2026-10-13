@@ -27,6 +27,7 @@ expression ∷ Scope → Syntax.Expr → Fresh Resolved.Expr
 expression scope = case _ of
   Syntax.Integer span value → pure (Resolved.Integer span value)
   Syntax.Boolean span value → pure (Resolved.Boolean span value)
+  Syntax.TextLiteral span value → pure (Resolved.TextLiteral span value)
   Syntax.Variable span name → liftEither (bareName scope span name)
   Syntax.Call span name arguments → callName scope span name arguments
   Syntax.Add span left right → Resolved.Add span <$> nested left

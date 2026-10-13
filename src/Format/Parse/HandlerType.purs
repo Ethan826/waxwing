@@ -179,6 +179,7 @@ typeRefSpan = case _ of
   IntRef span → span
   BoolRef span → span
   UnitRef span → span
+  TextRef span → span
   VarRef span _ → span
   NamedRef span _ _ → span
   FunRef span _ _ _ → span

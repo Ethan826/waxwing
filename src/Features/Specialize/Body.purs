@@ -62,6 +62,7 @@ copyNode ∷ Scope → Span → Checked.Node → Specializing IR.Node
 copyNode scope span = case _ of
   Checked.Integer value → pure (IR.Integer value)
   Checked.Boolean value → pure (IR.Boolean value)
+  Checked.Text value → pure (IR.Text value)
   Checked.Local id → pure (IR.Local id)
   Checked.Call id instantiation arguments → IR.Call
     <$> callee scope span id instantiation

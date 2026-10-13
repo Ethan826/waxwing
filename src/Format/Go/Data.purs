@@ -11,11 +11,16 @@ module Format.Go.Data
   , pipeLocal
   , integer
   , boolean
+  , goTextLiteral
   , malformed
   ) where
 
 import Prelude
 import Data.Array as Array
+import Data.Enum (fromEnum)
+import Data.Int (hexadecimal, toStringAs)
+import Data.String.CodePoints (CodePoint, singleton, toCodePointArray)
+import Data.String.CodeUnits as String
 import Data.String.Common (joinWith)
 import Domain.IR.Internal (EffectKey(..), FunType, FunTypeId(..), Ty(..))
 import Domain.Resolved (CtorId(..), FunctionId(..), LocalId(..), TypeId(..))
@@ -37,6 +42,7 @@ goType = case _ of
   TData (TypeId index) → "waxwingTy" <> show index
   TFun (FunTypeId index) → "waxwingFun" <> show index
   TUnit → "struct{}"
+  TText → "string"
   -- One handler struct per effect layout (Format.Go.Effect).
   THandler key → "*" <> effectName key
 
@@ -85,6 +91,56 @@ integer value = "int32(" <> show value <> ")"
 
 boolean ∷ Boolean → String
 boolean value = if value then "true" else "false"
+
+-- A Text value as a Go string literal. The escaping is canonical, so the
+-- output is the same for any input: printable ASCII is written as is,
+-- `"` and `\` and the three line escapes by name, and every other code
+-- point as a fixed-width hex escape (`\u00e9`, `\U0001f600`). The source
+-- stays ASCII whatever the text holds.
+goTextLiteral ∷ String → String
+goTextLiteral text = "\"" <> joinWith "" (map goEscaped (toCodePointArray text))
+  <> "\""
+
+goEscaped ∷ CodePoint → String
+goEscaped point = case code of
+  0x22 → "\\\""
+  0x5C → "\\\\"
+  0x0A → "\\n"
+  0x09 → "\\t"
+  0x0D → "\\r"
+  _ → otherEscaped point code
+  where
+  code = fromEnum point
+
+otherEscaped ∷ CodePoint → Int → String
+otherEscaped point code
+  | code >= firstPrintable && code <= lastPrintable = singleton point
+  | code <= lastBasic = "\\u" <> hexadecimalPadded basicDigits code
+  | otherwise = "\\U" <> hexadecimalPadded fullDigits code
+
+-- Printable ASCII runs from the space to the tilde; `\u` takes 4 hex digits
+-- (to U+FFFF) and `\U` 8.
+firstPrintable ∷ Int
+firstPrintable = 0x20
+
+lastPrintable ∷ Int
+lastPrintable = 0x7E
+
+lastBasic ∷ Int
+lastBasic = 0xFFFF
+
+basicDigits ∷ Int
+basicDigits = 4
+
+fullDigits ∷ Int
+fullDigits = 8
+
+hexadecimalPadded ∷ Int → Int → String
+hexadecimalPadded width code = joinWith "" (Array.replicate padding "0") <>
+  digits
+  where
+  digits = toStringAs hexadecimal code
+  padding = width - String.length digits
 
 -- Raised by every helper that meets a value its declarations cannot
 -- produce: an unknown tag or a nil field (only foreign code, I001).

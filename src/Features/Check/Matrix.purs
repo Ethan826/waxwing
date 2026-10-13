@@ -54,6 +54,7 @@ complete signature ty heads =
   open = case _ of
     TInt → true
     TUnit → true
+    TText → true
     TVar _ → true
     TFun _ _ _ → true
     THandler _ _ → true

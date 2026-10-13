@@ -4,6 +4,7 @@ package:
     - arrays
     - effect
     - either
+    - enums
     - foldable-traversable
     - integers
     - maybe

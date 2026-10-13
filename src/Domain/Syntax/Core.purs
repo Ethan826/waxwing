@@ -34,6 +34,7 @@ data Expr
   | With Span Expr Expr
   | Handle Span Expr (Array FailClause)
   | Fail Span Expr
+  | TextLiteral Span String
 
 -- A block item (FX001 design §1): `let name = e`, `let _ = e` (Nothing)
 -- spanning `let` through `e`, `defer e` spanning `defer` through `e`, or
@@ -70,6 +71,7 @@ data TypeRef
   = IntRef Span
   | BoolRef Span
   | UnitRef Span
+  | TextRef Span
   | VarRef Span String
   | NamedRef Span String (Array TypeArgument)
   | THandlerRef Span LabelRef (Maybe RowRef)

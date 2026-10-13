@@ -81,6 +81,7 @@ operand inner = dispatch
   [ on "Int" (IntRef <$> tokenSpan)
   , on "Bool" (BoolRef <$> tokenSpan)
   , on "Unit" (UnitRef <$> tokenSpan)
+  , on "Text" (TextRef <$> tokenSpan)
   , on "Handler" (HandlerType.operand (defer rowed) inner)
   , onWhen upperText (spanned appliedOf (parts <$> upperName <*> arguments))
   , onWhen lowerText (variable <$> token)
@@ -214,6 +215,7 @@ typeRefSpan = case _ of
   IntRef span → span
   BoolRef span → span
   UnitRef span → span
+  TextRef span → span
   VarRef span _ → span
   NamedRef span _ _ → span
   FunRef span _ _ _ → span

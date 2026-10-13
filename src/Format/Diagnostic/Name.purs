@@ -12,6 +12,7 @@ typeName = case _ of
   IntName → "Int"
   BoolName → "Bool"
   UnitName → "Unit"
+  TextName → "Text"
   DataName name → name
   AppliedName name arguments → name <> listed (map typeName arguments)
   VariableName name → name

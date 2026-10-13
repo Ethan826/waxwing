@@ -159,6 +159,7 @@ groundType grounds span = case _ of
   IR.TInt → Right TInt
   IR.TBool → Right TBool
   IR.TUnit → Right TUnit
+  IR.TText → Right TText
   IR.TData (TypeId output) → maybe' missing Right
     (Map.lookup output grounds.types)
   arrow@(IR.TFun _) → groundSpine (IR.spine grounds.table arrow)

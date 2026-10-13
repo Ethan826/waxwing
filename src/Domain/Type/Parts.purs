@@ -126,6 +126,7 @@ groundWith rowGround = case _ of
   TInt → Just TInt
   TBool → Just TBool
   TUnit → Just TUnit
+  TText → Just TText
   TData id arguments rows → TData id <$> traverse recur arguments
     <*> traverse rowGround rows
   TVar _ → Nothing

@@ -7,7 +7,7 @@ import Data.Maybe (maybe')
 import Data.String.CodeUnits as String
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
-import Format.Lex (Token)
+import Format.Lex (Token, TokenKind(..))
 import Format.Parse.Grammar
   ( Parser
   , dispatch
@@ -32,7 +32,8 @@ negativeDigits ∷ Parser Token
 negativeDigits = spanned negated
   (expect "-" *> digitsOr "Expected digits after minus")
   where
-  negated span digits = { text: "-" <> digits.text, span }
+  negated span digits =
+    { text: "-" <> digits.text, span, kind: Plain }
 
 -- The next token, which must be digits; otherwise E_SYNTAX at that token.
 digitsOr ∷ String → Parser Token

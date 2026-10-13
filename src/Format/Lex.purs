@@ -1,17 +1,25 @@
-module Format.Lex (Token, lex, isName, isUpper, endPosition) where
+module Format.Lex
+  ( module Format.Lex.Token
+  , lex
+  , isName
+  , isUpper
+  , endPosition
+  ) where
 
 import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.String.CodePoints as CodePoints
 import Data.String.CodeUnits as String
 import Domain.Problem (Problem(..))
-import Domain.Syntax (Diagnostic, Position, Span, origin, problemAt)
+import Domain.Syntax (Diagnostic, Position, origin, problemAt)
+import Format.Lex.Text (literal)
+import Format.Lex.Token (Token, TokenKind(..))
 import Format.Stack (Stack)
 import Format.Stack as Stack
 
-type Token = { text ∷ String, span ∷ Span }
 type Scan = { index ∷ Int, position ∷ Position, tokens ∷ Stack Token }
 type Scanned = Either Diagnostic (Step Scan (Array Token))
 
@@ -58,6 +66,7 @@ reserved = case _ of
   "let" → true
   "defer" → true
   "Unit" → true
+  "Text" → true
   "ctl" → true
   "resume" → true
   _ → false
@@ -106,12 +115,13 @@ scanAt source state head
   | isSpace head = continue (spaces source state)
   | isLetter head = continue (word source state isNameChar)
   | isDigit head = continue (word source state isDigit)
+  | head == '"' = literalStep source state
   | head == '.', String.slice state.index (state.index + 3) source == "..." =
       continue (emit "..." state)
   | pairStart head, Just text ← twoCharacter source state.index =
       continue (emit text state)
   | punctuation head = continue (emit (String.singleton head) state)
-  | otherwise = unexpected state.position head
+  | otherwise = unexpected source state
 
 continue ∷ Scan → Scanned
 continue state = Right (Loop state)
@@ -164,12 +174,31 @@ emit text state = state
     { offset = state.position.offset + width
     , column = state.position.column + width
     }
-  token = { text, span: { start: state.position, end: next } }
+  token = { text, span: { start: state.position, end: next }, kind: Plain }
 
-unexpected ∷ Position → Char → Scanned
-unexpected position character = Left (problemAt Lexical span)
+-- A whole text literal, as its tokens, is one step.
+literalStep ∷ String → Scan → Scanned
+literalStep source state = map resume
+  (literal source state.index state.position)
   where
-  span = { start: position, end: advance position character }
+  resume found = Loop
+    { index: found.index
+    , position: found.position
+    , tokens: Array.foldl (flip Stack.push) state.tokens found.tokens
+    }
+
+-- The span covers the whole code point, so a character outside the BMP is
+-- two units (Text v1 design §2).
+unexpected ∷ String → Scan → Scanned
+unexpected source state = Left (problemAt Lexical span)
+  where
+  width = String.length
+    (CodePoints.take 1 (String.slice state.index (state.index + 2) source))
+  span = { start: state.position, end: moved }
+  moved = state.position
+    { offset = state.position.offset + width
+    , column = state.position.column + width
+    }
 
 word ∷ String → Scan → (Char → Boolean) → Scan
 word source state predicate = emit text state

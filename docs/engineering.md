@@ -32,7 +32,11 @@ adding a bypass allowlist.
   P001 Task 3 it also admits exactly Data.Map, Data.Set and Data.Tuple
   (packages ordered-collections and tuples), for the unifier's
   substitution; their submodules (Data.Map.Internal, Data.Set.NonEmpty,
-  Data.Tuple.Nested) and Data.List stay rejected, pinned by the same file;
+  Data.Tuple.Nested) and Data.List stay rejected, pinned by the same file.
+  Since Text v1 Task 2 it also admits exactly Data.Enum (package enums), for
+  `toEnum`/`fromEnum` between Int and CodePoint in `\u{…}` decoding and Go
+  literal escaping; Data.Char and Data.Enum.* stay rejected, pinned by the
+  same file;
 - no JS FFI files outside src/Runtime; all runtime capabilities live in
   Runtime and Program; Program.Command runs over the Domain.Host ports and
   may not import Effect or Runtime, so tests drive it with fake hosts;

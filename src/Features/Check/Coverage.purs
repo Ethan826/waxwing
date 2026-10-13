@@ -35,6 +35,7 @@ covered ∷ Signature → Checked.Expr → Either Diagnostic Unit
 covered signature (Checked.Expr expression) = case expression.node of
   Checked.Integer _ → pure unit
   Checked.Boolean _ → pure unit
+  Checked.Text _ → pure unit
   Checked.Local _ → pure unit
   Checked.FunctionRef _ _ → pure unit
   Checked.CtorRef _ _ → pure unit

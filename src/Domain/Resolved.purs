@@ -94,6 +94,7 @@ data Expr
   | With Span Expr Expr
   | Handle Span Expr (Array FailClause)
   | Fail Span Expr
+  | TextLiteral Span String
 
 type HandlerClause =
   { operation ∷ Int
@@ -196,3 +197,4 @@ exprSpan expression = case expression of
   With span _ _ → span
   Handle span _ _ → span
   Fail span _ → span
+  TextLiteral span _ → span

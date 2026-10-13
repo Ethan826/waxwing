@@ -42,6 +42,7 @@ lowerType env arguments span = case _ of
   TInt → pure IR.TInt
   TBool → pure IR.TBool
   TUnit → pure IR.TUnit
+  TText → pure IR.TText
   TData id parts _ → traverse recur parts >>= applied env span id
   TVar (Rigid (VarId index)) → argument span arguments index
   TVar (Hole _) → lowerType env [] span (map absurd env.representative)
@@ -142,6 +143,7 @@ lowerField env arguments ty syntax = case ty, syntax of
   TInt, _ → pure IR.TInt
   TBool, _ → pure IR.TBool
   TUnit, _ → pure IR.TUnit
+  TText, _ → pure IR.TText
   TFun _ _ _, FunRef span _ _ _ → lowerWritten span (spine ty)
     (typeRefSpine syntax)
   TFun _ _ _, _ → mismatch

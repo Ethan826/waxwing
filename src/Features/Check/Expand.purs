@@ -83,6 +83,7 @@ substitute arguments = case _ of
   TInt → Right TInt
   TBool → Right TBool
   TUnit → Right TUnit
+  TText → Right TText
   TData id inner _ → rowless id <$> traverse (substitute arguments) inner
   TVar (VarId index) → maybe' missing Right (Array.index arguments index)
   THandler (Label effect inner mark) _ → handler effect mark <$> traverse
@@ -114,6 +115,7 @@ spelling = case _ of
   TInt → "i"
   TBool → "b"
   TUnit → "u"
+  TText → "t"
   TVar _ → "v"
   TData (TypeId id) arguments _ → show id <> "("
     <> joinWith "," (map spelling arguments)
@@ -208,6 +210,7 @@ field numbers = case _ of
   TInt → Right TInt
   TBool → Right TBool
   TUnit → Right TUnit
+  TText → Right TText
   TVar _ → Right TInt
   TFun _ _ _ → Right TInt
   THandler _ _ → Right TInt
