@@ -24,7 +24,8 @@ const longSpine = 20000;
 // `parameters` copies of TInt, then `last`, then the result, by a loop.
 const longArrow = (parameters, last, result) => {
   let built = TFun.create(last)(closedRow)(result);
-  for (let index = 0; index < parameters; index += 1) built = TFun.create(TInt.value)(closedRow)(built);
+  for (let index = 0; index < parameters; index += 1) built =
+    TFun.create(TInt.value)(closedRow)(built);
   return built;
 };
 
@@ -37,8 +38,10 @@ test('equality and order on 20,000-long spines need no deep recursion', () => {
   assert.equal(eq(one)(differs), false);
   assert.equal(ordering(one, differs), 'LT');
   assert.equal(ordering(differs, one), 'GT');
-  assert.equal(ordering(one, longArrow(longSpine, TInt.value, TInt.value)), 'GT');
-  assert.equal(ordering(TFun.create(TInt.value)(closedRow)(TInt.value), one), 'LT');
+  assert.equal(ordering(one, longArrow(longSpine, TInt.value, TInt.value)),
+    'GT');
+  assert.equal(ordering(TFun.create(TInt.value)(closedRow)(TInt.value), one),
+    'LT');
 });
 
 test('substitution and grounding walk a 20,000-long spine by a loop', () => {
@@ -82,11 +85,13 @@ const generatedPairs = 2000;
 const maximumDepth = 3;
 const names = { [-1]: 'LT', 0: 'EQ', 1: 'GT' };
 
-test('order and equality agree with the derived instances on arrow-free types', () => {
+test('order and equality agree with the derived instances on arrow-free types',
+  () => {
   const next = generator(0x0d3);
   const seen = { LT: 0, EQ: 0, GT: 0 };
   for (let index = 0; index < generatedPairs; index += 1) {
-    const [left, right] = [arrowFree(next, maximumDepth), arrowFree(next, maximumDepth)];
+    const [left, right] =
+      [arrowFree(next, maximumDepth), arrowFree(next, maximumDepth)];
     const expected = names[derived(left, right)];
     assert.equal(ordering(left, right), expected);
     assert.equal(eq(left)(right), expected === 'EQ');
@@ -96,32 +101,44 @@ test('order and equality agree with the derived instances on arrow-free types', 
     JSON.stringify(seen));
 });
 
-const span = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 2, offset: 1 } };
+const span = {
+  start: { line: 1, column: 1, offset: 0 }, end: {
+  line: 1, column: 2, offset: 1 } };
 const name = { int: problem.IntName.value, unit: problem.UnitName.value };
 const arrow = (parameter, result, row = Nothing.value) =>
   problem.FunctionName.create(parameter)(row)(result);
 const listOf = argument => problem.AppliedName.create('List')([argument]);
 
-test('arrow type names are right-associative, function parameters parenthesized', () => {
+test('arrow type names are right-associative, function parameters ' +
+  'parenthesized', () => {
   const map = arrow(arrow(name.int, name.int),
     arrow(listOf(name.int), listOf(name.int)));
-  assert.deepEqual(wire({ problem: problem.TypeMismatch.create(map)(name.int), span, related: [] }), {
+  assert.deepEqual(wire({
+    problem: problem.TypeMismatch.create(map)(name.int), span, related: [] }), {
     code: 'E_TYPE', span, related: [],
     message: 'Expected (Int -> Int) -> List(Int) -> List(Int), found Int'
   });
   const returned = arrow(name.int, arrow(name.int, name.int));
   const nestedResult = listOf(arrow(name.int, name.int));
-  assert.equal(wire({ problem: problem.NotComparable.create(returned), span, related: [] }).message,
+  assert.equal(wire({
+    problem: problem.NotComparable.create(returned), span,
+    related: [] }).message,
     'Type Int -> Int -> Int is not comparable');
-  assert.equal(wire({ problem: problem.AmbiguousType.create(nestedResult), span, related: [] }).message,
+  assert.equal(wire({
+    problem: problem.AmbiguousType.create(nestedResult), span,
+    related: [] }).message,
     'Ambiguous type List(Int -> Int) in comparison');
 });
 
 test('a 20,000-long arrow type name renders without deep recursion', () => {
   let built = name.int;
-  for (let index = 0; index < longSpine; index += 1) built = arrow(name.int, built);
-  const text = wire({ problem: problem.NotComparable.create(built), span, related: [] }).message;
-  assert.equal(text, `Type ${'Int -> '.repeat(longSpine)}Int is not comparable`);
+  for (let index = 0; index < longSpine; index += 1) built =
+    arrow(name.int, built);
+  const text =
+    wire({ problem: problem.NotComparable.create(built), span,
+    related: [] }).message;
+  assert.equal(text,
+    `Type ${'Int -> '.repeat(longSpine)}Int is not comparable`);
 });
 
 // FX008 Task 3: an arrow's row text follows the segment it is written after,
@@ -130,10 +147,14 @@ test('an arrow name shows its row after the segment it follows', () => {
   const messageOf = built => wire({
     problem: problem.NotComparable.create(built), span, related: [] }).message;
   const single = arrow(name.unit, name.unit, Just.create('nofail Log'));
-  assert.equal(messageOf(single), 'Type Unit -> Unit with nofail Log is not comparable');
+  assert.equal(messageOf(single),
+    'Type Unit -> Unit with nofail Log is not comparable');
   const curried = arrow(name.int, arrow(name.int, name.int, Just.create('R2')),
     Just.create('R1'));
-  assert.equal(messageOf(curried), 'Type Int -> Int with R1 -> Int with R2 is not comparable');
-  const parameter = arrow(arrow(name.int, name.int, Just.create('R')), name.int);
-  assert.equal(messageOf(parameter), 'Type (Int -> Int with R) -> Int is not comparable');
+  assert.equal(messageOf(curried),
+    'Type Int -> Int with R1 -> Int with R2 is not comparable');
+  const parameter =
+    arrow(arrow(name.int, name.int, Just.create('R')), name.int);
+  assert.equal(messageOf(parameter),
+    'Type (Int -> Int with R) -> Int is not comparable');
 });

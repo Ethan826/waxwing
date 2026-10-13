@@ -2,31 +2,44 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { graphFindings, textFindings } from '../scripts/structure.mjs';
 
-test('layer gate rejects effects, reverse dependencies, and unchecked IR access', () => {
+test('layer gate rejects effects, reverse dependencies, and unchecked IR ' +
+  'access', () => {
   for (const [name, dependency] of [
     ['Domain.Syntax', 'Effect'], ['Format.Parse', 'Program.Main'],
     ['Features.Resolve', 'Domain.IR.Internal'], ['Format.Lex', 'Unsafe.Coerce'],
     ['Domain.Syntax', 'Format.Go'], ['Format.Lex', 'Data.String.Unsafe'],
     ['Features.Resolve', 'Format.Parse'], ['Runtime.Node', 'Program.Main'],
     ['Program.Command', 'Effect'], ['Program.Command', 'Runtime.Node']
-  ]) assert.equal(graphFindings({ [name]: { path: 'src/example.purs', depends: [dependency] } }).length, 1);
-  assert.deepEqual(graphFindings({ 'Features.Check': { path: 'src/check.purs', depends: ['Domain.Syntax', 'Domain.Checked.Internal', 'Data.Array'] } }), []);
-  assert.deepEqual(graphFindings({ 'Program.Main': { path: 'src/main.purs', depends: ['Effect'] } }), []);
-  assert.equal(graphFindings({ 'Unknown': { path: 'src/unknown.purs', depends: [] } }).length, 1);
-  assert.equal(graphFindings({ 'Waxwing.Old': { path: 'src/Waxwing/Old.purs', depends: [] } }).length, 1);
+  ]) assert.equal(graphFindings({
+    [name]: { path: 'src/example.purs', depends: [dependency] } }).length, 1);
+  assert.deepEqual(graphFindings({
+    'Features.Check': {
+    path: 'src/check.purs',
+    depends: ['Domain.Syntax', 'Domain.Checked.Internal', 'Data.Array'] } }),
+    []);
+  assert.deepEqual(graphFindings({
+    'Program.Main': { path: 'src/main.purs', depends: ['Effect'] } }), []);
+  assert.equal(graphFindings({
+    'Unknown': { path: 'src/unknown.purs', depends: [] } }).length, 1);
+  assert.equal(graphFindings({
+    'Waxwing.Old': { path: 'src/Waxwing/Old.purs', depends: [] } }).length, 1);
 });
 
 // Two IRs, two allowlists: checking produces the checked IR, specialization
 // alone reads it and produces the monomorphic IR that Go generation reads.
-test('IR gate admits each internal IR only to its producer and consumer', () => {
+test('IR gate admits each internal IR only to its producer and consumer', () =>
+  {
   const found = (name, dependency) =>
-    graphFindings({ [name]: { path: 'src/example.purs', depends: [dependency] } });
+    graphFindings({
+      [name]: { path: 'src/example.purs', depends: [dependency] } });
   for (const [name, dependency] of [
     ['Features.Check', 'Domain.IR.Internal'],
     ['Format.Go', 'Domain.Checked.Internal'],
     ['Features.Resolve', 'Domain.Checked.Internal']
-  ]) assert.deepEqual(found(name, dependency), [`${name} imports ${dependency}`]);
-  assert.deepEqual(graphFindings({ 'Features.Specialize': { path: 'src/example.purs',
+  ]) assert.deepEqual(found(name, dependency),
+    [`${name} imports ${dependency}`]);
+  assert.deepEqual(graphFindings({
+    'Features.Specialize': { path: 'src/example.purs',
     depends: ['Domain.Checked.Internal', 'Domain.IR.Internal'] } }), []);
 });
 
@@ -36,7 +49,8 @@ test('length gate counts blank lines and includes tooling and tests', () => {
 });
 
 test('escape gate rejects partiality and test suppression', () => {
-  assert.equal(textFindings('src/Waxwing/Foo.purs', 'unsafePartial\n').length, 1);
+  assert.equal(textFindings('src/Waxwing/Foo.purs', 'unsafePartial\n').length,
+    1);
   assert.equal(textFindings('test/x.mjs', 'test.' + 'skip("x")\n').length, 1);
 });
 
