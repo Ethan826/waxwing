@@ -136,8 +136,8 @@ enclosing function.
 ## 3. Static rules (errors)
 
 The texts below are approved by the user. The two that were marked
-*pending* were approved on 2026-10-13. The duplicate-binding errors are E_SYNTAX at the offending
-name, each with a note at the first binding.
+*pending* were approved on 2026-10-13. The duplicate-binding errors are
+E_SYNTAX at the offending name, each with a note at the first binding.
 
 - Two imports in one signature bind the same local name, compared after
   renaming, so `{ log as note, info as note }` conflicts: `note is imported
