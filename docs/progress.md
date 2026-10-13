@@ -4123,21 +4123,22 @@ that, an `Application` origin that crossed no boundary (installation and
 `defer` set `via`), and a current row that is the signature's alone (one
 site): inside a `with` or `handle` a callee's label can pair with an
 installed duplicate, and the old text stays. Accepted and rejected programs
-are unchanged (differential: only the new-text programs differ). Recorded limits: a `let`-bound or
-lambda-bound callee is `this function value` (the resolved syntax keeps no
-local's name); an unannotated arrow's note points at the parameter's name
-(no type span is kept); a call inside a `with` or `handle`, and a
-callback passed as an argument, keep their old text (BACKLOG FX018); the
-hint writes the caller's row as written, so a named tail stays (p3:
-`with M + L + ...e`) and the ambient tail is omitted, while the headline
-prints labels only. When a caller label's payload holds an arrow, handler or
-row-applied type, the printer drops its rows, so the hint takes the anonymous
-text instead of a row that would fail differently when written. Only a parameter whose type is one arrow (its result
-is no arrow) is named; later stages and two-stage types are anonymous
-(their `with` belongs to the last arrow, so the hint would loop), and a
-leftover from a row nested in a label payload keeps the old text. Tests:
-test/fx017-callback-row.test.mjs (16); regression row
-`fx-callback-row`. Subsumption of the callback's row stays with FX007.
+are unchanged (differential: only the new-text programs differ). Recorded
+limits: a `let`-bound or lambda-bound callee is `this function value` (the
+resolved syntax keeps no local's name); an unannotated arrow's note points
+at the parameter's name (no type span is kept); a call inside a `with` or
+`handle`, and a callback passed as an argument, keep their old text (BACKLOG
+FX018); the hint writes the caller's row as written, so a named tail stays
+(p3: `with M + L + ...e`) and the ambient tail is omitted, while the
+headline prints labels only. When a caller label's payload holds an arrow,
+handler or row-applied type, the printer drops its rows, so the hint takes
+the anonymous text instead of a row that would fail differently when
+written. Only a parameter whose type is one arrow (its result is no arrow)
+is named; later stages and two-stage types are anonymous (their `with`
+belongs to the last arrow, so the hint would loop), and a leftover from a
+row nested in a label payload keeps the old text. Tests:
+test/fx017-callback-row.test.mjs (16); regression row `fx-callback-row`.
+Subsumption of the callback's row stays with FX007.
 
 Verify: `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0
 (.build/fx017-verify.log): 1264/1264 parallel, 53/53 serial, 82 regression

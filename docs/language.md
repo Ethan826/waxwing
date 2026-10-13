@@ -411,7 +411,10 @@ Limits, stated plainly.
   callback with no `with` reads `but its row has no labels`. Only a
   parameter whose type is a single arrow is named; any other callee (a
   later stage of a curried type, a call result, a `let` local) reads `this
-  function value`. Workaround: write the callback's row as the
+  function value`. When a label of the caller's row has a payload that
+  holds a row (a function type, a handler, a row-applied type), the hint
+  omits `write q's row as …`, because the printed row would drop the
+  payload's row. Workaround: write the callback's row as the
   caller's full row (`q: Int -> Int with L + M`).
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
