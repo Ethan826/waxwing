@@ -52,7 +52,7 @@ rejected env state origin failure = case failure of
   -- A caller label the called row lacks is the callback's fault, unless it
   -- is not a callback (FX017); the rest is the caller performing it.
   extra label callee occurrence = maybe' (ordinary label occurrence) identity
-    (callbackLacks env state origin callee)
+    (callbackLacks env state origin (siteOccurrence env occurrence) callee)
   ordinary label occurrence _ = notAllowed label occurrence
   notAllowed label occurrence = do
     name ← labelName env span label

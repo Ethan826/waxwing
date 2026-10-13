@@ -176,3 +176,42 @@ test('a named tail and a Fail payload: the hint writes the row as written', () =
       'a\'s row is written here']]
   });
 });
+
+const anonymous = (row, own) => 'this function value must allow every effect '
+  + `of a (${row}), but its row ${own}; a function value's row must equal `
+  + 'its caller\'s (FX017)';
+const callerNote = [': Int with L + M =', 'with L + M', 'a\'s row is written here'];
+
+test('a later stage of a curried parameter is an anonymous function value', () => {
+  expectDiagnostic(effects + 'fn a(q: Int -> (Int -> Int with L) with L + M, '
+    + 'x: Int): Int with L + M = q(x, x);' + main, {
+    code: 'E_EFFECT', message: anonymous('L + M', 'is L'),
+    at: ['q(x, x)'], notes: [callerNote]
+  });
+});
+
+test('a parameter with a two-stage type is anonymous: its hint would loop', () => {
+  const head = effects + 'fn a(q: Int -> Int -> Int with L, x: Int): Int '
+    + 'with L + M = ';
+  expectDiagnostic(head + 'q(x, x);' + main, {
+    code: 'E_EFFECT', message: anonymous('L + M', 'has no labels'),
+    at: ['q(x, x)'], notes: [callerNote]
+  });
+  expectDiagnostic(head + 'q(x)(x);' + main, {
+    code: 'E_EFFECT', message: anonymous('L + M', 'has no labels'),
+    at: ['q(x)'], notes: [callerNote]
+  });
+});
+
+test('a row nested in a label payload keeps the old message', () => {
+  expectDiagnostic(effects + 'effect S(s) { fn get(): s; }; '
+    + 'fn a(q: Int -> Int with S(Int -> Int with L), x: Int): Int '
+    + 'with S(Int -> Int with L + M) = q(x);' + main, {
+    code: 'E_EFFECT',
+    message: 'a performs M, which its signature does not allow',
+    at: ['q(x)'],
+    notes: [[': Int with S(Int -> Int with L + M) =',
+      'with S(Int -> Int with L + M)',
+      'the signature of a does not allow M']]
+  });
+});

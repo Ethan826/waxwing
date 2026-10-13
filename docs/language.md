@@ -407,9 +407,11 @@ Limits, stated plainly.
   rejected (FX017) with `q must allow every effect of a (L + M), but its
   row is L; write q's row as `with L + M`; a callback's row must equal its
   caller's (FX017)`, notes at both written rows. The hint writes the
-  caller's row as written, so a named tail stays (`with M + L + ...e`). A callback with no `with`
-  reads `but its row has no labels`; a callee that is not a parameter reads
-  `this function value`. Workaround: write the callback's row as the
+  caller's row as written, so a named tail stays (`with M + L + ...e`). A
+  callback with no `with` reads `but its row has no labels`. Only a
+  parameter whose type is a single arrow is named; any other callee (a
+  later stage of a curried type, a call result, a `let` local) reads `this
+  function value`. Workaround: write the callback's row as the
   caller's full row (`q: Int -> Int with L + M`).
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.

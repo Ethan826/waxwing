@@ -125,10 +125,21 @@ calleeOf env = case _ of
     (Array.find named env.functions)
   none _ = []
   named function = function.name == env.functionName
-  parameterCallee parameter = Just
-    { name: parameter.name
-    , rowSpan: fromMaybe parameter.span parameter.rowSpan
-    }
+  parameterCallee parameter =
+    if singleStage parameter.ty then Just
+      { name: parameter.name
+      , rowSpan: fromMaybe parameter.span parameter.rowSpan
+      }
+    else Nothing
+
+-- Only an arrow whose result is no arrow has one row to name: a `with`
+-- after a curried type belongs to its last arrow, and a later stage is not
+-- the parameter's row (FX017).
+singleStage ∷ Ty Resolved.VarId → Boolean
+singleStage = case _ of
+  TFun _ _ (TFun _ _ _) → false
+  TFun _ _ _ → true
+  _ → false
 
 -- Whether `ty` may still be applied: an arrow, or a meta not yet bound.
 functionLike ∷ State → Ty Open → Boolean

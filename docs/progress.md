@@ -4130,7 +4130,11 @@ local's name); an unannotated arrow's note points at the parameter's name
 callback passed as an argument, keep their old text (BACKLOG FX018); the
 hint writes the caller's row as written, so a named tail stays (p3:
 `with M + L + ...e`) and the ambient tail is omitted, while the headline
-prints labels only. Tests: test/fx017-callback-row.test.mjs (13); regression row
+prints labels only. Only a parameter whose type is one arrow (its result
+is no arrow) is named; later stages and two-stage types are anonymous
+(their `with` belongs to the last arrow, so the hint would loop), and a
+leftover from a row nested in a label payload keeps the old text. Tests:
+test/fx017-callback-row.test.mjs (16); regression row
 `fx-callback-row`. Subsumption of the callback's row stays with FX007.
 
 Verify: `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0

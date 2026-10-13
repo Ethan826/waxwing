@@ -75,7 +75,7 @@ const checkRows = [
     // fault. Without the classification the call is reported as the caller
     // performing the label, which its own signature allows.
     name: 'fx-callback-row', file: 'src/Features/Check/Callback.purs',
-    needle: '    | isNothing origin.via && signatureOnly env →',
+    needle: '    | isNothing origin.via && signatureOnly env && topLevel env placed →',
     replacement: '    | false →',
     probe: 'fx-callback-row', message: /callback row: /
   },

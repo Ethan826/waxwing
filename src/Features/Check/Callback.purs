@@ -12,6 +12,7 @@ import Domain.Row (Label, Row(..))
 import Domain.Syntax (Diagnostic, Note)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Context (CheckEnv)
+import Features.Check.Occurrence (OccurrenceId(..))
 import Features.Check.Provenance (Callee, Consumed(..), Origin)
 import Features.Check.Report (noteAt)
 import Features.Check.RowName (labelName, tailName)
@@ -33,13 +34,22 @@ callbackLacks
   . CheckEnv r
   → State
   → Origin
+  → OccurrenceId
   → TyRow Flex
   → Maybe (Either Diagnostic a)
-callbackLacks env state origin calleeRow = case origin.consumed of
+callbackLacks env state origin placed calleeRow = case origin.consumed of
   Application named
-    | isNothing origin.via && signatureOnly env →
+    | isNothing origin.via && signatureOnly env && topLevel env placed →
         Just (lacking env state origin named calleeRow)
   _ → Nothing
+
+-- A label of the current row itself. A row nested in a label's payload is
+-- unified with rows written nowhere, and its leftover is not the callee's
+-- row but a part of it, which no `with` of the callee can fix.
+topLevel ∷ ∀ r. CheckEnv r → OccurrenceId → Boolean
+topLevel env = case _ of
+  Written span _ → span == env.functionSpan
+  Extended _ → false
 
 signatureOnly ∷ ∀ r. CheckEnv r → Boolean
 signatureOnly env = case env.sites of
