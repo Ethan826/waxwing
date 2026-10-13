@@ -137,3 +137,12 @@ data Problem
   | DeferHandlerVariable String String
   | ExpectedNofail String String
   | HandlerMayFail AbortCause
+
+-- The subject of the effect error for a function value met in unification
+-- (Features.Check.Require). Named once so that the passes refining that
+-- error (Features.Check.ArgumentRow) match the constructor and this subject,
+-- not a copy of the text. A constructor of its own would be the structural
+-- signal, but Format.Diagnostic is at its line cap and would need three more
+-- arms (code, message, notes) for what is the same error.
+thisFunction ∷ String
+thisFunction = "This function"

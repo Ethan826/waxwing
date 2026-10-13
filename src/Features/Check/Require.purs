@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (Problem(..), thisFunction)
 import Domain.Resolved (EffectInfo)
 import Domain.Row (Row(..), isPure)
 import Features.Check.Provenance (trail)
@@ -96,7 +96,7 @@ expectType env state expected actual span = do
       }
   rowProblem name row =
     if isPure row then MustBePure name
-    else EffectNotAllowed "This function" name
+    else EffectNotAllowed thisFunction name
   walk = trail state.subst state.origins
 
   -- A function: `where` bindings are strict, and this resolves both types.

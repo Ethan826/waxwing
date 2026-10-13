@@ -118,16 +118,17 @@ applyValue env state named ty argument = do
 calleeOf ∷ ∀ r. CheckEnv r → Resolved.Expr → Maybe Callee
 calleeOf env = case _ of
   Resolved.Local _ (Resolved.LocalId index) → Array.index parameters index
-    >>= parameterCallee
+    >>= parameterCallee index
   _ → Nothing
   where
   parameters = maybe' none _.parameters
     (Array.find named env.functions)
   none _ = []
   named function = function.name == env.functionName
-  parameterCallee parameter =
+  parameterCallee index parameter =
     if singleStage parameter.ty then Just
       { name: parameter.name
+      , index
       , rowSpan: fromMaybe parameter.span parameter.rowSpan
       , written: isJust parameter.rowSpan
       }

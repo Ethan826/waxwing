@@ -94,7 +94,7 @@ const checkRows = [
     // the function's row lacks. Without the classification the argument is
     // reported as `This function performs M`, with no notes.
     name: 'fx-callback-argument', file: 'src/Features/Check/ArgumentRow.purs',
-    needle: '    EffectNotAllowed "This function" _ →',
+    needle: '    EffectNotAllowed who _\n      | who == thisFunction →',
     replacement: '    EffectNotAllowed "This function (old)" _ →',
     probe: 'fx-callback-argument', message: /callback argument: /
   },

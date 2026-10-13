@@ -4201,3 +4201,12 @@ exit 1 by design): 312 differences in 4,492 harvested sources and 5 in
 message is now an FX018 (or FX017) text, none an acceptance or Go change; 0
 in fuzz, `isName` and matches. The first verify attempts failed on the
 style gate (a `case` on `Either`) and on the two FX008 probes above.
+
+FX018 review fix (2026-10-13): an (a) or FX017 `write …` hint is printed only
+for a callback read once in the function (`Features.Check.LocalUses`); with a
+call outside and one inside a `with`, no one row serves both. The effect
+error's subject for a function value is a named constant (`thisFunction`),
+not a copy of the text. Verify exit 0 (.build/fx018-fix-verify.log):
+1298/1298 parallel, 53/53 serial, 84 proofs; differential (against 0a23784):
+421 harvested and 2 mutations differences, every one rejected by both
+compilers with an FX017/FX018 text.

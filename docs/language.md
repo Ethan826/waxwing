@@ -428,7 +428,12 @@ Limits, stated plainly.
   (FX018)`. Both keep the old text inside a lambda body, for a row nested
   in a label's payload, and for the other direction. The `write …` part is
   left out when the row it would write does not fix the call (a constructor
-  field's closed row, a caller wider than the callee).
+  field's closed row, a caller wider than the callee), and, for a
+  callback, when the callback is read more than once in the function: one
+  row cannot serve a call outside and a call inside a `with`. The notes are
+  bounded as all notes are (at most four besides path lines), so with three
+  or more installations, or a `handle` with several clauses, some `is
+  handled here` notes are dropped.
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
 - `let` is monomorphic. A local of type `A -> B with pure` is not accepted

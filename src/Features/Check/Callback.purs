@@ -4,7 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
-import Data.Maybe (Maybe(..), fromMaybe, isNothing)
+import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Traversable (traverse)
 import Domain.Note (NoteReason(..))
 import Domain.Problem (CallbackKind(..))
@@ -19,6 +19,7 @@ import Features.Check.CallbackParts
   , tailSuffix
   )
 import Features.Check.Context (CheckEnv)
+import Features.Check.LocalUses (usesOf)
 import Features.Check.Occurrence (OccurrenceId(..))
 import Features.Check.Provenance (Callee, Consumed(..), Origin)
 import Features.Check.Report (noteAt)
@@ -82,7 +83,7 @@ lacking kind env state origin named calleeRow = do
   installed ← handled env origin.span kind labels
   Left
     { problem: lacksProblem kind named env.functionName
-        { row, own, suffix: tailSuffix env tail, writable: true }
+        { row, own, suffix: tailSuffix env tail, writable: singleUse env named }
         labels
     , span: origin.span
     , related: calleeNotes named <> installed
@@ -116,3 +117,14 @@ handled env span kind labels = case kind of
     <$> traverse (labelName env span)
       (Array.take slice'.site.count (Array.drop slice'.offset labels))
   note site label = noteAt site.span (HandledHere label)
+
+-- The hint rewrites the parameter's row for this call; any other use of the
+-- parameter, outside or inside another `with`, has a row of its own to meet,
+-- and no one row may serve both. The hint is written only for a parameter
+-- read once in the function (a callee with no name has no hint at all).
+singleUse ∷ ∀ r. CheckEnv r → Maybe Callee → Boolean
+singleUse env = maybe false single
+  where
+  single callee = maybe false (once callee) (Array.find named env.functions)
+  named function = function.name == env.functionName
+  once callee function = usesOf callee.index function.body == 1

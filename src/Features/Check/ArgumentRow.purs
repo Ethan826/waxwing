@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Note (NoteReason(..))
-import Domain.Problem (CallbackKind(..), Problem(..))
+import Domain.Problem (CallbackKind(..), Problem(..), thisFunction)
 import Domain.Row (Label, Row(..))
 import Domain.Syntax (Diagnostic, Note, Span)
 import Domain.Type (Ty(..), TyRow)
@@ -59,10 +59,11 @@ argumentLacks
   → Maybe Diagnostic
 argumentLacks env state use index expected actual named diagnostic =
   case diagnostic.problem of
-    EffectNotAllowed "This function" _ →
-      topRows state expected (Checked.typeOf actual)
-        >>= short state
-        >>= reported
+    EffectNotAllowed who _
+      | who == thisFunction →
+          topRows state expected (Checked.typeOf actual)
+            >>= short state
+            >>= reported
     _ → Nothing
   where
   reported rows = either (const Nothing) Just

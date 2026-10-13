@@ -70,3 +70,24 @@ test('hints for an argument fix the call', () => {
   }
   assert.ok(hints > 30, `hints printed: ${hints}`);
 });
+
+test('hints for a callback used outside and inside a with fix the program', () => {
+  const inside = 'with handler M { m() => 1 } { q(y) }';
+  const forms = [`let y = q(x); ${inside}`,
+    `let y = with handler M { m() => 1 } { q(x) }; q(y)`,
+    `let y = q(x); let z = q(y); ${inside}`];
+  let hints = 0;
+  let unwritten = 0;
+  for (const callee of calleeRows) for (const caller of callerRows) {
+    for (const form of forms) {
+      const type = `Int -> Int ${callee}`;
+      const source = effects + `fn a(q: ${type}, x: Int): Int ${caller} = `
+        + `{ ${form} };` + tail;
+      hints += checked(source, `q: ${type},`,
+        row => `q: Int -> Int with ${row},`, false);
+      unwritten += /\(FX018\)$/.test(failure(source) ?? '') ? 1 : 0;
+    }
+  }
+  assert.ok(unwritten > 20, `FX018 texts without a hint: ${unwritten}`);
+  assert.equal(hints, 0, 'a used-twice callback gets no written hint');
+});

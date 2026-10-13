@@ -44,7 +44,8 @@ data Consumed
 -- (FX017): its name, and where its row is written (its `with`, or, with
 -- none written, the parameter's name: the resolved syntax keeps no span
 -- for its type).
-type Callee = { name ∷ String, rowSpan ∷ Span, written ∷ Boolean }
+type Callee =
+  { name ∷ String, index ∷ Int, rowSpan ∷ Span, written ∷ Boolean }
 
 -- The boundary a label crossed on its way to the rejection.
 data Boundary

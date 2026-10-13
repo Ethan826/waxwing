@@ -136,3 +136,76 @@ test('a payload holding a row: the hint is anonymous', () => {
       handled('M'), callerNote(`: Int with ${payload} =`, `with ${payload}`)]
   });
 });
+
+// One callback used both outside and inside a `with`: no one row serves
+// both calls, so the hint is left unwritten.
+const twice = (callee, caller, first, second) => effects
+  + `fn a(q: Int -> Int ${callee}, x: Int): Int ${caller} = { ${first} };` + main;
+const withM = 'with handler M { m() => 1 }';
+const anonymous = rowText => here('q', rowText, 'is L');
+test('a callback called outside and inside a with: no hint', () => {
+  const inside = `${withM} { q(y) }`;
+  expectDiagnostic(twice('with L', 'with L', `let y = q(x); ${inside}`), {
+    code: 'E_EFFECT', message: anonymous('M + L'), at: ['q(y)'],
+    notes: [calleeNote('q: Int -> Int with L,', 'with L'),
+      handled('M', inside), callerNote(': Int with L =', 'with L')]
+  });
+});
+
+test('the same, the call inside the with coming first', () => {
+  const inside = `${withM} { q(x) }`;
+  expectDiagnostic(twice('with L', 'with L', `let y = ${inside}; q(y)`), {
+    code: 'E_EFFECT', message: anonymous('M + L'), at: ['q(x)'],
+    notes: [calleeNote('q: Int -> Int with L,', 'with L'),
+      handled('M', inside), callerNote(': Int with L =', 'with L')]
+  });
+});
+
+test('the same with a named tail', () => {
+  const inside = `${withM} { q(y) }`;
+  expectDiagnostic(twice('with L + ...e', 'with L + ...e',
+    `let y = q(x); ${inside}`), {
+    code: 'E_EFFECT', message: anonymous('M + L'), at: ['q(y)'],
+    notes: [calleeNote('q: Int -> Int with L + ...e,', 'with L + ...e'),
+      handled('M', inside), callerNote(': Int with L + ...e =', 'with L + ...e')]
+  });
+});
+
+test('a nofail label prints with its mark; the hint compiles', () => {
+  const log = 'effect Log { fn log(n: Int): Unit; }; effect M { fn m(): Int; }; ';
+  const source = log + 'fn a(q: Int -> Int with nofail Log, x: Int): Int '
+    + `with nofail Log = { ${install}with h { q(x) } };` + main;
+  expectDiagnostic(source, {
+    code: 'E_EFFECT',
+    message: here('q', 'M + nofail Log', 'is nofail Log',
+      write('q', 'M + nofail Log')),
+    at: ['q(x)'],
+    notes: [calleeNote('q: Int -> Int with nofail Log,', 'with nofail Log'),
+      handled('M'), callerNote(': Int with nofail Log =', 'with nofail Log')]
+  });
+  applyHint(source, 'q: Int -> Int with nofail Log,',
+    row => `q: Int -> Int with ${row},`);
+});
+
+test('under a lambda the old text stays', () => {
+  expectDiagnostic(effects + 'fn a(q: Int -> Int with L, x: Int): Int with L '
+    + `= { ${install}let f = fn(y: Int) => with h { q(y) }; f(1) };` + main, {
+    code: 'E_EFFECT',
+    message: 'a performs M, which its signature does not allow',
+    at: ['q(y)'],
+    notes: [[': Int with L =', 'with L', 'the signature of a does not allow M']]
+  });
+});
+
+test('a leftover nested in a payload keeps the old text under a with', () => {
+  expectDiagnostic(effects + 'effect S(s) { fn get(): s; }; '
+    + 'fn a(q: Int -> Int with S(Int -> Int with L), x: Int): Int '
+    + `with S(Int -> Int with L + M) = { ${install}with h { q(x) } };` + main, {
+    code: 'E_EFFECT',
+    message: 'a performs M, which its signature does not allow',
+    at: ['q(x)'],
+    notes: [[': Int with S(Int -> Int with L + M) =',
+      'with S(Int -> Int with L + M)',
+      'the signature of a does not allow M']]
+  });
+});
