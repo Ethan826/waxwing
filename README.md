@@ -34,13 +34,17 @@ marked as such, and their syntax is illustrative until it has a design.
 
 This is `examples/services.wxw`, which compiles and runs today. Services are
 declared as **effects**, and functions name the effects they use. A
-**handler** is an ordinary value that implements an effect. `main` builds
-real or fake handlers and installs them with `with`.
+**handler** is an ordinary value that implements an effect. Each
+implementation is constructed by a function and injected where `main`
+installs it with `with`; program code never checks which one it got, and the
+tests inject fakes into the same functions.
 
 ```rust
 effect Database { fn query(id: Int): Int; };
 effect Clock { fn now(): Int; };
 effect Log { fn log(n: Int): Unit; };
+
+fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
 
 fn fetch(id: Int): Int with Database + Log = {
   let row = query(id);
@@ -54,10 +58,8 @@ fn stamp(id: Int): Int with Clock + Log = {
   at
 };
 
-fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
-
 fn audited(id: Int): Int with Database + Clock + nofail Log = {
-  defer closeLog(id);   // runs on every exit; may not fail
+  defer closeLog(id);
   defer log(id);
   fetch(id) + stamp(id)
 };
@@ -66,29 +68,31 @@ fn report(first: Int, second: Int): Int
     with Database + Clock + nofail Log =
   audited(first) + audited(second);
 
-fn main(): Unit with Console = {
-  let live = true;
-  let database = if live then handler Database { query(id) => id + id }
-    else handler Database { query(id) => 7 };
-  let clock = if live then handler Clock { now() => 100 }
-    else handler Clock { now() => 0 };
-  let logger = if live then handler Log { log(n) => print(n) }
-    else handler Log { log(n) => () };
-  with database { with clock { with logger {
-    print(report(1, 2));
-    print(report(3, 4))
-  } } }
-};
-```
+fn liveDatabase(): Handler(Database with pure) =
+  handler Database { query(id) => id + id };
 
-(Waxwing has no comments yet. The `//` notes on this page are annotations
-for the reader, not part of the source.)
+fn systemClock(): Handler(Clock with pure) =
+  handler Clock { now() => 100 };
+
+fn consoleLogger(): Handler(nofail Log with Console + ...e) =
+  handler Log { log(n) => print(n) };
+
+fn main(): Unit with Console =
+  with liveDatabase() {
+    with systemClock() {
+      with consoleLogger() {
+        print(report(1, 2));
+        print(report(3, 4))
+      }
+    }
+  };
+```
 
 The program is checked end to end:
 
 - **Effects compose.** `audited` uses `fetch` and `stamp`, so its row must
   cover theirs. A function cannot perform an effect its signature omits.
-- **`main` must handle every effect** except Console. Drop the `with clock`
+- **`main` must handle every effect** except Console. Drop the `with systemClock()`
   line and the compiler explains where the requirement came from. This is
 the JSON diagnostic, rendered:
 
@@ -389,8 +393,8 @@ Both execution paths print `42` for the answer example. `main` may return any
 type: the executable prints the value in the coverage-witness format (`5`,
 `true`, `Node(Leaf, 1, Node(...))`, negative integers with `-`), and
 examples/tree.wxw prints a binary search tree. examples/services.wxw composes
-services with overlapping effects (Database, Clock, Log) and selects real or
-fake handlers in `main`; a program using `defer` or `crash` that ends in a
+services with overlapping effects (Database, Clock, Log) and constructs and
+installs its handlers in `main` (the tests inject fakes); a program using `defer` or `crash` that ends in a
 defect prints one report on stderr and exits 1. Comparisons are built in,
 non-chaining and looser than `+`, with one structural order (constructor
 declaration order, then fields left to right; ADR 005). `emit` writes

@@ -336,6 +336,12 @@ left-over label is E_EFFECT `Unhandled Database in main`, with notes naming
 the path from the call that needs it (test/fx-diagnostics.test.mjs,
 test/fx-services.test.mjs).
 
+Injection. Construct each implementation as a handler value and install it
+at the composition root; never select one with a flag (`if live then …`).
+Program code takes effects through its row and does not check which
+implementation it got; tests install fakes in a `main` of their own
+(examples/services.wxw, test/fx-services-programs.mjs).
+
 Handlers. Handlers are deep and dynamically scoped: an operation goes to
 the innermost installed handler for its key at the moment it runs, and a
 closure keeps no handler. A clause runs in the context of its `with`,

@@ -4210,3 +4210,24 @@ not a copy of the text. Verify exit 0 (.build/fx018-fix-verify.log):
 1298/1298 parallel, 53/53 serial, 84 proofs; differential (against 0a23784):
 421 harvested and 2 mutations differences, every one rejected by both
 compilers with an FX017/FX018 text.
+
+## Services example injects implementations (2026-10-13)
+
+Principle (user): never choose an implementation with a control-flow
+artifact; construct each as a value and inject it at the composition root.
+examples/services.wxw now has `liveDatabase`, `systemClock` and
+`consoleLogger` constructors and a `main` that installs them with `with`;
+no `live` flag, no `if`. The tests build `fakeDatabase`, `fixedClock` and
+`silentLogger` and their own `main` (test/fx-services-programs.mjs); the
+effect-free baseline takes lambdas from named constructors. Outputs are
+unchanged (live and fake). The dropped-handler diagnostic is unchanged in
+text: `Unhandled Clock in main` with the through, origin and boundary notes
+(drop `with systemClock()`). Key breakdown: before 9 keys (0 type, 6
+function, 3 effect; baseline 6), after 12 (0 type, 9 function, 3 effect;
+baseline 9). bootstrap/services.go regenerated; the other snapshots are
+byte-identical. Mark sharing moved to test/fx-services-marks.test.mjs (an
+`if` between two Log handlers reached by a `nofail Log` cleanup: accepted
+when both are fail-free, `Expected nofail Log, found Log` when one may
+fail). An entry function taking the handlers as parameters could not be
+written: BACKLOG FX019 (the logger needs the named tail
+`Handler(nofail Log with Console + ...e)`). No compiler change.

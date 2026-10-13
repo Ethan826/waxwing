@@ -782,6 +782,9 @@ programs at `Features.Check.Unlowered` (Global Constraints).
     that label, along every cleanup call chain, up to the declaration that
     installs the handler (`nofail(k)` lets a wrapper pass the assumption
     through without fixing it).
+  - Superseded 2026-10-13: the selection-by-`if` requirement below gave way
+    to injection (constructed handlers installed in `main`, fakes in the
+    tests); mark sharing is covered by test/fx-services-marks.test.mjs.
   - The real and the fake handlers that `if` or `match` selects in `main`
     share one mark, so each handler a cleanup reaches is fail-free in both
     forms, or handles its own failures inside its clauses.

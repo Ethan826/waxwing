@@ -26,16 +26,21 @@ fn report(first: Int, second: Int): Int
     with Database + Clock + nofail Log =
   audited(first) + audited(second);
 
-fn main(): Unit with Console = {
-  let live = true;
-  let database = if live then handler Database { query(id) => id + id }
-    else handler Database { query(id) => 7 };
-  let clock = if live then handler Clock { now() => 100 }
-    else handler Clock { now() => 0 };
-  let logger = if live then handler Log { log(n) => print(n) }
-    else handler Log { log(n) => () };
-  with database { with clock { with logger {
-    print(report(1, 2));
-    print(report(3, 4))
-  } } }
-};
+fn liveDatabase(): Handler(Database with pure) =
+  handler Database { query(id) => id + id };
+
+fn systemClock(): Handler(Clock with pure) =
+  handler Clock { now() => 100 };
+
+fn consoleLogger(): Handler(nofail Log with Console + ...e) =
+  handler Log { log(n) => print(n) };
+
+fn main(): Unit with Console =
+  with liveDatabase() {
+    with systemClock() {
+      with consoleLogger() {
+        print(report(1, 2));
+        print(report(3, 4))
+      }
+    }
+  };

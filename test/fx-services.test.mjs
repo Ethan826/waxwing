@@ -9,15 +9,15 @@ import { baseline, dropped, fake, fakeOutput, realOutput, scenario }
 
 // FX001 Task 11 (design §5, acceptance scenario): services with overlapping
 // requirements, composed with no row annotations beyond each function's own
-// labels; real and stateless fake handlers built inline in `main` and
-// selected there; cleanup only through `defer`, with `nofail` marks along
-// the cleanup chain (FX008 amendment).
-test('real handlers selected in main, through the CLI', () => {
+// labels; implementations constructed by named functions and installed in
+// `main`, never selected by a flag (injection, 2026-10-13); cleanup only
+// through `defer`, with `nofail` marks along the cleanup chain (FX008).
+test('live handlers constructed and installed in main, through the CLI', () => {
   assert.equal(command('node', ['scripts/waxwing.mjs', 'run',
     'examples/services.wxw']), realOutput);
 });
 
-test('stateless fake handlers selected in main', () => {
+test('stateless fakes constructed and installed by their own main', () => {
   assert.equal(runGo(fake), fakeOutput);
 });
 
@@ -26,7 +26,7 @@ test('the example matches its Go snapshot byte for byte', () => {
 });
 
 test('a dropped handler: headline, origin, path and boundary notes', () => {
-  const main = /fn main\(\): Unit with Console = \{[^]*\n\};/.exec(dropped)[0];
+  const main = /fn main\(\): Unit with Console =\n[^]*\n  \};/.exec(dropped)[0];
   expectDiagnostic(dropped, {
     code: 'E_EFFECT', message: 'Unhandled Clock in main', at: ['report(1, 2)'],
     notes: [['audited(first)', 'audited(first)', 'through report'],
@@ -56,4 +56,6 @@ test('keys equal the effect-free baseline plus the effect keys (F6)', t => {
   assert.deepEqual(keyNames(full, true),
     ['effect Clock[]', 'effect Database[]', 'effect Log[]']);
   assert.equal(full.length, plain.length + extra.length);
+  assert.deepEqual([typeKeys(full).length, functionKeys(full).length,
+    keyNames(full, true).length, plain.length], [0, 9, 3, 9]);
 });

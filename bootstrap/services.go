@@ -218,72 +218,60 @@ func waxwingFn4(ctx *waxwingCtx, waxwingLocal0 int32, waxwingLocal1 int32) int32
 return waxwingAdd(waxwingFn3(ctx, waxwingLocal0), waxwingFn3(ctx, waxwingLocal1))
 }
 
-func waxwingFn5(ctx *waxwingCtx) struct{} {
-return waxwingFn5Block0(ctx)
+func waxwingFn5(ctx *waxwingCtx) *waxwingEff1 {
+return &waxwingEff1{op0: waxwingFn5Lambda0}
 }
 
-func waxwingFn5Block0(ctx *waxwingCtx) struct{} {
-var waxwingLocal0 bool = true
-_ = waxwingLocal0
-var waxwingLocal1 *waxwingEff1 = func() *waxwingEff1 { if waxwingLocal0 { return &waxwingEff1{op0: waxwingFn5Lambda1} }; return &waxwingEff1{op0: waxwingFn5Lambda2} }()
-_ = waxwingLocal1
-var waxwingLocal4 *waxwingEff2 = func() *waxwingEff2 { if waxwingLocal0 { return &waxwingEff2{op0: waxwingFn5Lambda3} }; return &waxwingEff2{op0: waxwingFn5Lambda4} }()
-_ = waxwingLocal4
-var waxwingLocal5 *waxwingEff0 = func() *waxwingEff0 { if waxwingLocal0 { return &waxwingEff0{op0: waxwingFn5Lambda5} }; return &waxwingEff0{op0: waxwingFn5Lambda6} }()
-_ = waxwingLocal5
-return waxwingFn5With7(ctx, waxwingLocal4, waxwingLocal5, waxwingLocal1)
+func waxwingFn5Lambda0(ctx *waxwingCtx, waxwingLocal0 int32) int32 {
+return waxwingAdd(waxwingLocal0, waxwingLocal0)
 }
 
-func waxwingFn5Lambda1(ctx *waxwingCtx, waxwingLocal2 int32) int32 {
-return waxwingAdd(waxwingLocal2, waxwingLocal2)
+func waxwingFn6(ctx *waxwingCtx) *waxwingEff2 {
+return &waxwingEff2{op0: waxwingFn6Lambda0}
 }
 
-func waxwingFn5Lambda2(ctx *waxwingCtx, waxwingLocal3 int32) int32 {
-return int32(7)
-}
-
-func waxwingFn5Lambda3(ctx *waxwingCtx) int32 {
+func waxwingFn6Lambda0(ctx *waxwingCtx) int32 {
 return int32(100)
 }
 
-func waxwingFn5Lambda4(ctx *waxwingCtx) int32 {
-return int32(0)
+func waxwingFn7(ctx *waxwingCtx) *waxwingEff0 {
+return &waxwingEff0{op0: waxwingFn7Lambda0}
 }
 
-func waxwingFn5Lambda5(ctx *waxwingCtx, waxwingLocal6 int32) struct{} {
-return func() struct{} { fmt.Println(waxwingLocal6); return struct{}{} }()
+func waxwingFn7Lambda0(ctx *waxwingCtx, waxwingLocal0 int32) struct{} {
+return func() struct{} { fmt.Println(waxwingLocal0); return struct{}{} }()
 }
 
-func waxwingFn5Lambda6(ctx *waxwingCtx, waxwingLocal7 int32) struct{} {
-return struct{}{}
+func waxwingFn8(ctx *waxwingCtx) struct{} {
+return waxwingFn8With0(ctx, waxwingFn5(ctx))
 }
 
-func waxwingFn5With7(ctx *waxwingCtx, waxwingLocal4 *waxwingEff2, waxwingLocal5 *waxwingEff0, waxwingHandler *waxwingEff1) struct{} {
+func waxwingFn8With0(ctx *waxwingCtx, waxwingHandler *waxwingEff1) struct{} {
 ctx = waxwingInstall(ctx, 1, waxwingHandler)
-return waxwingFn5Block8(ctx, waxwingLocal4, waxwingLocal5)
+return waxwingFn8Block1(ctx)
 }
 
-func waxwingFn5Block8(ctx *waxwingCtx, waxwingLocal4 *waxwingEff2, waxwingLocal5 *waxwingEff0) struct{} {
-return waxwingFn5With9(ctx, waxwingLocal5, waxwingLocal4)
+func waxwingFn8Block1(ctx *waxwingCtx) struct{} {
+return waxwingFn8With2(ctx, waxwingFn6(ctx))
 }
 
-func waxwingFn5With9(ctx *waxwingCtx, waxwingLocal5 *waxwingEff0, waxwingHandler *waxwingEff2) struct{} {
+func waxwingFn8With2(ctx *waxwingCtx, waxwingHandler *waxwingEff2) struct{} {
 ctx = waxwingInstall(ctx, 2, waxwingHandler)
-return waxwingFn5Block10(ctx, waxwingLocal5)
+return waxwingFn8Block3(ctx)
 }
 
-func waxwingFn5Block10(ctx *waxwingCtx, waxwingLocal5 *waxwingEff0) struct{} {
-return waxwingFn5With11(ctx, waxwingLocal5)
+func waxwingFn8Block3(ctx *waxwingCtx) struct{} {
+return waxwingFn8With4(ctx, waxwingFn7(ctx))
 }
 
-func waxwingFn5With11(ctx *waxwingCtx, waxwingHandler *waxwingEff0) struct{} {
+func waxwingFn8With4(ctx *waxwingCtx, waxwingHandler *waxwingEff0) struct{} {
 ctx = waxwingInstall(ctx, 3, waxwingHandler)
-return waxwingFn5Block12(ctx)
+return waxwingFn8Block5(ctx)
 }
 
-func waxwingFn5Block12(ctx *waxwingCtx) struct{} {
+func waxwingFn8Block5(ctx *waxwingCtx) struct{} {
 _ = func() struct{} { fmt.Println(waxwingFn4(ctx, int32(1), int32(2))); return struct{}{} }()
 return func() struct{} { fmt.Println(waxwingFn4(ctx, int32(3), int32(4))); return struct{}{} }()
 }
 
-func main() { defer waxwingReport(); waxwingFn5(nil) }
+func main() { defer waxwingReport(); waxwingFn8(nil) }

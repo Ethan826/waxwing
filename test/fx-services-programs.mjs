@@ -10,17 +10,33 @@ export const realOutput = '2\n101\n1\n1001\n4\n102\n2\n1002\n206\n'
   + '6\n103\n3\n1003\n8\n104\n4\n1004\n214\n';
 export const fakeOutput = '14\n14\n';
 
-// Only the live handlers become fakes: the programs differ in one binding.
-export const fake = scenario.replace('let live = true;', 'let live = false;');
+// Fakes are constructed here and injected by their own `main`; the
+// declarations are the example's, up to its first constructor.
+const declarations = scenario.slice(0, scenario.indexOf('fn liveDatabase'));
+const fakes = `fn fakeDatabase(): Handler(Database with pure) =
+  handler Database { query(id) => 7 };
+
+fn fixedClock(): Handler(Clock with pure) =
+  handler Clock { now() => 0 };
+
+fn silentLogger(): Handler(nofail Log with Console + ...e) =
+  handler Log { log(n) => () };
+
+`;
+const injected = scenario.slice(scenario.indexOf('fn main'));
+export const fake = declarations + fakes + injected
+  .replace('liveDatabase', 'fakeDatabase').replace('systemClock', 'fixedClock')
+  .replace('consoleLogger', 'silentLogger');
 
 // The same scenario with one handler dropped (the Clock one).
 export const dropped = scenario
-  .replace('with clock { with logger {', 'with logger {')
-  .replace('} } }\n};', '} }\n};');
+  .replace('    with systemClock() {\n', '')
+  .replace('      with consoleLogger() {', '    with consoleLogger() {')
+  .replace('      }\n    }\n  };', '    }\n  };');
 
 // The effect-free baseline (ruling F6): each operation a plain function
-// parameter, each inline handler value inline lambdas of the operations'
-// types, passed where the handler was installed. Same declaration names.
+// parameter, each handler a lambda of the operations' types
+// built by a named constructor and passed where it was installed. Same declaration names.
 // Every callback is `with pure`: a deferred callback of an open row (an
 // ambient one, or `with Console`, which keeps a rigid tail) is rejected by
 // the mark check, so the baseline's log lambda cannot print. Only its keys
@@ -54,11 +70,16 @@ fn report(query: Int -> Int with pure, now: Unit -> Int with pure,
     log: Int -> Unit with pure, first: Int, second: Int): Int with pure =
   audited(query, now, log, first) + audited(query, now, log, second);
 
+fn liveDatabase(): Int -> Int with pure = fn(id: Int) => id + id;
+
+fn systemClock(): Unit -> Int with pure = fn(u: Unit) => 100;
+
+fn consoleLogger(): Int -> Unit with pure = fn(n: Int) => ();
+
 fn main(): Unit with Console = {
-  let live = true;
-  let query = if live then fn(id: Int) => id + id else fn(id: Int) => 7;
-  let now = if live then fn(u: Unit) => 100 else fn(u: Unit) => 0;
-  let log = if live then fn(n: Int) => () else fn(n: Int) => ();
+  let query = liveDatabase();
+  let now = systemClock();
+  let log = consoleLogger();
   print(report(query, now, log, 1, 2));
   print(report(query, now, log, 3, 4))
 };
