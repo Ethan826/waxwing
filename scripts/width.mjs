@@ -4,8 +4,9 @@ import { pathToFileURL } from 'node:url';
 
 // Lists every line over 80 code points in the tracked .md, .mjs, .js and
 // .wxw files. Usage: node scripts/width.mjs [--exclude <file>]. The file
-// names paths to skip, one per line (relative to the repository root); phase
-// 1 of the 80-column sweep skips the files the Text branch changes.
+// names paths to skip, one per line (relative to the repository root).
+// Skipped always: vendored skills, patches, bootstrap snapshots, generated
+// editor snapshots and lock files.
 // Exempt, in Markdown outside code fences only: table rows, ATX headings
 // (a heading is one line), and a line that is a single unbreakable token or
 // one whole `[text](target)` link after its indent and list marker. Inside
@@ -13,14 +14,15 @@ import { pathToFileURL } from 'node:url';
 export const maximumColumns = 80;
 const sourceFile = /\.(md|mjs|js|wxw)$/;
 const skippedPrefixes = [
-  '.agents/', '.claude/skills/', 'docs/patches/', 'bootstrap/'
+  '.agents/', '.claude/skills/', 'docs/patches/', 'bootstrap/',
+  'editors/vscode/snapshots/'
 ];
 const skippedNames = [
   'spago.lock', 'skills-lock.json', 'bun.lock', 'package-lock.json'
 ];
 
 const columnsOf = line => [...line].length;
-const fence = /^\s*(>\s*)*(```|~~~)/;
+const fence = /^\s*(>\s*)*(`{3,}|~{3,})(.*)$/;
 const marker = /^(\s*(>\s*)*([-*+]|\d+[.)])?\s+)/;
 const bareUrl = /^\S*:\/\/\S*( \\)?$/;
 const wholeLink = /^\[[^\]]*\]\([^)\s]*\)\S*$/;
@@ -33,10 +35,23 @@ const unbreakable = line => {
 const exemptMarkdown = line => line.trimStart().startsWith('|') ||
   /^ {0,3}#{1,6}(\s|$)/.test(line) || unbreakable(line);
 
+// A fence opens with 3 or more backticks or tildes and closes only with the
+// same character, at least as many times, and nothing after it.
+const fenceStep = (open, line) => {
+  const found = fence.exec(line);
+  if (!found) return open;
+  const [, , run, rest] = found;
+  if (open === null) return run;
+  const closes = run[0] === open[0] && run.length >= open.length &&
+    rest.trim() === '';
+  return closes ? null : open;
+};
+
 export const wideLinesOf = (file, text) => {
-  let inFence = false;
+  let open = null;
   return text.split('\n').flatMap((line, index) => {
-    if (file.endsWith('.md') && fence.test(line)) inFence = !inFence;
+    if (file.endsWith('.md')) open = fenceStep(open, line);
+    const inFence = open !== null;
     const columns = columnsOf(line);
     const exempt = file.endsWith('.md') &&
       (inFence ? bareUrl.test(line.trim()) : exemptMarkdown(line));
@@ -67,4 +82,5 @@ const main = () => {
   process.exitCode = findings.length === 0 ? 0 : 1;
 };
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main();
+const entry = process.argv[1];
+if (entry && import.meta.url === pathToFileURL(entry).href) main();

@@ -32,3 +32,18 @@ test('source files have no exemptions', () => {
   assert.equal(flagged('a.mjs', `// ${url}\n`), 1);
   assert.equal(flagged('a.wxw', `${pad}x\n`), 1);
 });
+
+test('a fence closes only on its own character and length or more', () => {
+  const row = `| a | ${pad} |`;
+  assert.equal(flagged('a.md', `\`\`\`\`\n\`\`\`\n${row}\n\`\`\`\`\n`), 1);
+  assert.equal(flagged('a.md', `~~~\n\`\`\`\n${row}\n~~~\n${row}\n`), 1);
+  const info = `\`\`\`\n\`\`\`js\n${row}\n\`\`\`\n${row}\n`;
+  assert.equal(flagged('a.md', info), 1);
+});
+
+test('importing the checker without a script path does not throw', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const run = spawnSync(process.execPath, ['--input-type=module', '-e',
+    "await import('./scripts/width.mjs');"], { encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stderr);
+});
