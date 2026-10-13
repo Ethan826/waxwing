@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 // Lists every line over 80 code points in the tracked .md, .mjs, .js and
 // .wxw files. Usage: node scripts/width.mjs [--exclude <file>]. The file
 // names paths to skip, one per line; phase 1 of the 80-column sweep skips
-// the files the Text branch changes.
+// the files the Text branch changes. Exempt: Markdown table rows, and lines
+// whose only overflow is a URL or link target.
 const maximumColumns = 80;
 const sourceFile = /\.(md|mjs|js|wxw)$/;
 const skippedPrefixes = [
@@ -27,11 +28,17 @@ const inScope = file => sourceFile.test(file) && !excluded.has(file) &&
 const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' })
   .split('\0').filter(inScope);
 
+const linkTarget = /\]\([^)\s]*\)|<https?:[^>\s]*>|https?:\/\/[^\s)>]*/g;
+const columnsOf = line => [...line].length;
+
+const exempt = (file, line) =>
+  file.endsWith('.md') && (line.trimStart().startsWith('|') ||
+    columnsOf(line.replace(linkTarget, '')) <= maximumColumns);
+
 const wideLines = file =>
-  readFileSync(file, 'utf8').split('\n').flatMap((line, index) => {
-    const columns = [...line].length;
-    return columns > maximumColumns ? [`${file}:${index + 1}: ${columns}`] : [];
-  });
+  readFileSync(file, 'utf8').split('\n').flatMap((line, index) =>
+    columnsOf(line) > maximumColumns && !exempt(file, line) ?
+      [`${file}:${index + 1}: ${columnsOf(line)}`] : []);
 
 const findings = tracked.flatMap(wideLines);
 
