@@ -147,8 +147,8 @@ E_SYNTAX at the offending name, each with a note at the first binding.
   `with Database as Log` is rejected even when `Log` is absent from the
   row, because otherwise `Log.query` would mean Database and contradict
   canonical lookup.
-  - Text (approved 2026-10-13; this broadens the earlier "… in this row"): `Log is
-    already an effect name`.
+  - Text (approved 2026-10-13; this broadens the earlier "… in this row"):
+    `Log is already an effect name`.
   - Note: `declared here` at the effect declaration, or `first bound
     here` at the earlier alias.
 - Alias or import syntax in any row other than a function declaration's
