@@ -34,6 +34,14 @@ const cases = [
     + '{ defer print("[${t()}]"); print("hi") };'],
   ['handled operation', who + 'fn main(): Unit with Console = '
     + 'with handler Who { who() => "Ada" } { print("Hi ${who()}!") };'],
+  ['failing hole stops later holes', 'type Err = Err1; '
+    + 'fn t(n: Int): Text with Console = { print(n); "x" }; '
+    + 'fn bad(): Text with Fail(Err) = { fail(Err1); "y" }; '
+    + 'fn main(): Unit with Console = print(handle '
+    + '"${t(1)}${bad()}${t(2)}" { fail(error: Err) => "caught" });'],
+  ['brace text in a block', main('Text', '"${ { "}" } }"')],
+  ['brace text in a handler', who + 'fn main(): Text = '
+    + '"${ with handler Who { who() => "}" } { who() } }";'],
   ['non-BMP', id + main('Text', '"\u{1F600}${id("\u{1F600}")}\u{1F600}"')]
 ];
 const batch = runGoBatch(import.meta.url, cases);
@@ -55,6 +63,9 @@ out('match braces', 'x!\n');
 out('hole in a hole', 'z\n');
 out('defer', 'hi\n0\n[x]\n');
 out('handled operation', 'Hi Ada!\n');
+out('failing hole stops later holes', '1\ncaught\n');
+out('brace text in a block', '}\n');
+out('brace text in a handler', '}\n');
 out('non-BMP', '\u{1F600}\u{1F600}\u{1F600}\n');
 
 const head = 'fn main(): Text = ';
@@ -129,7 +140,8 @@ test('10,000 nested holes give the same diagnostic, with no overflow', () => {
 
 test('a 10,000-deep unclosed nesting stops at the limit too', () => {
   const diagnostic = rejected(main('Text', '"${'.repeat(10000)), 'E_NESTING');
-  assert.equal(diagnostic.span.start.offset, holeStart(129));
+  assert.equal(diagnostic.message, 'Nesting exceeds 128 levels');
+  assert.deepEqual(diagnostic.span, span(holeStart(129), holeStart(129) + 2));
 });
 
 test('10,000 holes in one literal compile', () => {

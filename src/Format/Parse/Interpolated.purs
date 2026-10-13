@@ -8,7 +8,15 @@ import Data.Maybe (maybe')
 import Data.String.Common (joinWith)
 import Domain.Syntax (Diagnostic, Expr(..), Span)
 import Format.Lex (Token, TokenKind(..))
-import Format.Parse.Cursor (Parsed, Run, State, advance, current, failAt)
+import Format.Parse.Cursor
+  ( Parsed
+  , Run
+  , State
+  , advance
+  , current
+  , expected
+  , failAt
+  )
 import Format.Stack (Stack)
 import Format.Stack as Stack
 
@@ -83,7 +91,7 @@ closing walk parsed close = case close.kind of
   _ → unbalanced parsed unit
 
 unbalanced ∷ ∀ a. Parsed Expr → Unit → Either Diagnostic a
-unbalanced parsed _ = failAt parsed.rest "Expected '}'"
+unbalanced parsed _ = failAt parsed.rest (expected "}")
 
 -- A literal the lexer left unclosed cannot occur.
 stuck ∷ ∀ a. Walk → Unit → Either Diagnostic a

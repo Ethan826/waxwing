@@ -14,12 +14,14 @@ test('print of a literal writes it raw', () => {
 });
 
 test('every ordinary escape decodes', () => {
-  const source = 'fn main(): Text = "\\n|\\r|\\t|\\"|\\\\|\\$|\\u{41}|\\u{0041}";';
+  const source = 'fn main(): Text = '
+    + '"\\n|\\r|\\t|\\"|\\\\|\\$|\\u{41}|\\u{0041}";';
   assert.equal(runGo(source), '\n|\r|\t|"|\\|$|A|A\n');
 });
 
 test('control and non-printing scalars survive the Go literal', () => {
-  const source = 'fn main(): Text = "\\u{1}\\u{7F}\\u{85}\\u{FFFD}\\u{10FFFF}";';
+  const source = 'fn main(): Text = '
+    + '"\\u{1}\\u{7F}\\u{85}\\u{FFFD}\\u{10FFFF}";';
   assert.equal(runGo(source), '\u0001\u007f\u0085\ufffd\u{10FFFF}\n');
 });
 
@@ -55,7 +57,7 @@ test('an Int where a Text is expected is a type error', () => {
   assert.equal(diagnostic.message, 'Expected Text, found Int');
 });
 
-test('Text is not a pattern literal, so match over it needs a catch-all', () => {
+test('Text is no pattern literal, so match over it needs a catch-all', () => {
   const source = 'fn main(): Int = match "a" { _ => 1, };';
   assert.match(checked(source), /main/);
 });

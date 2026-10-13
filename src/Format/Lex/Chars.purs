@@ -10,11 +10,13 @@ module Format.Lex.Chars
   , isDigit
   , isNameChar
   , isUpper
+  , hashesEnd
+  , repeated
   ) where
 
 import Prelude
 import Data.Array as Array
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.String.CodeUnits as String
 
 -- Deeper nesting is E_NESTING (ADR 006 derives the number from the measured
@@ -118,3 +120,15 @@ isUpper text = maybe false upper (String.charAt 0 text)
 
 lineBreak ∷ Char → Boolean
 lineBreak character = character == '\n' || character == '\r'
+
+-- The index after the run of `#`s that starts at `index`. A self tail call,
+-- which purs compiles to a loop.
+hashesEnd ∷ String → Int → Int
+hashesEnd source index =
+  if String.charAt index source == Just '#' then hashesEnd source (index + 1)
+  else index
+
+-- `count` copies of a character.
+repeated ∷ Char → Int → String
+repeated character count = String.fromCharArray
+  (Array.replicate count character)

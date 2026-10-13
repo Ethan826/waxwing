@@ -41,6 +41,7 @@ import Format.Parse.Cursor (Parsed, Run, State, initialState) as Exports
 import Format.Parse.Cursor
   ( Continue
   , Run
+  , expected
   , failAt
   , foldAt
   , groupedAt
@@ -98,7 +99,7 @@ textLiteral hole = Parser (takeText (run hole))
 
 expect ∷ String → Parser Token
 expect text = dispatch [ on text token ]
-  (failWith ("Expected '" <> text <> "'"))
+  (failWith (expected text))
 
 name ∷ Parser Token
 name = dispatch [ onWhen isName token ] (failWith "Expected an identifier")

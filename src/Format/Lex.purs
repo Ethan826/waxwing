@@ -1,8 +1,8 @@
 module Format.Lex
   ( module Format.Lex.Token
   , lex
+  , module Exports
   , isName
-  , isUpper
   , endPosition
   ) where
 
@@ -15,9 +15,10 @@ import Data.String.CodePoints as CodePoints
 import Data.String.CodeUnits as String
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Position, origin, problemAt)
-import Format.Lex.Chars as Chars
+import Format.Lex.Chars (isUpper) as Exports
 import Format.Lex.Chars
-  ( isDigit
+  ( hashesEnd
+  , isDigit
   , isLetter
   , isNameChar
   , isSpace
@@ -74,6 +75,7 @@ scanAt source state head
   | isLetter head = continue (word source state isNameChar)
   | isDigit head = continue (word source state isDigit)
   | head == '"' = quoted source state
+  | head == '#', rawStart source state.index = quoted source state
   | head == '{' = continue (opened state)
   | head == '}' = closed source state
   | head == '.', String.slice state.index (state.index + 3) source == "..." =
@@ -82,6 +84,11 @@ scanAt source state head
       continue (emit text state)
   | punctuation head = continue (emit (String.singleton head) state)
   | otherwise = unexpected source state
+
+-- `#`s, then the quote of a raw or extended literal.
+rawStart ∷ String → Int → Boolean
+rawStart source index =
+  String.charAt (hashesEnd source index) source == Just '"'
 
 continue ∷ Scan → Scanned
 continue state = Right (Loop state)
@@ -147,7 +154,3 @@ advance position character =
   nextLine = { offset: position.offset + 1, line: position.line + 1, column: 1 }
   nextColumn = position
     { offset = position.offset + 1, column = position.column + 1 }
-
--- Defined in Format.Lex.Chars; a value cannot be re-exported by name.
-isUpper ∷ String → Boolean
-isUpper = Chars.isUpper

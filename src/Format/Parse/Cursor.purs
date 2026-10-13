@@ -9,6 +9,7 @@ module Format.Parse.Cursor
   , peekText
   , nextSpan
   , failAt
+  , expected
   , initialState
   , nestedAt
   , rootedAt
@@ -102,6 +103,10 @@ nextSpan state = maybe' endSpan tokenSpan (current state)
 
 current ∷ State → Maybe Token
 current state = Array.index state.tokens state.index
+
+-- The message for a missing fixed token.
+expected ∷ String → String
+expected text = "Expected '" <> text <> "'"
 
 failAt ∷ ∀ a. State → String → Either Diagnostic a
 failAt state message = Left (problemAt (Syntax message) (nextSpan state))
