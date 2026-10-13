@@ -158,8 +158,10 @@ its *indent*, is removed from every content line.
   UTF-16 code-unit offsets"; line and column one based). A character
   outside the BMP therefore counts as 2 in offsets and columns. Tests pin
   this with non-ASCII text before an error.
-- The lexer must iterate by code point, not by UTF-16 unit, wherever it
-  classifies characters.
+- The lexer must never split a surrogate pair. As built (Task 2), it walks
+  UTF-16 units: every character it classifies is ASCII, so it only slices
+  at ASCII boundaries. Wherever it quotes a following character, it takes
+  one whole code point.
 
 ## 3. Compiler structure
 
@@ -245,6 +247,11 @@ All of these are E_SYNTAX. Spans follow the location convention of §2:
 | Unterminated literal | the opening delimiter (`#`s and quotes) |
 | Line break (LF or lone CR) | from the opening delimiter to the end of that line |
 | Unknown or invalid escape | the whole escape, from `\` to its last character |
+
+As built (Task 2): `\u` not followed by `{` is `Unknown escape \u`. A
+malformed `\u{…` ends before the first character that is neither a hex
+digit nor `}`, and that prefix is what the error quotes (for example
+`Invalid Unicode escape \u{12`).
 | Unterminated interpolation | from `${` (or `$#{`) to where scanning stopped |
 | `"""` not followed by a line break | the characters after `"""` on that line |
 | Closing `"""` not on its own line | the closing delimiter |
