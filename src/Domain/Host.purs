@@ -8,6 +8,8 @@ import Prelude (Unit)
 data HostFailure
   = IoFailure String
   | ToolFailure { message ∷ String, command ∷ String }
+  -- The first invalid byte of a source file, by the location convention.
+  | InvalidUtf8 { offset ∷ Int, line ∷ Int, column ∷ Int }
 
 -- `buildExecutable goSource binaryPath` and `runProgram goSource` own their
 -- temporary directory and remove it before returning.

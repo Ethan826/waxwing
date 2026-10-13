@@ -40,8 +40,59 @@ export const writeError = text => () => { console.error(text); };
 export const setExitCode = status => () => { process.exitCode = status; };
 export const json = record => JSON.stringify(record);
 
+// Index of the first byte that starts an invalid UTF-8 sequence (WHATWG
+// ranges), or -1 when the bytes are valid.
+const firstInvalid = bytes => {
+  const inside = (at, low = 0x80, high = 0xBF) =>
+    at < bytes.length && bytes[at] >= low && bytes[at] <= high;
+  const tail = (at, count) =>
+    Array.from({ length: count }, (_, k) => at + k).every(k => inside(k));
+  const widthAt = i => {
+    const b = bytes[i];
+    if (b < 0x80) return 1;
+    if (b >= 0xC2 && b <= 0xDF) return tail(i + 1, 1) ? 2 : 0;
+    if (b >= 0xE0 && b <= 0xEF) {
+      const low = b === 0xE0 ? 0xA0 : 0x80;
+      const high = b === 0xED ? 0x9F : 0xBF;
+      return inside(i + 1, low, high) && tail(i + 2, 1) ? 3 : 0;
+    }
+    if (b >= 0xF0 && b <= 0xF4) {
+      const low = b === 0xF0 ? 0x90 : 0x80;
+      const high = b === 0xF4 ? 0x8F : 0xBF;
+      return inside(i + 1, low, high) && tail(i + 2, 2) ? 4 : 0;
+    }
+    return 0;
+  };
+  for (let i = 0; i < bytes.length;) {
+    const width = widthAt(i);
+    if (width === 0) return i;
+    i += width;
+  }
+  return -1;
+};
+
+// A BOM stays in the text (`ignoreBOM`), as `readFileSync(path, 'utf8')`
+// kept it before invalid bytes were rejected.
+const decoder = fatal => new TextDecoder('utf-8', { fatal, ignoreBOM: true });
+
+// Positions follow the location convention: UTF-16 units, LF starts a line.
+const invalidAt = (results, bytes) => {
+  const prefix = decoder(false).decode(bytes.subarray(0, firstInvalid(bytes)));
+  const lines = prefix.split('\n');
+  const column = lines[lines.length - 1].length + 1;
+  return results.utf8(prefix.length)(lines.length)(column);
+};
+
 export const readSourceWith = results => path => () =>
-  attempt(results, () => results.right(readFileSync(path, 'utf8')));
+  attempt(results, () => {
+    const bytes = readFileSync(path);
+    try {
+      return results.right(decoder(true).decode(bytes));
+    } catch (error) {
+      if (error instanceof TypeError) return invalidAt(results, bytes);
+      throw error;
+    }
+  });
 
 export const writeTextWith = results => path => text => () =>
   attempt(results, () => {

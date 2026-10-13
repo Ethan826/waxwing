@@ -7,6 +7,7 @@ module Format.Wire
   , usageRecord
   , failureRecord
   , sourceRecord
+  , invalidUtf8
   ) where
 
 import Domain.Host (HostFailure(..))
@@ -41,6 +42,12 @@ failureRecord = case _ of
   IoFailure text → PlainWire { code: "E_IO", message: text }
   ToolFailure tool → ToolWire
     { ok: false, code: "E_TOOL", message: tool.message, command: tool.command }
+  -- Program.Command reports this one as a source diagnostic; the plain
+  -- record only keeps this function total.
+  InvalidUtf8 _ → PlainWire { code: "E_SYNTAX", message: invalidUtf8 }
+
+invalidUtf8 ∷ String
+invalidUtf8 = "Invalid UTF-8 in source"
 
 sourceRecord ∷ String → Diagnostic → WireRecord
 sourceRecord file diagnostic = SourceWire

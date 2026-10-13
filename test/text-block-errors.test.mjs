@@ -7,6 +7,7 @@ const lines = (...parts) => parts.join('\n');
 const head = 'fn main(): Text = ';
 const open = `${head}"""`;
 const own = 'The closing """ must be on its own line';
+const openingBreak = '""" must be followed by a line break';
 const less = 'This line is indented less than the closing """';
 const lineBreak = 'Text cannot contain a line break; use \\n or a """ block';
 const lineStart = (source, line) => source.split('\n').slice(0, line - 1)
@@ -28,7 +29,7 @@ const rows = [
   ['nothing after the opening', open, 'Unterminated text literal',
     s => at(s, '"""')],
   ['nothing after the opening in a hole', head + '"$' + '{"""',
-    'Unterminated interpolation', s => spanOf(s, 19, s.length)],
+    'Unterminated interpolation', s => spanOf(s, head.length + 1, s.length)],
   ['backslash at a line end', lines(open, '  a\\', '  b', '  """;'),
     'Unknown escape \\', s => at(s, '\\')],
   ['backslash at a CRLF line end',
@@ -69,8 +70,10 @@ const rows = [
     'Expected """#, found """', s => at(s, '"""', 1)],
   ['too many hashes', lines(`${head}#"""`, '  a', '  """##;'),
     'Expected """#, found """##', s => at(s, '"""##')],
+  ['opening then a lone CR at the end', `${open}\r`, openingBreak,
+    s => spanOf(s, s.indexOf('\r'), s.indexOf('\r'))],
   ['lone carriage return', lines(open, '  a\rb', '  """'), lineBreak,
-    s => spanOf(s, 18, s.indexOf('\r'))],
+    s => spanOf(s, head.length, s.indexOf('\r'))],
   ['unclosed hole', lines(open, '  ${a', '"""', ''),
     'Unterminated interpolation', whole]
 ];

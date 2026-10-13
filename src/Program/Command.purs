@@ -5,10 +5,17 @@ module Program.Command (Outcome, command) where
 import Prelude
 import Data.Either (Either, either)
 import Data.Maybe (Maybe(..))
-import Domain.Host (Host, HostFailure)
-import Domain.Syntax (Diagnostic)
+import Domain.Host (Host, HostFailure(..))
+import Domain.Problem (Problem(..))
+import Domain.Syntax (Diagnostic, Position, Span, problemAt)
 import Format.Arguments (Invocation(..), invocation)
-import Format.Wire (WireRecord, failureRecord, sourceRecord, usageRecord)
+import Format.Wire
+  ( WireRecord
+  , failureRecord
+  , invalidUtf8
+  , sourceRecord
+  , usageRecord
+  )
 import Program.Compile (compile)
 
 type Outcome = { status ∷ Int, stdout ∷ String, stderr ∷ Maybe WireRecord }
@@ -39,9 +46,19 @@ perform host = case _ of
 translated
   ∷ ∀ m. Monad m ⇒ Host m → String → (String → m Outcome) → m Outcome
 translated host input next =
-  host.readSource input >>= either (pure <<< hostFailed) compiled
+  host.readSource input >>= either (pure <<< unreadable) compiled
   where
+  unreadable = case _ of
+    InvalidUtf8 start → rejected input
+      (problemAt (Syntax invalidUtf8) (oneUnit start))
+    failure → hostFailed failure
   compiled source = either (pure <<< rejected input) next (compile source)
+
+-- One unit, starting at the first invalid byte.
+oneUnit ∷ Position → Span
+oneUnit start = { start, end }
+  where
+  end = start { offset = start.offset + 1, column = start.column + 1 }
 
 rejected ∷ String → Diagnostic → Outcome
 rejected input diagnostic =

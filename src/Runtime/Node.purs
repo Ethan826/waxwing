@@ -21,6 +21,7 @@ type Results =
   { right ∷ String → Either HostFailure String
   , io ∷ String → Either HostFailure String
   , tool ∷ String → String → Either HostFailure String
+  , utf8 ∷ Int → Int → Int → Either HostFailure String
   }
 
 type Attempt = Effect (Either HostFailure String)
@@ -54,7 +55,8 @@ wireText = case _ of
   ToolWire record → json record
 
 results ∷ Results
-results = { right: Right, io: ioFailure, tool: toolFailure }
+results = { right: Right, io: ioFailure, tool: toolFailure, utf8: badUtf8 }
   where
   ioFailure text = Left (IoFailure text)
   toolFailure message command = Left (ToolFailure { message, command })
+  badUtf8 offset line column = Left (InvalidUtf8 { offset, line, column })
