@@ -215,3 +215,23 @@ test('a row nested in a label payload keeps the old message', () => {
       'the signature of a does not allow M']]
   });
 });
+
+// The hint cannot print a payload's arrow rows, so it falls back to the
+// anonymous text rather than a row that, written, fails differently.
+test('a payload holding an arrow row: the hint is anonymous', () => {
+  const state = 'effect S(s) { fn get(): s; }; ';
+  for (const payload of ['Int -> Int with L + M', 'Int -> Int with pure']) {
+    const callee = `with S(${payload})`;
+    const caller = `with S(${payload}) + M`;
+    expectDiagnostic(effects + state + `fn a(q: Int -> Int ${callee}, x: Int): `
+      + `Int ${caller} = q(x);` + main, {
+      code: 'E_EFFECT',
+      message: 'q must allow every effect of a (S(Int -> Int) + M), but its '
+        + 'row is S(Int -> Int); a function value\'s row must equal its '
+        + 'caller\'s (FX017)',
+      at: ['q(x)'],
+      notes: [[`q: Int -> Int ${callee}`, callee, 'q\'s row is written here'],
+        [`: Int ${caller} =`, caller, 'a\'s row is written here']]
+    });
+  }
+});

@@ -4130,7 +4130,9 @@ local's name); an unannotated arrow's note points at the parameter's name
 callback passed as an argument, keep their old text (BACKLOG FX018); the
 hint writes the caller's row as written, so a named tail stays (p3:
 `with M + L + ...e`) and the ambient tail is omitted, while the headline
-prints labels only. Only a parameter whose type is one arrow (its result
+prints labels only. When a caller label's payload holds an arrow, handler or
+row-applied type, the printer drops its rows, so the hint takes the anonymous
+text instead of a row that would fail differently when written. Only a parameter whose type is one arrow (its result
 is no arrow) is named; later stages and two-stage types are anonymous
 (their `with` belongs to the last arrow, so the hint would loop), and a
 leftover from a row nested in a label payload keeps the old text. Tests:

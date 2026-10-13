@@ -8,9 +8,10 @@ import Data.String (joinWith)
 import Data.Traversable (traverse)
 import Domain.Note (NoteReason(..))
 import Domain.Problem (Hint(..), Problem(..))
-import Domain.Row (Label, Row(..))
+import Domain.Row (Label(..), Row(..))
 import Domain.Syntax (Diagnostic, Note)
-import Domain.Type (Ty, TyRow)
+import Domain.Type (Ty(..), TyRow)
+import Domain.Type.Parts (children)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Occurrence (OccurrenceId(..))
 import Features.Check.Provenance (Callee, Consumed(..), Origin)
@@ -72,13 +73,33 @@ lacking env state origin named calleeRow = do
         ( CallbackRowLacks (_.name <$> named) env.functionName caller
             (nonEmpty callee)
         )
-        (CallbackRow (_.name <$> named) (caller <> written))
+        (CallbackRow hinted (caller <> written))
     , span: origin.span
     , related: notes env named
     }
   where
   written = writtenTail env state
+  -- A payload's arrow rows are not printed, so the row written from this
+  -- text would not be the caller's: the hint then names no row to write.
+  hinted =
+    if Array.any holdsRow (payloads env state) then Nothing
+    else _.name <$> named
   nonEmpty text = if text == "" then Nothing else Just text
+
+payloads ∷ ∀ r. CheckEnv r → State → Array (Ty Flex)
+payloads env state = Array.concatMap arguments
+  (signatureLabels env state)
+  where
+  arguments (Label _ found _) = found
+
+-- Whether a type carries a row: an arrow, a handler, or a type applied to
+-- a row argument, at any depth.
+holdsRow ∷ Ty Flex → Boolean
+holdsRow ty = case ty of
+  TFun _ _ _ → true
+  THandler _ _ → true
+  TData _ _ rows | not (Array.null rows) → true
+  _ → Array.any holdsRow (children ty)
 
 -- The hint writes the row as the caller wrote it: a named tail stays, the
 -- ambient one (no name) is implicit.
