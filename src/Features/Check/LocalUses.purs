@@ -20,6 +20,7 @@ parts = case _ of
   Construct _ _ arguments → arguments
   Add _ left right → [ left, right ]
   Concat _ left right → [ left, right ]
+  Interpolate _ holes → holes
   Compare _ _ left right → [ left, right ]
   If _ test yes no → [ test, yes, no ]
   Match _ subject arms → Array.cons subject (map _.body arms)

@@ -35,7 +35,7 @@ maximumDigits = 6
 -- The escape starting at the backslash at `at`.
 escape ∷ Origin → Int → Either Diagnostic Decoded
 escape origin at = case markAt origin.source (at + 1) of
-  Ended → unterminated origin
+  Ended → unterminated origin (at + 1)
   LineEnd → lineBreak origin (at + 1)
   Quote → simple at "\""
   Backslash → simple at "\\"

@@ -27,6 +27,7 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.Construct _ arguments → anyOf arguments
   IR.Add left right → anyOf [ left, right ]
   IR.Concat left right → anyOf [ left, right ]
+  IR.Interpolate parts → anyOf parts
   IR.Compare operator left right →
     isBoolOrdering operator left || anyOf [ left, right ]
   IR.If condition yes no → anyOf [ condition, yes, no ]
@@ -84,6 +85,7 @@ prints (IR.Expr expression) = case expression.node of
   IR.Construct _ arguments → anyOf arguments
   IR.Add left right → anyOf [ left, right ]
   IR.Concat left right → anyOf [ left, right ]
+  IR.Interpolate parts → anyOf parts
   IR.Compare _ left right → anyOf [ left, right ]
   IR.If condition yes no → anyOf [ condition, yes, no ]
   IR.Match scrutinee arms → prints scrutinee || Array.any armPrints arms

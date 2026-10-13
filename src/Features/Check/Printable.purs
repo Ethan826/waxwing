@@ -31,6 +31,7 @@ printable holders env (Checked.Expr expression) = case expression.node of
   Checked.Construct _ _ arguments → each arguments
   Checked.Add left right → each [ left, right ]
   Checked.Concat left right → each [ left, right ]
+  Checked.Interpolate parts → each parts
   Checked.Compare _ left right → each [ left, right ]
   Checked.If condition yes no → each [ condition, yes, no ]
   Checked.Match scrutinee arms → each (Array.cons scrutinee (map armBody arms))

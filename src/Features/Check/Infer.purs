@@ -32,7 +32,7 @@ import Features.Check.Lambda (checkLambda)
 import Features.Check.Pipe (checkPipe)
 import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
-import Features.Check.Scheme (State, Threaded)
+import Features.Check.Scheme (State, Threaded, threadAll)
 import Features.Check.Sync (sync)
 import Features.Check.Site (Site)
 
@@ -84,6 +84,7 @@ inferNode env state expression = case expression of
     arguments
   Resolved.Add span left right → checkAddition env state span left right
   Resolved.Concat span left right → checkConcat env state span left right
+  Resolved.Interpolate span parts → checkInterpolate env state span parts
   Resolved.Compare span operator left right → checkComparison env state
     { span, operator }
     left
@@ -147,6 +148,18 @@ checkConcat env state span left right = do
   joined ← require env second.state TText first.value
   checked ← require env joined TText second.value
   typed checked span TText (Checked.Concat first.value second.value)
+
+-- Each hole is inferred, then must be Text, in source order.
+checkInterpolate ∷ Env → State → Span → Array Resolved.Expr → Inferred
+checkInterpolate env state span parts = do
+  threaded ← threadAll (hole env) state parts
+  typed threaded.state span TText (Checked.Interpolate threaded.value)
+
+hole ∷ Env → State → Resolved.Expr → Either Diagnostic (Threaded Checked.Expr)
+hole env state part = do
+  found ← infer env state part
+  checked ← require env found.state TText found.value
+  pure { value: found.value, state: checked }
 
 checkComparison
   ∷ Env

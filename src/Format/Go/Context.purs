@@ -48,6 +48,7 @@ children = case _ of
   IR.Construct _ arguments → arguments
   IR.Add left right → [ left, right ]
   IR.Concat left right → [ left, right ]
+  IR.Interpolate parts → parts
   IR.Compare _ left right → [ left, right ]
   IR.If condition yes no → [ condition, yes, no ]
   IR.Match scrutinee arms → Array.cons scrutinee (map armBody arms)

@@ -1,7 +1,8 @@
-module Format.Stack (Stack, empty, push) where
+module Format.Stack (Stack, empty, push, unpush) where
 
 import Prelude
 import Data.Foldable (class Foldable, foldMapDefaultR)
+import Data.Maybe (Maybe(..))
 
 -- An accumulator for long scans. Array.snoc copies the whole array on every
 -- call, so building n items costs O(n²); pushing here is O(1), and
@@ -22,6 +23,11 @@ empty = Bottom
 
 push ∷ ∀ a. a → Stack a → Stack a
 push item stack = Push stack item
+
+-- The newest item and the stack beneath it: a stack of open scopes.
+unpush ∷ ∀ a. Stack a → Maybe { item ∷ a, below ∷ Stack a }
+unpush Bottom = Nothing
+unpush (Push below item) = Just { item, below }
 
 foldNewestFirst ∷ ∀ a b. (a → b → b) → b → Stack a → b
 foldNewestFirst _ result Bottom = result

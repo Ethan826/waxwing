@@ -21,23 +21,28 @@ import Format.Lex.Chars
   , isLetter
   , isNameChar
   , isSpace
+  , lineBreak
   , pairStart
   , punctuation
   , reserved
   , twoCharacter
   )
-import Format.Lex.Text (literal)
+import Format.Lex.Scan
+  ( Scan
+  , Scanned
+  , atBreak
+  , closed
+  , emit
+  , finish
+  , lined
+  , opened
+  , quoted
+  , start
+  )
 import Format.Lex.Token (Token, TokenKind(..))
-import Format.Stack (Stack)
-import Format.Stack as Stack
-
-type Scan = { index ∷ Int, position ∷ Position, tokens ∷ Stack Token }
-type Scanned = Either Diagnostic (Step Scan (Array Token))
 
 lex ∷ String → Either Diagnostic (Array Token)
 lex source = tailRecM (scan source) start
-  where
-  start = { index: 0, position: origin, tokens: Stack.empty }
 
 -- The parser asks this of most tokens it dispatches on, so the text is
 -- read in place rather than copied into a character array (T003).
@@ -60,14 +65,17 @@ scan ∷ String → Scan → Scanned
 scan source state = maybe' finished (scanAt source state)
   (String.charAt state.index source)
   where
-  finished _ = Right (Done (Array.fromFoldable state.tokens))
+  finished _ = finish state
 
 scanAt ∷ String → Scan → Char → Scanned
 scanAt source state head
-  | isSpace head = continue (spaces source state)
+  | isSpace head = maybe (continue (spaces source state)) Left
+      (atBreak state head)
   | isLetter head = continue (word source state isNameChar)
   | isDigit head = continue (word source state isDigit)
-  | head == '"' = literalStep source state
+  | head == '"' = quoted source state
+  | head == '{' = continue (opened state)
+  | head == '}' = closed source state
   | head == '.', String.slice state.index (state.index + 3) source == "..." =
       continue (emit "..." state)
   | pairStart head, Just text ← twoCharacter source state.index =
@@ -84,48 +92,25 @@ spaces ∷ String → Scan → Scan
 spaces source state = state
   { index = skipped.index, position = skipped.position }
   where
-  skipped = spaceEnd source state.index state.position
+  skipped = spaceEnd (lined state) source state.index state.position
 
 -- A self tail call, which purs compiles to a loop.
 spaceEnd
-  ∷ String → Int → Position → { index ∷ Int, position ∷ Position }
-spaceEnd source index position
-  | Just next ← spaceStep position (String.charAt index source) =
-      spaceEnd source (index + 1) next
+  ∷ Boolean → String → Int → Position → { index ∷ Int, position ∷ Position }
+spaceEnd within source index position
+  | Just next ← spaceStep within position (String.charAt index source) =
+      spaceEnd within source (index + 1) next
   | otherwise = { index, position }
 
--- The position after `found` if it is whitespace.
-spaceStep ∷ Position → Maybe Char → Maybe Position
-spaceStep position found = found >>= stepped
+-- The position after `found` if it is whitespace. A run inside an
+-- ordinary hole stops at a line break, which ends the hole (`within`).
+spaceStep ∷ Boolean → Position → Maybe Char → Maybe Position
+spaceStep within position found = found >>= stepped
   where
   stepped character =
-    if isSpace character then Just (advance position character) else Nothing
-
--- Tokens never contain a newline, so a token only moves the column.
-emit ∷ String → Scan → Scan
-emit text state = state
-  { index = state.index + width
-  , position = next
-  , tokens = Stack.push token state.tokens
-  }
-  where
-  width = String.length text
-  next = state.position
-    { offset = state.position.offset + width
-    , column = state.position.column + width
-    }
-  token = { text, span: { start: state.position, end: next }, kind: Plain }
-
--- A whole text literal, as its tokens, is one step.
-literalStep ∷ String → Scan → Scanned
-literalStep source state = map resume
-  (literal source state.index state.position)
-  where
-  resume found = Loop
-    { index: found.index
-    , position: found.position
-    , tokens: Array.foldl (flip Stack.push) state.tokens found.tokens
-    }
+    if isSpace character && not (within && lineBreak character) then
+      Just (advance position character)
+    else Nothing
 
 -- The span covers the whole code point, so a character outside the BMP is
 -- two units (Text v1 design §2).

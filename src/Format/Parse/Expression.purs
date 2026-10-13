@@ -185,7 +185,7 @@ primary inner = dispatch
   , on "resume" (bare <$> unsupportedControl)
   , on "true" (bare <<< boolean true <$> token)
   , on "false" (bare <<< boolean false <$> token)
-  , on "\"" (bare <<< text <$> textLiteral)
+  , on "\"" (bare <$> textLiteral inner)
   , onWhen integerStart (bare <<< integer <$> integerLiteral)
   , onWhen isName (named inner)
   ]
@@ -193,7 +193,6 @@ primary inner = dispatch
   where
   boolean value found = Boolean found.span value
   integer literal = Integer literal.span literal.value
-  text literal = TextLiteral literal.span literal.text
   bare value = { value, start: (exprSpan value).start }
 
 -- Reached past the last token too, where taking reports the missing token.

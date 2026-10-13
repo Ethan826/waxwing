@@ -43,6 +43,7 @@ covered signature (Checked.Expr expression) = case expression.node of
   Checked.Construct _ _ arguments → traverse_ recur arguments
   Checked.Add left right → traverse_ recur [ left, right ]
   Checked.Concat left right → traverse_ recur [ left, right ]
+  Checked.Interpolate parts → traverse_ recur parts
   Checked.Compare _ left right → traverse_ recur [ left, right ]
   Checked.If condition yes no → traverse_ recur [ condition, yes, no ]
   Checked.Match scrutinee arms → coverMatch signature expression.span scrutinee

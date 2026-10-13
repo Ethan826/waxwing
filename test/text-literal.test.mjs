@@ -64,8 +64,9 @@ test('Text is a reserved type name', () => {
   rejectedAt('fn Text(): Int = 1; fn main(): Int = 1;', 'E_SYNTAX', 'Text');
 });
 
-// Until interpolation lands (plan Task 5), `${` is ordinary text, and `\$`
-// is still a valid escape; Task 5 replaces this test.
-test('before interpolation, ${ is literal text', () => {
-  assert.equal(runGo('fn main(): Text = "a${b}\\${c}";'), 'a${b}${c}\n');
+// `${` opens a hole (test/text-interpolate.test.mjs); a `$` that does not
+// start one, and the `\$` escape, are ordinary text.
+test('$ not followed by { and \\$ are literal text', () => {
+  assert.equal(runGo('fn main(): Text = "a$b $ {c} \\${d}";'),
+    'a$b $ {c} ${d}\n');
 });

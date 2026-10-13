@@ -34,6 +34,8 @@ expression scope = case _ of
     <*> nested right
   Syntax.Concat span left right → Resolved.Concat span <$> nested left
     <*> nested right
+  Syntax.Interpolate span parts → Resolved.Interpolate span
+    <$> traverse nested parts
   Syntax.Compare span operator left right → Resolved.Compare span operator
     <$> nested left
     <*> nested right

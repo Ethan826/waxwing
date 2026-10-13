@@ -6,7 +6,6 @@ module Format.Parse.Cursor
   , advance
   , skip
   , current
-  , takeText
   , peekText
   , nextSpan
   , failAt
@@ -30,7 +29,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe, maybe')
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Position, Span, origin, problemAt)
-import Format.Lex (Token, TokenKind(..))
+import Format.Lex (Token)
 import Format.Stack (Stack)
 import Format.Stack as Stack
 
@@ -103,36 +102,6 @@ nextSpan state = maybe' endSpan tokenSpan (current state)
 
 current ∷ State → Maybe Token
 current state = Array.index state.tokens state.index
-
--- A whole text literal (Format.Lex.Token) as one value: the decoded chunks
--- joined, spanning the open token through the close. The dispatch that
--- reaches it has seen `TextOpen`; an open that is not one, or a literal the
--- lexer left unclosed, cannot occur and fails like a missing token.
-takeText
-  ∷ State → Either Diagnostic (Parsed { text ∷ String, span ∷ Span })
-takeText state = maybe' missing opened (current state)
-  where
-  missing _ = failAt state "Expected an expression"
-  opened open = case open.kind of
-    TextOpen → map (spanning open) (tailRecM chunk start)
-      where
-      start = { text: "", rest: advance state open }
-    _ → missing unit
-  spanning open parsed =
-    { value: { text: parsed.value, span: spanOver open parsed.rest }
-    , rest: parsed.rest
-    }
-  spanOver open rest = { start: open.span.start, end: rest.lastEnd }
-  chunk found = maybe' (stuck found.rest) (taken found) (current found.rest)
-  stuck rest _ = failAt rest "Unterminated text literal"
-  taken found next = case next.kind of
-    TextChunk decoded → Right
-      ( Loop
-          { text: found.text <> decoded, rest: advance found.rest next }
-      )
-    TextClose → Right
-      (Done { value: found.text, rest: advance found.rest next })
-    _ → stuck found.rest unit
 
 failAt ∷ ∀ a. State → String → Either Diagnostic a
 failAt state message = Left (problemAt (Syntax message) (nextSpan state))

@@ -68,6 +68,7 @@ data Node
   | Construct CtorId Instantiation (Array Expr)
   | Add Expr Expr
   | Concat Expr Expr
+  | Interpolate (Array Expr)
   | Compare Operator Expr Expr
   | If Expr Expr Expr
   | Match Expr (Array Arm)

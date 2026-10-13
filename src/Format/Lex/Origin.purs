@@ -1,5 +1,6 @@
 module Format.Lex.Origin
   ( Origin
+  , Start
   , Mark(..)
   , markAt
   , run
@@ -12,13 +13,19 @@ module Format.Lex.Origin
 
 import Prelude
 import Data.Either (Either(..))
-import Data.Maybe (maybe)
+import Data.Maybe (Maybe, maybe)
 import Data.String.CodeUnits as String
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Position, Span, problemAt)
 
--- The literal's opening quote is at `index`, at `open`.
-type Origin = { source ∷ String, index ∷ Int, open ∷ Position }
+-- A place in the source, with its position.
+type Start = { index ∷ Int, position ∷ Position }
+
+-- The literal's opening quote is at `index`, at `open`. `enclosing` is the
+-- `$` of the hole the literal sits in, if any: a literal that runs out
+-- inside a hole is that hole's failure, not its own (design §1).
+type Origin =
+  { source ∷ String, index ∷ Int, open ∷ Position, enclosing ∷ Maybe Start }
 
 -- What the character at an index means to the scanner.
 data Mark = Ended | Quote | LineEnd | Backslash | Other Char
@@ -43,19 +50,27 @@ invalid origin from to prefix = Left
       (spanOf origin from to)
   )
 
-unterminated ∷ ∀ a. Origin → Either Diagnostic a
-unterminated origin = Left
-  ( problemAt (Syntax "Unterminated text literal")
-      (spanOf origin origin.index (origin.index + 1))
-  )
+-- The source ended at `stop`.
+unterminated ∷ ∀ a. Origin → Int → Either Diagnostic a
+unterminated origin stop = Left
+  (maybe own (stopped origin stop) origin.enclosing)
+  where
+  own = problemAt (Syntax "Unterminated text literal")
+    (spanOf origin origin.index (origin.index + 1))
 
 -- From the opening quote to the line break.
 lineBreak ∷ ∀ a. Origin → Int → Either Diagnostic a
-lineBreak origin at = Left
-  ( problemAt
-      (Syntax "Text cannot contain a line break; use \\n or a \"\"\" block")
-      (spanOf origin origin.index at)
-  )
+lineBreak origin at = Left (maybe own (stopped origin at) origin.enclosing)
+  where
+  own = problemAt
+    (Syntax "Text cannot contain a line break; use \\n or a \"\"\" block")
+    (spanOf origin origin.index at)
+
+-- Inside a hole, a literal that ends its line or the file leaves the hole
+-- itself unbalanced: from its `$` to where scanning stopped.
+stopped ∷ Origin → Int → Start → Diagnostic
+stopped origin stop hole = problemAt (Syntax "Unterminated interpolation")
+  { start: hole.position, end: positionAt origin stop }
 
 spanOf ∷ Origin → Int → Int → Span
 spanOf origin from to =

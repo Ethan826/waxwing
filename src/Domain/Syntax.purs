@@ -56,6 +56,7 @@ exprSpan = case _ of
   Call span _ _ → span
   Add span _ _ → span
   Concat span _ _ → span
+  Interpolate span _ → span
   Compare span _ _ _ → span
   If span _ _ _ → span
   Match span _ _ → span

@@ -1,9 +1,11 @@
 module Format.Lex.Chars
-  ( punctuation
+  ( nestingLimit
+  , punctuation
   , reserved
   , pairStart
   , twoCharacter
   , isSpace
+  , lineBreak
   , isLetter
   , isDigit
   , isNameChar
@@ -14,6 +16,12 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe, maybe)
 import Data.String.CodeUnits as String
+
+-- Deeper nesting is E_NESTING (ADR 006 derives the number from the measured
+-- stack): the parser counts expression levels against it, and the lexer
+-- counts the holes open at once.
+nestingLimit ∷ Int
+nestingLimit = 128
 
 -- Membership is a `case`, which compiles to a chain of comparisons: the
 -- lexer asks it of each punctuation character and the parser asks
@@ -107,3 +115,6 @@ isUpper ∷ String → Boolean
 isUpper text = maybe false upper (String.charAt 0 text)
   where
   upper character = character >= 'A' && character <= 'Z'
+
+lineBreak ∷ Char → Boolean
+lineBreak character = character == '\n' || character == '\r'

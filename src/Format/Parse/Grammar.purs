@@ -34,8 +34,9 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either)
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Syntax (Diagnostic, Span)
+import Domain.Syntax (Diagnostic, Expr, Span)
 import Format.Lex (Token, isName, isUpper)
+import Format.Lex.Chars as Chars
 import Format.Parse.Cursor (Parsed, Run, State, initialState) as Exports
 import Format.Parse.Cursor
   ( Continue
@@ -51,10 +52,10 @@ import Format.Parse.Cursor
   , separated
   , shifting
   , skip
-  , takeText
   , rootedAt
   , trailing
   )
+import Format.Parse.Interpolated (takeText)
 import Format.Parse.Steps
   ( applyAt
   , mapAt
@@ -82,16 +83,18 @@ instance Apply Parser where
 instance Applicative Parser where
   pure value = Parser (pureAt value)
 
--- Deeper nesting is E_NESTING; ADR 006 derives it from the measured stack.
+-- Deeper nesting is E_NESTING; the lexer counts open holes against the
+-- same limit (Format.Lex.Chars).
 nestingLimit ∷ Int
-nestingLimit = 128
+nestingLimit = Chars.nestingLimit
 
 token ∷ Parser Token
 token = Parser takeAt
 
--- A whole text literal: its decoded text and its span.
-textLiteral ∷ Parser { text ∷ String, span ∷ Span }
-textLiteral = Parser takeText
+-- A whole text literal: a constant, or its chunks and holes, whose
+-- expressions `hole` parses.
+textLiteral ∷ Parser Expr → Parser Expr
+textLiteral hole = Parser (takeText (run hole))
 
 expect ∷ String → Parser Token
 expect text = dispatch [ on text token ]

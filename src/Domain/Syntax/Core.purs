@@ -23,6 +23,7 @@ data Expr
   | Call Span String (Array Expr)
   | Add Span Expr Expr
   | Concat Span Expr Expr
+  | Interpolate Span (Array Expr)
   | Compare Span Operator Expr Expr
   | If Span Expr Expr Expr
   | Match Span Expr (Array Arm)
