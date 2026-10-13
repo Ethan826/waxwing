@@ -433,7 +433,10 @@ Limits, stated plainly.
   row cannot serve a call outside and a call inside a `with`. The notes are
   bounded as all notes are (at most four besides path lines), so with three
   or more installations, or a `handle` with several clauses, some `is
-  handled here` notes are dropped.
+  handled here` notes are dropped. A hint is checked only inside its own
+  function, so applying it can expose a truthful (b) error in a caller, for
+  example `fn b(p: Int -> Int with L): Int with L = a(p, 1)` after the hint
+  rewrote `a`'s parameter.
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
 - `let` is monomorphic. A local of type `A -> B with pure` is not accepted

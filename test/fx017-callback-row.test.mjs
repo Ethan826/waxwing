@@ -216,6 +216,18 @@ test('a row nested in a label payload keeps the old message', () => {
 
 // The hint cannot print a payload's arrow rows, so it falls back to the
 // anonymous text rather than a row that, written, fails differently.
+test('a callback read twice: the named headline, no written hint', () => {
+  expectDiagnostic(effects + 'fn a(q: Int -> Int with L, x: Int): Int '
+    + 'with L + M = q(x) + q(x);' + main, {
+    code: 'E_EFFECT',
+    message: 'q must allow every effect of a (L + M), but its row is L; '
+      + 'a function value\'s row must equal its caller\'s (FX017)',
+    at: ['q(x)'],
+    notes: [['q: Int -> Int with L', 'with L', 'q\'s row is written here'],
+      [': Int with L + M =', 'with L + M', 'a\'s row is written here']]
+  });
+});
+
 test('a payload holding an arrow row: the hint is anonymous', () => {
   const state = 'effect S(s) { fn get(): s; }; ';
   for (const payload of ['Int -> Int with L + M', 'Int -> Int with pure']) {

@@ -142,11 +142,11 @@ test('a payload holding a row: the hint is anonymous', () => {
 const twice = (callee, caller, first, second) => effects
   + `fn a(q: Int -> Int ${callee}, x: Int): Int ${caller} = { ${first} };` + main;
 const withM = 'with handler M { m() => 1 }';
-const anonymous = rowText => here('q', rowText, 'is L');
+const withoutHint = rowText => here('q', rowText, 'is L');
 test('a callback called outside and inside a with: no hint', () => {
   const inside = `${withM} { q(y) }`;
   expectDiagnostic(twice('with L', 'with L', `let y = q(x); ${inside}`), {
-    code: 'E_EFFECT', message: anonymous('M + L'), at: ['q(y)'],
+    code: 'E_EFFECT', message: withoutHint('M + L'), at: ['q(y)'],
     notes: [calleeNote('q: Int -> Int with L,', 'with L'),
       handled('M', inside), callerNote(': Int with L =', 'with L')]
   });
@@ -155,7 +155,7 @@ test('a callback called outside and inside a with: no hint', () => {
 test('the same, the call inside the with coming first', () => {
   const inside = `${withM} { q(x) }`;
   expectDiagnostic(twice('with L', 'with L', `let y = ${inside}; q(y)`), {
-    code: 'E_EFFECT', message: anonymous('M + L'), at: ['q(x)'],
+    code: 'E_EFFECT', message: withoutHint('M + L'), at: ['q(x)'],
     notes: [calleeNote('q: Int -> Int with L,', 'with L'),
       handled('M', inside), callerNote(': Int with L =', 'with L')]
   });
@@ -165,7 +165,7 @@ test('the same with a named tail', () => {
   const inside = `${withM} { q(y) }`;
   expectDiagnostic(twice('with L + ...e', 'with L + ...e',
     `let y = q(x); ${inside}`), {
-    code: 'E_EFFECT', message: anonymous('M + L'), at: ['q(y)'],
+    code: 'E_EFFECT', message: withoutHint('M + L'), at: ['q(y)'],
     notes: [calleeNote('q: Int -> Int with L + ...e,', 'with L + ...e'),
       handled('M', inside), callerNote(': Int with L + ...e =', 'with L + ...e')]
   });

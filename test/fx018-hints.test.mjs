@@ -71,7 +71,7 @@ test('hints for an argument fix the call', () => {
   assert.ok(hints > 30, `hints printed: ${hints}`);
 });
 
-test('hints for a callback used outside and inside a with fix the program', () => {
+test('a callback used outside and inside a with is given no written hint', () => {
   const inside = 'with handler M { m() => 1 } { q(y) }';
   const forms = [`let y = q(x); ${inside}`,
     `let y = with handler M { m() => 1 } { q(x) }; q(y)`,
