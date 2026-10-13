@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { grammarPath, render, wordGroups } from '../scripts/editor-grammar-generate.mjs';
+import {
+  grammarPath, render, wordGroups
+} from '../scripts/editor-grammar-generate.mjs';
 
 // IDE001 stage 1: the editor grammar must not drift from the lexer.
 const chars = readFileSync('src/Format/Lex/Chars.purs', 'utf8');
@@ -27,7 +29,7 @@ test('the grammar keyword set equals the lexer reserved words', () => {
       .test(rule.name)).flatMap(wordsOf);
   const wildcard = named('variable.language.wildcard').flatMap(wordsOf);
   assert.deepEqual([...reserving, ...wildcard].sort(), reservedWords);
-  assert.deepEqual(contextual.sort(), ['nofail', 'pure']);
+  assert.deepEqual(contextual.sort(), ['fail', 'nofail', 'pure']);
   assert.deepEqual(contextual.filter(word => reservedWords.includes(word)), []);
 });
 
@@ -41,7 +43,8 @@ test('the committed grammar is what the generator renders', () => {
 });
 
 test('the extension is private, runtime-free and has no comment syntax', () => {
-  const manifest = JSON.parse(readFileSync('editors/vscode/package.json', 'utf8'));
+  const manifest = JSON.parse(
+    readFileSync('editors/vscode/package.json', 'utf8'));
   assert.equal(manifest.private, true);
   assert.equal(manifest.main, undefined);
   assert.deepEqual(manifest.contributes.languages[0].extensions, ['.wxw']);

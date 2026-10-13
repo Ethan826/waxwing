@@ -1,51 +1,51 @@
 1: type Shape = Dot | Square(Int) | Pair(Shape, Shape);
   "type" keyword.declaration
-  " " 
+  " "
   "Shape" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "Dot" entity.name.type
-  " " 
+  " "
   "|" punctuation.separator
-  " " 
+  " "
   "Square" entity.name.type
   "(" punctuation.section.parens
   "Int" support.type.builtin
   ")" punctuation.section.parens
-  " " 
+  " "
   "|" punctuation.separator
-  " " 
+  " "
   "Pair" entity.name.type
   "(" punctuation.section.parens
   "Shape" entity.name.type
   "," punctuation.separator
-  " " 
+  " "
   "Shape" entity.name.type
   ")" punctuation.section.parens
   ";" punctuation.separator
-2: 
-  "" 
+2:
+  ""
 3: fn size(s: Shape): Int = match s {
   "fn" keyword.declaration
-  " " 
+  " "
   "size" variable.other
   "(" punctuation.section.parens
   "s" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Shape" entity.name.type
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "match" keyword.control
-  " " 
+  " "
   "s" variable.other
-  " " 
+  " "
   "{" meta.braces
 4:   Dot => 1,
   "  " meta.braces
@@ -149,20 +149,20 @@
 11: };
   "}" meta.braces
   ";" punctuation.separator
-12: 
-  "" 
+12:
+  ""
 13: fn main(): Int = size(Pair(Square(3), Pair(Dot, Square(2))));
   "fn" keyword.declaration
-  " " 
+  " "
   "main" variable.other
   "(" punctuation.section.parens
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "size" variable.other
   "(" punctuation.section.parens
   "Pair" entity.name.type
@@ -172,12 +172,12 @@
   "3" constant.numeric.integer
   ")" punctuation.section.parens
   "," punctuation.separator
-  " " 
+  " "
   "Pair" entity.name.type
   "(" punctuation.section.parens
   "Dot" entity.name.type
   "," punctuation.separator
-  " " 
+  " "
   "Square" entity.name.type
   "(" punctuation.section.parens
   "2" constant.numeric.integer
@@ -186,5 +186,5 @@
   ")" punctuation.section.parens
   ")" punctuation.section.parens
   ";" punctuation.separator
-14: 
-  "" 
+14:
+  ""

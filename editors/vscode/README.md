@@ -6,19 +6,22 @@ server. The extension is private and is not published.
 
 ## Install locally
 
-Either open VS Code, run "Developer: Install Extension from Location...", and
-choose this directory (`editors/vscode`), or symlink it:
+Run "Developer: Install Extension from Location..." in VS Code and choose
+this directory (`editors/vscode`). Alternatively symlink it:
 
-    ln -s "$PWD/editors/vscode" ~/.vscode/extensions/waxwing-local.waxwing-0.0.1
+    ln -s "$PWD/editors/vscode" \
+      ~/.vscode/extensions/waxwing-local.waxwing-vscode-0.0.1
 
-then reload the window.
+then reload the window. Recent VS Code versions may ignore a bare symlink
+unless the extension is also listed in `~/.vscode/extensions/extensions.json`;
+if the language does not appear, use Install Extension from Location.
 
 ## What is highlighted
 
 - Reserved words, as the lexer reserves them (`Format.Lex.Chars.reserved`):
   control (`if then else match with handle defer resume`), declarations
   (`fn type effect handler let ctl`), `true`/`false`, the built-in types
-  `Int Bool Unit Text`, and the wildcard `_`. `pure` and `nofail` are
+  `Int Bool Unit Text`, and the wildcard `_`. `pure`, `nofail` and `fail` are
   contextual (ordinary names to the lexer) and are always highlighted.
 - Uppercase names as types, constructors and effects; lowercase names as
   values; integers, with a leading `-`.
@@ -36,7 +39,7 @@ then reload the window.
 
 - Escapes and holes of a raw literal depend on its `#` count, which a rule
   cannot read from its parent, so the grammar has one generated rule per
-  count 0 to 5. Longer runs close correctly (by back-reference) but have no
+  count 0 to 16. Longer runs close correctly (by back-reference) but have no
   inner escapes or holes.
 - Escape validity is checked by pattern only: surrogates and values above
   10FFFF in `\u{...}` are not marked. A `"` followed by more `#`s than the

@@ -1,8 +1,8 @@
 1: effect Database { fn query(id: Int): Int; };
   "effect" keyword.declaration
-  " " 
+  " "
   "Database" entity.name.type
-  " " 
+  " "
   "{" meta.braces
   " " meta.braces
   "fn" meta.braces keyword.declaration
@@ -23,9 +23,9 @@
   ";" punctuation.separator
 2: effect Clock { fn now(): Int; };
   "effect" keyword.declaration
-  " " 
+  " "
   "Clock" entity.name.type
-  " " 
+  " "
   "{" meta.braces
   " " meta.braces
   "fn" meta.braces keyword.declaration
@@ -42,9 +42,9 @@
   ";" punctuation.separator
 3: effect Log { fn log(n: Int): Unit; };
   "effect" keyword.declaration
-  " " 
+  " "
   "Log" entity.name.type
-  " " 
+  " "
   "{" meta.braces
   " " meta.braces
   "fn" meta.braces keyword.declaration
@@ -63,65 +63,65 @@
   " " meta.braces
   "}" meta.braces
   ";" punctuation.separator
-4: 
-  "" 
+4:
+  ""
 5: fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
   "fn" keyword.declaration
-  " " 
+  " "
   "closeLog" variable.other
   "(" punctuation.section.parens
   "id" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Unit" support.type.builtin
-  " " 
+  " "
   "with" keyword.control
-  " " 
+  " "
   "nofail" storage.modifier.contextual
-  " " 
+  " "
   "Log" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "log" variable.other
   "(" punctuation.section.parens
   "id" variable.other
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "1000" constant.numeric.integer
   ")" punctuation.section.parens
   ";" punctuation.separator
-6: 
-  "" 
+6:
+  ""
 7: fn fetch(id: Int): Int with Database + Log = {
   "fn" keyword.declaration
-  " " 
+  " "
   "fetch" variable.other
   "(" punctuation.section.parens
   "id" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
-  " " 
+  " "
   "with" keyword.control
-  " " 
+  " "
   "Database" entity.name.type
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "Log" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "{" meta.braces
 8:   let row = query(id);
   "  " meta.braces
@@ -149,32 +149,32 @@
 11: };
   "}" meta.braces
   ";" punctuation.separator
-12: 
-  "" 
+12:
+  ""
 13: fn stamp(id: Int): Int with Clock + Log = {
   "fn" keyword.declaration
-  " " 
+  " "
   "stamp" variable.other
   "(" punctuation.section.parens
   "id" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
-  " " 
+  " "
   "with" keyword.control
-  " " 
+  " "
   "Clock" entity.name.type
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "Log" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "{" meta.braces
 14:   let at = now();
   "  " meta.braces
@@ -205,38 +205,38 @@
 17: };
   "}" meta.braces
   ";" punctuation.separator
-18: 
-  "" 
+18:
+  ""
 19: fn audited(id: Int): Int with Database + Clock + nofail Log = {
   "fn" keyword.declaration
-  " " 
+  " "
   "audited" variable.other
   "(" punctuation.section.parens
   "id" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
-  " " 
+  " "
   "with" keyword.control
-  " " 
+  " "
   "Database" entity.name.type
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "Clock" entity.name.type
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "nofail" storage.modifier.contextual
-  " " 
+  " "
   "Log" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "{" meta.braces
 20:   defer closeLog(id);
   "  " meta.braces
@@ -272,76 +272,76 @@
 23: };
   "}" meta.braces
   ";" punctuation.separator
-24: 
-  "" 
+24:
+  ""
 25: fn report(first: Int, second: Int): Int
   "fn" keyword.declaration
-  " " 
+  " "
   "report" variable.other
   "(" punctuation.section.parens
   "first" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   "," punctuation.separator
-  " " 
+  " "
   "second" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
 26:     with Database + Clock + nofail Log =
-  "    " 
+  "    "
   "with" keyword.control
-  " " 
+  " "
   "Database" entity.name.type
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "Clock" entity.name.type
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "nofail" storage.modifier.contextual
-  " " 
+  " "
   "Log" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
 27:   audited(first) + audited(second);
-  "  " 
+  "  "
   "audited" variable.other
   "(" punctuation.section.parens
   "first" variable.other
   ")" punctuation.section.parens
-  " " 
+  " "
   "+" keyword.operator.arithmetic
-  " " 
+  " "
   "audited" variable.other
   "(" punctuation.section.parens
   "second" variable.other
   ")" punctuation.section.parens
   ";" punctuation.separator
-28: 
-  "" 
+28:
+  ""
 29: fn main(): Unit with Console = {
   "fn" keyword.declaration
-  " " 
+  " "
   "main" variable.other
   "(" punctuation.section.parens
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Unit" support.type.builtin
-  " " 
+  " "
   "with" keyword.control
-  " " 
+  " "
   "Console" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "{" meta.braces
 30:   let live = true;
   "  " meta.braces
@@ -566,5 +566,5 @@
 41: };
   "}" meta.braces
   ";" punctuation.separator
-42: 
-  "" 
+42:
+  ""

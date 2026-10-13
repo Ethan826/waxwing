@@ -6,14 +6,17 @@ import { fileURLToPath } from 'node:url';
 // captured by its parent (only an `end` pattern can back-reference). So
 // one rule is written per count up to `explicitCounts`; longer runs close
 // correctly by back-reference but get no inner escapes or holes.
+const schema = 'https://raw.githubusercontent.com/martinring/'
+  + 'tmlanguage/master/tmlanguage.json';
 export const grammarPath = 'editors/vscode/syntaxes/waxwing.tmLanguage.json';
-const explicitCounts = 5;
+const explicitCounts = 16;
 const scope = suffix => `${suffix}.waxwing`;
 const word = '[A-Za-z0-9_]';
 const boundary = names => `(?<!${word})(?:${names.join('|')})(?!${word})`;
 
 // Every reserved word of Format.Lex.Chars.reserved is placed in exactly one
-// of these groups, except `_`, which has its own rule. `pure` and `nofail`
+// of these groups, except `_`, which has its own rule. `pure`, `nofail` and
+// `fail`
 // are contextual: ordinary names to the lexer.
 export const wordGroups = [
   ['keyword.control', ['if', 'then', 'else', 'match', 'with', 'handle',
@@ -21,29 +24,33 @@ export const wordGroups = [
   ['keyword.declaration', ['fn', 'type', 'effect', 'handler', 'let', 'ctl']],
   ['constant.language.boolean', ['true', 'false']],
   ['support.type.builtin', ['Int', 'Bool', 'Unit', 'Text']],
-  ['storage.modifier.contextual', ['pure', 'nofail']]
+  ['storage.modifier.contextual', ['pure', 'nofail', 'fail']]
 ];
 
 const wordRule = ([name, names]) => ({
   name: scope(name), match: boundary(names)
 });
 const hashes = count => '#'.repeat(count);
+// An invalid `\u{...}` is marked through its closing brace, as the lexer's
+// error span runs.
+const badUnicode = 'u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n"]*\\}?)?';
 const escapeOf = count => {
   const mark = `\\\\${hashes(count)}`;
   return [
     { name: scope('constant.character.escape'),
       match: `${mark}(?:[ntr"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})` },
     { name: scope('invalid.illegal.escape'),
-      match: `${mark}(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr"\\\\$u\\n]|(?=\\n|$))` }
+      match: `${mark}(?:${badUnicode}|[^ntr"\\\\$u\\n]|(?=\\n|$))` }
   ];
 };
 const delimiter = 'punctuation.definition.string';
+const interpolation = 'punctuation.section.interpolation';
 const hole = (count, spans) => ({
   name: scope('meta.interpolation'),
   begin: `\\$${hashes(count)}\\{`,
   end: spans ? '\\}' : '\\}|$',
-  beginCaptures: { 0: { name: scope('punctuation.section.interpolation.begin') } },
-  endCaptures: { 0: { name: scope('punctuation.section.interpolation.end') } },
+  beginCaptures: { 0: { name: scope(`${interpolation}.begin`) } },
+  endCaptures: { 0: { name: scope(`${interpolation}.end`) } },
   patterns: [{ include: spans ? '#expression' : '#hole-line' }]
 });
 const literal = (count, block) => {
@@ -75,6 +82,7 @@ const items = [
   ...wordGroups.map(wordRule),
   { name: scope('variable.language.wildcard'), match: boundary(['_']) },
   { name: scope('constant.numeric.integer'), match: `-?(?<!${word})[0-9]+` },
+  { name: scope('keyword.operator.minus'), match: '-' },
   { name: scope('keyword.operator.arrow'), match: '->|=>|\\|>' },
   { name: scope('keyword.operator.comparison'), match: '==|!=|<=|>=|<|>' },
   { name: scope('keyword.operator.join'), match: '\\+\\+' },
@@ -92,7 +100,7 @@ const braces = end => ({
 });
 
 export const grammar = () => ({
-  $schema: 'https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json',
+  $schema: schema,
   name: 'Waxwing',
   scopeName: 'source.waxwing',
   patterns: [{ include: '#expression' }],
@@ -111,5 +119,6 @@ export const render = () => `${JSON.stringify(grammar(), null, 2)}\n`;
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   writeFileSync(grammarPath, render());
-  console.log(`wrote ${grammarPath}, ${readFileSync(grammarPath, 'utf8').split('\n').length} lines`);
+  const lines = readFileSync(grammarPath, 'utf8').split('\n').length;
+  console.log(`wrote ${grammarPath}, ${lines} lines`);
 }

@@ -1,53 +1,53 @@
 1: type Tree = Leaf | Node(Tree, Int, Tree);
   "type" keyword.declaration
-  " " 
+  " "
   "Tree" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "Leaf" entity.name.type
-  " " 
+  " "
   "|" punctuation.separator
-  " " 
+  " "
   "Node" entity.name.type
   "(" punctuation.section.parens
   "Tree" entity.name.type
   "," punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   "," punctuation.separator
-  " " 
+  " "
   "Tree" entity.name.type
   ")" punctuation.section.parens
   ";" punctuation.separator
-2: 
-  "" 
+2:
+  ""
 3: fn insert(tree: Tree, key: Int): Tree = match tree {
   "fn" keyword.declaration
-  " " 
+  " "
   "insert" variable.other
   "(" punctuation.section.parens
   "tree" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Tree" entity.name.type
   "," punctuation.separator
-  " " 
+  " "
   "key" variable.other
   ":" punctuation.separator
-  " " 
+  " "
   "Int" support.type.builtin
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Tree" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "match" keyword.control
-  " " 
+  " "
   "tree" variable.other
-  " " 
+  " "
   "{" meta.braces
 4:   Leaf => Node(Leaf, key, Leaf),
   "  " meta.braces
@@ -147,20 +147,20 @@
 9: };
   "}" meta.braces
   ";" punctuation.separator
-10: 
-  "" 
+10:
+  ""
 11: fn main(): Tree = insert(insert(insert(insert(insert(Leaf, 5), 3), 8), 3), 1);
   "fn" keyword.declaration
-  " " 
+  " "
   "main" variable.other
   "(" punctuation.section.parens
   ")" punctuation.section.parens
   ":" punctuation.separator
-  " " 
+  " "
   "Tree" entity.name.type
-  " " 
+  " "
   "=" keyword.operator.assignment
-  " " 
+  " "
   "insert" variable.other
   "(" punctuation.section.parens
   "insert" variable.other
@@ -173,25 +173,25 @@
   "(" punctuation.section.parens
   "Leaf" entity.name.type
   "," punctuation.separator
-  " " 
+  " "
   "5" constant.numeric.integer
   ")" punctuation.section.parens
   "," punctuation.separator
-  " " 
+  " "
   "3" constant.numeric.integer
   ")" punctuation.section.parens
   "," punctuation.separator
-  " " 
+  " "
   "8" constant.numeric.integer
   ")" punctuation.section.parens
   "," punctuation.separator
-  " " 
+  " "
   "3" constant.numeric.integer
   ")" punctuation.section.parens
   "," punctuation.separator
-  " " 
+  " "
   "1" constant.numeric.integer
   ")" punctuation.section.parens
   ";" punctuation.separator
-12: 
-  "" 
+12:
+  ""

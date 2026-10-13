@@ -28,6 +28,7 @@ const grammar = await registry.loadGrammar('source.waxwing');
 
 // One line per token: its text, then its scopes without the root and the
 // `.waxwing` suffix, innermost last.
+const plain = scope => scope.replace(/\.waxwing$/, '');
 const snapshot = source => {
   let stack = textmate.INITIAL;
   return source.split('\n').flatMap((line, number) => {
@@ -35,8 +36,8 @@ const snapshot = source => {
     stack = result.ruleStack;
     return [`${number + 1}: ${line}`, ...result.tokens.map(token =>
       `  ${JSON.stringify(line.slice(token.startIndex, token.endIndex))} ${
-        token.scopes.slice(1).map(s => s.replace(/\.waxwing$/, '')).join(' ')}`)];
-  }).join('\n') + '\n';
+        token.scopes.slice(1).map(plain).join(' ')}`)];
+  }).map(line => line.trimEnd()).join('\n') + '\n';
 };
 
 const sources = [
@@ -52,7 +53,10 @@ for (const { path, out } of sources) {
   else {
     let expected = null;
     try { expected = readFileSync(out, 'utf8'); } catch { /* missing */ }
-    if (expected !== actual) { failures += 1; console.error(`differs: ${path}`); }
+    if (expected !== actual) {
+      failures += 1;
+      console.error(`differs: ${path}`);
+    }
   }
 }
 assert.equal(failures, 0, 'grammar snapshots differ; review, then --update');

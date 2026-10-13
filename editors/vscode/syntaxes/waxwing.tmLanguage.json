@@ -31,7 +31,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -76,7 +76,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -121,7 +121,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -166,7 +166,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -211,7 +211,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -256,7 +256,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -282,7 +282,502 @@
         },
         {
           "name": "string.quoted.other.raw.waxwing",
-          "begin": "(#{6,})\"\"\"",
+          "begin": "######\"\"\"",
+          "end": "\"\"\"######",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\######(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$######\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "#######\"\"\"",
+          "end": "\"\"\"#######",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\#######(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\#######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$#######\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "########\"\"\"",
+          "end": "\"\"\"########",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$########\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "#########\"\"\"",
+          "end": "\"\"\"#########",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\#########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\#########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$#########\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "##########\"\"\"",
+          "end": "\"\"\"##########",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\##########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\##########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$##########\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "###########\"\"\"",
+          "end": "\"\"\"###########",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\###########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\###########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$###########\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "############\"\"\"",
+          "end": "\"\"\"############",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$############\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "#############\"\"\"",
+          "end": "\"\"\"#############",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\#############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\#############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$#############\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "##############\"\"\"",
+          "end": "\"\"\"##############",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\##############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\##############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$##############\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "###############\"\"\"",
+          "end": "\"\"\"###############",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\###############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\###############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$###############\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "################\"\"\"",
+          "end": "\"\"\"################",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\################(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\################(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$################\\{",
+              "end": "\\}",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#expression"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "(#{17,})\"\"\"",
           "end": "\"\"\"\\1",
           "beginCaptures": {
             "0": {
@@ -316,7 +811,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -361,7 +856,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -406,7 +901,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -451,7 +946,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -496,7 +991,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -541,7 +1036,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -567,7 +1062,502 @@
         },
         {
           "name": "string.quoted.other.raw.waxwing",
-          "begin": "(#{6,})\"(?!\"\")",
+          "begin": "######\"(?!\"\")",
+          "end": "\"######|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\######(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$######\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "#######\"(?!\"\")",
+          "end": "\"#######|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\#######(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\#######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$#######\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "########\"(?!\"\")",
+          "end": "\"########|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$########\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "#########\"(?!\"\")",
+          "end": "\"#########|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\#########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\#########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$#########\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "##########\"(?!\"\")",
+          "end": "\"##########|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\##########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\##########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$##########\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "###########\"(?!\"\")",
+          "end": "\"###########|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\###########(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\###########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$###########\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "############\"(?!\"\")",
+          "end": "\"############|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$############\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "#############\"(?!\"\")",
+          "end": "\"#############|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\#############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\#############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$#############\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "##############\"(?!\"\")",
+          "end": "\"##############|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\##############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\##############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$##############\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "###############\"(?!\"\")",
+          "end": "\"###############|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\###############(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\###############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$###############\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "################\"(?!\"\")",
+          "end": "\"################|$",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.waxwing"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.waxwing"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.waxwing",
+              "match": "\\\\################(?:[ntr\"\\\\$]|u\\{[0-9A-Fa-f]{1,6}\\})"
+            },
+            {
+              "name": "invalid.illegal.escape.waxwing",
+              "match": "\\\\################(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+            },
+            {
+              "name": "meta.interpolation.waxwing",
+              "begin": "\\$################\\{",
+              "end": "\\}|$",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.begin.waxwing"
+                }
+              },
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.section.interpolation.end.waxwing"
+                }
+              },
+              "patterns": [
+                {
+                  "include": "#hole-line"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.raw.waxwing",
+          "begin": "(#{17,})\"(?!\"\")",
           "end": "\"\\1|$",
           "beginCaptures": {
             "0": {
@@ -598,7 +1588,7 @@
         },
         {
           "name": "storage.modifier.contextual.waxwing",
-          "match": "(?<![A-Za-z0-9_])(?:pure|nofail)(?![A-Za-z0-9_])"
+          "match": "(?<![A-Za-z0-9_])(?:pure|nofail|fail)(?![A-Za-z0-9_])"
         },
         {
           "name": "variable.language.wildcard.waxwing",
@@ -607,6 +1597,10 @@
         {
           "name": "constant.numeric.integer.waxwing",
           "match": "-?(?<![A-Za-z0-9_])[0-9]+"
+        },
+        {
+          "name": "keyword.operator.minus.waxwing",
+          "match": "-"
         },
         {
           "name": "keyword.operator.arrow.waxwing",
