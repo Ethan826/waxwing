@@ -1,0 +1,377 @@
+1: effect Directory { fn lookup(id: Int): Text; };
+  "effect" keyword.declaration
+  " "
+  "Directory" entity.name.type
+  " "
+  "{" meta.braces
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "lookup" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Text" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+2:
+  ""
+3: type Entry = Entry(Text, Int);
+  "type" keyword.declaration
+  " "
+  "Entry" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "Entry" entity.name.type
+  "(" punctuation.section.parens
+  "Text" support.type.builtin
+  "," punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+4:
+  ""
+5: fn greeting(name: Text): Text = "Hello, ${name}!";
+  "fn" keyword.declaration
+  " "
+  "greeting" variable.other
+  "(" punctuation.section.parens
+  "name" variable.other
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "Hello, " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "name" string.quoted.double meta.interpolation variable.other
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  "!" string.quoted.double
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+6:
+  ""
+7: fn welcome(line: Text): Text = line ++ " Welcome aboard.";
+  "fn" keyword.declaration
+  " "
+  "welcome" variable.other
+  "(" punctuation.section.parens
+  "line" variable.other
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "line" variable.other
+  " "
+  "++" keyword.operator.join
+  " "
+  "\"" string.quoted.double punctuation.definition.string.begin
+  " Welcome aboard." string.quoted.double
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+8:
+  ""
+9: fn letter(name: Text, id: Int): Text = """
+  "fn" keyword.declaration
+  " "
+  "letter" variable.other
+  "(" punctuation.section.parens
+  "name" variable.other
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  "," punctuation.separator
+  " "
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "\"\"\"" string.quoted.double punctuation.definition.string.begin
+10:     Dear ${name},
+  "    Dear " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "name" string.quoted.double meta.interpolation variable.other
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  "," string.quoted.double
+11:       your id is ${show(id)}.
+  "      your id is " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "show" string.quoted.double meta.interpolation variable.other
+  "(" string.quoted.double meta.interpolation punctuation.section.parens
+  "id" string.quoted.double meta.interpolation variable.other
+  ")" string.quoted.double meta.interpolation punctuation.section.parens
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  "." string.quoted.double
+12:     """;
+  "    " string.quoted.double
+  "\"\"\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+13:
+  ""
+14: fn rawPath(): Text = #"C:\users\${name}\notes"#;
+  "fn" keyword.declaration
+  " "
+  "rawPath" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Text" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "#\"" string.quoted.other.raw punctuation.definition.string.begin
+  "C:\\users\\${name}\\notes" string.quoted.other.raw
+  "\"#" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+15:
+  ""
+16: fn entryFor(id: Int): Entry with Directory = Entry(lookup(id), id);
+  "fn" keyword.declaration
+  " "
+  "entryFor" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Entry" entity.name.type
+  " "
+  "with" keyword.control
+  " "
+  "Directory" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "Entry" entity.name.type
+  "(" punctuation.section.parens
+  "lookup" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " "
+  "id" variable.other
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+17:
+  ""
+18: fn directory(): Handler(Directory with pure) =
+  "fn" keyword.declaration
+  " "
+  "directory" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Handler" entity.name.type
+  "(" punctuation.section.parens
+  "Directory" entity.name.type
+  " "
+  "with" keyword.control
+  " "
+  "pure" storage.modifier.contextual
+  ")" punctuation.section.parens
+  " "
+  "=" keyword.operator.assignment
+19:   handler Directory {
+  "  "
+  "handler" keyword.declaration
+  " "
+  "Directory" entity.name.type
+  " "
+  "{" meta.braces
+20:     lookup(id) => if id == 1 then "Ada \"the first\"" else "Grace"
+  "    " meta.braces
+  "lookup" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "if" meta.braces keyword.control
+  " " meta.braces
+  "id" meta.braces variable.other
+  " " meta.braces
+  "==" meta.braces keyword.operator.comparison
+  " " meta.braces
+  "1" meta.braces constant.numeric.integer
+  " " meta.braces
+  "then" meta.braces keyword.control
+  " " meta.braces
+  "\"" meta.braces string.quoted.double punctuation.definition.string.begin
+  "Ada " meta.braces string.quoted.double
+  "\\\"" meta.braces string.quoted.double constant.character.escape
+  "the first" meta.braces string.quoted.double
+  "\\\"" meta.braces string.quoted.double constant.character.escape
+  "\"" meta.braces string.quoted.double punctuation.definition.string.end
+  " " meta.braces
+  "else" meta.braces keyword.control
+  " " meta.braces
+  "\"" meta.braces string.quoted.double punctuation.definition.string.begin
+  "Grace" meta.braces string.quoted.double
+  "\"" meta.braces string.quoted.double punctuation.definition.string.end
+21:   };
+  "  " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+22:
+  ""
+23: fn main(): Unit with Console =
+  "fn" keyword.declaration
+  " "
+  "main" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Unit" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Console" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+24:   with directory() {
+  "  "
+  "with" keyword.control
+  " "
+  "directory" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  " "
+  "{" meta.braces
+25:     print(
+  "    " meta.braces
+  "print" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+26:       lookup(2)
+  "      " meta.braces
+  "lookup" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "2" meta.braces constant.numeric.integer
+  ")" meta.braces punctuation.section.parens
+27:         |> greeting
+  "        " meta.braces
+  "|>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "greeting" meta.braces variable.other
+28:         |> welcome
+  "        " meta.braces
+  "|>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "welcome" meta.braces variable.other
+29:     );
+  "    " meta.braces
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+30:     print(letter(lookup(1), 1));
+  "    " meta.braces
+  "print" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "letter" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "lookup" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "1" meta.braces constant.numeric.integer
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "1" meta.braces constant.numeric.integer
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+31:     print(rawPath());
+  "    " meta.braces
+  "print" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "rawPath" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+32:     print(entryFor(1));
+  "    " meta.braces
+  "print" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "entryFor" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "1" meta.braces constant.numeric.integer
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+33:     print("shown: ${show(entryFor(2))}");
+  "    " meta.braces
+  "print" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "\"" meta.braces string.quoted.double punctuation.definition.string.begin
+  "shown: " meta.braces string.quoted.double
+  "${" meta.braces string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "show" meta.braces string.quoted.double meta.interpolation variable.other
+  "(" meta.braces string.quoted.double meta.interpolation punctuation.section.parens
+  "entryFor" meta.braces string.quoted.double meta.interpolation variable.other
+  "(" meta.braces string.quoted.double meta.interpolation punctuation.section.parens
+  "2" meta.braces string.quoted.double meta.interpolation constant.numeric.integer
+  ")" meta.braces string.quoted.double meta.interpolation punctuation.section.parens
+  ")" meta.braces string.quoted.double meta.interpolation punctuation.section.parens
+  "}" meta.braces string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  "\"" meta.braces string.quoted.double punctuation.definition.string.end
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+34:     print(show(lookup(1) < lookup(2)))
+  "    " meta.braces
+  "print" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "show" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "lookup" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "1" meta.braces constant.numeric.integer
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "<" meta.braces keyword.operator.comparison
+  " " meta.braces
+  "lookup" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "2" meta.braces constant.numeric.integer
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+35:   };
+  "  " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+36:
+  ""
