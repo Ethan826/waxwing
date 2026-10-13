@@ -56,8 +56,10 @@ const checkRows = [
     // growing layouts are accepted.
     name: 'fx-layout-edges', file: 'src/Features/Check/Nested.purs',
     needle: '  THandler (Label (UserEffect (EffectId index)) arguments _) _ → '
-      + 'Array.cons\n    (offset + index)\n    (Array.concatMap recur arguments)',
-    replacement: '  THandler (Label (UserEffect (EffectId index)) arguments _) _ → '
+      + 'Array.cons\n    (offset + index)\n    (Array.concatMap recur ' +
+        'arguments)',
+    replacement: '  THandler (Label (UserEffect (EffectId index)) arguments ' +
+      '_) _ → '
       + 'Array.concatMap recur arguments',
     probe: 'fx-layout-edges', message: /layout edges: "accepted"/
   },
@@ -75,7 +77,8 @@ const checkRows = [
     // fault. Without the classification the call is reported as the caller
     // performing the label, which its own signature allows.
     name: 'fx-callback-row', file: 'src/Features/Check/Callback.purs',
-    needle: '    | isNothing origin.via && inFunction env && siteLabel env placed →',
+    needle: '    | isNothing origin.via && inFunction env && siteLabel env ' +
+      'placed →',
     replacement: '    | false →',
     probe: 'fx-callback-row', message: /callback row: /
   },
@@ -84,8 +87,10 @@ const checkRows = [
     // installed labels. Restricted to the signature's row alone, the
     // mismatch is again reported as the caller performing the label.
     name: 'fx-callback-install', file: 'src/Features/Check/Callback.purs',
-    needle: '    | isNothing origin.via && inFunction env && siteLabel env placed →',
-    replacement: '    | isNothing origin.via && inFunction env && siteLabel env placed\n'
+    needle: '    | isNothing origin.via && inFunction env && siteLabel env ' +
+      'placed →',
+    replacement: '    | isNothing origin.via && inFunction env && siteLabel ' +
+      'env placed\n'
       + '        && Array.length env.sites == 1 →',
     probe: 'fx-callback-install', message: /callback install: /
   },

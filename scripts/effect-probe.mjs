@@ -83,7 +83,8 @@ const measureConfig = (work, config) => {
   const checksumOk = runs.every(ok)
     && parsed.every(([, sum]) => sum === wanted(config));
   return { config: config.join(':'), checksumOk,
-    milliseconds: summary(parsed.map(([ns]) => Number((ns / 1e6).toFixed(3)))) };
+    milliseconds: summary(parsed.map(([ns]) =>
+      Number((ns / 1e6).toFixed(3)))) };
 };
 
 const buildSizes = () => helperSizes.map(count => {
@@ -101,9 +102,11 @@ const buildSizes = () => helperSizes.map(count => {
 });
 
 const batch = (name, work) => {
-  const before = { load: load(), uptime: timed('uptime', []).result.stdout.trim() };
+  const before = {
+    load: load(), uptime: timed('uptime', []).result.stdout.trim() };
   const rows = work();
-  const after = { load: load(), uptime: timed('uptime', []).result.stdout.trim() };
+  const after = {
+    load: load(), uptime: timed('uptime', []).result.stdout.trim() };
   return { name, before, after, rows };
 };
 
@@ -130,4 +133,5 @@ if (process.argv[2] !== 'semantics') {
   results.decision = adopt ? 'ADOPT' : 'BLOCKED';
   console.log(`decision: ${results.decision}`);
 }
-writeFileSync(join(root, 'results.json'), JSON.stringify(results, null, 2) + '\n');
+writeFileSync(join(root, 'results.json'),
+  JSON.stringify(results, null, 2) + '\n');

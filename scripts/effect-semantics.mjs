@@ -8,7 +8,8 @@ const body = String.raw`
 type dbError struct{ n int }
 type releaseError struct{}
 
-func (e dbError) Shown() (string, string)      { return "DbError", fmt.Sprintf("Timeout(%d)", e.n) }
+func (e dbError) Shown() (string, string)      { return "DbError",
+	fmt.Sprintf("Timeout(%d)", e.n) }
 func (e releaseError) Shown() (string, string) { return "ReleaseError", "Busy" }
 
 var out []string
@@ -17,11 +18,14 @@ func say(s string) { out = append(out, s) }
 
 func flush() { fmt.Println(strings.Join(out, "\n")) }
 
-func markers(f *waxwingCtx) []*waxwingMarker { return []*waxwingMarker{f.marker} }
+func markers(f *waxwingCtx) []*waxwingMarker {
+	return []*waxwingMarker{f.marker} }
 
 func clauseMode() {
-	outer := waxwingInstall(nil, keyLog, &logHandler{func(c *waxwingCtx, s string) int { say("outer got " + s); return 10 }})
-	inner := waxwingInstall(outer, keyLog, &logHandler{func(c *waxwingCtx, s string) int {
+	outer := waxwingInstall(nil, keyLog, &logHandler{func(c *waxwingCtx,
+		s string) int { say("outer got " + s); return 10 }})
+	inner := waxwingInstall(outer, keyLog, &logHandler{func(c *waxwingCtx,
+		s string) int {
 		say("inner clause " + s)
 		return 1 + performLog(c, "fwd:"+s)
 	}})
@@ -40,7 +44,8 @@ func abortMode() {
 	fa := waxwingFrame(nil, keyFail)
 	r, a := waxwingHandle(markers(fa), func() int {
 		fo := waxwingFrame(fa, keyOther)
-		waxwingHandle(markers(fo), func() int { waxwingFail(fo, keyFail, 7); return 0 })
+		waxwingHandle(markers(fo), func() int { waxwingFail(fo, keyFail, 7);
+			return 0 })
 		say("unreachable")
 		return 0
 	})
@@ -48,24 +53,31 @@ func abortMode() {
 	// the failing body targets the outer frame across an inner same-key handle
 	fb := waxwingFrame(fa, keyFail)
 	_, b := waxwingHandle(markers(fa), func() int {
-		waxwingHandle(markers(fb), func() int { waxwingFail(fb, keyFail, 8); return 0 }) // caught by fb
+		// caught by fb
+		waxwingHandle(markers(fb), func() int { waxwingFail(fb, keyFail, 8);
+			return 0 })
 		say("B: inner caught its own")
-		waxwingHandle(markers(fb), func() int { waxwingFail(fa, keyFail, 9); return 0 }) // aimed at fa
+		// aimed at fa
+		waxwingHandle(markers(fb), func() int { waxwingFail(fa, keyFail, 9);
+			return 0 })
 		say("unreachable")
 		return 0
 	})
 	say(fmt.Sprint("B: outer caught ", b.payload))
 	// a clause installed outside an inner handle that fails is not caught by it
 	_, c := waxwingHandle(markers(fa), func() int {
-		_, inner := waxwingHandle(markers(fb), func() int { waxwingFail(fb, keyFail, 1); return 0 })
+		_, inner := waxwingHandle(markers(fb), func() int { waxwingFail(fb, keyFail,
+			1); return 0 })
 		say("C: clause runs after helper")
-		waxwingFail(fb.outer, keyFail, inner.payload.(int)+98) // clause context = fb.outer
+		// clause context = fb.outer
+		waxwingFail(fb.outer, keyFail, inner.payload.(int)+98)
 		return 0
 	})
 	say(fmt.Sprint("C: outer caught ", c.payload))
 	// two nested blocks unwind innermost first (d2 d1 per block)
 	_, d := waxwingHandle(markers(fa), func() int {
-		block(fa, func() { block(fa, func() { say("body"); waxwingFail(fa, keyFail, 5) }) })
+		block(fa, func() { block(fa, func() { say("body"); waxwingFail(fa, keyFail,
+			5) }) })
 		return 0
 	})
 	say(fmt.Sprint("D: caught ", d.payload))
@@ -74,7 +86,8 @@ func abortMode() {
 		var st waxwingPending
 		defer waxwingCleanup(&st, func() {
 			g := waxwingFrame(fa, keyFail)
-			_, h := waxwingHandle(markers(g), func() int { waxwingFail(g, keyFail, 3); return 0 })
+			_, h := waxwingHandle(markers(g), func() int { waxwingFail(g, keyFail, 3);
+				return 0 })
 			say(fmt.Sprint("E: cleanup handled ", h.payload))
 		})
 		waxwingFail(fa, keyFail, 4)
@@ -98,7 +111,8 @@ func reportMode() {
 	fa := waxwingFrame(nil, keyFail)
 	var st waxwingPending
 	defer waxwingCleanup(&st, func() { say("d1"); waxwingCrash("bad\nline") })
-	defer waxwingCleanup(&st, func() { say("d2"); waxwingFail(fa, keyFail, releaseError{}) })
+	defer waxwingCleanup(&st, func() { say("d2"); waxwingFail(fa, keyFail,
+		releaseError{}) })
 	say("body")
 	waxwingFail(fa, keyFail, dbError{3})
 }
@@ -124,8 +138,10 @@ func defectMode() {
 func guardMode() { performLog(nil, "x") }
 
 func main() {
-	modes := map[string]func(){"clause": clauseMode, "abort": abortMode, "markers": markersMode,
-		"report": reportMode, "normal": normalMode, "defect": defectMode, "guard": guardMode}
+	modes := map[string]func(){"clause": clauseMode, "abort": abortMode,
+		"markers": markersMode,
+		"report": reportMode, "normal": normalMode, "defect": defectMode,
+			"guard": guardMode}
 	waxwingMain(func() { defer flush(); modes[os.Args[1]]() })
 }
 `;
@@ -138,7 +154,8 @@ export const semanticCases = [
     stdout: lines('inner clause hi', 'outer got fwd:hi', 'result 11') },
   { mode: 'abort', status: 0, stderr: '', stdout: lines(
     'A: 0 caught 7', 'B: inner caught its own', 'B: outer caught 9',
-    'C: clause runs after helper', 'C: outer caught 99', 'body', 'd2', 'd1', 'd2', 'd1',
+    'C: clause runs after helper', 'C: outer caught 99', 'body', 'd2', 'd1',
+      'd2', 'd1',
     'D: caught 5', 'E: cleanup handled 3', 'E: abort continued 4') },
   { mode: 'markers', status: 0, stderr: '', stdout: 'distinct 1000 of 1000\n' },
   { mode: 'report', status: 1, stdout: lines('body', 'd2', 'd1'),
@@ -149,5 +166,6 @@ export const semanticCases = [
     stderr: lines('crash: a', 'cleanup failed: crash: b') },
   { mode: 'defect', status: 1, stdout: lines('cleanup ran'),
     stderr: lines('crash: boom') },
-  { mode: 'guard', status: 1, stdout: '\n', stderr: lines('no handler for Log') }
+  { mode: 'guard', status: 1, stdout: '\n',
+    stderr: lines('no handler for Log') }
 ];

@@ -42,7 +42,8 @@ func waxwingInstall(outer *waxwingCtx, key int, handler any) *waxwingCtx {
 // A handle's frame: a fresh marker per frame, never shared.
 func waxwingFrame(outer *waxwingCtx, key int) *waxwingCtx {
 	waxwingNext++
-	return &waxwingCtx{key: key, outer: outer, marker: &waxwingMarker{id: waxwingNext}}
+	return &waxwingCtx{key: key, outer: outer,
+		marker: &waxwingMarker{id: waxwingNext}}
 }
 
 func waxwingFind(ctx *waxwingCtx, key int) *waxwingCtx {
@@ -76,7 +77,8 @@ func waxwingOwns(markers []*waxwingMarker, target *waxwingMarker) bool {
 
 // Recovers only aborts aimed at its own markers; the failure clause runs
 // after it returns, in the handle's context.
-func waxwingHandle(markers []*waxwingMarker, body func() int) (result int, caught *waxwingAbort) {
+func waxwingHandle(markers []*waxwingMarker, body func() int) (result int,
+	caught *waxwingAbort) {
 	defer func() {
 		if r := recover(); r != nil {
 			if a, ok := r.(*waxwingAbort); ok && waxwingOwns(markers, a.target) {
@@ -94,7 +96,8 @@ type waxwingPending struct {
 	later []any
 }
 
-func waxwingEscape(s string) string { return strings.ReplaceAll(s, "\n", "\\n") }
+func waxwingEscape(s string) string { return strings.ReplaceAll(s, "\n",
+	"\\n") }
 
 func waxwingCauses(r any) []string {
 	switch v := r.(type) {
@@ -110,7 +113,8 @@ func waxwingCauses(r any) []string {
 	return []string{"crash: " + waxwingEscape(fmt.Sprint(r))}
 }
 
-func waxwingCrash(text string) { panic(&waxwingDefect{[]string{"crash: " + waxwingEscape(text)}}) }
+func waxwingCrash(text string) {
+	panic(&waxwingDefect{[]string{"crash: " + waxwingEscape(text)}}) }
 
 // One cause while nothing else fails (an abort stays an abort); a defect
 // carrying every cause, in execution order, once a cleanup also fails.

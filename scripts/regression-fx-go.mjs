@@ -23,7 +23,8 @@ export const fxGoRows = [
     name: 'fx-clause-order', file: 'src/Format/Go/Handle.purs',
     needle: '(Array.reverse (Array.mapWithIndex Tuple branches))',
     replacement: '(Array.mapWithIndex Tuple branches)',
-    probe: 'fx-clause-order', message: /clause order: panic: interface conversion/
+    probe: 'fx-clause-order',
+      message: /clause order: panic: interface conversion/
   },
   {
     // Design §3 "Cleanup context": a deferred expression runs in the
@@ -32,7 +33,8 @@ export const fxGoRows = [
     // context in force at exit.
     name: 'fx-cleanup-context', file: 'src/Format/Go/Context.purs',
     needle: '"\\treturn &waxwingCtx{key: key, handler: handler, outer: outer}"',
-    replacement: '"\\tif outer == nil {"\n    , "\\t\\treturn &waxwingCtx{key: key,'
+    replacement: '"\\tif outer == nil {"\n    , "\\t\\treturn ' +
+      '&waxwingCtx{key: key,'
       + ' handler: handler}"\n    , "\\t}"\n    , "\\tsaved := *outer"\n'
       + '    , "\\t*outer = waxwingCtx{key: key, handler: handler,'
       + ' outer: &saved}"\n    , "\\treturn outer"',
@@ -43,7 +45,8 @@ export const fxGoRows = [
     // defect after a typed abort is reported without the abort.
     name: 'fx-cleanup-cause', file: 'src/Format/Go/Cleanup.purs',
     needle: 'causes = waxwingCauses(pending)', replacement: 'causes = nil',
-    probe: 'fx-cleanup-cause', message: /pending cause dropped: "crash: Busy\\n"/
+    probe: 'fx-cleanup-cause',
+      message: /pending cause dropped: "crash: Busy\\n"/
   },
   {
     // A pending typed abort reaches its `handle` only if every cleanup on

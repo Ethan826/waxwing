@@ -55,7 +55,8 @@ func deepHandles(ctx *waxwingCtx, n int) int {
 		waxwingFail(ctx, keyFail, 5)
 	}
 	fo := waxwingFrame(ctx, keyOther)
-	r, _ := waxwingHandle([]*waxwingMarker{fo.marker}, func() int { return deepHandles(fo, n-1) + 1 })
+	r, _ := waxwingHandle([]*waxwingMarker{fo.marker}, func() int {
+		return deepHandles(fo, n-1) + 1 })
 	return r
 }
 
@@ -83,7 +84,8 @@ func caught(n int) int {
 	fa := waxwingFrame(nil, keyFail)
 	sum := 0
 	for i := 0; i < n; i++ {
-		_, a := waxwingHandle([]*waxwingMarker{fa.marker}, func() int { waxwingFail(fa, keyFail, i); return 0 })
+		_, a := waxwingHandle([]*waxwingMarker{fa.marker}, func() int {
+			waxwingFail(fa, keyFail, i); return 0 })
 		sum += a.payload.(int)
 	}
 	return sum
@@ -150,7 +152,8 @@ export const helperProgram = (count, seed) => {
     + `\nvar helpers = []func(*waxwingCtx, int) int{\n${names.join('\n')}\n}\n`
     + String.raw`
 func main() {
-	ctx := waxwingInstall(nil, keyLog, &logHandler{func(c *waxwingCtx, s string) int { return 1 }})
+	ctx := waxwingInstall(nil, keyLog, &logHandler{func(c *waxwingCtx,
+		s string) int { return 1 }})
 	sum := 0
 	for i, h := range helpers {
 		sum += h(ctx, i%5-1)

@@ -25,7 +25,8 @@ export const fnRows = [
     // A named value lowered by its type's arity, through an eta adapter,
     // rather than its declared arity (design §4): `f(1)` must enter stuck.
     name: 'stage-value', file: 'src/Format/Go/Expression.purs',
-    needle: '  IR.FunctionRef id → reference next (functionWrapper scope.shape id)',
+    needle: '  IR.FunctionRef id → reference next (functionWrapper ' +
+      'scope.shape id)',
     replacement: '  IR.FunctionRef id → '
       + eta('  ', 'term.ty', '(functionWrapper scope.shape id).name',
         '\n      , Array.length (functionWrapper scope.shape id).parameters'
@@ -91,10 +92,12 @@ export const fnRows = [
       + '    <> joinWith "" (Array.mapWithIndex (\\i c → "var waxwingArg"\n'
       + '      <> show i <> " " <> joinWith "" (map (goType <<< IR.typeOf)\n'
       + '        (Array.fromFoldable (Array.index (Array.slice first\n'
-      + '          (first + blockSize) arguments) i))) <> " = " <> c <> "\\n")\n'
+      + '          (first + blockSize) arguments) i))) <> " = " <> c <> ' +
+        '"\\n")\n'
       + '        parts.codes)\n'
       + '    <> "return waxwingValue"\n'
-      + '    <> joinWith "" (Array.mapWithIndex (\\i _ → "(waxwingArg" <> show i\n'
+      + '    <> joinWith "" (Array.mapWithIndex (\\i _ → "(waxwingArg" <> ' +
+        'show i\n'
       + '      <> ")") parts.codes)',
     probe: 'block-order', message: /helper evaluated its block early/
   },

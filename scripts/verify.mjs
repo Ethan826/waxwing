@@ -11,7 +11,8 @@ const run = (command, args) => {
 const purs = spawnSync('purs', ['--version'], { encoding: 'utf8' });
 assert.ifError(purs.error);
 assert.equal(purs.status, 0);
-assert.equal(purs.stdout.trim(), '0.15.16', 'use the pinned PureScript compiler');
+assert.equal(purs.stdout.trim(), '0.15.16',
+  'use the pinned PureScript compiler');
 const spago = spawnSync('spago', ['--version'], { encoding: 'utf8' });
 assert.ifError(spago.error);
 assert.equal(spago.status, 0);
@@ -19,7 +20,8 @@ assert.equal(spago.stdout.trim(), '1.0.4', 'use the pinned Spago');
 const tidy = spawnSync('purs-tidy', ['--version'], { encoding: 'utf8' });
 assert.ifError(tidy.error);
 assert.equal(tidy.status, 0);
-assert.equal((tidy.stdout + tidy.stderr).trim(), 'v0.11.1', 'use the pinned formatter');
+assert.equal((tidy.stdout + tidy.stderr).trim(), 'v0.11.1',
+  'use the pinned formatter');
 run('purs-tidy', ['check', 'src', 'tools/style/src']);
 run('node', ['scripts/build.mjs']);
 run('node', ['scripts/strict-rebuild.mjs']);
@@ -39,4 +41,5 @@ if (serialTests.length > 0) {
   run('node', ['--test', '--test-concurrency=1', ...serialTests]);
 }
 run('node', ['scripts/regression.mjs']);
-console.log('Verified compiler, gates, executable programs, rejection diagnostics, properties, and regression proofs.');
+console.log('Verified compiler, gates, executable programs, rejection ' +
+  'diagnostics, properties, and regression proofs.');

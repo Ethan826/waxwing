@@ -19,7 +19,8 @@ export const fx008MarkRows = [
     // Copies (review I1): a stage tail bound to the rest of the target gets
     // fresh copies of its labels. Sharing them merges unrelated contexts.
     name: 'fx008-copies', file: 'src/Features/Check/UnifyMark.purs',
-    needle: '    | otherwise → maybe unchanged (above direction) (freshened subst label)',
+    needle: '    | otherwise → maybe unchanged (above direction) (freshened ' +
+      'subst label)',
     replacement: '    | otherwise → unchanged',
     probe: 'fx008-copies', message: /copies: rejected/
   },
@@ -71,7 +72,8 @@ export const fx008MarkRows = [
     // A local handler annotation gets a clause row C of its own (rev7 I3);
     // an alias makes the unification with the context reach C.
     name: 'fx008-c-alias', file: 'src/Features/Check/MarkUse.purs',
-    needle: '  if outside then withClauses <$> inference <*> inference <*> (Hole <$> next)',
+    needle: '  if outside then withClauses <$> inference <*> inference <*> ' +
+      '(Hole <$> next)',
     replacement: '  if outside then onlyInference <$> inference',
     probe: 'fx008-c-alias', message: /C alias: rejected/
   },
@@ -126,7 +128,8 @@ export const fx008MarkRows = [
   {
     // The tail may also occur in the function's own row (review C1).
     name: 'fx008-result-own-row', file: 'src/Features/Check/ResultClauses.purs',
-    needle: 'occurs meta = foldHoles (found meta) false (TFun TUnit row TUnit)\n'
+    needle: 'occurs meta = foldHoles (found meta) false (TFun TUnit row ' +
+      'TUnit)\n'
       + '    || Array.any',
     replacement: 'occurs meta = Array.any',
     probe: 'fx008-result-own-row', message: /result own row: accepted/

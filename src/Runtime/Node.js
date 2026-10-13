@@ -25,7 +25,8 @@ const withBuilt = (results, go, binaryIn, after) => () => {
     const source = join(work, 'main.go');
     const binary = binaryIn(work);
     writeFileSync(source, go);
-    return external(results, 'go', ['build', '-o', binary, source], () => after(binary));
+    return external(results, 'go', ['build', '-o', binary, source], () =>
+      after(binary));
   } catch (error) {
     return results.io(error.message);
   } finally {
@@ -43,7 +44,8 @@ export const readSourceWith = results => path => () =>
   attempt(results, () => results.right(readFileSync(path, 'utf8')));
 
 export const writeTextWith = results => path => text => () =>
-  attempt(results, () => { writeFileSync(path, text); return results.right(''); });
+  attempt(results, () => {
+    writeFileSync(path, text); return results.right(''); });
 
 export const buildWith = results => go => output =>
   withBuilt(results, go, () => resolve(output), () => results.right(''));

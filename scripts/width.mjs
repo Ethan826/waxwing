@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 // .wxw files. Usage: node scripts/width.mjs [--exclude <file>]. The file
 // names paths to skip, one per line; phase 1 of the 80-column sweep skips
 // the files the Text branch changes. Exempt: Markdown table rows, and lines
-// whose only overflow is a URL or link target.
+// whose only overflow is a URL, a link target, or a single unbreakable token.
 const maximumColumns = 80;
 const sourceFile = /\.(md|mjs|js|wxw)$/;
 const skippedPrefixes = [
@@ -33,6 +33,7 @@ const columnsOf = line => [...line].length;
 
 const exempt = (file, line) =>
   file.endsWith('.md') && (line.trimStart().startsWith('|') ||
+    !/\S\s+\S/.test(line) ||
     columnsOf(line.replace(linkTarget, '')) <= maximumColumns);
 
 const wideLines = file =>
