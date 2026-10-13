@@ -11,7 +11,7 @@ module Runtime.Node
 
 import Prelude
 import Data.Either (Either(..))
-import Domain.Host (Host, HostFailure(..))
+import Domain.Host (Host, HostFailure(..), ReadFailure(..))
 import Effect (Effect)
 import Format.Wire (WireRecord(..))
 
@@ -21,24 +21,30 @@ type Results =
   { right ∷ String → Either HostFailure String
   , io ∷ String → Either HostFailure String
   , tool ∷ String → String → Either HostFailure String
-  , utf8 ∷ Int → Int → Int → Either HostFailure String
+  }
+
+type ReadResults =
+  { right ∷ String → Either ReadFailure String
+  , io ∷ String → Either ReadFailure String
+  , utf8 ∷ Int → Int → Int → Either ReadFailure String
   }
 
 type Attempt = Effect (Either HostFailure String)
+type ReadAttempt = Effect (Either ReadFailure String)
 
 foreign import commandArguments ∷ Effect (Array String)
 foreign import writeOutput ∷ String → Effect Unit
 foreign import writeError ∷ String → Effect Unit
 foreign import setExitCode ∷ Int → Effect Unit
 foreign import json ∷ ∀ fields. Record fields → String
-foreign import readSourceWith ∷ Results → String → Attempt
+foreign import readSourceWith ∷ ReadResults → String → ReadAttempt
 foreign import writeTextWith ∷ Results → String → String → Attempt
 foreign import buildWith ∷ Results → String → String → Attempt
 foreign import runWith ∷ Results → String → Attempt
 
 nodeHost ∷ Host Effect
 nodeHost =
-  { readSource: readSourceWith results
+  { readSource: readSourceWith readResults
   , writeText
   , buildExecutable
   , runProgram: runWith results
@@ -55,8 +61,13 @@ wireText = case _ of
   ToolWire record → json record
 
 results ∷ Results
-results = { right: Right, io: ioFailure, tool: toolFailure, utf8: badUtf8 }
+results = { right: Right, io: ioFailure, tool: toolFailure }
   where
   ioFailure text = Left (IoFailure text)
   toolFailure message command = Left (ToolFailure { message, command })
-  badUtf8 offset line column = Left (InvalidUtf8 { offset, line, column })
+
+readResults ∷ ReadResults
+readResults = { right: Right, io: unreadable, utf8: invalid }
+  where
+  unreadable text = Left (Unreadable (IoFailure text))
+  invalid offset line column = Left (InvalidUtf8 { offset, line, column })

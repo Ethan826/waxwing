@@ -17,18 +17,18 @@ const cli = (bytes, verb = 'emit') => {
   try {
     const file = join(work, 'in.wxw');
     writeFileSync(file, bytes);
-    const result = spawnSync('node',
-      ['scripts/waxwing.mjs', verb, file, join(work, 'out.go')],
+    const args = verb === 'run' ? [file] : [file, join(work, 'out.go')];
+    const result = spawnSync('node', ['scripts/waxwing.mjs', verb, ...args],
       { encoding: 'utf8', timeout: 60000 });
     assert.ifError(result.error);
     return { ...result, file };
   } finally { rmSync(work, { recursive: true, force: true }); }
 };
 
-const refusal = (valid, invalid, rest = Buffer.alloc(0)) => {
+const refusal = (valid, invalid, rest = Buffer.alloc(0), verb = 'emit') => {
   const bytes = Buffer.concat([valid, Buffer.from(invalid), rest]);
   const prefix = valid.toString('utf8');
-  const result = cli(bytes);
+  const result = cli(bytes, verb);
   assert.equal(result.status, 1, result.stderr);
   const wire = JSON.parse(result.stderr);
   assert.equal(wire.code, 'E_SYNTAX');
@@ -86,4 +86,9 @@ test('a BOM is treated as it was before, not stripped', () => {
   const result = cli(bytes);
   assert.equal(result.status, 1);
   assert.equal(JSON.parse(result.stderr).code, 'E_LEX');
+});
+
+test('build and run reject through the same read', () => {
+  for (const verb of ['build', 'run'])
+    refusal(Buffer.concat([head, Buffer.from('é')]), [0xFF], tail, verb);
 });

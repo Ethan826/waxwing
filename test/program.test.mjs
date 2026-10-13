@@ -4,7 +4,9 @@ import { command } from '../output/Program.Command/index.js';
 import { monadEffect } from '../output/Effect/index.js';
 import { Left, Right } from '../output/Data.Either/index.js';
 import { Just, Nothing } from '../output/Data.Maybe/index.js';
-import { IoFailure, ToolFailure } from '../output/Domain.Host/index.js';
+import {
+  InvalidUtf8, IoFailure, ToolFailure, Unreadable
+} from '../output/Domain.Host/index.js';
 import { wireText } from '../output/Runtime.Node/index.js';
 import { checked, rejected } from './support.mjs';
 
@@ -57,11 +59,24 @@ test('an empty run destination is accepted as the original CLI did', () => {
 
 test('a failed read is E_IO with status 1 and calls nothing else', () => {
   const { host, calls } = fakeHost({
-    readSource: new Left(IoFailure.create('ENOENT: missing')) });
+    readSource: new Left(
+      Unreadable.create(IoFailure.create('ENOENT: missing'))) });
   const outcome = execute(host, ['emit', 'in.wxw', 'out.go']);
   assert.deepEqual(outcome, { status: 1, stdout: '',
     stderr: { code: 'E_IO', message: 'ENOENT: missing' } });
   assert.deepEqual(calls, [['readSource', 'in.wxw']]);
+});
+
+test('invalid UTF-8 on read is a source diagnostic with the file', () => {
+  const start = { offset: 7, line: 2, column: 3 };
+  const { host, calls } = fakeHost({
+    readSource: new Left(InvalidUtf8.create(start)) });
+  const outcome = execute(host, ['run', 'bad.wxw']);
+  assert.deepEqual(outcome, { status: 1, stdout: '', stderr: {
+    code: 'E_SYNTAX', message: 'Invalid UTF-8 in source',
+    span: { start, end: { offset: 8, line: 2, column: 4 } },
+    file: 'bad.wxw', related: [] } });
+  assert.deepEqual(calls, [['readSource', 'bad.wxw']]);
 });
 
 test('a source diagnostic is status 1 with the wire fields and file', () => {

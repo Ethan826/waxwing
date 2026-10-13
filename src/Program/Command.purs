@@ -5,14 +5,13 @@ module Program.Command (Outcome, command) where
 import Prelude
 import Data.Either (Either, either)
 import Data.Maybe (Maybe(..))
-import Domain.Host (Host, HostFailure(..))
+import Domain.Host (Host, HostFailure, ReadFailure(..))
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Position, Span, problemAt)
 import Format.Arguments (Invocation(..), invocation)
 import Format.Wire
   ( WireRecord
   , failureRecord
-  , invalidUtf8
   , sourceRecord
   , usageRecord
   )
@@ -51,8 +50,11 @@ translated host input next =
   unreadable = case _ of
     InvalidUtf8 start → rejected input
       (problemAt (Syntax invalidUtf8) (oneUnit start))
-    failure → hostFailed failure
+    Unreadable failure → hostFailed failure
   compiled source = either (pure <<< rejected input) next (compile source)
+
+invalidUtf8 ∷ String
+invalidUtf8 = "Invalid UTF-8 in source"
 
 -- One unit, starting at the first invalid byte.
 oneUnit ∷ Position → Span
