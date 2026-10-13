@@ -67,9 +67,25 @@ services must be able to reuse natural names such as `get`, `log` and
   `Fail.fail(e)`, whose family comes from the head of `e`'s type, exactly
   as `fail(e)` does today.
 
-**Signature aliases and imports.** These are allowed in any written row:
-the final `with` of a function signature, and rows inside parameter types
-and handler types where a row is written. The forms, in order:
+**Operation references.** A qualified operation is also a value. For
+example, `Database.query` can be passed as an argument without being
+called, as in `map(Database.query, ids)`, exactly as a bare operation
+reference (the compiler's existing `OperationRef`) works today. An
+imported bare name is a reference in the same way: with
+`Fail(Error) { fail }`, `fail` may be passed as a value of the family's
+operation type.
+
+**Signature aliases and imports.** These are allowed only in a function
+declaration's own row: the `with` of its final stage. They are scoped to
+that function's body. Alias or import syntax in any other written row is
+an error (§3). Other written rows include:
+- a parameter's type;
+- a handler type;
+- a lambda parameter's annotation;
+- an effect operation's signature.
+
+The rule is that one row, one body, one scope. A function's bindings are
+therefore all visible in its signature line. The forms, in order:
 
 ```
 [nofail | nofail(k)] Effect[(args)] [as Alias] [{ op [as name], … }]
@@ -111,23 +127,37 @@ enclosing function.
   The first match wins, with no fallback. If the inner binding has the
   wrong type, the result is an ordinary type error at the use. It never
   silently falls through to an outer binding of the same name.
-- **Lambdas inherit** the enclosing function's imports. A lambda's own
-  written rows, in its parameter types, do not import.
+- **Lambdas inherit** the enclosing function's aliases and imports.
+  Lambdas cannot declare their own, because only a function declaration's
+  own row may (§1).
 - **Hints never choose a binding.** A bare name with no binding is the
   existing unbound-name error, and the hint (below) only lists fixes.
 
 ## 3. Static rules (errors)
 
-All of these are E_SYNTAX at the offending name, each with a note at the
-first binding. The texts are approved, with the user's refinements.
+The texts below are approved by the user, apart from two marked
+*pending*. The duplicate-binding errors are E_SYNTAX at the offending
+name, each with a note at the first binding.
 
 - Two imports in one signature bind the same local name, compared after
   renaming, so `{ log as note, info as note }` conflicts: `note is imported
   twice in this signature`, with the note `first imported here`.
-- An alias equals an effect name in the row, or an earlier alias: `D is
-  already an effect name in this row`, with the note `first bound here`.
+- An alias equals any declared effect name, whether or not that effect is
+  in the row, or equals an earlier alias in the same row. For example,
+  `with Database as Log` is rejected even when `Log` is absent from the
+  row, because otherwise `Log.query` would mean Database and contradict
+  canonical lookup.
+  - Text (*pending*; this broadens the approved "… in this row"): `Log is
+    already an effect name`.
+  - Note: `declared here` at the effect declaration, or `first bound
+    here` at the earlier alias.
+- Alias or import syntax in any row other than a function declaration's
+  own row (E_SYNTAX at the alias or the opening brace):
+  - Text (*pending*): `Imports and aliases are allowed only in a
+    function's own row`.
 - An import names something the effect does not declare: the existing
-  E_HANDLER `x is not an operation of Log`.
+  E_HANDLER `x is not an operation of Log`. It has no first-binding
+  note.
 
 **Unbound bare operation names.** These keep the existing unbound-name
 error and code, with a hint attached in the existing hint form:
@@ -172,8 +202,14 @@ Every existing program uses bare operation names: examples, hundreds of
 test programs, the reference interpreter's corpus and the generator.
 
 - A one-off mechanical rewrite script migrates all of them in one change.
-  It rewrites each bare operation call to its qualified form, and never
-  to an import, so the result is reviewable.
+  It rewrites each bare operation call and each bare operation reference
+  to its qualified form, and never to an import, so the result is
+  reviewable.
+  - It rewrites only names that resolve to operations today. A local or
+    parameter that shadows an operation name is left alone, so shadowing
+    is preserved.
+  - Handler clause heads (`handler Log { log(n) => … }`, `fail(error: E)
+    => …`) are not rewritten.
 - The reference interpreter's parser and the generator are updated in the
   same change.
 - There is no deprecation period before 1.0.
@@ -199,6 +235,13 @@ test programs, the reference interpreter's corpus and the generator.
 - **Multiple Fail families.** `Fail(E1) { fail as f1 } + Fail(E2) { fail
   as f2 }` checks each payload against its own family, and
   `Fail.fail(e)` infers the family from `e`.
+- **Operation references.** A higher-order use, `map(Database.query,
+  ids)`. A reference to an imported `Fail(Error) { fail }` passed as a
+  value.
+- **Placement errors.** Import or alias syntax in a parameter type, a
+  handler type and a lambda annotation each gives the placement error. An
+  alias equal to a declared effect absent from the row gives the
+  collision error.
 - **Regression rows** for the two collision bugs in "Problem": the
   defects restored in isolated copies must be caught.
 - **Gates.** Go output is unchanged (snapshots and differential), and
