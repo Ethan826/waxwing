@@ -47,7 +47,7 @@ const rows = [
     probe: 'show-fields', message: /printed value lost fields/
   },
   {
-    name: 'state-thread', file: 'src/Format/Parse/Grammar.purs',
+    name: 'state-thread', file: 'src/Format/Parse/Steps.purs',
     needle: 'given ← argument applied.rest',
     replacement: 'given ← argument state',
     probe: 'state-thread', message: /parser state not threaded/
