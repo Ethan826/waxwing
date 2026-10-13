@@ -54,7 +54,7 @@ test('p4: an unannotated callback has no labels; its name is the note', () => {
     code: 'E_EFFECT',
     message: lacks('q', 'L', 'has no labels', written('q', 'L')),
     at: ['q(x)'],
-    notes: [['q: Int -> Int,', 'q', 'q\'s row is written here'],
+    notes: [['q: Int -> Int,', 'q', 'q\'s row is not written'],
       [': Int with L =', 'with L', 'a\'s row is written here']]
   });
 });

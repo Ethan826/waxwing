@@ -103,6 +103,7 @@ noteText = case _ of
     <> " has an ambient row"
   MustBePureParameter → "this parameter must be pure"
   RowWrittenHere name → name <> "'s row is written here"
+  RowNotWritten name → name <> "'s row is not written"
   HandledHere label → shortLabel label <> " is handled here"
   MainOnlyConsole → "main may perform only Console"
   CleanupMustNotFail → "cleanup registered here must not fail"

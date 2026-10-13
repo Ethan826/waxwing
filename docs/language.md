@@ -408,7 +408,8 @@ Limits, stated plainly.
   row is L; write q's row as `with L + M`; a callback's row must equal its
   caller's (FX017)`, notes at both written rows. The hint writes the
   caller's row as written, so a named tail stays (`with M + L + ...e`). A
-  callback with no `with` reads `but its row has no labels`. Only a
+  callback with no `with` reads `but its row has no labels`, and its note
+  reads `q's row is not written`. Only a
   parameter whose type is a single arrow is named; any other callee (a
   later stage of a curried type, a call result, a `let` local) reads `this
   function value`. When a label of the caller's row has a payload that

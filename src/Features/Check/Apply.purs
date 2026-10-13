@@ -9,7 +9,7 @@ module Features.Check.Apply
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe, maybe')
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe')
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -129,6 +129,7 @@ calleeOf env = case _ of
     if singleStage parameter.ty then Just
       { name: parameter.name
       , rowSpan: fromMaybe parameter.span parameter.rowSpan
+      , written: isJust parameter.rowSpan
       }
     else Nothing
 

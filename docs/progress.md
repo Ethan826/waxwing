@@ -4126,7 +4126,8 @@ installed duplicate, and the old text stays. Accepted and rejected programs
 are unchanged (differential: only the new-text programs differ). Recorded
 limits: a `let`-bound or lambda-bound callee is `this function value` (the
 resolved syntax keeps no local's name); an unannotated arrow's note points
-at the parameter's name (no type span is kept); a call inside a `with` or
+at the parameter's name (no type span is kept) and reads `q's row is not
+written`; a call inside a `with` or
 `handle`, and a callback passed as an argument, keep their old text (BACKLOG
 FX018); the hint writes the caller's row as written, so a named tail stays
 (p3: `with M + L + ...e`) and the ambient tail is omitted, while the

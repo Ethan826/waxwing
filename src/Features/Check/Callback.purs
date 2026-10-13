@@ -137,5 +137,7 @@ notes env named = maybe [] (Array.singleton <<< calleeNote) named
     [ noteAt (fromMaybe env.functionSpan env.rowSpan) (written env.functionName)
     ]
   where
-  calleeNote callee = noteAt callee.rowSpan (written callee.name)
+  calleeNote callee = noteAt callee.rowSpan (calleeReason callee)
+  calleeReason callee =
+    if callee.written then written callee.name else RowNotWritten callee.name
   written = RowWrittenHere
