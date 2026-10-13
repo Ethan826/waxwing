@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="assets/branding/waxwing-logo.png" alt="Waxwing bird logo" width="240">
+  <img src="assets/branding/waxwing-logo.png" alt="Waxwing bird logo"
+       width="240">
 </p>
 
 # Waxwing
@@ -93,8 +94,8 @@ The program is checked end to end:
 - **Effects compose.** `audited` uses `fetch` and `stamp`, so its row must
   cover theirs. A function cannot perform an effect its signature omits.
 - **`main` must handle every effect** except Console. Drop the
-  `with systemClock()` line and the compiler explains where the requirement came from. This is
-the JSON diagnostic, rendered:
+  `with systemClock()` line and the compiler explains where the requirement
+  came from. This is the JSON diagnostic, rendered:
 
   ```
   E_EFFECT  Unhandled Clock in main                   (at the call in main)
@@ -256,7 +257,7 @@ first-class way to pass a group of operations around, alongside effects.
 ### Inferred requirements and errors: layers without the Layer
 
 This is the milestone the language is built around (INF001,
-[requirements](docs/plans/2026-10-11-requirement-and-error-inference-milestone.md)).
+[requirements][inf001]).
 Today every function writes its full effect row, such as
 `with Database + BalanceApi + Logger + Fail(DbError) + Fail(NetworkError)`.
 INF001 makes the compiler infer both channels: the services a function
@@ -322,7 +323,7 @@ the design.
 | Effect diagnostics that say what to write (FX017, FX018) | Done |
 | Text (D001, first tranche) | In progress |
 | Records, row-polymorphic (R001) | Design next |
-| Inferred requirements and errors (INF001) | Requirements reviewed; design after records |
+| Inferred requirements and errors (INF001) | Reviewed; design next |
 | Classes, modules, numbers, collections, stdlib | Planned |
 | Concurrency, state, general resumption | Designed or planned |
 
@@ -398,9 +399,10 @@ type: the executable prints the value in the coverage-witness format (`5`,
 examples/tree.wxw prints a binary search tree. examples/services.wxw composes
 services with overlapping effects (Database, Clock, Log) and constructs and
 installs its handlers in `main` (the tests inject fakes); a program using
-`defer` or `crash` that ends in a defect prints one report on stderr and exits 1. Comparisons are built in,
-non-chaining and looser than `+`, with one structural order (constructor
-declaration order, then fields left to right; ADR 005). `emit` writes
+`defer` or `crash` that ends in a defect prints one report on stderr and
+exits 1. Comparisons are built in, non-chaining and looser than `+`, with
+one structural order (constructor declaration order, then fields left to
+right; ADR 005). `emit` writes
 canonical deterministic Go; `build` invokes Go on a temporary source file;
 `run` builds and executes a temporary binary. Destinations are explicit and
 may be overwritten. Diagnostics are JSON on stderr with stable tags and
@@ -413,7 +415,7 @@ PureScript modules, not yet a native Go compiler executable.
 - [Next-session handoff](docs/next-session.md) and [progress](docs/progress.md)
 - [Local backlog](BACKLOG.md)
 - [Language specification](docs/language.md)
-- [Language direction, effects and future targets](docs/plans/2026-10-08-language-direction.md)
+- [Language direction, effects and future targets][direction]
 - [Architecture](docs/architecture.md): five layers, Domain, Features,
   Format, Runtime, Program ([ADR 004](docs/adr/004-five-layers.md))
 - Decisions: [ADR 001](docs/adr/001-slice.md),
@@ -430,3 +432,6 @@ PureScript modules, not yet a native Go compiler executable.
 - [Reference provenance](docs/provenance.md)
 - [Self-hosting chain](docs/bootstrap.md)
 - [Stage 0 bootstrap plan](docs/plans/bootstrap.md) (historical)
+
+[inf001]: docs/plans/2026-10-11-requirement-and-error-inference-milestone.md
+[direction]: docs/plans/2026-10-08-language-direction.md
