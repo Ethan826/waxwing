@@ -7,7 +7,8 @@ fn main(): Unit with Console = {
   let k2 = fn(n: Int) => ();
   let h1 = handler Log { log(n) => k1(n) };
   let h2 = handler Log { log(n) => k2(n) };
-  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == v) else () };
+  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == v)
+else () };
   let g2 = fn(u: Unit) => with h2 { if put(Some(true)) then () else () };
   let r = fn(x) => { fail(Job(k1)); fail(x) };
   let q = fn(u: Unit) => r(Job(fn(n: Int) => ()));

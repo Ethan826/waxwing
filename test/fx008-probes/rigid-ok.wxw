@@ -2,6 +2,7 @@ type E = E;
 effect Log { fn log(n: Int): Unit; };
 fn mk(g: Int -> Unit): Handler(Log) = handler Log { log(n) => g(n) };
 fn main(): Unit with Console = {
-  let h = handle mk(fn(n: Int) => fail(E)) { fail(error: E) => mk(fn(n: Int) => ()) };
+  let h = handle mk(fn(n: Int) => fail(E)) { fail(error: E) => mk(fn(n: Int) =>
+()) };
   with h { log(1) }
 };

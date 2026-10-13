@@ -1,4 +1,5 @@
 effect Log { fn log(n: Int): Unit; };
-fn around(body: Unit -> Unit with Log + ...e): Unit with Log + ...e = with handler Log { log(n) => log(n + 100) } { body(()) };
+fn around(body: Unit -> Unit with Log + ...e): Unit with Log + ...e = with
+handler Log { log(n) => log(n + 100) } { body(()) };
 fn main(): Unit with Console =
   with handler Log { log(n) => print(n) } { around(fn(u: Unit) => log(1)) };

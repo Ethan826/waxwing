@@ -4,10 +4,12 @@ effect Cell(a) { fn put(x: a): Bool; };
 fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h = handler Log { log(n) => k(()) };
-  let g1 = fn(u: Unit) => with h { let v = No; if put(v) then print(v == v) else () };
+  let g1 = fn(u: Unit) => with h { let v = No; if put(v) then print(v == v) else
+() };
   let g2 = fn(u: Unit) => { k(()); if put(Some(true)) then () else () };
   let h3 = handler Log { log(n) => () };
   let g3 = fn(u: Unit) => { k(()); with h3 { () } };
-  let g4 = fn(u: Unit) => with h3 { let w = No; if put(w) then print(w == w) else () };
+  let g4 = fn(u: Unit) => with h3 { let w = No; if put(w) then print(w == w)
+else () };
   print(0)
 };

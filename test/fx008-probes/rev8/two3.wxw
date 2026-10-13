@@ -5,7 +5,8 @@ fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h1 = handler Tick { tick() => k(()) };
   let h2 = handler Tick { tick() => k(()) };
-  with handler Get(Handler(Log with Console)) { get() => handler Log { log(n) => print(n) } } { with h1 { tick() } };
+  with handler Get(Handler(Log with Console)) { get() => handler Log { log(n) =>
+print(n) } } { with h1 { tick() } };
   let g = fn(u: Unit) => with h2 { with get() { log(1) } };
   print(0)
 };

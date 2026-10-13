@@ -5,7 +5,8 @@ fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h1 = handler Log { log(n) => k(()) };
   let h2 = handler Log { log(n) => k(()) };
-  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == v) else () };
+  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == v)
+else () };
   let g2 = fn(u: Unit) => with h2 { if put(Some(true)) then () else () };
   print(0)
 };
