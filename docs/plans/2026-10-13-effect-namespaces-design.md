@@ -251,3 +251,43 @@ test programs, the reference interpreter's corpus and the generator.
   - README samples migrated.
   - An ADR, numbered after Text's ADR 011.
   - BACKLOG: FX020 done, with the INF001 note.
+
+## Plan-time amendments (2026-10-13)
+
+A survey of the compiler while writing the plan found four facts the
+design did not state. Each one is recorded here, and none adds
+user-facing text.
+
+1. **`fail` is a keyword today.** The parser recognises `fail(e)` as its
+   own expression form (Syntax.Fail) before ordinary names. Under this
+   design, `fail` stops being syntax: `Fail.fail(e)`, or an imported
+   `fail`, is an ordinary operation call whose family comes from `e`. The
+   `handle` clause head `fail(error: E) =>` is a clause head naming the
+   handled effect's operation, and it stays. This removes a special form,
+   in line with the principle that built-ins get no special syntax.
+2. **Console and Fail are not declared effects.** They are names
+   hard-coded in row resolution, with no declaration and no operation
+   table. FX020 gives them a built-in declaration table, resolved like
+   user effects, so that `Console.print`, `Fail.fail`, imports and the
+   collision rule (§4) work uniformly.
+   - `print` accepts any printable type, so it cannot be written as an
+     ordinary Waxwing declaration until type classes exist (C001).
+   - Like `show`, it stays compiler-provided. This is a recorded
+     temporary gap, not a design choice.
+3. **Migration is large.** About 818 call sites exist across 170 test
+   files, plus 118 `.wxw` fixtures, and many tests pin exact columns
+   that a qualifier shifts. The migration therefore runs in reviewable
+   stages:
+   1. qualified names and imports are added while bare operation names
+      still resolve;
+   2. the corpus is migrated in chunks;
+   3. bare operation resolution and the `fail` keyword are removed,
+      together with the unbound-name hint.
+
+   Verify passes after every stage.
+4. **Pinned spans.** When a migrated test pins a span that the qualifier
+   shifts, the new span is the old one moved by exactly the inserted
+   characters. Each such update is mechanical and is checked in review.
+   The rewrite tool locates operation names from the compiler's own
+   resolved output, never from a regular expression, so a local that
+   shadows an operation name is never rewritten.
