@@ -11,6 +11,7 @@ import {
 } from './fx-gen-expr.mjs';
 import { failingFrame } from './fx-gen-failing.mjs';
 import { crossing, escaping, nested, stages } from './fx-gen-fragments.mjs';
+import { noteType, textFrame } from './fx-gen-text.mjs';
 import { rng } from './fx-gen-rng.mjs';
 
 export const fragments = [
@@ -21,6 +22,7 @@ export const fragments = [
 // Outside the rotation (it would dilute the scenarios counted by the
 // census): an extra in some programs, in most unconstrained ones.
 const failing = { name: 'failing-frame', make: failingFrame };
+const texting = { name: 'text-frame', make: textFrame };
 const regular = fragments.filter(fragment => !fragment.terminal);
 
 export const prelude = 'type Err = Err1(Int) | Err2; type Oops = Oops(Int); '
@@ -65,8 +67,11 @@ const fnText = fn => `fn ${fn.name}(${fn.params.map(([name, type]) =>
 // may fail (Task 11): the generator then keeps cleanup, and every call of a
 // function whose row names the label, away from the frames that may fail
 // (`ctx.failing`, test/fx-gen-expr.mjs).
-export const render = ({ fns, main }) => plainWithoutDefer(
-  [prelude, ...fns.map(fnText), fnText(main)].join(' '));
+export const render = ({ fns, main }) => {
+  const body = [...fns.map(fnText), fnText(main)].join(' ');
+  const types = body.includes('Note') ? prelude + noteType : prelude;
+  return plainWithoutDefer(`${types} ${body}`);
+};
 
 const plainWithoutDefer = source =>
   (source.includes('defer') ? source : source.replace(/nofail /g, ''));
@@ -122,6 +127,7 @@ export const generate = (seed, index = seed, options = {}) => {
   const focus = focusOf(index);
   const extras = r.chance(40) ? [r.pick(regular)] : [];
   if (r.chance(shared.unconstrained ? 40 : 15)) extras.push(failing);
+  if (r.chance(70)) extras.push(texting);
   const items = mainItems(ctx, focus, extras);
   const terminal = focus.find(fragment => fragment.terminal);
   const ret = !terminal && r.chance(25) ? 'Int' : 'Unit';

@@ -5,11 +5,12 @@
 // its type. A candidate is kept only if `keep` accepts it (the caller
 // checks that it is still well-typed and still differs); coarse changes
 // are tried first and the search restarts after each accepted one.
-import { lit, truth, unit } from './fx-gen-ast.mjs';
+import { lit, str, truth, unit } from './fx-gen-ast.mjs';
 
 const literalOf = node => {
-  if (node.k === 'lit') return null;
-  return { Int: lit(0), Unit: unit, Bool: truth }[node.ty] ?? null;
+  if (node.k === 'lit' || node.text === '""') return null;
+  return { Int: lit(0), Unit: unit, Bool: truth, Text: str('""'),
+    Note: { k: 'lit', text: 'Blank', ty: 'Note' } }[node.ty] ?? null;
 };
 const without = (list, index) => list.filter((_, at) => at !== index);
 const replaced = (list, index, value) =>
@@ -63,7 +64,7 @@ function* variants(node, replaceable = true) {
     case 'call': yield* inList(node, 'args', node.args); return;
     case 'app': yield* inChild(node, 'callee'); yield* inList(node, 'args',
       node.args); return;
-    case 'add':
+    case 'add': case 'cat': case 'cmp':
       yield node.left;
       yield node.right;
       yield* inChild(node, 'left');

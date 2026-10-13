@@ -6,7 +6,7 @@ export const comparisons = {
   '<': order => order < 0, '<=': order => order <= 0,
   '>': order => order > 0, '>=': order => order >= 0
 };
-export const builtins = new Set(['print', 'crash', 'fail']);
+export const builtins = new Set(['print', 'crash', 'fail', 'show']);
 
 export const matches = (pattern, value, bound) => {
   if (pattern.tag === 'wildcard') return true;

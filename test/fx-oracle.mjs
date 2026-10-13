@@ -17,14 +17,18 @@ import { isUpper, unit } from './poly-parse.mjs';
 import {
   builtins, comparisons, find, matches
 } from './fx-oracle-context.mjs';
-import { compareValues, show, typeOfValue } from './fx-oracle-values.mjs';
+import {
+  compareValues, isText, show, typeOfValue
+} from './fx-oracle-values.mjs';
+import { evaluateText, noteComparison } from './fx-oracle-text.mjs';
 
 const maximumSteps = 3_000_000;
 
 export const interpret = (source, options = {}) => {
   const program = parseProgram(source);
   const state = { program, options, causes: [], events: new Set(), caught: 0,
-    pendingAbort: [], lambdas: [], clauses: [], evaluate: null };
+    pendingAbort: [], lambdas: [], clauses: [], evaluate: null,
+    effects: 0 };
   const { causes, events, lambdas } = state;
   const stdout = [];
   let steps = 0;
@@ -79,7 +83,10 @@ export const interpret = (source, options = {}) => {
 
   const saturate = (callee, ctx) => {
     const { args } = callee;
-    if (callee.kind === 'ctor') return { ctor: callee.name, fields: args };
+    if (callee.kind === 'ctor') {
+      if (args.some(isText)) events.add('text-in-data');
+      return { ctor: callee.name, fields: args };
+    }
     if (callee.kind === 'op') return perform(state, callee, args, ctx);
     if (callee.kind === 'builtin') return builtin(callee.name, args[0], ctx);
     const bound = new Map(callee.kind === 'lambda' ? callee.env : []);
@@ -95,7 +102,15 @@ export const interpret = (source, options = {}) => {
   };
 
   const builtin = (name, argument, ctx) => {
-    if (name === 'print') { stdout.push(`${show(argument)}\n`); return unit; }
+    if (name === 'print') {
+      state.effects++;
+      stdout.push(`${show(argument)}\n`);
+      return unit;
+    }
+    if (name === 'show') {
+      events.add('text-show');
+      return { text: show(argument) };
+    }
     if (name === 'crash') {
       causes.push(crashLine(argument));
       throw new Defect();
@@ -116,9 +131,12 @@ export const interpret = (source, options = {}) => {
         const left = evaluate(node.left, env, ctx);
         return (left + evaluate(node.right, env, ctx)) | 0;
       }
+      case 'text': case 'concat':
+        return evaluateText(state, node, env, ctx);
       case 'compare': {
         const left = evaluate(node.left, env, ctx);
         const right = evaluate(node.right, env, ctx);
+        if (isText(left)) noteComparison(events, left, right);
         return comparisons[node.operator](compareValues(program, left, right));
       }
       case 'if': return evaluate(node.condition, env, ctx)

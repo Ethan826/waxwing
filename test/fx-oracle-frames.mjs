@@ -36,6 +36,7 @@ const note = (state, effect, frame, ctx) => {
 export const perform = (state, callee, args, ctx) => {
   const frame = find(ctx, 'with', callee.effect);
   if (!frame) throw new OracleError(`no handler for ${callee.effect}`);
+  state.effects++;
   note(state, callee.effect, frame, ctx);
   const clause = frame.handler.clauses.get(callee.name);
   const bound = new Map(frame.handler.env);

@@ -2,20 +2,29 @@
 // printing (ADR 005), and the type of a value as a failure report names it
 // (`Error(Int)`, design §5). Shares no code with the compiler.
 import { unit } from './poly-parse.mjs';
+import { compareText, quoteText } from './text-reference.mjs';
+
+// Text is { text }: a string of Unicode scalars (design §1).
+export const isText = value => typeof value === 'object'
+  && Object.hasOwn(value, 'text');
 
 export const isFunction = value => value?.kind === 'fn' || value?.kind === 'op'
   || value?.kind === 'ctor' || value?.kind === 'builtin'
   || value?.kind === 'lambda';
 export const isHandler = value => value?.kind === 'handler';
 
-export const show = value => value === unit ? '()'
+// Printing: a Text on its own is raw, a Text nested in data is quoted.
+const nested = value => value === unit ? '()'
+  : isText(value) ? quoteText(value.text)
   : typeof value !== 'object' ? String(value)
   : value.fields.length === 0 ? value.ctor
-    : `${value.ctor}(${value.fields.map(show).join(', ')})`;
+    : `${value.ctor}(${value.fields.map(nested).join(', ')})`;
+export const show = value => (isText(value) ? value.text : nested(value));
 
 const sign = difference => Math.sign(difference);
 export const compareValues = (program, left, right) => {
   if (left === unit) return 0;
+  if (isText(left)) return compareText(left.text, right.text);
   if (typeof left !== 'object') return sign(Number(left) - Number(right));
   const order = program.ctors.get(left.ctor) - program.ctors.get(right.ctor);
   if (order !== 0) return sign(order);
@@ -30,6 +39,7 @@ export const compareValues = (program, left, right) => {
 // determines is shown as Int, the representative of an unsolved hole.
 export const typeOfValue = (program, value) => {
   if (value === unit) return { head: 'Unit', args: [] };
+  if (isText(value)) return { head: 'Text', args: [] };
   if (typeof value === 'number') return { head: 'Int', args: [] };
   if (typeof value === 'boolean') return { head: 'Bool', args: [] };
   if (isHandler(value)) return { head: 'Handler', args: [] };

@@ -5,18 +5,38 @@
 // with the compiler. test/poly-parse.mjs keeps its tokenizer and parser
 // private, so the effect grammar needs its own.
 import { isUpper } from './poly-parse.mjs';
+import { scanLiteral } from './text-reference.mjs';
 
 export { isUpper };
 
 const token = new RegExp(String.raw`\s*(?:(-\s*\d+|\d+)|`
   + String.raw`([A-Za-z_][A-Za-z0-9_]*)|`
-  + String.raw`(\.\.\.|=>|==|!=|<=|>=|->|\|>|[<>(){},;:=+|]))`, 'y');
+  + String.raw`(\.\.\.|=>|==|!=|<=|>=|->|\|>|\+\+|[<>(){},;:=+|]))`, 'y');
+
+// A text literal is one token { kind: 'text', parts, style }: a part is a
+// string or { hole: tokens } (the hole's source tokenized in turn), and
+// `style` is 'raw' for a `#` literal, 'block' for `"""`, else 'plain'.
+const textToken = (source, at) => {
+  const found = scanLiteral(source, at);
+  const parts = found.parts.map(part => (typeof part === 'string' ? part
+    : { hole: tokenize(part.hole) }));
+  const style = found.block ? 'block' : found.hashes > 0 ? 'raw' : 'plain';
+  return { token: { kind: 'text', parts, style }, end: found.end };
+};
 
 export const tokenize = source => {
   const tokens = [];
+  const end = source.trimEnd().length;
   token.lastIndex = 0;
-  while (token.lastIndex < source.trimEnd().length) {
+  while (token.lastIndex < end) {
     const at = token.lastIndex;
+    const start = at + source.slice(at).search(/\S/);
+    if (source[start] === '"' || source[start] === '#') {
+      const found = textToken(source, start);
+      tokens.push(found.token);
+      token.lastIndex = found.end;
+      continue;
+    }
     const found = token.exec(source);
     if (!found) throw new Error(`oracle: cannot read at ${at}`);
     const [, integer, name, punctuation] = found;

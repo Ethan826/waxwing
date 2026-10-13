@@ -1,5 +1,6 @@
 // Typed syntax trees of the generated FX001 programs, and their printer.
-// Each node carries `ty` ('Int', 'Unit', 'Bool', 'Err', 'Oops' or 'fn') so
+// Each node carries `ty` ('Int', 'Unit', 'Bool', 'Text', 'Note', 'Err',
+// 'Oops' or 'fn'; a 'str' is a Text literal's finished source) so
 // the shrinker can replace a subexpression by a literal of its type.
 // Blocks are { items, value }: an item is { k: 'let' | 'do' | 'defer', ... };
 // a null value makes the block Unit (printed with a trailing `;`).
@@ -7,6 +8,10 @@ export const lit = number => ({ k: 'lit', text: String(number), ty: 'Int' });
 export const unit = { k: 'lit', text: '()', ty: 'Unit' };
 export const truth = { k: 'lit', text: 'true', ty: 'Bool' };
 export const local = (name, ty = 'Int') => ({ k: 'var', name, ty });
+export const str = source => ({ k: 'str', text: source, ty: 'Text' });
+export const cat = (left, right) => ({ k: 'cat', left, right, ty: 'Text' });
+export const compare = (op, left, right) =>
+  ({ k: 'cmp', op, left, right, ty: 'Bool' });
 export const call = (name, args, ty) => ({ k: 'call', name, args, ty });
 export const apply = (callee, args, ty) => ({ k: 'app', callee, args, ty });
 export const add = (left, right) => ({ k: 'add', left, right, ty: 'Int' });
@@ -35,7 +40,8 @@ export const err = number => (number < 0 ? call('Err2', [], 'Err')
   : call('Err1', [lit(number)], 'Err'));
 export const oops = number => call('Oops', [lit(number)], 'Oops');
 
-const atomic = node => ['lit', 'var', 'call', 'app'].includes(node.k);
+const atomic = node =>
+  ['lit', 'var', 'call', 'app', 'str'].includes(node.k);
 const operand = node => (atomic(node) ? text(node) : `(${text(node)})`);
 const piece = item =>
   (item.k === 'let' ? `let ${item.name} = ${text(item.value)};`
@@ -58,6 +64,11 @@ export const text = node => {
     case 'app': return `${node.callee.k === 'lam' ? `(${text(node.callee)})`
       : text(node.callee)}(${node.args.map(text).join(', ')})`;
     case 'add': return `${operand(node.left)} + ${operand(node.right)}`;
+    case 'str': return node.text;
+    case 'cat': return `${node.left.k === 'cat' ? text(node.left)
+      : operand(node.left)} ++ ${operand(node.right)}`;
+    case 'cmp': return `${operand(node.left)} ${node.op} `
+      + `${operand(node.right)}`;
     case 'lam': return `fn(${node.params.join(', ')}) => ${text(node.body)}`;
     case 'blk': return body(node) === '' ? '{}' : `{ ${body(node)} }`;
     case 'with': return `with ${text(node.handler)} ${text(node.body)}`;

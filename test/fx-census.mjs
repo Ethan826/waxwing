@@ -4,6 +4,8 @@
 // minimums a run must meet.
 const scoped = 50;
 const cleanup = 25;
+const texts = 250;
+const literals = 75;
 
 // [name, interpreter events (any of them counts), minimum programs]
 export const categories = [
@@ -25,7 +27,23 @@ export const categories = [
     ['cleanup-registration-context'], cleanup],
   ['cleanup: unreached defer', ['unreached-defer'], cleanup],
   // `w` is reserved for the parameter of generated failing clauses.
-  ['failing random clause', ['clause-abort:w'], cleanup]
+  ['failing random clause', ['clause-abort:w'], cleanup],
+  // Text v1 (design §5); the frame is in 70% of programs.
+  ['text: interpolation', ['text-interpolation'], texts],
+  ['text: effectful interpolation hole', ['text-effectful-hole'], texts],
+  ['text: several effectful holes in one literal', ['text-ordered-holes'],
+    texts],
+  ['text: ++', ['text-concat'], texts],
+  ['text: ++ with an effectful operand', ['text-effectful-concat'], literals],
+  ['text: nested in data', ['text-in-data'], texts],
+  ['text: show', ['text-show'], texts],
+  ['text: comparison', ['text-compare'], texts],
+  ['text: comparison with a non-BMP character', ['text-compare-astral'],
+    texts],
+  ['text: non-BMP against a BMP scalar above the surrogates',
+    ['text-compare-trap'], texts],
+  ['text: raw literal', ['text-raw'], literals],
+  ['text: block literal', ['text-block'], literals]
 ];
 
 // outcomes: the interpreter outcomes of the run's programs.

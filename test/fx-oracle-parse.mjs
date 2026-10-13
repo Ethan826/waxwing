@@ -1,17 +1,19 @@
 // The surface syntax for the FX001 reference interpreter: the language of
 // test/poly-parse.mjs (blocks, `let`, lambdas, postfix application, pipes,
-// `match`, `if`) plus effect declarations, `handler`, `with`, `handle` and
-// `defer`. Returns { ctors, fields, types (by name), owner (constructor →
-// type), functions, ops }. Types are read
-// into trees (test/fx-oracle-lex.mjs) and mostly dropped. Shares no code
-// with the compiler.
+// `match`, `if`) plus effect declarations, `handler`, `with`, `handle`,
+// `defer`, and Text (literals, `++`). Returns { ctors, fields, types (by
+// name), owner (constructor → type), functions, ops }. Types are read into
+// trees (test/fx-oracle-lex.mjs) and mostly dropped. Shares no code with
+// the compiler.
 import { cursor, isUpper, tokenize, typeReader } from './fx-oracle-lex.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
+import { textNode } from './fx-oracle-text.mjs';
 import { unit } from './poly-parse.mjs';
 
 const unitNode = { tag: 'value', value: unit };
 const operators = ['==', '!=', '<', '<=', '>', '>='];
-
+const hole = tokens => expressions(cursor(withoutMarks(tokens)))
+  .expression();
 const expressions = reader => {
   const { peek, take, list } = reader;
   const readType = typeReader(reader);
@@ -55,6 +57,7 @@ const expressions = reader => {
   const primary = () => {
     const next = take();
     if (next.kind === 'int') return { tag: 'value', value: next.value };
+    if (next.kind === 'text') return textNode(next, hole);
     if (next.text === 'true' || next.text === 'false') {
       return { tag: 'value', value: next.text === 'true' };
     }
@@ -74,7 +77,10 @@ const expressions = reader => {
   };
   const addition = () => {
     let left = atom();
-    while (peek('+')) { take('+'); left = { tag: 'add', left, right: atom() }; }
+    while (peek('+') || peek('++')) {
+      const tag = take().text === '+' ? 'add' : 'concat';
+      left = { tag, left, right: atom() };
+    }
     return left;
   };
   const comparison = () => {
