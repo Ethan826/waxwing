@@ -49,7 +49,7 @@ export const textProbes = {
     'fn main(): Text = { let x = "a"; "\\${x}" };', '${x}\n',
     'escaped dollar interpolated'),
   'text-hash-mismatch': rejects('fn main(): Text = ##"x"###;',
-    'Expected "##, found "###', 'hash mismatch accepted'),
+    'Expected "##, found "###', 'hash mismatch not diagnosed'),
   'text-surrogate': rejects('fn main(): Text = "\\u{D800}";',
     'Invalid Unicode escape \\u{D800}', 'surrogate escape accepted'),
   // U+1F600 is above U+FFFD by code point, below it by UTF-16 unit.

@@ -96,10 +96,16 @@ const examples = readdirSync('examples').filter(name => name.endsWith('.wxw'))
   .filter(name => !polymorphicExamples.has(name))
   .sort().map(name => readFileSync(join('examples', name), 'utf8'));
 
+// Text v1: Text in an ADT and in interpolation, with no effects and no
+// arrows, interns nothing and is copied unchanged.
+const textProgram = 'type Note = Note(Text, Int); '
+  + 'fn label(n: Note): Text = match n { Note(t, _) => "<${t}>" }; '
+  + 'fn main(): Text = label(Note("a" ++ "b", 1));';
+
 test('specialize is the identity on monomorphic programs', () => {
-  const programs = [...examples,
+  const programs = [...examples, textProgram,
     ...[...parsedTrees, ...executedTrees].map(treeProgram),
     ...[...nestedCases, ...flatCases].map(({ program }) => program)];
-  assert.equal(programs.length, examples.length + 232);
+  assert.equal(programs.length, examples.length + 233);
   programs.forEach(identical);
 });

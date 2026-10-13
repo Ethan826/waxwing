@@ -1,4 +1,4 @@
-# Waxwing / Text v1 done on branch `text`; whole-branch review next (2026-10-14)
+# Waxwing / Text v1 done on branch `text`; whole-branch review next (2026-10-13)
 
 Text v1 (BACKLOG D001, first tranche) is implemented on branch `text` (worktree
 `.worktrees/text`, rebased onto main 0b1f850): Tasks 1-9 of

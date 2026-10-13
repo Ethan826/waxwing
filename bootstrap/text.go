@@ -149,7 +149,7 @@ func waxwingFn2(ctx *waxwingCtx, waxwingLocal0 string, waxwingLocal1 int32) stri
 return ("Dear " + waxwingLocal0 + ",\n  your id is " + fmt.Sprint(waxwingLocal1) + ".")
 }
 
-func waxwingFn3(ctx *waxwingCtx, waxwingLocal0 string) string {
+func waxwingFn3(ctx *waxwingCtx) string {
 return "C:\\users\\${name}\\notes"
 }
 
@@ -177,7 +177,7 @@ return waxwingFn6Block1(ctx)
 func waxwingFn6Block1(ctx *waxwingCtx) struct{} {
 _ = func() struct{} { fmt.Println(waxwingFn6Pipe2(ctx, waxwingFn6Pipe3(ctx, waxwingEff0Op0(ctx, int32(2))))); return struct{}{} }()
 _ = func() struct{} { fmt.Println(waxwingFn2(ctx, waxwingEff0Op0(ctx, int32(1)), int32(1))); return struct{}{} }()
-_ = func() struct{} { fmt.Println(waxwingFn3(ctx, "grace")); return struct{}{} }()
+_ = func() struct{} { fmt.Println(waxwingFn3(ctx)); return struct{}{} }()
 _ = func() struct{} { fmt.Println(string(waxwingShow0(nil, waxwingFn4(ctx, int32(1))))); return struct{}{} }()
 _ = func() struct{} { fmt.Println(("shown: " + string(waxwingShow0(nil, waxwingFn4(ctx, int32(2)))))); return struct{}{} }()
 return func() struct{} { fmt.Println(fmt.Sprint((waxwingEff0Op0(ctx, int32(1)) < waxwingEff0Op0(ctx, int32(2))))); return struct{}{} }()

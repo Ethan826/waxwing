@@ -4,14 +4,14 @@ type Entry = Entry(Text, Int);
 
 fn greeting(name: Text): Text = "Hello, ${name}!";
 
-fn shout(line: Text): Text = line ++ " Welcome aboard.";
+fn welcome(line: Text): Text = line ++ " Welcome aboard.";
 
 fn letter(name: Text, id: Int): Text = """
     Dear ${name},
       your id is ${show(id)}.
     """;
 
-fn windowsPath(name: Text): Text = #"C:\users\${name}\notes"#;
+fn rawPath(): Text = #"C:\users\${name}\notes"#;
 
 fn entryFor(id: Int): Entry with Directory = Entry(lookup(id), id);
 
@@ -25,10 +25,10 @@ fn main(): Unit with Console =
     print(
       lookup(2)
         |> greeting
-        |> shout
+        |> welcome
     );
     print(letter(lookup(1), 1));
-    print(windowsPath("grace"));
+    print(rawPath());
     print(entryFor(1));
     print("shown: ${show(entryFor(2))}");
     print(show(lookup(1) < lookup(2)))

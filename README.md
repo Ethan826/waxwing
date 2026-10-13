@@ -163,34 +163,59 @@ fn main(): Int =
 `add(1)` is a partial application. Over-application and staging follow a
 documented evaluation order (ADR 008).
 
-**Text**, from `examples/text.wxw`: Unicode literals, `${}` interpolation,
+**Text**, all of `examples/text.wxw`: Unicode literals, `${}` interpolation,
 `++`, `"""` blocks that strip their indent, raw `#"…"#` literals, and
-`show`:
+`show`, with the `Directory` effect injected by `with directory()` as in
+the services example:
 
 ```rust
+effect Directory { fn lookup(id: Int): Text; };
+
+type Entry = Entry(Text, Int);
+
 fn greeting(name: Text): Text = "Hello, ${name}!";
 
-fn shout(line: Text): Text = line ++ " Welcome aboard.";
+fn welcome(line: Text): Text = line ++ " Welcome aboard.";
 
 fn letter(name: Text, id: Int): Text = """
     Dear ${name},
       your id is ${show(id)}.
     """;
 
-fn windowsPath(name: Text): Text = #"C:\users\${name}\notes"#;
+fn rawPath(): Text = #"C:\users\${name}\notes"#;
 
-type Entry = Entry(Text, Int);
+fn entryFor(id: Int): Entry with Directory = Entry(lookup(id), id);
+
+fn directory(): Handler(Directory with pure) =
+  handler Directory {
+    lookup(id) => if id == 1 then "Ada \"the first\"" else "Grace"
+  };
 
 fn main(): Unit with Console =
   with directory() {
     print(
       lookup(2)
         |> greeting
-        |> shout
-    );                            // Hello, Grace! Welcome aboard.
-    print(windowsPath("grace"));  // C:\users\${name}\notes
-    print(Entry("Ada", 1))        // Entry("Ada", 1)
+        |> welcome
+    );
+    print(letter(lookup(1), 1));
+    print(rawPath());
+    print(entryFor(1));
+    print("shown: ${show(entryFor(2))}");
+    print(show(lookup(1) < lookup(2)))
   };
+```
+
+It prints:
+
+```
+Hello, Grace! Welcome aboard.
+Dear Ada "the first",
+  your id is 1.
+C:\users\${name}\notes
+Entry("Ada \"the first\"", 1)
+shown: Entry("Grace", 2)
+true
 ```
 
 Text values are Unicode, stored as UTF-8 and compared by code point. A
@@ -198,8 +223,6 @@ Text printed on its own is written raw, and inside data it is quoted and
 escaped, so every printed value reads back as source. `show(x)` returns
 what `print(x)` would write. Interpolation takes only Text, so other
 values go through `show`. The Go keeps a plain `string` (ADR 011).
-(The full program also installs `directory()`, a handler for a `Directory`
-effect, as `examples/services.wxw` does.)
 
 **Typed failures.** A failure is an effect with a payload, handled
 precisely:

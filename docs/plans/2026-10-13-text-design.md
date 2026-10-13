@@ -2,10 +2,10 @@
 
 Status: approved by the user section by section on 2026-10-13. This document
 records that design; the user must still review it before the plan is
-written. Implemented on branch `text` (plan Tasks 1-9); ADR 011 records the
-decisions as built. It is the first of two specs in the tranche the user
-chose on 2026-10-13: Text first, then Records (R001, PureScript-style).
-Numbers and collections stay in D001.
+written. Implemented on branch `text` (plan Tasks 1-9), pending the
+whole-branch review; ADR 011 records the decisions as built. It is the
+first of two specs in the tranche the user chose on 2026-10-13: Text first,
+then Records (R001, PureScript-style). Numbers and collections stay in D001.
 
 ## Purpose
 
@@ -59,6 +59,10 @@ error at that expression.
   balancing is `Unterminated interpolation`. Inside a `"""` block, a hole
   may span lines. An empty hole `${}` is the existing parse error
   `Expected an expression`.
+  As built (Task 5): holes share the parser's nesting budget. A hole's
+  expression is a nested position (ADR 006), and the lexer allows at most
+  128 holes open at once, giving E_NESTING at the 129th `${` (two units).
+  Holes side by side in one literal do not nest, so 10,000 compile.
 - Parts are evaluated left to right, each exactly once, with their
   ordinary effects. This is FN001's evaluation order: `"${a()}${b()}"`
   performs a's effects before b's.

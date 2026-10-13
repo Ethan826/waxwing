@@ -4327,7 +4327,7 @@ failed two serial timing tests (`a 5,000-parameter function type through
 generics builds in 10 s`, `20,000 let items compile in linear time`) and the
 rerun at lower load passed; the failure is recorded in the BACKLOG T007 row.
 
-## Text v1 (D001, first tranche) done on branch `text` (2026-10-14)
+## Text v1 (D001, first tranche) done on branch `text` (2026-10-13)
 
 Plan docs/plans/2026-10-13-text-plan.md, Tasks 1-9, on branch `text` rebased
 onto main 0b1f850; spec docs/plans/2026-10-13-text-design.md, ADR 011
@@ -4361,22 +4361,28 @@ Task 9 (regression proofs, scale, example, docs):
   10,000 interpolation parts and a literal of 100,000 escapes compile and
   run with the right output; emission is deterministic (two emits equal).
   Bound = 3x the median of five runs on this host (macOS, Node 26.6.0, Go
-  1.26.4), compile in-process and `go build` alone. Five serial runs at
-  moderate load (1-minute load averages before each run, then 5 and 15
-  minutes: 2.42 3.84 4.70; 2.42 3.84 4.70; 3.18 3.97 4.74; 3.33 3.99 4.74;
-  3.22 3.96 4.73):
+  1.26.4), compile in-process and `go build` alone. Method (fix round 1,
+  docs/engineering.md): one warm-up `go build` of a trivial program, then
+  each measured build is the minimum of three; the first version timed a
+  single build, which at about 130 ms (Go's fixed startup and link cost) is
+  as large as the 1 MB and 100,000-escape bounds. Five serial runs under
+  the new method, 1-, 5- and 15-minute load averages before each run: 2.88
+  3.16 3.86; 2.82 3.14 3.84; 2.78 3.12 3.83; 2.65 3.08 3.81; 2.76 3.10
+  3.81. Single-build medians of the first method (ms): 1 MB 141 compile and
+  146 build, 10,000 parts 521 and 709, 100,000 escapes 142 and 130. Under
+  the new method:
 
   | Case | Phase | Median ms | Min | Max | Bound ms |
   |---|---|---|---|---|---|
-  | 1 MB literal | compile | 141 | 140 | 141 | 423 |
-  | 1 MB literal | go build | 146 | 144 | 148 | 438 |
-  | 10,000 parts | compile | 521 | 491 | 543 | 1563 |
-  | 10,000 parts | go build | 709 | 707 | 720 | 2127 |
-  | 100,000 escapes | compile | 142 | 135 | 155 | 426 |
-  | 100,000 escapes | go build | 130 | 129 | 132 | 390 |
+  | 1 MB literal | compile | 142 | 139 | 151 | 423 |
+  | 1 MB literal | go build (min of 3) | 151 | 146 | 153 | 438 |
+  | 10,000 parts | compile | 531 | 515 | 536 | 1563 |
+  | 10,000 parts | go build (min of 3) | 719 | 717 | 724 | 2127 |
+  | 100,000 escapes | compile | 148 | 138 | 153 | 426 |
+  | 100,000 escapes | go build (min of 3) | 133 | 131 | 137 | 390 |
 
-  Inside the full verify (load average about 6 after the parallel phase) the
-  `go build` figures were higher: 342, 943 and 302 ms, within the bounds.
+  The medians moved by 1 to 4 percent (noise), so no bound changed: none is
+  raised, none lowered.
 - examples/text.wxw (a `Directory` effect injected by `with directory()`, a
   pipe with one stage per line, a block, a raw literal, an `Entry(Text,
   Int)` printed nested, `show`) with bootstrap/text.go compared byte for byte
@@ -4406,3 +4412,14 @@ Evidence:
   compiler change since f36744d). The harvest run's test pass exited 1 on
   timing tests under the hook; recorded in BACKLOG T007 with figures only.
 - `.build/regression` and the baseline copy were deleted.
+
+Text v1 Task 9 fix round 1 (2026-10-13): scale test now warms up and takes
+the minimum of three builds (medians above; no bound changed); hash-mismatch
+probe message corrected; example's `welcome` and `rawPath` renamed and
+bootstrap/text.go regenerated; README shows the whole example verbatim;
+EBNF, spec notes and dates fixed; a Text-only program joined `specialize is
+the identity`. Verify exit 0 (.build/text-t9-fix-verify.log): 1535/1535,
+57/57, 91 proofs. Inside verify the `go build` minimums were 300, 883 and
+292 ms (bounds 438, 2127, 390), about twice the standalone figures: the
+bounds hold but the margin is thin on the 100,000-escape case. No timing
+failure, so no T007 entry.

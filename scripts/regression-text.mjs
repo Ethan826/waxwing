@@ -2,8 +2,9 @@
 // are in test/regression-text.mjs. Each replacement is a whole defect that
 // still compiles. Go compares strings bytewise, which on valid UTF-8 is
 // code-point order, so there is no Go helper that could regress to UTF-16
-// order; the faithful mutant is a UTF-16 comparison in the field
-// comparison, the one place Text order is generated.
+// order. A top-level Text `<` is Go's native `<` (Format.Go.Compare
+// `comparison`); the faithful mutant is a UTF-16 comparison in the field
+// comparison, so only the order of Text nested in data is mutated.
 export const textRows = [
   {
     // Interpolation parts evaluated right to left (design §1).
@@ -48,7 +49,7 @@ export const textRows = [
     name: 'text-hash-mismatch', file: 'src/Format/Lex/Walk.purs',
     needle: '  else mismatch origin (here state.at) quotes following\n',
     replacement: '  else closing origin state\n',
-    probe: 'text-hash-mismatch', message: /hash mismatch accepted/
+    probe: 'text-hash-mismatch', message: /hash mismatch not diagnosed/
   },
   {
     // A surrogate scalar accepted by `\u{…}`.

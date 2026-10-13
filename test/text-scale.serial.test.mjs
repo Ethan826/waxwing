@@ -12,7 +12,8 @@ import { scalePrograms } from './text-scale-programs.mjs';
 // run with the right output. A serial test (`*.serial.test.mjs`):
 // scripts/verify.mjs runs it after the parallel phase. Each bound is 3x
 // the median of five runs on the development host (docs/progress.md, Text
-// entry), for the in-process compile and for `go build` alone.
+// entry), for the in-process compile and for `go build` alone (after a
+// warm-up build, the minimum of three).
 const buildTimeoutMs = 120_000;
 const bounds = {
   // Medians of five: compile 141 ms, go build 146 ms.
@@ -23,27 +24,47 @@ const bounds = {
   'a literal of 100,000 escapes': { compileMs: 3 * 142, buildMs: 3 * 130 }
 };
 
+const buildOf = result => timedBuild(work => {
+  const go = join(work, 'main.go');
+  writeFileSync(go, result);
+  return go;
+}, buildTimeoutMs);
+
+// Method (docs/engineering.md): one warm-up `go build` first, so Go's
+// toolchain and standard library are cached, then each measured build is
+// the minimum of three. Load inflates some runs; a real regression
+// inflates all of them.
+const builds = 3;
+const warmUp = async () => {
+  const trivial = compile('fn main(): Text = "x";');
+  assert.ok(trivial instanceof Right);
+  const built = await buildOf(trivial.value0);
+  assert.equal(built.status, 0, built.errors);
+};
+
 for (const program of scalePrograms) {
   test(`${program.name} compiles and runs`, async t => {
     const started = performance.now();
     const result = compile(program.source);
     const compileMs = performance.now() - started;
     assert.ok(result instanceof Right, 'program was rejected');
-    const built = await timedBuild(work => {
-      const go = join(work, 'main.go');
-      writeFileSync(go, result.value0);
-      return go;
-    }, buildTimeoutMs);
+    await warmUp();
+    const runs = [];
+    for (let run = 0; run < builds; run++) {
+      runs.push(await buildOf(result.value0));
+    }
+    const buildMs = Math.min(...runs.map(one => one.buildMs));
     const bound = bounds[program.name];
     t.diagnostic(`compile ${Math.round(compileMs)} ms, bound `
-      + `${bound.compileMs}; go build ${Math.round(built.buildMs)} ms, `
-      + `bound ${bound.buildMs}`);
-    assert.equal(built.killed, false, `go build killed at ${buildTimeoutMs}`);
-    assert.equal(built.status, 0, built.errors);
-    assert.equal(built.stdout, program.expected);
+      + `${bound.compileMs}; go build min of ${builds} `
+      + `${Math.round(buildMs)} ms, bound ${bound.buildMs}`);
+    for (const one of runs) {
+      assert.equal(one.killed, false, `go build killed at ${buildTimeoutMs}`);
+      assert.equal(one.status, 0, one.errors);
+      assert.equal(one.stdout, program.expected);
+    }
     assert.ok(compileMs <= bound.compileMs, `compile took ${compileMs} ms`);
-    assert.ok(built.buildMs <= bound.buildMs,
-      `go build took ${built.buildMs} ms`);
+    assert.ok(buildMs <= bound.buildMs, `go build took ${buildMs} ms`);
   });
 }
 

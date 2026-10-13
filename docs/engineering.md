@@ -87,6 +87,11 @@ adding a bypass allowlist.
   run (which also checks the output), take the median of five runs on a
   quiet host to choose the bound, and set the bound to 3x that median; the
   `go build` test assumes the warm `.build/go-cache` that verify provides.
+  test/text-scale.serial.test.mjs (Text v1) refines the `go build` timing:
+  one warm-up build of a trivial program first, then each measured build is
+  the minimum of three, since Go's fixed startup and link cost (about 130
+  ms) is as large as the smaller bounds and load inflates single runs while
+  a real regression inflates all of them.
   Under verify's load the measured figures stayed inside the bounds, but
   they are not guaranteed to on a busy host (T003 exposure). FN006's 20,000-parameter timing suite
   is now test/fn-linear-timing.serial.test.mjs, separate from the existing

@@ -41,9 +41,9 @@ pattern     = "_" | lower | upper, [ "(", pattern, { ",", pattern }, ")" ]
             | integer | "true" | "false" ;
 comparison  = addition, [ ( "==" | "!=" | "<" | "<=" | ">" | ">=" ),
               addition ] ;
-addition    = atom, { "+", atom } ;
+addition    = atom, { ( "+" | "++" ), atom } ;
 atom        = primary, { "(", [ arguments ], ")" } ;
-primary     = integer | "true" | "false" | identifier
+primary     = integer | "true" | "false" | identifier | text
             | "(", expression, ")" ;
 arguments   = expression, { ",", expression } ;
 integer     = [ "-" ], digit, { digit } ;
