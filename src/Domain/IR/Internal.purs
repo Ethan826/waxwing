@@ -132,6 +132,7 @@ data Node
   | UnitValue
   | Block (Array Item) Expr
   | Print Expr
+  | Show Expr
   | Crash Expr
   | OperationRef EffectKey Int
   | Perform EffectKey Int (Array Expr)

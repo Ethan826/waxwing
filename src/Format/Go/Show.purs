@@ -1,4 +1,10 @@
-module Format.Go.Show (showName, showHelpers, printed, appendsWithFmt) where
+module Format.Go.Show
+  ( showName
+  , showHelpers
+  , printed
+  , shown
+  , appendsWithFmt
+  ) where
 
 import Prelude
 import Data.Array as Array
@@ -7,6 +13,7 @@ import Domain.IR.Internal (CtorInfo, Ty(..))
 import Domain.Resolved (CtorId, TypeId(..))
 import Format.Go.Data (fieldName, goType, malformed)
 import Format.Go.Layout (Declared, Layout, Member)
+import Format.Go.TextShow (holdsText, quoteName)
 
 showName ∷ TypeId → String
 showName (TypeId index) = "waxwingShow" <> show index
@@ -23,10 +30,21 @@ printed ty call = case ty of
   TData owner → "string(" <> showName owner <> "(nil, " <> call <> "))"
   _ → call
 
+-- What `show` returns, as a Go string: exactly what `printed` writes, but
+-- Int and Bool are formatted here, and a Text is its own text.
+shown ∷ Ty → String → String
+shown ty call = case ty of
+  TInt → "fmt.Sprint(" <> call <> ")"
+  TBool → "fmt.Sprint(" <> call <> ")"
+  TText → call
+  _ → printed ty call
+
 -- Whether a printer calls fmt.Append: exactly when a declared type has an
--- Int or Bool field (showField).
+-- Int or Bool field (showField), or the quoting printer, which formats
+-- escapes with fmt.Appendf (TextShow).
 appendsWithFmt ∷ Layout → Boolean
-appendsWithFmt program = Array.any declaredUses program.types
+appendsWithFmt program = holdsText program
+  || Array.any declaredUses program.types
   where
   declaredUses declared = Array.any memberUses declared.members
   memberUses member = Array.any formatted member.ctor.fields
@@ -75,8 +93,8 @@ showField id position = case _ of
   TInt → appended
   TBool → appended
   TUnit → "out = " <> appendText "()"
-  -- Written raw for now; nested Text is quoted by the Text printing task.
-  TText → "out = append(out, " <> field <> "...)\n"
+  -- Alone a Text prints raw (`printed`); nested in data it is quoted.
+  TText → "out = " <> quoteName <> "(out, " <> field <> ")\n"
   -- Printing is rejected at a type holding an arrow (design §3), yet every
   -- declared type gets its printer; a function field is never printed.
   TFun _ → malformed <> "\n"

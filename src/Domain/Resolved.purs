@@ -53,6 +53,7 @@ data GlobalRef
   | GlobalCtor CtorId
   | Operation EffectId Int Int
   | BuiltinPrint
+  | BuiltinShow
   | BuiltinCrash
 
 -- Functions and constructors share one global namespace.
@@ -88,6 +89,8 @@ data Expr
   | Perform Span EffectId Int (Array Expr)
   | PrintRef Span
   | Print Span (Array Expr)
+  | ShowRef Span
+  | Show Span (Array Expr)
   | CrashRef Span
   | Crash Span (Array Expr)
   | Handler Span (Label (Ty VarId)) (Array HandlerClause)
@@ -191,6 +194,8 @@ exprSpan expression = case expression of
   Perform span _ _ _ → span
   PrintRef span → span
   Print span _ → span
+  ShowRef span → span
+  Show span _ → span
   CrashRef span → span
   Crash span _ → span
   Handler span _ _ → span

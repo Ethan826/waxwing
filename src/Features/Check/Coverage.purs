@@ -51,6 +51,7 @@ covered signature (Checked.Expr expression) = case expression.node of
   Checked.Pipe left right → traverse_ recur [ left, right ]
   Checked.UnitValue → pure unit
   Checked.Print value → recur value
+  Checked.Show value → recur value
   Checked.Crash value → recur value
   Checked.OperationRef _ _ _ → pure unit
   Checked.Perform _ _ _ arguments → traverse_ recur arguments

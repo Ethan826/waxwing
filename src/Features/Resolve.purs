@@ -50,6 +50,7 @@ resolve program = do
         ( globals tables.ctors <> Effect.globals effects
             <>
               [ { name: "print", ref: Resolved.BuiltinPrint }
+              , { name: "show", ref: Resolved.BuiltinShow }
               , { name: "crash", ref: Resolved.BuiltinCrash }
               ]
         )

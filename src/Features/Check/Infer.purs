@@ -11,6 +11,7 @@ import Domain.Resolved (Ty(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Operator, Span, problemAt)
 import Domain.Type (TyRow)
+import Features.Check.Show (showCall, showRef)
 import Features.Check.Operation
   ( operationCall
   , operationRef
@@ -106,6 +107,8 @@ inferNode env state expression = case expression of
     operationCall infer env state span effect index arguments
   Resolved.PrintRef span → printRef env state span
   Resolved.Print span arguments → printCall infer env state span arguments
+  Resolved.ShowRef span → showRef env state span
+  Resolved.Show span arguments → showCall infer env state span arguments
   Resolved.CrashRef span → crashRef env state span
   Resolved.Crash span arguments → crashCall infer env state span arguments
   Resolved.Block span items value → checkBlock infer env state span items

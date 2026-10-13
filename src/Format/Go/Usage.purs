@@ -38,6 +38,7 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.Pipe left right → anyOf [ left, right ]
   IR.UnitValue → false
   IR.Print value → usesBoolOrdering value
+  IR.Show value → usesBoolOrdering value
   IR.Crash value → usesBoolOrdering value
   IR.Block items value → anyOf (IR.blockParts items value)
   IR.OperationRef _ _ → false
@@ -58,9 +59,18 @@ needsPrint (IR.Program program) = Array.any inFunction program.functions
   where
   inFunction function = prints function.body
 
+-- `show` of an Int or a Bool is formatted by fmt.Sprint; every other type
+-- is rendered by a printer or directly, which need not import fmt.
+formatsAlone ∷ Ty → Boolean
+formatsAlone = case _ of
+  TInt → true
+  TBool → true
+  _ → false
+
 prints ∷ IR.Expr → Boolean
 prints (IR.Expr expression) = case expression.node of
   IR.Print _ → true
+  IR.Show value → formatsAlone (IR.typeOf value) || prints value
   IR.Crash _ → true
   IR.Integer _ → false
   IR.Boolean _ → false

@@ -54,6 +54,7 @@ children = case _ of
   IR.Lambda _ body → [ body ]
   IR.Pipe left right → [ left, right ]
   IR.Print value → [ value ]
+  IR.Show value → [ value ]
   IR.Crash value → [ value ]
   IR.Block items value → IR.blockParts items value
   _ → []
@@ -93,11 +94,19 @@ effectKey = case _ of
   UserEffect (EffectId index) → index + 1
   _ → 0
 
+-- Text's key lies below every other: data keys are -4 - id, so only a
+-- program of two billion types could reach it (Go's int is at least 32
+-- bits wide, and this is math.MinInt32). Giving Text a key must not move
+-- an existing one, which the corpus differential confirms.
+textFailKey ∷ Int
+textFailKey = -2147483648
+
 failKey ∷ TypeHead → Int
 failKey = case _ of
   HeadInt → -1
   HeadBool → -2
   HeadUnit → -3
+  HeadText → textFailKey
   HeadData (TypeId index) → -4 - index
 
 -- Markers are non-zero-sized (Go lets distinct zero-sized variables share

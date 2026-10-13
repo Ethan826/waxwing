@@ -117,6 +117,7 @@ typeHead = case _ of
   TInt → Just HeadInt
   TBool → Just HeadBool
   TUnit → Just HeadUnit
+  TText → Just HeadText
   TData id _ _ → Just (HeadData id)
   _ → Nothing
 

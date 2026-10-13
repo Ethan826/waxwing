@@ -138,6 +138,7 @@ parts (Checked.Expr expression) = case expression.node of
   Checked.Lambda _ body → [ body ]
   Checked.Pipe left right → [ left, right ]
   Checked.Print value → [ value ]
+  Checked.Show value → [ value ]
   Checked.Crash value → [ value ]
   Checked.Perform _ _ _ arguments → arguments
   Checked.Handler _ _ clauses → map handlerBody clauses

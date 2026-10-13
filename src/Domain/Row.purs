@@ -54,7 +54,7 @@ data EffectRef = UserEffect EffectId | FailEffect | ConsoleEffect
 -- `Fail(Error(Int))` and `Fail(Error(Bool))` share a key.
 data LabelKey = EffectKey EffectRef | FailKey TypeHead
 
-data TypeHead = HeadInt | HeadBool | HeadUnit | HeadData TypeId
+data TypeHead = HeadInt | HeadBool | HeadUnit | HeadText | HeadData TypeId
 
 derive instance eqEffectRef ∷ Eq EffectRef
 derive instance ordEffectRef ∷ Ord EffectRef

@@ -28,6 +28,7 @@ parts = case _ of
   Block _ items result → Array.snoc (map itemBody items) result
   Perform _ _ _ arguments → arguments
   Print _ arguments → arguments
+  Show _ arguments → arguments
   Crash _ arguments → arguments
   Handler _ _ clauses → map _.body clauses
   With _ handler body → [ handler, body ]

@@ -29,6 +29,7 @@ foldTypes step found (Checked.Expr expression) = case expression.node of
   Checked.If condition yes no → foldl recur own [ condition, yes, no ]
   Checked.Match scrutinee arms → foldl arm (recur own scrutinee) arms
   Checked.Print value → recur own value
+  Checked.Show value → recur own value
   Checked.Crash value → recur own value
   Checked.OperationRef _ _ instantiation → applied instantiation []
   Checked.Perform _ _ instantiation arguments → applied instantiation arguments
@@ -87,6 +88,7 @@ retype change (Checked.Expr expression) = Checked.Expr
       (recur body)
     Checked.Pipe left right → Checked.Pipe (recur left) (recur right)
     Checked.Print value → Checked.Print (recur value)
+    Checked.Show value → Checked.Show (recur value)
     Checked.Crash value → Checked.Crash (recur value)
     Checked.OperationRef effect index instantiation →
       Checked.OperationRef effect index (map change instantiation)

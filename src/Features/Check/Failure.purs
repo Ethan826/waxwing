@@ -114,6 +114,7 @@ firstFail (Checked.Expr expression) = case expression.node of
   Checked.Lambda _ body → firstFail body
   Checked.Pipe left right → firstIn [ left, right ]
   Checked.Print value → firstFail value
+  Checked.Show value → firstFail value
   Checked.Crash value → firstFail value
   Checked.Perform _ _ _ arguments → firstIn arguments
   Checked.Block items value → firstIn (Checked.blockParts items value)
@@ -157,6 +158,7 @@ firstUnkeyed subst (Checked.Expr expression) = case expression.node of
   Checked.Lambda _ body → firstUnkeyed subst body
   Checked.Pipe left right → firstIn [ left, right ]
   Checked.Print value → firstUnkeyed subst value
+  Checked.Show value → firstUnkeyed subst value
   Checked.Crash value → firstUnkeyed subst value
   Checked.Perform _ _ _ arguments → firstIn arguments
   Checked.Block items value → firstIn (Checked.blockParts items value)

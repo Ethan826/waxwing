@@ -97,6 +97,11 @@ boolean value = if value then "true" else "false"
 -- `"` and `\` and the three line escapes by name, and every other code
 -- point as a fixed-width hex escape (`\u00e9`, `\U0001f600`). The source
 -- stays ASCII whatever the text holds.
+--
+-- Precondition: the input is valid Unicode, never a lone surrogate. The
+-- lexer rejects surrogate escapes and invalid UTF-8, so no literal can
+-- hold one; a lone surrogate would be emitted as an escape Go refuses to
+-- compile.
 goTextLiteral ∷ String → String
 goTextLiteral text = "\"" <> joinWith "" (map goEscaped (toCodePointArray text))
   <> "\""

@@ -68,4 +68,5 @@ bareLabel subst (Label effect arguments mark) = Label effect kept mark
     HeadInt → TInt
     HeadBool → TBool
     HeadUnit → TUnit
+    HeadText → TText
     HeadData id → TData id [] []

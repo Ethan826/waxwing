@@ -76,6 +76,7 @@ data Node
   | UnitValue
   | Block (Array Item) Expr
   | Print Expr
+  | Show Expr
   | Crash Expr
   | OperationRef EffectId Int Instantiation
   | Perform EffectId Int Instantiation (Array Expr)

@@ -27,7 +27,7 @@ import Format.Go.Lowered
 import Format.Go.Match (lowerMatch)
 import Format.Go.Pipe (lowerPipe)
 import Format.Go.Report (lowerCrash)
-import Format.Go.Show (printed)
+import Format.Go.Show (printed, shown)
 import Format.Go.Value (applyValue, named, reference)
 
 -- `next` is the number the first lifted function met in pre-order will
@@ -59,6 +59,7 @@ expression scope next whole@(IR.Expr term) = case term.node of
   IR.Pipe left right → lowerPipe scope lower next whole left right
   IR.UnitValue → leaf next "struct{}{}"
   IR.Print value → printedValue (IR.typeOf value) (lower next value)
+  IR.Show value → shownValue (IR.typeOf value) (lower next value)
   IR.Crash value → lowerCrash lower next term.ty value
   IR.Block items value → lowerBlock scope lower next term.ty items value
   IR.OperationRef key position →
@@ -95,6 +96,9 @@ conditional ty codes = joinWith "" (Array.zipWith append pieces codes)
   <> " }()"
   where
   pieces = [ "func() " <> goType ty <> " { if ", " { return ", " }; return " ]
+
+shownValue ∷ Ty → Lowered → Lowered
+shownValue ty value = value { code = shown ty value.code }
 
 printedValue ∷ Ty → Lowered → Lowered
 printedValue ty value = value
