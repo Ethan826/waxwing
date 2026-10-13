@@ -12,6 +12,14 @@ adding a bypass allowlist.
 
 - pinned PureScript/Spago, purs-tidy formatting, strict warnings, pedantic
   packages, dependency lock, Unicode PureScript punctuation and 80 columns;
+- 80 columns in every tracked .md, .mjs, .js and .wxw file (code points),
+  enforced by scripts/width.mjs, which verify runs after the structure gate;
+  test/width.test.mjs pins the rules. Exempt: Markdown table rows; ATX
+  headings (a heading is one line); outside code fences, a line that is one
+  token or one whole `[text](target)` link; inside a fence, a bare URL line;
+  and skipped files: .agents/, .claude/skills/, docs/patches/, bootstrap/
+  snapshots, editors/vscode/snapshots/ (generated) and lock files. Wrap
+  with continuation lines; never reword. Generated JSON is not scanned;
 - 250 physical lines for maintained PureScript/JS source, tests, and tools;
   final newlines, textual escape/suppression checks (conservative, includes
   text inside comments/strings; checker fixture strings are assembled);

@@ -32,6 +32,10 @@ vertical slice before adding language features. Task tracking is local.
   100-line target. Comments and blank lines count. Generated output, locks,
   data fixtures, and generated-Go snapshots are excluded; maintained code
   disguised as a fixture is not exempt.
+- Every .md, .mjs, .js and .wxw line is at most 80 code points, enforced by
+  scripts/width.mjs in verify. Exempt: Markdown table rows, ATX headings,
+  single-token or whole-link lines, bare URLs, and generated or vendored
+  files (docs/engineering.md lists them). Reflow; never reword.
 - PureScript: pinned purs-tidy, Unicode punctuation, 80 columns, final newline.
   Types/instances, constants, public functions, then private functions.
   Use explicit names; conventional compiler names Expr, IR, Ty are allowed.

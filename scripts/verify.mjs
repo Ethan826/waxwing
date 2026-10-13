@@ -26,6 +26,7 @@ run('purs-tidy', ['check', 'src', 'tools/style/src']);
 run('node', ['scripts/build.mjs']);
 run('node', ['scripts/strict-rebuild.mjs']);
 assert.deepEqual(await checkStructure(), [], 'structural gates');
+run('node', ['scripts/width.mjs']);
 // Every test file runs; a hand-kept list could silently omit a new one.
 // `*.serial.test.mjs` files time `go build` or other heavy work against
 // fixed bounds, so they run after the parallel phase, one file at a time,
