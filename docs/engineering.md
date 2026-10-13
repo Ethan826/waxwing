@@ -97,7 +97,8 @@ adding a bypass allowlist.
   output, so a time bound there tests the host, not the compiler (user
   decision 2026-10-13); they still build, run and match exactly.
   Under verify's load the measured figures stayed inside the bounds, but
-  they are not guaranteed to on a busy host (T003 exposure). FN006's 20,000-parameter timing suite
+  they are not guaranteed to on a busy host (T003 exposure). FN006's
+  20,000-parameter timing suite
   is now test/fn-linear-timing.serial.test.mjs, separate from the existing
   fn-linear.serial.test.mjs; every workload, assertion and bound is
   unchanged. Repeated parallel-contention failures motivated this runner
@@ -110,7 +111,8 @@ adding a bypass allowlist.
   Then verify runs
   scripts/regression.mjs, a table of isolated-copy mutations, each of which
   must pass on the healthy build and fail on its mutant: `branch`
-  (Features.Check.Infer branch type), `nil-guard` (Format.Go.Match drops the `!= nil`
+  (Features.Check.Infer branch type), `nil-guard` (Format.Go.Match drops the
+  `!= nil`
   test; probe requires the unmatched panic, not a runtime error),
   `exhaustive` (Features.Check.Coverage always succeeds), `ctor-order`
   (Format.Go.Compare reverses the tag comparison), `first-field` (compares
@@ -169,7 +171,8 @@ adding a bypass allowlist.
   `effect-free-ctx`, not duplicated. The Task 12 verify
   (.build/task12a-verify.log in the worktree) printed 81 `Regression
   proof (…)` lines in all (`node scripts/regression.mjs name…` proves
-  only the named rows); the A003 order and print tests also use an independent value
+  only the named rows); the A003 order and print tests also use an independent
+  value
   oracle (test/value-oracle.mjs);
 - Text v1 (ADR 011) adds seven regression rows, in
   scripts/regression-text.mjs with probes in test/regression-text.mjs (an
@@ -187,13 +190,15 @@ adding a bypass allowlist.
   interpolation parts and a literal of 100,000 escapes each compile and run,
   and emission is deterministic. Each bound is 3x the median of five runs
   on the development host, for the in-process compile and, for the
-  10,000-part case only, for `go build` alone (figures in docs/progress.md, Text entry). Examples are snapshotted
+  10,000-part case only, for `go build` alone (figures in docs/progress.md, Text
+  entry). Examples are snapshotted
   byte for byte (examples/text.wxw to bootstrap/text.go,
   test/text-literal.test.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):
   `runGoBatch(import.meta.url, cases, label?)` takes an array of
   `[name, source]` pairs (an array, so a computed name collision is refused
-  at declaration rather than collapsing silently) and, on the first `run(name)`, compiles them all, writes a synthetic module
+  at declaration rather than collapsing silently) and, on the first `run(name)`,
+  compiles them all, writes a synthetic module
   under `.build/go-batches/<id>/` (its own go.mod with module path
   `waxwingbatch` and the pinned toolchain's language version, one package
   `c<N>` per case, a dispatcher `main` importing them), builds once with
@@ -363,10 +368,12 @@ library APIs, not a proof of arbitrary dependency purity.
 
 Superpowers is project-local, revision-pinned third-party guidance, preserved
 unmodified under .agents/skills with its MIT notice. It is distinct from
-maintained Waxwing source/tests/tooling; project gates still cover their existing
+maintained Waxwing source/tests/tooling; project gates still cover their
+existing
 roots without weakened checks. docs/planning-skills.md records instruction
 precedence and adoption. Migrated plans preserve historical evidence without
-asserting retroactive TDD/commit records. Execution uses the installed plan/task/review helpers and real commit ranges.
+asserting retroactive TDD/commit records. Execution uses the installed
+plan/task/review helpers and real commit ranges.
 
 ## Audit review findings (2026-10-07)
 

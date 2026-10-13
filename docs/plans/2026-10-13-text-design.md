@@ -77,7 +77,8 @@ error at that expression.
 **Comparison.** `== != < <= > >=` on Text compare by Unicode code point,
 lexicographically. This is code-point order, not UTF-16 order: a non-BMP
 character such as U+1F600 sorts after U+FFFD. Every implementation must
-agree, the reference interpreter included (§5). Text fields inside data take part in the structural order
+agree, the reference interpreter included (§5). Text fields inside data take
+part in the structural order
 of ADR 005 unchanged.
 
 **`show(x)`.** `show` is a built-in name, like `print`. It takes one value
@@ -250,7 +251,8 @@ The reference interpreter in the test tree (effects oracle) gains Text
 values. Its comparison must compare by code point, iterating with
 `codePointAt` or an equivalent, and must never use JavaScript's native
 string `<`, which compares UTF-16 units. A test compares U+1F600 with
-U+FFFD in both Go and the interpreter. The interpreter also gains literals, interpolation, `++`, comparison, printing and `show`, with
+U+FFFD in both Go and the interpreter. The interpreter also gains literals,
+interpolation, `++`, comparison, printing and `show`, with
 the same printing rules. The FX differential generator gains Text
 expressions: interpolations with effectful parts, nested data holding Text,
 and comparisons. Go output is compared with the interpreter as today.
