@@ -33,7 +33,7 @@ const wordRule = ([name, names]) => ({
 const hashes = count => '#'.repeat(count);
 // An invalid `\u{...}` is marked through its closing brace, as the lexer's
 // error span runs.
-const badUnicode = 'u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n"]*\\}?)?';
+const badUnicode = 'u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?';
 const escapeOf = count => {
   const mark = `\\\\${hashes(count)}`;
   return [

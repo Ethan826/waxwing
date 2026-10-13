@@ -31,7 +31,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -76,7 +76,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -121,7 +121,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -166,7 +166,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -211,7 +211,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -256,7 +256,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -301,7 +301,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -346,7 +346,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -391,7 +391,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -436,7 +436,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -481,7 +481,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -526,7 +526,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -571,7 +571,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -616,7 +616,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -661,7 +661,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -706,7 +706,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -751,7 +751,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\################(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\################(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -811,7 +811,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -856,7 +856,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -901,7 +901,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -946,7 +946,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -991,7 +991,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1036,7 +1036,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#####(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1081,7 +1081,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1126,7 +1126,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#######(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1171,7 +1171,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1216,7 +1216,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1261,7 +1261,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1306,7 +1306,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###########(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1351,7 +1351,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1396,7 +1396,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\#############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\#############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1441,7 +1441,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\##############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\##############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1486,7 +1486,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\###############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\###############(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",
@@ -1531,7 +1531,7 @@
             },
             {
               "name": "invalid.illegal.escape.waxwing",
-              "match": "\\\\################(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[^}\\n\"]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
+              "match": "\\\\################(?:u(?!\\{[0-9A-Fa-f]{1,6}\\})(?:\\{[0-9A-Fa-f]*\\}?)?|[^ntr\"\\\\$u\\n]|(?=\\n|$))"
             },
             {
               "name": "meta.interpolation.waxwing",

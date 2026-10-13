@@ -25,7 +25,8 @@
   " " string.quoted.double
   "\\u{}" string.quoted.double invalid.illegal.escape
   " " string.quoted.double
-  "\\u{110000x}" string.quoted.double invalid.illegal.escape
+  "\\u{110000" string.quoted.double invalid.illegal.escape
+  "x}" string.quoted.double
   "\"" string.quoted.double punctuation.definition.string.end
   ";" punctuation.separator
 2: fn empty(): Text = "";
@@ -248,8 +249,8 @@
   "###\"" string.quoted.other.raw punctuation.definition.string.begin
   "\\###u{41}" string.quoted.other.raw constant.character.escape
   " " string.quoted.other.raw
-  "\\###u{zz}" string.quoted.other.raw invalid.illegal.escape
-  " \"## " string.quoted.other.raw
+  "\\###u{" string.quoted.other.raw invalid.illegal.escape
+  "zz} \"## " string.quoted.other.raw
   "\"###" string.quoted.other.raw punctuation.definition.string.end
   ";" punctuation.separator
 12: fn raw7(): Text = #######"deep "###### still "#######;
@@ -495,7 +496,11 @@
   "  "
   "############\"" string.quoted.other.raw punctuation.definition.string.begin
   "a \"########### " string.quoted.other.raw
-  "\\############u{4 $############{x}" string.quoted.other.raw invalid.illegal.escape
+  "\\############u{4" string.quoted.other.raw invalid.illegal.escape
+  " " string.quoted.other.raw
+  "$############{" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.begin
+  "x" string.quoted.other.raw meta.interpolation variable.other
+  "}" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
   "\"############" string.quoted.other.raw punctuation.definition.string.end
   ";" punctuation.separator
 34:
