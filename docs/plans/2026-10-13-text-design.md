@@ -119,8 +119,20 @@ its *indent*, is removed from every content line.
 - Inside, `\` and `${` are literal. Escapes are written `\` + n `#`s + the
   escape (`\#n`, `\##u{…}`). Interpolation is `$` + n `#`s + `{…}`
   (`$#{x}`).
-- The literal ends only at `"` followed by exactly n `#`s, so `"` and `"#`
-  can appear inside a `##` literal.
+- **Termination**, for a literal with n `#`s:
+  - A `"` followed by exactly n `#`s closes it.
+  - A `"` followed by fewer than n `#`s is content, so `"` and `"#` can
+    appear inside a `##` literal.
+  - A `"` followed by more than n `#`s is an error at that quote and all
+    its `#`s, for example `Expected "##, found "###`.
+  - Suppose a single-line literal reaches the end of its line, or a block
+    reaches the end of the file, without closing. If it contains a `"`,
+    the error is at its last `"` and that quote's `#`s, for example
+    `Expected "#, found "` for `#"x"`. With no `"` at all, it is
+    `Unterminated text literal`.
+  - The mismatch message shows the expected closing delimiter, then the one
+    found. It is the approved `Expected "#, found "` text, generalized to
+    the counts.
 
 **Not in v1:**
 - length, indexing, slicing, split, join, trim and parsing (STD001, with a
@@ -155,9 +167,14 @@ its *indent*, is removed from every content line.
   scans text literals.
   - It does all decoding there: escapes, delimiter counts, block
     indentation and CRLF normalization.
-  - It emits one literal token. The token carries an ordered list of parts:
-    decoded text chunks and interpolation holes, each hole holding the
-    tokens of its expression with exact spans.
+  - It emits a flat token stream. Tokens gain a kind. A literal is
+    `TextOpen`, then `TextChunk` (decoded text) and holes (`HoleOpen`, the
+    hole's ordinary tokens, `HoleClose`) in source order, then
+    `TextClose`. The parser assembles the literal from that sequence.
+  - The scanner keeps an explicit stack of open literals and holes, so
+    nesting such as `"${ "${ … }" }"` never uses host recursion. Nesting
+    literals inside holes deeper than the existing limit (128) gives the
+    existing E_NESTING diagnostic at the innermost opening.
   - Every error in §6 is raised here with an exact span.
 - **Parsing and resolving.** New expression forms: a text literal (a
   constant chunk), an interpolated literal (parts) and `++`. A literal
@@ -193,8 +210,10 @@ its *indent*, is removed from every content line.
 - **Printing.**
   - A Text printed alone is written as is.
   - In the existing declared-type printers (`Format.Go.Show`), a Text
-    field is written quoted with Waxwing's escaping: `"` and `\` escaped,
-    and `\n`, `\t`, `\r` written as escapes.
+    field is written quoted with Waxwing's escaping. `"` and `\` are
+    escaped, `\n`, `\t` and `\r` are written as escapes, and every `${` is
+    written `\${`. A `$` not followed by `{` stays literal. The quoted form
+    therefore never interpolates when read back.
   - Other control characters, and any non-printing scalar, are written as
     `\u{…}` in lowercase hex.
   - The result is a valid Waxwing literal that reads back to the same
