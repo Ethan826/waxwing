@@ -503,5 +503,39 @@
   "}" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
   "\"############" string.quoted.other.raw punctuation.definition.string.end
   ";" punctuation.separator
-34:
+34: fn arrows(): Int = a -> b;
+  "fn" keyword.declaration
+  " "
+  "arrows" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "a" variable.other
+  " "
+  "->" keyword.operator.arrow
+  " "
+  "b" variable.other
+  ";" punctuation.separator
+35: fn tight(): Int = x->1;
+  "fn" keyword.declaration
+  " "
+  "tight" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "x" variable.other
+  "->" keyword.operator.arrow
+  "1" constant.numeric.integer
+  ";" punctuation.separator
+36:
   ""

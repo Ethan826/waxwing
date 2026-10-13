@@ -56,8 +56,7 @@
   " "
   "a" variable.other
   " "
-  "-" keyword.operator.minus
-  ">" keyword.operator.comparison
+  "->" keyword.operator.arrow
   " "
   "b" variable.other
   "," punctuation.separator
@@ -136,8 +135,7 @@
   " "
   "a" variable.other
   " "
-  "-" keyword.operator.minus
-  ">" keyword.operator.comparison
+  "->" keyword.operator.arrow
   " "
   "Bool" support.type.builtin
   "," punctuation.separator
@@ -238,8 +236,7 @@
   "a" variable.other
   ")" punctuation.section.parens
   " "
-  "-" keyword.operator.minus
-  ">" keyword.operator.comparison
+  "->" keyword.operator.arrow
   " "
   "b" variable.other
   "," punctuation.separator
@@ -321,8 +318,7 @@
   " "
   "b" variable.other
   " "
-  "-" keyword.operator.minus
-  ">" keyword.operator.comparison
+  "->" keyword.operator.arrow
   " "
   "c" variable.other
   "," punctuation.separator
@@ -332,8 +328,7 @@
   " "
   "a" variable.other
   " "
-  "-" keyword.operator.minus
-  ">" keyword.operator.comparison
+  "->" keyword.operator.arrow
   " "
   "b" variable.other
   ")" punctuation.section.parens
@@ -341,8 +336,7 @@
   " "
   "a" variable.other
   " "
-  "-" keyword.operator.minus
-  ">" keyword.operator.comparison
+  "->" keyword.operator.arrow
   " "
   "c" variable.other
   " "

@@ -31,3 +31,5 @@ fn minus(): Int = - 42;
 fn fails(): Unit = fail(E);
 fn raw12(): Text =
   ############"a "########### \############u{4 $############{x}"############;
+fn arrows(): Int = a -> b;
+fn tight(): Int = x->1;

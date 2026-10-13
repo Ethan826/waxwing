@@ -1600,7 +1600,7 @@
         },
         {
           "name": "keyword.operator.minus.waxwing",
-          "match": "-"
+          "match": "-(?!>)"
         },
         {
           "name": "keyword.operator.arrow.waxwing",

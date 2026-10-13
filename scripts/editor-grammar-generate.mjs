@@ -16,8 +16,7 @@ const boundary = names => `(?<!${word})(?:${names.join('|')})(?!${word})`;
 
 // Every reserved word of Format.Lex.Chars.reserved is placed in exactly one
 // of these groups, except `_`, which has its own rule. `pure`, `nofail` and
-// `fail`
-// are contextual: ordinary names to the lexer.
+// `fail` are contextual: ordinary names to the lexer.
 export const wordGroups = [
   ['keyword.control', ['if', 'then', 'else', 'match', 'with', 'handle',
     'defer', 'resume']],
@@ -82,7 +81,7 @@ const items = [
   ...wordGroups.map(wordRule),
   { name: scope('variable.language.wildcard'), match: boundary(['_']) },
   { name: scope('constant.numeric.integer'), match: `-?(?<!${word})[0-9]+` },
-  { name: scope('keyword.operator.minus'), match: '-' },
+  { name: scope('keyword.operator.minus'), match: '-(?!>)' },
   { name: scope('keyword.operator.arrow'), match: '->|=>|\\|>' },
   { name: scope('keyword.operator.comparison'), match: '==|!=|<=|>=|<|>' },
   { name: scope('keyword.operator.join'), match: '\\+\\+' },
