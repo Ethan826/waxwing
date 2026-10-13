@@ -50,6 +50,14 @@ line.
 error at that expression.
 - Interpolations may nest, as in `"a ${f("b ${c}")} d"`.
 - `\${` is a literal `${`. A `$` not followed by `{` is literal.
+- **Boundaries.** A hole starts at `${` and ends at the `}` that balances
+  it, counted over tokens, not characters. Braces of blocks, handlers and
+  records inside the hole nest. A nested text literal is consumed as one
+  whole token, so braces and quotes inside it do not count. A hole that
+  reaches the end of the literal's line, or of the file, without
+  balancing is `Unterminated interpolation`. Inside a `"""` block, a hole
+  may span lines. An empty hole `${}` is the existing parse error
+  `Expected an expression`.
 - Parts are evaluated left to right, each exactly once, with their
   ordinary effects. This is FN001's evaluation order: `"${a()}${b()}"`
   performs a's effects before b's.
@@ -61,19 +69,30 @@ error at that expression.
   `1 + "a"` is an ordinary type error.
 
 **Comparison.** `== != < <= > >=` on Text compare by Unicode code point,
-lexicographically. Text fields inside data take part in the structural order
+lexicographically. This is code-point order, not UTF-16 order: a non-BMP
+character such as U+1F600 sorts after U+FFFD. Every implementation must
+agree, the reference interpreter included (§5). Text fields inside data take part in the structural order
 of ADR 005 unchanged.
 
 **`show(x)`.** `show` is a built-in name, like `print`. It takes one value
 of any printable type and returns, as `Text`, exactly what `print(x)` would
 write.
 - `show` is pure.
-- `show(t)` of a Text `t` is `t` itself.
+- `show(t)` of a Text `t` is `t` itself, unquoted. Quoting happens only
+  for Text nested in data, as in printing.
+- `show` is not a type class. Waxwing has no classes yet (C001). Like
+  `print` and the comparison operators, `show` is a compiler built-in
+  over every printable type, which today means every type except
+  functions and handlers. The output format is fixed, and users cannot
+  customise it. When C001 lands, `show` and `print` are expected to
+  become a Show-style class with derived instances. That is a planned
+  migration, not something this design decides.
 - A function or handler argument gives the existing `Expected a printable
   value, found <t>` error.
 
 **Printing.** A Text on its own is written raw. This covers `print(t)` and
-a `main` that returns Text.
+a `main` that returns Text. As today, `print` and the printed result of
+`main` end with one newline. `show` adds none.
 - A Text nested in data is written quoted, using the canonical escaping of
   §4, for example `Pair("a b", 1)` and `Some("line\nbreak")`.
 - Every other printing rule is unchanged.
@@ -87,7 +106,12 @@ its *indent*, is removed from every content line.
   whitespace-only lines are exempt and become empty.
 - The line break after the opening `"""` and the one before the closing
   `"""` are not part of the text.
-- CRLF in the source becomes `\n`. Trailing spaces are kept.
+- CRLF in the source becomes `\n`. A lone CR inside any literal is the
+  error `Text cannot contain a line break; use \n or a """ block`; write
+  `\r` instead. Trailing spaces are kept.
+- The text ends with the last content line's own characters. It has no
+  final newline unless the source has a blank line before the closing
+  `"""`, which contributes `\n`.
 - Escapes and interpolation work as in ordinary literals.
 
 **Raw and extended delimiters.** A literal or block may be wrapped in n ≥ 1
@@ -103,6 +127,10 @@ its *indent*, is removed from every content line.
   prelude, List and Option decision);
 - Char and byte-level APIs;
 - Swift's trailing-`\` line continuation;
+- comments. They are a separate design (user, 2026-10-13), because their
+  syntax, nesting and interaction with `#` delimiters and interpolation
+  need their own decisions. The lexer rework should leave room for them
+  but does not add them;
 - user `Console` handlers. `print` accepts any printable value, so a
   clause has no single parameter type; the handler stays uninhabited
   (ADR 010, ruling F3) and BACKLOG D001 keeps the note.
@@ -180,14 +208,31 @@ its *indent*, is removed from every content line.
 ## 5. Reference model and differential
 
 The reference interpreter in the test tree (effects oracle) gains Text
-values, literals, interpolation, `++`, comparison, printing and `show`, with
+values. Its comparison must compare by code point, iterating with
+`codePointAt` or an equivalent, and must never use JavaScript's native
+string `<`, which compares UTF-16 units. A test compares U+1F600 with
+U+FFFD in both Go and the interpreter. The interpreter also gains literals, interpolation, `++`, comparison, printing and `show`, with
 the same printing rules. The FX differential generator gains Text
 expressions: interpolations with effectful parts, nested data holding Text,
 and comparisons. Go output is compared with the interpreter as today.
 
 ## 6. Diagnostics (approved texts)
 
-All of these are E_SYNTAX at the exact span:
+All of these are E_SYNTAX. Spans follow the location convention of §2:
+
+| Error | Span |
+|---|---|
+| Invalid UTF-8 | the first invalid byte, one unit at its offset |
+| Unterminated literal | the opening delimiter (`#`s and quotes) |
+| Line break (LF or lone CR) | from the opening delimiter to the end of that line |
+| Unknown or invalid escape | the whole escape, from `\` to its last character |
+| Unterminated interpolation | from `${` (or `$#{`) to where scanning stopped |
+| `"""` not followed by a line break | the characters after `"""` on that line |
+| Closing `"""` not on its own line | the closing delimiter |
+| Under-indented line | that line's leading whitespace (empty if none) |
+| `#` count mismatch | the closing quote and its `#`s |
+
+The texts:
 
 - `Invalid UTF-8 in source`
 - `Unterminated text literal`
