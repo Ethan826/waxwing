@@ -135,8 +135,8 @@ enclosing function.
 
 ## 3. Static rules (errors)
 
-The texts below are approved by the user, apart from two marked
-*pending*. The duplicate-binding errors are E_SYNTAX at the offending
+The texts below are approved by the user. The two that were marked
+*pending* were approved on 2026-10-13. The duplicate-binding errors are E_SYNTAX at the offending
 name, each with a note at the first binding.
 
 - Two imports in one signature bind the same local name, compared after
@@ -147,13 +147,13 @@ name, each with a note at the first binding.
   `with Database as Log` is rejected even when `Log` is absent from the
   row, because otherwise `Log.query` would mean Database and contradict
   canonical lookup.
-  - Text (*pending*; this broadens the approved "… in this row"): `Log is
+  - Text (approved 2026-10-13; this broadens the earlier "… in this row"): `Log is
     already an effect name`.
   - Note: `declared here` at the effect declaration, or `first bound
     here` at the earlier alias.
 - Alias or import syntax in any row other than a function declaration's
   own row (E_SYNTAX at the alias or the opening brace):
-  - Text (*pending*): `Imports and aliases are allowed only in a
+  - Text (approved 2026-10-13): `Imports and aliases are allowed only in a
     function's own row`.
 - An import names something the effect does not declare: the existing
   E_HANDLER `x is not an operation of Log`. It has no first-binding
