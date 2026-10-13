@@ -149,7 +149,9 @@ function per use and no interfaces or boxing.
 fn compose(f: b -> c, g: a -> b): a -> c = fn(x) => f(g(x));
 
 fn main(): Int =
-  upTo(5) |> filter(fn(x) => x > 2) |> map(compose(add(1), double))
+  upTo(5)
+    |> filter(fn(x) => x > 2)
+    |> map(compose(add(1), double))
     |> foldLeft(add, 0);
 ```
 
