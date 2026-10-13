@@ -121,11 +121,13 @@ enclosing function.
 All of these are E_SYNTAX at the offending name, each with a note at the
 first binding. The texts are approved, with the user's refinements.
 
-| Rule | Text |
-|---|---|
-| Two imports in one signature bind the same local name (compared after renaming, so `{ log as note, info as note }` conflicts) | `note is imported twice in this signature`; note: `first imported here` |
-| An alias equals an effect name in the row, or an earlier alias | `D is already an effect name in this row`; note: `first bound here` |
-| An import names something the effect does not declare | the existing E_HANDLER `x is not an operation of Log` |
+- Two imports in one signature bind the same local name, compared after
+  renaming, so `{ log as note, info as note }` conflicts: `note is imported
+  twice in this signature`, with the note `first imported here`.
+- An alias equals an effect name in the row, or an earlier alias: `D is
+  already an effect name in this row`, with the note `first bound here`.
+- An import names something the effect does not declare: the existing
+  E_HANDLER `x is not an operation of Log`.
 
 **Unbound bare operation names.** These keep the existing unbound-name
 error and code, with a hint attached in the existing hint form:
