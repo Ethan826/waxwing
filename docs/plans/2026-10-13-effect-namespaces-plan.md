@@ -150,6 +150,13 @@ module names.
     `Log.log`, each reach their own handler;
   - `1.5` and `x.y` give their errors (Review Focus 5);
   - `...` is unchanged.
+- [ ] Make `fail` an ordinary name. The parser stops intercepting
+  `fail(…)` (Format/Parse/Expression.purs `on "fail"`). The resolver
+  then binds `fail` through a temporary legacy global entry pointing at
+  Fail's operation, so unmigrated programs still compile. That entry is
+  marked as transitional in code and removed in Task 7.
+  - The resolved node for `fail(e)` and `Fail.fail(e)` is unchanged.
+  - Test: an existing `fail(E)` program gives identical Go.
 - [ ] Implement it. Bare names keep working, and the existing suite is
   unchanged.
 - [ ] Run verify and the differential, which should show only new
@@ -206,6 +213,15 @@ module names.
 - Rows resolve Console and Fail through the same declaration table as
   user effects.
 
+- [ ] Invariant: adding built-in declarations must preserve every
+  existing user `EffectId` and every emitted runtime key:
+  - host effects 0;
+  - user effects EffectId+1;
+  - Fail keys by head, Text MinInt32.
+
+  Built-ins must therefore not take positions in `program.effects`.
+  - Test: the services and Fail corpus programs emit byte-identical Go.
+  - The seven snapshots are unchanged.
 - [ ] Write the failing tests: `effect Console {…}` and `effect Fail
   {…}` are rejected, and today's Console and Fail programs are
   unchanged.
@@ -229,8 +245,41 @@ module names.
 - Update test/fx-gen-*.mjs so the generator emits qualified calls, and
   imports in some functions.
 
+- **Rejected programs.** Fixtures that fail before or during resolution
+  produce no resolved output.
+  - For those, the tool proposes candidate edits from the token stream:
+    a bare name followed by `(` that matches a declared operation. It
+    never edits them silently. Every such file and edit goes into an
+    explicit manifest, scripts/fx020-manual.json, which is reviewed
+    line by line.
+  - Programs that resolve are always rewritten from the resolver's
+    output.
+- **Edit map.** Every change the tool makes is recorded as an edit map
+  from original offsets to new ones. Each entry is an insertion
+  position plus a length, and wrapping adds line-break insertions. The
+  map is how pinned spans, notes and differential diagnostics are
+  translated. Wrapping long lines is a separate step with its own map,
+  never mixed with qualification in one edit.
+- **Paired differential mode.** This is a new script,
+  scripts/fx020-paired.mjs.
+  - It keeps a frozen copy of the original corpus and a baseline build
+    of the compiler from before Task 6.
+  - For each original and migrated pair, it compares:
+    - for accepted programs, the final emitted Go, which must be equal;
+    - for rejected programs, the diagnostic code, the message, and the
+      span and note positions mapped through the edit map.
+  - Intentional differences, such as new namespace errors and hints, are
+    listed in a narrow ledger file (scripts/fx020-expected.json) with a
+    reason for each. Any difference not in the ledger fails the run.
 - [ ] Write the failing tests for the tool itself. A fixture set must
   cover:
+  - a rejected program, with a syntax error and with an unbound name,
+    that contains an operation call, which must land in the manifest,
+    not be edited;
+  - edit-map translation of a span on the edited line, of a span after
+    a wrapped line, and of a span whose two ends move independently;
+  - the paired mode reporting an unexpected difference, plus one
+    ledger-listed difference that passes.
   - calls;
   - references;
   - shadowing locals left alone;
@@ -256,22 +305,27 @@ original text.
 
 - [ ] Run the tool across the corpus, in chunks by area.
   - Commit each chunk separately, with verify passing at each.
-  - Where a test pins a shifted span, move it by exactly the inserted
-    characters. Each commit message names the files whose pins moved.
-- [ ] Gate: build the paired differential. The original corpus on the
-  base compiler and the migrated corpus on the head compiler must
-  produce identical Go and identical diagnostics, apart from the
-  shifted columns, which are predicted by the inserted lengths.
+  - Where a test pins a span, translate it through that chunk's edit
+    map. Each commit message names the files whose pins moved.
+  - Manifest entries (rejected fixtures) are applied by hand in the same
+    chunk, each matching its manifest line.
+- [ ] Gate, for every chunk: the paired differential (Task 5) passes.
+  Accepted pairs give equal Go. Rejected pairs give equal diagnostics
+  through the edit map. Any other difference must be in the ledger,
+  with its reason.
 - [ ] Gate: the seven snapshots are unchanged.
-- [ ] Gate: no migrated line exceeds 80 columns. Wrap where needed.
+- [ ] Gate: no migrated line exceeds 80 columns. Wrapping is its own
+  commit per chunk, after qualification, with its own edit map and its
+  own paired-differential run.
 - [ ] Commit `style: FX020 migration, <area>`.
 
-### Task 7: Remove bare operations and the `fail` keyword
+### Task 7: Remove bare operations and the legacy `fail` binding
 
 **Files:**
 - src/Features/Resolve/Effect.purs: stop exporting operations into
   `globals`.
-- src/Format/Parse/Expression.purs: remove the `on "fail"` keyword path.
+- src/Features/Resolve: remove the transitional legacy `fail` global
+  from Task 2. The parser keyword path was already removed there.
 - src/Domain/Problem.purs `Hint` and Format/Diagnostic*: the
   unbound-name hint.
 - New scripts/regression-fx020.mjs and test/regression-fx020.mjs.
