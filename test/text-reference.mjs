@@ -2,7 +2,9 @@
 // the spec and sharing no code with the compiler: a literal decoder
 // (ordinary, raw, block and extended delimiters), the quoted printed form
 // of nested Text, and the code-point order. The FX001 interpreter uses it
-// for literals, printing and comparison.
+// for literals, printing and comparison. `decodeLiteral` and `scanLiteral`
+// assume valid input: they accept a mid-line `"""` in a block with no `#`
+// and holes spanning lines in one-line literals, which the compiler rejects.
 const escapeLetters = { n: '\n', t: '\t', r: '\r', '"': '"', '\\': '\\',
   $: '$' };
 const isSpace = ch => ch === ' ' || ch === '\t';
@@ -60,7 +62,9 @@ const scanBody = (source, from, hashes, block) => {
     const ch = source[at];
     if (source.startsWith(closer, at)
       && (!block || units.slice(lastBreak(units) + 1).every(isRawSpace))) {
-      if (hashes > 0 && source[at + closer.length] === '#') fail('too many hashes');
+      if (hashes > 0 && source[at + closer.length] === '#') {
+        fail('too many hashes');
+      }
       return { units, end: at + closer.length };
     }
     if (ch === '\r' && source[at + 1] === '\n') { at++; continue; }

@@ -94,14 +94,15 @@ const pool = ['a', 'b', 'Z', '0', ' ', ' ', '"', '"', '\\', '\\', '$', '$',
   '\u0085', '\u009f', ' ', 'é', ' ', ' ', '‪',
   '‮', '⁦', '⁩', ' ', '⁥', '⁪', '�',
   '￿', '', '～', '\u{10000}', '\u{1f600}', '\u{10ffff}',
-  '\u{1f468}‍\u{1f469}'];
-const chunks = ['${', '${x}', '"#', '"##', '\\#', '$#{', '\\u{41}', '"""',
+  '~', '\u2027', '\u0000', '\u{1f468}‍\u{1f469}'];
+const chunks = ['\n  \n', '\n\t\n', '\n \t \n', '\n \n',
+  '${', '${x}', '"#', '"##', '\\#', '$#{', '\\u{41}', '"""',
   '\\$', '#"'];
 
 // Random text of up to `length` pieces from the pool.
 export const randomText = (r, length = 12) => {
   const count = r.int(length + 1);
   const parts = Array.from({ length: count }, () =>
-    (r.chance(8) ? r.pick(chunks) : r.pick(pool)));
+    (r.chance(14) ? r.pick(chunks) : r.pick(pool)));
   return parts.join('');
 };
