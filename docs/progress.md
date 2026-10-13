@@ -4231,3 +4231,10 @@ when both are fail-free, `Expected nofail Log, found Log` when one may
 fail). An entry function taking the handlers as parameters could not be
 written: BACKLOG FX019 (the logger needs the named tail
 `Handler(nofail Log with Console + ...e)`). No compiler change.
+
+Verify (services-di, 2026-10-13): `rm -rf output && GOTOOLCHAIN=go1.26.4
+npm run verify` exit 0 (.build/services-di-verify.log): 1301/1301 parallel,
+53/53 serial, 84 regression proofs. A first run at load average about 25
+failed two serial timing tests (`a 5,000-parameter function type through
+generics builds in 10 s`, `20,000 let items compile in linear time`) and the
+rerun at lower load passed; the failure is recorded in the BACKLOG T007 row.

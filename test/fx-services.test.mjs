@@ -22,7 +22,8 @@ test('stateless fakes constructed and installed by their own main', () => {
 });
 
 test('the example matches its Go snapshot byte for byte', () => {
-  assert.equal(checked(scenario), readFileSync('bootstrap/services.go', 'utf8'));
+  assert.equal(checked(scenario),
+    readFileSync('bootstrap/services.go', 'utf8'));
 });
 
 test('a dropped handler: headline, origin, path and boundary notes', () => {

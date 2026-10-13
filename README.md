@@ -92,8 +92,8 @@ The program is checked end to end:
 
 - **Effects compose.** `audited` uses `fetch` and `stamp`, so its row must
   cover theirs. A function cannot perform an effect its signature omits.
-- **`main` must handle every effect** except Console. Drop the `with systemClock()`
-  line and the compiler explains where the requirement came from. This is
+- **`main` must handle every effect** except Console. Drop the
+  `with systemClock()` line and the compiler explains where the requirement came from. This is
 the JSON diagnostic, rendered:
 
   ```
@@ -164,6 +164,9 @@ documented evaluation order (ADR 008).
 
 **Typed failures.** A failure is an effect with a payload, handled
 precisely:
+
+(Waxwing has no comments yet. The `//` notes on this page are annotations
+for the reader, not part of the source.)
 
 ```rust
 type Error = NotFound(Int) | Forbidden;
@@ -394,8 +397,8 @@ type: the executable prints the value in the coverage-witness format (`5`,
 `true`, `Node(Leaf, 1, Node(...))`, negative integers with `-`), and
 examples/tree.wxw prints a binary search tree. examples/services.wxw composes
 services with overlapping effects (Database, Clock, Log) and constructs and
-installs its handlers in `main` (the tests inject fakes); a program using `defer` or `crash` that ends in a
-defect prints one report on stderr and exits 1. Comparisons are built in,
+installs its handlers in `main` (the tests inject fakes); a program using
+`defer` or `crash` that ends in a defect prints one report on stderr and exits 1. Comparisons are built in,
 non-chaining and looser than `+`, with one structural order (constructor
 declaration order, then fields left to right; ADR 005). `emit` writes
 canonical deterministic Go; `build` invokes Go on a temporary source file;

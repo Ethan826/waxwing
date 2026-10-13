@@ -35,8 +35,8 @@ export const dropped = scenario
   .replace('      }\n    }\n  };', '    }\n  };');
 
 // The effect-free baseline (ruling F6): each operation a plain function
-// parameter, each handler a lambda of the operations' types
-// built by a named constructor and passed where it was installed. Same declaration names.
+// parameter. Named constructors build the lambdas, and `main` passes them
+// where the handlers were installed. Declaration names are the same.
 // Every callback is `with pure`: a deferred callback of an open row (an
 // ambient one, or `with Console`, which keeps a rigid tail) is rejected by
 // the mark check, so the baseline's log lambda cannot print. Only its keys
