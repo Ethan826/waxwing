@@ -16,12 +16,15 @@ import { scalePrograms } from './text-scale-programs.mjs';
 // warm-up build, the minimum of three).
 const buildTimeoutMs = 120_000;
 const bounds = {
-  // Medians of five: compile 141 ms, go build 146 ms.
-  'a 1 MB literal': { compileMs: 3 * 141, buildMs: 3 * 146 },
+  // Medians of five: compile 141 ms. No go build bound: go build time for
+  // these two is Go's fixed startup (~130 ms) plus ~17/~4 ms of Waxwing
+  // output; a time bound there tests the host, not the compiler (user
+  // decision 2026-10-13). They still build, run and match exactly.
+  'a 1 MB literal': { compileMs: 3 * 141, buildMs: null },
   // Compile 521 ms, go build 709 ms.
   '10,000 interpolation parts': { compileMs: 3 * 521, buildMs: 3 * 709 },
-  // Compile 142 ms, go build 130 ms.
-  'a literal of 100,000 escapes': { compileMs: 3 * 142, buildMs: 3 * 130 }
+  // Compile 142 ms; no go build bound (see above).
+  'a literal of 100,000 escapes': { compileMs: 3 * 142, buildMs: null }
 };
 
 const buildOf = result => timedBuild(work => {
@@ -48,23 +51,26 @@ for (const program of scalePrograms) {
     const result = compile(program.source);
     const compileMs = performance.now() - started;
     assert.ok(result instanceof Right, 'program was rejected');
-    await warmUp();
+    const bound = bounds[program.name];
+    const timed = bound.buildMs !== null;
+    if (timed) await warmUp();
     const runs = [];
-    for (let run = 0; run < builds; run++) {
+    for (let run = 0; run < (timed ? builds : 1); run++) {
       runs.push(await buildOf(result.value0));
     }
     const buildMs = Math.min(...runs.map(one => one.buildMs));
-    const bound = bounds[program.name];
     t.diagnostic(`compile ${Math.round(compileMs)} ms, bound `
-      + `${bound.compileMs}; go build min of ${builds} `
-      + `${Math.round(buildMs)} ms, bound ${bound.buildMs}`);
+      + `${bound.compileMs}; go build ${Math.round(buildMs)} ms, bound `
+      + `${timed ? bound.buildMs : 'none'}`);
     for (const one of runs) {
       assert.equal(one.killed, false, `go build killed at ${buildTimeoutMs}`);
       assert.equal(one.status, 0, one.errors);
       assert.equal(one.stdout, program.expected);
     }
     assert.ok(compileMs <= bound.compileMs, `compile took ${compileMs} ms`);
-    assert.ok(buildMs <= bound.buildMs, `go build took ${buildMs} ms`);
+    if (timed) {
+      assert.ok(buildMs <= bound.buildMs, `go build took ${buildMs} ms`);
+    }
   });
 }
 

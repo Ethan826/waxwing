@@ -3,7 +3,7 @@
 Status: approved by the user section by section on 2026-10-13. This document
 records that design; the user must still review it before the plan is
 written. Implemented on branch `text` (plan Tasks 1-9), whole-branch
-review done (with fixes), awaiting the user's merge decision; ADR 011
+review done (with fixes), merged into main 2026-10-13; ADR 011
 records the decisions as built. It is the first of two specs in the tranche
 the user chose on 2026-10-13: Text first, then Records (R001,
 PureScript-style). Numbers and collections stay in D001.
@@ -104,7 +104,9 @@ a `main` that returns Text. As today, `print` and the printed result of
 - Every other printing rule is unchanged.
 
 **Multiline blocks.** A block opens with `"""` followed by a line break and
-closes with `"""` on its own line. The closing line's leading whitespace,
+closes with `"""` on its own line. Trailing whitespace after the opening
+`"""` stays an error (user, 2026-10-13), because the formatter will strip
+it. The closing line's leading whitespace,
 its *indent*, is removed from every content line.
 - The indent must be an exact character-for-character prefix of each
   content line, so tabs and spaces never mix silently. A content line

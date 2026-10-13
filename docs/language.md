@@ -513,7 +513,9 @@ code-point order, so Text fields take part in the structural order of ADR
 005 unchanged.
 
 Multiline blocks (text-block, text-block-errors). A block opens with `"""`
-followed by a line break and closes with `"""` on its own line. The closing
+followed by a line break and closes with `"""` on its own line. Trailing
+whitespace after the opening `"""` stays an error, because the formatter
+will strip it. The closing
 line's leading whitespace is the indent, removed from every content line;
 it must be an exact character-for-character prefix of each non-blank line,
 so a tab never stands for a space. A line indented less is `This line is

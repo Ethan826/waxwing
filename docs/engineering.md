@@ -91,7 +91,11 @@ adding a bypass allowlist.
   one warm-up build of a trivial program first, then each measured build is
   the minimum of three, since Go's fixed startup and link cost (about 130
   ms) is as large as the smaller bounds and load inflates single runs while
-  a real regression inflates all of them.
+  a real regression inflates all of them. Only the 10,000-part case keeps a
+  `go build` bound: for the 1 MB literal and the 100,000-escape program,
+  `go build` time is Go's fixed startup (~130 ms) plus ~17/~4 ms of Waxwing
+  output, so a time bound there tests the host, not the compiler (user
+  decision 2026-10-13); they still build, run and match exactly.
   Under verify's load the measured figures stayed inside the bounds, but
   they are not guaranteed to on a busy host (T003 exposure). FN006's 20,000-parameter timing suite
   is now test/fn-linear-timing.serial.test.mjs, separate from the existing
@@ -182,8 +186,8 @@ adding a bypass allowlist.
   test/text-scale.serial.test.mjs (a serial test): a 1 MB literal, 10,000
   interpolation parts and a literal of 100,000 escapes each compile and run,
   and emission is deterministic. Each bound is 3x the median of five runs
-  on the development host, for the in-process compile and for `go build`
-  alone (figures in docs/progress.md, Text entry). Examples are snapshotted
+  on the development host, for the in-process compile and, for the
+  10,000-part case only, for `go build` alone (figures in docs/progress.md, Text entry). Examples are snapshotted
   byte for byte (examples/text.wxw to bootstrap/text.go,
   test/text-literal.test.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):

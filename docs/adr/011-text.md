@@ -1,7 +1,7 @@
 # ADR 011: Text, literals, interpolation and `show`
 
 Implemented on branch `text` 2026-10-13 (plan Tasks 1-9), whole-branch
-review done (with fixes); awaiting the user's merge decision. Binding spec:
+review done (with fixes); merged into main 2026-10-13. Binding spec:
 docs/plans/2026-10-13-text-design.md, with its plan-time amendments and its
 "as built" notes; plan docs/plans/2026-10-13-text-plan.md; evidence
 docs/progress.md ("Text v1"). Builds on ADR 005 (structural order), ADR 006
