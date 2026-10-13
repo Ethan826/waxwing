@@ -35,11 +35,11 @@ test('p2: the callback lacks L, which the body only performs later', () => {
   });
 });
 
-test('p3: named tails print labels only', () => {
+test('p3: the headline prints labels only, the hint keeps the named tail', () => {
   expectDiagnostic(effects + 'fn a(q: Int -> Int with L + ...e, x: Int): Int '
     + 'with M + L + ...e = q(x);' + main, {
     code: 'E_EFFECT',
-    message: lacks('q', 'M + L', 'is L', written('q', 'M + L')),
+    message: lacks('q', 'M + L', 'is L', written('q', 'M + L + ...e')),
     at: ['q(x)'],
     notes: [['q: Int -> Int with L + ...e', 'with L + ...e',
       'q\'s row is written here'],
@@ -159,5 +159,20 @@ test('a callee pairing with an installed duplicate keeps the old message', () =>
       [around, around, 'Log is handled here'],
       [': Unit with Log + ...e =', 'with Log + ...e',
         'the signature of around does not allow Log']]
+  });
+});
+
+test('a named tail and a Fail payload: the hint writes the row as written', () => {
+  expectDiagnostic('type E = E; effect L { fn l(): Int; }; '
+    + 'fn a(q: Int -> Int with Fail(E) + ...e, x: Int): Int '
+    + 'with L + Fail(E) + ...e = q(x);' + main, {
+    code: 'E_EFFECT',
+    message: lacks('q', 'L + Fail(E)', 'is Fail(E)',
+      written('q', 'L + Fail(E) + ...e')),
+    at: ['q(x)'],
+    notes: [['q: Int -> Int with Fail(E) + ...e', 'with Fail(E) + ...e',
+      'q\'s row is written here'],
+    [': Int with L + Fail(E) + ...e =', 'with L + Fail(E) + ...e',
+      'a\'s row is written here']]
   });
 });

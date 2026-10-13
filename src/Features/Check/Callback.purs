@@ -14,7 +14,7 @@ import Domain.Type (Ty, TyRow)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Provenance (Callee, Consumed(..), Origin)
 import Features.Check.Report (noteAt)
-import Features.Check.RowName (labelName)
+import Features.Check.RowName (labelName, tailName)
 import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.Subst (Flex, resolveRow)
 
@@ -62,12 +62,22 @@ lacking env state origin named calleeRow = do
         ( CallbackRowLacks (_.name <$> named) env.functionName caller
             (nonEmpty callee)
         )
-        (CallbackRow (_.name <$> named) caller)
+        (CallbackRow (_.name <$> named) (caller <> written))
     , span: origin.span
     , related: notes env named
     }
   where
+  written = writtenTail env state
   nonEmpty text = if text == "" then Nothing else Just text
+
+-- The hint writes the row as the caller wrote it: a named tail stays, the
+-- ambient one (no name) is implicit.
+writtenTail ∷ ∀ r. CheckEnv r → State → String
+writtenTail env state = maybe "" named tail
+  where
+  Row _ tail = resolveRow state.subst (flexibleRow env.current)
+  named variable = tailText (tailName env variable)
+  tailText name = if name == "" then "" else " + ..." <> name
 
 -- The labels of the current row, which is the signature's own.
 signatureLabels ∷ ∀ r. CheckEnv r → State → Array (Label (Ty Flex))

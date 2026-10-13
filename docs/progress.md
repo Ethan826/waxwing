@@ -4127,9 +4127,10 @@ are unchanged (differential: only the new-text programs differ). Recorded limits
 lambda-bound callee is `this function value` (the resolved syntax keeps no
 local's name); an unannotated arrow's note points at the parameter's name
 (no type span is kept); a call inside a `with` or `handle`, and a
-callback passed as an argument, keep their old text; a named tail is
-dropped from the hint's row (labels only, as approved). Tests:
-test/fx017-callback-row.test.mjs (11, seen failing first); regression row
+callback passed as an argument, keep their old text (BACKLOG FX018); the
+hint writes the caller's row as written, so a named tail stays (p3:
+`with M + L + ...e`) and the ambient tail is omitted, while the headline
+prints labels only. Tests: test/fx017-callback-row.test.mjs (13); regression row
 `fx-callback-row`. Subsumption of the callback's row stays with FX007.
 
 Verify: `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0

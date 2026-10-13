@@ -406,7 +406,8 @@ Limits, stated plainly.
   label: `fn a(q: Int -> Int with L, x: Int): Int with L + M = q(x)` is
   rejected (FX017) with `q must allow every effect of a (L + M), but its
   row is L; write q's row as `with L + M`; a callback's row must equal its
-  caller's (FX017)`, notes at both written rows. A callback with no `with`
+  caller's (FX017)`, notes at both written rows. The hint writes the
+  caller's row as written, so a named tail stays (`with M + L + ...e`). A callback with no `with`
   reads `but its row has no labels`; a callee that is not a parameter reads
   `this function value`. Workaround: write the callback's row as the
   caller's full row (`q: Int -> Int with L + M`).
