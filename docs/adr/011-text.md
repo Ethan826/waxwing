@@ -1,7 +1,7 @@
 # ADR 011: Text, literals, interpolation and `show`
 
-Implemented on branch `text` 2026-10-13 (plan Tasks 1-9), pending
-the whole-branch review and merge. Binding spec:
+Implemented on branch `text` 2026-10-13 (plan Tasks 1-9), whole-branch
+review done (with fixes); awaiting the user's merge decision. Binding spec:
 docs/plans/2026-10-13-text-design.md, with its plan-time amendments and its
 "as built" notes; plan docs/plans/2026-10-13-text-plan.md; evidence
 docs/progress.md ("Text v1"). Builds on ADR 005 (structural order), ADR 006
@@ -96,7 +96,7 @@ Decisions made while building, none adding user-facing text beyond spec §6:
   runs from the opening delimiter to the CR, possibly across lines. Only LF
   or CRLF ends a `#` line literal. A backslash before a line break in a block
   is `Unknown escape \` (spanning the backslash and its `#`s). `"""` at end of
-  file is `""" must be followed by a line break`.
+  file is `Unterminated text literal`.
 - **Dedent ordering.** The indent is known only at the closing line, so a
   closed block's own chunks are rescanned with it (Format.Lex.Dedent); any
   error from the first scan wins over an under-indent error.
@@ -110,7 +110,9 @@ Decisions made while building, none adding user-facing text beyond spec §6:
   `++` needed the parser's `chainLeft1` generalised to `chainLeftAny`, which
   tags each operand with the operator before it.
 - **Boundaries of a hole** are counted over tokens, so a nested literal is
-  one whole token. A hole may span lines only inside a block.
+  one whole token. A hole may span lines inside a block, and also when a
+  `"""` block is nested in a one-line literal's hole: `"a ${ """` then
+  an indented `inner` line and a closing `"""` line `} b"` prints `a inner b`.
 - **Gate allowance.** The pure layers may import exactly Data.Enum
   (`toEnum`/`fromEnum` between Int and CodePoint); `enums` was already in
   the build through `strings`, so no new code entered, and the structure

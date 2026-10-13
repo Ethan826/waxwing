@@ -17,10 +17,7 @@ sameRow one@(Row oneLabels oneTail) other@(Row otherLabels otherTail)
   | Array.null oneLabels && Array.null otherLabels = oneTail == otherTail
   | otherwise = one == other
 
--- An application's row arguments, compared before its type arguments so
--- that the type arguments' comparison, which recurses, stays last: a
--- deeply applied type then costs the stack it did before rows (P001 R7
--- headroom). Rows are shallow; none costs no dictionary.
+-- Compared before type arguments; the order is set in Core's instance.
 sameRows ∷ ∀ a v. Eq a ⇒ Eq v ⇒ Array (Row a v) → Array (Row a v) → Boolean
 sameRows one other = Array.null one && Array.null other || one == other
 

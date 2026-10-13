@@ -1,4 +1,4 @@
-# Waxwing / Text v1 done on branch `text`; whole-branch review next (2026-10-13)
+# Waxwing / Text v1 done on branch `text`; review done (with fixes), merge decision next (2026-10-13)
 
 Text v1 (BACKLOG D001, first tranche) is implemented on branch `text` (worktree
 `.worktrees/text`, rebased onto main 0b1f850): Tasks 1-9 of
@@ -10,7 +10,7 @@ Order from here:
 1. The whole-branch review of `text` (Opus), then its fixes and the user's
    merge decision.
 2. Phase 2 of the 80-column sweep (scripts/width.mjs): the text-touched files
-   that phase 1 left (about 98 lines over 80 across 462 files at the end of
+   that phase 1 left (about 98 lines over 80 across 468 files at the end of
    Task 9, in docs/engineering.md, scripts/structure.mjs and several tests).
    The width.mjs argv guard and the fence toggle for mixed fence characters
    are phase-2 items.

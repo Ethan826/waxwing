@@ -2,10 +2,11 @@
 
 Status: approved by the user section by section on 2026-10-13. This document
 records that design; the user must still review it before the plan is
-written. Implemented on branch `text` (plan Tasks 1-9), pending the
-whole-branch review; ADR 011 records the decisions as built. It is the
-first of two specs in the tranche the user chose on 2026-10-13: Text first,
-then Records (R001, PureScript-style). Numbers and collections stay in D001.
+written. Implemented on branch `text` (plan Tasks 1-9), whole-branch
+review done (with fixes), awaiting the user's merge decision; ADR 011
+records the decisions as built. It is the first of two specs in the tranche
+the user chose on 2026-10-13: Text first, then Records (R001,
+PureScript-style). Numbers and collections stay in D001.
 
 ## Purpose
 

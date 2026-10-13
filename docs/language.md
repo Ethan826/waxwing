@@ -494,7 +494,8 @@ other types go through `show(x)`, and a non-Text hole is the ordinary E_TYPE
 (`"a ${f("b ${c}")} d"`). A hole ends at the `}` that balances it, counted
 over tokens: braces of blocks, handlers and matches inside the hole count,
 and a nested literal is one token, so braces and quotes inside it do not. A
-hole reaching the end of its line (a `"""` block's holes may span lines) or
+hole reaching the end of its line (a `"""` block's holes may span lines, and
+so may a hole holding a nested block) or
 the end of the file is `Unterminated interpolation`. `${}` is `Expected an
 expression`, `\$` is a literal `$` (so `\${` writes `${`), and a `$` not
 followed by `{` is literal. Parts are evaluated left to right, each once,
