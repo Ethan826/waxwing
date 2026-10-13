@@ -1,0 +1,451 @@
+1: fn plain(): Text = "a\n\t\r\"\\\$ \u{1F600} \q \u{} \u{110000x}";
+  "fn" keyword.declaration
+  " " 
+  "plain" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "a" string.quoted.double
+  "\\n" string.quoted.double constant.character.escape
+  "\\t" string.quoted.double constant.character.escape
+  "\\r" string.quoted.double constant.character.escape
+  "\\\"" string.quoted.double constant.character.escape
+  "\\\\" string.quoted.double constant.character.escape
+  "\\$" string.quoted.double constant.character.escape
+  " " string.quoted.double
+  "\\u{1F600}" string.quoted.double constant.character.escape
+  " " string.quoted.double
+  "\\q" string.quoted.double invalid.illegal.escape
+  " " string.quoted.double
+  "\\u" string.quoted.double invalid.illegal.escape
+  "{} " string.quoted.double
+  "\\u" string.quoted.double invalid.illegal.escape
+  "{110000x}" string.quoted.double
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+2: fn empty(): Text = "";
+  "fn" keyword.declaration
+  " " 
+  "empty" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+3: fn dollar(): Text = "cost $5 and \${not} but ${name}";
+  "fn" keyword.declaration
+  " " 
+  "dollar" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "cost $5 and " string.quoted.double
+  "\\$" string.quoted.double constant.character.escape
+  "{not} but " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "name" string.quoted.double meta.interpolation variable.other
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+4: fn nested(): Text = "a ${f("b ${c} \"q\"")} d";
+  "fn" keyword.declaration
+  " " 
+  "nested" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "a " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "f" string.quoted.double meta.interpolation variable.other
+  "(" string.quoted.double meta.interpolation punctuation.section.parens
+  "\"" string.quoted.double meta.interpolation string.quoted.double punctuation.definition.string.begin
+  "b " string.quoted.double meta.interpolation string.quoted.double
+  "${" string.quoted.double meta.interpolation string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "c" string.quoted.double meta.interpolation string.quoted.double meta.interpolation variable.other
+  "}" string.quoted.double meta.interpolation string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  " " string.quoted.double meta.interpolation string.quoted.double
+  "\\\"" string.quoted.double meta.interpolation string.quoted.double constant.character.escape
+  "q" string.quoted.double meta.interpolation string.quoted.double
+  "\\\"" string.quoted.double meta.interpolation string.quoted.double constant.character.escape
+  "\"" string.quoted.double meta.interpolation string.quoted.double punctuation.definition.string.end
+  ")" string.quoted.double meta.interpolation punctuation.section.parens
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  " d" string.quoted.double
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+5: fn braces(): Text = "x ${{ let y = 1; y }} z ${match n { 1 => "one", _ => "}" }}";
+  "fn" keyword.declaration
+  " " 
+  "braces" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "x " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "{" string.quoted.double meta.interpolation meta.braces
+  " " string.quoted.double meta.interpolation meta.braces
+  "let" string.quoted.double meta.interpolation meta.braces keyword.declaration
+  " " string.quoted.double meta.interpolation meta.braces
+  "y" string.quoted.double meta.interpolation meta.braces variable.other
+  " " string.quoted.double meta.interpolation meta.braces
+  "=" string.quoted.double meta.interpolation meta.braces keyword.operator.assignment
+  " " string.quoted.double meta.interpolation meta.braces
+  "1" string.quoted.double meta.interpolation meta.braces constant.numeric.integer
+  ";" string.quoted.double meta.interpolation meta.braces punctuation.separator
+  " " string.quoted.double meta.interpolation meta.braces
+  "y" string.quoted.double meta.interpolation meta.braces variable.other
+  " " string.quoted.double meta.interpolation meta.braces
+  "}" string.quoted.double meta.interpolation meta.braces
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  " z " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "match" string.quoted.double meta.interpolation keyword.control
+  " " string.quoted.double meta.interpolation
+  "n" string.quoted.double meta.interpolation variable.other
+  " " string.quoted.double meta.interpolation
+  "{" string.quoted.double meta.interpolation meta.braces
+  " " string.quoted.double meta.interpolation meta.braces
+  "1" string.quoted.double meta.interpolation meta.braces constant.numeric.integer
+  " " string.quoted.double meta.interpolation meta.braces
+  "=>" string.quoted.double meta.interpolation meta.braces keyword.operator.arrow
+  " " string.quoted.double meta.interpolation meta.braces
+  "\"" string.quoted.double meta.interpolation meta.braces string.quoted.double punctuation.definition.string.begin
+  "one" string.quoted.double meta.interpolation meta.braces string.quoted.double
+  "\"" string.quoted.double meta.interpolation meta.braces string.quoted.double punctuation.definition.string.end
+  "," string.quoted.double meta.interpolation meta.braces punctuation.separator
+  " " string.quoted.double meta.interpolation meta.braces
+  "_" string.quoted.double meta.interpolation meta.braces variable.language.wildcard
+  " " string.quoted.double meta.interpolation meta.braces
+  "=>" string.quoted.double meta.interpolation meta.braces keyword.operator.arrow
+  " " string.quoted.double meta.interpolation meta.braces
+  "\"" string.quoted.double meta.interpolation meta.braces string.quoted.double punctuation.definition.string.begin
+  "}" string.quoted.double meta.interpolation meta.braces string.quoted.double
+  "\"" string.quoted.double meta.interpolation meta.braces string.quoted.double punctuation.definition.string.end
+  " " string.quoted.double meta.interpolation meta.braces
+  "}" string.quoted.double meta.interpolation meta.braces
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+  "\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+6: fn open(): Text = "unterminated ${f(x)
+  "fn" keyword.declaration
+  " " 
+  "open" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "unterminated " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "f" string.quoted.double meta.interpolation variable.other
+  "(" string.quoted.double meta.interpolation punctuation.section.parens
+  "x" string.quoted.double meta.interpolation variable.other
+  ")" string.quoted.double meta.interpolation punctuation.section.parens
+7: fn after(): Int = -42;
+  "fn" keyword.declaration
+  " " 
+  "after" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "-42" constant.numeric.integer
+  ";" punctuation.separator
+8: fn raw1(): Text = #"no \n escape, "quote" and \#n and $#{name} and ${x}"#;
+  "fn" keyword.declaration
+  " " 
+  "raw1" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "#\"" string.quoted.other.raw punctuation.definition.string.begin
+  "no \\n escape, \"quote\" and " string.quoted.other.raw
+  "\\#n" string.quoted.other.raw constant.character.escape
+  " and " string.quoted.other.raw
+  "$#{" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.begin
+  "name" string.quoted.other.raw meta.interpolation variable.other
+  "}" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
+  " and ${x}" string.quoted.other.raw
+  "\"#" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+9: fn raw2(): Text = ##"a "# b "#" c \##t \#t $##{x} $#{y}"##;
+  "fn" keyword.declaration
+  " " 
+  "raw2" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "##\"" string.quoted.other.raw punctuation.definition.string.begin
+  "a \"# b \"#\" c " string.quoted.other.raw
+  "\\##t" string.quoted.other.raw constant.character.escape
+  " \\#t " string.quoted.other.raw
+  "$##{" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.begin
+  "x" string.quoted.other.raw meta.interpolation variable.other
+  "}" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
+  " $#{y}" string.quoted.other.raw
+  "\"##" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+10: fn raw3(): Text = ###"\###u{41} \###u{zz} "## "###;
+  "fn" keyword.declaration
+  " " 
+  "raw3" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "###\"" string.quoted.other.raw punctuation.definition.string.begin
+  "\\###u{41}" string.quoted.other.raw constant.character.escape
+  " " string.quoted.other.raw
+  "\\###u" string.quoted.other.raw invalid.illegal.escape
+  "{zz} \"## " string.quoted.other.raw
+  "\"###" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+11: fn raw7(): Text = #######"deep "###### still "#######;
+  "fn" keyword.declaration
+  " " 
+  "raw7" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "#######\"" string.quoted.other.raw punctuation.definition.string.begin
+  "deep \"###### still " string.quoted.other.raw
+  "\"#######" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+12: fn rawnest(): Text = #"a $#{f(##"inner "# $##{z}"##)} b"#;
+  "fn" keyword.declaration
+  " " 
+  "rawnest" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "#\"" string.quoted.other.raw punctuation.definition.string.begin
+  "a " string.quoted.other.raw
+  "$#{" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.begin
+  "f" string.quoted.other.raw meta.interpolation variable.other
+  "(" string.quoted.other.raw meta.interpolation punctuation.section.parens
+  "##\"" string.quoted.other.raw meta.interpolation string.quoted.other.raw punctuation.definition.string.begin
+  "inner \"# " string.quoted.other.raw meta.interpolation string.quoted.other.raw
+  "$##{" string.quoted.other.raw meta.interpolation string.quoted.other.raw meta.interpolation punctuation.section.interpolation.begin
+  "z" string.quoted.other.raw meta.interpolation string.quoted.other.raw meta.interpolation variable.other
+  "}" string.quoted.other.raw meta.interpolation string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
+  "\"##" string.quoted.other.raw meta.interpolation string.quoted.other.raw punctuation.definition.string.end
+  ")" string.quoted.other.raw meta.interpolation punctuation.section.parens
+  "}" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
+  " b" string.quoted.other.raw
+  "\"#" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+13: fn block(): Text = """
+  "fn" keyword.declaration
+  " " 
+  "block" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "\"\"\"" string.quoted.double punctuation.definition.string.begin
+14:   line one \n ${a}
+  "  line one " string.quoted.double
+  "\\n" string.quoted.double constant.character.escape
+  " " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "a" string.quoted.double meta.interpolation variable.other
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+15:     indented "quoted" ""
+  "    indented \"quoted\" \"\"" string.quoted.double
+16:   ${f("""
+  "  " string.quoted.double
+  "${" string.quoted.double meta.interpolation punctuation.section.interpolation.begin
+  "f" string.quoted.double meta.interpolation variable.other
+  "(" string.quoted.double meta.interpolation punctuation.section.parens
+  "\"\"\"" string.quoted.double meta.interpolation string.quoted.double punctuation.definition.string.begin
+17:     inner
+  "    inner" string.quoted.double meta.interpolation string.quoted.double
+18:     """)}
+  "    " string.quoted.double meta.interpolation string.quoted.double
+  "\"\"\"" string.quoted.double meta.interpolation string.quoted.double punctuation.definition.string.end
+  ")" string.quoted.double meta.interpolation punctuation.section.parens
+  "}" string.quoted.double meta.interpolation punctuation.section.interpolation.end
+19:   end \q
+  "  end " string.quoted.double
+  "\\q" string.quoted.double invalid.illegal.escape
+20:   """;
+  "  " string.quoted.double
+  "\"\"\"" string.quoted.double punctuation.definition.string.end
+  ";" punctuation.separator
+21: fn rawblock(): Text = #"""
+  "fn" keyword.declaration
+  " " 
+  "rawblock" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Text" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "#\"\"\"" string.quoted.other.raw punctuation.definition.string.begin
+22:   raw "" """ not closed \n \#n
+  "  raw \"\" \"\"\" not closed \\n " string.quoted.other.raw
+  "\\#n" string.quoted.other.raw constant.character.escape
+23:   $#{
+  "  " string.quoted.other.raw
+  "$#{" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.begin
+24:     name
+  "    " string.quoted.other.raw meta.interpolation
+  "name" string.quoted.other.raw meta.interpolation variable.other
+25:   }
+  "  " string.quoted.other.raw meta.interpolation
+  "}" string.quoted.other.raw meta.interpolation punctuation.section.interpolation.end
+26:   """#;
+  "  " string.quoted.other.raw
+  "\"\"\"#" string.quoted.other.raw punctuation.definition.string.end
+  ";" punctuation.separator
+27: fn ops(): Bool = 1 + -2 ++ "x" == y |> z != w <= 3 >= 4 < 5 > 6;
+  "fn" keyword.declaration
+  " " 
+  "ops" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Bool" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "1" constant.numeric.integer
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "-2" constant.numeric.integer
+  " " 
+  "++" keyword.operator.join
+  " " 
+  "\"" string.quoted.double punctuation.definition.string.begin
+  "x" string.quoted.double
+  "\"" string.quoted.double punctuation.definition.string.end
+  " " 
+  "==" keyword.operator.comparison
+  " " 
+  "y" variable.other
+  " " 
+  "|>" keyword.operator.arrow
+  " " 
+  "z" variable.other
+  " " 
+  "!=" keyword.operator.comparison
+  " " 
+  "w" variable.other
+  " " 
+  "<=" keyword.operator.comparison
+  " " 
+  "3" constant.numeric.integer
+  " " 
+  ">=" keyword.operator.comparison
+  " " 
+  "4" constant.numeric.integer
+  " " 
+  "<" keyword.operator.comparison
+  " " 
+  "5" constant.numeric.integer
+  " " 
+  ">" keyword.operator.comparison
+  " " 
+  "6" constant.numeric.integer
+  ";" punctuation.separator
+28: fn mods(): Unit with pure = handle nofail(k) Log ...e;
+  "fn" keyword.declaration
+  " " 
+  "mods" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Unit" support.type.builtin
+  " " 
+  "with" keyword.control
+  " " 
+  "pure" storage.modifier.contextual
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "handle" keyword.control
+  " " 
+  "nofail" storage.modifier.contextual
+  "(" punctuation.section.parens
+  "k" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "Log" entity.name.type
+  " " 
+  "..." keyword.operator.spread
+  "e" variable.other
+  ";" punctuation.separator
+29: 
+  "" 

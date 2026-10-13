@@ -1,0 +1,1408 @@
+1: type List(a) = Nil | Cons(a, List(a));
+  "type" keyword.declaration
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Nil" entity.name.type
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+2: type Maybe(a) = Nothing | Just(a);
+  "type" keyword.declaration
+  " " 
+  "Maybe" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Nothing" entity.name.type
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Just" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+3: type Pair(a, b) = Pair(a, b);
+  "type" keyword.declaration
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+4: type Either(a, b) = Left(a) | Right(b);
+  "type" keyword.declaration
+  " " 
+  "Either" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Left" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Right" entity.name.type
+  "(" punctuation.section.parens
+  "b" variable.other
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+5: type Tree(a) = Leaf | Node(Tree(a), a, Tree(a));
+  "type" keyword.declaration
+  " " 
+  "Tree" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Leaf" entity.name.type
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Node" entity.name.type
+  "(" punctuation.section.parens
+  "Tree" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "Tree" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+6: 
+  "" 
+7: fn length(xs: List(a)): Int = match xs {
+  "fn" keyword.declaration
+  " " 
+  "length" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+8:   Nil => 0,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "0" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+9:   Cons(_, rest) => 1 + length(rest),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "_" meta.braces variable.language.wildcard
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "1" meta.braces constant.numeric.integer
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "length" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+10: };
+  "}" meta.braces
+  ";" punctuation.separator
+11: 
+  "" 
+12: fn append(xs: List(a), ys: List(a)): List(a) = match xs {
+  "fn" keyword.declaration
+  " " 
+  "append" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "ys" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+13:   Nil => ys,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "ys" meta.braces variable.other
+  "," meta.braces punctuation.separator
+14:   Cons(x, rest) => Cons(x, append(rest, ys)),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "append" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "rest" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "ys" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+15: };
+  "}" meta.braces
+  ";" punctuation.separator
+16: 
+  "" 
+17: fn reverseOnto(xs: List(a), done: List(a)): List(a) = match xs {
+  "fn" keyword.declaration
+  " " 
+  "reverseOnto" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "done" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+18:   Nil => done,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "done" meta.braces variable.other
+  "," meta.braces punctuation.separator
+19:   Cons(x, rest) => reverseOnto(rest, Cons(x, done)),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "reverseOnto" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "rest" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "done" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+20: };
+  "}" meta.braces
+  ";" punctuation.separator
+21: 
+  "" 
+22: fn reverse(xs: List(a)): List(a) = reverseOnto(xs, Nil);
+  "fn" keyword.declaration
+  " " 
+  "reverse" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "reverseOnto" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  "," punctuation.separator
+  " " 
+  "Nil" entity.name.type
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+23: 
+  "" 
+24: fn zip(xs: List(a), ys: List(b)): List(Pair(a, b)) = match Pair(xs, ys) {
+  "fn" keyword.declaration
+  " " 
+  "zip" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "ys" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "b" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "xs" variable.other
+  "," punctuation.separator
+  " " 
+  "ys" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "{" meta.braces
+25:   Pair(Cons(x, xr), Cons(y, yr)) => Cons(Pair(x, y), zip(xr, yr)),
+  "  " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "xr" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "y" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "yr" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "y" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "zip" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "xr" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "yr" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+26:   _ => Nil,
+  "  " meta.braces
+  "_" meta.braces variable.language.wildcard
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+27: };
+  "}" meta.braces
+  ";" punctuation.separator
+28: 
+  "" 
+29: fn headOr(xs: List(a), fallback: a): a = match xs {
+  "fn" keyword.declaration
+  " " 
+  "headOr" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "fallback" variable.other
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+30:   Nil => fallback,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "fallback" meta.braces variable.other
+  "," meta.braces punctuation.separator
+31:   Cons(x, _) => x,
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "_" meta.braces variable.language.wildcard
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+32: };
+  "}" meta.braces
+  ";" punctuation.separator
+33: 
+  "" 
+34: fn last(xs: List(a)): Maybe(a) = match xs {
+  "fn" keyword.declaration
+  " " 
+  "last" variable.other
+  "(" punctuation.section.parens
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Maybe" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+35:   Nil => Nothing,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nothing" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+36:   Cons(x, Nil) => Just(x),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Just" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+37:   Cons(_, rest) => last(rest),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "_" meta.braces variable.language.wildcard
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "last" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+38: };
+  "}" meta.braces
+  ";" punctuation.separator
+39: 
+  "" 
+40: fn take(count: Int, xs: List(a)): List(a) =
+  "fn" keyword.declaration
+  " " 
+  "take" variable.other
+  "(" punctuation.section.parens
+  "count" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+41:   if count <= 0 then Nil
+  "  " 
+  "if" keyword.control
+  " " 
+  "count" variable.other
+  " " 
+  "<=" keyword.operator.comparison
+  " " 
+  "0" constant.numeric.integer
+  " " 
+  "then" keyword.control
+  " " 
+  "Nil" entity.name.type
+42:   else match xs {
+  "  " 
+  "else" keyword.control
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+43:     Nil => Nil,
+  "    " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+44:     Cons(x, rest) => Cons(x, take(count + -1, rest)),
+  "    " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "take" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "count" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "-1" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+45:   };
+  "  " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+46: 
+  "" 
+47: fn drop(count: Int, xs: List(a)): List(a) =
+  "fn" keyword.declaration
+  " " 
+  "drop" variable.other
+  "(" punctuation.section.parens
+  "count" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+48:   if count <= 0 then xs
+  "  " 
+  "if" keyword.control
+  " " 
+  "count" variable.other
+  " " 
+  "<=" keyword.operator.comparison
+  " " 
+  "0" constant.numeric.integer
+  " " 
+  "then" keyword.control
+  " " 
+  "xs" variable.other
+49:   else match xs {
+  "  " 
+  "else" keyword.control
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+50:     Nil => Nil,
+  "    " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+51:     Cons(_, rest) => drop(count + -1, rest),
+  "    " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "_" meta.braces variable.language.wildcard
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "drop" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "count" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "-1" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+52:   };
+  "  " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+53: 
+  "" 
+54: fn fromMaybe(m: Maybe(a), fallback: a): a = match m {
+  "fn" keyword.declaration
+  " " 
+  "fromMaybe" variable.other
+  "(" punctuation.section.parens
+  "m" variable.other
+  ":" punctuation.separator
+  " " 
+  "Maybe" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "fallback" variable.other
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "m" variable.other
+  " " 
+  "{" meta.braces
+55:   Nothing => fallback,
+  "  " meta.braces
+  "Nothing" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "fallback" meta.braces variable.other
+  "," meta.braces punctuation.separator
+56:   Just(x) => x,
+  "  " meta.braces
+  "Just" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+57: };
+  "}" meta.braces
+  ";" punctuation.separator
+58: 
+  "" 
+59: fn fst(p: Pair(a, b)): a = match p { Pair(x, _) => x };
+  "fn" keyword.declaration
+  " " 
+  "fst" variable.other
+  "(" punctuation.section.parens
+  "p" variable.other
+  ":" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "p" variable.other
+  " " 
+  "{" meta.braces
+  " " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "_" meta.braces variable.language.wildcard
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "x" meta.braces variable.other
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+60: 
+  "" 
+61: fn snd(p: Pair(a, b)): b = match p { Pair(_, y) => y };
+  "fn" keyword.declaration
+  " " 
+  "snd" variable.other
+  "(" punctuation.section.parens
+  "p" variable.other
+  ":" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "b" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "p" variable.other
+  " " 
+  "{" meta.braces
+  " " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "_" meta.braces variable.language.wildcard
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "y" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "y" meta.braces variable.other
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+62: 
+  "" 
+63: fn swap(p: Pair(a, b)): Pair(b, a) = match p { Pair(x, y) => Pair(y, x) };
+  "fn" keyword.declaration
+  " " 
+  "swap" variable.other
+  "(" punctuation.section.parens
+  "p" variable.other
+  ":" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "b" variable.other
+  "," punctuation.separator
+  " " 
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "p" variable.other
+  " " 
+  "{" meta.braces
+  " " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "y" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "y" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+64: 
+  "" 
+65: fn size(t: Tree(a)): Int = match t {
+  "fn" keyword.declaration
+  " " 
+  "size" variable.other
+  "(" punctuation.section.parens
+  "t" variable.other
+  ":" punctuation.separator
+  " " 
+  "Tree" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "t" variable.other
+  " " 
+  "{" meta.braces
+66:   Leaf => 0,
+  "  " meta.braces
+  "Leaf" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "0" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+67:   Node(left, _, right) => size(left) + 1 + size(right),
+  "  " meta.braces
+  "Node" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "_" meta.braces variable.language.wildcard
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "size" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "1" meta.braces constant.numeric.integer
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "size" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+68: };
+  "}" meta.braces
+  ";" punctuation.separator
+69: 
+  "" 
+70: fn larger(x: Int, y: Int): Int = if x < y then y else x;
+  "fn" keyword.declaration
+  " " 
+  "larger" variable.other
+  "(" punctuation.section.parens
+  "x" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "y" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "if" keyword.control
+  " " 
+  "x" variable.other
+  " " 
+  "<" keyword.operator.comparison
+  " " 
+  "y" variable.other
+  " " 
+  "then" keyword.control
+  " " 
+  "y" variable.other
+  " " 
+  "else" keyword.control
+  " " 
+  "x" variable.other
+  ";" punctuation.separator
+71: 
+  "" 
+72: fn depth(t: Tree(a)): Int = match t {
+  "fn" keyword.declaration
+  " " 
+  "depth" variable.other
+  "(" punctuation.section.parens
+  "t" variable.other
+  ":" punctuation.separator
+  " " 
+  "Tree" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "t" variable.other
+  " " 
+  "{" meta.braces
+73:   Leaf => 0,
+  "  " meta.braces
+  "Leaf" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "0" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+74:   Node(left, _, right) => 1 + larger(depth(left), depth(right)),
+  "  " meta.braces
+  "Node" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "_" meta.braces variable.language.wildcard
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "1" meta.braces constant.numeric.integer
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "larger" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "depth" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "depth" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+75: };
+  "}" meta.braces
+  ";" punctuation.separator
+76: 
+  "" 
+77: fn flatten(t: Tree(a)): List(a) = match t {
+  "fn" keyword.declaration
+  " " 
+  "flatten" variable.other
+  "(" punctuation.section.parens
+  "t" variable.other
+  ":" punctuation.separator
+  " " 
+  "Tree" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "t" variable.other
+  " " 
+  "{" meta.braces
+78:   Leaf => Nil,
+  "  " meta.braces
+  "Leaf" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+79:   Node(left, x, right) => append(flatten(left), Cons(x, flatten(right))),
+  "  " meta.braces
+  "Node" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "append" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "flatten" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "flatten" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+80: };
+  "}" meta.braces
+  ";" punctuation.separator
+81: 
+  "" 
+82: fn leftOr(e: Either(a, b), fallback: a): a = match e {
+  "fn" keyword.declaration
+  " " 
+  "leftOr" variable.other
+  "(" punctuation.section.parens
+  "e" variable.other
+  ":" punctuation.separator
+  " " 
+  "Either" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "fallback" variable.other
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "e" variable.other
+  " " 
+  "{" meta.braces
+83:   Left(x) => x,
+  "  " meta.braces
+  "Left" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+84:   Right(_) => fallback,
+  "  " meta.braces
+  "Right" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "_" meta.braces variable.language.wildcard
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "fallback" meta.braces variable.other
+  "," meta.braces punctuation.separator
+85: };
+  "}" meta.braces
+  ";" punctuation.separator
+86: 
+  "" 
+87: fn main(): Pair(List(Pair(Int, Bool)), Maybe(Int)) =
+  "fn" keyword.declaration
+  " " 
+  "main" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "Bool" support.type.builtin
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "Maybe" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+88:   Pair(
+  "  " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+89:     zip(reverse(Cons(1, Cons(2, Cons(3, Nil)))), Cons(true, Cons(false, Nil))),
+  "    " 
+  "zip" variable.other
+  "(" punctuation.section.parens
+  "reverse" variable.other
+  "(" punctuation.section.parens
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "1" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "2" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "3" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Nil" entity.name.type
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "true" constant.language.boolean
+  "," punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "false" constant.language.boolean
+  "," punctuation.separator
+  " " 
+  "Nil" entity.name.type
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  "," punctuation.separator
+90:     last(flatten(Node(Node(Leaf, 4, Leaf), 5, Node(Leaf, 6, Leaf))))
+  "    " 
+  "last" variable.other
+  "(" punctuation.section.parens
+  "flatten" variable.other
+  "(" punctuation.section.parens
+  "Node" entity.name.type
+  "(" punctuation.section.parens
+  "Node" entity.name.type
+  "(" punctuation.section.parens
+  "Leaf" entity.name.type
+  "," punctuation.separator
+  " " 
+  "4" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Leaf" entity.name.type
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "5" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Node" entity.name.type
+  "(" punctuation.section.parens
+  "Leaf" entity.name.type
+  "," punctuation.separator
+  " " 
+  "6" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Leaf" entity.name.type
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+91:   );
+  "  " 
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+92: 
+  "" 

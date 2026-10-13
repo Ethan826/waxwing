@@ -1,0 +1,571 @@
+1: type List(a) = Nil | Cons(a, List(a));
+  "type" keyword.declaration
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Nil" entity.name.type
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+2: type Pair(a, b) = Pair(a, b);
+  "type" keyword.declaration
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  "," punctuation.separator
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+3: 
+  "" 
+4: fn map(f: a -> b, xs: List(a)): List(b) = match xs {
+  "fn" keyword.declaration
+  " " 
+  "map" variable.other
+  "(" punctuation.section.parens
+  "f" variable.other
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "->" keyword.operator.arrow
+  " " 
+  "b" variable.other
+  "," punctuation.separator
+  " " 
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "b" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+5:   Nil => Nil,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+6:   Cons(x, rest) => Cons(f(x), map(f, rest)),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "f" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "map" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "f" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+7: };
+  "}" meta.braces
+  ";" punctuation.separator
+8: 
+  "" 
+9: fn filter(keep: a -> Bool, xs: List(a)): List(a) = match xs {
+  "fn" keyword.declaration
+  " " 
+  "filter" variable.other
+  "(" punctuation.section.parens
+  "keep" variable.other
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "->" keyword.operator.arrow
+  " " 
+  "Bool" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+10:   Nil => Nil,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Nil" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+11:   Cons(x, rest) =>
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+12:     if keep(x) then Cons(x, filter(keep, rest)) else filter(keep, rest),
+  "    " meta.braces
+  "if" meta.braces keyword.control
+  " " meta.braces
+  "keep" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "then" meta.braces keyword.control
+  " " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "filter" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "keep" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "else" meta.braces keyword.control
+  " " meta.braces
+  "filter" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "keep" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+13: };
+  "}" meta.braces
+  ";" punctuation.separator
+14: 
+  "" 
+15: fn foldLeft(f: (b, a) -> b, acc: b, xs: List(a)): b = match xs {
+  "fn" keyword.declaration
+  " " 
+  "foldLeft" variable.other
+  "(" punctuation.section.parens
+  "f" variable.other
+  ":" punctuation.separator
+  " " 
+  "(" punctuation.section.parens
+  "b" variable.other
+  "," punctuation.separator
+  " " 
+  "a" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "->" keyword.operator.arrow
+  " " 
+  "b" variable.other
+  "," punctuation.separator
+  " " 
+  "acc" variable.other
+  ":" punctuation.separator
+  " " 
+  "b" variable.other
+  "," punctuation.separator
+  " " 
+  "xs" variable.other
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "a" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "b" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "xs" variable.other
+  " " 
+  "{" meta.braces
+16:   Nil => acc,
+  "  " meta.braces
+  "Nil" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "acc" meta.braces variable.other
+  "," meta.braces punctuation.separator
+17:   Cons(x, rest) => foldLeft(f, f(acc, x), rest),
+  "  " meta.braces
+  "Cons" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "x" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "foldLeft" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "f" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "f" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "acc" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "x" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "rest" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+18: };
+  "}" meta.braces
+  ";" punctuation.separator
+19: 
+  "" 
+20: fn compose(f: b -> c, g: a -> b): a -> c = fn(x) => f(g(x));
+  "fn" keyword.declaration
+  " " 
+  "compose" variable.other
+  "(" punctuation.section.parens
+  "f" variable.other
+  ":" punctuation.separator
+  " " 
+  "b" variable.other
+  " " 
+  "->" keyword.operator.arrow
+  " " 
+  "c" variable.other
+  "," punctuation.separator
+  " " 
+  "g" variable.other
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "->" keyword.operator.arrow
+  " " 
+  "b" variable.other
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "a" variable.other
+  " " 
+  "->" keyword.operator.arrow
+  " " 
+  "c" variable.other
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "fn" keyword.declaration
+  "(" punctuation.section.parens
+  "x" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=>" keyword.operator.arrow
+  " " 
+  "f" variable.other
+  "(" punctuation.section.parens
+  "g" variable.other
+  "(" punctuation.section.parens
+  "x" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+21: 
+  "" 
+22: fn add(x: Int, y: Int): Int = x + y;
+  "fn" keyword.declaration
+  " " 
+  "add" variable.other
+  "(" punctuation.section.parens
+  "x" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "y" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "x" variable.other
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "y" variable.other
+  ";" punctuation.separator
+23: 
+  "" 
+24: fn double(x: Int): Int = x + x;
+  "fn" keyword.declaration
+  " " 
+  "double" variable.other
+  "(" punctuation.section.parens
+  "x" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "x" variable.other
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "x" variable.other
+  ";" punctuation.separator
+25: 
+  "" 
+26: fn upTo(n: Int): List(Int) = if n <= 0 then Nil else Cons(n, upTo(n + -1));
+  "fn" keyword.declaration
+  " " 
+  "upTo" variable.other
+  "(" punctuation.section.parens
+  "n" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "if" keyword.control
+  " " 
+  "n" variable.other
+  " " 
+  "<=" keyword.operator.comparison
+  " " 
+  "0" constant.numeric.integer
+  " " 
+  "then" keyword.control
+  " " 
+  "Nil" entity.name.type
+  " " 
+  "else" keyword.control
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "n" variable.other
+  "," punctuation.separator
+  " " 
+  "upTo" variable.other
+  "(" punctuation.section.parens
+  "n" variable.other
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "-1" constant.numeric.integer
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+27: 
+  "" 
+28: fn main(): Pair(Int, List(Int)) =
+  "fn" keyword.declaration
+  " " 
+  "main" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "List" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  " " 
+  "=" keyword.operator.assignment
+29:   Pair(
+  "  " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+30:     upTo(5) |> filter(fn(x) => x > 2) |> map(compose(add(1), double))
+  "    " 
+  "upTo" variable.other
+  "(" punctuation.section.parens
+  "5" constant.numeric.integer
+  ")" punctuation.section.parens
+  " " 
+  "|>" keyword.operator.arrow
+  " " 
+  "filter" variable.other
+  "(" punctuation.section.parens
+  "fn" keyword.declaration
+  "(" punctuation.section.parens
+  "x" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "=>" keyword.operator.arrow
+  " " 
+  "x" variable.other
+  " " 
+  ">" keyword.operator.comparison
+  " " 
+  "2" constant.numeric.integer
+  ")" punctuation.section.parens
+  " " 
+  "|>" keyword.operator.arrow
+  " " 
+  "map" variable.other
+  "(" punctuation.section.parens
+  "compose" variable.other
+  "(" punctuation.section.parens
+  "add" variable.other
+  "(" punctuation.section.parens
+  "1" constant.numeric.integer
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "double" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+31:       |> foldLeft(add, 0),
+  "      " 
+  "|>" keyword.operator.arrow
+  " " 
+  "foldLeft" variable.other
+  "(" punctuation.section.parens
+  "add" variable.other
+  "," punctuation.separator
+  " " 
+  "0" constant.numeric.integer
+  ")" punctuation.section.parens
+  "," punctuation.separator
+32:     map(add(100), Cons(1, Cons(2, Nil)))
+  "    " 
+  "map" variable.other
+  "(" punctuation.section.parens
+  "add" variable.other
+  "(" punctuation.section.parens
+  "100" constant.numeric.integer
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "1" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Cons" entity.name.type
+  "(" punctuation.section.parens
+  "2" constant.numeric.integer
+  "," punctuation.separator
+  " " 
+  "Nil" entity.name.type
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+33:   );
+  "  " 
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+34: 
+  "" 

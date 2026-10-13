@@ -1,0 +1,190 @@
+1: type Shape = Dot | Square(Int) | Pair(Shape, Shape);
+  "type" keyword.declaration
+  " " 
+  "Shape" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "Dot" entity.name.type
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Square" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  " " 
+  "|" punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "Shape" entity.name.type
+  "," punctuation.separator
+  " " 
+  "Shape" entity.name.type
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+2: 
+  "" 
+3: fn size(s: Shape): Int = match s {
+  "fn" keyword.declaration
+  " " 
+  "size" variable.other
+  "(" punctuation.section.parens
+  "s" variable.other
+  ":" punctuation.separator
+  " " 
+  "Shape" entity.name.type
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "match" keyword.control
+  " " 
+  "s" variable.other
+  " " 
+  "{" meta.braces
+4:   Dot => 1,
+  "  " meta.braces
+  "Dot" meta.braces entity.name.type
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "1" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+5:   Square(side) => side + side + side + side,
+  "  " meta.braces
+  "Square" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "side" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "side" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "side" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "side" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "side" meta.braces variable.other
+  "," meta.braces punctuation.separator
+6:   Pair(Dot, Dot) => 2,
+  "  " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "Dot" meta.braces entity.name.type
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "Dot" meta.braces entity.name.type
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "2" meta.braces constant.numeric.integer
+  "," meta.braces punctuation.separator
+7:   Pair(left, right) => match left {
+  "  " meta.braces
+  "Pair" meta.braces entity.name.type
+  "(" meta.braces punctuation.section.parens
+  "left" meta.braces variable.other
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "right" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "match" meta.braces keyword.control
+  " " meta.braces
+  "left" meta.braces variable.other
+  " " meta.braces
+  "{" meta.braces meta.braces
+8:     Dot => 100 + size(right),
+  "    " meta.braces meta.braces
+  "Dot" meta.braces meta.braces entity.name.type
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "100" meta.braces meta.braces constant.numeric.integer
+  " " meta.braces meta.braces
+  "+" meta.braces meta.braces keyword.operator.arithmetic
+  " " meta.braces meta.braces
+  "size" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "right" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  "," meta.braces meta.braces punctuation.separator
+9:     _ => size(left) + size(right),
+  "    " meta.braces meta.braces
+  "_" meta.braces meta.braces variable.language.wildcard
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "size" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "left" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "+" meta.braces meta.braces keyword.operator.arithmetic
+  " " meta.braces meta.braces
+  "size" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "right" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  "," meta.braces meta.braces punctuation.separator
+10:   },
+  "  " meta.braces meta.braces
+  "}" meta.braces meta.braces
+  "," meta.braces punctuation.separator
+11: };
+  "}" meta.braces
+  ";" punctuation.separator
+12: 
+  "" 
+13: fn main(): Int = size(Pair(Square(3), Pair(Dot, Square(2))));
+  "fn" keyword.declaration
+  " " 
+  "main" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "size" variable.other
+  "(" punctuation.section.parens
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "Square" entity.name.type
+  "(" punctuation.section.parens
+  "3" constant.numeric.integer
+  ")" punctuation.section.parens
+  "," punctuation.separator
+  " " 
+  "Pair" entity.name.type
+  "(" punctuation.section.parens
+  "Dot" entity.name.type
+  "," punctuation.separator
+  " " 
+  "Square" entity.name.type
+  "(" punctuation.section.parens
+  "2" constant.numeric.integer
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+14: 
+  "" 

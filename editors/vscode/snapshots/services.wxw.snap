@@ -1,0 +1,570 @@
+1: effect Database { fn query(id: Int): Int; };
+  "effect" keyword.declaration
+  " " 
+  "Database" entity.name.type
+  " " 
+  "{" meta.braces
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "query" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+2: effect Clock { fn now(): Int; };
+  "effect" keyword.declaration
+  " " 
+  "Clock" entity.name.type
+  " " 
+  "{" meta.braces
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "now" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+3: effect Log { fn log(n: Int): Unit; };
+  "effect" keyword.declaration
+  " " 
+  "Log" entity.name.type
+  " " 
+  "{" meta.braces
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Unit" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+4: 
+  "" 
+5: fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
+  "fn" keyword.declaration
+  " " 
+  "closeLog" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Unit" support.type.builtin
+  " " 
+  "with" keyword.control
+  " " 
+  "nofail" storage.modifier.contextual
+  " " 
+  "Log" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "log" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "1000" constant.numeric.integer
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+6: 
+  "" 
+7: fn fetch(id: Int): Int with Database + Log = {
+  "fn" keyword.declaration
+  " " 
+  "fetch" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "with" keyword.control
+  " " 
+  "Database" entity.name.type
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "Log" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "{" meta.braces
+8:   let row = query(id);
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "row" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "query" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+9:   log(row);
+  "  " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "row" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+10:   row
+  "  " meta.braces
+  "row" meta.braces variable.other
+11: };
+  "}" meta.braces
+  ";" punctuation.separator
+12: 
+  "" 
+13: fn stamp(id: Int): Int with Clock + Log = {
+  "fn" keyword.declaration
+  " " 
+  "stamp" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "with" keyword.control
+  " " 
+  "Clock" entity.name.type
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "Log" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "{" meta.braces
+14:   let at = now();
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "at" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "now" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+15:   log(at + id);
+  "  " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "at" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+16:   at
+  "  " meta.braces
+  "at" meta.braces variable.other
+17: };
+  "}" meta.braces
+  ";" punctuation.separator
+18: 
+  "" 
+19: fn audited(id: Int): Int with Database + Clock + nofail Log = {
+  "fn" keyword.declaration
+  " " 
+  "audited" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  " " 
+  "with" keyword.control
+  " " 
+  "Database" entity.name.type
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "Clock" entity.name.type
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "nofail" storage.modifier.contextual
+  " " 
+  "Log" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "{" meta.braces
+20:   defer closeLog(id);
+  "  " meta.braces
+  "defer" meta.braces keyword.control
+  " " meta.braces
+  "closeLog" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+21:   defer log(id);
+  "  " meta.braces
+  "defer" meta.braces keyword.control
+  " " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+22:   fetch(id) + stamp(id)
+  "  " meta.braces
+  "fetch" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "stamp" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+23: };
+  "}" meta.braces
+  ";" punctuation.separator
+24: 
+  "" 
+25: fn report(first: Int, second: Int): Int
+  "fn" keyword.declaration
+  " " 
+  "report" variable.other
+  "(" punctuation.section.parens
+  "first" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  "," punctuation.separator
+  " " 
+  "second" variable.other
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Int" support.type.builtin
+26:     with Database + Clock + nofail Log =
+  "    " 
+  "with" keyword.control
+  " " 
+  "Database" entity.name.type
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "Clock" entity.name.type
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "nofail" storage.modifier.contextual
+  " " 
+  "Log" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+27:   audited(first) + audited(second);
+  "  " 
+  "audited" variable.other
+  "(" punctuation.section.parens
+  "first" variable.other
+  ")" punctuation.section.parens
+  " " 
+  "+" keyword.operator.arithmetic
+  " " 
+  "audited" variable.other
+  "(" punctuation.section.parens
+  "second" variable.other
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+28: 
+  "" 
+29: fn main(): Unit with Console = {
+  "fn" keyword.declaration
+  " " 
+  "main" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " " 
+  "Unit" support.type.builtin
+  " " 
+  "with" keyword.control
+  " " 
+  "Console" entity.name.type
+  " " 
+  "=" keyword.operator.assignment
+  " " 
+  "{" meta.braces
+30:   let live = true;
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "live" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "true" meta.braces constant.language.boolean
+  ";" meta.braces punctuation.separator
+31:   let database = if live then handler Database { query(id) => id + id }
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "database" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "if" meta.braces keyword.control
+  " " meta.braces
+  "live" meta.braces variable.other
+  " " meta.braces
+  "then" meta.braces keyword.control
+  " " meta.braces
+  "handler" meta.braces keyword.declaration
+  " " meta.braces
+  "Database" meta.braces entity.name.type
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "query" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "id" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "id" meta.braces meta.braces variable.other
+  " " meta.braces meta.braces
+  "+" meta.braces meta.braces keyword.operator.arithmetic
+  " " meta.braces meta.braces
+  "id" meta.braces meta.braces variable.other
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+32:     else handler Database { query(id) => 7 };
+  "    " meta.braces
+  "else" meta.braces keyword.control
+  " " meta.braces
+  "handler" meta.braces keyword.declaration
+  " " meta.braces
+  "Database" meta.braces entity.name.type
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "query" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "id" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "7" meta.braces meta.braces constant.numeric.integer
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+  ";" meta.braces punctuation.separator
+33:   let clock = if live then handler Clock { now() => 100 }
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "clock" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "if" meta.braces keyword.control
+  " " meta.braces
+  "live" meta.braces variable.other
+  " " meta.braces
+  "then" meta.braces keyword.control
+  " " meta.braces
+  "handler" meta.braces keyword.declaration
+  " " meta.braces
+  "Clock" meta.braces entity.name.type
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "now" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "100" meta.braces meta.braces constant.numeric.integer
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+34:     else handler Clock { now() => 0 };
+  "    " meta.braces
+  "else" meta.braces keyword.control
+  " " meta.braces
+  "handler" meta.braces keyword.declaration
+  " " meta.braces
+  "Clock" meta.braces entity.name.type
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "now" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "0" meta.braces meta.braces constant.numeric.integer
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+  ";" meta.braces punctuation.separator
+35:   let logger = if live then handler Log { log(n) => print(n) }
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "logger" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "if" meta.braces keyword.control
+  " " meta.braces
+  "live" meta.braces variable.other
+  " " meta.braces
+  "then" meta.braces keyword.control
+  " " meta.braces
+  "handler" meta.braces keyword.declaration
+  " " meta.braces
+  "Log" meta.braces entity.name.type
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "log" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "n" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "print" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "n" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+36:     else handler Log { log(n) => () };
+  "    " meta.braces
+  "else" meta.braces keyword.control
+  " " meta.braces
+  "handler" meta.braces keyword.declaration
+  " " meta.braces
+  "Log" meta.braces entity.name.type
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "log" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "n" meta.braces meta.braces variable.other
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "=>" meta.braces meta.braces keyword.operator.arrow
+  " " meta.braces meta.braces
+  "(" meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces punctuation.section.parens
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+  ";" meta.braces punctuation.separator
+37:   with database { with clock { with logger {
+  "  " meta.braces
+  "with" meta.braces keyword.control
+  " " meta.braces
+  "database" meta.braces variable.other
+  " " meta.braces
+  "{" meta.braces meta.braces
+  " " meta.braces meta.braces
+  "with" meta.braces meta.braces keyword.control
+  " " meta.braces meta.braces
+  "clock" meta.braces meta.braces variable.other
+  " " meta.braces meta.braces
+  "{" meta.braces meta.braces meta.braces
+  " " meta.braces meta.braces meta.braces
+  "with" meta.braces meta.braces meta.braces keyword.control
+  " " meta.braces meta.braces meta.braces
+  "logger" meta.braces meta.braces meta.braces variable.other
+  " " meta.braces meta.braces meta.braces
+  "{" meta.braces meta.braces meta.braces meta.braces
+38:     print(report(1, 2));
+  "    " meta.braces meta.braces meta.braces meta.braces
+  "print" meta.braces meta.braces meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  "report" meta.braces meta.braces meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  "1" meta.braces meta.braces meta.braces meta.braces constant.numeric.integer
+  "," meta.braces meta.braces meta.braces meta.braces punctuation.separator
+  " " meta.braces meta.braces meta.braces meta.braces
+  "2" meta.braces meta.braces meta.braces meta.braces constant.numeric.integer
+  ")" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  ";" meta.braces meta.braces meta.braces meta.braces punctuation.separator
+39:     print(report(3, 4))
+  "    " meta.braces meta.braces meta.braces meta.braces
+  "print" meta.braces meta.braces meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  "report" meta.braces meta.braces meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  "3" meta.braces meta.braces meta.braces meta.braces constant.numeric.integer
+  "," meta.braces meta.braces meta.braces meta.braces punctuation.separator
+  " " meta.braces meta.braces meta.braces meta.braces
+  "4" meta.braces meta.braces meta.braces meta.braces constant.numeric.integer
+  ")" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces meta.braces meta.braces punctuation.section.parens
+40:   } } }
+  "  " meta.braces meta.braces meta.braces meta.braces
+  "}" meta.braces meta.braces meta.braces meta.braces
+  " " meta.braces meta.braces meta.braces
+  "}" meta.braces meta.braces meta.braces
+  " " meta.braces meta.braces
+  "}" meta.braces meta.braces
+41: };
+  "}" meta.braces
+  ";" punctuation.separator
+42: 
+  "" 

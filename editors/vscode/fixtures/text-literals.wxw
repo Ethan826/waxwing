@@ -1,0 +1,28 @@
+fn plain(): Text = "a\n\t\r\"\\\$ \u{1F600} \q \u{} \u{110000x}";
+fn empty(): Text = "";
+fn dollar(): Text = "cost $5 and \${not} but ${name}";
+fn nested(): Text = "a ${f("b ${c} \"q\"")} d";
+fn braces(): Text = "x ${{ let y = 1; y }} z ${match n { 1 => "one", _ => "}" }}";
+fn open(): Text = "unterminated ${f(x)
+fn after(): Int = -42;
+fn raw1(): Text = #"no \n escape, "quote" and \#n and $#{name} and ${x}"#;
+fn raw2(): Text = ##"a "# b "#" c \##t \#t $##{x} $#{y}"##;
+fn raw3(): Text = ###"\###u{41} \###u{zz} "## "###;
+fn raw7(): Text = #######"deep "###### still "#######;
+fn rawnest(): Text = #"a $#{f(##"inner "# $##{z}"##)} b"#;
+fn block(): Text = """
+  line one \n ${a}
+    indented "quoted" ""
+  ${f("""
+    inner
+    """)}
+  end \q
+  """;
+fn rawblock(): Text = #"""
+  raw "" """ not closed \n \#n
+  $#{
+    name
+  }
+  """#;
+fn ops(): Bool = 1 + -2 ++ "x" == y |> z != w <= 3 >= 4 < 5 > 6;
+fn mods(): Unit with pure = handle nofail(k) Log ...e;

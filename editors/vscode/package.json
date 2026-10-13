@@ -1,0 +1,28 @@
+{
+  "name": "waxwing-vscode",
+  "displayName": "Waxwing",
+  "description": "Syntax highlighting for the Waxwing language.",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "waxwing-local",
+  "license": "UNLICENSED",
+  "engines": { "vscode": "^1.80.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "waxwing",
+        "aliases": ["Waxwing", "waxwing"],
+        "extensions": [".wxw"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "waxwing",
+        "scopeName": "source.waxwing",
+        "path": "./syntaxes/waxwing.tmLanguage.json"
+      }
+    ]
+  }
+}
