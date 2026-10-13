@@ -80,6 +80,7 @@ pairStart = case _ of
   '>' → true
   '-' → true
   '|' → true
+  '+' → true
   _ → false
 
 lex ∷ String → Either Diagnostic (Array Token)
@@ -159,7 +160,7 @@ twoCharacter source index = Array.find (eq pair) twoCharacterTokens
   pair = String.slice index (index + 2) source
 
 twoCharacterTokens ∷ Array String
-twoCharacterTokens = [ "=>", "==", "!=", "<=", ">=", "->", "|>" ]
+twoCharacterTokens = [ "=>", "==", "!=", "<=", ">=", "->", "|>", "++" ]
 
 -- Tokens never contain a newline, so a token only moves the column.
 emit ∷ String → Scan → Scan

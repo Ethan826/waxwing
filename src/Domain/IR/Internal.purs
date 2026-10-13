@@ -121,6 +121,7 @@ data Node
   | Call FunctionId (Array Expr)
   | Construct CtorId (Array Expr)
   | Add Expr Expr
+  | Concat Expr Expr
   | Compare Operator Expr Expr
   | If Expr Expr Expr
   | Match Expr (Array Arm)

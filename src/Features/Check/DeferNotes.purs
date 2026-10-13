@@ -131,6 +131,7 @@ parts (Checked.Expr expression) = case expression.node of
   Checked.Call _ _ arguments → arguments
   Checked.Construct _ _ arguments → arguments
   Checked.Add left right → [ left, right ]
+  Checked.Concat left right → [ left, right ]
   Checked.Compare _ left right → [ left, right ]
   Checked.If condition yes no → [ condition, yes, no ]
   Checked.Match scrutinee arms → Array.cons scrutinee (map armBody arms)

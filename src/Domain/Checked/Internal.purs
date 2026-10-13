@@ -67,6 +67,7 @@ data Node
   | Call FunctionId Instantiation (Array Expr)
   | Construct CtorId Instantiation (Array Expr)
   | Add Expr Expr
+  | Concat Expr Expr
   | Compare Operator Expr Expr
   | If Expr Expr Expr
   | Match Expr (Array Arm)

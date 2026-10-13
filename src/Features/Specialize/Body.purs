@@ -71,6 +71,7 @@ copyNode scope span = case _ of
     <$> ownerCtor scope span id instantiation
     <*> each arguments
   Checked.Add left right → IR.Add <$> recur left <*> recur right
+  Checked.Concat left right → IR.Concat <$> recur left <*> recur right
   Checked.Compare operator left right → IR.Compare operator <$> recur left
     <*> recur right
   Checked.If condition yes no → IR.If <$> recur condition <*> recur yes

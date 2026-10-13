@@ -106,6 +106,7 @@ firstFail (Checked.Expr expression) = case expression.node of
   Checked.Call _ _ arguments → firstIn arguments
   Checked.Construct _ _ arguments → firstIn arguments
   Checked.Add left right → firstIn [ left, right ]
+  Checked.Concat left right → firstIn [ left, right ]
   Checked.Compare _ left right → firstIn [ left, right ]
   Checked.If condition yes no → firstIn [ condition, yes, no ]
   Checked.Match scrutinee arms → firstIn
@@ -150,6 +151,7 @@ firstUnkeyed subst (Checked.Expr expression) = case expression.node of
   Checked.Call _ _ arguments → firstIn arguments
   Checked.Construct _ _ arguments → firstIn arguments
   Checked.Add left right → firstIn [ left, right ]
+  Checked.Concat left right → firstIn [ left, right ]
   Checked.Compare _ left right → firstIn [ left, right ]
   Checked.If condition yes no → firstIn [ condition, yes, no ]
   Checked.Match scrutinee arms → firstIn

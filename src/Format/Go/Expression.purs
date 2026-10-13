@@ -46,6 +46,7 @@ expression scope next whole@(IR.Expr term) = case term.node of
   IR.Construct id arguments →
     named scope lower next (ctorWrapper scope.shape id) whole arguments
   IR.Add left right → pair addition left right
+  IR.Concat left right → pair concatenation left right
   IR.Compare operator left right →
     pair (comparison operator (IR.typeOf left)) left right
   IR.If condition yes no →
@@ -88,6 +89,9 @@ joined render parts =
 
 addition ∷ String → String → String
 addition left right = "waxwingAdd(" <> left <> ", " <> right <> ")"
+
+concatenation ∷ String → String → String
+concatenation left right = "(" <> left <> " + " <> right <> ")"
 
 -- `if` keeps its immediately invoked closure; nested `if` branches build
 -- at the nesting limit (test/depth.test.mjs), unlike nested match closures.

@@ -19,7 +19,7 @@ module Format.Parse.Grammar
   , sepBy1
   , sepByTrailing1
   , commaList
-  , chainLeft1
+  , chainLeftAny
   , chainRight
   , manyOn
   , spanned
@@ -62,6 +62,7 @@ import Format.Parse.Steps
   , refineAt
   , spannedAt
   , takeAt
+  , taggedAt
   )
 import Format.Stack as Stack
 
@@ -151,14 +152,19 @@ sepByTrailing1 separator close item =
 commaList ∷ ∀ a. Parser a → Parser (Array a)
 commaList item = dispatch [ on ")" (pure []) ] (sepBy1 "," item)
 
--- Folds left in a loop: a `op` b `op` c is (a `op` b) `op` c. Each operator
--- pushes the operands before it one level deeper, and each later operand
--- is nested, so the counted depth is the depth of the left-nested tree.
-chainLeft1 ∷ ∀ a. String → (a → a → a) → Parser a → Parser a
-chainLeft1 operator combine item = Parser
-  ( foldAt (shifting nestingLimit operator) identity combine (run item)
-      (run (nested item))
+-- Folds left in a loop: a `op` b `op` c is (a `op` b) `op` c, where the
+-- operators are any of `operators`, mixed freely (`combine` is given the
+-- one read). Each operator pushes the operands before it one level deeper,
+-- and each later operand is nested, so the counted depth is the depth of
+-- the left-nested tree.
+chainLeftAny
+  ∷ ∀ a. Array String → (String → a → a → a) → Parser a → Parser a
+chainLeftAny operators combine item = Parser
+  ( foldAt (shifting nestingLimit operators) _.value step (taggedAt (run item))
+      (taggedAt (run (nested item)))
   )
+  where
+  step left right = combine right.operator left right.value
 
 -- `a -> b -> c`: the items before each operator, one level deeper, and the
 -- last, which is not (Cursor `rightAt`); the caller folds them right.

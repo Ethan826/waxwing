@@ -95,7 +95,8 @@ out('dollar', 'Some("\\${x} $ {} \\${")\n');
 out('empty', 'Some("")\n');
 out('nonprint', 'Some("\\u{85}\u{a0}\\u{7f}\u{fffd}\\u{2028}\\u{2029}'
   + '\\u{1f}\\u{9f}\u{ad}")\n');
-out('bidi', 'Some("\\u{202a}\\u{202e}\\u{2066}\\u{2069}\u{202f}\u{2065}\u{206a}")\n');
+out('bidi', 'Some("\\u{202a}\\u{202e}\\u{2066}\\u{2069}'
+  + '\u{202f}\u{2065}\u{206a}")\n');
 out('show data', 'true\n');
 out('show text', 'true\n');
 out('show int', 'true\n');

@@ -225,11 +225,11 @@ trailing separator close state
   | peekText (skip state) == close = Right (Done (skip state))
   | otherwise = Right (Loop (skip state))
 
--- An operator after an operand: E_NESTING at the operator when the operands
--- before it would be pushed past the limit.
-shifting ∷ Int → String → Continue
-shifting limit operator state
-  | peekText state /= operator = Right (Done state)
+-- One of the operators after an operand: E_NESTING at the operator when
+-- the operands before it would be pushed past the limit.
+shifting ∷ Int → Array String → Continue
+shifting limit operators state
+  | not (Array.elem (peekText state) operators) = Right (Done state)
   | state.peak >= limit = tooDeep limit state
   | otherwise = Right (Loop (skip (deepen state)))
 

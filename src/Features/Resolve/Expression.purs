@@ -32,6 +32,8 @@ expression scope = case _ of
   Syntax.Call span name arguments → callName scope span name arguments
   Syntax.Add span left right → Resolved.Add span <$> nested left
     <*> nested right
+  Syntax.Concat span left right → Resolved.Concat span <$> nested left
+    <*> nested right
   Syntax.Compare span operator left right → Resolved.Compare span operator
     <$> nested left
     <*> nested right

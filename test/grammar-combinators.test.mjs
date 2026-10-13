@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { Left, Right } from '../output/Data.Either/index.js';
 import { endPosition, lex } from '../output/Format.Lex/index.js';
 import {
-  applicativeParser, chainLeft1, commaList, initialState, name, run, spanned
+  applicativeParser, chainLeftAny, commaList, initialState, name, run,
+  spanned
 } from '../output/Format.Parse.Grammar/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
 
@@ -30,9 +31,11 @@ const failed = (parser, source) => {
 
 const text = found => found.text;
 const pair = left => right => ({ left, right });
+const plus = () => pair;
+const tagged = operator => left => right => ({ operator, left, right });
 
-test('chainLeft1 nests to the left and drops the operator tokens', () => {
-  const sum = chainLeft1('+')(pair)(name);
+test('chainLeftAny nests to the left and drops the operator tokens', () => {
+  const sum = chainLeftAny(['+'])(plus)(name);
   const result = parsed(sum, 'a + b + c ;');
   assert.deepEqual(
     [result.value.left.left.text, result.value.left.right.text,
@@ -40,8 +43,8 @@ test('chainLeft1 nests to the left and drops the operator tokens', () => {
   assert.equal(result.next, 5, 'stops before the token after the chain');
 });
 
-test('chainLeft1 returns a lone item and fails on a dangling operator', () => {
-  const sum = chainLeft1('+')(pair)(name);
+test('chainLeftAny returns a lone item, fails on a dangling one', () => {
+  const sum = chainLeftAny(['+'])(plus)(name);
   const single = parsed(sum, 'a ;');
   assert.equal(single.value.text, 'a');
   assert.equal(single.next, 1);
@@ -49,6 +52,15 @@ test('chainLeft1 returns a lone item and fails on a dangling operator', () => {
     { at: 3, message: 'Expected an identifier' });
   assert.deepEqual(failed(sum, 'a + ;'),
     { at: 4, message: 'Expected an identifier' });
+});
+
+test('chainLeftAny hands each operator read to combine, in order', () => {
+  const sum = chainLeftAny(['+', '++'])(tagged)(name);
+  const { value, next } = parsed(sum, 'a + b ++ c ;');
+  assert.deepEqual([value.operator, value.left.operator,
+    value.left.left.text, value.left.right.text, value.right.text],
+  ['++', '+', 'a', 'b', 'c']);
+  assert.equal(next, 5);
 });
 
 test('commaList is empty exactly before `)` and leaves `)` unread', () => {
@@ -60,7 +72,8 @@ test('commaList is empty exactly before `)` and leaves `)` unread', () => {
   assert.equal(parsed(list, 'a b').next, 1, 'no comma ends the list');
   assert.deepEqual(failed(list, 'a, )'),
     { at: 3, message: 'Expected an identifier' });
-  assert.deepEqual(failed(list, ''), { at: 0, message: 'Expected an identifier' });
+  assert.deepEqual(failed(list, ''),
+    { at: 0, message: 'Expected an identifier' });
 });
 
 const spanOf = span => value => ({ span, value });

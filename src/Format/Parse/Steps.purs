@@ -5,11 +5,13 @@ module Format.Parse.Steps
   , takeAt
   , refineAt
   , spannedAt
+  , taggedAt
   ) where
 
 import Prelude
+import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (maybe')
+import Data.Maybe (maybe, maybe')
 import Domain.Syntax (Diagnostic, Span)
 import Format.Lex (Token)
 import Format.Parse.Cursor (Run, advance, current, failAt, nextSpan)
@@ -52,3 +54,11 @@ spannedAt build parser state = map withSpan (parser state)
     , rest: parsed.rest
     }
   endOf rest = if rest.index == state.index then start else rest.lastEnd
+
+-- A parsed value with the text of the token just before it: for an item
+-- that follows a chain operator, that operator.
+taggedAt ∷ ∀ a. Run a → Run { operator ∷ String, value ∷ a }
+taggedAt parser state = map tag (parser state)
+  where
+  operator = maybe "" _.text (Array.index state.tokens (state.index - 1))
+  tag parsed = parsed { value = { operator, value: parsed.value } }

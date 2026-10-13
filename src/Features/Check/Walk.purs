@@ -25,6 +25,7 @@ foldTypes step found (Checked.Expr expression) = case expression.node of
     body
   Checked.Pipe left right → foldl recur own [ left, right ]
   Checked.Add left right → foldl recur own [ left, right ]
+  Checked.Concat left right → foldl recur own [ left, right ]
   Checked.Compare _ left right → foldl recur own [ left, right ]
   Checked.If condition yes no → foldl recur own [ condition, yes, no ]
   Checked.Match scrutinee arms → foldl arm (recur own scrutinee) arms
@@ -75,6 +76,7 @@ retype change (Checked.Expr expression) = Checked.Expr
       (map change instantiation)
       (map recur arguments)
     Checked.Add left right → Checked.Add (recur left) (recur right)
+    Checked.Concat left right → Checked.Concat (recur left) (recur right)
     Checked.Compare operator left right → Checked.Compare operator
       (recur left)
       (recur right)

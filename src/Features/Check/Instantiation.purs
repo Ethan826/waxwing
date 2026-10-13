@@ -87,6 +87,7 @@ foldCalls step found (Checked.Expr expression) = case expression.node of
     arguments
   Checked.Construct _ _ arguments → foldl recur found arguments
   Checked.Add left right → foldl recur found [ left, right ]
+  Checked.Concat left right → foldl recur found [ left, right ]
   Checked.Compare _ left right → foldl recur found [ left, right ]
   Checked.If condition yes no → foldl recur found [ condition, yes, no ]
   Checked.Match scrutinee arms → foldl recur found

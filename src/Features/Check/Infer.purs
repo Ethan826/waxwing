@@ -83,6 +83,7 @@ inferNode env state expression = case expression of
     id
     arguments
   Resolved.Add span left right → checkAddition env state span left right
+  Resolved.Concat span left right → checkConcat env state span left right
   Resolved.Compare span operator left right → checkComparison env state
     { span, operator }
     left
@@ -137,6 +138,15 @@ checkAddition env state span left right = do
   added ← require env second.state TInt first.value
   checked ← require env added TInt second.value
   typed checked span TInt (Checked.Add first.value second.value)
+
+checkConcat
+  ∷ Env → State → Span → Resolved.Expr → Resolved.Expr → Inferred
+checkConcat env state span left right = do
+  first ← infer env state left
+  second ← infer env first.state right
+  joined ← require env second.state TText first.value
+  checked ← require env joined TText second.value
+  typed checked span TText (Checked.Concat first.value second.value)
 
 checkComparison
   ∷ Env

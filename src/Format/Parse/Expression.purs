@@ -18,7 +18,7 @@ import Format.Lex (Token, isName)
 import Format.Parse.Grammar
   ( Case
   , Parser
-  , chainLeft1
+  , chainLeftAny
   , commaList
   , defer
   , dispatch
@@ -91,7 +91,8 @@ expression = dispatch
 -- `a |> f |> g` is `(a |> f) |> g`, looser than comparison; an `if`,
 -- `match` or lambda operand needs parentheses (FN001 design §1).
 pipeline ∷ Parser Expr → Parser Expr
-pipeline inner = chainLeft1 "|>" pipe (comparison inner)
+pipeline inner = chainLeftAny [ "|>" ] (const pipe)
+  (comparison inner)
   where
   pipe left right = Pipe (spanBetween left right) left right
 
@@ -119,10 +120,13 @@ spanBetween ∷ Expr → Expr → Span
 spanBetween first second =
   { start: (exprSpan first).start, end: (exprSpan second).end }
 
+-- `+` and `++` share this level and mix in one chain, so `1 + 2 ++ "x"`
+-- is `(1 + 2) ++ "x"`; the checker rejects it.
 additive ∷ Parser Expr → Parser Expr
-additive inner = chainLeft1 "+" add (atom inner)
+additive inner = chainLeftAny [ "+", "++" ] operation (atom inner)
   where
-  add left right = Add (spanBetween left right) left right
+  operation operator = if operator == "+" then add Add else add Concat
+  add build left right = build (spanBetween left right) left right
 
 conditional ∷ Parser Expr → Parser Expr
 conditional inner = ifOf <$> expect "if" <*> inner <* expect "then" <*> inner

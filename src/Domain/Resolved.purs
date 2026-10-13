@@ -77,6 +77,7 @@ data Expr
   | Call Span FunctionId (Array Expr)
   | Construct Span CtorId (Array Expr)
   | Add Span Expr Expr
+  | Concat Span Expr Expr
   | Compare Span Operator Expr Expr
   | If Span Expr Expr Expr
   | Match Span Expr (Array Arm)
@@ -182,6 +183,7 @@ exprSpan expression = case expression of
   Call span _ _ → span
   Construct span _ _ → span
   Add span _ _ → span
+  Concat span _ _ → span
   Compare span _ _ _ → span
   If span _ _ _ → span
   Match span _ _ → span
