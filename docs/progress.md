@@ -4326,3 +4326,83 @@ npm run verify` exit 0 (.build/services-di-verify.log): 1301/1301 parallel,
 failed two serial timing tests (`a 5,000-parameter function type through
 generics builds in 10 s`, `20,000 let items compile in linear time`) and the
 rerun at lower load passed; the failure is recorded in the BACKLOG T007 row.
+
+## Text v1 (D001, first tranche) done on branch `text` (2026-10-14)
+
+Plan docs/plans/2026-10-13-text-plan.md, Tasks 1-9, on branch `text` rebased
+onto main 0b1f850; spec docs/plans/2026-10-13-text-design.md, ADR 011
+(docs/adr/011-text.md). Not merged; the whole-branch review is next.
+
+Delivered:
+- `Text`, a reserved ground type lowered to a Go `string`, with ordinary,
+  raw (`#"…"#`) and `"""` block literals, `${}` interpolation (left to
+  right, nesting), `++`, comparison by code point, canonical quoting of Text
+  nested in data, and the built-in `show`.
+- Source read as UTF-8 with a fatal decoder; the first invalid byte is a
+  diagnostic (`ReadFailure`). Non-ASCII outside a literal stays E_LEX, with a
+  whole-code-point span.
+- Splits made for room before adding: Domain.Type.Core, Domain.Syntax.Core,
+  Format.Parse.Steps, Format.Lex.{Origin,Escape,Chars}.
+- Reference model: independent decoder, quoter and code-point comparison;
+  the effects oracle and FX generator gained Text. Differential 0
+  disagreements on every seed tried.
+
+Task 9 (regression proofs, scale, example, docs):
+- Seven isolated-copy rows (scripts/regression-text.mjs, probes in
+  test/regression-text.mjs), each printing "fixed compiler passes; restored
+  defect fails": `text-order`, `text-nested-raw`, `text-indent-count`,
+  `text-dollar`, `text-hash-mismatch`, `text-surrogate`, `text-utf16-order`.
+  Go compares strings bytewise, which on valid UTF-8 is code-point order,
+  and no Go helper compares Text, so the "native UTF-16 comparison" mutant
+  replaces the field comparison in Format.Go.Compare with a UTF-16 unit
+  comparison. The runner's replace now takes a function, because a `$'` in
+  a replacement is a replace pattern (the `text-dollar` mutant has one).
+- Scale (test/text-scale.serial.test.mjs, serial phase): a 1 MB literal,
+  10,000 interpolation parts and a literal of 100,000 escapes compile and
+  run with the right output; emission is deterministic (two emits equal).
+  Bound = 3x the median of five runs on this host (macOS, Node 26.6.0, Go
+  1.26.4), compile in-process and `go build` alone. Five serial runs at
+  moderate load (1-minute load averages before each run, then 5 and 15
+  minutes: 2.42 3.84 4.70; 2.42 3.84 4.70; 3.18 3.97 4.74; 3.33 3.99 4.74;
+  3.22 3.96 4.73):
+
+  | Case | Phase | Median ms | Min | Max | Bound ms |
+  |---|---|---|---|---|---|
+  | 1 MB literal | compile | 141 | 140 | 141 | 423 |
+  | 1 MB literal | go build | 146 | 144 | 148 | 438 |
+  | 10,000 parts | compile | 521 | 491 | 543 | 1563 |
+  | 10,000 parts | go build | 709 | 707 | 720 | 2127 |
+  | 100,000 escapes | compile | 142 | 135 | 155 | 426 |
+  | 100,000 escapes | go build | 130 | 129 | 132 | 390 |
+
+  Inside the full verify (load average about 6 after the parallel phase) the
+  `go build` figures were higher: 342, 943 and 302 ms, within the bounds.
+- examples/text.wxw (a `Directory` effect injected by `with directory()`, a
+  pipe with one stage per line, a block, a raw literal, an `Entry(Text,
+  Int)` printed nested, `show`) with bootstrap/text.go compared byte for byte
+  in test/text-literal.test.mjs; the six existing snapshots are
+  byte-identical (checked with `emit`). test/specialize.test.mjs now lists
+  text.wxw with the examples that intern an arrow.
+- Docs: ADR 011, the Text section of docs/language.md (including `"""`
+  maximal munch, the non-BMP location convention and holes sharing the
+  nesting budget), docs/architecture.md and docs/engineering.md (Text
+  rows), the spec's §1 maximal-munch sentence and §6 lone-CR span note,
+  README (Text under "works today", "strings" removed from "Not yet
+  supported", roadmap), BACKLOG (D001, STD001, header, T007), and the stale
+  `chainLeft1` / Grammar `apply` references (now `chainLeftAny` and
+  Format.Parse.Steps' `applyAt`; docs/architecture.md, docs/engineering.md,
+  docs/adr/006-nesting-limit.md, test/regression.mjs, BACKLOG O001).
+
+Evidence:
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0
+  (.build/text-t9-verify.log): 1535/1535 parallel, 57/57 serial, 91
+  regression proofs, 7 of them the new Text rows. A first attempt
+  (.build/text-t9-verify-first.log) failed one test, `specialize is the
+  identity on monomorphic programs`, because examples/text.wxw interns an
+  arrow; fixed by listing it, then the full run above passed.
+- Differential against f36744d (`scripts/differential.mjs --corpus all
+  --regenerate`, .build/text-t9-diff.log): harvested 6775 sources, fuzz
+  1029, isName 1085, matches 1000, mutations 1000: 0 differences (no
+  compiler change since f36744d). The harvest run's test pass exited 1 on
+  timing tests under the hook; recorded in BACKLOG T007 with figures only.
+- `.build/regression` and the baseline copy were deleted.

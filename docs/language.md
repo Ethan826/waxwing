@@ -7,13 +7,13 @@ their verifying test file in test/.
 
 Identifiers: ASCII letters/underscore then letters/digits/underscore.
 Whitespace: space, tab, CR, LF. Reserved words: `fn if then else true false
-Int Bool type match`, and the lone `_`. `type`, `match` and `_` were
+Int Bool Text type match`, and the lone `_`. `type`, `match` and `_` were
 identifiers in Stage 0 (ADR 003). Punctuation includes `|`, `{`, `}`, the
 single token `=>` (adt-syntax), the operators `== != < <= > >=`, and
 (FN001) `->` and `|>`, matched longest first (`==` before `=>` and `=`,
 `->` before an integer's minus, `|>` before `|`; fn-syntax); a lone `!` is
 E_LEX (compare).
-Comments and strings do not exist.
+Comments do not exist. Text literals are described under Text, below.
 
 ```ebnf
 program     = { declaration } ;
@@ -158,7 +158,8 @@ built equal values are equal, never by identity); `!=` is its negation
 the `ctor-order` and `first-field` regression rows).
 
 Printing. The executable prints `main`'s value plus LF; printing is a backend
-wrapper, not a source effect. Int prints decimal with a leading `-` when
+wrapper, not a source effect. (Text prints raw alone and quoted inside data,
+below.) Int prints decimal with a leading `-` when
 negative, Bool `true` or `false`, a declared value `Name` or
 `Name(f1, f2)` with `, ` separators: the coverage-witness format without `_`,
 so every printed value is valid Waxwing source that reproduces the value
@@ -457,11 +458,123 @@ Limits, stated plainly.
   `Result` (STD001).
 - Handler types for `Console` and `Fail` are uninhabited (FX011).
 
+Text (Text v1; ADR 011; design docs/plans/2026-10-13-text-design.md). `Text`
+is a built-in ground type and a reserved type name, like `Int` and `Bool`.
+Its values are immutable sequences of Unicode scalar values, stored as
+UTF-8 and lowered to a Go `string`. Source files are UTF-8; invalid UTF-8
+is E_SYNTAX `Invalid UTF-8 in source` at the first invalid byte (one unit,
+found when the CLI reads the file). Identifiers and keywords stay ASCII, so
+a non-ASCII character outside a literal is E_LEX `Unexpected character`,
+spanning the whole code point. A byte order mark is such a character.
+
+```ebnf
+text     = [ hashes ], ( line | block ), [ hashes ] ;
+line     = '"', { char | escape | hole }, '"' ;
+block    = '"""', LF, { char | escape | hole | LF }, LF, [ indent ],
+           '"""' ;
+escape   = '\', [ hashes ], ( 'n' | 't' | 'r' | '"' | '\' | '$'
+         | 'u', '{', hex, { hex }, '}' ) ;
+hole     = "$", [ hashes ], "{", expression, "}" ;
+primary  = ... | text ;
+addition = atom, { ( "+" | "++" ), atom } ;
+```
+
+Ordinary literals (text-literal, text-lex). `"…"` is one line. The escapes
+are `\n \t \r \" \\ \$` and `\u{H…}` with 1 to 6 hex digits naming a
+Unicode scalar value; a surrogate (D800 to DFFF) or a value above 10FFFF is
+E_SYNTAX `Invalid Unicode escape \u{…}`, any other `\x` is `Unknown escape
+\x`, and a raw line break (LF, CRLF or a lone CR) is `Text cannot contain a
+line break; use \n or a """ block`. A literal with no closing quote is
+`Unterminated text literal`. Every one of these has an exact span
+(test/text-lex.test.mjs, text-spans.mjs).
+
+Interpolation (text-interpolate). `${e}` holds any expression of type Text;
+other types go through `show(x)`, and a non-Text hole is the ordinary E_TYPE
+`Expected Text, found <t>` at the hole's expression. Holes nest
+(`"a ${f("b ${c}")} d"`). A hole ends at the `}` that balances it, counted
+over tokens: braces of blocks, handlers and matches inside the hole count,
+and a nested literal is one token, so braces and quotes inside it do not. A
+hole reaching the end of its line (a `"""` block's holes may span lines) or
+the end of the file is `Unterminated interpolation`. `${}` is `Expected an
+expression`, `\$` is a literal `$` (so `\${` writes `${`), and a `$` not
+followed by `{` is literal. Parts are evaluated left to right, each once,
+with their ordinary effects (FN001's order), so `"${a()}${b()}"` performs
+a's effects first. Holes share the parser's nesting budget (below).
+
+Joining and comparison (text-concat, text-print). `a ++ b` takes Text on
+both sides, is left-associative and has the precedence of `+`, so it binds
+tighter than comparison and looser than application. It is not a special
+case of `+`: `1 + "a"` is an ordinary type error, and `1 + 2 ++ "x"` is
+`Expected Text, found Int` at `1 + 2`. `== != < <= > >=` compare Text by
+Unicode code point, lexicographically, not by UTF-16 unit: U+1F600 sorts
+after U+FFFD. Go's string order is bytewise, which on valid UTF-8 is exactly
+code-point order, so Text fields take part in the structural order of ADR
+005 unchanged.
+
+Multiline blocks (text-block, text-block-errors). A block opens with `"""`
+followed by a line break and closes with `"""` on its own line. The closing
+line's leading whitespace is the indent, removed from every content line;
+it must be an exact character-for-character prefix of each non-blank line,
+so a tab never stands for a space. A line indented less is `This line is
+indented less than the closing """` at its leading whitespace; blank or
+whitespace-only lines are exempt and become empty. The break after the
+opening and the one before the closing delimiter are not text, so the text
+ends with the last content line's own characters, and a blank line before
+the closing delimiter adds one `\n`. CRLF in the source reads as `\n`; a
+lone CR is the line-break error, spanning from the opening delimiter to the
+CR, which can cross lines. Trailing spaces are kept. Other block errors are
+`""" must be followed by a line break` and `The closing """ must be on its
+own line`.
+
+Raw and extended delimiters (text-raw). Wrapping a literal or block in n
+`#`s, as in `#"…"#`, `##"…"##` and `#"""…"""#`, makes `\` and `${`
+literal. An escape is then written `\` and n `#`s and the escape
+(`\#n`, `\##u{41}`), and a hole `$` and n `#`s and `{…}` (`$#{x}`). A
+quote followed by exactly n `#`s closes the literal; followed by fewer, it
+is text; followed by more, it is E_SYNTAX `Expected "##, found "###` (the
+expected delimiter, then the one found, at that quote and its `#`s). A
+line literal that runs out of line, or a block out of file, reports its last
+quote the same way (`Expected "#, found "` for `#"x"`) or, with no quote at
+all, `Unterminated text literal`.
+
+Maximal munch: `"""` always opens a block. So a one-line literal whose text
+begins with `""` writes its first quote as `\"` (or `\#"` when raw): the
+literal `#"\#"""x"#` is the text `"""x`, while `#"""x"#` is read as a
+block opening (here an error, as no line break follows).
+
+`show` and printing (text-print). `show(x)` is a compiler built-in like
+`print`, not a type class and not reserved. It takes one printable value
+(everything except functions and handlers, else `Expected a printable
+value, found <t>`), is pure, and returns as Text exactly what `print(x)`
+writes, without the final LF. `show(t)` of a Text is `t` itself. Until
+type classes exist (BACKLOG C001) its output format is fixed and cannot be
+customised. A Text printed alone (`print(t)`, a `main` returning Text) is
+written raw; a Text nested in data is written quoted with the canonical
+escaping: `\"`, `\\`, `\n`, `\t` and `\r` by name, `\$` before `{`, and
+`\u{…}` in lowercase hex for the controls U+0000 to U+001F and U+007F to
+U+009F (apart from the three named), U+2028, U+2029 and the bidi controls
+U+202A to U+202E and U+2066 to U+2069 (Trojan Source). Every other scalar is
+written as is, so invisible scalars such as U+200B print raw. The set is
+fixed, independent of any Unicode table, and the quoted form is a valid
+literal that reads back to the same text. `Fail(Text)` is accepted; its
+runtime key is outside every other family's range (ADR 011).
+
+Locations with non-BMP text. Offsets and columns stay UTF-16 code units
+(below), so a character outside the BMP, such as U+1F600, counts as 2.
+Tests pin spans after such a character. Wherever the lexer quotes a
+character it takes a whole code point, so no span splits a surrogate pair.
+
+Not in v1: length, indexing, slicing, split, join, trim and parsing (BACKLOG
+STD001), Char and byte APIs, a trailing-`\` line continuation, comments,
+and user `Console` handlers (`print` accepts any printable value, so a
+clause has no single parameter type; the handler stays uninhabited).
+
 Nesting. One declaration body may nest at most 128 levels (ADR 006,
 Format.Parse.Grammar `nestingLimit`). A level is a parenthesized expression,
 an `if` condition or branch, a `match` scrutinee or arm body, a call or
 constructor argument, a constructor-pattern field, a `+`, `|>` or
-comparison operand, or (FN001) a lambda body or the parameter side of an
+comparison operand, a `++` operand (it counts like `+`), an interpolation
+hole's expression, or (FN001) a lambda body or the parameter side of an
 arrow; a postfix application chain nests its callee once (ADR 006,
 fn-depth). Only one root-to-leaf path counts; siblings and later declarations
 do not add up, and every function body starts at 0. Operators count the
@@ -470,7 +583,13 @@ of n operands counts n - 1 levels (129 operands compile, 130 do not), and
 a deep left operand counts in full. Deeper input is E_NESTING `Nesting
 exceeds 128 levels` at the token that would exceed the limit, never a stack
 overflow (test/depth.test.mjs, through the CLI, for each form at 128 and
-129). A flat sum without that bound is Proposed (BACKLOG O001).
+129). A flat sum without that bound is Proposed (BACKLOG O001). Interpolation
+holes share this budget: a hole's expression is one level (a literal inside
+a hole nests further), and the lexer allows at most 128 holes open at once,
+reporting E_NESTING at the 129th `${` (two units). A literal has no
+nesting of its own, so 10,000 holes side by side in one literal compile; a
+flat `++` chain is bounded like `+` (129 operands compile, 130 do not;
+text-concat, text-interpolate).
 
 Locations are half-open UTF-16 code-unit offsets, zero based; line/column one
 based; LF increments line and resets column. Parenthesized expressions keep

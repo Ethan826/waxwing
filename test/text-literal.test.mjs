@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checked, rejectedAt, runGo } from './support.mjs';
+import { readFileSync } from 'node:fs';
+import { checked, command, rejectedAt, runGo } from './support.mjs';
 
 // Text v1 design §1 and §4: ordinary literals, end to end.
 test('a Text main prints its decoded text raw', () => {
@@ -71,4 +72,19 @@ test('Text is a reserved type name', () => {
 test('$ not followed by { and \\$ are literal text', () => {
   assert.equal(runGo('fn main(): Text = "a$b $ {c} \\${d}";'),
     'a$b $ {c} ${d}\n');
+});
+
+// The Text example, byte for byte, and through the CLI (design §7).
+test('text example matches its snapshot and runs through the CLI', () => {
+  const source = readFileSync('examples/text.wxw', 'utf8');
+  assert.equal(checked(source), readFileSync('bootstrap/text.go', 'utf8'));
+  assert.equal(command('node', ['scripts/waxwing.mjs', 'run',
+    'examples/text.wxw']), [
+    'Hello, Grace! Welcome aboard.',
+    'Dear Ada "the first",',
+    '  your id is 1.',
+    'C:\\users\\${name}\\notes',
+    'Entry("Ada \\"the first\\"", 1)',
+    'shown: Entry("Grace", 2)',
+    'true', ''].join('\n'));
 });

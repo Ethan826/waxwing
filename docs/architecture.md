@@ -6,9 +6,9 @@ an earlier layer; scripts/structure.mjs enforces it from `purs graph`.
 
 | Layer | Modules (src/) | Role |
 |---|---|---|
-| Domain | Syntax, Type, Resolved, Problem, Host, Checked.Internal, IR.Internal | syntax trees, spans, `Ty v`, resolved syntax, checked IR, monomorphic IR, `Problem` data, capability-port types |
+| Domain | Syntax, Syntax.Core, Type, Type.{Core,Compare,Parts,Marks}, Resolved, Problem, Host, Checked.Internal, IR.Internal | syntax trees, spans, `Ty v`, resolved syntax, checked IR, monomorphic IR, `Problem` data, capability-port types |
 | Features | Resolve, Resolve.{Expression,Types,Pattern,Repeated,Fresh,Lambda}, Check, Check.{Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
-| Format | Lex, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,Usage}, Diagnostic, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
+| Format | Lex, Lex.{Token,Scan,Text,Origin,Escape,Chars,Run,Walk,Block,Dedent}, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,TextShow,Usage}, Diagnostic, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
 | Runtime | Node (+ Node.js) | port implementations, argv/stdout/stderr/exit, JSON; the only FFI |
 | Program | Compile, Command, Main | pure `compile`, commands over any `Host`, entry point |
 
@@ -41,11 +41,12 @@ Format.Wire.
   whose constructor is not exported, with Functor, Apply and Applicative
   instances only (no Bind, Monad or Alt). Choice is LL(1): `dispatch` picks
   a case by the next token's text without consuming, so error locations
-  and messages are those of the hand-written parser it replaced. Grammar's
-  `apply` is the only place the remaining input is threaded (the
-  `state-thread` regression row restores the defect); Format.Parse.Cursor
-  holds the token state and its primitive steps. Every list (`sepBy1`,
-  `sepByTrailing1`, `commaList`, `chainLeft1`, `chainRight`, `manyOn`) is
+  and messages are those of the hand-written parser it replaced.
+  Format.Parse.Steps' `applyAt`, which Grammar's Apply instance calls, is
+  the only place the remaining input is threaded (the `state-thread`
+  regression row restores the defect); Format.Parse.Cursor holds the token
+  state and its primitive steps. Every list (`sepBy1`, `sepByTrailing1`,
+  `commaList`, `chainLeftAny`, `chainRight`, `manyOn`) is
   a `tailRecM` loop, so breadth costs no stack; an arrow type's chain is
   read by `chainRight` and folded right (FN001). `nested`, `infixed`,
   `grouped`, `chainRight` and `rooted` count nesting, and depth past
@@ -54,6 +55,43 @@ Format.Wire.
   may not use `do`, `bind` or the Kleisli operators, and only
   Format.Parse imports `run` and `initialState` (CST gate,
   docs/engineering.md).
+- **Text** (ADR 011, design docs/plans/2026-10-13-text-design.md).
+  - *Lexing.* Format.Lex.Token gives a token a kind (`Plain`, `TextOpen`,
+    `TextChunk decoded`, `HoleOpen`, `HoleClose`, `TextClose`). A text
+    literal is lexed by Format.Lex.Scan, which keeps an explicit stack of
+    open literals and holes, so nesting never uses host recursion.
+    Format.Lex.Text scans one segment at a time; Escape decodes escapes;
+    Origin turns offsets into positions (UTF-16 units, so a non-BMP
+    character counts 2); Walk is the scan loop with the `#`-count
+    termination rules; Block handles a block's line starts and closing
+    line; Dedent rescans a closed block's chunks with its indent, which is
+    known only at the closing line; Chars holds the shared character
+    classes and `nestingLimit`. The scanner walks UTF-16 units and
+    classifies only ASCII, so it never splits a surrogate pair.
+  - *Parsing.* Format.Parse.Interpolated builds a `TextLiteral`, or an
+    `Interpolate` of parts, from the token kinds; a hole's expression goes
+    through `nested`, so holes share the nesting budget (the lexer also
+    stops at 128 open holes). `++` is read with `chainLeftAny` beside `+`.
+  - *Types.* `TText` is a ground `Ty` constructor (Domain.Type.Core, split
+    out of Domain.Type for room); Text adds no specialization keys. A
+    `Fail(Text)` has its own key, MinInt32 (Format.Go.Context).
+  - *Checking.* Features.Check.Show checks `show` as `print`'s argument
+    with a fresh open row and no effect; a hole and each `++` operand are
+    checked against `TText`.
+  - *Go.* A Text is a Go `string`; `++` and interpolation lower to `+` in
+    source order (Go evaluates operands left to right, so no temporaries);
+    comparison is Go's bytewise string order, which is code-point order on
+    valid UTF-8. Format.Go.TextShow holds the quoting printer
+    `waxwingQuoteText`, the printing escaper, emitted only when a declared
+    type has a Text field, so programs without Text emit unchanged Go.
+  - *Source bytes.* Runtime.Node reads bytes and decodes with a fatal
+    UTF-8 decoder; Program.Command turns the first invalid byte into a
+    diagnostic (`ReadFailure`, not a `HostFailure`).
+  - *Tests and rows.* Tests are test/text-*.test.mjs; the reference
+    decoder, quoter and code-point comparison are test/text-reference.mjs,
+    the effects oracle and generator gained Text (fx-oracle-text.mjs,
+    fx-gen-text.mjs). Regression rows: scripts/regression-text.mjs, probes
+    in test/regression-text.mjs. Scale: test/text-scale.serial.test.mjs.
 - **Resolve** has two type passes (register names, assign TypeId/CtorId in
   declaration order; then resolve field and signature types) so mutual
   recursion works. Functions and constructors share one global table. LocalIds

@@ -163,6 +163,44 @@ fn main(): Int =
 `add(1)` is a partial application. Over-application and staging follow a
 documented evaluation order (ADR 008).
 
+**Text**, from `examples/text.wxw`: Unicode literals, `${}` interpolation,
+`++`, `"""` blocks that strip their indent, raw `#"…"#` literals, and
+`show`:
+
+```rust
+fn greeting(name: Text): Text = "Hello, ${name}!";
+
+fn shout(line: Text): Text = line ++ " Welcome aboard.";
+
+fn letter(name: Text, id: Int): Text = """
+    Dear ${name},
+      your id is ${show(id)}.
+    """;
+
+fn windowsPath(name: Text): Text = #"C:\users\${name}\notes"#;
+
+type Entry = Entry(Text, Int);
+
+fn main(): Unit with Console =
+  with directory() {
+    print(
+      lookup(2)
+        |> greeting
+        |> shout
+    );                            // Hello, Grace! Welcome aboard.
+    print(windowsPath("grace"));  // C:\users\${name}\notes
+    print(Entry("Ada", 1))        // Entry("Ada", 1)
+  };
+```
+
+Text values are Unicode, stored as UTF-8 and compared by code point. A
+Text printed on its own is written raw, and inside data it is quoted and
+escaped, so every printed value reads back as source. `show(x)` returns
+what `print(x)` would write. Interpolation takes only Text, so other
+values go through `show`. The Go keeps a plain `string` (ADR 011).
+(The full program also installs `directory()`, a handler for a `Directory`
+effect, as `examples/services.wxw` does.)
+
 **Typed failures.** A failure is an effect with a payload, handled
 precisely:
 
@@ -203,36 +241,16 @@ q must allow every effect of a (L + M), but its row is L;
 write q's row as `with L + M`; a callback's row must equal its caller's (FX017)
 ```
 
-**Not yet supported:** strings (in progress), records, type classes,
+**Not yet supported:** records, type classes,
 modules, multiplication and other numeric operators beyond `+`, comments,
-and anything resembling a standard library. Today's programs compute with
-Int, Bool, Unit, user types and functions.
+text operations such as length and split, and anything resembling a
+standard library. Today's programs compute with Int, Bool, Text, Unit,
+user types and functions.
 
 ## Where it is going
 
 The rest of this page is planned, not implemented. The status of each item
 is in [BACKLOG.md](BACKLOG.md).
-
-### Text (in progress)
-
-A built-in `Text` type is being implemented now
-([design](docs/plans/2026-10-13-text-design.md),
-[plan](docs/plans/2026-10-13-text-plan.md)). This syntax is approved:
-
-```rust
-fn greet(name: Text, count: Int): Text =
-  "Hello, ${name}! You have ${show(count)} new messages.";
-
-fn page(title: Text): Text = """
-    <h1>${title}</h1>
-      <p>indented two more</p>
-    """;                              // the closing """ sets the indent
-
-let path = #"C:\Users\${not interpolated}"#;   // raw text
-```
-
-Text is Unicode (UTF-8 in Go) and compares by code point. Printing writes
-it raw on its own, and quoted and escaped inside data.
 
 ### Records, PureScript-style (next)
 
@@ -321,7 +339,7 @@ the design.
 | First-class functions (FN001) | Done |
 | Algebraic effects, handlers, typed failures, cleanup (FX001, FX008) | Done |
 | Effect diagnostics that say what to write (FX017, FX018) | Done |
-| Text (D001, first tranche) | In progress |
+| Text (D001, first tranche) | Done |
 | Records, row-polymorphic (R001) | Design next |
 | Inferred requirements and errors (INF001) | Reviewed; design next |
 | Classes, modules, numbers, collections, stdlib | Planned |

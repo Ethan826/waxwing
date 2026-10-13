@@ -2,9 +2,10 @@
 
 Status: approved by the user section by section on 2026-10-13. This document
 records that design; the user must still review it before the plan is
-written. The plan has not been written and nothing is implemented. It is the
-first of two specs in the tranche the user chose on 2026-10-13: Text first,
-then Records (R001, PureScript-style). Numbers and collections stay in D001.
+written. Implemented on branch `text` (plan Tasks 1-9); ADR 011 records the
+decisions as built. It is the first of two specs in the tranche the user
+chose on 2026-10-13: Text first, then Records (R001, PureScript-style).
+Numbers and collections stay in D001.
 
 ## Purpose
 
@@ -133,6 +134,12 @@ its *indent*, is removed from every content line.
   - The mismatch message shows the expected closing delimiter, then the one
     found. It is the approved `Expected "#, found "` text, generalized to
     the counts.
+- **Maximal munch.** `"""` always opens a block, so `#"""x"#` is a block
+  opening, never a literal. A one-line literal whose text begins with
+  `""` therefore writes its first quote as `\"` (or `\#"` when raw): for
+  example `#"\#"""x"#` is the text `"""x`. (In an ordinary literal every
+  quote needs an escape anyway.) Task 8 found this while generating
+  literals (docs/language.md, Text).
 
 **Not in v1:**
 - length, indexing, slicing, split, join, trim and parsing (STD001, with a
@@ -249,18 +256,25 @@ All of these are E_SYNTAX. Spans follow the location convention of §2:
 |---|---|
 | Invalid UTF-8 | the first invalid byte, one unit at its offset |
 | Unterminated literal | the opening delimiter (`#`s and quotes) |
-| Line break (LF or lone CR) | from the opening delimiter to the end of that line |
+| Line break (LF or lone CR) | from the opening delimiter to the end of that line; for a lone CR in a block, to the CR, possibly across lines |
 | Unknown or invalid escape | the whole escape, from `\` to its last character |
-
-As built (Task 2): `\u` not followed by `{` is `Unknown escape \u`. A
-malformed `\u{…` ends before the first character that is neither a hex
-digit nor `}`, and that prefix is what the error quotes (for example
-`Invalid Unicode escape \u{12`).
 | Unterminated interpolation | from `${` (or `$#{`) to where scanning stopped |
 | `"""` not followed by a line break | the characters after `"""` on that line |
 | Closing `"""` not on its own line | the closing delimiter |
 | Under-indented line | that line's leading whitespace (empty if none) |
 | `#` count mismatch | the closing quote and its `#`s |
+
+As built (Task 2): `\u` not followed by `{` is `Unknown escape \u`. A
+malformed `\u{…` ends before the first character that is neither a hex
+digit nor `}`, and that prefix is what the error quotes (for example
+`Invalid Unicode escape \u{12`).
+
+As built (Task 6): a lone CR inside a block is the line-break error with a
+span from the opening delimiter to the CR, so it can cross several lines.
+A backslash followed by a line break inside a block is `Unknown escape \`
+(or `\#`), spanning the backslash and its `#`s only. A lone CR in a
+single-line `#` literal is the same line-break error, not an unterminated
+literal.
 
 The texts:
 

@@ -67,11 +67,11 @@ adding a bypass allowlist.
   rejected forms, the exempt modules and an ordinary named import;
 - structured negative diagnostics (test/diagnostics.test.mjs, one row per
   code family with exact code, span and text), generated-Go snapshots
-  (bootstrap/answer.go, bootstrap/shapes.go), positive build/run, seeded AST
-  roundtrips and reference execution (nested and flat multi-arm matches), a
-  brute-force coverage oracle with brute-forced inhabitedness over generated
-  type systems (test/coverage.test.mjs), and fake-host command tests
-  (test/program.test.mjs);
+  (bootstrap/answer.go, bootstrap/shapes.go, bootstrap/text.go), positive
+  build/run, seeded AST roundtrips and reference execution (nested and flat
+  multi-arm matches), a brute-force coverage oracle with brute-forced
+  inhabitedness over generated type systems (test/coverage.test.mjs), and
+  fake-host command tests (test/program.test.mjs);
 - `npm run verify` runs every test/*.test.mjs file (32 files, 302 tests at
   P001 Task 9, no skips; the list is read from the directory, never
   hand-kept) in one parallel `node --test` run, except the
@@ -106,7 +106,7 @@ adding a bypass allowlist.
   `exhaustive` (Features.Check.Coverage always succeeds), `ctor-order`
   (Format.Go.Compare reverses the tag comparison), `first-field` (compares
   the last field first), `show-fields` (Format.Go.Show prints only the
-  first field) and `state-thread` (Format.Parse.Grammar's `apply` runs the
+  first field) and `state-thread` (Format.Parse.Steps' `applyAt` runs the
   second parser from the original state; examples/answer.wxw must still
   compile to bootstrap/answer.go) and `capture` (Format.Go.Match drops a
   match's scrutinee from its free locals, so an enclosing lifted match
@@ -162,6 +162,25 @@ adding a bypass allowlist.
   proof (…)` lines in all (`node scripts/regression.mjs name…` proves
   only the named rows); the A003 order and print tests also use an independent value
   oracle (test/value-oracle.mjs);
+- Text v1 (ADR 011) adds seven regression rows, in
+  scripts/regression-text.mjs with probes in test/regression-text.mjs (an
+  import and a spread in scripts/regression.mjs and
+  test/regression-probes.mjs): `text-order` (interpolation parts evaluated
+  right to left), `text-nested-raw` (a Text in data printed raw),
+  `text-indent-count` (a block's indent removed by length, not as an exact
+  prefix), `text-dollar` (`\$` interpolating), `text-hash-mismatch` (a
+  closing quote with too many `#`s accepted), `text-surrogate` (`\u{D800}`
+  accepted) and `text-utf16-order` (the field comparison orders Text by
+  UTF-16 unit). Go compares strings bytewise, which on valid UTF-8 is
+  code-point order, and no Go helper compares Text, so the UTF-16 mutant
+  replaces the field comparison itself. The scale rule is
+  test/text-scale.serial.test.mjs (a serial test): a 1 MB literal, 10,000
+  interpolation parts and a literal of 100,000 escapes each compile and run,
+  and emission is deterministic. Each bound is 3x the median of five runs
+  on the development host, for the in-process compile and for `go build`
+  alone (figures in docs/progress.md, Text entry). Examples are snapshotted
+  byte for byte (examples/text.wxw to bootstrap/text.go,
+  test/text-literal.test.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):
   `runGoBatch(import.meta.url, cases, label?)` takes an array of
   `[name, source]` pairs (an array, so a computed name collision is refused

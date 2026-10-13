@@ -212,7 +212,7 @@ const capture = () => {
   console.log('capture regression detects the defect');
 };
 
-// Grammar's apply is the only place the remaining input is threaded; if the
+// Steps' applyAt is the only place the remaining input is threaded; if the
 // second parser restarts from the first's state, no program parses as written.
 const stateThread = () => {
   const result = compile(readFileSync('examples/answer.wxw', 'utf8'));

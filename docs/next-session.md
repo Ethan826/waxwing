@@ -1,3 +1,32 @@
+# Waxwing / Text v1 done on branch `text`; whole-branch review next (2026-10-14)
+
+Text v1 (BACKLOG D001, first tranche) is implemented on branch `text` (worktree
+`.worktrees/text`, rebased onto main 0b1f850): Tasks 1-9 of
+docs/plans/2026-10-13-text-plan.md, ADR 011 (docs/adr/011-text.md), the Text
+section of docs/language.md, examples/text.wxw with bootstrap/text.go, and
+the Text entry in docs/progress.md. Nothing is pushed or merged.
+
+Order from here:
+1. The whole-branch review of `text` (Opus), then its fixes and the user's
+   merge decision.
+2. Phase 2 of the 80-column sweep (scripts/width.mjs): the text-touched files
+   that phase 1 left (about 98 lines over 80 across 462 files at the end of
+   Task 9, in docs/engineering.md, scripts/structure.mjs and several tests).
+   The width.mjs argv guard and the fence toggle for mixed fence characters
+   are phase-2 items.
+3. IDE001 waits to be rebased onto main after Text merges.
+4. FX020 (effect operation namespaces; spec awaiting the user's review) is
+   next after that, then R001.
+
+Open items from Text: `show` is compiler-provided until C001 (ADR 011);
+user Console handlers are still uninhabited (BACKLOG D001); Text operations
+are STD001; a flat chain of 130 `++` operands is E_NESTING until O001.
+
+Setup facts: run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in the
+worktree; the regression runner leaves about 2 GB under .build/regression,
+delete it after a run. Agent copies for mutant proofs and differentials
+exclude .build and are deleted.
+
 # Waxwing / FX001 Tasks 1-12 reviewed; awaiting merge decision (2026-10-12)
 
 FX001 Tasks 1-12 are complete on branch fx001-finish (worktree

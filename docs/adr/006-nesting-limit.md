@@ -37,7 +37,7 @@ bounded by the stack.
 `nestingLimit = 128`, a named constant in Format.Parse.Grammar.
 
 What counts as one level (Format.Parse.Grammar `nested`, `infixed`,
-`chainLeft1`; bookkeeping in Format.Parse.Cursor): a parenthesized
+`chainLeftAny`; bookkeeping in Format.Parse.Cursor): a parenthesized
 expression, an `if` condition and each branch, a `match` scrutinee and each
 arm body, each call or constructor argument, each constructor-pattern
 field, and each `+` or comparison operand. Function bodies start at depth 0.
@@ -149,7 +149,7 @@ through Parse and Resolve.
   (`L^k` is k nested type arguments; test/fn-depth.test.mjs). This is the
   only departure from the design's measure.
 - Expressions: a lambda body is a nested position; `|>` operands count as
-  `+` operands do (`chainLeft1`).
+  `+` operands do (`chainLeftAny`).
 - Postfix application chains are flattened: `g(1)(2)(3)` is one
   `Apply (Call g [1]) [2, 3]` and `(h)(1)(2)` is `Apply h [1, 2]`, exact
   under design section 5 (`e(a1, …, aj)` is `e(a1)…(aj)`, with the same
@@ -212,7 +212,7 @@ predate FN001 Task 6 (present at 97740c6). The Task 6 review bisected
 them with this probe: constructor-argument was 304 through c4e9ed1 and
 14ad3a4, 280 at ceb52c2 (FN001 Task 3: the postfix `atom` layer
 `applyTo <$> primary <*> dispatch …` and the `pipeline` layer
-`chainLeft1 "|>"` add frames per nested level; parens 648 → 521,
+`chainLeftAny [ "|>" ]` add frames per nested level; parens 648 → 521,
 call-argument 369 → 326), 284 at 3a4868d and 0a49dfd, 276 at 8045a4e
 (the Task 4 review fixes: `primary` returns a `Primary` record, and
 `bare <$> named inner` added a map layer per level; call-argument
