@@ -216,8 +216,12 @@ its *indent*, is removed from every content line.
     escaped, `\n`, `\t` and `\r` are written as escapes, and every `${` is
     written `\${`. A `$` not followed by `{` stays literal. The quoted form
     therefore never interpolates when read back.
-  - Other control characters, and any non-printing scalar, are written as
-    `\u{…}` in lowercase hex.
+  - Exactly these scalars are written as `\u{…}` in lowercase hex: the
+    controls U+0000–001F and U+007F–009F (apart from `\n`, `\t` and `\r`),
+    U+2028 and U+2029, the bidi controls U+202A–202E and U+2066–2069. Every
+    other scalar is written as is. The set is fixed, so it is stable across
+    Unicode versions and matches the JS reference interpreter. The bidi
+    controls are in it because of Trojan Source.
   - The result is a valid Waxwing literal that reads back to the same
     text.
 - **`show(v)`.** It reuses those printers: `string(waxwingShowN(nil, v))`

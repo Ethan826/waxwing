@@ -8,9 +8,9 @@ import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (Row(..))
+import Domain.Row (openRow)
 import Domain.Syntax (Diagnostic, Span, problemAt)
-import Domain.Type (Ty(..), TyRow)
+import Domain.Type (Ty(..))
 import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Scheme (State, Threaded)
 
@@ -39,22 +39,19 @@ showCall infer env state span arguments = maybe' arity found
           }
 
 -- A bare `show` is a monomorphic lambda at each fresh use, as bare `print`
--- is, over a fresh parameter; its row is the empty one, because it performs
--- nothing, where print's is exactly Console.
+-- is, over a fresh parameter and, as bare `crash` is, a fresh open row: it
+-- performs nothing, so it fits wherever any arrow is expected.
 showRef ∷ ∀ r. CheckEnv r → State → Span → Result
 showRef _ state span = Right
   { value: Checked.Expr
-      { ty: TFun parameter pure' TText
+      { ty: TFun parameter (openRow (Hole (state.next + 1))) TText
       , span
       , node: Checked.Lambda [ { local: Just local, ty: parameter } ] body
       }
-  , state: state { next = state.next + 1 }
+  , state: state { next = state.next + 2 }
   }
   where
   parameter = TVar (Hole state.next)
   local = Resolved.LocalId (-1)
   body = Checked.Expr { ty: TText, span, node: Checked.Show value }
   value = Checked.Expr { ty: parameter, span, node: Checked.Local local }
-
-pure' ∷ TyRow Open
-pure' = Row [] Nothing

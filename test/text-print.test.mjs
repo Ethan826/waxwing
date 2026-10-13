@@ -9,6 +9,7 @@ const pair = 'type Pair = Pair(Text, Int); ';
 const some = 'type Opt = None | Some(Text); ';
 const box = 'type Box = Box(Text); ';
 const list = 'type L = Nil | Cons(Text, L); ';
+const glist = 'type List(a) = Nil | Cons(a, List(a)); ';
 const err = 'type E = E(Text); ';
 const main = (type, body) => `fn main(): ${type} = ${body};`;
 const cases = [
@@ -16,9 +17,12 @@ const cases = [
   ['line', some + main('Opt', 'Some("line\\nbreak")')],
   ['bell', some + main('Opt', 'Some("\\u{7}\u{1F600}")')],
   ['escapes', some + main('Opt', 'Some("q\\"b\\\\t\\tr\\rd$")')],
-  ['dollar', some + main('Opt', 'Some("${x} $ {} \\${")')],
+  ['dollar', some + main('Opt', 'Some("\\${x} $ {} \\${")')],
   ['empty', some + main('Opt', 'Some("")')],
-  ['nonprint', some + main('Opt', 'Some("\\u{85}\\u{a0}\\u{7f}\\u{FFFD}")')],
+  ['nonprint', some + main('Opt', 'Some("\\u{85}\\u{a0}\\u{7f}\\u{FFFD}'
+    + '\\u{2028}\\u{2029}\\u{1f}\\u{9f}\\u{ad}")')],
+  ['bidi', some + main('Opt', 'Some("\\u{202A}\\u{202E}\\u{2066}\\u{2069}'
+    + '\\u{202F}\\u{2065}\\u{206A}")')],
   ['show data', pair + main('Bool',
     'show(Pair("x", 2)) == "Pair(\\"x\\", 2)"')],
   ['show text', main('Bool', 'show("t") == "t"')],
@@ -28,6 +32,26 @@ const cases = [
   ['show raw', main('Text', 'show("a\\nb")')],
   ['bare show', 'fn apply(f: Int -> Text): Text = f(7); '
     + main('Text', 'apply(show)')],
+  ['show console', 'fn apply(f: (Int -> Text with Console)): Text '
+    + 'with Console = f(7); fn main(): Unit with Console = '
+    + 'print(apply(show));'],
+  ['show fail', err + 'fn apply(f: (Int -> Text with Fail(E))): Text '
+    + 'with Fail(E) = f(7); fn main(): Unit with Console = '
+    + 'handle print(apply(show)) { fail(e: E) => print(0) };'],
+  ['generic', glist + 'fn main(): Bool = show(Cons("a\\n", Nil)) == '
+    + '"Cons(\\"a\\\\n\\", Nil)";'],
+  ['generic print', glist + main('List(Text)',
+    'Cons("a\\n", Cons("b", Nil))')],
+  ['generic cmp', glist + main('Bool',
+    'Cons("a", Nil) < Cons("b", Nil)')],
+  ['generic cmp astral', glist + main('Bool',
+    'Cons("\u{1F600}", Nil) > Cons("\\u{FFFD}", Nil)')],
+  ['fail data key', err + 'fn work(): Int with Fail(E) = fail(E("x")); '
+    + 'fn main(): Unit with Console = handle print(work()) '
+    + '{ fail(e: E) => print(1) };'],
+  ['fail int key', 'fn work(): Int with Fail(Int) = fail(3); '
+    + 'fn main(): Unit with Console = handle print(work()) '
+    + '{ fail(e: Int) => print(e) };'],
   ['astral', main('Bool', '"\u{1F600}" > "\\u{FFFD}"')],
   ['less', main('Bool', '"a" < "b"')],
   ['box', box + main('Bool', 'Box("b") > Box("a")')],
@@ -67,10 +91,11 @@ out('pair', 'Pair("a b", 1)\n');
 out('line', 'Some("line\\nbreak")\n');
 out('bell', 'Some("\\u{7}\u{1F600}")\n');
 out('escapes', 'Some("q\\"b\\\\t\\tr\\rd$")\n');
-out('dollar', 'Some("${x} $ {} \\${")\n'.replace('${x}', '\\${x}'));
+out('dollar', 'Some("\\${x} $ {} \\${")\n');
 out('empty', 'Some("")\n');
-out('nonprint', 'Some("\\u{85}\\u{a0}\\u{7f}\\u{fffd}")\n'
-  .replace('\\u{fffd}', '\ufffd'));
+out('nonprint', 'Some("\\u{85}\u{a0}\\u{7f}\u{fffd}\\u{2028}\\u{2029}'
+  + '\\u{1f}\\u{9f}\u{ad}")\n');
+out('bidi', 'Some("\\u{202a}\\u{202e}\\u{2066}\\u{2069}\u{202f}\u{2065}\u{206a}")\n');
 out('show data', 'true\n');
 out('show text', 'true\n');
 out('show int', 'true\n');
@@ -78,6 +103,14 @@ out('show bool', 'true\n');
 out('show unit', 'true\n');
 out('show raw', 'a\nb\n');
 out('bare show', '7\n');
+out('show console', '7\n');
+out('show fail', '7\n');
+out('generic', 'true\n');
+out('generic print', 'Cons("a\\n", Cons("b", Nil))\n');
+out('generic cmp', 'true\n');
+out('generic cmp astral', 'true\n');
+out('fail data key', '1\n');
+out('fail int key', '3\n');
 out('astral', 'true\n');
 out('less', 'true\n');
 out('box', 'true\n');
@@ -118,6 +151,18 @@ test('show takes exactly one argument', () => {
 
 test('show is pure and leaves no Console demand', () => {
   checked('fn main(): Text = show(1);');
+  checked('fn main(): Text = { let f = show; f(1) };');
+});
+
+test('the Fail keys keep their layout', () => {
+  const data = checked(err + 'fn work(): Int with Fail(E) = fail(E("x")); '
+    + 'fn main(): Unit with Console = handle print(work()) '
+    + '{ fail(e: E) => print(1) };');
+  assert.match(data, /, -4, /);
+  const int = checked('fn work(): Int with Fail(Int) = fail(3); '
+    + 'fn main(): Unit with Console = handle print(work()) '
+    + '{ fail(e: Int) => print(e) };');
+  assert.match(int, /, -1, /);
 });
 
 test('Text is reserved in a type position', () => {
