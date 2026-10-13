@@ -5,18 +5,37 @@
 # Waxwing bootstrap
 
 Waxwing is a small functional language targeting ordinary Go. Waxwing source
-files use the `.wxw` extension.
-Stage 0 is implemented in PureScript. This repository implements one checked
-vertical slice plus closed algebraic data types with exhaustive nested
-`match` (A001), structural comparison operators `== != < <= > >=` on every
-type, and printing of whatever `main` returns (A003, in final review).
-P001 implements rank-1 polymorphism: parameterized types and generic
-functions, lowered by whole-program specialization
-([ADR 007](docs/adr/007-specialization.md),
-examples/lists.wxw). FN001 adds first-class functions: function types,
-partial application, lambdas, closures and `|>`, staged by declared arity
-([ADR 008](docs/adr/008-functions.md)). HKTs, classes, and rows are
-planned.
+files use the `.wxw` extension. Stage 0, the compiler in this repository, is
+implemented in PureScript and emits deterministic Go source.
+
+Implemented and merged into main:
+
+- Typed functions over Int, Bool and Unit, with blocks and `let`, and
+  structured JSON diagnostics with source spans.
+- Closed algebraic data types with exhaustive nested `match` (A001,
+  [ADR 003](docs/adr/003-closed-adts.md)); structural comparison
+  `== != < <= > >=` on every type and printing of whatever `main` returns
+  (A003, [ADR 005](docs/adr/005-structural-order.md)).
+- Rank-1 polymorphism: parameterized types and generic functions, lowered by
+  whole-program specialization (P001, [ADR 007](docs/adr/007-specialization.md)).
+- First-class functions: function types, partial application, lambdas,
+  closures and `|>`, staged by declared arity (FN001,
+  [ADR 008](docs/adr/008-functions.md)).
+- Effects (FX001, [ADR 010](docs/adr/010-effects.md)): effect declarations,
+  an effect row on every arrow, first-class handler values installed with
+  `with`, typed failures with `fail` and `handle`, `defer` cleanup, `crash`,
+  and a host Console effect. `nofail` marks make `defer` sound: cleanup can
+  never end in a typed failure (FX008). Rejections explain where an effect
+  came from and which boundary refused it.
+
+Effect rows are written, not inferred; automatic requirement and error
+composition is the next milestone (INF001,
+[brief](docs/plans/2026-10-11-requirement-and-error-inference-milestone.md)).
+Records, type classes, modules, a standard library, concurrency and a Go
+foreign-function interface are planned or in design; see BACKLOG.md and the
+[language direction](docs/plans/2026-10-08-language-direction.md).
+[docs/language.md](docs/language.md) states what is implemented, including
+its stated limits.
 
 ## Prerequisites and fresh checkout
 
@@ -58,12 +77,16 @@ node scripts/waxwing.mjs build examples/answer.wxw .build/answer
 .build/answer
 node scripts/waxwing.mjs run examples/answer.wxw
 node scripts/waxwing.mjs run examples/tree.wxw
+node scripts/waxwing.mjs run examples/services.wxw
 ```
 
 Both execution paths print `42` for the answer example. `main` may return any
 type: the executable prints the value in the coverage-witness format (`5`,
 `true`, `Node(Leaf, 1, Node(...))`, negative integers with `-`), and
-examples/tree.wxw prints a binary search tree. Comparisons are built in,
+examples/tree.wxw prints a binary search tree. examples/services.wxw composes
+services with overlapping effects (Database, Clock, Log) and selects real or
+fake handlers in `main`; a program using `defer` or `crash` that ends in a
+defect prints one report on stderr and exits 1. Comparisons are built in,
 non-chaining and looser than `+`, with one structural order (constructor
 declaration order, then fields left to right; ADR 005). `emit` writes
 canonical deterministic Go; `build` invokes Go on a temporary source file;
@@ -75,30 +98,23 @@ PureScript modules, not yet a native Go compiler executable.
 
 ## Where to continue
 
-- [Language direction, effects and future targets](docs/plans/2026-10-08-language-direction.md)
-
-- [Implementation plan](docs/plans/bootstrap.md)
-- [Progress](docs/progress.md)
+- [Next-session handoff](docs/next-session.md) and [progress](docs/progress.md)
+- [Local backlog](BACKLOG.md)
 - [Language specification](docs/language.md)
-- [Architecture](docs/architecture.md) and decisions:
-  [ADR 001](docs/adr/001-slice.md),
+- [Language direction, effects and future targets](docs/plans/2026-10-08-language-direction.md)
+- [Architecture](docs/architecture.md): five layers, Domain, Features,
+  Format, Runtime, Program ([ADR 004](docs/adr/004-five-layers.md))
+- Decisions: [ADR 001](docs/adr/001-slice.md),
   [ADR 002](docs/adr/002-polymorphic-lowering.md),
+  [ADR 003](docs/adr/003-closed-adts.md),
+  [ADR 004](docs/adr/004-five-layers.md),
   [ADR 005](docs/adr/005-structural-order.md),
   [ADR 006](docs/adr/006-nesting-limit.md),
   [ADR 007](docs/adr/007-specialization.md),
-  [ADR 008](docs/adr/008-functions.md)
+  [ADR 008](docs/adr/008-functions.md),
+  [ADR 009](docs/adr/009-waxwing-name.md),
+  [ADR 010](docs/adr/010-effects.md)
 - [Engineering rules and gate coverage](docs/engineering.md)
 - [Reference provenance](docs/provenance.md)
 - [Self-hosting chain](docs/bootstrap.md)
-- [Local backlog](BACKLOG.md)
-
-Closed ADTs and exhaustive matching are implemented (see
-[ADR 003](docs/adr/003-closed-adts.md), [ADR 004](docs/adr/004-five-layers.md)
-and examples/shapes.wxw). The compiler is organized in five layers: Domain,
-Features, Format, Runtime, Program ([architecture](docs/architecture.md)).
-Comparison and printing are specified in [language](docs/language.md) and
-[ADR 005](docs/adr/005-structural-order.md). Milestone A003 is merged. G001
-(applicative parser combinators; nesting deeper than 128 levels is the
-E_NESTING diagnostic, [ADR 006](docs/adr/006-nesting-limit.md)) is Done on
-branch g001, pending a scoped re-review, and is not merged.
-[Progress](docs/progress.md) records the evidence.
+- [Stage 0 bootstrap plan](docs/plans/bootstrap.md) (historical)
