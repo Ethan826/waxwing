@@ -585,8 +585,11 @@ Found while writing the acceptance scenario's effect-free baseline
    is unified into its caller's body row, not subsumed by it. A function
    `with L + M` that calls `q` is rejected at the call: `a performs M,
    which its signature does not allow`. The same happens with `L + Fail(E)`.
-   A written callback row must equal the caller's row label for label;
-   the headline is the wrong kind (BACKLOG FX017).
+   A written callback row must equal the caller's row label for label.
+   FX017 (2026-10-12) gave it its own diagnostic, `q must allow every
+   effect of a (L + M), but its row is L`, with the caller's label, the
+   callback's row and both written rows named; whether the callback's row
+   should instead be subsumed by the caller's stays open (FX007).
 2. A callback whose row is ambient or `with Console` cannot be deferred:
    `defer must not fail, but it may perform any effect of ...`. A written
    `with Console` on a parameter keeps a rigid tail, and no closed Console

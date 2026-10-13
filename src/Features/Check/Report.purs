@@ -80,7 +80,7 @@ reasonOf ∷ (String → NoteReason) → String → Origin → Maybe NoteReason
 reasonOf call label origin = case origin.consumed of
   Operation _ → Just (PerformedHere label)
   CallOf callee → Just (call callee)
-  Application → Just (FromFunctionValue label)
+  Application _ → Just (FromFunctionValue label)
   ClauseRow → Nothing
   FailOf _ → Just (RaisedHere label)
 

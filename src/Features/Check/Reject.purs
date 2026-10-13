@@ -14,6 +14,7 @@ import Data.Maybe (maybe, maybe')
 import Data.Tuple (Tuple(..))
 import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span, problemAt)
+import Features.Check.Callback (callbackLacks)
 import Features.Check.Context (CheckEnv)
 import Features.Check.Occurrence (OccurrenceId(..))
 import Features.Check.Provenance (Boundary(..), Hop, Origin, trail)
@@ -37,7 +38,7 @@ rejected
 rejected env state origin failure = case failure of
   Mismatch found expected → mismatch expected found
   RowMissing label _ occurrence → notAllowed label occurrence
-  RowExtra label occurrence → notAllowed label occurrence
+  RowExtra label callee occurrence → extra label callee occurrence
   RowSharedTail left right → conflict left right
   RowMismatch left right → conflict left right
   RowPayload found expected occurrence → payload found expected occurrence
@@ -48,6 +49,11 @@ rejected env state origin failure = case failure of
     Tuple expectedName foundName ← typeNames env span (opened expected)
       (opened found)
     Left (problemAt (TypeMismatch expectedName foundName) span)
+  -- A caller label the called row lacks is the callback's fault, unless it
+  -- is not a callback (FX017); the rest is the caller performing it.
+  extra label callee occurrence = maybe' (ordinary label occurrence) identity
+    (callbackLacks env state origin callee)
+  ordinary label occurrence _ = notAllowed label occurrence
   notAllowed label occurrence = do
     name ← labelName env span label
     Left

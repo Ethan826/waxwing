@@ -7,7 +7,7 @@ import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span, problemAt)
-import Features.Check.Apply (applyValue, functionLike)
+import Features.Check.Apply (applyValue, calleeOf, functionLike)
 import Features.Check.Call (fixedResult, saturatedResult)
 import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Scheme (State, Threaded)
@@ -34,7 +34,8 @@ checkPipe infer env state span left right = do
   callee ← infer env value.state right
   let calleeType = Checked.typeOf callee.value
   when (isJust saturated && not (functionLike callee.state calleeType)) arity
-  applied ← applyValue env callee.state calleeType value.value
+  applied ← applyValue env callee.state (calleeOf env right) calleeType
+    value.value
   pure
     { value: Checked.Expr
         { ty: applied.value

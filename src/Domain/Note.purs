@@ -15,6 +15,7 @@ data NoteReason
   | SignatureForbids String String
   | SignatureAmbient String
   | MustBePureParameter
+  | RowWrittenHere String
   | HandledHere String
   | MainOnlyConsole
   | CleanupMustNotFail

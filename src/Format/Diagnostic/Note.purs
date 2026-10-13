@@ -102,6 +102,7 @@ noteText = case _ of
   SignatureAmbient callee → "the signature of " <> callee
     <> " has an ambient row"
   MustBePureParameter → "this parameter must be pure"
+  RowWrittenHere name → name <> "'s row is written here"
   HandledHere label → shortLabel label <> " is handled here"
   MainOnlyConsole → "main may perform only Console"
   CleanupMustNotFail → "cleanup registered here must not fail"

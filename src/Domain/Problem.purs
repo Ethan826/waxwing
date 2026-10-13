@@ -63,7 +63,12 @@ data EntryKind
 -- What a diagnostic suggests beside its problem: a partial application
 -- of the named function or constructor, short of this many arguments; or
 -- a block whose trailing `;` made it Unit (FX001 design §1).
-data Hint = MissingArguments String Int | TrailingSemicolon
+data Hint
+  = MissingArguments String Int
+  | TrailingSemicolon
+  -- A callback row that lacks a caller label (FX017): the callback's name,
+  -- when it has one, and the caller's row as `with` should write it.
+  | CallbackRow (Maybe String) String
 
 -- Why a handler may fail (FX008 design §3.6): a clause fails with a payload,
 -- or its tail is a rigid row that may hold a `Fail` (its text: `...e`).
@@ -101,6 +106,10 @@ data Problem
   -- Rendered as its problem, with the hint after; code and span unchanged.
   | Hinted Problem Hint
   | EffectNotAllowed String String
+  -- FX017: a callback's name (none for an anonymous function value), its
+  -- caller, the caller's labels, and the callback's (none when it has no
+  -- labels). The labels arrive printed.
+  | CallbackRowLacks (Maybe String) String String (Maybe String)
   | UnhandledEffect String
   | MustBePure String
   | RowSort Boolean

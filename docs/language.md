@@ -404,9 +404,12 @@ Limits, stated plainly.
   and its `handle` never runs; a cleanup that diverges never delivers it.
 - A callback parameter's written row must equal the caller's row label for
   label: `fn a(q: Int -> Int with L, x: Int): Int with L + M = q(x)` is
-  rejected (`a performs M, which its signature does not allow`) although
-  the body never performs M (FX017). Workaround: write the callback's row
-  as the caller's full row (`q: Int -> Int with L + M`).
+  rejected (FX017) with `q must allow every effect of a (L + M), but its
+  row is L; write q's row as `with L + M`; a callback's row must equal its
+  caller's (FX017)`, notes at both written rows. A callback with no `with`
+  reads `but its row has no labels`; a callee that is not a parameter reads
+  `this function value`. Workaround: write the callback's row as the
+  caller's full row (`q: Int -> Int with L + M`).
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
 - `let` is monomorphic. A local of type `A -> B with pure` is not accepted

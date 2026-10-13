@@ -2,11 +2,14 @@ module Features.Check.Apply
   ( checkApply
   , applyAll
   , applyValue
+  , calleeOf
   , functionLike
   ) where
 
 import Prelude
+import Data.Array as Array
 import Data.Either (Either(..))
+import Data.Maybe (Maybe(..), fromMaybe, maybe')
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -16,7 +19,7 @@ import Domain.Row (openRow)
 import Features.Check.Consume (consumeAt)
 import Domain.Type (Ty(..), TyRow)
 import Features.Check.Context (CheckEnv, Infer)
-import Features.Check.Provenance (Consumed(Application))
+import Features.Check.Provenance (Callee, Consumed(Application))
 import Features.Check.Require (expectType, require, typeName)
 import Features.Check.Scheme (State, Threaded, headOf, resolved, threadAll)
 import Features.Check.Sync (sync)
@@ -41,7 +44,7 @@ checkApply
   → Either Diagnostic (Threaded Checked.Expr)
 checkApply infer env state span callee arguments = do
   head ← infer env state callee
-  applyAll infer env span head arguments
+  applyAll infer env span (calleeOf env callee) head arguments
 
 -- A checked callee applied to each argument in turn, the type threaded
 -- with the state (Scheme's `threadAll`, so no frame or copy per argument),
@@ -51,11 +54,12 @@ applyAll
   . Infer r
   → CheckEnv r
   → Span
+  → Maybe Callee
   → Threaded Checked.Expr
   → Array Resolved.Expr
   → Either Diagnostic (Threaded Checked.Expr)
-applyAll infer env span callee arguments = do
-  applied ← threadAll (applyNext infer env span) start arguments
+applyAll infer env span named callee arguments = do
+  applied ← threadAll (applyNext infer env span named) start arguments
   pure
     { value: Checked.Expr
         { ty: applied.state.ty
@@ -74,15 +78,16 @@ applyNext
   . Infer r
   → CheckEnv r
   → Span
+  → Maybe Callee
   → Applying
   → Resolved.Expr
   → Either Diagnostic { value ∷ Checked.Expr, state ∷ Applying }
-applyNext infer env span applying argument = do
+applyNext infer env span named applying argument = do
   synced ← sync env applying.state (Resolved.exprSpan argument)
   opened ← open env synced applying.ty (Resolved.exprSpan argument)
   checked ← infer env opened.state argument
   reached ← require env checked.state opened.value.parameter checked.value
-  consumed ← consumeAt env reached span Application opened.value.row
+  consumed ← consumeAt env reached span (Application named) opened.value.row
   pure
     { value: checked.value
     , state: { ty: opened.value.result, state: consumed }
@@ -94,16 +99,36 @@ applyValue
   ∷ ∀ r
   . CheckEnv r
   → State
+  → Maybe Callee
   → Ty Open
   → Checked.Expr
   → Either Diagnostic (Threaded (Ty Open))
-applyValue env state ty argument = do
+applyValue env state named ty argument = do
   synced ← sync env state (Checked.spanOf argument)
   opened ← open env synced ty (Checked.spanOf argument)
   reached ← require env opened.state opened.value.parameter argument
-  consumed ← consumeAt env reached (Checked.spanOf argument) Application
+  consumed ← consumeAt env reached (Checked.spanOf argument)
+    (Application named)
     opened.value.row
   pure { value: opened.value.result, state: consumed }
+
+-- A callee that is a parameter of the enclosing function has a name and a
+-- written row to point at (FX017). LocalIds below the parameter count are
+-- the parameters; the resolved syntax keeps no other local's name.
+calleeOf ∷ ∀ r. CheckEnv r → Resolved.Expr → Maybe Callee
+calleeOf env = case _ of
+  Resolved.Local _ (Resolved.LocalId index) → Array.index parameters index
+    >>= parameterCallee
+  _ → Nothing
+  where
+  parameters = maybe' none _.parameters
+    (Array.find named env.functions)
+  none _ = []
+  named function = function.name == env.functionName
+  parameterCallee parameter = Just
+    { name: parameter.name
+    , rowSpan: fromMaybe parameter.span parameter.rowSpan
+    }
 
 -- Whether `ty` may still be applied: an arrow, or a meta not yet bound.
 functionLike ∷ State → Ty Open → Boolean

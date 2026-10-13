@@ -19,10 +19,10 @@ const checkRows = [
     // left-over label of the argument's row, met by a closed row, is
     // dropped as if the closed row had been opened.
     name: 'fx-closed-opened', file: 'src/Features/Check/RowFinish.purs',
-    needle: '    _ → Done\n      ( Left\n          (RowExtra (resolveLabel',
+    needle: '    _ → Done\n      ( Left\n          ( RowExtra (resolveLabel',
     replacement: '    Closed → Loop (pending { right = pending.right'
       + ' { entries = Array.drop 1 pending.right.entries } })\n'
-      + '    _ → Done\n      ( Left\n          (RowExtra (resolveLabel',
+      + '    _ → Done\n      ( Left\n          ( RowExtra (resolveLabel',
     probe: 'fx-closed-opened', message: /closed parameter row: accepted/
   },
   {
@@ -69,6 +69,15 @@ const checkRows = [
       + ' occurrence origin',
     replacement: 'remember _ _ origins = origins',
     probe: 'fx-provenance', message: /provenance: notes/
+  },
+  {
+    // FX017: a caller label the callback's row lacks is the callback's
+    // fault. Without the classification the call is reported as the caller
+    // performing the label, which its own signature allows.
+    name: 'fx-callback-row', file: 'src/Features/Check/Callback.purs',
+    needle: '    | isNothing origin.via && signatureOnly env →',
+    replacement: '    | false →',
+    probe: 'fx-callback-row', message: /callback row: /
   },
   {
     // A row of more than `visibleLabels` labels is abbreviated; printed in

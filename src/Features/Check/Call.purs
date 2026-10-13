@@ -128,7 +128,7 @@ overApplied infer env span node use arguments = do
   reached ← sync env called.state span
   unless (functionLike reached (Checked.typeOf called.value))
     (arityAt span)
-  applyAll infer env span (called { state = reached })
+  applyAll infer env span Nothing (called { state = reached })
     (Array.drop arity arguments)
   where
   arity = Array.length use.value.fields

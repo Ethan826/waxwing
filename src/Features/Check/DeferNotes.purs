@@ -50,7 +50,7 @@ failureNotes state span whole body label occurrence =
     _ → false
   viaCall origin = case origin.consumed of
     CallOf _ → true
-    Application → true
+    Application _ → true
     ClauseRow → true
     _ → false
   bring application = noteAt (Checked.spanOf application)

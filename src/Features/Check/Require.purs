@@ -80,7 +80,7 @@ expectType env state expected actual span = do
     TooDeep → tooDeepAt span
     Mismatch _ _ → mismatched unit
     RowMissing label row occurrence → rowFailure label row occurrence
-    RowExtra label occurrence → rowFailure label (Row [] Nothing) occurrence
+    RowExtra label _ occurrence → rowFailure label (Row [] Nothing) occurrence
     RowSharedTail left right → rowConflict env span left right
     RowMismatch _ _ → mismatched unit
     RowPayload _ _ _ → mismatched unit

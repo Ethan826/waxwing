@@ -98,7 +98,7 @@ crossing
     , consumed ∷ Consumed
     , via ∷ Maybe Boundary
     }
-crossing span = { span, consumed: Application, via: Just DeferItem }
+crossing span = { span, consumed: Application Nothing, via: Just DeferItem }
 
 -- After the settling loop: each deferred row, resolved, may hold no `Fail`
 -- and must not end in a rigid row variable, which a caller may fill with

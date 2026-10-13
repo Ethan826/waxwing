@@ -1,5 +1,6 @@
 module Features.Check.Provenance
   ( Consumed(..)
+  , Callee
   , Boundary(..)
   , Origin
   , Origins
@@ -35,9 +36,15 @@ import Features.Check.Subst (Flex, Subst)
 data Consumed
   = Operation String
   | CallOf String
-  | Application
+  | Application (Maybe Callee)
   | ClauseRow
   | FailOf String
+
+-- A function value applied that is a parameter of the enclosing function
+-- (FX017): its name, and where its row is written (its `with`, or, with
+-- none written, the parameter's name: the resolved syntax keeps no span
+-- for its type).
+type Callee = { name ∷ String, rowSpan ∷ Span }
 
 -- The boundary a label crossed on its way to the rejection.
 data Boundary

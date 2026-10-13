@@ -87,7 +87,10 @@ finish operands pending _ =
           (stageLabel pending.mode meta pending.subst first.label)
     _ → Done
       ( Left
-          (RowExtra (resolveLabel pending.subst first.label) first.occurrence)
+          ( RowExtra (resolveLabel pending.subst first.label)
+              (resolveRow pending.subst operands.left)
+              first.occurrence
+          )
       )
   grow meta first staged = either (Done <<< Left)
     (Loop <<< swapped meta first)

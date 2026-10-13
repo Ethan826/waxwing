@@ -19,6 +19,7 @@ import Domain.Problem
   )
 import Domain.Syntax (Diagnostic, ErrorCode, Span)
 import Domain.Syntax as Code
+import Format.Diagnostic.Callback as Callback
 import Format.Diagnostic.Mark as Mark
 import Format.Diagnostic.Name (listed)
 import Format.Diagnostic.Name as Name
@@ -57,6 +58,7 @@ code = case _ of
   Internal _ → Code.InternalError
   Hinted problem _ → code problem
   EffectNotAllowed _ _ → Code.EffectError
+  CallbackRowLacks _ _ _ _ → Code.EffectError
   UnhandledEffect _ → Code.EffectError
   MustBePure _ → Code.EffectError
   RowEquality _ _ _ → Code.EffectError
@@ -133,6 +135,8 @@ message = case _ of
   Hinted problem hint → message problem <> hintMessage hint
   EffectNotAllowed name label → name <> " performs " <> shortLabel label
     <> ", which its signature does not allow"
+  CallbackRowLacks callee function caller own →
+    Callback.headline callee function caller own
   UnhandledEffect label → "Unhandled " <> shortLabel label <> " in main"
   MustBePure label → "This function must be pure, but it performs "
     <> shortLabel label
@@ -178,6 +182,8 @@ wire diagnostic =
 noted ∷ Problem → Boolean
 noted = case _ of
   EffectNotAllowed _ _ → true
+  CallbackRowLacks _ _ _ _ → true
+  Hinted problem _ → noted problem
   UnhandledEffect _ → true
   MustBePure _ → true
   RowEquality _ _ _ → true
@@ -205,6 +211,7 @@ hintMessage = case _ of
     <> name
     <> "?"
   TrailingSemicolon → "; remove the trailing ;?"
+  CallbackRow name caller → "; " <> Callback.hint name caller
   where
   counted count
     | count == 1 = "1 argument"

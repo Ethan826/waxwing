@@ -176,7 +176,7 @@ const environment = current => ({
 });
 const consumeInto = (labels, target) => {
   const result = consumeLabels(environment(target))(start)({
-    origin: { span, consumed: Application.value, via: Nothing.value },
+    origin: { span, consumed: new Application(Nothing.value), via: Nothing.value },
     sources: [], labels, target, sites: [], ignoreMarks: false
   });
   assert.ok(result instanceof Right, result.value0?.problem?.constructor.name);
@@ -197,7 +197,7 @@ test('consumeLabels makes no copies', () => {
 test('a closed stage consumed into a wider target makes no copies', () => {
   const closedStage = Row.create([labels[0]])(Nothing.value);
   const result = consumeVia(environment(wide()))(start)({
-    span, consumed: Application.value, via: Nothing.value
+    span, consumed: new Application(Nothing.value), via: Nothing.value
   })([])(closedStage);
   assert.ok(result instanceof Right, result.value0?.problem?.constructor.name);
   assert.deepEqual(reasonsOf(result.value0), ['Assumed']);

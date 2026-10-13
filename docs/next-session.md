@@ -14,11 +14,17 @@ Evidence logs are in the worktree's .build/ (final-fix-verify.log: exit 0,
 
 Next: the user's decision on merging fx001-finish into main.
 
+FX017 (callback-row diagnostic) is done on branch fx017, a diagnostic-only
+change from 3ff0538: `q must allow every effect of a (L + M), but its row
+is L; ...` with notes at both written rows (docs/progress.md, "FX017").
+Not pushed or merged; it touches the same tree as fx001-finish, so merge it
+after the fx001-finish decision. Open question left with FX007: whether a
+callback's row should be subsumed by its caller's.
+
 Open BACKLOG items after FX001: FX002 (concurrency, builds on CF001), FX003
 (local state, recording fakes), FX005 (`ctx` elimination, cached lookup),
 FX006 (general resume), FX007 (relax strict `defer`; `nofail ...e`), FX010,
-FX011, FX012, FX017 (callback rows must equal the caller's row; misleading
-headline), FX013-FX016 (FX008 limitations: L1 with P5, L4, L6, handler
+FX011, FX012, FX013-FX016 (FX008 limitations: L1 with P5, L4, L6, handler
 through a generic function), T009, T010, D002, E013, FN006 items (1) (a
 `make()(x)` oracle row) and (2), plus the notes added to D001, R001, STD001,
 PKG001, I001 and CF001. INF001 stays the next language milestone after

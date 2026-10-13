@@ -59,7 +59,10 @@ install infer env state span handlerValue label rows body = do
   installed ← labelName env span (flexLabel label)
   reached ← consumeIgnoring env state
     { origin:
-        { span, consumed: Application, via: Just (Installation installed) }
+        { span
+        , consumed: Application Nothing
+        , via: Just (Installation installed)
+        }
     , stage: rows.inference
     , target: env.current
     }

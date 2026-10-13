@@ -142,7 +142,9 @@ adding a bypass allowlist.
   diagnostics rows in scripts/regression-fx.mjs (`fx-side-condition`,
   `fx-defer-fail`, `fx-defer-rigid`, `fx-defer-unified`,
   `fx-closed-opened`, `fx-layout-edges`, `fx-provenance`,
-  `fx-abbreviation`; probes in test/regression-fx.mjs) and the emitted-Go
+  `fx-abbreviation`, and FX017's `fx-callback-row`, which restores the
+  old classification of a callback row that lacks a caller label; probes
+  in test/regression-fx.mjs) and the emitted-Go
   rows in scripts/regression-fx-go.mjs (`fx-clause-context`,
   `fx-abort-target`, `fx-clause-order`, `fx-cleanup-context`,
   `fx-cleanup-cause`, `fx-cleanup-defect`, `fx-ctx-reachable`; probes in

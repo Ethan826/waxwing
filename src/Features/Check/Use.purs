@@ -124,7 +124,7 @@ declarationUse state variables markNames sorts fields result row =
       , scheme: scheme.value { arguments = arguments }
       , row: opened.value
       , rows: staged.value
-      , consumed: Application
+      , consumed: Application Nothing
       , callee: Nothing
       }
   , state: staged.state

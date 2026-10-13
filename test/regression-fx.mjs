@@ -107,7 +107,16 @@ const abbreviation = context => {
   detected(context);
 };
 
+// FX017: the callback's written row lacks a label of its caller's.
+const callbackRow = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
+  + 'fn a(q: Int -> Int with L, x: Int): Int with L + M = q(x);' + main;
+const callbackMessage = 'q must allow every effect of a (L + M), but its row '
+  + 'is L; write q\'s row as `with L + M`; a callback\'s row must equal its '
+  + 'caller\'s (FX017)';
+
 export const fxProbes = {
+  'fx-callback-row': refused(callbackRow, effect, callbackMessage,
+    'callback row'),
   'fx-side-condition': refused(sideCondition, effect,
     'Log + ...r and Clock + ...r cannot be made equal: both end in ...r',
     'side condition'),

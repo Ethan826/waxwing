@@ -4101,3 +4101,42 @@ notes (timing retune, timeout in `timedRun`, typed-failure scenario),
 recorded only. Verify: `rm -rf output &&
 GOTOOLCHAIN=go1.26.4 npm run verify` exit 0 (.build/final-fix-verify.log),
 81 regression proofs, no bound raised, no rerun.
+
+### FX017: callback-row diagnostic (2026-10-12)
+
+Branch fx017 (from 3ff0538, the approved text). A function value applied
+inside a function whose signature row has a label the value's row lacks
+(`fn a(q: Int -> Int with L, x: Int): Int with L + M = q(x)`) was reported
+as `a performs M, which its signature does not allow`, contradicting the
+signature. It is now E_EFFECT at the call with the approved text: `q must
+allow every effect of a (L + M), but its row is L` (`but its row has no
+labels` for an unannotated arrow, `this function value` for a callee that
+is not a named parameter), the hint `write q's row as `with L + M`; a
+callback's row must equal its caller's (FX017)` after `; `, and notes
+`q's row is written here` and `a's row is written here`.
+
+Classification (Features.Check.Callback): the unifier pairs the callee's
+labels first, so `RowMissing` is the callee performing what the caller
+lacks (unchanged: probes p5, p6) and `RowExtra`, now carrying the row it was
+left over against, is a caller label the callee lacks. The new text needs
+that, an `Application` origin that crossed no boundary (installation and
+`defer` set `via`), and a current row that is the signature's alone (one
+site): inside a `with` or `handle` a callee's label can pair with an
+installed duplicate, and the old text stays. Accepted and rejected programs
+are unchanged (differential: only the new-text programs differ). Recorded limits: a `let`-bound or
+lambda-bound callee is `this function value` (the resolved syntax keeps no
+local's name); an unannotated arrow's note points at the parameter's name
+(no type span is kept); a call inside a `with` or `handle`, and a
+callback passed as an argument, keep their old text; a named tail is
+dropped from the hint's row (labels only, as approved). Tests:
+test/fx017-callback-row.test.mjs (11, seen failing first); regression row
+`fx-callback-row`. Subsumption of the callback's row stays with FX007.
+
+Verify: `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0
+(.build/fx017-verify.log): 1264/1264 parallel, 53/53 serial, 82 regression
+proofs. Differential against a build of 3ff0538 (.build/fx017-differential.log,
+exit 1 by design): 8 differences in 3,841 harvested sources, all the new
+FX017 probes; 0 in 1,029 fuzz, 1,085 `isName`, 1,000 matches and 1,000
+mutations sources. No bound raised, no rerun hiding a failure (the first
+verify attempts failed on an 80-column comment and a regression needle
+that the new `RowExtra` layout broke; both fixed, then one clean run).
