@@ -417,6 +417,18 @@ Limits, stated plainly.
   omits `write q's row as …`, because the printed row would drop the
   payload's row. Workaround: write the callback's row as the
   caller's full row (`q: Int -> Int with L + M`).
+  Under `with` or `handle` in the function's body the row at the call also
+  holds the installed labels, innermost first (FX018): `q must allow every
+  effect at this call (M + L), but its row is L; write q's row as `with M +
+  L`; a callback's row must equal the row where it is called (FX018)`, with
+  a note `M is handled here` at each installation. Passing a function whose
+  row lacks a label of the parameter's row reads `q must allow every effect
+  of take's parameter f (L + M), but its row is L; write q's row as `with L
+  + M`; a function passed as an argument must have its parameter's row
+  (FX018)`. Both keep the old text inside a lambda body, for a row nested
+  in a label's payload, and for the other direction. The `write …` part is
+  left out when the row it would write does not fix the call (a constructor
+  field's closed row, a caller wider than the callee).
 - There is no mutable state, so a fake handler is stateless (fixed clock,
   canned results, a prefixing logger); recording fakes are FX003.
 - `let` is monomorphic. A local of type `A -> B with pure` is not accepted

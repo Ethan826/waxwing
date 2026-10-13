@@ -75,9 +75,28 @@ const checkRows = [
     // fault. Without the classification the call is reported as the caller
     // performing the label, which its own signature allows.
     name: 'fx-callback-row', file: 'src/Features/Check/Callback.purs',
-    needle: '    | isNothing origin.via && signatureOnly env && topLevel env placed →',
+    needle: '    | isNothing origin.via && inFunction env && siteLabel env placed →',
     replacement: '    | false →',
     probe: 'fx-callback-row', message: /callback row: /
+  },
+  {
+    // FX018 (a): under `with` or `handle` the row at the call holds the
+    // installed labels. Restricted to the signature's row alone, the
+    // mismatch is again reported as the caller performing the label.
+    name: 'fx-callback-install', file: 'src/Features/Check/Callback.purs',
+    needle: '    | isNothing origin.via && inFunction env && siteLabel env placed →',
+    replacement: '    | isNothing origin.via && inFunction env && siteLabel env placed\n'
+      + '        && Array.length env.sites == 1 →',
+    probe: 'fx-callback-install', message: /callback install: /
+  },
+  {
+    // FX018 (b): a function passed where the parameter's row has a label
+    // the function's row lacks. Without the classification the argument is
+    // reported as `This function performs M`, with no notes.
+    name: 'fx-callback-argument', file: 'src/Features/Check/ArgumentRow.purs',
+    needle: '    EffectNotAllowed "This function" _ →',
+    replacement: '    EffectNotAllowed "This function (old)" _ →',
+    probe: 'fx-callback-argument', message: /callback argument: /
   },
   {
     // A row of more than `visibleLabels` labels is abbreviated; printed in

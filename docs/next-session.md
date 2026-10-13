@@ -14,6 +14,10 @@ Evidence logs are in the worktree's .build/ (final-fix-verify.log: exit 0,
 
 Next: the user's decision on merging fx001-finish into main.
 
+FX018 (callback-row diagnostics under `with`/`handle` and in argument
+passing) is done on branch fx018 from 0a23784; not pushed or merged
+(docs/progress.md, "FX018").
+
 FX017 (callback-row diagnostic) is done on branch fx017, a diagnostic-only
 change from 3ff0538: `q must allow every effect of a (L + M), but its row
 is L; ...` with notes at both written rows (docs/progress.md, "FX017").

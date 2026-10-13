@@ -4128,8 +4128,8 @@ limits: a `let`-bound or lambda-bound callee is `this function value` (the
 resolved syntax keeps no local's name); an unannotated arrow's note points
 at the parameter's name (no type span is kept) and reads `q's row is not
 written`; a call inside a `with` or
-`handle`, and a callback passed as an argument, keep their old text (BACKLOG
-FX018); the hint writes the caller's row as written, so a named tail stays
+`handle`, and a callback passed as an argument, kept their old text until
+FX018; the hint writes the caller's row as written, so a named tail stays
 (p3: `with M + L + ...e`) and the ambient tail is omitted, while the
 headline prints labels only. When a caller label's payload holds an arrow,
 handler or row-applied type, the printer drops its rows, so the hint takes
@@ -4149,3 +4149,55 @@ FX017 probes; 0 in 1,029 fuzz, 1,085 `isName`, 1,000 matches and 1,000
 mutations sources. No bound raised, no rerun hiding a failure (the first
 verify attempts failed on an 80-column comment and a regression needle
 that the new `RowExtra` layout broke; both fixed, then one clean run).
+
+### FX018: callback-row diagnostics in with/handle and argument passing (2026-10-13)
+
+Branch fx018 (from 0a23784, wording chosen in BACKLOG FX018). Diagnostic
+only: the accepted and rejected programs and the Go output are unchanged.
+
+(a) A callback-row mismatch directly in a function's body but under `with`
+or `handle` (`Features.Check.Callback`; FX017 had excluded it): `q must
+allow every effect at this call (M + L + M), but its row is L; write q's row
+as `with M + L + M`; a callback's row must equal the row where it is called
+(FX018)`. The row at the call is the installed labels, innermost first, then
+the signature's; the notes are the callee's, `M is handled here` at each
+installing `with`/`handle`, and the caller's. The two corpus programs where
+a callee label pairs with an installed duplicate (`around`) get this text
+and it is true there: the hint (`with Log + Log + ...e`) compiles. The
+FX008 probe table pins these two (rev6/around3 and rev6/around6): their
+expected text, around3's notes and the table hash changed with this task, for
+the reviewer's diff of test/fx008-probe-table-rev6.mjs. Inside a
+lambda body there is no signature site and the old text stays.
+
+(b) A function passed where the parameter's row has a label the function's
+row lacks (`Features.Check.ArgumentRow`, from `Argument.refused`): `q must
+allow every effect of take's parameter f (L + M), but its row is L; ...
+(FX018)` with the callee's note and `f's row is written here`. Only the
+top-level arrow row of the argument against the parameter's counts: the two
+rows are unified on their own and must fail for a label the argument lacks.
+The other direction (b3), a nested row, and applications of function values
+keep the old text. A constructor field has no parameter name (`of the
+parameter it is passed to`).
+
+FX017's rules carry over (named only for single-stage parameters; payload
+rows holding a row give the anonymous hint; named tails kept). One new
+rule: the `write …` hint of (b) is printed only if a simulation of the
+rewritten argument, unifying it with the parameter and consuming the
+callee's row, succeeds. A sweep of 616 generated programs found cases where
+the parameter's row is not enough (a caller wider than the callee, since the
+callee's ambient tail is shared with the argument's; a constructor's closed
+row); those keep the headline with the anonymous hint. The hint's tail is
+the row at the call's named tail, which the callee's own row ends in. After
+that change no printed hint failed on the sweep, and each tested hint is
+shown to compile when applied. Tests: test/fx018-callback-row.test.mjs,
+test/fx018-argument-row.test.mjs; regression rows `fx-callback-install` and
+`fx-callback-argument` (and `fx-callback-row`, whose needle moved).
+
+Verify: `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` exit 0
+(.build/fx018-verify.log): 1291/1291 parallel, 53/53 serial, 84 regression
+proofs. Differential against a build of 0a23784 (.build/fx018-differential.log,
+exit 1 by design): 312 differences in 4,492 harvested sources and 5 in
+1,000 mutations sources, every one a previously rejected program whose
+message is now an FX018 (or FX017) text, none an acceptance or Go change; 0
+in fuzz, `isName` and matches. The first verify attempts failed on the
+style gate (a `case` on `Either`) and on the two FX008 probes above.

@@ -17,7 +17,7 @@ import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Stages (arrowType)
 import Features.Check.Consume (consumeAt)
-import Features.Check.Apply (applyAll, functionLike)
+import Features.Check.Apply (applyAll, calleeOf, functionLike)
 import Features.Check.Sync (sync)
 import Features.Check.Argument (refused)
 import Features.Check.Context (CheckEnv, Infer)
@@ -173,9 +173,12 @@ supplied infer env span node use arguments = do
         (Array.drop count use.value.rows)
         use.value.result
   argumentPair ty actual = { ty, actual, index: 0 }
+  namedArgument index = Array.index arguments index >>= calleeOf env
   indexed index pair = pair { index = index }
   checkArgument reached pair = either
-    (Left <<< refused env reached use.value pair.index pair.ty pair.actual)
+    ( Left <<< refused env reached use.value pair.index pair.ty pair.actual
+        (namedArgument pair.index)
+    )
     (Right <<< threadedUnit)
     (require env reached pair.ty pair.actual)
   threadedUnit reached = { value: unit, state: reached }

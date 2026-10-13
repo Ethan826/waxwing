@@ -20,13 +20,17 @@ export const rev6 = [
   probe('rev6/around2',
     no('E_EFFECT', 'around performs Log, which its signature does not allow', 158, 182)),
   probe('rev6/around3',
-    no('E_EFFECT', 'around performs Log, which its signature does not allow', 154, 162)),
+    no('E_EFFECT', 'body must allow every effect at this call (Log + Log), but its row is Log; '
+      + 'write body\'s row as `with Log + Log + ...e`; a callback\'s row must '
+      + 'equal the row where it is called (FX018)', 154, 162)),
   probe('rev6/around4',
     no('E_SYNTAX', 'Expected a capitalized name', 74, 78)),
   probe('rev6/around5',
     ok('101\n', '349c5850df08b37125b86f5603ab4bf0e0c0db640b99ed8d4ea212d082c6b6fc')),
   probe('rev6/around6',
-    no('E_EFFECT', 'around performs Log, which its signature does not allow', 211, 219)),
+    no('E_EFFECT', 'body must allow every effect at this call (Log + Log), but its row is Log; '
+      + 'write body\'s row as `with Log + Log + ...e`; a callback\'s row must '
+      + 'equal the row where it is called (FX018)', 211, 219)),
   probe('rev6/con',
     no('E_INTERNAL', 'Invalid handler effect', 0, 0)),
   probe('rev6/con2',

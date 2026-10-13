@@ -3,33 +3,42 @@ module Features.Check.Callback (callbackLacks) where
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
-import Data.String (joinWith)
+import Data.Foldable (foldl)
+import Data.Maybe (Maybe(..), fromMaybe, isNothing)
 import Data.Traversable (traverse)
 import Domain.Note (NoteReason(..))
-import Domain.Problem (Hint(..), Problem(..))
-import Domain.Row (Label(..), Row(..))
-import Domain.Syntax (Diagnostic, Note)
-import Domain.Type (Ty(..), TyRow)
-import Domain.Type.Parts (children)
+import Domain.Problem (CallbackKind(..))
+import Domain.Row (Label, Row(..))
+import Domain.Syntax (Diagnostic, Note, Span)
+import Domain.Type (Ty, TyRow)
+import Features.Check.CallbackParts
+  ( calleeNotes
+  , labelsOf
+  , lacksProblem
+  , printed
+  , tailSuffix
+  )
 import Features.Check.Context (CheckEnv)
 import Features.Check.Occurrence (OccurrenceId(..))
 import Features.Check.Provenance (Callee, Consumed(..), Origin)
 import Features.Check.Report (noteAt)
-import Features.Check.RowName (labelName, tailName)
+import Features.Check.RowName (labelName)
 import Features.Check.Scheme (State, flexibleRow)
 import Features.Check.Subst (Flex, resolveRow)
 
--- FX017. An application of a function value whose row, closed by a rigid
--- tail, lacks a label that the caller's signature row writes. Consumption
--- pairs the callee's labels first, so a label of the callee that the
--- caller lacks (`RowMissing`) is reported before any caller label the
--- callee lacks (`RowExtra`): this is only the second kind. The current row
--- must be the signature's alone: inside a `with` or `handle` it holds
--- installed labels too, a callee's label may pair with an installed
--- duplicate, and the signature's own would be named as missing from a row
--- that prints it. An installation or `defer` crossing a boundary has a
--- `via`, and no other consumer is an `Application`.
+-- FX017, FX018. An application of a function value whose row, closed by a
+-- rigid tail, lacks a label of the row at the call. Consumption pairs the
+-- callee's labels first, so a label of the callee that the caller lacks
+-- (`RowMissing`) is reported before any label of the row at the call that
+-- the callee lacks (`RowExtra`): this is only the second kind. The row at
+-- the call is the signature's alone (FX017), or, under `with` or `handle`
+-- directly in the function's body, the installed labels first (FX018). A
+-- body inside a lambda has no signature site, and its row is open, so it
+-- keeps the old text. An installation or `defer` crossing a boundary has a
+-- `via`, and no other consumer is an `Application`. The leftover must be a
+-- label of the row itself: a row nested in a label's payload is unified
+-- with rows written nowhere, and its leftover is part of the callee's row,
+-- which no `with` of the callee can fix.
 callbackLacks
   ∷ ∀ r a
   . CheckEnv r
@@ -40,104 +49,70 @@ callbackLacks
   → Maybe (Either Diagnostic a)
 callbackLacks env state origin placed calleeRow = case origin.consumed of
   Application named
-    | isNothing origin.via && signatureOnly env && topLevel env placed →
-        Just (lacking env state origin named calleeRow)
+    | isNothing origin.via && inFunction env && siteLabel env placed →
+        Just (lacking (kindOf env) env state origin named calleeRow)
   _ → Nothing
 
--- A label of the current row itself. A row nested in a label's payload is
--- unified with rows written nowhere, and its leftover is not the callee's
--- row but a part of it, which no `with` of the callee can fix.
-topLevel ∷ ∀ r. CheckEnv r → OccurrenceId → Boolean
-topLevel env = case _ of
-  Written span _ → span == env.functionSpan
+siteLabel ∷ ∀ r. CheckEnv r → OccurrenceId → Boolean
+siteLabel env = case _ of
+  Written span _ → Array.any (isSite span) env.sites
   Extended _ → false
+  where
+  isSite span site = site.span == span
 
-signatureOnly ∷ ∀ r. CheckEnv r → Boolean
-signatureOnly env = case env.sites of
-  [ site ] → site.span == env.functionSpan
-  _ → false
+-- Directly in a function's body: its signature is the outermost site.
+inFunction ∷ ∀ r. CheckEnv r → Boolean
+inFunction env = map _.span (Array.last env.sites) == Just env.functionSpan
+
+kindOf ∷ ∀ r. CheckEnv r → CallbackKind
+kindOf env = if Array.length env.sites == 1 then OfCaller else AtCall
 
 lacking
   ∷ ∀ r a
-  . CheckEnv r
+  . CallbackKind
+  → CheckEnv r
   → State
   → Origin
   → Maybe Callee
   → TyRow Flex
   → Either Diagnostic a
-lacking env state origin named calleeRow = do
-  caller ← printed env origin (signatureLabels env state)
-  callee ← printed env origin (labelsOf calleeRow)
+lacking kind env state origin named calleeRow = do
+  row ← printed env origin.span labels
+  own ← printed env origin.span (labelsOf calleeRow)
+  installed ← handled env origin.span kind labels
   Left
-    { problem: Hinted
-        ( CallbackRowLacks (_.name <$> named) env.functionName caller
-            (nonEmpty callee)
-        )
-        (CallbackRow hinted (caller <> written))
+    { problem: lacksProblem kind named env.functionName
+        { row, own, suffix: tailSuffix env tail, writable: true }
+        labels
     , span: origin.span
-    , related: notes env named
+    , related: calleeNotes named <> installed
+        <> [ noteAt (fromMaybe env.functionSpan env.rowSpan) written ]
     }
   where
-  written = writtenTail env state
-  -- A payload's arrow rows are not printed, so the row written from this
-  -- text would not be the caller's: the hint then names no row to write.
-  hinted =
-    if Array.any holdsRow (payloads env state) then Nothing
-    else _.name <$> named
-  nonEmpty text = if text == "" then Nothing else Just text
+  Row labels tail = resolveRow state.subst (flexibleRow env.current)
+  written = RowWrittenHere env.functionName
 
-payloads ∷ ∀ r. CheckEnv r → State → Array (Ty Flex)
-payloads env state = Array.concatMap arguments
-  (signatureLabels env state)
-  where
-  arguments (Label _ found _) = found
-
--- Whether a type carries a row: an arrow, a handler, or a type applied to
--- a row argument, at any depth.
-holdsRow ∷ Ty Flex → Boolean
-holdsRow ty = case ty of
-  TFun _ _ _ → true
-  THandler _ _ → true
-  TData _ _ rows | not (Array.null rows) → true
-  _ → Array.any holdsRow (children ty)
-
--- The hint writes the row as the caller wrote it: a named tail stays, the
--- ambient one (no name) is implicit.
-writtenTail ∷ ∀ r. CheckEnv r → State → String
-writtenTail env state = maybe "" named tail
-  where
-  Row _ tail = resolveRow state.subst (flexibleRow env.current)
-  named variable = tailText (tailName env variable)
-  tailText name = if name == "" then "" else " + ..." <> name
-
--- The labels of the current row, which is the signature's own.
-signatureLabels ∷ ∀ r. CheckEnv r → State → Array (Label (Ty Flex))
-signatureLabels env state =
-  labelsOf (resolveRow state.subst (flexibleRow env.current))
-
-labelsOf ∷ TyRow Flex → Array (Label (Ty Flex))
-labelsOf (Row labels _) = labels
-
-printed
+-- Each installation's labels, innermost first as the row orders them, with
+-- the `with` or `handle` that installed them. Only the row at a call under
+-- an installation has any.
+handled
   ∷ ∀ r
   . CheckEnv r
-  → Origin
+  → Span
+  → CallbackKind
   → Array (Label (Ty Flex))
-  → Either Diagnostic String
-printed env origin labels = joinWith " + " <$> traverse
-  (labelName env origin.span)
-  labels
-
--- Where the callee's row is written (none for a function value that is not
--- a parameter), then where the caller's is: its `with`, or, when none is
--- written, the signature.
-notes ∷ ∀ r. CheckEnv r → Maybe Callee → Array Note
-notes env named = maybe [] (Array.singleton <<< calleeNote) named
-  <>
-    [ noteAt (fromMaybe env.functionSpan env.rowSpan) (written env.functionName)
-    ]
+  → Either Diagnostic (Array Note)
+handled env span kind labels = case kind of
+  AtCall → Array.concat <$> traverse siteNotes slices
+  _ → Right []
   where
-  calleeNote callee = noteAt callee.rowSpan (calleeReason callee)
-  calleeReason callee =
-    if callee.written then written callee.name else RowNotWritten callee.name
-  written = RowWrittenHere
+  slices = (foldl slice { offset: 0, found: [] } installing).found
+  installing = Array.dropEnd 1 env.sites
+  slice pending site =
+    { offset: pending.offset + site.count
+    , found: Array.snoc pending.found { site, offset: pending.offset }
+    }
+  siteNotes slice' = map (note slice'.site)
+    <$> traverse (labelName env span)
+      (Array.take slice'.site.count (Array.drop slice'.offset labels))
+  note site label = noteAt site.span (HandledHere label)

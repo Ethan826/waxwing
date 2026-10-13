@@ -1,4 +1,7 @@
 import test from 'node:test';
+import assert from 'node:assert/strict';
+import { Right } from '../output/Data.Either/index.js';
+import { compile } from '../output/Program.Compile/index.js';
 import { expectDiagnostic } from './fx-diagnostics-support.mjs';
 
 // FX017: a callback whose written row lacks a label of its caller's row is
@@ -134,32 +137,27 @@ test('a let-bound callee keeps no name in the resolved syntax', () => {
   });
 });
 
-test('a label an installation put in the row keeps the old message', () => {
-  expectDiagnostic(effects + 'fn a(q: Int -> Int with L, x: Int): Int with L '
-    + '= { let h = handler M { m() => 1 }; with h { q(x) } };' + main, {
-    code: 'E_EFFECT',
-    message: 'a performs M, which its signature does not allow',
-    at: ['q(x) }', 'q(x)'],
-    notes: [[': Int with L =', 'with L',
-      'the signature of a does not allow M']]
-  });
-});
-
-test('a callee pairing with an installed duplicate keeps the old message', () => {
+// Under `with` or `handle` the text is FX018's (test/fx018-callback-row.test.mjs).
+test('a callee pairing with an installed duplicate: FX018\'s text is true', () => {
   const around = 'with handler Log { log(n) => log(n + 100) } { body(()) }';
-  expectDiagnostic('effect Log { fn log(n: Int): Unit; }; '
+  const source = 'effect Log { fn log(n: Int): Unit; }; '
     + 'fn around(body: Unit -> Unit with Log + ...e): Unit with Log + ...e = '
     + `${around}; fn main(): Unit with Console = with handler Log `
-    + '{ log(n) => print(n) } { around(fn(u: Unit) => log(1)) };', {
+    + '{ log(n) => print(n) } { around(fn(u: Unit) => log(1)) };';
+  expectDiagnostic(source, {
     code: 'E_EFFECT',
-    message: 'around performs Log, which its signature does not allow',
+    message: 'body must allow every effect at this call (Log + Log), but its '
+      + 'row is Log; write body\'s row as `with Log + Log + ...e`; a '
+      + 'callback\'s row must equal the row where it is called (FX018)',
     at: ['body(())'],
-    notes: [[around, around, 'Log comes from this function value'],
-      [around, 'log(n + 100)', 'Log is performed here'],
-      [around, around, 'Log is handled here'],
-      [': Unit with Log + ...e =', 'with Log + ...e',
-        'the signature of around does not allow Log']]
+    notes: [['body: Unit -> Unit with Log + ...e', 'with Log + ...e',
+      'body\'s row is written here'],
+    [around, around, 'Log is handled here'],
+    [': Unit with Log + ...e =', 'with Log + ...e',
+      'around\'s row is written here']]
   });
+  assert.ok(compile(source.replace('body: Unit -> Unit with Log + ...e',
+    'body: Unit -> Unit with Log + Log + ...e')) instanceof Right);
 });
 
 test('a named tail and a Fail payload: the hint writes the row as written', () => {

@@ -114,7 +114,25 @@ const callbackMessage = 'q must allow every effect of a (L + M), but its row '
   + 'is L; write q\'s row as `with L + M`; a callback\'s row must equal its '
   + 'caller\'s (FX017)';
 
+// FX018: the same under a `with`, and when passed as an argument.
+const callbackInstall = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
+  + 'fn a(q: Int -> Int with L, x: Int): Int with L + M = '
+  + '{ let h = handler M { m() => 1 }; with h { q(x) } };' + main;
+const installMessage = 'q must allow every effect at this call (M + L + M), '
+  + 'but its row is L; write q\'s row as `with M + L + M`; a callback\'s row '
+  + 'must equal the row where it is called (FX018)';
+const callbackArgument = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
+  + 'fn take(f: Int -> Int with L + M): Int with L + M = f(1); '
+  + 'fn a(q: Int -> Int with L): Int with L + M = take(q);' + main;
+const argumentMessage = 'q must allow every effect of take\'s parameter f '
+  + '(L + M), but its row is L; write q\'s row as `with L + M`; a function '
+  + 'passed as an argument must have its parameter\'s row (FX018)';
+
 export const fxProbes = {
+  'fx-callback-install': refused(callbackInstall, effect, installMessage,
+    'callback install'),
+  'fx-callback-argument': refused(callbackArgument, effect, argumentMessage,
+    'callback argument'),
   'fx-callback-row': refused(callbackRow, effect, callbackMessage,
     'callback row'),
   'fx-side-condition': refused(sideCondition, effect,

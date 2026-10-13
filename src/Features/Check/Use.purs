@@ -51,7 +51,7 @@ type Use =
 type Callee =
   { name ∷ String
   , span ∷ Span
-  , parameters ∷ Array { span ∷ Span, rowSpan ∷ Maybe Span }
+  , parameters ∷ Array { name ∷ String, span ∷ Span, rowSpan ∷ Maybe Span }
   , variables ∷ Array String
   , sorts ∷ Array Syntax.Sort
   }
@@ -83,7 +83,7 @@ functionUse env state span (FunctionId index) =
     , sorts: function.sorts
     }
   parameterSpans parameter =
-    { span: parameter.span, rowSpan: parameter.rowSpan }
+    { name: parameter.name, span: parameter.span, rowSpan: parameter.rowSpan }
 
 -- The handler types in the signature opened (design §3.4, P5): only a
 -- function's use, not a constructor's, whose fields stay as written.

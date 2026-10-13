@@ -35,11 +35,12 @@ export const baseNotes = {
   'rev6/amb2': [
     [191, 197, 'Tick is performed here'],
     [72, 203, 'main may perform only Console']],
+  // FX018 (2026-10-13): the callback-row text and notes for this call under
+  // `with handler Log`, which the pinned old text had called a performance.
   'rev6/around3': [
-    [108, 164, 'Log comes from this function value'],
-    [137, 149, 'Log is performed here'],
+    [67, 82, 'body\'s row is written here'],
     [108, 164, 'Log is handled here'],
-    [90, 105, 'the signature of around does not allow Log']],
+    [90, 105, 'around\'s row is written here']],
   'design-review/p3': [
     [162, 168, 'Fail(E) is raised here'],
     [174, 191, 'Log is handled here'],

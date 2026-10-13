@@ -12,7 +12,9 @@ import Data.Foldable (sum)
 import Domain.Type.Parts (children, rowsOf)
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Sort(..))
 import Domain.Type (Ty(..))
+import Features.Check.ArgumentRow (argumentLacks)
 import Features.Check.Context (CheckEnv)
+import Features.Check.Provenance as Provenance
 import Features.Check.Report (noteAt)
 import Features.Check.Scheme (State, flexible)
 import Features.Check.Unify (Failure(..), Flex(..), resolveRow, unify)
@@ -32,11 +34,14 @@ refused
   → Int
   → Ty Open
   → Checked.Expr
+  → Maybe Provenance.Callee
   → Diagnostic
   → Diagnostic
-refused env state use index expected actual diagnostic =
-  maybe diagnostic noted use.callee
+refused env state use index expected actual passed diagnostic =
+  fromMaybe old
+    (argumentLacks env state use index expected actual passed diagnostic)
   where
+  old = maybe diagnostic noted use.callee
   noted callee = case diagnostic.problem of
     MustBePure _ → diagnostic
       { related = diagnostic.related <> pureNote callee }
