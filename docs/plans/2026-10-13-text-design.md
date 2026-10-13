@@ -315,3 +315,41 @@ Work is test-first: each behavioural test is seen failing before its code.
   expressions, so effects, `fail` and `nofail` marks flow through them
   exactly as through call arguments. Tests include an effectful hole
   inside a `defer`.
+
+## Plan-time amendments (2026-10-13)
+
+A survey of the compiler while writing the plan found five places where
+this spec disagreed with the code. Each is corrected here. None adds
+user-facing text.
+
+1. **`++` chain length.** The spec asked for a 20,000-operand `++` chain to
+   compile. Today the 128-level nesting limit (ADR 006) also bounds flat
+   operator chains: 129 operands of `+` compile and 130 give E_NESTING
+   (docs/language.md). `++` follows the same rule as `+`, and BACKLOG O001
+   would lift both. The scale requirement becomes: a 129-operand `++`
+   chain compiles and a 130-operand chain gives E_NESTING. Interpolation
+   is one node with a list of parts, not nested, so 10,000 parts still
+   must compile.
+2. **Evaluation order in Go.** No temporaries are needed. Binary operators
+   already rely on Go evaluating calls left to right in lexical order
+   (Format/Go/Compare.purs). Waxwing values are immutable, so a variable
+   read cannot observe a later part's effect. `++` and interpolation lower
+   to Go `+` the same way. The order test in §7 stays.
+3. **Snapshots.** There are six existing `bootstrap/*.go` snapshots, not
+   five: answer, functions, lists, services, shapes and tree. All stay
+   byte-identical.
+4. **Invalid UTF-8.** The CLI reads source with Node's `readFileSync(path,
+   'utf8')`, which silently replaces invalid bytes. Detection therefore
+   happens in the Runtime read, using a fatal UTF-8 decode. The first
+   invalid byte's position becomes the diagnostic span: its offset is the
+   UTF-16 length of the valid prefix, and the span is one unit.
+   Program.Compile still receives a decoded String.
+5. **Non-ASCII outside literals.** A non-ASCII character outside a literal
+   stays E_LEX `Unexpected character`, but its span now covers the whole
+   code point, so a non-BMP character is 2 units, not half a surrogate
+   pair. This is the only intended change to an existing diagnostic, and
+   the differential is allowed to show it.
+
+`Text` becomes a reserved type name like `Int`, `Bool` and `Unit`; no test
+or example uses it as an identifier. `show` becomes a built-in global like
+`print`. It is not reserved, and a bare `show` behaves like a bare `print`.
