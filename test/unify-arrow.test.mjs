@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Right } from '../output/Data.Either/index.js';
-import { eqTy } from '../output/Domain.Type/index.js';
+import { eqTy } from '../output/Domain.Type.Core/index.js';
 import { eqFlex as flexEq } from '../output/Features.Check.Subst/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
 import {
