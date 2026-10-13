@@ -1,0 +1,3 @@
+# Approximate highlighting on GitHub until Waxwing has its own grammar
+# (IDE001); Rust colours keywords, literals and numbers reasonably.
+*.wxw linguist-language=Rust

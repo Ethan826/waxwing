@@ -37,7 +37,7 @@ declared as **effects**, and functions name the effects they use. A
 **handler** is an ordinary value that implements an effect. `main` builds
 real or fake handlers and installs them with `with`.
 
-```
+```rust
 effect Database { fn query(id: Int): Int; };
 effect Clock { fn now(): Int; };
 effect Log { fn log(n: Int): Unit; };
@@ -111,7 +111,7 @@ the JSON diagnostic, rendered:
 
 **Algebraic data types and exhaustive matching:**
 
-```
+```rust
 type Shape = Dot | Square(Int) | Pair(Shape, Shape);
 
 fn size(s: Shape): Int = match s {
@@ -128,7 +128,7 @@ and printed as `Pair(Square(3), Dot)`.
 **Generic types and functions**, with type variables implicit in
 signatures:
 
-```
+```rust
 type List(a) = Nil | Cons(a, List(a));
 type Maybe(a) = Nothing | Just(a);
 
@@ -145,7 +145,7 @@ function per use and no interfaces or boxing.
 **First-class functions:** lambdas, closures, partial application and the
 `|>` pipe.
 
-```
+```rust
 fn compose(f: b -> c, g: a -> b): a -> c = fn(x) => f(g(x));
 
 fn main(): Int =
@@ -161,7 +161,7 @@ documented evaluation order (ADR 008).
 **Typed failures.** A failure is an effect with a payload, handled
 precisely:
 
-```
+```rust
 type Error = NotFound(Int) | Forbidden;
 
 effect Accounts { fn balance(id: Int): Int; };
@@ -211,7 +211,7 @@ A built-in `Text` type is being implemented now
 ([design](docs/plans/2026-10-13-text-design.md),
 [plan](docs/plans/2026-10-13-text-plan.md)). This syntax is approved:
 
-```
+```rust
 fn greet(name: Text, count: Int): Text =
   "Hello, ${name}! You have ${show(count)} new messages.";
 
@@ -233,7 +233,7 @@ PureScript rather than Haskell. That means no generated selector
 functions, no field-name clashes between types, and simple update syntax.
 The syntax below is illustrative; the design comes next:
 
-```
+```rust
 fn fullName(person: { first: Text, last: Text, ...rest }): Text =
   "${person.first} ${person.last}";
 
