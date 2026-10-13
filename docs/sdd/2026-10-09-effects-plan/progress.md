@@ -28,220 +28,876 @@ Note: one controller build ran concurrently with the parser implementer's;
 a transient regression failure resulted. Do not build in parallel again.
 
 ## Pre-flight scan (opus): preflight-scan.md — 28 rows, rulings:
-Ruling F1: ctx key = EffectId for user effects; Fail handles keyed by (Fail, TypeHead) — spec S401-409 is binding; plan only names Go identifiers — cost: none if spec holds.
-Ruling F2: IR OperationRef stays (bare operation with parameters is a function value, spec §1); Task 7 lowers it like FunctionRef and counts it in usesContext — cost: small.
-Ruling F3: Handler(Console)/Handler(Fail(E)) layouts emit empty handler structs in Task 7 (uninhabited types, but must compile) — rejecting in Check would change accepted Task 5 programs; revisit with D001.
-Ruling F4: Task 7 replaces each 'unlowered effect' assertion with a stronger executable assertion and re-targets regression row handler-metadata; never deletes one without a replacement.
-Ruling F5: keep counting only keys with type arguments (effects as types/functions today) — the limit is a polymorphic-key guard (Keys.purs comment, design §6); spec S427 "every key" read as "every polymorphic key, including effect keys"; record in ADR 010 — cost: a doc mismatch only.
-Ruling F6: Task 11 baseline = the same scenario with effects/handlers replaced by plain parameters, written in the test; assert difference = #effect keys.
-Ruling F7: Task 7 guard panic is a plain Go panic string "no handler for L"; Task 8's defect reporter formats any non-abort panic value as a defect line; specified in Task 8 brief.
-Ruling F8: adopt spec §3 text: an abort or defect escaping cleanup while another cause is pending becomes an uncatchable cleanup defect carrying both — spec text says so; flagged to the user for confirmation before Task 8 (non-blocking now).
-Ruling F9: keep implemented `Fail(DbError)` label spelling (rows print labels capitalized everywhere, §5 Row display); spec S706 lowercase is a typo — cost: one text change.
-Ruling F10: keep implemented headline text; "(required by …)" becomes a Task 9 note — per scan.
-Ruling F11: Task 10 differential corpus runs as a *.serial.test.mjs file (verify's serial phase), seeded, with an env knob for larger runs outside verify.
-Ruling F12: Task 6 executable probes deferred to Task 7 (guard prevents Go); Task 6's two already-passing tests are characterization tests, documented as such in progress.
-Ruling F13: Task 9 creates a new module for origin hooks rather than growing UnifyRow; include deferred Fail retries provenance in its brief.
-Ruling F14: Task 12 uses next free BACKLOG ids (check BACKLOG at the time) instead of FX004.
-Ruling F15: work on claude/vibrant-cerf-3km61i in place (session's assigned branch); no worktree — same isolation (dedicated branch) — record in progress.
-Ruling F16: Task 6 review after parser fix commit — already the plan.
-Ruling F17: Task 12 probes go into a new test/regression-fx.mjs; side-condition mutant gets an explicit timeout treated as failure.
-Ruling F18: Task 10 brief adds the verify step; Task 11 reuses existing 20,000-let test rather than duplicating, and adds a services.go snapshot comparison.
-Ruling F19: Tasks 7/8 file lists are compile-guided.
-Parser fix 5da7865: review (opus) ❌ Needs fixes — Important: Handler args via bare operand regress `Handler((Clock))` (accepted→E_SYNTAX) and `Handler(Int -> Int)` (E_ARITY→E_SYNTAX). Minor (deferred to final review): negative tests assert code only; lambda-param and fail-clause rejections untested; findMap over take 1 obscure.
-Parser fix: fix round 1 queued (resume implementer) after the running full verify ends.
-Task 6 test-shape updates committed 85c5867 (poly-run keys effect:false; specialize identity asserts effects == []).
-Regression proofs run 1: 7 passed, row 8 (capture) copy failed to compile — run overlapped implementer's parser edits; rerun after fix round.
-Parser fix round 1: 3aa1217 (Handler args via typeAndRow; lone-arg row lifted). Scoped re-review (opus) dispatched. Task 6 review (opus) dispatched: brief task-6-brief.md, report task-6-report.md, package review-task6.diff (9a6befd..HEAD, Task 6 paths).
-Parser fix re-review r1: findings 1-4 ADDRESSED; new Important: HandlerType.purs:61-68  ignores found.row →  silently drops one row. Round 2 queued after regression proofs.
-Parser fix re-review r1: findings 1-4 ADDRESSED; new Important: HandlerType.purs:61-68 sole ignores found.row, so Handler(Clock with Log with pure) silently drops one row. Round 2 queued after regression proofs.
-Task 6 review (opus): Spec ✅, quality Approved; no Critical/Important. Probed finiteness risks all rejected.
-Task 6: minor (deferred): Format.Go Expression/Usage use wildcards for the six effect nodes — Task 7 brief: list them explicitly.
-Task 6: minor (deferred): guard test lacks bare OperationRef / handler-typed parameter cases.
-Task 6: minor (deferred): Lower.purs `>>= (pure <<< IR.THandler)` → `map IR.THandler`.
-Task 6: minor (deferred): Fail layouts keyed by full payload — Task 7 brief: runtime key is (Fail, TypeHead), not the layout.
-Task 6: minor (deferred): Console/Fail layouts absent from specializationKeys.
-Regression rows duplicate-effect/operation/effect-parameter/operation-parameter: restored defect now yields "program was accepted" (old guard gone); messages updated; 7 remaining rows pass (.build/fx001-task6-regression2.log).
-Task 6: complete (2501024, a3b54d3, 85c5867, regression rows, docs 51353c8)
-Parser fix: complete (5da7865, 3aa1217, 49717bc); re-review r2 ADDRESSED, no new breakage.
-Verify at 49717bc (.build/fx001-parser-verify.log): 760/760 parallel; serial 12/22, all T007 timing (fn-linear-timing 8 incl. pipe at the margin, fn-scale 2); regression 33/33.
-Ruling: Task 7 implementer on sonnet (user: cheaper models where possible); escalate to opus on BLOCKED or fix round 4 — cost if wrong: extra turns.
-Task 7: dispatched, BASE 49717bc.
-Task 7: implementer DONE_WITH_CONCERNS e9a613f (checker fixes in Tables.purs ownerType, Consume.purs bound tail; ctor ctx; block-order needle; handler-metadata→effect-free-ctx). Review (opus) dispatched.
-Task 7 review (opus): ❌ Critical: Handle.purs:117-125 frames push last clause innermost; checker selects first occurrence → Error(Int)/Error(Bool) clauses panic at runtime; duplicate Int clauses pick the wrong one. Fix round 1 (resume implementer) includes it plus minors: check-level tests for Tables ownerType and Consume bound-tail fixes (seen failing with fix reverted); key-0 fallbacks in handlerKey/effectShape → guard.
-Task 7: minor (deferred): Context.children `_ → []` wildcard; Fail guard text names no family; `runtime` ~60-line declaration.
-Task 7 fix round 1: 4b80bd1 (clause order, check-level tests, key guards). Re-review (opus) dispatched.
-Task 7 re-review r1: all 3 ADDRESSED, no new breakage. 20,000-let timing: pre7 49717bc 1533/1574/1540 ms vs HEAD 1505/1405/1386 ms alternating — environment (T007), not Task 7.
-Ruling (user decision 2026-10-09): defer must not fail (Swift rule); spec §2/§3/§5 probes, plan Tasks 8/10/12, findings, next-session updated; task-8 brief regenerated.
-Task 7: complete (e9a613f, 4b80bd1; docs ad1059d); verify 786/786 parallel, T007 serial only, regression 33/33.
-Task 8: dispatched (sonnet), BASE ad1059d
-Snapshot of this workspace committed to docs/sdd/2026-10-09-effects-plan/ (84fd420); refresh after each task.
-User 2026-10-09: complete Task 8 then STOP (no Task 9); write bounded concurrency-foundations design milestone (requirements: cc-requirements.md). Design writer (opus) dispatched in parallel with Task 8 implementer; docs only.
-CF001 draft (opus) written: docs/plans/2026-10-09-concurrency-foundations-design.md (477 lines; refs checked against abstracts only — WebFetch host failures). Subset: par let fork-join, Fail/pure children, leftmost failure, child root wrapper relays outer aborts to join. 7 doc over-promises in §11. FX004 ID clash: covered by ruling F14. Adversarial review (opus) dispatched.
-Task 8: implementer DONE_WITH_CONCERNS 041cb31 (defer-must-not-fail not total: late Fail via shared meta / caller ...e / unsettled closure → runtime cleanup-failed line; false positive for defer handling unsettled-key Fail; Cleanup/Report modules; IR.TypeInfo.arguments; recursive payloadName). Review (opus) dispatched.
-CF001 adversarial review (opus): Accept with fixes — C1 sequential-equivalence overclaim (leaks/unbounded goroutines), I1-I8 (label-only check vs tails = same as Task 8 concern a; sharability via handler types; overclaimed ESTABLISHED labels; OCaml citation; law policy; indexed monads + per-guarantee table; FX005 before FX002). Fix round 1 sent to the writer (opus).
-Task 8 review (opus): ❌ Critical: defer-must-not-fail unsound — P1 bracket callback (ambient tail), P2 named ...e, P3 unsettled closure, P4 lambda decided later, P5d handled abort converted to fatal report. Important: Report.payloadName recursion overflows on 5,000-arrow payload (compiler crash with defer); false positive defer+handle with unsettled key. (d),(e) OK. Minor: trailer says Sonnet; record conventions (no pending cause → first cleanup crash unprefixed; Go runtime panics print `panic: <text>`).
-Ruling (needs user confirmation): deferred expression gets its own row (fresh meta tail), its labels consumed into the current row but its tail never unified with the current row; after the function's constraints settle, reject if any Fail label remains or the tail resolved to a rigid row variable (ambient or named) — that variable could carry Fail. An unsolved meta tail closes to empty. Sound; strict for effect-polymorphic cleanup callbacks (bracket); can be relaxed later by an internal lacks-Fail constraint without breaking accepted programs. Cost if wrong: bracket idiom unavailable until relaxed.
-Task 8 fix round 1 (resume implementer, sonnet) with that rule + payloadName loop + tests for P1-P5d and the false positive.
-CF001 fix round 1 committed ceb979d (502 lines; R0 general no-X rule; resource budget in subset). Re-review (opus) dispatched.
-CF001 re-review r1 (opus): all 19 ADDRESSED; new Important N1 (inline over-budget divergence before join), N2 (par forces ctx + entry poll: undeclared change to spec §4/test 13), N3 (discard panic kind vs Task 8 cleanup, polls inside cleanup). Fix round 2 sent to writer incl. exact R0 alignment.
-CF001 round 2 committed a8052df (518 lines). Container restarted 2026-10-09 during Task 8 fix round 1; partial edits kept in tree; implementer resumed.
-Checked CF001 assumption: no loop keyword (Lex.reserved); emitted Go loops only bounded runtime loops (Entry args, Cleanup, Context markers, Report text) — divergence only via calls. Holds.
-CF001 re-review r2 (opus): N1-N3, R0, minors ADDRESSED; new Important P1 (discard not propagated to nested par; join not a poll point), P2 (equivalence condition must cover both runs; OOM process-wide); minor P3-P5. Fix round 3 sent.
-CF001 round 3 committed 29ce6a9 (530 lines); re-review r3 dispatched (named risk: cleanup defects dropped during discard).
-CF001 re-review r3 (opus): Accept with fixes; P1-P5 ADDRESSED; dropping discarded tasks' cleanup defects judged correct (determinism) but needs stated argument + spec §3 scoping (N1); minors N2-N5. Applying verbatim via haiku.
-CF001: accepted after 3 review rounds + verbatim minors (8e38aa0, 538 lines). Pending: Task 8 reconciliation, doc-audit corrections, BACKLOG/handoff.
-User 2026-10-09: proceed through the rest of the epic (Tasks 9-12) after updating the plan per recent planning (supersedes "stop after Task 8"). Strict defer ruling stands (user did not choose the lacks-Fail constraint; flagged). Sequence: close Task 8 → opus re-scan Tasks 9-12 → plan amendments (docs) → Tasks 9-12 SDD → final whole-branch review (opus) → handoff.
-Task 8 fix round 1: d5bfa8d (sound defer check per ruling, payloadName loop); verify 818/818 parallel, T007 serial only, regression 33/33. Re-review (opus) dispatched.
-Task 8 re-review r1: all ADDRESSED; precision regressions accepted as documented limitations (FX007). Task 8: complete (041cb31, d5bfa8d).
-Re-scan 9-12 (opus): 27 amendments (rescan-9-12.md). Rulings — all 12 adopted as proposed:
-Ruling R1: per-task verify passes when the only failures are the named BACKLOG T007 set (identical at base) plus an explicit `node scripts/regression.mjs` exit 0.
-Ruling R2: strict defer is adopted (user proceeded 2026-10-09 without requesting the lacks-Fail constraint); "pending user confirmation" wording → "adopted 2026-10-09; relaxation is FX007".
-Ruling R3: Task 9 stores occurrence links in Subst (every unification path), new modules Provenance/Origin; deferred-row origins separate.
-Ruling R4: Task 9 note reasons/texts as proposed in rescan T9-4; wire `related` = [{span, message}]; user may reword at review.
-Ruling R5-R8: Task 10 files/interpreter/generator/runs as proposed (serial file, env knobs, batches ≤100, shrinker + sensitivity tests).
-Ruling R9-R11: Task 11 no bracket idiom; hand-written inline baseline; host-measured bounds at 3× median; acceptance in parallel fx-services.test.mjs, timing serial.
-Ruling R12: Task 12 adds 4 regression rows + test/regression-fx.mjs; side-condition probe with own timeout; reuse effect-free-ctx; BACKLOG updates existing FX007/CF001 rows.
-Plan amended e2c3809 (868 lines).
-Task 9: dispatched (sonnet), BASE e2c3809
-Container restart #2: Task 9 implementer lost before writing anything (tree clean at e2c3809). Re-dispatched fresh.
-User 2026-10-10: add operational (Gleam/OTP) concerns to the CF001 assessment; do NOT begin Task 9; stop after the assessment for review. Task 9 re-dispatch stopped; its unreviewed partial edits saved to docs/sdd/2026-10-09-effects-plan/task-9-wip-abandoned.patch (git apply to resume) and stashed; tree reset to e2c3809.
-User 2026-10-10 (clarified): do not abandon Task 9; accommodate the new operational thinking. Task 9 WIP restored from stash; implementer resumed. OTP addendum (design only) dispatched in parallel; check its impact on Tasks 10-12 before continuing.
-CF001 ops addendum committed 57231e0 (723 lines; O-1..O-7; Task 12 ADR wording additions; no change to Tasks 9-11). Review (opus) dispatched.
-Task 9: implementer DONE_WITH_CONCERNS 2fc7a02 (coarse boundary spans; maxNotes vs pathHops; report-time callee re-check; bidirectional Matched links). Review (opus) dispatched.
-User 2026-10-10: backend-maintainability proposal (design only; backend-requirements.md). Interpretation per the user's earlier clarification: finish in-flight Task 9 review cycle, write the proposal, then STOP for user review before Task 10.
-CF001 ops review (opus): Accept with fixes; Critical façade-as-Shareable breaks par discard argument; I1-I6. Fix round sent to writer.
-Task 9 review (opus): Needs fixes — I1 boundary spans (carry with/annotation spans through Resolve; with Log misreported as ambient), I2 maxCharacters excludes headline (2,522 chars probe), I3 no note inside deferred expr for later-settled Fail key. Ruling: fix all three (spec §6 names them) + Minor e wording. Fix round 1 → implementer.
-CF001 ops fix round 1 committed 304261f (761 lines; C1 → B3b inert handlers, a pre-existing CF001 flaw). Re-review dispatched.
-CF001 ops re-review (opus): all 16 ADDRESSED; N1 B3b false premise (with-consumption + R0 already reject) → demote; minors. Applying verbatim via haiku.
-CF001 ops addendum: accepted (a7ade34).
-BK001 proposal draft committed 4dcf647 (462 lines; typed builders + plan/syntax split; no library; after FX001). Review (opus) dispatched.
-BK001 review (opus): Accept with fixes; 9 Important (overclaims, wrong facts, D2 sketch not total, two-tier recommendation, priority steps 0/1/6 before CF001/FX005), 9 Minor. Fix round sent to writer.
-BK001 fix round committed ab9cf6f (518 lines). Re-review dispatched.
-Task 9 fix round 1: 04ab898 (rowSpan through Resolve; 120-char label elision; defer note inside; M1/M2). Parallel 842/843 (large-source T004 flake), serial T007, regression 0. Re-review dispatched.
-BK001 re-review (opus): Accept with fixes; N1 Callee rule vs main/stages/function values/templates; N2 D8 is forward risk; N3-N8 minors. Fix round 2 sent.
-BK001: accepted after review + 2 fix rounds (controller spot-check of N1/N2 in round 2) fc133fd; BACKLOG row added.
-Task 9 re-review r1 (opus): I1 partly (N1 nested-arrow param notes on wrong with), I2 OK for required cases (string cut acceptable; payload mismatch structural); bound gap long names → E011, fix comment + record; I3 tested case only (N2 blames first Fail-row call). M1/M2 OK; rowSpan no wire change. Fix round 2 → implementer.
-Task 9 fix round 2: cee8542. Controller evidence: new tests run against 04ab898 in isolated worktree → fail: 'nested pure row names the parameter', 'nested row variable declared at the parameter', 'late Fail key blames its own call' (3 fail, 42 pass); second N2 probe passes there (characterization). Re-review r2 dispatched.
-Task 9 re-review r2 (opus): N1 residual wrong note (topRowPure with two pure rows), N2 fixed (no wrong note in ~20 probes; missing notes acceptable), settleDeferred linear, I2 comment OK (record E011 gap at close). Fix round 3 → implementer (one-line + tighten N2 test).
-Task 9 fix round 3: b80cc17. Re-review r3 (sonnet; small diff) dispatched.
-Task 9: complete (2fc7a02, 04ab898, cee8542, b80cc17). STOP for user review before Task 10 (user 2026-10-10).
-User 2026-10-10: "Run Task 10" — pause lifted for Task 10 only; stop after Task 10 completes (Tasks 11-12 not requested).
-Ruling: Task 10 implementer on sonnet (user: cheaper models; prior rulings) — escalate to opus on BLOCKED or fix round 4 — cost if wrong: extra turns.
-Ruling: implementer edits docs/engineering.md only; controller writes the progress entry from the report — matches Tasks 6-9 practice — cost: none.
-Task 10: dispatched (sonnet), BASE 89de11c
-Task 10: implementer DONE_WITH_CONCERNS 50f84ae (strict-defer hole via failing handler clause found; parser re-implemented not extended; shrink first 3 diffs). Review (opus): Needs fixes — I1 Task 7 inline run probes (fx-specialize, fx-handler-check) not moved/traced; I2 verify gate (parallel T004, serial T003 ladder); I3 defer hole escalation.
-Ruling: accept fx-oracle-parse re-implementing the grammar (poly-parse is a closed closure, editing it is forbidden) — cost if wrong: a second parser to maintain.
-Ruling: accept shrinking only the first 3 differences per run (every difference's seed+source still written) — each candidate costs a Go build — cost if wrong: manual shrink of later diffs.
-Ruling: accept sensitivity check as interpreter vs flagged interpreter (serial run proves Go = interpreter) — cost: none.
-Ruling: verify gate — parallel T004 (3,000-constructor match) and serial T003 ladder failed identically in Task 9 logs (.build/fx001-task9-verify.log, fx001-task9-serial.log; base 89de11c differs from b80cc17 by docs/assets only); treat as the recorded timing set, controller adds recurrences to BACKLOG T003/T004; implementer reports the shrinker test's parallel-phase wall time — cost if wrong: a timing regression hidden in known noise.
-Ruling: strict-defer hole (defer op reaching a failing handler clause) → new BACKLOG item by controller, linked to FX007; generator restriction (fail-free random clauses) stays until fixed — cost: reduced clause-abort coverage meanwhile.
-Ruling: do not amend the pushed commit's trailer (Sonnet line) — no force-push for metadata; later commits use the Opus trailer — cost: one inaccurate trailer.
-Task 10: minor (deferred): Int 32-bit wrap latent; fx-oracle-parse.mjs 240 lines (split later).
-Task 10: fix round 1/5 (7 addressed, 0 open — Task 7 probes moved+traced, shrinker time, evidence before shrink, GOWORK+shrink budget, exact census, engineering.md sentence, URL paths; commits 50f84ae..9365db3)
-Task 10: minor (deferred): fx-oracle-frames.mjs:3 header comment stale ({created, called}); callback created with no handler counts as escaped; shrink deadline checked between candidates only; escaped-callback count equals crossing count (glance).
-Controller check: fn-scale "chain of 1,000 partial applications" failed in the fix serial log (not in Task 9's); fails alone 3/3 (310-341 ms phases) with src/scripts/test file unchanged since 89de11c → container bound, recorded under T007. Implementer's claim that it failed in Task 9's log was wrong (only test 19 did).
-Task 10: complete (commits 50f84ae..9365db3, review clean). STOP: user asked for Task 10 only.
-Correction 2026-10-10 12:3x: after a worker restart the controller lost memory of the completed Task 10 and re-dispatched it; stopped within minutes, no edits written. Local branch reset to origin bba62d4 and main (234d115) merged in (no content change).
-FX008 (controller 2026-10-10): hole is general — any cleanup operation may reach a failing clause of a caller-installed handler. User decisions: no weakening of structure/design; option 3 (type-level tracking) chosen. Next: design note → review → user decision → implement, before Tasks 11-12. Work moving to the user's local machine.
-FX008 (local, branch fx008, 2026-10-10): baseline verify green (.build/fx008-baseline-verify.log; 934/934, 29/29, 33/33). Design note written by the controller (opus): docs/plans/2026-10-10-abort-tracking-design.md (approach A `nofail` marks; B, C alternatives; D1-D5). Independent review (opus) dispatched → review-fx008-design-result.md. STOP for the user's decision after review; no implementation.
-FX008 design review (opus): Accept with fixes — C1 solve seeded only from defer demands (cross-function hole stays open; seed from every N), C2 clause own rows need late consumption keeping Fail to a fixpoint (else base effect system unsound); I1 equality merges via locals, I2 no mark polymorphism (forwarding helper), I3 migration understated, I4 §5 restated; M1-M10. Revision 1 applies all (C1/C2 fixed in §3.5 order; I1→L4/D7, I2→L5/D6, I3→§6, A1→D0). Scoped re-review (same opus reviewer) dispatched → rereview-fx008-design-result.md.
-FX008 re-review (opus): Accept with fixes — C1, C2, I3, I4, M1-M10 ADDRESSED; I1/I2 PARTLY; new N1 Critical (late-consumption fixpoint loops when a restricted row shares its tail with its target), N2 full settle order, N3-N5 minors. Revision 2: shared-suffix rule + termination measure (restricted row × root occurrence, once), full order (settleKeys, late consumption, settleKeys, judge, mark solve, close marks, comparable/printable, entry), N3-N5 and Task 11 amendments recorded. Round 3 (N1 fix only) sent to the reviewer.
-FX008 round 3 (opus, N1 only): shared-suffix rule sound (wording: key missing from all target labels; suffix = first shared tail meta); measure via provenance links unsound (links cycle; provenance must not influence typing). Applied: step-2-local copy map (extension meta → origin (row, label index)), each origin pair copied once; fallback "never extend a tail ending a restricted row" recorded. Not re-reviewed. STOP for the user's decisions D0-D7.
-FX008 2026-10-10: user shared outside advice (approve direction subject to a focused termination review; D0-D7 recommendations; D6/D7 as composability work, not closed by Task 11; fallback never silent). User: treat as advice only — D0-D7 stay open (recorded in note §12). Revision 4 replaces §3.5 steps 1-3 (feed graph, topological sweep, full re-consumption, loop with settleKeys; properties P1-P4 stated). Focused termination review (fresh opus) dispatched → review-fx008-termination-result.md.
-FX008 termination review (fresh opus): P1 ESTABLISHED; P2 ESTABLISHED given P3 fix; P3, P4 REFUTED as written (argbind, dup hang, cycle2open), new Critical T1 (clause rigid tail dropped). Corrected procedure adopted as revision 5 (not second-checked). Current-checker defects reproduced by controller → BACKLOG FX009 (rigid Fail(a) param accepted, runtime panic), FX010 (E_INTERNAL row consumption). Probes in .build/fx008-probes/. STOP: D0-D7 open with the user.
-User decisions 2026-10-10 (interview): D0 yes; D1 marks per label; D2 `nofail`; D3 all three openings; D4 CF001 abort-free now; D5 FX007 re-scoped, deferred; D6 mark variables IN FX008, spelled `nofail(k) L`; D7 directional checking IN FX008; revision 6 then one opus review (incl. second check of rev 5 settling), then written-spec approval; FX009 now in parallel (sonnet implementer in worktree, opus review).
-FX008 revision 6 (controller, opus): D6/D7 included. D7 needed: directional consumption with mark copies at tail binding; `with` consumes R as a restricted row (not unified with ρ); per-installation frame marks (m = own-abort only); mark check as atom-path reachability with rigid mark variables. Whole-note review (opus) dispatched → review-fx008-rev6-result.md (includes second check of rev 5 settling). FX009 implementer (sonnet, worktree, branch fx009) running.
-FX009: implementer (sonnet) DONE_WITH_CONCERNS c445bac on branch fx009 (worktree .claude/worktrees/agent-a323eb1007714023e; reset from 234d115 to fx008 531e438 first). settleKeys rejects leftover postponed pairs (Failure.purs); span heuristic = first fail in body else body; new test/fx-fail-pairs.test.mjs; regression row postponed-fail; nested-fail probe retargeted (its mutant no longer distinguished). Verify exit 0: 937/937, 29/29, 34 proofs. Review (opus) dispatched → review-fx009-result.md; named risks: span heuristic vs §6, nested-fail retarget.
-FX008 rev6 review (opus): Accept with fixes, no Critical, no unsound acceptance found; path check correct; rev 5 loop holds with installed entries. I1 (consuming R loses inference; meta2/hole2c — Go output change) fixed in revision 7 by keeping R ≡ ρ (marks ignored) and an internal clause row C for marks; I2 extension marks fresh with edge; I3 examples; I4 local annotations fresh metas, l4b pinned as L4; M1-M9 applied. Console E_INTERNAL → BACKLOG FX011. Rev 7 unreviewed. FX009: user decided M1 = reject at the annotation; sent to the implementer with fix round 1.
-FX008 rev 7: user asked for the scoped check; opus dispatched → review-fx008-rev7-result.md (R|C change, extension marks, local annotations, witness, tail pass).
-FX009 fix round 1: 33a3a62 (annotation rejection in Resolve/Row.purs per user M1; settleFinal; Postponed/Unsettled span stamping; M2/M4; regression signature-fail replaces postponed-fail). Verify 943/943, 29/29, 34. Concerns: pair guard unreachable/untested after M1; handle-clause payload not covered. Re-review (opus) dispatched → rereview-fx009-result.md.
-FX008 rev7 check (opus): Accept with fixes; soundness ESTABLISHED; I1 inference not fully restored (late1/late2) → user chose the one-way hook (rev 8); I2 R's marks dead (fresh on extension); I3 written types get own C; I4 merge2 pinned L4; M1-M4. Rev 8 written; narrow hook review (opus) dispatched → review-fx008-rev8-hook-result.md.
-FX009 rereview (opus): Needs fixes — N1 guard reachable via keyless payloads (Fail(Int -> Int)); N2 handle-clause payloads E_INTERNAL; M3 docs. User: extend the annotation rule to every keyless payload (signatures and handle clauses). Round 2 sent to the implementer.
-FX009 round 2: f6cb6d0 — keyless payloads rejected at the label (signatures, handle clauses); guard unreachable (15 probes, guard-disabled build identical) → shrunk to minimal; stamping code deleted; rows signature-fail, keyless-fail, clause-fail; verify 958/958, 29/29, 36 proofs. Scoped re-check (opus, same reviewer) sent.
-FX008 hook review (opus): Accept with fixes — I1 two handlers sharing a lambda lose R1≡R2 (two1/two3/two1f rejected, two2 Go changes) → F1 R≡R on shared clause tails; I2 hook diverges on positive cycles (cyc2/cyc3) → F2 whole-row consumption with per-key cycle test; M1-M5; implementation as data sets + checker-level sync. Revision 9 applies all; F1/F2 unreviewed; probe gate added as the first plan task (probes kept in .build/fx008-probes/rev6-8). FX009: round 2 approved by re-review (rereview-fx009-result.md Round 2); docs commit 3518678 on fx009; verify at 3518678: exit 0, 958/958, 29/29, 36 proofs. Awaiting the user's merge decision for fx009 and written-spec approval for FX008.
-FX009 merged into fx008 26fefe3 (user); merged verify exit 0, 958/958, 29/29, 36. User: one focused F1/F2 review (termination incl. F1-exposed cycles, inference compatibility/marks, scheduling); if no substantive issue → user approves spec → writing-plans, probe gate first. Review (opus) dispatched → review-fx008-rev9-f1f2-result.md.
-FX008 F1/F2 focused review (opus): SUBSTANTIVE ISSUE — termination (cyc1 re-dirty loop), inference (F1 over-restores, ov1), scheduling (no F1 in settling, set1) REFUTED as written; corrections T, F1′ (remainder meta φ_t per clause-tail class), S; mapping argument: no today-accepted program rejected. Revision 10 applies them (unreviewed). User's approval condition not met; reported.
-User chose a focused re-check of revision 10's corrections (T, F1′, S); fresh opus dispatched → review-fx008-rev10-result.md. Rev9 probes kept in .build/fx008-probes/rev9.
-FX008 rev10 re-check (opus): no substantive issue (N1 class identity, N2 feed-graph row, N3 gain1, N4 φ closing; wording). Applied. Spec APPROVED by the user's stated condition. Next: writing-plans (probe gate first).
-FX008 plan: writing-plans; planner (opus) drafting docs/plans/2026-10-10-abort-tracking-plan.md (probe gate first; subagent-driven execution as chosen).
-History rewritten (SCH001 split, merge redone, 9824c1b), force-pushed with lease; merged branches deleted (remote+local): claude/optimistic-dijkstra-6i21jy, claude/vibrant-cerf-3km61i, fx001; stale TMPDIR dirs removed. Planner still drafting the FX008 plan.
-FX008 plan draft (opus planner): docs/plans/2026-10-10-abort-tracking-plan.md, 9 tasks, 23 mutants assigned, decisions P1-P12; independent plan review (opus) dispatched → review-fx008-plan-result.md.
-Pasted execution advice received (treated as advice, consistent with the user's earlier direction): Sonnet implements all tasks incl. 3-7 with Opus review/escalation; resolve the two missing probes; classify P1-P12; reasons + expected outcomes for permitted probe changes; dedicated implementation worktree; trim duplication. Added to the running plan review (items A-F). Not approval to implement.
-FX008 plan review (opus): Ready with fixes — 8 Important (worktree setup; 12 missing probes; Sonnet-first needs splits 2a/2b, 5a/5b, 6a/6b; throwaway-tail copies; P3 text plumbing; tail-pass explanation; ec1 exit-count witness; post-Check labels Unmarked) and 11 Minor; P5/P6/P10/P11 + P3 codes need user sign-off. Revision sent to the planner.
-FX008 plan round 2 re-check (opus): Ready with fixes — N1 ec1 expected text (gate by pattern), setup cp commands, Task 7 Opus design pre-review / optional 7b, tamper note; applied by controller (plan revision 3). Awaiting the user's approval and sign-offs (P3, P5, P6, P7, P10, P11; P13 for information).
-User APPROVED the FX008 plan at 0d7cc27 (2026-10-10), signing off P3, P5, P6, P7, P10, P11 and accepting P13; authorized setup and Task 1 only. Recorded in the plan status.
-Setup done: worktree /Users/ethan/Desktop/waxwing-fx008-impl, branch fx008-impl from 8fe4218; 102 probes copied (duplicates excluded), .spago and .build/home copied (no node_modules in main); baseline verify there exit 0, 958/958, 29/29, 36 proofs (.build/setup-verify.log in the worktree). Task 1 dispatched (sonnet), BASE 8fe4218.
-Task 1: implementer BLOCKED on one discrepancy (facts/lexical stdout: plan says empty, observed 2). Ruling: pin stdout 2 and correct the plan line in the Task 1 commit — the plan transcribed it wrongly; the controller observed 2 earlier and BACKLOG FX008 records it — cost if wrong: none, since today's outcome is what the gate must pin. All other 101 probes plus 2 witnesses matched. Implementer's design choices accepted (pattern strings in the hash, slow probes in the child process, split tables).
-Task 1: implementer DONE_WITH_CONCERNS 58c3d61 (104 probes: 57 accepted incl. 4 defect reports, 47 rejected; 14 slow; tamper hash 669451…; timeout path not exercised; gain1 Go hash null until Task 7). Controller verify in worktree: exit 0, 1063/1063 parallel, 29/29 serial, 36 proofs. Review (opus) dispatched → review-fx008-task1-result.md.
-Task 1 review (opus): Spec ✅, Quality Needs fixes — I1 flipped overwritten by kit (flips silently no-op), I2 null Go hash skips check; M1-M3. Plan slip: design-review/r5.wxw byte-identical to n1.wxw. Ruling: keep r5, flip it with n1 in Task 5 (same outcome) — original r5 lost (scratch overwritten before copy) — cost if wrong: one redundant probe. Fix round 1 → implementer.
-Task 1 fix round 1: 71d6263 (I1 kit order + flip invariants tests; I2 Go hash required; r5 flips with n1 in Task 5, marked slow — Ruling: accept r5 slow — same program as n1 — cost: a few seconds; M1, M2). Gate 107/107; verify exit 0, 1065/1065, 29/29, 36. Scoped re-review (opus, same reviewer) dispatched.
-Task 1 re-review: all ADDRESSED; Spec ✅, Quality Approved. Plan count nit fixed (bc959aa). Task 1: complete (58c3d61, 71d6263, bc959aa). STOP before Task 2 (user authorized setup and Task 1 only).
-User 2026-10-10: "Continue" — Tasks 2+ authorized; continuous execution until a stop condition (report-before-pin at Task 5, unlisted probe change, irreversible action). Task 2 dispatched (sonnet), BASE bc959aa.
-Task 2: implementer DONE 66e4f5d (Mark on Label, HandlerRows, Marks.purs, Strip.purs; deviations: uniformRows, stripRowMarks export, rowsOf both rows + Unify both, operationUse Plain). Verify exit 0, 1068/1068, 29/29, 36; gate 107/107. Review (opus) dispatched.
-Task 2 review (opus): Spec ❌, Needs fixes — C1 exponential blow-up for handler types nested in handler rows (R and C visited/rebuilt separately; OOM at depth 22 vs base ≥127); I1 strip of bodies/tables untested; M1-M5 (M5: plan listed three helpers that needed no change). Ruling: HandlerRows.clauses becomes Maybe (Nothing = same as R); written types and post-Check types use Nothing, only distinct C uses Just; passes visit clauses only when Just — P2 is routine representation, root-cause fix, cost if wrong: an interface change rippling into Tasks 3-7 plan text (updated in the same fix). Guard test: depth-40 nesting within a measured bound. Fix round 1 → implementer.
-Task 2 fix round 1: c6af69f (Maybe clauses, clauseRow, handlerRowList (unplanned export), nesting guard depth 40 (OOM on 66e4f5d → 16 ms), strip test covers bodies/tables, markVariables order test, plan lines updated). Verify exit 0, 1070/1070, 30/30, 36. Scoped re-review (opus) incl. robustness of the 48.9 ms serial bound.
-Task 2 re-review: C1, I1, M1-M4 ADDRESSED (depth timings base-like to 124; Go identical); (b) 48.9 ms bound not load-robust (41-73 ms first-compile under load) → warm + 2000 ms at depths 40 and 120; c1 plan Task 3 localMarks must not give Just C to nested handler types (+ guard); c2/c3 Task 7 notes. Fix round 2 → implementer. New BACKLOG G004: depth-125 RangeError (pre-existing).
-Task 2 fix round 2: 5ed5b0e (warm 2000 ms bound at depths 40/120; plan c1-c3). Controller checked the diff (test bound + plan text only) — Ruling: no further reviewer round for a test-bound/plan-text change matching the reviewer's exact proposal — cost: low. Task 2: complete (66e4f5d, c6af69f, 5ed5b0e). Task 3 dispatched (sonnet), BASE 5ed5b0e.
-Task 3: implementer DONE f16c6b5 (syntax/resolution/printing/oracle; 7 declared deviations incl. ifSecond lookahead, arrow-row printing rules, scope checks on literals/clauses). Verify exit 0, 1099 parallel, 33 serial, 36 proofs; gate 107/107. Review (opus) dispatched.
-Task 3 review (opus): Spec ❌ narrow — I1 nofail ...e at a row-argument start gives Expected ')' instead of the P10 text; M1 nofail(k) in row args/handled label untested; M2 arrow rows dropped per-arrow; M3 budgets; M4 nofail(k) Console introduces k; M5 spec §3.4 wording for Task 12. Existing behaviour unchanged (26k-source base/candidate comparison, 0 diffs). Rulings: M2 print every arrow's row once any shows one — no P10 text covers it, avoids silent loss — cost: longer texts only for marked types; M4 Console marks normalize before collection — cost: none. Fix round 1 → implementer. New BACKLOG E012 (closed vs ambient rows print alike, pre-existing).
-Task 3 fix round 1: 1f9f257 (I1 opensLabel '...'; M1 tests; M2 all arrows print once one does; M3 budgets; M4 Console-only k not introduced). Verify exit 0, 1104/1104, 33/33, 36; gate 107/107. Scoped re-review (opus, same reviewer) incl. base-vs-candidate corpus comparison.
-Task 3 re-review: I1, M1-M4 ADDRESSED; corpus 0 diffs at 1f9f257; N1 Console filter too broad (bypasses L6 and scope checks). Ruling: filter only in signature collection; L6 and scope checks unchanged — the spec rules stand, M4 only meant 'not introduced' — cost: none. Fix round 2 → implementer (+ plan Task 12 note for M5).
-Task 3 fix round 2: e0580a4 (onConsole tag; filter only in signature collection; tests; plan Task 12 note M5). Controller checked the diff. Task 3: complete (f16c6b5, 1f9f257, e0580a4). Task 4 dispatched (sonnet), BASE e0580a4.
-Task 4: implementer DONE 3b0dd3e (RowMode Equal/Ignore/Directional; MarkStore, RowFinish, UnifyMark; consumeLabels/consumeIgnoring; opening in functionUse; deviations: single commit incl. refactor, literalMark meta early, Edge.label semantics). Verify exit 0, 1120/33, 36; gate 107/107 no change. Review (opus) dispatched with algorithm focus and base-vs-candidate corpus comparison.
-Task 4 review (opus): Spec ❌ narrow, Quality approved with fixes. Edge directions confirmed; corpus 0 diffs (Go/diagnostics); I1 handler types with both clauses Nothing never compare C's marks (soundness hole once marks are read; plan wording prescribed it); m1 shared counter renumbers checked-IR holes (435 check-phase diffs, no output change); m2 clause-row clash prints identical types; m3 three surviving mutants; m4-m6. Rulings: I1 both-Nothing → R with EqualMarks (C=R), else R ignoring + clauseRow equal — soundness, keeps one pass — cost: none; m1 separate mark-meta counter — keeps differential usable — cost: small; m2 print clause row when it holds a marked label — consistent with the arrow-row ruling; flagged to the user as a text change. Fix round 1 → implementer.
-Task 4 fix round 1: aa8db84 (I1 both-Nothing EqualMarks; m1 separate counter → differential 0 diffs all phases vs e0580a4; m2 clause-row printing; m3 mutant tests; m4-m6). Verify exit 0, 1125/33, 36; gate 107/107. Scoped re-review (opus, same reviewer) incl. judging the asymmetric I1 text.
-Task 4 re-review: I1, m1, m3-m6 ADDRESSED; m2 PARTLY (one-sided rows); n1 property test weakened → fix round 2 (restore). User decision 2026-10-10: adopt symmetric mismatch-text rule (both sides show rows when either does; empty handler row 'with pure'; changes approved P3 callback text to '... found Unit -> Unit with Log') → fix round 3 queued.
-Task 4 fix rounds 2-3: a43f56c (property test restored: one Assumed per matched pair unless unmarked/both N; >100), 84b684e (symmetric texts; pure-row test uses State(Int)/State(Bool) — Ruling: accept — Log-with-pure vs Log-with-nofail-Tick is a missing-label error, not E_TYPE — cost: none). Controller checked diffs. Task 4: complete (3b0dd3e, aa8db84, a43f56c, 84b684e). Task 5 dispatched (sonnet), BASE 84b684e; flipped pattern probes stay pattern-gated, observed texts reported to the user before pinning.
-Task 5: implementer STOPPED (gate): design-review/r4 changed (Unhandled Log in main at 163-167 → side-condition text at 107-117), same cycle as n1. Observed dup/n1/r5 texts matched patterns. Reported to the user. User decisions 2026-10-10: permit r4 as a fourth Task 5 flip; pin all four exact texts. Ruling: require an idle round after the last consumption before exit (no early stop, spec P3) — cost: one extra settleKeys round per declaration with deferrals. Implementer resumed.
-Task 5: implementer DONE d9a0576 (Cycle/Feed/FeedOrder/Settle; idle round; four flips pinned; cycle-presence row; differential only dup,n1/r5,r4; 8k defers 970 vs 694 ms, linear). Verify exit 0, 1142/33, 38 proofs; gate 107/107. Review (opus) dispatched.
-Task 5 review (opus): Spec ✅, Quality Needs fixes — I1 quadratic settle order (eager maybe fallback, FeedOrder.purs:76; 8k defers 6.4 s vs base 0.8 s); M1-M8. Loop verified (60k random graphs vs brute force; corpus: only the four probes differ). Controller: M4 → BACKLOG T008 (feed graph over rows, N² edges; base already quadratic); M6 noted for Tasks 7/9 (Check.purs passes only the loop's subst; full state will change notes then); M7 recorded as an allowed text move: a program with a late Fail(E) in a defer plus n1's cycle now reports the cycle text instead of the defer text (both reject; follows the mandated order). Fix round 1 → implementer.
-Task 5 re-review: I1, M1, M2, M8 ADDRESSED; M3 PARTLY (Tarjan twice per round, linear, acceptable); serial bound robust (2.1 s idle, 4.3 s loaded vs 8 s; defect 26 s); probe a real proof (timeout margin machine-dependent → comment b5fab7c). Task 5: complete (d9a0576, dd45b58, b5fab7c). PAUSED at the user's request before Task 6; handoff in docs/next-session.md.
-User 2026-10-11: resume FX008 with Task 6; cost-efficient agents (Sonnet implementer, one scoped Opus review, controller checks small fix rounds). Task 6 dispatched (sonnet), BASE b5fab7c.
-Task 6: implementer DONE_WITH_CONCERNS 01cbe77 (Handle.purs move), 418cd38 (Watch/TailWatch/Restricted/SettleEntry/Site; watch moves rather than adds; entries already builds Task 7 remainder entries, untested). Verify exit 0, 1146/34, proofs pass; gate 107/107 + settle 6; differential 0 diffs all corpora vs b5fab7c. Concerns: failing-first was ERR_MODULE_NOT_FOUND only; Subst.purs 246. Review (opus) dispatched.
-Task 6 review (opus): Spec ✅, Quality Needs fixes — I1 revert test cannot fail (mutant survives; fix watching(10,11)); M1 compose should take later watch, not union; M2 Remainder consume drops φ labels/ignoreMarks/sites (comment invariant); M3 missing group falls back to Fresh (comment, flag for Task 7); M4 Subst 246 (4 lines left). Deviations 1-7 accepted (7 → M1). Mutants: 3/4 killed before fix. Fix round 1 → implementer (same agent); controller checks the diff.
-Task 6 fix round 1: c8503f9 (I1 revert test watches 10,11, killed its mutant: '+ [ 11 ] - []'; M1 compose later watch, unionWatch removed; M2/M3 comments; Subst untouched 246). Controller checked the diff and log: verify exit 0, 1146/1146, 34/34, 38 proofs. Ruling: no re-review — test and comment changes plus a tests-only compose change, matching the reviewer's exact proposals — cost: low. Task 6: complete (01cbe77, 418cd38, c8503f9). Next: Task 7 (Opus pre-reviews the Sync/TailPass design before code).
-User 2026-10-11: 'Do one more increment' — Task 7. Sonnet writes the Sync/TailPass design first (stop), Opus pre-reviews, then the same implementer proceeds test-first to Step 5 and stops before pinning p5, r1, r2, ec1, tp1 texts (report to the user). BASE c8503f9.
-Task 7 Phase A: design .build/task7-design.md (worktree; departures: Groups.purs; F2 on the subgraph reachable from dirty rows; merge keeps the loser's group entry; open: T meaning, no Hint sync, sync before bounded, postponed Fail in sync, call sites, no 7b). Controller flag: 'flip on text move' contradicts the gate rule. Opus design pre-review dispatched.
-Task 7 design pre-review (opus): Approved with amendments — A1 (Critical) F1′ grew branch must join groupAt(m), no signature filter; A2 (Critical) tail pass consumes Row [] ϱ into the target's tail only; A3 sync before open in Apply.applyNext; A4 no id comparison/representative lookup on merged groups; A5 sync in require's failure branch (Hint site kept); A6 no duplicate byTail entries; A7 unlisted probe change → stop, never flip. Items 1-3, 8-9 accepted; 7 accepted with corrected reasoning (Task 12 observation). Phase B → implementer with A1-A7.
-Task 7 Phase B: implementer STOPPED at the gate (wip 8dd22be; nothing pinned, table untouched; rows/verify/commit not done). Gate 98/107. Listed: gain1 accepted 0; p5/r1/r2 E_EFFECT 'Console + Log + ... and Console + ... cannot be made equal: both end in ...' (predicted); tp1 E_EFFECT 'f performs Console, which its signature does not allow' 204-219 (predicted); ec1 NOT flipped (still Unhandled Fail(E) in main 284-301). Unlisted changes: argbind-internal E_INTERNAL → accepted (plan: change stops work); cyc2/cyc3 message sides swapped (F2 error prints clause row first); sh1 swapped and span 237-242 → 192-246. Departures: sync at the start of each Settle round (else f1/argbind/set1 wrongly rejected: static φ); Consume.closeTail (closedRow stage is a no-op); Cycle.counted exported; A5 not done; Clauses 248 and Sync 250 lines. Reported to the user for rulings (a) argbind, (b) F2 orientation, (c) sync in Settle, (d) ec1.
-Task 7 gate diagnosis (opus, review-fx008-task7-gate-diagnosis.md): tp1 on 8dd22be actually rejected at 148-335 (Settle-round sync binds φ:=ϱ; Sync.purs:118). (a) argbind-internal acceptance sound (Go and interpreter print nothing, exit 0); FX010 not fixed (smaller reproducer still E_INTERNAL). (c) F1′ in settling is a missing plan step, not a workaround; fix: skip the rigid branch in settling (tail pass binds ϱ after the loop), report at the handler literal per P13; T003 and RF1 hold. (d) ec1 cannot flip: checkDefer consumes the deferred row at check time (Defer.purs:63); plan prediction wrong; new witness ec2 proves fx008-exit-count. (b) cyc2/cyc3 orientation only; sh1 text unchanged, span 192-246 (handler literal) is the only P13-consistent span. Remaining: A5, nesting linearity test, exact-text checks. Awaiting user rulings on (a), (b), (d).
-User decisions 2026-10-11 (Task 7 gate): (a) accept argbind-internal flip to accepted (Go hash pin, slow); FX010 stays open with the smaller reproducer. (b) pin p5/r1/r2 as predicted, cyc2/cyc3 swapped texts, sh1 span 192-246. (d) ec1 keeps today's outcome; add ec2 unchanged; fx008-exit-count proved with ec2; plan corrected. Controller ruling (c): keep F1′ in settling but skip the rigid branch there (tail pass binds ϱ after the loop) and report at the handler literal (P13) — mechanism fix per diagnosis — cost if wrong: a reviewer round. Implementer resumed with the diagnosis instructions.
-Task 7: implementer DONE 9358d79 (on wip 8dd22be). Verify exit 0 (controller read .build/task7-verify.log): 1172/1172, 35/35, 48 proof lines; gate 108/108 (ec2 added); differential vs c8503f9 over 114 files: only gain1, argbind-internal, p5, r1, r2, cyc2, cyc3, sh1, tp1 differ. Deviations: rows fx008-phi/new-labels/signature/settle-phi use different mutants/probes (planned ones did not reproduce); Consume.closeTail; Walked shallow reads; new modules ClauseBody, Filing, SyncCycle, Groups, Walked. Concern: handler literal whose clause performs Cell(type of another literal) grows 2^depth (depth 12: 0.6 s vs 7 ms base), untested. Code review (opus) dispatched.
-Task 7 review (opus): Spec ❌, Needs fixes. Critical: 2^depth for handler-in-clause-payload chains (h{i+1} = handler Log { log(n) => put(h{i}) }): depth 14 1.8 s vs base 6.7 ms; cause C and R both carry nested handler types; removing C's label args → linear. Options (a) C keeps no label arguments (preferred; interface change for Tasks 8-9), (b) sharing walkers, (c) limitation. Important: F1′ join-group (A1) has no killing test. Rows: add fx008-phi-tail (two3); signature/settle-phi/new-labels plan text only. Minor: untested closing paths and A5 sync, loose texts for cyc2/cyc3/sh1/f2, unknown-payload Fail comment, tail pass O(n²) on nesting, stale next. Awaiting user ruling on the Critical.
-User decision 2026-10-11 (Task 7 Critical): option (a) — C keeps no label arguments (key, count, mark, own tail per label; arguments read from R), mirroring Task 2's C1; plan Tasks 8-9 interface text updated in the same change. Fix round 1 → implementer (same agent) with all review fixes; Opus re-review of the C change.
-Task 7 fix round 1: 95eac9e (C1 option (a): bare labels in C via Walked.bareLabel; depth 12/14/20/30: 523/1846/>60k/>60k ms → 25/29/41/71 ms; depth-30 guard in child process times out on 9358d79, passes after; fx008-phi-tail added; exact texts pinned; plan text; comments). I1 not done: no probe distinguishes Join from New (later sync merges); recorded in plan. Gate 108/108 no change; differential vs 9358d79 0 diffs; verify (controller read .build/task7-fix-verify.log) Verified line, 1173/1173, 36/36, 49 proof lines. Scoped re-review (opus) dispatched.
-Task 7 re-review (opus): Spec ❌ — doubling fixed (depth 30 ~50 ms); keys/counts hold; NEW Critical: bare Fail payload head (Job, no args) unified with full Fail(Job(Int)) in unifyClauses rejects an accepted program (Expected Handler(Log), found Handler(Log)); latent in settling c→C and Task 8. Fix: key-wise argument-ignoring unify for C rows (unifyClauses, filing, Settle bare entries), localMarks C bare, probes famw/famw2, plan Task 8 rule. Join: PARTLY (unrefuted, but 'six-orders guards it' false; reword). Ruling: apply the reviewer's fix — mechanism within the user's option (a) — cost if wrong: another round. Fix round 2 → implementer.
-Task 7 fix round 2: 66f1eca (UnifyRow.ignoringArguments for C in unifyClauses, Consume.consumeBare in filing, Settle bare entries; localMarks C bare; famw/famw2 probes unchanged entries (accepted on c8503f9, rejected on 95eac9e); hook test red on 95eac9e; markuse test now asserts bare C copy per the ruling; plan Task 8 pairing rule; Join sentence reworded). Verify exit 0 captured (.build/task7-fix2-verify.log): 1176/1176, 36/36, 49 proof lines; differential vs 95eac9e: only famw/famw2. Controller checked the diff. Ruling: no further re-review — exactly the reviewer's prescribed fix; the whole-branch review covers Task 7 again — cost if wrong: found at branch review. Task 7: complete (8dd22be, 9358d79, 95eac9e, 66f1eca). Next: Task 8.
-User 2026-10-11: 'Let's do the next task' — Task 8 dispatched (fresh sonnet implementer; Task 7 agent's context too large to resume cheaply), BASE 66f1eca.
-Task 8: implementer DONE_WITH_CONCERNS b30b8b8 (Install.purs, Lend.purs; 5 tests, 4 failed first on assertions, f1/f2 guard). Gate 110/110 unchanged; verify exit 0 1181/36, 49 proofs; differential vs 66f1eca 0 diffs. Major deviation: install does not consume C (consumption renamed tails → 449 check-phase IR diffs); settling's installation entries pair C with current by key/position without unification (Lend.assume), recording Assumed edges, consumeBare fallback only if unpaired. Frame from marks.fresh; no watchTail; edges re-recorded each round. Review (opus) dispatched.
-Task 8 review (opus): Spec ✅ given the deviation, Needs fixes. Deviation verified: plan consumption vs assume give identical mark-edge sets over 3,151 sources (570 with installations); fallback never taken; dedicated counter would not avoid renaming. I1 1,000 installations 3.97 s → 11.5 s (Lend walks tail chains; labelCount reruns lend). I2 weak tests (reversed-edge mutant survives; TailPass install rule unreachable while R ≡ current). M1-M5 (M5: Task 9 fx008-c-unified row targets Install.purs). Ruling: accept the assume deviation (mechanism; same edges evidenced; plan amended) — cost if wrong: Task 9's mark check would miss edges, guarded by the whole-branch review. Fix round 1 → implementer.
-Task 8 fix round 1: ff0c6d1 (I1: 1,000 installations 11.6 s → 5.2-6.3 s, floor 5.1 s from the extra entries vs 3.97 s base; eager where bindings moved into Settle.paired; serial guard 9.5 s warm; I2: edge endpoints asserted, nested duplicate-key case p10, reversed-edge mutant fails 2/6; M1-M5; plan Interfaces describe assume). Verify exit 0 (controller read .build/task8-fix-verify.log): 1182/1182, 37/37, 49 proofs; gate 110/110; differential vs b30b8b8 0 diffs. Ruling: close without re-review — fixes match the review; residual ~1.4x cost and the 9.5 s bound's load margin recorded on T008 — cost if wrong: a flaky serial test, visible in verify. Task 8: complete (b30b8b8, ff0c6d1). Next: Task 9.
-User 2026-10-11: 'Do it please' — Task 9 dispatched (fresh sonnet), BASE ff0c6d1.
-Task 9: implementer DONE 1649218 (Frames, Mark, MarkReport, Format/Diagnostic/Mark; 9 rejection tests failed first; exactly 8 listed probes flipped with the approved texts; 12 proof lines; scale medians: 8k defers 1.0 s, 1k installs 7.3 s (quadratic, pre-existing), 1k chain 0.31 s, 200 vars 3 ms; verify exit 0 1208/41, 61 proofs; differential: harvest regenerated, 13 diffs = 7 flipped probe sources + 6 new rejection programs). Deviations: Console frames no edges; C recorded as a pre-consumption copy of R at install (Install.clausesOf); ClauseEntry.label; fx008-copies new probe, fx008-frame-m uses p2; generator nofail placement. Concern: C copy at install may miss FrameRigid if R's tail binds rigid later. Review (opus) dispatched.
-Task 9 review (opus): NOT ready — Critical C1: Install.clausesOf's copy of C at install closes an unbound tail later bound to a real C; six accepted programs (a1, a4, a6, a8, a9, a10) end a cleanup in a typed abort (Go exit 1 fail(E): E; interpreter 'typed abort escaped cleanup'). Lazy/linked C rejects aroundBoth. Proposed fix (prototyped): at function use, a top-level result handler type gets its own C, keeping R's tail only if the variable occurs in a parameter type or the own row; clausesOf fallback keeps the tail linked; new limitation: handler passed through a generic function and installed from its result gives an M frame when the context's rest is M or rigid. I1: 1,000 installations 7.3 s quadratic (T008); Task 8 guard 9.5 s failed at 10.15-10.35 s under load. M1 Console-frame skip; M2 generator always nofail; M3 sizes; M4 ambient name. Path check, b1-b11 adversarial, rows, differential: sound. Awaiting user decisions.
-User decisions 2026-10-11 (Task 9): (1) adopt the reviewer's prototyped C1 rule (result handler types get their own C at function use; tail kept only if the variable occurs in a parameter type or the own row; clausesOf fallback keeps the tail linked); record the new limitation beside L1, L4, P5 and refine P2 / design §3.4. (2) Fix T008 (quadratic feed graph) before the whole-branch review, as a new task after Task 12; the Task 8 guard's failure under load (10.15-10.35 s vs 9.5 s) recorded in BACKLOG meanwhile. Controller: M1 keep the Console skip only as a commented D001 guard with BACKLOG note; M2-M4 as the review says. Fix round 1 → implementer (same agent).
-Task 9 fix round 1: 360f13e (ResultClauses.ownClauses at Use.openedUse; clausesOf fallback keeps the tail linked; a1, a4, a6, a8, a9, a3c, a10 rejection tests accepted on 1649218; own-row program guards; rows fx008-result-clauses, fx008-result-own-row; M1-M4). Gate: 8 flips unchanged, no other change. Verify exit 0 1217/41; install scale 7353 ms. Differential vs 1649218: 7 new rejections + q1Nofail checked-IR hash only (Go identical). Re-review (opus, same reviewer) dispatched incl. the implementer's unproved concern (result hole later unified with a rigid variable via annotation).
-Task 9 re-review (opus): C1 implementation ADDRESSED (a1-a10, a3c, own-row rejected; b/c/d sets unchanged); missed-FrameRigid ADDRESSED; q1Nofail IR OK; plan/M1-M4 ADDRESSED. NEW Critical C2 (§6 break): ResultClauses closes C when the hole does not occur → r1, r2, r9 (no defer, accepted on base) rejected. Fix: fresh tail meta instead of closing (prototype: r1/r2/r9 accepted with base outputs, r5 rejected, a-set rejected, gate passes). User decision 2026-10-12: adopt the fresh tail. Fix round 2 → implementer; controller checks the diff.
-Task 9 fix round 2: 889ca99 (fresh tail meta for result C when the hole occurs in no parameter or own row; r1, r2, r9 accepted with base outputs and fail on 360f13e; r5 rejected; a-set rejected; q1Nofail IR hash back to 1649218's; rows: fx008-result-clauses retargeted (ownClauses disabled; aroundBoth), fx008-result-fresh added (r1), fx008-result-own-row). Verify exit 0 (controller read .build/task9-fix2-verify.log): 1221/1221, 41/41; installs 7479 ms. Differential vs 360f13e: r1, r2, r9, r5, q1Nofail IR only. Controller checked the source diff. Ruling: no further re-review — the reviewer's prototyped one-line fix; the whole-branch review covers it — cost if wrong: found at branch review. Task 9: complete (1649218, 360f13e, 889ca99). Next: Task 10.
-User 2026-10-12: 'go' — Task 10 dispatched (fresh sonnet), BASE 889ca99.
-Task 10: implementer DONE d85a791 (MarkNotes.purs; 12 assertions failed first, all plan notes matched on first run incl. merge2; unlisted cases pinned from observation; 1,000-hop: 269 chars, 4 notes, ~9 s compile (base 8.7 s); verify exit 0 1226/41; differential vs 889ca99: 23 notes-only diffs). Concerns: duplicate-edge test indirect; 9 s test. Review (opus, scoped) dispatched.
-Task 10 review (opus): APPROVED, 4 Minor (M1 record Plain/DeferDemand origin as decision + comment; M2 assert total length ≤ maxCharacters in the 1,000-hop test; M3 dedupe test uses chain(2); M4 reuse abortCause/clauseNote). Backlog candidate: Plain mark from a type (Box field, lambda parameter type) rejects with zero notes. Fix round → implementer; controller checks.
-Task 10 fix round: 52b9df8 (M1, M2, M4 applied; M3 kept chain(3): implementer says chain(3) gives 4 notes = maxNotes and chain(2) only 3; reviewer said 5. Ruling: accept chain(3) — the test pins 4 notes and checks unique spans over shown notes; either count leaves the duplicate check meaningful — cost: minor). Verify exit 0 (controller read .build/task10-fix-verify.log): 1226/1226, 41/41. Task 10: complete (d85a791, 52b9df8). Next: Task 11.
-User 2026-10-12: Task 11 dispatched (fresh sonnet), BASE 52b9df8. Any accepted escape = stop and report.
-Task 11: implementer DONE 2ef711b (test-side only; failing random clause 78 ≥25; soundness 300 programs: 220 accepted, 55 cleanup user-op (≥50, thin: seeds 1/777 give 50), 73 FX008 headlines, 77 escapes all rejected, accepted = oracle = Go; sensitivity at ff0c6d1: 77/77 escapes accepted; serial run 13.8 s; verify exit 0). Deviations: separate failingHandlerRejection export; failing-frame fragment (15%/30%); oracle events clause-abort, cleanup-operation. Scoped review (opus) dispatched: escape-shape coverage.
-Task 11 review (opus): changes required. Escapes: 73 lexical, 1 forwarding, 3 non-FX008 (risky Fail(Err)); none cross-function, handler-as-value, ambient, nofail(k). C1 random failing clauses dynamically dead (failing-frame supplies 77/78; fix: guard clause with handle and have the with body perform the label → 55 clauses, 10 escapes). I1 add failingFrame variants (forward, callee, handler value, ambient) and accept FX008 rejections at call/argument spans. I2 sensitivity misstated (ff0c6d1 accepts 70/77). I3 unconstrained defer built from a context holding the family label → use safe(inside). Oracle trust sound. M1 margin ok (50-63 over 10 seeds; optional fail-free wrapper, ≥60). M2, M3 minor. Ruling: apply all — test design within the plan; an FX008 rejection at a call span is allowed for the cross-function nofail-row case — cost: none. Any accepted escape from the new shapes = stop. Fix round → implementer.
-Task 11 fix round: 0a571d4 (C1 random failing clauses live: 116 without the fragment, 178 with; I1 test/fx-gen-failing.mjs shapes lexical, forward, callee-plain, callee-nofail, value-passed, value-returned, ambient, random, ≥5 each; FX008 headline accepted at defer or call; I2/I3 safe(inside), sensitivity rerun; M1 fail-free wrappers: cleanup user-op 67-89 over 10 seeds). Default seed: 120 escapes all rejected (lexical 24, forward 24, callee-plain 9, callee-nofail 9, value-passed 12, value-returned 10, ambient 14, random 18); ff0c6d1 accepts 110/120 (value-returned rejected there by the strict Fail text); 10 seeds: no accepted escape, no Go/oracle disagreement. Verify exit 0 (controller read .build/task11-fix-verify.log): 1226/1226, 47/47 (one fewer accepted-program chunk, 163 vs 220 accepted; no test removed). Ruling: close without re-review — the reviewer's prescribed fixes, evidence exceeds the minimums; gap: no nofail(k) shape in the generator, noted for the whole-branch review — cost: low. Task 11: complete (2ef711b, 0a571d4). Next: Task 12.
-User 2026-10-12: Task 12 dispatched (fresh sonnet), BASE 0a571d4. Controller writes next-session.md and BACKLOG from the implementer's report.
-Task 12: implementer DONE 9a62014 (spec, CF001 three places only, FX001 plan, design §3.4 M5, architecture, findings; 9 design-vs-implementation differences resolved for the implementation; verify exit 0 1226/47; 64 regression proofs, 28 FX008). Controller spot-check: P10 headlines and notes present in the spec (wrapped), CF001 hunks only §5/§8A.6/§8A.8. Ruling: no review — docs only; the whole-branch review covers spec fidelity — cost: low. BACKLOG: FX008 implemented; FX007, FX012, FX006 notes; FX013-FX016 limitation rows. Task 12: complete. Next: T008, then the whole-branch review.
-User 2026-10-12: 'Carry on' — T008 dispatched (fresh sonnet: profile first, fix the root cause, no behaviour change), BASE 9a62014.
-T008: implementer DONE 33f9854. Profile: not the feed graph — settling extends the shared target row by a label-free alias hop per consumption, so walks traverse an N-hop chain (~14M boundRow at n=1000). Fix: Aliases (union-find-style classes of alias hops in Subst; boundAt jumps to the class end). install 1k 7856 → ~500 ms, 2k 35206 → ~1010 ms (ratio 2.0); defers and chain at parity. Ratio guard (≤3.2) failed on 9a62014 (4.27); mutant row fx008-install-linear. Differential 0 diffs all phases; verify exit 0. Review (opus) dispatched.
-T008 review (opus): Approve with fixes, no Critical. Property test (scratch alias-prop.mjs): 0 mismatches in ~5M checks incl. adversarial targets and reverts; precondition 'never rebind a bound meta' holds but unasserted (rebinding variant: 21k mismatches). I1 maintained property test + mutant row; I2 document the precondition; M1-M6 style/comments/constants; M7 close T008, new row for labelled extendRow chains and unmergeable hops. Fix round → implementer (scratch property test path given); controller checks.
-T008 fix round: e54d869 (test/aliases.test.mjs seeded, ~496k checks, ~0.5 s, asserts jumps; row fx008-alias-jump: labelled bindings merged as hops, fails the property test only; I2 precondition documented; M1-M6). Verify exit 0 (controller read .build/t008-fix-verify.log). Ruling: close — reviewer's fixes; reviewer's two mutants were equivalent, replacement accepted — cost: low. T008: complete (33f9854, e54d869). BACKLOG T008 Done, T009 opened. Next: whole-branch review.
-User 2026-10-12: whole-branch review dispatched (opus), range 8fe4218cab1e5da8bea3fa492a7858c14602a24f..e54d869.
-Whole-branch review (opus, review-fx008-branch-result.md): Ready after fixes, no Critical. 26 new adversarial programs: every witnessed escape rejected; 16 accepted agree Go = interpreter = base Go. §6 outcome comparison vs 8fe4218: no Go difference in common acceptances; 412 newly accepted nofail programs emit Go identical to unmarked base; I1 four no-defer programs changed notes only since Task 7 (amb2, around3, p3, ov1ctl: 'this function value', lost 'is handled here' / 'is raised here'; cause consumed: Application at Clauses.purs:148, SettleEntry.purs:107, Filing.purs:43). M1 stale serial constants; M2 mark check reads pre-settle registry; M3 Lend drops Left, unreachable TailPass rule/Settle fallback; M4 no nofail(k) generator shape; M5 BACKLOG; M6 Type.purs 250; M7 checkedStates. Perf mixed 7.2 s → 0.62 s; chain 83 → 332 ms (linear). Awaiting user decisions.
-User decisions 2026-10-12 (branch review): I1 restore base notes for programs without defer and pin full notes for amb2, around3, p3, ov1ctl; unreachable TailPass rule, Settle fallback and Lend Left kept as asserted guards (E_INTERNAL, not silent); register reviewer's nofail(k) programs p01, p02, p11, q03 as tests, generator shape to BACKLOG; accept linear constant factors (defers 1.5x, chain 4x), record on T009. Controller: M1 stale constants, M2 comment/order, M6 Type.purs, M7 checkedStates as review says. Branch fix round → fresh sonnet.
-Branch fix round: 6213f56 (I1: ClauseRow origin + Subst relays so trail follows clause-row hops; amb2, around3, p3, ov1ctl notes identical to 8fe4218; baseNotes pins fail on e54d869 (4); 5,534 sources: no no-defer program differs from base in notes. Guards: TailPass rule, Settle fallback, Lend Left → E_INTERNAL; two forced by test via Features.Check.Inspect; nofail(k) tests p01, p02, p11, q03 rejected + controls accepted, Go = interpreter. M1: installations 7342 → 486 ms median (bound 1458), install guard 9500 → 1467. M2 not applied (not behaviour-preserving; comment fixed). M6 untouched. M7: Features.Check exports only check; Inspect, Function modules.) Verify exit 0 (controller read .build/branch-fix-verify.log): 1243/1243, 48/48, 66 proofs. Differential vs e54d869: 19 notes-only diffs (restored sets; one defer program back to base; argbind 'Fail(E) comes from this function value' → 'Fail(E) is raised here', not pinned — asked the user). Ruling: no re-review — notes-only effect proven by the differential; relays touch provenance only — cost: low.
-User decisions 2026-10-12: accept the argbind-path note ('Fail(E) is raised here'), pinned in 98b153f (witness/ec1 full notes; verify exit 0); merge and push: fx008-impl → fx008 (--no-ff), verify, fast-forward main, push main and fx008-impl.
+Ruling F1: ctx key = EffectId for user effects; Fail handles keyed by (Fail,
+TypeHead) — spec S401-409 is binding; plan only names Go identifiers — cost:
+none if spec holds. Ruling F2: IR OperationRef stays (bare operation with
+parameters is a function value, spec §1); Task 7 lowers it like FunctionRef and
+counts it in usesContext — cost: small. Ruling F3:
+Handler(Console)/Handler(Fail(E)) layouts emit empty handler structs in Task 7
+(uninhabited types, but must compile) — rejecting in Check would change accepted
+Task 5 programs; revisit with D001. Ruling F4: Task 7 replaces each 'unlowered
+effect' assertion with a stronger executable assertion and re-targets regression
+row handler-metadata; never deletes one without a replacement. Ruling F5: keep
+counting only keys with type arguments (effects as types/functions today) — the
+limit is a polymorphic-key guard (Keys.purs comment, design §6); spec S427
+"every key" read as "every polymorphic key, including effect keys"; record in
+ADR 010 — cost: a doc mismatch only. Ruling F6: Task 11 baseline = the same
+scenario with effects/handlers replaced by plain parameters, written in the
+test; assert difference = #effect keys. Ruling F7: Task 7 guard panic is a plain
+Go panic string "no handler for L"; Task 8's defect reporter formats any
+non-abort panic value as a defect line; specified in Task 8 brief. Ruling F8:
+adopt spec §3 text: an abort or defect escaping cleanup while another cause is
+pending becomes an uncatchable cleanup defect carrying both — spec text says so;
+flagged to the user for confirmation before Task 8 (non-blocking now). Ruling
+F9: keep implemented `Fail(DbError)` label spelling (rows print labels
+capitalized everywhere, §5 Row display); spec S706 lowercase is a typo — cost:
+one text change. Ruling F10: keep implemented headline text; "(required by …)"
+becomes a Task 9 note — per scan. Ruling F11: Task 10 differential corpus runs
+as a *.serial.test.mjs file (verify's serial phase), seeded, with an env knob
+for larger runs outside verify. Ruling F12: Task 6 executable probes deferred to
+Task 7 (guard prevents Go); Task 6's two already-passing tests are
+characterization tests, documented as such in progress. Ruling F13: Task 9
+creates a new module for origin hooks rather than growing UnifyRow; include
+deferred Fail retries provenance in its brief. Ruling F14: Task 12 uses next
+free BACKLOG ids (check BACKLOG at the time) instead of FX004. Ruling F15: work
+on claude/vibrant-cerf-3km61i in place (session's assigned branch); no worktree
+— same isolation (dedicated branch) — record in progress. Ruling F16: Task 6
+review after parser fix commit — already the plan. Ruling F17: Task 12 probes go
+into a new test/regression-fx.mjs; side-condition mutant gets an explicit
+timeout treated as failure. Ruling F18: Task 10 brief adds the verify step; Task
+11 reuses existing 20,000-let test rather than duplicating, and adds a
+services.go snapshot comparison. Ruling F19: Tasks 7/8 file lists are
+compile-guided. Parser fix 5da7865: review (opus) ❌ Needs fixes — Important:
+Handler args via bare operand regress `Handler((Clock))` (accepted→E_SYNTAX) and
+`Handler(Int -> Int)` (E_ARITY→E_SYNTAX). Minor (deferred to final review):
+negative tests assert code only; lambda-param and fail-clause rejections
+untested; findMap over take 1 obscure. Parser fix: fix round 1 queued (resume
+implementer) after the running full verify ends. Task 6 test-shape updates
+committed 85c5867 (poly-run keys effect:false; specialize identity asserts
+effects == []). Regression proofs run 1: 7 passed, row 8 (capture) copy failed
+to compile — run overlapped implementer's parser edits; rerun after fix round.
+Parser fix round 1: 3aa1217 (Handler args via typeAndRow; lone-arg row lifted).
+Scoped re-review (opus) dispatched. Task 6 review (opus) dispatched: brief
+task-6-brief.md, report task-6-report.md, package review-task6.diff
+(9a6befd..HEAD, Task 6 paths). Parser fix re-review r1: findings 1-4 ADDRESSED;
+new Important: HandlerType.purs:61-68 ignores found.row → silently drops one
+row. Round 2 queued after regression proofs. Parser fix re-review r1: findings
+1-4 ADDRESSED; new Important: HandlerType.purs:61-68 sole ignores found.row, so
+Handler(Clock with Log with pure) silently drops one row. Round 2 queued after
+regression proofs. Task 6 review (opus): Spec ✅, quality Approved; no
+Critical/Important. Probed finiteness risks all rejected. Task 6: minor
+(deferred): Format.Go Expression/Usage use wildcards for the six effect nodes —
+Task 7 brief: list them explicitly. Task 6: minor (deferred): guard test lacks
+bare OperationRef / handler-typed parameter cases. Task 6: minor (deferred):
+Lower.purs `>>= (pure <<< IR.THandler)` → `map IR.THandler`. Task 6: minor
+(deferred): Fail layouts keyed by full payload — Task 7 brief: runtime key is
+(Fail, TypeHead), not the layout. Task 6: minor (deferred): Console/Fail layouts
+absent from specializationKeys. Regression rows
+duplicate-effect/operation/effect-parameter/operation-parameter: restored defect
+now yields "program was accepted" (old guard gone); messages updated; 7
+remaining rows pass (.build/fx001-task6-regression2.log). Task 6: complete
+(2501024, a3b54d3, 85c5867, regression rows, docs 51353c8) Parser fix: complete
+(5da7865, 3aa1217, 49717bc); re-review r2 ADDRESSED, no new breakage. Verify at
+49717bc (.build/fx001-parser-verify.log): 760/760 parallel; serial 12/22, all
+T007 timing (fn-linear-timing 8 incl. pipe at the margin, fn-scale 2);
+regression 33/33. Ruling: Task 7 implementer on sonnet (user: cheaper models
+where possible); escalate to opus on BLOCKED or fix round 4 — cost if wrong:
+extra turns. Task 7: dispatched, BASE 49717bc. Task 7: implementer
+DONE_WITH_CONCERNS e9a613f (checker fixes in Tables.purs ownerType, Consume.purs
+bound tail; ctor ctx; block-order needle; handler-metadata→effect-free-ctx).
+Review (opus) dispatched. Task 7 review (opus): ❌ Critical: Handle.purs:117-125
+frames push last clause innermost; checker selects first occurrence →
+Error(Int)/Error(Bool) clauses panic at runtime; duplicate Int clauses pick the
+wrong one. Fix round 1 (resume implementer) includes it plus minors: check-level
+tests for Tables ownerType and Consume bound-tail fixes (seen failing with fix
+reverted); key-0 fallbacks in handlerKey/effectShape → guard. Task 7: minor
+(deferred): Context.children `_ → []` wildcard; Fail guard text names no family;
+`runtime` ~60-line declaration. Task 7 fix round 1: 4b80bd1 (clause order,
+check-level tests, key guards). Re-review (opus) dispatched. Task 7 re-review
+r1: all 3 ADDRESSED, no new breakage. 20,000-let timing: pre7 49717bc
+1533/1574/1540 ms vs HEAD 1505/1405/1386 ms alternating — environment (T007),
+not Task 7. Ruling (user decision 2026-10-09): defer must not fail (Swift rule);
+spec §2/§3/§5 probes, plan Tasks 8/10/12, findings, next-session updated; task-8
+brief regenerated. Task 7: complete (e9a613f, 4b80bd1; docs ad1059d); verify
+786/786 parallel, T007 serial only, regression 33/33. Task 8: dispatched
+(sonnet), BASE ad1059d Snapshot of this workspace committed to
+docs/sdd/2026-10-09-effects-plan/ (84fd420); refresh after each task. User
+2026-10-09: complete Task 8 then STOP (no Task 9); write bounded
+concurrency-foundations design milestone (requirements: cc-requirements.md).
+Design writer (opus) dispatched in parallel with Task 8 implementer; docs only.
+CF001 draft (opus) written:
+docs/plans/2026-10-09-concurrency-foundations-design.md (477 lines; refs checked
+against abstracts only — WebFetch host failures). Subset: par let fork-join,
+Fail/pure children, leftmost failure, child root wrapper relays outer aborts to
+join. 7 doc over-promises in §11. FX004 ID clash: covered by ruling F14.
+Adversarial review (opus) dispatched. Task 8: implementer DONE_WITH_CONCERNS
+041cb31 (defer-must-not-fail not total: late Fail via shared meta / caller ...e
+/ unsettled closure → runtime cleanup-failed line; false positive for defer
+handling unsettled-key Fail; Cleanup/Report modules; IR.TypeInfo.arguments;
+recursive payloadName). Review (opus) dispatched. CF001 adversarial review
+(opus): Accept with fixes — C1 sequential-equivalence overclaim (leaks/unbounded
+goroutines), I1-I8 (label-only check vs tails = same as Task 8 concern a;
+sharability via handler types; overclaimed ESTABLISHED labels; OCaml citation;
+law policy; indexed monads + per-guarantee table; FX005 before FX002). Fix round
+1 sent to the writer (opus). Task 8 review (opus): ❌ Critical:
+defer-must-not-fail unsound — P1 bracket callback (ambient tail), P2 named ...e,
+P3 unsettled closure, P4 lambda decided later, P5d handled abort converted to
+fatal report. Important: Report.payloadName recursion overflows on 5,000-arrow
+payload (compiler crash with defer); false positive defer+handle with unsettled
+key. (d),(e) OK. Minor: trailer says Sonnet; record conventions (no pending
+cause → first cleanup crash unprefixed; Go runtime panics print
+`panic: <text>`). Ruling (needs user confirmation): deferred expression gets its
+own row (fresh meta tail), its labels consumed into the current row but its tail
+never unified with the current row; after the function's constraints settle,
+reject if any Fail label remains or the tail resolved to a rigid row variable
+(ambient or named) — that variable could carry Fail. An unsolved meta tail
+closes to empty. Sound; strict for effect-polymorphic cleanup callbacks
+(bracket); can be relaxed later by an internal lacks-Fail constraint without
+breaking accepted programs. Cost if wrong: bracket idiom unavailable until
+relaxed. Task 8 fix round 1 (resume implementer, sonnet) with that rule +
+payloadName loop + tests for P1-P5d and the false positive. CF001 fix round 1
+committed ceb979d (502 lines; R0 general no-X rule; resource budget in subset).
+Re-review (opus) dispatched. CF001 re-review r1 (opus): all 19 ADDRESSED; new
+Important N1 (inline over-budget divergence before join), N2 (par forces ctx +
+entry poll: undeclared change to spec §4/test 13), N3 (discard panic kind vs
+Task 8 cleanup, polls inside cleanup). Fix round 2 sent to writer incl. exact R0
+alignment. CF001 round 2 committed a8052df (518 lines). Container restarted
+2026-10-09 during Task 8 fix round 1; partial edits kept in tree; implementer
+resumed. Checked CF001 assumption: no loop keyword (Lex.reserved); emitted Go
+loops only bounded runtime loops (Entry args, Cleanup, Context markers, Report
+text) — divergence only via calls. Holds. CF001 re-review r2 (opus): N1-N3, R0,
+minors ADDRESSED; new Important P1 (discard not propagated to nested par; join
+not a poll point), P2 (equivalence condition must cover both runs; OOM
+process-wide); minor P3-P5. Fix round 3 sent. CF001 round 3 committed 29ce6a9
+(530 lines); re-review r3 dispatched (named risk: cleanup defects dropped during
+discard). CF001 re-review r3 (opus): Accept with fixes; P1-P5 ADDRESSED;
+dropping discarded tasks' cleanup defects judged correct (determinism) but needs
+stated argument + spec §3 scoping (N1); minors N2-N5. Applying verbatim via
+haiku. CF001: accepted after 3 review rounds + verbatim minors (8e38aa0, 538
+lines). Pending: Task 8 reconciliation, doc-audit corrections, BACKLOG/handoff.
+User 2026-10-09: proceed through the rest of the epic (Tasks 9-12) after
+updating the plan per recent planning (supersedes "stop after Task 8"). Strict
+defer ruling stands (user did not choose the lacks-Fail constraint; flagged).
+Sequence: close Task 8 → opus re-scan Tasks 9-12 → plan amendments (docs) →
+Tasks 9-12 SDD → final whole-branch review (opus) → handoff. Task 8 fix round 1:
+d5bfa8d (sound defer check per ruling, payloadName loop); verify 818/818
+parallel, T007 serial only, regression 33/33. Re-review (opus) dispatched. Task
+8 re-review r1: all ADDRESSED; precision regressions accepted as documented
+limitations (FX007). Task 8: complete (041cb31, d5bfa8d). Re-scan 9-12 (opus):
+27 amendments (rescan-9-12.md). Rulings — all 12 adopted as proposed: Ruling R1:
+per-task verify passes when the only failures are the named BACKLOG T007 set
+(identical at base) plus an explicit `node scripts/regression.mjs` exit 0.
+Ruling R2: strict defer is adopted (user proceeded 2026-10-09 without requesting
+the lacks-Fail constraint); "pending user confirmation" wording → "adopted
+2026-10-09; relaxation is FX007". Ruling R3: Task 9 stores occurrence links in
+Subst (every unification path), new modules Provenance/Origin; deferred-row
+origins separate. Ruling R4: Task 9 note reasons/texts as proposed in rescan
+T9-4; wire `related` = [{span, message}]; user may reword at review. Ruling
+R5-R8: Task 10 files/interpreter/generator/runs as proposed (serial file, env
+knobs, batches ≤100, shrinker + sensitivity tests). Ruling R9-R11: Task 11 no
+bracket idiom; hand-written inline baseline; host-measured bounds at 3× median;
+acceptance in parallel fx-services.test.mjs, timing serial. Ruling R12: Task 12
+adds 4 regression rows + test/regression-fx.mjs; side-condition probe with own
+timeout; reuse effect-free-ctx; BACKLOG updates existing FX007/CF001 rows. Plan
+amended e2c3809 (868 lines). Task 9: dispatched (sonnet), BASE e2c3809 Container
+restart #2: Task 9 implementer lost before writing anything (tree clean at
+e2c3809). Re-dispatched fresh. User 2026-10-10: add operational (Gleam/OTP)
+concerns to the CF001 assessment; do NOT begin Task 9; stop after the assessment
+for review. Task 9 re-dispatch stopped; its unreviewed partial edits saved to
+docs/sdd/2026-10-09-effects-plan/task-9-wip-abandoned.patch (git apply to
+resume) and stashed; tree reset to e2c3809. User 2026-10-10 (clarified): do not
+abandon Task 9; accommodate the new operational thinking. Task 9 WIP restored
+from stash; implementer resumed. OTP addendum (design only) dispatched in
+parallel; check its impact on Tasks 10-12 before continuing. CF001 ops addendum
+committed 57231e0 (723 lines; O-1..O-7; Task 12 ADR wording additions; no change
+to Tasks 9-11). Review (opus) dispatched. Task 9: implementer DONE_WITH_CONCERNS
+2fc7a02 (coarse boundary spans; maxNotes vs pathHops; report-time callee
+re-check; bidirectional Matched links). Review (opus) dispatched. User
+2026-10-10: backend-maintainability proposal (design only;
+backend-requirements.md). Interpretation per the user's earlier clarification:
+finish in-flight Task 9 review cycle, write the proposal, then STOP for user
+review before Task 10. CF001 ops review (opus): Accept with fixes; Critical
+façade-as-Shareable breaks par discard argument; I1-I6. Fix round sent to
+writer. Task 9 review (opus): Needs fixes — I1 boundary spans (carry
+with/annotation spans through Resolve; with Log misreported as ambient), I2
+maxCharacters excludes headline (2,522 chars probe), I3 no note inside deferred
+expr for later-settled Fail key. Ruling: fix all three (spec §6 names them) +
+Minor e wording. Fix round 1 → implementer. CF001 ops fix round 1 committed
+304261f (761 lines; C1 → B3b inert handlers, a pre-existing CF001 flaw).
+Re-review dispatched. CF001 ops re-review (opus): all 16 ADDRESSED; N1 B3b false
+premise (with-consumption + R0 already reject) → demote; minors. Applying
+verbatim via haiku. CF001 ops addendum: accepted (a7ade34). BK001 proposal draft
+committed 4dcf647 (462 lines; typed builders + plan/syntax split; no library;
+after FX001). Review (opus) dispatched. BK001 review (opus): Accept with fixes;
+9 Important (overclaims, wrong facts, D2 sketch not total, two-tier
+recommendation, priority steps 0/1/6 before CF001/FX005), 9 Minor. Fix round
+sent to writer. BK001 fix round committed ab9cf6f (518 lines). Re-review
+dispatched. Task 9 fix round 1: 04ab898 (rowSpan through Resolve; 120-char label
+elision; defer note inside; M1/M2). Parallel 842/843 (large-source T004 flake),
+serial T007, regression 0. Re-review dispatched. BK001 re-review (opus): Accept
+with fixes; N1 Callee rule vs main/stages/function values/templates; N2 D8 is
+forward risk; N3-N8 minors. Fix round 2 sent. BK001: accepted after review + 2
+fix rounds (controller spot-check of N1/N2 in round 2) fc133fd; BACKLOG row
+added. Task 9 re-review r1 (opus): I1 partly (N1 nested-arrow param notes on
+wrong with), I2 OK for required cases (string cut acceptable; payload mismatch
+structural); bound gap long names → E011, fix comment + record; I3 tested case
+only (N2 blames first Fail-row call). M1/M2 OK; rowSpan no wire change. Fix
+round 2 → implementer. Task 9 fix round 2: cee8542. Controller evidence: new
+tests run against 04ab898 in isolated worktree → fail: 'nested pure row names
+the parameter', 'nested row variable declared at the parameter', 'late Fail key
+blames its own call' (3 fail, 42 pass); second N2 probe passes there
+(characterization). Re-review r2 dispatched. Task 9 re-review r2 (opus): N1
+residual wrong note (topRowPure with two pure rows), N2 fixed (no wrong note in
+~20 probes; missing notes acceptable), settleDeferred linear, I2 comment OK
+(record E011 gap at close). Fix round 3 → implementer (one-line + tighten N2
+test). Task 9 fix round 3: b80cc17. Re-review r3 (sonnet; small diff)
+dispatched. Task 9: complete (2fc7a02, 04ab898, cee8542, b80cc17). STOP for user
+review before Task 10 (user 2026-10-10). User 2026-10-10: "Run Task 10" — pause
+lifted for Task 10 only; stop after Task 10 completes (Tasks 11-12 not
+requested). Ruling: Task 10 implementer on sonnet (user: cheaper models; prior
+rulings) — escalate to opus on BLOCKED or fix round 4 — cost if wrong: extra
+turns. Ruling: implementer edits docs/engineering.md only; controller writes the
+progress entry from the report — matches Tasks 6-9 practice — cost: none. Task
+10: dispatched (sonnet), BASE 89de11c Task 10: implementer DONE_WITH_CONCERNS
+50f84ae (strict-defer hole via failing handler clause found; parser
+re-implemented not extended; shrink first 3 diffs). Review (opus): Needs fixes —
+I1 Task 7 inline run probes (fx-specialize, fx-handler-check) not moved/traced;
+I2 verify gate (parallel T004, serial T003 ladder); I3 defer hole escalation.
+Ruling: accept fx-oracle-parse re-implementing the grammar (poly-parse is a
+closed closure, editing it is forbidden) — cost if wrong: a second parser to
+maintain. Ruling: accept shrinking only the first 3 differences per run (every
+difference's seed+source still written) — each candidate costs a Go build — cost
+if wrong: manual shrink of later diffs. Ruling: accept sensitivity check as
+interpreter vs flagged interpreter (serial run proves Go = interpreter) — cost:
+none. Ruling: verify gate — parallel T004 (3,000-constructor match) and serial
+T003 ladder failed identically in Task 9 logs (.build/fx001-task9-verify.log,
+fx001-task9-serial.log; base 89de11c differs from b80cc17 by docs/assets only);
+treat as the recorded timing set, controller adds recurrences to BACKLOG
+T003/T004; implementer reports the shrinker test's parallel-phase wall time —
+cost if wrong: a timing regression hidden in known noise. Ruling: strict-defer
+hole (defer op reaching a failing handler clause) → new BACKLOG item by
+controller, linked to FX007; generator restriction (fail-free random clauses)
+stays until fixed — cost: reduced clause-abort coverage meanwhile. Ruling: do
+not amend the pushed commit's trailer (Sonnet line) — no force-push for
+metadata; later commits use the Opus trailer — cost: one inaccurate trailer.
+Task 10: minor (deferred): Int 32-bit wrap latent; fx-oracle-parse.mjs 240 lines
+(split later). Task 10: fix round 1/5 (7 addressed, 0 open — Task 7 probes
+moved+traced, shrinker time, evidence before shrink, GOWORK+shrink budget, exact
+census, engineering.md sentence, URL paths; commits 50f84ae..9365db3) Task 10:
+minor (deferred): fx-oracle-frames.mjs:3 header comment stale ({created,
+called}); callback created with no handler counts as escaped; shrink deadline
+checked between candidates only; escaped-callback count equals crossing count
+(glance). Controller check: fn-scale "chain of 1,000 partial applications"
+failed in the fix serial log (not in Task 9's); fails alone 3/3 (310-341 ms
+phases) with src/scripts/test file unchanged since 89de11c → container bound,
+recorded under T007. Implementer's claim that it failed in Task 9's log was
+wrong (only test 19 did). Task 10: complete (commits 50f84ae..9365db3, review
+clean). STOP: user asked for Task 10 only. Correction 2026-10-10 12:3x: after a
+worker restart the controller lost memory of the completed Task 10 and
+re-dispatched it; stopped within minutes, no edits written. Local branch reset
+to origin bba62d4 and main (234d115) merged in (no content change). FX008
+(controller 2026-10-10): hole is general — any cleanup operation may reach a
+failing clause of a caller-installed handler. User decisions: no weakening of
+structure/design; option 3 (type-level tracking) chosen. Next: design note →
+review → user decision → implement, before Tasks 11-12. Work moving to the
+user's local machine. FX008 (local, branch fx008, 2026-10-10): baseline verify
+green (.build/fx008-baseline-verify.log; 934/934, 29/29, 33/33). Design note
+written by the controller (opus): docs/plans/2026-10-10-abort-tracking-design.md
+(approach A `nofail` marks; B, C alternatives; D1-D5). Independent review (opus)
+dispatched → review-fx008-design-result.md. STOP for the user's decision after
+review; no implementation. FX008 design review (opus): Accept with fixes — C1
+solve seeded only from defer demands (cross-function hole stays open; seed from
+every N), C2 clause own rows need late consumption keeping Fail to a fixpoint
+(else base effect system unsound); I1 equality merges via locals, I2 no mark
+polymorphism (forwarding helper), I3 migration understated, I4 §5 restated;
+M1-M10. Revision 1 applies all (C1/C2 fixed in §3.5 order; I1→L4/D7, I2→L5/D6,
+I3→§6, A1→D0). Scoped re-review (same opus reviewer) dispatched →
+rereview-fx008-design-result.md. FX008 re-review (opus): Accept with fixes — C1,
+C2, I3, I4, M1-M10 ADDRESSED; I1/I2 PARTLY; new N1 Critical (late-consumption
+fixpoint loops when a restricted row shares its tail with its target), N2 full
+settle order, N3-N5 minors. Revision 2: shared-suffix rule + termination measure
+(restricted row × root occurrence, once), full order (settleKeys, late
+consumption, settleKeys, judge, mark solve, close marks, comparable/printable,
+entry), N3-N5 and Task 11 amendments recorded. Round 3 (N1 fix only) sent to the
+reviewer. FX008 round 3 (opus, N1 only): shared-suffix rule sound (wording: key
+missing from all target labels; suffix = first shared tail meta); measure via
+provenance links unsound (links cycle; provenance must not influence typing).
+Applied: step-2-local copy map (extension meta → origin (row, label index)),
+each origin pair copied once; fallback "never extend a tail ending a restricted
+row" recorded. Not re-reviewed. STOP for the user's decisions D0-D7. FX008
+2026-10-10: user shared outside advice (approve direction subject to a focused
+termination review; D0-D7 recommendations; D6/D7 as composability work, not
+closed by Task 11; fallback never silent). User: treat as advice only — D0-D7
+stay open (recorded in note §12). Revision 4 replaces §3.5 steps 1-3 (feed
+graph, topological sweep, full re-consumption, loop with settleKeys; properties
+P1-P4 stated). Focused termination review (fresh opus) dispatched →
+review-fx008-termination-result.md. FX008 termination review (fresh opus): P1
+ESTABLISHED; P2 ESTABLISHED given P3 fix; P3, P4 REFUTED as written (argbind,
+dup hang, cycle2open), new Critical T1 (clause rigid tail dropped). Corrected
+procedure adopted as revision 5 (not second-checked). Current-checker defects
+reproduced by controller → BACKLOG FX009 (rigid Fail(a) param accepted, runtime
+panic), FX010 (E_INTERNAL row consumption). Probes in .build/fx008-probes/.
+STOP: D0-D7 open with the user. User decisions 2026-10-10 (interview): D0 yes;
+D1 marks per label; D2 `nofail`; D3 all three openings; D4 CF001 abort-free now;
+D5 FX007 re-scoped, deferred; D6 mark variables IN FX008, spelled `nofail(k) L`;
+D7 directional checking IN FX008; revision 6 then one opus review (incl. second
+check of rev 5 settling), then written-spec approval; FX009 now in parallel
+(sonnet implementer in worktree, opus review). FX008 revision 6 (controller,
+opus): D6/D7 included. D7 needed: directional consumption with mark copies at
+tail binding; `with` consumes R as a restricted row (not unified with ρ);
+per-installation frame marks (m = own-abort only); mark check as atom-path
+reachability with rigid mark variables. Whole-note review (opus) dispatched →
+review-fx008-rev6-result.md (includes second check of rev 5 settling). FX009
+implementer (sonnet, worktree, branch fx009) running. FX009: implementer
+(sonnet) DONE_WITH_CONCERNS c445bac on branch fx009 (worktree
+.claude/worktrees/agent-a323eb1007714023e; reset from 234d115 to fx008 531e438
+first). settleKeys rejects leftover postponed pairs (Failure.purs); span
+heuristic = first fail in body else body; new test/fx-fail-pairs.test.mjs;
+regression row postponed-fail; nested-fail probe retargeted (its mutant no
+longer distinguished). Verify exit 0: 937/937, 29/29, 34 proofs. Review (opus)
+dispatched → review-fx009-result.md; named risks: span heuristic vs §6,
+nested-fail retarget. FX008 rev6 review (opus): Accept with fixes, no Critical,
+no unsound acceptance found; path check correct; rev 5 loop holds with installed
+entries. I1 (consuming R loses inference; meta2/hole2c — Go output change) fixed
+in revision 7 by keeping R ≡ ρ (marks ignored) and an internal clause row C for
+marks; I2 extension marks fresh with edge; I3 examples; I4 local annotations
+fresh metas, l4b pinned as L4; M1-M9 applied. Console E_INTERNAL → BACKLOG
+FX011. Rev 7 unreviewed. FX009: user decided M1 = reject at the annotation; sent
+to the implementer with fix round 1. FX008 rev 7: user asked for the scoped
+check; opus dispatched → review-fx008-rev7-result.md (R|C change, extension
+marks, local annotations, witness, tail pass). FX009 fix round 1: 33a3a62
+(annotation rejection in Resolve/Row.purs per user M1; settleFinal;
+Postponed/Unsettled span stamping; M2/M4; regression signature-fail replaces
+postponed-fail). Verify 943/943, 29/29, 34. Concerns: pair guard
+unreachable/untested after M1; handle-clause payload not covered. Re-review
+(opus) dispatched → rereview-fx009-result.md. FX008 rev7 check (opus): Accept
+with fixes; soundness ESTABLISHED; I1 inference not fully restored (late1/late2)
+→ user chose the one-way hook (rev 8); I2 R's marks dead (fresh on extension);
+I3 written types get own C; I4 merge2 pinned L4; M1-M4. Rev 8 written; narrow
+hook review (opus) dispatched → review-fx008-rev8-hook-result.md. FX009 rereview
+(opus): Needs fixes — N1 guard reachable via keyless payloads (Fail(Int ->
+Int)); N2 handle-clause payloads E_INTERNAL; M3 docs. User: extend the
+annotation rule to every keyless payload (signatures and handle clauses). Round
+2 sent to the implementer. FX009 round 2: f6cb6d0 — keyless payloads rejected at
+the label (signatures, handle clauses); guard unreachable (15 probes,
+guard-disabled build identical) → shrunk to minimal; stamping code deleted; rows
+signature-fail, keyless-fail, clause-fail; verify 958/958, 29/29, 36 proofs.
+Scoped re-check (opus, same reviewer) sent. FX008 hook review (opus): Accept
+with fixes — I1 two handlers sharing a lambda lose R1≡R2 (two1/two3/two1f
+rejected, two2 Go changes) → F1 R≡R on shared clause tails; I2 hook diverges on
+positive cycles (cyc2/cyc3) → F2 whole-row consumption with per-key cycle test;
+M1-M5; implementation as data sets + checker-level sync. Revision 9 applies all;
+F1/F2 unreviewed; probe gate added as the first plan task (probes kept in
+.build/fx008-probes/rev6-8). FX009: round 2 approved by re-review
+(rereview-fx009-result.md Round 2); docs commit 3518678 on fx009; verify at
+3518678: exit 0, 958/958, 29/29, 36 proofs. Awaiting the user's merge decision
+for fx009 and written-spec approval for FX008. FX009 merged into fx008 26fefe3
+(user); merged verify exit 0, 958/958, 29/29, 36. User: one focused F1/F2 review
+(termination incl. F1-exposed cycles, inference compatibility/marks,
+scheduling); if no substantive issue → user approves spec → writing-plans, probe
+gate first. Review (opus) dispatched → review-fx008-rev9-f1f2-result.md. FX008
+F1/F2 focused review (opus): SUBSTANTIVE ISSUE — termination (cyc1 re-dirty
+loop), inference (F1 over-restores, ov1), scheduling (no F1 in settling, set1)
+REFUTED as written; corrections T, F1′ (remainder meta φ_t per clause-tail
+class), S; mapping argument: no today-accepted program rejected. Revision 10
+applies them (unreviewed). User's approval condition not met; reported. User
+chose a focused re-check of revision 10's corrections (T, F1′, S); fresh opus
+dispatched → review-fx008-rev10-result.md. Rev9 probes kept in
+.build/fx008-probes/rev9. FX008 rev10 re-check (opus): no substantive issue (N1
+class identity, N2 feed-graph row, N3 gain1, N4 φ closing; wording). Applied.
+Spec APPROVED by the user's stated condition. Next: writing-plans (probe gate
+first). FX008 plan: writing-plans; planner (opus) drafting
+docs/plans/2026-10-10-abort-tracking-plan.md (probe gate first; subagent-driven
+execution as chosen). History rewritten (SCH001 split, merge redone, 9824c1b),
+force-pushed with lease; merged branches deleted (remote+local):
+claude/optimistic-dijkstra-6i21jy, claude/vibrant-cerf-3km61i, fx001; stale
+TMPDIR dirs removed. Planner still drafting the FX008 plan. FX008 plan draft
+(opus planner): docs/plans/2026-10-10-abort-tracking-plan.md, 9 tasks, 23
+mutants assigned, decisions P1-P12; independent plan review (opus) dispatched →
+review-fx008-plan-result.md. Pasted execution advice received (treated as
+advice, consistent with the user's earlier direction): Sonnet implements all
+tasks incl. 3-7 with Opus review/escalation; resolve the two missing probes;
+classify P1-P12; reasons + expected outcomes for permitted probe changes;
+dedicated implementation worktree; trim duplication. Added to the running plan
+review (items A-F). Not approval to implement. FX008 plan review (opus): Ready
+with fixes — 8 Important (worktree setup; 12 missing probes; Sonnet-first needs
+splits 2a/2b, 5a/5b, 6a/6b; throwaway-tail copies; P3 text plumbing; tail-pass
+explanation; ec1 exit-count witness; post-Check labels Unmarked) and 11 Minor;
+P5/P6/P10/P11 + P3 codes need user sign-off. Revision sent to the planner. FX008
+plan round 2 re-check (opus): Ready with fixes — N1 ec1 expected text (gate by
+pattern), setup cp commands, Task 7 Opus design pre-review / optional 7b, tamper
+note; applied by controller (plan revision 3). Awaiting the user's approval and
+sign-offs (P3, P5, P6, P7, P10, P11; P13 for information). User APPROVED the
+FX008 plan at 0d7cc27 (2026-10-10), signing off P3, P5, P6, P7, P10, P11 and
+accepting P13; authorized setup and Task 1 only. Recorded in the plan status.
+Setup done: worktree /Users/ethan/Desktop/waxwing-fx008-impl, branch fx008-impl
+from 8fe4218; 102 probes copied (duplicates excluded), .spago and .build/home
+copied (no node_modules in main); baseline verify there exit 0, 958/958, 29/29,
+36 proofs (.build/setup-verify.log in the worktree). Task 1 dispatched (sonnet),
+BASE 8fe4218. Task 1: implementer BLOCKED on one discrepancy (facts/lexical
+stdout: plan says empty, observed 2). Ruling: pin stdout 2 and correct the plan
+line in the Task 1 commit — the plan transcribed it wrongly; the controller
+observed 2 earlier and BACKLOG FX008 records it — cost if wrong: none, since
+today's outcome is what the gate must pin. All other 101 probes plus 2 witnesses
+matched. Implementer's design choices accepted (pattern strings in the hash,
+slow probes in the child process, split tables). Task 1: implementer
+DONE_WITH_CONCERNS 58c3d61 (104 probes: 57 accepted incl. 4 defect reports, 47
+rejected; 14 slow; tamper hash 669451…; timeout path not exercised; gain1 Go
+hash null until Task 7). Controller verify in worktree: exit 0, 1063/1063
+parallel, 29/29 serial, 36 proofs. Review (opus) dispatched →
+review-fx008-task1-result.md. Task 1 review (opus): Spec ✅, Quality Needs fixes
+— I1 flipped overwritten by kit (flips silently no-op), I2 null Go hash skips
+check; M1-M3. Plan slip: design-review/r5.wxw byte-identical to n1.wxw. Ruling:
+keep r5, flip it with n1 in Task 5 (same outcome) — original r5 lost (scratch
+overwritten before copy) — cost if wrong: one redundant probe. Fix round 1 →
+implementer. Task 1 fix round 1: 71d6263 (I1 kit order + flip invariants tests;
+I2 Go hash required; r5 flips with n1 in Task 5, marked slow — Ruling: accept r5
+slow — same program as n1 — cost: a few seconds; M1, M2). Gate 107/107; verify
+exit 0, 1065/1065, 29/29, 36. Scoped re-review (opus, same reviewer) dispatched.
+Task 1 re-review: all ADDRESSED; Spec ✅, Quality Approved. Plan count nit fixed
+(bc959aa). Task 1: complete (58c3d61, 71d6263, bc959aa). STOP before Task 2
+(user authorized setup and Task 1 only). User 2026-10-10: "Continue" — Tasks 2+
+authorized; continuous execution until a stop condition (report-before-pin at
+Task 5, unlisted probe change, irreversible action). Task 2 dispatched (sonnet),
+BASE bc959aa. Task 2: implementer DONE 66e4f5d (Mark on Label, HandlerRows,
+Marks.purs, Strip.purs; deviations: uniformRows, stripRowMarks export, rowsOf
+both rows + Unify both, operationUse Plain). Verify exit 0, 1068/1068, 29/29,
+36; gate 107/107. Review (opus) dispatched. Task 2 review (opus): Spec ❌, Needs
+fixes — C1 exponential blow-up for handler types nested in handler rows (R and C
+visited/rebuilt separately; OOM at depth 22 vs base ≥127); I1 strip of
+bodies/tables untested; M1-M5 (M5: plan listed three helpers that needed no
+change). Ruling: HandlerRows.clauses becomes Maybe (Nothing = same as R);
+written types and post-Check types use Nothing, only distinct C uses Just;
+passes visit clauses only when Just — P2 is routine representation, root-cause
+fix, cost if wrong: an interface change rippling into Tasks 3-7 plan text
+(updated in the same fix). Guard test: depth-40 nesting within a measured bound.
+Fix round 1 → implementer. Task 2 fix round 1: c6af69f (Maybe clauses,
+clauseRow, handlerRowList (unplanned export), nesting guard depth 40 (OOM on
+66e4f5d → 16 ms), strip test covers bodies/tables, markVariables order test,
+plan lines updated). Verify exit 0, 1070/1070, 30/30, 36. Scoped re-review
+(opus) incl. robustness of the 48.9 ms serial bound. Task 2 re-review: C1, I1,
+M1-M4 ADDRESSED (depth timings base-like to 124; Go identical); (b) 48.9 ms
+bound not load-robust (41-73 ms first-compile under load) → warm + 2000 ms at
+depths 40 and 120; c1 plan Task 3 localMarks must not give Just C to nested
+handler types (+ guard); c2/c3 Task 7 notes. Fix round 2 → implementer. New
+BACKLOG G004: depth-125 RangeError (pre-existing). Task 2 fix round 2: 5ed5b0e
+(warm 2000 ms bound at depths 40/120; plan c1-c3). Controller checked the diff
+(test bound + plan text only) — Ruling: no further reviewer round for a
+test-bound/plan-text change matching the reviewer's exact proposal — cost: low.
+Task 2: complete (66e4f5d, c6af69f, 5ed5b0e). Task 3 dispatched (sonnet), BASE
+5ed5b0e. Task 3: implementer DONE f16c6b5 (syntax/resolution/printing/oracle; 7
+declared deviations incl. ifSecond lookahead, arrow-row printing rules, scope
+checks on literals/clauses). Verify exit 0, 1099 parallel, 33 serial, 36 proofs;
+gate 107/107. Review (opus) dispatched. Task 3 review (opus): Spec ❌ narrow — I1
+nofail ...e at a row-argument start gives Expected ')' instead of the P10 text;
+M1 nofail(k) in row args/handled label untested; M2 arrow rows dropped
+per-arrow; M3 budgets; M4 nofail(k) Console introduces k; M5 spec §3.4 wording
+for Task 12. Existing behaviour unchanged (26k-source base/candidate comparison,
+0 diffs). Rulings: M2 print every arrow's row once any shows one — no P10 text
+covers it, avoids silent loss — cost: longer texts only for marked types; M4
+Console marks normalize before collection — cost: none. Fix round 1 →
+implementer. New BACKLOG E012 (closed vs ambient rows print alike,
+pre-existing). Task 3 fix round 1: 1f9f257 (I1 opensLabel '...'; M1 tests; M2
+all arrows print once one does; M3 budgets; M4 Console-only k not introduced).
+Verify exit 0, 1104/1104, 33/33, 36; gate 107/107. Scoped re-review (opus, same
+reviewer) incl. base-vs-candidate corpus comparison. Task 3 re-review: I1, M1-M4
+ADDRESSED; corpus 0 diffs at 1f9f257; N1 Console filter too broad (bypasses L6
+and scope checks). Ruling: filter only in signature collection; L6 and scope
+checks unchanged — the spec rules stand, M4 only meant 'not introduced' — cost:
+none. Fix round 2 → implementer (+ plan Task 12 note for M5). Task 3 fix round
+2: e0580a4 (onConsole tag; filter only in signature collection; tests; plan Task
+12 note M5). Controller checked the diff. Task 3: complete (f16c6b5, 1f9f257,
+e0580a4). Task 4 dispatched (sonnet), BASE e0580a4. Task 4: implementer DONE
+3b0dd3e (RowMode Equal/Ignore/Directional; MarkStore, RowFinish, UnifyMark;
+consumeLabels/consumeIgnoring; opening in functionUse; deviations: single commit
+incl. refactor, literalMark meta early, Edge.label semantics). Verify exit 0,
+1120/33, 36; gate 107/107 no change. Review (opus) dispatched with algorithm
+focus and base-vs-candidate corpus comparison. Task 4 review (opus): Spec ❌
+narrow, Quality approved with fixes. Edge directions confirmed; corpus 0 diffs
+(Go/diagnostics); I1 handler types with both clauses Nothing never compare C's
+marks (soundness hole once marks are read; plan wording prescribed it); m1
+shared counter renumbers checked-IR holes (435 check-phase diffs, no output
+change); m2 clause-row clash prints identical types; m3 three surviving mutants;
+m4-m6. Rulings: I1 both-Nothing → R with EqualMarks (C=R), else R ignoring +
+clauseRow equal — soundness, keeps one pass — cost: none; m1 separate mark-meta
+counter — keeps differential usable — cost: small; m2 print clause row when it
+holds a marked label — consistent with the arrow-row ruling; flagged to the user
+as a text change. Fix round 1 → implementer. Task 4 fix round 1: aa8db84 (I1
+both-Nothing EqualMarks; m1 separate counter → differential 0 diffs all phases
+vs e0580a4; m2 clause-row printing; m3 mutant tests; m4-m6). Verify exit 0,
+1125/33, 36; gate 107/107. Scoped re-review (opus, same reviewer) incl. judging
+the asymmetric I1 text. Task 4 re-review: I1, m1, m3-m6 ADDRESSED; m2 PARTLY
+(one-sided rows); n1 property test weakened → fix round 2 (restore). User
+decision 2026-10-10: adopt symmetric mismatch-text rule (both sides show rows
+when either does; empty handler row 'with pure'; changes approved P3 callback
+text to '... found Unit -> Unit with Log') → fix round 3 queued. Task 4 fix
+rounds 2-3: a43f56c (property test restored: one Assumed per matched pair unless
+unmarked/both N; >100), 84b684e (symmetric texts; pure-row test uses
+State(Int)/State(Bool) — Ruling: accept — Log-with-pure vs Log-with-nofail-Tick
+is a missing-label error, not E_TYPE — cost: none). Controller checked diffs.
+Task 4: complete (3b0dd3e, aa8db84, a43f56c, 84b684e). Task 5 dispatched
+(sonnet), BASE 84b684e; flipped pattern probes stay pattern-gated, observed
+texts reported to the user before pinning. Task 5: implementer STOPPED (gate):
+design-review/r4 changed (Unhandled Log in main at 163-167 → side-condition text
+at 107-117), same cycle as n1. Observed dup/n1/r5 texts matched patterns.
+Reported to the user. User decisions 2026-10-10: permit r4 as a fourth Task 5
+flip; pin all four exact texts. Ruling: require an idle round after the last
+consumption before exit (no early stop, spec P3) — cost: one extra settleKeys
+round per declaration with deferrals. Implementer resumed. Task 5: implementer
+DONE d9a0576 (Cycle/Feed/FeedOrder/Settle; idle round; four flips pinned;
+cycle-presence row; differential only dup,n1/r5,r4; 8k defers 970 vs 694 ms,
+linear). Verify exit 0, 1142/33, 38 proofs; gate 107/107. Review (opus)
+dispatched. Task 5 review (opus): Spec ✅, Quality Needs fixes — I1 quadratic
+settle order (eager maybe fallback, FeedOrder.purs:76; 8k defers 6.4 s vs base
+0.8 s); M1-M8. Loop verified (60k random graphs vs brute force; corpus: only the
+four probes differ). Controller: M4 → BACKLOG T008 (feed graph over rows, N²
+edges; base already quadratic); M6 noted for Tasks 7/9 (Check.purs passes only
+the loop's subst; full state will change notes then); M7 recorded as an allowed
+text move: a program with a late Fail(E) in a defer plus n1's cycle now reports
+the cycle text instead of the defer text (both reject; follows the mandated
+order). Fix round 1 → implementer. Task 5 re-review: I1, M1, M2, M8 ADDRESSED;
+M3 PARTLY (Tarjan twice per round, linear, acceptable); serial bound robust (2.1
+s idle, 4.3 s loaded vs 8 s; defect 26 s); probe a real proof (timeout margin
+machine-dependent → comment b5fab7c). Task 5: complete (d9a0576, dd45b58,
+b5fab7c). PAUSED at the user's request before Task 6; handoff in
+docs/next-session.md. User 2026-10-11: resume FX008 with Task 6; cost-efficient
+agents (Sonnet implementer, one scoped Opus review, controller checks small fix
+rounds). Task 6 dispatched (sonnet), BASE b5fab7c. Task 6: implementer
+DONE_WITH_CONCERNS 01cbe77 (Handle.purs move), 418cd38
+(Watch/TailWatch/Restricted/SettleEntry/Site; watch moves rather than adds;
+entries already builds Task 7 remainder entries, untested). Verify exit 0,
+1146/34, proofs pass; gate 107/107 + settle 6; differential 0 diffs all corpora
+vs b5fab7c. Concerns: failing-first was ERR_MODULE_NOT_FOUND only; Subst.purs
+246. Review (opus) dispatched. Task 6 review (opus): Spec ✅, Quality Needs fixes
+     — I1 revert test cannot fail (mutant survives; fix watching(10,11)); M1
+     compose should take later watch, not union; M2 Remainder consume drops φ
+     labels/ignoreMarks/sites (comment invariant); M3 missing group falls back
+     to Fresh (comment, flag for Task 7); M4 Subst 246 (4 lines left).
+     Deviations 1-7 accepted (7 → M1). Mutants: 3/4 killed before fix. Fix round
+     1 → implementer (same agent); controller checks the diff. Task 6 fix round
+     1: c8503f9 (I1 revert test watches 10,11, killed its mutant: '+ [ 11 ] -
+     []'; M1 compose later watch, unionWatch removed; M2/M3 comments; Subst
+     untouched 246). Controller checked the diff and log: verify exit 0,
+     1146/1146, 34/34, 38 proofs. Ruling: no re-review — test and comment
+     changes plus a tests-only compose change, matching the reviewer's exact
+     proposals — cost: low. Task 6: complete (01cbe77, 418cd38, c8503f9). Next:
+     Task 7 (Opus pre-reviews the Sync/TailPass design before code). User
+     2026-10-11: 'Do one more increment' — Task 7. Sonnet writes the
+     Sync/TailPass design first (stop), Opus pre-reviews, then the same
+     implementer proceeds test-first to Step 5 and stops before pinning p5, r1,
+     r2, ec1, tp1 texts (report to the user). BASE c8503f9. Task 7 Phase A:
+     design .build/task7-design.md (worktree; departures: Groups.purs; F2 on the
+     subgraph reachable from dirty rows; merge keeps the loser's group entry;
+     open: T meaning, no Hint sync, sync before bounded, postponed Fail in sync,
+     call sites, no 7b). Controller flag: 'flip on text move' contradicts the
+     gate rule. Opus design pre-review dispatched. Task 7 design pre-review
+     (opus): Approved with amendments — A1 (Critical) F1′ grew branch must join
+     groupAt(m), no signature filter; A2 (Critical) tail pass consumes Row [] ϱ
+     into the target's tail only; A3 sync before open in Apply.applyNext; A4 no
+     id comparison/representative lookup on merged groups; A5 sync in require's
+     failure branch (Hint site kept); A6 no duplicate byTail entries; A7
+     unlisted probe change → stop, never flip. Items 1-3, 8-9 accepted; 7
+     accepted with corrected reasoning (Task 12 observation). Phase B →
+     implementer with A1-A7. Task 7 Phase B: implementer STOPPED at the gate
+     (wip 8dd22be; nothing pinned, table untouched; rows/verify/commit not
+     done). Gate 98/107. Listed: gain1 accepted 0; p5/r1/r2 E_EFFECT 'Console +
+     Log + ... and Console + ... cannot be made equal: both end in ...'
+     (predicted); tp1 E_EFFECT 'f performs Console, which its signature does not
+     allow' 204-219 (predicted); ec1 NOT flipped (still Unhandled Fail(E) in
+     main 284-301). Unlisted changes: argbind-internal E_INTERNAL → accepted
+     (plan: change stops work); cyc2/cyc3 message sides swapped (F2 error prints
+     clause row first); sh1 swapped and span 237-242 → 192-246. Departures: sync
+     at the start of each Settle round (else f1/argbind/set1 wrongly rejected:
+     static φ); Consume.closeTail (closedRow stage is a no-op); Cycle.counted
+     exported; A5 not done; Clauses 248 and Sync 250 lines. Reported to the user
+     for rulings (a) argbind, (b) F2 orientation, (c) sync in Settle, (d) ec1.
+     Task 7 gate diagnosis (opus, review-fx008-task7-gate-diagnosis.md): tp1 on
+     8dd22be actually rejected at 148-335 (Settle-round sync binds φ:=ϱ;
+     Sync.purs:118). (a) argbind-internal acceptance sound (Go and interpreter
+     print nothing, exit 0); FX010 not fixed (smaller reproducer still
+     E_INTERNAL). (c) F1′ in settling is a missing plan step, not a workaround;
+     fix: skip the rigid branch in settling (tail pass binds ϱ after the loop),
+     report at the handler literal per P13; T003 and RF1 hold. (d) ec1 cannot
+     flip: checkDefer consumes the deferred row at check time (Defer.purs:63);
+     plan prediction wrong; new witness ec2 proves fx008-exit-count. (b)
+     cyc2/cyc3 orientation only; sh1 text unchanged, span 192-246 (handler
+     literal) is the only P13-consistent span. Remaining: A5, nesting linearity
+     test, exact-text checks. Awaiting user rulings on (a), (b), (d). User
+     decisions 2026-10-11 (Task 7 gate): (a) accept argbind-internal flip to
+     accepted (Go hash pin, slow); FX010 stays open with the smaller reproducer.
+     (b) pin p5/r1/r2 as predicted, cyc2/cyc3 swapped texts, sh1 span 192-246.
+     (d) ec1 keeps today's outcome; add ec2 unchanged; fx008-exit-count proved
+     with ec2; plan corrected. Controller ruling (c): keep F1′ in settling but
+     skip the rigid branch there (tail pass binds ϱ after the loop) and report
+     at the handler literal (P13) — mechanism fix per diagnosis — cost if wrong:
+     a reviewer round. Implementer resumed with the diagnosis instructions. Task
+     7: implementer DONE 9358d79 (on wip 8dd22be). Verify exit 0 (controller
+     read .build/task7-verify.log): 1172/1172, 35/35, 48 proof lines; gate
+     108/108 (ec2 added); differential vs c8503f9 over 114 files: only gain1,
+     argbind-internal, p5, r1, r2, cyc2, cyc3, sh1, tp1 differ. Deviations: rows
+     fx008-phi/new-labels/signature/settle-phi use different mutants/probes
+     (planned ones did not reproduce); Consume.closeTail; Walked shallow reads;
+     new modules ClauseBody, Filing, SyncCycle, Groups, Walked. Concern: handler
+     literal whose clause performs Cell(type of another literal) grows 2^depth
+     (depth 12: 0.6 s vs 7 ms base), untested. Code review (opus) dispatched.
+     Task 7 review (opus): Spec ❌, Needs fixes. Critical: 2^depth for
+     handler-in-clause-payload chains (h{i+1} = handler Log { log(n) =>
+     put(h{i}) }): depth 14 1.8 s vs base 6.7 ms; cause C and R both carry
+     nested handler types; removing C's label args → linear. Options (a) C keeps
+     no label arguments (preferred; interface change for Tasks 8-9), (b) sharing
+     walkers, (c) limitation. Important: F1′ join-group (A1) has no killing
+     test. Rows: add fx008-phi-tail (two3); signature/settle-phi/new-labels plan
+     text only. Minor: untested closing paths and A5 sync, loose texts for
+     cyc2/cyc3/sh1/f2, unknown-payload Fail comment, tail pass O(n²) on nesting,
+     stale next. Awaiting user ruling on the Critical. User decision 2026-10-11
+     (Task 7 Critical): option (a) — C keeps no label arguments (key, count,
+     mark, own tail per label; arguments read from R), mirroring Task 2's C1;
+     plan Tasks 8-9 interface text updated in the same change. Fix round 1 →
+     implementer (same agent) with all review fixes; Opus re-review of the C
+     change. Task 7 fix round 1: 95eac9e (C1 option (a): bare labels in C via
+     Walked.bareLabel; depth 12/14/20/30: 523/1846/>60k/>60k ms → 25/29/41/71
+     ms; depth-30 guard in child process times out on 9358d79, passes after;
+     fx008-phi-tail added; exact texts pinned; plan text; comments). I1 not
+     done: no probe distinguishes Join from New (later sync merges); recorded in
+     plan. Gate 108/108 no change; differential vs 9358d79 0 diffs; verify
+     (controller read .build/task7-fix-verify.log) Verified line, 1173/1173,
+     36/36, 49 proof lines. Scoped re-review (opus) dispatched. Task 7 re-review
+     (opus): Spec ❌ — doubling fixed (depth 30 ~50 ms); keys/counts hold; NEW
+     Critical: bare Fail payload head (Job, no args) unified with full
+     Fail(Job(Int)) in unifyClauses rejects an accepted program (Expected
+     Handler(Log), found Handler(Log)); latent in settling c→C and Task 8. Fix:
+     key-wise argument-ignoring unify for C rows (unifyClauses, filing, Settle
+     bare entries), localMarks C bare, probes famw/famw2, plan Task 8 rule.
+     Join: PARTLY (unrefuted, but 'six-orders guards it' false; reword). Ruling:
+     apply the reviewer's fix — mechanism within the user's option (a) — cost if
+     wrong: another round. Fix round 2 → implementer. Task 7 fix round 2:
+     66f1eca (UnifyRow.ignoringArguments for C in unifyClauses,
+     Consume.consumeBare in filing, Settle bare entries; localMarks C bare;
+     famw/famw2 probes unchanged entries (accepted on c8503f9, rejected on
+     95eac9e); hook test red on 95eac9e; markuse test now asserts bare C copy
+     per the ruling; plan Task 8 pairing rule; Join sentence reworded). Verify
+     exit 0 captured (.build/task7-fix2-verify.log): 1176/1176, 36/36, 49 proof
+     lines; differential vs 95eac9e: only famw/famw2. Controller checked the
+     diff. Ruling: no further re-review — exactly the reviewer's prescribed fix;
+     the whole-branch review covers Task 7 again — cost if wrong: found at
+     branch review. Task 7: complete (8dd22be, 9358d79, 95eac9e, 66f1eca). Next:
+     Task 8. User 2026-10-11: 'Let's do the next task' — Task 8 dispatched
+     (fresh sonnet implementer; Task 7 agent's context too large to resume
+     cheaply), BASE 66f1eca. Task 8: implementer DONE_WITH_CONCERNS b30b8b8
+     (Install.purs, Lend.purs; 5 tests, 4 failed first on assertions, f1/f2
+     guard). Gate 110/110 unchanged; verify exit 0 1181/36, 49 proofs;
+     differential vs 66f1eca 0 diffs. Major deviation: install does not consume
+     C (consumption renamed tails → 449 check-phase IR diffs); settling's
+     installation entries pair C with current by key/position without
+     unification (Lend.assume), recording Assumed edges, consumeBare fallback
+     only if unpaired. Frame from marks.fresh; no watchTail; edges re-recorded
+     each round. Review (opus) dispatched. Task 8 review (opus): Spec ✅ given
+     the deviation, Needs fixes. Deviation verified: plan consumption vs assume
+     give identical mark-edge sets over 3,151 sources (570 with installations);
+     fallback never taken; dedicated counter would not avoid renaming. I1 1,000
+     installations 3.97 s → 11.5 s (Lend walks tail chains; labelCount reruns
+     lend). I2 weak tests (reversed-edge mutant survives; TailPass install rule
+     unreachable while R ≡ current). M1-M5 (M5: Task 9 fx008-c-unified row
+     targets Install.purs). Ruling: accept the assume deviation (mechanism; same
+     edges evidenced; plan amended) — cost if wrong: Task 9's mark check would
+     miss edges, guarded by the whole-branch review. Fix round 1 → implementer.
+     Task 8 fix round 1: ff0c6d1 (I1: 1,000 installations 11.6 s → 5.2-6.3 s,
+     floor 5.1 s from the extra entries vs 3.97 s base; eager where bindings
+     moved into Settle.paired; serial guard 9.5 s warm; I2: edge endpoints
+     asserted, nested duplicate-key case p10, reversed-edge mutant fails 2/6;
+     M1-M5; plan Interfaces describe assume). Verify exit 0 (controller read
+     .build/task8-fix-verify.log): 1182/1182, 37/37, 49 proofs; gate 110/110;
+     differential vs b30b8b8 0 diffs. Ruling: close without re-review — fixes
+     match the review; residual ~1.4x cost and the 9.5 s bound's load margin
+     recorded on T008 — cost if wrong: a flaky serial test, visible in verify.
+     Task 8: complete (b30b8b8, ff0c6d1). Next: Task 9. User 2026-10-11: 'Do it
+     please' — Task 9 dispatched (fresh sonnet), BASE ff0c6d1. Task 9:
+     implementer DONE 1649218 (Frames, Mark, MarkReport, Format/Diagnostic/Mark;
+     9 rejection tests failed first; exactly 8 listed probes flipped with the
+     approved texts; 12 proof lines; scale medians: 8k defers 1.0 s, 1k installs
+     7.3 s (quadratic, pre-existing), 1k chain 0.31 s, 200 vars 3 ms; verify
+     exit 0 1208/41, 61 proofs; differential: harvest regenerated, 13 diffs = 7
+     flipped probe sources + 6 new rejection programs). Deviations: Console
+     frames no edges; C recorded as a pre-consumption copy of R at install
+     (Install.clausesOf); ClauseEntry.label; fx008-copies new probe,
+     fx008-frame-m uses p2; generator nofail placement. Concern: C copy at
+     install may miss FrameRigid if R's tail binds rigid later. Review (opus)
+     dispatched. Task 9 review (opus): NOT ready — Critical C1:
+     Install.clausesOf's copy of C at install closes an unbound tail later bound
+     to a real C; six accepted programs (a1, a4, a6, a8, a9, a10) end a cleanup
+     in a typed abort (Go exit 1 fail(E): E; interpreter 'typed abort escaped
+     cleanup'). Lazy/linked C rejects aroundBoth. Proposed fix (prototyped): at
+     function use, a top-level result handler type gets its own C, keeping R's
+     tail only if the variable occurs in a parameter type or the own row;
+     clausesOf fallback keeps the tail linked; new limitation: handler passed
+     through a generic function and installed from its result gives an M frame
+     when the context's rest is M or rigid. I1: 1,000 installations 7.3 s
+     quadratic (T008); Task 8 guard 9.5 s failed at 10.15-10.35 s under load. M1
+     Console-frame skip; M2 generator always nofail; M3 sizes; M4 ambient name.
+     Path check, b1-b11 adversarial, rows, differential: sound. Awaiting user
+     decisions. User decisions 2026-10-11 (Task 9): (1) adopt the reviewer's
+     prototyped C1 rule (result handler types get their own C at function use;
+     tail kept only if the variable occurs in a parameter type or the own row;
+     clausesOf fallback keeps the tail linked); record the new limitation beside
+     L1, L4, P5 and refine P2 / design §3.4. (2) Fix T008 (quadratic feed graph)
+     before the whole-branch review, as a new task after Task 12; the Task 8
+     guard's failure under load (10.15-10.35 s vs 9.5 s) recorded in BACKLOG
+     meanwhile. Controller: M1 keep the Console skip only as a commented D001
+     guard with BACKLOG note; M2-M4 as the review says. Fix round 1 →
+     implementer (same agent). Task 9 fix round 1: 360f13e
+     (ResultClauses.ownClauses at Use.openedUse; clausesOf fallback keeps the
+     tail linked; a1, a4, a6, a8, a9, a3c, a10 rejection tests accepted on
+     1649218; own-row program guards; rows fx008-result-clauses,
+     fx008-result-own-row; M1-M4). Gate: 8 flips unchanged, no other change.
+     Verify exit 0 1217/41; install scale 7353 ms. Differential vs 1649218: 7
+     new rejections + q1Nofail checked-IR hash only (Go identical). Re-review
+     (opus, same reviewer) dispatched incl. the implementer's unproved concern
+     (result hole later unified with a rigid variable via annotation). Task 9
+     re-review (opus): C1 implementation ADDRESSED (a1-a10, a3c, own-row
+     rejected; b/c/d sets unchanged); missed-FrameRigid ADDRESSED; q1Nofail IR
+     OK; plan/M1-M4 ADDRESSED. NEW Critical C2 (§6 break): ResultClauses closes
+     C when the hole does not occur → r1, r2, r9 (no defer, accepted on base)
+     rejected. Fix: fresh tail meta instead of closing (prototype: r1/r2/r9
+     accepted with base outputs, r5 rejected, a-set rejected, gate passes). User
+     decision 2026-10-12: adopt the fresh tail. Fix round 2 → implementer;
+     controller checks the diff. Task 9 fix round 2: 889ca99 (fresh tail meta
+     for result C when the hole occurs in no parameter or own row; r1, r2, r9
+     accepted with base outputs and fail on 360f13e; r5 rejected; a-set
+     rejected; q1Nofail IR hash back to 1649218's; rows: fx008-result-clauses
+     retargeted (ownClauses disabled; aroundBoth), fx008-result-fresh added
+     (r1), fx008-result-own-row). Verify exit 0 (controller read
+     .build/task9-fix2-verify.log): 1221/1221, 41/41; installs 7479 ms.
+     Differential vs 360f13e: r1, r2, r9, r5, q1Nofail IR only. Controller
+     checked the source diff. Ruling: no further re-review — the reviewer's
+     prototyped one-line fix; the whole-branch review covers it — cost if wrong:
+     found at branch review. Task 9: complete (1649218, 360f13e, 889ca99). Next:
+     Task 10. User 2026-10-12: 'go' — Task 10 dispatched (fresh sonnet), BASE
+     889ca99. Task 10: implementer DONE d85a791 (MarkNotes.purs; 12 assertions
+     failed first, all plan notes matched on first run incl. merge2; unlisted
+     cases pinned from observation; 1,000-hop: 269 chars, 4 notes, ~9 s compile
+     (base 8.7 s); verify exit 0 1226/41; differential vs 889ca99: 23 notes-only
+     diffs). Concerns: duplicate-edge test indirect; 9 s test. Review (opus,
+     scoped) dispatched. Task 10 review (opus): APPROVED, 4 Minor (M1 record
+     Plain/DeferDemand origin as decision + comment; M2 assert total length ≤
+     maxCharacters in the 1,000-hop test; M3 dedupe test uses chain(2); M4 reuse
+     abortCause/clauseNote). Backlog candidate: Plain mark from a type (Box
+     field, lambda parameter type) rejects with zero notes. Fix round →
+     implementer; controller checks. Task 10 fix round: 52b9df8 (M1, M2, M4
+     applied; M3 kept chain(3): implementer says chain(3) gives 4 notes =
+     maxNotes and chain(2) only 3; reviewer said 5. Ruling: accept chain(3) —
+     the test pins 4 notes and checks unique spans over shown notes; either
+     count leaves the duplicate check meaningful — cost: minor). Verify exit 0
+     (controller read .build/task10-fix-verify.log): 1226/1226, 41/41. Task 10:
+     complete (d85a791, 52b9df8). Next: Task 11. User 2026-10-12: Task 11
+     dispatched (fresh sonnet), BASE 52b9df8. Any accepted escape = stop and
+     report. Task 11: implementer DONE 2ef711b (test-side only; failing random
+     clause 78 ≥25; soundness 300 programs: 220 accepted, 55 cleanup user-op
+     (≥50, thin: seeds 1/777 give 50), 73 FX008 headlines, 77 escapes all
+     rejected, accepted = oracle = Go; sensitivity at ff0c6d1: 77/77 escapes
+     accepted; serial run 13.8 s; verify exit 0). Deviations: separate
+     failingHandlerRejection export; failing-frame fragment (15%/30%); oracle
+     events clause-abort, cleanup-operation. Scoped review (opus) dispatched:
+     escape-shape coverage. Task 11 review (opus): changes required. Escapes: 73
+     lexical, 1 forwarding, 3 non-FX008 (risky Fail(Err)); none cross-function,
+     handler-as-value, ambient, nofail(k). C1 random failing clauses dynamically
+     dead (failing-frame supplies 77/78; fix: guard clause with handle and have
+     the with body perform the label → 55 clauses, 10 escapes). I1 add
+     failingFrame variants (forward, callee, handler value, ambient) and accept
+     FX008 rejections at call/argument spans. I2 sensitivity misstated (ff0c6d1
+     accepts 70/77). I3 unconstrained defer built from a context holding the
+     family label → use safe(inside). Oracle trust sound. M1 margin ok (50-63
+     over 10 seeds; optional fail-free wrapper, ≥60). M2, M3 minor. Ruling:
+     apply all — test design within the plan; an FX008 rejection at a call span
+     is allowed for the cross-function nofail-row case — cost: none. Any
+     accepted escape from the new shapes = stop. Fix round → implementer. Task
+     11 fix round: 0a571d4 (C1 random failing clauses live: 116 without the
+     fragment, 178 with; I1 test/fx-gen-failing.mjs shapes lexical, forward,
+     callee-plain, callee-nofail, value-passed, value-returned, ambient, random,
+     ≥5 each; FX008 headline accepted at defer or call; I2/I3 safe(inside),
+     sensitivity rerun; M1 fail-free wrappers: cleanup user-op 67-89 over 10
+     seeds). Default seed: 120 escapes all rejected (lexical 24, forward 24,
+     callee-plain 9, callee-nofail 9, value-passed 12, value-returned 10,
+     ambient 14, random 18); ff0c6d1 accepts 110/120 (value-returned rejected
+     there by the strict Fail text); 10 seeds: no accepted escape, no Go/oracle
+     disagreement. Verify exit 0 (controller read .build/task11-fix-verify.log):
+     1226/1226, 47/47 (one fewer accepted-program chunk, 163 vs 220 accepted; no
+     test removed). Ruling: close without re-review — the reviewer's prescribed
+     fixes, evidence exceeds the minimums; gap: no nofail(k) shape in the
+     generator, noted for the whole-branch review — cost: low. Task 11: complete
+     (2ef711b, 0a571d4). Next: Task 12. User 2026-10-12: Task 12 dispatched
+     (fresh sonnet), BASE 0a571d4. Controller writes next-session.md and BACKLOG
+     from the implementer's report. Task 12: implementer DONE 9a62014 (spec,
+     CF001 three places only, FX001 plan, design §3.4 M5, architecture,
+     findings; 9 design-vs-implementation differences resolved for the
+     implementation; verify exit 0 1226/47; 64 regression proofs, 28 FX008).
+     Controller spot-check: P10 headlines and notes present in the spec
+     (wrapped), CF001 hunks only §5/§8A.6/§8A.8. Ruling: no review — docs only;
+     the whole-branch review covers spec fidelity — cost: low. BACKLOG: FX008
+     implemented; FX007, FX012, FX006 notes; FX013-FX016 limitation rows. Task
+     12: complete. Next: T008, then the whole-branch review. User 2026-10-12:
+     'Carry on' — T008 dispatched (fresh sonnet: profile first, fix the root
+     cause, no behaviour change), BASE 9a62014. T008: implementer DONE 33f9854.
+     Profile: not the feed graph — settling extends the shared target row by a
+     label-free alias hop per consumption, so walks traverse an N-hop chain
+     (~14M boundRow at n=1000). Fix: Aliases (union-find-style classes of alias
+     hops in Subst; boundAt jumps to the class end). install 1k 7856 → ~500 ms,
+     2k 35206 → ~1010 ms (ratio 2.0); defers and chain at parity. Ratio guard
+     (≤3.2) failed on 9a62014 (4.27); mutant row fx008-install-linear.
+     Differential 0 diffs all phases; verify exit 0. Review (opus) dispatched.
+     T008 review (opus): Approve with fixes, no Critical. Property test (scratch
+     alias-prop.mjs): 0 mismatches in ~5M checks incl. adversarial targets and
+     reverts; precondition 'never rebind a bound meta' holds but unasserted
+     (rebinding variant: 21k mismatches). I1 maintained property test + mutant
+     row; I2 document the precondition; M1-M6 style/comments/constants; M7 close
+     T008, new row for labelled extendRow chains and unmergeable hops. Fix round
+     → implementer (scratch property test path given); controller checks. T008
+     fix round: e54d869 (test/aliases.test.mjs seeded, ~496k checks, ~0.5 s,
+     asserts jumps; row fx008-alias-jump: labelled bindings merged as hops,
+     fails the property test only; I2 precondition documented; M1-M6). Verify
+     exit 0 (controller read .build/t008-fix-verify.log). Ruling: close —
+     reviewer's fixes; reviewer's two mutants were equivalent, replacement
+     accepted — cost: low. T008: complete (33f9854, e54d869). BACKLOG T008 Done,
+     T009 opened. Next: whole-branch review. User 2026-10-12: whole-branch
+     review dispatched (opus), range
+     8fe4218cab1e5da8bea3fa492a7858c14602a24f..e54d869. Whole-branch review
+     (opus, review-fx008-branch-result.md): Ready after fixes, no Critical. 26
+     new adversarial programs: every witnessed escape rejected; 16 accepted
+     agree Go = interpreter = base Go. §6 outcome comparison vs 8fe4218: no Go
+     difference in common acceptances; 412 newly accepted nofail programs emit
+     Go identical to unmarked base; I1 four no-defer programs changed notes only
+     since Task 7 (amb2, around3, p3, ov1ctl: 'this function value', lost 'is
+     handled here' / 'is raised here'; cause consumed: Application at
+     Clauses.purs:148, SettleEntry.purs:107, Filing.purs:43). M1 stale serial
+     constants; M2 mark check reads pre-settle registry; M3 Lend drops Left,
+     unreachable TailPass rule/Settle fallback; M4 no nofail(k) generator shape;
+     M5 BACKLOG; M6 Type.purs 250; M7 checkedStates. Perf mixed 7.2 s → 0.62 s;
+     chain 83 → 332 ms (linear). Awaiting user decisions. User decisions
+     2026-10-12 (branch review): I1 restore base notes for programs without
+     defer and pin full notes for amb2, around3, p3, ov1ctl; unreachable
+     TailPass rule, Settle fallback and Lend Left kept as asserted guards
+     (E_INTERNAL, not silent); register reviewer's nofail(k) programs p01, p02,
+     p11, q03 as tests, generator shape to BACKLOG; accept linear constant
+     factors (defers 1.5x, chain 4x), record on T009. Controller: M1 stale
+     constants, M2 comment/order, M6 Type.purs, M7 checkedStates as review says.
+     Branch fix round → fresh sonnet. Branch fix round: 6213f56 (I1: ClauseRow
+     origin + Subst relays so trail follows clause-row hops; amb2, around3, p3,
+     ov1ctl notes identical to 8fe4218; baseNotes pins fail on e54d869 (4);
+     5,534 sources: no no-defer program differs from base in notes. Guards:
+     TailPass rule, Settle fallback, Lend Left → E_INTERNAL; two forced by test
+     via Features.Check.Inspect; nofail(k) tests p01, p02, p11, q03 rejected +
+     controls accepted, Go = interpreter. M1: installations 7342 → 486 ms median
+     (bound 1458), install guard 9500 → 1467. M2 not applied (not
+     behaviour-preserving; comment fixed). M6 untouched. M7: Features.Check
+     exports only check; Inspect, Function modules.) Verify exit 0 (controller
+     read .build/branch-fix-verify.log): 1243/1243, 48/48, 66 proofs.
+     Differential vs e54d869: 19 notes-only diffs (restored sets; one defer
+     program back to base; argbind 'Fail(E) comes from this function value' →
+     'Fail(E) is raised here', not pinned — asked the user). Ruling: no
+     re-review — notes-only effect proven by the differential; relays touch
+     provenance only — cost: low. User decisions 2026-10-12: accept the
+     argbind-path note ('Fail(E) is raised here'), pinned in 98b153f
+     (witness/ec1 full notes; verify exit 0); merge and push: fx008-impl → fx008
+     (--no-ff), verify, fast-forward main, push main and fx008-impl.
 
 ## FX001 Tasks 11-12 (session 2026-10-12, appended from the local ledger)
 
@@ -264,46 +920,111 @@ Execution: Sonnet implements, Opus reviews (user direction 2026-10-10).
 | Global | "commit on branch claude/vibrant-cerf-3km61i" | stale, ruled below |
 | T12 self | scripts/regression.mjs 246 lines (+2 for import/spread = 248 ≤ 250) | fits; test/regression.mjs (247) needs no change |
 
-Ruling: commit on fx001-finish in .worktrees/fx001-finish, not claude/vibrant-cerf-3km61i — that branch is the old cloud branch; FX008 used the same worktree pattern — cost if wrong: a branch rename.
-Ruling: FX001 probes live in a new test/regression-fx*.mjs module (split as needed for the 250-line limit), aggregated by test/regression-probes.mjs like test/regression-fx008.mjs; test/regression.mjs is not modified — the amendment's purpose is not touching the 247-line test/regression.mjs, and the existing FX008 probes follow this pattern — cost if wrong: a file move.
-Ruling: a listed T12 row whose defect an existing row already restores (same file/needle) is cited, not duplicated, as the plan already does for effect-free-ctx — cost if wrong: one fewer row.
-User 2026-10-12: Task 11 dispatched (fresh sonnet), BASE 9d6952b. Implementer told: no src/ change; BLOCKED if the scenario needs one.
-Baseline verify at 9d6952b in the worktree: exit 0 (.build/fx001-baseline-verify.log).
-Task 11: implementer DONE_WITH_CONCERNS 3b51d21 (test-side + example/snapshot; no src; 9 keys = 6 fn + 3 effect vs baseline 6; dropped-Clock diagnostic exact; 1,000-label rejections 451/498 chars; medians ms: install 131, lookup 141, unwind 46, caught 38, go build 135 (warm-cache concern); specialize.test exclusion for services.wxw; scenario has no Fail (baseline can't express it); verify exit 0 1252/1252). Review (opus) dispatched.
-Task 11 review (opus): Spec ✅ substance, Needs fixes. I1 progress entry (timing evidence, Task 1 comparison) and findings (callback-row unification; `with Console` callback cannot be deferred) missing; test comment cites a nonexistent entry. ⚠️ TDD shown only for snapshot and diagnostic (characterization tests; accepted as such).
-Ruling: the implementer writes the docs/progress.md entry and docs/findings.md items in the fix round — my dispatch had reserved docs for the controller, but the brief requires the entry in the change and controller edits skip review — cost if wrong: none.
-Task 11: minor (deferred): M1 lookup/install "loop" is 10^6-deep native recursion (not stack-dominated: ~40 ms vs ~135 ms) — state in comment/FX005 observation.
-Task 11: minor (deferred): M2 caught-failure (38 ms) and unwind (46 ms) workloads barely exceed ~30 ms process start; bounds mostly guard spawn.
-Task 11: minor (deferred): M3 go build bound assumes warm .build/go-cache; note precondition.
-Task 11: minor (deferred): M4 polymorphicExamples now includes non-polymorphic services.wxw; rename.
-Task 11: minor (deferred): M5 redundant assert fx-services.test.mjs:701; M6 one 81-column line.
-Task 11: fix round 1/5 (1 addressed, 0 open; commits 3b51d21..3005d91). Re-review (sonnet): figures match report. Minor (deferred): findings section cites FX007 as relaxation, which fits the cleanup case but not finding 1.
-Task 11: complete (commits 9d6952b..3005d91, review clean)
-Ruling: split Task 12 into 12a (Steps 1+4: regression rows/probes, own review) and 12b (Steps 2+3: ADR 010, language Effects, architecture/engineering, BACKLOG, findings, progress, next-session) — different natures, each a coherent review surface; rows' names feed the docs — cost if wrong: one extra dispatch.
-Ruling: the controller appends this session's ledger to the committed snapshot docs/sdd/2026-10-09-effects-plan/progress.md at finish (it holds FX008's ledger under the same plan) — bookkeeping, not reviewed content — cost: none.
-Task 12a dispatched (fresh sonnet), BASE 3005d91: regression rows/probes per Step 1+4; layout and duplicate rulings carried.
-Task 12a: implementer DONE ab456fa (15 rows; 81 proofs; verify exit 0; files 83/68/129/79 lines; fx-cleanup-context mutant mutates ctx in place (also leaks installs); re-targeted fx-ctx-reachable, fx-closed-opened (RowFinish), fx-layout-edges (A/B pair); fx-defer-fail/fx-defer-unified probes overlap). Review (opus) dispatched.
-Task 12a review (opus): Spec ✅, Approved; all 15 rows faithful (fx-cleanup-context and fx-defer-unified strict justified supersets; fx-ctx-reachable coarser "entry body only" stand-in). Reviewer ran fx-closed-opened, fx-side-condition.
-Task 12a: minor (deferred): M1 seven row regexes match only the label prefix (e.g. /abbreviation: /) — a mutant failing for an unrelated reason would count; tighten to the named detection.
-Task 12a: minor (deferred): M2-M4 row comments: fx-ctx-reachable is entry-body-only and drops program.effects; fx-defer-unified subsumes fx-defer-fail; fx-cleanup-context also leaks installs past `with`.
-Task 12a: complete (commits 3005d91..ab456fa, review clean)
-Task 12b dispatched (fresh sonnet), BASE ab456fa: Steps 2-3 + architecture/engineering/findings/progress/next-session; FX008 BACKLOG status correction (merged 2026-10-12).
-Task 12b: implementer DONE_WITH_CONCERNS 46b9bed (ADR 010 new, language Effects wholly new, FX002/3/5 added, FX008 status corrected, FN006(1) left open: make()(x) uncovered; verify exit 0, 81 proofs). Review (opus) dispatched.
-Task 12b review (opus): Spec ✅, Needs fixes; 21/22 sampled claims verified by probes/source. I1 language.md:310 says ctl/resume get the dedicated E_SYNTAX message; only expression position does (effect decl: Expected '}'; handler clause: Expected an identifier) — code short of spec §1.
-Ruling: fix the doc and record the code-vs-spec gap in findings + BACKLOG (no compiler change in this docs task) — a dedicated diagnostic in declaration/clause positions is a small parser follow-up, not FX001 acceptance — cost if wrong: one parser fix later.
-Task 12b: minor (deferred): M1 ADR 010:62-65 Grow example attributed to fx-layout-edges, whose probe is the A/B pair.
-Task 12b: minor (deferred): M2 ADR 010:144-148 "every row label carries a mark" vs Fail labels unmarked.
-Task 12b: minor (deferred): M3 BACKLOG FX005 "1.4x that shape" ambiguous (depth 100 vs 10,000).
-Task 12b: minor (deferred): M4 language.md:383 report/exit-1 claim holds only for programs using defer/crash (usesDefects).
-Task 12b: minor (deferred): M5 engineering.md:87 over-long line.
-Task 12b: fix commit cda990f (language text corrected; findings item 7; FX006 note; ADR made no claim). Scoped re-review (sonnet) dispatched.
-Task 12b: fix round 1/5 (1 addressed, 0 open; commits 46b9bed..cda990f). Re-review (sonnet): approve.
-Task 12b: minor (deferred): findings.md:630 cites Format/Parse/Expression.purs for the dedicated message; it is defined in Format/Parse/Handler.purs:84 (unsupportedControl) — controller grep.
-Task 12: complete (commits 3005d91..cda990f: 12a ab456fa, 12b 46b9bed, cda990f; reviews clean)
-Final whole-branch review (opus) dispatched, range 9d6952b..cda990f.
-Final review (opus): With fixes; no Critical. All 15 mutants rebuilt and fail for the named defect. I1 callback-row limit (written callback row must equal caller's row; misleading "performs M, which its signature does not allow" headline instead of §6 side-condition text) untracked: BACKLOG row + language.md limit + scope findings' FX007 sentence. Minors 2-8 doc accuracy (Grow attribution, "last two" timing, fx-closed-opened wording, Fail mark, FX005 1.4x, ADR status, language "checked" claim); 9 no spawn timeout; 10 go build headroom; 11 ledger snapshot. Triage: fix T12a M1 regexes; T11 M2 → BACKLOG T003; others drop.
-Ruling: one fix wave covering I1, Minors 2-8, T12a M1 regexes, and a T003 note combining T11 M2, Minor 9 and Minor 10; recommendation 2 (Fail variant of the services scenario) becomes a BACKLOG note, not built now — spec §5 does not require typed failure in the scenario — cost if wrong: one more example later. Ledger snapshot by the controller.
-Final fix wave: e53cab9 (FX017 callback-row limit; minors 2-8; 7 regexes tightened, proofs pass; T003 and FX001 notes; verify exit 0 1252/53, 81 proofs, .build/final-fix-verify.log). Scoped re-review (sonnet) dispatched.
-Final fix wave re-review (sonnet): all findings addressed; ADR reflow lost no content (word-level comparison); regex escaping matches JSON.stringify output. Minor: progress addition ~11 lines vs 3-6 requested (accepted).
-Controller checked .build/final-fix-verify.log: exit=0, 1252/1252, 53/53, 81 proofs. Deleted .build/regression (2.6 GB mutant copies).
-Final review: complete (fix commit e53cab9, re-review clean). Next: user's merge decision.
+Ruling: commit on fx001-finish in .worktrees/fx001-finish, not
+claude/vibrant-cerf-3km61i — that branch is the old cloud branch; FX008 used the
+same worktree pattern — cost if wrong: a branch rename. Ruling: FX001 probes
+live in a new test/regression-fx*.mjs module (split as needed for the 250-line
+limit), aggregated by test/regression-probes.mjs like test/regression-fx008.mjs;
+test/regression.mjs is not modified — the amendment's purpose is not touching
+the 247-line test/regression.mjs, and the existing FX008 probes follow this
+pattern — cost if wrong: a file move. Ruling: a listed T12 row whose defect an
+existing row already restores (same file/needle) is cited, not duplicated, as
+the plan already does for effect-free-ctx — cost if wrong: one fewer row. User
+2026-10-12: Task 11 dispatched (fresh sonnet), BASE 9d6952b. Implementer told:
+no src/ change; BLOCKED if the scenario needs one. Baseline verify at 9d6952b in
+the worktree: exit 0 (.build/fx001-baseline-verify.log). Task 11: implementer
+DONE_WITH_CONCERNS 3b51d21 (test-side + example/snapshot; no src; 9 keys = 6
+fn + 3 effect vs baseline 6; dropped-Clock diagnostic exact; 1,000-label
+rejections 451/498 chars; medians ms: install 131, lookup 141, unwind 46, caught
+38, go build 135 (warm-cache concern); specialize.test exclusion for
+services.wxw; scenario has no Fail (baseline can't express it); verify exit 0
+1252/1252). Review (opus) dispatched. Task 11 review (opus): Spec ✅ substance,
+Needs fixes. I1 progress entry (timing evidence, Task 1 comparison) and findings
+(callback-row unification; `with Console` callback cannot be deferred) missing;
+test comment cites a nonexistent entry. ⚠️ TDD shown only for snapshot and
+diagnostic (characterization tests; accepted as such). Ruling: the implementer
+writes the docs/progress.md entry and docs/findings.md items in the fix round —
+my dispatch had reserved docs for the controller, but the brief requires the
+entry in the change and controller edits skip review — cost if wrong: none. Task
+11: minor (deferred): M1 lookup/install "loop" is 10^6-deep native recursion
+(not stack-dominated: ~40 ms vs ~135 ms) — state in comment/FX005 observation.
+Task 11: minor (deferred): M2 caught-failure (38 ms) and unwind (46 ms)
+workloads barely exceed ~30 ms process start; bounds mostly guard spawn. Task
+11: minor (deferred): M3 go build bound assumes warm .build/go-cache; note
+precondition. Task 11: minor (deferred): M4 polymorphicExamples now includes
+non-polymorphic services.wxw; rename. Task 11: minor (deferred): M5 redundant
+assert fx-services.test.mjs:701; M6 one 81-column line. Task 11: fix round 1/5
+(1 addressed, 0 open; commits 3b51d21..3005d91). Re-review (sonnet): figures
+match report. Minor (deferred): findings section cites FX007 as relaxation,
+which fits the cleanup case but not finding 1. Task 11: complete (commits
+9d6952b..3005d91, review clean) Ruling: split Task 12 into 12a (Steps 1+4:
+regression rows/probes, own review) and 12b (Steps 2+3: ADR 010, language
+Effects, architecture/engineering, BACKLOG, findings, progress, next-session) —
+different natures, each a coherent review surface; rows' names feed the docs —
+cost if wrong: one extra dispatch. Ruling: the controller appends this session's
+ledger to the committed snapshot docs/sdd/2026-10-09-effects-plan/progress.md at
+finish (it holds FX008's ledger under the same plan) — bookkeeping, not reviewed
+content — cost: none. Task 12a dispatched (fresh sonnet), BASE 3005d91:
+regression rows/probes per Step 1+4; layout and duplicate rulings carried. Task
+12a: implementer DONE ab456fa (15 rows; 81 proofs; verify exit 0; files
+83/68/129/79 lines; fx-cleanup-context mutant mutates ctx in place (also leaks
+installs); re-targeted fx-ctx-reachable, fx-closed-opened (RowFinish),
+fx-layout-edges (A/B pair); fx-defer-fail/fx-defer-unified probes overlap).
+Review (opus) dispatched. Task 12a review (opus): Spec ✅, Approved; all 15 rows
+faithful (fx-cleanup-context and fx-defer-unified strict justified supersets;
+fx-ctx-reachable coarser "entry body only" stand-in). Reviewer ran
+fx-closed-opened, fx-side-condition. Task 12a: minor (deferred): M1 seven row
+regexes match only the label prefix (e.g. /abbreviation: /) — a mutant failing
+for an unrelated reason would count; tighten to the named detection. Task 12a:
+minor (deferred): M2-M4 row comments: fx-ctx-reachable is entry-body-only and
+drops program.effects; fx-defer-unified subsumes fx-defer-fail;
+fx-cleanup-context also leaks installs past `with`. Task 12a: complete (commits
+3005d91..ab456fa, review clean) Task 12b dispatched (fresh sonnet), BASE
+ab456fa: Steps 2-3 + architecture/engineering/findings/progress/next-session;
+FX008 BACKLOG status correction (merged 2026-10-12). Task 12b: implementer
+DONE_WITH_CONCERNS 46b9bed (ADR 010 new, language Effects wholly new, FX002/3/5
+added, FX008 status corrected, FN006(1) left open: make()(x) uncovered; verify
+exit 0, 81 proofs). Review (opus) dispatched. Task 12b review (opus): Spec ✅,
+Needs fixes; 21/22 sampled claims verified by probes/source. I1 language.md:310
+says ctl/resume get the dedicated E_SYNTAX message; only expression position
+does (effect decl: Expected '}'; handler clause: Expected an identifier) — code
+short of spec §1. Ruling: fix the doc and record the code-vs-spec gap in
+findings + BACKLOG (no compiler change in this docs task) — a dedicated
+diagnostic in declaration/clause positions is a small parser follow-up, not
+FX001 acceptance — cost if wrong: one parser fix later. Task 12b: minor
+(deferred): M1 ADR 010:62-65 Grow example attributed to fx-layout-edges, whose
+probe is the A/B pair. Task 12b: minor (deferred): M2 ADR 010:144-148 "every row
+label carries a mark" vs Fail labels unmarked. Task 12b: minor (deferred): M3
+BACKLOG FX005 "1.4x that shape" ambiguous (depth 100 vs 10,000). Task 12b: minor
+(deferred): M4 language.md:383 report/exit-1 claim holds only for programs using
+defer/crash (usesDefects). Task 12b: minor (deferred): M5 engineering.md:87
+over-long line. Task 12b: fix commit cda990f (language text corrected; findings
+item 7; FX006 note; ADR made no claim). Scoped re-review (sonnet) dispatched.
+Task 12b: fix round 1/5 (1 addressed, 0 open; commits 46b9bed..cda990f).
+Re-review (sonnet): approve. Task 12b: minor (deferred): findings.md:630 cites
+Format/Parse/Expression.purs for the dedicated message; it is defined in
+Format/Parse/Handler.purs:84 (unsupportedControl) — controller grep. Task 12:
+complete (commits 3005d91..cda990f: 12a ab456fa, 12b 46b9bed, cda990f; reviews
+clean) Final whole-branch review (opus) dispatched, range 9d6952b..cda990f.
+Final review (opus): With fixes; no Critical. All 15 mutants rebuilt and fail
+for the named defect. I1 callback-row limit (written callback row must equal
+caller's row; misleading "performs M, which its signature does not allow"
+headline instead of §6 side-condition text) untracked: BACKLOG row + language.md
+limit + scope findings' FX007 sentence. Minors 2-8 doc accuracy (Grow
+attribution, "last two" timing, fx-closed-opened wording, Fail mark, FX005 1.4x,
+ADR status, language "checked" claim); 9 no spawn timeout; 10 go build headroom;
+11 ledger snapshot. Triage: fix T12a M1 regexes; T11 M2 → BACKLOG T003; others
+drop. Ruling: one fix wave covering I1, Minors 2-8, T12a M1 regexes, and a T003
+note combining T11 M2, Minor 9 and Minor 10; recommendation 2 (Fail variant of
+the services scenario) becomes a BACKLOG note, not built now — spec §5 does not
+require typed failure in the scenario — cost if wrong: one more example later.
+Ledger snapshot by the controller. Final fix wave: e53cab9 (FX017 callback-row
+limit; minors 2-8; 7 regexes tightened, proofs pass; T003 and FX001 notes;
+verify exit 0 1252/53, 81 proofs, .build/final-fix-verify.log). Scoped re-review
+(sonnet) dispatched. Final fix wave re-review (sonnet): all findings addressed;
+ADR reflow lost no content (word-level comparison); regex escaping matches
+JSON.stringify output. Minor: progress addition ~11 lines vs 3-6 requested
+(accepted). Controller checked .build/final-fix-verify.log: exit=0, 1252/1252,
+53/53, 81 proofs. Deleted .build/regression (2.6 GB mutant copies). Final
+review: complete (fix commit e53cab9, re-review clean). Next: user's merge
+decision.

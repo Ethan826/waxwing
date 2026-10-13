@@ -12,7 +12,9 @@ produced the Task 9 holes. The `failing random clause` census row is met by
 the designed `failing-frame` fragment, not by random clauses. The recorded
 sensitivity count is wrong: 70 of 77, not 77.
 
-## Experiments (scratch copy of test/ against the worktree's output/; seed 20261010)
+Experiments (scratch copy of test/ against the worktree's output/; seed
+20261010)
+---
 
 I instrumented the oracle to record each cleanup's operations, clause
 parameters, the function that installed the handler, the handler expression

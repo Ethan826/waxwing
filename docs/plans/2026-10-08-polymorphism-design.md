@@ -54,7 +54,8 @@ type      = "Int" | "Bool" | lower
 ```
 type List(a) = Nil | Cons(a, List(a));
 type Pair(a, b) = Pair(a, b);
-fn length(xs: List(a)): Int = match xs { Nil => 0, Cons(_, t) => 1 + length(t) };
+fn length(xs: List(a)): Int = match xs { Nil => 0, Cons(_,
+  t) => 1 + length(t) };
 fn zip(xs: List(a), ys: List(b)): List(Pair(a, b)) = …;
 ```
 
@@ -245,15 +246,16 @@ monomorphic IR.
      the element type. So a program's output is the same for any ground
      representative. Section 8 tests this directly rather than relying on
      the argument alone.
-  `length(Nil)` thus specializes to the same key as `length` at Int.
+     `length(Nil)` thus specializes to the same key as `length` at Int.
 - Limit: Specialize fails with E_SPECIALIZATION, Problem
-  `SpecializationLimit Int`, when the number of keys created from
-  polymorphic declarations would exceed 10,000 (a named constant, global).
-  Counted: each instantiation of a function with type variables and each
-  ground application of a type with parameters, together. Not counted:
-  monomorphic functions and types, so existing large monomorphic programs
-  are unaffected. Plan review 2026-10-08 fixed this accounting. The span is the reference (call, construction or type
-  reference) that would create the first key over the limit.
+  `SpecializationLimit Int`, when the number of keys created from polymorphic
+  declarations would exceed 10,000 (a named constant, global). Counted: each
+  instantiation of a function with type variables and each ground application of
+  a type with parameters, together. Not counted: monomorphic functions and
+  types, so existing large monomorphic programs are unaffected. Plan review
+  2026-10-08 fixed this accounting. The span is the reference (call,
+  construction or type reference) that would create the first key over the
+  limit.
 - Go names stay numeric (`bumpusTy7`, `bumpusFn12`, `bumpusFn12Match1`).
   Printed values use source constructor names, so `Cons(1, Nil)` prints and
   re-reads as today.

@@ -1,11 +1,11 @@
 # Review: FX008 Task 5 (settling loop), fx008-impl d9a0576 (base 84b684e)
 
-[ran] = executed by the reviewer; [read] = from reading the code.
-Scratch: /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/t5review/
+[ran] = executed by the reviewer; [read] = from reading the code. Scratch:
+/private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/t5review/
 (base build `base/output`, instrumented build `inst/`, one-line fix build
-`fix/`, tools in `tools/`, counterexamples in `cx/`). The worktree was
-not modified; `.build/regression` was written by the regression script,
-as it always is.
+`fix/`, tools in `tools/`, counterexamples in `cx/`). The worktree was not
+modified; `.build/regression` was written by the regression script, as it always
+is.
 
 ## Verdict
 

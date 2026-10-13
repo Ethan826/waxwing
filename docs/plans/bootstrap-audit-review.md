@@ -24,4 +24,5 @@ Declined to judge: ADTs/polymorphism/self-hosting implementation (future
 milestones); general forged resolved entry/table validation (trusted interface);
 large/deep-input guarantees (E002); fresh online/cross-platform setup (F001);
 applying external MileAhead patch (F002). These were reviewed for truthful scope
-and limitations. Executor rulings on every item are in bootstrap-audit-ledger.md.
+and limitations. Executor rulings on every item are in
+bootstrap-audit-ledger.md.

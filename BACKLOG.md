@@ -1,8 +1,12 @@
 # Local backlog
 
-Current delivery (2026-10-13): FN001, P001, FX001 (Tasks 1-12), FX008 and FX017 are merged into main and pushed. FX018 is merged into main and pushed (2026-10-13). The Text plan (docs/plans/2026-10-13-text-plan.md) is next. Next milestone: INF001 design. Waxwing / `.wxw` rename is R003. See docs/next-session.md and docs/progress.md for the current evidence.
-A003, G001, E005 and T001 are merged into main. Plan and verification evidence
-are in docs/plans/bootstrap.md and docs/progress.md. No remote tracking.
+Current delivery (2026-10-13): FN001, P001, FX001 (Tasks 1-12), FX008 and FX017
+are merged into main and pushed. FX018 is merged into main and pushed
+(2026-10-13). The Text plan (docs/plans/2026-10-13-text-plan.md) is next. Next
+milestone: INF001 design. Waxwing / `.wxw` rename is R003. See
+docs/next-session.md and docs/progress.md for the current evidence. A003, G001,
+E005 and T001 are merged into main. Plan and verification evidence are in
+docs/plans/bootstrap.md and docs/progress.md. No remote tracking.
 
 | ID | State | Next concrete work and acceptance |
 |---|---|---|

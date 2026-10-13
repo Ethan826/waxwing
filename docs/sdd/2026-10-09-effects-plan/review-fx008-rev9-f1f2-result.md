@@ -8,9 +8,8 @@ Subst.purs, Binding.purs, UnifyRow.purs, Unify.purs, Consume.purs,
 Handler.purs, Apply.purs, Scheme.purs and Check.purs. No repository file
 other than this one was changed.
 
-Tags: [ran] means run on the current compiler (`node scripts/waxwing.mjs
-run`). [read] means reasoning about rev 9, which is not implemented. New
-probes are in
+Tags: [ran] means run on the current compiler (`node scripts/waxwing.mjs run`).
+[read] means reasoning about rev 9, which is not implemented. New probes are in
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/rev9/.
 
 ## Verdict: substantive issue (three defects, each with a small correction)
@@ -122,7 +121,8 @@ effect Tick { fn tick(): Unit; };
 fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h0 = handler Tick { tick() => () };
-  let h1 = handler Log { log(n) => with h0 { k(()) } };   // c1 = [| t], T = [Tick | t]
+  // c1 = [| t], T = [Tick | t]
+  let h1 = handler Log { log(n) => with h0 { k(()) } };
   let h2 = handler Log { log(n) => k(()) };               // c2 = [Tick | t]
   with h1 { log(1) };
   print(0)
@@ -240,7 +240,8 @@ fn main(): Unit with Console = {
   let k2 = fn(n: Int) => ();
   let h1 = handler Log { log(n) => k1(n) };
   let h2 = handler Log { log(n) => k2(n) };
-  let g1 = fn(u: Unit) => with h1 { let v = No; if put(v) then print(v == v) else () };
+  let g1 = fn(u: Unit) => with h1 { let v = No;
+    if put(v) then print(v == v) else () };
   let g2 = fn(u: Unit) => with h2 { if put(Some(true)) then () else () };
   let r = fn(x) => { fail(Job(k1)); fail(x) };
   let q = fn(u: Unit) => r(Job(k2));

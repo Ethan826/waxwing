@@ -1,16 +1,16 @@
 # Effects, handlers and typed failures: design (FX001)
 
-Status: written spec, revised after the user's whole-spec review
-(2026-10-09): FN001 evaluation order, one dependency model, `ctx` mode over
-emitted IR, handler restrictions, confirmations; section 6 (diagnostic
-quality) added at the user's request; approved for implementation
-planning by the user 2026-10-09. Direction
-decisions and sections 1-5 were settled section by section with the user
-on 2026-10-09; only the item under "Awaiting confirmation" remains
+Status: written spec, revised after the user's whole-spec review (2026-10-09):
+FN001 evaluation order, one dependency model, `ctx` mode over emitted IR,
+handler restrictions, confirmations; section 6 (diagnostic quality) added at the
+user's request; approved for implementation planning by the user 2026-10-09.
+Direction decisions and sections 1-5 were settled section by section with the
+user on 2026-10-09; only the item under "Awaiting confirmation" remains
 unconfirmed. Implementation status lives in the plan
-(2026-10-09-effects-plan.md) and docs/progress.md; the `defer` failure
-rule was revised by the user on 2026-10-09 (section 3). Background: docs/plans/2026-10-08-language-direction.md
-(FX001 sections) and BACKLOG.md FX001.
+(2026-10-09-effects-plan.md) and docs/progress.md; the `defer` failure rule was
+revised by the user on 2026-10-09 (section 3). Background:
+docs/plans/2026-10-08-language-direction.md (FX001 sections) and BACKLOG.md
+FX001.
 
 FX008 amendment (2026-10-12): `nofail` marks make `defer` sound against
 handlers that can fail. Sections 1, 2, 3, 5 and 6 carry the change; each
@@ -81,10 +81,10 @@ they differ (docs/plans/2026-10-10-abort-tracking-plan.md).
 8. **Scoped labels.** A row may contain a label more than once; the
    innermost handler takes the operation. This permits intercept-and-
    forward handlers and needs no lacks constraints on row variables.
-9. **Recoverable defects are uncatchable; cleanup still runs.**
-   Recoverable runtime defects are never caught by `handle`; they unwind
-   to program exit with a report, running deferred cleanup on the way. Go
-   fatal errors (stack exhaustion, out of memory) skip cleanup (section 3). Catching defects at
+9. **Recoverable defects are uncatchable; cleanup still runs.** Recoverable
+   runtime defects are never caught by `handle`; they unwind to program exit
+   with a report, running deferred cleanup on the way. Go fatal errors (stack
+   exhaustion, out of memory) skip cleanup (section 3). Catching defects at
    supervision boundaries is left to the concurrency follow-up.
 
 ## 1. Syntax (section approved by the user 2026-10-09 with adjustments)
@@ -132,18 +132,18 @@ fn h(f: a -> b with pure, x: a): b;              // callback must be pure
 fn safeDiv(n: Int, d: Int): Int with Fail(DivByZero);
 ```
 
-**Omission is not a promise of an empty effect row; `with pure` is. It
-promises neither termination nor freedom from `crash` (section 3).** Every signature
+**Omission is not a promise of an empty effect row; `with pure` is. It promises
+neither termination nor freedom from `crash` (section 3).** Every signature
 carries an ambient row (decision 6). Every arrow without `with`, and the
-signature itself when it has no `with` or a `with` without a spread, shares
-that ambient row. The ambient row lets a function pass through what its
-callbacks perform, never perform anything itself. `with` attaches to the
-nearest arrow to its left, so `A -> B -> C with E` puts `E` on the final
-stage and `(A, B) -> C with E` remains exactly `A -> B -> C with E`;
-parentheses delimit it: `(Int -> Int with Log) -> Int` annotates the
-parameter. `Handler(Clock with Log)` is a Clock handler whose clauses
-perform Log; bare `Handler(Clock)` uses the ambient row in a signature and
-is `pure` in a field or operation type (no ambient row there).
+signature itself when it has no `with` or a `with` without a spread, shares that
+ambient row. The ambient row lets a function pass through what its callbacks
+perform, never perform anything itself. `with` attaches to the nearest arrow to
+its left, so `A -> B -> C with E` puts `E` on the final stage and
+`(A, B) -> C with E` remains exactly `A -> B -> C with E`; parentheses delimit
+it: `(Int -> Int with Log) -> Int` annotates the parameter.
+`Handler(Clock with Log)` is a Clock handler whose clauses perform Log; bare
+`Handler(Clock)` uses the ambient row in a signature and is `pure` in a field or
+operation type (no ambient row there).
 
 **Marks (FX008 amendment, 2026-10-12).** `nofail` is contextual, like
 `pure`: recognized directly before a label in a row (after `with`, after
@@ -219,21 +219,20 @@ and row arguments stay distinct through resolution, substitution and
 specialization, and a declared type or effect with row parameters checks
 the number and sort of its arguments.
 
-**Label keys (scoped labels, decision 8).** A label's key is its effect,
-except `Fail`, keyed by the resolved declared type identity of its payload
-(Int, Bool or a TypeId), while the label keeps the full payload type:
-`Fail(DbError)` and `Fail(ValidationError)` are distinct keys;
-`Fail(Error(Int))` and `Fail(Error(Bool))` share the `Error` key and their
-arguments must unify when one is matched against the other. `fail(e)`
-requires `Fail(typeOf(e))`, the full type. A payload whose head is still
-an unsolved meta is decided after the body's other constraints are solved
-(deferred key); one that remains a meta is E_TYPE `Fail needs a concrete
-error family`. Keys are Int, Bool, Unit or a declared TypeId. A written
-`Fail` payload without a family key (a type variable, a function type or
-a handler type), in a signature or a `handle` clause, is that E_TYPE at
-the written label, with a hint naming `...e`, a concrete family or
-`Result` (BACKLOG FX009, user decision 2026-10-10). Limitation recorded for STD001: no
-fully generic helper turns an arbitrary `Result(error, value)` into a
+**Label keys (scoped labels, decision 8).** A label's key is its effect, except
+`Fail`, keyed by the resolved declared type identity of its payload (Int, Bool
+or a TypeId), while the label keeps the full payload type: `Fail(DbError)` and
+`Fail(ValidationError)` are distinct keys; `Fail(Error(Int))` and
+`Fail(Error(Bool))` share the `Error` key and their arguments must unify when
+one is matched against the other. `fail(e)` requires `Fail(typeOf(e))`, the full
+type. A payload whose head is still an unsolved meta is decided after the body's
+other constraints are solved (deferred key); one that remains a meta is E_TYPE
+`Fail needs a concrete error family`. Keys are Int, Bool, Unit or a declared
+TypeId. A written `Fail` payload without a family key (a type variable, a
+function type or a handler type), in a signature or a `handle` clause, is that
+E_TYPE at the written label, with a hint naming `...e`, a concrete family or
+`Result` (BACKLOG FX009, user decision 2026-10-10). Limitation recorded for
+STD001: no fully generic helper turns an arbitrary `Result(error, value)` into a
 failing computation; helpers are per family, or return Result.
 
 Rows keep order and multiplicity. Matching takes the *first* occurrence
@@ -532,31 +531,28 @@ A Go fatal error is not an exit and runs no cleanup. Multi-
 shot resumption of continuations containing `defer` is explicitly
 unresolved and left to that milestone.
 
-**Cleanup failures (revised by the user 2026-10-09).** A deferred
-expression cannot end in a typed abort: section 2 rejects a `defer` whose
-expression performs an unhandled `Fail` (or may, through an open row
-tail: Task 8 review ruling, adopted 2026-10-09; relaxation is FX007) or
-performs an operation whose frame may fail (FX008 amendment, 2026-10-12),
-so no typed cleanup
-failure can replace, drop or convert a pending typed failure. A pending
-typed failure reaches its own `handle` if every deferred expression run on
-the way completes normally; if cleanup raises a recoverable defect, the
-pending abort stops being recoverable and heads the report; if cleanup
-diverges, it is never delivered. Cleanup may still handle failures internally and
-complete normally, including during unwinding. What remains is defects:
-if cleanup raises a recoverable defect (`crash`, the missing-handler
-guard, a Go runtime panic), the program is already failing
-uncatchably: the pending cause (an abort
-or an earlier defect, if any) is retained as the first cause, later causes
-are recorded in execution order, the remaining deferred expressions still
-run, and the program reports once. A typed abort pending when such a
-defect occurs becomes part of that defect report rather than reaching its
-`handle`. Rejected alternatives (2026-10-09): converting a pending abort
-into an uncatchable defect on a typed cleanup failure (loses recoverability
-for a second error), dropping the cleanup failure (silent loss), letting it
-replace the original (loses the cause), and attaching it as a suppressed
-cause (needs a heterogeneous error value FX001 does not have, or out-of-row
-printing).
+**Cleanup failures (revised by the user 2026-10-09).** A deferred expression
+cannot end in a typed abort: section 2 rejects a `defer` whose expression
+performs an unhandled `Fail` (or may, through an open row tail: Task 8 review
+ruling, adopted 2026-10-09; relaxation is FX007) or performs an operation whose
+frame may fail (FX008 amendment, 2026-10-12), so no typed cleanup failure can
+replace, drop or convert a pending typed failure. A pending typed failure
+reaches its own `handle` if every deferred expression run on the way completes
+normally; if cleanup raises a recoverable defect, the pending abort stops being
+recoverable and heads the report; if cleanup diverges, it is never delivered.
+Cleanup may still handle failures internally and complete normally, including
+during unwinding. What remains is defects: if cleanup raises a recoverable
+defect (`crash`, the missing-handler guard, a Go runtime panic), the program is
+already failing uncatchably: the pending cause (an abort or an earlier defect,
+if any) is retained as the first cause, later causes are recorded in execution
+order, the remaining deferred expressions still run, and the program reports
+once. A typed abort pending when such a defect occurs becomes part of that
+defect report rather than reaching its `handle`. Rejected alternatives
+(2026-10-09): converting a pending abort into an uncatchable defect on a typed
+cleanup failure (loses recoverability for a second error), dropping the cleanup
+failure (silent loss), letting it replace the original (loses the cause), and
+attaching it as a suppressed cause (needs a heterogeneous error value FX001 does
+not have, or out-of-row printing).
 
 **Defects.** A defect is any recoverable runtime panic that is not a
 targeted abort. No handler catches one; unwinding runs every deferred
@@ -630,9 +626,9 @@ creating a key enqueues the layouts it depends on:
   (`Handler(L …)` in a field reaches L's effect key);
 - an effect key: the type and effect keys of its operations' parameter and
   result types (`Handler(L …)` there reaches L's effect key).
-Rows are erased everywhere, so labels and types occurring only inside rows
-create no key and no dependency. Every key counts toward the existing
-10,000-key limit.
+  Rows are erased everywhere, so labels and types occurring only inside rows
+  create no key and no dependency. Every key counts toward the existing
+  10,000-key limit.
 
 **Finiteness argument (to be checked as a proof in the plan).** Two
 static rules bound this worklist. (A) Function keys: ADR 007's
@@ -675,23 +671,22 @@ effects (`type T(a) = T(Handler(G(List(a))));` with
 version of each, which must compile. Rules (A) and (B) together are the
 finiteness argument; the 10,000-key guard is a backstop, not the argument.
 
-**Uniform `ctx` (backend choice, within the whole-program model).** The
-mode is chosen over the *emitted* IR, not over code reachable from `main`:
-specialization emits every monomorphic function, used or not, and an
-unused function performing Clock must still compile. A program whose
-emitted IR contains no operation invocation, handler construction or
-handler type, `fail`, `with` or `handle` threads no context. Required
-test: a pure `main` beside an unused effectful function emits `ctx` code
-that builds and runs. Changing dead-code emission is a separate choice. Otherwise every function, stage,
-lambda and function value takes `ctx *waxwingCtx` first, giving function
-values one calling convention regardless of latent effects. All new
-runtime support (context, cleanup helper, defect reporting and `main`'s
-recovery wrapper) is emitted only when used, so existing programs stay
-byte-identical and Console-only programs omit `ctx`; programs using
-`crash` or `defer` get the runtime pieces they need without `ctx`.
-PKG001 obligation: host-callable exports and separately consumed
-libraries need adapters whose public calling convention does not depend
-on whether the consuming application uses effects.
+**Uniform `ctx` (backend choice, within the whole-program model).** The mode is
+chosen over the *emitted* IR, not over code reachable from `main`:
+specialization emits every monomorphic function, used or not, and an unused
+function performing Clock must still compile. A program whose emitted IR
+contains no operation invocation, handler construction or handler type, `fail`,
+`with` or `handle` threads no context. Required test: a pure `main` beside an
+unused effectful function emits `ctx` code that builds and runs. Changing
+dead-code emission is a separate choice. Otherwise every function, stage, lambda
+and function value takes `ctx *waxwingCtx` first, giving function values one
+calling convention regardless of latent effects. All new runtime support
+(context, cleanup helper, defect reporting and `main`'s recovery wrapper) is
+emitted only when used, so existing programs stay byte-identical and
+Console-only programs omit `ctx`; programs using `crash` or `defer` get the
+runtime pieces they need without `ctx`. PKG001 obligation: host-callable exports
+and separately consumed libraries need adapters whose public calling convention
+does not depend on whether the consuming application uses effects.
 
 **Context and operations.** `waxwingCtx{key, handler any, outer, marker}`
 is an immutable linked list; installing allocates a node, leaving needs no
@@ -716,10 +711,10 @@ measured in section 5, a cached index is a follow-up.
 - `waxwingCleanup` (Go `defer` in the lifted block helper, recovering
   directly) preserves the pending cause, runs remaining cleanup, records
   later causes in order and applies section 3's policy.
-Ordinary calls need no abort-result checks; handler installation,
-deferred recovery and cleanup still have costs, measured in section 5.
-Result-propagation lowering remains an alternative that would change Go,
-not semantics.
+  Ordinary calls need no abort-result checks; handler installation,
+  deferred recovery and cleanup still have costs, measured in section 5.
+  Result-propagation lowering remains an alternative that would change Go,
+  not semantics.
 
 **I001 obligation.** A foreign Go library could recover a panic raised by
 a Waxwing callback. I001 must define the permitted callback boundary
@@ -734,7 +729,9 @@ possible future solution, not a demonstrated replacement; the general-
 resume milestone must establish it or choose bounded row-aware
 re-specialization.
 
-## 5. Scope, testing, diagnostics and acceptance (revised after user review 2026-10-09)
+5\. Scope, testing, diagnostics and acceptance (revised after user review
+2026-10-09)
+---
 
 **Scope boundary (user decision (b), 2026-10-09).** FX001 has no mutable
 state: handler clauses are ordinary functions and Waxwing has no cells.
@@ -839,11 +836,12 @@ a named row stays shared; the eta-expansion limitation is pinned.
     large rows, same-key mismatch and the side condition, asserting
     locations, related notes and bounded output.
 
-**Acceptance scenario** (BACKLOG FX001): services with overlapping
-requirements composed without annotations; real versus stateless fake
-handler values injected at `main`; a missing-capability diagnostic meeting
-section 6 (origin, boundary and path notes) when a handler is dropped; the scenario's specialization key count equals its
-effect-free baseline plus its effect keys (quantifies key and code growth).
+**Acceptance scenario** (BACKLOG FX001): services with overlapping requirements
+composed without annotations; real versus stateless fake handler values injected
+at `main`; a missing-capability diagnostic meeting section 6 (origin, boundary
+and path notes) when a handler is dropped; the scenario's specialization key
+count equals its effect-free baseline plus its effect keys (quantifies key and
+code growth).
 
 **Oracle.** An independent reference interpreter in the test tree with a
 target-neutral model of sections 2-3 (evidence context, targeted aborts,
@@ -946,8 +944,8 @@ is reported.
 - At a handler whose own mark is demanded N: `This handler may fail here:
   its clause for log fails with E`, or `This handler may fail here: its
   clause for log may perform any effect of ...e`.
-Notes, from the demand back to the source, bounded by the note and
-character limits, one per path edge of these kinds:
+  Notes, from the demand back to the source, bounded by the note and
+  character limits, one per path edge of these kinds:
 
 - a frame, at the `with`: `Log is handled here`;
 - an outer frame reached by clauses, at the inner `with`: `this handler's
@@ -978,19 +976,19 @@ path check); the notes tell them apart. Some exact texts of rejections
 without `defer` may differ from earlier ones because clause rows are
 checked separately; none is known to.
 
-**Abbreviation without losing relationships.** Differing labels print
-first, always with their effect name and the mismatch; their type
-arguments are abbreviated like any type when they are large: subterms off
-the path to the differing subterm are elided (`State(Pair(…, List(Bool)))`
-against `State(Pair(…, List(Int)))`), so the character bound holds
-without hiding the effect or the relevant difference. Other labels are elided past a fixed count (`Database +
-Log + Clock + … 9 more + ...e`). Tails and named row variables are always
-printed, with the same name on both sides of a comparison, so shared-tail
-relationships stay visible. Same-key duplicates are never merged
-(multiplicity shows). Types inside labels use E011's elision once it
-exists. Call paths print their first and last hops with `… k more calls`
-between. Each diagnostic has fixed bounds on note count, path lines and
-total characters (named constants chosen in the plan).
+**Abbreviation without losing relationships.** Differing labels print first,
+always with their effect name and the mismatch; their type arguments are
+abbreviated like any type when they are large: subterms off the path to the
+differing subterm are elided (`State(Pair(…, List(Bool)))` against
+`State(Pair(…, List(Int)))`), so the character bound holds without hiding the
+effect or the relevant difference. Other labels are elided past a fixed count
+(`Database + Log + Clock + … 9 more + ...e`). Tails and named row variables are
+always printed, with the same name on both sides of a comparison, so shared-tail
+relationships stay visible. Same-key duplicates are never merged (multiplicity
+shows). Types inside labels use E011's elision once it exists. Call paths print
+their first and last hops with `… k more calls` between. Each diagnostic has
+fixed bounds on note count, path lines and total characters (named constants
+chosen in the plan).
 
 **Regression cases** (section 5 probe 14). Each asserts code, primary span,
 related spans and note texts, and bounded output, not just error codes:
@@ -1002,8 +1000,8 @@ related spans and note texts, and bounded output, not just error codes:
   label; shared tail kept; output within its bound);
 - same-key payload mismatch under nested `State` handlers;
 - the side-condition failure.
-Mutants: provenance dropped (origin note missing) and abbreviation
-disabled (bound exceeded), each caught.
+  Mutants: provenance dropped (origin note missing) and abbreviation
+  disabled (bound exceeded), each caught.
 
 **Research.** PureScript's row and effect diagnostics (as experienced in
 MileAhead) are recorded as LA001 research cases

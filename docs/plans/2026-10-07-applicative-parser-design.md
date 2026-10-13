@@ -26,7 +26,8 @@ and every existing diagnostic keeps its exact code, span and message.
 ## 1. The Parser type (Format.Parse.Core)
 
 ```purescript
-newtype Parser a = Parser (State → Either Diagnostic { value ∷ a, rest ∷ State })
+newtype Parser a = Parser (State → Either Diagnostic { value ∷ a,
+  rest ∷ State })
 ```
 
 Instances: Functor, Apply, Applicative. No Bind, Monad, Alt or MonadRec
@@ -43,10 +44,12 @@ as `failAt` does today).
 Choice is predictive, LL(1), on the next token's text:
 
 ```purescript
-dispatch ∷ Array (Case a) → Parser a → Parser a   -- first matching case, else fallback
+-- first matching case, else fallback
+dispatch ∷ Array (Case a) → Parser a → Parser a
 on ∷ String → Parser a → Case a                    -- exact token text
 when ∷ (String → Boolean) → Parser a → Case a      -- token predicate
-optionalOn ∷ String → Parser a → Parser (Maybe a)  -- parse iff next token is text
+-- parse iff next token is text
+optionalOn ∷ String → Parser a → Parser (Maybe a)
 ```
 
 `Case` is a record of a predicate and a parser (Data.Tuple is not on the
@@ -91,8 +94,10 @@ All of Format.Parse.{Literal, Pattern, Expression, Declaration} and the
 declaration loop in Format.Parse are rewritten in applicative style, e.g.
 
 ```purescript
-ctorPattern = ctorOf <$> upperName <*> optionalOn "(" (parens (sepBy1 "," pattern))
-expression = dispatch [ on "if" conditional, on "match" matchExpression ] comparison
+ctorPattern = ctorOf <$> upperName <*> optionalOn "(" (parens (sepBy1 ","
+  pattern))
+expression = dispatch [ on "if" conditional, on "match" matchExpression ]
+  comparison
 ```
 
 Comparisons keep "Comparisons do not chain" (E_SYNTAX at the second

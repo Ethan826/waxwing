@@ -249,12 +249,12 @@ marks print plain.
   every edge is read on resolved marks.
 - A declaration reference instantiates the declaration's mark variables
   with one fresh meta each, shared across its signature.
-- Console labels are normalized to N at resolution, including the label
-  `print` consumes, copies of Console labels (§3.4), and a Console frame
-  installed from a `Handler(Console …)` value (accepted today, though no
-  such value can be built; `handler Console {}` is E_INTERNAL today,
-  BACKLOG FX011). User Console handlers (D001) revisit this. `Fail` labels carry a fixed placeholder that is never
-  compared.
+- Console labels are normalized to N at resolution, including the label `print`
+  consumes, copies of Console labels (§3.4), and a Console frame installed from
+  a `Handler(Console …)` value (accepted today, though no such value can be
+  built; `handler Console {}` is E_INTERNAL today, BACKLOG FX011). User Console
+  handlers (D001) revisit this. `Fail` labels carry a fixed placeholder that is
+  never compared.
 - Label keys are unchanged.
 - Marks are stripped at the Check-to-IR boundary. This includes the
   handled label inside `THandler`, so specialization keys never split on

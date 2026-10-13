@@ -5,10 +5,12 @@
   results and operation types (src/Format/Parse/HandlerType.purs:39-50,
   src/Format/Parse/Type.purs:80). Probed at HEAD, and covered by
   test/fx-handler-type.test.mjs:38-51.
-- ✅ Bare `Handler(L)` is unchanged: it is still a `NamedRef "Handler"` (test :53).
+- ✅ Bare `Handler(L)` is unchanged: it is still a `NamedRef "Handler"` (test
+  :53).
 - ✅ The brief's repro now CHECKs OK (test :58-61). The Log and pure positive
   and negative cases are covered (tests :63-80).
-- ✅ The rows the spec gives meaning to are still kept. I probed each one at HEAD:
+- ✅ The rows the spec gives meaning to are still kept. I probed each one at
+  HEAD:
   - the signature result row: `fn f(x: Int): Int with Log` and
     `fn f(): (Int) with Log`
   - the operation result row: `fn op(): Int with Log`

@@ -87,9 +87,9 @@ depth:
 | D8 | ctx threading by convention: signatures (`declared`, `parameterList`, `contextParameter`, literal `ctx`) and calls (`passed`, `"ctx"`) agree only by review; no mismatch recorded; the `effect-free-ctx` row (scripts/regression.mjs:177) guards mode selection, a different check | declaration/call agreement (forward risk) | Calls built from the callee's own `Signature` (§3.1), by call kind |
 
 Risk ranking (likelihood × cost of a silent miss): D2 highest (every new
-lowering adds lookups), D8 next as forward risk (no mismatch recorded,
-but the planned FX005 and FX002 change ctx threading), then D1/D3-style planning errors in
-Handle and Stage, then D7 (latent), then D2′, syntax and precedence (none
+lowering adds lookups), D8 next as forward risk (no mismatch recorded, but the
+planned FX005 and FX002 change ctx threading), then D1/D3-style planning errors
+in Handle and Stage, then D7 (latent), then D2′, syntax and precedence (none
 observed; comparisons are fully parenthesized, Compare.purs:58-72).
 
 ## 3. Options
@@ -318,7 +318,8 @@ entryDeclarations plan =
   names = entryNames (Go.calleeName plan.wrapper)
   signature = entrySignature plan names
   walk = Go.countDown Go.Lines names.position (Array.length plan.placed - 1)
-    [ Go.switchOn Go.Lines (Go.index (Go.ref names.kinds) (Go.ref names.position))
+    [ Go.switchOn Go.Lines (Go.index (Go.ref names.kinds) (Go.ref
+      names.position))
         (map (unpack names) plan.arrays)
     ]
   final = Go.call Go.Threaded plan.wrapper (map (argument names) plan.placed)
@@ -339,11 +340,11 @@ unpack names storage = Go.caseOf Go.Lines (Go.int storage.kind)
   slot = Go.index (Go.ref names.slots) (Go.ref names.position)
 ```
 
-`entrySignature` builds `{ name: names.entry, context: <the wrapper
-callee's context>, parameters: [ chain any ], result }`; `Go.call
-Go.Threaded` passes `ctx` exactly when the callee's own `Signature` has
-it, so the entry and the wrapped function cannot disagree (D8).
-`arrayLiteral` renders a sized `[n]T{…}`, n the element count. `nodeValue`/`nodePrevious` are the `Name`s Stage's
+`entrySignature` builds `{ name: names.entry, context: <the wrapper callee's
+context>, parameters: [ chain any ], result }`; `Go.call Go.Threaded` passes
+`ctx` exactly when the callee's own `Signature` has it, so the entry and the
+wrapped function cannot disagree (D8). `arrayLiteral` renders a sized `[n]T{…}`,
+n the element count. `nodeValue`/`nodePrevious` are the `Name`s Stage's
 `nodeType` declares. `storageVar`, `argument`, `placedKind`, `placedSlot`,
 `entryNames` and `slotArray` are one-line helpers.
 
@@ -375,13 +376,13 @@ runtime text is not produced by helpers; it stays in `raw` templates
   scrutinee, the `if` IIFE, `defer` registration). Determinism: no map is
   iterated while rendering. Naming: spellings stay in Format.Go.Data and
   the pre-order counter in Lowered.
-- Runtime contracts: ctx first in every signature whose
-  `Signature.context` is true (functions, constructors, lifted helpers,
-  first stages, stage closures, entries; not later stages `(e any)`) and
-  in every call of such a callee; `main` passes `nil`; calls into and out
-  of `raw` runtime templates stay spelled in the template. Handler/marker/
-  frame layout, cleanup LIFO and the defect report text are unchanged; ctx mode selection
-  (Context.usesContext) is planning and does not move.
+- Runtime contracts: ctx first in every signature whose `Signature.context` is
+  true (functions, constructors, lifted helpers, first stages, stage closures,
+  entries; not later stages `(e any)`) and in every call of such a callee;
+  `main` passes `nil`; calls into and out of `raw` runtime templates stay
+  spelled in the template. Handler/marker/ frame layout, cleanup LIFO and the
+  defect report text are unchanged; ctx mode selection (Context.usesContext) is
+  planning and does not move.
 - Fixed runtime support stays readable templates: Context.runtime
   (Context.purs:108-175), Cleanup.cleanupRuntime, the fixed parts of the
   Compare/Show helpers, `waxwingAdd`, the import block. Each becomes one

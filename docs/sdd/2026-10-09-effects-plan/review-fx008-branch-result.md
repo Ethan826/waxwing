@@ -158,11 +158,10 @@ stays `check`.
 ## End-to-end soundness: adversarial programs
 
 Harness: candidate verdict; base verdict; reference interpreter
-(`test/fx-oracle.mjs` `outcome`); for accepted programs, `go build` and
-run, compared with the interpreter. All programs start with
-`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`.
-Sources of the escape programs are listed at the end. "c" variants are the
-fail-free controls.
+(`test/fx-oracle.mjs` `outcome`); for accepted programs, `go build` and run,
+compared with the interpreter. All programs start with `type E = E; effect Log {
+fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`. Sources of the
+escape programs are listed at the end. "c" variants are the fail-free controls.
 
 | # | program | features combined | interpreter | e54d869 verdict |
 |---|---|---|---|---|
@@ -368,127 +367,192 @@ variants replace the failing clause with `print`. Common header omitted.
 
 p01-app-failing-k.wxw
 ```
-fn app(f: Unit -> Unit with nofail(k) Log + Fail(E) + ...e): Unit with ...e = handle with handler Log { log(n) => fail(E) } { f(()) } { fail(e: E) => () };
+fn app(f: Unit -> Unit with nofail(k) Log + Fail(E) + ...e): Unit with ...e =
+  handle with handler Log { log(n) => fail(E) } { f(()) } { fail(e: E) => () };
 fn main(): Unit with Console = app(fn(u: Unit) => { defer log(1); () });
 ```
 p02-two-callbacks.wxw
 ```
-fn both(f: Unit -> Unit with nofail(k) Log, g: Unit -> Unit with nofail(k) Log): Unit with nofail(k) Log = { f(()); g(()) };
-fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } { both(fn(u: Unit) => { defer log(1); () }, fn(u: Unit) => log(2)) } { fail(e: E) => print(9) };
+fn both(f: Unit -> Unit with nofail(k) Log, g: Unit -> Unit with nofail(k)
+  Log): Unit with nofail(k) Log = { f(()); g(()) };
+fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } {
+  both(fn(u: Unit) => { defer log(1); () }, fn(u: Unit) => log(2)) } { fail(e:
+  E) => print(9) };
 ```
 p03-rec-nofail-forward.wxw
 ```
-fn loop(n: Int): Unit with nofail Log = if n == 0 then { defer log(0); () } else with handler Log { log(m) => log(m + 10) } { loop(n + -1) };
-fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } { loop(3) } { fail(e: E) => print(9) };
+fn loop(n: Int): Unit with nofail Log = if n == 0 then { defer log(0);
+  () } else with handler Log { log(m) => log(m + 10) } { loop(n + -1) };
+fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } {
+  loop(3) } { fail(e: E) => print(9) };
 ```
 p04-pick-k.wxw
 ```
-fn pick(h: Handler(nofail(k) Log with Fail(E))): Handler(nofail(k) Log with Fail(E)) with pure = h;
-fn main(): Unit with Console = handle { with pick(handler Log { log(n) => fail(E) }) { defer log(1); () } } { fail(e: E) => print(9) };
+fn pick(h: Handler(nofail(k) Log with Fail(E))): Handler(nofail(k) Log with
+  Fail(E)) with pure = h;
+fn main(): Unit with Console = handle { with pick(handler Log { log(n) =>
+  fail(E) }) { defer log(1); () } } { fail(e: E) => print(9) };
 ```
 p04b-pick-k-open.wxw
 ```
-fn pick(h: Handler(nofail(k) Log with ...e)): Handler(nofail(k) Log with ...e) with pure = h;
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { with pick(handler Log { log(n) => tick() }) { defer log(1); () } } { fail(e: E) => print(9) };
+fn pick(h: Handler(nofail(k) Log with ...e)): Handler(nofail(k) Log with ...e)
+  with pure = h;
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  with pick(handler Log { log(n) => tick() }) { defer log(1);
+  () } } { fail(e: E) => print(9) };
 ```
 p05-clause-forward-defer.wxw
 ```
-fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } { with handler Log { log(n) => with handler Log { log(m) => log(m) } { defer log(n); () } } { log(1) } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } {
+  with handler Log { log(n) => with handler Log { log(m) => log(m) } { defer
+  log(n); () } } { log(1) } } { fail(e: E) => print(9) };
 ```
 p06-box-generic.wxw
 ```
 type Box(a) = Box(a);
-fn main(): Unit with Console = handle { let b = Box(handler Log { log(n) => fail(E) }); match b { Box(h) => with h { defer log(1); () } } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle { let b = Box(handler Log { log(n) =>
+  fail(E) }); match b { Box(h) => with h { defer log(1);
+  () } } } { fail(e: E) => print(9) };
 ```
 p07-closure-literal.wxw
 ```
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { let mk = fn(u: Unit) => handler Log { log(n) => tick() }; with mk(()) { defer log(1); () } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  let mk = fn(u: Unit) => handler Log { log(n) => tick() };
+  with mk(()) { defer log(1); () } } { fail(e: E) => print(9) };
 ```
 p08-one-value-many-installs.wxw
 ```
-fn main(): Unit with Console = handle { let h = handler Log { log(n) => tick() };
-  with handler Tick { tick() => print(5) } { with h { defer log(1); () }; with h { log(2) }; with h { log(3) }; with h { log(4) } };
-  with handler Tick { tick() => print(6) } { with h { log(5) }; with h { log(6) } };
-  with handler Tick { tick() => fail(E) } { with h { log(7) }; with h { defer log(8); () } } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle { let h = handler Log { log(n) => tick()
+  };
+  with handler Tick { tick() => print(5) } { with h { defer log(1); () };
+    with h { log(2) }; with h { log(3) }; with h { log(4) } };
+  with handler Tick { tick() => print(6) } { with h { log(5) };
+    with h { log(6) } };
+  with handler Tick { tick() => fail(E) } { with h { log(7) };
+    with h { defer log(8); () } } } { fail(e: E) => print(9) };
 ```
 p10-clause-calls-nofail.wxw
 ```
 fn work(): Unit with nofail Log = { defer log(1); () };
-fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } { with handler Tick { tick() => work() } { tick() } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } {
+  with handler Tick { tick() => work() } { tick() } } { fail(e: E) => print(9)
+  };
 ```
 p11-k-returned.wxw
 ```
-fn id2(f: Unit -> Unit with nofail(k) Log + ...e): Unit -> Unit with nofail(k) Log + ...e = f;
-fn main(): Unit with Console = handle { let g = id2(fn(u: Unit) => { defer log(1); () }); with handler Log { log(n) => print(n) } { g(()) }; with handler Log { log(n) => fail(E) } { g(()) } } { fail(e: E) => print(9) };
+fn id2(f: Unit -> Unit with nofail(k) Log + ...e): Unit -> Unit with nofail(k)
+  Log + ...e = f;
+fn main(): Unit with Console = handle { let g = id2(fn(u: Unit) => { defer
+  log(1); () }); with handler Log { log(n) => print(n) } { g(()) };
+  with handler Log { log(n) => fail(E) } { g(()) } } { fail(e: E) => print(9) };
 ```
 p12b-result-merge-literal-false.wxw
 ```
 fn mk(): Handler(nofail Log with ...e) with pure = handler Log { log(n) => () };
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { let h = if false then mk() else handler Log { log(n) => tick() }; with h { defer log(1); () } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  let h = if false then mk() else handler Log { log(n) => tick() };
+  with h { defer log(1); () } } { fail(e: E) => print(9) };
 ```
 p13-nested-clause-chain.wxw
 ```
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { with handler Log { log(a) => with handler Log { log(b) => with handler Log { log(c) => tick() } { defer log(b); () } } { log(a) } } { log(1) } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  with handler Log { log(a) => with handler Log { log(b) => with handler Log {
+  log(c) => tick() } { defer log(b); () } } { log(a) } } { log(1) } } { fail(e:
+  E) => print(9) };
 ```
 p14-row-param-box.wxw
 ```
 type HB(...e) = HB(Handler(nofail Log with ...e));
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { match HB(handler Log { log(n) => tick() }) { HB(h) => with h { defer log(1); () } } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  match HB(handler Log { log(n) => tick() }) { HB(h) => with h { defer log(1);
+  () } } } { fail(e: E) => print(9) };
 ```
 p15-clause-defer-through-param.wxw
 ```
-fn inst(h: Handler(nofail Log with nofail Tick + ...e)): Unit with nofail Tick + ...e = with h { log(1) };
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { inst(handler Log { log(n) => { defer tick(); () } }) } { fail(e: E) => print(9) };
+fn inst(h: Handler(nofail Log with nofail Tick + ...e)): Unit with nofail Tick
+  + ...e = with h { log(1) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  inst(handler Log { log(n) => { defer tick();
+  () } }) } { fail(e: E) => print(9) };
 ```
 p16-three-merge.wxw
 ```
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { let a = handler Log { log(n) => () }; let b = handler Log { log(n) => print(n) }; let c = handler Log { log(n) => tick() }; let h = if true then a else if true then b else c; with h { defer log(1); () } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  let a = handler Log { log(n) => () }; let b = handler Log { log(n) =>
+  print(n) }; let c = handler Log { log(n) => tick() };
+  let h = if true then a else if true then b else c; with h { defer log(1);
+  () } } { fail(e: E) => print(9) };
 ```
 p17-cell-args.wxw
 ```
 effect Cell(a) { fn get(): a; };
-fn main(): Unit with Console = handle with handler Cell(Int) { get() => fail(E) } { with handler Cell(Bool) { get() => true } { with handler Log { log(n) => { let x = get(); () } } { defer log(1); () } } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Cell(Int) { get() => fail(E)
+  } { with handler Cell(Bool) { get() => true } { with handler Log { log(n) =>
+  { let x = get(); () } } { defer log(1); () } } } { fail(e: E) => print(9) };
 ```
 p18-late-merge-param.wxw
 ```
-fn main(): Unit with Console = handle { let a = handler Log { log(n) => () }; let c = handler Log { log(n) => tick() }; let r = fn(x: Handler(Log with Tick)) => with handler Tick { tick() => fail(E) } { with x { defer log(1); () } }; r(a); r(c) } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle { let a = handler Log { log(n) => () };
+  let c = handler Log { log(n) => tick() }; let r = fn(x: Handler(Log with
+  Tick)) => with handler Tick { tick() => fail(E) } { with x { defer log(1);
+  () } }; r(a); r(c) } { fail(e: E) => print(9) };
 ```
 p19b-lambda-defer-reversed.wxw
 ```
-fn main(): Unit with Console = handle { let k = fn(u: Unit) => { defer log(1); () }; with handler Log { log(n) => fail(E) } { k(()) }; with handler Log { log(n) => print(n) } { k(()) } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle { let k = fn(u: Unit) => { defer log(1);
+  () }; with handler Log { log(n) => fail(E) } { k(()) };
+  with handler Log { log(n) => print(n) } { k(()) } } { fail(e: E) => print(9)
+  };
 ```
 q02-callback-takes-handler.wxw
 ```
-fn useh(f: Handler(nofail Log with Fail(E)) -> Unit with Fail(E)): Unit with Fail(E) = f(handler Log { log(n) => fail(E) });
-fn main(): Unit with Console = handle useh(fn(h: Handler(nofail Log with Fail(E))) => with h { defer log(1); () }) { fail(e: E) => print(9) };
+fn useh(f: Handler(nofail Log with Fail(E)) -> Unit with Fail(E)): Unit with
+  Fail(E) = f(handler Log { log(n) => fail(E) });
+fn main(): Unit with Console = handle useh(fn(h: Handler(nofail Log with
+  Fail(E))) => with h { defer log(1); () }) { fail(e: E) => print(9) };
 ```
 q03-k-in-clause-row.wxw
 ```
-fn inst(h: Handler(nofail Log with nofail(k) Tick + ...e)): Unit with nofail(k) Tick + ...e = with h { log(1) };
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { inst(handler Log { log(n) => { defer tick(); () } }) } { fail(e: E) => print(9) };
+fn inst(h: Handler(nofail Log with nofail(k) Tick + ...e)): Unit with nofail(k)
+  Tick + ...e = with h { log(1) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  inst(handler Log { log(n) => { defer tick();
+  () } }) } { fail(e: E) => print(9) };
 ```
 q05-box-clause-install-defer.wxw
 ```
 type Box(a) = Box(a);
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { let b = Box(handler Log { log(n) => tick() }); with handler Tick { tick() => match b { Box(h) => with h { defer log(1); () } } } { tick() } } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  let b = Box(handler Log { log(n) => tick() });
+  with handler Tick { tick() => match b { Box(h) => with h { defer log(1);
+  () } } } { tick() } } { fail(e: E) => print(9) };
 ```
 q06-handled-inside-rethrow.wxw
 ```
-fn main(): Unit with Console = handle with handler Log { log(n) => handle fail(E) { fail(e: E) => fail(E) } } { defer log(1); () } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Log { log(n) => handle
+  fail(E) { fail(e: E) => fail(E) } } { defer log(1);
+  () } { fail(e: E) => print(9) };
 ```
 q08-call-generic-fail.wxw
 ```
 fn call(g: Unit -> Unit with ...e): Unit with ...e = g(());
-fn main(): Unit with Console = handle with handler Log { log(n) => call(fn(u: Unit) => fail(E)) } { defer log(1); () } { fail(e: E) => print(9) };
+fn main(): Unit with Console = handle with handler Log { log(n) => call(fn(u:
+  Unit) => fail(E)) } { defer log(1); () } { fail(e: E) => print(9) };
 ```
 q09-mutual-k.wxw
 ```
 fn a(n: Int): Unit with nofail(k) Log = if n == 0 then log(0) else b(n + -1);
-fn b(n: Int): Unit with nofail Log = if n == 0 then { defer log(5); () } else a(n);
-fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } { a(3) } { fail(e: E) => print(9) };
+fn b(n: Int): Unit with nofail Log = if n == 0 then { defer log(5);
+  () } else a(n);
+fn main(): Unit with Console = handle with handler Log { log(n) => fail(E) } {
+  a(3) } { fail(e: E) => print(9) };
 ```
 q10-k-shared-frame.wxw
 ```
-fn inst(h: Handler(nofail(k) Log with nofail(k) Tick + ...e), body: Unit -> Unit with nofail(k) Log + nofail(k) Tick + ...e): Unit with nofail(k) Tick + ...e = with h { body(()) };
-fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } { inst(handler Log { log(n) => tick() }, fn(u: Unit) => { defer log(1); () }) } { fail(e: E) => print(9) };
+fn inst(h: Handler(nofail(k) Log with nofail(k) Tick + ...e),
+  body: Unit -> Unit with nofail(k) Log + nofail(k) Tick + ...e): Unit with
+  nofail(k) Tick + ...e = with h { body(()) };
+fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) } {
+  inst(handler Log { log(n) => tick() }, fn(u: Unit) => { defer log(1);
+  () }) } { fail(e: E) => print(9) };
 ```

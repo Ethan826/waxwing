@@ -15,7 +15,10 @@ tracked edits and no commits.
 
 ## Critical
 
-### C1. A handler type's C, copied at install, misses clause effects that reach R's tail later: cleanups end in typed aborts [ran]
+<h3>
+C1. A handler type's C, copied at install, misses clause effects that reach R's
+tail later: cleanups end in typed aborts [ran]
+</h3>
 
 **Where.** src/Features/Check/Install.purs:98-112 (`clausesOf`). A written
 handler type has `clauses = Nothing`. At `with`, C is taken as a copy of
@@ -31,17 +34,19 @@ value with a real C (a local annotation, or a literal) is unified with
 that meta. When the value only arrives later, for example as a lambda's
 argument, the copy has already closed the tail.
 
-**Counterexamples.** All are accepted by 1649218. Go exits 1 with
-`fail(E): E`, and the interpreter reports `oracle error: typed abort
-escaped cleanup`. Prelude for each:
-`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`
+**Counterexamples.** All are accepted by 1649218. Go exits 1 with `fail(E): E`,
+and the interpreter reports `oracle error: typed abort escaped cleanup`. Prelude
+for each: `type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn
+tick(): Unit; };`
 
 - **a1.** Identity through a lambda.
   ```
-  fn id(h: Handler(nofail Log with ...e)): Handler(nofail Log with ...e) with pure = h;
+  fn id(h: Handler(nofail Log with ...e)): Handler(nofail Log with ...e) with
+    pure = h;
   fn main(): Unit with Console = handle {
     let run = fn(x: Handler(nofail Log)) => with id(x) { defer log(1); () };
-    with handler Tick { tick() => fail(E) } { run(handler Log { log(n) => tick() }) }
+    with handler Tick { tick() => fail(E) } { run(handler Log { log(n) =>
+      tick() }) }
   } { fail(error: E) => print(9) };
   ```
   Control: the same program with `tick() => print(5)` prints `5` in Go and
@@ -49,18 +54,19 @@ escaped cleanup`. Prelude for each:
 - **a4.** a1 with an unannotated parameter, `fn(x) => with id(x) {…}`.
 - **a6.** A forwarding chain. The inner literal's `tick()` reaches a Tick
   handler `tick() => log(5)`, which reaches a failing Log handler.
-- **a8.** The handler returned inside a closure:
-  `fn later(h: Handler(nofail Log with ...e)): Unit -> Handler(nofail Log with ...e) with pure = fn(u: Unit) => h;`
-  then `with later(x)(()) {…}`.
-- **a9.** The handler returned inside a data value:
-  `type Box(a) = Box(a); fn boxed(h: …): Box(Handler(nofail Log with ...e)) with pure = Box(h);`
-  then `match boxed(x) { Box(h) => with h {…} }`.
+- **a8.** The handler returned inside a closure: `fn later(h: Handler(nofail Log
+  with ...e)): Unit -> Handler(nofail Log with ...e) with pure = fn(u: Unit) =>
+  h;` then `with later(x)(()) {…}`.
+- **a9.** The handler returned inside a data value: `type Box(a) = Box(a); fn
+  boxed(h: …): Box(Handler(nofail Log with ...e)) with pure = Box(h);` then
+  `match boxed(x) { Box(h) => with h {…} }`.
 - **a10.** The implementer's own concern: a missed `FrameRigid`. The defer
   is accepted inside a generic function, because the tail becomes rigid
   `e` only after the install.
   ```
   fn g(x: Handler(nofail Log with ...e)): Unit with ...e = {
-    let run = fn(y: Handler(nofail Log)) => with id(y) { defer log(1); () }; run(x) };
+    let run = fn(y: Handler(nofail Log)) => with id(y) { defer log(1); () };
+      run(x) };
   fn main(): Unit with Console = handle with handler Tick { tick() => fail(E) }
     { g(handler Log { log(n) => tick() }) } { fail(error: E) => print(9) };
   ```
@@ -128,8 +134,10 @@ Full `verify` was not run.
 parameters, and it *accepted* this program:
 ```
 effect Get(a) { fn get(): a; };
-fn mk(): Handler(nofail Log with ...e) with Get(Handler(nofail Log with ...e)) + ...e = get();
-… { with handler Get(Handler(nofail Log with Tick + Fail(E) + Console)) { get() => handler Log { log(n) => tick() } } { with mk() { defer log(1); () } } }
+fn mk(): Handler(nofail Log with ...e) with Get(Handler(nofail Log with ...e))
+  + ...e = get();
+… { with handler Get(Handler(nofail Log with Tick + Fail(E) + Console)) { get()
+  => handler Log { log(n) => tick() } } { with mk() { defer log(1); () } } }
 ```
 That is a hole which 1649218 itself rejects. So the occurs check must
 cover the own row.
@@ -141,7 +149,10 @@ rule needs the user's sign-off on the rule and on the new limitation.
 
 ## Important
 
-### I1. Scale: 1,000 installations is quadratic, and Task 8's guard now has a 1.29× margin (user decision) [ran]
+<h3>
+I1. Scale: 1,000 installations is quadratic, and Task 8's guard now has a 1.29×
+margin (user decision) [ran]
+</h3>
 
 - **The new bound.** test/fx008-scale.serial.test.mjs:20 sets
   `MEASURED_INSTALLATIONS = 7342`, so the bound is 22 s. I measured
@@ -373,34 +384,41 @@ but it exposed C2 below.**
 - The plan text has to be updated for C2: "otherwise closed" becomes "a
   fresh tail meta".
 
-### C2 (Critical, §6 compatibility): a closed result C rejects programs with no `defer` [ran]
+<h3>C2 (Critical, §6 compatibility): a closed result C rejects programs with no
+<code>defer</code> [ran]</h3>
 
-`ResultClauses.purs`, `Hole meta | not (occurs meta) → Nothing`. A
-handler-typed result unifies C ≡ C, marks included, with every value it
-meets. A closed C fails against a C with more labels, or against a rigid
-tail. All three programs below are accepted by the base build (main
-checkout) and by 1649218, and the Go agrees with the interpreter.
-360f13e rejects them. Prelude for each:
-`type E = E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`
+`ResultClauses.purs`, `Hole meta | not (occurs meta) → Nothing`. A handler-typed
+result unifies C ≡ C, marks included, with every value it meets. A closed C
+fails against a C with more labels, or against a rigid tail. All three programs
+below are accepted by the base build (main checkout) and by 1649218, and the Go
+agrees with the interpreter. 360f13e rejects them. Prelude for each: `type E =
+E; effect Log { fn log(n: Int): Unit; }; effect Tick { fn tick(): Unit; };`
 
 - **r1.** Rejected with E_TYPE `Expected Handler(Log), found Handler(Log)`
   at `x`.
   ```
   fn mk(): Handler(Log with ...e) with pure = handler Log { log(n) => () };
-  fn pick(b: Bool, x: Handler(Log with ...e)): Handler(Log with ...e) with pure = if b then mk() else x;
-  fn main(): Unit with Console = with handler Log { log(n) => print(n) } { with pick(true, handler Log { log(n) => log(n + 1) }) { log(1) } };
+  fn pick(b: Bool, x: Handler(Log with ...e)): Handler(Log with ...e) with pure
+    = if b then mk() else x;
+  fn main(): Unit with Console = with handler Log { log(n) => print(n) } { with
+    pick(true, handler Log { log(n) => log(n + 1) }) { log(1) } };
   ```
 - **r2.** Base output `3`. Rejected with E_TYPE, the same text, at `x`.
   ```
-  fn mk(): Handler(Log with Tick + ...e) with pure = handler Log { log(n) => tick() };
-  fn run(x: Handler(Log with Tick + ...e)): Unit with Tick + ...e = { let h = if true then mk() else x; with h { log(1) } };
-  fn main(): Unit with Console = with handler Tick { tick() => print(3) } { run(handler Log { log(n) => tick() }) };
+  fn mk(): Handler(Log with Tick + ...e) with pure = handler Log { log(n) =>
+    tick() };
+  fn run(x: Handler(Log with Tick + ...e)): Unit with Tick + ...e = { let h =
+    if true then mk() else x; with h { log(1) } };
+  fn main(): Unit with Console = with handler Tick { tick() => print(3) } {
+    run(handler Log { log(n) => tick() }) };
   ```
 - **r9.** Base output `3 1`. Rejected with E_EFFECT `This function
   performs Console, which its signature does not allow` at `mk()`.
   ```
   fn mk(): Handler(Log with Tick) with pure = handler Log { log(n) => () };
-  fn main(): Unit with Console = with handler Tick { tick() => print(3) } { let h = if true then handler Log { log(n) => { tick(); print(n) } } else mk(); with h { log(1) } };
+  fn main(): Unit with Console = with handler Tick { tick() => print(3) } { let
+    h = if true then handler Log { log(n) => { tick(); print(n) } } else mk();
+    with h { log(1) } };
   ```
 
 The plan's differential missed this: no harvested program merges a
@@ -423,8 +441,10 @@ closed tail, so the defect is in my rule, not in the implementation.
 > - r1, r2 and r9 compile with the base outputs: none, `3`, and `3 1`;
 > - r5 is rejected with the Log defer message at `defer log(1)`:
 >   ```
->   fn mk(): Handler(nofail Log with ...e) with pure = handler Log { log(n) => () };
->   fn g(x: Handler(nofail Log with ...e)): Unit with ...e = { let h = if true then mk() else x; with h { defer log(1); () } };
+>   fn mk(): Handler(nofail Log with ...e) with pure = handler Log { log(n) =>
+>     () };
+>   fn g(x: Handler(nofail Log with ...e)): Unit with ...e = { let h = if true
+>     then mk() else x; with h { defer log(1); () } };
 >   ```
 >   with main as in a10.
 >

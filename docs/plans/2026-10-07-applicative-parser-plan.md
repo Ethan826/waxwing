@@ -9,7 +9,10 @@ the final whole-branch review's findings are fixed (record
 docs/plans/applicative-parser-review.md), pending the controller's scoped
 re-review; merging into main needs user approval.
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use
+> superpowers:subagent-driven-development (recommended) or
+> superpowers:executing-plans to implement this plan task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace hand-threaded parser state with an applicative `Parser`,
 make every grammar list stack-safe, reject over-deep nesting with
@@ -70,41 +73,43 @@ runner, Go 1.26.4.
   `src/Format/Parse/Expression.purs` (call sites only, via adapters)
 
 **Interfaces (produced, in Format.Parse.Grammar):**
-- `newtype Parser a = Parser (State → Either Diagnostic { value ∷ a, rest ∷ State })`
-  with Functor/Apply/Applicative. `State` moves into Grammar
-  as today's fields (tokens, index, eof) plus `lastEnd ∷ Position` (end of
-  the last consumed token, for `spanned`); Task 3 adds `depth`.
-- Primitives: `token ∷ Parser Token`, `expect ∷ String → Parser Token`,
-  `name`, `upperName ∷ Parser Token`, `failWith ∷ ∀ a. String → Parser a`
-  (E_SYNTAX at the current token or end of input, same as `failAt`),
-  `refine ∷ ∀ a b. (a → Either Diagnostic b) → Parser a → Parser b`
-  (fallible map, consumes nothing extra), `defer ∷ ∀ a. (Unit → Parser a) → Parser a`.
+- `newtype Parser a = Parser (State → Either Diagnostic { value ∷ a, rest ∷
+  State })` with Functor/Apply/Applicative. `State` moves into Grammar as
+  today's fields (tokens, index, eof) plus `lastEnd ∷ Position` (end of the last
+  consumed token, for `spanned`); Task 3 adds `depth`.
+- Primitives: `token ∷ Parser Token`, `expect ∷ String → Parser Token`, `name`,
+  `upperName ∷ Parser Token`, `failWith ∷ ∀ a. String → Parser a` (E_SYNTAX at
+  the current token or end of input, same as `failAt`),
+  `refine ∷ ∀ a b. (a → Either Diagnostic b) → Parser a → Parser b` (fallible
+  map, consumes nothing extra), `defer ∷ ∀ a. (Unit → Parser a) → Parser a`.
 - Choice: `type Case a = { accepts ∷ String → Boolean, parser ∷ Parser a }`,
-  `on ∷ String → Parser a → Case a`, `onWhen ∷ (String → Boolean) → Parser a → Case a` (not `when`, which
-  Prelude already exports),
-  `dispatch ∷ Array (Case a) → Parser a → Parser a` (first case whose
-  predicate accepts the next token text, else the fallback; `"<end>"` at end),
-  `optionalOn ∷ String → Parser a → Parser (Maybe a)`.
+  `on ∷ String → Parser a → Case a`,
+  `onWhen ∷ (String → Boolean) → Parser a → Case a` (not `when`, which Prelude
+  already exports), `dispatch ∷ Array (Case a) → Parser a → Parser a` (first
+  case whose predicate accepts the next token text, else the fallback; `"<end>"`
+  at end), `optionalOn ∷ String → Parser a → Parser (Maybe a)`.
 - Lists (tailRecM over Either, accumulating in Format.Stack):
   `sepBy1 ∷ String → Parser a → Parser (Array a)`,
   `sepByTrailing1 ∷ String → String → Parser a → Parser (Array a)` (separator,
   closing token: a separator directly followed by the closing token ends the
   list, closing token not consumed), `commaList ∷ Parser a → Parser (Array a)`
-  (empty iff next token is `)`), `chainLeft1 ∷ String → (a → a → a) → Parser a → Parser a`.
+  (empty iff next token is `)`),
+  `chainLeft1 ∷ String → (a → a → a) → Parser a → Parser a`.
 - Spans: `spanned ∷ ∀ a b. (Span → a → b) → Parser a → Parser b` (first to
   last consumed token).
 - Interop until Task 2: `fromLegacy ∷ Core.Parser a → Parser a`,
   `toLegacy ∷ Parser a → Core.Parser a`.
 
 - [ ] **Step 1: Failing tests.** test/grammar.test.mjs, through `compile`
-  (`rejectedAt`/`checked` from test/support.mjs): (a) a `match` with 1,473
-  valid arms — `fn f(n: Int): Int = match n { 0 => 0, 1 => 1, …, 1471 =>
-  1471, _ => -1 };` (1,472 distinct integer-literal arms plus a final
-  wildcard, so no arm is redundant and no constructor-list parsing is
-  involved) — must compile within 5 s (RED: RangeError); (b) `match b { T => 1, }` accepted;
-  `match b { T => 1,, }` keeps today's E_SYNTAX code, span and message
-  (record them from the current compiler first and assert them); (c) the
-  pattern/literal rows already in test/diagnostics.test.mjs stay as they are.
+  (`rejectedAt`/`checked` from test/support.mjs): (a) a `match` with 1,473 valid
+  arms —
+  `fn f(n: Int): Int = match n { 0 => 0, 1 => 1, …, 1471 => 1471, _ => -1 };`
+  (1,472 distinct integer-literal arms plus a final wildcard, so no arm is
+  redundant and no constructor-list parsing is involved) — must compile within 5
+  s (RED: RangeError); (b) `match b { T => 1, }` accepted;
+  `match b { T => 1,, }` keeps today's E_SYNTAX code, span and message (record
+  them from the current compiler first and assert them); (c) the pattern/literal
+  rows already in test/diagnostics.test.mjs stay as they are.
 - [ ] **Step 2:** run; record RED.
 - [ ] **Step 3:** implement Grammar; port Literal (`integerLiteral` via
   `dispatch` on `-`, `refine` for the range check — spans and messages
@@ -118,11 +123,11 @@ runner, Go 1.26.4.
 ### Task 2: Port Expression, Declaration and the declaration loop
 
 **Files:**
-- Modify: `src/Format/Parse/Expression.purs`, `src/Format/Parse/Declaration.purs`,
-  `src/Format/Parse.purs`, `src/Format/Parse/Core.purs` (reduced to `State`
-  and anything Grammar still needs, or merged into Grammar),
-  `tools/style/src/Style/Check.purs` (+ `test/style.test.mjs`),
-  `test/grammar.test.mjs`
+- Modify: `src/Format/Parse/Expression.purs`,
+  `src/Format/Parse/Declaration.purs`, `src/Format/Parse.purs`,
+  `src/Format/Parse/Core.purs` (reduced to `State` and anything Grammar still
+  needs, or merged into Grammar), `tools/style/src/Style/Check.purs` (+
+  `test/style.test.mjs`), `test/grammar.test.mjs`
 - Delete: the legacy adapters.
 
 - [ ] **Step 1: Failing tests** (time-bounded, 5 s each, RED RangeError):
@@ -134,13 +139,13 @@ runner, Go 1.26.4.
   Format.Parse.{Literal,Pattern,Expression,Declaration} contain no `do`
   block and no `>>=`/`=<<` (Grammar is exempt). Positive and negative
   fixtures in test/style.test.mjs, failing first.
-- [ ] **Step 3:** port. `expression` = `dispatch [on "if" …, on "match" …] comparison`;
-  comparison: additive, then `optionalOn`-style operator and second
-  additive, then a `dispatch` that fails with "Comparisons do not chain" if
-  another operator follows; `additive` = `chainLeft1 "+"` building
-  `Add (spanBetween l r) l r`; `parenthesized` returns the inner value
-  (child span rule); calls via `commaList`; `typeDeclaration` via
-  `sepBy1 "|"` and `sepBy1 ","` fields; the top-level loop keeps its
+- [ ] **Step 3:** port. `expression` =
+  `dispatch [on "if" …, on "match" …] comparison`; comparison: additive, then
+  `optionalOn`-style operator and second additive, then a `dispatch` that fails
+  with "Comparisons do not chain" if another operator follows; `additive` =
+  `chainLeft1 "+"` building `Add (spanBetween l r) l r`; `parenthesized` returns
+  the inner value (child span rule); calls via `commaList`; `typeDeclaration`
+  via `sepBy1 "|"` and `sepBy1 ","` fields; the top-level loop keeps its
   tailRecM shape over Grammar steps. Delete adapters and dead Core code.
 - [ ] **Step 4:** all tests pass; no parser module grew versus HEAD~ (record
   line counts); verify; cmp; commit `refactor: applicative expressions and
@@ -169,19 +174,19 @@ level (the k-th `+` raises depth by one for the rest of the chain); the
 failure span is that `+` (or comparison operator) token.
 
 - [ ] **Step 1: Probe.** scripts/depth-probe.mjs (≤100 lines): for each form
-  {parens, if-condition, if-branch, match-scrutinee, match-arm,
-  call-argument, constructor-argument, constructor-pattern, plus-chain},
-  generate well-typed, exhaustive programs of depth d and binary-search,
-  in a fresh `node scripts/bumpus.mjs emit` process per run (emit runs every
-  compiler phase including Go generation, and never invokes the Go tool),
-  the smallest d that overflows. Classify every run's outcome: `overflow`
-  (stderr contains `RangeError` / `Maximum call stack size exceeded`),
-  `diagnostic` (a structured Bumpus diagnostic: semantic rejection),
-  `timeout`, or `ok`. Only `overflow` drives the search; any `diagnostic` or
-  `timeout` at a depth below the overflow point is printed as an anomaly and
-  investigated (a generator bug or a real defect to own), never counted as
-  the limit. Also probe mixed forms (below). Print a table per form. Run it with the limit disabled (temporarily huge constant, not
-  committed) and record the table in ADR 006.
+  {parens, if-condition, if-branch, match-scrutinee, match-arm, call-argument,
+  constructor-argument, constructor-pattern, plus-chain}, generate well-typed,
+  exhaustive programs of depth d and binary-search, in a fresh
+  `node scripts/bumpus.mjs emit` process per run (emit runs every compiler phase
+  including Go generation, and never invokes the Go tool), the smallest d that
+  overflows. Classify every run's outcome: `overflow` (stderr contains
+  `RangeError` / `Maximum call stack size exceeded`), `diagnostic` (a structured
+  Bumpus diagnostic: semantic rejection), `timeout`, or `ok`. Only `overflow`
+  drives the search; any `diagnostic` or `timeout` at a depth below the overflow
+  point is printed as an anomaly and investigated (a generator bug or a real
+  defect to own), never counted as the limit. Also probe mixed forms (below).
+  Print a table per form. Run it with the limit disabled (temporarily huge
+  constant, not committed) and record the table in ADR 006.
 - [ ] **Step 2:** choose `nestingLimit`: the largest power of two ≤ half the
   minimum measured depth (spec: 256 provisional). Record the decision.
 - [ ] **Step 3: Failing tests** in test/depth.test.mjs, through the CLI
@@ -210,9 +215,11 @@ failure span is that `+` (or comparison operator) token.
   `src/Features/Resolve/Pattern.purs`, `src/Features/Resolve.purs`,
   `src/Domain/Resolved.purs` (drop `Numbered` if unused)
 
-**Interfaces:** `newtype Fresh a = Fresh (Int → Either Diagnostic { value ∷ a, next ∷ Int })`
+**Interfaces:**
+`newtype Fresh a = Fresh (Int → Either Diagnostic { value ∷ a, next ∷ Int })`
 with Functor/Apply/Applicative/Bind/Monad; `fresh ∷ Fresh LocalId`;
-`failure ∷ ∀ a. Diagnostic → Fresh a`; `liftEither ∷ ∀ a. Either Diagnostic a → Fresh a`;
+`failure ∷ ∀ a. Diagnostic → Fresh a`;
+`liftEither ∷ ∀ a. Either Diagnostic a → Fresh a`;
 `runFresh ∷ ∀ a. Int → Fresh a → Either Diagnostic a`.
 
 - [ ] **Step 1:** characterization first: add to test/adt-match.test.mjs a

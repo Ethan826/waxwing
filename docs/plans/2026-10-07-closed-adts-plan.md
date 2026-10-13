@@ -4,7 +4,10 @@ Status: Tasks 1-8 executed 2026-10-07 (commit range c2a9788..HEAD on main).
 Final review complete; findings fixed in d2fddf9 (record:
 docs/plans/closed-adts-review.md).
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use
+> superpowers:subagent-driven-development (recommended) or
+> superpowers:executing-plans to implement this plan task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add monomorphic recursive closed ADTs, typed construction, nested
 `match` with Maranget exhaustiveness/redundancy, and nil-safe Go lowering.
@@ -155,14 +158,16 @@ its plan-time amendments in section 10).
     `Eq`.
   - `data Ty = TInt | TBool | TData TypeId`
   - `type TypeInfo = { name ∷ String, ctors ∷ Array CtorId, span ∷ Span }`
-  - `type CtorInfo = { name ∷ String, owner ∷ TypeId, fields ∷ Array Ty, span ∷ Span }`
+  - `type CtorInfo = { name ∷ String, owner ∷ TypeId, fields ∷ Array Ty, span ∷
+    Span }`
   - `type Parameter = { name ∷ String, ty ∷ Ty, span ∷ Span }`
   - `type Tables = { types ∷ Array TypeInfo, ctors ∷ Array CtorInfo }`
   - `type Local = { name ∷ String, id ∷ LocalId }` (the resolver's scope)
   - `data GlobalRef = FunctionRef FunctionId | CtorRef CtorId`; the
     resolver's `Global` becomes `{ name ∷ String, ref ∷ GlobalRef }`
   - `Expr += Construct Span CtorId (Array Expr)`
-  - `Program = { types ∷ Array TypeInfo, ctors ∷ Array CtorInfo, functions, entry }`
+  - `Program = { types ∷ Array TypeInfo, ctors ∷ Array CtorInfo, functions,
+    entry }`
   - `describe ∷ Array TypeInfo → Ty → String` gives "Int", "Bool" or the
     type name. Stage 0 messages are unchanged.
 - Produces in other modules:
@@ -189,8 +194,9 @@ its plan-time amendments in section 10).
 - Go bytes, pinned by the spec:
   - Struct `type sprigTy<n> struct {` with `tag uint32` and fields
     `c<ctor>f<i>`, one per line, unindented, `}`.
-  - Constructor `func sprigCtor<k>(f0 …) sprigTy<n> { return sprigTy<n>{tag: t, c<k>f0: f0, …} }`.
-    ADT fields are stored as `&f<i>`; primitive fields directly.
+  - Constructor `func sprigCtor<k>(f0 …) sprigTy<n> { return sprigTy<n>{tag: t,
+    c<k>f0: f0, …} }`. ADT fields are stored as `&f<i>`; primitive fields
+    directly.
   - Declarations go after `sprigAdd`'s blank line and before the functions,
     each followed by one blank line.
 
@@ -234,7 +240,8 @@ its plan-time amendments in section 10).
   - Register the new modules in `structure.mjs` (only Go.Data gets IR access
     if it needs it).
 - [ ] **Step 4: Run** `npm run verify`. Expected: exit 0.
-- [ ] **Step 5: Commit** `feat: resolve, check and lower ADT construction (A001 T2)`.
+- [ ] **Step 5: Commit**
+  `feat: resolve, check and lower ADT construction (A001 T2)`.
 
 ### Task 3: Patterns and match end-to-end, without coverage
 
@@ -568,7 +575,8 @@ Spec: five-layers design, evaluation 1. Messages stay byte-identical.
   characterization test is unchanged and passing; the regression rows'
   probes still match on code (update a probe only if it asserted a
   constructor name that moved, and keep its assertion's meaning).
-- [ ] **Step 5: Commit** `refactor: structured diagnostics rendered in Format (A001 T6)`.
+- [ ] **Step 5: Commit**
+  `refactor: structured diagnostics rendered in Format (A001 T6)`.
 
 ### Task 7: Capability ports and fakeable commands
 
@@ -641,7 +649,8 @@ Spec: five-layers design, evaluations 3–4. CLI behavior stays identical:
 - [ ] **Step 3: Run** `npm run verify`. Expected: exit 0. The existing
   end-to-end `test/shell.test.mjs`, which spawns real processes, passes
   unchanged, alongside the new fake-host tests.
-- [ ] **Step 4: Commit** `refactor: capability ports with fakeable commands (A001 T7)`.
+- [ ] **Step 4: Commit**
+  `refactor: capability ports with fakeable commands (A001 T7)`.
 
 ### Task 8: Documentation, closure and final review
 

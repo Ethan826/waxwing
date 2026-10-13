@@ -9,7 +9,8 @@ Last checkpoint: 2026-10-07. This preserves historical bootstrap status.
 Typed functions and basic expressions compile and execute. Malformed syntax,
 unbound names, and type incompatibility produce structured diagnostics with
 spans. Generated Go is deterministic. One command verifies the entire slice.
-Reference influences, decisions, limitations, and continuation work live on disk.
+Reference influences, decisions, limitations, and continuation work live on
+disk.
 
 ## Tasks and current state
 
@@ -71,15 +72,16 @@ P001's approved plan remains the active delivery; this direction does not
 add implementation tasks to it. New milestone designs are separate.
 
 User approved a local baseline (9624bec), isolated audit worktree and inline
-execution with one final fresh reviewer. Audit work was completed in the isolated audit/bootstrap-docs worktree.
-User-authorized local merge into main and merged verification are complete;
-the merged branch/worktree were removed after evidence preservation.
-See the migrated plan and docs/progress.md. Milestone A001 (closed ADTs and
-exhaustive matching) is implemented and closed pending the controller's final
-review: spec docs/plans/2026-10-07-closed-adts-design.md, five-layer spec
+execution with one final fresh reviewer. Audit work was completed in the
+isolated audit/bootstrap-docs worktree. User-authorized local merge into main
+and merged verification are complete; the merged branch/worktree were removed
+after evidence preservation. See the migrated plan and docs/progress.md.
+Milestone A001 (closed ADTs and exhaustive matching) is implemented and closed
+pending the controller's final review: spec
+docs/plans/2026-10-07-closed-adts-design.md, five-layer spec
 docs/plans/2026-10-07-five-layers-design.md, plan
-docs/plans/2026-10-07-closed-adts-plan.md (Tasks 1-8), ADRs 003 and 004.
-Index of milestone documents: language.md, architecture.md, engineering.md.
+docs/plans/2026-10-07-closed-adts-plan.md (Tasks 1-8), ADRs 003 and 004. Index
+of milestone documents: language.md, architecture.md, engineering.md.
 
 ## Naming update (2026-10-09)
 

@@ -33,16 +33,16 @@ none blocking.**
 
    The plan text names only `Assumed`, so record this as an implementation
    decision (Minor 1).
-2. **The 1,000-hop test.** It keeps the first and last notes as the plan
-   means. The raw notes are ClausesReach(f1) … ClausesReach(f1000),
-   HandledHere(outer), then ClauseAborts. `limited` (Format/Diagnostic/Note.purs:65-75)
-   keeps the first `maxNotes - 1 = 3` notes that are not path notes, plus the
-   last one. The kept notes are f1, f2 and f3, which are nearest the demand,
-   and the clause note, which is the source. The test pins those four exactly
+2. **The 1,000-hop test.** It keeps the first and last notes as the plan means.
+   The raw notes are ClausesReach(f1) … ClausesReach(f1000), HandledHere(outer),
+   then ClauseAborts. `limited` (Format/Diagnostic/Note.purs:65-75) keeps the
+   first `maxNotes - 1 = 3` notes that are not path notes, plus the last one.
+   The kept notes are f1, f2 and f3, which are nearest the demand, and the
+   clause note, which is the source. The test pins those four exactly
    (fx008-defer.test.mjs:182-191). The only casualty of elision is the outer
    `Log is handled here`. That is the existing policy for notes that are not
-   path notes, which have no `… k more` marker. Measured: 269 characters and
-   4 notes at 3, 50 and 200 hops alike. The `maxCharacters` half of the plan
+   path notes, which have no `… k more` marker. Measured: 269 characters and 4
+   notes at 3, 50 and 200 hops alike. The `maxCharacters` half of the plan
    assertion is not asserted explicitly (Minor 2).
 3. **Duplicates.** Confirmed in practice. Probes produced no repeated note:
    - a forwarding clause performing `log` twice;
@@ -113,25 +113,25 @@ None.
    (P1 parenthetical), required by the hole/c1/cross/pending assertions. Also
    extend the comment at MarkNotes.purs:77-79 to say "an assumed edge, or a
    defer demand on a label the signature wrote".
-2. **test/fx008-defer.test.mjs:191**: the plan asks that the diagnostic
-   "stays within `maxCharacters`", but only `related.length <= 4` is
-   asserted. Fix: add
-   `assert.ok(found.message.length + found.related.reduce((sum, note) => sum + note.message.length, 0) <= 2000);`
-   or import `maxCharacters` from `../output/Format.Diagnostic.Row/index.js`
-   instead of the literal.
-3. **test/fx008-defer.test.mjs:169-180**: `chain(3)` gives five raw notes,
-   so `maxNotes` elision drops `Log is handled here`. The span-uniqueness
-   check then runs on an already truncated list. Fix: use `chain(2)`, which
-   gives four notes with nothing elided. Assert
-   `[chainWith(1), chainWith(2)] forwarded, handledHere(<outer with>, 'Log'), clauseFails('log(n) => fail(E)', 'log')`
+2. **test/fx008-defer.test.mjs:191**: the plan asks that the diagnostic "stays
+   within `maxCharacters`", but only `related.length <= 4` is asserted. Fix: add
+   `assert.ok(found.message.length + found.related.reduce((sum, note) => sum +
+   note.message.length, 0) <= 2000);` or import `maxCharacters` from
+   `../output/Format.Diagnostic.Row/index.js` instead of the literal.
+3. **test/fx008-defer.test.mjs:169-180**: `chain(3)` gives five raw notes, so
+   `maxNotes` elision drops `Log is handled here`. The span-uniqueness check
+   then runs on an already truncated list. Fix: use `chain(2)`, which gives four
+   notes with nothing elided. Assert `[chainWith(1), chainWith(2)] forwarded,
+   handledHere(<outer with>, 'Log'), clauseFails('log(n) => fail(E)', 'log')`
    and keep the unique-span assertion. Alternatively, rename the test to say
    what it checks.
-4. **src/Features/Check/MarkReport.purs:56-66 and src/Format/Diagnostic/Mark.purs:32-39**:
-   the abort cause is built twice, by `abortHeadline` and by MarkNotes'
-   `abortCause`. The "its clause for …" text is also written twice, in
-   `handlerFails` and in `clauseNote` at Mark.purs:50-56. Fix: export
-   `abortCause` from MarkNotes and write
-   `abortHeadline env state label site = noted site.handler <<< HandlerMayFail <$> abortCause env state label site`.
-   Then drop `clausePayload` from the export list. In Mark.purs, write
-   `handlerFails typeName cause = "This handler may fail here: " <> clauseNote typeName cause`.
-   Neither change alters any text.
+4. **src/Features/Check/MarkReport.purs:56-66 and
+   src/Format/Diagnostic/Mark.purs:32-39**: the abort cause is built twice, by
+   `abortHeadline` and by MarkNotes' `abortCause`. The "its clause for …" text
+   is also written twice, in `handlerFails` and in `clauseNote` at
+   Mark.purs:50-56. Fix: export `abortCause` from MarkNotes and write
+   `abortHeadline env state label site = noted site.handler <<< HandlerMayFail
+   <$> abortCause env state label site`. Then drop `clausePayload` from the
+   export list. In Mark.purs, write `handlerFails typeName cause = "This handler
+   may fail here: " <> clauseNote typeName cause`. Neither change alters any
+   text.

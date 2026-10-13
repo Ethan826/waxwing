@@ -3,7 +3,8 @@
 Commit f16c6b5 (base 5ed5b0e), worktree /Users/ethan/Desktop/waxwing-fx008-impl.
 Reviewer: Opus, 2026-10-10. Worktree's tracked files not modified.
 
-**Verdict: Spec ❌ (one narrow gap) · Quality: Needs fixes (one small fix, plus test gaps)**
+**Verdict: Spec ❌ (one narrow gap) · Quality: Needs fixes (one small fix, plus
+test gaps)**
 
 ## Ran (not just read)
 

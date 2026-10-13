@@ -204,7 +204,8 @@ c1f1 *sprigTy0
 
 func sprigCtor0() sprigTy0 { return sprigTy0{tag: 1} }
 
-func sprigCtor1(f0 int32, f1 sprigTy0) sprigTy0 { return sprigTy0{tag: 2, c1f0: f0, c1f1: &f1} }
+func sprigCtor1(f0 int32, f1 sprigTy0) sprigTy0 { return sprigTy0{tag: 2,
+  c1f0: f0, c1f1: &f1} }
 ```
 
 The struct has one field per constructor field, named `c<CtorId>f<index>`.
@@ -219,7 +220,8 @@ arm bodies; a scrutinee is lowered at its enclosing depth:
 
 ```go
 func(sprigMatch0 sprigTy0) int32 {
-if sprigMatch0.tag == 2 && sprigMatch0.c1f1 != nil && sprigMatch0.c1f1.tag == 1 {
+if sprigMatch0.tag == 2 && sprigMatch0.c1f1 != nil &&
+  sprigMatch0.c1f1.tag == 1 {
 sprigLocal1 := sprigMatch0.c1f0
 _ = sprigLocal1
 return …

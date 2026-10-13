@@ -8,7 +8,10 @@ up to renumbering, and the limit's accounting. Dependency change
 (ordered-collections, tuples; Data.Map, Data.Set, Data.Tuple only)
 approved.
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use
+> superpowers:subagent-driven-development (recommended) or
+> superpowers:executing-plans to implement this plan task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Parameterized types and rank-1 polymorphic functions, checked
 with rigid and flexible variables and occurs-checked unification, and

@@ -9,8 +9,8 @@ Consume.purs, Handler.purs, Unify.purs, Subst.purs, Scheme.purs, Apply.purs,
 Call.purs, Pipe.purs, Hint.purs, Failure.purs and Check.purs. No repository
 file other than this one was changed.
 
-Tags: [ran] = run today (`node scripts/waxwing.mjs run`). [read] =
-reasoning about rev 10, which is not implemented. New probes are in
+Tags: [ran] = run today (`node scripts/waxwing.mjs run`). [read] = reasoning
+about rev 10, which is not implemented. New probes are in
 /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/d41c2ee4-6993-4bc5-a1f7-33359afc9a21/scratchpad/rev10/.
 
 ## Verdict: no substantive issue

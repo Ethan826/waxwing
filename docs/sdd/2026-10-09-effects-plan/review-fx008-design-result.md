@@ -1,4 +1,6 @@
-# Review: FX008 abort-tracking design note (docs/plans/2026-10-10-abort-tracking-design.md)
+Review: FX008 abort-tracking design note
+(docs/plans/2026-10-10-abort-tracking-design.md)
+===
 
 Reviewer: independent, adversarial. Date: 2026-10-10. Branch fx008.
 No repository file other than this one was changed.
@@ -158,8 +160,10 @@ of a prefixing handler is "N exactly when its outer Log is N", and the
 type language cannot express that. Program, accepted today, prints
 `101 101 0 9` [ran]:
 ```
-fn prefix(): Handler(Log with Log) with pure = handler Log { log(n) => log(n + 100) };
-fn run(h: Handler(Log with Log + ...e)): Unit with Log + ...e = { defer log(0); with h { log(1) } };
+fn prefix(): Handler(Log with Log) with pure = handler Log { log(n) => log(n +
+  100) };
+fn run(h: Handler(Log with Log + ...e)): Unit with Log + ...e = { defer log(0);
+  with h { log(1) } };
 // main: `with prefix() { defer log(1); () }` under a printing handler;
 //       `run(prefix())` under a printing handler;
 //       `with prefix() { log(3) }` under a failing one, inside handle
