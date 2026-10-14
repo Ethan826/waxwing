@@ -1,10 +1,11 @@
 # Records: design (R001, first tranche)
 
-Status: written spec awaiting the user's review. The user approved this
-design section by section in conversation on 2026-10-14, together with
-review refinements. No plan exists yet and nothing is implemented.
-Sequencing: after FX020 (effect operation namespaces), which kept `.` free
-for `r.field` on lowercase receivers.
+Status: written spec awaiting the user's review (revised 2026-10-14 after
+the first review: printability, ADT storage, Fail payloads, row sorts).
+The user approved this design section by section in conversation on
+2026-10-14, together with review refinements. No plan exists yet and
+nothing is implemented. Sequencing: after FX020 (effect operation
+namespaces), which kept `.` free for `r.field` on lowercase receivers.
 
 ## Goal
 
@@ -55,8 +56,12 @@ function is generated per field.
   `{ b: Bool, a: Int }` are the same type.
 - Record types may appear anywhere a type may: parameters, results, type
   arguments, constructor fields, other record fields and `main`'s result.
-- There is no empty record type or literal: `{}` stays Unit in
-  expressions.
+- Source has no empty record type or literal: `{}` stays Unit in
+  expressions. Empty rows still exist internally; for example, the tail of
+  `{ a: Int, ...r }` is empty when it is applied to `{ a: Int }`.
+- The tail-only type `{ ...r }` is allowed. It means any record, and needs
+  no literal of its own. If a specialization ever needs the empty layout,
+  it is emitted as an empty Go struct.
 
 **Literal.** `{ name: "Ada", age: 36 }` has the closed type of its fields.
 In expression position, `{` followed by a lowercase name and `:` begins a
@@ -93,8 +98,13 @@ comparisons.
   `...r` spelling does not make the two interchangeable.
 - A variable's sort is fixed by its first use, in a record type or in a
   `with` row. A later use of the other sort is the row-sort error (§6).
-- A row parameter of a `type` declaration that no record type uses keeps
-  today's effect sort.
+- Sorts propagate through declared-type applications and forward
+  references. When a row argument is passed to a type's row parameter,
+  the argument takes that parameter's sort, and the reverse, solved to a
+  fixed point over the declarations.
+- A row parameter defaults to effect sort (today's behaviour) only if no
+  use constrains it, directly or through propagation. Not having met a
+  direct record use is not enough.
 
 ## 2. Typing
 
@@ -154,7 +164,24 @@ Fields cannot be polymorphic.
 - **Printing.** `{ age: 36, name: "Ada" }`: fields are printed in sorted
   label order, each in nested-value form, so Text is quoted as it is when
   nested in data.
-- **Groundness.**
+- **Printability is a separate rule from comparison.**
+  - Today, `show`, `Console.print` and `crash` accept any printable type,
+    which is everything except functions and handlers. They do not apply
+    comparison's groundness rule.
+  - A record is printable exactly when every field type is.
+  - Inside generic code, printing a record whose tail is a row variable
+    is accepted, as printing a type variable is today. The tail is
+    checked once it is known.
+  - That check does not exist today, even for type variables (BACKLOG
+    E017). `fn show2(x: a): Text = show(x)` called with a function passes
+    the checker, then fails `go build`.
+  - The plan's first task therefore adds a specialization-time printable
+    check at each `show`, `Console.print` and `crash` site, on the site's
+    ground type. A function or handler anywhere in that type, including
+    one in a record tail, is E_TYPE `Expected a printable value, found
+    <t>` (existing text), reported at the print site.
+  - Records reuse that check.
+- **Comparison groundness.**
   - Today's rule applies unchanged. A comparison's operand type must
     contain no variable once the function is checked, and a record row
     variable is a variable.
@@ -162,8 +189,40 @@ Fields cannot be polymorphic.
     is E_TYPE `Type { name: Text, ...r } is not comparable`. Specialization
     does not rescue a comparison that was rejected in the generic body.
   - A call site that compares a fully known record is accepted.
-  - Printing follows the rule `print` already applies to variables.
-    Implementation confirms that rule, and pins it in a test.
+
+## 3a. Records as typed-failure payloads
+
+- `Fail` families are keyed by the payload's declared head (ADR 010).
+  ADTs share a family across type arguments: `Fail(Error(Int))` and
+  `Fail(Error(Bool))` share a key, so their arguments must unify.
+- **Record payloads.** A record's head is its label set, in sorted order.
+  - The labels play the part a declared type's name plays, and the field
+    types play the part of its type arguments.
+  - `Fail({ code: Int })` and `Fail({ code: Text })` therefore share a
+    family, and their field types must unify.
+  - `Fail({ code: Int })` and `Fail({ msg: Text })` are different
+    families.
+  - Reordered equivalent shapes have the same label set and the same
+    family.
+- **Open payloads.** A payload whose label set is not yet known has a
+  deferred key, as a payload whose head is still a meta variable does
+  today. That covers a payload whose tail is an unsolved meta.
+  - If the key is never settled, the payload is the existing E_TYPE
+    `Fail needs a concrete error family`.
+  - A payload with a rigid row tail, such as `Fail({ code: Int, ...r })`
+    in a generic signature, is rejected the same way that `Fail(a)` is
+    rejected today.
+  - Specialization does not rescue a rejected payload.
+- **Runtime keys.** Existing keys are unchanged:
+  - `Int` -1, `Bool` -2, `Unit` -3;
+  - a declared type -4 minus its id;
+  - Text MinInt32.
+
+  Record label sets get keys counting up from MinInt32 + 1, numbered in
+  sorted order of their canonical label lists. That keeps the numbering
+  deterministic and disjoint from the declared-type range, which counts
+  down from -4. The emitter refuses a program in which the two ranges
+  would meet; that needs over two billion declarations.
 
 ## 4. Relation to C001
 
@@ -192,8 +251,16 @@ is one Go struct, `waxwingRec<N>`.
 - Go field names are derived from labels deterministically and without
   collisions, and can never be a Go keyword (for example, a fixed prefix
   on every label).
-- Records are Go values, not pointers. Nested records are stored inline.
-  A record in an ADT field is stored like any other non-ADT field.
+- Records are Go values, not pointers. Nested records are stored inline,
+  and so is a record in an ADT field.
+- **ADT-valued fields inside records keep the existing indirection.** A
+  record field whose type is a declared type is stored as a pointer,
+  exactly as an ADT field of declared type is today.
+  - Without that, `type Node = Node({ child: Node })` would be a recursive
+    Go value type.
+  - Construction allocates, and access dereferences. Comparison and
+    printing walk the pointer with the existing nil-guarded paths, so a
+    nil field still reports the existing malformed-value panic.
 
 **Specialization.**
 - A record row variable in a signature is a specialization parameter, like
@@ -232,7 +299,9 @@ struct, only when the program uses them, following the ADT helpers.
 | Effect row used as a record row | E_TYPE `r is an effect row, not a record row` | as above |
 | Shape mismatch | existing E_TYPE `Expected { age: Int, name: Text }, found { name: Text }` | existing expected/found conventions |
 | Field type mismatch | existing E_TYPE `Expected Int, found Text` | the value, by existing conventions |
-| Comparing or printing an open record | E_TYPE `Type { name: Text, ...r } is not comparable` | the left operand, as today |
+| Comparing an open record | E_TYPE `Type { name: Text, ...r } is not comparable` | the left operand, as today |
+| Printing a non-printable value (now also checked at the ground type) | existing E_TYPE `Expected a printable value, found <t>` | the print site |
+| Record payload with an unknown label set | existing E_TYPE `Fail needs a concrete error family` | as today |
 
 - A record type is printed in diagnostics with its labels sorted and its
   tail written `...r`.
@@ -277,7 +346,18 @@ unchanged.
     expressions;
   - type-preserving update;
   - row-sort separation;
-  - comparison and printing, including groundness and nested records.
+  - comparison and printing, including groundness and nested records;
+  - printability: a generic printer specialized at a record with a
+    function in its tail is rejected with the existing text, never
+    E_TOOL; the same for a bare type variable (E017);
+  - recursive storage: `type Node = Node({ child: Node })` and a list of
+    records each build, compare and print; a nil field reports the
+    existing panic;
+  - Fail payloads: reordered equivalent shapes in one family; distinct
+    label sets in distinct families; same labels with different field
+    types unify (or give the existing mismatch); an open payload in
+    generic code is rejected; existing Fail keys and the seven snapshots
+    unchanged.
 - **Reference interpreter and generator** (test/fx-oracle*,
   test/fx-gen-*). Both are extended with records as an independent model.
   The Go-versus-interpreter differential must show 0 disagreements across
@@ -289,7 +369,8 @@ unchanged.
   - independently extended tails instead of a shared remainder;
   - field evaluation order left to Go;
   - shape identity that ignores field types (`{ x: Int }` and
-    `{ x: Text }` sharing a struct).
+    `{ x: Text }` sharing a struct);
+  - the missing specialization-time printable check (E017).
 - **Scale.** A test measures key and code growth as many record shapes
   flow through a chain of generic functions. Its bound is set from
   measurement on this host, never relaxed later. A synthetic proxy for
