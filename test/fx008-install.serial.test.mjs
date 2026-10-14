@@ -22,9 +22,9 @@ const count = 1000;
 
 const program = size => 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Tick { fn tick(): Unit; }; '
-  + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } { '
+  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } { '
   + Array.from({ length: size },
-    () => 'with handler Tick { tick() => log(1) } { tick() }; ').join('')
+    () => 'with handler Tick { tick() => Log.log(1) } { Tick.tick() }; ').join('')
   + '() };';
 
 const resolved = size => resolve(parse(program(size)).value0).value0;

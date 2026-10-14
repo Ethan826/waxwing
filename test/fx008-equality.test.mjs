@@ -18,7 +18,7 @@ const unmarked = source =>
 
 test('a fail-free handler parameter refuses a plain handler', () => {
   const source = log
-    + 'fn run(h: Handler(nofail Log with pure)): Unit = with h { log(1) }; '
+    + 'fn run(h: Handler(nofail Log with pure)): Unit = with h { Log.log(1) }; '
     + 'fn pass(h: Handler(Log with pure)): Unit = run(h); '
     + 'fn main(): Int = 0;';
   const found = rejectedArgument(source, 'run(h)', 'h');
@@ -28,7 +28,7 @@ test('a fail-free handler parameter refuses a plain handler', () => {
 
 test('handler types open at declaration use', () => {
   const source = log
-    + 'fn run(h: Handler(Log with pure)): Unit = with h { log(1) }; '
+    + 'fn run(h: Handler(Log with pure)): Unit = with h { Log.log(1) }; '
     + 'fn mk(): Handler(nofail Log with pure) = handler Log { log(n) => () }; '
     + 'fn main(): Int = { run(mk()); 0 };';
   assert.equal(runGo(source), '0\n');
@@ -46,7 +46,7 @@ test('callback rows are invariant in marks', () => {
 
 test('a lambda passed to a nofail callback compiles', () => {
   const source = log + 'fn need(k: Unit -> Unit with nofail Log): Unit = (); '
-    + 'fn go(): Unit with nofail Log = need(fn(u: Unit) => log(1)); '
+    + 'fn go(): Unit with nofail Log = need(fn(u: Unit) => Log.log(1)); '
     + 'fn main(): Int = 0;';
   assert.equal(checked(source), checked(unmarked(source)));
 });
@@ -55,7 +55,7 @@ const tick = 'effect Tick { fn tick(): Unit; }; ';
 
 test('handler types with clause rows of different marks differ', () => {
   const source = log + tick
-    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { log(1) ' +
+    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { Log.log(1) ' +
       '}; '
     + 'fn outer(h: Handler(Log with nofail Tick)): Unit with Tick = inner(h); '
     + 'fn main(): Int = 0;';
@@ -76,7 +76,7 @@ test('a clause row mark clash through a lambda annotation names the '
 
 test('a result written M stays closed against a nofail parameter', () => {
   const source = log
-    + 'fn run(h: Handler(nofail Log with pure)): Unit = with h { log(1) }; '
+    + 'fn run(h: Handler(nofail Log with pure)): Unit = with h { Log.log(1) }; '
     + 'fn mk(): Handler(Log with pure) = handler Log { log(n) => () }; '
     + 'fn main(): Int = { run(mk()); 0 };';
   const found = rejectedArgument(source, 'run(mk())', 'mk()');

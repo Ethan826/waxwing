@@ -32,20 +32,20 @@ const installationsOf = state =>
 const logs = 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Tick { fn tick(): Unit; }; ';
 const closed = logs
-  + 'fn run(): Unit with Tick = with handler Log { log(n) => tick() } '
-  + '{ log(1) }; '
+  + 'fn run(): Unit with Tick = with handler Log { log(n) => Tick.tick() } '
+  + '{ Log.log(1) }; '
   + 'fn main(): Unit with Console = '
-  + 'with handler Tick { tick() => print(0) } { run() };';
+  + 'with handler Tick { tick() => Console.print(0) } { run() };';
 const nested = logs
-  + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
-  + '{ with handler Tick { tick() => { log(1); log(2) } } '
-  + '{ with handler Log { log(n) => { tick(); log(n) } } { log(3) } } };';
+  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+  + '{ with handler Tick { tick() => { Log.log(1); Log.log(2) } } '
+  + '{ with handler Log { log(n) => { Tick.tick(); Log.log(n) } } { Log.log(3) } } };';
 const rigid = logs
   + 'fn run(cb: Unit -> Unit with ...e): Unit with ...e = '
-  + 'with handler Log { log(n) => cb(()) } { log(1) }; '
-  + 'fn main(): Unit with Console = run(fn(u: Unit) => print(1));';
+  + 'with handler Log { log(n) => cb(()) } { Log.log(1) }; '
+  + 'fn main(): Unit with Console = run(fn(u: Unit) => Console.print(1));';
 const console = 'fn f(h: Handler(Console with pure)): Unit with Console = '
-  + 'with h { print(1) }; fn main(): Unit = ();';
+  + 'with h { Console.print(1) }; fn main(): Unit = ();';
 
 const markOf = (state, mark) => plainMark(resolveMark(state.subst.marks)(mark));
 const clauseMarks = (state, installation) =>

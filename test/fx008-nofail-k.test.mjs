@@ -12,21 +12,21 @@ import { accepted, rejected } from './fx008-nofail-k-programs.mjs';
 // and Go prints what the interpreter prints.
 const deferLog = 'defer must not fail, but it performs Log, whose handler '
   + 'may fail';
-const failingLog = ['with handler Log { log(n) => fail(E) } { ',
-  'log(n) => fail(E)', 'Log is handled here',
+const failingLog = ['with handler Log { log(n) => Fail.fail(E) } { ',
+  'log(n) => Fail.fail(E)', 'Log is handled here',
     'its clause for log fails with E'];
 const expectations = {
   p01: { message: 'Expected nofail(k) Log, found Log', at: 'f(())',
     handler: `${failingLog[0]}f(()) }`, clause: failingLog[1] },
-  p02: { message: deferLog, at: 'defer log(1)', clause: failingLog[1],
-    handler: `${failingLog[0]}both(fn(u: Unit) => { defer log(1); () }, `
-      + 'fn(u: Unit) => log(2)) }' },
-  p11: { message: deferLog, at: 'defer log(1)', clause: failingLog[1],
+  p02: { message: deferLog, at: 'defer Log.log(1)', clause: failingLog[1],
+    handler: `${failingLog[0]}both(fn(u: Unit) => { defer Log.log(1); () }, `
+      + 'fn(u: Unit) => Log.log(2)) }' },
+  p11: { message: deferLog, at: 'defer Log.log(1)', clause: failingLog[1],
     handler: `${failingLog[0]}g(()) }` },
   q03: { message: 'defer must not fail, but it performs Tick, whose handler '
-      + 'may fail', at: 'defer tick()', clause: 'tick() => fail(E)',
-    handler: 'with handler Tick { tick() => fail(E) } { inst(handler Log '
-      + '{ log(n) => { defer tick(); () } }) }' }
+      + 'may fail', at: 'defer Tick.tick()', clause: 'tick() => Fail.fail(E)',
+    handler: 'with handler Tick { tick() => Fail.fail(E) } { inst(handler Log '
+      + '{ log(n) => { defer Tick.tick(); () } }) }' }
 };
 
 const textOf = (source, span) =>

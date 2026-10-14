@@ -7,7 +7,7 @@ export const probe = name => readFileSync(`test/fx008-probes/${name}.wxw`,
   'utf8');
 
 export const head = 'type E = E; effect Log { fn log(n: Int): Unit; }; ';
-const handled = ' { fail(error: E) => print(9) }';
+const handled = ' { fail(error: E) => Console.print(9) }';
 
 export const deferLog =
   'defer must not fail, but it performs Log, whose handler may fail';
@@ -20,20 +20,20 @@ export const q1Nofail = probe('design-review/q1')
 
 export const forwardingIntoFailing = head
   + 'fn main(): Unit with Console = handle { '
-  + 'with handler Log { log(n) => fail(E) } { '
-  + 'with handler Log { log(n) => log(n + 1) } { defer log(1); () } } }'
+  + 'with handler Log { log(n) => Fail.fail(E) } { '
+  + 'with handler Log { log(n) => Log.log(n + 1) } { defer Log.log(1); () } } }'
   + handled + ';';
 
 export const forwardingFailFree = forwardingIntoFailing
-  .replace('log(n) => fail(E)', 'log(n) => print(n)');
+  .replace('log(n) => Fail.fail(E)', 'log(n) => Console.print(n)');
 
 export const ambientCallback = head
   + 'fn f(cb: Unit -> Unit): Unit = with handler Log { log(n) => cb(()) } '
-  + '{ defer log(1); () }; '
-  + 'fn main(): Unit with Console = f(fn(u: Unit) => print(1));';
+  + '{ defer Log.log(1); () }; '
+  + 'fn main(): Unit with Console = f(fn(u: Unit) => Console.print(1));';
 
 export const rigidVariable = head
-  + 'fn f(): Unit with nofail(k) Log = { defer log(1); () }; '
+  + 'fn f(): Unit with nofail(k) Log = { defer Log.log(1); () }; '
   + 'fn main(): Int = 0;';
 
 export const nofailCall = head
@@ -42,40 +42,40 @@ export const nofailCall = head
 
 export const failFreeLiteral = head
   + 'fn mk(): Handler(nofail Log with Fail(E)) = '
-  + 'handler Log { log(n) => fail(E) }; fn main(): Int = 0;';
+  + 'handler Log { log(n) => Fail.fail(E) }; fn main(): Int = 0;';
 
 export const aroundBoth = head
   + 'fn prefix(): Handler(nofail Log with Log) with pure = '
-  + 'handler Log { log(n) => log(n + 100) }; '
+  + 'handler Log { log(n) => Log.log(n + 100) }; '
   + 'fn around(body: Unit -> Unit with nofail(k) Log + nofail(k) Log + ...e): '
   + 'Unit with nofail(k) Log + ...e = with prefix() { body(()) }; '
   + 'fn main(): Unit with Console = handle { '
-  + 'with handler Log { log(n) => print(n) } '
-  + '{ around(fn(u: Unit) => { defer log(1); () }) }; '
-  + 'with handler Log { log(n) => fail(E) } '
-  + '{ around(fn(u: Unit) => log(2)) } }' + handled + ';';
+  + 'with handler Log { log(n) => Console.print(n) } '
+  + '{ around(fn(u: Unit) => { defer Log.log(1); () }) }; '
+  + 'with handler Log { log(n) => Fail.fail(E) } '
+  + '{ around(fn(u: Unit) => Log.log(2)) } }' + handled + ';';
 
 export const consoleCleanup = 'fn f(): Unit with Console = '
-  + '{ defer print(1); print(2) }; fn main(): Unit with Console = f();';
+  + '{ defer Console.print(1); Console.print(2) }; fn main(): Unit with Console = f();';
 
-const inner = 'with handler Log { log(n) => { defer log(n + 1); () } } '
-  + '{ log(1) }';
+const inner = 'with handler Log { log(n) => { defer Log.log(n + 1); () } } '
+  + '{ Log.log(1) }';
 export const clauseDefer = head + 'fn main(): Unit with Console = '
-  + `with handler Log { log(n) => print(n) } { ${inner} };`;
+  + `with handler Log { log(n) => Console.print(n) } { ${inner} };`;
 export const clauseDeferFailing = head + 'fn main(): Unit with Console = '
-  + `handle with handler Log { log(n) => fail(E) } { ${inner} }` + handled
+  + `handle with handler Log { log(n) => Fail.fail(E) } { ${inner} }` + handled
     + ';';
 
 export const count = head + 'fn count(n: Int): Unit with nofail Log = '
-  + 'if n == 0 then () else ({ defer log(n); count(n + -1) }); '
+  + 'if n == 0 then () else ({ defer Log.log(n); count(n + -1) }); '
   + 'fn main(): Unit with Console = '
-  + 'with handler Log { log(n) => print(n) } { count(3) };';
+  + 'with handler Log { log(n) => Console.print(n) } { count(3) };';
 
 export const pass = head + 'fn pass(n: Int): Unit with nofail(k) Log = '
-  + 'if n == 0 then log(0) else pass2(n + -1); '
+  + 'if n == 0 then Log.log(0) else pass2(n + -1); '
   + 'fn pass2(n: Int): Unit with nofail(k) Log = pass(n); '
   + 'fn main(): Unit with Console = '
-  + 'with handler Log { log(n) => print(n) } { pass(3) };';
+  + 'with handler Log { log(n) => Console.print(n) } { pass(3) };';
 
 // The same programs with every mark removed, to compare their Go.
 export const unmarked = source => source.replace(/nofail(\(\w+\))? /g, '');
@@ -83,9 +83,9 @@ export const unmarked = source => source.replace(/nofail(\(\w+\))? /g, '');
 const box = 'type Box = Box(Handler(nofail Log with pure)); ';
 const using = clause => head + box + 'fn main(): Unit = match '
   + `Box(handler Log { log(n) => ${clause} }) `
-  + '{ Box(h) => with h { defer log(1); () } };';
+  + '{ Box(h) => with h { defer Log.log(1); () } };';
 export const boxPlain = using('()');
-export const boxOwnFailure = using('handle fail(E) { fail(e: E) => () }');
+export const boxOwnFailure = using('handle Fail.fail(E) { fail(e: E) => () }');
 export const boxCrash = using('crash(1)');
 export const boxPlainParameter = head + box
   + 'fn f(h: Handler(Log with pure)): Unit = match Box(h) { Box(x) => () }; '
@@ -96,12 +96,12 @@ export const boxPlainParameter = head + box
 // use would reach the deferred tick of the first.
 export const copies = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
   + 'effect Tick { fn tick(): Unit; }; fn main(): Unit with Console = handle { '
-  + 'let k = fn(u: Unit) => log(1); '
-  + 'with handler Tick { tick() => print(5) } { '
-  + 'with handler Log { log(n) => print(n) } { defer tick(); k(()) } }; '
-  + 'with handler Tick { tick() => fail(E) } { '
-  + 'with handler Log { log(n) => print(n) } { k(()) } } '
-  + '} { fail(error: E) => print(9) };';
+  + 'let k = fn(u: Unit) => Log.log(1); '
+  + 'with handler Tick { tick() => Console.print(5) } { '
+  + 'with handler Log { log(n) => Console.print(n) } { defer Tick.tick(); k(()) } }; '
+  + 'with handler Tick { tick() => Fail.fail(E) } { '
+  + 'with handler Log { log(n) => Console.print(n) } { k(()) } } '
+  + '} { fail(error: E) => Console.print(9) };';
 
 // Task 9 review C1: a handler passed through a generic function and
 // installed from its result. The result type's C is its own (design §3.4),
@@ -112,26 +112,26 @@ const identity = 'fn id(h: Handler(nofail Log with ...e)): '
   + 'Handler(nofail Log with ...e) with pure = h; ';
 const under = (clause, body) => 'fn main(): Unit with Console = handle '
   + `with handler Tick { tick() => ${clause} } { ${body} }`
-  + ' { fail(error: E) => print(9) };';
+  + ' { fail(error: E) => Console.print(9) };';
 const lambda = (parameter, use) => `let run = fn(${parameter}) => ${use}; `;
 const via = (parameter, handled) => 'fn main(): Unit with Console = handle { '
-  + lambda(parameter, `with ${handled} { defer log(1); () }`)
+  + lambda(parameter, `with ${handled} { defer Log.log(1); () }`)
   + 'with handler Tick { tick() => TICK } { run(handler Log { log(n) => ' +
-    'tick() }) } }'
-  + ' { fail(error: E) => print(9) };';
-const failing = source => source.replace('TICK', 'fail(E)');
+    'Tick.tick() }) } }'
+  + ' { fail(error: E) => Console.print(9) };';
+const failing = source => source.replace('TICK', 'Fail.fail(E)');
 export const a1 = rest + identity + via('x: Handler(nofail Log)', 'id(x)')
-  .replace('TICK', 'fail(E)');
+  .replace('TICK', 'Fail.fail(E)');
 export const a1Control = rest + identity
   + via('x: Handler(nofail Log)', 'id(x)')
-  .replace('TICK', 'print(5)');
+  .replace('TICK', 'Console.print(5)');
 export const a4 = rest + identity + failing(via('x', 'id(x)'));
 export const a6 = rest + identity + 'fn main(): Unit with Console = handle { '
-  + lambda('x: Handler(nofail Log)', 'with id(x) { defer log(1); () }')
-  + 'with handler Log { log(n) => fail(E) } { with handler Tick { tick() => ' +
-    'log(5) } '
-  + '{ run(handler Log { log(n) => tick() }) } } } { fail(error: E) => ' +
-    'print(9) };';
+  + lambda('x: Handler(nofail Log)', 'with id(x) { defer Log.log(1); () }')
+  + 'with handler Log { log(n) => Fail.fail(E) } { with handler Tick { tick() => ' +
+    'Log.log(5) } '
+  + '{ run(handler Log { log(n) => Tick.tick() }) } } } { fail(error: E) => ' +
+    'Console.print(9) };';
 export const a8 = rest + 'fn later(h: Handler(nofail Log with ...e)): '
   + 'Unit -> Handler(nofail Log with ...e) with pure = fn(u: Unit) => h; '
   + failing(via('x: Handler(nofail Log)', 'later(x)(())'));
@@ -145,56 +145,56 @@ export const a3c = rest + 'type Box(a) = Box(a); '
   + failing(via('x: Handler(nofail Log)', 'unbox(Box(x))'));
 export const a10 = rest + identity
   + 'fn g(x: Handler(nofail Log with ...e)): Unit with ...e = { '
-  + lambda('y: Handler(nofail Log)', 'with id(y) { defer log(1); () }')
+  + lambda('y: Handler(nofail Log)', 'with id(y) { defer Log.log(1); () }')
   + 'run(x) }; fn main(): Unit with Console = handle with handler Tick '
-  + '{ tick() => fail(E) } { g(handler Log { log(n) => tick() }) } '
-  + '{ fail(error: E) => print(9) };';
+  + '{ tick() => Fail.fail(E) } { g(handler Log { log(n) => Tick.tick() }) } '
+  + '{ fail(error: E) => Console.print(9) };';
 // The result's own row mentions the tail: a check of parameters alone
 // closes C and accepts this (review C1, "the own row matters").
 export const ownRow = rest + 'effect Get(a) { fn get(): a; }; '
   + 'fn mk(): Handler(nofail Log with ...e) with '
-  + 'Get(Handler(nofail Log with ...e)) + ...e = get(); '
+  + 'Get(Handler(nofail Log with ...e)) + ...e = Get.get(); '
   + 'fn main(): Unit with Console = handle with handler Tick '
-  + '{ tick() => fail(E) } { with handler Get(Handler(nofail Log with Tick '
-  + '+ Fail(E) + Console)) { get() => handler Log { log(n) => tick() } } '
-  + '{ with mk() { defer log(1); () } } } { fail(error: E) => print(9) };';
+  + '{ tick() => Fail.fail(E) } { with handler Get(Handler(nofail Log with Tick '
+  + '+ Fail(E) + Console)) { get() => handler Log { log(n) => Tick.tick() } } '
+  + '{ with mk() { defer Log.log(1); () } } } { fail(error: E) => Console.print(9) };';
 
 // Round 2 (review C2): a result C closed at the use broke programs with no
 // `defer` that merge a handler result with another handler value (§6).
 // r1, r2 and r9 are accepted with the base build's output.
 const stdMain = (value, body) => 'fn main(): Unit with Console = handle with '
-  + `handler Tick { tick() => fail(E) } { ${value} } `
-  + '{ fail(error: E) => print(9) };';
+  + `handler Tick { tick() => Fail.fail(E) } { ${value} } `
+  + '{ fail(error: E) => Console.print(9) };';
 export const r1 = rest
   + 'fn mk(): Handler(Log with ...e) with pure = handler Log { log(n) => () }; '
   + 'fn pick(b: Bool, x: Handler(Log with ...e)): Handler(Log with ...e) '
   + 'with pure = if b then mk() else x; '
-  + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
-  + '{ with pick(true, handler Log { log(n) => log(n + 1) }) { log(1) } };';
+  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+  + '{ with pick(true, handler Log { log(n) => Log.log(n + 1) }) { Log.log(1) } };';
 export const r2 = rest
   + 'fn mk(): Handler(Log with Tick + ...e) with pure = '
-  + 'handler Log { log(n) => tick() }; '
+  + 'handler Log { log(n) => Tick.tick() }; '
   + 'fn run(x: Handler(Log with Tick + ...e)): Unit with Tick + ...e = '
-  + '{ let h = if true then mk() else x; with h { log(1) } }; '
-  + 'fn main(): Unit with Console = with handler Tick { tick() => print(3) } '
-  + '{ run(handler Log { log(n) => tick() }) };';
+  + '{ let h = if true then mk() else x; with h { Log.log(1) } }; '
+  + 'fn main(): Unit with Console = with handler Tick { tick() => Console.print(3) } '
+  + '{ run(handler Log { log(n) => Tick.tick() }) };';
 export const r9 = rest
   + 'fn mk(): Handler(Log with Tick) with pure = handler Log { log(n) => () }; '
-  + 'fn main(): Unit with Console = with handler Tick { tick() => print(3) } '
-  + '{ let h = if true then handler Log { log(n) => { tick(); print(n) } } '
-  + 'else mk(); with h { log(1) } };';
+  + 'fn main(): Unit with Console = with handler Tick { tick() => Console.print(3) } '
+  + '{ let h = if true then handler Log { log(n) => { Tick.tick(); Console.print(n) } } '
+  + 'else mk(); with h { Log.log(1) } };';
 export const r5 = rest
   + 'fn mk(): Handler(nofail Log with ...e) with pure = handler Log { log(n) ' +
     '=> () }; '
   + 'fn g(x: Handler(nofail Log with ...e)): Unit with ...e = '
-  + '{ let h = if true then mk() else x; with h { defer log(1); () } }; '
-  + stdMain('g(handler Log { log(n) => tick() })');
+  + '{ let h = if true then mk() else x; with h { defer Log.log(1); () } }; '
+  + stdMain('g(handler Log { log(n) => Tick.tick() })');
 
 // Task 10: `count` let-bound lambdas, each installing a forwarding handler
 // and calling the previous one; the first defers, under a failing handler.
 export const chain = count => head + 'fn main(): Unit with Console = handle '
-  + 'with handler Log { log(n) => fail(E) } { '
-  + 'let f0 = fn(u: Unit) => { defer log(0); () }; '
+  + 'with handler Log { log(n) => Fail.fail(E) } { '
+  + 'let f0 = fn(u: Unit) => { defer Log.log(0); () }; '
   + Array.from({ length: count }, (_, at) => `let f${at + 1} = fn(u: Unit) => `
-    + `with handler Log { log(n) => log(n) } { f${at}(()) }; `).join('')
+    + `with handler Log { log(n) => Log.log(n) } { f${at}(()) }; `).join('')
   + `f${count}(()) }` + handled + ';';

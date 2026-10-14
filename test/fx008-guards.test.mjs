@@ -24,13 +24,13 @@ const logs = 'effect Log { fn log(n: Int): Unit; }; '
 // row it is installed in.
 const rigid = logs
   + 'fn run(cb: Unit -> Unit with ...e): Unit with ...e = '
-  + 'with handler Log { log(n) => cb(()) } { log(1) }; '
-  + 'fn main(): Unit with Console = run(fn(u: Unit) => print(1));';
+  + 'with handler Log { log(n) => cb(()) } { Log.log(1) }; '
+  + 'fn main(): Unit with Console = run(fn(u: Unit) => Console.print(1));';
 // Two installations; the outer one's row holds only Log.
 const nested = logs
-  + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
-  + '{ with handler Tick { tick() => { log(1); log(2) } } '
-  + '{ with handler Log { log(n) => { tick(); log(n) } } { log(3) } } };';
+  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+  + '{ with handler Tick { tick() => { Log.log(1); Log.log(2) } } '
+  + '{ with handler Log { log(n) => { Tick.tick(); Log.log(n) } } { Log.log(3) } } };';
 
 const programOf = source => resolve(parse(source).value0).value0;
 const entries = map => toUnfoldable(unfoldableArray)(map);

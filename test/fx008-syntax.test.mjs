@@ -12,17 +12,17 @@ import { resolve } from '../output/Features.Resolve/index.js';
 const log = 'effect Log { fn log(n: Int): Unit; }; ';
 const clock = 'effect Clock { fn now(): Int; }; ';
 const main = ' fn main(): Int = 0;';
-const handled = 'with handler Log { log(n) => print(n) }';
+const handled = 'with handler Log { log(n) => Console.print(n) }';
 
 // The same source with every written mark removed.
 const unmarked = source =>
   source.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
 
 const positions = [
-  ['with nofail Log', log + 'fn work(): Unit with nofail Log = log(1); '
+  ['with nofail Log', log + 'fn work(): Unit with nofail Log = Log.log(1); '
     + `fn main(): Unit with Console = ${handled} { work() };`],
   ['with Console + nofail Log', log + 'fn work(): Unit with Console + nofail '
-    + 'Log = { print(1); log(2) }; '
+    + 'Log = { Console.print(1); Log.log(2) }; '
     + `fn main(): Unit with Console = ${handled} { work() };`],
   ['a row argument', log + 'type Box(...e) = Box(Unit -> Unit with ...e); '
     + 'fn use(b: Box(nofail Log)): Int = 0;' + main],
@@ -36,8 +36,8 @@ const positions = [
     + 'fn make(): Handler(nofail Log) = handler Log { log(n) => () };' + main],
   ['a mark variable used twice', log + 'fn each(f: Unit -> Unit with '
     + 'nofail(k) Log): Unit with nofail(k) Log = f(()); '
-    + 'fn twice(): Unit with nofail Log = { each(fn(u) => log(1)); '
-    + 'each(fn(u) => log(2)) }; '
+    + 'fn twice(): Unit with nofail Log = { each(fn(u) => Log.log(1)); '
+    + 'each(fn(u) => Log.log(2)) }; '
     + `fn main(): Unit with Console = ${handled} { twice() };`],
   ['a mark variable in a row argument', log
     + 'type Box(...e) = Box(Unit -> Unit with ...e); '
@@ -65,7 +65,7 @@ test('nofail is an ordinary name elsewhere', () => {
 
 test('nofail on Fail is E_TYPE', () => {
   for (const mark of ['nofail', 'nofail(k)']) {
-    const source = `type E = E; fn f(): Unit with ${mark} Fail(E) = fail(E);`
+    const source = `type E = E; fn f(): Unit with ${mark} Fail(E) = Fail.fail(E);`
       + main;
     const found = rejectedAt(source, 'E_TYPE', 'Fail(E)');
     assert.equal(found.message, 'nofail does not apply to Fail');
@@ -123,17 +123,17 @@ test('x: k beside nofail(k) is a type variable', () => {
 });
 
 test('nofail Console is redundant', () => {
-  const plain = 'fn f(): Unit with Console = print(1);' + main;
+  const plain = 'fn f(): Unit with Console = Console.print(1);' + main;
   for (const mark of ['nofail', 'nofail(k)']) {
-    const source = `fn f(): Unit with ${mark} Console = print(1);` + main;
+    const source = `fn f(): Unit with ${mark} Console = Console.print(1);` + main;
     assert.equal(checked(source), checked(plain));
   }
 });
 
 test('nofail prints in label messages, Console never', () => {
   const state = 'effect State(s) { fn put(value: s): Unit; }; '
-    + 'fn f(): Unit with nofail State(Int) = put(true);' + main;
-  const mismatch = rejectedAt(state, 'E_TYPE', 'put(true)');
+    + 'fn f(): Unit with nofail State(Int) = State.put(true);' + main;
+  const mismatch = rejectedAt(state, 'E_TYPE', 'State.put(true)');
   assert.equal(mismatch.message,
     'Expected nofail State(Int), found State(Bool)');
   const callback = log + clock + 'fn f(k: Unit -> Unit with nofail Log + ...e)'
@@ -193,7 +193,7 @@ test('a mark variable only on Console is not introduced', () => {
     assert.ok(resolved instanceof Right, JSON.stringify(resolved));
     return resolved.value0.functions[0].markVariables;
   };
-  const only = 'fn f(): Unit with nofail(k) Console = print(1);' + main;
+  const only = 'fn f(): Unit with nofail(k) Console = Console.print(1);' + main;
   assert.deepEqual(names(only), []);
   const also = log + 'fn f(g: Unit -> Unit with nofail(k) Console + '
     + 'nofail(j) Log): Unit = ();' + main;

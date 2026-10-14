@@ -5,23 +5,23 @@ const numbers = (count, make) => Array.from({ length: count },
 
 // `count` defers in one fail-free function.
 export const manyDefers = count => head + 'fn work(): Unit with nofail Log = { '
-  + 'defer log(0); '.repeat(count) + '() }; fn main(): Int = 0;';
+  + 'defer Log.log(0); '.repeat(count) + '() }; fn main(): Int = 0;';
 
 // `count` sequential installations in one declaration.
 export const manyInstallations = count => head
   + 'effect Tick { fn tick(): Unit; }; '
-  + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } { '
-  + 'defer log(0); '
-  + 'with handler Tick { tick() => log(1) } { tick() }; '.repeat(count)
+  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } { '
+  + 'defer Log.log(0); '
+  + 'with handler Tick { tick() => Log.log(1) } { Tick.tick() }; '.repeat(count)
   + '() };';
 
 // A chain of `count` functions, each installing a forwarding handler.
 export const forwardingChain = count => head
   + numbers(count - 1, index => `fn f${index}(): Unit with nofail Log = `
-    + `with handler Log { log(n) => log(n) } { f${index + 1}() }; `).join('')
-  + `fn f${count}(): Unit with nofail Log = { defer log(0); () }; `
+    + `with handler Log { log(n) => Log.log(n) } { f${index + 1}() }; `).join('')
+  + `fn f${count}(): Unit with nofail Log = { defer Log.log(0); () }; `
   + 'fn main(): Unit with Console = '
-  + 'with handler Log { log(n) => print(n) } { f1() };';
+  + 'with handler Log { log(n) => Console.print(n) } { f1() };';
 
 // Two functions over `count` mark variables each.
 export const markVariables = count => {

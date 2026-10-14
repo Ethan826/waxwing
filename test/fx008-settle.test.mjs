@@ -44,7 +44,7 @@ test('a satisfiable two-row cycle settles', () => {
 
 test('8,000 defers settle', () => {
   const deferred = Array.from({ length: 8000 },
-    (_, index) => `defer print(${index}); `).join('');
+    (_, index) => `defer Console.print(${index}); `).join('');
   const source = `fn main(): Unit with Console = { ${deferred}() };`;
   const found = compileWithin(context, source, timeoutMs);
   assert.equal(found.timedOut, false, 'timed out');

@@ -64,8 +64,8 @@ const source = 'effect Clock { fn now(): Int; }; '
   + 'effect Tick { fn tick(h: Handler(Clock)): Handler(Clock); }; '
   + 'type Box = Box(Handler(Clock)); '
   + 'fn run(h: Handler(Clock), f: Unit -> Unit with Clock): Int '
-  + '= with h { now() }; '
-  + 'fn main(): Int = with handler Clock { now() => 42 } { now() };';
+  + '= with h { Clock.now() }; '
+  + 'fn main(): Int = with handler Clock { now() => 42 } { Clock.now() };';
 
 // Every label below a type has Unmarked, and every handler type Nothing.
 const stripped = ty => {

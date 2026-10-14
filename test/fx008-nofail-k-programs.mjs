@@ -9,15 +9,15 @@ const header = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
 // failing handler around it, so its defer runs under a failing frame.
 const appFailing = header
   + 'fn app(f: Unit -> Unit with nofail(k) Log + Fail(E) + ...e): Unit '
-  + 'with ...e = handle with handler Log { log(n) => fail(E) } '
+  + 'with ...e = handle with handler Log { log(n) => Fail.fail(E) } '
   + '{ f(()) } { fail(e: E) => () };\n'
   + 'fn main(): Unit with Console = '
-  + 'app(fn(u: Unit) => { defer log(1); () });\n';
+  + 'app(fn(u: Unit) => { defer Log.log(1); () });\n';
 const appFailFree = header
   + 'fn app(f: Unit -> Unit with nofail(k) Log + ...e): Unit with ...e = '
   + 'with handler Log { log(n) => () } { f(()) };\n'
   + 'fn main(): Unit with Console = '
-  + 'app(fn(u: Unit) => { defer log(1); print(5) });\n';
+  + 'app(fn(u: Unit) => { defer Log.log(1); Console.print(5) });\n';
 
 // Two callbacks share k; the defer is in one, the other only logs.
 const bothCallbacks = 'fn both(f: Unit -> Unit with nofail(k) Log, '
@@ -25,12 +25,12 @@ const bothCallbacks = 'fn both(f: Unit -> Unit with nofail(k) Log, '
   + '{ f(()); g(()) };\n';
 const twoFailing = header + bothCallbacks
   + 'fn main(): Unit with Console = handle with handler Log '
-  + '{ log(n) => fail(E) } { both(fn(u: Unit) => { defer log(1); () }, '
-  + 'fn(u: Unit) => log(2)) } { fail(e: E) => print(9) };\n';
+  + '{ log(n) => Fail.fail(E) } { both(fn(u: Unit) => { defer Log.log(1); () }, '
+  + 'fn(u: Unit) => Log.log(2)) } { fail(e: E) => Console.print(9) };\n';
 const twoFailFree = header + bothCallbacks
   + 'fn main(): Unit with Console = with handler Log '
-  + '{ log(n) => print(n) } { both(fn(u: Unit) => { defer log(1); () }, '
-  + 'fn(u: Unit) => log(2)) };\n';
+  + '{ log(n) => Console.print(n) } { both(fn(u: Unit) => { defer Log.log(1); () }, '
+  + 'fn(u: Unit) => Log.log(2)) };\n';
 
 // A `nofail(k)` callback returned by a higher-order function, then called
 // under a fail-free and under a failing handler.
@@ -38,27 +38,27 @@ const idK = header + 'fn id2(f: Unit -> Unit with nofail(k) Log + ...e): '
   + 'Unit -> Unit with nofail(k) Log + ...e = f;\n';
 const returnedFailing = idK
   + 'fn main(): Unit with Console = handle { '
-  + 'let g = id2(fn(u: Unit) => { defer log(1); () }); '
-  + 'with handler Log { log(n) => print(n) } { g(()) }; '
-  + 'with handler Log { log(n) => fail(E) } { g(()) } } '
-  + '{ fail(e: E) => print(9) };\n';
+  + 'let g = id2(fn(u: Unit) => { defer Log.log(1); () }); '
+  + 'with handler Log { log(n) => Console.print(n) } { g(()) }; '
+  + 'with handler Log { log(n) => Fail.fail(E) } { g(()) } } '
+  + '{ fail(e: E) => Console.print(9) };\n';
 const returnedFailFree = idK
   + 'fn main(): Unit with Console = handle { '
-  + 'let g = id2(fn(u: Unit) => { defer log(1); () }); '
-  + 'with handler Log { log(n) => print(n) } { g(()) } } '
-  + '{ fail(e: E) => print(9) };\n';
+  + 'let g = id2(fn(u: Unit) => { defer Log.log(1); () }); '
+  + 'with handler Log { log(n) => Console.print(n) } { g(()) } } '
+  + '{ fail(e: E) => Console.print(9) };\n';
 
 // `nofail(k)` in a parameter handler's clause row; the clause defers.
 const instK = header + 'fn inst(h: Handler(nofail Log with nofail(k) Tick '
-  + '+ ...e)): Unit with nofail(k) Tick + ...e = with h { log(1) };\n';
+  + '+ ...e)): Unit with nofail(k) Tick + ...e = with h { Log.log(1) };\n';
 const clauseFailing = instK
   + 'fn main(): Unit with Console = handle with handler Tick '
-  + '{ tick() => fail(E) } { inst(handler Log '
-  + '{ log(n) => { defer tick(); () } }) } { fail(e: E) => print(9) };\n';
+  + '{ tick() => Fail.fail(E) } { inst(handler Log '
+  + '{ log(n) => { defer Tick.tick(); () } }) } { fail(e: E) => Console.print(9) };\n';
 const clauseFailFree = instK
   + 'fn main(): Unit with Console = handle with handler Tick '
-  + '{ tick() => print(7) } { inst(handler Log '
-  + '{ log(n) => { defer tick(); () } }) } { fail(e: E) => print(9) };\n';
+  + '{ tick() => Console.print(7) } { inst(handler Log '
+  + '{ log(n) => { defer Tick.tick(); () } }) } { fail(e: E) => Console.print(9) };\n';
 
 export const rejected = [
   ['p01: a nofail(k) callback under a failing handler of the callee',

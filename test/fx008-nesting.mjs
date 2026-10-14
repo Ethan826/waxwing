@@ -31,7 +31,7 @@ export const literalProgram = depth => 'effect Log { fn log(n: Int): Unit; }; '
   + Array.from({ length: depth }, (_, index) =>
     `let h${index + 1} = handler Log { log(n) => () }; `
     + `let g${index + 1} = fn(u: Unit) => with h${index + 1} `
-    + `{ put(h${index}) }; `).join('')
+    + `{ Cell.put(h${index}) }; `).join('')
   + '0 };';
 
 // Task 2 c2 shape: each literal's clause performs `Cell(type of the previous
@@ -44,5 +44,5 @@ export const clauseLiteralProgram = depth =>
   + 'effect Cell(a) { fn put(x: a): Unit; }; fn main(): Int = { '
   + 'let h0 = handler Log { log(n) => () }; '
   + Array.from({ length: depth }, (_, index) =>
-    `let h${index + 1} = handler Log { log(n) => put(h${index}) }; `).join('')
+    `let h${index + 1} = handler Log { log(n) => Cell.put(h${index}) }; `).join('')
   + '0 };';

@@ -19,7 +19,7 @@ const handledHere = (container, label) => [container, container,
   `${label} is handled here`];
 const forwarded = "this handler's clauses perform Log, whose handler may fail";
 const chainWith =
-  index => `with handler Log { log(n) => log(n) } { f${index - 1}(()) }`;
+  index => `with handler Log { log(n) => Log.log(n) } { f${index - 1}(()) }`;
 const clauseFails = (container, operation) => [container, container,
   `its clause for ${operation} fails with E`];
 const allows = (container, name, label, inner = container) => [container, inner,
@@ -54,8 +54,8 @@ test('q1: run is written with a plain Log', () => {
 test('a fail-free handler type refuses a failing literal', () => {
   effect(failFreeLiteral,
     'This handler may fail here: its clause for log fails with E',
-    ['handler Log { log(n) => fail(E) }'],
-    [clauseFails('log(n) => fail(E)', 'log')]);
+    ['handler Log { log(n) => Fail.fail(E) }'],
+    [clauseFails('log(n) => Fail.fail(E)', 'log')]);
 });
 
 test("mk returning Handler(nofail Log) keeps today's row error", () => {
@@ -78,35 +78,35 @@ test('a nofail call under a plain signature', () => {
 });
 
 test('a forwarding clause into a failing outer handler', () => {
-  const outer = 'with handler Log { log(n) => fail(E) } { with handler Log '
-    + '{ log(n) => log(n + 1) } { defer log(1); () } }';
-  effect(forwardingIntoFailing, deferLog, ['defer log(1)'], [
-    ['with handler Log { log(n) => log(n + 1) } { defer log(1); () }',
-      'with handler Log { log(n) => log(n + 1) } { defer log(1); () }',
+  const outer = 'with handler Log { log(n) => Fail.fail(E) } { with handler Log '
+    + '{ log(n) => Log.log(n + 1) } { defer Log.log(1); () } }';
+  effect(forwardingIntoFailing, deferLog, ['defer Log.log(1)'], [
+    ['with handler Log { log(n) => Log.log(n + 1) } { defer Log.log(1); () }',
+      'with handler Log { log(n) => Log.log(n + 1) } { defer Log.log(1); () }',
       "this handler's clauses perform Log, whose handler may fail"],
-    handledHere(outer, 'Log'), clauseFails('log(n) => fail(E)', 'log')]);
+    handledHere(outer, 'Log'), clauseFails('log(n) => Fail.fail(E)', 'log')]);
 });
 
 test('a clause calling an ambient callback', () => {
-  effect(ambientCallback, deferLog, ['defer log(1)'], [[
-    'with handler Log { log(n) => cb(()) } { defer log(1); () }',
-    'with handler Log { log(n) => cb(()) } { defer log(1); () }',
+  effect(ambientCallback, deferLog, ['defer Log.log(1)'], [[
+    'with handler Log { log(n) => cb(()) } { defer Log.log(1); () }',
+    'with handler Log { log(n) => cb(()) } { defer Log.log(1); () }',
     "this handler's clauses may perform any effect of ..."]]);
 });
 
 test('a rigid mark variable cannot be assumed fail-free', () => {
   effect(rigidVariable,
     'defer must not fail, but it performs nofail(k) Log, whose handler is '
-    + "fail-free only when the caller's is", ['defer log(1)'], [[
+    + "fail-free only when the caller's is", ['defer Log.log(1)'], [[
       'with nofail(k) Log', 'with nofail(k) Log',
       "nofail(k) Log is fail-free only when the caller's handler is"]]);
 });
 
 test('a defer inside a clause follows the outer frame', () => {
-  const outer = 'with handler Log { log(n) => fail(E) } { with handler Log '
-    + '{ log(n) => { defer log(n + 1); () } } { log(1) } }';
-  effect(clauseDeferFailing, deferLog, ['defer log(n + 1)'],
-    [handledHere(outer, 'Log'), clauseFails('log(n) => fail(E)', 'log')]);
+  const outer = 'with handler Log { log(n) => Fail.fail(E) } { with handler Log '
+    + '{ log(n) => { defer Log.log(n + 1); () } } { Log.log(1) } }';
+  effect(clauseDeferFailing, deferLog, ['defer Log.log(n + 1)'],
+    [handledHere(outer, 'Log'), clauseFails('log(n) => Fail.fail(E)', 'log')]);
 });
 
 test('L4: l4b is rejected', () => {
@@ -135,51 +135,51 @@ test('a handler in a constructor field keeps its mark', () => {
 // Task 9 review C1: a handler passed through a generic function and
 // installed from its result keeps the clauses it will run in the caller's
 // context. Each was accepted by 1649218 and died with `fail(E): E`.
-const tickOuter = 'with handler Tick { tick() => fail(E) } { run(handler '
-  + 'Log { log(n) => tick() }) }';
+const tickOuter = 'with handler Tick { tick() => Fail.fail(E) } { run(handler '
+  + 'Log { log(n) => Tick.tick() }) }';
 const viaTick = installed => [
   [installed, installed,
     "this handler's clauses perform Tick, whose handler may fail"],
-  handledHere(tickOuter, 'Tick'), clauseFails('tick() => fail(E)', 'tick')];
+  handledHere(tickOuter, 'Tick'), clauseFails('tick() => Fail.fail(E)', 'tick')];
 const rigidTail = installed => [[installed, installed,
   "this handler's clauses may perform any effect of ...e"]];
-const withId = 'with id(x) { defer log(1); () }';
+const withId = 'with id(x) { defer Log.log(1); () }';
 const passedThrough = {
   a1: [a1, viaTick(withId)],
   a4: [a4, viaTick(withId)],
   a6: [a6, [
-    ['with id(x) { defer log(1); () }', 'with id(x) { defer log(1); () }',
+    ['with id(x) { defer Log.log(1); () }', 'with id(x) { defer Log.log(1); () }',
       "this handler's clauses perform Log, whose handler may fail"],
-    handledHere('with handler Log { log(n) => fail(E) } { with handler Tick '
-      + '{ tick() => log(5) } { run(handler Log { log(n) => tick() }) } }',
-    'Log'), clauseFails('log(n) => fail(E)', 'log')]],
-  a8: [a8, viaTick('with later(x)(()) { defer log(1); () }')],
-  a9: [a9, viaTick('with match boxed(x) { Box(h) => h } { defer log(1); () }')],
-  a3c: [a3c, viaTick('with unbox(Box(x)) { defer log(1); () }')],
-  a10: [a10, rigidTail('with id(y) { defer log(1); () }')],
-  r5: [r5, rigidTail('with h { defer log(1); () }')],
+    handledHere('with handler Log { log(n) => Fail.fail(E) } { with handler Tick '
+      + '{ tick() => Log.log(5) } { run(handler Log { log(n) => Tick.tick() }) } }',
+    'Log'), clauseFails('log(n) => Fail.fail(E)', 'log')]],
+  a8: [a8, viaTick('with later(x)(()) { defer Log.log(1); () }')],
+  a9: [a9, viaTick('with match boxed(x) { Box(h) => h } { defer Log.log(1); () }')],
+  a3c: [a3c, viaTick('with unbox(Box(x)) { defer Log.log(1); () }')],
+  a10: [a10, rigidTail('with id(y) { defer Log.log(1); () }')],
+  r5: [r5, rigidTail('with h { defer Log.log(1); () }')],
   'a result whose own row holds the tail': [ownRow, [
-    ...viaTick('with mk() { defer log(1); () }').slice(0, 1),
-    handledHere('with handler Tick { tick() => fail(E) } { with handler Get'
+    ...viaTick('with mk() { defer Log.log(1); () }').slice(0, 1),
+    handledHere('with handler Tick { tick() => Fail.fail(E) } { with handler Get'
       + '(Handler(nofail Log with Tick + Fail(E) + Console)) { get() => '
-      + 'handler Log { log(n) => tick() } } { with mk() { defer log(1); () } ' +
+      + 'handler Log { log(n) => Tick.tick() } } { with mk() { defer Log.log(1); () } ' +
         '} }',
-    'Tick'), clauseFails('tick() => fail(E)', 'tick')]]
+    'Tick'), clauseFails('tick() => Fail.fail(E)', 'tick')]]
 };
 for (const [name, [source, notes]] of Object.entries(passedThrough)) {
   test(`a handler passed through a generic function: ${name}`, () => {
-    effect(source, deferLog, ['defer log(1)'], notes);
+    effect(source, deferLog, ['defer Log.log(1)'], notes);
   });
 }
 
 test('a path with repeated edges has no repeated notes', () => {
   const found = expectDiagnostic(chain(3), {
-    code: 'E_EFFECT', message: deferLog, at: ['defer log(0)'],
+    code: 'E_EFFECT', message: deferLog, at: ['defer Log.log(0)'],
     notes: [
       [chainWith(1), chainWith(1), forwarded],
       [chainWith(2), chainWith(2), forwarded],
       [chainWith(3), chainWith(3), forwarded],
-      clauseFails('log(n) => fail(E)', 'log')]
+      clauseFails('log(n) => Fail.fail(E)', 'log')]
   });
   const spans = found.related.map(note => note.span.start.offset);
   assert.equal(new Set(spans).size, found.related.length);
@@ -187,12 +187,12 @@ test('a path with repeated edges has no repeated notes', () => {
 
 test('a 1,000-hop mark path is bounded', () => {
   const found = expectDiagnostic(chain(1000), {
-    code: 'E_EFFECT', message: deferLog, at: ['defer log(0)'],
+    code: 'E_EFFECT', message: deferLog, at: ['defer Log.log(0)'],
     notes: [
       [chainWith(1), chainWith(1), forwarded],
       [chainWith(2), chainWith(2), forwarded],
       [chainWith(3), chainWith(3), forwarded],
-      clauseFails('log(n) => fail(E)', 'log')]
+      clauseFails('log(n) => Fail.fail(E)', 'log')]
   });
   assert.ok(found.related.length <= 4);
   assert.ok(length(found) <= maxCharacters, `${length(found)} characters`);
