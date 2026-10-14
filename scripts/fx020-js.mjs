@@ -16,6 +16,7 @@ const word = /[A-Za-z0-9_$]/;
 const escapeAt = (text, index) => {
   const next = text[index + 1];
   if (next === '\n') return ['', 2];
+  if (next === '\r') return ['', text[index + 2] === '\n' ? 3 : 2];
   if (next === 'x') {
     return [String.fromCharCode(parseInt(text.slice(index + 2, index + 4),
       16)), 4];

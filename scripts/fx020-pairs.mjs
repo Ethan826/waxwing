@@ -66,19 +66,15 @@ export const pairUp = (originalSources, migratedSources) => {
   return { pairs, lonely, strays };
 };
 
-// A source near the JS stack limit can overflow on a cold run and pass
-// once V8 has optimised (smaller) frames: the first trial saw 2 of 6,404
-// pairs overflow on one side only. A stack overflow is retried once; a
-// second one is the outcome.
-const outcome = (compiler, source, retried = false) => {
+// A crash is an outcome like any other: a crash on one side only is an
+// `outcome` difference, never retried (a near-limit stack overflow that
+// differs between runs is BACKLOG G006).
+const outcome = (compiler, source) => {
   try {
     const result = compiler.compile(source);
     return result instanceof compiler.Left
       ? { rejected: compiler.wire(result.value0) } : { go: result.value0 };
   } catch (error) {
-    if (!retried && error instanceof RangeError) {
-      return outcome(compiler, source, true);
-    }
     return { crash: `${error.constructor.name}: ${error.message}` };
   }
 };
@@ -115,7 +111,9 @@ const difference = ({ original, migrated, edits }, pair) => {
 // A ledger entry names the original (or, for an unpaired twin, the
 // migrated) source by sourceKey, the kind, and optionally the exact
 // candidate summary it expects, so it cannot excuse a different change.
+// An entry naming neither source excuses nothing (and so is stale).
 const excuses = (entry, found) => entry.kind === found.kind
+  && (entry.original !== undefined || entry.migrated !== undefined)
   && (entry.original === undefined
     || entry.original === sourceKey(found.original ?? ''))
   && (entry.migrated === undefined

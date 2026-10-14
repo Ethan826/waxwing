@@ -58,19 +58,29 @@ export const mapSpan = (edits, original, migrated, span) => ({
 // the twin is not original-plus-insertions: an `Effect.` qualifier before
 // a name, or whitespace containing a line break.
 const qualifierAt = /^[A-Z][A-Za-z0-9_]*\.(?=[a-z_])/;
-const breakAt = /^[ \t]*\n[ \t\n]*/;
+const whitespace = /^[ \t\n]*/;
+
+// A hand wrap replaces a space with a break and indentation (`a, b` →
+// `a,\n  b`). As an insertion, the break goes before the original
+// whitespace still at `at`, which must end the migrated run; the
+// inserted part must hold the line break.
+const breakAt = (original, at, migrated, index) => {
+  const kept = whitespace.exec(original.slice(at))[0];
+  const run = whitespace.exec(migrated.slice(index))[0];
+  const text = run.slice(0, run.length - kept.length);
+  return text.includes('\n') && run.endsWith(kept)
+    && migrated.startsWith(original.slice(at + kept.length,
+      at + kept.length + 1), index + run.length)
+    ? { at, text, kind: 'break' } : undefined;
+};
 
 const insertionAt = (original, at, migrated, index) => {
-  const rest = migrated.slice(index, index + 200);
-  for (const [pattern, kind] of [[qualifierAt, 'qualifier'],
-    [breakAt, 'break']]) {
-    const found = pattern.exec(rest);
-    if (found !== null && migrated.startsWith(original.slice(at, at + 1),
-      index + found[0].length)) {
-      return { at, text: found[0], kind };
-    }
+  const found = qualifierAt.exec(migrated.slice(index, index + 200));
+  if (found !== null && migrated.startsWith(original.slice(at, at + 1),
+    index + found[0].length)) {
+    return { at, text: found[0], kind: 'qualifier' };
   }
-  return undefined;
+  return breakAt(original, at, migrated, index);
 };
 
 export const align = (original, migrated) => {

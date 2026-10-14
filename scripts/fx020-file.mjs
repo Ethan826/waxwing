@@ -9,8 +9,10 @@
 import { positionAt, apply } from './fx020-editmap.mjs';
 import { literalUnits } from './fx020-js.mjs';
 import { contextIndex, locate } from './fx020-locate.mjs';
-import { analyse, shape } from './fx020-program.mjs';
-import { candidates, declared, mentions } from './fx020-tokens.mjs';
+import { analyse, verified } from './fx020-program.mjs';
+import {
+  candidates, declared, mentions, operationWords
+} from './fx020-tokens.mjs';
 
 const fenceInfo = new Set(['', 'rust', 'waxwing', 'wxw']);
 const shown = 240;
@@ -65,14 +67,6 @@ const qualifiersFor = (source, scope) => {
   return known;
 };
 
-// A resolved unit must re-resolve, after its edits, to the same program
-// with nothing left to rewrite.
-const verified = (env, source, analysed) => {
-  const again = analyse(env.compiler, apply(source, analysed.edits));
-  return again.status === 'resolved' && again.edits.length === 0
-    && shape(again.program) === shape(analysed.program);
-};
-
 // Whether to look for a fragment is decided with every operation name
 // the corpus declares; what goes to the manifest, with the names the
 // file can see (its own declarations and its imports'), since generated
@@ -80,16 +74,28 @@ const verified = (env, source, analysed) => {
 const decide = (env, path, source, scope) => {
   const analysed = analyse(env.compiler, source);
   if (analysed.status === 'resolved') {
-    return verified(env, source, analysed) ? { edits: analysed.edits }
+    return verified(env.compiler, source, analysed)
+      ? { edits: analysed.edits }
       : { reason: 'resolved, but the rewrite does not re-resolve alike' };
   }
   const everywhere = qualifiersFor(source, env.index.qualifiers);
-  if (candidates(source, everywhere).length === 0
-    && !mentions(source, everywhere)) return { edits: [] };
-  const located = locate(env.index, source);
-  if (located.status === 'located') return { edits: located.edits };
+  const broad = candidates(source, everywhere);
+  if (broad.length === 0 && !mentions(source, everywhere)) {
+    return { edits: [] };
+  }
+  const located = locate(env.index, source,
+    operationWords(source, everywhere));
   const visible = qualifiersFor(source, scope ?? env.index.qualifiers);
   const proposed = candidates(source, visible);
+  // Placed, yet no source qualifies any candidate the file can see: a
+  // fragment whose every context shadows or quotes the name is for a
+  // human.
+  if (located.status === 'located' && located.edits.length === 0
+    && proposed.length > 0) {
+    return { reason: 'fragment: located, but no edit for its candidates',
+      candidates: proposed };
+  }
+  if (located.status === 'located') return { edits: located.edits };
   if (proposed.length === 0) {
     return mentions(source, visible) ? { mention: true } : { edits: [] };
   }

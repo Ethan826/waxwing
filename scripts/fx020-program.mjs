@@ -7,6 +7,8 @@
 // bare, so a second run finds nothing. Locals and clause heads are not
 // such nodes. A program that does not resolve gets only token-stream
 // candidates, for the manifest.
+import { apply } from './fx020-editmap.mjs';
+
 const operationNodes = new Set(['Perform', 'OperationRef', 'Print',
   'PrintRef', 'Fail']);
 const builtin = { Print: ['print', 'Console'], PrintRef: ['print', 'Console'],
@@ -121,4 +123,13 @@ export const shape = program => {
     }
   }
   return parts.join(';');
+};
+
+// A resolved program's edits are trusted only if the rewritten text
+// re-resolves to the same program (spans aside) with nothing left to
+// rewrite.
+export const verified = (compiler, source, analysed) => {
+  const again = analyse(compiler, apply(source, analysed.edits));
+  return again.status === 'resolved' && again.edits.length === 0
+    && shape(again.program) === shape(analysed.program);
 };

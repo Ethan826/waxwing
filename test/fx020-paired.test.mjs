@@ -58,6 +58,18 @@ test('alignment recovers the insertions from a migrated twin', () => {
   assert.equal(align(original, original.replace('1', '2')), undefined);
 });
 
+test('a hand wrap aligns, and a span after it moves down', () => {
+  const before = 'fn f(a: Int, b: Int): Int = a;';
+  const after = 'fn f(a: Int,\n  b: Int): Int = a;';
+  const edits = align(before, after);
+  assert.deepEqual(edits, [{ at: 12, text: '\n ', kind: 'break' }]);
+  const at = before.indexOf('b: Int');
+  assert.deepEqual(mapSpan(edits, before, after,
+    span(position(at, 1, at + 1), position(at + 6, 1, at + 7))),
+  span(position(at + 2, 2, 3), position(at + 8, 2, 9)));
+  assert.equal(align(before, 'fn f(a: Int,\n b: Int): Int = a;').length, 1);
+});
+
 const log = 'effect Log { fn log(n: Int): Unit; };\n';
 const main = '\nfn main(): Unit with Console = print(0);';
 const program = body => log + body + main;
@@ -104,5 +116,12 @@ test('a migrated source with no original twin is a difference', () => {
 test('a ledger entry that matches nothing is stale', () => {
   const result = run([accepted], [qualify(accepted)],
     [{ original: sourceKey(shadow(9)), kind: 'go', reason: 'gone' }]);
+  assert.equal(result.stale.length, 1);
+});
+
+test('a ledger entry naming neither source excuses nothing', () => {
+  const result = run([shadow(3)], [wrongly(3)],
+    [{ kind: 'go', reason: 'too broad' }]);
+  assert.equal(result.unexpected.length, 1);
   assert.equal(result.stale.length, 1);
 });

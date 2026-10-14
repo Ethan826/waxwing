@@ -5,18 +5,28 @@
 // and every literal that resolves alone), and takes the edits those
 // sources' resolver output places inside it. Every occurrence must agree
 // on those edits; otherwise, or when no resolving source contains it, it
-// goes to the manifest.
-import { analyse } from './fx020-program.mjs';
+// goes to the manifest. An occurrence counts only where it is a token
+// sequence of its own (no identifier character, or `.` before a leading
+// name, runs into it at either edge) and where the fragment's operation
+// words are code in that source, not string text. A context whose own
+// rewrite does not verify (fx020-program `verified`) is not used.
+import { analyse, verified } from './fx020-program.mjs';
+import { codeMask } from './fx020-tokens.mjs';
 
 const separator = '\u0000';
 
 export const contextIndex = (compiler, sources) => {
   const contexts = [];
+  const unverified = [];
   const qualifiers = new Map();
   for (const source of new Set(sources)) {
     if (source.includes(separator)) continue;
     const analysed = analyse(compiler, source);
     if (analysed.status !== 'resolved') continue;
+    if (!verified(compiler, source, analysed)) {
+      unverified.push(source);
+      continue;
+    }
     for (const [name, effect] of analysed.operations) {
       qualifiers.set(name, (qualifiers.get(name) ?? new Set()).add(effect));
     }
@@ -28,7 +38,7 @@ export const contextIndex = (compiler, sources) => {
     starts.push(offset);
     offset += context.source.length + separator.length;
   }
-  return { contexts, starts, qualifiers,
+  return { contexts, starts, qualifiers, unverified,
     joined: contexts.map(context => context.source).join(separator) };
 };
 
@@ -47,17 +57,39 @@ const editsWithin = (context, from, length) => context.edits
   .filter(edit => edit.at >= from && edit.at < from + length)
   .map(edit => ({ ...edit, at: edit.at - from }));
 
-export const locate = (index, fragment) => {
+const identifierChar = /[A-Za-z0-9_]/;
+
+const bounded = (source, from, fragment) => {
+  const before = source[from - 1] ?? '';
+  const after = source[from + fragment.length] ?? '';
+  return !(identifierChar.test(fragment[0])
+    && (identifierChar.test(before) || before === '.'))
+    && !(identifierChar.test(fragment[fragment.length - 1])
+      && identifierChar.test(after));
+};
+
+const isCode = (context, from, words) => {
+  context.mask ??= codeMask(context.source);
+  return words.every(word => context.mask[from + word] === 1);
+};
+
+// `words`: offsets in the fragment of its operation words.
+export const locate = (index, fragment, words = []) => {
   if (fragment.length === 0) return { status: 'absent' };
   const variants = new Set();
   let found = index.joined.indexOf(fragment);
-  if (found === -1) return { status: 'absent' };
   while (found !== -1 && variants.size < 2) {
     const which = contextAt(index.starts, found);
-    variants.add(JSON.stringify(editsWithin(index.contexts[which],
-      found - index.starts[which], fragment.length)));
+    const context = index.contexts[which];
+    const from = found - index.starts[which];
+    if (bounded(context.source, from, fragment)
+      && isCode(context, from, words)) {
+      variants.add(JSON.stringify(editsWithin(context, from,
+        fragment.length)));
+    }
     found = index.joined.indexOf(fragment, found + 1);
   }
+  if (variants.size === 0) return { status: 'absent' };
   return variants.size === 1
     ? { status: 'located', edits: JSON.parse([...variants][0]) }
     : { status: 'inconsistent' };

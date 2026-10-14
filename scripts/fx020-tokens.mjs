@@ -10,7 +10,7 @@ const name = /[A-Za-z_][A-Za-z0-9_]*/y;
 
 // Offsets of code: everything but the text of string literals, whose
 // `${…}` holes are code again.
-const codeMask = source => {
+export const codeMask = source => {
   const code = new Uint8Array(source.length);
   const holes = [];
   let inString = false;
@@ -107,6 +107,15 @@ export const mentions = (source, qualifiers) => {
       && source[match.index - 1] !== '.') return true;
   }
   return false;
+};
+
+// Offsets of code words that are operation names, not after `.`.
+export const operationWords = (source, qualifiers) => {
+  const code = codeMask(source);
+  return [...source.matchAll(/[A-Za-z_][A-Za-z0-9_]*/g)]
+    .filter(match => code[match.index] && qualifiers.has(match[0])
+      && source[match.index - 1] !== '.')
+    .map(match => match.index);
 };
 
 // Operations a text declares, by tokens alone (it need not resolve).

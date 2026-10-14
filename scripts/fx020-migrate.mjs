@@ -20,7 +20,12 @@
 // with token-stream candidates, and `mentions`, text that names an
 // operation in no recognisable shape. The edit map (.build/
 // fx020-edits.json) holds, per file, every insertion with its file
-// position and, per unit, its insertions in program offsets.
+// position and, per unit, its insertions in offsets of that unit's own
+// text (the cooked chain of literals). A pinned span in a test refers to
+// the program the test builds, of which a fragment unit is only a part:
+// translate it with the built program's own map, `align(original,
+// migrated)` of fx020-editmap on the program before and after (what the
+// paired run does), never with a unit's offsets.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, normalize, resolve } from 'node:path';
 import { compiler, regenerate } from './differential-load.mjs';
@@ -130,6 +135,8 @@ const main = async () => {
     if (write) writeFileSync(join(root, path), result.text);
   }
   report(rows);
+  console.log(`contexts: ${env.index.contexts.length} resolving sources, `
+    + `${env.index.unverified.length} dropped (rewrite did not verify)`);
   const manifestFile = resolve(option('--manifest', join(root,
     write ? 'scripts/fx020-manual.json' : '.build/fx020-manual.json')));
   save(manifestFile, manifest);

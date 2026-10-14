@@ -98,3 +98,60 @@ test('the command line dry run writes nothing; --write writes', () => {
     assert.deepEqual(manifest.entries, []);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+// Review fix round 1: an occurrence must be a token sequence of its own,
+// in code, and a fragment placed with no edit for its candidates is for
+// a human.
+const reasons = async (contexts, literal) => {
+  const placed = await environment(loaded, contexts.map(body =>
+    `${effect}fn work(): Unit with Log + Console = ${body}${main}`));
+  const text = `const tail = head + '${literal}';\n`;
+  const result = migrateSource(placed, 'test/z.test.mjs', text);
+  assert.equal(result.text, text);
+  return result.manual.map(({ reason }) => reason);
+};
+
+test('a qualified, identifier-embedded or quoted occurrence is no place',
+  async () => assert.deepEqual(await reasons(['{ Log.log(2); () };',
+    '{ catalog(2); () };', 'print("log(2);");'], 'log(2);'),
+  ['fragment: no resolving source contains it']));
+
+test('an occurrence starting inside a name is no place', async () =>
+  assert.deepEqual(await reasons(['{ log(1); log(2); () };'],
+    'g(1); log(2);'), ['fragment: no resolving source contains it']));
+
+test('a fragment placed with no edit for its candidates is manual',
+  async () => {
+    const shadowed = 'fn work(log: Int -> Unit): Unit = log(2);';
+    const placed = await environment(loaded, [effect + shadowed + main]);
+    const text = 'const tail = head + \'= log(2);\';\n';
+    assert.deepEqual(migrateSource(placed, 'test/z.test.mjs', text).manual
+      .map(({ reason }) => reason),
+    ['fragment: located, but no edit for its candidates']);
+  });
+
+// A compiler whose qualified text resolves to a different program: the
+// rewrite must be refused, and such a source is no context.
+const drifting = { ...loaded, parse: source =>
+  loaded.parse(source.replace('Log.log(2)', 'Log.log(3)')) };
+
+test('a rewrite that does not re-resolve alike is refused', async () => {
+  const source = `${effect}\n${fragment}\n${main}\n`;
+  const result = migrateSource(await environment(drifting, []), 'x.wxw',
+    source);
+  assert.equal(result.text, source);
+  assert.deepEqual(result.manual.map(({ reason }) => reason),
+    ['resolved, but the rewrite does not re-resolve alike']);
+});
+
+test('a context whose rewrite does not verify is not used', async () => {
+  const { index } = await environment(drifting, harvest);
+  assert.deepEqual([index.contexts.length, index.unverified.length], [0, 1]);
+});
+
+test('a line continuation with CRLF is skipped', () => {
+  const text = 'const crlf = \'fn main(): Unit with Console = \\\r\n'
+    + 'print(7);\';\n';
+  assert.equal(migrateSource(env, 'test/c.test.mjs', text).text,
+    text.replace('print(7)', 'Console.print(7)'));
+});

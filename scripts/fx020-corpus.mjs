@@ -8,8 +8,11 @@ const skippedDirectories = new Set(['.git', 'node_modules', 'output',
   '.build', '.spago', '.worktrees', 'bootstrap', '.superpowers', '.agents',
   '.claude', 'assets', 'src', 'tools', '.vscode']);
 // R3: deliberate bare names in the FX020 tests stay for Task 7; the
-// tool's own scripts are not corpus.
-const skippedFiles = [/^test\/fx020-.*\.test\.mjs$/, /^scripts\/fx020-/];
+// tool's own scripts are not corpus; historical logs (plans, SDD records,
+// the progress log) keep their original text (plan, Task 6). ADRs,
+// README.md and docs/language.md stay in.
+const skippedFiles = [/^test\/fx020-.*\.test\.mjs$/, /^scripts\/fx020-/,
+  /^docs\/(plans|sdd)\//, /^docs\/progress\.md$/];
 const extensions = /\.(wxw|md|mjs|js)$/;
 
 export const corpusFiles = (root, directory = root) => readdirSync(directory,
@@ -29,7 +32,7 @@ export const areas = [
   ['examples', /^examples\//], ['negative', /^negative\//],
   ['test fixtures', /^test\/.*\.wxw$/], ['test', /^test\//],
   ['regression', /^scripts\/regression/], ['scripts', /^scripts\//],
-  ['editors', /^editors\//], ['docs history', /^docs\/(plans|sdd|adr)\//],
+  ['editors', /^editors\//], ['docs adr', /^docs\/adr\//],
   ['docs', /\.md$/], ['other', /./]];
 
 export const areaOf = path =>
