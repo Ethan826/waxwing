@@ -6,13 +6,13 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Tuple (Tuple(..), fst)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (RecordRow, recordRow)
 import Features.Check.RecordTail (Fields, bindTail, shareTails)
 import Features.Check.Search (Stack(..), stackItems)
-import Features.Check.Subst (Flex, Subst, metaOf, walk)
+import Features.Check.Subst (Flex(..), Subst, metaOf, walk)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyParts (mismatch)
 
@@ -35,13 +35,25 @@ unifyRecord
   → Either Failure Subst
 unifyRecord unifyField subst left right =
   if duplicated one || duplicated other then failed subst
-  else foldM fieldPair subst (common one other)
-    >>= tails failed one other
+  else foldM fieldPair subst (common one other) >>= decided
   where
   one = flatten subst left
   other = flatten subst right
   fieldPair reached (Tuple mine theirs) = unifyField reached mine theirs
   failed reached = mismatch reached (TRecord left) (TRecord right)
+  decided reached =
+    if rebound reached one || rebound reached other then
+      unifyRecord unifyField reached left right
+    else tails failed one other reached
+
+-- Whether unifying the shared fields bound the row's own tail meta, as in
+-- `{ a: { ...r }, ...r }`. The rows are then flattened again and unified
+-- anew, so that binding is followed rather than overwritten. Each round
+-- binds one more of their tails, so the rounds end.
+rebound ∷ Subst → Flat → Boolean
+rebound subst row = maybe false bound (metaTail row.tail)
+  where
+  bound meta = walk subst (TVar (Meta meta)) /= TVar (Meta meta)
 
 -- The tails, once the labels both rows hold have unified.
 tails

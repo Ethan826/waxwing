@@ -112,5 +112,17 @@ export const r001Probes = {
       fail(`sort feedback to callers lost: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
+  },
+  // `r` is bound to { b: Int } through field `a`; the tails must follow
+  // that binding, so the extra `c` is a mismatch, not a second binding.
+  'r001-field-bound-tail': context => {
+    const found = outcome(context, 'fn g(x: { a: { ...r }, ...r }): Int = 1; '
+      + 'fn f(p: { a: { b: Int }, c: Bool }): Int = g(p); '
+      + 'fn main(): Int = 0;');
+    if (found !== 'E_TYPE Expected { a: { ..._ }, ..._ }, found '
+      + '{ a: { b: Int }, c: Bool }') {
+      fail(`a tail bound through a field was rebound: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
   }
 };

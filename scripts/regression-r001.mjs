@@ -68,5 +68,14 @@ export const r001Rows = [
     needle: '  else Loop\n    { known: Map.union fresh known\n',
     replacement: '  else Done\n    { known: Map.union fresh known\n',
     probe: 'r001-sort-feedback', message: /feedback/
+  },
+  {
+    // The tails are decided against the rows flattened before the shared
+    // fields unified, so a tail those fields bound is bound again.
+    name: 'r001-field-bound-tail',
+    file: 'src/Features/Check/UnifyRecord.purs',
+    needle: '    if rebound reached one || rebound reached other then\n',
+    replacement: '    if false then\n',
+    probe: 'r001-field-bound-tail', message: /rebound/
   }
 ];

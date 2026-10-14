@@ -2,6 +2,7 @@ module Features.Check.Use
   ( Use
   , Callee
   , withOrigin
+  , seededUse
   , functionUse
   , ctorUse
   , declarationUse

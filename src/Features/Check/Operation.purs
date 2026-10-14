@@ -25,7 +25,7 @@ import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.Stages (arrowType)
 import Features.Check.Provenance (Consumed(Operation))
-import Features.Check.Use (Use, declarationUse, withOrigin)
+import Features.Check.Use (Use, declarationUse, seededUse, withOrigin)
 
 type Result = Either Diagnostic (Threaded Checked.Expr)
 
@@ -150,20 +150,27 @@ operationUse env state span effect@(EffectId owner) index =
   owned info = maybe' missing (used info)
     (Array.index info.operations index)
   used info operation = Right
-    ( withOrigin (Operation operation.name) Nothing
-        ( declarationUse state info.parameters []
-            (map typeSort info.parameters)
-            (map parameterType operation.parameters)
-            operation.result
-            ( Row
-                [ Label (UserEffect effect)
-                    (Array.mapWithIndex variable info.parameters)
-                    Plain
-                ]
-                Nothing
+    ( seededUse env searched
+        ( withOrigin (Operation operation.name) Nothing
+            ( declarationUse state info.parameters []
+                (map typeSort info.parameters)
+                (map parameterType operation.parameters)
+                operation.result
+                ( Row
+                    [ Label (UserEffect effect)
+                        (Array.mapWithIndex variable info.parameters)
+                        Plain
+                    ]
+                    Nothing
+                )
             )
         )
     )
+  -- An operation's record tails lack what its signature says, like a
+  -- function's. Its variables are all types, whose record uses Resolve
+  -- refuses (Features.Resolve.EffectSorts), so the signature is searched
+  -- whatever its sorts.
+  searched = [ RecordSort ]
   typeSort _ = TypeSort
   parameterType parameter = parameter.ty
   variable position _ = TVar (VarId position)

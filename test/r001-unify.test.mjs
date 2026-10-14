@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkedPoly, checkRejectedAt } from './phases.mjs';
+import { checkedPoly, checkRejectedAt, resolveRejectedAt }
+  from './phases.mjs';
 
 // R001 Task 4: record rows unify by label, with lacks sets, one shared
 // remainder for two open tails, an occurs check and rigid signature tails
@@ -168,4 +169,43 @@ test('nested records unify field by field', () => {
   mismatch('fn g(x: { a: { b: Int } }): Int = 1; '
     + 'fn f(y: { a: { b: Bool } }): Int = g(y);', 'y',
   'Expected { a: { b: Int } }, found { a: { b: Bool } }', 1);
+});
+
+// Fix round 1: a tail bound while the shared fields unify is followed
+// before the tails are decided, never overwritten.
+const nested = 'fn g(x: { a: { ...r }, ...r }): { ...r } = g(x); ';
+
+test('a tail bound by a field is not rebound by the tails', () => {
+  mismatch('fn g(x: { a: { ...r }, ...r }): Int = 1; '
+    + 'fn f(p: { a: { b: Int }, c: Bool }): Int = g(p);', 'p',
+  'Expected { a: { ..._ }, ..._ }, found { a: { b: Int }, c: Bool }', 1);
+  accepted('fn g(x: { a: { ...r }, ...r }): Int = 1; '
+    + 'fn f(p: { a: { c: Bool }, c: Bool }): Int = g(p);');
+});
+
+test('a tail bound by a field keeps that binding', () => {
+  mismatch(`${nested}fn f(p: { a: { b: Int }, c: Bool }): { c: Bool } `
+    + '= g(p);', 'p', 'Expected { a: { ..._ }, ..._ }, found '
+    + '{ a: { b: Int }, c: Bool }', 1);
+  accepted(`${nested}fn f(p: { a: { b: Int }, b: Int }): { b: Int } `
+    + '= g(p);');
+});
+
+test('a tail bound by a field then meets the other tail', () => {
+  const mk = 'fn mk(n: Int): { a: { b: Int }, ...s } = mk(n); ';
+  accepted(`${nested}${mk}fn f(n: Int): { b: Int } = g(mk(n));`);
+  mismatch(`${nested}${mk}fn f(n: Int): { c: Bool } = g(mk(n));`, 'g(mk(n))',
+    'Expected { c: Bool }, found { b: Int }');
+});
+
+// An effect's parameters are types: a record tail may not name one, as
+// for a declared type (R001 design §1).
+test('a record tail may not name an effect\'s type parameter', () => {
+  const diagnostic = resolveRejectedAt('effect E(r) { fn op(y: { ...r }): '
+    + '{ a: Int, ...r }; }; fn f(q: { a: Int }): Int with E({ a: Int }) = '
+    + `{ let u = E.op(q); 1 };${main}`, 'E_TYPE', '...r');
+  assert.equal(diagnostic.message, 'Expected an effect row, found a type');
+  const passed = resolveRejectedAt(`${box}effect E(r) { fn op(): Box(...r); `
+    + `};${main}`, 'E_TYPE', '...r', 2);
+  assert.equal(passed.message, 'Expected an effect row, found a type');
 });

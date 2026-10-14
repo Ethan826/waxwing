@@ -18,6 +18,7 @@ import Features.Resolve.Marks
   , rowMarkVariableRefs
   )
 import Features.Resolve.Builtin (builtinEffects)
+import Features.Resolve.EffectSorts (effectSorts)
 import Features.Resolve.Types (resolveTypeWith)
 import Features.Resolve.Repeated (laterRepeat)
 
@@ -32,6 +33,7 @@ effects
   → Either Syntax.Diagnostic (Array Resolved.EffectInfo)
 effects types declarations = do
   uniqueEffects declarations
+  traverse_ (effectSorts types) declarations
   traverse resolved declarations
   where
   resolved effect = withOperations effect <$> traverse
