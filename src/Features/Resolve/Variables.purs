@@ -17,7 +17,7 @@ import Features.Resolve.Occurrences
   , typeOccurrences
   )
 import Features.Resolve.Repeated (laterRepeat)
-import Features.Resolve.Sorts (settledOccurrences)
+import Features.Resolve.SortConflict (settledOccurrences)
 
 -- A function's type variables are implicitly quantified over its whole
 -- signature: every lowercase name in its parameter and result types, in

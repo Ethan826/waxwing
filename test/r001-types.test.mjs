@@ -173,21 +173,46 @@ test('a record argument makes the callee parameter record sort', () => {
 });
 
 // The mirror: the record tail is in the callee, the effect use in the
-// caller. The callee parameter has both kinds of evidence, settles to the
-// effect default, and its record tail is the row-sort error.
+// caller. The callee parameter settles to record sort from its own use, so
+// the caller is blamed, at its later use, with a note at its first.
 const callee = 'type X(...p) = X({ a: Int, ...p }); ';
 const caller = 'type B(...s) = B((Unit) -> Unit with ...s, X(...s)); ';
-const reverse = (name, source) => test(name, () => {
-  const diagnostic = resolveRejectedAt(`${source}${main}`, 'E_TYPE',
-    '...p', 1);
-  assert.equal(diagnostic.message, 'p is an effect row, not a record row');
+const effectNotRecord = 's is an effect row, not a record row';
+const recordNotEffect = 's is a record row, not an effect row';
+
+test('a callee record tail meets a caller effect use', () => {
+  sortError(`${caller}${callee}${main}`, effectNotRecord, '...s',
+    'with ...s', 2);
 });
 
-reverse('a callee record tail meets a caller effect use',
-  `${caller}${callee}`);
-reverse('the same with the declarations swapped', `${callee}${caller}`);
-reverse('the same with the fields swapped',
-  'type B(...s) = B(X(...s), (Unit) -> Unit with ...s); ' + callee);
-reverse('the same through a chain',
-  `${caller.replace('X(...s)', 'D(...s)')}type D(...u) = D(X(...u)); `
-  + callee);
+test('the same with the declarations swapped', () => {
+  sortError(`${callee}${caller}${main}`, effectNotRecord, '...s',
+    'with ...s', 2);
+});
+
+test('the same with the fields swapped', () => {
+  sortError('type B(...s) = B(X(...s), (Unit) -> Unit with ...s); '
+    + `${callee}${main}`, recordNotEffect, 'with ...s', '...s', 0, 1);
+});
+
+test('the same through a chain', () => {
+  sortError(`${caller.replace('X(...s)', 'D(...s)')}`
+    + `type D(...u) = D(X(...u)); ${callee}${main}`, effectNotRecord,
+  '...s', 'with ...s', 2);
+});
+
+test('two callees that disagree blame the caller, not either callee', () => {
+  sortError('type B(...s) = B(X(...s), E(...s)); '
+    + `type E(...q) = E((Unit) -> Unit with ...q); ${callee}${main}`,
+  recordNotEffect, '...s', '...s', 2, 1);
+});
+
+test('callers that pass different sorts blame the later argument', () => {
+  const source = 'type C1(...a) = C1({ x: Int, ...a }, P(...a)); '
+    + 'type C2(...b) = C2((Unit) -> Unit with ...b, P(...b)); '
+    + `type P(...p) = P(Int);${main}`;
+  const diagnostic = resolveRejectedAt(source, 'E_TYPE', '...b', 2);
+  assert.equal(diagnostic.message, 'b is a record row, not an effect row');
+  assert.deepEqual(diagnostic.related, [{ span: spanAt(source, '...a', 2),
+    message: 'first written here' }]);
+});

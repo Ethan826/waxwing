@@ -36,19 +36,27 @@ export const r001Rows = [
     probe: 'r001-duplicate-field', message: /duplicate field/
   },
   {
-    // Effect evidence is ignored, so a direct `with` use no longer stops a
-    // record argument from making its parameter record sort.
-    name: 'r001-effect-evidence', file: 'src/Features/Resolve/Sorts.purs',
-    needle: 'has true && not (has false)',
-    replacement: 'has true',
-    probe: 'r001-effect-evidence', message: /effect evidence/
+    // An argument gives no sort to the caller's parameter, so a parameter
+    // passed only to a record parameter stays effect sort.
+    name: 'r001-callee-to-caller', file: 'src/Features/Resolve/RowSettle.purs',
+    needle: '  callee applied = Map.lookup '
+      + '(Tuple applied.callee applied.position) known\n',
+    replacement: '  callee _ = Nothing\n',
+    probe: 'r001-callee-to-caller', message: /callee to caller/
   },
   {
-    // A use is not checked against its parameter's settled sort, so a
-    // record tail on a parameter that also has effect evidence is accepted.
+    // A variable's uses are not checked against each other after the sorts
+    // settle, so a caller using a record parameter as an effect row passes.
     name: 'r001-settled-sort', file: 'src/Features/Resolve/Sorts.purs',
-    needle: '  *> traverse_ settledParameter declaration.parameters\n',
+    needle: '  traverse_ (consistent (declaredTypes final)) final\n',
     replacement: '',
     probe: 'r001-settled-sort', message: /settled sort/
+  },
+  {
+    // Callers passing different sorts to one parameter are not diagnosed.
+    name: 'r001-caller-conflict', file: 'src/Features/Resolve/RowSettle.purs',
+    needle: "maybe' accepted (Left <<< clash found.head)",
+    replacement: "maybe' accepted (const (accepted unit))",
+    probe: 'r001-caller-conflict', message: /caller conflict/
   }
 ];

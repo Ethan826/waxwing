@@ -64,25 +64,34 @@ export const r001Probes = {
     }
     console.log(`${context.probe} regression detects the defect`);
   },
-  // A parameter with a direct `with` use stays effect sort, so passing a
-  // record row to it is the row-sort error.
-  'r001-effect-evidence': context => {
-    const found = outcome(context, 'type A(...r) = A({ a: Int, ...r }, '
-      + 'B(...r)); type B(...s) = B((Unit) -> Unit with ...s); '
-      + 'fn main(): Int = 0;');
-    if (found !== 'E_TYPE r is a record row, not an effect row') {
-      fail(`effect evidence lost: ${found}`);
+  // A parameter passed only to a record parameter is record sort, so
+  // using it as an effect row is the row-sort error.
+  'r001-callee-to-caller': context => {
+    const found = outcome(context, 'type Outer(...s) = Outer(Inner(...s)); '
+      + 'type Inner(...r) = Inner({ a: Int, ...r }); '
+      + 'fn f(x: Outer(...e)): Unit with ...e = (); fn main(): Int = 0;');
+    if (found !== 'E_TYPE e is a record row, not an effect row') {
+      fail(`callee to caller propagation lost: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
   },
-  // The record tail in the callee is the row-sort error when the caller
-  // uses the same row as an effect row.
+  // The caller is the row-sort error when it uses a row as an effect row
+  // that it also passes to a record parameter.
   'r001-settled-sort': context => {
     const found = outcome(context, 'type B(...s) = B((Unit) -> Unit with '
       + '...s, X(...s)); type X(...p) = X({ a: Int, ...p }); '
       + 'fn main(): Int = 0;');
-    if (found !== 'E_TYPE p is an effect row, not a record row') {
+    if (found !== 'E_TYPE s is an effect row, not a record row') {
       fail(`settled sort not enforced: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  'r001-caller-conflict': context => {
+    const found = outcome(context, 'type C1(...a) = C1({ x: Int, ...a }, '
+      + 'P(...a)); type C2(...b) = C2((Unit) -> Unit with ...b, P(...b)); '
+      + 'type P(...p) = P(Int); fn main(): Int = 0;');
+    if (found !== 'E_TYPE b is a record row, not an effect row') {
+      fail(`caller conflict accepted: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
   }
