@@ -43,9 +43,9 @@ data Tail = Bare | Applied (Array Expr) | Member Token (Maybe (Array Expr))
 -- `named`, with the choice made by the one dispatch after the name, so a
 -- constructor argument costs no frame beyond a plain call (G002, ADR 006).
 -- The `.` must touch both names (R19); otherwise it is a stray token, as
--- before FX020. Only capitalized names read `.`; a lowercase receiver never does, so
--- `r.field` can reuse `.` later (R001). Spans run from the name through the
--- last character written, like a variable or a call.
+-- before FX020. Only capitalized names read `.`; a lowercase receiver never
+-- does, so `r.field` can reuse `.` later (R001). Spans run from the name
+-- through the last character written, like a variable or a call.
 upperNamed ∷ Parser Expr → Parser Primary
 upperNamed inner = spanned primaryOf
   ( parts <$> name
