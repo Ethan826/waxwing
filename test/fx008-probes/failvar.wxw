@@ -1,2 +1,2 @@
 fn g(h: Int -> Unit with Fail(a)): Unit = ();
-fn main(): Unit with Console = print(1);
+fn main(): Unit with Console = Console.print(1);

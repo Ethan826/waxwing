@@ -1,4 +1,4 @@
 type E = E; effect Cell(a) { fn put(x: a): Unit; }; fn hole(u: Unit): a =
 hole(u); fn call(h: a -> Unit with Fail(a), x: a): Unit = (); fn f(): Unit with
 Cell(E) = { let x = hole(()); let r = fn(k) => { defer k(x); () }; r(fn(z) =>
-put(z)); call(fn(y) => fail(E), x) }; fn main(): Int = 0;
+Cell.put(z)); call(fn(y) => Fail.fail(E), x) }; fn main(): Int = 0;

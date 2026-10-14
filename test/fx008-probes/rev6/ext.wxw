@@ -1,9 +1,9 @@
 type E = E;
 effect Log { fn log(n: Int): Unit; };
 fn main(): Unit with Console = {
-  let fwd = handler Log { log(n) => log(n + 10) };
-  let inst = fn(u: Unit) => with fwd { log(1) };
-  with handler Log { log(n) => print(n) } { defer inst(()); () };
-  handle { with handler Log { log(n) => fail(E) } { inst(()) } } { fail(error:
-E) => print(9) }
+  let fwd = handler Log { log(n) => Log.log(n + 10) };
+  let inst = fn(u: Unit) => with fwd { Log.log(1) };
+  with handler Log { log(n) => Console.print(n) } { defer inst(()); () };
+  handle { with handler Log { log(n) => Fail.fail(E) } { inst(()) } } { fail(error:
+E) => Console.print(9) }
 };

@@ -1,11 +1,11 @@
 type E = E;
 effect Log { fn log(n: Int): Unit; };
 fn main(): Unit with Console = handle {
-  let fwd = handler Log { log(n) => log(n + 10) };
-  with handler Log { log(n) => fail(E) } { with fwd { log(1) } };
+  let fwd = handler Log { log(n) => Log.log(n + 10) };
+  with handler Log { log(n) => Fail.fail(E) } { with fwd { Log.log(1) } };
   ()
 } { fail(error: E) => {
-  let fwd2 = handler Log { log(n) => log(n + 10) };
-  let g = fn(u: Unit) => { with fwd2 { log(2) }; defer log(0); () };
-  with handler Log { log(n) => print(n) } { g(()) }
+  let fwd2 = handler Log { log(n) => Log.log(n + 10) };
+  let g = fn(u: Unit) => { with fwd2 { Log.log(2) }; defer Log.log(0); () };
+  with handler Log { log(n) => Console.print(n) } { g(()) }
 } };

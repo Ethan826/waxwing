@@ -4,11 +4,11 @@ effect Cell(a) { fn put(x: a): Unit; };
 fn main(): Unit with Console = {
   let z = fn(f) => {
     let h = handler Log { log(n) => f(n) };
-    put(f);
+    Cell.put(f);
     let k = fn(u: Unit) => ();
     defer k(());
-    let w = fn(u: Unit) => { put(fn(n: Int) => fail(E)); k(()) };
-    with h { log(1) }
+    let w = fn(u: Unit) => { Cell.put(fn(n: Int) => Fail.fail(E)); k(()) };
+    with h { Log.log(1) }
   };
   ()
 };

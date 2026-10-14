@@ -5,9 +5,9 @@ fn main(): Unit with Console = {
   let g = fn(n: Int) => ();
   let h = handler Log { log(n) => g(n) };
   let z = fn(u: Unit) => {
-    put(g);
-    defer put(fn(n: Int) => fail(E));
+    Cell.put(g);
+    defer Cell.put(fn(n: Int) => Fail.fail(E));
     ()
   };
-  with h { log(1) }
+  with h { Log.log(1) }
 };

@@ -7,6 +7,6 @@ fn main(): Unit with Console = {
   let h2 = handler Log { log(n) => () };
   handle with handler Get(E) { get() => E } { with h1 { () } } { fail(e: E) =>
 () };
-  let g2 = fn(u: Unit) => with h2 { let v = get(); fail(v) };
-  print(0)
+  let g2 = fn(u: Unit) => with h2 { let v = Get.get(); Fail.fail(v) };
+  Console.print(0)
 };

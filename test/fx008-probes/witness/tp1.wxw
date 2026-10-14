@@ -3,9 +3,9 @@ effect Log { fn log(n: Int): Unit; };
 fn f(cb: Int -> Unit with ...e): Unit with Console = {
   let k1 = fn(n: Int) => ();
   let h1 = handler Log { log(n) => k1(n) };
-  with h1 { log(1) };
-  let r = fn(x) => { fail(Job(k1)); fail(x) };
+  with h1 { Log.log(1) };
+  let r = fn(x) => { Fail.fail(Job(k1)); Fail.fail(x) };
   let q = fn(u: Unit) => r(Job(cb));
   ()
 };
-fn main(): Unit with Console = f(fn(n: Int) => print(n));
+fn main(): Unit with Console = f(fn(n: Int) => Console.print(n));

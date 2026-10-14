@@ -25,29 +25,29 @@ const clauseFails = (container, operation) => [container, container,
 const allows = (container, name, label, inner = container) => [container, inner,
   `the signature of ${name} allows a failing ${label} handler; write with `
   + `nofail ${label}`];
-const lexicalWith = 'with handler Log { log(n) => fail(E) } '
-  + '{ defer log(1); print(2) }';
+const lexicalWith = 'with handler Log { log(n) => Fail.fail(E) } '
+  + '{ defer Log.log(1); Console.print(2) }';
 
 test('the pinned program is rejected', () => {
-  effect(probe('facts/lexical'), deferLog, ['defer log(1)'], [
+  effect(probe('facts/lexical'), deferLog, ['defer Log.log(1)'], [
     handledHere(lexicalWith, 'Log'),
-    clauseFails('log(n) => fail(E)', 'log')]);
+    clauseFails('log(n) => Fail.fail(E)', 'log')]);
 });
 
 test('hole, c1 and cross: the signature of work allows a failing Log', () => {
   for (const file of ['rev6/hole', 'design-review/c1', 'facts/cross']) {
-    effect(probe(file), deferLog, ['defer log(1)'],
+    effect(probe(file), deferLog, ['defer Log.log(1)'],
       [allows('with Log', 'work', 'Log')]);
   }
 });
 
 test('pending: the signature of work allows a failing Log', () => {
-  effect(probe('facts/pending'), deferLog, ['defer log(1)'],
+  effect(probe('facts/pending'), deferLog, ['defer Log.log(1)'],
     [allows('with Log + Fail(F)', 'work', 'Log')]);
 });
 
 test('q1: run is written with a plain Log', () => {
-  effect(probe('design-review/q1'), deferLog, ['defer log(0)'],
+  effect(probe('design-review/q1'), deferLog, ['defer Log.log(0)'],
     [allows('Unit with Log + ...e', 'run', 'Log', 'with Log + ...e')]);
 });
 
@@ -64,9 +64,9 @@ test("mk returning Handler(nofail Log) keeps today's row error", () => {
   expectDiagnostic(source, {
     code: 'E_EFFECT',
     message: 'This function must be pure, but it performs Fail(E)',
-    at: ['handler Log { log(n) => fail(E) }'],
+    at: ['handler Log { log(n) => Fail.fail(E) }'],
     // The note's span is today's: it stops before the closing parenthesis.
-    notes: [['handler Log { log(n) => fail(E) }', 'fail(E',
+    notes: [['handler Log { log(n) => Fail.fail(E) }', 'Fail.fail(E',
       'Fail(E) is raised here']]
   });
 });
@@ -110,17 +110,19 @@ test('a defer inside a clause follows the outer frame', () => {
 });
 
 test('L4: l4b is rejected', () => {
-  effect(probe('rev6/l4b'), deferLog, ['defer log(0)'], [
-    handledHere('with handler Log { log(n) => fail(E) } { k(()) }', 'Log'),
-    clauseFails('log(n) => fail(E)', 'log')]);
+  effect(probe('rev6/l4b'), deferLog, ['defer Log.log(0)'], [
+    handledHere('with handler Log { log(n) => Fail.fail(E) } { k(()) }',
+      'Log'),
+    clauseFails('log(n) => Fail.fail(E)', 'log')]);
 });
 
 test('L4: merge2 is rejected', () => {
   effect(probe('rev7/merge2'),
     'defer must not fail, but it performs Tick, whose handler may fail',
-    ['defer tick()'], [
-      handledHere('with handler Tick { tick() => fail(E) } { b(()) }', 'Tick'),
-      ['tick() => fail(E)', 'tick() => fail(E)',
+    ['defer Tick.tick()'], [
+      handledHere('with handler Tick { tick() => Fail.fail(E) } { b(()) }',
+        'Tick'),
+      ['tick() => Fail.fail(E)', 'tick() => Fail.fail(E)',
         'its clause for tick fails with E']]);
 });
 
@@ -204,10 +206,12 @@ test('ec1: Unhandled Fail(E) names the raise, the handler and main', () => {
     source.lastIndexOf('};') + 2);
   expectDiagnostic(source, {
     code: 'E_EFFECT', message: 'Unhandled Fail(E) in main',
-    at: ['with h { log(1) }'],
+    at: ['with h { Log.log(1) }'],
     notes: [
-      ['put(fn(n: Int) => fail(E))', 'fail(E', 'Fail(E) is raised here'],
-      ['with h { log(1) }', 'with h { log(1) }', 'Log is handled here'],
+      ['Cell.put(fn(n: Int) => Fail.fail(E))', 'Fail.fail(E',
+        'Fail(E) is raised here'],
+      ['with h { Log.log(1) }', 'with h { Log.log(1) }',
+        'Log is handled here'],
       [main, main, 'main may perform only Console']]
   });
 });

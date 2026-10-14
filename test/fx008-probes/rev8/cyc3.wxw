@@ -7,5 +7,5 @@ fn main(): Unit with Console = {
   let h2 = handler Log { log(n) => k2(()) };
   let g1 = fn(u: Unit) => with h1 { k2(()) };
   let g2 = fn(u: Unit) => with h2 { k1(()) };
-  print(0)
+  Console.print(0)
 };

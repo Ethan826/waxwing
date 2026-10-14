@@ -2,6 +2,6 @@ type Job(a) = Job(a);
 effect Log { fn log(n: Int): Unit; };
 fn use(h: Handler(Log with Fail(Job(Int)))): Int = 0;
 fn main(): Unit with Console = {
-  let h = handler Log { log(n) => fail(Job(n)) };
-  print(use(h))
+  let h = handler Log { log(n) => Fail.fail(Job(n)) };
+  Console.print(use(h))
 };

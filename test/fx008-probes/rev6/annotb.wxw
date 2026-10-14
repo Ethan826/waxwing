@@ -1,7 +1,7 @@
 effect Log { fn log(n: Int): Unit; };
 fn main(): Unit with Console = {
-  let h = handler Log { log(n) => print(n) };
-  let inst = fn(x: Handler(Log)) => with x { log(1) };
+  let h = handler Log { log(n) => Console.print(n) };
+  let inst = fn(x: Handler(Log)) => with x { Log.log(1) };
   inst(h);
-  with h { defer log(2); () }
+  with h { defer Log.log(2); () }
 };

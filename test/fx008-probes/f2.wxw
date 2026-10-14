@@ -1,9 +1,9 @@
 effect Log { fn log(n: Int): Unit; };
 effect Tick { fn tick(): Unit; };
 fn main(): Unit with Console = {
-  let k = fn(n: Int) => print(n);
-  with handler Tick { tick() => print(0) } {
-    { defer with handler Log { log(n) => k(n) } { log(1) }; () };
+  let k = fn(n: Int) => Console.print(n);
+  with handler Tick { tick() => Console.print(0) } {
+    { defer with handler Log { log(n) => k(n) } { Log.log(1) }; () };
     k(2)
   }
 };

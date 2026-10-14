@@ -4,7 +4,7 @@ effect Tick { fn tick(): Unit; };
 fn main(): Unit with Console = handle {
   with handler Tick { tick() => {
       let mk = fn(g) => handler Log { log(n) => g(n) };
-      let h = mk(fn(n: Int) => fail(E));
-      with h { log(1) }
-    } } { tick() }
-} { fail(error: E) => print(9) };
+      let h = mk(fn(n: Int) => Fail.fail(E));
+      with h { Log.log(1) }
+    } } { Tick.tick() }
+} { fail(error: E) => Console.print(9) };

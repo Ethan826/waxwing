@@ -23,19 +23,19 @@ const noFiniteSolution = (name, start, end) => {
 };
 
 test('dup has no finite solution', () => {
-  noFiniteSolution('dup', 150, 160);
+  noFiniteSolution('dup', 162, 172);
 });
 
 test('n1 has no finite solution', () => {
-  noFiniteSolution('n1', 138, 148);
+  noFiniteSolution('n1', 146, 156);
 });
 
 test('r5 has no finite solution', () => {
-  noFiniteSolution('design-review/r5', 138, 148);
+  noFiniteSolution('design-review/r5', 146, 156);
 });
 
 test('r4 has no finite solution', () => {
-  noFiniteSolution('design-review/r4', 107, 117);
+  noFiniteSolution('design-review/r4', 115, 125);
 });
 
 test('a satisfiable two-row cycle settles', () => {

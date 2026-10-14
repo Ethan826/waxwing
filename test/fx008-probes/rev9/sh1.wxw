@@ -4,5 +4,5 @@ fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h0 = handler Tick { tick() => () };
   let h = handler Two { a() => k(()), b() => with h0 { k(()) } };
-  print(0)
+  Console.print(0)
 };

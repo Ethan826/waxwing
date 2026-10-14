@@ -10,7 +10,7 @@ const defer =
 // plan's Task 1. Top-level, facts and witness probes first.
 const own = [
   probe('argbind-internal',
-    no('E_INTERNAL', 'Effect row consumption failed', 318, 335),
+    no('E_INTERNAL', 'Effect row consumption failed', 333, 354),
     {
       fx008: ok('',
         'b524e7d7ebab4c06d2e9e54a13a8b127587c2d982a465d991ed76a5d82ace8c1'),
@@ -38,7 +38,7 @@ const own = [
     {
       fx008: no('E_EFFECT',
         'Console + Log + Log + ... and Log + Console + ... cannot be made ' +
-          'equal: both end in ...', 150, 160),
+          'equal: both end in ...', 162, 172),
       task: 5,
       flipped: true,
       reason:
@@ -61,7 +61,7 @@ const own = [
       'fail(E): E\n',
       1),
     {
-      fx008: no('E_EFFECT', defer, 79, 91),
+      fx008: no('E_EFFECT', defer, 79, 95),
       task: 9,
       flipped: true,
       reason: '§1 cross-function form.'
@@ -71,7 +71,7 @@ const own = [
       '37',
       'fail(E): E\n', 1),
     {
-      fx008: no('E_EFFECT', defer, 129, 141),
+      fx008: no('E_EFFECT', defer, 134, 150),
       task: 9,
       flipped: true,
       reason: '§1 pinned form.'
@@ -80,7 +80,7 @@ const own = [
     ok('', 'a13f61db21218c39027e441178a206248d719599c0b9a1e6a06aad925d87aa4c',
       'fail(F): F\ncleanup failed: fail(E): E\n', 1),
     {
-      fx008: no('E_EFFECT', defer, 101, 113),
+      fx008: no('E_EFFECT', defer, 101, 117),
       task: 9,
       flipped: true,
       reason: '§1: work\'s Log is plain.'
@@ -96,7 +96,7 @@ const own = [
     {
       fx008: no('E_EFFECT',
         'Console + Log + ... and Console + ... cannot be made equal: both ' +
-        'end in ...', 138, 148),
+        'end in ...', 146, 156),
       task: 5,
       flipped: true,
       reason: '§6: same as dup. Message pinned by the user on 2026-10-10.',
@@ -105,12 +105,12 @@ const own = [
   probe('rigid-ok',
     no('E_EFFECT',
       'Fail(E) + Console + ... and Console + ... cannot be made equal: both ' +
-        'end in ...', 216,
-      236)),
+        'end in ...', 221,
+      241)),
   probe('rigid',
     no('E_TYPE', 'Expected Handler(Log), found Handler(Log)', 98, 128)),
   probe('witness/ec1',
-    no('E_EFFECT', 'Unhandled Fail(E) in main', 284, 301),
+    no('E_EFFECT', 'Unhandled Fail(E) in main', 299, 320),
     { slow: true }),
   // ec1's Fail(E) arrives at check time (checkDefer), so ec1 is a control;
   // ec2 delays it to settling (user 2026-10-11) and proves the exit count.
@@ -123,11 +123,11 @@ const own = [
     ok('0\n', '4070dfb73c4413cabc5c24e18f00fd279aab46c22cdbee64f83bf0681c46ac' +
       'ae')),
   probe('witness/ec2',
-    no('E_EFFECT', 'Unhandled Fail(E) in main', 90, 380),
+    no('E_EFFECT', 'Unhandled Fail(E) in main', 90, 399),
     { slow: true }),
   probe('witness/tp1',
     no('E_EFFECT', 'f performs Console, which its signature does not allow',
-      266, 278),
+      270, 287),
     {
       fx008: no('E_EFFECT',
         'f performs Console, which its signature does not allow', 204, 219),

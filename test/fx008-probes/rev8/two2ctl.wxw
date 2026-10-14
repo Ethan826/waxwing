@@ -5,7 +5,7 @@ fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h1 = handler Log { log(n) => k(()) };
   let h2 = handler Log { log(n) => () };
-  let g1 = fn(u: Unit) => with h1 { put(No) };
-  let g2 = fn(u: Unit) => with h2 { put(Some(true)) };
-  print(0)
+  let g1 = fn(u: Unit) => with h1 { Cell.put(No) };
+  let g2 = fn(u: Unit) => with h2 { Cell.put(Some(true)) };
+  Console.print(0)
 };

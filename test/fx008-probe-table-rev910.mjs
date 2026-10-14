@@ -9,15 +9,15 @@ export const rev910 = [
       'fail(E): E\n',
       1),
     {
-      fx008: no('E_EFFECT', defer, 79, 91),
+      fx008: no('E_EFFECT', defer, 79, 95),
       task: 9,
       flipped: true,
       reason: '§1 cross-function form.'
     }),
   probe('design-review/c2',
-    no('E_TYPE', 'Expected a handler', 177, 194)),
+    no('E_TYPE', 'Expected a handler', 177, 198)),
   probe('design-review/c3',
-    no('E_TYPE', 'Expected a handler', 168, 185)),
+    no('E_TYPE', 'Expected a handler', 168, 189)),
   probe('design-review/late',
     no('E_TYPE', 'Fail needs a concrete error family', 109, 116)),
   probe('design-review/p1',
@@ -27,18 +27,18 @@ export const rev910 = [
     ok('11\n9\n',
       'acad7dbdc4bb2cb2fe11197aa95c2a7962aef6981d694f24ed16c1619d76c15c')),
   probe('design-review/p3',
-    no('E_EFFECT', 'Unhandled Fail(E) in main', 174, 191)),
+    no('E_EFFECT', 'Unhandled Fail(E) in main', 179, 200)),
   probe('design-review/p4',
-    no('E_EFFECT', 'run performs Log, which its signature does not allow', 162,
-      168)),
+    no('E_EFFECT', 'run performs Log, which its signature does not allow', 174,
+      180)),
   probe('design-review/p5',
     no('E_EFFECT',
       'Console + ... and Log + Console + ... cannot be made equal: both end ' +
-        'in ...', 163, 169),
+        'in ...', 175, 181),
     {
       fx008: no('E_EFFECT',
         'Console + Log + ... and Console + ... cannot be made equal: both ' +
-          'end in ...', 163, 169),
+          'end in ...', 175, 181),
       task: 7,
       flipped: true,
       reason:
@@ -51,22 +51,22 @@ export const rev910 = [
     ok('101\n101\n0\n9\n',
       '457caffab02720935a2484bede539c0ad6fe929300394f41472ded166092aeca'),
     {
-      fx008: no('E_EFFECT', defer, 203, 215),
+      fx008: no('E_EFFECT', defer, 207, 223),
       task: 9,
       flipped: true,
       reason: 'I2: run\'s Log is plain (§6).'
     }),
   probe('design-review/q2',
     no('E_EFFECT', 'This function must be pure, but it performs Fail(E)', 74,
-      107)),
+      112)),
   probe('design-review/r1',
     no('E_EFFECT',
       'Console + ... and Log + Console + ... cannot be made equal: both end ' +
-        'in ...', 180, 186),
+        'in ...', 188, 194),
     {
       fx008: no('E_EFFECT',
         'Console + Log + ... and Console + ... cannot be made equal: both ' +
-          'end in ...', 180, 186),
+          'end in ...', 188, 194),
       task: 7,
       flipped: true,
       reason:
@@ -78,11 +78,11 @@ export const rev910 = [
   probe('design-review/r2',
     no('E_EFFECT',
       'Console + ... and Log + Console + ... cannot be made equal: both end ' +
-        'in ...', 194, 200),
+        'in ...', 202, 208),
     {
       fx008: no('E_EFFECT',
         'Console + Log + ... and Console + ... cannot be made equal: both ' +
-          'end in ...', 194, 200),
+          'end in ...', 202, 208),
       task: 7,
       flipped: true,
       reason:
@@ -94,12 +94,12 @@ export const rev910 = [
   probe('design-review/r3',
     ok('', 'dcd7ac7a2d440632c8aa86955be9689e3d380451b083d3504672522c12b2ff41')),
   probe('design-review/r4',
-    no('E_EFFECT', 'Unhandled Log in main', 163, 167),
+    no('E_EFFECT', 'Unhandled Log in main', 179, 183),
     {
       fx008: no('E_EFFECT',
         'Console + Log + ... and Console + ... cannot be made equal: both ' +
-          'end in ...', 107,
-        117),
+          'end in ...', 115,
+        125),
       task: 5,
       flipped: true,
       reason:
@@ -111,7 +111,7 @@ export const rev910 = [
     {
       fx008: no('E_EFFECT',
         'Console + Log + ... and Console + ... cannot be made equal: both ' +
-        'end in ...', 138, 148),
+        'end in ...', 146, 156),
       task: 5,
       flipped: true,
       reason:
@@ -120,7 +120,7 @@ export const rev910 = [
       slow: true
     }),
   probe('rev10/gain1',
-    no('E_EFFECT', 'Unhandled Cell(Bool) in main', 263, 268),
+    no('E_EFFECT', 'Unhandled Cell(Bool) in main', 272, 277),
     {
       fx008: ok('0\n',
         'a0c048733fb46329c2c1245599002f0bb0f3091decc349483233543e74f8d035'),
@@ -135,7 +135,7 @@ export const rev910 = [
     ok('0\n', 'c517a44c83c8de911ae03a091802a30833dbd709e6920f12217c11498a8235' +
       '16')),
   probe('rev10/pair1ctl',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 302, 303)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 315, 316)),
   probe('rev10/rl1',
     ok('0\n', '597396062f228698368d0523de70fc4dd9e5332339b967c32f762a61eb5919' +
       'a5')),
@@ -146,7 +146,7 @@ export const rev910 = [
     ok('0\n', '8c2420dc8ae1735ba3ef257308ba4ef74e35ca81f2f0a0b403e9b931d81a52' +
       '61')),
   probe('rev9/ov1ctl',
-    no('E_EFFECT', 'Unhandled Tick in main', 290, 308)),
+    no('E_EFFECT', 'Unhandled Tick in main', 295, 317)),
   probe('rev9/ov1f',
     ok('0\n', 'ca8f71b03da1725422bd46c21ce2ad859b4b4d4697de728a9dd19610719a25' +
       'e8')),
@@ -155,7 +155,7 @@ export const rev910 = [
       '16'),
     { slow: true }),
   probe('rev9/set1ctl',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 411, 412)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 424, 425)),
   probe('rev9/sh1',
     no('E_EFFECT', '... and Tick + ... cannot be made equal: both end in ...',
       237, 242),

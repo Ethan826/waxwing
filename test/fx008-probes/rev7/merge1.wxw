@@ -2,8 +2,8 @@ type E = E;
 effect Tick { fn tick(): Unit; };
 fn main(): Unit with Console = handle {
   let h = handler Tick { tick() => () };
-  let g1 = fn(u: Unit) => { with h { () }; defer tick(); () };
-  let g2 = fn(u: Unit) => { with h { () }; tick() };
-  with handler Tick { tick() => print(1) } { g1(()) };
-  with handler Tick { tick() => fail(E) } { g2(()) }
-} { fail(error: E) => print(9) };
+  let g1 = fn(u: Unit) => { with h { () }; defer Tick.tick(); () };
+  let g2 = fn(u: Unit) => { with h { () }; Tick.tick() };
+  with handler Tick { tick() => Console.print(1) } { g1(()) };
+  with handler Tick { tick() => Fail.fail(E) } { g2(()) }
+} { fail(error: E) => Console.print(9) };

@@ -42,9 +42,9 @@ test('p5, r1 and r2 are rejected by the hook (F2)', () => {
   const text =
     new RegExp('^Console \\+ Log \\+ \\.\\.\\. and Console \\+ \\.\\.\\. '
       + 'cannot be made equal: both end in \\.\\.\\.$');
-  rejectedAt(probe('design-review/p5'), 163, 169, text);
-  rejectedAt(probe('design-review/r1'), 180, 186, text);
-  rejectedAt(probe('design-review/r2'), 194, 200, text);
+  rejectedAt(probe('design-review/p5'), 175, 181, text);
+  rejectedAt(probe('design-review/r1'), 188, 194, text);
+  rejectedAt(probe('design-review/r2'), 202, 208, text);
 });
 
 test('cyc2, cyc3 and sh1 report the c -> R edge of their cycle', () => {
@@ -124,12 +124,12 @@ test('a clause tail that turns rigid in settling is rejected by the tail '
 // ec1's Fail(E) arrives at check time (checkDefer), so it is a control with
 // today's outcome; ec2 delays it to settling and proves the exit count.
 test('ec1 keeps its outcome: its Fail(E) is not late', () => {
-  rejectedAt(probe('witness/ec1'), 284, 301, /^Unhandled Fail\(E\) in main$/);
+  rejectedAt(probe('witness/ec1'), 299, 320, /^Unhandled Fail\(E\) in main$/);
 });
 
 test('a late Fail reaching a clause through an argument binding is '
   + 'rejected', () => {
-  rejectedAt(probe('witness/ec2'), 90, 380, /^Unhandled Fail\(E\) in main$/);
+  rejectedAt(probe('witness/ec2'), 90, 399, /^Unhandled Fail\(E\) in main$/);
 });
 
 test('argbind-internal is accepted (sound gain)', () => {

@@ -1,8 +1,8 @@
 effect Log { fn log(n: Int): Unit; };
 fn main(): Unit with Console = {
   let f = fn(u: Unit) => {
-    let k = fn(n: Int) => log(n);
-    with handler Log { log(n) => print(n) } { defer k(3); k(2) }
+    let k = fn(n: Int) => Log.log(n);
+    with handler Log { log(n) => Console.print(n) } { defer k(3); k(2) }
   };
   ()
 };

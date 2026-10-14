@@ -5,11 +5,11 @@ fn main(): Unit with Console = {
   let g = fn(n: Int) => ();
   let h = handler Log { log(n) => g(n) };
   let z = fn(u: Unit) => {
-    put(g);
+    Cell.put(g);
     let k = fn(v: Unit) => ();
     defer k(());
-    let w = fn(v: Unit) => { put(fn(n: Int) => fail(E)); k(()) };
+    let w = fn(v: Unit) => { Cell.put(fn(n: Int) => Fail.fail(E)); k(()) };
     ()
   };
-  with h { log(1) }
+  with h { Log.log(1) }
 };

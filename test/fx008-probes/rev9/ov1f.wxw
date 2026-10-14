@@ -5,6 +5,6 @@ fn main(): Unit with Console = {
   let h0 = handler Tick { tick() => () };
   let h2 = handler Log { log(n) => k(()) };
   let h1 = handler Log { log(n) => with h0 { k(()) } };
-  with h1 { log(1) };
-  print(0)
+  with h1 { Log.log(1) };
+  Console.print(0)
 };

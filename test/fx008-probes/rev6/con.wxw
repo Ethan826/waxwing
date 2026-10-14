@@ -1,2 +1,2 @@
 fn main(): Unit with Console = with handler Console { print(n) => () } {
-print(1) };
+Console.print(1) };

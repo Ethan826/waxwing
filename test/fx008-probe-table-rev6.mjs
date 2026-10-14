@@ -8,29 +8,29 @@ export const rev6 = [
     ok('1\n', '482737397df6602fa3c8b6802139d577b8f3694821a64e9d6c721521017f40' +
       '87')),
   probe('rev6/amb2',
-    no('E_EFFECT', 'Unhandled Tick in main', 162, 200)),
+    no('E_EFFECT', 'Unhandled Tick in main', 166, 209)),
   probe('rev6/amb3',
     ok('5\n', 'a706fa081440e9dbd4dac942167005d5fa3a29660409b6659baf777154edb5' +
       'f5')),
   probe('rev6/annot',
     no('E_EFFECT',
       'Console + Log + ... and Console + ... cannot be made equal: both end ' +
-        'in ...', 235, 262)),
+        'in ...', 255, 286)),
   probe('rev6/annotb',
     ok('1\n2\n',
       'a916d80fb41789ede6bb94f5395d0d4abca3c7d2ff1546ff480ce8b0cd67022a')),
   probe('rev6/around',
     no('E_EFFECT', 'around performs Log, which its signature does not allow',
-      185, 211)),
+      189, 215)),
   probe('rev6/around2',
     no('E_EFFECT', 'around performs Log, which its signature does not allow',
-      158, 182)),
+      162, 190)),
   probe('rev6/around3',
     no('E_EFFECT',
       'body must allow every effect at this call (Log + Log), but its row is ' +
       'Log; '
       + 'write body\'s row as `with Log + Log + ...e`; a callback\'s row must '
-      + 'equal the row where it is called (FX018)', 154, 162)),
+      + 'equal the row where it is called (FX018)', 158, 166)),
   probe('rev6/around4',
     no('E_SYNTAX', 'Expected a capitalized name', 74, 78)),
   probe('rev6/around5',
@@ -41,14 +41,14 @@ export const rev6 = [
       'body must allow every effect at this call (Log + Log), but its row is ' +
       'Log; '
       + 'write body\'s row as `with Log + Log + ...e`; a callback\'s row must '
-      + 'equal the row where it is called (FX018)', 211, 219)),
+      + 'equal the row where it is called (FX018)', 215, 223)),
   probe('rev6/con',
     no('E_INTERNAL', 'Invalid handler effect', 0, 0)),
   probe('rev6/con2',
     ok('2\n', 'f7fccfc70d7814bc7d342f6459d63708617306f3435d48c44a518d68cb6eaf' +
       '15')),
   probe('rev6/ext',
-    no('E_EFFECT', 'defer must not fail, but it performs Fail(E)', 227, 241)),
+    no('E_EFFECT', 'defer must not fail, but it performs Fail(E)', 243, 257)),
   probe('rev6/extb',
     ok('12\n0\n9\n',
       '9edbfd9d4d1f0672f3740fc8962ec9d3881d9965d72ac8a6fb185d1fbfa2f127')),
@@ -57,7 +57,7 @@ export const rev6 = [
       'fail(E): E\n',
       1),
     {
-      fx008: no('E_EFFECT', defer, 79, 91),
+      fx008: no('E_EFFECT', defer, 79, 95),
       task: 9,
       flipped: true,
       reason: '§1 cross-function form.'
@@ -79,12 +79,12 @@ export const rev6 = [
     no('E_EFFECT',
       'Log + Fail(E) + Console + ... and Log + Console + ... cannot be made ' +
         'equal: both end in ...',
-      304, 309)),
+      329, 334)),
   probe('rev6/l4b',
     ok('0\n', 'e00f20ebb296ce02c06fbde7c6a96439a68ce3b3ab33df2fbf7ca75e46544b' +
       '99'),
     {
-      fx008: no('E_EFFECT', defer, 153, 165),
+      fx008: no('E_EFFECT', defer, 153, 169),
       task: 9,
       flipped: true,
       reason: 'L4 (§6).'
@@ -95,7 +95,7 @@ export const rev6 = [
   probe('rev6/meta2',
     ok('', '9ea2294c6518dac53fa7d9ab1b821b2e63b4f540b7470ed3f749e72064ed6e74')),
   probe('rev6/meta3',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 247, 248)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 260, 261)),
   probe('rev6/reuse',
     ok('12\n0\n',
       '8c2e67a600770fd68c943f16e4b7de4461f31ee8d3eda25598b9dee359d5ff6a')),
@@ -103,5 +103,5 @@ export const rev6 = [
     no('E_EFFECT',
       'Log + Fail(E) + Console + ... and Log + Console + ... cannot be made ' +
         'equal: both end in ...',
-      354, 359)),
+      391, 396)),
 ];
