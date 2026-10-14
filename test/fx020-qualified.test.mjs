@@ -108,15 +108,16 @@ test('a Fail span ends at its payload, as before', () => {
 });
 
 // Review Focus 5: `.` elsewhere gives a clear existing error and blocks
-// nothing for later `r.field` on lowercase receivers.
-test('1.5 and x.y keep a clear existing error', () => {
+// nothing for `r.field` on lowercase receivers, which R001 Task 5 made a
+// field access: on an Int it is the record error at the receiver.
+test('1.5 keeps a clear existing error; x.y is a field access', () => {
   const number = rejected('fn main(): Int = 1.5;', 'E_LEX');
   assert.equal(number.message, 'Unexpected character');
   assert.equal(number.span.start.offset, 18);
   const field = rejected('fn f(x: Int): Int = x.y; fn main(): Int = 1;',
-    'E_SYNTAX');
-  assert.equal(field.message, "Expected ';'");
-  assert.equal(field.span.start.offset, 21);
+    'E_TYPE');
+  assert.equal(field.message, 'Expected a record, found Int');
+  assert.equal(field.span.start.offset, 20);
 });
 
 test('... still lexes as one token', () => {
@@ -128,9 +129,9 @@ test('... still lexes as one token', () => {
 
 test('a lowercase receiver is never read as a qualifier', () => {
   const source = 'fn f(log: Int): Int = log.log(1); fn main(): Int = 1;';
-  const found = rejected(source, 'E_SYNTAX');
-  assert.equal(found.message, "Expected ';'");
-  assert.deepEqual(found.span.start.offset, source.indexOf('.'));
+  const found = rejected(source, 'E_TYPE');
+  assert.equal(found.message, 'Expected a record, found Int');
+  assert.deepEqual(found.span.start.offset, source.indexOf('log.'));
 });
 
 // R19: a qualifier's `.` touches both names. Otherwise `Log` is a plain

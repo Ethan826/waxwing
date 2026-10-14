@@ -8,6 +8,7 @@ module Format.Parse.Cursor
   , current
   , peekText
   , touchesQualifier
+  , whileAt
   , nextSpan
   , failAt
   , expected
@@ -18,7 +19,6 @@ module Format.Parse.Cursor
   , groupedAt
   , rightAt
   , separated
-  , leading
   , trailing
   , shifting
   , foldAt
@@ -200,10 +200,9 @@ separated separator state =
   Right
     (if peekText state == separator then Loop (skip state) else Done state)
 
--- Items that each begin with `text`, which the item itself consumes.
-leading ∷ String → Continue
-leading text state =
-  Right (if peekText state == text then Loop state else Done state)
+-- Items that each begin where `starts` holds; the item consumes it.
+whileAt ∷ (State → Boolean) → Continue
+whileAt starts state = Right (if starts state then Loop state else Done state)
 
 trailing ∷ String → String → Continue
 trailing separator close state

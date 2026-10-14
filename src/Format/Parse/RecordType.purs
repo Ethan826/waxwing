@@ -1,4 +1,4 @@
-module Format.Parse.RecordType (operand) where
+module Format.Parse.RecordType (operand, label) where
 
 import Prelude
 import Data.Array as Array

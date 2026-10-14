@@ -11,6 +11,7 @@ import Features.Resolve.HandlerExpression as HandlerExpression
 import Features.Resolve.Lambda (lambda)
 import Features.Resolve.Name (bareName, callName)
 import Features.Resolve.Pattern (resolvePattern)
+import Features.Resolve.Record (recordLiteral, recordUpdate)
 import Features.Resolve.Qualified (qualifiedCall, qualifiedName)
 import Features.Resolve.Scope (Scope)
 import Domain.Resolved as Resolved
@@ -66,6 +67,12 @@ expression scope = case _ of
     clauses
   Syntax.UnitValue span → pure (Resolved.UnitValue span)
   Syntax.Block span items value → block expression scope span items value
+  Syntax.RecordLiteral span fields → recordLiteral nested span fields
+  Syntax.FieldAccess span record label → Resolved.FieldAccess span
+    <$> nested record
+    <*> pure label
+  Syntax.RecordUpdate span record fields → recordUpdate nested span record
+    fields
   where
   -- Eta-expanded: a point-free `expression scope` would recurse at once.
   nested syntax = expression scope syntax

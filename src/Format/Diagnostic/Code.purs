@@ -42,6 +42,8 @@ code = case _ of
   RecordRowAsEffect _ → Code.TypeMismatch
   EffectRowAsRecord _ → Code.TypeMismatch
   NotPrintable _ → Code.TypeMismatch
+  MissingField _ _ → Code.TypeMismatch
+  ExpectedRecord _ → Code.TypeMismatch
   DeferMayFail _ → Code.EffectError
   DeferMayPerform _ → Code.EffectError
   HandlerMissing _ → Code.HandlerError

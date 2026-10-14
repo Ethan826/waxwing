@@ -39,6 +39,9 @@ printable holders env (Checked.Expr expression) = case expression.node of
   Checked.Lambda _ body → recur body
   Checked.Pipe left right → each [ left, right ]
   Checked.Block items value → each (Checked.blockParts items value)
+  Checked.RecordLiteral fields → each (Checked.fieldValues fields)
+  Checked.FieldAccess record _ → recur record
+  Checked.RecordUpdate record fields → each (Checked.updateParts record fields)
   _ → Right unit
   where
   recur = printable holders env

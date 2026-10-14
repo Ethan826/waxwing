@@ -30,6 +30,7 @@ import Features.Check.Call (checkCall, checkConstruct)
 import Features.Check.Context (Locals)
 import Features.Check.Lambda (checkLambda)
 import Features.Check.Pipe (checkPipe)
+import Features.Check.Record (checkAccess, checkLiteral, checkUpdate)
 import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
 import Features.Check.Scheme (State, Threaded, threadAll)
@@ -129,6 +130,14 @@ inferNode env state expression = case expression of
     span
     family
     value
+  Resolved.RecordLiteral span fields → checkLiteral infer env state span
+    fields
+  Resolved.FieldAccess span record label → checkAccess infer env state span
+    record
+    label
+  Resolved.RecordUpdate span record fields → checkUpdate infer env state span
+    record
+    fields
 
 typed ∷ State → Span → Ty Open → Checked.Node → Inferred
 typed state span ty node = pure

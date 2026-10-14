@@ -76,6 +76,8 @@ message = case _ of
   RecordRowAsEffect name → name <> " is a record row, not an effect row"
   EffectRowAsRecord name → name <> " is an effect row, not a record row"
   NotPrintable ty → "Expected a printable value, found " <> typeName ty
+  MissingField label ty → label <> " is not a field of " <> typeName ty
+  ExpectedRecord ty → "Expected a record, found " <> typeName ty
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
   DeferMayPerform tail →

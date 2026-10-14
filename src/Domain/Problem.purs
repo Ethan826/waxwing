@@ -137,6 +137,10 @@ data Problem
   | RecordRowAsEffect String
   | EffectRowAsRecord String
   | NotPrintable TypeName
+  -- R001: a label the record's type does not hold, and that type; a
+  -- field read or updated on a value that is no record, and its type.
+  | MissingField String TypeName
+  | ExpectedRecord TypeName
   | DeferMayFail String
   | DeferMayPerform String
   | RowEquality RowText RowText String

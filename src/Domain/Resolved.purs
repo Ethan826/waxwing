@@ -6,7 +6,7 @@ module Domain.Resolved
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe, fromMaybe)
-import Domain.Syntax (Operator, Sort(..), Span, TypeRef)
+import Domain.Syntax (FieldName, Operator, Sort(..), Span, TypeRef)
 import Domain.Ids (EffectId)
 import Domain.Type (Ty(..), TyRow, TypeId(..), VarId(..))
 import Domain.Row (Label)
@@ -106,6 +106,12 @@ data Expr
   -- the payload type.
   | Fail Span (Maybe (Ty VarId)) Expr
   | TextLiteral Span String
+  -- R001: fields in written order, each label with its span.
+  | RecordLiteral Span (Array FieldValue)
+  | FieldAccess Span Expr FieldName
+  | RecordUpdate Span Expr (Array FieldValue)
+
+type FieldValue = { name ∷ String, span ∷ Span, value ∷ Expr }
 
 type HandlerClause =
   { operation ∷ Int
@@ -213,3 +219,6 @@ exprSpan expression = case expression of
   Handle span _ _ → span
   Fail span _ _ → span
   TextLiteral span _ → span
+  RecordLiteral span _ → span
+  FieldAccess span _ _ → span
+  RecordUpdate span _ _ → span

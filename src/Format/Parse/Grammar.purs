@@ -16,6 +16,7 @@ module Format.Parse.Grammar
   , dispatch
   , ifSecond
   , ifQualifier
+  , choose
   , optionalOn
   , sepBy1
   , sepByTrailing1
@@ -23,6 +24,7 @@ module Format.Parse.Grammar
   , chainLeftAny
   , chainRight
   , manyOn
+  , manyWhile
   , spanned
   , nested
   , rooted
@@ -42,12 +44,12 @@ import Format.Parse.Cursor (Parsed, Run, State, initialState) as Exports
 import Format.Parse.Cursor
   ( Continue
   , Run
+  , State
   , expected
   , failAt
   , foldAt
   , groupedAt
   , infixedAt
-  , leading
   , nestedAt
   , peekText
   , touchesQualifier
@@ -57,6 +59,7 @@ import Format.Parse.Cursor
   , skip
   , rootedAt
   , trailing
+  , whileAt
   )
 import Format.Parse.Interpolated (takeText)
 import Format.Parse.Steps
@@ -138,16 +141,18 @@ dispatch cases fallback = Parser (dispatchAt cases fallback)
 -- Chooses on the token after the next, consuming nothing: a contextual
 -- keyword is one only when what follows it says so.
 ifSecond ∷ ∀ a. (String → Boolean) → Parser a → Parser a → Parser a
-ifSecond accepts (Parser yes) (Parser no) = Parser chosen
-  where
-  chosen state = (if accepts (peekText (skip state)) then yes else no) state
+ifSecond accepts = choose (accepts <<< peekText <<< skip)
 
 -- Chooses on whether a `.` touches the token before and after it, so
 -- `Log . log` and `Log\n.log` are not qualifiers (R19). Consumes nothing.
 ifQualifier ∷ ∀ a. Parser a → Parser a → Parser a
-ifQualifier (Parser yes) (Parser no) = Parser chosen
+ifQualifier = choose touchesQualifier
+
+-- Chooses on the state ahead (Format.Parse.Lookahead), consuming nothing.
+choose ∷ ∀ a. (State → Boolean) → Parser a → Parser a → Parser a
+choose test (Parser yes) (Parser no) = Parser chosen
   where
-  chosen state = (if touchesQualifier state then yes else no) state
+  chosen state = (if test state then yes else no) state
 
 optionalOn ∷ ∀ a. String → Parser a → Parser (Maybe a)
 optionalOn text parser = dispatch [ on text (Just <$> parser) ]
@@ -186,7 +191,11 @@ chainRight operator item = Parser (rightAt nestingLimit operator (run item))
 
 -- Zero or more items, each beginning with `text` (which the item reads).
 manyOn ∷ ∀ a. String → Parser a → Parser (Array a)
-manyOn text item = dispatch [ on text (collect (leading text) item) ] (pure [])
+manyOn text = manyWhile (eq text <<< peekText)
+
+-- Zero or more items, each where `starts` holds (the item reads on).
+manyWhile ∷ ∀ a. (State → Boolean) → Parser a → Parser (Array a)
+manyWhile starts item = choose starts (collect (whileAt starts) item) (pure [])
 
 -- From the first to the last consumed token; an empty span at the next
 -- token's start if nothing was consumed.

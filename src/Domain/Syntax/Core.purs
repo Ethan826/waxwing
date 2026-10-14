@@ -39,6 +39,14 @@ data Expr
   | With Span Expr Expr
   | Handle Span Expr (Array FailClause)
   | TextLiteral Span String
+  -- R001: `{ l: e, … }` in written order (evaluation order), `e.l` and
+  -- `e { l = v, … }`. Each label keeps its own span.
+  | RecordLiteral Span (Array FieldValue)
+  | FieldAccess Span Expr FieldName
+  | RecordUpdate Span Expr (Array FieldValue)
+
+type FieldName = { name ∷ String, span ∷ Span }
+type FieldValue = { name ∷ String, span ∷ Span, value ∷ Expr }
 
 -- A block item (FX001 design §1): `let name = e`, `let _ = e` (Nothing)
 -- spanning `let` through `e`, `defer e` spanning `defer` through `e`, or

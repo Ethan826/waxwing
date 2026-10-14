@@ -8,12 +8,16 @@ import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Syntax as Syntax
 import Features.Resolve.Repeated (laterRepeat)
 
+-- A field of a record type, literal or update (R001).
+type Labelled r = { name ∷ String, span ∷ Syntax.Span | r }
+
 -- The first field, in source order, that repeats an earlier one's label,
 -- with the earlier field: the error is at the repeat, noted at the first
 -- (R001 design §6).
 repeatedLabel
-  ∷ Array Syntax.FieldRef
-  → Maybe { first ∷ Syntax.FieldRef, again ∷ Syntax.FieldRef }
+  ∷ ∀ r
+  . Array (Labelled r)
+  → Maybe { first ∷ Labelled r, again ∷ Labelled r }
 repeatedLabel fields = do
   index ← laterRepeat (map label fields)
   again ← Array.index fields index
@@ -24,8 +28,8 @@ repeatedLabel fields = do
   sameLabel again field = field.name == again.name
 
 repeatedField
-  ∷ ∀ a
-  . { first ∷ Syntax.FieldRef, again ∷ Syntax.FieldRef }
+  ∷ ∀ a r
+  . { first ∷ Labelled r, again ∷ Labelled r }
   → Either Syntax.Diagnostic a
 repeatedField found = Left
   { problem: Duplicate DuplicateField found.again.name

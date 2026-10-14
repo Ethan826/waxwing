@@ -52,6 +52,10 @@ comparable functions env (Checked.Expr expression) = case expression.node of
     (Array.cons body (map failureBody clauses))
   Checked.Fail value → recur value
   Checked.Block items value → traverse_ recur (Checked.blockParts items value)
+  Checked.RecordLiteral fields → traverse_ recur (Checked.fieldValues fields)
+  Checked.FieldAccess record _ → recur record
+  Checked.RecordUpdate record fields → traverse_ recur
+    (Checked.updateParts record fields)
   _ → pure unit
   where
   recur = comparable functions env

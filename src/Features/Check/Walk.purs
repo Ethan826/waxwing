@@ -42,6 +42,10 @@ foldTypes step found (Checked.Expr expression) = case expression.node of
   Checked.Handle body clauses → foldl failureClause (recur own body) clauses
   Checked.Fail value → recur own value
   Checked.Block items value → foldl recur own (Checked.blockParts items value)
+  Checked.RecordLiteral fields → foldl recur own (Checked.fieldValues fields)
+  Checked.FieldAccess record _ → recur own record
+  Checked.RecordUpdate record fields → foldl recur own
+    (Checked.updateParts record fields)
   _ → own
   where
   own = step found expression.span expression.ty
@@ -107,8 +111,13 @@ retype change (Checked.Expr expression) = Checked.Expr
       (map failureClause clauses)
     Checked.Fail value → Checked.Fail (recur value)
     Checked.Block items value → Checked.Block (map item items) (recur value)
+    Checked.RecordLiteral fields → Checked.RecordLiteral (map field fields)
+    Checked.FieldAccess record label → Checked.FieldAccess (recur record) label
+    Checked.RecordUpdate record fields → Checked.RecordUpdate (recur record)
+      (map field fields)
     leaf → leaf
   parameter declared = declared { ty = change declared.ty }
+  field found = found { value = recur found.value }
   item = case _ of
     Checked.Let local value → Checked.Let local (recur value)
     Checked.Defer value → Checked.Defer (recur value)

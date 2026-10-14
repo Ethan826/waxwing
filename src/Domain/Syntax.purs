@@ -22,7 +22,9 @@ import Domain.Syntax.Core
   , ErrorCode(..)
   , Expr(..)
   , FailClause
+  , FieldName
   , FieldRef
+  , FieldValue
   , FunctionDecl
   , HandlerParameterRef
   , Import
@@ -76,6 +78,9 @@ exprSpan = case _ of
   With span _ _ → span
   Handle span _ _ → span
   TextLiteral span _ → span
+  RecordLiteral span _ → span
+  FieldAccess span _ _ → span
+  RecordUpdate span _ _ → span
 
 typeRefSpan ∷ TypeRef → Span
 typeRefSpan = case _ of

@@ -1,15 +1,12 @@
 module Format.Parse.Expression (expression) where
 
 import Prelude
-import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), maybe)
 import Domain.Problem (Problem(..))
 import Domain.Syntax
   ( Diagnostic
   , Expr(..)
   , Operator(..)
-  , Position
   , Span
   , exprSpan
   , problemAt
@@ -19,17 +16,16 @@ import Format.Parse.Grammar
   ( Case
   , Parser
   , chainLeftAny
+  , choose
   , defer
   , dispatch
   , expect
   , failWith
   , infixed
-  , manyOn
   , nested
   , on
   , onWhen
   , refine
-  , sepBy1
   , textLiteral
   , token
   )
@@ -41,14 +37,14 @@ import Format.Parse.Handler
   , unsupportedControl
   , withExpr
   )
+import Format.Parse.Lookahead (labelled)
 import Format.Parse.Name (Primary, named, upperNamed)
+import Format.Parse.Postfix (applied, suffixes)
+import Format.Parse.Record (literal)
 import Format.Parse.Literal (integerLiteral, integerStart)
 import Format.Parse.Pattern (arms)
 
 type Comparison = { text ∷ String, operator ∷ Operator }
-
--- A postfix chain's arguments, in order, and where its last `)` ends.
-type Application = { arguments ∷ Array Expr, end ∷ Position }
 
 comparisons ∷ Array Comparison
 comparisons =
@@ -71,7 +67,7 @@ expression = dispatch
   [ on "if" (conditional inner)
   , on "match" (matchExpression inner)
   , on "fn" (lambda inner)
-  , on "{" (block inner)
+  , on "{" (choose (labelled ":") (pipeline inner) (block inner))
   , on "handler" (handlerExpr inner)
   , on "with" (withExpr inner)
   , on "handle" (handleExpr inner)
@@ -138,33 +134,9 @@ matchExpression inner = matchOf <$> expect "match" <*> inner <* expect "{"
   matchOf keyword scrutinee matched close =
     Match { start: keyword.span.start, end: close.span.end } scrutinee matched
 
--- A primary, then any number of postfix `(…)` groups, read as one
--- application of every group's arguments in order: by design §5
--- `g(1)(2)` is `g(1, 2)`, same order and stage boundaries, so `g(1)(2)`
--- is `Apply (Call g [1]) [2]`. The callee is one level deeper, once for
--- the whole chain (ADR 006), so no phase recurses once per group.
+-- A primary, then any postfix operations (Format.Parse.Postfix).
 atom ∷ Parser Expr → Parser Expr
-atom inner = applyTo <$> primary inner
-  <*> dispatch [ on "(" (Just <$> infixed (chain inner)) ] (pure Nothing)
-  where
-  applyTo callee = maybe callee.value (applied callee)
-  applied callee found = Apply
-    { start: callee.start, end: found.end }
-    callee.value
-    found.arguments
-
--- Each group takes at least one argument; the chain ends at its last `)`.
-chain ∷ Parser Expr → Parser Application
-chain inner = joined <$> group <*> manyOn "(" group
-  where
-  group = groupOf <$ expect "(" <*> sepBy1 "," inner <*> expect ")"
-  groupOf arguments close = { arguments, end: close.span.end }
-  joined first rest =
-    { arguments: Array.concat (Array.cons first.arguments (map args rest))
-    , end: maybe first.end endOf (Array.last rest)
-    }
-  args found = found.arguments
-  endOf found = found.end
+atom inner = applied <$> primary inner <*> suffixes inner
 
 -- Parentheses return the inner expression with its own span, and `()`
 -- the Unit value (Format.Parse.Block); `start` is where the primary
@@ -179,11 +151,13 @@ primary inner = dispatch
   , on "false" (bare <<< boolean false <$> token)
   , on "\"" (bare <$> textLiteral inner)
   , onWhen integerStart (bare <<< integer <$> integerLiteral)
+  , on "{" (bare <$> choose (labelled ":") (literal inner) unexpected)
   , onWhen isQualifier (upperNamed inner)
   , onWhen isName (named inner)
   ]
-  (bare <$> refine notAnExpression token)
+  (bare <$> unexpected)
   where
+  unexpected = refine notAnExpression token
   boolean value found = Boolean found.span value
   integer literal = Integer literal.span literal.value
   bare value = { value, start: (exprSpan value).start }

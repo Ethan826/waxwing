@@ -148,6 +148,9 @@ parts (Checked.Expr expression) = case expression.node of
   Checked.Handle body clauses → Array.cons body (map failureBody clauses)
   Checked.Fail value → [ value ]
   Checked.Block items value → Checked.blockParts items value
+  Checked.RecordLiteral fields → Checked.fieldValues fields
+  Checked.FieldAccess record _ → [ record ]
+  Checked.RecordUpdate record fields → Checked.updateParts record fields
   _ → []
   where
   armBody arm = arm.body

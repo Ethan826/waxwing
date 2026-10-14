@@ -87,6 +87,13 @@ data Node
   | Handle Expr (Array FailClause)
   | Fail Expr
   | Text String
+  -- R001: a literal's fields in written order, which is evaluation order;
+  -- the sorted order is its type's. An update's base, then replacements.
+  | RecordLiteral (Array Field)
+  | FieldAccess Expr String
+  | RecordUpdate Expr (Array Field)
+
+type Field = { label ∷ String, value ∷ Expr }
 
 -- A block item (FX001): a monomorphic `let` of a local or `_`, a deferred
 -- expression of type Unit, or a discarded value.
@@ -128,6 +135,16 @@ itemValue = case _ of
   Let _ value → value
   Defer value → value
   Discard value → value
+
+-- A literal's values, in evaluation (written) order.
+fieldValues ∷ Array Field → Array Expr
+fieldValues fields = map fieldValue fields
+  where
+  fieldValue found = found.value
+
+-- An update's expressions in evaluation order: its base, then its values.
+updateParts ∷ Expr → Array Field → Array Expr
+updateParts record fields = Array.cons record (fieldValues fields)
 
 -- A block's expressions in evaluation order: its items', then its value.
 blockParts ∷ Array Item → Expr → Array Expr

@@ -109,6 +109,10 @@ foldCalls step found (Checked.Expr expression) = case expression.node of
   Checked.Fail value → recur found value
   Checked.Block items value → foldl recur found
     (Checked.blockParts items value)
+  Checked.RecordLiteral fields → foldl recur found (Checked.fieldValues fields)
+  Checked.FieldAccess record _ → recur found record
+  Checked.RecordUpdate record fields → foldl recur found
+    (Checked.updateParts record fields)
   _ → found
   where
   recur = foldCalls step

@@ -36,6 +36,9 @@ parts = case _ of
   With _ handler body → [ handler, body ]
   Handle _ body clauses → Array.cons body (map _.body clauses)
   Fail _ _ payload → [ payload ]
+  RecordLiteral _ fields → map _.value fields
+  FieldAccess _ record _ → [ record ]
+  RecordUpdate _ record fields → Array.cons record (map _.value fields)
   _ → []
 
 itemBody ∷ Item → Expr

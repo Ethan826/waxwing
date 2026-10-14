@@ -139,6 +139,10 @@ firstFail (Checked.Expr expression) = case expression.node of
   Checked.Crash value → firstFail value
   Checked.Perform _ _ _ arguments → firstIn arguments
   Checked.Block items value → firstIn (Checked.blockParts items value)
+  Checked.RecordLiteral fields → firstIn (Checked.fieldValues fields)
+  Checked.FieldAccess record _ → firstIn [ record ]
+  Checked.RecordUpdate record fields → firstIn
+    (Checked.updateParts record fields)
   _ → Nothing
   where
   firstIn expressions = Array.head (Array.mapMaybe firstFail expressions)
@@ -185,6 +189,10 @@ firstUnkeyed subst (Checked.Expr expression) = case expression.node of
   Checked.Crash value → firstUnkeyed subst value
   Checked.Perform _ _ _ arguments → firstIn arguments
   Checked.Block items value → firstIn (Checked.blockParts items value)
+  Checked.RecordLiteral fields → firstIn (Checked.fieldValues fields)
+  Checked.FieldAccess record _ → firstIn [ record ]
+  Checked.RecordUpdate record fields → firstIn
+    (Checked.updateParts record fields)
   _ → Nothing
   where
   firstIn expressions = Array.head
