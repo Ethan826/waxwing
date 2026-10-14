@@ -63,5 +63,16 @@ export const r001Probes = {
       fail(`duplicate field accepted: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
+  },
+  // A parameter with a direct `with` use stays effect sort, so passing a
+  // record row to it is the row-sort error.
+  'r001-effect-evidence': context => {
+    const found = outcome(context, 'type A(...r) = A({ a: Int, ...r }, '
+      + 'B(...r)); type B(...s) = B((Unit) -> Unit with ...s); '
+      + 'fn main(): Int = 0;');
+    if (found !== 'E_TYPE r is a record row, not an effect row') {
+      fail(`effect evidence lost: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
   }
 };

@@ -129,7 +129,9 @@ test('a record tail names a variable in scope', () => {
 });
 
 test('a record tail may not name a type parameter', () => {
-  rejectedAt(`type Box(a) = Box({ a: Int, ...a });${main}`, 'E_TYPE', '...a');
+  const diagnostic = rejectedAt(
+    `type Box(a) = Box({ a: Int, ...a });${main}`, 'E_TYPE', '...a');
+  assert.equal(diagnostic.message, 'Expected an effect row, found a type');
 });
 
 test('record sorts check and specialize with the rest of a program', () => {
@@ -144,4 +146,28 @@ test('a record field is judged for nested datatypes', () => {
   const diagnostic = rejectedAt(source, 'E_SPECIALIZATION', 'T(Box(a))', 0);
   assert.equal(diagnostic.message,
     'Recursive use of T changes its type arguments');
+});
+
+// A direct effect use is evidence too: propagation cannot override it.
+const pairs = 'type A(...r) = A({ a: Int, ...r }, B(...r)); ';
+const effectB = 'type B(...s) = B((Unit) -> Unit with ...s); ';
+
+test('a direct effect use contradicts a record argument', () => {
+  sortError(`${pairs}${effectB}${main}`,
+    'r is a record row, not an effect row', '...r', '...r', 2, 1);
+});
+
+test('the contradiction travels through a chain', () => {
+  sortError('type A(...r) = A({ a: Int, ...r }, D(...r)); '
+    + `type D(...u) = D(B(...u)); ${effectB}${main}`,
+  'r is a record row, not an effect row', '...r', '...r', 2, 1);
+});
+
+test('a record argument makes the callee parameter record sort', () => {
+  const source = 'type A(...r) = A({ a: Int, ...r }, B(...r)); '
+    + `type B(...s) = B(Int); ${main}`;
+  assert.deepEqual(sortsOf(source, 1), ['RecordSort']);
+  sortError(`${source.replace(main, '')}`
+    + `fn g(x: B(...e)): Unit with ...e = ();${main}`,
+  'e is a record row, not an effect row', 'with ...e', '...e');
 });

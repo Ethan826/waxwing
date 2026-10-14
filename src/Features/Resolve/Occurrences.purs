@@ -82,7 +82,8 @@ rowOccurrences declared place (Syntax.RowRef span labels tail) =
     label.arguments
   ending Syntax.Pure = []
   ending (Syntax.Spread name) =
-    [ (occurrence name span soleSort) { applied = place } ]
+    [ (occurrence name span soleSort) { applied = sole } ]
+  sole = if Array.null labels then place else Nothing
   soleSort =
     if Array.null labels then maybe Syntax.RowSort parameterSort place
     else Syntax.RowSort

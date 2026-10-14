@@ -34,5 +34,13 @@ export const r001Rows = [
     needle: '    traverse_ repeatedField (repeatedLabel fields)\n',
     replacement: '',
     probe: 'r001-duplicate-field', message: /duplicate field/
+  },
+  {
+    // Effect evidence is ignored, so a direct `with` use no longer stops a
+    // record argument from making its parameter record sort.
+    name: 'r001-effect-evidence', file: 'src/Features/Resolve/Sorts.purs',
+    needle: 'has true && not (has false)',
+    replacement: 'has true',
+    probe: 'r001-effect-evidence', message: /effect evidence/
   }
 ];
