@@ -19,15 +19,15 @@ import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
 import Domain.Problem (Problem(..))
 import Domain.Resolved (FunctionId(..))
-import Domain.Row (Label(..), Mark(..), closedRow, uniformRows)
-import Domain.Syntax (Diagnostic, Span, origin, problemAt)
-import Domain.Type (Ty(..), TypeId(..))
-import Domain.Type.Parts (arrows)
+import Domain.Syntax (Diagnostic, origin, problemAt)
+import Domain.Type (Ty(..))
 import Features.Specialize.Body (fillFunction)
 import Features.Specialize.Copy (run)
+import Features.Specialize.Ground (Grounds, groundOf, groundType)
 import Features.Specialize.Intern (funTypes)
 import Features.Specialize.Keys (Env, State, Work, WorkKind(..))
 import Features.Specialize.Lower (fillEffect, fillType)
+import Features.Specialize.Printable (checkSites)
 import Features.Specialize.Seeds (environment, seeded)
 
 -- A key as tests see it: the checked declaration's id and its ground type
@@ -88,6 +88,7 @@ specialized representative checked@(Checked.Program program) = do
   entry ← maybe' missingEntry Right
     (join (Array.index env.monoFunctions (functionIndex program.entry)))
   state ← tailRecM (next env) { index: 0, state: seeded env }
+  checkSites env state
   pure { state, entry: FunctionId entry }
   where
   env = environment representative checked
@@ -116,33 +117,6 @@ values table = map snd (Map.toUnfoldable table ∷ Array (Tuple Int v))
 functionIndex ∷ FunctionId → Int
 functionIndex (FunctionId index) = index
 
--- The ground type of each output type so far, the arrow table and the
--- effect layouts. Keys hold no rows: specialization erases them.
-type Grounds =
-  { types ∷ Map Int (Ty Void)
-  , table ∷ Array IR.FunType
-  , effects ∷ Map Int IR.EffectInfo
-  }
-
-type Tables = { table ∷ Array IR.FunType, effects ∷ Map Int IR.EffectInfo }
-
-groundOf
-  ∷ Tables
-  → Either Diagnostic (Map Int (Ty Void))
-  → Work
-  → Either Diagnostic (Map Int (Ty Void))
-groundOf tables found work = do
-  types ← found
-  arguments ← traverse
-    ( groundType { types, table: tables.table, effects: tables.effects }
-        work.span
-    )
-    work.arguments
-  pure (Map.insert work.output (rowless arguments) types)
-  where
-  -- Rows are erased in specialization (FX001 design §4).
-  rowless arguments = TData (TypeId work.declaration) arguments []
-
 key ∷ Grounds → Work → Either Diagnostic Key
 key grounds work = made <$> traverse (groundType grounds work.span)
   work.arguments
@@ -153,24 +127,3 @@ key grounds work = made <$> traverse (groundType grounds work.span)
     , effect: work.kind == EffectWork
     , arguments
     }
-
-groundType ∷ Grounds → Span → IR.Ty → Either Diagnostic (Ty Void)
-groundType grounds span = case _ of
-  IR.TInt → Right TInt
-  IR.TBool → Right TBool
-  IR.TUnit → Right TUnit
-  IR.TText → Right TText
-  IR.TData (TypeId output) → maybe' missing Right
-    (Map.lookup output grounds.types)
-  arrow@(IR.TFun _) → groundSpine (IR.spine grounds.table arrow)
-  IR.THandler (IR.EffectKey output) → maybe' missingEffect groundHandler
-    (Map.lookup output grounds.effects)
-  where
-  missing _ = Left (problemAt (Internal "Invalid type id") span)
-  missingEffect _ = Left (problemAt (Internal "Invalid effect key") span)
-  groundHandler info = handlerOf info <$> traverse recur info.arguments
-  handlerOf info arguments = THandler (Label info.effect arguments Unmarked)
-    (uniformRows closedRow)
-  recur part = groundType grounds span part
-  groundSpine found = arrows <$> traverse recur found.parameters
-    <*> recur found.result

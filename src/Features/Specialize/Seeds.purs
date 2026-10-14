@@ -43,6 +43,7 @@ seeded env =
   , effects: Map.empty
   , functions: Map.empty
   , work: Map.fromFoldable (Array.mapWithIndex Tuple work)
+  , prints: Map.empty
   , arrows: noArrows
   , counts:
       { types: Array.length typeWork
@@ -51,6 +52,7 @@ seeded env =
       , effects: 0
       , work: Array.length work
       , polymorphic: 0
+      , prints: 0
       }
   }
   where

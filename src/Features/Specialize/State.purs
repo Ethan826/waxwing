@@ -5,6 +5,7 @@ module Features.Specialize.State
   , WorkKind(..)
   , State
   , Counts
+  , PrintSite
   , Specializing
   , specializationLimit
   , enqueue
@@ -66,7 +67,12 @@ type Counts =
   , effects ∷ Int
   , work ∷ Int
   , polymorphic ∷ Int
+  , prints ∷ Int
   }
+
+-- A print, show or crash argument's span and ground type, noted for the
+-- printable check once every type is filled (Features.Specialize.Printable).
+type PrintSite = { span ∷ Span, ty ∷ IR.Ty }
 
 -- Output declarations by output id, the memo tables of polymorphic keys,
 -- of effect layouts and of arrows, and the worklist (never emptied: it
@@ -80,6 +86,7 @@ type State =
   , effects ∷ Map Int IR.EffectInfo
   , functions ∷ Map Int IR.FunctionDecl
   , work ∷ Map Int Work
+  , prints ∷ Map Int PrintSite
   , arrows ∷ Arrows
   , counts ∷ Counts
   }

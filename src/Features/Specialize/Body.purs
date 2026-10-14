@@ -11,6 +11,7 @@ import Domain.Resolved (FunctionId(..))
 import Domain.Syntax (Span)
 import Features.Specialize.Copy (modify)
 import Features.Specialize.Handlers as Handlers
+import Features.Specialize.Printable (site)
 import Features.Specialize.Keys (Env, Specializing, Work, ctorAt, internal)
 import Features.Specialize.Values
   ( Scope
@@ -88,9 +89,9 @@ copyNode scope span = case _ of
   Checked.Lambda parameters body → lambda scope recur span parameters body
   Checked.Pipe left right → IR.Pipe <$> recur left <*> recur right
   Checked.UnitValue → pure IR.UnitValue
-  Checked.Print value → IR.Print <$> recur value
-  Checked.Show value → IR.Show <$> recur value
-  Checked.Crash value → IR.Crash <$> recur value
+  Checked.Print value → IR.Print <$> site (recur value)
+  Checked.Show value → IR.Show <$> site (recur value)
+  Checked.Crash value → IR.Crash <$> site (recur value)
   Checked.OperationRef effect index instantiation → Handlers.operationRef
     scope
     span

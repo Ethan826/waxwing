@@ -8,11 +8,12 @@ import { fx008Rows } from './regression-fx008.mjs';
 import { fxRows } from './regression-fx.mjs';
 import { textRows } from './regression-text.mjs';
 import { fx020Rows } from './regression-fx020.mjs';
+import { r001Rows } from './regression-r001.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
 // `node scripts/regression.mjs [name…]` proves only the named rows.
 const chosen = process.argv.slice(2);
 const proved = [...coreRows, ...fnRows, ...fx008Rows, ...fxRows,
-  ...textRows, ...fx020Rows]
+  ...textRows, ...fx020Rows, ...r001Rows]
   .filter(row => chosen.length === 0 || chosen.includes(row.name));
 const base = '.build/regression';
 const commandTimeoutMs = 180_000;
