@@ -7,8 +7,8 @@ import { expectDiagnostic, state } from './fx-diagnostics-support.mjs';
 
 // FX020 Task 3 review round 1: more aliases-and-imports behaviour.
 const logs = 'effect Log { fn log(n: Int): Unit; fn info(n: Int): Unit; }; ';
-const printing = 'with handler Log { log(n) => print(n), '
-  + 'info(n) => print(n + 100) } ';
+const printing = 'with handler Log { log(n) => Console.print(n), '
+  + 'info(n) => Console.print(n + 100) } ';
 const main = body => 'fn main(): Unit with Console = ' + body + ';';
 
 const goOf = source => {
@@ -48,7 +48,7 @@ test('an import from a second State label binds the first', () => {
   });
   const both = state + 'fn f(): Int with State(Int) { get as outer } + '
     + 'State(Int) { get as inner } = outer() + inner(); '
-    + 'fn main(): Unit with Console = print('
+    + 'fn main(): Unit with Console = Console.print('
     + 'with handler State(Int) { get() => 4, put(value) => () } '
     + 'with handler State(Int) { get() => 5, put(value) => () } { f() });';
   // Both imports perform on the label a perform reaches: 5 + 5.
@@ -70,7 +70,7 @@ test('an alias and imports on one label work together', () => {
 test('a pattern binder shadows an import', () => {
   const source = logs + 'fn f(x: Int): Int with Log { log } = '
     + 'match x { log => log + 1 }; fn main(): Unit with Console = '
-    + printing + '{ print(f(4)) };';
+    + printing + '{ Console.print(f(4)) };';
   assert.equal(runGo(source), '5\n');
 });
 

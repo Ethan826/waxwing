@@ -1,12 +1,12 @@
 // Operation spellings in the generated FX001 corpus (FX020 design §1). A
-// function writes its operations bare (the legacy globals, until FX020
-// Task 7: 20%), qualified (`Log.log`: 50%) or through imports of its own
-// row (`Log { log as note }`: 30%, qualifying what it does not import);
-// an effect the body performs is imported more often than one it does
-// not. Any but a bare one may alias an effect of its row, and then spells that
-// effect through the alias and the canonical name in turn. The scheme is
-// drawn from a stream of its own, so a seed gives the program shape it
-// gave before FX020; only the spelling changed.
+// function writes its operations qualified (`Log.log`: 70%) or through
+// imports of its own row (`Log { log as note }`: 30%, qualifying what it
+// does not import); an effect the body performs is imported more often
+// than one it does not. Either may alias an effect of its row, and then
+// spells that effect through the alias and the canonical name in turn.
+// Bare operation names are unbound (Task 7), so there is no bare mode. The
+// scheme is drawn from a stream of its own, so a seed gives the program
+// shape it gave before FX020; only the spelling changed.
 import { rng } from './fx-gen-rng.mjs';
 
 const effectOf = { log: 'Log', tick: 'Tick', print: 'Console', fail: 'Fail' };
@@ -17,8 +17,8 @@ const aliases = { Log: 'L', Tick: 'T', Console: 'C', 'Fail(Err)': 'F',
   'Fail(Oops)': 'G' };
 const renames = { Log: 'note', Tick: 'step', Console: 'say',
   'Fail(Err)': 'raiseErr', 'Fail(Oops)': 'raiseOops' };
-const modes = ['bare', 'bare', 'qualified', 'qualified', 'qualified',
-  'qualified', 'qualified', 'imports', 'imports', 'imports'];
+const modes = ['qualified', 'qualified', 'qualified', 'qualified',
+  'qualified', 'qualified', 'qualified', 'imports', 'imports', 'imports'];
 
 export const namer = seed => rng(seed ^ 0x2f020);
 
@@ -44,9 +44,8 @@ export const scheme = (r, rowText, performed = null) => {
   const mode = r.pick(modes);
   const names = { mode, aliases: new Map(), imports: new Map() };
   const items = rowText ? rowText.split(' + ') : [];
-  names.rowText = mode === 'bare' ? rowText
-    : items.map(item => decorate(r, mode, item, names, performed))
-      .join(' + ');
+  names.rowText = items.map(item => decorate(r, mode, item, names, performed))
+    .join(' + ');
   return names;
 };
 
@@ -68,7 +67,8 @@ export const speller = names => {
   let count = 0;
   return node => {
     const effect = effectOf[node.name];
-    if (!effect || !names || names.mode === 'bare') return node.name;
+    if (!effect) return node.name;
+    if (!names) return `${effect}.${node.name}`;
     const item = itemOf(node);
     if (names.imports.has(item)) return names.imports.get(item);
     const alias = names.aliases.get(item);

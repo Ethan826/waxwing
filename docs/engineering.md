@@ -303,14 +303,11 @@ behavior-preserving refactor or performance change.
 scripts/ladder-profile.mjs times the match-lift ladder cold and per phase,
 alternating with a baseline build. Both are review conventions. The
 differential loads compilers and harvests sources through
-scripts/differential-load.mjs, which the FX020 tools below share.
+scripts/differential-load.mjs.
 
-FX020's corpus migration has one-off tools, removed with their tests in
-FX020 Task 7: scripts/fx020-migrate.mjs qualifies bare operation names
-from the resolver's output (dry run by default; unplaceable units go to a
-hand-review manifest), and scripts/fx020-paired.mjs pairs each original
-program with its migrated twin and compares their Go or their mapped
-diagnostics, with intended differences in scripts/fx020-expected.json.
+FX020's corpus migration used one-off tools (a resolver-driven rewriter and
+a paired differential of each original program with its migrated twin).
+They were removed in FX020 Task 7; git history keeps them.
 
 The FX001 differential corpus (Task 10) is a test-side reference
 interpreter (test/fx-oracle*.mjs, written from the design, no compiler code)

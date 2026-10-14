@@ -51,13 +51,8 @@ type Local = { name ∷ String, id ∷ LocalId }
 data GlobalRef
   = GlobalFunction FunctionId Int
   | GlobalCtor CtorId
-  | Operation EffectId Int Int
-  | BuiltinPrint
   | BuiltinShow
   | BuiltinCrash
-  -- TRANSITIONAL (FX020 Task 7 removes it): the bare name `fail`, which
-  -- means `Fail.fail` while bare operation names still resolve.
-  | LegacyFail
 
 -- Functions and constructors share one global namespace.
 type Global = { name ∷ String, ref ∷ GlobalRef }

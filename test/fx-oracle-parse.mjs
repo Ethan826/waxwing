@@ -1,11 +1,10 @@
 // The surface syntax for the FX001 reference interpreter: the language of
 // test/poly-parse.mjs plus effect declarations and the expressions of
 // test/fx-oracle-expr.mjs. Returns { ctors, fields, types (by name), owner
-// (constructor → type), functions (with their own row), ops (bare
-// operation names, until FX020 Task 7), effects (effect → operation →
-// arity) }. Types are read into trees
-// (test/fx-oracle-lex.mjs) and mostly dropped. Shares no code with the
-// compiler.
+// (constructor → type), functions (with their own row), effects
+// (effect → operation → arity) }. Operation names are never global. Types
+// are read into trees (test/fx-oracle-lex.mjs) and mostly dropped. Shares
+// no code with the compiler.
 import { cursor, tokenize } from './fx-oracle-lex.mjs';
 import { expressions } from './fx-oracle-expr.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
@@ -15,8 +14,7 @@ export const parseProgram = source => {
   const { peek, take, list } = reader;
   const { expression, readType } = expressions(reader);
   const program = { ctors: new Map(), fields: new Map(), types: new Map(),
-    owner: new Map(), functions: new Map(), ops: new Map(),
-    effects: new Map() };
+    owner: new Map(), functions: new Map(), effects: new Map() };
   const typed = () => {
     const name = take().text;
     take(':');
@@ -51,7 +49,6 @@ export const parseProgram = source => {
     take(':');
     readType();
     take(';');
-    program.ops.set(name, { effect, arity: count });
     program.effects.get(effect).set(name, count);
   };
   const effectDeclaration = () => {

@@ -6,7 +6,7 @@
 // parameters, imports and globals shadow in that order, with no fallback.
 // An imported `fail` fixes its family: a payload of another family is an
 // oracle error (the checker refuses such a program). Each operation value
-// records its `spelling` (bare, qualified, alias or import), which the
+// records its `spelling` (qualified, alias or import), which the
 // interpreter reports as an event when it is performed, for the census.
 // Shares no code with the compiler.
 import { OracleError } from './fx-oracle-cleanup.mjs';

@@ -7,11 +7,12 @@ import { fnRows } from './regression-fn.mjs';
 import { fx008Rows } from './regression-fx008.mjs';
 import { fxRows } from './regression-fx.mjs';
 import { textRows } from './regression-text.mjs';
+import { fx020Rows } from './regression-fx020.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
 // `node scripts/regression.mjs [name…]` proves only the named rows.
 const chosen = process.argv.slice(2);
 const proved = [...coreRows, ...fnRows, ...fx008Rows, ...fxRows,
-  ...textRows]
+  ...textRows, ...fx020Rows]
   .filter(row => chosen.length === 0 || chosen.includes(row.name));
 const base = '.build/regression';
 const commandTimeoutMs = 180_000;
@@ -22,12 +23,16 @@ for (const row of proved) {
   const root = `${base}/${row.name}`;
   mkdirSync(root, { recursive: true });
   cpSync('src', `${root}/src`, { recursive: true });
-  const file = `${root}/${row.file}`;
-  const original = readFileSync(file, 'utf8');
-  assert.equal(original.split(row.needle).length, 2,
-    `${row.name}: mutation must have exactly one target`);
-  // A function, so `$'` in a replacement is not a replace pattern.
-  writeFileSync(file, original.replace(row.needle, () => row.replacement));
+  // A row restores one defect in one place, or in several (`edits`).
+  for (const edit of row.edits ?? [row]) {
+    const file = `${root}/${edit.file}`;
+    const original = readFileSync(file, 'utf8');
+    assert.equal(original.split(edit.needle).length, 2,
+      `${row.name}: mutation must have exactly one target`);
+    // A function, so `$'` in a replacement is not a replace pattern.
+    writeFileSync(file, original.replace(edit.needle,
+      () => edit.replacement));
+  }
   const built =
     run('purs', ['compile', `${root}/src/**/*.purs`, '.spago/p/*/src/**/*.purs',
     '--output', `${root}/output`]);

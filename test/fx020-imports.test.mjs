@@ -6,8 +6,8 @@ import { expectDiagnostic, db, state } from './fx-diagnostics-support.mjs';
 // FX020 Task 3: aliases and imports in a function's own row.
 const logs = 'effect Log { fn log(n: Int): Unit; fn info(n: Int): Unit; }; ';
 const database = 'effect Database { fn query(id: Int): Int; }; ';
-const printing = 'with handler Log { log(n) => print(n), '
-  + 'info(n) => print(n + 100) } ';
+const printing = 'with handler Log { log(n) => Console.print(n), '
+  + 'info(n) => Console.print(n + 100) } ';
 const main = body => 'fn main(): Unit with Console = ' + body + ';';
 const placement = "Imports and aliases are allowed only in a function's "
   + 'own row';
@@ -21,7 +21,7 @@ test('an import binds the bare name; trailing comma and rename work', () => {
 test('an alias leaves the canonical name valid', () => {
   const source = database + 'fn f(): Int with Database as D = '
     + 'D.query(1) + Database.query(2); fn main(): Unit with Console = '
-    + 'with handler Database { query(id) => id + 10 } { print(f()) };';
+    + 'with handler Database { query(id) => id + 10 } { Console.print(f()) };';
   assert.equal(runGo(source), '23\n');
 });
 
@@ -35,7 +35,7 @@ test('Console { print } and Fail(E) { fail } import built-ins', () => {
   const source = db + 'fn f(): Int with Fail(DbError) { fail } = '
     + 'fail(DbError); fn g(): Unit with Console { print } = print(1); '
     + 'fn main(): Unit with Console = { g(); '
-    + 'print(handle f() { fail(error: DbError) => 7 }) };';
+    + 'Console.print(handle f() { fail(error: DbError) => 7 }) };';
   assert.equal(runGo(source), '1\n7\n');
 });
 
@@ -48,7 +48,8 @@ test('an import shadows a global function', () => {
 // Review Focus 1.
 test('a parameter, a let and a lambda binder each shadow an import', () => {
   const run = (text, shown) => runGo(logs + 'fn ' + text
-    + ' fn main(): Unit with Console = ' + printing + `{ print(${shown}) };`);
+    + ' fn main(): Unit with Console = ' + printing
+    + `{ Console.print(${shown}) };`);
   assert.equal(run('f(log: Int): Int with Log { log } = log + 1;', 'f(4)'),
     '5\n');
   assert.equal(run('f(): Int with Log { log } = { let log = 7; log + 1 };',
@@ -76,7 +77,7 @@ test('two Fail families each check their own payload', () => {
   const families = 'type E1 = E1(Int); type E2 = E2(Int); '
     + 'fn both(): Int with Fail(E1) { fail as f1 } + Fail(E2) '
     + '{ fail as f2 } = { f2(E2(2)); f1(E1(1)) }; '
-    + 'fn main(): Unit with Console = print(handle handle both() '
+    + 'fn main(): Unit with Console = Console.print(handle handle both() '
     + '{ fail(error: E1) => 10 } { fail(error: E2) => 20 });';
   assert.equal(runGo(families), '20\n');
   const wrong = families.replace('f1(E1(1))', 'f1(E2(1))');
@@ -90,7 +91,7 @@ test('Fail.fail(e) infers its family even beside an import', () => {
   const source = 'type E1 = E1(Int); type E2 = E2(Int); '
     + 'fn both(): Int with Fail(E1) { fail } + Fail(E2) = '
     + '{ Fail.fail(E2(2)); fail(E1(1)) }; '
-    + 'fn main(): Unit with Console = print(handle handle both() '
+    + 'fn main(): Unit with Console = Console.print(handle handle both() '
     + '{ fail(error: E1) => 10 } { fail(error: E2) => 20 });';
   assert.equal(runGo(source), '20\n');
 });
@@ -99,7 +100,7 @@ test('an imported fail passed as a value is the family operation', () => {
   const use = 'type E = E(Int); fn apply(f: E -> Int with Fail(E)): Int '
     + 'with Fail(E) = f(E(3)); ';
   const source = use + 'fn run(): Int with Fail(E) { fail } = apply(fail); '
-    + 'fn main(): Unit with Console = print(handle run() '
+    + 'fn main(): Unit with Console = Console.print(handle run() '
     + '{ fail(error: E) => match error { E(n) => n } });';
   assert.equal(runGo(source), '3\n');
   const wrong = 'type E = E(Int); fn run(): Int with Fail(E) { fail } = '
@@ -111,7 +112,7 @@ test('an imported fail passed as a value is the family operation', () => {
 
 test('an import through a parameterised effect works', () => {
   const source = state + 'fn f(): Int with State(Int) { get } = get() + 1; '
-    + 'fn main(): Unit with Console = print(with handler State(Int) '
+    + 'fn main(): Unit with Console = Console.print(with handler State(Int) '
     + '{ get() => 41, put(value) => () } { f() });';
   assert.equal(runGo(source), '42\n');
 });

@@ -4,7 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe, maybe')
 import Data.String as String
 import Data.Traversable (traverse)
 import Domain.Problem (Problem(..), UnboundKind(..))
@@ -12,13 +12,9 @@ import Domain.Syntax as Syntax
 import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
 import Features.Resolve.Fresh (Fresh, failure, liftEither)
-import Features.Resolve.Qualified
-  ( failCall
-  , failReference
-  , importedCall
-  , importedName
-  )
+import Features.Resolve.Qualified (importedCall, importedName)
 import Features.Resolve.Scope (Import, Scope)
+import Features.Resolve.Unbound (unboundName)
 
 -- Design §2: a local wins, then a signature import (FX020 §2), then a
 -- function, a value if it has parameters and E_ARITY without its call if it
@@ -33,20 +29,13 @@ bareName scope span name = maybe' otherwise found (findLocal scope name)
   found id = pure (Resolved.Local span id)
   otherwise _ = maybe' viaGlobal (importedName span) (findImport scope name)
   viaGlobal _ = maybe' unbound global (findGlobal scope name)
-  unbound _ = failure
-    (Syntax.problemAt (Unbound UnboundLocal name) span)
+  unbound _ = failure (unboundName scope span UnboundLocal name)
   global entry = case entry.ref of
     Resolved.GlobalCtor id → liftEither (bareConstructor scope span id)
     Resolved.GlobalFunction id arity → liftEither
       (bareFunction span name id arity)
-    Resolved.Operation effect index arity →
-      if arity == 0 then failure
-        (Syntax.problemAt (FunctionNeedsCall name) span)
-      else pure (Resolved.OperationRef span effect index)
-    Resolved.BuiltinPrint → pure (Resolved.PrintRef span)
     Resolved.BuiltinShow → pure (Resolved.ShowRef span)
     Resolved.BuiltinCrash → pure (Resolved.CrashRef span)
-    Resolved.LegacyFail → failReference Nothing span
 
 bareFunction
   ∷ Syntax.Span
@@ -88,17 +77,12 @@ callName nested scope span name arguments = maybe' globalCall localCall
   globalCall _ = maybe' viaGlobal imported (findImport scope name)
   imported = importedCall span arguments resolved
   viaGlobal _ = maybe' unbound dispatch (findGlobal scope name)
-  unbound _ = failure
-    (Syntax.problemAt (Unbound UnboundFunction name) span)
+  unbound _ = failure (unboundName scope span UnboundFunction name)
   dispatch global = case global.ref of
     Resolved.GlobalFunction id _ → Resolved.Call span id <$> resolved
     Resolved.GlobalCtor id → constructorCall scope span name id resolved
-    Resolved.Operation effect index _ → Resolved.Perform span effect index
-      <$> resolved
-    Resolved.BuiltinPrint → Resolved.Print span <$> resolved
     Resolved.BuiltinShow → Resolved.Show span <$> resolved
     Resolved.BuiltinCrash → Resolved.Crash span <$> resolved
-    Resolved.LegacyFail → failCall Nothing span arguments resolved
   resolved = traverse nested arguments
 
 constructorCall

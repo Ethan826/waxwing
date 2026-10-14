@@ -7,8 +7,9 @@ import { markProbes } from './regression-fx008-marks.mjs';
 import { fxProbes } from './regression-fx.mjs';
 import { diagProbes } from './regression-diag.mjs';
 import { textProbes } from './regression-text.mjs';
+import { fx020Probes } from './regression-fx020.mjs';
 
 export const externalProbes = {
   ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes,
-  ...markProbes, ...fxProbes, ...textProbes, ...diagProbes
+  ...markProbes, ...fxProbes, ...textProbes, ...fx020Probes, ...diagProbes
 };

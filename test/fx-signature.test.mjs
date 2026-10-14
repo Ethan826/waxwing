@@ -74,6 +74,14 @@ const rejectedCases = [
   ['qualified nullary operation',
     clock + 'fn main(): Int with Clock = Clock.now;',
     'E_ARITY', 'Expected Clock.now()'],
+  ['bare nullary operation is unbound',
+    clock + 'fn main(): Int with Clock = now();',
+    'E_UNBOUND',
+    'Unbound function now; use Clock.now, or import it with Clock { now }'],
+  ['bare nullary operation as a value is unbound',
+    clock + 'fn main(): Int with Clock = now;',
+    'E_UNBOUND',
+    'Unbound local now; use Clock.now, or import it with Clock { now }'],
   ['print function', 'fn main(): Unit with Console = Console.print(fn(x) => '
     + 'x);',
     'E_TYPE', 'Expected a printable value, found _ -> _']

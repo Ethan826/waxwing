@@ -6,10 +6,9 @@ const scoped = 50;
 const cleanup = 25;
 const texts = 250;
 const literals = 75;
-// FX020 spellings (test/fx-gen-names.mjs): about 500, 220, 100 and 150 of
-// 500 programs perform an operation written qualified, imported, through
-// an alias, or bare.
-const spellings = { qualified: 400, import: 150, alias: 50, bare: 75 };
+// FX020 spellings (test/fx-gen-names.mjs): programs that perform an
+// operation written qualified, imported, or through an alias.
+const spellings = { qualified: 400, import: 150, alias: 50 };
 
 // [name, interpreter events (any of them counts), minimum programs]
 export const categories = [
@@ -53,9 +52,7 @@ export const categories = [
   ['spelling: an imported operation performed', ['spelling-import'],
     spellings.import],
   ['spelling: an operation performed through an alias', ['spelling-alias'],
-    spellings.alias],
-  // Bare operation names go in FX020 Task 7.
-  ['spelling: a bare operation performed', ['spelling-bare'], spellings.bare]
+    spellings.alias]
 ];
 
 // outcomes: the interpreter outcomes of the run's programs.

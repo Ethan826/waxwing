@@ -129,7 +129,7 @@ test('the shrinker replaces subexpressions by literals', () => {
   };
   const smallest = shrink({ fns: [], main }, keep);
   assert.ok(render(smallest).endsWith('fn main(): Unit with Console = { ' +
-    'print(0); };'),
+    'Console.print(0); };'),
     render(smallest));
 });
 

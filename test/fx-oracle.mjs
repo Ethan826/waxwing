@@ -24,9 +24,6 @@ import { evaluateText, noteComparison } from './fx-oracle-text.mjs';
 import { functionScope, operation } from './fx-oracle-names.mjs';
 
 const maximumSteps = 3_000_000;
-// The builtins that are operations (Console.print, Fail.fail): a bare use
-// is the legacy global until FX020 Task 7.
-const bareBuiltins = new Set(['print', 'fail']);
 
 export const interpret = (source, options = {}) => {
   const program = parseProgram(source);
@@ -47,12 +44,8 @@ export const interpret = (source, options = {}) => {
       return { kind: 'fn', name, args: [],
         arity: program.functions.get(name).parameters.length };
     }
-    if (program.ops.has(name)) {
-      const { effect, arity } = program.ops.get(name);
-      return { kind: 'op', name, effect, arity, args: [], spelling: 'bare' };
-    }
     if (builtins.has(name)) return { kind: 'builtin', name, arity: 1,
-      args: [], spelling: bareBuiltins.has(name) ? 'bare' : null };
+      args: [] };
     throw new OracleError(`unknown name ${name}`);
   };
   const scopeOf = declared =>

@@ -8,7 +8,7 @@ import { expectDiagnostic } from './fx-diagnostics-support.mjs';
 // (E_DUPLICATE, the form two user effects give, minus the note: a
 // built-in has no source span). Rows resolve through the same table, so
 // every program that compiled before compiles to the same Go.
-const main = 'fn main(): Unit with Console = print(1);';
+const main = 'fn main(): Unit with Console = Console.print(1);';
 
 for (const [name, declaration] of [
   ['Console', 'effect Console { fn shout(n: Int): Unit; };'],
@@ -25,7 +25,7 @@ for (const [name, declaration] of [
 
 test('the collision is reported at the declaration, not a use', () => {
   const declaration = 'effect Console { fn print(n: Int): Unit; };';
-  const source = 'fn first(): Unit with Console = print(1); '
+  const source = 'fn first(): Unit with Console = Console.print(1); '
     + declaration + main;
   expectDiagnostic(source, {
     code: 'E_DUPLICATE',
@@ -52,13 +52,14 @@ test('Console and Fail rows resolve as before', () => {
     + 'fn b(): Unit with Console { print } = print(1); '
     + 'fn c(): Unit with Console as C = C.print(2); '
     + 'fn main(): Unit with Console = { b(); c(); '
-    + 'print(handle a() { fail(error: E) => match error { E(n) => n } }) };';
+    + 'Console.print(handle a() { fail(error: E) => '
+    + 'match error { E(n) => n } }) };';
   assert.equal(runGo(source), '1\n2\n2\n');
 });
 
 test('Handler(Console) and Handler(Fail(E)) rows resolve as before', () => {
   const source = 'type E = E(Int); '
     + 'fn run(h: Handler(Console), g: Handler(Fail(E))): Int = 4; '
-    + 'fn main(): Unit with Console = print(1);';
+    + 'fn main(): Unit with Console = Console.print(1);';
   assert.equal(runGo(source), '1\n');
 });

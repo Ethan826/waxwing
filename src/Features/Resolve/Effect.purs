@@ -1,6 +1,5 @@
 module Features.Resolve.Effect
   ( effects
-  , globals
   , summaries
   ) where
 
@@ -10,7 +9,6 @@ import Data.Either (Either(..))
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
-import Domain.Ids (EffectId(..))
 import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
@@ -67,17 +65,6 @@ effects types declarations = do
     , parameters: map parameterName effect.parameters
     , operations
     , span: effect.span
-    }
-
-globals ∷ Array Resolved.EffectInfo → Array Resolved.Global
-globals found = Array.concat (Array.mapWithIndex owned found)
-  where
-  owned index effect = Array.mapWithIndex (operation (EffectId index))
-    effect.operations
-  operation effect index info =
-    { name: info.name
-    , ref: Resolved.Operation effect index
-        (Array.length info.parameters)
     }
 
 -- Mark variables belong to function signatures alone (FX008 L6).

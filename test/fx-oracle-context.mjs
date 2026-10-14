@@ -6,7 +6,8 @@ export const comparisons = {
   '<': order => order < 0, '<=': order => order <= 0,
   '>': order => order > 0, '>=': order => order >= 0
 };
-export const builtins = new Set(['print', 'crash', 'fail', 'show']);
+// Global functions only: operation names (print, fail) are never global.
+export const builtins = new Set(['crash', 'show']);
 
 export const matches = (pattern, value, bound) => {
   if (pattern.tag === 'wildcard') return true;

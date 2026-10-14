@@ -59,7 +59,7 @@ const randomFn = (ctx, index) => {
 };
 
 // A function is written with its spelling scheme (test/fx-gen-names.mjs);
-// one without (a hand-built test program) writes bare names.
+// one without (a hand-built test program) qualifies every operation.
 const fnText = fn => {
   const row = fn.names?.rowText ?? fn.rowText;
   return `fn ${fn.name}(${fn.params.map(([name, type]) =>

@@ -23,6 +23,7 @@ import Format.Diagnostic.Mark as Mark
 import Format.Diagnostic.Name (listed)
 import Format.Diagnostic.Name as Name
 import Format.Diagnostic.Note (WireNote, wireNotes)
+import Format.Diagnostic.Qualify as Qualify
 import Format.Diagnostic.Row (equalityMessage, mismatchMessage, shortLabel)
 
 type WireDiagnostic =
@@ -142,6 +143,7 @@ hintMessage = case _ of
     <> name
     <> "?"
   TrailingSemicolon → "; remove the trailing ;?"
+  QualifyOperation name effects → Qualify.hint name effects
   CallbackRow kind name row → "; " <> Callback.hint kind name row
   where
   counted count

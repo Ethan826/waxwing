@@ -54,14 +54,10 @@ resolve program = do
   -- Applied once, so the globals are built once rather than per function.
   bodies ← traverse
     ( resolveFunction
-        ( globals tables.ctors <> Effect.globals effects
+        ( globals tables.ctors
             <>
-              [ { name: "print", ref: Resolved.BuiltinPrint }
-              , { name: "show", ref: Resolved.BuiltinShow }
+              [ { name: "show", ref: Resolved.BuiltinShow }
               , { name: "crash", ref: Resolved.BuiltinCrash }
-              -- TRANSITIONAL (FX020 Task 7 removes it): `fail` was a
-              -- keyword; until bare operation names go, it names Fail.fail.
-              , { name: "fail", ref: Resolved.LegacyFail }
               ]
         )
         tables

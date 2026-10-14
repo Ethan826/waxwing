@@ -67,6 +67,9 @@ data EntryKind
 data Hint
   = MissingArguments String Int
   | TrailingSemicolon
+  -- An unbound bare operation name (FX020): the name and the effects that
+  -- declare it, built-ins first, then in declaration order. Never chosen.
+  | QualifyOperation String (Array String)
   -- A callback row that lacks a label (FX017, FX018): the callback's name,
   -- when it has one, and the row as `with` should write it.
   | CallbackRow CallbackKind (Maybe String) String

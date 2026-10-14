@@ -4,7 +4,7 @@ import { outcome } from './fx-oracle.mjs';
 
 // FX020 Task 5: the reference interpreter reads qualified operations,
 // signature aliases and imports, with Console and Fail as effects (design
-// §1-§4). Bare names keep resolving as globals until Task 7. Each expected
+// §1-§4). Bare operation names are unbound (Task 7). Each expected
 // output is the one the compiled Go gives (test/fx020-*.test.mjs).
 const seen = source => {
   const { stdout, stderr, status } = outcome(source);
@@ -13,12 +13,13 @@ const seen = source => {
 const prints = (source, stdout) =>
   assert.deepEqual(seen(source), { stdout, stderr: '', status: 0 });
 const logs = 'effect Log { fn log(n: Int): Unit; fn info(n: Int): Unit; }; ';
-const printing = 'with handler Log { log(n) => print(n), '
-  + 'info(n) => print(n + 100) } ';
+const printing = 'with handler Log { log(n) => Console.print(n), '
+  + 'info(n) => Console.print(n + 100) } ';
 const main = body => `fn main(): Unit with Console = ${body};`;
 const database = 'effect Database { fn query(id: Int): Int; }; ';
 const families = 'type E1 = E1(Int); type E2 = E2(Int); ';
-const both = 'fn main(): Unit with Console = print(handle handle both() '
+const both = 'fn main(): Unit with Console = '
+  + 'Console.print(handle handle both() '
   + '{ fail(error: E1) => 10 } { fail(error: E2) => 20 });';
 
 test('Log.log, Console.print and Fail.fail are qualified calls', () => {
@@ -32,7 +33,7 @@ test('a qualified operation is a value', () => {
   const twice = database + 'fn twice(f: Int -> Int with Database, n: Int): '
     + 'Int with Database = f(f(n)); ';
   prints(twice + main('with handler Database { query(id) => id + 1 } '
-    + '{ print(twice(Database.query, 1)) }'), '3\n');
+    + '{ Console.print(twice(Database.query, 1)) }'), '3\n');
   prints('type E = E(Int); fn apply(f: E -> Int with Fail(E)): Int '
     + 'with Fail(E) = f(E(3)); fn main(): Int = handle apply(Fail.fail) '
     + '{ fail(error: E) => match error { E(n) => n } };', '3\n');
@@ -41,7 +42,7 @@ test('a qualified operation is a value', () => {
 test('two effects declaring log reach their own handlers', () => {
   prints('effect Audit { fn log(n: Int): Unit; }; ' + logs
     + 'fn work(): Unit with Audit + Log = { Audit.log(1); Log.log(2) }; '
-    + main('with handler Audit { log(n) => print(n + 10) } '
+    + main('with handler Audit { log(n) => Console.print(n + 10) } '
       + `{ ${printing}{ work() } }`), '11\n2\n');
 });
 
@@ -55,7 +56,8 @@ test('imports bind bare names, renamed, with a trailing comma', () => {
 test('an alias leaves the canonical name valid', () => {
   prints(database + 'fn f(): Int with Database as D = '
     + 'D.query(1) + Database.query(2); '
-    + main('with handler Database { query(id) => id + 10 } { print(f()) }'),
+    + main('with handler Database { query(id) => id + 10 } '
+      + '{ Console.print(f()) }'),
   '23\n');
   prints(logs + 'fn f(): Unit with Log as L { info as note } + Console '
     + '{ print as say } = { L.log(1); note(2); say(3) }; '
@@ -65,7 +67,8 @@ test('an alias leaves the canonical name valid', () => {
 test('Console { print } and Fail(E) { fail } import built-ins', () => {
   prints('type E = E; fn f(): Int with Fail(E) { fail } = fail(E); '
     + 'fn g(): Unit with Console { print } = print(1); '
-    + main('{ g(); print(handle f() { fail(error: E) => 7 }) }'), '1\n7\n');
+    + main('{ g(); Console.print(handle f() { fail(error: E) => 7 }) }'),
+  '1\n7\n');
 });
 
 test('two Fail families import under two names; Fail.fail infers', () => {
@@ -90,24 +93,22 @@ test('each performed operation reports how it was spelled', () => {
   for (const spelling of ['alias', 'import', 'qualified']) {
     assert.ok(events.has(`spelling-${spelling}`), spelling);
   }
-  assert.ok(!events.has('spelling-bare'));
-  const bare = outcome(logs + main(`${printing}{ log(1) }`)).events;
-  assert.ok(bare.has('spelling-bare'));
+  assert.ok(![...events].some(event => event === 'spelling-bare'));
 });
 
 test('an imported operation is a value', () => {
   prints('type E = E(Int); fn apply(f: E -> Int with Fail(E)): Int '
     + 'with Fail(E) = f(E(3)); '
     + 'fn run(): Int with Fail(E) { fail } = apply(fail); '
-    + main('print(handle run() { fail(error: E) => match error '
+    + main('Console.print(handle run() { fail(error: E) => match error '
       + '{ E(n) => n } })'), '3\n');
 });
 
 test('an import through a parameterised effect', () => {
   prints('effect State(s) { fn get(): s; fn put(value: s): Unit; }; '
     + 'fn f(): Int with State(Int) { get } = get() + 1; '
-    + main('print(with handler State(Int) { get() => 41, put(value) => () } '
-      + '{ f() })'), '42\n');
+    + main('Console.print(with handler State(Int) '
+      + '{ get() => 41, put(value) => () } { f() })'), '42\n');
 });
 
 test('an import shadows a global function', () => {
@@ -118,7 +119,7 @@ test('an import shadows a global function', () => {
 
 test('a parameter, a let and a lambda binder each shadow an import', () => {
   const run = (text, shown) => seen(logs + 'fn ' + text
-    + main(`${printing}{ print(${shown}) }`)).stdout;
+    + main(`${printing}{ Console.print(${shown}) }`)).stdout;
   assert.equal(run('f(log: Int): Int with Log { log } = log + 1; ', 'f(4)'),
     '5\n');
   assert.equal(run('f(): Int with Log { log } = { let log = 7; log + 1 }; ',
@@ -151,6 +152,12 @@ test('imports are scoped to their own function', () => {
   assert.equal(found.stderr, 'oracle error: unknown name note\n');
 });
 
-test('bare operation names still resolve as globals', () => {
-  prints(logs + main(`${printing}{ log(1); info(2) }`), '1\n102\n');
+test('bare operation names are unknown, print and fail included', () => {
+  for (const body of [`${printing}{ log(1) }`, 'print(1)', 'fail(E)']) {
+    const found = seen('type E = E; ' + logs + main(body));
+    assert.equal(found.status, -1);
+    assert.match(found.stderr, /^oracle error: unknown name \w+\n$/);
+  }
+  const value = seen('type E = E; fn main(): Unit = { let f = fail; () };');
+  assert.equal(value.stderr, 'oracle error: unknown name fail\n');
 });

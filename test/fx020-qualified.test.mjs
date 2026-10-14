@@ -1,18 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Left, Right } from '../output/Data.Either/index.js';
+import { Right } from '../output/Data.Either/index.js';
 import { compile } from '../output/Program.Compile/index.js';
 import { runGo, rejected, rejectedAt } from './support.mjs';
 import { expectDiagnostic, log, database as nullary, db } from
   './fx-diagnostics-support.mjs';
 
-// FX020 Task 2: `Effect.op(args)` and `Effect.op` resolve by declaration
-// to the nodes the bare names resolve to; bare names still work.
-const goOf = source => {
-  const result = compile(source);
-  assert.ok(result instanceof Right, JSON.stringify(result));
-  return result.value0;
-};
+// FX020 Task 2: `Effect.op(args)` and `Effect.op` resolve by declaration.
+// Bare operation names are unbound since Task 7 (test/fx020-unbound).
 const database = 'effect Database { fn query(id: Int): Int; }; ';
 const twice = database + 'fn twice(f: Int -> Int with Database, n: Int): '
   + 'Int with Database = f(f(n)); ';
@@ -20,7 +15,7 @@ const handled = 'with handler Database { query(id) => id + 1 } ';
 
 test('Log.log(1) performs', () => {
   assert.equal(runGo(log + 'fn main(): Unit with Console = with handler Log '
-    + '{ log(n) => print(n) } { Log.log(1) };'), '1\n');
+    + '{ log(n) => Console.print(n) } { Log.log(1) };'), '1\n');
 });
 
 test('Console.print(1) prints', () => {
@@ -33,33 +28,9 @@ test('Fail.fail(E) is caught by handle', () => {
     + '{ fail(error: DbError) => 7 };'), '7\n');
 });
 
-test('a bare fail(E) still works through the legacy global', () => {
-  assert.equal(runGo(db + 'fn main(): Int = handle fail(DbError) '
-    + '{ fail(error: DbError) => 7 };'), '7\n');
-});
-
-test('qualified and bare forms emit identical Go', () => {
-  const pairs = [
-    [db + 'fn main(): Int = handle fail(DbError) '
-      + '{ fail(error: DbError) => 7 };',
-    db + 'fn main(): Int = handle Fail.fail(DbError) '
-      + '{ fail(error: DbError) => 7 };'],
-    ['fn main(): Unit with Console = print(1);',
-      'fn main(): Unit with Console = Console.print(1);'],
-    [log + 'fn main(): Unit = with handler Log { log(n) => () } { log(1) };',
-      log + 'fn main(): Unit = with handler Log { log(n) => () } '
-      + '{ Log.log(1) };'],
-    [twice + 'fn main(): Int = ' + handled + '{ twice(query, 1) };',
-      twice + 'fn main(): Int = ' + handled + '{ twice(Database.query, 1) };']
-  ];
-  for (const [bare, qualified] of pairs) {
-    assert.equal(goOf(qualified), goOf(bare));
-  }
-});
-
 test('map(Database.query, ids) passes a reference', () => {
   assert.equal(runGo(twice + 'fn main(): Unit with Console = '
-    + handled + '{ print(twice(Database.query, 1)) };'), '3\n');
+    + handled + '{ Console.print(twice(Database.query, 1)) };'), '3\n');
 });
 
 test('Database.query in a with-Log function is an effect error', () => {
@@ -88,8 +59,8 @@ test('two effects declaring log reach their own handlers', () => {
   const audit = 'effect Audit { fn log(n: Int): Unit; }; ';
   assert.equal(runGo(audit + log + 'fn work(): Unit with Audit + Log = '
     + '{ Audit.log(1); Log.log(2) }; fn main(): Unit with Console = '
-    + 'with handler Audit { log(n) => print(n + 10) } '
-    + 'with handler Log { log(n) => print(n + 20) } { work() };'),
+    + 'with handler Audit { log(n) => Console.print(n + 10) } '
+    + 'with handler Log { log(n) => Console.print(n + 20) } { work() };'),
   '11\n22\n');
 });
 
@@ -118,7 +89,8 @@ test('a nullary operation named without a call is E_ARITY', () => {
 });
 
 test('fail with the wrong shape is rejected where it is written', () => {
-  const none = rejectedAt('fn main(): Int = fail();', 'E_ARITY', 'fail()');
+  const none = rejectedAt('fn main(): Int = Fail.fail();', 'E_ARITY',
+    'Fail.fail()');
   assert.equal(none.message, 'Wrong number of arguments');
   rejectedAt('fn main(): Int = Fail.fail(1, 2);', 'E_ARITY',
     'Fail.fail(1, 2)');
@@ -129,8 +101,8 @@ test('fail with the wrong shape is rejected where it is written', () => {
 });
 
 test('a Fail span ends at its payload, as before', () => {
-  const found = rejectedAt('fn f(): Int = fail(1); fn main(): Int = 1;',
-    'E_EFFECT', 'fail(1');
+  const found = rejectedAt('fn f(): Int = Fail.fail(1); fn main(): Int = 1;',
+    'E_EFFECT', 'Fail.fail(1');
   assert.equal(found.message, 'f performs Fail(Int), which its signature '
     + 'does not allow');
 });
