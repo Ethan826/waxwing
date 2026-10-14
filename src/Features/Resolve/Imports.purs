@@ -6,6 +6,7 @@ import Data.Either (Either(..), either)
 import Data.Foldable (foldM)
 import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Tuple (Tuple(..))
+import Data.Tuple as Tuple
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Row (Label(..), Row(..))
@@ -28,19 +29,35 @@ bindings
   → TyRow Resolved.VarId
   → Either Syntax.Diagnostic Bindings
 bindings declarations infos function row = do
-  aliased ← foldM (alias declarations) [] labels
-  imported ← foldM (importing infos) [] pairs
+  seen ← foldM (labelled declarations infos) none pairs
   pure
-    { aliases: map aliasOf aliased
-    , imports: map entryOf imported
+    { aliases: map aliasOf seen.aliased
+    , imports: map entryOf seen.imported
     }
   where
+  none = { aliased: [], imported: [] }
   labels = maybe [] rowLabels function.row
   rowLabels (Syntax.RowRef _ found _) = found
   pairs = Array.zip labels (resolvedLabels row)
   resolvedLabels (Row found _) = found
   aliasOf found = { name: found.name, effect: found.effect }
   entryOf found = found.entry
+
+-- What the labels so far bound.
+type Seen = { aliased ∷ Array Aliased, imported ∷ Array Bound }
+
+-- One label at a time, its alias before its imports, so the first error in
+-- source order is the one reported (R19).
+labelled
+  ∷ Array Syntax.EffectDecl
+  → Array Resolved.EffectInfo
+  → Seen
+  → Tuple Syntax.LabelRef (Label (Resolved.Ty Resolved.VarId))
+  → Either Syntax.Diagnostic Seen
+labelled declarations infos seen pair = do
+  aliased ← alias declarations seen.aliased (Tuple.fst pair)
+  imported ← importing infos seen.imported pair
+  pure { aliased, imported }
 
 type Aliased = { name ∷ String, effect ∷ String, span ∷ Syntax.Span }
 

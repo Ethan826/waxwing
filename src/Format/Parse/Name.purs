@@ -9,6 +9,7 @@ import Format.Parse.Grammar
   , commaList
   , dispatch
   , expect
+  , ifQualifier
   , name
   , on
   , optionalOn
@@ -41,22 +42,21 @@ data Tail = Bare | Applied (Array Expr) | Member Token (Maybe (Array Expr))
 -- A capitalized name: a constructor or `Effect.op`. It has the shape of
 -- `named`, with the choice made by the one dispatch after the name, so a
 -- constructor argument costs no frame beyond a plain call (G002, ADR 006).
--- Only capitalized names read `.`; a lowercase receiver never does, so
+-- The `.` must touch both names (R19); otherwise it is a stray token, as
+-- before FX020. Only capitalized names read `.`; a lowercase receiver never does, so
 -- `r.field` can reuse `.` later (R001). Spans run from the name through the
 -- last character written, like a variable or a call.
 upperNamed ∷ Parser Expr → Parser Primary
 upperNamed inner = spanned primaryOf
   ( parts <$> name
-      <*> dispatch
-        [ on "(" (Applied <$> arguments)
-        , on "." (Member <$ expect "." <*> name <*> optionalOn "(" arguments)
-        ]
-        (pure Bare)
+      <*> dispatch [ on "(" (Applied <$> arguments) ]
+        (ifQualifier member (pure Bare))
   )
   where
   primaryOf span found = { value: tailOf span found, start: span.start }
   parts identifier found = { identifier, found }
   arguments = expect "(" *> commaList inner <* expect ")"
+  member = Member <$ expect "." <*> name <*> optionalOn "(" arguments
 
 tailOf ∷ Span → { identifier ∷ Token, found ∷ Tail } → Expr
 tailOf span parsed = case parsed.found of

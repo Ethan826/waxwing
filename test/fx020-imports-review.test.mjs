@@ -89,3 +89,27 @@ test('an unknown import is reported before a later duplicate', () => {
     notes: [['{ log, info', 'log', 'first imported here']]
   });
 });
+
+// R19: errors come in source order across aliases and imports, one label
+// at a time, a label's alias before its imports.
+const store = 'effect Database { fn query(id: Int): Int; }; ';
+
+test('an earlier duplicate import beats a later alias collision', () => {
+  const source = logs + store + 'fn f(): Unit with Log { log as note, info '
+    + 'as note } + Database as Log = (); fn main(): Unit = ();';
+  expectDiagnostic(source, {
+    code: 'E_SYNTAX', message: 'note is imported twice in this signature',
+    at: ['info as note', 'note'],
+    notes: [['{ log as note', 'note', 'first imported here']]
+  });
+});
+
+test('an alias collision before a later duplicate import is first', () => {
+  const source = logs + store + 'fn f(): Unit with Database as Log + Log '
+    + '{ log, info as log } = (); fn main(): Unit = ();';
+  expectDiagnostic(source, {
+    code: 'E_SYNTAX', message: 'Log is already an effect name',
+    at: ['Database as Log', 'Log'],
+    notes: [['effect Log', 'Log', 'declared here']]
+  });
+});

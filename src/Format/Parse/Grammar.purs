@@ -15,6 +15,7 @@ module Format.Parse.Grammar
   , onWhen
   , dispatch
   , ifSecond
+  , ifQualifier
   , optionalOn
   , sepBy1
   , sepByTrailing1
@@ -49,6 +50,7 @@ import Format.Parse.Cursor
   , leading
   , nestedAt
   , peekText
+  , touchesQualifier
   , rightAt
   , separated
   , shifting
@@ -139,6 +141,13 @@ ifSecond ∷ ∀ a. (String → Boolean) → Parser a → Parser a → Parser a
 ifSecond accepts (Parser yes) (Parser no) = Parser chosen
   where
   chosen state = (if accepts (peekText (skip state)) then yes else no) state
+
+-- Chooses on whether a `.` touches the token before and after it, so
+-- `Log . log` and `Log\n.log` are not qualifiers (R19). Consumes nothing.
+ifQualifier ∷ ∀ a. Parser a → Parser a → Parser a
+ifQualifier (Parser yes) (Parser no) = Parser chosen
+  where
+  chosen state = (if touchesQualifier state then yes else no) state
 
 optionalOn ∷ ∀ a. String → Parser a → Parser (Maybe a)
 optionalOn text parser = dispatch [ on text (Just <$> parser) ]

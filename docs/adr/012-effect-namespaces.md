@@ -33,7 +33,10 @@ whose row lacks Database resolves, and effect checking then rejects it with
 today's E_EFFECT (`f performs Database, which its signature does not
 allow`). Resolution never depends on inferred rows, which keeps INF001
 unblocked. `.` is a token; only an uppercase name followed by `.` is a
-qualifier (Format.Parse.Name `upperNamed`), so `x.y` on a lowercase value is
+qualifier (Format.Parse.Name `upperNamed`) whose `.` touches both names
+(R19: `Log . log(1)` and `Log\n.log(1)` are a plain `Log` followed by a stray
+`.`, `Expected ';'`; Grammar `ifQualifier`, no parser stack cost: depth probe
+259 / 296 / 396 / 326 before and after), so `x.y` on a lowercase value is
 not read as one and R001's `r.field` can reuse `.`. `1.5` stays E_LEX.
 
 An unknown qualifier or member uses existing texts only: `Nope.log(1)` is
@@ -120,7 +123,10 @@ All approved by the user on 2026-10-13.
   aliases are allowed only in a function's own row`, at the alias name, else
   the `{`.
 - An import naming a non-operation: the existing E_HANDLER `nope is not an
-  operation of Log`, without a note. Errors are raised in source order.
+  operation of Log`, without a note. Errors are raised in source order
+  across aliases and imports, one label at a time, a label's alias before its
+  imports (R19: `{ log as note, info as note } + Database as Log` reports the
+  duplicate import, not the later `Log` collision).
 
 Notes on E_SYNTAX problems now render (`Format.Diagnostic` `noted`), with
 new note reasons `EffectDeclaredHere`, `FirstImportedHere` and
@@ -137,8 +143,9 @@ Format.Diagnostic.Qualify):
 - one effect declares the name (approved): `Unbound function log; use
   Log.log, or import it with Log { log }`;
 - several (R18, **pending the user's approval or rewording**, pinned in
-  test/fx020-unbound.test.mjs): `Unbound function log; use Log.log or
-  Audit.log, or import one with Log { log } or Audit { log }`; three or
+  test/fx020-unbound.test.mjs, for a program declaring Audit before Log):
+  `Unbound function log; use Audit.log or Log.log, or import one with
+  Audit { log } or Log { log }`; three or
   more: `A.log, B.log or C.log` and `A { log }, B { log } or C { log }`;
 - candidates are built-in effects declaring the name first, then user effects
   in declaration order; the hint is not narrowed by the function's row

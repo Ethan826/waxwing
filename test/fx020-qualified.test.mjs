@@ -132,3 +132,29 @@ test('a lowercase receiver is never read as a qualifier', () => {
   assert.equal(found.message, "Expected ';'");
   assert.deepEqual(found.span.start.offset, source.indexOf('.'));
 });
+
+// R19: a qualifier's `.` touches both names. Otherwise `Log` is a plain
+// name and the `.` is the stray token it always was: Expected ';' there.
+const spaced = [
+  ['Log . log(1)', 'Log . log(1)'],
+  ['Log\n.log(1)', 'Log\n.log(1)'],
+  ['Log .log(1)', 'Log .log(1)'],
+  ['Log. log(1)', 'Log. log(1)'],
+  ['Log.\nlog(1)', 'Log.\nlog(1)']
+];
+
+for (const [title, call] of spaced) {
+  test(`${JSON.stringify(title)} is not a qualified call`, () => {
+    const source = log + 'fn main(): Unit with Log = ' + call + ';';
+    const found = rejected(source, 'E_SYNTAX');
+    assert.equal(found.message, "Expected ';'");
+    assert.equal(found.span.start.offset, source.indexOf('.'));
+    assert.equal(found.span.end.offset, source.indexOf('.') + 1);
+  });
+}
+
+test('an adjacent qualifier still parses over two lines of arguments', () => {
+  const source = log + 'fn main(): Unit with Log = Log.log(\n1\n);';
+  assert.equal(rejected(source, 'E_EFFECT').message,
+    'Unhandled Log in main');
+});

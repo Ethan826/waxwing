@@ -4446,8 +4446,15 @@ Delivered:
   reference is an eta lambda. Console and Fail are built-in declarations with
   no EffectIds (runtime keys unchanged).
 - Unbound bare operation names keep their error with a hint; the
-  multi-candidate wording (R18) awaits the user. `print` and `show` remain
-  compiler-provided until C001.
+  multi-candidate wording (R18) awaits the user. `Console.print` and `show`
+  remain compiler-provided until C001.
+- Final review (R19): a qualifier's `.` touches both names (`Log . log(1)`
+  and `Log\n.log(1)` give the stray-`.` `Expected ';'` at the `.`;
+  test/fx020-qualified.test.mjs), at no parser stack cost (depth probe,
+  limit lifted, isolated copies at 9c488ca and after: constructor-argument
+  259, call-argument 296, parens 396, parens-in-call-in-constructor 326,
+  all unchanged); aliases and imports are folded one label at a time, so the
+  first error in source order wins (test/fx020-imports-review.test.mjs).
 - The corpus (examples, 101 fixtures, tests; about 920 automatic edits
   (sum of the Task 6 report's chunk figures) plus manual ones) was migrated by a
   one-off tool, then the tool, the paired run and bare-name support were

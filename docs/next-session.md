@@ -9,8 +9,9 @@ reports: .superpowers/sdd/2026-10-13-effect-namespaces-plan/.
 
 Waiting on the user:
 1. **The multi-candidate hint wording** (ruling R18, pinned in
-   test/fx020-unbound.test.mjs). Two candidates: `Unbound function log; use
-   Log.log or Audit.log, or import one with Log { log } or Audit { log }`;
+   test/fx020-unbound.test.mjs). Two candidates, for a program declaring
+   Audit before Log (declaration order): `Unbound function log; use
+   Audit.log or Log.log, or import one with Audit { log } or Log { log }`;
    three or more: `A.log, B.log or C.log` and `A { log }, B { log } or C { log
    }`. Approve or reword; a reword changes one text and its tests
    (Format.Diagnostic.Qualify).
@@ -52,7 +53,8 @@ Order from here:
    The width.mjs argv guard and the fence toggle for mixed fence characters
    are phase-2 items.
 3. IDE001 waits to be rebased onto main after Text merges.
-4. FX020 (effect operation namespaces; spec awaiting the user's review) is
+4. FX020 (effect operation namespaces; spec awaiting the user's review
+   (since implemented; see top)) is
    next after that, then R001.
 
 Open items from Text: `show` is compiler-provided until C001 (ADR 011);

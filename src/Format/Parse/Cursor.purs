@@ -7,6 +7,7 @@ module Format.Parse.Cursor
   , skip
   , current
   , peekText
+  , touchesQualifier
   , nextSpan
   , failAt
   , expected
@@ -89,6 +90,17 @@ skip state = maybe state (advance state) (current state)
 
 peekText ∷ State → String
 peekText state = state.upcoming
+
+-- A `.` directly after the token just consumed and directly before the
+-- one after it: the shape of a qualifier `Effect.op` (FX020, R19).
+touchesQualifier ∷ State → Boolean
+touchesQualifier state = state.upcoming == "." && maybe false dotJoins
+  (current state)
+  where
+  dotJoins dot = dot.span.start.offset == state.lastEnd.offset
+    && maybe false (startsAt dot.span.end.offset)
+      (Array.index state.tokens (state.index + 1))
+  startsAt offset found = found.span.start.offset == offset
 
 textAt ∷ Array Token → Int → String
 textAt tokens index = maybe "<end>" tokenText (Array.index tokens index)

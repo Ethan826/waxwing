@@ -337,11 +337,12 @@ a value, qualified by its effect: `Database.query(id)`, `Console.print(x)`,
 effects may declare the same operation name, and an operation may share a
 name with a function: `fn log` and `Log.log` are different things.
 Qualified names resolve by declaration, never by the row: `Database.query` in
-a function whose row lacks
-Database resolves, and is then E_EFFECT `f performs Database, which its
-signature does not allow`. `Nope.log(1)` is `Unbound function Nope.log`, and
+a function whose row lacks Database resolves, and is then E_EFFECT `f
+performs Database, which its signature does not allow`. `Nope.log(1)` is `Unbound function Nope.log`, and
 `Log.nope(1)` is E_HANDLER `nope is not an operation of Log`. A qualifier is
-an uppercase name directly followed by `.`; lowercase `x.y` is not one.
+an uppercase name directly followed by `.` and then the operation name, with
+no whitespace between the three (`Log . log(1)` is `Expected ';'` at the
+`.`); lowercase `x.y` is not one.
 `Fail.fail(e)` takes its family from the type of `e`, and `Fail.fail` alone
 is a function value of the payload, `E -> a` performing `Fail(E)`; it is not a
 keyword, and the `handle` clause head `fail(error: E) => r` is unchanged.
@@ -367,12 +368,13 @@ that name. A bare operation name with no binding is E_UNBOUND with a hint
 that only lists fixes (it never resolves the name, and does not depend on the
 row): `Unbound function log; use Log.log, or import it with Log { log }`. With
 several candidates, in declaration order, built-ins first: `Unbound function
-log; use Log.log or Audit.log, or import one with Log { log } or Audit { log
-}` (this wording awaits the user's approval; three or more read `A.log,
-B.log or C.log`). `print` is `Console.print` and `fail` is `Fail.fail`; there
-is no bare `print`. `Console.print` is compiler-provided because it ranges
-over every printable type, a temporary gap until C001, and `show` is a bare
-global function, likewise compiler-provided until C001.
+log; use Audit.log or Log.log, or import one with Audit { log } or Log { log
+}` for a program declaring Audit before Log (this wording awaits the user's
+approval; three or more read `A.log, B.log or C.log`). `print` is
+`Console.print` and `fail` is `Fail.fail`; there is no bare `print`.
+`Console.print` is compiler-provided because it ranges over every printable
+type, a temporary gap until C001, and `show` is a bare global function,
+likewise compiler-provided until C001.
 
 Errors (E_SYNTAX unless noted; each has an exact-text test in
 test/fx020-*.test.mjs):
