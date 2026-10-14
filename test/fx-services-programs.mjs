@@ -80,7 +80,7 @@ fn main(): Unit with Console = {
   let query = liveDatabase();
   let now = systemClock();
   let log = consoleLogger();
-  print(report(query, now, log, 1, 2));
-  print(report(query, now, log, 3, 4))
+  Console.print(report(query, now, log, 1, 2));
+  Console.print(report(query, now, log, 3, 4))
 };
 `;

@@ -2,23 +2,23 @@ effect Database { fn query(id: Int): Int; };
 effect Clock { fn now(): Int; };
 effect Log { fn log(n: Int): Unit; };
 
-fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
+fn closeLog(id: Int): Unit with nofail Log = Log.log(id + 1000);
 
 fn fetch(id: Int): Int with Database + Log = {
-  let row = query(id);
-  log(row);
+  let row = Database.query(id);
+  Log.log(row);
   row
 };
 
 fn stamp(id: Int): Int with Clock + Log = {
-  let at = now();
-  log(at + id);
+  let at = Clock.now();
+  Log.log(at + id);
   at
 };
 
 fn audited(id: Int): Int with Database + Clock + nofail Log = {
   defer closeLog(id);
-  defer log(id);
+  defer Log.log(id);
   fetch(id) + stamp(id)
 };
 
@@ -33,14 +33,14 @@ fn systemClock(): Handler(Clock with pure) =
   handler Clock { now() => 100 };
 
 fn consoleLogger(): Handler(nofail Log with Console + ...e) =
-  handler Log { log(n) => print(n) };
+  handler Log { log(n) => Console.print(n) };
 
 fn main(): Unit with Console =
   with liveDatabase() {
     with systemClock() {
       with consoleLogger() {
-        print(report(1, 2));
-        print(report(3, 4))
+        Console.print(report(1, 2));
+        Console.print(report(3, 4))
       }
     }
   };

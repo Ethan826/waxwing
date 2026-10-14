@@ -32,7 +32,7 @@ test('a dropped handler: headline, origin, path and boundary notes', () => {
     code: 'E_EFFECT', message: 'Unhandled Clock in main', at: ['report(1, 2)'],
     notes: [['audited(first)', 'audited(first)', 'through report'],
       ['stamp(id)', 'stamp(id)', 'through audited'],
-      ['let at = now();', 'now()', 'Clock is performed here'],
+      ['let at = Clock.now();', 'Clock.now()', 'Clock is performed here'],
       [main, main, 'main may perform only Console']]
   });
 });

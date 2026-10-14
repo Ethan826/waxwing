@@ -13,7 +13,7 @@ fn letter(name: Text, id: Int): Text = """
 
 fn rawPath(): Text = #"C:\users\${name}\notes"#;
 
-fn entryFor(id: Int): Entry with Directory = Entry(lookup(id), id);
+fn entryFor(id: Int): Entry with Directory = Entry(Directory.lookup(id), id);
 
 fn directory(): Handler(Directory with pure) =
   handler Directory {
@@ -22,14 +22,14 @@ fn directory(): Handler(Directory with pure) =
 
 fn main(): Unit with Console =
   with directory() {
-    print(
-      lookup(2)
+    Console.print(
+      Directory.lookup(2)
         |> greeting
         |> welcome
     );
-    print(letter(lookup(1), 1));
-    print(rawPath());
-    print(entryFor(1));
-    print("shown: ${show(entryFor(2))}");
-    print(show(lookup(1) < lookup(2)))
+    Console.print(letter(Directory.lookup(1), 1));
+    Console.print(rawPath());
+    Console.print(entryFor(1));
+    Console.print("shown: ${show(entryFor(2))}");
+    Console.print(show(Directory.lookup(1) < Directory.lookup(2)))
   };

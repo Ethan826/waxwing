@@ -45,23 +45,23 @@ effect Database { fn query(id: Int): Int; };
 effect Clock { fn now(): Int; };
 effect Log { fn log(n: Int): Unit; };
 
-fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
+fn closeLog(id: Int): Unit with nofail Log = Log.log(id + 1000);
 
 fn fetch(id: Int): Int with Database + Log = {
-  let row = query(id);
-  log(row);
+  let row = Database.query(id);
+  Log.log(row);
   row
 };
 
 fn stamp(id: Int): Int with Clock + Log = {
-  let at = now();
-  log(at + id);
+  let at = Clock.now();
+  Log.log(at + id);
   at
 };
 
 fn audited(id: Int): Int with Database + Clock + nofail Log = {
   defer closeLog(id);
-  defer log(id);
+  defer Log.log(id);
   fetch(id) + stamp(id)
 };
 
@@ -76,14 +76,14 @@ fn systemClock(): Handler(Clock with pure) =
   handler Clock { now() => 100 };
 
 fn consoleLogger(): Handler(nofail Log with Console + ...e) =
-  handler Log { log(n) => print(n) };
+  handler Log { log(n) => Console.print(n) };
 
 fn main(): Unit with Console =
   with liveDatabase() {
     with systemClock() {
       with consoleLogger() {
-        print(report(1, 2));
-        print(report(3, 4))
+        Console.print(report(1, 2));
+        Console.print(report(3, 4))
       }
     }
   };
@@ -184,7 +184,7 @@ fn letter(name: Text, id: Int): Text = """
 
 fn rawPath(): Text = #"C:\users\${name}\notes"#;
 
-fn entryFor(id: Int): Entry with Directory = Entry(lookup(id), id);
+fn entryFor(id: Int): Entry with Directory = Entry(Directory.lookup(id), id);
 
 fn directory(): Handler(Directory with pure) =
   handler Directory {
@@ -193,16 +193,16 @@ fn directory(): Handler(Directory with pure) =
 
 fn main(): Unit with Console =
   with directory() {
-    print(
-      lookup(2)
+    Console.print(
+      Directory.lookup(2)
         |> greeting
         |> welcome
     );
-    print(letter(lookup(1), 1));
-    print(rawPath());
-    print(entryFor(1));
-    print("shown: ${show(entryFor(2))}");
-    print(show(lookup(1) < lookup(2)))
+    Console.print(letter(Directory.lookup(1), 1));
+    Console.print(rawPath());
+    Console.print(entryFor(1));
+    Console.print("shown: ${show(entryFor(2))}");
+    Console.print(show(Directory.lookup(1) < Directory.lookup(2)))
   };
 ```
 
@@ -236,7 +236,7 @@ type Error = NotFound(Int) | Forbidden;
 effect Accounts { fn balance(id: Int): Int; };
 
 fn checked(id: Int): Int with Accounts + Fail(Error) =
-  if id < 0 then fail(Forbidden) else balance(id);
+  if id < 0 then Fail.fail(Forbidden) else Accounts.balance(id);
 
 fn total(a: Int, b: Int): Int with Accounts + Fail(Error) =
   checked(a) + checked(b);
@@ -244,8 +244,8 @@ fn total(a: Int, b: Int): Int with Accounts + Fail(Error) =
 fn main(): Unit with Console = {
   let accounts = handler Accounts { balance(id) => id + 100 };
   with accounts {
-    print(handle total(1, 2) { fail(error: Error) => -1 });    // 203
-    print(handle total(1, -2) { fail(error: Error) => -1 })    // -1
+    Console.print(handle total(1, 2) { fail(error: Error) => -1 });    // 203
+    Console.print(handle total(1, -2) { fail(error: Error) => -1 })    // -1
   }
 };
 ```
