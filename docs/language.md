@@ -338,11 +338,11 @@ effects may declare the same operation name, and an operation may share a
 name with a function: `fn log` and `Log.log` are different things.
 Qualified names resolve by declaration, never by the row: `Database.query` in
 a function whose row lacks Database resolves, and is then E_EFFECT `f
-performs Database, which its signature does not allow`. `Nope.log(1)` is `Unbound function Nope.log`, and
-`Log.nope(1)` is E_HANDLER `nope is not an operation of Log`. A qualifier is
-an uppercase name directly followed by `.` and then the operation name, with
-no whitespace between the three (`Log . log(1)` is `Expected ';'` at the
-`.`); lowercase `x.y` is not one.
+performs Database, which its signature does not allow`. `Nope.log(1)` is
+`Unbound function Nope.log`, and `Log.nope(1)` is E_HANDLER `nope is not an
+operation of Log`. A qualifier is an uppercase name directly followed by `.`
+and then the operation name, with no whitespace between the three
+(`Log . log(1)` is `Expected ';'` at the `.`); lowercase `x.y` is not one.
 `Fail.fail(e)` takes its family from the type of `e`, and `Fail.fail` alone
 is a function value of the payload, `E -> a` performing `Fail(E)`; it is not a
 keyword, and the `handle` clause head `fail(error: E) => r` is unchanged.
