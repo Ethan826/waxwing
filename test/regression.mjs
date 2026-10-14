@@ -73,7 +73,7 @@ const exhaustive = () => {
 // has an effect node or layout (design §4), so a Console-only program's Go
 // stays free of `ctx` and byte-identical to its snapshot.
 const effectFreeContext = () => {
-  const result = compile('fn main(): Unit with Console = print(1);');
+  const result = compile('fn main(): Unit with Console = Console.print(1);');
   assert.ok(result instanceof Right, 'effect-free probe program was rejected');
   if (result.value0.includes('ctx')) {
     console.error('ctx emitted for an effect-free program');

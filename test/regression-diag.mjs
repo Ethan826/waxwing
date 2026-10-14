@@ -16,19 +16,19 @@ const expectsDiagnostic = (context, source, code, message, label) => {
 const nestedFail = context => {
   const { compile, wire } = context;
   const source = 'fn hole(u: Unit): a = hole(u); fn h(k: b): a = hole(()); '
-    + 'fn f(): Int with Fail(Int) = fail(h(fn(e) => fail(e))); '
+    + 'fn f(): Int with Fail(Int) = Fail.fail(h(fn(e) => Fail.fail(e))); '
     + 'fn main(): Int = 0;';
   expectsDiagnostic(context, source, 'E_TYPE',
     'Fail needs a concrete error family', 'nested Fail payload');
   const found = wire(compile(source).value0);
-  assert.equal(found.span.start.offset, source.indexOf('fail(e)'),
+  assert.equal(found.span.start.offset, source.indexOf('Fail.fail(e)'),
     'nested Fail payload: wrong span');
 };
 
 const duplicateBinder = context => expectsDiagnostic(
   context,
   'effect Add { fn add(x: Int, y: Int): Int; }; '
-    + 'fn main(): Int = with handler Add { add(x, x) => x } { add(1, 2) };',
+    + 'fn main(): Int = with handler Add { add(x, x) => x } { Add.add(1, 2) };',
   'E_DUPLICATE', 'Duplicate parameter x', 'duplicate handler binder'
 );
 
@@ -73,7 +73,7 @@ const duplicateOperationParameter = context => expectsDiagnostic(
 const deferredFailEffect = context => expectsDiagnostic(
   context,
   'type DbError = DbError; fn f(): Int with pure = { '
-    + 'let raise = fn(error) => fail(error); raise(DbError) }; '
+    + 'let raise = fn(error) => Fail.fail(error); raise(DbError) }; '
     + 'fn main(): Int = 0;',
   'E_EFFECT', 'f performs Fail(DbError), which its signature does not allow',
   'deferred Fail capability'

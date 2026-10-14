@@ -77,7 +77,7 @@ test(`${cases} comparisons agree with the code-point order`, () => {
     pairs.push([left, r.chance(30) ? left + shortText(r) : shortText(r)]);
   }
   const printed = ([left, right]) => operators.map(operator =>
-    `print(${literal(r, [left], ordinary)} ${operator} `
+    `Console.print(${literal(r, [left], ordinary)} ${operator} `
     + `${literal(r, [right], ordinary)});`).join(' ');
   const batch = runGoBatch(import.meta.url, pairs.map((pair, index) => [
     `c${index}`, `fn main(): Unit with Console = { ${printed(pair)} };`]),

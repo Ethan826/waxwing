@@ -34,10 +34,10 @@ const cases = [
     + main('Text', 'apply(show)')],
   ['show console', 'fn apply(f: (Int -> Text with Console)): Text '
     + 'with Console = f(7); fn main(): Unit with Console = '
-    + 'print(apply(show));'],
+    + 'Console.print(apply(show));'],
   ['show fail', err + 'fn apply(f: (Int -> Text with Fail(E))): Text '
     + 'with Fail(E) = f(7); fn main(): Unit with Console = '
-    + 'handle print(apply(show)) { fail(e: E) => print(0) };'],
+    + 'handle Console.print(apply(show)) { fail(e: E) => Console.print(0) };'],
   ['generic', glist + 'fn main(): Bool = show(Cons("a\\n", Nil)) == '
     + '"Cons(\\"a\\\\n\\", Nil)";'],
   ['generic print', glist + main('List(Text)',
@@ -46,12 +46,12 @@ const cases = [
     'Cons("a", Nil) < Cons("b", Nil)')],
   ['generic cmp astral', glist + main('Bool',
     'Cons("\u{1F600}", Nil) > Cons("\\u{FFFD}", Nil)')],
-  ['fail data key', err + 'fn work(): Int with Fail(E) = fail(E("x")); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: E) => print(1) };'],
-  ['fail int key', 'fn work(): Int with Fail(Int) = fail(3); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: Int) => print(e) };'],
+  ['fail data key', err + 'fn work(): Int with Fail(E) = Fail.fail(E("x")); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: E) => Console.print(1) };'],
+  ['fail int key', 'fn work(): Int with Fail(Int) = Fail.fail(3); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: Int) => Console.print(e) };'],
   ['astral', main('Bool', '"\u{1F600}" > "\\u{FFFD}"')],
   ['less', main('Bool', '"a" < "b"')],
   ['box', box + main('Bool', 'Box("b") > Box("a")')],
@@ -61,27 +61,27 @@ const cases = [
   ['list', list + main('L', 'Cons("a", Cons("b\\n", Nil))')],
   ['list cmp', list + main('Bool',
     'Cons("a", Nil) < Cons("a", Cons("b", Nil))')],
-  ['fail caught', err + 'fn work(): Int with Fail(E) = fail(E("bad")); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: E) => print(e) };'],
-  ['fail text', 'fn work(): Int with Fail(Text) = fail("bad\\n"); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: Text) => print(e) };'],
+  ['fail caught', err + 'fn work(): Int with Fail(E) = Fail.fail(E("bad")); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: E) => Console.print(e) };'],
+  ['fail text', 'fn work(): Int with Fail(Text) = Fail.fail("bad\\n"); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: Text) => Console.print(e) };'],
   ['fail text and int', 'fn work(): Int with Fail(Text) + Fail(Int) = '
-    + 'fail(4); fn main(): Unit with Console = handle '
-    + 'handle print(work()) { fail(e: Text) => print(e) } '
-    + '{ fail(n: Int) => print(n) };'],
+    + 'Fail.fail(4); fn main(): Unit with Console = handle '
+    + 'handle Console.print(work()) { fail(e: Text) => Console.print(e) } '
+    + '{ fail(n: Int) => Console.print(n) };'],
   ['fail text report', 'fn work(): Unit with Fail(Text) = '
-    + '{ defer crash(0); fail("bad\\n") }; '
+    + '{ defer crash(0); Fail.fail("bad\\n") }; '
     + 'fn main(): Unit with Console = '
-    + 'handle work() { fail(e: Text) => print(7) };'],
+    + 'handle work() { fail(e: Text) => Console.print(7) };'],
   ['crash', 'fn main(): Unit = { defer crash("a\\nb"); () };'],
   ['crash plain', 'fn main(): Unit = crash("a\\nb");'],
   ['handler text', 'effect Greet { fn greet(n: Text): Text; }; '
     + 'fn main(): Unit with Console = with handler Greet '
-    + '{ greet(n) => n } { print(greet("hi")) };'],
+    + '{ greet(n) => n } { Console.print(Greet.greet("hi")) };'],
   ['defer text', 'fn main(): Unit with Console = '
-    + '{ let t = "x"; defer print(t); () };']
+    + '{ let t = "x"; defer Console.print(t); () };']
 ].map(([name, source]) => [name, source]);
 const batch = runGoBatch(import.meta.url, cases);
 const out = (name, stdout) => test(name, () =>
@@ -156,13 +156,13 @@ test('show is pure and leaves no Console demand', () => {
 });
 
 test('the Fail keys keep their layout', () => {
-  const data = checked(err + 'fn work(): Int with Fail(E) = fail(E("x")); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: E) => print(1) };');
+  const data = checked(err + 'fn work(): Int with Fail(E) = Fail.fail(E("x")); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: E) => Console.print(1) };');
   assert.match(data, /, -4, /);
-  const int = checked('fn work(): Int with Fail(Int) = fail(3); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: Int) => print(e) };');
+  const int = checked('fn work(): Int with Fail(Int) = Fail.fail(3); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: Int) => Console.print(e) };');
   assert.match(int, /, -1, /);
 });
 
@@ -176,13 +176,13 @@ test('the Go literal of a Text is canonical and ASCII', () => {
 });
 
 test('Fail(Text) no longer needs a concrete error family', () => {
-  checked('fn work(): Int with Fail(Text) = fail("x"); '
+  checked('fn work(): Int with Fail(Text) = Fail.fail("x"); '
     + 'fn main(): Int = 1;');
 });
 
 test('Text has its own Fail key, below every existing one', () => {
-  const go = checked('fn work(): Int with Fail(Text) = fail("x"); '
-    + 'fn main(): Unit with Console = handle print(work()) '
-    + '{ fail(e: Text) => print(e) };');
+  const go = checked('fn work(): Int with Fail(Text) = Fail.fail("x"); '
+    + 'fn main(): Unit with Console = handle Console.print(work()) '
+    + '{ fail(e: Text) => Console.print(e) };');
   assert.ok(go.includes('-2147483648'), go);
 });

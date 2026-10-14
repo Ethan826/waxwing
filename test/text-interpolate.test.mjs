@@ -7,8 +7,8 @@ import { runGoBatch } from './go-batch.mjs';
 // escapes, boundaries and the nesting limit. Runs are built once (T001).
 const main = (type, body) => `fn main(): ${type} = ${body};`;
 const id = 'fn id(s: Text): Text = s; ';
-const noisy = 'fn t1(): Text with Console = { print(1); "a" }; '
-  + 'fn t2(): Text with Console = { print(2); "b" }; ';
+const noisy = 'fn t1(): Text with Console = { Console.print(1); "a" }; '
+  + 'fn t2(): Text with Console = { Console.print(2); "b" }; ';
 const who = 'effect Who { fn who(): Text; }; ';
 const cases = [
   ['hello', 'fn greet(name: Text): Text = "Hello, ${name}!"; '
@@ -21,27 +21,27 @@ const cases = [
   ['empty text hole', main('Text', '"[${""}]"')],
   ['adjacent holes', id + main('Text', '"${id("a")}${id("b")}${id("c")}"')],
   ['order', noisy + 'fn main(): Unit with Console = '
-    + 'print("${t1()}${t2()}");'],
+    + 'Console.print("${t1()}${t2()}");'],
   ['block braces', 'fn main(): Unit with Console = '
-    + 'print("<${ { print(1); "x" } }>");'],
+    + 'Console.print("<${ { Console.print(1); "x" } }>");'],
   ['braces in a nested text', id + main('Text', '"${id("}{")}"')],
   ['quote in a nested text', id + main('Text', '"${id("\\"")}"')],
   ['match braces', 'type T = A | B; ' + id
     + main('Text', '"${match A { A => "x", B => "y" }}!"')],
   ['hole in a hole', id + main('Text', '"${id("${id("${id("z")}")}")}"')],
-  ['defer', 'fn t(): Text with Console = { print(0); "x" }; '
+  ['defer', 'fn t(): Text with Console = { Console.print(0); "x" }; '
     + 'fn main(): Unit with Console = '
-    + '{ defer print("[${t()}]"); print("hi") };'],
+    + '{ defer Console.print("[${t()}]"); Console.print("hi") };'],
   ['handled operation', who + 'fn main(): Unit with Console = '
-    + 'with handler Who { who() => "Ada" } { print("Hi ${who()}!") };'],
+    + 'with handler Who { who() => "Ada" } { Console.print("Hi ${Who.who()}!") };'],
   ['failing hole stops later holes', 'type Err = Err1; '
-    + 'fn t(n: Int): Text with Console = { print(n); "x" }; '
-    + 'fn bad(): Text with Fail(Err) = { fail(Err1); "y" }; '
-    + 'fn main(): Unit with Console = print(handle '
+    + 'fn t(n: Int): Text with Console = { Console.print(n); "x" }; '
+    + 'fn bad(): Text with Fail(Err) = { Fail.fail(Err1); "y" }; '
+    + 'fn main(): Unit with Console = Console.print(handle '
     + '"${t(1)}${bad()}${t(2)}" { fail(error: Err) => "caught" });'],
   ['brace text in a block', main('Text', '"${ { "}" } }"')],
   ['brace text in a handler', who + 'fn main(): Text = '
-    + '"${ with handler Who { who() => "}" } { who() } }";'],
+    + '"${ with handler Who { who() => "}" } { Who.who() } }";'],
   ['non-BMP', id + main('Text', '"\u{1F600}${id("\u{1F600}")}\u{1F600}"')]
 ];
 const batch = runGoBatch(import.meta.url, cases);

@@ -11,7 +11,7 @@ test('a Text main prints its decoded text raw', () => {
 });
 
 test('print of a literal writes it raw', () => {
-  assert.equal(runGo('fn main(): Unit = print("a");'), 'a\n');
+  assert.equal(runGo('fn main(): Unit = Console.print("a");'), 'a\n');
 });
 
 test('every ordinary escape decodes', () => {

@@ -40,12 +40,12 @@ const sideCondition = log + clock + both
   + 'fn main(): Int = { let h = fn(x) => x; both(h, h) };';
 
 const pureCallback = 'fn use(f: Int -> Int with pure): Int = f(1); '
-  + 'fn main(): Int with Console = use(fn(x) => { print(x); x });';
+  + 'fn main(): Int with Console = use(fn(x) => { Console.print(x); x });';
 
 // P3: the closure's `Fail` arrives after the `defer` was checked.
 const lateFail = unit + 'fn work(): Unit with Console = handle { '
-  + 'let f = fn(x) => fail(x); let g = fn(y) => { defer f(y); () }; g(E) } '
-  + '{ fail(error: E) => print(9) };' + main;
+  + 'let f = fn(x) => Fail.fail(x); let g = fn(y) => { defer f(y); () }; g(E) } '
+  + '{ fail(error: E) => Console.print(9) };' + main;
 
 // A and B grow each other's layouts through handler types (design §4); the
 // cycle is seen only through the handler-type edges between the effects.
@@ -53,7 +53,7 @@ const grow = 'type Box(a) = Box(a); '
   + 'effect A(x) { fn f(): Handler(B(Box(x))); }; '
   + 'effect B(y) { fn g(): Handler(A(y)); }; fn main(): Int = 0;';
 
-const risky = unit + 'fn risky(): Unit with Fail(E) = fail(E); '
+const risky = unit + 'fn risky(): Unit with Fail(E) = Fail.fail(E); '
   + 'fn work(): Unit with Fail(E) = { defer risky(); () };' + main;
 
 const provenance = context => {
@@ -144,7 +144,7 @@ export const fxProbes = {
     'This function must be pure, but it performs Console',
     'closed parameter row'),
   'fx-defer-fail': refused(
-    unit + 'fn work(): Unit with Fail(E) = { defer fail(E); () };' + main,
+    unit + 'fn work(): Unit with Fail(E) = { defer Fail.fail(E); () };' + main,
     effect, `${deferText}performs Fail(E)`, 'defer Fail'),
   'fx-defer-rigid': refused(unit + 'fn bracket(release: Unit -> Unit): Unit '
     + '= { defer release(()); () };' + main, effect,

@@ -32,8 +32,8 @@ test('raw at top level, quoted inside data, show is raw', () => {
 });
 
 test('interpolation runs its parts left to right', () => {
-  const source = 'fn a(): Text with Console = { print(1); "x" }; '
-    + 'fn b(): Text with Console = { print(2); "y" }; '
+  const source = 'fn a(): Text with Console = { Console.print(1); "x" }; '
+    + 'fn b(): Text with Console = { Console.print(2); "y" }; '
     + 'fn main(): Text with Console = "${a()}-${b()}" ++ "!";';
   const found = outcome(source);
   assert.equal(found.stdout, '1\n2\nx-y!\n');

@@ -69,7 +69,7 @@ const deferCount = 16_000;
 
 const settleOrderLinear = context => {
   const deferred = Array.from({ length: deferCount },
-    (_, index) => `defer print(${index}); `).join('');
+    (_, index) => `defer Console.print(${index}); `).join('');
   const source = `fn main(): Unit with Console = { ${deferred}() };`;
   const found = compileWithin(context, source, orderTimeoutMs);
   if (found.timedOut) fail('settle order: timed out');
@@ -90,8 +90,8 @@ const installCount = 2_000;
 const installLinear = context => {
   const source = 'effect Log { fn log(n: Int): Unit; }; '
     + 'effect Tick { fn tick(): Unit; }; '
-    + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
-    + '{ ' + 'with handler Tick { tick() => log(1) } { tick() }; '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+    + '{ ' + 'with handler Tick { tick() => Log.log(1) } { Tick.tick() }; '
       .repeat(installCount) + '() };';
   const found = compileWithin(context, source, installTimeoutMs);
   if (found.timedOut) fail('install order: timed out');
