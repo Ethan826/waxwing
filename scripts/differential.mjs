@@ -42,6 +42,17 @@ const withoutPlain = tokens => Array.isArray(tokens)
   ? tokens.map(token => token.kind?.constructor?.name === 'Plain'
     ? { text: token.text, span: token.span } : token) : tokens;
 
+// R001 Task 7: the monomorphic IR gained `records`, its record layouts. A
+// program without records has none, so it is compared without the field
+// and a baseline from before records agrees wherever the IR does.
+const withoutNoRecords = program => {
+  if (!Array.isArray(program.records) || program.records.length > 0) {
+    return program;
+  }
+  const { records: _, ...rest } = program;
+  return rest;
+};
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack.
 const digest = value => {
   const hash = createHash('sha1');
@@ -88,7 +99,8 @@ const outcome = (compiler, source) => {
   const resolved = parsed && step('resolve', () => compiler.resolve(parsed));
   const checked = resolved && step('check', () => compiler.check(resolved));
   const specialized = checked
-    && step('specialize', () => compiler.specialize(checked));
+    && step('specialize', () => compiler.specialize(checked),
+      withoutNoRecords);
   if (specialized === undefined) return phases;
   try {
     phases.push(['emit', textHash(compiler.emit(specialized))]);

@@ -1,0 +1,16 @@
+type Team = Solo | Pair({ lead: Person, rest: Team });
+type Person = Person({ name: Text, age: Int });
+
+fn older(p: { age: Int, ...r }): { age: Int, ...r } = p { age = p.age + 1 };
+
+fn label(p: { name: Text, ...r }): Text = "${p.name}!";
+
+fn main(): Unit with Console = {
+  let ada = { name: "Ada", age: 36, id: 7 };
+  let bo = { id: 8, age: 41, name: "Bo" };
+  Console.print(older(ada));
+  Console.print(label(bo));
+  Console.print(ada < bo);
+  Console.print(Pair({ lead: Person({ name: ada.name, age: ada.age }),
+    rest: Solo }));
+};

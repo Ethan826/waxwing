@@ -14,8 +14,9 @@ import Data.Foldable (foldl)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Set (Set)
 import Data.Set as Set
+import Data.Tuple (Tuple(..), snd)
 import Domain.IR.Internal as IR
-import Domain.IR.Internal (EffectKey(..), Ty(..))
+import Domain.IR.Internal (EffectKey(..), LayoutId(..), Ty(..))
 import Domain.Problem (TypeName(..))
 import Domain.Resolved (TypeId(..))
 import Format.Diagnostic (typeName)
@@ -60,8 +61,12 @@ payloadName shape ty = case ty of
   TFun _ → arrow (IR.spine shape.funTypes ty)
   THandler (EffectKey index) → maybe unknown handler
     (Array.index shape.effectInfos index)
+  TRecord (LayoutId index) → maybe unknown record
+    (Array.index shape.records index)
   where
   recur = payloadName shape
+  record info = RecordName (map field info.fields) Nothing
+  field (Tuple label part) = Tuple label (recur part)
   unknown = DataName "?"
   named info = applied info.name (map recur info.arguments)
   -- The spine is walked by a loop (IR.spine), then folded, so an arrow of
@@ -85,9 +90,21 @@ holdsFunction ∷ Shape → Layout → Ty → Boolean
 holdsFunction shape tables start = tailRec round
   { frontier: [ start ], seen: Set.empty }
   where
-  round state
+  round state = reached state
+    { frontier = Array.concatMap (inlined shape) state.frontier }
+  reached state
     | Array.any direct state.frontier = Done true
     | otherwise = spread shape tables state
+
+-- A record's fields stand in its place, a nested record's too: a record
+-- holds only earlier layouts, so this ends.
+inlined ∷ Shape → Ty → Array Ty
+inlined shape = case _ of
+  TRecord (LayoutId index) → maybe [] fieldsOf
+    (Array.index shape.records index)
+  ty → [ ty ]
+  where
+  fieldsOf info = Array.concatMap (inlined shape <<< snd) info.fields
 
 type Spread = { frontier ∷ Array Ty, seen ∷ Set TypeId }
 

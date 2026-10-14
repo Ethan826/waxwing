@@ -117,15 +117,17 @@ copyNode scope span = case _ of
   Checked.Fail value → Handlers.abort recur span value
   Checked.Block items value → IR.Block <$> traverse (item scope) items
     <*> recur value
-  -- Unreachable until Task 7: every record node has, or reads, a value of
-  -- record type, whose lowering reports this first (Features.Specialize.Lower).
-  Checked.RecordLiteral _ → unlowered
-  Checked.FieldAccess _ _ → unlowered
-  Checked.RecordUpdate _ _ → unlowered
+  -- R001: fields keep their written order, which is evaluation order.
+  Checked.RecordLiteral fields → IR.RecordLiteral <$> traverse field fields
+  Checked.FieldAccess record label → IR.FieldAccess <$> recur record
+    <*> pure label
+  Checked.RecordUpdate record fields → IR.RecordUpdate <$> recur record
+    <*> traverse field fields
   where
-  unlowered = internal "Record types are not lowered yet" span unit
   recur = expression scope
   each = traverse recur
+  field found = labelled found.label <$> recur found.value
+  labelled label value = { label, value }
 
 item ∷ Scope → Checked.Item → Specializing IR.Item
 item scope = case _ of

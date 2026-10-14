@@ -18,6 +18,7 @@ import Features.Check.TypeName (typeName)
 import Features.Specialize.Copy (modify)
 import Features.Specialize.Ground (Grounds, groundOf, groundType)
 import Features.Specialize.Intern (funTypes)
+import Features.Specialize.Layouts (layoutTable)
 import Features.Specialize.State
   ( Env
   , PrintSite
@@ -72,10 +73,19 @@ built found = case found.ty of
 groundsOf ∷ State → Either Diagnostic Grounds
 groundsOf state = map withTypes (foldl (groundOf tables) (Right Map.empty) work)
   where
-  tables = { table: funTypes state.arrows, effects: state.effects }
+  tables =
+    { table: funTypes state.arrows
+    , effects: state.effects
+    , records: layoutTable state.layouts
+    }
   work = Array.filter isType (Array.fromFoldable (Map.values state.work))
   isType found = found.kind == TypeWork
-  withTypes types = { types, table: tables.table, effects: tables.effects }
+  withTypes types =
+    { types
+    , table: tables.table
+    , effects: tables.effects
+    , records: tables.records
+    }
 
 type Judging = { env ∷ Env, holders ∷ Functional, known ∷ Grounds }
 

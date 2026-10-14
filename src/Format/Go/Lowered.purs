@@ -46,7 +46,7 @@ import Format.Go.Layout (Layout)
 -- `context` is the program's mode (Format.Go.Context) and `effects` holds
 -- each effect layout's runtime key and operations, by EffectKey. `defects`
 -- is whether `defer` or `crash` occurs (Format.Go.Cleanup); the report
--- names a payload type by `types` and `effectInfos`.
+-- names a payload type by `types`, `effectInfos` and `records`.
 type Shape =
   { signatures ∷ Array Wrapper
   , ctors ∷ Array Wrapper
@@ -57,6 +57,7 @@ type Shape =
   , effects ∷ Array EffectShape
   , types ∷ Array IR.TypeInfo
   , effectInfos ∷ Array IR.EffectInfo
+  , records ∷ Array IR.RecordInfo
   }
 
 -- An effect layout: its runtime key, and each operation as the n-ary
@@ -107,6 +108,7 @@ shapeOf program'@(IR.Program program) =
   , effects: Array.mapWithIndex layout program.effects
   , types: program.types
   , effectInfos: program.effects
+  , records: program.records
   }
   where
   signature definition =

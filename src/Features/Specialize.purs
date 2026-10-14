@@ -26,6 +26,7 @@ import Features.Specialize.Copy (run)
 import Features.Specialize.Ground (Grounds, groundOf, groundType)
 import Features.Specialize.Intern (funTypes)
 import Features.Specialize.Keys (Env, State, Work, WorkKind(..))
+import Features.Specialize.Layouts (layoutTable)
 import Features.Specialize.Lower (fillEffect, fillType)
 import Features.Specialize.Printable (checkSites)
 import Features.Specialize.Seeds (environment, seeded)
@@ -57,6 +58,7 @@ specializeWith representative checked = do
         , effects: values finished.state.effects
         , functions: values finished.state.functions
         , funTypes: funTypes finished.state.arrows
+        , records: layoutTable finished.state.layouts
         , entry: finished.entry
         }
     )
@@ -73,8 +75,10 @@ specializationKeys checked = do
   let types = Array.filter (kindIs TypeWork) made
   let table = funTypes finished.state.arrows
   let effects = finished.state.effects
-  typesSoFar ← foldl (groundOf { table, effects }) (Right Map.empty) types
-  traverse (key { types: typesSoFar, table, effects })
+  let records = layoutTable finished.state.layouts
+  typesSoFar ← foldl (groundOf { table, effects, records }) (Right Map.empty)
+    types
+  traverse (key { types: typesSoFar, table, effects, records })
     ( types <> Array.filter (kindIs EffectWork) made
         <> Array.filter (kindIs FunctionWork) made
     )

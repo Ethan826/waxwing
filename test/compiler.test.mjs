@@ -129,6 +129,15 @@ test('functions example matches its snapshot and runs through the CLI', () => {
     'examples/functions.wxw']), 'Pair(27, Cons(101, Cons(102, Nil)))\n');
 });
 
+// R001 Task 7: records lowered to Go structs (design §5, §8 Snapshots).
+test('records example matches its snapshot and runs through the CLI', () => {
+  const source = readFileSync('examples/records.wxw', 'utf8');
+  assert.equal(checked(source), readFileSync('bootstrap/records.go', 'utf8'));
+  assert.equal(command('node', ['scripts/waxwing.mjs', 'run',
+    'examples/records.wxw']), '{ age: 37, id: 7, name: "Ada" }\nBo!\ntrue\n'
+    + 'Pair({ lead: Person({ age: 36, name: "Ada" }), rest: Solo })\n');
+});
+
 test('EOF and multiline diagnostic positions are exact', () => {
   const source = 'fn main(): Int =\n  true;';
   assert.deepEqual(rejected(source, 'E_TYPE').span.start, {

@@ -24,6 +24,17 @@ const outcome = (context, source) => {
   return run.status === 0 ? 'ran' : 'E_TOOL: go failed to build';
 };
 
+// What a program printed, or its rejection, or how its Go failed.
+const shown = (context, source) => {
+  const result = context.compile(source);
+  if (result instanceof context.Left) {
+    const wired = context.wire(result.value0);
+    return `${wired.code} ${wired.message}`;
+  }
+  const run = context.ran(result.value0);
+  return run.status === 0 ? run.stdout : `E_TOOL: ${run.output}`;
+};
+
 export const r001Probes = {
   // A generic printer reached with a function is E_TYPE at the site.
   'r001-print-ground': context => {
@@ -37,13 +48,14 @@ export const r001Probes = {
     console.log(`${context.probe} regression detects the defect`);
   },
   // `{ a, b }` and `{ b, a }` are one type: the result unifies with the
-  // parameter. (The type variable keeps `f` out of the specializer.) Since
-  // R001 Task 4 unification pairs labels by name, so the order is seen in
-  // a diagnostic, which prints the fields as the row keeps them.
+  // parameter, and the program specializes, lowers and runs (R001 Task 7).
+  // Since R001 Task 4 unification pairs labels by name, so the order is
+  // seen in a diagnostic, which prints the fields as the row keeps them.
   'r001-record-order': context => {
-    const found = outcome(context, 'fn f(x: { a: Int, b: Bool }, y: c): '
-      + '{ b: Bool, a: Int } = x; fn main(): Int = 0;');
-    if (found !== 'ran') {
+    const found = shown(context, 'fn f(x: { a: Int, b: Bool }): '
+      + '{ b: Bool, a: Int } = x; fn main(): Unit with Console = '
+      + 'Console.print(f({ b: true, a: 1 }));');
+    if (found !== '{ a: 1, b: true }\n') {
       fail(`label order distinguished two records: ${found}`);
     }
     const printed = outcome(context, 'fn g(x: { b: Bool, a: Int }): Int = 1; '

@@ -4,6 +4,8 @@ module Format.Go.Show
   , printed
   , shown
   , appendsWithFmt
+  , showValue
+  , appendText
   ) where
 
 import Prelude
@@ -13,6 +15,7 @@ import Domain.IR.Internal (CtorInfo, Ty(..))
 import Domain.Resolved (CtorId, TypeId(..))
 import Format.Go.Data (fieldName, goType, malformed)
 import Format.Go.Layout (Declared, Layout, Member)
+import Format.Go.RecordNames (showRecordName)
 import Format.Go.TextShow (holdsText, quoteName)
 
 showName ∷ TypeId → String
@@ -28,6 +31,8 @@ printed ∷ Ty → String → String
 printed ty call = case ty of
   TUnit → "func(_ struct{}) string { return \"()\" }(" <> call <> ")"
   TData owner → "string(" <> showName owner <> "(nil, " <> call <> "))"
+  TRecord layout → "string(" <> showRecordName layout <> "(nil, " <> call
+    <> "))"
   _ → call
 
 -- What `show` returns, as a Go string: exactly what `printed` writes, but
@@ -83,7 +88,12 @@ ctorBody id ctor
       fields = Array.mapWithIndex (showField id) ctor.fields
 
 showField ∷ CtorId → Int → Ty → String
-showField id position = case _ of
+showField id position = showValue ("v." <> fieldName id position)
+
+-- Appends one stored value, a constructor's or a record's field, in its
+-- nested form. A record is stored inline, so it needs no nil guard.
+showValue ∷ String → Ty → String
+showValue field = case _ of
   TData owner → "if " <> field <> " == nil { " <> malformed <> " }\n"
     <> "out = "
     <> showName owner
@@ -100,9 +110,10 @@ showField id position = case _ of
   TFun _ → malformed <> "\n"
   -- Handler types are refused exactly as arrows are (FX001 design §2).
   THandler _ → malformed <> "\n"
+  TRecord layout → "out = " <> showRecordName layout <> "(out, " <> field
+    <> ")\n"
   where
   appended = "out = fmt.Append(out, " <> field <> ")\n"
-  field = "v." <> fieldName id position
 
 appendText ∷ String → String
 appendText text = "append(out, \"" <> text <> "\"...)\n"

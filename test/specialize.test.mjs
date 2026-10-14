@@ -70,12 +70,14 @@ const withoutResolution = ({ effects, ...program }) => {
 const identical = source => {
   const resolved = succeeded(resolve(succeeded(parse(source), source)), source);
   const program = succeeded(check(resolved), source);
-  const { funTypes, effects, ...specialized } =
+  const { funTypes, effects, records, ...specialized } =
     succeeded(specialize(program), source);
-  // A monomorphic program without arrows interns none (FN001 Task 5), and
-  // one without effects has no effect layout (FX001 Task 6).
+  // A monomorphic program without arrows interns none (FN001 Task 5), one
+  // without effects has no effect layout (FX001 Task 6), and one without
+  // records has no record layout (R001 Task 7).
   assert.deepEqual(funTypes, [], 'arrow table');
   assert.deepEqual(effects, [], 'effect layouts');
+  assert.deepEqual(records, [], 'record layouts');
   for (const table of ['types', 'ctors', 'functions']) {
     assert.equal(specialized[table].length, program[table].length, table);
   }
@@ -89,9 +91,11 @@ const identical = source => {
 // examples/services.wxw declares effects, whose layouts specialization
 // rebuilds (FX001 Task 11; test/fx-services.test.mjs). So does
 // examples/text.wxw, which also pipes through named functions, so it
-// interns an arrow (Text v1 Task 9; test/text-literal.test.mjs).
+// interns an arrow (Text v1 Task 9; test/text-literal.test.mjs). And
+// examples/records.wxw is row-polymorphic and interns record layouts
+// (R001 Task 7; test/compiler.test.mjs).
 const polymorphicExamples = new Set(['functions.wxw', 'lists.wxw',
-  'services.wxw', 'text.wxw']);
+  'records.wxw', 'services.wxw', 'text.wxw']);
 const examples = readdirSync('examples').filter(name => name.endsWith('.wxw'))
   .filter(name => !polymorphicExamples.has(name))
   .sort().map(name => readFileSync(join('examples', name), 'utf8'));

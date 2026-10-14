@@ -26,6 +26,7 @@ import Format.Go.Lowered
   )
 import Format.Go.Match (lowerMatch)
 import Format.Go.Pipe (lowerPipe)
+import Format.Go.Record (lowerAccess, lowerLiteral, lowerUpdate)
 import Format.Go.Report (lowerCrash)
 import Format.Go.Show (printed, shown)
 import Format.Go.Value (applyValue, named, reference)
@@ -74,6 +75,10 @@ expression scope next whole@(IR.Expr term) = case term.node of
     lowerInstall scope lower next term.ty handler body
   IR.Handle body clauses → lowerHandle scope lower next term.ty body clauses
   IR.Abort family value → lowerAbort scope lower next term.ty family value
+  IR.RecordLiteral fields → lowerLiteral lower next term.ty fields
+  IR.FieldAccess record label → lowerAccess lower next term.ty record label
+  IR.RecordUpdate record fields →
+    lowerUpdate lower next term.ty record fields
   where
   lower = expression scope
   each = several lower next

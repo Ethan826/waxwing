@@ -18,6 +18,7 @@ import Format.Go.Effect (effectDeclarations)
 import Format.Go.Expression (expression)
 import Format.Go.Layout (Layout, layout)
 import Format.Go.Lowered (Shape, Wrapper, shapeOf)
+import Format.Go.RecordHelpers (recordHelpers)
 import Format.Go.Show (appendsWithFmt, printed, showHelpers)
 import Format.Go.TextShow (holdsText, quoteHelper)
 import Format.Go.Stage (staged)
@@ -39,7 +40,7 @@ emit program'@(IR.Program program) =
     <> "package main\n\n"
     <> imports usesFmt shape.defects
     <> "func waxwingAdd(a int32, b int32) int32 { return a + b }\n\n"
-    <> (if needsBoolHelper program' then boolHelper else "")
+    <> (if needsBoolHelper program' || records.bool then boolHelper else "")
     <>
       ( if shape.context then runtime <> effectDeclarations program.effects
         else ""
@@ -47,10 +48,13 @@ emit program'@(IR.Program program) =
     <> (if shape.defects then cleanupRuntime shape.context else "")
     <> declarations shape.context tables
     <> funTypeDeclarations shape.context program.funTypes
+    <> records.structs
     <> stages.nodes
     <> compareHelpers tables
-    <> (if holdsText tables then quoteHelper else "")
+    <> records.compares
+    <> (if holdsText tables || records.quote then quoteHelper else "")
     <> showHelpers tables
+    <> records.shows
     <> joinWith "\n" (map codeOf functions)
     <> stages.code
     <> joinWith ""
@@ -58,6 +62,7 @@ emit program'@(IR.Program program) =
   where
   -- Computed once; every emitter reads it instead of searching (I3).
   tables = layout { types: program.types, ctors: program.ctors }
+  records = recordHelpers program'
   shape = shapeOf program'
   functions = map (function tables shape) program.functions
   stages = staged shape (Array.concatMap wrappersOf functions)
@@ -65,6 +70,8 @@ emit program'@(IR.Program program) =
     || shape.defects
     || Array.any (printing program.entry) program.functions
     || appendsWithFmt tables
+    || records.fmt
+    || records.quote
   codeOf emitted = emitted.code
   wrappersOf emitted = emitted.wrappers
 

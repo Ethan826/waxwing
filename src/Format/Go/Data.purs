@@ -7,6 +7,7 @@ module Format.Go.Data
   , effectName
   , performName
   , fieldName
+  , fieldType
   , localName
   , pipeLocal
   , integer
@@ -27,6 +28,7 @@ import Domain.Resolved (CtorId(..), FunctionId(..), LocalId(..), TypeId(..))
 import Format.Go.Context (typeList)
 import Format.Go.Context as Context
 import Format.Go.Layout (Declared, Layout, Member)
+import Format.Go.RecordNames (recordName)
 
 -- Each type becomes one tagged struct and its constructor functions.
 declarations ∷ Boolean → Layout → String
@@ -45,6 +47,8 @@ goType = case _ of
   TText → "string"
   -- One handler struct per effect layout (Format.Go.Effect).
   THandler key → "*" <> effectName key
+  -- A record is a value (R001 design §5).
+  TRecord layout → recordName layout
 
 -- One named Go type per interned arrow, in number order (design §13 rule
 -- 8): each names its result's type by number, so the text is linear in

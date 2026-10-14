@@ -7,7 +7,7 @@
 import assert from 'node:assert/strict';
 import { Right } from '../output/Data.Either/index.js';
 import {
-  TBool, TData, TFun, THandler, TInt, TUnit
+  TBool, TData, TFun, THandler, TInt, TRecord, TText, TUnit
 } from '../output/Domain.Type/index.js';
 import { specializationKeys } from '../output/Features.Specialize/index.js';
 import { checkedPoly } from './phases.mjs';
@@ -27,6 +27,12 @@ const groundText = (program, type) => {
   if (type instanceof TInt) return 'Int';
   if (type instanceof TBool) return 'Bool';
   if (type instanceof TUnit) return 'Unit';
+  if (type instanceof TText) return 'Text';
+  // R001: a ground record, its fields in the row's (sorted) order.
+  if (type instanceof TRecord) {
+    return `{ ${type.value0.fields.map(field =>
+      `${field.value0}: ${groundText(program, field.value1)}`).join(', ')} }`;
+  }
   if (type instanceof THandler) {
     return `Handler(${applied(program.effects[type.value0.value0.value0].name,
       type.value0.value1.map(arg => groundText(program, arg)))})`;

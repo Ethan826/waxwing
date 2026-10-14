@@ -3,14 +3,16 @@ module Features.Specialize.Lower (lowerType, fillType, fillEffect) where
 import Prelude
 import Data.Array as Array
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Traversable (sequence, traverse)
+import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.IR.Internal as IR
 import Domain.Resolved (CtorId(..), CtorInfo, OperationInfo)
 import Domain.Row (Label(..))
 import Domain.Syntax
-  ( Span
+  ( Sort(..)
+  , Span
   , TypeArgument(..)
   , TypeRef(..)
   , handlerLabelRef
@@ -29,6 +31,7 @@ import Features.Specialize.Keys
   , arrowOf
   , internal
   )
+import Features.Specialize.Record (recordType, writtenField)
 
 -- A body type at one key: rigid variable i is the key's i-th argument and
 -- every hole is the representative (design §6). An application's arguments
@@ -37,6 +40,7 @@ import Features.Specialize.Keys
 -- spine, then its suffixes interned (FN001 Task 5): no recursion per arrow.
 -- Rows are erased (FX001 design §4): no Go type depends on one. A handler
 -- type is its label's layout: the label's arguments, then its effect key.
+-- A record is its layout, its tail the key's argument (R001 design §5).
 lowerType ∷ Env → Array IR.Ty → Span → Ty Open → Specializing IR.Ty
 lowerType env arguments span = case _ of
   TInt → pure IR.TInt
@@ -47,12 +51,15 @@ lowerType env arguments span = case _ of
   TVar (Rigid (VarId index)) → argument span arguments index
   TVar (Hole _) → lowerType env [] span (map absurd env.representative)
   arrow@(TFun _ _ _) → lowerSpine recur (spine arrow)
-  TRecord _ → internal "Record types are not lowered yet" span unit
+  TRecord row → recordType (const recur) tail row
   THandler (Label effect parts _) _ → traverse recur parts
     >>= effectAt env span effect
     >>= (pure <<< IR.THandler)
   where
   recur part = lowerType env arguments span part
+  tail = case _ of
+    Rigid (VarId index) → Just <$> argument span arguments index
+    Hole _ → pure Nothing
 
 -- Parameters left to right, then the result, then the interned arrow.
 lowerSpine
@@ -131,13 +138,15 @@ layout env work operation = do
 
 -- A field's applications are created at their own references in the
 -- constructor's source, walked alongside it as Check.Nested does; a
--- handler type's label arguments beside its label's.
+-- handler type's label arguments beside its label's, a record's fields
+-- beside theirs, by label. An application's record-sorted argument is
+-- written `...r` and passed among its type arguments (Resolve), so it is
+-- paired with them and lowered at the application's span.
 lowerField
   ∷ Env → Array IR.Ty → Ty VarId → TypeRef → Specializing IR.Ty
 lowerField env arguments ty syntax = case ty, syntax of
   TData id parts _, NamedRef span _ references →
-    paired span parts (Array.mapMaybe typeArgument references)
-      (lowerField env arguments)
+    paired span parts (typeSlots id references) (slot span)
       >>= applied env span id
   TData _ _ _, _ → mismatch
   TVar (VarId index), _ → argument (typeRefSpan syntax) arguments index
@@ -148,9 +157,10 @@ lowerField env arguments ty syntax = case ty, syntax of
   TFun _ _ _, FunRef span _ _ _ → lowerWritten span (spine ty)
     (typeRefSpine syntax)
   TFun _ _ _, _ → mismatch
-  TRecord _, _ → internal "Record types are not lowered yet"
-    (typeRefSpan syntax)
-    unit
+  TRecord row, RecordRef _ written _ → recordType (byLabel written)
+    (map Just <<< variable)
+    row
+  TRecord _, _ → mismatch
   THandler (Label effect parts _) _, _ → maybe' (const mismatch)
     (lowerHandler effect parts)
     (handlerLabelRef syntax)
@@ -160,9 +170,22 @@ lowerField env arguments ty syntax = case ty, syntax of
       recur
       >>= effectAt env label.span effect
       >>= (pure <<< IR.THandler)
-  typeArgument = case _ of
-    TypeArgument foundType → Just foundType
-    RowArgument _ → Nothing
+  typeSlots (TypeId id) references = Array.mapMaybe typeSlot
+    ( Array.zip (maybe [] sortsOf (Array.index env.types id))
+        references
+    )
+  sortsOf info = info.sourceSorts
+  typeSlot (Tuple sort reference) =
+    if sort == RowSort then Nothing else Just reference
+  slot span part = case _ of
+    TypeArgument foundType → recur part foundType
+    RowArgument _ → lowerType env arguments span (map Rigid part)
+  byLabel written label part = writtenField (const mismatch)
+    (recur part <<< fieldType)
+    written
+    label
+  fieldType reference = reference.ty
+  variable (VarId index) = argument (typeRefSpan syntax) arguments index
   mismatch = internal "Field syntax mismatch" (typeRefSpan syntax) unit
   recur = lowerField env arguments
   -- Each parameter and the final result beside its written source, as

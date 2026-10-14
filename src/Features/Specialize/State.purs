@@ -24,6 +24,7 @@ import Domain.Syntax (Span)
 import Domain.Type (Ty)
 import Features.Specialize.Copy (Copy)
 import Features.Specialize.Intern (Arrows)
+import Features.Specialize.Layouts (Layouts)
 
 -- The checked program's tables and what Specialize computed from them
 -- once: the output id of each monomorphic type and function, each
@@ -75,8 +76,8 @@ type Counts =
 type PrintSite = { span ∷ Span, ty ∷ IR.Ty }
 
 -- Output declarations by output id, the memo tables of polymorphic keys,
--- of effect layouts and of arrows, and the worklist (never emptied: it
--- also records every key in order).
+-- of effect layouts, of arrows and of record layouts, and the worklist
+-- (never emptied: it also records every key in order).
 type State =
   { typeKeys ∷ Map Key Int
   , functionKeys ∷ Map Key Int
@@ -88,6 +89,7 @@ type State =
   , work ∷ Map Int Work
   , prints ∷ Map Int PrintSite
   , arrows ∷ Arrows
+  , layouts ∷ Layouts
   , counts ∷ Counts
   }
 

@@ -6,6 +6,7 @@ module Format.Go.Compare
   , compareName
   , compareHelpers
   , comparison
+  , fieldComparison
   ) where
 
 import Prelude
@@ -17,6 +18,7 @@ import Domain.Resolved (TypeId(..))
 import Domain.Syntax (Operator(..))
 import Format.Go.Data (fieldName, goType, malformed)
 import Format.Go.Layout (Declared, Layout, Member)
+import Format.Go.RecordNames (compareRecordName)
 
 goOperator ∷ Operator → String
 goOperator = case _ of
@@ -58,6 +60,8 @@ compareHelpers program = joinWith "" (map compareHelper program.types)
 comparison ∷ Operator → Ty → String → String → String
 comparison operator ty left right = case ty of
   TData owner → viaHelper (compareName owner)
+  -- Go == on a struct would compare its pointer fields (R001 design §5).
+  TRecord layout → viaHelper (compareRecordName layout)
   TBool | isOrdering operator → viaHelper "waxwingCmpBool"
   TUnit | isOrdering operator → viaHelper unitOrder
   _ → "(" <> left <> " " <> symbol <> " " <> right <> ")"
@@ -106,6 +110,8 @@ ctorFields member = guarded
     if body == "" then ""
     else "if a.tag == " <> show member.tag <> " {\n" <> body <> "}\n"
 
+-- One field of `a` and `b`, of a constructor or a record: a record field
+-- is stored inline and compared by its own helper.
 fieldComparison ∷ String → Ty → String
 fieldComparison field = case _ of
   TInt → "if " <> left <> " < " <> right <> " { return -1 }; if " <> left
@@ -124,6 +130,8 @@ fieldComparison field = case _ of
     <> malformed
     <> " }\n"
     <> decide (compareName owner <> "(*" <> left <> ", *" <> right <> ")")
+  TRecord layout → decide
+    (compareRecordName layout <> "(" <> left <> ", " <> right <> ")")
   -- Checking rejects every comparison at a type holding an arrow (design
   -- §3), yet every declared type gets its helper; Go cannot compare two
   -- func values, so a function field is never compared and a constructor

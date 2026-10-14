@@ -49,9 +49,13 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.Install _ _ → effects
   IR.Handle _ _ → effects
   IR.Abort _ _ → effects
+  IR.RecordLiteral _ → records
+  IR.FieldAccess _ _ → records
+  IR.RecordUpdate _ _ → records
   where
   anyOf = Array.any usesBoolOrdering
   effects = anyOf (IR.effectParts expression.node)
+  records = anyOf (IR.recordParts expression.node)
   armUses arm = usesBoolOrdering arm.body
 
 -- Whether fmt is used: by a print, and by a crash, which renders its value
@@ -99,7 +103,11 @@ prints (IR.Expr expression) = case expression.node of
   IR.Install _ _ → effects
   IR.Handle _ _ → effects
   IR.Abort _ _ → effects
+  IR.RecordLiteral _ → records
+  IR.FieldAccess _ _ → records
+  IR.RecordUpdate _ _ → records
   where
   anyOf = Array.any prints
   effects = anyOf (IR.effectParts expression.node)
+  records = anyOf (IR.recordParts expression.node)
   armPrints arm = prints arm.body

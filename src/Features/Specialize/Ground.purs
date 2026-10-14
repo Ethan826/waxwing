@@ -9,8 +9,10 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (maybe')
+import Data.Array as Array
+import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..))
 import Domain.IR.Internal as IR
 import Domain.Problem (Problem(..))
 import Domain.Row (Label(..), Mark(..), closedRow, uniformRows)
@@ -19,15 +21,21 @@ import Domain.Type (Ty(..), TypeId(..))
 import Domain.Type.Parts (arrows)
 import Features.Specialize.Keys (Work)
 
--- The ground type of each output type so far, the arrow table and the
--- effect layouts. Keys hold no rows: specialization erases them.
+-- The ground type of each output type so far, the arrow table, the
+-- effect layouts and the record layouts. Keys hold no effect rows:
+-- specialization erases them.
 type Grounds =
   { types ∷ Map Int (Ty Void)
   , table ∷ Array IR.FunType
   , effects ∷ Map Int IR.EffectInfo
+  , records ∷ Array IR.RecordInfo
   }
 
-type Tables = { table ∷ Array IR.FunType, effects ∷ Map Int IR.EffectInfo }
+type Tables =
+  { table ∷ Array IR.FunType
+  , effects ∷ Map Int IR.EffectInfo
+  , records ∷ Array IR.RecordInfo
+  }
 
 groundOf
   ∷ Tables
@@ -37,7 +45,12 @@ groundOf
 groundOf tables found work = do
   types ← found
   arguments ← traverse
-    ( groundType { types, table: tables.table, effects: tables.effects }
+    ( groundType
+        { types
+        , table: tables.table
+        , effects: tables.effects
+        , records: tables.records
+        }
         work.span
     )
     work.arguments
@@ -57,8 +70,13 @@ groundType grounds span = case _ of
   arrow@(IR.TFun _) → groundSpine (IR.spine grounds.table arrow)
   IR.THandler (IR.EffectKey output) → maybe' missingEffect groundHandler
     (Map.lookup output grounds.effects)
+  IR.TRecord (IR.LayoutId output) → maybe' missing groundRecord
+    (Array.index grounds.records output)
   where
   missing _ = Left (problemAt (Internal "Invalid type id") span)
+  groundRecord info = TRecord <<< closed <$> traverse field info.fields
+  closed fields = { fields, tail: Nothing }
+  field (Tuple label ty) = Tuple label <$> recur ty
   missingEffect _ = Left (problemAt (Internal "Invalid effect key") span)
   groundHandler info = handlerOf info <$> traverse recur info.arguments
   handlerOf info arguments = THandler (Label info.effect arguments Unmarked)

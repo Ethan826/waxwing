@@ -43,7 +43,7 @@ hasEffect (IR.Expr expression) = case expression.node of
   node → Array.any hasEffect (children node)
 
 children ∷ IR.Node → Array IR.Expr
-children = case _ of
+children node = case node of
   IR.Call _ arguments → arguments
   IR.Construct _ arguments → arguments
   IR.Add left right → [ left, right ]
@@ -59,6 +59,9 @@ children = case _ of
   IR.Show value → [ value ]
   IR.Crash value → [ value ]
   IR.Block items value → IR.blockParts items value
+  IR.RecordLiteral _ → IR.recordParts node
+  IR.FieldAccess _ _ → IR.recordParts node
+  IR.RecordUpdate _ _ → IR.recordParts node
   _ → []
   where
   armBody arm = arm.body

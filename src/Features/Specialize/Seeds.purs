@@ -11,6 +11,7 @@ import Domain.Resolved (CtorId(..), CtorInfo, FunctionId(..), TypeInfo)
 import Domain.Type (Ty, TypeId(..))
 import Domain.Type.Parts (mentionsTypeVariable, rowArguments)
 import Features.Specialize.Intern (noArrows)
+import Features.Specialize.Layouts (noLayouts)
 import Features.Specialize.Keys (Env, State, Work, WorkKind(..))
 
 -- Design §6: monomorphic types and functions keep their relative order and
@@ -45,6 +46,7 @@ seeded env =
   , work: Map.fromFoldable (Array.mapWithIndex Tuple work)
   , prints: Map.empty
   , arrows: noArrows
+  , layouts: noLayouts
   , counts:
       { types: Array.length typeWork
       , ctors: Array.length (Array.filter isJust monoCtors)

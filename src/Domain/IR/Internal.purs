@@ -27,6 +27,7 @@ data Ty
   | TUnit
   | THandler EffectKey
   | TText
+  | TRecord LayoutId
 
 -- An arrow's number: its index in `funTypes`.
 newtype FunTypeId = FunTypeId Int
@@ -34,10 +35,17 @@ newtype FunTypeId = FunTypeId Int
 -- An effect layout's number: its index in `effects` (FX001 design §4).
 newtype EffectKey = EffectKey Int
 
+-- A record layout's number: its index in `records` (R001 design §5). A
+-- closed record type is one layout whatever order its fields were written
+-- in, and it comes last so every earlier type keeps its order.
+newtype LayoutId = LayoutId Int
+
 derive instance eqFunTypeId ∷ Eq FunTypeId
 derive instance ordFunTypeId ∷ Ord FunTypeId
 derive instance eqEffectKey ∷ Eq EffectKey
 derive instance ordEffectKey ∷ Ord EffectKey
+derive instance eqLayoutId ∷ Eq LayoutId
+derive instance ordLayoutId ∷ Ord LayoutId
 derive instance eqTy ∷ Eq Ty
 derive instance ordTy ∷ Ord Ty
 
@@ -93,12 +101,17 @@ type EffectInfo =
 type OperationInfo =
   { name ∷ String, parameters ∷ Array Ty, result ∷ Ty, span ∷ Span }
 
+-- One record layout: its fields in sorted label order, each type a number
+-- or a builtin, so a layout names only earlier layouts.
+type RecordInfo = { fields ∷ Array (Tuple String Ty) }
+
 newtype Program = Program
   { types ∷ Array TypeInfo
   , ctors ∷ Array CtorInfo
   , effects ∷ Array EffectInfo
   , functions ∷ Array FunctionDecl
   , funTypes ∷ Array FunType
+  , records ∷ Array RecordInfo
   , entry ∷ FunctionId
   }
 
@@ -143,6 +156,13 @@ data Node
   | Handle Expr (Array FailClause)
   | Abort TypeHead Expr
   | Text String
+  | RecordLiteral (Array Field)
+  | FieldAccess Expr String
+  | RecordUpdate Expr (Array Field)
+
+-- R001: a literal's fields in written order, which is evaluation order; an
+-- update's base, then its replacements in written order.
+type Field = { label ∷ String, value ∷ Expr }
 
 -- FX001 effect nodes (design §4): a bare operation; an invocation, partial
 -- as `Call` may be; a handler's construction, with one clause per
@@ -190,6 +210,17 @@ itemValue = case _ of
   Let _ value → value
   Defer value → value
   Discard value → value
+
+-- A record node's expressions in evaluation order; any other node has
+-- none here.
+recordParts ∷ Node → Array Expr
+recordParts = case _ of
+  RecordLiteral fields → map fieldValue fields
+  FieldAccess record _ → [ record ]
+  RecordUpdate record fields → Array.cons record (map fieldValue fields)
+  _ → []
+  where
+  fieldValue field = field.value
 
 -- A block's expressions in evaluation order: its items', then its value.
 blockParts ∷ Array Item → Expr → Array Expr

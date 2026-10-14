@@ -205,15 +205,19 @@ numberHole found meta =
   if Map.member meta found.seen then found
   else { next: found.next + 1, seen: Map.insert meta found.next found.seen }
 
--- A type's holes: its parts', then its rows' (each row's tail, then its
--- label arguments). Type and row metas share one numbering, so a row
--- meta stays apart from every type meta.
+-- A type's holes: its parts', then a record's tail, then its rows' (each
+-- row's tail, then its label arguments). Type, record and row metas share
+-- one numbering, so no two of them ever meet under one number.
 foldHoles ∷ ∀ b. (b → Int → b) → b → Ty Open → b
 foldHoles step found = case _ of
   TVar (Hole meta) → step found meta
-  ty → foldl foldRow (foldl (foldHoles step) found (children ty))
+  ty → foldl foldRow
+    (recordTail (foldl (foldHoles step) found (children ty)) ty)
     (rowsOf ty)
   where
+  recordTail reached = case _ of
+    TRecord { tail: Just tail } → tailHole reached tail
+    _ → reached
   foldRow reached row@(Row _ tail)
     | isPure row = reached
     | otherwise = foldl (foldHoles step)
