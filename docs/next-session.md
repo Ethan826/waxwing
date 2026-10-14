@@ -1,41 +1,34 @@
-# Waxwing / FX020 done on branch `fx020`, approved 2026-10-14; merge into main pending (2026-10-14)
+# Waxwing / FX020 merged into main; housekeeping; R001 next (2026-10-14)
 
-FX020 (effect operation namespaces, BACKLOG FX020) is implemented on branch
-`fx020` (worktree `.worktrees/fx020`, from main 26611c3): Tasks 1-8 of
-docs/plans/2026-10-13-effect-namespaces-plan.md, ADR 012
-(docs/adr/012-effect-namespaces.md), the Effects section of docs/language.md,
-and docs/progress.md ("FX020"). Nothing is pushed or merged. Ledger and task
-reports: .superpowers/sdd/2026-10-13-effect-namespaces-plan/.
+FX020 (effect operation namespaces, BACKLOG FX020) was merged into main by
+fast-forward on 2026-10-14 (c374b40). Its worktree and branch are removed.
+Evidence logs are kept under .build/fx020-evidence/ (gitignored) in the main
+checkout. The SDD ledger is gone; its rulings are summarised in
+docs/progress.md "FX020" and ADR 012 (docs/adr/012-effect-namespaces.md).
+The 80-column width gate (cd4a862) and IDE001 stage 1 (b2be43f..3f1b564) are
+already on main.
 
-Update 2026-10-14: the user approved both hint decisions (the
-multi-candidate wording, and writing a parameterised effect's parameters in
-the import form, FX022, done). Merge into main is next.
+Housekeeping (branch `housekeeping`, not merged): the VS Code grammar follows
+FX020. `fail` is no longer a contextual keyword, `Effect.op` is highlighted,
+and `as` aliases and import lists in a signature row are scoped; fixture
+editors/vscode/fixtures/effect-namespaces.wxw, README "What is highlighted".
 
-Decided by the user (2026-10-14):
-1. **The multi-candidate hint wording** (ruling R18, pinned in
-   test/fx020-unbound.test.mjs). Two candidates, for a program declaring
-   Audit before Log (declaration order): `Unbound function log; use
-   Audit.log or Log.log, or import one with Audit { log } or Log { log }`;
-   three or more: `A.log, B.log or C.log` and `A { log }, B { log } or C { log
-   }`. Approved as written.
-2. The merge decision (still to do). Integrate into main by fast-forward
-   or rebase only (no merge commits). The branch starts at 26611c3; check
-   main for newer commits first.
+Next: R001 (records) design, jointly with C001 (`r.field` coexists with
+`Effect.op` because qualifiers are uppercase), then the INF001 design.
 
 Open items from FX020: FX021 (an import from an unreachable duplicate label
-silently binds the first); the INF001 requirement (a way to alias or
-import without writing the whole inferred row); `print` and `show` stay
+silently binds the first); the INF001 requirement (a way to alias or import
+without writing the whole inferred row); `print` and `show` stay
 compiler-provided until C001; G002 margin is 259 against the limit 256;
 G006 stack flake; T007 timing figures.
-
-Order after the merge: phase 2 of the 80-column sweep, IDE001 rebased onto
-main, then R001 (records; `r.field` coexists with `Effect.op` because
-qualifiers are uppercase), and the INF001 design.
 
 Setup facts: run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in the
 worktree; `node scripts/width.mjs` checks git-tracked files only, so run it
 after `git add`. The regression runner leaves about 2 GB under
-.build/regression; delete it after a run.
+.build/regression; delete it after a run. The grammar snapshot check is
+opt-in (editors/vscode/README.md).
+
+Older sections below are history.
 
 ---
 
