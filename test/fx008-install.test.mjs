@@ -37,9 +37,11 @@ const closed = logs
   + 'fn main(): Unit with Console = '
   + 'with handler Tick { tick() => Console.print(0) } { run() };';
 const nested = logs
-  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+  + 'fn main(): Unit with Console = with handler Log { log(n) => '
+  + 'Console.print(n) } '
   + '{ with handler Tick { tick() => { Log.log(1); Log.log(2) } } '
-  + '{ with handler Log { log(n) => { Tick.tick(); Log.log(n) } } { Log.log(3) } } };';
+  + '{ with handler Log { log(n) => { Tick.tick(); Log.log(n) } } { '
+  + 'Log.log(3) } } };';
 const rigid = logs
   + 'fn run(cb: Unit -> Unit with ...e): Unit with ...e = '
   + 'with handler Log { log(n) => cb(()) } { Log.log(1) }; '

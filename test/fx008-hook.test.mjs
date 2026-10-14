@@ -101,11 +101,15 @@ const three = order => [
   '  let k1 = fn(n: Int) => ();', '  let k2 = fn(n: Int) => ();',
   '  let k3 = fn(n: Int) => ();',
   ...order.map(n => `  let h${n} = handler Log { log(n) => k${n}(n) };`),
-  '  let g1 = fn(u: Unit) => with h1 { let v = No; if Cell.put(v) then Console.print(v == ' +
+  '  let g1 = fn(u: Unit) => with h1 { let v = No; if Cell.put(v) then ' +
+  'Console.print(v == ' +
     'v) else () };',
-  '  let g2 = fn(u: Unit) => with h2 { if Cell.put(Some(true)) then () else () };',
-  '  let g3 = fn(u: Unit) => with h3 { if Cell.put(Some(true)) then () else () };',
-  '  let r = fn(x) => { Fail.fail(Job(k1)); Fail.fail(Job(k3)); Fail.fail(x) };',
+  '  let g2 = fn(u: Unit) => with h2 { if Cell.put(Some(true)) then () else ' +
+    '() };',
+  '  let g3 = fn(u: Unit) => with h3 { if Cell.put(Some(true)) then () else ' +
+    '() };',
+  '  let r = fn(x) => { Fail.fail(Job(k1)); Fail.fail(Job(k3)); Fail.fail(x) ' +
+    '};',
   '  let q = fn(u: Unit) => r(Job(k2));', '  Console.print(0)', '};'
 ].join('\n');
 

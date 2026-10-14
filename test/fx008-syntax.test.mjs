@@ -65,7 +65,8 @@ test('nofail is an ordinary name elsewhere', () => {
 
 test('nofail on Fail is E_TYPE', () => {
   for (const mark of ['nofail', 'nofail(k)']) {
-    const source = `type E = E; fn f(): Unit with ${mark} Fail(E) = Fail.fail(E);`
+    const source = `type E = E; fn f(): Unit with ${mark} Fail(E) = `
+      + `Fail.fail(E);`
       + main;
     const found = rejectedAt(source, 'E_TYPE', 'Fail(E)');
     assert.equal(found.message, 'nofail does not apply to Fail');
@@ -125,7 +126,8 @@ test('x: k beside nofail(k) is a type variable', () => {
 test('nofail Console is redundant', () => {
   const plain = 'fn f(): Unit with Console = Console.print(1);' + main;
   for (const mark of ['nofail', 'nofail(k)']) {
-    const source = `fn f(): Unit with ${mark} Console = Console.print(1);` + main;
+    const source = `fn f(): Unit with ${mark} Console = `
+      + 'Console.print(1);' + main;
     assert.equal(checked(source), checked(plain));
   }
 });

@@ -78,7 +78,8 @@ test('a nofail call under a plain signature', () => {
 });
 
 test('a forwarding clause into a failing outer handler', () => {
-  const outer = 'with handler Log { log(n) => Fail.fail(E) } { with handler Log '
+  const outer = 'with handler Log { log(n) => Fail.fail(E) } { with handler '
+    + 'Log '
     + '{ log(n) => Log.log(n + 1) } { defer Log.log(1); () } }';
   effect(forwardingIntoFailing, deferLog, ['defer Log.log(1)'], [
     ['with handler Log { log(n) => Log.log(n + 1) } { defer Log.log(1); () }',
@@ -103,7 +104,8 @@ test('a rigid mark variable cannot be assumed fail-free', () => {
 });
 
 test('a defer inside a clause follows the outer frame', () => {
-  const outer = 'with handler Log { log(n) => Fail.fail(E) } { with handler Log '
+  const outer = 'with handler Log { log(n) => Fail.fail(E) } { with handler '
+    + 'Log '
     + '{ log(n) => { defer Log.log(n + 1); () } } { Log.log(1) } }';
   effect(clauseDeferFailing, deferLog, ['defer Log.log(n + 1)'],
     [handledHere(outer, 'Log'), clauseFails('log(n) => Fail.fail(E)', 'log')]);
@@ -140,7 +142,8 @@ const tickOuter = 'with handler Tick { tick() => Fail.fail(E) } { run(handler '
 const viaTick = installed => [
   [installed, installed,
     "this handler's clauses perform Tick, whose handler may fail"],
-  handledHere(tickOuter, 'Tick'), clauseFails('tick() => Fail.fail(E)', 'tick')];
+  handledHere(tickOuter, 'Tick'),
+  clauseFails('tick() => Fail.fail(E)', 'tick')];
 const rigidTail = installed => [[installed, installed,
   "this handler's clauses may perform any effect of ...e"]];
 const withId = 'with id(x) { defer Log.log(1); () }';
@@ -148,21 +151,27 @@ const passedThrough = {
   a1: [a1, viaTick(withId)],
   a4: [a4, viaTick(withId)],
   a6: [a6, [
-    ['with id(x) { defer Log.log(1); () }', 'with id(x) { defer Log.log(1); () }',
+    ['with id(x) { defer Log.log(1); () }', 'with id(x) { defer Log.log(1); '
+      + '() }',
       "this handler's clauses perform Log, whose handler may fail"],
-    handledHere('with handler Log { log(n) => Fail.fail(E) } { with handler Tick '
-      + '{ tick() => Log.log(5) } { run(handler Log { log(n) => Tick.tick() }) } }',
+    handledHere('with handler Log { log(n) => Fail.fail(E) } { with handler '
+      + 'Tick '
+      + '{ tick() => Log.log(5) } { run(handler Log { log(n) => Tick.tick() '
+      + '}) } }',
     'Log'), clauseFails('log(n) => Fail.fail(E)', 'log')]],
   a8: [a8, viaTick('with later(x)(()) { defer Log.log(1); () }')],
-  a9: [a9, viaTick('with match boxed(x) { Box(h) => h } { defer Log.log(1); () }')],
+  a9: [a9, viaTick('with match boxed(x) { Box(h) => h } { defer Log.log(1); '
+    + '() }')],
   a3c: [a3c, viaTick('with unbox(Box(x)) { defer Log.log(1); () }')],
   a10: [a10, rigidTail('with id(y) { defer Log.log(1); () }')],
   r5: [r5, rigidTail('with h { defer Log.log(1); () }')],
   'a result whose own row holds the tail': [ownRow, [
     ...viaTick('with mk() { defer Log.log(1); () }').slice(0, 1),
-    handledHere('with handler Tick { tick() => Fail.fail(E) } { with handler Get'
+    handledHere('with handler Tick { tick() => Fail.fail(E) } { with handler '
+      + 'Get'
       + '(Handler(nofail Log with Tick + Fail(E) + Console)) { get() => '
-      + 'handler Log { log(n) => Tick.tick() } } { with mk() { defer Log.log(1); () } ' +
+      + 'handler Log { log(n) => Tick.tick() } } { with mk() { defer '
+      + 'Log.log(1); () } ' +
         '} }',
     'Tick'), clauseFails('tick() => Fail.fail(E)', 'tick')]]
 };

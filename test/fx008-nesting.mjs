@@ -44,5 +44,6 @@ export const clauseLiteralProgram = depth =>
   + 'effect Cell(a) { fn put(x: a): Unit; }; fn main(): Int = { '
   + 'let h0 = handler Log { log(n) => () }; '
   + Array.from({ length: depth }, (_, index) =>
-    `let h${index + 1} = handler Log { log(n) => Cell.put(h${index}) }; `).join('')
+    `let h${index + 1} = handler Log { log(n) => `
+    + `Cell.put(h${index}) }; `).join('')
   + '0 };';

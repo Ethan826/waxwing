@@ -10,7 +10,8 @@ export const manyDefers = count => head + 'fn work(): Unit with nofail Log = { '
 // `count` sequential installations in one declaration.
 export const manyInstallations = count => head
   + 'effect Tick { fn tick(): Unit; }; '
-  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } { '
+  + 'fn main(): Unit with Console = with handler Log { log(n) => '
+  + 'Console.print(n) } { '
   + 'defer Log.log(0); '
   + 'with handler Tick { tick() => Log.log(1) } { Tick.tick() }; '.repeat(count)
   + '() };';
@@ -18,7 +19,8 @@ export const manyInstallations = count => head
 // A chain of `count` functions, each installing a forwarding handler.
 export const forwardingChain = count => head
   + numbers(count - 1, index => `fn f${index}(): Unit with nofail Log = `
-    + `with handler Log { log(n) => Log.log(n) } { f${index + 1}() }; `).join('')
+    + `with handler Log { log(n) => Log.log(n) } `
+    + `{ f${index + 1}() }; `).join('')
   + `fn f${count}(): Unit with nofail Log = { defer Log.log(0); () }; `
   + 'fn main(): Unit with Console = '
   + 'with handler Log { log(n) => Console.print(n) } { f1() };';

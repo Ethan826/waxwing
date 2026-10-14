@@ -55,7 +55,8 @@ const tick = 'effect Tick { fn tick(): Unit; }; ';
 
 test('handler types with clause rows of different marks differ', () => {
   const source = log + tick
-    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { Log.log(1) ' +
+    + 'fn inner(h: Handler(Log with Tick)): Unit with Tick = with h { '
+    + 'Log.log(1) ' +
       '}; '
     + 'fn outer(h: Handler(Log with nofail Tick)): Unit with Tick = inner(h); '
     + 'fn main(): Int = 0;';

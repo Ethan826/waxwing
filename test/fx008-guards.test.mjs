@@ -28,9 +28,11 @@ const rigid = logs
   + 'fn main(): Unit with Console = run(fn(u: Unit) => Console.print(1));';
 // Two installations; the outer one's row holds only Log.
 const nested = logs
-  + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+  + 'fn main(): Unit with Console = with handler Log { log(n) => '
+  + 'Console.print(n) } '
   + '{ with handler Tick { tick() => { Log.log(1); Log.log(2) } } '
-  + '{ with handler Log { log(n) => { Tick.tick(); Log.log(n) } } { Log.log(3) } } };';
+  + '{ with handler Log { log(n) => { Tick.tick(); Log.log(n) } } { '
+  + 'Log.log(3) } } };';
 
 const programOf = source => resolve(parse(source).value0).value0;
 const entries = map => toUnfoldable(unfoldableArray)(map);
