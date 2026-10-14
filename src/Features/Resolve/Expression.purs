@@ -6,7 +6,7 @@ import Data.Map as Map
 import Data.Traversable (traverse)
 import Domain.Syntax as Syntax
 import Features.Resolve.Block (block)
-import Features.Resolve.Fresh (Fresh, liftEither)
+import Features.Resolve.Fresh (Fresh)
 import Features.Resolve.HandlerExpression as HandlerExpression
 import Features.Resolve.Lambda (lambda)
 import Features.Resolve.Name (bareName, callName)
@@ -24,10 +24,10 @@ expression scope = case _ of
   Syntax.Integer span value → pure (Resolved.Integer span value)
   Syntax.Boolean span value → pure (Resolved.Boolean span value)
   Syntax.TextLiteral span value → pure (Resolved.TextLiteral span value)
-  Syntax.Variable span name → liftEither (bareName scope span name)
+  Syntax.Variable span name → bareName scope span name
   Syntax.Call span name arguments → callName nested scope span name arguments
-  Syntax.Qualified span qualifier member → liftEither
-    (qualifiedName scope span qualifier member)
+  Syntax.Qualified span qualifier member → qualifiedName scope span qualifier
+    member
   Syntax.QualifiedCall span qualifier member arguments → qualifiedCall scope
     span
     qualifier

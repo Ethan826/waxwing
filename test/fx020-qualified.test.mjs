@@ -122,7 +122,10 @@ test('fail with the wrong shape is rejected where it is written', () => {
   assert.equal(none.message, 'Wrong number of arguments');
   rejectedAt('fn main(): Int = Fail.fail(1, 2);', 'E_ARITY',
     'Fail.fail(1, 2)');
-  rejectedAt('fn main(): Int = Fail.fail;', 'E_SYNTAX', 'Fail.fail');
+  // Since Task 2b `Fail.fail` alone is a value (test/fx020-fail-ref).
+  const value = rejectedAt('fn main(): Int = Fail.fail;', 'E_TYPE',
+    'Fail.fail');
+  assert.equal(value.message, 'Expected Int, found _ -> _');
 });
 
 test('a Fail span ends at its payload, as before', () => {

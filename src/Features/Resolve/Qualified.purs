@@ -1,14 +1,14 @@
 module Features.Resolve.Qualified
   ( failCall
+  , failReference
   , qualifiedCall
   , qualifiedName
-  , unappliedFail
   ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe, maybe')
+import Data.Maybe (Maybe(..), maybe')
 import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Resolved as Resolved
@@ -19,7 +19,7 @@ import Features.Resolve.Effect
   , Operation(..)
   , builtinEffects
   )
-import Features.Resolve.Fresh (Fresh, failure, liftEither)
+import Features.Resolve.Fresh (Fresh, failure, fresh, liftEither)
 import Features.Resolve.Scope (Scope)
 
 -- Why a qualified name has no declaration.
@@ -65,22 +65,22 @@ qualifiedName
   → Syntax.Span
   → String
   → String
-  → Either Syntax.Diagnostic Resolved.Expr
+  → Fresh Resolved.Expr
 qualifiedName scope span qualifier member =
-  either (missing UnboundLocal span qualifier member) (reference span written)
+  either (liftEither <<< missing UnboundLocal span qualifier member)
+    (reference span written)
     (declared scope qualifier member)
   where
   written = qualifier <> "." <> member
 
-reference
-  ∷ Syntax.Span → String → Declared → Either Syntax.Diagnostic Resolved.Expr
+reference ∷ Syntax.Span → String → Declared → Fresh Resolved.Expr
 reference span written found = case found.operation of
   UserOperation effect index →
-    if found.arity == 0 then Left
+    if found.arity == 0 then failure
       (Syntax.problemAt (FunctionNeedsCall written) span)
-    else Right (Resolved.OperationRef span effect index)
-  PrintOperation → Right (Resolved.PrintRef span)
-  FailOperation → unappliedFail span
+    else pure (Resolved.OperationRef span effect index)
+  PrintOperation → pure (Resolved.PrintRef span)
+  FailOperation → failReference span
 
 -- `Effect.op(args)` performs, prints or fails; the resolved node is the one
 -- the bare call resolves to. `resolved` is the arguments, resolved.
@@ -138,7 +138,16 @@ failCall span arguments resolved = resolved >>= single
   payloadEnd payload =
     { start: span.start, end: (Syntax.exprSpan payload).end }
 
--- Fail has no value form (a reference to it never existed); this is the
--- parser's old text for `fail` without `(`.
-unappliedFail ∷ Syntax.Span → Either Syntax.Diagnostic Resolved.Expr
-unappliedFail span = Left (Syntax.problemAt (Syntax "Expected '('") span)
+-- `Fail.fail` as a value: `fn(e) => Fail.fail(e)` over a fresh binder,
+-- every part at the reference's span. Applying it is then exactly a
+-- `fail(e)`: the family is keyed by the payload's type head, settled as
+-- every `fail` is, and a payload never decided is FailNeedsConcrete at the
+-- reference. A lambda is monomorphic, so one bound reference has one
+-- family, while each written reference gets its own. Bare `fail` (the
+-- legacy global) and, from FX020 Task 3, an imported `fail` share it.
+failReference ∷ Syntax.Span → Fresh Resolved.Expr
+failReference span = eta <$> fresh
+  where
+  eta payload = Resolved.Lambda span
+    [ { local: Just payload, ty: Nothing, span } ]
+    (Resolved.Fail span (Resolved.Local span payload))

@@ -12,7 +12,7 @@ import Domain.Syntax as Syntax
 import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
 import Features.Resolve.Fresh (Fresh, failure, liftEither)
-import Features.Resolve.Qualified (failCall, unappliedFail)
+import Features.Resolve.Qualified (failCall, failReference)
 import Features.Resolve.Scope (Scope)
 
 -- Design §2: a local wins; then a function, a value if it has parameters
@@ -21,24 +21,25 @@ bareName
   ∷ Scope
   → Syntax.Span
   → String
-  → Either Syntax.Diagnostic Resolved.Expr
+  → Fresh Resolved.Expr
 bareName scope span name = maybe' otherwise found (findLocal scope name)
   where
   found id = pure (Resolved.Local span id)
   otherwise _ = maybe' unbound global (findGlobal scope name)
-  unbound _ = Left
+  unbound _ = failure
     (Syntax.problemAt (Unbound UnboundLocal name) span)
   global entry = case entry.ref of
-    Resolved.GlobalCtor id → bareConstructor scope span id
-    Resolved.GlobalFunction id arity → bareFunction span name id arity
+    Resolved.GlobalCtor id → liftEither (bareConstructor scope span id)
+    Resolved.GlobalFunction id arity → liftEither
+      (bareFunction span name id arity)
     Resolved.Operation effect index arity →
-      if arity == 0 then Left
+      if arity == 0 then failure
         (Syntax.problemAt (FunctionNeedsCall name) span)
       else pure (Resolved.OperationRef span effect index)
     Resolved.BuiltinPrint → pure (Resolved.PrintRef span)
     Resolved.BuiltinShow → pure (Resolved.ShowRef span)
     Resolved.BuiltinCrash → pure (Resolved.CrashRef span)
-    Resolved.LegacyFail → unappliedFail span
+    Resolved.LegacyFail → failReference span
 
 bareFunction
   ∷ Syntax.Span
