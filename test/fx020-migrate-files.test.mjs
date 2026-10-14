@@ -155,3 +155,10 @@ test('a line continuation with CRLF is skipped', () => {
   assert.equal(migrateSource(env, 'test/c.test.mjs', text).text,
     text.replace('print(7)', 'Console.print(7)'));
 });
+
+test('a line continuation with U+2028 is skipped', () => {
+  const text = 'const ls = \'fn main(): Unit with Console = \\\u2028'
+    + 'print(8);\';\n';
+  assert.equal(migrateSource(env, 'test/l.test.mjs', text).text,
+    text.replace('print(8)', 'Console.print(8)'));
+});

@@ -70,6 +70,34 @@ test('a hand wrap aligns, and a span after it moves down', () => {
   assert.equal(align(before, 'fn f(a: Int,\n b: Int): Int = a;').length, 1);
 });
 
+// A wrap right before a qualified call: two edits at one offset, the
+// break then the qualifier, and a span after both moves past both.
+const wrapsBefore = (before, after, expected) => {
+  const edits = align(before, after);
+  assert.deepEqual(edits, expected);
+  const at = before.indexOf('(1)');
+  const moved = after.indexOf('(1)');
+  const line = after.slice(0, moved).split('\n').length;
+  const column = moved - after.lastIndexOf('\n', moved - 1);
+  assert.deepEqual(mapSpan(edits, before, after,
+    span(position(at, 1, at + 1), position(at + 3, 1, at + 4))),
+  span(position(moved, line, column), position(moved + 3, line,
+    column + 3)));
+};
+
+test('a wrap before a newly qualified call aligns', () => {
+  wrapsBefore('fn w(): Unit with Log = log(1);',
+    'fn w(): Unit with Log =\n  Log.log(1);',
+    [{ at: 23, text: '\n ', kind: 'break' },
+      { at: 24, text: 'Log.', kind: 'qualifier' }]);
+  wrapsBefore('f(a, log(1))', 'f(a,\n  Log.log(1))',
+    [{ at: 4, text: '\n ', kind: 'break' },
+      { at: 5, text: 'Log.', kind: 'qualifier' }]);
+  wrapsBefore('f(a,log(1))', 'f(a,\n  Log.log(1))',
+    [{ at: 4, text: '\n  ', kind: 'break' },
+      { at: 4, text: 'Log.', kind: 'qualifier' }]);
+});
+
 const log = 'effect Log { fn log(n: Int): Unit; };\n';
 const main = '\nfn main(): Unit with Console = print(0);';
 const program = body => log + body + main;

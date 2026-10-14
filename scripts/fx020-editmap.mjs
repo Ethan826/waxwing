@@ -63,25 +63,30 @@ const whitespace = /^[ \t\n]*/;
 // A hand wrap replaces a space with a break and indentation (`a, b` →
 // `a,\n  b`). As an insertion, the break goes before the original
 // whitespace still at `at`, which must end the migrated run; the
-// inserted part must hold the line break.
+// inserted part must hold the line break. After the run comes the
+// original's next character, or a qualifier inserted before it (a wrap
+// right before `Log.log(1)`), which the next step takes.
+const qualified = (migrated, index, next) => {
+  const found = qualifierAt.exec(migrated.slice(index, index + 200));
+  return found !== null && migrated.startsWith(next, index + found[0].length);
+};
+
 const breakAt = (original, at, migrated, index) => {
   const kept = whitespace.exec(original.slice(at))[0];
   const run = whitespace.exec(migrated.slice(index))[0];
   const text = run.slice(0, run.length - kept.length);
+  const next = original.slice(at + kept.length, at + kept.length + 1);
   return text.includes('\n') && run.endsWith(kept)
-    && migrated.startsWith(original.slice(at + kept.length,
-      at + kept.length + 1), index + run.length)
+    && (migrated.startsWith(next, index + run.length)
+      || qualified(migrated, index + run.length, next))
     ? { at, text, kind: 'break' } : undefined;
 };
 
-const insertionAt = (original, at, migrated, index) => {
-  const found = qualifierAt.exec(migrated.slice(index, index + 200));
-  if (found !== null && migrated.startsWith(original.slice(at, at + 1),
-    index + found[0].length)) {
-    return { at, text: found[0], kind: 'qualifier' };
-  }
-  return breakAt(original, at, migrated, index);
-};
+const insertionAt = (original, at, migrated, index) =>
+  qualified(migrated, index, original.slice(at, at + 1))
+    ? { at, text: qualifierAt.exec(migrated.slice(index, index + 200))[0],
+      kind: 'qualifier' }
+    : breakAt(original, at, migrated, index);
 
 export const align = (original, migrated) => {
   const edits = [];

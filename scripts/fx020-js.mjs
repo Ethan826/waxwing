@@ -15,7 +15,9 @@ const word = /[A-Za-z0-9_$]/;
 // The escape at `index` (a backslash): its cooked text and raw length.
 const escapeAt = (text, index) => {
   const next = text[index + 1];
-  if (next === '\n') return ['', 2];
+  if (next === '\n' || next === '\u2028' || next === '\u2029') {
+    return ['', 2];
+  }
   if (next === '\r') return ['', text[index + 2] === '\n' ? 3 : 2];
   if (next === 'x') {
     return [String.fromCharCode(parseInt(text.slice(index + 2, index + 4),
