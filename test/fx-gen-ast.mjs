@@ -42,44 +42,46 @@ export const oops = number => call('Oops', [lit(number)], 'Oops');
 
 const atomic = node =>
   ['lit', 'var', 'call', 'app', 'str'].includes(node.k);
-const operand = node => (atomic(node) ? text(node) : `(${text(node)})`);
-const piece = item =>
-  (item.k === 'let' ? `let ${item.name} = ${text(item.value)};`
-  : `${item.k === 'defer' ? 'defer ' : ''}${text(item.value)};`);
-const body = node => [...node.items.map(piece),
-  ...(node.value ? [text(node.value)] : [])].join(' ');
+const bare = node => node.name;
 
-const clause =
-  ({ op, params, body }) => `${op}(${params.join(', ')}) => ${text(body)}`;
-const failure = ({ family, name, body }) =>
-  `fail(${name}: ${family}) => ${text(body)}`;
-const arm = ({ pattern, body }) => `${pattern} => ${text(body)}`;
-
-export const text = node => {
+// The source of `node`; `spell` names each call (test/fx-gen-names.mjs).
+export const text = (node, spell = bare) => {
+  const write = child => text(child, spell);
+  const operand = child => (atomic(child) ? write(child) : `(${write(child)})`);
+  const piece = item =>
+    (item.k === 'let' ? `let ${item.name} = ${write(item.value)};`
+    : `${item.k === 'defer' ? 'defer ' : ''}${write(item.value)};`);
+  const body = block => [...block.items.map(piece),
+    ...(block.value ? [write(block.value)] : [])].join(' ');
+  const clause = ({ op, params, body: done }) =>
+    `${op}(${params.join(', ')}) => ${write(done)}`;
+  const failure = ({ family, name, body: done }) =>
+    `fail(${name}: ${family}) => ${write(done)}`;
+  const arm = ({ pattern, body: done }) => `${pattern} => ${write(done)}`;
   switch (node.k) {
     case 'lit': return node.text;
     case 'var': return node.name;
     case 'call': return node.args.length === 0 && /^[A-Z]/.test(node.name)
-      ? node.name : `${node.name}(${node.args.map(text).join(', ')})`;
-    case 'app': return `${node.callee.k === 'lam' ? `(${text(node.callee)})`
-      : text(node.callee)}(${node.args.map(text).join(', ')})`;
+      ? node.name : `${spell(node)}(${node.args.map(write).join(', ')})`;
+    case 'app': return `${node.callee.k === 'lam' ? `(${write(node.callee)})`
+      : write(node.callee)}(${node.args.map(write).join(', ')})`;
     case 'add': return `${operand(node.left)} + ${operand(node.right)}`;
     case 'str': return node.text;
-    case 'cat': return `${node.left.k === 'cat' ? text(node.left)
+    case 'cat': return `${node.left.k === 'cat' ? write(node.left)
       : operand(node.left)} ++ ${operand(node.right)}`;
     case 'cmp': return `${operand(node.left)} ${node.op} `
       + `${operand(node.right)}`;
-    case 'lam': return `fn(${node.params.join(', ')}) => ${text(node.body)}`;
+    case 'lam': return `fn(${node.params.join(', ')}) => ${write(node.body)}`;
     case 'blk': return body(node) === '' ? '{}' : `{ ${body(node)} }`;
-    case 'with': return `with ${text(node.handler)} ${text(node.body)}`;
+    case 'with': return `with ${write(node.handler)} ${write(node.body)}`;
     case 'handler':
       return `handler ${node.effect} {`
         + ` ${node.clauses.map(clause).join(', ')} }`;
     case 'handle':
-      return `handle ${text(node.body)} {`
+      return `handle ${write(node.body)} {`
         + ` ${node.clauses.map(failure).join(', ')} }`;
     case 'match':
-      return `match ${text(node.scrutinee)} {`
+      return `match ${write(node.scrutinee)} {`
         + ` ${node.arms.map(arm).join(', ')} }`;
     default: throw new Error(`unknown node ${node.k}`);
   }

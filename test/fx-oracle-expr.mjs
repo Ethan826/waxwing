@@ -1,6 +1,7 @@
 // The expression reader of the FX001 reference interpreter: patterns,
 // lambdas, application, pipes, `match`, `if`, blocks, `handler`, `with`,
-// `handle`, `defer` and Text. `expressions(reader)` returns { expression,
+// `handle`, `defer`, Text and qualified operations (`Effect.op`, applied
+// like any value). `expressions(reader)` returns { expression,
 // parameter, readType }. Shares no code with the compiler.
 import { cursor, isUpper, typeReader } from './fx-oracle-lex.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
@@ -63,6 +64,10 @@ export const expressions = reader => {
       const inner = expression();
       take(')');
       return inner;
+    }
+    if (isUpper(next.text) && peek('.')) {
+      take('.');
+      return { tag: 'qualified', effect: next.text, name: take().text };
     }
     if (!peek('(')) {
       return isUpper(next.text) ? { tag: 'apply', name: next.text, args: [] }

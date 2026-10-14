@@ -13,6 +13,7 @@ import { failingFrame } from './fx-gen-failing.mjs';
 import { crossing, escaping, nested, stages } from './fx-gen-fragments.mjs';
 import { noteType, textFrame } from './fx-gen-text.mjs';
 import { rng } from './fx-gen-rng.mjs';
+import { namer, scheme, speller } from './fx-gen-names.mjs';
 
 export const fragments = [
   { name: 'nested', make: nested }, { name: 'crossing', make: crossing },
@@ -28,9 +29,9 @@ const regular = fragments.filter(fragment => !fragment.terminal);
 export const prelude = 'type Err = Err1(Int) | Err2; type Oops = Oops(Int); '
   + 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Tick { fn tick(n: Int): Int; }; '
-  + 'fn arg(n: Int): Int with Console = { print(n); n }; '
-  + 'fn risky(n: Int): Int with Fail(Err) + Console = '
-  + '{ print(n); fail(Err1(n)); n };';
+  + 'fn arg(n: Int): Int with Console = { Console.print(n); n }; '
+  + 'fn risky(n: Int): Int with Fail(Err) { fail } + Console = '
+  + '{ Console.print(n); fail(Err1(n)); n };';
 const known = [
   { name: 'arg', params: [['n', 'Int']], ret: 'Int', row: new Set() },
   { name: 'risky', params: [['n', 'Int']], ret: 'Int', row: new Set(['Err']) }
@@ -55,9 +56,14 @@ const randomFn = (ctx, index) => {
     rowText: rowText(row), body: genBlock(inner, 2, ret) };
 };
 
-const fnText = fn => `fn ${fn.name}(${fn.params.map(([name, type]) =>
-  `${name}: ${type}`).join(', ')}): ${fn.retText}`
-  + `${fn.rowText ? ` with ${fn.rowText}` : ''} = ${text(fn.body)};`;
+// A function is written with its spelling scheme (test/fx-gen-names.mjs);
+// one without (a hand-built test program) writes bare names.
+const fnText = fn => {
+  const row = fn.names?.rowText ?? fn.rowText;
+  return `fn ${fn.name}(${fn.params.map(([name, type]) =>
+    `${name}: ${type}`).join(', ')}): ${fn.retText}`
+    + `${row ? ` with ${row}` : ''} = ${text(fn.body, speller(fn.names))};`;
+};
 
 // The program text: the fixed prelude, then the functions, then main.
 // A program with no `defer` needs no mark, so it is written with plain
@@ -116,8 +122,10 @@ export const generate = (seed, index = seed, options = {}) => {
   const r = rng(seed);
   const shared = {
     counter: 0, extra: [], shapes: [], unconstrained: !!options.unconstrained };
+  const spelling = namer(seed);
+  const mainNames = scheme(spelling, 'Console');
   let ctx = { r, shared, labels: new Set(), locals: [], fns: [...known],
-    failing: new Set(), lax: new Set() };
+    failing: new Set(), lax: new Set(), spell: speller(mainNames) };
   const own = [];
   for (let count = r.int(3), position = 0; position < count; position++) {
     const fn = randomFn(ctx, position);
@@ -135,8 +143,9 @@ export const generate = (seed, index = seed, options = {}) => {
   const value = ret === 'Int' ? intExpr(ctx, 2) : null;
   const body = block([...items, ...ending], value);
   const main = { name: 'main', params: [], retText: ret, rowText: 'Console',
-    body };
-  const program = { fns: [...own, ...shared.extra], main };
+    body, names: mainNames };
+  const named = fn => ({ ...fn, names: scheme(spelling, fn.rowText) });
+  const program = { fns: [...own, ...shared.extra].map(named), main };
   return { seed, program, source: render(program), shapes: shared.shapes,
     focus: focus.map(fragment => fragment.name) };
 };

@@ -331,6 +331,12 @@ differing program's source, both outcomes and a shrunk source
 rejection variants of strict `defer` are generated from the same seed, and
 25 more reach a failing handler (FX008: directly, through a forwarding
 clause, through a clause calling an ambient callback).
+Since FX020 Task 5 the interpreter reads qualified operations, signature
+aliases and imports, with Console and Fail as effects
+(test/fx-oracle-names.mjs; tests in test/fx020-oracle.test.mjs), and the
+generator spells each function's operations bare, qualified (some through
+an alias) or through imports of its own row (test/fx-gen-names.mjs), from
+a stream of its own so a seed keeps its program shape.
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context

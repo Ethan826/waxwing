@@ -3,7 +3,8 @@
 // among them), `show`, and raw and block literals. A frame is a Unit block
 // of Text items, sometimes under a Log or Tick handler so that holes
 // perform user effects too. Fixed items guarantee the census; random ones
-// vary the shapes.
+// vary the shapes. A hole is written when it is made, with the spelling
+// of main (`ctx.spell`, test/fx-gen-names.mjs), where frames are placed.
 import {
   call, cat, compare, doItem, letItem, lit, local, print, str, text,
   withHandler, block
@@ -31,9 +32,9 @@ const plain = (ctx, st) => literalOf(ctx, [randomText(ctx.r, 6)], st.flat);
 const hole = (ctx, depth, st) => {
   const inner = { ...st, flat: true };
   const value = textExpr(ctx, depth, inner);
-  if (!ctx.r.chance(30)) return { hole: text(value) };
+  if (!ctx.r.chance(30)) return { hole: text(value, ctx.spell) };
   const effect = block([doItem(unitExpr(ctx, 1))], value);
-  return { hole: text(effect) };
+  return { hole: text(effect, ctx.spell) };
 };
 
 const interpolated = (ctx, depth, st) => {
@@ -68,8 +69,9 @@ const arg = ctx => call('arg', [lit(ctx.r.number())], 'Int');
 const ordered = (ctx, st) => {
   const { r } = ctx;
   const effect = block([doItem(print(lit(r.number())))], str('"x"'));
-  return literalOf(ctx, [randomText(r, 3), { hole: text(show(arg(ctx))) },
-    randomText(r, 3), { hole: text(effect) }, randomText(r, 3)], st.flat);
+  return literalOf(ctx, [randomText(r, 3),
+    { hole: text(show(arg(ctx)), ctx.spell) }, randomText(r, 3),
+    { hole: text(effect, ctx.spell) }, randomText(r, 3)], st.flat);
 };
 
 // U+1F600 against a BMP scalar above the surrogates: UTF-16 order differs.

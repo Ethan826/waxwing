@@ -21,6 +21,7 @@ import {
   compareValues, isText, show, typeOfValue
 } from './fx-oracle-values.mjs';
 import { evaluateText, noteComparison } from './fx-oracle-text.mjs';
+import { functionScope, operation } from './fx-oracle-names.mjs';
 
 const maximumSteps = 3_000_000;
 
@@ -51,6 +52,8 @@ export const interpret = (source, options = {}) => {
       kind: 'builtin', name, arity: 1, args: [] };
     throw new OracleError(`unknown name ${name}`);
   };
+  const scopeOf = declared =>
+    (declared.scope ??= functionScope(program, declared.row));
   const complete = (value, ctx) => (value?.args?.length === 0
     && arityOf(value) === 0 ? saturate(value, ctx) : value);
   const applyOne = (callee, argument, ctx) => {
@@ -89,13 +92,15 @@ export const interpret = (source, options = {}) => {
     }
     if (callee.kind === 'op') return perform(state, callee, args, ctx);
     if (callee.kind === 'builtin') return builtin(callee.name, args[0], ctx);
-    const bound = new Map(callee.kind === 'lambda' ? callee.env : []);
+    const declared = program.functions.get(callee.name);
+    const bound = new Map(callee.kind === 'lambda' ? callee.env
+      : scopeOf(declared));
     const names = callee.kind === 'lambda' ? callee.parameters
-      : program.functions.get(callee.name).parameters;
+      : declared.parameters;
     names.forEach((name, index) => {
       if (name !== null) bound.set(name, args[index]); });
     if (callee.kind === 'fn') {
-      return evaluate(program.functions.get(callee.name).body, bound, ctx);
+      return evaluate(declared.body, bound, ctx);
     }
     lambdas.push({ created: callee.ctx, called: ctx });
     try { return evaluate(callee.body, bound, ctx); } finally { lambdas.pop(); }
@@ -126,6 +131,8 @@ export const interpret = (source, options = {}) => {
     switch (node.tag) {
       case 'value': return node.value;
       case 'local': return complete(lookup(node.name, env), ctx);
+      case 'qualified': return complete(
+        operation(program, env, node.effect, node.name), ctx);
       case 'lambda': return { ...node, kind: 'lambda', env, ctx, args: [] };
       case 'add': {
         const left = evaluate(node.left, env, ctx);
