@@ -5,9 +5,10 @@ import { task5Probes } from './regression-task5.mjs';
 import { fx008Probes } from './regression-fx008.mjs';
 import { markProbes } from './regression-fx008-marks.mjs';
 import { fxProbes } from './regression-fx.mjs';
+import { diagProbes } from './regression-diag.mjs';
 import { textProbes } from './regression-text.mjs';
 
 export const externalProbes = {
   ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes,
-  ...markProbes, ...fxProbes, ...textProbes
+  ...markProbes, ...fxProbes, ...textProbes, ...diagProbes
 };

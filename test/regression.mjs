@@ -69,73 +69,6 @@ const exhaustive = () => {
   console.log('exhaustive regression detects the defect');
 };
 
-const expectsDiagnostic = (source, code, message, label) => {
-  const result = compile(source);
-  assert.ok(result instanceof Left, `${label}: program was accepted`);
-  const found = wire(result.value0);
-  assert.equal(found.code, code, `${label}: wrong diagnostic code`);
-  assert.equal(found.message, message, `${label}: wrong diagnostic message`);
-};
-
-// Both payloads are unsolved: the walk into the outer Fail's payload must
-// reach the inner one first, else the outer Fail's span is reported.
-const nestedFail = () => {
-  const source = 'fn hole(u: Unit): a = hole(u); fn h(k: b): a = hole(()); '
-    + 'fn f(): Int with Fail(Int) = fail(h(fn(e) => fail(e))); '
-    + 'fn main(): Int = 0;';
-  expectsDiagnostic(source, 'E_TYPE', 'Fail needs a concrete error family',
-    'nested Fail payload');
-  const found = wire(compile(source).value0);
-  assert.equal(found.span.start.offset, source.indexOf('fail(e)'),
-    'nested Fail payload: wrong span');
-};
-
-const duplicateBinder = () => expectsDiagnostic(
-  'effect Add { fn add(x: Int, y: Int): Int; }; '
-    + 'fn main(): Int = with handler Add { add(x, x) => x } { add(1, 2) };',
-  'E_DUPLICATE', 'Duplicate parameter x', 'duplicate handler binder'
-);
-
-const duplicateRowTail = () => expectsDiagnostic(
-  'fn f(): Int with ...e + ...r = 0; fn main(): Int = 0;',
-  'E_SYNTAX', 'Only one row tail is allowed', 'duplicate row tail'
-);
-
-const constructorFunction = () => expectsDiagnostic(
-  'fn F(): Int = 0; type T = F; fn main(): Int = 0;',
-  'E_DUPLICATE', 'Duplicate function F', 'constructor and function collision'
-);
-
-const duplicateEffect = () => expectsDiagnostic(
-  'effect Clock { fn now(): Int; }; effect Clock { fn later(): Int; }; '
-    + 'fn main(): Int = 0;',
-  'E_DUPLICATE', 'Duplicate effect Clock', 'duplicate effect'
-);
-
-const duplicateOperation = () => expectsDiagnostic(
-  'effect Clock { fn now(): Int; fn now(): Int; }; fn main(): Int = 0;',
-  'E_DUPLICATE', 'Duplicate operation now', 'duplicate operation'
-);
-
-const duplicateEffectParameter = () => expectsDiagnostic(
-  'effect State(a, a) { fn get(): a; }; fn main(): Int = 0;',
-  'E_DUPLICATE', 'Duplicate type parameter a', 'duplicate effect parameter'
-);
-
-const duplicateOperationParameter = () => expectsDiagnostic(
-  'effect State { fn put(a: Int, a: Bool): Unit; }; '
-    + 'fn main(): Int = 0;',
-  'E_DUPLICATE', 'Duplicate parameter a', 'duplicate operation parameter'
-);
-
-const deferredFailEffect = () => expectsDiagnostic(
-  'type DbError = DbError; fn f(): Int with pure = { '
-    + 'let raise = fn(error) => fail(error); raise(DbError) }; '
-    + 'fn main(): Int = 0;',
-  'E_EFFECT', 'f performs Fail(DbError), which its signature does not allow',
-  'deferred Fail capability'
-);
-
 // FX001 Task 7: the evidence context is threaded only when the emitted IR
 // has an effect node or layout (design §4), so a Console-only program's Go
 // stays free of `ctx` and byte-identical to its snapshot.
@@ -227,13 +160,6 @@ const stateThread = () => {
 
 const probes = {
   branch, 'nil-guard': nilGuard, exhaustive,
-  'nested-fail': nestedFail, 'duplicate-binder': duplicateBinder,
-  'duplicate-row-tail': duplicateRowTail, 'duplicate-effect': duplicateEffect,
-  'constructor-function': constructorFunction,
-  'duplicate-operation': duplicateOperation,
-  'duplicate-effect-parameter': duplicateEffectParameter,
-  'duplicate-operation-parameter': duplicateOperationParameter,
-  'deferred-fail-effect': deferredFailEffect,
   'effect-free-ctx': effectFreeContext,
   'ctor-order': ordered('Nil < Cons(0, Nil)', 'constructor order wrong'),
   'first-field': ordered('Cons(1, Nil) > Cons(0, Cons(5, Nil))',
