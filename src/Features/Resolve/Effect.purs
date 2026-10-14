@@ -1,4 +1,12 @@
-module Features.Resolve.Effect (effects, globals, summaries) where
+module Features.Resolve.Effect
+  ( BuiltinEffect
+  , Declared
+  , Operation(..)
+  , builtinEffects
+  , effects
+  , globals
+  , summaries
+  ) where
 
 import Prelude
 import Data.Array as Array
@@ -17,6 +25,39 @@ import Features.Resolve.Marks
   )
 import Features.Resolve.Types (resolveTypeWith)
 import Features.Resolve.Repeated (laterRepeat)
+
+-- What `Effect.op` names (FX020 §2: by declaration, never by row). Console
+-- and Fail are not declared effects, so each has a built-in table below,
+-- searched like a declared effect's operations (amendment 2). Imports and
+-- collision checks (FX020 Tasks 3 and 4) share it. `print` ranges over
+-- every printable type, so it stays compiler-provided until C001.
+data Operation
+  = UserOperation EffectId Int
+  | PrintOperation
+  | FailOperation
+
+type Declared = { operation ∷ Operation, arity ∷ Int }
+
+type BuiltinEffect =
+  { name ∷ String, operations ∷ Array { name ∷ String, declared ∷ Declared } }
+
+builtinEffects ∷ Array BuiltinEffect
+builtinEffects =
+  [ { name: "Console"
+    , operations:
+        [ { name: "print"
+          , declared: { operation: PrintOperation, arity: 1 }
+          }
+        ]
+    }
+  , { name: "Fail"
+    , operations:
+        [ { name: "fail"
+          , declared: { operation: FailOperation, arity: 1 }
+          }
+        ]
+    }
+  ]
 
 summaries ∷ Array Syntax.EffectDecl → Array { name ∷ String, arity ∷ Int }
 summaries = map summary

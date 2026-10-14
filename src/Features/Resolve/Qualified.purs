@@ -13,54 +13,25 @@ import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.Effect
+  ( BuiltinEffect
+  , Declared
+  , Operation(..)
+  , builtinEffects
+  )
 import Features.Resolve.Fresh (Fresh, failure, liftEither)
 import Features.Resolve.Scope (Scope)
-
--- What `Effect.op` names (FX020 §2: by declaration, never by row). Console
--- and Fail are not declared effects, so each has a built-in table below,
--- searched like a declared effect's operations (amendment 2). `print`
--- ranges over every printable type, so it stays compiler-provided until
--- C001.
-data Operation
-  = UserOperation EffectId Int
-  | PrintOperation
-  | FailOperation
-
-type Declared = { operation ∷ Operation, arity ∷ Int }
 
 -- Why a qualified name has no declaration.
 data Missing = NotAnEffect | NotAnOperation
 
-type BuiltinEffect =
-  { name ∷ String, operations ∷ Array { name ∷ String, declared ∷ Declared } }
-
-builtins ∷ Array BuiltinEffect
-builtins =
-  [ { name: "Console"
-    , operations:
-        [ { name: "print"
-          , declared: { operation: PrintOperation, arity: 1 }
-          }
-        ]
-    }
-  , { name: "Fail"
-    , operations:
-        [ { name: "fail"
-          , declared: { operation: FailOperation, arity: 1 }
-          }
-        ]
-    }
-  ]
-
 -- A user effect of that name wins; the built-ins are searched after.
 declared ∷ Scope → String → String → Either Missing Declared
 declared scope qualifier member = maybe' builtin user
-  (Array.findIndex (userNamed qualifier) scope.effectInfos)
+  (Array.findIndex (called qualifier) scope.effectInfos)
   where
-  userNamed wanted effect = effect.name == wanted
-  builtinNamed wanted effect = effect.name == wanted
   builtin _ = maybe' notAnEffect (builtinMember member)
-    (Array.find (builtinNamed qualifier) builtins)
+    (Array.find (called qualifier) builtinEffects)
   user index = maybe' notAnOperation Right
     (Array.index scope.effectInfos index >>= userMember index member)
   notAnEffect _ = Left NotAnEffect
@@ -69,10 +40,9 @@ declared scope qualifier member = maybe' builtin user
 userMember
   ∷ Int → String → Resolved.EffectInfo → Maybe Declared
 userMember index member effect =
-  Array.findIndex (named member)
+  Array.findIndex (called member)
     effect.operations >>= declaredAt
   where
-  named wanted entry = entry.name == wanted
   declaredAt position = arityOf <$> Array.index effect.operations position
     where
     arityOf info =
@@ -82,10 +52,12 @@ userMember index member effect =
 
 builtinMember ∷ String → BuiltinEffect → Either Missing Declared
 builtinMember member effect = maybe' notAnOperation (Right <<< _.declared)
-  (Array.find (named member) effect.operations)
+  (Array.find (called member) effect.operations)
   where
   notAnOperation _ = Left NotAnOperation
-  named wanted entry = entry.name == wanted
+
+called ∷ ∀ r. String → { name ∷ String | r } → Boolean
+called wanted entry = entry.name == wanted
 
 -- `Effect.op` as a value: a reference, as the bare name is.
 qualifiedName

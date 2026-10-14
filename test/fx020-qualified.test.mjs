@@ -128,7 +128,8 @@ test('fail with the wrong shape is rejected where it is written', () => {
 test('a Fail span ends at its payload, as before', () => {
   const found = rejectedAt('fn f(): Int = fail(1); fn main(): Int = 1;',
     'E_EFFECT', 'fail(1');
-  assert.ok(found.message.length > 0);
+  assert.equal(found.message, 'f performs Fail(Int), which its signature '
+    + 'does not allow');
 });
 
 // Review Focus 5: `.` elsewhere gives a clear existing error and blocks
@@ -151,6 +152,8 @@ test('... still lexes as one token', () => {
 });
 
 test('a lowercase receiver is never read as a qualifier', () => {
-  assert.ok(compile('fn f(log: Int): Int = log.log(1); fn main(): Int = 1;')
-    instanceof Left);
+  const source = 'fn f(log: Int): Int = log.log(1); fn main(): Int = 1;';
+  const found = rejected(source, 'E_SYNTAX');
+  assert.equal(found.message, "Expected ';'");
+  assert.deepEqual(found.span.start.offset, source.indexOf('.'));
 });

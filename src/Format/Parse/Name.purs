@@ -1,31 +1,22 @@
-module Format.Parse.Name (Primary, nameOrQualified) where
+module Format.Parse.Name (Primary, named, upperNamed) where
 
 import Prelude
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Domain.Syntax (Expr(..), Position, Span)
-import Format.Lex (Token, isUpper)
+import Format.Lex (Token)
 import Format.Parse.Grammar
   ( Parser
   , commaList
   , dispatch
   , expect
-  , ifSecond
   , name
-  , onWhen
+  , on
   , optionalOn
   , spanned
   )
 
 -- A primary expression and the position its source text starts at.
 type Primary = { value ∷ Expr, start ∷ Position }
-
--- A capitalized name followed by `.` is a qualified operation (FX020);
--- anything else is a variable or call. A lowercase receiver is never read
--- as a qualifier, so `r.field` can reuse `.` later (R001).
-nameOrQualified ∷ Parser Expr → Parser Primary
-nameOrQualified inner = dispatch
-  [ onWhen isUpper (ifSecond (eq ".") (qualified inner) (named inner)) ]
-  (named inner)
 
 -- A variable spans its name; a call runs through its `)`. It builds its
 -- Primary itself: a separate `<$>` over it added a stack layer per nested
@@ -43,22 +34,35 @@ namedOf span found = maybe (Variable span found.identifier.text)
   (Call span found.identifier.text)
   found.arguments
 
--- `Effect.op` or `Effect.op(args)`, spanning from the qualifier through the
+-- What follows a capitalized name: nothing, a call's arguments, or `.op`
+-- with its optional arguments (FX020).
+data Tail = Bare | Applied (Array Expr) | Member Token (Maybe (Array Expr))
+
+-- A capitalized name: a constructor or `Effect.op`. It has the shape of
+-- `named`, with the choice made by the one dispatch after the name, so a
+-- constructor argument costs no frame beyond a plain call (G002, ADR 006).
+-- Only capitalized names read `.`; a lowercase receiver never does, so
+-- `r.field` can reuse `.` later (R001). Spans run from the name through the
 -- last character written, like a variable or a call.
-qualified ∷ Parser Expr → Parser Primary
-qualified inner = spanned primaryOf
-  ( parts <$> name <* expect "." <*> name
-      <*> optionalOn "(" (expect "(" *> commaList inner <* expect ")")
+upperNamed ∷ Parser Expr → Parser Primary
+upperNamed inner = spanned primaryOf
+  ( parts <$> name
+      <*> dispatch
+        [ on "(" (Applied <$> arguments)
+        , on "." (Member <$ expect "." <*> name <*> optionalOn "(" arguments)
+        ]
+        (pure Bare)
   )
   where
-  primaryOf span found = { value: qualifiedOf span found, start: span.start }
-  parts qualifier member found = { qualifier, member, arguments: found }
+  primaryOf span found = { value: tailOf span found, start: span.start }
+  parts identifier found = { identifier, found }
+  arguments = expect "(" *> commaList inner <* expect ")"
 
-qualifiedOf
-  ∷ Span
-  → { qualifier ∷ Token, member ∷ Token, arguments ∷ Maybe (Array Expr) }
-  → Expr
-qualifiedOf span found = maybe
-  (Qualified span found.qualifier.text found.member.text)
-  (QualifiedCall span found.qualifier.text found.member.text)
-  found.arguments
+tailOf ∷ Span → { identifier ∷ Token, found ∷ Tail } → Expr
+tailOf span parsed = case parsed.found of
+  Bare → Variable span parsed.identifier.text
+  Applied arguments → Call span parsed.identifier.text arguments
+  Member member Nothing →
+    Qualified span parsed.identifier.text member.text
+  Member member (Just arguments) →
+    QualifiedCall span parsed.identifier.text member.text arguments

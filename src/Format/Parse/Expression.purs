@@ -14,7 +14,7 @@ import Domain.Syntax
   , exprSpan
   , problemAt
   )
-import Format.Lex (Token, isName)
+import Format.Lex (Token, isName, isUpper)
 import Format.Parse.Grammar
   ( Case
   , Parser
@@ -41,7 +41,7 @@ import Format.Parse.Handler
   , unsupportedControl
   , withExpr
   )
-import Format.Parse.Name (Primary, nameOrQualified)
+import Format.Parse.Name (Primary, named, upperNamed)
 import Format.Parse.Literal (integerLiteral, integerStart)
 import Format.Parse.Pattern (arms)
 
@@ -179,13 +179,18 @@ primary inner = dispatch
   , on "false" (bare <<< boolean false <$> token)
   , on "\"" (bare <$> textLiteral inner)
   , onWhen integerStart (bare <<< integer <$> integerLiteral)
-  , onWhen isName (nameOrQualified inner)
+  , onWhen isQualifier (upperNamed inner)
+  , onWhen isName (named inner)
   ]
   (bare <$> refine notAnExpression token)
   where
   boolean value found = Boolean found.span value
   integer literal = Integer literal.span literal.value
   bare value = { value, start: (exprSpan value).start }
+
+-- A capitalized name may start `Effect.op` (FX020).
+isQualifier ∷ String → Boolean
+isQualifier text = isName text && isUpper text
 
 -- Reached past the last token too, where taking reports the missing token.
 notAnExpression ∷ Token → Either Diagnostic Expr
