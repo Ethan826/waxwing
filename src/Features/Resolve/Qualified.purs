@@ -19,7 +19,7 @@ import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Domain.Type (Ty, VarId)
-import Features.Resolve.Effect
+import Features.Resolve.Builtin
   ( BuiltinEffect
   , Declared
   , Operation(..)

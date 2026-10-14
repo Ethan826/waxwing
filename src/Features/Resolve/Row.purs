@@ -9,6 +9,7 @@ import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), normalMark)
 import Domain.Syntax as Syntax
+import Features.Resolve.Builtin (builtinEffects)
 import Domain.Type (Ty(..), TyRow, VarId(..))
 
 type Effects = Array { name ∷ String, arity ∷ Int }
@@ -91,11 +92,13 @@ lookupEffect
   ∷ Effects
   → Syntax.LabelRef
   → Either Syntax.Diagnostic { ref ∷ EffectRef, arity ∷ Int }
-lookupEffect effects reference = case reference.name of
-  "Console" → Right { ref: ConsoleEffect, arity: 0 }
-  "Fail" → Right { ref: FailEffect, arity: 1 }
-  name → maybe' missing found (Array.findIndex (named name) effects)
+lookupEffect effects reference = maybe' userEffect builtin
+  (Array.find (builtinNamed reference.name) builtinEffects)
   where
+  builtin effect = Right { ref: effect.ref, arity: effect.arity }
+  builtinNamed name effect = effect.name == name
+  userEffect _ = maybe' missing found
+    (Array.findIndex (named reference.name) effects)
   named name effect = effect.name == name
   found index = Right
     { ref: UserEffect (EffectId index)

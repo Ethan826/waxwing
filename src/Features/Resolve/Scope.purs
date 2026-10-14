@@ -5,7 +5,7 @@ import Data.Maybe (Maybe)
 import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
 import Domain.Type (Ty, VarId)
-import Features.Resolve.Effect (Declared)
+import Features.Resolve.Builtin (Declared)
 
 -- An imported operation (FX020 §1): the local name it is bound to, what it
 -- names, and, for a `Fail(E)` import, the family `E` that `fail` is fixed to.

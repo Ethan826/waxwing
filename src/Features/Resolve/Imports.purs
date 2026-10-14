@@ -11,7 +11,7 @@ import Domain.Resolved as Resolved
 import Domain.Row (Label(..), Row(..))
 import Domain.Syntax as Syntax
 import Domain.Type (TyRow)
-import Features.Resolve.Effect (Declared, Operation(..), builtinEffects)
+import Features.Resolve.Builtin (Declared, Operation(..), builtinEffects)
 import Features.Resolve.Qualified (declared)
 import Features.Resolve.Scope (Bindings, Import)
 
