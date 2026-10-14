@@ -4429,8 +4429,8 @@ failure, so no T007 entry.
 Plan docs/plans/2026-10-13-effect-namespaces-plan.md, Tasks 1-8 on branch
 `fx020` from main 26611c3 (worktree .worktrees/fx020); spec
 docs/plans/2026-10-13-effect-namespaces-design.md, ADR 012
-(docs/adr/012-effect-namespaces.md). Not merged; the user's review of the
-multi-candidate hint wording and the merge decision are next. Ledger and
+(docs/adr/012-effect-namespaces.md). Not merged; the hint wordings were
+approved 2026-10-14 and the merge into main is next. Ledger and
 task reports: .superpowers/sdd/2026-10-13-effect-namespaces-plan/
 (progress.md, task-*-report.md; rulings R1-R18).
 
@@ -4446,8 +4446,8 @@ Delivered:
   reference is an eta lambda. Console and Fail are built-in declarations with
   no EffectIds (runtime keys unchanged).
 - Unbound bare operation names keep their error with a hint; the
-  multi-candidate wording (R18) awaits the user. `Console.print` and `show`
-  remain compiler-provided until C001.
+  multi-candidate wording (R18) was approved 2026-10-14. `Console.print`
+  and `show` remain compiler-provided until C001.
 - Final review (R19): a qualifier's `.` touches both names (`Log . log(1)`
   and `Log\n.log(1)` give the stray-`.` `Expected ';'` at the `.`;
   test/fx020-qualified.test.mjs), at no parser stack cost (depth probe,
@@ -4519,8 +4519,9 @@ Evidence (logs under .build/ in the worktree, names fx020-task<N>-*):
 Rulings summary (ledger has the full text): R1 user `effect Console` is the
 existing `Duplicate effect Console`; R2 no note for a built-in; R3-R4 bare
 tests converted in Task 7, one-off tools removed; R5/R18 the multi-candidate
-hint is pinned and goes to the user; R6 unknown `X.y` uses existing texts; R7
-Fail reference in its own task; R8 differential categories accepted; R9 the
+hint is pinned and goes to the user (approved 2026-10-14); R6 unknown
+`X.y` uses existing texts; R7 Fail
+reference in its own task; R8 differential categories accepted; R9 the
 G002 margin is measured; R10/R12 a family rides on the Fail node; R11 a
 duplicated label's import binds the reachable one (FX021); R13 Task 5 split;
 R14 Task 6 as one chunked dispatch; R15 one message changes; R16 stack-size

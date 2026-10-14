@@ -1,4 +1,4 @@
-# Waxwing / FX020 done on branch `fx020`, awaiting the user's review and merge (2026-10-14)
+# Waxwing / FX020 done on branch `fx020`, approved 2026-10-14; merge into main pending (2026-10-14)
 
 FX020 (effect operation namespaces, BACKLOG FX020) is implemented on branch
 `fx020` (worktree `.worktrees/fx020`, from main 26611c3): Tasks 1-8 of

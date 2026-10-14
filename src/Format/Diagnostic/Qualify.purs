@@ -6,8 +6,8 @@ import Data.Maybe (maybe')
 import Data.String (joinWith)
 import Domain.Problem (Candidate)
 
--- FX020. One candidate is the approved wording (2026-10-13); several are
--- pinned by the controller, awaiting the user's review. One effect:
+-- FX020. One candidate is the approved wording (2026-10-13); several were
+-- approved by the user (2026-10-14). One effect:
 -- `; use Log.log, or import it with Log { log }`. Several: `; use A.log or
 -- B.log, or import one with A { log } or B { log }`, and from three
 -- `A.log, B.log or C.log`. The import part writes an effect's parameters

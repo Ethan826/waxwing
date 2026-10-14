@@ -373,8 +373,8 @@ log; use Audit.log or Log.log, or import one with Audit { log } or Log { log
 2026-10-14; three or more read `A.log, B.log or C.log`). A parameterised
 effect is imported with its parameters: `Unbound function fail; use
 Fail.fail, or import it with Fail(E) { fail }`, and `Box(t) { put }` for
-`effect Box(t)`. `print` is
-`Console.print` and `fail` is `Fail.fail`; there is no bare `print`.
+`effect Box(t)`. `print` is `Console.print` and `fail` is `Fail.fail`; there
+is no bare `print`.
 `Console.print` is compiler-provided because it ranges over every printable
 type, a temporary gap until C001, and `show` is a bare global function,
 likewise compiler-provided until C001.
