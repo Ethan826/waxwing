@@ -9,7 +9,7 @@ import { expectDiagnostic } from './fx-diagnostics-support.mjs';
 // the user's, approved 2026-10-12 (BACKLOG FX017). Probes p1-p6 are the
 // ones the whole-branch review found.
 const effects = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; ';
-const main = ' fn main(): Unit with Console = print(1);';
+const main = ' fn main(): Unit with Console = Console.print(1);';
 const fixed = 'a callback\'s row must equal its caller\'s (FX017)';
 const lacks = (callee, row, own, fresh = '') =>
   `${callee} must allow every effect of a (${row}), but its row ${own}`
@@ -29,7 +29,7 @@ test('p1: the callback names L, the caller L + M', () => {
 
 test('p2: the callback lacks L, which the body only performs later', () => {
   expectDiagnostic(effects + 'fn a(q: Int -> Int with M, x: Int): Int '
-    + 'with L + M = q(x) + l();' + main, {
+    + 'with L + M = q(x) + L.l();' + main, {
     code: 'E_EFFECT',
     message: lacks('q', 'L + M', 'is M', written('q', 'L + M')),
     at: ['q(x)'],
@@ -65,11 +65,11 @@ test('p4: an unannotated callback has no labels; its name is the note', () => {
 
 test('p5: a lambda performing M keeps the genuine message', () => {
   expectDiagnostic(effects + 'fn a(x: Int): Int with L = '
-    + '(fn(y: Int) => m())(x);' + main, {
+    + '(fn(y: Int) => M.m())(x);' + main, {
     code: 'E_EFFECT',
     message: 'a performs M, which its signature does not allow',
-    at: ['(fn(y: Int) => m())(x)'],
-    notes: [['=> m()', 'm()', 'M is performed here'],
+    at: ['(fn(y: Int) => M.m())(x)'],
+    notes: [['=> M.m()', 'M.m()', 'M is performed here'],
       [': Int with L =', 'with L',
         'the signature of a does not allow M']]
   });
@@ -143,11 +143,11 @@ test('a let-bound callee keeps no name in the resolved syntax', () => {
 // (test/fx018-callback-row.test.mjs).
 test('a callee pairing with an installed duplicate: FX018\'s text is '
   + 'true', () => {
-  const around = 'with handler Log { log(n) => log(n + 100) } { body(()) }';
+  const around = 'with handler Log { log(n) => Log.log(n + 100) } { body(()) }';
   const source = 'effect Log { fn log(n: Int): Unit; }; '
     + 'fn around(body: Unit -> Unit with Log + ...e): Unit with Log + ...e = '
     + `${around}; fn main(): Unit with Console = with handler Log `
-    + '{ log(n) => print(n) } { around(fn(u: Unit) => log(1)) };';
+    + '{ log(n) => Console.print(n) } { around(fn(u: Unit) => Log.log(1)) };';
   expectDiagnostic(source, {
     code: 'E_EFFECT',
     message: 'body must allow every effect at this call (Log + Log), but its '

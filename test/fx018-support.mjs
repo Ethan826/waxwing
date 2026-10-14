@@ -7,7 +7,7 @@ import { diagnose } from './fx-diagnostics-support.mjs';
 // inside `with`/`handle` and when a function is passed as an argument.
 export const effects = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
   + 'effect N { fn n(): Int; }; ';
-export const main = ' fn main(): Unit with Console = print(1);';
+export const main = ' fn main(): Unit with Console = Console.print(1);';
 export const keep = 'fn keep(f: Int -> Int with ...e): Int -> Int with ...e '
   + '= f; ';
 export const accepted = source =>

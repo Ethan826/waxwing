@@ -10,7 +10,7 @@ import { wire } from '../output/Format.Diagnostic/index.js';
 // ill-formed anyway (a lambda in q's place fails the same way) is skipped.
 const effects = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; '
   + 'effect N { fn n(): Int; }; ';
-const tail = ' fn main(): Unit with Console = print(1);';
+const tail = ' fn main(): Unit with Console = Console.print(1);';
 const calleeRows = ['', 'with L', 'with M', 'with L + M', 'with M + L',
   'with M + L + M', 'with L + ...e', 'with M + L + ...e', 'with L + M + ...e',
   'with N + M + L', 'with Console + L'];

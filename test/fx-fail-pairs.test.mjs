@@ -67,27 +67,27 @@ for (const [name, head, payload] of clauses) {
 test('the keyless-payload program from review N1 is rejected at Fail', () => {
   const source = 'type E = E; fn g(h: Int -> Unit with Fail(Int -> Int)): '
     + 'Unit = h(1); fn main(): Unit with Console = '
-    + 'g(fn(n: Int) => fail(E));';
+    + 'g(fn(n: Int) => Fail.fail(E));';
   expectWritten(source, 'Fail(Int -> Int)');
 });
 
 test('Fail(Unit) and Fail(Error(a)) are still allowed', () => {
   const result = checked('type Error(a) = Error(a); fn raise(e: a): Int '
-    + 'with Fail(Error(a)) + Fail(Unit) = fail(Error(e)); '
+    + 'with Fail(Error(a)) + Fail(Unit) = Fail.fail(Error(e)); '
     + 'fn main(): Int = 0;');
   assert.ok(result instanceof Right, JSON.stringify(result));
 });
 
 test('the reported program is rejected at Fail(a) in the signature', () => {
   const source = 'type E = E; fn g(h: Int -> Unit with Fail(a)): Unit = h(1); '
-    + 'fn main(): Unit with Console = g(fn(n: Int) => fail(E));';
+    + 'fn main(): Unit with Console = g(fn(n: Int) => Fail.fail(E));';
   expectWritten(source, 'Fail(a)');
 });
 
 test('a concrete Fail(E) parameter row is accepted and runs', () => {
   const source = 'type E = E; fn g(h: Int -> Int with Fail(E)): Int '
     + 'with Fail(E) = h(1); fn main(): Int = '
-    + 'handle g(fn(n: Int) => fail(E)) { fail(e: E) => 7 };';
+    + 'handle g(fn(n: Int) => Fail.fail(E)) { fail(e: E) => 7 };';
   assert.ok(checked(source) instanceof Right);
   assert.equal(runGo(source), '7\n');
 });
@@ -96,9 +96,9 @@ test('a concrete Fail(E) parameter row is accepted and runs', () => {
 // outer `fail(h(` would be the first found without descending.
 test('nested unresolved failure payload is visited', () => {
   const source = 'fn hole(u: Unit): a = hole(u); fn h(k: b): a = hole(()); '
-    + 'fn f(): Int with Fail(Int) = fail(h(fn(e) => fail(e))); '
+    + 'fn f(): Int with Fail(Int) = Fail.fail(h(fn(e) => Fail.fail(e))); '
     + 'fn main(): Int = 0;';
   expectDiagnostic(source, {
-    code: 'E_TYPE', message: family, at: ['fail(e)', 'fail(e'], notes: []
+    code: 'E_TYPE', message: family, at: ['Fail.fail(e)', 'Fail.fail(e'], notes: []
   });
 });

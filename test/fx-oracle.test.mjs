@@ -69,8 +69,8 @@ test('the cases excluded from the interpreter are the transformed ones', () => {
 test('a cleanup ending in a typed abort is an interpreter error', () => {
   const source = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
     + 'fn main(): Unit with Console = handle with handler Log '
-    + '{ log(n) => fail(E) } { defer log(1); print(2) } '
-    + '{ fail(error: E) => print(9) };';
+    + '{ log(n) => Fail.fail(E) } { defer Log.log(1); Console.print(2) } '
+    + '{ fail(error: E) => Console.print(9) };';
   const result = outcome(source);
   assert.equal(result.status, -1);
   assert.equal(result.stderr, 'oracle error: typed abort escaped cleanup\n');
@@ -80,8 +80,8 @@ test('a clause failing past an inner handle of its family reaches the '
   + 'outer', () => {
   const source = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
     + 'fn main(): Unit with Console = handle with handler Log '
-    + '{ log(n) => fail(E) } { handle log(1) { fail(error: E) => print(1) } } '
-    + '{ fail(error: E) => print(2) };';
+    + '{ log(n) => Fail.fail(E) } { handle Log.log(1) { fail(error: E) => Console.print(1) } } '
+    + '{ fail(error: E) => Console.print(2) };';
   assert.equal(seen(source).stdout, '2\n');
   assert.equal(seen(source, { clauseContext: 'inner' }).stdout, '1\n');
 });
@@ -149,8 +149,8 @@ test('the oracle ignores nofail marks', () => {
   const marked = 'effect Log { fn log(n: Int): Unit; }; '
     + 'fn each(f: Unit -> Unit with nofail(k) Log): Unit with nofail(k) Log '
     + '= f(()); '
-    + 'fn work(): Unit with Console + nofail Log = each(fn(u) => log(1)); '
-    + 'fn main(): Unit with Console = with handler Log { log(n) => print(n) } '
+    + 'fn work(): Unit with Console + nofail Log = each(fn(u) => Log.log(1)); '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
     + '{ work() };';
   const plain = marked.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
   assert.notEqual(marked, plain);

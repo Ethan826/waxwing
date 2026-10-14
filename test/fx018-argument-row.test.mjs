@@ -34,7 +34,7 @@ test('b2, b4, b5: accepted programs stay accepted', () => {
   accepted(effects + 'fn take(f: Int -> Int with L): Int with L = f(1); '
     + 'fn a(q: Int -> Int with L + M): Int with L + M = take(q);' + main);
   accepted(effects + take
-    + 'fn a(x: Int): Int with L + M = take(fn(y: Int) => l());' + main);
+    + 'fn a(x: Int): Int with L + M = take(fn(y: Int) => L.l());' + main);
 });
 
 test('b3: the argument performing more keeps the old message', () => {

@@ -33,7 +33,7 @@ export const prelude = 'type Err = Err1(Int) | Err2; type Oops = Oops(Int); '
   + 'effect Tick { fn tick(n: Int): Int; }; '
   + 'fn arg(n: Int): Int with Console = { Console.print(n); n }; '
   + 'fn risky(n: Int): Int with Fail(Err) { fail } + Console = '
-  + '{ Console.print(n); fail(Err1(n)); n };';
+  + '{ Console.print(n); Fail.fail(Err1(n)); n };';
 const known = [
   { name: 'arg', params: [['n', 'Int']], ret: 'Int', row: new Set() },
   { name: 'risky', params: [['n', 'Int']], ret: 'Int', row: new Set(['Err']) }

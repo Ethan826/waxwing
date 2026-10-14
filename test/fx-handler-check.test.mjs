@@ -56,25 +56,25 @@ const state = 'effect State(s) { fn get(): s; fn put(v: s): Unit; }; ';
 
 for (const [name, source] of [
   ['handler installation', clock + 'fn main(): Int = '
-    + 'with handler Clock { now() => 42 } { now() };'],
+    + 'with handler Clock { now() => 42 } { Clock.now() };'],
   ['first-class handler', clock + 'fn run(h: Handler(Clock)): Int = '
-    + 'with h { now() }; fn main(): Int = run(handler Clock { now() => 42 });'],
+    + 'with h { Clock.now() }; fn main(): Int = run(handler Clock { now() => 42 });'],
   ['handler clauses forward to the outside row', clock
     + 'fn main(): Int with Console = with handler Clock '
-    + '{ now() => { print(1); 42 } } { now() };'],
+    + '{ now() => { Console.print(1); 42 } } { Clock.now() };'],
   ['failure is answer-type independent', errors + 'fn main(): Int = '
-    + 'handle fail(DbError) { fail(error: DbError) => 42 };'],
+    + 'handle Fail.fail(DbError) { fail(error: DbError) => 42 };'],
   ['Fail clause binder is not a reserved name', errors
-    + 'fn main(): Int = handle fail(DbError) { fail(problem: DbError) => 42 ' +
+    + 'fn main(): Int = handle Fail.fail(DbError) { fail(problem: DbError) => 42 ' +
       '};'],
   ['different error families are separate keys', errors
-    + 'fn main(): Int = handle handle fail(DbError) '
+    + 'fn main(): Int = handle handle Fail.fail(DbError) '
     + '{ fail(error: ValidationError) => 1 } { fail(error: DbError) => 2 };'],
   ['partial handling forwards the unmentioned family', errors
-    + 'fn f(): Int with Fail(DbError) = handle fail(DbError) '
+    + 'fn f(): Int with Fail(DbError) = handle Fail.fail(DbError) '
     + '{ fail(error: ValidationError) => 1 };' + main],
   ['deferred failure payload resolves after the lambda is applied', errors
-    + 'fn main(): Int = { let raise = fn(error) => fail(error); '
+    + 'fn main(): Int = { let raise = fn(error) => Fail.fail(error); '
     + 'handle raise(DbError) { fail(error: DbError) => 42 } };'],
   ['row-parameterized field', clock + 'effect Log { fn log(n: Int): Unit; }; '
     + 'type Job(a, ...effects) = Job(Int -> a with ...effects); '
@@ -96,11 +96,11 @@ for (const [name, source] of [
     + 'fn use(job: Job(Log, Int, Clock)): Job(Log, Int, Clock) = job;' + main],
   ['nested State handlers retain type arguments', state
     + 'fn readInt(): Int with State(Int) = with handler State(Int) '
-    + '{ get() => 1, put(value) => () } { get() }; '
+    + '{ get() => 1, put(value) => () } { State.get() }; '
     + 'fn readBool(): Bool with State(Bool) = with handler State(Bool) '
-    + '{ get() => true, put(value) => () } { get() };' + main],
+    + '{ get() => true, put(value) => () } { State.get() };' + main],
   ['handler type accepts a declared effect key', clock
-    + 'fn apply(h: Handler(Clock)): Int = with h { now() };' + main],
+    + 'fn apply(h: Handler(Clock)): Int = with h { Clock.now() };' + main],
   ['Handler with a declared type name remains an ADT',
     'type Foo = Foo; type Handler(a) = Handler(a); '
       + 'fn main(): Handler(Foo) = Handler(Foo);']
@@ -115,18 +115,18 @@ for (const [name, source, code, message] of [
   ['foreign operation', clock + 'fn main(): Int = with handler Clock '
     + '{ put() => 1 } { 0 };', 'E_HANDLER', 'put is not an operation of Clock'],
   ['generic failure family', 'fn raise(error: a): Int with Fail(a) = '
-    + 'fail(error);' + main, 'E_TYPE', 'Fail needs a concrete error family'],
+    + 'Fail.fail(error);' + main, 'E_TYPE', 'Fail needs a concrete error family'],
   ['same payload family arguments must unify', 'type Error(a) = Error(a); '
-    + 'fn main(): Int = handle fail(Error(1)) '
+    + 'fn main(): Int = handle Fail.fail(Error(1)) '
     + '{ fail(error: Error(Bool)) => 0 };', 'E_TYPE',
       'Expected Bool, found Int'],
   ['deferred failure mismatch keeps semantic diagnostic',
     'type Error(a) = Error(a); '
-    + 'fn main(): Int = { let raise = fn(error) => fail(error); '
+    + 'fn main(): Int = { let raise = fn(error) => Fail.fail(error); '
     + 'handle raise(Error(1)) { fail(problem: Error(Bool)) => 0 } };',
     'E_TYPE', 'Expected Bool, found Int'],
   ['rigid failure payload is rejected at fail', 'fn raise(error: a): Int '
-    + 'with Fail(a) = fail(error);' + main, 'E_TYPE',
+    + 'with Fail(a) = Fail.fail(error);' + main, 'E_TYPE',
     'Fail needs a concrete error family'],
   ['row sort mismatch in a type application', clock
     + 'type Job(a, ...effects) = Job(Int -> a with ...effects); '
@@ -145,7 +145,7 @@ for (const [name, source, code, message] of [
     'Expected fn main() with a printable result type'],
   ['handler nested in ADT cannot be printed', clock
     + 'type Box(a) = Box(a); fn main(): Int = '
-    + '{ print(Box(handler Clock { now() => 1 })); 0 };', 'E_TYPE',
+    + '{ Console.print(Box(handler Clock { now() => 1 })); 0 };', 'E_TYPE',
     'Expected a printable value, found Box(Handler(Clock))'],
   ['handler nested in ADT cannot be compared', clock
     + 'type Box(a) = Box(a); fn main(): Bool = '
@@ -167,15 +167,15 @@ for (const [name, source, code, message] of [
 test('deferred missing Fail capability keeps effect diagnostic and '
   + 'span', () => {
   const source = 'type DbError = DbError; fn f(): Int with pure = { '
-    + 'let raise = fn(error) => fail(error); raise(DbError) };' + main;
+    + 'let raise = fn(error) => Fail.fail(error); raise(DbError) };' + main;
   rejectedAt(source, 'E_EFFECT',
     'f performs Fail(DbError), which its signature does not allow',
-    'fail(error');
+    'Fail.fail(error');
 });
 
 test('duplicate handler binders use the parameter diagnostic span', () => {
   const source = 'effect Add { fn add(x: Int, y: Int): Int; }; '
-    + 'fn main(): Int = with handler Add { add(x, x) => x } { add(1, 2) };';
+    + 'fn main(): Int = with handler Add { add(x, x) => x } { Add.add(1, 2) };';
   rejectedAt(source, 'E_DUPLICATE', 'Duplicate parameter x', 'x',
     source.indexOf('add(x, x)') + 5);
 });
@@ -198,7 +198,7 @@ test('long function-type spines are lowered without recursive '
 test('nested State handlers keep distinct first-seen type arguments', () => {
   accepted(state + 'fn nested(): Int = with handler State(Int) '
     + '{ get() => 1, put(value) => () } { with handler State(Bool) '
-    + '{ get() => true, put(value) => () } { get(); }; get() };' + main);
+    + '{ get() => true, put(value) => () } { State.get(); }; State.get() };' + main);
 });
 
 for (const [source, message, fragment, occurrence = 0] of [

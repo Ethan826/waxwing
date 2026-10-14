@@ -23,8 +23,8 @@ const keysOf = (source, pattern) => keyTexts(source)
 test('recursive handler installation yields one function key', () => {
   const source = clock + 'fn loop(x: a, n: Int): a with Clock = '
     + 'if n > 3 then x else with handler Clock { now() => n } '
-    + '{ { now(); loop(x, n + 1) } }; fn main(): Int = '
-    + 'with handler Clock { now() => 0 } { loop(1, now()) };';
+    + '{ { Clock.now(); loop(x, n + 1) } }; fn main(): Int = '
+    + 'with handler Clock { now() => 0 } { loop(1, Clock.now()) };';
   assert.deepEqual(keysOf(source, /^fn loop/), ['fn loop[Int]']);
   assert.deepEqual(keysOf(source, /^effect/), ['effect Clock[]']);
 });
@@ -33,7 +33,7 @@ test('growing-label recursion is rejected by the instantiation rule', () => {
   const source = list + state + 'fn listState(v: List(a)): '
     + 'Handler(State(List(a))) = handler State(List(a)) '
     + '{ get() => v, put(value) => () }; '
-    + 'fn r(): Unit with State(a) + ...e = { let v = get(); '
+    + 'fn r(): Unit with State(a) + ...e = { let v = State.get(); '
     + 'with listState(Cons(v, Nil)) { r() } };' + main;
   const diagnostic = checkRejectedAt(source, code, 'r()', 1);
   assert.equal(diagnostic.message,
@@ -89,7 +89,7 @@ test('a Grow handler at bare parameters makes one effect key', () => {
 test('State(Int) and State(Bool) give two effect keys', () => {
   const source = state + 'fn nested(): Int = with handler State(Int) '
     + '{ get() => 1, put(value) => () } { with handler State(Bool) '
-    + '{ get() => true, put(value) => () } { get(); }; get() };' + main;
+    + '{ get() => true, put(value) => () } { State.get(); }; State.get() };' + main;
   assert.deepEqual(keysOf(source, /^effect/),
     ['effect State[Bool]', 'effect State[Int]']);
 });
@@ -104,7 +104,7 @@ test('effect keys reach operation types; handler fields reach effects', () => {
 
 test('a performed operation reaches its effect key', () => {
   const source = list + state + 'fn f(): List(Bool) with State(List(Bool))'
-    + ' = get();' + main;
+    + ' = State.get();' + main;
   assert.deepEqual(keysOf(source, /^effect/), ['effect State[List(Bool)]']);
 });
 
@@ -119,9 +119,9 @@ test('rows in data arguments give no extra type key', () => {
 test('a pure function used at three different rows is one key', () => {
   const source = clock + 'fn twice(f: a -> a, x: a): a = f(f(x)); '
     + 'fn main(): Int with Console = twice(fn(x) => x + 1, 0) '
-    + '+ twice(fn(x) => { print(x); x }, 1) '
+    + '+ twice(fn(x) => { Console.print(x); x }, 1) '
     + '+ (with handler Clock { now() => 2 } '
-    + '{ twice(fn(x) => x + now(), 3) });';
+    + '{ twice(fn(x) => x + Clock.now(), 3) });';
   assert.deepEqual(keysOf(source, /^fn twice/), ['fn twice[Int]']);
 });
 
@@ -129,7 +129,7 @@ test('a pure function used at three different rows is one key', () => {
 // function is polymorphic, so it gets no copy until a use instantiates it.
 test('a type variable only in the effect row makes a function generic', () => {
   const source = state + 'fn peek(): Unit with State(a) = '
-    + '{ let v = get(); () };' + main;
+    + '{ let v = State.get(); () };' + main;
   const result = specialize(checkedPoly(source));
   assert.ok(result instanceof Right, JSON.stringify(result));
   assert.deepEqual(

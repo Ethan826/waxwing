@@ -14,7 +14,7 @@ const labels = 1000;
 const names = Array.from({ length: labels }, (_, at) => `E${at + 1}`);
 const effects = names.map((name, at) =>
   `effect ${name} { fn op${at + 1}(): Int; };`).join(' ');
-const big = `fn big(): Int with ${names.join(' + ')} = op1(); `;
+const big = `fn big(): Int with ${names.join(' + ')} = E1.op1(); `;
 
 const inWork = body => {
   const work = mkdtempSync(join(tmpdir(), 'waxwing-labels-'));

@@ -63,7 +63,7 @@ test('a pure handler argument is accepted where the clause returns it', () => {
 
 test('a Log-performing clause fits Handler(Tick with Log)', () => {
   accepted(prelude + 'fn t(h: Handler(Clock with pure)): '
-    + 'Handler(Tick with Log) = handler Tick { tick() => { log(); h } };'
+    + 'Handler(Tick with Log) = handler Tick { tick() => { Log.log(); h } };'
     + main);
 });
 
@@ -72,14 +72,14 @@ const spanText = (source, found) =>
 
 test('a Log-performing clause is rejected under with pure', () => {
   const source = prelude + 'fn t(h: Handler(Clock with pure)): '
-    + 'Handler(Tick with pure) = handler Tick { tick() => { log(); h } };'
+    + 'Handler(Tick with pure) = handler Tick { tick() => { Log.log(); h } };'
     + main;
   const found = rejection(source);
   assert.equal(found.code, 'E_EFFECT');
   assert.equal(found.message,
     'This function must be pure, but it performs Log');
   assert.equal(spanText(source, found),
-    'handler Tick { tick() => { log(); h } }');
+    'handler Tick { tick() => { Log.log(); h } }');
 });
 
 test('a Log handler is not a pure handler parameter', () => {
@@ -138,7 +138,7 @@ for (const [name, source] of [
   ['operation parameter', 'effect E { fn op(x: Int with Log): Unit; };'],
   ['lambda parameter',
     'fn t(): Int = { let f = fn(x: Int with Log) => x; 0 };'],
-  ['fail clause', 'type DbError = DbError; fn t(): Int = handle fail(DbError) '
+  ['fail clause', 'type DbError = DbError; fn t(): Int = handle Fail.fail(DbError) '
     + '{ fail(error: DbError with Log) => 0 };']
 ]) test(`a written row is rejected in a ${name}`, () => {
   const full = prelude + source;

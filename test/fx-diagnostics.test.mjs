@@ -6,7 +6,7 @@ import { clock, database, diagnose, expectDiagnostic, length, log,
   from './fx-diagnostics-support.mjs';
 
 const chain = depth => {
-  const body = index => index === depth ? 'query()' : `f${index + 1}()`;
+  const body = index => index === depth ? 'Database.query()' : `f${index + 1}()`;
   const functions = Array.from({ length: depth }, (_, at) =>
     `fn f${at + 1}(): Int with Database = ${body(at + 1)};`);
   return database + 'fn main(): Int = f1(); ' + functions.join(' ');
@@ -23,7 +23,7 @@ test('a 30-deep call chain missing Database at main: path, origin, '
     notes: [hop(1), hop(2),
       ['fn f3(): Int with Database = f4();', 'f4()', '… 25 more calls'],
       hop(28), hop(29),
-      ['fn f30(): Int with Database = query();', 'query()',
+      ['fn f30(): Int with Database = Database.query();', 'Database.query()',
         'Database is performed here'],
       ['fn main(): Int = f1();', 'fn main(): Int = f1();',
         'main may perform only Console']]
@@ -34,7 +34,7 @@ test('a 3-deep call chain prints every hop, with no elision', () => {
   expectDiagnostic(chain(3), {
     code: 'E_EFFECT', message: 'Unhandled Database in main', at: ['f1()'],
     notes: [hop(1), hop(2),
-      ['fn f3(): Int with Database = query();', 'query()',
+      ['fn f3(): Int with Database = Database.query();', 'Database.query()',
         'Database is performed here'],
       ['fn main(): Int = f1();', 'fn main(): Int = f1();',
         'main may perform only Console']]
@@ -53,14 +53,14 @@ const wrapper = 'fn keep(f: Int -> Int with ...e): Int -> Int with ...e = f; '
 
 test('an operation in a lambda passed through three higher-order functions '
   + 'into a with-pure parameter', () => {
-  const callback = 'fn(x) => { log(x); x }';
+  const callback = 'fn(x) => { Log.log(x); x }';
   const source = log + wrapper
     + `fn main(): Int = once(keep(keep(keep(${callback}))));`;
   expectDiagnostic(source, {
     code: 'E_EFFECT',
       message: 'This function must be pure, but it performs Log',
     at: [`keep(keep(keep(${callback})))`],
-    notes: [[callback, 'log(x)', 'Log is performed here'],
+    notes: [[callback, 'Log.log(x)', 'Log is performed here'],
       ['fn once(f: Int -> Int with pure)', 'with pure',
         'this parameter must be pure']]
   });
@@ -116,7 +116,7 @@ const boolHandlers = 'get() => true, put(v) => ()';
 test('a same-key payload mismatch notes the innermost handler '
   + 'installation', () => {
   const inner = `with handler State(Bool) { ${boolHandlers} } { useInt() }`;
-  const source = state + 'fn useInt(): Int with State(Int) = get(); '
+  const source = state + 'fn useInt(): Int with State(Int) = State.get(); '
     + `fn main(): Int = with handler State(Int) { ${handlers} } { ${inner} };`;
   expectDiagnostic(source, {
     code: 'E_TYPE', message: 'Expected State(Bool), found State(Int)',
@@ -127,7 +127,7 @@ test('a same-key payload mismatch notes the innermost handler '
 
 test('a same-key payload mismatch notes the innermost signature entry', () => {
   const bad = 'fn bad(): Int with State(Bool) = useInt();';
-  const source = state + 'fn useInt(): Int with State(Int) = get(); '
+  const source = state + 'fn useInt(): Int with State(Int) = State.get(); '
     + bad + ' fn main(): Int = 0;';
   expectDiagnostic(source, {
     code: 'E_TYPE', message: 'Expected State(Bool), found State(Int)',
@@ -145,7 +145,7 @@ test('a large payload mismatch elides the subterms off the differing '
     + '= useInt();';
   const source = nest + state
     + 'fn useInt(): Pair(Pair(Int, Bool), List(Int)) with '
-    + 'State(Pair(Pair(Int, Bool), List(Int))) = get(); ' + bad
+    + 'State(Pair(Pair(Int, Bool), List(Int))) = State.get(); ' + bad
     + ' fn main(): Int = 0;';
   const { diagnostic } = diagnose(source);
   assert.equal(diagnostic.message,
@@ -158,7 +158,7 @@ const longEffect =
 
 test('a label with a 2,500-character argument keeps the whole diagnostic ' +
   'bounded', () => {
-  const raise = `fn raise(): Int with E(${longType}) = { op(); 1 }; `;
+  const raise = `fn raise(): Int with E(${longType}) = { E.op(); 1 }; `;
   const { diagnostic } = diagnose(longEffect + raise
     + 'fn main(): Int = raise();');
   assert.equal(diagnostic.message, 'Unhandled E(…) in main');
@@ -179,12 +179,12 @@ test('long labels in a row conflict still name the label and the shared '
 test('a closed written row that lacks a label names its with, not an ambient ' +
   'row', () => {
   const stamp = 'fn stamp(): Int with Log = tick(); ';
-  expectDiagnostic(log + clock + 'fn tick(): Int with Clock = now(); ' + stamp
+  expectDiagnostic(log + clock + 'fn tick(): Int with Clock = Clock.now(); ' + stamp
     + 'fn main(): Int = 0;', {
     code: 'E_EFFECT',
     message: 'stamp performs Clock, which its signature does not allow',
     at: [stamp.trim(), 'tick()'],
-    notes: [['fn tick(): Int with Clock = now();', 'now()',
+    notes: [['fn tick(): Int with Clock = Clock.now();', 'Clock.now()',
       'Clock is performed here'],
     [stamp.trim(), 'with Log', 'the signature of stamp does not allow Clock']]
   });
@@ -201,7 +201,7 @@ test('diagnostics outside the effect system carry no notes', () => {
     'fn main(): Int = match 1 { 1 => 0 };',
     'fn main(): Unit = ();  fn main(): Unit = ();',
     'type L = Nil | Cons(Int, L); fn main(): Int = Cons(1);',
-    'fn main(): Int = { print(fn(x) => x); 0 };',
+    'fn main(): Int = { Console.print(fn(x) => x); 0 };',
     'fn main(): Int = 5 5;'
   ]) {
     const { diagnostic } = diagnose(source);

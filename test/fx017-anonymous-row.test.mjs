@@ -4,7 +4,7 @@ import { expectDiagnostic } from './fx-diagnostics-support.mjs';
 // FX017, continued from fx017-callback-row.test.mjs: the cases where the
 // hint cannot name the callback's row and falls back to the anonymous text.
 const effects = 'effect L { fn l(): Int; }; effect M { fn m(): Int; }; ';
-const main = ' fn main(): Unit with Console = print(1);';
+const main = ' fn main(): Unit with Console = Console.print(1);';
 
 const anonymous = (row, own) => 'this function value must allow every effect '
   + `of a (${row}), but its row ${own}; a function value's row must equal `

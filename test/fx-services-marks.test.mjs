@@ -10,18 +10,18 @@ import { expectDiagnostic } from './fx-diagnostics-support.mjs';
 const program = (first, second) => `type E = E;
 effect Log { fn log(n: Int): Unit; };
 
-fn cleanup(): Unit with nofail Log = { defer log(1); () };
+fn cleanup(): Unit with nofail Log = { defer Log.log(1); () };
 
 fn main(): Unit with Console = {
   let pick = true;
   let h = if pick then handler Log { log(n) => ${first} }
     else handler Log { log(n) => ${second} };
-  handle with h { cleanup() } { fail(error: E) => print(9) }
+  handle with h { cleanup() } { fail(error: E) => Console.print(9) }
 };
 `;
 
 test('both selected Log handlers fail-free: accepted', () => {
-  assert.equal(runGo(program('print(n)', '()')), '1\n');
+  assert.equal(runGo(program('Console.print(n)', '()')), '1\n');
 });
 
 const rejected = {
@@ -29,14 +29,14 @@ const rejected = {
   at: ['cleanup() }', 'cleanup()'],
   notes: [
     ['with h { cleanup() }', 'with h { cleanup() }', 'Log is handled here'],
-    ['log(n) => fail(E)', 'log(n) => fail(E)',
+    ['log(n) => Fail.fail(E)', 'log(n) => Fail.fail(E)',
       'its clause for log fails with E']]
 };
 
 test('a may-fail handler in the else branch: rejected, FX008 text', () => {
-  expectDiagnostic(program('print(n)', 'fail(E)'), rejected);
+  expectDiagnostic(program('Console.print(n)', 'Fail.fail(E)'), rejected);
 });
 
 test('a may-fail handler in the then branch: rejected, same text', () => {
-  expectDiagnostic(program('fail(E)', 'print(n)'), rejected);
+  expectDiagnostic(program('Fail.fail(E)', 'Console.print(n)'), rejected);
 });

@@ -22,8 +22,8 @@ for (const [name, , , status, out, err] of cases) {
 // guard (ruling F7) and an embedded newline.
 const injected = runGoBatch(import.meta.url, [
   ['the missing-handler guard is a cause line', {
-    source: log + 'fn main(): Unit with Console = { defer print(1); '
-      + 'with handler Log { log(n) => () } { log(1) } };',
+    source: log + 'fn main(): Unit with Console = { defer Console.print(1); '
+      + 'with handler Log { log(n) => () } { Log.log(1) } };',
     transform: go => go.replace('waxwingFind(ctx, 1, "Log")',
       'waxwingFind(ctx, 99, "Log")')
   }],
@@ -53,18 +53,18 @@ const refuse = (source, text, span) => {
 };
 
 test('a defer performing an unhandled Fail directly is rejected', () => {
-  refuse(unit + 'fn work(): Unit with Fail(E) = { defer fail(E); () };',
-    'Fail(E)', 'defer fail(E)');
+  refuse(unit + 'fn work(): Unit with Fail(E) = { defer Fail.fail(E); () };',
+    'Fail(E)', 'defer Fail.fail(E)');
 });
 
 test('a defer performing an unhandled Fail through a call is rejected', () => {
-  refuse(unit + 'fn risky(): Unit with Fail(E) = fail(E); '
+  refuse(unit + 'fn risky(): Unit with Fail(E) = Fail.fail(E); '
     + 'fn work(): Unit with Fail(E) = { defer risky(); () };',
   'Fail(E)', 'defer risky()');
 });
 
 test('a defer is rejected whether or not the signature allows the Fail', () => {
-  refuse(unit + 'fn risky(): Unit with Fail(E) = fail(E); '
+  refuse(unit + 'fn risky(): Unit with Fail(E) = Fail.fail(E); '
     + 'fn work(): Unit = { defer risky(); () };',
   'Fail(E)', 'defer risky()');
 });
@@ -72,8 +72,8 @@ test('a defer is rejected whether or not the signature allows the Fail', () => {
 test('a defer performing a Fail whose key is deferred is rejected', () => {
   refuse(unit + 'fn pick(): a = crash(0); '
     + 'fn work(): Unit with Fail(E) = { let p = pick(); '
-    + 'defer fail(p); match p { E => () } };',
-  'Fail(E)', 'defer fail(p)');
+    + 'defer Fail.fail(p); match p { E => () } };',
+  'Fail(E)', 'defer Fail.fail(p)');
 });
 
 const refuseTail = (source, tail, span) => {
@@ -96,14 +96,14 @@ test('a defer calling a named-row callback is rejected (P2)', () => {
 
 test('a Fail reaching a closure after its key settles is rejected (P3)', () => {
   refuse(unit + 'fn work(): Unit with Console = handle { '
-    + 'let f = fn(x) => fail(x); let g = fn(y) => { defer f(y); () }; g(E) } '
-    + '{ fail(error: E) => print(9) };', 'Fail(E)', 'defer f(y)');
+    + 'let f = fn(x) => Fail.fail(x); let g = fn(y) => { defer f(y); () }; g(E) } '
+    + '{ fail(error: E) => Console.print(9) };', 'Fail(E)', 'defer f(y)');
 });
 
 test('a Fail reaching a shared lambda meta later is rejected (P4)', () => {
   refuse(unit + 'fn work(): Unit with Console = handle { '
-    + 'let run = fn(h) => { defer h(()); () }; run(fn(_) => fail(E)) } '
-    + '{ fail(error: E) => print(9) };', 'Fail(E)', 'defer h(())');
+    + 'let run = fn(h) => { defer h(()); () }; run(fn(_) => Fail.fail(E)) } '
+    + '{ fail(error: E) => Console.print(9) };', 'Fail(E)', 'defer h(())');
 });
 
 test('a pending abort cannot meet a failing cleanup (P5d)', () => {
@@ -115,7 +115,7 @@ test('a pending abort cannot meet a failing cleanup (P5d)', () => {
 test('a defer handling a Fail of a key settled later is accepted', () => {
   const go = checked(unit + 'fn pick(): a = crash(0); '
     + 'fn main(): Unit with Console = { let p = pick(); '
-    + 'defer handle fail(p) { fail(error: E) => print(1) }; match p '
+    + 'defer handle Fail.fail(p) { fail(error: E) => Console.print(1) }; match p '
     + '{ E => () } };');
   assert.ok(go.includes('waxwingCleanup'), go);
 });
@@ -124,7 +124,7 @@ test('a payload with a 5,000-arrow type is named by a loop', () => {
   const arrow = 'Int -> '.repeat(5000) + 'Int';
   const go = checked('type Error(a) = Error(a); fn work(f: ' + arrow
     + '): Unit with Fail(Error(' + arrow + ')) = '
-    + '{ defer crash(1); fail(Error(f)) }; fn main(): Unit = ();');
+    + '{ defer crash(1); Fail.fail(Error(f)) }; fn main(): Unit = ();');
   assert.ok(go.includes('waxwingCleanup'));
 });
 
@@ -136,7 +136,7 @@ test('a defer must have type Unit', () => {
 
 test('a defer cannot be the last item without a semicolon', () => {
   const diagnostic = rejected('fn main(): Unit with Console = '
-    + '{ defer print(1) };', 'E_SYNTAX');
+    + '{ defer Console.print(1) };', 'E_SYNTAX');
   assert.equal(diagnostic.message, 'Expected ;');
 });
 
@@ -149,7 +149,7 @@ test('crash takes one printable argument', () => {
 });
 
 test('a block without defer emits no Go defer', () => {
-  const go = checked('fn main(): Int with Console = { print(1); 2 };');
+  const go = checked('fn main(): Int with Console = { Console.print(1); 2 };');
   assert.ok(!go.includes('defer'), go);
   assert.ok(!go.includes('waxwingCleanup'), go);
   assert.ok(!go.includes('waxwingReport'), go);
@@ -158,7 +158,7 @@ test('a block without defer emits no Go defer', () => {
 test('handlers without defer or crash emit no cleanup or defect '
   + 'runtime', () => {
   const go = checked(unit + 'fn main(): Unit with Console = '
-    + 'handle fail(E) { fail(error: E) => print(1) };');
+    + 'handle Fail.fail(E) { fail(error: E) => Console.print(1) };');
   assert.ok(go.includes('waxwingHandle'), go);
   for (const name of ['waxwingCleanup', 'waxwingReport', 'waxwingDefect']) {
     assert.ok(!go.includes(name), `${name}\n${go}`);

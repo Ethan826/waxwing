@@ -30,34 +30,34 @@ const rejected = (source, code, message, notes = []) => {
 const clock = 'effect Clock { fn now(): Int; }; ';
 const log = 'effect Log { fn log(x: Int): Unit; }; ';
 const acceptedCases = [
-  ['declared operation', clock + 'fn main(): Int with Clock = now();', false],
+  ['declared operation', clock + 'fn main(): Int with Clock = Clock.now();', false],
   ['ambient callback', 'fn map(f: Int -> Int, x: Int): Int = f(x); '
-    + 'fn main(): Int with Console = map(fn(x) => { print(x); x }, 3);'],
+    + 'fn main(): Int with Console = map(fn(x) => { Console.print(x); x }, 3);'],
   ['eta opens a pure local', log
     + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
     + 'fn adapt(g: Int -> Int with pure): Int with Log = use(fn(x) => g(x)); '
     + 'fn main(): Int = 0;'],
   ['named rows share', 'fn use(f: Int -> Int with ...e): Int with ...e = f(1); '
-    + 'fn main(): Int with Console = use(fn(x) => { print(x); x });'],
+    + 'fn main(): Int with Console = use(fn(x) => { Console.print(x); x });'],
   ['partial leaves body latent', clock
-    + 'fn take(x: Int, y: Int): Int with Clock = now(); '
+    + 'fn take(x: Int, y: Int): Int with Clock = Clock.now(); '
     + 'fn main(): Unit = { let f = take(1); (); };']
 ];
 for (const [name, source, valid = true] of acceptedCases) {
   test(name, () => valid ? accepted(source)
     : rejected(source, 'E_EFFECT', 'Unhandled Clock in main',
-      [['fn main(): Int with Clock = now();',
+      [['fn main(): Int with Clock = Clock.now();',
         'main may perform only Console']]));
 }
 const rejectedCases = [
   ['rigid ambient cannot invent effects', clock
-    + 'fn f(): Int = now(); fn main(): Int = 0;',
+    + 'fn f(): Int = Clock.now(); fn main(): Int = 0;',
     'E_EFFECT', 'f performs Clock, which its signature does not allow',
-    [['fn f(): Int = now();', 'the signature of f has an ambient row']]],
+    [['fn f(): Int = Clock.now();', 'the signature of f has an ambient row']]],
   ['pure callback', 'fn use(f: Int -> Int with pure): Int = f(1); '
-    + 'fn main(): Int with Console = use(fn(x) => { print(x); x });',
+    + 'fn main(): Int with Console = use(fn(x) => { Console.print(x); x });',
     'E_EFFECT', 'This function must be pure, but it performs Console',
-    [['print(x)', 'Console is performed here'],
+    [['Console.print(x)', 'Console is performed here'],
       ['with pure', 'this parameter must be pure']]],
   ['closed local cannot widen', log
     + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
@@ -69,9 +69,9 @@ const rejectedCases = [
   ['row then type sort',
     'fn f(g: Int -> Int with ...e, x: e): Int = 0; fn main(): Int = 0;',
     'E_TYPE', 'Expected a type, found an effect row'],
-  ['bare nullary operation', clock + 'fn main(): Int with Clock = now;',
-    'E_ARITY', 'Expected now()'],
-  ['print function', 'fn main(): Unit with Console = print(fn(x) => x);',
+  ['bare nullary operation', clock + 'fn main(): Int with Clock = Clock.now;',
+    'E_ARITY', 'Expected Clock.now()'],
+  ['print function', 'fn main(): Unit with Console = Console.print(fn(x) => x);',
     'E_TYPE', 'Expected a printable value, found _ -> _']
 ];
 for (const [name, source, code, message, notes] of rejectedCases) {
@@ -89,7 +89,7 @@ test('row variables erase from instantiations even before type '
   const result =
     phase('fn choose(f: Int -> Int with ...e, x: a): a with ...e = '
     + '{ f(0); x }; fn main(): Int with Console = '
-    + 'choose(fn(x) => { print(x); x }, 42);');
+    + 'choose(fn(x) => { Console.print(x); x }, 42);');
   assert.ok(result instanceof Right, JSON.stringify(result));
   const arguments_ = result.value0.functions[1].body.value0.node.value1;
   assert.equal(arguments_.length, 1);
