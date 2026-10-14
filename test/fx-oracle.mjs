@@ -24,6 +24,9 @@ import { evaluateText, noteComparison } from './fx-oracle-text.mjs';
 import { functionScope, operation } from './fx-oracle-names.mjs';
 
 const maximumSteps = 3_000_000;
+// The builtins that are operations (Console.print, Fail.fail): a bare use
+// is the legacy global until FX020 Task 7.
+const bareBuiltins = new Set(['print', 'fail']);
 
 export const interpret = (source, options = {}) => {
   const program = parseProgram(source);
@@ -46,10 +49,10 @@ export const interpret = (source, options = {}) => {
     }
     if (program.ops.has(name)) {
       const { effect, arity } = program.ops.get(name);
-      return { kind: 'op', name, effect, arity, args: [] };
+      return { kind: 'op', name, effect, arity, args: [], spelling: 'bare' };
     }
-    if (builtins.has(name)) return {
-      kind: 'builtin', name, arity: 1, args: [] };
+    if (builtins.has(name)) return { kind: 'builtin', name, arity: 1,
+      args: [], spelling: bareBuiltins.has(name) ? 'bare' : null };
     throw new OracleError(`unknown name ${name}`);
   };
   const scopeOf = declared =>
@@ -90,23 +93,28 @@ export const interpret = (source, options = {}) => {
       if (args.some(isText)) events.add('text-in-data');
       return { ctor: callee.name, fields: args };
     }
+    if (callee.spelling) events.add(`spelling-${callee.spelling}`);
     if (callee.kind === 'op') return perform(state, callee, args, ctx);
-    if (callee.kind === 'builtin') return builtin(callee.name, args[0], ctx);
-    const declared = program.functions.get(callee.name);
-    const bound = new Map(callee.kind === 'lambda' ? callee.env
-      : scopeOf(declared));
-    const names = callee.kind === 'lambda' ? callee.parameters
-      : declared.parameters;
-    names.forEach((name, index) => {
-      if (name !== null) bound.set(name, args[index]); });
-    if (callee.kind === 'fn') {
-      return evaluate(declared.body, bound, ctx);
-    }
+    if (callee.kind === 'builtin') return builtin(callee, args[0], ctx);
+    if (callee.kind === 'fn') return callFunction(callee, ctx);
+    const bound = bindAll(new Map(callee.env), callee.parameters, args);
     lambdas.push({ created: callee.ctx, called: ctx });
     try { return evaluate(callee.body, bound, ctx); } finally { lambdas.pop(); }
   };
+  const bindAll = (bound, names, args) => {
+    names.forEach((name, index) => {
+      if (name !== null) bound.set(name, args[index]); });
+    return bound;
+  };
+  // A function's body starts in its row's aliases and imports.
+  const callFunction = ({ name, args }, ctx) => {
+    const declared = program.functions.get(name);
+    const bound = bindAll(new Map(scopeOf(declared)), declared.parameters,
+      args);
+    return evaluate(declared.body, bound, ctx);
+  };
 
-  const builtin = (name, argument, ctx) => {
+  const builtin = ({ name, family }, argument, ctx) => {
     if (name === 'print') {
       state.effects++;
       stdout.push(`${show(argument)}\n`);
@@ -121,6 +129,9 @@ export const interpret = (source, options = {}) => {
       throw new Defect();
     }
     const type = typeOfValue(program, argument);
+    if (family && family !== type.head) {
+      throw new OracleError(`${type.head} failed through Fail(${family})`);
+    }
     const frame = find(ctx, 'fail', type.head);
     if (!frame) throw new OracleError(`no handle for ${type.head}`);
     throw new Abort(frame.marker, argument, ctx);

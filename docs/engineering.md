@@ -336,7 +336,10 @@ aliases and imports, with Console and Fail as effects
 (test/fx-oracle-names.mjs; tests in test/fx020-oracle.test.mjs), and the
 generator spells each function's operations bare, qualified (some through
 an alias) or through imports of its own row (test/fx-gen-names.mjs), from
-a stream of its own so a seed keeps its program shape.
+a stream of its own so a seed keeps its program shape. Each performed
+operation reports its spelling, and the census requires programs that
+perform one qualified (400), imported (150), through an alias (50) and
+bare (75, until Task 7).
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context

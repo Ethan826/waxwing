@@ -2,7 +2,8 @@
 // function writes its operations bare (the legacy globals, until FX020
 // Task 7: 20%), qualified (`Log.log`: 50%) or through imports of its own
 // row (`Log { log as note }`: 30%, qualifying what it does not import);
-// any but a bare one may alias an effect of its row, and then spells that
+// an effect the body performs is imported more often than one it does
+// not. Any but a bare one may alias an effect of its row, and then spells that
 // effect through the alias and the canonical name in turn. The scheme is
 // drawn from a stream of its own, so a seed gives the program shape it
 // gave before FX020; only the spelling changed.
@@ -22,13 +23,14 @@ const modes = ['bare', 'bare', 'qualified', 'qualified', 'qualified',
 export const namer = seed => rng(seed ^ 0x2f020);
 
 // One written row item ('nofail Log', 'Fail(Err)', ...) of a scheme.
-const decorate = (r, mode, item, names) => {
+const decorate = (r, mode, item, names, performed) => {
   const effect = item.replace(/^nofail /, '');
+  const likely = !performed || performed.has(effect) ? 85 : 30;
   const operation = operationOf[effect.replace(/\(.*$/, '')];
   const alias = aliases[effect] && r.chance(30) ? aliases[effect] : null;
   if (alias) names.aliases.set(effect, alias);
   const aliased = alias ? `${item} as ${alias}` : item;
-  if (mode !== 'imports' || !operation || !r.chance(65)) return aliased;
+  if (mode !== 'imports' || !operation || !r.chance(likely)) return aliased;
   const taken = [...names.imports.values()].includes(operation);
   const local = taken || r.chance(50) ? renames[effect] : operation;
   names.imports.set(effect, local);
@@ -37,23 +39,37 @@ const decorate = (r, mode, item, names) => {
 };
 
 // { mode, aliases, imports (both by row item), rowText (as written) }.
-export const scheme = (r, rowText) => {
+// `performed`: the row items the body's calls name (null: unknown).
+export const scheme = (r, rowText, performed = null) => {
   const mode = r.pick(modes);
   const names = { mode, aliases: new Map(), imports: new Map() };
   const items = rowText ? rowText.split(' + ') : [];
   names.rowText = mode === 'bare' ? rowText
-    : items.map(item => decorate(r, mode, item, names)).join(' + ');
+    : items.map(item => decorate(r, mode, item, names, performed))
+      .join(' + ');
   return names;
 };
 
-// The name a call is written with; an operation's row item is its effect,
-// or for `fail` the family of its payload.
+// An operation call's row item: its effect, or for `fail` the family of
+// its payload.
+const itemOf = node => (node.name === 'fail' ? `Fail(${node.args[0]?.ty})`
+  : effectOf[node.name]);
+
+// The row items the operation calls in a tree name.
+export const performedItems = (node, found = new Set()) => {
+  if (node === null || typeof node !== 'object') return found;
+  if (node.k === 'call' && effectOf[node.name]) found.add(itemOf(node));
+  for (const child of Object.values(node)) performedItems(child, found);
+  return found;
+};
+
+// The name a call is written with.
 export const speller = names => {
   let count = 0;
   return node => {
     const effect = effectOf[node.name];
     if (!effect || !names || names.mode === 'bare') return node.name;
-    const item = effect === 'Fail' ? `Fail(${node.args[0]?.ty})` : effect;
+    const item = itemOf(node);
     if (names.imports.has(item)) return names.imports.get(item);
     const alias = names.aliases.get(item);
     return `${alias && count++ % 2 === 0 ? alias : effect}.${node.name}`;

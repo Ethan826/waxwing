@@ -75,6 +75,26 @@ test('two Fail families import under two names; Fail.fail infers', () => {
     + '{ Fail.fail(E2(2)); fail(E1(1)) }; ' + both, '20\n');
 });
 
+// The checker refuses this program; the interpreter states the rule too.
+test('an imported fail raises only its own family', () => {
+  const found = seen(families + 'fn both(): Int with Fail(E1) { fail as f1 } '
+    + '+ Fail(E2) = f1(E2(2)); ' + both);
+  assert.equal(found.status, -1);
+  assert.equal(found.stderr, 'oracle error: E2 failed through Fail(E1)\n');
+});
+
+test('each performed operation reports how it was spelled', () => {
+  const { events } = outcome(logs + 'fn f(): Unit with Log as L { info } = '
+    + '{ L.log(1); info(2) }; ' + main('with handler Log { log(n) => '
+    + 'Console.print(n), info(n) => () } { f(); Log.log(3) }'));
+  for (const spelling of ['alias', 'import', 'qualified']) {
+    assert.ok(events.has(`spelling-${spelling}`), spelling);
+  }
+  assert.ok(!events.has('spelling-bare'));
+  const bare = outcome(logs + main(`${printing}{ log(1) }`)).events;
+  assert.ok(bare.has('spelling-bare'));
+});
+
 test('an imported operation is a value', () => {
   prints('type E = E(Int); fn apply(f: E -> Int with Fail(E)): Int '
     + 'with Fail(E) = f(E(3)); '
@@ -125,7 +145,8 @@ test('lambdas and clause bodies inherit the function\'s imports', () => {
 
 test('imports are scoped to their own function', () => {
   const found = seen(logs + 'fn f(): Unit with Log { info as note } = '
-    + `note(1); fn g(): Unit with Log = note(2); ${main(`${printing}{ g() }`)}`);
+    + 'note(1); fn g(): Unit with Log = note(2); '
+    + main(`${printing}{ g() }`));
   assert.equal(found.status, -1);
   assert.equal(found.stderr, 'oracle error: unknown name note\n');
 });

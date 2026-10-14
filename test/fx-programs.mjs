@@ -13,7 +13,9 @@ import { failingFrame } from './fx-gen-failing.mjs';
 import { crossing, escaping, nested, stages } from './fx-gen-fragments.mjs';
 import { noteType, textFrame } from './fx-gen-text.mjs';
 import { rng } from './fx-gen-rng.mjs';
-import { namer, scheme, speller } from './fx-gen-names.mjs';
+import {
+  namer, performedItems, scheme, speller
+} from './fx-gen-names.mjs';
 
 export const fragments = [
   { name: 'nested', make: nested }, { name: 'crossing', make: crossing },
@@ -144,7 +146,8 @@ export const generate = (seed, index = seed, options = {}) => {
   const body = block([...items, ...ending], value);
   const main = { name: 'main', params: [], retText: ret, rowText: 'Console',
     body, names: mainNames };
-  const named = fn => ({ ...fn, names: scheme(spelling, fn.rowText) });
+  const named = fn => ({ ...fn,
+    names: scheme(spelling, fn.rowText, performedItems(fn.body)) });
   const program = { fns: [...own, ...shared.extra].map(named), main };
   return { seed, program, source: render(program), shapes: shared.shapes,
     focus: focus.map(fragment => fragment.name) };
