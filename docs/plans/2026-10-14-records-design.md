@@ -1,6 +1,6 @@
 # Records: design (R001, first tranche)
 
-Status: written spec awaiting the user's review (revised 2026-10-14 after
+Status: approved by the user 2026-10-14 (revised 2026-10-14 after
 the first review: printability, ADT storage, Fail payloads, row sorts).
 The user approved this design section by section in conversation on
 2026-10-14, together with review refinements. No plan exists yet and
@@ -185,7 +185,7 @@ Fields cannot be polymorphic.
   - Today's rule applies unchanged. A comparison's operand type must
     contain no variable once the function is checked, and a record row
     variable is a variable.
-  - So comparing or printing a `{ name: Text, ...r }` inside generic code
+  - So comparing a `{ name: Text, ...r }` inside generic code
     is E_TYPE `Type { name: Text, ...r } is not comparable`. Specialization
     does not rescue a comparison that was rejected in the generic body.
   - A call site that compares a fully known record is accepted.
@@ -347,17 +347,20 @@ unchanged.
   - type-preserving update;
   - row-sort separation;
   - comparison and printing, including groundness and nested records;
-  - printability: a generic printer specialized at a record with a
-    function in its tail is rejected with the existing text, never
-    E_TOOL; the same for a bare type variable (E017);
-  - recursive storage: `type Node = Node({ child: Node })` and a list of
-    records each build, compare and print; a nil field reports the
-    existing panic;
+  - printability (E017): specialized printable checks for each of
+    `show`, `Console.print` and `crash`, at a bare type variable and at a
+    record tail, with a function and with a handler, both directly and
+    nested inside records and ADTs, rejected with the existing text and
+    never E_TOOL;
+  - recursive storage: `type Node = End | Node({ child: Node })` builds,
+    runs, compares and prints a multi-level value, and so does a list of
+    records; a nil field reports the existing panic;
   - Fail payloads: reordered equivalent shapes in one family; distinct
-    label sets in distinct families; same labels with different field
-    types unify (or give the existing mismatch); an open payload in
-    generic code is rejected; existing Fail keys and the seven snapshots
-    unchanged.
+    label sets in distinct families, with handlers for two label sets
+    active at once and each abort reaching its own handler; same labels
+    with incompatible field types rejected with the existing mismatch; an
+    open payload in generic code rejected; existing Fail keys and the
+    seven snapshots unchanged.
 - **Reference interpreter and generator** (test/fx-oracle*,
   test/fx-gen-*). Both are extended with records as an independent model.
   The Go-versus-interpreter differential must show 0 disagreements across
@@ -384,7 +387,12 @@ unchanged.
   existing bootstrap/*.go snapshots stay byte-identical, and repeated
   emits are byte-identical.
 - **Gates.** `npm run verify` exits 0, and the differential against the
-  base shows only new-source differences.
+  base shows only new-source differences, with one narrow exception
+  (E017). An existing program that the base accepted and that then failed
+  `go build` with E_TOOL, because a non-printable type reached a print
+  site through a type variable, may change to the approved E_TYPE
+  `Expected a printable value, found <t>`. Every such difference is listed
+  and classified. Every valid existing program keeps byte-identical Go.
 - **Documentation:**
   - ADR 013;
   - the Records section of docs/language.md;
