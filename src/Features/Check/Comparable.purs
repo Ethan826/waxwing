@@ -4,6 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (traverse_)
+import Data.Tuple (snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..), TypeName)
@@ -96,7 +97,11 @@ rigid = case _ of
   Rigid _ → true
   Hole _ → false
 
+-- A record's tail is a variable beside its fields (design §3), so an open
+-- record is not ground whatever its fields are.
 variablesOf ∷ Ty Open → Array Open
 variablesOf = case _ of
   TVar variable → [ variable ]
+  TRecord row → Array.concatMap variablesOf (map snd row.fields)
+    <> Array.fromFoldable row.tail
   ty → Array.concatMap variablesOf (children ty)
