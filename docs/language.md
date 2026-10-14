@@ -303,11 +303,13 @@ Functions (FN001; ADR 008; spec docs/plans/2026-10-08-functions-design.md).
   parameters (fn-scale.serial). Functions are neither printed nor
   compared.
 
-## Effects (FX001, FX008)
+## Effects (FX001, FX008, FX020)
 
-Decision record docs/adr/010-effects.md; spec
-docs/plans/2026-10-09-effects-design.md. Everything below is implemented
-and checked by test/fx-*.test.mjs, test/fx008-*.test.mjs and the
+Decision records docs/adr/010-effects.md and
+docs/adr/012-effect-namespaces.md; specs docs/plans/2026-10-09-effects-design.md
+and docs/plans/2026-10-13-effect-namespaces-design.md. Everything below is
+implemented and checked by test/fx-*.test.mjs, test/fx008-*.test.mjs,
+test/fx020-*.test.mjs and the
 regression rows of scripts/regression-fx*.mjs, except the limits at the
 end, which are stated, not tested.
 
@@ -318,15 +320,73 @@ In expression position (`resume(1)`) the error is E_SYNTAX `General control
 clause the parser gives a generic syntax error (`Expected '}'`, `Expected
 an identifier`; BACKLOG FX006). `pure` and `nofail` are contextual.
 An effect declares operations, `effect Clock { fn now(): Int; };` and
-`effect State(s) { fn get(): s; fn put(value: s): Unit; };`; an operation is
-a global name called like a function (a bare `now` is E_ARITY `Expected
-now()`). Built in: `Fail(e)` with `fail(error: e)`, `Console` with
-`print(value: a)`, handled only by the runtime at `main`, and `crash(value)`.
+`effect State(s) { fn get(): s; fn put(value: s): Unit; };`; an operation
+is called qualified by its effect (`Clock.now()`, "Operation names" below).
+Built in: `Fail(e)` with `fail(error: e)`, `Console` with `print(value: a)`,
+handled only by the runtime at `main`, and `crash(value)`, a plain global
+function.
 A signature may end in `with L1 + L2`, `with L + ...e` (a named row
 variable) or `with pure`. Expressions: blocks `{ let x = e; e; e }`, `()`,
 `handler L { op(x) => e, ... }`, `with h { body }`, `handle body {
 fail(error: E) => r }` and block items `defer e;`. `{}` and `()` are Unit;
 a trailing `;` makes a block Unit; `let` is monomorphic.
+
+Operation names (FX020, ADR 012). An operation is always called, or used as
+a value, qualified by its effect: `Database.query(id)`, `Console.print(x)`,
+`Fail.fail(NotFound(3))`, `map(Database.query, ids)`. Two effects may declare
+the same operation name, and an operation may share a name with a function:
+`fn log` and `Log.log` are different things. Qualified names resolve by
+declaration, never by the row: `Database.query` in a function whose row lacks
+Database resolves, and is then E_EFFECT `f performs Database, which its
+signature does not allow`. `Nope.log(1)` is `Unbound function Nope.log`, and
+`Log.nope(1)` is E_HANDLER `nope is not an operation of Log`. A qualifier is
+an uppercase name directly followed by `.`; lowercase `x.y` is not one.
+`Fail.fail(e)` takes its family from the type of `e`, and `Fail.fail` alone
+is a function value of the payload, `E -> a` performing `Fail(E)`; it is not a
+keyword, and the `handle` clause head `fail(error: E) => r` is unchanged.
+
+A function's own row (the `with` of its final stage) may alias effects and
+import operations, scoped to its body:
+`fn audit(n: Int): Unit with Database as D + Log { log, info as note } = …`
+makes `D.query` another spelling of `Database.query` (the canonical name stays
+valid), and `log` and `note` the operations `Log.log` and `Log.info`.
+`Console { print }` gives `print(x)`; `Fail(Error) { fail }` binds `fail` to
+that family, so `fail(x)` requires `x : Error`, and `Fail(E1) { fail as f1 }
++ Fail(E2) { fail as f2 }` imports two families under two names. Marks
+combine (`nofail Log { log }`), and a trailing comma is allowed. Handler
+clause heads still name the handled effect's own operations. Lambdas inherit
+the function's aliases and imports; they cannot declare any.
+
+Scoping is lexical and the first match wins, with no fallback: binders (`let`,
+pattern, lambda parameter), then function parameters, then imports, then
+global functions and constructors. A binder named like an import wins, and if
+it has the wrong type the result is the ordinary type error at the use
+(`Expected a function, found Int`). An import wins over a global function of
+that name. A bare operation name with no binding is E_UNBOUND with a hint
+that only lists fixes (it never resolves the name, and does not depend on the
+row): `Unbound function log; use Log.log, or import it with Log { log }`. With
+several candidates, in declaration order, built-ins first: `Unbound function
+log; use Log.log or Audit.log, or import one with Log { log } or Audit { log
+}` (this wording awaits the user's approval; three or more read `A.log,
+B.log or C.log`). `print` is `Console.print` (and `fail`, `Fail.fail`); `show`
+and `print` stay compiler-provided over every printable type until C001.
+
+Errors (E_SYNTAX unless noted; each has an exact-text test in
+test/fx020-imports.test.mjs):
+- `note is imported twice in this signature`, with the note `first imported
+  here`, when two imports bind one local name after renaming.
+- `Log is already an effect name`, with the note `declared here` or `first
+  bound here`, when an alias equals any declared effect name (present in the
+  row or not) or an earlier alias; Console and Fail carry no note.
+- `Imports and aliases are allowed only in a function's own row`, for alias
+  or import syntax in a parameter type, a handler type, a lambda annotation,
+  an effect operation's signature or the row of an arrow result.
+- `nope is not an operation of Log` (E_HANDLER) for an unknown import.
+- A user `effect Console` or `effect Fail` is E_DUPLICATE `Duplicate effect
+  Console`.
+
+A duplicated effect in a row (`State(Int) + State(Bool)`) has only its first
+label reachable, so an import from the second binds the first (BACKLOG FX021).
 
 Rows. A row is an ordered list of labels and an optional tail. Matching
 takes the first occurrence of a label's key; a label's key is its effect,

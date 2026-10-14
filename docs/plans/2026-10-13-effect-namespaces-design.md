@@ -1,10 +1,12 @@
 # Effect operation namespaces: design (FX020)
 
-Status: the user approved this design in conversation on 2026-10-13,
-together with review refinements. The written spec is awaiting the user's
-review. No plan exists yet and nothing is implemented. Sequencing: after
-Text v1, because both rework the parser, and before Records (R001),
-because `r.field` must coexist with `Effect.op`.
+Status: approved and implemented on branch fx020 (2026-10-13 to
+2026-10-14); not merged. The user approved this design in conversation on
+2026-10-13, together with review refinements. As built: docs/adr/012-
+effect-namespaces.md (one wording, the multi-candidate hint, awaits the
+user's approval). Sequencing: after Text v1, because both rework the
+parser, and before Records (R001), because `r.field` must coexist with
+`Effect.op`.
 
 ## Problem
 

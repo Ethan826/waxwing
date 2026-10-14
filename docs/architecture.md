@@ -7,8 +7,8 @@ an earlier layer; scripts/structure.mjs enforces it from `purs graph`.
 | Layer | Modules (src/) | Role |
 |---|---|---|
 | Domain | Syntax, Syntax.Core, Type, Type.{Core,Compare,Parts,Marks}, Resolved, Problem, Host, Checked.Internal, IR.Internal | syntax trees, spans, `Ty v`, resolved syntax, checked IR, monomorphic IR, `Problem` data, capability-port types |
-| Features | Resolve, Resolve.{Expression,Types,Pattern,Repeated,Fresh,Lambda}, Check, Check.{Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
-| Format | Lex, Lex.{Token,Scan,Text,Origin,Escape,Chars,Run,Walk,Block,Dedent}, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,TextShow,Usage}, Diagnostic, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
+| Features | Resolve, Resolve.{Expression,Types,Pattern,Repeated,Fresh,Lambda,Name,Builtin,Qualified,Imports,Unbound,Scope}, Check, Check.{Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
+| Format | Lex, Lex.{Token,Scan,Text,Origin,Escape,Chars,Run,Walk,Block,Dedent}, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,TextShow,Usage}, Diagnostic, Diagnostic.{Code,Qualify}, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
 | Runtime | Node (+ Node.js) | port implementations, argv/stdout/stderr/exit, JSON; the only FFI |
 | Program | Compile, Command, Main | pure `compile`, commands over any `Host`, entry point |
 
@@ -100,6 +100,19 @@ Format.Wire.
   pattern's binders scope its arm body); arms, arguments and pattern fields
   go through Array `traverse`, which is balanced, so resolution depth is
   logarithmic in list length (G001 Task 4).
+- **Operation names** (FX020, ADR 012). Format.Parse.Name reads a
+  qualifier (`upperNamed`: an uppercase name, then `.` or `(`, chosen in one
+  dispatch so the constructor-argument stack margin stays at 259, G002) and
+  Format.Parse.Chain the arrow-row placement rule; Format.Parse.Mark reads
+  `as Alias { op as name }` after a label. Features.Resolve.Name is the
+  lexical lookup (binders, parameters, imports, globals; no fallback).
+  Features.Resolve.Builtin is the table of Console and Fail, which are not
+  `EffectId` declarations; Qualified turns `Effect.op` and imported names
+  into `Perform`, `Print` or `Fail` nodes (and the eta lambda for `Fail.fail`
+  as a value); Imports validates a function's own row once (alias and
+  import collisions, unknown operation) into `Scope.bindings`; Unbound
+  builds the hint, worded by Format.Diagnostic.Qualify. Resolve never reads
+  rows to resolve a name.
 - **Type table.** `TypeInfo {name, ctors, span}` and `CtorInfo {name, owner,
   fields, span}` travel with the program. Names appear only in messages, never
   in Go.

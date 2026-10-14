@@ -254,6 +254,30 @@ fn main(): Unit with Console = {
 (`crash`), by contrast, runs every pending cleanup and exits with one
 report.
 
+**Qualified operations and imports.** An effect's operations are always
+called through the effect, so two effects may share an operation name. A
+function's own row can alias an effect and import operations for its body:
+
+```rust
+effect Log { fn log(n: Int): Unit; };
+effect Audit { fn log(n: Int): Unit; };
+
+fn work(n: Int): Unit with Log { log as note } + Audit = {
+  note(n);                  // Log.log
+  Audit.log(n + 1)
+};
+
+fn main(): Unit with Console { print } = {
+  let log = handler Log { log(n) => print(n) };
+  let audit = handler Audit { log(n) => print(n + 10) };
+  with log { with audit { work(1) } }     // prints 1, then 12
+};
+```
+
+Parameters and `let` bindings shadow imports, imports shadow global
+functions, and nothing falls back. A bare operation name that nothing
+binds is an error that suggests the qualified call and the import (ADR 012).
+
 **Diagnostics** are structured JSON with exact source spans. Effect errors
 explain their origin, the boundary that refused them, and the path between
 the two. Errors aim to say what to write. For example, when a callback's

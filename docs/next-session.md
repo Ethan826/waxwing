@@ -1,3 +1,41 @@
+# Waxwing / FX020 done on branch `fx020`, awaiting the user's review and merge (2026-10-14)
+
+FX020 (effect operation namespaces, BACKLOG FX020) is implemented on branch
+`fx020` (worktree `.worktrees/fx020`, from main 26611c3): Tasks 1-8 of
+docs/plans/2026-10-13-effect-namespaces-plan.md, ADR 012
+(docs/adr/012-effect-namespaces.md), the Effects section of docs/language.md,
+and docs/progress.md ("FX020"). Nothing is pushed or merged. Ledger and task
+reports: .superpowers/sdd/2026-10-13-effect-namespaces-plan/.
+
+Waiting on the user:
+1. **The multi-candidate hint wording** (ruling R18, pinned in
+   test/fx020-unbound.test.mjs). Two candidates: `Unbound function log; use
+   Log.log or Audit.log, or import one with Log { log } or Audit { log }`;
+   three or more: `A.log, B.log or C.log` and `A { log }, B { log } or C { log
+   }`. Approve or reword; a reword changes one text and its tests
+   (Format.Diagnostic.Qualify).
+2. The merge decision. Integrate into main by fast-forward or rebase only (no
+   merge commits). The branch starts at 26611c3; check main for newer
+   commits first.
+
+Open items from FX020: FX021 (an import from an unreachable duplicate label
+silently binds the first); FX022 (the hint writes `Fail { fail }`, which is
+not valid syntax, and omits a parameterised effect's arguments); the INF001
+requirement (a way to alias or import without writing the whole inferred row);
+`print` and `show` stay compiler-provided until C001; G002 margin is 259
+against the limit 256; G006 stack flake; T007 timing figures.
+
+Order after the merge: phase 2 of the 80-column sweep, IDE001 rebased onto
+main, then R001 (records; `r.field` coexists with `Effect.op` because
+qualifiers are uppercase), and the INF001 design.
+
+Setup facts: run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in the
+worktree; `node scripts/width.mjs` checks git-tracked files only, so run it
+after `git add`. The regression runner leaves about 2 GB under
+.build/regression; delete it after a run.
+
+---
+
 # Waxwing / Text v1 done on branch `text`; review done (with fixes), merged into main 2026-10-13 (2026-10-13)
 
 Text v1 (BACKLOG D001, first tranche) is implemented on branch `text` (worktree

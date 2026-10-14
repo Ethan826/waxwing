@@ -642,3 +642,22 @@ Learned while retargeting mutants for the fifteen new rows
    `Expected '}'`; `with handler E { ctl op() => 1, } {...}` gives
    `Expected an identifier`. Spec §1 asks for a dedicated diagnostic; the
    code falls short in the two declaration positions (BACKLOG FX006).
+
+## FX020: effect namespaces (2026-10-14)
+
+1. `node scripts/width.mjs` checks git-tracked files only. A new, unstaged
+   file passes the gate silently; run it after `git add`. The Task 5b commit
+   claimed a clean width gate and had an 81-column line for that reason.
+2. A `where` helper without a type signature is monomorphic: one used at two
+   record types (Unbound's built-in and user effects) fails to unify. Lift it
+   to a top level function with a row-polymorphic signature.
+3. A regression probe that only asserts "program was rejected" hides which
+   rejection a mutant produces; print the code and message
+   (test/regression-fx020.mjs `prints`).
+4. The unbound-name hint is not narrowed by the row, by design: resolution
+   never depends on rows, so it also offers the import form inside lambdas and
+   for effects that cannot be imported; FX022 records the `Fail { fail }`
+   spelling problem.
+5. V8 warm-up changes the stack depth available to the first `compile` of a
+   near-limit source (BACKLOG G006); paired comparisons of old and new trees
+   need `node --stack-size=3000`, never a retry.

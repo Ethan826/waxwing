@@ -4423,3 +4423,97 @@ the identity`. Verify exit 0 (.build/text-t9-fix-verify.log): 1535/1535,
 292 ms (bounds 438, 2127, 390), about twice the standalone figures: the
 bounds hold but the margin is thin on the 100,000-escape case. No timing
 failure, so no T007 entry.
+
+## FX020 effect operation namespaces done on branch `fx020` (2026-10-14)
+
+Plan docs/plans/2026-10-13-effect-namespaces-plan.md, Tasks 1-8 on branch
+`fx020` from main 26611c3 (worktree .worktrees/fx020); spec
+docs/plans/2026-10-13-effect-namespaces-design.md, ADR 012
+(docs/adr/012-effect-namespaces.md). Not merged; the user's review of the
+multi-candidate hint wording and the merge decision are next. Ledger and
+task reports: .superpowers/sdd/2026-10-13-effect-namespaces-plan/
+(progress.md, task-*-report.md; rulings R1-R18).
+
+Delivered:
+- Every operation is `Effect.op`, resolved by declaration and never by the
+  row; `.` is a token, and only an uppercase name before it qualifies.
+- A function's own row may alias effects and import operations (`with
+  Database as D + Log { log, info as note }`); lexical order binders,
+  parameters, imports, globals with no fallback; the three approved
+  collision and placement errors, with notes.
+- `fail` is no longer a keyword: `Fail.fail(e)` and an imported `fail(e)` are
+  one `Resolved.Fail` node (an imported family rides on it, R12); a Fail
+  reference is an eta lambda. Console and Fail are built-in declarations with
+  no EffectIds (runtime keys unchanged).
+- Unbound bare operation names keep their error with a hint; the
+  multi-candidate wording (R18) awaits the user. `print` and `show` remain
+  compiler-provided until C001.
+- The corpus (examples, 101 fixtures, tests; about 700 automatic edits plus
+  manual ones) was migrated by a one-off tool, then the tool, the paired run
+  and bare-name support were removed (R4, Task 7).
+
+Tasks (commits on fx020):
+- Task 1: behaviour-preserving splits (bb083c5, fb89cd5):
+  Format.Diagnostic.Code, test/fx-oracle-expr.mjs, test/regression-diag.mjs.
+- Task 2: qualified operations (c503adb, fix 19784ed): lexer `.`,
+  Format.Parse.Name, Features.Resolve.{Name,Qualified}. G002 margin measured:
+  constructor-argument 259.
+- Task 2b (controller-added, R7): the Fail reference as an eta lambda (5d66dcc).
+- Task 3: aliases and imports (96e8450, fix 6c88869): Resolve.Imports,
+  Format.Parse.Chain, R10, R11, R12; FX021 added.
+- Task 4: Console and Fail as built-in declarations, E_DUPLICATE (3c5547f).
+- Task 5a: the rewrite tool, manifest, edit map and paired differential
+  (739194c, c9601dd, c4e3920); Task 5b: reference interpreter and generator
+  for qualified names, imports and aliases (c781627, fd83293). The 5a/5b
+  split is R13.
+- Task 6: corpus migration in chunks (4878aaa .. ee455f6), 10 commits plus a
+  review fix round.
+- Task 7: bare resolution and tooling removed, unbound hint (383699f, e21b19a).
+- Task 8: review cleanups (3ab36d2, `refactor: FX020 review cleanups`) and
+  the documentation commit.
+
+Evidence (logs under .build/ in the worktree, names fx020-task<N>-*):
+- Verify: exit 0 at every task's end. Final counts: Task 5b fix 1645/1645
+  parallel, Task 7 1626 parallel, 57/57 serial, 93 regression proofs
+  (fx020-task7-verify.log); Task 8, on the committed
+  clean tree, exit 0 (.build/fx020-task8-verify.log): 1626/1626 parallel,
+  57/57 serial, 94 regression proof lines, width 0 over 80 in 490 files.
+- Regression rows (scripts/regression-fx020.mjs, probes
+  test/regression-fx020.mjs), each fixed passes and restored defect fails:
+  `fx020-first-declaration` (bare unbound call fell back to the first
+  effect declaring the name), `fx020-function-wins` (`fn log` beside
+  `Log.log` must each reach their own), `fx020-row-dependent` (resolution
+  must not depend on the written row). The Task 8 cleanup made the
+  function-wins probe print the rejection.
+- Compiler differential per task against its base (`scripts/differential.mjs
+  --corpus all --regenerate`): Task 1 0; Task 2 1,071 (966 fail-as-Call
+  parse trees, 41 enclosing spans, 59 lone `.`, 1 `fail()` E_SYNTAX to
+  E_ARITY; accepted, R8); Task 3 2,761 raw, 46 normalised, all parse-phase
+  and new-syntax sources; Task 4 5 (sources declaring `effect Console` or
+  `effect Fail`); Task 5a, 5b 0; Task 7 11 (exactly the 11 new bare-name
+  rejection programs). Fuzz, isName and matches 0 throughout.
+- Paired runs (original program against migrated twin, same Go required,
+  scripts/fx020-paired.mjs, since removed): final Task 6 tree 6,930 pairs, 0
+  unexpected, 1 ledger entry (R15, `Expected now()` to `Expected
+  Clock.now()`); the seven bootstrap/*.go snapshots byte-identical
+  (`git diff 26611c3..HEAD -- bootstrap` empty). Two nested-handler sources
+  overflow the stack on a cold first compile in either tree (G006), so paired
+  runs used `node --stack-size=3000` (R16).
+- Go-vs-interpreter differential (test/fx-differential.serial.test.mjs,
+  `WAXWING_FX_SEED=$((20261010 + 500*k))`, k = 0..10): 11 seeds x 500 = 5,500
+  programs, 0 disagreements at Task 5b, again after its fix round (imported
+  and aliased spellings 213-249 and 85-117 per seed) and at Task 7
+  (.build/fx020-task7-seeds.log, 8/8 tests per seed).
+- Timing failures under the differential and harvest runs are in BACKLOG T007
+  (figures only, bounds unchanged); verify itself passed.
+
+Rulings summary (ledger has the full text): R1 user `effect Console` is the
+existing `Duplicate effect Console`; R2 no note for a built-in; R3-R4 bare
+tests converted in Task 7, one-off tools removed; R5/R18 the multi-candidate
+hint is pinned and goes to the user; R6 unknown `X.y` uses existing texts; R7
+Fail reference in its own task; R8 differential categories accepted; R9 the
+G002 margin is measured; R10/R12 a family rides on the Fail node; R11 a
+duplicated label's import binds the reachable one (FX021); R13 Task 5 split;
+R14 Task 6 as one chunked dispatch; R15 one message changes; R16 stack-size
+for paired runs; R17 qualify and wrap commits are verified as a pair.
+Open: FX021, FX022, G002, G006, T007.
