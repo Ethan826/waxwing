@@ -3,7 +3,8 @@ effect Log { fn log(n: Int): Unit; };
 effect Tick { fn tick(): Unit; };
 fn main(): Unit with Console = handle {
   let h = handler Log { log(n) => Console.print(n) };
-  let inst = fn(x: Handler(Log)) => { defer Tick.tick(); with x { Log.log(1) } };
+  let inst = fn(x: Handler(Log)) => { defer Tick.tick();
+    with x { Log.log(1) } };
   with handler Tick { tick() => Console.print(5) } { inst(h) };
   with handler Tick { tick() => Fail.fail(E) } { with h { Tick.tick() } }
 } { fail(error: E) => Console.print(9) };

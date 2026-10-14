@@ -1,4 +1,5 @@
 type E = E;
 fn g(h: Int -> Unit with Fail(a)): Unit = ();
-fn main(): Unit with Console = { let k = fn(n: Int) => Console.print(n); defer k(1);
+fn main(): Unit with Console = { let k = fn(n: Int) => Console.print(n);
+  defer k(1);
 g(k) };

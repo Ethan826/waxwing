@@ -5,7 +5,8 @@ fn main(): Unit with Console = {
   let k2 = fn(u: Unit) => ();
   let h = handler Log { log(n) => k2(()) };
   let hc = handler Cell(Bool) { put(x) => true };
-  let g = fn(u: Unit) => { if Cell.put(true) then () else (); with h { Log.log(1) } };
+  let g = fn(u: Unit) => { if Cell.put(true) then () else ();
+    with h { Log.log(1) } };
   with hc { g(()); k(()) };
   Console.print(0)
 };

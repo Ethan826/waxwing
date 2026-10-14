@@ -1,7 +1,9 @@
 effect Log { fn log(n: Int): Unit; };
-fn prefix(): Handler(Log with Log) with pure = handler Log { log(n) => Log.log(n +
+fn prefix(): Handler(Log with Log) with pure = handler Log { log(n) =>
+  Log.log(n +
 100) };
 fn around(body: Unit -> Unit with Log + Log + ...e): Unit with Log + ...e = with
 prefix() { body(()) };
 fn main(): Unit with Console =
-  with handler Log { log(n) => Console.print(n) } { around(fn(u: Unit) => Log.log(1)) };
+  with handler Log { log(n) => Console.print(n) } { around(fn(u: Unit) =>
+    Log.log(1)) };

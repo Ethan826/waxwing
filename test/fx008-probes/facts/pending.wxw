@@ -3,5 +3,6 @@ type F = F;
 effect Log { fn log(n: Int): Unit; };
 fn work(): Unit with Log + Fail(F) = { defer Log.log(1); Fail.fail(F) };
 fn main(): Unit with Console = handle { handle with handler Log { log(n) =>
-Fail.fail(E) } { work() } { fail(error: E) => Console.print(9) } } { fail(error: F) =>
+Fail.fail(E) } { work() } { fail(error: E) => Console.print(9) } } {
+  fail(error: F) =>
 Console.print(8) };

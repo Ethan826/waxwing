@@ -1,5 +1,6 @@
 type E = E;
 effect Log { fn log(n: Int): Unit; };
 fn mk(): Handler(Log) = handler Log { log(n) => Fail.fail(E) };
-fn main(): Unit with Console = handle with mk() { Log.log(1) } { fail(error: E) =>
+fn main(): Unit with Console = handle with mk() { Log.log(1) } { fail(error: E)
+  =>
 Console.print(9) };

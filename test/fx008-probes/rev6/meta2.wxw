@@ -3,7 +3,8 @@ effect Log { fn log(n: Int): Unit; };
 effect Cell(a) { fn put(x: a): Bool; };
 fn main(): Unit with Console = {
   let h = handler Log { log(n) => () };
-  let g1 = fn(u: Unit) => with h { let v = No; if Cell.put(v) then Console.print(v == v) else
+  let g1 = fn(u: Unit) => with h { let v = No;
+    if Cell.put(v) then Console.print(v == v) else
 () };
   let g2 = fn(u: Unit) => with h { if Cell.put(Some(true)) then () else () };
   ()

@@ -41,7 +41,7 @@ export const rev6 = [
       'body must allow every effect at this call (Log + Log), but its row is ' +
       'Log; '
       + 'write body\'s row as `with Log + Log + ...e`; a callback\'s row must '
-      + 'equal the row where it is called (FX018)', 215, 223)),
+      + 'equal the row where it is called (FX018)', 217, 225)),
   probe('rev6/con',
     no('E_INTERNAL', 'Invalid handler effect', 0, 0)),
   probe('rev6/con2',
@@ -79,7 +79,7 @@ export const rev6 = [
     no('E_EFFECT',
       'Log + Fail(E) + Console + ... and Log + Console + ... cannot be made ' +
         'equal: both end in ...',
-      329, 334)),
+      333, 338)),
   probe('rev6/l4b',
     ok('0\n', 'e00f20ebb296ce02c06fbde7c6a96439a68ce3b3ab33df2fbf7ca75e46544b' +
       '99'),
@@ -95,7 +95,7 @@ export const rev6 = [
   probe('rev6/meta2',
     ok('', '9ea2294c6518dac53fa7d9ab1b821b2e63b4f540b7470ed3f749e72064ed6e74')),
   probe('rev6/meta3',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 260, 261)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 264, 265)),
   probe('rev6/reuse',
     ok('12\n0\n',
       '8c2e67a600770fd68c943f16e4b7de4461f31ee8d3eda25598b9dee359d5ff6a')),
@@ -103,5 +103,5 @@ export const rev6 = [
     no('E_EFFECT',
       'Log + Fail(E) + Console + ... and Log + Console + ... cannot be made ' +
         'equal: both end in ...',
-      391, 396)),
+      395, 400)),
 ];

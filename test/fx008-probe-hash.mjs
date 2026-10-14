@@ -2,4 +2,4 @@
 // in the same commit as the table, so it catches only accidental edits; the
 // real control is the reviewer's diff of test/fx008-probe-table*.mjs.
 export const tableHash =
-  '620b09c6451e20533e243c2b16f11a95b8791fc8b0484a049ac65413390dd0b1';
+  'c4508bb2d2eab8e6aadda513483cf12b80412f6bf5b089f95e43a91fc7f0b5b7';

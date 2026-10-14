@@ -4,4 +4,5 @@ fn f(): Unit with Tick = {
   let inst = fn(h: Handler(Log)) => with h { Log.log(1) };
   inst(handler Log { log(n) => Tick.tick() })
 };
-fn main(): Unit with Console = with handler Tick { tick() => Console.print(5) } { f() };
+fn main(): Unit with Console = with handler Tick { tick() => Console.print(5) }
+  { f() };

@@ -106,7 +106,7 @@ const own = [
     no('E_EFFECT',
       'Fail(E) + Console + ... and Console + ... cannot be made equal: both ' +
         'end in ...', 221,
-      241)),
+      245)),
   probe('rigid',
     no('E_TYPE', 'Expected Handler(Log), found Handler(Log)', 98, 128)),
   probe('witness/ec1',

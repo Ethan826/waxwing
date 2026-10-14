@@ -7,4 +7,5 @@ fn f(cb: Unit -> Unit with ...e): Unit with Tick + ...e = {
   g2(())
 };
 fn main(): Unit with Console =
-  with handler Tick { tick() => Console.print(2) } { f(fn(u: Unit) => Console.print(1)) };
+  with handler Tick { tick() => Console.print(2) } { f(fn(u: Unit) =>
+    Console.print(1)) };

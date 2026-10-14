@@ -13,7 +13,7 @@ const cross = [allows('with Log', 'work')];
 export const probeNotes = {
   'facts/lexical': [
     handled('with handler Log { log(n) => Fail.fail(E) } '
-      + '{ defer Log.log(1); Console.print(2) }', 'Log'),
+      + '{ defer Log.log(1);\n  Console.print(2) }', 'Log'),
     fails('log(n) => Fail.fail(E)', 'log')],
   'facts/pending': [allows('with Log + Fail(F)', 'work')],
   'facts/cross': cross,

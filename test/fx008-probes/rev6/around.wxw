@@ -3,4 +3,5 @@ fn prefix(): Handler(Log with Log) = handler Log { log(n) => Log.log(n + 100) };
 fn around(body: Unit -> Unit with Log + ...e): Unit with Log + ...e = with
 prefix() { body(()) };
 fn main(): Unit with Console =
-  with handler Log { log(n) => Console.print(n) } { around(fn(u: Unit) => Log.log(1)) };
+  with handler Log { log(n) => Console.print(n) } { around(fn(u: Unit) =>
+    Log.log(1)) };

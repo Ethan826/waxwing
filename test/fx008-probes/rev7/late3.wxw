@@ -4,7 +4,8 @@ effect Cell(a) { fn put(x: a): Bool; };
 fn main(): Unit with Console = {
   let k = fn(u: Unit) => ();
   let h = handler Log { log(n) => k(()) };
-  let g1 = fn(u: Unit) => with h { let v = No; if Cell.put(v) then Console.print(v == v) else
+  let g1 = fn(u: Unit) => with h { let v = No;
+    if Cell.put(v) then Console.print(v == v) else
 () };
   with handler Cell(Opt(Bool)) { put(x) => true } { k(()) };
   ()

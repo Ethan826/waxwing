@@ -26,7 +26,7 @@ const allows = (container, name, label, inner = container) => [container, inner,
   `the signature of ${name} allows a failing ${label} handler; write with `
   + `nofail ${label}`];
 const lexicalWith = 'with handler Log { log(n) => Fail.fail(E) } '
-  + '{ defer Log.log(1); Console.print(2) }';
+  + '{ defer Log.log(1);\n  Console.print(2) }';
 
 test('the pinned program is rejected', () => {
   effect(probe('facts/lexical'), deferLog, ['defer Log.log(1)'], [

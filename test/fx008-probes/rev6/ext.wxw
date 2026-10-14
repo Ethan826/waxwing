@@ -4,6 +4,7 @@ fn main(): Unit with Console = {
   let fwd = handler Log { log(n) => Log.log(n + 10) };
   let inst = fn(u: Unit) => with fwd { Log.log(1) };
   with handler Log { log(n) => Console.print(n) } { defer inst(()); () };
-  handle { with handler Log { log(n) => Fail.fail(E) } { inst(()) } } { fail(error:
+  handle { with handler Log { log(n) => Fail.fail(E) } { inst(()) } } {
+    fail(error:
 E) => Console.print(9) }
 };

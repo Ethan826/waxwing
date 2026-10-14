@@ -4,6 +4,7 @@ effect Cell(a) { fn put(x: a): Unit; };
 fn main(): Unit with Console = {
   let h = handler Log { log(n) => () };
   let g1 = fn(u: Unit) => with h { Cell.put(No) };
-  let g2 = fn(u: Unit) => with handler Log { log(n) => () } { Cell.put(Some(1)) };
+  let g2 = fn(u: Unit) => with handler Log { log(n) => () } { Cell.put(Some(1))
+    };
   ()
 };

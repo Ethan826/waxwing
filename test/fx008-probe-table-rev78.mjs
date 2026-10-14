@@ -79,7 +79,7 @@ export const rev78 = [
     ok('0\n', 'f1385c8c30828aa3cf047737e2ffa49e574d4a54c121152e50eb59af4fb7f1' +
       'bc')),
   probe('rev8/one1ctl',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 289, 290)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 293, 294)),
   probe('rev8/one1rev8',
     ok('0\n', '7c05ca999e8588e8688157af8407919a3f0f38d840086018004ef837c6987b' +
       '41')),
@@ -92,7 +92,7 @@ export const rev78 = [
     ok('0\n', '5bb3f21809c79b7961bc20091fcc89483d7d56b54515441824709864258249' +
       '07')),
   probe('rev8/two1ctl',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 335, 336)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 339, 340)),
   probe('rev8/two1f',
     ok('0\n', 'cde141070301f20d2b30dc1d709d7ae3e48f6575e9d1f0b04134c06e075a70' +
       'e6')),

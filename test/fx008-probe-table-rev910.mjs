@@ -51,7 +51,7 @@ export const rev910 = [
     ok('101\n101\n0\n9\n',
       '457caffab02720935a2484bede539c0ad6fe929300394f41472ded166092aeca'),
     {
-      fx008: no('E_EFFECT', defer, 207, 223),
+      fx008: no('E_EFFECT', defer, 211, 227),
       task: 9,
       flipped: true,
       reason: 'I2: run\'s Log is plain (§6).'
@@ -120,7 +120,7 @@ export const rev910 = [
       slow: true
     }),
   probe('rev10/gain1',
-    no('E_EFFECT', 'Unhandled Cell(Bool) in main', 272, 277),
+    no('E_EFFECT', 'Unhandled Cell(Bool) in main', 276, 281),
     {
       fx008: ok('0\n',
         'a0c048733fb46329c2c1245599002f0bb0f3091decc349483233543e74f8d035'),
@@ -155,7 +155,7 @@ export const rev910 = [
       '16'),
     { slow: true }),
   probe('rev9/set1ctl',
-    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 424, 425)),
+    no('E_TYPE', 'Ambiguous type Opt(_) in comparison', 428, 429)),
   probe('rev9/sh1',
     no('E_EFFECT', '... and Tick + ... cannot be made equal: both end in ...',
       237, 242),
