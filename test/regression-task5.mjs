@@ -31,7 +31,7 @@ const keyless = (label, source, fragment) => ({ compile, Left, wire }) => {
     `Fail family (${label}): wrong span`);
 };
 const caller = 'type E = E; fn g(h: Int -> Unit with Fail(P)): Unit = h(1); '
-  + 'fn main(): Unit with Console = g(fn(n: Int) => fail(E));';
+  + 'fn main(): Unit with Console = g(fn(n: Int) => Fail.fail(E));';
 
 export const task5Probes = {
   'signature-fail': keyless('variable', caller.replace('P', 'a'), 'Fail(a)'),

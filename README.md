@@ -101,12 +101,12 @@ The program is checked end to end:
   E_EFFECT  Unhandled Clock in main                   (at the call in main)
     through report                                    (main → report)
     through audited                                   (report → audited)
-    Clock is performed here                           (now() in stamp)
+    Clock is performed here                           (Clock.now() in stamp)
     main may perform only Console                     (main's signature)
   ```
 
 - **Cleanup is sound.** `nofail Log` promises that the Log handler cannot
-  fail. Without that promise, `defer log(id)` is rejected, because a
+  fail. Without that promise, `defer Log.log(id)` is rejected, because a
   failing handler could abort a cleanup halfway.
 - **Effects disappear at compile time.** Rows are erased before Go is
   generated, and handler values become ordinary Go structs passed down a
@@ -221,7 +221,7 @@ true
 Text values are Unicode, stored as UTF-8 and compared by code point. A
 Text printed on its own is written raw, and inside data it is quoted and
 escaped, so every printed value reads back as source. `show(x)` returns
-what `print(x)` would write. Interpolation takes only Text, so other
+what `Console.print(x)` would write. Interpolation takes only Text, so other
 values go through `show`. The Go keeps a plain `string` (ADR 011).
 
 **Typed failures.** A failure is an effect with a payload, handled

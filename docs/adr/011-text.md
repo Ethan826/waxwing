@@ -163,9 +163,10 @@ declared type has a Text field.
 ### `show` is a compiler-provided built-in until C001
 
 `show(x)` takes one printable value (everything but functions and
-handlers), is pure, and returns as Text exactly what `print(x)` would write,
-without the final LF. It reuses the existing printers (`string(waxwingShowN(
-nil, v))` for declared types; direct forms for Int, Bool, Unit, Text);
+handlers), is pure, and returns as Text exactly what `Console.print(x)` would
+write, without the final LF. It reuses the existing printers
+(`string(waxwingShowN(nil, v))` for declared types; direct forms for Int,
+Bool, Unit, Text);
 `show(t)` of a Text is `t` itself. It is not a type class.
 
 **The explicit gap:** Waxwing has no classes, so `show`, like `print` and the

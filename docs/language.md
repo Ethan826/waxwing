@@ -350,7 +350,7 @@ Handlers. Handlers are deep and dynamically scoped: an operation goes to
 the innermost installed handler for its key at the moment it runs, and a
 closure keeps no handler. A clause runs in the context of its `with`,
 without that handler, so a logger's clause that logs reaches the next outer
-logger. `fail(e)` unwinds to the innermost `handle` for `e`'s family in the
+logger. `Fail.fail(e)` unwinds to the innermost `handle` for `e`'s family in the
 context where it runs; the clauses of one `handle` are frames with the
 first clause innermost. A handler value is neither comparable nor
 printable, nor may `crash` take it or `main` return it. A program that
@@ -373,7 +373,7 @@ covers handlers: an operation performed in a `defer` must meet only
 fail-free handler frames. A label written `nofail Log` in a signature
 assumes the caller's Log handler cannot end an operation in a typed abort
 (a clause may fail internally and handle it); a plain label promises
-nothing, and `defer log(1)` under a plain `Log` is E_EFFECT `defer must not
+nothing, and `defer Log.log(1)` under a plain `Log` is E_EFFECT `defer must not
 fail, but it performs Log, whose handler may fail`, with notes naming the
 signature or clause responsible. `nofail(k) Log` ties the assumption to a
 mark variable of the signature (usable in function signatures and their
@@ -548,11 +548,11 @@ block opening (here an error, as no line break follows).
 `show` and printing (text-print). `show(x)` is a compiler built-in like
 `print`, not a type class and not reserved. It takes one printable value
 (everything except functions and handlers, else `Expected a printable
-value, found <t>`), is pure, and returns as Text exactly what `print(x)`
+value, found <t>`), is pure, and returns as Text exactly what `Console.print(x)`
 writes, without the final LF. `show(t)` of a Text is `t` itself. Until
 type classes exist (BACKLOG C001) its output format is fixed and cannot be
-customised. A Text printed alone (`print(t)`, a `main` returning Text) is
-written raw; a Text nested in data is written quoted with the canonical
+customised. A Text printed alone (`Console.print(t)`, a `main` returning
+Text) is written raw; a Text nested in data is written quoted with the canonical
 escaping: `\"`, `\\`, `\n`, `\t` and `\r` by name, `\$` before `{`, and
 `\u{…}` in lowercase hex for the controls U+0000 to U+001F and U+007F to
 U+009F (apart from the three named), U+2028, U+2029 and the bidi controls

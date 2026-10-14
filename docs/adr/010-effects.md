@@ -105,7 +105,7 @@ calling convention must not depend on the consuming program (BACKLOG).
 A clause runs in the context of its `with`, without the handler itself
 (`fx-clause-context`), so a Log clause that logs reaches the next outer
 Log. The clauses of one `handle` are frames with the first clause
-innermost (regression row `fx-clause-order`, Task 7 Critical). `fail(e)`
+innermost (regression row `fx-clause-order`, Task 7 Critical). `Fail.fail(e)`
 panics with an abort aimed at the innermost frame marker for `e`'s key;
 the lifted `handle` helper recovers only aborts for its own markers
 (`fx-abort-target`) and re-raises everything else. Markers are fresh

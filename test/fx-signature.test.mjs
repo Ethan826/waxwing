@@ -71,7 +71,8 @@ const rejectedCases = [
   ['row then type sort',
     'fn f(g: Int -> Int with ...e, x: e): Int = 0; fn main(): Int = 0;',
     'E_TYPE', 'Expected a type, found an effect row'],
-  ['bare nullary operation', clock + 'fn main(): Int with Clock = Clock.now;',
+  ['qualified nullary operation',
+    clock + 'fn main(): Int with Clock = Clock.now;',
     'E_ARITY', 'Expected Clock.now()'],
   ['print function', 'fn main(): Unit with Console = Console.print(fn(x) => '
     + 'x);',
