@@ -20,6 +20,7 @@ import Domain.Row
   )
 import Domain.Type (Ty(..), TyRow, foldStages, stagesThrough)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
+import Domain.Type.Record (mapFields)
 
 -- What a pass changes: every mark, and each handler type's pair of rows
 -- once its parts are done.
@@ -57,6 +58,7 @@ edited edit = case _ of
   THandler label rows → THandler (editedLabel edit label)
     (edit.handler (mapHandlerRows (editedRow edit) rows))
   arrow@(TFun _ _ _) → editedStages (stagesThrough identity arrow)
+  TRecord row → TRecord (mapFields recur row)
   leaf → leaf
   where
   recur ty = edited edit ty

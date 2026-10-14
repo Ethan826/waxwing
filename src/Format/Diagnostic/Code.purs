@@ -39,6 +39,8 @@ code = case _ of
   RowEquality _ _ _ → Code.EffectError
   LabelMismatch _ _ → Code.TypeMismatch
   RowSort _ → Code.TypeMismatch
+  RecordRowAsEffect _ → Code.TypeMismatch
+  EffectRowAsRecord _ → Code.TypeMismatch
   NotPrintable _ → Code.TypeMismatch
   DeferMayFail _ → Code.EffectError
   DeferMayPerform _ → Code.EffectError

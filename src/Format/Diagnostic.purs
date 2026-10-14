@@ -73,6 +73,8 @@ message = case _ of
     <> shortLabel label
   RowSort true → "Expected an effect row, found a type"
   RowSort false → "Expected a type, found an effect row"
+  RecordRowAsEffect name → name <> " is a record row, not an effect row"
+  EffectRowAsRecord name → name <> " is an effect row, not a record row"
   NotPrintable ty → "Expected a printable value, found " <> typeName ty
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
@@ -115,6 +117,9 @@ noted = case _ of
   EffectNotAllowed _ _ → true
   CallbackRowLacks _ _ _ _ _ → true
   Hinted problem _ → noted problem
+  Duplicate DuplicateField _ → true
+  RecordRowAsEffect _ → true
+  EffectRowAsRecord _ → true
   UnhandledEffect _ → true
   MustBePure _ → true
   RowEquality _ _ _ → true
@@ -160,6 +165,7 @@ duplicateWord = case _ of
   DuplicateTypeParameter → "type parameter"
   DuplicateEffect → "effect"
   DuplicateOperation → "operation"
+  DuplicateField → "field"
 
 unboundWord ∷ UnboundKind → String
 unboundWord = case _ of

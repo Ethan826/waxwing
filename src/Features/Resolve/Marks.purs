@@ -35,8 +35,11 @@ markVariableRefs = case _ of
   Syntax.NamedRef _ _ arguments → Array.concatMap argumentRefs arguments
   Syntax.THandlerRef _ label row → labelRefs label
     <> maybe [] rowMarkVariableRefs row
+  Syntax.RecordRef _ fields _ → Array.concatMap fieldRefs fields
   arrow@(Syntax.FunRef _ _ _ _) → spineRefs arrow
   _ → []
+  where
+  fieldRefs field = markVariableRefs field.ty
 
 rowMarkVariableRefs ∷ Syntax.RowRef → Array MarkVariableRef
 rowMarkVariableRefs (Syntax.RowRef _ labels _) =

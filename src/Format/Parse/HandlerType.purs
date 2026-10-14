@@ -16,6 +16,7 @@ import Domain.Syntax
   , TypeRef(..)
   , origin
   , problemAt
+  , typeRefSpan
   )
 import Format.Parse.Grammar
   ( Parser
@@ -200,14 +201,3 @@ addFirst span name arguments (RowRef rest labels tail) = RowRef
       labels
   )
   tail
-
-typeRefSpan ∷ TypeRef → Span
-typeRefSpan = case _ of
-  IntRef span → span
-  BoolRef span → span
-  UnitRef span → span
-  TextRef span → span
-  VarRef span _ → span
-  NamedRef span _ _ → span
-  FunRef span _ _ _ → span
-  THandlerRef span _ _ → span

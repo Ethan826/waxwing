@@ -17,6 +17,7 @@ import Data.Set as Set
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Resolved (CtorInfo)
 import Domain.Type (Ty(..), TypeId(..))
+import Domain.Type.Record (fieldTypes)
 import Features.Check.Nested (referenced)
 
 -- The declared types a value of which can hold a function: one of their
@@ -45,6 +46,7 @@ containsFunction ∷ ∀ v. Functional → Ty v → Boolean
 containsFunction found = case _ of
   TFun _ _ _ → true
   THandler _ _ → true
+  TRecord row → Array.any (containsFunction found) (fieldTypes row)
   TData id arguments _ → Set.member id found
     || Array.any (containsFunction found) arguments
   _ → false

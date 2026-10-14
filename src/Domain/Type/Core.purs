@@ -8,6 +8,7 @@ module Domain.Type.Core
   , foldStages
   , substitute
   , substituteRow
+  , spliceRecord
   ) where
 
 import Prelude
@@ -17,6 +18,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
+import Domain.Type.Record (RecordRow, recordRow)
 import Domain.Ids (TypeId)
 import Domain.Row (HandlerRows, Label(..), Row(..), closedRow, openRow)
 import Domain.Row as Row
@@ -43,7 +45,8 @@ derive instance ordVarId ∷ Ord VarId
 -- spine. A declaration of thousands of parameters has a spine as long, so
 -- every pass here walks a spine by a loop and recurses only into
 -- parameters, type arguments and label arguments, whose depth the nesting
--- limits bound (design §1, §3). An application's type arguments come
+-- limits bound (design §1, §3). A record's tail is a variable whose image
+-- is a record type (Domain.Type.Record). An application's type arguments come
 -- before its row arguments, each in declaration order. `TUnit`,
 -- `THandler` and `TText` come last so the order of the earlier ones is kept. A
 -- variable has one sort, type or row, by construction.
@@ -56,6 +59,7 @@ data Ty v
   | TUnit
   | THandler (Label (Ty v)) (HandlerRows (Ty v) v)
   | TText
+  | TRecord (RecordRow (Ty v) v)
 
 type TyRow v = Row (Ty v) v
 
@@ -83,6 +87,7 @@ instance eqTy ∷ Eq v ⇒ Eq (Ty v) where
     TFun _ _ _, TFun _ _ _ → sameSpines arrowLink left right
     THandler one oneRow, THandler other otherRow → one == other
       && oneRow == otherRow
+    TRecord one, TRecord other → one == other
     _, _ → sameLeaf left right
 
 instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
@@ -96,6 +101,7 @@ instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
     THandler one oneRow, THandler other otherRow → compareParts one other
       oneRow
       otherRow
+    TRecord one, TRecord other → compare one other
     _, _ → compareLeaves left right
 
 -- Renaming keeps each variable's sort: a renamed row tail stays a tail.
@@ -149,6 +155,7 @@ substitute substitution = case _ of
   TVar variable → substitution.types variable
   THandler label row → THandler (substituteLabel substitution label)
     (Row.mapHandlerRows (substituteRow substitution) row)
+  TRecord row → substituteRecord substitution row
   arrow@(TFun _ _ _) → substitutedStages (stagesThrough identity arrow)
   where
   substituted part = substitute substitution part
@@ -169,6 +176,25 @@ substituteRow substitution (Row labels tail)
       written = map (substituteLabel substitution) labels
       spliced variable = appended (substitution.rows variable)
       appended (Row more rest) = Row (written <> more) rest
+
+-- Fields in place; a tail's image, a record type, supplies the rest.
+substituteRecord
+  ∷ ∀ v w. Substitution v w → RecordRow (Ty v) v → Ty w
+substituteRecord substitution row = maybe (TRecord (recordRow written Nothing))
+  (spliceRecord written <<< substitution.types)
+  row.tail
+  where
+  written = map (map (substitute substitution)) row.fields
+
+-- The written fields, then what a tail became: a record's fields join
+-- them and its tail ends the row; another variable is the new tail. A tail
+-- is a record-sorted variable (resolution checks), so no other image
+-- arises; were one to, the row ends there.
+spliceRecord ∷ ∀ v. Array (Tuple String (Ty v)) → Ty v → Ty v
+spliceRecord written = case _ of
+  TRecord more → TRecord (recordRow (written <> more.fields) more.tail)
+  TVar variable → TRecord (recordRow written (Just variable))
+  _ → TRecord (recordRow written Nothing)
 
 substituteLabel ∷ ∀ v w. Substitution v w → Label (Ty v) → Label (Ty w)
 substituteLabel substitution (Label effect arguments mark) =
@@ -206,3 +232,4 @@ headOf = case _ of
   TUnit → UnitHead
   THandler _ _ → HandlerHead
   TText → TextHead
+  TRecord _ → RecordHead

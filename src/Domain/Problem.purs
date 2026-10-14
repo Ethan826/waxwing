@@ -2,6 +2,7 @@ module Domain.Problem where
 
 import Prelude (class Eq)
 import Data.Maybe (Maybe)
+import Data.Tuple (Tuple)
 
 -- What went wrong, as data. Features never write diagnostic text; Format
 -- renders it, so a change of surface syntax changes only Format.
@@ -18,6 +19,8 @@ data TypeName
   | AppliedName String (Array TypeName)
   | VariableName String
   | HoleName
+  -- Fields sorted by label, and the tail's name (`...r`), if it has one.
+  | RecordName (Array (Tuple String TypeName)) (Maybe String)
   | FunctionName TypeName (Maybe String) TypeName
 
 derive instance eqTypeName ∷ Eq TypeName
@@ -54,6 +57,7 @@ data DuplicateKind
   | DuplicateTypeParameter
   | DuplicateEffect
   | DuplicateOperation
+  | DuplicateField
 
 data EntryKind
   = MissingEntry
@@ -128,6 +132,10 @@ data Problem
   | UnhandledEffect String
   | MustBePure String
   | RowSort Boolean
+  -- R001: a row variable used at both sorts; its name. The first use
+  -- fixed the sort named (record row, or effect row).
+  | RecordRowAsEffect String
+  | EffectRowAsRecord String
   | NotPrintable TypeName
   | DeferMayFail String
   | DeferMayPerform String

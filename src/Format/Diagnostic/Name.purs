@@ -5,6 +5,7 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (joinWith)
+import Data.Tuple (Tuple(..))
 import Domain.Problem (TypeName(..))
 
 typeName ∷ TypeName → String
@@ -17,7 +18,17 @@ typeName = case _ of
   AppliedName name arguments → name <> listed (map typeName arguments)
   VariableName name → name
   HoleName → "_"
+  RecordName fields tail → recordName fields tail
   arrow@(FunctionName _ _ _) → arrowName arrow
+
+-- `{ a: Int, b: Bool, ...r }`; the fields arrive sorted by label.
+recordName ∷ Array (Tuple String TypeName) → Maybe String → String
+recordName fields tail =
+  if Array.null items then "{}" else "{ " <> joinWith ", " items <> " }"
+  where
+  items = map field fields <> maybe [] tailItem tail
+  field (Tuple label ty) = label <> ": " <> typeName ty
+  tailItem name = [ "..." <> name ]
 
 -- Right-associative: `(Int -> Int) -> List(Int) -> List(Int)`, a parameter
 -- that is itself an arrow parenthesized. An arrow's row, when it has one to

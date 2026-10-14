@@ -21,7 +21,8 @@ import Domain.Checked.Internal (Open)
 import Domain.Problem (Problem(..))
 import Domain.Resolved (CtorId(..), CtorInfo, TypeId(..), TypeInfo)
 import Domain.Row (Label(..), closedRow, uniformRows)
-import Domain.Type (Ty(..), VarId(..))
+import Domain.Type (Ty(..), VarId(..), spliceRecord)
+import Domain.Type.Record (recordRow)
 import Domain.Type.Parts (arrows, children, ground, spine)
 import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
 
@@ -90,7 +91,16 @@ substitute arguments = case _ of
     (substitute arguments)
     inner
   arrow@(TFun _ _ _) → substituteSpine (spine arrow)
+  TRecord row → traverse recordField row.fields >>= substituteTail row.tail
   where
+  recordField (Tuple label ty) = Tuple label <$> substitute arguments ty
+  substituteTail tail written = maybe' (closedRecord written)
+    (tailImage written)
+    tail
+  closedRecord written _ = Right (TRecord (recordRow written Nothing))
+  tailImage written (VarId index) = maybe' missing
+    (Right <<< spliceRecord written)
+    (Array.index arguments index)
   rowless id inner = TData id inner []
   handler effect mark inner = THandler (Label effect inner mark)
     (uniformRows closedRow)
@@ -122,10 +132,15 @@ spelling = case _ of
     <> ")"
   arrow@(TFun _ _ _) → "f(" <> joinWith "," (map spelling (children arrow))
     <> ")"
+  TRecord row → "r(" <> joinWith "," (map fieldSpelling row.fields)
+    <> maybe' (const "") (const ",..") row.tail
+    <> ")"
   handler@(THandler _ _) → "h("
     <> joinWith ","
       (map spelling (children handler))
     <> ")"
+  where
+  fieldSpelling (Tuple label ty) = label <> ":" <> spelling ty
 
 closedKey ∷ Array CtorInfo → Tuple Int TypeInfo → Lookup (Maybe Key)
 closedKey ctors (Tuple index info) = judge <$> traverse (ctorInfo ctors)
@@ -214,6 +229,9 @@ field numbers = case _ of
   TVar _ → Right TInt
   TFun _ _ _ → Right TInt
   THandler _ _ → Right TInt
+  -- No record value exists before literals (R001 Task 5); the inhabited
+  -- check of a record by its fields comes with them.
+  TRecord _ → Right TInt
   found@(TData _ _ _) → maybe' unexpanded (Right <<< applied)
     (Map.lookup (spelling found) numbers)
   where

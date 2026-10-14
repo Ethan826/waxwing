@@ -4,11 +4,17 @@ module Domain.Resolved
   ) where
 
 import Prelude
-import Data.Maybe (Maybe)
-import Domain.Syntax (Operator, Sort, Span, TypeRef)
+import Data.Array as Array
+import Data.Maybe (Maybe, fromMaybe)
+import Domain.Syntax (Operator, Sort(..), Span, TypeRef)
 import Domain.Ids (EffectId)
 import Domain.Type (Ty(..), TyRow, TypeId(..), VarId(..))
 import Domain.Row (Label)
+
+-- The sort of a variable of a declaration, from its `sorts`: type, record
+-- row (the rest of a record) or effect row.
+sortOf ∷ Array Sort → VarId → Sort
+sortOf sorts (VarId index) = fromMaybe TypeSort (Array.index sorts index)
 
 newtype FunctionId = FunctionId Int
 newtype LocalId = LocalId Int

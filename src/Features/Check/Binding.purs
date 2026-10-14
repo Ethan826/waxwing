@@ -17,6 +17,7 @@ import Data.Maybe (Maybe(..), maybe, maybe')
 import Domain.Row (Label(..), Row(..), handlerRowList, isPure)
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
+import Domain.Type.Record (fieldTypes)
 import Features.Check.Aliases (aliased)
 import Features.Check.Search (Stack(..))
 import Features.Check.Subst
@@ -61,6 +62,7 @@ exceedsLimit subst ty = tailRec step (Push { ty, level: 1 } Bottom)
     THandler (Label _ arguments _) rows → foldl (pushRow (level + 1))
       (foldl (pushAt (level + 1)) rest arguments)
       (handlerRowList rows)
+    TRecord row → foldl (pushAt (level + 1)) rest (fieldTypes row)
     _ → rest
   pushRow level rest row
     | isPure row = rest

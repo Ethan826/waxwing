@@ -6,9 +6,10 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Domain.Problem (Problem(..))
+import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
+import Domain.Type.Record (recordRow)
 import Features.Resolve.Row (resolveRow)
 
 -- A declared type applied to arguments, given the resolver of a type
@@ -29,7 +30,7 @@ appliedTo effects variables ambient resolved span arguments index info
       (Syntax.problemAt (TypeArguments info.name) span)
   | otherwise =
       do
-        typeArguments ← traverse resolveTypeArgument typeArgumentsSyntax
+        typeArguments ← traverse resolveTypeSlot typeSlots
         rowArguments ← traverse resolveRowArgument rowArgumentsSyntax
         pure
           (Resolved.TData (Resolved.TypeId index) typeArguments rowArguments)
@@ -38,12 +39,30 @@ appliedTo effects variables ambient resolved span arguments index info
         (Array.zip info.sourceSorts arguments)
       matching sort (Tuple foundSort argument) =
         if foundSort == sort then Just argument else Nothing
-      typeArgumentsSyntax = ordered Syntax.TypeSort
+      -- A record row parameter takes its argument among the type arguments.
+      typeSlots = Array.filter typeSlot
+        (Array.zip info.sourceSorts arguments)
+      typeSlot (Tuple sort _) = sort /= Syntax.RowSort
       rowArgumentsSyntax = ordered Syntax.RowSort
-      resolveTypeArgument = typeArgument
+      resolveTypeSlot (Tuple sort argument) =
+        if sort == Syntax.RecordSort then recordArgument argument
+        else typeArgument argument
       typeArgument = case _ of
         Syntax.TypeArgument reference → resolved reference
         Syntax.RowArgument row → sortError false (rowSpan row)
+      recordArgument = case _ of
+        Syntax.RowArgument
+          (Syntax.RowRef tailSpan [] (Just (Syntax.Spread tailName))) →
+          maybe' (unboundTail tailName tailSpan)
+            (pure <<< recordTail)
+            (Array.elemIndex tailName variables)
+        Syntax.RowArgument row → sortError false (rowSpan row)
+        Syntax.TypeArgument reference → sortError true
+          (Syntax.typeRefSpan reference)
+      recordTail found = Resolved.TRecord
+        (recordRow [] (Just (Resolved.VarId found)))
+      unboundTail tailName tailSpan _ = Left
+        (Syntax.problemAt (Unbound UnboundTypeVariable tailName) tailSpan)
       resolveRowArgument = rowArgument
       rowArgument = case _ of
         Syntax.RowArgument row → resolveRow effects variables ambient

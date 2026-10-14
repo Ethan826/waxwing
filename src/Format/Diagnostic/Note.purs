@@ -114,6 +114,7 @@ noteText = case _ of
   EffectDeclaredHere → "declared here"
   FirstImportedHere → "first imported here"
   FirstBoundHere → "first bound here"
+  FirstWrittenHere → "first written here"
   InnermostHere label → "the innermost " <> shortLabel label <> " is here"
   ContinuesInto _ _ _ → ""
   ClausesReach label → Mark.clausesReach (shortLabel label)

@@ -5,14 +5,17 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
+import Data.Foldable (traverse_)
 import Data.Tuple (Tuple(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
 import Domain.Row (uniformRows)
+import Domain.Type.Record (recordRow)
 import Features.Resolve.Marks (arrowRows)
 import Features.Resolve.Row (label, resolveRow)
 import Features.Resolve.HandlerType as HandlerType
+import Features.Resolve.RecordFields (repeatedField, repeatedLabel)
 import Features.Resolve.TypeArguments (appliedTo)
 
 -- `variables` are those in scope: `VarId i` is the i-th. A declared type
@@ -49,6 +52,7 @@ resolveTypeWith types effects variables ambient = resolved
     Syntax.THandlerRef _ reference row → Resolved.THandler
       <$> label effects resolved reference
       <*> (uniformRows <$> resolveRow effects variables ambient resolved row)
+    Syntax.RecordRef _ fields tail → record fields tail
     arrow@(Syntax.FunRef _ _ _ _) → spine arrow
   spine arrow = do
     parameters ← traverse resolved (Syntax.typeRefSpine arrow).parameters
@@ -59,6 +63,18 @@ resolveTypeWith types effects variables ambient = resolved
   stage pair result = Resolved.TFun (first pair) (second pair) result
   first (Tuple value _) = value
   second (Tuple _ value) = value
+  -- Fields are checked for a repeated label before any is resolved.
+  record fields tail = do
+    traverse_ repeatedField (repeatedLabel fields)
+    written ← traverse recordField fields
+    rest ← traverse recordTail tail
+    pure (Resolved.TRecord (recordRow written rest))
+  recordField field = Tuple field.name <$> resolved field.ty
+  recordTail tail = maybe' (unboundTail tail)
+    (pure <<< Resolved.VarId)
+    (Array.elemIndex tail.name variables)
+  unboundTail tail _ = Left
+    (Syntax.problemAt (Unbound UnboundTypeVariable tail.name) tail.span)
   variable index = pure (Resolved.TVar (Resolved.VarId index))
   named name info = info.name == name
   missingType span name arguments _

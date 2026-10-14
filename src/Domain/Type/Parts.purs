@@ -10,6 +10,7 @@ module Domain.Type.Parts
   , rowArguments
   , typeHead
   , mentionsTypeVariable
+  , mapRecord
   ) where
 
 import Prelude
@@ -17,6 +18,7 @@ import Prim hiding (Row)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..), snd)
 import Domain.Row
   ( HandlerRows
   , Label(..)
@@ -25,7 +27,15 @@ import Domain.Row
   , closedRow
   , handlerRowList
   )
-import Domain.Type (Stages, Ty(..), TyRow, foldStages, stagesThrough)
+import Domain.Type.Record (RecordRow, mapFields, recordRow)
+import Domain.Type
+  ( Stages
+  , Ty(..)
+  , TyRow
+  , foldStages
+  , spliceRecord
+  , stagesThrough
+  )
 
 -- An arrow's parameters, in order, and its final result, which is not an
 -- arrow. A type that is not an arrow is its own result.
@@ -74,6 +84,7 @@ children ∷ ∀ v. Ty v → Array (Ty v)
 children = case _ of
   TData _ arguments _ → arguments
   THandler (Label _ arguments _) _ → arguments
+  TRecord row → map snd row.fields
   arrow@(TFun _ _ _) → spineParts (spine arrow)
   _ → []
   where
@@ -102,10 +113,12 @@ rowArguments (Row labels _) = Array.concatMap labelArguments labels
   labelArguments (Label _ arguments _) = arguments
 
 -- A type variable anywhere, inside rows' labels too; row tails are not
--- type variables. Recurses only where `children` and `rowsOf` do.
+-- type variables. An open record's tail is one: its image is a record type
+-- (Domain.Type.Record). Recurses only where `children` and `rowsOf` do.
 mentionsTypeVariable ∷ ∀ v. Ty v → Boolean
 mentionsTypeVariable = case _ of
   TVar _ → true
+  TRecord { tail: Just _ } → true
   ty → Array.any mentionsTypeVariable (children ty)
     || Array.any rowMentions (rowsOf ty)
   where
@@ -131,6 +144,7 @@ groundWith rowGround = case _ of
   TData id arguments rows → TData id <$> traverse recur arguments
     <*> traverse rowGround rows
   TVar _ → Nothing
+  TRecord row → groundRecord recur row
   THandler (Label effect arguments mark) rows → THandler
     <$> (Label effect <$> traverse recur arguments <*> pure mark)
     <*> groundRows rowGround rows
@@ -138,6 +152,18 @@ groundWith rowGround = case _ of
     (stagesThrough identity arrow)
   where
   recur ty = groundWith rowGround ty
+
+-- Ground when closed and every field is: an open tail is a variable.
+groundRecord
+  ∷ ∀ v
+  . (Ty v → Maybe (Ty Void))
+  → RecordRow (Ty v) v
+  → Maybe (Ty Void)
+groundRecord typeGround row = maybe' closedFields (const Nothing) row.tail
+  where
+  closedFields _ = TRecord <<< closedRecord <$> traverse field row.fields
+  closedRecord fields = { fields, tail: Nothing }
+  field (Tuple name ty) = Tuple name <$> typeGround ty
 
 groundRows
   ∷ ∀ v
@@ -177,3 +203,12 @@ groundLabel ∷ ∀ v. Label (Ty v) → Maybe (Label (Ty Void))
 groundLabel (Label effect arguments mark) = Label effect
   <$> traverse ground arguments
   <*> pure mark
+
+-- A record with `change` applied to each field type and to the tail
+-- variable standing as a type, whose image supplies the rest of the row.
+mapRecord ∷ ∀ v. (Ty v → Ty v) → RecordRow (Ty v) v → Ty v
+mapRecord change row = maybe' closed open row.tail
+  where
+  written = (mapFields change row).fields
+  closed _ = TRecord (recordRow written Nothing)
+  open variable = spliceRecord written (change (TVar variable))

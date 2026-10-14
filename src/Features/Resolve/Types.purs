@@ -11,6 +11,7 @@ import Data.Traversable (traverse)
 import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
 import Features.Resolve.Marks (markVariableRefs, refuseMarkVariables)
+import Features.Resolve.Sorts (settleDeclarations)
 import Features.Resolve.TypeRef (resolveType, resolveTypeWith)
 import Features.Resolve.TypeValidation as TypeValidation
 import Features.Resolve.Variables (uniqueTypeParameters)
@@ -32,14 +33,15 @@ typeTable program = do
   TypeValidation.uniqueCtors program.functions program.types
   TypeValidation.uniqueFunctions program.functions
   uniqueTypeParameters program.types
-  ctors ← traverse (resolveCtor types effects) owned
+  declarations ← settleDeclarations program.types
+  let
+    types = Array.zipWith typeInfo (firstCtors declarations) declarations
+  ctors ← traverse (resolveCtor types effects) (ownedCtors declarations)
   pure { types, ctors }
   where
   effects = map summary program.effects
   summary effect =
     { name: effect.name, arity: Array.length effect.parameters }
-  owned = ownedCtors program.types
-  types = Array.zipWith typeInfo (firstCtors program.types) program.types
 
 ownedCtors ∷ Array Syntax.TypeDecl → Array Owned
 ownedCtors types = Array.mapWithIndex numbered
@@ -51,8 +53,6 @@ ownedCtors types = Array.mapWithIndex numbered
   name parameter = parameter.name
   parameterNames parameters = map name (Array.filter isType parameters)
     <> map name (Array.filter isRow parameters)
-  isType parameter = parameter.sort == Syntax.TypeSort
-  isRow parameter = parameter.sort == Syntax.RowSort
   withOwner owner parameters decl = { owner, parameters, decl }
   numbered index entry =
     { id: Resolved.CtorId index
@@ -77,11 +77,8 @@ typeInfo first declaration =
   , rowParameters: map parameterName (rowParameters declaration.parameters)
   , variables: map parameterName (typeParameters declaration.parameters)
       <> map parameterName (rowParameters declaration.parameters)
-  , sorts:
-      Array.replicate (Array.length (typeParameters declaration.parameters))
-        Syntax.TypeSort <> Array.replicate
-        (Array.length (rowParameters declaration.parameters))
-        Syntax.RowSort
+  , sorts: map parameterSort (typeParameters declaration.parameters)
+      <> map parameterSort (rowParameters declaration.parameters)
   , sourceSorts: map parameterSort declaration.parameters
   , ctors: Array.mapWithIndex ctorId declaration.ctors
   , span: declaration.span
@@ -89,10 +86,18 @@ typeInfo first declaration =
   where
   ctorId position _ = Resolved.CtorId (first + position)
   parameterName parameter = parameter.name
-  typeParameters = Array.filter (hasSort Syntax.TypeSort)
-  rowParameters = Array.filter (hasSort Syntax.RowSort)
-  hasSort sort parameter = parameter.sort == sort
+  typeParameters = Array.filter isType
+  rowParameters = Array.filter isRow
   parameterSort parameter = parameter.sort
+
+-- A record row parameter stands for the rest of a record type, so it is
+-- passed and numbered with the type parameters, in declaration order; only
+-- effect rows are row parameters (R001 design §2).
+isType ∷ Syntax.TypeParameter → Boolean
+isType parameter = parameter.sort /= Syntax.RowSort
+
+isRow ∷ Syntax.TypeParameter → Boolean
+isRow parameter = parameter.sort == Syntax.RowSort
 
 resolveCtor
   ∷ Array Resolved.TypeInfo

@@ -107,7 +107,7 @@ resolveSignature
   → Syntax.FunctionDecl
   → Either Syntax.Diagnostic Signature
 resolveSignature types effects function = do
-  occurrences ← sortedVariables references function.row
+  occurrences ← sortedVariables types references function.row
   let written = Array.sortWith sort occurrences
   let
     variables = map name written <> [ "" ]

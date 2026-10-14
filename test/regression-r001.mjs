@@ -35,5 +35,33 @@ export const r001Probes = {
       }
     }
     console.log(`${context.probe} regression detects the defect`);
+  },
+  // `{ a, b }` and `{ b, a }` are one type: the result unifies with the
+  // parameter. (The type variable keeps `f` out of the specializer.)
+  'r001-record-order': context => {
+    const found = outcome(context, 'fn f(x: { a: Int, b: Bool }, y: c): '
+      + '{ b: Bool, a: Int } = x; fn main(): Int = 0;');
+    if (found !== 'ran') {
+      fail(`label order distinguished two records: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // A row passed to a record parameter is a record row, so `with ...e` on
+  // the same variable is the row-sort error.
+  'r001-row-sort-propagation': context => {
+    const found = outcome(context, 'type Box(...r) = Box({ a: Int, ...r }); '
+      + 'fn f(x: Box(...e)): Unit with ...e = (); fn main(): Int = 0;');
+    if (found !== 'E_TYPE e is a record row, not an effect row') {
+      fail(`row sort propagation lost: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  'r001-duplicate-field': context => {
+    const found = outcome(context, 'fn f(x: { name: Int, name: Bool }, '
+      + 'y: c): Int = 1; fn main(): Int = 0;');
+    if (found !== 'E_DUPLICATE Duplicate field name') {
+      fail(`duplicate field accepted: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
   }
 };

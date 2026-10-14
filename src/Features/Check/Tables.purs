@@ -1,6 +1,5 @@
 module Features.Check.Tables (Lookup, typeInfo, ctorInfo, ownerType) where
 
-import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
@@ -13,7 +12,9 @@ import Domain.Resolved
   , TypeInfo
   , VarId(..)
   )
+import Data.Tuple (Tuple(..))
 import Domain.Row (Row(..))
+import Domain.Type.Record (recordRow)
 import Domain.Syntax as Syntax
 
 -- Ids come from the checker's own tables, so a failed lookup is a compiler
@@ -37,12 +38,17 @@ ctorInfo ctors (CtorId index) = maybe' missing Right
 -- order. Construction and patterns both instantiate it, so a row-
 -- parameterized type is the same type in both.
 ownerType ∷ TypeId → TypeInfo → Ty VarId
-ownerType owner info = TData owner (map variable (positions Syntax.TypeSort))
-  (map row (positions Syntax.RowSort))
+ownerType owner info = TData owner
+  (Array.mapMaybe typeArgument indexed)
+  (Array.mapMaybe rowArgument indexed)
   where
-  variable position = TVar (VarId position)
-  row position = Row [] (Just (VarId position))
-  positions sort = Array.mapMaybe identity
-    (Array.mapWithIndex (select sort) info.sorts)
-  select sort position sortValue =
-    if sortValue == sort then Just position else Nothing
+  indexed = Array.mapWithIndex Tuple info.sorts
+  -- A record row parameter is passed as a record: the rest of one.
+  typeArgument (Tuple position sort) = case sort of
+    Syntax.TypeSort → Just (TVar (VarId position))
+    Syntax.RecordSort → Just
+      (TRecord (recordRow [] (Just (VarId position))))
+    Syntax.RowSort → Nothing
+  rowArgument (Tuple position sort) = case sort of
+    Syntax.RowSort → Just (Row [] (Just (VarId position)))
+    _ → Nothing

@@ -34,6 +34,7 @@ import Domain.Type
   , stagesThrough
   )
 import Domain.Type as Type
+import Domain.Type.Parts (mapRecord)
 import Features.Check.Aliases (Aliases, jumped, noAliases)
 import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
@@ -181,6 +182,7 @@ resolve subst ty = case walk subst ty of
   THandler label rows → THandler (resolveLabel subst label)
     (mapHandlerRows (resolveRow subst) rows)
   arrow@(TFun _ _ _) → resolvedStages (stagesThrough (walk subst) arrow)
+  TRecord row → mapRecord resolved row
   settled → settled
   where
   resolved argument = resolve subst argument

@@ -60,6 +60,8 @@ candidates tables ty = case ty of
   TVar _ → Right []
   TFun _ _ _ → Right []
   THandler _ _ → Right []
+  -- Abstract too: record patterns are a later tranche (R001 design §1).
+  TRecord _ → Right []
 
 -- The declared constructors whose expanded counterparts are inhabited.
 applied ∷ Signature → TypeId → Ty Open → Lookup (Array Head)

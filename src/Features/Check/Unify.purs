@@ -142,6 +142,9 @@ unifyHeads level subst left right = case left, right of
           >>= unifyInference level leftRows rightRows
           >>= unifyClauses leftRows rightRows
   TFun _ _ _, TFun _ _ _ → unifyArrows level subst left right
+  -- Record rows unify in R001 Task 4; until then only equal records do.
+  TRecord _, TRecord _ | resolve subst left == resolve subst right →
+    Right subst
   _, _ → mismatch subst left right
   where
   -- Arguments pairwise, one level deeper, left to right. Folded here,

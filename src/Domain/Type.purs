@@ -13,5 +13,6 @@ import Domain.Type.Core
   , foldStages
   , stagesThrough
   , substitute
+  , spliceRecord
   , substituteRow
   )

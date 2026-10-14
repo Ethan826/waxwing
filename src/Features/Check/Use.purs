@@ -147,6 +147,7 @@ arrowRow _ = closedRow
 
 typeArgument ∷ Syntax.Sort → Ty Open → Maybe (Ty Open)
 typeArgument Syntax.TypeSort ty = Just ty
+typeArgument Syntax.RecordSort ty = Just ty
 typeArgument Syntax.RowSort _ = Nothing
 
 -- A constructor's scheme is its owner's parameters.

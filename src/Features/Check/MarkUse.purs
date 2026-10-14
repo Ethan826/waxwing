@@ -23,6 +23,7 @@ import Domain.Row
   )
 import Domain.Type (Ty(..), TyRow)
 import Domain.Type.Parts (rowsOf, spine)
+import Domain.Type.Record (traverseFields)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.Subst (empty)
 import Features.Check.Walked (bareLabel)
@@ -93,6 +94,7 @@ freshType outside = case _ of
   THandler label rows → THandler <$> freshLabel outside label
     <*> handlerRows outside rows
   arrow@(TFun _ _ _) → arrowType outside arrow
+  TRecord row → TRecord <$> traverseFields (freshType outside) row
   leaf → pure leaf
 
 -- Along the spine by a loop: parameters, then rows, then the result.

@@ -5,8 +5,7 @@ module Features.Check.TypeName
   , labelParts
   , labelText
   , markPrefix
-  , rendered
-  , listed
+  , module Features.Check.TypeText
   ) where
 
 import Prelude
@@ -24,6 +23,7 @@ import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), clauseRow)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TyRow, TypeId(..), VarId(..))
 import Domain.Type.Parts (children, rowArguments, rowsOf, spine)
+import Features.Check.TypeText (listed, rendered)
 
 type Names r =
   { types ∷ Array TypeInfo
@@ -77,9 +77,17 @@ typeNameIn shown env span = case _ of
   TVar (Hole _) → Right HoleName
   arrow@(TFun _ _ _) → arrowName shown env span arrow
   THandler label rows → handlerName label (clauseRow rows)
+  TRecord row → RecordName <$> traverse field row.fields
+    <*> traverse tailName row.tail
   where
+  field (Tuple label ty) = Tuple label <$> typeNameIn shown env span ty
+  tailName = case _ of
+    Rigid (VarId index) → maybe' unnamedTail Right
+      (Array.index env.variables index)
+    Hole _ → Right "_"
   missing _ = Left (problemAt (Internal "Invalid resolved type") span)
   unnamed _ = Left (problemAt (Internal "Unnamed type variable") span)
+  unnamedTail _ = Left (problemAt (Internal "Unnamed type variable") span)
   named arguments info
     | Array.null arguments = Right (DataName info.name)
     | otherwise = AppliedName info.name <$> traverse (typeNameIn shown env span)
@@ -205,30 +213,3 @@ effectName env span = case _ of
     (Array.index env.effects index)
   where
   invalid _ = Left (problemAt (Internal "Invalid handler effect") span)
-
-listed ∷ Array String → String
-listed parts =
-  if Array.null parts then "" else "(" <> joinWith ", " parts <> ")"
-
--- A name as plain text, for a label's elided argument; an arrow's row follows
--- the segment it is written after, as the diagnostic's own printer does.
-rendered ∷ TypeName → String
-rendered = case _ of
-  IntName → "Int"
-  BoolName → "Bool"
-  UnitName → "Unit"
-  TextName → "Text"
-  DataName name → name
-  AppliedName name arguments → name <> listed (map rendered arguments)
-  VariableName name → name
-  HoleName → "_"
-  arrow@(FunctionName _ _ _) → arrowText Nothing arrow
-
-arrowText ∷ Maybe String → TypeName → String
-arrowText pending = case _ of
-  FunctionName parameter row result → rendered parameter <> withRow pending
-    <> " -> "
-    <> arrowText row result
-  other → rendered other <> withRow pending
-  where
-  withRow = maybe "" (append " with ")

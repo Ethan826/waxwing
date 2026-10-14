@@ -22,6 +22,7 @@ import Domain.Syntax.Core
   , ErrorCode(..)
   , Expr(..)
   , FailClause
+  , FieldRef
   , FunctionDecl
   , HandlerParameterRef
   , Import
@@ -37,6 +38,7 @@ import Domain.Syntax.Core
   , Pattern(..)
   , Position
   , Program
+  , RecordTail
   , RefSpine
   , RowRef(..)
   , RowTail(..)
@@ -84,6 +86,7 @@ typeRefSpan = case _ of
   VarRef span _ → span
   NamedRef span _ _ → span
   THandlerRef span _ _ → span
+  RecordRef span _ _ → span
   FunRef span _ _ _ → span
 
 -- A written spine can be thousands of arrows long, so it is walked by

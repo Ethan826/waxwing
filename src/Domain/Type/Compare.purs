@@ -49,6 +49,7 @@ data Head
   | UnitHead
   | HandlerHead
   | TextHead
+  | RecordHead
 
 derive instance eqHead ∷ Eq Head
 derive instance ordHead ∷ Ord Head

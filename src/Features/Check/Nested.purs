@@ -4,7 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (sequence_, traverse_)
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), fromMaybe, maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
@@ -14,7 +14,9 @@ import Domain.Resolved (CtorId(..), EffectInfo)
 import Domain.Row (EffectRef(..), Label(..))
 import Domain.Syntax
   ( Diagnostic
+  , FieldRef
   , RefSpine
+  , Sort
   , Span
   , TypeArgument(..)
   , TypeRef(..)
@@ -23,8 +25,10 @@ import Domain.Syntax
   , typeRefSpan
   , typeRefSpine
   )
+import Domain.Syntax as Syntax
 import Domain.Type (Ty(..), TypeId(..), VarId)
 import Domain.Type.Parts (children)
+import Domain.Type.Record (fieldTypes)
 import Features.Check.Components (components)
 
 -- The instantiation rule over one reference graph of type and effect
@@ -42,10 +46,12 @@ nestedTypes (Checked.Program program) = do
   typeNodes ← traverse typeNode program.types
   let nodes = typeNodes <> map effectNode program.effects
   component ← components (map (edges offset) nodes)
-  traverse_ (judgeNode { component, names: map nodeName nodes, offset })
+  traverse_ (judgeNode { component, names: map nodeName nodes, slots, offset })
     (Array.mapWithIndex Tuple nodes)
   where
   offset = Array.length program.types
+  slots = map sourceSorts program.types
+  sourceSorts info = info.sourceSorts
   typeNode info = typeNamed info <$> traverse (ctorAt info.span) info.ctors
   typeNamed info entries = { name: info.name, entries }
   ctorAt span (CtorId index) = maybe' (invalid span) (Right <<< ctorEntry)
@@ -69,7 +75,13 @@ type Node = { name ∷ String, entries ∷ Array Entry }
 type Entry = { span ∷ Span, types ∷ Array (Ty VarId), syntax ∷ Array TypeRef }
 
 -- Types are nodes 0 to n - 1, effects n onwards (`offset` is n).
-type Graph = { component ∷ Array Int, names ∷ Array String, offset ∷ Int }
+-- `slots`: the sort of each parameter of each type, as written.
+type Graph =
+  { component ∷ Array Int
+  , names ∷ Array String
+  , slots ∷ Array (Array Sort)
+  , offset ∷ Int
+  }
 
 -- An operation's parameter types, then its result.
 effectNode ∷ EffectInfo → Node
@@ -124,8 +136,8 @@ judgeField graph inside ty syntax = case ty, syntax of
   TData (TypeId index) arguments _, NamedRef span _ references → reference
     span
     index
-    arguments
-    (Array.mapMaybe typeArgument references)
+    (typed (slotsOf index) arguments)
+    (typeReferences (slotsOf index) references)
   TData _ _ _, _ → Left (mismatch (typeRefSpan syntax))
   THandler label _, _ → maybe' (const (Left (mismatch (typeRefSpan syntax))))
     (handler label)
@@ -134,6 +146,10 @@ judgeField graph inside ty syntax = case ty, syntax of
     (spineParts (typeRefSpine syntax))
     recur
   TFun _ _ _, _ → Left (mismatch (typeRefSpan syntax))
+  TRecord row, RecordRef span fields _ → paired span (fieldTypes row)
+    (writtenTypes fields)
+    recur
+  TRecord _, _ → Left (mismatch (typeRefSpan syntax))
   _, _ → Right unit
   where
   recur = judgeField graph inside
@@ -145,6 +161,7 @@ judgeField graph inside ty syntax = case ty, syntax of
     _ → paired written.span arguments written.arguments recur
   reference span index arguments references = offending span index arguments
     *> paired span arguments references recur
+  slotsOf index = fromMaybe [] (Array.index graph.slots index)
   offending span index arguments
     | inside index && not (Array.all (admissible always) arguments) =
         maybe' (missing span) (nested span) (Array.index graph.names index)
@@ -152,9 +169,33 @@ judgeField graph inside ty syntax = case ty, syntax of
   nested span name = Left (problemAt (NestedDatatype name) span)
   missing span _ = Left (problemAt (Internal "Invalid type id") span)
   always _ = true
-  typeArgument = case _ of
-    TypeArgument foundType → Just foundType
-    RowArgument _ → Nothing
+
+-- A declared type's arguments that are types, each beside its source: an
+-- effect row or a record row stands for no type to judge. The resolved
+-- arguments run type group first (`sourceSorts` in declaration order, the
+-- row parameters left out).
+typed ∷ ∀ v. Array Sort → Array (Ty v) → Array (Ty v)
+typed sorts arguments = Array.mapMaybe typeSlot
+  (Array.zip (Array.filter rowFree sorts) arguments)
+  where
+  rowFree sort = sort /= Syntax.RowSort
+  typeSlot (Tuple sort ty) =
+    if sort == Syntax.TypeSort then Just ty else Nothing
+
+typeReferences ∷ Array Sort → Array TypeArgument → Array TypeRef
+typeReferences sorts references = Array.mapMaybe typeSlot
+  (Array.zip sorts references)
+  where
+  typeSlot (Tuple sort argument) = case sort, argument of
+    Syntax.TypeSort, TypeArgument found → Just found
+    _, _ → Nothing
+
+-- The written field types in label order, as the resolved row keeps them.
+writtenTypes ∷ Array FieldRef → Array TypeRef
+writtenTypes fields = map fieldType (Array.sortWith fieldName fields)
+  where
+  fieldType field = field.ty
+  fieldName field = field.name
 
 -- Resolution keeps each field's source beside it, argument for argument;
 -- a disagreement is a compiler bug.

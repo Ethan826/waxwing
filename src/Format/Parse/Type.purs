@@ -16,10 +16,12 @@ import Domain.Syntax
   , TypeArgument(..)
   , TypeRef(..)
   , problemAt
+  , typeRefSpan
   )
 import Format.Parse.Chain (Segment, combined, unexpectedRow)
 import Format.Parse.Row (markedOr, rowArgument, rowRef)
 import Format.Parse.HandlerType as HandlerType
+import Format.Parse.RecordType as RecordType
 import Format.Lex (Token, isName, isUpper)
 import Format.Parse.Grammar
   ( Parser
@@ -29,6 +31,7 @@ import Format.Parse.Grammar
   , expect
   , failWith
   , grouped
+  , ifSecond
   , nested
   , on
   , onWhen
@@ -71,6 +74,7 @@ operand inner = dispatch
   , on "Unit" (UnitRef <$> tokenSpan)
   , on "Text" (TextRef <$> tokenSpan)
   , on "Handler" (HandlerType.operand (defer rowed) inner)
+  , on "{" (ifSecond (eq "}") (refine unknown token) (RecordType.operand inner))
   , onWhen upperText (spanned appliedOf (parts <$> upperName <*> arguments))
   , onWhen lowerText (variable <$> token)
   ]
@@ -150,17 +154,6 @@ addFirst span name arguments (RowRef rest labels tail) = RowRef
       labels
   )
   tail
-
-typeRefSpan ∷ TypeRef → Span
-typeRefSpan = case _ of
-  IntRef span → span
-  BoolRef span → span
-  UnitRef span → span
-  TextRef span → span
-  VarRef span _ → span
-  NamedRef span _ _ → span
-  FunRef span _ _ _ → span
-  THandlerRef span _ _ → span
 
 unknown ∷ Token → Either Diagnostic TypeRef
 unknown found = Left (problemAt (Syntax "Expected a type") found.span)

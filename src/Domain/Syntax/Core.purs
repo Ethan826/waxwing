@@ -79,11 +79,18 @@ data TypeRef
   | VarRef Span String
   | NamedRef Span String (Array TypeArgument)
   | THandlerRef Span LabelRef (Maybe RowRef)
+  | RecordRef Span (Array FieldRef) (Maybe RecordTail)
   | FunRef Span TypeRef (Maybe RowRef) TypeRef
+
+-- `{ a: A, ...r }`: each field spans its label, the tail spans `...r`.
+type FieldRef = { name ∷ String, ty ∷ TypeRef, span ∷ Span }
+type RecordTail = { name ∷ String, span ∷ Span }
 
 data TypeArgument = TypeArgument TypeRef | RowArgument RowRef
 
-data Sort = TypeSort | RowSort
+-- `RecordSort` is a row variable that stands for the rest of a record
+-- (R001); the parser writes only the first two, resolution finds the third.
+data Sort = TypeSort | RecordSort | RowSort
 
 derive instance eqSort ∷ Eq Sort
 derive instance ordSort ∷ Ord Sort
