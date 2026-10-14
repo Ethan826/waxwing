@@ -68,11 +68,15 @@ data Hint
   = MissingArguments String Int
   | TrailingSemicolon
   -- An unbound bare operation name (FX020): the name and the effects that
-  -- declare it, built-ins first, then in declaration order. Never chosen.
-  | QualifyOperation String (Array String)
+  -- declare it, built-ins first, then in declaration order, each with its
+  -- parameter names (FX022). Never chosen.
+  | QualifyOperation String (Array Candidate)
   -- A callback row that lacks a label (FX017, FX018): the callback's name,
   -- when it has one, and the row as `with` should write it.
   | CallbackRow CallbackKind (Maybe String) String
+
+-- An effect that declares an operation, and its parameters as written.
+type Candidate = { name ∷ String, parameters ∷ Array String }
 
 -- Where a callback's row falls short: of its caller's signature row
 -- (FX017), of the row at a call under `with` or `handle`, or of the

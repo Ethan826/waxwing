@@ -7,24 +7,26 @@ docs/plans/2026-10-13-effect-namespaces-plan.md, ADR 012
 and docs/progress.md ("FX020"). Nothing is pushed or merged. Ledger and task
 reports: .superpowers/sdd/2026-10-13-effect-namespaces-plan/.
 
-Waiting on the user:
+Update 2026-10-14: the user approved both hint decisions (the
+multi-candidate wording, and writing a parameterised effect's parameters in
+the import form, FX022, done). Merge into main is next.
+
+Decided by the user (2026-10-14):
 1. **The multi-candidate hint wording** (ruling R18, pinned in
    test/fx020-unbound.test.mjs). Two candidates, for a program declaring
    Audit before Log (declaration order): `Unbound function log; use
    Audit.log or Log.log, or import one with Audit { log } or Log { log }`;
    three or more: `A.log, B.log or C.log` and `A { log }, B { log } or C { log
-   }`. Approve or reword; a reword changes one text and its tests
-   (Format.Diagnostic.Qualify).
-2. The merge decision. Integrate into main by fast-forward or rebase only (no
-   merge commits). The branch starts at 26611c3; check main for newer
-   commits first.
+   }`. Approved as written.
+2. The merge decision (still to do). Integrate into main by fast-forward
+   or rebase only (no merge commits). The branch starts at 26611c3; check
+   main for newer commits first.
 
 Open items from FX020: FX021 (an import from an unreachable duplicate label
-silently binds the first); FX022 (the hint writes `Fail { fail }`, which is
-not valid syntax, and omits a parameterised effect's arguments); the INF001
-requirement (a way to alias or import without writing the whole inferred row);
-`print` and `show` stay compiler-provided until C001; G002 margin is 259
-against the limit 256; G006 stack flake; T007 timing figures.
+silently binds the first); the INF001 requirement (a way to alias or
+import without writing the whole inferred row); `print` and `show` stay
+compiler-provided until C001; G002 margin is 259 against the limit 256;
+G006 stack flake; T007 timing figures.
 
 Order after the merge: phase 2 of the 80-column sweep, IDE001 rebased onto
 main, then R001 (records; `r.field` coexists with `Effect.op` because
@@ -53,9 +55,9 @@ Order from here:
    The width.mjs argv guard and the fence toggle for mixed fence characters
    are phase-2 items.
 3. IDE001 waits to be rebased onto main after Text merges.
-4. FX020 (effect operation namespaces; spec awaiting the user's review
-   (since implemented; see top)) is
-   next after that, then R001.
+4. FX020 (effect operation namespaces; at the time, the spec awaited the
+   user's review) was next after that, then R001. FX020 has since been
+   implemented; see the top section.
 
 Open items from Text: `show` is compiler-provided until C001 (ADR 011);
 user Console handlers are still uninhabited (BACKLOG D001); Text operations

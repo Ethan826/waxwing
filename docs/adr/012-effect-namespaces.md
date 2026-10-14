@@ -5,8 +5,8 @@ with the controller-added Task 2b and Task 5 split into 5a and 5b); not
 merged. Binding spec: docs/plans/2026-10-13-effect-namespaces-design.md,
 with its plan-time amendments; plan
 docs/plans/2026-10-13-effect-namespaces-plan.md; evidence docs/progress.md
-("FX020"). Builds on ADR 010 (effects) and ADR 011 (Text). One wording is
-still pending the user's review (see "The unbound-name hint").
+("FX020"). Builds on ADR 010 (effects) and ADR 011 (Text). The hint wordings
+were approved by the user on 2026-10-14 (see "The unbound-name hint").
 
 ## Context
 
@@ -142,7 +142,7 @@ hint that only lists fixes (Features.Resolve.Unbound,
 Format.Diagnostic.Qualify):
 - one effect declares the name (approved): `Unbound function log; use
   Log.log, or import it with Log { log }`;
-- several (R18, **pending the user's approval or rewording**, pinned in
+- several (R18, approved by the user 2026-10-14, pinned in
   test/fx020-unbound.test.mjs, for a program declaring Audit before Log):
   `Unbound function log; use Audit.log or Log.log, or import one with
   Audit { log } or Log { log }`; three or
@@ -151,9 +151,14 @@ Format.Diagnostic.Qualify):
   in declaration order; the hint is not narrowed by the function's row
   (resolution never depends on rows), and it offers the import form even
   inside lambdas (the import goes on the enclosing function's row);
-- no effect declares the name: no hint. For a parameterised effect the hint
-  omits the arguments (`Box { put }`), so for `Fail` it writes `Fail { fail
-  }`, which is not valid syntax as written (`Fail(E) { fail }` is).
+- no effect declares the name: no hint;
+- a parameterised effect is written in the import form with its parameters
+  (FX022, approved 2026-10-14): a user effect with its declared parameter
+  names in order (`effect Box(t)` gives `import it with Box(t) { put }`,
+  `Pair(a, b) { … }`), the built-in `Fail` as `Fail(E) { fail }`. The
+  qualified part stays bare (`use Box.put`, `use Fail.fail`), and effects
+  without parameters are unchanged. Several candidates: `… or import one
+  with Fail(E) { fail } or Log { fail }`.
 
 ### Duplicated labels in a row bind the reachable one (R11)
 

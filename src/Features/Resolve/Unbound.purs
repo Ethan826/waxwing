@@ -2,7 +2,7 @@ module Features.Resolve.Unbound (unboundName) where
 
 import Prelude
 import Data.Array as Array
-import Domain.Problem (Hint(..), Problem(..), UnboundKind)
+import Domain.Problem (Candidate, Hint(..), Problem(..), UnboundKind)
 import Domain.Syntax as Syntax
 import Features.Resolve.Builtin (builtinEffects)
 import Features.Resolve.Scope (Scope)
@@ -18,8 +18,12 @@ unboundName scope span kind name = Syntax.problemAt problem span
   problem
     | Array.null declaring = Unbound kind name
     | otherwise = Hinted (Unbound kind name) (QualifyOperation name declaring)
-  declaring = map _.name (Array.filter (offers name) builtinEffects)
-    <> map _.name (Array.filter (offers name) scope.effectInfos)
+  declaring = map candidate (Array.filter (offers name) builtinEffects)
+    <> map candidate (Array.filter (offers name) scope.effectInfos)
+
+candidate
+  ∷ ∀ r. { name ∷ String, parameters ∷ Array String | r } → Candidate
+candidate effect = { name: effect.name, parameters: effect.parameters }
 
 called ∷ ∀ r. String → { name ∷ String | r } → Boolean
 called wanted entry = entry.name == wanted

@@ -656,8 +656,8 @@ Learned while retargeting mutants for the fifteen new rows
    (test/regression-fx020.mjs `prints`).
 4. The unbound-name hint is not narrowed by the row, by design: resolution
    never depends on rows, so it also offers the import form inside lambdas and
-   for effects that cannot be imported; FX022 records the `Fail { fail }`
-   spelling problem.
+   for effects that cannot be imported; FX022 (done) made the import
+   form write `Fail(E) { fail }`.
 5. V8 warm-up changes the stack depth available to the first `compile` of a
    near-limit source (BACKLOG G006); paired comparisons of old and new trees
    need `node --stack-size=3000`, never a retry.

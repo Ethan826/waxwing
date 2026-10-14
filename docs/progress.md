@@ -4525,4 +4525,10 @@ G002 margin is measured; R10/R12 a family rides on the Fail node; R11 a
 duplicated label's import binds the reachable one (FX021); R13 Task 5 split;
 R14 Task 6 as one chunked dispatch; R15 one message changes; R16 stack-size
 for paired runs; R17 qualify and wrap commits are verified as a pair.
-Open: FX021, FX022, G002, G006, T007.
+Open: FX021, G002, G006, T007.
+
+FX022 (2026-10-14, user-approved wording): the unbound-name hint writes a
+parameterised effect's parameters in the import form (`Fail(E) { fail }`,
+`Box(t) { put }`, `Pair(a, b) { … }`); `use` stays bare and effects without
+parameters are unchanged. The multi-candidate hint wording was approved too.
+Report: .superpowers/sdd/2026-10-13-effect-namespaces-plan/fx022-report.md.

@@ -24,6 +24,7 @@ type BuiltinEffect =
   { name ∷ String
   , ref ∷ EffectRef
   , arity ∷ Int
+  , parameters ∷ Array String
   , operations ∷ Array { name ∷ String, declared ∷ Declared }
   }
 
@@ -32,6 +33,7 @@ builtinEffects =
   [ { name: "Console"
     , ref: ConsoleEffect
     , arity: 0
+    , parameters: []
     , operations:
         [ { name: "print"
           , declared: { operation: PrintOperation, arity: 1 }
@@ -41,6 +43,7 @@ builtinEffects =
   , { name: "Fail"
     , ref: FailEffect
     , arity: 1
+    , parameters: [ "E" ]
     , operations:
         [ { name: "fail"
           , declared: { operation: FailOperation, arity: 1 }

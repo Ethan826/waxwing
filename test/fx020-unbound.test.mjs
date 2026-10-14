@@ -31,9 +31,10 @@ test('a bare print(1) names Console.print', () => refused(
   'Unbound function print; use Console.print, '
   + 'or import it with Console { print }'));
 
-test('a bare fail(E) names Fail.fail, without arguments', () => refused(
+test('a bare fail(E) imports Fail with its argument', () => refused(
   'type E = E; fn main(): Int = fail(E);', 'fail(E)',
-  'Unbound function fail; use Fail.fail, or import it with Fail { fail }'));
+  'Unbound function fail; use Fail.fail, or import it with '
+  + 'Fail(E) { fail }'));
 
 test('a bare name used as a value gets the same hint', () => refused(
   log + 'fn main(): Unit = { let f = log; () };', 'log',
@@ -59,10 +60,22 @@ test('no effect declares the name, no hint', () => refused(
   log + 'fn main(): Unit = other(1);', 'other(1)',
   'Unbound function other'));
 
-test('a parameterised effect is written without arguments', () => refused(
+test('a parameterised effect is imported with its parameters', () => refused(
   'effect Box(t) { fn put(x: t): Unit; }; fn main(): Unit = put(1);',
   'put(1)', 'Unbound function put; use Box.put, or import it with '
-  + 'Box { put }'));
+  + 'Box(t) { put }'));
+
+test('several parameters keep their order', () => refused(
+  'effect Pair(a, b) { fn put(x: a): Unit; }; '
+  + 'fn main(): Unit = put(1);', 'put(1)',
+  'Unbound function put; use Pair.put, or import it with '
+  + 'Pair(a, b) { put }'));
+
+test('a parameterised candidate among several', () => refused(
+  'effect Log { fn fail(n: Int): Unit; }; type E = E; '
+  + 'fn main(): Int = fail(E);', 'fail(E)',
+  'Unbound function fail; use Fail.fail or Log.fail, '
+  + 'or import one with Fail(E) { fail } or Log { fail }'));
 
 test('a hint never resolves the name', () => {
   assert.ok(compile(log + 'fn main(): Unit = log(1);') instanceof Left);
