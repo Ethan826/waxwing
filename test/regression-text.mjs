@@ -37,7 +37,8 @@ const box = 'type Box = Box(Text); ';
 
 export const textProbes = {
   'text-order': prints(noisy + 'fn main(): Unit with Console = '
-    + 'Console.print("${a()}${b()}");', '1\n2\nxy\n', 'holes evaluated right to left'),
+    + 'Console.print("${a()}${b()}");', '1\n2\nxy\n', 'holes evaluated right '
+    + 'to left'),
   'text-nested-raw': prints(box + 'fn main(): Box = Box("a b\\n");',
     'Box("a b\\n")\n', 'nested Text printed raw'),
   // Two spaces close the block; the content line is indented by two tabs.

@@ -13,7 +13,8 @@ const noisy = 'fn t1(): Text with Console = { Console.print(1); "a" }; '
 const cases = [
   ['chain', main('Text', '"a" ++ "b" ++ "c"')],
   ['binds tighter', main('Bool', '"a" ++ "b" == "ab"')],
-  ['order', noisy + 'fn main(): Unit with Console = Console.print(t1() ++ t2());'],
+  ['order', noisy + 'fn main(): Unit with Console = Console.print(t1() ++ '
+    + 't2());'],
   ['empty', main('Text', '"" ++ "" ++ "x"')],
   ['parens', main('Text', '"a" ++ ("b" ++ "c")')],
   ['astral', main('Bool', '"\u{1F600}" ++ "x" == "\u{1F600}x"')],

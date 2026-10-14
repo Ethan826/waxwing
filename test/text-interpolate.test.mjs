@@ -33,7 +33,8 @@ const cases = [
     + 'fn main(): Unit with Console = '
     + '{ defer Console.print("[${t()}]"); Console.print("hi") };'],
   ['handled operation', who + 'fn main(): Unit with Console = '
-    + 'with handler Who { who() => "Ada" } { Console.print("Hi ${Who.who()}!") };'],
+    + 'with handler Who { who() => "Ada" } { '
+    + 'Console.print("Hi ${Who.who()}!") };'],
   ['failing hole stops later holes', 'type Err = Err1; '
     + 'fn t(n: Int): Text with Console = { Console.print(n); "x" }; '
     + 'fn bad(): Text with Fail(Err) = { Fail.fail(Err1); "y" }; '

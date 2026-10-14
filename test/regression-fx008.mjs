@@ -90,7 +90,8 @@ const installCount = 2_000;
 const installLinear = context => {
   const source = 'effect Log { fn log(n: Int): Unit; }; '
     + 'effect Tick { fn tick(): Unit; }; '
-    + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => '
+    + 'Console.print(n) } '
     + '{ ' + 'with handler Tick { tick() => Log.log(1) } { Tick.tick() }; '
       .repeat(installCount) + '() };';
   const found = compileWithin(context, source, installTimeoutMs);

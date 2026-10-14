@@ -44,7 +44,8 @@ const pureCallback = 'fn use(f: Int -> Int with pure): Int = f(1); '
 
 // P3: the closure's `Fail` arrives after the `defer` was checked.
 const lateFail = unit + 'fn work(): Unit with Console = handle { '
-  + 'let f = fn(x) => Fail.fail(x); let g = fn(y) => { defer f(y); () }; g(E) } '
+  + 'let f = fn(x) => Fail.fail(x); let g = fn(y) => { defer f(y); () }; g(E) '
+  + '} '
   + '{ fail(error: E) => Console.print(9) };' + main;
 
 // A and B grow each other's layouts through handler types (design §4); the

@@ -27,7 +27,8 @@ const db = 'type DbError = DbError; ';
 // there); in its own context it would count down to 0 and print 7.
 const clauseContext = log + 'fn main(): Unit with Console = '
   + 'with handler Log { log(n) => Console.print(n) } { with handler Log '
-  + '{ log(n) => match n { 0 => Console.print(7), _ => Log.log(n + -1) } } { Log.log(2) } };';
+  + '{ log(n) => match n { 0 => Console.print(7), _ => Log.log(n + -1) } } { '
+  + 'Log.log(2) } };';
 
 // The outer `handle` takes an abort raised by a clause, past the inner one.
 const abortTarget = db + log + 'fn main(): Unit with Console = handle '
@@ -36,12 +37,15 @@ const abortTarget = db + log + 'fn main(): Unit with Console = handle '
   + '{ fail(error: DbError) => Console.print(2) };';
 
 const clauseOrder = 'type Error(a) = Error(a); fn main(): Int = '
-  + 'handle Fail.fail(Error(5)) { fail(e: Error(Int)) => match e { Error(n) => n }, '
+  + 'handle Fail.fail(Error(5)) { fail(e: Error(Int)) => match e { Error(n) '
+  + '=> n }, '
   + 'fail(e: Error(Bool)) => 2 };';
 
 const cleanupContext = unit + log + 'fn main(): Unit with Console = '
-  + 'with handler Log { log(n) => Console.print(n) } { handle { { defer Log.log(1); '
-  + 'with handler Log { log(n) => Console.print(n + 100) } { Fail.fail(E) } } } '
+  + 'with handler Log { log(n) => Console.print(n) } { handle { { defer '
+  + 'Log.log(1); '
+  + 'with handler Log { log(n) => Console.print(n + 100) } { Fail.fail(E) } } '
+  + '} '
   + '{ fail(error: E) => Console.print(9) } };';
 
 // An abort with a crashing cleanup: the abort heads the report and the
