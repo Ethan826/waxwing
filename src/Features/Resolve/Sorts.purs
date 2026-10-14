@@ -174,12 +174,34 @@ sorted evidence index at parameter =
 -- fixes the sort. A record tail may not name a type parameter.
 consistent ∷ Declared → Syntax.TypeDecl → Either Syntax.Diagnostic Unit
 consistent declared declaration = traverse_ misused records
-  *> void (settledOccurrences (Array.filter rowUse uses))
+  *> void (settledOccurrences rowUses)
+  *> traverse_ settledParameter declaration.parameters
   where
   uses = ownUses declared declaration
   records = Array.filter (isSort Syntax.RecordSort) uses
   isSort sort occurrence = occurrence.sort == sort
+  rowUses = Array.sortWith offset (Array.filter rowUse uses)
   rowUse occurrence = occurrence.sort /= Syntax.TypeSort
+  offset occurrence = occurrence.span.start.offset
+  -- Every use of a row parameter must also agree with the sort the whole
+  -- program settled for it, so that a parameter given both kinds of
+  -- evidence is diagnosed at the use that disagrees (the effect default).
+  settledParameter parameter =
+    if parameter.sort == Syntax.TypeSort then Right unit
+    else maybe (Right unit) (disagree parameter)
+      (Array.find (differs parameter) rowUses)
+  differs parameter occurrence = occurrence.name == parameter.name
+    && occurrence.sort /= parameter.sort
+  disagree parameter occurrence = Left
+    ( maybe' (bare parameter occurrence) (conflict occurrence)
+        (Array.find (earlier parameter occurrence) rowUses)
+    )
+  earlier parameter occurrence other = other.name == parameter.name
+    && other.sort == parameter.sort
+    && offset other < offset occurrence
+  bare parameter occurrence _ =
+    (conflict occurrence (occurrence { sort = parameter.sort }))
+      { related = [] }
   misused occurrence = traverse_ (clash occurrence)
     (Array.find (called occurrence) declaration.parameters)
   called occurrence parameter = parameter.name == occurrence.name

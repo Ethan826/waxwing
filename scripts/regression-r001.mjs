@@ -42,5 +42,13 @@ export const r001Rows = [
     needle: 'has true && not (has false)',
     replacement: 'has true',
     probe: 'r001-effect-evidence', message: /effect evidence/
+  },
+  {
+    // A use is not checked against its parameter's settled sort, so a
+    // record tail on a parameter that also has effect evidence is accepted.
+    name: 'r001-settled-sort', file: 'src/Features/Resolve/Sorts.purs',
+    needle: '  *> traverse_ settledParameter declaration.parameters\n',
+    replacement: '',
+    probe: 'r001-settled-sort', message: /settled sort/
   }
 ];

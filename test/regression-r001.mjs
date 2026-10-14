@@ -74,5 +74,16 @@ export const r001Probes = {
       fail(`effect evidence lost: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
+  },
+  // The record tail in the callee is the row-sort error when the caller
+  // uses the same row as an effect row.
+  'r001-settled-sort': context => {
+    const found = outcome(context, 'type B(...s) = B((Unit) -> Unit with '
+      + '...s, X(...s)); type X(...p) = X({ a: Int, ...p }); '
+      + 'fn main(): Int = 0;');
+    if (found !== 'E_TYPE p is an effect row, not a record row') {
+      fail(`settled sort not enforced: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
   }
 };

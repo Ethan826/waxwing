@@ -171,3 +171,23 @@ test('a record argument makes the callee parameter record sort', () => {
     + `fn g(x: B(...e)): Unit with ...e = ();${main}`,
   'e is a record row, not an effect row', 'with ...e', '...e');
 });
+
+// The mirror: the record tail is in the callee, the effect use in the
+// caller. The callee parameter has both kinds of evidence, settles to the
+// effect default, and its record tail is the row-sort error.
+const callee = 'type X(...p) = X({ a: Int, ...p }); ';
+const caller = 'type B(...s) = B((Unit) -> Unit with ...s, X(...s)); ';
+const reverse = (name, source) => test(name, () => {
+  const diagnostic = resolveRejectedAt(`${source}${main}`, 'E_TYPE',
+    '...p', 1);
+  assert.equal(diagnostic.message, 'p is an effect row, not a record row');
+});
+
+reverse('a callee record tail meets a caller effect use',
+  `${caller}${callee}`);
+reverse('the same with the declarations swapped', `${callee}${caller}`);
+reverse('the same with the fields swapped',
+  'type B(...s) = B(X(...s), (Unit) -> Unit with ...s); ' + callee);
+reverse('the same through a chain',
+  `${caller.replace('X(...s)', 'D(...s)')}type D(...u) = D(X(...u)); `
+  + callee);
