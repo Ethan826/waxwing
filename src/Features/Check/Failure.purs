@@ -9,17 +9,19 @@ import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (Tuple(..))
+import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), openRow)
 import Domain.Syntax (Diagnostic, Span, problemAt)
-import Domain.Type (Ty(..))
+import Domain.Type (Ty(..), VarId, substitute)
 import Domain.Type.Parts (typeHead)
 import Features.Check.Context (CheckEnv, Infer, Locals)
 import Features.Check.Consume (consumeAt)
 import Features.Check.Provenance (Consumed(FailOf))
 import Features.Check.Reject (rejected)
+import Features.Check.Require (require)
 import Features.Check.Scheme (State, Threaded, opened, resolved)
 import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..), Flex, Subst(..), settleRows)
@@ -33,11 +35,14 @@ failExpression
   → Env r
   → State
   → Span
+  → Maybe (Ty VarId)
   → Resolved.Expr
   → Result
-failExpression infer env state span value = do
+failExpression infer env state span family value = do
   payload ← infer env state value
-  consumed ← consumeAt env payload.state span (FailOf env.functionName)
+  fixed ← maybe' (const (Right payload.state)) (familyFixed env payload)
+    family
+  consumed ← consumeAt env fixed span (FailOf env.functionName)
     (Row [ Label FailEffect [ Checked.typeOf payload.value ] Unmarked ] Nothing)
   pure
     { value: Checked.Expr
@@ -47,6 +52,20 @@ failExpression infer env state span value = do
         }
     , state: consumed { next = consumed.next + 1 }
     }
+
+-- An imported `Fail(E) { fail }` fixes the payload to `E`: a mismatch is
+-- the ordinary type error at the payload.
+familyFixed
+  ∷ ∀ r
+  . Env r
+  → Threaded Checked.Expr
+  → Ty VarId
+  → Either Diagnostic State
+familyFixed env payload ty = require env payload.state
+  (substitute { types: rigidType, rows: openRow <<< Rigid } ty)
+  payload.value
+  where
+  rigidType id = TVar (Rigid id)
 
 settleKeys
   ∷ ∀ r. CheckEnv r → State → Checked.Expr → Either Diagnostic Subst

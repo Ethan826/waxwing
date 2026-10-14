@@ -125,7 +125,10 @@ inferNode env state expression = case expression of
     span
     body
     clauses
-  Resolved.Fail span value → Failure.failExpression infer env state span value
+  Resolved.Fail span family value → Failure.failExpression infer env state
+    span
+    family
+    value
 
 typed ∷ State → Span → Ty Open → Checked.Node → Inferred
 typed state span ty node = pure

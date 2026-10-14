@@ -35,7 +35,7 @@ parts = case _ of
   Handler _ _ clauses → map _.body clauses
   With _ handler body → [ handler, body ]
   Handle _ body clauses → Array.cons body (map _.body clauses)
-  Fail _ payload → [ payload ]
+  Fail _ _ payload → [ payload ]
   _ → []
 
 itemBody ∷ Item → Expr

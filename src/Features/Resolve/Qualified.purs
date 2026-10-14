@@ -155,9 +155,7 @@ missing kind span qualifier member = case _ of
 
 -- `fail(e)` and `Fail.fail(e)`: one payload, and a node spanning `fail`
 -- through the payload's end, exactly as the parser's old form did. A family
--- (from `Fail(E) { fail }`) fixes the payload's type: the payload is passed
--- to a lambda annotated with it, so a wrong payload is the ordinary type
--- error at the argument.
+-- (from `Fail(E) { fail }`) rides on the node and fixes the payload's type.
 failCall
   ∷ Maybe (Ty VarId)
   → Syntax.Span
@@ -168,18 +166,8 @@ failCall family span arguments resolved = resolved >>= single
   where
   unchanged _ = span
   single = case _ of
-    [ value ] → maybe' (plain value) (typed value) family
+    [ value ] → pure (Resolved.Fail failSpan family value)
     _ → failure (Syntax.problemAt Arity span)
-  plain value _ = pure (Resolved.Fail failSpan value)
-  typed value ty = fresh >>= annotated value ty
-  annotated value ty payload = pure
-    ( Resolved.Apply failSpan
-        ( Resolved.Lambda failSpan
-            [ { local: Just payload, ty: Just ty, span } ]
-            (Resolved.Fail failSpan (Resolved.Local span payload))
-        )
-        [ value ]
-    )
   failSpan = maybe' unchanged payloadEnd (Array.head arguments)
   payloadEnd payload =
     { start: span.start, end: (Syntax.exprSpan payload).end }
@@ -196,4 +184,4 @@ failReference family span = eta <$> fresh
   where
   eta payload = Resolved.Lambda span
     [ { local: Just payload, ty: family, span } ]
-    (Resolved.Fail span (Resolved.Local span payload))
+    (Resolved.Fail span Nothing (Resolved.Local span payload))

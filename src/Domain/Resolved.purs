@@ -101,7 +101,9 @@ data Expr
   | Handler Span (Label (Ty VarId)) (Array HandlerClause)
   | With Span Expr Expr
   | Handle Span Expr (Array FailClause)
-  | Fail Span Expr
+  -- `fail(e)`; a family written by an import (`Fail(E) { fail }`) fixes
+  -- the payload type.
+  | Fail Span (Maybe (Ty VarId)) Expr
   | TextLiteral Span String
 
 type HandlerClause =
@@ -208,5 +210,5 @@ exprSpan expression = case expression of
   Handler span _ _ → span
   With span _ _ → span
   Handle span _ _ → span
-  Fail span _ → span
+  Fail span _ _ → span
   TextLiteral span _ → span
