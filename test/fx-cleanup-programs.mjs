@@ -44,13 +44,16 @@ export const cases = [
   ok, '1\n2\n3\n', ''],
   ['cleanup uses the registration context during an abort', unit + log,
     'fn main(): Unit with Console = '
-    + 'with handler Log { log(n) => Console.print(n) } { handle { { defer Log.log(1); '
-    + 'with handler Log { log(n) => Console.print(n + 100) } { Fail.fail(E) } } } '
+    + 'with handler Log { log(n) => Console.print(n) } { handle { { defer '
+    + 'Log.log(1); '
+    + 'with handler Log { log(n) => Console.print(n + 100) } { Fail.fail(E) } '
+    + '} } '
     + '{ fail(error: E) => Console.print(9) } };',
   ok, '1\n9\n', ''],
   ['crash is not caught by handle', unit,
     'fn main(): Unit with Console = '
-    + '{ Console.print(0); handle crash(1) { fail(error: E) => Console.print(2) } };',
+    + '{ Console.print(0); handle crash(1) { fail(error: E) => '
+    + 'Console.print(2) } };',
   failed, '0\n', 'crash: 1\n'],
   ['a payload holding a function is not printable',
     'type Boxed = Boxed(Int -> Int); ' + why,
@@ -75,6 +78,7 @@ export const cases = [
   ok, '2\n1\n', ''],
   ['a defer in a block of a function value', '',
     'fn main(): Unit with Console = '
-    + '{ let f = fn(x) => { defer Console.print(x + 1); Console.print(x) }; f(1); f(5) };',
+    + '{ let f = fn(x) => { defer Console.print(x + 1); Console.print(x) }; '
+    + 'f(1); f(5) };',
   ok, '1\n2\n5\n6\n', '']
 ];

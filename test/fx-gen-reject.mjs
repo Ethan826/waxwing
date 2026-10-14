@@ -74,7 +74,8 @@ export const failingHandlerRejection = (seed, index) => {
       false)} }`;
   const source =
     `${prelude} fn work(): Unit with Console = handle with ${failing} `
-    + `{ ${inner} } { fail(error: ${family}) => Console.print(${r.number()}) }; `
+    + `{ ${inner} } { fail(error: ${family}) => Console.print(${r.number()}) `
+    + `}; `
     + 'fn main(): Unit = ();';
   return { source, text, message };
 };

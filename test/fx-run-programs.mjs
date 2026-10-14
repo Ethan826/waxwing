@@ -9,7 +9,8 @@ const job = 'type Job(a, ...effects) = Job(Int -> a with ...effects); ';
 export const cases = [
   ['clause context: intercept and forward', log
     + 'fn work(): Unit with Log = { Log.log(1); Log.log(2) }; '
-    + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => '
+    + 'Console.print(n) } '
     + '{ with handler Log { log(n) => Log.log(n + 100) } { work() } };',
   '101\n102\n'],
   ['clause context: forwarding handler passed as a value', log
@@ -82,7 +83,8 @@ export const cases = [
     + 'with handler Clock { now() => 100 } { with handler Log '
     + '{ log(n) => Console.print(n) } { Console.print(runAll(jobs, 1)) } }; '
     + 'with handler Clock { now() => 200 } { with handler Log '
-    + '{ log(n) => Console.print(n + 1000) } { Console.print(runAll(jobs, 1)) } } };',
+    + '{ log(n) => Console.print(n + 1000) } { Console.print(runAll(jobs, 1)) '
+    + '} } };',
   '1\n103\n1001\n203\n'],
   ['a lambda made under one handler runs under another', clock
     + 'fn make(): Int -> Int with Clock = fn(x) => x + Clock.now(); '
@@ -99,7 +101,8 @@ export const cases = [
   ['a partial operation call supplies its argument now', 'effect Add '
     + '{ fn add(x: Int, y: Int): Int; }; fn main(): Int with Console = '
     + 'with handler Add { add(x, y) => x + y } '
-    + '{ let inc = Add.add({ Console.print(1); 1 }); Console.print(2); inc(41) };',
+    + '{ let inc = Add.add({ Console.print(1); 1 }); Console.print(2); '
+    + 'inc(41) };',
   '1\n2\n42\n'],
   ['recursive handler installation', clock
     + 'fn loop(n: Int): Int with Clock = match n { 0 => Clock.now(), _ => '
@@ -131,7 +134,8 @@ export const cases = [
     + 'fail(e: Error(Bool)) => 2 };',
   '5\n'],
   ['two clauses of one family: the first is innermost (result)',
-    'fn main(): Int = handle Fail.fail(3) { fail(e: Int) => e, fail(e: Int) => 2 };',
+    'fn main(): Int = handle Fail.fail(3) { fail(e: Int) => e, fail(e: Int) ' +
+      '=> 2 };',
   '3\n'],
   ['a pure main beside an unused effectful function', clock
     + 'fn unused(): Int with Clock = Clock.now(); fn main(): Int = 7;',

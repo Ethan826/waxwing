@@ -8,7 +8,8 @@ const main = ' fn main(): Int = 0;';
 // builds and prints exactly what its handlers say.
 export const specialized = [
   ['a handler over now()',
-    clock + 'fn main(): Int = with handler Clock { now() => 1 } { Clock.now() };',
+    clock + 'fn main(): Int = with handler Clock { now() => 1 } { Clock.now() '
+      + '};',
     '1\n'],
   ['an unused effectful function', clock
     + 'fn unused(): Int with Clock = Clock.now();' + main, '0\n'],

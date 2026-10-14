@@ -6,7 +6,8 @@ import { clock, database, diagnose, expectDiagnostic, length, log,
   from './fx-diagnostics-support.mjs';
 
 const chain = depth => {
-  const body = index => index === depth ? 'Database.query()' : `f${index + 1}()`;
+  const body = index =>
+    index === depth ? 'Database.query()' : `f${index + 1}()`;
   const functions = Array.from({ length: depth }, (_, at) =>
     `fn f${at + 1}(): Int with Database = ${body(at + 1)};`);
   return database + 'fn main(): Int = f1(); ' + functions.join(' ');
@@ -179,8 +180,8 @@ test('long labels in a row conflict still name the label and the shared '
 test('a closed written row that lacks a label names its with, not an ambient ' +
   'row', () => {
   const stamp = 'fn stamp(): Int with Log = tick(); ';
-  expectDiagnostic(log + clock + 'fn tick(): Int with Clock = Clock.now(); ' + stamp
-    + 'fn main(): Int = 0;', {
+  expectDiagnostic(log + clock + 'fn tick(): Int with Clock = Clock.now(); '
+    + stamp + 'fn main(): Int = 0;', {
     code: 'E_EFFECT',
     message: 'stamp performs Clock, which its signature does not allow',
     at: [stamp.trim(), 'tick()'],

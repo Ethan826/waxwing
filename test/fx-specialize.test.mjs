@@ -89,7 +89,8 @@ test('a Grow handler at bare parameters makes one effect key', () => {
 test('State(Int) and State(Bool) give two effect keys', () => {
   const source = state + 'fn nested(): Int = with handler State(Int) '
     + '{ get() => 1, put(value) => () } { with handler State(Bool) '
-    + '{ get() => true, put(value) => () } { State.get(); }; State.get() };' + main;
+    + '{ get() => true, put(value) => () } { State.get(); }; State.get() };'
+    + main;
   assert.deepEqual(keysOf(source, /^effect/),
     ['effect State[Bool]', 'effect State[Int]']);
 });

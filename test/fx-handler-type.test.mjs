@@ -138,7 +138,8 @@ for (const [name, source] of [
   ['operation parameter', 'effect E { fn op(x: Int with Log): Unit; };'],
   ['lambda parameter',
     'fn t(): Int = { let f = fn(x: Int with Log) => x; 0 };'],
-  ['fail clause', 'type DbError = DbError; fn t(): Int = handle Fail.fail(DbError) '
+  ['fail clause', 'type DbError = DbError; fn t(): Int = handle '
+    + 'Fail.fail(DbError) '
     + '{ fail(error: DbError with Log) => 0 };']
 ]) test(`a written row is rejected in a ${name}`, () => {
   const full = prelude + source;

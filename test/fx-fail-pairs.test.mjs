@@ -99,6 +99,7 @@ test('nested unresolved failure payload is visited', () => {
     + 'fn f(): Int with Fail(Int) = Fail.fail(h(fn(e) => Fail.fail(e))); '
     + 'fn main(): Int = 0;';
   expectDiagnostic(source, {
-    code: 'E_TYPE', message: family, at: ['Fail.fail(e)', 'Fail.fail(e'], notes: []
+    code: 'E_TYPE', message: family, at: ['Fail.fail(e)', 'Fail.fail(e'],
+    notes: []
   });
 });

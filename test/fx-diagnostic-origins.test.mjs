@@ -4,12 +4,14 @@ import { clock, db, expectDiagnostic, log } from './fx-diagnostics-support.mjs';
 test('repeated Fail families attribute each origin to its own '
   + 'occurrence', () => {
   const types = 'type A = A; type B = B; ';
-  const both = 'fn two(): Int with Fail(A) + Fail(B) = { Fail.fail(A); Fail.fail(B) }; ';
+  const both = 'fn two(): Int with Fail(A) + Fail(B) = { Fail.fail(A); '
+    + 'Fail.fail(B) }; ';
   const handled = 'fn main(): Int = handle two() { fail(error: A) => 0 };';
   expectDiagnostic(types + both + handled, {
     code: 'E_EFFECT', message: 'Unhandled Fail(B) in main',
     at: ['fn main(): Int = handle two() { fail(error: A) => 0 };', 'two()'],
-    notes: [['fn two(): Int with Fail(A) + Fail(B) = { Fail.fail(A); Fail.fail(B) };',
+    notes: [['fn two(): Int with Fail(A) + Fail(B) = { Fail.fail(A); '
+      + 'Fail.fail(B) };',
       'Fail.fail(B', 'Fail(B) is raised here'],
     ['fn main(): Int = handle two() { fail(error: A) => 0 };',
       'fn main(): Int = handle two() { fail(error: A) => 0 };',
@@ -19,7 +21,8 @@ test('repeated Fail families attribute each origin to its own '
   expectDiagnostic(types + both + other, {
     code: 'E_EFFECT', message: 'Unhandled Fail(A) in main',
       at: [other, 'two()'],
-    notes: [['fn two(): Int with Fail(A) + Fail(B) = { Fail.fail(A); Fail.fail(B) };',
+    notes: [['fn two(): Int with Fail(A) + Fail(B) = { Fail.fail(A); '
+      + 'Fail.fail(B) };',
       'Fail.fail(A', 'Fail(A) is raised here'],
     [other, other, 'main may perform only Console']]
   });
@@ -62,7 +65,8 @@ test('Unhandled Fail(DbError) in main has an origin note at the fail', () => {
 test('a direct operation in main notes only the boundary', () => {
   const main = 'fn main(): Int with Clock = Clock.now();';
   expectDiagnostic(clock + main, {
-    code: 'E_EFFECT', message: 'Unhandled Clock in main', at: [main, 'Clock.now()'],
+    code: 'E_EFFECT', message: 'Unhandled Clock in main',
+    at: [main, 'Clock.now()'],
     notes: [[main, main, 'main may perform only Console']]
   });
 });
@@ -206,7 +210,8 @@ test('a late Fail key blames its own call, not an innocent identity '
 });
 
 test('a late Fail key blames the call of the reported family', () => {
-  const lambdas = 'let b = fn(x) => Fail.fail(x); let a = fn(x) => Fail.fail(x); '
+  const lambdas = 'let b = fn(x) => Fail.fail(x); let a = fn(x) => '
+    + 'Fail.fail(x); '
     + 'defer { b(B); a(A) }; ()';
   const work = `fn work(): Unit = handle { ${lambdas} } `
     + '{ fail(error: A) => (), fail(error: B) => () }; ';

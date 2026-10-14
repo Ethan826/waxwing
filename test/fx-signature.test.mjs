@@ -30,9 +30,11 @@ const rejected = (source, code, message, notes = []) => {
 const clock = 'effect Clock { fn now(): Int; }; ';
 const log = 'effect Log { fn log(x: Int): Unit; }; ';
 const acceptedCases = [
-  ['declared operation', clock + 'fn main(): Int with Clock = Clock.now();', false],
+  ['declared operation', clock + 'fn main(): Int with Clock = Clock.now();',
+    false],
   ['ambient callback', 'fn map(f: Int -> Int, x: Int): Int = f(x); '
-    + 'fn main(): Int with Console = map(fn(x) => { Console.print(x); x }, 3);'],
+    + 'fn main(): Int with Console = map(fn(x) => { Console.print(x); x }, '
+    + '3);'],
   ['eta opens a pure local', log
     + 'fn use(f: Int -> Int with Log): Int with Log = f(1); '
     + 'fn adapt(g: Int -> Int with pure): Int with Log = use(fn(x) => g(x)); '
@@ -71,7 +73,8 @@ const rejectedCases = [
     'E_TYPE', 'Expected a type, found an effect row'],
   ['bare nullary operation', clock + 'fn main(): Int with Clock = Clock.now;',
     'E_ARITY', 'Expected Clock.now()'],
-  ['print function', 'fn main(): Unit with Console = Console.print(fn(x) => x);',
+  ['print function', 'fn main(): Unit with Console = Console.print(fn(x) => '
+    + 'x);',
     'E_TYPE', 'Expected a printable value, found _ -> _']
 ];
 for (const [name, source, code, message, notes] of rejectedCases) {

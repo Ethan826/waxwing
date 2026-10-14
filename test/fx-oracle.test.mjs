@@ -80,7 +80,8 @@ test('a clause failing past an inner handle of its family reaches the '
   + 'outer', () => {
   const source = 'type E = E; effect Log { fn log(n: Int): Unit; }; '
     + 'fn main(): Unit with Console = handle with handler Log '
-    + '{ log(n) => Fail.fail(E) } { handle Log.log(1) { fail(error: E) => Console.print(1) } } '
+    + '{ log(n) => Fail.fail(E) } { handle Log.log(1) { fail(error: E) => '
+    + 'Console.print(1) } } '
     + '{ fail(error: E) => Console.print(2) };';
   assert.equal(seen(source).stdout, '2\n');
   assert.equal(seen(source, { clauseContext: 'inner' }).stdout, '1\n');
@@ -150,7 +151,8 @@ test('the oracle ignores nofail marks', () => {
     + 'fn each(f: Unit -> Unit with nofail(k) Log): Unit with nofail(k) Log '
     + '= f(()); '
     + 'fn work(): Unit with Console + nofail Log = each(fn(u) => Log.log(1)); '
-    + 'fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } '
+    + 'fn main(): Unit with Console = with handler Log { log(n) => '
+    + 'Console.print(n) } '
     + '{ work() };';
   const plain = marked.replace(/nofail(?:\([a-z]+\))? (?=[A-Z])/g, '');
   assert.notEqual(marked, plain);

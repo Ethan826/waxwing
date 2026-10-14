@@ -96,7 +96,8 @@ test('a defer calling a named-row callback is rejected (P2)', () => {
 
 test('a Fail reaching a closure after its key settles is rejected (P3)', () => {
   refuse(unit + 'fn work(): Unit with Console = handle { '
-    + 'let f = fn(x) => Fail.fail(x); let g = fn(y) => { defer f(y); () }; g(E) } '
+    + 'let f = fn(x) => Fail.fail(x); let g = fn(y) => { defer f(y); () }; '
+    + 'g(E) } '
     + '{ fail(error: E) => Console.print(9) };', 'Fail(E)', 'defer f(y)');
 });
 
@@ -115,7 +116,8 @@ test('a pending abort cannot meet a failing cleanup (P5d)', () => {
 test('a defer handling a Fail of a key settled later is accepted', () => {
   const go = checked(unit + 'fn pick(): a = crash(0); '
     + 'fn main(): Unit with Console = { let p = pick(); '
-    + 'defer handle Fail.fail(p) { fail(error: E) => Console.print(1) }; match p '
+    + 'defer handle Fail.fail(p) { fail(error: E) => Console.print(1) }; '
+    + 'match p '
     + '{ E => () } };');
   assert.ok(go.includes('waxwingCleanup'), go);
 });

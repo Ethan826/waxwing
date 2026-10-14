@@ -58,14 +58,16 @@ for (const [name, source] of [
   ['handler installation', clock + 'fn main(): Int = '
     + 'with handler Clock { now() => 42 } { Clock.now() };'],
   ['first-class handler', clock + 'fn run(h: Handler(Clock)): Int = '
-    + 'with h { Clock.now() }; fn main(): Int = run(handler Clock { now() => 42 });'],
+    + 'with h { Clock.now() }; fn main(): Int = run(handler Clock { now() => '
+    + '42 });'],
   ['handler clauses forward to the outside row', clock
     + 'fn main(): Int with Console = with handler Clock '
     + '{ now() => { Console.print(1); 42 } } { Clock.now() };'],
   ['failure is answer-type independent', errors + 'fn main(): Int = '
     + 'handle Fail.fail(DbError) { fail(error: DbError) => 42 };'],
   ['Fail clause binder is not a reserved name', errors
-    + 'fn main(): Int = handle Fail.fail(DbError) { fail(problem: DbError) => 42 ' +
+    + 'fn main(): Int = handle Fail.fail(DbError) { fail(problem: DbError) => '
+    + '42 ' +
       '};'],
   ['different error families are separate keys', errors
     + 'fn main(): Int = handle handle Fail.fail(DbError) '
@@ -115,7 +117,8 @@ for (const [name, source, code, message] of [
   ['foreign operation', clock + 'fn main(): Int = with handler Clock '
     + '{ put() => 1 } { 0 };', 'E_HANDLER', 'put is not an operation of Clock'],
   ['generic failure family', 'fn raise(error: a): Int with Fail(a) = '
-    + 'Fail.fail(error);' + main, 'E_TYPE', 'Fail needs a concrete error family'],
+    + 'Fail.fail(error);' + main, 'E_TYPE', 'Fail needs a concrete error '
+    + 'family'],
   ['same payload family arguments must unify', 'type Error(a) = Error(a); '
     + 'fn main(): Int = handle Fail.fail(Error(1)) '
     + '{ fail(error: Error(Bool)) => 0 };', 'E_TYPE',
@@ -198,7 +201,8 @@ test('long function-type spines are lowered without recursive '
 test('nested State handlers keep distinct first-seen type arguments', () => {
   accepted(state + 'fn nested(): Int = with handler State(Int) '
     + '{ get() => 1, put(value) => () } { with handler State(Bool) '
-    + '{ get() => true, put(value) => () } { State.get(); }; State.get() };' + main);
+    + '{ get() => true, put(value) => () } { State.get(); }; State.get() };'
+    + main);
 });
 
 for (const [source, message, fragment, occurrence = 0] of [
