@@ -30,6 +30,7 @@ import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
+import Features.Check.Seed (seeded)
 import Features.Check.Tables (ownerType)
 
 -- One use of a function's or constructor's scheme, its variables
@@ -65,12 +66,15 @@ functionUse env state span (FunctionId index) =
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
   found function = Right
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
-        ( openedUse
-            ( declarationUse state function.variables function.markVariables
-                function.sorts
-                (map parameterType function.parameters)
-                function.result
-                function.row
+        ( seededUse env function.sorts
+            ( openedUse
+                ( declarationUse state function.variables
+                    function.markVariables
+                    function.sorts
+                    (map parameterType function.parameters)
+                    function.result
+                    function.row
+                )
             )
         )
     )
@@ -99,6 +103,14 @@ openedUse use =
   found = openHandlers use.state use.value.fields use.value.result
   owned = ownClauses found.state.next found.value.fields use.value.row
     found.value.result
+
+-- The use's state with what its types say their record tails lack.
+seededUse
+  ∷ ∀ r. CheckEnv r → Array Syntax.Sort → Threaded Use → Threaded Use
+seededUse env sorts use = use { state = seeded env sorts types use.state }
+  where
+  types = use.value.fields
+    <> [ use.value.result, TFun TUnit use.value.row TUnit ]
 
 -- A use that consumes `consumed`, of this callee, if it is a named one.
 withOrigin ∷ Consumed → Maybe Callee → Threaded Use → Threaded Use
@@ -162,10 +174,12 @@ ctorUse env state span (CtorId index) =
   ownerOf (TypeId owner) = Array.index env.types owner
   owned ctor info = Right
     ( withOrigin (CallOf ctor.name) Nothing
-        ( declarationUse state info.variables [] info.sorts
-            ctor.fields
-            (ownerType ctor.owner info)
-            closedRow
+        ( seededUse env info.sorts
+            ( declarationUse state info.variables [] info.sorts
+                ctor.fields
+                (ownerType ctor.owner info)
+                closedRow
+            )
         )
     )
 

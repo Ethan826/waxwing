@@ -23,6 +23,7 @@ import Features.Check.MarkReport (reportViolation)
 import Features.Check.Printable (printable)
 import Features.Check.Require (require, tooDeepAt)
 import Features.Check.Scheme (State, firstTooDeep, holes, resolved, start)
+import Features.Check.Seed (seeded)
 import Features.Check.Settle (settleRestricted)
 import Features.Check.Unify (Subst, isEmpty)
 import Features.Check.Walk (retype)
@@ -69,8 +70,7 @@ checkFunction
   → Resolved.FunctionDecl
   → Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
 checkFunction holders env function = do
-  body ← infer env (start { next = Array.length function.variables })
-    function.body
+  body ← infer env (own env function) function.body
   finished ← require env body.state (rigid function.result) body.value
   maybe (Right unit) tooDeepAt (firstTooDeep finished.subst body.value)
   restricted ← settleRestricted env finished body.value
@@ -103,6 +103,16 @@ checkFunction holders env function = do
     , state: marked
     }
   where
+  parameterType parameter = rigid parameter.ty
+
+-- The state a body starts in: the signature's variables are numbered
+-- before any meta, and its record tails lack what it says (R001 design §2).
+own ∷ Env → Resolved.FunctionDecl → State
+own env function = seeded env function.sorts signature
+  (start { next = Array.length function.variables })
+  where
+  signature = map parameterType function.parameters
+    <> [ rigid function.result, rigid (TFun TUnit function.row TUnit) ]
   parameterType parameter = rigid parameter.ty
 
 -- Every type in the body, resolved. An empty substitution resolves each

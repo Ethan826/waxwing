@@ -23,6 +23,7 @@ import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
+import Data.Set (Set)
 import Data.Tuple (Tuple, snd)
 import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
 import Domain.Type
@@ -66,7 +67,9 @@ derive instance ordFlex ∷ Ord Flex
 -- the substitution so that a postponed pair that reverts takes its edges
 -- with it. `watch` (FX008):
 -- the tails the restricted registry watches, with those bound since it
--- last looked; data, so it reverts the same way.
+-- last looked; data, so it reverts the same way. `lacks` (R001): the
+-- labels each record tail may never hold, a meta's or a signature's rigid
+-- one's (Features.Check.Lacks).
 newtype Subst = Subst
   { types ∷ Map Int (Ty Flex)
   , rows ∷ Map Int (TyRow Flex)
@@ -77,6 +80,7 @@ newtype Subst = Subst
   , marks ∷ MarkStore (Ty Flex)
   , watch ∷ TailWatch
   , aliases ∷ Aliases
+  , lacks ∷ Map Flex (Set String)
   }
 
 -- A postponed pair keeps where its sides were written and how it treats
@@ -95,6 +99,7 @@ empty = Subst
   , marks: emptyMarks
   , watch: emptyWatch
   , aliases: noAliases
+  , lacks: Map.empty
   }
 
 -- No meta is bound, so resolving under it changes no type. (Mark bindings

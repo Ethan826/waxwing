@@ -40,6 +40,7 @@ import Features.Check.UnifyParts
   , sameLength
   , unifyClauses
   )
+import Features.Check.UnifyRecord (unifyRecord)
 import Features.Check.UnifyRow
   ( unifyRows
   , unifyRowsIgnoring
@@ -55,7 +56,8 @@ import Features.Check.UnifyRow
 -- design §1): metas bound earlier in the same unification can chain into
 -- types deeper than either operand was, so past `inferredTypeLimit` it
 -- fails with TooDeep instead of recursing further (ruling R7, fix round 2).
--- Rows unify by scoped labels (Features.Check.UnifyRow, FX001).
+-- Rows unify by scoped labels (Features.Check.UnifyRow, FX001); records'
+-- fields one level deeper, by label (Features.Check.UnifyRecord, R001).
 unify ∷ Subst → Ty Flex → Ty Flex → Either Failure Subst
 unify = unifyAt 1
 
@@ -142,9 +144,8 @@ unifyHeads level subst left right = case left, right of
           >>= unifyInference level leftRows rightRows
           >>= unifyClauses leftRows rightRows
   TFun _ _ _, TFun _ _ _ → unifyArrows level subst left right
-  -- Record rows unify in R001 Task 4; until then only equal records do.
-  TRecord _, TRecord _ | resolve subst left == resolve subst right →
-    Right subst
+  TRecord one, TRecord other → unifyRecord (unifyAt (level + 1)) subst one
+    other
   _, _ → mismatch subst left right
   where
   -- Arguments pairwise, one level deeper, left to right. Folded here,

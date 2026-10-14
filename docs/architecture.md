@@ -7,7 +7,7 @@ an earlier layer; scripts/structure.mjs enforces it from `purs graph`.
 | Layer | Modules (src/) | Role |
 |---|---|---|
 | Domain | Syntax, Syntax.Core, Type, Type.{Core,Compare,Parts,Marks,Record}, Resolved, Problem, Host, Checked.Internal, IR.Internal | syntax trees, spans, `Ty v`, resolved syntax, checked IR, monomorphic IR, `Problem` data, capability-port types |
-| Features | Resolve, Resolve.{Expression,Types,TypeRef,TypeArguments,Occurrences,Sorts,RecordFields,Pattern,Repeated,Fresh,Lambda,Name,Builtin,Qualified,Imports,Unbound,Scope}, Check, Check.{TypeText,Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,UnifyParts,UnifyFailure,Compose,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,State,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
+| Features | Resolve, Resolve.{Expression,Types,TypeRef,TypeArguments,Occurrences,Sorts,RecordFields,Pattern,Repeated,Fresh,Lambda,Name,Builtin,Qualified,Imports,Unbound,Scope}, Check, Check.{TypeText,Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,UnifyParts,UnifyFailure,UnifyRecord,RecordTail,Lacks,Implied,Seed,Compose,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,State,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
 | Format | Lex, Lex.{Token,Scan,Text,Origin,Escape,Chars,Run,Walk,Block,Dedent}, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,TextShow,Usage}, Diagnostic, Diagnostic.{Code,Qualify}, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
 | Runtime | Node (+ Node.js) | port implementations, argv/stdout/stderr/exit, JSON; the only FFI |
 | Program | Compile, Command, Main | pure `compile`, commands over any `Host`, entry point |
@@ -125,6 +125,11 @@ Format.Wire.
   sorted by label, and a tail that is a variable of record sort whose image
   is a record type (R001). Features.Resolve.Sorts settles every row
   variable's sort, record or effect, over the declarations to a fixed point.
+  Features.Check.UnifyRecord unifies record rows by label, with one shared
+  remainder for two open tails; every record tail has a lacks set in the
+  substitution (Features.Check.Lacks), seeded from the signature or
+  constructor at each use and from a function's own signature for its body,
+  through declarations' record parameters too (Features.Check.Implied).
   Resolve produces variables and type arguments from source (P001 Task 2;
   `VarId i` is a declaration's i-th parameter or a signature's i-th
   variable).

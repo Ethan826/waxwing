@@ -12,8 +12,8 @@ export const r001Rows = [
     probe: 'r001-print-ground', message: /E_TOOL/
   },
   {
-    // Record fields left in written order: `{ a, b }` and `{ b, a }` are
-    // two types, so equal records no longer unify (R001 design §1).
+    // Record fields left in written order: a diagnostic prints them so
+    // (R001 design §1, §6; unification pairs labels by name since Task 4).
     name: 'r001-record-order', file: 'src/Domain/Type/Record.purs',
     needle: 'recordRow fields tail = { fields: sortFields fields, tail }',
     replacement: 'recordRow fields tail = { fields, tail }',

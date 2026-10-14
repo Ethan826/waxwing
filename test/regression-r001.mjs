@@ -37,12 +37,19 @@ export const r001Probes = {
     console.log(`${context.probe} regression detects the defect`);
   },
   // `{ a, b }` and `{ b, a }` are one type: the result unifies with the
-  // parameter. (The type variable keeps `f` out of the specializer.)
+  // parameter. (The type variable keeps `f` out of the specializer.) Since
+  // R001 Task 4 unification pairs labels by name, so the order is seen in
+  // a diagnostic, which prints the fields as the row keeps them.
   'r001-record-order': context => {
     const found = outcome(context, 'fn f(x: { a: Int, b: Bool }, y: c): '
       + '{ b: Bool, a: Int } = x; fn main(): Int = 0;');
     if (found !== 'ran') {
       fail(`label order distinguished two records: ${found}`);
+    }
+    const printed = outcome(context, 'fn g(x: { b: Bool, a: Int }): Int = 1; '
+      + 'fn f(y: Int): Int = g(y); fn main(): Int = 0;');
+    if (printed !== 'E_TYPE Expected { a: Int, b: Bool }, found Int') {
+      fail(`label order kept in a diagnostic: ${printed}`);
     }
     console.log(`${context.probe} regression detects the defect`);
   },
