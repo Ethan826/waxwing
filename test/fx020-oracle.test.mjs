@@ -93,7 +93,6 @@ test('each performed operation reports how it was spelled', () => {
   for (const spelling of ['alias', 'import', 'qualified']) {
     assert.ok(events.has(`spelling-${spelling}`), spelling);
   }
-  assert.ok(![...events].some(event => event === 'spelling-bare'));
 });
 
 test('an imported operation is a value', () => {

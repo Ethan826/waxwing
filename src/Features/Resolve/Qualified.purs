@@ -1,8 +1,6 @@
 module Features.Resolve.Qualified
   ( Missing(..)
   , declared
-  , failCall
-  , failReference
   , importedCall
   , importedName
   , missing

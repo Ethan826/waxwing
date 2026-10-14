@@ -18,10 +18,14 @@ unboundName scope span kind name = Syntax.problemAt problem span
   problem
     | Array.null declaring = Unbound kind name
     | otherwise = Hinted (Unbound kind name) (QualifyOperation name declaring)
-  declaring = map _.name (Array.filter builtinHas builtinEffects)
-    <> map _.name (Array.filter userHas scope.effectInfos)
-  builtinHas effect = Array.any (called name) effect.operations
-  userHas effect = Array.any (called name) effect.operations
+  declaring = map _.name (Array.filter (offers name) builtinEffects)
+    <> map _.name (Array.filter (offers name) scope.effectInfos)
 
 called ∷ ∀ r. String → { name ∷ String | r } → Boolean
 called wanted entry = entry.name == wanted
+
+-- Built-in and user effects differ in their other fields, so this takes any
+-- record with operations.
+offers
+  ∷ ∀ r s. String → { operations ∷ Array { name ∷ String | s } | r } → Boolean
+offers wanted effect = Array.any (called wanted) effect.operations

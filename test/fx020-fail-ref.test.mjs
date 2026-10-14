@@ -1,18 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Right } from '../output/Data.Either/index.js';
-import { compile } from '../output/Program.Compile/index.js';
 import { runGo } from './support.mjs';
 import { diagnose, expectDiagnostic } from './fx-diagnostics-support.mjs';
 
 // FX020 Task 2b: `Fail.fail` used as a value is the Fail operation
 // reference; a bare `fail` is unbound (Task 7). Applying it behaves as
 // `Fail.fail(e)` does: the family comes from the payload's type.
-const goOf = source => {
-  const result = compile(source);
-  assert.ok(result instanceof Right, JSON.stringify(result));
-  return result.value0;
-};
 const families = 'type A = A(Int); type B = B(Int); '
   + 'fn useA(f: A -> Int with Fail(A)): Int with Fail(A) = f(A(1)); '
   + 'fn useB(f: B -> Int with Fail(B)): Int with Fail(B) = f(B(2)); ';

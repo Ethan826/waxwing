@@ -27,12 +27,15 @@ const bareRefused = (source, message, failure) => context => {
   detected(context);
 };
 
-// A mutant may emit Go that fails to build; the reason is then printed.
+// A mutant may reject the program or emit Go that fails to build; the
+// rejection or the reason is then printed.
 const prints = (source, expected, failure) => context => {
+  const rejected = wired(context, source);
   let output;
-  try { output = context.printed(source); } catch (error) {
-    output = error.message;
-  }
+  try {
+    output = rejected === null ? context.printed(source)
+      : `rejected: ${rejected.code} ${rejected.message}`;
+  } catch (error) { output = error.message; }
   if (output !== expected) fail(`${failure}: ${JSON.stringify(output)}`);
   detected(context);
 };
