@@ -45,18 +45,28 @@ export const r001Rows = [
     probe: 'r001-callee-to-caller', message: /callee to caller/
   },
   {
-    // A variable's uses are not checked against each other after the sorts
-    // settle, so a caller using a record parameter as an effect row passes.
+    // A variable's uses are not checked against the settled sorts, so a
+    // caller using a record parameter as an effect row passes.
     name: 'r001-settled-sort', file: 'src/Features/Resolve/Sorts.purs',
-    needle: '  traverse_ (consistent (declaredTypes final)) final\n',
-    replacement: '',
+    needle: '  traverse_ (checked settled.given everything)\n'
+      + '    (Array.zip (Array.zip final uses) perDeclaration) $> final\n',
+    replacement: '  pure final\n',
     probe: 'r001-settled-sort', message: /settled sort/
   },
   {
     // Callers passing different sorts to one parameter are not diagnosed.
-    name: 'r001-caller-conflict', file: 'src/Features/Resolve/RowSettle.purs',
-    needle: "maybe' accepted (Left <<< clash found.head)",
-    replacement: "maybe' accepted (const (accepted unit))",
+    name: 'r001-caller-conflict', file: 'src/Features/Resolve/SortCheck.purs',
+    needle: '    | givenArgument given found.use = '
+      + 'Left (callerClash everything found)\n',
+    replacement: '    | givenArgument given found.use = Right unit\n',
     probe: 'r001-caller-conflict', message: /caller conflict/
+  },
+  {
+    // The phases run once each, so a sort a caller gives a callee never
+    // travels back up to the callee's other callers.
+    name: 'r001-sort-feedback', file: 'src/Features/Resolve/RowSettle.purs',
+    needle: '  else Loop\n    { known: Map.union fresh known\n',
+    replacement: '  else Done\n    { known: Map.union fresh known\n',
+    probe: 'r001-sort-feedback', message: /feedback/
   }
 ];

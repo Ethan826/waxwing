@@ -90,8 +90,19 @@ export const r001Probes = {
     const found = outcome(context, 'type C1(...a) = C1({ x: Int, ...a }, '
       + 'P(...a)); type C2(...b) = C2((Unit) -> Unit with ...b, P(...b)); '
       + 'type P(...p) = P(Int); fn main(): Int = 0;');
-    if (found !== 'E_TYPE b is a record row, not an effect row') {
+    if (found !== 'E_TYPE b is an effect row, not a record row') {
       fail(`caller conflict accepted: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // P takes record sort from C1, so C2, which only passes its row to P, is
+  // record sort too, and using it as an effect row is the sort error.
+  'r001-sort-feedback': context => {
+    const found = outcome(context, 'type C1(...a) = C1({ x: Int, ...a }, '
+      + 'P(...a)); type C2(...b) = C2(P(...b)); type P(...p) = P(Int); '
+      + 'fn f(x: C2(...e)): Unit with ...e = (); fn main(): Int = 0;');
+    if (found !== 'E_TYPE e is a record row, not an effect row') {
+      fail(`sort feedback to callers lost: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
   }

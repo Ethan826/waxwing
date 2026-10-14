@@ -1,13 +1,14 @@
 module Features.Resolve.SortConflict
   ( settledOccurrences
   , conflict
+  , misread
   ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
-import Data.Maybe (maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Domain.Problem (Problem(..))
 import Domain.Syntax as Syntax
 import Features.Resolve.Occurrences (Occurrence)
@@ -32,16 +33,28 @@ settledOccurrences occurrences = map (map named) found
     | occurrence.sort == previous.sort = Right before
     | otherwise = Left (conflict occurrence previous)
 
+-- Two uses of a variable with different sorts: the error is at the later,
+-- naming the sort the first gave it.
 conflict ∷ Occurrence → Occurrence → Syntax.Diagnostic
 conflict occurrence previous = case occurrence.sort, previous.sort of
-  Syntax.RowSort, Syntax.RecordSort → noted (RecordRowAsEffect name)
-  Syntax.RecordSort, Syntax.RowSort → noted (EffectRowAsRecord name)
+  Syntax.RowSort, Syntax.RecordSort → misread previous.sort occurrence
+    (Just previous)
+  Syntax.RecordSort, Syntax.RowSort → misread previous.sort occurrence
+    (Just previous)
   _, _ → Syntax.problemAt (RowSort (occurrence.sort /= Syntax.TypeSort))
     occurrence.span
+
+-- A use that reads a variable of the given sort as the other row sort,
+-- noted at the use that fixed it when there is one.
+misread ∷ Syntax.Sort → Occurrence → Maybe Occurrence → Syntax.Diagnostic
+misread sort occurrence first =
+  { problem
+  , span: occurrence.span
+  , related: maybe [] noted first
+  }
   where
-  name = occurrence.name
-  noted problem =
-    { problem
-    , span: occurrence.span
-    , related: [ { span: previous.span, reason: Syntax.FirstWrittenHere } ]
-    }
+  problem =
+    if sort == Syntax.RecordSort then RecordRowAsEffect occurrence.name
+    else EffectRowAsRecord occurrence.name
+  noted previous =
+    [ { span: previous.span, reason: Syntax.FirstWrittenHere } ]

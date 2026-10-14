@@ -212,7 +212,7 @@ test('callers that pass different sorts blame the later argument', () => {
     + 'type C2(...b) = C2((Unit) -> Unit with ...b, P(...b)); '
     + `type P(...p) = P(Int);${main}`;
   const diagnostic = resolveRejectedAt(source, 'E_TYPE', '...b', 2);
-  assert.equal(diagnostic.message, 'b is a record row, not an effect row');
+  assert.equal(diagnostic.message, 'b is an effect row, not a record row');
   assert.deepEqual(diagnostic.related, [{ span: spanAt(source, '...a', 2),
     message: 'first written here' }]);
 });
