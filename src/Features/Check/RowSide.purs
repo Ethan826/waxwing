@@ -19,13 +19,8 @@ import Domain.Syntax (Span)
 import Domain.Type (Ty, TyRow, VarId)
 import Features.Check.Occurrence (OccurrenceId, Sides, nowhere)
 import Features.Check.Occurrence as Occurrence
-import Features.Check.Subst
-  ( Failure(..)
-  , Flex(..)
-  , Subst
-  , boundAt
-  , resolveLabel
-  )
+import Features.Check.Subst (Flex(..), Subst, boundAt, resolveLabel)
+import Features.Check.UnifyFailure (Failure(..))
 
 -- An operand's tail, so its cases are plain constructors.
 data Tail = Closed | RigidTail VarId | MetaTail Int

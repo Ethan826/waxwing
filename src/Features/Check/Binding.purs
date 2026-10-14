@@ -20,14 +20,14 @@ import Domain.Type.Parts (children, rowArguments, rowsOf)
 import Features.Check.Aliases (aliased)
 import Features.Check.Search (Stack(..))
 import Features.Check.Subst
-  ( Failure(..)
-  , Flex(..)
+  ( Flex(..)
   , Subst(..)
-  , resolve
   , walk
   , metaOf
   , walkRow
+  , resolve
   )
+import Features.Check.UnifyFailure (Failure(..))
 import Features.Check.Watch (noteBound)
 
 -- The deepest type checking may build (ruling R7, in the spirit of ADR 006).

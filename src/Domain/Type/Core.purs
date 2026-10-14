@@ -20,7 +20,15 @@ import Data.Tuple (Tuple(..))
 import Domain.Ids (TypeId)
 import Domain.Row (HandlerRows, Label(..), Row(..), closedRow, openRow)
 import Domain.Row as Row
-import Domain.Type.Compare (compareParts, compareRows, sameRow, sameRows)
+import Domain.Type.Compare
+  ( Head(..)
+  , Link
+  , compareParts
+  , compareRows
+  , compareSpines
+  , sameRows
+  , sameSpines
+  )
 
 -- A type variable of a signature or declaration, numbered by Resolve.
 newtype VarId = VarId Int
@@ -60,20 +68,6 @@ type Stages v = { arrows ∷ Array (Ty v), result ∷ Ty v }
 -- tail a row, whose labels are spliced after the written ones.
 type Substitution v w = { types ∷ v → Ty w, rows ∷ v → TyRow w }
 
--- Constructors in declaration order, as the derived instance ranked them.
-data Head
-  = IntHead
-  | BoolHead
-  | DataHead
-  | VarHead
-  | FunHead
-  | UnitHead
-  | HandlerHead
-  | TextHead
-
-derive instance eqHead ∷ Eq Head
-derive instance ordHead ∷ Ord Head
-
 -- The derived instances recursed once per arrow of a spine. These walk
 -- spines in step by a loop and keep the derived order: constructors in
 -- declaration order, then fields left to right. Applications are compared
@@ -86,7 +80,7 @@ instance eqTy ∷ Eq v ⇒ Eq (Ty v) where
   eq left right = case left, right of
     TData first lefts leftRows, TData second rights rightRows →
       first == second && sameRows leftRows rightRows && lefts == rights
-    TFun _ _ _, TFun _ _ _ → sameSpines left right
+    TFun _ _ _, TFun _ _ _ → sameSpines arrowLink left right
     THandler one oneRow, THandler other otherRow → one == other
       && oneRow == otherRow
     _, _ → sameLeaf left right
@@ -98,7 +92,7 @@ instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
         EQ, EQ → compare lefts rights
         EQ, decided → decided
         decided, _ → decided
-    TFun _ _ _, TFun _ _ _ → compareSpines left right
+    TFun _ _ _, TFun _ _ _ → compareSpines arrowLink left right
     THandler one oneRow, THandler other otherRow → compareParts one other
       oneRow
       otherRow
@@ -180,29 +174,12 @@ substituteLabel ∷ ∀ v w. Substitution v w → Label (Ty v) → Label (Ty w)
 substituteLabel substitution (Label effect arguments mark) =
   Label effect (map (substitute substitution) arguments) mark
 
--- Two arrows' spines in step, by a loop, until a parameter or row differs
--- or one side is no longer an arrow.
-sameSpines ∷ ∀ v. Eq v ⇒ Ty v → Ty v → Boolean
-sameSpines left right = tailRec step (Tuple left right)
-  where
-  step (Tuple one other) = case one, other of
-    TFun first firstRow rest, TFun second secondRow more
-      | first == second && sameRow firstRow secondRow →
-          Loop (Tuple rest more)
-      | otherwise → Done false
-    _, _ → Done (one == other)
-
-compareSpines ∷ ∀ v. Ord v ⇒ Ty v → Ty v → Ordering
-compareSpines left right = tailRec step (Tuple left right)
-  where
-  step (Tuple one other) = case one, other of
-    TFun first firstRow rest, TFun second secondRow more → continued rest
-      more
-      (compareParts first second firstRow secondRow)
-    _, _ → Done (compare one other)
-  continued rest more = case _ of
-    EQ → Loop (Tuple rest more)
-    decided → Done decided
+-- Core owns the type, so it tells the spine loops (Compare) which types
+-- are arrows.
+arrowLink ∷ ∀ v. Ty v → Maybe (Link (Ty v) v)
+arrowLink = case _ of
+  TFun parameter row rest → Just { parameter, row, rest }
+  _ → Nothing
 
 -- Two types that are not both applications, arrows nor handlers.
 sameLeaf ∷ ∀ v. Eq v ⇒ Ty v → Ty v → Boolean

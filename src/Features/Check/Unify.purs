@@ -1,9 +1,10 @@
 module Features.Check.Unify
   ( module Features.Check.Subst
   , module Features.Check.Binding
+  , module Features.Check.Compose
+  , module Features.Check.UnifyFailure
   , unify
   , settleRows
-  , compose
   ) where
 
 import Prelude hiding (compose)
@@ -11,32 +12,36 @@ import Control.Monad.Rec.Class (Step(..), tailRec, tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Foldable (foldM)
-import Data.Map as Map
-import Data.Maybe (isNothing, maybe')
+import Data.Maybe (isNothing)
 import Data.Tuple (Tuple(..))
-import Domain.Row (HandlerRows, Label(..), clauseRow)
+import Domain.Row (HandlerRows, Label(..))
 import Domain.Type (Ty(..), TyRow)
-import Features.Check.Aliases (noAliases)
 import Features.Check.Binding (exceedsLimit, inferredTypeLimit)
 import Features.Check.Binding as Binding
+import Features.Check.Compose (compose)
 import Features.Check.Subst
-  ( Failure(..)
-  , Flex(..)
+  ( Flex(..)
   , Subst(..)
   , empty
   , isEmpty
-  , resolve
-  , resolveRow
   , substitute
   , substituteRow
   , walk
   , walkRow
+
+  , resolve
+  , resolveRow
   )
+import Features.Check.UnifyFailure (Failure(..))
 import Features.Check.Origin (linked)
-import Features.Check.UnifyMark (equateMarks)
+import Features.Check.UnifyParts
+  ( handledMarks
+  , mismatch
+  , sameLength
+  , unifyClauses
+  )
 import Features.Check.UnifyRow
-  ( ignoringArguments
-  , unifyRows
+  ( unifyRows
   , unifyRowsIgnoring
   , unifyRowsTraced
   )
@@ -75,34 +80,6 @@ settleRows = tailRecM pass
     { subst: linked traced.events traced.subst
     , decided: reached.decided || not traced.postponed
     }
-
--- `substitute (compose later earlier)` is `substitute later` after
--- `substitute earlier`; Map.union keeps the earlier side's bindings.
--- Precondition: `later` was made from `earlier` (or neither made fresh row
--- metas), so their fresh metas do not collide; the smaller counter is
--- kept. Postponed pairs are the earlier's, then the later's; of two links
--- from one occurrence the earlier's stays; mark bindings likewise. The
--- edges and the watch are the later's alone, which hold the earlier's under the
--- precondition (made from it). The aliases are dropped: an empty table walks
--- hop by hop, so this is always sound. Nothing in src composes, tests only.
-compose ∷ Subst → Subst → Subst
-compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
-  { types: Map.union (map (substitute later) earlierBindings.types)
-      laterBindings.types
-  , rows: Map.union (map (substituteRow later) earlierBindings.rows)
-      laterBindings.rows
-  , fresh: min laterBindings.fresh earlierBindings.fresh
-  , postponed: earlierBindings.postponed <> laterBindings.postponed
-  , links: Map.union earlierBindings.links laterBindings.links
-  , relays: Map.union earlierBindings.relays laterBindings.relays
-  , marks: laterBindings.marks
-      { bindings = Map.union earlierBindings.marks.bindings
-          laterBindings.marks.bindings
-      , fresh = min laterBindings.marks.fresh earlierBindings.marks.fresh
-      }
-  , watch: laterBindings.watch
-  , aliases: noAliases
-  }
 
 unifyAt ∷ Int → Subst → Ty Flex → Ty Flex → Either Failure Subst
 unifyAt level subst left right =
@@ -174,20 +151,6 @@ unifyHeads level subst left right = case left, right of
   unifyPair reached (Tuple leftArgument rightArgument) =
     unifyAt (level + 1) reached leftArgument rightArgument
 
--- The handled labels' marks are types' parts and unify by equality; a clash
--- is the handler types differing (P3).
-handledMarks
-  ∷ Ty Flex
-  → Ty Flex
-  → Label (Ty Flex)
-  → Label (Ty Flex)
-  → Subst
-  → Either Failure Subst
-handledMarks left right (Label _ _ one) (Label _ _ other) subst =
-  maybe' refused Right (equateMarks subst one other)
-  where
-  refused _ = mismatch subst left right
-
 -- R is the inference row: it unifies with the context ignoring marks,
 -- which are dead there (design §3.4). When neither type has a C of its
 -- own, C is R and its marks are compared with it, in one pass (P3).
@@ -202,20 +165,6 @@ unifyInference level left right subst =
     unifyRowAt level left.inference right.inference subst
   else unifyRowsIgnoring (unifyAt (level + 1)) subst left.inference
     right.inference
-
--- C is compared only when a side has one of its own; `Nothing` is R, which
--- was just unified with marks if neither has one (a written type then costs
--- one row, not two).
-unifyClauses
-  ∷ HandlerRows (Ty Flex) Flex
-  → HandlerRows (Ty Flex) Flex
-  → Subst
-  → Either Failure Subst
-unifyClauses left right subst =
-  if isNothing left.clauses && isNothing right.clauses then Right subst
-  else unifyRows ignoringArguments subst
-    (clauseRow left)
-    (clauseRow right)
 
 -- Two rows at this level: their label arguments one level deeper.
 unifyRowAt
@@ -234,12 +183,3 @@ unifyRowsAt level lefts rights subst = foldM unifyPair subst
   (Array.zip lefts rights)
   where
   unifyPair reached (Tuple left right) = unifyRowAt level left right reached
-
-sameLength ∷ ∀ a b. Array a → Array b → Boolean
-sameLength one other = Array.length one == Array.length other
-
--- The differing pair is resolved for the message only when that is safe.
-mismatch ∷ Subst → Ty Flex → Ty Flex → Either Failure Subst
-mismatch subst left right =
-  if exceedsLimit subst left || exceedsLimit subst right then Left TooDeep
-  else Left (Mismatch (resolve subst left) (resolve subst right))

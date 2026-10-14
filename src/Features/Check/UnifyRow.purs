@@ -40,14 +40,8 @@ import Features.Check.RowSide
   )
 import Features.Check.Search (Stack(..))
 import Features.Check.UnifyMark (pairMarks, targetLabel)
-import Features.Check.Subst
-  ( Failure(..)
-  , Flex(..)
-  , Subst
-  , resolveLabel
-  , resolveRow
-  , walk
-  )
+import Features.Check.Subst (Flex(..), Subst, walk, resolveLabel, resolveRow)
+import Features.Check.UnifyFailure (Failure(..))
 
 -- The type unifier, passed in: Features.Check.Unify calls this module.
 type Unifier = Subst → Ty Flex → Ty Flex → Either Failure Subst

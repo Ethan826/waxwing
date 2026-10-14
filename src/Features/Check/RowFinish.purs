@@ -24,14 +24,14 @@ import Features.Check.RowSide (Side, Tail(..), tailOf)
 import Features.Check.Search (Stack(..), stackItems)
 import Features.Check.UnifyMark (advanceTail, stageLabel)
 import Features.Check.Subst
-  ( Failure(..)
-  , Flex(..)
+  ( Flex(..)
   , Subst
   , postpone
+  , walk
   , resolveLabel
   , resolveRow
-  , walk
   )
+import Features.Check.UnifyFailure (Failure(..))
 
 -- The result of unifying two rows. `postponed`: the pair met a deferred
 -- Fail key and was set aside in `subst` (which is otherwise the

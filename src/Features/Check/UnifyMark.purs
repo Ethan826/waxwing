@@ -23,7 +23,8 @@ import Features.Check.MarkStore
   , resolveMark
   )
 import Features.Check.Occurrence (OccurrenceId)
-import Features.Check.Subst (Failure(..), Flex, Subst(..), resolveLabel)
+import Features.Check.Subst (Flex, Subst(..), resolveLabel)
+import Features.Check.UnifyFailure (Failure(..))
 
 type Made = { label ∷ Label (Ty Flex), subst ∷ Subst }
 
