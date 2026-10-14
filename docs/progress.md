@@ -4448,9 +4448,10 @@ Delivered:
 - Unbound bare operation names keep their error with a hint; the
   multi-candidate wording (R18) awaits the user. `print` and `show` remain
   compiler-provided until C001.
-- The corpus (examples, 101 fixtures, tests; about 700 automatic edits plus
-  manual ones) was migrated by a one-off tool, then the tool, the paired run
-  and bare-name support were removed (R4, Task 7).
+- The corpus (examples, 101 fixtures, tests; about 920 automatic edits
+  (sum of the Task 6 report's chunk figures) plus manual ones) was migrated by a
+  one-off tool, then the tool, the paired run and bare-name support were
+  removed (R4, Task 7).
 
 Tasks (commits on fx020):
 - Task 1: behaviour-preserving splits (bb083c5, fb89cd5):
@@ -4473,11 +4474,12 @@ Tasks (commits on fx020):
   the documentation commit.
 
 Evidence (logs under .build/ in the worktree, names fx020-task<N>-*):
-- Verify: exit 0 at every task's end. Final counts: Task 5b fix 1645/1645
-  parallel, Task 7 1626 parallel, 57/57 serial, 93 regression proofs
-  (fx020-task7-verify.log); Task 8, on the committed
-  clean tree, exit 0 (.build/fx020-task8-verify.log): 1626/1626 parallel,
-  57/57 serial, 94 regression proof lines, width 0 over 80 in 490 files.
+- Verify: exit 0 at every task's end. Final counts: Task 5b fix 1647/1647
+  parallel (fx020-task5b-fix1-verify.log), Task 7 1626 parallel, 57/57
+  serial, 94 regression proof lines (fx020-task7-verify.log);
+  Task 8, on the committed clean tree, exit 0
+  (.build/fx020-task8-verify.log): 1626/1626 parallel, 57/57 serial, 94
+  regression proof lines, width 0 over 80 in 490 files.
 - Regression rows (scripts/regression-fx020.mjs, probes
   test/regression-fx020.mjs), each fixed passes and restored defect fails:
   `fx020-first-declaration` (bare unbound call fell back to the first

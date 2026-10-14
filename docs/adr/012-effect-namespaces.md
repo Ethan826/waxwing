@@ -40,7 +40,8 @@ An unknown qualifier or member uses existing texts only: `Nope.log(1)` is
 `Unbound function Nope.log` (E_UNBOUND, the whole written name; `Unbound
 local Nope.log` without a call), and `Log.nope(1)` is E_HANDLER `nope is not
 an operation of Log`, at the whole qualified expression. A nullary operation
-used without its call is `Expected Database.query()`.
+used without its call is E_ARITY `Expected Clock.now()`; an operation
+with parameters used as a value is an ordinary function value.
 
 ### Aliases and imports, only in a function's own row
 
@@ -160,8 +161,9 @@ BACKLOG FX021 (tests pin today's behaviour).
 ## Consequences and limits
 
 - Go output is unchanged: the seven bootstrap/*.go snapshots are
-  byte-identical, and the migration (about 700 automatic edits plus manual
-  ones across the examples, 101 fixtures and the test programs) was proved
+  byte-identical, and the migration (about 920 automatic edits, the sum of
+  the Task 6 report's chunk figures, plus manual ones across the examples,
+  101 fixtures and the test programs) was proved
   by a paired differential of 6,930 original/migrated program pairs with
   equal Go. One message changed
   (R15): the bare `now` value error echoed the written name,

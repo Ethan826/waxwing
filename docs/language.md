@@ -333,10 +333,11 @@ a trailing `;` makes a block Unit; `let` is monomorphic.
 
 Operation names (FX020, ADR 012). An operation is always called, or used as
 a value, qualified by its effect: `Database.query(id)`, `Console.print(x)`,
-`Fail.fail(NotFound(3))`, `map(Database.query, ids)`. Two effects may declare
-the same operation name, and an operation may share a name with a function:
-`fn log` and `Log.log` are different things. Qualified names resolve by
-declaration, never by the row: `Database.query` in a function whose row lacks
+`Fail.fail(NotFound(3))`, or passing `Database.query` as an argument. Two
+effects may declare the same operation name, and an operation may share a
+name with a function: `fn log` and `Log.log` are different things.
+Qualified names resolve by declaration, never by the row: `Database.query` in
+a function whose row lacks
 Database resolves, and is then E_EFFECT `f performs Database, which its
 signature does not allow`. `Nope.log(1)` is `Unbound function Nope.log`, and
 `Log.nope(1)` is E_HANDLER `nope is not an operation of Log`. A qualifier is
@@ -368,11 +369,13 @@ row): `Unbound function log; use Log.log, or import it with Log { log }`. With
 several candidates, in declaration order, built-ins first: `Unbound function
 log; use Log.log or Audit.log, or import one with Log { log } or Audit { log
 }` (this wording awaits the user's approval; three or more read `A.log,
-B.log or C.log`). `print` is `Console.print` (and `fail`, `Fail.fail`); `show`
-and `print` stay compiler-provided over every printable type until C001.
+B.log or C.log`). `print` is `Console.print` and `fail` is `Fail.fail`; there
+is no bare `print`. `Console.print` is compiler-provided because it ranges
+over every printable type, a temporary gap until C001, and `show` is a bare
+global function, likewise compiler-provided until C001.
 
 Errors (E_SYNTAX unless noted; each has an exact-text test in
-test/fx020-imports.test.mjs):
+test/fx020-*.test.mjs):
 - `note is imported twice in this signature`, with the note `first imported
   here`, when two imports bind one local name after renaming.
 - `Log is already an effect name`, with the note `declared here` or `first
