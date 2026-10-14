@@ -16,6 +16,8 @@ import Features.Resolve.Types (resolveTypeWith, typeTable)
 import Features.Resolve.Marks (signatureMarkVariables)
 import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
+import Features.Resolve.Imports as Imports
+import Features.Resolve.Scope (Bindings)
 import Features.Resolve.Variables (sortedVariables)
 import Domain.Resolved (Global)
 import Domain.Type (TyRow)
@@ -31,7 +33,11 @@ type Signature =
   }
 
 type Definition =
-  { index ∷ Int, function ∷ Syntax.FunctionDecl, signature ∷ Signature }
+  { index ∷ Int
+  , function ∷ Syntax.FunctionDecl
+  , signature ∷ Signature
+  , bindings ∷ Bindings
+  }
 
 resolve ∷ Syntax.Program → Either Syntax.Diagnostic Resolved.Program
 resolve program = do
@@ -40,9 +46,10 @@ resolve program = do
   signatures ← traverse
     (resolveSignature tables.types (Effect.summaries program.effects))
     functions
+  bound ← traverse (bindingsFor effects) (Array.zip functions signatures)
   let
     definitions = Array.mapWithIndex indexed
-      (Array.zipWith pair functions signatures)
+      (Array.zipWith pair functions (Array.zip signatures bound))
   entry ← entryPoint definitions
   -- Applied once, so the globals are built once rather than per function.
   bodies ← traverse
@@ -71,9 +78,19 @@ resolve program = do
     }
   where
   functions = program.functions
-  pair function signature = { function, signature }
+  bindingsFor effects (Tuple function signature) = Imports.bindings
+    program.effects
+    effects
+    function
+    signature.row
+  pair function (Tuple signature bindings) =
+    { function, signature, bindings }
   indexed index entry =
-    { index, function: entry.function, signature: entry.signature }
+    { index
+    , function: entry.function
+    , signature: entry.signature
+    , bindings: entry.bindings
+    }
   globals ctors = Array.mapWithIndex functionGlobal functions
     <> Array.mapWithIndex ctorGlobal ctors
 
@@ -181,6 +198,7 @@ resolveFunction globals tables effects effectInfos definition =
     , effectInfos
     , ctors: tables.ctors
     , locals
+    , bindings: definition.bindings
     , types: tables.types
     , variables: definition.signature.variables
     , markVariables: definition.signature.markVariables

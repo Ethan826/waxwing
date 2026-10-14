@@ -94,10 +94,23 @@ data RowRef = RowRef Span (Array LabelRef) (Maybe RowTail)
 -- the label's own `span` stays the label's.
 data MarkRef = NofailRef Span | NofailVariableRef Span String
 
+-- `as Alias` and `{ op [as name], … }` after a label (FX020 §1). Both are
+-- written only in a function's own row; the parser refuses them elsewhere.
+type Alias = { name ∷ String, span ∷ Span }
+
+-- One imported operation: its name, and the local name it is bound to
+-- (the same name unless renamed), each with its own span.
+type Import =
+  { name ∷ String, nameSpan ∷ Span, local ∷ String, localSpan ∷ Span }
+
+type Imports = { open ∷ Span, names ∷ Array Import }
+
 type LabelRef =
   { name ∷ String
   , arguments ∷ Array TypeRef
   , mark ∷ Maybe MarkRef
+  , alias ∷ Maybe Alias
+  , imports ∷ Maybe Imports
   , span ∷ Span
   }
 
@@ -133,6 +146,7 @@ type OperationDecl =
 
 type EffectDecl =
   { name ∷ String
+  , nameSpan ∷ Span
   , parameters ∷ Array TypeParameter
   , operations ∷ Array OperationDecl
   , span ∷ Span

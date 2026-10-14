@@ -1,6 +1,7 @@
 module Format.Parse.Effect (effectDeclaration) where
 
 import Prelude
+import Data.Foldable (traverse_)
 import Data.Maybe (fromMaybe)
 import Domain.Syntax
   ( EffectDecl
@@ -16,9 +17,11 @@ import Format.Parse.Grammar
   , manyOn
   , name
   , optionalOn
+  , refine
   , sepBy1
   , upperName
   )
+import Format.Parse.Row (refuseBindings)
 import Format.Parse.Type (typeAndRow, typeRef)
 
 effectDeclaration ∷ Parser EffectDecl
@@ -32,6 +35,7 @@ effectDeclaration = effectOf <$> expect "effect" <*> upperName
   parameters = expect "(" *> sepBy1 "," typeParameter <* expect ")"
   effectOf keyword identifier found operations semicolon =
     { name: identifier.text
+    , nameSpan: identifier.span
     , parameters: fromMaybe [] found
     , operations
     , span: { start: keyword.span.start, end: semicolon.span.end }
@@ -42,9 +46,10 @@ operation = operationOf <$> expect "fn" <*> name <* expect "("
   <*> commaList parameter
   <* expect ")"
   <* expect ":"
-  <*> typeAndRow
+  <*> refine plainSignature typeAndRow
   <*> expect ";"
   where
+  plainSignature result = result <$ traverse_ refuseBindings result.row
   operationOf keyword identifier parameters result semicolon =
     { name: identifier.text
     , parameters

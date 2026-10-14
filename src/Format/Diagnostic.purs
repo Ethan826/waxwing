@@ -121,6 +121,7 @@ noted = case _ of
   DeferMayFail _ → true
   DeferMayPerform _ → true
   FailNeedsConcrete → true
+  Syntax _ → true
   DeferHandlerMayFail _ → true
   DeferHandlerVariable _ _ → true
   ExpectedNofail _ _ → true

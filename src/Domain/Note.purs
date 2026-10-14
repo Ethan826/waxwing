@@ -22,6 +22,10 @@ data NoteReason
   | CleanupMustNotFail
   | FailAlternatives
   | DeclaredHere String
+  -- FX020 §3: the bare notes of the duplicate-binding errors.
+  | EffectDeclaredHere
+  | FirstImportedHere
+  | FirstBoundHere
   | InnermostHere String
   | ContinuesInto String Int String
   -- The notes of a mark rejection (FX008 design §3.6): a frame, a clause

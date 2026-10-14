@@ -139,6 +139,8 @@ resolveTypeWith types effects variables ambient = resolved
                     [ { name: effectName
                       , arguments: argumentTypes
                       , mark: Nothing
+                      , alias: Nothing
+                      , imports: Nothing
                       , span: referenceSpan
                       }
                     ]

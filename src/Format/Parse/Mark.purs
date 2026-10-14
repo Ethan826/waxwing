@@ -1,4 +1,9 @@
-module Format.Parse.Mark (label, markedLabel, opensLabel) where
+module Format.Parse.Mark
+  ( label
+  , markedLabel
+  , opensLabel
+  , plainLabel
+  ) where
 
 import Prelude
 import Data.Either (Either(..), either)
@@ -24,6 +29,7 @@ import Format.Parse.Grammar
   , optionalOn
   , refine
   , sepBy1
+  , sepByTrailing1
   , spanned
   , token
   , upperName
@@ -33,8 +39,8 @@ import Format.Parse.Grammar
 type Variable = { name ∷ String, end ∷ Position }
 
 -- A label as written: `Log`, `State(Int)`. It carries no mark.
-label ∷ Parser TypeRef → Parser LabelRef
-label inner = spanned labelOf
+plainLabel ∷ Parser TypeRef → Parser LabelRef
+plainLabel inner = spanned labelOf
   ( parts <$> upperName
       <*> optionalOn "(" arguments
   )
@@ -43,7 +49,38 @@ label inner = spanned labelOf
   parts identifier found =
     { name: identifier.text, arguments: fromMaybe [] found }
   labelOf span found =
-    { name: found.name, arguments: found.arguments, mark: Nothing, span }
+    { name: found.name
+    , arguments: found.arguments
+    , mark: Nothing
+    , alias: Nothing
+    , imports: Nothing
+    , span
+    }
+
+-- A label of a row: `Database as D`, `Log { log, info as note }` (FX020
+-- §1). Where an alias or import has no meaning, the row refuses it.
+label ∷ Parser TypeRef → Parser LabelRef
+label inner = withBindings <$> plainLabel inner <*> optionalOn "as" alias
+  <*> optionalOn "{" imports
+  where
+  alias = expect "as" *> (aliasOf <$> upperName)
+  aliasOf found = { name: found.text, span: found.span }
+  imports = importsOf <$> expect "{"
+    <*> sepByTrailing1 "," "}" import_
+    <* expect "}"
+  importsOf open names = { open: open.span, names }
+  import_ = importOf <$> name <*> optionalOn "as" (expect "as" *> name)
+  importOf found renamed = maybe' (same found) (renamedTo found) renamed
+  same found _ = importFor found found
+  renamedTo found local = importFor found local
+  importFor found local =
+    { name: found.text
+    , nameSpan: found.span
+    , local: local.text
+    , localSpan: local.span
+    }
+  withBindings found written imported =
+    found { alias = written, imports = imported }
 
 -- `nofail Log` or `nofail(k) Log` (FX008 design §3.2), read where a label
 -- must follow: after `with`, after `+`, as a row argument or a handled

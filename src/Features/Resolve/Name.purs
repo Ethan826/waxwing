@@ -4,7 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Map as Map
-import Data.Maybe (Maybe, maybe')
+import Data.Maybe (Maybe(..), maybe')
 import Data.String as String
 import Data.Traversable (traverse)
 import Domain.Problem (Problem(..), UnboundKind(..))
@@ -12,11 +12,17 @@ import Domain.Syntax as Syntax
 import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
 import Features.Resolve.Fresh (Fresh, failure, liftEither)
-import Features.Resolve.Qualified (failCall, failReference)
-import Features.Resolve.Scope (Scope)
+import Features.Resolve.Qualified
+  ( failCall
+  , failReference
+  , importedCall
+  , importedName
+  )
+import Features.Resolve.Scope (Import, Scope)
 
--- Design §2: a local wins; then a function, a value if it has parameters
--- and E_ARITY without its call if it has none; then a constructor.
+-- Design §2: a local wins, then a signature import (FX020 §2), then a
+-- function, a value if it has parameters and E_ARITY without its call if it
+-- has none; then a constructor. The first match wins: there is no fallback.
 bareName
   ∷ Scope
   → Syntax.Span
@@ -25,7 +31,8 @@ bareName
 bareName scope span name = maybe' otherwise found (findLocal scope name)
   where
   found id = pure (Resolved.Local span id)
-  otherwise _ = maybe' unbound global (findGlobal scope name)
+  otherwise _ = maybe' viaGlobal (importedName span) (findImport scope name)
+  viaGlobal _ = maybe' unbound global (findGlobal scope name)
   unbound _ = failure
     (Syntax.problemAt (Unbound UnboundLocal name) span)
   global entry = case entry.ref of
@@ -39,7 +46,7 @@ bareName scope span name = maybe' otherwise found (findLocal scope name)
     Resolved.BuiltinPrint → pure (Resolved.PrintRef span)
     Resolved.BuiltinShow → pure (Resolved.ShowRef span)
     Resolved.BuiltinCrash → pure (Resolved.CrashRef span)
-    Resolved.LegacyFail → failReference span
+    Resolved.LegacyFail → failReference Nothing span
 
 bareFunction
   ∷ Syntax.Span
@@ -78,7 +85,9 @@ callName nested scope span name arguments = maybe' globalCall localCall
         (Syntax.problemAt (NotCallable name) span)
     | otherwise = Resolved.Apply span (Resolved.Local (nameSpan span name) id)
         <$> resolved
-  globalCall _ = maybe' unbound dispatch (findGlobal scope name)
+  globalCall _ = maybe' viaGlobal imported (findImport scope name)
+  imported = importedCall span arguments resolved
+  viaGlobal _ = maybe' unbound dispatch (findGlobal scope name)
   unbound _ = failure
     (Syntax.problemAt (Unbound UnboundFunction name) span)
   dispatch global = case global.ref of
@@ -89,7 +98,7 @@ callName nested scope span name arguments = maybe' globalCall localCall
     Resolved.BuiltinPrint → Resolved.Print span <$> resolved
     Resolved.BuiltinShow → Resolved.Show span <$> resolved
     Resolved.BuiltinCrash → Resolved.Crash span <$> resolved
-    Resolved.LegacyFail → failCall span arguments resolved
+    Resolved.LegacyFail → failCall Nothing span arguments resolved
   resolved = traverse nested arguments
 
 constructorCall
@@ -116,6 +125,11 @@ nameSpan span name = { start: span.start, end }
 
 findLocal ∷ Scope → String → Maybe Resolved.LocalId
 findLocal scope name = Map.lookup name scope.locals
+
+findImport ∷ Scope → String → Maybe Import
+findImport scope name = Array.find named scope.bindings.imports
+  where
+  named found = found.local == name
 
 findGlobal ∷ Scope → String → Maybe Global
 findGlobal scope name = Array.find named scope.globals

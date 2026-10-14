@@ -2,7 +2,6 @@ module Format.Parse.Type (typeRef, typeAndRow) where
 
 import Prelude
 import Data.Array as Array
-import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe, maybe')
@@ -11,7 +10,6 @@ import Data.Traversable (traverse)
 import Domain.Problem (Problem(..))
 import Domain.Syntax
   ( Diagnostic
-  , Position
   , RowRef(..)
   , RowTail(..)
   , Span
@@ -19,6 +17,7 @@ import Domain.Syntax
   , TypeRef(..)
   , problemAt
   )
+import Format.Parse.Chain (Segment, combined, unexpectedRow)
 import Format.Parse.Row (markedOr, rowArgument, rowRef)
 import Format.Parse.HandlerType as HandlerType
 import Format.Lex (Token, isName, isUpper)
@@ -42,17 +41,6 @@ import Format.Parse.Grammar
   )
 
 type Applied = { identifier ∷ Token, arguments ∷ Maybe (Array TypeArgument) }
-
--- What one `->` separates: an operand, or a parenthesized list of types.
-type Segment =
-  { span ∷ Span
-  , types ∷ NonEmptyArray TypeRef
-  , row ∷ Maybe RowRef
-  }
-
--- A parameter type and where its segment starts.
-type Parameter =
-  { start ∷ Position, ty ∷ TypeRef, row ∷ Maybe RowRef }
 
 -- `->` is right-associative and loosest (FN001 design §1). The chain is
 -- read as a list and folded right, never one recursion per arrow, and a
@@ -122,62 +110,6 @@ segment inner = spanned segmentOf
   closing = [] <$ expect ")"
   arrowNext = dispatch [ on "->" (pure unit) ] (failWith "Expected ->")
 
--- Each arrow spans its parameter's segment through the chain's end; a
--- lone type keeps its own span, parenthesized or not.
-folded ∷ { init ∷ Array Segment, last ∷ Segment } → TypeRef
-folded chain = Array.foldr arrow (NonEmptyArray.last chain.last.types)
-  ( Array.concat
-      ( Array.zipWith annotated chain.init
-          (Array.drop 1 chain.init <> [ chain.last ])
-      ) <> lastParameters
-  )
-  where
-  end = chain.last.span.end
-  lastParameters = map (startingAt chain.last.span.start)
-    (NonEmptyArray.init chain.last.types)
-  arrow parameter result =
-    FunRef { start: parameter.start, end } parameter.ty parameter.row result
-  annotated before after = setLast after.row (parameters before)
-  setLast row found = fromMaybe found
-    (Array.modifyAt (Array.length found - 1) (withRow row) found)
-  withRow row parameter = parameter { row = row }
-
-parameters ∷ Segment → Array Parameter
-parameters found = map (startingAt found.span.start)
-  (NonEmptyArray.toArray found.types)
-
-startingAt ∷ Position → TypeRef → Parameter
-startingAt start ty = { start, ty, row: Nothing }
-
--- A row follows the chain's last segment: it is the signature's row for a
--- lone type, or the final arrow's row. Only the first segment of an arrow
--- chain has no arrow before it, so a row there would be dropped; reject it.
-combined
-  ∷ { init ∷ Array Segment, last ∷ Segment }
-  → Either Diagnostic { ty ∷ TypeRef, row ∷ Maybe RowRef }
-combined chain = maybe' (merged chain) unexpectedRow (leadingRow chain)
-
--- The row written on the chain's first segment, if there is an arrow after it.
-leadingRow ∷ { init ∷ Array Segment, last ∷ Segment } → Maybe RowRef
-leadingRow chain = maybe' (const Nothing) segmentRow (Array.head chain.init)
-
-merged
-  ∷ { init ∷ Array Segment, last ∷ Segment }
-  → Unit
-  → Either Diagnostic { ty ∷ TypeRef, row ∷ Maybe RowRef }
-merged chain _ = Right
-  { ty: folded chain
-  , row: if Array.null chain.init then chain.last.row else Nothing
-  }
-
-segmentRow ∷ Segment → Maybe RowRef
-segmentRow found = found.row
-
--- A row with no meaning where it was written is an error, never dropped.
-unexpectedRow ∷ ∀ a. RowRef → Either Diagnostic a
-unexpectedRow (RowRef span _ _) = Left
-  (problemAt (Syntax "Unexpected effect row") span)
-
 appliedOf ∷ Span → Applied → TypeRef
 appliedOf span found =
   NamedRef span found.identifier.text (fromMaybe [] found.arguments)
@@ -207,7 +139,16 @@ typeOrRow inner = refine makeArgument
 addFirst ∷ Span → String → Array TypeRef → RowRef → RowRef
 addFirst span name arguments (RowRef rest labels tail) = RowRef
   { start: span.start, end: rest.end }
-  (Array.cons { name, arguments, mark: Nothing, span } labels)
+  ( Array.cons
+      { name
+      , arguments
+      , mark: Nothing
+      , alias: Nothing
+      , imports: Nothing
+      , span
+      }
+      labels
+  )
   tail
 
 typeRefSpan ∷ TypeRef → Span

@@ -13,7 +13,8 @@ import Data.Tuple (Tuple(..))
 import Domain.Note (NoteReason(..))
 import Domain.Problem (Problem)
 import Domain.Syntax.Core
-  ( Arm
+  ( Alias
+  , Arm
   , Clause
   , CtorDecl
   , Diagnostic
@@ -23,6 +24,8 @@ import Domain.Syntax.Core
   , FailClause
   , FunctionDecl
   , HandlerParameterRef
+  , Import
+  , Imports
   , Item(..)
   , LabelRef
   , LambdaParam
@@ -126,6 +129,8 @@ handlerLabelRef = case _ of
       { name
       , arguments: Array.mapMaybe typeArgument arguments
       , mark: Nothing
+      , alias: Nothing
+      , imports: Nothing
       , span
       }
   _ → Nothing

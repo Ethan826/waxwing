@@ -33,6 +33,8 @@ resolve effects variables ambient resolveType span arguments = case arguments of
         { name: effectName
         , arguments: argumentRefs
         , mark: Nothing
+        , alias: Nothing
+        , imports: Nothing
         , span: effectSpan
         }
       <*>

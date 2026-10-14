@@ -111,6 +111,9 @@ noteText = case _ of
     "use ...e to pass through what a callback performs, a concrete "
       <> "family such as Fail(DbError), or return a Result"
   DeclaredHere name → name <> " is declared here"
+  EffectDeclaredHere → "declared here"
+  FirstImportedHere → "first imported here"
+  FirstBoundHere → "first bound here"
   InnermostHere label → "the innermost " <> shortLabel label <> " is here"
   ContinuesInto _ _ _ → ""
   ClausesReach label → Mark.clausesReach (shortLabel label)

@@ -30,7 +30,13 @@ import Format.Parse.Grammar
   , token
   )
 import Format.Parse.Mark (markedLabel, opensLabel)
-import Format.Parse.Row (rowArgument, rowRef)
+import Format.Parse.Row
+  ( bindingSpan
+  , placement
+  , plainRow
+  , refuseBindings
+  , rowArgument
+  )
 import Format.Lex (Token)
 
 type Rowed = { ty ∷ TypeRef, row ∷ Maybe RowRef }
@@ -56,9 +62,17 @@ operand rowed inner = build <$> token
     (unmarked parser)
   unmarked parser = refine apply
     ( parsed <$> sepBy1 "," (argument rowed parser)
-        <*> optionalOn "with" (rowRef parser)
+        <* refusedBindings
+        <*> optionalOn "with" (plainRow parser)
         <*> expect ")"
     )
+  -- A handler type is not a function's own row (FX020 §1).
+  refusedBindings = dispatch
+    [ on "as" (refine refused (expect "as" *> token))
+    , on "{" (refine refused token)
+    ]
+    (pure unit)
+  refused found = Left (placement found.span)
   parsed values row close =
     { arguments: map Tuple.fst values
     , argumentRows: Array.mapMaybe Tuple.snd values
@@ -75,7 +89,7 @@ operand rowed inner = build <$> token
         (Left <<< unexpectedRow)
         found.row
     | otherwise = Left (unexpectedRow first)
-  lifted first _ = Right (Just first)
+  lifted first _ = Just <$> refuseBindings first
   ordinary found _ = Right
     ( NamedRef (applicationSpan found) "Handler"
         found.arguments
@@ -96,6 +110,8 @@ operand rowed inner = build <$> token
     { name: labelName
     , arguments: argumentRefs
     , mark: Nothing
+    , alias: Nothing
+    , imports: Nothing
     , span: labelSpan
     }
     (Just row)
@@ -134,10 +150,12 @@ operand rowed inner = build <$> token
 -- mark, so this is always the special form, with the ambient row when none
 -- is written.
 markedHandlerType ∷ Parser TypeRef → Parser TypeRef
-markedHandlerType parser = built <$> markedLabel parser
-  <*> optionalOn "with" (rowRef parser)
+markedHandlerType parser = built <$> refine unbound (markedLabel parser)
+  <*> optionalOn "with" (plainRow parser)
   <*> expect ")"
   where
+  unbound found = maybe' (const (Right found)) (Left <<< placement)
+    (bindingSpan found)
   built labelRef row close = THandlerRef
     { start: labelRef.span.start, end: close.span.end }
     labelRef
@@ -171,7 +189,16 @@ unexpectedRow (RowRef span _ _) =
 addFirst ∷ Span → String → Array TypeRef → RowRef → RowRef
 addFirst span name arguments (RowRef rest labels tail) = RowRef
   { start: span.start, end: rest.end }
-  (Array.cons { name, arguments, mark: Nothing, span } labels)
+  ( Array.cons
+      { name
+      , arguments
+      , mark: Nothing
+      , alias: Nothing
+      , imports: Nothing
+      , span
+      }
+      labels
+  )
   tail
 
 typeRefSpan ∷ TypeRef → Span

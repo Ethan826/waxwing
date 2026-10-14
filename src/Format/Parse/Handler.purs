@@ -29,13 +29,13 @@ import Format.Parse.Grammar
   , spanned
   , token
   )
-import Format.Parse.Mark (label)
+import Format.Parse.Mark (plainLabel)
 import Format.Parse.Type (typeRef)
 
 type Binder = { name ∷ Maybe String, span ∷ Span }
 
 handlerExpr ∷ Parser Expr → Parser Expr
-handlerExpr inner = make <$> expect "handler" <*> label typeRef
+handlerExpr inner = make <$> expect "handler" <*> plainLabel typeRef
   <* expect "{"
   <*> clauses (clause inner)
   <*> expect "}"
