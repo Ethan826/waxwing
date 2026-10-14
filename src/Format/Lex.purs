@@ -41,6 +41,7 @@ import Format.Lex.Scan
   , start
   )
 import Format.Lex.Token (Token, TokenKind(..))
+import Format.Stack as Stack
 
 lex ∷ String → Either Diagnostic (Array Token)
 lex source = tailRecM (scan source) start
@@ -80,10 +81,20 @@ scanAt source state head
   | head == '}' = closed source state
   | head == '.', String.slice state.index (state.index + 3) source == "..." =
       continue (emit "..." state)
+  | head == '.', afterNumber state = unexpected source state
   | pairStart head, Just text ← twoCharacter source state.index =
       continue (emit text state)
   | punctuation head = continue (emit (String.singleton head) state)
   | otherwise = unexpected source state
+
+-- A `.` directly after an integer literal is a decimal point, which the
+-- language lacks (`1.5`): E_LEX as before `.` became a token. Only a
+-- literal is refused, so `r.field` on a lowercase receiver stays open.
+afterNumber ∷ Scan → Boolean
+afterNumber state = maybe false numberEndsHere (Stack.unpush state.tokens)
+  where
+  numberEndsHere top = maybe false isDigit (String.charAt 0 top.item.text)
+    && top.item.span.end.offset == state.position.offset
 
 -- `#`s, then the quote of a raw or extended literal.
 rawStart ∷ String → Int → Boolean

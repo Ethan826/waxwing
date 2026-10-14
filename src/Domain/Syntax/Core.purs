@@ -21,6 +21,9 @@ data Expr
   | Boolean Span Boolean
   | Variable Span String
   | Call Span String (Array Expr)
+  -- `Effect.op` and `Effect.op(args)`: qualifier, then member (FX020).
+  | Qualified Span String String
+  | QualifiedCall Span String String (Array Expr)
   | Add Span Expr Expr
   | Concat Span Expr Expr
   | Interpolate Span (Array Expr)
@@ -35,7 +38,6 @@ data Expr
   | HandlerExpr Span LabelRef (Array Clause)
   | With Span Expr Expr
   | Handle Span Expr (Array FailClause)
-  | Fail Span Expr
   | TextLiteral Span String
 
 -- A block item (FX001 design §1): `let name = e`, `let _ = e` (Nothing)

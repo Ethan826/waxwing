@@ -54,6 +54,8 @@ exprSpan = case _ of
   Boolean span _ → span
   Variable span _ → span
   Call span _ _ → span
+  Qualified span _ _ → span
+  QualifiedCall span _ _ _ → span
   Add span _ _ → span
   Concat span _ _ → span
   Interpolate span _ → span
@@ -68,7 +70,6 @@ exprSpan = case _ of
   HandlerExpr span _ _ → span
   With span _ _ → span
   Handle span _ _ → span
-  Fail span _ → span
   TextLiteral span _ → span
 
 typeRefSpan ∷ TypeRef → Span

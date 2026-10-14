@@ -44,6 +44,8 @@ punctuation = case _ of
   '}' → true
   '<' → true
   '>' → true
+  -- `...` is matched before this (Format.Lex), so a lone `.` is one token.
+  '.' → true
   _ → false
 
 -- FX001 reserves its words at once (design §1), though later tasks parse

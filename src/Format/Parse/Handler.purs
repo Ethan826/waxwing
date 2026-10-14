@@ -2,7 +2,6 @@ module Format.Parse.Handler
   ( handlerExpr
   , withExpr
   , handleExpr
-  , failExpr
   , unsupportedControl
   ) where
 
@@ -67,14 +66,6 @@ handleExpr inner = handled <$> expect "handle" <*> inner <* expect "{"
 clauses ∷ ∀ a. Parser a → Parser (Array a)
 clauses item = dispatch [ on "}" (pure []) ]
   (sepByTrailing1 "," "}" item)
-
-failExpr ∷ Parser Expr → Parser Expr
-failExpr inner = failed <$> expect "fail" <* expect "(" <*> inner
-  <* expect ")"
-  where
-  failed keyword value = Fail
-    { start: keyword.span.start, end: (exprSpan value).end }
-    value
 
 unsupportedControl ∷ Parser Expr
 unsupportedControl = refine rejected token

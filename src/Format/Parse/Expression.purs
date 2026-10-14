@@ -19,33 +19,29 @@ import Format.Parse.Grammar
   ( Case
   , Parser
   , chainLeftAny
-  , commaList
   , defer
   , dispatch
   , expect
   , failWith
   , infixed
   , manyOn
-  , name
   , nested
   , on
   , onWhen
-  , optionalOn
   , refine
   , sepBy1
-  , spanned
   , textLiteral
   , token
   )
 import Format.Parse.Block (block, parenthesized)
 import Format.Parse.Lambda (lambda)
 import Format.Parse.Handler
-  ( failExpr
-  , handleExpr
+  ( handleExpr
   , handlerExpr
   , unsupportedControl
   , withExpr
   )
+import Format.Parse.Name (Primary, nameOrQualified)
 import Format.Parse.Literal (integerLiteral, integerStart)
 import Format.Parse.Pattern (arms)
 
@@ -53,9 +49,6 @@ type Comparison = { text ∷ String, operator ∷ Operator }
 
 -- A postfix chain's arguments, in order, and where its last `)` ends.
 type Application = { arguments ∷ Array Expr, end ∷ Position }
-
--- A primary expression and the position its source text starts at.
-type Primary = { value ∷ Expr, start ∷ Position }
 
 comparisons ∷ Array Comparison
 comparisons =
@@ -180,14 +173,13 @@ chain inner = joined <$> group <*> manyOn "(" group
 primary ∷ Parser Expr → Parser Primary
 primary inner = dispatch
   [ on "(" (parenthesized inner)
-  , on "fail" (bare <$> failExpr inner)
   , on "ctl" (bare <$> unsupportedControl)
   , on "resume" (bare <$> unsupportedControl)
   , on "true" (bare <<< boolean true <$> token)
   , on "false" (bare <<< boolean false <$> token)
   , on "\"" (bare <$> textLiteral inner)
   , onWhen integerStart (bare <<< integer <$> integerLiteral)
-  , onWhen isName (named inner)
+  , onWhen isName (nameOrQualified inner)
   ]
   (bare <$> refine notAnExpression token)
   where
@@ -199,19 +191,3 @@ primary inner = dispatch
 notAnExpression ∷ Token → Either Diagnostic Expr
 notAnExpression found =
   Left (problemAt (Syntax "Expected an expression") found.span)
-
--- A variable spans its name; a call runs through its `)`. It builds its
--- Primary itself: a separate `<$>` over it added a stack layer per nested
--- call level (FN001 Task 6 review, ADR 006 "Functions emitted").
-named ∷ Parser Expr → Parser Primary
-named inner = spanned primaryOf (parts <$> name <*> optionalOn "(" arguments)
-  where
-  primaryOf span found = { value: namedOf span found, start: span.start }
-  parts identifier found = { identifier, arguments: found }
-  arguments = expect "(" *> commaList inner <* expect ")"
-
-namedOf
-  ∷ Span → { identifier ∷ Token, arguments ∷ Maybe (Array Expr) } → Expr
-namedOf span found = maybe (Variable span found.identifier.text)
-  (Call span found.identifier.text)
-  found.arguments

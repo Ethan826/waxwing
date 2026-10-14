@@ -52,6 +52,9 @@ resolve program = do
               [ { name: "print", ref: Resolved.BuiltinPrint }
               , { name: "show", ref: Resolved.BuiltinShow }
               , { name: "crash", ref: Resolved.BuiltinCrash }
+              -- TRANSITIONAL (FX020 Task 7 removes it): `fail` was a
+              -- keyword; until bare operation names go, it names Fail.fail.
+              , { name: "fail", ref: Resolved.LegacyFail }
               ]
         )
         tables
