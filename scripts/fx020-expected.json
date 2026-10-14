@@ -1,0 +1,4 @@
+{
+  "about": "FX020 paired differential ledger (scripts/fx020-paired.mjs). Each entry excuses one intended difference: original or migrated (sha1 of that source, as the run prints it), kind (go | diagnostic | outcome | unpaired original | unpaired migrated), optionally candidate (the exact candidate summary expected), and reason. Entries nothing matches fail the run.",
+  "differences": []
+}
