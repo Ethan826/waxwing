@@ -476,7 +476,7 @@
   " "
   "=" keyword.operator.assignment
   " "
-  "fail" storage.modifier.contextual
+  "fail" variable.other
   "(" punctuation.section.parens
   "E" entity.name.type
   ")" punctuation.section.parens

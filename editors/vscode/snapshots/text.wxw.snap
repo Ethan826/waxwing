@@ -154,7 +154,7 @@
   ";" punctuation.separator
 15:
   ""
-16: fn entryFor(id: Int): Entry with Directory = Entry(lookup(id), id);
+16: fn entryFor(id: Int): Entry with Directory = Entry(Directory.lookup(id), id);
   "fn" keyword.declaration
   " "
   "entryFor" variable.other
@@ -176,7 +176,9 @@
   " "
   "Entry" entity.name.type
   "(" punctuation.section.parens
-  "lookup" variable.other
+  "Directory" meta.qualified-operation entity.name.type
+  "." meta.qualified-operation punctuation.accessor
+  "lookup" meta.qualified-operation entity.name.function
   "(" punctuation.section.parens
   "id" variable.other
   ")" punctuation.section.parens
@@ -273,13 +275,17 @@
   ")" punctuation.section.parens
   " "
   "{" meta.braces
-25:     print(
+25:     Console.print(
   "    " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
-26:       lookup(2)
+26:       Directory.lookup(2)
   "      " meta.braces
-  "lookup" meta.braces variable.other
+  "Directory" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "lookup" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "2" meta.braces constant.numeric.integer
   ")" meta.braces punctuation.section.parens
@@ -297,13 +303,17 @@
   "    " meta.braces
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-30:     print(letter(lookup(1), 1));
+30:     Console.print(letter(Directory.lookup(1), 1));
   "    " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "letter" meta.braces variable.other
   "(" meta.braces punctuation.section.parens
-  "lookup" meta.braces variable.other
+  "Directory" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "lookup" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "1" meta.braces constant.numeric.integer
   ")" meta.braces punctuation.section.parens
@@ -313,18 +323,22 @@
   ")" meta.braces punctuation.section.parens
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-31:     print(rawPath());
+31:     Console.print(rawPath());
   "    " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "rawPath" meta.braces variable.other
   "(" meta.braces punctuation.section.parens
   ")" meta.braces punctuation.section.parens
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-32:     print(entryFor(1));
+32:     Console.print(entryFor(1));
   "    " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "entryFor" meta.braces variable.other
   "(" meta.braces punctuation.section.parens
@@ -332,9 +346,11 @@
   ")" meta.braces punctuation.section.parens
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-33:     print("shown: ${show(entryFor(2))}");
+33:     Console.print("shown: ${show(entryFor(2))}");
   "    " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "\"" meta.braces string.quoted.double punctuation.definition.string.begin
   "shown: " meta.braces string.quoted.double
@@ -350,20 +366,26 @@
   "\"" meta.braces string.quoted.double punctuation.definition.string.end
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-34:     print(show(lookup(1) < lookup(2)))
+34:     Console.print(show(Directory.lookup(1) < Directory.lookup(2)))
   "    " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "show" meta.braces variable.other
   "(" meta.braces punctuation.section.parens
-  "lookup" meta.braces variable.other
+  "Directory" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "lookup" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "1" meta.braces constant.numeric.integer
   ")" meta.braces punctuation.section.parens
   " " meta.braces
   "<" meta.braces keyword.operator.comparison
   " " meta.braces
-  "lookup" meta.braces variable.other
+  "Directory" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "lookup" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "2" meta.braces constant.numeric.integer
   ")" meta.braces punctuation.section.parens

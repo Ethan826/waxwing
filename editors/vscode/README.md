@@ -21,8 +21,20 @@ if the language does not appear, use Install Extension from Location.
 - Reserved words, as the lexer reserves them (`Format.Lex.Chars.reserved`):
   control (`if then else match with handle defer resume`), declarations
   (`fn type effect handler let ctl`), `true`/`false`, the built-in types
-  `Int Bool Unit Text`, and the wildcard `_`. `pure`, `nofail` and `fail` are
-  contextual (ordinary names to the lexer) and are always highlighted.
+  `Int Bool Unit Text`, and the wildcard `_`. `pure` and `nofail` are
+  contextual (ordinary names to the lexer) and are always highlighted. `fail`
+  is an ordinary name since FX020 and is not a keyword.
+- Effect namespaces (FX020, ADR 012): a qualified operation `Effect.op`,
+  with or without `(args)`, as an effect-scoped uppercase qualifier
+  (`entity.name.type`), a `punctuation.accessor` dot and an
+  `entity.name.function` operation. Only the adjacent form counts, as in the
+  lexer: `Log . log` and lowercase `x.y` are not qualified.
+- Signature aliases and imports: in `with Database as D + Log { log, info as
+  note }`, `as` is the contextual keyword `keyword.other.alias`, the alias `D`
+  is `entity.name.type.alias`, the braces after an effect name, alias or `)`
+  are `meta.imports`, imported names are `entity.name.function` and the local
+  name after `as` is `variable.other.alias`. `as` is not reserved (an
+  ordinary name elsewhere) and is highlighted only in those positions.
 - Uppercase names as types, constructors and effects; lowercase names as
   values; integers, with a leading `-`.
 - Operators `+ ++ == != < <= > >= -> => |> ...`, `=`, and the separators
@@ -44,6 +56,10 @@ if the language does not appear, use Install Extension from Location.
 - Escape validity is checked by pattern only: surrogates and values above
   10FFFF in `\u{...}` are not marked. A `"` followed by more `#`s than the
   literal opened with is not flagged.
+- `as` is recognised by position, not by parsing: `x as Foo` outside a
+  signature row is also marked. A brace directly after a name, whose first
+  item is a lowercase name followed by `,`, `as` or `}`, is taken as an import
+  list.
 - No semantic information: a lowercase name is never told apart as a
   function, a parameter or a field.
 
@@ -56,8 +72,9 @@ file differs from the generator or if its keyword set differs from the
 lexer's reserved words.
 
 Tokenization snapshots (`snapshots/`) cover every `examples/*.wxw` and
-`fixtures/text-literals.wxw`. They need two packages that are not
-repository dependencies, so the check is opt-in and is not part of verify:
+`fixtures/text-literals.wxw` and `fixtures/effect-namespaces.wxw`. They need
+two packages that are not repository dependencies, so the check is opt-in and
+is not part of verify:
 
     npm install --no-save vscode-textmate vscode-oniguruma
     node scripts/editor-grammar-snapshots.mjs            # compare

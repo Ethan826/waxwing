@@ -15,15 +15,17 @@ const word = '[A-Za-z0-9_]';
 const boundary = names => `(?<!${word})(?:${names.join('|')})(?!${word})`;
 
 // Every reserved word of Format.Lex.Chars.reserved is placed in exactly one
-// of these groups, except `_`, which has its own rule. `pure`, `nofail` and
-// `fail` are contextual: ordinary names to the lexer.
+// of these groups, except `_`, which has its own rule. `pure` and `nofail`
+// are contextual: ordinary names to the lexer. So are `fail` (since FX020,
+// ADR 012, an ordinary operation name) and `as`, which is highlighted only
+// where an alias or an import renaming can stand (`aliasRule`, `renameRule`).
 export const wordGroups = [
   ['keyword.control', ['if', 'then', 'else', 'match', 'with', 'handle',
     'defer', 'resume']],
   ['keyword.declaration', ['fn', 'type', 'effect', 'handler', 'let', 'ctl']],
   ['constant.language.boolean', ['true', 'false']],
   ['support.type.builtin', ['Int', 'Bool', 'Unit', 'Text']],
-  ['storage.modifier.contextual', ['pure', 'nofail', 'fail']]
+  ['storage.modifier.contextual', ['pure', 'nofail']]
 ];
 
 const wordRule = ([name, names]) => ({
@@ -76,8 +78,43 @@ const counts = Array.from({ length: explicitCounts + 1 }, (_, count) => count);
 const literals = block => [...counts.map(count => literal(count, block)),
   longRun(block)];
 
+// `Effect.op`, adjacent as the lexer reads a qualifier (ADR 012): no
+// whitespace around the `.`, an uppercase qualifier and a lowercase name.
+const qualified = {
+  name: scope('meta.qualified-operation'),
+  match: `(?<!${word})([A-Z]${word}*)(\\.)([a-z_]${word}*)`,
+  captures: {
+    1: { name: scope('entity.name.type') },
+    2: { name: scope('punctuation.accessor') },
+    3: { name: scope('entity.name.function') }
+  }
+};
+// `Effect as Alias` in a signature row: `as` is highlighted only between an
+// effect name (or its `)`) and an uppercase alias.
+const aliasRule = {
+  name: scope('meta.effect-alias'),
+  match: `(?<=[A-Za-z0-9_)]\\s)(as)(\\s+)([A-Z]${word}*)(?!${word})`,
+  captures: {
+    1: { name: scope('keyword.other.alias') },
+    3: { name: scope('entity.name.type.alias') }
+  }
+};
+// `op as name` inside an import list.
+const renameRule = {
+  name: scope('meta.import-rename'),
+  match: `(?<!${word})(as)(\\s+)([a-z_]${word}*)(?!${word})`,
+  captures: {
+    1: { name: scope('keyword.other.alias') },
+    3: { name: scope('variable.other.alias') }
+  }
+};
+const operationName = {
+  name: scope('entity.name.function'), match: `(?<!${word})[a-z_]${word}*`
+};
+
 const items = [
   ...literals(true), ...literals(false),
+  qualified, aliasRule,
   ...wordGroups.map(wordRule),
   { name: scope('variable.language.wildcard'), match: boundary(['_']) },
   { name: scope('constant.numeric.integer'), match: `-?(?<!${word})[0-9]+` },
@@ -93,9 +130,20 @@ const items = [
   { name: scope('variable.other'), match: `(?<!${word})[a-z_]${word}*` },
   { name: scope('punctuation.section.parens'), match: '[()]' }
 ];
+// The first name of an import list is followed by `,`, `as` or the close.
+const listItem = `[a-z_]${word}*\\s*(?:,|\\}|as(?!${word}))`;
 const braces = end => ({
   name: scope('meta.braces'), begin: '\\{', end,
   patterns: [{ include: end === '\\}' ? '#expression' : '#hole-line' }]
+});
+
+// An import list `Effect { op, op as name }`: a brace directly after an
+// effect name, an alias or a `)`, holding names and renames only.
+const imports = end => ({
+  name: scope('meta.imports'),
+  begin: `(?<=[A-Za-z0-9_)]|[A-Za-z0-9_)]\\s)\\{(?=\\s*${listItem})`,
+  end,
+  patterns: [renameRule, operationName, { include: '#items' }]
 });
 
 export const grammar = () => ({
@@ -105,11 +153,13 @@ export const grammar = () => ({
   patterns: [{ include: '#expression' }],
   repository: {
     items: { patterns: items },
-    expression: { patterns: [{ include: '#items' }, braces('\\}')] },
+    expression: {
+      patterns: [{ include: '#items' }, imports('\\}'), braces('\\}')]
+    },
     // A hole in a one-line literal ends at its line's end, as the lexer
     // ends it; so do braces opened inside it.
     'hole-line': {
-      patterns: [{ include: '#items' }, braces('\\}|$')]
+      patterns: [{ include: '#items' }, imports('\\}|$'), braces('\\}|$')]
     }
   }
 });

@@ -1,0 +1,57 @@
+effect Database { fn query(id: Int): Int; };
+effect Log { fn log(n: Int): Unit; fn info(n: Int): Unit; };
+type Error = Missing | Broken(Int);
+
+fn log(n: Int): Int = n + 1;
+
+fn qualified(id: Int): Int with Database + Log = {
+  Log.log(id);
+  Log.info(Database.query(id));
+  log(id)
+};
+
+fn aliased(id: Int): Int with Database as D + Log as L = {
+  L.log(id);
+  D.query(id)
+};
+
+fn imported(id: Int): Int with Database as D + Log { log, info as note } = {
+  note(id);
+  log(id);
+  D.query(id)
+};
+
+fn imports(id: Int): Int with nofail Log { log, info, } = {
+  info(id);
+  log(id);
+  id
+};
+
+fn failing(id: Int): Int with Fail(Error) { fail } =
+  fail(Missing);
+
+fn spaced(id: Int): Int with Fail(Error) { fail as stop } =
+  stop(Broken(id));
+
+fn fail(n: Int): Int = n;
+
+fn value(id: Int): Unit with Log = {
+  let op = Log.log;
+  op(id)
+};
+
+fn database(): Handler(Database with pure) =
+  handler Database { query(id) => id + id };
+
+fn logger(): Handler(Log with Console + ...e) =
+  handler Log { log(n) => Console.print(n), info(n) => Console.print(n) };
+
+fn main(): Unit with Console =
+  with database() {
+    with logger() {
+      Console.print(qualified(1));
+      Console.print(aliased(2));
+      Console.print(imported(3));
+      value(4)
+    }
+  };

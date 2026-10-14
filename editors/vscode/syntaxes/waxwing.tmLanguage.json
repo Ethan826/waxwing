@@ -1571,6 +1571,33 @@
           }
         },
         {
+          "name": "meta.qualified-operation.waxwing",
+          "match": "(?<![A-Za-z0-9_])([A-Z][A-Za-z0-9_]*)(\\.)([a-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.waxwing"
+            },
+            "2": {
+              "name": "punctuation.accessor.waxwing"
+            },
+            "3": {
+              "name": "entity.name.function.waxwing"
+            }
+          }
+        },
+        {
+          "name": "meta.effect-alias.waxwing",
+          "match": "(?<=[A-Za-z0-9_)]\\s)(as)(\\s+)([A-Z][A-Za-z0-9_]*)(?![A-Za-z0-9_])",
+          "captures": {
+            "1": {
+              "name": "keyword.other.alias.waxwing"
+            },
+            "3": {
+              "name": "entity.name.type.alias.waxwing"
+            }
+          }
+        },
+        {
           "name": "keyword.control.waxwing",
           "match": "(?<![A-Za-z0-9_])(?:if|then|else|match|with|handle|defer|resume)(?![A-Za-z0-9_])"
         },
@@ -1588,7 +1615,7 @@
         },
         {
           "name": "storage.modifier.contextual.waxwing",
-          "match": "(?<![A-Za-z0-9_])(?:pure|nofail|fail)(?![A-Za-z0-9_])"
+          "match": "(?<![A-Za-z0-9_])(?:pure|nofail)(?![A-Za-z0-9_])"
         },
         {
           "name": "variable.language.wildcard.waxwing",
@@ -1650,6 +1677,32 @@
           "include": "#items"
         },
         {
+          "name": "meta.imports.waxwing",
+          "begin": "(?<=[A-Za-z0-9_)]|[A-Za-z0-9_)]\\s)\\{(?=\\s*[a-z_][A-Za-z0-9_]*\\s*(?:,|\\}|as(?![A-Za-z0-9_])))",
+          "end": "\\}",
+          "patterns": [
+            {
+              "name": "meta.import-rename.waxwing",
+              "match": "(?<![A-Za-z0-9_])(as)(\\s+)([a-z_][A-Za-z0-9_]*)(?![A-Za-z0-9_])",
+              "captures": {
+                "1": {
+                  "name": "keyword.other.alias.waxwing"
+                },
+                "3": {
+                  "name": "variable.other.alias.waxwing"
+                }
+              }
+            },
+            {
+              "name": "entity.name.function.waxwing",
+              "match": "(?<![A-Za-z0-9_])[a-z_][A-Za-z0-9_]*"
+            },
+            {
+              "include": "#items"
+            }
+          ]
+        },
+        {
           "name": "meta.braces.waxwing",
           "begin": "\\{",
           "end": "\\}",
@@ -1665,6 +1718,32 @@
       "patterns": [
         {
           "include": "#items"
+        },
+        {
+          "name": "meta.imports.waxwing",
+          "begin": "(?<=[A-Za-z0-9_)]|[A-Za-z0-9_)]\\s)\\{(?=\\s*[a-z_][A-Za-z0-9_]*\\s*(?:,|\\}|as(?![A-Za-z0-9_])))",
+          "end": "\\}|$",
+          "patterns": [
+            {
+              "name": "meta.import-rename.waxwing",
+              "match": "(?<![A-Za-z0-9_])(as)(\\s+)([a-z_][A-Za-z0-9_]*)(?![A-Za-z0-9_])",
+              "captures": {
+                "1": {
+                  "name": "keyword.other.alias.waxwing"
+                },
+                "3": {
+                  "name": "variable.other.alias.waxwing"
+                }
+              }
+            },
+            {
+              "name": "entity.name.function.waxwing",
+              "match": "(?<![A-Za-z0-9_])[a-z_][A-Za-z0-9_]*"
+            },
+            {
+              "include": "#items"
+            }
+          ]
         },
         {
           "name": "meta.braces.waxwing",

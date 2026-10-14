@@ -44,7 +44,9 @@ const sources = [
   ...readdirSync('examples').filter(f => f.endsWith('.wxw')).map(f => ({
     path: `examples/${f}`, out: `${root}/snapshots/${f}.snap` })),
   { path: `${root}/fixtures/text-literals.wxw`,
-    out: `${root}/snapshots/text-literals.wxw.snap` }
+    out: `${root}/snapshots/text-literals.wxw.snap` },
+  { path: `${root}/fixtures/effect-namespaces.wxw`,
+    out: `${root}/snapshots/effect-namespaces.wxw.snap` }
 ];
 let failures = 0;
 for (const { path, out } of sources) {

@@ -1,0 +1,676 @@
+1: effect Database { fn query(id: Int): Int; };
+  "effect" keyword.declaration
+  " "
+  "Database" entity.name.type
+  " "
+  "{" meta.braces
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "query" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+2: effect Log { fn log(n: Int): Unit; fn info(n: Int): Unit; };
+  "effect" keyword.declaration
+  " "
+  "Log" entity.name.type
+  " "
+  "{" meta.braces
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Unit" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "fn" meta.braces keyword.declaration
+  " " meta.braces
+  "info" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Int" meta.braces support.type.builtin
+  ")" meta.braces punctuation.section.parens
+  ":" meta.braces punctuation.separator
+  " " meta.braces
+  "Unit" meta.braces support.type.builtin
+  ";" meta.braces punctuation.separator
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+3: type Error = Missing | Broken(Int);
+  "type" keyword.declaration
+  " "
+  "Error" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "Missing" entity.name.type
+  " "
+  "|" punctuation.separator
+  " "
+  "Broken" entity.name.type
+  "(" punctuation.section.parens
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+4:
+  ""
+5: fn log(n: Int): Int = n + 1;
+  "fn" keyword.declaration
+  " "
+  "log" variable.other
+  "(" punctuation.section.parens
+  "n" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "n" variable.other
+  " "
+  "+" keyword.operator.arithmetic
+  " "
+  "1" constant.numeric.integer
+  ";" punctuation.separator
+6:
+  ""
+7: fn qualified(id: Int): Int with Database + Log = {
+  "fn" keyword.declaration
+  " "
+  "qualified" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Database" entity.name.type
+  " "
+  "+" keyword.operator.arithmetic
+  " "
+  "Log" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "{" meta.braces
+8:   Log.log(id);
+  "  " meta.braces
+  "Log" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "log" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+9:   Log.info(Database.query(id));
+  "  " meta.braces
+  "Log" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "info" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "Database" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "query" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+10:   log(id)
+  "  " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+11: };
+  "}" meta.braces
+  ";" punctuation.separator
+12:
+  ""
+13: fn aliased(id: Int): Int with Database as D + Log as L = {
+  "fn" keyword.declaration
+  " "
+  "aliased" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Database" entity.name.type
+  " "
+  "as" meta.effect-alias keyword.other.alias
+  " " meta.effect-alias
+  "D" meta.effect-alias entity.name.type.alias
+  " "
+  "+" keyword.operator.arithmetic
+  " "
+  "Log" entity.name.type
+  " "
+  "as" meta.effect-alias keyword.other.alias
+  " " meta.effect-alias
+  "L" meta.effect-alias entity.name.type.alias
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "{" meta.braces
+14:   L.log(id);
+  "  " meta.braces
+  "L" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "log" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+15:   D.query(id)
+  "  " meta.braces
+  "D" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "query" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+16: };
+  "}" meta.braces
+  ";" punctuation.separator
+17:
+  ""
+18: fn imported(id: Int): Int with Database as D + Log { log, info as note } = {
+  "fn" keyword.declaration
+  " "
+  "imported" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Database" entity.name.type
+  " "
+  "as" meta.effect-alias keyword.other.alias
+  " " meta.effect-alias
+  "D" meta.effect-alias entity.name.type.alias
+  " "
+  "+" keyword.operator.arithmetic
+  " "
+  "Log" entity.name.type
+  " "
+  "{" meta.imports
+  " " meta.imports
+  "log" meta.imports entity.name.function
+  "," meta.imports punctuation.separator
+  " " meta.imports
+  "info" meta.imports entity.name.function
+  " " meta.imports
+  "as" meta.imports meta.import-rename keyword.other.alias
+  " " meta.imports meta.import-rename
+  "note" meta.imports meta.import-rename variable.other.alias
+  " " meta.imports
+  "}" meta.imports
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "{" meta.braces
+19:   note(id);
+  "  " meta.braces
+  "note" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+20:   log(id);
+  "  " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+21:   D.query(id)
+  "  " meta.braces
+  "D" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "query" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+22: };
+  "}" meta.braces
+  ";" punctuation.separator
+23:
+  ""
+24: fn imports(id: Int): Int with nofail Log { log, info, } = {
+  "fn" keyword.declaration
+  " "
+  "imports" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "nofail" storage.modifier.contextual
+  " "
+  "Log" entity.name.type
+  " "
+  "{" meta.imports
+  " " meta.imports
+  "log" meta.imports entity.name.function
+  "," meta.imports punctuation.separator
+  " " meta.imports
+  "info" meta.imports entity.name.function
+  "," meta.imports punctuation.separator
+  " " meta.imports
+  "}" meta.imports
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "{" meta.braces
+25:   info(id);
+  "  " meta.braces
+  "info" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+26:   log(id);
+  "  " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  ";" meta.braces punctuation.separator
+27:   id
+  "  " meta.braces
+  "id" meta.braces variable.other
+28: };
+  "}" meta.braces
+  ";" punctuation.separator
+29:
+  ""
+30: fn failing(id: Int): Int with Fail(Error) { fail } =
+  "fn" keyword.declaration
+  " "
+  "failing" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Fail" entity.name.type
+  "(" punctuation.section.parens
+  "Error" entity.name.type
+  ")" punctuation.section.parens
+  " "
+  "{" meta.imports
+  " " meta.imports
+  "fail" meta.imports entity.name.function
+  " " meta.imports
+  "}" meta.imports
+  " "
+  "=" keyword.operator.assignment
+31:   fail(Missing);
+  "  "
+  "fail" variable.other
+  "(" punctuation.section.parens
+  "Missing" entity.name.type
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+32:
+  ""
+33: fn spaced(id: Int): Int with Fail(Error) { fail as stop } =
+  "fn" keyword.declaration
+  " "
+  "spaced" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Fail" entity.name.type
+  "(" punctuation.section.parens
+  "Error" entity.name.type
+  ")" punctuation.section.parens
+  " "
+  "{" meta.imports
+  " " meta.imports
+  "fail" meta.imports entity.name.function
+  " " meta.imports
+  "as" meta.imports meta.import-rename keyword.other.alias
+  " " meta.imports meta.import-rename
+  "stop" meta.imports meta.import-rename variable.other.alias
+  " " meta.imports
+  "}" meta.imports
+  " "
+  "=" keyword.operator.assignment
+34:   stop(Broken(id));
+  "  "
+  "stop" variable.other
+  "(" punctuation.section.parens
+  "Broken" entity.name.type
+  "(" punctuation.section.parens
+  "id" variable.other
+  ")" punctuation.section.parens
+  ")" punctuation.section.parens
+  ";" punctuation.separator
+35:
+  ""
+36: fn fail(n: Int): Int = n;
+  "fn" keyword.declaration
+  " "
+  "fail" variable.other
+  "(" punctuation.section.parens
+  "n" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "n" variable.other
+  ";" punctuation.separator
+37:
+  ""
+38: fn value(id: Int): Unit with Log = {
+  "fn" keyword.declaration
+  " "
+  "value" variable.other
+  "(" punctuation.section.parens
+  "id" variable.other
+  ":" punctuation.separator
+  " "
+  "Int" support.type.builtin
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Unit" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Log" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+  " "
+  "{" meta.braces
+39:   let op = Log.log;
+  "  " meta.braces
+  "let" meta.braces keyword.declaration
+  " " meta.braces
+  "op" meta.braces variable.other
+  " " meta.braces
+  "=" meta.braces keyword.operator.assignment
+  " " meta.braces
+  "Log" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "log" meta.braces meta.qualified-operation entity.name.function
+  ";" meta.braces punctuation.separator
+40:   op(id)
+  "  " meta.braces
+  "op" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+41: };
+  "}" meta.braces
+  ";" punctuation.separator
+42:
+  ""
+43: fn database(): Handler(Database with pure) =
+  "fn" keyword.declaration
+  " "
+  "database" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Handler" entity.name.type
+  "(" punctuation.section.parens
+  "Database" entity.name.type
+  " "
+  "with" keyword.control
+  " "
+  "pure" storage.modifier.contextual
+  ")" punctuation.section.parens
+  " "
+  "=" keyword.operator.assignment
+44:   handler Database { query(id) => id + id };
+  "  "
+  "handler" keyword.declaration
+  " "
+  "Database" entity.name.type
+  " "
+  "{" meta.braces
+  " " meta.braces
+  "query" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "id" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "id" meta.braces variable.other
+  " " meta.braces
+  "+" meta.braces keyword.operator.arithmetic
+  " " meta.braces
+  "id" meta.braces variable.other
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+45:
+  ""
+46: fn logger(): Handler(Log with Console + ...e) =
+  "fn" keyword.declaration
+  " "
+  "logger" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Handler" entity.name.type
+  "(" punctuation.section.parens
+  "Log" entity.name.type
+  " "
+  "with" keyword.control
+  " "
+  "Console" entity.name.type
+  " "
+  "+" keyword.operator.arithmetic
+  " "
+  "..." keyword.operator.spread
+  "e" variable.other
+  ")" punctuation.section.parens
+  " "
+  "=" keyword.operator.assignment
+47:   handler Log { log(n) => Console.print(n), info(n) => Console.print(n) };
+  "  "
+  "handler" keyword.declaration
+  " "
+  "Log" entity.name.type
+  " "
+  "{" meta.braces
+  " " meta.braces
+  "log" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  "," meta.braces punctuation.separator
+  " " meta.braces
+  "info" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "=>" meta.braces keyword.operator.arrow
+  " " meta.braces
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces punctuation.section.parens
+  "n" meta.braces variable.other
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+48:
+  ""
+49: fn main(): Unit with Console =
+  "fn" keyword.declaration
+  " "
+  "main" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  ":" punctuation.separator
+  " "
+  "Unit" support.type.builtin
+  " "
+  "with" keyword.control
+  " "
+  "Console" entity.name.type
+  " "
+  "=" keyword.operator.assignment
+50:   with database() {
+  "  "
+  "with" keyword.control
+  " "
+  "database" variable.other
+  "(" punctuation.section.parens
+  ")" punctuation.section.parens
+  " "
+  "{" meta.braces
+51:     with logger() {
+  "    " meta.braces
+  "with" meta.braces keyword.control
+  " " meta.braces
+  "logger" meta.braces variable.other
+  "(" meta.braces punctuation.section.parens
+  ")" meta.braces punctuation.section.parens
+  " " meta.braces
+  "{" meta.braces meta.braces
+52:       Console.print(qualified(1));
+  "      " meta.braces meta.braces
+  "Console" meta.braces meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces meta.braces punctuation.section.parens
+  "qualified" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "1" meta.braces meta.braces constant.numeric.integer
+  ")" meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces punctuation.section.parens
+  ";" meta.braces meta.braces punctuation.separator
+53:       Console.print(aliased(2));
+  "      " meta.braces meta.braces
+  "Console" meta.braces meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces meta.braces punctuation.section.parens
+  "aliased" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "2" meta.braces meta.braces constant.numeric.integer
+  ")" meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces punctuation.section.parens
+  ";" meta.braces meta.braces punctuation.separator
+54:       Console.print(imported(3));
+  "      " meta.braces meta.braces
+  "Console" meta.braces meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.braces meta.qualified-operation entity.name.function
+  "(" meta.braces meta.braces punctuation.section.parens
+  "imported" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "3" meta.braces meta.braces constant.numeric.integer
+  ")" meta.braces meta.braces punctuation.section.parens
+  ")" meta.braces meta.braces punctuation.section.parens
+  ";" meta.braces meta.braces punctuation.separator
+55:       value(4)
+  "      " meta.braces meta.braces
+  "value" meta.braces meta.braces variable.other
+  "(" meta.braces meta.braces punctuation.section.parens
+  "4" meta.braces meta.braces constant.numeric.integer
+  ")" meta.braces meta.braces punctuation.section.parens
+56:     }
+  "    " meta.braces meta.braces
+  "}" meta.braces meta.braces
+57:   };
+  "  " meta.braces
+  "}" meta.braces
+  ";" punctuation.separator
+58:
+  ""

@@ -65,7 +65,7 @@
   ";" punctuation.separator
 4:
   ""
-5: fn closeLog(id: Int): Unit with nofail Log = log(id + 1000);
+5: fn closeLog(id: Int): Unit with nofail Log = Log.log(id + 1000);
   "fn" keyword.declaration
   " "
   "closeLog" variable.other
@@ -87,7 +87,9 @@
   " "
   "=" keyword.operator.assignment
   " "
-  "log" variable.other
+  "Log" meta.qualified-operation entity.name.type
+  "." meta.qualified-operation punctuation.accessor
+  "log" meta.qualified-operation entity.name.function
   "(" punctuation.section.parens
   "id" variable.other
   " "
@@ -123,7 +125,7 @@
   "=" keyword.operator.assignment
   " "
   "{" meta.braces
-8:   let row = query(id);
+8:   let row = Database.query(id);
   "  " meta.braces
   "let" meta.braces keyword.declaration
   " " meta.braces
@@ -131,14 +133,18 @@
   " " meta.braces
   "=" meta.braces keyword.operator.assignment
   " " meta.braces
-  "query" meta.braces variable.other
+  "Database" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "query" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "id" meta.braces variable.other
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-9:   log(row);
+9:   Log.log(row);
   "  " meta.braces
-  "log" meta.braces variable.other
+  "Log" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "log" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "row" meta.braces variable.other
   ")" meta.braces punctuation.section.parens
@@ -176,7 +182,7 @@
   "=" keyword.operator.assignment
   " "
   "{" meta.braces
-14:   let at = now();
+14:   let at = Clock.now();
   "  " meta.braces
   "let" meta.braces keyword.declaration
   " " meta.braces
@@ -184,13 +190,17 @@
   " " meta.braces
   "=" meta.braces keyword.operator.assignment
   " " meta.braces
-  "now" meta.braces variable.other
+  "Clock" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "now" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-15:   log(at + id);
+15:   Log.log(at + id);
   "  " meta.braces
-  "log" meta.braces variable.other
+  "Log" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "log" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "at" meta.braces variable.other
   " " meta.braces
@@ -247,11 +257,13 @@
   "id" meta.braces variable.other
   ")" meta.braces punctuation.section.parens
   ";" meta.braces punctuation.separator
-21:   defer log(id);
+21:   defer Log.log(id);
   "  " meta.braces
   "defer" meta.braces keyword.control
   " " meta.braces
-  "log" meta.braces variable.other
+  "Log" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "log" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "id" meta.braces variable.other
   ")" meta.braces punctuation.section.parens
@@ -432,7 +444,7 @@
   ")" punctuation.section.parens
   " "
   "=" keyword.operator.assignment
-36:   handler Log { log(n) => print(n) };
+36:   handler Log { log(n) => Console.print(n) };
   "  "
   "handler" keyword.declaration
   " "
@@ -447,7 +459,9 @@
   " " meta.braces
   "=>" meta.braces keyword.operator.arrow
   " " meta.braces
-  "print" meta.braces variable.other
+  "Console" meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces punctuation.section.parens
   "n" meta.braces variable.other
   ")" meta.braces punctuation.section.parens
@@ -498,9 +512,11 @@
   ")" meta.braces meta.braces punctuation.section.parens
   " " meta.braces meta.braces
   "{" meta.braces meta.braces meta.braces
-42:         print(report(1, 2));
+42:         Console.print(report(1, 2));
   "        " meta.braces meta.braces meta.braces
-  "print" meta.braces meta.braces meta.braces variable.other
+  "Console" meta.braces meta.braces meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.braces meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.braces meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces meta.braces meta.braces punctuation.section.parens
   "report" meta.braces meta.braces meta.braces variable.other
   "(" meta.braces meta.braces meta.braces punctuation.section.parens
@@ -511,9 +527,11 @@
   ")" meta.braces meta.braces meta.braces punctuation.section.parens
   ")" meta.braces meta.braces meta.braces punctuation.section.parens
   ";" meta.braces meta.braces meta.braces punctuation.separator
-43:         print(report(3, 4))
+43:         Console.print(report(3, 4))
   "        " meta.braces meta.braces meta.braces
-  "print" meta.braces meta.braces meta.braces variable.other
+  "Console" meta.braces meta.braces meta.braces meta.qualified-operation entity.name.type
+  "." meta.braces meta.braces meta.braces meta.qualified-operation punctuation.accessor
+  "print" meta.braces meta.braces meta.braces meta.qualified-operation entity.name.function
   "(" meta.braces meta.braces meta.braces punctuation.section.parens
   "report" meta.braces meta.braces meta.braces variable.other
   "(" meta.braces meta.braces meta.braces punctuation.section.parens
