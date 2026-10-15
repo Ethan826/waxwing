@@ -690,12 +690,39 @@ are unchanged. Two declarations passing different sorts to one parameter
 are the same error at the later argument. A record tail may not name a
 type parameter, and an effect's parameters are types, so `effect E(r) {
 fn op(y: { ...r }): Int; }` is E_TYPE `Expected an effect row, found a
-type`: effects cannot take record rows yet (BACKLOG R009). A declared
-type's record-row parameter takes only a written `...r`: a concrete row,
-`Holder({ y: Bool })`, is not syntax and reads `Expected an effect row,
-found a type`, although diagnostics print that form when a solved row
-fills the parameter (`Expected a record, found Holder({ y: Bool })`;
-BACKLOG R012).
+type`: effects cannot take record rows yet (BACKLOG R009).
+
+Record-row arguments (R012, approved by the user 2026-10-15;
+r012-arguments, r012-diagnostics). A declared type's record-row
+parameter takes a record type argument wherever a type is written
+(signatures, constructor and record fields, lambda annotations, handler
+type arguments, `Fail` payloads). The argument is the parameter's row,
+the tail of the records the declaration writes beside it, not the whole
+payload: with `type Holder(...r) = Holder({ x: Int, ...r })`,
+`Holder({ y: Bool })` holds `{ x: Int, y: Bool }`. `Holder({ y: Bool,
+...s })` passes the open row with tail `s`, a record use of `s`;
+`Holder(...s)` is unchanged, and `Holder({ ...s })` means the same as
+`Holder(...s)`. Labels are unordered here too, so `Holder({ y: Bool, z:
+Int })` and `Holder({ z: Int, y: Bool })` are one type, the form
+diagnostics print (`Expected Holder({ y: Bool }), found Holder({ y: Int
+})`). The argument's labels must differ from those the declaration writes
+beside that parameter, directly or through the declared types it passes
+the parameter to: `Holder({ x: Bool })`, and also `Holder({ x: Int })`,
+is E_DUPLICATE `Duplicate field x` at the argument's `x`, with the note
+`first written here` at the declaration's `x` (for `type Pair(...r) =
+Pair(Holder(...r))`, `Pair({ x: Bool })` notes Holder's `x`). An open
+argument's tail lacks those labels, as a signature's does: in
+`Pair({ y: Bool, ...s })`, `s` lacks `x` and `y`. A type that is not a
+record is E_TYPE `Expected a record, found Int` at the argument, and an
+effect label or labelled row (`Holder(Console)`, `Holder(Log + ...s)`) is
+E_TYPE `Expected a type, found an effect row`. An effect row parameter is
+unchanged: a record type there is `Expected an effect row, found a type`.
+Inside a recursive group of declarations a record argument must be a bare
+`...r` or mention no variable, as a type argument must be a bare variable
+or ground, so a row cannot grow through recursion: `type T(...r) = End({
+...r }) | More(T({ a: { ...r } }))` is E_SPECIALIZATION `Recursive use of
+T changes its type arguments` at `T({ a: { ...r } })`, and a reference
+inside a record argument's fields is judged as any other.
 
 Literals, access and update (r001-parse, r001-expressions). `{ name:
 "Ada", age: 36 }` has the closed type of its fields. In expression

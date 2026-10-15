@@ -1,6 +1,7 @@
 # ADR 013: Structural records with row-typed tails
 
-Implemented on branch `records` 2026-10-14 (plan Tasks 1-11); not merged.
+Implemented on branch `records` 2026-10-14 (plan Tasks 1-11) and
+2026-10-15 (Task 12, R012); not merged.
 Binding spec: docs/plans/2026-10-14-records-design.md (approved
 2026-10-14); plan docs/plans/2026-10-14-records-plan.md; evidence
 docs/progress.md ("R001"). Builds on ADR 002 (planned specialization),
@@ -92,13 +93,66 @@ E_TYPE `Expected an effect row, found a type`: an effect's parameters are
 types, so effects cannot take record-row parameters in this tranche (Task
 4 ruling; BACKLOG R009).
 
-A declared type's record-row parameter takes only a written `...r`: a
-concrete row argument such as `Holder({ y: Bool })` is not syntax and
-reads E_TYPE `Expected an effect row, found a type` (misleading), although
-diagnostics print that form (`Expected L({ a: Int }), found L({ b: Int })`,
-`Expected a record, found Holder({ y: Bool })`) where a solved row fills
-the parameter (final review I2; BACKLOG R012: syntax and a record-specific
-text, which needs the user's approval).
+### Record-row arguments (R012)
+
+The final review (I2) found that a declared type's record-row parameter
+took only a written `...r`, although diagnostics print `Holder({ y: Bool
+})` where a solved row fills it. Plan Task 12 added the form; the user
+approved the surface and both diagnostics on 2026-10-15.
+
+- A record type written for a record parameter is its row, the tail of
+  the records the declaration writes beside the parameter:
+  `Holder({ y: Bool })` with `type Holder(...r) = Holder({ x: Int, ...r
+  })` holds `{ x: Int, y: Bool }`. The parser already read `{ … }` as a
+  type argument, so only resolution changed
+  (Features.Resolve.TypeArguments `recordType`); the depth probe is
+  untouched. The argument resolves to the `TRecord` a solved row would
+  be, so checking, specialization keys and lowering needed no change.
+- `{ ...s }` written for any row parameter is the argument `...s`
+  (Features.Resolve.RecordArguments `asRow`, applied in TypeArguments and
+  in Occurrences, so the sort solver sees the same use). A record argument
+  with labels is a record use of its tail; it gives the callee's
+  parameter no sort, and an effect row parameter keeps refusing it with
+  `Expected an effect row, found a type`.
+- Wrong sorts reuse approved texts: a type that is not a record is
+  `Expected a record, found Int` at the argument, named as checking names
+  types (Features.Check.ResolvedName), and an effect's name is `Expected a
+  type, found an effect row`, as a labelled row already was.
+- The argument's labels must be disjoint from those the declaration
+  writes beside that parameter, directly or through declared types it
+  passes the parameter to (Features.Resolve.ArgumentClash, a worklist over
+  the constructors' field syntax mirroring Features.Check.Implied
+  `declared`): a shared label, even with the same field type, is
+  `Duplicate field x` at the argument's label with `first written here`
+  at the declaration's, two written occurrences. Types outside bodies are
+  checked once their signatures resolve (`programClashes`); body types
+  where Resolve.Lacking checks them. Programs without a record parameter
+  skip both walks.
+- An open argument's tail lacks the declaration's labels as a `...r`
+  argument's does: Implied already read a `TRecord` argument's tail, and
+  Resolve.Lacking now takes its passed tails from the same record
+  arguments, at the tail's `...s`. That also fixed a found defect: Lacking
+  read a written argument position as the parameter's place among the
+  declaration's variables, which differ after an effect row parameter, so
+  `T(...e, ...r)` with `type T(...e, ...r) = T((Int) -> Int with ...e, {
+  x: Int, ...r })` was reported as `e may already have field x` at `...e`
+  (RecordArguments `slotOf`; row `r012-slot-position`).
+- The instantiation rule over declarations (ADR 007, Features.Check.Nested)
+  judged only type arguments: a record argument stood for a row, which
+  could not grow while only `...r` was writable. Now a row could grow
+  through recursion, `type T(...r) = End({ ...r }) | More(T({ a: { ...r }
+  }))`, and a use of it overflowed the stack in Features.Check.Expand
+  (found while testing Task 12). Inside a component a record argument must
+  be a bare `...r` or mention no variable, a record tail included, and the
+  rule walks into record arguments' fields
+  (Features.Check.NestedArguments; rows `r012-nested-row`,
+  `r012-nested-walk`). The existing text applies: `Recursive use of T
+  changes its type arguments`. A label a declaration passes back to its
+  own parameter (`More(T({ inner: Int, ...r }))`) is that same growth, so
+  the clash check skips a label matching itself and leaves it to this
+  rule, whose report names the offending reference rather than noting a
+  label at its own span. Function instantiation (BACKLOG R010) is
+  unchanged.
 
 ### Unification and lacks sets
 
@@ -315,8 +369,13 @@ test/regression-r001.mjs): `r001-print-ground`, `r001-record-order`,
 `r001-sort-feedback`, `r001-field-bound-tail`, `r001-sorted-layout`,
 `r001-lacks`, `r001-shared-remainder`, `r001-field-order`,
 `r001-shape-types`, and from the final review `r001-body-lacks` and
-`r001-record-guard` (probes in test/regression-r001-body.mjs). Tests:
+`r001-record-guard` (probes in test/regression-r001-body.mjs), and for
+R012 `r012-record-argument`, `r012-argument-clash`, `r012-argument-lacks`,
+`r012-slot-position`, `r012-spread-argument`, `r012-nested-row` and
+`r012-nested-walk` (scripts/regression-r012.mjs, probes in
+test/regression-r012.mjs). Tests:
 test/r001-*.test.mjs (test/r001-body-types.test.mjs for C1), the scale test
-test/r001-scale.serial.test.mjs, and the reference interpreter and
+test/r001-scale.serial.test.mjs, test/r012-*.test.mjs, and the
+reference interpreter and
 generator (test/fx-oracle-records.mjs, fx-gen-records.mjs,
 fx-gen-record-fns.mjs).

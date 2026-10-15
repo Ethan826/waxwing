@@ -4766,3 +4766,60 @@ final-fix-findings.md and final-fix-report.md).
   run in five of six verifies, about 1.75 s alone on this tree and on the
   base) are in BACKLOG T007. Serial 59/59 and 111 regression proofs
   passed on 2e77dc2 when run on their own.
+
+## R012: concrete record-row arguments (plan Task 12, 2026-10-15)
+
+The user put R012 in this tranche and approved its surface and both
+diagnostics (2026-10-15): a declared type's record-row parameter takes a
+record type argument, which supplies the row beside the declaration's
+labels (`Holder({ y: Bool })` holds `{ x: Int, y: Bool }`).
+
+- Resolution only for the form: the parser already read `{ … }` as a type
+  argument (depth probe not run: Format.Parse untouched).
+  Features.Resolve.TypeArguments resolves a record argument to the
+  `TRecord` a solved row would be; `{ ...s }` is `...s`
+  (RecordArguments `asRow`, also in Occurrences, so the sort solver agrees).
+  Wrong sorts: `Expected a record, found Int` (named by
+  Features.Check.ResolvedName) and, for an effect's name, `Expected a
+  type, found an effect row`. Features.Resolve.ArgumentClash reports a
+  label the declaration writes beside the parameter, directly or through
+  nested declared types, as `Duplicate field x` at the argument's label
+  noted at the declaration's, even with equal field types. Resolve.Lacking
+  takes passed tails from record arguments too.
+- Found while testing: (1) Resolve.Lacking read a written argument
+  position as the parameter's variable place, so with `type T(...e,
+  ...r)` the base reported `e may already have field x` at `...e`; fixed
+  by RecordArguments `slotOf`. (2) Once rows could hold fields, the
+  declarations' instantiation rule (Features.Check.Nested), which skipped
+  row arguments, admitted `type T(...r) = End({ ...r }) | More(T({ a: {
+  ...r } }))`, and a use of it overflowed the stack in
+  Features.Check.Expand. Record arguments are now judged (bare `...r` or
+  no variable) and walked (Features.Check.NestedArguments), with the
+  existing `Recursive use of T changes its type arguments`.
+- Tests: test/r012-arguments.test.mjs (12) and
+  test/r012-diagnostics.test.mjs (16). The first 23 were run before any
+  source change: 20 failed, 3 passed (an effect row parameter's refusal, a
+  program without concrete rows, and the sort conflict of a record
+  argument's tail, which the base also reports first)
+  (.build/evidence/r012-red.log). The nested-recursion, slot-position and
+  spread tests were added after the defects were found; their red is the
+  rows below and the base outputs in the differential.
+- Regression rows (scripts/regression-r012.mjs, probes
+  test/regression-r012.mjs), each proved in an isolated copy with the
+  message pinning the restored symptom: `r012-record-argument` (`Expected
+  an effect row, found a type`), `r012-argument-clash` (E_INTERNAL
+  `Duplicate record label` from the lowering guard), `r012-argument-lacks`
+  (same), `r012-slot-position` (same), `r012-spread-argument` (`Expected
+  an effect row, found a type`), `r012-nested-row` and `r012-nested-walk`
+  (the growing row accepted).
+- Differential against 57ee9dc (`--corpus all --regenerate`; 7,205
+  harvested, 1,029 fuzz, 1,000 matches, 1,000 mutations): 33 differences,
+  all in the resolve phase. All 31 harvested ones are the new R012 test
+  programs (checked against a harvest of test/r012-*.test.mjs alone): the
+  base refused each record argument with `Expected an effect row, found a
+  type`, and the slot-position program with `e may already have field
+  x`. The 2 mutation differences are mutants of those programs (`Boo`,
+  `xnt` for a type), unbound names on the candidate. No existing source
+  differs; the eight bootstrap/*.go snapshots are byte-identical. In one
+  run both compilers threw on 2 harvested sources (no difference; a
+  rerun of the harvested corpus showed none, G006's warm-up overflow).

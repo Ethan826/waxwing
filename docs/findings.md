@@ -704,3 +704,13 @@ Learned while retargeting mutants for the fifteen new rows
    row; any type that shares it outside a callback position (a label's
    argument, FX024) must equal the caller's whole row at each call. Give
    such positions no ambient row.
+10. A declared type's arguments are numbered two ways: by written
+    position, and by variable place (type and record parameters first).
+    Resolve.Lacking read one as the other, which only an effect row
+    parameter before a record one exposes (R012, `r012-slot-position`).
+    Convert in one named helper (RecordArguments `slotOf`).
+11. Making a form writable widens every rule that assumed it was not: once
+    a record row argument could hold fields, the declarations'
+    instantiation rule, which skipped row arguments, admitted rows growing
+    through recursion and the checker overflowed its stack (R012). Audit
+    each rule that says "stands for no type" when a form becomes writable.
