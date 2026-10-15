@@ -95,7 +95,18 @@ parameters (controller rulings, Task 3, after four review rounds):
   looked up at all.
 
 The texts are the approved `r is a record row, not an effect row` and its
-mirror. A record tail naming a type parameter, and `...r` naming an
+mirror. A type written in a body (a lambda's annotation, a handler's label
+arguments, a `handle` clause's payload) uses its signature's row variables
+with the sorts the signature settled (BACKLOG R016, 2026-10-15,
+Features.Resolve.BodySorts): reading one row sort as the other is that
+text at the body's use, noted `first written here` at the signature's
+first use, the later use being the error as above. Before, an effect row
+used as a lambda's record tail read as `a is not a field of { a: Int,
+...r }`, a record row as a lambda's effect row was accepted, and an
+effect row passed to a record parameter in a body reached E_INTERNAL
+(rows `r016-effect-as-record`, `r016-record-as-effect`). A row variable
+read as a type there, or a type variable as a row, is not covered yet
+(BACKLOG R017). A record tail naming a type parameter, and `...r` naming an
 effect's parameter (Features.Resolve.EffectSorts), are the existing
 E_TYPE `Expected an effect row, found a type`: an effect's parameters are
 types, so effects cannot take record-row parameters in this tranche (Task
@@ -159,8 +170,8 @@ approved the surface and both diagnostics on 2026-10-15.
   own parameter (`More(T({ inner: Int, ...r }))`) is that same growth, so
   the clash check skips a label matching itself and leaves it to this
   rule, whose report names the offending reference rather than noting a
-  label at its own span. Function instantiation (BACKLOG R010) is
-  unchanged.
+  label at its own span. Function instantiation was unchanged then
+  (BACKLOG R010); it was brought into line on 2026-10-15, below.
 
 ### Unification and lacks sets
 
@@ -344,11 +355,17 @@ not chosen.
 - Each open tail's layout is interned and emitted as a struct even when it
   is only a key argument: the scale chain emits 400 structs for 200
   shapes, and bootstrap/records.go has two unused ones (BACKLOG R011).
-- The instantiation rule (ADR 007) does not judge record-row arguments: a
-  recursive call that grows a record row reaches the 10,000 limit
-  (`More than 10000 specializations`) instead of `Recursive call to g
-  changes its type arguments` (found while writing this ADR; BACKLOG R010).
-  Finiteness still holds through the limit.
+- The instantiation rule (ADR 007) did not judge a function call's
+  record-row arguments: a recursive call that grew a record row reached
+  the 10,000 limit (`More than 10000 specializations`) instead of
+  `Recursive call to g changes its type arguments` (found while writing
+  this ADR; BACKLOG R010). Fixed 2026-10-15 on branch `r001-followups`:
+  Features.Check.Instantiation judges each record row slot, by the
+  callee's sorts, as Features.Check.Nested judges a declaration's record
+  argument (NestedArguments `admissibleSlot`): the referrer's bare
+  `{ ...r }`, or no rigid variable, a record tail included. The existing
+  text is reported at the call, as for a type variable (rows
+  `r010-nested-row`, `r010-mutual-row`).
 - Field access through a nil declared-type pointer inside a record is a
   Go nil dereference, not the malformed-value panic; only foreign code can
   make one (docs/findings.md "R001", I001).
@@ -383,7 +400,10 @@ test/regression-r001.mjs): `r001-print-ground`, `r001-record-order`,
 R012 `r012-record-argument`, `r012-argument-clash`, `r012-argument-lacks`,
 `r012-slot-position`, `r012-spread-argument`, `r012-nested-row` and
 `r012-nested-walk` (scripts/regression-r012.mjs, probes in
-test/regression-r012.mjs). Tests:
+test/regression-r012.mjs), and for the follow-ups `r015-effect-row`,
+`r015-record-row`, `r016-effect-as-record`, `r016-record-as-effect`,
+`r010-nested-row` and `r010-mutual-row` (scripts/regression-ie.mjs, probes
+in test/regression-ie.mjs). Tests:
 test/r001-*.test.mjs (test/r001-body-types.test.mjs for C1), the scale test
 test/r001-scale.serial.test.mjs, test/r012-*.test.mjs, and the
 reference interpreter and

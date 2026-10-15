@@ -88,9 +88,20 @@ argument components plus the ground arguments written inside C, and the
 component DAG has finitely many entering keys. test/poly-properties checks
 that bound on 200 generated components.
 
-2026-10-14 note: R001's record rows (ADR 013) are not judged by this rule
-(BACKLOG R010), so for record rows the rule alone no longer makes the key
-set finite; the 10,000-specialization limit still bounds it.
+2026-10-14 note: R001's record rows (ADR 013) were not judged by this
+rule (BACKLOG R010), so for record rows the rule alone no longer made the
+key set finite; the 10,000-specialization limit still bounded it.
+2026-10-15 (R010, done): a function call's record row slot is judged as a
+declaration's record argument already was (R012): it must be the
+referrer's bare `{ ...r }` or mention no rigid variable, a record tail
+included (Features.Check.NestedArguments `admissibleSlot`, by the callee's
+sorts). A growing row is `Recursive call to g changes its type
+arguments` at the call, not the limit. Type slots are judged as before,
+so a type argument may still mention a record tail (`a` given `{ ...r }`
+or `{ b: Int, ...r }`): its tail can only be a row the component's
+record slots pass unchanged, so such arguments come from finitely many
+written shapes over finitely many rows, but spec §4.2's proof as written
+covers type variables only.
 
 The rule is conservative (spec §4.3): `f(a)` calling `g(List(a))` with
 `g(b)` calling `f(Int)` is finite but rejected. The exact criterion is the

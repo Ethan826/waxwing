@@ -4987,3 +4987,40 @@ BACKLOG T007 stand as written.
   test programs (E_INTERNAL or accepted before, the texts above now);
   0 in the 1,029 fuzz, 1,085 isName, 1,000 match and 1,000 mutation
   sources (.build/evidence/ie-a-diff-2.log).
+
+### R016 and R010 (internal errors, 2026-10-15)
+
+- R016 (3e610b6): a type written in a body (lambda annotation, handler
+  label arguments, `handle` payload) read the signature's row variables
+  without their sorts. An effect row as a lambda's record tail read as
+  `a is not a field of { a: Int, ...r }`, an effect row passed to a
+  record parameter there was E_INTERNAL `Invalid type variable`, and a
+  record row as an effect row was accepted. Features.Resolve.BodySorts
+  now gives the approved `r is an effect row, not a record row` (or its
+  mirror) at the body's use, noted `first written here` at the
+  signature's first use. Found while fixing it: a row read as a type, or
+  a type variable as a row, in a body is unchecked (BACKLOG R017; texts
+  need approval).
+- R010 (75b2aa3): the instantiation rule ignored a function call's
+  record row slots, so a call growing a row reached `More than 10000
+  specializations` (0.3-0.4 s). Each record slot is now judged as a
+  declaration's record argument (NestedArguments `admissibleSlot`): the
+  existing `Recursive call to g changes its type arguments` at the call,
+  for the nested, open, lambda-inner, mutual and declared-type forms.
+  The declaration form was already refused (R012).
+- Tests seen failing first (.build/evidence/ie-b-r016-red-2.log,
+  ie-b-r010-red-1.log); regression rows r016-effect-as-record,
+  r016-record-as-effect, r010-nested-row and r010-mutual-row proved
+  failing with each defect restored in an isolated copy
+  (ie-b-r016-regression-1.log, ie-b-r010-regression-1.log).
+- Differential against 80b5b53 (`--corpus all --regenerate`,
+  .build/evidence/ie-b-diff-1.log): 24 differences in 7,246 harvested
+  sources, all new test programs of this batch (6 FX025, 5 R015, 8 R016,
+  5 R010: E_INTERNAL, accepted or the specialization limit before, the
+  texts above now); 1 of 1,000 mutations, an R015 source whose `main`
+  was renamed (E_ENTRY before, now the R015 sort error, reported first);
+  0 in 1,029 fuzz, 1,085 isName and 1,000 match sources. Every existing
+  example, negative and test program is unchanged.
+- language.md: the row-sort paragraph gains R015's rule (a record-sorted
+  row parameter written as a type has the effect row's text) and R016's;
+  the instantiation rule gains record row arguments.

@@ -228,8 +228,12 @@ Polymorphism (P001; ADR 007; spec docs/plans/2026-10-08-polymorphism-design.md).
   `fn f(x: a): Int = f(Cons(x, Nil));` is E_SPECIALIZATION `Recursive call
   to f changes its type arguments` and `type Nest(a) = Nil | Cons(a,
   Nest(List(a)));` is E_SPECIALIZATION `Recursive use of Nest changes its
-  type arguments`. The rule guarantees that only finitely many
-  specializations exist (proof: spec §4.2); it also rejects some finite
+  type arguments`. A record row argument is judged the same way: it must
+  be the calling function's bare `{ ...r }` or mention no variable, a
+  record tail included, so `fn g(x: { ...r }, n: Int): Int = ... g({
+  inner: x }, n + -1)` is `Recursive call to g changes its type
+  arguments` at that call (R010). The rule guarantees that only finitely
+  many specializations exist (proof: spec §4.2); it also rejects some finite
   programs, such as `f(a)` calling `g(List(a))` with `g(b)` calling
   `f(Int)` (poly-termination).
 - Inferred-type depth. Composing generic calls can infer types far deeper
@@ -694,7 +698,16 @@ are unchanged. Two declarations passing different sorts to one parameter
 are the same error at the later argument. A record tail may not name a
 type parameter, and an effect's parameters are types, so `effect E(r) {
 fn op(y: { ...r }): Int; }` is E_TYPE `Expected an effect row, found a
-type`: effects cannot take record rows yet (BACKLOG R009).
+type`: effects cannot take record rows yet (BACKLOG R009). A row
+parameter written as a type, `type T(...e) = T(e)`, is E_TYPE `Expected
+a type, found an effect row` at the use, and a record-sorted row
+parameter written as a type gets the same text, as in a signature (R015).
+A type written in a body (a lambda's annotation, a handler's label
+arguments, a `handle` clause's payload) uses its signature's row
+variables with the signature's sorts: under `fn g(p: Int): Unit with
+...r`, `fn(q: { a: Int, ...r }) => q.a` is `r is an effect row, not a
+record row` at the lambda's `...r`, noted `first written here` at the
+signature's `with ...r`, and the other way round likewise (R016).
 
 Record-row arguments (R012, approved by the user 2026-10-15;
 r012-arguments, r012-diagnostics). A declared type's record-row
