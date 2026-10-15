@@ -4730,8 +4730,10 @@ final-fix-findings.md and final-fix-report.md).
   after). Types written in a body (lambda annotations, `with
   handler` label arguments, `handle` clause payloads) are held to the
   signature's lacks sets in Features.Resolve.Lacking: E_TYPE `r may
-  already have field a` (approved 2026-10-15) at the label, or at the
-  `...r` passed to a declared type, note `r is introduced here`.
+  already have field a` (text approved 2026-10-15) at the label, or at
+  the `...r` passed to a declared type, note `r is introduced here` (this
+  placement was implemented by the wave and approved by the user on
+  2026-10-15 afterwards).
   Specialize's `recordType` reports a repeated label as E_INTERNAL
   `Duplicate record label`. test/r001-body-types.test.mjs (14 tests: l1,
   l2, m1, m4, o2, a `handle` payload, note placement, four accepted forms,
@@ -4823,3 +4825,31 @@ labels (`Holder({ y: Bool })` holds `{ x: Int, y: Bool }`).
   differs; the eight bootstrap/*.go snapshots are byte-identical. In one
   run both compilers threw on 2 harvested sources (no difference; a
   rerun of the harvested corpus showed none, G006's warm-up overflow).
+
+## R001 pre-merge evidence fixes (plan Task 13, 2026-10-15)
+
+- T012 done: each of the eight rows' mutants was run in an isolated copy
+  (.build/evidence/t13-mutant-outputs.log), and each `message` now pins
+  what the restored defect produces: `r001-record-order` the unsorted
+  `Expected { b: Bool, a: Int }`, `r001-row-sort-propagation` and
+  `r001-duplicate-field` acceptance, `r001-callee-to-caller` and
+  `r001-sort-feedback` the clash reported against the wrong variable,
+  `r001-settled-sort` and `r001-caller-conflict` E_INTERNAL `Invalid type
+  variable`, `r001-field-bound-tail` Go's `cannot use` build error.
+  Re-proved: `node scripts/regression.mjs` with the eight rows, each
+  "fixed compiler passes; restored defect fails"
+  (.build/evidence/t13-regression-eight.log). The other rows added on this
+  branch already pinned their symptom.
+- FX024's documented alternative to `with pure`, a payload sharing the
+  signature's written `...e`: three tests in
+  test/fx024-label-arguments.test.mjs (an arrow raised and run by main's
+  catcher, printing the callback's Console output; a caller with the same
+  shared row passing it on; a `Handler(Log with ...e)` raised and
+  installed). They passed when written: the FX024 mutant (row
+  `fx-label-argument-ambient`) also accepts all three, since a written
+  `...e` never took the ambient row
+  (.build/evidence/t13-fx024-shared-under-mutant.log).
+- Docs: the o2 placement's approval history (spec §6, ADR 013), the
+  unconstrained record-argument sentence (docs/language.md), the
+  docs/engineering.md R001 bullet, and BACKLOG E020, FX025, FX026 and
+  FX027 (probe logs .build/evidence/t13-backlog-probes*.log).

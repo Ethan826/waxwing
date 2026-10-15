@@ -304,7 +304,7 @@ struct, only when the program uses them, following the ADT helpers.
 | Comparing an open record | E_TYPE `Type { name: Text, ...r } is not comparable` | the left operand, as today |
 | Printing a non-printable value (now also checked at the ground type) | existing E_TYPE `Expected a printable value, found <t>` | the print site |
 | Record payload with an unknown label set | existing E_TYPE `Fail needs a concrete error family` | as today |
-| A type written in a body puts a label beside a signature's record row variable that the signature does not say it lacks (approved 2026-10-15, final review C1) | E_TYPE `r may already have field a`, note `r is introduced here` | the written label `a` (for a declared type's label, the `...r` passed to it); note at the `...r` of the signature that introduces `r` |
+| A type written in a body puts a label beside a signature's record row variable that the signature does not say it lacks (final review C1; text approved 2026-10-15; the placement, at the `...r` passed to a declared type and the note at the signature's `...r`, was implemented by the fix wave and approved by the user on 2026-10-15 afterwards) | E_TYPE `r may already have field a`, note `r is introduced here` | the written label `a` (for a declared type's label, the `...r` passed to it); note at the `...r` of the signature that introduces `r` |
 
 - A record type is printed in diagnostics with its labels sorted and its
   tail written `...r`.

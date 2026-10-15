@@ -202,7 +202,7 @@ adding a bypass allowlist.
   entry). Examples are snapshotted
   byte for byte (examples/text.wxw to bootstrap/text.go,
   test/text-literal.test.mjs);
-- R001 (records, ADR 013) adds fourteen regression rows, in
+- R001 (records, ADR 013) adds sixteen regression rows, in
   scripts/regression-r001.mjs with probes in test/regression-r001.mjs:
   `r001-print-ground` (no ground-type printable check: the probe must see
   Go's own `go build` error, read after the `# command-line-arguments`
@@ -213,14 +213,18 @@ adding a bypass allowlist.
   (tails decided against stale rows), `r001-sorted-layout` (layouts keyed in
   written order), `r001-lacks` (no lacks check), `r001-shared-remainder`
   (two open tails each given their own remainder), `r001-field-order`
-  (every field used in place in the Go struct literal) and
-  `r001-shape-types` (layouts keyed by labels alone). Six rows'
-  `message`s pin the symptom of their restored defect (the Go error, or
-  the wrong output), not only the probe's own failure label, so an
-  unrelated mutant failure cannot satisfy those proofs: `r001-print-ground`
-  and the five Task-10 rows (tightened in R001 Task 11). The other eight
-  still match only their probe's label (BACKLOG T012). The scale rule is
-  test/r001-scale.serial.test.mjs (programs in
+  (every field used in place in the Go struct literal),
+  `r001-shape-types` (layouts keyed by labels alone), `r001-body-lacks`
+  (body types not held to the signature's lacks sets) and
+  `r001-record-guard` (no repeated-label guard in lowering). R012 adds
+  seven rows in scripts/regression-r012.mjs (probes in
+  test/regression-r012.mjs), and FX024 adds `fx-label-argument-ambient`
+  to scripts/regression-fx.mjs. Every one of these rows' `message`s pins
+  the symptom of its restored defect (the wrong diagnostic, a wrong
+  acceptance, an internal error, Go's build error or the wrong output),
+  not only the probe's own failure label, so an unrelated mutant failure
+  cannot satisfy the proof (BACKLOG T012, done in R001 Task 13). The scale
+  rule is test/r001-scale.serial.test.mjs (programs in
   test/r001-scale-programs.mjs): 200 shapes through 20 generic links give
   exactly 4,001 keys and checked output, with compile, `go build` (the Text
   v1 method) and Go-line bounds of 3x the median of five runs (figures in

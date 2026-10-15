@@ -8,19 +8,20 @@ bootstrap/records.go, and the "R001" entries in docs/progress.md. The
 whole-branch review's fix wave (docs/progress.md "R001 final fix wave")
 fixed C1 (types written in a body are held to the signature's lacks sets;
 E_TYPE `r may already have field a`, approved 2026-10-15) and FX024 (a
-label's arguments have no ambient row), and filed R012 and E019. Nothing
-is pushed or merged. Next: the user's merge decision, by fast-forward only
-(no merge commits). Ledger and reports:
-.superpowers/sdd/2026-10-14-records-plan/ (final-fix-report.md for the
-wave).
+label's arguments have no ambient row), and filed R012 and E019. R012
+(concrete record-row arguments, plan Task 12) is done, and plan Task 13
+fixed the pre-merge evidence (T012 done, FX024's shared `...e` tests,
+BACKLOG E020 and FX025-FX027). Nothing is pushed or merged. Next: the
+user's merge decision, by fast-forward only (no merge commits). Ledger and
+reports: .superpowers/sdd/2026-10-14-records-plan/ (final-fix-report.md
+for the wave).
 
 Open items from R001: fast-follows R004 (record patterns) and R005
 (extension, merge and removal with written lacks constraints); later R006
 (polymorphic fields), R007 (punning), R008 (type aliases), R009
 (record-row parameters of effects); found during the tranche R010 (the
 instantiation rule misses record rows; growth is caught only by the 10,000
-limit), R011 (unused tail structs), R012 (concrete row arguments for
-record-row parameters; text needs approval), E018 (lambda missing-field
+limit), R011 (unused tail structs), E018 (lambda missing-field
 diagnostic), E019 (lacks-failure wording; needs approval), T011 (record
 corpus gaps, now also lambda annotations over open tails and handler type
 arguments), and an I001 note (nil field access). FX024's fix makes an

@@ -195,12 +195,14 @@ same Implied facts the body is seeded with): each label the type puts
 beside one of the signature's record row variables, directly or through a
 declared type's record parameter, must be one the signature says the
 variable lacks. Otherwise it is E_TYPE `r may already have field a`
-(approved 2026-10-15) at the written label, or at the `...r` passed to the
-declared type when the label is that type's, with the note `r is
-introduced here` at the signature's first `...r`. As defence in depth,
-Specialize's `recordType` reports a label both written and in the tail's
-image as E_INTERNAL `Duplicate record label` rather than lowering it
-(regression rows `r001-body-lacks`, `r001-record-guard`).
+(text approved 2026-10-15) at the written label, or at the `...r` passed
+to the declared type when the label is that type's, with the note `r is
+introduced here` at the signature's first `...r`; the placement at the
+passed `...r`, with its note, was implemented by the fix wave and approved
+by the user on 2026-10-15 afterwards. As defence in depth, Specialize's
+`recordType` reports a label both written and in the tail's image as
+E_INTERNAL `Duplicate record label` rather than lowering it (regression
+rows `r001-body-lacks`, `r001-record-guard`).
 
 ### Inference and diagnostics
 
@@ -216,8 +218,8 @@ A repeated label in a type, literal or update is the existing template
 `Duplicate field <label>` at the second label, noted `first written here`
 (ruling, Task 3: the spec's `Duplicate field name` is that template at the
 label `name`). No other new text was added in the tasks; the final review
-added `r may already have field a` with its note (approved 2026-10-15,
-"Unification and lacks sets").
+added `r may already have field a` with its note (text approved
+2026-10-15; placement approved afterwards, "Unification and lacks sets").
 
 ### Comparison and printability
 

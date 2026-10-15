@@ -717,12 +717,15 @@ record is E_TYPE `Expected a record, found Int` at the argument, and an
 effect label or labelled row (`Holder(Console)`, `Holder(Log + ...s)`) is
 E_TYPE `Expected a type, found an effect row`. An effect row parameter is
 unchanged: a record type there is `Expected an effect row, found a type`.
-Inside a recursive group of declarations a record argument must be a bare
-`...r` or mention no variable, as a type argument must be a bare variable
-or ground, so a row cannot grow through recursion: `type T(...r) = End({
-...r }) | More(T({ a: { ...r } }))` is E_SPECIALIZATION `Recursive use of
-T changes its type arguments` at `T({ a: { ...r } })`, and a reference
-inside a record argument's fields is judged as any other.
+A labelled record argument gives an otherwise unconstrained parameter no
+sort, so it stays an effect row: `type Q(...q) = Q(Int); type P = P(Q({
+a: Int }))` is `Expected an effect row, found a type`. Inside a recursive
+group of declarations a record argument must be a bare `...r` or mention
+no variable, as a type argument must be a bare variable or ground, so a
+row cannot grow through recursion: `type T(...r) = End({ ...r }) |
+More(T({ a: { ...r } }))` is E_SPECIALIZATION `Recursive use of T changes
+its type arguments` at `T({ a: { ...r } })`, and a reference inside a
+record argument's fields is judged as any other.
 
 Literals, access and update (r001-parse, r001-expressions). `{ name:
 "Ada", age: 36 }` has the closed type of its fields. In expression
