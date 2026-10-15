@@ -4701,6 +4701,58 @@ regression proofs (14 R001 rows).
 
 Open: R004 and R005 (fast-follows), R006-R009 (later), R010 (instantiation
 rule misses record rows), R011 (unused tail structs), E018 (lambda
-missing-field diagnostic), FX024 (Handler in a `Fail` payload), T011 (corpus
-gaps), T012 (eight rows still match only their label), the I001 note on nil
-field access, G002, T007.
+missing-field diagnostic), T011 (corpus gaps), T012 (eight rows still match
+only their label), the I001 note on nil field access, G002, T007; FX024 was
+fixed by the final fix wave below, which also filed R012 and E019.
+
+## R001 final fix wave (2026-10-15)
+
+The whole-branch review of `records` at 96e28f2 found C1 (critical) and
+I2-I4; the user approved C1's text and ruled FX024 fixed before the merge
+(findings and report under .superpowers/sdd/2026-10-14-records-plan/,
+final-fix-findings.md and final-fix-report.md).
+
+- FX024 (4c7ee77). Cause: Resolve gave a type written as an effect
+  label's argument in a signature the signature's ambient row, which is
+  also that row's tail; a caller with a label the callee lacks bound the
+  tail, and so the payload's row, to its whole row, which then differed
+  from the payload the caller wrote. Fix: label arguments resolve without
+  an ambient row everywhere (as fields, operations, handler labels and
+  `handle` clauses already did); an unannotated arrow or bare `Handler(L)`
+  there is `pure` (ADR 010). test/fx024-label-arguments.test.mjs (10
+  tests, 10 red before); row `fx-label-argument-ambient`. A function that
+  raises an ambient callback in such a payload is now rejected (the
+  existing row-equality text); one existing test program did that and was
+  rewritten (test/fx-cleanup.test.mjs, the 5,000-arrow payload).
+- C1 (8d81da1). Types written in a body (lambda annotations, `with
+  handler` label arguments, `handle` clause payloads) are held to the
+  signature's lacks sets in Features.Resolve.Lacking: E_TYPE `r may
+  already have field a` (approved 2026-10-15) at the label, or at the
+  `...r` passed to a declared type, note `r is introduced here`.
+  Specialize's `recordType` reports a repeated label as E_INTERNAL
+  `Duplicate record label`. test/r001-body-types.test.mjs (14 tests: l1,
+  l2, m1, m4, o2, a `handle` payload, note placement, four accepted forms,
+  the guard driven directly); rows `r001-body-lacks` (restored: E_INTERNAL
+  Duplicate record label from the guard) and `r001-record-guard`.
+- I2, I3, I4 and recommendation 4 are documentation: R012 (concrete row
+  arguments for record-row parameters), E019 (lacks-failure wording), the
+  corrected "latent" claims (ADR 013, BACKLOG R005), T011's generator
+  shapes.
+- Differential against 96e28f2 (`--corpus all --regenerate`, 7,170
+  harvested sources; fuzz, isName, matches and mutations 0): 25
+  differences. 17 change the final outcome, all this wave's new test
+  programs: 8 FX024 programs the base rejected with the spurious E_EFFECT
+  now compile, the pure-callback raise now compiles and the ambient one
+  is now rejected; 4 C1 programs whose Go failed `go build` and 2 whose
+  function is never called are now `r may already have field`, and l1's
+  contradictory text became the approved one. 8 differ only in the
+  resolve phase with identical final diagnostics or Go: three FX017/FX018
+  callback-row programs and four nested `Handler(Log with S(…))` programs
+  (their label arguments lost the ambient tail) and the rewritten
+  5,000-arrow payload. Full-compile comparison of every harvested source:
+  17 differ, the same 17; no existing program's Go changed. The first run
+  also showed G006's one-sided parser `RangeError` on the two longest
+  nested-handler sources; a `--stack-size=3000` rerun showed none, and the
+  base overflows the same way after warm-up (BACKLOG G006).
+- Parser untouched; no depth probe. Timing failures of the instrumented
+  harvest run are in BACKLOG T007.

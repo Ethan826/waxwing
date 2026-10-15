@@ -92,6 +92,14 @@ E_TYPE `Expected an effect row, found a type`: an effect's parameters are
 types, so effects cannot take record-row parameters in this tranche (Task
 4 ruling; BACKLOG R009).
 
+A declared type's record-row parameter takes only a written `...r`: a
+concrete row argument such as `Holder({ y: Bool })` is not syntax and
+reads E_TYPE `Expected an effect row, found a type` (misleading), although
+diagnostics print that form (`Expected L({ a: Int }), found L({ b: Int })`,
+`Expected a record, found Holder({ y: Bool })`) where a solved row fills
+the parameter (final review I2; BACKLOG R012: syntax and a record-specific
+text, which needs the user's approval).
+
 ### Unification and lacks sets
 
 Features.Check.UnifyRecord follows each side through its tail's bindings
@@ -116,8 +124,29 @@ instantiation, and a function's own signature seeds them for its body
 (Features.Check.Seed, Implied), also through declared types' record
 parameters. A lacks violation reports the shape mismatch (`Expected
 { ..._ }, found { a: Int }`), never a duplicate location invented from an
-inferred row. A lambda annotation over an enclosing rigid tail adds no
-lacks constraint; this is latent until extension syntax (BACKLOG R005).
+inferred row.
+
+Seeding scope. Those seeds cover signatures, constructors and effect
+operations, not types written in a body. The final review (C1) found that
+this hole was not latent: a lambda annotation `{ a: Int, ...r }`, a `with
+handler State({ n: Int, ...r })` label or a `Holder(...r)` annotation
+under `fn g(p: { ...r })` passed the checker, a caller filled `r` with
+`a`, and lowering declared the field twice (`go build` failed with `f_a
+redeclared`; probes l2, m1, m4, o2), while a field access through such an
+annotation read as the self-contradictory `a is not a field of { a: Int,
+...r }` (l1). Resolve now holds every type written in a body (a lambda's
+parameter annotations, a handler's label arguments, a `handle` clause's
+payload) to its signature's lacks sets (Features.Resolve.Lacking, with the
+same Implied facts the body is seeded with): each label the type puts
+beside one of the signature's record row variables, directly or through a
+declared type's record parameter, must be one the signature says the
+variable lacks. Otherwise it is E_TYPE `r may already have field a`
+(approved 2026-10-15) at the written label, or at the `...r` passed to the
+declared type when the label is that type's, with the note `r is
+introduced here` at the signature's first `...r`. As defence in depth,
+Specialize's `recordType` reports a label both written and in the tail's
+image as E_INTERNAL `Duplicate record label` rather than lowering it
+(regression rows `r001-body-lacks`, `r001-record-guard`).
 
 ### Inference and diagnostics
 
@@ -132,7 +161,9 @@ field's type and has the base's type, so an update never changes a type.
 A repeated label in a type, literal or update is the existing template
 `Duplicate field <label>` at the second label, noted `first written here`
 (ruling, Task 3: the spec's `Duplicate field name` is that template at the
-label `name`). No other new text was added.
+label `name`). No other new text was added in the tasks; the final review
+added `r may already have field a` with its note (approved 2026-10-15,
+"Unification and lacks sets").
 
 ### Comparison and printability
 
@@ -237,7 +268,12 @@ not chosen.
   now begins a record (three mutations; a mutated `{ Int; }` changes from
   `Expected a type` to `Expected an identifier`, E_SYNTAX both sides,
   ruling, Task 3), and invalid sources whose lowercase `.` is now an
-  access (ruling, Task 5).
+  access (ruling, Task 5). The final fix wave's differential against
+  96e28f2 changed the final outcome of its 17 new sources only; eight
+  sources differ in the resolve phase alone (label arguments now carry no
+  ambient row, FX024) with identical diagnostics or Go: seven existing
+  ones and the rewritten 5,000-arrow payload of test/fx-cleanup.test.mjs,
+  whose earlier form raised an ambient callback and is now rejected.
 - The differential's digests gained two normalisations (Tasks 7 and 8):
   the specialize digest drops an empty `records` field and the check
   digest drops a checked function's `sorts`, a copy of resolve-phase data.
@@ -277,8 +313,10 @@ test/regression-r001.mjs): `r001-print-ground`, `r001-record-order`,
 `r001-row-sort-propagation`, `r001-duplicate-field`,
 `r001-callee-to-caller`, `r001-settled-sort`, `r001-caller-conflict`,
 `r001-sort-feedback`, `r001-field-bound-tail`, `r001-sorted-layout`,
-`r001-lacks`, `r001-shared-remainder`, `r001-field-order` and
-`r001-shape-types`. Tests: test/r001-*.test.mjs, the scale test
+`r001-lacks`, `r001-shared-remainder`, `r001-field-order`,
+`r001-shape-types`, and from the final review `r001-body-lacks` and
+`r001-record-guard` (probes in test/regression-r001-body.mjs). Tests:
+test/r001-*.test.mjs (test/r001-body-types.test.mjs for C1), the scale test
 test/r001-scale.serial.test.mjs, and the reference interpreter and
 generator (test/fx-oracle-records.mjs, fx-gen-records.mjs,
 fx-gen-record-fns.mjs).

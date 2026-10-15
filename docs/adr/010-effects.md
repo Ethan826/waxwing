@@ -48,6 +48,19 @@ named row variables and locals are not (a local of type `A -> B with pure`
 passed where `A -> B with Log` is wanted is a type error; eta-expansion is
 the workaround).
 
+A type written as an effect label's argument has no ambient row, in a
+signature as in a field, an operation, a handler's label or a `handle`
+clause: an unannotated arrow or a bare `Handler(L)` in `Fail({ k: (Int) ->
+Int })`, `State((Int) -> Int)` or `Fail(W(Handler(Log)))` is `pure`
+(FX024, fixed 2026-10-15). Before, in a signature it took the ambient row,
+which is also the tail of the row the label stands in; a caller with a
+label the callee lacks bound that tail, and so the payload's row, to its
+own whole row, and the payload the caller wrote (its ambient alone) no
+longer matched: a spurious E_EFFECT `v performs Console, which its
+signature does not allow`. A callback raised in such a payload must now be
+`with pure` or share a written `...e` (regression row
+`fx-label-argument-ambient`, test/fx024-label-arguments.test.mjs).
+
 ### Row erasure (revises direction decision 1)
 
 Row structure is erased before specialization; types inside labels are not.

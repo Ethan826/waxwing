@@ -694,3 +694,13 @@ Learned while retargeting mutants for the fifteen new rows
    call that grows a record row reaches the 10,000-specialization limit
    instead of the rule's diagnostic (found while writing ADR 013; BACKLOG
    R010).
+8. Seeding lacks only at signatures, constructors and operations left
+   every type written in a body unchecked against its signature's rigid
+   tails; the hole reached `go build` (a field declared twice), so it was
+   not latent (final review C1). Treat every written type as a seeding
+   site, and keep a lowering-time guard so a checker hole is an internal
+   error, never a Go failure.
+9. The ambient row is a function's own row tail as well as its callbacks'
+   row; any type that shares it outside a callback position (a label's
+   argument, FX024) must equal the caller's whole row at each call. Give
+   such positions no ambient row.

@@ -403,7 +403,12 @@ except `Fail`, keyed by its payload's declared head, so `Fail(DbError)` and
 `Fail(Error(Bool))` share a key. Omitting `with` is not a promise of
 purity: every signature has an ambient row through which a function passes
 what its callbacks perform. `with pure` demands an empty row of the
-callbacks it annotates. `main` may perform only `Console`; any other
+callbacks it annotates. A type written as a label's argument has no
+ambient row, in a signature as in a field, an operation or a `handle`
+clause: the arrow in `Fail({ k: (Int) -> Int })` and the handler in
+`Fail({ h: Handler(Log) })` are `pure`, so a function and its caller with
+more labels name the same payload (FX024); a callback raised in such a
+payload is written `with pure`. `main` may perform only `Console`; any other
 left-over label is E_EFFECT `Unhandled Database in main`, with notes naming
 the path from the call that needs it (test/fx-diagnostics.test.mjs,
 test/fx-services.test.mjs).
@@ -685,7 +690,12 @@ are unchanged. Two declarations passing different sorts to one parameter
 are the same error at the later argument. A record tail may not name a
 type parameter, and an effect's parameters are types, so `effect E(r) {
 fn op(y: { ...r }): Int; }` is E_TYPE `Expected an effect row, found a
-type`: effects cannot take record rows yet (BACKLOG R009).
+type`: effects cannot take record rows yet (BACKLOG R009). A declared
+type's record-row parameter takes only a written `...r`: a concrete row,
+`Holder({ y: Bool })`, is not syntax and reads `Expected an effect row,
+found a type`, although diagnostics print that form when a solved row
+fills the parameter (`Expected a record, found Holder({ y: Bool })`;
+BACKLOG R012).
 
 Literals, access and update (r001-parse, r001-expressions). `{ name:
 "Ada", age: 36 }` has the closed type of its fields. In expression
@@ -720,11 +730,20 @@ extended, so a function cannot read a field its type does not name. Each
 tail lacks the labels written beside it, and the checker enforces it at
 every use: `{ a: Int, ...r }` can never have `r` hold `a`, so passing a
 record through `fn k(y: { ...r }): { a: Int, ...r }` where `r` would have
-to hold `a` is a shape mismatch. Lacks constraints cannot be written yet
-(BACKLOG R005). Two open rows that meet share one remainder, so what one
-use fixes the other sees. Mismatches use the existing texts: `Expected { a:
-Int, b: Bool }, found { a: Int }` for shapes and `Expected Int, found Text`
-for fields. Fields cannot be polymorphic (R006).
+to hold `a` is a shape mismatch. A type written in a body (a lambda's
+parameter annotation, a `with handler` label's arguments, a `handle`
+clause's payload) is held to the same sets: under `fn g(p: { ...r })`,
+`fn(q: { a: Int, ...r }) => q` is E_TYPE `r may already have field a`
+(approved 2026-10-15) at `a`, with the note `r is introduced here` at the
+signature's first `...r`; through a declared type, `fn(h: Holder(...r))`
+with `type Holder(...r) = Holder({ x: Int, ...r })`, it is `r may already
+have field x` at that `...r` (r001-body-types). Writing the label in the
+signature, `p: { a: Int, ...r }`, makes the annotation valid. Lacks
+constraints cannot be written yet (BACKLOG R005). Two open rows that meet
+share one remainder, so what one use fixes the other sees. Mismatches use
+the existing texts: `Expected { a: Int, b: Bool }, found { a: Int }` for
+shapes and `Expected Int, found Text` for fields. Fields cannot be
+polymorphic (R006).
 
 Comparison and printing (r001-compare, r001-go). `== != < <= > >=` compare
 records field by field in sorted label order, the first difference
