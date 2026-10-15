@@ -13,11 +13,11 @@ import Domain.Checked.Internal (Open)
 import Domain.Row (Label, LabelKey, Row(..), labelKey, labelMark, withMark)
 import Domain.Syntax (Span)
 import Domain.Type (Ty, TyRow)
-import Domain.Type.Parts (typeHead)
+import Features.Check.FlatRecord (failHead)
 import Features.Check.MarkStore (RowMode(..))
 import Features.Check.Occurrence (OccurrenceId(Written))
 import Features.Check.Scheme (flexible)
-import Features.Check.Subst (Flex, Subst, walk)
+import Features.Check.Subst (Flex, Subst)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyMark (pairMarks)
 import Features.Check.Walked (walkedRow)
@@ -126,7 +126,7 @@ appended found label key = Map.alter (Just <<< added) key found
   added held = Array.snoc (fromMaybe [] held) label
 
 keyOf ∷ Subst → Label (Ty Open) → Maybe LabelKey
-keyOf subst = labelKey (typeHead <<< walk subst <<< flexible)
+keyOf subst = labelKey (failHead subst <<< flexible)
 
 flexKey ∷ Subst → Label (Ty Flex) → Maybe LabelKey
-flexKey subst = labelKey (typeHead <<< walk subst)
+flexKey subst = labelKey (failHead subst)

@@ -69,10 +69,12 @@ refusedOnFail reference = maybe (Right unit) refused reference.mark
   where
   refused _ = Left (Syntax.problemAt NofailOnFail reference.span)
 
--- A Fail payload needs a family key: Int, Bool, Unit or a declared type.
--- A type variable, a function or a handler type has none, so nothing it is
--- matched against could ever be decided: it is refused where it is written
--- (design §2, FX009).
+-- A Fail payload needs a family key: Int, Bool, Unit, Text, a declared
+-- type or a closed record's label set. A type variable, a function, a
+-- handler type or a record with a row tail (`{ code: Int, ...r }`, whose
+-- labels a signature never fixes) has none, so nothing it is matched
+-- against could ever be decided: it is refused where it is written
+-- (design §2, FX009; R001 design §3a).
 failFamily ∷ Syntax.Span → Ty VarId → Either Syntax.Diagnostic (Ty VarId)
 failFamily span payload =
   if keyless payload then Left
@@ -86,6 +88,7 @@ failFamily span payload =
     TVar _ → true
     TFun _ _ _ → true
     THandler _ _ → true
+    TRecord { tail: Just _ } → true
     _ → false
 
 lookupEffect

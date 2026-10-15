@@ -15,7 +15,7 @@ import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), maybe')
 import Domain.Row (Row(..), labelKey, openRow)
 import Domain.Type (TyRow)
-import Domain.Type.Parts (typeHead)
+import Features.Check.FlatRecord (failHead)
 import Features.Check.Binding (bindTail, extendRow)
 import Features.Check.MarkStore (RowMode)
 import Features.Check.Occurrence (Sides)
@@ -27,7 +27,6 @@ import Features.Check.Subst
   ( Flex(..)
   , Subst
   , postpone
-  , walk
   , resolveLabel
   , resolveRow
   )
@@ -78,7 +77,7 @@ finish operands pending _ =
   traced subst =
     { subst, events: stackItems pending.events, postponed: false }
   extra first = maybe' (postponed operands) (knownExtra first)
-    (labelKey (typeHead <<< walk pending.subst) first.label)
+    (labelKey (failHead pending.subst) first.label)
   knownExtra first _ = case tailOf pending.left.tail of
     MetaTail meta
       | tailOf pending.right.tail == MetaTail meta → Done

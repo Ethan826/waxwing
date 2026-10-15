@@ -37,6 +37,7 @@ import Format.Go.Capture (Free, none, read, union)
 import Format.Go.Cleanup (usesDefects)
 import Format.Go.Context (effectKey, usesContext)
 import Format.Go.Data (ctorName, functionName, performName)
+import Format.Go.Families (RecordKeys, recordKeys)
 import Format.Go.Layout (Layout)
 
 -- What lowering reads about the whole program (FN001): each function's and
@@ -46,7 +47,8 @@ import Format.Go.Layout (Layout)
 -- `context` is the program's mode (Format.Go.Context) and `effects` holds
 -- each effect layout's runtime key and operations, by EffectKey. `defects`
 -- is whether `defer` or `crash` occurs (Format.Go.Cleanup); the report
--- names a payload type by `types`, `effectInfos` and `records`.
+-- names a payload type by `types`, `effectInfos` and `records`;
+-- `failures` numbers the label sets of record payloads' families.
 type Shape =
   { signatures ∷ Array Wrapper
   , ctors ∷ Array Wrapper
@@ -58,6 +60,7 @@ type Shape =
   , types ∷ Array IR.TypeInfo
   , effectInfos ∷ Array IR.EffectInfo
   , records ∷ Array IR.RecordInfo
+  , failures ∷ RecordKeys
   }
 
 -- An effect layout: its runtime key, and each operation as the n-ary
@@ -109,6 +112,7 @@ shapeOf program'@(IR.Program program) =
   , types: program.types
   , effectInfos: program.effects
   , records: program.records
+  , failures: recordKeys program'
   }
   where
   signature definition =

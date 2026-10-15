@@ -24,8 +24,9 @@ import Domain.IR.Internal (Ty(..))
 import Domain.Resolved (LocalId)
 import Domain.Row (TypeHead)
 import Format.Go.Capture (Free, union, without)
-import Format.Go.Context (contextParameter, failKey)
+import Format.Go.Context (contextParameter)
 import Format.Go.Data (functionName, goType, localName, malformed)
+import Format.Go.Families (failKey)
 import Format.Go.Report (abortReport)
 import Format.Go.Lowered
   ( Lowered
@@ -76,7 +77,14 @@ installKey shape = case _ of
   _ → malformedKey
   where
   layoutKey layout = layout.key
-  malformedKey = "func() int { " <> malformed <> " }()"
+
+-- A family's key's Go text; a label set without one is a compiler bug,
+-- shown as a missing layout is.
+familyKey ∷ Shape → TypeHead → String
+familyKey shape head = maybe malformedKey show (failKey shape.failures head)
+
+malformedKey ∷ String
+malformedKey = "func() int { " <> malformed <> " }()"
 
 lowerHandle
   ∷ Scope → Lowering → Int → Ty → IR.Expr → Array IR.FailClause → Lowered
@@ -96,14 +104,15 @@ lowerHandle scope lower next result body clauses =
   clauseBody found = found.body
   captured = union ([ inner.free ] <> Array.zipWith unbound clauses parts.frees)
   unbound found free = without found.local free
-  lifted = handleFunction name result captured inner.code
+  lifted = handleFunction scope.shape name result captured inner.code
     (Array.zipWith Branch clauses parts.codes)
 
 -- A failure clause and its lowered body.
 data Branch = Branch IR.FailClause String
 
-handleFunction ∷ String → Ty → Free → String → Array Branch → String
-handleFunction name result captured body branches =
+handleFunction
+  ∷ Shape → String → Ty → Free → String → Array Branch → String
+handleFunction shape name result captured body branches =
   "func " <> name <> "("
     <> joinWith ", " ([ contextParameter ] <> map parameter captured)
     <> ") "
@@ -113,7 +122,7 @@ handleFunction name result captured body branches =
     <> "result, caught := waxwingHandle([]*waxwingMarker{"
     <> joinWith ", " (Array.mapWithIndex markerName branches)
     <> "}, "
-    <> frames branches
+    <> frames shape branches
     <> ", func(ctx *waxwingCtx) "
     <> goType result
     <> " { return "
@@ -133,12 +142,12 @@ markerLine index branch = markerName index branch
 -- own context, the first clause innermost: the checker types the body
 -- against the first clause of a family (first occurrence wins, design §2).
 -- The clauses run outside it.
-frames ∷ Array Branch → String
-frames branches = foldl push "ctx"
+frames ∷ Shape → Array Branch → String
+frames shape branches = foldl push "ctx"
   (Array.reverse (Array.mapWithIndex Tuple branches))
   where
   push inner (Tuple index branch) = "waxwingFrame(" <> inner <> ", "
-    <> show (failKey (familyOf branch))
+    <> familyKey shape (familyOf branch)
     <> ", "
     <> markerName index branch
     <> ")"
@@ -167,7 +176,7 @@ parameter local = localName local.id <> " " <> goType local.ty
 lowerAbort ∷ Scope → Lowering → Int → Ty → TypeHead → IR.Expr → Lowered
 lowerAbort scope lower next result head value = payload
   { code = "waxwingFail[" <> goType result <> "](ctx, "
-      <> show (failKey head)
+      <> familyKey scope.shape head
       <> ", "
       <> payload.code
       <> ", "

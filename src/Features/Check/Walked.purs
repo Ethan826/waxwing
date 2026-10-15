@@ -12,7 +12,7 @@ import Data.Maybe (maybe)
 import Domain.Checked.Internal (Open(..))
 import Domain.Row (EffectRef(..), Label(..), Row(..), TypeHead(..))
 import Domain.Type (Ty(..), TyRow, VarId)
-import Domain.Type.Parts (typeHead)
+import Features.Check.FlatRecord (failHead)
 import Features.Check.Scheme (flexible, flexibleRow, opened)
 import Features.Check.Subst (Flex, Subst, walk, walkRow)
 
@@ -53,7 +53,8 @@ headedRow subst row = Row (map headed labels) tail
 -- again): its effect and mark, and no arguments, so a handler type nested in
 -- a label argument is held once, by R, not twice. A `Fail` label keeps its
 -- payload's head (a type with no arguments), which is its key; a payload
--- whose head is not known yet stays as it is. C's arguments are never
+-- whose head is not known yet stays as it is, and so does a record, whose
+-- head (its label set) is no type without arguments. C's arguments are never
 -- unified (`ignoringArguments`): C rows pair by key and relate marks and
 -- tails only, so the kept payload is never bound.
 bareLabel ∷ Subst → Label (Ty Open) → Label (Ty Open)
@@ -62,11 +63,12 @@ bareLabel subst (Label effect arguments mark) = Label effect kept mark
   kept = case effect of
     FailEffect → map headOnly arguments
     _ → []
-  headOnly argument = maybe argument headType
-    (typeHead (walk subst (flexible argument)))
-  headType = case _ of
+  headOnly argument = maybe argument (headType argument)
+    (failHead subst (flexible argument))
+  headType argument = case _ of
     HeadInt → TInt
     HeadBool → TBool
     HeadUnit → TUnit
     HeadText → TText
     HeadData id → TData id [] []
+    HeadRecord _ → argument

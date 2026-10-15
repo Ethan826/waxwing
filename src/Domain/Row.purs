@@ -54,7 +54,17 @@ data EffectRef = UserEffect EffectId | FailEffect | ConsoleEffect
 -- `Fail(Error(Int))` and `Fail(Error(Bool))` share a key.
 data LabelKey = EffectKey EffectRef | FailKey TypeHead
 
-data TypeHead = HeadInt | HeadBool | HeadUnit | HeadText | HeadData TypeId
+-- A closed record's head is its label set, sorted (R001 design §3a): the
+-- labels play the part of a declared type's name, and the field types
+-- that of its arguments. It comes last, so every other head keeps its
+-- order.
+data TypeHead
+  = HeadInt
+  | HeadBool
+  | HeadUnit
+  | HeadText
+  | HeadData TypeId
+  | HeadRecord (Array String)
 
 derive instance eqEffectRef ∷ Eq EffectRef
 derive instance ordEffectRef ∷ Ord EffectRef
@@ -87,7 +97,8 @@ isBare ∷ ∀ t v. Row t v → Boolean
 isBare (Row labels tail) = Array.null labels && isJust tail
 
 -- `Nothing` while a Fail payload's head is not a declared type (a
--- variable): the key is deferred until the head is known.
+-- variable) or a closed record (an unsolved tail): the key is deferred
+-- until the head is known.
 labelKey ∷ ∀ t. (t → Maybe TypeHead) → Label t → Maybe LabelKey
 labelKey headOf (Label effect arguments _) = case effect of
   FailEffect → FailKey <$> (headOf =<< Array.head arguments)

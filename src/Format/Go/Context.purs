@@ -14,15 +14,14 @@ module Format.Go.Context
   , parameterList
   , typeList
   , effectKey
-  , failKey
   ) where
 
 import Prelude
 import Data.Array as Array
 import Data.String.Common (joinWith)
-import Domain.Ids (EffectId(..), TypeId(..))
+import Domain.Ids (EffectId(..))
 import Domain.IR.Internal as IR
-import Domain.Row (EffectRef(..), TypeHead(..))
+import Domain.Row (EffectRef(..))
 
 -- Effect layouts exist for every handler type, so any of them, or any
 -- effect node in a body, selects the mode.
@@ -90,29 +89,14 @@ typeList ∷ Boolean → Array String → String
 typeList context types = joinWith ", "
   (if context then Array.cons "*waxwingCtx" types else types)
 
--- Runtime keys: user effects count from 1, failure families count down
--- from -1 by their payload's declared head (Fail layouts are keyed by the
--- full payload, which is not a runtime key), and the host effects, which
--- no frame ever holds, share 0.
+-- Runtime keys: user effects count from 1, failure families are negative
+-- (Format.Go.Families; Fail layouts are keyed by the full payload, which
+-- is not a runtime key), and the host effects, which no frame ever holds,
+-- share 0.
 effectKey ∷ EffectRef → Int
 effectKey = case _ of
   UserEffect (EffectId index) → index + 1
   _ → 0
-
--- Text's key lies below every other: data keys are -4 - id, so only a
--- program of two billion types could reach it (Go's int is at least 32
--- bits wide, and this is math.MinInt32). Giving Text a key must not move
--- an existing one, which the corpus differential confirms.
-textFailKey ∷ Int
-textFailKey = -2147483648
-
-failKey ∷ TypeHead → Int
-failKey = case _ of
-  HeadInt → -1
-  HeadBool → -2
-  HeadUnit → -3
-  HeadText → textFailKey
-  HeadData (TypeId index) → -4 - index
 
 -- Markers are non-zero-sized (Go lets distinct zero-sized variables share
 -- an address) and compared by pointer only. `recover` runs directly in the

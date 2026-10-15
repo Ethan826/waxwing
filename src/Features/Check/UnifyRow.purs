@@ -17,7 +17,7 @@ import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Tuple (Tuple(..))
 import Domain.Row (Label(..), isPure, labelKey)
 import Domain.Type (Ty, TyRow)
-import Domain.Type.Parts (typeHead)
+import Features.Check.FlatRecord (failHead)
 import Features.Check.Binding (extendRow)
 import Features.Check.MarkStore (RowMode(..))
 import Features.Check.Occurrence (Sides, nowhere)
@@ -40,7 +40,7 @@ import Features.Check.RowSide
   )
 import Features.Check.Search (Stack(..))
 import Features.Check.UnifyMark (pairMarks, targetLabel)
-import Features.Check.Subst (Flex(..), Subst, walk, resolveLabel, resolveRow)
+import Features.Check.Subst (Flex(..), Subst, resolveLabel, resolveRow)
 import Features.Check.UnifyFailure (Failure(..))
 
 -- The type unifier, passed in: Features.Check.Unify calls this module.
@@ -133,7 +133,7 @@ consume
 consume unify operands pending entry =
   maybe' (postponed operands) keyed (keyOf entry)
   where
-  keyOf found = labelKey (typeHead <<< walk pending.subst) found.label
+  keyOf found = labelKey (failHead pending.subst) found.label
   entries = pending.right.entries
   keyed key = maybe' (absent operands pending entry) (decided key)
     (Array.findIndex (stops key) entries)

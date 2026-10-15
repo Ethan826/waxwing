@@ -1,17 +1,16 @@
 module Features.Check.UnifyRecord (unifyRecord) where
 
 import Prelude
-import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (Maybe, maybe, maybe')
 import Data.Tuple (Tuple(..), fst)
 import Domain.Type (Ty(..))
-import Domain.Type.Record (RecordRow, recordRow)
+import Domain.Type.Record (RecordRow)
 import Features.Check.RecordTail (Fields, bindTail, shareTails)
-import Features.Check.Search (Stack(..), stackItems)
+import Features.Check.FlatRecord (Flat, flatten)
 import Features.Check.Subst (Flex(..), Subst, metaOf, walk)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyParts (mismatch)
@@ -71,23 +70,6 @@ tails failed one other subst =
   where
   onlyMine = only one other
   onlyTheirs = only other one
-
-type Flat = { fields ∷ Fields, tail ∷ Maybe Flex }
-
--- The row with its tail's bindings spliced in, by a loop: each bound tail
--- is a record whose fields join and whose tail is followed in turn.
-flatten ∷ Subst → RecordRow (Ty Flex) Flex → Flat
-flatten subst row = tailRec step
-  { chunks: Push row.fields Bottom, tail: row.tail }
-  where
-  step pending = maybe' (ended pending) (followed pending) pending.tail
-  ended pending _ = Done (joined pending.chunks Nothing)
-  followed pending tail = case walk subst (TVar tail) of
-    TRecord more → Loop
-      { chunks: Push more.fields pending.chunks, tail: more.tail }
-    TVar found → Done (joined pending.chunks (Just found))
-    _ → Done (joined pending.chunks (Just tail))
-  joined chunks tail = recordRow (Array.concat (stackItems chunks)) tail
 
 -- Sorted, so a label held twice is held by neighbours. Lacks sets keep
 -- this from arising; were it to, the row is no record.

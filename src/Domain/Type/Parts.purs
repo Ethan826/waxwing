@@ -18,7 +18,7 @@ import Prim hiding (Row)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..), snd)
+import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Row
   ( HandlerRows
   , Label(..)
@@ -124,7 +124,9 @@ mentionsTypeVariable = case _ of
   where
   rowMentions row = Array.any mentionsTypeVariable (rowArguments row)
 
--- The declared identity a Fail payload is keyed by, if the type has one.
+-- The declared identity a Fail payload is keyed by, if the type has one:
+-- a record's sorted labels once it is closed. An open record's labels are
+-- not all known yet, so it has none (R001 design §3a).
 typeHead ∷ ∀ v. Ty v → Maybe TypeHead
 typeHead = case _ of
   TInt → Just HeadInt
@@ -132,6 +134,7 @@ typeHead = case _ of
   TUnit → Just HeadUnit
   TText → Just HeadText
   TData id _ _ → Just (HeadData id)
+  TRecord { fields, tail: Nothing } → Just (HeadRecord (map fst fields))
   _ → Nothing
 
 groundWith
