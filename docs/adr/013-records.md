@@ -105,12 +105,17 @@ used as a lambda's record tail read as `a is not a field of { a: Int,
 ...r }`, a record row as a lambda's effect row was accepted, and an
 effect row passed to a record parameter in a body reached E_INTERNAL
 (rows `r016-effect-as-record`, `r016-record-as-effect`). A row variable
-read as a type there, or a type variable as a row, is not covered yet
-(BACKLOG R017). A record tail naming a type parameter, and `...r` naming an
-effect's parameter (Features.Resolve.EffectSorts), are the existing
-E_TYPE `Expected an effect row, found a type`: an effect's parameters are
-types, so effects cannot take record-row parameters in this tranche (Task
-4 ruling; BACKLOG R009).
+read as a type there, or a type variable as a row, is the signature's
+own text too, through SortConflict `conflict`, with no note: `Expected a
+type, found an effect row` at the `r`, `Expected an effect row, found a
+type` at the `...a` or `with ...a` (BACKLOG R017; before, accepted,
+E_INTERNAL or `b is not a field of { b: Int, ...a }`; rows
+`r017-row-as-type`, `r017-type-as-row`). A record tail naming a type
+parameter, and `...r` naming an effect's parameter
+(Features.Resolve.EffectSorts), are the existing E_TYPE `Expected an
+effect row, found a type`: an effect's parameters are types, so effects
+cannot take record-row parameters in this tranche (Task 4 ruling; BACKLOG
+R009).
 
 ### Record-row arguments (R012)
 
@@ -402,6 +407,7 @@ R012 `r012-record-argument`, `r012-argument-clash`, `r012-argument-lacks`,
 `r012-nested-walk` (scripts/regression-r012.mjs, probes in
 test/regression-r012.mjs), and for the follow-ups `r015-effect-row`,
 `r015-record-row`, `r016-effect-as-record`, `r016-record-as-effect`,
+`r017-row-as-type`, `r017-type-as-row`,
 `r010-nested-row` and `r010-mutual-row` (scripts/regression-ie.mjs, probes
 in test/regression-ie.mjs). Tests:
 test/r001-*.test.mjs (test/r001-body-types.test.mjs for C1), the scale test

@@ -2,12 +2,12 @@
 
 The internal-error batch is done on branch `r001-followups` (worktree
 .worktrees/r001-followups, from main 80b5b53), not merged: FX025
-(d0c9f8a), R015 (b07d11f), R016 (3e610b6) and R010 (75b2aa3), each with
-tests seen failing first and regression rows (scripts/regression-ie.mjs),
-using existing or approved texts only (docs/progress.md "FX025 and R015",
-"R016 and R010"). Filed while fixing R016: R017 (a row read as a type, or
-a type variable as a row, in a body; texts need approval). Next: the
-user's merge decision, by fast-forward only.
+(d0c9f8a), R015 (b07d11f), R016 (3e610b6), R010 (75b2aa3) and R017
+(036153b, found while fixing R016: a row read as a type, or a type
+variable as a row, in a body), each with tests seen failing first and
+regression rows (scripts/regression-ie.mjs), using existing or approved
+texts only (docs/progress.md "FX025 and R015", "R016 and R010"). Next:
+the user's merge decision, by fast-forward only.
 
 Then, in order: R004 (record patterns) and R005 (extension, merge and
 removal), each with a design the user approves first; then the INF001

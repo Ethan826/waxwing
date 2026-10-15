@@ -707,7 +707,11 @@ arguments, a `handle` clause's payload) uses its signature's row
 variables with the signature's sorts: under `fn g(p: Int): Unit with
 ...r`, `fn(q: { a: Int, ...r }) => q.a` is `r is an effect row, not a
 record row` at the lambda's `...r`, noted `first written here` at the
-signature's `with ...r`, and the other way round likewise (R016).
+signature's `with ...r`, and the other way round likewise (R016). A row
+variable used there as a type, `fn(q: r)`, is `Expected a type, found an
+effect row` at the `r`, and a type variable used as a row, `{ b: Int,
+...a }` or `with ...a`, is `Expected an effect row, found a type`, as in
+a signature (R017).
 
 Record-row arguments (R012, approved by the user 2026-10-15;
 r012-arguments, r012-diagnostics). A declared type's record-row

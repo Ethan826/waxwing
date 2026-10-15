@@ -4999,8 +4999,8 @@ BACKLOG T007 stand as written.
   now gives the approved `r is an effect row, not a record row` (or its
   mirror) at the body's use, noted `first written here` at the
   signature's first use. Found while fixing it: a row read as a type, or
-  a type variable as a row, in a body is unchecked (BACKLOG R017; texts
-  need approval).
+  a type variable as a row, in a body was unchecked (BACKLOG R017, fixed
+  in fix round 1 below).
 - R010 (75b2aa3): the instantiation rule ignored a function call's
   record row slots, so a call growing a row reached `More than 10000
   specializations` (0.3-0.4 s). Each record slot is now judged as a
@@ -5024,3 +5024,28 @@ BACKLOG T007 stand as written.
 - language.md: the row-sort paragraph gains R015's rule (a record-sorted
   row parameter written as a type has the effect row's text) and R016's;
   the instantiation rule gains record row arguments.
+
+Fix round 1 (review of R016 and R010, 2026-10-15):
+
+- R017 (036153b; controller ruling: the existing signature-analog
+  texts): Features.Resolve.BodySorts now flags every body use whose sort
+  differs from the signature's and reports it through SortConflict
+  `conflict`. A row read as a type is `Expected a type, found an effect
+  row` at the body's `r` (lambda annotation, inside `List(r)`, a
+  `handle` payload); a type variable read as a row is `Expected an
+  effect row, found a type` at `...a` or `with ...a`; no note. Row
+  against row is unchanged (R016's tests pass as they were). Tests
+  test/r017-body-type-sorts.test.mjs seen failing first
+  (.build/evidence/ie-b-r017-red-1.log); rows r017-row-as-type and
+  r017-type-as-row proved failing with the check restricted back to row
+  sorts (ie-b-r017-regression-1.log).
+- test/r010-record-instantiation.test.mjs pins ADR 007's R010 note: a
+  type argument that mentions a record tail (`g(x, { z: x }, n + -1)`
+  with `y: a`) is accepted and prints 7.
+- Differential against 80b5b53 (.build/evidence/ie-b-diff-2.log): 30
+  differences in 7,254 harvested sources, the 24 above plus R017's 6 new
+  test programs (accepted, E_INTERNAL or the misleading field text
+  before); 1 of 1,000 mutations, an R017 source without the block's
+  final value (resolved before, now R017's E_TYPE in resolve); 0 in
+  fuzz, isName and matches. The harvest runs' timing failures are in
+  BACKLOG T007 (bounds unchanged).
