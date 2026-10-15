@@ -85,6 +85,14 @@ parameters (controller rulings, Task 3, after four review rounds):
   reported site with its own sort (`b is an effect row, not a record
   row` when `b` is an effect row; `r001-caller-conflict`).
 - A parameter left without a sort is effect sort, today's behaviour.
+- **Record-free fast path** (R001 Task 15, T007). With no record type
+  written in any declaration's fields no use has record sort, so every
+  parameter stays effect sort and no two uses can disagree; Sorts returns
+  the declarations as written without the walks. A written type's name is
+  found through an index built once per program
+  (Features.Resolve.TypeIndices, a sorted array searched by halves), not a
+  scan of the declared types, and a reference without arguments is not
+  looked up at all.
 
 The texts are the approved `r is a record row, not an effect row` and its
 mirror. A record tail naming a type parameter, and `...r` naming an

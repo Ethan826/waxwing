@@ -4889,3 +4889,63 @@ T007 stand as written.
   the clean tree at ee6038c, no other build running, exit 0 on the first
   run (.build/evidence/t14-final-verify-1.log): 1,875/1,875 parallel,
   59/59 serial, 118 regression proofs; the chain took 2,495 ms.
+
+## R001 compile-time regression removed (plan Task 15, 2026-10-15)
+
+Task 14 found Records slowed three existing programs against main
+de96a15. Profiled first (`node --cpu-prof` on the built output/, the
+three programs compiled in-process), then fixed without behaviour change
+(commits 260edaf, 2ef868c, 52e82cb). Earlier records above and in
+BACKLOG T007 stand as written.
+
+- Root causes. The 10,000-type chain: Features.Resolve.Occurrences found
+  each written type by scanning every declared type (`declaredIndex`,
+  about 710 ms per compile, quadratic), run twice per program by Sorts.
+  Three thousand instantiations: Variables rebuilt and scanned the
+  declared-type table for every signature (about 80 ms), and Ty's Ord
+  instance built record-row dictionaries each time it was made, once per
+  nested comparison (about 11 ms). Twenty thousand types: the row-sort
+  walks ran on a program without records (about 28 ms), and E017's ground
+  tables (Specialize.Printable) were a strict `where` value, built for
+  every program (about 16 ms).
+- Fix. Names are indexed once per program
+  (Features.Resolve.TypeIndices, a stable-sorted array searched by halves
+  in a loop; cheaper to build than a Map of the same names), and a
+  reference without arguments is not looked up. The declared-type table
+  is built once in Resolve and passed to Variables, EffectSorts and
+  Lacking. Sorts settles declarations as written when no declaration
+  writes a record type, where the solver can neither change nor reject
+  anything (ADR 013, "Record-free fast path"). The ground tables are
+  built only for a structured print site. Ty's Ord compares records
+  through Domain.Type.Compare `compareRecords`, so the dictionaries are
+  built only when two records meet; Eq stays inline (moving it as well
+  measured slower on the wide match checks).
+- Figures (interleaved file runs, main / before bf4b8e7 / candidate
+  52e82cb in the worktree, medians ms with ranges in BACKLOG T007):
+  chain 931 / 1,710 / 945; instantiations 875 / 968 / 879; twenty
+  thousand types 660 / 707 / 684 (.build/evidence/t15-timing-coverage-
+  scale-4.log, t15-timing-large-source-3.log). Every other figure in
+  those files is within 0.91x to 1.04x of main except two small, noisy
+  ones in the worktree run. A control with the same candidate built in a
+  copy under .build (-coverage-scale-5, -large-source-4) shows running
+  from the worktree root adds a few percent on some tests (the 62 ms
+  redundant-arm test: copy 63.4, worktree 70.9, main 61.7); Task 14's
+  candidate figures carried the same effect. r001-scale unchanged
+  (compile 254 / 256 ms). Records-heavy in-process programs
+  (.build/evidence/t15-records-heavy.log): 3,000 record-typed functions
+  about 30% faster, the r001-scale programs unchanged.
+- Found, not caused here: a records-heavy declaration chain is
+  super-linear in ArgumentClash (25 s at 2,000 declarations, before and
+  after); BACKLOG R013.
+- Guard: test/r001-sort-cost.test.mjs (no timing): a record-free
+  program's declarations come back as the same array, a written or
+  nested record type still settles and still rejects a disagreement, and
+  the name index agrees with a first-declaration scan over 2,000
+  generated arrays. Seen failing with each defect restored in an
+  isolated copy (fast path removed, a shallow record detector, a
+  last-duplicate search, a search ignoring the name;
+  .build/evidence/t15-red.log). A timing-free guard for the quadratic
+  scan itself was not found practical; the existing chain bound stays.
+- Differential against bf4b8e7 (`--corpus all --regenerate`):
+  0 differences over 7,212 harvested, 1,029 fuzz, 1,085 isName, 1,000
+  match and 1,000 mutation sources (.build/evidence/t15-differential.log).
