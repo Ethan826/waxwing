@@ -4,12 +4,13 @@
 export const r001Rows = [
   {
     // No specialization-time printable check (BACKLOG E017): a type
-    // variable instantiated with a function passes the checker and fails
-    // `go build` (E_TOOL).
+    // variable instantiated with a function passes the checker and its Go
+    // fails to compile (E_TOOL), as Go's own error shows.
     name: 'r001-print-ground', file: 'src/Features/Specialize.purs',
     needle: '  checkSites env state\n',
     replacement: '',
-    probe: 'r001-print-ground', message: /E_TOOL/
+    probe: 'r001-print-ground',
+    message: /E_TOOL: go build failed: \.\/main\.go:\d+:\d+: cannot use/
   },
   {
     // Record fields left in written order: a diagnostic prints them so
@@ -77,5 +78,75 @@ export const r001Rows = [
     needle: '    if rebound reached one || rebound reached other then\n',
     replacement: '    if false then\n',
     probe: 'r001-field-bound-tail', message: /rebound/
+  },
+  {
+    // A layout keyed by its fields in written order: an open row's fields
+    // and its tail's spliced in after them make a second layout, a second
+    // Go struct, for one record type (R001 design §5).
+    name: 'r001-sorted-layout', file: 'src/Features/Specialize/Layouts.purs',
+    needle: '  fields = sortFields written\n',
+    replacement: '  fields = written\n',
+    probe: 'r001-sorted-layout', message: /written-order layout/
+  },
+  {
+    // A meta tail bound to a label it lacks (rule 4), so `{ a: Int, ...r }`
+    // with `r` bound to `{ a: Int }` passes.
+    name: 'r001-lacks', file: 'src/Features/Check/RecordTail.purs',
+    needle: '  if Array.any forbidden fields then failed subst\n',
+    replacement: '  if false then failed subst\n',
+    probe: 'r001-lacks', message: /lacks/
+  },
+  {
+    // Two open tails each extended with their own fresh remainder (rule 3),
+    // so the remainder one use fixes is not the other's.
+    name: 'r001-shared-remainder',
+    edits: [
+      {
+        file: 'src/Features/Check/RecordTail.purs',
+        needle: '  fresh = Subst bindings { fresh = bindings.fresh - 1 }\n',
+        replacement: '  fresh = Subst bindings { fresh = bindings.fresh - 2 }\n'
+      },
+      {
+        file: 'src/Features/Check/RecordTail.purs',
+        needle: '  bindTheirs reached = bindTail failed reached theirs.meta '
+          + 'theirs.fields\n    remainder\n',
+        replacement: '  bindTheirs reached = bindTail failed reached '
+          + 'theirs.meta theirs.fields\n'
+          + '    (Just (Meta (bindings.fresh - 1)))\n'
+      }
+    ],
+    probe: 'r001-shared-remainder', message: /independent/
+  },
+  {
+    // Every field used in place in the struct literal, so Go evaluates the
+    // fields in sorted label order, not as written (R001 design §5).
+    name: 'r001-field-order', file: 'src/Format/Go/Record.purs',
+    needle: '  IR.Local _ → true\n  _ → false\n',
+    replacement: '  IR.Local _ → true\n  _ → true\n',
+    probe: 'r001-field-order', message: /field order/
+  },
+  {
+    // Layouts keyed by labels alone, so `{ x: Int }` and `{ x: Text }`
+    // share one Go struct.
+    name: 'r001-shape-types',
+    edits: [
+      {
+        file: 'src/Features/Specialize/Layouts.purs',
+        needle: '  (Map.lookup fields layouts.numbers)\n',
+        replacement: '  (Map.lookup shape layouts.numbers)\n'
+      },
+      {
+        file: 'src/Features/Specialize/Layouts.purs',
+        needle: '{ numbers: Map.insert fields layouts.count',
+        replacement: '{ numbers: Map.insert shape layouts.count'
+      },
+      {
+        file: 'src/Features/Specialize/Layouts.purs',
+        needle: '  fields = sortFields written\n',
+        replacement: '  fields = sortFields written\n'
+          + '  shape = map (map (const IR.TUnit)) fields\n'
+      }
+    ],
+    probe: 'r001-shape-types', message: /field types/
   }
 ];

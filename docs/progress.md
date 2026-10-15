@@ -4533,3 +4533,67 @@ parameterised effect's parameters in the import form (`Fail(E) { fail }`,
 `Box(t) { put }`, `Pair(a, b) { … }`); `use` stays bare and effects without
 parameters are unchanged. The multi-candidate hint wording was approved too.
 Report: .superpowers/sdd/2026-10-13-effect-namespaces-plan/fx022-report.md.
+
+## R001 Task 10: regression rows, scale, services proxy (2026-10-14)
+
+On branch `records` (plan .superpowers/sdd/2026-10-14-records-plan, spec
+docs/plans/2026-10-14-records-design.md §8).
+
+- Five regression rows (scripts/regression-r001.mjs, probes in
+  test/regression-r001.mjs), each "fixed compiler passes; restored defect
+  fails" in an isolated copy: `r001-sorted-layout` (Layouts' key in written
+  order: an open row's spliced tail makes a second struct for one type),
+  `r001-lacks` (RecordTail's lacks check removed), `r001-shared-remainder`
+  (two open tails each given their own fresh remainder),
+  `r001-field-order` (every field used in place in the Go struct literal,
+  so Go evaluates them in sorted order) and `r001-shape-types` (layouts
+  keyed by labels alone, so `{ x: Int }` and `{ x: Text }` share a struct).
+  The E017 row `r001-print-ground` now proves that `go build` itself
+  failed: the probe reads Go's `# command-line-arguments` header and first
+  error, rather than calling every failed `go run` a build failure.
+- Fail keys: a test where the later-sorted label set (`{ zed }`) is
+  declared, raised and handled first pins `{ alpha }` to MinInt32 + 1. With
+  first-use numbering restored in an isolated copy, the existing
+  "count up … in sorted order" test passed and this one failed.
+- Scale (test/r001-scale.serial.test.mjs, serial phase): 200 distinct
+  shapes `{ k: Int, fI: Int }` through a chain of 20 generic functions,
+  each updating `k`: 4,001 keys (one per shape and link, plus `main`,
+  asserted exactly), 19,617 Go lines, output checked. Keys and lines grow
+  linearly: 50x20 1,001 keys and 4,917 lines; 100x20 2,001 and 9,817;
+  200x20 4,001 and 19,617; 100x40 4,001 and 17,817. Text v1 method: compile
+  in-process; `go build` after one warm-up build, the minimum of three.
+  Five serial runs on this host (macOS, Node 26.6.0, Go 1.26.4), load
+  average (1, 5, 15 minutes) before each: 2.74 2.48 3.31; 3.56 2.65 3.36;
+  3.35 2.62 3.35; 3.25 2.61 3.34; 3.23 2.62 3.34
+  (.build/r001-t10-scale-five.log).
+
+  | Measure | Runs | Median | Bound (3x) |
+  |---|---|---|---|
+  | compile ms | 243, 243, 242, 242, 251 | 243 | 729 |
+  | go build ms (min of 3) | 728, 718, 714, 693, 697 | 714 | 2142 |
+  | Go lines | 19617 (all five) | 19617 | 58851 |
+
+  Each tail's layout is interned too, so the chain emits 400 structs for
+  200 shapes, half of them (`{ fI: Int }`) declared and never used.
+- Services proxy, a proxy and not a validation of the unimplemented
+  services feature (same test file, no time bound; keys exact, output
+  checked): environments are records of `(Int) -> Int with Console`
+  service functions, each holding a window of `width` consecutive services
+  of `services`, so neighbours overlap; generic `useI(env: { sI: …, ...r
+  }, n)` calls the service through its label alone, and each environment
+  calls each of its services through that code. Keys are one per
+  (environment label set, service), one per service function, and `main`;
+  environments with one label set share keys. Single in-process compiles:
+
+  | Services | Environments | Width | Keys | Go lines | Structs | Compile ms |
+  |---|---|---|---|---|---|---|
+  | 20 | 20 | 8 | 181 | 2519 | 160 | 152 |
+  | 20 | 100 | 8 | 181 | 2759 | 160 | 351 |
+  | 40 | 40 | 10 | 441 | 6939 | 400 | 221 |
+  | 40 | 200 | 10 | 441 | 7419 | 400 | 967 |
+  | 80 | 80 | 10 | 881 | 13859 | 800 | 397 |
+
+  The test runs 20 services, 100 environments, width 8. The first row's
+  compile includes JIT warm-up; repeated environments add only `main`'s
+  lines, but its compile time grows with `main`'s 100 or 200 `let`
+  bindings of 8 or 10 nested calls.

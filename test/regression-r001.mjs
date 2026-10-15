@@ -12,8 +12,10 @@ const sites = [
   ['crash', 'Unit', 'crash(item)']
 ];
 
-// What the compiler gives: its rejection, or the result of building the
-// Go it emitted (a build failure is E_TOOL for the driver).
+// What the compiler gives: its rejection, or the result of running the Go
+// it emitted. A Go compile failure (E_TOOL for the driver) is told from a
+// failed run by the header `go run` prints for its package, and carries
+// Go's first error, so a proof shows that the build itself failed.
 const outcome = (context, source) => {
   const result = context.compile(source);
   if (result instanceof context.Left) {
@@ -21,7 +23,11 @@ const outcome = (context, source) => {
     return `${wired.code} ${wired.message}`;
   }
   const run = context.ran(result.value0);
-  return run.status === 0 ? 'ran' : 'E_TOOL: go failed to build';
+  if (run.status === 0) return 'ran';
+  const lines = run.output.split('\n');
+  const header = lines.indexOf('# command-line-arguments');
+  return header < 0 ? `go run failed: ${run.output}`
+    : `E_TOOL: go build failed: ${lines[header + 1]}`;
 };
 
 // What a program printed, or its rejection, or how its Go failed.
@@ -134,6 +140,63 @@ export const r001Probes = {
     if (found !== 'E_TYPE Expected { a: { ..._ }, ..._ }, found '
       + '{ a: { b: Int }, c: Bool }') {
       fail(`a tail bound through a field was rebound: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // `{ b: Int, ...r }` with `r` bound to `{ a: Bool }` is
+  // `{ a: Bool, b: Int }`, the caller's record: one layout, one struct.
+  'r001-sorted-layout': context => {
+    const found = shown(context, 'fn f(x: { b: Int, ...r }): '
+      + '{ b: Int, ...r } = x; fn main(): Unit with Console = '
+      + 'Console.print(f({ a: true, b: 1 }));');
+    if (found !== '{ a: true, b: 1 }\n') {
+      fail(`a written-order layout split one record type: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // `r` lacks `a` from k's signature, so it may not be `{ a: Int }`.
+  'r001-lacks': context => {
+    const found = outcome(context, 'fn k(y: { ...r }): { a: Int, ...r } = '
+      + 'k(y); fn f(q: { a: Int }): Int = { let u = k(q); 1 }; '
+      + 'fn main(): Int = 0;');
+    if (found !== 'E_TYPE Expected { ..._ }, found { a: Int }') {
+      fail(`a tail was bound to a label it lacks: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // `same(p, q)` gives p's and q's tails one remainder; h then fixes it as
+  // `{ c: Text }` through p, so q cannot be `{ d: Text }` (as in
+  // test/r001-unify.test.mjs).
+  'r001-shared-remainder': context => {
+    const found = outcome(context, 'fn ra(n: Int): { a: Int, ...r } = ra(n); '
+      + 'fn rb(n: Int): { b: Bool, ...s } = rb(n); '
+      + 'fn same(x: t, y: t): t = x; fn h(x: { a: Int, b: Bool, c: Text }, '
+      + 'y: { a: Int, b: Bool, d: Text }): Int = 1; fn f(n: Int): Int = { '
+      + 'let p = ra(n); let q = rb(n); let u = same(p, q); h(p, q) }; '
+      + 'fn main(): Int = 0;');
+    if (found !== 'E_TYPE Expected { a: Int, b: Bool, d: Text }, found '
+      + '{ a: Int, b: Bool, c: Text }') {
+      fail(`tails extended independently: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // Fields run as written, `b` before `a`, though the struct sorts them.
+  'r001-field-order': context => {
+    const found = shown(context, 'fn say(s: Text, n: Int): Int with Console '
+      + '= { Console.print(s); n }; fn main(): Unit with Console = '
+      + 'Console.print({ b: say("b", 2), a: say("a", 1) });');
+    if (found !== 'b\na\n{ a: 1, b: 2 }\n') {
+      fail(`field order left to Go: ${found}`);
+    }
+    console.log(`${context.probe} regression detects the defect`);
+  },
+  // One label, two field types: two shapes, each built and printed.
+  'r001-shape-types': context => {
+    const found = shown(context, 'fn a(): { x: Int } = { x: 1 }; '
+      + 'fn b(): { x: Text } = { x: "t" }; fn main(): Unit with Console = '
+      + '{ Console.print(a()); Console.print(b()) };');
+    if (found !== '{ x: 1 }\n{ x: "t" }\n') {
+      fail(`shapes told apart by labels, not field types: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);
   }

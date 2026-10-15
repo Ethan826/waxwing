@@ -56,6 +56,25 @@ test('label-set keys count up from MinInt32 + 1 in sorted order', () => {
     minInt32 + 1}, waxwingRec`));
 });
 
+// Here first use is not sorted order: `{ zed }` is declared, raised and
+// handled before `{ alpha }`, yet `{ alpha }` sorts first and takes the
+// first key.
+test('label-set keys follow sorted order, not first use', () => {
+  const go = checked('fn raise(n: Int): Int '
+    + 'with Fail({ zed: Int }) + Fail({ alpha: Text }) = '
+    + 'if n == 0 then Fail.fail({ zed: 7 }) '
+    + 'else Fail.fail({ alpha: "m" }); '
+    + 'fn main(): Text = handle show(raise(1)) '
+    + '{ fail(e: { zed: Int }) => "zed", '
+    + 'fail(e: { alpha: Text }) => e.alpha };');
+  assert.match(go, new RegExp(`waxwingFail\\[int32\\]\\(ctx, ${
+    minInt32 + 2}, waxwingRec\\d+\\{f_zed: `), go);
+  assert.match(go, new RegExp(`waxwingFail\\[int32\\]\\(ctx, ${
+    minInt32 + 1}, waxwingRec\\d+\\{f_alpha: `), go);
+  assert.ok(go.includes(`waxwingFrame(waxwingFrame(ctx, ${minInt32 + 1}`),
+    go);
+});
+
 test('one family across two functions shares one key', () => {
   const source = 'fn one(): Int with Fail({ x: Int, y: Bool }) = '
     + 'Fail.fail({ y: true, x: 1 }); '
