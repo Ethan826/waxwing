@@ -57,8 +57,19 @@ signatureLacking
   → Maybe Lacking
 signatureLacking tables function signature =
   if Array.elem Syntax.RecordSort signature.sorts then Just
-    { variables: signature.variables, lacks, introduced }
+    (lackingOf tables function signature)
   else Nothing
+
+-- A function, so that only a signature with a record row variable pays
+-- for its walk: `where` bindings are strict.
+lackingOf
+  ∷ ∀ r
+  . Resolved.Tables
+  → Syntax.FunctionDecl
+  → Signature r
+  → Lacking
+lackingOf tables function signature =
+  { variables: signature.variables, lacks, introduced }
   where
   types = map typeOf signature.parameters
     <> [ signature.result, TFun TUnit signature.row TUnit ]
