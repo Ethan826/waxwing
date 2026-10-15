@@ -4762,6 +4762,7 @@ final-fix-findings.md and final-fix-report.md).
   base overflows the same way after warm-up (BACKLOG G006).
 - Parser untouched; no depth probe. Timing failures of the instrumented
   harvest run and of two verify runs (test/coverage-scale.test.mjs, the
-  10,000-type chain, 6,329 and 5,426 ms against 5 s under the parallel
-  run, about 1.75 s alone on this tree and on the base) are in BACKLOG
-  T007.
+  10,000-type chain, 5,145 to 6,329 ms against 5 s under the parallel
+  run in five of six verifies, about 1.75 s alone on this tree and on the
+  base) are in BACKLOG T007. Serial 59/59 and 111 regression proofs
+  passed on 2e77dc2 when run on their own.
