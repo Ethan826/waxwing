@@ -4965,3 +4965,25 @@ BACKLOG T007 stand as written.
   (`type T(...e) = T(e);` is E_INTERNAL `Invalid type variable`), R016
   (a signature's effect row used as a lambda's record tail reports
   `a is not a field of { a: Int, ...r }`).
+
+### FX025 and R015 (internal errors, 2026-10-15)
+
+- FX025 (d0c9f8a): an unbound effect row variable in a type declaration,
+  a declared type's argument or a lambda annotation was E_INTERNAL
+  `Missing row variable` at offset 0. It is the existing E_UNBOUND
+  `Unbound type variable z` a record tail gets, at the written row (the
+  whole `with ...z`, as the row sort errors are; at `...z` as an
+  argument).
+- R015 (b07d11f): a row parameter written as a type, `type T(...e) =
+  T(e);`, was E_INTERNAL `Invalid type variable`; a record row
+  parameter so written compiled unchecked. Both are the existing E_TYPE
+  `Expected a type, found an effect row` at the use, as in a signature
+  (Sorts.rowsAsTypes, run before the record-free fast path).
+- Tests seen failing first (.build/evidence/ie-a-red-1.log); regression
+  rows fx025-unbound-row, r015-effect-row, r015-record-row proved
+  failing with each defect restored in an isolated copy.
+- Differential against 80b5b53 (`--corpus all --regenerate`): 11
+  differences in 7,224 harvested sources, all this change's own new
+  test programs (E_INTERNAL or accepted before, the texts above now);
+  0 in the 1,029 fuzz, 1,085 isName, 1,000 match and 1,000 mutation
+  sources (.build/evidence/ie-a-diff-2.log).
