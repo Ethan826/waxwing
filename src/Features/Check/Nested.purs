@@ -1,12 +1,12 @@
-module Features.Check.Nested (nestedTypes, admissible, referenced) where
+module Features.Check.Nested (nestedTypes, referenced) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (sequence_, traverse_)
-import Data.Maybe (Maybe(..), fromMaybe, maybe')
+import Data.Maybe (fromMaybe, maybe')
 import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple(..), snd)
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
 import Domain.Problem (Problem(..))
@@ -18,7 +18,6 @@ import Domain.Syntax
   , RefSpine
   , Sort
   , Span
-  , TypeArgument(..)
   , TypeRef(..)
   , handlerLabelRef
   , problemAt
@@ -30,6 +29,11 @@ import Domain.Type (Ty(..), TypeId(..), VarId)
 import Domain.Type.Parts (children)
 import Domain.Type.Record (fieldTypes)
 import Features.Check.Components (components)
+import Features.Check.NestedArguments
+  ( admissibleArgument
+  , judged
+  , judgedReferences
+  )
 
 -- The instantiation rule over one reference graph of type and effect
 -- declarations (design §4.1, FX001 design §4 "Layout dependencies"): an
@@ -60,13 +64,6 @@ nestedTypes (Checked.Program program) = do
   ctorEntry ctor =
     { span: ctor.span, types: ctor.fields, syntax: ctor.fieldSyntax }
   nodeName node = node.name
-
--- `admissible variable ty`: `ty` is a bare variable, or mentions no
--- variable that `variable` selects. Shared with the function half.
-admissible ∷ ∀ v. (v → Boolean) → Ty v → Boolean
-admissible variable = case _ of
-  TVar _ → true
-  ty → not (mentions variable ty)
 
 -- A declaration of the graph: a type, whose entries are its constructors,
 -- or an effect, whose entries are its operations; an entry's types are
@@ -136,8 +133,8 @@ judgeField graph inside ty syntax = case ty, syntax of
   TData (TypeId index) arguments _, NamedRef span _ references → reference
     span
     index
-    (typed (slotsOf index) arguments)
-    (typeReferences (slotsOf index) references)
+    (judged (slotsOf index) arguments)
+    (judgedReferences (slotsOf index) references)
   TData _ _ _, _ → Left (mismatch (typeRefSpan syntax))
   THandler label _, _ → maybe' (const (Left (mismatch (typeRefSpan syntax))))
     (handler label)
@@ -156,39 +153,18 @@ judgeField graph inside ty syntax = case ty, syntax of
   handler (Label effect arguments _) written = case effect of
     UserEffect (EffectId index) → reference written.span
       (graph.offset + index)
-      arguments
+      (map (Tuple Syntax.TypeSort) arguments)
       written.arguments
     _ → paired written.span arguments written.arguments recur
   reference span index arguments references = offending span index arguments
-    *> paired span arguments references recur
+    *> paired span (map snd arguments) references recur
   slotsOf index = fromMaybe [] (Array.index graph.slots index)
   offending span index arguments
-    | inside index && not (Array.all (admissible always) arguments) =
+    | inside index && not (Array.all admissibleArgument arguments) =
         maybe' (missing span) (nested span) (Array.index graph.names index)
     | otherwise = Right unit
   nested span name = Left (problemAt (NestedDatatype name) span)
   missing span _ = Left (problemAt (Internal "Invalid type id") span)
-  always _ = true
-
--- A declared type's arguments that are types, each beside its source: an
--- effect row or a record row stands for no type to judge. The resolved
--- arguments run type group first (`sourceSorts` in declaration order, the
--- row parameters left out).
-typed ∷ ∀ v. Array Sort → Array (Ty v) → Array (Ty v)
-typed sorts arguments = Array.mapMaybe typeSlot
-  (Array.zip (Array.filter rowFree sorts) arguments)
-  where
-  rowFree sort = sort /= Syntax.RowSort
-  typeSlot (Tuple sort ty) =
-    if sort == Syntax.TypeSort then Just ty else Nothing
-
-typeReferences ∷ Array Sort → Array TypeArgument → Array TypeRef
-typeReferences sorts references = Array.mapMaybe typeSlot
-  (Array.zip sorts references)
-  where
-  typeSlot (Tuple sort argument) = case sort, argument of
-    Syntax.TypeSort, TypeArgument found → Just found
-    _, _ → Nothing
 
 -- The written field types in label order, as the resolved row keeps them.
 writtenTypes ∷ Array FieldRef → Array TypeRef
@@ -224,8 +200,3 @@ referenced = case _ of
   TData (TypeId index) arguments _ → Array.cons index
     (Array.concatMap referenced arguments)
   ty → Array.concatMap referenced (children ty)
-
-mentions ∷ ∀ v. (v → Boolean) → Ty v → Boolean
-mentions variable = case _ of
-  TVar each → variable each
-  ty → Array.any (mentions variable) (children ty)

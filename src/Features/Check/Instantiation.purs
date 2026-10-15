@@ -12,7 +12,8 @@ import Domain.Problem (Problem(..))
 import Domain.Resolved (FunctionId(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Components (components)
-import Features.Check.Nested (admissible, nestedTypes)
+import Features.Check.Nested (nestedTypes)
+import Features.Check.NestedArguments (admissible)
 
 -- Design §4.1: specialization stays finite when, at every reference
 -- inside a strongly connected component, each type argument is a bare

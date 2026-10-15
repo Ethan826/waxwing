@@ -17,6 +17,7 @@ import Features.Resolve.Row (label, resolveRow)
 import Features.Resolve.HandlerType as HandlerType
 import Features.Resolve.RecordFields (repeatedField, repeatedLabel)
 import Features.Resolve.TypeArguments (appliedTo)
+import Features.Check.ResolvedName (resolvedName)
 
 -- `variables` are those in scope: `VarId i` is the i-th. A declared type
 -- takes exactly as many arguments as it has parameters, else E_ARITY at the
@@ -90,10 +91,15 @@ resolveTypeWith types effects variables ambient = resolved
         arguments
     | otherwise = unbound UnboundType span name unit
   applied span _ arguments index = maybe' invalid
-    ( appliedTo effects variables ambient { resolved, bare } span arguments
+    ( appliedTo effects variables ambient
+        { resolved, bare, named: resolvedName names, declared }
+        span
+        arguments
         index
     )
     (Array.index types index)
+  names = { types, effects, variables }
+  declared name = Array.any (named name) types
   invalid _ = Left (Syntax.problemAt (Internal "Invalid type id") nowhere)
   nowhere = { start: Syntax.origin, end: Syntax.origin }
   unbound kind span name _ = Left

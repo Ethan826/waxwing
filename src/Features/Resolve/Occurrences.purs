@@ -11,6 +11,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Traversable (mapAccumL)
 import Domain.Syntax as Syntax
+import Features.Resolve.RecordArguments (asRow)
 
 -- A declared type as an argument's position sees it: its name, and the
 -- sort each of its parameters was written or settled with.
@@ -46,12 +47,19 @@ typeOccurrences declared = case _ of
   where
   declaredIndex name = Array.findIndex (named name) declared
   named name entry = entry.name == name
-  argument callee position = case _ of
+  -- `{ ...s }` for a row parameter is `...s` (R012).
+  argument callee position found = case rowAt callee position found of
     Syntax.TypeArgument reference → typeOccurrences declared reference
     Syntax.RowArgument row → rowOccurrences declared
       (map (applied position) callee)
       row
   applied position callee = { callee, position }
+  rowAt callee position found =
+    if rowSlot callee position then asRow found else found
+  rowSlot callee position = maybe false (rowParameter position)
+    (callee >>= Array.index declared)
+  rowParameter position entry =
+    Array.index entry.sorts position /= Just Syntax.TypeSort
   field entry = typeOccurrences declared entry.ty
   recordTail tail = [ occurrence tail.name tail.span Syntax.RecordSort ]
   labelOccurrences label = Array.concatMap (typeOccurrences declared)

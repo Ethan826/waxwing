@@ -17,6 +17,7 @@ import Features.Resolve.Marks (signatureMarkVariables)
 import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
+import Features.Resolve.ArgumentClash (programClashes)
 import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Scope (Bindings)
 import Features.Resolve.Variables (sortedVariables)
@@ -47,6 +48,7 @@ resolve program = do
   signatures ← traverse
     (resolveSignature tables.types (Effect.summaries program.effects))
     functions
+  programClashes tables program
   bound ← traverse (bindingsFor effects) (Array.zip functions signatures)
   let
     definitions = Array.mapWithIndex indexed
