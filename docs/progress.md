@@ -4949,3 +4949,19 @@ BACKLOG T007 stand as written.
 - Differential against bf4b8e7 (`--corpus all --regenerate`):
   0 differences over 7,212 harvested, 1,029 fuzz, 1,085 isName, 1,000
   match and 1,000 mutation sources (.build/evidence/t15-differential.log).
+
+### Task 15 follow-up (review, 2026-10-15)
+
+- Correction: the chain is about 1.01 to 1.02x main, not inside main's
+  range in every run. In the second worktree control run
+  (.build/evidence/t15-timing-coverage-scale-5.log) the candidate's
+  927-942 ms is disjoint from main's 900-919 by about 8 ms; in -4 all
+  seven candidate rounds were at least 933 ms against main's median 931
+  (ranges 933-966 and 913-945 overlap); the copy run overlaps (908-945).
+- test/r001-sort-cost.test.mjs gains a record type in a later
+  declaration; a first-declaration-only detector fails it in an isolated
+  copy (.build/evidence/t15-followup-red.log).
+- Filed: BACKLOG R014 (the TypeRef and RecordArguments name scans), R015
+  (`type T(...e) = T(e);` is E_INTERNAL `Invalid type variable`), R016
+  (a signature's effect row used as a lambda's record tail reports
+  `a is not a field of { a: Int, ...r }`).
