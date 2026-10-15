@@ -12,6 +12,7 @@ import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
 import Features.Resolve.Marks (markVariableRefs, refuseMarkVariables)
 import Features.Resolve.Sorts (settleDeclarations)
+import Features.Resolve.TypeIndices (TypeIndices)
 import Features.Resolve.TypeRef (resolveType, resolveTypeWith)
 import Features.Resolve.TypeValidation as TypeValidation
 import Features.Resolve.Variables (uniqueTypeParameters)
@@ -27,13 +28,15 @@ type Owned =
 -- A function or constructor name, for the shared-namespace duplicate check.
 -- Declarations are checked in the order the spec fixes: types, constructors,
 -- functions and parameters, then type parameters, then constructor fields.
-typeTable ∷ Syntax.Program → Either Syntax.Diagnostic Resolved.Tables
-typeTable program = do
+-- `indices` are the program's types by name (TypeIndices).
+typeTable
+  ∷ TypeIndices → Syntax.Program → Either Syntax.Diagnostic Resolved.Tables
+typeTable indices program = do
   TypeValidation.uniqueTypes program.types
   TypeValidation.uniqueCtors program.functions program.types
   TypeValidation.uniqueFunctions program.functions
   uniqueTypeParameters program.types
-  declarations ← settleDeclarations program.types
+  declarations ← settleDeclarations indices program.types
   let
     types = Array.zipWith typeInfo (firstCtors declarations) declarations
   ctors ← traverse (resolveCtor types effects) (ownedCtors declarations)

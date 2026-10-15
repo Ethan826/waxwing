@@ -27,7 +27,9 @@ import Domain.Type.Compare
   , Link
   , compareParts
   , compareRows
+  , compareRecords
   , compareSpines
+  , sameRecords
   , sameRows
   , sameSpines
   )
@@ -87,7 +89,7 @@ instance eqTy ∷ Eq v ⇒ Eq (Ty v) where
     TFun _ _ _, TFun _ _ _ → sameSpines arrowLink left right
     THandler one oneRow, THandler other otherRow → one == other
       && oneRow == otherRow
-    TRecord one, TRecord other → one == other
+    TRecord one, TRecord other → sameRecords one other
     _, _ → sameLeaf left right
 
 instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
@@ -101,7 +103,7 @@ instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
     THandler one oneRow, THandler other otherRow → compareParts one other
       oneRow
       otherRow
-    TRecord one, TRecord other → compare one other
+    TRecord one, TRecord other → compareRecords one other
     _, _ → compareLeaves left right
 
 -- Renaming keeps each variable's sort: a renamed row tail stays a tail.

@@ -57,24 +57,26 @@ type Signature r =
 -- body can have a record tail then (every program before records).
 signatureLacking
   ∷ ∀ r
-  . Resolved.Tables
+  . Occurrences.Declared
+  → Resolved.Tables
   → Syntax.FunctionDecl
   → Signature r
   → Maybe Lacking
-signatureLacking tables function signature =
+signatureLacking declaredHere tables function signature =
   if Array.elem Syntax.RecordSort signature.sorts then Just
-    (lackingOf tables function signature)
+    (lackingOf declaredHere tables function signature)
   else Nothing
 
 -- A function, so that only a signature with a record row variable pays
 -- for its walk: `where` bindings are strict.
 lackingOf
   ∷ ∀ r
-  . Resolved.Tables
+  . Occurrences.Declared
+  → Resolved.Tables
   → Syntax.FunctionDecl
   → Signature r
   → Lacking
-lackingOf tables function signature =
+lackingOf declaredHere tables function signature =
   { variables: signature.variables, lacks, introduced }
   where
   types = map typeOf signature.parameters
@@ -84,7 +86,7 @@ lackingOf tables function signature =
   noted found (entry ∷ Implied VarId) = case entry.tail of
     VarId index → Map.insertWith Set.union index entry.labels found
   introduced = foldl first Map.empty
-    (Array.sortWith start (signatureOccurrences tables function))
+    (Array.sortWith start (signatureOccurrences declaredHere function))
   first found occurrence
     | Map.member occurrence.name found = found
     | otherwise = Map.insert occurrence.name occurrence.span found
@@ -174,16 +176,10 @@ beside = case _ of
   labelled label = Array.concatMap beside label.arguments
 
 signatureOccurrences
-  ∷ Resolved.Tables → Syntax.FunctionDecl → Array Occurrence
-signatureOccurrences tables function =
+  ∷ Occurrences.Declared → Syntax.FunctionDecl → Array Occurrence
+signatureOccurrences declaredHere function =
   Array.concatMap (typeOccurrences declaredHere) references
     <> maybe [] (Occurrences.rowOccurrences declaredHere Nothing) function.row
   where
-  declaredHere = declaredTypes tables
   references = Array.snoc (map typeOf function.parameters) function.result
   typeOf parameter = parameter.ty
-
-declaredTypes ∷ Resolved.Tables → Occurrences.Declared
-declaredTypes tables = map entry tables.types
-  where
-  entry info = { name: info.name, sorts: info.sourceSorts }

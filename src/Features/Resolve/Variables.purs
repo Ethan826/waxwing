@@ -10,10 +10,10 @@ import Data.Either (Either(..))
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), maybe)
 import Domain.Problem (DuplicateKind(..), Problem(..))
-import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.Occurrences
-  ( rowOccurrences
+  ( Declared
+  , rowOccurrences
   , typeOccurrences
   )
 import Features.Resolve.Repeated (laterRepeat)
@@ -61,18 +61,16 @@ occurrences = case _ of
     (Array.snoc found.parameters found.result)
 
 -- Sort disagreements are diagnosed at the second written occurrence.
+-- `declared` is built once per program (Occurrences.resolvedDeclared).
 sortedVariables
-  ∷ Array Resolved.TypeInfo
+  ∷ Declared
   → Array Syntax.TypeRef
   → Maybe Syntax.RowRef
   → Either Syntax.Diagnostic (Array { name ∷ String, sort ∷ Syntax.Sort })
-sortedVariables types references row = settledOccurrences
+sortedVariables declared references row = settledOccurrences
   ( Array.concatMap (typeOccurrences declared) references
       <> maybe [] (rowOccurrences declared Nothing) row
   )
-  where
-  declared = map declaredType types
-  declaredType info = { name: info.name, sorts: info.sourceSorts }
 
 argumentNames ∷ Syntax.TypeArgument → Array String
 argumentNames = case _ of

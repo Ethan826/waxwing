@@ -2,6 +2,7 @@ module Features.Resolve.Occurrences
   ( Applied
   , Declared
   , Occurrence
+  , resolvedDeclared
   , typeOccurrences
   , rowOccurrences
   ) where
@@ -10,12 +11,18 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Traversable (mapAccumL)
+import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.RecordArguments (asRow)
+import Features.Resolve.TypeIndices (TypeIndices, indexOf)
 
--- A declared type as an argument's position sees it: its name, and the
+-- The declared types as an argument's position sees them: each type's
+-- index by name, built once per program (TypeIndices), and by index the
 -- sort each of its parameters was written or settled with.
-type Declared = Array { name ∷ String, sorts ∷ Array Syntax.Sort }
+type Declared =
+  { indices ∷ TypeIndices
+  , sorts ∷ Array (Array Syntax.Sort)
+  }
 
 -- Where a variable stands as a declared type's argument: the type's index
 -- and the parameter's position.
@@ -31,9 +38,17 @@ type Occurrence =
   , applied ∷ Maybe Applied
   }
 
+-- The resolved types, with the sorts their parameters settled to.
+resolvedDeclared ∷ TypeIndices → Array Resolved.TypeInfo → Declared
+resolvedDeclared indices types = { indices, sorts: map sourceSorts types }
+  where
+  sourceSorts info = info.sourceSorts
+
 typeOccurrences ∷ Declared → Syntax.TypeRef → Array Occurrence
 typeOccurrences declared = case _ of
   Syntax.VarRef span name → [ occurrence name span Syntax.TypeSort ]
+  -- No arguments, no occurrences: the name need not be looked up.
+  Syntax.NamedRef _ _ [] → []
   Syntax.NamedRef _ name arguments → Array.concat
     ( Array.mapWithIndex (argument (declaredIndex name))
         arguments
@@ -45,8 +60,7 @@ typeOccurrences declared = case _ of
   arrow@(Syntax.FunRef _ _ _ _) → arrowOccurrences arrow
   _ → []
   where
-  declaredIndex name = Array.findIndex (named name) declared
-  named name entry = entry.name == name
+  declaredIndex name = indexOf declared.indices name
   -- `{ ...s }` for a row parameter is `...s` (R012).
   argument callee position found = case rowAt callee position found of
     Syntax.TypeArgument reference → typeOccurrences declared reference
@@ -57,9 +71,9 @@ typeOccurrences declared = case _ of
   rowAt callee position found =
     if rowSlot callee position then asRow found else found
   rowSlot callee position = maybe false (rowParameter position)
-    (callee >>= Array.index declared)
-  rowParameter position entry =
-    Array.index entry.sorts position /= Just Syntax.TypeSort
+    (callee >>= Array.index declared.sorts)
+  rowParameter position sorts =
+    Array.index sorts position /= Just Syntax.TypeSort
   field entry = typeOccurrences declared entry.ty
   recordTail tail = [ occurrence tail.name tail.span Syntax.RecordSort ]
   labelOccurrences label = Array.concatMap (typeOccurrences declared)
@@ -96,9 +110,9 @@ rowOccurrences declared place (Syntax.RowRef span labels tail) =
     if Array.null labels then maybe Syntax.RowSort parameterSort place
     else Syntax.RowSort
   parameterSort found = maybe Syntax.RowSort (sortAt found.position)
-    (Array.index declared found.callee)
-  sortAt position entry = recordOrRow
-    (fromMaybe Syntax.RowSort (Array.index entry.sorts position))
+    (Array.index declared.sorts found.callee)
+  sortAt position sorts = recordOrRow
+    (fromMaybe Syntax.RowSort (Array.index sorts position))
   recordOrRow sort =
     if sort == Syntax.RecordSort then sort else Syntax.RowSort
 

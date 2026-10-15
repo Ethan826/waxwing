@@ -14,6 +14,7 @@ import Features.Resolve.Occurrences
   , Occurrence
   , typeOccurrences
   )
+import Features.Resolve.RecordArguments (subtypes)
 import Features.Resolve.RowSettle (Known, Place, settledPlaces)
 import Features.Resolve.SortCheck
   ( Use
@@ -22,6 +23,30 @@ import Features.Resolve.SortCheck
   , settledUses
   )
 import Features.Resolve.SortConflict (conflict, settledOccurrences)
+import Features.Resolve.TypeIndices (TypeIndices)
+
+-- Without a record type written in a declaration, no use has record sort:
+-- every row parameter stays an effect row, and no two uses can disagree,
+-- so the declarations are settled as written, without the walks (a
+-- program of n types without records paid them for nothing, T007).
+settleDeclarations
+  ∷ TypeIndices
+  → Array Syntax.TypeDecl
+  → Either Syntax.Diagnostic (Array Syntax.TypeDecl)
+settleDeclarations indices declarations =
+  if Array.any recordWritten declarations then
+    settledAll indices declarations
+  else Right declarations
+
+-- Whether a record type is written anywhere in a declaration's fields.
+recordWritten ∷ Syntax.TypeDecl → Boolean
+recordWritten declaration = Array.any isRecord
+  (Array.concatMap subtypes (Array.concatMap ctorFields declaration.ctors))
+  where
+  ctorFields ctor = ctor.fields
+  isRecord = case _ of
+    Syntax.RecordRef _ _ _ → true
+    _ → false
 
 -- Row parameters of the declarations take the sort their uses give them
 -- (R001 design §1); RowSettle.settledPlaces solves them. Then every use of
@@ -29,17 +54,18 @@ import Features.Resolve.SortConflict (conflict, settledOccurrences)
 -- declaration's own uses must agree, the first fixing the sort, with the
 -- error at the later use noted at the first; arguments to a parameter its
 -- callers gave a sort must agree with that sort (SortCheck.settledUses).
-settleDeclarations
-  ∷ Array Syntax.TypeDecl
+settledAll
+  ∷ TypeIndices
+  → Array Syntax.TypeDecl
   → Either Syntax.Diagnostic (Array Syntax.TypeDecl)
-settleDeclarations declarations =
+settledAll indices declarations =
   traverse_ (checked settled.given everything)
     (Array.zip (Array.zip final uses) perDeclaration) $> final
   where
   settled = settledPlaces declarations
-    (map (ownUses (declaredTypes declarations)) declarations)
+    (map (ownUses (declaredTypes indices declarations)) declarations)
   final = Array.mapWithIndex (record settled.known) declarations
-  uses = map (ownUses (declaredTypes final)) final
+  uses = map (ownUses (declaredTypes indices final)) final
   perDeclaration = Array.mapWithIndex usesAt (Array.zip final uses)
   usesAt index (Tuple declaration found) =
     declarationUses index declaration found
@@ -62,11 +88,12 @@ sorted known index position parameter =
   where
   isRecord = Map.lookup (Tuple index position) known == Just true
 
-declaredTypes ∷ Array Syntax.TypeDecl → Declared
-declaredTypes = map declared
+-- `indices` are the declarations' (TypeIndices), built once.
+declaredTypes ∷ TypeIndices → Array Syntax.TypeDecl → Declared
+declaredTypes indices declarations =
+  { indices, sorts: map sorts declarations }
   where
-  declared declaration =
-    { name: declaration.name, sorts: map sortOf declaration.parameters }
+  sorts declaration = map sortOf declaration.parameters
   sortOf parameter = parameter.sort
 
 -- The uses of a declaration's own parameters in its constructor fields.

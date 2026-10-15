@@ -3,6 +3,8 @@ module Domain.Type.Compare
   , sameRows
   , compareRows
   , compareParts
+  , sameRecords
+  , compareRecords
   , Head(..)
   , Link
   , sameSpines
@@ -16,6 +18,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe, maybe')
 import Data.Tuple (Tuple(..))
 import Domain.Row (Row(..))
+import Domain.Type.Record (RecordRow)
 
 -- Rows with no label (every row before row syntax) compare by their
 -- tails alone.
@@ -32,6 +35,18 @@ compareRows
   ∷ ∀ a v. Ord a ⇒ Ord v ⇒ Array (Row a v) → Array (Row a v) → Ordering
 compareRows one other =
   if Array.null one && Array.null other then EQ else compare one other
+
+-- Records compare by the derived instances of their rows. Through these
+-- functions Core's instances build the record dictionaries only when two
+-- records meet, not each time an instance is made: that was once per
+-- nested comparison of every type, records or not (T007, R001 Task 15).
+sameRecords
+  ∷ ∀ a v. Eq a ⇒ Eq v ⇒ RecordRow a v → RecordRow a v → Boolean
+sameRecords one other = one == other
+
+compareRecords
+  ∷ ∀ a v. Ord a ⇒ Ord v ⇒ RecordRow a v → RecordRow a v → Ordering
+compareRecords one other = compare one other
 
 -- The first pair's order, or when equal the second's, computed only then.
 compareParts ∷ ∀ a b. Ord a ⇒ Ord b ⇒ a → a → b → b → Ordering

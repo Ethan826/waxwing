@@ -5,10 +5,10 @@ import Data.Array as Array
 import Data.Either (Either)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.Occurrences
-  ( Occurrence
+  ( Declared
+  , Occurrence
   , rowOccurrences
   , typeOccurrences
   )
@@ -19,12 +19,11 @@ import Features.Resolve.SortConflict (settledOccurrences)
 -- sort error a declared type's parameter gets (R001 design §1), at the
 -- use. Only record uses are judged here; type and effect-row uses keep
 -- their existing checks.
+-- `declared` is built once per program (Occurrences.resolvedDeclared).
 effectSorts
-  ∷ Array Resolved.TypeInfo → Syntax.EffectDecl → Either Syntax.Diagnostic Unit
-effectSorts types effect = traverse_ judged effect.operations
+  ∷ Declared → Syntax.EffectDecl → Either Syntax.Diagnostic Unit
+effectSorts declared effect = traverse_ judged effect.operations
   where
-  declared = map declaredType types
-  declaredType info = { name: info.name, sorts: info.sourceSorts }
   judged operation = void
     (settledOccurrences (map parameter effect.parameters <> uses operation))
   parameter entry =

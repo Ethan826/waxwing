@@ -19,6 +19,7 @@ import Features.Resolve.Marks
   )
 import Features.Resolve.Builtin (builtinEffects)
 import Features.Resolve.EffectSorts (effectSorts)
+import Features.Resolve.Occurrences (Declared)
 import Features.Resolve.Types (resolveTypeWith)
 import Features.Resolve.Repeated (laterRepeat)
 
@@ -27,13 +28,15 @@ summaries = map summary
   where
   summary effect = { name: effect.name, arity: Array.length effect.parameters }
 
+-- `declared` is the types' sort table, built once (Resolve).
 effects
-  ∷ Array Resolved.TypeInfo
+  ∷ Declared
+  → Array Resolved.TypeInfo
   → Array Syntax.EffectDecl
   → Either Syntax.Diagnostic (Array Resolved.EffectInfo)
-effects types declarations = do
+effects declared types declarations = do
   uniqueEffects declarations
-  traverse_ (effectSorts types) declarations
+  traverse_ (effectSorts declared) declarations
   traverse resolved declarations
   where
   resolved effect = withOperations effect <$> traverse

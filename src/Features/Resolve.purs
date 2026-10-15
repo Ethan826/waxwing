@@ -19,6 +19,8 @@ import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
 import Features.Resolve.ArgumentClash (programClashes)
 import Features.Resolve.Lacking (signatureLacking)
+import Features.Resolve.Occurrences (Declared, resolvedDeclared)
+import Features.Resolve.TypeIndices (typeIndices)
 import Features.Resolve.Scope (Bindings)
 import Features.Resolve.Variables (sortedVariables)
 import Domain.Resolved (Global)
@@ -43,10 +45,14 @@ type Definition =
 
 resolve ∷ Syntax.Program → Either Syntax.Diagnostic Resolved.Program
 resolve program = do
-  tables ← typeTable program
-  effects ← Effect.effects tables.types program.effects
+  tables ← typeTable indices program
+  -- Built once: one per signature cost O(types) each (T007).
+  let declared = resolvedDeclared indices tables.types
+  effects ← Effect.effects declared tables.types program.effects
   signatures ← traverse
-    (resolveSignature tables.types (Effect.summaries program.effects))
+    ( resolveSignature declared tables.types
+        (Effect.summaries program.effects)
+    )
     functions
   programClashes tables program
   bound ← traverse (bindingsFor effects) (Array.zip functions signatures)
@@ -63,6 +69,7 @@ resolve program = do
               , { name: "crash", ref: Resolved.BuiltinCrash }
               ]
         )
+        declared
         tables
         (Effect.summaries program.effects)
         effects
@@ -76,6 +83,7 @@ resolve program = do
     , entry
     }
   where
+  indices = typeIndices program.types
   functions = program.functions
   bindingsFor effects (Tuple function signature) = Imports.bindings
     program.effects
@@ -105,12 +113,13 @@ ctorGlobal index info =
   { name: info.name, ref: Resolved.GlobalCtor (Resolved.CtorId index) }
 
 resolveSignature
-  ∷ Array Resolved.TypeInfo
+  ∷ Declared
+  → Array Resolved.TypeInfo
   → Array { name ∷ String, arity ∷ Int }
   → Syntax.FunctionDecl
   → Either Syntax.Diagnostic Signature
-resolveSignature types effects function = do
-  occurrences ← sortedVariables types references function.row
+resolveSignature declared types effects function = do
+  occurrences ← sortedVariables declared references function.row
   let written = Array.sortWith sort occurrences
   let
     variables = map name written <> [ "" ]
@@ -183,12 +192,13 @@ entryProblem definition
 
 resolveFunction
   ∷ Array Global
+  → Declared
   → Resolved.Tables
   → Array { name ∷ String, arity ∷ Int }
   → Array Resolved.EffectInfo
   → Definition
   → Either Syntax.Diagnostic Resolved.FunctionDecl
-resolveFunction globals tables effects effectInfos definition =
+resolveFunction globals declared tables effects effectInfos definition =
   withBody <$> runFresh
     (Array.length parameters)
     (expression scope definition.function.body)
@@ -203,7 +213,7 @@ resolveFunction globals tables effects effectInfos definition =
     , types: tables.types
     , variables: definition.signature.variables
     , markVariables: definition.signature.markVariables
-    , lacking: signatureLacking tables definition.function
+    , lacking: signatureLacking declared tables definition.function
         definition.signature
     }
   parameters = definition.signature.parameters

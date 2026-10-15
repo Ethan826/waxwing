@@ -50,14 +50,17 @@ site copied = do
 -- The first noted site, in specialization order, whose ground type is not
 -- printable (BACKLOG E017); the error is at the site, as at check time.
 -- Sites of builtin types need no tables, so a program that prints only
--- those builds none.
+-- those builds none: `judged` is a function because `where` bindings are
+-- strict (as a value it built every program's tables, T007).
 checkSites ∷ Env → State → Either Diagnostic Unit
-checkSites env state = if Array.null structured then Right unit else judged
+checkSites env state =
+  if Array.null structured then Right unit else judged unit
   where
   structured = Array.filter built (Array.fromFoldable (Map.values state.prints))
-  judged = groundsOf state >>= judgeAll
-  judgeAll known = traverse_ (judge { env, holders, known }) structured
-  holders = functional env.ctors
+  judged _ = groundsOf state >>= judgeAll
+  judgeAll known = traverse_
+    (judge { env, holders: functional env.ctors, known })
+    structured
 
 -- A noted type that is not a builtin needs the ground types of the program.
 built ∷ PrintSite → Boolean
