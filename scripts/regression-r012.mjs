@@ -60,9 +60,8 @@ export const r012Rows = [
     // row growing through recursion is admitted.
     name: 'r012-nested-row',
     file: 'src/Features/Check/NestedArguments.purs',
-    needle: '  if sort == Syntax.RecordSort then bareRow ty || '
-      + 'not (mentionsRow ty)\n',
-    replacement: '  if sort == Syntax.RecordSort then admissible always ty\n',
+    needle: 'admissibleArgument = admissibleSlot always\n',
+    replacement: 'admissibleArgument (Tuple _ ty) = admissible always ty\n',
     probe: 'r012-nested-row', message: /growing row: accepted/
   },
   {
