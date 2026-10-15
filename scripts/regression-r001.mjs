@@ -14,70 +14,88 @@ export const r001Rows = [
   },
   {
     // Record fields left in written order: a diagnostic prints them so
-    // (R001 design §1, §6; unification pairs labels by name since Task 4).
+    // (R001 design §1, §6; unification pairs labels by name since Task 4),
+    // `{ b: Bool, a: Int }` where the sorted `{ a: Int, b: Bool }` is due.
     name: 'r001-record-order', file: 'src/Domain/Type/Record.purs',
     needle: 'recordRow fields tail = { fields: sortFields fields, tail }',
     replacement: 'recordRow fields tail = { fields, tail }',
-    probe: 'r001-record-order', message: /label order/
+    probe: 'r001-record-order',
+    message:
+      /label order kept in a diagnostic: E_TYPE Expected \{ b: Bool, a: Int \}/
   },
   {
     // A record row argument takes no sort from its parameter, so a row
-    // passed to a record parameter is read as an effect row.
+    // passed to a record parameter is read as an effect row, and `with
+    // ...e` on it is accepted and runs.
     name: 'r001-row-sort-propagation',
     file: 'src/Features/Resolve/Occurrences.purs',
     needle: '    if sort == Syntax.RecordSort then sort else Syntax.RowSort',
     replacement: '    if sort == Syntax.TypeSort then sort else Syntax.RowSort',
-    probe: 'r001-row-sort-propagation', message: /propagation/
+    probe: 'r001-row-sort-propagation',
+    message: /row sort propagation lost: ran\n/
   },
   {
-    // A repeated label in a record type is not diagnosed.
+    // A repeated label in a record type is not diagnosed: the program is
+    // accepted and runs.
     name: 'r001-duplicate-field', file: 'src/Features/Resolve/TypeRef.purs',
     needle: '    traverse_ repeatedField (repeatedLabel fields)\n',
     replacement: '',
-    probe: 'r001-duplicate-field', message: /duplicate field/
+    probe: 'r001-duplicate-field',
+    message: /duplicate field accepted: ran\n/
   },
   {
     // An argument gives no sort to the caller's parameter, so a parameter
-    // passed only to a record parameter stays effect sort.
+    // passed only to a record parameter stays effect sort, so the clash is
+    // reported against Outer's `s`, not f's `e`.
     name: 'r001-callee-to-caller', file: 'src/Features/Resolve/RowSettle.purs',
     needle: '  callee applied = Map.lookup '
       + '(Tuple applied.callee applied.position) known\n',
     replacement: '  callee _ = Nothing\n',
-    probe: 'r001-callee-to-caller', message: /callee to caller/
+    probe: 'r001-callee-to-caller',
+    message: /caller propagation lost: E_TYPE s is an effect row, not a record/
   },
   {
     // A variable's uses are not checked against the settled sorts, so a
-    // caller using a record parameter as an effect row passes.
+    // caller using a record parameter as an effect row passes the sort
+    // check and reaches the checker, which fails internally.
     name: 'r001-settled-sort', file: 'src/Features/Resolve/Sorts.purs',
     needle: '  traverse_ (checked settled.given everything)\n'
       + '    (Array.zip (Array.zip final uses) perDeclaration) $> final\n',
     replacement: '  pure final\n',
-    probe: 'r001-settled-sort', message: /settled sort/
+    probe: 'r001-settled-sort',
+    message: /settled sort not enforced: E_INTERNAL Invalid type variable/
   },
   {
-    // Callers passing different sorts to one parameter are not diagnosed.
+    // Callers passing different sorts to one parameter are not diagnosed;
+    // the checker then fails internally.
     name: 'r001-caller-conflict', file: 'src/Features/Resolve/SortCheck.purs',
     needle: '    | givenArgument given found.use = '
       + 'Left (callerClash everything found)\n',
     replacement: '    | givenArgument given found.use = Right unit\n',
-    probe: 'r001-caller-conflict', message: /caller conflict/
+    probe: 'r001-caller-conflict',
+    message: /caller conflict accepted: E_INTERNAL Invalid type variable/
   },
   {
     // The phases run once each, so a sort a caller gives a callee never
-    // travels back up to the callee's other callers.
+    // travels back up to the callee's other callers, so the clash is
+    // reported against C2's `b`, not f's `e`.
     name: 'r001-sort-feedback', file: 'src/Features/Resolve/RowSettle.purs',
     needle: '  else Loop\n    { known: Map.union fresh known\n',
     replacement: '  else Done\n    { known: Map.union fresh known\n',
-    probe: 'r001-sort-feedback', message: /feedback/
+    probe: 'r001-sort-feedback',
+    message: /feedback to callers lost: E_TYPE b is an effect row, not a record/
   },
   {
     // The tails are decided against the rows flattened before the shared
-    // fields unified, so a tail those fields bound is bound again.
+    // fields unified, so a tail those fields bound is bound again: the
+    // mismatch passes and Go rejects the struct it was given.
     name: 'r001-field-bound-tail',
     file: 'src/Features/Check/UnifyRecord.purs',
     needle: '    if rebound reached one || rebound reached other then\n',
     replacement: '    if false then\n',
-    probe: 'r001-field-bound-tail', message: /rebound/
+    probe: 'r001-field-bound-tail',
+    message:
+      /rebound: E_TOOL: go build failed: \.\/main\.go:\d+:\d+: cannot use/
   },
   {
     // A layout keyed by its fields in written order: an open row's fields
