@@ -13,14 +13,15 @@ import Domain.Resolved (FunctionId(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Components (components)
 import Features.Check.Nested (nestedTypes)
-import Features.Check.NestedArguments (admissible)
+import Features.Check.NestedArguments (admissibleSlot, judged)
 
 -- Design §4.1: specialization stays finite when, at every reference
 -- inside a strongly connected component, each type argument is a bare
--- variable of the referrer or ground. Types are judged first, in
--- declaration order; then each function's calls, in pre-order. A body's
--- types are fully substituted by now, so a hole is final and counts as
--- ground: specialization fixes it to one ground type.
+-- variable of the referrer or ground, and each record row argument the
+-- referrer's bare `{ ...r }` or ground, its tail included (R010). Types
+-- are judged first, in declaration order; then each function's calls, in
+-- pre-order. A body's types are fully substituted by now, so a hole is
+-- final and counts as ground: specialization fixes it to one ground type.
 instantiationRule ∷ Checked.Program → Either Diagnostic Unit
 instantiationRule checked@(Checked.Program program) = do
   nestedTypes checked
@@ -56,17 +57,20 @@ judgeCall
   → FunctionId
   → Instantiation
   → Either Diagnostic Unit
-judgeCall context judged span (FunctionId callee) instantiation =
-  judged *> verdict
+judgeCall context earlier span (FunctionId callee) instantiation =
+  earlier *> verdict
   where
   inside = Array.index context.component context.caller
     == Array.index context.component callee
   verdict
-    | inside && not (Array.all (admissible rigid) instantiation) =
-        maybe' missing reject (Array.index context.functions callee)
+    | inside = maybe' missing judgedBy (Array.index context.functions callee)
     | otherwise = Right unit
-  reject function = Left (problemAt (PolymorphicRecursion function.name) span)
+  judgedBy function
+    | Array.all (admissibleSlot rigid) (slots function) = Right unit
+    | otherwise = Left (problemAt (PolymorphicRecursion function.name) span)
   missing _ = Left (problemAt (Internal "Invalid function id") span)
+  -- The type and record row slots, by the callee's sorts.
+  slots function = judged function.sorts instantiation
 
 -- Every reference to a named function in a checked body, in pre-order: a
 -- call before its arguments, a scrutinee before its arms, an applied

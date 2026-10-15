@@ -1,4 +1,4 @@
-// FX025, R015 and R016 regression rows, imported by
+// FX025, R015, R016 and R010 regression rows, imported by
 // scripts/regression.mjs; their probes are in test/regression-ie.mjs.
 // Each restores one defect in a whole, compiling form.
 const rowsAsTypes = 'rowsAsTypes indices declarations = traverse_ '
@@ -9,6 +9,23 @@ const bodyUses = '              (typeOccurrences signature.declared '
   + 'reference)\n';
 const noBodyUses = '              (const [] (typeOccurrences '
   + 'signature.declared reference))\n';
+// The instantiation rule judging every slot as a type: a record tail is
+// invisible to it.
+const asTypes = [
+  {
+    file: 'src/Features/Check/Instantiation.purs',
+    needle: 'import Domain.Syntax (Diagnostic, Span, problemAt)\n',
+    replacement: 'import Domain.Syntax (Diagnostic, Span, problemAt)\n'
+      + 'import Domain.Syntax as Syntax\nimport Data.Tuple (Tuple(..))\n'
+  },
+  {
+    file: 'src/Features/Check/Instantiation.purs',
+    needle: '  slots function = judged function.sorts instantiation\n',
+    replacement: '  slots function = map asType '
+      + '(judged function.sorts instantiation)\n'
+      + '  asType (Tuple _ ty) = Tuple Syntax.TypeSort ty\n'
+  }
+];
 export const ieRows = [
   {
     // The unbound row variable lost its place: an internal error at 0.
@@ -59,5 +76,19 @@ export const ieRows = [
     replacement: noBodyUses,
     probe: 'r016-record-as-effect',
     message: /record row as effect: accepted/
+  },
+  {
+    // A call that nests its record row reaches the specialization limit.
+    name: 'r010-nested-row',
+    edits: asTypes,
+    probe: 'r010-nested-row',
+    message: /nested row: E_SPECIALIZATION More than 10000 specializations/
+  },
+  {
+    // So does mutual recursion through a bare pass-back.
+    name: 'r010-mutual-row',
+    edits: asTypes,
+    probe: 'r010-mutual-row',
+    message: /mutual row: E_SPECIALIZATION More than 10000 specializations/
   }
 ];

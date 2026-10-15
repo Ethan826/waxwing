@@ -1,6 +1,7 @@
 module Features.Check.NestedArguments
   ( admissible
   , admissibleArgument
+  , admissibleSlot
   , judged
   , judgedReferences
   ) where
@@ -33,11 +34,19 @@ admissible variable = case _ of
 -- grows through a recursive reference, `T({ a: { ...r } })`, would give
 -- the type infinitely many instances.
 admissibleArgument ∷ ∀ v. Tuple Sort (Ty v) → Boolean
-admissibleArgument (Tuple sort ty) =
-  if sort == Syntax.RecordSort then bareRow ty || not (mentionsRow ty)
-  else admissible always ty
+admissibleArgument = admissibleSlot always
   where
   always _ = true
+
+-- `admissibleSlot variable slot`: the same judgement of a type or record
+-- row slot for the variables `variable` selects; a function's call judges
+-- its rigid variables, a hole being ground (Features.Check.Instantiation,
+-- R010: `g({ inner: x })` under `g(x: { ...r })` grows the row).
+admissibleSlot ∷ ∀ v. (v → Boolean) → Tuple Sort (Ty v) → Boolean
+admissibleSlot variable (Tuple sort ty) =
+  if sort == Syntax.RecordSort then
+    bareRow ty || not (mentionsRow variable ty)
+  else admissible variable ty
 
 -- A declared type's arguments that are types or record rows, each with
 -- its parameter's sort: an effect row stands for no type to judge. The
@@ -71,9 +80,10 @@ bareRow = case _ of
   TRecord { fields: [], tail: Just _ } → true
   _ → false
 
--- Whether a type mentions a type variable or a record tail.
-mentionsRow ∷ ∀ v. Ty v → Boolean
-mentionsRow = case _ of
-  TVar _ → true
-  TRecord { tail: Just _ } → true
-  ty → Array.any mentionsRow (children ty)
+-- Whether a type mentions a selected variable as a type or a record tail.
+mentionsRow ∷ ∀ v. (v → Boolean) → Ty v → Boolean
+mentionsRow variable = case _ of
+  TVar each → variable each
+  ty@(TRecord { tail: Just each }) → variable each
+    || Array.any (mentionsRow variable) (children ty)
+  ty → Array.any (mentionsRow variable) (children ty)

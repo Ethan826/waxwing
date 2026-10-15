@@ -1,4 +1,4 @@
-// FX025, R015 and R016 regression probes, imported through
+// FX025, R015, R016 and R010 regression probes, imported through
 // test/regression-probes.mjs; the rows are in scripts/regression-ie.mjs.
 // Each uses only the compiler under test, passed in the context.
 const fail = message => {
@@ -22,6 +22,8 @@ const expect = (context, label, source, wanted) => {
 
 const main = ' fn main(): Int = 0;';
 const sort = 'E_TYPE Expected a type, found an effect row';
+const recursive = name => `E_SPECIALIZATION Recursive call to ${name} `
+  + 'changes its type arguments';
 
 export const ieProbes = {
   // An unbound effect row variable is the unbound type variable of a
@@ -44,5 +46,16 @@ export const ieProbes = {
   'r016-record-as-effect': context => expect(context, 'record row as effect',
     'fn g(p: { a: Int, ...r }): Int = { let f = fn(q: (Int) -> Int with '
       + `...r) => 0; 0 };${main}`,
-    'E_TYPE r is a record row, not an effect row')
+    'E_TYPE r is a record row, not an effect row'),
+  // A recursive call that nests its record row changes its arguments.
+  'r010-nested-row': context => expect(context, 'nested row',
+    'fn g(x: { ...r }, n: Int): Int = if n == 0 then 0 else '
+      + 'g({ inner: x }, n + -1); fn main(): Int = g({ a: 1 }, 3);',
+    recursive('g')),
+  // Through mutual recursion too.
+  'r010-mutual-row': context => expect(context, 'mutual row',
+    'fn f(x: { ...r }, n: Int): Int = if n == 0 then 0 else '
+      + 'h({ inner: x }, n + -1); fn h(y: { ...s }, n: Int): Int = '
+      + 'f(y, n); fn main(): Int = f({ a: 1 }, 3);',
+    recursive('h'))
 };
