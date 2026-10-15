@@ -640,6 +640,134 @@ STD001), Char and byte APIs, a trailing-`\` line continuation, comments,
 and user `Console` handlers (`print` accepts any printable value, so a
 clause has no single parameter type; the handler stays uninhabited).
 
+Records (R001, first tranche; ADR 013; design
+docs/plans/2026-10-14-records-design.md). Records are anonymous and
+structural, typed by rows, in the style of PureScript: no field name
+belongs to a global namespace and no function is generated per field.
+Behaviour below is checked by test/r001-*.test.mjs, the reference
+interpreter (test/fx-oracle-records.mjs) and the rows of
+scripts/regression-r001.mjs.
+
+```ebnf
+operand    = ... | recordtype ;
+recordtype = "{", rpart, { ",", rpart }, [ "," ], "}" ;
+rpart      = lower, ":", type | "...", lower ;
+primary    = ... | "{", lower, ":", expression,
+             { ",", lower, ":", expression }, [ "," ], "}" ;
+atom       = primary, { suffix } ;
+suffix     = "(", [ arguments ], ")" | ".", lower
+           | "{", lower, "=", expression,
+             { ",", lower, "=", expression }, [ "," ], "}" ;
+```
+
+Types (r001-types). `{ name: Text, age: Int }` is a closed record type
+and `{ name: Text, ...r }` an open one, whose tail `r` is a row variable
+of record sort; `{ ...r }` is any record. A tail is last and single (`Row
+tail must be last`, `Only one row tail is allowed`). Labels are lowercase
+and unique: a repeated label in a type, literal or update is E_DUPLICATE
+`Duplicate field name` (the label's own name) at the second, with the note
+`first written here` at the first. Label order is not significant, so `{
+a: Int, b: Bool }` and `{ b: Bool, a: Int }` are one type, and types print
+with sorted labels and the tail written `...r` (`..._` when undetermined).
+Record types go wherever a type goes: parameters, results, type
+arguments, constructor fields, other records' fields and `main`'s result.
+There is no empty record in source: `{}` in a type is E_SYNTAX `Expected a
+type`, and `{}` in an expression stays Unit.
+
+Row sorts (r001-types, r001-sorts). A row variable is a record row or an
+effect row, never both: `fn f(x: { a: Int, ...r }): Unit with ...r` is
+E_TYPE `r is a record row, not an effect row` at the later use, with the
+note `first written here` at the first (and `r is an effect row, not a
+record row` the other way). A declared type's row parameter takes the sort
+of its uses, through other declarations in both directions, until nothing
+changes; one no use constrains stays an effect row, so existing programs
+are unchanged. Two declarations passing different sorts to one parameter
+are the same error at the later argument. A record tail may not name a
+type parameter, and an effect's parameters are types, so `effect E(r) {
+fn op(y: { ...r }): Int; }` is E_TYPE `Expected an effect row, found a
+type`: effects cannot take record rows yet (BACKLOG R009).
+
+Literals, access and update (r001-parse, r001-expressions). `{ name:
+"Ada", age: 36 }` has the closed type of its fields. In expression
+position `{` followed by a lowercase name and `:` begins a literal; `{ x
+}` stays a block (there is no punning). `e.name` reads a field of any
+receiver but an uppercase name, which stays an effect qualifier (`Log.log`):
+locals, calls, parentheses and other accesses (`r.a.b`, `f(x).a`). The `.`
+touches both the receiver and the label; a spaced `.` is the existing
+syntax error at the `.`. `e { name = n, age = a }` copies `e` with those
+fields replaced; it never adds a field or changes a field's type (`p {
+age = "x" }` is `Expected Int, found Text` at `"x"`). Calls, accesses and
+updates are postfix at one level, left to right, and bind tighter than
+`|>`, `+` and comparisons: `f(x) { name = n }.name` is `((f(x)) { name =
+n }).name`. An update needs `name =`, so `match r { a = 1 } { … }` updates
+its scrutinee and a match arm `a => …` is unchanged. Reading a field the
+record cannot have is E_TYPE `age is not a field of { name: Text }` at the
+label (also through an open type: `age is not a field of { name: Text,
+...r }`), and an access or update on anything else is E_TYPE `Expected a
+record, found Int` at the receiver.
+
+Evaluation. A literal evaluates each field once, in written order; an
+update evaluates its base once, then each replacement once, in written
+order; an access evaluates its receiver once. `{ b: say("b"), a: say("a")
+}` performs b's effects first, though the value is laid out sorted.
+
+Row polymorphism (r001-unify). A function over `{ name: Text, ...r }`
+accepts any record with a Text `name` and returns the rest unchanged:
+`fn older(p: { age: Int, ...r }): { age: Int, ...r } = p { age = p.age +
+1 }` gives back every other field. A signature's row variable is rigid in
+its own body, like a type variable: it can be read through but never
+extended, so a function cannot read a field its type does not name. Each
+tail lacks the labels written beside it, and the checker enforces it at
+every use: `{ a: Int, ...r }` can never have `r` hold `a`, so passing a
+record through `fn k(y: { ...r }): { a: Int, ...r }` where `r` would have
+to hold `a` is a shape mismatch. Lacks constraints cannot be written yet
+(BACKLOG R005). Two open rows that meet share one remainder, so what one
+use fixes the other sees. Mismatches use the existing texts: `Expected { a:
+Int, b: Bool }, found { a: Int }` for shapes and `Expected Int, found Text`
+for fields. Fields cannot be polymorphic (R006).
+
+Comparison and printing (r001-compare, r001-go). `== != < <= > >=` compare
+records field by field in sorted label order, the first difference
+deciding, so `{ name: "Ada", age: 36 } < { name: "Bo", age: 1 }` is false.
+A record is comparable when every field type is, and a record tail is a
+variable for groundness: comparing a `{ name: Text, ...r }` inside generic
+code is E_TYPE `Type { name: Text, ...r } is not comparable` at the left
+operand; a call site that compares a known record is fine. A record prints
+as `{ age: 36, name: "Ada" }`, labels sorted, each field in nested form (a
+Text quoted). A record is printable when every field is; generic code may
+print an open record, and the type is checked at each instantiation.
+
+Printability at the ground type (r001-printable, BACKLOG E017).
+`show`, `Console.print` and `crash` are checked again after specialization
+at their argument's ground type, so `fn p(item: a): Text = show(item)`
+reached with a function, a `Handler(Log)`, or a type holding one (also in
+a record tail) is E_TYPE `Expected a printable value, found Int -> Int` at
+the print site, never a failed `go build`.
+
+Failure payloads (r001-fail). A record can be a `Fail` payload. Its family
+is its label set: `Fail({ code: Int })` and `Fail({ code: Text })` are one
+family, so their field types must agree (`Expected Int, found Text`);
+`Fail({ code: Int })` and `Fail({ msg: Text })` are two, and each `handle`
+clause catches its own; reordered shapes are one family. A payload whose
+labels are unknown when the function is checked, such as `Fail({ code:
+Int, ...r })` in a signature or clause, is the existing E_TYPE `Fail needs
+a concrete error family`. Label sets have runtime keys of their own,
+outside every other family's range (ADR 013).
+
+Representation. Each distinct record type of the specialized program is
+one Go value struct with its fields in sorted label order; a function over
+an open record gets one Go copy per concrete row it is used with, and
+reordered rows share it. A field of declared type is stored through a
+pointer, as a constructor field is, so `type Node = End | Node({ child:
+Node })` is legal. Field access through a nil pointer, which only foreign
+code can produce, is a Go nil dereference rather than the `waxwing:
+malformed value` panic that comparison and printing give.
+
+Not in this tranche: record patterns (BACKLOG R004), extension, merge and
+removal with written lacks constraints (R005), polymorphic fields (R006),
+punning (R007), type aliases (R008) and record-row parameters of effects
+(R009).
+
 Nesting. One declaration body may nest at most 128 levels (ADR 006,
 Format.Parse.Grammar `nestingLimit`). A level is a parenthesized expression,
 an `if` condition or branch, a `match` scrutinee or arm body, a call or
@@ -647,8 +775,11 @@ constructor argument, a constructor-pattern field, a `+`, `|>` or
 comparison operand, a `++` operand (it counts like `+`), an interpolation
 hole's expression, or (FN001) a lambda body or the parameter side of an
 arrow; a postfix application chain nests its callee once (ADR 006,
-fn-depth). Only one root-to-leaf path counts; siblings and later declarations
-do not add up, and every function body starts at 0. Operators count the
+fn-depth), and so does each record access or update (R001), while a record
+type's field type and a literal's or update's field value are one level
+each (128 accesses in a chain parse, the 129th is E_NESTING). Only one
+root-to-leaf path counts; siblings and later declarations do not add up,
+and every function body starts at 0. Operators count the
 depth of the tree they build: `a + b + c` is `(a + b) + c`, so a flat sum
 of n operands counts n - 1 levels (129 operands compile, 130 do not), and
 a deep left operand counts in full. Deeper input is E_NESTING `Nesting

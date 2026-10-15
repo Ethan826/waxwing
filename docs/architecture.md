@@ -7,8 +7,8 @@ an earlier layer; scripts/structure.mjs enforces it from `purs graph`.
 | Layer | Modules (src/) | Role |
 |---|---|---|
 | Domain | Syntax, Syntax.Core, Type, Type.{Core,Compare,Parts,Marks,Record}, Resolved, Problem, Host, Checked.Internal, IR.Internal | syntax trees, spans, `Ty v`, resolved syntax, checked IR, monomorphic IR, `Problem` data, capability-port types |
-| Features | Resolve, Resolve.{Expression,Types,TypeRef,TypeArguments,Occurrences,Sorts,EffectSorts,RecordFields,Record,Pattern,Repeated,Fresh,Lambda,Name,Builtin,Qualified,Imports,Unbound,Scope}, Check, Check.{TypeText,Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,UnifyParts,UnifyFailure,UnifyRecord,RecordTail,Lacks,Implied,Seed,Record,Compose,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,State,Lower,Body,Copy,Intern,Values} | resolution, checking, coverage, specialization; report `Problem` data, never text |
-| Format | Lex, Lex.{Token,Scan,Text,Origin,Escape,Chars,Run,Walk,Block,Dedent}, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,TextShow,Usage}, Diagnostic, Diagnostic.{Code,Qualify}, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
+| Features | Resolve, Resolve.{Expression,Types,TypeRef,TypeArguments,Occurrences,Sorts,RowSettle,SortCheck,SortConflict,EffectSorts,RecordFields,Record,Pattern,Repeated,Fresh,Lambda,Name,Builtin,Qualified,Imports,Unbound,Scope}, Check, Check.{TypeText,Infer,Call,Apply,Lambda,Pipe,Use,Context,Hint,Functional,Arms,Match,Require,Scheme,Walk,Comparable,Instantiation,Nested,Components,Unify,UnifyParts,UnifyFailure,UnifyRecord,FlatRecord,RecordTail,Lacks,Implied,Seed,Record,Compose,Tables,Inhabited,Signature,Matrix,Usefulness,Missing,Coverage,Search,MarkStore,UnifyMark,MarkUse,RowFinish,ResultClauses,Walked,Settle,SettleEntry,Feed,FeedOrder,Cycle,Restricted,Watch,TailWatch,Handle,Sync,Filing,Groups,SyncCycle,Clauses,ClauseBody,TailPass,Install,Lend,Frames,Mark,MarkReport,MarkNotes,Site,Strip}, Specialize, Specialize.{Seeds,Keys,State,Lower,Body,Copy,Intern,Values,Ground,Printable,Layouts,Record} | resolution, checking, coverage, specialization; report `Problem` data, never text |
+| Format | Lex, Lex.{Token,Scan,Text,Origin,Escape,Chars,Run,Walk,Block,Dedent}, Parse, Parse.*, Stack, Go, Go.{Layout,Data,Lowered,Expression,Match,Capture,Value,Apply,Lambda,Pipe,Stage,Entry,Compare,Show,TextShow,Usage,Families,Record,RecordNames,RecordHelpers,RecordUse}, Diagnostic, Diagnostic.{Code,Qualify}, Wire, Arguments | text in (tokens, parser, reserved words, uppercase rule); Go out; diagnostic text, `E_*` names, wire records, usage text |
 | Runtime | Node (+ Node.js) | port implementations, argv/stdout/stderr/exit, JSON; the only FFI |
 | Program | Compile, Command, Main | pure `compile`, commands over any `Host`, entry point |
 
@@ -74,7 +74,8 @@ Format.Wire.
     stops at 128 open holes). `++` is read with `chainLeftAny` beside `+`.
   - *Types.* `TText` is a ground `Ty` constructor (Domain.Type.Core, split
     out of Domain.Type for room); Text adds no specialization keys. A
-    `Fail(Text)` has its own key, MinInt32 (Format.Go.Context).
+    `Fail(Text)` has its own key, MinInt32 (Format.Go.Families since
+    R001 Task 8, Format.Go.Context before).
   - *Checking.* Features.Check.Show checks `show` as `print`'s argument
     with a fresh open row and no effect; a hole and each `++` operand are
     checked against `TText`.
@@ -124,7 +125,11 @@ Format.Wire.
   A record is `TRecord` over Domain.Type.Record's `RecordRow`: fields kept
   sorted by label, and a tail that is a variable of record sort whose image
   is a record type (R001). Features.Resolve.Sorts settles every row
-  variable's sort, record or effect, over the declarations to a fixed point.
+  variable's sort, record or effect, over the declarations to a fixed point:
+  Features.Resolve.RowSettle alternates callee-to-caller and
+  caller-to-callee phases (Jacobi rounds) until neither adds a sort, then
+  SortCheck and SortConflict check every use against the settled sort in
+  one place (ADR 013).
   Features.Check.UnifyRecord unifies record rows by label, with one shared
   remainder for two open tails; every record tail has a lacks set in the
   substitution (Features.Check.Lacks), seeded from the signature or
@@ -263,6 +268,31 @@ Format.Wire.
   scripts/regression-fx.mjs (checker and diagnostics) and
   scripts/regression-fx-go.mjs (emitted Go), with probes in
   test/regression-fx.mjs and test/regression-fx-go.mjs.
+- **R001 records (ADR 013)**: types, row sorts, unification and record
+  expressions are described under Types above. Since R001 Task 2,
+  Features.Specialize.Printable's `checkSites` judges every `show`,
+  `Console.print` and `crash` site at its ground type once the worklist
+  ends (E017), with ground types from Specialize.Ground. Specialize.Layouts
+  hash-conses closed record types into `IR.TRecord LayoutId` layouts (fields
+  sorted, numbered in first-use order; not keys, not counted against the
+  limit), and Specialize.Record lowers a record at a key, splicing in the
+  tail's layout; an unsolved record-sorted argument or tail is the empty
+  rest (Specialize.Values). A closed record payload's `Fail` head is its
+  sorted label set (`HeadRecord`, Domain.Row), decided late through
+  Features.Check.FlatRecord `failHead`. Format.Go.RecordNames names the
+  structs (`waxwingRec<N>`, fields `f_<label>`), RecordHelpers emits one
+  struct per layout and the compare and show helpers RecordUse finds used,
+  Record lowers literals, access and update (temporaries in written order
+  inside an immediately invoked closure, trivial fields in place), and
+  Families assigns `Fail` runtime keys (label sets from MinInt32 + 1, in
+  sorted order) and refuses, in Program.Compile before emit, a program
+  whose ranges would meet. Tests: test/r001-*.test.mjs (types, sorts,
+  unify, parse, expressions, compare, printable, go, go-keys, fail), the
+  scale test test/r001-scale.serial.test.mjs (programs in
+  test/r001-scale-programs.mjs), and the oracle and generator
+  (test/fx-oracle-records.mjs, fx-gen-records.mjs, fx-gen-record-fns.mjs).
+  Regression rows: scripts/regression-r001.mjs with probes in
+  test/regression-r001.mjs.
 - **P001 tests** (one file per concern): poly-syntax (grammar,
   resolution), unify (+ unify-oracle, union-find reference), poly-check
   (typing), poly-depth (inferred-type bound), poly-termination
@@ -333,7 +363,8 @@ validation of tag and payload consistency before they become closed sums
 (I001). No fake stages for absent features. ADR 002 set the polymorphism
 strategy; ADR 007 records the implemented specialization; ADR 008 the
 function values and their staged lowering; ADR 010 the effect rows,
-handlers, cleanup and their erased lowering.
+handlers, cleanup and their erased lowering; ADR 013 the records, whose
+rows enter specialization keys.
 
 ## Known leak
 

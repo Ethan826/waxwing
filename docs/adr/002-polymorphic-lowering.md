@@ -50,3 +50,9 @@ type are to be allowed, in the fp-ts style, without newtypes; C001's ADR
 will supersede that clause and say how a value built under one instance is
 kept from use under another. See BACKLOG C001 and
 docs/plans/2026-10-08-polymorphism-design.md section 10.
+
+2026-10-14 note: R001's first tranche (ADR 013, on branch `records`)
+implements the records clause above as written: unique labels with lacks
+sets, label order normalized, and open-row functions specialized to
+concrete Go struct layouts. No accessor evidence was needed, since every
+function is specialized, and no boxed fallback was built.

@@ -224,6 +224,45 @@ escaped, so every printed value reads back as source. `show(x)` returns
 what `Console.print(x)` would write. Interpolation takes only Text, so other
 values go through `show`. The Go keeps a plain `string` (ADR 011).
 
+**Records**, structural and row-typed in the style of PureScript, all of
+`examples/records.wxw`:
+
+```rust
+type Team = Solo | Pair({ lead: Person, rest: Team });
+type Person = Person({ name: Text, age: Int });
+
+fn older(p: { age: Int, ...r }): { age: Int, ...r } = p { age = p.age + 1 };
+
+fn label(p: { name: Text, ...r }): Text = "${p.name}!";
+
+fn main(): Unit with Console = {
+  let ada = { name: "Ada", age: 36, id: 7 };
+  let bo = { id: 8, age: 41, name: "Bo" };
+  Console.print(older(ada));
+  Console.print(label(bo));
+  Console.print(ada < bo);
+  Console.print(Pair({ lead: Person({ name: ada.name, age: ada.age }),
+    rest: Solo }));
+};
+```
+
+It prints:
+
+```
+{ age: 37, id: 7, name: "Ada" }
+Bo!
+true
+Pair({ lead: Person({ age: 36, name: "Ada" }), rest: Solo })
+```
+
+`...r` is row polymorphism: `older` takes any record with an Int `age`
+and gives back every other field unchanged. Field names belong to no
+global namespace and no selector functions are generated; label order
+does not matter, and records compare and print in sorted label order. An
+update `p { age = … }` never adds a field or changes a field's type. Each
+record type becomes one Go struct, and a function over an open record gets
+one Go copy per concrete record it is used with (ADR 013).
+
 **Typed failures.** A failure is an effect with a payload, handled
 precisely:
 
@@ -288,36 +327,24 @@ q must allow every effect of a (L + M), but its row is L;
 write q's row as `with L + M`; a callback's row must equal its caller's (FX017)
 ```
 
-**Not yet supported:** records, type classes,
-modules, multiplication and other numeric operators beyond `+`, comments,
-text operations such as length and split, and anything resembling a
-standard library. Today's programs compute with Int, Bool, Text, Unit,
-user types and functions.
+**Not yet supported:** record patterns and record extension, type
+classes, modules, multiplication and other numeric operators beyond `+`,
+comments, text operations such as length and split, and anything
+resembling a standard library. Today's programs compute with Int, Bool,
+Text, Unit, records, user types and functions.
 
 ## Where it is going
 
 The rest of this page is planned, not implemented. The status of each item
 is in [BACKLOG.md](BACKLOG.md).
 
-### Records, PureScript-style (next)
+### More records (next)
 
-Records will be anonymous and structural, typed by rows, following
-PureScript rather than Haskell. That means no generated selector
-functions, no field-name clashes between types, and simple update syntax.
-The syntax below is illustrative; the design comes next:
-
-```rust
-fn fullName(person: { first: Text, last: Text, ...rest }): Text =
-  "${person.first} ${person.last}";
-
-let ada = { first: "Ada", last: "Lovelace", born: 1815 };
-fullName(ada);                   // fine: extra fields are allowed
-let older = ada { born = 1816 }; // update returns a new record
-```
-
-`...rest` is row polymorphism: the function needs these fields and accepts
-any record that has them. Records of functions also give an explicit,
-first-class way to pass a group of operations around, alongside effects.
+Records exist (above); the next tranches add record patterns, then
+extension, merge and removal with written lacks constraints (BACKLOG R004,
+R005). Records of functions will then give an explicit, first-class way to
+pass a group of operations around, alongside effects, and are the base for
+service environments and C001's instances.
 
 ### Inferred requirements and errors: layers without the Layer
 
@@ -387,7 +414,7 @@ the design.
 | Algebraic effects, handlers, typed failures, cleanup (FX001, FX008) | Done |
 | Effect diagnostics that say what to write (FX017, FX018) | Done |
 | Text (D001, first tranche) | Done |
-| Records, row-polymorphic (R001) | Design next |
+| Records, row-polymorphic (R001) | First tranche done; patterns and extension next |
 | Inferred requirements and errors (INF001) | Reviewed; design next |
 | Classes, modules, numbers, collections, stdlib | Planned |
 | Concurrency, state, general resumption | Designed or planned |
@@ -492,7 +519,10 @@ PureScript modules, not yet a native Go compiler executable.
   [ADR 007](docs/adr/007-specialization.md),
   [ADR 008](docs/adr/008-functions.md),
   [ADR 009](docs/adr/009-waxwing-name.md),
-  [ADR 010](docs/adr/010-effects.md)
+  [ADR 010](docs/adr/010-effects.md),
+  [ADR 011](docs/adr/011-text.md),
+  [ADR 012](docs/adr/012-effect-namespaces.md),
+  [ADR 013](docs/adr/013-records.md)
 - [Engineering rules and gate coverage](docs/engineering.md)
 - [Reference provenance](docs/provenance.md)
 - [Self-hosting chain](docs/bootstrap.md)

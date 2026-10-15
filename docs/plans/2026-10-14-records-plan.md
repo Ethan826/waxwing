@@ -25,6 +25,12 @@ test runner, Go 1.26.4. No new dependency.
 
 **Spec:** docs/plans/2026-10-14-records-design.md (approved 2026-10-14).
 
+**Status:** Done 2026-10-14: Tasks 1-11 on branch `records` (commits
+356397c..HEAD from de96a15), as built in ADR 013 and docs/progress.md
+("R001"); the controller's rulings are in
+.superpowers/sdd/2026-10-14-records-plan/progress.md. Not merged; the
+user's merge decision (fast-forward only) is next.
+
 ## Global Constraints
 
 - **AGENTS.md governs:**
@@ -109,9 +115,9 @@ test runner, Go 1.26.4. No new dependency.
 **Interfaces:** export lists are unchanged; importers change only module
 names.
 
-- [ ] Split. `npm run verify` exits 0, and the differential against the
+- [x] Split. `npm run verify` exits 0, and the differential against the
   base shows 0 differences.
-- [ ] Commit `refactor: splits for R001`.
+- [x] Commit `refactor: splits for R001`.
 
 ### Task 2: Specialization-time printable check (E017)
 
@@ -129,7 +135,7 @@ names.
 - A failing site returns E_TYPE `Expected a printable value, found <t>`
   at the print site's span, with `<t>` printed ground.
 
-- [ ] **Failing tests.** For each of `show`, `Console.print` and `crash`,
+- [x] **Failing tests.** For each of `show`, `Console.print` and `crash`,
   a generic printer `fn p(x: a): … = show(x)` (or `Console.print(x)`,
   `crash(x)`) is reached with:
   - a function;
@@ -139,12 +145,12 @@ names.
   Each gives E_TYPE `Expected a printable value, found <t>` at the print
   site, never E_TOOL. A printable instantiation (`Int`, `Box(Int)`) still
   runs.
-- [ ] Implement it.
-- [ ] **Regression row `r001-print-ground`.** Restoring "no
+- [x] Implement it.
+- [x] **Regression row `r001-print-ground`.** Restoring "no
   specialization-time check" makes the probe reach E_TOOL.
-- [ ] **Differential.** List every existing source that changes. The only
+- [x] **Differential.** List every existing source that changes. The only
   allowed change is E_TOOL → this E_TYPE.
-- [ ] Commit `fix: printable check at the ground type (E017)`, and mark
+- [x] Commit `fix: printable check at the ground type (E017)`, and mark
   BACKLOG E017 done.
 
 ### Task 3: Record types: syntax, resolution, row sorts
@@ -170,7 +176,7 @@ names.
   `sortOf ∷ VarId → Sort` from resolution.
 - The empty row is `{ fields: [], tail: Nothing }`, internal only.
 
-- [ ] **Failing tests:**
+- [x] **Failing tests:**
   - **Parsing:** `{ a: Int, b: Bool }`, `{ a: Int, ...r }`, `{ ...r }`,
     a trailing comma, and nesting inside a constructor field and in a
     type argument.
@@ -187,7 +193,7 @@ names.
   - **Default:** an unconstrained declaration row parameter stays effect
     sort, so existing programs are unchanged.
   - **Source:** `{}` in type position is E_SYNTAX (existing text).
-- [ ] Implement it. Verify, run the differential (new sources only), and
+- [x] Implement it. Verify, run the differential (new sources only), and
   commit `feat: record types and row sorts`.
 
 ### Task 4: Record-row unification with lacks sets
@@ -208,7 +214,7 @@ names.
   locations. They map to `Duplicate field name` only when two source
   occurrences are known.
 
-- [ ] **Failing tests,** one per spec §2 rule:
+- [x] **Failing tests,** one per spec §2 rule:
   1. **Closed versus closed:** same labels unify; a missing or extra
      label gives `Expected { a: Int, b: Bool }, found { a: Int }`.
   2. **Extension of a meta tail.**
@@ -225,7 +231,7 @@ names.
   6. **Rigid tails:** known-field access on `{ name: Text, ...r }`
      succeeds; an unknown field is `age is not a field of { name: Text,
      ...r }` and never extends `r`.
-- [ ] Implement it. Verify, run the differential, and commit `feat: record
+- [x] Implement it. Verify, run the differential, and commit `feat: record
   row unification`.
 
 ### Task 5: Literals, access, update (parse, resolve, infer)
@@ -251,7 +257,7 @@ names.
   {label, value})`.
 - Task 7 lowers these.
 
-- [ ] **Failing tests:**
+- [x] **Failing tests:**
   - **Literal:** a literal and its inferred closed type; `{}` is still
     Unit; `{ x }` is still a block.
   - **Access:** access, chains `r.a.b`, and access after a call and after
@@ -271,10 +277,10 @@ names.
   - **Review Focus 1 and 2:** the receiver kinds; `match r { a = 1 } { … }`
     parses as an update head; a match arm `a => …` is unchanged;
     `with h { log(1) }` is unchanged.
-- [ ] **Depth.** Measure the four forms before and after in an isolated
+- [x] **Depth.** Measure the four forms before and after in an isolated
   copy, with no loss. Record the figures in the report, and in G002 only
   if they change.
-- [ ] Implement it. Verify, run the differential, and commit `feat: record
+- [x] Implement it. Verify, run the differential, and commit `feat: record
   literals, access and update`.
 
 ### Task 6: Comparison and printability on records
@@ -286,7 +292,7 @@ names.
   printable when every field is, including tails at the ground type.
 - Tests: test/r001-compare.test.mjs.
 
-- [ ] **Failing tests:**
+- [x] **Failing tests:**
   - **Comparison groundness:** comparing a `{ name: Text, ...r }` in
     generic code gives `Type { name: Text, ...r } is not comparable` at
     the left operand. A concrete call site comparing a known record is
@@ -298,7 +304,7 @@ names.
     naming the full record.
   - **Handlers:** a record holding a `Handler(Log)` field is neither
     comparable nor printable.
-- [ ] Implement it. Commit `feat: record comparison and printability
+- [x] Implement it. Commit `feat: record comparison and printability
   rules`.
 
 ### Task 7: Specialization keys and Go lowering
@@ -325,7 +331,7 @@ names.
 - Produces deterministic layout numbering, in first-use order of the
   worklist, as ADTs have.
 
-- [ ] **Failing tests:**
+- [x] **Failing tests:**
   - **Shapes:**
     - `{ x: Int }` and `{ x: Text }` are two structs;
     - two orderings of one shape are one struct;
@@ -347,7 +353,7 @@ names.
     Go differences on existing sources).
   - **Limit:** record layouts do not count toward the 10,000 limit, but
     function copies at new row arguments do. A test pins both counts.
-- [ ] Implement it. Verify, run the differential, and commit `feat: record
+- [x] Implement it. Verify, run the differential, and commit `feat: record
   specialization and Go lowering`.
 
 ### Task 8: Records as `Fail` payloads
@@ -363,7 +369,7 @@ names.
   declared-type range, which counts down from -4.
 - Tests: test/r001-fail.test.mjs.
 
-- [ ] **Failing tests:**
+- [x] **Failing tests:**
   - **Same family:** `Fail({ a: Int, b: Int })` raised and caught by a
     clause `fail(error: { b: Int, a: Int })`.
   - **Two families at once:** handlers for `{ code: Int }` and `{ msg:
@@ -380,7 +386,7 @@ names.
     - an operation taking and returning a record;
     - a handler clause that updates the record;
     - a record field holding a `Handler(L)`.
-- [ ] Implement it. Commit `feat: records as Fail payloads`.
+- [x] Implement it. Commit `feat: records as Fail payloads`.
 
 ### Task 9: Reference interpreter and generator
 
@@ -393,12 +399,12 @@ names.
 - test/fx-census.mjs: minimums for programs that run a record literal, an
   access, an update and a generic record function.
 
-- [ ] Write the interpreter tests first (record RED).
-- [ ] Implement them.
-- [ ] Run `WAXWING_FX_SEED=$((20261010+500*k)) node --test
+- [x] Write the interpreter tests first (record RED).
+- [x] Implement them.
+- [x] Run `WAXWING_FX_SEED=$((20261010+500*k)) node --test
   test/fx-differential.serial.test.mjs` for k=0..10. Each seed must show
   0 disagreements.
-- [ ] Commit `test: records in the interpreter and generator`.
+- [x] Commit `test: records in the interpreter and generator`.
 
 ### Task 10: Regression rows, scale, proxy measurement
 
@@ -406,40 +412,40 @@ names.
 - scripts/regression-r001.mjs and test/regression-r001.mjs (from Task 2).
 - test/r001-scale.serial.test.mjs.
 
-- [ ] **Rows,** each "fixed passes; restored defect fails":
+- [x] **Rows,** each "fixed passes; restored defect fails":
   - `r001-sorted-layout`: layouts in written order;
   - `r001-lacks`: no lacks check;
   - `r001-shared-remainder`: tails extended independently;
   - `r001-field-order`: Go composite literal order relied on;
   - `r001-shape-types`: shape identity by labels only.
-- [ ] **Scale.** N distinct shapes flow through a chain of K generic
+- [x] **Scale.** N distinct shapes flow through a chain of K generic
   functions. Measure keys, Go lines and compile and build time on this
   host, and set each bound to 3x the median of five runs (the Text v1
   method: one warm-up build, then the minimum of three builds).
-- [ ] **Proxy.** Overlapping record-of-function environments are passed
+- [x] **Proxy.** Overlapping record-of-function environments are passed
   through generic code. Record keys and lines in docs/progress.md as a
   proxy for the services scenario, not as a validation of it.
-- [ ] Commit `test: R001 regression rows and scale`.
+- [x] Commit `test: R001 regression rows and scale`.
 
 ### Task 11: Documentation
 
-- [ ] **ADR 013** (docs/adr/013-records.md): the as-built decisions,
+- [x] **ADR 013** (docs/adr/013-records.md): the as-built decisions,
   including why record rows enter specialization keys while effect rows
   stay erased (ADR 010), and the confirmation of ADR 002.
-- [ ] **docs/language.md:** a Records section and the grammar.
-- [ ] **docs/architecture.md:** the new modules.
-- [ ] **README:** records under "works today", plus a sample.
-- [ ] **BACKLOG:**
+- [x] **docs/language.md:** a Records section and the grammar.
+- [x] **docs/architecture.md:** the new modules.
+- [x] **README:** records under "works today", plus a sample.
+- [x] **BACKLOG:**
   - R001: first tranche done;
   - new fast-follow items: record patterns; extension, merge and removal
     with written lacks constraints;
   - later items: polymorphic fields, punning and type aliases;
   - E017: done;
   - G002 if the margin changed.
-- [ ] **Progress files:** docs/progress.md, docs/next-session.md, and
+- [x] **Progress files:** docs/progress.md, docs/next-session.md, and
   docs/findings.md if anything was learned.
-- [ ] Run `node scripts/width.mjs` after `git add`, then verify.
-- [ ] Commit `docs: R001 ADR 013 and language`.
+- [x] Run `node scripts/width.mjs` after `git add`, then verify.
+- [x] Commit `docs: R001 ADR 013 and language`.
 
 ## Execution
 

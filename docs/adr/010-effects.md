@@ -54,19 +54,21 @@ Row structure is erased before specialization; types inside labels are not.
 Specialization keys are type keys, function keys and effect keys (effect,
 ground type arguments), built by the one worklist. Rows enter no key, so
 recursion that grows a row (`with h { loop(n + 1) }`) creates no new
-instance. The earlier idea of confining CPS by row-keyed specialization is
-not available; FX006 must establish a conservative reachability analysis or
-choose bounded row-aware re-specialization. Rejected: a uniform boxed
-operation ABI with typed adapters (stronger erasure at representation and
-conversion cost). Finiteness rests on two rules: ADR 007's instantiation
-rule for function keys, and P001's nested-declaration rule extended to one
-reference graph over type and effect declarations (the mutually recursive
-pair A/B is rejected, regression row `fx-layout-edges`; the self-recursive
-`effect Grow(a) { fn next(): Handler(Grow(Box(a))); }` is rejected even
-without that edge). Only keys that carry type arguments count toward the
-10,000-key limit (ruling F5: the limit is a guard on polymorphic keys; the
-spec's "every key" is read that way, a documentation mismatch only). An
-effect with no type arguments is a key but does not count.
+instance. (Record rows, ADR 013, do enter keys: they decide a struct's
+fields, which effect rows never do.) The earlier idea of confining CPS by
+row-keyed specialization is not available; FX006 must establish a
+conservative reachability analysis or choose bounded row-aware
+re-specialization. Rejected: a uniform boxed operation ABI with typed
+adapters (stronger erasure at representation and conversion cost).
+Finiteness rests on two rules: ADR 007's instantiation rule for function
+keys, and P001's nested-declaration rule extended to one reference graph
+over type and effect declarations (the mutually recursive pair A/B is
+rejected, regression row `fx-layout-edges`; the self-recursive `effect
+Grow(a) { fn next(): Handler(Grow(Box(a))); }` is rejected even without that
+edge). Only keys that carry type arguments count toward the 10,000-key limit
+(ruling F5: the limit is a guard on polymorphic keys; the spec's "every key"
+is read that way, a documentation mismatch only). An effect with no type
+arguments is a key but does not count.
 
 ### Runtime evidence and keys
 
@@ -75,7 +77,9 @@ installing allocates a node and leaving pops nothing. Lookup is linear in
 the installed handlers. Runtime keys: `EffectId + 1` for user effects, so
 `State(Int)` and `State(Bool)` share a key and the innermost frame wins;
 `Fail` families count down from -1 by the payload's declared head (`Int`
--1, `Bool` -2, `Unit` -3, a declared type -4 minus its id); host effects
+-1, `Bool` -2, `Unit` -3, a declared type -4 minus its id; since ADR 011
+Text MinInt32, and since ADR 013 a record payload's label set MinInt32 + 1
+upwards, in the sorted order of the program's label lists); host effects
 share 0 and no frame holds one. A perform function type-asserts the frame's
 handler to its own layout, which the first-occurrence rule makes
 unreachable when well typed. Handlers are deep and dynamically scoped:

@@ -4597,3 +4597,109 @@ docs/plans/2026-10-14-records-design.md §8).
   compile includes JIT warm-up; repeated environments add only `main`'s
   lines, but its compile time grows with `main`'s 100 or 200 `let`
   bindings of 8 or 10 nested calls.
+
+## R001 records (first tranche) done on branch `records` (2026-10-14)
+
+Plan docs/plans/2026-10-14-records-plan.md, Tasks 1-11, on branch `records`
+from main de96a15 (worktree .worktrees/records); spec
+docs/plans/2026-10-14-records-design.md (approved 2026-10-14), ADR 013
+(docs/adr/013-records.md), language docs/language.md ("Records"). Not
+merged and nothing pushed: the user's merge decision (fast-forward only)
+is next. Ledger and task reports: .superpowers/sdd/2026-10-14-records-plan/
+(progress.md with every ruling, task-*-report.md).
+
+Delivered:
+- Record types `{ l: T, … }` and `{ l: T, ...r }`, sorted and unique
+  labels, and row sorts: a row variable is a record row or an effect row,
+  solved over the declarations in both directions.
+- Literals, `e.l` and `e { l = v }` as postfix operations; inference with
+  rigid tails, implicit lacks sets and shared remainders; type-preserving
+  update; the approved diagnostics of spec §6.
+- Comparison and printing in sorted label order; records as `Fail`
+  payloads keyed by label set; one Go struct per shape and one function
+  copy per concrete row, with evaluation order kept by temporaries.
+- E017 (printable check at the ground type) fixed first.
+
+Tasks (commits on `records`):
+- Task 1: behaviour-preserving splits (356397c): Subst/UnifyFailure,
+  Unify/Compose/UnifyParts, Resolve.Types/TypeRef/TypeArguments,
+  Specialize.Keys/State, Type.Core/Compare. Differential 0 differences.
+- Task 2: E017 (d36fcc4): Specialize.Printable `checkSites`, Ground.
+- Task 3: record types and row sorts (0a09142; fixes bd766c4, a93b899,
+  c14d4b1, 61d55d4 after four review rounds): RecordType parser, Type.Record,
+  Resolve.Sorts, RowSettle, SortCheck, SortConflict, Occurrences.
+- Task 4: record-row unification (a16ce1b; fix b800a18): UnifyRecord,
+  RecordTail, Lacks, Seed, Implied; effect operations seed lacks, and an
+  effect's parameter cannot be a record tail.
+- Task 5: literals, access, update (fd6f17c): Parse.Lookahead, Postfix,
+  Record; Resolve.Record; Check.Record.
+- Task 6: comparison and printability (ef5ca3b).
+- Task 7: specialization keys and Go lowering (0d7d0e0): Specialize.Layouts,
+  Record; Format.Go.Record, RecordHelpers, RecordNames, RecordUse;
+  examples/records.wxw and bootstrap/records.go.
+- Task 8: unsolved record-sorted arguments are the empty rest (5fbb1ac);
+  records as `Fail` payloads (baf796f): `HeadRecord`, FlatRecord
+  `failHead`, Format.Go.Families.
+- Task 9: records in the reference interpreter and generator (dfec27a).
+- Task 10: regression rows, scale, services proxy (7fd1d14; section above).
+- Task 11: the five Task-10 rows' messages pin their mutant's symptom
+  (9e8cf17), and this documentation.
+
+Evidence (logs under .build/ in the worktree):
+- Verify, `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`, exit 0
+  at every task's end on its committed tree: Task 2 1651 parallel and 57
+  serial; Task 4 fix 1717/57; Task 5 1749/57; Task 7 1786/57, 103 proofs;
+  Task 8 1807/57, 103 proofs; Task 9 1819/57; Task 10 1820/59, 108 proofs
+  (14 of them R001 rows). No timing failure in any verify.
+- Compiler differential against each task's base (`scripts/differential.mjs
+  --corpus all --regenerate`): Task 1 0; Task 2 11 (this task's own
+  programs, E_TOOL at `go build` to E_TYPE; no existing source); Task 3
+  final 44, all sources the base rejected with `Expected a type` at a `{`
+  in a type (41 new sources, 3 mutations); Task 4 fix 26 (new sources and one
+  mutant); Task 5 64, all parse-phase sources the base rejected (57 new,
+  2 fx020 sources and 2 mutants whose lowercase `.` is now an access,
+  3 mutants of new sources); Task 6 0; Task 7 27 (sources the base
+  rejected with E_INTERNAL "Record types are not lowered yet"); Task 8 15
+  (new sources). Tasks 9-11 changed no compiler source. Fuzz, isName and
+  matches 0 throughout; no valid existing program's Go changed.
+- The seven bootstrap/*.go snapshots are byte-identical throughout;
+  bootstrap/records.go is new.
+- Parser depth (scripts/depth-probe.mjs, limit lifted, isolated copies):
+  constructor-argument 259, call-argument 296, parens 396,
+  parens-in-call-in-constructor 326 before and after Tasks 1, 3, 4 and 5
+  (one 325 reading at a base was noise). G002 unchanged.
+- Go-vs-interpreter differential, `WAXWING_FX_SEED=$((20261010+500*k))`,
+  k = 0..10: 0 disagreements on every seed (Task 9); seven record census
+  rows met (337 to 368 programs per seed, minimum 250).
+- Timing failures seen only in the differential's instrumented harvest runs
+  are in BACKLOG T007 (figures only, bounds unchanged).
+
+Rulings summary (the ledger has the full text): R1-R4 sequencing of
+printer, rule-6 tests, interim E_INTERNAL and end-to-end printable tests;
+the duplicate-field text is the existing template `Duplicate field
+<label>`; the row-sort solver alternates phases with Jacobi rounds and one
+post-solve check, blaming the later use (or the later caller's argument)
+with a note at the first, and a caller clash names the variable's own
+sort; an effect's parameter cannot be a record tail, and effect operations
+seed lacks; the lowercase `.` on existing invalid sources is accepted;
+unsolved record-sorted arguments lower to the empty rest; the label-set
+capacity refusal reuses `Fail without a family` in Program.Compile; the
+pre-existing Handler-payload E_EFFECT is filed, not fixed (FX024); Tasks
+4, 5 and 7 ran on Opus.
+
+Task 11 test tightening: scripts/regression-r001.mjs rows
+`r001-sorted-layout` (`written-order layout … E_TOOL: … cannot use`),
+`r001-lacks` (`lacks: E_TOOL: go build failed: … redeclared`),
+`r001-shared-remainder` (`independently: E_TOOL: go build failed: …
+cannot use`), `r001-field-order` (`field order left to Go: a\nb\n`) and
+`r001-shape-types` (`field types: E_TOOL: … cannot use`), each matched
+against the mutant output in the Task 10 report and re-proved with `node
+scripts/regression.mjs <row>`: "fixed compiler passes; restored defect
+fails" for all five. Verify on the committed tree 05da489 exit 0
+(.build/r001-t11-verify.log): 1820/1820 parallel, 59/59 serial, 108
+regression proofs (14 R001 rows).
+
+Open: R004 and R005 (fast-follows), R006-R009 (later), R010 (instantiation
+rule misses record rows), R011 (unused tail structs), E018 (lambda
+missing-field diagnostic), FX024 (Handler in a `Fail` payload), T011
+(corpus gaps), the I001 note on nil field access, G002, T007.

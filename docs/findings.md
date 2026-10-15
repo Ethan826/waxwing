@@ -661,3 +661,36 @@ Learned while retargeting mutants for the fifteen new rows
 5. V8 warm-up changes the stack depth available to the first `compile` of a
    near-limit source (BACKLOG G006); paired comparisons of old and new trees
    need `node --stack-size=3000`, never a retry.
+
+## R001: records (2026-10-14)
+
+1. A regression row's `message` must pin the restored defect's symptom (the
+   Go error or the wrong output), not just the probe's own failure label:
+   the five Task-10 rows matched only the label, so any mutant failure,
+   such as a checker crash, would have satisfied the proof (tightened in
+   Task 11).
+2. Sort inference over declarations needs both directions, alternated until
+   nothing changes, and one check of every use afterwards. A one-way fixed
+   point, then one pass each way, each accepted contradictory programs or
+   rejected valid ones (Task 3, four review rounds; ADR 013 "Row sorts").
+   Reading only the previous round's sorts (Jacobi rounds) removes the
+   dependence on declaration order.
+3. Unifying a record's shared fields can bind the record's own tail
+   (`{ a: { ...r }, ...r }`); deciding the tails from rows flattened before
+   that overwrote the binding (Task 4 review). Flatten again after the
+   fields unify.
+4. The depth probe's boundary is noisy by one: parens-in-call-in-constructor
+   read 325 once and 326 otherwise on the same tree (Tasks 4 and 5). Sample
+   the boundary repeatedly before calling a margin lost. Moving hot helpers
+   (`resolve*`, the `Subst` constructors) out of Features.Check.Subst cost a
+   unit of margin and was reverted (Task 1).
+5. A new field in a phase's output (IR `records`, checked `sorts`) makes
+   every program differ in the differential; normalise it in the digest
+   only where a baseline without it agrees, and say so (Tasks 7 and 8).
+6. Field access through a nil declared-type pointer inside a record is a
+   raw Go nil dereference; only foreign code can make one, and comparison
+   and printing are nil-guarded (Task 7 review; BACKLOG I001 note).
+7. The instantiation rule does not see record-row arguments: a recursive
+   call that grows a record row reaches the 10,000-specialization limit
+   instead of the rule's diagnostic (found while writing ADR 013; BACKLOG
+   R010).

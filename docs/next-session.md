@@ -1,3 +1,37 @@
+# Waxwing / R001 records first tranche done on branch `records`; awaiting merge decision (2026-10-14)
+
+R001's first tranche (records, BACKLOG R001) is complete on branch
+`records` (worktree .worktrees/records, from main de96a15): Tasks 1-11 of
+docs/plans/2026-10-14-records-plan.md, ADR 013 (docs/adr/013-records.md),
+the Records section of docs/language.md, examples/records.wxw with
+bootstrap/records.go, and the "R001" entries in docs/progress.md. Nothing
+is pushed or merged. Next: the user's merge decision, by fast-forward only
+(no merge commits); the whole-branch review precedes it per the plan's
+Execution section. Ledger and reports:
+.superpowers/sdd/2026-10-14-records-plan/.
+
+Open items from R001: fast-follows R004 (record patterns) and R005
+(extension, merge and removal with written lacks constraints, plus the
+lambda-annotation lacks gap); later R006 (polymorphic fields), R007
+(punning), R008 (type aliases), R009 (record-row parameters of effects);
+found during the tranche R010 (the instantiation rule misses record rows;
+growth is caught only by the 10,000 limit), R011 (unused tail structs),
+E018 (lambda missing-field diagnostic), FX024 (pre-existing E_EFFECT with a
+Handler in a `Fail` payload), T011 (record corpus gaps), and an I001 note
+(nil field access). G002 is unchanged at 259; T007 has the harvest-run
+timing figures. After R001: the INF001 design, and C001 with records of
+operations.
+
+Setup facts: run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in
+the worktree; `node scripts/width.mjs` checks git-tracked files only, so
+run it after `git add`. Delete .build/regression and .build/go-cache after
+a verify run; agent copies for mutant proofs and differentials exclude
+.build and are deleted.
+
+Older sections below are history.
+
+---
+
 # Waxwing / FX020 merged into main; housekeeping; R001 next (2026-10-14)
 
 FX020 (effect operation namespaces, BACKLOG FX020) was merged into main by

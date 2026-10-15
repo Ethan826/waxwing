@@ -3,8 +3,10 @@
 Status: approved by the user 2026-10-14 (revised 2026-10-14 after
 the first review: printability, ADT storage, Fail payloads, row sorts).
 The user approved this design section by section in conversation on
-2026-10-14, together with review refinements. No plan exists yet and
-nothing is implemented. Sequencing: after FX020 (effect operation
+2026-10-14, together with review refinements. Implemented on branch
+`records` (plan docs/plans/2026-10-14-records-plan.md, Tasks 1-11); not
+merged. As built: docs/adr/013-records.md, which records the decisions the
+plan's rulings added. Sequencing: after FX020 (effect operation
 namespaces), which kept `.` free for `r.field` on lowercase receivers.
 
 ## Goal

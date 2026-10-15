@@ -202,6 +202,29 @@ adding a bypass allowlist.
   entry). Examples are snapshotted
   byte for byte (examples/text.wxw to bootstrap/text.go,
   test/text-literal.test.mjs);
+- R001 (records, ADR 013) adds fourteen regression rows, in
+  scripts/regression-r001.mjs with probes in test/regression-r001.mjs:
+  `r001-print-ground` (no ground-type printable check: the probe must see
+  Go's own `go build` error, read after the `# command-line-arguments`
+  header), `r001-record-order` (fields kept in written order),
+  `r001-row-sort-propagation`, `r001-duplicate-field`,
+  `r001-callee-to-caller`, `r001-settled-sort`, `r001-caller-conflict` and
+  `r001-sort-feedback` (the row-sort solver), `r001-field-bound-tail`
+  (tails decided against stale rows), `r001-sorted-layout` (layouts keyed in
+  written order), `r001-lacks` (no lacks check), `r001-shared-remainder`
+  (two open tails each given their own remainder), `r001-field-order`
+  (every field used in place in the Go struct literal) and
+  `r001-shape-types` (layouts keyed by labels alone). A row's `message`
+  pins the symptom of its restored defect (the Go error, or the wrong
+  output), not only the probe's own failure label, so an unrelated mutant
+  failure cannot satisfy the proof (R001 Task 11). The scale rule is
+  test/r001-scale.serial.test.mjs (programs in
+  test/r001-scale-programs.mjs): 200 shapes through 20 generic links give
+  exactly 4,001 keys and checked output, with compile, `go build` (the Text
+  v1 method) and Go-line bounds of 3x the median of five runs (figures in
+  docs/progress.md, "R001 Task 10"); a services proxy runs in the same file
+  with exact keys and no time bound. The records example is snapshotted
+  (examples/records.wxw to bootstrap/records.go, test/compiler.test.mjs);
 - Go execution in tests is batched per test file (T001, test/go-batch.mjs):
   `runGoBatch(import.meta.url, cases, label?)` takes an array of
   `[name, source]` pairs (an array, so a computed name collision is refused
@@ -299,7 +322,11 @@ compile) over the sources the test suite parses (harvested by
 scripts/differential-hook.mjs into .build), token soups, generated
 nested-match programs and mutations, and exits 1 on any difference: run
 it against an isolated build of the previous commit for every
-behavior-preserving refactor or performance change.
+behavior-preserving refactor or performance change. Its digests carry
+normalisations for fields an IR gained, each dropped only where a baseline
+without it agrees: a Plain token's `kind` (Text v1), an empty `records` in
+the monomorphic IR (R001 Task 7) and a checked function's `sorts`, a copy
+of resolve-phase data (R001 Task 8).
 scripts/ladder-profile.mjs times the match-lift ladder cold and per phase,
 alternating with a baseline build. Both are review conventions. The
 differential loads compilers and harvests sources through
