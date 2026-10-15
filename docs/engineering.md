@@ -214,10 +214,12 @@ adding a bypass allowlist.
   written order), `r001-lacks` (no lacks check), `r001-shared-remainder`
   (two open tails each given their own remainder), `r001-field-order`
   (every field used in place in the Go struct literal) and
-  `r001-shape-types` (layouts keyed by labels alone). A row's `message`
-  pins the symptom of its restored defect (the Go error, or the wrong
-  output), not only the probe's own failure label, so an unrelated mutant
-  failure cannot satisfy the proof (R001 Task 11). The scale rule is
+  `r001-shape-types` (layouts keyed by labels alone). Six rows'
+  `message`s pin the symptom of their restored defect (the Go error, or
+  the wrong output), not only the probe's own failure label, so an
+  unrelated mutant failure cannot satisfy those proofs: `r001-print-ground`
+  and the five Task-10 rows (tightened in R001 Task 11). The other eight
+  still match only their probe's label (BACKLOG T012). The scale rule is
   test/r001-scale.serial.test.mjs (programs in
   test/r001-scale-programs.mjs): 200 shapes through 20 generic links give
   exactly 4,001 keys and checked output, with compile, `go build` (the Text

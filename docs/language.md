@@ -660,19 +660,19 @@ suffix     = "(", [ arguments ], ")" | ".", lower
              { ",", lower, "=", expression }, [ "," ], "}" ;
 ```
 
-Types (r001-types). `{ name: Text, age: Int }` is a closed record type
-and `{ name: Text, ...r }` an open one, whose tail `r` is a row variable
-of record sort; `{ ...r }` is any record. A tail is last and single (`Row
+Types (r001-types). `{ name: Text, age: Int }` is a closed record type and
+`{ name: Text, ...r }` an open one, whose tail `r` is a row variable of
+record sort; `{ ...r }` is any record. A tail is last and single (`Row
 tail must be last`, `Only one row tail is allowed`). Labels are lowercase
 and unique: a repeated label in a type, literal or update is E_DUPLICATE
-`Duplicate field name` (the label's own name) at the second, with the note
-`first written here` at the first. Label order is not significant, so `{
-a: Int, b: Bool }` and `{ b: Bool, a: Int }` are one type, and types print
-with sorted labels and the tail written `...r` (`..._` when undetermined).
-Record types go wherever a type goes: parameters, results, type
-arguments, constructor fields, other records' fields and `main`'s result.
-There is no empty record in source: `{}` in a type is E_SYNTAX `Expected a
-type`, and `{}` in an expression stays Unit.
+`Duplicate field <label>` (`Duplicate field a` for `a`) at the second,
+with the note `first written here` at the first. Label order is not
+significant, so `{ a: Int, b: Bool }` and `{ b: Bool, a: Int }` are one
+type, and types print with sorted labels and the tail written `...r`
+(`..._` when undetermined). Record types go wherever a type goes:
+parameters, results, type arguments, constructor fields, other records'
+fields and `main`'s result. There is no empty record in source: `{}` in a
+type is E_SYNTAX `Expected a type`, and `{}` in an expression stays Unit.
 
 Row sorts (r001-types, r001-sorts). A row variable is a record row or an
 effect row, never both: `fn f(x: { a: Int, ...r }): Unit with ...r` is
@@ -746,7 +746,9 @@ the print site, never a failed `go build`.
 
 Failure payloads (r001-fail). A record can be a `Fail` payload. Its family
 is its label set: `Fail({ code: Int })` and `Fail({ code: Text })` are one
-family, so their field types must agree (`Expected Int, found Text`);
+family, so their field types must agree (a mismatch is the existing
+`Expected X, found Y`, oriented by which use is expected, e.g. `Expected
+Int, found Text`);
 `Fail({ code: Int })` and `Fail({ msg: Text })` are two, and each `handle`
 clause catches its own; reordered shapes are one family. A payload whose
 labels are unknown when the function is checked, such as `Fail({ code:

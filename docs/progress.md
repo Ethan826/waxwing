@@ -4701,5 +4701,6 @@ regression proofs (14 R001 rows).
 
 Open: R004 and R005 (fast-follows), R006-R009 (later), R010 (instantiation
 rule misses record rows), R011 (unused tail structs), E018 (lambda
-missing-field diagnostic), FX024 (Handler in a `Fail` payload), T011
-(corpus gaps), the I001 note on nil field access, G002, T007.
+missing-field diagnostic), FX024 (Handler in a `Fail` payload), T011 (corpus
+gaps), T012 (eight rows still match only their label), the I001 note on nil
+field access, G002, T007.

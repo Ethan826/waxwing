@@ -88,6 +88,10 @@ argument components plus the ground arguments written inside C, and the
 component DAG has finitely many entering keys. test/poly-properties checks
 that bound on 200 generated components.
 
+2026-10-14 note: R001's record rows (ADR 013) are not judged by this rule
+(BACKLOG R010), so for record rows the rule alone no longer makes the key
+set finite; the 10,000-specialization limit still bounds it.
+
 The rule is conservative (spec §4.3): `f(a)` calling `g(List(a))` with
 `g(b)` calling `f(Int)` is finite but rejected. The exact criterion is the
 absence of an expanding cycle in the instantiation graph; relaxing to it

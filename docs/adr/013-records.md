@@ -233,8 +233,11 @@ not chosen.
 - Go output of every valid existing program is unchanged: the seven
   bootstrap/*.go snapshots are byte-identical, examples/records.wxw adds
   bootstrap/records.go, and each task's differential showed only new
-  sources, E017's E_TOOL to E_TYPE, and invalid sources whose lowercase
-  `.` is now an access (ruling, Task 5).
+  sources, E017's E_TOOL to E_TYPE, invalid sources whose `{` in a type
+  now begins a record (three mutations; a mutated `{ Int; }` changes from
+  `Expected a type` to `Expected an identifier`, E_SYNTAX both sides,
+  ruling, Task 3), and invalid sources whose lowercase `.` is now an
+  access (ruling, Task 5).
 - The differential's digests gained two normalisations (Tasks 7 and 8):
   the specialize digest drops an empty `records` field and the check
   digest drops a checked function's `sorts`, a copy of resolve-phase data.

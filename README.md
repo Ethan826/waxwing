@@ -342,9 +342,10 @@ is in [BACKLOG.md](BACKLOG.md).
 
 Records exist (above); the next tranches add record patterns, then
 extension, merge and removal with written lacks constraints (BACKLOG R004,
-R005). Records of functions will then give an explicit, first-class way to
-pass a group of operations around, alongside effects, and are the base for
-service environments and C001's instances.
+R005). Records of functions already work today (`{ f: fn(x: Int) => x +
+1 }`, called as `r.f(1)`); building service environments and C001's
+instances on them, as an explicit, first-class way to pass a group of
+operations around alongside effects, is future work.
 
 ### Inferred requirements and errors: layers without the Layer
 
