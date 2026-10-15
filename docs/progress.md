@@ -4724,7 +4724,10 @@ final-fix-findings.md and final-fix-report.md).
   raises an ambient callback in such a payload is now rejected (the
   existing row-equality text); one existing test program did that and was
   rewritten (test/fx-cleanup.test.mjs, the 5,000-arrow payload).
-- C1 (8d81da1). Types written in a body (lambda annotations, `with
+- C1 (8d81da1; 73222ef walks a signature only when it has a record row,
+  since strict `where` bindings had made every function map every
+  declared type: 3,000 types and functions resolved in 121 ms, 61 ms
+  after). Types written in a body (lambda annotations, `with
   handler` label arguments, `handle` clause payloads) are held to the
   signature's lacks sets in Features.Resolve.Lacking: E_TYPE `r may
   already have field a` (approved 2026-10-15) at the label, or at the
@@ -4755,4 +4758,7 @@ final-fix-findings.md and final-fix-report.md).
   nested-handler sources; a `--stack-size=3000` rerun showed none, and the
   base overflows the same way after warm-up (BACKLOG G006).
 - Parser untouched; no depth probe. Timing failures of the instrumented
-  harvest run are in BACKLOG T007.
+  harvest run and of two verify runs (test/coverage-scale.test.mjs, the
+  10,000-type chain, 6,329 and 5,426 ms against 5 s under the parallel
+  run, about 1.75 s alone on this tree and on the base) are in BACKLOG
+  T007.
