@@ -5,6 +5,7 @@ module Features.Resolve.HandlerExpression
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either)
 import Data.Foldable (foldl, traverse_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
@@ -12,6 +13,7 @@ import Data.Traversable (traverse)
 import Domain.Resolved as Resolved
 import Domain.Row (EffectRef(..), Label(..), Mark(..))
 import Domain.Syntax as Syntax
+import Features.Resolve.BodySorts (bodySorts)
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Handler as Handler
 import Features.Resolve.Lacking (lackingIn)
@@ -42,7 +44,7 @@ handlerExpression resolveExpression scope span reference clauses = do
         reference
         clauses
     )
-  liftEither (traverse_ (lackingIn scope) reference.arguments)
+  liftEither (traverse_ (bodyType scope) reference.arguments)
   checked ← traverse (handlerClause resolveExpression scope) resolved.clauses
   pure (Resolved.Handler span resolved.label checked)
 
@@ -110,7 +112,7 @@ failureClause resolveExpression scope clause = do
           clause.ty
         >>= failFamily (Syntax.typeRefSpan clause.ty)
     )
-  liftEither (lackingIn scope clause.ty)
+  liftEither (bodyType scope clause.ty)
   local ← fresh
   let locals = Map.insert clause.name local scope.locals
   body ← resolveExpression (scope { locals = locals }) clause.body
@@ -125,3 +127,9 @@ failureClause resolveExpression scope clause = do
 -- variables, as a lambda annotation's types do.
 variableRefs ∷ Syntax.LabelRef → Array MarkVariableRef
 variableRefs reference = Array.concatMap markVariableRefs reference.arguments
+
+-- A type written in the body reads the signature's row variables with
+-- their sorts (R016), then puts beside them only labels they lack.
+bodyType ∷ Scope → Syntax.TypeRef → Either Syntax.Diagnostic Unit
+bodyType scope reference = bodySorts scope.signatureSorts reference
+  *> lackingIn scope reference

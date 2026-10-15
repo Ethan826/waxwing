@@ -9,6 +9,7 @@ import Data.Traversable (traverse)
 import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.BodySorts (SignatureSorts, bodySorts)
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Lacking (Lacking, lackingIn)
 import Features.Resolve.Marks (markVariableRefs, scopedMarkVariables)
@@ -25,6 +26,7 @@ type Annotations r =
   , variables ∷ Array String
   , markVariables ∷ Array String
   , lacking ∷ Maybe Lacking
+  , signatureSorts ∷ SignatureSorts
   | r
   }
 
@@ -54,7 +56,9 @@ parameter
 parameter annotations syntax = boundOf <$> liftEither annotation
   <*> traverse issue syntax.name
   where
-  annotation = scoped *> written <* traverse_ (lackingIn annotations) syntax.ty
+  annotation = scoped *> written <* traverse_ checked syntax.ty
+  checked found = bodySorts annotations.signatureSorts found
+    *> lackingIn annotations found
   scoped = scopedMarkVariables annotations.markVariables
     (Array.concatMap markVariableRefs (Array.fromFoldable syntax.ty))
   written = traverse

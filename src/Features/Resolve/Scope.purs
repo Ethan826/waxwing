@@ -6,6 +6,7 @@ import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
 import Domain.Type (Ty, VarId)
 import Features.Resolve.Builtin (Declared)
+import Features.Resolve.BodySorts (SignatureSorts)
 import Features.Resolve.Lacking (Lacking)
 
 -- An imported operation (FX020 §1): the local name it is bound to, what it
@@ -34,4 +35,5 @@ type Scope =
   , variables ∷ Array String
   , markVariables ∷ Array String
   , lacking ∷ Maybe Lacking
+  , signatureSorts ∷ SignatureSorts
   }

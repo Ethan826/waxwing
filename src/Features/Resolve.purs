@@ -18,6 +18,7 @@ import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
 import Features.Resolve.ArgumentClash (programClashes)
+import Features.Resolve.BodySorts (signatureSorts)
 import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Occurrences (Declared, resolvedDeclared)
 import Features.Resolve.TypeIndices (typeIndices)
@@ -215,6 +216,9 @@ resolveFunction globals declared tables effects effectInfos definition =
     , markVariables: definition.signature.markVariables
     , lacking: signatureLacking declared tables definition.function
         definition.signature
+    , signatureSorts: signatureSorts declared definition.function
+        definition.signature.variables
+        definition.signature.sorts
     }
   parameters = definition.signature.parameters
   locals = Map.fromFoldable (Array.mapWithIndex parameterLocal parameters)

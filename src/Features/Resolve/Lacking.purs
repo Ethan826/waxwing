@@ -2,6 +2,7 @@ module Features.Resolve.Lacking
   ( Lacking
   , signatureLacking
   , lackingIn
+  , signatureOccurrences
   ) where
 
 import Prelude

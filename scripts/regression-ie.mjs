@@ -1,10 +1,14 @@
-// FX025 and R015 regression rows, imported by scripts/regression.mjs; their
-// probes are in test/regression-ie.mjs. Each restores one defect in a
-// whole, compiling form.
+// FX025, R015 and R016 regression rows, imported by
+// scripts/regression.mjs; their probes are in test/regression-ie.mjs.
+// Each restores one defect in a whole, compiling form.
 const rowsAsTypes = 'rowsAsTypes indices declarations = traverse_ '
   + '(misusedIn declared)\n  (Array.filter hasRowParameter declarations)\n';
 const unchecked = 'rowsAsTypes indices declarations = traverse_ '
   + '(misusedIn declared) []\n';
+const bodyUses = '              (typeOccurrences signature.declared '
+  + 'reference)\n';
+const noBodyUses = '              (const [] (typeOccurrences '
+  + 'signature.declared reference))\n';
 export const ieRows = [
   {
     // The unbound row variable lost its place: an internal error at 0.
@@ -36,5 +40,24 @@ export const ieRows = [
     replacement: unchecked,
     probe: 'r015-record-row',
     message: /record row as type: accepted/
+  },
+  {
+    // Body types unchecked against the signature's sorts: an effect row
+    // as a lambda's record tail reads as a missing field.
+    name: 'r016-effect-as-record',
+    file: 'src/Features/Resolve/BodySorts.purs',
+    needle: bodyUses,
+    replacement: noBodyUses,
+    probe: 'r016-effect-as-record',
+    message: /effect row as record: E_TYPE a is not a field of/
+  },
+  {
+    // The same: a record row as a lambda's effect row is accepted.
+    name: 'r016-record-as-effect',
+    file: 'src/Features/Resolve/BodySorts.purs',
+    needle: bodyUses,
+    replacement: noBodyUses,
+    probe: 'r016-record-as-effect',
+    message: /record row as effect: accepted/
   }
 ];
