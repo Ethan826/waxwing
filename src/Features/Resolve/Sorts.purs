@@ -34,9 +34,12 @@ settleDeclarations
   → Array Syntax.TypeDecl
   → Either Syntax.Diagnostic (Array Syntax.TypeDecl)
 settleDeclarations indices declarations =
-  if Array.any recordWritten declarations then
-    settledAll indices declarations
-  else Right declarations
+  rowsAsTypes indices declarations *> settling
+  where
+  settling =
+    if Array.any recordWritten declarations then
+      settledAll indices declarations
+    else Right declarations
 
 -- Whether a record type is written anywhere in a declaration's fields.
 recordWritten ∷ Syntax.TypeDecl → Boolean
@@ -47,6 +50,36 @@ recordWritten declaration = Array.any isRecord
   isRecord = case _ of
     Syntax.RecordRef _ _ _ → true
     _ → false
+
+-- A row parameter written as a type, `type T(...e) = T(e)`, is the sort
+-- error at that use, as the same mistake in a signature (R015). Only
+-- declarations with a row parameter are walked.
+rowsAsTypes
+  ∷ TypeIndices → Array Syntax.TypeDecl → Either Syntax.Diagnostic Unit
+rowsAsTypes indices declarations = traverse_ (misusedIn declared)
+  (Array.filter hasRowParameter declarations)
+  where
+  declared = declaredTypes indices declarations
+  hasRowParameter declaration = Array.any rowParameter
+    declaration.parameters
+
+rowParameter ∷ Syntax.TypeParameter → Boolean
+rowParameter parameter = parameter.sort /= Syntax.TypeSort
+
+misusedIn ∷ Declared → Syntax.TypeDecl → Either Syntax.Diagnostic Unit
+misusedIn declared declaration = traverse_ misused
+  (Array.sortWith offset (Array.filter typeUse (ownUses declared declaration)))
+  where
+  typeUse occurrence = occurrence.sort == Syntax.TypeSort
+  offset occurrence = occurrence.span.start.offset
+  misused occurrence = traverse_ (clash occurrence)
+    (Array.find (named occurrence) declaration.parameters)
+  named occurrence parameter = parameter.name == occurrence.name
+    && rowParameter parameter
+  clash occurrence parameter = Left
+    ( conflict occurrence
+        (occurrence { sort = parameter.sort, span = parameter.span })
+    )
 
 -- Row parameters of the declarations take the sort their uses give them
 -- (R001 design §1); RowSettle.settledPlaces solves them. Then every use of
