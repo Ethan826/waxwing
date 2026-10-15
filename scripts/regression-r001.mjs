@@ -86,7 +86,9 @@ export const r001Rows = [
     name: 'r001-sorted-layout', file: 'src/Features/Specialize/Layouts.purs',
     needle: '  fields = sortFields written\n',
     replacement: '  fields = written\n',
-    probe: 'r001-sorted-layout', message: /written-order layout/
+    probe: 'r001-sorted-layout',
+    message:
+      /written-order layout split one record type: E_TOOL: [^]*cannot use/
   },
   {
     // A meta tail bound to a label it lacks (rule 4), so `{ a: Int, ...r }`
@@ -94,7 +96,8 @@ export const r001Rows = [
     name: 'r001-lacks', file: 'src/Features/Check/RecordTail.purs',
     needle: '  if Array.any forbidden fields then failed subst\n',
     replacement: '  if false then failed subst\n',
-    probe: 'r001-lacks', message: /lacks/
+    probe: 'r001-lacks',
+    message: /lacks: E_TOOL: go build failed: .*redeclared/
   },
   {
     // Two open tails each extended with their own fresh remainder (rule 3),
@@ -115,7 +118,8 @@ export const r001Rows = [
           + '    (Just (Meta (bindings.fresh - 1)))\n'
       }
     ],
-    probe: 'r001-shared-remainder', message: /independent/
+    probe: 'r001-shared-remainder',
+    message: /independently: E_TOOL: go build failed: .*cannot use/
   },
   {
     // Every field used in place in the struct literal, so Go evaluates the
@@ -123,7 +127,7 @@ export const r001Rows = [
     name: 'r001-field-order', file: 'src/Format/Go/Record.purs',
     needle: '  IR.Local _ → true\n  _ → false\n',
     replacement: '  IR.Local _ → true\n  _ → true\n',
-    probe: 'r001-field-order', message: /field order/
+    probe: 'r001-field-order', message: /field order left to Go: a\nb\n/
   },
   {
     // Layouts keyed by labels alone, so `{ x: Int }` and `{ x: Text }`
@@ -147,6 +151,7 @@ export const r001Rows = [
           + '  shape = map (map (const IR.TUnit)) fields\n'
       }
     ],
-    probe: 'r001-shape-types', message: /field types/
+    probe: 'r001-shape-types',
+    message: /field types: E_TOOL: [^]*cannot use/
   }
 ];
