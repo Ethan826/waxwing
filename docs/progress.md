@@ -4736,7 +4736,10 @@ final-fix-findings.md and final-fix-report.md).
   `Duplicate record label`. test/r001-body-types.test.mjs (14 tests: l1,
   l2, m1, m4, o2, a `handle` payload, note placement, four accepted forms,
   the guard driven directly); rows `r001-body-lacks` (restored: E_INTERNAL
-  Duplicate record label from the guard) and `r001-record-guard`.
+  Duplicate record label from the guard) and `r001-record-guard`. With the
+  guard, row `r001-lacks`'s restored defect also ends in that E_INTERNAL
+  rather than `go build`, so its message now pins `lacks: E_INTERNAL
+  Duplicate record label` (found by the wave's fourth verify).
 - I2, I3, I4 and recommendation 4 are documentation: R012 (concrete row
   arguments for record-row parameters), E019 (lacks-failure wording), the
   corrected "latent" claims (ADR 013, BACKLOG R005), T011's generator

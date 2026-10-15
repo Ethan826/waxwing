@@ -92,12 +92,14 @@ export const r001Rows = [
   },
   {
     // A meta tail bound to a label it lacks (rule 4), so `{ a: Int, ...r }`
-    // with `r` bound to `{ a: Int }` passes.
+    // with `r` bound to `{ a: Int }` passes; lowering then meets `a` twice,
+    // which the record guard reports (before the guard, `go build` failed
+    // with the field redeclared).
     name: 'r001-lacks', file: 'src/Features/Check/RecordTail.purs',
     needle: '  if Array.any forbidden fields then failed subst\n',
     replacement: '  if false then failed subst\n',
     probe: 'r001-lacks',
-    message: /lacks: E_TOOL: go build failed: .*redeclared/
+    message: /lacks: E_INTERNAL Duplicate record label/
   },
   {
     // Two open tails each extended with their own fresh remainder (rule 3),
