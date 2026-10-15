@@ -25,15 +25,16 @@ resolveRow effects variables ambient resolve = maybe
   (Right (Row [] ambient))
   written
   where
-  written (Syntax.RowRef _ labels tail) = Row
+  written (Syntax.RowRef span labels tail) = Row
     <$> traverse (label effects resolve) labels
-    <*> maybe (Right ambient) ending tail
-  ending Syntax.Pure = Right Nothing
-  ending (Syntax.Spread name) = maybe' missing found
+    <*> maybe (Right ambient) (ending span) tail
+  ending _ Syntax.Pure = Right Nothing
+  ending span (Syntax.Spread name) = maybe' (missing span name) found
     (Array.elemIndex name variables)
   found index = Right (Just (VarId index))
-  missing _ = Left (Syntax.problemAt (Internal "Missing row variable") nowhere)
-  nowhere = { start: Syntax.origin, end: Syntax.origin }
+  -- The same E_UNBOUND a record row's unbound tail gets.
+  missing span name _ = Left
+    (Syntax.problemAt (Unbound UnboundTypeVariable name) span)
 
 label
   ∷ Effects
