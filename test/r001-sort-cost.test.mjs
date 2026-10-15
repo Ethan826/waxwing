@@ -43,6 +43,15 @@ test('a record type written in a declaration settles the sorts', () => {
     .constructor.name), ['RecordSort', 'RecordSort']);
 });
 
+// Every declaration is searched, not only the first.
+test('a record type in a later declaration settles the sorts', () => {
+  const types = typesOf('type S(...s) = S(R(...s)); type U = U(Int); '
+    + 'type R(...r) = R({ x: Int, ...r });');
+  assert.deepEqual(settled(types).value0.map(type => type.parameters
+    .map(parameter => parameter.sort.constructor.name)),
+  [['RecordSort'], [], ['RecordSort']]);
+});
+
 test('a record type nested in a declaration still settles', () => {
   const types = typesOf('type R(...r) = R(L((Int) -> { x: Int, ...r })); '
     + 'type L(a) = L(a);');
