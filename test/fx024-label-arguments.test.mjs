@@ -73,3 +73,33 @@ test('a pure callback may be raised', () => {
   checked(`fn w(f: (Int) -> Int with pure): Int with ${arrow} = `
     + `Fail.fail({ k: f });${main}`);
 });
+
+// The documented alternative to `with pure`: the callback and the payload
+// share a written `...e`, which is also the signature's tail, so the
+// callback's effect is the catcher's to perform.
+const say = 'fn say(n: Int): Int with Console = '
+  + '{ Console.print(n); n + 1 }; ';
+const shared = 'Fail({ k: (Int) -> Int with ...e }) + ...e';
+const raises = `fn w(f: (Int) -> Int with ...e): Int with ${shared} = `
+  + 'Fail.fail({ k: f }); ';
+const catcher = '{ fail(e: { k: (Int) -> Int with Console }) => e.k(1) }';
+
+test('a callback sharing ...e is raised and run by its catcher', () => {
+  assert.equal(runGo(`${say}${raises}fn main(): Unit with Console = `
+    + `Console.print(handle w(say) ${catcher});`), '1\n2\n');
+});
+
+test('a caller with the same shared row passes it on', () => {
+  assert.equal(runGo(`${say}${raises}fn v(f: (Int) -> Int with ...e): `
+    + `Int with ${shared} = w(f); fn main(): Unit with Console = `
+    + `Console.print(handle v(say) ${catcher});`), '1\n2\n');
+});
+
+test('a handler sharing ...e is raised and installed by its catcher', () => {
+  const held = 'Handler(Log with ...e)';
+  assert.equal(runGo(`${log}fn w(h: ${held}): Int with Fail({ h: ${held} })`
+    + ' + ...e = Fail.fail({ h: h }); fn main(): Unit with Console = '
+    + 'Console.print(handle w(handler Log { log(n) => Console.print(n) }) '
+    + '{ fail(e: { h: Handler(Log with Console) }) => '
+    + '{ with e.h { Log.log(5) }; 6 } });'), '5\n6\n');
+});
