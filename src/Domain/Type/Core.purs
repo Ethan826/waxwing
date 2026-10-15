@@ -29,7 +29,6 @@ import Domain.Type.Compare
   , compareRows
   , compareRecords
   , compareSpines
-  , sameRecords
   , sameRows
   , sameSpines
   )
@@ -89,7 +88,7 @@ instance eqTy ∷ Eq v ⇒ Eq (Ty v) where
     TFun _ _ _, TFun _ _ _ → sameSpines arrowLink left right
     THandler one oneRow, THandler other otherRow → one == other
       && oneRow == otherRow
-    TRecord one, TRecord other → sameRecords one other
+    TRecord one, TRecord other → one == other
     _, _ → sameLeaf left right
 
 instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
