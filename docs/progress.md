@@ -4858,3 +4858,34 @@ labels (`Holder({ y: Bool })` holds `{ x: Int, y: Bool }`).
   docs/engineering.md R001 bullet, and BACKLOG E020, FX025, FX026, FX027
   and FX028 (probe logs .build/evidence/t13-backlog-probes*.log,
   t13-fix1-fx024-probes-2.log).
+
+## R001 timing comparison and final gate (plan Task 14, 2026-10-15)
+
+The user kept the timing bound and asked for base and candidate under
+comparable conditions, both logs kept, and the final verify with
+competing builds stopped. Earlier failure records above and in BACKLOG
+T007 stand as written.
+
+- Comparison: base de96a15 (the merge base) built in .build/base-de96a15
+  beside candidate ee6038c; each timing file that failed or flaked during
+  R001 run alone, base and candidate interleaved, one warm-up pair and 5
+  measured pairs (7 for coverage-scale), load average 1.8 to 3.0 (waits
+  recorded). Logs: .build/evidence/t14-timing-coverage-scale.log,
+  -large-source, -fn-linear-timing, -fn-scale, -fx-block, -fx-scale,
+  -fx008-scale, -match-lift-timing, -text-scale, -r001-scale (candidate
+  only: no base equivalent). Figures in BACKLOG T007.
+- Finding: Records slow the 10,000-type dependency chain
+  (test/coverage-scale.test.mjs) from a median 898 ms to 1,710 ms (1.90x,
+  ranges disjoint). The earlier "load sensitivity" reading compared the
+  tree with 96e28f2, itself a Records commit. Bisection
+  (.build/evidence/t14-chain-bisect.log): about 930 ms at d36fcc4, about
+  1,320 ms from 0a09142 (record types and row sorts), about 1,720 ms from
+  61d55d4 (row sorts alternate both directions until settled). Smaller
+  disjoint-range increases: three thousand distinct instantiations 1.17x,
+  twenty thousand one-constructor types 1.09x, 200 mark variables 1.09x.
+  Every other figure is within 0.86x to 1.06x. Not profiled; no bound
+  changed (the chain keeps 2.9x headroom alone, 5.5x before).
+- Final gate: `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on
+  the clean tree at ee6038c, no other build running, exit 0 on the first
+  run (.build/evidence/t14-final-verify-1.log): 1,875/1,875 parallel,
+  59/59 serial, 118 regression proofs; the chain took 2,495 ms.
