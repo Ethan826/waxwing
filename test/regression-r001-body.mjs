@@ -61,7 +61,11 @@ export const r001BodyProbes = {
       () => pure(Just.create(image.ty)))({ start: origin, end: origin })(row);
     const result = copy.run(lowering)({ layouts: image.layouts });
     if (!(result instanceof context.Left)) {
-      fail('record guard: a label declared twice was lowered');
+      const { value, state } = result.value0;
+      const labels = layouts.layoutFields(state.layouts)(value)
+        .map(field => field.value0);
+      fail('record guard: a label declared twice was lowered: '
+        + `{ ${labels.join(', ')} }`);
     }
     console.log(`${context.probe} regression detects the defect`);
   }

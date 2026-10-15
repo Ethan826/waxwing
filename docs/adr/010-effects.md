@@ -59,7 +59,10 @@ own whole row, and the payload the caller wrote (its ambient alone) no
 longer matched: a spurious E_EFFECT `v performs Console, which its
 signature does not allow`. A callback raised in such a payload must now be
 `with pure` or share a written `...e` (regression row
-`fx-label-argument-ambient`, test/fx024-label-arguments.test.mjs).
+`fx-label-argument-ambient`, test/fx024-label-arguments.test.mjs). The
+shared `...e` works only where a caller's row equals the callee's; a
+caller that adds a label, the scenario above, must use `with pure`
+(FX017's equal-row rule; BACKLOG FX028).
 
 ### Row erasure (revises direction decision 1)
 

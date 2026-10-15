@@ -4839,7 +4839,9 @@ labels (`Holder({ y: Bool })` holds `{ x: Int, y: Bool }`).
   Re-proved: `node scripts/regression.mjs` with the eight rows, each
   "fixed compiler passes; restored defect fails"
   (.build/evidence/t13-regression-eight.log). The other rows added on this
-  branch already pinned their symptom.
+  branch already pinned their symptom except `r001-record-guard`, whose
+  probe now prints the lowered layout, pinned as `{ a, a }` (fix round
+  1; .build/evidence/t13-fix1-record-guard.log).
 - FX024's documented alternative to `with pure`, a payload sharing the
   signature's written `...e`: three tests in
   test/fx024-label-arguments.test.mjs (an arrow raised and run by main's
@@ -4848,8 +4850,11 @@ labels (`Holder({ y: Bool })` holds `{ x: Int, y: Bool }`).
   installed). They passed when written: the FX024 mutant (row
   `fx-label-argument-ambient`) also accepts all three, since a written
   `...e` never took the ambient row
-  (.build/evidence/t13-fx024-shared-under-mutant.log).
+  (.build/evidence/t13-fix1-fx024-probes-under-mutant.log). A caller that
+  adds a label to the shared row is rejected with a misleading or opaque
+  text (BACKLOG FX028); ADR 010 and docs/language.md state the limit.
 - Docs: the o2 placement's approval history (spec §6, ADR 013), the
   unconstrained record-argument sentence (docs/language.md), the
-  docs/engineering.md R001 bullet, and BACKLOG E020, FX025, FX026 and
-  FX027 (probe logs .build/evidence/t13-backlog-probes*.log).
+  docs/engineering.md R001 bullet, and BACKLOG E020, FX025, FX026, FX027
+  and FX028 (probe logs .build/evidence/t13-backlog-probes*.log,
+  t13-fix1-fx024-probes-2.log).

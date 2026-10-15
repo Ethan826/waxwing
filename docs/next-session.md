@@ -11,7 +11,7 @@ E_TYPE `r may already have field a`, approved 2026-10-15) and FX024 (a
 label's arguments have no ambient row), and filed R012 and E019. R012
 (concrete record-row arguments, plan Task 12) is done, and plan Task 13
 fixed the pre-merge evidence (T012 done, FX024's shared `...e` tests,
-BACKLOG E020 and FX025-FX027). Nothing is pushed or merged. Next: the
+BACKLOG E020 and FX025-FX028). Nothing is pushed or merged. Next: the
 user's merge decision, by fast-forward only (no merge commits). Ledger and
 reports: .superpowers/sdd/2026-10-14-records-plan/ (final-fix-report.md
 for the wave).

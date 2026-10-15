@@ -187,12 +187,13 @@ export const r001Rows = [
   },
   {
     // C1 defence in depth: a record whose written labels and tail's image
-    // share a label is lowered to a struct declaring that field twice.
+    // share a label is lowered to a layout declaring that field twice,
+    // `{ a, a }`.
     name: 'r001-record-guard', file: 'src/Features/Specialize/Record.purs',
     needle: '  repeated spliced = Set.size (Set.fromFoldable (map fst spliced))'
       + '\n    /= Array.length spliced\n',
     replacement: '  repeated _ = false\n',
     probe: 'r001-record-guard',
-    message: /record guard: a label declared twice was lowered/
+    message: /a label declared twice was lowered: \{ a, a \}\n/
   }
 ];

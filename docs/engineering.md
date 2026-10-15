@@ -221,10 +221,11 @@ adding a bypass allowlist.
   test/regression-r012.mjs), and FX024 adds `fx-label-argument-ambient`
   to scripts/regression-fx.mjs. Every one of these rows' `message`s pins
   the symptom of its restored defect (the wrong diagnostic, a wrong
-  acceptance, an internal error, Go's build error or the wrong output),
-  not only the probe's own failure label, so an unrelated mutant failure
-  cannot satisfy the proof (BACKLOG T012, done in R001 Task 13). The scale
-  rule is test/r001-scale.serial.test.mjs (programs in
+  acceptance, an internal error, Go's build error, the wrong output, or,
+  for `r001-record-guard`, the lowered layout `{ a, a }`), not only the
+  probe's own failure label, so an unrelated mutant failure cannot satisfy
+  the proof (BACKLOG T012, done in R001 Task 13). The scale rule is
+  test/r001-scale.serial.test.mjs (programs in
   test/r001-scale-programs.mjs): 200 shapes through 20 generic links give
   exactly 4,001 keys and checked output, with compile, `go build` (the Text
   v1 method) and Go-line bounds of 3x the median of five runs (figures in

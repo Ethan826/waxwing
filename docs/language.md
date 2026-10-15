@@ -408,9 +408,13 @@ ambient row, in a signature as in a field, an operation or a `handle`
 clause: the arrow in `Fail({ k: (Int) -> Int })` and the handler in
 `Fail({ h: Handler(Log) })` are `pure`, so a function and its caller with
 more labels name the same payload (FX024); a callback raised in such a
-payload is written `with pure`. `main` may perform only `Console`; any other
-left-over label is E_EFFECT `Unhandled Database in main`, with notes naming
-the path from the call that needs it (test/fx-diagnostics.test.mjs,
+payload is written `with pure`, or shares a written `...e` with it (`fn
+w(f: (Int) -> Int with ...e): Int with Fail({ k: (Int) -> Int with ...e
+}) + ...e`), which works only where a caller's row equals the callee's: a
+caller that adds a label must use `with pure` (FX017's equal-row rule;
+BACKLOG FX028). `main` may perform only `Console`; any other left-over
+label is E_EFFECT `Unhandled Database in main`, with notes naming the path
+from the call that needs it (test/fx-diagnostics.test.mjs,
 test/fx-services.test.mjs).
 
 Injection. Construct each implementation as a handler value and install it
