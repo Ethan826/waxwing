@@ -22,6 +22,9 @@ import {
 } from './fx-oracle-values.mjs';
 import { evaluateText, noteComparison } from './fx-oracle-text.mjs';
 import { functionScope, operation } from './fx-oracle-names.mjs';
+import {
+  evaluateRecord, holdsRecord, isRecord
+} from './fx-oracle-records.mjs';
 
 const maximumSteps = 3_000_000;
 
@@ -102,12 +105,14 @@ export const interpret = (source, options = {}) => {
   // A function's body starts in its row's aliases and imports.
   const callFunction = ({ name, args }, ctx) => {
     const declared = program.functions.get(name);
+    if (declared.generic) events.add('record-generic');
     const bound = bindAll(new Map(scopeOf(declared)), declared.parameters,
       args);
     return evaluate(declared.body, bound, ctx);
   };
 
   const builtin = ({ name, family }, argument, ctx) => {
+    if (name !== 'crash' && holdsRecord(argument)) events.add(`record-${name}`);
     if (name === 'print') {
       state.effects++;
       stdout.push(`${show(argument)}\n`);
@@ -142,12 +147,15 @@ export const interpret = (source, options = {}) => {
         const left = evaluate(node.left, env, ctx);
         return (left + evaluate(node.right, env, ctx)) | 0;
       }
+      case 'record': case 'access': case 'update':
+        return evaluateRecord(state, node, env, ctx);
       case 'text': case 'concat':
         return evaluateText(state, node, env, ctx);
       case 'compare': {
         const left = evaluate(node.left, env, ctx);
         const right = evaluate(node.right, env, ctx);
         if (isText(left)) noteComparison(events, left, right);
+        if (isRecord(left)) events.add('record-compare');
         return comparisons[node.operator](compareValues(program, left, right));
       }
       case 'if': return evaluate(node.condition, env, ctx)

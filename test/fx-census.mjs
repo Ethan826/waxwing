@@ -9,6 +9,8 @@ const literals = 75;
 // FX020 spellings (test/fx-gen-names.mjs): programs that perform an
 // operation written qualified, imported, or through an alias.
 const spellings = { qualified: 400, import: 150, alias: 50 };
+// R001 records (test/fx-gen-records.mjs); the frame is in 70% of programs.
+const records = 250;
 
 // [name, interpreter events (any of them counts), minimum programs]
 export const categories = [
@@ -52,7 +54,15 @@ export const categories = [
   ['spelling: an imported operation performed', ['spelling-import'],
     spellings.import],
   ['spelling: an operation performed through an alias', ['spelling-alias'],
-    spellings.alias]
+    spellings.alias],
+  ['record: literal', ['record-literal'], records],
+  ['record: access', ['record-access'], records],
+  ['record: update', ['record-update'], records],
+  ['record: generic function over an open record', ['record-generic'],
+    records],
+  ['record: comparison', ['record-compare'], records],
+  ['record: printed', ['record-print', 'record-show'], records],
+  ['record: Fail payload', ['record-fail'], records]
 ];
 
 // outcomes: the interpreter outcomes of the run's programs.

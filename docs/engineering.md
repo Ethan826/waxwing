@@ -337,6 +337,16 @@ a stream of its own so a seed keeps its program shape. Each performed
 operation reports its spelling, and the census requires programs that
 perform one qualified (400), imported (150), through an alias (50) and
 bare (75, until Task 7).
+Since R001 Task 9 the interpreter models records (test/fx-oracle-records.mjs;
+hand traces in test/fx-oracle-records.test.mjs): fields and update
+replacements evaluate once in written order, values compare and print in
+sorted label order (Text quoted as nested data), and a record payload's
+Fail family is its label set. A record frame (test/fx-gen-records.mjs, in
+70% of programs) draws a label universe with one type per label, writes
+literals and types in shuffled order, and calls generic functions over open
+records (test/fx-gen-record-fns.mjs). The census requires 250 programs each
+running a record literal, access, update, generic record function,
+comparison, print and Fail payload.
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context

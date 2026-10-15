@@ -11,6 +11,7 @@ import {
 } from './fx-gen-expr.mjs';
 import { failingFrame } from './fx-gen-failing.mjs';
 import { crossing, escaping, nested, stages } from './fx-gen-fragments.mjs';
+import { cellType, recordFrame } from './fx-gen-records.mjs';
 import { noteType, textFrame } from './fx-gen-text.mjs';
 import { rng } from './fx-gen-rng.mjs';
 import {
@@ -26,6 +27,7 @@ export const fragments = [
 // census): an extra in some programs, in most unconstrained ones.
 const failing = { name: 'failing-frame', make: failingFrame };
 const texting = { name: 'text-frame', make: textFrame };
+const recording = { name: 'record-frame', make: recordFrame };
 const regular = fragments.filter(fragment => !fragment.terminal);
 
 export const prelude = 'type Err = Err1(Int) | Err2; type Oops = Oops(Int); '
@@ -77,7 +79,8 @@ const fnText = fn => {
 // (`ctx.failing`, test/fx-gen-expr.mjs).
 export const render = ({ fns, main }) => {
   const body = [...fns.map(fnText), fnText(main)].join(' ');
-  const types = body.includes('Note') ? prelude + noteType : prelude;
+  const types = (body.includes('Note') ? prelude + noteType : prelude)
+    + (/Cell|Empty/.test(body) ? cellType : '');
   return plainWithoutDefer(`${types} ${body}`);
 };
 
@@ -138,6 +141,7 @@ export const generate = (seed, index = seed, options = {}) => {
   const extras = r.chance(40) ? [r.pick(regular)] : [];
   if (r.chance(shared.unconstrained ? 40 : 15)) extras.push(failing);
   if (r.chance(70)) extras.push(texting);
+  if (r.chance(70)) extras.push(recording);
   const items = mainItems(ctx, focus, extras);
   const terminal = focus.find(fragment => fragment.terminal);
   const ret = !terminal && r.chance(25) ? 'Int' : 'Unit';

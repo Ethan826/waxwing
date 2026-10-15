@@ -8,6 +8,7 @@
 import { cursor, tokenize } from './fx-oracle-lex.mjs';
 import { expressions } from './fx-oracle-expr.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
+import { openRecord } from './fx-oracle-records.mjs';
 
 export const parseProgram = source => {
   const reader = cursor(withoutMarks(tokenize(source)));
@@ -15,11 +16,11 @@ export const parseProgram = source => {
   const { expression, readType } = expressions(reader);
   const program = { ctors: new Map(), fields: new Map(), types: new Map(),
     owner: new Map(), functions: new Map(), effects: new Map() };
+  // [name, type]; a function over an open record is generic in its rest.
   const typed = () => {
     const name = take().text;
     take(':');
-    readType();
-    return name;
+    return [name, readType()];
   };
   const parameters = () => (peek(')') ? (take(')'), []) : list(typed, ')'));
   const constructor = (type, position) => {
@@ -67,7 +68,8 @@ export const parseProgram = source => {
     take(':');
     const { row = [] } = readType();
     take('=');
-    program.functions.set(name, { parameters: params, row,
+    program.functions.set(name, { parameters: params.map(([param]) => param),
+      generic: params.some(([, type]) => openRecord(type)), row,
       body: expression() });
   };
   while (!reader.done()) {

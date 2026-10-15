@@ -3,6 +3,9 @@
 // (`Error(Int)`, design §5). Shares no code with the compiler.
 import { unit } from './poly-parse.mjs';
 import { compareText, quoteText } from './text-reference.mjs';
+import {
+  compareRecords, isRecord, recordText, recordType, recordTypeText
+} from './fx-oracle-records.mjs';
 
 // Text is { text }: a string of Unicode scalars (design §1).
 export const isText = value => typeof value === 'object'
@@ -17,6 +20,7 @@ export const isHandler = value => value?.kind === 'handler';
 const nested = value => value === unit ? '()'
   : isText(value) ? quoteText(value.text)
   : typeof value !== 'object' ? String(value)
+  : isRecord(value) ? recordText(value, nested)
   : value.fields.length === 0 ? value.ctor
     : `${value.ctor}(${value.fields.map(nested).join(', ')})`;
 export const show = value => (isText(value) ? value.text : nested(value));
@@ -26,6 +30,8 @@ export const compareValues = (program, left, right) => {
   if (left === unit) return 0;
   if (isText(left)) return compareText(left.text, right.text);
   if (typeof left !== 'object') return sign(Number(left) - Number(right));
+  if (isRecord(left)) return compareRecords(left, right, (one, other) =>
+    compareValues(program, one, other));
   const order = program.ctors.get(left.ctor) - program.ctors.get(right.ctor);
   if (order !== 0) return sign(order);
   for (const [index, field] of left.fields.entries()) {
@@ -44,6 +50,8 @@ export const typeOfValue = (program, value) => {
   if (typeof value === 'boolean') return { head: 'Bool', args: [] };
   if (isHandler(value)) return { head: 'Handler', args: [] };
   if (isFunction(value)) return { head: '->', args: [] };
+  if (isRecord(value)) return recordType(value, field =>
+    typeOfValue(program, field));
   const type = program.owner.get(value.ctor);
   const found = new Map();
   const declared = type.ctors.find(ctor => ctor.name === value.ctor);
@@ -64,7 +72,8 @@ const bind = (program, found, tree, actual) => {
   });
 };
 
-export const typeText = type => (type.args.length === 0 ? type.head
+export const typeText = type => (type.labels ? recordTypeText(type, typeText)
+  : type.args.length === 0 ? type.head
   : `${type.head}(${type.args.map(typeText).join(', ')})`);
 
 // A type is printable unless a function or handler occurs in it, through

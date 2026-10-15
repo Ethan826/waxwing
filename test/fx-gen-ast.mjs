@@ -1,7 +1,9 @@
 // Typed syntax trees of the generated FX001 programs, and their printer.
 // Each node carries `ty` ('Int', 'Unit', 'Bool', 'Text', 'Note', 'Err',
-// 'Oops' or 'fn'; a 'str' is a Text literal's finished source) so
-// the shrinker can replace a subexpression by a literal of its type.
+// 'Oops', 'Cell', 'fn', or a record shape (test/fx-gen-records.mjs); a
+// 'str' is a Text literal's finished source) so the shrinker can replace
+// a subexpression by a literal of its type. Records (R001): a literal's
+// and an update's fields are [label, node] in written order.
 // Blocks are { items, value }: an item is { k: 'let' | 'do' | 'defer', ... };
 // a null value makes the block Unit (printed with a trailing `;`).
 export const lit = number => ({ k: 'lit', text: String(number), ty: 'Int' });
@@ -27,6 +29,11 @@ export const handle = (body, clauses) =>
 export const match = (scrutinee, arms, ty) =>
   ({ k: 'match', scrutinee, arms, ty });
 
+export const record = (fields, ty) => ({ k: 'rec', fields, ty });
+export const access = (base, label, ty) => ({ k: 'get', base, label, ty });
+export const update = (base, fields) =>
+  ({ k: 'upd', base, fields, ty: base.ty });
+
 export const letItem = (name, value) => ({ k: 'let', name, value });
 export const doItem = value => ({ k: 'do', value });
 export const deferItem = value => ({ k: 'defer', value });
@@ -41,7 +48,7 @@ export const err = number => (number < 0 ? call('Err2', [], 'Err')
 export const oops = number => call('Oops', [lit(number)], 'Oops');
 
 const atomic = node =>
-  ['lit', 'var', 'call', 'app', 'str'].includes(node.k);
+  ['lit', 'var', 'call', 'app', 'str', 'rec', 'get', 'upd'].includes(node.k);
 const bare = node => node.name;
 
 // The source of `node`; `spell` names each call (test/fx-gen-names.mjs).
@@ -58,6 +65,8 @@ export const text = (node, spell = bare) => {
   const failure = ({ family, name, body: done }) =>
     `fail(${name}: ${family}) => ${write(done)}`;
   const arm = ({ pattern, body: done }) => `${pattern} => ${write(done)}`;
+  const fields = (list, mark) => list.map(([label, value]) =>
+    `${label}${mark} ${write(value)}`).join(', ');
   switch (node.k) {
     case 'lit': return node.text;
     case 'var': return node.name;
@@ -67,6 +76,9 @@ export const text = (node, spell = bare) => {
       : write(node.callee)}(${node.args.map(write).join(', ')})`;
     case 'add': return `${operand(node.left)} + ${operand(node.right)}`;
     case 'str': return node.text;
+    case 'rec': return `{ ${fields(node.fields, ':')} }`;
+    case 'get': return `${operand(node.base)}.${node.label}`;
+    case 'upd': return `${operand(node.base)} { ${fields(node.fields, ' =')} }`;
     case 'cat': return `${node.left.k === 'cat' ? write(node.left)
       : operand(node.left)} ++ ${operand(node.right)}`;
     case 'cmp': return `${operand(node.left)} ${node.op} `

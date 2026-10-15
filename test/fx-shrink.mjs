@@ -2,9 +2,10 @@
 // works on the generator's typed trees: drop block items (defers
 // included), handlers (`with` and `handle` become their body), clauses and
 // match arms, whole functions, and replace a subexpression by a literal of
-// its type. A candidate is kept only if `keep` accepts it (the caller
-// checks that it is still well-typed and still differs); coarse changes
-// are tried first and the search restarts after each accepted one.
+// its type (a record field's value too). A candidate is kept only if
+// `keep` accepts it (the caller checks that it is still well-typed and
+// still differs); coarse changes are tried first and the search restarts
+// after each accepted one.
 import { lit, str, truth, unit } from './fx-gen-ast.mjs';
 
 const literalOf = node => {
@@ -16,12 +17,16 @@ const without = (list, index) => list.filter((_, at) => at !== index);
 const replaced = (list, index, value) =>
   list.map((old, at) => (at === index ? value : old));
 
+// An entry with `field` changed: a record field is a [label, node] pair.
+const within = (entry, field, changed) => (Array.isArray(entry)
+  ? replaced(entry, field, changed) : { ...entry, [field]: changed });
+
 // Each way to change one child of `node` (a list of children by key).
 function* inList(node, key, list, field) {
   for (const [index, entry] of list.entries()) {
     for (const changed of variants(field ? entry[field] : entry)) {
       yield { ...node, [key]: replaced(list, index,
-        field ? { ...entry, [field]: changed } : changed) };
+        field ? within(entry, field, changed) : changed) };
     }
   }
 }
@@ -71,6 +76,10 @@ function* variants(node, replaceable = true) {
       yield* inChild(node, 'right');
       return;
     case 'lam': yield* inChild(node, 'body'); return;
+    case 'rec': yield* inList(node, 'fields', node.fields, 1); return;
+    case 'get': yield* inChild(node, 'base'); return;
+    case 'upd': yield* inChild(node, 'base');
+      yield* inList(node, 'fields', node.fields, 1); return;
     case 'match':
       if (node.arms.length > 1) {
         yield* node.arms.map((_, index) =>

@@ -1,11 +1,15 @@
 // The expression reader of the FX001 reference interpreter: patterns,
 // lambdas, application, pipes, `match`, `if`, blocks, `handler`, `with`,
-// `handle`, `defer`, Text and qualified operations (`Effect.op`, applied
-// like any value). `expressions(reader)` returns { expression,
-// parameter, readType }. Shares no code with the compiler.
+// `handle`, `defer`, Text, qualified operations (`Effect.op`, applied
+// like any value) and records: a literal is a primary; call, access and
+// update are postfix, left to right. `expressions(reader)` returns
+// { expression, parameter, readType }. Shares no code with the compiler.
 import { cursor, isUpper, typeReader } from './fx-oracle-lex.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
 import { textNode } from './fx-oracle-text.mjs';
+import {
+  literalAhead, readFields, updateAhead
+} from './fx-oracle-records.mjs';
 import { unit } from './poly-parse.mjs';
 
 const unitNode = { tag: 'value', value: unit };
@@ -43,16 +47,28 @@ export const expressions = reader => {
     take('=>');
     return { tag: 'lambda', parameters, body: expression() };
   };
+  const postfix = node => {
+    if (peek('.')) {
+      take('.'); return { tag: 'access', base: node, label: take().text }; }
+    if (updateAhead(reader)) {
+      take('{');
+      return { tag: 'update', base: node,
+        fields: readFields(reader, '=', expression) };
+    }
+    take('(');
+    const args = peek(')') ? (take(')'), []) : list(expression, ')');
+    return { tag: 'applyValue', callee: node, args };
+  };
   const atom = () => {
     let node = primary();
-    while (peek('(')) {
-      take('(');
-      const args = peek(')') ? (take(')'), []) : list(expression, ')');
-      node = { tag: 'applyValue', callee: node, args };
-    }
+    while (peek('(') || peek('.') || updateAhead(reader)) node = postfix(node);
     return node;
   };
   const primary = () => {
+    if (literalAhead(reader)) {
+      take('{');
+      return { tag: 'record', fields: readFields(reader, ':', expression) };
+    }
     const next = take();
     if (next.kind === 'int') return { tag: 'value', value: next.value };
     if (next.kind === 'text') return textNode(next, hole);
@@ -146,7 +162,7 @@ export const expressions = reader => {
     return { head, name, body: expression() };
   };
   const expression = () => {
-    if (peek('{')) return block();
+    if (peek('{') && !literalAhead(reader)) return block();
     if (peek('fn')) return lambda();
     if (peek('handler')) {
       take('handler');

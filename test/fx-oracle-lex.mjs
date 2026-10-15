@@ -7,6 +7,7 @@
 // own.
 import { isUpper } from './poly-parse.mjs';
 import { scanLiteral } from './text-reference.mjs';
+import { readRecordType } from './fx-oracle-records.mjs';
 
 export { isUpper };
 
@@ -65,19 +66,23 @@ export const cursor = tokens => {
     take(close);
     return items;
   };
-  return { peek, take, list, done: () => at >= tokens.length };
+  const ahead = offset => tokens[at + offset];
+  return { peek, take, list, ahead, done: () => at >= tokens.length };
 };
 
 // type := operand ('+' operand)* ('->' type)? ('with' row)?
 // operand := '(' type, ... ')' | '...' name | Name ('(' type, ... ')')?
+//   | '{' (label ':' type | '...' name), ... '}'
 // row := item ('+' item)*, item := operand ('as' Name)? ('{' imports '}')?
 // Arrows read right to left, as `A -> B -> C` does. The row after a
 // type's own `with` is kept as its `row`: items { head, args, alias,
 // imports }, an import an [operation, local name] pair (FX020 §1). Only a
 // function's own row may alias or import; the interpreter trusts the
 // checker and reads the forms wherever they are written.
-export const typeReader = ({ peek, take, list }) => {
+export const typeReader = reader => {
+  const { peek, take, list } = reader;
   const operand = () => {
+    if (peek('{')) { take('{'); return readRecordType(reader, type); }
     if (peek('(')) {
       take('(');
       const inner = list(type, ')');
