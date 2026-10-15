@@ -69,3 +69,12 @@ test('a type argument over the row is judged as before', () => {
   checked('fn g(x: a, y: { ...r }, n: Int): Int = if n == 0 then 0 else '
     + 'g(y, y, n + -1); fn main(): Int = g(1, { a: 1 }, 3);');
 });
+
+// ADR 007's R010 note: a type slot is judged as before, so its argument
+// may mention a record tail the record slots pass unchanged; that is
+// finite, and accepted.
+test('a type argument that mentions a record tail is accepted', () => {
+  assert.equal(runGo('fn g(x: { a: Int, ...r }, y: a, n: Int): Int = '
+    + 'if n == 0 then x.a else g(x, { z: x }, n + -1); fn main(): Unit '
+    + 'with Console = Console.print(g({ a: 7 }, 1, 3));'), '7\n');
+});

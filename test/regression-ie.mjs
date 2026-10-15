@@ -1,4 +1,4 @@
-// FX025, R015, R016 and R010 regression probes, imported through
+// FX025, R015, R016, R017 and R010 regression probes, imported through
 // test/regression-probes.mjs; the rows are in scripts/regression-ie.mjs.
 // Each uses only the compiler under test, passed in the context.
 const fail = message => {
@@ -47,6 +47,14 @@ export const ieProbes = {
     'fn g(p: { a: Int, ...r }): Int = { let f = fn(q: (Int) -> Int with '
       + `...r) => 0; 0 };${main}`,
     'E_TYPE r is a record row, not an effect row'),
+  // A body type reads the signature's effect row as no type.
+  'r017-row-as-type': context => expect(context, 'row as type',
+    'fn g(p: Int): Unit with ...r = { let f = fn(q: r) => 0; () };'
+      + main, sort),
+  // Nor its type variable as a row.
+  'r017-type-as-row': context => expect(context, 'type as row',
+    'fn g(p: a): Int = { let f = fn(q: { b: Int, ...a }) => q.b; 0 };'
+      + main, 'E_TYPE Expected an effect row, found a type'),
   // A recursive call that nests its record row changes its arguments.
   'r010-nested-row': context => expect(context, 'nested row',
     'fn g(x: { ...r }, n: Int): Int = if n == 0 then 0 else '

@@ -1,4 +1,4 @@
-// FX025, R015, R016 and R010 regression rows, imported by
+// FX025, R015, R016, R017 and R010 regression rows, imported by
 // scripts/regression.mjs; their probes are in test/regression-ie.mjs.
 // Each restores one defect in a whole, compiling form.
 const rowsAsTypes = 'rowsAsTypes indices declarations = traverse_ '
@@ -9,6 +9,11 @@ const bodyUses = '              (typeOccurrences signature.declared '
   + 'reference)\n';
 const noBodyUses = '              (const [] (typeOccurrences '
   + 'signature.declared reference))\n';
+// Body types checked for row sorts only, as R016 first did (R017).
+const everySort = '  differs sort = sort /= occurrence.sort\n';
+const rowSortsOnly = '  differs sort = sort /= occurrence.sort && rows sort\n'
+  + '  rows sort = sort /= Syntax.TypeSort\n'
+  + '    && occurrence.sort /= Syntax.TypeSort\n';
 // The instantiation rule judging every slot as a type: a record tail is
 // invisible to it.
 const asTypes = [
@@ -76,6 +81,26 @@ export const ieRows = [
     replacement: noBodyUses,
     probe: 'r016-record-as-effect',
     message: /record row as effect: accepted/
+  },
+  {
+    // A signature's effect row as a lambda's parameter type reaches
+    // lowering as a type variable that was never numbered.
+    name: 'r017-row-as-type',
+    file: 'src/Features/Resolve/BodySorts.purs',
+    needle: everySort,
+    replacement: rowSortsOnly,
+    probe: 'r017-row-as-type',
+    message: /row as type: E_INTERNAL Invalid type variable/
+  },
+  {
+    // A signature's type variable as a lambda's record tail reads as a
+    // missing field.
+    name: 'r017-type-as-row',
+    file: 'src/Features/Resolve/BodySorts.purs',
+    needle: everySort,
+    replacement: rowSortsOnly,
+    probe: 'r017-type-as-row',
+    message: /type as row: E_TYPE b is not a field of/
   },
   {
     // A call that nests its record row reaches the specialization limit.
