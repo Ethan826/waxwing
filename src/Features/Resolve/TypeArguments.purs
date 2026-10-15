@@ -12,20 +12,24 @@ import Domain.Resolved as Resolved
 import Domain.Type.Record (recordRow)
 import Features.Resolve.Row (resolveRow)
 
--- A declared type applied to arguments, given the resolver of a type
--- reference in the owner's scope. Type and row arguments are each taken in
+type Resolver =
+  Syntax.TypeRef → Either Syntax.Diagnostic (Resolved.Ty Resolved.VarId)
+
+-- A declared type applied to arguments, given the resolvers of a type
+-- reference in the owner's scope, with its ambient row and without it (for
+-- a label's arguments, FX024). Type and row arguments are each taken in
 -- declaration order, whatever order they were written in.
 appliedTo
   ∷ Array { name ∷ String, arity ∷ Int }
   → Array String
   → Maybe Resolved.VarId
-  → (Syntax.TypeRef → Either Syntax.Diagnostic (Resolved.Ty Resolved.VarId))
+  → { resolved ∷ Resolver, bare ∷ Resolver }
   → Syntax.Span
   → Array Syntax.TypeArgument
   → Int
   → Resolved.TypeInfo
   → Either Syntax.Diagnostic (Resolved.Ty Resolved.VarId)
-appliedTo effects variables ambient resolved span arguments index info
+appliedTo effects variables ambient { resolved, bare } span arguments index info
   | Array.length arguments /= Array.length info.sourceSorts = Left
       (Syntax.problemAt (TypeArguments info.name) span)
   | otherwise =
@@ -66,7 +70,7 @@ appliedTo effects variables ambient resolved span arguments index info
       resolveRowArgument = rowArgument
       rowArgument = case _ of
         Syntax.RowArgument row → resolveRow effects variables ambient
-          resolved
+          bare
           (Just (closedRowArgument row))
         Syntax.TypeArgument
           ( Syntax.NamedRef referenceSpan effectName
@@ -78,7 +82,7 @@ appliedTo effects variables ambient resolved span arguments index info
           (Syntax.typeRefSpan reference)
       effectRow referenceSpan effectName effectArguments _ = do
         argumentTypes ← traverse effectTypeArgument effectArguments
-        resolveRow effects variables ambient resolved
+        resolveRow effects variables ambient bare
           ( Just
               ( Syntax.RowRef referenceSpan
                   [ { name: effectName

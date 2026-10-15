@@ -122,11 +122,14 @@ test('a defer handling a Fail of a key settled later is accepted', () => {
   assert.ok(go.includes('waxwingCleanup'), go);
 });
 
+// Since FX024 a label's argument has no ambient row, so the payload's
+// arrow is pure and no ambient callback can be raised as it: the value
+// comes from `crash`.
 test('a payload with a 5,000-arrow type is named by a loop', () => {
   const arrow = 'Int -> '.repeat(5000) + 'Int';
-  const go = checked('type Error(a) = Error(a); fn work(f: ' + arrow
-    + '): Unit with Fail(Error(' + arrow + ')) = '
-    + '{ defer crash(1); Fail.fail(Error(f)) }; fn main(): Unit = ();');
+  const go = checked('type Error(a) = Error(a); fn work(): Unit with '
+    + 'Fail(Error(' + arrow + ')) = '
+    + '{ defer crash(1); Fail.fail(Error(crash(2))) }; fn main(): Unit = ();');
   assert.ok(go.includes('waxwingCleanup'));
 });
 

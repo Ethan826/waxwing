@@ -110,6 +110,29 @@ const checkRows = [
     needle: 'if total <= visibleLabels then map textOf row.labels',
     replacement: 'if true then map textOf row.labels',
     probe: 'fx-abbreviation', message: /abbreviation: bound exceeded/
+  },
+  {
+    // FX024: a label's arguments take the signature's ambient row, which is
+    // also the row's own tail, so a caller with a label its callee lacks
+    // cannot pass the callee's payload on.
+    name: 'fx-label-argument-ambient',
+    edits: [
+      {
+        file: 'src/Features/Resolve/TypeRef.purs',
+        needle: '  bare reference = resolveTypeWith types effects variables '
+          + 'Nothing reference\n',
+        replacement: '  bare reference = resolveTypeWith types effects '
+          + 'variables ambient reference\n'
+      },
+      {
+        file: 'src/Features/Resolve.purs',
+        needle: '    bare = resolveTypeWith types effects variables Nothing\n',
+        replacement: '    bare = resolveTypeWith types effects variables '
+          + 'ambient\n'
+      }
+    ],
+    probe: 'fx-label-argument-ambient',
+    message: /label argument ambient row: E_EFFECT v performs Console/
   }
 ];
 

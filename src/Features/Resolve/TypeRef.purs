@@ -37,6 +37,12 @@ resolveTypeWith
   → Either Syntax.Diagnostic (Resolved.Ty Resolved.VarId)
 resolveTypeWith types effects variables ambient = resolved
   where
+  -- A label's arguments have no ambient row, in a signature as in a field
+  -- or an operation: an unannotated arrow or a bare `Handler(L)` there is
+  -- `pure` (FX024). The ambient row is also the tail of the row the label
+  -- stands in, which a caller's other labels extend, so a payload sharing
+  -- it would have to name the caller's whole row.
+  bare reference = resolveTypeWith types effects variables Nothing reference
   resolved = case _ of
     Syntax.IntRef _ → pure Resolved.TInt
     Syntax.BoolRef _ → pure Resolved.TBool
@@ -50,13 +56,13 @@ resolveTypeWith types effects variables ambient = resolved
       (applied span name arguments)
       (Array.findIndex (named name) types)
     Syntax.THandlerRef _ reference row → Resolved.THandler
-      <$> label effects resolved reference
-      <*> (uniformRows <$> resolveRow effects variables ambient resolved row)
+      <$> label effects bare reference
+      <*> (uniformRows <$> resolveRow effects variables ambient bare row)
     Syntax.RecordRef _ fields tail → record fields tail
     arrow@(Syntax.FunRef _ _ _ _) → spine arrow
   spine arrow = do
     parameters ← traverse resolved (Syntax.typeRefSpine arrow).parameters
-    rows ← traverse (resolveRow effects variables ambient resolved)
+    rows ← traverse (resolveRow effects variables ambient bare)
       (arrowRows arrow)
     result ← resolved (Syntax.typeRefSpine arrow).result
     pure (Array.foldr stage result (Array.zip parameters rows))
@@ -79,12 +85,14 @@ resolveTypeWith types effects variables ambient = resolved
   named name info = info.name == name
   missingType span name arguments _
     | name == "Handler" = HandlerType.resolve effects variables ambient
-        resolved
+        bare
         span
         arguments
     | otherwise = unbound UnboundType span name unit
   applied span _ arguments index = maybe' invalid
-    (appliedTo effects variables ambient resolved span arguments index)
+    ( appliedTo effects variables ambient { resolved, bare } span arguments
+        index
+    )
     (Array.index types index)
   invalid _ = Left (Syntax.problemAt (Internal "Invalid type id") nowhere)
   nowhere = { start: Syntax.origin, end: Syntax.origin }

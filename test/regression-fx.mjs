@@ -131,6 +131,25 @@ const argumentMessage = 'q must allow every effect of take\'s parameter f '
   + '(L + M), but its row is L; write q\'s row as `with L + M`; a function '
   + 'passed as an argument must have its parameter\'s row (FX018)';
 
+// FX024: an arrow, or a handler, in a payload passes from a callee to a
+// caller with another label; each program must be accepted.
+const labelArguments = context => {
+  const handlers = log + 'type W(a) = W(a); '
+    + 'fn bad(): Int with Fail(W(Handler(Log))) = 1; '
+    + 'fn v(): Int with Fail(W(Handler(Log))) + Console = bad();' + main;
+  const arrows = 'fn w(): Int with Fail({ k: (Int) -> Int }) = 1; '
+    + 'fn v(): Int with Console + Fail({ k: (Int) -> Int }) = w();' + main;
+  for (const source of [arrows, handlers]) {
+    const found = compileWithin(context, source, timeoutMs);
+    if (found.timedOut) fail('label argument ambient row: timed out');
+    if (found.diagnostic !== null) {
+      fail('label argument ambient row: '
+        + `${found.diagnostic.code} ${found.diagnostic.message}`);
+    }
+  }
+  detected(context);
+};
+
 export const fxProbes = {
   'fx-callback-install': refused(callbackInstall, effect, installMessage,
     'callback install'),
@@ -155,5 +174,6 @@ export const fxProbes = {
   'fx-layout-edges': layoutEdges,
   'fx-provenance': provenance,
   'fx-abbreviation': abbreviation,
+  'fx-label-argument-ambient': labelArguments,
   ...goProbes
 };

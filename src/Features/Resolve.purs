@@ -114,9 +114,11 @@ resolveSignature types effects function = do
     sorts = map sort written <> [ Syntax.RowSort ]
     ambient = Just (Resolved.VarId (Array.length written))
     resolved = resolveTypeWith types effects variables ambient
+    -- A label's arguments have no ambient row (FX024, Resolve.TypeRef).
+    bare = resolveTypeWith types effects variables Nothing
   parameters ← traverse (parameter resolved) function.parameters
   result ← resolved function.result
-  row ← resolveRow effects variables ambient resolved function.row
+  row ← resolveRow effects variables ambient bare function.row
   pure { variables, markVariables, sorts, parameters, result, row }
   where
   markVariables = signatureMarkVariables
