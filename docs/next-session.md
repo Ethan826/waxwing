@@ -1,3 +1,25 @@
+# Waxwing / R001 merged into main; internal-error batch next (2026-10-15)
+
+R001 (records, first tranche, with R012 and plan Tasks 13-15) was
+fast-forwarded into main at 80b5b53 on 2026-10-15 after a clean final
+verify on that tree; the `records` branch and worktree are deleted, and so
+are the git-ignored evidence logs and SDD ledger the R001 docs cite under
+.build/evidence and .superpowers (the figures are kept in docs/progress.md,
+ADR 013 and BACKLOG). The user confirmed FX024's consequence (an
+unannotated arrow in a label's argument is `pure`; ADR 010, FX028).
+Nothing is pushed.
+
+Next, in order: the internal-error batch on branch `r001-followups`
+(FX025, R015, R016, R010: user-reachable E_INTERNAL or misleading
+diagnostics, using existing or approved texts); then R004 (record
+patterns) and R005 (extension, merge and removal), each with a design the
+user approves first; then the INF001 design and C001 with records of
+operations. Alongside: a phase profile of `npm run verify`, R013 and R014.
+
+The section below is the pre-merge state, kept as history.
+
+---
+
 # Waxwing / R001 records first tranche and final fix wave done on branch `records`; awaiting merge decision (2026-10-15)
 
 R001's first tranche (records, BACKLOG R001) is complete on branch
