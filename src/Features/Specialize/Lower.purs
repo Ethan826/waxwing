@@ -51,7 +51,7 @@ lowerType env arguments span = case _ of
   TVar (Rigid (VarId index)) → argument span arguments index
   TVar (Hole _) → lowerType env [] span (map absurd env.representative)
   arrow@(TFun _ _ _) → lowerSpine recur (spine arrow)
-  TRecord row → recordType (const recur) tail row
+  TRecord row → recordType (const recur) tail span row
   THandler (Label effect parts _) _ → traverse recur parts
     >>= effectAt env span effect
     >>= (pure <<< IR.THandler)
@@ -157,8 +157,9 @@ lowerField env arguments ty syntax = case ty, syntax of
   TFun _ _ _, FunRef span _ _ _ → lowerWritten span (spine ty)
     (typeRefSpine syntax)
   TFun _ _ _, _ → mismatch
-  TRecord row, RecordRef _ written _ → recordType (byLabel written)
+  TRecord row, RecordRef span written _ → recordType (byLabel written)
     (map Just <<< variable)
+    span
     row
   TRecord _, _ → mismatch
   THandler (Label effect parts _) _, _ → maybe' (const mismatch)

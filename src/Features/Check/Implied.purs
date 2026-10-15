@@ -1,4 +1,4 @@
-module Features.Check.Implied (Implied, implied) where
+module Features.Check.Implied (Implied, implied, declared) where
 
 import Prelude
 import Control.Monad.Rec.Class (Step(..), tailRec)

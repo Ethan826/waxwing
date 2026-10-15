@@ -9,9 +9,10 @@ import { diagProbes } from './regression-diag.mjs';
 import { textProbes } from './regression-text.mjs';
 import { fx020Probes } from './regression-fx020.mjs';
 import { r001Probes } from './regression-r001.mjs';
+import { r001BodyProbes } from './regression-r001-body.mjs';
 
 export const externalProbes = {
   ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes,
   ...markProbes, ...fxProbes, ...textProbes, ...fx020Probes, ...r001Probes,
-  ...diagProbes
+  ...r001BodyProbes, ...diagProbes
 };

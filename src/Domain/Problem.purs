@@ -141,6 +141,9 @@ data Problem
   -- field read or updated on a value that is no record, and its type.
   | MissingField String TypeName
   | ExpectedRecord TypeName
+  -- R001: a record row variable of the enclosing signature and a label a
+  -- type written in the body puts beside it, which it may already hold.
+  | RowMayHaveField String String
   | DeferMayFail String
   | DeferMayPerform String
   | RowEquality RowText RowText String

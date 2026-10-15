@@ -17,6 +17,7 @@ import Features.Resolve.Marks (signatureMarkVariables)
 import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
+import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Scope (Bindings)
 import Features.Resolve.Variables (sortedVariables)
 import Domain.Resolved (Global)
@@ -200,6 +201,8 @@ resolveFunction globals tables effects effectInfos definition =
     , types: tables.types
     , variables: definition.signature.variables
     , markVariables: definition.signature.markVariables
+    , lacking: signatureLacking tables definition.function
+        definition.signature
     }
   parameters = definition.signature.parameters
   locals = Map.fromFoldable (Array.mapWithIndex parameterLocal parameters)

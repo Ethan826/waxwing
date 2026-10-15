@@ -3,13 +3,14 @@ module Features.Resolve.Lambda (Annotations, lambda) where
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (for_)
+import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
+import Features.Resolve.Lacking (Lacking, lackingIn)
 import Features.Resolve.Marks (markVariableRefs, scopedMarkVariables)
 import Features.Resolve.Repeated (repeated)
 import Features.Resolve.Types (resolveTypeWith)
@@ -19,9 +20,11 @@ import Features.Resolve.Types (resolveTypeWith)
 -- (FX008 design §3.2).
 type Annotations r =
   { types ∷ Array Resolved.TypeInfo
+  , ctors ∷ Array Resolved.CtorInfo
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , variables ∷ Array String
   , markVariables ∷ Array String
+  , lacking ∷ Maybe Lacking
   | r
   }
 
@@ -51,7 +54,7 @@ parameter
 parameter annotations syntax = boundOf <$> liftEither annotation
   <*> traverse issue syntax.name
   where
-  annotation = scoped *> written
+  annotation = scoped *> written <* traverse_ (lackingIn annotations) syntax.ty
   scoped = scopedMarkVariables annotations.markVariables
     (Array.concatMap markVariableRefs (Array.fromFoldable syntax.ty))
   written = traverse

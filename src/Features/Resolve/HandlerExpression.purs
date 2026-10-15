@@ -5,7 +5,7 @@ module Features.Resolve.HandlerExpression
 
 import Prelude
 import Data.Array as Array
-import Data.Foldable (foldl)
+import Data.Foldable (foldl, traverse_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
@@ -14,6 +14,7 @@ import Domain.Row (EffectRef(..), Label(..), Mark(..))
 import Domain.Syntax as Syntax
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Handler as Handler
+import Features.Resolve.Lacking (lackingIn)
 import Features.Resolve.Marks
   ( MarkVariableRef
   , markVariableRefs
@@ -41,6 +42,7 @@ handlerExpression resolveExpression scope span reference clauses = do
         reference
         clauses
     )
+  liftEither (traverse_ (lackingIn scope) reference.arguments)
   checked ← traverse (handlerClause resolveExpression scope) resolved.clauses
   pure (Resolved.Handler span resolved.label checked)
 
@@ -108,6 +110,7 @@ failureClause resolveExpression scope clause = do
           clause.ty
         >>= failFamily (Syntax.typeRefSpan clause.ty)
     )
+  liftEither (lackingIn scope clause.ty)
   local ← fresh
   let locals = Map.insert clause.name local scope.locals
   body ← resolveExpression (scope { locals = locals }) clause.body

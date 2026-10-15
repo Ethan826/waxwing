@@ -28,6 +28,8 @@ data NoteReason
   | FirstBoundHere
   -- R001: the first of two uses of a field label or a row variable.
   | FirstWrittenHere
+  -- R001: the signature's `...r` that introduces a record row variable.
+  | IntroducedHere String
   | InnermostHere String
   | ContinuesInto String Int String
   -- The notes of a mark rejection (FX008 design §3.6): a frame, a clause

@@ -153,5 +153,26 @@ export const r001Rows = [
     ],
     probe: 'r001-shape-types',
     message: /field types: E_TOOL: [^]*cannot use/
+  },
+  {
+    // C1 (final review): a type written in a body is not held to its
+    // signature's lacks sets, so `{ a: Int, ...r }` in a lambda annotation
+    // under `p: { ...r }` passes and `r` may be `{ a: Bool }`; lowering
+    // then meets `a` twice, which the record guard reports.
+    name: 'r001-body-lacks', file: 'src/Features/Resolve/Lacking.purs',
+    needle: '  if Array.elem Syntax.RecordSort signature.sorts then Just\n',
+    replacement: '  if false then Just\n',
+    probe: 'r001-body-lacks',
+    message: /signature tail: E_INTERNAL Duplicate record label/
+  },
+  {
+    // C1 defence in depth: a record whose written labels and tail's image
+    // share a label is lowered to a struct declaring that field twice.
+    name: 'r001-record-guard', file: 'src/Features/Specialize/Record.purs',
+    needle: '  repeated spliced = Set.size (Set.fromFoldable (map fst spliced))'
+      + '\n    /= Array.length spliced\n',
+    replacement: '  repeated _ = false\n',
+    probe: 'r001-record-guard',
+    message: /record guard: a label declared twice was lowered/
   }
 ];

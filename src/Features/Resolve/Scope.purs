@@ -6,6 +6,7 @@ import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
 import Domain.Type (Ty, VarId)
 import Features.Resolve.Builtin (Declared)
+import Features.Resolve.Lacking (Lacking)
 
 -- An imported operation (FX020 §1): the local name it is bound to, what it
 -- names, and, for a `Fail(E)` import, the family `E` that `fail` is fixed to.
@@ -32,4 +33,5 @@ type Scope =
   , effectInfos ∷ Array Resolved.EffectInfo
   , variables ∷ Array String
   , markVariables ∷ Array String
+  , lacking ∷ Maybe Lacking
   }

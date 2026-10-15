@@ -115,6 +115,7 @@ noteText = case _ of
   FirstImportedHere → "first imported here"
   FirstBoundHere → "first bound here"
   FirstWrittenHere → "first written here"
+  IntroducedHere name → name <> " is introduced here"
   InnermostHere label → "the innermost " <> shortLabel label <> " is here"
   ContinuesInto _ _ _ → ""
   ClausesReach label → Mark.clausesReach (shortLabel label)

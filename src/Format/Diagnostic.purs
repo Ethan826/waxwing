@@ -77,6 +77,7 @@ message = case _ of
   EffectRowAsRecord name → name <> " is an effect row, not a record row"
   NotPrintable ty → "Expected a printable value, found " <> typeName ty
   MissingField label ty → label <> " is not a field of " <> typeName ty
+  RowMayHaveField name label → name <> " may already have field " <> label
   ExpectedRecord ty → "Expected a record, found " <> typeName ty
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
@@ -122,6 +123,7 @@ noted = case _ of
   Duplicate DuplicateField _ → true
   RecordRowAsEffect _ → true
   EffectRowAsRecord _ → true
+  RowMayHaveField _ _ → true
   UnhandledEffect _ → true
   MustBePure _ → true
   RowEquality _ _ _ → true
