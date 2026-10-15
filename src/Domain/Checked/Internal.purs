@@ -3,7 +3,7 @@ module Domain.Checked.Internal where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe)
-import Domain.Syntax (Operator, Span)
+import Domain.Syntax (Operator, Sort, Span)
 import Domain.Type (TyRow)
 import Domain.Ids (EffectId)
 import Domain.Resolved
@@ -39,10 +39,13 @@ newtype Program = Program
   , entry ∷ FunctionId
   }
 
--- The name appears only in diagnostics.
+-- The name appears only in diagnostics. `sorts` is each signature
+-- variable's, by VarId, as resolved: specialization reads which
+-- instantiation slots are record rows (R001 design §5).
 type FunctionDecl =
   { id ∷ FunctionId
   , name ∷ String
+  , sorts ∷ Array Sort
   , parameters ∷ Array (Ty Open)
   , result ∷ Ty Open
   , row ∷ TyRow Open

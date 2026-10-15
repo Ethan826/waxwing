@@ -54,7 +54,11 @@ const ctorInfo = ({ fieldSyntax, ...info }) => {
   assert.equal(fieldSyntax.length, info.fields.length, info.name);
   return info;
 };
-const functionInfo = ({ row, ...info }) => {
+// A checked function carries its variables' sorts (R001 Task 8): only
+// its ambient row's for a monomorphic one. They are checked, then dropped.
+const functionInfo = ({ row, sorts, ...info }) => {
+  assert.ok(sorts.every(sort => sort.constructor.name === 'RowSort'),
+    `${info.name} has type or record variables`);
   assert.deepEqual(row.value0, [], `${info.name} has effect labels`);
   assert.equal(row.value1.constructor.name, 'Just');
   assert.equal(row.value1.value0.constructor.name,

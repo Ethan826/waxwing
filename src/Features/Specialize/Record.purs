@@ -17,9 +17,10 @@ import Features.Specialize.State (Specializing)
 -- stands for, spliced in; the whole is interned as one layout. A field's
 -- types are numbered before the layout holding them, as an arrow's are
 -- before the arrow. A tail no key fixes, an unsolved hole (`tail` gives
--- Nothing), is the empty rest. So is an image that is not a layout: an
--- unsolved record-sorted type argument takes the representative, as every
--- hole does, and the copy it reaches reads that as no more fields.
+-- Nothing), is the empty rest. So is an image that is not a layout, which
+-- no key gives: an unsolved record-sorted instantiation argument is
+-- lowered as the empty rest too (Features.Specialize.Values), not as the
+-- representative.
 recordType
   ∷ ∀ a v
   . (String → a → Specializing IR.Ty)

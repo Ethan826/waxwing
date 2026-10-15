@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checked, rejectedAt, runGo } from './support.mjs';
 import { checkedPoly } from './phases.mjs';
+import { keyTexts } from './poly-keys.mjs';
 import { TRecord, TVar } from '../output/Domain.Type/index.js';
 import { Hole } from '../output/Domain.Checked.Internal/index.js';
 
@@ -109,4 +110,30 @@ test('record-sorted type arguments lower beside their source', () => {
     + 'let m = Mixed(1, { k: 2, z: "q" }, fn(n: Int) => n); '
     + 'Console.print(match m { Mixed(x, r, f) => f(r.k + x) }) };';
   assert.equal(runGo(source), '1\nOuter(Box({ a: 1, b: true }))\n3\n');
+});
+
+// Carried from Task 7 (design §5, rows canonicalised before a key): an
+// unsolved record-sorted instantiation argument is the empty rest, as an
+// unsolved record tail is, never the representative type. One key, one
+// copy.
+const named = (source, prefix) =>
+  keyTexts(source).filter(key => key.startsWith(prefix));
+
+test('an unsolved record-sorted argument of a call is the empty rest', () => {
+  const get = 'fn get(x: { a: Int, ...r }): Int = x.a; ';
+  for (const use of ['let g = fn(r) => get(r);', 'let g = get;']) {
+    const source = `${get}fn main(): Int = { ${use} get({ a: 1 }) };`;
+    assert.deepEqual(named(source, 'fn get'), ['fn get[{  }]']);
+    assert.equal((checked(source).match(/^func waxwingFn\d+\(/gm) ?? [])
+      .length, 2);
+    assert.equal(runGo(source), '1\n');
+  }
+});
+
+test('an unsolved record-sorted argument of a constructor too', () => {
+  const source = 'type Box(...r) = Box({ a: Int, ...r }); '
+    + 'fn main(): Int = { let g = fn(x) => Box(x); let h = Box; '
+    + 'match Box({ a: 1 }) { Box(y) => y.a } };';
+  assert.deepEqual(named(source, 'type Box'), ['type Box[{  }]']);
+  assert.equal(runGo(source), '1\n');
 });

@@ -94,6 +94,7 @@ checkFunction holders env function = do
     { function:
         { id: function.id
         , name: function.name
+        , sorts: function.sorts
         , parameters: map parameterType function.parameters
         , result: rigid function.result
         , row: Entry.resolvedRow settledSubst env.current

@@ -53,6 +53,15 @@ const withoutNoRecords = program => {
   return rest;
 };
 
+// R001 Task 8: a checked function gained `sorts`, its signature's
+// variable sorts copied from the resolved declaration (compared in the
+// resolve phase). The check phase is compared without the copy, so a
+// baseline from before it agrees wherever the checked IR does.
+const withoutSorts = program => ({
+  ...program,
+  functions: program.functions.map(({ sorts: _, ...rest }) => rest)
+});
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack.
 const digest = value => {
   const hash = createHash('sha1');
@@ -97,7 +106,8 @@ const outcome = (compiler, source) => {
   if (lexed === undefined) return phases;
   const parsed = step('parse', () => compiler.parse(source));
   const resolved = parsed && step('resolve', () => compiler.resolve(parsed));
-  const checked = resolved && step('check', () => compiler.check(resolved));
+  const checked = resolved
+    && step('check', () => compiler.check(resolved), withoutSorts);
   const specialized = checked
     && step('specialize', () => compiler.specialize(checked),
       withoutNoRecords);
