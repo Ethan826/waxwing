@@ -1,5 +1,6 @@
 module Features.Resolve.TypeIndices
-  ( TypeIndices
+  ( Indexed
+  , TypeIndices
   , typeIndices
   , indexOf
   ) where
@@ -8,12 +9,18 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..), fst)
+import Domain.Resolved as Resolved
 
 -- The declared types' names with their indices, sorted by name, built once
 -- per program and searched by halves. Scanning the types for each written
 -- type made a program of n types O(n²) (T007, R001 Task 15); a sorted
 -- array is a few times cheaper to build than a Map of the same names.
 newtype TypeIndices = TypeIndices (Array (Tuple String Int))
+
+-- The declared types with their names' index, which a written type's name
+-- is looked up in rather than scanned for (R014).
+type Indexed r =
+  { types ∷ Array Resolved.TypeInfo, typeIndices ∷ TypeIndices | r }
 
 -- The sort is stable, so a name declared twice has its first declaration
 -- first, where a scan in declaration order would find it.

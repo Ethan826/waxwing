@@ -13,6 +13,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.Marks (arrowRows)
+import Features.Resolve.TypeIndices (Indexed, indexOf)
 
 -- A row written for a declared type's record parameter (R012): a record
 -- type, whose fields join the declaration's and whose tail is the rest, or
@@ -56,23 +57,22 @@ subtypes reference = Array.cons reference
 
 -- Every record argument written in a type, in source order.
 recordArguments
-  ∷ Array Resolved.TypeInfo → Syntax.TypeRef → Array RecordArgument
-recordArguments types reference = Array.concatMap applied
+  ∷ ∀ r. Indexed r → Syntax.TypeRef → Array RecordArgument
+recordArguments known reference = Array.concatMap applied
   (subtypes reference)
   where
   applied = case _ of
     Syntax.NamedRef _ name arguments → maybe []
       (argumentsOf arguments)
-      (Array.findIndex (named name) types)
+      (indexOf known.typeIndices name)
     _ → []
-  named name info = info.name == name
   argumentsOf arguments callee = Array.catMaybes
     (Array.mapWithIndex (argumentAt callee) arguments)
   argumentAt callee position argument =
     if recordAt callee position then rowOf callee position (asRow argument)
     else Nothing
   recordAt callee position = maybe false (sortIs position)
-    (Array.index types callee)
+    (Array.index known.types callee)
   sortIs position info =
     Array.index info.sourceSorts position == Just Syntax.RecordSort
   rowOf callee position = case _ of

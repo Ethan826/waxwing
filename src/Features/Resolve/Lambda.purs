@@ -14,6 +14,7 @@ import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Lacking (Lacking, lackingIn)
 import Features.Resolve.Marks (markVariableRefs, scopedMarkVariables)
 import Features.Resolve.Repeated (repeated)
+import Features.Resolve.TypeIndices (TypeIndices)
 import Features.Resolve.Types (resolveTypeWith)
 
 -- What an annotation may name: the declared types, and the enclosing
@@ -21,6 +22,7 @@ import Features.Resolve.Types (resolveTypeWith)
 -- (FX008 design §3.2).
 type Annotations r =
   { types ∷ Array Resolved.TypeInfo
+  , typeIndices ∷ TypeIndices
   , ctors ∷ Array Resolved.CtorInfo
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , variables ∷ Array String
@@ -62,7 +64,7 @@ parameter annotations syntax = boundOf <$> liftEither annotation
   scoped = scopedMarkVariables annotations.markVariables
     (Array.concatMap markVariableRefs (Array.fromFoldable syntax.ty))
   written = traverse
-    ( resolveTypeWith annotations.types annotations.effects
+    ( resolveTypeWith annotations annotations.effects
         annotations.variables
         (Just (Resolved.VarId (Array.length annotations.variables - 1)))
     )

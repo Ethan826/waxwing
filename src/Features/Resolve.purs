@@ -17,7 +17,7 @@ import Features.Resolve.Marks (signatureMarkVariables)
 import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
-import Features.Resolve.ArgumentClash (programClashes)
+import Features.Resolve.ArgumentClash (Tables, programClashes)
 import Features.Resolve.BodySorts (signatureSorts)
 import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Occurrences (Declared, resolvedDeclared)
@@ -49,13 +49,14 @@ resolve program = do
   tables ← typeTable indices program
   -- Built once: one per signature cost O(types) each (T007).
   let declared = resolvedDeclared indices tables.types
-  effects ← Effect.effects declared tables.types program.effects
+  let known = { types: tables.types, ctors: tables.ctors, typeIndices: indices }
+  effects ← Effect.effects declared known program.effects
   signatures ← traverse
-    ( resolveSignature declared tables.types
+    ( resolveSignature declared known
         (Effect.summaries program.effects)
     )
     functions
-  programClashes tables program
+  programClashes known program
   bound ← traverse (bindingsFor effects) (Array.zip functions signatures)
   let
     definitions = Array.mapWithIndex indexed
@@ -71,7 +72,7 @@ resolve program = do
               ]
         )
         declared
-        tables
+        known
         (Effect.summaries program.effects)
         effects
     )
@@ -115,20 +116,20 @@ ctorGlobal index info =
 
 resolveSignature
   ∷ Declared
-  → Array Resolved.TypeInfo
+  → Tables
   → Array { name ∷ String, arity ∷ Int }
   → Syntax.FunctionDecl
   → Either Syntax.Diagnostic Signature
-resolveSignature declared types effects function = do
+resolveSignature declared known effects function = do
   occurrences ← sortedVariables declared references function.row
   let written = Array.sortWith sort occurrences
   let
     variables = map name written <> [ "" ]
     sorts = map sort written <> [ Syntax.RowSort ]
     ambient = Just (Resolved.VarId (Array.length written))
-    resolved = resolveTypeWith types effects variables ambient
+    resolved = resolveTypeWith known effects variables ambient
     -- A label's arguments have no ambient row (FX024, Resolve.TypeRef).
-    bare = resolveTypeWith types effects variables Nothing
+    bare = resolveTypeWith known effects variables Nothing
   parameters ← traverse (parameter resolved) function.parameters
   result ← resolved function.result
   row ← resolveRow effects variables ambient bare function.row
@@ -194,7 +195,7 @@ entryProblem definition
 resolveFunction
   ∷ Array Global
   → Declared
-  → Resolved.Tables
+  → Tables
   → Array { name ∷ String, arity ∷ Int }
   → Array Resolved.EffectInfo
   → Definition
@@ -212,14 +213,16 @@ resolveFunction globals declared tables effects effectInfos definition =
     , locals
     , bindings: definition.bindings
     , types: tables.types
+    , typeIndices: tables.typeIndices
     , variables: definition.signature.variables
     , markVariables: definition.signature.markVariables
-    , lacking: signatureLacking declared tables definition.function
+    , lacking: signatureLacking declared plain definition.function
         definition.signature
     , signatureSorts: signatureSorts declared definition.function
         definition.signature.variables
         definition.signature.sorts
     }
+  plain = { types: tables.types, ctors: tables.ctors }
   parameters = definition.signature.parameters
   locals = Map.fromFoldable (Array.mapWithIndex parameterLocal parameters)
   parameterLocal index parameter =

@@ -38,7 +38,7 @@ handlerExpression
 handlerExpression resolveExpression scope span reference clauses = do
   liftEither (scopedMarkVariables scope.markVariables (variableRefs reference))
   resolved ← liftEither
-    ( Handler.resolveHandler scope.types scope.effectInfos scope.effects
+    ( Handler.resolveHandler scope scope.effectInfos scope.effects
         scope.variables
         span
         reference
@@ -105,7 +105,7 @@ failureClause
 failureClause resolveExpression scope clause = do
   payload ← liftEither
     ( scopedMarkVariables scope.markVariables (markVariableRefs clause.ty)
-        *> Types.resolveTypeWith scope.types
+        *> Types.resolveTypeWith scope
           scope.effects
           scope.variables
           Nothing

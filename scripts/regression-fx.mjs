@@ -119,15 +119,15 @@ const checkRows = [
     edits: [
       {
         file: 'src/Features/Resolve/TypeRef.purs',
-        needle: '  bare reference = resolveTypeWith types effects variables '
+        needle: '  bare reference = resolveTypeWith known effects variables '
           + 'Nothing reference\n',
-        replacement: '  bare reference = resolveTypeWith types effects '
+        replacement: '  bare reference = resolveTypeWith known effects '
           + 'variables ambient reference\n'
       },
       {
         file: 'src/Features/Resolve.purs',
-        needle: '    bare = resolveTypeWith types effects variables Nothing\n',
-        replacement: '    bare = resolveTypeWith types effects variables '
+        needle: '    bare = resolveTypeWith known effects variables Nothing\n',
+        replacement: '    bare = resolveTypeWith known effects variables '
           + 'ambient\n'
       }
     ],

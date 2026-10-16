@@ -12,8 +12,8 @@ import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
 import Features.Resolve.Marks (markVariableRefs, refuseMarkVariables)
 import Features.Resolve.Sorts (settleDeclarations)
-import Features.Resolve.TypeIndices (TypeIndices)
-import Features.Resolve.TypeRef (resolveType, resolveTypeWith)
+import Features.Resolve.TypeIndices (Indexed, TypeIndices)
+import Features.Resolve.TypeRef (resolveTypeWith)
 import Features.Resolve.TypeValidation as TypeValidation
 import Features.Resolve.Variables (uniqueTypeParameters)
 
@@ -39,7 +39,8 @@ typeTable indices program = do
   declarations ← settleDeclarations indices program.types
   let
     types = Array.zipWith typeInfo (firstCtors declarations) declarations
-  ctors ← traverse (resolveCtor types effects) (ownedCtors declarations)
+  ctors ← traverse (resolveCtor { types, typeIndices: indices } effects)
+    (ownedCtors declarations)
   pure { types, ctors }
   where
   effects = map summary program.effects
@@ -103,15 +104,15 @@ isRow ∷ Syntax.TypeParameter → Boolean
 isRow parameter = parameter.sort == Syntax.RowSort
 
 resolveCtor
-  ∷ Array Resolved.TypeInfo
+  ∷ Indexed ()
   → Array { name ∷ String, arity ∷ Int }
   → Owned
   → Either Syntax.Diagnostic Resolved.CtorInfo
-resolveCtor types effects entry = do
+resolveCtor known effects entry = do
   refuseMarkVariables (Array.concatMap markVariableRefs entry.decl.fields)
   withFields <$> traverse field entry.decl.fields
   where
-  field reference = resolveTypeWith types effects entry.parameters Nothing
+  field reference = resolveTypeWith known effects entry.parameters Nothing
     reference
   withFields fields =
     { name: entry.decl.name

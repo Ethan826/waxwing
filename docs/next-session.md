@@ -1,3 +1,19 @@
+# Waxwing / R014 done on branch `r014`; awaiting merge (2026-10-16)
+
+R014 (written type names looked up through TypeIndices rather than
+scanned) is done on branch `r014` from main 41cbbbb: 0 differences
+against 41cbbbb over every differential corpus; the 10,000-type chain
+about 940 → 577 ms and R013's records-heavy chain at N=1,000 4.1 → 1.7 s
+(docs/progress.md "R014"). Nothing is pushed or merged; merge by
+fast-forward only.
+
+Next, unchanged: R004 (record patterns) and R005 (extension, merge and
+removal), each with a design the user approves first; then the INF001
+design and C001 with records of operations. Alongside: a phase profile of
+`npm run verify` and R013 (now only ArgumentClash `declaredLabels`).
+
+---
+
 # Waxwing / internal-error batch merged into main (2026-10-15)
 
 The internal-error batch was fast-forwarded into main at a1df6fc on

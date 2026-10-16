@@ -19,6 +19,7 @@ import Domain.Syntax as Syntax
 import Domain.Type (Ty, VarId)
 import Features.Resolve.Row (label)
 import Features.Resolve.Repeated (laterRepeat)
+import Features.Resolve.TypeIndices (Indexed)
 import Features.Resolve.Types (resolveTypeWith)
 
 type Handler =
@@ -38,7 +39,8 @@ type Clause =
 type Parameter = { name ∷ Maybe String, ty ∷ Ty VarId, span ∷ Syntax.Span }
 
 resolveHandler
-  ∷ Array Resolved.TypeInfo
+  ∷ ∀ r
+  . Indexed r
   → Array Resolved.EffectInfo
   → Array { name ∷ String, arity ∷ Int }
   → Array String
@@ -46,9 +48,9 @@ resolveHandler
   → Syntax.LabelRef
   → Array Syntax.Clause
   → Either Syntax.Diagnostic Handler
-resolveHandler types effects summaries variables span reference clauses = do
+resolveHandler known effects summaries variables span reference clauses = do
   labelValue ← label summaries
-    (resolveTypeWith types summaries variables Nothing)
+    (resolveTypeWith known summaries variables Nothing)
     reference
   effectId ← effectIdOf labelValue
   effect ← atEffect effects effectId span

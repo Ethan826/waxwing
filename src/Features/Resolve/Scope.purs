@@ -8,6 +8,7 @@ import Domain.Type (Ty, VarId)
 import Features.Resolve.Builtin (Declared)
 import Features.Resolve.BodySorts (SignatureSorts)
 import Features.Resolve.Lacking (Lacking)
+import Features.Resolve.TypeIndices (TypeIndices)
 
 -- An imported operation (FX020 §1): the local name it is bound to, what it
 -- names, and, for a `Fail(E)` import, the family `E` that `fail` is fixed to.
@@ -30,6 +31,7 @@ type Scope =
   , locals ∷ Map String Resolved.LocalId
   , bindings ∷ Bindings
   , types ∷ Array Resolved.TypeInfo
+  , typeIndices ∷ TypeIndices
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , effectInfos ∷ Array Resolved.EffectInfo
   , variables ∷ Array String

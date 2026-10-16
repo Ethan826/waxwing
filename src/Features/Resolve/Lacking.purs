@@ -22,9 +22,10 @@ import Domain.Resolved (TypeId(..))
 import Domain.Type (Ty(..), TyRow, VarId(..))
 import Features.Check.Implied (Implied, declared, implied)
 import Features.Resolve.Marks (arrowRows)
-import Features.Resolve.ArgumentClash (clashIn)
+import Features.Resolve.ArgumentClash (Tables, clashIn)
 import Features.Resolve.Occurrences (Occurrence, typeOccurrences)
 import Features.Resolve.Occurrences as Occurrences
+import Features.Resolve.TypeIndices (TypeIndices)
 import Features.Resolve.RecordArguments
   ( RecordArgument
   , recordArguments
@@ -102,6 +103,7 @@ lackingOf declaredHere tables function signature =
 lackingIn
   ∷ ∀ r
   . { types ∷ Array Resolved.TypeInfo
+    , typeIndices ∷ TypeIndices
     , ctors ∷ Array Resolved.CtorInfo
     , lacking ∷ Maybe Lacking
     | r
@@ -117,7 +119,8 @@ lackingIn scope reference = clashIn tables reference
             (Array.filter (unlacked lacking) (written tables reference))
         )
     )
-  tables = { types: scope.types, ctors: scope.ctors }
+  tables =
+    { types: scope.types, typeIndices: scope.typeIndices, ctors: scope.ctors }
   start found = found.span.start.offset
   unlacked lacking found = maybe false (absent lacking found)
     (Array.elemIndex found.tail lacking.variables)
@@ -134,19 +137,20 @@ lackingIn scope reference = clashIn tables reference
   note name span = [ { span, reason: IntroducedHere name } ]
 
 -- Every label a written type puts beside a record tail.
-written ∷ Resolved.Tables → Syntax.TypeRef → Array Written
+written ∷ Tables → Syntax.TypeRef → Array Written
 written tables reference = beside reference
-  <> Array.concatMap (passed tables) (recordArguments tables.types reference)
+  <> Array.concatMap (passed tables) (recordArguments tables reference)
 
 -- A tail passed to a declared type's record parameter, alone (`...r`) or
 -- as a record argument's tail (R012), implies the labels that type writes
 -- beside that parameter (Features.Check.Implied), all at the `...r`.
-passed ∷ Resolved.Tables → RecordArgument → Array Written
+passed ∷ Tables → RecordArgument → Array Written
 passed tables argument = maybe [] labelled argument.tail
   where
   labelled tail = map (at tail) (Set.toUnfoldable labels)
   labels = maybe Set.empty implied (Array.index tables.types argument.callee)
-  implied info = declared tables (TypeId argument.callee)
+  implied info = declared { types: tables.types, ctors: tables.ctors }
+    (TypeId argument.callee)
     (slotOf info argument.position)
   at tail label = { tail: tail.name, label, span: tail.span }
 

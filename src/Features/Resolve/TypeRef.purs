@@ -1,9 +1,9 @@
-module Features.Resolve.TypeRef (resolveType, resolveTypeWith) where
+module Features.Resolve.TypeRef (resolveTypeWith) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), isJust, maybe')
 import Data.Traversable (traverse)
 import Data.Foldable (traverse_)
 import Data.Tuple (Tuple(..))
@@ -18,32 +18,28 @@ import Features.Resolve.HandlerType as HandlerType
 import Features.Resolve.RecordFields (repeatedField, repeatedLabel)
 import Features.Resolve.TypeArguments (appliedTo)
 import Features.Check.ResolvedName (resolvedName)
+import Features.Resolve.TypeIndices (Indexed, indexOf)
 
 -- `variables` are those in scope: `VarId i` is the i-th. A declared type
 -- takes exactly as many arguments as it has parameters, else E_ARITY at the
--- whole reference, which is checked before its arguments.
-resolveType
-  ∷ Array Resolved.TypeInfo
-  → Array String
-  → Syntax.TypeRef
-  → Either Syntax.Diagnostic (Resolved.Ty Resolved.VarId)
-resolveType types variables = resolveTypeWith types [] variables Nothing
-
+-- whole reference, which is checked before its arguments. A name is looked
+-- up in `known.typeIndices`, not scanned for (R014).
 resolveTypeWith
-  ∷ Array Resolved.TypeInfo
+  ∷ ∀ r
+  . Indexed r
   → Array { name ∷ String, arity ∷ Int }
   → Array String
   → Maybe Resolved.VarId
   → Syntax.TypeRef
   → Either Syntax.Diagnostic (Resolved.Ty Resolved.VarId)
-resolveTypeWith types effects variables ambient = resolved
+resolveTypeWith known effects variables ambient = resolved
   where
   -- A label's arguments have no ambient row, in a signature as in a field
   -- or an operation: an unannotated arrow or a bare `Handler(L)` there is
   -- `pure` (FX024). The ambient row is also the tail of the row the label
   -- stands in, which a caller's other labels extend, so a payload sharing
   -- it would have to name the caller's whole row.
-  bare reference = resolveTypeWith types effects variables Nothing reference
+  bare reference = resolveTypeWith known effects variables Nothing reference
   resolved = case _ of
     Syntax.IntRef _ → pure Resolved.TInt
     Syntax.BoolRef _ → pure Resolved.TBool
@@ -55,7 +51,7 @@ resolveTypeWith types effects variables ambient = resolved
     Syntax.NamedRef span name arguments → maybe'
       (missingType span name arguments)
       (applied span name arguments)
-      (Array.findIndex (named name) types)
+      (indexOf known.typeIndices name)
     Syntax.THandlerRef _ reference row → Resolved.THandler
       <$> label effects bare reference
       <*> (uniformRows <$> resolveRow effects variables ambient bare row)
@@ -83,7 +79,6 @@ resolveTypeWith types effects variables ambient = resolved
   unboundTail tail _ = Left
     (Syntax.problemAt (Unbound UnboundTypeVariable tail.name) tail.span)
   variable index = pure (Resolved.TVar (Resolved.VarId index))
-  named name info = info.name == name
   missingType span name arguments _
     | name == "Handler" = HandlerType.resolve effects variables ambient
         bare
@@ -97,9 +92,9 @@ resolveTypeWith types effects variables ambient = resolved
         arguments
         index
     )
-    (Array.index types index)
-  names = { types, effects, variables }
-  declared name = Array.any (named name) types
+    (Array.index known.types index)
+  names = { types: known.types, effects, variables }
+  declared name = isJust (indexOf known.typeIndices name)
   invalid _ = Left (Syntax.problemAt (Internal "Invalid type id") nowhere)
   nowhere = { start: Syntax.origin, end: Syntax.origin }
   unbound kind span name _ = Left

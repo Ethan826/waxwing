@@ -5088,3 +5088,37 @@ and 390 pixels in both themes: correct logo source, transparent image
 background and no page overflow. Screenshots reviewed for logo and code
 legibility. Width and whitespace checks pass. No compiler suite run for
 this website styling and Markdown formatting change, per user direction.
+
+## R014: written type names looked up, not scanned (2026-10-16)
+
+Branch `r014` from main 41cbbbb. Features.Resolve.TypeRef
+`resolveTypeWith` and Features.Resolve.RecordArguments `recordArguments`
+found each written type's name by scanning the declared types, quadratic
+in the number of types. Both now take the declared types with the
+program's TypeIndices (`Indexed r`, Features.Resolve.TypeIndices, built
+once in Resolve) and look the name up with `indexOf`; TypeRef's
+`declared` check does the same. The indices travel in Scope, a lambda's
+annotations and ArgumentClash's `Tables`; the unused `resolveType` was
+removed. No behaviour change intended.
+
+- Differential against 41cbbbb (`--corpus all --regenerate`):
+  0 differences over 7,254 harvested, 1,029 fuzz, 1,085 isName, 1,000
+  match and 1,000 mutation sources (.build/evidence/r014-differential.log).
+  The harvest run's timing tests fail under the hook and the parallel
+  load, as recorded in BACKLOG T007.
+- Timing, in-process `checked`, three interleaved rounds, base in a
+  .build copy and candidate in the repository root (which a Task 15
+  control found adds a few percent): a 10,000-type chain 934-943 →
+  575-579 ms; R013's records-heavy chain at N=1,000 4,117-4,149 →
+  1,709-1,716 ms (.build/evidence/r014-timing.log). R013's remaining cost
+  is ArgumentClash `declaredLabels`.
+- No new test: the lookup's agreement with a first-declaration scan is
+  already guarded by test/r001-sort-cost.test.mjs (TypeIndices over 2,000
+  generated arrays), and the chain keeps its existing bound.
+- Verify: the first run's tests passed (1909/1909, 59/59) but its
+  regression proofs stopped at fx-label-argument-ambient, whose needles
+  named the renamed `types` argument (`mutation must have exactly one
+  target`); the needles now say `known`, and every row's needle matches
+  exactly once (158 edits checked). Rerun `rm -rf output &&
+  GOTOOLCHAIN=go1.26.4 npm run verify`: 1909/1909, 59/59, 127 regression
+  proofs, exit 0 (.build/evidence/r014-verify-2.log).

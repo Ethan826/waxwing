@@ -1,5 +1,6 @@
 module Features.Resolve.ArgumentClash
-  ( clashIn
+  ( Tables
+  , clashIn
   , programClashes
   ) where
 
@@ -16,6 +17,7 @@ import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved (CtorId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.TypeIndices (Indexed)
 import Features.Resolve.RecordArguments
   ( RecordArgument
   , hasRecordParameters
@@ -23,6 +25,9 @@ import Features.Resolve.RecordArguments
   , slotOf
   , subtypes
   )
+
+-- The declared types, indexed by name, and their constructors.
+type Tables = Indexed (ctors ∷ Array Resolved.CtorInfo)
 
 -- A label a declaration writes beside a record parameter, where written.
 type Written = { name ∷ String, span ∷ Syntax.Span }
@@ -40,17 +45,17 @@ type Search =
 -- here` at the declaration's, even when the field types agree. The first
 -- clash in source order is reported.
 clashIn
-  ∷ Resolved.Tables → Syntax.TypeRef → Either Syntax.Diagnostic Unit
+  ∷ Tables → Syntax.TypeRef → Either Syntax.Diagnostic Unit
 clashIn tables reference =
   if hasRecordParameters tables.types then
-    traverse_ (clashOf tables) (recordArguments tables.types reference)
+    traverse_ (clashOf tables) (recordArguments tables reference)
   else Right unit
 
 -- The types a program writes outside bodies: constructor fields, function
 -- signatures and effect operations. Body types are checked where they are
 -- resolved (Resolve.Lacking `lackingIn`).
 programClashes
-  ∷ Resolved.Tables → Syntax.Program → Either Syntax.Diagnostic Unit
+  ∷ Tables → Syntax.Program → Either Syntax.Diagnostic Unit
 programClashes tables program =
   if hasRecordParameters tables.types then
     traverse_ (clashIn tables) references
@@ -76,7 +81,7 @@ programClashes tables program =
   labelTypes label = label.arguments
 
 clashOf
-  ∷ Resolved.Tables → RecordArgument → Either Syntax.Diagnostic Unit
+  ∷ Tables → RecordArgument → Either Syntax.Diagnostic Unit
 clashOf tables argument = maybe (Right unit) duplicate
   (Array.findMap clashing (Array.sortWith start argument.fields))
   where
@@ -101,7 +106,7 @@ start found = found.span.start.offset
 -- over a worklist, as Features.Check.Implied `declared` gathers them from
 -- resolved types; each parameter is entered once, so recursive
 -- declarations end.
-declaredLabels ∷ Resolved.Tables → Int → Int → Array Written
+declaredLabels ∷ Tables → Int → Int → Array Written
 declaredLabels tables callee position = tailRec step
   { pending: [ Tuple callee position ], seen: Set.empty, labels: [] }
   where
@@ -113,7 +118,7 @@ declaredLabels tables callee position = tailRec step
         found { pending = tail, seen = Set.insert head found.seen }
 
 -- One parameter's labels, and the parameters it is passed on to.
-gathered ∷ Resolved.Tables → Tuple Int Int → Search → Search
+gathered ∷ Tables → Tuple Int Int → Search → Search
 gathered tables (Tuple owner position) found = maybe found entered
   (Array.index tables.types owner)
   where
@@ -129,7 +134,7 @@ gathered tables (Tuple owner position) found = maybe found entered
     , pending = found.pending
         <> map place
           ( Array.filter (passes name)
-              (Array.concatMap (recordArguments tables.types) fields)
+              (Array.concatMap (recordArguments tables) fields)
           )
     }
   beside name = case _ of

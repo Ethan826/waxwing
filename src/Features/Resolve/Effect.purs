@@ -20,6 +20,7 @@ import Features.Resolve.Marks
 import Features.Resolve.Builtin (builtinEffects)
 import Features.Resolve.EffectSorts (effectSorts)
 import Features.Resolve.Occurrences (Declared)
+import Features.Resolve.TypeIndices (Indexed)
 import Features.Resolve.Types (resolveTypeWith)
 import Features.Resolve.Repeated (laterRepeat)
 
@@ -30,11 +31,12 @@ summaries = map summary
 
 -- `declared` is the types' sort table, built once (Resolve).
 effects
-  ∷ Declared
-  → Array Resolved.TypeInfo
+  ∷ ∀ r
+  . Declared
+  → Indexed r
   → Array Syntax.EffectDecl
   → Either Syntax.Diagnostic (Array Resolved.EffectInfo)
-effects declared types declarations = do
+effects declared known declarations = do
   uniqueEffects declarations
   traverse_ (effectSorts declared) declarations
   traverse resolved declarations
@@ -47,12 +49,12 @@ effects declared types declarations = do
     *>
       ( withSignature declaration
           <$> traverse (parameter variables) declaration.parameters
-          <*> resolveTypeWith types (summaries declarations) variables
+          <*> resolveTypeWith known (summaries declarations) variables
             Nothing
             declaration.result
       )
   parameter variables declaration = withType declaration
-    <$> resolveTypeWith types (summaries declarations) variables Nothing
+    <$> resolveTypeWith known (summaries declarations) variables Nothing
       declaration.ty
   withType declaration ty =
     { name: declaration.name, ty, span: declaration.span, rowSpan: Nothing }
