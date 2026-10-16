@@ -19,10 +19,17 @@ the empty record type `{}`, checked, lowered to Go and documented.
   evaluation is left to right. A literal without a spread stays
   `RecordLiteral`, so existing programs lower byte-identically. Removal is
   `RecordRemoval Span Expr (Array Label)`, `Label = { name, span }`.
-- **Rest binders** extend the record pattern's rest from "present" to
-  "present, optionally named": Syntax `Maybe Rest` with `Rest = { span,
-  name ∷ Maybe Label }`; Resolved, Checked and IR carry `Maybe LocalId`
-  for the binder. Coverage treats the binder as `_` (no change).
+- **Rest binders** keep three distinct states (review, 2026-10-16): no
+  rest, bare `...`, and named `...rest`. Syntax `Maybe Rest` with `Rest =
+  { span, name ∷ Maybe Label }`; Resolved, Checked and IR an explicit
+  `data Rest = NoRest | IgnoredRest | NamedRest LocalId` (the IR's
+  carries the remainder's type), replacing R004's Boolean. Coverage
+  treats a named rest as `_` (no change).
+- **The remainder's layout is registered explicitly.** A named rest's
+  type travels through checking (Checked carries it, retyped at
+  settlement) and specialization, which registers the remainder layout
+  even when no body expression has that type. An unused named rest
+  follows Go lowering's existing treatment of unused binders.
 - **Written lacks** are `constraints` on FunctionDecl at Syntax and
   Resolved (`Lacks { variable, span, labels }`). They join the implied
   lacks facts (Check/Implied, Seed) for the body and at each
@@ -127,8 +134,8 @@ test runner, Go 1.26.4. No new dependency.
   `lacks` via RecordFields; a named rest issues a LocalId (Resolve/
   RecordPattern, Pattern `binders`); constraints resolve their variable
   against the signature's sorted variables (the approved texts for
-  non-record ones) and join Resolve/Lacking `lackingOf` so body types may write the
-  lacked labels.
+  non-record ones) and join Resolve/Lacking `lackingOf` so body types
+  may write the lacked labels.
 
 - [ ] Failing tests test/r005-parse.test.mjs and r005-resolve.test.mjs:
   each new form parsed (spread first, last, alone; `without` chained
@@ -170,7 +177,11 @@ Focus 5; placeholders in Specialize/Body.
 - [ ] Failing tests test/r005-check.test.mjs: every text at its
   location in both written orders; hole bases and receivers; rigid
   tails with and without the clause; rest binder types; removal to `{}`;
-  `{}` against Unit both ways; provenance through a wrapper.
+  `{}` against Unit both ways; provenance through a wrapper; written
+  lacks through a function reference (`let g = granted;` then `g(p)`)
+  and through partial application, each rejected when the later
+  application supplies the forbidden field; a named rest's type after
+  settlement.
 - [ ] Implement; verify; commit.
 
 ### Task 3: Lowering, evidence, docs, close-out
@@ -185,7 +196,10 @@ Focus 5; placeholders in Specialize/Body.
   tests test/r005-go.test.mjs: evaluation order with effects, extension
   of an open row specialized twice, removal and rest to `{}`, `{}`
   printing beside `()`, equality of empty records, ADT-valued fields
-  kept as pointers. Snapshots byte-identical; verify; commit.
+  kept as pointers; an unused named rest whose remainder shape appears
+  nowhere else in the program (its layout is still emitted and the Go
+  builds); bare `...` and no rest unchanged. Snapshots byte-identical;
+  verify; commit.
 - [ ] **Reference execution:** the FX001 interpreter
   (test/fx-oracle-records.mjs, fx-oracle-parse.mjs) evaluates spreads,
   `without`, named rests and `{}` (with an event per spread for order),
