@@ -1,4 +1,15 @@
-# Waxwing / R014 done on branch `r014`; awaiting merge (2026-10-16)
+# Waxwing / R014 merged; R004 design approved (2026-10-16)
+
+R014 was fast-forwarded into main at 955ad33 (branch deleted, nothing
+pushed). R004's design, docs/plans/2026-10-16-record-patterns-design.md,
+has the user's decisions (2026-10-16): a record pattern names every field
+or ends with `...`; fields pun in patterns; the missing-field text and
+witness form are approved. Next: R004's implementation plan, then
+execution; then R005's design.
+
+---
+
+# Waxwing / R014 done on branch `r014` (2026-10-16, merged since)
 
 R014 (written type names looked up through TypeIndices rather than
 scanned) is done on branch `r014` from main 41cbbbb: 0 differences

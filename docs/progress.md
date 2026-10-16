@@ -5122,3 +5122,12 @@ removed. No behaviour change intended.
   exactly once (158 edits checked). Rerun `rm -rf output &&
   GOTOOLCHAIN=go1.26.4 npm run verify`: 1909/1909, 59/59, 127 regression
   proofs, exit 0 (.build/evidence/r014-verify-2.log).
+
+## R014 merged; R004 design decisions (2026-10-16)
+
+R014 fast-forwarded into main at 955ad33 at the user's request; branch
+deleted. R004 design drafted (docs/plans/2026-10-16-record-patterns-
+design.md) and its open decisions answered by the user: explicit `...`
+for unnamed fields, punning in patterns ahead of R007, the missing-field
+text and the witness form approved. Docs only; no compiler change, so no
+verify run for this entry.
