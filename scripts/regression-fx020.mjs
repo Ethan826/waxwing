@@ -66,9 +66,8 @@ export const fx020Rows = [
   {
     // Resolution reading the row: an effect outside the function's written
     // row declares nothing, so `Database.query` stops resolving there
-    // instead of resolving and failing effect checking. The second edit
-    // restores `maybe`, which Resolve.purs no longer imports (R005 moved
-    // the entry check out); the defect itself is unchanged.
+    // instead of resolving and failing effect checking. The defect uses
+    // `maybe`, which Resolve.purs imports again since R005 Task 2.
     name: 'fx020-row-dependent',
     edits: [
       {
@@ -83,11 +82,6 @@ export const fx020Rows = [
           + '  rowLabels (Syntax.RowRef _ found _) = found\n'
           + '  scope =\n    { globals\n    , effects\n'
           + '    , effectInfos: map hidden effectInfos\n'
-      },
-      {
-        file: 'src/Features/Resolve.purs',
-        needle: 'import Data.Maybe (Maybe(..))\n',
-        replacement: 'import Data.Maybe (Maybe(..), maybe)\n'
       }
     ],
     probe: 'fx020-row-dependent', message: /resolved by the row/

@@ -11,7 +11,8 @@ import Features.Check.Subst (Subst(..), substitute, substituteRow)
 -- metas), so their fresh metas do not collide; the smaller counter is
 -- kept. Postponed pairs are the earlier's, then the later's; of two links
 -- from one occurrence the earlier's stays; mark bindings likewise. The
--- edges, the watch and the lacks sets are the later's alone, which hold
+-- edges, the watch, the lacks sets and their written clauses are the
+-- later's alone, which hold
 -- the earlier's under the precondition (made from it). The aliases are
 -- dropped: an empty table walks hop by hop, so this is always sound.
 -- Nothing in src composes, tests only.
@@ -33,4 +34,5 @@ compose later@(Subst laterBindings) (Subst earlierBindings) = Subst
   , watch: laterBindings.watch
   , aliases: noAliases
   , lacks: laterBindings.lacks
+  , written: laterBindings.written
   }

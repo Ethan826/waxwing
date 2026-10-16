@@ -158,6 +158,9 @@ data Problem
   -- R001: a record row variable of the enclosing signature and a label a
   -- type written in the body puts beside it, which it may already hold.
   | RowMayHaveField String String
+  -- R005: a label a call's argument puts in a row a written `where r lacks
+  -- { … }` forbids it, and the clause's variable (design §5).
+  | LackedField String String
   | DeferMayFail String
   | DeferMayPerform String
   | RowEquality RowText RowText String

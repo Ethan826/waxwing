@@ -16,7 +16,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (fst, snd)
 import Domain.Row (closedRow)
-import Domain.Type (TyRow)
+import Domain.Type (TyRow, VarId(..))
 import Domain.Syntax as Syntax
 import Features.Check.Stages (arrowType, openedRow, stages)
 import Domain.Checked.Internal (Open)
@@ -31,7 +31,8 @@ import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
-import Features.Check.Seed (seeded)
+import Features.Check.Seed (required, seeded)
+import Features.Check.Unify (Flex(Meta))
 import Features.Check.Tables (ownerType)
 
 -- One use of a function's or constructor's scheme, its variables
@@ -67,14 +68,16 @@ functionUse env state span (FunctionId index) =
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
   found function = Right
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
-        ( seededUse env function.sorts
-            ( openedUse
-                ( declarationUse state function.variables
-                    function.markVariables
-                    function.sorts
-                    (map parameterType function.parameters)
-                    function.result
-                    function.row
+        ( requiredUse function.constraints
+            ( seededUse env function.sorts
+                ( openedUse
+                    ( declarationUse state function.variables
+                        function.markVariables
+                        function.sorts
+                        (map parameterType function.parameters)
+                        function.result
+                        function.row
+                    )
                 )
             )
         )
@@ -112,6 +115,14 @@ seededUse env sorts use = use { state = seeded env sorts types use.state }
   where
   types = use.value.fields
     <> [ use.value.result, TFun TUnit use.value.row TUnit ]
+
+-- R005 design §2: the use's metas lack what the callee's `where` clauses
+-- say, after what its types imply (Features.Check.Seed `required`).
+requiredUse ∷ Array Resolved.Requirement → Threaded Use → Threaded Use
+requiredUse constraints use = use
+  { state = required metaOf constraints use.state }
+  where
+  metaOf (VarId index) = Meta (use.value.scheme.base + index)
 
 -- A use that consumes `consumed`, of this callee, if it is a named one.
 withOrigin ∷ Consumed → Maybe Callee → Threaded Use → Threaded Use

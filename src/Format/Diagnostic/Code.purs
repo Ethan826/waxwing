@@ -49,6 +49,7 @@ code = case _ of
   SecondSpread → Code.TypeMismatch
   TypeAsRecordRow _ → Code.TypeMismatch
   RowMayHaveField _ _ → Code.TypeMismatch
+  LackedField _ _ → Code.TypeMismatch
   DeferMayFail _ → Code.EffectError
   DeferMayPerform _ → Code.EffectError
   HandlerMissing _ → Code.HandlerError

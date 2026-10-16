@@ -114,8 +114,8 @@ export const r001Rows = [
     // which the record guard reports (before the guard, `go build` failed
     // with the field redeclared).
     name: 'r001-lacks', file: 'src/Features/Check/RecordTail.purs',
-    needle: '  if Array.any forbidden fields then failed subst\n',
-    replacement: '  if false then failed subst\n',
+    needle: '    (Array.find forbidden (map fst fields))\n',
+    replacement: '    (Array.find forbidden [])\n',
     probe: 'r001-lacks',
     message: /lacks: E_INTERNAL Duplicate record label/
   },

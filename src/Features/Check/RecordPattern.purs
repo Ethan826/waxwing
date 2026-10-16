@@ -12,8 +12,9 @@ import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, problemAt)
 import Domain.Type (Ty(..))
+import Domain.Type.Record (withoutLabels)
 import Features.Check.FreshRecord (freshRecord)
-import Features.Check.Matched (Against, Matched, PatternEnv)
+import Features.Check.Matched (Against, Matched, PatternEnv, Typed)
 import Features.Check.PatternRow
   ( KnownRow
   , Written
@@ -47,7 +48,6 @@ recordAgainst
   → Either Diagnostic (Threaded Matched)
 recordAgainst against env state expected written = do
   bounded state expected written.span
-  restChecked written
   case ty of
     TRecord row
       | growable row written → extended against env state expected written
@@ -62,17 +62,6 @@ recordAgainst against env state expected written = do
   notRecord _ = do
     name ← typeName env written.span ty
     Left (problemAt (ExpectedRecord name) written.span)
-
--- R005 Task 1 placeholder: a named rest resolves, but its remainder type
--- is judged in Task 2. A bare `...` and no rest are checked as in R004.
-restChecked ∷ Written → Either Diagnostic Unit
-restChecked written = case written.rest of
-  Resolved.NamedRest _ → Left
-    ( problemAt
-        (Internal "R005 placeholder: rest binders are checked in Task 2")
-        written.span
-    )
-  _ → Right unit
 
 -- A hole tail grows by the labels the pattern writes and the record lacks,
 -- as `.l` grows one (user decision 2026-10-16), so arm order does not
@@ -183,12 +172,35 @@ matched expected written checked =
       { pattern: Checked.Pattern
           { ty: expected
           , span: written.span
-          , shape: Checked.Record (map fieldOf checked.value) (endsOpen written)
+          , shape: Checked.Record (map fieldOf checked.value) rest
           }
-      , locals: Array.concatMap localsOf checked.value
+      , locals: Array.concatMap localsOf checked.value <> restLocals rest
       }
   , state: checked.state
   }
   where
   fieldOf field = { label: field.label, pattern: field.matched.pattern }
   localsOf field = field.matched.locals
+  rest = restOf checked.state expected written
+
+-- R005 design §3: a named rest is the matched record without the written
+-- labels, its tail kept (the open rest, or the closed remainder, `{}`
+-- when none is left). The record is the expected type as the fields'
+-- checks left it, which holds every written label by then.
+restOf ∷ State → Ty Open → Written → Checked.Rest
+restOf state expected written = case written.rest of
+  Resolved.NoRest → Checked.NoRest
+  Resolved.IgnoredRest → Checked.IgnoredRest
+  Resolved.NamedRest id → Checked.NamedRest id
+    (remainder (resolved state.subst expected))
+  where
+  remainder = case _ of
+    TRecord row → TRecord (withoutLabels (writtenLabels written) row)
+    other → other
+
+-- A named rest is a binder of its arm.
+restLocals ∷ Checked.Rest → Array Typed
+restLocals = case _ of
+  Checked.NamedRest id ty → [ { id, ty } ]
+  Checked.NoRest → []
+  Checked.IgnoredRest → []

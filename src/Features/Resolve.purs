@@ -4,7 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either)
 import Data.Map as Map
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Syntax as Syntax
@@ -221,4 +221,6 @@ resolveFunction globals declared tables effects effectInfos definition =
     , span: definition.function.span
     , rowSpan: writtenSpan definition.function.row
     , constraints: definition.signature.constraints
+    , introduced: maybe Map.empty introducedOf scope.lacking
     }
+  introducedOf lacking = lacking.introduced

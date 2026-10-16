@@ -42,7 +42,7 @@ the empty record type `{}`, checked, lowered to Go and documented.
 **Tech Stack:** PureScript 0.15.16, Spago 1.0.4, purs-tidy 0.11.1, Node
 test runner, Go 1.26.4. No new dependency.
 
-**Status:** Draft 2026-10-16, not started.
+**Status:** Tasks 1 and 2 done (2026-10-16); Task 3 pending.
 
 ## Global Constraints
 
@@ -80,7 +80,7 @@ test runner, Go 1.26.4. No new dependency.
   | Added in | Placeholder at | Removed in |
   |---|---|---|
   | Task 1 (Resolved) | Check/Infer for `RecordExtension`, `RecordRemoval`; Check/RecordPattern for a named rest | Task 2 |
-  | Task 2 (Checked) | Specialize/Body for the new expressions and a named rest | Task 3 |
+  | Task 2 (Checked) | Specialize/Body for the new expressions (`record extension and removal are lowered in Task 3`) and a named rest (`rest binders are lowered in Task 3`) | Task 3 |
 
 - **Go output** of existing programs stays byte-identical (bootstrap
   snapshots; the differential against main changes only sources using the
@@ -174,7 +174,7 @@ Focus 5; placeholders in Specialize/Body.
   generic wrapper that passes the row on.
 - **`{}`** unifies only with an empty closed record.
 
-- [ ] Failing tests test/r005-check.test.mjs: every text at its
+- [x] Failing tests test/r005-check.test.mjs: every text at its
   location in both written orders; hole bases and receivers; rigid
   tails with and without the clause; rest binder types; removal to `{}`;
   `{}` against Unit both ways; provenance through a wrapper; written
@@ -182,7 +182,7 @@ Focus 5; placeholders in Specialize/Body.
   and through partial application, each rejected when the later
   application supplies the forbidden field; a named rest's type after
   settlement.
-- [ ] Implement; verify; commit.
+- [x] Implement; verify; commit.
 
 ### Task 3: Lowering, evidence, docs, close-out
 

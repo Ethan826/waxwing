@@ -42,6 +42,8 @@ printable holders env (Checked.Expr expression) = case expression.node of
   Checked.RecordLiteral fields → each (Checked.fieldValues fields)
   Checked.FieldAccess record _ → recur record
   Checked.RecordUpdate record fields → each (Checked.updateParts record fields)
+  Checked.RecordExtension items → each (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → recur record
   _ → Right unit
   where
   recur = printable holders env

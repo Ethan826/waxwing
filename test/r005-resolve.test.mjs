@@ -154,28 +154,16 @@ test('a clause for another label does not admit it', () => {
   assert.equal(found.message, 'r may already have field fa');
 });
 
-// Task 2 replaces these placeholders with checking (the spread, `without`
-// and a rest binder's type); until then they reach `Internal` errors.
-const placeholder = 'R005 placeholder: record extension and removal are '
-  + 'checked in Task 2';
-
-test('an extension reaches the checking placeholder', () => {
-  const source = `fn f(p: Int): Int = { ...p, fa: 1 }.fa;${main}`;
-  const found = rejectedAt(source, 'E_INTERNAL', '{ ...p, fa: 1 }');
-  assert.equal(found.message, placeholder);
-});
-
-test('a removal reaches the checking placeholder', () => {
-  const source = `fn f(p: Int): Int = p without { fa };${main}`;
-  const found = rejectedAt(source, 'E_INTERNAL', 'p without { fa }');
-  assert.equal(found.message, placeholder);
-});
-
-test('a named rest reaches the checking placeholder', () => {
-  const found = rejectedAt(arms(arm('{ fa, ...rr }')), 'E_INTERNAL',
-    '{ fa, ...rr }');
-  assert.equal(found.message,
-    'R005 placeholder: rest binders are checked in Task 2');
+// Task 2 checks the forms these reached as placeholders: a non-record
+// spread, receiver or scrutinee is no record (test/r005-check.test.mjs).
+test('a spread, a removal and a named rest of an Int are no record', () => {
+  for (const [source, text] of [
+    [`fn f(p: Int): Int = { ...p, fa: 1 }.fa;${main}`, '...p'],
+    [`fn f(p: Int): Int = p without { fa };${main}`, 'p'],
+    [arms(arm('{ fa, ...rr }')), '{ fa, ...rr }']]) {
+    const found = rejectedAt(source, 'E_TYPE', text, text === 'p' ? 1 : 0);
+    assert.equal(found.message, 'Expected a record, found Int');
+  }
 });
 
 test('bare and no rest are checked as before', () => {

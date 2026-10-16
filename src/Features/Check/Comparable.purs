@@ -57,6 +57,9 @@ comparable functions env (Checked.Expr expression) = case expression.node of
   Checked.FieldAccess record _ → recur record
   Checked.RecordUpdate record fields → traverse_ recur
     (Checked.updateParts record fields)
+  Checked.RecordExtension items → traverse_ recur
+    (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → recur record
   _ → pure unit
   where
   recur = comparable functions env

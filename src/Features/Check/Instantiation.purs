@@ -118,6 +118,9 @@ foldCalls step found (Checked.Expr expression) = case expression.node of
   Checked.FieldAccess record _ → recur found record
   Checked.RecordUpdate record fields → foldl recur found
     (Checked.updateParts record fields)
+  Checked.RecordExtension items → foldl recur found
+    (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → recur found record
   _ → found
   where
   recur = foldCalls step

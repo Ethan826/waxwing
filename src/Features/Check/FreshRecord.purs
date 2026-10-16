@@ -1,4 +1,4 @@
-module Features.Check.FreshRecord (Fresh, freshRecord) where
+module Features.Check.FreshRecord (Fresh, freshRecord, freshRest) where
 
 import Prelude
 import Data.Array as Array
@@ -32,6 +32,19 @@ freshRecord state labels open =
   fields = Array.mapWithIndex hole labels
   hole index _ = TVar (Hole (state.next + index))
   tail = state.next + Array.length labels
+
+-- `{ ...ρ }`, ρ fresh and lacking `lacked`: the record a spread's hole
+-- base becomes, so a later binding cannot add the literal's own labels to
+-- it (R005 design §1).
+freshRest ∷ State → Array String → Fresh
+freshRest state lacked = fresh
+  { state = fresh.state
+      { subst = addLacks (Meta state.next) (Set.fromFoldable lacked)
+          fresh.state.subst
+      }
+  }
+  where
+  fresh = freshRecord state [] true
 
 tailOf ∷ Boolean → Int → Maybe Open
 tailOf open tail = if open then Just (Hole tail) else Nothing

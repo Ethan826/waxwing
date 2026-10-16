@@ -1,4 +1,9 @@
-module Features.Check.Record (checkLiteral, checkAccess, checkUpdate) where
+module Features.Check.Record
+  ( checkLiteral
+  , checkAccess
+  , checkUpdate
+  , select
+  ) where
 
 import Prelude
 import Data.Either (Either(..), either)

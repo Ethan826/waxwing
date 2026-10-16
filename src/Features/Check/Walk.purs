@@ -9,7 +9,8 @@ import Domain.Type (Ty)
 
 -- Every type a checked body carries, in pre-order: an expression's type,
 -- then its instantiation, then its parts left to right; an arm's pattern
--- before its body; a pattern's type before its fields. Each type comes with
+-- before its body; a pattern's type before its fields, then a named
+-- rest's. Each type comes with
 -- the span of the expression or pattern holding it. A lambda's parameter
 -- types come before its body, with the lambda's span. A block's items come
 -- in order, then its value. A flat exhaustive dispatch (BACKLOG E003).
@@ -46,6 +47,9 @@ foldTypes step found (Checked.Expr expression) = case expression.node of
   Checked.FieldAccess record _ → recur own record
   Checked.RecordUpdate record fields → foldl recur own
     (Checked.updateParts record fields)
+  Checked.RecordExtension items → foldl recur own
+    (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → recur own record
   _ → own
   where
   own = step found expression.span expression.ty
@@ -115,9 +119,16 @@ retype change (Checked.Expr expression) = Checked.Expr
     Checked.FieldAccess record label → Checked.FieldAccess (recur record) label
     Checked.RecordUpdate record fields → Checked.RecordUpdate (recur record)
       (map field fields)
+    Checked.RecordExtension items → Checked.RecordExtension
+      (map literalItem items)
+    Checked.RecordRemoval record labels → Checked.RecordRemoval (recur record)
+      labels
     leaf → leaf
   parameter declared = declared { ty = change declared.ty }
   field found = found { value = recur found.value }
+  literalItem = case _ of
+    Checked.Given found → Checked.Given (field found)
+    Checked.Spreading value → Checked.Spreading (recur value)
   item = case _ of
     Checked.Let local value → Checked.Let local (recur value)
     Checked.Defer value → Checked.Defer (recur value)
@@ -138,12 +149,16 @@ foldPattern step found (Checked.Pattern pattern) = case pattern.shape of
   Checked.IntLit _ → own
   Checked.BoolLit _ → own
   Checked.Ctor _ fields → foldl (foldPattern step) own fields
-  Checked.Record fields _ → foldl (foldPattern step) own
-    ( map fieldPattern
-        fields
-    )
+  Checked.Record fields rest → restType
+    (foldl (foldPattern step) own (map fieldPattern fields))
+    rest
   where
   own = step found pattern.span pattern.ty
+  -- A named rest's type follows the fields, at the pattern's span.
+  restType reached = case _ of
+    Checked.NamedRest _ ty → step reached pattern.span ty
+    Checked.NoRest → reached
+    Checked.IgnoredRest → reached
   fieldPattern field = field.pattern
 
 retypePattern ∷ (Ty Open → Ty Open) → Checked.Pattern → Checked.Pattern
@@ -157,5 +172,10 @@ retypePattern change (Checked.Pattern pattern) = Checked.Pattern
     Checked.BoolLit value → Checked.BoolLit value
     Checked.Ctor id fields → Checked.Ctor id
       (map (retypePattern change) fields)
-    Checked.Record fields rest → Checked.Record (map field fields) rest
+    Checked.Record fields rest → Checked.Record (map field fields)
+      (restOf rest)
+  restOf = case _ of
+    Checked.NamedRest id ty → Checked.NamedRest id (change ty)
+    Checked.NoRest → Checked.NoRest
+    Checked.IgnoredRest → Checked.IgnoredRest
   field found = found { pattern = retypePattern change found.pattern }

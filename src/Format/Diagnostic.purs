@@ -77,6 +77,10 @@ message = case _ of
   NotPrintable ty → "Expected a printable value, found " <> typeName ty
   MissingField label ty → label <> " is not a field of " <> typeName ty
   RowMayHaveField name label → name <> " may already have field " <> label
+  LackedField label name → label <> " is not allowed here: " <> name
+    <> " lacks { "
+    <> label
+    <> " }"
   ExpectedRecord ty → "Expected a record, found " <> typeName ty
   PatternMissingField label → "Pattern is missing field " <> label
     <> "; add it or end the pattern with ..."
@@ -129,6 +133,7 @@ noted = case _ of
   RecordRowAsEffect _ → true
   EffectRowAsRecord _ → true
   RowMayHaveField _ _ → true
+  LackedField _ _ → true
   UnhandledEffect _ → true
   MustBePure _ → true
   RowEquality _ _ _ → true

@@ -143,6 +143,8 @@ firstFail (Checked.Expr expression) = case expression.node of
   Checked.FieldAccess record _ → firstIn [ record ]
   Checked.RecordUpdate record fields → firstIn
     (Checked.updateParts record fields)
+  Checked.RecordExtension items → firstIn (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → firstIn [ record ]
   _ → Nothing
   where
   firstIn expressions = Array.head (Array.mapMaybe firstFail expressions)
@@ -193,6 +195,8 @@ firstUnkeyed subst (Checked.Expr expression) = case expression.node of
   Checked.FieldAccess record _ → firstIn [ record ]
   Checked.RecordUpdate record fields → firstIn
     (Checked.updateParts record fields)
+  Checked.RecordExtension items → firstIn (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → firstIn [ record ]
   _ → Nothing
   where
   firstIn expressions = Array.head

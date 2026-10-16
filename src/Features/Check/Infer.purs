@@ -2,6 +2,7 @@ module Features.Check.Infer (Env, infer) where
 
 import Prelude
 import Data.Either (Either(..))
+import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe, maybe')
 import Domain.Checked.Internal (Open)
@@ -31,6 +32,8 @@ import Features.Check.Context (Locals)
 import Features.Check.Lambda (checkLambda)
 import Features.Check.Pipe (checkPipe)
 import Features.Check.Record (checkAccess, checkLiteral, checkUpdate)
+import Features.Check.Extension (checkExtension)
+import Features.Check.Removal (checkRemoval)
 import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
 import Features.Check.Scheme (State, Threaded, threadAll)
@@ -50,6 +53,7 @@ type Env =
   , variables ∷ Array String
   , markVariables ∷ Array String
   , locals ∷ Locals
+  , introduced ∷ Map String Span
   }
 
 type Inferred = Either Diagnostic (Threaded Checked.Expr)
@@ -138,18 +142,12 @@ inferNode env state expression = case expression of
   Resolved.RecordUpdate span record fields → checkUpdate infer env state span
     record
     fields
-  Resolved.RecordExtension span _ → unchecked span
-  Resolved.RecordRemoval span _ _ → unchecked span
-
--- R005 Task 1 placeholder: the forms resolve, checking arrives in Task 2.
-unchecked ∷ Span → Inferred
-unchecked span = Left
-  ( problemAt
-      ( Internal
-          "R005 placeholder: record extension and removal are checked in Task 2"
-      )
-      span
-  )
+  Resolved.RecordExtension span items → checkExtension infer env state span
+    items
+  Resolved.RecordRemoval span record labels → checkRemoval infer env state
+    span
+    record
+    labels
 
 typed ∷ State → Span → Ty Open → Checked.Node → Inferred
 typed state span ty node = pure

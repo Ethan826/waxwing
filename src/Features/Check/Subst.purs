@@ -2,6 +2,7 @@ module Features.Check.Subst
   ( Flex(..)
   , Subst(..)
   , RowPair
+  , WrittenLack
   , empty
   , isEmpty
   , substitute
@@ -25,6 +26,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Set (Set)
 import Data.Tuple (Tuple, snd)
+import Domain.Syntax (Span)
 import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
 import Domain.Type
   ( Substitution
@@ -69,7 +71,8 @@ derive instance ordFlex ∷ Ord Flex
 -- the tails the restricted registry watches, with those bound since it
 -- last looked; data, so it reverts the same way. `lacks` (R001): the
 -- labels each record tail may never hold, a meta's or a signature's rigid
--- one's (Features.Check.Lacks).
+-- one's (Features.Check.Lacks). `written` (R005): for a lacked label that
+-- a `where` clause wrote, the clause's variable and the label's span.
 newtype Subst = Subst
   { types ∷ Map Int (Ty Flex)
   , rows ∷ Map Int (TyRow Flex)
@@ -81,7 +84,10 @@ newtype Subst = Subst
   , watch ∷ TailWatch
   , aliases ∷ Aliases
   , lacks ∷ Map Flex (Set String)
+  , written ∷ Map Flex (Map String WrittenLack)
   }
+
+type WrittenLack = { variable ∷ String, span ∷ Span }
 
 -- A postponed pair keeps where its sides were written and how it treats
 -- marks, for its retry.
@@ -100,6 +106,7 @@ empty = Subst
   , watch: emptyWatch
   , aliases: noAliases
   , lacks: Map.empty
+  , written: Map.empty
   }
 
 -- No meta is bound, so resolving under it changes no type. (Mark bindings

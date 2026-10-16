@@ -95,8 +95,14 @@ data Node
   | RecordLiteral (Array Field)
   | FieldAccess Expr String
   | RecordUpdate Expr (Array Field)
+  -- R005: a literal with a spread, its items in written order, which is
+  -- evaluation order (design §1); a removal's receiver and its labels.
+  | RecordExtension (Array LiteralItem)
+  | RecordRemoval Expr (Array String)
 
 type Field = { label ∷ String, value ∷ Expr }
+
+data LiteralItem = Given Field | Spreading Expr
 
 -- A block item (FX001): a monomorphic `let` of a local or `_`, a deferred
 -- expression of type Unit, or a discarded value.
@@ -121,9 +127,13 @@ data Shape
   | IntLit Int
   | BoolLit Boolean
   | Ctor CtorId (Array Pattern)
-  -- R004: the fields written, in written order, and whether the pattern
-  -- ends with `...`.
-  | Record (Array FieldPattern) Boolean
+  -- R004: the fields written, in written order, and how the pattern ends.
+  | Record (Array FieldPattern) Rest
+
+-- R005 design §3: no `...`, a bare one, or `...name`, whose binder has
+-- the matched record's type without the written labels; the type is kept
+-- so that settlement resolves it and lowering can lay the remainder out.
+data Rest = NoRest | IgnoredRest | NamedRest LocalId (Ty Open)
 
 type FieldPattern = { label ∷ String, pattern ∷ Pattern }
 
@@ -149,6 +159,14 @@ fieldValues ∷ Array Field → Array Expr
 fieldValues fields = map fieldValue fields
   where
   fieldValue found = found.value
+
+-- An extension's expressions in evaluation (written) order.
+extensionParts ∷ Array LiteralItem → Array Expr
+extensionParts items = map itemPart items
+  where
+  itemPart = case _ of
+    Given found → found.value
+    Spreading value → value
 
 -- An update's expressions in evaluation order: its base, then its values.
 updateParts ∷ Expr → Array Field → Array Expr

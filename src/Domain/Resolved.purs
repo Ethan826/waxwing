@@ -4,6 +4,7 @@ module Domain.Resolved
   , module Domain.Type
   ) where
 
+import Data.Map (Map)
 import Data.Maybe (Maybe)
 import Domain.Resolved.Core
 import Domain.Syntax (FieldName, Operator, Sort, Span)
@@ -101,8 +102,11 @@ type FunctionDecl =
   , body ∷ Expr
   , span ∷ Span
   , rowSpan ∷ Maybe Span
-  -- Written `where` constraints; checking ignores them until R005 Task 2.
+  -- Written `where` constraints (R005 design §2).
   , constraints ∷ Array Requirement
+  -- Each record row variable's first written `...r`, for the note of
+  -- `r may already have field a` (Features.Resolve.Lacking).
+  , introduced ∷ Map String Span
   }
 
 type Program =

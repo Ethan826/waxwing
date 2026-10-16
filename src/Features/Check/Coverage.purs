@@ -67,6 +67,9 @@ covered signature (Checked.Expr expression) = case expression.node of
   Checked.FieldAccess record _ → recur record
   Checked.RecordUpdate record fields → traverse_ recur
     (Checked.updateParts record fields)
+  Checked.RecordExtension items → traverse_ recur
+    (Checked.extensionParts items)
+  Checked.RecordRemoval record _ → recur record
   where
   recur = covered signature
   handlerBody clause = clause.body

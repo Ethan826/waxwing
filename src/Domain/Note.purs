@@ -30,6 +30,8 @@ data NoteReason
   | FirstWrittenHere
   -- R001: the signature's `...r` that introduces a record row variable.
   | IntroducedHere String
+  -- R005: the label of a written `where r lacks { … }` a call violates.
+  | RequiredHere
   | InnermostHere String
   | ContinuesInto String Int String
   -- The notes of a mark rejection (FX008 design §3.6): a frame, a clause

@@ -5456,3 +5456,95 @@ and resolved hashes needed projections in scripts/differential.mjs (now
 field, and a record pattern's rest is hashed as before (a span, a
 Boolean), as `withoutSorts` did for R001. Without them every source
 differed at parse. .build/regression and .build/go-cache deleted.
+
+## R005 Task 2: checking (2026-10-16)
+
+What. The Tranche A forms check; lowering is a placeholder (Task 3). A
+preparatory split, behaviour-preserving, moved the record pattern row
+helpers (Written, KnownRow, endsOpen, listed, growable, unknown,
+writtenLabels) from Features.Check.RecordPattern (247 lines) to
+Features.Check.PatternRow; build and the r004/r005 tests passed on it.
+
+Spread (Features.Check.Extension). Items are checked in written order;
+the checked node keeps them so (`Checked.RecordExtension (Array
+LiteralItem)`, `Given Field | Spreading Expr`). The base's type under the
+substitution decides: a record whose known fields hold a literal label is
+`Duplicate field l` at the later of the two items in written order,
+noted `first written here` at the earlier; a rigid tail must lack each
+label, else `r may already have field l` at the label, noted `r is
+introduced here` at the signature's first `...r` (Resolve's `introduced`
+now travels on Resolved.FunctionDecl); a hole tail is given the labels as
+lacks; a hole base is unified with `{ ...ρ }`, ρ fresh and lacking them
+(FreshRecord `freshRest`), and judged again; anything else is `Expected a
+record, found T` at the spread `...e`. The result is the base's fields
+and tail with the literal's fields.
+
+Removal (Features.Check.Removal). Each label in written order through
+Check/Record `select`, `.l`'s rule (MissingField at the label,
+ExpectedRecord at the receiver; a hole receiver or tail grows over a fresh
+tail lacking the label); the result is the receiver's resolved type
+without the labels (Domain.Type.Record `withoutLabels`), `{}` when nothing
+is left. `{}` is the closed empty TRecord and never unifies with Unit
+(`Expected Unit, found {}`, `Expected {}, found Unit`).
+
+Rest binder. Checked `Record (Array FieldPattern) Rest`, `Rest = NoRest |
+IgnoredRest | NamedRest LocalId (Ty Open)`: the binder's type is the
+expected type, resolved after the fields' checks, without the written
+labels (the open tail kept, the closed remainder, or `{}`); it joins the
+arm's locals. Walk `foldPattern` visits and `retypePattern` resolves it,
+so settlement and hole numbering see it. Coverage is unchanged.
+
+Written lacks. The substitution keeps, beside each tail's lacks set, the
+labels a `where` clause wrote with the clause's variable and the label's
+span (`Subst.written`, Lacks `writtenOf`/`addWritten`). Seed `required`
+joins a signature's clauses after its implied lacks, for the body (rigid
+tails, Function `own`) and at every use (the use's metas, Use
+`requiredUse`); a label the types already imply keeps no clause, so its
+violation keeps the shape text. RecordTail `bindTail` is where a
+violation is found: a field the meta lacks, or a lacked label a rigid
+rest does not lack, is the new unification failure `Forbidden label
+lack` when a clause wrote it (else the mismatch, as before), and a meta
+rest inherits the clause with the lack. Require `expectType` (and Reject,
+for consumptions) report it through Features.Check.Lacked: E_TYPE `admin
+is not allowed here: r lacks { admin }` at the expression being required,
+for a call its argument, noted `required here` at the label in the
+clause (Problem `LackedField`, note `RequiredHere`). Only the violated
+label is named. Paths, each tested at its location: a direct call; a
+function reference (`let g = granted; g(p)`); a partial application
+(`twice(1)` then applied); a pipe; a lambda passing its parameter on; a
+wrapper with its own clause, refused at the outer argument and noted at
+the wrapper's clause (inside the wrapper, granted's clause was met by the
+wrapper's rigid `s`, which lacks the label by its own clause); a wrapper
+without the clause, refused inside it at `granted(q)`'s argument `q`,
+noted at granted's clause (the rigid `s` does not lack the label).
+
+Placeholders (plan table). Removed: Check/Infer and Check/RecordPattern
+(Task 1). Added: Specialize/Body `R005 placeholder: record extension and
+removal are lowered in Task 3` for both expressions and `R005
+placeholder: rest binders are lowered in Task 3` for a named rest. Case
+analyses given real cases for the new forms: Walk (`foldTypes`, `retype`,
+`foldPattern`, `retypePattern`), Failure (`firstFail`, `firstUnkeyed`),
+Coverage, Comparable, Printable, DeferNotes `parts`, Instantiation
+`foldCalls`, Require and Reject (the new failure), Compose (the new
+substitution field). Matrix ignores the rest as before.
+
+Tests. test/r005-check.test.mjs and r005-lacks.test.mjs: 31 tests, all
+failing before the change (.build/evidence/r005-t2-red.log), 33 passing
+after (two added while implementing: the hole base's shape text, a
+lambda passing its parameter on). The three r005-resolve tests that
+asserted the Task 1 placeholders now assert `Expected a record, found
+Int` for the same sources. scripts/differential.mjs (250 lines) has no
+projection for Resolved's new `introduced` or Checked's `Rest`; a
+differential was not run for this task.
+
+Regression rows whose needles this task's edits moved, each proved
+again (restored defect fails): r004-missing-field and r004-hole-tail
+name Check/PatternRow.purs (split commit); r001-lacks restores its
+defect at bindTail's new `Array.find forbidden (map fst fields)` (no
+field refused); fx020-row-dependent's second edit (restoring the `maybe`
+import, Task 1) no longer had a target, since Resolve.purs imports
+`maybe` again for `introduced`, so it was removed, the defect unchanged.
+
+`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: 2084/2084,
+59/59, 134 regression proofs, exit 0 (.build/evidence/r005-t2-verify.log).
+.build/regression and .build/go-cache deleted.

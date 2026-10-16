@@ -23,9 +23,10 @@ import Features.Check.MarkReport (reportViolation)
 import Features.Check.Printable (printable)
 import Features.Check.Require (require, tooDeepAt)
 import Features.Check.Scheme (State, firstTooDeep, holes, resolved, start)
-import Features.Check.Seed (seeded)
+import Features.Check.Seed (required, seeded)
 import Features.Check.Settle (settleRestricted)
 import Features.Check.Unify (Subst, isEmpty)
+import Features.Check.Unify as Unify
 import Features.Check.Walk (retype)
 
 -- One function checked alone: its checked form and final state.
@@ -53,6 +54,7 @@ environment program function =
   , markVariables: function.markVariables
   , locals: Map.fromFoldable
       (Array.mapWithIndex parameterLocal function.parameters)
+  , introduced: function.introduced
   }
   where
   row = current function
@@ -107,10 +109,13 @@ checkFunction holders env function = do
   parameterType parameter = rigid parameter.ty
 
 -- The state a body starts in: the signature's variables are numbered
--- before any meta, and its record tails lack what it says (R001 design §2).
+-- before any meta, and its record tails lack what it says (R001 design §2),
+-- its `where` clauses included (R005 design §2).
 own ∷ Env → Resolved.FunctionDecl → State
-own env function = seeded env function.sorts signature
-  (start { next = Array.length function.variables })
+own env function = required Unify.Rigid function.constraints
+  ( seeded env function.sorts signature
+      (start { next = Array.length function.variables })
+  )
   where
   signature = map parameterType function.parameters
     <> [ rigid function.result, rigid (TFun TUnit function.row TUnit) ]

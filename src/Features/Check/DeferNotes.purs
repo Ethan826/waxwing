@@ -151,6 +151,8 @@ parts (Checked.Expr expression) = case expression.node of
   Checked.RecordLiteral fields → Checked.fieldValues fields
   Checked.FieldAccess record _ → [ record ]
   Checked.RecordUpdate record fields → Checked.updateParts record fields
+  Checked.RecordExtension items → Checked.extensionParts items
+  Checked.RecordRemoval record _ → [ record ]
   _ → []
   where
   armBody arm = arm.body

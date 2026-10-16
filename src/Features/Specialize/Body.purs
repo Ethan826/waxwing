@@ -123,11 +123,20 @@ copyNode scope span = case _ of
     <*> pure label
   Checked.RecordUpdate record fields → IR.RecordUpdate <$> recur record
     <*> traverse field fields
+  Checked.RecordExtension _ → unlowered span
+  Checked.RecordRemoval _ _ → unlowered span
   where
   recur = expression scope
   each = traverse recur
   field found = labelled found.label <$> recur found.value
   labelled label value = { label, value }
+
+-- R005 Task 2 placeholders: the forms check, lowering arrives in Task 3.
+unlowered ∷ ∀ a. Span → Specializing a
+unlowered span = internal
+  "R005 placeholder: record extension and removal are lowered in Task 3"
+  span
+  unit
 
 item ∷ Scope → Checked.Item → Specializing IR.Item
 item scope = case _ of
@@ -157,7 +166,13 @@ copyShape scope span ty = case _ of
     <*> traverse (copyPattern scope) fields
   -- R004: the fields named, in written order; `...` needs no node, as
   -- an unnamed field is read by no test.
-  Checked.Record fields _ → IR.Record <$> traverse labelled fields
+  Checked.Record fields Checked.NoRest → IR.Record <$> traverse labelled fields
+  Checked.Record fields Checked.IgnoredRest → IR.Record <$> traverse labelled
+    fields
+  Checked.Record _ (Checked.NamedRest _ _) → internal
+    "R005 placeholder: rest binders are lowered in Task 3"
+    span
+    unit
   where
   labelled found = field found.label <$> copyPattern scope found.pattern
   field label pattern = { label, pattern }

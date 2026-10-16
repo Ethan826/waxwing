@@ -7,6 +7,7 @@ module Domain.Type.Record
   , mapFields
   , traverseFields
   , emptyRecord
+  , withoutLabels
   ) where
 
 import Prelude
@@ -33,9 +34,16 @@ sortFields = Array.sortWith fst
 labels ∷ ∀ a v. RecordRow a v → Array String
 labels row = map fst row.fields
 
--- Internal only: source has no empty record type (design §1).
+-- Written `{}` since R005 (design §4); still the empty closed row.
 emptyRecord ∷ ∀ a v. RecordRow a v
 emptyRecord = { fields: [], tail: Nothing }
+
+-- The row without these labels' fields, its tail kept: a removal's or a
+-- rest binder's remainder (R005 design §3).
+withoutLabels ∷ ∀ a v. Array String → RecordRow a v → RecordRow a v
+withoutLabels removed row = row { fields = Array.filter kept row.fields }
+  where
+  kept (Tuple label _) = not (Array.elem label removed)
 
 fieldTypes ∷ ∀ a v. RecordRow a v → Array a
 fieldTypes row = map snd row.fields

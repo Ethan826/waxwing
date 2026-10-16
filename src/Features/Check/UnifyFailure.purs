@@ -4,7 +4,7 @@ import Prim hiding (Row)
 import Domain.Row (Label)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Occurrence (OccurrenceId)
-import Features.Check.Subst (Flex)
+import Features.Check.Subst (Flex, WrittenLack)
 
 -- Types and rows are resolved under the substitution reached at the
 -- failure: a mismatch names the first pair of subterms that differ, left
@@ -20,7 +20,8 @@ import Features.Check.Subst (Flex)
 -- theirs;
 -- `RowOccurs`,
 -- a row meta and the label argument holding it in a row (an infinite
--- row), apart from `Occurs`, whose meta is a type's.
+-- row), apart from `Occurs`, whose meta is a type's. `Forbidden` (R005):
+-- a label bound into a record tail that a written `lacks` forbids it.
 data Failure
   = Mismatch (Ty Flex) (Ty Flex)
   | Occurs Int (Ty Flex)
@@ -31,3 +32,4 @@ data Failure
   | RowSharedTail (TyRow Flex) (TyRow Flex)
   | RowMismatch (TyRow Flex) (TyRow Flex)
   | RowOccurs Int (Ty Flex)
+  | Forbidden String WrittenLack
