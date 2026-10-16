@@ -54,15 +54,19 @@ A record pattern is checked against the type expected at its position
 applied first. Three cases, decided by that type:
 
 - **A record type**, closed or open with a tail (a rigid signature
-  variable or an inference hole). Each named label must be a known field,
-  else the existing E_TYPE `a is not a field of { … }` at that label's
-  name (not its pattern). A pattern never learns a field from a tail:
-  `{ a: x, ... }` against `{ ...r }` is that error. Each field pattern is
-  checked against its field's type. Then, without `...`, the first
-  unlisted known field in label order is `Pattern is missing field l;
-  add it or end the pattern with ...`; and an open type with every known
-  field listed is `Pattern is missing the rest of { a: Int, ...r }; end
-  the pattern with ...`; both at the whole pattern.
+  variable or an inference hole). A rigid tail never supplies a field:
+  each named label must be a known field, else the existing E_TYPE `a is
+  not a field of { … }` at that label's name (not its pattern), so `{ a:
+  x, ... }` against `{ ...r }` is that error. A hole tail is extended by
+  the labels the pattern names and the type lacks, as `.l` extends one
+  (Check/Record `select`), so arm order does not matter (user decision
+  2026-10-16). Each field pattern is checked against its field's type.
+  Then, without `...`, the first unlisted known field in label order is
+  `Pattern is missing field l; add it or end the pattern with ...`; with
+  every known field listed, a hole tail is closed (as a closed pattern
+  makes a bare hole closed), and a rigid tail is `Pattern is missing the
+  rest of { a: Int, ...r }; end the pattern with ...`; both errors at the
+  whole pattern.
 - **An inference hole** (a type not yet known, such as an unannotated
   lambda parameter). The hole is unified with the type the pattern
   writes: closed over its labels without `...`; with `...`, open over a

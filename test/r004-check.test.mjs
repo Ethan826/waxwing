@@ -117,3 +117,31 @@ test('a hole\'s fields take their patterns\' types', () => {
   failsAt(lambda('{ fk: vk }', '{ fk: true }'), '{ fk: true }',
     'Expected { fk: Int }, found { fk: Bool }');
 });
+
+// User decision 2026-10-16: a record pattern extends a hole tail with the
+// labels it writes, as `.l` does, so arm order does not matter; a closed
+// pattern closes a hole tail.
+const hole = (argument, ...found) => 'fn f(): Int = (fn(p) => match p { '
+  + `${found.join(', ')} })(${argument});${main}`;
+const openFirst = ['{ fk: true, ... } => 1', '{ fk: vk, fm: vm } => vm'];
+const closedFirst = [openFirst[1], openFirst[0]];
+
+test('either arm order extends, then closes, a hole tail', () => {
+  for (const found of [openFirst, closedFirst]) {
+    passesCheck(hole('{ fk: true, fm: 2 }', ...found),
+      found[0].split(' =>')[0]);
+    failsAt(hole('{ fk: true, fm: 2, fz: 3 }', ...found),
+      '{ fk: true, fm: 2, fz: 3 }',
+      'Expected { fk: Bool, fm: Int }, found { fk: Bool, fm: Int, fz: Int }');
+  }
+});
+
+test('a later open arm may name a field an earlier open arm did not', () => {
+  passesCheck(hole('{ fa: 1, fb: true, fc: 3 }', '{ fa: va, ... } => va',
+    '{ fb: vb, ... } => 2'), '{ fa: va, ... }');
+});
+
+test('an open arm after a closed one cannot add a field', () => {
+  failsAt(hole('{ fk: true }', '{ fk: true } => 1', '{ fz: vz, ... } => 2'),
+    'fz', 'fz is not a field of { fk: Bool }');
+});

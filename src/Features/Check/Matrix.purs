@@ -118,9 +118,9 @@ simplify (Checked.Pattern pattern) = case pattern.shape of
   Checked.IntLit value → Headed (HInt value) []
   Checked.BoolLit value → Headed (HBool value) []
   Checked.Ctor id fields → Headed (HCtor id) (map simplify fields)
-  -- Unreachable until Task 3 replaces it: Check/Coverage stops at its R004
-  -- placeholder before building a matrix for a match with a record
-  -- pattern.
+  -- R004 placeholder (Task 3 replaces it): unreachable, since
+  -- Check/Coverage stops at its own placeholder before building a matrix
+  -- for a match with a record pattern.
   Checked.Record _ _ → Any
 
 patternType ∷ Checked.Pattern → Ty Open

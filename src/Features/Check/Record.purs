@@ -3,7 +3,6 @@ module Features.Check.Record (checkLiteral, checkAccess, checkUpdate) where
 import Prelude
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
@@ -13,7 +12,7 @@ import Domain.Syntax (Diagnostic, FieldName, Span, problemAt)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (recordRow)
 import Features.Check.Context (CheckEnv, Infer)
-import Features.Check.Lacks (addLacks)
+import Features.Check.FreshRecord (freshRecord)
 import Features.Check.Require (bounded, require, tooDeepAt, typeName)
 import Features.Check.Scheme
   ( State
@@ -23,7 +22,7 @@ import Features.Check.Scheme
   , resolved
   , threadAll
   )
-import Features.Check.Unify (Failure(..), Flex(..), unify)
+import Features.Check.Unify (Failure(..), unify)
 
 type Checked a = Either Diagnostic (Threaded a)
 
@@ -140,17 +139,14 @@ select
   → Checked (Ty Open)
 select env state record label = do
   bounded state ty (Checked.spanOf record)
-  either failed bound (unify widened.subst (flexible ty) (flexible wanted))
+  either failed bound
+    (unify fresh.state.subst (flexible ty) (flexible fresh.record))
   where
   ty = Checked.typeOf record
+  fresh = freshRecord state [ label.name ] true
+  -- freshRecord numbers its first label's hole `state.next`.
   field = TVar (Hole state.next)
-  rest = state.next + 1
-  wanted = TRecord (recordRow [ Tuple label.name field ] (Just (Hole rest)))
-  widened = state
-    { next = state.next + 2
-    , subst = addLacks (Meta rest) (Set.singleton label.name) state.subst
-    }
-  bound subst = Right { value: field, state: widened { subst = subst } }
+  bound subst = Right { value: field, state: fresh.state { subst = subst } }
   failed = case _ of
     TooDeep → tooDeepAt (Checked.spanOf record)
     _ → notSelected env state record label

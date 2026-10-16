@@ -5188,9 +5188,10 @@ found T` at the pattern. Problem gains `PatternMissingField` and
 RecordPattern moved to Features/Check/Matched.purs (Match re-exports
 them). Check/Walk `foldPattern` and `retypePattern` now name every shape.
 
-A consequence of the rule: once an earlier arm has made a hole an open
-record, a later arm is checked against that record, so it cannot name a
-field the earlier arm did not (a tail never supplies a field).
+The first commit made a later arm unable to name a field an earlier open
+arm had not (a tail never supplied a field). The user decided (2026-10-16)
+that a hole tail is extended instead, so arm order does not matter; see
+the follow-up below.
 
 Placeholders: Task 1's in Check/Match is gone. Check/Coverage stops any
 match holding a record pattern (nested too) at the first one with
@@ -5205,3 +5206,20 @@ the updated last test of test/r004-resolve.test.mjs; 17 failing first
 (.build/evidence/r004-t2-red.log), all passing after. `rm -rf output &&
 GOTOOLCHAIN=go1.26.4 npm run verify`: 1947/1947, 59/59, 127 regression
 proofs, exit 0 (.build/evidence/r004-t2-verify.log).
+
+Follow-up (user decision 2026-10-16): a record type whose tail is a hole
+grows by the labels a pattern names and it lacks, through the same fresh
+record `.l` uses (new Features/Check/FreshRecord.purs, now also behind
+Check/Record `select`), and is then judged anew. A pattern without `...`
+that lists every known field closes a hole tail; `Pattern is missing the
+rest` is now only for a rigid tail, and a rigid tail still never supplies
+a field. An open arm after a closed one naming a new field is the existing
+`fz is not a field of { fk: Bool }` at the label; a call passing an extra
+field after the arms closed the type is the existing record mismatch at
+the argument. The Matrix `simplify` comment now carries `R004
+placeholder`. Tests: 3 more in test/r004-check.test.mjs, 2 failing first
+(.build/evidence/r004-t2b-red.log; the third already held under the first
+rule), all 41 R004 tests passing after. `rm -rf output &&
+GOTOOLCHAIN=go1.26.4 npm run verify`: 1950/1950, 59/59, 127 regression
+proofs, exit 0 (.build/evidence/r004-t2b-verify.log; a first run failed
+the structural gate on a `case` over a Maybe, now `maybe` helpers).

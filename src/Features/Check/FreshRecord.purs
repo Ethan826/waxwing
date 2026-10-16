@@ -1,0 +1,41 @@
+module Features.Check.FreshRecord (Fresh, freshRecord) where
+
+import Prelude
+import Data.Array as Array
+import Data.Maybe (Maybe(..))
+import Data.Set as Set
+import Domain.Checked.Internal (Open(..))
+import Domain.Type (Ty(..))
+import Domain.Type.Record (recordRow)
+import Features.Check.Lacks (addLacks)
+import Features.Check.Scheme (State)
+import Features.Check.Unify (Flex(..))
+
+-- A record of fresh holes, one per label in the given order (the i-th
+-- label's is `state.next + i`), and the state that numbers them.
+type Fresh = { record ∷ Ty Open, fields ∷ Array (Ty Open), state ∷ State }
+
+-- The record a use of these labels asks for: open over a fresh tail that
+-- lacks them (`.l`, Check/Record `select`; a record pattern with `...`,
+-- or one extending a hole tail), or closed (a record pattern without
+-- `...` against a hole).
+freshRecord ∷ State → Array String → Boolean → Fresh
+freshRecord state labels open =
+  { record: TRecord (recordRow (Array.zip labels fields) (tailOf open tail))
+  , fields
+  , state: state
+      { next = tail + 1
+      , subst = addLacks (Meta tail) (lacking open labels) state.subst
+      }
+  }
+  where
+  fields = Array.mapWithIndex hole labels
+  hole index _ = TVar (Hole (state.next + index))
+  tail = state.next + Array.length labels
+
+tailOf ∷ Boolean → Int → Maybe Open
+tailOf open tail = if open then Just (Hole tail) else Nothing
+
+-- A closed record has no tail, so nothing to lack.
+lacking ∷ Boolean → Array String → Set.Set String
+lacking open labels = if open then Set.fromFoldable labels else Set.empty
