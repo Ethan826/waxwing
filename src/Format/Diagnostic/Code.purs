@@ -44,6 +44,8 @@ code = case _ of
   NotPrintable _ → Code.TypeMismatch
   MissingField _ _ → Code.TypeMismatch
   ExpectedRecord _ → Code.TypeMismatch
+  PatternMissingField _ → Code.TypeMismatch
+  PatternMissingRest _ → Code.TypeMismatch
   RowMayHaveField _ _ → Code.TypeMismatch
   DeferMayFail _ → Code.EffectError
   DeferMayPerform _ → Code.EffectError

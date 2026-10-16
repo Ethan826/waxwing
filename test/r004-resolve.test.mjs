@@ -52,11 +52,10 @@ test('a well-formed record pattern resolves', () => {
   resolved(arms(arm('{ fa: va, fb: true, ... }', 'va')));
 });
 
-// Documents the Task 1 placeholder (Check/Match patternAgainst); Task 2
-// replaces this test with real checking.
-test('a record pattern stops at the check placeholder', () => {
+// Task 1 stopped here at a placeholder; checking now judges the pattern
+// against the scrutinee's type (test/r004-check.test.mjs).
+test('a resolved record pattern reaches checking', () => {
   const source = arms(arm('{ fa: va }'));
-  const found = rejectedAt(source, 'E_INTERNAL', '{ fa: va }');
-  assert.equal(found.message,
-    'R004 placeholder: record patterns are checked in Task 2');
+  const found = rejectedAt(source, 'E_TYPE', '{ fa: va }');
+  assert.equal(found.message, 'Expected a record, found Int');
 });

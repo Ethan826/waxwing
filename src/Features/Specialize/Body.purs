@@ -155,3 +155,7 @@ copyShape scope span ty = case _ of
   Checked.BoolLit value → pure (IR.BoolLit value)
   Checked.Ctor id fields → IR.Ctor <$> ctorAt scope.env span ty id
     <*> traverse (copyPattern scope) fields
+  Checked.Record _ _ → internal
+    "R004 placeholder: record patterns are lowered in Task 4"
+    span
+    unit

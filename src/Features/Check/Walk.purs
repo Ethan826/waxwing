@@ -133,16 +133,29 @@ retype change (Checked.Expr expression) = Checked.Expr
 
 foldPattern ∷ ∀ b. (b → Span → Ty Open → b) → b → Checked.Pattern → b
 foldPattern step found (Checked.Pattern pattern) = case pattern.shape of
+  Checked.Wildcard → own
+  Checked.Bind _ → own
+  Checked.IntLit _ → own
+  Checked.BoolLit _ → own
   Checked.Ctor _ fields → foldl (foldPattern step) own fields
-  _ → own
+  Checked.Record fields _ → foldl (foldPattern step) own
+    ( map fieldPattern
+        fields
+    )
   where
   own = step found pattern.span pattern.ty
+  fieldPattern field = field.pattern
 
 retypePattern ∷ (Ty Open → Ty Open) → Checked.Pattern → Checked.Pattern
 retypePattern change (Checked.Pattern pattern) = Checked.Pattern
   (pattern { ty = change pattern.ty, shape = shape pattern.shape })
   where
   shape = case _ of
+    Checked.Wildcard → Checked.Wildcard
+    Checked.Bind id → Checked.Bind id
+    Checked.IntLit value → Checked.IntLit value
+    Checked.BoolLit value → Checked.BoolLit value
     Checked.Ctor id fields → Checked.Ctor id
       (map (retypePattern change) fields)
-    leaf → leaf
+    Checked.Record fields rest → Checked.Record (map field fields) rest
+  field found = found { pattern = retypePattern change found.pattern }

@@ -121,6 +121,11 @@ data Shape
   | IntLit Int
   | BoolLit Boolean
   | Ctor CtorId (Array Pattern)
+  -- R004: the fields written, in written order, and whether the pattern
+  -- ends with `...`.
+  | Record (Array FieldPattern) Boolean
+
+type FieldPattern = { label ∷ String, pattern ∷ Pattern }
 
 -- A declared type seen from inside its declaration, where its variables are
 -- rigid.

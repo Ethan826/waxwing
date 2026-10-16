@@ -34,7 +34,7 @@ coverage roots and inhabitation, witness openness, buildable commits,
 execution evidence, ADT pointers inside records), then regrouped into
 four slices (user, 2026-10-16): the split folds into whichever task
 needs it, parse and resolve are one task, and Go lowering joins the
-evidence task. Not started.
+evidence task. Tasks 1 and 2 done.
 
 ## Global Constraints
 
@@ -66,6 +66,7 @@ evidence task. Not started.
   | Task 1 (Syntax, Resolved) | Check/Match `patternAgainst` | Task 2 |
   | Task 2 (Checked) | Check/Coverage, before the matrix, for any match holding a record pattern | Task 3 |
   | Task 2 (Checked) | Specialize/Body `copyShape` | Task 4 |
+  | Task 2 (Checked) | Matrix `simplify` returns `Any` | Task 3 |
 
   Matrix `simplify` cannot fail. Task 2 gives it a real case, which
   Task 3 completes. Task 4 gates on `grep -rn "R004 placeholder" src`
@@ -153,11 +154,11 @@ Check/Coverage and Specialize/Body `copyShape`.
 - **Otherwise,** a rigid variable included: ExpectedRecord at the
   pattern.
 
-- [ ] Failing tests test/r004-check.test.mjs: every text at its
+- [x] Failing tests test/r004-check.test.mjs: every text at its
   location, including `{ unknown: value }` underlining `unknown`;
   generic constructor field; unannotated lambda parameter; rigid `a`;
   `{ ...r }`; field order irrelevant; arm bodies using field binders.
-- [ ] Implement; verify; commit.
+- [x] Implement; verify; commit.
 
 ### Task 3: Coverage, inhabitation and witnesses
 

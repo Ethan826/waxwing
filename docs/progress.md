@@ -5168,3 +5168,40 @@ Depth probe identical before and after (.build/evidence/r004-t1-depth-
 before.log, -after.log; 153 existing anomalies, unchanged). `rm -rf output
 && GOTOOLCHAIN=go1.26.4 npm run verify`: 1931/1931, 59/59, 127 regression
 proofs, exit 0 (.build/evidence/r004-t1-verify.log).
+
+## R004 Task 2: check (2026-10-16)
+
+Record patterns are checked (design §2). Checked `Record (Array
+FieldPattern) Boolean` (the Boolean is the `...`). New Features/Check/
+RecordPattern.purs holds the rule: the expected type, resolved under the
+substitution, decides. A `TRecord` (closed or open) needs each written
+label to be known (else `a is not a field of { … }` at the label, first in
+written order), checks each field against its type, then without `...`
+reports the first unlisted label in label order (`Pattern is missing
+field l; add it or end the pattern with ...`) or an open tail (`Pattern is
+missing the rest of T; end the pattern with ...`), both at the pattern. An
+unbound hole is unified with a record of fresh holes, closed without `...`
+and with `...` open over a fresh tail given `addLacks` of the written
+labels. Anything else, a rigid variable included, is `Expected a record,
+found T` at the pattern. Problem gains `PatternMissingField` and
+`PatternMissingRest` (E_TYPE). The pattern types shared by Match and
+RecordPattern moved to Features/Check/Matched.purs (Match re-exports
+them). Check/Walk `foldPattern` and `retypePattern` now name every shape.
+
+A consequence of the rule: once an earlier arm has made a hole an open
+record, a later arm is checked against that record, so it cannot name a
+field the earlier arm did not (a tail never supplies a field).
+
+Placeholders: Task 1's in Check/Match is gone. Check/Coverage stops any
+match holding a record pattern (nested too) at the first one with
+`Internal "R004 placeholder: record pattern coverage is Task 3"`;
+Specialize/Body `copyShape` returns `Internal "R004 placeholder: record
+patterns are lowered in Task 4"`; Matrix `simplify` returns `Any`
+(unreachable behind the Coverage placeholder; Task 3 replaces it).
+
+Tests: test/r004-check.test.mjs (16 tests; programs that check are seen
+reaching the Coverage placeholder, which Task 3 turns into acceptance) and
+the updated last test of test/r004-resolve.test.mjs; 17 failing first
+(.build/evidence/r004-t2-red.log), all passing after. `rm -rf output &&
+GOTOOLCHAIN=go1.26.4 npm run verify`: 1947/1947, 59/59, 127 regression
+proofs, exit 0 (.build/evidence/r004-t2-verify.log).

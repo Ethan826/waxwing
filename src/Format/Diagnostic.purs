@@ -79,6 +79,10 @@ message = case _ of
   MissingField label ty → label <> " is not a field of " <> typeName ty
   RowMayHaveField name label → name <> " may already have field " <> label
   ExpectedRecord ty → "Expected a record, found " <> typeName ty
+  PatternMissingField label → "Pattern is missing field " <> label
+    <> "; add it or end the pattern with ..."
+  PatternMissingRest ty → "Pattern is missing the rest of " <> typeName ty
+    <> "; end the pattern with ..."
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
   DeferMayPerform tail →

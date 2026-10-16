@@ -1,7 +1,5 @@
 module Features.Check.Match
-  ( Typed
-  , Matched
-  , PatternEnv
+  ( module Features.Check.Matched
   , checkPattern
   , patternAgainst
   ) where
@@ -17,14 +15,14 @@ import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Resolved
   ( CtorId(..)
   , CtorInfo
-  , EffectInfo
-  , LocalId
   , Tables
   , Ty(..)
   , TypeId(..)
   , TypeInfo
   )
 import Domain.Resolved as Resolved
+import Features.Check.Matched (Matched, PatternEnv, Typed)
+import Features.Check.RecordPattern (recordAgainst)
 import Features.Check.Require (expectType)
 import Features.Check.Tables (ownerType)
 import Features.Check.Seed (seeded)
@@ -37,18 +35,6 @@ import Features.Check.Scheme
   , start
   , threadAll
   )
-
-type Typed = { id ∷ LocalId, ty ∷ Ty Open }
-
-type Matched = { pattern ∷ Checked.Pattern, locals ∷ Array Typed }
-
-type PatternEnv r =
-  { effects ∷ Array EffectInfo
-  , types ∷ Array TypeInfo
-  , ctors ∷ Array CtorInfo
-  , variables ∷ Array String
-  | r
-  }
 
 -- Test seam: test/diagnostics.test.mjs calls this with bare tables to pin
 -- the constructor-arity guard. One pattern from a fresh state, outside any
@@ -79,9 +65,10 @@ patternAgainst env state expected = case _ of
   Resolved.IntLit span value → literal TInt span (Checked.IntLit value)
   Resolved.BoolLit span value → literal TBool span (Checked.BoolLit value)
   Resolved.Ctor span id fields → checkCtor env state expected span id fields
-  Resolved.Record span _ _ → Left (problemAt (Internal placeholder) span)
+  Resolved.Record span fields rest → recordAgainst patternAgainst env state
+    expected
+    { span, fields, rest }
   where
-  placeholder = "R004 placeholder: record patterns are checked in Task 2"
   leaf reached span shape locals = pure
     { value:
         { pattern: Checked.Pattern { ty: expected, span, shape }, locals }

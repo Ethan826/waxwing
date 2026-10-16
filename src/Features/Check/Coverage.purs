@@ -76,12 +76,32 @@ covered signature (Checked.Expr expression) = case expression.node of
 coverMatch
   ∷ Signature → Span → Checked.Expr → Array Checked.Arm → Either Diagnostic Unit
 coverMatch signature span scrutinee arms = do
+  recordPlaceholder arms
   redundancy signature span arms
   exhaustiveness signature span (Checked.typeOf scrutinee) arms
   covered signature scrutinee
   traverse_ armBody arms
   where
   armBody arm = covered signature arm.body
+
+-- R004 placeholder, removed in Task 3: a match holding a record pattern
+-- stops at its first one, before any matrix is built.
+recordPlaceholder ∷ Array Checked.Arm → Either Diagnostic Unit
+recordPlaceholder arms = maybe (pure unit) stopped
+  (Array.findMap (recordSpan <<< armPattern) arms)
+  where
+  armPattern arm = arm.pattern
+  stopped = Left <<< problemAt (Internal placeholder)
+  placeholder = "R004 placeholder: record pattern coverage is Task 3"
+
+recordSpan ∷ Checked.Pattern → Maybe Span
+recordSpan (Checked.Pattern pattern) = case pattern.shape of
+  Checked.Record _ _ → Just pattern.span
+  Checked.Ctor _ fields → Array.findMap recordSpan fields
+  Checked.Wildcard → Nothing
+  Checked.Bind _ → Nothing
+  Checked.IntLit _ → Nothing
+  Checked.BoolLit _ → Nothing
 
 -- Only earlier arms can make an arm redundant; the first one is reported.
 redundancy ∷ Signature → Span → Array Checked.Arm → Either Diagnostic Unit
