@@ -1,21 +1,22 @@
-# Waxwing / internal-error batch done on branch `r001-followups` (2026-10-15)
+# Waxwing / internal-error batch merged into main (2026-10-15)
 
-The internal-error batch is done on branch `r001-followups` (worktree
-.worktrees/r001-followups, from main 80b5b53), not merged: FX025
+The internal-error batch was fast-forwarded into main at a1df6fc on
+2026-10-15 after a clean verify of that tree (1909/1909, 59/59, 127
+proofs); the branch and worktree are deleted, nothing is pushed. FX025
 (d0c9f8a), R015 (b07d11f), R016 (3e610b6), R010 (75b2aa3) and R017
 (036153b, found while fixing R016: a row read as a type, or a type
 variable as a row, in a body), each with tests seen failing first and
 regression rows (scripts/regression-ie.mjs), using existing or approved
-texts only (docs/progress.md "FX025 and R015", "R016 and R010"). Next:
-the user's merge decision, by fast-forward only.
+texts only (docs/progress.md "FX025 and R015", "R016 and R010").
 
-Then, in order: R004 (record patterns) and R005 (extension, merge and
+Next, in order: R004 (record patterns) and R005 (extension, merge and
 removal), each with a design the user approves first; then the INF001
 design and C001 with records of operations. Alongside: a phase profile of
 `npm run verify`, R013 and R014.
 
 Setup facts: run `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` in
-the worktree; delete .build/regression and .build/go-cache after a run.
+a worktree (copy .spago and .build/home in); delete .build/regression and
+.build/go-cache after a run.
 
 ---
 
