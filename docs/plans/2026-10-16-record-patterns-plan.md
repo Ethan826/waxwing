@@ -34,8 +34,8 @@ coverage roots and inhabitation, witness openness, buildable commits,
 execution evidence, ADT pointers inside records), then regrouped into
 four slices (user, 2026-10-16): the split folds into whichever task
 needs it, parse and resolve are one task, and Go lowering joins the
-evidence task. Tasks 1 to 4 done: complete on branch `record-patterns`,
-awaiting the merge decision.
+evidence task. Tasks 1 to 4 done; fast-forwarded into main at 2ca49ab
+(2026-10-16).
 
 ## Global Constraints
 
