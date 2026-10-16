@@ -1,9 +1,7 @@
 module Features.Check.Expand
   ( Expansion
-  , Key
   , expand
   , application
-  , substitute
   ) where
 
 import Prelude
@@ -14,22 +12,16 @@ import Data.Foldable (all, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), isJust, maybe')
-import Data.String.Common (joinWith)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open)
 import Domain.Problem (Problem(..))
 import Domain.Resolved (CtorId(..), CtorInfo, TypeId(..), TypeInfo)
-import Domain.Row (Label(..), closedRow, uniformRows)
-import Domain.Type (Ty(..), VarId(..), spliceRecord)
-import Domain.Type.Record (recordRow)
-import Domain.Type.Parts (arrows, children, ground, spine)
+import Domain.Type (Ty(..), VarId)
+import Domain.Type.Parts (ground)
+import Features.Check.Spelling (Key, isData, key, spelling)
+import Features.Check.Substitute (substitute)
 import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
-
--- An application with its variables forgotten: rigid variables and holes
--- are one abstract type to coverage (design §5), so `List(a)` in every
--- function and `List(_)` share one key.
-type Key = Ty Unit
 
 -- Every application reachable from the roots by unfolding constructor
 -- fields, numbered by its spelling; finite by the instantiation rule
@@ -75,72 +67,6 @@ expand types ctors roots = do
 application ∷ Expansion → Ty Open → Lookup TypeInfo
 application expansion ty = maybe' unexpanded (typeInfo expansion.types)
   (TypeId <$> Map.lookup (spelling (key ty)) expansion.numbers)
-
--- A declared field type with the owner's arguments put for its variables.
--- Coverage never reads a row (an arrow or handler is abstract to it), so
--- rows are left out: arrows pure, applications without row arguments.
-substitute ∷ ∀ v. Array (Ty v) → Ty VarId → Lookup (Ty v)
-substitute arguments = case _ of
-  TInt → Right TInt
-  TBool → Right TBool
-  TUnit → Right TUnit
-  TText → Right TText
-  TData id inner _ → rowless id <$> traverse (substitute arguments) inner
-  TVar (VarId index) → maybe' missing Right (Array.index arguments index)
-  THandler (Label effect inner mark) _ → handler effect mark <$> traverse
-    (substitute arguments)
-    inner
-  arrow@(TFun _ _ _) → substituteSpine (spine arrow)
-  TRecord row → traverse recordField row.fields >>= substituteTail row.tail
-  where
-  recordField (Tuple label ty) = Tuple label <$> substitute arguments ty
-  substituteTail tail written = maybe' (closedRecord written)
-    (tailImage written)
-    tail
-  closedRecord written _ = Right (TRecord (recordRow written Nothing))
-  tailImage written (VarId index) = maybe' missing
-    (Right <<< spliceRecord written)
-    (Array.index arguments index)
-  rowless id inner = TData id inner []
-  handler effect mark inner = THandler (Label effect inner mark)
-    (uniformRows closedRow)
-  missing _ = Left (Internal "Invalid type argument")
-  substituteSpine found = arrows
-    <$> traverse (substitute arguments) found.parameters
-    <*> substitute arguments found.result
-
-key ∷ Ty Open → Key
-key = map forget
-  where
-  forget _ = unit
-
--- A key's canonical text, the map key for its number. Comparing two
--- spellings is one native string comparison; comparing two keys walked
--- both through Ord dictionaries, and with applications nested a thousand
--- deep that comparison was nearly all of checking (P001 final fix). An
--- arrow is `f(` its parameters and final result `)`, which no data
--- application's spelling (a number first) can be.
-spelling ∷ Key → String
-spelling = case _ of
-  TInt → "i"
-  TBool → "b"
-  TUnit → "u"
-  TText → "t"
-  TVar _ → "v"
-  TData (TypeId id) arguments _ → show id <> "("
-    <> joinWith "," (map spelling arguments)
-    <> ")"
-  arrow@(TFun _ _ _) → "f(" <> joinWith "," (map spelling (children arrow))
-    <> ")"
-  TRecord row → "r(" <> joinWith "," (map fieldSpelling row.fields)
-    <> maybe' (const "") (const ",..") row.tail
-    <> ")"
-  handler@(THandler _ _) → "h("
-    <> joinWith ","
-      (map spelling (children handler))
-    <> ")"
-  where
-  fieldSpelling (Tuple label ty) = label <> ":" <> spelling ty
 
 closedKey ∷ Array CtorInfo → Tuple Int TypeInfo → Lookup (Maybe Key)
 closedKey ctors (Tuple index info) = judge <$> traverse (ctorInfo ctors)
@@ -236,11 +162,6 @@ field numbers = case _ of
     (Map.lookup (spelling found) numbers)
   where
   applied number = TData (TypeId number) [] []
-
-isData ∷ Key → Boolean
-isData = case _ of
-  TData _ _ _ → true
-  _ → false
 
 unexpanded ∷ ∀ a. Unit → Lookup a
 unexpanded _ = Left (Internal "Unexpanded type application")

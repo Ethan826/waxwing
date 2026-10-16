@@ -17,8 +17,9 @@ import Data.Tuple (fst, snd)
 import Domain.Problem (Problem(..), Witness(..))
 import Domain.Checked.Internal (Open)
 import Domain.Resolved (CtorId(..), CtorInfo, Ty(..), TypeId, TypeInfo)
-import Features.Check.Expand (Expansion, application, expand, substitute)
+import Features.Check.Expand (Expansion, application, expand)
 import Features.Check.Inhabited (inhabitation)
+import Features.Check.Substitute (substitute)
 import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
 
 -- `inhabited` is indexed by the expansion's constructor numbers: one flag
