@@ -2,13 +2,14 @@
 // lambdas, application, pipes, `match`, `if`, blocks, `handler`, `with`,
 // `handle`, `defer`, Text, qualified operations (`Effect.op`, applied
 // like any value) and records: a literal is a primary; call, access and
-// update are postfix, left to right. `expressions(reader)` returns
-// { expression, parameter, readType }. Shares no code with the compiler.
+// update are postfix, left to right; a pattern may be a record's.
+// `expressions(reader)` returns { expression, parameter, readType }.
+// Shares no code with the compiler.
 import { cursor, isUpper, typeReader } from './fx-oracle-lex.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
 import { textNode } from './fx-oracle-text.mjs';
 import {
-  literalAhead, readFields, updateAhead
+  literalAhead, readFields, readRecordPattern, updateAhead
 } from './fx-oracle-records.mjs';
 import { unit } from './poly-parse.mjs';
 
@@ -26,6 +27,7 @@ export const expressions = reader => {
       return { tag: 'literal', value: next.text === 'true' };
     }
     if (next.text === '_') return { tag: 'wildcard' };
+    if (next.text === '{') return readRecordPattern(reader, pattern);
     if (!isUpper(next.text)) return { tag: 'bind', name: next.text };
     const fields = peek('(') ? (take('('), list(pattern, ')')) : [];
     return { tag: 'ctor', name: next.text, fields };

@@ -381,6 +381,14 @@ literals and types in shuffled order, and calls generic functions over open
 records (test/fx-gen-record-fns.mjs). The census requires 250 programs each
 running a record literal, access, update, generic record function,
 comparison, print and Fail payload.
+Since R004 Task 4 it also matches record patterns (fields, puns and
+`...`; test/fx-oracle-records.mjs). test/fx-oracle-record-patterns.test.mjs
+runs 200 generated programs (test/fx-gen-record-patterns.mjs), each match
+an ordered partition of its scrutinee's type so it is exhaustive and
+non-redundant by construction, through the compiler and Go, and compares
+stdout, stderr and status with the interpreter's. It requires 95% of the
+programs to be accepted and each pattern form in at least 10. It shares no
+code with the compiler or with the coverage oracle.
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context

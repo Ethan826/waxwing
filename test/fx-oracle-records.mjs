@@ -61,6 +61,25 @@ const fieldOf = (value, label) => {
   return found[1];
 };
 
+// A record pattern after its `{`: { tag: 'record', fields: [[label,
+// pattern]] }. A field without `:` puns, binding the label's name; a
+// trailing `...` ignores the unnamed fields, so it needs no node.
+export const readRecordPattern = ({ peek, take, list }, pattern) => {
+  const field = () => {
+    if (peek('...')) { take('...'); return null; }
+    const label = take().text;
+    if (!peek(':')) return [label, { tag: 'bind', name: label }];
+    take(':');
+    return [label, pattern()];
+  };
+  return { tag: 'record', fields: list(field, '}').filter(Boolean) };
+};
+
+// Each named field's pattern against the value's field of that label.
+export const recordMatches = (pattern, value, matches, bound) =>
+  pattern.fields.every(([label, field]) =>
+    matches(field, fieldOf(value, label), bound));
+
 // Each field, base and replacement is evaluated once, in written order.
 export const evaluateRecord = (state, node, env, ctx) => {
   const { events, evaluate } = state;
