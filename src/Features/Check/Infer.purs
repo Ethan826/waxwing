@@ -138,6 +138,18 @@ inferNode env state expression = case expression of
   Resolved.RecordUpdate span record fields → checkUpdate infer env state span
     record
     fields
+  Resolved.RecordExtension span _ → unchecked span
+  Resolved.RecordRemoval span _ _ → unchecked span
+
+-- R005 Task 1 placeholder: the forms resolve, checking arrives in Task 2.
+unchecked ∷ Span → Inferred
+unchecked span = Left
+  ( problemAt
+      ( Internal
+          "R005 placeholder: record extension and removal are checked in Task 2"
+      )
+      span
+  )
 
 typed ∷ State → Span → Ty Open → Checked.Node → Inferred
 typed state span ty node = pure

@@ -14,6 +14,7 @@ import Domain.Syntax
   , EffectDecl
   )
 import Format.Lex (Token, endPosition, lex)
+import Format.Parse.Constraint (constraints)
 import Format.Parse.Declaration (typeDeclaration)
 import Format.Parse.Type (typeRef, typeAndRow)
 import Format.Parse.Effect (effectDeclaration)
@@ -93,15 +94,17 @@ function = functionOf <$> expect "fn" <*> name <* expect "("
   <* expect ")"
   <* expect ":"
   <*> typeAndRow
+  <*> constraints
   <* expect "="
   <*> rooted expression
   <*> expect ";"
   where
-  functionOf keyword identifier parameters result body semicolon =
+  functionOf keyword identifier parameters result clauses body semicolon =
     { name: identifier.text
     , parameters
     , result: result.ty
     , row: result.row
+    , constraints: clauses
     , body
     , span: { start: keyword.span.start, end: semicolon.span.end }
     }

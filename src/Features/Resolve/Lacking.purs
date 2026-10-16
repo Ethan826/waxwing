@@ -52,6 +52,7 @@ type Signature r =
   , parameters ∷ Array Resolved.Parameter
   , result ∷ Ty VarId
   , row ∷ TyRow VarId
+  , constraints ∷ Array Resolved.Requirement
   | r
   }
 
@@ -84,7 +85,15 @@ lackingOf declaredHere tables function signature =
   types = map typeOf signature.parameters
     <> [ signature.result, TFun TUnit signature.row TUnit ]
   typeOf parameter = parameter.ty
-  lacks = foldl noted Map.empty (Array.concatMap (implied tables) types)
+  lacks = foldl stated implicit signature.constraints
+  implicit = foldl noted Map.empty (Array.concatMap (implied tables) types)
+  -- A written `where r lacks { a }` lets a body type write `a` beside `r`
+  -- as an implied lack does (R005 design §2).
+  stated found = case _ of
+    Resolved.Lacks clause → case clause.variable of
+      VarId index → Map.insertWith Set.union index (named clause.labels) found
+  named labels = Set.fromFoldable (map labelName labels)
+  labelName label = label.name
   noted found (entry ∷ Implied VarId) = case entry.tail of
     VarId index → Map.insertWith Set.union index entry.labels found
   introduced = foldl first Map.empty

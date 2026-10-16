@@ -74,13 +74,16 @@ operand inner = dispatch
   , on "Unit" (UnitRef <$> tokenSpan)
   , on "Text" (TextRef <$> tokenSpan)
   , on "Handler" (HandlerType.operand (defer rowed) inner)
-  , on "{" (ifSecond (eq "}") (refine unknown token) (RecordType.operand inner))
+  , on "{" (ifSecond (eq "}") emptyRecord (RecordType.operand inner))
   , onWhen upperText (spanned appliedOf (parts <$> upperName <*> arguments))
   , onWhen lowerText (variable <$> token)
   ]
   (refine unknown token)
   where
   rowed _ = typeAndRow
+  -- `{}` is the empty record type (R005 design §4), never Unit.
+  emptyRecord = spanned emptyOf (expect "{" *> expect "}")
+  emptyOf span _ = RecordRef span [] Nothing
   parts identifier found = { identifier, arguments: found }
   arguments = optionalOn "(" (expect "(" *> sepBy1 "," argument <* expect ")")
   argument = dispatch

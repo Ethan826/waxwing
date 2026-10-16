@@ -137,14 +137,14 @@ test runner, Go 1.26.4. No new dependency.
   non-record ones) and join Resolve/Lacking `lackingOf` so body types
   may write the lacked labels.
 
-- [ ] Failing tests test/r005-parse.test.mjs and r005-resolve.test.mjs:
+- [x] Failing tests test/r005-parse.test.mjs and r005-resolve.test.mjs:
   each new form parsed (spread first, last, alone; `without` chained
   with call, access, update and `|>`; named and bare rest; `where` with
   several constraints; `{}` in parameter, result and nested types);
   reserved-word use as a name is E_SYNTAX; second spread; repeated
   labels; constraint variable errors; a body type writing a lacked
   label is accepted only with the clause.
-- [ ] Implement; editor grammar test passes; depth probe unchanged;
+- [x] Implement; editor grammar test passes; depth probe unchanged;
   verify; commit.
 
 ### Task 2: Checking

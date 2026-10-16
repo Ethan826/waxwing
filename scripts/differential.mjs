@@ -62,13 +62,44 @@ const withoutSorts = program => ({
   functions: program.functions.map(({ sorts: _, ...rest }) => rest)
 });
 
+// R005 Task 1: a declaration gained `constraints`, its written `where`
+// clauses (parsed and resolved). A declaration with none is compared
+// without the field, so a baseline from before R005 agrees wherever the
+// syntax does.
+const withoutNoConstraints = program => ({
+  ...program,
+  functions: program.functions.map(declaration =>
+    declaration.constraints?.length === 0
+      ? Object.fromEntries(Object.entries(declaration)
+        .filter(([key]) => key !== 'constraints'))
+      : declaration)
+});
+
+// R005 Task 1: a record pattern's rest was a span (Maybe) or a Boolean and
+// is a Rest record or NoRest/IgnoredRest. Hashed as before, so a baseline
+// from before R005 agrees wherever the patterns do.
+const restAsBefore = pattern => {
+  const found = pattern.value2;
+  const span = found?.constructor?.name === 'Just' && found.value0.span;
+  if (!span) return pattern;
+  const just = Object.assign(Object.create(Object.getPrototypeOf(found)),
+    { value0: span });
+  return Object.assign(Object.create(Object.getPrototypeOf(pattern)),
+    pattern, { value2: just });
+};
+const booleanRests = { NoRest: false, IgnoredRest: true };
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack.
 const digest = value => {
   const hash = createHash('sha1');
   const pending = [value];
   while (pending.length > 0) {
-    const item = pending.pop();
-    if (item === null || typeof item !== 'object') {
+    const popped = pending.pop();
+    const item = popped?.constructor?.name === 'PRecord'
+      ? restAsBefore(popped) : popped;
+    if (item?.constructor?.name in booleanRests) {
+      hash.update(`boolean:${booleanRests[item.constructor.name]};`);
+    } else if (item === null || typeof item !== 'object') {
       hash.update(`${typeof item}:${String(item)};`);
     } else if (Array.isArray(item)) {
       hash.update(`[${item.length};`);
@@ -104,8 +135,10 @@ const outcome = (compiler, source) => {
   };
   const lexed = step('lex', () => compiler.lex(source), withoutPlain);
   if (lexed === undefined) return phases;
-  const parsed = step('parse', () => compiler.parse(source));
-  const resolved = parsed && step('resolve', () => compiler.resolve(parsed));
+  const parsed = step('parse', () => compiler.parse(source),
+    withoutNoConstraints);
+  const resolved = parsed && step('resolve', () => compiler.resolve(parsed),
+    withoutNoConstraints);
   const checked = resolved
     && step('check', () => compiler.check(resolved), withoutSorts);
   const specialized = checked

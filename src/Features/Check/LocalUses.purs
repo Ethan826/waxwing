@@ -3,7 +3,7 @@ module Features.Check.LocalUses (usesOf) where
 import Prelude
 import Data.Array as Array
 import Data.Foldable (sum)
-import Domain.Resolved (Expr(..), Item(..), LocalId(..))
+import Domain.Resolved (Expr(..), Item(..), LiteralItem(..), LocalId(..))
 
 -- How many times a parameter (a local numbered below the parameter count)
 -- is read in an expression. A diagnostic that proposes rewriting a
@@ -39,7 +39,14 @@ parts = case _ of
   RecordLiteral _ fields → map _.value fields
   FieldAccess _ record _ → [ record ]
   RecordUpdate _ record fields → Array.cons record (map _.value fields)
+  RecordExtension _ items → map itemValue items
+  RecordRemoval _ record _ → [ record ]
   _ → []
+
+itemValue ∷ LiteralItem → Expr
+itemValue = case _ of
+  Given found → found.value
+  Spreading _ value → value
 
 itemBody ∷ Item → Expr
 itemBody = case _ of

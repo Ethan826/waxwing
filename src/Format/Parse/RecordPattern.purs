@@ -3,7 +3,8 @@ module Format.Parse.RecordPattern (recordPattern) where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
-import Domain.Syntax (FieldPattern, Pattern(..), Span)
+import Domain.Syntax (FieldPattern, Pattern(..), Rest)
+import Format.Lex (isName, isUpper)
 import Format.Parse.Grammar
   ( Parser
   , dispatch
@@ -12,12 +13,13 @@ import Format.Parse.Grammar
   , manyOn
   , nested
   , on
+  , onWhen
   , optionalOn
   , spanned
   )
 import Format.Parse.RecordType (label)
 
-data Item = FieldItem FieldPattern | RestItem Span | EndItem
+data Item = FieldItem FieldPattern | RestItem Rest | EndItem
 
 -- `{ a: p, b, ... }` (R004 design §1): a first field, then `, field` or a
 -- final `, ...`, and a comma may follow the last item. Parsing the first
@@ -38,7 +40,7 @@ recordPattern inner = spanned written
     FieldItem value → Just value
     _ → Nothing
   restOf = case _ of
-    RestItem span → Just span
+    RestItem found → Just found
     _ → Nothing
 
 -- One item after a comma; the comma belongs to it, so that a `...` can
@@ -48,12 +50,18 @@ more inner = expect "," *> dispatch
   [ on "}" (pure EndItem), on "..." restItem ]
   (FieldItem <$> field inner)
 
--- `...` ends the list: only `}` or `,}` may follow, so a later field is
--- refused at the comma.
+-- `...` or `...name` ends the list (R005 design §3): only `}` or `,}` may
+-- follow, so a later field is refused at the comma. The rest spans the dots
+-- through the name, which keeps its own span; a name starting with a capital
+-- is left to the closing brace's refusal.
 restItem ∷ Parser Item
-restItem = spanned restOf (expect "...") <* closing
+restItem = spanned restOf (expect "..." *> optionalName) <* closing
   where
-  restOf span _ = RestItem span
+  restOf span name = RestItem { span, name }
+  optionalName = dispatch [ onWhen lowerText (Just <$> written) ] (pure Nothing)
+  written = labelOf <$> label
+  labelOf found = { name: found.text, span: found.span }
+  lowerText text = isName text && not (isUpper text)
   closing = dispatch [ on "}" (pure unit), on "," afterComma ] unexpected
   afterComma = ifSecond (eq "}") (void (expect ",")) unexpected
   unexpected = void (expect "}")

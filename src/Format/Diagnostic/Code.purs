@@ -46,6 +46,8 @@ code = case _ of
   ExpectedRecord _ → Code.TypeMismatch
   PatternMissingField _ → Code.TypeMismatch
   PatternMissingRest _ → Code.TypeMismatch
+  SecondSpread → Code.TypeMismatch
+  TypeAsRecordRow _ → Code.TypeMismatch
   RowMayHaveField _ _ → Code.TypeMismatch
   DeferMayFail _ → Code.EffectError
   DeferMayPerform _ → Code.EffectError

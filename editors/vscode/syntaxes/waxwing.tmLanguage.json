@@ -1599,7 +1599,7 @@
         },
         {
           "name": "keyword.control.waxwing",
-          "match": "(?<![A-Za-z0-9_])(?:if|then|else|match|with|handle|defer|resume)(?![A-Za-z0-9_])"
+          "match": "(?<![A-Za-z0-9_])(?:if|then|else|match|with|handle|defer|resume|where|lacks|without|disjoint)(?![A-Za-z0-9_])"
         },
         {
           "name": "keyword.declaration.waxwing",

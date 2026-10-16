@@ -151,6 +151,10 @@ data Problem
   -- (the first in label order), or the open rest of its type (the type).
   | PatternMissingField String
   | PatternMissingRest TypeName
+  -- R005: a second `...` in one record literal (until Tranche B), and a
+  -- `where` constraint on a type variable, by name (design §2, §5).
+  | SecondSpread
+  | TypeAsRecordRow String
   -- R001: a record row variable of the enclosing signature and a label a
   -- type written in the body puts beside it, which it may already hold.
   | RowMayHaveField String String

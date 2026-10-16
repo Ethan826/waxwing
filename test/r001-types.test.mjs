@@ -38,14 +38,13 @@ test('label order does not matter', () => {
   assert.equal(one.constructor.name, 'TRecord');
 });
 
-test('{} in a type is the existing syntax error', () => {
-  const source = `fn f(x: {}): Int = 1;${main}`;
-  const result = parse(source);
-  assert.ok(result instanceof Left);
-  const diagnostic = wire(result.value0);
-  assert.equal(diagnostic.code, 'E_SYNTAX');
-  assert.equal(diagnostic.message, 'Expected a type');
-  assert.deepEqual(diagnostic.span, spanAt(source, '{'));
+// R005 Task 1 (design §4): `{}` was E_SYNTAX `Expected a type`; it is now
+// the empty closed record type, with no fields and no tail.
+test('{} in a type is the empty closed record', () => {
+  const found = parameterType(`fn f(x: {}): Int = 1;${main}`);
+  assert.equal(found.constructor.name, 'TRecord');
+  assert.deepEqual(found.value0.fields, []);
+  assert.equal(found.value0.tail.constructor.name, 'Nothing');
 });
 
 test('a duplicate field is E_DUPLICATE at the second label', () => {

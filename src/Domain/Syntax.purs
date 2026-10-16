@@ -31,8 +31,10 @@ import Domain.Syntax.Core
   , Import
   , Imports
   , Item(..)
+  , Label
   , LabelRef
   , LambdaParam
+  , LiteralItem(..)
   , MarkRef(..)
   , Note
   , OperationDecl
@@ -42,7 +44,9 @@ import Domain.Syntax.Core
   , Position
   , Program
   , RecordTail
+  , Rest
   , RefSpine
+  , Requirement(..)
   , RowRef(..)
   , RowTail(..)
   , Sort(..)
@@ -82,6 +86,8 @@ exprSpan = case _ of
   RecordLiteral span _ → span
   FieldAccess span _ _ → span
   RecordUpdate span _ _ → span
+  RecordExtension span _ → span
+  RecordRemoval span _ _ → span
 
 typeRefSpan ∷ TypeRef → Span
 typeRefSpan = case _ of

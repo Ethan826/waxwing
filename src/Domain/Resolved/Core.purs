@@ -3,7 +3,7 @@ module Domain.Resolved.Core where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe, fromMaybe)
-import Domain.Syntax (Sort(..), Span, TypeRef)
+import Domain.Syntax (Label, Sort(..), Span, TypeRef)
 import Domain.Type (Ty, TypeId, VarId(..))
 
 -- The declared names and patterns of resolved syntax: ids, the type and
@@ -69,10 +69,14 @@ data Pattern
   | IntLit Span Int
   | BoolLit Span Boolean
   | Ctor Span CtorId (Array Pattern)
-  | Record Span (Array FieldPattern) Boolean
+  | Record Span (Array FieldPattern) Rest
+
+-- How a record pattern ends (R005 design §3): not at all, with a bare
+-- `...` that ignores the rest, or with `...name`, which binds it.
+data Rest = NoRest | IgnoredRest | NamedRest LocalId
 
 -- The label's span is kept for diagnostics about the field (R004 design
--- §1); the Boolean is whether the pattern ends with `...`.
+-- §1).
 type FieldPattern = { label ∷ String, span ∷ Span, pattern ∷ Pattern }
 
 -- `rowSpan`: where the written `with` row is, for notes (FX001 Task 9): a
@@ -97,3 +101,13 @@ type EffectInfo =
   , span ∷ Span
   }
 
+-- A written `where r lacks { a, b }`: the variable it names (an index into
+-- the signature's variables) with its written name and span, and the
+-- labels with their spans, which later diagnostics point at (R005 design
+-- §2, §5). `span` is the whole constraint.
+data Requirement = Lacks
+  { variable ∷ VarId
+  , written ∷ Label
+  , span ∷ Span
+  , labels ∷ Array Label
+  }

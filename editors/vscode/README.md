@@ -19,7 +19,8 @@ if the language does not appear, use Install Extension from Location.
 ## What is highlighted
 
 - Reserved words, as the lexer reserves them (`Format.Lex.Chars.reserved`):
-  control (`if then else match with handle defer resume`), declarations
+  control (`if then else match with handle defer resume where lacks without
+  disjoint`), declarations
   (`fn type effect handler let ctl`), `true`/`false`, the built-in types
   `Int Bool Unit Text`, and the wildcard `_`. `pure` and `nofail` are
   contextual (ordinary names to the lexer) and are always highlighted. `fail`

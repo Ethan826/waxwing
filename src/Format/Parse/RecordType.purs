@@ -33,8 +33,8 @@ data Part = FieldPart FieldRef | TailPart RecordTail
 
 -- `{ a: A, b: B }` or `{ a: A, ...r }`, a comma allowed after the last
 -- item (G005). The `{` is at the next token and a `}` does not follow it:
--- the empty record has no spelling (design §1), so `{}` is refused by the
--- caller as any other non-type. Each field's type is one level deeper.
+-- the caller reads `{}`, the empty record type (R005 design §4). Each
+-- field's type is one level deeper.
 operand ∷ Parser TypeRef → Parser TypeRef
 operand inner = refine assembled
   ( spanned written

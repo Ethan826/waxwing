@@ -16,6 +16,8 @@ const parsedPattern = pattern => {
 const patternShape = pattern => shape(parsedPattern(pattern));
 const entry = (label, found) => `{label: ${label}, pattern: ${found}}`;
 const bind = name => `PBind(${name})`;
+// R005 Task 1: a rest is `Just` a record holding its optional name.
+const bare = 'Just({name: Nothing})';
 const record = (fields, rest = 'Nothing') =>
   `PRecord([${fields.join(', ')}], ${rest})`;
 
@@ -37,14 +39,14 @@ test('a record pattern nests in a constructor pattern and around one', () => {
 test('a trailing comma is allowed, with or without the rest', () => {
   assert.equal(patternShape('{ a: n, }'), record([entry('a', bind('n'))]));
   assert.equal(patternShape('{ a: n, ..., }'),
-    record([entry('a', bind('n'))], 'Just'));
+    record([entry('a', bind('n'))], bare));
 });
 
 test('... ends the pattern and is recorded', () => {
   assert.equal(patternShape('{ a: n, ... }'),
-    record([entry('a', bind('n'))], 'Just'));
+    record([entry('a', bind('n'))], bare));
   const found = parsedPattern('{ a: n, ... }');
-  assert.deepEqual(found.value2.value0,
+  assert.deepEqual(found.value2.value0.span,
     spanAt(wrap('{ a: n, ... }'), '...'));
 });
 
@@ -53,7 +55,7 @@ test('a field without a pattern puns as a binder at its label', () => {
     record([entry('name', bind('name'))]));
   assert.equal(patternShape('{ name, admin: true, age, ... }'),
     record([entry('name', bind('name')), entry('admin', 'PBool(true)'),
-      entry('age', bind('age'))], 'Just'));
+      entry('age', bind('age'))], bare));
   const source = wrap('{ name, admin: true }');
   const found = parsedPattern('{ name, admin: true }');
   assert.deepEqual(found.value1[0].pattern.value0, spanAt(source, 'name'));
@@ -69,7 +71,7 @@ test('a label has its own span, apart from its pattern', () => {
 
 for (const [text, message] of [
   ['{ a: n, ..., b: m }', "Expected '}'"],
-  ['{ a: n, ... b }', "Expected '}'"],
+  ['{ a: n, ... 3 }', "Expected '}'"],
   ['{ a: n, ..., ... }', "Expected '}'"],
   ['{}', 'Expected an identifier'],
   ['{ ... }', 'Expected an identifier'],

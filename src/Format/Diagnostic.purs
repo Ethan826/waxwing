@@ -82,6 +82,8 @@ message = case _ of
     <> "; add it or end the pattern with ..."
   PatternMissingRest ty → "Pattern is missing the rest of " <> typeName ty
     <> "; end the pattern with ..."
+  SecondSpread → "A record literal accepts at most one spread"
+  TypeAsRecordRow name → name <> " is a type, not a record row"
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
   DeferMayPerform tail →

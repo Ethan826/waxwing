@@ -18,10 +18,10 @@ import Features.Check.Matched (Against, Matched, PatternEnv)
 import Features.Check.Require (bounded, expectType, typeName)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
 
--- A record pattern as resolved: its span, fields and whether it ends with
--- `...`.
+-- A record pattern as resolved: its span, fields and how it ends (none,
+-- a bare `...`, or a named rest, R005 design §3).
 type Written =
-  { span ∷ Span, fields ∷ Array Resolved.FieldPattern, rest ∷ Boolean }
+  { span ∷ Span, fields ∷ Array Resolved.FieldPattern, rest ∷ Resolved.Rest }
 
 -- A field to check: its label, the type expected of it, and its pattern.
 type Expected = { label ∷ String, ty ∷ Ty Open, pattern ∷ Resolved.Pattern }
@@ -46,6 +46,7 @@ recordAgainst
   → Either Diagnostic (Threaded Matched)
 recordAgainst against env state expected written = do
   bounded state expected written.span
+  restChecked written
   case ty of
     TRecord row
       | growable row written → extended against env state expected written
@@ -60,6 +61,25 @@ recordAgainst against env state expected written = do
   notRecord _ = do
     name ← typeName env written.span ty
     Left (problemAt (ExpectedRecord name) written.span)
+
+-- R005 Task 1 placeholder: a named rest resolves, but its remainder type
+-- is judged in Task 2. A bare `...` and no rest are checked as in R004.
+restChecked ∷ Written → Either Diagnostic Unit
+restChecked written = case written.rest of
+  Resolved.NamedRest _ → Left
+    ( problemAt
+        (Internal "R005 placeholder: rest binders are checked in Task 2")
+        written.span
+    )
+  _ → Right unit
+
+-- Whether the pattern ends with `...`, bare or named: it then lists no
+-- more fields than it writes.
+endsOpen ∷ Written → Boolean
+endsOpen written = case written.rest of
+  Resolved.NoRest → false
+  Resolved.IgnoredRest → true
+  Resolved.NamedRest _ → true
 
 -- A hole tail grows by the labels the pattern writes and the record lacks,
 -- as `.l` grows one (user decision 2026-10-16), so arm order does not
@@ -108,7 +128,7 @@ finished
   → Written
   → Either Diagnostic State
 finished env state expected known written =
-  if written.rest then Right state
+  if endsOpen written then Right state
   else listed env state expected known
     written
 
@@ -188,7 +208,7 @@ fromHole against env state expected written = do
   fieldsAgainst against env reached
     (Array.zipWith typed fresh.fields written.fields)
   where
-  fresh = freshRecord state (writtenLabels written) written.rest
+  fresh = freshRecord state (writtenLabels written) (endsOpen written)
   typed ty field = { label: field.label, ty, pattern: field.pattern }
 
 -- Each field against its type, in written order.
@@ -216,7 +236,7 @@ matched expected written checked =
       { pattern: Checked.Pattern
           { ty: expected
           , span: written.span
-          , shape: Checked.Record (map fieldOf checked.value) written.rest
+          , shape: Checked.Record (map fieldOf checked.value) (endsOpen written)
           }
       , locals: Array.concatMap localsOf checked.value
       }

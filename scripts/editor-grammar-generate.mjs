@@ -21,7 +21,7 @@ const boundary = names => `(?<!${word})(?:${names.join('|')})(?!${word})`;
 // where an alias or an import renaming can stand (`aliasRule`, `renameRule`).
 export const wordGroups = [
   ['keyword.control', ['if', 'then', 'else', 'match', 'with', 'handle',
-    'defer', 'resume']],
+    'defer', 'resume', 'where', 'lacks', 'without', 'disjoint']],
   ['keyword.declaration', ['fn', 'type', 'effect', 'handler', 'let', 'ctl']],
   ['constant.language.boolean', ['true', 'false']],
   ['support.type.builtin', ['Int', 'Bool', 'Unit', 'Text']],

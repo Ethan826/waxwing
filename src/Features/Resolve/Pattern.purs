@@ -112,9 +112,12 @@ binders ∷ Syntax.Pattern → Array Binder
 binders = case _ of
   Syntax.PBind span name → [ { name, span } ]
   Syntax.PCtor _ _ fields → Array.concatMap binders fields
-  Syntax.PRecord _ fields _ → Array.concatMap fieldBinders fields
+  Syntax.PRecord _ fields rest → Array.concatMap fieldBinders fields
+    <> maybe [] restBinder rest
   Syntax.PWildcard _ → []
   Syntax.PInt _ _ → []
   Syntax.PBool _ _ → []
   where
   fieldBinders field = binders field.pattern
+  restBinder found = maybe [] (Array.singleton <<< binderOf) found.name
+  binderOf label = { name: label.name, span: label.span }

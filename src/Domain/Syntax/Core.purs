@@ -44,9 +44,19 @@ data Expr
   | RecordLiteral Span (Array FieldValue)
   | FieldAccess Span Expr FieldName
   | RecordUpdate Span Expr (Array FieldValue)
+  -- R005: a literal holding a spread, its items in written order
+  -- (evaluation order), and `e without { l, … }` (design §1, §3).
+  | RecordExtension Span (Array LiteralItem)
+  | RecordRemoval Span Expr (Array Label)
 
 type FieldName = { name ∷ String, span ∷ Span }
 type FieldValue = { name ∷ String, span ∷ Span, value ∷ Expr }
+
+-- A written name with its own span: a removed or lacked label, a rest
+-- binder, a constraint's variable. `Spreading` spans `...e`; it is not
+-- `Spread`, which is a row tail (below).
+type Label = { name ∷ String, span ∷ Span }
+data LiteralItem = Given FieldValue | Spreading Span Expr
 
 -- A block item (FX001 design §1): `let name = e`, `let _ = e` (Nothing)
 -- spanning `let` through `e`, `defer e` spanning `defer` through `e`, or
@@ -64,7 +74,11 @@ data Pattern
   | PInt Span Int
   | PBool Span Boolean
   | PCtor Span String (Array Pattern)
-  | PRecord Span (Array FieldPattern) (Maybe Span)
+  | PRecord Span (Array FieldPattern) (Maybe Rest)
+
+-- `...` spans itself, or `...name` through the name (R005 design §3); the
+-- name is absent for a bare `...`.
+type Rest = { span ∷ Span, name ∷ Maybe Label }
 
 -- A field of a record pattern (R004 design §1). `span` is the label's, so a
 -- problem with the field is reported at the label; a pun's pattern is the
@@ -153,9 +167,15 @@ type FunctionDecl =
   , parameters ∷ Array Parameter
   , result ∷ TypeRef
   , row ∷ Maybe RowRef
+  , constraints ∷ Array Requirement
   , body ∷ Expr
   , span ∷ Span
   }
+
+-- `where r lacks { a, b }` (R005 design §2): the constraint spans the
+-- variable through the closing brace. Tranche B adds `disjoint`.
+data Requirement = Lacks
+  { variable ∷ Label, span ∷ Span, labels ∷ Array Label }
 
 type OperationDecl =
   { name ∷ String

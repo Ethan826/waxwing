@@ -13,6 +13,7 @@ import Features.Resolve.Expression (expression)
 import Features.Resolve.Fresh (runFresh)
 import Features.Resolve.Types (resolveTypeWith, typeTable)
 import Features.Resolve.Marks (signatureMarkVariables)
+import Features.Resolve.Requirements (resolveRequirements)
 import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
@@ -34,6 +35,7 @@ type Signature =
   , row ∷ TyRow Resolved.VarId
   , parameters ∷ Array Resolved.Parameter
   , result ∷ Resolved.Ty Resolved.VarId
+  , constraints ∷ Array Resolved.Requirement
   }
 
 type Definition =
@@ -132,7 +134,16 @@ resolveSignature declared known effects function = do
   parameters ← traverse (parameter resolved) function.parameters
   result ← resolved function.result
   row ← resolveRow effects variables ambient bare function.row
-  pure { variables, markVariables, sorts, parameters, result, row }
+  constraints ← resolveRequirements { variables, sorts } function.constraints
+  pure
+    { variables
+    , markVariables
+    , sorts
+    , parameters
+    , result
+    , row
+    , constraints
+    }
   where
   markVariables = signatureMarkVariables
     (Array.snoc (map parameterType function.parameters) function.result)
@@ -209,4 +220,5 @@ resolveFunction globals declared tables effects effectInfos definition =
     , body
     , span: definition.function.span
     , rowSpan: writtenSpan definition.function.row
+    , constraints: definition.signature.constraints
     }

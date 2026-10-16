@@ -37,7 +37,7 @@ import Format.Parse.Handler
   , unsupportedControl
   , withExpr
   )
-import Format.Parse.Lookahead (labelled)
+import Format.Parse.Lookahead (literalStart)
 import Format.Parse.Name (Primary, named, upperNamed)
 import Format.Parse.Postfix (applied, suffixes)
 import Format.Parse.Record (literal)
@@ -67,7 +67,7 @@ expression = dispatch
   [ on "if" (conditional inner)
   , on "match" (matchExpression inner)
   , on "fn" (lambda inner)
-  , on "{" (choose (labelled ":") (pipeline inner) (block inner))
+  , on "{" (choose literalStart (pipeline inner) (block inner))
   , on "handler" (handlerExpr inner)
   , on "with" (withExpr inner)
   , on "handle" (handleExpr inner)
@@ -151,7 +151,7 @@ primary inner = dispatch
   , on "false" (bare <<< boolean false <$> token)
   , on "\"" (bare <$> textLiteral inner)
   , onWhen integerStart (bare <<< integer <$> integerLiteral)
-  , on "{" (bare <$> choose (labelled ":") (literal inner) unexpected)
+  , on "{" (bare <$> choose literalStart (literal inner) unexpected)
   , onWhen isQualifier (upperNamed inner)
   , onWhen isName (named inner)
   ]

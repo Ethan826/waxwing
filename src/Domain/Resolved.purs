@@ -7,6 +7,7 @@ module Domain.Resolved
 import Data.Maybe (Maybe)
 import Domain.Resolved.Core
 import Domain.Syntax (FieldName, Operator, Sort, Span)
+import Domain.Syntax as Syntax
 import Domain.Ids (EffectId)
 import Domain.Type (Ty(..), TyRow, TypeId(..), VarId(..))
 import Domain.Row (Label)
@@ -51,8 +52,13 @@ data Expr
   | RecordLiteral Span (Array FieldValue)
   | FieldAccess Span Expr FieldName
   | RecordUpdate Span Expr (Array FieldValue)
+  -- R005: a literal with a spread, items in written order; removal.
+  | RecordExtension Span (Array LiteralItem)
+  | RecordRemoval Span Expr (Array Syntax.Label)
 
 type FieldValue = { name ∷ String, span ∷ Span, value ∷ Expr }
+
+data LiteralItem = Given FieldValue | Spreading Span Expr
 
 type HandlerClause =
   { operation ∷ Int
@@ -95,6 +101,8 @@ type FunctionDecl =
   , body ∷ Expr
   , span ∷ Span
   , rowSpan ∷ Maybe Span
+  -- Written `where` constraints; checking ignores them until R005 Task 2.
+  , constraints ∷ Array Requirement
   }
 
 type Program =
@@ -141,3 +149,5 @@ exprSpan expression = case expression of
   RecordLiteral span _ → span
   FieldAccess span _ _ → span
   RecordUpdate span _ _ → span
+  RecordExtension span _ → span
+  RecordRemoval span _ _ → span

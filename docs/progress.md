@@ -5369,3 +5369,90 @@ harvested sources, and one whitespace mutation of one of them).
 Eleven timing tests failed only in the instrumented harvest run (known,
 BACKLOG T007); they pass in verify. .build/r004-base, .build/regression
 and .build/go-cache deleted afterwards.
+
+## R005 Task 1: surface and resolution (2026-10-16)
+
+What. The Tranche A surface parses and resolves; checking is a
+placeholder (Task 2). Two preparatory splits, behaviour-preserving: the
+ids, tables, parameters and patterns left Domain.Resolved for
+Domain.Resolved.Core (re-exported), and the entry check left
+Features.Resolve for Features.Resolve.Entry. Differential of the split
+commit against its parent (`--corpus all`, .build/evidence/
+r005-t1-split-differential.log): 11,769 cases, 0 differences.
+
+Surface. `where`, `lacks`, `without` and `disjoint` are reserved
+(Format.Lex.Chars; the editor grammar's `keyword.control`, regenerated,
+and editors/vscode/README.md). `{}` in a type is `RecordRef span []
+Nothing`, which resolves to the closed empty record. A record literal
+holding `...e` is `RecordExtension Span (Array LiteralItem)`, items in
+written order (`Given FieldValue | Spreading Span Expr`); without a
+spread it stays `RecordLiteral`. `Spreading`, not the plan's `Spread`:
+Syntax already has `Spread` as a row tail. `e without { l, … }` is
+`RecordRemoval Span Expr (Array Label)`, a postfix at the level of call,
+access and update. `PRecord`'s rest is `Maybe Rest`, `Rest = { span, name
+∷ Maybe Label }`; Resolved's is `NoRest | IgnoredRest | NamedRest LocalId`.
+A signature's `where c, …` is `constraints ∷ Array Requirement` (the
+plan's `Constraint` is a Prim type in PureScript), `Lacks { variable,
+span, labels }`; Resolved's also keeps the variable's index. A literal is
+chosen on `{ …:` or `{ ...` (Lookahead `literalStart`); a literal is
+never a block. The constraint parser is Format.Parse.Constraint; the
+constraint's variable is resolved by Features.Resolve.Requirements.
+
+Texts (all at the stated location). A second spread: E_TYPE `A record
+literal accepts at most one spread`, at the second spread, refused before
+repeated labels. Repeated labels in a literal, `without` or a `lacks`
+list: `Duplicate field x` at the second, noted `first written here`. A
+rest name repeating a binder: `Duplicate binder x` (the rest name joins
+Pattern `binders`, and takes the next LocalId after the field binders; it
+is in scope in its arm only). A constraint variable: unknown, `Unbound
+type variable zz`; an effect row, `ee is an effect row, not a record
+row`; a type variable, new E_TYPE `tv is a type, not a record row`
+(approved 2026-10-16). `disjoint` in a constraint reads as `Expected
+'lacks'`; `without {}` as `Expected an identifier`. A written lack joins
+Resolve/Lacking `lackingOf`, so a body type writing a lacked label beside
+the variable resolves with the clause and is `r may already have field a`
+without it.
+
+Placeholders (plan table; Task 2 removes them). Check/Infer: `Internal
+"R005 placeholder: record extension and removal are checked in Task 2"`
+at the expression for `RecordExtension` and `RecordRemoval`.
+Check/RecordPattern: `Internal "R005 placeholder: rest binders are
+checked in Task 2"` at the pattern for a `NamedRest`; `NoRest` and
+`IgnoredRest` behave as R004's false and true did. Case analyses touched:
+Check/LocalUses `parts` (real cases, it cannot fail), Check/RecordPattern
+(`endsOpen`, total), Resolve/Pattern `binders`, Resolve/Expression, and
+the Syntax and Resolved `exprSpan`. Written constraints are resolved and
+kept on the resolved FunctionDecl, but checking ignores them until Task 2
+seeds them.
+
+Tests. test/r005-parse.test.mjs and r005-resolve.test.mjs: 79 tests, 67
+failing before the change (.build/evidence/r005-t1-red.log), all passing
+after. Two existing tests state behaviour R005 deliberately changes and
+were updated, not weakened: test/r001-types.test.mjs (`{}` in a type was
+E_SYNTAX `Expected a type`; it is the empty record) and
+test/r004-parse.test.mjs (a rest is `Just` a record with an optional
+name; `{ a: n, ... b }` is now a named rest, so the refused-after-rest
+case uses `... 3`). No fixture used the four words as names, so none was
+renamed. The fx020-row-dependent regression row (scripts/regression-
+fx020.mjs) gained a second edit restoring the `maybe` import that the
+entry-check split removed from Resolve.purs; its defect is unchanged.
+
+Depth probe (scripts/depth-probe.mjs): summary identical before and
+after (every form "none ≤ 65536", 153 anomalies, all E_NESTING
+diagnostics); logs r005-t1-depth-before.log and -after.log.
+
+`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: 2054/2054,
+59/59, 134 regression proofs, exit 0 (.build/evidence/r005-t1-verify.log).
+No regression needle stopped matching; one row (fx020-row-dependent, see
+above) needed its restored source to compile.
+
+Differential against the split commit's parent (`--corpus all`,
+.build/evidence/r005-t1-differential-all.log): 2 differences in 11,769
+cases, both expected and both in the harvested tests that this commit
+updated: `fn f(x: {}): Int` (was E_SYNTAX `Expected a type`) and
+`{ a: n, ... b }` (was `Expected '}'`, now a named rest). The syntax
+and resolved hashes needed projections in scripts/differential.mjs (now
+250 lines): a declaration with no `constraints` is compared without the
+field, and a record pattern's rest is hashed as before (a span, a
+Boolean), as `withoutSorts` did for R001. Without them every source
+differed at parse. .build/regression and .build/go-cache deleted.

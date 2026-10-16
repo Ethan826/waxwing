@@ -73,6 +73,12 @@ reserved = case _ of
   "Text" → true
   "ctl" → true
   "resume" → true
+  -- R005 (design §2): `disjoint` is reserved with them so that Tranche B
+  -- breaks no program a second time.
+  "where" → true
+  "lacks" → true
+  "without" → true
+  "disjoint" → true
   _ → false
 
 -- The first characters of `twoCharacterTokens`.
