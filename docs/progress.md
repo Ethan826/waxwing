@@ -5049,3 +5049,28 @@ Fix round 1 (review of R016 and R010, 2026-10-15):
   final value (resolved before, now R017's E_TYPE in resolve); 0 in
   fuzz, isName and matches. The harvest runs' timing failures are in
   BACKLOG T007 (bounds unchanged).
+
+## README and theme-aware branding (2026-10-15)
+
+User-reviewed README rewrite: keep the dependency/error-composition
+hypothesis prominent; distinguish implemented features from inference,
+class and target plans; explain record rows, explicit function interfaces,
+comparison composition and error-family narrowing. Link introductory
+references and Matt Parsons's error-composition discussion. Go's selection
+reflects the author's day job; WASM/JS and possibly LLVM are future targets.
+
+White-background and dark-theme PNG/SVG variants preserve the original
+logo paths and transforms. The original transparent artwork is unchanged.
+README selects the dark variant with picture media markup and defaults to
+the opaque white variant.
+
+Draft validation: all seven Waxwing code blocks compile and produce the
+expected output, with an entry point or existing helpers for excerpts.
+Width, links and image references checked; white PNG opacity and original
+path geometry checked.
+
+Full `npm run verify` was started under AGENTS.md's blanket completion
+rule, then stopped after the user questioned its relevance to this
+README/artwork change. Build, strict-warning and width checks passed
+before it was stopped. No complete-suite result is claimed. The relevant
+draft example, link and image checks above passed.

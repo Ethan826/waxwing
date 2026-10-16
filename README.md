@@ -1,273 +1,143 @@
 <p align="center">
-  <img src="assets/branding/waxwing-logo.png" alt="Waxwing bird logo"
-       width="240">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="assets/branding/waxwing-logo-dark.png">
+    <img src="assets/branding/waxwing-logo-white.png" alt="Waxwing bird logo"
+         width="240">
+  </picture>
 </p>
 
 # Waxwing
 
-Waxwing is a functional programming language that compiles to ordinary,
-readable Go. It aims for:
+Waxwing is an experimental functional language that compiles to Go. The aim is a
+stable release that people can use for real applications. The compiler is
+written in PureScript and is not yet self-hosted.
 
-- the everyday rigor of Rust: typed errors, exhaustive matching, and
-  diagnostics that explain themselves;
-- the expressive core of PureScript: algebraic data types, parametric
-  polymorphism, rows and effects;
-- syntax that a Go, TypeScript or Rust programmer can read on first sight.
+The language is built around two ideas:
 
-The central bet is that two row-based features carry most of what
-application code needs:
+- **[Algebraic effects][effects] track dependencies and typed failures.**
+  A function calls the operations it needs; handlers supply implementations.
+  Its effect row records the dependencies and error families the caller
+  must account for.
+- **[Row-polymorphic records][rows] specify required fields without fixing
+  the whole record.** A function can accept a larger record and preserve
+  its extra fields. Those fields can hold data or functions implementing
+  an interface.
 
-1. **Algebraic effects tracked in rows.** These replace dependency
-   injection frameworks, monad transformer stacks and hand-built
-   "environment" types.
-2. **Row-polymorphic records.** These replace nominal configuration and
-   service types.
+The hypothesis is that these two features can make dependencies and errors
+compose without requiring programmers to assemble an environment type, error
+union, or transformer stack for every combination.
 
-Together they should give the composability of Effect (TypeScript) and ZIO
-(Scala) without the ceremony.
+Today a named function has to list its effects and error families. Calling
+another service can mean updating that list in every caller. Planned inference
+would do that bookkeeping, including errors from constructing services as well
+as calling them. Programmers could still write signatures to limit what a
+function is allowed to do.
 
-The compiler is written in PureScript and is early: it is a working
-**Stage 0** that compiles a real but small language. This page shows what
-exists today, then where the language is going. Planned features are
-marked as such, and their syntax is illustrative until it has a design.
+## Dependencies as effects
 
-## A taste: services as effects
-
-This is `examples/services.wxw`, which compiles and runs today. Services are
-declared as **effects**, and functions name the effects they use. A
-**handler** is an ordinary value that implements an effect. Each
-implementation is constructed by a function and injected where `main`
-installs it with `with`; program code never checks which one it got, and the
-tests inject fakes into the same functions.
+An effect declares operations. A function names the effects it uses, and a
+handler supplies their implementations:
 
 ```rust
-effect Database { fn query(id: Int): Int; };
-effect Clock { fn now(): Int; };
-effect Log { fn log(n: Int): Unit; };
+effect Prices { fn price(id: Int): Int; };
 
-fn closeLog(id: Int): Unit with nofail Log = Log.log(id + 1000);
+fn total(first: Int, second: Int): Int with Prices =
+  Prices.price(first) + Prices.price(second);
 
-fn fetch(id: Int): Int with Database + Log = {
-  let row = Database.query(id);
-  Log.log(row);
-  row
-};
-
-fn stamp(id: Int): Int with Clock + Log = {
-  let at = Clock.now();
-  Log.log(at + id);
-  at
-};
-
-fn audited(id: Int): Int with Database + Clock + nofail Log = {
-  defer closeLog(id);
-  defer Log.log(id);
-  fetch(id) + stamp(id)
-};
-
-fn report(first: Int, second: Int): Int
-    with Database + Clock + nofail Log =
-  audited(first) + audited(second);
-
-fn liveDatabase(): Handler(Database with pure) =
-  handler Database { query(id) => id + id };
-
-fn systemClock(): Handler(Clock with pure) =
-  handler Clock { now() => 100 };
-
-fn consoleLogger(): Handler(nofail Log with Console + ...e) =
-  handler Log { log(n) => Console.print(n) };
+fn fixedPrices(amount: Int): Handler(Prices with pure) =
+  handler Prices { price(id) => amount };
 
 fn main(): Unit with Console =
-  with liveDatabase() {
-    with systemClock() {
-      with consoleLogger() {
-        Console.print(report(1, 2));
-        Console.print(report(3, 4))
-      }
-    }
+  with fixedPrices(20) {
+    Console.print(total(1, 2))
   };
 ```
 
-The program is checked end to end:
+This prints `40`. Replacing `fixedPrices(20)` changes the implementation used by
+`total`. The Prices requirement is in its signature; supplying the handler at
+the call site avoids passing it through `total`'s arguments.
 
-- **Effects compose.** `audited` uses `fetch` and `stamp`, so its row must
-  cover theirs. A function cannot perform an effect its signature omits.
-- **`main` must handle every effect** except Console. Drop the
-  `with systemClock()` line and the compiler explains where the requirement
-  came from. This is the JSON diagnostic, rendered:
+`main` may leave only Console unhandled. Removing `with fixedPrices(20)` and
+leaving its body produces `Unhandled Prices in main`, with source locations
+tracing the requirement back to `Prices.price`.
 
-  ```
-  E_EFFECT  Unhandled Clock in main                   (at the call in main)
-    through report                                    (main → report)
-    through audited                                   (report → audited)
-    Clock is performed here                           (Clock.now() in stamp)
-    main may perform only Console                     (main's signature)
-  ```
+Operations have qualified names: two effects can both declare `get`. A signature
+can import an operation for its body, as in `with Prices { price }`, or alias
+its effect with `with Prices as P`. Parameters and local bindings shadow
+imports; imports shadow global functions. Resolution does not try an outer
+binding when the inner one has an incompatible type.
 
-- **Cleanup is sound.** `nofail Log` promises that the Log handler cannot
-  fail. Without that promise, `defer Log.log(id)` is rejected, because a
-  failing handler could abort a cleanup halfway.
-- **Effects disappear at compile time.** Rows are erased before Go is
-  generated, and handler values become ordinary Go structs passed down a
-  context. A program that uses no effects emits plain Go functions.
+The [services example](examples/services.wxw) combines a database, clock, and
+logger, with fakes installed by the tests. Those handlers return fixed values.
+Connecting them to external services needs the planned Go FFI.
 
-## What works today
-
-**Algebraic data types and exhaustive matching:**
+## Records
 
 ```rust
-type Shape = Dot | Square(Int) | Pair(Shape, Shape);
-
-fn size(s: Shape): Int = match s {
-  Dot => 1,
-  Square(side) => side + side + side + side,
-  Pair(left, right) => size(left) + size(right),
-};
-```
-
-Matches are checked for exhaustiveness, and nested patterns are allowed.
-Every value can be compared with `== != < <= > >=` in one structural order,
-and printed as `Pair(Square(3), Dot)`.
-
-**Generic types and functions**, with type variables implicit in
-signatures:
-
-```rust
-type List(a) = Nil | Cons(a, List(a));
-type Maybe(a) = Nothing | Just(a);
-
-fn last(xs: List(a)): Maybe(a) = match xs {
-  Nil => Nothing,
-  Cons(x, Nil) => Just(x),
-  Cons(_, rest) => last(rest),
-};
-```
-
-Generics are compiled by specialization, so the Go has one concrete
-function per use and no interfaces or boxing.
-
-**First-class functions:** lambdas, closures, partial application and the
-`|>` pipe.
-
-```rust
-fn compose(f: b -> c, g: a -> b): a -> c = fn(x) => f(g(x));
-
-fn main(): Int =
-  upTo(5)
-    |> filter(fn(x) => x > 2)
-    |> map(compose(add(1), double))
-    |> foldLeft(add, 0);
-```
-
-`add(1)` is a partial application. Over-application and staging follow a
-documented evaluation order (ADR 008).
-
-**Text**, all of `examples/text.wxw`: Unicode literals, `${}` interpolation,
-`++`, `"""` blocks that strip their indent, raw `#"…"#` literals, and
-`show`, with the `Directory` effect injected by `with directory()` as in
-the services example:
-
-```rust
-effect Directory { fn lookup(id: Int): Text; };
-
-type Entry = Entry(Text, Int);
-
-fn greeting(name: Text): Text = "Hello, ${name}!";
-
-fn welcome(line: Text): Text = line ++ " Welcome aboard.";
-
-fn letter(name: Text, id: Int): Text = """
-    Dear ${name},
-      your id is ${show(id)}.
-    """;
-
-fn rawPath(): Text = #"C:\users\${name}\notes"#;
-
-fn entryFor(id: Int): Entry with Directory = Entry(Directory.lookup(id), id);
-
-fn directory(): Handler(Directory with pure) =
-  handler Directory {
-    lookup(id) => if id == 1 then "Ada \"the first\"" else "Grace"
-  };
-
-fn main(): Unit with Console =
-  with directory() {
-    Console.print(
-      Directory.lookup(2)
-        |> greeting
-        |> welcome
-    );
-    Console.print(letter(Directory.lookup(1), 1));
-    Console.print(rawPath());
-    Console.print(entryFor(1));
-    Console.print("shown: ${show(entryFor(2))}");
-    Console.print(show(Directory.lookup(1) < Directory.lookup(2)))
-  };
-```
-
-It prints:
-
-```
-Hello, Grace! Welcome aboard.
-Dear Ada "the first",
-  your id is 1.
-C:\users\${name}\notes
-Entry("Ada \"the first\"", 1)
-shown: Entry("Grace", 2)
-true
-```
-
-Text values are Unicode, stored as UTF-8 and compared by code point. A
-Text printed on its own is written raw, and inside data it is quoted and
-escaped, so every printed value reads back as source. `show(x)` returns
-what `Console.print(x)` would write. Interpolation takes only Text, so other
-values go through `show`. The Go keeps a plain `string` (ADR 011).
-
-**Records**, structural and row-typed in the style of PureScript, all of
-`examples/records.wxw`:
-
-```rust
-type Team = Solo | Pair({ lead: Person, rest: Team });
-type Person = Person({ name: Text, age: Int });
-
-fn older(p: { age: Int, ...r }): { age: Int, ...r } = p { age = p.age + 1 };
+fn older(p: { age: Int, ...r }): { age: Int, ...r } =
+  p { age = p.age + 1 };
 
 fn label(p: { name: Text, ...r }): Text = "${p.name}!";
 
 fn main(): Unit with Console = {
   let ada = { name: "Ada", age: 36, id: 7 };
-  let bo = { id: 8, age: 41, name: "Bo" };
   Console.print(older(ada));
-  Console.print(label(bo));
-  Console.print(ada < bo);
-  Console.print(Pair({ lead: Person({ name: ada.name, age: ada.age }),
-    rest: Solo }));
+  Console.print(label(ada))
 };
 ```
 
-It prints:
+This prints:
 
-```
+```text
 { age: 37, id: 7, name: "Ada" }
-Bo!
-true
-Pair({ lead: Person({ age: 36, name: "Ada" }), rest: Solo })
+Ada!
 ```
 
-`...r` is row polymorphism: `older` takes any record with an Int `age`
-and gives back every other field unchanged. Field names belong to no
-global namespace and no selector functions are generated; label order
-does not matter, and records compare and print in sorted label order. An
-update `p { age = … }` never adds a field or changes a field's type. Each
-record type becomes one Go struct, and a function over an open record gets
-one Go copy per concrete record it is used with (ADR 013).
+`...r` is the [row-polymorphic][rows] part of the type: `r` stands for the other
+fields, whatever they are. `older` accepts any record with an Int `age`. Since
+its result contains the same `...r`, it preserves those other fields and their
+types. `label` needs only `name`, so both functions can accept `ada` without
+converting it to a different record type.
 
-**Typed failures.** A failure is an effect with a payload, handled
-precisely:
+That gives a function a narrow requirement while letting callers supply wider
+records. It does not discard fields or cast a value to a smaller type. An update
+cannot add fields or change their types. Extension and removal syntax are
+planned.
 
-(Waxwing has no comments yet. The `//` notes on this page are annotations
-for the reader, not part of the source.)
+Records retain checked field types, but they do not have the distinct identity
+of [nominal types][nominal]. Two records with the same labels and field types
+are the same type, regardless of label order. When two values with the same
+representation must remain different types, use an ADT wrapper.
+
+### Records of functions
+
+A record of functions is a small explicit interface. Code calls the functions in
+the record; constructing a different record supplies a different implementation:
+
+```rust
+fn sumPrices(prices: { price: Int -> Int with pure, ...r },
+    first: Int, second: Int): Int with pure =
+  prices.price(first) + prices.price(second);
+
+fn main(): Int = {
+  let prices = { price: fn(id: Int) => 20, label: "fixed" };
+  sumPrices(prices, 1, 2)
+};
+```
+
+This prints `40`. The extra `label` field is preserved in the record but is not
+required by `sumPrices`. The functions are called directly; there is no instance
+search or encoded program for an interpreter to execute. Haskell's
+[records-of-functions approach][function-records] uses this kind of explicit
+interface. It is useful on its own, before reaching for type classes or
+free/freer monads.
+
+Waxwing also has handlers, which supply operations through an effect row instead
+of an explicit record argument. The conventions for using both in service
+environments still need design.
+
+## Typed failures and cleanup
 
 ```rust
 type Error = NotFound(Int) | Forbidden;
@@ -283,251 +153,309 @@ fn total(a: Int, b: Int): Int with Accounts + Fail(Error) =
 fn main(): Unit with Console = {
   let accounts = handler Accounts { balance(id) => id + 100 };
   with accounts {
-    Console.print(handle total(1, 2) { fail(error: Error) => -1 });    // 203
-    Console.print(handle total(1, -2) { fail(error: Error) => -1 })    // -1
+    Console.print(handle total(1, 2) { fail(error: Error) => -1 });
+    Console.print(handle total(1, -2) { fail(error: Error) => -1 })
   }
 };
 ```
 
-`handle` removes exactly the failure family it handles. A defect
-(`crash`), by contrast, runs every pending cleanup and exits with one
-report.
+This prints `203`, then `-1`. `handle` catches the Error family, so callers of
+this handled computation no longer need to account for `Fail(Error)`. It narrows
+the remaining error requirements: other families stay in the row, along with
+effects and failures introduced by recovery code. The `Error` data type itself
+is unchanged. If recovery raises Error again, `Fail(Error)` remains a
+requirement.
 
-**Qualified operations and imports.** An effect's operations are always
-called through the effect, so two effects may share an operation name. A
-function's own row can alias an effect and import operations for its body:
+`defer` registers cleanup on normal return, typed failure, and recoverable
+defects. Effect operations used in cleanup must be known not to raise typed
+failures: `defer Log.log(id)` requires `nofail Log` in the signature.
+`crash(value)` raises a defect and unwinds pending cleanup before reporting it
+on stderr and exiting 1. Diverging cleanup and Go fatal errors can prevent
+unwinding from completing.
+
+## Data, functions, and Text
+
+[Algebraic data types][adts] (ADTs) define alternatives such as `Nothing`
+or `Just(value)`. Matches must cover every alternative, and patterns can nest.
+Generic type variables are implicit in signatures. Here is a list and a function
+returning its last element:
 
 ```rust
-effect Log { fn log(n: Int): Unit; };
-effect Audit { fn log(n: Int): Unit; };
+type List(a) = Nil | Cons(a, List(a));
+type Maybe(a) = Nothing | Just(a);
 
-fn work(n: Int): Unit with Log { log as note } + Audit = {
-  note(n);                  // Log.log
-  Audit.log(n + 1)
-};
-
-fn main(): Unit with Console { print } = {
-  let log = handler Log { log(n) => print(n) };
-  let audit = handler Audit { log(n) => print(n + 10) };
-  with log { with audit { work(1) } }     // prints 1, then 12
+fn last(xs: List(a)): Maybe(a) = match xs {
+  Nil => Nothing,
+  Cons(x, Nil) => Just(x),
+  Cons(_, rest) => last(rest),
 };
 ```
 
-Parameters and `let` bindings shadow imports, imports shadow global
-functions, and nothing falls back. A bare operation name that nothing
-binds is an error that suggests the qualified call and the import (ADR 012).
+Functions are values, with lambdas, closures, and partial application. The `|>`
+operator passes its left operand to the function on the right. This excerpt uses
+helpers from [examples/functions.wxw](examples/functions.wxw):
 
-**Diagnostics** are structured JSON with exact source spans. Effect errors
-explain their origin, the boundary that refused them, and the path between
-the two. Errors aim to say what to write. For example, when a callback's
-effects don't cover its caller's:
+```rust
+fn compose(f: b -> c, g: a -> b): a -> c = fn(x) => f(g(x));
 
+fn main(): Int =
+  upTo(5)
+    |> filter(fn(x) => x > 2)
+    |> map(compose(add(1), double))
+    |> foldLeft(add, 0);
 ```
-q must allow every effect of a (L + M), but its row is L;
-write q's row as `with L + M`; a callback's row must equal its caller's (FX017)
+
+`add(1)` supplies the first argument and returns a function awaiting the second.
+Function application order is specified in
+[ADR 008](docs/adr/008-functions.md).
+
+Text supports Unicode literals, interpolation, concatenation with `++`, raw
+delimiters, and multiline blocks:
+
+```rust
+fn letter(name: Text, id: Int): Text = """
+    Dear ${name},
+      your id is ${show(id)}.
+    """;
+
+fn main(): Unit with Console = {
+  Console.print(letter("Ada", 1));
+  Console.print(#"C:\users\${name}\notes"#)
+};
 ```
 
-**Not yet supported:** record patterns and record extension, type
-classes, modules, multiplication and other numeric operators beyond `+`,
-comments, text operations such as length and split, and anything
-resembling a standard library. Today's programs compute with Int, Bool,
-Text, Unit, records, user types and functions.
+This prints:
 
-## Where it is going
+```text
+Dear Ada,
+  your id is 1.
+C:\users\${name}\notes
+```
 
-The rest of this page is planned, not implemented. The status of each item
-is in [BACKLOG.md](BACKLOG.md).
+Interpolation accepts Text; `show` formats other printable values as Text.
+`show` adds no newline. Console.print adds one. Text prints raw on its own and
+quoted and escaped inside an ADT or record. The full
+[text example](examples/text.wxw) also shows concatenation and comparison.
 
-### More records (next)
+### Equality, ordering, and printing
 
-Records exist (above); the next tranches add record patterns, then
-extension, merge and removal with written lacks constraints (BACKLOG R004,
-R005). Records of functions already work today (`{ f: fn(x: Int) => x +
-1 }`, called as `r.f(1)`); building service environments and C001's
-instances on them, as an explicit, first-class way to pass a group of
-operations around alongside effects, is future work.
+Waxwing currently provides these operations in the compiler. There are no
+[type classes][classes] or user-defined instances yet:
 
-### Inferred requirements and errors: layers without the Layer
+- **Equality (`==`, `!=`)** compares corresponding values recursively.
+  Records must have equal values in every field. ADTs must have the same
+  constructor and equal fields. A record or ADT is comparable only if all
+  of its component types are comparable.
+- **Ordering (`<`, `<=`, `>`, `>=`)** uses that same recursive structure.
+  ADTs compare constructor positions first, then fields from left to
+  right. Records compare field values in sorted label order. The first
+  unequal component decides the result. Text compares lexicographically
+  by Unicode code point.
+- **Printing (`Console.print`, `show`)** formats each field using its
+  type's printer. A record is printable only if every field is printable;
+  ADTs follow the same rule. Nested Text is quoted and escaped.
 
-This is the milestone the language is built around (INF001,
-[requirements][inf001]).
-Today every function writes its full effect row, such as
-`with Database + BalanceApi + Logger + Fail(DbError) + Fail(NetworkError)`.
-INF001 makes the compiler infer both channels: the services a function
-needs, and the errors it can raise. A business function then calls what
-it needs and lets the compiler track the rest.
+For example, comparing two `{ age: Int, name: Text }` records uses the Int
+comparison for `age`; if those values are equal, it uses the Text comparison for
+`name`. Nested records and ADTs compose in the same way. Functions and handlers
+are not comparable or printable. Comparison also requires a ground type: one
+with no remaining type or row variables.
 
-The experience aimed for is that of ZIO and Effect's *layers*, without
-layer types:
+The planned class system would express these component requirements as Eq, Ord,
+and Show constraints. A generic equality function could require `Eq(a)` instead
+of needing to know a concrete `a` when its body is checked. That constraint
+syntax is illustrative; it has not been designed. Derived record instances would
+use the instance selected independently for each field. Two Text fields could
+therefore use different selected comparison instances. Selection rules and the
+relationship between the selected Eq and Ord instances still need design.
 
-- **Providing a service** (installing a handler) removes that requirement,
-  and adds the handler's own requirements. For example, a real
-  `BalanceApi` needs an `HttpClient`, but a fake one needs nothing.
-- **Setup errors** (a database connection failing) and **operation
-  errors** (a query failing) stay separate and precisely typed. Providing
-  dependencies never makes a program look infallible.
-- **Handling one error family** removes exactly that family. Recovery
-  code's own requirements and errors join the result.
-- **Removing a provision or a handler** gives a diagnostic at the boundary
-  that now leaks, naming the missing service or error and where it came
-  from.
+Int is signed 32-bit, addition wraps, and `+` is the only arithmetic operator so
+far.
 
-You get no application-wide error union, no wrapper conversions, no
-manual row widening, and no monad transformers. Explicit signatures
-remain available and checkable. The surface syntax for opting into
-inference is still to be designed.
+## Inferred dependencies and errors
 
-### Later
+This is planned work. Today named functions must declare their own effects and
+failures. A function that calls Database, BalanceApi, and Logger may need to
+write:
 
-- **Type classes** (C001), designed with records: Eq/Ord/Show with derived
-  instances, and several instances per type without newtype wrappers.
-  `show` and `print` are expected to become class-based then.
-- **Modules and packages** (M001, PKG001).
-- **Numbers and collections** (D001): Int64, floats, defined arithmetic,
-  lists and maps with literals.
-- **A standard library** (STD001) with descriptive names and the usual FP
-  abstractions.
-- **Concurrency** (CF001, FX002): structured fork-join built on the
-  effect system.
-- **More effect features:**
-  - local state (FX003);
-  - faster handler lookup (FX005);
-  - general resumable handlers (FX006);
-  - a relaxed cleanup rule (FX007).
-- **A typed Go FFI** (I001).
-- **Tooling** (IDE001, DOC001, PBT001, SCH001): an editor extension,
-  doctests, property-based testing, and schema-driven parsing at
-  boundaries.
-- **Other targets** (J001): JavaScript for full-stack code shared with Go
-  services is the leading candidate.
+```text
+with Database + BalanceApi + Logger + Fail(DbError) + Fail(NetworkError)
+```
 
-Deliberately out of scope for the early language: higher-ranked types,
-GADTs and type families. Laziness, ownership and borrowing are not part of
-the design.
+Adding an operation with a new error family can require edits to callers' rows.
+The inference goal is to let named functions compose without those lists, while
+keeping explicit contracts available.
 
-### Roadmap at a glance
+Effect and ZIO are references for this design: providing services changes the
+dependencies and errors that remain. Waxwing aims to express that composition
+through rows and handlers, without a separate layer abstraction. The proposed
+behavior is:
 
-| Area | Status |
-|---|---|
-| Core language, ADTs, matching, comparison, printing | Done |
-| Generics by specialization (P001) | Done |
-| First-class functions (FN001) | Done |
-| Algebraic effects, handlers, typed failures, cleanup (FX001, FX008) | Done |
-| Effect diagnostics that say what to write (FX017, FX018) | Done |
-| Text (D001, first tranche) | Done |
-| Records, row-polymorphic (R001) | First tranche done; patterns and extension next |
-| Inferred requirements and errors (INF001) | Reviewed; design next |
-| Classes, modules, numbers, collections, stdlib | Planned |
-| Concurrency, state, general resumption | Designed or planned |
+- A route calls Database, BalanceApi, and Logger. The compiler infers all
+  three dependencies and the error families raised by those calls. Errors
+  raised in the route's own branches or helper functions join the result.
+- Installing a BalanceApi implementation that calls HttpClient replaces
+  the BalanceApi requirement with HttpClient. Installing a fake that
+  returns fixed results introduces no HttpClient requirement. The route
+  stays unchanged.
+- Constructing Database may raise ConnectionError. Constructing BalanceApi
+  may raise ConfigurationError. Calling them later may raise DbError or
+  NetworkError. Construction errors belong to the construction step, not
+  to every operation on an already constructed service. Assembly must
+  account for both setup and execution failures without a hand-written
+  combined error type.
+- Handling NetworkError narrows the computation's outstanding error
+  requirements. Callers no longer need to handle it unless recovery raises
+  it again. Recovery's own service requirements and error families join
+  the result. Handling setup failures separately leaves execution failures
+  visible.
+- Removing a service implementation or an error handler leaves a specific
+  requirement unhandled. The compiler reports it at the boundary where it
+  must be supplied or handled, with locations showing where it originated.
 
-## How the compiler is built
+These combinations should not require an application-wide error union,
+conversion wrappers between unrelated error families, or manual row widening in
+each caller. Programmers would still choose implementations, resource lifetimes,
+and recovery behavior.
 
-The pipeline has distinct stages: lex, parse, resolve names, type-check
-(producing a checked IR), specialize (producing a monomorphic IR), then
-generate Go. Each stage has its own data types, kept apart by enforced
-module boundaries ([architecture](docs/architecture.md)).
+Matt Parsons describes the error-composition problem in
+[The Trouble with Typed Errors][typed-errors]. Small error types are
+precise but awkward to combine; a shared AppError is easier to pass around but
+claims failures a particular function cannot produce. Catching one case often
+leaves the same broad error type for the caller.
 
-Correctness is checked in several independent ways:
+Waxwing addresses this at the level of failure families. A computation with
+`Fail(DbError) + Fail(ParseError)` can handle DbError and leave only ParseError
+for its caller, provided recovery introduces no new requirements. It does not
+need to wrap both payloads in a new combined ADT. Inference would also assemble
+these rows automatically. A handler handles a whole family, not one constructor
+of an error ADT; handling NotFound alone does not narrow `Error = NotFound(Int)
+| Forbidden` to Forbidden. First-class extensible error values and incompatible
+payloads within one family need separate design.
 
-- exact-text diagnostic tests;
-- Go snapshot tests;
-- a reference interpreter that is compared with the generated Go on
-  hundreds of random effectful programs;
-- a differential tool that compares every compiler phase against a
-  previous build;
-- **regression proofs**, each of which reintroduces a past bug in an
-  isolated copy of the compiler and shows that a test catches it.
+The [inference requirements][inf001] have been reviewed; syntax and type rules
+are still to be designed. The design must explain recursive inference, exported
+module interfaces, and relationships between callbacks' requirements and their
+callers'. It must also settle which error payloads belong to the same failure
+family. Nested handlers can distinguish repeated effects, so inference must
+preserve those occurrences. Shared resource acquisition, cancellation,
+concurrency, and general continuation control are separate work.
 
-`npm run verify` runs all of it. See [engineering](docs/engineering.md)
-for the rules.
+## Further language work
 
-## Building and running
+The class design also calls for multiple instances for one type without newtype
+wrappers. Records of functions offer a possible representation for those
+instance dictionaries, although the user-facing class and module rules have not
+been designed.
 
-### Prerequisites and fresh checkout
+The [backlog](BACKLOG.md) tracks the remaining work:
 
-Install these tools on PATH: Node >=22.5.0, PureScript 0.15.16, Spago 1.0.4,
-purs-tidy 0.11.1, and Go 1.26.4 (the tested Go version). For example:
+- Record patterns, followed by extension, merge, and removal with written
+  lacks constraints.
+- Type classes with Eq/Ord/Show and derived instances; modules and packages.
+- More numeric types and operators, built-in collections, and a standard
+  library. Lists currently have to be defined as ADTs.
+- A typed Go FFI for calling Go libraries.
+- Local state, concurrency, general resumable handlers, and less
+  restrictive callback and cleanup rules.
+- Type-aware editor tooling, executable documentation, property-based tests,
+  and schema-driven parsing.
+
+Higher-ranked types, GADTs, type families, laziness, ownership, and borrowing
+are outside the current design. There are no comments, modules, or standard
+library yet. Callback and handler row restrictions can reject a function that
+performs fewer effects than its caller permits. Those restrictions and other
+limits are in the [language specification](docs/language.md).
+
+## Compilation targets
+
+Go was chosen because it is the author's day-job language and made a practical
+first target. It is not a commitment to Go as the permanent backend. WebAssembly
+and JavaScript are the preferred long-term directions, with LLVM another
+possibility. Only the Go target exists today.
+
+## Generated Go and compiler checks
+
+Generic functions are specialized for their concrete type arguments; repeated
+uses with the same arguments share a copy. Record layouts become Go structs.
+Specialization produces concrete data and function types. More distinct type
+arguments can mean more code; a fixed specialization limit bounds it.
+
+Effect rows are erased. Handler dispatch still uses a runtime context, `any`,
+and type assertions. Typed failures use panic/recover. Programs without effects
+omit the handler machinery. Generated examples are checked into
+[bootstrap/](bootstrap/) for inspection.
+
+The compiler is organized as lexing, parsing, name resolution, checking,
+specialization, and Go emission, with separate syntax and IR types. Tests check
+diagnostics and locations, snapshot generated Go, and execute programs. An
+independent interpreter is compared with Go on generated programs. Mutation
+checks restore individual past defects in isolated compiler copies and require
+their tests to detect the expected symptom.
+
+`npm run verify` runs the build, formatting and module-boundary checks, and
+these tests. A separate differential command compares compiler phases with a
+previous build. Commands and test coverage are in
+[engineering](docs/engineering.md).
+
+## Build and run
+
+Install Node >=22.5.0, PureScript 0.15.16, Spago 1.0.4, purs-tidy 0.11.1, and Go
+on PATH. The tested Go version is 1.26.4.
 
 ```sh
 npm install -g purescript@0.15.16 spago@1.0.4 purs-tidy@0.11.1
 ```
 
-Install Go using its official distribution. On platforms without a PureScript
-npm binary, use the matching official release and verify its checksum.
-There are no local npm dependencies. PureScript packages are pinned by
-spago.yaml and spago.lock; the style checker is a separate workspace package.
-
-From the repository root, the single verification command is:
-
-```sh
-npm run verify
-```
-
-First build requires access to the PureScript registry and package downloads.
-Spago's cache is scoped to `.build/home` by scripts/cache.mjs because the
-sandbox cannot write the normal user cache. An existing Spago cache can be
-seeded there for offline work; see docs/findings.md. Do not change HOME.
-The CLI defaults Go's cache to `.build/go-cache` when GOCACHE is unset;
-test subprocesses select that workspace cache explicitly.
-
-The initial session verified cached builds; npm package installation could
-not be tested because registry.npmjs.org DNS was unavailable in its sandbox.
-That environment limit is recorded as F001 in BACKLOG.md.
-
-### Use
+Install Go separately. There are no local npm dependencies; the first build
+needs network access to download the pinned PureScript packages. Fresh online
+prerequisite installation and cross-platform builds remain unverified; see
+[F001](BACKLOG.md). Cache setup for offline builds is in
+[findings](docs/findings.md).
 
 ```sh
 npm run build
+node scripts/waxwing.mjs run examples/answer.wxw
+node scripts/waxwing.mjs run examples/services.wxw
+node scripts/waxwing.mjs run examples/records.wxw
+npm run verify
+```
+
+The answer example prints `42`. `main` must return a concrete, printable type. A
+Unit result is silent; other results are printed with a newline.
+
+To write Go source or build a binary at an explicit destination:
+
+```sh
 node scripts/waxwing.mjs emit examples/answer.wxw .build/answer.go
 node scripts/waxwing.mjs build examples/answer.wxw .build/answer
 .build/answer
-node scripts/waxwing.mjs run examples/answer.wxw
-node scripts/waxwing.mjs run examples/tree.wxw
-node scripts/waxwing.mjs run examples/services.wxw
 ```
 
-Both execution paths print `42` for the answer example. `main` may return any
-type: the executable prints the value in the coverage-witness format (`5`,
-`true`, `Node(Leaf, 1, Node(...))`, negative integers with `-`), and
-examples/tree.wxw prints a binary search tree. examples/services.wxw composes
-services with overlapping effects (Database, Clock, Log) and constructs and
-installs its handlers in `main` (the tests inject fakes); a program using
-`defer` or `crash` that ends in a defect prints one report on stderr and
-exits 1. Comparisons are built in, non-chaining and looser than `+`, with
-one structural order (constructor declaration order, then fields left to
-right; ADR 005). `emit` writes
-canonical deterministic Go; `build` invokes Go on a temporary source file;
-`run` builds and executes a temporary binary. Destinations are explicit and
-may be overwritten. Diagnostics are JSON on stderr with stable tags and
-source spans; source rejection exits 1, incorrect CLI usage exits 2. Boundary
-errors use E_IO or E_TOOL. The compiler is a Node executable using compiled
-PureScript modules, not yet a native Go compiler executable.
+Destinations may be overwritten. The compiler runs on Node; Go builds the
+emitted source. Diagnostics are JSON on stderr with error codes, spans, and
+related locations. Source rejection exits 1; incorrect CLI usage exits 2. File
+and tool errors use E_IO and E_TOOL.
 
-## Where to continue
+## Documentation
 
-- [Next-session handoff](docs/next-session.md) and [progress](docs/progress.md)
-- [Local backlog](BACKLOG.md)
 - [Language specification](docs/language.md)
-- [Language direction, effects and future targets][direction]
-- [Architecture](docs/architecture.md): five layers, Domain, Features,
-  Format, Runtime, Program ([ADR 004](docs/adr/004-five-layers.md))
-- Decisions: [ADR 001](docs/adr/001-slice.md),
-  [ADR 002](docs/adr/002-polymorphic-lowering.md),
-  [ADR 003](docs/adr/003-closed-adts.md),
-  [ADR 004](docs/adr/004-five-layers.md),
-  [ADR 005](docs/adr/005-structural-order.md),
-  [ADR 006](docs/adr/006-nesting-limit.md),
-  [ADR 007](docs/adr/007-specialization.md),
-  [ADR 008](docs/adr/008-functions.md),
-  [ADR 009](docs/adr/009-waxwing-name.md),
-  [ADR 010](docs/adr/010-effects.md),
-  [ADR 011](docs/adr/011-text.md),
-  [ADR 012](docs/adr/012-effect-namespaces.md),
-  [ADR 013](docs/adr/013-records.md)
-- [Engineering rules and gate coverage](docs/engineering.md)
+- [Language direction][direction] and [backlog](BACKLOG.md)
+- [Architecture](docs/architecture.md) and [decisions](docs/adr/)
+- [Progress](docs/progress.md) and [next-session handoff](docs/next-session.md)
 - [Reference provenance](docs/provenance.md)
-- [Self-hosting chain](docs/bootstrap.md)
-- [Stage 0 bootstrap plan](docs/plans/bootstrap.md) (historical)
+- [Self-hosting roadmap](docs/bootstrap.md)
 
 [inf001]: docs/plans/2026-10-11-requirement-and-error-inference-milestone.md
 [direction]: docs/plans/2026-10-08-language-direction.md
+
+[adts]: https://book.purescript.org/chapter4.html#algebraic-data-types
+[rows]:
+  https://book.purescript.org/chapter4.html#record-patterns-and-row-polymorphism
+[effects]: https://koka-lang.github.io/koka/doc/book.html
+[nominal]: https://en.wikipedia.org/wiki/Nominal_type_system
+[classes]: https://www.haskell.org/tutorial/classes.html
+[function-records]:
+  https://discourse.haskell.org/t/records-of-functions-and-implicit-parameters/747
+[typed-errors]:
+  https://www.parsonsmatt.org/2018/11/03/trouble_with_typed_errors.html

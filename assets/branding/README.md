@@ -9,9 +9,21 @@ the naming migration are preserved without modification.
 - [Editable bird mark](waxwing-mark.svg)
 - [Transparent PNG export](waxwing-logo.png)
 - [Preview on white](waxwing-preview.png)
+- [White-background PNG](waxwing-logo-white.png) and
+  [SVG](waxwing-logo-white.svg)
+- [Dark-theme PNG](waxwing-logo-dark.png) and [SVG](waxwing-logo-dark.svg)
+
+The README uses a white-background logo by default and an ivory version
+on transparent for dark themes. Both preserve the original path geometry;
+the dark version changes navy to `#F3F0E8`, keeping the coral crest.
 
 ```html
-<img src="assets/branding/waxwing-logo.png" alt="Waxwing bird logo" width="240">
+<picture>
+  <source media="(prefers-color-scheme: dark)"
+          srcset="assets/branding/waxwing-logo-dark.png">
+  <img src="assets/branding/waxwing-logo-white.png"
+       alt="Waxwing bird logo" width="240">
+</picture>
 ```
 
 ## Historical branding

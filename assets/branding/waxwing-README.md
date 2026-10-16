@@ -8,6 +8,10 @@ A vector recreation of the supplied “Minimal flight lines” concept.
 - `waxwing-mark.svg`: bird only; transparent background.
 - `waxwing-logo.png`: 2048 px wide transparent PNG export.
 - `waxwing-preview.png`: 530 px wide preview on white.
+- `waxwing-logo-white.svg` and `.png`: white-background README variants.
+- `waxwing-logo-dark.svg` and `.png`: ivory-on-transparent README variants.
+  PNG exports are 2048 px wide. Original paths and transforms are retained;
+  the dark variant changes navy to `#F3F0E8`, and the coral is unchanged.
 
 All artwork consists of editable vector paths. There are no embedded raster
 images, external resources, scripts, filters, or font dependencies. Individual
