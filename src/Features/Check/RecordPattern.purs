@@ -1,32 +1,33 @@
-module Features.Check.RecordPattern (Written, recordAgainst) where
+module Features.Check.RecordPattern (recordAgainst) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (lookup)
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
-import Domain.Syntax (Diagnostic, Span, problemAt)
+import Domain.Syntax (Diagnostic, problemAt)
 import Domain.Type (Ty(..))
-import Domain.Type.Record (RecordRow, labels, recordRow)
 import Features.Check.FreshRecord (freshRecord)
 import Features.Check.Matched (Against, Matched, PatternEnv)
+import Features.Check.PatternRow
+  ( KnownRow
+  , Written
+  , endsOpen
+  , growable
+  , listed
+  , unknown
+  , writtenLabels
+  )
 import Features.Check.Require (bounded, expectType, typeName)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
 
--- A record pattern as resolved: its span, fields and how it ends (none,
--- a bare `...`, or a named rest, R005 design §3).
-type Written =
-  { span ∷ Span, fields ∷ Array Resolved.FieldPattern, rest ∷ Resolved.Rest }
-
 -- A field to check: its label, the type expected of it, and its pattern.
 type Expected = { label ∷ String, ty ∷ Ty Open, pattern ∷ Resolved.Pattern }
-
-type KnownRow = RecordRow (Ty Open) Open
 
 -- A field's label and its checked pattern.
 type Labelled = { label ∷ String, matched ∷ Matched }
@@ -72,14 +73,6 @@ restChecked written = case written.rest of
         written.span
     )
   _ → Right unit
-
--- Whether the pattern ends with `...`, bare or named: it then lists no
--- more fields than it writes.
-endsOpen ∷ Written → Boolean
-endsOpen written = case written.rest of
-  Resolved.NoRest → false
-  Resolved.IgnoredRest → true
-  Resolved.NamedRest _ → true
 
 -- A hole tail grows by the labels the pattern writes and the record lacks,
 -- as `.l` grows one (user decision 2026-10-16), so arm order does not
@@ -145,52 +138,6 @@ knownField env known field = maybe' missing found
   missing _ = do
     name ← typeName env field.span known.ty
     Left (problemAt (MissingField field.label name) field.span)
-
--- The first unlisted label in label order, else the tail: a hole tail is
--- closed, as a closed pattern makes a bare hole closed; a rigid one is
--- the rest the pattern misses.
-listed
-  ∷ ∀ r
-  . PatternEnv r
-  → State
-  → Ty Open
-  → { ty ∷ Ty Open, row ∷ KnownRow }
-  → Written
-  → Either Diagnostic State
-listed env state expected known written = maybe' ended missingField
-  (Array.find unlisted (labels known.row))
-  where
-  unlisted label = not (Array.elem label (writtenLabels written))
-  missingField label = Left
-    (problemAt (PatternMissingField label) written.span)
-  ended _ = maybe' closedRow ofTail known.row.tail
-  closedRow _ = Right state
-  ofTail = case _ of
-    Hole _ → expectType env state expected closed written.span
-    Rigid _ → restMissing unit
-  closed = TRecord (recordRow known.row.fields Nothing)
-  restMissing _ = do
-    name ← typeName env written.span known.ty
-    Left (problemAt (PatternMissingRest name) written.span)
-
--- A record type grows only at a hole tail, and only when a label is new.
-growable ∷ KnownRow → Written → Boolean
-growable row written = maybe false grows row.tail
-  where
-  grows = case _ of
-    Hole _ → not (Array.null (unknown row written))
-    Rigid _ → false
-
--- The written labels the record type does not hold, in written order.
-unknown ∷ KnownRow → Written → Array String
-unknown row written = Array.filter absent (writtenLabels written)
-  where
-  absent label = not (Array.elem label (labels row))
-
-writtenLabels ∷ Written → Array String
-writtenLabels written = map fieldLabel written.fields
-  where
-  fieldLabel field = field.label
 
 -- The hole is unified with the pattern's record: a fresh hole per label,
 -- and with `...` a fresh tail lacking those labels (as `.l` makes one);

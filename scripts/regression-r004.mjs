@@ -5,7 +5,7 @@ export const r004Rows = [
   {
     // The check for unlisted fields never finds one, so a pattern that
     // omits a field and does not end with `...` is accepted.
-    name: 'r004-missing-field', file: 'src/Features/Check/RecordPattern.purs',
+    name: 'r004-missing-field', file: 'src/Features/Check/PatternRow.purs',
     needle: '  (Array.find unlisted (labels known.row))\n',
     replacement: '  (Array.find unlisted [])\n',
     probe: 'r004-missing-field',
@@ -66,7 +66,7 @@ export const r004Rows = [
   {
     // A hole tail is never extended, so a later arm naming a field the
     // earlier arms did not is an unknown field.
-    name: 'r004-hole-tail', file: 'src/Features/Check/RecordPattern.purs',
+    name: 'r004-hole-tail', file: 'src/Features/Check/PatternRow.purs',
     needle: '    Hole _ → not (Array.null (unknown row written))\n',
     replacement: '    Hole _ → not (Array.null (unknown row written)) '
       + '&& false\n',
