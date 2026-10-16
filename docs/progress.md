@@ -5074,3 +5074,17 @@ rule, then stopped after the user questioned its relevance to this
 README/artwork change. Build, strict-warning and width checks passed
 before it was stopped. No complete-suite result is claimed. The relevant
 draft example, link and image checks above passed.
+
+## GitHub Pages colors (2026-10-15)
+
+Add a Pages head include and stylesheet that follow the reader's system
+light/dark preference. Page, text, links, code and logo share a theme;
+override Primer's white image background for the transparent dark logo.
+Keep reference link definitions on one line so Jekyll renders the README
+links rather than showing their Markdown source.
+
+Chrome previews of the live page with the new stylesheet passed at 1100
+and 390 pixels in both themes: correct logo source, transparent image
+background and no page overflow. Screenshots reviewed for logo and code
+legibility. Width and whitespace checks pass. No compiler suite run for
+this website styling and Markdown formatting change, per user direction.

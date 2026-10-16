@@ -319,7 +319,7 @@ each caller. Programmers would still choose implementations, resource lifetimes,
 and recovery behavior.
 
 Matt Parsons describes the error-composition problem in
-[The Trouble with Typed Errors][typed-errors]. Small error types are
+[The Trouble with Typed Errors][errors]. Small error types are
 precise but awkward to combine; a shared AppError is easier to pass around but
 claims failures a particular function cannot produce. Catching one case often
 leaves the same broad error type for the caller.
@@ -450,12 +450,9 @@ and tool errors use E_IO and E_TOOL.
 [direction]: docs/plans/2026-10-08-language-direction.md
 
 [adts]: https://book.purescript.org/chapter4.html#algebraic-data-types
-[rows]:
-  https://book.purescript.org/chapter4.html#record-patterns-and-row-polymorphism
+[rows]: https://book.purescript.org/chapter4.html
 [effects]: https://koka-lang.github.io/koka/doc/book.html
 [nominal]: https://en.wikipedia.org/wiki/Nominal_type_system
 [classes]: https://www.haskell.org/tutorial/classes.html
-[function-records]:
-  https://discourse.haskell.org/t/records-of-functions-and-implicit-parameters/747
-[typed-errors]:
-  https://www.parsonsmatt.org/2018/11/03/trouble_with_typed_errors.html
+[function-records]: https://discourse.haskell.org/t/747
+[errors]: https://www.parsonsmatt.org/2018/11/03/trouble_with_typed_errors.html
