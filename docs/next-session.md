@@ -1,3 +1,18 @@
+# Waxwing / R004 done on branch `record-patterns`; awaiting merge (2026-10-16)
+
+R004 (record patterns) is complete on branch `record-patterns` (four
+commits for Task 4 on top of Tasks 1-3; nothing pushed or merged). Gates:
+`npm run verify` exit 0 (1975/1975, 59/59, 134 regression proofs); the
+reference interpreter agrees with Go on 200/200 generated programs; the
+differential against main shows only `{` in pattern position (before:
+E_SYNTAX) and the Task 3 inhabitation change. Evidence in docs/progress.md
+"R004 Task 4" and .build/evidence/r004-t4-*.log. Next: the user's decision
+to merge by fast-forward (no merge commits); then R005's design
+(extension, merge and removal), which would also settle binding the rest
+of a record.
+
+---
+
 # Waxwing / R014 merged; R004 design approved (2026-10-16)
 
 R014 was fast-forwarded into main at 955ad33 (branch deleted, nothing

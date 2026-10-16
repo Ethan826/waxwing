@@ -5278,3 +5278,94 @@ record with a `Void` field), `Nada => 0` was `Missing pattern: Some(_)` on
 main and is now accepted, and `Nada => 0, _ => 1` was accepted and is now
 E_REDUNDANT at `_`. 15 timing tests failed only in the instrumented
 harvest run (known, BACKLOG T007); they passed in verify.
+
+## R004 Task 4: lowering, evidence, close-out (2026-10-16)
+
+Record patterns reach Go and R004 is done on branch `record-patterns`
+(not merged). Commits: lowering, reference execution, example and docs,
+regression rows.
+
+Lowering (design §4). Domain/IR/Internal gains `Record (Array { label,
+pattern })` (243 lines, so no split); Specialize/Body `copyShape` copies
+it (the `...` needs no node, since an unnamed field is read by no test).
+Format/Go/Match `conditions` has no tag test: each named field's pattern
+is tested on `(<access>).f_<label>` (`recordField`), through the same
+`fieldAccess` as a constructor's field, now taking the Go field name. A
+record-valued field is inline (`pointer` false); an ADT-valued field
+(`TData`), in a record as in a constructor, is a pointer, so its nil
+guard precedes any projection and a binder dereferences it (`*`).
+`bindings` and Capture `binders` name every shape (no fallthrough). A
+matched record's layout is interned when the pattern's type is lowered
+(`typed` in `copyPattern`), so a function that only destructures a
+record from its caller still gets its struct (tested). Go output of
+every existing program is unchanged; `grep -rn "R004 placeholder" src`
+is empty.
+
+Tests: test/r004-go.test.mjs, 8 executed tests, 8 failing first (all
+`R004 placeholder: record patterns are lowered`,
+.build/evidence/r004-t4-red.log): a record in a constructor and a
+constructor in a record, an ADT-valued field bound and matched, puns, an
+open row matched at three rows, field binders captured by a lambda,
+nested records, a destructured record from a caller, and a nil ADT
+field in a record reaching the unmatched panic (a Go test, as
+test/adt-match.test.mjs does for constructors).
+
+Reference execution. The FX001 interpreter parses and matches record
+patterns (test/fx-oracle-records.mjs `readRecordPattern`,
+`recordMatches`; `matches` in fx-oracle-context.mjs), sharing no
+compiler code. test/fx-gen-record-patterns.mjs builds each match as an
+ordered partition of its scrutinee's type (lexicographic products of
+per-type splits, a catch-all appended only when constructors remain), so
+it is exhaustive and non-redundant by construction: omitted fields under
+`...`, puns, records in constructors and constructors in records, open
+rows, and binders shown by arm bodies. test/fx-oracle-record-patterns
+.test.mjs: 200 programs generated, 200 accepted by the compiler (floor
+95%), each form in at least 10 (pun 139, rest 171, binders 190,
+record-in-ctor 135, ctor-in-record 114, nested-record 111, open-row 74),
+200 compared with the Go output (stdout, stderr, status), 0 mismatches.
+With the interpreter's matcher mutated (first field ignored) 175 of 200
+differ. Separate from test/coverage-oracle.mjs.
+
+Example and docs. examples/records.wxw gains `greeting` (a pun, an
+explicit field and `...` over an open row, specialized at two rows) and
+`leader` (a constructor in a record in a constructor);
+bootstrap/records.go is regenerated (the new functions precede main, so
+later functions are renumbered; no other snapshot changes) and the
+pinned output extended (test/compiler.test.mjs). docs/language.md gets
+the grammar and "Record patterns (R004)"; ADR 013 gets "Record patterns
+(R004)" with the user's decisions of 2026-10-16.
+
+Regression rows (scripts/regression-r004.mjs, probes
+test/regression-r004.mjs), each failing with its defect restored in an
+isolated copy that compiles without warnings: `r004-missing-field` (no
+unlisted field found), `r004-label-span` (the field's span taken from
+its pattern), `r004-widening` (record patterns not widened:
+`E_INTERNAL Coverage field count mismatch`), `r004-walk-binders`
+(settlement does not retype patterns in record fields: `Invalid
+constructor id`), `r004-inhabitation` (record fields read as Int:
+`Missing pattern: Some(_)`), `r004-go-fields` (no field conditions: the
+first arm wins) and `r004-hole-tail` (a hole tail never extended). A
+first attempt at `r004-walk-binders` with a binder of type Int did not
+fail: lowering defaults an unresolved binder hole, so the probe uses a
+constructor pattern inside the field, whose type lowering needs.
+
+`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: 1975/1975,
+59/59, 134 regression proofs (127 + 7), exit 0
+(.build/evidence/r004-t4-verify.log; a first run failed the width gate
+on one line of the new rows file, fixed before the run reported).
+
+Differential against main (`--corpus all --regenerate`,
+.build/evidence/r004-t4-diff.log; every difference in
+r004-t4-diff-all.log; the full-source parse check in
+r004-t4-diff-parse-check.log): 416 differences, 385 harvested and 31
+mutations, none in fuzz, isName or matches. 411 are baseline E_SYNTAX
+`Expected a pattern` where main meets a `{` in pattern position (the
+harvest's every such rejection, checked against the full sources, stops
+at a `{`; the log prints only 200 characters, so 205 of these show no
+`{`). The other 5 are the Task 3 inhabitation change: over `Opt(Wrap)`
+and `Opt(Deep)`, `Nada => 0` was `Missing pattern: Some(_)` and is
+accepted, `Nada => 0, _ => 1` was accepted and is E_REDUNDANT (four
+harvested sources, and one whitespace mutation of one of them).
+Eleven timing tests failed only in the instrumented harvest run (known,
+BACKLOG T007); they pass in verify. .build/r004-base, .build/regression
+and .build/go-cache deleted afterwards.

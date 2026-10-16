@@ -34,7 +34,8 @@ coverage roots and inhabitation, witness openness, buildable commits,
 execution evidence, ADT pointers inside records), then regrouped into
 four slices (user, 2026-10-16): the split folds into whichever task
 needs it, parse and resolve are one task, and Go lowering joins the
-evidence task. Tasks 1 to 3 done.
+evidence task. Tasks 1 to 4 done: complete on branch `record-patterns`,
+awaiting the merge decision.
 
 ## Global Constraints
 
@@ -204,25 +205,25 @@ Check/Coverage and Specialize/Body `copyShape`.
 - Confirm a matched record's layout is registered (Go/Usage,
   RecordUse).
 
-- [ ] Failing tests test/r004-go.test.mjs, executed:
+- [x] Failing tests test/r004-go.test.mjs, executed:
   - a record in a constructor and a constructor in a record;
   - an ADT-valued field bound and matched;
   - puns;
   - a generic function over an open row, specialized twice;
   - field binders captured by a lambda.
-- [ ] Implement the lowering; snapshots byte-identical; verify; commit
+- [x] Implement the lowering; snapshots byte-identical; verify; commit
   before the evidence work.
-- [ ] **Reference execution.** Extend the FX001 reference interpreter
+- [x] **Reference execution.** Extend the FX001 reference interpreter
   (test/fx-oracle-parse.mjs, fx-oracle-context.mjs `matches`,
   fx-oracle-records.mjs) and its program generator with record
   patterns: omitted fields under `...`, puns, nesting both ways, and
   binders used by arm bodies. Compare its results with the compiled Go
   programs' output. Kept separate from the coverage oracle.
-- [ ] examples/records.wxw gains a match with record patterns; its
+- [x] examples/records.wxw gains a match with record patterns; its
   bootstrap snapshot changes only by that addition.
-- [ ] docs/language.md pattern grammar and Records section; ADR 013
+- [x] docs/language.md pattern grammar and Records section; ADR 013
   addendum (or ADR 014) for record patterns.
-- [ ] Regression rows (scripts/regression-r004.mjs, probes in
+- [x] Regression rows (scripts/regression-r004.mjs, probes in
   test/regression-r004.mjs), each proved failing:
   - the missing-field check removed;
   - label spans replaced by pattern spans;
@@ -230,6 +231,7 @@ Check/Coverage and Specialize/Body `copyShape`.
   - a Walk fallthrough skipping record binders;
   - record inhabitation read as `Int` again;
   - Go conditions ignoring record fields.
-- [ ] `grep -rn "R004 placeholder" src` is empty. Differential against
+- [x] `grep -rn "R004 placeholder" src` is empty. Differential against
   main. Timing tests unchanged (T007 rules).
-- [ ] BACKLOG R004 done; progress, next-session; commit; merge decision.
+- [x] BACKLOG R004 done; progress, next-session; commit.
+- [ ] Merge decision (the user's; fast-forward only).
