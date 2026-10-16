@@ -1,11 +1,12 @@
 # Waxwing / R004 merged into main (2026-10-16)
 
 R004 (record patterns) was fast-forwarded into main at 2ca49ab on
-2026-10-16; branch `record-patterns` deleted; nothing pushed. Next:
-R005's design (extension, merge and removal, written lacks constraints),
-which also settles binding the rest of a record; then the INF001 design
-and C001. Alongside: R013 (ArgumentClash `declaredLabels`) and a phase
-profile of `npm run verify`.
+2026-10-16; branch `record-patterns` deleted; nothing pushed. R005's
+design is drafted (docs/plans/2026-10-16-record-extension-design.md)
+with the user's decisions; its proposed parts (multi-tail rows, `#`,
+`without`, texts, two tranches) await review. Then a plan; then the
+INF001 design and C001. Alongside: R013 (ArgumentClash
+`declaredLabels`) and a phase profile of `npm run verify`.
 
 ---
 
