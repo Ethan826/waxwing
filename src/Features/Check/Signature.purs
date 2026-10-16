@@ -6,17 +6,19 @@ module Features.Check.Signature
   , fieldTypes
   , arity
   , witnessOf
+  , recordHead
   ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (maybe')
+import Data.Maybe (isJust, maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (fst, snd)
 import Domain.Problem (Problem(..), Witness(..))
 import Domain.Checked.Internal (Open)
 import Domain.Resolved (CtorId(..), CtorInfo, Ty(..), TypeId, TypeInfo)
+import Domain.Type.Record (RecordRow, labels)
 import Features.Check.Expand (Expansion, application, expand)
 import Features.Check.Inhabited (inhabitation)
 import Features.Check.Substitute (substitute)
@@ -31,8 +33,14 @@ type Signature =
   , inhabited ∷ Array Boolean
   }
 
--- Literals are nullary heads, so one specialization serves every type.
-data Head = HCtor CtorId | HInt Int | HBool Boolean
+-- Literals are nullary heads, so one specialization serves every type. A
+-- record type is one head whose fields are its known labels in label
+-- order; whether the type is open reaches the witness (R004 design §3).
+data Head
+  = HCtor CtorId
+  | HInt Int
+  | HBool Boolean
+  | HRecord { labels ∷ Array String, open ∷ Boolean }
 
 derive instance eqHead ∷ Eq Head
 
@@ -50,7 +58,7 @@ buildSignature types ctors roots = do
 -- complete. A rigid variable or a hole is abstract (design §5), and so is
 -- an arrow, which only `_` and binders match (FN001 design §3), as is
 -- Unit (FX001): none has heads, and `complete` never reads one as
--- complete.
+-- complete. A record type has its one head.
 candidates ∷ Signature → Ty Open → Lookup (Array Head)
 candidates tables ty = case ty of
   TInt → Right []
@@ -61,8 +69,7 @@ candidates tables ty = case ty of
   TVar _ → Right []
   TFun _ _ _ → Right []
   THandler _ _ → Right []
-  -- Abstract too: record patterns are a later tranche (R001 design §1).
-  TRecord _ → Right []
+  TRecord row → Right [ recordHead row ]
 
 -- The declared constructors whose expanded counterparts are inhabited.
 applied ∷ Signature → TypeId → Ty Open → Lookup (Array Head)
@@ -77,6 +84,7 @@ applied tables id ty = do
 fieldTypes ∷ Signature → Ty Open → Head → Lookup (Array (Ty Open))
 fieldTypes tables ty = case _ of
   HCtor id → ctorInfo tables.ctors id >>= fieldsOf
+  HRecord _ → recordFields ty
   _ → Right []
   where
   fieldsOf ctor = arguments >>= substituted ctor
@@ -85,9 +93,16 @@ fieldTypes tables ty = case _ of
     TData _ values _ → Right values
     _ → Left (Internal "Constructor head on a type that is not data")
 
+-- The field types of a record column, in label order.
+recordFields ∷ Ty Open → Lookup (Array (Ty Open))
+recordFields = case _ of
+  TRecord row → Right (map snd row.fields)
+  _ → Left (Internal "Record head on a type that is not a record")
+
 arity ∷ Signature → Head → Lookup Int
 arity tables = case _ of
   HCtor id → fieldCount <$> ctorInfo tables.ctors id
+  HRecord record → Right (Array.length record.labels)
   _ → Right 0
   where
   fieldCount ctor = Array.length ctor.fields
@@ -98,8 +113,15 @@ witnessOf tables head fields = case head of
   HCtor id → named <$> ctorInfo tables.ctors id
   HInt value → Right (WInt value)
   HBool value → Right (WBool value)
+  HRecord record → Right
+    (WRecord (Array.zip record.labels fields) record.open)
   where
   named ctor = WCtor ctor.name fields
+
+-- The fields of the row's sorted record (ADR 013), and whether it has a
+-- tail: a rigid or a hole tail alike is more than the labels it shows.
+recordHead ∷ RecordRow (Ty Open) Open → Head
+recordHead row = HRecord { labels: labels row, open: isJust row.tail }
 
 flag ∷ Array Boolean → CtorId → Lookup Boolean
 flag inhabited (CtorId index) = maybe' missing Right

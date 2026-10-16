@@ -1,7 +1,17 @@
 // A brute-force coverage oracle over the all-inhabited type
-// `type T = A | B(Bool) | C(T, Int);` and Bool. Values are enumerated one
-// level deeper than any pattern head; deeper subtrees are an opaque leaf.
+// `type T = A | B(Bool) | C(T, Int);`, Bool, and the record type R below.
+// Values are enumerated one level deeper than any pattern head; deeper
+// subtrees are an opaque leaf. A record takes no level of its own: its
+// fields sit at its level, in values and in patterns alike (R004).
 export const declarations = 'type T = A | B(Bool) | C(T, Int);';
+// R's fields in label order; S is open over a rigid tail, so a pattern on
+// it always ends with `...` and its witness does too.
+const recordFields = {
+  R: [['k', 'Bool'], ['s', 'S'], ['t', 'T']],
+  S: [['b', 'Bool'], ['i', 'Int']]
+};
+const openRecords = new Set(['S']);
+export const recordText = '{ k: Bool, s: { b: Bool, i: Int, ...r }, t: T }';
 export const literals = [0, 1, -1];
 const maximumDepth = 2;
 const opaque = { tag: 'opaque' };
@@ -16,8 +26,21 @@ const discardedLowBits = 16;
 export const choose = (next, count) =>
   (next() >>> discardedLowBits) % count;
 
+// A record pattern names a nonempty subset of the fields in label order,
+// and ends with `...` when it leaves one out or its type is open.
+const record = (next, type, level, names) => {
+  const all = recordFields[type];
+  const loose = openRecords.has(type) || choose(next, 2) === 0;
+  const kept = all.filter(() => !loose || choose(next, 3) !== 0);
+  const named = kept.length ? kept : all.slice(0, 1);
+  return { tag: 'record', open: loose || named.length < all.length,
+    labels: named.map(([label]) => label),
+    fields: named.map(([, field]) => pattern(next, field, level, names)) };
+};
+
 // Heads appear only at levels 1..maximumDepth; below that, `_` or binders.
 const head = (next, type, level, names) => {
+  if (type in recordFields) return record(next, type, level, names);
   if (type === 'Int') return { tag: 'int', n: literals[choose(next, 3)] };
   if (type === 'Bool') return { tag: 'bool', b: choose(next, 2) === 0 };
   const choice = choose(next, 3);
@@ -40,6 +63,9 @@ export const print = p => {
   if (p.tag === 'int') return String(p.n);
   if (p.tag === 'bool') return String(p.b);
   if (p.tag === 'A') return 'A';
+  if (p.tag === 'record') return `{ ${p.labels.map((label, index) =>
+    `${label}: ${print(p.fields[index])}`).concat(p.open ? ['...'] : [])
+    .join(', ')} }`;
   return `${p.tag}(${p.fields.map(print).join(', ')})`;
 };
 
@@ -57,8 +83,15 @@ export const intDomain = patterns => {
   return [...present, fresh];
 };
 
+const product = lists => lists.reduce((rows, list) =>
+  rows.flatMap(row => list.map(item => [...row, item])), [[]]);
+
 export const values = (type, depth, ints) => {
   if (depth === 0) return [opaque];
+  if (type in recordFields) return product(recordFields[type].map(
+    ([, field]) => values(field, depth, ints))).map(fields => ({
+    tag: 'record', labels: recordFields[type].map(([label]) => label), fields
+  }));
   if (type === 'Int') return ints.map(n => ({ tag: 'int', n }));
   if (type === 'Bool') return [true, false].map(b => ({ tag: 'bool', b }));
   const bools = values('Bool', depth - 1, ints);
@@ -77,15 +110,19 @@ export const matches = (p, v) => {
   if (p.tag !== v.tag) return false;
   if (p.tag === 'int') return p.n === v.n;
   if (p.tag === 'bool') return p.b === v.b;
+  if (p.tag === 'record') return p.labels.every((label, index) =>
+    matches(p.fields[index], v.fields[v.labels.indexOf(label)]));
   return (p.fields ?? []).every((field, index) =>
     matches(field, v.fields[index]));
 };
 
-// Witness text grammar: `_`, true, false, -?digits, Name, Name(w, ...).
+// Witness text grammar: `_`, true, false, -?digits, Name, Name(w, ...),
+// and `{ label: w, ... }`, with a final `...` for an open record.
 export const parseWitness = text => {
   let at = 0;
   const token = () => {
-    const found = /^\s*(-?\d+|[A-Za-z_]\w*|[(),])/.exec(text.slice(at));
+    const found = /^\s*(-?\d+|[A-Za-z_]\w*|\.\.\.|[(),{}:])/
+      .exec(text.slice(at));
     if (!found) throw new Error(`bad witness ${text} at ${at}`);
     at += found[0].length;
     return found[1];
@@ -97,12 +134,26 @@ export const parseWitness = text => {
     if (word === 'true' || word === 'false') return {
       tag: 'bool', b: word === 'true' };
     if (/^-?\d/.test(word)) return { tag: 'int', n: Number(word) };
+    if (word === '{') return parseRecord();
     const fields = [];
     if (peek() === '(') {
       token();
       do fields.push(parse()); while (token() === ',');
     }
     return { tag: word, fields };
+  };
+  const parseRecord = () => {
+    const found = { tag: 'record', open: false, labels: [], fields: [] };
+    for (let word = token(); word !== '}'; word = token()) {
+      if (word === '...') found.open = true;
+      else {
+        found.labels.push(word);
+        if (token() !== ':') throw new Error(`bad witness ${text}`);
+        found.fields.push(parse());
+      }
+      if (peek() === ',') token();
+    }
+    return found;
   };
   const result = parse();
   if (text.slice(at).trim() !== '') throw new Error(`trailing witness ${text}`);

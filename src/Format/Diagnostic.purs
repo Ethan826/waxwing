@@ -14,17 +14,16 @@ import Domain.Problem
   , Problem(..)
   , TypeName
   , UnboundKind(..)
-  , Witness(..)
   )
 import Domain.Syntax (Diagnostic, Span)
 import Format.Diagnostic.Callback as Callback
 import Format.Diagnostic.Code (code, codeName)
 import Format.Diagnostic.Mark as Mark
-import Format.Diagnostic.Name (listed)
 import Format.Diagnostic.Name as Name
 import Format.Diagnostic.Note (WireNote, wireNotes)
 import Format.Diagnostic.Qualify as Qualify
 import Format.Diagnostic.Row (equalityMessage, mismatchMessage, shortLabel)
+import Format.Diagnostic.Witness (pattern)
 
 type WireDiagnostic =
   { code ∷ String, message ∷ String, span ∷ Span, related ∷ Array WireNote }
@@ -186,11 +185,3 @@ unboundWord = case _ of
 
 typeName ∷ TypeName → String
 typeName = Name.typeName
-
--- Witnesses print as Waxwing patterns: `_`, literals, `Name(field, …)`.
-pattern ∷ Witness → String
-pattern = case _ of
-  WAny → "_"
-  WInt value → show value
-  WBool value → show value
-  WCtor name fields → name <> listed (map pattern fields)

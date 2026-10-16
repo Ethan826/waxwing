@@ -19,7 +19,7 @@ import Domain.Problem (Problem(..))
 import Domain.Resolved (CtorId(..), CtorInfo, TypeId(..), TypeInfo)
 import Domain.Type (Ty(..), VarId)
 import Domain.Type.Parts (ground)
-import Features.Check.Spelling (Key, isData, key, spelling)
+import Features.Check.Spelling (Key, isData, key, spelling, within)
 import Features.Check.Substitute (substitute)
 import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
 
@@ -29,7 +29,9 @@ import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
 -- own constructors in the declared order; their fields name applications as
 -- `TData (TypeId n) []` and the abstract type and every arrow as Int, which
 -- is all Inhabited reads: inhabited and never a data type (an arrow is
--- always inhabited, design §3, so its parts are never unfolded).
+-- always inhabited, design §3, so its parts are never unfolded). A record
+-- field stands for its own fields, nested records flattened in turn, since
+-- a record is inhabited exactly when every field is (R004 design §3).
 type Expansion =
   { numbers ∷ Map String Int
   , types ∷ Array TypeInfo
@@ -80,7 +82,7 @@ closedKey ctors (Tuple index info) = judge <$> traverse (ctorInfo ctors)
 admit ∷ Discovery → Array Key → Discovery
 admit state keys = numbered (state { frontier = map snd fresh })
   where
-  spelled = map withSpelling (Array.filter isData keys)
+  spelled = map withSpelling (Array.filter isData (Array.concatMap within keys))
   withSpelling found = Tuple (spelling found) found
   fresh = Array.filter unseen (Array.nubBy (comparing fst) spelled)
   unseen (Tuple text _) = not (Map.member text state.numbers)
@@ -135,7 +137,7 @@ tables types ctors found = do
     }
   where
   order = map snd (Map.toUnfoldable found.keys ∷ Array (Tuple Int Key))
-  expandedFields unfolded = Tuple unfolded.ctor <$> traverse
+  expandedFields unfolded = Tuple unfolded.ctor <<< Array.concat <$> traverse
     (field found.numbers)
     unfolded.fields
   owned index = map (adopt index)
@@ -145,23 +147,21 @@ tables types ctors found = do
     { ctors = Array.mapWithIndex (offset start) unfolded.ctors }
   offset start index _ = CtorId (start + index)
 
--- A substituted field as Inhabited reads it.
-field ∷ Map String Int → Key → Lookup (Ty VarId)
+-- A substituted field as Inhabited reads it: a record as its fields.
+field ∷ Map String Int → Key → Lookup (Array (Ty VarId))
 field numbers = case _ of
-  TInt → Right TInt
-  TBool → Right TBool
-  TUnit → Right TUnit
-  TText → Right TText
-  TVar _ → Right TInt
-  TFun _ _ _ → Right TInt
-  THandler _ _ → Right TInt
-  -- No record value exists before literals (R001 Task 5); the inhabited
-  -- check of a record by its fields comes with them.
-  TRecord _ → Right TInt
+  TInt → Right [ TInt ]
+  TBool → Right [ TBool ]
+  TUnit → Right [ TUnit ]
+  TText → Right [ TText ]
+  TVar _ → Right [ TInt ]
+  TFun _ _ _ → Right [ TInt ]
+  THandler _ _ → Right [ TInt ]
+  TRecord row → Array.concat <$> traverse (field numbers <<< snd) row.fields
   found@(TData _ _ _) → maybe' unexpanded (Right <<< applied)
     (Map.lookup (spelling found) numbers)
   where
-  applied number = TData (TypeId number) [] []
+  applied number = [ TData (TypeId number) [] [] ]
 
 unexpanded ∷ ∀ a. Unit → Lookup a
 unexpanded _ = Left (Internal "Unexpanded type application")

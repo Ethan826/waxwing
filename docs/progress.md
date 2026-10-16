@@ -5223,3 +5223,58 @@ rule), all 41 R004 tests passing after. `rm -rf output &&
 GOTOOLCHAIN=go1.26.4 npm run verify`: 1950/1950, 59/59, 127 regression
 proofs, exit 0 (.build/evidence/r004-t2b-verify.log; a first run failed
 the structural gate on a `case` over a Maybe, now `maybe` helpers).
+
+## R004 Task 3: coverage (2026-10-16)
+
+Record patterns are judged by coverage (design §3). A behaviour-preserving
+split came first: Features/Check/Spelling.purs (keys, their spelling) and
+Features/Check/Substitute.purs left Expand.purs (differential against the
+previous commit: 0 differences, .build/evidence/r004-t3-split-diff.log).
+
+Check/Signature `Head` gains `HRecord { labels, open }`: `candidates` of a
+`TRecord` is that one head (labels in label order, `open` when any tail,
+rigid or a hole nothing closed, is left); `arity` is the label count,
+`fieldTypes` the row's field types, `witnessOf` a new `WRecord` carrying
+the openness. Matrix `complete` holds a record column always complete,
+`_` rows included, so it always splits into its fields: a witness shows
+every field and an uninhabited field leaves none. `simplify` widens a
+record pattern to the labels of its own (settled) type, `_` for those
+under `...`; two different record heads in one column fail as a field
+count mismatch (Internal). Missing needed no change. Format/Diagnostic/
+Witness.purs renders `{ admin: false, name: _ }` and `{ a: _, ... }`; a
+record type with no known field (`{ ...r }`) prints `_`, since `{ ... }`
+is no pattern. Coverage `roots` collects record types too, and Expand
+sees through records: discovery numbers the data applications inside
+them (nested records too), and a record field reaches Inhabited as its
+own fields, flattened, so a constructor holding a record with an
+uninhabited field is uninhabited. Both Task 3 placeholders are gone;
+`grep -rn "R004 placeholder" src` shows only Specialize/Body (Task 4).
+
+Tests: new test/r004-coverage.test.mjs (11 tests); test/r004-check.test.mjs
+accepts through Check (test/phases.mjs) instead of the placeholder, two
+of its programs now reporting a redundant arm; test/coverage-oracle.mjs
+gains the record type `{ k: Bool, s: { b: Bool, i: Int, ...r }, t: T }`
+and record patterns with omitted fields and `...`, compared over 150
+generated matches through Check (coverage.test.mjs). 20 failing first
+(.build/evidence/r004-t3-red.log); all pass after
+(.build/evidence/r004-t3-green.log, 85 coverage and R004 tests). The
+binder-over-`{ o: Opt(Bool) }` test held before (records were never
+complete then); in an isolated copy it fails with the roots change
+reverted, the uninhabited-holder test with records read as Int again,
+and the nested-witness and uninhabited-field tests with records complete
+only when a head is present.
+
+`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: 1962/1962, 59/59,
+127 regression proofs, exit 0 (.build/evidence/r004-t3-verify.log).
+
+Differential against main (`--corpus all --regenerate`,
+.build/evidence/r004-t3-diff.log; every difference listed in
+r004-t3-diff-all.log): 199 differences, 187 harvested and 12 mutations,
+none in fuzz, isName or matches. 195 are sources main rejected at parse
+with `Expected a pattern` at a `{` in pattern position. The other 4 are
+the intended inhabitation change, from the new test's programs without a
+record pattern: over `Opt(Wrap)` and `Opt(Deep)` (a constructor holding a
+record with a `Void` field), `Nada => 0` was `Missing pattern: Some(_)` on
+main and is now accepted, and `Nada => 0, _ => 1` was accepted and is now
+E_REDUNDANT at `_`. 15 timing tests failed only in the instrumented
+harvest run (known, BACKLOG T007); they passed in verify.

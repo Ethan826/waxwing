@@ -3,12 +3,16 @@ import assert from 'node:assert/strict';
 import { compile } from '../output/Program.Compile/index.js';
 import { Left } from '../output/Data.Either/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
+import { parse } from '../output/Format.Parse/index.js';
+import { resolve } from '../output/Features.Resolve/index.js';
+import { check } from '../output/Features.Check/index.js';
 import {
   choose, declarations, enumerate, expected, generator, intDomain, matches,
-  parseWitness, pattern, print
+  parseWitness, pattern, print, recordText
 } from './coverage-oracle.mjs';
 
 const cases = 300;
+const recordCases = 150;
 const maximumArms = 4;
 
 // Builds one match and records each arm pattern's source offset.
@@ -25,11 +29,18 @@ const build = (type, patterns) => {
     start: prefix.length, end: prefix.length + match.length };
 };
 
-const outcome = source => {
-  const result = compile(source);
+const judged = result => {
   if (!(result instanceof Left)) return { code: null };
   const diagnostic = wire(result.value0);
   return { code: diagnostic.code, diagnostic };
+};
+const outcome = source => judged(compile(source));
+// Through Check only: record patterns are lowered to Go in R004 Task 4.
+const checkedOutcome = source => {
+  const parsed = parse(source);
+  if (parsed instanceof Left) return judged(parsed);
+  const resolved = resolve(parsed.value0);
+  return judged(resolved instanceof Left ? resolved : check(resolved.value0));
 };
 
 // A raw LCG's bit 0 alternates, so reading it made every two-way choice
@@ -42,42 +53,62 @@ test('two-way choices are not a strict alternation', () => {
     bits.join(''));
 });
 
+// Compares one generated match with the oracle; returns the expected code.
+const agrees = (next, type, text, run) => {
+  const count = 1 + choose(next, maximumArms);
+  const patterns = Array.from({ length: count },
+    () => pattern(next, type, 1, { count: 0 }));
+  const built = build(text, patterns);
+  const domain = enumerate(type, intDomain(patterns));
+  const want = expected(patterns, domain);
+  const got = run(built.source);
+  assert.equal(got.code, want.code, built.source);
+  if (want.code === 'E_REDUNDANT') {
+    const offset = built.offsets[want.arm];
+    const width = print(patterns[want.arm]).length;
+    assert.equal(got.diagnostic.span.start.offset, offset, built.source);
+    assert.equal(got.diagnostic.span.end.offset, offset + width,
+      built.source);
+  }
+  if (want.code === 'E_NON_EXHAUSTIVE') {
+    assert.equal(got.diagnostic.span.start.offset, built.start, built.source);
+    assert.equal(got.diagnostic.span.end.offset, built.end, built.source);
+    const text = got.diagnostic.message.replace(/^Missing pattern: /, '');
+    const witness = parseWitness(text);
+    // Spec section 8: the witness covers only unmatched enumerated values.
+    const covered = domain.filter(v => matches(witness, v));
+    assert.ok(covered.length > 0, `${text} matches nothing: ${built.source}`);
+    const unmatched = covered.every(v => !patterns.some(p => matches(p, v)));
+    assert.ok(unmatched, `${text} covers a matched value: ${built.source}`);
+  }
+  return want.code;
+};
+
+const everyOutcome = seen => {
+  for (const [code, count] of Object.entries(seen)) {
+    assert.ok(count > 0, `no generated case expected ${code}`);
+  }
+};
+
 test('coverage agrees with a brute-force first-match oracle', () => {
   const next = generator(0x5eed);
   const seen = { E_REDUNDANT: 0, E_NON_EXHAUSTIVE: 0, null: 0 };
   for (let index = 0; index < cases; index++) {
     const type = choose(next, 4) ? 'T' : 'Bool';
-    const count = 1 + choose(next, maximumArms);
-    const patterns = Array.from({ length: count },
-      () => pattern(next, type, 1, { count: 0 }));
-    const built = build(type, patterns);
-    const domain = enumerate(type, intDomain(patterns));
-    const want = expected(patterns, domain);
-    const got = outcome(built.source);
-    assert.equal(got.code, want.code, built.source);
-    seen[want.code]++;
-    if (want.code === 'E_REDUNDANT') {
-      const offset = built.offsets[want.arm];
-      const width = print(patterns[want.arm]).length;
-      assert.equal(got.diagnostic.span.start.offset, offset, built.source);
-      assert.equal(got.diagnostic.span.end.offset, offset + width,
-        built.source);
-    }
-    if (want.code === 'E_NON_EXHAUSTIVE') {
-      assert.equal(got.diagnostic.span.start.offset, built.start, built.source);
-      assert.equal(got.diagnostic.span.end.offset, built.end, built.source);
-      const text = got.diagnostic.message.replace(/^Missing pattern: /, '');
-      const witness = parseWitness(text);
-      // Spec section 8: the witness covers only unmatched enumerated values.
-      const covered = domain.filter(v => matches(witness, v));
-      assert.ok(covered.length > 0, `${text} matches nothing: ${built.source}`);
-      const unmatched = covered.every(v => !patterns.some(p => matches(p, v)));
-      assert.ok(unmatched, `${text} covers a matched value: ${built.source}`);
-    }
+    seen[agrees(next, type, type, outcome)]++;
   }
-  for (const [code, count] of Object.entries(seen)) {
-    assert.ok(count > 0, `no generated case expected ${code}`);
+  everyOutcome(seen);
+});
+
+// R004 Task 3: record patterns over a record holding T, Bool and an open
+// nested record, with omitted fields and `...`.
+test('record coverage agrees with the brute-force oracle', () => {
+  const next = generator(0x2ec0);
+  const seen = { E_REDUNDANT: 0, E_NON_EXHAUSTIVE: 0, null: 0 };
+  for (let index = 0; index < recordCases; index++) {
+    seen[agrees(next, 'R', recordText, checkedOutcome)]++;
   }
+  everyOutcome(seen);
 });
 
 // Generated small type systems, including uninhabited constructors such as

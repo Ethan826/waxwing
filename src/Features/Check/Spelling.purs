@@ -1,9 +1,10 @@
-module Features.Check.Spelling (Key, key, spelling, isData) where
+module Features.Check.Spelling (Key, key, spelling, isData, within) where
 
 import Prelude
 import Data.Maybe (maybe')
 import Data.String.Common (joinWith)
-import Data.Tuple (Tuple(..))
+import Data.Array as Array
+import Data.Tuple (Tuple(..), snd)
 import Domain.Checked.Internal (Open)
 import Domain.Resolved (TypeId(..))
 import Domain.Type (Ty(..))
@@ -51,3 +52,10 @@ isData ∷ Key → Boolean
 isData = case _ of
   TData _ _ _ → true
   _ → false
+
+-- A type as discovery sees it: a record is its field types, nested records
+-- in turn, so the data applications inside records are discovered too.
+within ∷ Key → Array Key
+within = case _ of
+  TRecord row → Array.concatMap (within <<< snd) row.fields
+  other → [ other ]

@@ -15,12 +15,20 @@ module Features.Check.Matrix
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
+import Data.Foldable (find)
 import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Tuple (fst)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved (Ty(..))
-import Features.Check.Signature (Head(..), Signature, arity, candidates)
+import Features.Check.Signature
+  ( Head(..)
+  , Signature
+  , arity
+  , candidates
+  , recordHead
+  )
 import Features.Check.Tables (Lookup)
 
 -- Binders and wildcards are indistinguishable to coverage.
@@ -44,10 +52,14 @@ column tys q = maybe' noTypes withTypes (Array.uncons tys)
 
 -- Int has unboundedly many heads, and a rigid variable, a hole or an arrow
 -- is abstract (design §5), so none of them is ever complete. Unit has no
--- pattern but `_` and binders (FX001), so it is abstract too.
+-- pattern but `_` and binders (FX001), so it is abstract too. A record
+-- type's one head is always complete, `_` included, so a record column
+-- always splits into its fields (R004 design §3): a witness then shows
+-- every field, and an uninhabited field leaves no witness.
 complete ∷ Signature → Ty Open → Array Head → Lookup Boolean
 complete signature ty heads =
   if open ty then Right false
+  else if isRecord ty then Right true
   else Array.all present <$> candidates signature ty
   where
   present head = Array.elem head heads
@@ -58,6 +70,8 @@ complete signature ty heads =
     TVar _ → true
     TFun _ _ _ → true
     THandler _ _ → true
+    _ → false
+  isRecord = case _ of
     TRecord _ → true
     _ → false
 
@@ -75,7 +89,9 @@ specialize signature head rows = do
   malformed count row = maybe false (mismatched count) (Array.head row)
   mismatched count = case _ of
     Any → false
-    Headed found fields → found == head && Array.length fields /= count
+    Headed found fields → clash found
+      || found == head && Array.length fields /= count
+  clash found = otherRecord head found
   specializeRow count row = Array.head row >>= specializeFirst count row
   specializeFirst count row = case _ of
     Any → Just (wildcards count <> afterFirst row)
@@ -118,10 +134,31 @@ simplify (Checked.Pattern pattern) = case pattern.shape of
   Checked.IntLit value → Headed (HInt value) []
   Checked.BoolLit value → Headed (HBool value) []
   Checked.Ctor id fields → Headed (HCtor id) (map simplify fields)
-  -- R004 placeholder (Task 3 replaces it): unreachable, since
-  -- Check/Coverage stops at its own placeholder before building a matrix
-  -- for a match with a record pattern.
-  Checked.Record _ _ → Any
+  Checked.Record fields _ → widened simplify pattern.ty fields
+
+-- R004 design §3: a record pattern widens to every label of its own type,
+-- in label order, a label it leaves to `...` being `_`. Settlement has
+-- put the final substitution into that type, and whatever tail is left,
+-- rigid or a hole nothing closed, makes the head open. A record pattern
+-- of another type is a checker bug, which `fieldTypes` then reports.
+widened
+  ∷ (Checked.Pattern → Pat) → Ty Open → Array Checked.FieldPattern → Pat
+widened simplified ty fields = case ty of
+  TRecord row → Headed (recordHead row) (map (fieldAt <<< fst) row.fields)
+  _ → Headed (HRecord { labels: map label fields, open: true })
+    (map (simplified <<< pattern) fields)
+  where
+  fieldAt name = maybe Any (simplified <<< pattern) (find (named name) fields)
+  named name field = field.label == name
+  label field = field.label
+  pattern field = field.pattern
+
+-- Two record heads in one column disagree only if checking gave the
+-- column's patterns different types, a compiler bug.
+otherRecord ∷ Head → Head → Boolean
+otherRecord head = case _ of
+  found@(HRecord _) → found /= head
+  _ → false
 
 patternType ∷ Checked.Pattern → Ty Open
 patternType (Checked.Pattern pattern) = pattern.ty

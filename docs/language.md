@@ -133,9 +133,12 @@ Coverage. After the whole program type-checks, each match is checked in
 source pre-order, functions in declaration order. The first redundant arm is
 E_REDUNDANT (at its pattern); then a non-exhaustive match is E_NON_EXHAUSTIVE
 (at the whole match) with message `Missing pattern: <witness>`, rendered like
-`Cons(_, Nil)`, `false`, `2`. Witnesses never name an uninhabited
-constructor. A type with no inhabited constructor (`type T = C(T);`) is legal;
-a wildcard over only such a remainder is E_REDUNDANT (adt-coverage;
+`Cons(_, Nil)`, `false`, `2`. A record witness lists every known field in
+label order, `{ admin: false, name: _ }`, with `...` last for an open type,
+`{ a: { b: _, ... }, c: false }`. Witnesses never name an uninhabited
+constructor; a record is inhabited exactly when every field is. A type with
+no inhabited constructor (`type T = C(T);`) is legal; a wildcard over only
+such a remainder is E_REDUNDANT (adt-coverage;
 coverage.test.mjs compares with a brute-force oracle).
 
 Evaluation is strict, operands and arguments left to right; `if` and `match`

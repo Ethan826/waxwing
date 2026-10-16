@@ -37,8 +37,14 @@ type RowText =
   , tail ∷ Maybe String
   }
 
--- A missing value, with constructor names already resolved.
-data Witness = WAny | WCtor String (Array Witness) | WInt Int | WBool Boolean
+-- A missing value, with constructor names already resolved. A record
+-- holds every known field in label order and whether its type is open.
+data Witness
+  = WAny
+  | WCtor String (Array Witness)
+  | WInt Int
+  | WBool Boolean
+  | WRecord (Array (Tuple String Witness)) Boolean
 
 data UnboundKind
   = UnboundLocal

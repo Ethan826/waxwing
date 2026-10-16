@@ -34,7 +34,7 @@ coverage roots and inhabitation, witness openness, buildable commits,
 execution evidence, ADT pointers inside records), then regrouped into
 four slices (user, 2026-10-16): the split folds into whichever task
 needs it, parse and resolve are one task, and Go lowering joins the
-evidence task. Tasks 1 and 2 done.
+evidence task. Tasks 1 to 3 done.
 
 ## Global Constraints
 
@@ -64,9 +64,9 @@ evidence task. Tasks 1 and 2 done.
   | Added in | Placeholder at | Removed in |
   |---|---|---|
   | Task 1 (Syntax, Resolved) | Check/Match `patternAgainst` | Task 2 |
-  | Task 2 (Checked) | Check/Coverage, before the matrix, for any match holding a record pattern | Task 3 |
+  | Task 2 (Checked) | Check/Coverage, before the matrix, for any match holding a record pattern | Task 3 (removed) |
   | Task 2 (Checked) | Specialize/Body `copyShape` | Task 4 |
-  | Task 2 (Checked) | Matrix `simplify` returns `Any` | Task 3 |
+  | Task 2 (Checked) | Matrix `simplify` returns `Any` | Task 3 (removed) |
 
   Matrix `simplify` cannot fail. Task 2 gives it a real case, which
   Task 3 completes. Task 4 gates on `grep -rn "R004 placeholder" src`
@@ -180,7 +180,7 @@ Check/Coverage and Specialize/Body `copyShape`.
   record patterns. The oracle shares no code with the compiler.
 - Removes the Coverage placeholder.
 
-- [ ] Failing tests:
+- [x] Failing tests:
   - a redundant arm after an exhaustive record row;
   - a witness through a record field, and a nested open-record witness
     `{ a: { b: _, ... }, c: false }`;
@@ -188,7 +188,7 @@ Check/Coverage and Specialize/Body `copyShape`.
   - an ADT whose only constructor holds a record with an uninhabited
     field, which is uninhabited;
   - the oracle with records.
-- [ ] Implement; verify; commit.
+- [x] Implement; verify; commit.
 
 ### Task 4: Go lowering, execution evidence, close-out
 
