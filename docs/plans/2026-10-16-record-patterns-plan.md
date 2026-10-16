@@ -31,7 +31,10 @@ texts approved 2026-10-16).
 
 **Status:** Revised 2026-10-16 after the user's review (label spans,
 coverage roots and inhabitation, witness openness, buildable commits,
-execution evidence, ADT pointers inside records); not started.
+execution evidence, ADT pointers inside records), then regrouped into
+four slices (user, 2026-10-16): the split folds into whichever task
+needs it, parse and resolve are one task, and Go lowering joins the
+evidence task. Not started.
 
 ## Global Constraints
 
@@ -60,14 +63,18 @@ execution evidence, ADT pointers inside records); not started.
 
   | Added in | Placeholder at | Removed in |
   |---|---|---|
-  | Task 2 (Syntax) | Resolve/Pattern `walk` | Task 3 |
-  | Task 3 (Resolved) | Check/Match `patternAgainst` | Task 4 |
-  | Task 4 (Checked) | Check/Coverage, before the matrix, for any match holding a record pattern | Task 5 |
-  | Task 4 (Checked) | Specialize/Body `copyShape` | Task 6 |
+  | Task 1 (Syntax, Resolved) | Check/Match `patternAgainst` | Task 2 |
+  | Task 2 (Checked) | Check/Coverage, before the matrix, for any match holding a record pattern | Task 3 |
+  | Task 2 (Checked) | Specialize/Body `copyShape` | Task 4 |
 
-  Matrix `simplify` cannot fail. Task 4 gives it a real case, which
-  Task 5 completes. No placeholder lasts past Task 6. Task 7 gates on
-  `grep -rn "R004 placeholder" src` returning nothing.
+  Matrix `simplify` cannot fail. Task 2 gives it a real case, which
+  Task 3 completes. Task 4 gates on `grep -rn "R004 placeholder" src`
+  returning nothing.
+- **Splits on demand.** A file that a task would push past 245 lines is
+  split along a real seam in that task, as its own behaviour-preserving
+  commit (differential: 0 differences) before the feature change.
+  Candidates: src/Domain/IR/Internal.purs (242), src/Domain/Resolved.purs
+  (224).
 - **Go output** of every existing valid program stays byte-identical
   (bootstrap/*.go snapshots; the differential against the base changes
   only sources with `{` in a pattern position, which were E_SYNTAX).
@@ -75,69 +82,57 @@ execution evidence, ADT pointers inside records); not started.
 - **Every task:** tests seen failing first; `rm -rf output &&
   GOTOOLCHAIN=go1.26.4 npm run verify` exits 0 on the committed tree;
   delete .build/regression and .build/go-cache afterwards.
-- **Models.** Sonnet implementers for Tasks 1, 2, 3, 6 and 7; Opus for
-  Tasks 4 and 5. Task 7's regression rows get a substantive Opus
-  review whoever writes them.
+- **Models.** Sonnet implementers for Tasks 1 and 4; Opus for Tasks 2
+  and 3. Task 4's regression rows get a substantive Opus review whoever
+  writes them.
 
 ## Review Focus
 
 1. **Every case analysis.** Several pattern walks end in `_ →`
    fallthroughs and would silently skip binders inside record fields:
    Check/Walk `foldPattern`, `retypePattern`; Resolve/Pattern `binders`;
-   Go/Match `bindings`; Go/Capture `binders`. Tasks 3, 4, 6.
+   Go/Match `bindings`; Go/Capture `binders`. Tasks 1, 2, 4.
 2. **Label spans.** Each diagnostic about a field sits at the label, not
-   the field's pattern or the record. Tasks 3, 4.
+   the field's pattern or the record. Tasks 1, 2.
 3. **Holes and rigids.** A record pattern under a generic constructor,
    an unannotated lambda parameter as scrutinee, a rigid `a`, and
-   `{ ...r }`. Task 4.
+   `{ ...r }`. Task 2.
 4. **Coverage through records.** Roots, inhabitation and witnesses for
-   nested records, parameterized ADTs and open rows. Task 5.
+   nested records, parameterized ADTs and open rows. Task 3.
 5. **Pointers.** ADT-valued fields inside records stay pointers, with
-   nil guards and dereferenced binders. Task 6.
+   nil guards and dereferenced binders. Task 4.
 
 ---
 
-### Task 1: Behaviour-preserving splits
+### Task 1: Parse and resolve
 
-**Files:** src/Domain/IR/Internal.purs (242): move `Pattern` and `Shape`
-to a new IR-internal module, added to the IR allowlist in
-scripts/structure.mjs and docs/engineering.md. Same for
-src/Domain/Resolved.purs (224) if Task 3 would pass 245.
-
-- [ ] Split; export lists unchanged for importers except module names.
-- [ ] Verify; differential against the base: 0 differences.
-- [ ] Commit `refactor: splits for R004`.
-
-### Task 2: Parse
-
-**Files:** src/Domain/Syntax/Core.purs: `PRecord Span (Array
-FieldPattern) (Maybe Span)`, where `FieldPattern` is `{ label, span,
-pattern }` and the `Maybe Span` is the `...`'s span. Also Syntax
-`patternSpan`; src/Format/Parse/Pattern.purs (`on "{" recordPattern`);
-a new src/Format/Parse/RecordPattern.purs reusing RecordType `label`
-and the `nested (defer …)` idiom. A punned field parses as `PBind` at
-the label. Placeholder in Resolve/Pattern `walk`.
+**Files:**
+- src/Domain/Syntax/Core.purs: `PRecord Span (Array FieldPattern)
+  (Maybe Span)`, where `FieldPattern` is `{ label, span, pattern }` and
+  the `Maybe Span` is the `...`'s span. Also Syntax `patternSpan`.
+- src/Format/Parse/Pattern.purs (`on "{" recordPattern`) and a new
+  src/Format/Parse/RecordPattern.purs reusing RecordType `label` and the
+  `nested (defer …)` idiom. A punned field parses as `PBind` at the
+  label.
+- src/Domain/Resolved.purs: `Record Span (Array Field) Boolean`, with
+  `Field = { label ∷ String, span ∷ Span, pattern ∷ Pattern }`.
+- src/Features/Resolve/Pattern.purs `walk` and `binders` (no
+  fallthrough for records); duplicate labels through
+  Resolve/RecordFields; a new Resolve/RecordPattern.purs if Pattern.purs
+  passes ~150 lines.
+- Placeholder in Check/Match `patternAgainst`.
 
 - [ ] Failing tests test/r004-parse.test.mjs, through `Format.Parse`
-  `parse` as test/r001-parse.test.mjs does: nesting both ways,
-  trailing comma, `...` only last, `{}` and `{ ... }` E_SYNTAX, a pun
-  and a pun beside an explicit field, label spans.
+  `parse` as test/r001-parse.test.mjs does: nesting both ways, trailing
+  comma, `...` only last, `{}` and `{ ... }` E_SYNTAX, a pun and a pun
+  beside an explicit field, label spans.
+- [ ] Failing tests test/r004-resolve.test.mjs: duplicate label with
+  its note; duplicate binder across fields and puns; binders scoped to
+  the arm; an unbound name in an arm body using a field binder of
+  another arm.
 - [ ] Implement; depth probe unchanged; verify; commit.
 
-### Task 3: Resolve
-
-**Files:** src/Domain/Resolved.purs: `Record Span (Array Field)
-Boolean`, with `Field = { label ∷ String, span ∷ Span, pattern ∷
-Pattern }`. Also src/Features/Resolve/Pattern.purs `walk` and `binders`
-(no fallthrough for records); duplicate labels through
-Resolve/RecordFields; a new Resolve/RecordPattern.purs if Pattern.purs
-passes ~150 lines. Placeholder in Check/Match `patternAgainst`.
-
-- [ ] Failing tests: duplicate label with its note; duplicate binder
-  across fields and puns; binders scoped to the arm.
-- [ ] Implement; verify; commit.
-
-### Task 4: Check
+### Task 2: Check
 
 **Files:** src/Domain/Checked/Internal.purs: `Record (Array { label ∷
 String, pattern ∷ Pattern }) Boolean`. Also Check/Match, with a new
@@ -164,7 +159,7 @@ Check/Coverage and Specialize/Body `copyShape`.
   `{ ...r }`; field order irrelevant; arm bodies using field binders.
 - [ ] Implement; verify; commit.
 
-### Task 5: Coverage, inhabitation and witnesses
+### Task 3: Coverage, inhabitation and witnesses
 
 **Files:**
 - Check/Signature: `HRecord { labels, open }`, `candidates` from the
@@ -194,7 +189,7 @@ Check/Coverage and Specialize/Body `copyShape`.
   - the oracle with records.
 - [ ] Implement; verify; commit.
 
-### Task 6: Specialize and Go
+### Task 4: Go lowering, execution evidence, close-out
 
 **Files:**
 - Specialize/Body `copyShape` and the IR record shape; removes the
@@ -213,10 +208,8 @@ Check/Coverage and Specialize/Body `copyShape`.
   - puns;
   - a generic function over an open row, specialized twice;
   - field binders captured by a lambda.
-- [ ] Implement; snapshots byte-identical; verify; commit.
-
-### Task 7: Execution evidence, docs, regression, close-out
-
+- [ ] Implement the lowering; snapshots byte-identical; verify; commit
+  before the evidence work.
 - [ ] **Reference execution.** Extend the FX001 reference interpreter
   (test/fx-oracle-parse.mjs, fx-oracle-context.mjs `matches`,
   fx-oracle-records.mjs) and its program generator with record
