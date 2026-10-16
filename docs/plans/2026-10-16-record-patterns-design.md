@@ -49,35 +49,56 @@ with `...`.** The options weighed:
 
 ## 2. Typing
 
-- A record pattern is checked against the scrutinee's (or enclosing
-  field's) type, which must be a record type: closed, or open with a tail.
-- Each named label must be in the type's known fields, else the existing
-  E_TYPE `a is not a field of { … }` at the label. A pattern cannot learn a
-  field from an open tail: `{ a: x, ... }` against `{ ...r }` is that error,
-  because a rigid tail has no known fields.
-- Under A1, a closed type's unlisted fields need `...`; an open type
-  always needs `...` (its tail may hold more fields).
-- Against a non-record type, the existing pattern E_TYPE mismatch text,
-  at the pattern, as a constructor pattern on the wrong type is today.
-  Against a type variable, as now, only `_` and binders fit.
-- Field binders are locals scoped to the arm, like constructor binders.
+A record pattern is checked against the type expected at its position
+(the scrutinee's, or the enclosing field's), with the substitution
+applied first. Three cases, decided by that type:
+
+- **A record type**, closed or open with a tail (a rigid signature
+  variable or an inference hole). Each named label must be a known field,
+  else the existing E_TYPE `a is not a field of { … }` at that label's
+  name (not its pattern). A pattern never learns a field from a tail:
+  `{ a: x, ... }` against `{ ...r }` is that error. Each field pattern is
+  checked against its field's type. Then, without `...`, the first
+  unlisted known field in label order is `Pattern is missing field l;
+  add it or end the pattern with ...`; and an open type with every known
+  field listed is `Pattern is missing the rest of { a: Int, ...r }; end
+  the pattern with ...`; both at the whole pattern.
+- **An inference hole** (a type not yet known, such as an unannotated
+  lambda parameter). The hole is unified with the type the pattern
+  writes: closed over its labels without `...`; with `...`, open over a
+  fresh tail that lacks those labels, as `.l` selection does (Check/Record
+  `select`). Each field's type is a fresh hole.
+- **Anything else**, including a rigid type variable `a`: the existing
+  E_TYPE `Expected a record, found T` at the pattern.
+
+Field binders, punned or written, are locals scoped to the arm, like
+constructor binders.
 
 ## 3. Coverage
 
 A record type is one constructor whose fields are the type's known
 labels in label order (ADR 013's canonical order). In Maranget's matrix a
-record pattern specializes to its fields, an unnamed field (via `...` or
-under A2) being `_`; the head is always complete, so a record column
-never forks. Witnesses print as record literals with every known field,
-`{ admin: false, name: _ }`, in label order; an open type's witness adds
-`...` (proposed rendering; part of the approved-text request with A1).
-The existing brute-force oracle test is extended with record columns.
+record pattern specializes to its fields, a field it does not name (via
+`...`) being `_`; the head is always complete, so a record column never
+forks. The head records whether the type is open, so a witness can print
+`...`. Witnesses print as record literals with every known field,
+`{ admin: false, name: _ }`, in label order, with `...` last for an open
+type (approved 2026-10-16).
+
+Coverage also has to see through records where it looks for data
+types: the types it collects for matching, and inhabitation (a record is
+inhabited exactly when every field type is), so that an ADT whose only
+constructor holds a record with an uninhabited field is uninhabited. The
+brute-force coverage oracle is extended with record columns and stays
+independent of the compiler.
 
 ## 4. Lowering
 
-A record pattern reads the Go struct's fields of the specialized type;
-no new runtime helper. Each field is read at most once per arm test, in
-label order; reads have no effects, so order is unobservable.
+A record pattern reads the specialized Go struct's fields; no new
+runtime helper and no tag test. A record-valued field is stored inline,
+and an ADT-valued field, inside a record as anywhere, stays a pointer:
+its nil guard and a binder's dereference are kept. Field reads have no
+effects, so their order is unobservable.
 
 ## 5. Punning in patterns (user 2026-10-16)
 
@@ -88,9 +109,10 @@ punning stays R007's, since `{ name }` there is a block.
 
 ## 6. Diagnostics
 
-Approved 2026-10-16: the missing-field text (§1); for an open type with
-every known field listed and no `...`, `Pattern is missing the rest of
-{ a: Int, ...r }; end the pattern with ...`; and the witness form (§3),
+Approved 2026-10-16 (texts and locations as in §2): the missing-field
+text (§1); for an open type with every known field listed and no `...`,
+`Pattern is missing the rest of { a: Int, ...r }; end the pattern with
+...`; and the witness form (§3),
 `{ admin: false, name: _ }`, with `...` last for an open type.
 Everything else reuses approved texts.
 

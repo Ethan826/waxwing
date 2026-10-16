@@ -5131,3 +5131,17 @@ design.md) and its open decisions answered by the user: explicit `...`
 for unnamed fields, punning in patterns ahead of R007, the missing-field
 text and the witness form approved. Docs only; no compiler change, so no
 verify run for this entry.
+
+## R004 plan revised after review (2026-10-16)
+
+The user's review of the R004 plan found five gaps, each confirmed in the
+code: label spans lost in resolution; Check/Expand `field` reads a record
+as `Int` and Check/Coverage `roots` collects only `TData`; `witnessOf`
+cannot tell an open record from a closed one; intermediate commits would
+not build; and no execution evidence for the feature. Plus two smaller
+corrections: ADT-valued fields inside records stay pointers, and the
+design's typing section now separates rigid variables from holes and
+pins `Expected a record`. The plan now carries label spans, an
+`HRecord { labels, open }` head, coverage roots and inhabitation through
+records, explicit placeholders with a removal table and a grep gate, and
+a reference-interpreter comparison in Task 7. Docs only.
