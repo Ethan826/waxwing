@@ -48,6 +48,7 @@ evidence task. Tasks 1 to 3 done.
   - `Pattern is missing the rest of { a: Int, ...r }; end the pattern
     with ...` (E_TYPE, at the whole pattern);
   - witnesses `{ admin: false, name: _ }`, and `{ a: _, ... }` when open;
+    a record type with no known field prints `_` (approved 2026-10-16);
   - existing `Duplicate field x` (at the second label, note at the
     first), `a is not a field of { … }` (at the label's name), `Expected
     a record, found T` (at the pattern), `Expected X, found Y`.

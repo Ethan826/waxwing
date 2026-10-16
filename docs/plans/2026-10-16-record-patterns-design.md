@@ -117,7 +117,9 @@ Approved 2026-10-16 (texts and locations as in §2): the missing-field
 text (§1); for an open type with every known field listed and no `...`,
 `Pattern is missing the rest of { a: Int, ...r }; end the pattern with
 ...`; and the witness form (§3),
-`{ admin: false, name: _ }`, with `...` last for an open type.
+`{ admin: false, name: _ }`, with `...` last for an open type; a record
+type with no known field (`{ ...r }`) prints as `_` (approved
+2026-10-16, since `{ ... }` is not a pattern).
 Everything else reuses approved texts.
 
 ## 7. Acceptance
