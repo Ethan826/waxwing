@@ -4,8 +4,10 @@ R014 was fast-forwarded into main at 955ad33 (branch deleted, nothing
 pushed). R004's design, docs/plans/2026-10-16-record-patterns-design.md,
 has the user's decisions (2026-10-16): a record pattern names every field
 or ends with `...`; fields pun in patterns; the missing-field text and
-witness form are approved. Next: R004's implementation plan, then
-execution; then R005's design.
+witness form are approved. The plan,
+docs/plans/2026-10-16-record-patterns-plan.md (7 tasks), is drafted;
+its stop item (a text for an open row with no `...`) needs approval
+before Task 4. Next: execution from Task 1; then R005's design.
 
 ---
 
