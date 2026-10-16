@@ -88,8 +88,10 @@ punning stays R007's, since `{ name }` there is a block.
 
 ## 6. Diagnostics
 
-Approved 2026-10-16: the missing-field text (§1) and the witness form
-(§3), `{ admin: false, name: _ }`, with `...` last for an open type.
+Approved 2026-10-16: the missing-field text (§1); for an open type with
+every known field listed and no `...`, `Pattern is missing the rest of
+{ a: Int, ...r }; end the pattern with ...`; and the witness form (§3),
+`{ admin: false, name: _ }`, with `...` last for an open type.
 Everything else reuses approved texts.
 
 ## 7. Acceptance

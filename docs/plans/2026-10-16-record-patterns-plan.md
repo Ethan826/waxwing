@@ -28,8 +28,8 @@ test runner, Go 1.26.4. No new dependency.
 **Spec:** docs/plans/2026-10-16-record-patterns-design.md (decisions
 approved 2026-10-16).
 
-**Status:** Draft 2026-10-16, not started. One text needs approval first
-(Global Constraints, "Stop item").
+**Status:** Ready 2026-10-16, not started. The open-row text was
+approved by the user 2026-10-16.
 
 ## Global Constraints
 
@@ -45,11 +45,10 @@ approved 2026-10-16).
   - existing `Duplicate field x` (at the second label, note at the
     first), `a is not a field of { … }` (at the label), `Expected a
     record, found Int` (at the pattern), `Expected X, found Y`.
-- **Stop item (before Task 4).** An open type whose known fields are all
-  listed, without `...` (`{ a: x }` against `{ a: Int, ...r }`), has no
-  missing field to name. Proposed E_TYPE `Pattern is missing the rest of
-  { a: Int, ...r }; end the pattern with ...`. Needs the user's approval;
-  any other new text is also a stop.
+- **Open row without `...`** (approved 2026-10-16): an open type whose
+  known fields are all listed (`{ a: x }` against `{ a: Int, ...r }`) is
+  E_TYPE `Pattern is missing the rest of { a: Int, ...r }; end the
+  pattern with ...` at the pattern. Any other new text is a stop.
 - **Go output** of every existing valid program stays byte-identical
   (bootstrap/*.go snapshots; differential against the base shows only
   sources that use record patterns or `{` in a pattern position, which
@@ -113,19 +112,19 @@ Resolve/RecordPattern.purs if Pattern.purs passes ~150.
   fields and puns, binders scoped to the arm.
 - [ ] Implement; verify; commit.
 
-### Task 4: Check (after the stop item is settled)
+### Task 4: Check
 
 **Files:** src/Domain/Checked/Internal.purs (`Record (Array (Tuple
 String Pattern)) Boolean`), src/Features/Check/Match.purs (new
 Check/RecordPattern.purs for the rule), Check/Walk `foldPattern` and
-`retypePattern`, Domain/Problem (`PatternMissingField`, and the stop
-item's problem), Format/Diagnostic texts.
+`retypePattern`, Domain/Problem (`PatternMissingField`,
+`PatternMissingRest`), Format/Diagnostic texts.
 
 **Rule:** apply the substitution to the expected type. A `TRecord`:
 each label must be known (else MissingField at the label), each field
 pattern checked against its field type, then without `...` the first
 unlisted label in order is PatternMissingField; an open row without
-`...` is the stop item's error. A hole: unify with `TRecord` of fresh
+`...` is the open-row error. A hole: unify with `TRecord` of fresh
 holes per label, closed, or with a fresh tail plus `addLacks` of the
 labels when `...` (Check/Record `select` precedent). Otherwise
 ExpectedRecord.

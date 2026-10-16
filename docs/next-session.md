@@ -6,8 +6,7 @@ has the user's decisions (2026-10-16): a record pattern names every field
 or ends with `...`; fields pun in patterns; the missing-field text and
 witness form are approved. The plan,
 docs/plans/2026-10-16-record-patterns-plan.md (7 tasks), is drafted;
-its stop item (a text for an open row with no `...`) needs approval
-before Task 4. Next: execution from Task 1; then R005's design.
+its open-row text is approved. Next: execution from Task 1; then R005's design.
 
 ---
 
