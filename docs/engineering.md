@@ -218,7 +218,14 @@ adding a bypass allowlist.
   (body types not held to the signature's lacks sets) and
   `r001-record-guard` (no repeated-label guard in lowering). R012 adds
   seven rows in scripts/regression-r012.mjs (probes in
-  test/regression-r012.mjs), and FX024 adds `fx-label-argument-ambient`
+  test/regression-r012.mjs), R004 seven in scripts/regression-r004.mjs
+  (probes in test/regression-r004.mjs): `r004-missing-field`,
+  `r004-label-span` (a field's span taken from its pattern),
+  `r004-widening` (record patterns not widened to their type's labels),
+  `r004-walk-binders` (settlement skipping patterns in record fields),
+  `r004-inhabitation` (record fields read as Int), `r004-go-fields`
+  (lowered conditions testing no field) and `r004-hole-tail` (a hole tail
+  never extended), and FX024 adds `fx-label-argument-ambient`
   to scripts/regression-fx.mjs. Every one of these rows' `message`s pins
   the symptom of its restored defect (the wrong diagnostic, a wrong
   acceptance, an internal error, Go's build error, the wrong output, or,
