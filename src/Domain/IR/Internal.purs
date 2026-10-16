@@ -198,6 +198,7 @@ data Shape
   | IntLit Int
   | BoolLit Boolean
   | Ctor CtorId (Array Pattern)
+  | Record (Array { label ∷ String, pattern ∷ Pattern })
 
 typeOf ∷ Expr → Ty
 typeOf (Expr expression) = expression.ty

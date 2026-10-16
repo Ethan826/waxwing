@@ -15,9 +15,10 @@ import Format.Go.Data
   )
 import Format.Go.Layout (Layout, tagOf)
 import Format.Go.Lowered (Lowered, Lowering, Scope, several)
+import Format.Go.RecordNames (recordField)
 import Domain.IR.Internal as IR
 import Domain.IR.Internal (Ty(..))
-import Domain.Resolved (CtorId, FunctionId, LocalId)
+import Domain.Resolved (FunctionId, LocalId)
 
 -- Where a pattern position lives, and whether reaching it dereferences.
 type Access = { path ∷ String, pointer ∷ Boolean }
@@ -120,10 +121,18 @@ conditions tables access (IR.Pattern pattern) = case pattern.shape of
     ( [ access.path <> ".tag == " <> show (tagOf tables id) ]
         <> Array.concat (Array.mapWithIndex (field id) fields)
     )
+  -- R004: no tag to test; each named field's pattern is tested on the
+  -- struct field, a record being stored inline and an ADT as a pointer.
+  IR.Record fields → guarded (Array.concatMap named fields)
   where
   guarded tests = (if access.pointer then [ nilGuard access.path ] else [])
     <> tests
-  field id index sub = conditions tables (fieldAccess access id index sub) sub
+  field id index sub = conditions tables
+    (fieldAccess access (fieldName id index) sub)
+    sub
+  named found = conditions tables
+    (fieldAccess access (recordField found.label) found.pattern)
+    found.pattern
 
 nilGuard ∷ String → String
 nilGuard path = path <> " != nil"
@@ -132,15 +141,24 @@ bindings ∷ Access → IR.Pattern → Array Binding
 bindings access (IR.Pattern pattern) = case pattern.shape of
   IR.Bind id → [ { id, value: dereferenced } ]
   IR.Ctor id fields → Array.concat (Array.mapWithIndex (field id) fields)
-  _ → []
+  IR.Record fields → Array.concatMap named fields
+  IR.Wildcard → []
+  IR.IntLit _ → []
+  IR.BoolLit _ → []
   where
   dereferenced = (if access.pointer then "*" else "") <> access.path
-  field id index sub = bindings (fieldAccess access id index sub) sub
+  field id index sub = bindings
+    (fieldAccess access (fieldName id index) sub)
+    sub
+  named found = bindings
+    (fieldAccess access (recordField found.label) found.pattern)
+    found.pattern
 
--- ADT fields are stored as pointers; primitive fields are stored directly.
-fieldAccess ∷ Access → CtorId → Int → IR.Pattern → Access
-fieldAccess access id index (IR.Pattern sub) =
-  { path: access.path <> "." <> fieldName id index, pointer: isData sub.ty }
+-- ADT fields are stored as pointers, in a constructor or a record;
+-- primitive and record fields are stored directly.
+fieldAccess ∷ Access → String → IR.Pattern → Access
+fieldAccess access name (IR.Pattern sub) =
+  { path: access.path <> "." <> name, pointer: isData sub.ty }
   where
   isData = case _ of
     TData _ → true

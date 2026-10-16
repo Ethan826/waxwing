@@ -66,7 +66,7 @@ evidence task. Tasks 1 to 3 done.
   |---|---|---|
   | Task 1 (Syntax, Resolved) | Check/Match `patternAgainst` | Task 2 |
   | Task 2 (Checked) | Check/Coverage, before the matrix, for any match holding a record pattern | Task 3 (removed) |
-  | Task 2 (Checked) | Specialize/Body `copyShape` | Task 4 |
+  | Task 2 (Checked) | Specialize/Body `copyShape` | Task 4 (removed) |
   | Task 2 (Checked) | Matrix `simplify` returns `Any` | Task 3 (removed) |
 
   Matrix `simplify` cannot fail. Task 2 gives it a real case, which
