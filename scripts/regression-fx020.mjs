@@ -66,18 +66,30 @@ export const fx020Rows = [
   {
     // Resolution reading the row: an effect outside the function's written
     // row declares nothing, so `Database.query` stops resolving there
-    // instead of resolving and failing effect checking.
-    name: 'fx020-row-dependent', file: 'src/Features/Resolve.purs',
-    needle: scopeHead,
-    replacement: '  where\n'
-      + '  hidden effect\n'
-      + '    | Array.any (isNamed effect.name) labels = effect\n'
-      + '    | otherwise = effect { operations = [] }\n'
-      + '  isNamed wanted label = label.name == wanted\n'
-      + '  labels = maybe [] rowLabels definition.function.row\n'
-      + '  rowLabels (Syntax.RowRef _ found _) = found\n'
-      + '  scope =\n    { globals\n    , effects\n'
-      + '    , effectInfos: map hidden effectInfos\n',
+    // instead of resolving and failing effect checking. The second edit
+    // restores `maybe`, which Resolve.purs no longer imports (R005 moved
+    // the entry check out); the defect itself is unchanged.
+    name: 'fx020-row-dependent',
+    edits: [
+      {
+        file: 'src/Features/Resolve.purs',
+        needle: scopeHead,
+        replacement: '  where\n'
+          + '  hidden effect\n'
+          + '    | Array.any (isNamed effect.name) labels = effect\n'
+          + '    | otherwise = effect { operations = [] }\n'
+          + '  isNamed wanted label = label.name == wanted\n'
+          + '  labels = maybe [] rowLabels definition.function.row\n'
+          + '  rowLabels (Syntax.RowRef _ found _) = found\n'
+          + '  scope =\n    { globals\n    , effects\n'
+          + '    , effectInfos: map hidden effectInfos\n'
+      },
+      {
+        file: 'src/Features/Resolve.purs',
+        needle: 'import Data.Maybe (Maybe(..))\n',
+        replacement: 'import Data.Maybe (Maybe(..), maybe)\n'
+      }
+    ],
     probe: 'fx020-row-dependent', message: /resolved by the row/
   }
 ];

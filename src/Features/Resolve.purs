@@ -2,14 +2,13 @@ module Features.Resolve (resolve) where
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), isNothing, maybe, maybe')
+import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Domain.Problem (EntryKind(..), Problem(..))
-import Domain.Type.Parts (groundErased)
 import Domain.Syntax as Syntax
+import Features.Resolve.Entry (entryPoint)
 import Features.Resolve.Expression (expression)
 import Features.Resolve.Fresh (runFresh)
 import Features.Resolve.Types (resolveTypeWith, typeTable)
@@ -162,35 +161,6 @@ annotationSpan ∷ Syntax.TypeRef → Maybe Syntax.Span
 annotationSpan = case _ of
   Syntax.FunRef _ _ (Just (Syntax.RowRef span _ _)) _ → Just span
   _ → Nothing
-
-entryPoint
-  ∷ Array Definition → Either Syntax.Diagnostic Resolved.FunctionId
-entryPoint definitions = maybe' absent checkEntry
-  (Array.find isEntry definitions)
-  where
-  isEntry definition = definition.function.name == "main"
-  absent _ = Left
-    ( Syntax.problemAt (EntryProblem MissingEntry)
-        { start: Syntax.origin, end: Syntax.origin }
-    )
-
-checkEntry ∷ Definition → Either Syntax.Diagnostic Resolved.FunctionId
-checkEntry definition = maybe (pure (Resolved.FunctionId definition.index))
-  invalid
-  (entryProblem definition)
-  where
-  invalid kind = Left
-    (Syntax.problemAt (EntryProblem kind) definition.function.span)
-
--- `main` takes no parameters and returns a ground type: there is no caller
--- to choose its type arguments. Rows are erased first: a row variable is
--- not a type argument (FX001).
-entryProblem ∷ Definition → Maybe EntryKind
-entryProblem definition
-  | not (Array.null definition.function.parameters) = Just EntryParameters
-  | isNothing (groundErased definition.signature.result) =
-      Just EntryPolymorphic
-  | otherwise = Nothing
 
 resolveFunction
   ∷ Array Global
