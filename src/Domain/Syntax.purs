@@ -23,6 +23,7 @@ import Domain.Syntax.Core
   , Expr(..)
   , FailClause
   , FieldName
+  , FieldPattern
   , FieldRef
   , FieldValue
   , FunctionDecl
@@ -122,6 +123,7 @@ patternSpan = case _ of
   PInt span _ → span
   PBool span _ → span
   PCtor span _ _ → span
+  PRecord span _ _ → span
 
 problemAt ∷ Problem → Span → Diagnostic
 problemAt problem span = { problem, span, related: [] }

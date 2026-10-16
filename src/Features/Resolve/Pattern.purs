@@ -17,6 +17,7 @@ import Domain.Resolved
   , Pattern(..)
   )
 import Features.Resolve.Fresh (Fresh, fresh, liftEither)
+import Features.Resolve.RecordPattern (recordPattern)
 
 type Resolution = { pattern ∷ Pattern, binders ∷ Array Local }
 type Binder = { name ∷ String, span ∷ Syntax.Span }
@@ -42,6 +43,8 @@ walk tables = case _ of
   Syntax.PInt span value → leaf (IntLit span value)
   Syntax.PBool span value → leaf (BoolLit span value)
   Syntax.PCtor span name fields → ctorPattern tables span name fields
+  Syntax.PRecord span fields rest →
+    recordPattern (walk tables) span fields rest
   where
   leaf pattern = pure { pattern, binders: [] }
 
@@ -109,4 +112,9 @@ binders ∷ Syntax.Pattern → Array Binder
 binders = case _ of
   Syntax.PBind span name → [ { name, span } ]
   Syntax.PCtor _ _ fields → Array.concatMap binders fields
-  _ → []
+  Syntax.PRecord _ fields _ → Array.concatMap fieldBinders fields
+  Syntax.PWildcard _ → []
+  Syntax.PInt _ _ → []
+  Syntax.PBool _ _ → []
+  where
+  fieldBinders field = binders field.pattern

@@ -64,6 +64,12 @@ data Pattern
   | PInt Span Int
   | PBool Span Boolean
   | PCtor Span String (Array Pattern)
+  | PRecord Span (Array FieldPattern) (Maybe Span)
+
+-- A field of a record pattern (R004 design §1). `span` is the label's, so a
+-- problem with the field is reported at the label; a pun's pattern is the
+-- binder it spells.
+type FieldPattern = { label ∷ String, span ∷ Span, pattern ∷ Pattern }
 
 type Arm = { pattern ∷ Pattern, body ∷ Expr, span ∷ Span }
 type Clause =

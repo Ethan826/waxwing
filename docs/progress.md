@@ -5145,3 +5145,26 @@ pins `Expected a record`. The plan now carries label spans, an
 `HRecord { labels, open }` head, coverage roots and inhabitation through
 records, explicit placeholders with a removal table and a grep gate, and
 a reference-interpreter comparison in Task 7. Docs only.
+
+## R004 Task 1: parse and resolve (2026-10-16)
+
+Record patterns parse and resolve; checking is a placeholder. Syntax
+`PRecord Span (Array FieldPattern) (Maybe Span)` and Resolved `Record Span
+(Array FieldPattern) Boolean` keep each label's span; a pun is a `PBind`
+at the label. New Format/Parse/RecordPattern.purs (first field mandatory,
+so `{}` and `{ ... }` give `Expected an identifier`; `...` must be
+followed by `}` or `,}`, else `Expected '}'`) and Features/Resolve/
+RecordPattern.purs (duplicate labels through RecordFields before the
+fields are resolved). Resolve/Pattern `binders` now names every case.
+
+Placeholder: Features/Check/Match `patternAgainst` returns `Internal "R004
+placeholder: record patterns are checked in Task 2"` at the pattern; the
+last test in test/r004-resolve.test.mjs documents it and Task 2 replaces
+it. No other case analysis needed a change.
+
+Tests: test/r004-parse.test.mjs and test/r004-resolve.test.mjs, 22 tests,
+21 failing first (.build/evidence/r004-t1-red.log), all passing after.
+Depth probe identical before and after (.build/evidence/r004-t1-depth-
+before.log, -after.log; 153 existing anomalies, unchanged). `rm -rf output
+&& GOTOOLCHAIN=go1.26.4 npm run verify`: 1931/1931, 59/59, 127 regression
+proofs, exit 0 (.build/evidence/r004-t1-verify.log).

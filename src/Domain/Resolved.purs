@@ -69,6 +69,11 @@ data Pattern
   | IntLit Span Int
   | BoolLit Span Boolean
   | Ctor Span CtorId (Array Pattern)
+  | Record Span (Array FieldPattern) Boolean
+
+-- The label's span is kept for diagnostics about the field (R004 design
+-- §1); the Boolean is whether the pattern ends with `...`.
+type FieldPattern = { label ∷ String, span ∷ Span, pattern ∷ Pattern }
 
 type Arm = { pattern ∷ Pattern, body ∷ Expr, span ∷ Span }
 

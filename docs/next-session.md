@@ -7,7 +7,7 @@ or ends with `...`; fields pun in patterns; the missing-field text and
 witness form are approved. The plan,
 docs/plans/2026-10-16-record-patterns-plan.md, was revised after the
 user's review and regrouped into four tasks (2026-10-16); its open-row
-text is approved. Next: Task 1 (parse and resolve) on branch `r004`;
+text is approved. Next: Task 1 (parse and resolve) on branch `record-patterns`;
 then R005's design.
 
 ---

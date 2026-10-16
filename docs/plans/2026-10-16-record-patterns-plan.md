@@ -122,15 +122,15 @@ evidence task. Not started.
   passes ~150 lines.
 - Placeholder in Check/Match `patternAgainst`.
 
-- [ ] Failing tests test/r004-parse.test.mjs, through `Format.Parse`
+- [x] Failing tests test/r004-parse.test.mjs, through `Format.Parse`
   `parse` as test/r001-parse.test.mjs does: nesting both ways, trailing
   comma, `...` only last, `{}` and `{ ... }` E_SYNTAX, a pun and a pun
   beside an explicit field, label spans.
-- [ ] Failing tests test/r004-resolve.test.mjs: duplicate label with
+- [x] Failing tests test/r004-resolve.test.mjs: duplicate label with
   its note; duplicate binder across fields and puns; binders scoped to
   the arm; an unbound name in an arm body using a field binder of
   another arm.
-- [ ] Implement; depth probe unchanged; verify; commit.
+- [x] Implement; depth probe unchanged; verify; commit.
 
 ### Task 2: Check
 

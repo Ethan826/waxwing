@@ -79,7 +79,9 @@ patternAgainst env state expected = case _ of
   Resolved.IntLit span value → literal TInt span (Checked.IntLit value)
   Resolved.BoolLit span value → literal TBool span (Checked.BoolLit value)
   Resolved.Ctor span id fields → checkCtor env state expected span id fields
+  Resolved.Record span _ _ → Left (problemAt (Internal placeholder) span)
   where
+  placeholder = "R004 placeholder: record patterns are checked in Task 2"
   leaf reached span shape locals = pure
     { value:
         { pattern: Checked.Pattern { ty: expected, span, shape }, locals }

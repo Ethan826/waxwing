@@ -21,6 +21,7 @@ import Format.Parse.Grammar
   , upperName
   )
 import Format.Parse.Literal (integerLiteral, integerStart)
+import Format.Parse.RecordPattern (recordPattern)
 
 -- An upper name is always a constructor and a lower name always a binder,
 -- so a misspelled constructor never becomes a catch-all.
@@ -29,6 +30,7 @@ pattern = dispatch
   [ on "_" (PWildcard <$> tokenSpan)
   , on "true" (flip PBool true <$> tokenSpan)
   , on "false" (flip PBool false <$> tokenSpan)
+  , on "{" (recordPattern (defer later))
   , onWhen integerStart (intPattern <$> integerLiteral)
   , onWhen upperText ctorPattern
   , onWhen isName (binder <$> token)
@@ -38,6 +40,7 @@ pattern = dispatch
   upperText text = isName text && isUpper text
   intPattern literal = PInt literal.span literal.value
   binder found = PBind found.span found.text
+  later _ = pattern
 
 -- One or more arms and an optional trailing comma. The closing `}` is left
 -- for the caller, whose match span ends there.
