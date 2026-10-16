@@ -7,9 +7,10 @@ Binding spec: docs/plans/2026-10-14-records-design.md (approved
 docs/progress.md ("R001"). Builds on ADR 002 (planned specialization),
 ADR 005 (structural order), ADR 007 (specialization), ADR 010 (effects and
 `Fail` keys), ADR 011 (Text) and ADR 012 (qualified operations, which kept
-`.` free on lowercase receivers). Records of operations as services, record
-patterns, extension and merge, and C001 instances are not part of this
-decision.
+`.` free on lowercase receivers). Records of operations as services,
+extension and merge, and C001 instances are not part of this decision.
+Record patterns (R004, branch `record-patterns`) are the section "Record
+patterns (R004)" below.
 
 ## Context
 
@@ -339,6 +340,71 @@ not chosen.
   calls the helper, and a nil ADT pointer in a record reports the existing
   malformed-value panic. A program without records emits unchanged Go.
 
+### Record patterns (R004)
+
+Spec: docs/plans/2026-10-16-record-patterns-design.md; plan
+docs/plans/2026-10-16-record-patterns-plan.md; evidence docs/progress.md
+("R004 Task 1" to "Task 4"). Decided by the user on 2026-10-16.
+
+- **Surface.** `match` destructures a record: `{ name: n, admin: true }`.
+  A field is `label: pattern`, any pattern, nested freely in and around
+  constructor patterns; order is not significant; labels are unique
+  (`Duplicate field x`, at the second). A pattern position has no block,
+  so `{` there is unambiguous. There is no `{}` or `{ ... }` pattern
+  (`_` already matches any record).
+- **Explicit rest.** A pattern names every field of the scrutinee's type
+  or ends with `...`, which ignores the others (Rust's `..`). Adding a
+  field to a type then flags every pattern that does not mention it:
+  `Pattern is missing field admin; add it or end the pattern with ...`,
+  at the pattern, naming the first unlisted label in label order. An
+  open type with every known field listed and no `...` is `Pattern is
+  missing the rest of { a: Int, ...r }; end the pattern with ...`.
+- **Puns.** A field written without `: pattern` binds its label,
+  `{ name, admin: true }`, a `PBind` at the label from the parser on, so
+  no later layer sees a pun. Literal punning stays R007's, since
+  `{ name }` in an expression is a block.
+- **Typing.** The expected type, under the substitution, decides. A
+  record type supplies its fields; a label it lacks is `a is not a field
+  of { … }` at the label, and a rigid tail never supplies one. A hole
+  tail is extended by the labels the pattern names, as `.l` extends one
+  (Check/Record `select`, Check/FreshRecord), so arm order does not
+  matter; a pattern without `...` listing every known field closes a hole
+  tail, as a closed pattern closes a bare hole. A bare hole (an
+  unannotated parameter) is unified with the record the pattern writes,
+  closed without `...` and open over a fresh tail lacking its labels with
+  it. Anything else, a rigid variable included, is `Expected a record,
+  found T`, at the pattern.
+- **Coverage.** A record type is one always-complete head, so a record
+  column never forks: a pattern widens to the type's labels (`_` for
+  those under `...`) and specializes to its fields. A witness is a
+  record literal with every known field in label order, `{ admin: false,
+  name: _ }`, and `...` last for an open type; a record type with no
+  known field prints `_`, since `{ ... }` is no pattern.
+- **Inhabitation.** A record is inhabited exactly when every field type
+  is, and its data fields enter the dependency graph like a
+  constructor's. Before this change a record field was read as `Int`.
+  Existing programs change only in the corner this fixes: an ADT whose
+  only constructor holds a record with an uninhabited field is now
+  uninhabited. Over `Opt(Wrap)` with `Wrap` such a type, `Nada => 0` is
+  now accepted (it was `Missing pattern: Some(_)`), and `_` after it is
+  now E_REDUNDANT (it was accepted).
+- **Lowering.** No tag test and no new runtime helper: each named field's
+  pattern is tested and bound on the struct's field `f_<label>`. A
+  record-valued field is stored inline. An ADT-valued field, inside a
+  record as in a constructor, is a pointer: its nil guard precedes any
+  projection through it and a binder dereferences it. Field reads have
+  no effects, so their order is unobservable. A matched record's layout
+  is interned when its pattern's type is specialized, so a function that
+  only destructures a record from its caller still gets the struct.
+- **Consequences.** Output of every existing valid program is unchanged
+  (the differential changes only sources with `{` in a pattern position,
+  parse errors before, and the inhabitation corner above). The reference
+  interpreter (test/fx-oracle-records.mjs) matches record patterns
+  without compiler code, and generated matches run in Go agree with it
+  (test/fx-oracle-record-patterns.test.mjs). Not decided here: binding
+  the rest of a record (`...rest`, with R005), and patterns in `let` or
+  parameters, which take none today.
+
 ## Consequences and limits
 
 - Go output of every valid existing program is unchanged: the seven
@@ -374,7 +440,7 @@ not chosen.
 - Field access through a nil declared-type pointer inside a record is a
   Go nil dereference, not the malformed-value panic; only foreign code can
   make one (docs/findings.md "R001", I001).
-- Not in this tranche: record patterns (R004), extension, merge and
+- Not in this tranche: extension, merge and
   removal with written lacks constraints (R005), polymorphic fields (R006),
   punning (R007), type aliases (R008), record-row parameters of effects
   (R009).

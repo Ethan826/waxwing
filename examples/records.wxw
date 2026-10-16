@@ -5,6 +5,16 @@ fn older(p: { age: Int, ...r }): { age: Int, ...r } = p { age = p.age + 1 };
 
 fn label(p: { name: Text, ...r }): Text = "${p.name}!";
 
+fn greeting(p: { name: Text, admin: Bool, ...r }): Text = match p {
+  { name, admin: true, ... } => "Welcome back, ${name}",
+  { name, ... } => "Hello, ${name}",
+};
+
+fn leader(t: Team): Text = match t {
+  Solo => "nobody",
+  Pair({ lead: Person({ name, ... }), ... }) => name,
+};
+
 fn main(): Unit with Console = {
   let ada = { name: "Ada", age: 36, id: 7 };
   let bo = { id: 8, age: 41, name: "Bo" };
@@ -13,4 +23,8 @@ fn main(): Unit with Console = {
   Console.print(ada < bo);
   Console.print(Pair({ lead: Person({ name: ada.name, age: ada.age }),
     rest: Solo }));
+  Console.print(greeting({ name: "Cy", admin: true, id: 9 }));
+  Console.print(greeting({ admin: false, name: "Di" }));
+  Console.print(leader(Pair({ lead: Person({ name: "Ed", age: 5 }),
+    rest: Solo })));
 };

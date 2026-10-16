@@ -135,7 +135,8 @@ test('records example matches its snapshot and runs through the CLI', () => {
   assert.equal(checked(source), readFileSync('bootstrap/records.go', 'utf8'));
   assert.equal(command('node', ['scripts/waxwing.mjs', 'run',
     'examples/records.wxw']), '{ age: 37, id: 7, name: "Ada" }\nBo!\ntrue\n'
-    + 'Pair({ lead: Person({ age: 36, name: "Ada" }), rest: Solo })\n');
+    + 'Pair({ lead: Person({ age: 36, name: "Ada" }), rest: Solo })\n'
+    + 'Welcome back, Cy\nHello, Di\nEd\n');
 });
 
 test('EOF and multiline diagnostic positions are exact', () => {

@@ -38,7 +38,7 @@ lparam      = ( lower | "_" ), [ ":", type ] ;
 pipeline    = comparison, { "|>", comparison } ;
 arm         = pattern, "=>", expression ;
 pattern     = "_" | lower | upper, [ "(", pattern, { ",", pattern }, ")" ]
-            | integer | "true" | "false" ;
+            | integer | "true" | "false" | recordpat ;
 comparison  = addition, [ ( "==" | "!=" | "<" | "<=" | ">" | ">=" ),
               addition ] ;
 addition    = atom, { ( "+" | "++" ), atom } ;
@@ -126,7 +126,8 @@ adt-types, adt-match.
 
 Patterns. `_` matches anything; a lowercase name binds; an uppercase name is a
 constructor with exactly its field count (E_ARITY); literals match their
-primitive type. Pattern type errors are E_TYPE at the pattern. All arm bodies
+primitive type; a record pattern matches a record by its fields (Records,
+below). Pattern type errors are E_TYPE at the pattern. All arm bodies
 must have the first arm's type.
 
 Coverage. After the whole program type-checks, each match is checked in
@@ -769,6 +770,41 @@ record cannot have is E_TYPE `age is not a field of { name: Text }` at the
 label (also through an open type: `age is not a field of { name: Text,
 ...r }`), and an access or update on anything else is E_TYPE `Expected a
 record, found Int` at the receiver.
+
+Record patterns (R004; ADR 013; r004-*). `match` destructures a record:
+
+```ebnf
+recordpat = "{", fieldpat, { ",", fieldpat }, [ ",", "..." ], [ "," ],
+            "}" ;
+fieldpat  = lower, [ ":", pattern ] ;
+```
+
+```wxw
+fn greeting(p: { name: Text, admin: Bool }): Text = match p {
+  { name, admin: true } => "Welcome back, ${name}",
+  { name: n, admin: false } => "Hello, ${n}",
+};
+```
+
+A field is `label: pattern`, any pattern, nested in and around constructor
+patterns; order is not significant and a repeated label is E_TYPE
+`Duplicate field x` at the second. A field written without `: pattern` puns
+and binds its label. `{}` and `{ ... }` are not patterns (`_` matches any
+record). A pattern names every field of the scrutinee's type or ends with
+`...`, which ignores the others; otherwise E_TYPE `Pattern is missing field
+admin; add it or end the pattern with ...` at the pattern, naming the first
+unlisted label in label order. A label the type lacks is E_TYPE `a is not
+a field of { … }` at the label, so `{ a: x, ... }` against `{ ...r }` with
+`r` rigid is that error: a rigid tail never supplies a field. A tail that
+is still unknown is extended by the labels a pattern names, so arm order
+does not matter, and a pattern listing every known field without `...`
+closes it. For a rigid tail the same pattern is E_TYPE `Pattern is missing
+the rest of { a: Int, ...r }; end the pattern with ...`. An unannotated
+parameter takes the record the pattern writes, open with `...`. Any other
+scrutinee, a rigid type variable included, is E_TYPE `Expected a record,
+found T` at the pattern. Binders are locals of their arm. Coverage and
+witnesses are above; a record with no known field has the witness `_`.
+Examples: examples/records.wxw; executed by test/r004-go.test.mjs.
 
 Evaluation. A literal evaluates each field once, in written order; an
 update evaluates its base once, then each replacement once, in written
