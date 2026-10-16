@@ -58,12 +58,11 @@ test runner, Go 1.26.4. No new dependency.
   - existing `age is not a field of { … }` and `Duplicate field age` for
     `without`, at the label; `Expected a record, found T` at a non-record
     spread or receiver.
-- **Stop item before Task 1's resolve step.** A `lacks` constraint on
-  something other than a signature's record row variable has no approved
-  text. Proposed: an unknown name, existing E_UNBOUND for a type
-  variable; an effect row, existing `r is an effect row, not a record
-  row`; a type variable, new E_TYPE `a is a type, not a record row`.
-  Needs the user's approval. Any other new text is also a stop.
+- **A `lacks` target that is not a record row variable** (approved
+  2026-10-16), at the constraint's variable: an unknown name, existing
+  E_UNBOUND for a type variable; an effect row, existing `r is an effect
+  row, not a record row`; a type variable, E_TYPE `a is a type, not a
+  record row`. Any other new text is a stop.
 - **Reserved words** `where`, `lacks`, `without`, `disjoint` (design §2)
   break programs using them as names; ADR 013's section records it.
 - **Buildable commits** with placeholders, as in R004: `Internal "R005
@@ -127,11 +126,10 @@ test runner, Go 1.26.4. No new dependency.
   is the approved E_TYPE; duplicate labels in a literal, `without` or
   `lacks` via RecordFields; a named rest issues a LocalId (Resolve/
   RecordPattern, Pattern `binders`); constraints resolve their variable
-  against the signature's sorted variables (stop item for non-record
-  ones) and join Resolve/Lacking `lackingOf` so body types may write the
+  against the signature's sorted variables (the approved texts for
+  non-record ones) and join Resolve/Lacking `lackingOf` so body types may write the
   lacked labels.
 
-- [ ] Get the stop item's texts approved.
 - [ ] Failing tests test/r005-parse.test.mjs and r005-resolve.test.mjs:
   each new form parsed (spread first, last, alone; `without` chained
   with call, access, update and `|>`; named and bare rest; `where` with
