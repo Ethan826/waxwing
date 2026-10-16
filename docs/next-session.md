@@ -3,9 +3,11 @@
 R004 (record patterns) was fast-forwarded into main at 2ca49ab on
 2026-10-16; branch `record-patterns` deleted; nothing pushed. R005's
 design is drafted (docs/plans/2026-10-16-record-extension-design.md)
-(draft 2, after the user's review): Tranche A (extension, written
-lacks, removal, empty records) awaits approval of its proposals, then a
-plan; Tranche B (open-row merge) needs an algorithm pass. Then the
+(draft 2): Tranche A (extension, written lacks, removal, empty
+records) is approved and planned (docs/plans/2026-10-16-record-
+extension-plan.md, 3 tasks; one stop item, a text for a non-record
+variable in `lacks`); Tranche B (open-row merge) needs an algorithm
+pass. Then the
 INF001 design and C001. Alongside: R013 (ArgumentClash
 `declaredLabels`) and a phase profile of `npm run verify`.
 

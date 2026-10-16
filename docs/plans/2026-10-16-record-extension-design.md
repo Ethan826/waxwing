@@ -1,10 +1,9 @@
 # Record extension, merge and removal: design (R005), draft 2
 
-Status: draft 2, 2026-10-16, revised after the user's review. Two
-tranches (approved). Tranche A (§1-§5) is ready for review toward
-planning once its **Proposed** items are approved. Tranche B (§6) keeps
-its surface but needs a dedicated algorithm pass before planning. No
-code.
+Status: draft 2, 2026-10-16. Tranche A (§1-§5) approved for planning
+(user, 2026-10-16): braced lacks labels, `{}` as the empty record type,
+and the §5 texts as corrected there. Tranche B (§6) keeps its surface
+but needs a dedicated algorithm pass before planning. No code.
 
 ## Decided (user, 2026-10-16)
 
@@ -53,11 +52,9 @@ fn granted(p: { ...r }): Bool where r lacks { admin } =
 
 - A signature may end its types with `where` and constraints separated
   by commas, before `=`: `where r lacks { admin, owner }`.
-- **Proposed:** labels are always braced, so commas inside braces
-  separate labels and commas outside separate constraints. This changes
-  the decided `where r lacks a, b` to `where r lacks { a, b }`, matching
-  `without { … }`; `where r lacks a, s lacks b` would otherwise be
-  ambiguous about whether `s` is a label.
+- Labels are always braced (approved 2026-10-16), so commas inside
+  braces separate labels and commas outside separate constraints:
+  `where r lacks { a, b }`, matching `without { … }`.
 - A label already written beside `r` in the signature is implied; writing
   it again is allowed and has no effect.
 - A written lack seeds the body like an implied one and is checked at
@@ -104,14 +101,14 @@ gives an empty record. It becomes an observable value:
 - Tests: removal to empty, rest binding to empty, copy of an empty rest,
   equality, printing beside Unit, a signature written with `{}`.
 
-## 5. Diagnostics (Tranche A; **Proposed**, need approval)
+## 5. Diagnostics (Tranche A; approved 2026-10-16)
 
 | Case | Text | Location |
 |---|---|---|
-| A literal adds a label its spread's known type has | existing `Duplicate field admin`, note `first written here` | the label; the note at the spread that supplied the field |
+| A literal adds a label its spread's known type has | existing `Duplicate field admin`, note `first written here` | the later item in written order, noted at the earlier: `{ ...p, admin: true }` at `admin`, noted at `...p`; `{ admin: true, ...p }` at `...p`, noted at `admin` |
 | A literal adds a label a rigid tail may hold | existing `r may already have field admin`, note `r is introduced here` | the label |
 | A call's argument has a field a written `lacks` forbids | E_TYPE `admin is not allowed here: r lacks { admin }`, note `required here` | the argument; the note at `admin` in the `where` clause |
-| A second spread in one literal (until Tranche B) | E_TYPE `A record literal takes one spread` | the second spread |
+| A second spread in one literal (until Tranche B) | E_TYPE `A record literal accepts at most one spread` | the second spread |
 | `without` a missing or repeated label | existing texts (§3) | the label |
 
 # Tranche B (needs an algorithm pass before planning)
