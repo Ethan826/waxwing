@@ -5747,3 +5747,29 @@ Branch `r013` from main 1f3e6ee. `type R<i>(...r) = R<i>({ f<i>: Int,
   2107/2107 parallel, 59/59 serial, 142 regression proofs, exit 0
   (.build/evidence/r013-verify.log). Deleted afterwards: .build/r013-base,
   .build/regression, .build/go-cache.
+
+## Hygiene: F007, F006, A005 (2026-10-16)
+
+Three independent fixes on branch `hygiene`, one commit each, each test
+seen failing before its fix (red logs in .build/evidence/hygiene-<id>-red.log).
+
+- F007 (7332c7f). The structural core allowlist admitted every
+  Data.Array.* module. It now admits exactly Data.Array and
+  Data.Array.NonEmpty, the only two src/ imports; Data.Array.ST,
+  Data.Array.ST.Iterator and near-misses are rejected.
+  test/structure.test.mjs pins both directions. docs/engineering.md updated.
+- F006 (0354a5f). scripts/build-prune.mjs removes every output directory
+  whose module name starts with a workspace prefix (the five layers plus
+  Style) as well as live modules, so deleted modules lose their output.
+  The prefixes come from `layers` in scripts/structure.mjs plus Style.
+  Dependency output stays cached, so incremental builds are unchanged.
+  test/build-prune.test.mjs works in a temp tree. Checked by hand:
+  a planted output/Format.Parse.Zombie vanished on `npm run build`.
+- A005 (763379e). `HostCode` (HostUsage, HostIo, HostTool) in Domain.Host;
+  Format.Wire's `hostCodeName` is the only place the strings appear. Wire
+  output is byte-identical: test/program.test.mjs is unchanged and green.
+  test/host-code.test.mjs pins each spelling.
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`):
+  2112/2112 parallel, 59/59 serial, 142 regression proofs, exit 0
+  (.build/evidence/hygiene-verify.log). No regression needle changed.
+  Deleted afterwards: .build/regression, .build/go-cache.
