@@ -610,13 +610,19 @@ the old `tail`).
   is either total (printing, walking, comparing) or reaches Task 2's
   placeholder (unifying, specializing).
 
-- [ ] Failing tests test/r005b-row.test.mjs (Domain level through
+- [x] Failing tests test/r005b-row.test.mjs (Domain level through
   output/): `recordRow` sorts tails and keeps repeats; flatten follows
   two bound tails and a chain of 10,000 without stack growth;
   `withoutLabels` and printing over `tails` of length 0 and 1 equal
-  today's.
-- [ ] Implement (splits first); verify; differential `--corpus all`:
-  **0 differences** in every phase; commit.
+  today's. Seen failing against main's build (9 of 9,
+  .build/evidence/r005b-t1-red.log), then passing.
+- [x] Implement (splits first); verify; differential `--corpus all`:
+  **0 differences** in every phase; commit. Done on branch
+  r005b-task1: Domain.Type.RecordSubst split out of Core first; verify
+  2132 + 59 tests, 142 proofs, exit 0; differential 0 of 12,608 cases
+  (docs/progress.md "R005 Tranche B Task 1"). Two regression rows named
+  record-row text in their needles and were updated, meaning kept.
+  Awaiting the user's review; Task 2 is not authorized.
 
 Size: about 250k tokens (wide, mechanical), 3-4 h. Sonnet; Opus reviews
 the differential.

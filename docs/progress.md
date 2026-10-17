@@ -5908,3 +5908,54 @@ was not run; the width check was).
 - docs/engineering.md "Evidence for solvers and diagnostics" is binding
   with proportional scope. AGENTS.md is unchanged: it does not point to
   docs/engineering.md for solver evidence rules.
+
+## R005 Tranche B Task 1: several-tail representation (2026-10-17)
+
+Branch `r005b-task1` from 2448a3c. The user accepted Task 0 and
+authorized Task 1 only (their Task 0 rulings are recorded in the plan's
+Decisions 8-13 and ledger). Representation only: no producer makes two
+tails, behaviour is unchanged.
+
+- `RecordRow a v = { fields, tails ∷ Array v }`, tails sorted by `v`'s
+  order, repeats kept. `recordRow` now needs `Ord v` and skips the sort
+  for none or one tail. Domain.Type.RecordSubst (split out of Core in
+  its own commit) classifies what each tail became (`Image`) and
+  splices all of them; `Domain.Type.rename` replaces the `Functor Ty`
+  instance, since a rename can reorder tails and the Functor had no
+  `Ord`. `Problem.RecordName` carries `Array String`.
+- `FlatRecord.flatten` follows every bound tail with two stacks (a
+  10,000-chain, and two at once, cost no stack); `Flat` has `tails`.
+  Total over any number: printing, walking, comparing, substituting,
+  resolving, lacking facts (`Implied`: one fact per tail), extension
+  (each tail must lack the new labels), pattern rows (a closed pattern
+  needs every tail a hole), `Specialize.recordType` (each tail's layout
+  spliced, the duplicate-label guard covers overlaps).
+- Not total, by decision rather than placeholder (the plan's table adds
+  Task 2's placeholder later): `UnifyRecord` treats a flattened row of
+  several tails as a mismatch. No producer reaches it; Task 2/4 replace
+  it with the placeholder and then the rule.
+- Tests: test/r005b-row.test.mjs, 9 tests, seen failing against main's
+  build (9 of 9, .build/evidence/r005b-t1-red.log) then passing. Five
+  existing test files that built or read rows directly (row-substitute,
+  r001-printable, -types, -go-keys, -body-types) and the
+  regression-r001-body probe follow `tails`; no assertion weakened.
+- Differential against main (isolated build, `--corpus all
+  --regenerate`): 12,608 cases, 0 differences (harvested 8,494,
+  fuzz 1,029, isName 1,085, matches 1,000, mutations 1,000). One
+  projection added to scripts/differential-project.mjs: a record row of
+  no tail or one is hashed as the old `tail` (`Nothing` or `Just`). It
+  is needed: without it a one-record program's resolve hash differs
+  (checked on `fn f(x: { a: Int, ...r })`). Harvest-run failures were the
+  known T007 timing tests plus the tests above, fixed before verify.
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`): exit
+  0; 2132 tests, 59 oracle tests, 142 regression proofs. Two earlier
+  runs failed in the regression stage and were fixed: needles/
+  replacements that named `tail` text. `r001-record-order`'s needle was
+  the exact `recordRow` line (now matches `recordRow fields tails =
+  { fields: sortFields fields,`, restored defect unchanged);
+  `r005-empty-unit`'s replacement used `emptied.tail` (now `Array.null
+  emptied.tails`, same defect). Each proved failing with the defect
+  restored.
+- Sizes: Core 240 lines (was 236), Parts 217, Scheme 228, Lower 222; no
+  file over 250.
+- Not done: Tasks 2-10, which stay unauthorized.
