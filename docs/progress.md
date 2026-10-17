@@ -5562,3 +5562,135 @@ draft of the Tranche B algorithm (docs only, Proposed); and, where an
 item needs a new text or design decision, adopting the proposed one
 marked "provisional, needs approval" in the docs. Code tasks run one at
 a time so timing tests stay stable.
+
+## R005 Task 3: lowering, evidence, close-out (2026-10-16)
+
+What. Tranche A is complete on branch `record-extension` (extension,
+`without`, rest binders, written lacks, `{}`), awaiting the controller's
+fast-forward; Tranche B (open-row merge) waits for its algorithm pass.
+Commits, in order: the IR split (Domain.IR.Parts, below), lowering, the
+reference execution, the example and docs, the regression rows, a needle
+fix (r004-go-fields), and the differential's split. No provisional
+choice was needed: every user-facing text is an approved one.
+
+Preparatory split, behaviour-preserving. Domain.IR.Internal (243 lines)
+lost `recordParts`, `blockParts`, `effectParts` and `itemValue` to
+Domain.IR.Parts (49 lines, new importer of Domain.IR.Internal in
+scripts/structure.mjs `internalModules` and docs/engineering.md); the six
+Format.Go callers import it. Build, r004-go, compiler and structure tests
+passed; Go output is unchanged. Likewise scripts/differential.mjs (250
+lines) gave its projections and `digest` to scripts/differential-project.mjs.
+
+Lowering. Specialize/Body copies `Checked.RecordExtension` to
+`IR.RecordExtension (Array Part)`, `Part = Given Field | Spreading Expr`,
+in written order, and `RecordRemoval` to `IR.RecordRemoval expr labels`.
+A record pattern's `IR.Record fields rest` has `Rest = NoRest |
+IgnoredRest | NamedRest local Ty`; the remainder's type is lowered with
+`typed`, which interns its layout whether or not an expression has that
+shape (an unused `{ a, ...unused }` over `{ a, b }` emits both structs).
+Both placeholders are gone (`grep -rn "R005 placeholder" src` is empty;
+the plan's table says removed). Format.Go.Extension (new, 115 lines):
+an extension binds each item that could act to a typed temporary in
+written order inside an immediately invoked closure (the spread's base is
+`waxwingBase`, once; a trivial item is used in place), then builds the
+result layout's struct: a field the literal writes is its temporary
+(a declared type stored through `&`), every other field is copied from the
+base, an ADT pointer as it stands. A removal evaluates its receiver once
+and copies the kept fields. A base none of whose fields is copied is
+discarded with `_ = waxwingBase` (Go rejects an unused variable); a named
+rest in a match arm (Format.Go.Match `bindings`, which now takes the
+program's record table) binds a struct of the remaining fields read from
+the scrutinee's path and is discarded like any unused binder. Capture
+sees the rest binder, Context and Usage the new nodes. The empty layout
+is the empty struct. Format.Go.Record exports its temporaries helpers.
+bootstrap/*.go are byte-identical except records.go (below).
+
+Tests. test/r005-go.test.mjs, 12 tests executed through Go: 11 failed
+before (the Task 2 placeholder; .build/evidence/r005-t3-red.log), the
+bare-`...`-unchanged test passed as expected; all pass after. They cover
+evaluation order with Console effects (spread first, middle, last), an
+open row extended at three rows, removal's receiver once, `{}` printing
+beside `()`, equality of empty records, a named rest used, closed, and
+unused (two layouts emitted), ADT-valued fields through extension,
+removal and rest, and a written-lacks program. The Task 2 test that
+asserted the placeholders (test/r005-check.test.mjs) was removed with
+them.
+
+Reference execution. The FX001 interpreter (test/fx-oracle-records.mjs,
+-expr, -parse) evaluates a literal's spread at its place among the items,
+`without`, named rests and `{}` (printed `{}`); a `where` clause is
+skipped; no compiler code. test/fx-gen-record-extension.mjs builds
+well-typed programs by construction (a fixed type per label; disjoint
+spreads; removals of labels the receiver has; rest binders whose body
+spreads the remainder beside fields it lacks; generic row extensions with
+`where r lacks`), with `tick` effects in items so output order is checked.
+test/fx-oracle-record-extension.test.mjs: generated 200, accepted 200,
+compared 200, mismatches 0 (seeds 20261017..; forms: extension 194,
+removal 196, rest 173, generic 145, empty 162, effects 194, spread first
+182, middle 58, last 123, binder used 87). Sensitivity (interpreter
+broken, then restored): spreads evaluated last gave 16 mismatches of 200
+and failed two hand traces; `without` keeping the named labels failed two
+hand traces and the comparison; a rest binding the whole record made the
+interpreter throw on the first comparison and failed the comparison test.
+
+Example and docs. examples/records.wxw gained `promote` (extension with
+`where r lacks { admin }`), `anonymous` (`without`) and `details` (a named
+rest); bootstrap/records.go was regenerated with `waxwing emit` and the
+expected output extended in test/compiler.test.mjs. docs/language.md has
+the grammar, the four reserved words and the Records text (spread,
+`without`, rest binders, written lacks, `{}`); ADR 013 has the section
+"Extension, written lacks and removal (R005 Tranche A)" (decisions,
+approved texts, the reserved-word break, evaluation order, provenance,
+lowering). A sentence in the existing text was corrected: `{}` in a type
+is now the empty record.
+
+Regression rows (scripts/regression-r005.mjs, probes test/regression-
+r005.mjs), each proved failing with the defect restored and compiling
+with 0 warnings (checked with `purs compile --json-errors` on every
+mutated copy): `r005-overlap` (Extension: no overlap check),
+`r005-overlap-order` (overlap always at the item), `r005-written-use`
+(Use: no written lacks at a use; the symptom is E_INTERNAL `Duplicate
+record label` at lowering, the call having been accepted),
+`r005-provenance` (RecordTail `refused`: clause forgotten, the shape
+mismatch), `r005-rest-type` (the rest typed as the whole record),
+`r005-go-order` (temporaries sorted by label, the spread first: output
+2, 1, 3), `r005-empty-unit` (`{}` unifying with Unit, both directions),
+`r005-rest-layout` (the remainder layout interned then forgotten, so
+`go build` fails on an undefined struct). r004-go-fields' needle follows
+Match.purs's new `IR.Record fields _` (the defect is unchanged).
+
+Gate. `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: 2103/2103,
+59/59, 142 regression proofs (134 + 8), exit 0 (.build/evidence/r005-t3-
+verify.log). A first run failed at r004-go-fields (needle moved); fixed
+and rerun from scratch. The structural gates, width (0 lines over 80) and
+purs-tidy pass.
+
+Differential against main (e0aff36 built in an isolated copy;
+`--corpus all --regenerate`; .build/evidence/r005-t3-diff.log, with
+full lists in r005-t3-diff-harvested.log and -mutations.log). Projections
+added in scripts/differential-project.mjs: the resolved declaration's
+`introduced` is dropped (Task 2), and the monomorphic IR's record pattern
+hashes without its rest when none or bare (Task 3); Task 1's constraints
+and boolean rests were already there. Totals: harvested 8,015 sources,
+351 differences; fuzz 1,029 + 1,085 isName probes, 0; matches 1,000, 0;
+mutations 1,000, 20. Every one of the 371 is in the parse phase, and a
+script (not kept) classified each by its baseline or candidate error:
+- 20 harvested and 2 mutated sources use `where`, `lacks`, `without` or
+  `disjoint` as a name (baseline accepts, candidate E_SYNTAX): the
+  reserved-word break, five test variants for each word.
+- baseline rejects at the new syntax: 293 harvested and 15 mutated at
+  `where`, `without` or a spread's `...`; 27 and 2 at a rest binder's
+  name after `...`; 10 and 1 at the `{` of `{}` in a type; 1 at the `{`
+  of a literal beginning with a spread.
+- no difference in resolve, check, specialize, emit or compile for any
+  source both parse (4,735 compiled sources: Go byte-identical).
+The harvest run's own test failures are the known timing tests (seven
+"linear through Specialize" at 20,000 parameters, BACKLOG T007).
+
+Uncertain or noted. The Go closure for an extension evaluates a trivial
+base (a local) in place, so `{ ...p }` with a local `p` and trivial
+fields builds the struct with no closure. `{ ...rest }` alone is not a
+record pattern (R004: a record pattern names one field); the generator
+respects it. The regression harness builds mutated copies with plain
+`purs compile`, so 0 warnings was checked separately (above). Files were
+deleted afterwards: .build/r005-base, .build/regression, .build/go-cache.

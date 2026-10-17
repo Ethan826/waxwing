@@ -1,3 +1,19 @@
+# Waxwing / R005 Tranche A done on branch `record-extension` (2026-10-16)
+
+R005 Tranche A (extension, `without`, rest binders, written lacks, `{}`)
+is complete on branch `record-extension` (Tasks 1-3; nothing pushed or
+merged). Gates: `npm run verify` exit 0 (2103/2103, 59/59, 142 regression
+proofs); the reference interpreter agrees with Go on 200/200 generated
+programs; the differential against main shows 371 differences, all in the
+parse phase: sources using the new syntax or the four new reserved words
+(`where lacks without disjoint`). Evidence in docs/progress.md "R005 Task
+3" and .build/evidence/r005-t3-*.log. Next: the controller's review and
+fast-forward into main (no merge commits); Tranche B (open-row merge,
+`disjoint`) needs its algorithm pass before planning; then the INF001
+design and C001. No provisional choice is waiting for approval.
+
+---
+
 # Waxwing / R004 merged into main (2026-10-16)
 
 R004 (record patterns) was fast-forwarded into main at 2ca49ab on

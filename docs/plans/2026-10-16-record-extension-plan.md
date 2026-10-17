@@ -42,7 +42,8 @@ the empty record type `{}`, checked, lowered to Go and documented.
 **Tech Stack:** PureScript 0.15.16, Spago 1.0.4, purs-tidy 0.11.1, Node
 test runner, Go 1.26.4. No new dependency.
 
-**Status:** Tasks 1 and 2 done (2026-10-16); Task 3 pending.
+**Status:** Tasks 1-3 done on branch `record-extension` (2026-10-16),
+awaiting the controller's fast-forward; Tranche B has no plan.
 
 ## Global Constraints
 
@@ -186,7 +187,7 @@ Focus 5; placeholders in Specialize/Body.
 
 ### Task 3: Lowering, evidence, docs, close-out
 
-- [ ] **Lowering:** Specialize/Body copies the new forms (placeholders
+- [x] **Lowering:** Specialize/Body copies the new forms (placeholders
   removed). Format/Go/Record: extension evaluates items in written order
   into temporaries, then builds the result struct from the base's fields
   and the new ones; removal copies the remaining fields into the result
@@ -200,20 +201,20 @@ Focus 5; placeholders in Specialize/Body.
   nowhere else in the program (its layout is still emitted and the Go
   builds); bare `...` and no rest unchanged. Snapshots byte-identical;
   verify; commit.
-- [ ] **Reference execution:** the FX001 interpreter
+- [x] **Reference execution:** the FX001 interpreter
   (test/fx-oracle-records.mjs, fx-oracle-parse.mjs) evaluates spreads,
   `without`, named rests and `{}` (with an event per spread for order),
   sharing no compiler code; a generator compares it with Go for
   generated programs, as test/fx-oracle-record-patterns.test.mjs does.
-- [ ] examples/records.wxw, docs/language.md (grammar, reserved words,
+- [x] examples/records.wxw, docs/language.md (grammar, reserved words,
   Records), ADR 013 section "Extension, written lacks and removal (R005
   Tranche A)" including the reserved-word break.
-- [ ] Regression rows (scripts/regression-r005.mjs, probes in
+- [x] Regression rows (scripts/regression-r005.mjs, probes in
   test/regression-r005.mjs), each proved failing: overlap check removed;
   overlap location ignoring written order; written lacks not seeded at a
   use; provenance lost (implied text instead); rest binder typed as the
   whole record; Go extension evaluating in the wrong order; `{}`
   unifying with Unit.
-- [ ] `grep -rn "R005 placeholder" src` empty; differential against
+- [x] `grep -rn "R005 placeholder" src` empty; differential against
   main classified; BACKLOG R005 (Tranche A done, B pending), progress,
   next-session; commit; the user's merge decision.
