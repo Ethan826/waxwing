@@ -1,4 +1,17 @@
-# Waxwing / R005 Tranche A done on branch `record-extension` (2026-10-16)
+# Waxwing / R005 Tranche A merged; evening queue running (2026-10-16)
+
+R005 Tranche A was fast-forwarded into main at fedb8ff (branch deleted,
+nothing pushed). The Tranche B algorithm draft,
+docs/plans/2026-10-16-open-row-merge-design.md, was written unattended
+and awaits the user's review (open: how complete the deferred-equation
+solver should be; whether `{ ...r, ...s }` in a signature implies
+`r disjoint s`). The evening queue continues: R013, A005, F006, F007,
+then a verify phase profile (docs/progress.md "Unattended evening
+queue").
+
+---
+
+# Waxwing / R005 Tranche A done on branch `record-extension` (2026-10-16, merged since)
 
 R005 Tranche A (extension, `without`, rest binders, written lacks, `{}`)
 is complete on branch `record-extension` (Tasks 1-3; nothing pushed or
