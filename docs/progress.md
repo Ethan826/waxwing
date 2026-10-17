@@ -5958,4 +5958,73 @@ tails, behaviour is unchanged.
   restored.
 - Sizes: Core 240 lines (was 236), Parts 217, Scheme 228, Lower 222; no
   file over 250.
+- Verification record (stated exactly): the full verify above ran on
+  83ce639. The final commit 0351225 changed documents only (this
+  section, the plan, BACKLOG) and received only the width check
+  (`node scripts/width.mjs`, exit 0), which the user approved as
+  sufficient for a docs-only commit (2026-10-17).
 - Not done: Tasks 2-10, which stay unauthorized.
+
+## R005 Tranche B Task 2: surface (2026-10-17)
+
+Branch `r005b-task2` from main 0351225. The user authorized Task 2 only.
+Checking stays behind placeholders; nothing in Tasks 3-10 was started.
+
+- First commit (9df7e01), before the parser could expose several tails:
+  Check/UnifyRecord returns `Failure.Placeholder`, rendered as E_INTERNAL
+  `R005B placeholder: rows with several tails are checked in Task 4`
+  (Check/Placeholder). Constructed-input test
+  test/r005b-placeholder.test.mjs (rows built through the compiled
+  modules), seen failing first (it reported a plain Mismatch) and then
+  passing.
+- Second commit: Format.Diagnostic.Records split out (behaviour kept).
+- Surface: `{ ...r, ...s }` in record types (tails after the fields;
+  `Row tail must be last` at the first tail a field follows; effect rows
+  keep `Only one row tail is allowed`, tested); `where r disjoint s`
+  (Syntax and Resolved `Disjoint`); D8 at TypeRef for a written record
+  and in Resolve.Apart through a declared type that writes two record
+  parameters into one record (Resolve.ArgumentPairs computes those
+  pairs by a worklist, held in the ArgumentGraph); D9 at the second
+  variable; D3 with its hint at the later `...s` for a body type whose
+  tails the signature does not join (a clause, or a parameter, result
+  or declared type that writes both into one record); and, as the
+  design's ArgumentClash pairs, `Duplicate field x` for a label two
+  record arguments share where the declaration joins them. Texts and
+  locations are the approved rows (D8, D9, D3); no new text.
+- Placeholders after this task (`grep -rn "R005B placeholder" src`):
+  Check/UnifyRecord (several tails, Task 4) and Check/Placeholder
+  `withoutDisjoint` (called by Check/Function and Check/Use, Task 3).
+  Field access and removal over a row of several tails read every
+  unification failure as a missing field (`a is not a field of ...`),
+  a wrong text found by probing; Check/Record `select` now passes the
+  placeholder through. A rest binder over several tails keeps both
+  tails and is accepted where nothing unifies them.
+- Tests: test/r005b-parse.test.mjs (17), r005b-resolve.test.mjs (25),
+  r005b-surface.test.mjs (14), r005b-placeholder.test.mjs (4); red log
+  .build/evidence/r005b-t2-red.log (against main's build: 15 of 17, 21
+  of 25 and 13 of 14 fail; the rest are controls). Two existing
+  assertions in test/r005-parse.test.mjs changed meaning on purpose:
+  `where r disjoint s` was E_SYNTAX and now parses, and the printed
+  shape of `{}` follows the tails array. Regression rows r012-argument-
+  lacks and r012-nested-walk had needles naming the one-tail text; both
+  updated, same defects, re-proved failing.
+- Differential against main (isolated build, `--corpus all
+  --regenerate`, .build/evidence/r005b-t2-diff.log and -diff-full.log):
+  67 differences, all in the parse phase: 45 sources with several
+  record tails (baseline `Only one row tail is allowed`) and 22 with a
+  `disjoint` clause (baseline `Expected 'lacks'`), 3 of them mutations
+  of such sources that now fail later in the parse. No other
+  difference among the corpus. One projection added
+  (scripts/differential-project.mjs): a written record type of no tail
+  or one is hashed as the old `Maybe`; without it every record type
+  would differ.
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`): exit
+  0 on 0a8f73c, the last code commit; 2191 tests, 59 oracle tests, 142
+  regression proofs. Two earlier runs failed in the regression stage on
+  the two needles above and were fixed. The docs commit after it
+  received only the width check.
+- Ruling recorded (plan, ledger and Task 3): one passed lacks fact per
+  tail; it does not establish that `r` and `s` are disjoint; Task 3
+  tests both, also through a declared-type wrapper.
+- Not done: Tasks 3-10, unauthorized.
+

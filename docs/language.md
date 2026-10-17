@@ -25,7 +25,7 @@ typedecl    = "type", upper, [ "(", lower, { ",", lower }, ")" ], "=",
               ctor, { "|", ctor }, ";" ;
 ctor        = upper, [ "(", type, { ",", type }, ")" ] ;
 function    = "fn", identifier, "(", [ parameters ], ")", ":", type,
-              [ "where", lacks, { ",", lacks } ], "=", expression, ";" ;
+              [ "where", clause, { ",", clause } ], "=", expression, ";" ;
 parameters  = parameter, { ",", parameter } ;
 parameter   = identifier, ":", type ;
 type        = arrow ;
@@ -679,15 +679,22 @@ suffix     = "(", [ arguments ], ")" | ".", lower
            | "{", lower, "=", expression,
              { ",", lower, "=", expression }, [ "," ], "}"
            | "without", "{", lower, { ",", lower }, [ "," ], "}" ;
+clause     = lacks | disjoint ;
 lacks      = lower, "lacks", "{", lower, { ",", lower }, [ "," ], "}" ;
+disjoint   = lower, "disjoint", lower ;
 ```
 
 A literal holds at most one `...expression` item (R005, below).
 
 Types (r001-types). `{ name: Text, age: Int }` is a closed record type and
 `{ name: Text, ...r }` an open one, whose tail `r` is a row variable of
-record sort; `{ ...r }` is any record. A tail is last and single (`Row
-tail must be last`, `Only one row tail is allowed`). Labels are lowercase
+record sort; `{ ...r }` is any record. Tails come last (`Row tail must
+be last`). A record type may hold several, `{ ...r, ...s }` (R005 Tranche
+B); an effect row still allows one (`Only one row tail is allowed`). The
+same tail twice in one record, written or through a declared type that
+writes its parameters into one record (`Pair(...a, ...a)`), is E_TYPE
+`...r is written twice in one record` at the second, noted `first
+written here` at the first. Labels are lowercase
 and unique: a repeated label in a type, literal or update is E_DUPLICATE
 `Duplicate field <label>` (`Duplicate field a` for `a`) at the second,
 with the note `first written here` at the first. Label order is not
@@ -927,8 +934,20 @@ rest binder or `{ ...rest }`. It is distinct from Unit (`Expected Unit,
 found {}`; `Expected {}, found Unit`), prints `{}` beside Unit's `()`, and
 all empty records are equal. In Go it is the empty struct.
 
-Not in this tranche: merging two open records and the `disjoint`
-constraint (R005 Tranche B), polymorphic fields (R006), punning in
+Tranche B, Task 2 (surface only): `where r disjoint s` names two
+different record row variables (`r disjoint r` is E_TYPE `A disjoint
+constraint must name two different row variables` at the second `r`), and
+a type written in a body that puts two tails into one record needs the
+signature to join them (a `disjoint` clause, or a parameter or result
+type that writes both into one record): otherwise E_TYPE `r and s are
+not known to be disjoint; require r disjoint s in the signature` at the
+later `...s`. Checking is not yet written: a program that unifies a row
+of several tails, or defines or calls a function with a `disjoint`
+clause, stops at E_INTERNAL `R005B placeholder: …` (docs/plans/
+2026-10-17-open-row-merge-plan.md, Global Constraints).
+
+Not in this tranche: merging two open records (R005 Tranche B, later
+tasks), polymorphic fields (R006), punning in
 expressions (R007), type aliases (R008) and record-row parameters of
 effects (R009).
 

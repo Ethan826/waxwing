@@ -4,8 +4,9 @@
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps
 > use checkbox (`- [ ]`) syntax for tracking. The user accepted Task 0
-> and authorized Task 1 (2026-10-17); Tasks 2-10 are not authorized: do
-> not start Task 2 before the user reviews Task 1 and authorizes it.
+> and authorized Task 1 (2026-10-17); the user then authorized Task 2
+> alone (2026-10-17). Tasks 3-10 are not authorized: do not start Task 3
+> before the user reviews Task 2 and authorizes it.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs: record rows with
@@ -73,7 +74,8 @@ test runner, Go 1.26.4. No new dependency.
 
 **Status:** Draft 2026-10-17, corrected after the user's review of the
 same day. Task 0 accepted (2026-10-17, branch r005b-task0); Task 1
-authorized; Tasks 2-10 not authorized.
+done (branch r005b-task1); Task 2 authorized and done on branch
+r005b-task2 (2026-10-17, awaiting review); Tasks 3-10 not authorized.
 
 ## Global Constraints
 
@@ -139,6 +141,19 @@ authorized; Tasks 2-10 not authorized.
   | Task 4 | Specialize/Record: a row with two or more tails under a key | `rows with several tails are lowered in Task 8` | Task 8 |
   | Task 5 | the end-of-body report of an `Unresolved` outcome | `unresolved row equations are reported in Task 6` | Task 6 |
   | Task 5 | Require/Reject for a `Contradiction` whose reason is `Equated` (or a `boundBy` or `emptied` binding) | `contradictions from equations are reported in Task 6` | Task 6 |
+
+  **Task 2's two placeholders as landed** (2026-10-17): the first is
+  `Failure.Placeholder` (Check/UnifyFailure), returned by
+  Check/UnifyRecord when either flattened row has two or more tails and
+  rendered as E_INTERNAL by Check/Placeholder `placeholderAt` from
+  Require `expectType`, Reject and Record `select`; `select` is the one
+  caller that read every unification failure as a missing field (field
+  access `w.a` and removal `w without { a }` over such a row), so it
+  passes the placeholder through. The second is Check/Placeholder
+  `withoutDisjoint`, called at the start of Function `checkFunction`
+  (at the function) and Use `functionUse` (at the call), each over the
+  callee's resolved constraints. Task 3 removes only the second; Task 4
+  the first.
 
   A test that needs D4 or D6 before Task 6 asserts the placeholder's
   E_INTERNAL message (it pins the result class); Task 6 changes those
@@ -313,6 +328,16 @@ test/fixtures/r005b/.
 
 The user's Task 0 review (2026-10-17) is recorded in Decisions 8-13;
 L29, L31, L32 and L34 above carry its wording.
+
+**Ruling recorded with Task 2 (the user, 2026-10-17): one passed lacks
+fact per tail.** If a declaration requires its row argument to lack `x`,
+every component of `{ ...r, ...s }` must lack `x`: `Implied` makes one
+fact per tail, and Task 2 resolves a record's labels against each of its
+tails the same way. This does **not** establish that `r` and `s` are
+disjoint; that is a separate obligation (`Disjoint`, option A or a
+written clause). Task 3 must test both distinctions, including
+propagation through a declared-type wrapper (Decision 14, Task 3's
+tests).
 
 Status count: 34 claims. Backed: 22 (L2-L4, L6-L16, L20, L23-L25,
 L27, L29-L31). Split, each part named: 4 (L1, L26, L28, L32: the
@@ -622,7 +647,7 @@ the old `tail`).
   2132 + 59 tests, 142 proofs, exit 0; differential 0 of 12,608 cases
   (docs/progress.md "R005 Tranche B Task 1"). Two regression rows named
   record-row text in their needles and were updated, meaning kept.
-  Awaiting the user's review; Task 2 is not authorized.
+  Reviewed; the user authorized Task 2 only (2026-10-17).
 
 Size: about 250k tokens (wide, mechanical), 3-4 h. Sonnet; Opus reviews
 the differential.
@@ -645,7 +670,7 @@ D9; placeholders (table).
 with `Disjoint`; Problem `RepeatedTail`, `SameDisjoint`,
 `NotKnownDisjoint` (D3, hinted via `Hinted`).
 
-- [ ] Failing tests test/r005b-parse.test.mjs and r005b-resolve.test.mjs:
+- [x] Failing tests test/r005b-parse.test.mjs and r005b-resolve.test.mjs:
   two and three tails in parameter, result, nested, declared-type and
   lambda-annotation positions; `where r disjoint s` alone and beside
   `lacks`; D8 written and through `Pair(...a, ...a)`; D9 at the second
@@ -653,9 +678,18 @@ with `Disjoint`; Problem `RepeatedTail`, `SameDisjoint`,
   fact, accepted with it and with an implying row (option A); a
   multi-tail signature reaching the Task 4 placeholder; effect rows
   still refuse a second tail.
-- [ ] Implement; verify; differential: differences only in parse and
+- [x] Implement; verify; differential: differences only in parse and
   resolve for sources with several record tails or `disjoint`
-  constraints (all refused before), each classified; commit.
+  constraints (all refused before), each classified; commit. Done on
+  branch r005b-task2: placeholder commit first (9df7e01), then the
+  Diagnostic.Records split, the surface and two needle updates; verify
+  2191 + 59 tests, 142 proofs, exit 0 on 0a8f73c; differential 67
+  differences, all parse phase (45 several tails, 22 `disjoint`), none
+  other (docs/progress.md "R005 Tranche B Task 2"). Also added:
+  test/r005b-surface.test.mjs and r005b-placeholder.test.mjs; D3 for
+  body types and `Duplicate field` between joined record arguments are
+  in Resolve.Apart; no fixture is activated (the table assigns none to
+  Task 2). Awaiting the user's review; Task 3 is not authorized.
 
 Size: about 150k tokens, 2-3 h. Sonnet.
 
@@ -726,8 +760,18 @@ never matters; a property test checks commutativity and associativity.
   `fn tagged(p: { id: Int, ...r }, q: { ...s }): Int = g(p, q)` is D3''
   `s may already have field id` without `s lacks { id }`, and D3 `r and
   s are not known to be disjoint` with it but without `r disjoint s`;
-  the property test of `prefer`. The `merge(p, p)` form is
-  complete-source and joins Task 7.
+  the property test of `prefer`. The ruling of 2026-10-17 (ledger,
+  "one passed lacks fact per tail"), both distinctions: (a) a declared
+  type whose record parameter lacks `x` (`type Holder(...r) = Holder({ x:
+  Int, ...r })`), given `{ ...r, ...s }` or a wrapper `type W(...a, ...b)
+  = W(Holder({ ...a, ...b }))`, requires both `r` and `s` to lack `x`
+  (each missing fact is D3'' for its own tail; a signature stating both
+  `r lacks { x }` and `s lacks { x }` is accepted); (b) the same
+  signature without `r disjoint s` (and no row joining them) is refused
+  where the pair is required, and stating the lacks facts never supplies
+  the disjointness, nor the reverse; both through a declared-type wrapper
+  at its caller. The `merge(p, p)` form is complete-source and joins Task
+  7.
 - [ ] Implement; verify; differential: differences only P1-P7's class
   (shape text → D1) and sources using `disjoint`, each classified; L21
   checked (no existing expectation edited); commit.
@@ -1206,3 +1250,10 @@ the reading of R1.1 that `determinate`'s approved text needs.
 13. **research/open-row-merge/state.mjs imports the prototype's
     `flatten`** (shared machinery): its property E results stand but
     are not independent (research README).
+
+**Task 2 (2026-10-17).**
+
+14. **Task 2 alone is authorized**; Tasks 3-10 wait for the user's review
+    of it. The ruling on lacks per tail (ledger, below L34) is recorded
+    with it: one passed lacks fact per tail is correct, it does not
+    establish that `r` and `s` are disjoint, and Task 3 tests both.
