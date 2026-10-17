@@ -5997,8 +5997,9 @@ Checking stays behind placeholders; nothing in Tasks 3-10 was started.
   Field access and removal over a row of several tails read every
   unification failure as a missing field (`a is not a field of ...`),
   a wrong text found by probing; Check/Record `select` now passes the
-  placeholder through. A rest binder over several tails keeps both
-  tails and is accepted where nothing unifies them.
+  placeholder through. A rest binder over several tails kept both
+  tails and was accepted where nothing unified them; see the boundary
+  fix below.
 - Tests: test/r005b-parse.test.mjs (17), r005b-resolve.test.mjs (25),
   r005b-surface.test.mjs (14), r005b-placeholder.test.mjs (4); red log
   .build/evidence/r005b-t2-red.log (against main's build: 15 of 17, 21
@@ -6026,5 +6027,62 @@ Checking stays behind placeholders; nothing in Tasks 3-10 was started.
 - Ruling recorded (plan, ledger and Task 3): one passed lacks fact per
   tail; it does not establish that `r` and `s` are disjoint; Task 3
   tests both, also through a declared-type wrapper.
+- Boundary fix (user ruling 2026-10-17, "never called" is no guard): a
+  third placeholder, `R005B placeholder: rest binders and removal over
+  several tails are typed in Task 7`, from Check/SeveralTails
+  `withinOneTail` (the row's tails counted after following bindings).
+  It is called by Check/RecordPattern `restOf` for a NAMED rest binder
+  and by Check/Removal before any label is selected, so removal no
+  longer depends on unification order. Bare `...` creates no value and
+  its typing needs no new rule, so it is accepted. Single-tail rest
+  and removal are unchanged. Plan table: this placeholder is added in
+  Task 2 (moved earlier) and removed in Task 7. Tests in
+  test/r005b-surface.test.mjs (unused, returned, used and passed-on
+  named rest; removal; bare rest and single-tail controls), red log
+  .build/evidence/r005b-t2b-red.log (5 fail first). The `Duplicate
+  field x` for overlapping record arguments is reported at the later
+  contributor with `first written here` at the earlier, asserted in
+  r005b-resolve.test.mjs.
+- Boundary-fix evidence: differential against main (isolated build,
+  .build/evidence/r005b-t2b-diff.log): 70 differences (68 harvested,
+  2 mutations), every listed one in the parse phase and a several-tail
+  or  source; the count moved from 67 only because the
+  harvested corpus gained this fix's new test sources and the mutations
+  are regenerated. Verify (npm <command>
+
+Usage:
+
+npm install        install all the dependencies in your project
+npm install <foo>  add the <foo> dependency to your project
+npm test           run this project's tests
+npm run <foo>      run the script named <foo>
+npm <command> -h   quick help on <command>
+npm -l             display usage info for all commands
+npm help <term>    search for help on <term>
+npm help npm       more involved overview
+
+All commands:
+
+    access, adduser, approve-scripts, audit, bugs, cache, ci,
+    completion, config, dedupe, deny-scripts, deprecate, diff,
+    dist-tag, docs, doctor, edit, exec, explain, explore,
+    find-dupes, fund, get, help, help-search, init, install,
+    install-ci-test, install-scripts, install-test, link, ll,
+    login, logout, ls, org, outdated, owner, pack, ping, pkg,
+    prefix, profile, prune, publish, query, rebuild, repo,
+    restart, root, run, sbom, search, set, shrinkwrap, stage,
+    star, stars, start, stop, team, test, token, trust,
+    undeprecate, uninstall, unpublish, unstar, update, version,
+    view, whoami
+
+Specify configs in the ini-formatted file:
+    /Users/ethan/.npmrc
+or on the command line via: npm <command> --key=value
+
+More configuration info: npm help config
+Configuration fields: npm help 7 config
+
+npm@11.18.0 /Users/ethan/.nvm/versions/node/v26.6.0/lib/node_modules/npm, .build/evidence/r005b-t2b-verify.log): exit 0 on be42baf,
+  the code commit; 2196 tests, 59 oracle tests, 142 regression proofs.
 - Not done: Tasks 3-10, unauthorized.
 

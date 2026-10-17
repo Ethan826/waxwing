@@ -137,7 +137,7 @@ r005b-task2 (2026-10-17, awaiting review); Tasks 3-10 not authorized.
   | Task 2 | Check: the first record unification or flattening that meets a row with two or more tails (Check/UnifyRecord entry, Check/FlatRecord callers that assume one tail) | `rows with several tails are checked in Task 4` | Task 4 |
   | Task 2 | Check/Function and Check/Use where a resolved `Disjoint` constraint would be seeded | `disjoint constraints are checked in Task 3` | Task 3 |
   | Task 4 | Check/UnifyRecord: a residue whose constants each have several homes, or a quiet residue | `equations that wait are solved in Task 5` | Task 5 |
-  | Task 4 | Check/Removal and Check/RecordPattern (rest binder): a receiver or scrutinee whose flattened row has two or more tails | `removal and rest binders over several tails are checked in Task 7` | Task 7 |
+  | Task 2 (moved earlier, user 2026-10-17) | Check/SeveralTails `withinOneTail`, called by Check/Removal and Check/RecordPattern `restOf` (named rest only; bare `...` is accepted): a receiver or scrutinee whose flattened row has two or more tails | `rest binders and removal over several tails are typed in Task 7` | Task 7 |
   | Task 4 | Specialize/Record: a row with two or more tails under a key | `rows with several tails are lowered in Task 8` | Task 8 |
   | Task 5 | the end-of-body report of an `Unresolved` outcome | `unresolved row equations are reported in Task 6` | Task 6 |
   | Task 5 | Require/Reject for a `Contradiction` whose reason is `Equated` (or a `boundBy` or `emptied` binding) | `contradictions from equations are reported in Task 6` | Task 6 |
@@ -987,8 +987,8 @@ pairs, D2' immediate and late), Check/Removal.purs (design §5.2: one
 requirement against `{ l1: α1, …, ...ρ }`, type `ρ`, never subtraction),
 Check/RecordPattern.purs (206: extract the rest binder first) and
 PatternRow.purs (the same for `{ l, ...rest }`), Check/Record `select`;
-the Task 4 removal placeholder removed. Specialize keeps its
-placeholder.
+the Task 2 multi-tail rest/removal placeholder (Check/SeveralTails)
+removed. Specialize keeps its placeholder.
 
 - [ ] Failing tests test/r005b-literal.test.mjs: `{ ...a, ...b }`,
   `{ ...a, x: v, ...b }`, three spreads, a spread of a merge result,
