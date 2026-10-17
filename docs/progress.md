@@ -5773,3 +5773,16 @@ seen failing before its fix (red logs in .build/evidence/hygiene-<id>-red.log).
   2112/2112 parallel, 59/59 serial, 142 regression proofs, exit 0
   (.build/evidence/hygiene-verify.log). No regression needle changed.
   Deleted afterwards: .build/regression, .build/go-cache.
+
+## Verify phase profile (2026-10-17)
+
+Measurement only, branch `verify-profile`; no script, test or source
+changed. Report: docs/plans/2026-10-17-verify-profile.md; raw data under
+`.build/profile/` (git-ignored). From a clean `output` and Go cache on an
+idle 10-core host, the phases sum to 1292 s (21.5 min): tidy 0.5 s, build
+7.3 s, strict rebuild 16.5 s, structure 1.1 s, width 0.1 s, parallel tests
+76 s, serial tests 92.6 s, 142 regression proofs 1098 s (85%). A typical
+proof is 7 s, of which 5.7 s is a full purs compile of 523 modules. Warm
+Go cache saves about 23 s. Proposals (incremental compiles from a cloned
+baseline, concurrent rows) are recorded as BACKLOG T013 and await the
+user's approval. Deleted afterwards: .build/regression, .build/go-cache.
