@@ -53,6 +53,8 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.RecordLiteral _ → records
   IR.FieldAccess _ _ → records
   IR.RecordUpdate _ _ → records
+  IR.RecordExtension _ → records
+  IR.RecordRemoval _ _ → records
   where
   anyOf = Array.any usesBoolOrdering
   effects = anyOf (Parts.effectParts expression.node)
@@ -107,6 +109,8 @@ prints (IR.Expr expression) = case expression.node of
   IR.RecordLiteral _ → records
   IR.FieldAccess _ _ → records
   IR.RecordUpdate _ _ → records
+  IR.RecordExtension _ → records
+  IR.RecordRemoval _ _ → records
   where
   anyOf = Array.any prints
   effects = anyOf (Parts.effectParts expression.node)

@@ -109,9 +109,13 @@ binders ∷ IR.Pattern → Array Occurrence
 binders (IR.Pattern pattern) = case pattern.shape of
   IR.Bind id → [ { id, ty: pattern.ty, binds: true } ]
   IR.Ctor _ fields → Array.concatMap binders fields
-  IR.Record fields → Array.concatMap fieldBinders fields
+  IR.Record fields rest → Array.concatMap fieldBinders fields
+    <> restBinder rest
   IR.Wildcard → []
   IR.IntLit _ → []
   IR.BoolLit _ → []
   where
   fieldBinders found = binders found.pattern
+  restBinder = case _ of
+    IR.NamedRest id ty → [ { id, ty, binds: true } ]
+    _ → []

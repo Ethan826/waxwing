@@ -178,19 +178,3 @@ test('a named rest against a hole is typed after settlement', () => {
   assert.deepEqual(ty.value0.fields.map(field => field.value0), ['age']);
   assert.equal(holes(ty), false);
 });
-
-// Specialization meets the Task 3 placeholder for every new form.
-test('checked programs reach the lowering placeholder', () => {
-  for (const [body, text] of [
-    ['{ ...p, cc: 1 }.cc', '{ ...p, cc: 1 }'],
-    ['(p without { aa }).bb', 'p without { aa }']]) {
-    const source = `fn f(p: { aa: Int, bb: Int }): Int = ${body};`
-      + ' fn main(): Int = f({ aa: 1, bb: 2 });';
-    const found = rejectedAt(source, 'E_INTERNAL', text);
-    assert.match(found.message, /^R005 placeholder: .* in Task 3$/);
-  }
-  const source = arms('{ aa: Int }', 'Int', '{ aa, ...rest } => 1')
-    .replace(main, ' fn main(): Int = f({ aa: 1 });');
-  const found = rejectedAt(source, 'E_INTERNAL', '{ aa, ...rest }');
-  assert.match(found.message, /^R005 placeholder: .* in Task 3$/);
-});

@@ -159,10 +159,16 @@ data Node
   | RecordLiteral (Array Field)
   | FieldAccess Expr String
   | RecordUpdate Expr (Array Field)
+  | RecordExtension (Array Part)
+  | RecordRemoval Expr (Array String)
 
 -- R001: a literal's fields in written order, which is evaluation order; an
 -- update's base, then its replacements in written order.
 type Field = { label ∷ String, value ∷ Expr }
+
+-- R005: a spread literal's items in written order, which is evaluation
+-- order (design §1); a removal's receiver and the labels it drops.
+data Part = Given Field | Spreading Expr
 
 -- FX001 effect nodes (design §4): a bare operation; an invocation, partial
 -- as `Call` may be; a handler's construction, with one clause per
@@ -198,7 +204,12 @@ data Shape
   | IntLit Int
   | BoolLit Boolean
   | Ctor CtorId (Array Pattern)
-  | Record (Array { label ∷ String, pattern ∷ Pattern })
+  | Record (Array { label ∷ String, pattern ∷ Pattern }) Rest
+
+-- R005: how a record pattern ends. A named rest binds the matched record
+-- without the written labels; its type is kept so that lowering lays the
+-- remainder out even where no expression has that shape.
+data Rest = NoRest | IgnoredRest | NamedRest LocalId Ty
 
 typeOf ∷ Expr → Ty
 typeOf (Expr expression) = expression.ty

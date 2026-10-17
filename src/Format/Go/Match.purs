@@ -13,6 +13,7 @@ import Format.Go.Data
   , integer
   , localName
   )
+import Format.Go.Extension (remainder)
 import Format.Go.Layout (Layout, tagOf)
 import Format.Go.Lowered (Lowered, Lowering, Scope, several)
 import Format.Go.RecordNames (recordField)
@@ -66,7 +67,7 @@ lowerMatch scope lower next result scrutinee arms =
   capturedName captured = localName captured.id
   context = scope.shape.context
   lifted = matchFunction context signature
-    (Array.zipWith (armCode scope.tables) arms bodies.codes)
+    (Array.zipWith (armCode scope.tables scope.shape.records) arms bodies.codes)
 
 matchName ∷ FunctionId → Int → String
 matchName owner number = functionName owner <> "Match" <> show number
@@ -88,8 +89,8 @@ matchFunction context signature arms =
     <> [ scrutineeName <> " " <> goType signature.scrutinee ]
   parameter captured = localName captured.id <> " " <> goType captured.ty
 
-armCode ∷ Layout → IR.Arm → String → String
-armCode tables arm body =
+armCode ∷ Layout → Array IR.RecordInfo → IR.Arm → String → String
+armCode tables records arm body =
   if Array.null bound then
     "if " <> condition <> " { return " <> body <> " }\n"
   else
@@ -100,7 +101,7 @@ armCode tables arm body =
   where
   root = { path: scrutineeName, pointer: false }
   tests = conditions tables root arm.pattern
-  bound = bindings root arm.pattern
+  bound = bindings records root arm.pattern
   condition = if Array.null tests then "true" else joinWith " && " tests
 
 -- Each binder is also discarded so Go never reports an unused variable.
@@ -123,7 +124,7 @@ conditions tables access (IR.Pattern pattern) = case pattern.shape of
     )
   -- R004: no tag to test; each named field's pattern is tested on the
   -- struct field, a record being stored inline and an ADT as a pointer.
-  IR.Record fields → guarded (Array.concatMap named fields)
+  IR.Record fields _ → guarded (Array.concatMap named fields)
   where
   guarded tests = (if access.pointer then [ nilGuard access.path ] else [])
     <> tests
@@ -137,22 +138,27 @@ conditions tables access (IR.Pattern pattern) = case pattern.shape of
 nilGuard ∷ String → String
 nilGuard path = path <> " != nil"
 
-bindings ∷ Access → IR.Pattern → Array Binding
-bindings access (IR.Pattern pattern) = case pattern.shape of
+bindings ∷ Array IR.RecordInfo → Access → IR.Pattern → Array Binding
+bindings records access (IR.Pattern pattern) = case pattern.shape of
   IR.Bind id → [ { id, value: dereferenced } ]
   IR.Ctor id fields → Array.concat (Array.mapWithIndex (field id) fields)
-  IR.Record fields → Array.concatMap named fields
+  IR.Record fields rest → Array.concatMap named fields <> restBinding rest
   IR.Wildcard → []
   IR.IntLit _ → []
   IR.BoolLit _ → []
   where
   dereferenced = (if access.pointer then "*" else "") <> access.path
-  field id index sub = bindings
+  field id index sub = bindings records
     (fieldAccess access (fieldName id index) sub)
     sub
-  named found = bindings
+  named found = bindings records
     (fieldAccess access (recordField found.label) found.pattern)
     found.pattern
+  -- R005: a named rest is a struct of the remaining fields, copied from
+  -- the scrutinee's path; a record is never behind a pointer.
+  restBinding = case _ of
+    IR.NamedRest id ty → [ { id, value: remainder records ty access.path } ]
+    _ → []
 
 -- ADT fields are stored as pointers, in a constructor or a record;
 -- primitive and record fields are stored directly.

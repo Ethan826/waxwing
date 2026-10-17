@@ -20,9 +20,14 @@ recordParts = case _ of
   IR.RecordLiteral fields → map fieldValue fields
   IR.FieldAccess record _ → [ record ]
   IR.RecordUpdate record fields → Array.cons record (map fieldValue fields)
+  IR.RecordExtension parts → map partValue parts
+  IR.RecordRemoval record _ → [ record ]
   _ → []
   where
   fieldValue field = field.value
+  partValue = case _ of
+    IR.Given field → field.value
+    IR.Spreading base → base
 
 -- A block's expressions in evaluation order: its items', then its value.
 blockParts ∷ Array IR.Item → IR.Expr → Array IR.Expr

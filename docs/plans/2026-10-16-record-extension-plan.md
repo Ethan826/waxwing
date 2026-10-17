@@ -80,7 +80,7 @@ test runner, Go 1.26.4. No new dependency.
   | Added in | Placeholder at | Removed in |
   |---|---|---|
   | Task 1 (Resolved) | Check/Infer for `RecordExtension`, `RecordRemoval`; Check/RecordPattern for a named rest | Task 2 |
-  | Task 2 (Checked) | Specialize/Body for the new expressions (`record extension and removal are lowered in Task 3`) and a named rest (`rest binders are lowered in Task 3`) | Task 3 |
+  | Task 2 (Checked) | Specialize/Body for the new expressions (`record extension and removal are lowered in Task 3`) and a named rest (`rest binders are lowered in Task 3`) | Task 3 (removed) |
 
 - **Go output** of existing programs stays byte-identical (bootstrap
   snapshots; the differential against main changes only sources using the

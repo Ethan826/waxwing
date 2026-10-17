@@ -7,6 +7,7 @@ import Domain.IR.Internal as IR
 import Domain.IR.Internal (Ty)
 import Format.Go.Block (lowerBlock)
 import Format.Go.Compare (comparison)
+import Format.Go.Extension (lowerExtension, lowerRemoval)
 import Format.Go.Data (boolean, goTextLiteral, goType, integer, localName)
 import Format.Go.Capture (union)
 import Format.Go.Effect (lowerHandlerValue)
@@ -79,6 +80,10 @@ expression scope next whole@(IR.Expr term) = case term.node of
   IR.FieldAccess record label → lowerAccess lower next term.ty record label
   IR.RecordUpdate record fields →
     lowerUpdate lower next term.ty record fields
+  IR.RecordExtension parts →
+    lowerExtension scope.shape.records lower next term.ty parts
+  IR.RecordRemoval record _ →
+    lowerRemoval scope.shape.records lower next term.ty record
   where
   lower = expression scope
   each = several lower next

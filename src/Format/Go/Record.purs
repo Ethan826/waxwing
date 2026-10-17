@@ -8,7 +8,17 @@
 -- field, a literal or a local name, is used in place: its evaluation does
 -- nothing, so order is kept. A literal of trivial fields alone is the
 -- struct literal itself.
-module Format.Go.Record (lowerLiteral, lowerAccess, lowerUpdate) where
+module Format.Go.Record
+  ( Written
+  , lowerLiteral
+  , lowerAccess
+  , lowerUpdate
+  , temporary
+  , temporaries
+  , stored
+  , closure
+  , joined
+  ) where
 
 import Prelude
 import Data.Array as Array
@@ -75,12 +85,18 @@ labelOf found = found.label
 -- The k-th written field: in place when trivial, else its temporary.
 field ∷ Int → Tuple IR.Field String → Written
 field index (Tuple found code) =
-  if trivial found.value then written code ""
+  temporary ("waxwingField" <> show index) found.label found.value code
+
+-- A part of a record, labelled "" when it has none: its code in place
+-- when trivial, else bound to a temporary of that name before the record
+-- is built, so parts run in written order.
+temporary ∷ String → String → IR.Expr → String → Written
+temporary name label expression code =
+  if trivial expression then written code ""
   else written name ("var " <> name <> " " <> goType ty <> " = " <> code)
   where
-  ty = IR.typeOf found.value
-  name = "waxwingField" <> show index
-  written value binding = { label: found.label, ty, value, binding }
+  ty = IR.typeOf expression
+  written value binding = { label, ty, value, binding }
 
 trivial ∷ IR.Expr → Boolean
 trivial (IR.Expr expression) = case expression.node of

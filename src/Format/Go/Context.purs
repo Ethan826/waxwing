@@ -62,6 +62,8 @@ children node = case node of
   IR.RecordLiteral _ → Parts.recordParts node
   IR.FieldAccess _ _ → Parts.recordParts node
   IR.RecordUpdate _ _ → Parts.recordParts node
+  IR.RecordExtension _ → Parts.recordParts node
+  IR.RecordRemoval _ _ → Parts.recordParts node
   _ → []
   where
   armBody arm = arm.body

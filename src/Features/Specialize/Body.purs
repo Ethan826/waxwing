@@ -123,20 +123,18 @@ copyNode scope span = case _ of
     <*> pure label
   Checked.RecordUpdate record fields → IR.RecordUpdate <$> recur record
     <*> traverse field fields
-  Checked.RecordExtension _ → unlowered span
-  Checked.RecordRemoval _ _ → unlowered span
+  -- R005: items keep their written order, spread included.
+  Checked.RecordExtension items → IR.RecordExtension <$> traverse part items
+  Checked.RecordRemoval record labels → IR.RecordRemoval <$> recur record
+    <*> pure labels
   where
   recur = expression scope
   each = traverse recur
   field found = labelled found.label <$> recur found.value
   labelled label value = { label, value }
-
--- R005 Task 2 placeholders: the forms check, lowering arrives in Task 3.
-unlowered ∷ ∀ a. Span → Specializing a
-unlowered span = internal
-  "R005 placeholder: record extension and removal are lowered in Task 3"
-  span
-  unit
+  part = case _ of
+    Checked.Given found → IR.Given <$> field found
+    Checked.Spreading base → IR.Spreading <$> recur base
 
 item ∷ Scope → Checked.Item → Specializing IR.Item
 item scope = case _ of
@@ -165,14 +163,17 @@ copyShape scope span ty = case _ of
   Checked.Ctor id fields → IR.Ctor <$> ctorAt scope.env span ty id
     <*> traverse (copyPattern scope) fields
   -- R004: the fields named, in written order; `...` needs no node, as
-  -- an unnamed field is read by no test.
-  Checked.Record fields Checked.NoRest → IR.Record <$> traverse labelled fields
-  Checked.Record fields Checked.IgnoredRest → IR.Record <$> traverse labelled
-    fields
-  Checked.Record _ (Checked.NamedRest _ _) → internal
-    "R005 placeholder: rest binders are lowered in Task 3"
-    span
-    unit
+  -- an unnamed field is read by no test. R005: a named rest keeps its
+  -- remainder's type, which interns the remainder's layout even when no
+  -- expression has that shape.
+  Checked.Record fields rest → IR.Record <$> traverse labelled fields
+    <*> copyRest scope span rest
   where
   labelled found = field found.label <$> copyPattern scope found.pattern
   field label pattern = { label, pattern }
+
+copyRest ∷ Scope → Span → Checked.Rest → Specializing IR.Rest
+copyRest scope span = case _ of
+  Checked.NoRest → pure IR.NoRest
+  Checked.IgnoredRest → pure IR.IgnoredRest
+  Checked.NamedRest id ty → IR.NamedRest id <$> typed scope span ty
