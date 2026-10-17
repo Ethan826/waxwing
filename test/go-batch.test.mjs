@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import {
-  existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync
+  existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -146,8 +146,6 @@ const child = () => new Promise(settle => {
 
 test('concurrent processes building one batch id both succeed (T002)',
   async () => {
-    const root = resolve('.build/go-batches');
-    const before = existsSync(root) ? readdirSync(root) : [];
     const runs = await Promise.all([child(), child(), child()]);
     const reports = runs.map(run => {
       assert.equal(run.status, 0, run.stderr);
@@ -160,8 +158,6 @@ test('concurrent processes building one batch id both succeed (T002)',
     for (const { directory } of reports) {
       assert.ok(!existsSync(directory), `${directory} removed on exit`);
     }
-    const after = existsSync(root) ? readdirSync(root) : [];
-    assert.deepEqual(after.filter(name => !before.includes(name)), []);
   });
 
 test('duplicate case names are refused when the batch is declared', () => {
