@@ -2,7 +2,6 @@ module Features.Check.Use
   ( Use
   , Callee
   , withOrigin
-  , seededUse
   , functionUse
   , ctorUse
   , declarationUse
@@ -16,7 +15,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (fst, snd)
 import Domain.Row (closedRow)
-import Domain.Type (TyRow, VarId(..))
+import Domain.Type (TyRow)
 import Domain.Syntax as Syntax
 import Features.Check.Stages (arrowType, openedRow, stages)
 import Domain.Checked.Internal (Open)
@@ -32,8 +31,7 @@ import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
 import Features.Check.Placeholder (withoutDisjoint)
-import Features.Check.Seed (required, seeded)
-import Features.Check.Unify (Flex(Meta))
+import Features.Check.UseFacts (requiredUse, seededUse)
 import Features.Check.Tables (ownerType)
 
 -- One use of a function's or constructor's scheme, its variables
@@ -110,22 +108,6 @@ openedUse use =
   found = openHandlers use.state use.value.fields use.value.result
   owned = ownClauses found.state.next found.value.fields use.value.row
     found.value.result
-
--- The use's state with what its types say their record tails lack.
-seededUse
-  ∷ ∀ r. CheckEnv r → Array Syntax.Sort → Threaded Use → Threaded Use
-seededUse env sorts use = use { state = seeded env sorts types use.state }
-  where
-  types = use.value.fields
-    <> [ use.value.result, TFun TUnit use.value.row TUnit ]
-
--- R005 design §2: the use's metas lack what the callee's `where` clauses
--- say, after what its types imply (Features.Check.Seed `required`).
-requiredUse ∷ Array Resolved.Requirement → Threaded Use → Threaded Use
-requiredUse constraints use = use
-  { state = required metaOf constraints use.state }
-  where
-  metaOf (VarId index) = Meta (use.value.scheme.base + index)
 
 -- A use that consumes `consumed`, of this callee, if it is a named one.
 withOrigin ∷ Consumed → Maybe Callee → Threaded Use → Threaded Use

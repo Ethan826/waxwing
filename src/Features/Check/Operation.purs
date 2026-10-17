@@ -25,7 +25,8 @@ import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.Stages (arrowType)
 import Features.Check.Provenance (Consumed(Operation))
-import Features.Check.Use (Use, declarationUse, seededUse, withOrigin)
+import Features.Check.Use (Use, declarationUse, withOrigin)
+import Features.Check.UseFacts (seededUse)
 
 type Result = Either Diagnostic (Threaded Checked.Expr)
 

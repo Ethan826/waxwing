@@ -23,10 +23,22 @@ export const r005Rows = [
   },
   {
     // A use's metas lack nothing the callee's `where` clauses wrote.
-    name: 'r005-written-use', file: 'src/Features/Check/Use.purs',
-    needle: '  { state = required metaOf constraints use.state }',
-    replacement: '  { state = required metaOf (Array.take 0 constraints) '
-      + 'use.state }',
+    // (The rule moved to Features.Check.UseFacts in R005 Tranche B Task 3,
+    // which does not import Data.Array, so the defect brings the import.)
+    name: 'r005-written-use',
+    edits: [
+      {
+        file: 'src/Features/Check/UseFacts.purs',
+        needle: 'import Prelude\n',
+        replacement: 'import Prelude\nimport Data.Array as Array\n'
+      },
+      {
+        file: 'src/Features/Check/UseFacts.purs',
+        needle: '  { state = required metaOf constraints use.state }',
+        replacement: '  { state = required metaOf (Array.take 0 constraints) '
+          + 'use.state }'
+      }
+    ],
     probe: 'r005-written-use',
     message: /written lack not seeded: E_INTERNAL Duplicate record label/
   },
