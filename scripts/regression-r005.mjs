@@ -65,9 +65,9 @@ export const r005Rows = [
     needle: '  TUnit, TUnit → Right subst\n',
     replacement: '  TUnit, TUnit → Right subst\n'
       + '  TRecord emptied, TUnit | Array.null emptied.fields '
-      + '&& isNothing emptied.tail → Right subst\n'
+      + '&& Array.null emptied.tails → Right subst\n'
       + '  TUnit, TRecord emptied | Array.null emptied.fields '
-      + '&& isNothing emptied.tail → Right subst\n',
+      + '&& Array.null emptied.tails → Right subst\n',
     probe: 'r005-empty-unit',
     message: /\{\} unified with Unit: \n/
   },
