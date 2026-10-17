@@ -6053,3 +6053,9 @@ Checking stays behind placeholders; nothing in Tasks 3-10 was started.
   the code commit; 2196 tests, 59 oracle tests, 142 regression proofs.
 - Not done: Tasks 3-10, unauthorized.
 
+- Controller check (2026-10-17): the rest/removal fix's differential
+  rerun with every difference shown
+  (.build/evidence/r005b-t2b-diff-full.log): 70 differences, all in the
+  parse phase; main rejected 48 with `Only one row tail is allowed` and 22
+  with `Expected 'lacks'`; every one of the 70 sources has several record
+  tails or a `disjoint` clause. No later-phase difference.
