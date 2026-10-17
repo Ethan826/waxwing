@@ -1,0 +1,52 @@
+{
+  "name": "design-generic-three",
+  "from": "design (draft 3) §3.3, a merge of merges, generically",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn three(a: { ...r }, b: { ...s },\n    c: { ...t }): { ...r, ...s, ...t } = merge(merge(a, b), c);\nfn main(): Int = { let v = three({ x: 1 }, { y: 2 }, { z: 3 }); v.z };\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "3\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[["R","S"],["R","T"],["S","T"]]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["R"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["S"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m0","m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m3"]},
+        "r": {"fields":[],"tails":["T"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2","m3"]},
+        "r": {"fields":[],"tails":["R","S","T"]}
+      }
+    ],
+    "orders": "all"
+  },
+  "remark": "rows: three's body (rigids R, S, T for r, s, t)."
+}

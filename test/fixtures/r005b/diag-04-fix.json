@@ -1,0 +1,36 @@
+{
+  "name": "diag-04-fix",
+  "from": "diagnostics Example 4, resolving edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn wrap(a: { ...r }, b: { ...s }): { inner: { ...r, ...s } }\n  = { inner: merge(a, b) };\nfn apply0(f: (a, b) -> { inner: { x: Int, y: Int } }): Int = 0;\nfn main(): Int = apply0(fn(p: { x: Int }, q: { y: Int }) => wrap(p, q));\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "diag-10",
+  "from": "diagnostics Example 10",
+  "source": "fn build(k: (Int -> a, Int -> b) -> { x: Int, y: Int }): Int = 0;\nfn main(): Int = build(fn(f, g) => { ...f(1), ...g(2) });\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell which part of { ..._1, ..._2 } has field x; annotate this lambda's parameters",
+    "at": {"text":"fn(f, g) => { ...f(1), ...g(2) }","nth":0},
+    "notes": [
+      {"message":"..._1 comes from here","at":{"text":"f(1)","nth":0}},
+      {"message":"..._2 comes from here","at":{"text":"g(2)","nth":0}},
+      {
+        "message": "{ x: Int, y: Int } is required here",
+        "at": {"text":"{ x: Int, y: Int }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

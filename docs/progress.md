@@ -5872,3 +5872,39 @@ no compiler change, implementation not authorized.
   Decisions pending with the user are listed at its end.
 - docs/engineering.md has a proposed (not binding) section, "Evidence
   for solvers and diagnostics".
+
+## R005 Tranche B Task 0: the gate's evidence (2026-10-17)
+
+Branch `r005b-task0` from 746ffa7. The user approved Task 0 alone;
+Tasks 1-10 are not authorized. Documents, research scripts and fixture
+data only: no src change, nothing added to `npm run verify` (so verify
+was not run; the width check was).
+
+- docs/plans/2026-10-17-open-row-merge-rules.md: an argument for every
+  solving rule, rewrites (preserve solutions, fresh metas accounted for)
+  apart from the one defaulting rule (the end default selects the least
+  solution), rejections, termination, and labelled heuristics. Two
+  findings: the `naming` index is sound but not lossless (ledger L32,
+  Task 5 to decide); the termination bound first written counted an
+  apart pair once and was corrected.
+- research/open-row-merge/exhaustive.mjs: domains A (3,339,712
+  problems, 19,305,292 runs, every order) and B (79,825, 453,550): S, H,
+  L, E (state solutions equal the problem's), D, C1, C2, C3 and the
+  measure bounds hold on every run; three restored defects are caught.
+  perm.mjs `STATE=1` over the full campaign: E 0 failures.
+- test/fixtures/r005b/: 72 fixtures (every diagnostics example, fix and
+  variant; the design's worked examples; P1-P7 and controls; the two
+  counterexamples; Appendix B), each with `stages` (solver, check, text,
+  run). fixtures.mjs: 0 failing; the asserted Unresolved counts
+  (`odd-cycle` 0, `determinate` 1, `diag-01` 4) and their coverage each
+  fail when wrong. P1-P7's `before` texts match today's build.
+- The plan: ledger completed (34 claims: 22 backed, 4 split, 6
+  argument only with reasons, L5 a proof, L34 a question about R1.1);
+  test stages and the activation table (most published examples
+  compile from Task 7, run from Task 8); task test lists and regression
+  rows moved accordingly; the user's decisions recorded (also in the
+  design); the substring test withdrawn; estimates marked as planning
+  estimates.
+- docs/engineering.md "Evidence for solvers and diagnostics" is binding
+  with proportional scope. AGENTS.md is unchanged: it does not point to
+  docs/engineering.md for solver evidence rules.

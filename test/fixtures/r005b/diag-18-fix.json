@@ -1,0 +1,36 @@
+{
+  "name": "diag-18-fix",
+  "from": "diagnostics Example 18, resolving edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn use(f: (a, b) -> { ...r }, p: { ...r }): Int = 0;\nfn outer(p: { ...t }): Int = use(fn(a: { ...t }, b: {}) => merge(a, b), p);\nfn main(): Int = outer({ x: 1 });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["T"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":[],"tails":["T"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

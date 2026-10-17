@@ -52,6 +52,9 @@ says nothing about how many solutions exist.
 | unresolved.mjs | the permanent Unresolved fixtures: zero, one and several solutions; exits 1 on a mismatch |
 | diag.mjs | classifies the 19 examples of the diagnostics plan (docs/plans/2026-10-17-open-row-merge-diagnostics.md, Appendix A, where it was first printed) |
 | annotation.mjs | user decision 1's `Both` example |
+| fixtures.mjs | checks every executable example fixture, test/fixtures/r005b/*.json: shape, and the class of its labels-only rows against the oracle and the prototype in every order named; asserts the counts of the three Unresolved bucket fixtures and their coverage (plan Task 0) |
+| exhaustive.mjs, exhaustive-run.mjs | every problem within domains A and B in every order: S, H, L, E, D, C1, C2, C3, the measure and fresh-meta bounds, one-tail forcedness; counts of each rule firing and each refusal kind |
+| state.mjs | a solver state read back as a constraint system (facts, upper bounds, pending equations through the bindings) and its solutions, for property E (the rewrites preserve solutions) |
 
 The session originals were in the scratchpad: d2/solver2.mjs (now the
 three solver files), review/bf.mjs (oracle.mjs), d2/drive2.mjs,
@@ -91,6 +94,10 @@ Small runs (each a few seconds at most), last run 2026-10-17:
 | `node odd-cycle.mjs` | D4 without several solutions | `solutions: []`; `verdict: D4 pending=3` |
 | `node unresolved.mjs` | Unresolved with zero, one and several solutions | `zero (odd-cycle.mjs): D4, 0 solutions`, `one (determinate.mjs): D4, 1 solutions`, `many (a two-part sum): D4, 4 solutions`; exit 0 |
 | `node diag.mjs .` | the diagnostics plan's example classes | identical to the output printed in that plan's Appendix A (compared with `diff` on 2026-10-17) |
+| `node fixtures.mjs` | the 72 executable example fixtures | one line each; `odd-cycle` asserted 0, `determinate` 1, `diag-01` 4; `72 fixtures, 0 failing`; exit 0 |
+| `node exhaustive.mjs A` | domain A (labels a, b; rigid R; metas m0-m2; two equations, plus one `lacks` or `dis`) | 3,339,712 problems, 19,305,292 runs; accept 870,440, refuse 18,374,712, D4 60,140; `equivChecked` 930,580; D4 by solutions 466 / 120 / 59,554; `defects: none`; about 53 s on 10 workers |
+| `node exhaustive.mjs B` | domain B (label a; metas m0-m3; quiet equations) | 79,825 problems, 453,550 runs; accept 193,376, refuse 249,746, D4 10,428; quiet in 6,518 runs; `defects: none`; about 4 s |
+| `STATE=1 node perm.mjs 21 2000` | perm.mjs plus property E | the counts of `node perm.mjs 21 2000` plus `stateChecked` 2345, no `stateDiff` or `stateSkipped` |
 
 **The two D4 counterexamples** (the user's review of 2026-10-17, recorded
 in docs/plans/2026-10-17-open-row-merge-diagnostics.md, §1). D4 means
@@ -104,7 +111,23 @@ each row's parts disjoint) has none and ends in D4. Both were run on
 Environment switches for perm.mjs: `DENSE=1` (dense generator),
 `EXPAND=1` (build the `k × l` basis for a quiet equation beside a stuck
 one; the design does not adopt it), `NOSUM=1` (no sum-rule lacks or apart
-facts). For programs.mjs: `SHARE=1`.
+facts), `STATE=1` (property E on every run not refused, for states with
+at most four free metas). For programs.mjs: `SHARE=1`.
+
+**Task 0 (2026-10-17).** The solver gained counters in `st.stats`
+(bindings, self-apart, U4, narrowings, one meta alone, shared remainder,
+cancelled tails, sum-rule facts by kind, no-home refusals,
+deduplication, examination steps) for exhaustive.mjs; no behaviour
+changed: `perm.mjs 21 2000` raw and dense, `programs.mjs 1 4000`,
+chain.mjs and growth.mjs printed the values in the table above. The
+full campaign below was rerun with `STATE=1`: every count identical,
+and E checked on 111,800 (raw) and 325,090 (dense) runs with 0
+failures. Each exhaustive check was shown to catch a restored defect in
+a deleted copy (commit to the first of several homes, domain B; the sum
+rule's lack without its rigid check, domain A; a binding's lacks not
+passed to its image, domain A), and each asserted fixture count to fail
+when wrong. The rule arguments these support are
+docs/plans/2026-10-17-open-row-merge-rules.md.
 
 The campaign behind the design's Appendix A, seeds 21 to 28 at 12,000
 problems each, five orders, so 480,000 runs per generator (about 10

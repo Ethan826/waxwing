@@ -1,0 +1,21 @@
+{
+  "name": "diag-06-fix",
+  "from": "diagnostics Example 6, resolving edit",
+  "source": "fn split(p: { ...r }): Int = 0;\nfn main(): Int = split({ x: 1, y: 2 });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":4,"check":3,"text":null,"run":3},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

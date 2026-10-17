@@ -1,0 +1,43 @@
+{
+  "name": "diag-01",
+  "from": "diagnostics Example 1",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply0(f: (a, b) -> { x: Int, y: Int }): Int = 0;\nfn main(): Int = apply0(merge);\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge",
+    "at": {"text":"merge","nth":1},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      },
+      {
+        "message": "{ x: Int, y: Int } is required here",
+        "at": {"text":"{ x: Int, y: Int }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "solutions": 4,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  },
+  "remark": "Asserted count: the several-solutions bucket of Unresolved (unresolved.mjs control a+b = { x, y } plus the pair r # s that merge's rows carry, still 4)."
+}

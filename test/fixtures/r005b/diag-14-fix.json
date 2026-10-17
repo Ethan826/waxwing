@@ -1,0 +1,28 @@
+{
+  "name": "diag-14-fix",
+  "from": "diagnostics Example 14, resolving edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): Int = 0;\nfn noX(p: { ...u }, q: { ...v }): Int where u lacks { y }, v lacks { x }\n  = 0;\nfn main(): Int = apply(merge, noX);\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      },
+      {"k":"lacks","v":"m0","l":"y"},
+      {"k":"lacks","v":"m1","l":"x"}
+    ],
+    "orders": "all"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "diag-16-fix",
+  "from": "diagnostics Example 16, resolving edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn size(p: { ...q }): Int = 0;\nfn pair(a: { ...r }, b: { ...s }): Int where r disjoint s\n  = size(merge(a, b));\nfn main(): Int = pair({ x: 1 }, { y: 2 });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":4,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[["R","S"]]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["R"]},
+        "r": {"fields":[],"tails":["S"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

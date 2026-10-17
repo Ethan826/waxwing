@@ -1,0 +1,37 @@
+{
+  "name": "diag-13",
+  "from": "diagnostics Example 13",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply1(f: (a, b) -> { x: Int, y: Int }, p: a): Int = 0;\nfn main(): Int = apply1(merge, { z: 1 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D6",
+    "code": "E_TYPE",
+    "message": "merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z",
+    "at": {"text":"{ z: 1 }","nth":0},
+    "notes": [{"message":"required here","at":{"text":"merge","nth":1}}]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["z"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

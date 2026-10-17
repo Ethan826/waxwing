@@ -1,0 +1,36 @@
+{
+  "name": "diag-10-fix",
+  "from": "diagnostics Example 10, resolving edit",
+  "source": "fn build(k: (Int -> a, Int -> b) -> { x: Int, y: Int }): Int = 0;\nfn main(): Int = build(fn(f: Int -> { x: Int }, g: Int -> { y: Int }) =>\n  { ...f(1), ...g(2) });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

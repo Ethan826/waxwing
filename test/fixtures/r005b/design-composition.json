@@ -1,0 +1,46 @@
+{
+  "name": "design-composition",
+  "from": "design (draft 3) §1.5, instantiation and composition",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn main(): Int = merge(merge({ x: 1 }, { y: 2 }), { z: 3 }).x;\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "1\n",
+  "stages": {"solver":4,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m0","m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m3"]},
+        "r": {"fields":["z"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

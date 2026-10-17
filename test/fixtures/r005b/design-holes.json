@@ -1,0 +1,42 @@
+{
+  "name": "design-holes",
+  "from": "design (draft 3) §7, holes on both sides",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply0(f: (a, b) -> c, w: c): Int = 0;\nfn outer(k: { x: Int, ...t }): Int = apply0(merge, k);\nfn main(): Int = outer({ x: 1, y: 2 });\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge",
+    "at": {"text":"k","nth":1},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      },
+      {
+        "message": "{ x: Int, ...t } is required here",
+        "at": {"text":"{ x: Int, ...t }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{"T":["x"]},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x"],"tails":["T"]}
+      }
+    ],
+    "orders": "all"
+  },
+  "remark": "Derived by R4 (labels before rigids), R7 (the deferring unification is at k), R8, R9."
+}

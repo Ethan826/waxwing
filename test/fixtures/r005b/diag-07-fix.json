@@ -1,0 +1,36 @@
+{
+  "name": "diag-07-fix",
+  "from": "diagnostics Example 7, resolving edit",
+  "source": "type Both(...r, ...s) = Both({ ...r, ...s });\nfn example(): Both({ x: Int }, { y: Int }) = Both({ x: 1, y: 2 });\nfn main(): Int = { let b = example(); 0 };\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":5,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "name": "design-generic-three-d3",
+  "from": "design (draft 3) §3.3, result Int and only `where r disjoint s`",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn size(p: { ...q }): Int = 0;\nfn three(a: { ...r }, b: { ...s },\n    c: { ...t }): Int where r disjoint s = size(merge(merge(a, b), c));\nfn main(): Int = three({ x: 1 }, { y: 2 }, { z: 3 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D3",
+    "code": "E_TYPE",
+    "message": "r and t are not known to be disjoint; require r disjoint t in the signature",
+    "at": {"text":"c","nth":1},
+    "notes": [{"message":"required here","at":{"text":"r disjoint s","nth":0}}]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":4,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[["R","S"]]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["R"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["S"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m0","m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m3"]},
+        "r": {"fields":[],"tails":["T"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m4"]},
+        "r": {"fields":[],"tails":["m2","m3"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

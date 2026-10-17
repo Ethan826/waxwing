@@ -1,0 +1,36 @@
+{
+  "name": "design-mixed-fixed",
+  "from": "design (draft 3) §4, with the clauses",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn size(p: { ...q }): Int = 0;\nfn tagged(p: { id: Int, ...r }, q: { ...s }): Int where s lacks { id }, r disjoint s = size(merge(p, q));\nfn main(): Int = tagged({ id: 1 }, { y: 2 });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":4,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{"R":["id"],"S":["id"]},"apart":[["R","S"]]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["id"],"tails":["R"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["S"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m0","m1"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

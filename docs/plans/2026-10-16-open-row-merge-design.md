@@ -86,6 +86,34 @@ by this draft.
    by effect settling and the joint fixpoint (§12).
 10. The task breakdown (§13) follows these decisions.
 
+## User decisions (2026-10-17, plan review)
+
+Recorded with R005 Tranche B's implementation plan
+(docs/plans/2026-10-17-open-row-merge-plan.md, "Decisions"), which the
+user reviewed after this draft:
+
+1. Retiring Tranche A's approved `A record literal accepts at most one
+   spread` is approved, when several spreads become supported (§13
+   slice 6, the plan's Task 7). The record-type `Only one row tail is
+   allowed` retires too (slice 2, the plan's Task 2); the effect-row
+   restriction stays.
+2. `Equated` ranked last (§1.3) is approved, for choosing between
+   competing provenance reasons. The causal rules R10.1-R10.3 of the
+   diagnostics file still decide which explanation a failure gets; their
+   control fixtures are kept.
+3. The two counterexample programs' D4 texts are approved as the plan
+   derives them, the annotation hint included for both; for the odd
+   cycle the hint may expose a contradiction rather than repair the
+   program.
+4. docs/engineering.md's "Evidence for solvers and diagnostics" is
+   approved as a general rule with proportional scope.
+5. The plan's effort estimates are planning estimates, not an approved
+   budget.
+
+The arguments for every solving rule (rewrites shown to preserve
+solutions, the end default shown to select the least solution) are in
+docs/plans/2026-10-17-open-row-merge-rules.md (the plan's Task 0).
+
 ## Changes from draft 2
 
 | Change | Where |
@@ -274,11 +302,12 @@ callee use whose variables the metas instantiate, when there is one
   written `disjoint` (`Disjoint`), then an implied fact (`Implied`), then
   a spread fact (`Spread`); between two of one kind, the earlier in
   source order. `Equated` ranks last, between two the earlier site
-  (Proposed: the decision does not rank it; it is derived, never
-  written). The result does not depend on the order in which facts
-  arrive, and a note cites a written clause in preference to a type that
-  implies the same fact. This replaces Task 2's "the first seeded wins"
-  for lacks too; §1.6 lists the Tranche A diagnostics that change.
+  (approved 2026-10-17 for competing provenance reasons; R10.1-R10.3
+  still decide which explanation applies). The result does not depend
+  on the order in which facts arrive, and a note cites a written clause
+  in preference to a type that implies the same fact. This replaces
+  Task 2's "the first seeded wins" for lacks too; §1.6 lists the
+  Tranche A diagnostics that change.
 - `arrivedAt` is stamped for every meta bound during a requirement,
   including bindings made by commits and by the drain, with the span of
   that requirement; bindings made by the end-of-body settle are stamped
@@ -1343,10 +1372,11 @@ Each slice keeps every commit building and `npm run verify` green.
    of §10.2 are written as expectations and submitted to the user; D4
    and D6 stay Proposed until approved.
 6. **The merge literal and friends.** Several spreads (Tranche A's
-   `at most one spread` text retires), access, removal and rest binders
-   by §5.2 (fresh rest row, never subtraction; approved), record
-   patterns over multi-tail rows; D1-D3 locations and notes; printing
-   by §10.1. Specialize keeps its placeholder for multi-tail rows.
+   `at most one spread` text retires, approved 2026-10-17), access,
+   removal and rest binders by §5.2 (fresh rest row, never subtraction;
+   approved), record patterns over multi-tail rows; D1-D3 locations and
+   notes; printing by §10.1. Specialize keeps its placeholder for
+   multi-tail rows.
 7. **Specialization and lowering.** Canonical form, the struct from
    several sources, evaluation order; the placeholder retires; Go and
    interpreter agree.
@@ -1384,7 +1414,7 @@ Still Proposed:
 1. D4 and D6: settled by the diagnostics file (approved 2026-10-17
    with corrections), except the optional hint suffix `or state the
    parts in the enclosing signature`.
-2. The rank of `Equated` in the precedence (last, §1.3).
+2. Settled (2026-10-17): `Equated` ranks last (§1.3).
 3. The place of `..._` when printing rows, and the order of a callee's
    variables in notes (§10.1).
 4. The `removed here` note when a removed label is accessed on the
@@ -1407,7 +1437,7 @@ Still Proposed:
 | P8 | The drain runs after each top-level unification and in each settle round | Proposed |
 | P9 | A failure found against a pending equation or a bound is reported at the current expression with D6 and `required here` at the equation's site | Approved with D6 (diagnostics file, R7, R8, R10) |
 | P10 | `without` and rest binders take the fresh rest row of one requirement, never a resolved type minus labels | Approved (user decision 6) |
-| P11 | Provenance precedence `Lacks`, `Disjoint`, `Implied`, `Spread`, source order breaking ties, for lacks and pairs | Approved (user decision 5); `Equated` last, Proposed |
+| P11 | Provenance precedence `Lacks`, `Disjoint`, `Implied`, `Spread`, source order breaking ties, for lacks and pairs | Approved (user decision 5); `Equated` last, approved 2026-10-17 |
 | P12 | A repeated tail is D8 at resolve; no declaration-level interchangeable-tails check (D7) | D8 approved; D7 withdrawn (user decision 1) |
 | P13 | Pending equations hold the residue, have an identity and a normal form, are replaced on re-deferral and indexed by meta | Proposed |
 | P14 | Rows print fields by label, then rigid tails by first written occurrence in the enclosing signature | Approved (user decision 4) |

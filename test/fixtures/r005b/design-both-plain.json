@@ -1,0 +1,37 @@
+{
+  "name": "design-both-plain",
+  "from": "design (draft 3) §8, without the annotation",
+  "source": "type Both(...r, ...s) = Both({ ...r, ...s });\nfn example(): Int = { let b = Both({ x: 1, y: 2 }); 0 };\nfn main(): Int = example();\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether Both's r or s has field x; write Both's row arguments in the enclosing signature or in a lambda parameter's annotation",
+    "at": {"text":"{ x: 1, y: 2 }","nth":0},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":5,"text":6,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

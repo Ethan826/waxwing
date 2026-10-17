@@ -1,0 +1,78 @@
+{
+  "name": "odd-cycle",
+  "from": "the user's review 2026-10-17, second D4 counterexample (research odd-cycle.mjs)",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn three(f: (a, b) -> { x: Int }, g: (b, c) -> { x: Int },\n    h: (a, c) -> { x: Int }): Int = 0;\nfn main(): Int = three(merge, merge, merge);\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge",
+    "at": {"text":"merge","nth":1},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      },
+      {
+        "message": "{ x: Int } is required here",
+        "at": {"text":"{ x: Int }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "solutions": 0,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["m2"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2","m3"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m4"]},
+        "r": {"fields":[],"tails":["m5"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m4"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m3"]},
+        "r": {"fields":[],"tails":["m5"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m4","m5"]},
+        "r": {"fields":["x"],"tails":[]}
+      }
+    ],
+    "orders": 24
+  },
+  "remark": "Asserted count 0: Unresolved with no solution. The hint names where an annotation can go; here it would expose the contradiction, not make the program valid (diagnostics §0)."
+}

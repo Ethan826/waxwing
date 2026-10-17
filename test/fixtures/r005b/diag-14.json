@@ -1,0 +1,39 @@
+{
+  "name": "diag-14",
+  "from": "diagnostics Example 14",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): Int = 0;\nfn noX(p: { ...u }, q: { ...v }): Int where u lacks { x }, v lacks { x }\n  = 0;\nfn main(): Int = apply(merge, noX);\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D6",
+    "code": "E_TYPE",
+    "message": "merge's { ...r, ...s } must be { x: Int, y: Int }, but neither r nor s can have field x",
+    "at": {"text":"noX","nth":1},
+    "notes": [
+      {"message":"required here","at":{"text":"merge","nth":1}},
+      {"message":"excluded here","at":{"text":"x","nth":1}},
+      {"message":"excluded here","at":{"text":"x","nth":2}}
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      },
+      {"k":"lacks","v":"m0","l":"x"},
+      {"k":"lacks","v":"m1","l":"x"}
+    ],
+    "orders": "all"
+  },
+  "remark": "Every order of the rows is run (L26): the class is the same; under R10.1 the text is too."
+}

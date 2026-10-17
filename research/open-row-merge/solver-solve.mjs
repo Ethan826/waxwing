@@ -56,6 +56,7 @@ export const residue = (st, left, right) => {
     if (!removeOnce(ta, t)) tb.push(t);
   });
   return {
+    cancelled: b.tails.length - tb.length,
     c1: [...onlyA, ...ta.filter(v => !isMeta(v))].sort(),
     m1: ta.filter(isMeta),
     c2: [...onlyB, ...tb.filter(v => !isMeta(v))].sort(),
@@ -80,7 +81,9 @@ const sumRule = (st, r) => {
     if (os.every(o => st.upper.has(o))) {
       const u = new Set([...cs, ...os.flatMap(o => [...st.upper.get(o)])]);
       for (const m of ms) {
+        const v1 = st.version;
         if (!st.bound.has(m)) narrow(st, m, u);
+        if (st.version !== v1) st.stats.sumBound++;
       }
     }
     if (st.opts.noSumFacts || os.length === 0) continue;
@@ -90,7 +93,9 @@ const sumRule = (st, r) => {
       : hypLacks(st, c, l))));
     for (const m of ms) {
       for (const l of common) {
+        const v1 = st.version;
         if (!st.bound.has(m)) requireLacks(st, m, l);
+        if (st.version !== v1) st.stats.sumLack++;
       }
     }
     // apart: q apart from every o and disjoint from every constant of cs
@@ -100,7 +105,9 @@ const sumRule = (st, r) => {
     for (const m of ms) {
       for (const q of qs) {
         if (!st.bound.has(m) && (!isMeta(q) || !st.bound.has(q))) {
+          const v1 = st.version;
           requireApart(st, m, q);
+          if (st.version !== v1) st.stats.sumApart++;
         }
       }
     }
@@ -119,7 +126,10 @@ const homesOf = (st, { c1, m1, c2, m2 }) => {
   for (const [consts, metas] of [[c1, m2], [c2, m1]]) {
     for (const c of consts) {
       const cands = metas.filter(m => admits(st, m, c));
-      if (cands.length === 0) throw new Fail('mismatch', `no home for ${c}`);
+      if (cands.length === 0) {
+        st.stats.noHome++;
+        throw new Fail('mismatch', `no home for ${c}`);
+      }
       plan.push({ c, cands });
     }
   }
@@ -136,7 +146,10 @@ const defer = (st, eq, id, r, plan) => {
     right: { ...asRow(c2), tails: [...asRow(c2).tails, ...m2] } };
   if (id === null) {
     const dup = [...st.pending.values()].find(p => p.key === key);
-    if (dup) return;
+    if (dup) {
+      st.stats.dedup++;
+      return;
+    }
     if (plan.length) st.stats.defers++; else st.stats.quiet++;
     const nid = st.nextId++;
     st.pending.set(nid, { ...res, key, site: eq.site, seen: st.version,
@@ -146,6 +159,7 @@ const defer = (st, eq, id, r, plan) => {
     const dup = [...st.pending.entries()]
       .find(([k, p]) => k !== id && p.key === key);
     if (dup) {
+      st.stats.dedup++;
       st.pending.delete(Math.max(id, dup[0]));
       return;
     }
@@ -158,23 +172,28 @@ const defer = (st, eq, id, r, plan) => {
 // Examine an equation (fresh, or pending under id).
 export const examine = (st, eq, id) => {
   for (;;) {
+    st.stats.steps++;
     const r = residue(st, eq.left, eq.right);
     const { c1, m1, c2, m2 } = r;
+    st.stats.cancelled += r.cancelled;
     const drop = () => {
       if (id !== null) st.pending.delete(id);
     };
     if (!c1.length && !c2.length && !m1.length && !m2.length) return drop();
     if ((m2.length === 0 && c1.length) || (m1.length === 0 && c2.length)) {
+      st.stats.noHome++;
       throw new Fail('mismatch', `no home for ${(m2.length ? c2 : c1)[0]}`);
     }
     if (sumRule(st, r)) continue;
     // a side that is one meta and nothing else takes the other side
     if (m1.length === 1 && c1.length === 0) {
+      st.stats.oneMeta++;
       drop();
       return bind(st, m1[0],
         { ...asRow(c2), tails: [...asRow(c2).tails, ...m2] });
     }
     if (m2.length === 1 && c2.length === 0) {
+      st.stats.oneMeta++;
       drop();
       return bind(st, m2[0],
         { ...asRow(c1), tails: [...asRow(c1).tails, ...m1] });
@@ -182,6 +201,7 @@ export const examine = (st, eq, id) => {
     const plan = homesOf(st, r);
     // one meta each side, both with constants: one shared remainder
     if (m1.length === 1 && m2.length === 1) {
+      st.stats.remainder++;
       drop();
       const z = freshMeta(st);
       const a = asRow(c2), b = asRow(c1);

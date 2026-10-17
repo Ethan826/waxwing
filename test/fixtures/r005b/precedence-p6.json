@@ -1,0 +1,34 @@
+{
+  "name": "precedence-p6",
+  "from": "design (draft 3) §1.6 P6, a wrapper whose clause repeats its own implied lack",
+  "source": "fn f(p: { name: Int, ...r }): { admin: Bool, name: Int, ...r }\n  where r lacks { admin } = { admin: true, ...p };\nfn w(q: { name: Int, ...s }): { admin: Bool, name: Int, ...s }\n  where s lacks { admin } = f(q);\nfn main(): Int = { let v = w({ name: 1, admin: false }); 0 };\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D1",
+    "code": "E_TYPE",
+    "message": "admin is not allowed here: s lacks { admin }",
+    "at": {"text":"{ name: 1, admin: false }","nth":0},
+    "notes": [{"message":"required here","at":{"text":"admin","nth":4}}]
+  },
+  "before": {
+    "id": "TrancheA",
+    "code": "E_TYPE",
+    "message": "Expected { name: Int, ..._ }, found { admin: Bool, name: Int }",
+    "at": {"text":"{ name: 1, admin: false }","nth":0},
+    "notes": []
+  },
+  "output": null,
+  "stages": {"solver":4,"check":3,"text":3,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {"k":"lacks","v":"m0","l":"admin"},
+      {
+        "k": "eq",
+        "l": {"fields":["name"],"tails":["m0"]},
+        "r": {"fields":["admin","name"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

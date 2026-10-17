@@ -1,0 +1,79 @@
+{
+  "name": "determinate",
+  "from": "the user's review 2026-10-17, first D4 counterexample (research determinate.mjs)",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn det(f: ({ ...p }, { ...q }) -> { ...t, ...u },\n    g: ({ ...q }, { ...u }) -> { a: Int, ...t }): Int = 0;\nfn main(): Int = det(merge, merge);\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether merge's r or s has field a; pass a lambda with annotated parameters in place of merge",
+    "at": {"text":"merge","nth":2},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      },
+      {
+        "message": "{ a: Int, ..._ } is required here",
+        "at": {"text":"{ a: Int, ...t }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "solutions": 1,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m12"]},
+        "r": {"fields":[],"tails":["m13"]}
+      },
+      {"k":"lacks","v":"m12","l":"a"},
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m10"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["m11"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":[],"tails":["m12","m13"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m11"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m3"]},
+        "r": {"fields":[],"tails":["m13"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2","m3"]},
+        "r": {"fields":["a"],"tails":["m12"]}
+      }
+    ],
+    "orders": 24
+  },
+  "remark": "Asserted count 1: Unresolved with exactly one solution, p = { a }, q = {}, t = {}, u = { a }. The quiet equation (first merge) is never D4; the waiting one is at the second merge. Its homes are det's q and u, which the second merge's r and s were bound to (step 6, newer to older); naming them r and s reads R1.1 as naming an owner's variable at its current bare-meta image, as Example 19's approved `{ x: 1 }` prose already does. det's t is not the owner's and prints ..._ (R1.3, R5)."
+}

@@ -1,0 +1,34 @@
+{
+  "name": "precedence-control-no-clause",
+  "from": "design (draft 3) §1.6 control: P1 without the clause",
+  "source": "fn f(p: { name: Int, ...r }): { admin: Bool, name: Int, ...r }\n  = { admin: true, ...p };\nfn main(): Int = { let v = f({ name: 1, admin: false }); 0 };\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "TrancheA",
+    "code": "E_TYPE",
+    "message": "Expected { name: Int, ..._ }, found { admin: Bool, name: Int }",
+    "at": {"text":"{ name: 1, admin: false }","nth":0},
+    "notes": []
+  },
+  "before": {
+    "id": "TrancheA",
+    "code": "E_TYPE",
+    "message": "Expected { name: Int, ..._ }, found { admin: Bool, name: Int }",
+    "at": {"text":"{ name: 1, admin: false }","nth":0},
+    "notes": []
+  },
+  "output": null,
+  "stages": {"solver":4,"check":3,"text":3,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {"k":"lacks","v":"m0","l":"admin"},
+      {
+        "k": "eq",
+        "l": {"fields":["name"],"tails":["m0"]},
+        "r": {"fields":["admin","name"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

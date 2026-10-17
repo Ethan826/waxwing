@@ -1,0 +1,47 @@
+{
+  "name": "design-removal-right",
+  "from": "design (draft 3) §5.2, the label held by the right part (F1)",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn main(): Int = {\n  let drop = fn(p, q) => merge(p, q) without { x };\n  drop({ y: 2 }, { x: 1 }).x\n};\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "TrancheA",
+    "code": "E_TYPE",
+    "message": "x is not a field of { y: Int }",
+    "at": {"text":"x","nth":2},
+    "notes": []
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x"],"tails":["m9"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m9"]},
+        "r": {"fields":["x"],"tails":["m8"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

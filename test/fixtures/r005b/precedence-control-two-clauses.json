@@ -1,0 +1,35 @@
+{
+  "name": "precedence-control-two-clauses",
+  "from": "design (draft 3) §1.6 control: two clauses naming one label",
+  "source": "fn granted(p: { ...r }): Bool where r lacks { admin }, r lacks { admin } =\n  { ...p, admin: true }.admin;\nfn main(): Int = { let b = granted({ admin: false }); 0 };\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D1",
+    "code": "E_TYPE",
+    "message": "admin is not allowed here: r lacks { admin }",
+    "at": {"text":"{ admin: false }","nth":0},
+    "notes": [{"message":"required here","at":{"text":"admin","nth":0}}]
+  },
+  "before": {
+    "id": "D1",
+    "code": "E_TYPE",
+    "message": "admin is not allowed here: r lacks { admin }",
+    "at": {"text":"{ admin: false }","nth":0},
+    "notes": [{"message":"required here","at":{"text":"admin","nth":0}}]
+  },
+  "output": null,
+  "stages": {"solver":4,"check":3,"text":3,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {"k":"lacks","v":"m0","l":"admin"},
+      {"k":"lacks","v":"m0","l":"admin"},
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["admin"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

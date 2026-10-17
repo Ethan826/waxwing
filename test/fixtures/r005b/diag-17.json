@@ -1,0 +1,57 @@
+{
+  "name": "diag-17",
+  "from": "diagnostics Example 17",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn merge3(a: { ...r }, b: { ...s }, c: { ...t }): { ...r, ...s, ...t }\n  = merge(merge(a, b), c);\nfn apply3(f: (a, b, c) -> { x: Int, y: Int }, p: a, q: b, w: c): Int = 0;\nfn main(): Int = apply3(merge3, { x: 1 }, { y: 2 }, { z: 3 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D6",
+    "code": "E_TYPE",
+    "message": "merge3's { ...r, ...s, ...t } must be { x: Int, y: Int }, so t cannot have field z",
+    "at": {"text":"{ z: 3 }","nth":0},
+    "notes": [{"message":"required here","at":{"text":"merge3","nth":1}}]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m2"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["m2"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1","m2"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":["z"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

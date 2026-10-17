@@ -1,0 +1,41 @@
+{
+  "name": "diag-18",
+  "from": "diagnostics Example 18",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn use(f: (a, b) -> { ...r }, p: { ...r }): Int = 0;\nfn outer(p: { ...t }): Int = use(merge, p);\nfn main(): Int = outer({ x: 1 });\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether merge's r or s holds t; pass a lambda with annotated parameters in place of merge",
+    "at": {"text":"p","nth":2},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      },
+      {
+        "message": "{ ...t } is required here",
+        "at": {"text":"{ ...t }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":[],"tails":["T"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

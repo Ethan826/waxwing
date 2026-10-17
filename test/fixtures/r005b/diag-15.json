@@ -1,0 +1,40 @@
+{
+  "name": "diag-15",
+  "from": "diagnostics Example 15",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn main(): Int = merge({ x: 1 }, { x: 2 }).x;\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D2",
+    "code": "E_TYPE",
+    "message": "Field x is in both records: r disjoint s",
+    "at": {"text":"{ x: 2 }","nth":0},
+    "notes": [
+      {"message":"first written here","at":{"text":"{ x: 1 }","nth":0}},
+      {"message":"required here","at":{"text":"r disjoint s","nth":0}}
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":4,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["x"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

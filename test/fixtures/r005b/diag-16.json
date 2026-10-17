@@ -1,0 +1,27 @@
+{
+  "name": "diag-16",
+  "from": "diagnostics Example 16",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn size(p: { ...q }): Int = 0;\nfn pair(a: { ...r }, b: { ...s }): Int = size(merge(a, b));\nfn main(): Int = pair({ x: 1 }, { y: 2 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D3",
+    "code": "E_TYPE",
+    "message": "r and s are not known to be disjoint; require r disjoint s in the signature",
+    "at": {"text":"b","nth":3},
+    "notes": [{"message":"required here","at":{"text":"r disjoint s","nth":0}}]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":4,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["R"]},
+        "r": {"fields":[],"tails":["S"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "diag-18-wrong",
+  "from": "diagnostics Example 18, the tempting wrong edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn use(f: (a, b) -> { ...r }, p: { ...r }): Int = 0;\nfn outer(p: { ...t }): Int = use(fn(a: { ...t }, b: { ...t }) => merge(a, b), p);\nfn main(): Int = outer({ x: 1 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D3'",
+    "code": "E_TYPE",
+    "message": "t is in both records and may have fields",
+    "at": {"text":"b","nth":4},
+    "notes": [{"message":"required here","at":{"text":"r disjoint s","nth":0}}]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":4,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["T"]},
+        "r": {"fields":[],"tails":["T"]}
+      }
+    ],
+    "orders": "all"
+  }
+}

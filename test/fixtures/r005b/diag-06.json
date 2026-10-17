@@ -1,0 +1,37 @@
+{
+  "name": "diag-06",
+  "from": "diagnostics Example 6",
+  "source": "fn split(p: { ...r, ...s }): Int = 0;\nfn main(): Int = split({ x: 1, y: 2 });\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether split's r or s has field x",
+    "at": {"text":"{ x: 1, y: 2 }","nth":0},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":5,"text":6,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "design-partial",
+  "from": "design (draft 3) §1.5, a partial application",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn twice(): Int = {\n  let add = merge({ x: 1 });\n  add({ y: 2 }).y\n};\nfn main(): Int = twice();\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "2\n",
+  "stages": {"solver":4,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

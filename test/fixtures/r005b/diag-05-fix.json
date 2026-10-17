@@ -1,0 +1,31 @@
+{
+  "name": "diag-05-fix",
+  "from": "diagnostics Example 5, resolving edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn wrap(a: { ...r }, b: { ...s }): { inner: { ...r, ...s } }\n  = { inner: merge(a, b) };\nfn apply1(f: (a, b) -> { inner: { x: Int, y: Int } }, q: b): Int = 0;\nfn main(): Int = apply1(wrap, { y: 1 });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

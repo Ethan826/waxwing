@@ -12,11 +12,16 @@
 // solutions (`unresolved0`, `unresolved1`, `unresolvedMany`).
 // Usage: node perm.mjs <seed> <problems>
 // Env: DENSE=1 (two-meta sums against labels), EXPAND=1 (build the basis
-// for a quiet equation beside a stuck one), NOSUM=1 (no sum-rule facts).
+// for a quiet equation beside a stuck one), NOSUM=1 (no sum-rule facts),
+// STATE=1 (also property E of exhaustive.mjs: a run not refused leaves a
+// state whose solutions, read through the bindings, are exactly the
+// problem's; checked when the state has at most 4 free metas, the rest
+// counted as `stateSkipped`).
 import { verdict, row } from './drive.mjs';
 import { allSolutions, leastOf, sat } from './oracle.mjs';
 import * as S from './solver.mjs';
 import { mulberry, sampleWith } from './random.mjs';
+import { stateKeys, solutionKeys } from './state.mjs';
 
 const rnd = mulberry(Number(process.argv[2] ?? 1));
 const pick = a => a[Math.floor(rnd() * a.length)];
@@ -89,8 +94,21 @@ const bucket = (p, used, sols, v) => {
     : sols.length === 1 ? 'unresolved1' : 'unresolvedMany');
 };
 
+const stateCheck = (p, used, sols, v) => {
+  if (!process.env.STATE || v.v === 'refuse') return;
+  const got = stateKeys(v.st, used, p.universe, p.hyp, 4);
+  if (got === null) return bump('stateSkipped');
+  const want = solutionKeys(sols, used);
+  bump('stateChecked');
+  if (got.size !== want.size || [...got].some(k => !want.has(k))) {
+    bump('stateDiff');
+    tally.examples.push(['E', p]);
+  }
+};
+
 const judge = (p, used, sols, lst, order, v) => {
   bucket(p, used, sols, v);
+  stateCheck(p, used, sols, v);
   if (v.v === 'accept' && lst) {
     const got = S.solution(v.st, used);
     const same = m => [...got[m]].sort().join() === [...lst[m]].sort().join();

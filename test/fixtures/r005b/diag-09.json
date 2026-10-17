@@ -1,0 +1,37 @@
+{
+  "name": "diag-09",
+  "from": "diagnostics Example 9",
+  "source": "fn apply0(f: (a, b) -> { x: Int, y: Int }): Int = 0;\nfn main(): Int = apply0(fn(p, q) => { ...p, ...q });\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether p or q has field x; annotate this lambda's parameters",
+    "at": {"text":"fn(p, q) => { ...p, ...q }","nth":0},
+    "notes": [
+      {
+        "message": "{ x: Int, y: Int } is required here",
+        "at": {"text":"{ x: Int, y: Int }","nth":0}
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x","y"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}

@@ -524,33 +524,49 @@ Each directory has a README.md with exact commands, seeds, expected
 output and what each script checks; a design citing a result names the
 command that reproduces it.
 
-## Evidence for solvers and diagnostics (proposed, needs the user's approval)
+## Evidence for solvers and diagnostics
 
-Proposed 2026-10-17 from the open-row merge review; not binding, and not
-in AGENTS.md, until the user approves it. A checker or solver change
-whose diagnostics make claims would follow these rules:
+Approved by the user on 2026-10-17 as a general rule, with proportional
+scope. It binds **new or materially changed solving rules and the
+diagnostic claims they make** (a unifier's rule, a constraint solver, a
+decision procedure whose result a diagnostic reports). Routine checker
+edits (a new text for an existing failure, a refactor, a rule extended
+to a new syntactic form with the same meaning) do not need a new
+three-way result type, an exhaustive oracle or a claims ledger. Where
+the evidence a rule below asks for is unavailable (no independent
+oracle can be written, the domain is too large, a part of the system is
+absent from the prototype), the design says so explicitly and names
+the compiler test that covers it instead. All of this is review
+convention: no gate checks it.
 
 - The solver returns an explicit result, `Solved`, `Contradiction` or
   `Unresolved`, and diagnostics are rendered only from it: a
   contradiction text only from `Contradiction`, an unresolved text only
-  from `Unresolved`. No internal state is named for a property it has
-  not established (for example "ambiguous").
+  from `Unresolved`. Result types and behavioural tests are the
+  safeguard; no test bans a word in source. No internal state is named
+  for a property it has not established (for example "ambiguous").
 - An independent oracle checks the claim behind each result: a solved
   problem's emitted solution satisfies every constraint; a contradiction
   has no solution by brute force; an unresolved result makes no claim
   about the number of solutions, and permanent fixtures cover it with
-  zero, one and several solutions.
+  zero, one and several solutions, asserting those fixtures' counts.
 - Each worked example of a design is an executable fixture (source,
   result class, exact text, primary location, notes), checked against
-  the oracle before approval and through the compiler once implemented.
-- Every solving rule has a written argument before implementation (it
-  preserves solutions; a rejection establishes impossibility; iteration
-  terminates), is tested on small exhaustive domains and on random
+  the oracle before approval and through the compiler once implemented,
+  at the stage each test can run (solver, complete source, execution).
+- Every solving rule has a written argument before implementation, by
+  kind: a rewrite preserves solutions (fresh variables accounted for:
+  the new system's solutions restricted to the old variables are
+  exactly the old ones); a defaulting rule selects a solution, which
+  must satisfy every constraint (and be least where that is the
+  acceptance policy); a rejection establishes impossibility; iteration
+  terminates. Each is tested on small exhaustive domains and on random
   problems, and performance heuristics are labelled apart from
   correctness rules.
 - A design keeps a claims ledger: each factual claim names the fixture
-  or oracle property behind it or is marked "argument, not yet
-  checked"; no unbacked claim passes the review before implementation.
+  or oracle property behind it or is marked "argument, not yet checked"
+  with the reason; no unbacked claim passes the review before
+  implementation.
 - A review finding closes with a regression fixture or an oracle
   property, not with a document edit alone.
 - A cross-boundary generator of real programs compares the compiler's
@@ -558,7 +574,8 @@ whose diagnostics make claims would follow these rules:
   permanent fixtures.
 
 First applied in docs/plans/2026-10-17-open-row-merge-plan.md (R005
-Tranche B), where these are that plan's requirements.
+Tranche B); its rule arguments are
+docs/plans/2026-10-17-open-row-merge-rules.md.
 
 ## Known gaps in enforcement (A001)
 

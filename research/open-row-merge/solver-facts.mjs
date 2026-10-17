@@ -30,7 +30,9 @@ export const makeState = (hyp, firstFresh, opts = {}) => ({
   pending: new Map(), nextId: 0, hyp, fresh: firstFresh, version: 0,
   touched: new Map(), opts,
   stats: { commits: 0, defers: 0, quiet: 0, fresh: 0, reexam: 0,
-    maxPending: 0, sumFacts: 0 },
+    maxPending: 0, sumFacts: 0, binds: 0, selfApart: 0, emptied: 0,
+    narrowed: 0, oneMeta: 0, remainder: 0, cancelled: 0, sumBound: 0,
+    sumLack: 0, sumApart: 0, noHome: 0, dedup: 0, steps: 0 },
 });
 export const freshMeta = st => {
   st.stats.fresh++;
@@ -99,7 +101,10 @@ export const requireApart = (st, v, w) => {
     return requireDisjoint(st, left, right);
   }
   if (v === w) {
-    if (isMeta(v)) return bind(st, v, { fields: [], tails: [] });
+    if (isMeta(v)) {
+      st.stats.selfApart++;
+      return bind(st, v, { fields: [], tails: [] });
+    }
     throw new Fail('evidence', `${v} disjoint ${v}`);
   }
   if (!isMeta(v) && !isMeta(w)) {
@@ -160,6 +165,7 @@ export const bind = (st, m, row) => {
   }
   const mates = partners(st, m);
   mates.forEach(p => st.apart.delete(pairKey(m, p)));
+  st.stats.binds++;
   st.bound.set(m, image);
   st.lacks.delete(m);
   st.upper.delete(m);
@@ -190,6 +196,10 @@ export const narrow = (st, m, u) => {
     ? !lacksOf(st, m).has(x) : !partners(st, m).includes(x))));
   if (old && next.size === old.size) return;
   st.upper.set(m, next);
+  st.stats.narrowed++;
   touch(st, m);
-  if (next.size === 0) bind(st, m, { fields: [], tails: [] });
+  if (next.size === 0) {
+    st.stats.emptied++;
+    bind(st, m, { fields: [], tails: [] });
+  }
 };

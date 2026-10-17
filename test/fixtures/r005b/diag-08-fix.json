@@ -1,0 +1,51 @@
+{
+  "name": "diag-08-fix",
+  "from": "diagnostics Example 8, resolving edit",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn merge3(a: { ...r }, b: { ...s }, c: { ...t }): { ...r, ...s, ...t }\n  = merge(merge(a, b), c);\nfn apply0(f: (b, c) -> { x: Int, y: Int, z: Int }): Int = 0;\nfn main(): Int =\n  apply0(fn(q: { y: Int }, w: { z: Int }) => merge3({ x: 1 }, q, w));\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m2"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":[],"tails":["m2"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m1"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":["z"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1","m2"]},
+        "r": {"fields":["x","y","z"],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  }
+}
