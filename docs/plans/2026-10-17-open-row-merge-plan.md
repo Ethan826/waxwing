@@ -3,9 +3,9 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps
-> use checkbox (`- [ ]`) syntax for tracking. The user approved Task 0
-> alone (2026-10-17); Tasks 1-10 are not authorized: do not start Task 1
-> before the user reviews Task 0's gate and authorizes it.
+> use checkbox (`- [ ]`) syntax for tracking. The user accepted Task 0
+> and authorized Task 1 (2026-10-17); Tasks 2-10 are not authorized: do
+> not start Task 2 before the user reviews Task 1 and authorizes it.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs: record rows with
@@ -72,8 +72,8 @@ property.
 test runner, Go 1.26.4. No new dependency.
 
 **Status:** Draft 2026-10-17, corrected after the user's review of the
-same day. Task 0 approved alone and done (branch r005b-task0), awaiting
-the gate; Tasks 1-10 not authorized.
+same day. Task 0 accepted (2026-10-17, branch r005b-task0); Task 1
+authorized; Tasks 2-10 not authorized.
 
 ## Global Constraints
 
@@ -292,32 +292,35 @@ test/fixtures/r005b/.
 | L14 | D4 with a least solution needs two pending equations sharing a meta (C3, §2.2) | exhaustive: 120 (A) and 80 (B) such runs, c3fail 0; campaign 3,205 and 45, all within C3 | backed | compiler oracle test with a recorded ceiling (Task 5) |
 | L15 | Removal by the fresh remainder keeps no held label (§5.2) | rules §11; removal.mjs; fixtures `design-removal-left`, `-right`, `-rest-field`, `-wait` | backed (labels) | `r005b-without-hole-*`, `r005b-rest-hole` (Task 7) |
 | L16 | §8's `Both` example is accepted, unannotated D4 | annotation.mjs; fixtures `design-both-annotated`, `design-both-plain`, `diag-07`, `diag-07-fix` | backed (labels) | `r005b-both-annotation` (Task 5, texts Task 6, run Task 8) |
-| L17 | A nested equation is deferred once, at the outer site (§2.6) | rules §9 "Nested equations" | argument, not yet checked: the prototype has no field types | `r005b-nested-field`, `r005b-pending-dedup` (Task 5) |
-| L18 | The joint fixpoint ends and is order independent (§6) | rules §12 "joint fixpoint" | argument, not yet checked: the prototype has no effect rows | `r005b-end-fixpoint` both directions (Task 5) |
-| L19 | The store reverts with a postponed effect pair (§1.3, §6) | rules §12 "Rollback" (it lives in `Subst`) | argument, not yet checked: no effect rows in the prototype | `r005b-settle-rollback` (Task 5) |
+| L17 | A nested equation is deferred once, at the outer site (§2.6) | rules §9 "Nested equations" | argument, not yet checked: the prototype has no field types; an implementation obligation, not established compiler behaviour: its tests must land with Task 5 | `r005b-nested-field`, `r005b-pending-dedup` (Task 5) |
+| L18 | The joint fixpoint ends and is order independent (§6) | rules §12 "joint fixpoint" | argument, not yet checked: the prototype has no effect rows; an implementation obligation, not established compiler behaviour: its tests must land with Task 5 | `r005b-end-fixpoint` both directions (Task 5) |
+| L19 | The store reverts with a postponed effect pair (§1.3, §6) | rules §12 "Rollback" (it lives in `Subst`) | argument, not yet checked: no effect rows in the prototype; an implementation obligation, not established compiler behaviour: its test must land with Task 5 | `r005b-settle-rollback` (Task 5) |
 | L20 | P1-P7's "before" texts (§1.6) | fixtures `precedence-p1` … `-p7` and the three controls hold `before`; all ten matched today's build exactly (text, span, notes; output/ built after 746ffa7's last src change, scratch probe, 2026-10-17) | backed | asserted against main in an isolated copy, red log (Task 3) |
 | L21 | No existing test expectation moves with the precedence (§1.6) | design §1.6's grep | argument, not yet checked: only the implementation can run the suite | Task 3 runs the whole suite before changing any expectation |
-| L22 | After specialization every row is ground (§9) | rules §12 (unsolved tails read as `{}`, rigids replaced by key rows) | argument, not yet checked: no specializer in the prototype | Specialize asserts it (E_INTERNAL on a tail left); Task 8 generator |
+| L22 | After specialization every row is ground (§9) | rules §12 (unsolved tails read as `{}`, rigids replaced by key rows) | argument, not yet checked: no specializer in the prototype; an implementation obligation, not established compiler behaviour: its check must land with Task 8 | Specialize asserts it (E_INTERNAL on a tail left); Task 8 generator |
 | L23 | `x # x` forces `{}`; a rigid twice is D3' (§3.1) | rules §10; exhaustive: self-apart fired in 7.7M runs of A with E; fixture `diag-18-wrong` | backed | `r005b-self-apart` (Task 3); exhaustive domain (Task 4) |
 | L24 | The diagnostics examples' classes (diagnostics Appendix A) | fixtures: all 19 examples, their fixes and variants, every class as stated; diag.mjs | backed | complete-source fixtures (Task 7) |
 | L25 | Appendix B's six refusal kinds differ from the approved texts | diag.mjs output (diagnostics Appendix A) | backed (as a fact about the prototype) | fixtures `diag-03`, `-05`, `-13`, `-15`, `-17`, `-19`, `lone-meta-lack` assert the approved texts (Tasks 3, 7) |
 | L26 | Example 14's text is order independent under R10.1 | class: fixture `diag-14` refused in all 24 orders of its rows; text: R10.1 | class backed; text argument, not yet checked: needs the renderer | `diag-14` in both fact orders (Task 7) |
 | L27 | `expand` removes the raw-generator D4s with a least solution (§2.2) | perm.mjs `EXPAND=1`, recorded campaign | backed | none (not adopted) |
 | L28 | Programs calling `merge` with known arguments never wait (§2.7) | rules §6; fixtures `design-composition`, `design-partial`, `diag-15-fix` never defer in any order (solver stage 4) | argument with instances; the general claim is not yet checked: it is about all programs | Task 9 census: no pending equation in that shape |
-| L29 | Every rewrite preserves solutions (property E; rules §0) | exhaustive: E on 930,580 (A) and 203,804 (B) states, 0 failures; campaign: E on 111,800 and 325,090 states, 0 failures; sensitivity runs | backed | — |
+| L29 | Every rewrite preserves solutions (property E; rules §0). Bounded evidence for solution preservation, exhaustive over the stated domains; not a proof of every rewrite in general | exhaustive: E on 930,580 (A) and 203,804 (B) states, 0 failures; campaign: E on 111,800 and 325,090 states, 0 failures; sensitivity runs | backed | — |
 | L30 | The empty default selects a solution that satisfies every constraint and is least, whenever no pending equation has a constant (rules §12) | the monotonicity argument; exhaustive D, S, L 0 failures | backed | compiler oracle test S and L (Task 4) |
-| L31 | Homes are complete: no meta a solution could use is excluded (rules §8) | the argument per exclusion; H 0 failures (an incomplete exclusion would refuse a satisfiable problem) | backed | compiler oracle test H (Task 4) |
-| L32 | Re-examining only equations that name a changed meta (`naming`) is sound but not lossless: the sum rule's apart derivation reads facts of unnamed partners (rules §14) | the argument; C2 0 differences in the exhaustive domains and campaign | soundness backed; losslessness argument, not yet checked (no counterexample found; none constructed) | Task 5 indexes partners too or records it as a measured heuristic |
+| L31 | Homes are complete: no meta a solution could use is excluded (rules §8) | the argument per exclusion; H 0 failures. H (honest refusal) alone can miss losing one valid alternative while another is retained; "no valid home excluded" is backed only by property E (an excluded valid home would change the solution set) or a direct exclusion check | argument; backed by E where E runs; the direct exclusion check is not yet written | compiler oracle test H and property E (Task 4), plus a direct check that every home excluded has no solution using it (Task 4) |
+| L32 | Re-examining only equations that name a changed meta (`naming`) is sound but not lossless: the sum rule's apart derivation reads facts of unnamed partners (rules §14) | the argument; C2 0 differences in the exhaustive domains and campaign | soundness backed; losslessness argument, not yet checked (no counterexample found; none constructed) | Task 5 requirement (user, 2026-10-17): a dependency-complete wake-up rule. Index every fact the equation's rules read, including relevant partners, or conservatively rescan pending equations. Recording missed wake-ups as a measured heuristic is not acceptable under the order-independence requirement. Compare the indexed implementation against a reference that rescans everything to a fixpoint |
 | L33 | The occurs check never fires on row tails after cancellation, only on field types (rules §7) | the argument (cancellation, fresh metas in commits and remainders) | argument, not yet checked: the prototype does not count occurs refusals apart from other mismatches | Task 4: an E_INTERNAL guard or a counter in the oracle test |
-| L34 | The pinned D4 text of `determinate` names the second merge's r and s (plan, "Pinned compiler programs") | the parts are det's q and u, to which merge's r and s were bound; R1.1 names them only if an owner's variable is named at its current bare-meta image, as Example 19's approved `{ x: 1 }` prose already does | needs the user's confirmation of that reading of R1.1 (not an edit) | `determinate` fixture (Task 7) |
+| L34 | The pinned D4 text of `determinate` names the second merge's r and s (plan, "Pinned compiler programs") | the parts are det's q and u, to which merge's r and s were bound; R1.1 names them only if an owner's variable is named at its current bare-meta image, as Example 19's approved `{ x: 1 }` prose already does | approved by the user (2026-10-17) with this interpretation: follow bare-meta aliases when matching a part to the equation owner's variables, so the second `merge` can name its parts `r` and `s` even when their representatives originated as `det`'s `q` and `u`; naming must be independent of which direction the unifier chose for an alias; preserve part identity and tracked remainder ancestry; never assign an owner's name to arbitrary components of a structured binding | `determinate` fixture (Task 7) |
+
+The user's Task 0 review (2026-10-17) is recorded in Decisions 8-13;
+L29, L31, L32 and L34 above carry its wording.
 
 Status count: 34 claims. Backed: 22 (L2-L4, L6-L16, L20, L23-L25,
 L27, L29-L31). Split, each part named: 4 (L1, L26, L28, L32: the
 prototype, class, instance or soundness part backed; the compiler,
 text, general or losslessness part argument, not yet checked).
 Argument, not yet checked, with the reason in its row: 6 (L17, L18,
-L19, L21, L22, L33). A proof accepted as argument: 1 (L5). A question
-for the user: 1 (L34). No claim is unbacked.
+L19, L21, L22, L33). A proof accepted as argument: 1 (L5). L34
+approved with its interpretation. No claim is unbacked.
 
 ## Review findings and their checks
 
@@ -368,7 +371,8 @@ fixtures (Tasks 3, 6, 7), and `found-*` (Task 9). Texts marked
 "derived" in a fixture's `remark` (`design-forced-fact`,
 `design-holes`, and the notes of `odd-cycle` and `determinate`) apply
 R1-R11 to a program the diagnostics file does not show; the user
-reviews them at the gate.
+approved them (2026-10-17), including `{ a: Int, ..._ } is required
+here` on `determinate`.
 
 **Format.**
 
@@ -532,7 +536,7 @@ needs. Task 6 states that reading in R1's implementation.
 
 Docs, research scripts and fixture data only; no src change, nothing in
 verify. Approved alone by the user (2026-10-17); done on branch
-r005b-task0, awaiting the gate.
+r005b-task0; accepted by the user (2026-10-17).
 
 **Files:**
 - docs/plans/2026-10-17-open-row-merge-rules.md (new): one section per
@@ -579,7 +583,8 @@ r005b-task0, awaiting the gate.
   four split, each with its reason; L34 a question for the user.
 - [x] Width check; commit. **Gate: the user reviews the arguments, the
   ledger (rows left as argument), the fixtures' texts (those marked
-  derived, and L34), and authorizes Task 1.**
+  derived, and L34), and authorizes Task 1.** Done: the user accepted
+  Task 0 and authorized Task 1 (2026-10-17), Decisions 8-13.
 
 Size estimate: about 250k tokens, one long session (a planning
 estimate, not an approved budget).
@@ -761,7 +766,11 @@ counted and printed, never to a verdict.
   no solution), L, C2; the step counter within the measure (L3) and
   fresh metas within `|Π|·|Κ|` (L4); the exhaustive one-tail domain
   equal to ADR 013's rules (L1) and Task 0's domains A and B with
-  property E where the entry exposes the state. Problems that reach the
+  property E where the entry exposes the state. **The compiler-backed
+  property E test reads the state back independently** (user,
+  2026-10-17): it interprets the exported bindings itself rather than
+  calling the compiler's flattener, and includes a sensitivity check
+  that corrupts binding traversal and must fail. Problems that reach the
   Task 5 placeholder are counted. The fixtures with `stages.solver` 4
   run their `rows` here (two holes against one, the composition, the
   overlaps, P1-P7's projections).
@@ -842,6 +851,16 @@ Int, quiet ∷ Boolean }`; `drain ∷ Subst → Either Contradiction Subst`;
 - Not here: `apply2(merge, …)`, `apply0(merge)`, `both(merge, merge)`
   and the counterexample programs as complete sources (Task 7); any
   executed result (Task 8).
+
+- [ ] **Dependency-complete wake-up** (user requirement, 2026-10-17,
+  ledger L32): the drain's index covers every fact an equation's rules
+  read, including the facts of relevant partners (the sum rule's apart
+  derivation), or conservatively rescans pending equations. Recording
+  missed wake-ups as a measured heuristic is not acceptable under the
+  order-independence requirement. Failing test in test/row-merge.test.mjs:
+  the indexed implementation is compared with a reference that rescans
+  every pending equation to a fixpoint, on the exhaustive domains and the
+  random generators, in every order; any difference fails.
 
 Rows landing: `r005b-quiet`, `r005b-pending-dedup`, `r005b-pending-end`,
 `r005b-end-fixpoint`, `r005b-settle-rollback`, `r005b-nested-field`,
@@ -954,7 +973,8 @@ and the rows whose probes are published merge programs: `r005b-upper`,
 `r005b-owner-written`.
 
 Size estimate: about 350k tokens, 5-6 h (it now also switches on the
-complete-source fixtures).
+complete-source fixtures); recorded as an estimate, not an approved
+budget (the user, 2026-10-17).
 
 ### Task 8: Specialization and lowering; reference interpreter
 
@@ -1155,3 +1175,28 @@ argument-only rows (L17, L18, L19, L21, L22, L33 and the argument parts
 of L1, L26, L28, L32); the derived texts (`design-forced-fact`,
 `design-holes`, the notes of `odd-cycle` and `determinate`); and L34,
 the reading of R1.1 that `determinate`'s approved text needs.
+
+**The user's Task 0 review (2026-10-17).**
+
+8. **Task 0 accepted; Task 1 authorized; Tasks 2-10 unauthorized.**
+9. **L34 approved** with the interpretation recorded in the ledger:
+   bare-meta aliases are followed when matching a part to the owner's
+   variables, independently of the unifier's direction for an alias;
+   part identity and tracked remainder ancestry are preserved; an
+   owner's name is never given to arbitrary components of a structured
+   binding.
+10. **Derived texts approved:** `design-forced-fact`, `design-holes`,
+    the added notes on `odd-cycle` and `determinate`, including `{ a:
+    Int, ..._ } is required here`.
+11. **Task 7's revised estimate (350k)** is an estimate, not an approved
+    budget.
+12. **Requirements added:** Task 5's dependency-complete wake-up (L32);
+    the compiler-backed property E test reads back independently, with a
+    sensitivity check (Task 4); the field-type, rollback, joint-fixpoint
+    and specialization arguments (L17, L18, L19, L22) are implementation
+    obligations, not established compiler behaviour, and their planned
+    tests land with those changes; L29 is bounded evidence, and L31 needs
+    property E or a direct exclusion check.
+13. **research/open-row-merge/state.mjs imports the prototype's
+    `flatten`** (shared machinery): its property E results stand but
+    are not independent (research README).

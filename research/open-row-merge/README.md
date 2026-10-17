@@ -99,6 +99,13 @@ Small runs (each a few seconds at most), last run 2026-10-17:
 | `node exhaustive.mjs B` | domain B (label a; metas m0-m3; quiet equations) | 79,825 problems, 453,550 runs; accept 193,376, refuse 249,746, D4 10,428; quiet in 6,518 runs; `defects: none`; about 4 s |
 | `STATE=1 node perm.mjs 21 2000` | perm.mjs plus property E | the counts of `node perm.mjs 21 2000` plus `stateChecked` 2345, no `stateDiff` or `stateSkipped` |
 
+**Independence.** state.mjs imports the prototype's `flatten` from
+solver.mjs, so property E's read-back shares machinery with the solver
+under test. The results stand but are not independent; the compiler-backed
+test (plan Task 4) must interpret the exported bindings itself and
+include a sensitivity check that corrupts binding traversal (user,
+2026-10-17).
+
 **The two D4 counterexamples** (the user's review of 2026-10-17, recorded
 in docs/plans/2026-10-17-open-row-merge-diagnostics.md, §1). D4 means
 that the checker could not resolve the constraints: it established

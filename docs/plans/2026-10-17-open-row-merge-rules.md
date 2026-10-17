@@ -1,8 +1,8 @@
 # Open-row merge: arguments for the solving rules (R005 Tranche B)
 
 Status:
-Task 0 of docs/plans/2026-10-17-open-row-merge-plan.md, 2026-10-17; for
-the user's gate review; no implementation authorized
+Task 0 of docs/plans/2026-10-17-open-row-merge-plan.md, 2026-10-17;
+accepted by the user (2026-10-17) with the notes below
 
 One section per solving rule of docs/plans/2026-10-16-open-row-merge-
 design.md (draft 3, §2, §3, §5.2, §6), written before any rule is
@@ -13,6 +13,16 @@ backed by the checks named in its section; research/open-row-merge/
 README.md gives the commands. The prototype is labels only: field types,
 effect rows and lowering are absent, and the rules that depend on them
 are argued here and checked by the compiler tests the plan names.
+
+**Implementation obligations.** The field-type argument (§9, nested
+equations), the rollback argument and the joint-fixpoint argument (§12)
+and the specialization argument (the unsolved-tail reading, §12) are
+identified implementation obligations, not established compiler
+behaviour: the prototype cannot check them. Their planned tests (plan
+ledger L17, L18, L19, L22) must land with the changes that implement
+them (Tasks 5 and 8). Property E's exhaustive and random evidence is
+bounded evidence over the stated domains, not a proof of every rewrite
+in general (ledger L29).
 
 ## 0. Setting
 
@@ -431,9 +441,13 @@ the code that implements it.
   new fact on `q` does not re-examine it. The cost is only completeness
   (a fact not derived, possibly an `Unresolved` that a full re-run
   would resolve) and possibly order dependence; C2 showed no order
-  difference in either domain or campaign. Task 5 either indexes the
-  partners of named metas too or records this as a measured heuristic
-  (ledger L32).
+  difference in either domain or campaign. The user's requirement
+  (2026-10-17): Task 5 must be dependency-complete, indexing every fact
+  the rules read including relevant partners, or conservatively
+  rescanning pending equations; recording missed wake-ups as a measured
+  heuristic is not acceptable under the order-independence requirement.
+  It compares the indexed implementation with a reference that rescans
+  everything to a fixpoint (ledger L32).
 - **heuristic: deduplication by normal form**: an equal normal form is
   the same constraint (§9); two equal constraints with different normal
   forms would only be kept twice (one diagnostic per program anyway,
