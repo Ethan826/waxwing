@@ -89,7 +89,7 @@ failFamily span payload =
     TVar _ → true
     TFun _ _ _ → true
     THandler _ _ → true
-    TRecord { tail: Just _ } → true
+    TRecord { tails } | not (Array.null tails) → true
     _ → false
 
 lookupEffect

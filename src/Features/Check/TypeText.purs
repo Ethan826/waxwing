@@ -36,10 +36,10 @@ arrowText pending = case _ of
   withRow = maybe "" (append " with ")
 
 -- `{ a: Int, ...r }`, the fields sorted by label; `{}` for none.
-recordText ∷ Array (Tuple String TypeName) → Maybe String → String
-recordText fields tail =
+recordText ∷ Array (Tuple String TypeName) → Array String → String
+recordText fields tails =
   if Array.null items then "{}" else "{ " <> joinWith ", " items <> " }"
   where
-  items = map field fields <> maybe [] tailItem tail
+  items = map field fields <> map tailItem tails
   field (Tuple label ty) = label <> ": " <> rendered ty
-  tailItem name = [ "..." <> name ]
+  tailItem name = "..." <> name

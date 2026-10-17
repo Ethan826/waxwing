@@ -4,7 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe)
 import Domain.Syntax (Operator, Sort, Span)
-import Domain.Type (TyRow)
+import Domain.Type (TyRow, rename)
 import Domain.Ids (EffectId)
 import Domain.Resolved
   ( CtorId
@@ -140,7 +140,7 @@ type FieldPattern = { label ∷ String, pattern ∷ Pattern }
 -- A declared type seen from inside its declaration, where its variables are
 -- rigid.
 rigid ∷ Ty VarId → Ty Open
-rigid = map Rigid
+rigid = rename Rigid
 
 typeOf ∷ Expr → Ty Open
 typeOf (Expr expression) = expression.ty

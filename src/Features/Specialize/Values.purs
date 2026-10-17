@@ -9,7 +9,7 @@ module Features.Specialize.Values
 
 import Prelude
 import Data.Array as Array
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (maybe, maybe')
 import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
@@ -95,7 +95,7 @@ instantiated scope span sorts instantiation = sequence
 
 slotType ∷ Sort → Ty Checked.Open → Ty Checked.Open
 slotType sort ty = case sort, ty of
-  RecordSort, TVar hole@(Hole _) → TRecord (recordRow [] (Just hole))
+  RecordSort, TVar hole@(Hole _) → TRecord (recordRow [] [ hole ])
   _, _ → ty
 
 -- A lambda's parameters keep their locals and take their types at the key;

@@ -56,7 +56,7 @@ export const r001BodyProbes = {
     const image = layouts.internLayout([Tuple.create('a')(TInt.value)])(
       layouts.noLayouts);
     const origin = { offset: 0, line: 1, column: 1 };
-    const row = { fields: [Tuple.create('a')(0)], tail: Just.create(0) };
+    const row = { fields: [Tuple.create('a')(0)], tails: [0] };
     const lowering = recordType(() => () => pure(TInt.value))(
       () => pure(Just.create(image.ty)))({ start: origin, end: origin })(row);
     const result = copy.run(lowering)({ layouts: image.layouts });

@@ -81,7 +81,7 @@ appliedTo effects variables ambient resolvers span arguments index info
         Syntax.TypeArgument reference → recordType resolvers effects
           reference
       recordTail found = Resolved.TRecord
-        (recordRow [] (Just (Resolved.VarId found)))
+        (recordRow [] [ Resolved.VarId found ])
       unboundTail tailName tailSpan _ = Left
         (Syntax.problemAt (Unbound UnboundTypeVariable tailName) tailSpan)
       resolved = resolvers.resolved

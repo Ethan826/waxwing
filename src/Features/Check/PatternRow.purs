@@ -11,7 +11,7 @@ module Features.Check.PatternRow
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (maybe')
 import Domain.Checked.Internal (Open(..))
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
@@ -60,19 +60,21 @@ listed env state expected known written = maybe' ended missingField
   unlisted label = not (Array.elem label (writtenLabels written))
   missingField label = Left
     (problemAt (PatternMissingField label) written.span)
-  ended _ = maybe' closedRow ofTail known.row.tail
-  closedRow _ = Right state
-  ofTail = case _ of
-    Hole _ → expectType env state expected closed written.span
-    Rigid _ → restMissing unit
-  closed = TRecord (recordRow known.row.fields Nothing)
+  ended _
+    | Array.null known.row.tails = Right state
+    | Array.any rigid known.row.tails = restMissing unit
+    | otherwise = expectType env state expected closed written.span
+  rigid = case _ of
+    Hole _ → false
+    Rigid _ → true
+  closed = TRecord (recordRow known.row.fields [])
   restMissing _ = do
     name ← typeName env written.span known.ty
     Left (problemAt (PatternMissingRest name) written.span)
 
 -- A record type grows only at a hole tail, and only when a label is new.
 growable ∷ KnownRow → Written → Boolean
-growable row written = maybe false grows row.tail
+growable row written = Array.any grows row.tails
   where
   grows = case _ of
     Hole _ → not (Array.null (unknown row written))

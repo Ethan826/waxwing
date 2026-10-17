@@ -19,7 +19,7 @@ import Domain.Syntax
   , typeRefSpan
   , typeRefSpine
   )
-import Domain.Type (Ty(..), TypeId(..), VarId(..))
+import Domain.Type (Ty(..), TypeId(..), VarId(..), rename)
 import Domain.Type.Parts (Spine, spine)
 import Features.Specialize.Copy (get, modify)
 import Features.Specialize.Effects (effectAt)
@@ -49,7 +49,7 @@ lowerType env arguments span = case _ of
   TText → pure IR.TText
   TData id parts _ → traverse recur parts >>= applied env span id
   TVar (Rigid (VarId index)) → argument span arguments index
-  TVar (Hole _) → lowerType env [] span (map absurd env.representative)
+  TVar (Hole _) → lowerType env [] span (rename absurd env.representative)
   arrow@(TFun _ _ _) → lowerSpine recur (spine arrow)
   TRecord row → recordType (const recur) tail span row
   THandler (Label effect parts _) _ → traverse recur parts
@@ -180,7 +180,7 @@ lowerField env arguments ty syntax = case ty, syntax of
     if sort == RowSort then Nothing else Just reference
   slot span part = case _ of
     TypeArgument foundType → recur part foundType
-    RowArgument _ → lowerType env arguments span (map Rigid part)
+    RowArgument _ → lowerType env arguments span (rename Rigid part)
   byLabel written label part = writtenField (const mismatch)
     (recur part <<< fieldType)
     written

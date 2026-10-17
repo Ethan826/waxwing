@@ -1,13 +1,12 @@
 module Features.Check.Spelling (Key, key, spelling, isData, within) where
 
 import Prelude
-import Data.Maybe (maybe')
 import Data.String.Common (joinWith)
 import Data.Array as Array
 import Data.Tuple (Tuple(..), snd)
 import Domain.Checked.Internal (Open)
 import Domain.Resolved (TypeId(..))
-import Domain.Type (Ty(..))
+import Domain.Type (Ty(..), rename)
 import Domain.Type.Parts (children)
 
 -- An application with its variables forgotten: rigid variables and holes
@@ -16,7 +15,7 @@ import Domain.Type.Parts (children)
 type Key = Ty Unit
 
 key ∷ Ty Open → Key
-key = map forget
+key = rename forget
   where
   forget _ = unit
 
@@ -39,7 +38,7 @@ spelling = case _ of
   arrow@(TFun _ _ _) → "f(" <> joinWith "," (map spelling (children arrow))
     <> ")"
   TRecord row → "r(" <> joinWith "," (map fieldSpelling row.fields)
-    <> maybe' (const "") (const ",..") row.tail
+    <> joinWith "" (map (const ",..") row.tails)
     <> ")"
   handler@(THandler _ _) → "h("
     <> joinWith ","

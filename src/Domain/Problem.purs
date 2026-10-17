@@ -19,8 +19,8 @@ data TypeName
   | AppliedName String (Array TypeName)
   | VariableName String
   | HoleName
-  -- Fields sorted by label, and the tail's name (`...r`), if it has one.
-  | RecordName (Array (Tuple String TypeName)) (Maybe String)
+  -- Fields sorted by label, and the tails' names (`...r`), if it has any.
+  | RecordName (Array (Tuple String TypeName)) (Array String)
   | FunctionName TypeName (Maybe String) TypeName
 
 derive instance eqTypeName ∷ Eq TypeName

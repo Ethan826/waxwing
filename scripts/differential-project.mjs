@@ -2,6 +2,7 @@
 // that a baseline from before a representation change agrees with the
 // candidate wherever the programs do. Each says which change it undoes.
 import { createHash } from 'node:crypto';
+import { Just, Nothing } from '../output/Data.Maybe/index.js';
 
 // Tokens gained a `kind` (Text v1 Task 2); a Plain token is compared
 // without it, so a baseline without kinds agrees wherever the tokens do.
@@ -74,6 +75,22 @@ export const withoutIntroduced = program => ({
 const plainRecord = item => item?.constructor?.name === 'Record'
   && item.value1?.constructor?.name in booleanRests;
 
+// R005 Tranche B Task 1: a record row's `tail` (Maybe) became `tails`
+// (an array, sorted, repeats kept). A row of no tail or one is hashed as
+// before, `Nothing` or `Just` of the tail, so a baseline from before the
+// change agrees wherever the rows do. No program makes two tails yet; a
+// row of several is left as it is (it would differ, as it should).
+const isRow = item => Array.isArray(item.fields) && Array.isArray(item.tails)
+  && Object.keys(item).length === 2;
+const tailAsBefore = item => {
+  if (item === null || typeof item !== 'object' || Array.isArray(item)
+    || !isRow(item) || item.tails.length > 1) return item;
+  return {
+    fields: item.fields,
+    tail: item.tails.length === 0 ? Nothing.value : Just.create(item.tails[0])
+  };
+};
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack. With
 // `monomorphic` the IR's records are hashed as they were before R005.
 export const digest = (value, monomorphic = false) => {
@@ -81,8 +98,8 @@ export const digest = (value, monomorphic = false) => {
   const pending = [value];
   while (pending.length > 0) {
     const popped = pending.pop();
-    const item = popped?.constructor?.name === 'PRecord'
-      ? restAsBefore(popped) : popped;
+    const item = tailAsBefore(popped?.constructor?.name === 'PRecord'
+      ? restAsBefore(popped) : popped);
     if (item?.constructor?.name in booleanRests) {
       hash.update(`boolean:${booleanRests[item.constructor.name]};`);
     } else if (item === null || typeof item !== 'object') {

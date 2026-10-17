@@ -40,20 +40,22 @@ facts tables ty = own <> Array.concatMap inner (children ty)
   <> Array.concatMap (Array.concatMap inner <<< rowArguments) (rowsOf ty)
   where
   inner part = facts tables part
+  beside labelled tail = Beside tail labelled
+  labelsOf fields = Set.fromFoldable (map fst fields)
   own = case ty of
-    TRecord { fields, tail: Just tail } →
-      [ Beside tail (Set.fromFoldable (map fst fields)) ]
+    TRecord { fields, tails } → map (beside (labelsOf fields)) tails
     TData owner arguments _ → passed tables owner arguments
     _ → []
 
--- A type argument that is a record's tail, at its parameter's position.
+-- A type argument that is a record's tail, at its parameter's position;
+-- a record of several tails passes each of them.
 passed ∷ ∀ v. Resolved.Tables → TypeId → Array (Ty v) → Array (Fact v)
-passed tables owner arguments = Array.catMaybes
+passed tables owner arguments = Array.concat
   (Array.zipWith argument (slots tables owner) arguments)
   where
   argument position = case _ of
-    TRecord { tail: Just tail } → Just (Passed owner position tail)
-    _ → Nothing
+    TRecord row → map (Passed owner position) row.tails
+    _ → []
 
 -- The positions of a declaration's type arguments: its parameters that
 -- are not effect rows, in order.

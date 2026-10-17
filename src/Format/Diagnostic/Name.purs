@@ -22,13 +22,13 @@ typeName = case _ of
   arrow@(FunctionName _ _ _) → arrowName arrow
 
 -- `{ a: Int, b: Bool, ...r }`; the fields arrive sorted by label.
-recordName ∷ Array (Tuple String TypeName) → Maybe String → String
-recordName fields tail =
+recordName ∷ Array (Tuple String TypeName) → Array String → String
+recordName fields tails =
   if Array.null items then "{}" else "{ " <> joinWith ", " items <> " }"
   where
-  items = map field fields <> maybe [] tailItem tail
+  items = map field fields <> map tailItem tails
   field (Tuple label ty) = label <> ": " <> typeName ty
-  tailItem name = [ "..." <> name ]
+  tailItem name = "..." <> name
 
 -- Right-associative: `(Int -> Int) -> List(Int) -> List(Int)`, a parameter
 -- that is itself an arrow parenthesized. An arrow's row, when it has one to

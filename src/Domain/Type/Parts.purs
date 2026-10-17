@@ -27,7 +27,7 @@ import Domain.Row
   , closedRow
   , handlerRowList
   )
-import Domain.Type.Record (RecordRow, mapFields, recordRow)
+import Domain.Type.Record (RecordRow, mapFields)
 import Domain.Type
   ( Stages
   , Ty(..)
@@ -118,7 +118,7 @@ rowArguments (Row labels _) = Array.concatMap labelArguments labels
 mentionsTypeVariable ∷ ∀ v. Ty v → Boolean
 mentionsTypeVariable = case _ of
   TVar _ → true
-  TRecord { tail: Just _ } → true
+  TRecord { tails } | not (Array.null tails) → true
   ty → Array.any mentionsTypeVariable (children ty)
     || Array.any rowMentions (rowsOf ty)
   where
@@ -134,7 +134,7 @@ typeHead = case _ of
   TUnit → Just HeadUnit
   TText → Just HeadText
   TData id _ _ → Just (HeadData id)
-  TRecord { fields, tail: Nothing } → Just (HeadRecord (map fst fields))
+  TRecord { fields, tails: [] } → Just (HeadRecord (map fst fields))
   _ → Nothing
 
 groundWith
@@ -162,10 +162,11 @@ groundRecord
   . (Ty v → Maybe (Ty Void))
   → RecordRow (Ty v) v
   → Maybe (Ty Void)
-groundRecord typeGround row = maybe' closedFields (const Nothing) row.tail
+groundRecord typeGround row =
+  if Array.null row.tails then closed <$> traverse field row.fields
+  else Nothing
   where
-  closedFields _ = TRecord <<< closedRecord <$> traverse field row.fields
-  closedRecord fields = { fields, tail: Nothing }
+  closed fields = TRecord { fields, tails: [] }
   field (Tuple name ty) = Tuple name <$> typeGround ty
 
 groundRows
@@ -207,11 +208,10 @@ groundLabel (Label effect arguments mark) = Label effect
   <$> traverse ground arguments
   <*> pure mark
 
--- A record with `change` applied to each field type and to the tail
--- variable standing as a type, whose image supplies the rest of the row.
-mapRecord ∷ ∀ v. (Ty v → Ty v) → RecordRow (Ty v) v → Ty v
-mapRecord change row = maybe' closed open row.tail
+-- A record with `change` applied to each field type and to each tail
+-- variable standing as a type, whose image supplies part of the row.
+mapRecord ∷ ∀ v. Ord v ⇒ (Ty v → Ty v) → RecordRow (Ty v) v → Ty v
+mapRecord change row = spliceRecord written images
   where
   written = (mapFields change row).fields
-  closed _ = TRecord (recordRow written Nothing)
-  open variable = spliceRecord written (change (TVar variable))
+  images = map (change <<< TVar) row.tails

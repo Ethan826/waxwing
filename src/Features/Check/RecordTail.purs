@@ -48,14 +48,15 @@ bindTail failed subst meta fields rest =
   lacking = lacksOf subst (Meta meta)
   forbidden label = Set.member label lacking
   fitting _ = maybe' placed onto rest
-  placed _ = place failed subst meta (TRecord (recordRow fields rest))
+  tails = Array.fromFoldable rest
+  placed _ = place failed subst meta (TRecord (recordRow fields tails))
   onto tail = case tail of
     Meta _ → place failed
       ( addWritten tail (writtenOf subst (Meta meta))
           (addLacks tail (Set.union lacking (labelSet fields)) subst)
       )
       meta
-      (TRecord (recordRow fields rest))
+      (TRecord (recordRow fields tails))
     Rigid _ → maybe' placed (refused failed subst meta)
       (Array.find (unlackedBy tail) (Set.toUnfoldable lacking))
   unlackedBy tail label = not (Set.member label (lacksOf subst tail))
@@ -112,7 +113,7 @@ place failed subst@(Subst bindings) meta ty
 holdsTail ∷ Int → Ty Flex → Boolean
 holdsTail meta = case _ of
   TVar (Meta other) → other == meta
-  TRecord { tail: Just (Meta other) } | other == meta → true
+  TRecord { tails } | Array.elem (Meta meta) tails → true
   ty → Array.any held (children ty)
     || Array.any (Array.any held <<< rowArguments) (rowsOf ty)
   where

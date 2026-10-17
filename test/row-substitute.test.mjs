@@ -8,8 +8,9 @@ import { Just } from '../output/Data.Maybe/index.js';
 import { Row } from '../output/Domain.Row/index.js';
 import { TVar, substitute,
   substituteRow } from '../output/Domain.Type/index.js';
-import { functorTy } from '../output/Domain.Type.Core/index.js';
+import { rename } from '../output/Domain.Type.Core/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
+import { ordFlex } from '../output/Features.Check.Subst/index.js';
 import { choose, generator } from './coverage-oracle.mjs';
 import { label, row, rowMeta } from './row-support.mjs';
 import { bool, fromRow, fromTy, fun, int, list, meta, rigid, toRow,
@@ -27,7 +28,7 @@ const substitution = (types, rowMap) => ({
   rows: flex =>
     rowMap.has(metaOf(flex)) ? toRow(rowMap.get(metaOf(flex))) : open(flex)
 });
-const apply = (s, t) => fromTy(substitute(s)(toTy(t)));
+const apply = (s, t) => fromTy(substitute(ordFlex)(s)(toTy(t)));
 
 // With `rowed` false every row is closed and empty: a row-free type.
 const genLabel = (next, depth) => choose(next, 3) === 0 ? label(0)
@@ -59,7 +60,8 @@ test('the identity substitution changes nothing', () => {
   const next = generator(0x41);
   for (let index = 0; index < cases; index += 1) {
     const t = genType(next, 3);
-    assert.deepEqual(fromTy(substitute(identity)(toTy(t))), plain(t));
+    assert.deepEqual(fromTy(substitute(ordFlex)(identity)(toTy(t))),
+      plain(t));
   }
 });
 
@@ -69,12 +71,12 @@ test('substituting a composition is substituting in sequence', () => {
     const [s1, s2] =
       [substitution(...genMaps(next)), substitution(...genMaps(next))];
     const composed = {
-      types: flex => substitute(s2)(s1.types(flex)),
-      rows: flex => substituteRow(s2)(s1.rows(flex))
+      types: flex => substitute(ordFlex)(s2)(s1.types(flex)),
+      rows: flex => substituteRow(ordFlex)(s2)(s1.rows(flex))
     };
     const t = toTy(genType(next, 3));
-    assert.deepEqual(fromTy(substitute(composed)(t)),
-      fromTy(substitute(s2)(substitute(s1)(t))));
+    assert.deepEqual(fromTy(substitute(ordFlex)(composed)(t)),
+      fromTy(substitute(ordFlex)(s2)(substitute(ordFlex)(s1)(t))));
   }
 });
 
@@ -97,19 +99,20 @@ test('splicing keeps order and multiplicity, and closes a closed tail', () => {
   const written = row([label(0), label(1, int)], rowMeta(10));
   const s = substitution(new Map([[0, int]]),
     new Map([[10, row([label(1, meta(0)), label(0)])]]));
-  assert.deepEqual(fromRow(substituteRow(s)(toRow(written))),
+  assert.deepEqual(fromRow(substituteRow(ordFlex)(s)(toRow(written))),
     row([label(0), label(1, int), label(1, meta(0)), label(0)]));
 });
 
-test('renaming by Functor agrees with substitute on row-free types', () => {
+test('renaming agrees with substitute on row-free types', () => {
   const next = generator(0x43);
   const renamed = flex => flex instanceof unifier.Meta
     ? unifier.Meta.create(flex.value0 + 1) : flex;
   for (let index = 0; index < cases; index += 1) {
     const t = toTy(genType(next, 3, false));
     const viaSubstitute =
-      substitute({ types: flex => TVar.create(renamed(flex)),
+      substitute(ordFlex)({ types: flex => TVar.create(renamed(flex)),
       rows: flex => open(renamed(flex)) })(t);
-    assert.deepEqual(fromTy(functorTy.map(renamed)(t)), fromTy(viaSubstitute));
+    assert.deepEqual(fromTy(rename(ordFlex)(renamed)(t)),
+      fromTy(viaSubstitute));
   }
 });

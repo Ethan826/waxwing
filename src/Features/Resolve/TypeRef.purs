@@ -71,7 +71,7 @@ resolveTypeWith known effects variables ambient = resolved
     traverse_ repeatedField (repeatedLabel fields)
     written ← traverse recordField fields
     rest ← traverse recordTail tail
-    pure (Resolved.TRecord (recordRow written rest))
+    pure (Resolved.TRecord (recordRow written (Array.fromFoldable rest)))
   recordField field = Tuple field.name <$> resolved field.ty
   recordTail tail = maybe' (unboundTail tail)
     (pure <<< Resolved.VarId)

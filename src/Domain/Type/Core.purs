@@ -7,6 +7,7 @@ module Domain.Type.Core
   , stagesThrough
   , foldStages
   , substitute
+  , rename
   , substituteRow
   , spliceRecord
   ) where
@@ -19,7 +20,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
 import Domain.Type.Record (RecordRow)
-import Domain.Type.RecordSubst (Image(..), spliceImage)
+import Domain.Type.RecordSubst (Image(..), spliceImages)
 import Domain.Ids (TypeId)
 import Domain.Row (HandlerRows, Label(..), Row(..), closedRow, openRow)
 import Domain.Row as Row
@@ -107,8 +108,10 @@ instance ordTy ∷ Ord v ⇒ Ord (Ty v) where
     _, _ → compareLeaves left right
 
 -- Renaming keeps each variable's sort: a renamed row tail stays a tail.
-instance functorTy ∷ Functor Ty where
-  map change = substitute { types: TVar <<< change, rows: openRow <<< change }
+-- The tails are sorted again, since a rename need not keep their order.
+rename ∷ ∀ v w. Ord w ⇒ (v → w) → Ty v → Ty w
+rename change = substitute
+  { types: TVar <<< change, rows: openRow <<< change }
 
 -- The stages with `look` applied before each step, so a checker can follow
 -- a result that is a bound meta into the arrow it stands for. Two loops:
@@ -146,7 +149,7 @@ arrowCount look ty = tailRec counted (Tuple 0 ty)
 
 -- Replaces every variable by its sort's image. One pass: an image is not
 -- substituted again. Spines are walked by a loop, labels by `map`.
-substitute ∷ ∀ v w. Substitution v w → Ty v → Ty w
+substitute ∷ ∀ v w. Ord w ⇒ Substitution v w → Ty v → Ty w
 substitute substitution = case _ of
   TInt → TInt
   TBool → TBool
@@ -170,7 +173,7 @@ substitute substitution = case _ of
 -- A row's labels, then, for its tail, the tail's image spliced in: its
 -- labels appended in order and its own tail the new tail. A row with no
 -- label (every row before row syntax) allocates nothing.
-substituteRow ∷ ∀ v w. Substitution v w → TyRow v → TyRow w
+substituteRow ∷ ∀ v w. Ord w ⇒ Substitution v w → TyRow v → TyRow w
 substituteRow substitution (Row labels tail)
   | Array.null labels = maybe closedRow substitution.rows tail
   | otherwise = maybe (Row written Nothing) spliced tail
@@ -179,17 +182,18 @@ substituteRow substitution (Row labels tail)
       spliced variable = appended (substitution.rows variable)
       appended (Row more rest) = Row (written <> more) rest
 
--- Fields in place; a tail's image, a record type, supplies the rest.
+-- Fields in place; each tail's image, a record type, supplies the rest.
 substituteRecord
-  ∷ ∀ v w. Substitution v w → RecordRow (Ty v) v → Ty w
+  ∷ ∀ v w. Ord w ⇒ Substitution v w → RecordRow (Ty v) v → Ty w
 substituteRecord substitution row = TRecord
-  (spliceImage written (imageOf <<< substitution.types <$> row.tail))
+  (spliceImages written (map (imageOf <<< substitution.types) row.tails))
   where
   written = map (map (substitute substitution)) row.fields
 
--- The written fields, then what a tail became (Domain.Type.RecordSubst).
-spliceRecord ∷ ∀ v. Array (Tuple String (Ty v)) → Ty v → Ty v
-spliceRecord written ty = TRecord (spliceImage written (Just (imageOf ty)))
+-- The written fields, then what each tail became (Domain.Type.RecordSubst).
+spliceRecord ∷ ∀ v. Ord v ⇒ Array (Tuple String (Ty v)) → Array (Ty v) → Ty v
+spliceRecord written images = TRecord
+  (spliceImages written (map imageOf images))
 
 imageOf ∷ ∀ v. Ty v → Image (Ty v) v
 imageOf = case _ of
@@ -197,7 +201,7 @@ imageOf = case _ of
   TVar variable → Renamed variable
   _ → Ended
 
-substituteLabel ∷ ∀ v w. Substitution v w → Label (Ty v) → Label (Ty w)
+substituteLabel ∷ ∀ v w. Ord w ⇒ Substitution v w → Label (Ty v) → Label (Ty w)
 substituteLabel substitution (Label effect arguments mark) =
   Label effect (map (substitute substitution) arguments) mark
 

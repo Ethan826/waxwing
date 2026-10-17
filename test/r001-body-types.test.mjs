@@ -121,7 +121,7 @@ const lowered = (label, imageLabel) => {
     noLayouts);
   const field = () => () => pure(TInt.value);
   const tail = () => pure(Just.create(image.ty));
-  const row = { fields: [Tuple.create(label)(0)], tail: Just.create(0) };
+  const row = { fields: [Tuple.create(label)(0)], tails: [0] };
   const lowering = recordType(field)(tail)(spanAt(written, written))(row);
   return run(lowering)({ layouts: image.layouts });
 };

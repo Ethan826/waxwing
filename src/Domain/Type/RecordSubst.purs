@@ -1,7 +1,7 @@
-module Domain.Type.RecordSubst (Image(..), spliceImage) where
+module Domain.Type.RecordSubst (Image(..), spliceImages) where
 
 import Prelude
-import Data.Maybe (Maybe(..), maybe)
+import Data.Array as Array
 import Data.Tuple (Tuple)
 import Domain.Type.Record (RecordRow, recordRow)
 
@@ -15,16 +15,25 @@ data Image a v
   | Renamed v
   | Ended
 
--- The written fields, then what the tail became: a record's fields join
--- them and its tail ends the row; another variable is the new tail.
-spliceImage
+-- The written fields, then what each tail became: a record's fields join
+-- them and its tails join the row's; another variable is itself a tail.
+-- No tail is the common case and allocates nothing beyond the row.
+spliceImages
   ∷ ∀ a v
-  . Array (Tuple String a)
-  → Maybe (Image a v)
+  . Ord v
+  ⇒ Array (Tuple String a)
+  → Array (Image a v)
   → RecordRow a v
-spliceImage written = maybe (recordRow written Nothing) spliced
-  where
-  spliced = case _ of
-    Spliced more → recordRow (written <> more.fields) more.tail
-    Renamed variable → recordRow written (Just variable)
-    Ended → recordRow written Nothing
+spliceImages written images
+  | Array.null images = recordRow written []
+  | otherwise =
+      recordRow (written <> Array.concatMap fieldsOf images)
+        (Array.concatMap tailsOf images)
+      where
+      fieldsOf = case _ of
+        Spliced more → more.fields
+        _ → []
+      tailsOf = case _ of
+        Spliced more → more.tails
+        Renamed variable → [ variable ]
+        Ended → []

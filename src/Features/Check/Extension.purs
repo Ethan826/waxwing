@@ -3,6 +3,7 @@ module Features.Check.Extension (Introduced, checkExtension) where
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
+import Data.Foldable (foldM)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), isJust, maybe, maybe')
@@ -136,9 +137,9 @@ fromRecord env state base added row =
   hasLabel item = isJust item.given
   known item = maybe false held item.given
   held (Tuple label _) = Array.elem label (labels row)
-  fitting _ = map typed (ofTail env state withLabels row.tail)
+  fitting _ = map typed (foldM (ofTail env withLabels) state row.tails)
   typed reached =
-    { value: TRecord (recordRow (row.fields <> fields added) row.tail)
+    { value: TRecord (recordRow (row.fields <> fields added) row.tails)
     , state: reached
     }
 
@@ -159,19 +160,18 @@ overlap base item = Left
 ofTail
   ∷ ∀ r
   . CheckEnv (Introduced r)
-  → State
   → Array Added
-  → Maybe Open
+  → State
+  → Open
   → Either Diagnostic State
-ofTail env state added = maybe (Right state) judged
+ofTail env added state = case _ of
+  Hole meta → Right state
+    { subst = addLacks (Unify.Meta meta) (Set.fromFoldable named)
+        state.subst
+    }
+  Rigid variable → maybe (Right state) (mayHave env variable)
+    (Array.find (unlacked variable) added)
   where
-  judged = case _ of
-    Hole meta → Right state
-      { subst = addLacks (Unify.Meta meta) (Set.fromFoldable named)
-          state.subst
-      }
-    Rigid variable → maybe (Right state) (mayHave env variable)
-      (Array.find (unlacked variable) added)
   named = map labelOf (fields added)
   labelOf (Tuple label _) = label
   unlacked variable item = maybe false (absent variable) item.given

@@ -7,7 +7,6 @@ module Features.Check.Record
 
 import Prelude
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
@@ -45,7 +44,7 @@ checkLiteral infer env state span fields = do
   threaded ← threadAll (fieldValue infer env) state fields
   pure
     { value: Checked.Expr
-        { ty: TRecord (recordRow (map fieldType threaded.value) Nothing)
+        { ty: TRecord (recordRow (map fieldType threaded.value) [])
         , span
         , node: Checked.RecordLiteral threaded.value
         }

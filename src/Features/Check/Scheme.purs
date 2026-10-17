@@ -30,7 +30,7 @@ import Data.Traversable (traverse)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Syntax (Diagnostic, Span)
-import Domain.Type (Ty(..), TyRow, VarId(..))
+import Domain.Type (Ty(..), TyRow, VarId(..), rename)
 import Domain.Row (Row(..), isPure, openRow)
 import Domain.Type.Parts (children, rowArguments, rowsOf)
 import Features.Check.Provenance (Origins, noOrigins)
@@ -127,12 +127,12 @@ instantiate variables state =
 
 -- A scheme's type at one use.
 at ∷ Scheme → Ty VarId → Ty Open
-at scheme = map shifted
+at scheme = rename shifted
   where
   shifted (VarId index) = Hole (scheme.base + index)
 
 flexible ∷ Ty Open → Ty Flex
-flexible = map toFlex
+flexible = rename toFlex
   where
   toFlex = case _ of
     Checked.Rigid id → Unify.Rigid id
@@ -145,7 +145,7 @@ flexibleRow found = case flexible (TFun TUnit found TUnit) of
   _ → openRow (Unify.Meta 0)
 
 opened ∷ Ty Flex → Ty Open
-opened = map toOpen
+opened = rename toOpen
   where
   toOpen = case _ of
     Unify.Rigid id → Checked.Rigid id
@@ -193,7 +193,7 @@ holes body =
   where
   numbering = (foldTypes number { next: 0, seen: Map.empty } body).seen
   number found _ ty = foldHoles numberHole found ty
-  renamed ty = map renumber ty
+  renamed ty = rename renumber ty
   renumber = case _ of
     Hole meta → Hole (maybe meta identity (Map.lookup meta numbering))
     rigid → rigid
@@ -216,7 +216,7 @@ foldHoles step found = case _ of
     (rowsOf ty)
   where
   recordTail reached = case _ of
-    TRecord { tail: Just tail } → tailHole reached tail
+    TRecord row → foldl tailHole reached row.tails
     _ → reached
   foldRow reached row@(Row _ tail)
     | isPure row = reached

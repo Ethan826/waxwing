@@ -65,7 +65,7 @@ payloadName shape ty = case ty of
     (Array.index shape.records index)
   where
   recur = payloadName shape
-  record info = RecordName (map field info.fields) Nothing
+  record info = RecordName (map field info.fields) []
   field (Tuple label part) = Tuple label (recur part)
   unknown = DataName "?"
   named info = applied info.name (map recur info.arguments)

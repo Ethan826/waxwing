@@ -12,7 +12,7 @@ module Features.Check.Signature
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (isJust, maybe')
+import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (fst, snd)
 import Domain.Problem (Problem(..), Witness(..))
@@ -121,7 +121,8 @@ witnessOf tables head fields = case head of
 -- The fields of the row's sorted record (ADR 013), and whether it has a
 -- tail: a rigid or a hole tail alike is more than the labels it shows.
 recordHead ∷ RecordRow (Ty Open) Open → Head
-recordHead row = HRecord { labels: labels row, open: isJust row.tail }
+recordHead row = HRecord
+  { labels: labels row, open: not (Array.null row.tails) }
 
 flag ∷ Array Boolean → CtorId → Lookup Boolean
 flag inhabited (CtorId index) = maybe' missing Right

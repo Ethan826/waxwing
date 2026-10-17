@@ -106,5 +106,5 @@ variablesOf ∷ Ty Open → Array Open
 variablesOf = case _ of
   TVar variable → [ variable ]
   TRecord row → Array.concatMap variablesOf (map snd row.fields)
-    <> Array.fromFoldable row.tail
+    <> row.tails
   ty → Array.concatMap variablesOf (children ty)

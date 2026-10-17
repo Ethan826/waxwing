@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { rejectedAt, runGo } from './support.mjs';
 import { Nothing } from '../output/Data.Maybe/index.js';
+import { ordInt } from '../output/Data.Ord/index.js';
 import * as Set from '../output/Data.Set/index.js';
 import { Tuple } from '../output/Data.Tuple/index.js';
 import { ordTypeId } from '../output/Domain.Ids/index.js';
@@ -74,7 +75,7 @@ test('a type storing a function is refused whatever its arguments', () => {
 // Built directly: Task 7 lowers records, so no program reaches it yet.
 const field = (label, ty) => Tuple.create(label)(ty);
 const record = (...fields) => TRecord.create(
-  recordRow(fields.map(([label, ty]) => field(label, ty)))(Nothing.value));
+  recordRow(ordInt)(fields.map(([label, ty]) => field(label, ty)))([]));
 const arrow = TFun.create(TInt.value)(closedRow)(TInt.value);
 const handler = THandler.create(
   Label.create(new UserEffect(0))([])(Plain.value))(

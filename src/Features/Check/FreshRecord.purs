@@ -2,7 +2,6 @@ module Features.Check.FreshRecord (Fresh, freshRecord, freshRest) where
 
 import Prelude
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
 import Data.Set as Set
 import Domain.Checked.Internal (Open(..))
 import Domain.Type (Ty(..))
@@ -21,7 +20,7 @@ type Fresh = { record ∷ Ty Open, fields ∷ Array (Ty Open), state ∷ State }
 -- `...` against a hole).
 freshRecord ∷ State → Array String → Boolean → Fresh
 freshRecord state labels open =
-  { record: TRecord (recordRow (Array.zip labels fields) (tailOf open tail))
+  { record: TRecord (recordRow (Array.zip labels fields) (tailsOf open tail))
   , fields
   , state: state
       { next = tail + 1
@@ -46,8 +45,8 @@ freshRest state lacked = fresh
   where
   fresh = freshRecord state [] true
 
-tailOf ∷ Boolean → Int → Maybe Open
-tailOf open tail = if open then Just (Hole tail) else Nothing
+tailsOf ∷ Boolean → Int → Array Open
+tailsOf open tail = if open then [ Hole tail ] else []
 
 -- A closed record has no tail, so nothing to lack.
 lacking ∷ Boolean → Array String → Set.Set String

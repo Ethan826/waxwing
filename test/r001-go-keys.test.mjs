@@ -80,8 +80,9 @@ const holes = (ty, found) => {
     found.add(ty.value0.value0);
   }
   if (ty instanceof TRecord) {
-    const tail = ty.value0.tail.value0;
-    if (tail instanceof Hole) found.add(tail.value0);
+    for (const tail of ty.value0.tails) {
+      if (tail instanceof Hole) found.add(tail.value0);
+    }
     for (const field of ty.value0.fields) holes(field.value1, found);
   }
   return found;

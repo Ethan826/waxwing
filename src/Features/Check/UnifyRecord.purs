@@ -33,11 +33,16 @@ unifyRecord
   → RecordRow (Ty Flex) Flex
   → Either Failure Subst
 unifyRecord unifyField subst left right =
-  if duplicated one || duplicated other then failed subst
+  if duplicated one || duplicated other || several then failed subst
   else foldM fieldPair subst (common one other) >>= decided
   where
-  one = flatten subst left
-  other = flatten subst right
+  flatLeft = flatten subst left
+  flatRight = flatten subst right
+  one = viewed flatLeft
+  other = viewed flatRight
+  -- No producer makes a row of several tails yet, so none arrives; the
+  -- rule for them is Tranche B's, and until then they are no match.
+  several = Array.length flatLeft.tails > 1 || Array.length flatRight.tails > 1
   fieldPair reached (Tuple mine theirs) = unifyField reached mine theirs
   failed reached = mismatch reached (TRecord left) (TRecord right)
   decided reached =
@@ -45,11 +50,17 @@ unifyRecord unifyField subst left right =
       unifyRecord unifyField reached left right
     else tails failed one other reached
 
+-- A flattened row with at most one tail, which is all this rule reads.
+type Single = { fields ∷ Fields, tail ∷ Maybe Flex }
+
+viewed ∷ Flat → Single
+viewed row = { fields: row.fields, tail: Array.head row.tails }
+
 -- Whether unifying the shared fields bound the row's own tail meta, as in
 -- `{ a: { ...r }, ...r }`. The rows are then flattened again and unified
 -- anew, so that binding is followed rather than overwritten. Each round
 -- binds one more of their tails, so the rounds end.
-rebound ∷ Subst → Flat → Boolean
+rebound ∷ Subst → Single → Boolean
 rebound subst row = maybe false bound (metaTail row.tail)
   where
   bound meta = walk subst (TVar (Meta meta)) /= TVar (Meta meta)
@@ -57,8 +68,8 @@ rebound subst row = maybe false bound (metaTail row.tail)
 -- The tails, once the labels both rows hold have unified.
 tails
   ∷ (Subst → Either Failure Subst)
-  → Flat
-  → Flat
+  → Single
+  → Single
   → Subst
   → Either Failure Subst
 tails failed one other subst =
@@ -73,21 +84,21 @@ tails failed one other subst =
 
 -- Sorted, so a label held twice is held by neighbours. Lacks sets keep
 -- this from arising; were it to, the row is no record.
-duplicated ∷ Flat → Boolean
+duplicated ∷ Single → Boolean
 duplicated row = Array.any same (Array.zip labels (Array.drop 1 labels))
   where
   labels = map fst row.fields
   same (Tuple one other) = one == other
 
 -- The field types of each label both rows hold, mine first.
-common ∷ Flat → Flat → Array (Tuple (Ty Flex) (Ty Flex))
+common ∷ Single → Single → Array (Tuple (Ty Flex) (Ty Flex))
 common mine theirs = Array.mapMaybe paired mine.fields
   where
   table = Map.fromFoldable theirs.fields
   paired (Tuple label ty) = Tuple ty <$> Map.lookup label table
 
 -- The fields of `mine` whose labels `theirs` does not hold.
-only ∷ Flat → Flat → Fields
+only ∷ Single → Single → Fields
 only mine theirs = Array.filter absent mine.fields
   where
   table = Map.fromFoldable theirs.fields
@@ -129,8 +140,8 @@ grown failed subst tail fields rest = maybe' refused extended (metaTail tail)
 shared
   ∷ (Subst → Either Failure Subst)
   → Subst
-  → Flat
-  → Flat
+  → Single
+  → Single
   → Fields
   → Fields
   → Either Failure Subst

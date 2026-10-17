@@ -44,7 +44,7 @@ test('{} in a type is the empty closed record', () => {
   const found = parameterType(`fn f(x: {}): Int = 1;${main}`);
   assert.equal(found.constructor.name, 'TRecord');
   assert.deepEqual(found.value0.fields, []);
-  assert.equal(found.value0.tail.constructor.name, 'Nothing');
+  assert.deepEqual(found.value0.tails, []);
 });
 
 test('a duplicate field is E_DUPLICATE at the second label', () => {

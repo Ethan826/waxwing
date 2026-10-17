@@ -12,7 +12,7 @@ import Data.Map as Map
 import Domain.IR.Internal as IR
 import Domain.Problem (Problem(..), TypeName)
 import Domain.Syntax (Diagnostic, problemAt)
-import Domain.Type (Ty)
+import Domain.Type (Ty, rename)
 import Features.Check.Functional (Functional, containsFunction, functional)
 import Features.Check.TypeName (typeName)
 import Features.Specialize.Copy (modify)
@@ -100,7 +100,7 @@ refuse ∷ Judging → PrintSite → Ty Void → Either Diagnostic Unit
 refuse context found ground
   | groundPrintable context.holders ground = Right unit
   | otherwise =
-      typeName names found.span (map absurd ground)
+      typeName names found.span (rename absurd ground)
         >>= notPrintable found
       where
       names =

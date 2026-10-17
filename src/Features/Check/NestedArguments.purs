@@ -77,13 +77,13 @@ mentions variable = case _ of
 
 bareRow ∷ ∀ v. Ty v → Boolean
 bareRow = case _ of
-  TRecord { fields: [], tail: Just _ } → true
+  TRecord { fields: [], tails } → not (Array.null tails)
   _ → false
 
 -- Whether a type mentions a selected variable as a type or a record tail.
 mentionsRow ∷ ∀ v. (v → Boolean) → Ty v → Boolean
 mentionsRow variable = case _ of
   TVar each → variable each
-  ty@(TRecord { tail: Just each }) → variable each
+  ty@(TRecord { tails }) → Array.any variable tails
     || Array.any (mentionsRow variable) (children ty)
   ty → Array.any (mentionsRow variable) (children ty)

@@ -2,7 +2,7 @@ module Features.Specialize.Record (recordType, writtenField) where
 
 import Prelude
 import Data.Array as Array
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (Maybe, maybe, maybe')
 import Data.Traversable (traverse)
 import Data.Set as Set
 import Data.Tuple (Tuple(..), fst)
@@ -15,7 +15,7 @@ import Features.Specialize.Layouts (internLayout, layoutFields)
 import Features.Specialize.State (Specializing)
 
 -- A record type at one key (R001 design §5): each field lowered by `field`
--- in sorted label order, then the tail's image, the layout a key argument
+-- in sorted label order, then each tail's image, the layout a key argument
 -- stands for, spliced in; the whole is interned as one layout. A field's
 -- types are numbered before the layout holding them, as an arrow's are
 -- before the arrow. A tail no key fixes, an unsolved hole (`tail` gives
@@ -35,13 +35,14 @@ recordType
   → Specializing IR.Ty
 recordType field tail span row = do
   fields ← traverse lowered row.fields
-  rest ← maybe (pure Nothing) tail row.tail
+  rests ← traverse tail row.tails
   state ← get
-  let spliced = fields <> maybe [] (layoutFields state.layouts) rest
+  let spliced = fields <> Array.concatMap (restOf state) rests
   if repeated spliced then internal "Duplicate record label" span unit
   else interned (internLayout spliced state.layouts)
   where
   lowered (Tuple label ty) = Tuple label <$> field label ty
+  restOf state = maybe [] (layoutFields state.layouts)
   interned found = modify (withLayouts found.layouts) $> found.ty
   withLayouts layouts state = state { layouts = layouts }
   repeated spliced = Set.size (Set.fromFoldable (map fst spliced))

@@ -10,7 +10,7 @@ import Data.Either (Either(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Array as Array
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.IR.Internal as IR
@@ -75,7 +75,7 @@ groundType grounds span = case _ of
   where
   missing _ = Left (problemAt (Internal "Invalid type id") span)
   groundRecord info = TRecord <<< closed <$> traverse field info.fields
-  closed fields = { fields, tail: Nothing }
+  closed fields = { fields, tails: [] }
   field (Tuple label ty) = Tuple label <$> recur ty
   missingEffect _ = Left (problemAt (Internal "Invalid effect key") span)
   groundHandler info = handlerOf info <$> traverse recur info.arguments

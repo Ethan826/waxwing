@@ -16,7 +16,7 @@ import Domain.Checked.Internal as Checked
 import Domain.Resolved as Resolved
 import Domain.Row (Label(..), closedRow)
 import Domain.Syntax (Diagnostic)
-import Domain.Type (Ty(..), TyRow, VarId(..), substitute)
+import Domain.Type (Ty(..), TyRow, VarId(..), rename, substitute)
 import Features.Check.Context (CheckEnv, Infer, Locals)
 import Features.Check.Require (require)
 import Features.Check.Scheme (State, Threaded)
@@ -92,9 +92,9 @@ argument args (VarId index) = maybe (TVar (Rigid (VarId index))) identity
   (Array.index args index)
 
 labelArgs ∷ Label (Ty Resolved.VarId) → Checked.Instantiation
-labelArgs (Label _ args _) = map (map Rigid) args
+labelArgs (Label _ args _) = map (rename Rigid) args
 
 openLabel ∷ Label (Ty Resolved.VarId) → Label (Ty Open)
-openLabel (Label effect args mark) = Label effect (map (map Rigid) args)
+openLabel (Label effect args mark) = Label effect (map (rename Rigid) args)
   mark
 

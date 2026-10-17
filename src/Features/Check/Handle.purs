@@ -12,7 +12,7 @@ import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Row (Label(..), Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
-import Domain.Type (Ty(..), TyRow)
+import Domain.Type (Ty(..), TyRow, rename)
 import Features.Check.Context (Infer, Locals)
 import Features.Check.ClauseBody (HandlerEnv, openLabel)
 import Features.Check.Require (require)
@@ -59,7 +59,7 @@ failureClause
   → Either Diagnostic { value ∷ Checked.FailClause, state ∷ State }
 failureClause infer env expected state clause = do
   local ← maybe' invalid Right clause.local
-  let payload = map Rigid (payloadType clause.label)
+  let payload = rename Rigid (payloadType clause.label)
   let scoped = env { locals = Map.insert local payload env.locals }
   body ← infer scoped state clause.body
   reached ← require scoped body.state expected body.value

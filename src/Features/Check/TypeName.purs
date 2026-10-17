@@ -78,7 +78,7 @@ typeNameIn shown env span = case _ of
   arrow@(TFun _ _ _) → arrowName shown env span arrow
   THandler label rows → handlerName label (clauseRow rows)
   TRecord row → RecordName <$> traverse field row.fields
-    <*> traverse tailName row.tail
+    <*> traverse tailName row.tails
   where
   field (Tuple label ty) = Tuple label <$> typeNameIn shown env span ty
   tailName = case _ of

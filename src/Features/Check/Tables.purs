@@ -47,7 +47,7 @@ ownerType owner info = TData owner
   typeArgument (Tuple position sort) = case sort of
     Syntax.TypeSort → Just (TVar (VarId position))
     Syntax.RecordSort → Just
-      (TRecord (recordRow [] (Just (VarId position))))
+      (TRecord (recordRow [] [ VarId position ]))
     Syntax.RowSort → Nothing
   rowArgument (Tuple position sort) = case sort of
     Syntax.RowSort → Just (Row [] (Just (VarId position)))
