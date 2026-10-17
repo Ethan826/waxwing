@@ -4,12 +4,13 @@ module Format.Wire
   , PlainRecord
   , SourceRecord
   , ToolRecord
+  , hostCodeName
   , usageRecord
   , failureRecord
   , sourceRecord
   ) where
 
-import Domain.Host (HostFailure(..))
+import Domain.Host (HostCode(..), HostFailure(..))
 import Domain.Syntax (Diagnostic, Span)
 import Format.Diagnostic (wire)
 import Format.Diagnostic.Note (WireNote)
@@ -33,14 +34,24 @@ data WireRecord
   | SourceWire SourceRecord
   | ToolWire ToolRecord
 
+hostCodeName ∷ HostCode → String
+hostCodeName = case _ of
+  HostUsage → "E_USAGE"
+  HostIo → "E_IO"
+  HostTool → "E_TOOL"
+
 usageRecord ∷ String → WireRecord
-usageRecord text = PlainWire { code: "E_USAGE", message: text }
+usageRecord text = PlainWire { code: hostCodeName HostUsage, message: text }
 
 failureRecord ∷ HostFailure → WireRecord
 failureRecord = case _ of
-  IoFailure text → PlainWire { code: "E_IO", message: text }
+  IoFailure text → PlainWire { code: hostCodeName HostIo, message: text }
   ToolFailure tool → ToolWire
-    { ok: false, code: "E_TOOL", message: tool.message, command: tool.command }
+    { ok: false
+    , code: hostCodeName HostTool
+    , message: tool.message
+    , command: tool.command
+    }
 
 sourceRecord ∷ String → Diagnostic → WireRecord
 sourceRecord file diagnostic = SourceWire

@@ -1,10 +1,22 @@
 -- Capability ports. The monad stays abstract, so Domain needs no Effect and
 -- tests can pass fake records in place of the Node host.
-module Domain.Host (HostFailure(..), ReadFailure(..), Host) where
+module Domain.Host
+  ( HostCode(..)
+  , HostFailure(..)
+  , ReadFailure(..)
+  , Host
+  ) where
 
 import Data.Either (Either)
 import Domain.Syntax (Position)
 import Prelude (Unit)
+
+-- The codes the CLI itself reports, apart from source diagnostics; Format.Wire
+-- alone knows their spellings.
+data HostCode
+  = HostUsage
+  | HostIo
+  | HostTool
 
 data HostFailure
   = IoFailure String
