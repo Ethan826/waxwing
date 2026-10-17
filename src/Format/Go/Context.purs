@@ -21,6 +21,7 @@ import Data.Array as Array
 import Data.String.Common (joinWith)
 import Domain.Ids (EffectId(..))
 import Domain.IR.Internal as IR
+import Domain.IR.Parts as Parts
 import Domain.Row (EffectRef(..))
 
 -- Effect layouts exist for every handler type, so any of them, or any
@@ -57,10 +58,10 @@ children node = case node of
   IR.Print value → [ value ]
   IR.Show value → [ value ]
   IR.Crash value → [ value ]
-  IR.Block items value → IR.blockParts items value
-  IR.RecordLiteral _ → IR.recordParts node
-  IR.FieldAccess _ _ → IR.recordParts node
-  IR.RecordUpdate _ _ → IR.recordParts node
+  IR.Block items value → Parts.blockParts items value
+  IR.RecordLiteral _ → Parts.recordParts node
+  IR.FieldAccess _ _ → Parts.recordParts node
+  IR.RecordUpdate _ _ → Parts.recordParts node
   _ → []
   where
   armBody arm = arm.body

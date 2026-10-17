@@ -30,7 +30,8 @@ adding a bypass allowlist.
   and gives each internal IR its own importer allowlist (since P001
   Task 1): only Features.Check* and Features.Specialize* import
   Domain.Checked.Internal, and only Features.Specialize* and Format.Go*
-  import Domain.IR.Internal (scripts/structure.mjs `internalModules`;
+  import Domain.IR.Internal, as does Domain.IR.Parts, its split-off
+  helpers (scripts/structure.mjs `internalModules`;
   test/structure.test.mjs pins both directions).
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Array, Either, Maybe, Int, String, Foldable, Traversable} modules

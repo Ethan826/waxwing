@@ -18,6 +18,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Common (joinWith)
 import Domain.IR.Internal as IR
+import Domain.IR.Parts as Parts
 import Domain.IR.Internal (Ty)
 import Domain.Resolved (LocalId)
 import Format.Go.Capture (Captured, union, withoutAll)
@@ -39,7 +40,7 @@ lowerBlock scope lower next result items value =
   where
   context = scope.shape.context
   name = functionName scope.owner <> "Block" <> show next
-  parts = several lower (next + 1) (IR.blockParts items value)
+  parts = several lower (next + 1) (Parts.blockParts items value)
   captured = withoutAll (Array.mapMaybe letLocal items) (union parts.frees)
   capturedName local = localName local.id
   lifted = blockFunction context name captured result

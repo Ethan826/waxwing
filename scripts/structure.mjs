@@ -28,7 +28,7 @@ const internalModules = [
   { module: 'Domain.Checked.Internal',
     importers: /^Features\.(Check|Specialize)(\.|$)/ },
   { module: 'Domain.IR.Internal',
-    importers: /^(Features\.Specialize|Format\.Go)(\.|$)/ }
+    importers: /^(Features\.Specialize|Format\.Go|Domain\.IR\.Parts)(\.|$)/ }
 ];
 // Commands run over capability ports only, so tests can pass fake hosts.
 const portCommands = ['Program.Command'];

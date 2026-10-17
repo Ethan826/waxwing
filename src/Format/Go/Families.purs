@@ -24,6 +24,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Ids (TypeId(..))
 import Domain.IR.Internal as IR
+import Domain.IR.Parts as Parts
 import Domain.Problem (Problem(..))
 import Domain.Row (TypeHead(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
@@ -95,7 +96,7 @@ sites (IR.Program program)
 -- parts'.
 visit ∷ Sites → IR.Expr → Sites
 visit found (IR.Expr expression) = foldl visit (noted found)
-  (children node <> IR.effectParts node)
+  (children node <> Parts.effectParts node)
   where
   node = expression.node
   noted reached = case node of

@@ -3,6 +3,7 @@ module Format.Go.Usage (needsBoolHelper, needsPrint) where
 import Prelude
 import Data.Array as Array
 import Domain.IR.Internal as IR
+import Domain.IR.Parts as Parts
 import Domain.IR.Internal (Ty(..))
 import Format.Go.Compare (isBoolOrdering)
 
@@ -42,7 +43,7 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.Print value → usesBoolOrdering value
   IR.Show value → usesBoolOrdering value
   IR.Crash value → usesBoolOrdering value
-  IR.Block items value → anyOf (IR.blockParts items value)
+  IR.Block items value → anyOf (Parts.blockParts items value)
   IR.OperationRef _ _ → false
   IR.Perform _ _ _ → effects
   IR.HandlerValue _ _ → effects
@@ -54,8 +55,8 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.RecordUpdate _ _ → records
   where
   anyOf = Array.any usesBoolOrdering
-  effects = anyOf (IR.effectParts expression.node)
-  records = anyOf (IR.recordParts expression.node)
+  effects = anyOf (Parts.effectParts expression.node)
+  records = anyOf (Parts.recordParts expression.node)
   armUses arm = usesBoolOrdering arm.body
 
 -- Whether fmt is used: by a print, and by a crash, which renders its value
@@ -96,7 +97,7 @@ prints (IR.Expr expression) = case expression.node of
   IR.Apply callee arguments → anyOf (Array.cons callee arguments)
   IR.Lambda _ body → prints body
   IR.Pipe left right → anyOf [ left, right ]
-  IR.Block items value → anyOf (IR.blockParts items value)
+  IR.Block items value → anyOf (Parts.blockParts items value)
   IR.OperationRef _ _ → false
   IR.Perform _ _ _ → effects
   IR.HandlerValue _ _ → effects
@@ -108,6 +109,6 @@ prints (IR.Expr expression) = case expression.node of
   IR.RecordUpdate _ _ → records
   where
   anyOf = Array.any prints
-  effects = anyOf (IR.effectParts expression.node)
-  records = anyOf (IR.recordParts expression.node)
+  effects = anyOf (Parts.effectParts expression.node)
+  records = anyOf (Parts.recordParts expression.node)
   armPrints arm = prints arm.body

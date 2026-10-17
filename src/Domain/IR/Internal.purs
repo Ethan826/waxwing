@@ -205,39 +205,3 @@ typeOf (Expr expression) = expression.ty
 
 spanOf ∷ Expr → Span
 spanOf (Expr expression) = expression.span
-
-itemValue ∷ Item → Expr
-itemValue = case _ of
-  Let _ value → value
-  Defer value → value
-  Discard value → value
-
--- A record node's expressions in evaluation order; any other node has
--- none here.
-recordParts ∷ Node → Array Expr
-recordParts = case _ of
-  RecordLiteral fields → map fieldValue fields
-  FieldAccess record _ → [ record ]
-  RecordUpdate record fields → Array.cons record (map fieldValue fields)
-  _ → []
-  where
-  fieldValue field = field.value
-
--- A block's expressions in evaluation order: its items', then its value.
-blockParts ∷ Array Item → Expr → Array Expr
-blockParts items value = Array.snoc (map itemValue items) value
-
--- The expressions inside an FX001 effect node, in evaluation order: a
--- handler's clause bodies and a `handle`'s clause bodies after its body.
--- Any other node has none here.
-effectParts ∷ Node → Array Expr
-effectParts = case _ of
-  Perform _ _ arguments → arguments
-  HandlerValue _ clauses → map clauseBody clauses
-  Install handler body → [ handler, body ]
-  Handle body clauses → Array.cons body (map failBody clauses)
-  Abort _ value → [ value ]
-  _ → []
-  where
-  clauseBody clause = clause.body
-  failBody clause = clause.body

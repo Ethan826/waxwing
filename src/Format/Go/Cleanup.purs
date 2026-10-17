@@ -21,6 +21,7 @@ import Prelude
 import Data.Array as Array
 import Data.String.Common (joinWith)
 import Domain.IR.Internal as IR
+import Domain.IR.Parts as Parts
 import Format.Go.Context (children)
 
 -- Whether the emitted IR holds a `defer` or a `crash` anywhere. Only then
@@ -35,8 +36,8 @@ defective ∷ IR.Expr → Boolean
 defective (IR.Expr expression) = case expression.node of
   IR.Crash _ → true
   IR.Block items value → Array.any isDefer items
-    || Array.any defective (IR.blockParts items value)
-  node → Array.any defective (children node <> IR.effectParts node)
+    || Array.any defective (Parts.blockParts items value)
+  node → Array.any defective (children node <> Parts.effectParts node)
   where
   isDefer = case _ of
     IR.Defer _ → true

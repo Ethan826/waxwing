@@ -8,6 +8,7 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (snd)
 import Domain.IR.Internal as IR
+import Domain.IR.Parts as Parts
 import Domain.IR.Internal (LayoutId(..), Ty(..))
 import Format.Go.Context (children)
 
@@ -43,7 +44,7 @@ noUse = { compared: Set.empty, shown: Set.empty }
 -- parts' (Format.Go.Cleanup walks the same parts).
 visit ∷ RecordUse → IR.Expr → RecordUse
 visit reached (IR.Expr expression) = foldl visit (noted reached)
-  (children node <> IR.effectParts node)
+  (children node <> Parts.effectParts node)
   where
   node = expression.node
   noted found = case node of
