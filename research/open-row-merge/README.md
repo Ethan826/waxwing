@@ -50,6 +50,7 @@ says nothing about how many solutions exist.
 | determinate.mjs | a determinate system the solver rejects; the user's first D4 counterexample (one solution, D4) |
 | odd-cycle.mjs | three disjoint-row equations with no solution that end in D4; the user's second D4 counterexample |
 | unresolved.mjs | the permanent Unresolved fixtures: zero, one and several solutions; exits 1 on a mismatch |
+| diag.mjs | classifies the 19 examples of the diagnostics plan (docs/plans/2026-10-17-open-row-merge-diagnostics.md, Appendix A, where it was first printed) |
 | annotation.mjs | user decision 1's `Both` example |
 
 The session originals were in the scratchpad: d2/solver2.mjs (now the
@@ -89,6 +90,7 @@ Small runs (each a few seconds at most), last run 2026-10-17:
 | `node determinate.mjs` | the stated incompleteness | one solution, which is the least; `expand=false: D4`; `expand=true: accept` with it |
 | `node odd-cycle.mjs` | D4 without several solutions | `solutions: []`; `verdict: D4 pending=3` |
 | `node unresolved.mjs` | Unresolved with zero, one and several solutions | `zero (odd-cycle.mjs): D4, 0 solutions`, `one (determinate.mjs): D4, 1 solutions`, `many (a two-part sum): D4, 4 solutions`; exit 0 |
+| `node diag.mjs .` | the diagnostics plan's example classes | identical to the output printed in that plan's Appendix A (compared with `diff` on 2026-10-17) |
 
 **The two D4 counterexamples** (the user's review of 2026-10-17, recorded
 in docs/plans/2026-10-17-open-row-merge-diagnostics.md, §1). D4 means

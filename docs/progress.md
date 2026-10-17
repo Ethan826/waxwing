@@ -5847,3 +5847,28 @@ Branch `t002-r011` from 41f3253; not merged or pushed.
   59/59 serial, 142 regression proofs, exit 0, including
   `r005-rest-layout`. No regression needle changed. Deleted afterwards:
   .build/regression, .build/go-cache, .build/t002-base.
+
+## R005 Tranche B: the user's D4/D6 review and the plan (2026-10-17)
+
+Branch `r005b-plan` from 97ba05b; documents and research scripts only,
+no compiler change, implementation not authorized.
+
+- The user's review of the diagnostics plan is recorded in its §0
+  (status: approved 2026-10-17 with corrections). D4 means the checker
+  could not resolve the constraints (neither a solution nor a
+  contradiction established), not that several solutions exist; D6 an
+  established contradiction caused by an equation. Draft 3 of the
+  design cross-references it.
+- research/open-row-merge/ gained odd-cycle.mjs (no solution, D4),
+  unresolved.mjs (Unresolved with 0, 1 and 4 solutions; exit 0),
+  diag.mjs (the diagnostics plan's Appendix A script, identical output)
+  and three result buckets in perm.mjs. The full campaign (seeds 21-28 ×
+  12,000, five orders) reproduced the recorded counts exactly;
+  `solvedViolates` 0, `dishonest` 0; D4 with 0/1/several solutions:
+  raw 15/15/16,165, dense 1,110/2,395/184,640 (README).
+- docs/plans/2026-10-17-open-row-merge-plan.md: the Tranche B plan
+  (Task 0 gate, Tasks 1-10, placeholder table, approved texts, 30
+  regression rows, claims ledger, fixtures under test/fixtures/r005b/).
+  Decisions pending with the user are listed at its end.
+- docs/engineering.md has a proposed (not binding) section, "Evidence
+  for solvers and diagnostics".

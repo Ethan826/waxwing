@@ -1195,7 +1195,10 @@ run as their inner equation; the lambda examples as the equation their
 rows make. The script below, saved as diag.mjs in a scratch directory,
 was run from the repository root on 2026-10-17 at 98f1f34 as `node
 <scratch>/diag.mjs research/open-row-merge`; it is kept here rather than
-in the repository because this change is documentation only.
+in the repository because this change is documentation only. Since
+2026-10-17 it is also research/open-row-merge/diag.mjs (`node diag.mjs
+.` from that directory), whose output was compared with the one below
+and is identical.
 
 ```js
 // Classifies the examples of docs/plans/2026-10-17-open-row-merge-
