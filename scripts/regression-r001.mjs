@@ -17,8 +17,8 @@ export const r001Rows = [
     // (R001 design §1, §6; unification pairs labels by name since Task 4),
     // `{ b: Bool, a: Int }` where the sorted `{ a: Int, b: Bool }` is due.
     name: 'r001-record-order', file: 'src/Domain/Type/Record.purs',
-    needle: 'recordRow fields tail = { fields: sortFields fields, tail }',
-    replacement: 'recordRow fields tail = { fields, tail }',
+    needle: 'recordRow fields tails = { fields: sortFields fields,',
+    replacement: 'recordRow fields tails = { fields,',
     probe: 'r001-record-order',
     message:
       /label order kept in a diagnostic: E_TYPE Expected \{ b: Bool, a: Int \}/
