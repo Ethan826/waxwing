@@ -5694,3 +5694,56 @@ record pattern (R004: a record pattern names one field); the generator
 respects it. The regression harness builds mutated copies with plain
 `purs compile`, so 0 warnings was checked separately (above). Files were
 deleted afterwards: .build/r005-base, .build/regression, .build/go-cache.
+
+## R013: records-heavy chains (2026-10-16)
+
+Branch `r013` from main 1f3e6ee. `type R<i>(...r) = R<i>({ f<i>: Int,
+...r }, R<i+1>(...r));` over N declarations was quadratic after R014.
+
+- Profile (node --cpu-prof, in-process compiles of the built output/;
+  .build/evidence/r013-profile-{500,1000,2000}.txt): at N=2,000 about 90%
+  of the time was Features.Resolve.ArgumentClash's `declaredLabels`
+  worklist, two thirds of it in `gathered` re-reading every visited
+  declaration's field syntax (`recordArguments`, `subtypes`) for each
+  record argument, the rest in array appends on the worklist. It ran even
+  for an argument `...r` with no label, which can never clash.
+- Fix. Features.Resolve.ArgumentGraph (new) reads each declaration's
+  field syntax once per program: for each record parameter, the labels
+  written beside it and the parameters it is passed on to, with an index
+  from label name to the declarations writing it. `firstLabel` answers a
+  clash by name: the labels of that name other than the argument's own,
+  kept only if their declaration is reached from the callee (a loop over
+  waves of unseen parameters, so recursive and mutually recursive
+  declarations end), the first in source order. Nothing is followed when
+  no other label of that name exists, as in the chain. The graph is built
+  in Resolve beside the TypeIndices and carried in Scope, a lambda's
+  Annotations and ArgumentClash's `Tables` (`argumentGraph`), so body
+  types use it too. No behaviour change intended: same checks, same first
+  clash in source order, same notes.
+- Timing, in-process, 5 interleaved rounds after a warm-up, base main
+  1f3e6ee in a .build copy, candidate in the repository root, medians in
+  ms (ranges in .build/evidence/r013-timing.log): N=250 121 -> 27;
+  N=500 419 -> 45; N=1,000 1,683 -> 81; N=2,000 7,466 -> 175. The
+  10,000-type chain 540 -> 526 and r001-scale 215 -> 205 are unchanged.
+- Tests. test/r013-argument-graph.test.mjs: 500 generated programs
+  (recursive, mutually recursive and diamond declarations, labels drawn
+  from four names) compared with a reference of the rule that follows the
+  parameter by a plain search; it checks the code, message, span and the
+  `first written here` note, and passes on main too. test/r013-scale.test.mjs:
+  N=2,000 chains compile within 2 s, and a clash at the far end of a
+  labelled chain is reported at the first label with the far label as
+  `first written here`. Seen failing on main in an isolated copy
+  (7.1, 10.4 and 10.4 s against 2 s; .build/evidence/r013-red.log), green
+  here (about 0.2 s).
+- Regression needle: r012-argument-clash named `hasRecordParameters
+  tables.types` in `clashIn`; it now names `hasArguments
+  tables.argumentGraph` (same meaning: the check skipped).
+- Differential against 1f3e6ee (`--corpus all --regenerate`): 0
+  differences over 8,481 harvested, 1,029 fuzz, 1,085 isName, 1,000 match
+  and 1,000 mutation sources (.build/evidence/r013-diff.log). The
+  harvest run's 15 failed tests are timing tests under the hook (BACKLOG
+  T007).
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`):
+  2107/2107 parallel, 59/59 serial, 142 regression proofs, exit 0
+  (.build/evidence/r013-verify.log). Deleted afterwards: .build/r013-base,
+  .build/regression, .build/go-cache.

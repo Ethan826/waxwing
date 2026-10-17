@@ -146,9 +146,10 @@ approved the surface and both diagnostics on 2026-10-15.
   type, found an effect row`, as a labelled row already was.
 - The argument's labels must be disjoint from those the declaration
   writes beside that parameter, directly or through declared types it
-  passes the parameter to (Features.Resolve.ArgumentClash, a worklist over
-  the constructors' field syntax mirroring Features.Check.Implied
-  `declared`): a shared label, even with the same field type, is
+  passes the parameter to (Features.Resolve.ArgumentClash over the graph of
+  Features.Resolve.ArgumentGraph, built once from the constructors' field
+  syntax, as Features.Check.Implied `declared` reads them; R013): a
+  shared label, even with the same field type, is
   `Duplicate field x` at the argument's label with `first written here`
   at the declaration's, two written occurrences. Types outside bodies are
   checked once their signatures resolve (`programClashes`); body types

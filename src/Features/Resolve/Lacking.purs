@@ -25,6 +25,7 @@ import Features.Resolve.Marks (arrowRows)
 import Features.Resolve.ArgumentClash (Tables, clashIn)
 import Features.Resolve.Occurrences (Occurrence, typeOccurrences)
 import Features.Resolve.Occurrences as Occurrences
+import Features.Resolve.ArgumentGraph (ArgumentGraph)
 import Features.Resolve.TypeIndices (TypeIndices)
 import Features.Resolve.RecordArguments
   ( RecordArgument
@@ -113,6 +114,7 @@ lackingIn
   ∷ ∀ r
   . { types ∷ Array Resolved.TypeInfo
     , typeIndices ∷ TypeIndices
+    , argumentGraph ∷ ArgumentGraph
     , ctors ∷ Array Resolved.CtorInfo
     , lacking ∷ Maybe Lacking
     | r
@@ -129,7 +131,11 @@ lackingIn scope reference = clashIn tables reference
         )
     )
   tables =
-    { types: scope.types, typeIndices: scope.typeIndices, ctors: scope.ctors }
+    { types: scope.types
+    , typeIndices: scope.typeIndices
+    , ctors: scope.ctors
+    , argumentGraph: scope.argumentGraph
+    }
   start found = found.span.start.offset
   unlacked lacking found = maybe false (absent lacking found)
     (Array.elemIndex found.tail lacking.variables)

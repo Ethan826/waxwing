@@ -14,6 +14,7 @@ import Features.Resolve.Fresh (Fresh, fresh, liftEither)
 import Features.Resolve.Lacking (Lacking, lackingIn)
 import Features.Resolve.Marks (markVariableRefs, scopedMarkVariables)
 import Features.Resolve.Repeated (repeated)
+import Features.Resolve.ArgumentGraph (ArgumentGraph)
 import Features.Resolve.TypeIndices (TypeIndices)
 import Features.Resolve.Types (resolveTypeWith)
 
@@ -23,6 +24,7 @@ import Features.Resolve.Types (resolveTypeWith)
 type Annotations r =
   { types ∷ Array Resolved.TypeInfo
   , typeIndices ∷ TypeIndices
+  , argumentGraph ∷ ArgumentGraph
   , ctors ∷ Array Resolved.CtorInfo
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , variables ∷ Array String

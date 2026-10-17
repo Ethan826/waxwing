@@ -5,38 +5,23 @@ module Features.Resolve.ArgumentClash
   ) where
 
 import Prelude
-import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..), maybe)
-import Data.Set (Set)
-import Data.Set as Set
+import Data.Maybe (maybe)
 import Data.Tuple (Tuple(..))
 import Domain.Problem (DuplicateKind(..), Problem(..))
-import Domain.Resolved (CtorId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.ArgumentGraph (ArgumentGraph, firstLabel, hasArguments)
+import Features.Resolve.RecordArguments (RecordArgument, recordArguments)
 import Features.Resolve.TypeIndices (Indexed)
-import Features.Resolve.RecordArguments
-  ( RecordArgument
-  , hasRecordParameters
-  , recordArguments
-  , slotOf
-  , subtypes
-  )
 
 -- The declared types, indexed by name, and their constructors.
-type Tables = Indexed (ctors ∷ Array Resolved.CtorInfo)
-
--- A label a declaration writes beside a record parameter, where written.
-type Written = { name ∷ String, span ∷ Syntax.Span }
-
-type Search =
-  { pending ∷ Array (Tuple Int Int)
-  , seen ∷ Set (Tuple Int Int)
-  , labels ∷ Array Written
-  }
+type Tables = Indexed
+  ( ctors ∷ Array Resolved.CtorInfo
+  , argumentGraph ∷ ArgumentGraph
+  )
 
 -- A record argument's labels must be disjoint from those its declaration
 -- writes beside that parameter, directly or through the declarations it
@@ -47,7 +32,7 @@ type Search =
 clashIn
   ∷ Tables → Syntax.TypeRef → Either Syntax.Diagnostic Unit
 clashIn tables reference =
-  if hasRecordParameters tables.types then
+  if hasArguments tables.argumentGraph then
     traverse_ (clashOf tables) (recordArguments tables reference)
   else Right unit
 
@@ -57,7 +42,7 @@ clashIn tables reference =
 programClashes
   ∷ Tables → Syntax.Program → Either Syntax.Diagnostic Unit
 programClashes tables program =
-  if hasRecordParameters tables.types then
+  if hasArguments tables.argumentGraph then
     traverse_ (clashIn tables) references
   else Right unit
   where
@@ -85,13 +70,14 @@ clashOf
 clashOf tables argument = maybe (Right unit) duplicate
   (Array.findMap clashing (Array.sortWith start argument.fields))
   where
-  declared = Array.sortWith start
-    (declaredLabels tables argument.callee argument.position)
-  clashing field = map (Tuple field) (Array.find (same field) declared)
   -- A declaration passing its own row back to itself meets its own
   -- label: a row growing through recursion, which the instantiation rule
-  -- reports (Features.Check.NestedArguments), not a second occurrence.
-  same field label = label.name == field.name && label.span /= field.span
+  -- reports (Features.Check.NestedArguments), not a second occurrence;
+  -- `firstLabel` leaves the argument's own label out.
+  clashing field = map (Tuple field)
+    ( firstLabel tables.argumentGraph (Tuple argument.callee argument.position)
+        { name: field.name, span: field.span }
+    )
   duplicate (Tuple field first) = Left
     { problem: Duplicate DuplicateField field.name
     , span: field.span
@@ -100,48 +86,3 @@ clashOf tables argument = maybe (Right unit) duplicate
 
 start ∷ ∀ r. { span ∷ Syntax.Span | r } → Int
 start found = found.span.start.offset
-
--- The labels a declaration writes beside its record parameter at
--- `position`, gathered over every declaration it is passed to by a loop
--- over a worklist, as Features.Check.Implied `declared` gathers them from
--- resolved types; each parameter is entered once, so recursive
--- declarations end.
-declaredLabels ∷ Tables → Int → Int → Array Written
-declaredLabels tables callee position = tailRec step
-  { pending: [ Tuple callee position ], seen: Set.empty, labels: [] }
-  where
-  step found = maybe (Done found.labels) (Loop <<< visit found)
-    (Array.uncons found.pending)
-  visit found { head, tail }
-    | Set.member head found.seen = found { pending = tail }
-    | otherwise = gathered tables head
-        found { pending = tail, seen = Set.insert head found.seen }
-
--- One parameter's labels, and the parameters it is passed on to.
-gathered ∷ Tables → Tuple Int Int → Search → Search
-gathered tables (Tuple owner position) found = maybe found entered
-  (Array.index tables.types owner)
-  where
-  entered info = maybe found (fromFields (references info))
-    (Array.index info.variables (slotOf info position))
-  references info = Array.concatMap fieldSyntax info.ctors
-  fieldSyntax (CtorId index) = maybe [] syntaxOf
-    (Array.index tables.ctors index)
-  syntaxOf ctor = ctor.fieldSyntax
-  fromFields fields name = found
-    { labels = found.labels
-        <> Array.concatMap (beside name) (Array.concatMap subtypes fields)
-    , pending = found.pending
-        <> map place
-          ( Array.filter (passes name)
-              (Array.concatMap (recordArguments tables) fields)
-          )
-    }
-  beside name = case _ of
-    Syntax.RecordRef _ fields (Just tail) | tail.name == name →
-      map label fields
-    _ → []
-  label field = { name: field.name, span: field.span }
-  passes name argument = map tailName argument.tail == Just name
-  tailName tail = tail.name
-  place argument = Tuple argument.callee argument.position

@@ -18,6 +18,7 @@ import Features.Resolve.Row (resolveRow)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
 import Features.Resolve.ArgumentClash (Tables, programClashes)
+import Features.Resolve.ArgumentGraph (argumentGraph)
 import Features.Resolve.BodySorts (signatureSorts)
 import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Occurrences (Declared, resolvedDeclared)
@@ -50,7 +51,14 @@ resolve program = do
   tables ← typeTable indices program
   -- Built once: one per signature cost O(types) each (T007).
   let declared = resolvedDeclared indices tables.types
-  let known = { types: tables.types, ctors: tables.ctors, typeIndices: indices }
+  let
+    known =
+      { types: tables.types
+      , ctors: tables.ctors
+      , typeIndices: indices
+      , argumentGraph: argumentGraph
+          { types: tables.types, ctors: tables.ctors, typeIndices: indices }
+      }
   effects ← Effect.effects declared known program.effects
   signatures ← traverse
     ( resolveSignature declared known
@@ -195,6 +203,7 @@ resolveFunction globals declared tables effects effectInfos definition =
     , bindings: definition.bindings
     , types: tables.types
     , typeIndices: tables.typeIndices
+    , argumentGraph: tables.argumentGraph
     , variables: definition.signature.variables
     , markVariables: definition.signature.markVariables
     , lacking: signatureLacking declared plain definition.function

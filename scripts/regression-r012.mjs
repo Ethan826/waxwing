@@ -20,7 +20,7 @@ export const r012Rows = [
     name: 'r012-argument-clash',
     file: 'src/Features/Resolve/ArgumentClash.purs',
     needle: 'clashIn tables reference =\n'
-      + '  if hasRecordParameters tables.types then',
+      + '  if hasArguments tables.argumentGraph then',
     replacement: 'clashIn tables reference =\n  if false then',
     probe: 'r012-argument-clash',
     message: /argument clash: E_INTERNAL Duplicate record label/

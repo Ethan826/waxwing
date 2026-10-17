@@ -36,8 +36,7 @@ design is drafted (docs/plans/2026-10-16-record-extension-design.md)
 records) is approved and planned (docs/plans/2026-10-16-record-
 extension-plan.md, 3 tasks, all texts approved); Tranche B (open-row
 merge) needs an algorithm pass. Then the INF001 design and C001.
-Alongside: R013 (ArgumentClash `declaredLabels`) and a phase profile of
-`npm run verify`.
+Alongside: a phase profile of `npm run verify`.
 
 ---
 
@@ -82,7 +81,7 @@ fast-forward only.
 Next, unchanged: R004 (record patterns) and R005 (extension, merge and
 removal), each with a design the user approves first; then the INF001
 design and C001 with records of operations. Alongside: a phase profile of
-`npm run verify` and R013 (now only ArgumentClash `declaredLabels`).
+`npm run verify`.
 
 ---
 

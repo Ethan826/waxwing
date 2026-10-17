@@ -8,6 +8,7 @@ import Domain.Type (Ty, VarId)
 import Features.Resolve.Builtin (Declared)
 import Features.Resolve.BodySorts (SignatureSorts)
 import Features.Resolve.Lacking (Lacking)
+import Features.Resolve.ArgumentGraph (ArgumentGraph)
 import Features.Resolve.TypeIndices (TypeIndices)
 
 -- An imported operation (FX020 §1): the local name it is bound to, what it
@@ -32,6 +33,7 @@ type Scope =
   , bindings ∷ Bindings
   , types ∷ Array Resolved.TypeInfo
   , typeIndices ∷ TypeIndices
+  , argumentGraph ∷ ArgumentGraph
   , effects ∷ Array { name ∷ String, arity ∷ Int }
   , effectInfos ∷ Array Resolved.EffectInfo
   , variables ∷ Array String
