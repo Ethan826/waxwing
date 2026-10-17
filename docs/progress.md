@@ -5786,3 +5786,44 @@ proof is 7 s, of which 5.7 s is a full purs compile of 523 modules. Warm
 Go cache saves about 23 s. Proposals (incremental compiles from a cloned
 baseline, concurrent rows) are recorded as BACKLOG T013 and await the
 user's approval. Deleted afterwards: .build/regression, .build/go-cache.
+
+## T002 and R011 (2026-10-17)
+
+Branch `t002-r011` from 41f3253; not merged or pushed.
+
+- T002 (1ff8f75, 87a9e82). test/go-batch.mjs builds each batch under
+  `.build/go-batches/<id>.<pid>` and removes it on exit and on
+  SIGINT/SIGTERM; SIGKILL can still leave one (`rm -rf .build/go-batches`).
+  The self-test runs three child processes (test/go-batch-child.mjs) on one
+  id. Red first: against the old module all three attempts failed (EEXIST
+  on the shared directory). Green after; no `<id>.<pid>` left behind. The
+  first version also asserted that the root gained no directory, which
+  other files' batches broke under the parallel suite (87a9e82 dropped it).
+- R011 (a550787). Format.Go.RecordLayouts computes the emitted layouts: the
+  record layouts of every parameter, result, constructor field, arrow,
+  effect type, expression, pattern and named-rest type, closed through
+  fields (RecordUse's `closed`). RecordHelpers emits structs for those
+  only. Specialization keys and layout ids are unchanged. The BACKLOG row's
+  `waxwingRec4` is used; the unused ones in bootstrap/records.go were
+  `waxwingRec3`, `waxwingRec6` and `waxwingRec8` (three removed, nothing
+  else changed; the other snapshots are byte-identical). The scale chain
+  now has one struct per shape (test/r011-layouts.test.mjs, shapes + 0
+  tails); test/r001-go-keys.test.mjs expects shapes + 1 instead of
+  shapes + 2 (get's tail was the extra one).
+- Red/green. test/r011-layouts.test.mjs against main: key-only tail,
+  two-tails, snapshot and scale-chain rows failed; the rows that guard
+  kept layouts (named rest only, nested rest, printed rest, empty record,
+  compare-only, held in a constructor field) passed on both. Dropping the
+  `NamedRest` type from the roots made five rows fail, then was restored.
+- Differential against main (r011-diff.log, harvested/fuzz/matches/
+  mutations): lex through specialize had no difference. Emit differed for
+  614 of 8,494 harvested sources and 1 mutation. For all 614 harvested,
+  stripping from main's Go every struct declaration that nothing else
+  names (repeated to a fixed point) gives the candidate's Go exactly; 1,718
+  declarations were removed, none unexplained. Fuzz and matches: 0
+  differences. The harvest's own test run reported 15 timing or load
+  failures (everything runs at once); they are not differences.
+- Verify (.build/evidence/t002-r011-verify.log): 2120/2120 parallel,
+  59/59 serial, 142 regression proofs, exit 0, including
+  `r005-rest-layout`. No regression needle changed. Deleted afterwards:
+  .build/regression, .build/go-cache, .build/t002-base.

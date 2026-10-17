@@ -324,7 +324,9 @@ not chosen.
 
 ### Go lowering
 
-- Each layout is one Go value struct `waxwingRec<N>`, numbered in
+- Each layout that some emitted type mentions is one Go value struct
+  `waxwingRec<N>` (R011; an open tail interned only as a key argument has
+  none, and the ids of the others do not change), numbered in
   first-use order, fields `f_<label>` in sorted order (the prefix keeps
   every field distinct from Go keywords). Nested records are inline. A
   field of declared type is a pointer, as a constructor field is, so
