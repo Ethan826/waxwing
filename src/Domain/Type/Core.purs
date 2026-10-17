@@ -18,7 +18,8 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
-import Domain.Type.Record (RecordRow, recordRow)
+import Domain.Type.Record (RecordRow)
+import Domain.Type.RecordSubst (Image(..), spliceImage)
 import Domain.Ids (TypeId)
 import Domain.Row (HandlerRows, Label(..), Row(..), closedRow, openRow)
 import Domain.Row as Row
@@ -181,21 +182,20 @@ substituteRow substitution (Row labels tail)
 -- Fields in place; a tail's image, a record type, supplies the rest.
 substituteRecord
   ∷ ∀ v w. Substitution v w → RecordRow (Ty v) v → Ty w
-substituteRecord substitution row = maybe (TRecord (recordRow written Nothing))
-  (spliceRecord written <<< substitution.types)
-  row.tail
+substituteRecord substitution row = TRecord
+  (spliceImage written (imageOf <<< substitution.types <$> row.tail))
   where
   written = map (map (substitute substitution)) row.fields
 
--- The written fields, then what a tail became: a record's fields join
--- them and its tail ends the row; another variable is the new tail. A tail
--- is a record-sorted variable (resolution checks), so no other image
--- arises; were one to, the row ends there.
+-- The written fields, then what a tail became (Domain.Type.RecordSubst).
 spliceRecord ∷ ∀ v. Array (Tuple String (Ty v)) → Ty v → Ty v
-spliceRecord written = case _ of
-  TRecord more → TRecord (recordRow (written <> more.fields) more.tail)
-  TVar variable → TRecord (recordRow written (Just variable))
-  _ → TRecord (recordRow written Nothing)
+spliceRecord written ty = TRecord (spliceImage written (Just (imageOf ty)))
+
+imageOf ∷ ∀ v. Ty v → Image (Ty v) v
+imageOf = case _ of
+  TRecord more → Spliced more
+  TVar variable → Renamed variable
+  _ → Ended
 
 substituteLabel ∷ ∀ v w. Substitution v w → Label (Ty v) → Label (Ty w)
 substituteLabel substitution (Label effect arguments mark) =
