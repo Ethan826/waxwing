@@ -11,6 +11,7 @@ import Domain.Type (Ty(..))
 import Domain.Type.Record (withoutLabels)
 import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Record (select)
+import Features.Check.SeveralTails (withinOneTail)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
 
 type Checked a = Either Diagnostic (Threaded a)
@@ -32,6 +33,8 @@ checkRemoval
   → Checked Checked.Expr
 checkRemoval infer env state span record labels = do
   found ← infer env state record
+  withinOneTail (Checked.spanOf found.value) found.state.subst
+    (Checked.typeOf found.value)
   selected ← threadAll (selectedIn found.value) found.state labels
   ty ← remainder span
     (resolved selected.state.subst (Checked.typeOf found.value))

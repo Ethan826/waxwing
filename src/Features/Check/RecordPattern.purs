@@ -26,6 +26,7 @@ import Features.Check.PatternRow
   )
 import Features.Check.Require (bounded, expectType, typeName)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
+import Features.Check.SeveralTails (withinOneTail)
 
 -- A field to check: its label, the type expected of it, and its pattern.
 type Expected = { label ∷ String, ty ∷ Ty Open, pattern ∷ Resolved.Pattern }
@@ -52,10 +53,10 @@ recordAgainst against env state expected written = do
     TRecord row
       | growable row written → extended against env state expected written
           (unknown row written)
-      | otherwise → matched expected written
-          <$> fromRecord against env state expected { ty, row } written
-    TVar (Hole _) → matched expected written
-      <$> fromHole against env state expected written
+      | otherwise → fromRecord against env state expected { ty, row } written
+          >>= matched expected written
+    TVar (Hole _) → fromHole against env state expected written
+      >>= matched expected written
     _ → notRecord unit
   where
   ty = resolved state.subst expected
@@ -166,34 +167,39 @@ matched
   ∷ Ty Open
   → Written
   → Threaded (Array Labelled)
-  → Threaded Matched
-matched expected written checked =
-  { value:
-      { pattern: Checked.Pattern
-          { ty: expected
-          , span: written.span
-          , shape: Checked.Record (map fieldOf checked.value) rest
-          }
-      , locals: Array.concatMap localsOf checked.value <> restLocals rest
-      }
-  , state: checked.state
-  }
+  → Either Diagnostic (Threaded Matched)
+matched expected written checked = built <$> restOf checked.state expected
+  written
   where
+  built rest =
+    { value:
+        { pattern: Checked.Pattern
+            { ty: expected
+            , span: written.span
+            , shape: Checked.Record (map fieldOf checked.value) rest
+            }
+        , locals: Array.concatMap localsOf checked.value <> restLocals rest
+        }
+    , state: checked.state
+    }
   fieldOf field = { label: field.label, pattern: field.matched.pattern }
   localsOf field = field.matched.locals
-  rest = restOf checked.state expected written
 
 -- R005 design §3: a named rest is the matched record without the written
 -- labels, its tail kept (the open rest, or the closed remainder, `{}`
 -- when none is left). The record is the expected type as the fields'
--- checks left it, which holds every written label by then.
-restOf ∷ State → Ty Open → Written → Checked.Rest
+-- checks left it, which holds every written label by then. Over several
+-- tails it is a placeholder (Features.Check.SeveralTails).
+restOf
+  ∷ State → Ty Open → Written → Either Diagnostic Checked.Rest
 restOf state expected written = case written.rest of
-  Resolved.NoRest → Checked.NoRest
-  Resolved.IgnoredRest → Checked.IgnoredRest
-  Resolved.NamedRest id → Checked.NamedRest id
-    (remainder (resolved state.subst expected))
+  Resolved.NoRest → Right Checked.NoRest
+  Resolved.IgnoredRest → Right Checked.IgnoredRest
+  Resolved.NamedRest id →
+    Checked.NamedRest id (remainder known)
+      <$ withinOneTail written.span state.subst known
   where
+  known = resolved state.subst expected
   remainder = case _ of
     TRecord row → TRecord (withoutLabels (writtenLabels written) row)
     other → other
