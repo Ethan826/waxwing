@@ -1,7 +1,7 @@
 # Open-row merge: rendering D4 and D6 (R005 Tranche B)
 
 Status:
-Proposed, for the user's review; no implementation authorized
+Approved 2026-10-17 with corrections; no implementation authorized
 
 The user authorized (2026-10-17) pinning the rendering of D4 and D6,
 the two diagnostics that draft 3 of the algorithm
@@ -13,10 +13,78 @@ resolves it. Nothing here changes the algorithm; where an example shows
 that a rendering needs something draft 3 does not record, it is listed
 as a decision (§10), not adopted.
 
-Everything below is Proposed unless marked Approved. The Approved texts
-it reuses are user decision 7's: D2, D3 with the hint `require r
-disjoint s in the signature`, D3', D8, and D9 `A disjoint constraint
-must name two different row variables`.
+The user reviewed this file on 2026-10-17 and approved it with the
+corrections recorded in §0; the body below has been corrected
+accordingly. The Approved texts it reuses are user decision 7's: D2, D3
+with the hint `require r disjoint s in the signature`, D3', D8, and D9
+`A disjoint constraint must name two different row variables`.
+
+## 0. The user's review (2026-10-17)
+
+**The meaning of D4 and D6 (correction).** D4 means that the checker
+could not resolve the constraints: it has established neither a
+solution nor a contradiction. It does not mean that several solutions
+exist. D6 means that the checker has established a contradiction caused
+by an equation. The `Cannot tell …` text stays. Two counterexamples,
+kept as fixtures in research/open-row-merge/ (README, "The two D4
+counterexamples"), show why "several solutions" is the wrong reading:
+
+- determinate.mjs: `m3 ⊎ m0 = m2 ⊎ m1` and `m0 ⊎ m1 = { a } ⊎ m2` have
+  exactly one solution, and the checker ends in D4 (run 2026-10-17:
+  `solutions: [{"m0":[],"m1":["a"],"m2":[],"m3":["a"]}]`, `expand=false:
+  D4`);
+- odd-cycle.mjs: `a ⊎ b = { x }`, `b ⊎ c = { x }`, `a ⊎ c = { x }`, each
+  row's parts disjoint, have no solution, and the checker ends in D4
+  (run 2026-10-17: `solutions: []`, `verdict: D4 pending=3`).
+
+unresolved.mjs pins Unresolved with zero, one and several solutions
+(the two above and a two-part sum with four), and perm.mjs counts every
+D4 of its campaigns by its number of solutions (README). The solver's
+result is three-way, `Solved`, `Contradiction` or `Unresolved`; D4 is
+rendered only from `Unresolved`, D6 (and D1-D3'') only from
+`Contradiction`, and no state is called ambiguous (the coordinator's
+requirement of 2026-10-17, carried into the implementation plan,
+docs/plans/2026-10-17-open-row-merge-plan.md).
+
+An annotation can resolve inference or expose a contradiction; it does
+not necessarily make the program valid. The resolving edits below are
+edits that do make their example valid; a hint (R9) only names where
+more information can be given.
+
+**Decisions, approved with the user's wording.**
+
+1. **R10.2 approved.** Preserve the specific fact responsible when
+   pruning binds a row to `{}`; internal solving steps must not degrade
+   an approved lacks/disjointness error into a generic shape mismatch.
+2. **Equation reasons on committed and drained bindings approved.**
+   Retain the causal equation after it leaves the pending store so
+   Examples 14 and 17 report D6; merely having participated in some
+   equation must not turn later errors into D6.
+3. **Upper-bound explanations approved in principle.** Identify an
+   equation that actually excludes the offending field; eager per-label
+   storage is not required (retaining narrowing reasons and selecting at
+   failure is acceptable); multiple sufficient reasons → deterministic
+   source-based precedence, not arrival order.
+4. **R5.** The owner's side is printed as written (variable names and
+   the relevant nested row); the other side through the current
+   substitution.
+5. **Metadata.** Lambda-parameter names, record-part creation sites and
+   instantiated type origins are recorded as diagnostic metadata, kept
+   separate from satisfiability decisions.
+6. **Lists and hints approved:** list every candidate part, consistent
+   numbering across message and notes, the demonstrated annotation
+   hints; no hint for Example 6. Adjustment to R3: deduplicate by part
+   identity, not printed name; distinct parts that would get the same
+   name are disambiguated with numbered parts and origin notes; never
+   hide a candidate. Nested-field wording, the D6 forms and the
+   example-specific locations are approved. The six prototype
+   refusal-text differences (Appendix B) are requirements for
+   implementing diagnostics, not grounds for changing expected
+   classifications.
+
+So the general forms of §2, rules R1-R11 as corrected here, and the
+examples' texts, locations, notes and hints are Approved. §10 keeps the
+questions as they were put, each marked with its outcome.
 
 The examples use Tranche B's surface, which today's compiler rejects
 (`Only one row tail is allowed`). The annotation forms the edits rely on
@@ -31,16 +99,19 @@ use that span.
 
 ## 1. The names, reconciled with draft 3
 
-- **D4, an unresolved choice.** Draft 3, §6 and §10: a pending equation
-  that still has a constant (a label or a rigid tail) when the function
-  body ends. By construction the constant has two or more homes, so the
-  equation has several solutions and the checker does not pick one.
-  Quiet equations (no constants) are never D4 (§2.2).
+- **D4, unresolved constraints.** Draft 3, §6 and §10: a pending
+  equation that still has a constant (a label or a rigid tail) when the
+  function body ends. The constant has two or more homes that forced
+  moves cannot choose between, so the checker has established neither a
+  solution nor a contradiction. That says nothing about how many
+  solutions exist: there may be several (most examples below), exactly
+  one (determinate.mjs) or none (odd-cycle.mjs) (§0). Quiet equations
+  (no constants) are never D4 (§2.2).
 - **D6, a contradiction caused by an equation.** Draft 3, §1.3, §2.5 and
-  §10: a failure whose reason is an equation (`Equated`): an upper bound
-  violated, a fact the sum rule derived, or a constant of a pending
-  equation left with no home. The equation has no solution. Rule R10
-  (§3) proposes to include two more cases draft 3 leaves to other texts.
+  §10: the checker has established a contradiction whose reason is an
+  equation (`Equated`): an upper bound violated, a fact the sum rule
+  derived, or a constant of a pending equation left with no home. Rule
+  R10 (§3) includes two more cases draft 3 leaves to other texts.
 - **Other contradictions keep their own texts.** A failure that no
   equation causes is D1, D2, D2', D3, D3', D3'' or Tranche A's shape
   text, by the reason that excluded the placement (Examples 15, 16).
@@ -100,15 +171,18 @@ and D6. A diagnostic with exactly one unnamed part prints `..._`, as
 Tranche A does.
 
 **R3. Which parts are listed.** Only the homes: the parts that may still
-hold the constant (design §2.1, step 7), deduplicated by printed name.
-For D6 with no home, the parts that were homes before the excluding
-facts. Two parts: `whether A or B`, `neither A nor B`; three or more:
-`which of A, B or C`, `none of A, B or C`. Order: the owner's variables
-by first written occurrence in the owner's declaration (draft 3's
-§10.1 proposed detail), lambda parameters by position, unnamed parts by
-number. **No abbreviation**: every listed part is a variable written in
-one declaration, a parameter of one lambda, or a spread item, so the
-list is bounded by source the reader can see (decision 7).
+hold the constant (design §2.1, step 7), deduplicated by part identity,
+not by printed name (user's adjustment, §0). Distinct parts that would
+print with the same name are disambiguated as numbered parts (R2) with
+an origin note each (R8); no candidate is ever hidden. For D6 with no
+home, the parts that were homes before the excluding facts. Two parts:
+`whether A or B`, `neither A nor B`; three or more: `which of A, B or
+C`, `none of A, B or C`. Order: the owner's variables by first written
+occurrence in the owner's declaration (draft 3's §10.1 proposed detail),
+lambda parameters by position, unnamed parts by number. **No
+abbreviation**: every listed part is a variable written in one
+declaration, a parameter of one lambda, or a spread item, so the list is
+bounded by source the reader can see (decision 7).
 
 **R4. Which constant.** The first constant with two or more homes:
 labels before rigid tails, labels in label order (design §7). Example 8
@@ -120,8 +194,10 @@ proposed here, owner-named parts in R3's order and `..._n` last. The
 owner's side prints as the owner wrote it (`merge's { ...r, ...s }`); the
 other side prints through the substitution at the time of the report.
 Draft 3's §1.3 says both rows print through the substitution; printing
-the owner's side resolved would lose the names `O's` refers to (decision
-5).
+the owner's side resolved would lose the names `O's` refers to. Approved
+(§0, decision 4): the owner's side as written, with its variable names
+and the relevant nested row; the other side through the current
+substitution.
 
 **R6. Nested positions.** When the waiting equation is nested in a
 field type (design §2.6), `(in field P)` names the path from the outer
@@ -157,7 +233,8 @@ D6, in this order:
 
 Notes 2 and 3 of D4 need spans draft 3 does not record: a creation span
 for each record meta, and the span of the written type an instantiated
-row came from (decision 6).
+row came from. Approved (§0, decision 5) as diagnostic metadata, kept
+separate from satisfiability decisions.
 
 **R9. Hints (D4 only),** by where the homes come from; each names an
 annotation the language permits (draft 3's §10, docs/language.md):
@@ -174,25 +251,40 @@ Draft 3's optional suffix `or state the parts in the enclosing
 signature` (inside a generic function) is not exercised by any example
 here and stays Proposed.
 
+A hint names where more information can be given. The annotation it
+suggests can resolve inference or expose a contradiction; it does not
+necessarily make the program valid (§0). An annotation that exposes a
+contradiction turns D4 into D6 or another contradiction text: in
+Example 1, `fn(p: { x: Int }, q: { x: Int }) => merge(p, q)` is D2.
+
 **R10. Which text a contradiction gets.**
 
 1. D6 when the placement that fails depends on an equation: a violated
    upper bound (Examples 3, 5, 13, 19), a constant of a pending
-   equation with no home (Example 14), and, proposed beyond draft 3, a
-   label that a commit placed (Example 14 in the other order) or a
-   binding the drain made (Example 17). The last two need a binding
-   made by a commit or the drain to keep its equation, as `arrivedAt`
-   keeps its span (decision 2).
+   equation with no home (Example 14), and, beyond draft 3, a label
+   that a commit placed (Example 14 in the other order) or a binding
+   the drain made (Example 17). The last two need a binding made by a
+   commit or the drain to keep its causal equation after the equation
+   leaves the pending store, as `arrivedAt` keeps its span. Approved
+   (§0, decision 2), with its limit: merely having participated in
+   some equation must not turn a later error into D6; only the equation
+   that caused the failing placement counts.
 2. Otherwise the text of the strongest reason that removed the home,
    by draft 3's precedence (§1.3): D1 for a written `lacks`, D2 or D3''
    for a disjointness, Tranche A's shape text for `Implied` and
    `Spread`. This holds also when the sum rule pruned a lone meta's
    bound to nothing and U4 bound it to `{}`: the report is the lack
-   that pruned it, never `Expected {}, found …` (decision 3; Appendix
-   B shows why it is needed).
-3. For a violated bound, the equation named is the one whose narrowing
-   first excluded the atom, which needs a reason per excluded atom
-   rather than draft 3's one `why` per bound (Example 19, decision 4).
+   that pruned it, never `Expected {}, found …` (Appendix B shows why
+   it is needed). Approved (§0, decision 1): the specific fact
+   responsible is preserved; internal solving steps must not degrade
+   an approved lacks or disjointness error into a generic shape
+   mismatch.
+3. For a violated bound, the equation named is one that actually
+   excludes the offending atom. Approved in principle (§0, decision
+   3): eager per-atom storage is not required; retaining the narrowing
+   reasons and selecting at failure is acceptable. When several
+   equations each suffice, a deterministic source-based precedence
+   chooses (the earliest site), never arrival order (Example 19).
 
 **R11. Several at once.** One diagnostic per program, as today. At the
 end of a body, D4 for the pending equation with the earliest site; for
@@ -214,7 +306,7 @@ fn main(): Int = apply0(merge);
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge` |
 | Primary | the argument `merge` (line 4): its requirement against `(a, b) -> { x: Int, y: Int }` deferred the equation |
 | Note 1 | `r and s are written here`, at merge's result type, line 1 |
@@ -258,7 +350,7 @@ fn main(): Int = apply0(merge3);
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell which of merge3's r, s or t has field x; pass a lambda with annotated parameters in place of merge3` |
 | Primary | the argument `merge3` (line 6) |
 | Note 1 | `r, s and t are written here`, at merge3's result type, line 3 |
@@ -307,7 +399,7 @@ fn main(): Int = apply3(merge3, { v: 3 }, { x: 1 }, { y: 2 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D6, Proposed; E_TYPE |
+| Diagnostic | D6, Approved; E_TYPE |
 | Text | `merge3's { ...r, ...s, ...t } must be { x: Int, y: Int, z: Int }, so t cannot have field v` |
 | Primary | the argument `{ v: 3 }` (line 7), the expression being checked when `t`'s bound excluded `v` (rule 1) |
 | Note 1 | `required here`, at the argument `merge3`, the equation's site |
@@ -343,7 +435,7 @@ Prototype: run 3: refuse, 0 solutions; fix: accept.
 
 ## 5. Nested field types
 
-The ambiguous field is identified by `(in field inner)` in the text
+The unresolved field is identified by `(in field inner)` in the text
 (R6); the location is the outer equation's site.
 
 ### Example 4. Nested field type, unresolved (D4)
@@ -359,7 +451,7 @@ fn main(): Int = apply0(wrap);
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether wrap's r or s (in field inner) has field x; pass a lambda with annotated parameters in place of wrap` |
 | Primary | the argument `wrap` (line 6): the nested equation takes the outer equation's site (design §2.6) |
 | Note 1 | `r and s are written here`, at the row inside wrap's result, line 3 |
@@ -407,7 +499,7 @@ fn main(): Int = apply1(wrap, { z: 1 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D6, Proposed; E_TYPE |
+| Diagnostic | D6, Approved; E_TYPE |
 | Text | `wrap's { ...r, ...s } (in field inner) must be { x: Int, y: Int }, so s cannot have field z` |
 | Primary | the argument `{ z: 1 }` (line 6) |
 | Note 1 | `required here`, at the argument `wrap`, the outer equation's site |
@@ -462,7 +554,7 @@ fn main(): Int = split({ x: 1, y: 2 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether split's r or s has field x` |
 | Primary | the argument `{ x: 1, y: 2 }` (line 2) |
 | Note 1 | `r and s are written here`, at split's parameter type, line 1 |
@@ -481,7 +573,7 @@ fn split(p: { ...r }): Int = 0;
 fn main(): Int = split({ x: 1, y: 2 });
 ```
 
-No hint (rule R9): no annotation at this call can decide it, because
+No hint (rule R9): no annotation at this call can resolve it, because
 nothing in `split`'s type outside the parameter mentions `r` or `s`. The
 edit is to the signature: a function that never separates the parts
 needs one tail. The other side is the primary expression itself, so
@@ -498,7 +590,7 @@ fn main(): Int = { let b = Both({ x: 1, y: 2 }); 0 };
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether Both's r or s has field x; write Both's row arguments in the enclosing signature or in a lambda parameter's annotation` |
 | Primary | the argument `{ x: 1, y: 2 }` (line 2), as in design §8 |
 | Note 1 | `r and s are written here`, at Both's payload type, line 1 |
@@ -538,7 +630,7 @@ fn main(): Int = apply0(merge3({ x: 1 }));
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether merge3's s or t has field y; pass a lambda with annotated parameters in place of this partial application of merge3` |
 | Primary | the partial application `merge3({ x: 1 })` (line 6) |
 | Note 1 | `s and t are written here`, at merge3's result type, line 3 |
@@ -584,7 +676,7 @@ fn main(): Int = apply0(fn(p, q) => { ...p, ...q });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether p or q has field x; annotate this lambda's parameters` |
 | Primary | the lambda `fn(p, q) => { ...p, ...q }` (line 2): its arrow is unified with the parameter type at the argument, which is where today's compiler reports a lambda's mismatch |
 | Note 1 | `{ x: Int, y: Int } is required here`, at apply0's parameter type, line 1 |
@@ -618,7 +710,7 @@ fn main(): Int = build(fn(f, g) => { ...f(1), ...g(2) });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell which part of { ..._1, ..._2 } has field x; annotate this lambda's parameters` |
 | Primary | the lambda (line 2) |
 | Note 1 | `..._1 comes from here`, at the spread item `f(1)` |
@@ -687,7 +779,7 @@ fn main(): Int = apply1(merge3, { x: 1 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether merge3's s or t has field y; pass a lambda with annotated parameters in place of merge3` |
 | Primary | the argument `merge3` (line 6), where the equation was deferred; re-examination keeps the site (design §2.6) |
 | Note 1 | `s and t are written here`, at merge3's result type, line 3 |
@@ -724,17 +816,18 @@ not named.
 
 Prototype: run 12: D4, 4 solutions; fix: accept.
 
-## 8. Contradiction versus unresolved choice
+## 8. Contradiction versus unresolved constraints
 
-| | D4: unresolved choice | D6: contradiction from an equation |
+| | D4: unresolved constraints | D6: contradiction from an equation |
 |---|---|---|
-| Solutions | several; the checker will not pick one | none |
+| What the checker established | neither a solution nor a contradiction; there may be several solutions, one or none (§0) | a contradiction caused by an equation: no solution exists |
+| Solver result | `Unresolved` | `Contradiction` |
 | When | when the function body ends | as soon as found, mid-body |
 | Text | begins `Cannot tell`; names the homes | `… must be …, so A cannot …` or `…, but neither …` / `none of …` |
 | Location | where the equation was deferred | the expression being checked |
 | Notes | `… are written here`, `… comes from here`, `… is required here` | `required here` at the equation's site, `excluded here` |
-| Hint | the annotation that would decide it, if any | none |
-| What fixes it | more information: an annotation or an argument | a different value or type |
+| Hint | where an annotation can give more information, if anywhere | none |
+| What fixes it | more information, an annotation or an argument, which resolves inference or exposes a contradiction | a different value or type |
 
 Examples 13 and 14 are D6. Examples 15 and 16 are contradictions no
 equation causes, so they keep their Approved texts. Example 17 is a
@@ -751,7 +844,7 @@ fn main(): Int = apply1(merge, { z: 1 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D6, Proposed; E_TYPE |
+| Diagnostic | D6, Approved; E_TYPE |
 | Text | `merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z` |
 | Primary | the argument `{ z: 1 }` (line 4) |
 | Note 1 | `required here`, at the argument `merge`, the equation's site |
@@ -792,7 +885,7 @@ fn main(): Int = apply(merge, noX);
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D6, Proposed; E_TYPE |
+| Diagnostic | D6, Approved; E_TYPE |
 | Text | `merge's { ...r, ...s } must be { x: Int, y: Int }, but neither r nor s can have field x` |
 | Primary | the argument `noX` (line 6), whose unification gave both parts the lack |
 | Note 1 | `required here`, at the argument `merge`, the equation's site |
@@ -925,7 +1018,7 @@ fn main(): Int = apply3(merge3, { x: 1 }, { y: 2 }, { z: 3 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D6, Proposed (draft 3 as written gives the shape text); E_TYPE |
+| Diagnostic | D6, Approved (draft 3 as written gives the shape text); E_TYPE |
 | Text | `merge3's { ...r, ...s, ...t } must be { x: Int, y: Int }, so t cannot have field z` |
 | Primary | the argument `{ z: 3 }` (line 6) |
 | Note 1 | `required here`, at the argument `merge3`, the equation's site |
@@ -977,7 +1070,7 @@ fn main(): Int = outer({ x: 1 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D4, Proposed; E_TYPE |
+| Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether merge's r or s holds t; pass a lambda with annotated parameters in place of merge` |
 | Primary | the argument `p` (line 4): `merge`'s result had already become `use`'s `r` (step 6); `p` brought the constant `t` |
 | Note 1 | `r and s are written here`, at merge's result type, line 1 |
@@ -1024,7 +1117,7 @@ fn main(): Int = both(merge, merge, { z: 1 });
 
 | Part | Rendering |
 |---|---|
-| Diagnostic | D6, Proposed; E_TYPE |
+| Diagnostic | D6, Approved; E_TYPE |
 | Text | `merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z` |
 | Primary | the argument `{ z: 1 }` (line 5) |
 | Note 1 | `required here`, at the first `merge`, the site of the equation that excludes `z` |
@@ -1061,6 +1154,12 @@ Prototype: run 19: refuse, 0 solutions (with `{ x: 1 }` too); without
 the argument D4, 2 solutions; fix: accept.
 
 ## 10. Decisions for the user
+
+Outcomes (2026-10-17, §0): 1 approved, with D4 and D6 redefined; 2
+approved with its limit; 3 approved; 4 approved in principle (selection
+at failure allowed, source-based precedence); 5 approved; 6 approved as
+metadata kept apart from satisfiability; 7 approved, with R3's
+deduplication by part identity; 8 approved, no hint for Example 6.
 
 1. The general forms of §2 and the rules R1-R9 and R11, as D4 and D6's
    rendering.
@@ -1234,9 +1333,10 @@ lone meta, lack, { x }: refuse (mismatch: no home for undefined); 0 sol.
 lone meta, lack, { x, y }: refuse (lacks: m0 lacks x); 0 sol.
 ```
 
-Every classification agrees with the example: D4 where several
-solutions exist (2, 4 or 9), `refuse` with no solution for each D6, D2,
-D3 and Example 17, and `accept` with one solution for Example 11 and
+Every classification agrees with the example: D4 for each D4 example
+(these happen to have 2, 4 or 9 solutions; D4 itself claims nothing
+about the count, §0), `refuse` with no solution for each D6, D2, D3 and
+Example 17, and `accept` with one solution for Example 11 and
 every resolving edit. The kind of refusal is the prototype's, not the
 compiler's text; Appendix B lists where it differs from the text
 proposed.
@@ -1268,4 +1368,6 @@ produces, so it shows which texts need R10.
   of the left side). Verdicts are unaffected. Recorded as BACKLOG R018.
 
 No example's class (accept, refuse, D4) differed from what the design
-predicts.
+predicts. The user's review (§0, decision 6) makes these differences
+requirements for implementing the diagnostics (R10), not grounds for
+changing any expected classification.

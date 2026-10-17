@@ -22,8 +22,10 @@ disjoint) and `{ k: 'lacks', v, l }`. Hypotheses on rigids are
 drive.mjs converts them for the solver (`apart: ['R|S']`).
 
 Verdicts: `accept`; `refuse` (a hard error: overlap, lacks, evidence,
-upper, mismatch); `D4` (an equation still waiting with a constant at the
-end, the design's ambiguity error).
+upper, mismatch), the compiler's `Contradiction`; `D4` (an equation
+still waiting with a constant at the end), the compiler's `Unresolved`:
+the solver established neither a solution nor a contradiction, which
+says nothing about how many solutions exist.
 
 ## Files
 
@@ -45,7 +47,9 @@ end, the design's ambiguity error).
 | sat13.mjs | uniquely satisfiable one-in-three systems |
 | switch.mjs, switch2.mjs | the hardness construction of the design's §2.7 |
 | removal.mjs | `without` over a two-tail receiver |
-| determinate.mjs | a determinate system the solver rejects |
+| determinate.mjs | a determinate system the solver rejects; the user's first D4 counterexample (one solution, D4) |
+| odd-cycle.mjs | three disjoint-row equations with no solution that end in D4; the user's second D4 counterexample |
+| unresolved.mjs | the permanent Unresolved fixtures: zero, one and several solutions; exits 1 on a mismatch |
 | annotation.mjs | user decision 1's `Both` example |
 
 The session originals were in the scratchpad: d2/solver2.mjs (now the
@@ -67,10 +71,10 @@ Small runs (each a few seconds at most), last run 2026-10-17:
 
 | Command | Checks | Expected |
 |---|---|---|
-| `node perm.mjs 21 2000` | S, H, L, C1, C2, C3 on raw problems | `unsound`, `dishonest`, `notLeast`, `orderDiff`, `d4OnePendingWithLeast` 0; accept 2010, refuse 7655, D4 335; `d4WithLeast` 0 |
-| `DENSE=1 node perm.mjs 21 2000` | the same, dense two-meta sums | defects 0; accept 2900, refuse 3090, D4 4010; `d4WithLeast` 50, no `c3fail` |
-| `node perm.mjs 22 2000` | raw, another seed | defects 0; accept 1995, refuse 7675, D4 330 |
-| `DENSE=1 node perm.mjs 22 2000` | dense | defects 0; accept 2875, refuse 2955, D4 4170; `d4WithLeast` 65 |
+| `node perm.mjs 21 2000` | S, H, L, C1, C2, C3 on raw problems; the three result buckets | `unsound`, `dishonest`, `notLeast`, `orderDiff`, `d4OnePendingWithLeast` 0, no `solvedViolates`; accept 2010, refuse 7655, D4 335; `d4WithLeast` 0; `unresolvedMany` 335 |
+| `DENSE=1 node perm.mjs 21 2000` | the same, dense two-meta sums | defects 0; accept 2900, refuse 3090, D4 4010; `d4WithLeast` 50, no `c3fail`; `unresolved0` 25, `unresolved1` 35, `unresolvedMany` 3950 |
+| `node perm.mjs 22 2000` | raw, another seed | defects 0; accept 1995, refuse 7675, D4 330; `unresolvedMany` 330 |
+| `DENSE=1 node perm.mjs 22 2000` | dense | defects 0; accept 2875, refuse 2955, D4 4170; `d4WithLeast` 65; `unresolved0` 15, `unresolved1` 60, `unresolvedMany` 4095 |
 | `node programs.mjs 1 4000` | soundness, honest refusal, leastness on program-shaped and raw problems | no `BUG-*`, `accept-*` or `INCOMPLETE-*` key; `shaped:accept` 729, `raw:accept` 469 |
 | `SHARE=1 node programs.mjs 1 4000` | the same with shared parameters | no defect or `INCOMPLETE-*` key; `shaped:accept` 708 |
 | `node shared.mjs` | review F2's family | `{"total":392,"least":186,"d4Least":0,"unsound":0}` |
@@ -83,6 +87,17 @@ Small runs (each a few seconds at most), last run 2026-10-17:
 | `node removal.mjs` | design §5.2 | D4 while waiting; `m9 = { y }` with x in either part; `.x` on the rest refused (`m9 lacks x`); no part with x refused |
 | `node annotation.mjs` | design §8 | `accept` with `m0 = { x }`, `m1 = { y }` in both orders; `no annotation: D4` |
 | `node determinate.mjs` | the stated incompleteness | one solution, which is the least; `expand=false: D4`; `expand=true: accept` with it |
+| `node odd-cycle.mjs` | D4 without several solutions | `solutions: []`; `verdict: D4 pending=3` |
+| `node unresolved.mjs` | Unresolved with zero, one and several solutions | `zero (odd-cycle.mjs): D4, 0 solutions`, `one (determinate.mjs): D4, 1 solutions`, `many (a two-part sum): D4, 4 solutions`; exit 0 |
+
+**The two D4 counterexamples** (the user's review of 2026-10-17, recorded
+in docs/plans/2026-10-17-open-row-merge-diagnostics.md, §1). D4 means
+that the checker could not resolve the constraints: it established
+neither a solution nor a contradiction. It does not mean that several
+solutions exist. determinate.mjs has exactly one solution and ends in
+D4; odd-cycle.mjs (`a ⊎ b = { x }`, `b ⊎ c = { x }`, `a ⊎ c = { x }`,
+each row's parts disjoint) has none and ends in D4. Both were run on
+2026-10-17 with the output in the table above.
 
 Environment switches for perm.mjs: `DENSE=1` (dense generator),
 `EXPAND=1` (build the `k × l` basis for a quiet equation beside a stuck
@@ -106,6 +121,21 @@ C1 violations 0; D4 with a least solution 3,205 runs (dense) and 45
 rerun from this directory on 2026-10-17 and matched the recorded line
 exactly: dense accept 17325, refuse 19185, D4 23490, `d4WithLeast` 350;
 raw accept 11940, refuse 45965, D4 2095, `d4WithLeast` 5.
+
+The campaign was rerun in full on 2026-10-17 with the three result
+buckets (perm.mjs now checks that every accepted problem's emitted
+solution satisfies every constraint and counts each D4 by its number
+of solutions). The verdict counts and the recorded totals above were
+reproduced exactly. Over 480,000 runs per generator:
+
+| Generator | accept | refuse | D4 | `solvedViolates` | `dishonest` | D4 with 0 solutions | with 1 | with several |
+|---|---|---|---|---|---|---|---|---|
+| raw | 95,605 | 368,200 | 16,195 | 0 | 0 | 15 | 15 | 16,165 |
+| dense | 136,945 | 154,910 | 188,145 | 0 | 0 | 1,110 | 2,395 | 184,640 |
+
+So Solved never emitted a non-solution, Contradiction never refused a
+satisfiable problem, and Unresolved occurred with zero, one and several
+solutions, as the definition allows.
 
 ## What the evidence does not show
 

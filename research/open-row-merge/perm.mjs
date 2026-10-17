@@ -5,12 +5,16 @@
 // class for every order), C1 (no D4 with exactly one pending equation
 // while a least solution exists) and C3 (every D4 with a least solution
 // has two pending equations sharing a meta); counts D4 with a least
-// solution, the measured incompleteness.
+// solution, the measured incompleteness. The three result buckets
+// (user review, 2026-10-17): Solved => the emitted solution satisfies
+// every constraint (`solvedViolates`); Contradiction => no solution
+// (`dishonest`); Unresolved => no claim, counted by its number of
+// solutions (`unresolved0`, `unresolved1`, `unresolvedMany`).
 // Usage: node perm.mjs <seed> <problems>
 // Env: DENSE=1 (two-meta sums against labels), EXPAND=1 (build the basis
 // for a quiet equation beside a stuck one), NOSUM=1 (no sum-rule facts).
 import { verdict, row } from './drive.mjs';
-import { allSolutions, leastOf } from './oracle.mjs';
+import { allSolutions, leastOf, sat } from './oracle.mjs';
 import * as S from './solver.mjs';
 import { mulberry, sampleWith } from './random.mjs';
 
@@ -75,7 +79,18 @@ const shareAMeta = st => {
   return false;
 };
 
+const bucket = (p, used, sols, v) => {
+  if (v.v === 'accept') {
+    const got = S.solution(v.st, used);
+    if (!p.cs.every(c => sat(p.hyp, got, c))) bump('solvedViolates');
+  }
+  if (v.v !== 'D4') return;
+  bump(sols.length === 0 ? 'unresolved0'
+    : sols.length === 1 ? 'unresolved1' : 'unresolvedMany');
+};
+
 const judge = (p, used, sols, lst, order, v) => {
+  bucket(p, used, sols, v);
   if (v.v === 'accept' && lst) {
     const got = S.solution(v.st, used);
     const same = m => [...got[m]].sort().join() === [...lst[m]].sort().join();

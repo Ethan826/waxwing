@@ -10,6 +10,16 @@ sections they name. Everything not covered by them is still Proposed;
 the collected table at the end marks each item Approved, Proposed,
 Withdrawn or Removed.
 
+D4 and D6's rendering was pinned in
+docs/plans/2026-10-17-open-row-merge-diagnostics.md, which the user
+approved on 2026-10-17 with corrections (its §0). The corrections that
+touch this draft are applied below: D4 means that the checker could not
+resolve the constraints (it has established neither a solution nor a
+contradiction), not that several solutions exist; D6 means that it has
+established a contradiction caused by an equation. Where this draft
+still says Proposed about D4, D6, R10's reasons or the rendering rules,
+the diagnostics file's §0 governs.
+
 Answers the algorithm pass that draft 2 of the record extension design
 (docs/plans/2026-10-16-record-extension-design.md §6) requires before
 Tranche B is planned. No code. The prototypes in Appendix A are toy
@@ -155,7 +165,8 @@ finding needed the user's judgment and was in draft 2's §14.
   and nothing is generalized, so no residual becomes a constraint. At
   the end of a function, facts on unsolved metas and quiet equations
   are met by the empty row, the row lowering already gives them. An
-  equation still waiting with a constant is an ambiguity error.
+  equation still waiting with a constant is D4, unresolved constraints:
+  the checker has established neither a solution nor a contradiction.
 - **Why not complete.** Whether a least solution exists is coNP-hard
   (§2.7). The checker decides the forced cases and says so when it
   cannot; some determinate programs are rejected (user decision 3). The
@@ -425,7 +436,7 @@ To unify rows `L` and `R` (UnifyRecord, generalised):
      ?m'` with `?m'` fresh, and go to 1.
    - Constants remain, each with several homes: **defer** (§2.6).
    - No constants remain (metas on both sides, at least two on each):
-     **quiet**, deferred the same way but never an ambiguity (§2.2).
+     **quiet**, deferred the same way but never D4 (§2.2).
 
 ### 2.2 Quiet equations instead of the general solution
 
@@ -498,8 +509,9 @@ Int }`. The third argument checks against `{ y: Int }`.
 
 **Never resolved.** Without `p` and `q`, `fn apply0(f: (a, b) -> { x:
 Int, y: Int }): Int`, the equation is still pending when `main` ends:
-D4 at `merge`. Four splits of `{ x, y }` are solutions; no choice is
-forced, and each gives `merge` a different specialization.
+D4 at `merge`: forced moves place neither label. Here four splits of `{
+x, y }` are solutions, each giving `merge` a different specialization;
+D4 itself makes no claim about the number (diagnostics file, §0).
 
 **Forced by a fact.** If `?s` lacks `x` (say the program also passed
 `{ ...?s }` where `{ x: Int, ...t }` was expected), the only home of
@@ -911,9 +923,11 @@ the effect rows nor the record equations move.
    this default is the least solution of what was accepted.
 2. **A pending equation with a constant** is D4, at its site. By
    construction it still has a constant with two homes, so the default
-   cannot satisfy it. D4 is reported before `settleFinal`'s `Fail needs
-   a concrete error family`, so a `Fail` payload like `{ ...?r, ...?s }`
-   whose key waits on the equation reports the real ambiguity.
+   cannot satisfy it, and the checker has established neither a solution
+   nor a contradiction. D4 is reported before `settleFinal`'s `Fail
+   needs a concrete error family`, so a `Fail` payload like `{ ...?r,
+   ...?s }` whose key waits on the equation reports the real unresolved
+   equation.
 3. `settleFinal`, as today.
 
 **Postponed pairs.** A postponed effect pair reverts the substitution,
@@ -943,14 +957,15 @@ constants `x` and `r` each have two homes, `?a` and `?b`. The checker:
    order).
 
 With metas on both sides and no constants (`{ ...?a, ...?b } ~ { ...?c,
-...?d }`) the equation is quiet (§2.2): it is never ambiguous and builds
+...?d }`) the equation is quiet (§2.2): it is never D4 and builds
 nothing.
 
-## 8. Declarations, ambiguity at the use, and repeated tails
+## 8. Declarations, unresolved uses, and repeated tails
 
-**No declaration-level ambiguity check** (user decision 1). Draft 2
-proposed D7, which rejected at the declaration two record variables
-that every written row holds together. It is withdrawn. Whether a use
+**No declaration-level check of interchangeable tails** (user decision
+1). Draft 2 proposed D7, which rejected at the declaration two record
+variables that every written row holds together. It is withdrawn.
+Whether a use
 resolves depends on what the use's context fixes, which the declaration
 cannot see. A declared type's record-row arguments are such a context:
 
@@ -978,9 +993,10 @@ fn example(): Int = { let b = Both({ x: 1, y: 2 }); 0 };
 ```
 
 the equation is still pending when the body ends: D4 at `{ x: 1, y: 2
-}`, since the four splits of `{ x, y }` are all solutions and give four
-specializations of `Both`. That is where ambiguity is reported: at the
-unresolved use, never at the declaration. Required compiler test,
+}`; nothing at the use fixes the split (here the four splits of `{ x, y
+}` are all solutions and would give four specializations of `Both`).
+That is where an unresolved use is reported: at the use, never at the
+declaration. Required compiler test,
 `r005b-both-annotation` (§12): the annotated program is accepted and
 runs, the unannotated one is D4 at the argument.
 
@@ -1050,22 +1066,24 @@ text's.
 | D3 | Approved, remedy as a hint | No evidence that two rigid rows are disjoint, no overlapping label known | `r and s are not known to be disjoint`; hint `require r disjoint s in the signature` | the expression being required; `required here` at the obligation's clause or implying type; none for a literal |
 | D3' | Approved | The same rigid in both rows | `r is in both records and may have fields` | as D3 |
 | D3'' | Approved (Tranche A's text) | A known label against a rigid under disjointness | existing `s may already have field a` | the expression being required; `s is introduced here` at the signature's first `...s`; `required here` at the clause |
-| D4 | Proposed | A pending equation with a constant at the end of a function | `Cannot tell whether merge's r or s has field x` (or `holds t` for a rigid); with no callee owning the metas, `Cannot tell which part of { ..._, ..._ } has field x` | the site of the unification that deferred it; hint below |
+| D4 | Approved 2026-10-17 (diagnostics file) | Unresolved constraints: a pending equation with a constant at the end of a function | `Cannot tell whether merge's r or s has field x` (or `holds t` for a rigid); with no callee owning the metas, `Cannot tell which part of { ..._, ..._ } has field x` | the site of the unification that deferred it; hint below |
 | D5 | Withdrawn (draft 2, with P5) | | | |
-| D6 | Proposed | A failure caused by a pending equation or a bound (`Equated`) | `merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z`; when no part can: `…, but neither r nor s can have field x` | the expression being checked (rule 1); `required here` at the equation's site |
+| D6 | Approved 2026-10-17 (diagnostics file) | A contradiction caused by an equation (`Equated`): a pending equation, a bound, or a binding a commit or the drain made | `merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z`; when no part can: `…, but neither r nor s can have field x` | the expression being checked (rule 1); `required here` at the equation's site |
 | D7 | Withdrawn (user decision 1) | | | |
 | D8 | Approved | A repeated tail in a written row | `...r is written twice in one record` | the second `...r`; `first written here` at the first |
 | D9 | Approved | `where r disjoint r` | `A disjoint constraint must name two different row variables` | the clause's second `r` |
 | D10 | Removed (user decision 2) | | | |
 
-**D4's hint** (Proposed). Draft 2's `a type for r or s here would decide
-it` described no annotation the language has. The annotations Waxwing
-permits are a function's signature, type and constructor declarations,
-and a lambda's parameter annotations (docs/language.md, "Semantics" and
-"Functions"); there is no `let` or expression annotation and no lambda
-result annotation, and a lambda annotation may name only the enclosing
-signature's variables. So the hint depends on where the metas come
-from:
+**D4's hint** (approved in the diagnostics file's R9; an annotation it
+names can resolve inference or expose a contradiction, and does not
+necessarily make the program valid). Draft 2's `a type for r or s here
+would decide it` described no annotation the language has. The
+annotations Waxwing permits are a function's signature, type and
+constructor declarations, and a lambda's parameter annotations
+(docs/language.md, "Semantics" and "Functions"); there is no `let` or
+expression annotation and no lambda result annotation, and a lambda
+annotation may name only the enclosing signature's variables. So the
+hint depends on where the metas come from:
 
 - a callee used as a value (`apply0(merge)`): `pass a lambda with
   annotated parameters in place of merge`, as in `apply0(fn(p: { x: Int
@@ -1123,7 +1141,8 @@ callee's signature.
 
 ### 10.2 Rendering examples to pin before D4 and D6 are approved
 
-Pinned for review in docs/plans/2026-10-17-open-row-merge-diagnostics.md.
+Pinned in docs/plans/2026-10-17-open-row-merge-diagnostics.md, approved
+2026-10-17 with corrections (its §0).
 
 Each item becomes a test expectation (source, text, span, notes, hint)
 submitted to the user with slice 5. The hint of each must name an
@@ -1135,7 +1154,7 @@ annotation the language permits (above).
    later argument gives `t` a field outside `{ x, y }`.
 2. Nested field types: §2.6's `{ a: { ...?p, ...?q }, ...?r, ...?s } ~
    { a: { x: Int, y: Int }, z: Int }`; how D4 and D6 say that the
-   ambiguity is inside field `a`, and which site they use.
+   unresolved equation is inside field `a`, and which site they use.
 3. Equations without a named callee: `fn(p, q) => { ...p, ...q }`
    passed where `(a, b) -> { x: Int, y: Int }` is expected; the metas
    are the lambda's parameters, so the text must name them (`p` and `q`)
@@ -1195,14 +1214,15 @@ shows up as a soundness failure (review F13).
 | C2, order | the verdict class (accept, refuse, D4) is the same for every order of the constraints |
 | C3, the rest (reported) | every D4 with a least solution has two or more pending equations sharing a meta; its rate per generator is printed and compared with a recorded ceiling |
 
-C1 and C2 are checks, not completeness: a stuck single equation is
-genuinely ambiguous, and no verdict depends on the order the program
-happens to present constraints in. C3 is the stated incompleteness. Its
-rate is reported rather than pinned case by case; a rise above the
-recorded ceiling fails the run, a fall is a deliberate change to record.
-Pinned fixtures are the instances that are hard by §2.7, not random
-finds: the uniquely satisfiable one-in-three systems and the switch
-systems with an unsatisfiable formula, which stay D4.
+C1 and C2 are checks, not completeness: a stuck single equation has no
+least solution (it may have several solutions or none), and no verdict
+depends on the order the program happens to present constraints in. C3
+is the stated incompleteness. Its rate is reported rather than pinned
+case by case; a rise above the recorded ceiling fails the run, a fall is
+a deliberate change to record. Pinned fixtures are the instances that
+are hard by §2.7, not random finds: the uniquely satisfiable
+one-in-three systems and the switch systems with an unsatisfiable
+formula, which stay D4.
 
 **Generators.**
 
@@ -1243,7 +1263,7 @@ defect restored):
 | `r005b-mixed-tails` | tail/tail decomposition skipped | the same with the lack written, accepted without `r disjoint s` |
 | `r005b-provenance` | a decomposed lack loses its `Because` | D1's text where D2's is due, through a wrapper |
 | `r005b-precedence` | the first reason seeded wins | P1 of §1.6 prints the shape text; merge's D2 note at the result type instead of the clause |
-| `r005b-defer` | ambiguous constants placed in the first home | `apply2(merge, { y: 2 }, { x: 1 })` refused |
+| `r005b-defer` | constants with several homes placed in the first home | `apply2(merge, { y: 2 }, { x: 1 })` refused |
 | `r005b-upper` | no upper bounds | `both(merge, merge)` D4 |
 | `r005b-quiet` | quiet equations expanded | `h(merge × 12)` takes seconds (timing row, generous bound) |
 | `r005b-pending-dedup` | re-deferral appends | the nested-field equation of §2.6 reports D4 twice |
@@ -1361,7 +1381,9 @@ printing order of tails (decision 4), D2's wording and the other texts
 (decision 7, except D4 and D6), and D7's reach (withdrawn, decision 1).
 Still Proposed:
 
-1. D4 and D6: texts, hints and the rendering examples of §10.2.
+1. D4 and D6: settled by the diagnostics file (approved 2026-10-17
+   with corrections), except the optional hint suffix `or state the
+   parts in the enclosing signature`.
 2. The rank of `Equated` in the precedence (last, §1.3).
 3. The place of `..._` when printing rows, and the order of a callee's
    variables in notes (§10.1).
@@ -1381,12 +1403,12 @@ Still Proposed:
 | P4 | Acceptance: forced moves only, with upper bounds, the sum rule and persistent obligations; no exponential search, no eager basis expansion; quiet equations met by the default; a pending equation with a constant at the end is D4 | Approved (user decision 3) |
 | P5 | No part cap; the solver makes at most (program metas × constants) metas (§2.7) | Withdrawn (draft 2) |
 | P6 | Unsolved metas default to the empty row at the end, as lowering already does | Proposed |
-| P7 | The texts and locations of §10 | Per row of §10: D1-D3'', D8, D9 approved; D4, D6 and the location rules Proposed; D5, D7 withdrawn; D10 removed |
+| P7 | The texts and locations of §10 | Per row of §10: D1-D3'', D8, D9 approved; D4, D6 approved 2026-10-17 with their renderings (diagnostics file); the general location rules Proposed except where the diagnostics file fixes them; D5, D7 withdrawn; D10 removed |
 | P8 | The drain runs after each top-level unification and in each settle round | Proposed |
-| P9 | A failure found against a pending equation or a bound is reported at the current expression with D6 and `required here` at the equation's site | Proposed (with D6) |
+| P9 | A failure found against a pending equation or a bound is reported at the current expression with D6 and `required here` at the equation's site | Approved with D6 (diagnostics file, R7, R8, R10) |
 | P10 | `without` and rest binders take the fresh rest row of one requirement, never a resolved type minus labels | Approved (user decision 6) |
 | P11 | Provenance precedence `Lacks`, `Disjoint`, `Implied`, `Spread`, source order breaking ties, for lacks and pairs | Approved (user decision 5); `Equated` last, Proposed |
-| P12 | A repeated tail is D8 at resolve; no declaration-level ambiguity check (D7) | D8 approved; D7 withdrawn (user decision 1) |
+| P12 | A repeated tail is D8 at resolve; no declaration-level interchangeable-tails check (D7) | D8 approved; D7 withdrawn (user decision 1) |
 | P13 | Pending equations hold the residue, have an identity and a normal form, are replaced on re-deferral and indexed by meta | Proposed |
 | P14 | Rows print fields by label, then rigid tails by first written occurrence in the enclosing signature | Approved (user decision 4) |
 | P15 | `Because` has `Equated`, carrying the equation's id, rows, site and owner | Required by user decision 8; its shape (§1.3) Proposed |
@@ -1482,7 +1504,7 @@ counts them.
 | switch2.mjs (d2/switch2.mjs) | switch systems over unsatisfiable formulas (a least solution exists) | 308 of 308 D4, as intended (pinned fixtures) |
 | switch.mjs (d2/switch.mjs) | §2.7's switch construction, 400 random formulas | a least solution exists iff the formula is unsatisfiable: 400 of 400 |
 | chain.mjs (d2/cx2.mjs) | `h(merge × n)`, n up to 40 | accepted; no fresh meta, n apart pairs, n − 1 quiet equations, ≤ 3 ms (draft 1: 2^n parts, n = 9 in 4.3 s, history) |
-| growth.mjs (d2/growth.mjs) | the same with z = { a, b }, then each part fixed | D4 (genuinely ambiguous), then accepted; n = 60 in 38 ms |
+| growth.mjs (d2/growth.mjs) | the same with z = { a, b }, then each part fixed | D4 (several solutions, none least), then accepted; n = 60 in 38 ms |
 | growth.mjs | random stress, 40 metas, 12 equations, 3,000 problems | worst 12 solver-made metas (bound 28 × 7 = 196), ≤ 11 parts in a row, ≤ 19 ms |
 | programs.mjs (d2/run2.mjs) | draft 1's program-shaped and raw generators, with and without shared parameters, 10 × 4,000 | no soundness or honesty failure; no D4 with a least solution in program-shaped problems |
 | removal.mjs (d2/removal.mjs) | `without { x }` on `{ ...?r, ...?s }` (§5.2) | waits; `.x` on the rest refused at once; `ρ = { y }` with `x` in either part; no part with `x` refused |
