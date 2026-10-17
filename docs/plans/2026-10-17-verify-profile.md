@@ -1,7 +1,15 @@
 # Where `npm run verify` spends its time (2026-10-17)
 
-Measurement only. Nothing in scripts, tests or source was changed; every
-speedup below is a proposal that needs the user's approval before work.
+> **Historical note (2026-10-17).** The measurement, proposals,
+> estimates, "Unmeasured" list and "user picks a proposal" next action
+> below are the original profile, kept as it was written. Proposal 1 was
+> approved, experimented on and adopted; see "Incremental-compilation
+> experiment" and "Adopted (2026-10-17)" at the end. Proposals 2 to 6
+> remain open and deferred.
+
+Measurement only (historical: nothing was changed when this was written;
+proposal 1 is now adopted). Every other speedup below remains a proposal
+that needs the user's approval before work.
 Raw data and the throwaway drivers are in `.build/profile/` (git-ignored):
 `phases.jsonl`, `par.jsonl`, `ser.jsonl`, `rows.jsonl`, `tests-summary.txt`,
 `drive.mjs`, `regdrive.mjs`, `reporter.mjs`.
@@ -154,9 +162,10 @@ Other measurements:
   rows cannot be run concurrently from separate invocations without a
   change to that line.
 
-## Proposals (need the user's approval; none implemented)
+## Proposals (historical, superseded by "Adopted": #1 is implemented)
 
-Ranked by expected saving, then risk. Savings are estimates unless noted.
+Ranked by expected saving, then risk. Savings are estimates unless noted
+(historical: #1 is now measured, see "Adopted").
 
 | # | Proposal | Est. saving | Risk |
 |---|---|---:|---|
@@ -199,7 +208,7 @@ Ranked by expected saving, then risk. Savings are estimates unless noted.
 Not recommended: sharding slow test files (the longest is 35 s of a
 76 s phase); loosening or skipping any proof or timing bound (AGENTS.md).
 
-## Unmeasured
+## Unmeasured (historical, superseded by the experiment and "Adopted")
 
 - The full unmodified `scripts/regression.mjs` run (only per-row sums).
 - Any proposed change; all savings above are estimates from the component
@@ -245,3 +254,34 @@ host, GOTOOLCHAIN=go1.26.4.
   it, an equivalence check that includes at least one mutation low in
   the module graph (dependents' externs change), ideally kept as a
   standing check. Worker parallelism and strict-rebuild stay deferred.
+
+## Adopted (2026-10-17)
+
+User-approved production change, commit f5a06bf (scripts/regression.mjs,
+scripts/regression-clone.mjs, test/regression-incremental.test.mjs):
+one plain-purs baseline per run, an independent clone per row, unchanged
+probes, row cleanup in `finally`, and a permanent equivalence check. It
+supersedes the experiment's "A production change would need" list; worker
+parallelism (proposal 2) and the strict-rebuild change (4) stay deferred.
+
+Measured in the main checkout, idle host, GOTOOLCHAIN=go1.26.4, cold Go
+cache (`.build/go-cache` deleted first):
+
+| Run | Wall time | Outcome |
+|---|---|---|
+| `node scripts/regression.mjs`, from clean state | 449.3 s (7:29.3) | 142/142 |
+| `rm -rf output && npm run verify` | 728.7 s (12:08.7) | exit 0, 142 proofs |
+
+- The regression saving is **measured**: 17:19.5 (unmodified script, the
+  experiment) to 7:29.3 is about 590 s (57%). Row outcomes are the same
+  142 passes (healthy 0, mutant 1, message matched), with the same proof
+  count; the equivalence check is a separate test, not a row.
+- The full-suite saving is what the optimized full verify measured:
+  728.7 s against the earlier 1,320.5 s (22:00.5) clean-copy
+  measurement, about 592 s (45%). Conditions are close, not identical:
+  both idle and cold-Go-cache with no `output`, but the earlier run was
+  in a clean `git archive` copy at 106ce60 and this one is in the main
+  checkout at the T013 commit (which adds three tests). The original
+  profile's 1,292 s verify is a third, separate measurement.
+- Disk: row directories are removed as each row finishes, and the
+  baseline at the end, so a run no longer leaves gigabytes behind.

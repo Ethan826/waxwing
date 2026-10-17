@@ -123,7 +123,19 @@ adding a bypass allowlist.
   (controller ruling after a 1670.670250 ms parallel failure). These moves
   apply the existing fixed-bound scheduling policy, not looser checks.
   Then verify runs
-  scripts/regression.mjs, a table of isolated-copy mutations, each of which
+  scripts/regression.mjs (T013: one plain-purs baseline compiled per run in
+  .build/regression/baseline, never the spago output, whose bytes differ;
+  each row an independent `cp -cR` clone of it, or an ordinary recursive
+  copy where cloning fails, never a hard link; the row's edits applied to
+  the clone's sources and compiled incrementally with relative globs so
+  source paths match; row directories removed in `finally`, a failing row's
+  error saved to .build/regression-failed/<row>.log first, the
+  baseline removed at the end. test/regression-incremental.test.mjs, run by
+  verify, keeps this honest: it mutates Domain.Ids (TypeId newtype to
+  data), asserts that modules other than the edited one change, and
+  compares an incremental compile with a clean one over every output file
+  except cache-db.json; it also forces the copy fallback and checks inode
+  and nlink independence), a table of isolated-copy mutations, each of which
   must pass on the healthy build and fail on its mutant: `branch`
   (Features.Check.Infer branch type), `nil-guard` (Format.Go.Match drops the
   `!= nil`

@@ -1,5 +1,25 @@
 # Bootstrap evidence and current checkpoint
 
+## T013: incremental regression proofs (2026-10-17)
+
+Branch t013-incremental, commit f5a06bf (docs in the commit after it).
+`scripts/regression.mjs` compiles one plain-purs baseline (src, .spago,
+output) per run, clones it per row (`scripts/regression-clone.mjs`: `cp
+-cR`, else an ordinary copy; never hard links), applies the row's edits,
+compiles incrementally and runs the unchanged probes. Each row directory is
+removed in `finally`; a failing row's error is saved to
+`.build/regression-failed/<row>.log` first.
+`test/regression-incremental.test.mjs` is the permanent equivalence check:
+`Domain.Ids` `TypeId` newtype to data changes 25 dependents' compiled JS,
+and the incremental result equals a clean compile (all files and bytes
+except `cache-db.json`). It also covers the fallback and clone
+independence. Red logs: .build/evidence/t013-red.log (helper absent,
+hard-linking fallback, non-propagating mutation, corrupted incremental
+output). Measured: regression 449 s (was 1,039.5 s), full verify 728.7 s
+(was 1,320.5 s), 142/142 proofs, 2123 plus 59 tests passing
+(.build/evidence/t013-regression.log, t013-verify.log). Details:
+docs/plans/2026-10-17-verify-profile.md "Adopted (2026-10-17)".
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/
