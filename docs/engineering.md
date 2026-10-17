@@ -4,7 +4,10 @@ AGENTS.md is normative. CLAUDE.md is a pointer, so rules are not duplicated.
 The verification command is npm run verify. scripts/build.mjs removes the
 output of every workspace module before building, so each build recompiles
 them and a promoted strict warning fails every build (F004 fixed; dependency
-output stays cached). scripts/strict-rebuild.mjs, run by verify, proves it.
+output stays cached). Via scripts/build-prune.mjs it also removes output of
+workspace-prefixed modules whose source was deleted (F006;
+test/build-prune.test.mjs). scripts/strict-rebuild.mjs, run by verify,
+proves the recompile.
 Never obtain green results by suppressing a gate, weakening an assertion, or
 adding a bypass allowlist.
 
