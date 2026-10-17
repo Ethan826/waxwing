@@ -226,7 +226,16 @@ adding a bypass allowlist.
   `r004-walk-binders` (settlement skipping patterns in record fields),
   `r004-inhabitation` (record fields read as Int), `r004-go-fields`
   (lowered conditions testing no field) and `r004-hole-tail` (a hole tail
-  never extended), and FX024 adds `fx-label-argument-ambient`
+  never extended), R005 eight in scripts/regression-r005.mjs (probes in
+  test/regression-r005.mjs): `r005-overlap` (no overlap check),
+  `r005-overlap-order` (the overlap reported at the item whichever was
+  written first), `r005-written-use` (written lacks not seeded at a use),
+  `r005-provenance` (the violation's clause forgotten, the shape text
+  instead), `r005-rest-type` (a rest typed as the whole record),
+  `r005-go-order` (extension temporaries out of written order),
+  `r005-empty-unit` (`{}` unifying with Unit) and `r005-rest-layout` (a
+  remainder layout interned and forgotten, so an unused rest's struct is
+  never emitted), and FX024 adds `fx-label-argument-ambient`
   to scripts/regression-fx.mjs. Every one of these rows' `message`s pins
   the symptom of its restored defect (the wrong diagnostic, a wrong
   acceptance, an internal error, Go's build error, the wrong output, or,
