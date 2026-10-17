@@ -498,6 +498,20 @@ All maintained code remains below 250 lines; automatic counts do not prove
 full naming/complexity compliance. No new source behavior or unification is
 claimed. Existing executable/snapshot/diagnostic tests validate this refactor.
 
+## Research scripts
+
+research/ holds maintained evidence for designs that is not part of the
+compiler: prototypes, oracles and generators a design relies on (first
+research/open-row-merge/, for R005 Tranche B). It is maintained but not
+in verify: nothing there is built, tested or run by `npm run verify`.
+Automated: scripts/width.mjs scans it like every tracked .mjs and .md
+file, so the 80-column rule applies. Review convention: the 250-line
+limit and the other tooling rules hold there too, although
+scripts/structure.mjs scans only src, test, scripts and tools/style/src.
+Each directory has a README.md with exact commands, seeds, expected
+output and what each script checks; a design citing a result names the
+command that reproduces it.
+
 ## Known gaps in enforcement (A001)
 
 Review conventions only: the layer names describe reasons to change, which no

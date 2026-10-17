@@ -1,18 +1,103 @@
 # Open-row merge: the algorithm (R005 Tranche B)
 
-Status: Draft 2, 2026-10-17, written unattended after an adversarial
-review (docs/plans/2026-10-16-open-row-merge-review.md); every choice is
-Proposed and needs the user's review.
+Status:
+Draft 3, 2026-10-17: user decisions recorded; remaining Proposed items marked
+
+Draft 2 was written unattended after an adversarial review
+(docs/plans/2026-10-16-open-row-merge-review.md). The user reviewed it
+on 2026-10-17; the decisions are recorded below and applied in the
+sections they name. Everything not covered by them is still Proposed;
+the collected table at the end marks each item Approved, Proposed,
+Withdrawn or Removed.
 
 Answers the algorithm pass that draft 2 of the record extension design
 (docs/plans/2026-10-16-record-extension-design.md §6) requires before
 Tranche B is planned. No code. The prototypes in Appendix A are toy
-solvers in JavaScript, not the compiler.
+solvers in JavaScript, not the compiler, now kept in
+research/open-row-merge/.
+
+## User decisions (2026-10-17)
+
+The user reviewed draft 2 and decided the following. None is reopened
+by this draft.
+
+1. **D7 is withdrawn.** Draft 2 rejected, at the declaration, record
+   variables that every written row holds together ("interchangeable
+   tails"). The user's counterexample:
+
+   ```wxw
+   type Both(...r, ...s) = Both({ ...r, ...s });
+   fn example(): Both({ x: Int }, { y: Int }) = Both({ x: 1, y: 2 });
+   ```
+
+   The result annotation fixes `r` and `s` separately through the
+   declared type's record-row arguments, which the compiler already
+   preserves (ADR 013, R012), and deferred equations let this use
+   resolve. Ambiguity stays at the unresolved use site, as D4. The
+   example is a worked example (§8) and a required compiler test
+   (`r005b-both-annotation`, §12).
+2. **Implied disjointness: option A.** `{ ...r, ...s }` in a signature
+   implies that its tails are disjoint, as fields beside a tail imply
+   lacks. An explicit `where r disjoint s` remains useful when the
+   signature does not otherwise state the relationship, as in `fn g(a: {
+   ...r }, b: { ...s }): Int where r disjoint s`. D10 disappears.
+3. **Completeness.** Forced solving with upper bounds and persistent
+   obligations; no exponential search and no eager basis expansion. Some
+   determinate programs remain rejected (§2.2, §11). C1-C3 are checks
+   and measurements, not a completeness proof.
+4. **Printing tails.** Fields sorted by label, then rigid tails by first
+   written occurrence in the enclosing signature; never internal
+   allocation order (§10.1).
+5. **Provenance precedence.** Written `lacks`, then written `disjoint`,
+   then implied facts, then spread facts; source order breaks ties
+   (§1.3). The Tranche A diagnostics this changes are listed in §1.6,
+   each with a required test.
+6. **Removal.** The fresh-remainder rule (§5.2) is approved. The
+   distinction between one tail today (§5.1) and several tails in
+   Tranche B (§5.2) stays.
+7. **Diagnostics** (§10). Approved: D2; D2' with its distinction between
+   an overlap found immediately and one found late; D3'; D3'', reusing
+   Tranche A's text; D8. D3 is approved with its remedy in a hint,
+   `require r disjoint s in the signature` (not "add where …"). D9's text
+   is `A disjoint constraint must name two different row variables`. D4
+   and D6 stay Proposed until examples pin their rendering for more than
+   two tails, nested field types and equations without a named callee
+   (to-do list, §10.2), and D4's hint must describe an annotation the
+   language permits. D7 is withdrawn; D10 is gone.
+8. **Equation reasons.** Draft 2's §2.5 said that derived lacks and
+   apart facts keep an equation as their reason, but `Because` had no
+   constructor for one. It now has `Equated`, with what it carries and
+   how its notes render (§1.3).
+9. **Evidence in the repository.** The solver, the independent brute
+   force, the generators, seeds and reproduction instructions are in
+   research/open-row-merge/ before anything relies on them (Appendix A,
+   where today's reproduction is recorded). The evidence is labels
+   only; compiler tests must also cover nested field equations, rollback
+   by effect settling and the joint fixpoint (§12).
+10. The task breakdown (§13) follows these decisions.
+
+## Changes from draft 2
+
+| Change | Where |
+|---|---|
+| D7 withdrawn; the `Both` example worked through and required as a test | §8, §12 |
+| Implied disjointness adopted; D10 and option B removed | §0, §1.4, §1.5, §3.3, §10 |
+| The completeness policy and its limits stated; `expand` not adopted | §0, §2.2, §2.7, §11 |
+| Printing order of tails | §10.1 |
+| Precedence approved; the Tranche A diagnostics it changes, probed and listed with tests | §1.3, §1.6, §12, §13 |
+| Removal approved | §5.2 |
+| Diagnostic statuses; D3's hint; D4's hint reworked; D9's text; rendering to-do for D4 and D6 | §10 |
+| `Equated`, the equation reason | §1.3, §2.5 |
+| Prototypes moved into research/open-row-merge/ and rerun; evidence limits and the compiler tests they require | Appendix A, §12 |
+| Task breakdown and open items | §13, §14 |
 
 ## Changes from draft 1
 
+Kept as history. The rows for F8 and F9 are superseded by user decisions
+2 and 1.
+
 Each review finding (F1-F13) and where it is resolved. "Open" means the
-finding needs the user's judgment and is in §14 with a recommendation.
+finding needed the user's judgment and was in draft 2's §14.
 
 | Finding | Resolution |
 |---|---|
@@ -47,7 +132,9 @@ finding needs the user's judgment and is in §14 with a recommendation.
 
 - **Rows hold several tails.** A record row is labelled fields plus a
   multiset of tails (P1). `{ ...r, ...s }` is one row with two tails,
-  and instantiating `merge` gives `{ ...?r, ...?s }`.
+  and instantiating `merge` gives `{ ...?r, ...?s }`. Written in a
+  signature, such a row implies `r disjoint s`, as `{ a: A, ...r }`
+  implies `r lacks { a }` (user decision 2).
 - **Facts on variables, kept in the substitution.** Disjointness (Gaster
   and Jones's lacks predicates, extended with Harper and Pierce's
   compatibility assertion `r # s`) and, new in this draft, an upper
@@ -70,8 +157,10 @@ finding needs the user's judgment and is in §14 with a recommendation.
   are met by the empty row, the row lowering already gives them. An
   equation still waiting with a constant is an ambiguity error.
 - **Why not complete.** Whether a least solution exists is coNP-hard
-  (§2.7). The checker decides the forced cases, says so when it cannot,
-  and its incompleteness is characterized by testable properties (§12).
+  (§2.7). The checker decides the forced cases and says so when it
+  cannot; some determinate programs are rejected (user decision 3). The
+  properties of §12 check and measure this behaviour; they are not a
+  completeness proof.
 
 # Part I: the algorithm
 
@@ -126,11 +215,35 @@ data Because
   | Disjoint { variables ∷ Array String, span ∷ Span } -- `r disjoint s`
   | Implied { span ∷ Span } -- a label or a second tail beside the tail
   | Spread { earlier ∷ Span, later ∷ Span }   -- a literal's items
+  | Equated Equation                          -- derived from an equation
 
 type Bound = { atoms ∷ Set Atom, why ∷ Equation }  -- Atom: label, rigid
-type Equation = { left ∷ Row, right ∷ Row, site ∷ Span, owner ∷ Owner }
+type Equation =
+  { id ∷ PendingId, left ∷ Row, right ∷ Row, site ∷ Span, owner ∷ Owner }
 type Pending = Equation & { residue ∷ Residue, seen ∷ Int, quiet ∷ Bool }
 ```
+
+**`Equated`** (user decision 8) is the reason of every fact the sum rule
+derives (§2.5) and of every upper bound. It carries the equation itself,
+not a reference into `pending`, because the fact outlives the entry: an
+equation that is solved, or dropped as a duplicate, leaves `pending`
+while the lacks, apart pairs and bounds it derived stay. What it holds:
+
+- `id`, the equation's identity. Every equation that derives a fact gets
+  one, also one solved at its first examination, so two facts from one
+  equation compare equal. When a duplicate is dropped, its facts take
+  the surviving (older) id and site (§2.6).
+- `site`, the span of the unification that met the equation; for a
+  nested equation the outer equation's site (§2.6).
+- `owner`, the callee use whose variables the metas instantiate, if any.
+- `left` and `right`, the equation's original rows.
+
+A violation of an `Equated` fact renders as D6: the rows are printed
+through the substitution at the time of the report (so they show what
+is known then, not when the fact was stored), the variables are named
+through `owner` (`merge's r`), and the note `required here` sits at
+`site`. Without an owner the rows print with `..._` (D6 stays Proposed
+for those renderings, §10.2).
 
 (`&` is shorthand for the record's fields plus these.) `Owner` names the
 callee use whose variables the metas instantiate, when there is one
@@ -142,15 +255,19 @@ callee use whose variables the metas instantiate, when there is one
 - `because` replaces `written` (Task 2): for each lacked label, why it
   is lacked. An apart obligation that decomposes into a lack passes its
   own `Because` on, so a violation knows whether it broke a `lacks`
-  clause (text D1) or a disjointness (text D2).
-- **Precedence.** A label or pair can have several reasons. The store
-  keeps one, the first in the order `Lacks`, `Disjoint`, `Implied`,
-  `Spread`, and between two of one kind the earlier span. The result
-  does not depend on the order in which facts arrive, and a note cites
-  a written clause in preference to a type that implies the same fact.
-  This replaces Task 2's "the first seeded wins" for lacks too, a
-  visible change to Tranche A's notes when a clause repeats an implied
-  lack (slice 3 pins it).
+  clause (text D1) or a disjointness (text D2). An `Implied` or `Spread`
+  lack keeps Tranche A's shape text when violated; an `Equated` one is
+  D6.
+- **Precedence** (user decision 5). A label or pair can have several
+  reasons. The store keeps one: a written `lacks` (`Lacks`), then a
+  written `disjoint` (`Disjoint`), then an implied fact (`Implied`), then
+  a spread fact (`Spread`); between two of one kind, the earlier in
+  source order. `Equated` ranks last, between two the earlier site
+  (Proposed: the decision does not rank it; it is derived, never
+  written). The result does not depend on the order in which facts
+  arrive, and a note cites a written clause in preference to a type that
+  implies the same fact. This replaces Task 2's "the first seeded wins"
+  for lacks too; §1.6 lists the Tranche A diagnostics that change.
 - `arrivedAt` is stamped for every meta bound during a requirement,
   including bindings made by commits and by the drain, with the span of
   that requirement; bindings made by the end-of-body settle are stamped
@@ -165,9 +282,9 @@ callee use whose variables the metas instantiate, when there is one
 
 | Source | Row | Obligations recorded |
 |---|---|---|
-| A signature type `{ a: A, ...r, ...s }` (its own body) | rigid tails | `r`, `s` lack `a` (as today); `r # s` hypothesis, `Implied` under §14.1 option A, else required as a clause |
+| A signature type `{ a: A, ...r, ...s }` (its own body) | rigid tails | `r`, `s` lack `a` (as today); `r # s` hypothesis, `Implied` (user decision 2) |
 | The same type at a use (Use `seededUse`) | meta tails | the same on the use's metas |
-| A clause `where r disjoint s` | none | `r # s`, `Disjoint` |
+| A clause `where r disjoint s` | none | `r # s`, `Disjoint`; needed only where no written row holds both tails |
 | A literal `{ ...e1, x: v, ...e2 }` | fields and both spreads' tails | `row(e1) # row(e2)`, `x` against both, `Spread` |
 | A declared type writing `{ ...r, ...s }` in a field | as for signatures | through Implied `declared`, extended to pairs |
 | A record-row argument `Holder({ ...a, ...b })` | the argument row | `a # b` (Implied at the argument); ArgumentClash between two arguments a declaration concatenates |
@@ -197,7 +314,7 @@ fn main(): Int = merge(merge({ x: 1 }, { y: 2 }), { z: 3 }).x;
 | `{ z: 3 }` against `{ ...?s2 }` | `?s2 := { z: Int }` |
 | `.x` | the result flattens to `{ x: Int, y: Int, z: Int }` |
 
-Under §14.1 option A the result type also implies the pair; by the
+The result type also implies the pair (user decision 2); by the
 precedence of §1.3 the reason kept is still `Disjoint`, so notes point
 at the clause the user wrote.
 
@@ -217,6 +334,52 @@ the later call binds `?s := { y: Int }`. `add({ x: 5 })` instead is D2
 at `{ x: 5 }`, noted at `{ x: 1 }`. A `let` is not generalized
 (Check/Block), so a second `add(…)` shares `?s`, as it would today for
 any let-bound reference.
+
+### 1.6 Tranche A diagnostics that the precedence changes
+
+Tranche A keeps a clause's provenance only for a label the types do not
+already imply: Seed joins a signature's clauses after its implied lacks,
+and "a label the types already imply keeps no clause, so its violation
+keeps the shape text" (docs/progress.md, R005 Task 2; ADR 013,
+"Provenance of written lacks"). Under user decision 5 the written clause
+wins. So where a clause repeats a lack that the signature's types
+already imply, a violation changes from the shape text to D1 with its
+`required here` note. The "before" column was probed on the current
+compiler (main at 106ce60, its built output/, 2026-10-17); the cases
+use
+
+```wxw
+fn f(p: { name: Int, ...r }): { admin: Bool, name: Int, ...r }
+  where r lacks { admin } = { admin: true, ...p };
+```
+
+| Case | Program (beside `f` where used) | Before (Tranche A) | After |
+|---|---|---|---|
+| P1 the result type implies; direct call | `f({ name: 1, admin: false })` | `Expected { name: Int, ..._ }, found { admin: Bool, name: Int }` at the argument, no note | `admin is not allowed here: r lacks { admin }` at the argument, `required here` at the clause's `admin` |
+| P2 function reference | `let h = f; h({ name: 1, admin: false })` | the same shape text at the argument | D1 at the argument, the same note |
+| P3 partial application | `f` with a first parameter `n: Int`; `let h = f(1); h({ name: 1, admin: false })` | the same shape text at the argument | D1 at the argument, the same note |
+| P4 another parameter implies | `fn g(q: { ...r }, p: { admin: Bool, ...r }): Int where r lacks { admin } = 0`; `g({ admin: false }, { admin: true })` | `Expected { ..._ }, found { admin: Bool }` at `{ admin: false }` | D1 at `{ admin: false }`, noted at g's clause |
+| P5 a declared type implies | `type Holder(...r) = Holder({ admin: Bool, ...r })`; `fn k(q: { ...r }, p: Holder(...r)): Int where r lacks { admin } = 0`; `k({ admin: false }, Holder({ admin: true }))` | `Expected { ..._ }, found { admin: Bool }` at `{ admin: false }` | D1 at `{ admin: false }`, noted at k's clause |
+| P6 a wrapper whose clause repeats its own implied lack | `fn w(q: { name: Int, ...s }): { admin: Bool, name: Int, ...s } where s lacks { admin } = f(q)`; `w({ name: 1, admin: false })` | the shape text at the argument | `admin is not allowed here: s lacks { admin }` at the argument, noted at w's clause |
+| P7 a wrapper that lacks nothing | `fn w(q: { name: Int, ...s }): Int = { let x = f(q); 0 }` | `Expected { name: Int, ..._ }, found { name: Int, ...s }` at `q` | D1 at `q`, noted at f's clause |
+
+Unchanged, and asserted beside them as controls:
+
+- the same programs without the clause: the shape text before and
+  after, since an `Implied` lack keeps it;
+- two clauses naming one label, `where r lacks { admin }, r lacks {
+  admin }`: the first clause's note before and after (the source-order
+  tie-break);
+- a lack from a literal on a hole base (test/r005-check.test.mjs, "a
+  hole base becomes an open record"): the shape text.
+
+No existing expectation moves: test/r005-*.test.mjs and
+scripts/regression-r005.mjs combine a clause with an implied lack only
+in accepted programs (r005-check, r005-go), and the generated programs
+of test/fx-gen-record-extension.mjs are all valid. Required tests: P1-P7
+and the controls in a new test/r005b-precedence.test.mjs (slice 3), each
+asserting text, span and notes; the regression row `r005b-precedence`
+restores "the first seeded wins" and fails P1.
 
 ## 2. Solving equations between rows
 
@@ -298,7 +461,8 @@ generator, 20 of 480,000 runs end in D4 with a least solution because
 of it, each with a quiet equation sharing a meta with a waiting one,
 and all inside C3 (§12); in the dense generator, none. Building the
 basis at that moment (prototyped, `expand`) removes them at the old
-cost; not proposed (§14.2).
+cost; not adopted (user decision 3). research/open-row-merge/
+determinate.mjs reproduces one such case: a unique solution, D4.
 
 ### 2.3 Today's rules are the one-tail case
 
@@ -392,8 +556,10 @@ within `C2 ⊎ M2` (and symmetrically):
 - *apart*: a tail `q` apart from every `n ∈ M2`, and known disjoint from
   every constant of `C2`, is apart from `m`.
 
-Each derived fact keeps the equation as its reason, so a violation is
-reported with D6 and a `required here` note at the equation's site.
+Each derived fact keeps the equation as its reason, `Equated` (§1.3),
+which carries the equation's id, site, owner and rows; a violation is
+reported with D6 built from them and a `required here` note at the
+equation's site.
 The rule is sound because it only restates `m ⊆ C2 ⊎ M2`. It runs on
 every residue, quiet or not, at each examination.
 
@@ -515,9 +681,13 @@ equations, disjointness and lacks over metas, labels and rigids.
 A Waxwing program can state these systems (`merge3` or `merge4`
 passed for several parameters sharing type variables), so no
 polynomial checker accepts exactly the bodies with a least solution
-unless P = NP. Hence the policy: decide the forced cases, report the
-rest, and state the incompleteness as testable properties (§12).
-Acceptance itself is decidable: the checker always ends.
+unless P = NP. Hence the policy (user decision 3): decide the forced
+cases, with upper bounds and persistent obligations, and report the
+rest; no exponential search and no eager basis expansion. Some
+determinate programs are therefore rejected (§11). The properties of
+§12 check soundness and order independence and measure the
+incompleteness; they are not a completeness proof. Acceptance itself is
+decidable: the checker always ends.
 
 **Cost.**
 
@@ -609,8 +779,8 @@ fn three(a: { ...r }, b: { ...s },
     c: { ...t }): { ...r, ...s, ...t } = merge(merge(a, b), c);
 ```
 
-The result type gives `r # s`, `r # t`, `s # t` (implied under §14.1
-option A; under option B the signature must write them). Inner use:
+The result type gives `r # s`, `r # t`, `s # t` (implied, user
+decision 2). Inner use:
 `?r1 := r`, `?s1 := s`, so `?r1 # ?s1` becomes `r # s`, a hypothesis.
 Outer use: `{ ...?r2 } ~ { ...r, ...s }` binds `?r2 := { ...r, ...s }`
 (step 6); its pair `?r2 # ?s2` decomposes into `r # ?s2` and `s #
@@ -619,9 +789,10 @@ hypotheses. The result `{ ...r, ...s, ...t }` cancels against the
 signature's, tail by tail.
 
 With result `Int` and only `where r disjoint s`, the same steps reach
-`r # t` with no hypothesis: D3 `r and t are not known to be disjoint;
-add where r disjoint t`, at `c`, noted `required here` at merge's
-clause. (Both prototypes run both, Appendix A.)
+`r # t` with no hypothesis: D3, `r and t are not known to be disjoint`
+with the hint `require r disjoint t in the signature`, at `c`, noted
+`required here` at merge's clause. (The draft 1 and draft 2 prototypes
+ran both in the session; these two are not among the preserved scripts.)
 
 ## 4. The mixed case and wrappers
 
@@ -671,7 +842,7 @@ applied to `{ x: 1, y: 2 }` and then `.x` is refused with `x is not a
 field of { y: Int }`; `.y` runs and prints 2; a rest binder behaves the
 same. There is no current bug.
 
-### 5.2 The requirement on Tranche B
+### 5.2 The requirement on Tranche B (approved, user decision 6)
 
 With several tails, `select` can wait: on `{ ...?r, ...?s }` the label
 `x` has two homes. The resolved type then shows no `x`, a subtraction
@@ -709,7 +880,8 @@ Tranche B (P10):
 The printed result in Tranche A's text is `ρ` as resolved when the
 error is found; while it waits that is `{ ..._ }`, so the text reads `x
 is not a field of { ..._ }`. Proposed to keep the text and add the note
-`removed here` at the `without` (or at the pattern's label).
+`removed here` at the `without` (or at the pattern's label); the note
+is still Proposed.
 
 Regression rows (§12): `r005b-without-hole-left`, `-right` (the label
 held by either part) and `r005b-rest-hole`.
@@ -774,35 +946,54 @@ With metas on both sides and no constants (`{ ...?a, ...?b } ~ { ...?c,
 ...?d }`) the equation is quiet (§2.2): it is never ambiguous and builds
 nothing.
 
-## 8. Declarations that no call can use
+## 8. Declarations, ambiguity at the use, and repeated tails
 
-**Interchangeable tails** (review F9). In `fn split(p: { ...r, ...s }):
-Int`, every type that has `...r` also has `...s`, and the two have the
-same facts. Swapping `r` and `s` then maps every solution at a call to
-another solution, and the meet of the two leaves both empty (they are
-disjoint). So at every call where `r ⊎ s` holds anything, no least
-solution exists and the call is D4; the function can only be called
-with an empty record there. The declaration is the mistake, as with
-Haskell's ambiguity check.
+**No declaration-level ambiguity check** (user decision 1). Draft 2
+proposed D7, which rejected at the declaration two record variables
+that every written row holds together. It is withdrawn. Whether a use
+resolves depends on what the use's context fixes, which the declaration
+cannot see. A declared type's record-row arguments are such a context:
 
-Proposed check, at each signature and each declared type: two record
-variables `r`, `s` are interchangeable when every row written in it (at
-any depth, parameters, result, callbacks and declared-type arguments)
-has both or neither, and they have the same lacked labels, the same
-partners other than each other, and appear symmetrically in its
-clauses. Interchangeable variables are D7 at the first row that has
-both. The check is sound (every D7 declaration has only empty calls
-there) and deliberately narrow: `fn f(p: { ...r, ...s }, q: { ...r, ...t
-})` is not D7, because `f({ x: 1 }, { y: 2 })` forces `r = {}` through
-the bounds, although `f({ x: 1 }, { x: 2 })` is D4 at the call. A
-declared type is checked over its constructors' payloads:
-`type Both(...r, ...s) = Both({ ...r, ...s })` is D7.
+```wxw
+type Both(...r, ...s) = Both({ ...r, ...s });
+fn example(): Both({ x: Int }, { y: Int }) = Both({ x: 1, y: 2 });
+```
 
-**A repeated tail.** `{ ...r, ...r }` written in a type, or reached
-through a declared type (`Pair(...a, ...a)` where `Pair` concatenates
-its arguments), is D8 at resolve. Without it, the implied `r # r` would
-force callers to `{}` without a word. `where r disjoint r` (slice 2)
-is D9.
+| Step | Substitution and store |
+|---|---|
+| use of the constructor `Both` | `?r`, `?s`; payload `{ ...?r, ...?s }`; apart `?r # ?s`, reason `Implied` (the payload's type) |
+| `{ x: 1, y: 2 }` against the payload | `{ ...?r, ...?s } ~ { x: Int, y: Int }`: `x` and `y` each have two homes; the sum rule bounds `?r` and `?s` by `{ x, y }`; deferred, at the argument |
+| the result `Both(...?r, ...?s)` against `Both({ x: Int }, { y: Int })` | the record-row arguments unify one by one (R012): `?r := { x: Int }`, `?s := { y: Int }` |
+| drain | the pending equation flattens to `{ x: Int, y: Int } ~ { x: Int, y: Int }` and is dropped |
+
+Accepted; after specialization the payload is the closed row `{ x: Int,
+y: Int }` (labels-only reproduction: research/open-row-merge/
+annotation.mjs). If the checker meets the expected result before the
+argument, the arguments bind first and the argument is an ordinary
+closed equation: the same verdict (property C2). Without the
+annotation,
+
+```wxw
+fn example(): Int = { let b = Both({ x: 1, y: 2 }); 0 };
+```
+
+the equation is still pending when the body ends: D4 at `{ x: 1, y: 2
+}`, since the four splits of `{ x, y }` are all solutions and give four
+specializations of `Both`. That is where ambiguity is reported: at the
+unresolved use, never at the declaration. Required compiler test,
+`r005b-both-annotation` (§12): the annotated program is accepted and
+runs, the unannotated one is D4 at the argument.
+
+The same holds for functions. `fn split(p: { ...r, ...s }): Int` is
+accepted; `split({})` checks, and a call whose record has fields is D4
+unless something else at the use fixes `r` or `s`.
+
+**A repeated tail** (D8, approved). `{ ...r, ...r }` written in a type,
+or reached through a declared type (`Pair(...a, ...a)` where `Pair`
+concatenates its arguments), is D8 at resolve. Without it, the implied
+`r # r` would force callers to `{}` without a word. `where r disjoint r`
+(slice 2) is D9, `A disjoint constraint must name two different row
+variables`.
 
 ## 9. Specialization and lowering
 
@@ -844,25 +1035,52 @@ that slice 6 lowers. Until then Specialize reports an `R005 placeholder`
 for a multi-tail row (as slice 2 does for checking), so `npm run
 verify` stays green.
 
-## 10. Diagnostics (all Proposed)
+## 10. Diagnostics
 
-All E_TYPE. Location rules follow the table.
+All E_TYPE. Statuses are user decision 7's; location rules follow the
+table. A hint is rendered after the text, separated by `; `, as the
+existing hints are (Domain.Problem `Hinted`); code and span are the
+text's.
 
-| ID | Case | Text | Location and notes |
-|---|---|---|---|
-| D1 | A known field meets a lack a `lacks` clause wrote | Task 2's approved `admin is not allowed here: r lacks { admin }` | the argument (or item) being required; `required here` at the label in the clause |
-| D2 | A known overlap under disjointness, in a call | `Field a is in both records: r disjoint s` | the later contributing argument; `first written here` where the other side's field arrived (`arrivedAt`); `required here` at the clause, or at the later `...s` of the implying type |
-| D2' | A known overlap in a literal with several spreads | existing `Duplicate field a` | when the items' types already show it: the later item, noted `first written here` at the earlier (Tranche A's rule, extended to spreads); when found later: the expression that completed it (rule 1), notes `first written here` at the earlier item and `written again here` at the later |
-| D3 | No evidence that two rigid rows are disjoint, no overlapping label known | `r and s are not known to be disjoint; add where r disjoint s` | the expression being required; `required here` at the obligation's clause or implying type; none for a literal |
-| D3' | The same rigid in both rows | `r is in both records and may have fields` | as D3 |
-| D3'' | A known label against a rigid under disjointness | existing `s may already have field a` | the expression being required; `s is introduced here` at the signature's first `...s`; `required here` at the clause |
-| D4 | A pending equation with a constant at the end of a function | `Cannot tell whether merge's r or s has field x` (or `holds t` for a rigid); `{ ..._, ..._ }` style `Cannot tell which part of { ..._, ..._ } has field x` when no callee owns the metas | the site of the unification that deferred it; hint `a type for r or s here would decide it` |
-| D5 | (withdrawn with P5) | | |
-| D6 | A failure caused by a pending equation or a bound | `merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z`; when no part can: `…, but neither r nor s can have field x` | the expression being checked (rule 1); `required here` at the equation's site |
-| D7 | Interchangeable tails in a declaration (§8) | `r and s cannot be told apart: every type here has both or neither` | the first row with both; note `so a call can only pass an empty record here` |
-| D8 | A repeated tail in a written row | `...r is written twice in one record` | the second `...r`; `first written here` at the first |
-| D9 | `where r disjoint r` | `A row cannot be disjoint from itself` | the clause's second `r` |
-| D10 | (only under §14.1 option B) two rigid tails in one signature row with no clause | `{ ...r, ...s } needs where r disjoint s` | the later `...s` |
+| ID | Status | Case | Text | Location and notes |
+|---|---|---|---|---|
+| D1 | Approved (Task 2) | A known field meets a lack a `lacks` clause wrote | `admin is not allowed here: r lacks { admin }` | the argument (or item) being required; `required here` at the label in the clause |
+| D2 | Approved | A known overlap under disjointness, in a call | `Field a is in both records: r disjoint s` | the later contributing argument; `first written here` where the other side's field arrived (`arrivedAt`); `required here` at the clause, or at the later `...s` of the implying type |
+| D2' | Approved, both cases | A known overlap in a literal with several spreads | existing `Duplicate field a` | found immediately (the items' types already show it): the later item, noted `first written here` at the earlier (Tranche A's rule, extended to spreads); found late: the expression that completed it (rule 1), notes `first written here` at the earlier item and `written again here` at the later |
+| D3 | Approved, remedy as a hint | No evidence that two rigid rows are disjoint, no overlapping label known | `r and s are not known to be disjoint`; hint `require r disjoint s in the signature` | the expression being required; `required here` at the obligation's clause or implying type; none for a literal |
+| D3' | Approved | The same rigid in both rows | `r is in both records and may have fields` | as D3 |
+| D3'' | Approved (Tranche A's text) | A known label against a rigid under disjointness | existing `s may already have field a` | the expression being required; `s is introduced here` at the signature's first `...s`; `required here` at the clause |
+| D4 | Proposed | A pending equation with a constant at the end of a function | `Cannot tell whether merge's r or s has field x` (or `holds t` for a rigid); with no callee owning the metas, `Cannot tell which part of { ..._, ..._ } has field x` | the site of the unification that deferred it; hint below |
+| D5 | Withdrawn (draft 2, with P5) | | | |
+| D6 | Proposed | A failure caused by a pending equation or a bound (`Equated`) | `merge's { ...r, ...s } must be { x: Int, y: Int }, so r cannot have field z`; when no part can: `…, but neither r nor s can have field x` | the expression being checked (rule 1); `required here` at the equation's site |
+| D7 | Withdrawn (user decision 1) | | | |
+| D8 | Approved | A repeated tail in a written row | `...r is written twice in one record` | the second `...r`; `first written here` at the first |
+| D9 | Approved | `where r disjoint r` | `A disjoint constraint must name two different row variables` | the clause's second `r` |
+| D10 | Removed (user decision 2) | | | |
+
+**D4's hint** (Proposed). Draft 2's `a type for r or s here would decide
+it` described no annotation the language has. The annotations Waxwing
+permits are a function's signature, type and constructor declarations,
+and a lambda's parameter annotations (docs/language.md, "Semantics" and
+"Functions"); there is no `let` or expression annotation and no lambda
+result annotation, and a lambda annotation may name only the enclosing
+signature's variables. So the hint depends on where the metas come
+from:
+
+- a callee used as a value (`apply0(merge)`): `pass a lambda with
+  annotated parameters in place of merge`, as in `apply0(fn(p: { x: Int
+  }, q: { y: Int }) => merge(p, q))`, which then checks;
+- the unannotated parameters of a lambda (`fn(p, q) => merge(p, q)` or
+  `fn(p, q) => { ...p, ...q }` passed where its result is fixed):
+  `annotate this lambda's parameters`;
+- inside a generic function, either annotation may use the enclosing
+  signature's row variables, and the hint may add `or state the parts
+  in the enclosing signature`.
+
+A constructor whose payload holds the metas (`Both({ x: 1, y: 2 })` in a
+`let`) has no annotation nearby but the enclosing signature or a
+lambda parameter that receives it; its hint is one of the rendering
+examples still to pin (§10.2).
 
 Location rules:
 
@@ -887,24 +1105,67 @@ Location rules:
 5. Of several violations, the first in decomposition order is reported:
    labels before tails, each in sorted order.
 
-D2 could instead mirror D1 as `a is not allowed here: r disjoint s`;
-the draft keeps a distinct text because the user asked for separate
-messages.
+D2's distinct text, rather than D1's form, is approved (user decision
+7).
+
+### 10.1 Printing rows (user decision 4)
+
+A row prints its fields sorted by label, then its rigid tails in the
+order of their first written occurrence in the enclosing signature,
+never in internal allocation order: `tails` is kept sorted by variable
+number (§1.1), and numbers follow declaration and instantiation, not
+what the user wrote. Under `fn f(p: { ...s }, q: { ...r }): { ...r, ...s
+}` the result type prints `{ ...s, ...r }`, since `s` is written first.
+Proposed details: unsolved metas print as one `..._` each, after the
+rigid tails (Tranche A prints one tail, so the question never arose); a
+callee's variables named in a note through `Owner` are ordered by the
+callee's signature.
+
+### 10.2 Rendering examples to pin before D4 and D6 are approved
+
+Each item becomes a test expectation (source, text, span, notes, hint)
+submitted to the user with slice 5. The hint of each must name an
+annotation the language permits (above).
+
+1. More than two tails: `merge3(a, b, c)` used as a value where `(p, q,
+   w) -> { x: Int, y: Int }` is expected, so `{ ...?r, ...?s, ...?t } ~
+   { x: Int, y: Int }` waits; D4 naming three variables, and D6 when a
+   later argument gives `t` a field outside `{ x, y }`.
+2. Nested field types: §2.6's `{ a: { ...?p, ...?q }, ...?r, ...?s } ~
+   { a: { x: Int, y: Int }, z: Int }`; how D4 and D6 say that the
+   ambiguity is inside field `a`, and which site they use.
+3. Equations without a named callee: `fn(p, q) => { ...p, ...q }`
+   passed where `(a, b) -> { x: Int, y: Int }` is expected; the metas
+   are the lambda's parameters, so the text must name them (`p` and `q`)
+   rather than a callee's `r` and `s`.
+4. A constructor payload: the unannotated `Both({ x: 1, y: 2 })` of §8.
+5. A rigid constant with two homes (`holds t`), from §7.
+6. D6 when the excluding fact is an upper bound met from two equations
+   (`both(merge, merge)` followed by an argument outside the bound):
+   which equation the text and the note name.
 
 # Part II: evidence and plan
 
 ## 11. What a test can and cannot show
 
 The checker is sound and order independent by construction and by
-test; it is incomplete by design (§2.7). The properties below are each
-decidable on a generated problem, so a failure is a defect and a new
-seed cannot turn the suite red by finding a new instance of the
-intended incompleteness.
+test; it is incomplete by design (§2.7, user decision 3). Some
+determinate programs are rejected with D4: the uniquely satisfiable
+one-in-three systems, the switch systems over unsatisfiable formulas,
+and a quiet equation beside a waiting one that shares a meta (§2.2;
+research/open-row-merge/sat13.mjs, switch2.mjs, determinate.mjs). The
+properties below are each decidable on a generated problem, so a
+failure is a defect and a new seed cannot turn the suite red by finding
+a new instance of the intended incompleteness. They are checks and
+measurements, not a completeness proof: S, H, L, C1 and C2 held on every
+run, which shows no counterexample was found, and C3 is a measured rate.
 
 ## 12. Oracle and tests
 
-**Reference.** A new test/row-merge-oracle.mjs, written from this
-document's rules and not from the PureScript: atoms are labels and
+**Reference.** test/row-merge-oracle.mjs, ported from
+research/open-row-merge/oracle.mjs (written by the review independently
+of the solver and of the first oracle; Appendix A), not from the
+PureScript, and kept under the test limits: atoms are labels and
 rigid names, a meta denotes a set of atoms, and a rigid's lacks and
 disjointness hold only by hypothesis (rigids are uninterpreted, as in
 the checker; by parametricity this equals the universal reading). It
@@ -932,7 +1193,7 @@ shows up as a soundness failure (review F13).
 | C2, order | the verdict class (accept, refuse, D4) is the same for every order of the constraints |
 | C3, the rest (reported) | every D4 with a least solution has two or more pending equations sharing a meta; its rate per generator is printed and compared with a recorded ceiling |
 
-C1 and C2 are the testable completeness: a stuck single equation is
+C1 and C2 are checks, not completeness: a stuck single equation is
 genuinely ambiguous, and no verdict depends on the order the program
 happens to present constraints in. C3 is the stated incompleteness. Its
 rate is reported rather than pinned case by case; a rise above the
@@ -979,7 +1240,7 @@ defect restored):
 | `r005b-mixed-lacks` | label/tail decomposition skipped | `{ id: Int, ...r }` merged with `{ ...s }` accepted without `s lacks { id }` |
 | `r005b-mixed-tails` | tail/tail decomposition skipped | the same with the lack written, accepted without `r disjoint s` |
 | `r005b-provenance` | a decomposed lack loses its `Because` | D1's text where D2's is due, through a wrapper |
-| `r005b-precedence` | the first reason seeded wins | merge's D2 note at the result type instead of the clause |
+| `r005b-precedence` | the first reason seeded wins | P1 of §1.6 prints the shape text; merge's D2 note at the result type instead of the clause |
 | `r005b-defer` | ambiguous constants placed in the first home | `apply2(merge, { y: 2 }, { x: 1 })` refused |
 | `r005b-upper` | no upper bounds | `both(merge, merge)` D4 |
 | `r005b-quiet` | quiet equations expanded | `h(merge × 12)` takes seconds (timing row, generous bound) |
@@ -992,11 +1253,36 @@ defect restored):
 | `r005b-body-type` | Resolve.Lacking ignores tail pairs | a lambda annotated `{ ...r, ...s }` under a signature without the fact accepted |
 | `r005b-without-hole-left`, `-right` | removal subtracts from the resolved type | `drop({ x: 1 }, { y: 2 }).x` and `drop({ y: 2 }, { x: 1 }).x` run |
 | `r005b-rest-hole` | the rest binder subtracts | `match merge(p, q) { { x, ...rest } => rest.x }` runs |
-| `r005b-interchangeable` | no declaration check | `fn split(p: { ...r, ...s }): Int` accepted, D4 at each call |
+| `r005b-both-annotation` | the record-row arguments not unified before the drain, or the deferred equation dropped | §8's `example()` refused with D4 (its unannotated variant stays D4 either way) |
+| `r005b-nested-field` | a nested equation re-deferred on each pass, or given the expression's site | §2.6's nested equation reported twice or at the wrong site; solved once a later binding fixes `?p` |
+| `r005b-settle-rollback` | the store kept outside the substitution | an equation deferred inside a postponed effect pair's label arguments survives the revert, or is not deferred again at the retry with the pair's site |
 | `r005b-merge-order` | items built in label order | effects in `{ ...g(), x: f() }` run out of order |
 
 Plus: the one-tail differential (§2.3) over `--corpus all` shows no
-change from the representation slice and from the new unifier.
+change from the representation slice and from the new unifier, apart
+from the precedence cases of §1.6 (slice 3), each classified.
+
+**Evidence limits** (user decision 9). The preserved evidence (Appendix
+A) is labels only: field types, provenance and texts, effect rows,
+specialization and lowering are absent. Compiler tests must therefore
+cover, beyond the oracle test:
+
+- nested field equations (§2.6): a multi-tail equation inside a field
+  type, deferred once, re-examined without re-deferral, reported once at
+  the outer site, and solved when a later binding reaches it
+  (`r005b-nested-field`, `r005b-pending-dedup`);
+- rollback by effect settling (§6): a postponed effect pair reverts the
+  substitution and the store with it; an equation deferred inside its
+  label arguments is gone after the revert and deferred again at the
+  retry, with the pair's site (`r005b-settle-rollback`);
+- the joint fixpoint (§6), both directions: a body whose effect retry
+  unblocks a record equation is accepted, and one whose drain binds a
+  meta that a postponed effect pair waits on settles that pair
+  (`r005b-end-fixpoint`);
+- the Tranche A precedence changes P1-P7 of §1.6 and their controls;
+- the `Both` example of §8 and its unannotated variant
+  (`r005b-both-annotation`);
+- D8 and D9 at resolve, and D3's hint, with their approved texts.
 
 ## 13. Task breakdown (for the implementation plan)
 
@@ -1008,33 +1294,43 @@ Each slice keeps every commit building and `npm run verify` green.
    name `TRecord`; mechanical but wide.
 2. **Surface.** Types with several `...` tails parse and resolve (sorts:
    each tail a record use); `where r disjoint s` (Format.Parse.Constraint,
-   Resolve.Requirements, Resolved `Disjoint`); D8, D9, and D10 if §14.1
-   goes to option B; Resolve.Lacking and ArgumentClash learn pairs.
+   Resolve.Requirements, Resolved `Disjoint`); D8 and D9 with their
+   approved texts; Resolve.Lacking and ArgumentClash learn pairs.
    Checking a multi-tail type is an `R005 placeholder` until slice 4.
-3. **The store, single-tail.** `apart`, `because` with its precedence,
-   `upper`, seeding for bodies and uses (Seed, Use, Implied `declared`
-   with pairs), decomposition and the bind rule. Testable before
-   multi-tail unification: `fn g(a: { ...r }, b: { ...s }): Int where r
-   disjoint s` called as `g(p, p)` over `{ ...t }` is D3'; over `{ x:
-   Int }` twice, D2.
+3. **The store, single-tail.** `apart`, `because` with the approved
+   precedence and the `Equated` reason, `upper`, seeding for bodies and
+   uses (Seed, Use, Implied `declared` with pairs, implied disjointness
+   of signature rows by user decision 2), decomposition and the bind
+   rule. The Tranche A changes P1-P7 of §1.6 land here with
+   test/r005b-precedence.test.mjs and the row `r005b-precedence`.
+   Testable before multi-tail unification: `fn g(a: { ...r }, b: { ...s
+   }): Int where r disjoint s` called as `g(p, p)` over `{ ...t }` is
+   D3'; over `{ x: Int }` twice, D2; D3 with its hint.
 4. **Multi-tail unification, forced only.** Flatten, cancel, the sum
    rule, homes, commits, the shared remainder; a constant with several
    homes or a quiet residue is an immediate `R005 placeholder` error.
-   Oracle test level 1 lands with S, H, L and C2.
+   Oracle test level 1, ported from research/open-row-merge/, lands with
+   S, H, L and C2.
 5. **Pending equations.** `pending` with identity, normal form and the
    index; the drain after each top-level unification; nested sites;
-   the joint fixpoint with the settle rounds (§6); D4, D6. C1 and C3
-   join the oracle test.
+   the joint fixpoint with the settle rounds (§6); D4, D6 with their
+   Proposed texts. C1 and C3 join the oracle test. Tests the labels-only
+   evidence cannot replace land here: `r005b-both-annotation`,
+   `r005b-nested-field`, `r005b-pending-dedup`, `r005b-settle-rollback`,
+   `r005b-end-fixpoint` (§12, "Evidence limits"). The rendering examples
+   of §10.2 are written as expectations and submitted to the user; D4
+   and D6 stay Proposed until approved.
 6. **The merge literal and friends.** Several spreads (Tranche A's
    `at most one spread` text retires), access, removal and rest binders
-   by §5.2 (fresh rest row, never subtraction), record patterns over
-   multi-tail rows; D1-D3 locations and notes; D7. Specialize keeps its
-   placeholder for multi-tail rows.
+   by §5.2 (fresh rest row, never subtraction; approved), record
+   patterns over multi-tail rows; D1-D3 locations and notes; printing
+   by §10.1. Specialize keeps its placeholder for multi-tail rows.
 7. **Specialization and lowering.** Canonical form, the struct from
    several sources, evaluation order; the placeholder retires; Go and
    interpreter agree.
 8. **Evidence.** The program generator (§12 level 2), regression rows,
-   ADR 013 section, docs/language.md, BACKLOG.
+   ADR 013 section, docs/language.md, BACKLOG; research/open-row-merge/
+   README updated if any script changes or is rerun at another size.
 
 **Risks.**
 
@@ -1049,90 +1345,105 @@ Each slice keeps every commit building and `npm run verify` green.
   stamp only metas that occur in a record row.
 - Postponed effect pairs revert the substitution; the store must revert
   with it (it lives there), and a test should pin that.
-- The precedence of §1.3 changes which note Tranche A prints when a
-  clause repeats an implied lack; the affected expectations move in
-  slice 3.
+- The precedence of §1.3 changes Tranche A's diagnostics in the seven
+  cases of §1.6. No existing expectation moves; slice 3 adds their
+  tests and classifies them in its differential.
 - Field types in pending equations (§2.6) are argued, not prototyped.
 - Timing tests: slices run one at a time, as now.
 
-## 14. Open questions
+## 14. Open items
 
-1. **Implied or required `disjoint`** (review F8). The settled `merge`
-   writes `where r disjoint s` beside a result type `{ ...r, ...s }`.
-   - *Option A, implied* (draft 1's P3): a row with two tails implies
-     their disjointness, as `{ a: A, ...r }` implies `r lacks a`
-     (shipped, docs/language.md). Writing the clause is allowed and
-     redundant; its only effect is provenance, which by §1.3 prefers it,
-     so merge's notes cite the clause. No new text; declared types,
-     which have no `where`, work the same way.
-   - *Option B, required*: two rigid tails in one row of a signature
-     without the clause is D10 at the later tail. Every hypothesis a
-     body uses is then written, and the user's clause is what makes
-     `merge` check. Costs: it departs from implied lacks, and a declared
-     type `type Both(...r, ...s) = Both({ ...r, ...s })` would need a
-     `where` on type declarations (new surface) or stay implied (two
-     rules).
-   - *Recommendation*: A, for symmetry with implied lacks and because
-     declared types need no new surface; the precedence keeps the
-     user's clause visible in every note. If the user wrote the clause
-     because they expect it to be needed, B is coherent and costs one
-     text and the declared-type decision.
-2. **How complete to be.** Draft 2 adds upper bounds and the sum rule
-   and keeps the rest of the incompleteness as C3. Two further steps
-   were measured: building the `k × l` basis for a quiet equation when
-   it shares a meta with a waiting one (removes the 20 raw runs of §2.2,
-   brings back the geometric cost in the stress, worst 3.7 s), and a
-   bounded search at the end (exponential). Proposed: neither.
-3. **Printing order of tails.** Proposed: fields in label order, then
-   rigid tails in signature order, then `..._` for metas.
-4. **D2's wording** (§10, last paragraph), and the texts D4, D6-D10.
-5. **D7's reach.** The proposed check is sound and narrow (§8). A wider
-   one (every variable never alone in a row) would also reject
-   functions some calls can use, such as `f` in §8. Proposed: narrow.
+Draft 2's open questions are settled: implied or required `disjoint`
+(option A, user decision 2), how complete to be (decision 3), the
+printing order of tails (decision 4), D2's wording and the other texts
+(decision 7, except D4 and D6), and D7's reach (withdrawn, decision 1).
+Still Proposed:
 
-## Proposed decisions, collected
+1. D4 and D6: texts, hints and the rendering examples of §10.2.
+2. The rank of `Equated` in the precedence (last, §1.3).
+3. The place of `..._` when printing rows, and the order of a callee's
+   variables in notes (§10.1).
+4. The `removed here` note when a removed label is accessed on the
+   result (§5.2).
+5. The location rules of §10 as a whole; the approved rows fix their
+   own locations.
+6. Everything in the collected table below marked Proposed.
 
-| ID | Decision |
-|---|---|
-| P1 | `RecordRow` holds `tails ∷ Array v`, sorted, repeats kept |
-| P2 | The obligation store (`apart`, `upper`, `pending`, `naming`, `because`, `arrivedAt`) lives in the substitution |
-| P3 | §14.1: option A (implied, the clause redundant but preferred in notes) or option B (required, D10); recommendation A |
-| P4 | Acceptance: forced moves only, with upper bounds and the sum rule; quiet equations met by the default; a pending equation with a constant at the end is D4 |
-| P5 | Withdrawn: no part cap; the solver makes at most (program metas × constants) metas (§2.7) |
-| P6 | Unsolved metas default to the empty row at the end, as lowering already does |
-| P7 | The texts D1-D10 and the location rules of §10 |
-| P8 | The drain runs after each top-level unification and in each settle round |
-| P9 | A failure found against a pending equation or a bound is reported at the current expression with D6 and `required here` at the equation's site |
-| P10 | `without` and rest binders take the fresh rest row of one requirement, never a resolved type minus labels |
-| P11 | Provenance precedence `Lacks`, `Disjoint`, `Implied`, `Spread`, then the earlier span, for lacks and pairs |
-| P12 | Interchangeable tails are D7 at the declaration; a repeated tail is D8 at resolve |
-| P13 | Pending equations hold the residue, have an identity and a normal form, are replaced on re-deferral and indexed by meta |
+## Decisions, collected
+
+| ID | Decision | Status |
+|---|---|---|
+| P1 | `RecordRow` holds `tails ∷ Array v`, sorted, repeats kept | Proposed |
+| P2 | The obligation store (`apart`, `upper`, `pending`, `naming`, `because`, `arrivedAt`) lives in the substitution | Proposed |
+| P3 | A signature row with two tails implies their disjointness; `where r disjoint s` states it where no row does, and is preferred in notes | Approved (user decision 2) |
+| P4 | Acceptance: forced moves only, with upper bounds, the sum rule and persistent obligations; no exponential search, no eager basis expansion; quiet equations met by the default; a pending equation with a constant at the end is D4 | Approved (user decision 3) |
+| P5 | No part cap; the solver makes at most (program metas × constants) metas (§2.7) | Withdrawn (draft 2) |
+| P6 | Unsolved metas default to the empty row at the end, as lowering already does | Proposed |
+| P7 | The texts and locations of §10 | Per row of §10: D1-D3'', D8, D9 approved; D4, D6 and the location rules Proposed; D5, D7 withdrawn; D10 removed |
+| P8 | The drain runs after each top-level unification and in each settle round | Proposed |
+| P9 | A failure found against a pending equation or a bound is reported at the current expression with D6 and `required here` at the equation's site | Proposed (with D6) |
+| P10 | `without` and rest binders take the fresh rest row of one requirement, never a resolved type minus labels | Approved (user decision 6) |
+| P11 | Provenance precedence `Lacks`, `Disjoint`, `Implied`, `Spread`, source order breaking ties, for lacks and pairs | Approved (user decision 5); `Equated` last, Proposed |
+| P12 | A repeated tail is D8 at resolve; no declaration-level ambiguity check (D7) | D8 approved; D7 withdrawn (user decision 1) |
+| P13 | Pending equations hold the residue, have an identity and a normal form, are replaced on re-deferral and indexed by meta | Proposed |
+| P14 | Rows print fields by label, then rigid tails by first written occurrence in the enclosing signature | Approved (user decision 4) |
+| P15 | `Because` has `Equated`, carrying the equation's id, rows, site and owner | Required by user decision 8; its shape (§1.3) Proposed |
 
 # Appendix A: prototypes (toys, not the compiler)
 
-All in the session scratchpad (/private/tmp/claude-501/…/scratchpad),
-not part of the repository. JavaScript, labels only (field types
-ignored), no imports from output/.
+**Where.** research/open-row-merge/ (user decision 9). Its README.md
+gives each script's command, seed, expected output and what it checks.
+JavaScript, labels only (field types ignored), no imports from output/;
+maintained but not in verify (docs/engineering.md, "Research scripts").
 
-**Draft 1** (solver.mjs, solver-upper.mjs, oracle.mjs, run.mjs,
-dense.mjs, examples.mjs): the solver of draft 1 with eager `k × l`
-expansion; the upper-bound variant bounded a meta only from an equation
-with no tails on the other side. The review's scripts (review/: bf.mjs,
-an independent brute force; drive.mjs, perm.mjs, shared.mjs, cx1.mjs,
-cx2.mjs, sat13.mjs and their `-upper` variants) run those solvers.
+| File | Role |
+|---|---|
+| solver.mjs, solver-facts.mjs, solver-solve.mjs, solver-drain.mjs | the draft 2 solver: §2 as written here (no well-formedness inside unification; the sum rule for bounds, lacks and apart facts on every residue; commits one constant at a time; quiet equations; pending equations with identity, normal form, replacement, deduplication and re-examination only when a named meta changed; an optional `expand`, not adopted) |
+| oracle.mjs | the independent brute force, written by the review without reading the solver or the first oracle |
+| drive.mjs | creation-site obligations before each equation, a drain after each step |
+| perm.mjs; programs.mjs with programs-gen.mjs | the raw, dense, program-shaped and shared-parameter generators |
+| both.mjs, shared.mjs, chain.mjs, growth.mjs, sat13.mjs, switch.mjs, switch2.mjs, removal.mjs, determinate.mjs, annotation.mjs | the targeted runs below |
+| random.mjs | the seeded generators |
 
-**Draft 2** (d2/solver2.mjs, about 380 lines): §2 as written here. No
-well-formedness inside unification (creation sites only, driven by
-d2/drive2.mjs before each equation); the sum rule for bounds, lacks and
-apart facts on every residue; commits one constant at a time; quiet
-equations; pending equations with identity, normal form, replacement,
-deduplication, and re-examination only when a named meta changed; an
-optional `expand` that builds the basis for a quiet equation sharing a
-meta with a waiting one (§14.2).
+**How they were preserved.** The session originals (scratchpad d2/ and
+review/) were reflowed to 80 columns and the solver split under 250
+lines, without changing behaviour: on the seeds compared, each script's
+output was identical to its original's, timings aside (perm.mjs at seeds
+21 and 22 × 1,500, raw and dense, and seed 23 with `EXPAND=1`;
+programs.mjs at seeds 3 and 5 × 1,000 with and without `SHARE`; the
+targeted scripts in full). Deliberate differences: programs.mjs now uses
+oracle.mjs instead of the first author's oracle (identical output on
+those seeds); the draft 1 columns of perm, shared and sat13 are gone
+with draft 1's solvers.
 
-**Runs for draft 2.** `perm3.mjs` runs each problem in five constraint
-orders (the given one, reversed, three shuffles) against review/bf.mjs.
-Dense and raw: 8 seeds × 12,000 problems each, so 480,000 runs per row.
+**Reproduced on 2026-10-17** from the repository, at small sizes (the
+README lists expected values):
+
+| Command | Result |
+|---|---|
+| `node perm.mjs 21 2000`, `22 2000` | 0 S, H, L violations, 0 order differences, 0 C1 violations; D4 with a least solution 0 and 0 |
+| `DENSE=1 node perm.mjs 21 2000`, `22 2000` | the same; D4 with a least solution 50 and 65 runs, all within C3 |
+| `DENSE=1 node perm.mjs 21 12000`, `node perm.mjs 21 12000` | identical to the recorded campaign line for seed 21: D4 with a least solution 350 (dense) and 5 (raw) |
+| `node programs.mjs 1 4000`, with and without `SHARE=1` | no soundness, honesty or leastness failure; no D4 with a least solution |
+| `node shared.mjs` | 392 programs, 186 with a least solution, 0 of them D4, 0 unsound |
+| `node both.mjs` | accepted, the unique solution |
+| `node chain.mjs` | n up to 40: accepted, no fresh meta, n apart pairs, n − 1 quiet equations, ≤ 1 ms each |
+| `node growth.mjs` | D4 then accepted (n = 60 in 28 ms); random: worst 12 solver-made metas (P 28, C 7), ≤ 11 parts, ≤ 23 ms |
+| `node sat13.mjs` | five uniquely satisfiable instances, all D4; 0 of 40 meets of distinct solutions is a solution |
+| `node switch.mjs` | 400 of 400: a least solution exists iff the formula is unsatisfiable |
+| `node switch2.mjs` | 308 of 308 D4 (a least solution exists; pinned) |
+| `node removal.mjs` | as §5.2 |
+| `node determinate.mjs` | unique solution; D4; accepted only with `expand` |
+| `node annotation.mjs` | §8's `Both` example: accepted in either order, `?r = { x }`, `?s = { y }`; D4 without the annotation |
+
+The full campaign below was not rerun beyond seed 21 (it takes about
+two minutes; the README gives the loop).
+
+**Runs for draft 2.** perm.mjs (session name d2/perm3.mjs) runs each
+problem in five constraint orders (the given one, reversed, three
+shuffles) against oracle.mjs (session name review/bf.mjs). Dense and
+raw: seeds 21-28 × 12,000 problems each, so 480,000 runs per row; the
+README gives the loop. The `+ expand` rows use `EXPAND=1`.
 
 | Solver, generator | Runs | S, H, L | C2 order differences | C1 violations | D4 with a least solution |
 |---|---|---|---|---|---|
@@ -1142,7 +1453,9 @@ Dense and raw: 8 seeds × 12,000 problems each, so 480,000 runs per row.
 | draft 2 + expand, raw | 480,000 | 0 | 0 | 0 | 25 |
 
 Comparison on 5 seeds × 12,000 problems × 5 orders (300,000 runs per
-row), same problems, same brute force:
+row), same problems, same brute force. History: draft 1's solvers were
+not preserved, so only the draft 2 row is reproducible from the
+repository.
 
 | Solver | Dense: D4 with least | Raw: D4 with least | S, H, L, C2 |
 |---|---|---|---|
@@ -1157,20 +1470,21 @@ one that shares a meta, e.g. `?m3 ⊎ ?m0 = ?m2 ⊎ ?m1` with `?m0 ⊎ ?m1 =
 Counting quiet equations as pending, C1 holds there; that is why C1
 counts them.
 
-**Other draft 2 runs.**
+**Other draft 2 runs** (session names in parentheses).
 
 | Script | What | Result |
 |---|---|---|
-| d2/cx1.mjs | `both(merge, merge)` | accepted, the unique solution |
-| d2/shared.mjs | review F2's 392 programs | 186 with a least solution, all accepted; draft 1: all D4 |
-| d2/sat13.mjs | uniquely satisfiable one-in-three systems | D4, as intended (pinned fixtures) |
-| d2/switch2.mjs | switch systems over unsatisfiable formulas (a least solution exists) | 308 of 308 D4, as intended (pinned fixtures) |
-| d2/switch.mjs | §2.7's switch construction, 400 random formulas | a least solution exists iff the formula is unsatisfiable: 400 of 400 |
-| d2/cx2.mjs | `h(merge × n)`, n up to 40 | accepted; no fresh meta, n apart pairs, n − 1 quiet equations, ≤ 3 ms (draft 1: 2^n parts, n = 9 in 4.3 s) |
-| d2/growth.mjs | the same with z = { a, b }, then each part fixed | D4 (genuinely ambiguous), then accepted; n = 60 in 38 ms |
-| d2/growth.mjs | random stress, 40 metas, 12 equations, 3,000 problems | worst 12 solver-made metas (bound 28 × 7 = 196), ≤ 11 parts in a row, ≤ 19 ms |
-| d2/run2.mjs | draft 1's program-shaped and raw generators, with and without shared parameters, 10 × 4,000 | no soundness or honesty failure; no D4 with a least solution in program-shaped problems |
-| d2/removal.mjs | `without { x }` on `{ ...?r, ...?s }` (§5.2) | waits; `.x` on the rest refused at once; `ρ = { y }` with `x` in either part; no part with `x` refused |
+| both.mjs (d2/cx1.mjs) | `both(merge, merge)` | accepted, the unique solution |
+| shared.mjs (d2/shared.mjs) | review F2's 392 programs | 186 with a least solution, all accepted; draft 1: all D4 (history) |
+| sat13.mjs (d2/sat13.mjs) | uniquely satisfiable one-in-three systems | D4, as intended (pinned fixtures) |
+| switch2.mjs (d2/switch2.mjs) | switch systems over unsatisfiable formulas (a least solution exists) | 308 of 308 D4, as intended (pinned fixtures) |
+| switch.mjs (d2/switch.mjs) | §2.7's switch construction, 400 random formulas | a least solution exists iff the formula is unsatisfiable: 400 of 400 |
+| chain.mjs (d2/cx2.mjs) | `h(merge × n)`, n up to 40 | accepted; no fresh meta, n apart pairs, n − 1 quiet equations, ≤ 3 ms (draft 1: 2^n parts, n = 9 in 4.3 s, history) |
+| growth.mjs (d2/growth.mjs) | the same with z = { a, b }, then each part fixed | D4 (genuinely ambiguous), then accepted; n = 60 in 38 ms |
+| growth.mjs | random stress, 40 metas, 12 equations, 3,000 problems | worst 12 solver-made metas (bound 28 × 7 = 196), ≤ 11 parts in a row, ≤ 19 ms |
+| programs.mjs (d2/run2.mjs) | draft 1's program-shaped and raw generators, with and without shared parameters, 10 × 4,000 | no soundness or honesty failure; no D4 with a least solution in program-shaped problems |
+| removal.mjs (d2/removal.mjs) | `without { x }` on `{ ...?r, ...?s }` (§5.2) | waits; `.x` on the rest refused at once; `ρ = { y }` with `x` in either part; no part with `x` refused |
+| determinate.mjs (new) | §2.2's quiet equation beside a waiting one | unique solution, D4; `expand` accepts it |
 
 **Found by the draft 2 prototype and folded in.**
 
@@ -1182,6 +1496,10 @@ counts them.
 - Building the basis on demand reintroduces the cost: in the random
   stress, 254 solver-made metas and 3.7 s for one problem.
 
-Not covered by either prototype: field types (so §2.6's nested
-equations), provenance and texts, specialization and lowering, effect
-rows and the joint fixpoint of §6.
+**Evidence limits.** Not covered by the prototype: field types (so
+§2.6's nested equations), provenance and texts, specialization and
+lowering, effect rows, so the rollback of effect settling and the joint
+fixpoint of §6. The compiler tests of §12 ("Evidence limits") cover
+them. The runs show that no counterexample to S, H, L, C1 or C2 was
+found and measure C3; they prove neither soundness nor any
+completeness.
