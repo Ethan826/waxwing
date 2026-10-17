@@ -12,7 +12,7 @@ import { eqTy, ordTy } from '../output/Domain.Type.Core/index.js';
 import { ground } from '../output/Domain.Type.Parts/index.js';
 import * as problem from '../output/Domain.Problem/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
-import { eqFlex } from '../output/Features.Check.Subst/index.js';
+import { eqFlex } from '../output/Features.Check.Flex/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
 import { choose, generator } from './coverage-oracle.mjs';
 

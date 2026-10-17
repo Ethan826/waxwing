@@ -10,7 +10,7 @@ import { TVar, substitute,
   substituteRow } from '../output/Domain.Type/index.js';
 import { rename } from '../output/Domain.Type.Core/index.js';
 import * as unifier from '../output/Features.Check.Unify/index.js';
-import { ordFlex } from '../output/Features.Check.Subst/index.js';
+import { ordFlex } from '../output/Features.Check.Flex/index.js';
 import { choose, generator } from './coverage-oracle.mjs';
 import { label, row, rowMeta } from './row-support.mjs';
 import { bool, fromRow, fromTy, fun, int, list, meta, rigid, toRow,

@@ -1,8 +1,8 @@
 module Features.Check.Subst
-  ( Flex(..)
+  ( module Features.Check.Flex
   , Subst(..)
   , RowPair
-  , WrittenLack
+  , module Features.Check.RowStore
   , empty
   , isEmpty
   , substitute
@@ -14,7 +14,6 @@ module Features.Check.Subst
   , resolveRow
   , resolveLabel
   , boundAt
-  , metaOf
   ) where
 
 import Prelude
@@ -23,36 +22,26 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe)
-import Data.Set (Set)
+import Data.Maybe (Maybe, maybe)
 import Data.Tuple (Tuple, snd)
-import Domain.Syntax (Span)
 import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
 import Domain.Type
   ( Substitution
   , Ty(..)
   , TyRow
-  , VarId
   , foldStages
   , stagesThrough
   )
 import Domain.Type as Type
 import Domain.Type.Parts (mapRecord)
 import Features.Check.Aliases (Aliases, jumped, noAliases)
+import Features.Check.Flex (Flex(..), metaOf)
 import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
+import Features.Check.PartOrigin (PartOrigin, noOrigins)
+import Features.Check.RowStore (RowStore(..), WrittenLack, emptyStore)
 import Features.Check.Search (Stack(..), stackItems)
 import Features.Check.TailWatch (TailWatch, emptyWatch)
-
--- A checker variable: a signature's own variable, which is fixed inside
--- its function and unifies only with itself, or a meta, which stands for
--- one use's still unknown type or row and may be bound to any. A variable
--- has one sort by construction, so a meta is looked up by its position:
--- a type's variable in `types`, a row's tail in `rows`.
-data Flex = Rigid VarId | Meta Int
-
-derive instance eqFlex ∷ Eq Flex
-derive instance ordFlex ∷ Ord Flex
 
 -- Triangular: a binding may mention other bound metas. Binding a meta then
 -- never rewrites earlier bindings; `resolve` follows the links on demand.
@@ -69,10 +58,10 @@ derive instance ordFlex ∷ Ord Flex
 -- the substitution so that a postponed pair that reverts takes its edges
 -- with it. `watch` (FX008):
 -- the tails the restricted registry watches, with those bound since it
--- last looked; data, so it reverts the same way. `lacks` (R001): the
--- labels each record tail may never hold, a meta's or a signature's rigid
--- one's (Features.Check.Lacks). `written` (R005): for a lacked label that
--- a `where` clause wrote, the clause's variable and the label's span.
+-- last looked; data, so it reverts the same way. `store` (R001, R005,
+-- Tranche B): what record tails must satisfy (Features.Check.RowStore),
+-- and `origins`, the renderers' metadata about rows' parts
+-- (Features.Check.PartOrigin), revert the same way.
 newtype Subst = Subst
   { types ∷ Map Int (Ty Flex)
   , rows ∷ Map Int (TyRow Flex)
@@ -83,11 +72,9 @@ newtype Subst = Subst
   , marks ∷ MarkStore (Ty Flex)
   , watch ∷ TailWatch
   , aliases ∷ Aliases
-  , lacks ∷ Map Flex (Set String)
-  , written ∷ Map Flex (Map String WrittenLack)
+  , store ∷ RowStore
+  , origins ∷ PartOrigin
   }
-
-type WrittenLack = { variable ∷ String, span ∷ Span }
 
 -- A postponed pair keeps where its sides were written and how it treats
 -- marks, for its retry.
@@ -105,8 +92,8 @@ empty = Subst
   , marks: emptyMarks
   , watch: emptyWatch
   , aliases: noAliases
-  , lacks: Map.empty
-  , written: Map.empty
+  , store: emptyStore
+  , origins: noOrigins
   }
 
 -- No meta is bound, so resolving under it changes no type. (Mark bindings
@@ -226,8 +213,3 @@ substitution (Subst bindings) = { types: replaced, rows: replacedRow }
 -- The binding of a variable in one sort's table, if it is a bound meta.
 bound ∷ ∀ a. Map Int a → Flex → Maybe a
 bound table flex = flip Map.lookup table =<< metaOf flex
-
-metaOf ∷ Flex → Maybe Int
-metaOf = case _ of
-  Meta meta → Just meta
-  Rigid _ → Nothing

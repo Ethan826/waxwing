@@ -18,31 +18,35 @@ import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Domain.Type (Ty)
 import Features.Check.Implied (Implied, implied)
-import Features.Check.Subst (Flex, Subst(..), WrittenLack)
+import Features.Check.Subst (Flex, RowStore(..), Subst(..), WrittenLack)
 
 -- The labels a record tail may never hold (R001 design §2, rule 4).
 lacksOf ∷ Subst → Flex → Set String
-lacksOf (Subst bindings) tail = maybe Set.empty identity
-  (Map.lookup tail bindings.lacks)
+lacksOf (Subst { store: RowStore store }) tail = maybe Set.empty identity
+  (Map.lookup tail store.lacks)
 
 addLacks ∷ Flex → Set String → Subst → Subst
-addLacks tail labels subst@(Subst bindings)
+addLacks tail labels subst@(Subst bindings@{ store: RowStore store })
   | Set.isEmpty labels = subst
   | otherwise = Subst bindings
-      { lacks = Map.insertWith Set.union tail labels bindings.lacks }
+      { store = RowStore store
+          { lacks = Map.insertWith Set.union tail labels store.lacks }
+      }
 
 -- Of the labels a record tail lacks, those a `where` clause wrote, with
 -- where (R005 design §2, §5).
 writtenOf ∷ Subst → Flex → Map String WrittenLack
-writtenOf (Subst bindings) tail = maybe Map.empty identity
-  (Map.lookup tail bindings.written)
+writtenOf (Subst { store: RowStore store }) tail = maybe Map.empty identity
+  (Map.lookup tail store.written)
 
 -- What the tail already knows of a label is kept.
 addWritten ∷ Flex → Map String WrittenLack → Subst → Subst
-addWritten tail found subst@(Subst bindings)
+addWritten tail found subst@(Subst bindings@{ store: RowStore store })
   | Map.isEmpty found = subst
   | otherwise = Subst bindings
-      { written = Map.insertWith Map.union tail found bindings.written }
+      { store = RowStore store
+          { written = Map.insertWith Map.union tail found store.written }
+      }
 
 -- What a signature's types say its record tails lack, at one use (each
 -- tail a fresh meta) or for its own body (each a rigid). A signature with
