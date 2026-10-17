@@ -89,7 +89,7 @@ export const r012Rows = [
         needle: '    Syntax.RecordSort, TypeArgument found → Just found\n'
           + '    Syntax.RecordSort, RowArgument '
           + '(RowRef span [] (Just (Spread name))) →\n'
-          + '      Just (RecordRef span [] (Just { name, span }))\n',
+          + '      Just (RecordRef span [] [ { name, span } ])\n',
         replacement: ''
       }
     ],
