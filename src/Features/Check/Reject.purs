@@ -30,6 +30,7 @@ import Features.Check.Scheme (State, opened)
 import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..))
 import Features.Check.Lacked (lackedAt)
+import Features.Check.Placeholder (placeholderAt)
 
 -- A consumption (or the retry of a postponed one) that failed, reported at
 -- the consuming span with the notes the state can give: where the label
@@ -44,6 +45,7 @@ rejected env state origin failure = case failure of
   RowMismatch left right → conflict left right
   RowPayload found expected occurrence → payload found expected occurrence
   Forbidden label lack → Left (lackedAt span label lack)
+  Placeholder what → Left (placeholderAt span what)
   _ → Left (problemAt (Internal "Effect row consumption failed") span)
   where
   span = origin.span

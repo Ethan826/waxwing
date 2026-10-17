@@ -25,6 +25,7 @@ import Domain.Type (Ty(..))
 import Features.Check.Context (CheckEnv)
 import Features.Check.Hint (hinted)
 import Features.Check.Lacked (lackedAt)
+import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Sync (sync)
 import Features.Check.Scheme (State, flexible, opened, resolved, tooDeep)
 import Features.Check.Unify (Failure(..), inferredTypeLimit, unify)
@@ -87,6 +88,7 @@ expectType env state expected actual span = do
     RowPayload _ _ _ → mismatched unit
     RowOccurs _ _ → mismatched unit
     Forbidden label lack → Left (lackedAt span label lack)
+    Placeholder what → Left (placeholderAt span what)
   -- The label's trail is where it arose, as far as the state knows it.
   rowFailure label row occurrence = do
     name ← labelName env span label

@@ -12,7 +12,7 @@ import Domain.Type.Record (RecordRow)
 import Features.Check.RecordTail (Fields, bindTail, shareTails)
 import Features.Check.FlatRecord (Flat, flatten)
 import Features.Check.Subst (Flex(..), Subst, metaOf, walk)
-import Features.Check.UnifyFailure (Failure)
+import Features.Check.UnifyFailure (Failure(..))
 import Features.Check.UnifyParts (mismatch)
 
 -- Record rows unify by label (R001 design §2). Each side is first
@@ -33,15 +33,18 @@ unifyRecord
   → RecordRow (Ty Flex) Flex
   → Either Failure Subst
 unifyRecord unifyField subst left right =
-  if duplicated one || duplicated other || several then failed subst
+  if several then Left (Placeholder severalTails)
+  else if duplicated one || duplicated other then failed subst
   else foldM fieldPair subst (common one other) >>= decided
   where
   flatLeft = flatten subst left
   flatRight = flatten subst right
   one = viewed flatLeft
   other = viewed flatRight
-  -- No producer makes a row of several tails yet, so none arrives; the
-  -- rule for them is Tranche B's, and until then they are no match.
+  -- No producer makes a row of several tails before Tranche B Task 2's
+  -- parser; the rule for them is Task 4's, and until then they reach this
+  -- greppable placeholder rather than a mismatch that would pass for an
+  -- answer.
   several = Array.length flatLeft.tails > 1 || Array.length flatRight.tails > 1
   fieldPair reached (Tuple mine theirs) = unifyField reached mine theirs
   failed reached = mismatch reached (TRecord left) (TRecord right)
@@ -49,6 +52,9 @@ unifyRecord unifyField subst left right =
     if rebound reached one || rebound reached other then
       unifyRecord unifyField reached left right
     else tails failed one other reached
+
+severalTails ∷ String
+severalTails = "rows with several tails are checked in Task 4"
 
 -- A flattened row with at most one tail, which is all this rule reads.
 type Single = { fields ∷ Fields, tail ∷ Maybe Flex }

@@ -22,6 +22,8 @@ import Features.Check.Subst (Flex, WrittenLack)
 -- a row meta and the label argument holding it in a row (an infinite
 -- row), apart from `Occurs`, whose meta is a type's. `Forbidden` (R005):
 -- a label bound into a record tail that a written `lacks` forbids it.
+-- `Placeholder` (R005 Tranche B): the work a later task does, named for
+-- the E_INTERNAL it is reported as.
 data Failure
   = Mismatch (Ty Flex) (Ty Flex)
   | Occurs Int (Ty Flex)
@@ -33,3 +35,4 @@ data Failure
   | RowMismatch (TyRow Flex) (TyRow Flex)
   | RowOccurs Int (Ty Flex)
   | Forbidden String WrittenLack
+  | Placeholder String
