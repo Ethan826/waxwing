@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checkRejectedAt, checkedPoly } from './phases.mjs';
-import { rejectedAt, spanAt } from './support.mjs';
+import { spanAt } from './support.mjs';
 
 // R005 Task 2: checking the spread, `without`, rest binders and `{}`
 // (design §1, §3, §4, §5). Written lacks are r005-lacks.test.mjs's.

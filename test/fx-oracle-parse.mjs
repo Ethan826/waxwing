@@ -67,6 +67,8 @@ export const parseProgram = source => {
     const params = parameters();
     take(':');
     const { row = [] } = readType();
+    // R005: a `where` clause is for the checker; the interpreter skips it.
+    if (peek('where')) while (!peek('=')) take();
     take('=');
     program.functions.set(name, { parameters: params.map(([param]) => param),
       generic: params.some(([, type]) => openRecord(type)), row,

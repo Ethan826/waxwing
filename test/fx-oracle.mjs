@@ -147,7 +147,7 @@ export const interpret = (source, options = {}) => {
         const left = evaluate(node.left, env, ctx);
         return (left + evaluate(node.right, env, ctx)) | 0;
       }
-      case 'record': case 'access': case 'update':
+      case 'record': case 'access': case 'update': case 'without':
         return evaluateRecord(state, node, env, ctx);
       case 'text': case 'concat':
         return evaluateText(state, node, env, ctx);

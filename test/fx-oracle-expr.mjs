@@ -9,7 +9,8 @@ import { cursor, isUpper, typeReader } from './fx-oracle-lex.mjs';
 import { withoutMarks } from './fx-oracle-marks.mjs';
 import { textNode } from './fx-oracle-text.mjs';
 import {
-  literalAhead, readFields, readRecordPattern, updateAhead
+  literalAhead, readFields, readRecordPattern, readRemoval, updateAhead,
+  withoutAhead
 } from './fx-oracle-records.mjs';
 import { unit } from './poly-parse.mjs';
 
@@ -52,6 +53,10 @@ export const expressions = reader => {
   const postfix = node => {
     if (peek('.')) {
       take('.'); return { tag: 'access', base: node, label: take().text }; }
+    if (withoutAhead(reader)) {
+      take('without');
+      return { tag: 'without', base: node, labels: readRemoval(reader) };
+    }
     if (updateAhead(reader)) {
       take('{');
       return { tag: 'update', base: node,
@@ -63,7 +68,8 @@ export const expressions = reader => {
   };
   const atom = () => {
     let node = primary();
-    while (peek('(') || peek('.') || updateAhead(reader)) node = postfix(node);
+    while (peek('(') || peek('.') || updateAhead(reader)
+      || withoutAhead(reader)) node = postfix(node);
     return node;
   };
   const primary = () => {
