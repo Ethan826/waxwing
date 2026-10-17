@@ -1123,6 +1123,8 @@ callee's signature.
 
 ### 10.2 Rendering examples to pin before D4 and D6 are approved
 
+Pinned for review in docs/plans/2026-10-17-open-row-merge-diagnostics.md.
+
 Each item becomes a test expectation (source, text, span, notes, hint)
 submitted to the user with slice 5. The hint of each must name an
 annotation the language permits (above).
