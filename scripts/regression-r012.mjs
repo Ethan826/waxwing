@@ -29,9 +29,11 @@ export const r012Rows = [
     // Only a `...r` alone passes its labels on: a record argument's tail
     // implies none, so a caller fills r with x and lowering meets x twice.
     name: 'r012-argument-lacks', file: 'src/Features/Resolve/Lacking.purs',
-    needle: 'passed tables argument = maybe [] labelled argument.tail\n',
+    needle: 'passed tables argument = Array.concatMap labelled '
+      + 'argument.tails\n',
     replacement: 'passed tables argument =\n'
-      + '  if Array.null argument.fields then maybe [] labelled argument.tail\n'
+      + '  if Array.null argument.fields then Array.concatMap labelled '
+      + 'argument.tails\n'
       + '  else []\n',
     probe: 'r012-argument-lacks',
     message: /argument tail: E_INTERNAL Duplicate record label/
