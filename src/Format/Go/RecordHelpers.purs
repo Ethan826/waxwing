@@ -15,14 +15,15 @@ import Format.Go.RecordNames
   , recordName
   , showRecordName
   )
+import Format.Go.RecordLayouts (emittedLayouts)
 import Format.Go.RecordUse (recordUse)
 import Format.Go.Show (appendText, showValue)
 
 -- The Go of the program's record layouts (R001 design §5): one struct per
--- layout, and the compare and show helpers the program uses, in layout
--- order. `bool`, `fmt` and `quote` say whether those helpers call
--- waxwingCmpBool, fmt.Append and the quoting printer. A program without
--- records emits nothing here.
+-- layout some emitted type mentions (R011), and the compare and show
+-- helpers the program uses, in layout order. `bool`, `fmt` and `quote` say
+-- whether those helpers call waxwingCmpBool, fmt.Append and the quoting
+-- printer. A program without records emits nothing here.
 type RecordHelpers =
   { structs ∷ String
   , compares ∷ String
@@ -36,7 +37,7 @@ type Layout = { id ∷ LayoutId, fields ∷ Array (Tuple String Ty) }
 
 recordHelpers ∷ IR.Program → RecordHelpers
 recordHelpers program'@(IR.Program program) =
-  { structs: joinWith "" (map struct layouts)
+  { structs: joinWith "" (map struct emitted)
   , compares: joinWith "" (map compareHelper compared)
   , shows: joinWith "" (map showHelper shown)
   , bool: Array.any (holds isBool) compared
@@ -47,6 +48,7 @@ recordHelpers program'@(IR.Program program) =
   layouts = Array.mapWithIndex layout program.records
   layout number info = { id: LayoutId number, fields: info.fields }
   use = recordUse program'
+  emitted = Array.filter (member (emittedLayouts program')) layouts
   compared = Array.filter (member use.compared) layouts
   shown = Array.filter (member use.shown) layouts
   member used found = Set.member (index found.id) used

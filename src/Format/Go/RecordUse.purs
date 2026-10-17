@@ -1,4 +1,4 @@
-module Format.Go.RecordUse (RecordUse, recordUse) where
+module Format.Go.RecordUse (RecordUse, recordUse, note, closed) where
 
 import Prelude
 import Data.Array as Array

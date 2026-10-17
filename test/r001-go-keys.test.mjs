@@ -29,9 +29,10 @@ const atLimit = [
 
 test('record layouts do not count toward the limit; row copies do', () => {
   const go = checked(atLimit);
-  // Each m shape, get's argument and its tail { b: Int }.
+  // Each m shape and get's argument; its tail { b: Int } is a key argument
+  // alone, so it has no struct (R011).
   assert.equal((go.match(/^type waxwingRec\d+ struct/gm) ?? []).length,
-    shapes + 2);
+    shapes + 1);
   const over = `${atLimit} fn extra(): Int = get({ a: 1, c: 1 });`;
   assert.equal(rejectedAt(over, 'E_SPECIALIZATION', 'get({ a: 1, c: 1 })')
     .message, 'More than 10000 specializations');

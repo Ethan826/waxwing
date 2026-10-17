@@ -37,11 +37,6 @@ f_id int32
 f_name string
 }
 
-type waxwingRec3 struct {
-f_id int32
-f_name string
-}
-
 type waxwingRec4 struct {
 f_admin bool
 f_age int32
@@ -54,17 +49,10 @@ f_age int32
 f_id int32
 }
 
-type waxwingRec6 struct {
-f_id int32
-}
-
 type waxwingRec7 struct {
 f_admin bool
 f_id int32
 f_name string
-}
-
-type waxwingRec8 struct {
 }
 
 type waxwingRec9 struct {
