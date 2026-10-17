@@ -22,6 +22,7 @@ import Format.Diagnostic.Mark as Mark
 import Format.Diagnostic.Name as Name
 import Format.Diagnostic.Note (WireNote, wireNotes)
 import Format.Diagnostic.Qualify as Qualify
+import Format.Diagnostic.Records as Records
 import Format.Diagnostic.Row (equalityMessage, mismatchMessage, shortLabel)
 import Format.Diagnostic.Witness (pattern)
 
@@ -72,22 +73,17 @@ message = case _ of
     <> shortLabel label
   RowSort true → "Expected an effect row, found a type"
   RowSort false → "Expected a type, found an effect row"
-  RecordRowAsEffect name → name <> " is a record row, not an effect row"
-  EffectRowAsRecord name → name <> " is an effect row, not a record row"
+  RecordRowAsEffect name → Records.recordRowAsEffect name
+  EffectRowAsRecord name → Records.effectRowAsRecord name
   NotPrintable ty → "Expected a printable value, found " <> typeName ty
-  MissingField label ty → label <> " is not a field of " <> typeName ty
-  RowMayHaveField name label → name <> " may already have field " <> label
-  LackedField label name → label <> " is not allowed here: " <> name
-    <> " lacks { "
-    <> label
-    <> " }"
-  ExpectedRecord ty → "Expected a record, found " <> typeName ty
-  PatternMissingField label → "Pattern is missing field " <> label
-    <> "; add it or end the pattern with ..."
-  PatternMissingRest ty → "Pattern is missing the rest of " <> typeName ty
-    <> "; end the pattern with ..."
-  SecondSpread → "A record literal accepts at most one spread"
-  TypeAsRecordRow name → name <> " is a type, not a record row"
+  MissingField label ty → Records.missingField label (typeName ty)
+  RowMayHaveField name label → Records.mayHaveField name label
+  LackedField label name → Records.lackedField label name
+  ExpectedRecord ty → Records.expectedRecord (typeName ty)
+  PatternMissingField label → Records.patternMissingField label
+  PatternMissingRest ty → Records.patternMissingRest (typeName ty)
+  SecondSpread → Records.secondSpread
+  TypeAsRecordRow name → Records.typeAsRecordRow name
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
   DeferMayPerform tail →
