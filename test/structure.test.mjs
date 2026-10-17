@@ -90,3 +90,16 @@ test('pure layers may use Data.Enum only', () => {
     assert.equal(pure(dependency).length, 1, dependency);
   }
 });
+
+// F007: only the immutable arrays are core; ST arrays are mutation.
+test('pure layers admit immutable Data.Array modules, not ST arrays', () => {
+  const pure = dependency => graphFindings(
+    { 'Format.Lex': { path: 'src/Format/Lex.purs', depends: [dependency] } });
+  for (const dependency of ['Data.Array', 'Data.Array.NonEmpty']) {
+    assert.deepEqual(pure(dependency), [], dependency);
+  }
+  for (const dependency of ['Data.Array.ST', 'Data.Array.ST.Iterator',
+    'Data.Array.NonEmpty.Internal', 'Data.ArrayX']) {
+    assert.equal(pure(dependency).length, 1, dependency);
+  }
+});

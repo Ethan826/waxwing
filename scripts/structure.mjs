@@ -18,8 +18,8 @@ const pureLayers = ['Domain', 'Features', 'Format'];
 // Control.Monad.Rec.Class supplies tailRecM, the only stack-safe loop for
 // long inputs (BACKLOG E002); the rest of Control stays out of pure layers.
 const coreLibraries = new RegExp('^(Prelude$|Control\\.Monad\\.Rec\\.Class$|'
-  + 'Data\\.(Map|Set|Tuple|Enum)$|'
-  + 'Data\\.(Array|Either|Maybe|Int|String|Foldable|Traversable)(\\.|$))');
+  + 'Data\\.(Map|Set|Tuple|Enum|Array|Array\\.NonEmpty)$|'
+  + 'Data\\.(Either|Maybe|Int|String|Foldable|Traversable)(\\.|$))');
 const partialModules = /(^|\.)(Unsafe|Partial)(\.|$)/;
 // Each internal IR is visible only to the phase that produces it and the one
 // that consumes it: Check produces the checked IR, Specialize alone reads it

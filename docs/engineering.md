@@ -34,8 +34,10 @@ adding a bypass allowlist.
   helpers (scripts/structure.mjs `internalModules`;
   test/structure.test.mjs pins both directions).
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
-  Data.{Array, Either, Maybe, Int, String, Foldable, Traversable} modules
-  plus, since A003 Task 3b, exactly Control.Monad.Rec.Class, for `tailRecM`
+  Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
+  exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its
+  submodules are mutation and stay rejected, pinned by the same test file)
+  and, since A003 Task 3b, exactly Control.Monad.Rec.Class, for `tailRecM`
   loops over long inputs (BACKLOG E002); test/structure.test.mjs pins that
   Control.Monad.ST, Control.Monad and near-miss names stay rejected. Since
   P001 Task 3 it also admits exactly Data.Map, Data.Set and Data.Tuple
