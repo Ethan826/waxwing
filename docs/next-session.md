@@ -1,3 +1,28 @@
+# Waxwing / evening queue done (2026-10-17)
+
+Merged into main by fast-forward overnight (nothing pushed; each with a
+green `npm run verify` and the controller's review): R005 Tranche A
+(extension, `without`, rest binders, written lacks, `{}`), R013
+(records-heavy chains: 2,000 declarations 7.5 s to 0.18 s), hygiene
+F007, F006 and A005, T002 (per-process go-batch directories) and R011
+(only used record layouts are emitted; records.go loses three unused
+structs). Latest verify: 2120/2120, 59/59, 142 proofs.
+
+Waiting for the user, all written unattended and marked Proposed:
+- R005 Tranche B: draft 2 of the algorithm
+  (docs/plans/2026-10-16-open-row-merge-design.md) after an adversarial
+  review (docs/plans/2026-10-16-open-row-merge-review.md); open
+  questions in its §14 (implied vs written `disjoint`, completeness,
+  tail order, texts, a precedence rule that would change some Tranche A
+  notes).
+- T013: verify profile (docs/plans/2026-10-17-verify-profile.md);
+  regression proofs are 85% of 21.5 min; proposals (prebuilt output
+  plus incremental compile per proof; parallel workers) need approval.
+
+No provisional texts or decisions were adopted. Then: INF001 and C001.
+
+---
+
 # Waxwing / R005 Tranche A merged; evening queue running (2026-10-16)
 
 R005 Tranche A was fast-forwarded into main at fedb8ff (branch deleted,
