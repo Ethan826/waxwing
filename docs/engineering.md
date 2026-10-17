@@ -265,7 +265,8 @@ adding a bypass allowlist.
   GOCACHE under .build and GOWORK off, and runs each case as its own process
   (the binary invoked with the case's package name). `<id>` is the test
   file's basename plus an optional label, sanitized; a batch clears only its
-  own directory, never the root, and an id may be claimed once per process.
+  own per-process directory, never the root, and an id may be claimed once
+  per process.
   Before rewriting, each program must have exactly one `package main` clause
   and exactly one canonical printed entry (`func main() { fmt.Println(...) }`)
   or Unit entry (`func main() { waxwingFnN() }`), and no `func Main`; only
@@ -277,15 +278,16 @@ adding a bypass allowlist.
   case(s) when Go's output identifies their package. `run` keeps runGo's
   contract (stdout, exit status 0 asserted); `result` returns the raw
   process outcome. Panics keep their message and exit status; stack traces
-  differ (package path `waxwingbatch/c<N>`, `Main`). Batch directories
-  (binaries included) persist after a run and are replaced only by that
-  batch's next run; `rm -rf .build/go-batches` reclaims them. Because the
-  directories are fixed per test file, two concurrent test runs in one
-  checkout race on them (and on the build); run one at a time per checkout.
+  differ (package path `waxwingbatch/c<N>`, `Main`). Each process builds
+  under its own `.build/go-batches/<id>.<pid>/` (T002), so concurrent runs
+  of one file in a checkout do not race; the directory (binary included) is
+  removed when the process exits or gets SIGINT/SIGTERM. A SIGKILLed run
+  can leave one behind; `rm -rf .build/go-batches` reclaims them.
   The `go build` timeout (300 s) kills only the go command, not its compile
   children (spawnSync cannot kill a process group); depth.test.mjs's timed
   builds group-kill because their timeout is an assertion. Self-tests:
-  test/go-batch.test.mjs. Not batched: depth.test.mjs timing builds,
+  test/go-batch.test.mjs (the concurrency one spawns
+  test/go-batch-child.mjs). Not batched: depth.test.mjs timing builds,
   scripts/regression.mjs probes, `goTest`, and the slow accepted probes of
   test/fx008-probes.test.mjs (the batch compiles in-process, which would
   escape their child-process timeout); `runGo` remains as the

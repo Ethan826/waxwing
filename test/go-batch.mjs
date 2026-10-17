@@ -22,6 +22,26 @@ const goVersion = JSON.parse(readFileSync('package.json', 'utf8'))
 // Files run in parallel processes; ids are per file, so only a reuse inside
 // one file could collide, and that is refused.
 const claimed = new Set();
+// Concurrent runs of one file (T002) must not share a directory, so each
+// process builds under its own pid-suffixed one and removes it on the way
+// out; a killed process (SIGKILL) can still leave one behind.
+const built = new Set();
+const removeBuilt = () => {
+  for (const dir of built) rmSync(dir, { recursive: true, force: true });
+  built.clear();
+};
+const exitOnSignal = signal => {
+  removeBuilt();
+  process.exit(128 + signalNumbers[signal]);
+};
+const signalNumbers = { SIGINT: 2, SIGTERM: 15 };
+process.on('exit', removeBuilt);
+for (const signal of Object.keys(signalNumbers)) {
+  process.once(signal, () => exitOnSignal(signal));
+}
+
+export const batchDirectory = (id, pid = process.pid) =>
+  resolve('.build/go-batches', `${id}.${pid}`);
 
 export const batchId = (file, label = '') => {
   const path = file.startsWith('file:') ? fileURLToPath(file) : file;
@@ -109,6 +129,7 @@ const write = (dir, packages) => {
 const build = (id, dir, entries) => {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
+  built.add(dir);
   const transformed = entries.filter(entry => !entry.rejection).map(rewritten);
   let packages;
   // asCasePackage is pure text work; its refusal is the only throw here.
@@ -170,8 +191,7 @@ export const runGoBatch = (file, cases, label = '') => {
     const found = entries.get(String(name));
     assert.ok(found, `go batch ${id}: no case ${name}`);
     if (found.rejection) throw found.rejection;
-    outcome ??= build(id, resolve('.build/go-batches', id),
-      [...entries.values()]);
+    outcome ??= build(id, batchDirectory(id), [...entries.values()]);
     if (outcome.failure) throw outcome.failure;
     return [outcome.binary, found.ident];
   };

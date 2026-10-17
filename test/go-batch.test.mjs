@@ -1,14 +1,16 @@
 // Self-tests of the per-file Go batch harness (T001, test/go-batch.mjs).
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
-  existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync
+  existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { checked, command, runGo } from './support.mjs';
-import { asCasePackage, batchId, runGoBatch } from './go-batch.mjs';
+import {
+  asCasePackage, batchDirectory, batchId, runGoBatch
+} from './go-batch.mjs';
 
 const answer = 'fn main(): Int = 42;';
 const nullary = 'type N = A | B; fn main(): N = A;';
@@ -100,26 +102,67 @@ test('the rewrite guard rejects unexpected shapes, naming the case', () => {
   }
 });
 
-test('a batch clears only its own deterministic directory', () => {
+test('a batch clears only its own per-process directory', () => {
   const id = batchId(import.meta.url, 'own dir');
   assert.equal(id, 'go-batch.test.mjs-own-dir'.replace(/\./g, '-'));
   const root = resolve('.build/go-batches');
-  const neighbour = join(root, batchId(import.meta.url, 'neighbour'));
-  mkdirSync(neighbour, { recursive: true });
+  const own = batchDirectory(id);
+  assert.equal(own, join(root, `${id}.${process.pid}`));
+  // Another process's directory for the same id, and an unrelated batch.
+  const neighbours = [batchDirectory(id, 1), join(root, 'neighbour')];
+  for (const dir of neighbours) {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'marker'), '');
+  }
   try {
-    writeFileSync(join(neighbour, 'marker'), '');
-    mkdirSync(join(root, id), { recursive: true });
-    writeFileSync(join(root, id, 'stale'), '');
+    mkdirSync(own, { recursive: true });
+    writeFileSync(join(own, 'stale'), '');
     const batch = runGoBatch(import.meta.url, [['answer', answer]], 'own dir');
     assert.equal(batch.run('answer'), '42\n');
-    assert.ok(existsSync(join(root, id, 'go.mod')), 'synthetic go.mod');
-    assert.ok(!existsSync(join(root, id, 'stale')), 'own directory cleared');
-    assert.ok(existsSync(join(neighbour, 'marker')), 'neighbour untouched');
-  } finally { rmSync(neighbour, { recursive: true, force: true }); }
+    assert.ok(existsSync(join(own, 'go.mod')), 'synthetic go.mod');
+    assert.ok(!existsSync(join(own, 'stale')), 'own directory cleared');
+    for (const dir of neighbours) {
+      assert.ok(existsSync(join(dir, 'marker')), `${dir} untouched`);
+    }
+  } finally {
+    for (const dir of [own, ...neighbours]) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
   assert.throws(() => runGoBatch(import.meta.url, [['answer', answer]],
     'own dir'),
     /already claimed/);
 });
+
+const child = () => new Promise(settle => {
+  const process_ = spawn('node', ['test/go-batch-child.mjs'],
+    { stdio: ['ignore', 'pipe', 'pipe'] });
+  let stdout = '';
+  let stderr = '';
+  process_.stdout.on('data', chunk => { stdout += chunk; });
+  process_.stderr.on('data', chunk => { stderr += chunk; });
+  process_.on('close', status => settle({ status, stdout, stderr }));
+});
+
+test('concurrent processes building one batch id both succeed (T002)',
+  async () => {
+    const root = resolve('.build/go-batches');
+    const before = existsSync(root) ? readdirSync(root) : [];
+    const runs = await Promise.all([child(), child(), child()]);
+    const reports = runs.map(run => {
+      assert.equal(run.status, 0, run.stderr);
+      return JSON.parse(run.stdout);
+    });
+    const expected = ['0', '1', '2', '3', '4', '5'];
+    for (const report of reports) assert.deepEqual(report.outputs, expected);
+    assert.equal(new Set(reports.map(r => r.directory)).size, 3,
+      'each process builds in its own directory');
+    for (const { directory } of reports) {
+      assert.ok(!existsSync(directory), `${directory} removed on exit`);
+    }
+    const after = existsSync(root) ? readdirSync(root) : [];
+    assert.deepEqual(after.filter(name => !before.includes(name)), []);
+  });
 
 test('duplicate case names are refused when the batch is declared', () => {
   const unique = (count, name) =>
