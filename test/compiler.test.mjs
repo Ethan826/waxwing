@@ -134,7 +134,9 @@ test('records example matches its snapshot and runs through the CLI', () => {
   const source = readFileSync('examples/records.wxw', 'utf8');
   assert.equal(checked(source), readFileSync('bootstrap/records.go', 'utf8'));
   assert.equal(command('node', ['scripts/waxwing.mjs', 'run',
-    'examples/records.wxw']), '{ age: 37, id: 7, name: "Ada" }\nBo!\ntrue\n'
+    'examples/records.wxw']), '{ age: 37, id: 7, name: "Ada" }\n'
+    + '{ admin: true, age: 41, id: 8, name: "Bo" }\n{ age: 36, id: 7 }\n'
+    + 'Ada: { age: 36, id: 7 }\nBo!\ntrue\n'
     + 'Pair({ lead: Person({ age: 36, name: "Ada" }), rest: Solo })\n'
     + 'Welcome back, Cy\nHello, Di\nEd\n');
 });

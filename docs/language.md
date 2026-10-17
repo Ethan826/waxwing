@@ -8,10 +8,13 @@ their verifying test file in test/.
 Identifiers: ASCII letters/underscore then letters/digits/underscore.
 Whitespace: space, tab, CR, LF. Reserved words: `fn if then else true false
 Int Bool Text type match`, and the lone `_`. `type`, `match` and `_` were
-identifiers in Stage 0 (ADR 003). Punctuation includes `|`, `{`, `}`, the
-single token `=>` (adt-syntax), the operators `== != < <= > >=`, and
-(FN001) `->` and `|>`, matched longest first (`==` before `=>` and `=`,
-`->` before an integer's minus, `|>` before `|`; fn-syntax); a lone `!` is
+identifiers in Stage 0 (ADR 003). Since R005 `where lacks without disjoint`
+are reserved too (ADR 013 records the break for programs using them as
+names; `disjoint` is reserved for the later merge). Punctuation includes
+`|`, `{`, `}`, the single token `=>` (adt-syntax), the operators
+`== != < <= > >=`, and (FN001) `->` and `|>`, matched longest first (`==`
+before `=>` and `=`, `->` before an integer's minus, `|>` before `|`;
+fn-syntax); a lone `!` is
 E_LEX (compare).
 Comments do not exist. Text literals are described under Text, below.
 
@@ -22,7 +25,7 @@ typedecl    = "type", upper, [ "(", lower, { ",", lower }, ")" ], "=",
               ctor, { "|", ctor }, ";" ;
 ctor        = upper, [ "(", type, { ",", type }, ")" ] ;
 function    = "fn", identifier, "(", [ parameters ], ")", ":", type,
-              "=", expression, ";" ;
+              [ "where", lacks, { ",", lacks } ], "=", expression, ";" ;
 parameters  = parameter, { ",", parameter } ;
 parameter   = identifier, ":", type ;
 type        = arrow ;
@@ -667,15 +670,19 @@ scripts/regression-r001.mjs.
 
 ```ebnf
 operand    = ... | recordtype ;
-recordtype = "{", rpart, { ",", rpart }, [ "," ], "}" ;
+recordtype = "{", rpart, { ",", rpart }, [ "," ], "}" | "{", "}" ;
 rpart      = lower, ":", type | "...", lower ;
-primary    = ... | "{", lower, ":", expression,
-             { ",", lower, ":", expression }, [ "," ], "}" ;
+primary    = ... | "{", item, { ",", item }, [ "," ], "}" ;
+item       = lower, ":", expression | "...", expression ;
 atom       = primary, { suffix } ;
 suffix     = "(", [ arguments ], ")" | ".", lower
            | "{", lower, "=", expression,
-             { ",", lower, "=", expression }, [ "," ], "}" ;
+             { ",", lower, "=", expression }, [ "," ], "}"
+           | "without", "{", lower, { ",", lower }, [ "," ], "}" ;
+lacks      = lower, "lacks", "{", lower, { ",", lower }, [ "," ], "}" ;
 ```
+
+A literal holds at most one `...expression` item (R005, below).
 
 Types (r001-types). `{ name: Text, age: Int }` is a closed record type and
 `{ name: Text, ...r }` an open one, whose tail `r` is a row variable of
@@ -688,8 +695,8 @@ significant, so `{ a: Int, b: Bool }` and `{ b: Bool, a: Int }` are one
 type, and types print with sorted labels and the tail written `...r`
 (`..._` when undetermined). Record types go wherever a type goes:
 parameters, results, type arguments, constructor fields, other records'
-fields and `main`'s result. There is no empty record in source: `{}` in a
-type is E_SYNTAX `Expected a type`, and `{}` in an expression stays Unit.
+fields and `main`'s result. `{}` in a type is the empty record (R005,
+below); `{}` in an expression stays Unit.
 
 Row sorts (r001-types, r001-sorts). A row variable is a record row or an
 effect row, never both: `fn f(x: { a: Int, ...r }): Unit with ...r` is
@@ -774,8 +781,8 @@ record, found Int` at the receiver.
 Record patterns (R004; ADR 013; r004-*). `match` destructures a record:
 
 ```ebnf
-recordpat = "{", fieldpat, { ",", fieldpat }, [ ",", "..." ], [ "," ],
-            "}" ;
+recordpat = "{", fieldpat, { ",", fieldpat }, [ ",", "...", [ lower ] ],
+            [ "," ], "}" ;
 fieldpat  = lower, [ ":", pattern ] ;
 ```
 
@@ -874,10 +881,56 @@ Node })` is legal. Field access through a nil pointer, which only foreign
 code can produce, is a Go nil dereference rather than the `waxwing:
 malformed value` panic that comparison and printing give.
 
-Not in this tranche: record patterns (BACKLOG R004), extension, merge and
-removal with written lacks constraints (R005), polymorphic fields (R006),
-punning (R007), type aliases (R008) and record-row parameters of effects
-(R009).
+Extension, removal, rest binders and written lacks (R005 Tranche A; ADR
+013; r005-*, test/fx-oracle-record-extension.test.mjs). A literal may hold
+one spread: `{ ...p, admin: true }` is `p`'s fields and `admin`, in any
+written order. Items evaluate left to right, the spread's base once, so
+`{ a: f(), ...g(), b: h() }` calls f, g, h in that order. The result is the
+base's row with the fields added; `p` is a record, and the spread may
+repeat none of the literal's labels. A second spread is E_TYPE `A record
+literal accepts at most one spread` at the second. A label the base has is
+E_DUPLICATE `Duplicate field admin` at the later item in written order,
+noted `first written here` at the earlier: `{ ...p, admin: true }` at
+`admin`, noted at `...p`; `{ admin: true, ...p }` at `...p`, noted at
+`admin`. Through a rigid tail `r` the label must be one `r` lacks: E_TYPE
+`r may already have field admin` at the label, noted `r is introduced
+here` at the signature's first `...r`, until the signature says
+`where r lacks { admin }`. A non-record spread or receiver is E_TYPE
+`Expected a record, found Int`.
+
+`e without { name, age }` drops those fields: each must be a field the
+receiver has (`.name`'s rule: E_TYPE `age is not a field of { … }` at the
+label; a repeated label is E_DUPLICATE), and the result is the receiver's
+type without them, `{}` when nothing is left. It is a postfix with call,
+access and update; `without {}` is E_SYNTAX. The receiver is evaluated
+once.
+
+A rest binder names the remainder: `{ name, ...rest }` binds `rest` to the
+matched record without `name`; `...rest` is a lowercase name, repeating a
+binder is E_DUPLICATE `Duplicate binder rest`, and bare `...` still ignores the
+rest. Its type is the matched type without the written labels (the open
+tail kept), `{}` when none remain; it is a local of its arm.
+
+A written clause `where r lacks { admin }` after a signature's result says
+the row `r` never holds `admin`. It is checked as the labels a tail
+already lacks are: the body may write `admin` beside `...r`, and each call
+is refused if its argument puts `admin` in the row: E_TYPE `admin is not
+allowed here: r lacks { admin }` at the argument, noted `required here` at
+the label in the clause, also through a function value, a partial
+application, a pipe or a wrapper that passes the row on. The variable must
+be a record row of the signature: an unknown name is `Unbound type
+variable zz`, an effect row `ee is an effect row, not a record row`, a
+type variable `tv is a type, not a record row` (all at the variable).
+
+The empty record `{}` is a type, not a literal: it arises from removal, a
+rest binder or `{ ...rest }`. It is distinct from Unit (`Expected Unit,
+found {}`; `Expected {}, found Unit`), prints `{}` beside Unit's `()`, and
+all empty records are equal. In Go it is the empty struct.
+
+Not in this tranche: merging two open records and the `disjoint`
+constraint (R005 Tranche B), polymorphic fields (R006), punning in
+expressions (R007), type aliases (R008) and record-row parameters of
+effects (R009).
 
 Nesting. One declaration body may nest at most 128 levels (ADR 006,
 Format.Parse.Grammar `nestingLimit`). A level is a parenthesized expression,

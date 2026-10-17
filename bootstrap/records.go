@@ -43,24 +43,31 @@ f_name string
 }
 
 type waxwingRec4 struct {
+f_admin bool
+f_age int32
+f_id int32
+f_name string
+}
+
+type waxwingRec5 struct {
 f_age int32
 f_id int32
 }
 
-type waxwingRec5 struct {
+type waxwingRec6 struct {
 f_id int32
 }
 
-type waxwingRec6 struct {
+type waxwingRec7 struct {
 f_admin bool
 f_id int32
 f_name string
 }
 
-type waxwingRec7 struct {
+type waxwingRec8 struct {
 }
 
-type waxwingRec8 struct {
+type waxwingRec9 struct {
 f_admin bool
 f_name string
 }
@@ -181,6 +188,26 @@ out = waxwingQuoteText(out, v.f_name)
 return append(out, " }"...)
 }
 
+func waxwingShowRec4(out []byte, v waxwingRec4) []byte {
+out = append(out, "{ admin: "...)
+out = fmt.Append(out, v.f_admin)
+out = append(out, ", age: "...)
+out = fmt.Append(out, v.f_age)
+out = append(out, ", id: "...)
+out = fmt.Append(out, v.f_id)
+out = append(out, ", name: "...)
+out = waxwingQuoteText(out, v.f_name)
+return append(out, " }"...)
+}
+
+func waxwingShowRec5(out []byte, v waxwingRec5) []byte {
+out = append(out, "{ age: "...)
+out = fmt.Append(out, v.f_age)
+out = append(out, ", id: "...)
+out = fmt.Append(out, v.f_id)
+return append(out, " }"...)
+}
+
 func waxwingFn0(waxwingLocal0 waxwingTy0) string {
 return waxwingFn0Match0(waxwingLocal0)
 }
@@ -205,11 +232,14 @@ _ = waxwingLocal0
 var waxwingLocal1 waxwingRec2 = waxwingRec2{f_age: int32(41), f_id: int32(8), f_name: "Bo"}
 _ = waxwingLocal1
 _ = func() struct{} { fmt.Println(string(waxwingShowRec2(nil, waxwingFn2(waxwingLocal0)))); return struct{}{} }()
-_ = func() struct{} { fmt.Println(waxwingFn3(waxwingLocal1)); return struct{}{} }()
+_ = func() struct{} { fmt.Println(string(waxwingShowRec4(nil, waxwingFn3(waxwingLocal1)))); return struct{}{} }()
+_ = func() struct{} { fmt.Println(string(waxwingShowRec5(nil, waxwingFn4(waxwingLocal0)))); return struct{}{} }()
+_ = func() struct{} { fmt.Println(waxwingFn5(waxwingLocal0)); return struct{}{} }()
+_ = func() struct{} { fmt.Println(waxwingFn6(waxwingLocal1)); return struct{}{} }()
 _ = func() struct{} { fmt.Println((waxwingCmpRec2(waxwingLocal0, waxwingLocal1) < 0)); return struct{}{} }()
 _ = func() struct{} { fmt.Println(string(waxwingShow0(nil, waxwingCtor1(func() waxwingRec0 { var waxwingField0 waxwingTy1 = waxwingCtor2(func() waxwingRec1 { var waxwingField0 string = (waxwingLocal0).f_name; var waxwingField1 int32 = (waxwingLocal0).f_age; return waxwingRec1{f_age: waxwingField1, f_name: waxwingField0} }()); var waxwingField1 waxwingTy0 = waxwingCtor0(); return waxwingRec0{f_lead: &waxwingField0, f_rest: &waxwingField1} }())))); return struct{}{} }()
-_ = func() struct{} { fmt.Println(waxwingFn4(waxwingRec6{f_admin: true, f_id: int32(9), f_name: "Cy"})); return struct{}{} }()
-_ = func() struct{} { fmt.Println(waxwingFn5(waxwingRec8{f_admin: false, f_name: "Di"})); return struct{}{} }()
+_ = func() struct{} { fmt.Println(waxwingFn7(waxwingRec7{f_admin: true, f_id: int32(9), f_name: "Cy"})); return struct{}{} }()
+_ = func() struct{} { fmt.Println(waxwingFn8(waxwingRec9{f_admin: false, f_name: "Di"})); return struct{}{} }()
 _ = func() struct{} { fmt.Println(waxwingFn0(waxwingCtor1(func() waxwingRec0 { var waxwingField0 waxwingTy1 = waxwingCtor2(waxwingRec1{f_age: int32(5), f_name: "Ed"}); var waxwingField1 waxwingTy0 = waxwingCtor0(); return waxwingRec0{f_lead: &waxwingField0, f_rest: &waxwingField1} }()))); return struct{}{} }()
 return struct{}{}
 }
@@ -218,15 +248,38 @@ func waxwingFn2(waxwingLocal0 waxwingRec2) waxwingRec2 {
 return func() waxwingRec2 { var waxwingBase waxwingRec2 = waxwingLocal0; var waxwingField0 int32 = waxwingAdd((waxwingLocal0).f_age, int32(1)); waxwingBase.f_age = waxwingField0; return waxwingBase }()
 }
 
-func waxwingFn3(waxwingLocal0 waxwingRec2) string {
+func waxwingFn3(waxwingLocal0 waxwingRec2) waxwingRec4 {
+return waxwingRec4{f_admin: true, f_age: waxwingLocal0.f_age, f_id: waxwingLocal0.f_id, f_name: waxwingLocal0.f_name}
+}
+
+func waxwingFn4(waxwingLocal0 waxwingRec2) waxwingRec5 {
+return waxwingRec5{f_age: waxwingLocal0.f_age, f_id: waxwingLocal0.f_id}
+}
+
+func waxwingFn5(waxwingLocal0 waxwingRec2) string {
+return waxwingFn5Match0(waxwingLocal0)
+}
+
+func waxwingFn5Match0(waxwingScrutinee waxwingRec2) string {
+if true {
+waxwingLocal1 := waxwingScrutinee.f_name
+_ = waxwingLocal1
+waxwingLocal2 := waxwingRec5{f_age: waxwingScrutinee.f_age, f_id: waxwingScrutinee.f_id}
+_ = waxwingLocal2
+return (waxwingLocal1 + ": " + string(waxwingShowRec5(nil, waxwingLocal2)))
+}
+panic("waxwing: unmatched value")
+}
+
+func waxwingFn6(waxwingLocal0 waxwingRec2) string {
 return ((waxwingLocal0).f_name + "!")
 }
 
-func waxwingFn4(waxwingLocal0 waxwingRec6) string {
-return waxwingFn4Match0(waxwingLocal0)
+func waxwingFn7(waxwingLocal0 waxwingRec7) string {
+return waxwingFn7Match0(waxwingLocal0)
 }
 
-func waxwingFn4Match0(waxwingScrutinee waxwingRec6) string {
+func waxwingFn7Match0(waxwingScrutinee waxwingRec7) string {
 if waxwingScrutinee.f_admin == true {
 waxwingLocal1 := waxwingScrutinee.f_name
 _ = waxwingLocal1
@@ -240,11 +293,11 @@ return ("Hello, " + waxwingLocal2)
 panic("waxwing: unmatched value")
 }
 
-func waxwingFn5(waxwingLocal0 waxwingRec8) string {
-return waxwingFn5Match0(waxwingLocal0)
+func waxwingFn8(waxwingLocal0 waxwingRec9) string {
+return waxwingFn8Match0(waxwingLocal0)
 }
 
-func waxwingFn5Match0(waxwingScrutinee waxwingRec8) string {
+func waxwingFn8Match0(waxwingScrutinee waxwingRec9) string {
 if waxwingScrutinee.f_admin == true {
 waxwingLocal1 := waxwingScrutinee.f_name
 _ = waxwingLocal1

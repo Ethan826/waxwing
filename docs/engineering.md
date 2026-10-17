@@ -397,6 +397,14 @@ non-redundant by construction, through the compiler and Go, and compares
 stdout, stderr and status with the interpreter's. It requires 95% of the
 programs to be accepted and each pattern form in at least 10. It shares no
 code with the compiler or with the coverage oracle.
+Since R005 Task 3 it also evaluates a literal's spread (items left to
+right, the base once), `without`, a named rest and `{}` (printed `{}`;
+test/fx-oracle-records.mjs). test/fx-oracle-record-extension.test.mjs runs
+200 generated programs (test/fx-gen-record-extension.mjs: each record
+expression is built for a known label set, so it is well typed by
+construction, with effectful items so output order is checked), through the
+compiler and Go, and compares stdout, stderr and status with the
+interpreter's. It requires 95% accepted and each form in at least 10.
 test/fx-oracle.test.mjs validates the interpreter against the hand-derived
 traces of Tasks 2, 4, 7 and 8 (imported from their program modules), the
 shrinker, and a sensitivity check (clauses run in the operation's context

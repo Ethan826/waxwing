@@ -10,7 +10,8 @@ ADR 005 (structural order), ADR 007 (specialization), ADR 010 (effects and
 `.` free on lowercase receivers). Records of operations as services,
 extension and merge, and C001 instances are not part of this decision.
 Record patterns (R004, branch `record-patterns`) are the section "Record
-patterns (R004)" below.
+patterns (R004)" below, and extension, removal and written lacks (R005
+Tranche A, branch `record-extension`) the section after it.
 
 ## Context
 
@@ -401,9 +402,92 @@ docs/plans/2026-10-16-record-patterns-plan.md; evidence docs/progress.md
   parse errors before, and the inhabitation corner above). The reference
   interpreter (test/fx-oracle-records.mjs) matches record patterns
   without compiler code, and generated matches run in Go agree with it
-  (test/fx-oracle-record-patterns.test.mjs). Not decided here: binding
-  the rest of a record (`...rest`, with R005), and patterns in `let` or
-  parameters, which take none today.
+  (test/fx-oracle-record-patterns.test.mjs). Binding the rest of a
+  record (`...rest`) is R005 Tranche A, below. Not decided here: patterns
+  in `let` or parameters, which take none today.
+
+### Extension, written lacks and removal (R005 Tranche A)
+
+Spec: docs/plans/2026-10-16-record-extension-design.md §1-§5 (Tranche A
+approved by the user, 2026-10-16); plan
+docs/plans/2026-10-16-record-extension-plan.md; evidence docs/progress.md
+("R005 Task 1" to "R005 Task 3"). Branch `record-extension`; not merged.
+
+- **Decisions (user, 2026-10-16).** Merge combines disjoint records and
+  overlap is an error everywhere; extension is spread-first, `{ ...p,
+  admin: true }`; removal is the rest pattern `{ name, ...rest }` and the
+  expression `p without { name, age }`; constraints are a `where` clause
+  in words (`r lacks { admin }`), labels always braced; `{}` is the empty
+  record type, distinct from Unit; each field and spread is evaluated once,
+  left to right; two tranches, A single-tail, B (open-row merge,
+  `disjoint`) pending its algorithm pass.
+- **Surface.** A literal is a list of items, `label: expression` or
+  `...expression`, at most one spread (a second is E_TYPE `A record
+  literal accepts at most one spread` at the second). A literal begins
+  with a lowercase name and `:` or with `...`, so it is never a block;
+  `{}` in an expression stays Unit. `without { … }` is a postfix beside
+  call, access and update. A record pattern's rest is `NoRest`, a bare
+  `...` or `...name` (three states, not a Boolean); coverage treats a
+  named rest as `_`. A signature's `where` clause lists `r lacks { a, b }`
+  constraints separated by commas.
+- **Reserved-word break.** `where`, `lacks`, `without` and `disjoint` are
+  reserved (`disjoint` now, so that Tranche B causes no second break).
+  A program using one as a name is E_SYNTAX. The repository's fixtures
+  and examples used none; the differential classified every difference.
+- **Approved texts.** Overlap: existing `Duplicate field admin`, note
+  `first written here`, at the later item in written order, noted at the
+  earlier (`{ ...p, admin: true }` at `admin`, noted at `...p`; `{ admin:
+  true, ...p }` at `...p`, noted at `admin`). A rigid tail: existing `r may
+  already have field admin`, note `r is introduced here`, at the label.
+  A written lack violated at a call: E_TYPE `admin is not allowed here: r
+  lacks { admin }` at the argument, noted `required here` at the label in
+  the clause. `without`: existing `age is not a field of { … }` and
+  `Duplicate field age` at the label; `Expected a record, found T` at a
+  non-record spread (the whole `...p`, accepted 2026-10-16) or receiver.
+  A `lacks` target that is not a record row variable (approved
+  2026-10-16): unknown name `Unbound type variable zz`; effect row `ee is
+  an effect row, not a record row`; type variable `tv is a type, not a
+  record row`, each at the variable.
+- **Provenance of written lacks.** The substitution keeps, beside each
+  tail's lacks set, the labels a clause wrote with the clause's variable
+  and the label's span. A label the types already imply keeps no clause
+  (its violation keeps the shape text). The clause survives instantiation:
+  through a function value, partial application, pipe or generic wrapper
+  the violation names the clause of the function whose requirement was
+  broken, as a note at that clause. The text names only the violated label.
+- **Evaluation order.** In a spread literal the items run left to right,
+  the spread's base once, in the reference interpreter and in Go
+  (`{ a: f(), ...g(), b: h() }` calls f, g, h). `p without { … }`
+  evaluates `p` once. A rest binder reads the scrutinee, which the match
+  evaluated once.
+- **Empty records.** `{}` is a closed record type with no field and never
+  unifies with Unit (`Expected Unit, found {}`). It prints `{}` beside
+  Unit's `()`, all empty records are equal, and the layout is the empty
+  Go struct. It arises from removal, a rest binder or `{ ...rest }`.
+- **Go lowering.** `IR.RecordExtension` keeps its items in written order
+  and `IR.RecordRemoval` its labels; a pattern's `IR.Rest` is `NoRest`,
+  `IgnoredRest` or `NamedRest local remainderType`. Format.Go.Extension
+  evaluates each item that could act into a typed temporary, in written
+  order, inside an immediately invoked closure (the spread's base is one
+  such temporary), then builds the result layout's struct: a field the
+  literal writes is the temporary (a declared type stored through its
+  pointer), every other field is copied from the base, a pointer as it
+  stands. A removal evaluates its receiver once and copies the kept
+  fields. A base none of whose fields is copied is discarded (`_ =`), as
+  Go rejects an unused variable. A named rest in a match arm binds a
+  struct of the remaining fields read from the scrutinee's path, and is
+  discarded like any unused binder (`_ =`). Specialization interns the
+  remainder's layout from the rest's type, so an unused rest, whose shape
+  appears nowhere else, still has its struct. Extension and removal types
+  are interned as the expression's own type is.
+- **Evidence.** test/r005-*.test.mjs; the reference interpreter
+  evaluates spreads, `without`, named rests and `{}` without compiler code
+  and generated programs agree with Go, effects in order included
+  (test/fx-gen-record-extension.mjs, fx-oracle-record-extension.test.mjs);
+  rows `r005-*` of scripts/regression-r005.mjs (probes in
+  test/regression-r005.mjs); examples/records.wxw.
+- **Provisional choices.** None was needed in Task 3: every user-facing
+  text is one of the approved ones above.
 
 ## Consequences and limits
 
@@ -440,8 +524,8 @@ docs/plans/2026-10-16-record-patterns-plan.md; evidence docs/progress.md
 - Field access through a nil declared-type pointer inside a record is a
   Go nil dereference, not the malformed-value panic; only foreign code can
   make one (docs/findings.md "R001", I001).
-- Not in this tranche: extension, merge and
-  removal with written lacks constraints (R005), polymorphic fields (R006),
+- Not in this tranche: merging open rows and `disjoint` (R005 Tranche B),
+  polymorphic fields (R006),
   punning (R007), type aliases (R008), record-row parameters of effects
   (R009).
 
