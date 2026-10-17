@@ -26,6 +26,7 @@ import Features.Check.Scheme
   , resolved
   , threadAll
   )
+import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Unify (Failure(..), unify)
 
 type Checked a = Either Diagnostic (Threaded a)
@@ -153,6 +154,9 @@ select env state record label = do
   bound subst = Right { value: field, state: fresh.state { subst = subst } }
   failed = case _ of
     TooDeep → tooDeepAt (Checked.spanOf record)
+    -- A receiver of several tails is not yet told apart from a missing
+    -- field (Features.Check.Placeholder).
+    Placeholder what → Left (placeholderAt (Checked.spanOf record) what)
     _ → notSelected env state record label
 
 notSelected

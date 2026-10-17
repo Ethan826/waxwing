@@ -14,6 +14,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Set (Set)
 import Data.Set as Set
+import Data.Tuple (Tuple)
 import Domain.Note (NoteReason(..))
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
@@ -22,6 +23,12 @@ import Domain.Resolved (TypeId(..))
 import Domain.Type (Ty(..), TyRow, VarId(..))
 import Features.Check.Implied (Implied, declared, implied)
 import Features.Resolve.Marks (arrowRows)
+import Features.Resolve.Apart
+  ( Names
+  , apartFrom
+  , signatureTypes
+  , disjointIn
+  )
 import Features.Resolve.ArgumentClash (Tables, clashIn)
 import Features.Resolve.Occurrences (Occurrence, typeOccurrences)
 import Features.Resolve.Occurrences as Occurrences
@@ -41,6 +48,7 @@ type Lacking =
   { variables ∷ Array String
   , lacks ∷ Map Int (Set String)
   , introduced ∷ Map String Syntax.Span
+  , apart ∷ Set (Tuple String String)
   }
 
 -- A label written beside a record tail, or a declared type's, where it is
@@ -60,29 +68,32 @@ type Signature r =
 -- Nothing for a signature with no record row variable: no type in its
 -- body can have a record tail then (every program before records).
 signatureLacking
-  ∷ ∀ r
+  ∷ ∀ r n
   . Occurrences.Declared
   → Resolved.Tables
+  → Names n
   → Syntax.FunctionDecl
   → Signature r
   → Maybe Lacking
-signatureLacking declaredHere tables function signature =
+signatureLacking declaredHere tables names function signature =
   if Array.elem Syntax.RecordSort signature.sorts then Just
-    (lackingOf declaredHere tables function signature)
+    (lackingOf declaredHere tables names function signature)
   else Nothing
 
 -- A function, so that only a signature with a record row variable pays
 -- for its walk: `where` bindings are strict.
 lackingOf
-  ∷ ∀ r
+  ∷ ∀ r n
   . Occurrences.Declared
   → Resolved.Tables
+  → Names n
   → Syntax.FunctionDecl
   → Signature r
   → Lacking
-lackingOf declaredHere tables function signature =
-  { variables: signature.variables, lacks, introduced }
+lackingOf declaredHere tables names function signature =
+  { variables: signature.variables, lacks, introduced, apart }
   where
+  apart = apartFrom names (signatureTypes function) signature.constraints
   types = map typeOf signature.parameters
     <> [ signature.result, TFun TUnit signature.row TUnit ]
   typeOf parameter = parameter.ty
@@ -93,6 +104,7 @@ lackingOf declaredHere tables function signature =
   stated found = case _ of
     Resolved.Lacks clause → case clause.variable of
       VarId index → Map.insertWith Set.union index (named clause.labels) found
+    Resolved.Disjoint _ → found
   named labels = Set.fromFoldable (map labelName labels)
   labelName label = label.name
   noted found (entry ∷ Implied VarId) = case entry.tail of
@@ -109,7 +121,8 @@ lackingOf declaredHere tables function signature =
 -- fill with any label the signature does not say it lacks: a label beside
 -- one must be among those (C1, R001 final review). The first in source
 -- order is reported. A record argument there must not repeat its
--- declaration's labels (ArgumentClash, R012), checked first.
+-- declaration's labels (ArgumentClash, R012), checked first; then two
+-- tails of one record must be known disjoint (Features.Resolve.Apart).
 lackingIn
   ∷ ∀ r
   . { types ∷ Array Resolved.TypeInfo
@@ -124,7 +137,9 @@ lackingIn
 lackingIn scope reference = clashIn tables reference
   *> maybe (Right unit) checked scope.lacking
   where
-  checked lacking = maybe (Right unit) (refused lacking)
+  checked lacking = labelsChecked lacking
+    *> disjointIn tables lacking.apart reference
+  labelsChecked lacking = maybe (Right unit) (refused lacking)
     ( Array.head
         ( Array.sortWith start
             (Array.filter (unlacked lacking) (written tables reference))
@@ -160,7 +175,7 @@ written tables reference = beside reference
 -- as a record argument's tail (R012), implies the labels that type writes
 -- beside that parameter (Features.Check.Implied), all at the `...r`.
 passed ∷ Tables → RecordArgument → Array Written
-passed tables argument = maybe [] labelled argument.tail
+passed tables argument = Array.concatMap labelled argument.tails
   where
   labelled tail = map (at tail) (Set.toUnfoldable labels)
   labels = maybe Set.empty implied (Array.index tables.types argument.callee)
@@ -174,7 +189,7 @@ passed tables argument = maybe [] labelled argument.tail
 -- is walked by loops (`Syntax.typeRefSpine`).
 beside ∷ Syntax.TypeRef → Array Written
 beside = case _ of
-  Syntax.RecordRef _ fields tail → maybe [] (own fields) tail
+  Syntax.RecordRef _ fields tails → Array.concatMap (own fields) tails
     <> Array.concatMap field fields
   Syntax.NamedRef _ _ arguments → Array.concatMap argument arguments
   Syntax.THandlerRef _ label row → labelled label <> maybe [] rowLabels row

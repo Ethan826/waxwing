@@ -59,25 +59,29 @@ label = dispatch [ onWhen lowerText token ] (failWith "Expected an identifier")
   where
   lowerText text = isName text && not (isUpper text)
 
--- Fields in written order, and the tail, which must be last and single.
+-- Fields in written order, then the tails, which must come last: a field
+-- after a tail is refused at the first tail it follows (R005 Tranche B
+-- allows several tails, `{ ...r, ...s }`; effect rows still allow one).
 assembled
   ∷ { span ∷ Span, parts ∷ Array Part } → Either Diagnostic TypeRef
-assembled found = case tails of
-  [] → Right (RecordRef found.span fields Nothing)
-  [ tail ] | tail.index == Array.length found.parts - 1 →
-    Right (RecordRef found.span fields (Just tail.value))
-  [ tail ] → invalid "Row tail must be last" tail.value.span
-  _ → invalid "Only one row tail is allowed" secondSpan
+assembled found = maybe (Right (RecordRef found.span fields tails)) misplaced
+  (Array.find (before lastField) indexed)
   where
   fields = Array.mapMaybe fieldOf found.parts
-  tails = Array.catMaybes
-    (Array.mapWithIndex tailAt found.parts)
+  indexed = Array.catMaybes (Array.mapWithIndex tailAt found.parts)
+  tails = map tailValue indexed
+  tailValue entry = entry.value
+  lastField = Array.findLastIndex isField found.parts
+  before last entry = maybe false (laterThan entry.index) last
+  laterThan index field = field > index
+  misplaced entry = Left
+    (problemAt (Syntax "Row tail must be last") entry.value.span)
   tailAt index = case _ of
     TailPart value → Just { index, value }
     _ → Nothing
   fieldOf = case _ of
     FieldPart value → Just value
     _ → Nothing
-  secondSpan = maybe found.span tailSpan (Array.index tails 1)
-  tailSpan entry = entry.value.span
-  invalid message span = Left (problemAt (Syntax message) span)
+  isField = case _ of
+    FieldPart _ → true
+    _ → false

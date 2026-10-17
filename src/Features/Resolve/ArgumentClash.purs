@@ -13,6 +13,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Problem (DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.Apart (clashingArguments, repeatedTails)
 import Features.Resolve.ArgumentGraph (ArgumentGraph, firstLabel, hasArguments)
 import Features.Resolve.RecordArguments (RecordArgument, recordArguments)
 import Features.Resolve.TypeIndices (Indexed)
@@ -34,6 +35,8 @@ clashIn
 clashIn tables reference =
   if hasArguments tables.argumentGraph then
     traverse_ (clashOf tables) (recordArguments tables reference)
+      *> clashingArguments tables reference
+      *> repeatedTails tables reference
   else Right unit
 
 -- The types a program writes outside bodies: constructor fields, function

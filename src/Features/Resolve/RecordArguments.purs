@@ -2,6 +2,7 @@ module Features.Resolve.RecordArguments
   ( RecordArgument
   , asRow
   , hasRecordParameters
+  , namedArguments
   , recordArguments
   , slotOf
   , subtypes
@@ -16,21 +17,21 @@ import Features.Resolve.Marks (arrowRows)
 import Features.Resolve.TypeIndices (Indexed, indexOf)
 
 -- A row written for a declared type's record parameter (R012): a record
--- type, whose fields join the declaration's and whose tail is the rest, or
--- a `...r` alone (no fields). `position` is the parameter's in the
--- declaration's written order.
+-- type, whose fields join the declaration's and whose tails are the rest, or
+-- a `...r` alone (no fields); a record may hold several tails. `position`
+-- is the parameter's in the declaration's written order.
 type RecordArgument =
   { callee ∷ Int
   , position ∷ Int
   , fields ∷ Array Syntax.FieldRef
-  , tail ∷ Maybe Syntax.RecordTail
+  , tails ∷ Array Syntax.RecordTail
   }
 
 -- `{ ...s }` written for a row parameter is the argument `...s` (R012,
 -- user-approved 2026-10-15), at the `...s`.
 asRow ∷ Syntax.TypeArgument → Syntax.TypeArgument
 asRow = case _ of
-  Syntax.TypeArgument (Syntax.RecordRef _ [] (Just tail)) →
+  Syntax.TypeArgument (Syntax.RecordRef _ [] [ tail ]) →
     Syntax.RowArgument
       (Syntax.RowRef tail.span [] (Just (Syntax.Spread tail.name)))
   argument → argument
@@ -58,14 +59,19 @@ subtypes reference = Array.cons reference
 -- Every record argument written in a type, in source order.
 recordArguments
   ∷ ∀ r. Indexed r → Syntax.TypeRef → Array RecordArgument
-recordArguments known reference = Array.concatMap applied
+recordArguments known reference = Array.concatMap (namedArguments known)
   (subtypes reference)
+
+-- The record arguments of one written `Name(…)`, in source order; none
+-- for any other type, whose inner types are not looked into.
+namedArguments
+  ∷ ∀ r. Indexed r → Syntax.TypeRef → Array RecordArgument
+namedArguments known = case _ of
+  Syntax.NamedRef _ name arguments → maybe []
+    (argumentsOf arguments)
+    (indexOf known.typeIndices name)
+  _ → []
   where
-  applied = case _ of
-    Syntax.NamedRef _ name arguments → maybe []
-      (argumentsOf arguments)
-      (indexOf known.typeIndices name)
-    _ → []
   argumentsOf arguments callee = Array.catMaybes
     (Array.mapWithIndex (argumentAt callee) arguments)
   argumentAt callee position argument =
@@ -76,11 +82,11 @@ recordArguments known reference = Array.concatMap applied
   sortIs position info =
     Array.index info.sourceSorts position == Just Syntax.RecordSort
   rowOf callee position = case _ of
-    Syntax.TypeArgument (Syntax.RecordRef _ fields tail) → Just
-      { callee, position, fields, tail }
+    Syntax.TypeArgument (Syntax.RecordRef _ fields tails) → Just
+      { callee, position, fields, tails }
     Syntax.RowArgument
       (Syntax.RowRef span [] (Just (Syntax.Spread name))) → Just
-      { callee, position, fields: [], tail: Just { name, span } }
+      { callee, position, fields: [], tails: [ { name, span } ] }
     _ → Nothing
 
 -- The types written directly within a type.

@@ -83,6 +83,9 @@ message = case _ of
   PatternMissingField label → Records.patternMissingField label
   PatternMissingRest ty → Records.patternMissingRest (typeName ty)
   SecondSpread → Records.secondSpread
+  RepeatedTail name → Records.repeatedTail name
+  SameDisjoint → Records.sameDisjoint
+  NotKnownDisjoint one other → Records.notKnownDisjoint one other
   TypeAsRecordRow name → Records.typeAsRecordRow name
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
@@ -129,6 +132,7 @@ noted = case _ of
   RecordRowAsEffect _ → true
   EffectRowAsRecord _ → true
   RowMayHaveField _ _ → true
+  RepeatedTail _ → true
   LackedField _ _ → true
   UnhandledEffect _ → true
   MustBePure _ → true
@@ -160,6 +164,7 @@ hintMessage = case _ of
   TrailingSemicolon → "; remove the trailing ;?"
   QualifyOperation name effects → Qualify.hint name effects
   CallbackRow kind name row → "; " <> Callback.hint kind name row
+  RequireDisjoint one other → Records.requireDisjoint one other
   where
   counted count
     | count == 1 = "1 argument"

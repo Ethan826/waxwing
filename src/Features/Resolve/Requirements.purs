@@ -6,6 +6,7 @@ import Data.Either (Either(..))
 import Data.Foldable (traverse_)
 import Data.Maybe (fromMaybe, maybe)
 import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..))
 import Domain.Problem (Problem(..), UnboundKind(..))
 import Domain.Resolved (Requirement(..), VarId(..))
 import Domain.Syntax as Syntax
@@ -28,7 +29,15 @@ resolveRequirements
 resolveRequirements known = traverse (resolved known)
 
 resolved ∷ Variables → Syntax.Requirement → Either Syntax.Diagnostic Requirement
-resolved known (Syntax.Lacks found) = do
+resolved known = case _ of
+  Syntax.Lacks found → lacksOf known found
+  Syntax.Disjoint found → disjointOf known found
+
+lacksOf
+  ∷ Variables
+  → { variable ∷ Syntax.Label, span ∷ Syntax.Span, labels ∷ Array Syntax.Label }
+  → Either Syntax.Diagnostic Requirement
+lacksOf known found = do
   variable ← recordRow known found.variable
   traverse_ repeatedField (repeatedLabel found.labels)
   pure
@@ -39,6 +48,28 @@ resolved known (Syntax.Lacks found) = do
         , labels: found.labels
         }
     )
+
+-- `r disjoint s` (R005 Tranche B): both name record row variables of the
+-- signature, and two different ones (D9, at the second, approved
+-- 2026-10-17): `r disjoint r` would force every caller to `{}`.
+disjointOf
+  ∷ Variables
+  → { variables ∷ Tuple Syntax.Label Syntax.Label, span ∷ Syntax.Span }
+  → Either Syntax.Diagnostic Requirement
+disjointOf known found = do
+  one ← recordRow known first
+  other ← recordRow known second
+  when (first.name == second.name) (Left (sameVariable second))
+  pure
+    ( Disjoint
+        { variables: Tuple one other
+        , written: found.variables
+        , span: found.span
+        }
+    )
+  where
+  Tuple first second = found.variables
+  sameVariable at = Syntax.problemAt SameDisjoint at.span
 
 recordRow ∷ Variables → Syntax.Label → Either Syntax.Diagnostic VarId
 recordRow known variable = maybe unbound sorted

@@ -83,7 +83,7 @@ operand inner = dispatch
   rowed _ = typeAndRow
   -- `{}` is the empty record type (R005 design §4), never Unit.
   emptyRecord = spanned emptyOf (expect "{" *> expect "}")
-  emptyOf span _ = RecordRef span [] Nothing
+  emptyOf span _ = RecordRef span [] []
   parts identifier found = { identifier, arguments: found }
   arguments = optionalOn "(" (expect "(" *> sepBy1 "," argument <* expect ")")
   argument = dispatch

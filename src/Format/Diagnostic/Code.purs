@@ -47,6 +47,9 @@ code = case _ of
   PatternMissingField _ → Code.TypeMismatch
   PatternMissingRest _ → Code.TypeMismatch
   SecondSpread → Code.TypeMismatch
+  RepeatedTail _ → Code.TypeMismatch
+  SameDisjoint → Code.TypeMismatch
+  NotKnownDisjoint _ _ → Code.TypeMismatch
   TypeAsRecordRow _ → Code.TypeMismatch
   RowMayHaveField _ _ → Code.TypeMismatch
   LackedField _ _ → Code.TypeMismatch

@@ -7,6 +7,10 @@ module Format.Diagnostic.Records
   , patternMissingField
   , patternMissingRest
   , recordRowAsEffect
+  , repeatedTail
+  , requireDisjoint
+  , sameDisjoint
+  , notKnownDisjoint
   , secondSpread
   , typeAsRecordRow
   ) where
@@ -50,3 +54,19 @@ patternMissingRest ty = "Pattern is missing the rest of " <> ty
 
 secondSpread ∷ String
 secondSpread = "A record literal accepts at most one spread"
+
+-- R005 Tranche B (approved 2026-10-17, design §10 D8, D9, D3).
+repeatedTail ∷ String → String
+repeatedTail name = "..." <> name <> " is written twice in one record"
+
+sameDisjoint ∷ String
+sameDisjoint = "A disjoint constraint must name two different row variables"
+
+notKnownDisjoint ∷ String → String → String
+notKnownDisjoint one other =
+  one <> " and " <> other <> " are not known to be disjoint"
+
+-- D3's remedy, after its text (Hinted).
+requireDisjoint ∷ String → String → String
+requireDisjoint one other =
+  "; require " <> one <> " disjoint " <> other <> " in the signature"

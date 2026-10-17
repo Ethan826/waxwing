@@ -4,6 +4,7 @@ module Features.Resolve.ArgumentGraph
   , argumentGraph
   , firstLabel
   , hasArguments
+  , heldTogether
   ) where
 
 import Prelude
@@ -19,6 +20,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Resolved (CtorId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Features.Resolve.ArgumentPairs (Key, Pair, ordered, together)
 import Features.Resolve.RecordArguments
   ( hasRecordParameters
   , recordArguments
@@ -26,10 +28,6 @@ import Features.Resolve.RecordArguments
   , subtypes
   )
 import Features.Resolve.TypeIndices (Indexed)
-
--- A record parameter: the declaration's index and the parameter's place in
--- its written order.
-type Key = Tuple Int Int
 
 -- A label a declaration writes beside a record parameter, where written.
 type Written = { name ∷ String, span ∷ Syntax.Span }
@@ -48,11 +46,18 @@ newtype ArgumentGraph = ArgumentGraph
   { present ∷ Boolean
   , passes ∷ Map Key (Array Key)
   , labelled ∷ Map String (Array Candidate)
+  , together ∷ Set Pair
   }
 
 -- Whether any declared type has a record parameter.
 hasArguments ∷ ArgumentGraph → Boolean
 hasArguments (ArgumentGraph graph) = graph.present
+
+-- Whether a declaration writes two of its record parameters into one
+-- record (Features.Resolve.ArgumentPairs), in either order.
+heldTogether ∷ ArgumentGraph → Key → Key → Boolean
+heldTogether (ArgumentGraph graph) one other =
+  Set.member (ordered one other) graph.together
 
 argumentGraph
   ∷ ∀ r
@@ -62,6 +67,7 @@ argumentGraph tables = ArgumentGraph
   { present
   , passes: Map.fromFoldable (map passing entries)
   , labelled: foldl noted Map.empty (Array.concatMap candidates entries)
+  , together: if present then together tables else Set.empty
   }
   where
   present = hasRecordParameters tables.types
@@ -121,12 +127,12 @@ entriesOf tables owner info = Array.catMaybes
     , passes: map place (Array.filter (passes name) arguments)
     }
   beside name = case _ of
-    Syntax.RecordRef _ labels (Just tail) | tail.name == name →
+    Syntax.RecordRef _ labels tails | Array.any (named name) tails →
       map label labels
     _ → []
   label field = { name: field.name, span: field.span }
-  passes name argument = map tailName argument.tail == Just name
-  tailName tail = tail.name
+  named name tail = tail.name == name
+  passes name argument = Array.any (named name) argument.tails
   place argument = Tuple argument.callee argument.position
 
 -- Every parameter a record parameter is passed to, directly or on, itself

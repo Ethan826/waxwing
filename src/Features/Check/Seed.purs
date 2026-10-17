@@ -38,10 +38,13 @@ required
 required tailOf constraints state = state
   { subst = foldl clause state.subst constraints }
   where
-  clause subst (Resolved.Lacks found) = foldl
-    (lacked (tailOf found.variable) found.written.name)
-    subst
-    found.labels
+  clause subst = case _ of
+    Resolved.Lacks found → foldl
+      (lacked (tailOf found.variable) found.written.name)
+      subst
+      found.labels
+    -- Refused before seeding (Features.Check.Placeholder).
+    Resolved.Disjoint _ → subst
 
 lacked ∷ Flex → String → Subst → Syntax.Label → Subst
 lacked tail variable subst label

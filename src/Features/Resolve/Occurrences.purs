@@ -56,7 +56,7 @@ typeOccurrences declared = case _ of
   Syntax.THandlerRef _ label row → labelOccurrences label
     <> maybe [] (rowOccurrences declared Nothing) row
   Syntax.RecordRef _ fields tail → Array.concatMap field fields
-    <> maybe [] recordTail tail
+    <> Array.concatMap recordTail tail
   arrow@(Syntax.FunRef _ _ _ _) → arrowOccurrences arrow
   _ → []
   where

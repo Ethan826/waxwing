@@ -67,7 +67,7 @@ judgedReferences sorts references = Array.mapMaybe judgedSlot
     Syntax.TypeSort, TypeArgument found → Just found
     Syntax.RecordSort, TypeArgument found → Just found
     Syntax.RecordSort, RowArgument (RowRef span [] (Just (Spread name))) →
-      Just (RecordRef span [] (Just { name, span }))
+      Just (RecordRef span [] [ { name, span } ])
     _, _ → Nothing
 
 mentions ∷ ∀ v. (v → Boolean) → Ty v → Boolean

@@ -194,7 +194,6 @@ for (const [tail, message] of [
   ['where r lacks { a } s lacks { b }', "Expected '='"],
   ['where r lacks { a },', 'Expected an identifier'],
   ['where R lacks { a }', 'Expected an identifier'],
-  ['where r disjoint s', "Expected 'lacks'"],
   ['where r { a }', "Expected 'lacks'"]
 ]) {
   test(`${tail} is E_SYNTAX`, () => {
@@ -203,13 +202,13 @@ for (const [tail, message] of [
 }
 
 const typeShape = text => shape(parsedFunction(text).parameters[0].ty);
-const empty = 'RecordRef([], Nothing)';
+const empty = 'RecordRef([], [])';
 
 test('{} is the empty record type in every type position', () => {
   assert.equal(typeShape('fn f(x: {}): Int = 1;'), empty);
   assert.equal(shape(parsedFunction('fn f(): {} = 1;').result), empty);
   assert.equal(typeShape('fn f(x: { a: {} }): Int = 1;'),
-    `RecordRef([{name: a, ty: ${empty}}], Nothing)`);
+    `RecordRef([{name: a, ty: ${empty}}], [])`);
   assert.equal(typeShape('fn f(x: ({}) -> {}): Int = 1;'),
     `FunRef(${empty}, ${empty})`);
 });

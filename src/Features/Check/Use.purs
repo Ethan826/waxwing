@@ -31,6 +31,7 @@ import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
+import Features.Check.Placeholder (withoutDisjoint)
 import Features.Check.Seed (required, seeded)
 import Features.Check.Unify (Flex(Meta))
 import Features.Check.Tables (ownerType)
@@ -66,7 +67,9 @@ functionUse env state span (FunctionId index) =
   maybe' missing found (Array.index env.functions index)
   where
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
-  found function = Right
+  found function = used function
+    <$ withoutDisjoint span function.constraints
+  used function =
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
         ( requiredUse function.constraints
             ( seededUse env function.sorts

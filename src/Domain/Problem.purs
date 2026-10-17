@@ -84,6 +84,8 @@ data Hint
   -- A callback row that lacks a label (FX017, FX018): the callback's name,
   -- when it has one, and the row as `with` should write it.
   | CallbackRow CallbackKind (Maybe String) String
+  -- Two rows that are not known to be disjoint: the clause to write.
+  | RequireDisjoint String String
 
 -- An effect that declares an operation, and its parameters as written.
 type Candidate = { name ∷ String, parameters ∷ Array String }
@@ -161,6 +163,12 @@ data Problem
   -- R005: a label a call's argument puts in a row a written `where r lacks
   -- { … }` forbids it, and the clause's variable (design §5).
   | LackedField String String
+  -- R005 Tranche B (design §8, §10): a tail written twice in one record, a
+  -- `where r disjoint r`, and two tails of a body type the signature does
+  -- not say are disjoint.
+  | RepeatedTail String
+  | SameDisjoint
+  | NotKnownDisjoint String String
   | DeferMayFail String
   | DeferMayPerform String
   | RowEquality RowText RowText String

@@ -25,6 +25,7 @@ import Features.Check.Require (require, tooDeepAt)
 import Features.Check.Scheme (State, firstTooDeep, holes, resolved, start)
 import Features.Check.Seed (required, seeded)
 import Features.Check.Settle (settleRestricted)
+import Features.Check.Placeholder (withoutDisjoint)
 import Features.Check.Unify (Subst, isEmpty)
 import Features.Check.Unify as Unify
 import Features.Check.Walk (retype)
@@ -72,6 +73,7 @@ checkFunction
   → Resolved.FunctionDecl
   → Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
 checkFunction holders env function = do
+  withoutDisjoint function.span function.constraints
   body ← infer env (own env function) function.body
   finished ← require env body.state (rigid function.result) body.value
   maybe (Right unit) tooDeepAt (firstTooDeep finished.subst body.value)

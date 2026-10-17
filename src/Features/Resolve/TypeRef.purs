@@ -15,7 +15,11 @@ import Domain.Type.Record (recordRow)
 import Features.Resolve.Marks (arrowRows)
 import Features.Resolve.Row (label, resolveRow)
 import Features.Resolve.HandlerType as HandlerType
-import Features.Resolve.RecordFields (repeatedField, repeatedLabel)
+import Features.Resolve.RecordFields
+  ( repeatedField
+  , repeatedLabel
+  , repeatedTail
+  )
 import Features.Resolve.TypeArguments (appliedTo)
 import Features.Check.ResolvedName (resolvedName)
 import Features.Resolve.TypeIndices (Indexed, indexOf)
@@ -55,7 +59,7 @@ resolveTypeWith known effects variables ambient = resolved
     Syntax.THandlerRef _ reference row → Resolved.THandler
       <$> label effects bare reference
       <*> (uniformRows <$> resolveRow effects variables ambient bare row)
-    Syntax.RecordRef _ fields tail → record fields tail
+    Syntax.RecordRef _ fields tails → record fields tails
     arrow@(Syntax.FunRef _ _ _ _) → spine arrow
   spine arrow = do
     parameters ← traverse resolved (Syntax.typeRefSpine arrow).parameters
@@ -67,11 +71,12 @@ resolveTypeWith known effects variables ambient = resolved
   first (Tuple value _) = value
   second (Tuple _ value) = value
   -- Fields are checked for a repeated label before any is resolved.
-  record fields tail = do
+  record fields tails = do
     traverse_ repeatedField (repeatedLabel fields)
+    traverse_ repeatedTail (repeatedLabel tails)
     written ← traverse recordField fields
-    rest ← traverse recordTail tail
-    pure (Resolved.TRecord (recordRow written (Array.fromFoldable rest)))
+    rest ← traverse recordTail tails
+    pure (Resolved.TRecord (recordRow written rest))
   recordField field = Tuple field.name <$> resolved field.ty
   recordTail tail = maybe' (unboundTail tail)
     (pure <<< Resolved.VarId)

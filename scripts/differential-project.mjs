@@ -91,6 +91,18 @@ const tailAsBefore = item => {
   };
 };
 
+// R005 Tranche B Task 2: a written record type's tail (Maybe) became
+// `tails`, an array in written order. A type of no tail or one is hashed
+// as before, `Nothing` or `Just` of the tail; one of several (not
+// writable before) is left as it is and differs, as it should.
+const refAsBefore = item => {
+  const found = item?.constructor?.name === 'RecordRef' && item.value2;
+  if (!Array.isArray(found) || found.length > 1) return item;
+  const tail = found.length === 0 ? Nothing.value : Just.create(found[0]);
+  return Object.assign(Object.create(Object.getPrototypeOf(item)), item,
+    { value2: tail });
+};
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack. With
 // `monomorphic` the IR's records are hashed as they were before R005.
 export const digest = (value, monomorphic = false) => {
@@ -98,8 +110,8 @@ export const digest = (value, monomorphic = false) => {
   const pending = [value];
   while (pending.length > 0) {
     const popped = pending.pop();
-    const item = tailAsBefore(popped?.constructor?.name === 'PRecord'
-      ? restAsBefore(popped) : popped);
+    const item = tailAsBefore(refAsBefore(
+      popped?.constructor?.name === 'PRecord' ? restAsBefore(popped) : popped));
     if (item?.constructor?.name in booleanRests) {
       hash.update(`boolean:${booleanRests[item.constructor.name]};`);
     } else if (item === null || typeof item !== 'object') {

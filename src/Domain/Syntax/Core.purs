@@ -2,6 +2,7 @@ module Domain.Syntax.Core where
 
 import Prelude
 import Data.Maybe (Maybe)
+import Data.Tuple (Tuple)
 import Domain.Note (NoteReason)
 import Domain.Problem (Problem)
 
@@ -107,10 +108,11 @@ data TypeRef
   | VarRef Span String
   | NamedRef Span String (Array TypeArgument)
   | THandlerRef Span LabelRef (Maybe RowRef)
-  | RecordRef Span (Array FieldRef) (Maybe RecordTail)
+  | RecordRef Span (Array FieldRef) (Array RecordTail)
   | FunRef Span TypeRef (Maybe RowRef) TypeRef
 
--- `{ a: A, ...r }`: each field spans its label, the tail spans `...r`.
+-- `{ a: A, ...r, ...s }`: each field spans its label, each tail `...r`;
+-- the tails are in written order, after the fields.
 type FieldRef = { name ∷ String, ty ∷ TypeRef, span ∷ Span }
 type RecordTail = { name ∷ String, span ∷ Span }
 
@@ -173,9 +175,11 @@ type FunctionDecl =
   }
 
 -- `where r lacks { a, b }` (R005 design §2): the constraint spans the
--- variable through the closing brace. Tranche B adds `disjoint`.
-data Requirement = Lacks
-  { variable ∷ Label, span ∷ Span, labels ∷ Array Label }
+-- variable through the closing brace. `where r disjoint s` (R005 Tranche
+-- B) spans both variables.
+data Requirement
+  = Lacks { variable ∷ Label, span ∷ Span, labels ∷ Array Label }
+  | Disjoint { variables ∷ Tuple Label Label, span ∷ Span }
 
 type OperationDecl =
   { name ∷ String

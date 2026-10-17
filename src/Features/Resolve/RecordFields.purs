@@ -1,4 +1,8 @@
-module Features.Resolve.RecordFields (repeatedField, repeatedLabel) where
+module Features.Resolve.RecordFields
+  ( repeatedField
+  , repeatedLabel
+  , repeatedTail
+  ) where
 
 import Prelude
 import Data.Array as Array
@@ -33,6 +37,20 @@ repeatedField
   → Either Syntax.Diagnostic a
 repeatedField found = Left
   { problem: Duplicate DuplicateField found.again.name
+  , span: found.again.span
+  , related:
+      [ { span: found.first.span, reason: Syntax.FirstWrittenHere } ]
+  }
+
+-- A tail written twice in one record, `{ ...r, ...r }` (D8, approved
+-- 2026-10-17): at the second `...r`, noted at the first. Found by
+-- `repeatedLabel`, which compares names alone.
+repeatedTail
+  ∷ ∀ a r
+  . { first ∷ Labelled r, again ∷ Labelled r }
+  → Either Syntax.Diagnostic a
+repeatedTail found = Left
+  { problem: RepeatedTail found.again.name
   , span: found.again.span
   , related:
       [ { span: found.first.span, reason: Syntax.FirstWrittenHere } ]

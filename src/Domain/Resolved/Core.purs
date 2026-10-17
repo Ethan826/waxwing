@@ -3,6 +3,7 @@ module Domain.Resolved.Core where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe, fromMaybe)
+import Data.Tuple (Tuple)
 import Domain.Syntax (Label, Sort(..), Span, TypeRef)
 import Domain.Type (Ty, TypeId, VarId(..))
 
@@ -104,10 +105,17 @@ type EffectInfo =
 -- A written `where r lacks { a, b }`: the variable it names (an index into
 -- the signature's variables) with its written name and span, and the
 -- labels with their spans, which later diagnostics point at (R005 design
--- §2, §5). `span` is the whole constraint.
-data Requirement = Lacks
-  { variable ∷ VarId
-  , written ∷ Label
-  , span ∷ Span
-  , labels ∷ Array Label
-  }
+-- §2, §5). `span` is the whole constraint. `r disjoint s` (Tranche B) names
+-- two different record row variables, each with its written name.
+data Requirement
+  = Lacks
+      { variable ∷ VarId
+      , written ∷ Label
+      , span ∷ Span
+      , labels ∷ Array Label
+      }
+  | Disjoint
+      { variables ∷ Tuple VarId VarId
+      , written ∷ Tuple Label Label
+      , span ∷ Span
+      }

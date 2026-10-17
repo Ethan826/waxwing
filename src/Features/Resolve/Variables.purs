@@ -52,7 +52,7 @@ occurrences = case _ of
   Syntax.THandlerRef _ label row → labelOccurrences label
     <> maybe [] rowVariableNames row
   Syntax.RecordRef _ fields tail → Array.concatMap fieldNames fields
-    <> maybe [] tailName tail
+    <> Array.concatMap tailName tail
   arrow@(Syntax.FunRef _ _ _ _) → spineOccurrences (Syntax.typeRefSpine arrow)
   where
   fieldNames field = occurrences field.ty

@@ -206,7 +206,7 @@ resolveFunction globals declared tables effects effectInfos definition =
     , argumentGraph: tables.argumentGraph
     , variables: definition.signature.variables
     , markVariables: definition.signature.markVariables
-    , lacking: signatureLacking declared plain definition.function
+    , lacking: signatureLacking declared plain tables definition.function
         definition.signature
     , signatureSorts: signatureSorts declared definition.function
         definition.signature.variables
