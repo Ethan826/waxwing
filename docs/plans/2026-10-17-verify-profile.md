@@ -205,3 +205,43 @@ Not recommended: sharding slow test files (the longest is 35 s of a
 - Any proposed change; all savings above are estimates from the component
   timings.
 - Why the task description quotes 25-30 min against 21.5 min here.
+
+## Incremental-compilation experiment (2026-10-17)
+
+User-approved isolated experiment; nothing tracked changed. Raw results,
+the variant runner and the report are in .build/t013/results/
+(git-ignored). Built from `git archive main` at 106ce60, idle 10-core
+host, GOTOOLCHAIN=go1.26.4.
+
+- **Baseline:** one plain `purs compile`, 6.0 s. scripts/build.mjs
+  (spago) cannot serve: its output carries source maps and corefn, so
+  its index.js differs byte-wise from a plain compile.
+- **Per row:** an APFS clone (`cp -cR`) of the baseline output and
+  .spago, no hard links; the row's edits; purs with relative globs from
+  the row directory; the unchanged healthy and mutant probes.
+- **Equivalence, all 142 rows:** the mutant compiled incrementally
+  against the same mutant compiled clean, 1,099 files per row (523
+  modules' index.js and externs.cbor, foreign.js): 0 byte differences,
+  0 file-set differences, 0 compile failures. Only exclusion:
+  cache-db.json (source mtimes and hashes, build state not output).
+  Each mutant changed 1-2 files against the baseline. **Limit:** in
+  every row only the mutated module's own output changed; no row
+  exercised propagation to dependents' externs (a low-level change such
+  as one to Domain.Syntax.Core).
+- **Measured complete runs** (not sums of phases):
+
+| Run | Wall time | Outcome |
+|---|---|---|
+| `node scripts/regression.mjs`, unmodified | 1,039.5 s (17:19) | 142/142 |
+| Incremental variant (clone, edit, compile, both probes) | 440.2 s (7:20) | 142/142, same outcome per row |
+| `npm run verify`, clean copy, cold Go cache | 1,320.5 s (22:00) | exit 0 |
+
+  The incremental variant saves about 600 s (58%) of the regression
+  phase, about 45% of a full verify. Peak disk about 8 GB; the current
+  script leaves 5.9 GB of per-row outputs until .build/regression is
+  deleted.
+- **A production change would need:** a plain-purs baseline step; per-row
+  clones with a `cp -c` fallback; per-row cleanup; and, before relying on
+  it, an equivalence check that includes at least one mutation low in
+  the module graph (dependents' externs change), ideally kept as a
+  standing check. Worker parallelism and strict-rebuild stay deferred.
