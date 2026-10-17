@@ -57,8 +57,8 @@ export const r004Rows = [
     // The lowered conditions test no record field, so the first record
     // arm always matches.
     name: 'r004-go-fields', file: 'src/Format/Go/Match.purs',
-    needle: '  IR.Record fields → guarded (Array.concatMap named fields)',
-    replacement: '  IR.Record fields → guarded (Array.concatMap named '
+    needle: '  IR.Record fields _ → guarded (Array.concatMap named fields)',
+    replacement: '  IR.Record fields _ → guarded (Array.concatMap named '
       + '(Array.take 0 fields))',
     probe: 'r004-go-fields',
     message: /record fields ignored: admin Bo\n/
