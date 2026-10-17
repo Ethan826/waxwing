@@ -5548,3 +5548,17 @@ import, Task 1) no longer had a target, since Resolve.purs imports
 `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: 2084/2084,
 59/59, 134 regression proofs, exit 0 (.build/evidence/r005-t2-verify.log).
 .build/regression and .build/go-cache deleted.
+
+## Unattended evening queue (2026-10-16)
+
+The user accepted R005 Task 2's two choices (a non-record spread is
+reported at the whole `...p`; the written-lacks text names only the
+violated label). For the evening (until usage runs out) the user
+authorized: fast-forwarding each finished item into main after a green
+verify, a classified differential and the controller's review (never
+pushing); the queue R005 Task 3, R013, hygiene fixes A005, F006 and
+F007, a phase profile of `npm run verify` (report only), and an Opus
+draft of the Tranche B algorithm (docs only, Proposed); and, where an
+item needs a new text or design decision, adopting the proposed one
+marked "provisional, needs approval" in the docs. Code tasks run one at
+a time so timing tests stay stable.
