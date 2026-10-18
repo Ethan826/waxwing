@@ -1,5 +1,6 @@
 module Features.Check.RowOutcome
   ( RowOutcome(..)
+  , Stop(..)
   , Contradiction
   , Pending
   , outcome
@@ -36,16 +37,36 @@ type Contradiction = { failure ∷ Failure, because ∷ Maybe Because }
 -- An equation that waits: its residue's two sides (Task 5 adds the rest).
 type Pending = { left ∷ Flat, right ∷ Flat }
 
--- The outcome of solving that ended in `found`, or, for work a later task
--- does (a `Placeholder`), its text: never a verdict, neither solved nor
--- contradicted.
-outcome ∷ Either Failure Subst → Either String RowOutcome
-outcome = either failed (Right <<< Solved)
+-- Why solving stopped without a semantic outcome: a limit reached (the
+-- type grew past `inferredTypeLimit`), an invariant the rules' arguments
+-- establish found broken (a checker defect), or work a later task does
+-- (a placeholder). None of them says anything about the solutions.
+data Stop = Limit | Internal String | Unfinished String
+
+-- The outcome of solving that ended in `found`, or why it stopped
+-- without one. Every failure is classified by name, so a new constructor
+-- forces a decision on what it establishes (docs/plans/2026-10-17-open-
+-- row-merge-rules.md §11b): only a refusal a rejection rule argues, or a
+-- unifier refusal of field types that has no unifier, is a
+-- `Contradiction`.
+outcome ∷ Either Failure Subst → Either Stop RowOutcome
+outcome = either classified (Right <<< Solved)
   where
-  failed = case _ of
-    Placeholder what → Left what
-    failure → Right
-      (Contradiction { failure, because: reasonOf failure })
+  contradiction failure = Right
+    (Contradiction { failure, because: reasonOf failure })
+  classified failure = case failure of
+    Mismatch _ _ → contradiction failure
+    Occurs _ _ → contradiction failure
+    RowMissing _ _ _ → contradiction failure
+    RowExtra _ _ _ → contradiction failure
+    RowPayload _ _ _ → contradiction failure
+    RowSharedTail _ _ → contradiction failure
+    RowMismatch _ _ → contradiction failure
+    RowOccurs _ _ → contradiction failure
+    Refused _ → contradiction failure
+    TooDeep → Left Limit
+    Unexpected what → Left (Internal what)
+    Placeholder what → Left (Unfinished what)
 
 -- The reason of the fact a failure broke, if it broke one.
 reasonOf ∷ Failure → Maybe Because

@@ -69,3 +69,23 @@ test('one lacking tail: the other takes the label (forced by a fact)', () => {
   checkedPoly(source);
   assert.equal(rejected(source, 'E_INTERNAL').message, lowered);
 });
+
+// The old inputs of the two probes Task 4 rewrote (rows `r001-lacks`,
+// `r005b-self-apart`) stay rejected, with their current texts: since
+// Task 4 the bound's pruning (U2, U4) refuses them before the guard the
+// rows now isolate.
+test('a lone meta against a label it lacks is still refused', () => {
+  const source = 'fn k(y: { ...r }): { a: Int, ...r } = k(y); '
+    + 'fn f(q: { a: Int }): Int = { let u = k(q); 1 }; fn main(): Int = 0;';
+  const found = rejected(source, 'E_TYPE');
+  assert.equal(found.message, 'Expected { ..._ }, found { a: Int }');
+  assert.deepEqual(found.span, spanAt(source, 'q', 1));
+});
+
+test('one rigid passed for both disjoint parameters is still D3\'', () => {
+  const source = 'fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = '
+    + '0; fn h(p: { ...r }): Int = g(p, p); fn main(): Int = 0;';
+  assertDiagnostic(source, { code: 'E_TYPE',
+    message: 'r is in both records and may have fields', at: at('p', 2),
+    notes: [{ message: 'required here', at: at('r disjoint s') }] });
+});

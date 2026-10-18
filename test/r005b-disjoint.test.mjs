@@ -169,7 +169,9 @@ test('a constructor\'s fields imply the pair at its use', () => {
   rejects(use('{ y: Int }'), 'Field y is in both records: a disjoint b',
     at('W', 3), [note('first written here', 'W', 3),
       note('required here', '...b', 1)]);
-  // Checked; lowering the constructor's row of two tails is Task 8's.
+  // Checked; lowering the constructor's row of two tails is Task 8's. A
+  // permanent boundary test (user, 2026-10-18): a constructor used as a
+  // function over two tails reaches the lowering placeholder until then.
   checkedPoly(use('{ z: Int }'));
   assert.equal(rejected(use('{ z: Int }'), 'E_INTERNAL').message,
     'R005B placeholder: rows with several tails are lowered in Task 8');

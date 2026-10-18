@@ -4,8 +4,9 @@
 // the least solution), H (Contradiction: no solution), C2 (one verdict
 // for every order that reached one), property E (a solved state's
 // solutions, read back independently, are exactly the problem's), the
-// measure bound on state changes (L3) and on solver-made metas (L4), and
-// that the occurs check never meets a row tail (L33, an E_INTERNAL). A
+// measure bound on state changes (L3) and on solver-made metas (L4). A
+// limit or an internal failure (the tail occurs guard, L33) makes the
+// runner throw (test/row-merge-entry.mjs `classify`): a test failure. A
 // run that reaches a placeholder is `skipped`, counted by its order's
 // position, and never judged as agreement.
 import { allSolutions, isMeta, keyOf, leastOf, sat }
@@ -17,7 +18,7 @@ export const newTally = () => ({ problems: 0, runs: 0, accept: 0, refuse: 0,
   skipped: 0, skippedByOrder: {}, agreeSolved: 0, agreeContradiction: 0,
   solvedViolates: 0, notLeast: 0, unsound: 0, dishonest: 0, orderDiff: 0,
   stateChecked: 0, stateSkipped: 0, stateDiff: 0, corruptCaught: 0,
-  measureOver: 0, freshOver: 0, tailOccurs: 0, examples: [] });
+  measureOver: 0, freshOver: 0, examples: [] });
 
 const metasOf = cs => [...new Set(cs.flatMap(c => (c.k === 'lacks' ? [c.v]
   : [...c.l.tails, ...c.r.tails])).filter(isMeta))].sort();
@@ -61,9 +62,6 @@ export function judge(p, orders, t, options = {}) {
       defect(t, 'freshOver', p, order);
     }
     if (v.v === 'refuse') {
-      if (v.failure.constructor.name === 'Unexpected') {
-        defect(t, 'tailOccurs', p, order);
-      }
       if (sols.length) defect(t, 'dishonest', p, order);
       else t.agreeContradiction++;
       return;
@@ -106,7 +104,7 @@ function solved(p, order, v, known, t, options) {
 }
 
 export const DEFECTS = ['solvedViolates', 'notLeast', 'unsound', 'dishonest',
-  'orderDiff', 'stateDiff', 'measureOver', 'freshOver', 'tailOccurs'];
+  'orderDiff', 'stateDiff', 'measureOver', 'freshOver'];
 
 // The tally without its examples, and the defects it found.
 export const defects = t => DEFECTS.filter(k => t[k] > 0)

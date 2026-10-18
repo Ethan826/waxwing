@@ -33,21 +33,42 @@ const step = (subst, c) => {
   return entry.lacking(subst)(flexOf(c.v))(c.l);
 };
 
+// One step's outcome as the runner reads it: `{ skipped: what }` for a
+// placeholder (work a later task does), `{ refuse: failure }` for a
+// contradiction, `{ subst }` when solved. A limit reached or an internal
+// failure is no verdict and no skip: it fails the run (throws), so a
+// runner can never count it as an honest refusal.
+export function classify(found) {
+  if (found.constructor.name === 'Left') {
+    const stop = found.value0;
+    if (stop.constructor.name === 'Unfinished') return { skipped: stop.value0 };
+    throw new Error(`row solver stopped: ${stop.constructor.name} ${
+      stop.value0 ?? ''}`);
+  }
+  const result = found.value0;
+  if (result.constructor.name === 'Contradiction') {
+    return { refuse: result.value0.failure };
+  }
+  if (result.constructor.name === 'Solved') return { subst: result.value0 };
+  throw new Error(`unexpected outcome ${result.constructor.name}`);
+}
+
+export const outcomeOf = either => entry.outcome(either);
+
 // { v: 'accept' | 'refuse' | 'skipped', subst, base, failure?, what? }.
 // `base` is the state after the hypotheses, for counting changes.
 export function run(hyp, order) {
   const base = start(hyp);
   let subst = base;
   for (const c of order) {
-    const found = entry.outcome(step(subst, c));
-    if (found.constructor.name === 'Left') {
-      return { v: 'skipped', what: found.value0, subst, base };
+    const found = classify(entry.outcome(step(subst, c)));
+    if ('skipped' in found) {
+      return { v: 'skipped', what: found.skipped, subst, base };
     }
-    const result = found.value0;
-    if (result.constructor.name === 'Contradiction') {
-      return { v: 'refuse', failure: result.value0.failure, subst, base };
+    if ('refuse' in found) {
+      return { v: 'refuse', failure: found.refuse, subst, base };
     }
-    subst = result.value0;
+    subst = found.subst;
   }
   return { v: 'accept', subst, base };
 }
