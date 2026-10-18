@@ -21,12 +21,24 @@ export const withoutNoRecords = program => {
   return rest;
 };
 
+// R005 Tranche B Task 3: declarations and constructors gained `joined`,
+// the pairs of record tails their types write into one record; one with
+// none is compared without the field.
+const withoutNoJoined = item => {
+  if (!Array.isArray(item.joined) || item.joined.length > 0) return item;
+  const { joined: _, ...rest } = item;
+  return rest;
+};
 // R001 Task 8: a checked function gained `sorts`, its signature's
 // variable sorts copied from the resolved declaration (compared in the
 // resolve phase). The check phase is compared without the copy, so a
 // baseline from before it agrees wherever the checked IR does.
+// R005 Tranche B Task 3: the checked program's constructors (copied from
+// the resolved ones) carry `joined`; one with none is compared without.
 export const withoutSorts = program => ({
   ...program,
+  ...(Array.isArray(program.ctors)
+    ? { ctors: program.ctors.map(withoutNoJoined) } : {}),
   functions: program.functions.map(({ sorts: _, ...rest }) => rest)
 });
 
@@ -61,14 +73,6 @@ const booleanRests = { NoRest: false, IgnoredRest: true };
 // its record row variables is introduced, derived from the signature the
 // resolve phase compares anyway. Compared without it, with the empty
 // `constraints` of Task 1.
-// R005 Tranche B Task 3: declarations and constructors gained `joined`,
-// the pairs of record tails their types write into one record; one with
-// none is compared without the field.
-const withoutNoJoined = item => {
-  if (!Array.isArray(item.joined) || item.joined.length > 0) return item;
-  const { joined: _, ...rest } = item;
-  return rest;
-};
 export const withoutIntroduced = program => ({
   ...program,
   ctors: program.ctors.map(withoutNoJoined),
