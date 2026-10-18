@@ -72,5 +72,15 @@ export const r005bRows = [
     replacement: '  checked lacking = labelsChecked lacking\n',
     probe: 'r005b-body-type',
     message: /body type pair ignored: (accepted|E_INTERNAL R005B placeholder)/
+  },
+  {
+    // Implied pairs are not seeded at a use (the bug main had after Task 2):
+    // a call through a declared-type wrapper accepts overlapping tails.
+    name: 'r005b-wrapper-pairs', file: 'src/Features/Check/UseFacts.purs',
+    needle: '{ state = joined metaOf variables pairs use.state }',
+    replacement: '{ state = const use.state\n'
+      + '    (joined metaOf variables pairs use.state) }',
+    probe: 'r005b-wrapper-pairs',
+    message: /wrapper pair not seeded: accepted/
   }
 ];

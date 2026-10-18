@@ -88,5 +88,24 @@ export const r005bProbes = {
       'E_TYPE r and s are not known to be disjoint; require r disjoint s '
         + 'in the signature @...s');
     done(context);
+  },
+  // A call through a declared-type wrapper whose types join two tails:
+  // the implied pair is seeded at the use, so overlapping tails are D2 and
+  // two rigid tails not known apart are D3.
+  'r005b-wrapper-pairs': context => {
+    const wrapper = 'type Holder(...r) = Holder({ x: Int, ...r }); '
+      + 'type W(...a, ...b) = W(Holder({ ...a, ...b })); '
+      + 'fn k(a: { ...r }, b: { ...s }, w: W(...r, ...s)): Int = 0; ';
+    expect(context, 'wrapper pair not seeded',
+      `${wrapper}fn c(a: { ...u }, b: { ...v }): Int `
+        + 'where u lacks { x }, v lacks { x } = { let h = k(a, b); 0 }; '
+        + 'fn main(): Int = 0;',
+      'E_TYPE u and v are not known to be disjoint; require u disjoint v '
+        + 'in the signature @b [required here @...s]');
+    expect(context, 'wrapper pair overlap',
+      `${wrapper}fn main(): Int = { let h = k({ y: 1 }, { y: 2 }); 0 };`,
+      'E_TYPE Field y is in both records: r disjoint s @{ y: 2 } '
+        + '[first written here @{ y: 1 }] [required here @...s]');
+    done(context);
   }
 };

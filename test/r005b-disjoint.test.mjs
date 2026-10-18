@@ -100,6 +100,9 @@ const inCall = (source, text) => {
     found = source.indexOf(text, found + 1)) nth++;
   return at(text, nth);
 };
+// The wording of an implied lack's refusal at a call (Tranche A's shape
+// text) may improve in a later design (D1 is for written clauses only);
+// that the call is REJECTED is mandatory, and `rejects` asserts it.
 const calledRejects = (clauses, message, text, notes) => {
   const source = called(clauses);
   rejects(source, message, inCall(source, text), notes);
