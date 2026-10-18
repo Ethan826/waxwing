@@ -42,6 +42,9 @@ vertical slice before adding language features. Task tracking is local.
   Name numeric constants except 0, 1, 2 and test data. Aim for at most
   30 lines, 3 nested decisions, 8 active branches, and 8 where bindings per
   declaration; split responsibilities rather than enlarge budgets.
+- Inventiveness belongs in the composition of features, not the guts
+  (ADR 014): compose published primitives, name each component's source,
+  and flag novel machinery for the user's explicit approval.
 - Comments explain reasoning. Update docs/engineering.md when a rule changes
   and distinguish automated enforcement from review conventions.
 - Keep plan status, evidence, findings, ADRs, and backlog current in the same
