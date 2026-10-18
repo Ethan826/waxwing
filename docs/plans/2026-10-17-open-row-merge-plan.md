@@ -5,8 +5,9 @@
 > superpowers:executing-plans to implement this plan task-by-task. Steps
 > use checkbox (`- [ ]`) syntax for tracking. The user accepted Task 0
 > and authorized Task 1 (2026-10-17); the user then authorized Task 2
-> alone (2026-10-17). Tasks 3-10 are not authorized: do not start Task 3
-> before the user reviews Task 2 and authorizes it.
+> alone (2026-10-17), then Task 3 alone (2026-10-17). Tasks 4-10 are not
+> authorized: do not start Task 4 before the user reviews Task 3 and
+> authorizes it.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs: record rows with
@@ -75,7 +76,8 @@ test runner, Go 1.26.4. No new dependency.
 **Status:** Draft 2026-10-17, corrected after the user's review of the
 same day. Task 0 accepted (2026-10-17, branch r005b-task0); Task 1
 done (branch r005b-task1); Task 2 authorized and done on branch
-r005b-task2 (2026-10-17, awaiting review); Tasks 3-10 not authorized.
+r005b-task2 (2026-10-17); Task 3 authorized and done on branch
+r005b-task3 (2026-10-17, awaiting review); Tasks 4-10 not authorized.
 
 ## Global Constraints
 
@@ -135,7 +137,7 @@ r005b-task2 (2026-10-17, awaiting review); Tasks 3-10 not authorized.
   | Added in | Placeholder at | Text after `R005B placeholder: ` | Removed in |
   |---|---|---|---|
   | Task 2 | Check: the first record unification or flattening that meets a row with two or more tails (Check/UnifyRecord entry, Check/FlatRecord callers that assume one tail) | `rows with several tails are checked in Task 4` | Task 4 |
-  | Task 2 | Check/Function and Check/Use where a resolved `Disjoint` constraint would be seeded | `disjoint constraints are checked in Task 3` | Task 3 |
+  | Task 2 | Check/Function and Check/Use where a resolved `Disjoint` constraint would be seeded | `disjoint constraints are checked in Task 3` | Task 3 (removed, 32c74fa) |
   | Task 4 | Check/UnifyRecord: a residue whose constants each have several homes, or a quiet residue | `equations that wait are solved in Task 5` | Task 5 |
   | Task 2 (moved earlier, user 2026-10-17) | Check/SeveralTails `withinOneTail`, called by Check/Removal and Check/RecordPattern `restOf` (named rest only; bare `...` is accepted): a receiver or scrutinee whose flattened row has two or more tails | `rest binders and removal over several tails are typed in Task 7` | Task 7 |
   | Task 4 | Specialize/Record: a row with two or more tails under a key | `rows with several tails are lowered in Task 8` | Task 8 |
@@ -153,7 +155,10 @@ r005b-task2 (2026-10-17, awaiting review); Tasks 3-10 not authorized.
   `withoutDisjoint`, called at the start of Function `checkFunction`
   (at the function) and Use `functionUse` (at the call), each over the
   callee's resolved constraints. Task 3 removes only the second; Task 4
-  the first.
+  the first. Task 3 removed the second (32c74fa; Check/Placeholder now
+  holds only `placeholderAt`): the placeholder texts left in src are
+  Check/UnifyRecord's (several tails, Task 4) and Check/SeveralTails'
+  (rest binders and removal, Task 7).
 
   A test that needs D4 or D6 before Task 6 asserts the placeholder's
   E_INTERNAL message (it pins the result class); Task 6 changes those
@@ -310,10 +315,10 @@ test/fixtures/r005b/.
 | L17 | A nested equation is deferred once, at the outer site (§2.6) | rules §9 "Nested equations" | argument, not yet checked: the prototype has no field types; an implementation obligation, not established compiler behaviour: its tests must land with Task 5 | `r005b-nested-field`, `r005b-pending-dedup` (Task 5) |
 | L18 | The joint fixpoint ends and is order independent (§6) | rules §12 "joint fixpoint" | argument, not yet checked: the prototype has no effect rows; an implementation obligation, not established compiler behaviour: its tests must land with Task 5 | `r005b-end-fixpoint` both directions (Task 5) |
 | L19 | The store reverts with a postponed effect pair (§1.3, §6) | rules §12 "Rollback" (it lives in `Subst`) | argument, not yet checked: no effect rows in the prototype; an implementation obligation, not established compiler behaviour: its test must land with Task 5 | `r005b-settle-rollback` (Task 5) |
-| L20 | P1-P7's "before" texts (§1.6) | fixtures `precedence-p1` … `-p7` and the three controls hold `before`; all ten matched today's build exactly (text, span, notes; output/ built after 746ffa7's last src change, scratch probe, 2026-10-17) | backed | asserted against main in an isolated copy, red log (Task 3) |
-| L21 | No existing test expectation moves with the precedence (§1.6) | design §1.6's grep | argument, not yet checked: only the implementation can run the suite | Task 3 runs the whole suite before changing any expectation |
+| L20 | P1-P7's "before" texts (§1.6) | fixtures `precedence-p1` … `-p7` and the three controls hold `before`; all ten matched today's build exactly (text, span, notes; output/ built after 746ffa7's last src change, scratch probe, 2026-10-17) | backed; compiler check done (Task 3): test/r005b-precedence.test.mjs with R005B_EXPECT=before passed all ten against main 816140a in an isolated copy, and all seven P1-P7 failed there with the after texts (.build/evidence/r005b-t3-red.log) | asserted against main in an isolated copy, red log (Task 3) |
+| L21 | No existing test expectation moves with the precedence (§1.6) | design §1.6's grep | backed (Task 3): the whole suite ran on the implementation before any expectation changed; no precedence-related expectation moved. Edited on purpose: Task 2's two `disjoint` placeholder tests (r005b-surface; the placeholder is removed), test/specialize's projection (constructors gained `joined`), three tests' import of `Flex` (split) | Task 3 runs the whole suite before changing any expectation |
 | L22 | After specialization every row is ground (§9) | rules §12 (unsolved tails read as `{}`, rigids replaced by key rows) | argument, not yet checked: no specializer in the prototype; an implementation obligation, not established compiler behaviour: its check must land with Task 8 | Specialize asserts it (E_INTERNAL on a tail left); Task 8 generator |
-| L23 | `x # x` forces `{}`; a rigid twice is D3' (§3.1) | rules §10; exhaustive: self-apart fired in 7.7M runs of A with E; fixture `diag-18-wrong` | backed | `r005b-self-apart` (Task 3); exhaustive domain (Task 4) |
+| L23 | `x # x` forces `{}`; a rigid twice is D3' (§3.1) | rules §10; exhaustive: self-apart fired in 7.7M runs of A with E; fixture `diag-18-wrong` | backed; compiler check (Task 3): test/r005b-disjoint.test.mjs (`fn(p) => g(p, p)` accepts the empty record and refuses `{ x: 1 }`, accepted without the clause; `g(p, p)` over a rigid is D3') and row `r005b-self-apart` | `r005b-self-apart` (Task 3); exhaustive domain (Task 4) |
 | L24 | The diagnostics examples' classes (diagnostics Appendix A) | fixtures: all 19 examples, their fixes and variants, every class as stated; diag.mjs | backed | complete-source fixtures (Task 7) |
 | L25 | Appendix B's six refusal kinds differ from the approved texts | diag.mjs output (diagnostics Appendix A) | backed (as a fact about the prototype) | fixtures `diag-03`, `-05`, `-13`, `-15`, `-17`, `-19`, `lone-meta-lack` assert the approved texts (Tasks 3, 7) |
 | L26 | Example 14's text is order independent under R10.1 | class: fixture `diag-14` refused in all 24 orders of its rows; text: R10.1 | class backed; text argument, not yet checked: needs the renderer | `diag-14` in both fact orders (Task 7) |
@@ -339,12 +344,12 @@ written clause). Task 3 must test both distinctions, including
 propagation through a declared-type wrapper (Decision 14, Task 3's
 tests).
 
-Status count: 34 claims. Backed: 22 (L2-L4, L6-L16, L20, L23-L25,
-L27, L29-L31). Split, each part named: 4 (L1, L26, L28, L32: the
-prototype, class, instance or soundness part backed; the compiler,
-text, general or losslessness part argument, not yet checked).
-Argument, not yet checked, with the reason in its row: 6 (L17, L18,
-L19, L21, L22, L33). A proof accepted as argument: 1 (L5). L34
+Status count: 34 claims. Backed: 23 (L2-L4, L6-L16, L20, L21,
+L23-L25, L27, L29-L31; L21 since Task 3). Split, each part named: 4
+(L1, L26, L28, L32: the prototype, class, instance or soundness part
+backed; the compiler, text, general or losslessness part argument, not
+yet checked). Argument, not yet checked, with the reason in its row: 5
+(L17, L18, L19, L22, L33). A proof accepted as argument: 1 (L5). L34
 approved with its interpretation. No claim is unbacked.
 
 ## Review findings and their checks
@@ -358,7 +363,7 @@ approved with its interpretation. No claim is unbacked.
 | F5 exponential pieces | `r005b-quiet` (timing) | 5 |
 | F6 drain failures read as nonsense | `r005b-drain-text`, `r005b-drained-reason` | 6 |
 | F7 end of body with postponed pairs | `r005b-end-fixpoint`, `r005b-settle-rollback` | 5 |
-| F8 implied versus written clause | `r005b-precedence` and the P1-P7 fixtures | 3 |
+| F8 implied versus written clause | `r005b-precedence` and the P1-P7 fixtures (closed in Task 3: both landed, the row proved) | 3 |
 | F9 signatures no call can use | D8 test; `r005b-both-annotation` (D7 withdrawn) | 2, 5 |
 | F10 termination measure | step-counter assertion (L3) | 4 |
 | F11 D2' late location | fixture `d2-late` (rule 1 wins) | 7 |
@@ -738,7 +743,7 @@ requireDisjoint ∷ Because → Flat → Flat → Subst → Either Contradiction
 source position, `Equated` last by earliest site), so arrival order
 never matters; a property test checks commutativity and associativity.
 
-- [ ] Failing tests test/r005b-precedence.test.mjs: P1-P7 of design §1.6
+- [x] Failing tests test/r005b-precedence.test.mjs: P1-P7 of design §1.6
   each asserting the "after" text, span and notes, and its fixture's
   `before` asserted against main in an isolated copy (the red log
   records all seven failing on main with exactly the `before` texts);
@@ -747,7 +752,7 @@ never matters; a property test checks commutativity and associativity.
   These are fixtures (`stages.check` 3), so test/r005b-fixtures.test.mjs
   lands here and runs them, with `lone-meta-lack`, `-two` and
   `diag-06-fix`.
-- [ ] Failing tests test/r005b-disjoint.test.mjs (solver and renderer
+- [x] Failing tests test/r005b-disjoint.test.mjs (solver and renderer
   tests: single-tail rows, no spread literal): `g(a: { ...r }, b: {
   ...s }): Int where r disjoint s` as `g(p, p)` over `{ ...t }` is D3';
   over `{ x: Int }` twice D2 with `first written here` at `arrivedAt`;
@@ -772,13 +777,44 @@ never matters; a property test checks commutativity and associativity.
   the disjointness, nor the reverse; both through a declared-type wrapper
   at its caller. The `merge(p, p)` form is complete-source and joins Task
   7.
-- [ ] Implement; verify; differential: differences only P1-P7's class
+- [x] Implement; verify; differential: differences only P1-P7's class
   (shape text → D1) and sources using `disjoint`, each classified; L21
-  checked (no existing expectation edited); commit.
+  checked (no existing expectation edited); commit. Done on branch
+  r005b-task3 (2026-10-17): splits first (50b8312 RowStore, PartOrigin
+  and Flex out of Subst; 67140bc UseFacts out of Use; their differential
+  0 of 12,686), then 32c74fa (store, precedence, seeding, the bind rule,
+  decomposition, D2, D3', the placeholder removed, tests, six rows),
+  de290d4 (a differential projection) and ade35cd (row `r001-lacks`'s
+  needle); verify 2243 + 59 tests, 148 proofs, exit 0 on ade35cd. Red log
+  .build/evidence/r005b-t3-red.log: against main all seven P1-P7 fail
+  and, with R005B_EXPECT=before, all ten `before` texts pass exactly;
+  13 of 15 disjoint tests fail (the two passing are Resolve-phase
+  controls Task 2 already gave). Differential 68 differences, every one
+  classified (docs/progress.md "R005 Tranche B Task 3"). Also added: the
+  user's clarification of Decision 14 (each tail lacks the label,
+  disjointness given; every tail lacks it, disjointness not given), each
+  through `W` in a body type and at a call, failing for its own reason.
+  Representation notes: `Implied { span }` is split into `Joined` (an
+  implied pair, with its variables and later tail) and `Implied` (an
+  implied lack, no span); `Equated`, `upper`, `pending`, `naming`,
+  `boundBy` and `emptied` arrive with their producers (Tasks 4-5);
+  `requireDisjoint` is `requireApart` (an image against one partner, the
+  only form single-tail rows need; the general form lands with Task 7's
+  literal). The `d2-call` fixture (F13) is not written: the activation
+  table assigns no new fixture to Task 3; D2's `arrivedAt` note is
+  asserted in test/r005b-disjoint.test.mjs and -precedence instead.
 
 Rows landing: `r005b-precedence`, `r005b-provenance`, `r005b-mixed-lacks`,
 `r005b-mixed-tails`, `r005b-self-apart`, `r005b-body-type` (probes in
 the `g` and `tagged` forms above; none needs a spread literal).
+Landed in Task 3 (scripts/regression-r005b.mjs, probes in
+test/regression-r005b.mjs), each proved failing with its defect
+restored. As restored, `r005b-provenance`'s defect makes the decomposed
+lack a plain one, so the wrapper's caller reads the shape text where D2
+is due (the table's "D1's text" was a slip: no written lack is involved);
+`r005b-precedence` also probes the pair's note (clause over implying
+type); `r005b-body-type`'s restored defect is accepted (the lambda is not
+applied, so no several-tail unification is reached).
 
 Size: about 350k tokens, 5-6 h. Opus.
 

@@ -6059,3 +6059,119 @@ Checking stays behind placeholders; nothing in Tasks 3-10 was started.
   parse phase; main rejected 48 with `Only one row tail is allowed` and 22
   with `Expected 'lacks'`; every one of the 70 sources has several record
   tails or a `disjoint` clause. No later-phase difference.
+
+## R005 Tranche B Task 3: facts and precedence (2026-10-17)
+
+Branch `r005b-task3` from main 816140a. The user authorized Task 3 only
+(2026-10-17); Tasks 4-10 were not started.
+
+- Splits first, each behaviour-preserving: 50b8312 moves the lacks and
+  written clauses into Features.Check.RowStore (held by `Subst` as
+  `store`), adds Features.Check.PartOrigin (empty until Task 6, `origins`)
+  and Features.Check.Flex; 67140bc moves `seededUse`/`requiredUse` to
+  Check/UseFacts. Differential of 67140bc against main (isolated copies,
+  `--corpus all --regenerate`, .build/evidence/r005b-t3-split-diff.log):
+  0 differences of 12,686 cases. Regression row `r005-written-use`
+  follows the rule to UseFacts (same needle and defect; the defect now
+  brings its `Data.Array` import), re-proved.
+- The store (32c74fa): `lacks ∷ Map Flex (Map String Lack)`, a `Lack`
+  being a `Because` and, for a lack decomposed from a pair, the meta
+  whose binding brought the label; `apart ∷ Map Flex (Map Flex Because)`
+  (symmetric, rigids and unbound metas only); `arrivedAt` (stamped by the
+  bind rule from `site`, which Require `expectType` sets for the
+  requirement it checks). `Because` (Check/Because) is `Lacks`,
+  `Disjoint`, `Joined` (an implied pair: its variables and the later
+  tail's span), `Implied` (an implied lack, no span) and `Spread`;
+  `prefer` is the minimum of the derived order (kind, then span), so it
+  is commutative and associative and the kept reason never depends on
+  arrival order. `Equated`, upper bounds, pending equations and the
+  binding reasons arrive with their producers (Tasks 4-5).
+- Seeding: Seed `required` always records a written lack (P1-P7) and
+  seeds `where r disjoint s` (`Disjoint`); Seed `joined` seeds the pairs
+  a signature's or a constructor's types write into one record (option
+  A), computed in Resolve (Resolve.Apart `joinedPairs`/`withJoined`,
+  through declared types by the argument graph, each at its later tail;
+  `Resolved.FunctionDecl.joined`, `CtorInfo.joined`). At a use on the
+  use's metas (UseFacts), in a body on the rigids (Function `own`).
+- Checking: RecordTail `bindTail` is the bind rule (design §3.2 steps 1,
+  3-5, 7, 8): lacks pass on with their reasons; the meta's pairs are
+  removed and re-required on its image by Check/Disjoint `requireApart`
+  (design §3.1): labels against a meta partner become its lacks (reason
+  kept), against a rigid must be hypotheses (D3''); a meta apart from
+  itself is bound to `{}`; a rigid twice is D3'; two rigids need the
+  hypothesis (D3). A refusal reports by the lack's reason (D1 written,
+  D2/D3'' for a pair, the shape text otherwise). Texts are the approved
+  rows: D2 `Field a is in both records: r disjoint s` (`first written
+  here` at `arrivedAt`, `required here` at the clause or the implying
+  type's later tail), D3 (now noted), D3', D3'' (`s is introduced here`,
+  `required here`); `CheckEnv` gained `introduced` for D3''. The
+  `disjoint` placeholder is removed; left (by text): Check/UnifyRecord's
+  several-tail placeholder (Task 4) and Check/SeveralTails' rest/removal
+  placeholder (Task 7).
+- P1-P7 before/after, each asserted (test/r005b-precedence.test.mjs and
+  the fixtures): every one was the shape text on main and is D1 now,
+  noted at the clause's label: P1, P2, P3 `Expected { name: Int, ..._
+  }, found { admin: Bool, name: Int }` → `admin is not allowed here: r
+  lacks { admin }`; P4, P5 `Expected { ..._ }, found { admin: Bool }` →
+  the same D1; P6 → `… s lacks { admin }` at w's clause; P7 `Expected {
+  name: Int, ..._ }, found { name: Int, ...s }` → D1 at `q`, noted at
+  f's clause. The three controls are unchanged.
+- Tests: test/r005b-fixtures.test.mjs (runs every fixture from its
+  stages; Task 3 activates the 13 the table assigns: P1-P7, three
+  controls, `lone-meta-lack`, `-two`, `diag-06-fix`, which also runs
+  through Go), r005b-precedence (10 fixtures and three pair-precedence
+  probes), r005b-disjoint (17: the plan's list; Decision 14 and the
+  user's clarification: with disjointness given, every tail must lack
+  the label (D3'' in a body type, Tranche A's shape text at a call),
+  and with every tail lacking it, disjointness is still required (D3,
+  accepted once stated), each through the wrapper `W(...a, ...b) =
+  W(Holder({ ...a, ...b }))`, in a body type and at a call; D2 for a
+  wrapper's implied pair at metas; the pair through partial application,
+  a reference and a constructor), r005b-prefer (property test).
+  Red log .build/evidence/r005b-t3-red.log against main in its isolated
+  copy: 7 of 15 fixture tests, 10 of 13 precedence tests, 13 of 15
+  disjoint tests and the prefer file fail; with R005B_EXPECT=before all
+  ten `before` texts pass exactly. A gap found by those tests on main: a
+  call through a wrapper whose types join two tails was accepted though
+  the tails could overlap (implied pairs were not seeded).
+- Existing expectations changed (L21 checked; none by the precedence):
+  Task 2's two `disjoint` placeholder tests now assert acceptance; the
+  specialize test's projection drops the constructors' empty `joined`;
+  three tests import `Flex` from its new module.
+- Regression rows (scripts/regression-r005b.mjs): `r005b-precedence`,
+  `-provenance`, `-mixed-lacks`, `-mixed-tails`, `-self-apart`,
+  `-body-type`, each proved failing with its defect restored
+  (.build/evidence/r005b-t3-rows.log); `r005-provenance`'s needle moved
+  to the rewritten bind rule (same defect: the written reason forgotten,
+  so the shape text), re-proved.
+- Differential against main (isolated copies; .build/evidence/
+  r005b-t3-diff.log, classified in r005b-t3-diff-classified.log by
+  re-running each source through both builds): 68 differences of 12,736
+  cases (harvested 8,622, 68; fuzz 1,029, isName 1,085, matches 1,000,
+  mutations 1,000, 0 each). 37 in resolve: in each only the new non-empty
+  `joined` differs (checked by hashing both with it removed); of their
+  check outcomes 25 are unchanged (placeholders and a mismatch) and 12
+  change by disjointness: 4 `disjoint` placeholder → accepted, 2 →
+  Tranche A's shape text (Decision 14 at a call), 1 → D2, and 5 accepted
+  → refused (D3 1, D2 4: implied pairs now seeded, including through `W`
+  and a constructor). 31 in check: 7 are P1-P7 (shape text → D1); 24 are
+  `disjoint` sources past the removed placeholder: 12 accepted, D2 5, D3
+  2, D3' 2, D3'' 1, D1 1, and 1 `Expected {}, found { x: Int }` (the
+  self-apart test's `{ x: 1 }` against the forced `{}`). Every one of
+  the 68 is a source of this task's or Task 2's tests; none other. A
+  first run reported 3,507 check-phase differences: the checked program
+  copies constructors, which gained `joined`; de290d4 projects an empty
+  one away (as the resolve phase does), after which the run above.
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`,
+  .build/evidence/r005b-t3-verify.log): exit 0 on ade35cd, the last code
+  commit; 2243 tests, 59 oracle tests, 148 regression proofs (142 + the
+  six new rows). The first run, on de290d4, failed in the regression
+  stage (.build/evidence/r005b-t3-verify-first.log): row `r001-lacks`
+  named `Array.find forbidden`, which the bind rule made `findMap`;
+  ade35cd updates the needle (same defect), re-proved. Every needle was then
+  checked to have exactly one target. The docs commit after it received
+  only the width check.
+- Sizes: Subst 224, Use 218, Resolve 238 (no file over 250); new
+  Because 75, RowStore 105, Disjoint 68, UseFacts 53, Flex 20,
+  PartOrigin 12.
+- Not done: Tasks 4-10, unauthorized.

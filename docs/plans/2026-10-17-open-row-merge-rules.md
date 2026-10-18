@@ -259,6 +259,20 @@ the image forces (`lacks`, `upper`, `evidence`), so no solution.
 act on the image (§13). **Evidence:** 10,294,094 runs (A) bound a meta;
 dropping step 3 fails S and E (sensitivity, §0).
 
+**Compiler (Task 3, single-tail rows).** Features.Check.RecordTail
+`bindTail` implements steps 1, 3, 4, 5 (the image's own lacks, as
+Tranche A did), 7 and 8 (`arrivedAt`); step 2 and step 6 (bounds) arrive
+with Task 4. Step 3 passes each lack on with its reason (a meta rest
+inherits the reason and the meta it arrived with; a rigid rest must
+already lack it). Step 4 removes the meta's pairs from both sides before
+re-requiring each on the image, so the store keeps its invariant that a
+pair names only rigids and unbound metas. A refusal is reported by the
+lack's reason (D1 for a written lack, D2 or D3'' for a pair's, the
+caller's shape text otherwise); the reason changes only the report, not
+whether the binding is refused. Tests: test/r005b-disjoint.test.mjs,
+test/r005b-precedence.test.mjs; regression rows `r005b-provenance`
+(step 3 keeps the reason) and `r005-provenance`.
+
 ## 8. Homes, commit and the shared remainder (design §2.1 steps 7-8)
 
 **Homes** compute, for each constant, the metas of the other side that
@@ -345,6 +359,37 @@ formed only if it denotes `{}`; binding it to `{}` replaces a variable
 by its only value (preserves). **Evidence:** self-apart fired in
 7,666,467 runs (A) with E holding; fixture `diag-18-wrong` (D3', rigid
 twice); `evidence` refusals 9,167,657 (A), 0 dishonest.
+
+**Compiler (Task 3, single-tail rows).** Features.Check.Disjoint
+`requireApart` decomposes the pair of a bound meta's image `F ⊎ T` (`T`
+at most one tail until Task 4) with each partner `p`, which is a rigid
+or an unbound meta: labels first, in sorted order, then the tail
+(location rule 5). It is this section's rewrite restricted to `R = p`
+(no label on `R`, so the overlap case cannot arise until a literal of
+several spreads, Task 7): a label against a meta `p` becomes `p lacks
+l`, keeping the pair's reason and the bound meta as where the label
+arrived; against a rigid it must be a hypothesis (D3''); `t # p` with
+`t = p` a meta binds `{}` through the bind rule, with `t = p` a rigid is
+D3'; two different rigids must be a hypothesis (D3); otherwise the pair
+is stored. Seeding stores pairs between two fresh metas (a use) or two
+rigids (the body's hypotheses), which need no decomposition. The
+rejections are this section's (impossibility); the binding to `{}` is
+its `x # x` case. Tests: test/r005b-disjoint.test.mjs (D2, D3, D3',
+D3'', `{}` forced and its control without the clause, Decision 14's two
+distinctions through a declared-type wrapper); regression rows
+`r005b-mixed-lacks`, `r005b-mixed-tails`, `r005b-self-apart`.
+
+**Reasons and their precedence (design §1.3; not a solving rule).** The
+store keeps, for each lacked label and each pair, one reason. Merging
+two facts on one key keeps the union of the facts (the key is present)
+and chooses one reason by `prefer`, the minimum of a total order
+(written lacks, written disjoint, implied, spread; then the earlier
+span). The constraint set, and so every solution, is the same whichever
+reason is kept; only the text of a later violation depends on it.
+`prefer` depends on its two arguments alone, so the kept reason is
+independent of arrival order (test/r005b-prefer.test.mjs: commutative
+and associative on 3,000 random triples; regression row
+`r005b-precedence`).
 
 ## 11. Removal's fresh remainder (design §5.2)
 
