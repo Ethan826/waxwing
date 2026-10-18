@@ -5,9 +5,9 @@
 > superpowers:executing-plans to implement this plan task-by-task. Steps
 > use checkbox (`- [ ]`) syntax for tracking. The user accepted Task 0
 > and authorized Task 1 (2026-10-17); the user then authorized Task 2
-> alone (2026-10-17), then Task 3 alone (2026-10-17). Tasks 4-10 are not
-> authorized: do not start Task 4 before the user reviews Task 3 and
-> authorizes it.
+> alone (2026-10-17), then Task 3 alone (2026-10-17), then Task 4 alone
+> (2026-10-17). Tasks 5-10 are not authorized: do not start Task 5 before
+> the user reviews Task 4 and authorizes it.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs: record rows with
@@ -77,7 +77,8 @@ test runner, Go 1.26.4. No new dependency.
 same day. Task 0 accepted (2026-10-17, branch r005b-task0); Task 1
 done (branch r005b-task1); Task 2 authorized and done on branch
 r005b-task2 (2026-10-17); Task 3 authorized and done on branch
-r005b-task3 (2026-10-17, awaiting review); Tasks 4-10 not authorized.
+r005b-task3 (2026-10-17); Task 4 authorized alone and done on branch
+r005b-task4 (2026-10-17, awaiting review); Tasks 5-10 not authorized.
 
 ## Global Constraints
 
@@ -138,11 +139,11 @@ r005b-task3 (2026-10-17, awaiting review); Tasks 4-10 not authorized.
   |---|---|---|---|
   | Task 2 | Check: the first record unification or flattening that meets a row with two or more tails (Check/UnifyRecord entry, Check/FlatRecord callers that assume one tail) | `rows with several tails are checked in Task 4` | Task 4 |
   | Task 2 | Check/Function and Check/Use where a resolved `Disjoint` constraint would be seeded | `disjoint constraints are checked in Task 3` | Task 3 (removed, 32c74fa) |
-  | Task 4 | Check/UnifyRecord: a residue whose constants each have several homes, or a quiet residue | `equations that wait are solved in Task 5` | Task 5 |
+  | Task 4 (landed e63f7f4) | Check/RowSettle `placing`, called by Check/UnifyRecord: a residue whose constants each have several homes, or a quiet residue | `equations that wait are solved in Task 5` | Task 5 |
   | Task 2 (moved earlier, user 2026-10-17) | Check/SeveralTails `withinOneTail`, called by Check/Removal and Check/RecordPattern `restOf` (named rest only; bare `...` is accepted): a receiver or scrutinee whose flattened row has two or more tails | `rest binders and removal over several tails are typed in Task 7` | Task 7 |
-  | Task 4 | Specialize/Record: a row with two or more tails under a key | `rows with several tails are lowered in Task 8` | Task 8 |
+  | Task 4 (landed e63f7f4) | Specialize/Record `recordType`: a row with two or more tails under a key | `rows with several tails are lowered in Task 8` | Task 8 |
   | Task 5 | the end-of-body report of an `Unresolved` outcome | `unresolved row equations are reported in Task 6` | Task 6 |
-  | Task 5 | Require/Reject for a `Contradiction` whose reason is `Equated` (or a `boundBy` or `emptied` binding) | `contradictions from equations are reported in Task 6` | Task 6 |
+  | Task 5 (added early, in Task 4, e63f7f4) | Check/Lacked `refusedAt`, called by Require and Reject: a refusal whose reason is `Equated`, an `Outside` (a bound violated, also a meta U4 emptied by bounds alone) or a `Derived` lack; a refusal a `boundBy` binding caused is not yet told apart (R10.1, Task 6) | `contradictions from equations are reported in Task 6` | Task 6 |
 
   **Task 2's two placeholders as landed** (2026-10-17): the first is
   `Failure.Placeholder` (Check/UnifyFailure), returned by
@@ -158,7 +159,17 @@ r005b-task3 (2026-10-17, awaiting review); Tasks 4-10 not authorized.
   the first. Task 3 removed the second (32c74fa; Check/Placeholder now
   holds only `placeholderAt`): the placeholder texts left in src are
   Check/UnifyRecord's (several tails, Task 4) and Check/SeveralTails'
-  (rest binders and removal, Task 7).
+  (rest binders and removal, Task 7). Task 4 (e63f7f4) removed
+  Check/UnifyRecord's and added three: Check/RowSettle's (waiting
+  equations, Task 5), Specialize/Record's (lowering, Task 8) and, moved
+  earlier from Task 5 because Task 4's sum rule and bounds can make
+  `Equated` reasons, Check/Lacked's (contradictions from equations, Task
+  6; no source of Task 4's corpus and no generated problem reaches it).
+  The placeholder texts in src after Task 4 (`grep -rn "in Task [5-8]\""
+  src`; Check/Placeholder `placeholderAt` adds the `R005B placeholder: `
+  prefix to all but Specialize's, which writes it): Check/RowSettle (Task
+  5), Check/Lacked (Task 6), Check/SeveralTails (Task 7),
+  Specialize/Record (Task 8).
 
   A test that needs D4 or D6 before Task 6 asserts the placeholder's
   E_INTERNAL message (it pins the result class); Task 6 changes those
@@ -296,18 +307,18 @@ test/fixtures/r005b/.
 
 | # | Claim (where) | Backing (Task 0) | Status | Compiler check (task) |
 |---|---|---|---|---|
-| L1 | With one tail per side the rule makes ADR 013's rules 1-6 (design §2.3) | rules §6, §8; exhaustive: 0 commits, deferrals or quiet equations in 47,496 + 1,550 one-tail problems, with S, H, L, E | backed for the prototype; the equality with the compiler's rules is argument, not yet checked (it needs the compiler) | Task 4 differential `--corpus all`, 0 differences; exhaustive one-tail domain in test/row-merge.test.mjs |
-| L2 | The sum rule is sound: it restates `m ⊆ C2 ⊎ M2` (§2.5) | rules §5; exhaustive E and H (bound, lack, apart fired in 3.3M, 142k, 197k runs of A); campaign; the rigid condition's sensitivity run | backed | exhaustive domain (Task 4) |
-| L3 | Solving terminates; the measure decreases (§2.7) | rules §13; exhaustive: state changes ≤ the measure on every run (max ratio 2/3) | backed (prototype) | step counter bounded by the measure (Task 4) |
-| L4 | At most \|Π\|·\|Κ\| solver-made metas (§2.7) | exhaustive: max ratio 1/3; growth.mjs worst 12 of 196 | backed | asserted per problem (Task 4) |
+| L1 | With one tail per side the rule makes ADR 013's rules 1-6 (design §2.3) | rules §6, §8; exhaustive: 0 commits, deferrals or quiet equations in 47,496 + 1,550 one-tail problems, with S, H, L, E | backed for the prototype; the equality with the compiler's rules backed since Task 4 (below) | Task 4 differential `--corpus all`, 0 differences; exhaustive one-tail domain in test/row-merge.test.mjs; compiler check done (Task 4): the one-tail problems of domains A and B (22,308 and 585 problems, 122,232 and 2,854 runs) in every order equal an independent model of ADR 013's rules (test/row-merge-adr013.mjs), verdict and solution, none waiting (test/row-merge-domains.test.mjs); differential 0 differences among sources with neither several tails nor `disjoint` |
+| L2 | The sum rule is sound: it restates `m ⊆ C2 ⊎ M2` (§2.5) | rules §5; exhaustive E and H (bound, lack, apart fired in 3.3M, 142k, 197k runs of A); campaign; the rigid condition's sensitivity run | backed | exhaustive domain (Task 4); compiler check done (Task 4): domain A whole (scripts/row-merge-exhaustive.mjs, 19,305,292 runs) and domain B whole (in verify), H and S 0 failures |
+| L3 | Solving terminates; the measure decreases (§2.7) | rules §13; exhaustive: state changes ≤ the measure on every run (max ratio 2/3) | backed (prototype) | step counter bounded by the measure (Task 4); compiler check done (Task 4): the store's `changes` counter within the measure on every run of both whole domains and the generators (0 over) |
+| L4 | At most \|Π\|·\|Κ\| solver-made metas (§2.7) | exhaustive: max ratio 1/3; growth.mjs worst 12 of 196 | backed | asserted per problem (Task 4); compiler check done (Task 4): `fresh` within \|P\|·\|K\| on every run (0 over) |
 | L5 | Satisfiability is NP-complete (§2.7) | the reduction (design §2.7); sat13.mjs: the instances are D4 | argument (a proof, not a measurement), accepted as such by the plan; instances checked | none |
 | L6 | A least solution's existence is coNP-hard (§2.7) | the construction; switch.mjs 400 of 400 | backed | none |
 | L7 | Quiet equations do not multiply (§2.2) | chain.mjs, n up to 40; quiet fired in 6,518 runs of B with E | backed | `r005b-quiet` timing row (Task 5) |
 | L8 | Review F2's family: all 186 programs with a least solution accepted (§2.5) | shared.mjs | backed (prototype) | level 2 shared-parameter generator (Task 9) |
 | L9 | C1: one pending equation at D4 ⇒ no least solution (§12) | exhaustive c1fail 0; campaign `d4OnePendingWithLeast` 0 | backed | compiler oracle test (Task 5) |
-| L10 | C2: verdict class independent of order (§12) | exhaustive: every order of every problem, 0 differences; campaign 0 | backed | compiler oracle test (Tasks 4, 5) |
-| L11 | Solved emits a solution | exhaustive and campaign `solvedViolates` 0; fixtures (every Solved fixture) | backed | compiler oracle test (Task 4) |
-| L12 | Contradiction ⇒ no solution | exhaustive and campaign `dishonest` 0 (refusals by kind in rules §0); fixtures | backed | compiler oracle test (Task 4) |
+| L10 | C2: verdict class independent of order (§12) | exhaustive: every order of every problem, 0 differences; campaign 0 | backed | compiler oracle test (Tasks 4, 5); compiler check done (Task 4) for the runs that reach a verdict: one verdict for every order of every problem in both whole domains and the generators (0 differences; runs reaching Task 5's placeholder are counted apart, never a verdict) |
+| L11 | Solved emits a solution | exhaustive and campaign `solvedViolates` 0; fixtures (every Solved fixture) | backed | compiler oracle test (Task 4); compiler check done (Task 4): S 0 failures (796,409 Solved runs in domain A, 177,028 in B, and the generators) |
+| L12 | Contradiction ⇒ no solution | exhaustive and campaign `dishonest` 0 (refusals by kind in rules §0); fixtures | backed | compiler oracle test (Task 4); compiler check done (Task 4): H 0 failures (17,705,571 Contradiction runs in domain A, 233,144 in B, and the generators) |
 | L13 | Unresolved makes no claim on the count; occurs with 0, 1, several | fixtures assert `odd-cycle` 0, `determinate` 1, `diag-01` 4 and that the three buckets stay covered (failing demonstrations recorded in Task 0); unresolved.mjs; exhaustive buckets 466 / 120 / 59,554 (A) | backed | the same counts asserted by the compiler oracle test (Task 5); texts (Task 7) |
 | L14 | D4 with a least solution needs two pending equations sharing a meta (C3, §2.2) | exhaustive: 120 (A) and 80 (B) such runs, c3fail 0; campaign 3,205 and 45, all within C3 | backed | compiler oracle test with a recorded ceiling (Task 5) |
 | L15 | Removal by the fresh remainder keeps no held label (§5.2) | rules §11; removal.mjs; fixtures `design-removal-left`, `-right`, `-rest-field`, `-wait` | backed (labels) | `r005b-without-hole-*`, `r005b-rest-hole` (Task 7) |
@@ -318,17 +329,17 @@ test/fixtures/r005b/.
 | L20 | P1-P7's "before" texts (§1.6) | fixtures `precedence-p1` … `-p7` and the three controls hold `before`; all ten matched today's build exactly (text, span, notes; output/ built after 746ffa7's last src change, scratch probe, 2026-10-17) | backed; compiler check done (Task 3): test/r005b-precedence.test.mjs with R005B_EXPECT=before passed all ten against main 816140a in an isolated copy, and all seven P1-P7 failed there with the after texts (.build/evidence/r005b-t3-red.log) | asserted against main in an isolated copy, red log (Task 3) |
 | L21 | No existing test expectation moves with the precedence (§1.6) | design §1.6's grep | backed (Task 3): the whole suite ran on the implementation before any expectation changed; no precedence-related expectation moved. Edited on purpose: Task 2's two `disjoint` placeholder tests (r005b-surface; the placeholder is removed), test/specialize's projection (constructors gained `joined`), three tests' import of `Flex` (split) | Task 3 runs the whole suite before changing any expectation |
 | L22 | After specialization every row is ground (§9) | rules §12 (unsolved tails read as `{}`, rigids replaced by key rows) | argument, not yet checked: no specializer in the prototype; an implementation obligation, not established compiler behaviour: its check must land with Task 8 | Specialize asserts it (E_INTERNAL on a tail left); Task 8 generator |
-| L23 | `x # x` forces `{}`; a rigid twice is D3' (§3.1) | rules §10; exhaustive: self-apart fired in 7.7M runs of A with E; fixture `diag-18-wrong` | backed; compiler check (Task 3): test/r005b-disjoint.test.mjs (`fn(p) => g(p, p)` accepts the empty record and refuses `{ x: 1 }`, accepted without the clause; `g(p, p)` over a rigid is D3') and row `r005b-self-apart` | `r005b-self-apart` (Task 3); exhaustive domain (Task 4) |
+| L23 | `x # x` forces `{}`; a rigid twice is D3' (§3.1) | rules §10; exhaustive: self-apart fired in 7.7M runs of A with E; fixture `diag-18-wrong` | backed; compiler check (Task 3): test/r005b-disjoint.test.mjs (`fn(p) => g(p, p)` accepts the empty record and refuses `{ x: 1 }`, accepted without the clause; `g(p, p)` over a rigid is D3') and row `r005b-self-apart` | `r005b-self-apart` (Task 3); exhaustive domain (Task 4); exhaustive domain (Task 4): domains A and B whole through the compiler, 0 failures |
 | L24 | The diagnostics examples' classes (diagnostics Appendix A) | fixtures: all 19 examples, their fixes and variants, every class as stated; diag.mjs | backed | complete-source fixtures (Task 7) |
 | L25 | Appendix B's six refusal kinds differ from the approved texts | diag.mjs output (diagnostics Appendix A) | backed (as a fact about the prototype) | fixtures `diag-03`, `-05`, `-13`, `-15`, `-17`, `-19`, `lone-meta-lack` assert the approved texts (Tasks 3, 7) |
 | L26 | Example 14's text is order independent under R10.1 | class: fixture `diag-14` refused in all 24 orders of its rows; text: R10.1 | class backed; text argument, not yet checked: needs the renderer | `diag-14` in both fact orders (Task 7) |
 | L27 | `expand` removes the raw-generator D4s with a least solution (§2.2) | perm.mjs `EXPAND=1`, recorded campaign | backed | none (not adopted) |
 | L28 | Programs calling `merge` with known arguments never wait (§2.7) | rules §6; fixtures `design-composition`, `design-partial`, `diag-15-fix` never defer in any order (solver stage 4) | argument with instances; the general claim is not yet checked: it is about all programs | Task 9 census: no pending equation in that shape |
-| L29 | Every rewrite preserves solutions (property E; rules §0). Bounded evidence for solution preservation, exhaustive over the stated domains; not a proof of every rewrite in general | exhaustive: E on 930,580 (A) and 203,804 (B) states, 0 failures; campaign: E on 111,800 and 325,090 states, 0 failures; sensitivity runs | backed | — |
-| L30 | The empty default selects a solution that satisfies every constraint and is least, whenever no pending equation has a constant (rules §12) | the monotonicity argument; exhaustive D, S, L 0 failures | backed | compiler oracle test S and L (Task 4) |
-| L31 | Homes are complete: no meta a solution could use is excluded (rules §8) | the argument per exclusion; H 0 failures. H (honest refusal) alone can miss losing one valid alternative while another is retained; "no valid home excluded" is backed only by property E (an excluded valid home would change the solution set) or a direct exclusion check | argument; backed by E where E runs; the direct exclusion check is not yet written | compiler oracle test H and property E (Task 4), plus a direct check that every home excluded has no solution using it (Task 4) |
+| L29 | Every rewrite preserves solutions (property E; rules §0). Bounded evidence for solution preservation, exhaustive over the stated domains; not a proof of every rewrite in general | exhaustive: E on 930,580 (A) and 203,804 (B) states, 0 failures; campaign: E on 111,800 and 325,090 states, 0 failures; sensitivity runs | backed | —; compiler-backed check (Task 4): property E with an independent read-back of the exported bindings (test/row-merge-readback.mjs, never the compiler's flattener) on every Solved run: 796,409 (A) and 177,028 (B) states, 0 failures; its sensitivity check (nested bindings skipped) is caught (17,904 states in A) and asserted in test/row-merge.test.mjs |
+| L30 | The empty default selects a solution that satisfies every constraint and is least, whenever no pending equation has a constant (rules §12) | the monotonicity argument; exhaustive D, S, L 0 failures | backed | compiler oracle test S and L (Task 4); compiler check (Task 4), for Solved states (no equation waits): S and L 0 failures; the default with waiting equations is Task 5's |
+| L31 | Homes are complete: no meta a solution could use is excluded (rules §8) | the argument per exclusion; H 0 failures. H (honest refusal) alone can miss losing one valid alternative while another is retained; "no valid home excluded" is backed only by property E (an excluded valid home would change the solution set) or a direct exclusion check | argument; backed by E where E runs; the direct exclusion check is not yet written | compiler oracle test H and property E (Task 4), plus a direct check that every home excluded has no solution using it (Task 4); compiler check (Task 4): property E (above) and a direct exclusion check, every home excluded before an equation has no state solution using it (test/row-merge-homes.mjs; 201 checked, 0 wrong, 20 past the cap, in verify) |
 | L32 | Re-examining only equations that name a changed meta (`naming`) is sound but not lossless: the sum rule's apart derivation reads facts of unnamed partners (rules §14) | the argument; C2 0 differences in the exhaustive domains and campaign | soundness backed; losslessness argument, not yet checked (no counterexample found; none constructed) | Task 5 requirement (user, 2026-10-17): a dependency-complete wake-up rule. Index every fact the equation's rules read, including relevant partners, or conservatively rescan pending equations. Recording missed wake-ups as a measured heuristic is not acceptable under the order-independence requirement. Compare the indexed implementation against a reference that rescans everything to a fixpoint |
-| L33 | The occurs check never fires on row tails after cancellation, only on field types (rules §7) | the argument (cancellation, fresh metas in commits and remainders) | argument, not yet checked: the prototype does not count occurs refusals apart from other mismatches | Task 4: an E_INTERNAL guard or a counter in the oracle test |
+| L33 | The occurs check never fires on row tails after cancellation, only on field types (rules §7) | the argument (cancellation, fresh metas in commits and remainders) | backed since Task 4 by the compiler's guard (below); the prototype does not count occurs refusals apart from other mismatches | Task 4: an E_INTERNAL guard or a counter in the oracle test; compiler check done (Task 4): an E_INTERNAL guard in the bind rule (`Unexpected`, `A record tail occurs in its own binding`), counted as a defect by the oracle tests: 0 in every run |
 | L34 | The pinned D4 text of `determinate` names the second merge's r and s (plan, "Pinned compiler programs") | the parts are det's q and u, to which merge's r and s were bound; R1.1 names them only if an owner's variable is named at its current bare-meta image, as Example 19's approved `{ x: 1 }` prose already does | approved by the user (2026-10-17) with this interpretation: follow bare-meta aliases when matching a part to the equation owner's variables, so the second `merge` can name its parts `r` and `s` even when their representatives originated as `det`'s `q` and `u`; naming must be independent of which direction the unifier chose for an alias; preserve part identity and tracked remainder ancestry; never assign an owner's name to arbitrary components of a structured binding | `determinate` fixture (Task 7) |
 
 The user's Task 0 review (2026-10-17) is recorded in Decisions 8-13;
@@ -344,13 +355,15 @@ written clause). Task 3 must test both distinctions, including
 propagation through a declared-type wrapper (Decision 14, Task 3's
 tests).
 
-Status count: 34 claims. Backed: 23 (L2-L4, L6-L16, L20, L21,
-L23-L25, L27, L29-L31; L21 since Task 3). Split, each part named: 4
-(L1, L26, L28, L32: the prototype, class, instance or soundness part
-backed; the compiler, text, general or losslessness part argument, not
-yet checked). Argument, not yet checked, with the reason in its row: 5
-(L17, L18, L19, L22, L33). A proof accepted as argument: 1 (L5). L34
-approved with its interpretation. No claim is unbacked.
+Status count: 34 claims. Backed: 25 (L1-L4, L6-L16, L20, L21,
+L23-L25, L27, L29-L31, L33; L21 since Task 3, L1's compiler part and L33
+since Task 4). Split, each part named: 3 (L26, L28, L32: the class,
+instance or soundness part backed; the text, general or losslessness
+part argument, not yet checked). Argument, not yet checked, with the
+reason in its row: 4 (L17, L18, L19, L22). A proof accepted as
+argument: 1 (L5). L34 approved with its interpretation. No claim is
+unbacked. Task 4 added compiler checks to L2-L4, L10-L12, L23 and
+L29-L31 (their rows).
 
 ## Review findings and their checks
 
@@ -845,7 +858,7 @@ unifyRows ∷ … → Subst → Flat → Flat → Either Contradiction Subst
 task's oracle entry maps a remaining placeholder to a skipped problem,
 counted and printed, never to a verdict.
 
-- [ ] Failing tests test/row-merge.test.mjs (level 1): the raw, dense
+- [x] Failing tests test/row-merge.test.mjs (level 1): the raw, dense
   and program-shaped generators ported from perm.mjs and
   programs-gen.mjs with seeds, each problem in five orders; S (the
   emitted solution satisfies every constraint), H (`Contradiction` ⇒
@@ -860,7 +873,7 @@ counted and printed, never to a verdict.
   Task 5 placeholder are counted. The fixtures with `stages.solver` 4
   run their `rows` here (two holes against one, the composition, the
   overlaps, P1-P7's projections).
-- [ ] Failing tests test/r005b-unify.test.mjs (check-phase, no spread
+- [x] Failing tests test/r005b-unify.test.mjs (check-phase, no spread
   literal): `fn swap(p: { ...r, ...s }): { ...s, ...r } = p;` is
   accepted (common tails cancel, `r005b-cancel`); a `pick`-style
   two-tail parameter met by a one-tail row binds the lone meta (two
@@ -869,8 +882,24 @@ counted and printed, never to a verdict.
   `lone-meta-lack`, `-two`, already enabled since Task 3). §2.4 "forced
   by a fact" and "forced by a bound" defer first in some order, so they
   are Task 5's (rows) and Task 7's (complete source).
-- [ ] Implement; verify; differential: **0 differences** on existing
-  sources (the §2.3 differential); commit.
+- [x] Implement; verify; differential: **0 differences** on existing
+  sources (the §2.3 differential); commit. Done on branch r005b-task4
+  (2026-10-17), code commit e63f7f4 (docs/progress.md "R005 Tranche B
+  Task 4"): the driver Check/UnifyRecord over Check/RowResidue,
+  SumRule, Narrow (U1-U4, `emptied`), Homes, Commit (`boundBy`),
+  RowSettle and Homeless; the bind rule (RecordTail) and decomposition
+  (Disjoint) complete for any number of tails; Check/RowOutcome and the
+  test entry Check/RowEntry (with `outcome` mapping a placeholder to a
+  skipped run, never a verdict). Test files as planned, plus
+  test/row-merge-domains.test.mjs (domains split out: the one-tail
+  domains in full against an independent model of ADR 013's rules, L1;
+  domain B whole; domain A one candidate in 50); the whole of domain A
+  by scripts/row-merge-exhaustive.mjs outside verify (19,305,292 runs, 0
+  defects). Differential: 0 differences among sources with neither
+  several record tails nor `disjoint`; 14 Tranche-B transitions, each
+  classified. Placeholders: see the table. Deviations, for review: the
+  rules file's §11a (the forms in which the port differs, each argued),
+  and Check/Lacked's placeholder added early (table).
 
 Rows landing: `r005b-cancel`, `r005b-pruned-reason` (`r005b-upper`
 and `r005b-apart-persist` probe merge programs and land in Task 7;

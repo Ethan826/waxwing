@@ -6201,3 +6201,174 @@ Tranche B (D1 is for written clauses only; a future design may extend it).
 Mandatory: the Decision 14 tests (a lack through the wrapper at a call)
 assert rejection whatever the wording. The `Joined`/`Implied` split of
 `Because` and the written order `s disjoint r` are accepted.
+
+## R005 Tranche B Task 4: forced solving (2026-10-17)
+
+Branch `r005b-task4` from main dceec90. The user authorized Task 4 only
+(2026-10-17), with six boundaries: forced solving and the three-way
+result only (waiting equations and the drain stay Task 5's, behind an
+explicit placeholder); placeholders kept for rest/removal (Task 7) and
+lowering (Task 8); the complete bind and decomposition rules for several
+tails; property E read back independently, with a sensitivity check; the
+oracle with placeholder-skipped runs reported apart, by order; a
+differential with zero differences for sources without Tranche B syntax.
+Tasks 5-10 were not started.
+
+- Code commit e63f7f4. Check/UnifyRecord is the driver of design §2.1,
+  one examination at a time (`tailRecM`): flatten; common labels unify
+  once each (`rebound` restarts them); Check/RowResidue (multiset
+  cancellation, the residue, `Constant`); Check/Homeless (step 4: a
+  constant with no meta opposite); Check/SumRule (bound, lack, apart,
+  both directions, reasons `Equated`); Check/Narrow (U1-U4: narrowing, a
+  bound meta passing it to its image, U2 pruning with the pruning facts
+  kept, U4 binding `{}` and recording `emptied`); Check/RowSettle (one
+  meta alone, two bare metas newer to older, the shared remainder,
+  homes, commits, and the waiting placeholder); Check/Homes (rules §8);
+  Check/Commit (commit with `boundBy`, and placing a homeless constant
+  anyway so its fact reports itself). Check/RowStore gained `upper`,
+  `emptied`, `boundBy`, `equations` and the `changes` counter;
+  Check/Because gained `Equated Equation` (ordered by site, then
+  identity, last in the precedence); Check/RowBound holds `Atom`,
+  `Bound`, `Narrowing`; Check/Refused holds `refusedBy`, shared by the
+  rules.
+- The three-way result: Check/RowOutcome `Solved Subst | Contradiction
+  { failure, because } | Unresolved Subst (NonEmptyArray Pending)`.
+  Where each is produced: `outcome` (used by the test entry
+  Check/RowEntry) maps a unification's `Right` to `Solved` and any
+  failure except a `Placeholder` to `Contradiction`; a `Placeholder` is
+  returned apart (`Left` text), never a verdict. Nothing constructs
+  `Unresolved` yet: the end of a body does, in Task 5. Inside
+  unification a contradiction stays `Left` with its reason, as the plan
+  says; Require and Reject render failures as before.
+- Bind rule and decomposition, complete (rules §7, §10, §11a). Obligations
+  now checked that Task 3's single-tail form (`requireApart`, an image
+  against one partner) omitted: a label on both sides of a pair (a
+  partner bound since it was stored); the right side's labels against
+  the left side's tails; every pair of tails, not one; a rigid rest held
+  to the image's own labels (step 5); the image's own pairs of tails;
+  every lack passed to each of several rests; U2 on every new lack and
+  pair; U3's check and narrowing (steps 2, 6). Each sub-requirement
+  flattens its rows when it runs.
+- Placeholders (by text; Check/Placeholder adds the `R005B
+  placeholder: ` prefix): removed Task 2's `rows with several tails are
+  checked in Task 4`; added Check/RowSettle `equations that wait are
+  solved in Task 5` (defer and quiet), Specialize/Record `rows with
+  several tails are lowered in Task 8`, and, moved earlier from Task 5,
+  Check/Lacked `contradictions from equations are reported in Task 6`
+  for a refusal whose reason is `Equated`, an `Outside` or a `Derived`
+  lack (no source and no generated problem reaches it in Task 4: 0
+  `Outside` and 0 `Derived` refusals in the generators). Left from
+  before: Check/SeveralTails (Task 7).
+- Property E (rules §0, ledger L29): test/row-merge-readback.mjs reads
+  the state back from the exported bindings (one level each,
+  Check/RowEntry `bindings`) and facts, following the bindings itself
+  and never calling the compiler's flattener, enumerates the state's
+  solutions and compares the program metas' values with the oracle's
+  solutions. Sensitivity: a corrupted traversal (a bound tail inside a
+  binding read as empty) differs on 17,904 states of domain A and is
+  asserted to be caught in test/row-merge.test.mjs.
+- Oracle (level 1). test/row-merge-oracle.mjs is ported from
+  research/open-row-merge/oracle.mjs. Results (agreements by verdict
+  class; skipped runs are placeholders, never agreements):
+  - domain A whole (`node scripts/row-merge-exhaustive.mjs A 9`, 88 s,
+    .build/evidence/r005b-t4-exhaustive-A.log): 3,339,712 problems,
+    19,305,292 runs; Solved 796,409 (S and L hold), Contradiction
+    17,705,571 (no solution), skipped 803,312 (exactly the prototype's
+    deferral count); skipped by order position 0-5: 179,462, 174,781,
+    132,915, 129,410, 105,753, 80,991; E checked on 796,409 states, 0
+    failures; 0 order differences, 0 over the measure or the fresh-meta
+    bound, 0 tail occurs.
+  - domain B whole (in verify and by the script): 79,825 problems,
+    453,550 runs; Solved 177,028, Contradiction 233,144, skipped 43,378
+    (by position: 7,054, 6,949, 9,048, 8,758, 4,783, 6,786); 0 defects.
+  - one-tail domains (in verify): A 22,308 problems / 122,232 runs, B
+    585 / 2,854, equal to test/row-merge-adr013.mjs (an independent
+    model of ADR 013's rules) in verdict and solution, none skipped (L1).
+  - generators, five orders, 400 problems each (in verify): raw (seed 21)
+    Solved 356, Contradiction 1,415, skipped 229 (by position 46, 45, 46,
+    44, 48); dense (22) 243, 109, 1,648 (333, 325, 327, 329, 334); raw
+    programs (23) 543, 1,421, 36 (9, 6, 7, 7, 7); program-shaped (24)
+    960, 669, 371 (70, 86, 73, 73, 69); shared (25) 833, 802, 365 (79,
+    78, 73, 65, 70); 0 defects.
+  - fixtures: the 25 at solver stage 4 in every order, never waiting,
+    each its class; at stage 5 a verdict never contradicts the class and
+    every Unresolved run waits (skipped by class: Solved 13,430,
+    Unresolved 404, Contradiction 3,355).
+  - L31's direct check: 201 excluded homes checked, 0 with a solution,
+    20 past the read-back's cap.
+  - No disagreement anywhere. Cross-check with the prototype
+    (scripts/row-merge-cross.mjs, seeds 21, 2,000 problems per
+    generator, .build/evidence/r005b-t4-cross.log): wherever the
+    prototype never waited the compiler gives its verdict; wherever it
+    waited the compiler is skipped.
+- Fixtures activated: the 25 with `stages.solver` 4 run their rows in
+  test/row-merge.test.mjs; no fixture has `check`, `text` or `run` 4, so
+  test/r005b-fixtures.test.mjs keeps Task 3's 13 (its `task` is 4).
+- Regression rows (.build/evidence/r005b-t4-rows.log, each proved
+  failing with its defect restored): new `r005b-cancel` (no
+  cancellation: swap refused) and `r005b-pruned-reason` (U4 forgets the
+  pruning fact: the shape text); needles moved with the code, same
+  defects: `r005b-provenance`, `-mixed-lacks`, `-mixed-tails`,
+  `-self-apart`, `r005-provenance`, `r001-field-bound-tail`,
+  `r001-shared-remainder`. Two probes changed, meaning kept, because
+  Task 4's U2/U4 pruning is a second guard that refuses their old
+  programs before the restored defect matters: `r001-lacks` (a lone meta
+  against a row with a meta of its own, where no bound arises) and
+  `r005b-self-apart` (adds `g(p, both(p))`, where only the pair's check
+  guards). `r001-lacks` and `r001-record-guard` re-proved.
+- Tests seen failing first against main's build in its isolated copy
+  (.build/evidence/r005b-t4-red.log): all 6 of test/r005b-unify.test.mjs,
+  and both row-merge files (the entry module does not exist there).
+  Existing expectations changed: Task 2's placeholder tests
+  (test/r005b-placeholder.test.mjs, r005b-surface.test.mjs) now assert
+  the forced outcomes or Task 5's placeholder; Task 3's constructor test
+  checks at the check phase and asserts Task 8's placeholder for the
+  compile (the lowering placeholder is the plan's).
+- Rules file: §7 and §10 gain Task 4 paragraphs; new §11a, the forms in
+  which the port differs from the prototype, each argued (common labels
+  once; two bare metas; the shared remainder before homes; a homeless
+  constant placed anyway; U4's refusal and U3's check keep the pruning
+  fact; live facts only; waiting is a placeholder; the tail occurs guard;
+  the counters).
+- Sizes: RecordTail 234, RowStore 199, Record 174, Disjoint 161,
+  RowEntry 182; new modules 35-143 lines; no file over 250.
+- Differential against main (isolated copy built from `git archive main`,
+  `--corpus all --regenerate --show 1000`, run on e63f7f4's build,
+  .build/evidence/r005b-t4-diff.log, classified in
+  r005b-t4-diff-classified.log): 14 differences of 12,742 cases
+  (harvested 8,628: 14; fuzz 1,029, isName 1,085, matches 1,000,
+  mutations 1,000: 0 each). Sources with neither several record tails
+  nor `disjoint`: **0 differences**. Every difference is a Tranche-B
+  source (several tails), by category: Task 2's placeholder → accepted
+  at check, 6 (`pick`, field read beside two tails, two `swap`s, `wrap(
+  pick2)`, `granted2` with one lacking tail; the last two reach Task 8's
+  lowering placeholder when compiled); Task 2's placeholder → Task 5's
+  (an equation that would wait), 4 (`f({ a: 1 })`, `f(v)` over two rigid
+  tails, the unannotated `Both`, `id({ x: 1 })`); Task 2's placeholder →
+  a contradiction, 3 (`a is not a field of { ...r, ...s }`; D1 twice for
+  `granted2` with both tails lacking, R10.2); accepted → Task 8's
+  lowering placeholder, 1 (Task 3's constructor `ap(W)` over `{ y: Int
+  }` and `{ z: Int }`). The harvest's own test run exited 1 on timing
+  tests only (14, the T007 kind, under the harvest's load); verify runs
+  them in its serial phase, where they passed.
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`,
+  .build/evidence/r005b-t4-verify.log): exit 0 on e63f7f4, the code
+  commit; 2262 tests, 59 oracle tests, 151 regression proofs (149 + the
+  two new rows). The docs commit after it received only the width check.
+- The whole domains and the prototype cross-check were rerun on
+  e63f7f4's build after verify, with the results above, identical to the
+  runs on the working tree before the commit's last structural split.
+- Scale: test/r001-scale.serial.test.mjs's compile of 4,001 keys took
+  306-312 ms against main's 293-306 ms (three runs each, same host; bound
+  729 ms).
+- Actual effort: about 0.6M tokens in one session (the plan's estimate
+  was 400k tokens, 6-7 h; an estimate, not a budget).
+- Not done: Tasks 5-10, unauthorized. Open for review: Check/Lacked's
+  placeholder added early (it covers `Equated`, `Outside` and `Derived`
+  refusals; a refusal a commit's binding caused, R10.1, still takes its
+  fact's text until Task 6); the U2 pruning is applied by the row rules,
+  not by Tranche A's `addLacks` callers (Extension, FreshRecord, seeding):
+  a bound they leave holding a lacked atom is less tight, never unsound
+  (homes and narrowing read the lacks again), and a scratch check (not
+  committed) found no bound left in 88,716 Solved states sampled from
+  the generators and domain B; the two probes changed (above).

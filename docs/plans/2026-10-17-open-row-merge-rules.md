@@ -273,6 +273,20 @@ whether the binding is refused. Tests: test/r005b-disjoint.test.mjs,
 test/r005b-precedence.test.mjs; regression rows `r005b-provenance`
 (step 3 keeps the reason) and `r005-provenance`.
 
+**Compiler (Task 4, any number of tails; supersedes the Task 3
+paragraph).** `bindTail` takes the image's tails as an array and runs
+every step: 1; 2 (U3's check, §15.6); 3 and 5 on each tail (a meta
+inherits the meta's lacks and the image's labels; a rigid must lack
+both, so a rigid rest is now also held to the image's own labels, which
+Task 3 did not check); 7 (occurs, with the guard of §15.8); 4, each
+partner `p` re-required as the full `(F ⊎ T) # p` of §10 (Task 3 checked
+the image against one partner with at most one tail); 5's pairs, each
+two tails of `T` apart; 6 (U3's narrowing of each meta of `T`); 8. Each
+sub-requirement flattens its rows when it runs, so a meta an earlier
+step bound (a meta apart from itself, U4) is read through its binding.
+Tests: test/row-merge.test.mjs and -domains.test.mjs (S, H, L, E),
+test/r005b-unify.test.mjs.
+
 ## 8. Homes, commit and the shared remainder (design §2.1 steps 7-8)
 
 **Homes** compute, for each constant, the metas of the other side that
@@ -379,6 +393,30 @@ D3'', `{}` forced and its control without the clause, Decision 14's two
 distinctions through a declared-type wrapper); regression rows
 `r005b-mixed-lacks`, `r005b-mixed-tails`, `r005b-self-apart`.
 
+**Compiler (Task 4; supersedes the Task 3 paragraph).**
+Features.Check.Disjoint `requireDisjoint` is this section's rewrite in
+full, on both rows as flattened when it runs: a label on both sides is
+the overlap (reported by the pair's reason: D2, D1, D6 or the shape
+text); each label of the left side is lacked by each tail of the right
+side, in sorted order, then each label of the right side by each tail of
+the left; then each tail of one side is apart from each tail of the
+other (`requireApart`: a pair of tails that are still bare is the cases
+above; a tail bound meanwhile is decomposed through its image).
+`requireLack` on a meta bound meanwhile passes the lack to its image
+(the label must not be among its fields; each of its tails lacks it); on
+an unbound meta it records the lack and prunes the meta's upper bound
+(U2, §5). `wellFormed` is a row's own disjointness (each tail against the
+row's labels, each two tails apart), the creation-site obligation of §0,
+recorded by the test entry before each equation as the prototype's
+driver does. Obligations checked now that Task 3's single-tail form
+omitted: labels on both sides (a partner bound since the pair was
+stored), the right side's labels against the left side's tails, every
+pair of tails rather than one, a rigid rest against the image's labels,
+the image's own pairs of tails, and U2 on every new lack and pair.
+Regression rows `r005b-mixed-lacks` (labels against tails skipped),
+`r005b-mixed-tails` (tails against tails skipped), `r005b-self-apart`
+and `r005b-provenance` follow the rewritten code (same defects).
+
 **Reasons and their precedence (design §1.3; not a solving rule).** The
 store keeps, for each lacked label and each pair, one reason. Merging
 two facts on one key keeps the union of the facts (the key is present)
@@ -405,6 +443,92 @@ holds `li` cannot bring `li` back into `ρ` (review F1). **Evidence:**
 removal.mjs; fixtures `design-removal-left`, `-right`, `-rest-field`,
 `-wait` (the access is refused while the equation waits, and after it
 resolves either way).
+
+## 11a. The compiler's forced solving (Task 4)
+
+Features.Check.UnifyRecord drives one equation through §1-§8, one
+examination at a time (Features.Check.RowResidue, SumRule, Narrow,
+Homes, Commit, RowSettle, Homeless). Where it differs in form from the
+prototype, the difference and its argument:
+
+1. **Common labels once each** (§2). The labels both sides hold unify
+   their field types once per equation; a later pass skips them. If that
+   unification bound one of the rows' own tails, both rows are flattened
+   again and every label unified anew (Tranche A's `rebound`). Unifying
+   two types already unified again would change nothing, so skipping it
+   keeps the solutions.
+2. **One meta alone, two bare metas** (§6). Of two bare metas the newer
+   (the larger number) is bound to the older, as Tranche A and type
+   unification do; either choice preserves solutions (§6).
+3. **The shared remainder before homes** (§8). With one meta on each
+   side and constants on both, the remainder is made without computing
+   homes. A constant one of the two metas could not hold is refused by
+   the bind rule's own checks, each the meaning of the excluding fact:
+   step 1 (a lack), U3 (a bound), step 3 (a rigid constant must lack what
+   the meta lacks), step 4 (a pair re-required: a rigid constant apart
+   from the meta is in both rows, D3'; a label against a rigid partner of
+   the meta must be lacked by it, D3''; a rigid constant and a rigid
+   partner need the hypothesis, D3). So the class is the prototype's
+   (`no home` there); only the text differs, and it is the fact's, as
+   draft 3 step 8 asks.
+4. **A constant with no home is placed anyway** (draft 3 step 8, R10.2).
+   *Rejection:* homes are complete (§8), so no solution puts the
+   constant in any meta of the other side, and it must lie in one (§4):
+   no solution. The constant is placed in each such meta on a copy of the
+   state and the refusal whose reason the precedence prefers is reported
+   (text only). Should every placement succeed, the records' mismatch is
+   reported: the rejection rests on homes, not on the placement.
+5. **U4's refusal keeps its fact** (R10.2). A meta U4 bound to `{}`
+   keeps its last bound in `emptied`, whose `pruned` map holds, per atom,
+   the fact that removed it (U2). When a constant then finds no meta on
+   the other side (§4, a rejection as argued there), the fact that pruned
+   it from such a meta's bound is reported, the strongest by the
+   precedence, printed as the substitution stood before that sum-rule
+   step; a constant only bounds' equations excluded is `Outside` (D6,
+   Task 6); otherwise the records' mismatch. The verdict is §4's; only
+   the text is chosen.
+6. **U3's check reports a pruned atom by its fact.** Binding a bounded
+   meta to an image whose constant is outside the bound is refused (§5,
+   U3). If a fact pruned that atom (U2), the refusal is that fact's (a
+   lack: D1, D2 or the shape text; a pair with a rigid: the rigid in both
+   rows, D3'), as the bind rule would refuse it without the bound;
+   otherwise `Outside`. Text only.
+7. **The sum rule reads facts of live variables only.** The compiler
+   keeps a meta's lacks after binding it (the prototype forgets them);
+   the sum rule and homes read lacks only of unbound metas and rigids,
+   as the prototype does. A bound meta's lacks are true of its image
+   (§7, step 3), so reading them would also be sound; not reading them
+   keeps the port's facts the prototype's.
+8. **Waiting is a placeholder.** Constants left each with several homes
+   (defer) or metas on both sides and no constant (quiet) are Task 5's;
+   until then the examination ends in `Placeholder "equations that wait
+   are solved in Task 5"`: neither a verdict nor a guess (the three-way
+   result's `Unresolved` is made by Task 5's end of body). Nothing is
+   removed or added before it, so no claim about solutions is made.
+9. **The occurs check on a tail is a checker defect** (§7 step 7, ledger
+   L33). After cancellation, and with fresh metas in commits and
+   remainders, a meta is never among its own image's tails; the bind
+   rule reports it, were it to happen, as E_INTERNAL `A record tail
+   occurs in its own binding` (`Unexpected`), and the oracle tests count
+   it as a defect (0 in every run). The occurs check on field types is
+   Tranche A's, unchanged.
+10. **The counters.** `changes` counts state changes (a binding, a new
+    lack, each meta side of a new pair, a bound set or narrowed) as the
+    prototype's version does; `fresh` counts solver-made metas. The
+    oracle tests assert them within §13's measure and |P|·|K| (ledger L3,
+    L4).
+
+**Evidence (compiler).** test/row-merge.test.mjs: every fixture at
+solver stage 4 in every order (never waits, its class), the stage-5
+fixtures (a verdict never contradicts the class, Unresolved ones always
+wait), the raw, dense, raw-program and program-shaped generators in five
+orders (S, H, L, C2, E with its sensitivity check, L3, L4, L33) and
+L31's direct check; test/row-merge-domains.test.mjs: the one-tail
+problems of domains A and B in every order equal to ADR 013's rules
+(verdict and solution; ledger L1), domain B whole and domain A one
+candidate in 50, with E; `node scripts/row-merge-exhaustive.mjs A` (and
+`B`), the whole domains, outside verify. Results: docs/progress.md, "R005
+Tranche B Task 4".
 
 # Part II: defaulting
 

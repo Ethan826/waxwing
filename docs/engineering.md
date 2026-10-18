@@ -341,6 +341,12 @@ diff of the table is the real control.
 No coverage percentage is claimed. Properties use deterministic generators
 and explicit edge cases with no discarded inputs. Parsing tests compare with
 independent generated trees; executable comparisons use a BigInt interpreter.
+Record rows with several tails (R005 Tranche B Task 4,
+Features.Check.UnifyRecord) are compared with an independent brute force
+(test/row-merge-oracle.mjs, ported from research/open-row-merge/) on
+generated and exhaustive labels-only problems in several orders, with
+the solver's state read back by the test itself (property E,
+test/row-merge-readback.mjs) and a sensitivity check of that read-back.
 The unifier (Features.Check.Unify, P001 Task 3) is compared with an
 independent union-find oracle (test/unify-oracle.mjs) and checked for
 soundness, acyclicity and most-generality over generated pairs. Row
@@ -370,6 +376,12 @@ normalisations for fields an IR gained, each dropped only where a baseline
 without it agrees: a Plain token's `kind` (Text v1), an empty `records` in
 the monomorphic IR (R001 Task 7) and a checked function's `sorts`, a copy
 of resolve-phase data (R001 Task 8).
+R005 Tranche B Task 4 adds two such tools for the row solver:
+scripts/row-merge-exhaustive.mjs runs a whole exhaustive domain (A is
+about 19 million runs) through the compiler against the independent
+oracle, as test/row-merge-domains.test.mjs runs a sample, and
+scripts/row-merge-cross.mjs compares the compiler with the research
+prototype on generated problems.
 scripts/ladder-profile.mjs times the match-lift ladder cold and per phase,
 alternating with a baseline build. Both are review conventions. The
 differential loads compilers and harvests sources through
