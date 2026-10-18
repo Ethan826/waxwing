@@ -5,7 +5,7 @@ import Domain.Row (Label)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Occurrence (OccurrenceId)
 import Data.Maybe (Maybe)
-import Features.Check.Because (Because, Lack, Pair, WrittenLack)
+import Features.Check.Because (Because, Equation, Lack, Pair, WrittenLack)
 import Features.Check.Flex (Flex)
 import Features.Check.RowBound (Atom, Narrowing)
 
@@ -28,7 +28,11 @@ import Features.Check.RowBound (Atom, Narrowing)
 -- `Placeholder` (R005 Tranche B): the work a later task does, named for
 -- the E_INTERNAL it is reported as. `Unexpected`: an invariant the
 -- argument for a rule establishes found broken, reported as E_INTERNAL
--- with its text (a checker defect, never a program's).
+-- with its text (a checker defect, never a program's). `Drained` (Task
+-- 5): the failure the drain met re-examining a pending equation, with
+-- that equation; it establishes what its inner failure establishes
+-- (Features.Check.RowOutcome `refusal`), and is rendered from the
+-- equation (D6, Task 6).
 data Failure
   = Mismatch (Ty Flex) (Ty Flex)
   | Occurs Int (Ty Flex)
@@ -42,6 +46,7 @@ data Failure
   | Refused Refusal
   | Placeholder String
   | Unexpected String
+  | Drained Equation Failure
 
 -- A fact of the row store broken, with its reason. `Forbidden` (R005):
 -- a label bound into a record tail that a written `lacks` forbids it.

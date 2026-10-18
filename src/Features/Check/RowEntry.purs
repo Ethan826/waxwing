@@ -4,12 +4,16 @@ module Features.Check.RowEntry
   , equate
   , separate
   , lacking
+  , lackingOlder
+  , lackingOlderRaw
   , bindings
   , facts
+  , pending
   , exclusions
   , changes
   , solverMetas
   , module Features.Check.RowOutcome
+  , module Features.Check.Drain
   ) where
 
 import Prelude
@@ -21,6 +25,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 import Data.Tuple (Tuple(..), fst)
+import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (RecordRow, recordRow)
 import Features.Check.Disjoint
@@ -29,30 +34,45 @@ import Features.Check.Disjoint
   , seedApart
   , wellFormed
   )
+import Features.Check.Drain (Wake, drainWith, indexed, rescan)
 import Features.Check.FlatRecord (flatten)
 import Features.Check.Homes (admits)
+import Features.Check.LackOutside (lackedOutside)
 import Features.Check.Lacks (addLacks)
+import Features.Check.Pending (Side, idOf)
 import Features.Check.RecordTail (solvingWith)
 import Features.Check.Refused (Solving)
-import Features.Check.RowOutcome (RowOutcome(..), outcome)
+import Features.Check.RowOutcome
+  ( RowOutcome(..)
+  , Stop(..)
+  , concluded
+  , endOfBody
+  , refusal
+  , settledSubst
+  )
 import Features.Check.RowResidue (atomOf, constants, residue)
 import Features.Check.RowStore
   ( Atom(..)
   , Because(..)
+  , Equation(..)
   , RowStore(..)
   , changesOf
   , plain
   )
-import Features.Check.Subst (Flex, Subst(..), empty, storeOf)
-import Features.Check.Unify (unify)
+import Features.Check.Subst (Flex(..), Subst(..), empty, storeOf)
+import Features.Check.Unify (drainBy, unifyBy)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyParts (mismatch)
+import Features.Check.Waits (pendingOf)
 
--- The row solver's entry for tests (R005 Tranche B plan, Task 4): labels-
--- only constraint problems, as the prototype and the oracle encode them
--- (research/open-row-merge/README.md), run through the compiler's own
--- unification, decomposition and lacks, and the state read out raw so
--- that a test can interpret it itself. A label's field type is Int.
+-- The row solver's entry for tests (R005 Tranche B plan, Tasks 4-5):
+-- labels-only constraint problems, as the prototype and the oracle encode
+-- them (research/open-row-merge/README.md), run through the compiler's
+-- own unification, decomposition and lacks, each step ending with a drain
+-- whose wake-up the test injects (`indexed`, the checker's, or `rescan`,
+-- the reference), and the state read out raw so that a test can
+-- interpret it itself; a run's result is `concluded`. A label's field
+-- type is Int.
 
 type Row = RecordRow (Ty Flex) Flex
 
@@ -72,23 +92,43 @@ hypotheses lacks pairs = foldl paired (foldl lacked empty lacks) pairs
 -- `left = right`, after each row's own disjointness is recorded where it
 -- is made (the creation-site obligation, design §1.4), as the
 -- prototype's driver does.
-equate ∷ Subst → Row → Row → Either Failure Subst
-equate subst left right = made subst left >>= flip made right
+equate ∷ Wake → Subst → Row → Row → Either Failure Subst
+equate wake subst left right = made subst left >>= flip made right
   >>= unifying
   where
-  unifying reached = unify reached (TRecord left) (TRecord right)
+  unifying reached = unifyBy wake reached (TRecord left) (TRecord right)
 
--- `left # right`, likewise after each row's own disjointness.
-separate ∷ Subst → Row → Row → Either Failure Subst
-separate subst left right = made subst left >>= flip made right
+-- `left # right`, likewise after each row's own disjointness, drained.
+separate ∷ Wake → Subst → Row → Row → Either Failure Subst
+separate wake subst left right = made subst left >>= flip made right
   >>= disjoined
+  >>= drainBy wake
   where
   disjoined reached = requireDisjoint (solving left right) plain reached left
     right
 
--- `tail lacks label`.
-lacking ∷ Subst → Flex → String → Either Failure Subst
-lacking subst tail label = requireLack (solving one one) plain subst tail label
+-- `tail lacks label`, by the row rules, drained.
+lacking ∷ Wake → Subst → Flex → String → Either Failure Subst
+lacking wake subst tail label = requireLack (solving one one) plain subst
+  tail
+  label >>= drainBy wake
+  where
+  one = row [] [ tail ]
+
+-- The same lack added the older way (Features.Check.LackOutside, as
+-- Check/Extension adds it), drained, or not (`lackingOlderRaw`). The
+-- checker adds such a lack only to an unbound tail, so a tail bound here
+-- takes the row rules' lack instead.
+lackingOlder ∷ Wake → Subst → Flex → String → Either Failure Subst
+lackingOlder wake subst tail label = lackingOlderRaw subst tail label
+  >>= drainBy wake
+
+lackingOlderRaw ∷ Subst → Flex → String → Either Failure Subst
+lackingOlderRaw subst tail label =
+  if (flatten subst one).tails == [ tail ] && Array.null
+    (flatten subst one).fields then lackedOutside tail (Set.singleton label)
+    subst
+  else requireLack (solving one one) plain subst tail label
   where
   one = row [] [ tail ]
 
@@ -128,6 +168,28 @@ facts subst =
     , labels: Array.mapMaybe labelAtom (Array.fromFoldable bound.atoms)
     , rigids: Array.mapMaybe rigidAtom (Array.fromFoldable bound.atoms)
     }
+
+-- The pending equations, oldest first: identity, site, whether quiet,
+-- and each side's labels and tails.
+pending
+  ∷ Subst
+  → Array
+      { id ∷ Int
+      , quiet ∷ Boolean
+      , site ∷ Maybe Span
+      , left ∷ { labels ∷ Array String, tails ∷ Array Flex }
+      , right ∷ { labels ∷ Array String, tails ∷ Array Flex }
+      }
+pending subst = map entry (pendingOf subst)
+  where
+  entry found =
+    { id: idOf found
+    , quiet: found.quiet
+    , site: siteOf found.equation
+    , left: sided found.residue.mine
+    , right: sided found.residue.theirs
+    }
+  siteOf (Equation equation) = equation.site
 
 -- For `left = right` under `subst`, each constant of the residue and each
 -- meta of the other side that homes excludes (design §2.1 step 7), as
@@ -170,6 +232,10 @@ solving ∷ Row → Row → Solving
 solving left right = solvingWith failed
   where
   failed reached = mismatch reached (TRecord left) (TRecord right)
+
+sided ∷ Side → { labels ∷ Array String, tails ∷ Array Flex }
+sided side =
+  { labels: map fst side.fields, tails: side.rigids <> map Meta side.metas }
 
 labelAtom ∷ Atom → Maybe String
 labelAtom = case _ of

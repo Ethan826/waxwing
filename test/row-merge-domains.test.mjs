@@ -11,7 +11,8 @@ import { defects, judge, newTally } from './row-merge-judge.mjs';
 // compiler's row solver, every problem in every order of its constraints
 // (test/row-merge-domains.mjs). The one-tail problems in full, against
 // ADR 013's rules (ledger L1); domain B in full and domain A as a
-// deterministic sample here, with property E; the whole of domain A by
+// deterministic sample here, with property E (on Unresolved states too,
+// since Task 5) and C1, C3; the whole of domain A by
 // `node scripts/row-merge-exhaustive.mjs A`, outside verify (about ten
 // minutes of one core).
 
@@ -49,6 +50,10 @@ const atoms = value => [...value.fields,
   ...(value.tail !== null && !isMeta(value.tail) ? [value.tail] : [])].sort();
 
 const SAMPLE = { A: 50, B: 1 };
+// C3's recorded ceiling for a whole domain (rules §0: the prototype's
+// Unresolved runs with a least solution, 120 in A and 80 in B); the
+// sample of A has none recorded.
+const CEILING = { B: 80 };
 
 for (const name of ['A', 'B']) {
   test(`domain ${name}, one candidate in ${SAMPLE[name]}, every order`,
@@ -60,6 +65,7 @@ for (const name of ['A', 'B']) {
       const { examples, ...counts } = tally;
       t.diagnostic(JSON.stringify(counts));
       assert.deepEqual(defects(tally), []);
-      assert.ok(tally.stateChecked > 0 && tally.skipped > 0);
+      assert.ok(tally.stateChecked > 0 && tally.D4 > 0);
+      assert.ok(tally.d4WithLeast <= (CEILING[name] ?? Infinity));
     });
 }

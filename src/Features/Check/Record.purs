@@ -26,6 +26,7 @@ import Features.Check.Scheme
   , resolved
   , threadAll
   )
+import Features.Check.Drained (classifiedAt)
 import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Unify (Failure(..), unify)
 
@@ -158,6 +159,8 @@ select env state record label = do
     -- field (Features.Check.Placeholder).
     Placeholder what → Left (placeholderAt (Checked.spanOf record) what)
     Unexpected what → Left (problemAt (Internal what) (Checked.spanOf record))
+    -- The drain's failure is a waiting equation's, not this access's.
+    failure@(Drained _ _) → Left (classifiedAt (Checked.spanOf record) failure)
     _ → notSelected env state record label
 
 notSelected

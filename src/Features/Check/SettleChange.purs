@@ -2,13 +2,15 @@ module Features.Check.SettleChange
   ( Round
   , moved
   , retry
+  , drainedRound
   , postponedCount
   , labelCount
   ) where
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
+import Data.Maybe (fromMaybe)
 import Domain.Checked.Internal as Checked
 import Domain.Row (Row(..))
 import Domain.Syntax (Diagnostic)
@@ -16,26 +18,34 @@ import Features.Check.Context (CheckEnv)
 import Features.Check.Failure (settleKeys)
 import Features.Check.Scheme (State)
 import Features.Check.SettleEntry (Entry)
-import Features.Check.Unify (Subst(..))
+import Features.Check.Drained (classifiedAt, siteOfFailure)
+import Features.Check.Subst (storeOf)
+import Features.Check.Unify (Subst(..), drain)
+import Features.Check.Waits (versionOf)
 import Features.Check.Walked (walkedRow)
 
 -- One settle round's states: as it began, after (a) settled the keys,
--- and after (d) consumed every row; its entries; and whether (a), run
--- again after (d), could decide a pair.
+-- after (d) consumed every row, and after its drain; its entries; and
+-- whether (a), run again after (d), could decide a pair.
 type Round =
   { start ∷ State
   , settled ∷ State
   , consumed ∷ State
+  , drained ∷ State
   , entries ∷ Array Entry
   , retried ∷ Boolean
   }
 
 -- Whether the round moved: (a) decided a pair (fewer are set aside than
--- at the round's start), some row's label count changed, or (a) could
--- decide one after (d).
+-- at the round's start), some row's label count changed, (a) could
+-- decide one after (d), or the round's drain changed a variable (R005
+-- Tranche B design §6: the rounds stop only when neither the effect rows
+-- nor the record equations move).
 moved ∷ Round → Boolean
-moved found = decided || changed || found.retried
+moved found = decided || changed || found.retried || drainedSome
   where
+  drainedSome = versionOf (storeOf found.drained.subst)
+    /= versionOf (storeOf found.consumed.subst)
   decided = postponedCount found.settled.subst
     < postponedCount found.start.subst
   changed = counts found.consumed.subst /= counts found.start.subst
@@ -50,6 +60,18 @@ retry env body consumed =
   else decidable <$> settleKeys env consumed body
   where
   decidable subst = postponedCount subst < postponedCount consumed.subst
+
+-- The round's drain (design §6, the joint fixpoint): a retry or a
+-- consumption binds metas outside a top-level unification, so the record
+-- equations they woke are examined here. A failure is the equation's,
+-- reported at its site, or at the body.
+drainedRound
+  ∷ ∀ r. CheckEnv r → Checked.Expr → State → Either Diagnostic State
+drainedRound _ body consumed = either failed drained (drain consumed.subst)
+  where
+  drained subst = Right consumed { subst = subst }
+  failed failure = Left (classifiedAt (siteOf failure) failure)
+  siteOf failure = fromMaybe (Checked.spanOf body) (siteOfFailure failure)
 
 postponedCount ∷ Subst → Int
 postponedCount (Subst bindings) = Array.length bindings.postponed

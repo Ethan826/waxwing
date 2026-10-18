@@ -41,6 +41,7 @@ import Features.Check.Because
   , rank
   )
 import Features.Check.Flex (Flex(..))
+import Features.Check.Pending (Waiting, noneWaiting, wake)
 import Features.Check.RowBound (Atom(..), Bound, Narrowing, narrowedBy)
 
 -- What the record tails of a substitution are known to satisfy (R005
@@ -60,8 +61,13 @@ import Features.Check.RowBound (Atom(..), Bound, Narrowing, narrowedBy)
 -- Task 6); `equations`, the next equation's identity; `changes`,
 -- how many times the solver's state changed (a binding, a new lack, a new
 -- pair's meta side, a bound set or narrowed): the termination measure's
--- counter (rules §13, ledger L3). Pending equations and their index
--- arrive with Task 5.
+-- counter (rules §13, ledger L3). Task 5: `waiting`, the pending
+-- equations and their wake-up index (Features.Check.Pending); every change
+-- above to a variable (a binding, a new lack or pair, a bound set or
+-- narrowed, a pair removed) wakes the equations that read it and moves
+-- `version`; `nesting`, the pending equation being re-examined, whose site
+-- an equation nested in it takes (design §2.6). Their accessors are in
+-- Features.Check.Waits.
 newtype RowStore = RowStore
   { lacks ∷ Map Flex (Map String Lack)
   , apart ∷ Map Flex (Map Flex Because)
@@ -72,6 +78,9 @@ newtype RowStore = RowStore
   , boundBy ∷ Map Int Equation
   , equations ∷ Int
   , changes ∷ Int
+  , waiting ∷ Waiting
+  , nesting ∷ Maybe Equation
+  , version ∷ Int
   }
 
 emptyStore ∷ RowStore
@@ -85,6 +94,9 @@ emptyStore = RowStore
   , boundBy: Map.empty
   , equations: 0
   , changes: 0
+  , waiting: noneWaiting
+  , nesting: Nothing
+  , version: 0
   }
 
 -- The labels a tail lacks, each with its reason.
@@ -98,14 +110,16 @@ lackTable (RowStore store) tail = maybe Map.empty identity
 withLacks ∷ Flex → Map String Lack → RowStore → RowStore
 withLacks tail found (RowStore store)
   | Map.isEmpty found = RowStore store
-  | otherwise =
-      RowStore store
-        { lacks = Map.insertWith (Map.unionWith preferLack) tail found
-            store.lacks
-        , changes = store.changes + Map.size (Map.difference found known)
-        }
+  | otherwise = woken
+      ( RowStore store
+          { lacks = Map.insertWith (Map.unionWith preferLack) tail found
+              store.lacks
+          , changes = store.changes + new
+          }
+      )
       where
-      known = lackTable (RowStore store) tail
+      new = Map.size (Map.difference found (lackTable (RowStore store) tail))
+      woken = if new == 0 then identity else touched tail
 
 -- The tails this one is apart from, each with its reason.
 partnersOf ∷ RowStore → Flex → Map Flex Because
@@ -115,11 +129,14 @@ partnersOf (RowStore store) tail = maybe Map.empty identity
 -- The pair recorded both ways, the preferred reason kept; a new pair is a
 -- change on each of its meta sides.
 withApart ∷ Flex → Flex → Because → RowStore → RowStore
-withApart one other because (RowStore store) = RowStore store
-  { apart = added other one (added one other store.apart)
-  , changes = store.changes + if known then 0 else metaSides
-  }
+withApart one other because (RowStore store) = woken
+  ( RowStore store
+      { apart = added other one (added one other store.apart)
+      , changes = store.changes + if known then 0 else metaSides
+      }
+  )
   where
+  woken = if known then identity else touched one <<< touched other
   added from to = Map.insertWith (Map.unionWith prefer) from
     (Map.singleton to because)
   known = Map.member other (partnersOf (RowStore store) one)
@@ -131,11 +148,14 @@ withApart one other because (RowStore store) = RowStore store
 -- The tail's pairs removed from both sides (it was bound: its pairs are
 -- re-required on its image).
 withoutPairs ∷ Flex → RowStore → RowStore
-withoutPairs tail store@(RowStore found) = RowStore found
-  { apart = Map.delete tail
-      (foldl dropped found.apart (Map.keys (partnersOf store tail)))
-  }
+withoutPairs tail store@(RowStore found) =
+  foldl (flip touched)
+    ( RowStore found
+        { apart = Map.delete tail (foldl dropped found.apart partners) }
+    )
+    partners
   where
+  partners = Map.keys (partnersOf store tail)
   dropped table partner = Map.update (Just <<< Map.delete tail) partner table
 
 -- Where a meta was bound, if a requirement was being checked.
@@ -162,8 +182,12 @@ boundOf (RowStore store) meta = Map.lookup meta store.upper
 
 -- The meta's bound set or narrowed: a change.
 withBound ∷ Int → Bound → RowStore → RowStore
-withBound meta bound (RowStore store) = RowStore store
-  { upper = Map.insert meta bound store.upper, changes = store.changes + 1 }
+withBound meta bound (RowStore store) = touched (Meta meta)
+  ( RowStore store
+      { upper = Map.insert meta bound store.upper
+      , changes = store.changes + 1
+      }
+  )
 
 -- The bound of a meta just bound (U3: its image took it over).
 withoutBound ∷ Int → RowStore → RowStore
@@ -191,9 +215,15 @@ equationId (RowStore store) =
   , store: RowStore store { equations = store.equations + 1 }
   }
 
--- One more change (a meta bound).
-counted ∷ RowStore → RowStore
-counted (RowStore store) = RowStore store { changes = store.changes + 1 }
+-- One more change: `meta` bound.
+counted ∷ Int → RowStore → RowStore
+counted meta (RowStore store) = touched (Meta meta)
+  (RowStore store { changes = store.changes + 1 })
 
 changesOf ∷ RowStore → Int
 changesOf (RowStore store) = store.changes
+
+-- The variable changed: the equations that read it are woken.
+touched ∷ Flex → RowStore → RowStore
+touched tail (RowStore store) = RowStore store
+  { waiting = wake tail store.waiting, version = store.version + 1 }

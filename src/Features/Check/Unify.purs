@@ -3,7 +3,11 @@ module Features.Check.Unify
   , module Features.Check.Binding
   , module Features.Check.Compose
   , module Features.Check.UnifyFailure
+  , module Features.Check.Drain
   , unify
+  , unifyBy
+  , drain
+  , drainBy
   , settleRows
   ) where
 
@@ -19,6 +23,8 @@ import Domain.Type (Ty(..), TyRow)
 import Features.Check.Binding (exceedsLimit, inferredTypeLimit)
 import Features.Check.Binding as Binding
 import Features.Check.Compose (compose)
+import Features.Check.Drain (Reexamine, Wake, drainWith, indexed, rescan)
+import Features.Check.RowStore (atSite, siteOf)
 import Features.Check.Subst
   ( Flex(..)
   , Subst(..)
@@ -28,7 +34,8 @@ import Features.Check.Subst
   , substituteRow
   , walk
   , walkRow
-
+  , onStore
+  , storeOf
   , resolve
   , resolveRow
   )
@@ -40,7 +47,7 @@ import Features.Check.UnifyParts
   , sameLength
   , unifyClauses
   )
-import Features.Check.UnifyRecord (unifyRecord)
+import Features.Check.UnifyRecord (reexamine, unifyRecord)
 import Features.Check.UnifyRow
   ( unifyRows
   , unifyRowsIgnoring
@@ -58,13 +65,35 @@ import Features.Check.UnifyRow
 -- fails with TooDeep instead of recursing further (ruling R7, fix round 2).
 -- Rows unify by scoped labels (Features.Check.UnifyRow, FX001); records'
 -- fields one level deeper, by label (Features.Check.UnifyRecord, R001).
+-- Since R005 Tranche B Task 5 every top-level unification ends with a
+-- drain (design P8): the pending record equations a change woke are
+-- examined again (Features.Check.Drain, the indexed wake-up).
 unify ∷ Subst → Ty Flex → Ty Flex → Either Failure Subst
-unify = unifyAt 1
+unify = unifyBy indexed
+
+-- The same, with the drain's wake-up injected (the test entry compares
+-- `indexed` with `rescan`, ledger L32).
+unifyBy ∷ Wake → Subst → Ty Flex → Ty Flex → Either Failure Subst
+unifyBy wake subst left right = unifyAt 1 subst left right >>= drainBy wake
+
+drain ∷ Subst → Either Failure Subst
+drain = drainBy indexed
+
+-- A pending equation's residue is a record row met at the top, so its
+-- fields unify one level down.
+drainBy ∷ Wake → Subst → Either Failure Subst
+drainBy wake = drainWith wake again
+  where
+  again ∷ Reexamine
+  again = reexamine (unifyAt fieldLevel)
 
 -- Retries the postponed row pairs, in order, until a pass decides none
 -- (a pair is decided when it unifies or fails; the first failure is the
 -- result). Pairs still undecidable stay in `postponed`: FX001 Task 5
--- reports them (`Fail needs a concrete error family`).
+-- reports them (`Fail needs a concrete error family`). A retry is
+-- checked at its pair's site, so an equation it defers again takes that
+-- site (design §6); it does not drain: each settle round ends with one
+-- (Features.Check.Settle).
 settleRows ∷ Subst → Either Failure Subst
 settleRows = tailRecM pass
   where
@@ -73,15 +102,20 @@ settleRows = tailRecM pass
     bindings.postponed
   next original found =
     if found.decided then Loop found.subst else Done original
-  retry reached pair = settled reached <$> unifyRowsTraced unify pair.mode
+  retry reached pair = settled reached <$> unifyRowsTraced (unifyAt 1)
+    pair.mode
     pair.sides
-    reached.subst
+    (onStore (atSite pair.site) reached.subst)
     pair.left
     pair.right
   settled reached traced =
-    { subst: linked traced.events traced.subst
+    { subst: onStore (atSite (siteOf (storeOf reached.subst)))
+        (linked traced.events traced.subst)
     , decided: reached.decided || not traced.postponed
     }
+
+fieldLevel ∷ Int
+fieldLevel = 2
 
 unifyAt ∷ Int → Subst → Ty Flex → Ty Flex → Either Failure Subst
 unifyAt level subst left right =

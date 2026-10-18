@@ -1,8 +1,7 @@
 module Features.Check.RowResidue
   ( Constant(..)
   , Exam
-  , Side
-  , Residue
+  , module Features.Check.Pending
   , residue
   , common
   , constants
@@ -23,24 +22,14 @@ import Data.Tuple (Tuple(..))
 import Domain.Type (Ty)
 import Domain.Type.Record (RecordRow, recordRow)
 import Features.Check.FlatRecord (Flat)
+import Features.Check.Pending (Residue, Side)
 import Features.Check.RowStore (Atom(..), Equation)
 import Features.Check.Subst (Flex(..), Subst)
 
 -- What may go into a meta of the other side: a label with its field
--- type, or a rigid tail.
+-- type, or a rigid tail. A residue's sides (`Side`, `Residue`) are
+-- Features.Check.Pending's, where an equation that waits keeps them.
 data Constant = Field String (Ty Flex) | RigidTail Flex
-
--- One side of an equation once the labels both sides hold have unified
--- and the tails both hold cancelled (R005 Tranche B design §2.1 steps
--- 2-4, rules §2-§4): its labels with their types, its rigid tails, and
--- its unbound meta tails, repeats kept.
-type Side =
-  { fields ∷ Array (Tuple String (Ty Flex))
-  , rigids ∷ Array Flex
-  , metas ∷ Array Int
-  }
-
-type Residue = { mine ∷ Side, theirs ∷ Side }
 
 -- One equation's examination so far (Features.Check.UnifyRecord): the
 -- substitution reached, and the one before the last sum-rule step (where

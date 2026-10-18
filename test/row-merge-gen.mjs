@@ -143,3 +143,17 @@ export const fiveOrders = (rnd, cs) => {
 export const allOrders = xs => (xs.length <= 1 ? [xs]
   : xs.flatMap((x, i) => allOrders([...xs.slice(0, i), ...xs.slice(i + 1)])
     .map(p => [x, ...p])));
+
+// A fixture's orders as research/open-row-merge/fixtures.mjs names them:
+// every one (`all`), the given one, or a number: the given order, its
+// reverse and shuffles seeded with 1, that many in all.
+export const fixtureOrders = rows => {
+  if (rows.orders === 'all') return allOrders(rows.steps);
+  if (rows.orders === 'given') return [rows.steps];
+  const sample = sampleWith(mulberry(1));
+  const out = [rows.steps, [...rows.steps].reverse()];
+  while (out.length < rows.orders) {
+    out.push(sample(rows.steps, rows.steps.length));
+  }
+  return out;
+};

@@ -24,6 +24,7 @@ import Features.Check.TypeName (Names, typeName, typeNames)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
 import Features.Check.Context (CheckEnv)
+import Features.Check.Drained (classifiedAt)
 import Features.Check.Hint (hinted)
 import Features.Check.Lacked (refusedAt)
 import Features.Check.Placeholder (placeholderAt)
@@ -98,6 +99,9 @@ expectType env state expected actual span = do
     Refused refusal → Left (refusedAt env state.subst span refusal)
     Placeholder what → Left (placeholderAt span what)
     Unexpected what → Left (problemAt (Internal what) span)
+    -- The drain's failure is the equation's (D6), at the expression being
+    -- checked (design §2.6; Task 6's text).
+    failure@(Drained _ _) → Left (classifiedAt span failure)
   -- The label's trail is where it arose, as far as the state knows it.
   rowFailure label row occurrence = do
     name ← labelName env span label

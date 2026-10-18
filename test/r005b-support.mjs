@@ -51,3 +51,10 @@ export const assertDiagnostic = (source, expected) => {
     expected.notes.map(note => [note.message, ...offsets(source, note.at)]));
   return found;
 };
+
+// Task 5's placeholders for Task 6's texts: an Unresolved body (D4) and a
+// contradiction an equation established (D6).
+export const unresolved = 'R005B placeholder: unresolved row equations are '
+  + 'reported in Task 6';
+export const fromEquations = 'R005B placeholder: contradictions from '
+  + 'equations are reported in Task 6';

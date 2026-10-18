@@ -16,6 +16,7 @@ import Domain.Problem (Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span, problemAt)
 import Features.Check.Callback (callbackLacks)
 import Features.Check.Context (CheckEnv)
+import Features.Check.Drained (classifiedAt)
 import Features.Check.Occurrence (OccurrenceId(..))
 import Features.Check.Provenance (Boundary(..), Hop, Origin, trail)
 import Features.Check.Report
@@ -47,6 +48,7 @@ rejected env state origin failure = case failure of
   Refused refusal → Left (refusedAt env state.subst span refusal)
   Placeholder what → Left (placeholderAt span what)
   Unexpected what → Left (problemAt (Internal what) span)
+  Drained _ _ → Left (classifiedAt span failure)
   _ → Left (problemAt (Internal "Effect row consumption failed") span)
   where
   span = origin.span

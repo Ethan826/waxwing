@@ -28,7 +28,8 @@ import Features.Check.Restricted (matchedInstallation)
 import Features.Check.Scheme (State)
 import Features.Check.SettleEntry (Donor, Entry, EntryTail(..))
 import Features.Check.SettleEntry as Entries
-import Features.Check.SettleChange (labelCount, moved, retry)
+import Features.Check.SettleChange (drainedRound, labelCount, moved, retry)
+import Features.Check.EndReport (endReport)
 import Features.Check.Sync (syncSettling)
 import Features.Check.TailPass (tailPass)
 import Features.Check.Unify (Failure(..), Flex, Subst)
@@ -41,12 +42,17 @@ type Env r = CheckEnv (locals ∷ Locals | r)
 -- finite solution (c) and consumes each row in the graph's order (d). It
 -- ends after a round in which (a) decided no pair and no row's label count
 -- changed, whatever the binding that changed it, and (a) run after (d)
--- still decides nothing. A pair still set aside then is `Fail needs a
--- concrete error family`.
+-- still decides nothing; since R005 Tranche B Task 5 each round ends with
+-- a drain of the pending record equations, and a round whose drain moved
+-- counts as changed (the joint fixpoint, design §6). The record
+-- equations are then classified (Features.Check.EndReport: one still
+-- waiting with a constant is D4), and only then is a pair still set
+-- aside `Fail needs a concrete error family`.
 settleRestricted
   ∷ ∀ r. Env r → State → Checked.Expr → Either Diagnostic State
 settleRestricted env state body = do
   exited ← tailRecM (round env body) state
+  endReport body exited.subst
   settled ← settleFinal env exited body
   tailPass env (exited { subst = settled })
 
@@ -66,13 +72,13 @@ round env body state = do
   rejectCycle env keyed entries rows feeds
   consumed ← foldM (consume env entries rows) keyed (feedOrder rows feeds)
   retried ← retry env body consumed
+  drained ← drainedRound env body consumed
   pure
-    ( continued consumed
-        (moved { start: state, settled, consumed, entries, retried })
+    ( continued drained
+        (moved { start: state, settled, consumed, drained, entries, retried })
     )
   where
-  continued consumed movedNow =
-    if movedNow then Loop consumed else Done consumed
+  continued drained movedNow = if movedNow then Loop drained else Done drained
 
 feedRow ∷ Subst → Entry → FeedRow
 feedRow subst entry =

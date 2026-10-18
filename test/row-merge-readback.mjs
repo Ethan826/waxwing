@@ -3,8 +3,10 @@
 // 2026-10-17): the test follows the exported bindings itself, one level
 // at a time, never calling the compiler's flattener. The state's free
 // variables are its unbound metas; its constraints are the recorded lacks
-// on metas, the pairs with a meta side, the upper bounds, and each free
-// meta's own well-formedness (rigid facts are the hypotheses). Property E
+// on metas, the pairs with a meta side, the upper bounds, each pending
+// equation (Task 5: its two sides read through the bindings, as
+// multisets), and each free meta's own well-formedness (rigid facts are
+// the hypotheses). Property E
 // (rules §0): the program metas' values over the state's solutions are
 // exactly the problem's solutions. `skipNested` corrupts the traversal
 // (a bound tail inside a binding read as empty), for the sensitivity
@@ -41,6 +43,8 @@ export function freeMetas(state, metas) {
   state.lacks.forEach(f => visit(f.tail));
   state.apart.forEach(([a, b]) => { visit(a); visit(b); });
   state.upper.forEach(u => visit(u.meta));
+  (state.pending ?? []).forEach(p => [...p.l.tails, ...p.r.tails]
+    .forEach(visit));
   return [...free].sort();
 }
 
@@ -61,6 +65,11 @@ function constraints(state, hyp, options) {
   }
   for (const u of state.upper) {
     out.push(asg => value(asg, u.meta).every(x => u.atoms.includes(x)));
+  }
+  const atoms = (asg, r) => [...r.fields,
+    ...r.tails.flatMap(t => value(asg, t))].sort().join();
+  for (const p of state.pending ?? []) {
+    out.push(asg => atoms(asg, p.l) === atoms(asg, p.r));
   }
   return out;
 }

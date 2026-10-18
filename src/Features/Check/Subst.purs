@@ -26,6 +26,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe, maybe)
 import Data.Tuple (Tuple, snd)
 import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
+import Domain.Syntax (Span)
 import Domain.Type
   ( Substitution
   , Ty(..)
@@ -40,7 +41,7 @@ import Features.Check.Flex (Flex(..), metaOf)
 import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
 import Features.Check.PartOrigin (PartOrigin, noOrigins)
-import Features.Check.RowStore (RowStore, emptyStore)
+import Features.Check.RowStore (RowStore, emptyStore, siteOf)
 import Features.Check.Search (Stack(..), stackItems)
 import Features.Check.TailWatch (TailWatch, emptyWatch)
 
@@ -77,10 +78,16 @@ newtype Subst = Subst
   , origins ∷ PartOrigin
   }
 
--- A postponed pair keeps where its sides were written and how it treats
--- marks, for its retry.
+-- A postponed pair keeps where its sides were written, how it treats
+-- marks, and the requirement it was met in (R005 Tranche B design §6: a
+-- record equation its retry defers again takes that site), for its retry.
 type RowPair =
-  { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides, mode ∷ RowMode }
+  { left ∷ TyRow Flex
+  , right ∷ TyRow Flex
+  , sides ∷ Sides
+  , mode ∷ RowMode
+  , site ∷ Maybe Span
+  }
 
 empty ∷ Subst
 empty = Subst
@@ -129,6 +136,7 @@ postpone (Subst bindings) pair = Subst bindings
       , right: pair.right
       , sides: pair.sides
       , mode: pair.mode
+      , site: siteOf bindings.store
       }
   }
 

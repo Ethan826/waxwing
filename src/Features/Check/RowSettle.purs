@@ -5,7 +5,7 @@ import Prim hiding (Row)
 import Control.Monad.Rec.Class (Step(..))
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Domain.Type (Ty)
 import Domain.Type.Record (RecordRow)
 import Features.Check.Commit (commit, commitAnyway)
@@ -22,12 +22,10 @@ import Features.Check.RowResidue
   )
 import Features.Check.RowStore (Equation(..), equationId, siteOf)
 import Features.Check.Subst (Flex(..), Subst, onStore, storeOf)
-import Features.Check.UnifyFailure (Failure(..))
+import Features.Check.UnifyFailure (Failure)
+import Features.Check.Waits (nestingOf, waitFor)
 
 type Row = RecordRow (Ty Flex) Flex
-
--- A constant and the metas of the other side that may hold it.
-type Placing = { constant ∷ Constant, homes ∷ Array Int, metas ∷ Array Int }
 
 -- Steps 6-8 of R005 Tranche B design §2.1, once the sum rule changes
 -- nothing (rules §6, §8). A side that is one meta alone is bound to the
@@ -51,17 +49,22 @@ settle failed left right exam found
       found
   | otherwise = placing failed left right exam found
 
--- The equation's identity, taken when it first derives a fact.
+-- The equation's identity, taken when it first derives a fact or waits.
+-- Its site is the requirement being checked, or, for an equation met
+-- while the drain re-examines a pending one, that equation's: a nested
+-- equation keeps its outer equation's site (design §2.6).
 equationOf ∷ Row → Row → Exam → { equation ∷ Equation, subst ∷ Subst }
 equationOf left right exam = maybe' taken kept exam.equation
   where
   kept equation = { equation, subst: exam.subst }
   taken _ =
-    { equation: Equation
-        { id: next.id, site: siteOf (storeOf exam.subst), left, right }
+    { equation: Equation { id: next.id, site, left, right }
     , subst: onStore (const next.store) exam.subst
     }
-  next = equationId (storeOf exam.subst)
+  next = equationId store
+  store = storeOf exam.subst
+  site = maybe (siteOf store) outerSite (nestingOf store)
+  outerSite (Equation outer) = outer.site
 
 placing
   ∷ Failed → Row → Row → Exam → Residue → Either Failure (Step Exam Subst)
@@ -77,9 +80,12 @@ placing failed left right exam found =
     entry.constant
   committing _ = maybe' waiting
     (forced failed exam (equationOf left right exam))
-    (Array.find onlyHome plan)
-  onlyHome entry = Array.length entry.homes == 1
-  waiting _ = Left (Placeholder waits)
+    (Array.findMap onlyHome plan)
+  onlyHome entry = case entry.homes of
+    [ meta ] → Just { constant: entry.constant, meta }
+    _ → Nothing
+  waiting _ = Right (Done (wait (equationOf left right exam)))
+  wait taken = waitFor taken.equation found taken.subst
 
 -- A constant with one home, committed there; the equation is examined
 -- again.
@@ -87,18 +93,12 @@ forced
   ∷ Failed
   → Exam
   → { equation ∷ Equation, subst ∷ Subst }
-  → Placing
+  → { constant ∷ Constant, meta ∷ Int }
   → Either Failure (Step Exam Subst)
-forced failed exam taken entry = maybe' waiting committed
-  (Array.head entry.homes)
+forced failed exam taken home = again
+  <$> commit failed taken.equation taken.subst home.meta home.constant
   where
-  waiting _ = Left (Placeholder waits)
-  committed meta = again
-    <$> commit failed taken.equation taken.subst meta entry.constant
   again subst = Loop exam { subst = subst, equation = Just taken.equation }
-
-waits ∷ String
-waits = "equations that wait are solved in Task 5"
 
 bareMetas ∷ Failed → Subst → Residue → Either Failure Subst
 bareMetas failed subst found = maybe' (const (Right subst)) bound

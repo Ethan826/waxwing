@@ -99,7 +99,7 @@ repaired solving binding placed =
   where
   meta = binding.meta
   settled = withoutPairs (Meta meta) <<< stamped meta <<< withoutBound meta
-    <<< counted
+    <<< counted meta
   pairedWith reached (Tuple partner because) = requireDisjoint solving
     { because, from: Just meta }
     reached

@@ -1,4 +1,4 @@
-module Features.Check.UnifyRecord (unifyRecord) where
+module Features.Check.UnifyRecord (unifyRecord, reexamine) where
 
 import Prelude
 import Prim hiding (Row)
@@ -14,12 +14,14 @@ import Domain.Type.Record (RecordRow)
 import Features.Check.FlatRecord (Flat, flatten)
 import Features.Check.Homeless (homeless, homelessReport)
 import Features.Check.RecordTail (solvingWith)
+import Features.Check.Pending (Pending)
 import Features.Check.RowResidue
   ( Exam
   , Residue
   , common
   , residue
   , settledResidue
+  , sideRow
   )
 import Features.Check.RowSettle (equationOf, settle)
 import Features.Check.RowStore (changesOf)
@@ -41,9 +43,10 @@ type Row = RecordRow (Ty Flex) Flex
 -- (Features.Check.Homeless); (5) the sum rule, and if it changed the
 -- state, again from (1); then (6-8) Features.Check.RowSettle: one meta
 -- alone, the shared remainder, a commit (again from (1)), or the
--- equation waits, which Task 5 solves (a placeholder until then). Each
--- step keeps the solutions, each refusal has none. With one tail a side
--- these are ADR 013's rules 1-6.
+-- equation waits among the store's pending equations (Task 5), to be
+-- examined again by the drain (`reexamine`). Each step keeps the
+-- solutions, each refusal has none. With one tail a side these are ADR
+-- 013's rules 1-6.
 unifyRecord
   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
   → Subst
@@ -58,6 +61,27 @@ unifyRecord unifyField subst left right = tailRecM
   , equation: Nothing
   , seen: { mine: Set.empty, theirs: Set.empty }
   }
+
+-- A pending equation examined again (design §2.6, the drain): the same
+-- steps on its residue, which the substitution may have changed since,
+-- under its own identity, so that waiting again replaces its entry.
+-- Labels that now cancel unify their field types here, once.
+reexamine
+  ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
+  → Subst
+  → Pending
+  → Either Failure Subst
+reexamine unifyField subst pending = tailRecM
+  (examine unifyField left right)
+  { subst
+  , before: subst
+  , done: Set.empty
+  , equation: Just pending.equation
+  , seen: { mine: Set.empty, theirs: Set.empty }
+  }
+  where
+  left = sideRow pending.residue.mine
+  right = sideRow pending.residue.theirs
 
 examine
   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)

@@ -9,7 +9,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Problem (Hint(..), Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span)
 import Domain.Type (VarId(..))
-import Features.Check.Placeholder (placeholderAt)
+import Features.Check.Placeholder (fromEquations, placeholderAt)
 import Features.Check.RowStore (Because(..), arrival)
 import Features.Check.Subst (Flex(..), Subst, storeOf)
 import Features.Check.UnifyFailure (Refusal(..))
@@ -30,7 +30,7 @@ type Named r =
 -- enclosing signature's rigids (location rule 4).
 refusedAt ∷ ∀ r. Named r → Subst → Span → Refusal → Diagnostic
 refusedAt env subst span refusal
-  | fromEquation refusal = placeholderAt span equations
+  | fromEquation refusal = placeholderAt span fromEquations
   | otherwise = refusedFor env subst span refusal
 
 -- D6, a contradiction an equation established (a bound violated, or a
@@ -49,9 +49,6 @@ fromEquation = case _ of
     Equated _ → true
     _ → false
 
-equations ∷ String
-equations = "contradictions from equations are reported in Task 6"
-
 refusedFor ∷ ∀ r. Named r → Subst → Span → Refusal → Diagnostic
 refusedFor env subst span = case _ of
   Forbidden label lack → at (LackedField label lack.variable)
@@ -68,8 +65,8 @@ refusedFor env subst span = case _ of
     )
     (requiredAt because)
   Twice tail because → at (InBothRows (named tail)) (requiredAt because)
-  Outside _ _ → placeholderAt span equations
-  Derived _ _ → placeholderAt span equations
+  Outside _ _ → placeholderAt span fromEquations
+  Derived _ _ → placeholderAt span fromEquations
   where
   at problem related = { problem, span, related }
   arrived from = maybe span identity (arrival (storeOf subst) =<< from)
