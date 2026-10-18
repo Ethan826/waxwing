@@ -114,8 +114,10 @@ export const r001Rows = [
     // which the record guard reports (before the guard, `go build` failed
     // with the field redeclared).
     name: 'r001-lacks', file: 'src/Features/Check/RecordTail.purs',
-    needle: '    (Array.find forbidden (map fst fields))\n',
-    replacement: '    (Array.find forbidden [])\n',
+    // (`Array.findMap` since R005 Tranche B Task 3: the lack's reason
+    // comes with the label.)
+    needle: '    (Array.findMap forbidden (map fst fields))\n',
+    replacement: '    (Array.findMap forbidden [])\n',
     probe: 'r001-lacks',
     message: /lacks: E_INTERNAL Duplicate record label/
   },
