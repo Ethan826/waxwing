@@ -1,7 +1,15 @@
 # Open-row merge on qualified types with row predicates (R005 Tranche B)
 
 Status:
-Proposed re-plan under ADR 014; no implementation authorized
+Proposed re-plan under ADR 014; no implementation authorized.
+Not approved (user review, 2026-10-18). Open findings before any
+decision: four order-dependent raw problems unexplained; QT (strict
+PureScript) annotation burden not yet reported against QS; three checks
+ran from uncommitted scratch scripts; most citations recalled, not
+re-read; disjoint `Union`, symbolic multi-tail dependencies and
+empty-row defaulting still need justification. No approval of QS,
+N1-N5, fixture moves, D6b or retirements. An evidence follow-up is
+authorized.
 
 Written 2026-10-18 on branch `design-principles` from 1b45917 (ADR 014
 committed). Documents and research scripts only: no compiler source,
