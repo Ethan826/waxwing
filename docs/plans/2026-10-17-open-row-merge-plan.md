@@ -6,8 +6,8 @@
 > use checkbox (`- [ ]`) syntax for tracking. The user accepted Task 0
 > and authorized Task 1 (2026-10-17); the user then authorized Task 2
 > alone (2026-10-17), then Task 3 alone (2026-10-17), then Task 4 alone
-> (2026-10-17). Tasks 5-10 are not authorized: do not start Task 5 before
-> the user reviews Task 4 and authorizes it.
+> (2026-10-17), then Task 5 alone (2026-10-18). Tasks 6-10 are not
+> authorized.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs: record rows with
@@ -925,9 +925,46 @@ Failure.purs (210: extract `settleFinal`'s caller first; the
 Check/Function.purs (the end-of-body sequence of design §6),
 `RowPair` keeps its site for re-deferral at retry; placeholders (table).
 
-**Interfaces:** `type Pending = Equation & { residue ∷ Residue, seen ∷
-Int, quiet ∷ Boolean }`; `drain ∷ Subst → Either Contradiction Subst`;
-`endOfBody ∷ Subst → RowOutcome`.
+**Interfaces** (revised before implementation at the user's direction,
+2026-10-18: the outer `Stop` channel, `Limit | Internal | Unfinished`,
+survives the drain and the end of a body, and no single unification is
+a verdict):
+
+```
+type Pending =
+  { equation ∷ Equation, residue ∷ Residue, quiet ∷ Boolean
+  , reads ∷ Set Flex }          -- what its rules read (the wake-up index)
+drain ∷ Subst → Either Failure Subst
+endOfBody ∷ Subst → Either Stop RowOutcome
+concluded ∷ Either Failure Subst → Either Stop RowOutcome
+data RowOutcome
+  = Solved Settled
+  | Contradiction Contradiction
+  | Unresolved Settled (NonEmptyArray Pending)
+```
+
+- `drain` runs inside unification, as `unify` does: a failure stays a
+  `Failure` (wrapped `Drained Equation Failure`, so a renderer knows the
+  drain found it) and is classified only at the boundary, never turned
+  into a verdict there. A limit (`TooDeep`) or a broken invariant
+  (`Unexpected`) met while re-examining an equation is still a `Stop`
+  once classified.
+- `endOfBody` is the only producer of `Solved` and `Unresolved`:
+  `Settled` (a substitution the end of a body has classified) has no
+  exported constructor, so a successful unification cannot be read as
+  `Solved` (Task 4's `outcome`, which mapped `Right` to `Solved`, is
+  replaced by `concluded`). It returns `Left (Internal …)` if an
+  equation is still woken (the joint fixpoint did not drain), never a
+  verdict.
+- `concluded` classifies a whole run: a failure by rules §11b
+  (`Contradiction` or a `Stop`), a success through `endOfBody`. The
+  oracle runner fails on `Limit` and `Internal`; tests inject both
+  through `drain` (`Drained`) and `endOfBody`.
+- The plan's `seen ∷ Int` (a version per equation) becomes `reads`, the
+  set of variables whose facts the equation's rules read (its residue's
+  metas and rigids and their partners, ledger L32); a change to any of
+  them wakes it. A reference that rescans every pending equation to a
+  fixpoint is injected in its place by the test entry.
 
 - [ ] Failing solver tests in test/row-merge.test.mjs: every fixture
   with `stages.solver` 5 runs its `rows` (`diag-11` and `design-defer`
