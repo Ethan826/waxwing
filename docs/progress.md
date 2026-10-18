@@ -6051,6 +6051,10 @@ Checking stays behind placeholders; nothing in Tasks 3-10 was started.
   are regenerated. Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm
   run verify`, .build/evidence/r005b-t2b-verify.log): exit 0 on be42baf,
   the code commit; 2196 tests, 59 oracle tests, 142 regression proofs.
+- Gap shipped with this merge (816140a): implied pairs were not seeded
+  through declared types, so a call through a wrapper joining two tails
+  was accepted though the tails could overlap. Closed by Task 3 (bcdc595);
+  see "Bug fixed by Task 3" below.
 - Not done: Tasks 3-10, unauthorized.
 
 - Controller check (2026-10-17): the rest/removal fix's differential
@@ -6175,3 +6179,25 @@ Branch `r005b-task3` from main 816140a. The user authorized Task 3 only
   Because 75, RowStore 105, Disjoint 68, UseFacts 53, Flex 20,
   PartOrigin 12.
 - Not done: Tasks 4-10, unauthorized.
+
+### Bug fixed by Task 3: the wrapper gap (2026-10-17)
+
+Main (from the Task 2 merge, 816140a, until Task 3's bcdc595) accepted a
+call through a declared-type wrapper whose types join two tails (`type
+W(...a, ...b) = W(Holder({ ...a, ...b }))`, then `k(a, b)` with `w:
+W(...r, ...s)`) though the tails could overlap: after Task 2 the implied
+pairs were not seeded through declared types. Task 3 seeds them (Seed
+`joined`, at a use in UseFacts `joinedUse`), so the differential's five
+corrected acceptances are now refusals: one D3 (two rigid tails not known
+apart) and four D2 (metas that overlap, through `W` and a constructor).
+Regression row `r005b-wrapper-pairs` (mutation: `joinedUse` keeps
+`use.state`, discarding the seeded pairs) proves it: the probe asserts D3
+at a call with `u lacks { x }, v lacks { x }`, and D2 for
+`k({ y: 1 }, { y: 2 })`; with the defect restored the rigid call is
+accepted. Regression proofs 149.
+
+User decisions (2026-10-17): implied lacks keep the generic shape text in
+Tranche B (D1 is for written clauses only; a future design may extend it).
+Mandatory: the Decision 14 tests (a lack through the wrapper at a call)
+assert rejection whatever the wording. The `Joined`/`Implied` split of
+`Because` and the written order `s disjoint r` are accepted.
