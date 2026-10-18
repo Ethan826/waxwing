@@ -86,6 +86,8 @@ message = case _ of
   RepeatedTail name → Records.repeatedTail name
   SameDisjoint → Records.sameDisjoint
   NotKnownDisjoint one other → Records.notKnownDisjoint one other
+  InBothRecords label one other → Records.inBothRecords label one other
+  InBothRows name → Records.inBothRows name
   TypeAsRecordRow name → Records.typeAsRecordRow name
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
@@ -134,6 +136,9 @@ noted = case _ of
   RowMayHaveField _ _ → true
   RepeatedTail _ → true
   LackedField _ _ → true
+  NotKnownDisjoint _ _ → true
+  InBothRecords _ _ _ → true
+  InBothRows _ → true
   UnhandledEffect _ → true
   MustBePure _ → true
   RowEquality _ _ _ → true

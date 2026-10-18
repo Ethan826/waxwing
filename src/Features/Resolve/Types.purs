@@ -120,4 +120,6 @@ resolveCtor known effects entry = do
     , fields
     , fieldSyntax: entry.decl.fields
     , span: entry.decl.span
+    -- Filled once the argument graph exists (Features.Resolve).
+    , joined: []
     }

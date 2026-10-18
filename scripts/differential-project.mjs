@@ -61,12 +61,21 @@ const booleanRests = { NoRest: false, IgnoredRest: true };
 // its record row variables is introduced, derived from the signature the
 // resolve phase compares anyway. Compared without it, with the empty
 // `constraints` of Task 1.
+// R005 Tranche B Task 3: declarations and constructors gained `joined`,
+// the pairs of record tails their types write into one record; one with
+// none is compared without the field.
+const withoutNoJoined = item => {
+  if (!Array.isArray(item.joined) || item.joined.length > 0) return item;
+  const { joined: _, ...rest } = item;
+  return rest;
+};
 export const withoutIntroduced = program => ({
   ...program,
+  ctors: program.ctors.map(withoutNoJoined),
   functions: program.functions.map(declaration => {
     const { introduced: _, ...rest } = withoutNoConstraints(
       { functions: [declaration] }).functions[0];
-    return rest;
+    return withoutNoJoined(rest);
   })
 });
 

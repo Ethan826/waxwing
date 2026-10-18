@@ -46,6 +46,9 @@ type CtorInfo =
   , fields ∷ Array (Ty VarId)
   , fieldSyntax ∷ Array TypeRef
   , span ∷ Span
+  -- R005 Tranche B: the pairs of the owner's record parameters the fields
+  -- write into one record (Joined, below).
+  , joined ∷ Array Joined
   }
 
 type Tables = { types ∷ Array TypeInfo, ctors ∷ Array CtorInfo }
@@ -107,6 +110,12 @@ type EffectInfo =
 -- labels with their spans, which later diagnostics point at (R005 design
 -- §2, §5). `span` is the whole constraint. `r disjoint s` (Tranche B) names
 -- two different record row variables, each with its written name.
+-- R005 Tranche B (user decision 2, option A): two record row variables a
+-- signature's or a constructor's types write into one record, which are
+-- therefore disjoint, with the span of the later of the two tails (D2's
+-- and D3's `required here`).
+type Joined = { variables ∷ Tuple VarId VarId, span ∷ Span }
+
 data Requirement
   = Lacks
       { variable ∷ VarId

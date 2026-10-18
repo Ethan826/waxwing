@@ -169,6 +169,11 @@ data Problem
   | RepeatedTail String
   | SameDisjoint
   | NotKnownDisjoint String String
+  -- Tranche B Task 3: a label two disjoint rows both hold, with the
+  -- variables of the clause or type that says they are disjoint (D2); a
+  -- rigid tail in both rows (D3').
+  | InBothRecords String String String
+  | InBothRows String
   | DeferMayFail String
   | DeferMayPerform String
   | RowEquality RowText RowText String

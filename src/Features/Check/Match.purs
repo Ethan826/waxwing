@@ -5,6 +5,7 @@ module Features.Check.Match
   ) where
 
 import Prelude
+import Data.Map as Map
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (maybe')
@@ -46,7 +47,12 @@ checkPattern tables expected pattern = valueOf <$> patternAgainst env start
   pattern
   where
   env =
-    { effects: [], types: tables.types, ctors: tables.ctors, variables: [] }
+    { effects: []
+    , types: tables.types
+    , ctors: tables.ctors
+    , variables: []
+    , introduced: Map.empty
+    }
   valueOf threaded = threaded.value
 
 -- Patterns are checked top-down against the scrutinee's type. On a rigid

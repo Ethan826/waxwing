@@ -1,9 +1,9 @@
 module Features.Check.Lacks
   ( lacksOf
+  , lacksIn
   , addLacks
+  , addLackTable
   , seedLacks
-  , writtenOf
-  , addWritten
   ) where
 
 import Prelude
@@ -11,42 +11,34 @@ import Data.Array as Array
 import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (maybe)
 import Data.Set (Set)
-import Data.Set as Set
+import Data.Tuple (Tuple(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Domain.Type (Ty)
 import Features.Check.Implied (Implied, implied)
-import Features.Check.Subst (Flex, RowStore(..), Subst(..), WrittenLack)
+import Features.Check.RowStore (Lack, lackTable, plain, withLacks)
+import Features.Check.Subst (Flex, Subst, onStore, storeOf)
 
 -- The labels a record tail may never hold (R001 design §2, rule 4).
 lacksOf ∷ Subst → Flex → Set String
-lacksOf (Subst { store: RowStore store }) tail = maybe Set.empty identity
-  (Map.lookup tail store.lacks)
+lacksOf subst tail = Map.keys (lacksIn subst tail)
 
+-- The same, each with why (R005 Tranche B design §1.3).
+lacksIn ∷ Subst → Flex → Map String Lack
+lacksIn subst = lackTable (storeOf subst)
+
+-- Labels the tail lacks for no reason a diagnostic names: implied by a
+-- type, or by a row the checker made (Tranche A's shape text).
 addLacks ∷ Flex → Set String → Subst → Subst
-addLacks tail labels subst@(Subst bindings@{ store: RowStore store })
-  | Set.isEmpty labels = subst
-  | otherwise = Subst bindings
-      { store = RowStore store
-          { lacks = Map.insertWith Set.union tail labels store.lacks }
-      }
+addLacks tail labels = addLackTable tail
+  (Map.fromFoldable (map withPlain (Array.fromFoldable labels)))
+  where
+  withPlain label = Tuple label plain
 
--- Of the labels a record tail lacks, those a `where` clause wrote, with
--- where (R005 design §2, §5).
-writtenOf ∷ Subst → Flex → Map String WrittenLack
-writtenOf (Subst { store: RowStore store }) tail = maybe Map.empty identity
-  (Map.lookup tail store.written)
-
--- What the tail already knows of a label is kept.
-addWritten ∷ Flex → Map String WrittenLack → Subst → Subst
-addWritten tail found subst@(Subst bindings@{ store: RowStore store })
-  | Map.isEmpty found = subst
-  | otherwise = Subst bindings
-      { store = RowStore store
-          { written = Map.insertWith Map.union tail found store.written }
-      }
+-- Labels with their reasons; of two reasons for one label the preferred.
+addLackTable ∷ Flex → Map String Lack → Subst → Subst
+addLackTable tail found = onStore (withLacks tail found)
 
 -- What a signature's types say its record tails lack, at one use (each
 -- tail a fresh meta) or for its own body (each a rigid). A signature with

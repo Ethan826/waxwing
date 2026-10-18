@@ -9,6 +9,7 @@ module Features.Check.Require
 
 import Prelude
 import Data.Either (Either(..), either)
+import Data.Map (Map)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
@@ -24,10 +25,12 @@ import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
 import Features.Check.Context (CheckEnv)
 import Features.Check.Hint (hinted)
-import Features.Check.Lacked (lackedAt)
+import Features.Check.Lacked (refusedAt)
 import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Sync (sync)
 import Features.Check.Scheme (State, flexible, opened, resolved, tooDeep)
+import Features.Check.RowStore (atSite)
+import Features.Check.Subst (onStore)
 import Features.Check.Unify (Failure(..), inferredTypeLimit, unify)
 
 -- What a diagnostic needs to name a type: the declared types, and the
@@ -64,7 +67,7 @@ require env state expected actual = either hint Right
 -- failure is reported so too until rows are written (FX001 Task 4).
 expectType
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, introduced ∷ Map String Span | r)
   → State
   → Ty Open
   → Ty Open
@@ -74,9 +77,14 @@ expectType
 expectType env state expected actual span = do
   bounded state expected span
   bounded state actual span
-  either failed bound (unify state.subst (flexible expected) (flexible actual))
+  either failed bound
+    ( unify (atSpan (Just span) state.subst) (flexible expected)
+        (flexible actual)
+    )
   where
-  bound subst = Right (state { subst = subst })
+  -- Metas bound while this requirement is checked arrive here (`arrivedAt`).
+  atSpan site = onStore (atSite site)
+  bound subst = Right (state { subst = atSpan Nothing subst })
   failed = case _ of
     Occurs meta whole → reported InfiniteType (TVar (Hole meta)) (opened whole)
     TooDeep → tooDeepAt span
@@ -87,7 +95,7 @@ expectType env state expected actual span = do
     RowMismatch _ _ → mismatched unit
     RowPayload _ _ _ → mismatched unit
     RowOccurs _ _ → mismatched unit
-    Forbidden label lack → Left (lackedAt span label lack)
+    Refused refusal → Left (refusedAt env state.subst span refusal)
     Placeholder what → Left (placeholderAt span what)
   -- The label's trail is where it arose, as far as the state knows it.
   rowFailure label row occurrence = do

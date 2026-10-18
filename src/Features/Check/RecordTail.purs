@@ -9,31 +9,44 @@ module Features.Check.RecordTail
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
+import Data.Foldable (foldM)
+import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe')
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Set (Set)
 import Data.Set as Set
-import Data.Tuple (Tuple, fst)
+import Data.Tuple (Tuple(..), fst)
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (children, rowArguments, rowsOf)
 import Domain.Type.Record (recordRow)
 import Features.Check.Binding (exceedsLimit)
-import Features.Check.Lacks (addLacks, addWritten, lacksOf, writtenOf)
-import Features.Check.Subst (Flex(..), Subst(..), resolve)
-import Features.Check.UnifyFailure (Failure(..))
+import Features.Check.Disjoint (requireApart)
+import Features.Check.Lacks (addLackTable, lacksIn, lacksOf)
+import Features.Check.RowStore
+  ( Because(..)
+  , Lack
+  , partnersOf
+  , plain
+  , stamped
+  , withoutPairs
+  )
+import Features.Check.Subst (Flex(..), Subst(..), onStore, resolve, storeOf)
+import Features.Check.UnifyFailure (Failure(..), Refusal(..))
 
 type Fields = Array (Tuple String (Ty Flex))
 
 -- One of two meta tails, and the fields the other side adds to it.
 type Share = { meta ∷ Int, fields ∷ Fields }
 
--- Binds an unbound meta tail to `fields` and the tail `rest` (rule 4).
--- None of the fields may be a label the meta lacks. What it lacks passes
--- on to `rest`: a meta rest lacks it too, with the fields' own labels; a
+-- Binds an unbound meta tail to `fields` and the tail `rest` (rule 4; the
+-- bind rule of R005 Tranche B design §3.2, rules §7). None of the fields
+-- may be a label the meta lacks. What it lacks passes on to `rest` with
+-- its reason: a meta rest lacks it too, with the fields' own labels; a
 -- rigid rest must already lack it, since nothing can be added to a
--- signature's variable; a closed rest holds nothing more. `failed` is the
--- caller's mismatch, unless a `where` clause wrote the lack (R005):
--- that is `Forbidden`, and a meta rest inherits where it was written.
+-- signature's variable; a closed rest holds nothing more. Then the meta is
+-- bound, stamped with the requirement's span, and each pair it was in is
+-- required of its image (Features.Check.Disjoint). A refusal is reported
+-- by the lack's reason (`refusedBy`).
 bindTail
   ∷ (Subst → Either Failure Subst)
   → Subst
@@ -42,37 +55,63 @@ bindTail
   → Maybe Flex
   → Either Failure Subst
 bindTail failed subst meta fields rest =
-  maybe' fitting (refused failed subst meta)
-    (Array.find forbidden (map fst fields))
+  maybe' fitting (refusedBy failed subst Nothing)
+    (Array.findMap forbidden (map fst fields))
   where
-  lacking = lacksOf subst (Meta meta)
-  forbidden label = Set.member label lacking
-  fitting _ = maybe' placed onto rest
-  tails = Array.fromFoldable rest
-  placed _ = place failed subst meta (TRecord (recordRow fields tails))
-  onto tail = case tail of
-    Meta _ → place failed
-      ( addWritten tail (writtenOf subst (Meta meta))
-          (addLacks tail (Set.union lacking (labelSet fields)) subst)
-      )
-      meta
-      (TRecord (recordRow fields tails))
-    Rigid _ → maybe' placed (refused failed subst meta)
-      (Array.find (unlackedBy tail) (Set.toUnfoldable lacking))
-  unlackedBy tail label = not (Set.member label (lacksOf subst tail))
+  lacking = lacksIn subst (Meta meta)
+  forbidden label = Tuple label <$> Map.lookup label lacking
+  fitting _ = passed failed subst lacking fields rest
+    >>= place failed meta (TRecord (recordRow fields (Array.fromFoldable rest)))
+    >>= rebound
 
--- A label the meta may not take: `Forbidden` when a clause wrote the
--- lack, else the caller's mismatch.
-refused
+  partners ∷ Array (Tuple Flex Because)
+  partners = Map.toUnfoldable (partnersOf (storeOf subst) (Meta meta))
+  rebound placed = foldM (requireApart (emptied failed) meta fields rest)
+    (onStore (withoutPairs (Meta meta) <<< stamped meta) placed)
+    partners
+
+-- What the meta lacks, passed on to its rest.
+passed
   ∷ (Subst → Either Failure Subst)
   → Subst
-  → Int
-  → String
+  → Map String Lack
+  → Fields
+  → Maybe Flex
   → Either Failure Subst
-refused failed subst meta label = maybe' mismatched (Left <<< Forbidden label)
-  (Map.lookup label (writtenOf subst (Meta meta)))
+passed failed subst lacking fields =
+  maybe (Right subst) passedTo
   where
-  mismatched _ = failed subst
+  passedTo tail = case tail of
+    Meta _ → Right (addLackTable tail own subst)
+    Rigid _ → maybe' (const (Right subst))
+      (refusedBy failed subst (Just tail))
+      (Array.find (unlackedBy tail) (Map.toUnfoldable lacking))
+  own = Map.union lacking (Map.fromFoldable (map plainLack fields))
+  plainLack (Tuple label _) = Tuple label plain
+  unlackedBy tail (Tuple label _) = not (Set.member label (lacksOf subst tail))
+
+-- A label the meta may not take, by why it lacks it: D1 for a written
+-- `lacks`; for a pair's reason D2 when the label was being bound, D3''
+-- when a rigid rest may hold it; otherwise the caller's mismatch, the
+-- shape text Tranche A gives an implied lack.
+refusedBy
+  ∷ (Subst → Either Failure Subst)
+  → Subst
+  → Maybe Flex
+  → Tuple String Lack
+  → Either Failure Subst
+refusedBy failed subst rigid (Tuple label lack) = case lack.because of
+  Lacks written → Left (Refused (Forbidden label written))
+  Disjoint pair → paired pair
+  Joined pair → paired pair
+  _ → failed subst
+  where
+  paired pair = Left (Refused (maybe (Overlap label pair lack.from) held rigid))
+  held tail = MayHold tail label lack.because
+
+-- The empty row, which a meta apart from itself is (design §3.1).
+emptied ∷ (Subst → Either Failure Subst) → Subst → Int → Either Failure Subst
+emptied failed subst meta = bindTail failed subst meta [] Nothing
 
 -- Rule 3: two distinct unbound meta tails, each given the other side's
 -- fields and one fresh remainder, which therefore lacks both sides'
@@ -99,11 +138,11 @@ labelSet fields = Set.fromFoldable (map fst fields)
 -- bound is decided first, by a loop (Features.Check.Binding).
 place
   ∷ (Subst → Either Failure Subst)
-  → Subst
   → Int
   → Ty Flex
+  → Subst
   → Either Failure Subst
-place failed subst@(Subst bindings) meta ty
+place failed meta ty subst@(Subst bindings)
   | exceedsLimit subst ty = Left TooDeep
   | holdsTail meta (resolve subst ty) = failed subst
   | otherwise = Right

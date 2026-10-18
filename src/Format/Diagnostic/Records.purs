@@ -11,6 +11,8 @@ module Format.Diagnostic.Records
   , requireDisjoint
   , sameDisjoint
   , notKnownDisjoint
+  , inBothRecords
+  , inBothRows
   , secondSpread
   , typeAsRecordRow
   ) where
@@ -70,3 +72,13 @@ notKnownDisjoint one other =
 requireDisjoint ∷ String → String → String
 requireDisjoint one other =
   "; require " <> one <> " disjoint " <> other <> " in the signature"
+
+-- R005 Tranche B Task 3 (approved 2026-10-17, design §10 D2, D3').
+inBothRecords ∷ String → String → String → String
+inBothRecords label one other = "Field " <> label <> " is in both records: "
+  <> one
+  <> " disjoint "
+  <> other
+
+inBothRows ∷ String → String
+inBothRows name = name <> " is in both records and may have fields"

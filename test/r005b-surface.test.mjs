@@ -2,16 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checked, rejected, spanAt } from './support.mjs';
 
-// R005 Tranche B Task 2: whatever source can now write several tails or a
-// `disjoint` clause reaches a greppable E_INTERNAL placeholder, never a
-// mismatch, a missing-field text or an acceptance. The placeholders go in
-// Tasks 3 and 4 (docs/plans/2026-10-17-open-row-merge-plan.md, Global
-// Constraints).
+// R005 Tranche B Task 2: whatever source can now write several tails
+// reaches a greppable E_INTERNAL placeholder, never a mismatch, a
+// missing-field text or an acceptance. The placeholders go in Tasks 4 and
+// 7 (docs/plans/2026-10-17-open-row-merge-plan.md, Global Constraints).
+// Task 3 removed the `disjoint` clause's placeholder: the clause is seeded
+// and checked (test/r005b-disjoint.test.mjs).
 const main = ' fn main(): Int = 0;';
 const several = 'R005B placeholder: rows with several tails are checked in '
   + 'Task 4';
-const disjoint = 'R005B placeholder: disjoint constraints are checked in '
-  + 'Task 3';
 const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
 
 const placeholder = (source, message) => {
@@ -53,18 +52,17 @@ test('a signature with several tails and no record use is accepted', () => {
     + main);
 });
 
-test('a disjoint clause reaches its placeholder, defined or called', () => {
+test('a disjoint clause is checked, defined or called (Task 3)', () => {
   const defined = 'fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = '
     + `0;${main}`;
-  placeholder(defined, disjoint);
-  const called = 'fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = '
-    + '0; fn main(): Int = g({}, {});';
-  placeholder(called, disjoint);
+  checked(defined);
+  checked('fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = '
+    + '0; fn main(): Int = g({ x: 1 }, { y: 2 });');
 });
 
-test('a disjoint clause beside lacks reaches the same placeholder', () => {
-  placeholder('fn g(a: { ...r }, b: { ...s }): Int where r lacks { x }, '
-    + `r disjoint s = 0;${main}`, disjoint);
+test('a disjoint clause beside lacks is checked too (Task 3)', () => {
+  checked('fn g(a: { ...r }, b: { ...s }): Int where r lacks { x }, '
+    + `r disjoint s = 0;${main}`);
 });
 
 test('a function without the clause is unchanged', () => {

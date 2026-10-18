@@ -50,8 +50,10 @@ const typeInfo = ({ parameters, rowParameters, sorts, sourceSorts, variables,
   assert.deepEqual(variables, [], `${info.name} has variables`);
   return { ...info, arguments: [] };
 };
-const ctorInfo = ({ fieldSyntax, ...info }) => {
+// R005 Tranche B Task 3: a monomorphic constructor joins no record tails.
+const ctorInfo = ({ fieldSyntax, joined, ...info }) => {
   assert.equal(fieldSyntax.length, info.fields.length, info.name);
+  assert.deepEqual(joined, [], `${info.name} joins record tails`);
   return info;
 };
 // A checked function carries its variables' sorts (R001 Task 8): only

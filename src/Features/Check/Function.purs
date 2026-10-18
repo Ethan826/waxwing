@@ -23,9 +23,8 @@ import Features.Check.MarkReport (reportViolation)
 import Features.Check.Printable (printable)
 import Features.Check.Require (require, tooDeepAt)
 import Features.Check.Scheme (State, firstTooDeep, holes, resolved, start)
-import Features.Check.Seed (required, seeded)
+import Features.Check.Seed (joined, required, seeded)
 import Features.Check.Settle (settleRestricted)
-import Features.Check.Placeholder (withoutDisjoint)
 import Features.Check.Unify (Subst, isEmpty)
 import Features.Check.Unify as Unify
 import Features.Check.Walk (retype)
@@ -73,7 +72,6 @@ checkFunction
   → Resolved.FunctionDecl
   → Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
 checkFunction holders env function = do
-  withoutDisjoint function.span function.constraints
   body ← infer env (own env function) function.body
   finished ← require env body.state (rigid function.result) body.value
   maybe (Right unit) tooDeepAt (firstTooDeep finished.subst body.value)
@@ -112,11 +110,14 @@ checkFunction holders env function = do
 
 -- The state a body starts in: the signature's variables are numbered
 -- before any meta, and its record tails lack what it says (R001 design §2),
--- its `where` clauses included (R005 design §2).
+-- its `where` clauses included (R005 design §2), and are apart where its
+-- clauses or types say so: the body's hypotheses (Tranche B design §1.3).
 own ∷ Env → Resolved.FunctionDecl → State
 own env function = required Unify.Rigid function.constraints
-  ( seeded env function.sorts signature
-      (start { next = Array.length function.variables })
+  ( joined Unify.Rigid function.variables function.joined
+      ( seeded env function.sorts signature
+          (start { next = Array.length function.variables })
+      )
   )
   where
   signature = map parameterType function.parameters

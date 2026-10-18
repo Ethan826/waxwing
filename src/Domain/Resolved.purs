@@ -107,6 +107,8 @@ type FunctionDecl =
   -- Each record row variable's first written `...r`, for the note of
   -- `r may already have field a` (Features.Resolve.Lacking).
   , introduced ∷ Map String Span
+  -- The pairs of record row variables its types write into one record.
+  , joined ∷ Array Joined
   }
 
 type Program =

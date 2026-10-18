@@ -30,8 +30,7 @@ import Features.Check.MarkUse (instantiateMarks, openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
 import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
-import Features.Check.Placeholder (withoutDisjoint)
-import Features.Check.UseFacts (requiredUse, seededUse)
+import Features.Check.UseFacts (joinedUse, requiredUse, seededUse)
 import Features.Check.Tables (ownerType)
 
 -- One use of a function's or constructor's scheme, its variables
@@ -65,19 +64,20 @@ functionUse env state span (FunctionId index) =
   maybe' missing found (Array.index env.functions index)
   where
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
-  found function = used function
-    <$ withoutDisjoint span function.constraints
+  found function = Right (used function)
   used function =
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
         ( requiredUse function.constraints
-            ( seededUse env function.sorts
-                ( openedUse
-                    ( declarationUse state function.variables
-                        function.markVariables
-                        function.sorts
-                        (map parameterType function.parameters)
-                        function.result
-                        function.row
+            ( joinedUse function.joined function.variables
+                ( seededUse env function.sorts
+                    ( openedUse
+                        ( declarationUse state function.variables
+                            function.markVariables
+                            function.sorts
+                            (map parameterType function.parameters)
+                            function.result
+                            function.row
+                        )
                     )
                 )
             )
@@ -171,11 +171,13 @@ ctorUse env state span (CtorId index) =
   ownerOf (TypeId owner) = Array.index env.types owner
   owned ctor info = Right
     ( withOrigin (CallOf ctor.name) Nothing
-        ( seededUse env info.sorts
-            ( declarationUse state info.variables [] info.sorts
-                ctor.fields
-                (ownerType ctor.owner info)
-                closedRow
+        ( joinedUse ctor.joined info.variables
+            ( seededUse env info.sorts
+                ( declarationUse state info.variables [] info.sorts
+                    ctor.fields
+                    (ownerType ctor.owner info)
+                    closedRow
+                )
             )
         )
     )

@@ -20,6 +20,7 @@ import Features.Resolve.Imports as Imports
 import Features.Resolve.ArgumentClash (Tables, programClashes)
 import Features.Resolve.ArgumentGraph (argumentGraph)
 import Features.Resolve.BodySorts (signatureSorts)
+import Features.Resolve.Apart (joinedPairs, signatureTypes, withJoined)
 import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Occurrences (Declared, resolvedDeclared)
 import Features.Resolve.TypeIndices (typeIndices)
@@ -88,7 +89,7 @@ resolve program = do
     definitions
   pure
     { types: tables.types
-    , ctors: tables.ctors
+    , ctors: map (withJoined known) tables.ctors
     , effects
     , functions: bodies
     , entry
@@ -231,5 +232,7 @@ resolveFunction globals declared tables effects effectInfos definition =
     , rowSpan: writtenSpan definition.function.row
     , constraints: definition.signature.constraints
     , introduced: maybe Map.empty introducedOf scope.lacking
+    , joined: joinedPairs tables definition.signature.variables
+        (signatureTypes definition.function)
     }
   introducedOf lacking = lacking.introduced

@@ -12,12 +12,14 @@ import { r001Probes } from './regression-r001.mjs';
 import { r001BodyProbes } from './regression-r001-body.mjs';
 import { r004Probes } from './regression-r004.mjs';
 import { r005Probes } from './regression-r005.mjs';
+import { r005bProbes } from './regression-r005b.mjs';
 import { r012Probes } from './regression-r012.mjs';
 import { ieProbes } from './regression-ie.mjs';
 
 export const externalProbes = {
   ...polyProbes, ...fnProbes, ...task5Probes, ...fx008Probes,
   ...markProbes, ...fxProbes, ...textProbes, ...fx020Probes, ...r001Probes,
-  ...r001BodyProbes, ...r004Probes, ...r005Probes, ...r012Probes,
+  ...r001BodyProbes, ...r004Probes, ...r005Probes, ...r005bProbes,
+  ...r012Probes,
   ...ieProbes, ...diagProbes
 };

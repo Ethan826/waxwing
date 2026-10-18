@@ -1,10 +1,9 @@
-module Features.Check.Extension (Introduced, checkExtension) where
+module Features.Check.Extension (checkExtension) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
-import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), isJust, maybe, maybe')
 import Data.Set as Set
@@ -22,10 +21,6 @@ import Features.Check.Lacks (addLacks, lacksOf)
 import Features.Check.Require (bounded, expectType, typeName)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
 import Features.Check.Unify as Unify
-
--- Where each of the enclosing signature's record row variables is
--- introduced, by name (Resolved.FunctionDecl `introduced`).
-type Introduced r = (introduced ∷ Map String Span | r)
 
 type Checked a = Either Diagnostic (Threaded a)
 
@@ -46,8 +41,8 @@ type Base = { span ∷ Span, value ∷ Checked.Expr }
 -- the literal's fields.
 checkExtension
   ∷ ∀ r
-  . Infer (Introduced r)
-  → CheckEnv (Introduced r)
+  . Infer r
+  → CheckEnv r
   → State
   → Span
   → Array Resolved.LiteralItem
@@ -98,7 +93,7 @@ noSpread span _ = Left
 -- fields, and is judged as that; anything else is no record.
 extend
   ∷ ∀ r
-  . CheckEnv (Introduced r)
+  . CheckEnv r
   → State
   → Base
   → Array Added
@@ -124,7 +119,7 @@ extend env state base added = do
 -- reported); a rigid tail must lack each; a hole tail is told to.
 fromRecord
   ∷ ∀ r
-  . CheckEnv (Introduced r)
+  . CheckEnv r
   → State
   → Base
   → Array Added
@@ -159,7 +154,7 @@ overlap base item = Left
 
 ofTail
   ∷ ∀ r
-  . CheckEnv (Introduced r)
+  . CheckEnv r
   → Array Added
   → State
   → Open
@@ -181,7 +176,7 @@ ofTail env added state = case _ of
 -- `r may already have field a` at the label, noted at the signature's
 -- first `...r`, as Resolve reports a body type's label (ADR 013).
 mayHave
-  ∷ ∀ r a. CheckEnv (Introduced r) → VarId → Added → Either Diagnostic a
+  ∷ ∀ r a. CheckEnv r → VarId → Added → Either Diagnostic a
 mayHave env (VarId index) item = Left
   { problem: RowMayHaveField name (maybe "" fieldLabel item.given)
   , span: item.span

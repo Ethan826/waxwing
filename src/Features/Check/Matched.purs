@@ -1,11 +1,12 @@
 module Features.Check.Matched (Typed, Matched, PatternEnv, Against) where
 
 import Data.Either (Either)
+import Data.Map (Map)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Resolved (CtorInfo, EffectInfo, LocalId, Ty, TypeInfo)
 import Domain.Resolved as Resolved
-import Domain.Syntax (Diagnostic)
+import Domain.Syntax (Diagnostic, Span)
 import Features.Check.Scheme (State, Threaded)
 
 -- A pattern binder and its type.
@@ -19,6 +20,7 @@ type PatternEnv r =
   , types ∷ Array TypeInfo
   , ctors ∷ Array CtorInfo
   , variables ∷ Array String
+  , introduced ∷ Map String Span
   | r
   }
 

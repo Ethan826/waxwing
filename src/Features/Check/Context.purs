@@ -34,6 +34,9 @@ type CheckEnv r =
   , ctors ∷ Array Resolved.CtorInfo
   , variables ∷ Array String
   , markVariables ∷ Array String
+  -- Where each of the signature's record row variables is introduced,
+  -- by name (Resolved.FunctionDecl `introduced`).
+  , introduced ∷ Map String Span
   | r
   }
 

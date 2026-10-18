@@ -29,7 +29,7 @@ import Features.Check.RowName (labelName, labelView, rowConflict)
 import Features.Check.Scheme (State, opened)
 import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..))
-import Features.Check.Lacked (lackedAt)
+import Features.Check.Lacked (refusedAt)
 import Features.Check.Placeholder (placeholderAt)
 
 -- A consumption (or the retry of a postponed one) that failed, reported at
@@ -44,7 +44,7 @@ rejected env state origin failure = case failure of
   RowSharedTail left right → conflict left right
   RowMismatch left right → conflict left right
   RowPayload found expected occurrence → payload found expected occurrence
-  Forbidden label lack → Left (lackedAt span label lack)
+  Refused refusal → Left (refusedAt env state.subst span refusal)
   Placeholder what → Left (placeholderAt span what)
   _ → Left (problemAt (Internal "Effect row consumption failed") span)
   where

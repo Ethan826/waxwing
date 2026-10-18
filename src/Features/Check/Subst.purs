@@ -2,7 +2,6 @@ module Features.Check.Subst
   ( module Features.Check.Flex
   , Subst(..)
   , RowPair
-  , module Features.Check.RowStore
   , empty
   , isEmpty
   , substitute
@@ -14,6 +13,8 @@ module Features.Check.Subst
   , resolveRow
   , resolveLabel
   , boundAt
+  , storeOf
+  , onStore
   ) where
 
 import Prelude
@@ -39,7 +40,7 @@ import Features.Check.Flex (Flex(..), metaOf)
 import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
 import Features.Check.Occurrence (OccurrenceId, Sides)
 import Features.Check.PartOrigin (PartOrigin, noOrigins)
-import Features.Check.RowStore (RowStore(..), WrittenLack, emptyStore)
+import Features.Check.RowStore (RowStore, emptyStore)
 import Features.Check.Search (Stack(..), stackItems)
 import Features.Check.TailWatch (TailWatch, emptyWatch)
 
@@ -130,6 +131,14 @@ postpone (Subst bindings) pair = Subst bindings
       , mode: pair.mode
       }
   }
+
+-- The row store (Features.Check.RowStore), read or changed.
+storeOf ∷ Subst → RowStore
+storeOf (Subst bindings) = bindings.store
+
+onStore ∷ (RowStore → RowStore) → Subst → Subst
+onStore change (Subst bindings) = Subst bindings
+  { store = change bindings.store }
 
 -- The type itself if it is not a bound meta, else the end of its chain.
 -- Only a meta enters the loop: most types walked are not one, and the

@@ -7,6 +7,8 @@ module Features.Resolve.Apart
   , repeatedTails
   , signatureTypes
   , disjointIn
+  , joinedPairs
+  , withJoined
   ) where
 
 import Prelude
@@ -18,8 +20,10 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Domain.Problem (DuplicateKind(..), Hint(..), Problem(..))
+import Domain.Resolved (TypeId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
+import Domain.Type (VarId(..))
 import Features.Resolve.ArgumentGraph (ArgumentGraph, heldTogether)
 import Features.Resolve.ArgumentPairs (pairsOf)
 import Features.Resolve.RecordArguments
@@ -164,3 +168,31 @@ signatureTypes function =
   parameterType parameter = parameter.ty
   rowTypes (Syntax.RowRef _ labels _) = Array.concatMap labelTypes labels
   labelTypes label = label.arguments
+
+-- The pairs of variables a signature's or a declaration's types write into
+-- one record (option A), each at the later tail, in source order, as
+-- Check seeds them (Features.Check.Seed `joined`). `variables` names the
+-- VarIds in order. A tail written twice is D8 before this is read.
+joinedPairs
+  ∷ ∀ r
+  . Names r
+  → Array String
+  → Array Syntax.TypeRef
+  → Array Resolved.Joined
+joinedPairs tables variables references = Array.mapMaybe joined
+  (Array.concatMap (heldTails tables) references)
+  where
+  joined held = pair held <$> indexOf held.first <*> indexOf held.second
+  indexOf tail = VarId <$> Array.elemIndex tail.name variables
+  pair held one other = { variables: Tuple one other, span: held.second.span }
+
+-- A constructor with the pairs its fields write into one record, over its
+-- owner's parameters.
+withJoined
+  ∷ ∀ r. Names r → Resolved.CtorInfo → Resolved.CtorInfo
+withJoined tables ctor = ctor
+  { joined = joinedPairs tables variables ctor.fieldSyntax }
+  where
+  variables = maybe [] variablesOf (Array.index tables.types (index ctor.owner))
+  variablesOf info = info.variables
+  index (TypeId found) = found

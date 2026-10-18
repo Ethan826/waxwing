@@ -50,6 +50,8 @@ code = case _ of
   RepeatedTail _ → Code.TypeMismatch
   SameDisjoint → Code.TypeMismatch
   NotKnownDisjoint _ _ → Code.TypeMismatch
+  InBothRecords _ _ _ → Code.TypeMismatch
+  InBothRows _ → Code.TypeMismatch
   TypeAsRecordRow _ → Code.TypeMismatch
   RowMayHaveField _ _ → Code.TypeMismatch
   LackedField _ _ → Code.TypeMismatch
