@@ -339,7 +339,7 @@ test/fixtures/r005b/.
 | L30 | The empty default selects a solution that satisfies every constraint and is least, whenever no pending equation has a constant (rules §12) | the monotonicity argument; exhaustive D, S, L 0 failures | backed | compiler oracle test S and L (Task 4); compiler check (Task 4), for Solved states (no equation waits): S and L 0 failures; the default with waiting equations is Task 5's |
 | L31 | Homes are complete: no meta a solution could use is excluded (rules §8) | the argument per exclusion; H 0 failures. H (honest refusal) alone can miss losing one valid alternative while another is retained; "no valid home excluded" is backed only by property E (an excluded valid home would change the solution set) or a direct exclusion check | argument; backed by E where E runs; the direct exclusion check is not yet written | compiler oracle test H and property E (Task 4), plus a direct check that every home excluded has no solution using it (Task 4); compiler check (Task 4): property E (above) and a direct exclusion check, every home excluded before an equation has no state solution using it (test/row-merge-homes.mjs; 201 checked, 0 wrong, 20 past the cap, in verify) |
 | L32 | Re-examining only equations that name a changed meta (`naming`) is sound but not lossless: the sum rule's apart derivation reads facts of unnamed partners (rules §14) | the argument; C2 0 differences in the exhaustive domains and campaign | soundness backed; losslessness argument, not yet checked (no counterexample found; none constructed) | Task 5 requirement (user, 2026-10-17): a dependency-complete wake-up rule. Index every fact the equation's rules read, including relevant partners, or conservatively rescan pending equations. Recording missed wake-ups as a measured heuristic is not acceptable under the order-independence requirement. Compare the indexed implementation against a reference that rescans everything to a fixpoint |
-| L33 | The occurs check never fires on row tails after cancellation, only on field types (rules §7) | the argument (cancellation, fresh metas in commits and remainders) | backed since Task 4 by the compiler's guard (below); the prototype does not count occurs refusals apart from other mismatches | Task 4: an E_INTERNAL guard or a counter in the oracle test; compiler check done (Task 4): an E_INTERNAL guard in the bind rule (`Unexpected`, `A record tail occurs in its own binding`), counted as a defect by the oracle tests: 0 in every run |
+| L33 | The occurs check never fires on row tails after cancellation, only on field types (rules §7) | the argument (cancellation, fresh metas in commits and remainders) | backed since Task 4 by the compiler's guard (below); the prototype does not count occurs refusals apart from other mismatches | Task 4: an E_INTERNAL guard or a counter in the oracle test; compiler check done (Task 4): an E_INTERNAL guard in the bind rule (`Unexpected`, `A record tail occurs in its own binding`), a `Stop Internal` since the review fix (7f94d1a), on which the oracle runner fails: no run of either whole domain or the generators stopped |
 | L34 | The pinned D4 text of `determinate` names the second merge's r and s (plan, "Pinned compiler programs") | the parts are det's q and u, to which merge's r and s were bound; R1.1 names them only if an owner's variable is named at its current bare-meta image, as Example 19's approved `{ x: 1 }` prose already does | approved by the user (2026-10-17) with this interpretation: follow bare-meta aliases when matching a part to the equation owner's variables, so the second `merge` can name its parts `r` and `s` even when their representatives originated as `det`'s `q` and `u`; naming must be independent of which direction the unifier chose for an alias; preserve part identity and tracked remainder ancestry; never assign an owner's name to arbitrary components of a structured binding | `determinate` fixture (Task 7) |
 
 The user's Task 0 review (2026-10-17) is recorded in Decisions 8-13;
@@ -899,7 +899,11 @@ counted and printed, never to a verdict.
   several record tails nor `disjoint`; 14 Tranche-B transitions, each
   classified. Placeholders: see the table. Deviations, for review: the
   rules file's §11a (the forms in which the port differs, each argued),
-  and Check/Lacked's placeholder added early (table).
+  and Check/Lacked's placeholder added early (table). Review fix
+  (2026-10-18, 7f94d1a): `outcome` returns `Either Stop RowOutcome`, each
+  failure classified by name (rules §11b); a limit and an internal
+  failure are stops, never contradictions, and the oracle runner fails
+  on them (test/r005b-outcome.test.mjs).
 
 Rows landing: `r005b-cancel`, `r005b-pruned-reason` (`r005b-upper`
 and `r005b-apart-persist` probe merge programs and land in Task 7;
@@ -967,6 +971,13 @@ Int, quiet ∷ Boolean }`; `drain ∷ Subst → Either Contradiction Subst`;
   and the counterexample programs as complete sources (Task 7); any
   executed result (Task 8).
 
+- [ ] **Older lack-adding paths** (user, review of Task 4, 2026-10-18):
+  once pending equations and bounds persist across equations, every
+  path that adds a lack or a pair outside the row rules (Tranche A's
+  `addLacks` callers: Extension, FreshRecord, Seed) must do the pruning
+  (U2, U4) and wake-up work the row rules do. That a stale bound is
+  only "less tight" does not establish order independence; a test must
+  show it (in the dependency-complete comparison below).
 - [ ] **Dependency-complete wake-up** (user requirement, 2026-10-17,
   ledger L32): the drain's index covers every fact an equation's rules
   read, including the facts of relevant partners (the sum rule's apart

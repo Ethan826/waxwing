@@ -530,6 +530,31 @@ candidate in 50, with E; `node scripts/row-merge-exhaustive.mjs A` (and
 `B`), the whole domains, outside verify. Results: docs/progress.md, "R005
 Tranche B Task 4".
 
+## 11b. Result boundary classification (Task 4 fix, 2026-10-18)
+
+Features.Check.RowOutcome `outcome` turns a unification's result into
+`Either Stop RowOutcome`. Each failure constructor is classified by name
+(no catch-all), with what establishes its claim (docs/engineering.md,
+"Result boundary classification"; the user's review of 2026-10-18 found
+the first version mapping every failure but a placeholder to
+`Contradiction`):
+
+| Failure | Result | What establishes it |
+|---|---|---|
+| `Refused` (`Forbidden`, `Overlap`, `MayHold`, `Unproven`, `Twice`, `Outside`, `Derived`) | `Contradiction` | a violated fact, by the rejection arguments of §4, §5 (U3), §7 (steps 1-3), §8 (homes), §10 (decomposition) |
+| `Mismatch` | `Contradiction` | §1 (a label twice on a side), §4 (a constant with no meta opposite), §8 (a homeless constant), or Tranche A's unifier on field types (two different heads have no unifier) |
+| `Occurs` | `Contradiction` | an infinite type has no solution among finite types (Tranche A) |
+| `RowMissing`, `RowExtra`, `RowPayload`, `RowSharedTail`, `RowMismatch`, `RowOccurs` | `Contradiction` | effect-row unification of field types (FX001's unifier): no unifier exists |
+| `TooDeep` | `Stop Limit` | nothing about solutions: the type grew past the depth limit |
+| `Unexpected` | `Stop Internal` | nothing about solutions: an invariant an argument establishes (the tail occurs guard, §11a.9) found broken, a checker defect |
+| `Placeholder` | `Stop Unfinished` | nothing: work a later task does (§11a.8) |
+
+The oracle runner (test/row-merge-entry.mjs `classify`) throws on
+`Limit` and `Internal`, so a test or a tool fails rather than count a
+refusal; test/r005b-outcome.test.mjs injects each failure directly,
+since generated problems rarely reach them. Diagnostics are unchanged:
+Require and Reject render the failure as before.
+
 # Part II: defaulting
 
 ## 12. The end-of-body default (design §6 step 1)

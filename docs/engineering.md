@@ -585,6 +585,20 @@ convention: no gate checks it.
   outcome with an independent reference and shrinks failures into
   permanent fixtures.
 
+- **Result boundary classification** (the user, 2026-10-18; same
+  proportional scope). Where failures are converted into semantic
+  claims, no catch-all: each failure constructor is classified
+  explicitly (a proven mismatch or violated constraint is a
+  contradiction; a depth or resource limit an operational stop; a
+  broken internal invariant an internal error; an unimplemented stage a
+  placeholder stop), so adding a constructor forces a decision about
+  what it establishes. The classifier is tested on its own, with limits
+  and internal failures injected directly, since generated problems
+  rarely reach them. Tests are reviewed against the result's contract:
+  for each path producing a contradiction, name what established
+  impossibility. First instance: the RowOutcome table in
+  docs/plans/2026-10-17-open-row-merge-rules.md, §11b.
+
 First applied in docs/plans/2026-10-17-open-row-merge-plan.md (R005
 Tranche B); its rule arguments are
 docs/plans/2026-10-17-open-row-merge-rules.md.

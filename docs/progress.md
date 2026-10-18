@@ -6316,9 +6316,13 @@ Tasks 5-10 were not started.
   against a row with a meta of its own, where no bound arises) and
   `r005b-self-apart` (adds `g(p, both(p))`, where only the pair's check
   guards). `r001-lacks` and `r001-record-guard` re-proved.
-- Tests seen failing first against main's build in its isolated copy
-  (.build/evidence/r005b-t4-red.log): all 6 of test/r005b-unify.test.mjs,
-  and both row-merge files (the entry module does not exist there).
+- Chronology, corrected (user review, 2026-10-18): these tests were not
+  written first. The implementation came first; the red was demonstrated
+  afterwards by running the new tests against main's build in an
+  isolated copy (.build/evidence/r005b-t4-red.log: all 6 of
+  test/r005b-unify.test.mjs fail, and both row-merge files, whose entry
+  module does not exist there). That is regression sensitivity, not
+  test-first.
   Existing expectations changed: Task 2's placeholder tests
   (test/r005b-placeholder.test.mjs, r005b-surface.test.mjs) now assert
   the forced outcomes or Task 5's placeholder; Task 3's constructor test
@@ -6372,3 +6376,40 @@ Tasks 5-10 were not started.
   (homes and narrowing read the lacks again), and a scratch check (not
   committed) found no bound left in 88,716 Solved states sampled from
   the generators and domain B; the two probes changed (above).
+
+### Task 4 review fix: the result boundary (2026-10-18)
+
+The user's review found `outcome` mapping every failure but a
+placeholder to `Contradiction`, so `TooDeep` and `Unexpected` (verified
+in the compiled module) claimed that no solution exists. Fixed in
+7f94d1a: `outcome ∷ Either Failure Subst → Either Stop RowOutcome`,
+`Stop = Limit | Internal String | Unfinished String`, every failure
+constructor classified by name (rules §11b): `Refused`, `Mismatch`,
+`Occurs` and the six effect-row refusals are contradictions; `TooDeep`
+is `Limit`, `Unexpected` `Internal`, `Placeholder` `Unfinished`. No
+diagnostic changed. docs/engineering.md gains the general rule ("Result
+boundary classification").
+
+- Tests: test/r005b-outcome.test.mjs injects each stop directly and
+  asserts the runner (test/row-merge-entry.mjs `classify`) throws on a
+  limit or an internal failure, so the oracle tests and the tools fail
+  rather than count a refusal. Written before the fix and seen failing
+  against e63f7f4's build (.build/evidence/r005b-t4b-red.log: 4 of 5
+  fail, the genuine-contradiction control passes), then passing.
+- Follow-ups: the old inputs of the rewritten probes are asserted
+  rejected with their current texts (test/r005b-unify.test.mjs); `ap(W)`
+  is marked a permanent boundary test; the Task 5 obligation for older
+  lack-adding paths is in the plan.
+- Reruns on 7f94d1a's build: domain A (.build/evidence/r005b-t4b-
+  exhaustive-A.log) and B: verdict counts identical to the above, 0
+  defects, no run stopped; the prototype cross-check identical.
+- Differential against main (isolated copy, .build/evidence/
+  r005b-t4b-diff.log, classified in r005b-t4b-diff-classified.log): the
+  same 14 differences in the same five Tranche-B categories; 0 among
+  sources without Tranche B syntax (the old probe inputs added as tests
+  are among them, unchanged). The harvest's test run again failed only
+  on timing tests.
+- Verify (`rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`,
+  .build/evidence/r005b-t4b-verify.log): exit 0 on 7f94d1a, the fix's
+  code commit; 2269 tests, 59 oracle tests, 151 regression proofs. The
+  docs commit after it received only the width check.
