@@ -6440,3 +6440,32 @@ nothing built, verify not run (width check only).
   5 to a full-rescan drain with pending equations in the substitution,
   keep AH as a fallback with stated triggers, Z3 as an optional oracle
   outside verify. Tasks 5-10 remain unauthorized.
+
+## R005 Tranche B: re-plan on qualified types (2026-10-18)
+
+Branch `design-principles` from 1b45917 (ADR 014). Under ADR 014 the
+user asked for Tranche B to be re-planned on qualified types with row
+predicates. docs/plans/2026-10-18-row-merge-qualified-types.md (status:
+proposed re-plan under ADR 014; no implementation authorized). Docs and
+research only: no compiler source, test or script changed; nothing
+built, verify not run, the compiler not run (width check only).
+
+- Design: lacks, disjointness and `Merge` (disjoint union) predicates;
+  improvement only when determined, by `Union`'s functional
+  dependencies as PureScript solves it, the forward one applied
+  symbolically (Task 1's several-tail rows); pairwise improvement;
+  entailment by the signature's givens (nothing is generalized);
+  `{}` defaulting at the end of a body, otherwise D4 ("annotate"). Each
+  component's source is named; N1-N5 are flagged for approval.
+- research/row-merge-qt/: labels-only prototype (strict QT and
+  symbolic QS, options E, H, C) against the brute-force oracle: 0 S, L
+  or H violations on the 72 fixtures, the 19 programs, raw and dense
+  seeds 21-24, program shapes and F2; sensitivity shown with five
+  mutations. QS-EH: programs 11 and 12 need an annotation (as A),
+  programs 16 and `odd-cycle` become proved contradictions; F2 186 of
+  392 need one annotated parameter; no acceptance lost on program
+  shapes; 2.5 % of raw acceptances lost.
+- Re-plan: B0 gate, B1 removal of the sum rule, bounds, homes and
+  commits, B2 predicates, B3 diagnostics, then Tasks 7-10 (about
+  2.05-2.25M tokens, estimate). Decisions for the user in its §9.
+  Tasks 5-10 and B0-B3 remain unauthorized.
