@@ -6413,3 +6413,30 @@ boundary classification").
   .build/evidence/r005b-t4b-verify.log): exit 0 on 7f94d1a, the fix's
   code commit; 2269 tests, 59 oracle tests, 151 regression proofs. The
   docs commit after it received only the width check.
+
+## R005 Tranche B: alternatives assessment (2026-10-18)
+
+Branch `row-merge-alternatives` from main de8dffc. The user paused
+Tranche B before Task 5 to establish whether the custom solver is worth
+its cost. docs/plans/2026-10-18-row-merge-alternatives.md assesses it
+(status: assessment for the user's decision; no direction change made).
+Docs and research only: no compiler source, test or script changed;
+nothing built, verify not run (width check only).
+
+- research/row-merge-alternatives/: alternative A (splits never
+  inferred; one-tail rules, waiting, end default `{}` checked) and its
+  variants AH (with Task 4's one-home commit) and A0 (no deferral), as
+  labels-only toys, compared with the current prototype under the
+  brute-force oracle on the 72 fixtures, raw and dense generators and
+  program shapes; and Z3 (z3-solver 5.3.1, outside the repository) as a
+  second oracle: 0 disagreements with the brute force on 2,072 problems,
+  0 rejected claims of either solver, with sensitivity shown.
+- Findings: A changes 2 fixture verdicts, AH 1 (`design-forced-bound`),
+  all Solved to Unresolved, all at `stages.solver` 5; no oracle
+  violation for any variant; AH loses no acceptance on 12,000
+  program-shape runs; C keeps the F2 family (186 of 392), more proved
+  contradictions and 0 order differences.
+- Recommendation (for the user): keep the current rules, re-scope Task
+  5 to a full-rescan drain with pending equations in the substitution,
+  keep AH as a fallback with stated triggers, Z3 as an optional oracle
+  outside verify. Tasks 5-10 remain unauthorized.
