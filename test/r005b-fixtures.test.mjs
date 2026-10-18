@@ -11,7 +11,7 @@ import { assertDiagnostic, fixtures, wired } from './r005b-support.mjs';
 // E_INTERNAL); from `run`, the output through Go. A fixture before its
 // stage is skipped by that field only, never because it fails. `task` is
 // the plan's task this tree has reached.
-const task = 3;
+const task = 4;
 const reached = stage => stage !== null && stage <= task;
 
 const checkStage = fixture => {
@@ -42,7 +42,9 @@ for (const fixture of fixtures) {
 }
 
 // Task 3 activates the precedence fixtures and their controls, the two
-// lone-meta fixtures and diag-06-fix (the plan's activation table).
+// lone-meta fixtures and diag-06-fix (the plan's activation table); Task
+// 4 activates none here (no fixture's `check` or `run` stage is 4: its
+// solver-stage fixtures run in test/row-merge.test.mjs).
 test('the fixtures this task activates are the activation table\'s', () => {
   const active = fixtures.filter(fixture => reached(fixture.stages.check))
     .map(fixture => fixture.name);

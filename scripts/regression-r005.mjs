@@ -45,8 +45,9 @@ export const r005Rows = [
   {
     // The clause is forgotten when a violation is found: the violation is
     // the mismatch of the shapes, not the approved text.
-    // (Since R005 Tranche B Task 3 the lack's reason decides the report.)
-    name: 'r005-provenance', file: 'src/Features/Check/RecordTail.purs',
+    // (Since R005 Tranche B Task 3 the lack's reason decides the report;
+    // since Task 4 in Features.Check.Refused, shared by the row rules.)
+    name: 'r005-provenance', file: 'src/Features/Check/Refused.purs',
     needle: '  Lacks written → Left (Refused (Forbidden label written))\n',
     replacement: '  Lacks _ → failed subst\n',
     probe: 'r005-provenance',

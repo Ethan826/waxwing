@@ -157,6 +157,7 @@ select env state record label = do
     -- A receiver of several tails is not yet told apart from a missing
     -- field (Features.Check.Placeholder).
     Placeholder what → Left (placeholderAt (Checked.spanOf record) what)
+    Unexpected what → Left (problemAt (Internal what) (Checked.spanOf record))
     _ → notSelected env state record label
 
 notSelected

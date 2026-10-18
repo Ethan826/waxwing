@@ -91,8 +91,9 @@ export const r001Rows = [
     // mismatch passes and Go rejects the struct it was given.
     name: 'r001-field-bound-tail',
     file: 'src/Features/Check/UnifyRecord.purs',
-    needle: '    if rebound reached one || rebound reached other then\n',
-    replacement: '    if false then\n',
+    // (Since R005 Tranche B Task 4 a guard of the examination's loop.)
+    needle: '    | rebound reached one || rebound reached other = Right\n',
+    replacement: '    | false = Right\n',
     probe: 'r001-field-bound-tail',
     message:
       /rebound: E_TOOL: go build failed: \.\/main\.go:\d+:\d+: cannot use/
@@ -133,11 +134,13 @@ export const r001Rows = [
       },
       {
         file: 'src/Features/Check/RecordTail.purs',
+        // (Since R005 Tranche B Task 4 a meta's rigid constants come
+        // first.)
         needle: '  bindTheirs reached = bindTail failed reached theirs.meta '
-          + 'theirs.fields\n    remainder\n',
+          + 'theirs.fields\n    (theirs.rigids <> remainder)\n',
         replacement: '  bindTheirs reached = bindTail failed reached '
           + 'theirs.meta theirs.fields\n'
-          + '    (Just (Meta (bindings.fresh - 1)))\n'
+          + '    (theirs.rigids <> [ Meta (bindings.fresh - 1) ])\n'
       }
     ],
     probe: 'r001-shared-remainder',

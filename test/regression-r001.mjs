@@ -155,11 +155,16 @@ export const r001Probes = {
     console.log(`${context.probe} regression detects the defect`);
   },
   // `r` lacks `a` from k's signature, so it may not be `{ a: Int }`.
+  // Since R005 Tranche B Task 4 a lone meta against labels alone is first
+  // bounded by them, and the lack prunes the bound (U2, U4), which refuses
+  // the label before the bind rule's own check; the argument here,
+  // `{ a: Int, ..._ }`, has a meta of its own, so no bound arises and that
+  // check is the one guard.
   'r001-lacks': context => {
     const found = outcome(context, 'fn k(y: { ...r }): { a: Int, ...r } = '
-      + 'k(y); fn f(q: { a: Int }): Int = { let u = k(q); 1 }; '
-      + 'fn main(): Int = 0;');
-    if (found !== 'E_TYPE Expected { ..._ }, found { a: Int }') {
+      + 'k(y); fn mk(n: Int): { a: Int, ...t } = mk(n); '
+      + 'fn f(n: Int): Int = { let u = k(mk(n)); 1 }; fn main(): Int = f(1);');
+    if (found !== 'E_TYPE Expected { ..._ }, found { a: Int, ..._ }') {
       fail(`a tail was bound to a label it lacks: ${found}`);
     }
     console.log(`${context.probe} regression detects the defect`);

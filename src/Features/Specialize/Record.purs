@@ -25,7 +25,9 @@ import Features.Specialize.State (Specializing)
 -- representative. A label both written and in the tail's image is
 -- E_INTERNAL at `span`: the checker's lacks sets exclude it (R001 design
 -- §2, rule 4), so it is a checker defect, reported rather than lowered to
--- a Go struct with a field declared twice.
+-- a Go struct with a field declared twice. A row of two or more tails is
+-- lowered from R005 Tranche B Task 8; until then it is a greppable
+-- placeholder, never a layout guessed from it.
 recordType
   ∷ ∀ a v
   . (String → a → Specializing IR.Ty)
@@ -33,7 +35,22 @@ recordType
   → Span
   → RecordRow a v
   → Specializing IR.Ty
-recordType field tail span row = do
+recordType field tail span row
+  | Array.length row.tails > 1 = internal severalTails span unit
+  | otherwise = singleTail field tail span row
+
+severalTails ∷ String
+severalTails =
+  "R005B placeholder: rows with several tails are lowered in Task 8"
+
+singleTail
+  ∷ ∀ a v
+  . (String → a → Specializing IR.Ty)
+  → (v → Specializing (Maybe IR.Ty))
+  → Span
+  → RecordRow a v
+  → Specializing IR.Ty
+singleTail field tail span row = do
   fields ← traverse lowered row.fields
   rests ← traverse tail row.tails
   state ← get

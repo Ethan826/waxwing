@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checked } from './support.mjs';
+import { checked, rejected } from './support.mjs';
+import { checkedPoly } from './phases.mjs';
 import { assertDiagnostic, wired } from './r005b-support.mjs';
 
 // R005 Tranche B Task 3: persistent disjointness on single-tail rows, no
@@ -168,5 +169,8 @@ test('a constructor\'s fields imply the pair at its use', () => {
   rejects(use('{ y: Int }'), 'Field y is in both records: a disjoint b',
     at('W', 3), [note('first written here', 'W', 3),
       note('required here', '...b', 1)]);
-  checked(use('{ z: Int }'));
+  // Checked; lowering the constructor's row of two tails is Task 8's.
+  checkedPoly(use('{ z: Int }'));
+  assert.equal(rejected(use('{ z: Int }'), 'E_INTERNAL').message,
+    'R005B placeholder: rows with several tails are lowered in Task 8');
 });

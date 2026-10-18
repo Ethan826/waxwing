@@ -1,7 +1,7 @@
-// R005 Tranche B Task 2: a record row with several tails reaches the
-// checker's placeholder, never a plain mismatch. The rows are built
-// directly through the compiled modules, since no source can write two
-// tails before the parser learns to (the same commit order as Task 2).
+// R005 Tranche B Task 2: a record row with several tails reached the
+// checker's placeholder, never a plain mismatch; since Task 4 it is
+// solved by forced moves, and what would wait reaches Task 5's. The rows
+// are built directly through the compiled modules.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
@@ -19,32 +19,32 @@ const { unify } = await load('Features.Check.Unify');
 const field = label => Tuple.create(label)(TInt.value);
 const record = (labels, tails) => TRecord.create(
   recordRow(ordInt)(labels.map(field))(tails.map(number => new Meta(number))));
-const wording = 'rows with several tails are checked in Task 4';
+const waits = 'equations that wait are solved in Task 5';
 
-const refusal = (left, right) => {
-  const result = unify(empty)(left)(right);
-  assert.equal(result.constructor.name, 'Left');
-  return result.value0;
-};
+const result = (left, right) => unify(empty)(left)(right);
 
-test('two tails on the left reach the placeholder', () => {
-  const failure = refusal(record(['a'], [1, 2]), record(['a'], [3]));
-  assert.equal(failure.constructor.name, 'Placeholder');
-  assert.equal(failure.value0, wording);
+// Task 4 removed Task 2's placeholder (`rows with several tails are
+// checked in Task 4`): such rows unify by forced moves, and only an
+// equation that would wait reaches Task 5's placeholder.
+test('two tails against labels with two homes reach Task 5\'s placeholder',
+  () => {
+    const found = result(record(['a'], [1, 2]), record(['a', 'b'], []));
+    assert.equal(found.constructor.name, 'Left');
+    assert.equal(found.value0.constructor.name, 'Placeholder');
+    assert.equal(found.value0.value0, waits);
+  });
+
+test('two tails against one meta: the lone meta takes both', () => {
+  const found = result(record([], [3]), record(['b'], [1, 2]));
+  assert.equal(found.constructor.name, 'Right');
 });
 
-test('two tails on the right reach the placeholder', () => {
-  const failure = refusal(record([], [3]), record(['b'], [1, 2]));
-  assert.equal(failure.constructor.name, 'Placeholder');
-  assert.equal(failure.value0, wording);
-});
-
-test('a repeated tail is several tails too', () => {
-  const failure = refusal(record([], [1, 1]), record([], []));
-  assert.equal(failure.constructor.name, 'Placeholder');
+test('a repeated tail against the empty row: the meta is empty', () => {
+  const found = result(record([], [1, 1]), record([], []));
+  assert.equal(found.constructor.name, 'Right');
 });
 
 test('one tail on each side is still checked as before', () => {
-  const result = unify(empty)(record(['a'], [1]))(record(['a'], [2]));
-  assert.equal(result.constructor.name, 'Right');
+  const found = result(record(['a'], [1]), record(['a'], [2]));
+  assert.equal(found.constructor.name, 'Right');
 });

@@ -3,14 +3,15 @@ import assert from 'node:assert/strict';
 import { checked, rejected, spanAt } from './support.mjs';
 
 // R005 Tranche B Task 2: whatever source can now write several tails
-// reaches a greppable E_INTERNAL placeholder, never a mismatch, a
-// missing-field text or an acceptance. The placeholders go in Tasks 4 and
-// 7 (docs/plans/2026-10-17-open-row-merge-plan.md, Global Constraints).
-// Task 3 removed the `disjoint` clause's placeholder: the clause is seeded
-// and checked (test/r005b-disjoint.test.mjs).
+// reached a greppable E_INTERNAL placeholder, never a mismatch, a
+// missing-field text or an acceptance. Task 3 removed the `disjoint`
+// clause's placeholder (test/r005b-disjoint.test.mjs); Task 4 removed the
+// unification's (`rows with several tails are checked in Task 4`): the
+// same sources are now solved by forced moves, refused for a reason, or
+// reach Task 5's placeholder where an equation would wait
+// (docs/plans/2026-10-17-open-row-merge-plan.md, Global Constraints).
 const main = ' fn main(): Int = 0;';
-const several = 'R005B placeholder: rows with several tails are checked in '
-  + 'Task 4';
+const waits = 'R005B placeholder: equations that wait are solved in Task 5';
 const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
 
 const placeholder = (source, message) => {
@@ -22,28 +23,41 @@ const placeholder = (source, message) => {
 for (const [name, source] of [
   ['returning a parameter', `fn pick(w: { ...r, ...s }): { ...r, ...s } = w;`
     + main],
+  ['reading a known field', `fn get(w: { a: Int, ...r, ...s }): Int = w.a;`
+    + main]
+]) {
+  test(`several tails are solved (Task 4): ${name}`, () => {
+    checked(source);
+  });
+}
+
+for (const [name, source] of [
   ['calling with a record', 'fn f(w: { ...r, ...s }): Int = 0; '
     + 'fn main(): Int = f({ a: 1 });'],
   ['passing a generic row on', 'fn f(w: { ...r, ...s }): Int = 0; '
     + 'fn g(v: { ...a, ...b }): Int = f(v);' + main],
-  ['reading a known field', `fn get(w: { a: Int, ...r, ...s }): Int = w.a;`
-    + main],
-  ['reading an unknown field', `fn get(w: { ...r, ...s }): Int = w.a;` + main],
   ['a constructor with two tails', `${both}fn main(): Int = { let b = `
     + 'Both({ x: 1, y: 2 }); 0 };'],
   ['two calls of one generic', 'fn id(w: { ...r, ...s }): { ...r, ...s } = w; '
     + 'fn main(): Int = { let a = id({ x: 1 }); 0 };']
 ]) {
-  test(`several tails reach the placeholder: ${name}`, () => {
-    const found = placeholder(source, several);
+  test(`an equation that would wait reaches Task 5: ${name}`, () => {
+    const found = placeholder(source, waits);
     assert.ok(found.span.start.offset < source.length);
   });
 }
 
-test('the placeholder is at the unification that met the tails', () => {
-  const source = `fn pick(w: { ...r, ...s }): { ...r, ...s } = w;${main}`;
-  const found = placeholder(source, several);
-  assert.deepEqual(found.span, spanAt(source, 'w', 1));
+test('a field neither written nor in a tail is missing (Task 4)', () => {
+  const source = `fn get(w: { ...r, ...s }): Int = w.a;${main}`;
+  const found = rejected(source, 'E_TYPE');
+  assert.equal(found.message, 'a is not a field of { ...r, ...s }');
+});
+
+test('the placeholder is at the unification that would wait', () => {
+  const source = 'fn f(w: { ...r, ...s }): Int = 0; '
+    + 'fn main(): Int = f({ a: 1 });';
+  const found = placeholder(source, waits);
+  assert.deepEqual(found.span, spanAt(source, '{ a: 1 }'));
 });
 
 test('a signature with several tails and no record use is accepted', () => {

@@ -9,6 +9,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Problem (Hint(..), Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span)
 import Domain.Type (VarId(..))
+import Features.Check.Placeholder (placeholderAt)
 import Features.Check.RowStore (Because(..), arrival)
 import Features.Check.Subst (Flex(..), Subst, storeOf)
 import Features.Check.UnifyFailure (Refusal(..))
@@ -28,7 +29,31 @@ type Named r =
 -- its hint; D3', one rigid tail in both rows. D3, D3' and D3'' name the
 -- enclosing signature's rigids (location rule 4).
 refusedAt ∷ ∀ r. Named r → Subst → Span → Refusal → Diagnostic
-refusedAt env subst span = case _ of
+refusedAt env subst span refusal
+  | fromEquation refusal = placeholderAt span equations
+  | otherwise = refusedFor env subst span refusal
+
+-- D6, a contradiction an equation established (a bound violated, or a
+-- fact whose reason is an equation), is rendered from Task 6; until then
+-- it is this placeholder, whose class (a contradiction) is still right.
+fromEquation ∷ Refusal → Boolean
+fromEquation = case _ of
+  Outside _ _ → true
+  Derived _ _ → true
+  MayHold _ _ because → equated because
+  Unproven _ _ because → equated because
+  Twice _ because → equated because
+  _ → false
+  where
+  equated = case _ of
+    Equated _ → true
+    _ → false
+
+equations ∷ String
+equations = "contradictions from equations are reported in Task 6"
+
+refusedFor ∷ ∀ r. Named r → Subst → Span → Refusal → Diagnostic
+refusedFor env subst span = case _ of
   Forbidden label lack → at (LackedField label lack.variable)
     [ { span: lack.span, reason: RequiredHere } ]
   Overlap label pair from → at (inBoth label pair.variables)
@@ -43,6 +68,8 @@ refusedAt env subst span = case _ of
     )
     (requiredAt because)
   Twice tail because → at (InBothRows (named tail)) (requiredAt because)
+  Outside _ _ → placeholderAt span equations
+  Derived _ _ → placeholderAt span equations
   where
   at problem related = { problem, span, related }
   arrived from = maybe span identity (arrival (storeOf subst) =<< from)
@@ -61,6 +88,7 @@ requiredAt = case _ of
   Joined pair → [ { span: pair.span, reason: RequiredHere } ]
   Implied → []
   Spread _ → []
+  Equated _ → []
 
 -- A rigid tail is the enclosing signature's variable at its index.
 nameOf ∷ Array String → Flex → String

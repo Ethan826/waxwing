@@ -24,42 +24,37 @@ export const r005bRows = [
   },
   {
     // A lack decomposed from a pair loses its reason: the shape text.
-    name: 'r005b-provenance',
-    edits: [
-      {
-        file: 'src/Features/Check/Disjoint.purs',
-        needle: '(Because, partnersOf, withApart)',
-        replacement: '(Because, partnersOf, plain, withApart)'
-      },
-      {
-        file: 'src/Features/Check/Disjoint.purs',
-        needle: '(Map.singleton label { because, from: Just meta })',
-        replacement: '(Map.singleton label plain)'
-      }
-    ],
+    // (Since Task 4 the bind rule hands the pair's reason to the full
+    // decomposition, Features.Check.Disjoint `requireDisjoint`.)
+    name: 'r005b-provenance', file: 'src/Features/Check/RecordTail.purs',
+    needle: '    { because, from: Just meta }\n',
+    replacement: '    (const plain because)\n',
     probe: 'r005b-provenance',
     message: /decomposed lack lost its reason: E_TYPE Expected /
   },
   {
     // The labels of the image are not required of the partner.
     name: 'r005b-mixed-lacks', file: 'src/Features/Check/Disjoint.purs',
-    needle: 'foldM labelApart subst (Array.sort (map fst fields))',
-    replacement: 'foldM labelApart subst (Array.take 0 (map fst fields))',
+    needle: '  separated _ = labelsAgainst solving lack one other subst\n'
+      + '    >>= labelsAgainst solving lack other one\n',
+    replacement: '  separated _ = labelsAgainst solving lack one '
+      + '(other { tails = [] }) subst\n'
+      + '    >>= labelsAgainst solving lack other (one { tails = [] })\n',
     probe: 'r005b-mixed-lacks',
     message: /label against tail skipped: accepted/
   },
   {
     // The tail of the image is not required apart from the partner.
     name: 'r005b-mixed-tails', file: 'src/Features/Check/Disjoint.purs',
-    needle: '(Array.sort (map fst fields)) >>= tailApart',
-    replacement: '(Array.sort (map fst fields))',
+    needle: '    >>= tailsApart solving lack one.tails other.tails\n',
+    replacement: '    >>= tailsApart solving lack [] other.tails\n',
     probe: 'r005b-mixed-tails',
     message: /tail against tail skipped: accepted/
   },
   {
     // One rigid is allowed apart from itself.
     name: 'r005b-self-apart', file: 'src/Features/Check/Disjoint.purs',
-    needle: '    | one == other → Left (Refused (Twice tail because))',
+    needle: '    | one == other → Left (Refused (Twice one because))',
     replacement: '    | one == other → Right subst',
     probe: 'r005b-self-apart',
     message: /rigid apart from itself allowed: accepted/
@@ -82,5 +77,24 @@ export const r005bRows = [
       + '    (joined metaOf variables pairs use.state) }',
     probe: 'r005b-wrapper-pairs',
     message: /wrapper pair not seeded: accepted/
+  },
+  {
+    // Common tails are not cancelled (Task 4, rules §3): a row and its
+    // tails in another order are refused.
+    name: 'r005b-cancel', file: 'src/Features/Check/RowResidue.purs',
+    needle: '    | Array.elem tail found.mine = found\n',
+    replacement: '    | false = found\n',
+    probe: 'r005b-cancel',
+    message: /common tails not cancelled: E_TYPE Expected /
+  },
+  {
+    // U4's `{}` binding forgets the fact that pruned the bound (R10.2):
+    // a lone meta's written lack reads as a shape text, not D1.
+    name: 'r005b-pruned-reason', file: 'src/Features/Check/Narrow.purs',
+    needle: '(onStore (withEmptied meta next <<< withBound meta next) subst)',
+    replacement: '(onStore (const identity withEmptied <<< withBound meta '
+      + 'next) subst)',
+    probe: 'r005b-pruned-reason',
+    message: /pruning fact forgotten: E_TYPE Expected /
   }
 ];

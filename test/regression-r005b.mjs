@@ -73,11 +73,19 @@ export const r005bProbes = {
         + required);
     done(context);
   },
-  // One rigid in both rows is D3'.
+  // One rigid in both rows is D3'. Since Task 4 `g(p, p)` is refused
+  // twice over (the second meta's bound loses the rigid it is apart from,
+  // U2, and U4 empties it); the second argument here carries a meta of its
+  // own, so no bound arises and the pair's own check is the one guard.
   'r005b-self-apart': context => {
     expect(context, 'rigid apart from itself allowed',
       `${g}fn h(p: { ...r }): Int = g(p, p);${main}`,
       `E_TYPE r is in both records and may have fields @p ${required}`);
+    expect(context, 'rigid apart from itself allowed',
+      `${g}fn both(x: { ...u }): { ...u, ...v } = both(x); `
+        + `fn h(p: { ...r }): Int = g(p, both(p));${main}`,
+      'E_TYPE r is in both records and may have fields @both(p) '
+        + required);
     done(context);
   },
   // A body type joining two tails the signature does not is D3 (Resolve).
@@ -106,6 +114,22 @@ export const r005bProbes = {
       `${wrapper}fn main(): Int = { let h = k({ y: 1 }, { y: 2 }); 0 };`,
       'E_TYPE Field y is in both records: r disjoint s @{ y: 2 } '
         + '[first written here @{ y: 1 }] [required here @...s]');
+    done(context);
+  },
+  // Common tails cancel: a row equals its tails in another order.
+  'r005b-cancel': context => {
+    expect(context, 'common tails not cancelled',
+      `fn swap(p: { ...r, ...s }): { ...s, ...r } = p;${main}`, 'accepted');
+    done(context);
+  },
+  // A lone meta whose bound a written lack prunes to nothing is D1 (R10.2).
+  'r005b-pruned-reason': context => {
+    expect(context, 'pruning fact forgotten',
+      'fn granted(p: { ...r }): Bool where r lacks { admin } =\n'
+        + '  { ...p, admin: true }.admin;\n'
+        + 'fn main(): Int = { let b = granted({ admin: false }); 0 };\n',
+      'E_TYPE admin is not allowed here: r lacks { admin } '
+        + '@{ admin: false } [required here @admin]');
     done(context);
   }
 };

@@ -97,6 +97,7 @@ expectType env state expected actual span = do
     RowOccurs _ _ → mismatched unit
     Refused refusal → Left (refusedAt env state.subst span refusal)
     Placeholder what → Left (placeholderAt span what)
+    Unexpected what → Left (problemAt (Internal what) span)
   -- The label's trail is where it arose, as far as the state knows it.
   rowFailure label row occurrence = do
     name ← labelName env span label

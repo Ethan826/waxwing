@@ -46,6 +46,7 @@ rejected env state origin failure = case failure of
   RowPayload found expected occurrence → payload found expected occurrence
   Refused refusal → Left (refusedAt env state.subst span refusal)
   Placeholder what → Left (placeholderAt span what)
+  Unexpected what → Left (problemAt (Internal what) span)
   _ → Left (problemAt (Internal "Effect row consumption failed") span)
   where
   span = origin.span
