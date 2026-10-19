@@ -1,7 +1,7 @@
 # Waxwing / R005 Tranche B re-planned; B1 done, unmerged (2026-10-19)
 
-**State.** main is at 1b45917..d4d5cf4-era docs plus 1d43341 (research);
-the active branch is `r005b-replan` (UNMERGED, by the user's choice): the
+**State.** main is at 1d43341 (the Sym/H research merge); the active
+branch is `r005b-replan` (UNMERGED, by the user's choice): the
 implementation plan, README draft and prose review, B0's evidence, the
 user's B0 decisions (plan §10) and B1's behaviour-preserving splits
 (verify 2269/2269, 59/59, 151 proofs on 345e0df; differential 0).
