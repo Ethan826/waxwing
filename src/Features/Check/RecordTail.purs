@@ -1,6 +1,5 @@
 module Features.Check.RecordTail
-  ( Fields
-  , Share
+  ( Share
   , bindTail
   , shareTails
   , solvingWith
@@ -13,8 +12,7 @@ import Data.Either (Either(..))
 import Data.Foldable (foldM)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe, maybe')
-import Data.Set as Set
+import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (Tuple(..), fst)
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (children, rowArguments, rowsOf)
@@ -23,11 +21,11 @@ import Features.Check.FlatRecord (flatten)
 import Features.Check.Binding (exceedsLimit)
 import Features.Check.Disjoint (ownPairs, requireDisjoint, requireLack)
 import Features.Check.Lacks (addLackTable, lacksIn)
-import Features.Check.Narrow (narrow, prune)
+import Features.Check.Narrow (prune)
+import Features.Check.RecordTailBound (Fields, narrowedRests, within)
 import Features.Check.Refused (Failed, Solving, refusedBy)
 import Features.Check.RowStore
-  ( Atom(..)
-  , Because
+  ( Because
   , Bound
   , Lack
   , boundOf
@@ -39,9 +37,7 @@ import Features.Check.RowStore
   , withoutPairs
   )
 import Features.Check.Subst (Flex(..), Subst(..), onStore, resolve, storeOf)
-import Features.Check.UnifyFailure (Failure(..), Refusal(..))
-
-type Fields = Array (Tuple String (Ty Flex))
+import Features.Check.UnifyFailure (Failure(..))
 
 type Row = RecordRow (Ty Flex) Flex
 
@@ -115,28 +111,6 @@ solvingWith failed = { failed, emptied: emptiedBy failed }
 emptiedBy ∷ Failed → Subst → Int → Either Failure Subst
 emptiedBy failed subst meta = bindTail failed subst meta [] []
 
--- U3's check: every constant of the image within the meta's bound. An
--- atom a fact pruned from the bound is reported by that fact, as the
--- bind rule would have without the bound (R10.2): the label's lack, or
--- the rigid in both rows of its pair (D3'); one the bound's equations
--- excluded is `Outside` (D6, Task 6).
-within
-  ∷ Failed → Subst → Maybe Bound → Fields → Array Flex → Either Failure Subst
-within failed subst bound fields rests = maybe (Right subst) checked bound
-  where
-  constants = imageConstants fields rests
-  checked found = maybe (Right subst) (excluded found)
-    (Array.find (outside found) constants)
-  outside found atom = not (Set.member atom found.atoms)
-  excluded found atom = maybe (Left (Refused (Outside atom found.narrowings)))
-    (prunedBy failed subst atom)
-    (Map.lookup atom found.pruned)
-
-prunedBy ∷ Failed → Subst → Atom → Lack → Either Failure Subst
-prunedBy failed subst atom lack = case atom of
-  LabelAtom label → refusedBy failed subst Nothing (Tuple label lack)
-  RigidAtom tail → Left (Refused (Twice tail lack.because))
-
 -- What the meta lacks, passed on to each rest (steps 3 and 5).
 passed
   ∷ Solving
@@ -158,21 +132,6 @@ passed solving lacking fields rests subst = foldM handed subst rests
   lackedBy tail reached (Tuple label lack) = requireLack solving lack reached
     tail
     label
-
--- Step 6: each meta rest narrowed to the bound less the image's
--- constants.
-narrowedRests
-  ∷ Solving → Maybe Bound → Fields → Array Flex → Subst → Either Failure Subst
-narrowedRests solving bound fields rests subst = maybe (Right subst) narrowed
-  bound
-  where
-  constants = Set.fromFoldable (imageConstants fields rests)
-  narrowed found = foldM (narrow solving (rest found.atoms) (whys found))
-    subst
-    (Array.mapMaybe metaOf rests)
-  rest atoms = Set.difference atoms constants
-  whys found = map without found.narrowings
-  without narrowing = narrowing { allowed = rest narrowing.allowed }
 
 -- Rule 3: two distinct unbound meta tails, each given the other side's
 -- constants and one fresh remainder, which therefore lacks both sides'
@@ -213,22 +172,7 @@ holdsTail meta = case _ of
   where
   held part = holdsTail meta part
 
--- The image's constants: its labels and its rigid tails.
-imageConstants ∷ Fields → Array Flex → Array Atom
-imageConstants fields rests = map (LabelAtom <<< fst) fields
-  <> map RigidAtom (Array.filter rigid rests)
-
 unbound ∷ Subst → Flex → Boolean
 unbound (Subst bindings) = case _ of
   Meta meta → not (Map.member meta bindings.types)
   Rigid _ → false
-
-rigid ∷ Flex → Boolean
-rigid = case _ of
-  Rigid _ → true
-  Meta _ → false
-
-metaOf ∷ Flex → Maybe Int
-metaOf = case _ of
-  Meta meta → Just meta
-  Rigid _ → Nothing
