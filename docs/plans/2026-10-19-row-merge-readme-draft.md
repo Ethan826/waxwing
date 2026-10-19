@@ -222,6 +222,21 @@ extra fields in their left parts. Nothing uses the shared result `c`,
 so no behaviour changes, but the annotated program no longer accepts
 those typings.
 
+One case is worse: a direct call whose argument's split between the
+callee's parts is fixed only by a `lacks` clause. With
+
+```wxw
+fn granted2(p: { ...r, ...s }): Bool where s lacks { admin } = true;
+fn main(): Int = { let b = granted2({ admin: false }); 0 };
+```
+
+`admin` can only be in `r`, but no case of the solver concludes that,
+so the call waits and is reported. The caller cannot annotate it:
+annotations go on lambda parameters, and here the unknown parts belong
+to the call itself. Only the callee's signature can change (for example
+to `{ admin: Bool, ...r }`). This was found after the design was
+adopted; how to report it, or whether to support it, is open.
+
 On three families of generated test problems, which lean toward
 unknowns that nothing fixes, the adopted design accepted 9,210, 4,340
 and 7,792 runs where the earlier custom design accepted 14,255, 19,895
@@ -347,6 +362,7 @@ are counted over the program's fields plus one extra field `w`.
 | `both(merge, merge)` (design-forced-bound) | `both(fn(p: {}, q) => merge(p, q), merge)` | no |
 | `apply(merge, noX)` (diag-14-fix) | `apply(fn(p: { x: Int }, q) => merge(p, q), noX)` | no |
 | review F2's 392 programs `k(merge, …, merge)` with a shared parameter | the shared parameter, once, in the 186 with a least typing | no |
+| `granted2({ admin: false })` with `granted2(p: { ...r, ...s })` and `s lacks { admin }` (recovery obligation O4) | none: the parts are the call's own, which no annotation names; only the callee's signature can change | — |
 
 ### Texts and fixtures
 
