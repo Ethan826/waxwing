@@ -1,0 +1,1743 @@
+{
+ "purs": "0.15.16",
+ "cases": [
+  {
+   "name": "order-22-3634",
+   "kind": "order fixture",
+   "orders": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "accept",
+    "accept",
+    "accept",
+    "accept",
+    "accept",
+    "accept"
+   ],
+   "qsehz": [
+    "accept",
+    "accept",
+    "accept",
+    "accept",
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U , b :: U | t2 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t3 t4 => Nub @Type t4 t4 => P t0 -> P t3 -> P t4 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t3 is an unknown type t4 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U , b :: U | t2 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t3 t4 => Nub @Type t4 t4 => P t0 -> P t3 -> P t4 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t3 is an unknown type t4 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U , b :: U | t2 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t3 t4 => P t0 -> P t3 -> P t4 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t3 is an unknown type t4 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U , b :: U | t2 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t3 t4 => P t0 -> P t3 -> P t4 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t3 is an unknown type t4 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"a\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U , b :: U | t0 ) ( a :: U , b :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U , b :: U | t0 ) ( a :: U , b :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U , b :: U | t0 ) ( a :: U , b :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m3 while inferring the type of merge m3 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m3 while inferring the type of merge m3 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m3 while inferring the type of merge m3 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Lacks \"a\" v2 => Lacks \"b\" v0 => Lacks \"c\" v2 => Union v0 ( a :: U , b :: U | v0 ) ( a :: U | v2 ) => Union v1 v2 ( a :: U , b :: U | v0 ) => P ( a :: U , b :: U | v0 ) -> P v1 -> P v2 -> P v0 -> Array U",
+      "printed": "forall r30 r48 r55. Union r30 r48 ( a :: U , b :: U | r55 ) => Lacks \"a\" r55 => Lacks \"b\" r55 => Lacks \"a\" r48 => Lacks \"c\" r48 => Union r55 ( a :: U , b :: U | r55 ) ( a :: U | r48 ) => P ( a :: U , b :: U | r55 ) -> P r30 -> P r48 -> P r55 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Lacks \"a\" v2 => Lacks \"b\" v0 => Lacks \"c\" v2 => Union v0 ( a :: U , b :: U | v0 ) ( a :: U | v2 ) => Union v1 v2 ( a :: U , b :: U | v0 ) => P ( a :: U , b :: U | v0 ) -> P v1 -> P v2 -> P v0 -> Array U",
+      "printed": "forall r30 r39 r55. Union r30 r39 ( a :: U , b :: U | r55 ) => Lacks \"a\" r39 => Lacks \"c\" r39 => Union r55 ( a :: U , b :: U | r55 ) ( a :: U | r39 ) => Lacks \"a\" r55 => Lacks \"b\" r55 => P ( a :: U , b :: U | r55 ) -> P r30 -> P r39 -> P r55 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Lacks \"a\" v2 => Lacks \"b\" v0 => Lacks \"c\" v2 => Union v0 ( a :: U , b :: U | v0 ) ( a :: U | v2 ) => Union v1 v2 ( a :: U , b :: U | v0 ) => P ( a :: U , b :: U | v0 ) -> P v1 -> P v2 -> P v0 -> Array U",
+      "printed": "forall r39 r48 r55. Lacks \"a\" r55 => Lacks \"b\" r55 => Union r39 r48 ( a :: U , b :: U | r55 ) => Lacks \"a\" r48 => Lacks \"c\" r48 => Union r55 ( a :: U , b :: U | r55 ) ( a :: U | r48 ) => P ( a :: U , b :: U | r55 ) -> P r39 -> P r48 -> P r55 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Lacks \"a\" v2 => Lacks \"b\" v0 => Lacks \"c\" v2 => Union v0 ( a :: U , b :: U | v0 ) ( a :: U | v2 ) => Union v1 v2 ( a :: U , b :: U | v0 ) => P ( a :: U , b :: U | v0 ) -> P v1 -> P v2 -> P v0 -> Array U",
+      "printed": "forall r51 r55 s56. Lacks \"a\" r51 => Lacks \"b\" r51 => Lacks \"a\" s56 => Lacks \"c\" s56 => Union r51 ( a :: U , b :: U | r51 ) ( a :: U | s56 ) => Union r55 s56 ( a :: U , b :: U | r51 ) => P ( a :: U , b :: U | r51 ) -> P r55 -> P s56 -> P r51 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Lacks \"a\" v2 => Lacks \"b\" v0 => Lacks \"c\" v2 => Union v0 ( a :: U , b :: U | v0 ) ( a :: U | v2 ) => Union v1 v2 ( a :: U , b :: U | v0 ) => P ( a :: U , b :: U | v0 ) -> P v1 -> P v2 -> P v0 -> Array U",
+      "printed": "forall r46 s47 r55. Lacks \"a\" s47 => Lacks \"c\" s47 => Union r55 ( a :: U , b :: U | r55 ) ( a :: U | s47 ) => Union r46 s47 ( a :: U , b :: U | r55 ) => Lacks \"a\" r55 => Lacks \"b\" r55 => P ( a :: U , b :: U | r55 ) -> P r46 -> P s47 -> P r55 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Lacks \"a\" v2 => Lacks \"b\" v0 => Lacks \"c\" v2 => Union v0 ( a :: U , b :: U | v0 ) ( a :: U | v2 ) => Union v1 v2 ( a :: U , b :: U | v0 ) => P ( a :: U , b :: U | v0 ) -> P v1 -> P v2 -> P v0 -> Array U",
+      "printed": "forall r51 r55 s56. Lacks \"a\" s56 => Lacks \"c\" s56 => Union r51 ( a :: U , b :: U | r51 ) ( a :: U | s56 ) => Lacks \"a\" r51 => Lacks \"b\" r51 => Union r55 s56 ( a :: U , b :: U | r51 ) => P ( a :: U , b :: U | r51 ) -> P r55 -> P s56 -> P r51 -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "order-22-581",
+   "kind": "order fixture",
+   "orders": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "D4",
+    "D4"
+   ],
+   "qsehz": [
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t3 t4 => Nub @Type t4 t4 => P t0 -> P t3 -> P t4 to argument m3 while inferring the type of merge m3 in value declaration test where t0 is an unknown type t3 is an unknown type t4 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t2 t3 => Lacks @Type t1 t2 => S t1 -> P t2 -> P t3 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t3 t4 => P t0 -> P t3 -> P t4 to argument m3 while inferring the type of merge m3 in value declaration test where t0 is an unknown type t3 is an unknown type t4 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t2 t3 => Lacks @Type t1 t2 => S t1 -> P t2 -> P t3 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m0 while inferring the type of merge m0 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m0 while inferring the type of merge m0 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Union v0 v1 ( a :: U | v0 ) => Union v2 v0 v1 => P v0 -> P v1 -> P v2 -> Array U",
+      "printed": "forall r29 r37 s38. Union r29 r37 s38 => Lacks \"a\" r37 => Union r37 s38 ( a :: U | r37 ) => P r37 -> P s38 -> P r29 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v0 => Union v0 v1 ( a :: U | v0 ) => Union v2 v0 v1 => P v0 -> P v1 -> P v2 -> Array U",
+      "printed": "forall r36 r37 s38. Lacks \"a\" s38 => Union s38 r36 ( a :: U | s38 ) => Union r37 s38 r36 => P s38 -> P r36 -> P r37 -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "order-23-3089",
+   "kind": "order fixture",
+   "orders": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "D4",
+    "D4"
+   ],
+   "qsehz": [
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"b\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"b\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U , b :: U | t1 ) ( a :: U , c :: U | t2 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m1 while inferring the type of merge m1 in value declaration test where t3 is an unknown type t4 is an unknown type t5 is an unknown type t2 is an unknown type t1 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"b\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"b\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U , b :: U | t1 ) ( a :: U , c :: U | t2 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m1 while inferring the type of merge m1 in value declaration test where t3 is an unknown type t4 is an unknown type t5 is an unknown type t2 is an unknown type t1 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U , c :: U | t0 ) ( a :: U , c :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U , c :: U | t0 ) ( a :: U , c :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v3 => Lacks \"a\" v4 => Lacks \"b\" v3 => Lacks \"c\" v4 => Union v0 v1 v3 => Union v1 ( a :: U , b :: U | v3 ) ( a :: U , c :: U | v4 ) => Union v1 v2 v4 => P v0 -> P v1 -> P v2 -> P ( a :: U , b :: U | v3 ) -> Array U",
+      "printed": "forall r35 r38 r50 r53 s54. Lacks \"b\" r35 => Lacks \"a\" r35 => Union r38 r53 r35 => Union r53 ( a :: U , b :: U | r35 ) ( a :: U , c :: U | r50 ) => Lacks \"a\" r50 => Lacks \"c\" r50 => Union r53 s54 r50 => P r38 -> P r53 -> P s54 -> P ( a :: U , b :: U | r35 ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v3 => Lacks \"a\" v4 => Lacks \"b\" v3 => Lacks \"c\" v4 => Union v0 v1 v3 => Union v1 ( a :: U , b :: U | v3 ) ( a :: U , c :: U | v4 ) => Union v1 v2 v4 => P v0 -> P v1 -> P v2 -> P ( a :: U , b :: U | v3 ) -> Array U",
+      "printed": "forall r38 s42 r50 r53 s54. Union s54 ( a :: U , b :: U | r50 ) ( a :: U , c :: U | r38 ) => Lacks \"a\" r38 => Lacks \"c\" r38 => Union s54 s42 r38 => Lacks \"b\" r50 => Lacks \"a\" r50 => Union r53 s54 r50 => P r53 -> P s54 -> P s42 -> P ( a :: U , b :: U | r50 ) -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "order-24-3802",
+   "kind": "order fixture",
+   "orders": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "D4",
+    "D4"
+   ],
+   "qsehz": [
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"c\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"c\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"b\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t2 t3 => Lacks @Type t1 t2 => S t1 -> P t2 -> P t3 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"c\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Lacks \"c\" t1 while applying a function ext of type Cons @Type t2 U t1 t3 => Lacks @Type t2 t1 => S t2 -> P t1 -> P t3 to argument S while inferring the type of ext S in value declaration test where t2 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"b\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t2 t3 => Lacks @Type t1 t2 => S t1 -> P t2 -> P t3 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( b :: U | t0 ) ( b :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( b :: U | t0 ) ( b :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> P t3 to argument m1 while inferring the type of merge m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"b\" v2 => Lacks \"b\" v4 => Lacks \"c\" v4 => Union v1 v3 ( b :: U | v4 ) => Union v3 v0 v2 => Union v3 v2 ( c :: U | v4 ) => P v0 -> P v1 -> P v2 -> P v3 -> Array U",
+      "printed": "forall r34 r46 r53 s54 t57. Lacks \"c\" t57 => Union r34 r53 ( b :: U | t57 ) => Lacks \"b\" t57 => Union r53 r46 ( c :: U | t57 ) => Lacks \"b\" r46 => Union r53 s54 r46 => P s54 -> P r34 -> P r46 -> P r53 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"b\" v2 => Lacks \"b\" v4 => Lacks \"c\" v4 => Union v1 v3 ( b :: U | v4 ) => Union v3 v0 v2 => Union v3 v2 ( c :: U | v4 ) => P v0 -> P v1 -> P v2 -> P v3 -> Array U",
+      "printed": "forall s39 r46 r53 s54 t57. Lacks \"b\" s54 => Union r53 s39 s54 => Lacks \"c\" t57 => Union r46 r53 ( b :: U | t57 ) => Lacks \"b\" t57 => Union r53 s54 ( c :: U | t57 ) => P s39 -> P r46 -> P s54 -> P r53 -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "order-A-apart",
+   "kind": "order fixture",
+   "orders": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "qsehz": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | r3 ) ( a :: U | r3 ) while applying a function disj of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> U to argument m0 while inferring the type of disj m0 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | r3 ) ( a :: U | r3 ) while applying a function disj of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> U to argument m0 while inferring the type of disj m0 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | r3 ) ( a :: U | r3 ) while applying a function disj of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> U to argument m0 while inferring the type of disj m0 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 ( a :: U ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     }
+    ]
+   }
+  },
+  {
+   "name": "order-A-lacks",
+   "kind": "order fixture",
+   "orders": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "qsehz": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 r3 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 r3 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 r3 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => Nub @Type t2 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" r2 while applying a function lack of type Lacks @Type t0 t1 => S t0 -> P t1 -> U to argument S while inferring the type of lack S in value declaration test where r2 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" r2 while applying a function lack of type Lacks @Type t0 t1 => S t0 -> P t1 -> U to argument S while inferring the type of lack S in value declaration test where r2 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" r2 while applying a function lack of type Lacks @Type t0 t1 => S t0 -> P t1 -> U to argument S while inferring the type of lack S in value declaration test where r2 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 r3 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 r3 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 r3 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t0 t1 t2 => P t0 -> P t1 -> P t2 to argument m1 while inferring the type of merge m1 in value declaration test where r3 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" r2 while applying a function lack of type Lacks @Type t0 t1 => S t0 -> P t1 -> U to argument S while inferring the type of lack S in value declaration test where r2 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" r2 while applying a function lack of type Lacks @Type t0 t1 => S t0 -> P t1 -> U to argument S while inferring the type of lack S in value declaration test where r2 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" r2 while applying a function lack of type Lacks @Type t0 t1 => S t0 -> P t1 -> U to argument S while inferring the type of lack S in value declaration test where r2 is a rigid type variable bound at (line 0, column 0 - line 0, column 0) t0 is an unknown type t1 is an unknown type"
+     }
+    ]
+   }
+  },
+  {
+   "name": "domain-b-1",
+   "kind": "domain B (QT order difference)",
+   "orders": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "accept",
+    "D4"
+   ],
+   "qsehz": [
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Nub v1 v1 => Nub v3 v3 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r31 r40 r43 s44. Union r43 ( a :: U | r40 ) r31 => Nub r31 r31 => Lacks \"a\" r40 => Union r43 s44 r40 => Nub r40 r40 => P r43 -> P ( a :: U | r40 ) -> P ( a :: U | r40 ) -> P s44 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Nub v1 v1 => Nub v3 v3 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r33 s37 r39 r43. Lacks \"a\" r33 => Union r43 s37 r33 => Nub r33 r33 => Union r43 ( a :: U | r33 ) r39 => Nub r39 r39 => P r43 -> P ( a :: U | r33 ) -> P ( a :: U | r33 ) -> P s37 -> Array U"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r29 r38 r41 s42. Union r41 ( a :: U | r38 ) r29 => Lacks \"a\" r38 => Union r41 s42 r38 => P r41 -> P ( a :: U | r38 ) -> P ( a :: U | r38 ) -> P s42 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r31 s35 r37 r41. Lacks \"a\" r31 => Union r41 s35 r31 => Union r41 ( a :: U | r31 ) r37 => P r41 -> P ( a :: U | r31 ) -> P ( a :: U | r31 ) -> P s35 -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "domain-b-17",
+   "kind": "domain B (QT order difference)",
+   "orders": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "accept",
+    "D4"
+   ],
+   "qsehz": [
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Nub v2 v2 => Union v0 ( a :: U | v1 ) v2 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v1 -> Array U",
+      "printed": "forall r31 r35 r40. Union r35 ( a :: U | r40 ) r31 => Nub r31 r31 => Lacks \"a\" r40 => P r35 -> P ( a :: U | r40 ) -> P ( a :: U | r40 ) -> P r40 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Nub v2 v2 => Union v0 ( a :: U | v1 ) v2 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v1 -> Array U",
+      "printed": "forall r33 r36 r40. Lacks \"a\" r33 => Union r40 ( a :: U | r33 ) r36 => Nub r36 r36 => P r40 -> P ( a :: U | r33 ) -> P ( a :: U | r33 ) -> P r33 -> Array U"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v2 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v1 -> Array U",
+      "printed": "forall r29 r33 r38. Union r33 ( a :: U | r38 ) r29 => Lacks \"a\" r38 => P r33 -> P ( a :: U | r38 ) -> P ( a :: U | r38 ) -> P r38 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v2 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v1 -> Array U",
+      "printed": "forall r31 r34 r38. Lacks \"a\" r31 => Union r38 ( a :: U | r31 ) r34 => P r38 -> P ( a :: U | r31 ) -> P ( a :: U | r31 ) -> P r31 -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "domain-b-3",
+   "kind": "domain B (QT order difference)",
+   "orders": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "refuse",
+    "refuse",
+    "D4",
+    "D4",
+    "refuse",
+    "D4"
+   ],
+   "qsehz": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r33 s37 r42 r46 s47. Lacks \"a\" r33 => Union r46 s37 r33 => Nub r33 r33 => Lacks \"a\" s47 => Union r46 ( a :: U | r33 ) r42 => Nub r42 r42 => P r46 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s47 could not be determined Consider adding a type annotation. in value declaration test"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r34 s39 r43 r46 s47. Lacks \"a\" s39 => Union r46 ( a :: U | r43 ) r34 => Nub r34 r34 => Lacks \"a\" r43 => Union r46 s47 r43 => Nub r43 r43 => P r46 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s39 could not be determined Consider adding a type annotation. in value declaration test"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r36 s40 r42 r46 s47. Lacks \"a\" s47 => Lacks \"a\" r36 => Union r46 s40 r36 => Nub r36 r36 => Union r46 ( a :: U | r36 ) r42 => Nub r42 r42 => P r46 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s47 could not be determined Consider adding a type annotation. in value declaration test"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function lack of type Lacks @Type t1 t2 => S t1 -> P t2 -> U to argument S while inferring the type of lack S in value declaration test where t0 is an unknown type t1 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r31 s35 r40 r44 s45. Lacks \"a\" r31 => Union r44 s35 r31 => Lacks \"a\" s45 => Union r44 ( a :: U | r31 ) r40 => P r44 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s45 could not be determined Consider adding a type annotation. in value declaration test"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r32 s37 r41 r44 s45. Lacks \"a\" s37 => Union r44 ( a :: U | r41 ) r32 => Lacks \"a\" r41 => Union r44 s45 r41 => P r44 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s37 could not be determined Consider adding a type annotation. in value declaration test"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r34 s38 r40 r44 s45. Lacks \"a\" s45 => Lacks \"a\" r34 => Union r44 s38 r34 => Union r44 ( a :: U | r34 ) r40 => P r44 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s45 could not be determined Consider adding a type annotation. in value declaration test"
+     }
+    ]
+   }
+  },
+  {
+   "name": "domain-b-7",
+   "kind": "domain B (QT order difference)",
+   "orders": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "refuse",
+    "refuse",
+    "D4",
+    "D4",
+    "refuse",
+    "D4"
+   ],
+   "qsehz": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 t2 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Union t3 t1 t4 while applying a function disj of type Union @Type t5 t6 t4 => Nub @Type t4 t4 => P t5 -> P t6 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t5 is an unknown type t6 is an unknown type t4 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 t2 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Union t3 t1 t4 while applying a function disj of type Union @Type t5 t6 t4 => Nub @Type t4 t4 => P t5 -> P t6 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t5 is an unknown type t6 is an unknown type t4 is an unknown type t0 is an unknown type t3 is an unknown type t1 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t1 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 t2 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Union t3 t1 t4 while applying a function disj of type Union @Type t5 t6 t4 => P t5 -> P t6 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t5 is an unknown type t6 is an unknown type t4 is an unknown type t1 is an unknown type t3 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 t1 t2 The instance head contains unknown type variables. Consider adding a type annotation. while solving type class constraint Prim.Row.Union t3 t1 t4 while applying a function disj of type Union @Type t5 t6 t4 => P t5 -> P t6 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t5 is an unknown type t6 is an unknown type t4 is an unknown type t0 is an unknown type t3 is an unknown type t1 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function disj of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function disj of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function disj of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function disj of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function disj of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Nub ( a :: U | t0 ) ( a :: U | t0 ) The instance head contains unknown type variables. Consider adding a type annotation. while applying a function disj of type Union @Type t1 t2 t3 => Nub @Type t3 t3 => P t1 -> P t2 -> U to argument m1 while inferring the type of disj m1 in value declaration test where t1 is an unknown type t2 is an unknown type t3 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => Union v1 ( a :: U | v1 ) v4 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r34 r43 r46 s47 t53. Union r46 ( a :: U | r43 ) r34 => Lacks \"a\" r43 => Union r46 s47 r43 => Union r43 ( a :: U | r43 ) t53 => P r46 -> P ( a :: U | r43 ) -> P ( a :: U | r43 ) -> P s47 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => Union v1 ( a :: U | v1 ) v4 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r34 r46 r49 s50 t53. Union r49 ( a :: U | r46 ) r34 => Union r46 ( a :: U | r46 ) t53 => Lacks \"a\" r46 => Union r49 s50 r46 => P r49 -> P ( a :: U | r46 ) -> P ( a :: U | r46 ) -> P s50 -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v3 => Union v0 v2 v1 => Union v1 ( a :: U | v1 ) v4 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r36 s40 r42 r46 t53. Lacks \"a\" r36 => Union r46 s40 r36 => Union r46 ( a :: U | r36 ) r42 => Union r36 ( a :: U | r36 ) t53 => P r46 -> P ( a :: U | r36 ) -> P ( a :: U | r36 ) -> P s40 -> Array U"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r36 s40 r45 r49 s50 t0. Lacks \"a\" r36 => Union r49 s40 r36 => Union r36 s50 t0 => Union r49 ( a :: U | r36 ) r45 => P r49 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s50 could not be determined t0 could not be determined Consider adding a type annotation. in value declaration test"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r37 s42 r46 r49 s50 t0. Union r46 s42 t0 => Union r49 ( a :: U | r46 ) r37 => Lacks \"a\" r46 => Union r49 s50 r46 => P r49 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s42 could not be determined t0 could not be determined Consider adding a type annotation. in value declaration test"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "AmbiguousTypeVariables"
+      ],
+      "text": "The inferred type forall r39 s43 r45 r49 s50 t0. Union r39 s50 t0 => Lacks \"a\" r39 => Union r49 s43 r39 => Union r49 ( a :: U | r39 ) r45 => P r49 -> P ... -> ... -> ... has type variables which are not determined by those mentioned in the body of the type: s50 could not be determined t0 could not be determined Consider adding a type annotation. in value declaration test"
+     }
+    ]
+   }
+  },
+  {
+   "name": "domain-b-9",
+   "kind": "domain B (QT order difference)",
+   "orders": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "refuse",
+    "D4"
+   ],
+   "qsehz": [
+    "refuse",
+    "refuse"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => Nub @Type t5 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Union t0 ( a :: U | t1 ) t2 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function merge of type Union @Type t3 t4 t5 => P t3 -> P t4 -> P t5 to argument m0 while inferring the type of merge m0 in value declaration test where t2 is an unknown type t3 is an unknown type t4 is an unknown type t5 is an unknown type t0 is an unknown type t1 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "NoInstanceFound"
+      ],
+      "text": "No type class instance was found for Prim.Row.Lacks \"a\" t0 The instance head contains unknown type variables. Consider adding a type annotation. while applying a function ext of type Cons @Type t1 U t0 t2 => Lacks @Type t1 t0 => S t1 -> P t0 -> P t2 to argument S while inferring the type of ext S in value declaration test where t1 is an unknown type t0 is an unknown type t2 is an unknown type"
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "PossiblyInfiniteInstance"
+      ],
+      "text": "Type class instance for Prim.Row.Union t0 t1 t2 is possibly infinite. while solving type class constraint Prim.Row.Union t3 t1 t0 while applying a function merge of type Union @Type t4 t1 t5 => Nub @Type t5 t5 => P t4 -> P t1 -> P t5 to argument m2 while inferring the type of merge m2 in value declaration test where t4 is an unknown type t1 is an unknown type t5 is an unknown type t3 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Nub v1 v1 => Nub v3 v3 => Union v0 ( a :: U | v1 ) v3 => Union v4 v2 v1 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r33 s37 r39 r43 s44. Lacks \"a\" r33 => Union s44 s37 r33 => Nub r33 r33 => Union r43 ( a :: U | r33 ) r39 => Nub r39 r39 => P r43 -> P ( a :: U | r33 ) -> P ( a :: U | r33 ) -> P s37 -> Array U"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "error",
+      "codes": [
+       "PossiblyInfiniteInstance"
+      ],
+      "text": "Type class instance for Prim.Row.Union t0 t1 t2 is possibly infinite. while solving type class constraint Prim.Row.Union t3 t1 t0 while applying a function merge of type Union @Type t4 t1 t5 => P t4 -> P t1 -> P t5 to argument m2 while inferring the type of merge m2 in value declaration test where t4 is an unknown type t1 is an unknown type t5 is an unknown type t3 is an unknown type t0 is an unknown type t2 is an unknown type"
+     },
+     {
+      "v": "accept",
+      "type": "Lacks \"a\" v1 => Union v0 ( a :: U | v1 ) v4 => Union v3 v2 v1 => P v0 -> P ( a :: U | v1 ) -> P ( a :: U | v1 ) -> P v2 -> Array U",
+      "printed": "forall r31 s35 r37 r41 s42. Lacks \"a\" r31 => Union s42 s35 r31 => Union r41 ( a :: U | r31 ) r37 => P r41 -> P ( a :: U | r31 ) -> P ( a :: U | r31 ) -> P s35 -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "control-design-composition",
+   "kind": "control",
+   "orders": [
+    [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    [
+     5,
+     4,
+     3,
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "accept",
+    "accept"
+   ],
+   "qsehz": [
+    "accept",
+    "accept"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( y :: U ) -> P ( x :: U , y :: U ) -> P ( z :: U ) -> Array U"
+     }
+    ]
+   }
+  },
+  {
+   "name": "control-diag-15",
+   "kind": "control",
+   "orders": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     2,
+     1,
+     0
+    ]
+   ],
+   "qt": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "qsehz": [
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse",
+    "refuse"
+   ],
+   "purs": {
+    "sig-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "sig-union": [
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     },
+     {
+      "v": "accept",
+      "type": null,
+      "printed": null
+     }
+    ],
+    "gen-nub": [
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     },
+     {
+      "v": "error",
+      "codes": [
+       "TypesDoNotUnify"
+      ],
+      "text": "Could not match type ( ... ) with type ( x :: U ... ) while solving type class constraint Prim.Row.Nub t0 t0 while applying a function disj of type Union @Type t1 t2 t0 => Nub @Type t0 t0 => P t1 -> P t2 -> U to argument m0 while inferring the type of disj m0 in value declaration test where t1 is an unknown type t2 is an unknown type t0 is an unknown type"
+     }
+    ],
+    "gen-union": [
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( x :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( x :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( x :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( x :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( x :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( x :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( x :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( x :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( x :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( x :: U ) -> Array U"
+     },
+     {
+      "v": "accept",
+      "type": "P ( x :: U ) -> P ( x :: U ) -> Array U",
+      "printed": "P ( x :: U ) -> P ( x :: U ) -> Array U"
+     }
+    ]
+   }
+  }
+ ]
+}

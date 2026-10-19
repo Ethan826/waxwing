@@ -7,7 +7,9 @@ fixture moves, D6b or retirements. The evidence follow-up (§11,
 2026-10-18) resolved the four order-dependent problems (rule Z,
 locally introduced), reported QT against QS, committed the three
 scratch checks and audited the sources; the open findings that remain
-are listed in §11.7.
+are listed in §11.7. An experiment against the installed PureScript
+compiler (§12, 2026-10-19) tested whether QT models PureScript; its
+conclusion is in §12.5.
 
 Written 2026-10-18 on branch `design-principles` from 1b45917 (ADR 014
 committed). Documents and research scripts only: no compiler source,
@@ -1001,6 +1003,14 @@ PureScript has none).
 | order differences (raw, dense, shapes; problems) | 3, 0, 0 | 7, 0, 14 | 0, 0, 0 | 0 |
 | exhaustive domains A, B: order differences (problems) | 0, 29 | — | 0, 0 | 0, 0 (Task 0) |
 
+**What these numbers establish** (added 2026-10-19). QT's order
+differences establish order dependence *in the prototype QT*, a toy
+written for this document; they do not establish it for PureScript or
+for the published approach (§12 tests that separately). The zero
+counts for QS-EHZ and for the current design are evidence of order
+independence on the problems measured (the generators, the fixtures,
+domains A and B), not a proof of it.
+
 **Where they differ: no published example.** On the 72 fixtures and the
 19 programs QT and QS give the same classes. Every difference is in
 generated problems. Shrinking the program shapes QT rejects and QS
@@ -1162,11 +1172,14 @@ recorded. Remaining figures are planning **estimates**, not a budget
 
 ### 11.7 Open findings that remain
 
-1. Order independence of QS-EHZ is measured (0 differences on the
-   campaigns, the four fixtures in every permutation, and the
-   exhaustive domains, §11.2), not proved.
+1. Order independence of QS-EHZ, and of the current design, is
+   evidence from measurement (0 differences on the campaigns, the six
+   fixtures in every permutation, and the exhaustive domains, §11.2),
+   not a proof. QT's differences are the prototype's, not PureScript's
+   (§12).
 2. Locally introduced rules N5, H and Z (Z subsumes E) need the user's
-   approval or replacement; without Z, QS has order differences.
+   approval or replacement; without Z, QS has order differences. §12.5
+   says what the PureScript experiment shows about their need.
 3. Sources not accessed (§11.5) are cited only for context.
 4. Labels only: nested field types, effect rows (rollback, joint
    fixpoint) and diagnostic texts are not prototyped.
@@ -1176,6 +1189,131 @@ recorded. Remaining figures are planning **estimates**, not a budget
    not prototyped.
 7. Proposed, unapplied: the fixture reclassifications of §7.2, D6b,
    and the retirements of §9 items 6-7.
+
+## 12. Experiment against the installed PureScript compiler (2026-10-19)
+
+Branch `purs-experiment` from main 0bab7c7. Research only
+(research/purs-row-experiment/, README with commands and outputs); no
+compiler source, test or script changed, nothing of Waxwing built.
+The question (the user's): does QT, this document's "strict
+PureScript" prototype, model what PureScript does, and does PureScript
+itself show order-dependent acceptance or types on the problems where
+the prototypes do?
+
+### 12.1 The compiler
+
+`purs --version` is `0.15.16` (npm package `purescript` 0.15.16). Tag
+v0.15.16 is commit `4c66c05a59a08b698ba5c34b48e8bf7744ecb9f6`; the
+revision audited in §11.5, `cb3c4965`, is two commits later (a CoreFn
+typo fix and derive clauses), and Entailment.hs and Environment.hs are
+byte-identical at both (`diff`, 0 lines). So the installed compiler
+runs the `unionRows`, `nubRows` and `rowLacks` code and the `Union`
+dependencies quoted in §11.5.
+
+### 12.2 Method
+
+Each problem becomes a legal PureScript module over `Prim.Row` only:
+a row is a proxy `P r`, each step one element of an array (`same`,
+`disj`, `lack`), a row of several tails is folded with `merge` (`Union`,
+plus `Nub` of the result in encoding `nub`, which is
+Record.disjointUnion's constraint; without it in encoding `union`), a
+field is added with `Cons` plus `Lacks`. Mode `sig` gives the
+declaration a signature and makes the metas the unknowns of an applied
+lambda, so nothing is generalized (Waxwing's setting); mode `gen`
+leaves the signature out and takes the metas as parameters, so
+PureScript generalizes what it can and reports the inferred type in
+its MissingTypeDeclaration warning. An order of the steps is an order
+of the array's elements: the same expressions and constraints, met in
+another order, which is a genuinely equivalent program; parameter
+order, signature-constraint order and `let` order were not permuted.
+Types were observed from the warning, compared up to renaming of type
+variables and printing order of constraints; errors by code, and their
+texts separately. Each file is compiled alone into a fresh output
+directory (an up-to-date module prints no warnings). Two runs gave
+identical output.
+
+### 12.3 What the translation cannot express
+
+- **Disjointness.** PureScript's `Union` keeps duplicate labels;
+  disjointness is `Nub u u`, which `nubRows` reduces only on a closed
+  row. So in `nub` every problem in which a merged row stays open is
+  rejected (NoInstanceFound), where Waxwing defers the fact and the end
+  default meets it. Encoding `union` drops disjointness and so admits
+  rows Waxwing refuses (control diag-15).
+- **Defaulting.** PureScript has none. With a signature an unsolved
+  constraint is an error; without one it is generalized only if one of
+  its arguments is a bare unknown (Entailment.hs `canBeGeneralized`),
+  else NoInstanceFound, or AmbiguousTypeVariables when a generalized
+  variable is not determined by the type. QS's and QT's acceptance by
+  the end default has no PureScript counterpart.
+- **Rigid hypotheses.** A signature can give `Lacks`, not that two row
+  variables are disjoint.
+- **Field types** are all `U`; only array order was permuted; five of
+  QT's 29 domain-B differences were sampled.
+
+### 12.4 Results
+
+QT, QS-EHZ and purs, per order; `sig` the same in both encodings.
+
+| Case | QT | purs `sig` | purs `gen-nub` | purs `gen-union` | Faithful for the question? |
+|---|---|---|---|---|---|
+| order-22-3634 (6 orders) | accept ×6 | NoInstanceFound ×6 | NoInstanceFound ×6 | accept ×6, one type | no: the order dependence (QS-EH's) comes from the end default, which PureScript lacks |
+| order-22-581, -23-3089, -24-3802 (2 each) | D4 ×2 | NoInstanceFound ×2 | NoInstanceFound ×2 | accept ×2, one type | no, as above |
+| order-A-lacks, order-A-apart (6 each) | refuse ×6 | NoInstanceFound ×6 (`Lacks "a" r` not entailed) | — | — | yes for the outcome: both reject in every order; error text differs by order |
+| domain-b-1, -17 (2 each; 1 solution) | **accept, D4** | NoInstanceFound ×2 | accept ×2, one type | accept ×2, one type | yes: PureScript's pairwise dependency improvement unifies `m1` and `m2` in both orders, so QT's difference is the prototype's, not PureScript's |
+| domain-b-3 (6; no solution) | **refuse ×3, D4 ×3** | NoInstanceFound ×6 | NoInstanceFound ×3, AmbiguousTypeVariables ×3 | the same | yes: acceptance the same in every order; the error kind depends on the order |
+| domain-b-7 (6; no solution) | **refuse ×3, D4 ×3** | NoInstanceFound ×6 | NoInstanceFound ×6 | **accept ×3, AmbiguousTypeVariables ×3** | partly: `union` drops disjointness, so the accepted orders are PureScript's semantics, not Waxwing's |
+| domain-b-9 (2; no solution) | **refuse, D4** | NoInstanceFound ×2 | **PossiblyInfiniteInstance, accept** | **the same** | yes: a legal program, and its constraints (`m1 = m2` and `m1 = (a | m2 ⊎ m3)`) have no solution in any row semantics |
+| control design-composition | accept ×2 | accept ×2 | accept ×2, one type | accept ×2, one type | control |
+| control diag-15 (overlap) | refuse ×6 | `nub`: TypesDoNotUnify ×6; `union`: accept ×6 | TypesDoNotUnify ×6 | accept ×6 | control (shows `Nub` is what enforces disjointness) |
+
+Inferred types: wherever every order was accepted, all orders had one
+type. Diagnostics: in most `sig` rows the first error's text differs
+between orders (which constraint is reported first), as with every
+design here.
+
+### 12.5 Conclusion
+
+1. **In Waxwing's setting** (an explicit signature, nothing
+   generalized) PureScript rejects every sampled case in every order:
+   its acceptance never depends on the order there, only its error
+   text does. It also rejects the cases with a unique least solution
+   that QS-EHZ accepts (order-22-*, domain-b-1, -17), since it has no
+   default: they would need annotations.
+2. **In PureScript's own generalizing mode** PureScript 0.15.16 does
+   show order-dependent acceptance on legal programs: domain-b-9 (both
+   encodings: rejected as possibly infinite in one order, accepted with
+   unsatisfiable constraints in its type in the other) and domain-b-7
+   (encoding `union`), and order-dependent error kinds on domain-b-3.
+   So the published directional solver is not order independent
+   either; it accepts in those orders by generalizing what it cannot
+   solve, which Waxwing does not do.
+3. **QT models PureScript only in part.** On domain-b-1 and -17 QT's
+   order dependence does not occur in PureScript (the compiler's
+   pairwise improvement catches what QT's misses); on domain-b-9 both
+   show it, in the same direction. QT's numbers in §11 describe QT,
+   not PureScript.
+4. **The need for N5, H and Z** (ADR 014 point 4). The order
+   dependence they repair (the six fixtures) arises together with the
+   end-of-body default `{}`, an adapted rule (§11.5) that PureScript
+   lacks. With PureScript's rule instead (an unsolved predicate is an
+   error), those cases are rejected in every order and the local rules
+   are not needed for them; the cost is the annotations those programs
+   would then need. So the experiment demonstrates the need for N5, H
+   and Z *only relative to keeping the empty-row default for metas
+   that waiting predicates constrain*; it does not demonstrate that
+   published predicate solving alone needs them. Not measured: how
+   many of the generated or fixture programs a no-default QS would
+   reject (Waxwing's lowering already defaults an unconstrained tail to
+   `{}`, ADR 013, so "no default" would apply only to metas that a
+   waiting predicate constrains).
+5. Status unchanged: not approved; no solver is adopted.
+
+Open, from this experiment: the no-default variant's annotation burden
+(item 4) is unmeasured; only five of QT's 29 domain-B cases and only
+array order were tried; the translation's limits (§12.3) mean a
+PureScript result on a case marked "no" or "partly" says nothing about
+Waxwing's semantics.
 
 ## References
 

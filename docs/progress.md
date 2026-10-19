@@ -6503,3 +6503,20 @@ Results in docs/plans/2026-10-18-row-merge-qualified-types.md §11.
   introduced (N5, H, Z).
 - Cost: spent and remaining separated per path (estimates). Open
   findings in §11.7. Tasks 5-10 and B0-B3 remain unauthorized.
+
+## R005 Tranche B: PureScript experiment (2026-10-19)
+
+Branch `purs-experiment` from main 0bab7c7. Research and docs only;
+nothing of Waxwing built, verify not run. research/purs-row-experiment/
+translates the six order fixtures, five of QT's 29 domain-B order
+differences and two controls into legal PureScript over `Prim.Row`
+(176 programs: every order, encodings `nub`/`union`, modes `sig`/`gen`)
+and compiles each with the installed purs 0.15.16 (tag commit
+4c66c05a; Entailment.hs and Environment.hs identical to the audited
+cb3c4965). Findings (design §12): with a signature (Waxwing's setting)
+PureScript rejects every sampled case in every order; generalizing, it
+shows order-dependent acceptance on domain-b-9 and -7 and error kinds on
+-3; QT's differences on domain-b-1 and -17 do not occur in PureScript.
+The need for N5, H and Z is shown only relative to keeping the
+empty-row default. Claims about QT and the zero counts softened in the
+design (§11.2). Status unchanged: not approved.

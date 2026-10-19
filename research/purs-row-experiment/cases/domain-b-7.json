@@ -1,0 +1,60 @@
+{
+ "name": "domain-b-7",
+ "from": "node pick-domain-b.mjs 7: QT's order difference 7 of domain B",
+ "hyp": {
+  "lacks": {},
+  "apart": []
+ },
+ "steps": [
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0",
+     "m1"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m0",
+     "m2"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m1"
+    ]
+   },
+   "r": {
+    "fields": [
+     "a"
+    ],
+    "tails": [
+     "m0",
+     "m3"
+    ]
+   }
+  },
+  {
+   "k": "dis",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m1"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m2"
+    ]
+   }
+  }
+ ]
+}
