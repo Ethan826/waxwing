@@ -4,13 +4,15 @@ import { checked, rejected, spanAt } from './support.mjs';
 import { checkedPoly } from './phases.mjs';
 import { assertDiagnostic } from './r005b-support.mjs';
 
-// R005 Tranche B Task 4: rows with several tails unify by forced moves
-// (design §2.1), on check-phase sources with no literal of two spreads
-// (plan, "Test stages"). An equation that would wait reaches Task 5's
-// placeholder; a row of several tails under a specialization key reaches
-// Task 8's.
+// R005 Tranche B Task 4: rows with several tails unify, on check-phase
+// sources with no literal of two spreads (plan, "Test stages"). Since B2
+// only the one-tail rules decide (no sum rule, bounds or commits): a
+// residue with two or more metas on a side reaches placeholder P1, which
+// B3's predicates replace; a row of several tails under a specialization
+// key reaches Task 8's.
 const main = ' fn main(): Int = 0;';
-const waits = 'R005B placeholder: equations that wait are solved in Task 5';
+const waits = 'R005B placeholder: rows with two unknown tails on one side '
+  + 'are solved in Task B3';
 const lowered = 'R005B placeholder: rows with several tails are lowered in '
   + 'Task 8';
 const at = (text, nth = 0) => ({ text, nth });
@@ -37,7 +39,7 @@ test('a field written beside two tails is read; one not written is missing',
     assert.deepEqual(found.span, spanAt(source, 'a', 0));
   });
 
-test('a constant with two homes waits: Task 5\'s placeholder, at the call',
+test('a constant with two homes waits: placeholder P1, at the call',
   () => {
     const source = 'fn f(w: { ...r, ...s }): Int = 0; '
       + 'fn main(): Int = f({ a: 1 });';
@@ -46,34 +48,36 @@ test('a constant with two homes waits: Task 5\'s placeholder, at the call',
     assert.deepEqual(found.span, spanAt(source, '{ a: 1 }'));
   });
 
-// R10.2: a bound the written lacks prune to nothing makes U4 bind the
-// meta to `{}`; the refusal is still the lack's text, never `Expected {},
-// found …` (fixtures lone-meta-lack and -two, one tail, since Task 3).
+// Two unknown tails against labels: before B2 a bound the written lacks
+// pruned to nothing made U4 bind both metas to `{}` and the lack's text
+// was reported (R10.2), and with one tail lacking the label a commit put
+// it in the other. Both were the removed machinery's, so both now reach
+// P1; B4's H restores the first's Contradiction, with the written fact's
+// text preferred (R10.2's principle, plan §10 decision 5), and leaves the
+// second Unresolved. The one-tail fixtures lone-meta-lack and -two keep
+// D1 through the bind rule.
 const granted = clauses => 'fn granted2(p: { ...r, ...s }): Bool '
   + `where ${clauses} = true; `;
 
-test('two lacking tails: the earlier clause is named (R10.2)', () => {
-  for (const argument of ['{ admin: false }', '{ name: 1, admin: false }']) {
-    const source = `${granted('r lacks { admin }, s lacks { admin }')}`
-      + `fn main(): Int = { let b = granted2(${argument}); 0 };`;
-    assertDiagnostic(source, { code: 'E_TYPE',
-      message: 'admin is not allowed here: r lacks { admin }',
-      at: at(argument),
-      notes: [{ message: 'required here', at: at('admin') }] });
+test('two tails against labels reach P1, lacking or not', () => {
+  for (const clauses of ['r lacks { admin }, s lacks { admin }',
+    's lacks { admin }']) {
+    for (const argument of ['{ admin: false }',
+      '{ name: 1, admin: false }']) {
+      const source = `${granted(clauses)}`
+        + `fn main(): Int = { let b = granted2(${argument}); 0 };`;
+      const found = rejected(source, 'E_INTERNAL');
+      assert.equal(found.message, waits);
+      assert.deepEqual(found.span, spanAt(source, argument));
+    }
   }
 });
 
-test('one lacking tail: the other takes the label (forced by a fact)', () => {
-  const source = `${granted('s lacks { admin }')}`
-    + 'fn main(): Int = { let b = granted2({ admin: false }); 0 };';
-  checkedPoly(source);
-  assert.equal(rejected(source, 'E_INTERNAL').message, lowered);
-});
-
 // The old inputs of the two probes Task 4 rewrote (rows `r001-lacks`,
-// `r005b-self-apart`) stay rejected, with their current texts: since
-// Task 4 the bound's pruning (U2, U4) refuses them before the guard the
-// rows now isolate.
+// `r005b-self-apart`) stay rejected, with their current texts: from Task
+// 4 to B2 the bound's pruning (U2, U4) refused them before the guard the
+// rows now isolate; since B2 the bind rule and the rigid pair's check
+// do.
 test('a lone meta against a label it lacks is still refused', () => {
   const source = 'fn k(y: { ...r }): { a: Int, ...r } = k(y); '
     + 'fn f(q: { a: Int }): Int = { let u = k(q); 1 }; fn main(): Int = 0;';

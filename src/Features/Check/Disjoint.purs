@@ -20,7 +20,6 @@ import Domain.Type (Ty)
 import Domain.Type.Record (RecordRow)
 import Features.Check.FlatRecord (Flat, flatten)
 import Features.Check.Lacks (addLackTable, lacksOf)
-import Features.Check.Narrow (prune)
 import Features.Check.Refused (Solving, refusedBy)
 import Features.Check.RowStore (Because, Lack, partnersOf, withApart)
 import Features.Check.Subst (Flex(..), Subst, onStore, storeOf)
@@ -71,17 +70,15 @@ tailsApart solving lack ones others subst = foldM paired subst
 -- `tail` lacks `label`. A rigid must lack it by hypothesis (D3'' for a
 -- pair's reason). A meta bound since the requirement was made passes it
 -- to its image: the label must not be among the image's fields, and each
--- of its tails lacks it. An unbound meta records it, with its reason, and
--- its upper bound loses the label (U2, Features.Check.Narrow).
+-- of its tails lacks it. An unbound meta records it, with its reason.
 requireLack ∷ Solving → Lack → Subst → Flex → String → Either Failure Subst
 requireLack solving lack subst tail label = case tail of
   Rigid _
     | Set.member label (lacksOf subst tail) → Right subst
     | otherwise → refusedBy solving.failed subst (Just tail) (Tuple label lack)
   Meta _
-    | bare tail image → prunedTail solving
+    | bare tail image → Right
         (addLackTable tail (Map.singleton label lack) subst)
-        tail
     | Array.elem label (labelsOf image) →
         refusedBy solving.failed subst Nothing (Tuple label lack)
     | otherwise → foldM inherited subst image.tails
@@ -90,27 +87,26 @@ requireLack solving lack subst tail label = case tail of
   inherited reached part = requireLack solving lack reached part label
 
 -- `one # other` for two tails. Bound since the requirement was made,
--- their images are decomposed instead. A meta apart from itself holds
--- nothing, so it is bound to `{}`; a rigid apart from itself is D3'; two
--- rigids need the body's hypothesis (D3); otherwise the pair is stored,
--- and a meta's upper bound loses a rigid it is now apart from (U2).
+-- their images are decomposed instead. A rigid apart from itself is D3';
+-- two rigids need the body's hypothesis (D3); otherwise the pair is
+-- stored, a meta apart from itself included (plan §2.7: N5, which bound
+-- it to `{}`, was removed in B2; `{}` meets the pair, and a label later
+-- bound into the meta meets it on the image, D2).
 requireApart ∷ Solving → Lack → Subst → Flex → Flex → Either Failure Subst
 requireApart solving lack subst one other =
-  if alone one && alone other then tailPair solving lack.because subst one other
+  if alone one && alone other then tailPair lack.because subst one other
   else requireDisjoint solving lack subst (row one) (row other)
   where
   alone tail = bare tail (flatten subst (row tail))
 
-tailPair ∷ Solving → Because → Subst → Flex → Flex → Either Failure Subst
-tailPair solving because subst one other = case one, other of
-  Meta meta, Meta again | meta == again → solving.emptied subst meta
+tailPair ∷ Because → Subst → Flex → Flex → Either Failure Subst
+tailPair because subst one other = case one, other of
   Rigid _, Rigid _
     | one == other → Left (Refused (Twice one because))
     | Map.member one (partnersOf (storeOf subst) other) → Right subst
     | otherwise → Left
         (Refused (Unproven (min one other) (max one other) because))
-  _, _ → pruneBoth solving one other
-    (onStore (withApart one other because) subst)
+  _, _ → Right (onStore (withApart one other because) subst)
 
 -- Design §3.1's last paragraph: a row's own parts are disjoint, each tail
 -- lacking each label and each two tails apart, required where the row is
@@ -136,19 +132,6 @@ ownPairs solving lack tails subst = foldM paired subst
 -- metas at a use or two rigids in the body: stored as it is.
 seedApart ∷ Flex → Flex → Because → Subst → Subst
 seedApart one other because = onStore (withApart one other because)
-
-pruneBoth ∷ Solving → Flex → Flex → Subst → Either Failure Subst
-pruneBoth solving one other subst = prunedTail solving subst one
-  >>= pruneOther
-  where
-  pruneOther reached = prunedTail solving reached other
-
--- The one place this module narrows a meta's upper bound (U2): the tail
--- if it is a meta, nothing for a rigid.
-prunedTail ∷ Solving → Subst → Flex → Either Failure Subst
-prunedTail solving subst = case _ of
-  Meta meta → prune solving subst meta
-  Rigid _ → Right subst
 
 -- Whether the flattened row is the tail alone: unbound, or rigid.
 bare ∷ Flex → Flat → Boolean

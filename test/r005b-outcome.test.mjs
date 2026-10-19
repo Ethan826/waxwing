@@ -27,6 +27,19 @@ test('a genuine inconsistency is a Contradiction', () => {
   assert.equal(lacked.v, 'refuse');
 });
 
+// R005 Tranche B B2: the refusals only upper bounds and the sum rule made
+// (`Outside`, `Derived`) go with them, and so do their rows of the
+// classifier's table.
+test('no refusal of the removed bound and sum rules remains', () => {
+  for (const removed of ['Outside', 'Derived']) {
+    assert.equal(failures[removed], undefined, removed);
+  }
+  for (const kept of ['Forbidden', 'Overlap', 'MayHold', 'Unproven',
+    'Twice']) {
+    assert.equal(typeof failures[kept], 'function', kept);
+  }
+});
+
 test('depth exhaustion is no verdict: the Limit stop', () => {
   const found = outcomeOf(new Left(failures.TooDeep.value));
   assert.equal(found.constructor.name, 'Left');

@@ -1,43 +1,30 @@
 module Features.Check.RowSettle (settle) where
 
 import Prelude
-import Prim hiding (Row)
-import Control.Monad.Rec.Class (Step(..))
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe')
-import Domain.Type (Ty)
-import Domain.Type.Record (RecordRow)
 import Features.Check.RecordTail (bindTail, shareTails)
 import Features.Check.Refused (Failed)
-import Features.Check.RowPlacing (placing)
-import Features.Check.RowResidue (Exam, Residue, Side, constants)
+import Features.Check.RowResidue (Residue, Side, constants)
 import Features.Check.Subst (Flex(..), Subst)
-import Features.Check.UnifyFailure (Failure)
+import Features.Check.UnifyFailure (Failure(..))
 
-type Row = RecordRow (Ty Flex) Flex
-
--- Steps 6-8 of R005 Tranche B design §2.1, once the sum rule changes
--- nothing (rules §6, §8). A side that is one meta alone is bound to the
+-- The one-tail rules on a residue with metas (ADR 013 rules 1-3; R005
+-- Tranche B plan §1.2): a side that is one meta alone is bound to the
 -- other side (of two bare metas the newer, the larger, to the older, as
--- unification binds type metas). One meta on each side, both with
--- constants: one fresh remainder shared. Otherwise each constant's homes:
--- one with none is placed anyway, so the fact excluding it reports
--- itself; one with a single home is committed and the equation examined
--- again; constants each with several homes, or none left with metas on
--- both sides, wait: Task 5 solves equations that wait, and until then
--- they reach this placeholder, never a guess.
-settle
-  ∷ Failed → Row → Row → Exam → Residue → Either Failure (Step Exam Subst)
-settle failed left right exam found
-  | lone found.mine && lone found.theirs = Done <$> bareMetas failed exam.subst
-      found
-  | lone found.mine = Done <$> alone failed exam.subst found.mine found.theirs
-  | lone found.theirs = Done <$> alone failed exam.subst found.theirs
-      found.mine
-  | single found.mine && single found.theirs = Done <$> shared failed exam.subst
-      found
-  | otherwise = placing failed left right exam found
+-- unification binds type metas); one meta on each side, both with
+-- constants, share one fresh remainder. A residue with two or more metas
+-- on a side reaches placeholder P1, never a guess: B3 makes such rows
+-- one unknown tail and `Merge` predicates, and P1 becomes the guard of
+-- that invariant. (Task 4's sum rule, bounds and commits went in B2.)
+settle ∷ Failed → Subst → Residue → Either Failure Subst
+settle failed subst found
+  | lone found.mine && lone found.theirs = bareMetas failed subst found
+  | lone found.mine = alone failed subst found.mine found.theirs
+  | lone found.theirs = alone failed subst found.theirs found.mine
+  | single found.mine && single found.theirs = shared failed subst found
+  | otherwise = Left (Placeholder twoUnknown)
 
 bareMetas ∷ Failed → Subst → Residue → Either Failure Subst
 bareMetas failed subst found = maybe' (const (Right subst)) bound
@@ -78,3 +65,6 @@ lone side = single side && Array.null (constants side)
 
 single ∷ Side → Boolean
 single side = Array.length side.metas == 1
+
+twoUnknown ∷ String
+twoUnknown = "rows with two unknown tails on one side are solved in Task B3"

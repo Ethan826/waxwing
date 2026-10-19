@@ -5,9 +5,8 @@ import Domain.Row (Label)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Occurrence (OccurrenceId)
 import Data.Maybe (Maybe)
-import Features.Check.Because (Because, Lack, Pair, WrittenLack)
+import Features.Check.Because (Because, Pair, WrittenLack)
 import Features.Check.Flex (Flex)
-import Features.Check.RowBound (Atom, Narrowing)
 
 -- Types and rows are resolved under the substitution reached at the
 -- failure: a mismatch names the first pair of subterms that differ, left
@@ -51,15 +50,11 @@ data Failure
 -- asked to lack a label a pair needs (D3''); `Unproven`, two rigid tails
 -- asked to be disjoint without the hypothesis (D3); `Twice`, one rigid
 -- tail asked to be disjoint from itself (D3'). Each keeps its reason.
--- Task 4 (design §2.5, R10): `Outside`, an atom a meta must hold that its
--- upper bound excludes, with the bound's narrowings; `Derived`, a label
--- refused by a lack whose reason is an equation (`Equated`). Both are D6,
--- whose rendering is Task 6's.
+-- (Task 4's `Outside` and `Derived`, refusals only upper bounds and the
+-- sum rule made, went with them in B2.)
 data Refusal
   = Forbidden String WrittenLack
   | Overlap String Pair (Maybe Int)
   | MayHold Flex String Because
   | Unproven Flex Flex Because
   | Twice Flex Because
-  | Outside Atom (Array Narrowing)
-  | Derived String Lack

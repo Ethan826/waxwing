@@ -24,12 +24,12 @@ const metasOf = cs => [...new Set(cs.flatMap(c => (c.k === 'lacks' ? [c.v]
   : [...c.l.tails, ...c.r.tails])).filter(isMeta))].sort();
 
 // Design §2.7's measure as state changes: N metas each bound once, N.L
-// lacks, (N + R)(N + R + 1) pair sides, a bound set and shrunk K + 1
-// times per meta (research/open-row-merge/exhaustive-run.mjs).
+// lacks, (N + R)(N + R + 1) pair sides (research/open-row-merge/
+// exhaustive-run.mjs; its term for upper bounds went with them in B2).
 const measure = (P, K, L) => {
   const N = P * (1 + K);
   const R = K - L;
-  return N + N * L + (N + R) * (N + R + 1) + N * (K + 1);
+  return N + N * L + (N + R) * (N + R + 1);
 };
 
 const defect = (t, kind, ...more) => {

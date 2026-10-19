@@ -1,5 +1,6 @@
 module Features.Check.RecordTail
-  ( Share
+  ( Fields
+  , Share
   , bindTail
   , shareTails
   , solvingWith
@@ -21,12 +22,9 @@ import Features.Check.FlatRecord (flatten)
 import Features.Check.Binding (exceedsLimit)
 import Features.Check.Disjoint (ownPairs, requireDisjoint, requireLack)
 import Features.Check.Lacks (addLackTable, lacksIn)
-import Features.Check.Narrow (prune)
-import Features.Check.RecordTailBound (Fields, narrowedRests, within)
 import Features.Check.Refused (Failed, Solving, refusedBy)
 import Features.Check.RowStore
   ( Because
-  , Bound
   , Lack
   , counted
   , partnersOf
@@ -34,11 +32,12 @@ import Features.Check.RowStore
   , stamped
   , withoutPairs
   )
-import Features.Check.RowStoreBound (boundOf, withoutBound)
 import Features.Check.Subst (Flex(..), Subst(..), onStore, resolve, storeOf)
 import Features.Check.UnifyFailure (Failure(..))
 
 type Row = RecordRow (Ty Flex) Flex
+
+type Fields = Array (Tuple String (Ty Flex))
 
 -- One of two meta tails, and the fields and rigid tails the other side
 -- gives it, beside the shared remainder.
@@ -46,17 +45,16 @@ type Share = { meta ∷ Int, fields ∷ Fields, rigids ∷ Array Flex }
 
 -- The bind rule (R005 Tranche B design §3.2, rules §7): binds an unbound
 -- meta to `fields` and the tails `rests`. None of the fields may be a
--- label the meta lacks (step 1), and the image's constants must lie
--- within its upper bound (step 2, U3). What it lacks passes to each rest
--- with its reason: a meta rest lacks it too, with the fields' own labels;
--- a rigid rest must already lack both, since nothing can be added to a
+-- label the meta lacks (step 1). What it lacks passes to each rest with
+-- its reason: a meta rest lacks it too, with the fields' own labels; a
+-- rigid rest must already lack both, since nothing can be added to a
 -- signature's variable (steps 3 and 5). Then the occurs check (step 7);
 -- the meta is bound, stamped with the requirement's span, and each pair
 -- it was in is required of its image, decomposed in full
--- (Features.Check.Disjoint, step 4); the image's own tails are required
--- apart (step 5); and each meta rest is narrowed to the bound less the
--- image's constants (step 6, U3). A refusal is reported by the fact's
--- reason (Features.Check.Refused).
+-- (Features.Check.Disjoint, step 4); and the image's own tails are
+-- required apart (step 5). A refusal is reported by the fact's reason
+-- (Features.Check.Refused). (Task 4's steps 2 and 6, the upper bound U3,
+-- went with the bounds in B2.)
 bindTail ∷ Failed → Subst → Int → Fields → Array Flex → Either Failure Subst
 bindTail failed subst meta fields rests =
   maybe' fitting (refusedBy failed subst Nothing)
@@ -64,23 +62,19 @@ bindTail failed subst meta fields rests =
   where
   solving = solvingWith failed
   lacking = lacksIn subst (Meta meta)
-  bound = boundOf (storeOf subst) meta
   forbidden label = Tuple label <$> Map.lookup label lacking
 
   partners ∷ Array (Tuple Flex Because)
   partners = Map.toUnfoldable (partnersOf (storeOf subst) (Meta meta))
-  fitting _ = within failed subst bound fields rests
-    >>= passed solving lacking fields rests
+  fitting _ = passed solving lacking fields rests subst
     >>= place failed meta (recordRow fields rests)
-    >>= repaired solving { meta, bound, partners, fields, rests }
+    >>= repaired solving { meta, partners, fields, rests }
 
--- Steps 4, 5 (pairs), 6 and 8, once the meta is bound: each pair it was
--- in required of its image, the image's own tails apart, each meta rest
--- narrowed.
+-- Steps 4 and 5 (pairs), once the meta is bound: each pair it was in
+-- required of its image, the image's own tails apart.
 repaired
   ∷ Solving
   → { meta ∷ Int
-    , bound ∷ Maybe Bound
     , partners ∷ Array (Tuple Flex Because)
     , fields ∷ Fields
     , rests ∷ Array Flex
@@ -90,25 +84,18 @@ repaired
 repaired solving binding placed =
   foldM pairedWith (onStore settled placed) binding.partners
     >>= ownPairs solving plain binding.rests
-    >>= narrowedRests solving binding.bound binding.fields binding.rests
   where
   meta = binding.meta
-  settled = withoutPairs (Meta meta) <<< stamped meta <<< withoutBound meta
-    <<< counted
+  settled = withoutPairs (Meta meta) <<< stamped meta <<< counted
   pairedWith reached (Tuple partner because) = requireDisjoint solving
     { because, from: Just meta }
     reached
     (recordRow binding.fields binding.rests)
     { fields: [], tails: [ partner ] }
 
--- The rules' view of the caller: its mismatch, and the empty binding.
+-- The rules' view of the caller: its mismatch.
 solvingWith ∷ Failed → Solving
-solvingWith failed = { failed, emptied: emptiedBy failed }
-
--- The empty row, which a meta apart from itself, or whose bound is
--- empty, is (design §3.1, U4).
-emptiedBy ∷ Failed → Subst → Int → Either Failure Subst
-emptiedBy failed subst meta = bindTail failed subst meta [] []
+solvingWith failed = { failed }
 
 -- What the meta lacks, passed on to each rest (steps 3 and 5).
 passed
@@ -123,9 +110,7 @@ passed solving lacking fields rests subst = foldM handed subst rests
   own = Map.union lacking (Map.fromFoldable (map plainLack fields))
   plainLack (Tuple label _) = Tuple label plain
   handed reached tail = case tail of
-    Meta meta | unbound reached tail → prune solving
-      (addLackTable tail own reached)
-      meta
+    Meta _ | unbound reached tail → Right (addLackTable tail own reached)
     _ → foldM (lackedBy tail) reached
       (Map.toUnfoldable lacking <> map plainLack fields)
   lackedBy tail reached (Tuple label lack) = requireLack solving lack reached

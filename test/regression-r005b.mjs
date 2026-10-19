@@ -73,10 +73,10 @@ export const r005bProbes = {
         + required);
     done(context);
   },
-  // One rigid in both rows is D3'. Since Task 4 `g(p, p)` is refused
-  // twice over (the second meta's bound loses the rigid it is apart from,
-  // U2, and U4 empties it); the second argument here carries a meta of its
-  // own, so no bound arises and the pair's own check is the one guard.
+  // One rigid in both rows is D3'. From Task 4 to B2 `g(p, p)` was
+  // refused twice over (the second meta's bound lost the rigid it was
+  // apart from, U2, and U4 emptied it); the second argument here carries a
+  // meta of its own, so the pair's own check is the one guard.
   'r005b-self-apart': context => {
     expect(context, 'rigid apart from itself allowed',
       `${g}fn h(p: { ...r }): Int = g(p, p);${main}`,
@@ -122,14 +122,13 @@ export const r005bProbes = {
       `fn swap(p: { ...r, ...s }): { ...s, ...r } = p;${main}`, 'accepted');
     done(context);
   },
-  // A lone meta whose bound a written lack prunes to nothing is D1 (R10.2).
-  'r005b-pruned-reason': context => {
-    expect(context, 'pruning fact forgotten',
-      'fn granted(p: { ...r }): Bool where r lacks { admin } =\n'
-        + '  { ...p, admin: true }.admin;\n'
-        + 'fn main(): Int = { let b = granted({ admin: false }); 0 };\n',
-      'E_TYPE admin is not allowed here: r lacks { admin } '
-        + '@{ admin: false } [required here @admin]');
+  // A meta apart from itself keeps the pair (N5 removed, B2): a label
+  // later bound into it is D2, never `Expected {}, found …`.
+  'r005b-self-pair': context => {
+    expect(context, 'meta apart from itself emptied',
+      `${g}fn main(): Int = { let f = fn(p) => g(p, p); f({ x: 1 }) };`,
+      'E_TYPE Field x is in both records: r disjoint s @{ x: 1 } '
+        + `[first written here @{ x: 1 }] ${required}`);
     done(context);
   }
 };

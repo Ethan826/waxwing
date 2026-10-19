@@ -81,5 +81,3 @@ refusalReason = case _ of
   MayHold _ _ because → Just because
   Unproven _ _ because → Just because
   Twice _ because → Just because
-  Derived _ lack → Just lack.because
-  Outside _ _ → Nothing

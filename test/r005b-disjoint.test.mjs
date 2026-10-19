@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checked, rejected } from './support.mjs';
 import { checkedPoly } from './phases.mjs';
-import { assertDiagnostic, wired } from './r005b-support.mjs';
+import { assertDiagnostic } from './r005b-support.mjs';
 
 // R005 Tranche B Task 3: persistent disjointness on single-tail rows, no
 // spread literal (design §3, §4; plan Task 3). Approved texts: D2 `Field
@@ -58,15 +58,22 @@ test('a decomposed lack keeps its clause: D2 unless a lacks names it', () => {
 });
 
 // `{}` is Unit's literal; the empty record value is a removal's result.
-test('a meta apart from itself is the empty row', () => {
-  const lambda = '{ let f = fn(p) => g(p, p); ';
-  checked(`${g}fn main(): Int = ${lambda}f({ x: 1 } without { x }) };`);
-  checked(`${g}fn h(e: {}): Int = ${lambda}f(e) }; fn main(): Int = 0;`);
-  const found = wired(`${g}fn main(): Int = ${lambda}f({ x: 1 }) };`);
-  assert.equal(found?.code, 'E_TYPE');
-  const free = 'fn g(a: { ...r }, b: { ...s }): Int = 0; ';
-  checked(`${free}fn main(): Int = ${lambda}f({ x: 1 }) };`);
-});
+// Since R005 Tranche B B2 a meta apart from itself keeps the pair (plan
+// §2.7, N5 removed): `{}` meets it, and a label later bound into the meta
+// meets the pair on its image, an overlap (D2). Before B2 the meta was
+// bound to `{}` at once and `f({ x: 1 })` read `Expected {}, found { x:
+// Int }` (row `r005b-self-pair`).
+test('a meta apart from itself keeps the pair: an overlap once it holds',
+  () => {
+    const lambda = '{ let f = fn(p) => g(p, p); ';
+    checked(`${g}fn main(): Int = ${lambda}f({ x: 1 } without { x }) };`);
+    checked(`${g}fn h(e: {}): Int = ${lambda}f(e) }; fn main(): Int = 0;`);
+    rejects(`${g}fn main(): Int = ${lambda}f({ x: 1 }) };`,
+      'Field x is in both records: r disjoint s', at('{ x: 1 }'),
+      [note('first written here', '{ x: 1 }'), clause()]);
+    const free = 'fn g(a: { ...r }, b: { ...s }): Int = 0; ';
+    checked(`${free}fn main(): Int = ${lambda}f({ x: 1 }) };`);
+  });
 
 const tagged = clauses => `${g}fn tagged(p: { id: Int, ...r }, q: { ...s }): `
   + `Int${clauses} = g(p, q); fn main(): Int = 0;`;

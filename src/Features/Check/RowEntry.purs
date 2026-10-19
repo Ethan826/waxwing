@@ -6,7 +6,6 @@ module Features.Check.RowEntry
   , lacking
   , bindings
   , facts
-  , exclusions
   , changes
   , solverMetas
   , module Features.Check.RowOutcome
@@ -29,16 +28,12 @@ import Features.Check.Disjoint
   , seedApart
   , wellFormed
   )
-import Features.Check.FlatRecord (flatten)
-import Features.Check.Homes (admits)
 import Features.Check.Lacks (addLacks)
 import Features.Check.RecordTail (solvingWith)
 import Features.Check.Refused (Solving)
 import Features.Check.RowOutcome (RowOutcome(..), outcome)
-import Features.Check.RowResidue (atomOf, constants, residue)
 import Features.Check.RowStore
-  ( Atom(..)
-  , Because(..)
+  ( Because(..)
   , RowStore(..)
   , changesOf
   , plain
@@ -104,17 +99,16 @@ bindings (Subst found) = Array.mapMaybe bound (Map.toUnfoldable found.types)
     TVar tail → Just { meta, labels: [], tails: [ tail ] }
     _ → Nothing
 
--- The facts on tails: lacks, pairs (each once), and upper bounds.
+-- The facts on tails: lacks, and pairs (each once; a meta apart from
+-- itself once, as itself twice).
 facts
   ∷ Subst
   → { lacks ∷ Array { tail ∷ Flex, labels ∷ Array String }
     , apart ∷ Array (Tuple Flex Flex)
-    , upper ∷ Array { meta ∷ Int, labels ∷ Array String, rigids ∷ Array Flex }
     }
 facts subst =
   { lacks: map lacked (Map.toUnfoldable store.lacks)
   , apart: Array.concatMap paired (Map.toUnfoldable store.apart)
-  , upper: map bounded (Map.toUnfoldable store.upper)
   }
   where
   RowStore store = storeOf subst
@@ -122,43 +116,14 @@ facts subst =
     { tail, labels: Array.fromFoldable (Map.keys table) }
   paired (Tuple one table) = Array.mapMaybe (ordered one)
     (Array.fromFoldable (Map.keys table))
-  ordered one other = if one < other then Just (Tuple one other) else Nothing
-  bounded (Tuple meta bound) =
-    { meta
-    , labels: Array.mapMaybe labelAtom (Array.fromFoldable bound.atoms)
-    , rigids: Array.mapMaybe rigidAtom (Array.fromFoldable bound.atoms)
-    }
-
--- For `left = right` under `subst`, each constant of the residue and each
--- meta of the other side that homes excludes (design §2.1 step 7), as
--- `{ meta, label }` or `{ meta, rigid }`: a test checks that no solution
--- puts it there (ledger L31).
-exclusions
-  ∷ Subst
-  → Row
-  → Row
-  → Array { meta ∷ Int, labels ∷ Array String, rigids ∷ Array Flex }
-exclusions subst left right =
-  excluded found.mine found.theirs.metas <> excluded found.theirs
-    found.mine.metas
-  where
-  found = residue (flatten subst left) (flatten subst right)
-  excluded side metas = Array.concatMap (byMeta side) metas
-  byMeta side meta = Array.mapMaybe (refused meta)
-    (map atomOf (constants side))
-  refused meta atom =
-    if admits subst meta atom then Nothing
-    else Just
-      { meta
-      , labels: Array.mapMaybe labelAtom [ atom ]
-      , rigids: Array.mapMaybe rigidAtom [ atom ]
-      }
+  ordered one other =
+    if one <= other then Just (Tuple one other) else Nothing
 
 -- The termination measure's counter (ledger L3).
 changes ∷ Subst → Int
 changes subst = changesOf (storeOf subst)
 
--- How many metas the solver made (commits and remainders; ledger L4).
+-- How many metas the solver made (shared remainders; ledger L4).
 solverMetas ∷ Subst → Int
 solverMetas (Subst found) = -1 - found.fresh
 
@@ -170,13 +135,3 @@ solving ∷ Row → Row → Solving
 solving left right = solvingWith failed
   where
   failed reached = mismatch reached (TRecord left) (TRecord right)
-
-labelAtom ∷ Atom → Maybe String
-labelAtom = case _ of
-  LabelAtom label → Just label
-  RigidAtom _ → Nothing
-
-rigidAtom ∷ Atom → Maybe Flex
-rigidAtom = case _ of
-  RigidAtom tail → Just tail
-  LabelAtom _ → Nothing
