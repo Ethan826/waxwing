@@ -50,6 +50,26 @@ g a b c = merge (merge a b) c`, 'accept', 'accept'],
   => P r -> P s -> P u -> P rsu
 g a b c = merge a (merge b c)`, 'NoInstanceFound',
   'accept: { ...r, ...s, ...u } either way'],
+  // B3 follow-up (docs/plans/2026-10-19-row-merge-limitations.md): a
+  // wanted Union with one part unknown, solved from the given by the
+  // dependency union left -> right; and O4's shape, which has no given.
+  ['self-call', `both :: forall u v uv. Union u v uv => P u -> P uv
+both a = both a`, 'accept', 'waits (P5): no case solves Merge U ?v {U, V}'],
+  ['forwarding-wrapper', `both :: forall u v uv. Union u v uv => P u
+  -> (P u -> P uv) -> P uv
+both x k = k x
+fwd :: forall a b ab. Union a b ab => P a -> (P a -> P ab) -> P ab
+fwd x k = both x k`, 'accept', 'waits (P5) at both(x, k)'],
+  ['lambda-wrapper', `fwd :: forall a b ab. Union a b ab => P a
+  -> (P ab -> U) -> U
+fwd x h = (\\y -> h (merge x y)) P`, 'accept',
+  'waits (P5); fn(y: { ...b }) repairs it'],
+  ['o4-lacks-split', `granted2 :: forall r s t. Union r s t => Lacks "admin" s
+  => P t -> U
+granted2 _ = U
+use :: U
+use = granted2 (P :: P (admin :: U))`, 'NoInstanceFound',
+  'waits (P5); nothing at the call repairs it'],
 ];
 
 let failed = 0;

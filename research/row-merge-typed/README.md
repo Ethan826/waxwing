@@ -17,6 +17,7 @@ only `node`. Not part of `npm run verify`; scripts/width.mjs checks the
 | tr-solver.mjs | rows, types, unification (types structurally, rows by ADR 013's one-unknown rules after cancellation), occurs checks, lacks and pairs with the bind rule (no N5), and `made`: a written row with two or more unknown tails becomes one unknown and `Merge` predicates folded from the left, at every depth |
 | tr-cases.mjs | PureScript 0.15.16's three `unionRows` cases, Sym's mirror (option `sym`), the full rescan, H at the end (option `hEnd`), and the read-back the oracle checks (written apart from the solver's flatten) |
 | tr-oracle.mjs | the oracle: every assignment of label sets to the unknowns (subsets of the problem's labels), each field of an unknown typed by its own variable, the type equations solved by first-order unification with an occurs check; least solutions and most general typings |
+| tr-gen.mjs | the families' problems (`nestedProblems`, `assocProblems`), shared with the compiler's test/row-merge-typed.test.mjs (B3 follow-up, 2026-10-19; moving them here left tr-run.mjs's output identical) |
 | tr-run.mjs | the families `nested` and `assoc`, judged per variant (QT-strict, +Sym, +H, +Sym+H) |
 
 No rigid tails: they stay covered by research/row-merge-qt's

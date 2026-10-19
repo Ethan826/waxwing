@@ -10,11 +10,11 @@ import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM, foldl)
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Set as Set
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..), fst)
-import Domain.Row (Label(..))
+import Domain.Row (HandlerRows, Label(..))
 import Domain.Row as EffectRow
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..), TyRow)
@@ -126,8 +126,7 @@ rebuilt site subst ty = case ty of
     rows
   TFun parameter row result → arrow (rebuilt site subst parameter) row
     result
-  THandler label rows → over (flip THandler rows)
-    (labelled site subst label)
+  THandler label rows → handler rows (labelled site subst label)
   _ → { accum: subst, value: ty }
   where
   record tails found = recordOf
@@ -140,6 +139,8 @@ rebuilt site subst ty = case ty of
     result
   arrowRow parameter found result = over (TFun parameter found.value)
     (rebuilt site found.accum result)
+  handler rows found = over (THandler found.value)
+    (handlerRows site found.accum rows)
 
 field
   ∷ Maybe Span
@@ -148,6 +149,25 @@ field
   → Built (Tuple String (Ty Flex))
 field site subst (Tuple name part) = over (Tuple name)
   (rebuilt site subst part)
+
+-- A handler's own rows (what its clauses may perform), each desugared:
+-- their labels' arguments can hold records too (`Handler(Log with
+-- State({ ...r, ...s }))`).
+handlerRows
+  ∷ Maybe Span
+  → Subst
+  → HandlerRows (Ty Flex) Flex
+  → Built (HandlerRows (Ty Flex) Flex)
+handlerRows site subst rows = clauses
+  (effectRow site subst rows.inference)
+  where
+  clauses found = maybe (over (withClauses Nothing) found)
+    (clausesBuilt found)
+    rows.clauses
+  clausesBuilt found row = over (withClauses' found.value <<< Just)
+    (effectRow site found.accum row)
+  withClauses none inference = { inference, clauses: none }
+  withClauses' inference found = { inference, clauses: found }
 
 -- An effect row's label arguments desugared; its tail is an effect row's.
 effectRow ∷ Maybe Span → Subst → TyRow Flex → Built (TyRow Flex)
@@ -165,8 +185,7 @@ over ∷ ∀ a b. (a → b) → Built a → Built b
 over change found = { accum: found.accum, value: change found.value }
 
 -- Whether some record row in the type has two tails `unknown` holds of,
--- by a loop along arrow spines (a handler's own rows are not entered: the
--- guard in Features.Check.RowSettle stops on any row this misses).
+-- by a loop along arrow spines, a handler's own rows included.
 severalUnknownBy ∷ ∀ v. (v → Boolean) → Ty v → Boolean
 severalUnknownBy unknown = several
   where
@@ -179,7 +198,10 @@ severalUnknownBy unknown = several
     TFun parameter row result
       | several parameter || rowHolds row → Done true
       | otherwise → Loop result
-    THandler label _ → Done (labelHolds label)
+    THandler label rows → Done
+      ( labelHolds label || rowHolds rows.inference
+          || maybe false rowHolds rows.clauses
+      )
     _ → Done false
   fieldHolds (Tuple _ part) = several part
   twoUnknown tails = Array.length (Array.filter unknown tails) > 1

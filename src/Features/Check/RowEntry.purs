@@ -1,5 +1,6 @@
 module Features.Check.RowEntry
   ( row
+  , typedRow
   , hypotheses
   , equate
   , separate
@@ -11,14 +12,17 @@ module Features.Check.RowEntry
   , finish
   , merges
   , lineages
+  , causes
+  , nextPredicate
+  , typeBindings
   , module Features.Check.RowOutcome
   ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
-import Data.Either (Either)
-import Data.Foldable (foldl)
+import Data.Either (Either(..))
+import Data.Foldable (foldM, foldl)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
@@ -62,6 +66,10 @@ row ∷ Array String → Array Flex → Row
 row labels tails = recordRow (map field labels) tails
   where
   field label = Tuple label TInt
+
+-- A row with typed fields (the typed and nested families, B3 follow-up).
+typedRow ∷ Array (Tuple String (Ty Flex)) → Array Flex → Row
+typedRow = recordRow
 
 -- The hypotheses on rigid tails: the labels each lacks, the pairs apart.
 hypotheses ∷ Array (Tuple Flex (Array String)) → Array (Tuple Flex Flex) → Subst
@@ -122,6 +130,23 @@ lineages subst = map read (Map.toUnfoldable (mergesOf (storeOf subst)).moves)
 
 type Entry = { labels ∷ Array String, tails ∷ Array Flex }
 
+-- Each meta a case bound, with its predicate (R10.1), and the next
+-- predicate identity: what a revert must restore with the rest.
+causes ∷ Subst → Array { meta ∷ Int, predicate ∷ Int }
+causes subst = map read
+  (Map.toUnfoldable (mergesOf (storeOf subst)).boundBy)
+  where
+  read (Tuple meta predicate) = { meta, predicate }
+
+nextPredicate ∷ Subst → Int
+nextPredicate subst = (mergesOf (storeOf subst)).next
+
+-- Every binding as stored, for a test to resolve types itself.
+typeBindings ∷ Subst → Array { meta ∷ Int, ty ∷ Ty Flex }
+typeBindings (Subst found) = map read (Map.toUnfoldable found.types)
+  where
+  read (Tuple meta ty) = { meta, ty }
+
 -- Each binding of a meta, one level: its labels and its tails as written
 -- in the binding (not followed), for a test to follow itself.
 bindings
@@ -162,10 +187,34 @@ changes subst = changesOf (storeOf subst)
 solverMetas ∷ Subst → Int
 solverMetas (Subst found) = -1 - found.fresh
 
--- A row as made: desugared (plan §2.1), then its own disjointness
--- recorded.
+-- A row as made, at every depth (research/row-merge-typed tr-solver.mjs
+-- `made`): each record in a field made first, then the row desugared
+-- (plan §2.1) and its own disjointness recorded.
 made ∷ Subst → Row → Either Failure { row ∷ Row, subst ∷ Subst }
-made subst written =
+made subst written = foldM madeField { fields: [], subst } written.fields
+  >>= madeRow
+  where
+  madeRow found = made' found.subst (recordRow found.fields written.tails)
+
+madeField
+  ∷ { fields ∷ Array (Tuple String (Ty Flex)), subst ∷ Subst }
+  → Tuple String (Ty Flex)
+  → Either Failure
+      { fields ∷ Array (Tuple String (Ty Flex)), subst ∷ Subst }
+madeField found (Tuple label ty) = case ty of
+  TRecord inner → added <$> made found.subst inner
+  _ → Right found { fields = Array.snoc found.fields (Tuple label ty) }
+  where
+  added inner =
+    { fields: Array.snoc found.fields
+        ( Tuple label
+            (TRecord inner.row)
+        )
+    , subst: inner.subst
+    }
+
+made' ∷ Subst → Row → Either Failure { row ∷ Row, subst ∷ Subst }
+made' subst written =
   desugaredRow (solving written written) Nothing written subst >>= formed
   where
   formed desugared = withRow desugared.row <$> wellFormed

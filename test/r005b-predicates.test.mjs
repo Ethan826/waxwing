@@ -181,3 +181,21 @@ test('no solving step reads a predicate\'s site', () => {
   assert.equal(improve.split('.site').length - 1,
     located.split('.site').length - 1);
 });
+
+// A handler's own rows (what its clauses may perform) hold labels whose
+// arguments can be records of two tails; they are desugared at the use
+// like any other row (before the follow-up they reached the guard).
+const effects = 'effect Log { fn log(n: Int): Unit; }; '
+  + 'effect State(s) { fn get(): s; }; ';
+const stateOf = 'fn f(h: Handler(Log with State({ ...r, ...t })), '
+  + 'x: { ...r }, y: { ...t }): Int where r disjoint t = 0; ';
+
+test('a record of two tails in a handler\'s row is desugared', () => {
+  const mk = record => `fn mk(): Handler(Log with State(${record})) = mk(); `;
+  checks(`${effects}${stateOf}${mk('{ a: Int, b: Int }')}`
+    + 'fn main(): Int = f(mk(), { a: 1 }, { b: 2 });');
+  causedAt(`${effects}${stateOf}${mk('{ a: Int }')}`
+    + 'fn main(): Int = f(mk(), { a: 1 }, { b: 2 });', '{ b: 2 }');
+  waitsAt(`${effects}fn g(h: Handler(Log with State({ ...r, ...t }))): Int `
+    + `= 0; ${mk('{ a: Int }')}fn main(): Int = g(mk());`, 'g(mk())');
+});

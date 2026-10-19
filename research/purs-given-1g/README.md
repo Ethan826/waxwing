@@ -26,6 +26,10 @@ rows a Waxwing body makes, through the adopted configuration.
 | `merge (ext "a" a) b` under the given | accept (case 3 moves `a`, then the given matches) | accept, `{ a, ...R, ...S }` |
 | `merge (merge a b) c` under `Union r s rs`, `Union rs u rsu` | accept | accept |
 | `merge a (merge b c)` under the same givens | NoInstanceFound | accept, `{ ...R, ...S, ...U }` |
+| self-call `both a = both a` under `Union u v uv` (B3 follow-up) | accept | waits: no case solves `Merge U ?v {U, V}` |
+| a forwarding wrapper `fwd x k = both x k` | accept | waits at `both(x, k)` |
+| a wrapper through a lambda `\y -> h (merge x y)` | accept | waits; annotating the lambda repairs it |
+| O4: `Union r s t`, `Lacks "admin" s`, `t` = `(admin :: U)` | NoInstanceFound | waits; nothing at the call repairs it |
 
 The expectations in run.mjs were written before the first run; every
 one held.
