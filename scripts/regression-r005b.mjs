@@ -167,6 +167,38 @@ export const r005bRows = [
     message: /rigid part counted closed: (accepted|E_TYPE )/
   },
   {
+    // Case 2g absent (plan §10 decision 17): a wanted merge whose right
+    // part and result hold only rigid tails waits, as at B3.
+    name: 'r005b-case2g', file: 'src/Features/Check/RowMerge/Cases.purs',
+    needle: '  else if\n    unknownless right && unknownless result\n'
+      + '      && holdsAll right result then subtract\n',
+    replacement: '  else if false then subtract\n',
+    probe: 'r005b-case2g',
+    message: /2g absent: E_INTERNAL R005B placeholder: merge predicates /
+  },
+  {
+    // The superseded 2g proposal: a missing atom makes 2g claim the
+    // predicate and wait, which keeps case 3 from a refusal.
+    name: 'r005b-case2g-claim',
+    file: 'src/Features/Check/RowMerge/Cases.purs',
+    needle: '  else if\n    unknownless right && unknownless result\n'
+      + '      && holdsAll right result then subtract\n',
+    replacement: '  else if unknownless right && unknownless result then\n'
+      + '    if holdsAll right result then subtract else Right Waits\n',
+    probe: 'r005b-case2g-claim',
+    message: /missing atom claimed: E_INTERNAL R005B placeholder: merge /
+  },
+  {
+    // 2g without its rigid-tail test: a rigid tail of the right part that
+    // the result lacks is dropped, and an unsatisfiable merge is solved.
+    name: 'r005b-case2g-atoms',
+    file: 'src/Features/Check/RowMerge/Cases.purs',
+    needle: '    && Array.null (cancelled result.tails right.tails).missing\n',
+    replacement: '',
+    probe: 'r005b-case2g-atoms',
+    message: /rigid tail dropped: accepted/
+  },
+  {
     // A creation point not desugared (a constructor's use): its row of
     // two unknown tails reaches the unifier's guard (plan §2.1).
     name: 'r005b-one-unknown', file: 'src/Features/Check/Use.purs',

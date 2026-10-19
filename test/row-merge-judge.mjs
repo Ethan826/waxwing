@@ -7,7 +7,7 @@
 // exactly the problem's: for accepted runs and for runs that end waiting
 // at P5), the lineage lemma (rules §5: the labels one predicate's case-3
 // moves carry are pairwise disjoint and at most the problem's labels),
-// the second reference (research/row-merge-qt's QT-strict+Sym, H off
+// the second reference (research/row-merge-qt's QT-strict+Sym+2g, H off
 // until B4: accept, refuse and D4 against accept, refuse and P5), and the
 // bounds on state changes (L3) and on solver-made metas (L4). A limit or
 // an internal failure (the tail occurs guard, the two-unknown guard, the
@@ -21,10 +21,10 @@ import { changes, lineages, run, solverMetas, stateOf }
 import { emitted, stateKeys } from './row-merge-readback.mjs';
 import { verdictQT } from '../research/row-merge-qt/qt-drive.mjs';
 
-// The research prototype's configuration B3 matches: QT-strict with Sym,
-// before H (B4).
+// The research prototype's configuration B3 matches: QT-strict with Sym
+// and case 2g (option `g2`, plan §10 decision 17), before H (B4).
 export const B3_REFERENCE = { qts: true, selfApart: false, pairwise: false,
-  sym: true, hEnd: false };
+  sym: true, g2: true, hEnd: false };
 const P5 = 'merge predicates still waiting at the end of a body are '
   + 'classified in Task B4';
 const fromReference = { accept: 'accept', refuse: 'refuse', D4: 'skipped' };

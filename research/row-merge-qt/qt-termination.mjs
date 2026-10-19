@@ -1,5 +1,6 @@
 // Termination of re-examination (docs/plans/2026-10-19-row-merge-rules.md
-// §5, ledger L1): the adopted configuration (QT-strict+Sym+H) run with a
+// §5, ledger L1): the adopted configuration (QT-strict+Sym+H, with case
+// 2g since plan §10 decision 17; 2g removes a predicate) run with a
 // trace of every case-3 move and every rescan pass, on research
 // families and on a cyclic family made to feed merge results back into
 // parts. Checked on every run (each a violation, exit 1):
@@ -28,7 +29,7 @@ const PASS_CAP = 10000;
 class Capped extends Error {}
 
 const ADOPTED = { qts: true, selfApart: false, pairwise: false, sym: true,
-  hEnd: true };
+  g2: true, hEnd: true };
 const tally = () => ({ runs: 0, accept: 0, refuse: 0, D4: 0, moves: 0,
   maxLineageMoves: 0, maxPasses: 0, cyclicRuns: 0, edgeChangeRuns: 0,
   heightChecked: 0, heightNotFalling: 0, shiftedNotFalling: 0,

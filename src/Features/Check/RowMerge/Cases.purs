@@ -8,7 +8,7 @@ import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (foldM)
+import Data.Foldable (foldM, foldl)
 import Data.Map as Map
 import Data.Maybe (maybe)
 import Data.Set as Set
@@ -59,15 +59,23 @@ swapped = { left: _.right, right: _.left, rest: rightRest }
 -- closed; Entailment.hs 636-638) and the adaptation 1g (no part has an
 -- unknown; rules file §3) give t := L ⊎ R; case 2 (the right part and t
 -- closed; 639-660) gives the left part t minus R's labels, each shared
--- field's types unified, or waits if R holds a label t lacks (654); case
--- 3 (the left part has fields and a tail; 661-672) moves L's fields into
--- t beside a fresh u that lacks them and leaves `Merge rest(L) R u`.
+-- field's types unified, or waits if R holds a label t lacks (654); the
+-- adaptation 2g (R and t hold no unknown, and t holds every label and
+-- rigid tail of R; rules file §3, approved 2026-10-19) gives t minus R's
+-- labels and rigid tails the same way, and otherwise makes no claim, so a
+-- missing atom never stops case 3; case 3 (the left part has fields and a
+-- tail; 661-672) moves L's fields into t beside a fresh u that lacks them
+-- and leaves `Merge rest(L) R u`.
 oriented ∷ Unifier → Orientation → Merge → Subst → Either Failure Progress
 oriented unify way merge subst =
   if closed left || (unknownless left && unknownless right) then
     Solved <$> unify subst (TRecord merge.result) union
   else if closed right && closed result then
-    subtracted unify (way.left merge) right result subst
+    if holdsAll right result then subtract
+    else Right Waits
+  else if
+    unknownless right && unknownless result
+      && holdsAll right result then subtract
   else if not (Array.null left.fields) then
     moved unify way merge left subst
   else Right Waits
@@ -76,15 +84,27 @@ oriented unify way merge subst =
     ( recordRow (left.fields <> right.fields)
         (left.tails <> right.tails)
     )
+  subtract = subtracted unify (way.left merge) right result subst
   left = flatten subst (way.left merge)
   right = flatten subst (way.right merge)
   result = flatten subst merge.result
 
+-- Whether t holds every label of R, by name, and every rigid tail of R,
+-- one of t's tails each, by identity alone.
+holdsAll ∷ Flat → Flat → Boolean
+holdsAll right result =
+  Array.all (flip Set.member labels <<< fst) right.fields
+    && Array.null (cancelled result.tails right.tails).missing
+  where
+  labels = Set.fromFoldable (map fst result.fields)
+
+-- Case 2 or 2g once `holdsAll` holds: each shared field's types unified,
+-- then the left part is t less R's labels and less one equal tail for
+-- each rigid tail of R (2g's justification: with no unknown on either
+-- side, disjoint union cancels, so the left part has this one value).
 subtracted ∷ Unifier → Row → Flat → Flat → Subst → Either Failure Progress
 subtracted unify part right result subst =
-  if Array.all (flip Map.member table <<< fst) right.fields then
-    Solved <$> (foldM shared subst right.fields >>= rested)
-  else Right Waits
+  Solved <$> (foldM shared subst right.fields >>= rested)
   where
   table = Map.fromFoldable result.fields
   taken = Set.fromFoldable (map fst right.fields)
@@ -96,9 +116,20 @@ subtracted unify part right result subst =
             ( Array.filter (not <<< flip Set.member taken <<< fst)
                 result.fields
             )
-            []
+            (cancelled result.tails right.tails).rest
         )
     )
+
+-- The tails of `from` less one occurrence of each of `taken`, and those
+-- of `taken` that `from` did not hold.
+cancelled
+  ∷ Array Flex → Array Flex → { rest ∷ Array Flex, missing ∷ Array Flex }
+cancelled from = foldl cancel { rest: from, missing: [] }
+  where
+  cancel found tail
+    | Array.elem tail found.rest = found
+        { rest = Array.delete tail found.rest }
+    | otherwise = found { missing = Array.snoc found.missing tail }
 
 moved
   ∷ Unifier → Orientation → Merge → Flat → Subst → Either Failure Progress
