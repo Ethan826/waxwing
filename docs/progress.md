@@ -6731,4 +6731,73 @@ Check/Failure was not split (plan: only if B3 needs it).
   proofs; .build/evidence/r005b-b1-verify.log).
 - .build/r005b-base, .build/regression and .build/go-cache deleted.
 
-B2 onward are not authorized; gates L1 and L2 are open (plan §10).
+## R005 Tranche B B2: the invented machinery removed (2026-10-19)
+
+Authorized by the user (2026-10-19), B2 only, on branch `r005b-replan`;
+one code commit, 1bb23ae (32 files, 1,124 lines out, 295 in). Plan §7
+Task B2 lists what was removed and where B2 departed from the file list
+(Check/RowPlacing, `Equation`, `boundBy`, `Exam`, `Solving.emptied` and
+placeholder P2 removed as left without a producer or a cause; the
+case-2 provenance row left for B3, where case 2 first exists).
+
+- Red first (.build/evidence/r005b-b2-red.log, pre-B2 build): 6 new
+  tests fail, 37 pass: P1's text (three files), the bound- and
+  commit-solved problems skipped in every order, N5's D2, no `Outside`
+  or `Derived`.
+- Stop condition: the 25 fixtures at `stages.solver` 4 keep their
+  classes in every order and none waits. Not triggered.
+- Oracle, re-recorded (S, L, H, E, order, measure and fresh-meta
+  defects 0 in every family; .build/evidence/r005b-b2-oracle.log and
+  -oracle-tallies.log). Solved / Contradiction / skipped, Task 4 → B2:
+  - domain A whole (`node scripts/row-merge-exhaustive.mjs A 9`, 79 s,
+    .build/evidence/r005b-b2-exhaustive-A.log): 796,409 / 17,705,571 /
+    803,312 → 605,079 / 15,026,498 / 3,673,715 of 19,305,292 runs.
+  - domain B whole: 177,028 / 233,144 / 43,378 → 109,384 / 153,080 /
+    191,086 of 453,550 runs.
+  - domain A sample (1 in 50, in verify): 12,704 / 300,191 / 73,067.
+  - generators, 400 problems, five orders: raw (21) 356 / 1,415 / 229 →
+    292 / 1,387 / 321; dense (22) 243 / 109 / 1,648 → 195 / 83 /
+    1,722; raw programs (23) 543 / 1,421 / 36 → 518 / 1,354 / 128;
+    program-shaped (24) 960 / 669 / 371 → 931 / 611 / 458; shared (25)
+    833 / 802 / 365 → 815 / 728 / 457.
+  - stage-5 fixtures, skipped by class: Solved 13,430 → 13,438,
+    Unresolved 404, Contradiction 3,355 → 3,363.
+  - one-tail domains unchanged (A 22,308 problems, B 585; none skipped).
+  Contradiction shrinks as well as Solved, which the plan did not say:
+  refusals only the sum rule or a bound established now reach P1; B4's
+  H is to re-establish them.
+- L31's direct check is gone with `exclusions` (plan §1.2); `admits`
+  has no caller until B4.
+- Regression rows (.build/evidence/r005b-b2-rows.log, each proved by
+  name: fixed passes, defect fails): `r005b-pruned-reason` retired with
+  Check/Narrow; `r005b-self-pair` added (N5 restored reads `Expected
+  {}, found { x: Int }`); re-proved because their files changed:
+  r005b-self-apart, -mixed-lacks, -mixed-tails, -provenance,
+  -precedence, -cancel, r005-provenance, r001-lacks,
+  r001-shared-remainder, r001-field-bound-tail.
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on 1bb23ae:
+  exit 0 (tests 2269/2269, 59/59 serial, 151 regression proofs;
+  .build/evidence/r005b-b2-verify.log). Two earlier runs on amended
+  versions of the commit failed and were fixed before this one: a
+  PureScript comment line over 80 columns (Because.purs), and five
+  tests of test/r005b-surface.test.mjs still asserting P1's old text.
+- Differential against the task's base d7efc6d (isolated copy with
+  .spago, built 0 warnings), `--corpus all --regenerate`
+  (.build/evidence/r005b-b2-diff.log; all nine listed with `--show 50`
+  in -diff-harvested.log): fuzz 1,029, isName 1,085, matches 1,000,
+  mutations 1,000: 0 differences; harvested 8,629: 9, every one a
+  Tranche B source, none without Tranche B syntax:
+  - 1 N5's removal: `f({ x: 1 })` with `f = fn(p) => g(p, p)`,
+    `Expected {}, found { x: Int }` → D2, same span (planned, §1.2).
+  - 5 P1's wording only, same span.
+  - 1 accepted at check (a commit) → P1: `granted2({ admin: false })`
+    with `s lacks { admin }`.
+  - 2 D1 → P1: `granted2(…)` with both tails lacking `admin`, the
+    bound-established refusal (R10.2's old path); not among the plan's
+    two expected kinds, recorded in plan §7 Task B2.
+  The harvest's own test run exited 1 on 14 timing and scale tests
+  under the hook's load (as in B1); the same tests pass in verify.
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
+
+Nothing later is authorized; gates L1 and L2 are open (plan §10) and
+block B3.
