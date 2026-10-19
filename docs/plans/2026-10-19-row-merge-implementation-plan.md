@@ -3,8 +3,8 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps
-> use checkbox (`- [ ]`) syntax for tracking. **Tasks B1 and B2 were
-> authorized** (the user, 2026-10-19, each alone) and are done. Do not
+> use checkbox (`- [ ]`) syntax for tracking. **Tasks B1, B2 and B3
+> were authorized** (the user, 2026-10-19, each alone) and are done. Do not
 > start any later task, or the gate tasks L1 and L2, until the user
 > authorizes it, and then only the task the user names. Two gates (§10,
 > decisions 12 and 13) block B3.
@@ -84,9 +84,10 @@ an oracle property or a measured run.
 test runner, Go 1.26.4. No new dependency (Z3 stays outside the
 repository, an optional research oracle).
 
-**Status:** B0 accepted; B1 and B2 done (2026-10-19), each authorized
-alone; decisions in §10. Nothing later is authorized; termination (L1)
-and solving-time diagnostics (L2) are open ledger items and gate B3.
+**Status:** B0 accepted; B1, B2 and B3 done (2026-10-19), each
+authorized alone; L1 accepted and L2's limited location rule approved
+(§10, decision 15). Nothing later is authorized; B4 waits for the
+user's review of B3.
 
 Written on branch `r005b-replan` from main 1d43341. Docs only: no
 compiler source, test, script or test fixture changed; nothing built;
@@ -587,11 +588,12 @@ compiler); each is checked by the tests named.
 
   | # | Added in | Placeholder at | Text after `R005B placeholder: ` | Removed in |
   |---|---|---|---|---|
-  | P1 | Task 4 (e63f7f4); reworded in B2 (462602d) | Check/RowSettle `settle` (B2 folded `placing` back in): a residue with two or more metas on a side | was `equations that wait are solved in Task 5`; from B2 `rows with two unknown tails on one side are solved in Task B3` | B3 (becomes the `Unexpected` invariant guard, §2.1) |
+  | P1 | Task 4 (e63f7f4); reworded in B2 (462602d) | Check/RowSettle `settle` (B2 folded `placing` back in): a residue with two or more metas on a side | was `equations that wait are solved in Task 5`; from B2 `rows with two unknown tails on one side are solved in Task B3` | **B3**: now the invariant guard, `Unexpected "a record row holds two unknown tails"` (§2.1) |
   | P2 | Task 4 (e63f7f4) | Check/Lacked `refusedAt`: a refusal whose reason was an equation (`Outside`, `Derived`, an `Equated` reason) | was `contradictions from equations are reported in Task 6` | **B2**: its every cause went with the sum rule and bounds, so it was removed, not reworded. A refusal caused by a predicate's binding (R10.1) first exists in B3, which adds its placeholder (`contradictions from merge predicates are reported in Task B5`) with the cause; B5 removes it |
   | P3 | Task 2 (be42baf) | Check/SeveralTails `withinOneTail` | `rest binders and removal over several tails are typed in Task 7` | 7 |
   | P4 | Task 4 (e63f7f4) | Specialize/Record `recordType` | `rows with several tails are lowered in Task 8` | 8 |
-  | P5 | B3 | RowMerge/End `endOfBody` (called by Check/Function after settling, and by RowEntry's `finish`): a predicate still waits | `merge predicates still waiting at the end of a body are classified in Task B4` | B4 |
+  | P5 | B3 | RowMerge/End `endOfBody` (Check/Function after settling, Check/Failure before an open Fail family, RowEntry `finish`): a predicate still waits; at the earliest waiting predicate's site | `merge predicates still waiting at the end of a body are classified in Task B4` | B4 |
+  | P2′ | B3 | Check/Merged `mergedAt`: a failure a predicate caused, other than a broken fact | `contradictions from merge predicates are reported in Task B5` | B5 |
   | P6 | B4 | the report of an `Unresolved` outcome (Check/Function) and of H's Contradiction (Check/Lacked, P2's text) | `unresolved merge predicates are reported in Task B5` | B5 |
 
 - **Go output** of existing programs stays byte-identical in every task
@@ -1138,27 +1140,75 @@ endOfBody ∷ Subst → Either Stop RowOutcome          -- Solved or P5
 concluded ∷ Either Failure Subst → Either Stop RowOutcome
 ```
 
-- [ ] Failing tests test/row-merge.test.mjs (level 1): fixtures at
-  solver stages 4 and 5 whose expected class is Solved or Contradiction
-  assert it in every order; those expected Unresolved are skipped at P5
-  and counted; domains A, B and the generators with S, L, H, E (the
-  read-back with predicates) and the counts compared with the
-  prototype's; the second reference (§3.2); the invariant guard never
-  fires.
-- [ ] Failing tests test/row-merge-sym.test.mjs (§4.1) and
-  test/row-merge-order.test.mjs (§4.3, the parts that need no
-  Unresolved).
-- [ ] Failing tests test/r005b-predicates.test.mjs (check-phase, no
-  spread literal; `pick`-style signatures): a use of `fn pick2(p: {
-  ...r }, q: { ...s }, w: { ...r, ...s }): { ...r, ...s } = w;` with
-  known arguments accepted (case 1); `pick2(p, { a: 1 }, w)` with `p`
-  unknown accepted (Sym's 1'); a typed clash Contradiction both ways;
-  nested (§3.3); rigid tails (§3.3); occurs (§3.3).
-- [ ] Failing tests test/r005b-settle.test.mjs: rollback and the joint
-  fixpoint in both directions (§3.3), each within a time bound.
-- [ ] Implement; verify; differential: 0 among sources without Tranche
-  B syntax; Tranche B differences classified (P1 → accepted or a
-  contradiction; P1 → P5).
+- [x] Tests (red on the pre-B3 build: .build/evidence/r005b-b3-red.log)
+  test/row-merge.test.mjs: every fixture's rows in every order judged
+  in full; stages 4 and 5 keep or never contradict their classes; the
+  generators with S, L, H, E, the read-back now including waiting
+  predicates (property E also on runs that end waiting, a dropped
+  predicate as a second corruption) and the lineage lemma; the second
+  reference is the prototype's QT-strict+Sym, H off until B4 (accept,
+  refuse, D4 against accept, refuse, P5); the invariant guard never
+  fires (the runner throws on it).
+- [x] test/row-merge-sym.test.mjs (§4.1: mirrors of fixtures, domain B,
+  generators; association of the ten three-unknown fixtures under every
+  renaming and order) and test/row-merge-order.test.mjs (§4.3: research
+  order fixtures and purs cases, every order up to seven steps, else the
+  recorded ones).
+- [x] test/r005b-predicates.test.mjs (check phase, `pickR`-style): case
+  1, Sym's 1' both ways, both parts unknown (P5 at the use), typed clash
+  (a predicate's contradiction, P2) and R10.1's limit (a clash on a
+  binding no case made keeps its text), generic callers (1g, 1', D3''),
+  nested, occurs, the joint fixpoint both ways, the L2 location under
+  three rearrangements (logical sites), a waiting predicate reported
+  before an open Fail family, and the metadata check; each within 2 s.
+  Plan's separate test/r005b-settle.test.mjs is folded in there.
+- [x] test/r005b-outcome.test.mjs: `Exhausted` a limit, `FromMerge` its
+  inner class with the cause kept, stops injected through
+  re-examination stay stops.
+- [x] Implement; verify; differential (docs/progress.md "R005 Tranche B
+  B3").
+
+**B3 results and departures** (2026-10-19; docs/progress.md has the
+counts):
+
+- New modules src/Features/Check/RowMerge/: Merge (types), Predicate
+  (store operations), Desugar, Cases, Improve, End, Reach (metas
+  through bindings), Use (desugaring at uses); Check/Merged renders a
+  predicate's failure. RowStore gains `merges` (waiting predicates, next
+  identity, `boundBy`, each lineage's moves); `boundBy` and the moves
+  replace B2's removed `Equation` and `boundBy`.
+- Desugaring counts a row's unknown tails as written, as the prototype
+  does; the entry requires the parts' pair (it can refuse when a part is
+  already bound), uses only meet fresh metas, where storing the pair is
+  the same. Flattening first was tried and made verdicts order dependent
+  against the reference (a sound refusal in some orders).
+- Failure gains `FromMerge` (R10.1 extended: bindings any solving case
+  made, recorded in `boundBy`; failures found while re-examining, with
+  the L2 location) and `Exhausted` (the rescan's bound, a limit), each
+  with a classifier row and an injection test. A predicate's failure
+  renders a broken fact's own text (R10.2's principle) or P2, re-added
+  here with its cause (Check/Merged).
+- P1 is now the invariant guard (`Unexpected "a record row holds two
+  unknown tails"`); P5 is reported at the end of a body and, before
+  `Fail needs a concrete error family`, wherever a predicate still waits
+  (plan F-7, Check/Failure).
+- The L2 rule is implemented for failures found while re-examining:
+  the latest of the requirement being checked, the predicate's site and
+  the arrival sites of its rows' metas. In ordinary checking that is
+  the requirement being checked (rule 1); it differs while settling,
+  where no requirement is being checked.
+- Regression rows landed and proved: `r005b-lineage-lacks`,
+  `-case2-reason`, `-sym`, `-sym-rigid`, `-one-unknown`, `-end-fixpoint`.
+  **Not landed:** `r005b-settle-rollback`. Predicates live in the
+  substitution, so a postponed pair's revert takes them back with the
+  bindings by construction; no whole, compiling defect isolates that
+  without new plumbing, and no program was found whose retry makes
+  progress and then postpones again (a known label's binding is decided
+  even when another label's key stays open).
+- **Not done:** the typed research domain ported to the compiler
+  (§3.4, qt-typed.mjs): typed behaviour is checked at the check phase
+  only (clashes, nested types). M13 is argued in part (rules file §5).
+- Recovery obligations O1-O6 stay open; their checks are B4's and B5's.
 
 ### Task B4: The end of a body: Unresolved and H
 
@@ -1527,6 +1577,19 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     failures were to be disposed of, not rerun away (BACKLOG T005).
     L1 and L2 authorized as research and docs work; B3 stays blocked
     until both are reviewed.
+
+15. **L1 accepted, L2 approved, B3 authorized** (user, 2026-10-19).
+    L1's lineage argument is accepted, with Λ tightened to every label
+    available to a rescan (rules file §5) and the lineage-lacks
+    regression and the `Stop Limit` safeguard kept. L2: the provenance
+    location rule applies **only to refusals found while re-examining
+    predicates**; every other diagnostic keeps its location; different
+    explanations and different conflicts may stay order dependent, an
+    explicit policy decision. B3 must test the same-conflict cases
+    against the intended participants, comparing corresponding logical
+    sites when sources are rearranged, and report before pinning texts
+    if provenance cannot reproduce the stable location. O1-O6 stay open
+    until their checks pass; O4's burden belongs in the README too.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection

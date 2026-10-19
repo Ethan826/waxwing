@@ -1,4 +1,4 @@
-# Waxwing / R005 Tranche B: B1, B2 done; L1, L2 for review (2026-10-19)
+# Waxwing / R005 Tranche B: B1-B3 done, unmerged; B3 for review (2026-10-19)
 
 **State.** main is at 1d43341 (the Sym/H research merge); the active
 branch is `r005b-replan` (UNMERGED, by the user's choice): the
@@ -26,15 +26,16 @@ ledger, tasks B2-B5, 7-10); docs/plans/2026-10-19-row-merge-readme-draft.md
 (final path src/Features/Check/RowMerge/README.md);
 docs/plans/2026-10-18-row-merge-qualified-types.md (research record).
 
-**Next, needs the user's review:** L1 (rules file §5: termination for
-any predicate graph by a per-lineage label bound, with checks) and L2
-(docs/plans/2026-10-19-row-merge-locations.md: locate the same conflict
-at its latest written participant; leave different explanations and
-different conflicts order dependent). B3 does not start until both are
-reviewed and accepted. B2 was reviewed (plan §10, decision 14); its
-displaced refusals are recovery obligations O1-O6 (plan §4.7), each to
-be shown in B4/B5. docs/progress.md "R005 Tranche B: B2 review, gates
-L1 and L2" has the evidence.
+**Next, needs the user's review:** B3 (code commit 43490f4; verify
+2295/2295, 59/59, 157 proofs; differential classified in
+docs/progress.md "R005 Tranche B B3"). L1 was accepted and L2's
+limited location rule approved (plan §10 decision 15). Open from B3:
+the typed domain not ported, `r005b-settle-rollback` not landed, M13
+argued in part, and two findings for the user (O4: no annotation can
+fix a direct call whose split only a lacks clause decides; a generic
+function whose result names a variable no parameter fixes cannot call
+itself, `Merge U ?v {U, V}` waits). B4 (H, Unresolved, the reclassified
+fixtures, O1-O6's classes) waits for authorization.
 
 **Working method the user expects.** A branch per task; the user
 authorizes each task and each merge (fast-forward only); the controller
