@@ -23,6 +23,7 @@ import Features.Check.DeclarationUse (Callee, Use, declarationUse)
 import Features.Check.MarkUse (openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
+import Features.Check.RowMerge.Use (desugaredUse)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.UseFacts (joinedUse, requiredUse, seededUse)
 import Features.Check.Tables (ownerType)
@@ -34,7 +35,7 @@ functionUse env state span (FunctionId index) =
   maybe' missing found (Array.index env.functions index)
   where
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
-  found function = Right (used function)
+  found function = Right (desugaredUse span (used function))
   used function =
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
         ( requiredUse function.constraints
@@ -94,7 +95,7 @@ ctorUse env state span (CtorId index) =
   found ctor = maybe' missingType (owned ctor) (ownerOf ctor.owner)
   missingType _ = Left (problemAt (Internal "Invalid resolved type") span)
   ownerOf (TypeId owner) = Array.index env.types owner
-  owned ctor info = Right
+  owned ctor info = Right $ desugaredUse span
     ( withOrigin (CallOf ctor.name) Nothing
         ( joinedUse ctor.joined info.variables
             ( seededUse env info.sorts

@@ -67,11 +67,18 @@ outcome = either classified (Right <<< Solved)
     TooDeep → Left Limit
     Unexpected what → Left (Internal what)
     Placeholder what → Left (Unfinished what)
+    -- B3: what a predicate caused is what its own failure establishes,
+    -- kept with its cause for the renderers.
+    FromMerge _ found → either Left (const (contradiction failure))
+      (classified found)
+    -- B3: the rescan's bound (rules §5), a safeguard: a limit.
+    Exhausted _ → Left Limit
 
 -- The reason of the fact a failure broke, if it broke one.
 reasonOf ∷ Failure → Maybe Because
 reasonOf = case _ of
   Refused found → refusalReason found
+  FromMerge _ found → reasonOf found
   _ → Nothing
 
 refusalReason ∷ Refusal → Maybe Because

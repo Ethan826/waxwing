@@ -32,6 +32,15 @@ const f = 'fn f(p: { name: Int, ...r }): { admin: Bool, name: Int, ...r }\n'
 const tagged = clauses => `${g}fn tagged(p: { id: Int, ...r }, `
   + `q: { ...s }): Int${clauses} = g(p, q);${main}`;
 const required = '[required here @r disjoint s]';
+const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
+  + 'where r disjoint s = pickR(p, q); ';
+const same = 'fn same(a: z, b: z): Int = 0; ';
+const placeholder = 'R005B placeholder: ';
+const p2 = `${placeholder}contradictions from merge predicates are reported `
+  + 'in Task B5';
+const p4 = `${placeholder}rows with several tails are lowered in Task 8`;
+const p5 = `${placeholder}merge predicates still waiting at the end of a body `
+  + 'are classified in Task B4';
 
 export const r005bProbes = {
   // A written clause is cited over an implied fact, for a lack (P1) and
@@ -73,17 +82,18 @@ export const r005bProbes = {
         + required);
     done(context);
   },
-  // One rigid in both rows is D3'. From Task 4 to B2 `g(p, p)` was
-  // refused twice over (the second meta's bound lost the rigid it was
-  // apart from, U2, and U4 emptied it); the second argument here carries a
-  // meta of its own, so the pair's own check is the one guard.
+  // One rigid in both rows is D3'. The second program's argument is a
+  // rigid row of two tails (`both(p)`), checked by the pair alone. (From
+  // Task 4 to B2 it was `both(x): { ...u, ...v } = both(x)`, chosen to
+  // avoid the upper bounds; since B3 that body's recursive call leaves
+  // `Merge U ?v {U, V}` waiting, so the probe no longer reached `h`.)
   'r005b-self-apart': context => {
     expect(context, 'rigid apart from itself allowed',
       `${g}fn h(p: { ...r }): Int = g(p, p);${main}`,
       `E_TYPE r is in both records and may have fields @p ${required}`);
     expect(context, 'rigid apart from itself allowed',
-      `${g}fn both(x: { ...u }): { ...u, ...v } = both(x); `
-        + `fn h(p: { ...r }): Int = g(p, both(p));${main}`,
+      `${g}fn h(p: { ...r }, both: ({ ...r }) -> { ...r, ...w }): Int `
+        + `where r disjoint w = g(p, both(p));${main}`,
       'E_TYPE r is in both records and may have fields @both(p) '
         + required);
     done(context);
@@ -120,6 +130,61 @@ export const r005bProbes = {
   'r005b-cancel': context => {
     expect(context, 'common tails not cancelled',
       `fn swap(p: { ...r, ...s }): { ...s, ...r } = p;${main}`, 'accepted');
+    done(context);
+  },
+  // B3: a cyclic predicate's contradiction, found within the rescan's
+  // bound because the bind rule passes lacks on (rules §5).
+  'r005b-lineage-lacks': context => {
+    expect(context, 'lacks not passed on',
+      `${pickR}${same}fn noA(p: { ...r }): Int where r lacks { a } = 0; `
+        + 'fn main(): Int = { let f = fn(x, y, w) => { let k = noA(x); '
+        + 'let s = same(pickR(x, y), { ...w, a: 1 }); '
+        + 'same({ ...w, b: 2 }, { ...x, c: 3 }) }; 0 };',
+      `E_INTERNAL ${p2} @{ ...x, c: 3 }`);
+    done(context);
+  },
+  // B3: case 2 binds `p` to `{ a: Int }`; the clash on it is the
+  // predicate's (P2 until B5).
+  'r005b-case2-reason': context => {
+    expect(context, 'case binding lost its predicate',
+      `${pickR}${same}fn main(): Int = { let f = fn(p, q) => { `
+        + 'let x = same(pickR(p, q), { a: 1, b: 2 }); '
+        + 'let y = same(q, { b: 2 }); same(p, { a: true }) }; 0 };',
+      `E_INTERNAL ${p2} @{ a: true }`);
+    done(context);
+  },
+  // B3: one part unknown is solved by Sym's 1' (only lowering stops it).
+  'r005b-sym': context => {
+    expect(context, 'Sym disabled',
+      `${pickR}fn main(): Int = { let f = fn(p) => pickR(p, { a: 1 }); 0 };`,
+      `E_INTERNAL ${p4} @${pickR.trim()}`);
+    done(context);
+  },
+  // B3: a generic caller whose part is a rigid tail: it waits, never
+  // refused (the program has a solution, q = {}).
+  'r005b-sym-rigid': context => {
+    expect(context, 'rigid part counted closed',
+      `${pickR}${same}fn g(x: { ...u }): Int = `
+        + '{ let f = fn(q) => same(pickR(x, q), x); 0 }; fn main(): Int = 0;',
+      `E_INTERNAL ${p5} @pickR(x, q)`);
+    done(context);
+  },
+  // B3: a constructor's row of two unknown tails is desugared at its use.
+  'r005b-one-unknown': context => {
+    expect(context, 'creation point missed',
+      'type Both(...r, ...s) = Both({ ...r, ...s }); '
+        + 'fn main(): Int = { let b = Both({ x: 1, y: 2 }); 0 };',
+      `E_INTERNAL ${p5} @Both({ x: 1, y: 2 })`);
+    done(context);
+  },
+  // B3: the settling retry binds q's tail, which solves pickR(q, z).
+  'r005b-end-fixpoint': context => {
+    expect(context, 'retry not re-examined',
+      `${pickR}${same}fn main(): Int = { let h = fn(q, z, u) => { `
+        + 'let v = pickR(q, z); let r = handle Fail.fail(pickR(u, { c: 1 })) '
+        + '{ fail(e: { a: { b: Int }, c: Int }) => 0 }; same(u, { a: q }) }; '
+        + '0 };',
+      `E_INTERNAL ${p4} @${pickR.trim()}`);
     done(context);
   },
   // A meta apart from itself keeps the pair (N5 removed, B2): a label

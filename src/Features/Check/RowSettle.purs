@@ -15,16 +15,18 @@ import Features.Check.UnifyFailure (Failure(..))
 -- other side (of two bare metas the newer, the larger, to the older, as
 -- unification binds type metas); one meta on each side, both with
 -- constants, share one fresh remainder. A residue with two or more metas
--- on a side reaches placeholder P1, never a guess: B3 makes such rows
--- one unknown tail and `Merge` predicates, and P1 becomes the guard of
--- that invariant. (Task 4's sum rule, bounds and commits went in B2.)
+-- on a side cannot arise: since B3 every row is made with at most one
+-- unknown tail (Features.Check.RowMerge.Desugar; plan §2.1's invariant),
+-- so meeting one is a checker defect, `Unexpected` (a `Stop Internal`,
+-- never a verdict). Until B3 this was placeholder P1. (Task 4's sum rule,
+-- bounds and commits went in B2.)
 settle ∷ Failed → Subst → Residue → Either Failure Subst
 settle failed subst found
   | lone found.mine && lone found.theirs = bareMetas failed subst found
   | lone found.mine = alone failed subst found.mine found.theirs
   | lone found.theirs = alone failed subst found.theirs found.mine
   | single found.mine && single found.theirs = shared failed subst found
-  | otherwise = Left (Placeholder twoUnknown)
+  | otherwise = Left (Unexpected twoUnknown)
 
 bareMetas ∷ Failed → Subst → Residue → Either Failure Subst
 bareMetas failed subst found = maybe' (const (Right subst)) bound
@@ -67,4 +69,4 @@ single ∷ Side → Boolean
 single side = Array.length side.metas == 1
 
 twoUnknown ∷ String
-twoUnknown = "rows with two unknown tails on one side are solved in Task B3"
+twoUnknown = "a record row holds two unknown tails"

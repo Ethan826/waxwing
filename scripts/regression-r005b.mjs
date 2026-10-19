@@ -118,5 +118,73 @@ export const r005bRows = [
     ],
     probe: 'r005b-self-pair',
     message: /meta apart from itself emptied: E_TYPE Expected \{\}, found/
+  },
+  {
+    // The bind rule stops passing a meta's lacks to a meta rest of its
+    // image (rules §5's premise P1): a cyclic predicate's case 3 moves one
+    // label for ever and the rescan reaches its bound, a limit, where the
+    // program has a contradiction (L1; the defect the lineage check of
+    // the oracle runner also catches).
+    name: 'r005b-lineage-lacks', file: 'src/Features/Check/RecordTail.purs',
+    needle: '    Meta _ | unbound reached tail → Right (addLackTable tail own '
+      + 'reached)\n',
+    replacement: '    Meta _ | unbound reached tail → Right\n'
+      + '      (const reached (addLackTable tail own reached))\n',
+    probe: 'r005b-lineage-lacks',
+    message: /lacks not passed on: E_INTERNAL re-examination passed its bound/
+  },
+  {
+    // A binding a solving case made (case 2 here) loses its predicate as
+    // cause (R10.1 extended, plan §10 decision 5): a later clash on it
+    // reads as an ordinary mismatch.
+    name: 'r005b-case2-reason',
+    file: 'src/Features/Check/RowMerge/Improve.purs',
+    needle: '      { subst: solved merge.id (boundByCase merge.id found.subst '
+      + 'reached)\n',
+    replacement: '      { subst: solved merge.id\n'
+      + '          (const reached (boundByCase merge.id found.subst '
+      + 'reached))\n',
+    probe: 'r005b-case2-reason',
+    message: /case binding lost its predicate: E_TYPE Expected /
+  },
+  {
+    // Sym disabled: only the parts as written are tried (plan §2.3).
+    name: 'r005b-sym', file: 'src/Features/Check/RowMerge/Cases.purs',
+    needle: '    Waits → oriented unify swapped merge subst\n',
+    replacement: '    Waits → Right\n'
+      + '      (const Waits (oriented unify swapped merge subst))\n',
+    probe: 'r005b-sym',
+    message: /Sym disabled: E_INTERNAL R005B placeholder: merge predicates /
+  },
+  {
+    // A part with only a rigid tail counted as closed: case 1 then drops
+    // the rigid, and a program QT-strict leaves waiting is decided (on
+    // 2026-10-19 the probe was accepted with the defect).
+    name: 'r005b-sym-rigid', file: 'src/Features/Check/RowMerge/Cases.purs',
+    needle: 'closed row = Array.null row.tails\n',
+    replacement: 'closed row = not (Array.any isMeta row.tails)\n',
+    probe: 'r005b-sym-rigid',
+    message: /rigid part counted closed: (accepted|E_TYPE )/
+  },
+  {
+    // A creation point not desugared (a constructor's use): its row of
+    // two unknown tails reaches the unifier's guard (plan §2.1).
+    name: 'r005b-one-unknown', file: 'src/Features/Check/Use.purs',
+    needle: '  owned ctor info = Right $ desugaredUse span\n',
+    replacement: '  owned ctor info = Right $ identity\n',
+    probe: 'r005b-one-unknown',
+    message: /creation point missed: E_INTERNAL a record row holds two /
+  },
+  {
+    // A settling round retries its postponed pairs without re-examining
+    // the predicates (plan §2.9): a predicate a retry unblocks still
+    // waits at the end of the body.
+    name: 'r005b-end-fixpoint', file: 'src/Features/Check/Unify.purs',
+    needle: '  retry reached pair = settled reached <$> unifyRowsTraced unify '
+      + 'pair.mode\n',
+    replacement: '  retry reached pair = settled reached <$> unifyRowsTraced '
+      + '(unifyAt 1) pair.mode\n',
+    probe: 'r005b-end-fixpoint',
+    message: /retry not re-examined: E_INTERNAL R005B placeholder: merge /
   }
 ];

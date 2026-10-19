@@ -20,8 +20,11 @@ import Domain.Type.Parts (typeHead)
 import Features.Check.Context (CheckEnv, Infer, Locals)
 import Features.Check.Consume (consumeAt)
 import Features.Check.Provenance (Consumed(FailOf))
+import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Reject (rejected)
 import Features.Check.Require (require)
+import Features.Check.RowMerge.End (stillWaiting, waitingSite)
+import Features.Check.RowMerge.Predicate (anyWaiting)
 import Features.Check.Scheme (State, Threaded, opened, resolved)
 import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..), Flex, Subst(..), settleRows)
@@ -72,10 +75,10 @@ settleKeys
 settleKeys env state body = either failed checked (settleRows state.subst)
   where
   failed failure = failureDiagnostic env state body failure
-  checked settled = maybe' (noUnresolved settled) unresolved
+  checked settled = maybe' (noUnresolved settled) (unresolved settled)
     (firstUnkeyed settled body)
   noUnresolved settled _ = Right settled
-  unresolved span = Left (problemAt FailNeedsConcrete span)
+  unresolved settled span = Left (familyUnknown settled span)
 
 -- The keys settled for good, after the deferred rows are. A row pair still
 -- set aside then met a Fail payload no family key decides. Signatures and
@@ -89,7 +92,18 @@ settleFinal env state body = settleKeys env state body >>= leftover
   where
   leftover settled@(Subst bindings) =
     if Array.null bindings.postponed then Right settled
-    else Left (problemAt FailNeedsConcrete (failureSpan body))
+    else Left (familyUnknown settled (failureSpan body))
+
+-- A Fail payload whose family no key decides. R005 Tranche B B3 (plan
+-- F-7): a `Merge` predicate still waiting is reported before the family
+-- it may leave unknown, placeholder P5 at its site until B4 classifies
+-- it.
+familyUnknown ∷ Subst → Span → Diagnostic
+familyUnknown subst span
+  | anyWaiting subst = placeholderAt
+      (maybe' (const span) identity (waitingSite subst))
+      stillWaiting
+  | otherwise = problemAt FailNeedsConcrete span
 
 failureSpan ∷ Checked.Expr → Span
 failureSpan body = maybe' noFailure identity (firstFail body)

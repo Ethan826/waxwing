@@ -4,8 +4,10 @@
 // at a time, never calling the compiler's flattener. The state's free
 // variables are its unbound metas; its constraints are the recorded lacks
 // on metas, the pairs with a meta side (a meta apart from itself is empty),
-// and each free meta's own well-formedness (rigid facts are the
-// hypotheses). Task 4's upper bounds went in B2. Property E
+// each waiting `Merge` predicate as `left ⊎ right = result` with its
+// parts disjoint (since B3), and each free meta's own well-formedness
+// (rigid facts are the hypotheses). Task 4's upper bounds went in B2.
+// `skipMerge` drops the predicates, a second corruption to catch. Property E
 // (rules §0): the program metas' values over the state's solutions are
 // exactly the problem's solutions. `skipNested` corrupts the traversal
 // (a bound tail inside a binding read as empty), for the sensitivity
@@ -41,6 +43,8 @@ export function freeMetas(state, metas) {
   metas.forEach(visit);
   state.lacks.forEach(f => visit(f.tail));
   state.apart.forEach(([a, b]) => { visit(a); visit(b); });
+  (state.merges ?? []).forEach(m => [m.left, m.right, m.result]
+    .forEach(r => r.tails.forEach(visit)));
   return [...free].sort();
 }
 
@@ -58,6 +62,19 @@ function constraints(state, hyp, options) {
   for (const [a, b] of state.apart) {
     if (!isMeta(a) && !isMeta(b)) continue;
     out.push(asg => wellFormed(hyp, [...value(asg, a), ...value(asg, b)]));
+  }
+  if (options.skipMerge) return out;
+  const rowValue = (asg, r) => [...r.fields,
+    ...r.tails.flatMap(t => value(asg, t))];
+  const same = (a, b) => a.length === b.length
+    && [...a].sort().join() === [...b].sort().join();
+  for (const m of state.merges ?? []) {
+    out.push(asg => {
+      const parts = [...rowValue(asg, m.left), ...rowValue(asg, m.right)];
+      const result = rowValue(asg, m.result);
+      return wellFormed(hyp, parts) && wellFormed(hyp, result)
+        && same(parts, result);
+    });
   }
   return out;
 }

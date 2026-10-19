@@ -14,7 +14,7 @@ const entry = await load('Features.Check.RowEntry');
 const { Meta, Rigid } = await load('Features.Check.Flex');
 const { Tuple } = await load('Data.Tuple');
 
-const RIGIDS = ['R', 'S'];
+const RIGIDS = ['R', 'S', 'T', 'U'];
 
 export const flexOf = name => (name.startsWith('m')
   ? new Meta(Number(name.slice(1))) : new Rigid(RIGIDS.indexOf(name)));
@@ -56,7 +56,9 @@ export function classify(found) {
 export const outcomeOf = either => entry.outcome(either);
 
 // { v: 'accept' | 'refuse' | 'skipped', subst, base, failure?, what? }.
-// `base` is the state after the hypotheses, for counting changes.
+// `base` is the state after the hypotheses, for counting changes. Since
+// B3 the run ends at the end of a body (RowEntry `finish`): a predicate
+// still waiting there is placeholder P5, a skipped run.
 export function run(hyp, order) {
   const base = start(hyp);
   let subst = base;
@@ -70,6 +72,8 @@ export function run(hyp, order) {
     }
     subst = found.subst;
   }
+  const end = classify(entry.finish(subst));
+  if ('skipped' in end) return { v: 'skipped', what: end.skipped, subst, base };
   return { v: 'accept', subst, base };
 }
 
@@ -82,8 +86,15 @@ export function stateOf(subst) {
       [`m${b.meta}`, { fields: b.labels, tails: b.tails.map(nameOf) }])),
     lacks: facts.lacks.map(f => ({ tail: nameOf(f.tail), labels: f.labels })),
     apart: facts.apart.map(p => [nameOf(p.value0), nameOf(p.value1)]),
+    merges: entry.merges(subst).map(m => ({ left: rowRead(m.left),
+      right: rowRead(m.right), result: rowRead(m.result) })),
   };
 }
+
+const rowRead = r => ({ fields: r.labels, tails: r.tails.map(nameOf) });
+
+// Each predicate's case-3 moves (rules §5's lineage), by identity.
+export const lineages = subst => entry.lineages(subst);
 
 export const changes = subst => entry.changes(subst);
 export const solverMetas = subst => entry.solverMetas(subst);

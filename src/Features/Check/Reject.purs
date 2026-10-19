@@ -30,6 +30,7 @@ import Features.Check.Scheme (State, opened)
 import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..))
 import Features.Check.Lacked (refusedAt)
+import Features.Check.Merged (mergedAt)
 import Features.Check.Placeholder (placeholderAt)
 
 -- A consumption (or the retry of a postponed one) that failed, reported at
@@ -47,6 +48,8 @@ rejected env state origin failure = case failure of
   Refused refusal → Left (refusedAt env state.subst span refusal)
   Placeholder what → Left (placeholderAt span what)
   Unexpected what → Left (problemAt (Internal what) span)
+  FromMerge cause inner → mergedAt env state.subst span cause inner
+  Exhausted what → Left (problemAt (Internal what) span)
   _ → Left (problemAt (Internal "Effect row consumption failed") span)
   where
   span = origin.span
