@@ -15,6 +15,8 @@
 //   signature's hypotheses), else it fails (D3, D3'' in the compiler).
 // - Unification: ADR 013's one-tail rules (Remy, Gaster and Jones)
 //   after cancelling common labels and rigid tails.
+// `st.trace`, when set (qt-trace.mjs), records where facts came from and
+// which rows a mismatch met; it never changes a result.
 export class Fail extends Error {}
 export class Broken extends Error {}
 export const isMeta = v => /^m/.test(v);
@@ -78,6 +80,7 @@ const hypApart = (st, r, s) => (st.hyp.apart || [])
   .some(p => key(p[0], p[1]) === key(r, s));
 
 function addExcl(st, m, a) {
+  st.trace?.fact(`${m}>${a}`);
   const s = st.excl.get(m) ?? new Set();
   if (s.has(a)) return;
   s.add(a);
@@ -87,6 +90,7 @@ function addExcl(st, m, a) {
 
 // Atomic facts. On rigids: entailment by the givens, or failure.
 function apartAtoms(st, t, u) {
+  if (isMeta(t) || isMeta(u)) st.trace?.fact(key(t, u));
   if (t === u) {
     if (!isMeta(t)) throw new Fail(`twice: ${t}`);
     if (st.selfApart) bindMeta(st, t, EMPTY);
@@ -163,12 +167,16 @@ export function bindMeta(st, m, row) {
   st.bind.set(m, img);
   st.version++;
   for (const a of ex) {
+    const back = st.trace?.enter(`${m}>${a}`);
     requireDisjoint(st, img, isLab(a) ? { fields: [a], tails: [] }
       : tailRow(a));
+    st.trace?.leave(back);
   }
   for (const k of partners) {
     const other = k.split('|').find(x => x !== m) ?? m;
+    const back = st.trace?.enter(k);
     requireDisjoint(st, img, tailRow(other));
+    st.trace?.leave(back);
   }
   wellFormed(st, img);
 }
@@ -200,6 +208,9 @@ export function unify(st, L, R) {
   const k1 = [...minus(l.fields, r.fields), ...t1.filter(t => !isMeta(t))];
   const k2 = [...minus(r.fields, l.fields), ...t2.filter(t => !isMeta(t))];
   const m1 = t1.filter(isMeta), m2 = t2.filter(isMeta);
+  if ((k1.length && !m2.length) || (k2.length && !m1.length)) {
+    st.trace?.mismatch(L, R);
+  }
   if (k1.length && !m2.length) throw new Fail(`mismatch: ${k1[0]}`);
   if (k2.length && !m1.length) throw new Fail(`mismatch: ${k2[0]}`);
   if (!m1.length && !m2.length) return 'done';

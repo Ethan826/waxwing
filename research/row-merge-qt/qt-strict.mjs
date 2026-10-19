@@ -68,6 +68,7 @@ function subtract(st, left, R, T) {
   const bad = R.fields.find(f => tName.get(nameOf(f)) !== f);
   if (bad) throw new Fail(`mismatch: ${nameOf(bad)}`);
   const taken = new Set(R.fields.map(nameOf));
+  st.trace?.subtract(left, T.fields.length === R.fields.length);
   unify(st, left, { fields: T.fields.filter(f => !taken.has(nameOf(f))),
     tails: [] });
   return 'done';

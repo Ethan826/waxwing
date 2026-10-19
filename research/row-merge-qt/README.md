@@ -56,6 +56,10 @@ beside them.
 | qt-examples.mjs | Q1 and Q2: Waxwing programs QT rejects and QS accepts, with QT's smallest annotation (design §11.3) |
 | qt-checks.mjs | committed checks: `order` (the order fixtures), `annotations`, `f2`, `stage4`, `strict` (QT-strict's examples and its agreement with the installed purs) |
 | qt-domains.mjs | every problem of research/open-row-merge's exhaustive domains A and B in every order, QT, QS-EH and QS-EHZ against the oracle; exit 1 on a violation or a QS-EHZ order difference |
+| qt-trace.mjs | the adopted configuration (`QT-strict+Sym+H`) driven with each step's written position, the provenance of facts and the metas case 2 empties (through the `st.trace` hooks in qt-facts.mjs and qt-strict.mjs, which only record) |
+| qt-render.mjs | `render`: the diagnostic the rules select, modelled from provenance, compared across orders apart from the verdict kind; `case2`: case 2's empty bindings and the failures that meet them |
+| qt-adopted.mjs | `examples`, `three`, `controls`, `report`: the implementation plan's figures for the adopted configuration |
+| qt-given.mjs | case 1g on the six programs of research/purs-given-1g |
 | fixtures/order-*.json | six order-dependent problems (four raw, two from domain A): rows, every permutation, recorded outcomes of the configuration without and with the repair; and order-S-shapes-1910, a QT-strict difference of verdict class only (Contradiction against Unresolved) |
 
 ## Commands and output
@@ -122,6 +126,24 @@ check gives `S-violated` and `L-violated` in the typed domain; H
 without `cannotHold` gives `H:newWithSolution` 330 and 320 (raw seed
 21, 1,000 problems); Sym's case 3 rewriting the wrong part gives
 `H-violated` 10 and 25.
+
+## The adopted configuration (2026-10-19, branch `r005b-replan`)
+
+Implementation plan Task B0. Rerun from the committed tree; each exits
+0. The `st.trace` hooks change no result: `node qt-adapt.mjs raw 21
+2000`, `shaped 1 2000` and `dense 21 1000` print the same lines as
+before them, and qt-checks.mjs `order`, `strict`, qt-checks2.mjs `sym`,
+`kinds`, `generality` and qt-typed.mjs still exit 0.
+
+| Command | Output (abridged) |
+|---|---|
+| `node qt-adopted.mjs examples` | 11 `ok`: S1 D4, smallest annotation two parameters (4 choices), excludes 3 of 5 solutions; S2 accept unannotated, and swapped; S3 D4, one parameter, redundant; Q1 D4, one annotation on the shared `s` (m1 or m3), excludes 1 of 3; Q1 with the re-plan's `fn(p: {}, s)` still D4; Q2 D4, one, redundant; program 11 D4, one parameter (4 choices), redundant; program 12 D4, `m0 = { x }`, redundant; program 16 `same(merge, merge)` D4 (the earlier custom design: refuse); F2 392 programs, 186 with a least solution, 0 accepted plain, 186 with the shared parameter annotated |
+| `node qt-adopted.mjs three` | 10 `ok`: the fixtures with a row of three unknown tails (diag-02, -03, -08, -12, -17 and their fixes) give one outcome over every tail order and up to 720 step orders |
+| `node qt-adopted.mjs controls` | 84 `ok`; `moved: design-forced-bound Solved>D4, design-quiet Solved>D4, diag-14-fix Solved>D4`; order-22-*, -23-*, -24-* D4, order-A-* and order-S-shapes-1910 refuse, domain-b-1, -17, -9 D4, domain-b-3, -7 refuse, each in every order |
+| `node qt-adopted.mjs report` | 5 `ok`: under the proposed R11 the reported predicate is the same in every order: `determinate` site 9 (the second merge's result) field `a`; `odd-cycle`, `diag-01`, program 11 site 1 field `x`; Q1 site 4 field `b` |
+| `node qt-given.mjs` | 7 `ok` (research/purs-given-1g README) |
+| `node qt-render.mjs render 2000` | no `kindDiff` anywhere; `renderDiff` only for refusals met while solving (location rule 1 names the step being checked, which the order changes): fixtures 24 of 72, raw 758 of 2,000, shapes 855 of 2,000; none for H (fixtures 1, raw 10, dense 81, shapes 45 problems with H) or D4 (fixtures 18, raw 243, dense 1,807, shapes 342); `trace changed a verdict: 0` |
+| `node qt-render.mjs case2 2000` | case 2 binds a meta to `{}` in 8 raw runs and 9 shape runs; 3 shape runs then fail at a mismatch reaching such a meta (problems 1335, 1558, 1810), and in each another order fails otherwise (1558 and 1810: a fact, `not entailed` or `overlap`) |
 
 ## Sensitivity
 
