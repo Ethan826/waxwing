@@ -6603,3 +6603,13 @@ built, verify not run.
   a least solution are accepted with the shared parameter annotated; on
   the ten fixtures with three unknown tails every tail order and step
   order gives one outcome, and no generated problem has such a row.
+- Module README drafted: docs/plans/2026-10-19-row-merge-readme-draft.md
+  (final path src/Features/Check/RowMerge/README.md, made authoritative
+  and reviewed in the plan's Task 10a). For an ordinary programmer: the
+  problem through code, rigid variables, unknowns, waiting constraints
+  and defaulting by example, the options weighed (PureScript's
+  algorithm, Z3, the custom solver), what comes from PureScript and why
+  Sym and H differ, what programmers get and give up (S1 and Q1 narrow;
+  S2 needs no annotation with Sym; S3, program 11 and F2 redundant),
+  evidence and its limits with commands, and links to the decision
+  history. Width check only; nothing built.
