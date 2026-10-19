@@ -1,4 +1,4 @@
-# Waxwing / R005 Tranche B: B1-B3 done, unmerged; B3 for review (2026-10-19)
+# Waxwing / R005 Tranche B: B3 and its follow-up for review, unmerged (2026-10-19)
 
 **State.** main is at 1d43341 (the Sym/H research merge); the active
 branch is `r005b-replan` (UNMERGED, by the user's choice): the
@@ -26,16 +26,13 @@ ledger, tasks B2-B5, 7-10); docs/plans/2026-10-19-row-merge-readme-draft.md
 (final path src/Features/Check/RowMerge/README.md);
 docs/plans/2026-10-18-row-merge-qualified-types.md (research record).
 
-**Next, needs the user's review:** B3 (code commit 43490f4; verify
-2295/2295, 59/59, 157 proofs; differential classified in
-docs/progress.md "R005 Tranche B B3"). L1 was accepted and L2's
-limited location rule approved (plan §10 decision 15). Open from B3:
-the typed domain not ported, `r005b-settle-rollback` not landed, M13
-argued in part, and two findings for the user (O4: no annotation can
-fix a direct call whose split only a lacks clause decides; a generic
-function whose result names a variable no parameter fixes cannot call
-itself, `Merge U ?v {U, V}` waits). B4 (H, Unresolved, the reclassified
-fixtures, O1-O6's classes) waits for authorization.
+**Next, needs the user's review:** the B3 follow-up (code commit
+b3ac648; verify 2308/2308, 59/59, 157 proofs; docs/progress.md "R005
+Tranche B B3 follow-up") and a decision on
+docs/plans/2026-10-19-row-merge-limitations.md (case 2g proposed for
+the self-call and forwarding wrappers; O4 kept; D4's hint). B4 (H,
+Unresolved, the reclassified fixtures, O1-O6's classes) stays blocked
+until B3 is approved.
 
 **Working method the user expects.** A branch per task; the user
 authorizes each task and each merge (fast-forward only); the controller

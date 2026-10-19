@@ -919,9 +919,9 @@ check that will. B0 completes it; no unbacked claim passes the gate.
 | M8 | Acceptance, types and verdict kinds do not depend on the order of constraints | measured: `acceptDiff`, `kindDiff` 0 on every family incl. domains A and B; **not proved** | every order of fixtures and domains; five of generated problems (B3, B4, 9) |
 | M9 | Swapping a merge's arguments changes nothing | measured: `mirrorDiff` 0 on every family | mirror runs (B3) |
 | M10 | Association of three or more unknown tails changes nothing | measured (B0): ten fixtures, every tail and step order; typed `assoc`, both groupings and every order; argued for 1g only | compiler test (B3) |
-| M11 | Field types: cases unify them; unknown field types behave as ground ones | argued; checked by research/row-merge-typed (unknown field types, one level of nesting, no rigid tails) | typed entry and oracle (B3) |
+| M11 | Field types: cases unify them; unknown field types behave as ground ones | argued; checked by research/row-merge-typed (unknown field types, one level of nesting, no rigid tails) | the typed families through the compiler (test/row-merge-typed.test.mjs, B3 follow-up: reference, H, S/L, G) |
 | M12 | Nested predicates are re-examined and reported once, with their path | argued | nested tests (B3), Examples 4, 5 (Task 7) |
-| M13 | Predicates revert with a postponed effect pair; the joint fixpoint ends | argued (§2.9; rules §12 of the old file, adapted) | `r005b-settle-rollback`, `r005b-end-fixpoint` (B3) |
+| M13 | Predicates revert with a postponed effect pair; the joint fixpoint ends | argued against FX008's 4c premises (rules file §5, B3 follow-up) | the rollback tests at the boundary (test/r005b-rollback.test.mjs); settling through predicates within time bounds (test/r005b-predicates.test.mjs) |
 | M14 | After specialization every row is ground | argued (§2.11; old L22) | Specialize asserts it (Task 8) |
 | M15 | The representation invariant holds | argued (§2.1) | the `Unexpected` guard and the oracle runner failing on it (B3) |
 | M16 | The annotations of §5 make the programs accepted; S1, Q1 narrow, the rest are redundant | `node qt-checks2.mjs generality`; `node qt-adopted.mjs examples` for the adopted configuration | test/r005b-annotations.test.mjs (Task 7) |
@@ -1205,10 +1205,39 @@ counts):
   without new plumbing, and no program was found whose retry makes
   progress and then postpones again (a known label's binding is decided
   even when another label's key stays open).
-- **Not done:** the typed research domain ported to the compiler
-  (§3.4, qt-typed.mjs): typed behaviour is checked at the check phase
-  only (clashes, nested types). M13 is argued in part (rules file §5).
+- **Not done at B3** (done by the follow-up below): the typed and
+  nested research families through the compiler; M13 was argued in
+  part.
 - Recovery obligations O1-O6 stay open; their checks are B4's and B5's.
+
+**B3 follow-up** (the user's review, §10 decision 16; 2026-10-19):
+
+- Typed and nested coverage ported: test/row-merge-typed.test.mjs runs
+  research/row-merge-typed's families (`nested`, `assoc`) through the
+  compiler's entry, rows made at every depth, judged against that
+  research solver (Sym, H off) and its oracle (H, S/L, and G: the most
+  general typing up to renaming), plus each nested problem mirrored.
+  At the research sizes no violation; a defect in case 2's field types
+  is caught (G-violated 8 and 12).
+- Rollback shown at the transaction boundary (test/r005b-rollback.
+  test.mjs): a pair whose first label's payload solves a predicate by
+  re-examination and whose second label's family is unknown restores
+  the starting bindings, waiting predicates, identities, causes,
+  lineage history and facts, also through a settling retry; a revert
+  that kept the attempt's row store fails it (scratch). The planned
+  whole-program `r005b-settle-rollback` row stays unlanded, as the user
+  allowed.
+- M13 argued against FX008's premises (rules file §5): a case's
+  unification can postpone a new pair (tested), and those pairs are
+  bounded.
+- A handler's own rows were not desugared, and a record of two tails in
+  them reached the invariant guard (`Handler(Log with State({ ...r,
+  ...t }))` against a known handler). Now desugared like every other
+  row, with tests.
+- The two limitations probed against the compiler and purs, diagnosed,
+  and a remedy proposed, not adopted: docs/plans/2026-10-19-row-merge-
+  limitations.md (case 2g for a known left part and result; O4 kept;
+  the D4 hint must not suggest an annotation that cannot help).
 
 ### Task B4: The end of a body: Unresolved and H
 
@@ -1590,6 +1619,20 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     sites when sources are rearranged, and report before pinning texts
     if provenance cannot reproduce the stable location. O1-O6 stay open
     until their checks pass; O4's burden belongs in the README too.
+
+16. **B3 reviewed, not yet approved** (user, 2026-10-19). A focused
+    follow-up is authorized, within the approved rules: port the typed
+    and nested oracle coverage; show rollback at the postponement
+    boundary (constructed state allowed, no whole-program mutation
+    required); close M13's composition argument against FX008's
+    premises; desugar records in a handler's own rows if they are
+    reachable, or document and test that they are not; probe the
+    recursive-call limitation (with a nonrecursive forwarding wrapper)
+    and O4, show whether each comes from missing signature-given
+    entailment, inaccessible row arguments or both, and bring back the
+    smallest remedy or a proposal to keep it. No solver rule is added
+    without approval; D4 must not suggest an annotation that cannot
+    repair the call. B4 stays blocked; O1-O6 stay open.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection

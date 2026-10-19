@@ -257,25 +257,53 @@ without the bind rule passing a meta's lacks to its image, the labelled
 self-loop and the result-in-its-own-part examples move `a` forever and
 reach the 10,000-pass cap, so (P1)'s bind-rule half is load-bearing.
 
-**The joint fixpoint with effect settling (M13, B3, 2026-10-19).** What
-is argued: (1) every rescan, including those a settling retry starts
-(Check/Unify `settleRows` retries with the re-examining unifier),
-terminates by the theorem; (2) settling makes no predicate and no label
-(P3), so across all of settling's rescans each lineage's moves stay
-pairwise disjoint: lacks and bindings persist, except what a postponed
-pair's revert undoes, and the revert undoes the moves made inside it
-too, since predicates live in the substitution it restores (Check/
-RowFinish `postponed` returns to the pair's starting substitution);
-(3) B3 adds no reason for a settling round to continue: a round goes on
-only if it decided a pair, grew an effect row's label count, or can
-decide one (FX008, Check/SettleChange), and predicates change none of
-those directly. What is not separately argued: a case's unification of
-field types can meet effect rows and postpone a pair, as any
-unification of those types could; that such pairs cannot keep a round
-going is FX008's argument, which B3 relies on without re-arguing it.
-**Checked:** the B3 tests that settle through predicates in both
-directions, each within a 2-second bound (test/r005b-predicates.test.
-mjs), and every program of the suite and the differential.
+**The joint fixpoint with effect settling (M13; B3 follow-up,
+2026-10-19).** The outer loop is FX008's settling procedure (Check/Settle,
+the corrected procedure of docs/sdd/2026-10-09-effects-plan/
+review-fx008-termination-result.md): rounds of (a) deciding postponed
+`Fail` pairs, (b-d) consuming restricted rows, ending after a round in
+which (a) decided no pair and no row's label count changed. Its bound
+(4c) is at most (N0 + 1)(2n + 1) + 1 rounds plus the pairs (a) decides,
+from two premises. B3 adds callbacks inside unification (a rescan after
+each top-level unification and in each retry), checked here against
+each premise:
+
+- *No step creates an unbound effect-row meta class* (N0 counts them at
+  the start). B3's cases make record metas only (desugaring's results,
+  case 3's u, shared remainders): type metas, not effect-row metas. The
+  effect rows a case meets (inside field types: a function's row, a
+  handler's rows) are unified by Check/UnifyRow like any others, so an
+  extension continues a class and a nested growth merges or closes one,
+  as 4c counts. Settling makes no type at all except through those
+  extensions (no instantiation, no desugaring: P3).
+- *A resolved row only grows at its tail; a meta is bound once.* B3
+  binds through the same binders, so this holds unchanged.
+- *The pairs (a) decides* are the term B3 can enlarge: a case's
+  unification can postpone a new pair (test/r005b-rollback.test.mjs, "a
+  case's unification can postpone a pair", constructed). Bound: a pair
+  is two effect rows met by unification, and every effect row settling
+  can meet occurs in the types of the substitution when settling starts
+  or is one of the extensions 4c already bounds; a case copies existing
+  field types into records and never makes an effect row. A decided pair
+  has unified its rows, so meeting the same rows again finds their keys
+  known and postpones nothing; a pair postponed in an attempt that
+  postpones again is discarded with everything else that attempt did
+  (the rollback tests). So the pairs decided while settling are at most
+  the pairs of those finitely many rows, and a retry that only
+  postpones again decides nothing and cannot keep a round going.
+- *Inside a round* each retry is one unification, and every rescan it
+  starts terminates by the theorem above. Progress a rescan makes inside
+  an attempt that is reverted can be made again in a later round, but
+  only in a round that decided a pair or grew a row, of which there are
+  boundedly many; between reverts, lineages keep the lemma (lacks and
+  bindings persist).
+
+So the joint loop terminates: rounds are bounded by FX008's 4c with the
+decided pairs bounded as above, and each round does finitely much work.
+**Checked:** the rollback and postponement tests, and the B3 programs
+that settle through predicates in both directions within 2 seconds
+(test/r005b-predicates.test.mjs). Not checked beyond those: no
+generated family exercises settling through predicates.
 
 **What B3 inherits.** The step counter gets a stated bound from the
 theorem, `P · (|Λ| + 1) + 1` passes (exceeding it is a `Stop Limit`,
@@ -399,7 +427,7 @@ beyond §3's remark for 1g.
 | M10 | association changes nothing | measured (§10); argued for 1g only |
 | M11 | unknown field types | checked (§10) without rigid tails |
 | M12 | nested predicates | checked one level deep (§10); sites and paths are the compiler's (B3) |
-| M13 | rollback, joint fixpoint | argued in part (§5, B3): rescans in settling terminate, the lineage bound survives reverts, and predicates add no round condition; a pair a case's unification postpones relies on FX008's argument, not re-argued; tested within time bounds (B3) |
+| M13 | rollback, joint fixpoint | argued (§5, B3 follow-up): FX008's 4c premises checked against the rescan callbacks; the pairs cases can postpone bounded; reverts tested at the boundary; settling through predicates tested within time bounds, no generated family |
 | M14 | rows ground after specialization | argued; Task 8 |
 | M15 | one unknown tail per row | argued (plan §2.1); guard in B3 |
 | M16 | §5's annotations, narrowing | checked (`node qt-adopted.mjs examples`) |
