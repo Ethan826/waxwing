@@ -3,10 +3,10 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps
-> use checkbox (`- [ ]`) syntax for tracking. **No task is authorized.**
-> This plan is a draft for the user's review. Do not start Task B0 or
-> any later task until the user authorizes it, and then only the task
-> the user names.
+> use checkbox (`- [ ]`) syntax for tracking. **Only Task B1 is
+> authorized** (the user, 2026-10-19, after B0). Do not start B2 or any
+> later task until the user authorizes it, and then only the task the
+> user names. Two gates (§10, decisions 12 and 13) block B3.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs, checked by the
@@ -53,8 +53,9 @@ an oracle property or a measured run.
   field path (diagnostic metadata). It reverts with the substitution
   when a postponed effect pair reverts.
 - **Solving** uses PureScript's `unionRows` cases 1-3 (borrowed), the
-  adaptation 1g (parts with no unknown give their symbolic union;
-  broader than PureScript's matching of a given, rules file §3) and the
+  adaptation 1g (parts with no unknown give their symbolic union, which
+  is its justification, independent of PureScript's matching of a
+  given; rules file §3) and the
   approved adaptation Sym (the same cases with the parts swapped),
   re-examined by a full rescan after each top-level unification and in
   each effect-settling round; at the end of a body, the approved
@@ -82,8 +83,9 @@ an oracle property or a measured run.
 test runner, Go 1.26.4. No new dependency (Z3 stays outside the
 repository, an optional research oracle).
 
-**Status:** Draft for the user's review (2026-10-19); implementation not
-authorized.
+**Status:** B0 accepted and B1 authorized (2026-10-19); decisions in
+§10. B2 onward not authorized; termination (L1) and solving-time
+diagnostics (L2) are open ledger items.
 
 Written on branch `r005b-replan` from main 1d43341. Docs only: no
 compiler source, test, script or test fixture changed; nothing built;
@@ -507,10 +509,10 @@ increase except by re-making what a revert removed (B0 argues it).
 
 | Outcome | Text | Location |
 |---|---|---|
-| a case's unification fails (field mismatch, a label `t` cannot have, a refused fact) | D6 forms (`O's ROW must be OTHER, so A cannot have field l`), or the fact's own text (D1, D2, D3'') when a written fact is the reason (R10.2's principle) | R7: the expression being checked |
-| a binding a case made fails later (R10.1) | D6, the predicate from `boundBy` | the expression being checked |
-| H's Contradiction | D6 `… but neither A nor B can have field l` (`none of`, `cannot hold t`), `excluded here` per fact | **Proposed** (T4, stable, from provenance; rules file §7): each fact ruling the field out of a part keeps its reason by the approved precedence and, as metadata, the span of the use whose seeding stated it; the primary is the latest of those spans in source order, else the predicate's site; notes `required here` at the predicate's site and `excluded here` at each reason's span. On `diag-14` this is the approved `noX` |
-| Unresolved | D4 forms with R9's hints when a constant has two or more candidate parts (R3, R4); **Proposed** forms otherwise (§5: a predicate with no constant; constants each with one candidate) | R7: the predicate's site. R11 **Proposed**: the earliest-site predicate that has a field with two or more candidate parts; only when none has one, the earliest predicate. `determinate`'s approved text needs this: its earliest waiting predicate has no field, and the approved D4 names field `a` at the second `merge` (`node qt-adopted.mjs report`: site 9, field `a`, in every order checked) |
+| a case's unification fails (field mismatch, a label `t` cannot have, a refused fact) | D6 forms (`O's ROW must be OTHER, so A cannot have field l`), or the fact's own text (D1, D2, D3'') when a written fact is the reason (R10.2's principle, kept: the applicable written fact's specific diagnostic is preferred to D6; approved) | R7: the expression being checked |
+| a binding a case made fails later (R10.1, extended to case 2 bindings; approved) | D6, the predicate from `boundBy`, unless a written fact applies (R10.2) | the expression being checked |
+| H's Contradiction | D6 `… but neither A nor B can have field l` (`none of`, `cannot hold t`), `excluded here` per fact | **Approved** (T4, stable, from provenance; rules file §7): each fact ruling the field out of a part keeps its reason by the approved precedence and, as metadata, the span of the use whose seeding stated it; the primary is the latest of those spans in source order, else the predicate's site; notes `required here` at the predicate's site and `excluded here` at each reason's span. On `diag-14` this is the approved `noX` |
+| Unresolved | D4 forms with R9's hints when a constant has two or more candidate parts (R3, R4); forms approved 2026-10-19 otherwise (§5: a predicate with no constant; constants each with one candidate) | R7: the predicate's site. R11 **approved**: the earliest-site predicate that has a field with two or more candidate parts; only when none has one, the earliest predicate; predicates sharing a source span are ordered by a stable tie-break from source data (never by allocation identity). `determinate`'s approved text needs this: its earliest waiting predicate has no field, and the approved D4 names field `a` at the second `merge` (`node qt-adopted.mjs report`: site 9, field `a`, in every order checked) |
 
 ### 2.11 Specialization and lowering
 
@@ -816,13 +818,15 @@ programs`; `node qt-adopted.mjs controls` for all of them):
 | purs domain-b-3, -7 | QT: refuse/D4 by order | Contradiction in every order | 0 | research control |
 | purs domain-b-9 | QT: refuse, D4 | Unresolved in both orders | 0 | research control |
 
-**Reclassification proposals, for approval, not applied**: the three
-fixtures marked **proposal** move from Solved to Unresolved with their
+**Reclassifications, approved 2026-10-19; test/fixtures not edited in
+B1, the change belongs to B4's fixture step** (texts pinned in B5): the
+three fixtures marked **proposal** move from Solved to Unresolved with their
 D4 texts (one approved form, two Proposed), each gaining an
 `-annotated` fixture with the annotation of §5 (Solved, `output`
 `0\n`); `same` is added as a fixture (Unresolved, D4 approved form).
 Their research counterparts (research/open-row-merge's fixtures.mjs)
-keep asserting the superseded design's classes, as its record.
+keep asserting the superseded design's classes: that directory is the
+research archive of the old design's results.
 
 ### 4.6 Regression rows
 
@@ -843,7 +847,8 @@ the smallest annotation was found by trying every set of annotated
 unknowns at their least values (`node qt-adopted.mjs examples`). "Narrows"
 means fixing the annotated part excludes solutions the program had
 (counted with one extra label `w`, `node qt-checks2.mjs generality`).
-Texts are approved D4 forms where marked, otherwise **Proposed**. The
+Texts are approved D4 forms where marked, otherwise the forms the user
+approved on 2026-10-19 (proposals §2). The
 annotation syntax was checked on today's compiler in single-tail
 programs (lambdas `fn(p: {}) => …` and `fn(p, s: {}) => …` passed to a
 function with a `disjoint` clause: accepted, run printing 0).
@@ -883,7 +888,7 @@ check that will. B0 completes it; no unbacked claim passes the gate.
 |---|---|---|---|
 | M1 | Every case (1, 2, 3, 1g and Sym's mirrors) keeps the solutions, fresh metas accounted for | re-plan §13.1 (PureScript's cases), §14.1 (Sym); prototype S, L, H 0 violations | property E on every run (B3) |
 | M2 | Desugaring keeps the solutions (each `t` is determined by its parts) | argument (B0); prototype runs desugar every row | property E (B3) |
-| M3 | Re-examination terminates | argument (B0, §2.4) | a step counter within the measure on every run (B3) |
+| M3 | Re-examination terminates | argued for acyclic predicate graphs only (rules file §5). **Open (L1, gate before B3, §10.12):** cyclic graphs, and the measure under changing edges and shared rows | a step counter (a `Stop Limit` safeguard, not an argument) on every run (B3) |
 | M4 | `Solved` emits a solution, the least | prototype S, L 0 on every family | S, L on every run (B3, B4) |
 | M5 | `Contradiction` (a case's failure, a fact, H) has no solution | prototype H 0; H's argument (§14.2) | H on every run; H's direct exclusion check (B4) |
 | M6 | Unresolved occurs with 0, 1 and several solutions | `odd-cycle` 0, `determinate` 1, `diag-01` 4 | asserted counts (B4) |
@@ -897,6 +902,7 @@ check that will. B0 completes it; no unbacked claim passes the gate.
 | M14 | After specialization every row is ground | argued (§2.11; old L22) | Specialize asserts it (Task 8) |
 | M15 | The representation invariant holds | argued (§2.1) | the `Unexpected` guard and the oracle runner failing on it (B3) |
 | M16 | The annotations of §5 make the programs accepted; S1, Q1 narrow, the rest are redundant | `node qt-checks2.mjs generality`; `node qt-adopted.mjs examples` for the adopted configuration | test/r005b-annotations.test.mjs (Task 7) |
+| M19 | Diagnostics found while solving are located stably | **Open (L2, gate, §10.13):** the same conflict can get different locations under different orders; different orders can find different valid conflicts first. Modelled selection and location checks only (the prototype renders no text) | proposal first; then tests of the chosen change (B3, B5) |
 
 ## 7. Tasks
 
@@ -948,23 +954,28 @@ test-fixture change; nothing in verify.
 
 **B0 results** (user's review requests of 2026-10-19, items 1-6):
 
-- **Case 1g** is a Waxwing adaptation, not one of PureScript's cases. It
-  agrees with PureScript's matching of a given `Union` where a given
-  exists for the same parts, orientation and grouping, and is broader
-  elsewhere (swapped, regrouped, or disjointness from a clause with no
-  given), where purs 0.15.16 reports NoInstanceFound; its own
-  justification is the rules file's §3. Narrowing it would leave those
-  programs with no annotation that helps (§10, decision 4).
+- **Case 1g** is a Waxwing adaptation, not one of PureScript's cases.
+  Its justification is the symbolic disjoint union (rules file §3),
+  independently of PureScript's given matching. It agrees with that
+  matching where a given `Union` exists for the same parts, orientation
+  and grouping, and is broader elsewhere (swapped, regrouped, or
+  disjointness from a clause with no given), where purs 0.15.16 reports
+  NoInstanceFound; the agreement is a check, not the reason. Narrowing
+  it would leave those programs with no annotation that helps. Approved
+  broad (§10, decision 4).
 - **R10.2.** Case 2 still empties metas; those bindings need their
-  predicate as cause (R10.1 extended to case 2), and whether a written
-  fact's own text should win there is open (rules file §9).
+  predicate as cause (R10.1 extended to case 2), and a written fact's own
+  text wins there (R10.2's principle kept; approved, rules file §9).
 - **H's location** is now stable by construction (§2.10). Modelled
   diagnostics compared across orders apart from verdict kinds (`node
-  qt-render.mjs render 2000`): no verdict-kind difference; no rendered
-  difference for H or D4; refusals met while solving are reported at
-  the step being checked (location rule 1), so their modelled
-  diagnostic differs with the order in fixtures 24 of 72, raw 758 of
-  2,000 and shapes 855 of 2,000 problems. This is the approved rule's
+  qt-render.mjs render 2000`) are modelled diagnostic selection and
+  location checks (the prototype renders no text, so these do not show
+  that complete rendered messages are stable): no verdict-kind
+  difference; no difference in the modelled selection or location for H
+  or D4; refusals met while solving are located at the step being
+  checked (location rule 1), so their modelled diagnostic differs with
+  the order in fixtures 24 of 72, raw 758 of 2,000 and shapes 855 of
+  2,000 problems. Gate L2 (§10, decision 13). This is the approved rule's
   dependence on checking order (the re-plan's §11.1 `whyDiff`), not a
   verdict difference; it is listed for the user (§10, decision 6).
 - **Reproduced** from the tree: S2 accepted unannotated; Q1's smallest
@@ -1009,9 +1020,13 @@ Check/Homeless (step 4 only); Check/Disjoint (no pruning; N5 removed:
 the self-pair stored); Check/RowStore (no `upper`, `emptied`);
 Check/UnifyFailure, Check/RowOutcome, Check/Lacked, Check/Refused
 (`Outside`, `Derived` and their classifier rows removed; P2 reworded);
-`Because.Equated` if T5 is approved; Check/RowEntry, test/row-merge-*
+`Because.Equated` (T5, approved once every remaining consumer is
+accounted for: list them first); Check/RowEntry, test/row-merge-*
 (bounds out of the read-back and the judge; `exclusions` out);
-scripts/regression-r005b.mjs (`r005b-pruned-reason` as approved, §8).
+scripts/regression-r005b.mjs (`r005b-pruned-reason` retired, §8: the
+obsolete bound-specific mutations go with the machinery they target, in
+this task and not in B1; their behavioural controls stay and the case-2
+provenance regression is added).
 
 - [ ] Failing tests first: the rows of `design-forced-bound` (and every
   problem the domains solve only by a commit or a bound) reach P1, a
@@ -1029,6 +1044,14 @@ scripts/regression-r005b.mjs (`r005b-pruned-reason` as approved, §8).
   text change from N5's removal).
 
 ### Task B3: Desugaring, predicates, cases, Sym, re-examination
+
+**Gate (user, 2026-10-19): B3 does not start until ledger item L1 is
+closed** (§10, decision 12): an argument covering reachable cyclic
+predicate graphs, or a proof that they cannot arise with a test of that
+invariant; the acyclic measure checked under substitutions that change
+edges and share rows. The step counter is a `Stop Limit` safeguard, not
+the termination argument. Ledger item L2 (§10, decision 13) must be
+decided before the solving-time diagnostics part is implemented.
 
 **Files:** src/Features/Check/RowMerge/Predicate.purs, Desugar.purs,
 Cases.purs, Improve.purs, End.purs (minimal: `Solved` or P5);
@@ -1099,14 +1122,14 @@ option); tests.
 
 ### Task B5: Diagnostics (D4, D6) and metadata
 
-**Files:** Check/PartOrigin filled where rows and predicates are made
-(Use, Lambda, Extension, Record `select`, Desugar): part identity,
-creation span, lambda-parameter name, instantiated type origin, owner;
-RowMerge (or Check) Unresolved.purs (D4: R1-R4, R6-R9, R11; Proposed
-forms only if approved) and Contradicted.purs (D6: R1-R3, R5-R8,
-R10.1, H's form and location), both taking only `RowOutcome` payloads;
-Check/TypeName (split row printing first); Problem,
-Format/Diagnostic/Records; P2 and P6 removed.
+**Files:** Check/PartOrigin filled where rows and predicates are made (Use,
+Lambda, Extension, Record `select`, Desugar): part identity, creation span,
+lambda-parameter name, instantiated type origin, owner; RowMerge (or Check)
+Unresolved.purs (D4: R1-R4, R6-R9, R11 with a stable tie-break for predicates
+sharing a source span, never allocation identity; the forms approved 2026-10-19)
+and Contradicted.purs (D6: R1-R3, R5-R8, R10.1, H's form and location), both
+taking only `RowOutcome` payloads; Check/TypeName (split row printing first);
+Problem, Format/Diagnostic/Records; P2 and P6 removed.
 
 - [ ] Failing renderer tests (test/r005b-fixtures.test.mjs): the
   fixtures at `stages.text` 6 (`diag-06`, `diag-07`,
@@ -1118,6 +1141,10 @@ Format/Diagnostic/Records; P2 and P6 removed.
   `same-name-parts` (R3) and `participation-control` (R10.1's limit).
 - [ ] A structural test: no solving module imports PartOrigin or reads
   a predicate's metadata.
+- [ ] R11's tie-break: two waiting predicates at one source span are
+  reported identically in every order of making them.
+- [ ] Solving-time diagnostics (L2): only after the user decides the
+  gate's proposal (§10, decision 13).
 - [ ] Implement; verify; differential: 0 on existing sources; commit.
 
 ### Task 7: The merge literal, access, removal and rest binders
@@ -1328,56 +1355,92 @@ Total about 2.3-2.8M tokens (**estimate**), each task plus one verify
 
 ## 10. Decisions for the user
 
-Updated after Task B0 (2026-10-19). Proposals stay unapplied; their
-details are in docs/plans/2026-10-19-row-merge-proposals.md.
+Decided by the user on 2026-10-19 after Task B0; each decision is marked
+**approved** or **gate** (an open item that blocks a named task). The
+details of the proposals are in
+docs/plans/2026-10-19-row-merge-proposals.md.
 
-1. **Accept B0 and authorize B1 alone** (behaviour-preserving splits),
-   or amend this plan first.
+1. **B0 accepted; B1 authorized alone** (behaviour-preserving splits).
+   B2 onward remain unauthorized. **Approved.**
 2. **Fixture reclassifications** (§4.5): `design-forced-bound`,
    `diag-14-fix`, `design-quiet` Solved → Unresolved, each with an
-   `-annotated` fixture; `same` added (Unresolved); the research
-   controls' expected outcomes recorded (`node qt-adopted.mjs
-   controls`). B4 stops before its fixture step without this approval.
-3. **Proposed D4 texts and R11's choice** (proposals §2): a waiting
-   predicate with no field (S1, S3); one whose fields each have one
-   candidate part (program 12); R11 reporting the earliest predicate
-   with a field two parts may hold, else the earliest predicate (needed
-   for `determinate`'s approved text; order independent as modelled,
-   `node qt-adopted.mjs report`).
-4. **Case 1g's scope** (rules file §3): keep it broad (the measured
-   configuration; agrees with PureScript where a given exists, broader
-   elsewhere, justified independently), or narrow it to where a written
-   row of the signature joins the same parts in the same orientation and
-   grouping (PureScript's reach; merges inside functions with only a
-   `disjoint` clause, swapped or regrouped, would then be refused with no
-   annotation that helps). Recommended: broad, as an approved adapted
-   rule named in the README.
-5. **R10.2** (rules file §9): bound-driven emptying is gone, but case 2
-   still binds a part to `{}`, and failures there need the predicate as
-   cause (R10.1 extended to case 2: proposed). Decide whether a written
-   fact that also excludes the label is preferred to D6 there (R10.2's
-   principle kept as a rule) or R10.2 retires with R10.3.
-6. **H's location** (T4, rules file §7): the stable provenance rule.
-   And note: refusals met while solving keep the approved location rule
-   1 (the expression being checked), which differs between equivalent
-   orders (§7, B0 results); keep, or ask for a provenance-based rule for
-   them too (a text and location change, not proposed here).
-7. **Regression rows** (§8): retire `r005b-pruned-reason`; drop the
-   planned `r005b-upper` and `r005b-bound-reason`; the rewordings and
-   new rows.
-8. **N5's removal** (T2): Task 3's merged binding of a meta apart from
-   itself goes, as the adopted configuration measured.
+   annotated companion (`-annotated`, Solved, `output` `0\n`); `same`
+   added as Unresolved with zero solutions; the research controls'
+   expected outcomes recorded (`node qt-adopted.mjs controls`).
+   **Approved.** The old design's results stay in its research archive,
+   research/open-row-merge (fixtures.mjs asserts the superseded
+   classes). test/fixtures is not edited in B1; the reclassification
+   belongs to B4's fixture step and B5 pins the texts.
+3. **Proposed D4 forms and R11** (proposals §2): a waiting predicate
+   with no field (S1, S3); one whose fields each have one candidate part
+   (program 12); R11 reporting the earliest predicate with a field two
+   parts may hold, else the earliest predicate. **Approved**, with one
+   added requirement: the choice of predicate must have a **stable
+   tie-break** when predicates share a source span. Allocation identity
+   (the order in which predicates were made) must not decide; the
+   tie-break uses source data only (for instance the span's start and
+   end, then the path of the field), and B5 tests two predicates at one
+   span in every order.
+4. **Case 1g's scope** (rules file §3): **approved, broad.** Its
+   justification is the symbolic disjoint union: with no unknown in
+   either part the result has exactly one value, and the signature's
+   disjointness makes it a valid record. That holds independently of
+   PureScript's given matching, which agrees with 1g only where a given
+   `Union` exists for the same parts, orientation and grouping. The
+   rules file, this plan and the README draft keep the two apart: the
+   agreement with PureScript is a check, not the reason.
+5. **R10.2** (rules file §9): **approved.** Its principle is kept: where
+   a written fact also excludes the label, that fact's specific
+   diagnostic (D1, D2, D3'') is preferred to D6. Causal tracking extends
+   to case-2 bindings (R10.1 extended to case 2), as proposed.
+6. **H's location** (T4, rules file §7): **approved**, the stable
+   source/provenance rule. Refusals met while solving keep the approved
+   location rule 1 for now; see decision 13 (gate).
+7. **Regression rows** (§8): **approved** retiring the obsolete
+   bound-specific regression mutations (`r005b-pruned-reason`; the
+   planned `r005b-upper` and `r005b-bound-reason` are dropped), keeping
+   their behavioural controls and adding the case-2 provenance
+   regression (a binding case 2 made keeps its predicate as cause).
+   Each retirement happens together with the removal of the machinery
+   it targets (B2), not in B1.
+8. **N5's removal** (T2): **approved.**
 9. **Translation decisions** T1 (desugar at creation, left fold, no
-   memo), T3 (nested sites), T5 (`Equated` removed).
-10. **S2 in the decision record**: measured, the adopted design accepts
-    S2 without an annotation (Sym); proposed wording: "S1 and Q1 need
-    annotations that narrow; S2's annotation, needed only without Sym,
-    would narrow if written".
-11. **Module location**: new modules in src/Features/Check/RowMerge/ and
-    the README there (§0); retained modules stay where they are.
-12. **Termination** (rules file §5): argued for acyclic predicate
-    graphs only. Accept B3's step counter (a `Stop Limit`) as the guard
-    for the unargued cyclic case, or require the argument before B3.
+   memo) and T3 (nested sites): **approved.** T5 (`Equated` removed):
+   **approved** once its remaining consumers are accounted for (B2
+   lists every use of `Because.Equated` before deleting it).
+10. **S2 in the decision record**: **approved** the correction. The
+    adopted design accepts S2 without an annotation (Sym): "S1 and Q1
+    need annotations that narrow; S2's annotation, needed only without
+    Sym, would narrow if written".
+11. **Module location**: **approved**; new modules in
+    src/Features/Check/RowMerge/ and the README at
+    src/Features/Check/RowMerge/README.md (§0); retained modules stay
+    where they are.
+12. **Termination** (rules file §5): **GATE, blocks B3.** The argument
+    covers acyclic predicate graphs only. Before B3 either (a) an
+    argument covering reachable cyclic predicate graphs, or (b) a proof
+    that they cannot arise, with a test of that invariant. The step
+    counter (`Stop Limit`) is a safeguard, not a termination argument.
+    The acyclic measure must also be checked to stay valid as
+    substitutions change graph edges and make predicates share rows.
+    Ledger item L1 (rules file §11, M3).
+13. **Solving-time diagnostics** (location rule 1): **GATE, before that
+    part is implemented (B3 for refusals met while solving, B5 for
+    their text).** A proposal first, separating (1) the SAME conflict
+    getting different locations under different orders (fixable from
+    provenance) from (2) different orders discovering DIFFERENT valid
+    conflicts first (may need collecting or prioritizing conflicts, and
+    may be costly). It gives examples (fixtures 24 of 72, raw 758 and
+    shapes 855 of 2,000 in the modelled comparison) and the smallest
+    proposed change, before anything is decided. Complete diagnostic
+    order independence is not promised. Ledger item L2 (rules file
+    §11, M19).
+
+**Reporting correction (user, 2026-10-19).** The prototype renders no
+text. Its comparisons across orders are "modelled diagnostic selection
+and location checks": they model which constraint is reported and where,
+and are not evidence that complete rendered messages are stable. The
+rules file, this plan and the README draft say so.
 
 ## References
 

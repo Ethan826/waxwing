@@ -6655,3 +6655,41 @@ fixture, text, regression row or source changed.
   prose review recorded in docs/plans/2026-10-19-row-merge-readme-review.md
   (humanizer skill and Garner's plain-English concerns; before and after
   catalogues).
+
+## R005 Tranche B: the user's B0 decisions (2026-10-19)
+
+The user accepted Task B0's completed evidence and authorized B1 only;
+B2 onward stay unauthorized. Recorded in the plan's §10, the rules file,
+BACKLOG R005 and the README draft. Docs only.
+
+- Approved: case 1g broad; its justification is the symbolic disjoint
+  union, independently of PureScript's given matching (the agreement is a
+  check, not the reason). The fixture reclassifications
+  (`design-forced-bound`, `design-quiet`, `diag-14-fix` to Unresolved,
+  annotated companions, `same` Unresolved with zero solutions); test
+  fixtures are not edited in B1 (B4's fixture step), the old design's
+  results stay in research/open-row-merge (fixtures.mjs). The two
+  proposed D4 forms and R11, with a required stable tie-break when
+  predicates share a source span (allocation identity must not decide).
+  R10.2's principle kept (the applicable written fact's diagnostic is
+  preferred to D6), causal tracking extended to case-2 bindings. H's
+  stable source/provenance location. N5's removal, the S2 correction,
+  the module location src/Features/Check/RowMerge/README.md, T1, T3, and
+  `Equated`'s removal under T5 once its remaining consumers are
+  accounted for. Retiring the obsolete bound-specific regression
+  mutations (keeping their behavioural controls, adding the case-2
+  provenance regression) alongside the removal of their machinery (B2).
+- Gate L1 (termination), blocks B3: an argument covering reachable
+  cyclic predicate graphs, or proof that they cannot arise with a test
+  of that invariant; the step counter is a `Stop Limit` safeguard, not
+  an argument; the acyclic measure must also hold as substitutions
+  change edges and share rows.
+- Gate L2 (solving-time diagnostics), before that part is implemented: a
+  stable-location proposal separating the same conflict at different
+  locations under different orders (a provenance fix) from different
+  orders finding different valid conflicts first (may need collecting or
+  prioritizing, possibly costly), with examples and the smallest
+  change; complete order independence of diagnostics is not promised.
+- Wording corrected: the prototype renders no text; results are called
+  modelled diagnostic selection and location checks, not evidence that
+  complete rendered messages are stable (rules file, plan, README draft).

@@ -76,6 +76,8 @@ D6 (rules file §9).
 
 ## 5. Case 1g
 
+(Approved broad, 2026-10-19; plan §10.)
+
 Keep 1g as measured (parts with no unknown give their symbolic union,
 whenever their disjointness is entailed), named in the README as an
 adapted rule, with research/purs-given-1g as the record of where it

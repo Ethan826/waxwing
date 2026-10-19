@@ -155,9 +155,11 @@ result only when the signature states that exact combination as a
 with the parts swapped or grouped differently, and when the signature
 only says the parts are disjoint. The justification is that with
 nothing unknown the result has exactly one possible value; the
-signature's disjointness is what makes that value a valid record.
+signature's disjointness is what makes that value a valid record. That
+is the whole justification: the result is the symbolic disjoint union of
+the parts, and it does not depend on how PureScript matches a given.
 research/purs-given-1g shows where the two agree and where Waxwing goes
-further.
+further; the agreement is a check, not the reason.
 
 ### Sym, an approved adaptation
 
@@ -283,16 +285,18 @@ techniques where it can and accepts some annotations to do so.
 
 ## Evidence and its limits
 
-The design was measured with a small JavaScript model written for this
-purpose, against independent checkers that enumerate every answer
-(research/row-merge-qt with labels; research/row-merge-typed with field
-types, type unknowns and records inside merged fields). In every family
-checked, each accepted program's answer satisfied every constraint and
-was the least one, each contradiction had no answer, and acceptance,
-answers and kinds of error were the same in every order checked and
-with every merge's arguments swapped. H never changed an acceptance or
-an answer, and none of its contradictions had an answer. Merging three
-records gave one answer for both groupings and every argument order.
+The design was measured with a small JavaScript model written for this purpose,
+against independent checkers that enumerate every answer (research/row-merge-qt
+with labels; research/row-merge-typed with field types, type unknowns and
+records inside merged fields). In every family checked, each accepted program's
+answer satisfied every constraint and was the least one, each contradiction had
+no answer, and acceptance, answers and kinds of error were the same in every
+order checked and with every merge's arguments swapped. The model renders no
+text: its comparisons of diagnostics across orders are modelled diagnostic
+selection and location checks (which constraint is reported, and where), not
+evidence that complete messages are stable. H never changed an acceptance or an
+answer, and none of its contradictions had an answer. Merging three records gave
+one answer for both groupings and every argument order.
 
 These are measurements, not proofs: no argument shows that the rules
 reach the same verdict in every order. The problem generators are
@@ -363,7 +367,7 @@ node qt-adopted.mjs controls       # the 72 fixtures and research cases
 node qt-adapt.mjs raw 21 2000      # generated problems, every variant
 node qt-domains.mjs B 10           # exhaustive domain B (A: about 6 min)
 node qt-checks2.mjs sym            # swapped arguments, typed
-node qt-render.mjs render 2000     # diagnostics across orders
+node qt-render.mjs render 2000     # modelled selection, location
 node qt-given.mjs                  # case 1g's programs
 ```
 

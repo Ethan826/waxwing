@@ -2,18 +2,24 @@
 
 Status:
 Task B0 of docs/plans/2026-10-19-row-merge-implementation-plan.md,
-2026-10-19; for the user's review. Only B0 is authorized; nothing here
-approves a fixture reclassification, a diagnostic change, a regression
-retirement or any later task.
+2026-10-19. The user accepted B0 and authorized B1 only; the decisions
+of the same day are in the plan's §10 and are marked where they touch
+this file (1g broad, R10.2's principle and the case-2 cause, H's
+location, N5's removal). Two gates are open and recorded in the ledger:
+L1, termination for cyclic predicate graphs (blocks B3), and L2,
+solving-time diagnostics.
 
-One section per rule of the adopted design (QT-strict + Sym + H, the
-plan's §2), written before implementation, by kind (docs/engineering.md,
-"Evidence for solvers and diagnostics"): rewrites keep the solutions
-(fresh unknowns accounted for); rejections establish that no solution
-exists; the one defaulting rule selects a solution that satisfies every
-constraint and is the least; iteration terminates. Each argument names
-the check that backs it. Commands run from the directory named; outputs
-are in each directory's README. Nothing here was run on the compiler.
+One section per rule of the adopted design (QT-strict + Sym + H, the plan's §2),
+written before implementation, by kind (docs/engineering.md, "Evidence for
+solvers and diagnostics"): rewrites keep the solutions (fresh unknowns accounted
+for); rejections establish that no solution exists; the one defaulting rule
+selects a solution that satisfies every constraint and is the least; iteration
+terminates. Each argument names the check that backs it. Commands run from the
+directory named; outputs are in each directory's README. Nothing here was run on
+the compiler. The prototype renders no text: what the research scripts call
+diagnostics are modelled diagnostic selection and location checks (which
+constraint is reported, and where), not evidence that complete rendered messages
+are stable.
 
 Sections of docs/plans/2026-10-17-open-row-merge-rules.md that still
 hold, unchanged: §0 (semantics, with the addition below), §1 flatten,
@@ -126,15 +132,17 @@ cases):
 | `merge a (merge b c)` under them | NoInstanceFound | accept |
 
 **Classification: adapted** (not "as published" as the plan's first
-draft had it): it agrees with given matching where a given exists and
-otherwise rests on the argument above. **Narrowing it** to where a given
+draft had it). Its justification is the symbolic disjoint union argued
+above, independently of PureScript's given matching; the agreement with
+matching where a given exists is a check on that argument, not the
+reason for the rule. **Narrowing it** to where a given
 would match (the parts joined, in that orientation and grouping, by a
 row the signature writes) would reject the swapped and regrouped
 programs and every merge inside a function whose signature states only
 `r disjoint s`; no annotation can repair those (rigid parts cannot be
 annotated further), so the programmer would have to restructure the
-signature. The plan recommends the broad form, for the user's decision
-(plan §10).
+signature. The user approved the broad form on 2026-10-19 (plan §10,
+decision 4).
 
 ## 4. Sym
 
@@ -164,8 +172,16 @@ in parts of predicates above `P` (smaller height), so the second
 component falls; the unifier terminates as ADR 013's. **Not argued:** a
 cyclic "above" relation (a result unknown reaching, through bindings, a
 part of a predicate below it); no argument here excludes it. **Checked:**
-every run of every family above terminated; B3 adds a step counter with
-a stated bound, and a run reaching it is a `Stop Limit`, never a verdict.
+every run of every family above terminated. B3 adds a step counter with
+a stated bound, and a run reaching it is a `Stop Limit`, never a
+verdict; that is a safeguard, not a termination argument.
+
+**Open ledger item L1 (gate, blocks B3; user, 2026-10-19).** Before B3
+either (a) an argument covering reachable cyclic predicate graphs, or
+(b) a proof that they cannot arise, with a test of that invariant.
+Either must also show that the measure above stays valid as
+substitutions change the graph's edges (a binding makes one predicate's
+result appear in another's part) and make predicates share rows.
 
 ## 6. The end of a body
 
@@ -193,9 +209,9 @@ Contradiction with a solution, on research/row-merge-qt's families and
 research/row-merge-typed's; H ignoring lacks is caught (1,352
 Contradictions with solutions).
 
-**Location (proposed; replaces the plan's first draft).** The first
+**Location (approved 2026-10-19; replaces the plan's first draft).** The first
 draft's "the latest site at which a fact or binding arrived" depends on
-the order of processing. Proposed instead, from provenance only: each
+the order of processing. The rule is, from provenance only: each
 fact that rules the constant out of a part keeps its reason by the
 approved precedence (`prefer`: kind, then source position, so the
 reason kept does not depend on arrival order) and, as metadata, the
@@ -207,9 +223,11 @@ at each reason's written span in source order. On `diag-14` this gives
 the approved location: the excluding facts are `noX`'s two clauses,
 seeded at the use `noX` (prototype: steps 2 and 3, location 3, notes 2
 and 3, predicate site 1, the `merge`). **Checked** in the prototype as a
-model (no text is rendered there): `node qt-render.mjs render 2000`
-gives one modelled H diagnostic per problem across orders in every
-family (fixtures 1, raw 10, dense 81, shapes 45 problems with H).
+model: no text is rendered there, so `node qt-render.mjs render 2000`
+is a modelled diagnostic selection and location check, not evidence
+that complete rendered messages are stable. It gives one modelled H
+diagnostic per problem across orders in every family (fixtures 1, raw
+10, dense 81, shapes 45 problems with H).
 
 ## 8. A meta apart from itself (N5 removed)
 
@@ -235,7 +253,11 @@ without the predicate kept as the binding's cause, those runs would read
 their predicate, plan G-2) covers them with D6. Whether a written fact
 that also excludes the label should be preferred (D1 over D6, R10.2's
 principle) is a rendering question for the user; R10.2 is not retired
-here (plan §10).
+here. Decided 2026-10-19 (plan §10, decision 5): the principle is
+kept, so where a written fact also excludes the label, its specific
+diagnostic is preferred to D6; causal tracking extends to case-2
+bindings (R10.1 extended), and the case-2 provenance regression is
+added when the machinery it replaces is removed (B2).
 
 ## 10. Unknown field types, nested rows and association
 
@@ -264,7 +286,7 @@ beyond §3's remark for 1g.
 |---|---|---|
 | M1 | each case keeps solutions | argued (§2-§4); checked, labels and types |
 | M2 | desugaring keeps solutions | argued (§1); checked |
-| M3 | re-examination terminates | argued for acyclic predicates (§5); the cyclic case not argued; every run terminated |
+| M3 (L1, open gate before B3) | re-examination terminates | argued for acyclic predicates (§5); cyclic graphs not argued, nor the measure under changing edges and shared rows; every run terminated; the step counter is a safeguard only |
 | M4 | Solved is a solution, the least | argued (§6); S, L, G checked |
 | M5 | Contradiction has no solution | argued (§2, §7); H checked |
 | M6 | Unresolved with 0, 1, several | `odd-cycle` 0, `determinate` 1, `diag-01` 4 under the adopted configuration (`node qt-fixtures.mjs programs`) |
@@ -279,4 +301,5 @@ beyond §3's remark for 1g.
 | M15 | one unknown tail per row | argued (plan §2.1); guard in B3 |
 | M16 | §5's annotations, narrowing | checked (`node qt-adopted.mjs examples`) |
 | M17 | 1g agrees with given matching where a given exists, and is broader | checked against purs (§3) |
-| M18 | the proposed H location and R11 choice are order independent | modelled and measured (`node qt-render.mjs render`, `node qt-adopted.mjs report`) |
+| M18 | the H location and R11 choice are order independent | modelled diagnostic selection and location checks (`node qt-render.mjs render`, `node qt-adopted.mjs report`); the prototype renders no text; R11 needs a stable tie-break for predicates at one span (plan §10.3) |
+| M19 (L2, open gate) | diagnostics found while solving are located stably | not established: refusals met while solving are located at the step being checked, which varies with the order (modelled: fixtures 24 of 72, raw 758 and shapes 855 of 2,000); two causes, the same conflict at different locations and different valid conflicts found first; a proposal separating them comes before any decision (plan §10.13) |
