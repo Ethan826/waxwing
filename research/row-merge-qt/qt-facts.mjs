@@ -37,7 +37,8 @@ export const makeState = (hyp, opts = {}) => ({ hyp, bind: new Map(),
   empty: opts.empty ?? false, zero: opts.zero ?? false,
   plain: opts.plain ?? false, selfApart: opts.selfApart ?? true,
   qts: opts.qts ?? false, pairwise: opts.pairwise ?? true,
-  sym: opts.sym ?? false, hEnd: opts.hEnd ?? false });
+  sym: opts.sym ?? false, hEnd: opts.hEnd ?? false,
+  trace: opts.trace });
 
 export const freshMeta = st => `m${1000 + st.fresh++}`;
 

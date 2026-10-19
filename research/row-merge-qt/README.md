@@ -60,6 +60,9 @@ beside them.
 | qt-render.mjs | `render`: the diagnostic the rules select, modelled from provenance, compared across orders apart from the verdict kind; `case2`: case 2's empty bindings and the failures that meet them |
 | qt-adopted.mjs | `examples`, `three`, `controls`, `report`: the implementation plan's figures for the adopted configuration |
 | qt-given.mjs | case 1g on the six programs of research/purs-given-1g |
+| qt-termination.mjs | the adopted configuration with a trace of every case-3 move and rescan pass (hooks `rescan`, `pass`, `moved`, which only record): lineage disjointness, productive passes, cyclic "above" graphs, edge changes and the B0 height measure (as written and shifted by one); the research families (ledger L1) |
+| qt-cyclic.mjs | L1's checks: named cyclic examples, a cyclic family judged by the oracle, and qt-termination.mjs's families; exit 1 on a violation |
+| qt-locate.mjs | L2: refusals met while solving whose modelled diagnostic depends on the order, split by conflict (the minimal unsatisfiable subsets the oracle finds in each order's failing prefix), and the `latest` location rule's residuals |
 | fixtures/order-*.json | six order-dependent problems (four raw, two from domain A): rows, every permutation, recorded outcomes of the configuration without and with the repair; and order-S-shapes-1910, a QT-strict difference of verdict class only (Contradiction against Unresolved) |
 
 ## Commands and output
@@ -144,6 +147,27 @@ before them, and qt-checks.mjs `order`, `strict`, qt-checks2.mjs `sym`,
 | `node qt-given.mjs` | 7 `ok` (research/purs-given-1g README) |
 | `node qt-render.mjs render 2000` | no `kindDiff` anywhere; `renderDiff` only for refusals met while solving (location rule 1 names the step being checked, which the order changes): fixtures 24 of 72, raw 758 of 2,000, shapes 855 of 2,000; none for H (fixtures 1, raw 10, dense 81, shapes 45 problems with H) or D4 (fixtures 18, raw 243, dense 1,807, shapes 342); `trace changed a verdict: 0` |
 | `node qt-render.mjs case2 2000` | case 2 binds a meta to `{}` in 8 raw runs and 9 shape runs; 3 shape runs then fail at a mismatch reaching such a meta (problems 1335, 1558, 1810), and in each another order fails otherwise (1558 and 1810: a fact, `not entailed` or `overlap`) |
+
+## Termination and locations (L1, L2; 2026-10-19, branch `r005b-replan`)
+
+The implementation plan's gates (§10, decisions 12 and 13). The hooks
+added to qt-strict.mjs (`rescan`, `pass`, `moved`) and the `trace`
+option of qt-facts.mjs `makeState` only record: qt-cyclic.mjs runs every
+problem with and without them and counts no verdict changed
+(`traceChanged` 0 in every family), and `node qt-adopted.mjs controls`,
+`examples`, `three`, `report` and `node qt-given.mjs` still exit 0.
+
+| Command | Output (abridged) |
+|---|---|
+| `node qt-cyclic.mjs all` | `no violation`. Examples: self-loop with a label refuse (0 solutions), without D4 (8), own result in a part refuse (0), two-cycle D4 (8). Cyclic family (seed 31, 20,000 problems, 60,000 runs): 31,320 runs cyclic, at most 3 moves per lineage, 0 lineage violations, 0 unproductive passes, no refusal with a solution. Domain B: 36,701 of 159,650 runs cyclic, edges changed within a rescan in 2,808; the B0 measure did not fall on 2,677 of 5,277 changing acyclic passes, shifted by one on none. Domain A (one in 20): 42,299 of 333,972 cyclic. Generators (raw, dense, raw programs, shapes): no violation |
+| `node qt-locate.mjs 2000` | reproduces qt-render's order-dependent refusals (fixtures 24 of 72, raw 758, shapes 855 of 2,000) and splits them by the MUSes in each order's failing prefix. Same conflict, same explanation: 18, 55, 91; same conflict, explanation differs: 3, 57, 4; different conflicts: 3, 646, 212; shapes past the caps (9 steps, 5 metas): 548. Under `latest` no same-conflict location differs; different conflicts keep their location in 1, 11 and 25 |
+
+Sensitivity of the L1 checks (2026-10-19, scratch copies, deleted):
+without case 3's `wellFormed(st, moved)` nothing changes (the bind rule
+supplies the lack); with the bind rule not re-requiring a meta's lacks
+on its image (`bindMeta`'s loop over `ex` emptied), the labelled
+self-loop and the result-in-its-own-part examples reach the 10,000-pass
+cap (19,998 lineage violations).
 
 ## Sensitivity
 

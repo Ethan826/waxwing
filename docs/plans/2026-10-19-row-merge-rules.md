@@ -159,29 +159,100 @@ part with no fields" (closed tested by fields, not tails) is caught.
 ## 5. Re-examination and termination
 
 A full rescan applies §2-§4 to every waiting predicate until a pass
-changes nothing. **Termination, argued for acyclic predicates.** Order
-predicates by "above": `P'` is above `P` when `P`'s result unknown
-occurs in a part of `P'`. When this relation is acyclic, give each
-predicate its height (the longest chain above it) and take the measure
-(number of waiting predicates, Σ over labels in parts of the height of
-their predicate). Cases 1, 2, 1g and their mirrors remove a predicate
-(the first component falls; bindings they make may add labels to other
-parts, which the lexicographic order allows); case 3 and 3' move at
-least one label from a part of `P` into `P`'s result, which appears only
-in parts of predicates above `P` (smaller height), so the second
-component falls; the unifier terminates as ADR 013's. **Not argued:** a
-cyclic "above" relation (a result unknown reaching, through bindings, a
-part of a predicate below it); no argument here excludes it. **Checked:**
-every run of every family above terminated. B3 adds a step counter with
-a stated bound, and a run reaching it is a `Stop Limit`, never a
-verdict; that is a safeguard, not a termination argument.
+changes nothing.
 
-**Open ledger item L1 (gate, blocks B3; user, 2026-10-19).** Before B3
-either (a) an argument covering reachable cyclic predicate graphs, or
-(b) a proof that they cannot arise, with a test of that invariant.
-Either must also show that the measure above stays valid as
-substitutions change the graph's edges (a binding makes one predicate's
-result appear in another's part) and make predicates share rows.
+**The first argument (B0), superseded.** It ordered predicates by
+"above" (`P'` is above `P` when `P`'s result unknown occurs in a part of
+`P'`) and, for an acyclic relation, took the measure (number of waiting
+predicates, Σ over labels in parts of the height of their predicate).
+It covered acyclic graphs only, and as written it is wrong there too: a
+predicate nothing is above has height 0, so its labels weigh nothing
+and case 3 on it does not lower the measure. **Measured** (`node
+qt-cyclic.mjs families`): the measure failed to fall on 2,677 of 5,277
+changing acyclic passes in domain B (4,490 of 6,661 in a twentieth of
+domain A). Weighted by height + 1 it fell on every one in every family,
+including passes whose edges changed; but it still says nothing about a
+cyclic graph, and cyclic graphs arise (below).
+
+**Cyclic graphs are reachable** (so option (b) of the gate is closed).
+Unifying a merge's result with one of its own parts, or two merges'
+results with each other's parts, makes one: `qt-cyclic.mjs`'s examples
+(a self-loop with and without a label, a result in its own part, a
+two-cycle), and in ordinary families a cyclic graph at some pass in
+36,701 of 159,650 runs of domain B and 42,299 of 333,972 sampled runs of
+domain A. Edges also change within one rescan (2,808 and 2,284 runs).
+
+**The argument (L1, 2026-10-19, for the user's review).** It does not
+look at the graph. Premises, each a property of the compiler's existing
+rules or of B3's:
+
+- (P1) A case 3 or 3' step on `Merge l r t` unifies `t` with `{ F, ...u
+  }`, `F` the moved part's fields (non-empty) and `u` fresh, through the
+  ordinary unifier, and the predicate becomes one with result `u`. The
+  bind rule makes every meta rest of an image lack the image's labels and
+  everything the bound meta lacked, and refuses a rigid rest that does
+  not already lack them (Check/RecordTail `bindTail`, `passed`; the
+  prototype's `bindMeta` and `wellFormed`). Case 3 also requires `u` to
+  lack `F` (§2; redundant given the bind rule, see the checks).
+- (P2) Within a rescan, lack facts are never removed and bindings never
+  undone (a revert happens only when a postponed effect pair is retried,
+  between rescans).
+- (P3) A rescan makes no label and no predicate: cases move and remove
+  labels, unification copies them, and predicates are made only by the
+  desugaring at creation (a row with two unknown tails met later is the
+  invariant guard, a `Stop Internal`).
+
+Call the predicates one predicate becomes through successive case 3 and
+3' steps a lineage, with results `t0, t1, …` and moved label sets `F0,
+F1, …`; `M_i = F0 ∪ … ∪ F(i-1)`. **Lemma.** The `F_i` are pairwise
+disjoint. By induction, at step `i` the flattened `t_i` holds no field in
+`M_i` and its unknown tail, if any, lacks `M_i`: after step `i - 1`,
+`t_(i-1)` and `{ F(i-1), ...u }` flatten to the same row, so `t_i = u`
+holds what `t_(i-1)` held less `F(i-1)`, and its unknown tail lacks
+`F(i-1)` and what the earlier tail lacked (P1); later bindings respect
+those lacks (P1, P2). At step `i`, each label of `F_i` must go into
+`t_i`'s row, whose fields exclude `M_i` and whose unknown tail lacks
+it; a label of `M_i` is refused, a `Failure` that ends the rescan.
+**Theorem.** With `P` the predicates waiting when a rescan starts and
+`Λ` the labels the body mentions (finite; P3), a lineage makes at most
+`|Λ|` moves and is removed at most once, so the rescan makes at most `P
+· (|Λ| + 1)` productive steps. Every pass that changes the state makes
+one (a pass changes it only by a case firing; a case that fires removes
+or moves), so there are at most `P · (|Λ| + 1) + 1` passes, each of at
+most `P` examinations, each finite (the unifier, ADR 013, with its
+occurs check and its depth limit, a `Stop Limit`). Nothing here depends
+on the shape of the "above" graph: cycles, edges that bindings add or
+remove, and predicates that share parts or results are all covered,
+since a lineage's bound uses only its own result chain and the lacks
+every binding respects.
+
+**Checked** (`node qt-cyclic.mjs all`, .build/evidence/l1-all.log, the
+adopted configuration with a trace of every move and pass, the trace
+changing no verdict): no lineage moved a label twice and none moved more
+than `|Λ|` times (at most 3 = `|Λ|`), and every changing pass was
+productive, on the named examples, a cyclic family (20,000 problems,
+three orders each, 31,320 runs cyclic; the oracle finds no refusal with
+a solution; no run there is accepted), domain B whole, a twentieth
+of domain A, and the raw, dense, raw-program and shaped generators.
+**Sensitivity** (scratch copies, deleted): without case 3's requirement
+that `u` lack `F`, nothing changes (the bind rule supplies the lack);
+without the bind rule passing a meta's lacks to its image, the labelled
+self-loop and the result-in-its-own-part examples move `a` forever and
+reach the 10,000-pass cap, so (P1)'s bind-rule half is load-bearing.
+
+**Not covered here:** the effect-settling rounds and their joint
+fixpoint with re-examination (M13): each round's rescan terminates by
+the theorem; that the rounds end is the effect machinery's argument and
+M13's, still B3's obligation.
+
+**What B3 inherits.** The step counter gets a stated bound from the
+theorem, `P · (|Λ| + 1) + 1` passes (exceeding it is a `Stop Limit`,
+which the argument says cannot happen; still a safeguard, never a
+verdict). The compiler-level oracle runner checks the lemma on every run
+(moved labels per predicate identity pairwise disjoint). A regression
+row restores the defect the sensitivity check found (the bind rule not
+passing lacks to a meta rest): a cyclic program then reaches the
+counter's `Stop Limit` instead of its Contradiction.
 
 ## 6. The end of a body
 
@@ -286,7 +357,7 @@ beyond §3's remark for 1g.
 |---|---|---|
 | M1 | each case keeps solutions | argued (§2-§4); checked, labels and types |
 | M2 | desugaring keeps solutions | argued (§1); checked |
-| M3 (L1, open gate before B3) | re-examination terminates | argued for acyclic predicates (§5); cyclic graphs not argued, nor the measure under changing edges and shared rows; every run terminated; the step counter is a safeguard only |
+| M3 (L1, gate before B3; proposed closed, for the user's review) | re-examination terminates | argued for every predicate graph (§5: a lineage moves at most `\|Λ\|` times; no graph assumption); cyclic graphs shown reachable; checked on every family and a cyclic one, with a sensitivity check; the effect rounds' joint fixpoint is M13's |
 | M4 | Solved is a solution, the least | argued (§6); S, L, G checked |
 | M5 | Contradiction has no solution | argued (§2, §7); H checked |
 | M6 | Unresolved with 0, 1, several | `odd-cycle` 0, `determinate` 1, `diag-01` 4 under the adopted configuration (`node qt-fixtures.mjs programs`) |
@@ -302,4 +373,4 @@ beyond §3's remark for 1g.
 | M16 | §5's annotations, narrowing | checked (`node qt-adopted.mjs examples`) |
 | M17 | 1g agrees with given matching where a given exists, and is broader | checked against purs (§3) |
 | M18 | the H location and R11 choice are order independent | modelled diagnostic selection and location checks (`node qt-render.mjs render`, `node qt-adopted.mjs report`); the prototype renders no text; R11 needs a stable tie-break for predicates at one span (plan §10.3) |
-| M19 (L2, open gate) | diagnostics found while solving are located stably | not established: refusals met while solving are located at the step being checked, which varies with the order (modelled: fixtures 24 of 72, raw 758 and shapes 855 of 2,000); two causes, the same conflict at different locations and different valid conflicts found first; a proposal separating them comes before any decision (plan §10.13) |
+| M19 (L2, gate; proposal for the user's review) | diagnostics found while solving are located stably | proposal: docs/plans/2026-10-19-row-merge-locations.md (the same conflict located at its latest written participant; different explanations and different conflicts left order dependent; `node qt-locate.mjs 2000`). Not established: refusals met while solving are located at the step being checked, which varies with the order (modelled: fixtures 24 of 72, raw 758 and shapes 855 of 2,000); two causes, the same conflict at different locations and different valid conflicts found first; a proposal separating them comes before any decision (plan §10.13) |

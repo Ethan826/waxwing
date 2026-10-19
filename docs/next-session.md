@@ -1,4 +1,4 @@
-# Waxwing / R005 Tranche B: B1 and B2 done, unmerged (2026-10-19)
+# Waxwing / R005 Tranche B: B1, B2 done; L1, L2 for review (2026-10-19)
 
 **State.** main is at 1d43341 (the Sym/H research merge); the active
 branch is `r005b-replan` (UNMERGED, by the user's choice): the
@@ -26,19 +26,15 @@ ledger, tasks B2-B5, 7-10); docs/plans/2026-10-19-row-merge-readme-draft.md
 (final path src/Features/Check/RowMerge/README.md);
 docs/plans/2026-10-18-row-merge-qualified-types.md (research record).
 
-**Next, needs the user's authorization:** the gate tasks, in the
-user's order: L1, a termination argument for re-examination over
-reachable cyclic predicate graphs (or a proof with a test that they
-cannot arise), with the acyclic measure checked under substitutions
-that change edges and share rows; the `Stop Limit` counter is not the
-argument. Then L2, a proposal for solving-time diagnostics that keeps
-the same conflict located differently by order (fixable from
-provenance) apart from orders finding different first conflicts, with
-the smallest change. B3 does not start until both are resolved and
-reviewed. B2's departures from its file list for the user's review are
-in plan §7 Task B2 (P2 removed rather than reworded; `boundBy` and
-`Equation` removed; the case-2 provenance row left for B3; two D1 → P1
-differences besides the planned kinds).
+**Next, needs the user's review:** L1 (rules file §5: termination for
+any predicate graph by a per-lineage label bound, with checks) and L2
+(docs/plans/2026-10-19-row-merge-locations.md: locate the same conflict
+at its latest written participant; leave different explanations and
+different conflicts order dependent). B3 does not start until both are
+reviewed and accepted. B2 was reviewed (plan §10, decision 14); its
+displaced refusals are recovery obligations O1-O6 (plan §4.7), each to
+be shown in B4/B5. docs/progress.md "R005 Tranche B: B2 review, gates
+L1 and L2" has the evidence.
 
 **Working method the user expects.** A branch per task; the user
 authorizes each task and each merge (fast-forward only); the controller

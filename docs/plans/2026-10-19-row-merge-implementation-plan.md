@@ -834,6 +834,25 @@ research archive of the old design's results.
 See §8: rows kept, rows reworded for the new mechanism, proposed
 retirements, and new rows for Sym, H, the invariant and N5.
 
+### 4.7 Recovery obligations: what B2 displaced (user, 2026-10-19)
+
+Each refusal or acceptance that only B2's removed machinery made, now
+placeholder P1, is an obligation: the task named shows its outcome and
+diagnostic individually, by a test; none is assumed restored by H.
+Found by B2's differential (programs) and by running every fixture's
+rows in every order through the compiler before and after B2
+(.build/evidence/r005b-b2-fixture-rows-{before,after}.json; only two
+fixtures changed).
+
+| # | Was (Task 4) | Now (B2) | Expected (prototype, every order) | Shown in |
+|---|---|---|---|---|
+| O1 | `granted2({ admin: false })`, both tails `lacks { admin }`: D1 `admin is not allowed here: r lacks { admin }` at the argument | P1 | Contradiction by H, 0 solutions; text: D1 preferred to D6 (decision 5) | B4 (class), B5 (text) |
+| O2 | the same with `{ name: 1, admin: false }`: D1 | P1 | as O1 | B4, B5 |
+| O3 | `diag-14` rows: refused in 16 of 24 orders, skipped in 8 | P1 in all 24 | Contradiction by H (fixture class unchanged), the approved `noX` location (T4) | B4 (rows and class), B5 (text) |
+| O4 | `granted2(…)`, only `s lacks { admin }`, both arguments: accepted (a commit) | P1 | Unresolved, 1 and 2 solutions: a new annotation cost (§5) | B4, with its annotation measured |
+| O5 | `diag-14-fix` rows: accepted in 16 of 24 orders | P1 in all 24 | Unresolved (approved reclassification, decision 2) | B4 |
+| O6 | labels-only runs Task 4 refused and B2 skips: domain A 17,705,571 → 15,026,498 refusals, domain B 233,144 → 153,080, generators likewise (docs/progress.md "R005 Tranche B B2") | P1 | each either Contradiction or Unresolved, never accepted (they have no solution); the count H recovers reported against these | B4's oracle runs |
+
 ## 5. The annotation burden, at the compiler level
 
 Every program below defines
@@ -864,6 +883,7 @@ function with a `disjoint` clause: accepted, run printing 0).
 | program 11 `fn both(f: (p, q) -> { x: Int }, g: (p, w) -> { y: Int }): Int = 0;` `both(merge, merge)` (`design-forced-bound`) | Unresolved: approved D4 `Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge` at the first `merge` | one parameter: `both(fn(p: {}, q) => merge(p, q), merge)` (the re-plan's two-parameter form also works) | redundant |
 | program 12 `fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): Int = 0;` with `fn noX(p: { ...u }, q: { ...v }): Int where u lacks { y }, v lacks { x } = 0;`, `apply(merge, noX)` (`diag-14-fix`) | Unresolved: each field has one candidate part, Proposed form, e.g. `Cannot tell how merge's r and s split { x: Int, y: Int }; pass a lambda …` | `apply(fn(p: { x: Int }, q) => merge(p, q), noX)` | redundant |
 | F2's family, `k(merge, …, merge)` with a shared parameter, 186 programs with a least solution | Unresolved (all 392 plain; 206 have no least solution) | the shared parameter at its only value in the first callback (all 186 accepted, `node qt-adopted.mjs examples`) | redundant in all 186 |
+| `granted2({ admin: false })` with `fn granted2(p: { ...r, ...s }): Bool where s lacks { admin }` (found in B2's differential; not a published example) | Unresolved: `admin` has one candidate part, `r` (the prototype, every order, 1 solution; with `{ name: 1, admin: false }`, 2 solutions). Task 4 accepted it by a commit | not yet measured; expected as program 12's (an annotated part) | to be measured with program 12 in B4 |
 | program 16 `same(merge, merge)` | Unresolved (current design: Contradiction) | an annotation exposes the contradiction (as approved for `odd-cycle`'s hint) | — (no solution) |
 
 So, on the published examples, three programs need an annotation the
@@ -889,7 +909,7 @@ check that will. B0 completes it; no unbacked claim passes the gate.
 |---|---|---|---|
 | M1 | Every case (1, 2, 3, 1g and Sym's mirrors) keeps the solutions, fresh metas accounted for | re-plan §13.1 (PureScript's cases), §14.1 (Sym); prototype S, L, H 0 violations | property E on every run (B3) |
 | M2 | Desugaring keeps the solutions (each `t` is determined by its parts) | argument (B0); prototype runs desugar every row | property E (B3) |
-| M3 | Re-examination terminates | argued for acyclic predicate graphs only (rules file §5). **Open (L1, gate before B3, §10.12):** cyclic graphs, and the measure under changing edges and shared rows | a step counter (a `Stop Limit` safeguard, not an argument) on every run (B3) |
+| M3 | Re-examination terminates | **L1, for the user's review** (rules file §5): a lineage moves at most `\|Λ\|` times, so a rescan makes at most `P · (\|Λ\| + 1)` productive steps, for any predicate graph; cyclic graphs shown reachable; checked on every family and a cyclic one (`node qt-cyclic.mjs all`), with a sensitivity check. The B0 height measure was wrong as written (height 0 weighs nothing) | the lineage check in the oracle runner; the counter bounded by the theorem (a `Stop Limit` safeguard); `r005b-lineage-lacks` (B3) |
 | M4 | `Solved` emits a solution, the least | prototype S, L 0 on every family | S, L on every run (B3, B4) |
 | M5 | `Contradiction` (a case's failure, a fact, H) has no solution | prototype H 0; H's argument (§14.2) | H on every run; H's direct exclusion check (B4) |
 | M6 | Unresolved occurs with 0, 1 and several solutions | `odd-cycle` 0, `determinate` 1, `diag-01` 4 | asserted counts (B4) |
@@ -903,7 +923,7 @@ check that will. B0 completes it; no unbacked claim passes the gate.
 | M14 | After specialization every row is ground | argued (§2.11; old L22) | Specialize asserts it (Task 8) |
 | M15 | The representation invariant holds | argued (§2.1) | the `Unexpected` guard and the oracle runner failing on it (B3) |
 | M16 | The annotations of §5 make the programs accepted; S1, Q1 narrow, the rest are redundant | `node qt-checks2.mjs generality`; `node qt-adopted.mjs examples` for the adopted configuration | test/r005b-annotations.test.mjs (Task 7) |
-| M19 | Diagnostics found while solving are located stably | **Open (L2, gate, §10.13):** the same conflict can get different locations under different orders; different orders can find different valid conflicts first. Modelled selection and location checks only (the prototype renders no text) | proposal first; then tests of the chosen change (B3, B5) |
+| M19 | Diagnostics found while solving are located stably | **L2 proposal for review** (docs/plans/2026-10-19-row-merge-locations.md; `node qt-locate.mjs 2000`). **Open (L2, gate, §10.13):** the same conflict can get different locations under different orders; different orders can find different valid conflicts first. Modelled selection and location checks only (the prototype renders no text) | proposal first; then tests of the chosen change (B3, B5) |
 
 ## 7. Tasks
 
@@ -1037,8 +1057,12 @@ this task and not in B1; their behavioural controls stay and the case-2
 provenance regression is added).
 
 - [x] Failing tests first (.build/evidence/r005b-b2-red.log: 6 fail,
-  37 pass on the pre-B2 build): `design-forced-bound`'s rows and a
-  commit-only problem reach P1, skipped, in every order; `fn(p) => g(p,
+  37 pass on the pre-B2 build): the rows B2 displaces reach P1, skipped,
+  in every order (corrected 2026-10-19: B2 first named
+  `design-forced-bound` here, but Task 4 already left it waiting in
+  every order, so its red came from P1's old text alone; the test now
+  uses `diag-14-fix`, `diag-14` and a commit-only problem, red on the
+  pre-B2 build, .build/evidence/r005b-b2-correction-red.log); `fn(p) => g(p,
   p)` applied to `{ x: 1 }` is D2 (B0 pinned no text; §1.2 named D2 as
   the expected change, and the approved D2 form is what the bind rule
   produces); no `Outside` or `Derived` constructor (test/r005b-outcome);
@@ -1332,6 +1356,8 @@ kept as planned (`r005b-precedence`, `-provenance`, `-mixed-lacks`,
 | `r005b-h-exclusion` | **new** | H's exclusion without entailment (`cannotHold` reduced to the meta's own facts) | a program B0 finds (the order-A-lacks shape) refused although it has a solution, or `diag-14-fix` refused | B4 |
 | `r005b-h-binds` | **new** | H run before the end (inside re-examination) | `diag-14-fix`-shaped program: a verdict before the end where Unresolved is due | B4 |
 | `r005b-one-unknown` | **new** | a creation point not desugared | a constructor or effect-operation use with `{ ...r, ...s }`: E_INTERNAL (the invariant guard) where a verdict is due | B3 |
+| `r005b-case2-reason` | **new, B3** (moved from B2, user 2026-10-19) | a binding case 2 made loses its predicate as cause | the shape of `node qt-render.mjs case2`'s problem 1558 as a Waxwing program | B3 |
+| `r005b-lineage-lacks` | **new, proposed by L1** | the bind rule not passing a meta's lacks to a meta rest (Check/RecordTail `passed`) | a cyclic program (a merge result unified with its own part holding a label) reaches the step counter's `Stop Limit` instead of its Contradiction | B3 |
 | `r005b-self-pair` | **landed in B2** | N5 restored (a meta apart from itself bound to `{}`) | `fn(p) => g(p, p)` applied to `{ x: 1 }` reads the text before B2 (`Expected {}, found { x: Int }`) instead of D2 | B2 |
 
 ## 9. Estimates, actuals and risks
@@ -1462,7 +1488,10 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     counter (`Stop Limit`) is a safeguard, not a termination argument.
     The acyclic measure must also be checked to stay valid as
     substitutions change graph edges and make predicates share rows.
-    Ledger item L1 (rules file §11, M3).
+    Ledger item L1 (rules file §11, M3). **Returned for review**
+    (2026-10-19): rules file §5, an argument that uses no graph
+    property, with cyclic graphs shown reachable and the checks named
+    there; not closed until the user accepts it.
 13. **Solving-time diagnostics** (location rule 1): **GATE, before that
     part is implemented (B3 for refusals met while solving, B5 for
     their text).** A proposal first, separating (1) the SAME conflict
@@ -1473,7 +1502,31 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     shapes 855 of 2,000 in the modelled comparison) and the smallest
     proposed change, before anything is decided. Complete diagnostic
     order independence is not promised. Ledger item L2 (rules file
-    §11, M19).
+    §11, M19). **Proposal returned for review** (2026-10-19):
+    docs/plans/2026-10-19-row-merge-locations.md. Of the modelled
+    order-dependent refusals, same conflict with the same explanation:
+    fixtures 18, raw 55, shapes 91; same conflict explained differently:
+    3, 57, 4; different conflicts: 3, 646, 212 (548 shaped problems past
+    the oracle's caps). Proposed: for refusals found while re-examining
+    predicates only, locate at the latest written participant (stable
+    for the same conflict by construction in the model; its compiler
+    approximation to be checked in B3); no change for different
+    explanations or different conflicts. Not decided.
+
+14. **B2 reviewed** (user, 2026-10-19). Its departures are accepted
+    for this intermediate branch: (1) refusals displaced to P1 are
+    acceptable as unfinished checking; each is a named recovery
+    obligation (§4.7) whose outcome and diagnostic are shown
+    individually, not assumed restored by H; (2) P2's removal is
+    appropriate, its producers gone; (3) the unused structures go, and
+    B3's predicate causes must restore the provenance behaviour
+    required; (4) the case-2 provenance row moves to B3 (§8); (5) the
+    N5 overlap diagnostic at the argument is **confirmed**, with the
+    existing provenance-note rules (`first written here` where the label
+    arrived, `required here` at the clause). The harvest's 14 timing
+    failures were to be disposed of, not rerun away (BACKLOG T005).
+    L1 and L2 authorized as research and docs work; B3 stays blocked
+    until both are reviewed.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
