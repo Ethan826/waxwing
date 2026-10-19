@@ -88,13 +88,35 @@ export const r005bRows = [
     message: /common tails not cancelled: E_TYPE Expected /
   },
   {
-    // U4's `{}` binding forgets the fact that pruned the bound (R10.2):
-    // a lone meta's written lack reads as a shape text, not D1.
-    name: 'r005b-pruned-reason', file: 'src/Features/Check/Narrow.purs',
-    needle: '(onStore (withEmptied meta next <<< withBound meta next) subst)',
-    replacement: '(onStore (const identity withEmptied <<< withBound meta '
-      + 'next) subst)',
-    probe: 'r005b-pruned-reason',
-    message: /pruning fact forgotten: E_TYPE Expected /
+    // N5 restored (plan §2.7, removed in B2): a meta apart from itself is
+    // bound to `{}` at once instead of keeping the pair, so a label later
+    // bound into it reads as the shape text, not D2. (Task 4's
+    // `r005b-pruned-reason` was retired in B2 with Check/Narrow, its
+    // target; fixtures lone-meta-lack and -two keep pinning D1.)
+    name: 'r005b-self-pair',
+    edits: [
+      {
+        file: 'src/Features/Check/Disjoint.purs',
+        needle: 'import Domain.Type (Ty)\n',
+        replacement: 'import Domain.Type (Ty(..))\n'
+      },
+      {
+        file: 'src/Features/Check/Disjoint.purs',
+        needle: 'import Features.Check.Subst (Flex(..), Subst, onStore, '
+          + 'storeOf)\n',
+        replacement: 'import Features.Check.Subst (Flex(..), Subst(..), '
+          + 'onStore, storeOf)\n'
+      },
+      {
+        file: 'src/Features/Check/Disjoint.purs',
+        needle: 'tailPair because subst one other = case one, other of\n',
+        replacement: 'tailPair because subst one other = case one, other of\n'
+          + '  Meta meta, Meta again | meta == again → case subst of\n'
+          + '    Subst found → Right (Subst found { types = Map.insert meta\n'
+          + '      (TRecord { fields: [], tails: [] }) found.types })\n'
+      }
+    ],
+    probe: 'r005b-self-pair',
+    message: /meta apart from itself emptied: E_TYPE Expected \{\}, found/
   }
 ];

@@ -7,11 +7,13 @@ import { checked, rejected, spanAt } from './support.mjs';
 // missing-field text or an acceptance. Task 3 removed the `disjoint`
 // clause's placeholder (test/r005b-disjoint.test.mjs); Task 4 removed the
 // unification's (`rows with several tails are checked in Task 4`): the
-// same sources are now solved by forced moves, refused for a reason, or
-// reach Task 5's placeholder where an equation would wait
-// (docs/plans/2026-10-17-open-row-merge-plan.md, Global Constraints).
+// same sources are now solved, refused for a reason, or reach a
+// placeholder where two unknown tails meet on one side (P1, reworded in
+// B2 for B3's predicates; docs/plans/2026-10-19-row-merge-implementation-
+// plan.md, Global Constraints).
 const main = ' fn main(): Int = 0;';
-const waits = 'R005B placeholder: equations that wait are solved in Task 5';
+const waits = 'R005B placeholder: rows with two unknown tails on one side '
+  + 'are solved in Task B3';
 const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
 
 const placeholder = (source, message) => {
@@ -41,7 +43,7 @@ for (const [name, source] of [
   ['two calls of one generic', 'fn id(w: { ...r, ...s }): { ...r, ...s } = w; '
     + 'fn main(): Int = { let a = id({ x: 1 }); 0 };']
 ]) {
-  test(`an equation that would wait reaches Task 5: ${name}`, () => {
+  test(`two unknown tails on a side reach P1: ${name}`, () => {
     const found = placeholder(source, waits);
     assert.ok(found.span.start.offset < source.length);
   });

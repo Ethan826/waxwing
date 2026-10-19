@@ -6,45 +6,37 @@ import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM)
-import Data.Maybe (Maybe(..))
-import Data.Set as Set
 import Data.Tuple (Tuple(..), fst)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (RecordRow)
 import Features.Check.FlatRecord (Flat, flatten)
-import Features.Check.Homeless (homeless, homelessReport)
-import Features.Check.RecordTail (solvingWith)
+import Features.Check.Homeless (homeless)
 import Features.Check.RowResidue
-  ( Exam
-  , Residue
+  ( Residue
   , common
   , residue
   , settledResidue
   )
-import Features.Check.RowPlacing (equationOf)
 import Features.Check.RowSettle (settle)
-import Features.Check.RowStore (changesOf)
-import Features.Check.Subst (Flex(..), Subst, storeOf, walk)
-import Features.Check.SumRule (sumRule)
+import Features.Check.Subst (Flex(..), Subst, walk)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyParts (mismatch)
 
 type Row = RecordRow (Ty Flex) Flex
 
 -- Record rows unify by label (R001 design §2) and, since R005 Tranche B
--- Task 4, by the forced moves of design §2.1 (rules §1-§8), one
--- examination at a time: (1) both sides are flattened through their
--- tails' bindings, and a label twice on one side is the records'
--- mismatch; (2) the labels both hold unify field-wise, in label order,
--- each once (`unifyField`, one level deeper), and if that bound a tail of
--- either row both are flattened again; (3-4) common tails cancel and the
--- residue is left, a constant with no meta opposite failing at once
--- (Features.Check.Homeless); (5) the sum rule, and if it changed the
--- state, again from (1); then (6-8) Features.Check.RowSettle: one meta
--- alone, the shared remainder, a commit (again from (1)), or the
--- equation waits, which Task 5 solves (a placeholder until then). Each
--- step keeps the solutions, each refusal has none. With one tail a side
--- these are ADR 013's rules 1-6.
+-- Task 4, with several tails a side (plan §2), one examination at a time:
+-- (1) both sides are flattened through their tails' bindings, and a label
+-- twice on one side is the records' mismatch; (2) the labels both hold
+-- unify field-wise, in label order, each once (`unifyField`, one level
+-- deeper), and if that bound a tail of either row both are flattened
+-- again; (3-4) common tails cancel and the residue is left, a constant
+-- with no meta opposite failing at once (Features.Check.Homeless); then
+-- Features.Check.RowSettle: one meta alone, or the shared remainder of
+-- one meta a side; a residue with two or more metas on a side reaches
+-- placeholder P1 until B3's predicates. Each step keeps the solutions,
+-- each refusal has none. With one tail a side these are ADR 013's rules
+-- 1-6. (Task 4's sum rule, upper bounds and commits went in B2.)
 unifyRecord
   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
   → Subst
@@ -53,71 +45,35 @@ unifyRecord
   → Either Failure Subst
 unifyRecord unifyField subst left right = tailRecM
   (examine unifyField left right)
-  { subst
-  , before: subst
-  , done: Set.empty
-  , equation: Nothing
-  , seen: { mine: Set.empty, theirs: Set.empty }
-  }
+  subst
 
 examine
   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
   → Row
   → Row
-  → Exam
-  → Either Failure (Step Exam Subst)
-examine unifyField left right exam =
-  if repeated one || repeated other then Done <$> failed exam.subst
-  else foldM fieldPair exam.subst fresh >>= unified
+  → Subst
+  → Either Failure (Step Subst Subst)
+examine unifyField left right subst =
+  if repeated one || repeated other then Done <$> failed subst
+  else foldM fieldPair subst (common one other) >>= unified
   where
-  one = flatten exam.subst left
-  other = flatten exam.subst right
+  one = flatten subst left
+  other = flatten subst right
   failed reached = mismatch reached (TRecord left) (TRecord right)
-  pairs = common one other
-  fresh = Array.filter (not <<< flip Set.member exam.done <<< fst) pairs
   fieldPair reached (Tuple _ (Tuple mine theirs)) = unifyField reached mine
     theirs
   unified reached
     | rebound reached one || rebound reached other = Right
-        (Loop exam { subst = reached, done = Set.empty })
-    | otherwise = decide failed left right
-        exam
-          { subst = reached
-          , done = Set.union exam.done (Set.fromFoldable (map fst pairs))
-          }
-        (residue one other)
+        (Loop reached)
+    | otherwise = Done <$> decide failed reached (residue one other)
 
--- Steps 3-8 on the residue.
+-- Steps 3 and 4, then the one-tail rules, on the residue.
 decide
-  ∷ (Subst → Either Failure Subst)
-  → Row
-  → Row
-  → Exam
-  → Residue
-  → Either Failure (Step Exam Subst)
-decide failed left right exam found =
-  if settledResidue found then Right (Done exam.subst)
-  else if homeless found then Done <$> homelessReport failed seen found
-  else sumRule (solvingWith failed) taken.equation found taken.subst
-    >>= summed
-  where
-  seen = exam
-    { seen =
-        { mine: Set.union exam.seen.mine (Set.fromFoldable found.mine.metas)
-        , theirs: Set.union exam.seen.theirs
-            (Set.fromFoldable found.theirs.metas)
-        }
-    }
-  taken = equationOf left right seen
-  summed reached
-    | changesOf (storeOf reached) /= changesOf (storeOf taken.subst) = Right
-        ( Loop seen
-            { subst = reached
-            , before = exam.subst
-            , equation = Just taken.equation
-            }
-        )
-    | otherwise = settle failed left right seen found
+  ∷ (Subst → Either Failure Subst) → Subst → Residue → Either Failure Subst
+decide failed subst found
+  | settledResidue found = Right subst
+  | homeless found = failed subst
+  | otherwise = settle failed subst found
 
 -- Whether unifying the shared fields bound one of the row's own tail
 -- metas, as in `{ a: { ...r }, ...r }`. The rows are then flattened again

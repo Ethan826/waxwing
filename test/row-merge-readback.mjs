@@ -3,8 +3,9 @@
 // 2026-10-17): the test follows the exported bindings itself, one level
 // at a time, never calling the compiler's flattener. The state's free
 // variables are its unbound metas; its constraints are the recorded lacks
-// on metas, the pairs with a meta side, the upper bounds, and each free
-// meta's own well-formedness (rigid facts are the hypotheses). Property E
+// on metas, the pairs with a meta side (a meta apart from itself is empty),
+// and each free meta's own well-formedness (rigid facts are the
+// hypotheses). Task 4's upper bounds went in B2. Property E
 // (rules §0): the program metas' values over the state's solutions are
 // exactly the problem's solutions. `skipNested` corrupts the traversal
 // (a bound tail inside a binding read as empty), for the sensitivity
@@ -40,7 +41,6 @@ export function freeMetas(state, metas) {
   metas.forEach(visit);
   state.lacks.forEach(f => visit(f.tail));
   state.apart.forEach(([a, b]) => { visit(a); visit(b); });
-  state.upper.forEach(u => visit(u.meta));
   return [...free].sort();
 }
 
@@ -58,9 +58,6 @@ function constraints(state, hyp, options) {
   for (const [a, b] of state.apart) {
     if (!isMeta(a) && !isMeta(b)) continue;
     out.push(asg => wellFormed(hyp, [...value(asg, a), ...value(asg, b)]));
-  }
-  for (const u of state.upper) {
-    out.push(asg => value(asg, u.meta).every(x => u.atoms.includes(x)));
   }
   return out;
 }

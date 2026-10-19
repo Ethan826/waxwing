@@ -82,18 +82,11 @@ export function stateOf(subst) {
       [`m${b.meta}`, { fields: b.labels, tails: b.tails.map(nameOf) }])),
     lacks: facts.lacks.map(f => ({ tail: nameOf(f.tail), labels: f.labels })),
     apart: facts.apart.map(p => [nameOf(p.value0), nameOf(p.value1)]),
-    upper: facts.upper.map(u => ({ meta: `m${u.meta}`,
-      atoms: [...u.labels, ...u.rigids.map(nameOf)] })),
   };
 }
 
 export const changes = subst => entry.changes(subst);
 export const solverMetas = subst => entry.solverMetas(subst);
-
-// The homes `left = right` excludes under `subst` (ledger L31).
-export const exclusions = (subst, c) =>
-  entry.exclusions(subst)(rowOf(c.l))(rowOf(c.r)).map(e => ({
-    meta: `m${e.meta}`, atom: e.labels[0] ?? nameOf(e.rigids[0]) }));
 
 export const step1 = step;
 export const start1 = start;

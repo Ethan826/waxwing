@@ -6,15 +6,15 @@ import { run } from './row-merge-entry.mjs';
 import { allOrders, fiveOrders, mulberry, permProblem, rawProblem,
   shapedProblem } from './row-merge-gen.mjs';
 import { defects, judge, newTally } from './row-merge-judge.mjs';
-import { checkExclusions } from './row-merge-homes.mjs';
 
 // R005 Tranche B Task 4, level 1 of the oracle (plan, Task 4): the
 // compiler's row solver (Features.Check.RowEntry) against the
 // independent brute force (test/row-merge-oracle.mjs) on labels-only
-// problems, each in several orders. Forced moves only: a run whose
-// equation would wait reaches Task 5's placeholder and is `skipped`,
-// counted by its order's position and printed, never a verdict. The
-// exhaustive domains are in test/row-merge-domains.test.mjs.
+// problems, each in several orders. Since B2 only the one-tail rules
+// decide: a run with two or more metas on a side of a residue reaches
+// placeholder P1 and is `skipped`, counted by its order's position and
+// printed, never a verdict. The exhaustive domains are in
+// test/row-merge-domains.test.mjs.
 
 const fixtures = readdirSync('test/fixtures/r005b').sort()
   .map(name => JSON.parse(readFileSync(`test/fixtures/r005b/${name}`, 'utf8')));
@@ -64,6 +64,26 @@ test('fixtures at solver stage 5: a verdict never contradicts the class', t => {
   assert.ok(skipped.Unresolved > 0 && skipped.Solved > 0);
 });
 
+// B2: problems Task 4 solved only by an upper bound (`design-forced-bound`,
+// program 11) or by a commit (a constant with one home) now reach P1 in
+// every order, a skipped run and never a verdict.
+const P1 = 'rows with two unknown tails on one side are solved in Task B3';
+const committed = { hyp: { lacks: {}, apart: [] }, steps: [
+  { k: 'lacks', v: 'm0', l: 'a' },
+  { k: 'eq', l: { fields: [], tails: ['m0', 'm1'] },
+    r: { fields: ['a'], tails: [] } }] };
+
+test('solved before B2 only by a bound or a commit: P1 in every order', () => {
+  const bound = fixtures.find(f => f.name === 'design-forced-bound').rows;
+  for (const rows of [bound, committed]) {
+    for (const order of allOrders(rows.steps)) {
+      const found = run(rows.hyp, order);
+      assert.equal(found.v, 'skipped', JSON.stringify(order));
+      assert.equal(found.what, P1);
+    }
+  }
+});
+
 const GENERATORS = [
   ['raw (perm.mjs)', rnd => permProblem(rnd, false), 21],
   ['dense (perm.mjs DENSE=1)', rnd => permProblem(rnd, true), 22],
@@ -97,18 +117,4 @@ test('property E\'s read-back catches a corrupted traversal', () => {
   }
   assert.equal(tally.stateDiff, 0);
   assert.ok(tally.corruptCaught > 0, 'skipping nested bindings went unseen');
-});
-
-test('every home the solver excludes has no solution using it (L31)', t => {
-  const rnd = mulberry(26);
-  const tally = { exclusionsChecked: 0, exclusionsWrong: 0,
-    exclusionsSkipped: 0, examples: [] };
-  for (let i = 0; i < 300; i++) {
-    const p = i % 2 ? permProblem(rnd, true) : shapedProblem(rnd, true);
-    for (const order of fiveOrders(rnd, p.cs)) checkExclusions(p, order, tally);
-  }
-  const { examples, ...counts } = tally;
-  t.diagnostic(JSON.stringify(counts));
-  assert.equal(tally.exclusionsWrong, 0, JSON.stringify(examples));
-  assert.ok(tally.exclusionsChecked > 0);
 });

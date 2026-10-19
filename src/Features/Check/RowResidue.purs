@@ -1,6 +1,6 @@
 module Features.Check.RowResidue
-  ( Constant(..)
-  , Exam
+  ( Atom(..)
+  , Constant(..)
   , Side
   , Residue
   , residue
@@ -23,12 +23,20 @@ import Data.Tuple (Tuple(..))
 import Domain.Type (Ty)
 import Domain.Type.Record (RecordRow, recordRow)
 import Features.Check.FlatRecord (Flat)
-import Features.Check.RowStore (Atom(..), Equation)
-import Features.Check.Subst (Flex(..), Subst)
+import Features.Check.Subst (Flex(..))
 
 -- What may go into a meta of the other side: a label with its field
 -- type, or a rigid tail.
 data Constant = Field String (Ty Flex) | RigidTail Flex
+
+-- A constant without its field type: what a row may hold that a meta can
+-- be asked to hold, a label or a signature's rigid tail (an opaque row,
+-- held whole or not at all). R005 Tranche B design §2.5; since B2 read
+-- only by the exclusion test (Features.Check.Homes).
+data Atom = LabelAtom String | RigidAtom Flex
+
+derive instance eqAtom ∷ Eq Atom
+derive instance ordAtom ∷ Ord Atom
 
 -- One side of an equation once the labels both sides hold have unified
 -- and the tails both hold cancelled (R005 Tranche B design §2.1 steps
@@ -41,20 +49,6 @@ type Side =
   }
 
 type Residue = { mine ∷ Side, theirs ∷ Side }
-
--- One equation's examination so far (Features.Check.UnifyRecord): the
--- substitution reached, and the one before the last sum-rule step (where
--- a refusal U4 caused is printed, as it was before U4, R10.2); the labels
--- whose field types have unified (step 2 runs once per label); the
--- equation's identity once it derived a fact; and the metas each side's
--- residues have held.
-type Exam =
-  { subst ∷ Subst
-  , before ∷ Subst
-  , done ∷ Set String
-  , equation ∷ Maybe Equation
-  , seen ∷ { mine ∷ Set Int, theirs ∷ Set Int }
-  }
 
 -- The residue of two flattened rows. Tails cancel as multisets: disjoint
 -- union cancels, so `A ⊎ X = B ⊎ X` holds exactly when `A = B` (rules

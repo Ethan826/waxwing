@@ -1,7 +1,6 @@
 module Features.Check.RowStore
   ( RowStore(..)
   , module Features.Check.Because
-  , module Features.Check.RowBound
   , emptyStore
   , lackTable
   , withLacks
@@ -12,8 +11,6 @@ module Features.Check.RowStore
   , stamped
   , atSite
   , siteOf
-  , withBoundBy
-  , equationId
   , counted
   , changesOf
   ) where
@@ -26,7 +23,6 @@ import Data.Maybe (Maybe(..), maybe)
 import Domain.Syntax (Span)
 import Features.Check.Because
   ( Because(..)
-  , Equation(..)
   , Lack
   , Pair
   , WrittenLack
@@ -36,7 +32,6 @@ import Features.Check.Because
   , rank
   )
 import Features.Check.Flex (Flex(..))
-import Features.Check.RowBound (Atom(..), Bound, Narrowing, narrowedBy)
 
 -- What the record tails of a substitution are known to satisfy (R005
 -- Tranche B design §1.3), kept inside the substitution so that a
@@ -46,26 +41,17 @@ import Features.Check.RowBound (Atom(..), Bound, Narrowing, narrowedBy)
 -- tails, each a rigid or an unbound meta, that hold no label in common,
 -- kept both ways with one reason (a rigid pair is a body's hypothesis, a
 -- meta's an obligation). `arrivedAt`: where a meta was bound, the span of
--- the requirement being checked (`site`) when it was. Task 4: `upper`,
--- the upper bounds of unbound metas (design §2.5, Features.Check.Narrow);
--- `emptied`, for a meta U4 bound to `{}`, its last bound, which keeps the
--- facts that pruned it (R10.2; the plan's `Map Int Because`, kept per
--- atom so the fact excluding the constant that fails is the one named);
--- `boundBy`, the equation whose commit bound a meta (R10.1, read from
--- Task 6); `equations`, the next equation's identity; `changes`,
--- how many times the solver's state changed (a binding, a new lack, a new
--- pair's meta side, a bound set or narrowed): the termination measure's
--- counter (rules §13, ledger L3). Pending equations and their index
--- arrive with Task 5.
+-- the requirement being checked (`site`) when it was. `changes`: how
+-- many times the solver's state changed (a binding, a new lack, a new
+-- pair's meta side), the termination measure's counter (ledger L3).
+-- Task 4's upper bounds, emptied bounds, commit causes and equation
+-- identities went with the sum rule, bounds and commits in B2; B3 adds
+-- the waiting `Merge` predicates and the causes their cases record.
 newtype RowStore = RowStore
   { lacks ∷ Map Flex (Map String Lack)
   , apart ∷ Map Flex (Map Flex Because)
   , arrivedAt ∷ Map Int Span
   , site ∷ Maybe Span
-  , upper ∷ Map Int Bound
-  , emptied ∷ Map Int Bound
-  , boundBy ∷ Map Int Equation
-  , equations ∷ Int
   , changes ∷ Int
   }
 
@@ -75,10 +61,6 @@ emptyStore = RowStore
   , apart: Map.empty
   , arrivedAt: Map.empty
   , site: Nothing
-  , upper: Map.empty
-  , emptied: Map.empty
-  , boundBy: Map.empty
-  , equations: 0
   , changes: 0
   }
 
@@ -150,18 +132,6 @@ atSite site (RowStore store) = RowStore store { site = site }
 
 siteOf ∷ RowStore → Maybe Span
 siteOf (RowStore store) = store.site
-
--- The meta bound by a commit of this equation.
-withBoundBy ∷ Int → Equation → RowStore → RowStore
-withBoundBy meta equation (RowStore store) = RowStore store
-  { boundBy = Map.insert meta equation store.boundBy }
-
--- A new equation's identity, taken.
-equationId ∷ RowStore → { id ∷ Int, store ∷ RowStore }
-equationId (RowStore store) =
-  { id: store.equations
-  , store: RowStore store { equations = store.equations + 1 }
-  }
 
 -- One more change (a meta bound).
 counted ∷ RowStore → RowStore
