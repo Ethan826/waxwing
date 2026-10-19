@@ -30,7 +30,7 @@
 // disjointness facts hold for {}).
 import {
   Fail, isMeta, tailRow, freshMeta, flatten, wellFormed, unify, nameOf,
-  residue, cannotHold,
+  residue, cannotHold, minus,
 } from './qt-facts.mjs';
 
 const rowKey = f => `${f.fields.join()};${f.tails.join()}`;
@@ -47,6 +47,9 @@ function oriented(st, p, a, b) {
     return 'done';
   }
   if (closed(R) && closed(T)) return subtract(st, p[a], R, T);
+  if (st.g2 && !R.tails.some(isMeta) && !T.tails.some(isMeta)) {
+    return subtractRigid(st, p[a], R, T);
+  }
   if (!L.fields.length) return 'wait';
   const u = freshMeta(st);
   const moved = { fields: L.fields, tails: [u] };
@@ -72,6 +75,24 @@ function subtract(st, left, R, T) {
   st.trace?.subtract(left, T.fields.length === R.fields.length);
   unify(st, left, { fields: T.fields.filter(f => !taken.has(nameOf(f))),
     tails: [] });
+  return 'done';
+}
+
+// Option `g2` (proposed, NOT adopted; docs/plans/2026-10-19-row-merge-
+// limitations.md): case 2 with rigid tails, as 1g is case 1 with them.
+// With no unknown in the right part or t, the left part is t less the
+// right part's atoms (labels by name, rigid tails), if t holds them all;
+// disjoint union cancels, so that is its only value. Otherwise it waits,
+// as case 2 does.
+function subtractRigid(st, left, R, T) {
+  const tName = new Map(T.fields.map(f => [nameOf(f), f]));
+  if (!R.fields.every(f => tName.has(nameOf(f)))) return 'wait';
+  if (minus(R.tails, T.tails).length) return 'wait';
+  const bad = R.fields.find(f => tName.get(nameOf(f)) !== f);
+  if (bad) throw new Fail(`mismatch: ${nameOf(bad)}`);
+  const taken = new Set(R.fields.map(nameOf));
+  unify(st, left, { fields: T.fields.filter(f => !taken.has(nameOf(f))),
+    tails: minus(T.tails, R.tails) });
   return 'done';
 }
 

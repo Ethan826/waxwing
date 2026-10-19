@@ -62,6 +62,7 @@ beside them.
 | qt-given.mjs | case 1g on the six programs of research/purs-given-1g |
 | qt-termination.mjs | the adopted configuration with a trace of every case-3 move and rescan pass (hooks `rescan`, `pass`, `moved`, which only record): lineage disjointness, productive passes, cyclic "above" graphs, edge changes and the B0 height measure (as written and shifted by one); the research families (ledger L1) |
 | qt-cyclic.mjs | L1's checks: named cyclic examples, a cyclic family judged by the oracle, and qt-termination.mjs's families; exit 1 on a violation |
+| qt-2g.mjs | the proposed case 2g (option `g2` of qt-strict.mjs, NOT adopted; docs/plans/2026-10-19-row-merge-limitations.md) beside the adopted configuration: oracle checks of the 2g variant, order and mirror differences, every verdict change |
 | qt-locate.mjs | L2: refusals met while solving whose modelled diagnostic depends on the order, split by conflict (the minimal unsatisfiable subsets the oracle finds in each order's failing prefix), and the `latest` location rule's residuals |
 | fixtures/order-*.json | six order-dependent problems (four raw, two from domain A): rows, every permutation, recorded outcomes of the configuration without and with the repair; and order-S-shapes-1910, a QT-strict difference of verdict class only (Contradiction against Unresolved) |
 
@@ -160,6 +161,7 @@ problem with and without them and counts no verdict changed
 | Command | Output (abridged) |
 |---|---|
 | `node qt-cyclic.mjs all` | `no violation`. Examples: self-loop with a label refuse (0 solutions), without D4 (8), own result in a part refuse (0), two-cycle D4 (8). Cyclic family (seed 31, 20,000 problems, 60,000 runs): 31,320 runs cyclic, at most 3 moves per lineage, 0 lineage violations, 0 unproductive passes, no refusal with a solution. Domain B: 36,701 of 159,650 runs cyclic, edges changed within a rescan in 2,808; the B0 measure did not fall on 2,677 of 5,277 changing acyclic passes, shifted by one on none. Domain A (one in 20): 42,299 of 333,972 cyclic. Generators (raw, dense, raw programs, shapes): no violation |
+| `node qt-2g.mjs 2000` | `no violation`; the 2g variant changes verdicts only waiting → accepted: the named self-call shapes (4 runs) and 2 of 4,000 shaped runs; none in raw, dense or domain B; O4 still waits |
 | `node qt-locate.mjs 2000` | reproduces qt-render's order-dependent refusals (fixtures 24 of 72, raw 758, shapes 855 of 2,000) and splits them by the MUSes in each order's failing prefix. Same conflict, same explanation: 18, 55, 91; same conflict, explanation differs: 3, 57, 4; different conflicts: 3, 646, 212; shapes past the caps (9 steps, 5 metas): 548. Under `latest` no same-conflict location differs; different conflicts keep their location in 1, 11 and 25 |
 
 Sensitivity of the L1 checks (2026-10-19, scratch copies, deleted):
