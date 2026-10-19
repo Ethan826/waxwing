@@ -26,10 +26,14 @@ independently evaluate.
    its source in its design document or ADR.
 3. **Black boxes are ones in use elsewhere.** A component no one can
    explain from its source must be a widely used one, not a novel one.
-4. **Novel internal machinery needs a stated reason** and the author's
-   explicit approval, after a design document has offered the textbook
-   alternative and its cost (for example extra annotations). Accepting
-   some annotation burden to stay with a standard mechanism is the default.
+4. **Local rules are allowed, but each departure from a published source
+   needs a demonstrated need, a clear argument and reproducible evidence**,
+   and the author's explicit approval, after a design document has offered
+   the textbook alternative and its cost (for example extra annotations).
+   The need is established before approval (for example by showing the
+   published mechanism, faithfully modelled, actually fails the
+   requirement). Accepting some annotation burden to stay with a standard
+   mechanism is the default.
 5. **Assurance** is a proof, or extremely robust testing (oracles against
    independent references, exhaustive small domains, executable fixtures),
    under the evidence rules in docs/engineering.md.
