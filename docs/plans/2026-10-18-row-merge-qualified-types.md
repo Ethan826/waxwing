@@ -11,7 +11,8 @@ are listed in §11.7. An experiment against the installed PureScript
 compiler (§12, 2026-10-19) tested whether QT models PureScript; its
 conclusion is in §12.5. QT-strict, PureScript's mechanism with no local
 rule and no default for predicate-constrained unknowns, is measured in
-§13, with a recommendation (§13.7).
+§13, with a recommendation (§13.7); its adaptations Sym and H are
+measured in §14, whose §14.7 lists the open findings now current.
 
 Written 2026-10-18 on branch `design-principles` from 1b45917 (ADR 014
 committed). Documents and research scripts only: no compiler source,
@@ -1423,6 +1424,9 @@ not proved: no argument here shows QT-strict confluent.
 
 ### 13.5 Examples and annotations
 
+(The generality column is superseded by §14.4, which shows three of
+these annotations narrow the set of typings.)
+
 research/row-merge-qt/qt-examples.mjs `STRICT_EXAMPLES`, checked by
 `node qt-checks.mjs strict` (every order; the smallest annotation found
 by trying every set of annotated unknowns):
@@ -1483,6 +1487,193 @@ local rule.
   Revisit Z and the predicate default if a corpus of real programs
   shows QT-strict's burden in practice.
 - Status unchanged: not approved; no solver is adopted.
+
+## 14. QT-strict's adaptations: Sym and H (2026-10-19)
+
+Branch `qt-adaptations` from main d4d5cf4. Research only; nothing
+adopted, no fixture or text changed. QT-strict (§13) is the control.
+Each adaptation is reported alone, then combined. Commands and outputs:
+research/row-merge-qt/README, "QT-strict's adaptations".
+
+### 14.1 Sym: PureScript's cases on the parts swapped
+
+**Rule** (qt-strict.mjs `oriented`, option `sym`). For a waiting
+`Merge r s t`, QT-strict tries PureScript's cases with `r` on the left
+(§13.1). If none makes progress, Sym tries them again with `s` on the
+left:
+
+| Case | Fires when | Effect |
+|---|---|---|
+| 1' | `s` closed: no tail at all (no unknown, no rigid) | `t ~ { fields(s), fields(r), ...tails(r) }` by unification |
+| 2' | `r` and `t` closed | every label of `r` (by name) in `t`, with the same type: `s := t` minus `r`'s labels, their types from `t`; a label of `r` in `t` with another type is a Contradiction; a label of `r` missing from `t` is no progress |
+| 3' | `s` open with known labels | `t ~ { fields(s), ...u }`, `u` fresh; the predicate becomes `Merge r rest(s) u` |
+| 1g | no unknown in either part | as in §13.1 (symmetric already) |
+
+Prerequisites: the predicate's parts are required disjoint when it is
+made (Task 3's decomposition records `r # s`); "closed" means no tail,
+so a rigid tail makes a part open; field types need not be ground (they
+are unified, never compared, in the design; the prototype's typed
+domain has only ground types).
+
+**Argument.** Read a row under an assignment `σ` as a finite map from
+labels to field types (rigid tails as opaque atoms). `Merge r s t`
+means `σ(t) = σ(r) ⊎ σ(s)`, the union of two maps with disjoint
+domains, which `r # s` makes defined. That union is commutative: both
+orders give the same map, since each label's type comes from the one
+part that has it. So `Merge r s t` and `Merge s r t` have exactly the
+same solutions, and any rule that keeps the solutions of `Merge s r t`
+keeps those of `Merge r s t`. It remains to show each case keeps them
+(with `s` on the left):
+
+- 1': `σ(s)` is the fixed map `F`; `σ(t) = F ⊎ σ(r)` holds exactly when
+  `t` unifies with `{ F, ...r }`. The row unifier (ADR 013) unifies the
+  labels both sides hold field-wise, so every label `F` moves into `t`
+  has its type equated with `t`'s, and it is most general: solutions
+  are kept, fresh unknowns accounted for.
+- 2': `σ(r) = F_r` and `σ(t) = F_t` are fixed. A solution needs
+  `dom(F_r) ⊆ dom(F_t)` and `F_r(l) = F_t(l)` for each such label, and
+  then `σ(s) = F_t` restricted to the other labels, which is the only
+  value. A label with two types has no unifier: the Contradiction is a
+  proof. A missing label also has no solution, but PureScript reports
+  no progress (line 654), kept as such.
+- 3': `σ(s) = F ⊎ σ(rest)`, so `σ(t) = F ⊎ (σ(r) ⊎ σ(rest))`. With `u`
+  fresh and `Merge r rest u`, `u` is determined by `r` and `rest`, so
+  the new system's solutions restricted to the old unknowns are the old
+  ones; the field types of `F` are unified with `t`'s as in 1'.
+- **Rigid tails** are never bound or split: 1' and 2' need the moved or
+  subtracted part closed (no rigid), 3' moves fields only, 1g keeps
+  every rigid as a tail, and the unifier binds unknowns only.
+
+Commutativity motivates the rule; the three bullets prove it.
+
+**Results** (no oracle violation anywhere):
+
+| Family | QT-strict | +Sym |
+|---|---|---|
+| swapped inputs (`mirrorDiff`: every merge's arguments swapped, verdict or solution differs) | raw 602, shapes 2,014, typed 50,550, domain A 73,932, B 4,348 | **0** on every family |
+| typed swapped programs (`qt-checks2.mjs sym`: `merge(p, q)` against `merge(q, p)`, p unknown, p later `{ b: Int }`, a type clash `a: Int` against `a: Bool`, a nested merge) | D4 or accept, by orientation | one outcome over every order of both orientations, equal to the typed oracle's (the clash: Contradiction, no solution) |
+| accepted runs: raw / dense / shapes | 9,075 / 4,340 / 7,228 | 9,210 / 4,340 / 7,792 |
+| accepted runs: typed domain / domain A / domain B | 8,048 / 178,616 / 8,092 | 11,042 / 182,332 / 8,352 |
+| `acceptDiff` (all families) | 0 | 0 |
+| fixtures and programs | §13.3 | the same acceptance; diag-03 and diag-05 become Contradictions again (diag-14 stays Unresolved) |
+
+### 14.2 H: a contradiction only where no solution exists
+
+**Condition** (qt-strict.mjs `homeless`, option `hEnd`). Only at the
+end of a body that QT-strict (or +Sym) leaves Unresolved, after every
+binding: for a waiting `Merge r s t`, take the two sides `r ⊎ s` and
+`t`, cancel equal atoms (a typed field cancels only the same label with
+the same type) and equal tails; if a constant (a field or a rigid tail)
+is left on one side and every unknown on the other side cannot hold it
+(`cannotHold`, §11.1: it lacks the label, or holding it needs a fact
+the givens do not entail), the result is Contradiction instead of
+Unresolved. H binds nothing and defaults nothing.
+
+**Argument.** In a solution `σ` both sides denote the same multiset of
+atoms, each well formed. A constant `c` left on one side after
+cancellation is not among the other side's constants, so `c` lies in
+`σ(m)` for an unknown `m` of the other side. `cannotHold(m, c)` means
+`m`'s facts exclude `c` in every solution (§11.1; for a typed field, a
+same-named field beside `m` makes `m` lack the label). So no `σ`
+exists: the Contradiction is a proof. Since H runs after solving and
+changes only an Unresolved verdict, acceptance and inferred types are
+QT-strict's by construction.
+
+**Results:**
+
+| Check | +H against QT-strict | +Sym+H against +Sym |
+|---|---|---|
+| acceptance or solution differs in any run (`baseDiff`, asserted) | 0 on every family | 0 |
+| new Contradictions (`H:new`) | raw 1,580, dense 2,620, shapes 2,089, typed 51,996, domain A 759,684, B 33,384 | 270, 2,620, 428, 4,056, 636,788, 25,716 |
+| of those, with a solution (oracle) | **0** | **0** |
+| fixtures | diag-03, diag-05, diag-14 Contradiction again (their approved D6 classes) | the same |
+
+### 14.3 Verdict kinds across orders
+
+`kindDiff`: rejected in every order, Contradiction in some and
+Unresolved in others (acceptance unaffected), reported per variant:
+
+| Family | QT-strict | +Sym | +H | +Sym+H |
+|---|---|---|---|---|
+| raw, dense, F2, typed, domains A and B | 0 | 0 | 0 | 0 |
+| program shapes | 7 | 0 | 0 | 0 |
+
+Each adaptation removes the seven on the shapes: Sym because the case
+that found the mismatch in one order is now also tried with the parts
+swapped, H because the Unresolved order is classified as the
+Contradiction it is. fixtures/order-S-shapes-1910 pins it (`node
+qt-checks2.mjs kinds`: QT-strict `refuse, D4`, every adaptation
+`refuse, refuse`). For QT-strict alone it remains an open diagnostic
+finding. A way to close it without either adaptation (proposed, not
+adopted): apply PureScript's case 2 guard only after case 3 has moved
+the left part's labels; not measured.
+
+### 14.4 Generality, per example
+
+`node qt-checks2.mjs generality` counts each example's solutions (the
+labels it writes plus one extra label `w`) and whether fixing the
+annotated unknowns excludes any (narrows) or none (redundant); every
+annotation fixes the least solution's value, the one QS's default
+would choose:
+
+| Example | Solutions | Annotation | What is lost when it narrows |
+|---|---|---|---|
+| S1 `apply0(merge, merge)` (program 13, design-quiet) | 5 | narrows (3 excluded) | the instances in which both merges' parts hold the same extra labels; the shared result `c` is used by nothing, so no observable behaviour, but the annotated program no longer type-checks at them |
+| S2 `ignore(fn(p) => merge(p, { a: 1 }))` | 2 | narrows (1 excluded) | `p` holding labels other than `a`; the lambda is never applied |
+| S3 `apply0(merge)` into `{}` | 1 | redundant | nothing |
+| Q1 `relate(merge, merge)` | 3 | narrows (1 excluded) | instances with an extra label in both results; unused |
+| Q2 `nest(merge, merge)` | 1 | redundant | nothing |
+| program 11 `both(merge, merge)` | 1 | redundant | nothing |
+| program 12 `apply(merge, noX)` | 1 | redundant | nothing |
+| F2's 186 programs, the shared parameter | 1 each | redundant in all 186 | nothing |
+
+So "no annotation loses generality" was too strong: three of the eight
+narrow the program's set of typings, each by excluding instances that
+nothing in the program uses (Waxwing specializes a use at one
+instance, and QS would choose the annotated one).
+
+### 14.5 Combined: QT-strict+Sym+H
+
+Acceptance and types are +Sym's (H changes none); verdict kinds are
+order independent on every family; no oracle violation; on the
+fixtures diag-03, -05, -14 keep their approved Contradiction classes.
+Against the current design it still leaves Unresolved what QT-strict
+does except Sym's gains: raw 14,255 − 9,210 accepted runs, dense
+19,895 − 4,340, shapes 10,546 − 7,792 (QS-EHZ: 14,110, 14,465,
+10,546), and on the published examples programs 11, 12 and 13.
+
+### 14.6 Recommendation (ADR 014 point 4), per adaptation
+
+- **Sym: need demonstrated, argument written, evidence reproducible.**
+  Without it QT-strict's acceptance depends on the order in which a
+  merge's arguments are written (S2), which a symmetric merge must
+  not; the rule is proved to keep solutions (§14.1) and measured with
+  0 mirror differences and no violation, field types included in a
+  small typed domain. Recommended for approval as a local adaptation of
+  PureScript's rule.
+- **H: need demonstrated for diagnostics only.** It changes no
+  acceptance or type (asserted), restores the three approved
+  Contradiction classes, removes the verdict-kind order dependence,
+  and every new Contradiction was checked: none has a solution.
+  Recommended for approval as a classification rule.
+- **The combination**: recommended as the baseline candidate in place
+  of QT-strict alone, for the user's decision. Status unchanged: not
+  approved; no solver is adopted.
+
+### 14.7 Open findings (current)
+
+1. Order independence of acceptance (every QT-strict variant, QS-EHZ,
+   the current design) is measured, not proved.
+2. QT-strict alone has 7 verdict-kind order differences on the shapes
+   (fixture order-S-shapes-1910); closed by either adaptation.
+3. The typed domain has ground field types only; unknown field types
+   and nested rows inside fields are argued (§14.1), not prototyped.
+4. The burden of every QT-strict variant (§13.3, §14.5) is measured on
+   synthetic generators; no corpus of real programs exists.
+5. Three annotation examples narrow the set of typings (§14.4).
+6. Sources not accessed (§11.5); local rules N5, H, Z, Sym need the
+   user's decision; the fixture reclassifications, D6b and the
+   retirements of §9 remain proposals.
 
 ## References
 

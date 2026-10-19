@@ -6539,3 +6539,19 @@ published examples one more annotation (design-quiet) and three
 approved contradictions reported as "annotate". Recommendation (for the
 user): QT-strict as the baseline under ADR 014, the need for N5/H/Z
 being shown only on synthetic problems. Status unchanged: not approved.
+
+## R005 Tranche B: QT-strict's adaptations Sym and H (2026-10-19)
+
+Branch `qt-adaptations` from main d4d5cf4. Research and docs only;
+nothing of Waxwing built, verify not run; fixtures and texts unchanged.
+Design §14: Sym (PureScript's cases also with the parts swapped) is
+argued to keep solutions, field types and rigid tails included, and
+measured with 0 swapped-input differences on every family, a new typed
+domain (research/row-merge-qt/qt-typed.mjs) included; H (Contradiction
+for a constant no unknown of the other side can hold, at the end,
+classification only) leaves acceptance and types unchanged on every
+family (asserted) and none of its new Contradictions has a solution.
+Each removes QT-strict's 7 verdict-kind order differences on the
+shapes. Generality per annotation example: 5 redundant, 3 narrow the
+typings by instances nothing uses. Recommendation (for the user):
+QT-strict+Sym+H as the baseline candidate. Status: not approved.

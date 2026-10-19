@@ -21,6 +21,11 @@ export const isMeta = v => /^m/.test(v);
 export const isLab = a => /^[a-z]/.test(a);
 const key = (a, b) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 export const tailRow = t => ({ fields: [], tails: [t] });
+// A field is a label, or `label:Type` in the typed domain (qt-typed.mjs);
+// labels are unique by name, and lacks facts are on names.
+export const nameOf = l => l.split(':')[0];
+const names = fs => fs.map(nameOf);
+const unique = fs => new Set(names(fs)).size === fs.length;
 export const EMPTY = { fields: [], tails: [] };
 
 export const makeState = (hyp, opts = {}) => ({ hyp, bind: new Map(),
@@ -29,7 +34,8 @@ export const makeState = (hyp, opts = {}) => ({ hyp, bind: new Map(),
   home: opts.home ?? false, commit: opts.commit ?? false,
   empty: opts.empty ?? false, zero: opts.zero ?? false,
   plain: opts.plain ?? false, selfApart: opts.selfApart ?? true,
-  qts: opts.qts ?? false, pairwise: opts.pairwise ?? true });
+  qts: opts.qts ?? false, pairwise: opts.pairwise ?? true,
+  sym: opts.sym ?? false, hEnd: opts.hEnd ?? false });
 
 export const freshMeta = st => `m${1000 + st.fresh++}`;
 
@@ -47,7 +53,8 @@ export function flatten(st, row) {
 }
 
 export const metasOf = row => row.tails.filter(isMeta);
-export const excludes = (st, m, a) => st.excl.get(m)?.has(a) ?? false;
+export const excludes = (st, m, a) => st.excl.get(m)
+  ?.has(isLab(a) ? nameOf(a) : a) ?? false;
 export const apart = (st, m, n) => st.pairs.has(key(m, n));
 
 // Whether meta m can never hold constant c: m excludes c, or holding
@@ -60,7 +67,9 @@ export const apart = (st, m, n) => st.pairs.has(key(m, n));
 export function cannotHold(st, m, c) {
   if (excludes(st, m, c) || st.plain) return excludes(st, m, c);
   const facts = [...(st.excl.get(m) ?? [])];
-  if (isLab(c)) return facts.some(a => !isLab(a) && !hypLacks(st, a, c));
+  if (isLab(c)) {
+    return facts.some(a => !isLab(a) && !hypLacks(st, a, nameOf(c)));
+  }
   return facts.some(a => (isLab(a) ? !hypLacks(st, c, a)
     : a !== c && !hypApart(st, c, a)));
 }
@@ -104,7 +113,9 @@ function lackAtom(st, t, l) {
 export function requireDisjoint(st, L, R) {
   const l = flatten(st, L), r = flatten(st, R);
   for (const a of l.fields) {
-    if (r.fields.includes(a)) throw new Fail(`overlap: ${a}`);
+    if (names(r.fields).includes(nameOf(a))) {
+      throw new Fail(`overlap: ${nameOf(a)}`);
+    }
   }
   for (const a of l.fields) for (const t of r.tails) lackIn(st, t, a);
   for (const a of r.fields) for (const t of l.tails) lackIn(st, t, a);
@@ -113,8 +124,10 @@ export function requireDisjoint(st, L, R) {
 
 function lackIn(st, t, l) {
   const f = flatten(st, tailRow(t));
-  if (f.fields.includes(l)) throw new Fail(`overlap: ${l}`);
-  for (const u of f.tails) lackAtom(st, u, l);
+  if (names(f.fields).includes(nameOf(l))) {
+    throw new Fail(`overlap: ${nameOf(l)}`);
+  }
+  for (const u of f.tails) lackAtom(st, u, nameOf(l));
 }
 
 function apartIn(st, t, u) {
@@ -127,9 +140,7 @@ function apartIn(st, t, u) {
 // A row's own disjointness, required where the row is made.
 export function wellFormed(st, row) {
   const f = flatten(st, row);
-  if (new Set(f.fields).size !== f.fields.length) {
-    throw new Fail('duplicate label');
-  }
+  if (!unique(f.fields)) throw new Fail('duplicate label');
   for (const t of f.tails) for (const a of f.fields) lackIn(st, t, a);
   for (let i = 0; i < f.tails.length; i++) {
     for (let j = i + 1; j < f.tails.length; j++) {
@@ -183,9 +194,7 @@ export const rowOf = (ks, ms) => ({ fields: ks.filter(isLab),
 export function unify(st, L, R) {
   const l = flatten(st, L), r = flatten(st, R);
   for (const s of [l, r]) {
-    if (new Set(s.fields).size !== s.fields.length) {
-      throw new Fail('duplicate label');
-    }
+    if (!unique(s.fields)) throw new Fail('duplicate label');
   }
   const t1 = minus(l.tails, r.tails), t2 = minus(r.tails, l.tails);
   const k1 = [...minus(l.fields, r.fields), ...t1.filter(t => !isMeta(t))];

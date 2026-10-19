@@ -51,7 +51,7 @@ export function verdictQT(hyp, steps, opts = {}) {
   }
   const v = sym(st) ? finishSym(st) : st.qts ? finishStrict(st)
     : finish(st);
-  return { v, st };
+  return { v, st, why: st.why };
 }
 
 export const solutionQT = F.solution;

@@ -28,34 +28,54 @@
 // body any predicate still waiting is 'D4' (annotate); an unknown that
 // no waiting predicate mentions defaults to {} as today (its lacks and
 // disjointness facts hold for {}).
-import { isMeta, tailRow, freshMeta, flatten, wellFormed, unify }
-  from './qt-facts.mjs';
+import {
+  Fail, isMeta, tailRow, freshMeta, flatten, wellFormed, unify, nameOf,
+  residue, cannotHold,
+} from './qt-facts.mjs';
 
 const rowKey = f => `${f.fields.join()};${f.tails.join()}`;
 const closed = f => f.tails.length === 0;
 
-function improveOne(st, p) {
-  const R = flatten(st, p.r), S = flatten(st, p.s), T = flatten(st, p.t);
-  if (closed(R) || (!R.tails.some(isMeta) && !S.tails.some(isMeta))) {
-    unify(st, p.t, { fields: [...R.fields, ...S.fields],
-      tails: [...R.tails, ...S.tails] });
+// PureScript's three cases on one orientation: `a` is the left part's
+// key in the predicate, `b` the right's ('r' and 's' as written; 's'
+// and 'r' under option `sym`, design section 14.1).
+function oriented(st, p, a, b) {
+  const L = flatten(st, p[a]), R = flatten(st, p[b]), T = flatten(st, p.t);
+  if (closed(L) || (!L.tails.some(isMeta) && !R.tails.some(isMeta))) {
+    unify(st, p.t, { fields: [...L.fields, ...R.fields],
+      tails: [...L.tails, ...R.tails] });
     return 'done';
   }
-  if (closed(S) && closed(T)) {
-    if (!S.fields.every(l => T.fields.includes(l))) return 'wait';
-    unify(st, p.r, { fields: T.fields.filter(l => !S.fields.includes(l)),
-      tails: [] });
-    return 'done';
-  }
-  if (!R.fields.length) return 'wait';
+  if (closed(R) && closed(T)) return subtract(st, p[a], R, T);
+  if (!L.fields.length) return 'wait';
   const u = freshMeta(st);
-  const moved = { fields: R.fields, tails: [u] };
+  const moved = { fields: L.fields, tails: [u] };
   wellFormed(st, moved);
   unify(st, p.t, moved);
-  p.r = { fields: [], tails: R.tails };
+  p[a] = { fields: [], tails: L.tails };
   p.t = tailRow(u);
   st.version++;
   return 'moved';
+}
+
+// Case 2: the left part is t minus the right part's labels, matched by
+// name (lines 647-653); each matched field's type must be the right
+// part's (PureScript unifies the solved instance with the constraint,
+// lines 290-296); a right label missing from t is no progress.
+function subtract(st, left, R, T) {
+  const tName = new Map(T.fields.map(f => [nameOf(f), f]));
+  if (!R.fields.every(f => tName.has(nameOf(f)))) return 'wait';
+  const bad = R.fields.find(f => tName.get(nameOf(f)) !== f);
+  if (bad) throw new Fail(`mismatch: ${nameOf(bad)}`);
+  const taken = new Set(R.fields.map(nameOf));
+  unify(st, left, { fields: T.fields.filter(f => !taken.has(nameOf(f))),
+    tails: [] });
+  return 'done';
+}
+
+function improveOne(st, p) {
+  const r = oriented(st, p, 'r', 's');
+  return r === 'wait' && st.sym ? oriented(st, p, 's', 'r') : r;
 }
 
 const DEPENDENCIES = [['r', 's', 't'], ['s', 't', 'r'], ['t', 'r', 's']];
@@ -91,10 +111,30 @@ export function improveStrict(st) {
   }
 }
 
+// Option `hEnd` (H, design section 14.2): classification only, at the
+// end, of a body that is already Unresolved. A waiting predicate with a
+// constant on one side (after cancelling) that no unknown of the other
+// side can hold has no solution: Contradiction instead of D4. It binds
+// nothing and runs after every binding, so acceptance and types are
+// QT-strict's.
 export const finishStrict = st => {
   improveStrict(st);
-  return st.preds.length ? 'D4' : 'accept';
+  if (!st.preds.length) return 'accept';
+  const h = st.hEnd && st.preds.find(p => homeless(st, p));
+  if (h) {
+    st.why = 'no home';
+    return 'refuse';
+  }
+  return 'D4';
 };
+
+function homeless(st, p) {
+  const R = flatten(st, p.r), S = flatten(st, p.s);
+  const sides = residue(st, { fields: [...R.fields, ...S.fields],
+    tails: [...R.tails, ...S.tails] }, p.t);
+  return sides.some((side, i) => side.ks.some(c => sides[1 - i].ms
+    .every(m => cannotHold(st, m, c))));
+}
 
 // The unknowns a waiting predicate mentions (they get no default).
 export const constrained = st => new Set(st.preds.flatMap(p =>

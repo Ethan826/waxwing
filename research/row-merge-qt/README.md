@@ -50,6 +50,9 @@ beside them.
 | qt-fixtures.mjs | the 72 fixtures (test/fixtures/r005b) and the 19 programs through every variant; exit 1 on an oracle violation |
 | qt-programs.mjs | the 19 programs by fixture, program 16 (`same`) and the zero-solution bucket problem written out |
 | qt-strict.mjs | QT-strict (design §13): PureScript 0.15.16's three `unionRows` cases, entailment by the signature's rows, no pairwise improvement (option `pairwise` for QT-strict+P), no N5/E/H/Z, and no default for what a waiting predicate constrains |
+| qt-adapt.mjs | QT-strict, +Sym, +H, +Sym+H and QS-EHZ beside the current design on the generators and F2: verdicts, oracle checks, `acceptDiff`, `kindDiff`, `mirrorDiff`, and for +H `baseDiff`, `H:new`, `H:newWithSolution` (design §14) |
+| qt-typed.mjs | a typed domain (fields `a:Int`, `a:Bool`, `b:Int`, labels unique by name) with its own brute-force oracle; every problem of two equations, both orders and the mirror, through the QT-strict variants |
+| qt-checks2.mjs | `sym` (typed swapped-input programs), `generality` (does each annotation narrow the solutions or is it redundant), `kinds` (QT-strict's verdict-kind fixture under each variant) |
 | qt-examples.mjs | Q1 and Q2: Waxwing programs QT rejects and QS accepts, with QT's smallest annotation (design §11.3) |
 | qt-checks.mjs | committed checks: `order` (the order fixtures), `annotations`, `f2`, `stage4`, `strict` (QT-strict's examples and its agreement with the installed purs) |
 | qt-domains.mjs | every problem of research/open-row-merge's exhaustive domains A and B in every order, QT, QS-EH and QS-EHZ against the oracle; exit 1 on a violation or a QS-EHZ order difference |
@@ -97,6 +100,28 @@ adds positional pairwise improvement, for comparison only.
 | `node qt-fixtures.mjs programs` | QT-strict U on programs 11, 12, 13 (design-quiet) and 16 (`same`, C under the current design); `violations 0` |
 | `node qt-compare.mjs …` (the seeds above) | QT-strict totals: raw accept 9,075 (`accept>D4` 5,180), dense 4,340 (15,555), shapes 7,228 (3,318), F2 0 (186); `acceptDiff` 0 everywhere; `orderDiff` 7 on shapes, 0 elsewhere |
 | `node qt-domains.mjs A 10`, `… B 10` | QT-strict A: accept 178,616, refuse 16,446,806, D4 2,679,870, no `orderDiff` or `acceptDiff`; B: 8,092, 96,260, 349,198, none |
+
+## QT-strict's adaptations (2026-10-19, branch `qt-adaptations`)
+
+Fields may now be typed (`label:Type`); qt-facts.mjs compares labels by
+name for uniqueness, overlap and lacks, so the labels-only results
+above are unchanged. Rerun from the committed tree; each exits 0.
+
+| Command | Output (abridged) |
+|---|---|
+| `node qt-adapt.mjs …` (the same seeds and shapes as qt-compare.mjs) | no `violated`, `acceptDiff`, `baseDiff` or `H:newWithSolution` key for any variant; accepted runs (QT-strict, +Sym, +H, +Sym+H): raw 9,075, 9,210, 9,075, 9,210; dense 4,340 each; shapes 7,228, 7,792, 7,228, 7,792; F2 0; `kindDiff` shapes 7, 0, 0, 0; `mirrorDiff` raw 602, 0, 66, 0 and shapes 2,014, 0, 861, 0; `H:new` raw 1,580 (+H), 270 (+Sym+H), dense 2,620, 2,620, shapes 2,089, 428 |
+| `node qt-typed.mjs 10` | 336,610 problems; accepted runs 8,048, 11,042, 8,048, 11,042; `mirrorDiff` 50,550, 0, 4,170, 0; `H:new` 51,996, 4,056; no violation |
+| `node qt-domains.mjs B 10`, `… A 10` | B: accepted 8,092, 8,352, 8,092, 8,352; A: 178,616, 182,332, 178,616, 182,332; no `orderDiff`, `acceptDiff` or `kindDiff` for any QT-strict variant; `mirrorDiff` 0 with Sym; `H:new` A 759,684 and 636,788, B 33,384 and 25,716; about 6 min for A |
+| `node qt-checks2.mjs sym` | 5 `ok`: each typed program has one outcome under +Sym over every order of both orientations, matching the typed oracle |
+| `node qt-checks2.mjs generality` | 8 `ok` (design §14.4) |
+| `node qt-checks2.mjs kinds` | QT-strict `refuse, D4`; +Sym, +H, +Sym+H `refuse, refuse` |
+| `node qt-fixtures.mjs fixtures` | every QT-strict variant `S>U` design-forced-bound, design-quiet, diag-14-fix; `C>U` QT-strict diag-03, diag-05, diag-14; +Sym diag-14; +H and +Sym+H none |
+
+Sensitivity (scratch copies, final code): case 2 without its type
+check gives `S-violated` and `L-violated` in the typed domain; H
+without `cannotHold` gives `H:newWithSolution` 330 and 320 (raw seed
+21, 1,000 problems); Sym's case 3 rewriting the wrong part gives
+`H-violated` 10 and 25.
 
 ## Sensitivity
 
