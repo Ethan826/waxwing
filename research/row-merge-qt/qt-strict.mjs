@@ -48,7 +48,8 @@ function oriented(st, p, a, b) {
   }
   if (closed(R) && closed(T)) return subtract(st, p[a], R, T);
   if (st.g2 && !R.tails.some(isMeta) && !T.tails.some(isMeta)) {
-    return subtractRigid(st, p[a], R, T);
+    const g = subtractRigid(st, p[a], R, T);
+    if (g === 'done' || st.g2wait) return g;
   }
   if (!L.fields.length) return 'wait';
   const u = freshMeta(st);
@@ -78,12 +79,15 @@ function subtract(st, left, R, T) {
   return 'done';
 }
 
-// Option `g2` (proposed, NOT adopted; docs/plans/2026-10-19-row-merge-
-// limitations.md): case 2 with rigid tails, as 1g is case 1 with them.
-// With no unknown in the right part or t, the left part is t less the
-// right part's atoms (labels by name, rigid tails), if t holds them all;
-// disjoint union cancels, so that is its only value. Otherwise it waits,
-// as case 2 does.
+// Option `g2` (adopted 2026-10-19 as amended, plan §10 decision 17;
+// docs/plans/2026-10-19-row-merge-limitations.md): case 2 with rigid
+// tails, as 1g is case 1 with them. With no unknown in the right part or
+// t, and t holding every atom of the right part (labels by name, rigid
+// tails by identity), the left part is t less those atoms; disjoint union
+// cancels, so that is its only value. Otherwise 2g makes no claim and case
+// 3 is tried. Option `g2wait` is the superseded proposal, which waited on
+// a missing atom and so kept case 3 from a refusal (the counterexample in
+// test/r005b-case2g.test.mjs); kept only to reproduce it.
 function subtractRigid(st, left, R, T) {
   const tName = new Map(T.fields.map(f => [nameOf(f), f]));
   if (!R.fields.every(f => tName.has(nameOf(f)))) return 'wait';

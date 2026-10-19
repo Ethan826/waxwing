@@ -160,13 +160,39 @@ export const r005bProbes = {
       `E_INTERNAL ${p4} @${pickR.trim()}`);
     done(context);
   },
-  // B3: a generic caller whose part is a rigid tail: it waits, never
-  // refused (the program has a solution, q = {}).
+  // B3: a generic caller whose part is a rigid tail and whose result is
+  // unknown: it waits. (Since 2g a result of `x` itself is solved, q =
+  // {}, so the result here is a parameter of the lambda.)
   'r005b-sym-rigid': context => {
     expect(context, 'rigid part counted closed',
-      `${pickR}${same}fn g(x: { ...u }): Int = `
-        + '{ let f = fn(q) => same(pickR(x, q), x); 0 }; fn main(): Int = 0;',
+      `${pickR}${same}fn g(x: { ...u }): Int = { let f = fn(q, w) => `
+        + 'same(pickR(x, q), w); 0 }; fn main(): Int = 0;',
       `E_INTERNAL ${p5} @pickR(x, q)`);
+    done(context);
+  },
+  // 2g: the self-call's `Merge U ?v { ...U, ...V }` gives ?v := V.
+  'r005b-case2g': context => {
+    expect(context, '2g absent',
+      `fn both(x: { ...u }): { ...u, ...v } = both(x);${main}`, 'accepted');
+    done(context);
+  },
+  // 2g amended: `Merge R {a | w} {c}`'s mirror lacks R in `{ c }`; 2g
+  // claims nothing and case 3 moves `a` into `{ c }`: refused.
+  'r005b-case2g-claim': context => {
+    expect(context, 'missing atom claimed',
+      `${pickR}${same}fn g(x: { ...r }): Int where r lacks { a, c } = `
+        + '{ let f = fn(q, w) => { let k = same(pickR(x, q), { c: 1 }); '
+        + 'same(q, { a: 1, ...w }) }; 0 };' + main,
+      `E_INTERNAL ${p2} @{ a: 1, ...w }`);
+    done(context);
+  },
+  // 2g: `Merge ?y S R` has no 2g (S is not in R's row): it waits.
+  'r005b-case2g-atoms': context => {
+    expect(context, 'rigid tail dropped',
+      `${pickR}fn g(x: { ...r }, z: { ...s }, h: ({ ...r }) -> Int): Int `
+        + 'where r disjoint s = { let f = fn(y) => h(pickR(y, z)); 0 };'
+        + main,
+      `E_INTERNAL ${p5} @pickR(y, z)`);
     done(context);
   },
   // B3: a constructor's row of two unknown tails is desugared at its use.
