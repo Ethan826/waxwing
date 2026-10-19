@@ -6847,3 +6847,77 @@ reviewed. Nothing merged or pushed.
   oracle's caps. Proposed: refusals found while re-examining located at
   the latest written participant; no change for the other two.
   Prose-reviewed (humanizer).
+
+## R005 Tranche B B3: merge predicates (2026-10-19)
+
+Authorized by the user (2026-10-19, plan §10 decision 15, with L1
+accepted and L2's limited rule approved), on branch `r005b-replan`;
+code commit 43490f4. Plan §7 Task B3 lists what was built, the
+departures and what is not done.
+
+- Before code: rules §5's Λ tightened (every label in the
+  substitution's bindings and the waiting predicates' rows, nested
+  included; a rescan cannot enlarge it); O4 recorded as having no
+  annotation remedy (plan §5, README draft).
+- Red first (.build/evidence/r005b-b3-red.log, the new and changed
+  tests against the pre-B3 build): 32 of 60 fail. Many oracle tests
+  fail early because the pre-B3 entry has no `finish`, a weaker red
+  than a semantic failure; the check-phase tests fail on behaviour.
+- Oracle, every family with property E also on runs that end waiting,
+  the lineage lemma and the prototype's QT-strict+Sym as second
+  reference; 0 S, L, H, E, order, lineage or reference defects
+  everywhere. Accept / refuse / waiting (P5):
+  - domain A whole (`node scripts/row-merge-exhaustive.mjs A 9`, 411 s,
+    .build/evidence/r005b-b3-exhaustive-A.log): 182,332 / 16,583,318 /
+    2,539,642 of 19,305,292 runs; E on 182,332 accepted and 2,349,130
+    waiting states (B2: 605,079 / 15,026,498 / 3,673,715 skipped).
+  - domain B whole (13 s): 8,352 / 104,832 / 340,366 of 453,550; E on
+    170,816 waiting states (B2: 109,384 / 153,080 / 191,086).
+  - fixtures, every order: 27,051 / 11,964 / 578 of 39,593.
+  - generators (400 problems, five orders): raw 260 / 1,475 / 265;
+    dense 110 / 0 / 1,890; raw programs 405 / 1,350 / 245; shaped
+    680 / 930 / 390; shared 660 / 1,060 / 280.
+  Acceptance falls sharply because B2's one-tail rules bound a lone
+  meta to a row of two unknown tails and defaulted the rest to `{}`;
+  QT-strict leaves what a waiting predicate mentions undefaulted. The
+  reference agrees run for run.
+- Sym: mirrors of every fixture, domain B whole (453,550 runs, stride 1
+  on 2026-10-19; verify samples one in five) and three generators: 0
+  differences; association: the ten three-unknown fixtures under every
+  renaming and order, one outcome each.
+- Order fixtures (research/row-merge-qt/fixtures, purs cases): every
+  order up to seven steps, else the recorded ones; plan §4.5's classes
+  before H (order-22-* wait, order-A-* and order-S-shapes-1910 refuse,
+  the purs cases wait).
+- Termination in the compiler: the cyclic family through the entry,
+  9,004 runs, no limit; with the bind rule's lack passing removed, 936
+  limits (`Exhausted`), the defect `r005b-lineage-lacks` restores.
+- Regression rows proved: r005b-lineage-lacks, -case2-reason, -sym,
+  -sym-rigid, -one-unknown, -end-fixpoint (.build/evidence/
+  r005b-b3-rows-new*.log). `r005b-self-apart`'s second probe changed:
+  `both(x): { ...u, ...v } = both(x)` now waits in its own body (a
+  recursive use whose result names a variable no parameter fixes: no
+  case solves `Merge U ?v {U, V}`; PureScript would match the given by
+  functional dependency, which the adopted design does not do), so the
+  probe uses a function-typed parameter instead; re-proved.
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on 43490f4:
+  exit 0 (2295/2295, 59/59, 157 regression proofs;
+  .build/evidence/r005b-b3-verify.log). Three earlier runs on amended
+  versions of the commit failed and were fixed: four test lines over 80
+  columns (the files were untracked when I checked widths), then a line
+  my fix joined, then the `r005b-self-apart` probe above.
+- Differential against 5e65a71 (`--corpus all --regenerate`, harvest
+  runs exited 0, 0; .build/evidence/r005b-b3-diff.log): fuzz, isName,
+  matches, mutations 0; harvested 8,650 sources, 20 differences, all
+  Tranche B sources, most of them B3's new test programs: P1 → P5 8;
+  accepted at check → P5 3 (unknown parts no longer defaulted); P1 →
+  accepted 1 (nested); P1 → P2 4; ordinary mismatch → P2 2 (typed clash,
+  occurs: now attributed to their predicate); `Fail needs a concrete
+  error family` → P5 1 (F-7); accepted by both with desugared checked
+  types 1 (both then stop at Task 8's lowering placeholder).
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
+
+Not done in B3: the typed research domain ported (§3.4); the
+`r005b-settle-rollback` row (plan §7 Task B3). M13 is argued in part.
+O1-O6 stay open. Nothing later is authorized; B4 waits for the user's
+review of B3.
