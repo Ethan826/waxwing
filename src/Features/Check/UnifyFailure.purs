@@ -1,10 +1,11 @@
-module Features.Check.UnifyFailure (Failure(..), Refusal(..)) where
+module Features.Check.UnifyFailure (Failure(..), Refusal(..), Cause) where
 
 import Prim hiding (Row)
 import Domain.Row (Label)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Occurrence (OccurrenceId)
 import Data.Maybe (Maybe)
+import Domain.Syntax (Span)
 import Features.Check.Because (Because, Pair, WrittenLack)
 import Features.Check.Flex (Flex)
 
@@ -27,7 +28,15 @@ import Features.Check.Flex (Flex)
 -- `Placeholder` (R005 Tranche B): the work a later task does, named for
 -- the E_INTERNAL it is reported as. `Unexpected`: an invariant the
 -- argument for a rule establishes found broken, reported as E_INTERNAL
--- with its text (a checker defect, never a program's).
+-- with its text (a checker defect, never a program's). R005 Tranche B B3:
+-- `FromMerge`, a failure a `Merge` predicate caused (a binding its case
+-- made, R10.1, or found while re-examining it), with the predicate and,
+-- when found while re-examining, the location of the user's L2 rule (the
+-- latest written of the requirement being checked, the predicate's site
+-- and where the metas of its rows were bound;
+-- docs/plans/2026-10-19-row-merge-locations.md); `Exhausted`, the
+-- re-examination's step bound passed, which rules §5 argues cannot
+-- happen (a limit, never a verdict).
 data Failure
   = Mismatch (Ty Flex) (Ty Flex)
   | Occurs Int (Ty Flex)
@@ -41,6 +50,10 @@ data Failure
   | Refused Refusal
   | Placeholder String
   | Unexpected String
+  | FromMerge Cause Failure
+  | Exhausted String
+
+type Cause = { predicate ∷ Int, at ∷ Maybe Span }
 
 -- A fact of the row store broken, with its reason. `Forbidden` (R005):
 -- a label bound into a record tail that a written `lacks` forbids it.

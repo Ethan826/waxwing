@@ -13,6 +13,8 @@ module Features.Check.RowStore
   , siteOf
   , counted
   , changesOf
+  , mergesOf
+  , onMerges
   ) where
 
 import Prelude
@@ -32,6 +34,7 @@ import Features.Check.Because
   , rank
   )
 import Features.Check.Flex (Flex(..))
+import Features.Check.RowMerge.Merge (Merges, emptyMerges)
 
 -- What the record tails of a substitution are known to satisfy (R005
 -- Tranche B design §1.3), kept inside the substitution so that a
@@ -44,15 +47,17 @@ import Features.Check.Flex (Flex(..))
 -- the requirement being checked (`site`) when it was. `changes`: how
 -- many times the solver's state changed (a binding, a new lack, a new
 -- pair's meta side), the termination measure's counter (ledger L3).
--- Task 4's upper bounds, emptied bounds, commit causes and equation
--- identities went with the sum rule, bounds and commits in B2; B3 adds
--- the waiting `Merge` predicates and the causes their cases record.
+-- `merges`: the waiting `Merge` predicates and what their cases did
+-- (Features.Check.RowMerge.Merge, since B3). Task 4's upper bounds,
+-- emptied bounds, commit causes and equation identities went with the sum
+-- rule, bounds and commits in B2.
 newtype RowStore = RowStore
   { lacks ∷ Map Flex (Map String Lack)
   , apart ∷ Map Flex (Map Flex Because)
   , arrivedAt ∷ Map Int Span
   , site ∷ Maybe Span
   , changes ∷ Int
+  , merges ∷ Merges
   }
 
 emptyStore ∷ RowStore
@@ -62,6 +67,7 @@ emptyStore = RowStore
   , arrivedAt: Map.empty
   , site: Nothing
   , changes: 0
+  , merges: emptyMerges
   }
 
 -- The labels a tail lacks, each with its reason.
@@ -139,3 +145,10 @@ counted (RowStore store) = RowStore store { changes = store.changes + 1 }
 
 changesOf ∷ RowStore → Int
 changesOf (RowStore store) = store.changes
+
+mergesOf ∷ RowStore → Merges
+mergesOf (RowStore store) = store.merges
+
+onMerges ∷ (Merges → Merges) → RowStore → RowStore
+onMerges change (RowStore store) = RowStore store
+  { merges = change store.merges }

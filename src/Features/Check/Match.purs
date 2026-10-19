@@ -27,6 +27,7 @@ import Features.Check.RecordPattern (recordAgainst)
 import Features.Check.Require (expectType)
 import Features.Check.Tables (ownerType)
 import Features.Check.Seed (seeded)
+import Features.Check.RowMerge.Use (desugaredTypes)
 import Features.Check.Scheme
   ( Scheme
   , State
@@ -119,10 +120,10 @@ matchCtor
   → { ctor ∷ CtorInfo, fields ∷ Array Resolved.Pattern }
   → Either Diagnostic (Threaded Matched)
 matchCtor env scheme owner expected span id use = do
-  reached ← expectType env lacking expected
+  reached ← expectType env made.state expected
     (at scheme.value (ownerType use.ctor.owner owner))
     span
-  checked ← fieldsAgainst env reached fieldTypes use.fields
+  checked ← fieldsAgainst env reached made.value use.fields
   pure
     { value:
         { pattern: Checked.Pattern
@@ -137,6 +138,9 @@ matchCtor env scheme owner expected span id use = do
   where
   fieldTypes = map (at scheme.value) use.ctor.fields
   lacking = seeded env owner.sorts fieldTypes scheme.state
+  -- Seeded as written, then rows of two unknown tails desugared (R005
+  -- Tranche B plan §2.1), as a use's are.
+  made = desugaredTypes span lacking fieldTypes
   patternOf matched = matched.pattern
   localsOf matched = matched.locals
 

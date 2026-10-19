@@ -7,13 +7,15 @@ import { checked, rejected, spanAt } from './support.mjs';
 // missing-field text or an acceptance. Task 3 removed the `disjoint`
 // clause's placeholder (test/r005b-disjoint.test.mjs); Task 4 removed the
 // unification's (`rows with several tails are checked in Task 4`): the
-// same sources are now solved, refused for a reason, or reach a
-// placeholder where two unknown tails meet on one side (P1, reworded in
-// B2 for B3's predicates; docs/plans/2026-10-19-row-merge-implementation-
-// plan.md, Global Constraints).
+// same sources are now solved, refused for a reason, or, since B3, wait:
+// the two tails become a `Merge` predicate, which no case can decide when
+// nothing fixes how the argument splits between them, so it is still
+// waiting at the end of the body, placeholder P5 at the use (B4 makes it
+// Unresolved; docs/plans/2026-10-19-row-merge-implementation-plan.md,
+// Global Constraints).
 const main = ' fn main(): Int = 0;';
-const waits = 'R005B placeholder: rows with two unknown tails on one side '
-  + 'are solved in Task B3';
+const waits = 'R005B placeholder: merge predicates still waiting at the end '
+  + 'of a body are classified in Task B4';
 const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
 
 const placeholder = (source, message) => {
@@ -43,7 +45,7 @@ for (const [name, source] of [
   ['two calls of one generic', 'fn id(w: { ...r, ...s }): { ...r, ...s } = w; '
     + 'fn main(): Int = { let a = id({ x: 1 }); 0 };']
 ]) {
-  test(`two unknown tails on a side reach P1: ${name}`, () => {
+  test(`two unknown tails, a split nothing fixes: P5: ${name}`, () => {
     const found = placeholder(source, waits);
     assert.ok(found.span.start.offset < source.length);
   });
@@ -55,11 +57,11 @@ test('a field neither written nor in a tail is missing (Task 4)', () => {
   assert.equal(found.message, 'a is not a field of { ...r, ...s }');
 });
 
-test('the placeholder is at the unification that would wait', () => {
+test('the placeholder is at the use that made the predicate', () => {
   const source = 'fn f(w: { ...r, ...s }): Int = 0; '
     + 'fn main(): Int = f({ a: 1 });';
   const found = placeholder(source, waits);
-  assert.deepEqual(found.span, spanAt(source, '{ a: 1 }'));
+  assert.deepEqual(found.span, spanAt(source, 'f({ a: 1 })'));
 });
 
 test('a signature with several tails and no record use is accepted', () => {

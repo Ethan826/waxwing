@@ -8,6 +8,9 @@ module Features.Check.RowEntry
   , facts
   , changes
   , solverMetas
+  , finish
+  , merges
+  , lineages
   , module Features.Check.RowOutcome
   ) where
 
@@ -31,15 +34,19 @@ import Features.Check.Disjoint
 import Features.Check.Lacks (addLacks)
 import Features.Check.RecordTail (solvingWith)
 import Features.Check.Refused (Solving)
-import Features.Check.RowOutcome (RowOutcome(..), outcome)
+import Features.Check.RowMerge.Desugar (desugaredRow)
+import Features.Check.RowMerge.End (endOfBody)
+import Features.Check.RowMerge.Predicate (waiting)
+import Features.Check.RowOutcome (RowOutcome(..), Stop, outcome)
 import Features.Check.RowStore
   ( Because(..)
   , RowStore(..)
   , changesOf
+  , mergesOf
   , plain
   )
 import Features.Check.Subst (Flex, Subst(..), empty, storeOf)
-import Features.Check.Unify (unify)
+import Features.Check.Unify (reexamine, unify)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyParts (mismatch)
 
@@ -64,28 +71,56 @@ hypotheses lacks pairs = foldl paired (foldl lacked empty lacks) pairs
     subst
   paired subst (Tuple one other) = seedApart one other Implied subst
 
--- `left = right`, after each row's own disjointness is recorded where it
--- is made (the creation-site obligation, design §1.4), as the
--- prototype's driver does.
+-- `left = right`, as research/row-merge-qt qt-drive.mjs drives it: each
+-- row made (desugared, then its own disjointness recorded: the creation-
+-- site obligation, design §1.4), the predicates re-examined, then the
+-- rows unified (which re-examines again).
 equate ∷ Subst → Row → Row → Either Failure Subst
-equate subst left right = made subst left >>= flip made right
-  >>= unifying
-  where
-  unifying reached = unify reached (TRecord left) (TRecord right)
+equate subst left right = do
+  one ← made subst left
+  other ← made one.subst right
+  reached ← reexamine other.subst
+  unify reached (TRecord one.row) (TRecord other.row)
 
--- `left # right`, likewise after each row's own disjointness.
+-- `left # right`, likewise, then re-examined.
 separate ∷ Subst → Row → Row → Either Failure Subst
-separate subst left right = made subst left >>= flip made right
-  >>= disjoined
-  where
-  disjoined reached = requireDisjoint (solving left right) plain reached left
-    right
+separate subst left right = do
+  one ← made subst left
+  other ← made one.subst right
+  requireDisjoint (solving left right) plain other.subst one.row other.row
+    >>= reexamine
 
--- `tail lacks label`.
+-- `tail lacks label`, then re-examined.
 lacking ∷ Subst → Flex → String → Either Failure Subst
-lacking subst tail label = requireLack (solving one one) plain subst tail label
+lacking subst tail label =
+  requireLack (solving one one) plain subst tail label >>= reexamine
   where
   one = row [] [ tail ]
+
+-- The end of the body (Features.Check.RowMerge.End), classified.
+finish ∷ Subst → Either Stop RowOutcome
+finish subst = outcome (endOfBody subst)
+
+-- The waiting predicates, their rows as stored (not followed).
+merges
+  ∷ Subst → Array { id ∷ Int, left ∷ Entry, right ∷ Entry, result ∷ Entry }
+merges subst = map read (waiting subst)
+  where
+  read merge =
+    { id: merge.id
+    , left: entry merge.left
+    , right: entry merge.right
+    , result: entry merge.result
+    }
+  entry found = { labels: map fst found.fields, tails: found.tails }
+
+-- Each predicate's case-3 moves, in order (rules §5's lineage).
+lineages ∷ Subst → Array { id ∷ Int, moves ∷ Array (Array String) }
+lineages subst = map read (Map.toUnfoldable (mergesOf (storeOf subst)).moves)
+  where
+  read (Tuple id moves) = { id, moves }
+
+type Entry = { labels ∷ Array String, tails ∷ Array Flex }
 
 -- Each binding of a meta, one level: its labels and its tails as written
 -- in the binding (not followed), for a test to follow itself.
@@ -127,9 +162,18 @@ changes subst = changesOf (storeOf subst)
 solverMetas ∷ Subst → Int
 solverMetas (Subst found) = -1 - found.fresh
 
--- Each row's own disjointness, recorded where it is made.
-made ∷ Subst → Row → Either Failure Subst
-made subst written = wellFormed (solving written written) plain subst written
+-- A row as made: desugared (plan §2.1), then its own disjointness
+-- recorded.
+made ∷ Subst → Row → Either Failure { row ∷ Row, subst ∷ Subst }
+made subst written =
+  desugaredRow (solving written written) Nothing written subst >>= formed
+  where
+  formed desugared = withRow desugared.row <$> wellFormed
+    (solving written written)
+    plain
+    desugared.subst
+    desugared.row
+  withRow found reached = { row: found, subst: reached }
 
 solving ∷ Row → Row → Solving
 solving left right = solvingWith failed

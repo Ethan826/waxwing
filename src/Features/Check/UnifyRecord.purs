@@ -4,8 +4,9 @@ import Prelude
 import Prim hiding (Row)
 import Control.Monad.Rec.Class (Step(..), tailRecM)
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Foldable (foldM)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..), fst)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (RecordRow)
@@ -17,9 +18,10 @@ import Features.Check.RowResidue
   , residue
   , settledResidue
   )
+import Features.Check.RowMerge.Predicate (causeIn)
 import Features.Check.RowSettle (settle)
 import Features.Check.Subst (Flex(..), Subst, walk)
-import Features.Check.UnifyFailure (Failure)
+import Features.Check.UnifyFailure (Failure(..))
 import Features.Check.UnifyParts (mismatch)
 
 type Row = RecordRow (Ty Flex) Flex
@@ -43,9 +45,8 @@ unifyRecord
   → Row
   → Row
   → Either Failure Subst
-unifyRecord unifyField subst left right = tailRecM
-  (examine unifyField left right)
-  subst
+unifyRecord unifyField subst left right = attributed subst left right
+  (tailRecM (examine unifyField left right) subst)
 
 examine
   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
@@ -74,6 +75,28 @@ decide failed subst found
   | settledResidue found = Right subst
   | homeless found = failed subst
   | otherwise = settle failed subst found
+
+-- R10.1, extended to case 2 (plan §10 decision 5): a failure whose rows
+-- reach a meta a `Merge` case bound is that predicate's; a stop stays a
+-- stop, and one already attributed keeps its predicate.
+attributed
+  ∷ Subst → Row → Row → Either Failure Subst → Either Failure Subst
+attributed subst left right = either caused Right
+  where
+  caused failure
+    | open failure = Left
+        (maybe failure (byPredicate failure) (causeIn subst tails))
+    | otherwise = Left failure
+  tails = left.tails <> right.tails
+  byPredicate failure predicate = FromMerge { predicate, at: Nothing }
+    failure
+  open = case _ of
+    TooDeep → false
+    Unexpected _ → false
+    Placeholder _ → false
+    Exhausted _ → false
+    FromMerge _ _ → false
+    _ → true
 
 -- Whether unifying the shared fields bound one of the row's own tail
 -- metas, as in `{ a: { ...r }, ...r }`. The rows are then flattened again

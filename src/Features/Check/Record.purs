@@ -26,6 +26,7 @@ import Features.Check.Scheme
   , resolved
   , threadAll
   )
+import Features.Check.Merged (mergedAt)
 import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Unify (Failure(..), unify)
 
@@ -158,6 +159,10 @@ select env state record label = do
     -- field (Features.Check.Placeholder).
     Placeholder what → Left (placeholderAt (Checked.spanOf record) what)
     Unexpected what → Left (problemAt (Internal what) (Checked.spanOf record))
+    FromMerge cause inner → mergedAt env state.subst (Checked.spanOf record)
+      cause
+      inner
+    Exhausted what → Left (problemAt (Internal what) (Checked.spanOf record))
     _ → notSelected env state record label
 
 notSelected

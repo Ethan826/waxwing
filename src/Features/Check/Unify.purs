@@ -4,6 +4,7 @@ module Features.Check.Unify
   , module Features.Check.Compose
   , module Features.Check.UnifyFailure
   , unify
+  , reexamine
   , settleRows
   ) where
 
@@ -34,6 +35,7 @@ import Features.Check.Subst
   )
 import Features.Check.UnifyFailure (Failure(..))
 import Features.Check.Origin (linked)
+import Features.Check.RowMerge.Improve (improve)
 import Features.Check.UnifyParts
   ( handledMarks
   , mismatch
@@ -58,8 +60,18 @@ import Features.Check.UnifyRow
 -- fails with TooDeep instead of recursing further (ruling R7, fix round 2).
 -- Rows unify by scoped labels (Features.Check.UnifyRow, FX001); records'
 -- fields one level deeper, by label (Features.Check.UnifyRecord, R001).
+-- After a top-level unification the waiting `Merge` predicates are
+-- re-examined (R005 Tranche B plan §2.4), with the plain unifier, so a
+-- case's own unification never starts another rescan; with none waiting
+-- this costs nothing.
 unify ∷ Subst → Ty Flex → Ty Flex → Either Failure Subst
-unify = unifyAt 1
+unify subst left right = unifyAt 1 subst left right >>= reexamine
+
+-- The waiting predicates re-examined on their own (the test entry runs
+-- this after making a step's rows, as the research prototype's driver
+-- does).
+reexamine ∷ Subst → Either Failure Subst
+reexamine = improve (unifyAt 1)
 
 -- Retries the postponed row pairs, in order, until a pass decides none
 -- (a pair is decided when it unifies or fails; the first failure is the
