@@ -1696,6 +1696,22 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     approved here. B4 stays blocked until the 2g change is reviewed. No
     merge or push.
 
+18. **2g as amended accepted; B4 authorized** (user, 2026-10-19). No
+    blocking findings: fall-through keeps case 3 available and closed
+    case 2 keeps its wait; cancellation removes one matching rigid tail
+    by identity and unifies shared field types; the `r005b-sym-rigid`
+    witness change is justified (the old shape became solvable by the
+    intended improvement; the replacement keeps an unknown result); the
+    brute-force oracle and solution read-back give confidence beyond
+    agreement with the updated prototype; the diagnostic differences are
+    accounted for (earlier binding exposes a contradiction sooner; the
+    nested mismatch is within R10.1's limits). The reviewer reran 18
+    focused tests (the 2g and limitation tests and the order fixtures,
+    the counterexample's 720 permutations included), not verify or the
+    exhaustive corpora. O4 stays documented as a limitation callers
+    cannot repair with the available annotations; B5's hint wording
+    comes back for approval. No merge or push.
+
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
 and location checks": they model which constraint is reported and where,
