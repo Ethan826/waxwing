@@ -4,6 +4,14 @@ Status:
 Task 0 of docs/plans/2026-10-17-open-row-merge-plan.md, 2026-10-17;
 accepted by the user (2026-10-17) with the notes below
 
+**Partly superseded** (the user, 2026-10-19, adopting QT-strict + Sym +
+H): the sum rule (§5), homes and commits (§8), the drain and quiet
+equations (§9), U3 in the bind rule (§7), `x # x` binding `{}` (§10),
+§11a's forms for those rules and the `naming` heuristic (§14) no longer
+describe the design. Their replacements are argued in Task B0 of
+docs/plans/2026-10-19-row-merge-implementation-plan.md,
+which lists what is kept (§1).
+
 One section per solving rule of docs/plans/2026-10-16-open-row-merge-
 design.md (draft 3, §2, §3, §5.2, §6), written before any rule is
 implemented (the plan's evidence rule 3, with the user's correction of

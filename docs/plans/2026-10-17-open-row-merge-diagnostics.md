@@ -3,6 +3,13 @@
 Status:
 Approved 2026-10-17 with corrections; no implementation authorized
 
+**Partly superseded** (the user, 2026-10-19, adopting QT-strict + Sym +
+H): D4 and D6 keep their meaning (§0) and approved forms; the parts
+tied to the custom solver (homes and forced moves in §1, R10.2, R10.3,
+"quiet equations are never D4") are listed, with what replaces them,
+in docs/plans/2026-10-19-row-merge-implementation-plan.md §1;
+text changes await the user's review of that plan.
+
 The user authorized (2026-10-17) pinning the rendering of D4 and D6,
 the two diagnostics that draft 3 of the algorithm
 (docs/plans/2026-10-16-open-row-merge-design.md, §10 and the to-do list

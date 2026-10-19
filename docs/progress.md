@@ -6555,3 +6555,27 @@ Each removes QT-strict's 7 verdict-kind order differences on the
 shapes. Generality per annotation example: 5 redundant, 3 narrow the
 typings by instances nothing uses. Recommendation (for the user):
 QT-strict+Sym+H as the baseline candidate. Status: not approved.
+
+## R005 Tranche B: design adopted, implementation re-plan (2026-10-19)
+
+Branch `r005b-replan` from main 1d43341. Docs only; nothing of Waxwing
+built, verify not run.
+
+- The user's decisions (2026-10-19), recorded in
+  docs/plans/2026-10-18-row-merge-qualified-types.md ("The user's
+  decisions (2026-10-19)"): Sym approved; H approved as classification
+  only; QT-strict + Sym + H adopted as Tranche B's design. Boundaries:
+  Sym needs established disjointness and the closed-part test (closed
+  means no tail at all) and preserves field-type equations and rigid
+  tails; H runs only after solving and permitted defaulting end
+  Unresolved, may establish a Contradiction, and binds, defaults and
+  changes acceptance never; order independence is supported by
+  measurement, not proved. The annotation cost stays explicit, some
+  annotations narrowing typings (S1, S2, Q1). Evidence obligations are
+  implementation obligations, not a reason to add N5, Z or other rules.
+  Compiler implementation, fixture retirement and diagnostic text
+  changes await the review of the implementation plan.
+- Status lines updated: design draft 3 superseded as the algorithm; the
+  rules and diagnostics files partly superseded; the 2026-10-17 plan
+  superseded from Task 5 on; the alternatives assessment superseded;
+  BACKLOG R005.

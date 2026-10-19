@@ -3,6 +3,10 @@
 Status:
 Assessment for the user's decision; no direction change made
 
+Superseded by the user's adoption of QT-strict + Sym + H (2026-10-19;
+docs/plans/2026-10-18-row-merge-qualified-types.md). Its measurements
+remain the record of alternatives A, AH and Z3.
+
 Written 2026-10-18 on branch `row-merge-alternatives` from main de8dffc.
 No compiler source, test or script changed; nothing was built and
 verify was not run. The new prototypes and the Z3 cross-check are in
