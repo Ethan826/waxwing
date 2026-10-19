@@ -18,9 +18,9 @@ import Features.Check.RowStore
   ( Atom(..)
   , Because(..)
   , Equation
-  , boundOf
   , partnersOf
   )
+import Features.Check.RowStoreBound (boundOf)
 import Features.Check.Subst (Flex(..), Subst(..), storeOf)
 import Features.Check.UnifyFailure (Failure)
 
