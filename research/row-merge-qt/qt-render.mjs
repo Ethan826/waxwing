@@ -91,7 +91,7 @@ export function diagnostic(run) {
   return { form: 'solve', why: renamed(run.why), at: run.failedAt };
 }
 
-function* problems(n) {
+export function* problems(n) {
   const dir = `${here}../../test/fixtures/r005b/`;
   for (const f of readdirSync(dir).sort()) {
     const x = JSON.parse(readFileSync(dir + f, 'utf8'));

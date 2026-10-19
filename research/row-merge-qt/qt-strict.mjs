@@ -51,6 +51,7 @@ function oriented(st, p, a, b) {
   const u = freshMeta(st);
   const moved = { fields: L.fields, tails: [u] };
   wellFormed(st, moved);
+  st.trace?.moved?.(p, L.fields);
   unify(st, p.t, moved);
   p[a] = { fields: [], tails: L.tails };
   p.t = tailRow(u);
@@ -100,8 +101,10 @@ function pairwise(st) {
 }
 
 export function improveStrict(st) {
+  st.trace?.rescan?.();
   for (;;) {
     const before = st.version;
+    st.trace?.pass?.(st);
     for (const p of [...st.preds]) {
       if (!st.preds.includes(p)) continue;
       if (improveOne(st, p) === 'done') {

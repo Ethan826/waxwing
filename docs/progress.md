@@ -6801,3 +6801,49 @@ case-2 provenance row left for B3, where case 2 first exists).
 
 Nothing later is authorized; gates L1 and L2 are open (plan §10) and
 block B3.
+
+## R005 Tranche B: B2 review, gates L1 and L2 (2026-10-19)
+
+The user reviewed B2 (plan §10, decision 14: departures accepted for
+this branch; N5's overlap diagnostic confirmed) and authorized L1 and L2
+as research and docs work only. B3 stays blocked until both are
+reviewed. Nothing merged or pushed.
+
+- B2 correction: B2's test and note named `design-forced-bound` as
+  solved by a bound before B2; it was already waiting in every order
+  (Task 5's placeholder). Running every fixture's rows in every order
+  through the pre-B2 and B2 compilers (.build/evidence/
+  r005b-b2-fixture-rows-{before,after}.json) found two displaced
+  fixtures: `diag-14` (refused in 16 of 24 orders) and `diag-14-fix`
+  (accepted in 16 of 24). The test now uses them; red on the pre-B2
+  build (.build/evidence/r005b-b2-correction-red.log), green on B2.
+- Recovery obligations O1-O6 (plan §4.7): the two `granted2` refusals
+  (D1 before; the prototype refuses them in every order, 0 solutions),
+  `diag-14`, the two `granted2` acceptances with one lacking tail
+  (Unresolved under the adopted design, 1 and 2 solutions: an
+  annotation cost now in plan §5), `diag-14-fix`, and the labels-only
+  refusals. Each is to be shown individually in B4/B5.
+- T005, the harvest's 14 timing failures: all in `*.serial.test.mjs`
+  files, which the harvest ran under the parallel runner. Fixed in
+  scripts/differential-load.mjs (the harvest runs as verify does);
+  BACKLOG T005 lists the tests and conditions.
+- L1 (rules file §5, research/row-merge-qt/qt-termination.mjs and
+  qt-cyclic.mjs; .build/evidence/l1-all.log): an argument that a rescan
+  makes at most `P · (|Λ| + 1)` productive steps for any predicate graph
+  (a lineage's moved labels are pairwise disjoint because the bind rule
+  passes lacks to the image). Cyclic graphs are reachable (36,701 of
+  159,650 domain-B runs). The B0 height measure was wrong as written.
+  Checked with no violation on every family and a cyclic one; the
+  trace changed no verdict; the bind-rule half of the premise is
+  load-bearing (its mutant loops to the cap). Hooks added to
+  qt-strict.mjs and qt-facts.mjs only record; `node qt-adopted.mjs
+  controls`, `examples`, `three`, `report` and `node qt-given.mjs` still
+  exit 0.
+- L2 (docs/plans/2026-10-19-row-merge-locations.md, research/
+  row-merge-qt/qt-locate.mjs; .build/evidence/l2-locate.log): the
+  order-dependent refusals split into the same conflict (fixtures 18,
+  raw 55, shapes 91), the same conflict explained differently (3, 57,
+  4) and different conflicts (3, 646, 212); 548 shaped problems past the
+  oracle's caps. Proposed: refusals found while re-examining located at
+  the latest written participant; no change for the other two.
+  Prose-reviewed (humanizer).
