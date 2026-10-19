@@ -27,7 +27,8 @@ export const makeState = (hyp, opts = {}) => ({ hyp, bind: new Map(),
   excl: new Map(), pairs: new Set(), preds: [], fresh: 0, version: 0,
   mode: opts.mode ?? 'strict',
   home: opts.home ?? false, commit: opts.commit ?? false,
-  empty: opts.empty ?? false });
+  empty: opts.empty ?? false, zero: opts.zero ?? false,
+  plain: opts.plain ?? false });
 
 export const freshMeta = st => `m${1000 + st.fresh++}`;
 
@@ -46,6 +47,22 @@ export function flatten(st, row) {
 
 export const metasOf = row => row.tails.filter(isMeta);
 export const excludes = (st, m, a) => st.excl.get(m)?.has(a) ?? false;
+export const apart = (st, m, n) => st.pairs.has(key(m, n));
+
+// Whether meta m can never hold constant c: m excludes c, or holding
+// it would need a fact on rigids the givens do not entail. For a rigid
+// c: m lacks a label c is not known to lack, or m is apart from a rigid
+// c is not known to be apart from. For a label c: m is apart from a
+// rigid not known to lack c. Used by rules H and Z.
+// Option `plain` keeps only the first test (the defect that fixtures
+// order-A-* pin).
+export function cannotHold(st, m, c) {
+  if (excludes(st, m, c) || st.plain) return excludes(st, m, c);
+  const facts = [...(st.excl.get(m) ?? [])];
+  if (isLab(c)) return facts.some(a => !isLab(a) && !hypLacks(st, a, c));
+  return facts.some(a => (isLab(a) ? !hypLacks(st, c, a)
+    : a !== c && !hypApart(st, c, a)));
+}
 const hypLacks = (st, r, l) => (st.hyp.lacks[r] || []).includes(l);
 const hypApart = (st, r, s) => (st.hyp.apart || [])
   .some(p => key(p[0], p[1]) === key(r, s));

@@ -1,0 +1,159 @@
+{
+ "name": "order-A-apart",
+ "from": "node qt-domains.mjs A (domain A of research/open-row-merge)",
+ "repair": "exclusion through entailment (design section 11.1)",
+ "hyp": {
+  "lacks": {
+   "R": []
+  },
+  "apart": []
+ },
+ "steps": [
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m1",
+     "m2"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [
+     "a"
+    ],
+    "tails": []
+   }
+  },
+  {
+   "k": "dis",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "R"
+    ]
+   }
+  }
+ ],
+ "orders": [
+  [
+   0,
+   1,
+   2
+  ],
+  [
+   0,
+   2,
+   1
+  ],
+  [
+   1,
+   0,
+   2
+  ],
+  [
+   1,
+   2,
+   0
+  ],
+  [
+   2,
+   0,
+   1
+  ],
+  [
+   2,
+   1,
+   0
+  ]
+ ],
+ "dependent": "QS-EHZ-plain",
+ "independent": "QS-EHZ",
+ "outcomes": {
+  "QS-EHZ-plain": [
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   },
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   }
+  ],
+  "QS-EHZ": [
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   },
+   {
+    "v": "refuse",
+    "why": "not entailed: R \\ a",
+    "solution": null
+   }
+  ]
+ }
+}

@@ -6469,3 +6469,37 @@ built, verify not run, the compiler not run (width check only).
   commits, B2 predicates, B3 diagnostics, then Tasks 7-10 (about
   2.05-2.25M tokens, estimate). Decisions for the user in its §9.
   Tasks 5-10 and B0-B3 remain unauthorized.
+
+## R005 Tranche B: qualified-types evidence follow-up (2026-10-18)
+
+Branch `qt-evidence` from main 976d8c1 (the re-plan marked not
+approved, with open findings). Docs and research only; no compiler
+source, test, script or test fixture changed; nothing built, verify not
+run. The re-plan is not adopted; the 72 fixtures keep their classes.
+Results in docs/plans/2026-10-18-row-merge-qualified-types.md §11.
+
+- The four order-dependent raw problems: committed as
+  research/row-merge-qt/fixtures/order-*.json with every permutation
+  and outcome; cause: solving (a meta that can hold nothing of the
+  other side, seen as a repeated tail in one order and as lack and pair
+  facts in the other). Repair: rule Z (locally introduced, argued as an
+  improving substitution). The exhaustive domain A then showed 38 more,
+  from entailment (H's exclusion ignored facts the givens do not
+  entail); repaired by `cannotHold`, pinned by two more fixtures.
+  QS-EHZ: 0 order differences on raw, dense, shapes and domains A
+  (3,339,712 problems) and B, 0 S, L or H violations (measured, not
+  proved).
+- QT against QS reported side by side; QT and QS agree on the fixtures
+  and the 19 programs; Q1 and Q2 (shrunk from generated shapes) are D4
+  under QT and need one annotated lambda parameter, which fixes the
+  least solution QS infers.
+- The three scratch checks committed (research/row-merge-qt/
+  qt-checks.mjs) and rerun from the tree, with qt-domains.mjs.
+- Sources audited: PureScript pinned at cb3c4965 (Entailment.hs,
+  Environment.hs) and purescript-record at 8ebda016; Jones 1992
+  (revised), 1995, 2000, Chlipala 2010 and the Haskell 98 Report read
+  with sections; Gaster and Jones 1996, Jones 1994 and others not
+  accessed. Rules classified as published, adapted or locally
+  introduced (N5, H, Z).
+- Cost: spent and remaining separated per path (estimates). Open
+  findings in §11.7. Tasks 5-10 and B0-B3 remain unauthorized.

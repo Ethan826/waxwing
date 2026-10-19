@@ -1,0 +1,274 @@
+{
+ "name": "order-22-3634",
+ "from": "node qt-compare.mjs raw 22 4000, problem 3634 (0-based; each problem is followed by its five sampled orders)",
+ "repair": "rule Z (design section 11.1)",
+ "hyp": {
+  "lacks": {},
+  "apart": []
+ },
+ "steps": [
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m1",
+     "m2"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [
+     "b",
+     "a"
+    ],
+    "tails": [
+     "m3"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [
+     "c",
+     "a"
+    ],
+    "tails": [
+     "m2"
+    ]
+   },
+   "r": {
+    "fields": [
+     "c"
+    ],
+    "tails": [
+     "m3",
+     "m0"
+    ]
+   }
+  }
+ ],
+ "orders": [
+  [
+   0,
+   1,
+   2
+  ],
+  [
+   0,
+   2,
+   1
+  ],
+  [
+   1,
+   0,
+   2
+  ],
+  [
+   1,
+   2,
+   0
+  ],
+  [
+   2,
+   0,
+   1
+  ],
+  [
+   2,
+   1,
+   0
+  ]
+ ],
+ "dependent": "QS-EH",
+ "independent": "QS-EHZ",
+ "outcomes": {
+  "QS-EH": [
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   },
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   }
+  ],
+  "QS-EHZ": [
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [
+      "a",
+      "b"
+     ],
+     "m1": [
+      "a"
+     ],
+     "m2": [
+      "b"
+     ],
+     "m3": []
+    }
+   }
+  ]
+ }
+}

@@ -2,14 +2,12 @@
 
 Status:
 Proposed re-plan under ADR 014; no implementation authorized.
-Not approved (user review, 2026-10-18). Open findings before any
-decision: four order-dependent raw problems unexplained; QT (strict
-PureScript) annotation burden not yet reported against QS; three checks
-ran from uncommitted scratch scripts; most citations recalled, not
-re-read; disjoint `Union`, symbolic multi-tail dependencies and
-empty-row defaulting still need justification. No approval of QS,
-N1-N5, fixture moves, D6b or retirements. An evidence follow-up is
-authorized.
+Not approved (user review, 2026-10-18). No approval of QS, N1-N6,
+fixture moves, D6b or retirements. The evidence follow-up (§11,
+2026-10-18) resolved the four order-dependent problems (rule Z,
+locally introduced), reported QT against QS, committed the three
+scratch checks and audited the sources; the open findings that remain
+are listed in §11.7.
 
 Written 2026-10-18 on branch `design-principles` from 1b45917 (ADR 014
 committed). Documents and research scripts only: no compiler source,
@@ -62,6 +60,12 @@ and its cost measured.
   modules plus parts of six others, §5). Tasks 1-3 and most of Task 4
   (cancellation, the one-tail rules, the three-way result, the stop
   classification, the oracle tests) survive.
+- **Evidence follow-up** (§11): the order-dependent problems traced to
+  solving and entailment and repaired (rule Z and an entailment-aware
+  exclusion test, both locally introduced, each pinned by fixtures
+  over every permutation); QS-EHZ then shows 0 order differences on
+  every campaign and on the exhaustive domains A and B (measured, not
+  proved); QT against QS side by side; sources audited.
 - **Flagged, not standard** (§3.6): Merge as a *disjoint* union (a
   published combination, Ur/Web's `++` under `~`, stated as a
   three-place predicate); two one-line rules, E (an empty union empties
@@ -70,10 +74,11 @@ and its cost measured.
 
 ## 1. Components and their sources
 
-Citations as published; bibliographic details are given as known to
-the author of this document, and only the PureScript sources were
-fetched and read for it (2026-10-18). Nothing below copies code
-(docs/provenance.md: conceptual influence only).
+Citations as first written; §11.5 audits them (the sources actually
+read, with sections and a pinned PureScript revision, and each rule
+classified as published, adapted or locally introduced) and governs
+where they differ. Nothing below copies code (docs/provenance.md:
+conceptual influence only).
 
 | Component | Source | What is taken | What Waxwing changes |
 |---|---|---|---|
@@ -292,6 +297,7 @@ QS-EH for N4.
 | N2 | E: a `Merge` whose other side is `{}` binds every part to `{}` | an improvement in [J95]'s sense (the solutions are unchanged), not a dependency; alternative A's "metas against nothing" | leave it waiting; the end default satisfies it | raw: 130 more accepted runs (13,763 to 13,893), order differences 7 to 5; shapes: 4 more; fixtures: none | approve (one-line argument: a union is empty only if its parts are) |
 | N3 | H: a constant of `O` that every part already excludes is a Contradiction | a consistency check (an unsatisfiable predicate set), not improvement; alternative A's step 4; Task 4's homeless check | leave it waiting; Unresolved at the end | changes only the class, never acceptance: raw 183 more contradictions (53,222 to 53,405), shapes 66; order differences 5 to 4 (raw), 14 to 0 (shapes); keeps Example 14 (`diag-14`) a Contradiction with its approved D6 | approve |
 | N4 | C: a constant with exactly one non-excluding part is committed there | none (Task 4's commit, invented) | leave it waiting | raw: 307 more accepted runs (13,893 to 14,200), dense 4,095; shapes none; fixtures: `diag-14-fix` | not proposed |
+| N6 | Z: a meta of one side that lacks every constant and is apart from every meta of the other side is `{}` (subsumes N2) | locally introduced (§11.1, §11.5); an improving substitution in [J95] §4's sense | leave it waiting | needed for order independence: with it 0 order differences on every campaign and domain (§11.2); raw 217 more accepted runs than QS-EH | added by the follow-up; for approval |
 | N5 | `x # x` binds `x := {}` | a stated improvement, Task 3 (rules §10) | leave the pair; the end default satisfies it | not measured separately (Task 3 behaviour) | keep (already merged and approved) |
 
 ### 3.7 Removal, rest, `lacks` and precedence
@@ -411,9 +417,9 @@ AH, the classes are equal except 12 (AH accepts it by its commit) and
 
 | Program | Unresolved where | Annotation that resolves it | Checked |
 |---|---|---|---|
-| 11 `both(merge, merge)` | D4 at the first `merge` | `both(fn(p: {}, q: { x: Int }) => merge(p, q), merge)` | prototype: accepted in both orders (scratch script over the fixture's rows plus `m0 = {}`, `m1 = { x }`) |
-| 12 `apply(merge, noX)` | D4 at `merge` | `apply(fn(p: { x: Int }, q: { y: Int }) => merge(p, q), noX)` | prototype: accepted |
-| review F2's family, `k(merge, …, merge)` with a shared parameter: 186 of 392 | D4 at the first `merge` | one annotated parameter: `fn(p: P, q) => merge(p, q)` for the first callback, `P` the shared parameter's row | prototype: all 186 accepted with only the shared parameter fixed (scratch script, not committed) |
+| 11 `both(merge, merge)` | D4 at the first `merge` | `both(fn(p: {}, q: { x: Int }) => merge(p, q), merge)` | `node qt-checks.mjs annotations` (§11.4): accepted in both orders |
+| 12 `apply(merge, noX)` | D4 at `merge` | `apply(fn(p: { x: Int }, q: { y: Int }) => merge(p, q), noX)` | `node qt-checks.mjs annotations`: accepted |
+| review F2's family, `k(merge, …, merge)` with a shared parameter: 186 of 392 | D4 at the first `merge` | one annotated parameter: `fn(p: P, q) => merge(p, q)` for the first callback, `P` the shared parameter's row | `node qt-checks.mjs f2`: all 186 accepted with only the shared parameter fixed |
 
 Each annotation is a lambda parameter annotation, which the language
 permits (docs/language.md, "Functions"; the approved R9 hint `pass a
@@ -429,8 +435,10 @@ F2: 186 of 392 (as A and AH). On generated problems (§4.3): raw 362 of
 
 ### 4.3 Measured over generated problems
 
-Five constraint orders per raw or dense problem, two per program
-shape; every run judged by research/open-row-merge's brute-force oracle
+Superseded by §11.2 for QS-EH and QS-EHZ: the follow-up extended H's
+exclusion test (§11.1), which changed QS-EH's refusals; the other rows
+are unchanged. Five constraint orders per raw or dense problem, two per
+program shape; every run judged by research/open-row-merge's brute-force oracle
 (S: an accepted assignment is a solution; L: it is the least; H: a
 refusal has no solution). Totals over raw seeds 21 (2,000 problems)
 and 22-24 (4,000 each), dense the same seeds, program shapes seeds 1
@@ -641,15 +649,16 @@ estimate by about 1.5×.
 |---|---|---|---|
 | B0 gate | the user's decisions (§9); rules file rewritten for this design (§3.10: the pairwise rules, E, H, the end default; the bound, sum-rule and commit sections marked superseded); claims ledger rows re-backed; fixture updates (§7.2) checked against the prototype; the zero-solution fixture's source written | Opus | 150-200k, 3-4 h |
 | B1 removal | §5's migration steps 1-2: splits, then the sum rule, bounds, homes and commits removed; classifier table; domains re-recorded; differential | Opus | 200-250k, 4-5 h |
-| B2 predicates | waiting predicates in the substitution (identity, site, owner); full-rescan re-examination after each top-level unification and in each settle round (joint fixpoint); pairwise improvement; E and H if approved; the end default and `Unresolved`; rollback; nested field predicates; placeholder `unresolved row predicates are reported in Task B3` | Opus | 300-350k, 5-6 h |
+| B2 predicates | waiting predicates in the substitution (identity, site, owner); full-rescan re-examination after each top-level unification and in each settle round (joint fixpoint); pairwise improvement; H and Z if approved; the end default and `Unresolved`; rollback; nested field predicates; placeholder `unresolved row predicates are reported in Task B3` | Opus | 300-350k, 5-6 h |
 | B3 diagnostics | D4 and D6 from `Unresolved` and `Contradiction` (R1-R9, R11; R10.1 for solved predicates), metadata (creation sites, lambda parameter names), D6b if approved | Opus | 300-350k, 5-6 h |
 | 7 literal, removal, rest | as planned (the merge literal makes rows of several tails; removal's fresh remainder is an ordinary equation) | Opus | 350k, 5-6 h |
 | 8 lowering | as planned | Sonnet | 250k, 4 h |
 | 9 generator, oracle level 2 | as planned, with this prototype as the second reference | Opus | 300k, 4-5 h |
 | 10 close-out | ADR 013 Tranche B section (sources named per ADR 014), language.md, examples, progress | Sonnet | 200k, 3 h |
 
-Total about 2.05-2.25M tokens (**estimate**), against 1.95M remaining
-for the current plan: the paths cost about the same; the difference is
+Total about 2.05-2.25M tokens (**estimate**; §11.6 separates spent from
+remaining work for every path), against 1.95M remaining for the current
+plan: the paths cost about the same; the difference is
 what is maintained (no invented solver) and what users annotate (§4).
 Tasks B1-B3 replace Tasks 5 and 6.
 
@@ -686,7 +695,8 @@ Tasks B1-B3 replace Tasks 5 and 6.
 
 ### 7.2 What happens to the fixtures and research
 
-- **test/fixtures/r005b (72 fixtures).** 68 keep their `result`, text
+- **test/fixtures/r005b (72 fixtures).** Proposed, not applied: the
+  fixtures keep their classes (§11). 68 keep their `result`, text
   and stages (69 with H). Up to four move, each a decision for the user:
   `design-forced-bound` and `diag-14-fix` Solved → Unresolved (new D4
   texts at the first `merge` and at `merge`, with the annotated programs
@@ -768,9 +778,10 @@ ADR 013, [PS], [J00], [H98], design draft 3 §6, §9.
 2. **QS over QT** (§3.2): the forward dependency applied symbolically,
    keeping Task 1's representation (QT, PureScript's strict form, loses
    1,322 raw acceptances against 492).
-3. **N1-N5** (§3.6): approve N1 (Merge as disjoint union, the
-   definition); N2 (E) and N3 (H) recommended; N4 (C, the commit) not
-   proposed; N5 kept as merged.
+3. **N1-N6** (§3.6): approve N1 (Merge as disjoint union, the
+   definition); N3 (H) and N6 (Z, which subsumes N2's E) needed for the
+   measured class and order results; N4 (C, the commit) not proposed;
+   N5 kept as merged.
 4. **Fixture classes** (§7.2): `design-forced-bound` and `diag-14-fix`
    to Unresolved with new D4 renderings; `odd-cycle` to Contradiction,
    with `zero (new)` taking its bucket; a fixture for program 16.
@@ -792,13 +803,379 @@ ADR 013, [PS], [J00], [H98], design draft 3 §6, §9.
   generators. Its order differences are counted, not analysed.
 - The generators are synthetic; no corpus of real Waxwing programs
   using merge exists.
-- Bibliographic details other than PureScript's were not re-read for
-  this document (§1). The PureScript quotations are from the compiler's
-  master branch and Pursuit as fetched on 2026-10-18.
-- The scratch checks cited (the annotations of §4.2 on programs 11, 12
-  and F2; the 25 stage-4 fixtures never waiting) were run from scripts
-  not committed; their inputs are the committed fixtures and generator.
+- Sources: see §11.5 for what was read (with sections and revisions)
+  and what could not be accessed.
+- The checks first run from scratch scripts (the annotations of §4.2,
+  F2, the 25 stage-4 fixtures never waiting) are committed and were
+  rerun from the tree (§11.4).
 - Estimates (§5, §7) are planning estimates.
+
+## 11. Evidence follow-up (2026-10-18)
+
+Done on branch `qt-evidence` from main 976d8c1, at the user's request
+after the review that marked this document not approved. Documents and
+research only (research/row-merge-qt/); no compiler source, test,
+script or fixture under test/ changed; nothing built, verify not run.
+The re-plan is not adopted: QT is the baseline for comparison, and
+nothing below approves QS, N1-N6, a fixture move, D6b or a retirement.
+The 72 fixtures keep their classes, and every comparison below counts
+a fixture the current design decides and a variant does not as a loss.
+
+### 11.1 The order-dependent problems
+
+The four problems of §4.3 whose QS-EH verdict depended on the order,
+each committed as research/row-merge-qt/fixtures/order-*.json with its
+rows, *every* permutation of its steps (not only the campaign's five
+sampled orders), and the outcome (verdict, failure reason, solution) of
+each permutation under QS-EH and QS-EHZ. Rows after desugaring, in the
+fixture's step order:
+
+| Fixture (raw seed, problem) | Steps | QS-EH over all orders | QS-EHZ | Cause |
+|---|---|---|---|---|
+| order-22-581 | `m2 = m3 ⊎ m0`; `{ a } ⊎ m0 = m0 ⊎ m2` | accept, D4 | accept in both; `m2 = m3 = { a }`, `m0 = {}` | first equation first: `m2 := m3 ⊎ m0`, the second then holds `m0` twice and N5 forces `m0 := {}`. Second first: `m2 := { a }`, the pair `m0 # m2` gives `m0 ∉ a`, and `m3 ⊎ m0 = { a }` waits although `m0` can hold nothing of `{ a }` |
+| order-22-3634 | `m1 ⊎ m2 = m0`; `m0 = { a, b } ⊎ m3`; `{ c, a } ⊎ m2 = { c } ⊎ m3 ⊎ m0` | D4 in 3 of 6, accept in 3 | accept in all 6; `m0 = { a, b }`, `m1 = { a }`, `m2 = { b }`, `m3 = {}` | `m0` bound to `{ a, b, ...m3 }` first: `m3` appears twice and N5 empties it. `m0` bound to `m1 ⊎ m2` first: the pairs `m3 # m1`, `m3 # m2` arrive instead, and `m1 ⊎ m2 = { a, b } ⊎ m3` waits with `m3` apart from every part |
+| order-23-3089 | `m3 = { a, b } ⊎ m0 ⊎ m1`; `m1 ⊎ m3 = { c, a } ⊎ m1 ⊎ m2` | accept, D4 | accept in both | first equation first: `m1` twice, emptied by N5. Second first: `m3 := { c, a, ...m2 }`, so `m1 ∉ c, a` and `m1 # m2`, and `{ c } ⊎ m2 = { b } ⊎ m0 ⊎ m1` waits |
+| order-24-3802 | `{ c } ⊎ m1 ⊎ m3 = { b } ⊎ m3 ⊎ m2`; `{ b } ⊎ m2 = { b } ⊎ m3 ⊎ m0` | D4, accept | accept in both | first equation first: the shared remainder gives `m2 := { c, ...z }`, then `m3 ∉ c`, `m3 # z`, and `{ c } ⊎ z = m3 ⊎ m0` waits. Second first: `m2 := m3 ⊎ m0`, and `m3` cancels |
+
+**Where the difference comes from: solving**, in all four. Not
+entailment: no problem has a rigid variable (hypotheses empty). Not
+defaulting: the end default only checks what is left, and in each D4
+order what is left is a predicate in which one meta could hold nothing
+of the other side but no rule said so. In each, the same information
+reaches the solver either as a repeated tail (where N5, Task 3's `x # x`
+forces `{}`, applies) or as lack and pair facts (where no rule of QS-EH
+applies), depending on which equation binds a shared meta first.
+
+**Repair, rule Z** (a locally introduced rule, §11.5; option `zero`,
+research/row-merge-qt/qt-sym.mjs `zeroMeta`). *In a waiting predicate,
+a meta `x` of one side that lacks every constant of the other side and
+is apart from every meta of the other side is bound to `{}`.*
+
+Argument (a rewrite that preserves solutions). Let `L = R` be the
+predicate (both sides well formed, so each atom occurs at most once per
+side), and `σ` any solution of the whole problem. Every atom of `σ(x)`
+lies in `σ(L) = σ(R)`, so it is a constant of `R` or lies in `σ(m)` for
+a meta `m` of `R`. The lack facts hold in `σ` (a label `x` lacks is not
+in `σ(x)`; a rigid `x` excludes is not in `σ(x)`), and so do the pair
+facts (`σ(x)` and `σ(m)` share nothing). So `σ(x) = {}` in every
+solution, and binding `x := {}` leaves the set of solutions unchanged:
+an improving substitution in exactly Jones's sense ([J95] §4: `S`
+improves `P` when the satisfiable instances of `P` and `SP` are equal,
+with no new variables; [J00] §6). E (§3.6, N2) is the case of an empty
+other side, so Z subsumes it. Termination: each application binds a
+meta, and the metas are finite (rules §13's measure is unchanged: Z
+makes no fresh meta). Sensitivity (scratch copy, raw seed 21, 1,000
+problems, final code): Z without its apart test gives `H-violated` 14;
+without its lack test `H-violated` 14 and `L-violated` 115;
+`cannotHold` answering yes for every rigid gives `H-violated` 17 under
+QS-EH.
+
+**Two more, found by the exhaustive domains, from entailment.** With Z
+in place, `node qt-domains.mjs A` (every problem of domain A, which has
+a rigid `R`, in every order) still found 38 problems with differing
+verdicts, all of two kinds, now committed as fixtures/order-A-lacks
+and order-A-apart (every permutation, with their outcomes):
+
+| Fixture | Steps (hypothesis: `R` lacks nothing) | Without the repair | With it |
+|---|---|---|---|
+| order-A-lacks | `m0 = m1 ⊎ m2`; `m0 = R`; `m0 ∉ a` | D4 in 3 of 6 orders, refuse in 3 | refuse (`R \ a` not entailed) in all 6 |
+| order-A-apart | `m0 = m1 ⊎ m2`; `m0 = { a }`; `m0 # R` | D4 in 3, refuse in 3 | refuse in all 6 |
+
+Cause: **entailment**. When `m0` is bound to `R` (or `{ a }`) first, the
+fact `m0 ∉ a` (or `m0 # R`) becomes a wanted fact on the rigid, `R \ a`,
+which the givens do not entail: refused. When `m0` is bound to
+`m1 ⊎ m2` first, the fact passes to both parts, and the predicate
+`m1 ⊎ m2 = R` (or `{ a }`) waits: H's test asked only whether a part
+excludes the constant itself, not whether holding it would need a fact
+on rigids the givens do not entail. Repair: H and Z test `cannotHold`
+(qt-facts.mjs): a part cannot hold a rigid `c` if it lacks a label `c`
+is not known to lack or is apart from a rigid `c` is not known to be
+apart from, and cannot hold a label `l` if it is apart from a rigid not
+known to lack `l`. Argument: in any solution, a part holding `c` would
+place `c` beside that label or rigid in one row, which is well formed
+only under the missing hypothesis (rules §10, decomposition), so no
+solution places it there; H's and Z's arguments then apply unchanged.
+This is the entailment check Task 4's Homes already made (`admits`). The
+fixtures assert the repaired configuration (`QS-EHZ`) gives one outcome
+(verdict, reason, solution) in every order and that the configuration
+without the repair (option `plain`) still differs.
+
+**Order independence.** The requirement is the same acceptance and the
+same inferred types in every order. For accepted runs the inferred type
+of every program meta is the least solution (the L check, 0 violations
+everywhere), so equal acceptance implies equal types. With Z:
+
+- the six fixtures: one verdict and one solution in every permutation
+  (`node qt-checks.mjs order`, which also asserts that the
+  configuration without the repair still differs on each, so each
+  fixture keeps exhibiting the defect it pins; in scratch copies of
+  the final code, disabling Z gives 12 FAIL lines and removing the
+  entailment test from `cannotHold` gives 4 (the two order-A
+  fixtures), each with exit 1);
+- the campaigns (§11.2): 0 order differences on raw, dense, shapes;
+- exhaustive domains (`node qt-domains.mjs B`, `… A`): every problem
+  of research/open-row-merge's domains in every order, §11.2.
+
+This is measured, not proved. No argument here shows that the rule set
+is confluent (every order reaching the same verdict); the problem the
+solver approximates is coNP-hard in general (design draft 3 §2.7), so
+an incomplete solver's order independence rests on its rule set
+covering every way the same fact can arrive, which the four cases show
+is easy to miss. Open finding 1 (§11.7).
+
+**Diagnostics, tracked separately.** In the four fixtures QS-EHZ accepts
+in every order, so no diagnostic is involved. In the campaigns,
+`whyDiff` counts problems refused in every order for different reasons
+(the prototype's failure message with metas renamed, a proxy: the
+prototype renders no text): raw 4,871 (QS-EHZ), 4,785 (QT), 5,298 (the
+current design); dense 1,789, 1,496, 3,529; shapes 2,460, 2,336, 4,159.
+Every design reports the first failure met in checking order, so which
+contradiction is reported depends on the order; the approved location
+rules (R7, rule 1) already say so. This is not a verdict or type
+difference.
+
+### 11.2 Campaigns rerun
+
+Same commands as §4.3 (`node qt-compare.mjs …`), on the committed
+tree; totals over the same seeds. No S, L or H violation for any
+variant on any run (the logs contain no `violated` key).
+
+| Generator | Variant | Accept | Refuse | Unresolved | accept→U | refuse→U | Order differences |
+|---|---|---|---|---|---|---|---|
+| raw (70,000 runs) | C | 14,255 | 53,525 | 2,220 | — | — | 0 |
+| raw | QT | 12,933 | 53,172 | 3,895 | 1,322 | 353 | 3 |
+| raw | QS | 13,763 | 53,192 | 3,045 | 492 | 333 | 7 |
+| raw | QS-EH | 13,893 | 53,470 | 2,637 | 362 | 55 | 4 |
+| raw | QS-EHZ | 14,110 | 53,490 | 2,400 | 145 | 35 | **0** |
+| dense (70,000) | C | 19,895 | 22,540 | 27,565 | — | — | 0 |
+| dense | QT | 11,300 | 18,505 | 40,195 | 8,730 | 4,115 | 0 |
+| dense | QS-EH | 11,305 | 19,030 | 39,665 | 8,725 | 3,590 | 0 |
+| dense | QS-EHZ | 14,465 | 20,225 | 35,310 | 5,565 | 2,395 | 0 |
+| shapes (24,000) | C | 10,546 | 12,896 | 558 | — | — | 0 |
+| shapes | QT | 10,524 | 12,896 | 580 | 22 | 0 | 0 |
+| shapes | QS-EH | 10,546 | 12,872 | 582 | 0 | 24 | 0 |
+| shapes | QS-EHZ | 10,546 | 12,872 | 582 | 0 | 24 | 0 |
+| F2 (392) | C | 186 | 0 | 206 | — | — | — |
+| F2 | QT, QS, QS-EH, QS-EHZ | 0 | 0 | 392 | 186 | 0 | — |
+
+On dense problems QS-EHZ also accepts 135 runs the current design
+leaves unresolved and refutes 80 (as QS-EH). The 72 fixtures and the 19
+programs: QS-EHZ gives QS-EH's classes everywhere (`node qt-fixtures.mjs
+fixtures`, `… programs`, 0 violations).
+
+Exhaustive domains (`node qt-domains.mjs B 10` and `… A 10`: every
+problem of research/open-row-merge's domains, every order, judged by
+the brute-force oracle; exit 0 each):
+
+| Domain (problems) | Variant | Accept | Refuse | Unresolved | Order differences |
+|---|---|---|---|---|---|
+| A (3,339,712; 115 s) | QT | 828,816 | 18,354,856 | 121,620 | 0 |
+| A | QS-EH | 841,557 | 18,367,822 | 95,913 | 207 |
+| A | QS-EHZ | 863,588 | 18,370,812 | 70,892 | **0** |
+| B (79,825; 5 s) | QT | 180,937 | 245,280 | 27,333 | 29 |
+| B | QS-EH | 188,173 | 249,716 | 15,661 | 27 |
+| B | QS-EHZ | 192,266 | 249,734 | 11,550 | **0** |
+
+No S, L or H violation in either domain for any variant. An order
+difference here counts a problem whose verdict, or accepted solution,
+differs between orders. For comparison, the current design's prototype
+accepts 870,440 runs of domain A and 193,376 of domain B (research/
+open-row-merge README, Task 0), with 0 order differences.
+
+### 11.3 QT against QS
+
+QT is PureScript's formulation: a row holds at most one meta tail, and
+`{ ...?r, ...?s }` is a fresh opaque `?t` with `Merge ?r ?s ?t`, solved
+by the forward, backward and label-moving rules and pairwise
+dependencies (research/row-merge-qt/qt-preds.mjs; no E, H or Z, since
+PureScript has none).
+
+| Family | QT | QS | QS-EHZ | Current design |
+|---|---|---|---|---|
+| 72 fixtures: classes that differ from the fixture's | 4: `design-forced-bound`, `diag-14-fix` S→U; `diag-14` C→U; `odd-cycle` U→C | the same 4 | 3: as QT but `diag-14` stays C | 0 |
+| 19 programs (the assessment's 30 variants plus program 16) | 11, 12 need an annotation; 16, `odd-cycle` proved | the same | the same | — |
+| F2, 186 accepted by the current design | 186 need one annotation | 186 | 186 | 0 |
+| raw, runs accepted by C and not by the variant | 1,322 of 14,255 (9.3 %) | 492 | 145 (1.0 %) | — |
+| dense | 8,730 of 19,895 | 8,730 | 5,565 | — |
+| program shapes | 22 of 10,546 (all with `SHARE=1`) | 4 | 0 | — |
+| order differences (raw, dense, shapes; problems) | 3, 0, 0 | 7, 0, 14 | 0, 0, 0 | 0 |
+| exhaustive domains A, B: order differences (problems) | 0, 29 | — | 0, 0 | 0, 0 (Task 0) |
+
+**Where they differ: no published example.** On the 72 fixtures and the
+19 programs QT and QS give the same classes. Every difference is in
+generated problems. Shrinking the program shapes QT rejects and QS
+accepts gives two kinds, written as Waxwing programs
+(research/row-merge-qt/qt-examples.mjs; `node qt-checks.mjs
+annotations` checks each without and with its annotation, in every
+order):
+
+```wxw
+fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s = { ...a, ...b };
+
+// Q1: the second result is the first plus b and c
+fn relate(f: (p, s) -> { ...u },
+    g: (q, s) -> { b: Int, c: Int, ...u }): Int = 0;
+fn main(): Int = relate(merge, merge);
+
+// Q2: the outer merge's right part is an inner merge sharing p
+fn nest(f: (p, w) -> { a: Int, b: Int }, g: (p, q) -> w): Int = 0;
+fn main(): Int = nest(merge, merge);
+```
+
+Q1: QS cancels the shared `s` from both results (`m2 = { b, c } ⊎ m0`),
+which QT cannot see through the first merge's opaque union. Q2: QS
+decomposes `p # (p ⊎ q)` into `p # p`, so `p = {}`; QT never decomposes
+a pair through an opaque union. Both are D4 under QT in every order and
+accepted by QS-EHZ in every order. The smallest legal annotation for
+QT, one lambda parameter, is `relate(fn(p: {}, s) => merge(p, s),
+merge)` and `nest(fn(p: {}, w) => merge(p, w), merge)`.
+
+**Generality.** In both, and in programs 11 and 12 and the F2 family,
+the annotation fixes exactly the least solution, which QS infers
+(checked: the annotated QT solution equals the oracle's least solution
+and QS-EHZ's). Waxwing never generalizes a use (lambdas are monomorphic
+and `let` is not generalized, §3.5), so a use has one instantiation
+either way: the annotated program is the same program as QS's, and the
+enclosing function's signature does not change. No polymorphism is
+lost in these examples. An annotation would lose generality only where
+the least solution is not what the program means elsewhere (the
+annotated part also flowing to another use), which these examples do
+not have, or inside a generic function where the annotation must name
+the enclosing signature's row variable (the language permits it,
+docs/language.md "Names"); that case is argued, not prototyped. Q1 and
+Q2 are legal but contrived (found by shrinking, not taken from
+published examples).
+
+### 11.4 Reproducibility: the three scratch checks, committed
+
+research/row-merge-qt/qt-checks.mjs, run from the committed tree on
+2026-10-18 (exit 0 each):
+
+| Command | Result |
+|---|---|
+| `node qt-checks.mjs annotations` | program 11 with `fn(p: {}, q: { x: Int }) => merge(p, q)` accepted in both orders; program 12 with `fn(p: { x: Int }, q: { y: Int }) => merge(p, q)` accepted; Q1 and Q2: QT D4 in every order, QS-EHZ accept in every order, QT with the annotation accept in every order, its solution the least |
+| `node qt-checks.mjs f2` | `F2: 186 with a least solution; accepted plain 0; with the shared parameter annotated, QS-EHZ + QT 372` (all 186 under both) |
+| `node qt-checks.mjs stage4` | `stage 4: 25 fixtures, waiting in 0 (none)` (QS-EH and QS-EHZ, every permutation of every stage-4 fixture's rows) |
+| `node qt-checks.mjs order` | the four fixtures: recorded outcomes reproduce; QS-EHZ one verdict and one solution in every order; QS-EH still order-dependent |
+
+### 11.5 Source audit
+
+**Read for this follow-up** (2026-10-18), with what was checked:
+
+| Source | Revision or copy | Sections read |
+|---|---|---|
+| PureScript compiler [PS] | purescript/purescript commit `cb3c4965c8468d26c9b14cf0319db6dbd06ee4ff` (master, 2026-06-07; latest release tag v0.15.16, `4c66c05a…`): src/Language/PureScript/TypeChecker/Entailment.hs and src/Language/PureScript/Environment.hs | Entailment.hs `solveUnion`/`unionRows` (lines 618-671), `solveNub`/`nubRows` (698-709), `solveLacks`/`rowLacks` (711-730), the unsolved-constraint branch `unique` (363-371: `Deferred`, `Unsolved` when generalizing, else `NoInstanceFound`); Environment.hs `primRowClasses` (515-528: `Union` with `FunctionalDependency [0, 1] [2]`, `[1, 2] [0]`, `[2, 0] [1]`) |
+| PureScript `Record` library | purescript/purescript-record commit `8ebda0160b96cbc993e87c6751177473fc68e247`, src/Record.purs | `disjointUnion :: Union r1 r2 r3 => Nub r3 r3 => Record r1 -> Record r2 -> Record r3` (lines 198-207) |
+| Jones, A theory of qualified types [J92] | the revised version on the author's site (rev-qual-types.pdf, 21 pp.; "an earlier version … ESOP, 1992, LNCS 582") | §1 Predicates (entailment `⊩`: monotonicity, transitivity, closure under substitution); §1.2 extensible records (`r lacks l`) |
+| Jones, Simplifying and improving qualified types [J95] | FPCA '95 version on the author's site (fpca95.pdf) | §4 Improvement, §4.1 Improving records (the definition: `S` improves `P` iff `⌊P⌋ = ⌊SP⌋` and `S` introduces only new variables) |
+| Jones, Type classes with functional dependencies [J00] | ESOP 2000 version on the author's site (fundeps-esop2000.pdf) | §6 (improvement as the mechanism), §6.2 Improving inferred types (two predicates agreeing on a dependency's domain must agree on its range; unification failure is a type error; iterate), §6.3 Detecting ambiguity |
+| Chlipala, Ur [C10] | PLDI 2010 paper on the author's site (UrPLDI10.pdf) | §2.1 (concatenation `++` is invalid without its disjointness constraint); §4 (constraints solved when generated, otherwise kept in a global set and revisited); §4.1 Proving Disjointness (decomposition into atomic facts, a database of known facts, deferral when not yet provable); §4.2 (reverse-engineering, "if c is empty, then we can set α to be empty, too", for `map`); §4.3 Unifying Rows |
+| Haskell 98 Report [H98] | haskell.org/onlinereport, decls.html | §4.3.4 Ambiguous Types, and Defaults for Overloaded Numeric Operations; §4.6 (kind defaulting to `*`) |
+
+**Not accessed** (cited before from memory; nothing below rests on them
+alone): Gaster and Jones 1996 [GJ96] (the report's link returned an
+HTML page, not the PDF); Jones 1994 [J94] (a book, not online);
+Rémy [R94]; Harper and Pierce [HP91]; Leijen [L05]; Morris and McKinna
+[MM19] (HTTP 403); Sulzmann et al. [SDPS07]; Wand [W91]. Where §1 cited
+[GJ96] for lacks, [J92] §1.2 is the source read; where it cited [J94]
+for entailment and context reduction, [J92] §1 is.
+
+**Each retained rule of QS-EHZ, classified:**
+
+| Rule | Classification | Source read | Difference or justification |
+|---|---|---|---|
+| Flatten, cross off common fields and tails; a side reduced to one meta takes the other side; one meta plus fields on each side share one new meta; otherwise the equation stays unsolved and is revisited | **as published** | [C10] §4.3, §4 | Ur/Web leaves an unsolved equality in its constraint set and revisits it; QS does the same (full rescan). Waxwing's rigid tails are Ur/Web's "other miscellaneous components" |
+| A constant with no meta opposite is a mismatch | **adapted** | [C10] §4.3; ADR 013 | Ur/Web would keep it unsolved; with no unification variable left on the other side it can never be solved, so it is reported (a proof of no solution, rules §4) |
+| Disjointness: decompose into atomic facts, check against known facts, defer what is not yet provable | **as published** | [C10] §4.1 | Waxwing also stores pairs on metas and re-checks them when a meta is bound (Task 3) |
+| Lacks predicate | **as published** | [J92] §1.2; PureScript `Lacks` | — |
+| The bind rule (a bound meta's facts re-required on its image) | **adapted** | [J92] §1 (entailment closed under substitution) | Jones states closure as a property of `⊩`; Waxwing keeps facts in a store and re-checks them on binding rather than carrying predicates in types |
+| Entailment by the signature's givens | **as published** | [J92] §1; [C10] §4.1 (known constraints added to the context) | no given mentions a body-local meta (§3.5) |
+| `Merge` = disjoint union with three dependencies | **adapted** | Environment.hs `Union`; `Record.disjointUnion`; [C10] §2.1 | one predicate instead of `Union` plus `Nub u u`; justified below |
+| Forward dependency applied symbolically to two open parts (QS) | **adapted** | `unionRows` case 1 (left closed, right may be open); [C10] `++` rows | justified below |
+| Backward dependencies on open rows | **adapted** | `unionRows` case 2 (right and output closed) | QS solves with one meta left on a side by ADR 013's unifier, the most general unifier, so the solutions are kept |
+| Moving known labels into the result | **as published** (in effect) | `unionRows` case 3 | QS gets it from cancellation |
+| Pairwise `r s -> t` | **as published** | [J00] §6.2, first bullet | — |
+| Pairwise `r t -> s` | **adapted** | [J00] §6.2; Environment.hs `[2, 0] [1]` | stated on the n-ary form: equal other sides, parts differing in one meta each (cancellation of the common parts) |
+| Deferral; unsolved at the end is an error | **as published** | Entailment.hs 363-371 (`NoInstanceFound` when not generalizing); [C10] §4 | Waxwing never generalizes, so PureScript's `Unsolved` branch never applies |
+| End-of-body default `{}` | **adapted** | [H98] §4.3.4, §4.6 | justified below |
+| N5, `x # x` forces `x := {}` | **locally introduced** | — | improving substitution ([J95] §4): `x # x` holds only for `{}` |
+| H, a constant no part can hold is a contradiction | **locally introduced** | exclusion uses entailment ([J92] §1) | every constant of one side lies in some meta of the other; `cannotHold` (§11.1) shows none can hold it |
+| Z (subsumes E), a homeless meta is `{}` | **locally introduced** | analogous: [C10] §4.2's empty case, for `map` | §11.1's argument |
+
+**Restricting `Union` to disjoint rows.** PureScript's `Union l r u` is
+a relation on rows that may hold duplicates; `disjointUnion` adds `Nub
+u u`, i.e. it uses `Union` only on triples whose result has no
+duplicate, which is exactly a disjoint union. Waxwing rows can never
+hold duplicates (ADR 002, 013), so every triple Waxwing can form is one
+of those. A functional dependency of a relation holds on every subset
+of it (a sub-relation of a function is a function), so all three of
+`Union`'s dependencies hold for `Merge`; and on disjoint rows `t` minus
+`s` is well defined, so `s t -> r` and `r t -> s` are total where the
+rows are known. This is the adaptation's whole content.
+
+**Symbolic multi-tail dependencies (QS).** PureScript's case 1 already
+binds the result to a row with the *right* part's open tail (`u :=
+fixed(l) + r` with `r` open). QS also allows the left part open, writing
+`t := { ...r, ...s }`, Ur/Web's concatenation row. Soundness: given `r #
+s` (recorded where the row is made), every solution has `t` equal to
+`r ⊎ s`, so the binding keeps the solutions (an improving substitution,
+[J95] §4). It is what lets cancellation see the parts (Q1, Q2, and the
+1,322 against 145 raw runs). Order independence is not implied by it;
+measured (§11.1, §11.2).
+
+**Empty-row defaulting.** Haskell 98 defaults an ambiguous variable
+that occurs only in single-parameter constraints with a numeric class,
+to the first type of the default list that is an instance of all its
+classes, and reports an error if none is ([H98] §4.3.4); kinds default
+to `*` ([H98] §4.6). Waxwing's default differs in three ways: it
+applies to row metas in multi-variable predicates (`Merge`, `#`); its
+list is the single row `{}`; and it is accepted only if every remaining
+fact and predicate holds under it, else the program is Unresolved (D4)
+rather than ill-typed. Soundness: accepted only when the default
+satisfies every constraint, so the accepted assignment is a solution
+(the S check). Leastness: every binding was most general and every
+image is monotone in the free metas, so the all-`{}` choice is the
+least solution when it is one (rules §12; the L check, 0 violations).
+Order independence: the default is a deterministic function of the
+state at the end, so any order difference comes from solving (§11.1),
+never from the default itself.
+
+### 11.6 Cost
+
+Spent work is the same for every path; only Task 4's actual effort is
+recorded. Remaining figures are planning **estimates**, not a budget
+(Task 4 overran its estimate by about 1.5×).
+
+| Item | Spent |
+|---|---|
+| Tasks 0-3 | not recorded (planned 250k, 250k, 150k, 350k tokens) |
+| Task 4 and its review fix | about 0.6M tokens recorded for Task 4 (planned 400k); the fix not recorded |
+| Task 5, partial | not recorded; branch r005b-task5, 42 files +1,789/−281, unbuilt and unverified |
+| Alternatives assessment, this re-plan, this follow-up | not recorded |
+
+| Path | Remaining (estimate) | What it is |
+|---|---|---|
+| Continue the current design (C) | 1.95M (Task 5 400k, Task 6 450k, Tasks 7-10 1.1M); 1.85-1.9M as the assessment's C-lite | Task 5's WIP may shorten Task 5 by an unknown amount |
+| QS (QS-EHZ) | 2.05-2.25M (B0 150-200k, B1 200-250k, B2 300-350k, B3 300-350k, Tasks 7-10 1.1M) | Z adds a few lines to B2 |
+| QT (strict) | 2.1-2.35M (B2 350-450k: instantiation desugared to one meta tail and a `Merge`, three-place rules; B3 more D4 renderings; the rest as QS) | not prototyped beyond labels |
+
+### 11.7 Open findings that remain
+
+1. Order independence of QS-EHZ is measured (0 differences on the
+   campaigns, the four fixtures in every permutation, and the
+   exhaustive domains, §11.2), not proved.
+2. Locally introduced rules N5, H and Z (Z subsumes E) need the user's
+   approval or replacement; without Z, QS has order differences.
+3. Sources not accessed (§11.5) are cited only for context.
+4. Labels only: nested field types, effect rows (rollback, joint
+   fixpoint) and diagnostic texts are not prototyped.
+5. QT and QS differ on no published example; Q1 and Q2 are shrunk from
+   generated shapes.
+6. The generality of annotations inside generic functions is argued,
+   not prototyped.
+7. Proposed, unapplied: the fixture reclassifications of §7.2, D6b,
+   and the retirements of §9 items 6-7.
 
 ## References
 

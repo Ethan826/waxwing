@@ -10,8 +10,8 @@
 // Options as qt-preds.mjs: `empty` (O is {}: every part is {}), `home`
 // and `commit` (flagged, not standard).
 import {
-  Fail, isLab, EMPTY, freshMeta, flatten, excludes, bindMeta, unify,
-  residue, rowOf, minus, tailRow,
+  Fail, isLab, EMPTY, freshMeta, flatten, cannotHold, apart, bindMeta,
+  unify, residue, rowOf, minus, tailRow,
 } from './qt-facts.mjs';
 
 export function wait(st, l, r) {
@@ -64,8 +64,9 @@ function options(st, p) {
       }
       return true;
     }
+    if (st.zero && zeroMeta(st, own, other)) return true;
     for (const c of own.ks) {
-      const homes = other.ms.filter(m => !excludes(st, m, c));
+      const homes = other.ms.filter(m => !cannotHold(st, m, c));
       if (st.home && other.ms.length && !homes.length) {
         throw new Fail(`no home: ${c}`);
       }
@@ -75,6 +76,21 @@ function options(st, p) {
           freshMeta(st)] });
         return true;
       }
+    }
+  }
+  return false;
+}
+
+// Option `zero` (Z, flagged): a meta of one side that excludes every
+// constant and is apart from every meta of the other side is {}: each
+// of its atoms would have to lie on the other side, and none can.
+// (E is the case of an empty other side.) The design's section 3.11.
+function zeroMeta(st, own, other) {
+  for (const x of own.ms) {
+    if (other.ks.every(c => cannotHold(st, x, c))
+      && other.ms.every(m => apart(st, x, m))) {
+      bindMeta(st, x, EMPTY);
+      return true;
     }
   }
   return false;

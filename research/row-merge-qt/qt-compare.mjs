@@ -1,11 +1,15 @@
 // Random and program-shaped problems through the current design's
 // prototype (C), alternative A and AH (../row-merge-alternatives), and
-// the qualified-types prototype QT with its two flagged options (QT-H:
-// the no-home check; QT-HC: also the one-home commit), judged by the
-// independent brute-force oracle (../open-row-merge/oracle.mjs):
+// the qualified-types variants (`VARIANTS`: QT strict; QS symbolic;
+// suffixes E, H, Z, C for the flagged rules of the design's section
+// 3.6), judged by the independent brute-force oracle
+// (../open-row-merge/oracle.mjs):
 // S (accept => a solution), L (accept => the least solution), H (refuse
 // => no solution); order differences; transitions from C's verdict
-// (`accept>D4`: C accepts, the variant needs an annotation).
+// (`accept>D4`: C accepts, the variant needs an annotation); and
+// `whyDiff`, problems refused in every order for different reasons
+// (the prototype's failure message, metas renamed: a proxy for the
+// diagnostic, which the prototype does not render).
 // Usage: node qt-compare.mjs raw|dense <seed> <problems>
 //        node qt-compare.mjs shaped <seed> <problems>   (SHARE=1 too)
 //        node qt-compare.mjs f2
@@ -28,6 +32,7 @@ export const VARIANTS = {
   QS: qt({ mode: 'sym' }),
   'QS-E': qt({ mode: 'sym', empty: true }),
   'QS-EH': qt({ mode: 'sym', empty: true, home: true }),
+  'QS-EHZ': qt({ mode: 'sym', empty: true, home: true, zero: true }),
   'QS-EHC': qt({ mode: 'sym', empty: true, home: true, commit: true }),
 };
 const tallies = { C: {} };
@@ -56,20 +61,25 @@ export function one(p, orders) {
   const lst = leastOf(p.metas, p.hyp, p.cs, sols);
   const seen = Object.fromEntries(Object.keys(tallies)
     .map(k => [k, new Set()]));
+  const whys = Object.fromEntries(Object.keys(tallies)
+    .map(k => [k, new Set()]));
   for (const cs of orders) {
     const o = { hyp: p.hyp, cs };
     const cur = verdict(p.hyp, cs);
     judge(tallies.C, p, sols, lst, cur, S.solution);
     seen.C.add(cur.v);
+    if (cur.v === 'refuse') whys.C.add(cur.why.replace(/m\d+/g, 'm'));
     for (const [k, [run, sol]] of Object.entries(VARIANTS)) {
       const v = run(o);
       judge(tallies[k], p, sols, lst, v, sol);
       seen[k].add(v.v);
+      if (v.v === 'refuse') whys[k].add(v.why.replace(/m\d+/g, 'm'));
       if (v.v !== cur.v) bump(tallies[k], `${cur.v}>${v.v}`);
     }
   }
   for (const k of Object.keys(seen)) {
     if (seen[k].size > 1) bump(tallies[k], 'orderDiff');
+    if (seen[k].size === 1 && whys[k].size > 1) bump(tallies[k], 'whyDiff');
   }
 }
 

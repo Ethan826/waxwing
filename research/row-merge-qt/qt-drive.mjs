@@ -32,11 +32,16 @@ const step = (st, c) => {
 const settle = st => (sym(st) ? improveSym(st) : improve(st));
 
 // { v, st, why? }; opts: { mode: 'strict' | 'sym', empty, home,
-// commit } (qt-preds.mjs, qt-sym.mjs).
+// commit, zero } (qt-preds.mjs, qt-sym.mjs); `after(st)`, if given, is
+// called after each step (qt-checks.mjs `stage4` reads waiting
+// predicates there).
 export function verdictQT(hyp, steps, opts = {}) {
   const st = F.makeState(hyp, opts);
   try {
-    for (const c of steps) step(st, c);
+    for (const c of steps) {
+      step(st, c);
+      opts.after?.(st);
+    }
   } catch (e) {
     if (e instanceof F.Fail) return { v: 'refuse', why: e.message, st };
     throw e;

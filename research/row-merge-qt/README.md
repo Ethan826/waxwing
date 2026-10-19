@@ -24,15 +24,19 @@ determined (the design's §3):
 - the end of a body: every unbound meta defaults to `{}`, accepted only
   if every waiting predicate then holds; otherwise Unresolved (D4).
 
-Variants (qt-compare.mjs `VARIANTS`): `QT`, PureScript's strict form
-(at most one meta tail per row; `{ ...?r, ...?s }` becomes a fresh `?t`
-with `Merge ?r ?s ?t`, opaque until determined); `QS`, the forward
-dependency applied symbolically (rows keep several tails), the proposed
-core; suffixes `E` (an empty union empties its parts), `H` (a constant
-every part excludes is a contradiction) and `C` (a constant with one
-non-excluding part is committed there): the design's §3.6 items N2-N4,
-flagged, not standard. `C` (the current design), `A` and `AH` are the
-alternatives assessment's prototypes, run beside them.
+Variants (qt-compare.mjs `VARIANTS`): `QT`, PureScript's strict form (at
+most one meta tail per row; `{ ...?r, ...?s }` becomes a fresh `?t` with
+`Merge ?r ?s ?t`, opaque until determined); `QS`, the forward dependency
+applied symbolically (rows keep several tails), the proposed core;
+suffixes `E` (an empty union empties its parts), `H` (a constant no part
+can hold is a contradiction), `Z` (a meta of one side that can hold
+nothing of the other side is `{}`; subsumes E) and `C` (a constant with
+one possible part is committed there): the design's §3.6 items N2-N4 and
+N6, locally introduced, flagged, not approved. "Can hold" uses
+entailment (qt-facts.mjs `cannotHold`; option `plain` restores the
+pre-follow-up test, for the fixtures that pin it). `C` (the current
+design), `A` and `AH` are the alternatives assessment's prototypes, run
+beside them.
 
 ## Files
 
@@ -45,28 +49,45 @@ alternatives assessment's prototypes, run beside them.
 | qt-compare.mjs | raw, dense and program-shaped problems and review F2's family through C, A, AH and the QT/QS variants, judged by the brute-force oracle |
 | qt-fixtures.mjs | the 72 fixtures (test/fixtures/r005b) and the 19 programs through every variant; exit 1 on an oracle violation |
 | qt-programs.mjs | the 19 programs by fixture, program 16 (`same`) and the zero-solution bucket problem written out |
+| qt-examples.mjs | Q1 and Q2: Waxwing programs QT rejects and QS accepts, with QT's smallest annotation (design §11.3) |
+| qt-checks.mjs | committed checks: `order` (the order fixtures), `annotations`, `f2`, `stage4` |
+| qt-domains.mjs | every problem of research/open-row-merge's exhaustive domains A and B in every order, QT, QS-EH and QS-EHZ against the oracle; exit 1 on a violation or a QS-EHZ order difference |
+| fixtures/order-*.json | six order-dependent problems (four raw, two from domain A): rows, every permutation, recorded outcomes of the configuration without and with the repair |
 
-## Commands and output (run 2026-10-18, node v26.6.0)
+## Commands and output
+
+Rerun from the committed tree on 2026-10-18 (node v26.6.0, branch
+`qt-evidence`); each exits 0. The design's §4.3 records the first run,
+before the follow-up; §11 records these.
 
 | Command | Output (abridged) |
 |---|---|
-| `node qt-fixtures.mjs fixtures` | `72 fixtures with rows`; QS, QS-EH: `S>U` design-forced-bound, diag-14-fix; QS `C>U` diag-14 (QS-EH keeps it C); every QT/QS variant `U>C` odd-cycle; `violations 0`, exit 0; about 3 s |
-| `node qt-fixtures.mjs programs` | one line per program variant (the design's §4.1 table); #16 `same` C under QT and QS (U under A, AH); `U0 zero (new)` U with 0 solutions, `U1 determinate` U with 1, `U4 diag-01` U with 4, under every variant; `violations 0`, exit 0 |
-| `node qt-compare.mjs f2` | C accept 186, D4 206; every QT/QS variant D4 392 (`accept>D4` 186) |
-| `node qt-compare.mjs raw 21 2000` | C accept 2010, refuse 7655, D4 335; QT `accept>D4` 170; QS 55; QS-EH 45, `refuse>D4` 25; QS-EHC 5, 0 |
-| `node qt-compare.mjs raw <s> 4000`, s = 22, 23, 24 | QS-EH `accept>D4` 84, 92, 141; `refuse>D4` 15, 45, 35; `orderDiff` 2, 1, 1 |
-| `node qt-compare.mjs dense 21 2000` and `dense <s> 4000`, s = 22-24 | QS-EH `accept>D4` 1325, 2475, 2370, 2555; `D4>accept` 25, 45, 40, 25 (C unresolved, QS-EH accepts the least solution) |
-| `node qt-compare.mjs shaped 1 2000`, `shaped 2 4000`, each also with `SHARE=1` | QS-EH: no `accept>D4`; `refuse>D4` 10 and 14 (with SHARE 0 and 4); `orderDiff` 0 |
+| `node qt-checks.mjs order` | 18 `ok` lines: each of the six fixtures reproduces its recorded outcomes; QS-EHZ one outcome in every order; the variant without the repair (QS-EH, or QS-EHZ with `plain`) still order-dependent |
+| `node qt-checks.mjs annotations` | 11 `ok`: program 11's and 12's annotations accepted; Q1, Q2 D4 under QT and accepted by QS-EHZ in every order; QT with `fn(p: {}, …)` accepted, solution the least |
+| `node qt-checks.mjs f2` | `ok   F2: 186 with a least solution; accepted plain 0; with the shared parameter annotated, QS-EHZ + QT 372` |
+| `node qt-checks.mjs stage4` | `ok   stage 4: 25 fixtures, waiting in 0 (none)` |
+| `node qt-fixtures.mjs fixtures` | `72 fixtures with rows`; QS-EHZ: `S>U` design-forced-bound, diag-14-fix; `U>C` odd-cycle; QT also `C>U` diag-14; `violations 0` |
+| `node qt-fixtures.mjs programs` | the design's §4.1 table plus QS-EHZ; `U0 zero (new)` U with 0 solutions, `U1 determinate` U with 1, `U4 diag-01` U with 4; `violations 0` |
+| `node qt-compare.mjs f2` | C accept 186; every QT/QS variant D4 392 (`accept>D4` 186) |
+| `node qt-compare.mjs raw 21 2000`, `raw <s> 4000` (s = 22-24) | totals: C accept 14,255; QT `accept>D4` 1,322; QS-EHZ 145, `refuse>D4` 35, `orderDiff` 0 |
+| `node qt-compare.mjs dense 21 2000`, `dense <s> 4000` | totals: QS-EHZ `accept>D4` 5,565, `D4>accept` 135, `orderDiff` 0 |
+| `node qt-compare.mjs shaped 1 2000`, `shaped 2 4000`, each also with `SHARE=1` | totals: QS-EHZ no `accept>D4`, `refuse>D4` 24, `orderDiff` 0; QT `accept>D4` 22 (all with SHARE) |
+| `node qt-domains.mjs B 10` | 79,825 problems, about 5 s; QS-EHZ accept 192,266, refuse 249,734, D4 11,550, no `orderDiff`; QT `orderDiff` 29 |
+| `node qt-domains.mjs A 10` | 3,339,712 problems, about 115 s on 10 workers; QS-EHZ accept 863,588, refuse 18,370,812, D4 70,892, no `orderDiff`; QS-EH `orderDiff` 207 |
 
 No run of any variant shows an `S-violated`, `L-violated` or
 `H-violated` key: an accepted assignment always satisfied every
 constraint and was the least solution, and no refusal had a solution.
-The design's §4.3 has the totals per generator.
+`whyDiff` (problems refused in every order for different reasons, a
+proxy for the diagnostic) is reported per variant, the current design
+included; it is not an order-independence defect (design §11.1).
 
 ## Sensitivity
 
-Run 2026-10-18 in a deleted scratch copy (raw seed 21, 1,000 problems,
-and the 72 fixtures), one mutation at a time, each restored after:
+Run 2026-10-18 in deleted scratch copies (raw seed 21, 1,000 problems,
+and the 72 fixtures), one mutation at a time, each restored after. The
+first five were run before the follow-up; the last five on the final
+code:
 
 | Mutation | Caught |
 |---|---|
@@ -76,15 +97,22 @@ and the 72 fixtures), one mutation at a time, each restored after:
 | creation-site obligations dropped in mode `sym` | `S-violated`, `L-violated` 29 each; fixtures: none (they write their obligations as steps) |
 | the end default ignores predicates with constants on one side | `S-violated`, `L-violated` 105 each; fixtures: 1,224 violations |
 
+| rule Z disabled | `node qt-checks.mjs order`: 12 FAIL lines, exit 1 |
+| `cannotHold` reduced to `excludes` (the entailment repair removed) | `node qt-checks.mjs order`: 4 FAIL lines (order-A-lacks, order-A-apart), exit 1 |
+| Z without its apart test | `H-violated` 14 |
+| Z without its lack test | `H-violated` 14, `L-violated` 115 |
+| `cannotHold` true for every rigid | `H-violated` 17 (QS-EH) |
+
 One mutation (the same-parts rule unifying with its own parts' side)
 was caught by neither, so it is not listed as a check.
 
 ## What the evidence does not show
 
 Labels only: no field types (so no nested predicates), no effect rows
-(so no rollback or joint fixpoint), no texts. The prototype is a toy
-written for the re-plan, not a port of the compiler. Its order
-differences are counted, not analysed. One defect was found and fixed
-while writing it: the first `r s -> t` rule replaced two predicates by
-an equation that could itself only wait, which looped (raw seed 24
-never finished); every number above is from the fixed revision.
+(so no rollback or joint fixpoint), no texts. Order independence of
+QS-EHZ is measured on these domains and generators, not proved. The
+prototype is a toy written for the re-plan, not a port of the compiler.
+Its order differences are counted, not analysed. One defect was found
+and fixed while writing it: the first `r s -> t` rule replaced two
+predicates by an equation that could itself only wait, which looped (raw
+seed 24 never finished); every number above is from the fixed revision.

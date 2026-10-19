@@ -1,0 +1,107 @@
+{
+ "name": "order-22-581",
+ "from": "node qt-compare.mjs raw 22 4000, problem 581 (0-based; each problem is followed by its five sampled orders)",
+ "repair": "rule Z (design section 11.1)",
+ "hyp": {
+  "lacks": {},
+  "apart": []
+ },
+ "steps": [
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m2"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m3",
+     "m0"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [
+     "a"
+    ],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m0",
+     "m2"
+    ]
+   }
+  }
+ ],
+ "orders": [
+  [
+   0,
+   1
+  ],
+  [
+   1,
+   0
+  ]
+ ],
+ "dependent": "QS-EH",
+ "independent": "QS-EHZ",
+ "outcomes": {
+  "QS-EH": [
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [],
+     "m2": [
+      "a"
+     ],
+     "m3": [
+      "a"
+     ]
+    }
+   },
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   }
+  ],
+  "QS-EHZ": [
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [],
+     "m2": [
+      "a"
+     ],
+     "m3": [
+      "a"
+     ]
+    }
+   },
+   {
+    "v": "accept",
+    "why": null,
+    "solution": {
+     "m0": [],
+     "m2": [
+      "a"
+     ],
+     "m3": [
+      "a"
+     ]
+    }
+   }
+  ]
+ }
+}
