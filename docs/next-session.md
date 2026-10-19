@@ -1,12 +1,17 @@
-# Waxwing / R005 Tranche B re-planned; B1 done, unmerged (2026-10-19)
+# Waxwing / R005 Tranche B: B1 and B2 done, unmerged (2026-10-19)
 
 **State.** main is at 1d43341 (the Sym/H research merge); the active
 branch is `r005b-replan` (UNMERGED, by the user's choice): the
 implementation plan, README draft and prose review, B0's evidence, the
-user's B0 decisions (plan §10) and B1's behaviour-preserving splits
-(verify 2269/2269, 59/59, 151 proofs on 345e0df; differential 0).
-`r005b-task5` holds the stopped custom-solver Task 5 WIP (reference only;
-superseded). Nothing is pushed, ever, unless the user asks.
+user's B0 decisions (plan §10), B1's behaviour-preserving splits and
+B2's removal of the invented machinery (code commit 1bb23ae; verify
+2269/2269, 59/59, 151 proofs; differential against d7efc6d: 0 among
+sources without Tranche B syntax, 9 Tranche B differences classified in
+docs/progress.md "R005 Tranche B B2"). Since B2 only the one-tail rules
+decide record rows; any residue with two unknown tails on a side is
+placeholder P1 until B3. `r005b-task5` holds the stopped custom-solver
+Task 5 WIP (reference only; superseded). Nothing is pushed, ever, unless
+the user asks.
 
 **Design (adopted 2026-10-19).** Tranche B (open-row merge) uses
 QT-strict + Sym + H + broad 1g: PureScript 0.15.16's `Union` solving
@@ -21,13 +26,19 @@ ledger, tasks B2-B5, 7-10); docs/plans/2026-10-19-row-merge-readme-draft.md
 (final path src/Features/Check/RowMerge/README.md);
 docs/plans/2026-10-18-row-merge-qualified-types.md (research record).
 
-**Next, needs the user's authorization:** B2 (removal of invented
-machinery behind placeholder P1; retires the bound-specific regression
-mutations alongside, keeping their controls). Open gates: L1 termination
-argument for reachable cyclic predicate graphs (or a tested invariant
-that they can't arise) BEFORE B3; L2 a stable-location proposal for
-solving-time diagnostics (same conflict at different locations vs
-different conflicts found first) before that part is implemented.
+**Next, needs the user's authorization:** the gate tasks, in the
+user's order: L1, a termination argument for re-examination over
+reachable cyclic predicate graphs (or a proof with a test that they
+cannot arise), with the acyclic measure checked under substitutions
+that change edges and share rows; the `Stop Limit` counter is not the
+argument. Then L2, a proposal for solving-time diagnostics that keeps
+the same conflict located differently by order (fixable from
+provenance) apart from orders finding different first conflicts, with
+the smallest change. B3 does not start until both are resolved and
+reviewed. B2's departures from its file list for the user's review are
+in plan §7 Task B2 (P2 removed rather than reworded; `boundBy` and
+`Equation` removed; the case-2 provenance row left for B3; two D1 → P1
+differences besides the planned kinds).
 
 **Working method the user expects.** A branch per task; the user
 authorizes each task and each merge (fast-forward only); the controller

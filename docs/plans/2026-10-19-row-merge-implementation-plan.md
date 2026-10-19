@@ -3,10 +3,11 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps
-> use checkbox (`- [ ]`) syntax for tracking. **Only Task B1 is
-> authorized** (the user, 2026-10-19, after B0). Do not start B2 or any
-> later task until the user authorizes it, and then only the task the
-> user names. Two gates (§10, decisions 12 and 13) block B3.
+> use checkbox (`- [ ]`) syntax for tracking. **Tasks B1 and B2 were
+> authorized** (the user, 2026-10-19, each alone) and are done. Do not
+> start any later task, or the gate tasks L1 and L2, until the user
+> authorizes it, and then only the task the user names. Two gates (§10,
+> decisions 12 and 13) block B3.
 
 **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
 disjoint s = { ...a, ...b };` and everything it needs, checked by the
@@ -83,9 +84,9 @@ an oracle property or a measured run.
 test runner, Go 1.26.4. No new dependency (Z3 stays outside the
 repository, an optional research oracle).
 
-**Status:** B0 accepted and B1 authorized (2026-10-19); decisions in
-§10. B2 onward not authorized; termination (L1) and solving-time
-diagnostics (L2) are open ledger items.
+**Status:** B0 accepted; B1 and B2 done (2026-10-19), each authorized
+alone; decisions in §10. Nothing later is authorized; termination (L1)
+and solving-time diagnostics (L2) are open ledger items and gate B3.
 
 Written on branch `r005b-replan` from main 1d43341. Docs only: no
 compiler source, test, script or test fixture changed; nothing built;
@@ -586,8 +587,8 @@ compiler); each is checked by the tests named.
 
   | # | Added in | Placeholder at | Text after `R005B placeholder: ` | Removed in |
   |---|---|---|---|---|
-  | P1 | Task 4 (e63f7f4); reworded in B2 | Check/RowSettle `placing`: a residue with two or more metas on a side | was `equations that wait are solved in Task 5`; from B2 `rows with two unknown tails on one side are solved in Task B3` | B3 (becomes the `Unexpected` invariant guard, §2.1) |
-  | P2 | Task 4 (e63f7f4); reworded in B2 | Check/Lacked `refusedAt`: a refusal whose cause is a predicate's binding (R10.1) | was `contradictions from equations are reported in Task 6`; from B2 `contradictions from merge predicates are reported in Task B5` | B5 |
+  | P1 | Task 4 (e63f7f4); reworded in B2 (462602d) | Check/RowSettle `settle` (B2 folded `placing` back in): a residue with two or more metas on a side | was `equations that wait are solved in Task 5`; from B2 `rows with two unknown tails on one side are solved in Task B3` | B3 (becomes the `Unexpected` invariant guard, §2.1) |
+  | P2 | Task 4 (e63f7f4) | Check/Lacked `refusedAt`: a refusal whose reason was an equation (`Outside`, `Derived`, an `Equated` reason) | was `contradictions from equations are reported in Task 6` | **B2**: its every cause went with the sum rule and bounds, so it was removed, not reworded. A refusal caused by a predicate's binding (R10.1) first exists in B3, which adds its placeholder (`contradictions from merge predicates are reported in Task B5`) with the cause; B5 removes it |
   | P3 | Task 2 (be42baf) | Check/SeveralTails `withinOneTail` | `rest binders and removal over several tails are typed in Task 7` | 7 |
   | P4 | Task 4 (e63f7f4) | Specialize/Record `recordType` | `rows with several tails are lowered in Task 8` | 8 |
   | P5 | B3 | RowMerge/End `endOfBody` (called by Check/Function after settling, and by RowEntry's `finish`): a predicate still waits | `merge predicates still waiting at the end of a body are classified in Task B4` | B4 |
@@ -1035,20 +1036,51 @@ obsolete bound-specific mutations go with the machinery they target, in
 this task and not in B1; their behavioural controls stay and the case-2
 provenance regression is added).
 
-- [ ] Failing tests first: the rows of `design-forced-bound` (and every
-  problem the domains solve only by a commit or a bound) reach P1, a
-  skipped run, never a verdict; `fn(p) => g(p, p)` applied to `{ x: 1
-  }` is E_TYPE with the text B0 pinned (N5 removed); the classifier's
-  table has no `Outside` or `Derived` row (test/r005b-outcome).
-- [ ] The 25 fixtures at `stages.solver` 4 keep their classes in every
-  order (the alternatives assessment's A changed none, research only;
-  this run confirms it on the compiler). One that would wait stops the
-  task.
-- [ ] Domains A and B and the generators re-recorded: Solved shrinks,
-  skipped grows, S, L, H, E 0 defects, no stop.
-- [ ] Verify; differential: 0 among sources without Tranche B syntax;
-  each Tranche B difference classified (accepted → P1's E_INTERNAL, or a
-  text change from N5's removal).
+- [x] Failing tests first (.build/evidence/r005b-b2-red.log: 6 fail,
+  37 pass on the pre-B2 build): `design-forced-bound`'s rows and a
+  commit-only problem reach P1, skipped, in every order; `fn(p) => g(p,
+  p)` applied to `{ x: 1 }` is D2 (B0 pinned no text; §1.2 named D2 as
+  the expected change, and the approved D2 form is what the bind rule
+  produces); no `Outside` or `Derived` constructor (test/r005b-outcome);
+  P1's new text.
+- [x] The 25 fixtures at `stages.solver` 4 keep their classes in every
+  order; none waits (test/row-merge.test.mjs). The stop did not fire.
+- [x] Domains A and B and the generators re-recorded (docs/progress.md
+  "R005 Tranche B B2"): Solved shrinks and skipped grows; so does
+  Contradiction, which the plan did not say: refusals only the sum rule
+  or a bound established now reach P1 (H re-establishes them in B4). S,
+  L, H, E, order, measure and fresh-meta defects 0; no stop.
+- [x] Verify on 1bb23ae: exit 0 (2269/2269, 59/59, 151 proofs).
+  Differential against d7efc6d: 0 among sources without Tranche B
+  syntax; 9 Tranche B differences, each classified (N5 → D2; P1's
+  wording; accepted → P1; D1 → P1). docs/progress.md "R005 Tranche B
+  B2".
+
+**B2 results and departures from the file list** (2026-10-19):
+
+- Removed, besides the listed modules: Check/RowPlacing (its `placing`
+  was only P1 once commits and homes went; P1 now sits in RowSettle
+  `settle`); `Because.Equation`, RowStore `boundBy`, `equations`,
+  `withBoundBy`, `equationId` (T5's listing: their only writers were the
+  sum rule and Commit, and nothing read `boundBy`; B3 adds the
+  predicate's own cause record); RowResidue `Exam` (with the sum rule's
+  and commits' loops gone the examination's state is the substitution);
+  `Solving.emptied` (U4's and N5's only).
+- P2 was removed, not reworded: its causes were `Outside`, `Derived`
+  and `Equated` reasons, all gone. B3 adds a placeholder for refusals
+  that a predicate's binding causes, with that cause.
+- `Atom` moved to Check/RowResidue; Homes keeps `admits` (no bound
+  clause) with no caller until B4's H; RowEntry `exclusions` and the
+  L31 check (test/row-merge-homes.mjs) are gone, as listed.
+- `r005b-pruned-reason` retired; `r005b-self-pair` added and proved.
+  The case-2 provenance row (`r005b-case2-reason`) is not added: case 2
+  first exists in B3, so its defect cannot be restored before then
+  (the proposals file already placed it in B3; the rules file's §9
+  said B2).
+- Tranche B programs refused before B2 by a bound or the sum rule now
+  reach P1 (E_INTERNAL), as `granted2({ admin: false })` with both tails
+  lacking `admin` (was D1). This is the same kind of change as accepted
+  → P1; §10 decision 5 has H restore the written fact's text in B4.
 
 ### Task B3: Desugaring, predicates, cases, Sym, re-examination
 
@@ -1286,7 +1318,7 @@ kept as planned (`r005b-precedence`, `-provenance`, `-mixed-lacks`,
 
 | Row | Status | Defect restored | Probe | Task |
 |---|---|---|---|---|
-| `r005b-pruned-reason` | landed (Task 4); **retirement proposed** | its mutation targets Check/Narrow, which B2 deletes | `lone-meta-lack` and `-two` keep pinning D1 as fixtures | B2 |
+| `r005b-pruned-reason` | landed (Task 4); **retired in B2** | its mutation targets Check/Narrow, which B2 deletes | `lone-meta-lack` and `-two` keep pinning D1 as fixtures | B2 |
 | `r005b-upper` | planned, never landed; **drop proposed** | no upper bounds | `both(merge, merge)` is Unresolved by design | — |
 | `r005b-bound-reason` | planned; **drop proposed** | R10.3 | — | — |
 | `r005b-defer` | planned; **reworded** | a predicate solved by guessing a part | `apply2(merge, { y: 2 }, { x: 1 })` stays accepted with each label in its argument's part | 7 |
@@ -1300,7 +1332,7 @@ kept as planned (`r005b-precedence`, `-provenance`, `-mixed-lacks`,
 | `r005b-h-exclusion` | **new** | H's exclusion without entailment (`cannotHold` reduced to the meta's own facts) | a program B0 finds (the order-A-lacks shape) refused although it has a solution, or `diag-14-fix` refused | B4 |
 | `r005b-h-binds` | **new** | H run before the end (inside re-examination) | `diag-14-fix`-shaped program: a verdict before the end where Unresolved is due | B4 |
 | `r005b-one-unknown` | **new** | a creation point not desugared | a constructor or effect-operation use with `{ ...r, ...s }`: E_INTERNAL (the invariant guard) where a verdict is due | B3 |
-| `r005b-self-pair` | **new** | N5 restored (a meta apart from itself bound to `{}`) | `fn(p) => g(p, p)` applied to `{ x: 1 }` reads the text before B2 | B2 |
+| `r005b-self-pair` | **landed in B2** | N5 restored (a meta apart from itself bound to `{}`) | `fn(p) => g(p, p)` applied to `{ x: 1 }` reads the text before B2 (`Expected {}, found { x: Int }`) instead of D2 | B2 |
 
 ## 9. Estimates, actuals and risks
 
