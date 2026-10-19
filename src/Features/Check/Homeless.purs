@@ -15,7 +15,8 @@ import Features.Check.RowResidue
   , atomOf
   , constants
   )
-import Features.Check.RowStore (Bound, Lack, emptiedOf)
+import Features.Check.RowStore (Bound, Lack)
+import Features.Check.RowStoreBound (emptiedOf)
 import Features.Check.Subst (Subst, storeOf)
 import Features.Check.UnifyFailure (Failure(..), Refusal(..))
 

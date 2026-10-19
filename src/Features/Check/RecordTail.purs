@@ -28,14 +28,13 @@ import Features.Check.RowStore
   ( Because
   , Bound
   , Lack
-  , boundOf
   , counted
   , partnersOf
   , plain
   , stamped
-  , withoutBound
   , withoutPairs
   )
+import Features.Check.RowStoreBound (boundOf, withoutBound)
 import Features.Check.Subst (Flex(..), Subst(..), onStore, resolve, storeOf)
 import Features.Check.UnifyFailure (Failure(..))
 

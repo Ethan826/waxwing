@@ -17,12 +17,10 @@ import Features.Check.RowStore
   , Bound
   , Lack
   , Narrowing
-  , boundOf
   , narrowedBy
   , partnersOf
-  , withBound
-  , withEmptied
   )
+import Features.Check.RowStoreBound (boundOf, withBound, withEmptied)
 import Features.Check.Subst (Flex(..), Subst, onStore, storeOf)
 import Features.Check.UnifyFailure (Failure(..), Refusal(..))
 

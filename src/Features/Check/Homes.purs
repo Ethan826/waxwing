@@ -6,7 +6,8 @@ import Data.Map as Map
 import Data.Maybe (maybe)
 import Data.Set as Set
 import Features.Check.Lacks (lacksIn, lacksOf)
-import Features.Check.RowStore (Atom(..), RowStore, boundOf, partnersOf)
+import Features.Check.RowStore (Atom(..), RowStore, partnersOf)
+import Features.Check.RowStoreBound (boundOf)
 import Features.Check.Subst (Flex(..), Subst, storeOf)
 
 -- Homes (R005 Tranche B design §2.1 step 7, rules §8): whether the
