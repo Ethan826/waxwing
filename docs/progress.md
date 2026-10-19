@@ -6579,3 +6579,27 @@ built, verify not run.
   rules and diagnostics files partly superseded; the 2026-10-17 plan
   superseded from Task 5 on; the alternatives assessment superseded;
   BACKLOG R005.
+- Implementation plan written:
+  docs/plans/2026-10-19-row-merge-implementation-plan.md (draft for the
+  user's review; no task authorized). §1 lists every earlier decision as
+  retained, modified or superseded, and Tasks 1-4's modules as retained,
+  removed (SumRule, Narrow, RowBound, Commit and parts of six others,
+  about 560-650 lines, estimate) or modified; §2 specifies the design in
+  the compiler (one unknown tail per row, `Merge` predicates made at
+  creation, PureScript's cases and Sym, full-rescan re-examination, the
+  end of a body with H); migration B0 gate, B1 splits, B2 removal behind
+  the existing placeholder, B3 predicates, B4 end and H, B5 diagnostics,
+  then Tasks 7, 8, 9, 10a (the module README made authoritative) and 10b,
+  with a placeholder table; evidence and permanent tests for Sym, H,
+  orders, swapped inputs, association and the annotation cases; the
+  retired counterexamples kept as controls with new expected outcomes
+  (reclassifications proposed, not applied); estimates about 2.3-2.8M
+  tokens, separated from recorded spend.
+- Scratch checks run with the research prototype for the plan (not
+  committed; Task B0 commits them): under `QT-strict+Sym+H`, S2 is
+  accepted unannotated (Sym's case 1'); Q1's smallest annotation is on
+  the shared `s`, the re-plan's `p: {}` leaving it Unresolved; programs
+  11 and 12 need one annotated parameter each; all 186 F2 programs with
+  a least solution are accepted with the shared parameter annotated; on
+  the ten fixtures with three unknown tails every tail order and step
+  order gives one outcome, and no generated problem has such a row.
