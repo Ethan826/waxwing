@@ -133,7 +133,7 @@ const earlierRows = [
   {
     // The settling exit test counts the labels of the rows themselves; one
     // that counts targets exits before ec2's late Fail(E) arrives.
-    name: 'fx008-exit-count', file: 'src/Features/Check/Settle.purs',
+    name: 'fx008-exit-count', file: 'src/Features/Check/SettleChange.purs',
     needle: 'Row labels _ = walkedRow subst entry.own',
     replacement: 'Row labels _ = walkedRow subst entry.target',
     probe: 'fx008-exit-count', message: /exit test: accepted/

@@ -28,9 +28,10 @@ import Features.Check.Restricted (matchedInstallation)
 import Features.Check.Scheme (State)
 import Features.Check.SettleEntry (Donor, Entry, EntryTail(..))
 import Features.Check.SettleEntry as Entries
+import Features.Check.SettleChange (labelCount, moved, retry)
 import Features.Check.Sync (syncSettling)
 import Features.Check.TailPass (tailPass)
-import Features.Check.Unify (Failure(..), Flex, Subst(..))
+import Features.Check.Unify (Failure(..), Flex, Subst)
 
 type Env r = CheckEnv (locals ∷ Locals | r)
 
@@ -65,36 +66,13 @@ round env body state = do
   rejectCycle env keyed entries rows feeds
   consumed ← foldM (consume env entries rows) keyed (feedOrder rows feeds)
   retried ← retry env body consumed
-  pure (continued (decided settled) (changed entries consumed) retried consumed)
+  pure
+    ( continued consumed
+        (moved { start: state, settled, consumed, entries, retried })
+    )
   where
-  continued decidedNow changedNow retried consumed =
-    if decidedNow || changedNow || retried then Loop consumed
-    else Done consumed
-  -- (a) decided a pair: fewer are set aside than at the round's start.
-  decided keyed = postponedCount keyed.subst < postponedCount state.subst
-  changed entries consumed = counts entries consumed.subst
-    /= counts entries state.subst
-  counts entries subst = map (labelCount subst) entries
-
--- After (d): could a pair still set aside be decided now? The bindings of
--- (d) may give a deferred `Fail` key its head, which only (a) sees, so the
--- loop does not end until (a), run after (d), decides nothing.
-retry ∷ ∀ r. Env r → Checked.Expr → State → Either Diagnostic Boolean
-retry env body consumed =
-  if postponedCount consumed.subst == 0 then Right false
-  else decidable <$> settleKeys env consumed body
-  where
-  decidable subst = postponedCount subst < postponedCount consumed.subst
-
-postponedCount ∷ Subst → Int
-postponedCount (Subst bindings) = Array.length bindings.postponed
-
--- How many labels a row resolves to now: rows only grow at their tails,
--- so a change in the count is a change in the row.
-labelCount ∷ Subst → Entry → Int
-labelCount subst entry = Array.length labels
-  where
-  Row labels _ = walkedRow subst entry.own
+  continued consumed movedNow =
+    if movedNow then Loop consumed else Done consumed
 
 feedRow ∷ Subst → Entry → FeedRow
 feedRow subst entry =
