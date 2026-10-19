@@ -603,38 +603,6 @@ First applied in docs/plans/2026-10-17-open-row-merge-plan.md (R005
 Tranche B); its rule arguments are
 docs/plans/2026-10-17-open-row-merge-rules.md.
 
-## Adversarial review of proposed procedures
-
-Directed by the user on 2026-10-20, after a review refuted the
-completeness claim of a proposed signature checker (record composition
-dossier, §13.7) and, earlier, a forced-placement claim (§3.2, C7).
-Both defects had the same shape: the examples exercised cases where two
-different properties happened to coincide. Before a proposed procedure
-or a claim about one is approved for proof or implementation:
-
-- **Restrictions table.** List every restriction the proposed
-  representation introduces beyond the semantics (for example
-  "indivisible rests", "fresh records stand for arbitrary types", "one
-  generic solution per pattern"), why each is believed harmless, and
-  an example built to challenge it: something the semantics permits
-  that the representation cannot express.
-- **Separate passes.** Soundness: try to make the procedure accept an
-  invalid problem. Completeness: start from a valid construction and
-  try to make the procedure reject it.
-- **Distinguishing examples.** For each claim, at least one example
-  built to separate it from its nearest weaker or stronger variant,
-  not only the motivating programs.
-- **Bounded oracle at the level of the claim.** Where a claim
-  quantifies over problems (validity, ∀∃), the oracle enumerates small
-  problems and compares the proposal with bounded evaluation of the
-  semantics, not only concrete assignments. Bounded evidence still.
-- **Adversarial reviewer.** An independent reviewer gets the task
-  "find a false statement or a missing case", not "does this look
-  reasonable". A reviewer's counterexamples are checked independently
-  too (they are arguments, not conclusions).
-
-Review convention; no gate checks it.
-
 ## Prose review for READMEs and explanatory docs
 
 Review convention (not automated), adopted 2026-10-19 at the user's
