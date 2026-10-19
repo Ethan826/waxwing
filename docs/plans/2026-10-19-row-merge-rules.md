@@ -213,8 +213,25 @@ holds what `t_(i-1)` held less `F(i-1)`, and its unknown tail lacks
 those lacks (P1, P2). At step `i`, each label of `F_i` must go into
 `t_i`'s row, whose fields exclude `M_i` and whose unknown tail lacks
 it; a label of `M_i` is refused, a `Failure` that ends the rescan.
+**What `Λ` is** (tightened at the user's request, 2026-10-19): the
+labels occurring, when the rescan starts, in the substitution's bindings
+and in the waiting predicates' rows, field types included at every
+depth. That covers every label the rescan can reach: the types the body
+has instantiated so far (the signatures of every function, constructor
+and effect operation it used, with their nested record types) enter
+cases only as bound metas' images, and a case reads a part or a result
+only by flattening it through those bindings. A label written in the
+body but never unified into one of those rows cannot reach a predicate,
+so leaving it out is sound. The set is finite (the substitution is), and
+the rescan cannot enlarge it: cases and the unifier copy labels out of
+rows already there and remove them, the fresh metas they make carry
+none, and instantiation and the desugaring, the only makers of new
+types, run when a requirement is checked, never inside a rescan (P3).
+A later rescan may start with a larger `Λ`; each rescan's bound uses its
+own.
+
 **Theorem.** With `P` the predicates waiting when a rescan starts and
-`Λ` the labels the body mentions (finite; P3), a lineage makes at most
+`Λ` as above, a lineage makes at most
 `|Λ|` moves and is removed at most once, so the rescan makes at most `P
 · (|Λ| + 1)` productive steps. Every pass that changes the state makes
 one (a pass changes it only by a case firing; a case that fires removes
