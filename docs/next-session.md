@@ -1,3 +1,25 @@
+# Waxwing / R005 Tranche B: B3 with case 2g, for review, unmerged (2026-10-19)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). The user
+accepted the B3 follow-up and approved case 2g and keeping O4's
+limitation (plan §10 decision 17). 2g is implemented within B3 as
+amended the same day: the first form (a missing atom waits) made a
+refusal order dependent, so 2g now applies only when the result holds
+every label and rigid tail of the right part, and otherwise claims
+nothing. Code commit ae295d1; verify 2319/2319, 59/59, 160 proofs;
+evidence in docs/progress.md "R005 Tranche B B3: case 2g".
+
+**Next, needs the user's review:** the 2g change (rules file §3a, the
+amendment, the evidence with and without H). B4 stays blocked until it
+is reviewed. B5 must bring back the exact wording of the two kinds of
+hint (a lambda annotation where it helps; for a call's own rows, the
+limitation explained) for approval; no new text is approved. O4 is an
+accepted limitation; O1-O6 otherwise open.
+
+The working method and design notes in the section below still apply.
+
+---
+
 # Waxwing / R005 Tranche B: B3 and its follow-up for review, unmerged (2026-10-19)
 
 **State.** main is at 1d43341 (the Sym/H research merge); the active

@@ -714,3 +714,23 @@ Learned while retargeting mutants for the fifteen new rows
     instantiation rule, which skipped row arguments, admitted rows growing
     through recursion and the checker overflowed its stack (R012). Audit
     each rule that says "stands for no type" when a form becomes writable.
+
+## R005 Tranche B: case 2g (2026-10-19)
+
+1. A classification rule run at the end hides order differences an
+   earlier rule causes. The 2g proposal was measured only with H on and
+   reported "no order difference"; before H, its wait on a missing atom
+   kept case 3 from refusing, and refusals became order dependent
+   (`kindDiff` 4 in each shaped family; the compiler's judge, which runs
+   before H, caught it in "program-shaped, shared"). Measure a new solver
+   rule with and without any later classification, on every generated
+   family the judge runs (research/row-merge-qt `node qt-2g.mjs`).
+2. A precondition that only limits where a rule applies must make the
+   rule step aside, not return "no progress": a no-progress answer stops
+   the cases after it. Case 2's wait on a missing label is PureScript's
+   and kept; 2g's makes no claim (rules file §3a, "The amendment").
+3. A research prototype's options object is copied field by field
+   (qt-facts.mjs `makeState`): a new option passed in but not copied is
+   silently off, and a variant run with it measured nothing new until
+   the field was added. Check that a new option changes some verdict
+   before reading its measurements.

@@ -161,6 +161,32 @@ the parts, and it does not depend on how PureScript matches a given.
 research/purs-given-1g shows where the two agree and where Waxwing goes
 further; the agreement is a check, not the reason.
 
+### Case 2g, a second adaptation
+
+Case 2 needs the right part and the result to be fully known. A generic
+function that calls itself, or a wrapper that forwards to another
+generic function, leaves a constraint where they end in the function's
+own row variables instead:
+
+```wxw
+fn both(x: { ...u }): { ...u, ...v } = both(x);
+```
+
+In the call `both(x)` one part is `u`, the result is `{ ...u, ...v }`,
+and the other part is unknown. Case 2g does case 2's subtraction with
+row variables treated as names. When one part and the result have
+nothing unknown left, and the result contains every field and every row
+variable of that part, the other part is the result without them: here
+`v`. A row variable is removed only when the same variable appears in
+the result; the checker never looks inside it or guesses what it holds.
+If something is missing from the result, 2g does nothing and the other
+cases are tried as before. As with 1g, nothing unknown means the
+missing part has exactly one possible value. PureScript accepts these
+programs by matching the signature's own `Union` constraint; Waxwing
+uses 2g instead, which agrees with PureScript on the programs checked
+(research/purs-given-1g) and, like 1g, does not need that constraint
+written.
+
 ### Sym, an approved adaptation
 
 PureScript's cases look at the left
@@ -233,9 +259,10 @@ fn main(): Int = { let b = granted2({ admin: false }); 0 };
 `admin` can only be in `r`, but no case of the solver concludes that,
 so the call waits and is reported. The caller cannot annotate it:
 annotations go on lambda parameters, and here the unknown parts belong
-to the call itself. Only the callee's signature can change (for example
-to `{ admin: Bool, ...r }`). This was found after the design was
-adopted; how to report it, or whether to support it, is open.
+to the call itself. Writing the callee's signature differently (for
+example `{ admin: Bool, ...r }`) would avoid it, but that is a redesign
+of the callee, which the caller of a library may not control. Waxwing
+accepts this limitation for now (decision of 2026-10-19).
 
 On three families of generated test problems, which lean toward
 unknowns that nothing fixes, the adopted design accepted 9,210, 4,340
@@ -334,7 +361,7 @@ The plan's names; they may change before implementation.
 2. Unifying records by cancelling shared parts and applying ADR 013's
    one-unknown rules (Check/UnifyRecord, Check/RowResidue,
    Check/RecordTail).
-3. Solving after each unification: cases 1-3, 1g, then Sym, until
+3. Solving after each unification: cases 1-3, 1g, 2g, then Sym, until
    nothing changes (RowMerge/Cases, RowMerge/Improve). A case's failure
    is a contradiction.
 4. The end of a body: no constraint waiting means accepted and unused
@@ -346,7 +373,8 @@ The plan's names; they may change before implementation.
 ### Research labels
 
 The design is `QT-strict+Sym+H` in the research
-scripts: QT-strict is PureScript's cases with 1g; Sym and H as above.
+scripts: QT-strict is PureScript's cases with 1g; Sym and H as above;
+2g is the option `g2`.
 
 ### Annotation cases
 
@@ -362,7 +390,7 @@ are counted over the program's fields plus one extra field `w`.
 | `both(merge, merge)` (design-forced-bound) | `both(fn(p: {}, q) => merge(p, q), merge)` | no |
 | `apply(merge, noX)` (diag-14-fix) | `apply(fn(p: { x: Int }, q) => merge(p, q), noX)` | no |
 | review F2's 392 programs `k(merge, …, merge)` with a shared parameter | the shared parameter, once, in the 186 with a least typing | no |
-| `granted2({ admin: false })` with `granted2(p: { ...r, ...s })` and `s lacks { admin }` (recovery obligation O4) | none: the parts are the call's own, which no annotation names; only the callee's signature can change | — |
+| `granted2({ admin: false })` with `granted2(p: { ...r, ...s })` and `s lacks { admin }` (recovery obligation O4) | none: the parts are the call's own, which no annotation names; changing the callee's signature is a redesign the caller may not control | — |
 
 ### Texts and fixtures
 
@@ -385,6 +413,7 @@ node qt-domains.mjs B 10           # exhaustive domain B (A: about 6 min)
 node qt-checks2.mjs sym            # swapped arguments, typed
 node qt-render.mjs render 2000     # modelled selection, location
 node qt-given.mjs                  # case 1g's programs
+node qt-2g.mjs 2000                # case 2g, with and without H
 ```
 
 From research/row-merge-typed/: `node tr-run.mjs nested 1 2000` and

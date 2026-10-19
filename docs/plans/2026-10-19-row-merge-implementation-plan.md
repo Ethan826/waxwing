@@ -56,7 +56,10 @@ an oracle property or a measured run.
 - **Solving** uses PureScript's `unionRows` cases 1-3 (borrowed), the
   adaptation 1g (parts with no unknown give their symbolic union, which
   is its justification, independent of PureScript's matching of a
-  given; rules file §3) and the
+  given; rules file §3), the adaptation 2g (a right part and result
+  with no unknown, the result holding every atom of the right part,
+  give the left part their symbolic difference; rules file §3a,
+  decision 17) and the
   approved adaptation Sym (the same cases with the parts swapped),
   re-examined by a full rescan after each top-level unification and in
   each effect-settling round; at the end of a body, the approved
@@ -273,7 +276,7 @@ the adopted design (§1.3).
 
 **New** (B3-B5): src/Features/Check/RowMerge/Predicate (the `Merge`
 record and its store operations), Desugar (one unknown tail per row),
-Cases (PureScript's cases 1-3 and the adaptation 1g on one
+Cases (PureScript's cases 1-3 and the adaptations 1g and 2g on one
 orientation), Improve
 (Sym and the full rescan), End (`endOfBody`, `concluded`, H), and the
 README. Names may change in B0; each module ≤250 lines.
@@ -296,6 +299,7 @@ where a row cites them, the source read is named beside it (§11.5).
 | Desugaring a row of k ≥ 2 unknown tails | PureScript: a signature names the union's result (`Union r s t => …`); research/row-merge-qt/qt-preds.mjs `desugar` | one fresh `t`, k − 1 predicates folded from the left, parts required disjoint when made | Waxwing writes `{ ...r, ...s }` in the type, so the result variable is made at instantiation (T1) | adapted (translation of the surface) |
 | Solving a predicate: cases 1, 2, 3 | Entailment.hs `unionRows`: case 1 lines 636-638 (left closed: `t` is its fields followed by the right part), case 2 lines 639-660 (right and `t` closed: left is `t` minus the right's labels; no progress if one is missing, line 654), case 3 lines 661-672 (left open with known labels: they move into `t`; `Union rest(left) right t'` remains); otherwise no progress (`canMakeProgress`, line 628) | the three cases, their guards and their order | field types are unified (PureScript unifies the solved instance with the constraint, lines 290-296) | as published |
 | Case 1g: parts with no unknown | compared with Entailment.hs `matches` (lines 275, 735-750: a wanted `Union` matches a given by the dependency left right -> union); justified independently (rules file §3: with no unknown the result has one value in every solution, the symbolic union, well formed by the parts' entailed disjointness; Jones 1995 §4) | `t := l ⊎ r`, written as one row | broader than given matching: it also fires with the parts swapped, regrouped, or with only a `disjoint` clause (purs NoInstanceFound in those cases, research/purs-given-1g) | **adapted** (B0; the first draft said "re-plan §13.1") |
+| Case 2g: a known symbolic subrow subtracted (decision 17) | justified by cancellation of disjoint union (rules file §3a; Jones 1995 §4, as 1g); compared with given matching on the limitation probes (research/purs-given-1g), not derived from it | `l := t` less `r`'s labels and rigid tails, when `r` and `t` hold no unknown and `t` holds every atom of `r`; otherwise no claim | rigid tails cancelled by identity only; a missing atom never stops case 3 (the amendment) | **adapted** (approved and amended 2026-10-19) |
 | No pairwise improvement between wanted predicates | Types.hs lines 96-101 (`shouldGeneralize` false with a signature); Entailment.hs 314-320, 369 (an unsolved constraint is not stored as a dictionary for a later one to match) | none | — | as published (what PureScript does with a signature) |
 | **Sym**: the cases tried again with the parts swapped | locally introduced, **approved** (2026-10-19); argument re-plan §14.1 | — | cases 1', 2', 3' (§2.3) | local adaptation |
 | Deferral; a predicate unsolved at the end is an error | Entailment.hs 363-371 (`Deferred`; `Unsolved` when generalizing; else `NoInstanceFound`); Ur/Web §4 | wait, then report | Waxwing never generalizes, so only the error branch applies; the error is D4 ("annotate") | as published |
@@ -406,6 +410,7 @@ research/row-merge-qt/qt-strict.mjs `oriented`), in this order:
 | 1g | neither part has a meta (fields and rigid tails only), and their disjointness was required when the predicate was made (entailed for rigids: D3, D3', D3'' otherwise) | unify `t` with `{ fields(L), fields(R), ...tails(L), ...tails(R) }`; done. A Waxwing adaptation, not one of PureScript's cases (rules file §3) |
 | 1 | `L` closed | unify `t` with `{ fields(L), fields(R), ...tails(R) }`; done |
 | 2 | `R` and `T` closed | if every label of `R` is in `T`: unify each such field type with `T`'s, then `l := T` minus `R`'s labels; done. A label of `R` missing from `T`: no progress (line 654) |
+| 2g | `R` and `T` hold no meta, and `T` holds every label and rigid tail of `R` | unify each shared field type, then `l := T` minus `R`'s labels and one equal tail of `T` per rigid tail of `R` (by identity); done. Otherwise no claim: the next row is tried. A Waxwing adaptation (rules file §3a, decision 17 as amended) |
 | 3 | `L` has fields and a tail | `u` fresh, unify `t` with `{ fields(L), ...u }` (`u` well formed: it lacks those labels); the predicate becomes `Merge rest(L) r u` |
 | — | otherwise | no progress |
 
@@ -417,8 +422,9 @@ prerequisites are the approved boundaries: the parts were required
 disjoint when the predicate was made (a predicate is never made
 otherwise: the desugaring and Task 7's literal are its only makers);
 "closed" is `tails` empty (a rigid tail makes a part open); field types
-are unified, never compared or dropped; rigid tails are never bound,
-split or subtracted.
+are unified, never compared or dropped; rigid tails are never bound or
+split (2g's cancellation by identity is the one exception, rules file
+§3a).
 
 Each effect goes through the ordinary unifier and the bind rule, so a
 failure is an ordinary `Failure` (a mismatch, a refused fact, an occurs
@@ -433,8 +439,8 @@ effect-settling round, every waiting predicate is examined by §2.3 in
 identity order, repeatedly, until a pass changes nothing (a full rescan;
 qt-strict.mjs `improveStrict`). Nothing else improves a predicate: no
 pairwise improvement, no E, Z or N5. Termination (B0 writes the
-argument): a pass that changes something removes a predicate (1g, 1, 2
-and their mirrors) or moves at least one label out of a part into a
+argument): a pass that changes something removes a predicate (1g, 1, 2,
+2g and their mirrors) or moves at least one label out of a part into a
 binding of `t` (3, 3'), and the labels in parts are bounded by the
 labels written in the body.
 
@@ -885,7 +891,7 @@ function with a `disjoint` clause: accepted, run printing 0).
 | program 11 `fn both(f: (p, q) -> { x: Int }, g: (p, w) -> { y: Int }): Int = 0;` `both(merge, merge)` (`design-forced-bound`) | Unresolved: approved D4 `Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge` at the first `merge` | one parameter: `both(fn(p: {}, q) => merge(p, q), merge)` (the re-plan's two-parameter form also works) | redundant |
 | program 12 `fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): Int = 0;` with `fn noX(p: { ...u }, q: { ...v }): Int where u lacks { y }, v lacks { x } = 0;`, `apply(merge, noX)` (`diag-14-fix`) | Unresolved: each field has one candidate part, Proposed form, e.g. `Cannot tell how merge's r and s split { x: Int, y: Int }; pass a lambda …` | `apply(fn(p: { x: Int }, q) => merge(p, q), noX)` | redundant |
 | F2's family, `k(merge, …, merge)` with a shared parameter, 186 programs with a least solution | Unresolved (all 392 plain; 206 have no least solution) | the shared parameter at its only value in the first callback (all 186 accepted, `node qt-adopted.mjs examples`) | redundant in all 186 |
-| O4: `granted2({ admin: false })` with `fn granted2(p: { ...r, ...s }): Bool where s lacks { admin }` (found in B2's differential; not a published example) | Unresolved: `admin` has one candidate part, `r` (the prototype, every order, 1 solution; with `{ name: 1, admin: false }`, 2 solutions). Task 4 accepted it by a commit | **none found** (2026-10-19): the parts are the direct call's own instantiation, and Waxwing annotates only lambda parameters, so no annotation names `r` or `s`; the caller cannot fix it, only the callee's signature can (for example `{ admin: Bool, ...r }`). D4's approved hint ("pass a lambda with annotated parameters") does not apply to it | — (the caller has no remedy; for the user, B4/B5) |
+| O4: `granted2({ admin: false })` with `fn granted2(p: { ...r, ...s }): Bool where s lacks { admin }` (found in B2's differential; not a published example) | Unresolved: `admin` has one candidate part, `r` (the prototype, every order, 1 solution; with `{ name: 1, admin: false }`, 2 solutions). Task 4 accepted it by a commit | **none** (2026-10-19): the parts are the direct call's own instantiation, and Waxwing annotates only lambda parameters, so no annotation names `r` or `s`; callers cannot repair it with the available annotation syntax. Changing the callee's signature (for example `{ admin: Bool, ...r }`) is a possible redesign, not necessarily something a library's caller controls. D4's approved hint ("pass a lambda with annotated parameters") does not apply to it | — (kept as an accepted limitation, §10 decision 17; B5 explains it without suggesting an annotation) |
 | program 16 `same(merge, merge)` | Unresolved (current design: Contradiction) | an annotation exposes the contradiction (as approved for `odd-cycle`'s hint) | — (no solution) |
 
 So, on the published examples, three programs need an annotation the
@@ -1239,6 +1245,24 @@ counts):
   limitations.md (case 2g for a known left part and result; O4 kept;
   the D4 hint must not suggest an annotation that cannot help).
 
+**Case 2g** (§10 decision 17, as amended; 2026-10-19; code commit
+ae295d1, evidence in docs/progress.md "R005 Tranche B B3: case 2g"):
+
+- RowMerge/Cases: 2g after case 2, guarded by `holdsAll` (every label
+  of the right part by name, every rigid tail by identity); case 2
+  keeps its own wait; a missing atom makes 2g claim nothing.
+- The first form, waiting on a missing atom, was implemented first and
+  failed the generated family "program-shaped, shared" (`orderDiff`
+  1); the user amended the rule. The counterexample is a permanent test
+  in every order; `r005b-case2g-claim` restores the first form.
+- The limitation probes: the self-call, the forwarding wrapper and the
+  lambda wrapper are accepted; O4 still waits.
+  `r005b-sym-rigid`'s probe moved to an unknown result, since 2g now
+  solves `Merge U ?q U`.
+- The second reference (test/row-merge-judge.mjs) and the termination
+  check (qt-termination.mjs) use option `g2`; `qt-2g.mjs` runs it with
+  and without H.
+
 ### Task B4: The end of a body: Unresolved and H
 
 **Files:** RowMerge/End (`endOfBody` complete: `Solved`, H, `Unresolved`;
@@ -1285,6 +1309,11 @@ Problem, Format/Diagnostic/Records; P2 and P6 removed.
   a predicate's metadata.
 - [ ] R11's tie-break: two waiting predicates at one source span are
   reported identically in every order of making them.
+- [ ] Actionable hints told apart (§10 decision 17): a lambda
+  annotation offered only where one can resolve the constraint; for
+  rows of a call's own instantiation (O4), the limitation explained
+  with no annotation suggested. The exact wording is brought back for
+  approval before it is pinned.
 - [ ] Solving-time diagnostics (L2): only after the user decides the
   gate's proposal (§10, decision 13).
 - [ ] Implement; verify; differential: 0 on existing sources; commit.
@@ -1633,6 +1662,39 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     smallest remedy or a proposal to keep it. No solver rule is added
     without approval; D4 must not suggest an annotation that cannot
     repair the call. B4 stays blocked; O1-O6 stay open.
+
+17. **B3 follow-up accepted; 2g approved; O4 kept** (user, 2026-10-19).
+    The follow-up closes decision 16's four obligations; the absence of
+    generated effect-settling coverage stays a documented limit (M13).
+    **Case 2g approved** and authorized within B3 (rules file §3a):
+    subtracting a known symbolic subrow from a known symbolic result,
+    with these boundaries: the right part and the result hold no
+    unresolved row meta after following bindings; every label and rigid
+    tail of the right part occurs explicitly in the result; shared field
+    types are unified; rigid tails are cancelled by identity, never
+    inspected, split or inferred from what they might contain; Sym
+    applies it with the inputs exchanged. Recorded as another explicit
+    adaptation, not as PureScript's given matching; no general
+    improvement between predicates. **Amended** the same day, after the
+    implementation found that waiting on a missing atom kept case 3 from
+    a refusal (rules file §3a, "The amendment"): 2g applies only when
+    the result explicitly holds every label and rigid tail of the right
+    part; otherwise it makes no claim and checking continues to case 3
+    or waiting; case 2 keeps PureScript's behaviour. H must not conceal
+    such a regression: the counterexample is a permanent test, and the
+    order checks run with and without H. Wording: 2g preserves the
+    solution set while letting more waiting problems be decided,
+    accepted or refused; it does not "add solutions". **O4 stays
+    unresolved**, an accepted expressiveness limitation of this tranche:
+    callers cannot repair it with the available annotation syntax;
+    changing the callee's signature is a possible redesign, not
+    necessarily something a library's caller controls. **B5** must
+    distinguish actionable hints (a lambda annotation where it can
+    resolve the constraint; for rows of a call's own instantiation, the
+    limitation explained, with no annotation suggested); the exact
+    wording comes back for approval, and no new diagnostic text is
+    approved here. B4 stays blocked until the 2g change is reviewed. No
+    merge or push.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection

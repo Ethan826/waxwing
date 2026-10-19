@@ -6967,3 +6967,103 @@ plan §7 Task B3 "B3 follow-up" lists the results.
 
 B4 stays blocked; O1-O6 open; the limitations proposal waits for the
 user.
+
+## R005 Tranche B B3: case 2g (2026-10-19)
+
+The user accepted the B3 follow-up and approved case 2g and keeping
+O4's limitation (plan §10 decision 17), authorizing 2g within B3; B4
+stays blocked until this change is reviewed. On branch `r005b-replan`;
+code commit ae295d1.
+
+- Red first: the ten focused tests of test/r005b-case2g.test.mjs on the
+  pre-2g build, 7 fail (every acceptance and the cancellation test);
+  the three waiting or refusing controls pass, as they should.
+- **The approved form failed.** Implemented as written (a missing atom
+  waits), the parallel suite failed one test: "random problems, five
+  orders: program-shaped, shared, seed 25", `orderDiff` 1 (refuse in
+  some orders, waiting in others; the second reference with `g2` agreed
+  run for run). Without 2g the problem is refused in every order. In
+  the waiting orders 2g's precondition held for the mirror of `Merge R
+  {a | u} {c}`, R was missing, and the wait kept case 3 from moving `a`
+  into `{ c }`. In the prototype before H, `kindDiff` 4 in each of two
+  shaped families; with H, none, which is why `qt-2g.mjs` (run with H
+  only) had missed it (docs/findings.md "R005 Tranche B: case 2g").
+  Variant measured before asking: 2g makes no claim on a missing atom;
+  no violation with or without H, and in the compiler `orderDiff` 0
+  (.build/evidence/r005b-2g-{asapproved,fall}-tests.tap,
+  -variants.log, r005b-2g-fall.diff). The user chose it and amended
+  rule 5 (decision 17).
+- Implemented as amended (Check/RowMerge/Cases `holdsAll`; case 2 keeps
+  its own wait). The counterexample, minimized to six steps, refuses in
+  all 720 orders (permanent test).
+- Focused tests (11, all pass): rigid cancellation, two rigid tails at
+  once, labels beside them, the inputs exchanged (labels-only and
+  typed), a missing rigid tail and an unknown in the result (wait), a
+  missing label (no 2g; the mirror's case 3 refuses), the
+  counterexample, a field-type clash (P2 at the call), nested fields
+  (`w` bound to `{ m: Int }`; a later clash on it is an ordinary
+  E_TYPE, R10.1 attributing only failures whose rows' tails reach a
+  case's binding). test/r005b-limitations.test.mjs: the self-call, the
+  forwarding wrapper and the lambda wrapper (with or without its
+  annotation) accepted; O4 waits.
+- Regression rows (.build/evidence/r005b-2g-rows.log, each: fixed
+  passes, defect fails): `r005b-case2g` (2g absent: the self-call
+  waits), `r005b-case2g-claim` (the superseded wait: a refusal becomes
+  P5), `r005b-case2g-atoms` (the rigid-tail test skipped: an
+  unsatisfiable merge accepted). `r005b-sym-rigid`'s probe failed on the
+  fixed compiler, because 2g now solves `Merge U ?q U` (q = {}); it
+  moved to an unknown result (`fn(q, w) => same(pickR(x, q), w)`) and
+  was re-proved, with `r005b-sym`.
+- Second reference: test/row-merge-judge.mjs `B3_REFERENCE` has `g2`;
+  research/row-merge-qt `g2` is the amended rule, `g2wait` the
+  superseded one (kept to reproduce the counterexample). The archived
+  research configuration `ADOPTED` (qt-trace.mjs) is unchanged.
+- Order checks with and without H (`node qt-2g.mjs 2000`, 90 s,
+  .build/evidence/r005b-2g-qt.log): amended 2g, no S, L, H, order or
+  mirror violation on named, raw, dense, shaped seeds 1 and 25 and
+  domain B whole, both ways; verdict changes waiting → accepted (named
+  4, shaped 2 and 6) and waiting → refused (before H: shaped 6 and 14;
+  with H: shaped seed 25, 6); none from a verdict to waiting.
+  Superseded `g2wait` before H: `kindDiff` 4 and 4 (information only).
+- Termination (`node qt-cyclic.mjs all` with `g2`, 103 s,
+  .build/evidence/r005b-2g-termination.log): no violation on any family,
+  the cyclic one included; in the domain-A sample 68 runs move to
+  accepted and 2 to refused. 2g removes a predicate; rules §5 updated.
+- Compiler oracle (0 S, L, H, E, order, lineage, reference defects
+  everywhere). Accept / refuse / waiting, B3 → 2g:
+  - domain A whole (686 s, .build/evidence/r005b-2g-exhaustive-A.log):
+    182,332 / 16,583,318 / 2,539,642 → 185,276 / 16,583,450 /
+    2,536,566 (2,944 waiting → accepted, 132 waiting → refused).
+  - domain B whole (63 s): 8,352 / 104,832 / 340,366, unchanged.
+  - fixtures, every order: 27,051 / 11,964 / 578, unchanged.
+  - generators: program-shaped 680 / 930 / 390 → 685 / 930 / 385;
+    shared 660 / 1,060 / 280, unchanged in total, `orderDiff` 0; raw,
+    dense and raw programs unchanged.
+  - Sym, domain B at stride 1 (453,550 runs; .build/evidence/
+    r005b-2g-sym-stride1.tap, a scratch copy of the test, deleted):
+    pass.
+  - typed families at the research sizes (.build/evidence/
+    r005b-2g-typed-full.log): identical to the follow-up (no rigid
+    tails there, so 2g cannot fire).
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on ae295d1:
+  exit 0 (2319/2319, 59/59, 160 regression proofs;
+  .build/evidence/r005b-2g-verify.log). The first run, on the commit
+  before amending, failed purs-tidy (the 2g condition's wrapping); the
+  formatted condition moved two needles, updated and re-proved.
+- Differential against c5a6e16 (`--corpus all --regenerate`, harvest
+  runs exited 0, 0; .build/evidence/r005b-2g-diff.log, all seven listed
+  in -diff-harvested.log): fuzz, isName, matches, mutations 0;
+  harvested 8,667, 7 differences, all 2g's new test programs: P5 →
+  accepted 5 (the self-call, the wrapper, the lambda wrapper, the
+  field-type and nested programs); E_TYPE overlap → P2 2, same span
+  (`same(y, x)` after 2g bound y to `{ ...b }`).
+- Docs: rules file §3a (2g, the amendment, M20), §4 and §5; the
+  limitations doc decided; plan §10 decision 17, §1.3, §2.3, §2.4, §5's
+  O4 row, Task B3 and B5; README draft (2g subsection, O4 kept),
+  humanizer review of the new passages (one change: the O4 sentence
+  states the decision).
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
+
+B4 stays blocked until the user reviews 2g. O1-O6 open (O4 kept as a
+limitation). B5's hint wording comes back for approval. Nothing merged
+or pushed.
