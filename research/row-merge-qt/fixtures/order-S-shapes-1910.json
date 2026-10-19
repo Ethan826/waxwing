@@ -1,0 +1,203 @@
+{
+ "name": "order-S-shapes-1910",
+ "from": "node qt-compare.mjs shaped 1 2000, problem 1910 (0-based), in the two orders that run uses",
+ "repair": "none: a class difference only (design section 13.4)",
+ "hyp": {
+  "lacks": {},
+  "apart": []
+ },
+ "steps": [
+  {
+   "k": "dis",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m1"
+    ]
+   }
+  },
+  {
+   "k": "dis",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m2"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m3"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m2"
+    ]
+   },
+   "r": {
+    "fields": [
+     "b",
+     "c"
+    ],
+    "tails": []
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m3"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m4"
+    ]
+   }
+  },
+  {
+   "k": "dis",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m5"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m6"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m5"
+    ]
+   },
+   "r": {
+    "fields": [
+     "a"
+    ],
+    "tails": []
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m6"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": []
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m2",
+     "m3"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m1"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": [
+     "m5",
+     "m6"
+    ]
+   }
+  },
+  {
+   "k": "eq",
+   "l": {
+    "fields": [],
+    "tails": [
+     "m0",
+     "m1"
+    ]
+   },
+   "r": {
+    "fields": [],
+    "tails": []
+   }
+  }
+ ],
+ "orders": [
+  [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  [
+   9,
+   8,
+   7,
+   6,
+   5,
+   4,
+   3,
+   2,
+   1,
+   0
+  ]
+ ],
+ "variant": "QT-strict",
+ "classDifference": true,
+ "outcomes": {
+  "QT-strict": [
+   {
+    "v": "refuse",
+    "why": "mismatch: b",
+    "solution": null
+   },
+   {
+    "v": "D4",
+    "why": null,
+    "solution": null
+   }
+  ]
+ }
+}

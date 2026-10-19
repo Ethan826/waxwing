@@ -6520,3 +6520,22 @@ shows order-dependent acceptance on domain-b-9 and -7 and error kinds on
 The need for N5, H and Z is shown only relative to keeping the
 empty-row default. Claims about QT and the zero counts softened in the
 design (§11.2). Status unchanged: not approved.
+
+## R005 Tranche B: QT-strict measured (2026-10-19)
+
+Branch `qt-strict` from main 648689c. Research and docs only; nothing
+of Waxwing built, verify not run. research/row-merge-qt/qt-strict.mjs
+implements QT-strict: PureScript 0.15.16's three `unionRows` cases
+(cited by line), entailment by the signature's rows, no pairwise
+improvement (none in a signature'd PureScript declaration), no N5, E,
+H or Z, and no default for unknowns a waiting predicate constrains.
+Five QT artefacts fixed against PureScript's source. Measured beside
+QS-EHZ and the current design (design §13): no oracle violation;
+acceptance order independent on every family including domains A and
+B (7 shape problems differ in verdict class only, pinned by a fixture);
+burden lost against the current design raw 36.3 % (QS-EHZ 1.0 %),
+dense 78.2 % (28.0 %), shapes 31.5 % (0 %), F2 as QS-EHZ; on the
+published examples one more annotation (design-quiet) and three
+approved contradictions reported as "annotate". Recommendation (for the
+user): QT-strict as the baseline under ADR 014, the need for N5/H/Z
+being shown only on synthetic problems. Status unchanged: not approved.

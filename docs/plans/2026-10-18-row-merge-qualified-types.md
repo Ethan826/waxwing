@@ -9,7 +9,9 @@ locally introduced), reported QT against QS, committed the three
 scratch checks and audited the sources; the open findings that remain
 are listed in §11.7. An experiment against the installed PureScript
 compiler (§12, 2026-10-19) tested whether QT models PureScript; its
-conclusion is in §12.5.
+conclusion is in §12.5. QT-strict, PureScript's mechanism with no local
+rule and no default for predicate-constrained unknowns, is measured in
+§13, with a recommendation (§13.7).
 
 Written 2026-10-18 on branch `design-principles` from 1b45917 (ADR 014
 committed). Documents and research scripts only: no compiler source,
@@ -1314,6 +1316,173 @@ Open, from this experiment: the no-default variant's annotation burden
 array order were tried; the translation's limits (§12.3) mean a
 PureScript result on a case marked "no" or "partly" says nothing about
 Waxwing's semantics.
+
+## 13. QT-strict: PureScript's mechanism with no local rule (2026-10-19)
+
+Branch `qt-strict` from main 648689c. Research only
+(research/row-merge-qt/qt-strict.mjs; README "QT-strict"). The user
+asked for the textbook alternative ADR 014 point 4 requires before a
+local rule: PureScript's mechanism, nothing added, measured on the same
+families as QS-EHZ and the current design.
+
+### 13.1 Definition
+
+QT-strict is QT's strict representation (a row has at most one meta
+tail; `{ ...?r, ...?s }` is a fresh `?t` with `Merge ?r ?s ?t`, the left
+part first, as `merge`'s parameters are written) solved as PureScript
+0.15.16 solves `Union` (tag v0.15.16, commit 4c66c05a; Entailment.hs):
+
+| Rule | Source |
+|---|---|
+| case 1: the left part closed (no tail): `t` is its fields followed by the right part | `unionRows`, lines 636-638 |
+| case 2: the right part and `t` closed: the left part is `t` minus the right's labels, if all are in `t`; otherwise no progress | lines 639-660 |
+| case 3: the left part open with known labels: they move into `t`, and `Merge rest(left) right t'` remains | lines 661-672 |
+| otherwise no progress (the predicate waits) | line 628 (`guard canMakeProgress`) |
+| case 1g: parts with no unknown (fields and the signature's rigid row variables) give `t := r ⊎ s` | the signature's row `{ ...r, ...s }` plays the given `Union r s rs`; a wanted constraint matches a given by the dependency left right -> union (`matches`, lines 275, 735-750) |
+| facts: lacks and disjointness decomposed, entailed by the signature's givens (Task 3) | §11.5 (Ur/Web §4.1; Jones 1992 §1) |
+| no pairwise improvement between wanted predicates | in a declaration with a signature PureScript checks with `shouldGeneralize` false (Types.hs lines 96-101), so an unsolved constraint is never stored as a dictionary (Entailment.hs 369, 314-320) for a later one to match; Waxwing declarations always have signatures |
+| no N5, E, H, Z | — |
+
+**What defaults.** At the end of a body, if any `Merge` predicate is
+still waiting the body is Unresolved (D4, "annotate"); no unknown a
+waiting predicate mentions gets a default. Otherwise every unbound
+record meta defaults to `{}`. Such a meta carries at most lacks and
+disjointness facts, which `{}` satisfies. This matches today's rule
+for an unsolved record tail, which lowering reads as the empty row
+(ADR 013; Specialize/Record), and design draft 3 §6 step 1 for facts on
+unsolved metas (the compiler was not run for this document). A meta apart
+from itself (`x # x`) is such a fact here (N5 is off), met by `{}`.
+
+### 13.2 Prototype artefacts the PureScript experiment exposed, fixed
+
+Relative to QT (qt-preds.mjs), each replaced by the PureScript rule
+cited in §13.1:
+
+1. QT moved known labels out of either part; PureScript moves only the
+   left part's (case 3). This was domain-b-1/-17's artefact: QT moved
+   `m1`'s label and lost the predicate's identity.
+2. QT solved forward whenever the parts held at most one meta;
+   PureScript only when the left part is closed (case 1).
+3. QT subtracted a part's tail from an open result (`bare`);
+   PureScript subtracts only between closed rows (case 2).
+4. QT compared predicates pairwise, symmetrically; PureScript does not
+   in a declaration with a signature (§13.1). Measured as QT-strict+P
+   (positional, Environment.hs 525-527): it is not order independent
+   (raw `acceptDiff` 3).
+5. N5 is off (option `selfApart: false`).
+
+The PureScript experiment's 13 cases agree: QT-strict's acceptance
+equals purs's (mode `sig`, encoding `nub`) in every order of every case
+(`node qt-checks.mjs strict`). This agreement is weak evidence, since
+purs rejects all but one control there.
+
+### 13.3 Results
+
+All runs judged by the brute-force oracle: no S, L or H violation for
+QT-strict on any family (no `violated` key; fixtures and programs 0
+violations; domains exit 0). "Lost" counts runs or programs the
+current design accepts and the variant leaves Unresolved.
+
+| Family | Current design accepts | QS-EHZ lost | QT-strict lost |
+|---|---|---|---|
+| 72 fixtures | 29 Solved | 2 (design-forced-bound, diag-14-fix) | 3 (also design-quiet) |
+| 72 fixtures, Contradiction → Unresolved | — | 0 | 3 (diag-03, diag-05, diag-14: approved D6 texts become "annotate") |
+| 19 programs (30 variants + `same`) | — | 2 (programs 11, 12) | 3 (11, 12, 13); program 16 Contradiction → Unresolved |
+| F2 (392) | 186 | 186 (100 %) | 186 (100 %) |
+| raw, seeds 21-24 (70,000 runs) | 14,255 | 145 (1.0 %) | 5,180 (36.3 %) |
+| dense, seeds 21-24 (70,000) | 19,895 | 5,565 (28.0 %) | 15,555 (78.2 %) |
+| program shapes (24,000) | 10,546 | 0 | 3,318 (31.5 %) |
+| domain A (19,305,292 runs), accepted | 870,440 (Task 0) | 863,588 accepted | 178,616 accepted |
+| domain B (453,550 runs), accepted | 193,376 (Task 0) | 192,266 | 8,092 |
+
+(The Solved count of the fixtures is from their `result` fields; the
+domain rows compare accepted runs, since qt-domains.mjs does not run
+the current design.) Of QT-strict's Unresolved runs, those whose
+waiting predicates are all quiet (no field or rigid anywhere, the
+cases the `{}` default meets): raw 2,495 of 10,565, shapes 1,832 of
+6,707. Unresolved with a unique least solution: raw 1,235 runs, shapes
+734.
+
+### 13.4 Order independence
+
+`acceptDiff` (accepted in some orders and not others, or with
+different solutions) is 0 for QT-strict on every family: raw, dense,
+shapes, F2, and every problem of domains A and B in every order.
+`orderDiff` (verdict class) is 0 everywhere except 7 problems of the
+program shapes, which QT-strict rejects in every order but as a
+Contradiction in one and Unresolved in another. Cause: solving, by
+PureScript's case order. When the right part and `t` are both closed,
+case 2's guard is taken (lines 642-643) and makes no progress
+(`null leftover` false, line 654) instead of reporting the missing
+label, while in the other order case 3 had already moved the left
+part's labels and the mismatch was found. Pinned by
+fixtures/order-S-shapes-1910.json (both orders; `node qt-checks.mjs
+order` asserts rejection in both and the two classes). A diagnostic
+difference, not an acceptance or type difference. This is measured,
+not proved: no argument here shows QT-strict confluent.
+
+### 13.5 Examples and annotations
+
+research/row-merge-qt/qt-examples.mjs `STRICT_EXAMPLES`, checked by
+`node qt-checks.mjs strict` (every order; the smallest annotation found
+by trying every set of annotated unknowns):
+
+| Program | QT-strict | Smallest annotation | Generality |
+|---|---|---|---|
+| S1 `apply0(merge, merge)` with `apply0(f: (a, b) -> c, g: (d, e) -> c)` (fixture design-quiet) | D4 | `apply0(fn(p: {}, q) => merge(p, q), fn(p: {}, q) => merge(p, q))` (two parameters) | kept: the annotation fixes the least solution, which QS's default chooses, and a use has one instantiation (nothing is generalized) |
+| S2 `ignore(fn(p) => merge(p, { a: 1 }))` with `ignore(f: (p) -> q)` | D4 | `fn(p: {}) => merge(p, { a: 1 })` | kept, as above; `merge({ a: 1 }, p)`, the arguments swapped, is accepted unannotated (the left part is closed): QT-strict inherits `Union`'s left bias, which Waxwing's symmetric merge does not have |
+| S3 `apply0(merge)` with `apply0(f: (a, b) -> {})` | D4 | `fn(p, q: {}) => merge(p, q)` | kept |
+
+### 13.6 Would a user write the cases QT-strict rejects?
+
+What QT-strict leaves Unresolved, where the current design or QS-EHZ
+accepts, is of three kinds in the examples and the shrunk generated
+problems:
+
+1. An unknown nothing ever fixes (S1, S3; the "quiet" counts above): a
+   merge used as a value whose parts no argument, annotation or result
+   type determines. The program means its least instance, every part
+   `{}`. Plausible only in point-free higher-order code; the published
+   examples have one (design-quiet).
+2. A left part unknown while the right is known, the unknown never
+   fixed (S2): a lambda never applied, or passed where its parameter
+   type stays open. Rare in a body, but the asymmetry (S2 rejected, the
+   swapped call accepted) would surprise a user of a symmetric merge.
+3. Equations whose parts are fixed only through bounds or the `{}`
+   default (programs 11, 12): as for QS-EHZ.
+
+The generators overweight kinds 1 and 2: their leaves are often fresh
+unknowns standing for an unannotated value, which a real body usually
+fixes by applying it. On the published examples (72 fixtures, the 19
+programs) QT-strict costs one annotation more than QS-EHZ
+(design-quiet) and three approved contradiction texts (§13.3). No
+corpus of real Waxwing programs exists to settle the question.
+
+### 13.7 Recommendation (ADR 014 point 4)
+
+ADR 014 point 4 allows a local rule only with a demonstrated need, an
+argument and reproducible evidence, after the textbook alternative and
+its cost have been offered. QT-strict is that alternative, and it is
+order independent in acceptance on every family measured, with no
+local rule.
+
+- **Need for N5, H and Z: demonstrated only on synthetic problems.**
+  Their measured benefit is the gap between QT-strict and QS-EHZ: 5,035
+  more accepted raw runs, 10,125 dense, 3,318 program-shape runs, and
+  on the published examples one program (design-quiet) and three
+  approved D6 texts. The arguments (§11.1, §11.5) and evidence are
+  committed. Whether real programs hit the gap is not shown.
+- **Recommendation: QT-strict as the baseline**, as ADR 014 point 2's
+  default ("accepting some annotation burden to stay with a standard
+  mechanism is the default"), with two items for the user's decision
+  rather than adoption: (a) whether to accept the `Union` left bias
+  (S2) for a symmetric merge, which would be an adaptation of its own,
+  not measured here; (b) whether the three contradictions reported as
+  "annotate" (diag-03, -05, -14) are acceptable, or whether H alone is
+  worth approving for its diagnostic value (it changes no acceptance).
+  Revisit Z and the predicate default if a corpus of real programs
+  shows QT-strict's burden in practice.
+- Status unchanged: not approved; no solver is adopted.
 
 ## References
 

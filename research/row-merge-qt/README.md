@@ -49,10 +49,11 @@ beside them.
 | qt-compare.mjs | raw, dense and program-shaped problems and review F2's family through C, A, AH and the QT/QS variants, judged by the brute-force oracle |
 | qt-fixtures.mjs | the 72 fixtures (test/fixtures/r005b) and the 19 programs through every variant; exit 1 on an oracle violation |
 | qt-programs.mjs | the 19 programs by fixture, program 16 (`same`) and the zero-solution bucket problem written out |
+| qt-strict.mjs | QT-strict (design §13): PureScript 0.15.16's three `unionRows` cases, entailment by the signature's rows, no pairwise improvement (option `pairwise` for QT-strict+P), no N5/E/H/Z, and no default for what a waiting predicate constrains |
 | qt-examples.mjs | Q1 and Q2: Waxwing programs QT rejects and QS accepts, with QT's smallest annotation (design §11.3) |
-| qt-checks.mjs | committed checks: `order` (the order fixtures), `annotations`, `f2`, `stage4` |
+| qt-checks.mjs | committed checks: `order` (the order fixtures), `annotations`, `f2`, `stage4`, `strict` (QT-strict's examples and its agreement with the installed purs) |
 | qt-domains.mjs | every problem of research/open-row-merge's exhaustive domains A and B in every order, QT, QS-EH and QS-EHZ against the oracle; exit 1 on a violation or a QS-EHZ order difference |
-| fixtures/order-*.json | six order-dependent problems (four raw, two from domain A): rows, every permutation, recorded outcomes of the configuration without and with the repair |
+| fixtures/order-*.json | six order-dependent problems (four raw, two from domain A): rows, every permutation, recorded outcomes of the configuration without and with the repair; and order-S-shapes-1910, a QT-strict difference of verdict class only (Contradiction against Unresolved) |
 
 ## Commands and output
 
@@ -81,6 +82,21 @@ constraint and was the least solution, and no refusal had a solution.
 `whyDiff` (problems refused in every order for different reasons, a
 proxy for the diagnostic) is reported per variant, the current design
 included; it is not an order-independence defect (design §11.1).
+
+## QT-strict (2026-10-19, branch `qt-strict`)
+
+Rerun from the committed tree; each exits 0. Variant `QT-strict` is
+`{ qts: true, selfApart: false, pairwise: false }`; `QT-strict+P`
+adds positional pairwise improvement, for comparison only.
+
+| Command | Output (abridged) |
+|---|---|
+| `node qt-checks.mjs strict` | 23 `ok`: S1-S3 D4 under QT-strict and accepted by QS-EHZ in every order; each accepted by QT-strict with its annotation, the solution the least; S2 with its arguments swapped accepted; on the 13 cases of research/purs-row-experiment QT-strict's acceptance equals purs's (`sig`, `nub`) in every order |
+| `node qt-checks.mjs order` | 21 `ok` (adds order-S-shapes-1910: rejected in both orders, classes `refuse, D4`) |
+| `node qt-fixtures.mjs fixtures` | QT-strict `S>U` design-forced-bound, design-quiet, diag-14-fix; `C>U` diag-03, diag-05, diag-14; `violations 0` |
+| `node qt-fixtures.mjs programs` | QT-strict U on programs 11, 12, 13 (design-quiet) and 16 (`same`, C under the current design); `violations 0` |
+| `node qt-compare.mjs …` (the seeds above) | QT-strict totals: raw accept 9,075 (`accept>D4` 5,180), dense 4,340 (15,555), shapes 7,228 (3,318), F2 0 (186); `acceptDiff` 0 everywhere; `orderDiff` 7 on shapes, 0 elsewhere |
+| `node qt-domains.mjs A 10`, `… B 10` | QT-strict A: accept 178,616, refuse 16,446,806, D4 2,679,870, no `orderDiff` or `acceptDiff`; B: 8,092, 96,260, 349,198, none |
 
 ## Sensitivity
 

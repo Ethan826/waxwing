@@ -28,7 +28,8 @@ export const makeState = (hyp, opts = {}) => ({ hyp, bind: new Map(),
   mode: opts.mode ?? 'strict',
   home: opts.home ?? false, commit: opts.commit ?? false,
   empty: opts.empty ?? false, zero: opts.zero ?? false,
-  plain: opts.plain ?? false });
+  plain: opts.plain ?? false, selfApart: opts.selfApart ?? true,
+  qts: opts.qts ?? false, pairwise: opts.pairwise ?? true });
 
 export const freshMeta = st => `m${1000 + st.fresh++}`;
 
@@ -79,7 +80,11 @@ function addExcl(st, m, a) {
 function apartAtoms(st, t, u) {
   if (t === u) {
     if (!isMeta(t)) throw new Fail(`twice: ${t}`);
-    bindMeta(st, t, EMPTY);
+    if (st.selfApart) bindMeta(st, t, EMPTY);
+    else if (!st.pairs.has(key(t, t))) {
+      st.pairs.add(key(t, t));
+      st.version++;
+    }
   } else if (!isMeta(t) && !isMeta(u)) {
     if (!hypApart(st, t, u)) throw new Fail(`not entailed: ${t} # ${u}`);
   } else if (!isMeta(t)) addExcl(st, u, t);
@@ -151,7 +156,8 @@ export function bindMeta(st, m, row) {
       : tailRow(a));
   }
   for (const k of partners) {
-    requireDisjoint(st, img, tailRow(k.split('|').find(x => x !== m)));
+    const other = k.split('|').find(x => x !== m) ?? m;
+    requireDisjoint(st, img, tailRow(other));
   }
   wellFormed(st, img);
 }

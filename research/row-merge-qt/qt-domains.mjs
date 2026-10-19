@@ -1,10 +1,13 @@
 // Every problem of research/open-row-merge's exhaustive domains A and B
 // (exhaustive-run.mjs `problems`: two equations plus nothing, a `lacks`
-// or a `dis`; every order) through QT, QS-EH and QS-EHZ, judged by the
-// brute-force oracle: S (accept => a solution), L (accept => the least
-// solution), H (refuse => no solution), and order independence: one
-// verdict class, and for accepts one solution, over all orders.
-// Exit 1 on any S, L or H violation, or an order difference in QS-EHZ.
+// or a `dis`; every order) through QT, QT-strict, QS-EH and QS-EHZ,
+// judged by the brute-force oracle: S (accept => a solution), L (accept
+// => the least solution), H (refuse => no solution), and order
+// independence:
+// `orderDiff`, more than one verdict class or solution over the orders;
+// `acceptDiff`, accepted in some orders and not others, or with
+// different solutions. Exit 1 on any S, L or H violation, an order
+// difference in QS-EHZ or an acceptance difference in QT-strict.
 // Usage: node qt-domains.mjs A|B [workers]
 import { Worker, isMainThread, parentPort, workerData }
   from 'node:worker_threads';
@@ -14,7 +17,8 @@ import { allSolutions, leastOf, sat, isMeta }
   from '../open-row-merge/oracle.mjs';
 import { verdictQT, solutionQT } from './qt-drive.mjs';
 
-const VARIANTS = { QT: {}, 'QS-EH': { mode: 'sym', empty: true, home: true },
+const VARIANTS = { QT: {}, 'QT-strict': { qts: true, selfApart: false,
+  pairwise: false }, 'QS-EH': { mode: 'sym', empty: true, home: true },
   'QS-EHZ': { mode: 'sym', empty: true, home: true, zero: true } };
 const perms = xs => (xs.length <= 1 ? [xs] : xs.flatMap((x, i) =>
   perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map(p => [x, ...p])));
@@ -32,7 +36,7 @@ function run(p, tally) {
   bump(tally, 'problems');
   for (const [k, opts] of Object.entries(VARIANTS)) {
     const t = tally[k] ??= {};
-    const seen = new Set();
+    const seen = new Set(), acc = new Set();
     for (const order of perms(p.cs)) {
       const v = verdictQT(p.hyp, order, opts);
       bump(t, v.v);
@@ -46,8 +50,10 @@ function run(p, tally) {
       }
       if (v.v === 'refuse' && sols.length) bump(t, 'H-violated');
       seen.add(key);
+      acc.add(v.v === 'accept' ? key : 'no');
     }
     if (seen.size > 1) bump(t, 'orderDiff');
+    if (acc.size > 1) bump(t, 'acceptDiff');
   }
 }
 
@@ -83,6 +89,6 @@ function report(t, name, started) {
     console.log(k, JSON.stringify(t[k]));
     bad ||= ['S-violated', 'L-violated', 'H-violated'].some(x => t[k][x]);
   }
-  bad ||= !!t['QS-EHZ'].orderDiff;
+  bad ||= !!t['QS-EHZ'].orderDiff || !!t['QT-strict'].acceptDiff;
   process.exitCode = bad ? 1 : 0;
 }

@@ -7,7 +7,9 @@
 // S (accept => a solution), L (accept => the least solution), H (refuse
 // => no solution); order differences; transitions from C's verdict
 // (`accept>D4`: C accepts, the variant needs an annotation); and
-// `whyDiff`, problems refused in every order for different reasons
+// `acceptDiff`, problems accepted in some orders and not others, or
+// accepted with different solutions (C is not counted); `whyDiff`,
+// problems refused in every order for different reasons
 // (the prototype's failure message, metas renamed: a proxy for the
 // diagnostic, which the prototype does not render).
 // Usage: node qt-compare.mjs raw|dense <seed> <problems>
@@ -22,12 +24,16 @@ import { verdictA } from '../row-merge-alternatives/alt-drive.mjs';
 import * as A from '../row-merge-alternatives/alt-solver.mjs';
 import { generator, metasOf } from '../row-merge-alternatives/gen.mjs';
 import { verdictQT, solutionQT } from './qt-drive.mjs';
+import { quietOnly } from './qt-strict.mjs';
 
+export const QTS = { qts: true, selfApart: false, pairwise: false };
 const qt = opts => [o => verdictQT(o.hyp, o.cs, opts), solutionQT];
 export const VARIANTS = {
   A: [o => verdictA(o.hyp, o.cs), A.solution],
   AH: [o => verdictA(o.hyp, o.cs, { commit: true }), A.solution],
   QT: [o => verdictQT(o.hyp, o.cs), solutionQT],
+  'QT-strict': qt(QTS),
+  'QT-strict+P': qt({ ...QTS, pairwise: true }),
   'QT-E': qt({ empty: true }),
   QS: qt({ mode: 'sym' }),
   'QS-E': qt({ mode: 'sym', empty: true }),
@@ -49,6 +55,7 @@ function judge(t, p, sols, lst, v, sol) {
     if (!lst || !same(got, lst, p.metas)) bump(t, 'L-violated');
   }
   if (v.v === 'refuse' && sols.length) bump(t, 'H-violated');
+  if (v.v === 'D4' && v.st?.qts && quietOnly(v.st)) bump(t, 'D4:quiet');
   if (v.v === 'D4') {
     bump(t, sols.length > 1 ? 'D4:many' : `D4:${sols.length}sol`);
     if (lst) bump(t, 'D4:withLeast');
@@ -63,6 +70,8 @@ export function one(p, orders) {
     .map(k => [k, new Set()]));
   const whys = Object.fromEntries(Object.keys(tallies)
     .map(k => [k, new Set()]));
+  const accepts = Object.fromEntries(Object.keys(tallies)
+    .map(k => [k, new Set()]));
   for (const cs of orders) {
     const o = { hyp: p.hyp, cs };
     const cur = verdict(p.hyp, cs);
@@ -74,11 +83,14 @@ export function one(p, orders) {
       judge(tallies[k], p, sols, lst, v, sol);
       seen[k].add(v.v);
       if (v.v === 'refuse') whys[k].add(v.why.replace(/m\d+/g, 'm'));
+      accepts[k].add(v.v === 'accept'
+        ? JSON.stringify(sol(v.st, p.metas)) : 'no');
       if (v.v !== cur.v) bump(tallies[k], `${cur.v}>${v.v}`);
     }
   }
   for (const k of Object.keys(seen)) {
     if (seen[k].size > 1) bump(tallies[k], 'orderDiff');
+    if (accepts[k].size > 1) bump(tallies[k], 'acceptDiff');
     if (seen[k].size === 1 && whys[k].size > 1) bump(tallies[k], 'whyDiff');
   }
 }

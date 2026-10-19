@@ -45,3 +45,52 @@ export const EXAMPLES = [
     annotation: [{ k: 'eq', l: t('m0'), r: { fields: [], tails: [] } }],
     annotationText: 'nest(fn(p: {}, w) => merge(p, w), merge)' },
 ];
+
+const empty = { fields: [], tails: [] };
+const isEmpty = m => ({ k: 'eq', l: t(m), r: empty });
+
+// Programs QS-EHZ accepts (with the {} default) that QT-strict leaves D4
+// (the design's section 13), with the smallest annotation that makes
+// QT-strict accept (found by trying every set of annotated metas).
+export const STRICT_EXAMPLES = [
+  // S1. fn apply0(f: (a, b) -> c, g: (d, e) -> c): Int = 0;
+  //     fn main(): Int = apply0(merge, merge);   (fixture design-quiet)
+  { name: 'S1 apply0(merge, merge)', hyp: H,
+    steps: [
+      { k: 'dis', l: t('m0'), r: t('m1') },
+      { k: 'dis', l: t('m2'), r: t('m3') },
+      { k: 'eq', l: two('m0', 'm1'), r: two('m2', 'm3') },
+    ],
+    annotation: [isEmpty('m0'), isEmpty('m2')],
+    annotationText: 'apply0(fn(p: {}, q) => merge(p, q), '
+      + 'fn(p: {}, q) => merge(p, q))' },
+  // S2. fn ignore(f: (p) -> q): Int = 0;
+  //     fn main(): Int = ignore(fn(p) => merge(p, { a: 1 }));
+  // merge's r is p's row m2 (= m0), its s is { a } (m1). With the
+  // arguments swapped, merge({ a: 1 }, p), QT-strict accepts (the left
+  // part is closed: PureScript's case 1).
+  { name: 'S2 ignore(fn(p) => merge(p, { a: 1 }))', hyp: H,
+    steps: [
+      { k: 'dis', l: t('m0'), r: t('m1') },
+      { k: 'eq', l: t('m0'), r: t('m2') },
+      { k: 'eq', l: t('m1'), r: { fields: ['a'], tails: [] } },
+      { k: 'eq', l: two('m0', 'm1'), r: t('m3') },
+    ],
+    swapped: [
+      { k: 'dis', l: t('m1'), r: t('m0') },
+      { k: 'eq', l: t('m0'), r: t('m2') },
+      { k: 'eq', l: t('m1'), r: { fields: ['a'], tails: [] } },
+      { k: 'eq', l: two('m1', 'm0'), r: t('m3') },
+    ],
+    annotation: [isEmpty('m2')],
+    annotationText: 'ignore(fn(p: {}) => merge(p, { a: 1 }))' },
+  // S3. fn apply0(f: (a, b) -> {}): Int = 0;
+  //     fn main(): Int = apply0(merge);
+  { name: 'S3 apply0(merge) into {}', hyp: H,
+    steps: [
+      { k: 'dis', l: t('m0'), r: t('m1') },
+      { k: 'eq', l: two('m0', 'm1'), r: empty },
+    ],
+    annotation: [isEmpty('m1')],
+    annotationText: 'apply0(fn(p, q: {}) => merge(p, q))' },
+];

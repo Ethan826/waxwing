@@ -9,6 +9,7 @@
 import * as F from './qt-facts.mjs';
 import { desugar, improve, finish } from './qt-preds.mjs';
 import { wait, improveSym, finishSym } from './qt-sym.mjs';
+import { improveStrict, finishStrict } from './qt-strict.mjs';
 
 const sym = st => st.mode === 'sym';
 const made = (st, row) => {
@@ -29,10 +30,12 @@ const step = (st, c) => {
   }
   settle(st);
 };
-const settle = st => (sym(st) ? improveSym(st) : improve(st));
+const settle = st => (sym(st) ? improveSym(st)
+  : st.qts ? improveStrict(st) : improve(st));
 
 // { v, st, why? }; opts: { mode: 'strict' | 'sym', empty, home,
-// commit, zero } (qt-preds.mjs, qt-sym.mjs); `after(st)`, if given, is
+// commit, zero, selfApart, qts } (qt-preds.mjs, qt-sym.mjs,
+// qt-strict.mjs); `after(st)`, if given, is
 // called after each step (qt-checks.mjs `stage4` reads waiting
 // predicates there).
 export function verdictQT(hyp, steps, opts = {}) {
@@ -46,7 +49,9 @@ export function verdictQT(hyp, steps, opts = {}) {
     if (e instanceof F.Fail) return { v: 'refuse', why: e.message, st };
     throw e;
   }
-  return { v: sym(st) ? finishSym(st) : finish(st), st };
+  const v = sym(st) ? finishSym(st) : st.qts ? finishStrict(st)
+    : finish(st);
+  return { v, st };
 }
 
 export const solutionQT = F.solution;
