@@ -603,6 +603,32 @@ First applied in docs/plans/2026-10-17-open-row-merge-plan.md (R005
 Tranche B); its rule arguments are
 docs/plans/2026-10-17-open-row-merge-rules.md.
 
+## Prose review for READMEs and explanatory docs
+
+Review convention (not automated), adopted 2026-10-19 at the user's
+request. Applies to READMEs and documents written to explain a design to
+readers (not to plans, logs or progress records).
+
+1. **Catalog before rewriting.** For each problem, record the exact
+   passage, the pattern it shows, and why it weakens this particular text
+   (what a reader misreads, skips or has to reconstruct). Patterns include
+   the AI-writing signs the `humanizer` skill lists (not-X-but-Y contrasts,
+   one-line closers, staged openers, forced triads, dash overuse, inflated
+   claims, sales language, stock words, bold labels, filler) and Bryan A.
+   Garner's plain-English concerns (*Garner's Modern English Usage*; *Legal
+   Writing in Plain English*): needless words, buried nominalizations
+   ("make a determination" for "determine"), passive voice that hides the
+   actor, abstract nouns where a concrete example would serve, unexplained
+   jargon, inconsistent terms for one idea, and points buried mid-paragraph
+   instead of stated first.
+2. **Rewrite** to fix the catalogued findings.
+3. **Review the rewrite the same way** and fix what remains.
+4. **Preserve** facts, qualifications ("measured, not proved"), technical
+   distinctions and the author's intentional voice. Don't manufacture
+   informality, and don't drop a hedge that records a real limit.
+5. The `humanizer` skill is the tool for steps 1-3 where available; record
+   the catalogue in the commit or review notes.
+
 ## Known gaps in enforcement (A001)
 
 Review conventions only: the layer names describe reasons to change, which no

@@ -45,6 +45,9 @@ vertical slice before adding language features. Task tracking is local.
 - Inventiveness belongs in the composition of features, not the guts
   (ADR 014): compose published primitives, name each component's source,
   and flag novel machinery for the user's explicit approval.
+- READMEs and explanatory docs get a prose review before and after
+  rewriting (docs/engineering.md "Prose review"): catalog each finding,
+  rewrite, re-review, and preserve facts, qualifications and voice.
 - Comments explain reasoning. Update docs/engineering.md when a rule changes
   and distinguish automated enforcement from review conventions.
 - Keep plan status, evidence, findings, ADRs, and backlog current in the same
