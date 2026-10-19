@@ -52,9 +52,13 @@ an oracle property or a measured run.
   substitution's row store, with an identity, a site, an owner and a
   field path (diagnostic metadata). It reverts with the substitution
   when a postponed effect pair reverts.
-- **Solving** is PureScript's three `unionRows` cases, then Sym (the
-  same cases with the parts swapped), re-examined by a full rescan
-  after each top-level unification and in each effect-settling round.
+- **Solving** uses PureScript's `unionRows` cases 1-3 (borrowed), the
+  adaptation 1g (parts with no unknown give their symbolic union;
+  broader than PureScript's matching of a given, rules file §3) and the
+  approved adaptation Sym (the same cases with the parts swapped),
+  re-examined by a full rescan after each top-level unification and in
+  each effect-settling round; at the end of a body, the approved
+  classification rule H.
   Nothing else improves a predicate: no sum rule, bounds, homes,
   commits, pairwise improvement, N5, E or Z.
 - **The end of a body** is the only producer of `Solved` and
@@ -84,10 +88,12 @@ authorized.
 Written on branch `r005b-replan` from main 1d43341. Docs only: no
 compiler source, test, script or test fixture changed; nothing built;
 verify not run. What was run, read-only: the research scripts named
-below (their outputs are quoted where used) and scratch checks in the
-session scratchpad, not committed, whose results are marked
-**scratch** (Task B0 commits each as a research check before anything
-relies on it). The compiler build in output/ (built 2026-10-18 10:38;
+below (their outputs are quoted where used). Results first obtained by
+scratch checks were committed and reproduced from the tree in Task B0
+(research/row-merge-qt/qt-adopted.mjs, qt-render.mjs, qt-given.mjs;
+research/row-merge-typed; research/purs-given-1g); the marks
+**scratch** below were replaced by the command that reproduces each.
+The compiler build in output/ (built 2026-10-18 10:38;
 it has main's placeholder texts and none of the Task 5 WIP's modules)
 was run only on scratch programs to confirm that the lambda
 annotations of §5 are accepted syntax in single-tail programs; no
@@ -99,8 +105,8 @@ literal with two spreads (Task 7).
 - **Supersedes** the custom solver of design draft 3 and Tasks 5-6 of
   the 2026-10-17 plan: forced solving with upper bounds (user decision
   3), the sum rule, homes and commits, the drain and quiet equations,
-  R10.2 and R10.3, the F2 fix, C1 and C3, and Task 3's `x # x` binding
-  (N5). §1.1 lists every decision with its fate.
+  R10.2's U4 clause and R10.3, the F2 fix, C1 and C3, and Task 3's `x #
+  x` binding (N5). §1.1 lists every decision with its fate.
 - **Keeps** Tasks 1-3 and most of Task 4: the several-tail
   representation, the surface, the fact store with provenance and
   precedence, decomposition, the bind rule, cancellation and the
@@ -172,14 +178,14 @@ qualified-types re-plan's §9 proposals (Q-n).
 | P-13 | research/open-row-merge/state.mjs imports the prototype's flatten | Retained | A fact about that prototype |
 | P-14 | "one passed lacks fact per tail is correct, it does not establish that r and s are disjoint" | Retained | Task 3's tests stay |
 | G-0 | "D4 means that the checker could not resolve the constraints: it has established neither a solution nor a contradiction … D6 means that the checker has established a contradiction caused by an equation" | Retained (meaning); mechanism **modified** | D4: a `Merge` predicate still waits at the end of a body and H found no contradiction. D6: a contradiction found while solving a predicate (a case's unification fails) or by H. The diagnostics file's §1 definitions in terms of homes, forced moves, bounds and the drain are superseded |
-| G-1 | R10.2: "Preserve the specific fact responsible when pruning binds a row to `{}`" | **Superseded** with U4 | No bound and no U4. With N5 gone no solving step binds a meta to `{}` at all. The principle (no internal step degrades a written fact's text into a shape mismatch) stays a review rule, and the `lone-meta-lack` fixtures keep D1 |
+| G-1 | R10.2: "Preserve the specific fact responsible when pruning binds a row to `{}`" | U4 clause **superseded**; principle **open** (B0) | No bound and no U4, so bound-driven emptying disappears. Emptying does not: case 2 binds the left part to `{}` when the right part and the result have the same labels. B0 measured it (rules file §9, `node qt-render.mjs case2 2000`): 17 such bindings in 14,000 runs, 3 runs then failing at a mismatch that reaches the emptied meta, each with another order failing otherwise. Those need the predicate kept as the binding's cause (G-2) or they read `Expected {}, found …`. Whether R10.2's principle (a written fact's own text preferred) also applies there is open (§10); R10.2 is not retired by B0. The `lone-meta-lack` fixtures keep D1 |
 | G-2 | R10.1: "Retain the causal equation after it leaves the pending store so Examples 14 and 17 report D6; merely having participated in some equation must not turn later errors into D6" | **Modified** | Kept for bindings a predicate's case made (`boundBy` set by the cases); the commit and drain halves go. Example 14 is now H's (end of body) |
 | G-3 | R10.3: "Upper-bound explanations approved in principle" | **Superseded** with bounds | The failing predicate is the one being examined, so no selection is needed |
 | G-4 | R5: "The owner's side is printed as written … the other side through the current substitution" | Retained | — |
 | G-5 | "Lambda-parameter names, record-part creation sites and instantiated type origins are recorded as diagnostic metadata, kept separate from satisfiability decisions" | Retained | Also the predicate's site, owner and field path |
 | G-6 | "list every candidate part … deduplicate by part identity, not printed name … the demonstrated annotation hints; no hint for Example 6" | Retained; R3 **modified** | R3's candidate parts are the predicate's parts that H's exclusion test does not rule out (diagnostic metadata, never a solving step) |
 | G-7 | Diagnostics §1: "Quiet equations (no constants) are never D4 (§2.2)" | **Superseded** | A waiting predicate with no constant is Unresolved under QT-strict (S1 = `design-quiet`, S3). It needs a new D4 form, Proposed (§5, decision 3) |
-| F-2 | "Adopted: an upper bound per meta, with lacks and apart facts carried by one sum rule … all 186 shared-parameter programs with a least solution now accepted" | **Superseded** | Each of the 186 needs one annotated parameter, redundant in all 186 (it fixes the only value the shared parameter has; `node qt-checks2.mjs generality`; accepted with it under the adopted configuration, **scratch**) |
+| F-2 | "Adopted: an upper bound per meta, with lacks and apart facts carried by one sum rule … all 186 shared-parameter programs with a least solution now accepted" | **Superseded** | Each of the 186 needs one annotated parameter, redundant in all 186 (it fixes the only value the shared parameter has; `node qt-checks2.mjs generality`; accepted with it under the adopted configuration, `node qt-adopted.mjs examples`) |
 | F-3 | C1 "(one pending equation at D4 ⇒ no least solution)", C2 "(verdict independent of constraint order)", C3 "a reported rate" | C1 and C3 **superseded**; C2 **modified** | C1 is false here (S3: one predicate, one solution, Unresolved). C2 becomes: acceptance, inferred types and verdict kinds the same in every order, measured. C3's ceiling is replaced by the recorded count of Unresolved runs with a least solution |
 | F-4 | "Pending equations hold only the residue, have an identity, a normal form, a meta index, and nested equations inherit the outer site" | **Modified** | Predicates have an identity, a site and a field path; no residue normal form and no index. Nested predicates are made at instantiation, so their site is the use's (T3, §2.12) |
 | F-5 | "a residue with no constants stays pending as a quiet equation, which the empty default satisfies" | **Superseded** | Quiet predicates are Unresolved (G-7) |
@@ -194,7 +200,7 @@ qualified-types re-plan's §9 proposals (Q-n).
 | Q-3 | §9.3: N1-N6 | **Modified** | N1 is the meaning (disjoint union). N3 (H) approved as classification only, at the end. N2 (E), N4 (C), N6 (Z) not adopted. N5 **removed**: Task 3 merged it (Check/Disjoint `tailPair`), QT-strict runs without it (§2.7) |
 | Q-4 | §9.4 fixture classes | **Modified** | Proposals in §4.5: `design-forced-bound`, `diag-14-fix`, `design-quiet` Solved → Unresolved; `odd-cycle` stays Unresolved (no move to Contradiction: no pairwise improvement); `diag-14` stays Contradiction (by H) |
 | Q-5 | §9.5: D6b for two predicates that disagree | **Superseded** | No pairwise improvement, so no such contradiction is found; program 16 (`same`) is Unresolved |
-| Q-6 | §9.6: "The approved R10.2 and R10.3 retire" | As G-1, G-3 | For the user's confirmation (§10) |
+| Q-6 | §9.6: "The approved R10.2 and R10.3 retire" | R10.3 as G-3; R10.2 not retired (G-1, B0's finding) | For the user's decision (§10) |
 | Q-7 | §9.7: retire `r005b-upper`, `r005b-bound-reason`, `r005b-pruned-reason` | Proposal | §8 |
 
 Ledger rows of the 2026-10-17 plan that change (the others are retained
@@ -263,7 +269,8 @@ the adopted design (§1.3).
 
 **New** (B3-B5): src/Features/Check/RowMerge/Predicate (the `Merge`
 record and its store operations), Desugar (one unknown tail per row),
-Cases (PureScript's three cases and 1g on one orientation), Improve
+Cases (PureScript's cases 1-3 and the adaptation 1g on one
+orientation), Improve
 (Sym and the full rescan), End (`endOfBody`, `concluded`, H), and the
 README. Names may change in B0; each module ≤250 lines.
 
@@ -284,7 +291,7 @@ where a row cites them, the source read is named beside it (§11.5).
 | `Merge left right result` | PureScript `Prim.Row.Union` with `Nub` (Environment.hs 515-528: dependencies `[0, 1] [2]`, `[1, 2] [0]`, `[2, 0] [1]`); purescript-record `disjointUnion` (`Union r1 r2 r3 => Nub r3 r3 =>`, lines 198-207) | a three-place row predicate solved by the compiler | disjoint by definition (Waxwing rows hold no duplicate; one predicate instead of `Union` plus `Nub`) | adapted (re-plan §11.5) |
 | Desugaring a row of k ≥ 2 unknown tails | PureScript: a signature names the union's result (`Union r s t => …`); research/row-merge-qt/qt-preds.mjs `desugar` | one fresh `t`, k − 1 predicates folded from the left, parts required disjoint when made | Waxwing writes `{ ...r, ...s }` in the type, so the result variable is made at instantiation (T1) | adapted (translation of the surface) |
 | Solving a predicate: cases 1, 2, 3 | Entailment.hs `unionRows`: case 1 lines 636-638 (left closed: `t` is its fields followed by the right part), case 2 lines 639-660 (right and `t` closed: left is `t` minus the right's labels; no progress if one is missing, line 654), case 3 lines 661-672 (left open with known labels: they move into `t`; `Union rest(left) right t'` remains); otherwise no progress (`canMakeProgress`, line 628) | the three cases, their guards and their order | field types are unified (PureScript unifies the solved instance with the constraint, lines 290-296) | as published |
-| Case 1g: parts with no unknown | Entailment.hs `matches` (lines 275, 735-750): a wanted constraint matches a given by the dependency left right -> union; the signature's row `{ ...r, ...s }` plays the given | `t := r ⊎ s` when neither part has an unknown | the given is written as a row, not a constraint | adapted (re-plan §13.1) |
+| Case 1g: parts with no unknown | compared with Entailment.hs `matches` (lines 275, 735-750: a wanted `Union` matches a given by the dependency left right -> union); justified independently (rules file §3: with no unknown the result has one value in every solution, the symbolic union, well formed by the parts' entailed disjointness; Jones 1995 §4) | `t := l ⊎ r`, written as one row | broader than given matching: it also fires with the parts swapped, regrouped, or with only a `disjoint` clause (purs NoInstanceFound in those cases, research/purs-given-1g) | **adapted** (B0; the first draft said "re-plan §13.1") |
 | No pairwise improvement between wanted predicates | Types.hs lines 96-101 (`shouldGeneralize` false with a signature); Entailment.hs 314-320, 369 (an unsolved constraint is not stored as a dictionary for a later one to match) | none | — | as published (what PureScript does with a signature) |
 | **Sym**: the cases tried again with the parts swapped | locally introduced, **approved** (2026-10-19); argument re-plan §14.1 | — | cases 1', 2', 3' (§2.3) | local adaptation |
 | Deferral; a predicate unsolved at the end is an error | Entailment.hs 363-371 (`Deferred`; `Unsolved` when generalizing; else `NoInstanceFound`); Ur/Web §4 | wait, then report | Waxwing never generalizes, so only the error branch applies; the error is D4 ("annotate") | as published |
@@ -362,10 +369,11 @@ means no tail at all.
   orientation irrelevant (`mirrorDiff` 0). For three or more unknown
   tails the association also changes; on the ten fixtures with a row of
   three unknown tails, every tail order and every step order gave one
-  outcome under `QT-strict+Sym+H` (**scratch**). The generators make no
-  row with three unknown tails (**scratch**: 0 of 14,000 raw, dense and
-  shape problems checked), so B0 adds such problems before relying on
-  it (§3.4).
+  outcome under `QT-strict+Sym+H` (`node qt-adopted.mjs three`). The
+  labels-only generators make no row with three unknown tails; B0's
+  typed family `assoc` (research/row-merge-typed) merges three typed
+  arguments in both groupings and every order: one outcome per problem
+  for +Sym+H (rules file §10).
 
 ### 2.2 The predicate
 
@@ -391,7 +399,7 @@ research/row-merge-qt/qt-strict.mjs `oriented`), in this order:
 
 | Case | Fires when | Effect |
 |---|---|---|
-| 1g | neither part has a meta (fields and rigid tails only) | unify `t` with `{ fields(L), fields(R), ...tails(L), ...tails(R) }`; done |
+| 1g | neither part has a meta (fields and rigid tails only), and their disjointness was required when the predicate was made (entailed for rigids: D3, D3', D3'' otherwise) | unify `t` with `{ fields(L), fields(R), ...tails(L), ...tails(R) }`; done. A Waxwing adaptation, not one of PureScript's cases (rules file §3) |
 | 1 | `L` closed | unify `t` with `{ fields(L), fields(R), ...tails(R) }`; done |
 | 2 | `R` and `T` closed | if every label of `R` is in `T`: unify each such field type with `T`'s, then `l := T` minus `R`'s labels; done. A label of `R` missing from `T`: no progress (line 654) |
 | 3 | `L` has fields and a tail | `u` fresh, unify `t` with `{ fields(L), ...u }` (`u` well formed: it lacks those labels); the predicate becomes `Merge rest(L) r u` |
@@ -501,8 +509,8 @@ increase except by re-making what a revert removed (B0 argues it).
 |---|---|---|
 | a case's unification fails (field mismatch, a label `t` cannot have, a refused fact) | D6 forms (`O's ROW must be OTHER, so A cannot have field l`), or the fact's own text (D1, D2, D3'') when a written fact is the reason (R10.2's principle) | R7: the expression being checked |
 | a binding a case made fails later (R10.1) | D6, the predicate from `boundBy` | the expression being checked |
-| H's Contradiction | D6 `… but neither A nor B can have field l` (`none of`, `cannot hold t`), `excluded here` per fact | **Proposed** (T4): the latest site at which a fact or binding of the predicate's parts arrived (diag-14's approved location, `noX`, is that site) |
-| Unresolved | D4 forms with R9's hints when a constant has two or more candidate parts (R3, R4); **Proposed** forms otherwise (§5: a predicate with no constant; constants each with one candidate) | R7: the predicate's site. R11 **Proposed**: the earliest-site predicate that has a field with two or more candidate parts; only when none has one, the earliest predicate. `determinate`'s approved text needs this: its earliest waiting predicate has no field, and the approved D4 names field `a` at the second `merge` (prototype end state, **scratch**) |
+| H's Contradiction | D6 `… but neither A nor B can have field l` (`none of`, `cannot hold t`), `excluded here` per fact | **Proposed** (T4, stable, from provenance; rules file §7): each fact ruling the field out of a part keeps its reason by the approved precedence and, as metadata, the span of the use whose seeding stated it; the primary is the latest of those spans in source order, else the predicate's site; notes `required here` at the predicate's site and `excluded here` at each reason's span. On `diag-14` this is the approved `noX` |
+| Unresolved | D4 forms with R9's hints when a constant has two or more candidate parts (R3, R4); **Proposed** forms otherwise (§5: a predicate with no constant; constants each with one candidate) | R7: the predicate's site. R11 **Proposed**: the earliest-site predicate that has a field with two or more candidate parts; only when none has one, the earliest predicate. `determinate`'s approved text needs this: its earliest waiting predicate has no field, and the approved D4 names field `a` at the second `merge` (`node qt-adopted.mjs report`: site 9, field `a`, in every order checked) |
 
 ### 2.11 Specialization and lowering
 
@@ -697,8 +705,8 @@ Ported from Task 4's harness (test/row-merge-oracle.mjs, -readback,
 - **Mirror and association.** Each problem also with every row's unknown
   tails reversed (swapped inputs) and, for rows of three or more unknown
   tails, every tail order: one outcome. B0 adds a generator mode with
-  rows of three unknown tails (none of the current generators makes
-  one, **scratch**).
+  rows of three unknown tails (done in research form: `assoc` in
+  research/row-merge-typed, rules file §10).
 - **Typed domain** (research/row-merge-qt/qt-typed.mjs, ported):
   336,610 problems of two typed equations, both orders and the mirror.
 - **Generated problems**: raw, dense and program-shaped (seeds as Task
@@ -786,7 +794,7 @@ run (Task 8). Solver-level forms of the same rows land in B4.
 
 Kept, never deleted. Expected outcomes under `QT-strict+Sym+H`, every
 order, from the prototype (`node qt-fixtures.mjs fixtures`, `…
-programs`; research fixtures by **scratch** runs that B0 commits):
+programs`; `node qt-adopted.mjs controls` for all of them):
 
 | Control | Was (current design) | Expected now | Solutions | Status |
 |---|---|---|---|---|
@@ -832,7 +840,7 @@ fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }
 
 Verdicts are the prototype's under `QT-strict+Sym+H` in every order;
 the smallest annotation was found by trying every set of annotated
-unknowns at their least values (**scratch**, B0 commits it). "Narrows"
+unknowns at their least values (`node qt-adopted.mjs examples`). "Narrows"
 means fixing the annotated part excludes solutions the program had
 (counted with one extra label `w`, `node qt-checks2.mjs generality`).
 Texts are approved D4 forms where marked, otherwise **Proposed**. The
@@ -844,12 +852,12 @@ function with a `disjoint` clause: accepted, run printing 0).
 |---|---|---|---|
 | **S1** `fn apply0(f: (a, b) -> c, g: (d, e) -> c): Int = 0;` `apply0(merge, merge)` (`design-quiet`, program 13) | Unresolved: D4 at the first `merge`, Proposed form for a predicate with no field: `Cannot tell what merge's r and s hold; pass a lambda with annotated parameters in place of merge` | two parameters: `apply0(fn(p: {}, q) => merge(p, q), fn(p: {}, q) => merge(p, q))` (one part of each merge; any of the four choices) | **narrows**: 3 of 5 solutions excluded, the typings in which the merges' left parts hold labels (both results are the unused `c`). No observable behaviour depends on them, but the annotated program no longer type-checks at those instances |
 | **S2** `fn ignore(f: (p) -> q): Int = 0;` `ignore(fn(p) => merge(p, { a: 1 }))` | **accepted** (Sym's case 1': the right part is closed), `p = {}` | none needed | under QT-strict alone it needs `fn(p: {}) => …`, which **narrows** (1 of 2 excluded: `p` holding labels other than `a`, for a lambda never applied); written anyway under the adopted design it narrows the same way |
-| **Q1** `fn relate(f: (p, s) -> { ...u }, g: (q, s) -> { b: Int, c: Int, ...u }): Int = 0;` `relate(merge, merge)` | Unresolved: two predicates wait, the first with no field, the second with `b` and `c` (candidates: its `r` and the shared `s`); under §2.10's proposed R11, the approved form `Cannot tell whether merge's r or s has field b; pass a lambda with annotated parameters in place of merge` at the second `merge` | the shared `s`: `relate(fn(p, s: {}) => merge(p, s), merge)` (the re-plan's `fn(p: {}, s)` for QT, §11.3, leaves it Unresolved here, **scratch**) | **narrows**: 1 of 3 excluded, the typing in which the shared `s` holds an extra label, which then appears in both results; nothing uses it |
+| **Q1** `fn relate(f: (p, s) -> { ...u }, g: (q, s) -> { b: Int, c: Int, ...u }): Int = 0;` `relate(merge, merge)` | Unresolved: two predicates wait, the first with no field, the second with `b` and `c` (candidates: its `r` and the shared `s`); under §2.10's proposed R11, the approved form `Cannot tell whether merge's r or s has field b; pass a lambda with annotated parameters in place of merge` at the second `merge` | the shared `s`: `relate(fn(p, s: {}) => merge(p, s), merge)` (the re-plan's `fn(p: {}, s)` for QT, §11.3, leaves it Unresolved here, `node qt-adopted.mjs examples`) | **narrows**: 1 of 3 excluded, the typing in which the shared `s` holds an extra label, which then appears in both results; nothing uses it |
 | S3 `fn apply0(f: (a, b) -> {}): Int = 0;` `apply0(merge)` | Unresolved: no field (Proposed form) | `apply0(fn(p, q: {}) => merge(p, q))` | redundant (one solution) |
 | Q2 `fn nest(f: (p, w) -> { a: Int, b: Int }, g: (p, q) -> w): Int = 0;` `nest(merge, merge)` | Unresolved | `nest(fn(p: {}, w) => merge(p, w), merge)` | redundant |
 | program 11 `fn both(f: (p, q) -> { x: Int }, g: (p, w) -> { y: Int }): Int = 0;` `both(merge, merge)` (`design-forced-bound`) | Unresolved: approved D4 `Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge` at the first `merge` | one parameter: `both(fn(p: {}, q) => merge(p, q), merge)` (the re-plan's two-parameter form also works) | redundant |
 | program 12 `fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): Int = 0;` with `fn noX(p: { ...u }, q: { ...v }): Int where u lacks { y }, v lacks { x } = 0;`, `apply(merge, noX)` (`diag-14-fix`) | Unresolved: each field has one candidate part, Proposed form, e.g. `Cannot tell how merge's r and s split { x: Int, y: Int }; pass a lambda …` | `apply(fn(p: { x: Int }, q) => merge(p, q), noX)` | redundant |
-| F2's family, `k(merge, …, merge)` with a shared parameter, 186 programs with a least solution | Unresolved (all 392 plain; 206 have no least solution) | the shared parameter at its only value in the first callback (all 186 accepted, **scratch**) | redundant in all 186 |
+| F2's family, `k(merge, …, merge)` with a shared parameter, 186 programs with a least solution | Unresolved (all 392 plain; 206 have no least solution) | the shared parameter at its only value in the first callback (all 186 accepted, `node qt-adopted.mjs examples`) | redundant in all 186 |
 | program 16 `same(merge, merge)` | Unresolved (current design: Contradiction) | an annotation exposes the contradiction (as approved for `odd-cycle`'s hint) | — (no solution) |
 
 So, on the published examples, three programs need an annotation the
@@ -882,13 +890,13 @@ check that will. B0 completes it; no unbacked claim passes the gate.
 | M7 | H changes no acceptance or type | by construction (§2.5); prototype `baseDiff` 0 | H on/off on every run (B4) |
 | M8 | Acceptance, types and verdict kinds do not depend on the order of constraints | measured: `acceptDiff`, `kindDiff` 0 on every family incl. domains A and B; **not proved** | every order of fixtures and domains; five of generated problems (B3, B4, 9) |
 | M9 | Swapping a merge's arguments changes nothing | measured: `mirrorDiff` 0 on every family | mirror runs (B3) |
-| M10 | Association of three or more unknown tails changes nothing | **scratch** on ten fixtures only; argument not written | B0: argument and a generator with such rows; compiler test (B3) |
-| M11 | Field types: cases unify them; unknown field types behave as ground ones | argued (§14.1's bullets); typed domain with ground types only | typed entry and oracle (B3) |
+| M10 | Association of three or more unknown tails changes nothing | measured (B0): ten fixtures, every tail and step order; typed `assoc`, both groupings and every order; argued for 1g only | compiler test (B3) |
+| M11 | Field types: cases unify them; unknown field types behave as ground ones | argued; checked by research/row-merge-typed (unknown field types, one level of nesting, no rigid tails) | typed entry and oracle (B3) |
 | M12 | Nested predicates are re-examined and reported once, with their path | argued | nested tests (B3), Examples 4, 5 (Task 7) |
 | M13 | Predicates revert with a postponed effect pair; the joint fixpoint ends | argued (§2.9; rules §12 of the old file, adapted) | `r005b-settle-rollback`, `r005b-end-fixpoint` (B3) |
 | M14 | After specialization every row is ground | argued (§2.11; old L22) | Specialize asserts it (Task 8) |
 | M15 | The representation invariant holds | argued (§2.1) | the `Unexpected` guard and the oracle runner failing on it (B3) |
-| M16 | The annotations of §5 make the programs accepted; S1, Q1 narrow, the rest are redundant | `node qt-checks2.mjs generality`; **scratch** for the adopted configuration | test/r005b-annotations.test.mjs (Task 7) |
+| M16 | The annotations of §5 make the programs accepted; S1, Q1 narrow, the rest are redundant | `node qt-checks2.mjs generality`; `node qt-adopted.mjs examples` for the adopted configuration | test/r005b-annotations.test.mjs (Task 7) |
 
 ## 7. Tasks
 
@@ -920,14 +928,60 @@ test-fixture change; nothing in verify.
   forms of §5 and H's location (T4) applied to every affected fixture;
   the regression-row changes of §8; T1-T5.
 
-- [ ] Write the rules file; each argument names its check.
-- [ ] Commit the research checks; run them from the tree; record
-  outputs in the research README; each exits 0, and each check shown to
-  fail on a deliberately wrong expectation (scratch copy, deleted).
-- [ ] Complete the ledger; mark rows still argument-only with the reason.
-- [ ] Width check; commit. **Gate: the user reviews the rules file, the
-  ledger, the reclassification and text proposals, T1-T5 and §8, and
-  authorizes B1.**
+- [x] Write the rules file: docs/plans/2026-10-19-row-merge-rules.md
+  (2026-10-19). Termination is argued for acyclic predicate graphs only
+  (its §5); the cyclic case is stated as not argued.
+- [x] Commit the research checks and reproduce from the tree
+  (research/row-merge-qt README, "The adopted configuration";
+  research/row-merge-typed; research/purs-given-1g). Each exits 0; each
+  was shown to fail on a deliberately wrong expectation or a mutation in
+  a deleted scratch copy (qt-adopted.mjs `examples`, `controls`;
+  qt-given.mjs; tr-run.mjs's five mutations, research/row-merge-typed
+  README).
+- [x] Complete the ledger (rules file §11): M3 argued only for acyclic
+  predicates, M11-M12 checked without rigid tails and one level deep,
+  M8-M10 measured, not proved.
+- [x] Proposals written, not applied:
+  docs/plans/2026-10-19-row-merge-proposals.md.
+- [x] Width check; commit. **Gate: the user reviews the rules file, the
+  ledger, the proposals, T1-T5 and §8, and authorizes B1.**
+
+**B0 results** (user's review requests of 2026-10-19, items 1-6):
+
+- **Case 1g** is a Waxwing adaptation, not one of PureScript's cases. It
+  agrees with PureScript's matching of a given `Union` where a given
+  exists for the same parts, orientation and grouping, and is broader
+  elsewhere (swapped, regrouped, or disjointness from a clause with no
+  given), where purs 0.15.16 reports NoInstanceFound; its own
+  justification is the rules file's §3. Narrowing it would leave those
+  programs with no annotation that helps (§10, decision 4).
+- **R10.2.** Case 2 still empties metas; those bindings need their
+  predicate as cause (R10.1 extended to case 2), and whether a written
+  fact's own text should win there is open (rules file §9).
+- **H's location** is now stable by construction (§2.10). Modelled
+  diagnostics compared across orders apart from verdict kinds (`node
+  qt-render.mjs render 2000`): no verdict-kind difference; no rendered
+  difference for H or D4; refusals met while solving are reported at
+  the step being checked (location rule 1), so their modelled
+  diagnostic differs with the order in fixtures 24 of 72, raw 758 of
+  2,000 and shapes 855 of 2,000 problems. This is the approved rule's
+  dependence on checking order (the re-plan's §11.1 `whyDiff`), not a
+  verdict difference; it is listed for the user (§10, decision 6).
+- **Reproduced** from the tree: S2 accepted unannotated; Q1's smallest
+  annotation on the shared `s`; program 11 one parameter; F2's 186 with
+  one annotation; program 16 Contradiction → Unresolved; the ten
+  three-unknown fixtures one outcome over every tail and step order;
+  `determinate` reported at the second merge, field `a`, under the
+  proposed R11; the 72 fixtures (three move) and research controls.
+- **Association and types** (research/row-merge-typed): no violation, no
+  order, mirror or grouping difference for +Sym+H on 4,000 nested and
+  1,000 association problems; QT-strict alone has grouping differences
+  (`acceptDiff` 50 and 68). Unchecked: rigid tails with typed or nested
+  rows, deeper nesting, effects.
+- **No disagreement** between the prototypes, the oracles and the plan's
+  expectations was found, except the corrections above (1g's
+  classification; R10.2's retirement claim; H's location rule) and
+  those already reported (S2, Q1's annotation).
 
 ### Task B1: Behaviour-preserving splits
 
@@ -1274,34 +1328,56 @@ Total about 2.3-2.8M tokens (**estimate**), each task plus one verify
 
 ## 10. Decisions for the user
 
-1. **Authorize Task B0 alone** (docs and research only), or amend this
-   plan first.
+Updated after Task B0 (2026-10-19). Proposals stay unapplied; their
+details are in docs/plans/2026-10-19-row-merge-proposals.md.
+
+1. **Accept B0 and authorize B1 alone** (behaviour-preserving splits),
+   or amend this plan first.
 2. **Fixture reclassifications** (§4.5): `design-forced-bound`,
    `diag-14-fix`, `design-quiet` Solved → Unresolved, each with an
    `-annotated` fixture; `same` added (Unresolved); the research
-   controls' expected outcomes recorded. B4 stops before its fixture
-   step without this approval.
-3. **Proposed D4 forms** for a waiting predicate with no field (S1, S3)
-   and for one whose fields each have one candidate part (program 12),
-   and R11's choice between an earlier predicate with no field and a
-   later one with a field (§2.10; `determinate`'s approved text and Q1
-   depend on it). B0 writes the exact texts.
-4. **H's primary location** (T4).
-5. **R10.2 and R10.3 retire**; R10.1 limited to bindings a predicate's
-   case made; "quiet equations are never D4" retired (G-1-G-3, G-7).
-6. **Regression rows** (§8): retire `r005b-pruned-reason`; drop the
+   controls' expected outcomes recorded (`node qt-adopted.mjs
+   controls`). B4 stops before its fixture step without this approval.
+3. **Proposed D4 texts and R11's choice** (proposals §2): a waiting
+   predicate with no field (S1, S3); one whose fields each have one
+   candidate part (program 12); R11 reporting the earliest predicate
+   with a field two parts may hold, else the earliest predicate (needed
+   for `determinate`'s approved text; order independent as modelled,
+   `node qt-adopted.mjs report`).
+4. **Case 1g's scope** (rules file §3): keep it broad (the measured
+   configuration; agrees with PureScript where a given exists, broader
+   elsewhere, justified independently), or narrow it to where a written
+   row of the signature joins the same parts in the same orientation and
+   grouping (PureScript's reach; merges inside functions with only a
+   `disjoint` clause, swapped or regrouped, would then be refused with no
+   annotation that helps). Recommended: broad, as an approved adapted
+   rule named in the README.
+5. **R10.2** (rules file §9): bound-driven emptying is gone, but case 2
+   still binds a part to `{}`, and failures there need the predicate as
+   cause (R10.1 extended to case 2: proposed). Decide whether a written
+   fact that also excludes the label is preferred to D6 there (R10.2's
+   principle kept as a rule) or R10.2 retires with R10.3.
+6. **H's location** (T4, rules file §7): the stable provenance rule.
+   And note: refusals met while solving keep the approved location rule
+   1 (the expression being checked), which differs between equivalent
+   orders (§7, B0 results); keep, or ask for a provenance-based rule for
+   them too (a text and location change, not proposed here).
+7. **Regression rows** (§8): retire `r005b-pruned-reason`; drop the
    planned `r005b-upper` and `r005b-bound-reason`; the rewordings and
    new rows.
-7. **N5's removal** (T2): Task 3's merged binding of a meta apart from
+8. **N5's removal** (T2): Task 3's merged binding of a meta apart from
    itself goes, as the adopted configuration measured.
-8. **Translation decisions** T1 (desugar at creation, left fold, no
+9. **Translation decisions** T1 (desugar at creation, left fold, no
    memo), T3 (nested sites), T5 (`Equated` removed).
-9. **S2 in the decision record**: measured, the adopted design accepts
-   S2 without an annotation (Sym); proposed wording for the README and
-   the record: "S1 and Q1 need annotations that narrow; S2's annotation,
-   needed only without Sym, would narrow if written".
-10. **Module location**: new modules in src/Features/Check/RowMerge/ and
+10. **S2 in the decision record**: measured, the adopted design accepts
+    S2 without an annotation (Sym); proposed wording: "S1 and Q1 need
+    annotations that narrow; S2's annotation, needed only without Sym,
+    would narrow if written".
+11. **Module location**: new modules in src/Features/Check/RowMerge/ and
     the README there (§0); retained modules stay where they are.
+12. **Termination** (rules file §5): argued for acyclic predicate
+    graphs only. Accept B3's step counter (a `Stop Limit`) as the guard
+    for the unargued cyclic case, or require the argument before B3.
 
 ## References
 

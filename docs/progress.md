@@ -6613,3 +6613,45 @@ built, verify not run.
   S2 needs no annotation with Sym; S3, program 11 and F2 redundant),
   evidence and its limits with commands, and links to the decision
   history. Width check only; nothing built.
+
+## R005 Tranche B Task B0: the gate (2026-10-19)
+
+The user authorized B0 alone (2026-10-19), on branch `r005b-replan`.
+Docs and research only; nothing of Waxwing built, verify not run, no
+fixture, text, regression row or source changed.
+
+- Rules file docs/plans/2026-10-19-row-merge-rules.md: arguments by kind
+  for desugaring, PureScript's cases, case 1g, Sym, re-examination
+  (termination argued for acyclic predicate graphs only), defaulting, H
+  (with a stable, provenance-based location rule), the self-pair, R10.2,
+  and typed and nested rows; the ledger (M1-M18).
+- Case 1g is an adaptation, not one of PureScript's cases: it agrees with
+  matching a given `Union` where one exists for the same parts,
+  orientation and grouping, and is broader elsewhere, where purs 0.15.16
+  reports NoInstanceFound (research/purs-given-1g, 6 cases; qt-given.mjs,
+  7 cases).
+- R10.2: case 2 still binds a part to `{}` (17 of 14,000 runs); 3 runs
+  then fail at that meta, each with another order failing otherwise; the
+  binding needs its predicate as cause. Not retired; for the user.
+- Diagnostics modelled across orders apart from verdict kinds
+  (qt-render.mjs): no kind difference; none in H or D4 diagnostics; the
+  approved location rule 1 for refusals met while solving varies with
+  the order (fixtures 24 of 72, raw 758 and shapes 855 of 2,000).
+- Reproduced from the tree (qt-adopted.mjs): S2 accepted unannotated; Q1
+  annotated on the shared `s`; program 11 one parameter; F2 186 with one
+  annotation; program 16 Contradiction → Unresolved; three-unknown
+  fixtures one outcome in every tail and step order; `determinate`
+  reported at the second merge, field `a`, under the proposed R11; the
+  72 fixtures (three move) and the research controls.
+- research/row-merge-typed (new): unknown field types, merges inside
+  fields, association, with a unification-based oracle; +Sym+H no
+  violation and no order, mirror or grouping difference on 4,000 nested
+  and 1,000 association problems; five mutations caught. Unchecked:
+  rigid tails with typed or nested rows, deeper nesting, effects.
+- Proposals (not applied): docs/plans/2026-10-19-row-merge-proposals.md.
+  The plan's §10 decisions updated.
+- README draft rewritten (Z3's inherent and binding-specific costs apart,
+  two worked examples first, maintenance details last, 1g named) after a
+  prose review recorded in docs/plans/2026-10-19-row-merge-readme-review.md
+  (humanizer skill and Garner's plain-English concerns; before and after
+  catalogues).
