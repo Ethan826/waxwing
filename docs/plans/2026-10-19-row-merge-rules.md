@@ -7,7 +7,9 @@ of the same day are in the plan's §10 and are marked where they touch
 this file (1g broad, R10.2's principle and the case-2 cause, H's
 location, N5's removal). Two gates are open and recorded in the ledger:
 L1, termination for cyclic predicate graphs (blocks B3), and L2,
-solving-time diagnostics.
+solving-time diagnostics. Since decision 17 (2026-10-19) the adopted
+design also has case 2g (§3a), approved with an amendment found while
+implementing it.
 
 One section per rule of the adopted design (QT-strict + Sym + H, the plan's §2),
 written before implementation, by kind (docs/engineering.md, "Evidence for
@@ -144,17 +146,84 @@ annotated further), so the programmer would have to restructure the
 signature. The user approved the broad form on 2026-10-19 (plan §10,
 decision 4).
 
+## 3a. Case 2g: a known symbolic subrow subtracted (decision 17)
+
+**Rule** (Check/RowMerge/Cases `oriented`, after case 2; qt-strict.mjs
+option `g2`). For `Merge l r t` in one orientation: when neither `r` nor
+`t` has an unknown tail after following bindings, and `t` holds every
+label of `r` (by name) and every rigid tail of `r` (one of `t`'s tails
+each, by identity), each label's types are unified and `l` is unified
+with `t` less those labels and those tails. When `t` lacks one of them,
+2g makes no claim: the remaining cases are tried (case 3 when `l` has
+fields), and the predicate waits only if none applies. Sym tries the
+same with the parts exchanged. Case 2 itself, with `r` and `t` closed,
+keeps PureScript's no-progress on a missing label (line 654).
+
+**Prerequisites** (the user's boundaries, 2026-10-19). (a) `r` and `t`
+hold no unresolved row meta once bindings are followed (field types may
+hold metas; they are unified). (b) Every label and rigid tail of `r`
+occurs explicitly in `t`. (c) Rigid tails are cancelled by identity
+only: never inspected, split, or inferred from what they might contain.
+(d) A missing atom never stops another case (the amendment below).
+
+**Kind: rewrite.** With no unknown in `r` or `t`, `σ(r)` and `σ(t)` are
+fixed atoms for every assignment, and disjoint union is cancellative: if
+`σ(l) ⊎ σ(r) = σ(t)` then `σ(l)` is `σ(t)` less `σ(r)`'s atoms, which by
+(b) is the symbolic row 2g writes, so it is `l`'s only value, and
+unifying `l` with it keeps every solution (Jones 1995 §4, as for 1g). A
+shared label must have one type in a solution, so unifying its types
+keeps the solutions too, and a clash has none (a contradiction, as in
+case 2). It removes the predicate, and makes no label, predicate or
+fresh meta, so §5's argument covers it unchanged.
+
+**Correspondence with PureScript.** None as a rule: PureScript reaches
+the same wanted `Union u ?v uv` in a self-call or a forwarding wrapper
+only through a given `Union` and its dependency left -> right, which
+Waxwing does not do. 2g agrees with that matching on the probes of
+docs/plans/2026-10-19-row-merge-limitations.md (research/purs-given-1g)
+and is broader, as 1g is. **Classification: adapted**, like 1g and Sym;
+it is not given matching and adds no improvement between predicates.
+
+**The amendment.** The proposal waited on a missing atom. That
+pre-empted case 3 wherever 2g's preconditions held: in `Merge R {a | u}
+{c}` the mirror has `r = R` and `t = { c }`, R is missing, and waiting
+there kept case 3 from moving `a` into `{ c }` and refusing, so a
+problem refused in every order at B3 waited in some orders (generated
+family "program-shaped, shared", seed 25; minimized in
+test/r005b-case2g.test.mjs). The user amended the rule (2026-10-19): the
+missing-atom test restricts where 2g applies and never suppresses a rule
+that can establish a contradiction; H must not be what hides it.
+
+**Checked.** In the compiler, test/r005b-case2g.test.mjs (rigid
+cancellation, two tails at once, labels beside them, the inputs
+exchanged, a missing rigid tail, an unknown in the result, a missing
+label, the counterexample in all 720 orders, a field-type clash, nested
+fields) and regression rows `r005b-case2g` (2g absent),
+`r005b-case2g-claim` (the superseded wait) and `r005b-case2g-atoms`
+(the rigid-tail test skipped: an unsatisfiable merge is solved). In the
+prototype, `node qt-2g.mjs 2000` (.build/evidence/r005b-2g-qt.log): no
+S, L or H violation and no order or mirror difference, with H and
+before H, on the named, raw, dense, two shaped families and domain B
+whole; every verdict change is waiting -> accepted or waiting ->
+refused. The superseded variant (`g2wait`) shows `kindDiff` 4 in each
+shaped family before H and none with H, which is how the first
+measurement, run with H only, missed it. 2g keeps the solutions of
+every problem; what it changes is how many waiting problems are
+decided, either way.
+
 ## 4. Sym
 
 As the re-plan's §14.1. Prerequisites (the user's boundaries): the
 parts were required disjoint when the predicate was made (every maker
 does: §1 and Task 7's literal); a part is closed only when it has no
 tail at all, so a rigid tail makes it open; field types are unified,
-never compared or dropped; rigid tails are never bound, split or
-subtracted. **Checked:** `mirrorDiff` 0 for +Sym on every family of
-research/row-merge-qt and research/row-merge-typed (where unknown field
-types and nested rows are included); the mutation "case 1 firing for a
-part with no fields" (closed tested by fields, not tails) is caught.
+never compared or dropped; rigid tails are never bound or split (since
+2g, §3a, a rigid tail of one part may cancel an identical tail of the
+result, by identity alone). **Checked:** `mirrorDiff` 0 for +Sym on
+every family of research/row-merge-qt and research/row-merge-typed
+(where unknown field types and nested rows are included); the mutation
+"case 1 firing for a part with no fields" (closed tested by fields, not
+tails) is caught.
 
 ## 5. Re-examination and termination
 
@@ -235,13 +304,13 @@ own.
 `|Λ|` moves and is removed at most once, so the rescan makes at most `P
 · (|Λ| + 1)` productive steps. Every pass that changes the state makes
 one (a pass changes it only by a case firing; a case that fires removes
-or moves), so there are at most `P · (|Λ| + 1) + 1` passes, each of at
-most `P` examinations, each finite (the unifier, ADR 013, with its
-occurs check and its depth limit, a `Stop Limit`). Nothing here depends
-on the shape of the "above" graph: cycles, edges that bindings add or
-remove, and predicates that share parts or results are all covered,
-since a lineage's bound uses only its own result chain and the lacks
-every binding respects.
+or moves; 2g, §3a, removes), so there are at most `P · (|Λ| + 1) + 1`
+passes, each of at most `P` examinations, each finite (the unifier, ADR
+013, with its occurs check and its depth limit, a `Stop Limit`).
+Nothing here depends on the shape of the "above" graph: cycles, edges
+that bindings add or remove, and predicates that share parts or
+results are all covered, since a lineage's bound uses only its own
+result chain and the lacks every binding respects.
 
 **Checked** (`node qt-cyclic.mjs all`, .build/evidence/l1-all.log, the
 adopted configuration with a trace of every move and pass, the trace
@@ -251,6 +320,10 @@ productive, on the named examples, a cyclic family (20,000 problems,
 three orders each, 31,320 runs cyclic; the oracle finds no refusal with
 a solution; no run there is accepted), domain B whole, a twentieth
 of domain A, and the raw, dense, raw-program and shaped generators.
+With 2g (decision 17) the same check
+(.build/evidence/r005b-2g-termination.log) finds no violation on any of
+those families; in the domain-A sample 68 runs that waited are accepted
+and 2 refused.
 **Sensitivity** (scratch copies, deleted): without case 3's requirement
 that `u` lack `F`, nothing changes (the bind rule supplies the lack);
 without the bind rule passing a meta's lacks to its image, the labelled
@@ -432,5 +505,6 @@ beyond §3's remark for 1g.
 | M15 | one unknown tail per row | argued (plan §2.1); guard in B3 |
 | M16 | §5's annotations, narrowing | checked (`node qt-adopted.mjs examples`) |
 | M17 | 1g agrees with given matching where a given exists, and is broader | checked against purs (§3) |
+| M20 | 2g keeps the solutions and never stops another case | argued (§3a); checked in the compiler and the prototype, with and without H; its agreement with purs's given matching checked on the limitation probes only |
 | M18 | the H location and R11 choice are order independent | modelled diagnostic selection and location checks (`node qt-render.mjs render`, `node qt-adopted.mjs report`); the prototype renders no text; R11 needs a stable tie-break for predicates at one span (plan §10.3) |
 | M19 (L2, gate; proposal for the user's review) | diagnostics found while solving are located stably | proposal: docs/plans/2026-10-19-row-merge-locations.md (the same conflict located at its latest written participant; different explanations and different conflicts left order dependent; `node qt-locate.mjs 2000`). Not established: refusals met while solving are located at the step being checked, which varies with the order (modelled: fixtures 24 of 72, raw 758 and shapes 855 of 2,000); two causes, the same conflict at different locations and different valid conflicts found first; a proposal separating them comes before any decision (plan §10.13) |
