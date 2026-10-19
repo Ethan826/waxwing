@@ -6693,3 +6693,42 @@ BACKLOG R005 and the README draft. Docs only.
 - Wording corrected: the prototype renders no text; results are called
   modelled diagnostic selection and location checks, not evidence that
   complete rendered messages are stable (rules file, plan, README draft).
+
+## R005 Tranche B B1: splits (2026-10-19)
+
+Authorized by the user (2026-10-19), B1 only, on branch `r005b-replan`.
+Behaviour-preserving splits; no semantic change, no test or fixture
+change. Six commits, each built and tested for its area (456 tests of
+test/r005*, row-merge*, r001*), 0 warnings, purs-tidy clean:
+
+| Commit | Split | Lines after |
+|---|---|---|
+| f04903c | Settle: the round's change test, the retry and the label count into SettleChange (as 85ca98e on r005b-task5) | Settle 218, SettleChange 62 |
+| 299373e | RowSettle: `placing`, `forced`, `waits` and `equationOf` into RowPlacing; UnifyRecord imports `equationOf` from there | RowSettle 90, RowPlacing 71 |
+| fdd83c3 | Disjoint: both `prune` calls behind `prunedTail` | Disjoint 167 |
+| 4141629 | RecordTail: `within`, `prunedBy`, `narrowedRests`, the image's constants and `Fields` into RecordTailBound (the unused export of `Fields` goes) | RecordTail 178, RecordTailBound 75 |
+| 4159c77 | RowStore: `boundOf`, `withBound`, `withoutBound`, `emptiedOf`, `withEmptied` into RowStoreBound; five importers follow | RowStore 171, RowStoreBound 36 |
+| 345e0df | Use: `Use`, `Callee`, `declarationUse` and its helpers into DeclarationUse; Use re-exports them, no importer changes | Use 143, DeclarationUse 90 |
+
+Check/Failure was not split (plan: only if B3 needs it).
+
+- Differential against main (1d43341, isolated copy with .spago, built
+  0 warnings), `--corpus all --regenerate`: harvested 8,628 sources,
+  fuzz 1,029, isName 1,085, matches 1,000, mutations 1,000; **total
+  differences 0** (.build/evidence/r005b-b1-diff.log; the harvest run's
+  timing tests failed under parallel load, as the script notes, and
+  still harvested).
+- Test expectations: `git diff main -- test` is empty; no import path
+  changed.
+- Regression needles: only the text of `fx008-exit-count` moved (the
+  label count, now in SettleChange.purs); its file was updated and the
+  row re-proved. The needles of r001-lacks, r001-shared-remainder,
+  r005b-provenance, r005b-mixed-lacks, r005b-mixed-tails,
+  r005b-self-apart and fx008-settle-phi did not move; all eight were
+  proved by name (fixed passes, defect fails).
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on code commit
+  345e0df: exit 0 (tests 2269/2269, 59/59 serial, 151 regression
+  proofs; .build/evidence/r005b-b1-verify.log).
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
+
+B2 onward are not authorized; gates L1 and L2 are open (plan §10).
