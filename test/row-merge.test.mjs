@@ -64,25 +64,29 @@ test('fixtures at solver stage 5: a verdict never contradicts the class', t => {
   assert.ok(skipped.Unresolved > 0 && skipped.Solved > 0);
 });
 
-// B2: problems Task 4 solved only by an upper bound (`design-forced-bound`,
-// program 11) or by a commit (a constant with one home) now reach P1 in
-// every order, a skipped run and never a verdict.
+// B2: rows Task 4 decided only by an upper bound or a commit now reach
+// P1 in every order, a skipped run and never a verdict: `diag-14-fix`
+// (accepted in 16 of its 24 orders before B2), `diag-14` (refused in 16
+// of 24) and a constant with one home. (`design-forced-bound` is not
+// among them: Task 4 already left it waiting in every order.)
 const P1 = 'rows with two unknown tails on one side are solved in Task B3';
 const committed = { hyp: { lacks: {}, apart: [] }, steps: [
   { k: 'lacks', v: 'm0', l: 'a' },
   { k: 'eq', l: { fields: [], tails: ['m0', 'm1'] },
     r: { fields: ['a'], tails: [] } }] };
+const rowsOf = name => fixtures.find(f => f.name === name).rows;
 
-test('solved before B2 only by a bound or a commit: P1 in every order', () => {
-  const bound = fixtures.find(f => f.name === 'design-forced-bound').rows;
-  for (const rows of [bound, committed]) {
-    for (const order of allOrders(rows.steps)) {
-      const found = run(rows.hyp, order);
-      assert.equal(found.v, 'skipped', JSON.stringify(order));
-      assert.equal(found.what, P1);
+test('decided before B2 only by a bound or a commit: P1 in every order',
+  () => {
+    for (const rows of [rowsOf('diag-14-fix'), rowsOf('diag-14'),
+      committed]) {
+      for (const order of allOrders(rows.steps)) {
+        const found = run(rows.hyp, order);
+        assert.equal(found.v, 'skipped', JSON.stringify(order));
+        assert.equal(found.what, P1);
+      }
     }
-  }
-});
+  });
 
 const GENERATORS = [
   ['raw (perm.mjs)', rnd => permProblem(rnd, false), 21],

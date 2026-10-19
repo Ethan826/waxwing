@@ -22,23 +22,35 @@ export const compiler = async tree => {
     wire: diagnostic.wire, Left: either.Left, compile: compile.compile };
 };
 
+// The suite runs as verify runs it (scripts/verify.mjs): every file but
+// the `*.serial.test.mjs` ones in parallel, then those one file at a time,
+// since they time heavy work against fixed bounds. Run all at once under
+// the parallel runner, 14 of them failed on 2026-10-19 (BACKLOG T005).
 export const regenerate = (candidate, file) => {
   rmSync(file, { force: true });
+  const serial = name => name.endsWith('.serial.test.mjs');
   const tests = readdirSync(join(candidate, 'test'))
-    .filter(name => name.endsWith('.test.mjs')).map(name => `test/${name}`);
+    .filter(name => name.endsWith('.test.mjs')).sort()
+    .map(name => `test/${name}`);
   const hook = new URL('./differential-hook.mjs', import.meta.url).href;
-  const result = spawnSync(process.execPath, ['--test', ...tests], {
+  const runOf = args => spawnSync(process.execPath, args, {
     cwd: candidate, encoding: 'utf8',
     env: { ...process.env, WAXWING_HARVEST: file,
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --import=${hook}` }
   });
-  // A failing test (e.g. a timing bound under load) still harvested its
-  // sources; report it rather than discard the corpus, and keep the run's
-  // output so the failure can be identified (it was once discarded).
+  const runs = [runOf(['--test', ...tests.filter(name => !serial(name))]),
+    runOf(['--test', '--test-concurrency=1', ...tests.filter(serial)])];
+  // A failing test still harvested its sources; report it rather than
+  // discard the corpus, and keep the run's output so the failure can be
+  // identified (it was once discarded).
   const log = `${file}.log`;
-  writeFileSync(log, `${result.stdout ?? ''}${result.stderr ?? ''}`);
-  console.log(`harvest: test run exited ${result.status}; log ${log}`);
-  const failed = (result.stdout ?? '').split('\n')
+  const output = runs.map(found => `${found.stdout ?? ''}${found.stderr ?? ''}`)
+    .join('');
+  writeFileSync(log, output);
+  const status = runs.map(found => found.status).join(', ');
+  console.log(`harvest: test runs (parallel, serial) exited ${status}; `
+    + `log ${log}`);
+  const failed = runs.flatMap(found => (found.stdout ?? '').split('\n'))
     .filter(line => line.startsWith('✖ ') && !/failing tests/.test(line));
   for (const line of [...new Set(failed)]) console.log(`  ${line}`);
 };
