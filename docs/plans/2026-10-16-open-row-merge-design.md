@@ -3,6 +3,13 @@
 Status:
 Draft 3, 2026-10-17: user decisions recorded; remaining Proposed items marked
 
+**Superseded as Tranche B's algorithm** (the user, 2026-10-19): the
+adopted design is QT-strict + Sym + H
+(docs/plans/2026-10-18-row-merge-qualified-types.md, "The user's
+decisions (2026-10-19)"). What each decision below becomes (retained,
+modified or superseded) is listed in
+docs/plans/2026-10-19-row-merge-implementation-plan.md §1.
+
 Draft 2 was written unattended after an adversarial review
 (docs/plans/2026-10-16-open-row-merge-review.md). The user reviewed it
 on 2026-10-17; the decisions are recorded below and applied in the

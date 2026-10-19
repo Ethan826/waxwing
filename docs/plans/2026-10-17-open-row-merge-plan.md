@@ -79,6 +79,12 @@ done (branch r005b-task1); Task 2 authorized and done on branch
 r005b-task2 (2026-10-17); Task 3 authorized and done on branch
 r005b-task3 (2026-10-17); Task 4 authorized alone and done on branch
 r005b-task4 (2026-10-17, awaiting review); Tasks 5-10 not authorized.
+**Superseded from Task 5 on** (the user, 2026-10-19): R005 Tranche B is
+re-planned on the adopted design, QT-strict + Sym + H, in
+docs/plans/2026-10-19-row-merge-implementation-plan.md,
+which lists what of Tasks 0-4, this plan's decisions and its ledger is
+retained, modified or superseded (its §1). Tasks 0-4 below are history;
+Task 5's WIP (branch r005b-task5) is reference only.
 
 ## Global Constraints
 

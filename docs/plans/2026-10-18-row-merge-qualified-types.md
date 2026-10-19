@@ -14,6 +14,15 @@ rule and no default for predicate-constrained unknowns, is measured in
 §13, with a recommendation (§13.7); its adaptations Sym and H are
 measured in §14, whose §14.7 lists the open findings now current.
 
+**Adopted (the user, 2026-10-19): QT-strict + Sym + H** (§13.1, §14.1,
+§14.2, §14.5) is R005 Tranche B's design, with the boundaries recorded
+below ("The user's decisions (2026-10-19)"). Its implementation plan is
+docs/plans/2026-10-19-row-merge-implementation-plan.md, a draft for the
+user's review. Compiler implementation, fixture retirement and
+diagnostic text changes are not authorized until that review. QS,
+QS-EH and QS-EHZ (§0-§11) are not adopted; their measurements remain
+the record of the comparison.
+
 Written 2026-10-18 on branch `design-principles` from 1b45917 (ADR 014
 committed). Documents and research scripts only: no compiler source,
 test or script changed, nothing built, verify not run, and the compiler
@@ -27,6 +36,45 @@ Governing: docs/adr/014-composition-not-invention.md. Every solving
 component names its published source (§1); every piece without one is
 listed in §3.6 for the user's approval, with the textbook alternative
 and its cost measured.
+
+## The user's decisions (2026-10-19)
+
+Recorded with their wording; they govern every section below where a
+section differs.
+
+1. **Sym is approved** as a local adaptation of PureScript's `unionRows`
+   cases (§14.1).
+2. **H is approved as a classification rule only** (§14.2).
+3. **QT-strict + Sym + H is adopted as Tranche B's design** (§13.1,
+   §14.1, §14.2, §14.5).
+4. **Boundaries.**
+   - Sym requires the predicate's parts to be established disjoint and
+     applies the stated closed-part test: a part is closed only when it
+     has no tail at all (no unknown and no rigid). Swapping must
+     preserve field-type equations and rigid tails.
+   - H runs only after solving and permitted defaulting have finished
+     with an Unresolved result. It may establish a Contradiction; it
+     cannot bind variables, default anything or affect acceptance.
+   - Order independence (acceptance, inferred types and verdict kinds)
+     is supported by measurements (§13.4, §14.3, §14.5). It is never to
+     be described as proved.
+5. **The annotation cost stays explicit**, including the correction that
+   some annotations narrow the possible typings (S1, S2, Q1; §14.4).
+6. **Evidence obligations are implementation obligations**, not a
+   reason to add N5, Z or other improvement rules back implicitly.
+7. **Not yet authorized:** compiler implementation, fixture retirement
+   and diagnostic text changes await the review of the implementation
+   plan (docs/plans/2026-10-19-row-merge-implementation-plan.md).
+
+What the adopted configuration leaves out, read from §13.1 and the
+prototype's options (research/row-merge-qt/qt-adapt.mjs `ADAPT`,
+`QT-strict+Sym+H`): QS (the symbolic forward dependency), pairwise
+improvement, N2 (E), N4 (C), N5 (QT-strict runs with `selfApart:
+false`: a meta apart from itself keeps the pair instead of being bound
+to `{}`), N6 (Z), and the `{}` default for unknowns a waiting predicate
+mentions. N1 (`Merge` as a disjoint union) is the meaning QT-strict
+gives the predicate. The implementation plan lists what each earlier
+decision becomes (its §1).
 
 ## 0. In brief
 
