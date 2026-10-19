@@ -1010,8 +1010,8 @@ Check/Failure (`settleFinal`'s caller) if B3's end of body needs it.
   (2026-10-19; commits f04903c, 299373e, fdd83c3, 4141629, 4159c77,
   345e0df; docs/progress.md "R005 Tranche B B1").
 - [x] Verify on the last commit: exit 0 (.build/evidence/r005b-b1-verify.log).
-- [ ] Opus reviews the differential (.build/evidence/r005b-b1-diff.log:
-  0 differences).
+- [x] Opus reviews the differential (.build/evidence/r005b-b1-diff.log:
+  0 differences in all five corpora; controller, 2026-10-19).
 
 B1 did not split Check/Failure: `settleFinal`'s caller is split in B3
 only if the end of body needs it.
