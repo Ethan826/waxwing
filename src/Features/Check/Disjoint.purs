@@ -78,10 +78,10 @@ requireLack solving lack subst tail label = case tail of
   Rigid _
     | Set.member label (lacksOf subst tail) → Right subst
     | otherwise → refusedBy solving.failed subst (Just tail) (Tuple label lack)
-  Meta meta
-    | bare tail image → prune solving
+  Meta _
+    | bare tail image → prunedTail solving
         (addLackTable tail (Map.singleton label lack) subst)
-        meta
+        tail
     | Array.elem label (labelsOf image) →
         refusedBy solving.failed subst Nothing (Tuple label lack)
     | otherwise → foldM inherited subst image.tails
@@ -138,11 +138,17 @@ seedApart ∷ Flex → Flex → Because → Subst → Subst
 seedApart one other because = onStore (withApart one other because)
 
 pruneBoth ∷ Solving → Flex → Flex → Subst → Either Failure Subst
-pruneBoth solving one other subst = pruned one subst >>= pruned other
+pruneBoth solving one other subst = prunedTail solving subst one
+  >>= pruneOther
   where
-  pruned tail reached = case tail of
-    Meta meta → prune solving reached meta
-    Rigid _ → Right reached
+  pruneOther reached = prunedTail solving reached other
+
+-- The one place this module narrows a meta's upper bound (U2): the tail
+-- if it is a meta, nothing for a rigid.
+prunedTail ∷ Solving → Subst → Flex → Either Failure Subst
+prunedTail solving subst = case _ of
+  Meta meta → prune solving subst meta
+  Rigid _ → Right subst
 
 -- Whether the flattened row is the tail alone: unbound, or rigid.
 bare ∷ Flex → Flat → Boolean
