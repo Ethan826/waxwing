@@ -21,7 +21,8 @@ import Features.Check.RowResidue
   , residue
   , settledResidue
   )
-import Features.Check.RowSettle (equationOf, settle)
+import Features.Check.RowPlacing (equationOf)
+import Features.Check.RowSettle (settle)
 import Features.Check.RowStore (changesOf)
 import Features.Check.Subst (Flex(..), Subst, storeOf, walk)
 import Features.Check.SumRule (sumRule)
