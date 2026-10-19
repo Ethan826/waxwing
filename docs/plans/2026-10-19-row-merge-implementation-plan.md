@@ -1005,9 +1005,16 @@ Check/SettleChange, as 85ca98e on branch r005b-task5), Check/Use
 (`declarationUse` into its own module, room for the desugaring hook),
 Check/Failure (`settleFinal`'s caller) if B3's end of body needs it.
 
-- [ ] Each split its own commit: build, the area's tests, differential
-  **0 differences** (`--corpus all`), no test expectation changed.
-- [ ] Verify on the last commit. Opus reviews the differential.
+- [x] Each split its own commit: build, the area's tests, differential
+  **0 differences** (`--corpus all`), no test expectation changed
+  (2026-10-19; commits f04903c, 299373e, fdd83c3, 4141629, 4159c77,
+  345e0df; docs/progress.md "R005 Tranche B B1").
+- [x] Verify on the last commit: exit 0 (.build/evidence/r005b-b1-verify.log).
+- [ ] Opus reviews the differential (.build/evidence/r005b-b1-diff.log:
+  0 differences).
+
+B1 did not split Check/Failure: `settleFinal`'s caller is split in B3
+only if the end of body needs it.
 
 ### Task B2: Remove the invented machinery (behind P1)
 
