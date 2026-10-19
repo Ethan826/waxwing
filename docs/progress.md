@@ -6921,3 +6921,49 @@ Not done in B3: the typed research domain ported (§3.4); the
 `r005b-settle-rollback` row (plan §7 Task B3). M13 is argued in part.
 O1-O6 stay open. Nothing later is authorized; B4 waits for the user's
 review of B3.
+
+## R005 Tranche B B3 follow-up (2026-10-19)
+
+The user reviewed B3 and did not approve it yet (plan §10 decision 16):
+a focused follow-up within the approved rules. Code commit b3ac648;
+plan §7 Task B3 "B3 follow-up" lists the results.
+
+- Typed and nested coverage: test/row-merge-typed.test.mjs, the
+  research typed families through the compiler, judged against
+  research/row-merge-typed's solver (Sym, H off) and oracle (H, S/L,
+  G). At the research sizes (`ROW_MERGE_TYPED_SCALE`, .build/evidence/
+  r005b-b3f-typed-full.log), no violation: nested seed 1 accepted
+  6,393, refused 11,004, waiting 5,939 runs; seed 2 5,897 / 10,255 /
+  7,080; assoc 1,872 / 624 / 9,504 (the README's 1,872 of 12,000).
+  Sensitivity: case 2 not unifying field types gives G-violated 8 and
+  12 (scratch, deleted).
+- Rollback at the transaction boundary (test/r005b-rollback.test.mjs,
+  constructed state): bindings, waiting predicates, identities, causes,
+  lineage history, facts and the fresh counter restored, also through
+  a retry; a revert that kept the attempt's row store fails 2 of the 3
+  tests (scratch, deleted). A case's unification postponing a new pair
+  is shown there too, and settling stops with it set aside.
+- M13: rules file §5 checks FX008's 4c premises against the rescan
+  callbacks and bounds the pairs cases can postpone.
+- Handler rows: a record of two tails in a handler's own row reached the
+  invariant guard against a known handler (probe); desugared since,
+  with tests.
+- Limitations: probes in the compiler (test/r005b-limitations.test.mjs)
+  and purs (research/purs-given-1g, 10 cases, all as recorded): purs
+  accepts the self-call, the forwarding wrapper and the lambda wrapper
+  through its given `Union`, and rejects O4. Proposal for the user:
+  docs/plans/2026-10-19-row-merge-limitations.md (case 2g; `node
+  qt-2g.mjs 2000`: no violation, verdicts change only waiting →
+  accepted, 4 named and 2 of 4,000 shaped runs).
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on b3ac648:
+  exit 0 (2308/2308, 59/59, 157 proofs; .build/evidence/
+  r005b-b3f-verify.log).
+- Differential against 43490f4 (.build/evidence/r005b-b3f-diff.log):
+  fuzz, isName, matches, mutations 0; harvested 8,659, 3 differences,
+  all the handler-row fix on its tests (the guard before; now solved,
+  P2 and P5). Harvest runs exited 0, 0.
+- An empty file `P` at the repository root, made by a shell redirect in
+  one of my probe commands, was deleted.
+
+B4 stays blocked; O1-O6 open; the limitations proposal waits for the
+user.
