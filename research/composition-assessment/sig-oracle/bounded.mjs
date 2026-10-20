@@ -55,6 +55,11 @@ export function boundedValid(P, bounds = DEFAULT_BOUNDS) {
 }
 
 export function hasSolution(P, rigid, flexRows, tyValues, extend = {}) {
+  return findSolution(P, rigid, flexRows, tyValues, extend) !== null
+}
+
+// The first flexible assignment found satisfying B, or null.
+export function findSolution(P, rigid, flexRows, tyValues, extend = {}) {
   const rowKeys = P.flexRows.map((r) => `r${r}`)
   const tyKeys = P.flexTys.map((n) => `t${n}`)
   const flexTys = new Set(P.flexTys)
@@ -64,10 +69,10 @@ export function hasSolution(P, rigid, flexRows, tyValues, extend = {}) {
     const values = [...new Set([...tyValues, ...built])]
     for (const tys of product(tyKeys, () => values)) {
       const flex = new Map([...rows, ...tys])
-      if (sat({ ...makeTheta(rigid, flex), ...extend }, P.B)) return true
+      if (sat({ ...makeTheta(rigid, flex), ...extend }, P.B)) return flex
     }
   }
-  return false
+  return null
 }
 
 function show(map) {

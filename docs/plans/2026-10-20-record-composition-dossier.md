@@ -998,3 +998,265 @@ per-label field types are quantified and equated; nested records and
 record-valued type variables; finite rows over infinitely many labels
 (§8.1 of the paper states the lemma without the algorithm). These are
 questions for the next statement review, not claims.
+
+### 13.9 The author's review of §13.8; two tracks
+
+The author's review (2026-10-20) separates two tracks:
+
+- **P9s soundness**, a bounded proof target: formalize the exact
+  procedure the oracle runs and prove that every acceptance establishes
+  validity, keeping its incompleteness explicit. Statements in §14.
+- **Complete typed signature checking**, still research. BAPA supplies
+  set machinery for presence, not field types, nested types or their
+  interaction with quantification.
+
+A proved P9s could certify the signatures it handles and answer
+Unresolved elsewhere. **That would not approve its limitations as
+Waxwing's final behaviour**: completeness research and the
+acceptance-program criteria stay open.
+
+**Region questions, kept as questions.** Each needs its own argument;
+`split` establishes none of them (in `split` whole regions happen to
+suffice, which is one example, not a lemma).
+
+- Q1. Does Waxwing's restricted atom language (positive atoms, no
+  cardinality) remove the need to track region sizes?
+- Q2. Can existential rows always take whole regions?
+- Q3. If Q1 or Q2 holds for presence alone, does it survive independent
+  per-label field types and nested records?
+
+**The presence-to-BAPA correspondence, stated.** §13.8's "presence fits
+BAPA" named similar operators; the review asks for the translation.
+Four semantics are in play and differ:
+
+| Semantics | Labels | Rows | Where |
+|---|---|---|---|
+| Waxwing | infinitely many (identifiers) | finite | the language |
+| the dossier's `Valid` | any type `Label` | any partial map, infinite ones included | Rows.lean, a definitional choice "for review" |
+| JAR BAPA (main text) | a finite universe `U`, `MAXC = \|U\|` | every set is finite | syntax Fig. 3, p.5; `MAXC` p.6 |
+| JAR BAPA §8.1 | a countable universe | finite or infinite, `inf(b)` flags | pp.25-26, a sketch |
+
+Finding: the dossier's Lean `Valid` quantifies over arbitrary partial
+maps. Rows.lean's note that its theorems hold "for all partial maps,
+finite ones included" is true of universally quantified statements; it
+does not carry a ∀∃ statement to finite rows: restricting the rigid
+side alone only removes cases, but finite semantics restricts the
+flexible witnesses too, and a witness over partial maps may be
+infinite. Which
+of §13's Lean examples hold over finite rows is not checked. S1 below is
+stated for both semantics.
+
+The proposed translation (statement; no claim it is correct):
+
+- Fragment. Problems whose equations relate two record expressions;
+  field types ignored. The **presence abstraction** of a problem
+  replaces each row by its domain and each record expression
+  `{ l1: _, ..., ...r1, ..., ...rk }` by `{l1} ∪ ... ∪ dom r1 ∪ ...`,
+  defined iff the parts are pairwise disjoint.
+- Atoms. `lacks r l` as `e_l ∩ x_r = 0`; `disjoint r s` as
+  `x_r ∩ x_s = 0`; an equation as set equality of both sides plus one
+  emptiness atom per pair of parts on each side; `ff` as false.
+- Constants. Each written label `l` is a set variable `e_l` with
+  `|e_l| = 1`, pairwise disjoint, quantified outermost.
+- Quantifiers. `∀` over rigid sets, `∃` over flexible ones.
+- Universe. Formulation F1: the main text's finite universes. Candidate
+  statement: Waxwing presence validity holds iff the sentence is true in
+  every finite universe with at least `|L|` elements. Formulation F2:
+  §8.1's countable universe with `inf(x) = 0` on every quantified set,
+  closer to Waxwing literally but resting on a sketch.
+
+Obligations of F1, none discharged: (a) a flexible row never needs a
+label outside the written labels and the rigid rows' domains (a
+candidate argument: removing such a label from every flexible row
+preserves each presence atom, since no rigid row or written field holds
+it); (b) with (a), rigid assignments over a finite universe embed into
+Waxwing's labels and back; (c) the written-label singletons' place in
+the prefix (∃ or ∀ outermost should agree, by symmetry of a language
+with no element symbols; unproved); (d) "every finite universe" as one
+PA sentence by quantifying `MAXC` after the algorithm α, a step of this
+reader's, not checked against the paper. Separately, unproved: typed
+validity implies presence validity (a typed solution gives a presence
+solution, and every presence assignment extends to a typed one), so
+the translation could refute but not confirm a typed signature.
+
+## 14. P9s soundness: statements first
+
+Authorized (the author's review of §13.8, 2026-10-20): P9s's soundness
+dossier, with the exact symbolic assignments, disjointness obligations,
+acceptance rule and the interpretation into arbitrary ground rigid
+assignments. Not authorized: proofs (they follow approval of these
+statements), adopting P9s, compiler changes. Status labels as at the
+head of this dossier; nothing here is proved.
+
+The statements describe what the oracle runs
+(sig-oracle/p9s.mjs), without its bounds on the flexible search. The
+bounds only remove candidate solutions, so every acceptance the oracle
+reports is an acceptance in the sense below.
+
+### 14.1 Input and patterns
+
+- **Input.** A scoped signature problem `P` (§13.1): rigid type
+  variables `Tr`, rigid rows `R`, clauses `D`, body `B`. `L` is the set
+  of labels written in `D` and `B`. `Δ` is the set of ordered pairs
+  `(r, s)` and `(s, r)` for each `disjoint r s` in `D`. P9s reads only
+  `D`'s `lacks` and `disjoint` atoms, and S1 below is stated for any
+  scoped `D`.
+- **Patterns.** A pattern is `π : R × L → Bool`. It is *consistent*
+  with `D` if `lacks r l ∈ D` gives `¬π(r, l)` and `disjoint r s ∈ D`
+  gives `¬(π(r, l) ∧ π(s, l))` for every `l ∈ L`. The pattern of a
+  rigid assignment `θ` is `π_θ(r, l) = (θ.row r l ≠ none)`.
+
+### 14.2 The generic model of a pattern
+
+- **Generic labels and base types.** Labels `Label ⊕ R`; `ρ_r` is
+  `inr r`, the **rest label** of `r`. Base types `B ⊕ K`, with
+  constants `A(r, l)` for each `r ∈ R`, `l ∈ L` (as p9s.mjs builds
+  them; those with `¬π(r, l)` occur in no rigid row but `σ` may use
+  them), `R(r)` for each `r ∈ R`, and `T(n)` for each `n ∈ Tr`.
+  `P`'s syntax is carried over by `inl` on labels and base types.
+- **The generic rigid assignment** `γ_π`: row `r` is
+  `{ l: A(r, l) | π(r, l) } ∪ { ρ_r: R(r) }`; type variable `n` is
+  `T(n)`.
+- **Well-formed generic values** `W_π` (the symbolic assignments). A
+  generic row is well-formed if its field types are well-formed and:
+  (W1) its labels lie in `inl L ∪ inr R`;
+  (W2) it holds `ρ_r` only at `R(r)`;
+  (W3) for distinct `r`, `s` whose rest labels it holds, `(r, s) ∈ Δ`.
+  A generic type is well-formed if every row occurring in it, at any
+  depth, is.
+- **Disjointness obligations** (generic satisfaction `⊨Δ`, otherwise
+  §10's `Holds`):
+  (D1) a record expression's value is undefined unless the row it
+  composes is well-formed (checked at every record expression, at any
+  depth);
+  (D2) `disjoint x y` holds iff the rows share no label and every pair
+  of distinct rests `ρ_r` in `x`, `ρ_s` in `y` has `(r, s) ∈ Δ`.
+- **Acceptance rule.** P9s accepts `P` iff for every pattern `π`
+  consistent with `D` there is a flexible assignment `σ_π` with values
+  in `W_π` such that `combine(γ_π, σ_π) ⊨Δ B`. Otherwise it answers
+  Unresolved, never Contradiction (§13.7).
+
+The family `(σ_π)` is a **certificate**: finitely many patterns, each
+checked by evaluating `B` once in the generic model, so checking a
+certificate is decidable. Finding one is a separate question (S3, the
+step-3 solver), not needed for soundness.
+
+### 14.3 The interpretation
+
+Given `θ` with `θ ⊨ D` and `π_θ = π`, and any ground type `c`, define
+`h = h_{θ,c}` on generic values:
+
+- `h(inl b) = b`; `h(A(r, l)) = θ.row r l` if `π(r, l)` (present,
+  since `π_θ = π`), and `c` otherwise; `h(T(n)) = θ.ty n`;
+  `h(R(r)) = c`; arrows homomorphically.
+- On a well-formed row `ρ`: written labels map field by field,
+  `hRow ρ (l) = h(ρ(inl l))` for `l ∈ L`; each rest label `ρ_r` in `ρ`
+  is replaced by `rest_θ(r)`, `θ.row r` restricted to labels outside
+  `L`. A record maps to the record of `hRow` of its row.
+- On a flexible assignment, `hσ = (h ∘ σ.ty, hRow ∘ σ.row)`.
+
+`c` is arbitrary: `R(r)` used as a type on its own (not as a rest's
+field type), and `A(r, l)` with `¬π(r, l)`, carry no information about
+`θ`, and S1 holds for every choice (S1-fin for every finite `c`).
+
+### 14.4 Statements
+
+- **L1, coverage.** `θ ⊨ D` implies `π_θ` is consistent with `D`.
+- **L2, definedness.** For every well-formed `ρ`, `hRow ρ` is defined
+  (no label occurs twice), and for well-formed `ρ`, `ρ'` whose
+  composition is defined and well-formed,
+  `hRow(ρ ⊎ ρ') = hRow ρ ⊎ hRow ρ'`, defined. Argument to formalize:
+  written labels stay written; rests lie outside `L`; two rests in one
+  well-formed row are declared disjoint (W3) and `θ ⊨ D` makes them
+  disjoint; one rest twice is excluded by the generic composition.
+- **L3, commutation.** For every expression `t` and `σ` with values in
+  `W_π`: if `t` evaluates to `g` under `combine(γ_π, σ)` with (D1),
+  then `t` evaluates to `h(g)` under `combine(θ, hσ)`. Key cases: a
+  rigid tail, `hRow(γ_π.row r) = θ.row r` (uses `π_θ = π`); a rigid
+  type variable, `h(T(n)) = θ.ty n`; a composition, L2; nested records
+  and arrows, induction.
+- **L4, atoms.** For each atom `a` of `B`,
+  `combine(γ_π, σ) ⊨Δ a` implies `combine(θ, hσ) ⊨ a`: an equation by
+  L3 (h is a function); `lacks r l` (every `lacks` label is in `L`):
+  for a flexible `r` because `hRow` preserves presence and absence at
+  written labels, for a rigid `r` because `π_θ = π` (the rigid side of
+  `combine(θ, hσ)` is `θ`, not an image under `h`); `disjoint` by (D2),
+  W3 and `θ ⊨ D`, rests lying outside `L`; `ff` never holds.
+- **S1, soundness.** If P9s accepts `P`, then `Valid P`. Shape: given
+  `θ ⊨ D`, L1 gives a consistent pattern, the certificate gives
+  `σ_{π_θ}`, and `hσ` satisfies `B` at `θ` by L4.
+- **S1-fin, soundness for Waxwing's finite semantics.** The same for
+  `ValidFin` (to be defined: rigid and flexible rows finite at every
+  depth), for any finite `c`. By W1 generic rows are finite, and
+  `hRow` adds only `θ`'s finite rests, so `hσ` is finite when `θ` and
+  `c` are.
+
+What S1 does not claim: completeness (`split` is valid and
+Unresolved), any Contradiction verdict, termination of a search for
+certificates, or anything about Q1-Q3.
+
+### 14.5 Restrictions table, soundness pass
+
+Restrictions the generic model adds beyond the semantics, each with the
+challenge built for it. This pass looks only for acceptances that do
+not transfer; completeness was §13.7's pass.
+
+| Restriction | Believed harmless because | Challenge | Status |
+|---|---|---|---|
+| a rest is one label at one constant | `h` expands it wholly into `θ`'s rest, the same rest wherever it occurs | `equal-rests`, `alias`, `alias-chain`, `nested-alias` | checked (bounded) |
+| `R(r)`, and `A(r, l)` with `¬π(r, l)`, usable as types on their own | neither occurs in `γ_π` as a type on its own, so nothing ties it to `θ`; `h` sends both to `c` | S1 for every `c`; the oracle runs two | argument only: no solution found in 1,678 solved patterns uses either (the search tries ground values first), so the two `c` were never exercised (found by the adversarial reviewer) |
+| generic rows hold only written labels and rests (W1) | needed by `h`: a generic label `k ∉ L` would clash with a rest holding `k` | soundness requires it of `h`; whether a looser model still gives sound verdicts is not claimed | restriction kept |
+| (D1) at every record expression, at any depth | compositions inside fields expand too | `nested-alias` (declared, accepted), `nested-alias-undeclared` (not accepted) | checked (bounded) |
+| (D2) on `disjoint` atoms | two rests may overlap unless declared | `alias` (undeclared): the mutant without the side condition accepts, and the check finds the failure | checked; mutant fails |
+| W3 on rows not composed anywhere | `hRow` must be defined on every value of `σ`, used or not | a row holding two undeclared rests, used only by `lacks`: verdicts unaffected (`{}` also works), `h` undefined | needed by `h`; not exercised: no such challenge exists, and the mutant's L2 failures all come from composed rows (`compose-undeclared`, `nested-alias-undeclared`) |
+| patterns fix only written labels | `θ`'s other labels are its rests, outside `L` | L1; `lacks-declared`, `tyvar-field` | checked (bounded) |
+| distinct constants `A(r, l)` | atoms are positive: identifying constants under `h` cannot falsify an equation that holds | `types-differ` (generic rejects; incompleteness only) | argument in L4 |
+
+### 14.6 Claim-level check of the interpretation
+
+sig-oracle/check-interpretation.mjs checks L2, L3 and L4 directly. For
+every pattern P9s solves (also in problems another pattern leaves
+Unresolved), it takes the generic solution found, maps it by `h`
+(sig-oracle/interpret.mjs) into every bounded rigid assignment of that
+pattern satisfying `D`, for two choices of `c`, and checks that `h` is
+defined, that every subexpression of `B` the generic model defines
+evaluates to the image of its generic value, and that `B` holds.
+
+| Run | Problems | Patterns solved | Instances | L2, L3, L4 failures |
+|---|---|---|---|---|
+| challenges (23, three added for aliases and nesting) | 23 | 20 | 1,898 | 0 |
+| `1000 5` (plain and split grammars, with the challenges) | 2,023 | 1,307 | 261,950 | 0 |
+| `300 9 larger` (three unwritten labels, `{}` as a rigid field type) | 623 | 391 | 6,255,998 | 0 |
+| mutant: no side condition, challenges only | 23 | 28 | 3,806 | L2 672, L4 656 |
+| mutant, `300 5` | 623 | 576 | 183,204 | L2 25,712, L4 55,888 |
+
+Bounded evidence for L2-L4 at these sizes; no proof. L3 never fails
+alone in the mutant (a clash stops `h` first), so its separate power is
+untested. The rigid side sampled is small: rigid type variables over
+`Int`, `Bool`, `{}`, `(Int->Int)`, rigid fields `Int` and `Bool` (and
+`{}` with `larger`). Rigid type variables that are records with labels,
+nested rigid fields and infinite rows have no check behind them; for
+those the hand arguments of L2-L4 are all there is.
+
+**Adversarial review** (an independent reviewer, tasked with finding a
+false statement or missing case; 2026-10-20). No counterexample to S1
+or L1-L4. Corrections taken: constants `A(r, l)` with `¬π(r, l)`, which
+the code builds and `h` left undefined (now sent to `c`, in the
+statement and in interpret.mjs); L4's reason for `lacks` on a rigid
+row; S1-fin needs a finite `c`; two table rows above claimed checks
+that never ran; three slips in §13.9 (count of semantics, page of
+Fig. 3, the finite-rows sentence).
+
+### 14.7 For the author
+
+1. Approve or amend the statements 14.1-14.4 (W1-W3, D1-D2, the
+   acceptance rule, `h`, L1-L4, S1, S1-fin).
+2. The encoding of a rest as one label `ρ_r` at a constant `R(r)`, and
+   its expansion by `h`, are this dossier's (derived, not from a source;
+   skolemization itself is published, §13.4). Flagged under ADR 014 as
+   novel machinery.
+3. Whether S1-fin, rather than S1 over partial maps, is the target, and
+   whether `Valid` itself should move to finite rows (§13.9's finding).
+4. Proposed Lean files after approval: Sig/Generic.lean (generic model,
+   `W_π`, `⊨Δ`), Sig/Interp.lean (`h`, L2, L3), Sig/Soundness.lean (L1,
+   L4, S1, S1-fin).

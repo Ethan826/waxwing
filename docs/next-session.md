@@ -1,3 +1,24 @@
+# Waxwing / record composition foundation: P9s soundness statements (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). No
+compiler code changed in this thread; Task 7 stays checkpointed
+(`r005b-task7-wip`). Verify last run before this thread.
+
+**Read, in order.** As in the entry below, then dossier §13.9 (the
+author's review of §13.8: two tracks, Q1-Q3, the BAPA translation and
+the finite-rows finding) and §14 (P9s soundness statements, the
+restrictions table, the claim-level check, the adversarial review);
+sig-oracle/README.md "Checking the interpretation".
+
+**Next, needs the author:** approval or amendment of §14.7's four
+points (the statements; the rest encoding flagged under ADR 014;
+S1-fin vs S1 as the target and whether `Valid` moves to finite rows;
+the Lean file plan). Then, if approved, Lean proofs of L1-L4, S1.
+Not authorized: proofs before that approval, adopting P9s, CR,
+compiler changes.
+
+---
+
 # Waxwing / record composition foundation: C9 under review (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed), last commit
