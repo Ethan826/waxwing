@@ -9,6 +9,8 @@ import Domain.Resolved as Resolved
 import Domain.Syntax (TypeRef)
 import Domain.Type (Ty)
 import Features.Check.Context (CheckEnv)
+import Features.Check.OriginStore (originsOf)
+import Features.Check.PartOrigin (anyOccurrence)
 import Features.Check.Required (anyWritten, fieldsWritten, requiredBy)
 import Features.Check.Scheme (State, flexible)
 
@@ -25,8 +27,12 @@ notedArgument
   → { parameter ∷ Ty Open, argument ∷ Ty Open }
   → State
   → State
-notedArgument env written argument types state = state
-  { subst = ownSide (calleeSide state.subst) }
+notedArgument env written argument types state =
+  -- No row of two unknown tails yet: nothing to note, and a long spine
+  -- need not be walked.
+  if anyOccurrence (originsOf state.subst) then
+    state { subst = ownSide (calleeSide state.subst) }
+  else state
   where
   calleeSide subst = maybe subst
     (requiredBy fieldsWritten subst (flexible types.argument))

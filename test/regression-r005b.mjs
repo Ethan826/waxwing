@@ -188,8 +188,8 @@ export const r005bProbes = {
       `${pickR}${same}fn g(x: { ...r }): Int where r lacks { a, c } = `
         + '{ let f = fn(q, w) => { let k = same(pickR(x, q), { c: 1 }); '
         + 'same(q, { a: 1, ...w }) }; 0 };' + main,
-      `E_TYPE ${mustBe('{ c: Int }')}r cannot hold r @{ a: 1, ...w } `
-        + '[required here @pickR(x, q)]');
+      `E_TYPE ${mustBe('{ c: Int }')}pickR's r cannot hold g's r `
+        + '@{ a: 1, ...w } [required here @pickR(x, q)]');
     done(context);
   },
   // 2g: `Merge ?y S R` has no 2g (S is not in R's row): it waits, and at
@@ -199,7 +199,8 @@ export const r005bProbes = {
       `${pickR}fn g(x: { ...r }, z: { ...s }, h: ({ ...r }) -> Int): Int `
         + 'where r disjoint s = { let f = fn(y) => h(pickR(y, z)); 0 };'
         + main,
-      `E_TYPE ${mustBe('{ ...r }')}s cannot hold s @pickR(y, z)`);
+      `E_TYPE ${mustBe('g\'s { ...r }')}pickR's s cannot hold g's s `
+        + '@pickR(y, z)');
     done(context);
   },
   // B3: a constructor's row of two unknown tails is desugared at its use.

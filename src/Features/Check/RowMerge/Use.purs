@@ -88,11 +88,14 @@ ownedType
   → Ty Open
   → { accum ∷ Subst, value ∷ Ty Open }
 ownedType made base index site subst ty =
-  { accum: foldl withOwner found.accum
-      (occurrencesFrom (nextPredicate subst) (originsOf found.accum))
+  { accum:
+      if nextPredicate found.accum == first then found.accum
+      else foldl withOwner found.accum
+        (occurrencesFrom first (originsOf found.accum))
   , value: found.value
   }
   where
+  first = nextPredicate subst
   found = typeAt site subst ty
   withOwner reached (Tuple key occurrence) =
     onOrigins (owned key (ownerOf occurrence)) reached

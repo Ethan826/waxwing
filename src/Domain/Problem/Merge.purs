@@ -20,8 +20,14 @@ type Undetermined =
 
 -- Which part has a field or holds a rigid tail (R4); what the parts hold,
 -- for a predicate with no constant; how they split the other side, when
--- no constant has two candidate parts (both approved 2026-10-19).
-data Subject = HasField String | HoldsTail String | Holds | Splits TypeName
+-- no constant has two candidate parts (both approved 2026-10-19), with
+-- the enclosing function's name before it when names collide (decision
+-- 23).
+data Subject
+  = HasField String
+  | HoldsTail String
+  | Holds
+  | Splits (Maybe String) TypeName
 
 -- R9's hints as decision 20 chose them: a lambda in place of a function
 -- value or of a partial application of the owner, this lambda's
@@ -36,14 +42,16 @@ data MergeHint
 
 -- D6: a contradiction a predicate established. `row`: the owner's row as
 -- written (R5); `other`: the other side through the substitution;
--- `fault`: one part at fault (`parts` holds it) or none that can hold the
--- atom (`parts` holds those that were candidates); `atom`: a field or a
--- rigid tail.
+-- `otherOwner`: the enclosing function, written before `other` when names
+-- collide (decision 23); `fault`: one part at fault (`parts` holds it) or
+-- none that can hold the atom (`parts` holds those that were
+-- candidates); `atom`: a field or a rigid tail.
 type MustBe =
   { owner ∷ Maybe String
   , row ∷ TypeName
   , path ∷ Array String
   , other ∷ TypeName
+  , otherOwner ∷ Maybe String
   , fault ∷ Fault
   , parts ∷ Array String
   , atom ∷ MergeAtom

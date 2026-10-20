@@ -9,6 +9,7 @@ module Features.Check.PartOrigin
   , noOrigins
   , madeOccurrence
   , occurrencesFrom
+  , anyOccurrence
   , owned
   , occurrenceOf
   , occurrenceKey
@@ -42,13 +43,14 @@ import Features.Check.Flex (Flex)
 -- its first predicate's identity; `predicates`: each predicate's
 -- occurrence; `required`: for a meta, the written record type that first
 -- supplied it a constant at an argument (R8's `is required here`);
--- `parameters`: unannotated lambda parameters; `seeded`: the written
+-- `parameters`: unannotated lambda parameters (their type's meta and
+-- lambda); `seeded`: the written
 -- lacks a use stated, for H's location (T4).
 newtype PartOrigin = PartOrigin
   { occurrences ∷ Map Int Occurrence
   , predicates ∷ Map Int Int
   , required ∷ Map Int Span
-  , parameters ∷ Array Parameter
+  , parameters ∷ Map Int Span
   , seeded ∷ Array Seeded
   }
 
@@ -104,7 +106,7 @@ noOrigins = PartOrigin
   { occurrences: Map.empty
   , predicates: Map.empty
   , required: Map.empty
-  , parameters: []
+  , parameters: Map.empty
   , seeded: []
   }
 
@@ -119,6 +121,10 @@ madeOccurrence ids found (PartOrigin origins) =
     , predicates = foldl (byFirst first) origins.predicates ids
     }
   byFirst first table id = Map.insert id first table
+
+-- Whether any occurrence is recorded: none, and no note needs them.
+anyOccurrence ∷ PartOrigin → Boolean
+anyOccurrence (PartOrigin origins) = not (Map.isEmpty origins.occurrences)
 
 -- The occurrences keyed from identity `first` on, in order.
 occurrencesFrom ∷ Int → PartOrigin → Array (Tuple Int Occurrence)
@@ -154,12 +160,19 @@ requiredAt meta span (PartOrigin origins) = PartOrigin origins
 requiredOf ∷ Int → PartOrigin → Maybe Span
 requiredOf meta (PartOrigin origins) = Map.lookup meta origins.required
 
+-- Kept by meta in a map: a lambda of 20,000 parameters records each in
+-- logarithmic time (an array copied per parameter made it quadratic).
 parameterMade ∷ Parameter → PartOrigin → PartOrigin
 parameterMade parameter (PartOrigin origins) = PartOrigin origins
-  { parameters = Array.snoc origins.parameters parameter }
+  { parameters = Map.insert parameter.meta parameter.lambda
+      origins.parameters
+  }
 
 parametersOf ∷ PartOrigin → Array Parameter
-parametersOf (PartOrigin origins) = origins.parameters
+parametersOf (PartOrigin origins) = map parameterOf
+  (Map.toUnfoldable origins.parameters)
+  where
+  parameterOf (Tuple meta lambda) = { meta, lambda }
 
 seededAt ∷ Array Seeded → PartOrigin → PartOrigin
 seededAt added (PartOrigin origins) = PartOrigin origins

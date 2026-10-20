@@ -59,6 +59,34 @@ test('D6 blames the field that conflicts, not an earlier unknown one', () => {
   }
 });
 
+// Plan §10 decision 23: when a callee's part and a rigid tail of the
+// enclosing function share a name, the parts take the callee's name and
+// the enclosing function's rigid tails, and a row of them, take its own;
+// messages without a collision are unchanged (the fixtures pin those).
+test('colliding names are qualified, each by its own declaration', () => {
+  const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
+    + 'where r disjoint s = pickR(p, q); ';
+  const same = 'fn same(a: z, b: z): Int = 0; ';
+  const main = ' fn main(): Int = 0;';
+  for (const [source, [at, nth], message] of [
+    [`${pickR}fn g(x: { ...r }, z: { ...s }, h: ({ ...r }) -> Int): Int `
+      + 'where r disjoint s = { let f = fn(y) => h(pickR(y, z)); 0 };' + main,
+    ['pickR(y, z)', 0], 'pickR\'s { ...r, ...s } must be g\'s { ...r }, so '
+      + 'pickR\'s s cannot hold g\'s s'],
+    [`${pickR}${same}fn g(x: { ...r }): Int where r lacks { a, c } = `
+      + '{ let f = fn(q, w) => { let k = same(pickR(x, q), { c: 1 }); '
+      + 'same(q, { a: 1, ...w }) }; 0 };' + main,
+    ['{ a: 1, ...w }', 0], 'pickR\'s { ...r, ...s } must be { c: Int }, so '
+      + 'pickR\'s r cannot hold g\'s r'],
+    [`${pickR}fn g(h: ({ ...r }) -> Int): Int = `
+      + '{ let f = fn(p, q) => h(pickR(p, q)); 0 };' + main,
+    ['pickR(p, q)', 1], 'Cannot tell whether pickR\'s r or s holds g\'s r; '
+      + 'annotate this lambda\'s parameters']]) {
+    assert.equal(checkRejectedAt(source, 'E_TYPE', at, nth).message,
+      message);
+  }
+});
+
 // Decision 5 of 2026-10-17: the renderers' metadata is kept apart from
 // every satisfiability decision. No solving module imports it or a
 // renderer; only where rows and predicates are made writes it.
@@ -117,13 +145,14 @@ test('renderer level only: D6\'s none-of wording for three parts', () => {
     [new Tuple('x', Names.IntName.value), new Tuple('y', Names.IntName.value)],
     []);
   const text = mustBe(typeName)({
-    owner: new Just('merge3'), row, path: [], other,
+    owner: new Just('merge3'), row, path: [], other, otherOwner: Nothing.value,
     fault: Merge.NoPart.value, parts: ['r', 's', 't'],
     atom: new Merge.FieldAtom('x') });
   assert.equal(text, 'merge3\'s { ...r, ...s, ...t } must be '
     + '{ x: Int, y: Int }, but none of r, s or t can have field x');
   const nested = mustBe(typeName)({
     owner: Nothing.value, row, path: ['inner'], other,
+    otherOwner: Nothing.value,
     fault: Merge.NoPart.value, parts: ['r', 's', 't'],
     atom: new Merge.TailAtom('u') });
   assert.equal(nested, '{ ...r, ...s, ...t } (in field inner) must be '

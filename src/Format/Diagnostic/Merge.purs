@@ -26,8 +26,10 @@ undetermined name found = "Cannot tell " <> subject <> maybe "" hint found.hint
     HasField label → choice <> path <> " has field " <> label
     HoldsTail tail → choice <> path <> " holds " <> tail
     Holds → "what " <> owned <> partsList found.parts <> path <> " hold"
-    Splits other → "how " <> owned <> partsList found.parts <> path
+    Splits otherOwner other → "how " <> owned <> partsList found.parts
+      <> path
       <> " split "
+      <> maybe "" possessive otherOwner
       <> name other
   choice
     | Array.length found.parts == 2 = "whether " <> owned
@@ -50,6 +52,7 @@ mustBe ∷ (TypeName → String) → MustBe → String
 mustBe name found = maybe "" possessive found.owner <> name found.row
   <> nested found.path
   <> " must be "
+  <> maybe "" possessive found.otherOwner
   <> name found.other
   <> fault
   where

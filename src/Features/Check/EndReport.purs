@@ -23,7 +23,7 @@ import Domain.Resolved (EffectInfo)
 -- is where to report when no predicate has a site.
 endReport
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Span
   → Subst
   → Either Diagnostic Unit

@@ -15,8 +15,10 @@ adding a bypass allowlist.
 
 - pinned PureScript/Spago, purs-tidy formatting, strict warnings, pedantic
   packages, dependency lock, Unicode PureScript punctuation and 80 columns;
-- 80 columns in every tracked .md, .mjs, .js and .wxw file (code points),
-  enforced by scripts/width.mjs, which verify runs after the structure gate;
+- 80 columns in every .md, .mjs, .js and .wxw file (code points), tracked
+  or untracked and not ignored (a new file counts before it is committed;
+  the user's own untracked docs/writing/ is left out), enforced by
+  scripts/width.mjs, which verify runs after the structure gate;
   test/width.test.mjs pins the rules. Exempt: Markdown table rows; ATX
   headings (a heading is one line); outside code fences, a line that is one
   token or one whole `[text](target)` link; inside a fence, a bare URL line;

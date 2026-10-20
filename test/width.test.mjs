@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { wideLinesOf } from '../scripts/width.mjs';
+import { scannedFiles, wideLinesOf } from '../scripts/width.mjs';
 
 const pad = 'x '.repeat(40);
 const url = 'https://example.com/' + 'a'.repeat(70);
@@ -46,4 +46,16 @@ test('importing the checker without a script path does not throw', async () => {
   const run = spawnSync(process.execPath, ['--input-type=module', '-e',
     "await import('./scripts/width.mjs');"], { encoding: 'utf8' });
   assert.equal(run.status, 0, run.stderr);
+});
+
+// A file not yet committed is scanned with the tracked ones (user,
+// 2026-10-20: verify covers what is being submitted), except the user's own
+// untracked workspace, docs/writing/.
+test('untracked files are scanned, except docs/writing/', () => {
+  const files = scannedFiles({
+    tracked: ['src/A.purs', 'test/a.test.mjs'],
+    untracked: ['scripts/new.mjs', 'docs/writing/part-1.md', 'notes.txt'],
+    excluded: new Set()
+  });
+  assert.deepEqual(files, ['test/a.test.mjs', 'scripts/new.mjs']);
 });

@@ -2,9 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-// Lists every line over 80 code points in the tracked .md, .mjs, .js and
-// .wxw files. Usage: node scripts/width.mjs [--exclude <file>]. The file
-// names paths to skip, one per line (relative to the repository root).
+// Lists every line over 80 code points in the .md, .mjs, .js and .wxw
+// files: tracked ones, and untracked ones git does not ignore, so verify
+// covers files not yet committed (user, 2026-10-20), except docs/writing/,
+// the user's own untracked workspace. Usage: node scripts/width.mjs
+// [--exclude <file>]. The file names paths to skip, one per line
+// (relative to the repository root).
 // Skipped always: vendored skills, patches, bootstrap snapshots, generated
 // editor snapshots and lock files.
 // Exempt, in Markdown outside code fences only: table rows, ATX headings
@@ -17,6 +20,7 @@ const skippedPrefixes = [
   '.agents/', '.claude/skills/', 'docs/patches/', 'bootstrap/',
   'editors/vscode/snapshots/'
 ];
+const privatePrefixes = ['docs/writing/'];
 const skippedNames = [
   'spago.lock', 'skills-lock.json', 'bun.lock', 'package-lock.json'
 ];
@@ -60,6 +64,15 @@ export const wideLinesOf = (file, text) => {
   });
 };
 
+// The files to scan: tracked and untracked, of a scanned kind, neither
+// skipped, private nor excluded.
+export const scannedFiles = ({ tracked, untracked, excluded }) =>
+  [...tracked, ...untracked].filter(file => sourceFile.test(file) &&
+    !excluded.has(file) &&
+    ![...skippedPrefixes, ...privatePrefixes]
+      .some(prefix => file.startsWith(prefix)) &&
+    !skippedNames.includes(file.split('/').pop()));
+
 const main = () => {
   const root = execFileSync('git', ['rev-parse', '--show-toplevel'],
     { encoding: 'utf8' }).trim();
@@ -70,15 +83,15 @@ const main = () => {
   const excludedNames = excludeAt < 0 ? '' :
     readFileSync(argumentsList[excludeAt + 1], 'utf8');
   const excluded = new Set(excludedNames.split('\n').filter(Boolean));
-  const inScope = file => sourceFile.test(file) && !excluded.has(file) &&
-    !skippedPrefixes.some(prefix => file.startsWith(prefix)) &&
-    !skippedNames.includes(file.split('/').pop());
-  const tracked = run(['ls-files', '-z']).split('\0').filter(inScope);
-  const findings = tracked.flatMap(file =>
+  const listed = args => run(['ls-files', '-z', ...args]).split('\0')
+    .filter(Boolean);
+  const files = scannedFiles({ tracked: listed([]),
+    untracked: listed(['--others', '--exclude-standard']), excluded });
+  const findings = files.flatMap(file =>
     wideLinesOf(file, readFileSync(`${root}/${file}`, 'utf8')));
   console.log(findings.join('\n'));
   console.log(`${findings.length} lines over ${maximumColumns} columns`
-    + ` in ${tracked.length} files`);
+    + ` in ${files.length} files`);
   process.exitCode = findings.length === 0 ? 0 : 1;
 };
 

@@ -53,6 +53,8 @@ checkPattern tables expected pattern = valueOf <$> patternAgainst env start
     , ctors: tables.ctors
     , variables: []
     , introduced: Map.empty
+    -- Outside any function: no rigid tail of its to qualify.
+    , functionName: ""
     }
   valueOf threaded = threaded.value
 

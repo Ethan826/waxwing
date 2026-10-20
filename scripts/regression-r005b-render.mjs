@@ -117,5 +117,15 @@ export const r005bRenderRows = [
     ],
     probe: 'r005b-clash-established',
     message: /unknown field blamed: .*so r cannot have field a /
+  },
+  {
+    // Decision 23 undone: colliding names left unqualified.
+    name: 'r005b-names-collide',
+    file: 'src/Features/Check/Collision.purs',
+    needle: '  if Array.null (Array.intersect owned enclosing) then\n',
+    replacement: '  if true || Array.null (Array.intersect owned enclosing) '
+      + 'then\n',
+    probe: 'r005b-names-collide',
+    message: /colliding names unqualified: .* holds r; /
   }
 ];

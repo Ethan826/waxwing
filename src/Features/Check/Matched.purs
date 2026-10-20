@@ -21,6 +21,9 @@ type PatternEnv r =
   , ctors ∷ Array CtorInfo
   , variables ∷ Array String
   , introduced ∷ Map String Span
+  -- The enclosing function's name (R005 Tranche B decision 23: D6 qualifies
+  -- its rigid tails by it when names collide).
+  , functionName ∷ String
   | r
   }
 

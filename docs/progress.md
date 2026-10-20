@@ -7331,3 +7331,41 @@ in 0d5a146).
   .build/evidence/r005b-b5-fix-verify.log). Width now also reads
   scripts/regression-r005b-render.mjs, untracked when B5's verify ran:
   three of its lines were over 80 and are reflowed.
+
+## R005 Tranche B B5: colliding names, width coverage (2026-10-20)
+
+- Decision 23 (plan §10): the user approved the qualified-name rule and
+  its three texts, pinned first in test/r005b-render.test.mjs (red:
+  .build/evidence/r005b-b5-names-red.log), then Check/Collision: when a
+  callee's part and an enclosing rigid tail share a name in one message,
+  the parts take the callee's name and the rigid tails, and a row holding
+  them, the enclosing function's; otherwise nothing changes. The
+  enclosing name reaches the renderers through the environments'
+  `functionName` (pattern checking's environment gained it). Probes
+  `r005b-case2g-claim`, `-atoms` updated; new row `r005b-names-collide`.
+- Width: scripts/width.mjs now scans untracked files git does not ignore
+  (except docs/writing/), shown by an untracked 93-column file the old
+  script passed and the new one flags; test/width.test.mjs pins the
+  selection; docs/engineering.md updated.
+- Performance found on the way, owned: verify failed
+  test/fn-linear-timing.serial `partialFirst` (943, then 955 ms; bound
+  930). The base (29ec312) misses that bound too (892-1,078 ms alone;
+  BACKLOG T003). Measured interleaved against it, B5 had cost: the lambda
+  form +28% (1,140 → 1,465 ms), each unannotated parameter appended to an
+  array copied per parameter (quadratic); about 2.5% on partialFirst from
+  walking a 20,000-arrow parameter for notes no predicate needed. Fixed:
+  parameters kept in a map; the argument walk skipped while no occurrence
+  exists, the owner pass when a type made no predicate. After: every form
+  within -1% to +2% of the base except partialAll +4.9% (527 → 553 ms),
+  three rounds each (.build/evidence/r005b-b5-timing.log). The 28% loss
+  stayed inside its bound: no automated check catches this class yet; a
+  tighter timing row would be flaky under T003's load, so none was added.
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: exit 0
+  (2366/2366, 59/59, 176 regression proofs;
+  .build/evidence/r005b-b5-names-verify3.log). Two runs before it failed
+  only partialFirst's bound (r005b-b5-names-verify.log, -verify2.log).
+- Differential against 29ec312 (`--corpus all --regenerate`, harvest
+  exited 0, 0; .build/evidence/r005b-b5-names-diff.log): fuzz, isName,
+  matches, mutations 0; harvested 52, each at check with a placeholder in
+  the baseline: P6 → D4 31, P2 → D6 16, P2 → the failure's own text 5.
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
