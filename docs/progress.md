@@ -7512,3 +7512,12 @@ assessment.md.
   D8 without disjointness). C4, C8 and C9 unresolved.
 - Awaiting the author's review of the claims. No proofs, solver design
   or compiler change. Verify not run (docs and research only).
+- Revised after the author's review (same day): C7 split into presence
+  and type (the first statement was false; counterexample `r = { x:
+  Bool }` added to the oracle); C10 needs a call-site Contradiction
+  beside the instance; verdicts stated separately for calls and
+  signatures; author's decisions recorded (refuse unsatisfiable `where`
+  clauses, Unresolved when undecided; require a forced or written split
+  until C8 is established for a fragment); C8 restated for a fragment;
+  the oracle is bounded evidence only. Oracle: 23 of 23; three mutants
+  fail it. Proofs await approval of the revised statements.

@@ -94,14 +94,23 @@ function verdict(name, pred, expected) {
   return solutions(pred)
 }
 
-// C7: placement forced iff C ⊨ l ∈ part iff C ∧ part lacks l has none.
+// C7a: presence forced (C ⊨ l ∈ dom part) iff C ∧ part lacks l has no
+// solution. C7b: if presence is forced and every solution's union has
+// l : type, then the part's l has that type in every solution.
 function forced(name, pred, part, l, type) {
   const sols = solutions(pred)
-  const entailed = sols.every(([r, s]) => [r, s][part][l] === type)
+  const present = sols.every((pair) => has(pair[part], l))
   const refuted = solutions(both(pred, partLacks(part, l))).length === 0
-  claim(`C7 ${name}`, entailed === refuted,
-    `entailed ${entailed}, refutation ${refuted}`)
-  return entailed
+  claim(`C7a ${name}`, present === refuted,
+    `presence entailed ${present}, refutation ${refuted}`)
+  const resultTyped = sols.every((pair) => unionOf(pair)[l] === type)
+  const typed = sols.every((pair) => pair[part][l] === type)
+  claim(`C7b ${name}`, !(present && resultTyped) || typed,
+    `premises ${present && resultTyped}, type entailed ${typed}`)
+  return present && typed
+}
+function unionOf([r, s]) {
+  return disjointUnion(r, s) ?? {}
 }
 function both(p, q) {
   return (x) => p(x) && q(x)
@@ -128,6 +137,16 @@ verdict('5 both lack y',
   both(target(xy), both(partLacks(0, 'y'), partLacks(1, 'y'))),
   'Contradiction')
 
+// The reviewer's counterexample to the first statement of C7 ("C ⊨ l ∈
+// r : τ iff C ∧ r lacks l is unsatisfiable"): C fixes r = { x: Bool }.
+const fixedR = (pair) => same(pair[0], { x: 'Bool' })
+const lacksRefuted =
+  solutions(both(fixedR, partLacks(0, 'x'))).length === 0
+const intEntailed = solutions(fixedR).every((pair) => pair[0].x === 'Int')
+claim('first C7 statement refuted by r = { x: Bool }',
+  lacksRefuted && !intEntailed,
+  `lacks refuted ${lacksRefuted}, x: Int entailed ${intEntailed}`)
+
 // Program 3's overlap: ⊎ refuses it; biased composition accepts it.
 const one = { a: 'Int' }
 claim('§5 3 overlap: Contradiction under ⊎, accepted biased',
@@ -147,16 +166,32 @@ claim('§5 11 negative: q = { name, a } contradicts q lacks a',
   !lacks(q11neg, 'a'))
 
 // C10: program 6's negative control. Declared D: r disjoint s, both
-// lacking extra (the wrapper's promise names it). Every θR satisfying D
-// is a counter-instance: { extra } ⊎ r ⊎ s never equals r ⊎ s.
+// lacking extra (the wrapper's promise names it). For each θR meeting
+// D, search every flexible pair (r2, s2) for the body: join's parts
+// equal the parameters (exact records), and the promised result
+// { extra } ⊎ r ⊎ s equals the body's r2 ⊎ s2. Evidence is θR plus an
+// empty search.
 const d6 = pairs.filter(([r, s]) => disjointUnion(r, s) !== undefined &&
   lacks(r, 'extra') && lacks(s, 'extra'))
-claim('C10 6 negative: every θR is a counter-instance',
-  d6.every(counterInstance), `${d6.length} instances`)
-function counterInstance([r, s]) {
-  const body = disjointUnion(r, s)
-  const promised = disjointUnion({ extra: 'Bool' }, body)
-  return promised !== undefined && !same(promised, body)
+const rowKeys = rows.map(key)
+claim('C10 6 negative: every θR meeting D has no flexible assignment',
+  d6.every(noFlexible),
+  `${d6.length} instances; flexible pairs meeting the parameters`)
+function noFlexible([r, s]) {
+  const promised = disjointUnion({ extra: 'Bool' }, disjointUnion(r, s))
+  const r2s = rows.filter(sameKey(key(r)))
+  const s2s = rows.filter(sameKey(key(s)))
+  return !r2s.some(bodyWith(s2s, promised))
+}
+function sameKey(k) {
+  return (_, i) => rowKeys[i] === k
+}
+function bodyWith(s2s, promised) {
+  return (r2) => s2s.some((s2) => bodyHolds(r2, s2, promised))
+}
+function bodyHolds(r2, s2, promised) {
+  const result = disjointUnion(r2, s2)
+  return result !== undefined && same(result, promised)
 }
 
 console.log(results.join('\n'))
