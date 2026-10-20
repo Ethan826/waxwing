@@ -49,3 +49,11 @@
 'Composition.Syntax.r2' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Syntax.r2Enum' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Syntax.freshAlloc_fresh' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.not_part_self' does not depend on any axioms
+'Composition.Syntax.occurs_unsat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.record_step' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.holds_arrow_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.unify_sound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.unify_complete' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.r3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.decideCall_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
