@@ -118,5 +118,15 @@ export const r005bRenderProbes = {
         + 'field x; pass a lambda with annotated parameters in place of '
         + `wrapR @wrapR ${written} ${xy}`);
     done(context);
+  },
+  // D6 blames `b`, whose `Bool` conflicts, not `a`, whose type is unknown.
+  'r005b-clash-established': context => {
+    expect(context, 'unknown field blamed',
+      `${pickR}fn need(f: (a, b) -> { a: Int, b: Int }, p: a): Int = 0; `
+        + 'fn main(): Int = { let f = fn(w) => '
+        + 'need(pickR, { a: w, b: true }); 0 };',
+      'E_TYPE pickR\'s { ...r, ...s } must be { a: Int, b: Int }, so r '
+        + 'cannot have field b @{ a: w, b: true } [required here @pickR]');
+    done(context);
   }
 };

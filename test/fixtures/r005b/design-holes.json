@@ -7,7 +7,7 @@
     "id": "D4",
     "code": "E_TYPE",
     "message": "Cannot tell whether merge's r or s has field x; pass a lambda with annotated parameters in place of merge",
-    "at": {"text":"k","nth":1},
+    "at": {"text":"merge","nth":1},
     "notes": [
       {
         "message": "r and s are written here",
@@ -38,5 +38,5 @@
     ],
     "orders": "all"
   },
-  "remark": "Derived by R4 (labels before rigids), R7 (the deferring unification is at k), R8, R9."
+  "remark": "Derived by R4 (labels before rigids), R7 (the deferring unification is at k), R8, R9. Primary amended from k to merge (plan §10 decision 22, T6: a predicate from the result type is located at the use), the note at { x: Int, ...t } keeps where it is required"
 }

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { spanAt } from './support.mjs';
-import { checkRejectedAt } from './phases.mjs';
+import { checkedPoly, checkRejectedAt } from './phases.mjs';
 import { mustBe } from '../output/Format.Diagnostic.Merge/index.js';
 import { typeName } from '../output/Format.Diagnostic/index.js';
 import * as Merge from '../output/Domain.Problem.Merge/index.js';
@@ -32,6 +32,31 @@ test('R11: predicates at one location are ordered by source data', () => {
     '{ m: { x: Int, y: Int }, w: Int, z: Int } is required here']);
   assert.deepEqual(found.related[0].span,
     spanAt(source, '{ m: { ...a, ...b }, ...r, ...s }'));
+});
+
+// D6 names a field only where the types are established to conflict
+// (plan §10 decision 22): an earlier field whose type is still unknown can
+// become `Int` and is no evidence; the later field's `Bool` is. Each
+// program with the conflicting value made compatible is accepted (by
+// checking: Task 8 lowers rows of two tails), in either field order and
+// with the labels' order reversed.
+test('D6 blames the field that conflicts, not an earlier unknown one', () => {
+  const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
+    + 'where r disjoint s = pickR(p, q); ';
+  const program = (a, b, argument) => `${pickR}fn need(f: (a, b) -> `
+    + `{ ${a}: Int, ${b}: Int }, p: a): Int = 0; fn main(): Int = `
+    + `{ let f = fn(w) => need(pickR, ${argument}); 0 };`;
+  for (const [a, b, bad, good, label] of [
+    ['a', 'b', '{ a: w, b: true }', '{ a: w, b: 1 }', 'b'],
+    ['a', 'b', '{ a: true, b: w }', '{ a: 1, b: w }', 'a'],
+    ['z', 'y', '{ z: w, y: true }', '{ z: w, y: 1 }', 'y']]) {
+    const source = program(a, b, bad);
+    const fields = [a, b].sort().map(name => `${name}: Int`).join(', ');
+    assert.equal(checkRejectedAt(source, 'E_TYPE', bad).message,
+      `pickR's { ...r, ...s } must be { ${fields} }, so r cannot have `
+        + `field ${label}`);
+    checkedPoly(program(a, b, good));
+  }
 });
 
 // Decision 5 of 2026-10-17: the renderers' metadata is kept apart from

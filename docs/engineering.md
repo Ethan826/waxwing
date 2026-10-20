@@ -599,6 +599,23 @@ convention: no gate checks it.
   impossibility. First instance: the RowOutcome table in
   docs/plans/2026-10-17-open-row-merge-rules.md, §11b.
 
+- **Blame needs evidence** (the user, 2026-10-20, after B5's D6 named
+  a compatible field). A diagnostic that assigns blame (names a part, a
+  field, a fact) states the obligation its selection meets before it is
+  implemented, and each selection condition is reviewed against it: what
+  establishes that this one caused the rejection? Difference is not
+  incompatibility in a unifying checker (an unknown type differs from
+  `Int` and unifies with it); uncertainty keeps the failure's own text.
+  Its tests include an earlier plausible suspect that is compatible
+  beside a later one that fails, in each order, with the conflicting
+  value made compatible accepted. Rejection correctness and explanation
+  correctness are reviewed apart: a solver oracle backs the first only.
+  Each new heuristic is challenged for a case where its condition holds
+  and its conclusion is false before its output is pinned, and a state
+  snapshot read for blame is checked for bindings made earlier inside
+  the operation that failed. First instance: test/r005b-render.test.mjs,
+  row `r005b-clash-established`.
+
 First applied in docs/plans/2026-10-17-open-row-merge-plan.md (R005
 Tranche B); its rule arguments are
 docs/plans/2026-10-17-open-row-merge-rules.md.

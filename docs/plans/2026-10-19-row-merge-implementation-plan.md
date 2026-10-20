@@ -517,8 +517,8 @@ increase except by re-making what a revert removed (B0 argues it).
 
 | Outcome | Text | Location |
 |---|---|---|
-| a case's unification fails (field mismatch, a label `t` cannot have, a refused fact) | D6 forms (`O's ROW must be OTHER, so A cannot have field l`), or the fact's own text (D1, D2, D3'') when a written fact is the reason (R10.2's principle, kept: the applicable written fact's specific diagnostic is preferred to D6; approved) | R7: the expression being checked |
-| a binding a case made fails later (R10.1, extended to case 2 bindings; approved) | D6, the predicate from `boundBy`, unless a written fact applies (R10.2) | the expression being checked |
+| a case's unification fails (field mismatch, a label `t` cannot have, a refused fact) | D6 forms (`O's ROW must be OTHER, so A cannot have field l`), or the fact's own text (D1, D2, D3'') when a written fact is the reason (R10.2's principle, kept: the applicable written fact's specific diagnostic is preferred to D6; approved). **Amended** (decision 22): D6 only where a part at fault is established (a field it holds that the other side cannot take, or holds at a type established as different; an unresolved type is no evidence); otherwise the failure's own text | R7: the expression being checked |
+| a binding a case made fails later (R10.1, extended to case 2 bindings; approved) | D6, the predicate from `boundBy`, unless a written fact applies (R10.2). **Amended** (decision 22): D6 where a part the case bound cannot take a field of the failing records; a clash no D6 form explains (a field's type against a later requirement, an occurs failure, cancelled rigid tails) keeps the failure's own text | the expression being checked |
 | H's Contradiction | D6 `… but neither A nor B can have field l` (`none of`, `cannot hold t`), `excluded here` per fact | **Approved** (T4, stable, from provenance; rules file §7): each fact ruling the field out of a part keeps its reason by the approved precedence and, as metadata, the span of the use whose seeding stated it; the primary is the latest of those spans in source order, else the predicate's site; notes `required here` at the predicate's site and `excluded here` at each reason's span. On `diag-14` this is the approved `noX` |
 | Unresolved | D4 forms with R9's hints when a constant has two or more candidate parts (R3, R4); forms approved 2026-10-19 otherwise (§5: a predicate with no constant; constants each with one candidate) | R7: the predicate's site. R11 **approved**: the earliest-site predicate that has a field with two or more candidate parts; only when none has one, the earliest predicate; predicates sharing a source span are ordered by a stable tie-break from source data (never by allocation identity). `determinate`'s approved text needs this: its earliest waiting predicate has no field, and the approved D4 names field `a` at the second `merge` (`node qt-adopted.mjs report`: site 9, field `a`, in every order checked) |
 
@@ -854,8 +854,8 @@ fixtures changed).
 
 | # | Was (Task 4) | Now (B2) | Expected (prototype, every order) | Shown in |
 |---|---|---|---|---|
-| O1 | `granted2({ admin: false })`, both tails `lacks { admin }`: D1 `admin is not allowed here: r lacks { admin }` at the argument | P1 | Contradiction by H, 0 solutions; text: D1 preferred to D6 (decision 5) | **B4: class shown** (H's refusal, P2 at the call); B5 (text) |
-| O2 | the same with `{ name: 1, admin: false }`: D1 | P1 | as O1 | **B4: class shown**; B5 |
+| O1 | `granted2({ admin: false })`, both tails `lacks { admin }`: D1 `admin is not allowed here: r lacks { admin }` at the argument | P1 | Contradiction by H, 0 solutions; text: H's D6 `neither r nor s can have field admin` with `excluded here` at each lack (decision 22: H establishes the combined impossibility, which is not one written lack violated; the earlier reading, D1 preferred, is withdrawn) | **B4: class shown** (H's refusal, P2 at the call); **B5: text** (D6 at the call, T4) |
+| O2 | the same with `{ name: 1, admin: false }`: D1 | P1 | as O1 | **B4: class shown**; **B5: text** |
 | O3 | `diag-14` rows: refused in 16 of 24 orders, skipped in 8 | P1 in all 24 | Contradiction by H (fixture class unchanged), the approved `noX` location (T4) | **B4: shown**, H's refusal in all 24 orders, Unresolved with H off; B5 (text, location) |
 | O4 | `granted2(…)`, only `s lacks { admin }`, both arguments: accepted (a commit) | P1 | Unresolved, 1 and 2 solutions; no annotation can fix it at the call (§5), so it is a finding for the user, not only a cost | **B4: shown** Unresolved (P6); kept as an accepted limitation (decision 17); B5 explains it without an annotation hint |
 | O5 | `diag-14-fix` rows: accepted in 16 of 24 orders | P1 in all 24 | Unresolved (approved reclassification, decision 2) | **B4: shown**, Unresolved in all 24 orders |
@@ -1413,6 +1413,15 @@ one requirement against `{ l1: α1, …, ...ρ }`, type `ρ`); Check/Record
 - [ ] Implement; verify; differential: differences only in sources with
   several spreads (refused before) and removal or rest over several
   tails, classified.
+- [ ] B5's diagnostic gaps (decisions 21, 22), each closed with a check:
+  R1's lambda-parameter names (the resolved parameter carries none, so
+  parts that are only a lambda's rows have no name today); R8's
+  `written here` note for a row inside a handler's or an applied type's
+  argument (Check/WrittenRef follows fields and arrows only); the
+  stage-7 fixtures' locations under T6 (`diag-18`, `design-holes`
+  amended); `none of` reassessed with the merge literal and recorded if
+  still unreachable; `same-name-parts`: distinct part identities with
+  identical displayed names, numbered and ordered stably.
 
 ### Task 8: Specialization and lowering; reference interpreter
 
@@ -1856,6 +1865,30 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     - **`same-name-parts`** moves to Task 7; its requirement stays open:
       distinct part identities with identical displayed names, numbered
       and ordered stably.
+
+22. **B5 reviewed: one correction, departures decided** (user,
+    2026-10-20). Not accepted yet: D6 blamed a compatible field
+    (`need(pickR, { a: w, b: true })` read `so r cannot have field a`;
+    with `b: 1` it is accepted), because unequal resolved types were
+    taken for a clash. Correction: attribute only an established conflict
+    (Check/Clash), else the failure's own text, with the example, its
+    compatible control and the reordered family as tests and row
+    `r005b-clash-established`; docs/engineering.md "Blame needs
+    evidence" records the review requirement. Decisions: (1) the
+    ordinary-text fallbacks approved, §2.10 amended; (2) O1, O2 as H's
+    `neither` form approved (H establishes the combined impossibility,
+    unlike one violated lack); (3) colliding names fixed within B5, the
+    callee's part and the enclosing rigid tail qualified when their
+    names collide, wording to come back before it is pinned; (4) lambda
+    names and the missing `written here` positions are current gaps,
+    deferred to Task 7 with acceptance items; (5) `design-holes`'
+    primary moves from `k` to `merge` under T6, its requirement note
+    kept; (6) the regression substitutions accepted (`participation-
+    control` stays the check; the missing mutation recorded); (7) tests
+    written after the code are not red-first evidence; the provenance
+    walk and `Cause.within` are diagnostic infrastructure and authorize
+    no solving behaviour. The differential's exclusion of `syntax` is
+    accepted as limited to that metadata.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
