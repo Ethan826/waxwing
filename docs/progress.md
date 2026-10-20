@@ -7641,3 +7641,28 @@ assessment.md.
   supported; per-label field types are outside everything read.
   Dossier §13.8. Wording fixed: the proposed hard-instance construction
   fails; no impossibility claimed. No proofs, no compiler change.
+
+## Signature checking: P9s soundness, statements first (2026-10-20)
+
+- The author's review of §13.8: two tracks (P9s soundness as the bounded
+  proof target; complete typed checking still research); a proved P9s
+  would not approve its limitations as final behaviour. Recorded in
+  dossier §13.9 with the region questions Q1-Q3 kept as questions and
+  the presence-to-BAPA translation stated with its obligations. Found:
+  Lean `Valid` ranges over arbitrary partial maps, Waxwing over finite
+  rows; a ∀∃ result does not carry over automatically.
+- Dossier §14: the generic model (W1-W3), disjointness obligations
+  (D1-D2), acceptance rule (a checkable certificate per pattern), the
+  interpretation `h`, statements L1-L4, S1, S1-fin; restrictions table
+  for the soundness pass. Nothing proved; awaiting the author's
+  approval of the statements.
+- sig-oracle: claim-level check of `h` (interpret.mjs,
+  check-interpretation.mjs): 0 failures over 261,950 instances
+  (`1000 5`) and 6,255,998 (`300 9 larger`); the mutant without the
+  side condition fails L2 and L4. Three challenges added (23, all as
+  predicted). Generators moved to grammar.mjs; both recorded generated
+  runs reproduce exactly.
+- Adversarial reviewer: no counterexample to S1; corrections taken
+  (absent-label constants, L4's rigid `lacks` reason, S1-fin needs a
+  finite `c`, two table rows claimed checks that never ran, three §13.9
+  slips). Verify not run (docs and research only).
