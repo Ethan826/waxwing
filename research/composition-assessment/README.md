@@ -109,3 +109,7 @@ reference implementation (b4a63ba; inputs, outputs of the stock and
 nested-field builds, verdicts including residual constraints, the
 patches stated exactly); palsberg-zhao/, the retrieval log for Palsberg
 and Zhao (I&C 2004; reading only, no implementation exists).
+
+oracle/: the bounded enumerator for the record composition dossier
+(docs/plans/2026-10-20-record-composition-dossier.md, §8); its own
+README.
