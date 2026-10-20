@@ -1,0 +1,48 @@
+{
+  "name": "render-d6-neither",
+  "from": "D6, neither part (H)",
+  "remark": "derived by R1-R11 (B5; hints by plan §10 decision 20)",
+  "source": "fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s }\n  where r disjoint s = pickR(p, q);\nfn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): Int = 0;\nfn noX(p: { ...u }, q: { ...v }): Int where u lacks { x }, v lacks { x }\n  = 0;\nfn main(): Int = apply(pickR, noX);\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D6",
+    "code": "E_TYPE",
+    "message": "pickR's { ...r, ...s } must be { x: Int, y: Int }, but neither r nor s can have field x",
+    "at": {
+      "text": "noX",
+      "nth": 1
+    },
+    "notes": [
+      {
+        "message": "required here",
+        "at": {
+          "text": "pickR",
+          "nth": 2
+        }
+      },
+      {
+        "message": "excluded here",
+        "at": {
+          "text": "x",
+          "nth": 1
+        }
+      },
+      {
+        "message": "excluded here",
+        "at": {
+          "text": "x",
+          "nth": 2
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

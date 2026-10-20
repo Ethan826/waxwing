@@ -1,0 +1,16 @@
+{
+  "name": "render-mixed-annotated",
+  "from": "render-mixed annotated: the annotation reaches the lambda parameter's part",
+  "source": "fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s }\n  where r disjoint s = pickR(p, q);\nfn mk(): { ...u } = mk();\nfn apply1(f: (a) -> { x: Int, y: Int }): Int = 0;\nfn main(): Int = apply1(fn(p: { x: Int, y: Int }) => pickR(p, mk()));\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": null,
+    "run": 8
+  },
+  "rows": null
+}

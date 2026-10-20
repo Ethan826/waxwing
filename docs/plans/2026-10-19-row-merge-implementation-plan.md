@@ -1365,11 +1365,14 @@ Problem, Format/Diagnostic/Records; P2 and P6 removed.
   a predicate's metadata.
 - [ ] R11's tie-break: two waiting predicates at one source span are
   reported identically in every order of making them.
-- [ ] Actionable hints told apart (§10 decision 17): a lambda
-  annotation offered only where one can resolve the constraint; for
+- [ ] Actionable hints told apart (§10 decisions 17, 20): a lambda
+  annotation offered where at least one candidate part can take one,
+  each hinted text with an annotated companion that is decided; for
   rows of a call's own instantiation (O4), the limitation explained
-  with no annotation suggested. The exact wording is brought back for
-  approval before it is pinned.
+  with no annotation suggested. Wording approved (decision 20); pinned
+  in the first commit (`render-*`, diag-06; docs/progress.md "R005
+  Tranche B B5"), which leaves `render-d6-none` and `same-name-parts`
+  open for the user.
 - [ ] Solving-time diagnostics (L2): only after the user decides the
   gate's proposal (§10, decision 13).
 - [ ] Implement; verify; differential: 0 on existing sources; commit.
@@ -1782,6 +1785,42 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     H on/off comparisons, not verify. B5 keeps a lambda annotation that
     can resolve an ambiguity apart from O4's limitation, which callers
     cannot repair with the available annotations.
+
+20. **B5's hint wording approved** (user, 2026-10-19). D4 keeps its
+    approved texts; the hint follows `; ` as in R9, chosen by the
+    origin of the reported predicate's parts (PartOrigin), not by its
+    shape.
+    - **Kind 1, an annotation may help:** R9's three texts unchanged
+      (`pass a lambda with annotated parameters in place of O`; `… in
+      place of this partial application of O`; `annotate this
+      lambda's parameters`). Eligibility: at least one candidate part
+      of the reported field (for the no-field and one-candidate forms,
+      at least one unknown part) is a lambda parameter or comes from a
+      function value passed as an argument. **Qualification:** one
+      annotatable part shows where an annotation might help; it does
+      not establish that annotating it resolves the whole ambiguity,
+      since other unknown parts or predicates may remain. Each hinted
+      fixture has an annotated companion that must be accepted or
+      give a genuine contradiction; a companion that stays Unresolved
+      is reported to the user before its hint is pinned, and the check
+      is not weakened to diagnostic movement. In mixed-origin cases
+      the suggested annotation must reach the relevant part.
+    - **Kind 2, the parts belong to a direct call (O4):** wording A,
+      `; no annotation can decide A and B, which belong to this call
+      of O`. Approved instances: O4, `Cannot tell how granted2's r and
+      s split { admin: Bool }; no annotation can decide r and s, which
+      belong to this call of granted2`; Example 6 (`diag-06`), `Cannot
+      tell whether split's r or s has field x; no annotation can decide
+      r and s, which belong to this call of split`. Wording B (adding
+      `only a change to O's signature can`) was declined: callers need
+      not control the callee's signature, and "only" claims too much
+      about remedies.
+    - **Amendment to R9** (diagnostics file, the named-call row): the
+      named call's "none" hint, approved for Example 6, is replaced by
+      kind 2, following decision 17.
+    - **Deferred:** a note explaining that a part is not inferred to
+      hold a field because the other parts lack it (O4); it would need
+      new metadata and is not part of B5.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection

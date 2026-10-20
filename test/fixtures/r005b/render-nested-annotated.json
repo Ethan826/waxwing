@@ -1,0 +1,16 @@
+{
+  "name": "render-nested-annotated",
+  "from": "render-nested annotated",
+  "source": "fn wrapR(p: { ...r }, q: { ...s }): { inner: { ...r, ...s } }\n  where r disjoint s = wrapR(p, q);\nfn apply0(f: (a, b) -> { inner: { x: Int, y: Int } }): Int = 0;\nfn main(): Int = apply0(fn(p: { x: Int }, q: { y: Int }) => wrapR(p, q));\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": null,
+    "run": 8
+  },
+  "rows": null
+}

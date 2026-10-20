@@ -1,0 +1,34 @@
+{
+  "name": "render-call",
+  "from": "D4, a direct call's own rows (O4)",
+  "remark": "derived by R1-R11 (B5; hints by plan §10 decision 20)",
+  "source": "fn granted2(p: { ...r, ...s }): Bool where s lacks { admin } = true;\nfn main(): Int = { let b = granted2({ admin: false }); 0 };\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell how granted2's r and s split { admin: Bool }; no annotation can decide r and s, which belong to this call of granted2",
+    "at": {
+      "text": "{ admin: false }",
+      "nth": 0
+    },
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {
+          "text": "{ ...r, ...s }",
+          "nth": 0
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

@@ -1,0 +1,25 @@
+{
+  "name": "participation-control",
+  "from": "R10.1's limit: p took part in a solved predicate, but the clash comes from `same`, an ordinary unification, and keeps its own text",
+  "source": "fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s }\n  where r disjoint s = pickR(p, q);\nfn same(a: z, b: z): Int = 0;\nfn main(): Int = {\n  let f = fn(p) => { let w = pickR(p, { b: 2 }); same(w, { a: true, b: 3 }) };\n  f({ a: 1 })\n};\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "TrancheA",
+    "code": "E_TYPE",
+    "message": "Expected { a: Bool }, found { a: Int }",
+    "at": {
+      "text": "{ a: 1 }",
+      "nth": 0
+    },
+    "notes": []
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

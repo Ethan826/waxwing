@@ -1,0 +1,41 @@
+{
+  "name": "render-partial",
+  "from": "D4, a partial application",
+  "remark": "derived by R1-R11 (B5; hints by plan §10 decision 20)",
+  "source": "fn pick3(p: { ...r }, q: { ...s }, w: { ...t }): { ...r, ...s, ...t }\n  where r disjoint s, r disjoint t, s disjoint t = pick3(p, q, w);\nfn apply0(f: (b, c) -> { x: Int, y: Int, z: Int }): Int = 0;\nfn main(): Int = apply0(pick3({ x: 1 }));\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether pick3's s or t has field y; pass a lambda with annotated parameters in place of this partial application of pick3",
+    "at": {
+      "text": "pick3({ x: 1 })",
+      "nth": 0
+    },
+    "notes": [
+      {
+        "message": "s and t are written here",
+        "at": {
+          "text": "{ ...r, ...s, ...t }",
+          "nth": 0
+        }
+      },
+      {
+        "message": "{ x: Int, y: Int, z: Int } is required here",
+        "at": {
+          "text": "{ x: Int, y: Int, z: Int }",
+          "nth": 0
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

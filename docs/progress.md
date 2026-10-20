@@ -7143,3 +7143,53 @@ was built and the departures.
 B5 is not authorized. Its hint wording (a lambda annotation where it
 helps; the limitation explained for a call's own rows) comes back for
 approval first. Nothing merged or pushed.
+
+## R005 Tranche B B5: hint wording approved, texts pinned (2026-10-19)
+
+- The user approved the hint wording (plan §10 decision 20): R9's three
+  annotation hints unchanged, offered when at least one candidate part is
+  a lambda parameter or comes from a function value passed as an
+  argument; wording A for a call's own rows (`no annotation can decide r
+  and s, which belong to this call of O`); R9's named-call row amended
+  (diagnostics file R9 and Example 6), so diag-06's approved text gains
+  that hint; the O4 fact-exclusion note deferred.
+- First commit (texts pinned, tests red): diag-06's message; 13 new
+  `render-*` fixtures without a literal of two spreads (function
+  reference, three parts, partial application, nested field, `holds t`,
+  no field, one candidate each, a lambda's parameters, mixed origins,
+  the call's own rows (O4); D6 one part, `neither` (H), nested), with
+  texts, primaries and notes derived by R1-R11 and the hints of decision
+  20; an annotated companion for each of the 9 hinted ones, each
+  accepted at check today; participation-control (R10.1's limit,
+  passing: its text is not a predicate's). test/r005b-fixtures.test.mjs
+  reaches `task` 6 and adds decision 20's companion check (every hinted
+  text at its stage has an `-annotated` companion that is Solved or a
+  pinned contradiction, never Unresolved).
+- Red (.build/evidence/r005b-b5-red.log): 28 pass, 16 fail, each on its
+  placeholder (13 P6, 3 P2): diag-06, diag-07, design-both-plain and
+  the 13 `render-*` texts. research/open-row-merge `node fixtures.mjs`:
+  99 fixtures, 0 failing (the new ones without `rows`).
+- **For the user (not decided):**
+  1. *D4's primary for a direct call.* The approved diag-06, diag-07 and
+     design-both-plain put D4 at the argument; a predicate's site is
+     today the use's span, the whole call. Proposed translation decision
+     T6: a predicate made from a parameter's written row is sited at
+     that argument; one from the result type at the use (the call, the
+     partial application or the function value), nested ones inheriting
+     theirs (T3). It meets every approved stage-6 location and
+     render-call's argument. It does not meet diag-18's approved `p`
+     (stage 7): under T6 that D4 is at `merge`, where render-holds is
+     pinned (at `pickR`); diag-18's location was approved under draft 3's
+     rule "where the equation was deferred", which the adopted design
+     has no record of.
+  2. *`none of` is not reachable.* With three parts all lacking `x`
+     (`pick3` against `noX` with three `lacks`), the program is
+     Unresolved, not refused: the chain's intermediate part has no fact,
+     so H cannot rule it out. No `render-d6-none` is pinned; the form
+     stays for the merge literal (Task 7) if any source reaches it.
+  3. *same-name-parts needs a literal.* R1 names a predicate's parts by
+     its owner's variables, unique within a declaration, so distinct
+     parts printing alike arise only without an owner (lambda parameters
+     in a literal of two spreads). Proposed: move the fixture to Task 7.
+- The R11 tie-break test, the structural test (no solving module reads
+  PartOrigin) and the regression rows come with the code they test.
