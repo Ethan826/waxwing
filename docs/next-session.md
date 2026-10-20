@@ -1,12 +1,15 @@
-# Waxwing / R005 Tranche B: B5 corrected, colliding-names wording pending (2026-10-20)
+# Waxwing / R005 Tranche B: B5 complete, for final acceptance (2026-10-20)
 
-**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). The user's
-B5 review (plan §10 decision 22): D6's field blame corrected
-(Check/Clash), decisions 1-7 recorded; verify 2364/2364, 59/59, 175.
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). B5 with
+decisions 20-23: D4/D6, the field-blame fix, colliding names qualified,
+width covering new files, two performance regressions found and fixed;
+verify 2366/2366, 59/59, 176; differential 52, every one a placeholder
+replaced (docs/progress.md "R005 Tranche B B5: colliding names, width
+coverage").
 
-**Next.** The user's answer on the colliding-names wording (proposed in
-chat, not pinned); then implement it in B5, verify, and bring B5 back for
-acceptance. Task 7 stays blocked.
+**Next, needs the user:** final acceptance of B5; Task 7 stays blocked
+until then. Open: partialFirst's timing bound is missed by the base too
+on this machine (BACKLOG T003).
 
 ---
 

@@ -20,7 +20,12 @@ import Features.Check.UnifyFailure (Cause, Failure(..))
 -- `ordinary`'s text for the failure.
 mergedAt
   ∷ ∀ r a
-  . Names (effects ∷ Array EffectInfo, introduced ∷ Map String Span | r)
+  . Names
+      ( effects ∷ Array EffectInfo
+      , introduced ∷ Map String Span
+      , functionName ∷ String
+      | r
+      )
   → Subst
   → Span
   → Cause

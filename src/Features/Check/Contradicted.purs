@@ -15,6 +15,7 @@ import Domain.Problem
 import Domain.Resolved (EffectInfo)
 import Domain.Syntax (Diagnostic, Note, Span)
 import Features.Check.Atom (Atom(..))
+import Features.Check.Collision (naming)
 import Features.Check.Exclusion (exclusions)
 import Features.Check.Fault (faultIn)
 import Features.Check.MergeOther (wholeName, writtenName)
@@ -42,7 +43,7 @@ import Features.Check.UnifyFailure (Cause, Failure(..))
 -- the caller keeps the failure's own text.
 contradicted
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Subst
   → Span
   → Cause
@@ -71,7 +72,7 @@ heldBy subst view atom = map found (Array.find holding view.parts)
 -- H's refusal: no part can hold the atom.
 homeless
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Subst
   → Span
   → View
@@ -92,7 +93,7 @@ homeless env subst at view atom _ = reported env subst view primary
 -- A case's failure: the part that holds what the other side cannot.
 atFault
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Subst
   → Span
   → View
@@ -104,7 +105,7 @@ atFault env subst at view found = reported env subst view at
 
 reported
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Subst
   → View
   → Span
@@ -126,12 +127,15 @@ reported env subst view primary found notes =
     , row: writtenName (partNames view view.parts) view
     , path: pathOf view
     , other
+    , otherOwner: names.row
     , fault: found.fault
-    , parts: partNames view found.parts
+    , parts: map names.part (partNames view found.parts)
     , atom: case found.atom of
         LabelAtom label → FieldAtom label
-        RigidAtom _ → TailAtom (atomName env found.atom)
+        RigidAtom _ → TailAtom (names.rigid (atomName env found.atom))
     }
+  -- Decision 23: names qualified when a part and a rigid tail collide.
+  names = naming env view [ found.atom ] view.whole.tails
   ownerName owner = owner.name
   at span note = note.span == span
 

@@ -68,7 +68,12 @@ require env state expected actual = either hint Right
 -- failure is reported so too until rows are written (FX001 Task 4).
 expectType
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo, introduced ∷ Map String Span | r)
+  . Names
+      ( effects ∷ Array EffectInfo
+      , introduced ∷ Map String Span
+      , functionName ∷ String
+      | r
+      )
   → State
   → Ty Open
   → Ty Open

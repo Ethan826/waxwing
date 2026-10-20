@@ -12,6 +12,7 @@ import Domain.Problem (MergeHint(..), Problem(..), Subject(..), TypeName)
 import Domain.Resolved (EffectInfo)
 import Domain.Syntax (Diagnostic, Note, Span, TypeRef, typeRefSpan)
 import Features.Check.Atom (Atom(..))
+import Features.Check.Collision (naming)
 import Features.Check.MergeOther (otherName, wholeName)
 import Features.Check.MergeParts
   ( View
@@ -39,7 +40,7 @@ import Features.Check.TypeName (Names)
 -- R9's hint as decision 20 chose it; notes by R8.
 undetermined
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Span
   → Subst
   → NonEmptyArray Merge
@@ -54,7 +55,7 @@ undetermined env fallback subst merges =
 
 reported
   ∷ ∀ r
-  . Names (effects ∷ Array EffectInfo | r)
+  . Names (effects ∷ Array EffectInfo, functionName ∷ String | r)
   → Span
   → Subst
   → View
@@ -81,12 +82,14 @@ reported env fallback subst view = report
     , related: notes whole
     }
   subject other = maybe' (unsplit other) splitSubject split
+  -- Decision 23: names qualified when a part and a rigid tail collide.
   splitSubject found = case found.atom of
     LabelAtom label → HasField label
-    RigidAtom _ → HoldsTail (atomName env found.atom)
+    RigidAtom _ → HoldsTail
+      ((naming env view [ found.atom ] []).rigid (atomName env found.atom))
   unsplit other _
     | Array.null constants = Holds
-    | otherwise = Splits other
+    | otherwise = Splits (naming env view [] view.other.tails).row other
   notes whole = Array.catMaybes
     [ written names view, required site subst view whole ]
   ownerName owner = owner.name

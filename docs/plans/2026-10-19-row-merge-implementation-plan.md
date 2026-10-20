@@ -1890,6 +1890,19 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     no solving behaviour. The differential's exclusion of `syntax` is
     accepted as limited to that metadata.
 
+23. **Colliding names qualified; the field-blame fix accepted; width
+    covers new files** (user, 2026-10-20). When a callee's part and a
+    rigid tail of the enclosing function share a name in one D4 or D6,
+    the parts take the callee's name and the enclosing function's rigid
+    tails, and a row holding them, take its own; messages without a
+    collision are unchanged. Approved texts: `pickR's { ...r, ...s } must
+    be g's { ...r }, so pickR's s cannot hold g's s`; `pickR's { ...r,
+    ...s } must be { c: Int }, so pickR's r cannot hold g's r`; `Cannot
+    tell whether pickR's r or s holds g's r; annotate this lambda's
+    parameters` (Check/Collision, from the recorded identities). The
+    width check now reads untracked files git does not ignore, except
+    docs/writing/, so verify covers files not yet committed.
+
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
 and location checks": they model which constraint is reported and where,

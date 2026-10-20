@@ -128,5 +128,14 @@ export const r005bRenderProbes = {
       'E_TYPE pickR\'s { ...r, ...s } must be { a: Int, b: Int }, so r '
         + 'cannot have field b @{ a: w, b: true } [required here @pickR]');
     done(context);
+  },
+  // Decision 23: pickR's part r and g's rigid tail r, each qualified.
+  'r005b-names-collide': context => {
+    expect(context, 'colliding names unqualified',
+      `${pickR}fn g(h: ({ ...r }) -> Int): Int = `
+        + '{ let f = fn(p, q) => h(pickR(p, q)); 0 }; fn main(): Int = 0;',
+      'E_TYPE Cannot tell whether pickR\'s r or s holds g\'s r; annotate '
+        + `this lambda's parameters @pickR(p, q) ${written}`);
+    done(context);
   }
 };
