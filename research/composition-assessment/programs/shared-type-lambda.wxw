@@ -1,0 +1,8 @@
+fn main(): Int = {
+  let f = fn(q) => {
+    let m1 = { ...{ a: 1 }, ...q };
+    let m2 = { ...{ a: true }, ...q };
+    0
+  };
+  f({ b: 1 })
+};

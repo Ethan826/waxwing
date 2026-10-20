@@ -1,0 +1,15 @@
+fun greet(pre : string) : console ()
+  fun tag(x)
+    (pre, x)
+  val a = tag(1)
+  val b = tag("one")
+  println(a.fst ++ a.snd.show ++ " " ++ b.fst ++ b.snd)
+
+fun greet-val(pre : string) : console ()
+  val tag = fn(x) (pre, x)
+  val a = tag(1)
+  val b = tag("one")
+  println(a.fst ++ a.snd.show ++ " " ++ b.fst ++ b.snd)
+
+fun main()
+  greet("p:")

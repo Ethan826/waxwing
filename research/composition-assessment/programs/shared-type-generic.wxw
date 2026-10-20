@@ -1,0 +1,6 @@
+fn both(q: { ...r }): Int where r lacks { a } = {
+  let m1 = { ...{ a: 1 }, ...q };
+  let m2 = { ...{ a: true }, ...q };
+  0
+};
+fn main(): Int = both({ b: 1 });
