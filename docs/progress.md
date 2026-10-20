@@ -7205,8 +7205,8 @@ approval first. Nothing merged or pushed.
 ## R005 Tranche B B5: implementation (2026-10-20)
 
 D4 and D6 are rendered; P2 and P6 are gone. Code on top of 29ec312
-(splits a90a625, f23d294; the needle fix cc3a089; the code commit
-follows this entry).
+(splits a90a625, f23d294; the needle fix cc3a089; code and this entry
+in 0d5a146).
 
 - **Metadata** (diagnostic only, plan §0 decision 5 of 2026-10-17):
   Check/PartOrigin, held by the substitution. Desugar records each
