@@ -102,3 +102,13 @@ for error channels to compose during assembly and business logic. Official
 Effect Layer documentation is linked in the milestone. Conceptual influence
 only; no external implementation copied. Project brainstorming and
 verification-before-completion guidance used for the requirements brief.
+
+## CS source traceability (2026-10-20)
+
+Claim-level source records and the independent Sulzmann/Makholm-Wells
+follow-up are in
+[CS source traceability](plans/2026-10-20-cs-source-traceability.md).
+That index separates publication kind, inspected material, local
+adaptations, executable evidence and unresolved obligations. It does not
+certify the complete checker or adopt a replacement solver. The existing
+composition assessment and probe records remain separate evidence.

@@ -2,8 +2,11 @@
 
 Evidence for the foundation assessment (docs/plans/2026-10-20-
 composition-foundation-assessment.md, §4.7 and §4.8). Reading only: no
-implementation of Sulzmann's record systems was found or run. Nothing
-third-party is stored here.
+implementation of Sulzmann's record systems was found or run. The
+author-supplied thesis PDF is kept locally as
+`sulzmann-2000-thesis.pdf` (ignored by Git); the primary source is
+https://www.researchgate.net/publication/213884919_A_General_Framework_for_HindleyMilner_Type_Systems_with_Constraints
+No third-party implementation is stored here.
 
 ## Which works ATTAPL ch. 10 cites
 
@@ -28,7 +31,8 @@ records remark is in §10.8 (draft p. 489) and cites the thesis only.
 - Thesis (2000): not accessible to the agent (ResearchGate 213884919
   answers 403 and then a CAPTCHA page, not attempted; CiteSeer's 2006
   page has no file). The author then retrieved the ResearchGate PDF; it
-  was read for the assessment's §4.10 and is not stored here.
+  was read for the assessment's §4.10. The local reference copy is named
+  above; it is not versioned.
 - Sulzmann, Type systems for records revisited (unpublished, 1998;
   Leijen 2004 ref. [28]): not found.
 - Glynn, Stuckey, Sulzmann and Søndergaard, Boolean constraints for
