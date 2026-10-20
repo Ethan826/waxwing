@@ -7369,3 +7369,18 @@ in 0d5a146).
   matches, mutations 0; harvested 52, each at check with a placeholder in
   the baseline: P6 → D4 31, P2 → D6 16, P2 → the failure's own text 5.
 - .build/r005b-base, .build/regression and .build/go-cache deleted.
+
+## R005 Tranche B B5 accepted; Task 7 authorized (2026-10-20)
+
+- The user accepted B5 at 1337bd3 (plan §10 decision 24) and authorized
+  Task 7 within the approved plan; no merge or push. The reviewer ran 14
+  renderer and width tests, all passing, and read the recorded
+  verification, differential and timing evidence; full verify was not
+  rerun.
+- Kept open, not blocking: the `partialFirst` timing failures, under
+  T003 by the base's measurements; the measured 4.9% `partialAll`
+  slowdown and the missing automated complexity protection, new BACKLOG
+  T014.
+- Carried into Task 7's acceptance: `none of` and `same-name-parts`,
+  lambda-parameter names, the `written here` note inside a handler's or
+  an applied type's argument, and the stage-7 locations under T6.

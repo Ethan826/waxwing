@@ -87,10 +87,10 @@ an oracle property or a measured run.
 test runner, Go 1.26.4. No new dependency (Z3 stays outside the
 repository, an optional research oracle).
 
-**Status:** B0 accepted; B1, B2 and B3 done (2026-10-19), each
-authorized alone; L1 accepted and L2's limited location rule approved
-(§10, decision 15). Nothing later is authorized; B4 waits for the
-user's review of B3.
+**Status:** B0 accepted; B1-B5 done and accepted (2026-10-19 to
+2026-10-20), each authorized alone; L1 accepted and L2's limited
+location rule approved (§10, decision 15). Task 7 authorized (§10,
+decision 24); nothing after it is.
 
 Written on branch `r005b-replan` from main 1d43341. Docs only: no
 compiler source, test, script or test fixture changed; nothing built;
@@ -1902,6 +1902,21 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     parameters` (Check/Collision, from the recorded identities). The
     width check now reads untracked files git does not ignore, except
     docs/writing/, so verify covers files not yet committed.
+
+24. **B5 accepted at 1337bd3; Task 7 authorized** (user, 2026-10-20),
+    within the approved plan. The field-blame correction, the collision
+    qualification and the width coverage address the review's findings;
+    the performance fixes remove the quadratic parameter recording and
+    the unneeded traversal. The reviewer ran 14 renderer and width tests
+    (all passing) and read the recorded verification, differential and
+    timing evidence; full verify was not rerun. The timing failures stay
+    a separate, open issue, not erased by the third run passing: the
+    base's measurements put the `partialFirst` failures under T003; the
+    measured 4.9% `partialAll` slowdown and the missing automated
+    complexity protection stay visible (BACKLOG); neither blocks the
+    milestone. Task 7's acceptance carries the deferred diagnostic
+    fixtures (`none of`, `same-name-parts`), lambda-parameter names and
+    the missing `written here` positions. No merge or push.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
