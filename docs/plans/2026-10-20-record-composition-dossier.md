@@ -1,6 +1,8 @@
 # Record composition: definitions and claims (statements-first dossier)
 
-Date: 2026-10-20. Status: draft for the author's review. Approval of
+Date: 2026-10-20, revised the same day after the author's review (§8).
+Status: draft for the author's review; direction approved, statements
+revised, proofs not yet authorized. Approval of
 this phase covers definitions, claim statements and counterexample
 exploration. It does not cover proofs, adopting solver machinery or
 changing the compiler; those come back to the author with the completed
@@ -80,26 +82,60 @@ symmetric Casino rule (TR §2, Fig. 2, published, without row variables)
 and of Simon's `¬(f1 ∧ f2)` (PLDI 2014 §5, published, over presence
 flags with one shared type).
 
-## 2. Verdicts and what each gives compilation
+## 2. Verdicts, for calls and for signatures
 
-A procedure answers a checking problem with one of three verdicts.
-Each verdict states what it guarantees; compilation may use only that.
+A procedure answers a checking problem with one of three verdicts. A
+call and a signature ask different questions (D6), so the verdicts are
+stated for each. Compilation may use only what a verdict guarantees.
+
+### 2.1 Calls: does a solution exist?
+
+The problem `C` has flexible variables only.
 
 - **Solved(σ, C′, W)**: `σ` is a substitution, `C′` a residual
-  constraint set and `W` a witness assignment. Guarantees: (i) `C` and
-  `C′σ` have the same solutions on the problem's variables; (ii) `W`
-  satisfies `C′`, so `C` is satisfiable; (iii) for a signature problem,
-  the ∀∃ statement of D6 holds. Compilation receives `σ`, `C′`, and the
-  set of variables that `C′` leaves *undetermined* (several values in
-  `sol(C′)`); §4 says when it may use `W` for them.
-- **Contradiction(E)**: `sol(C)` is empty (for a signature problem:
-  there is a `θR` satisfying `D` for which no `θF` exists). `E` is
-  evidence a reader or test can check: a refutation from the rules, an
-  exhausted case split, or, for a signature, the counter-instance `θR`.
-  Compilation receives nothing; the program is ill-typed.
+  constraint set and `W` an assignment. Guarantees: (i) `C` and `C′σ`
+  have the same solutions on the problem's variables; (ii) `W`
+  satisfies `C′`, so `C` is satisfiable. Compilation receives `σ`,
+  `C′`, and the variables `C′` leaves *undetermined* (several values in
+  `sol(C′)`); §4 says what it may do with them.
+- **Contradiction(E)**: `sol(C)` is empty. `E` is evidence a reader or
+  test can check: a refutation from the rules or an exhausted case
+  split. Compilation receives nothing; the program is ill-typed.
 - **Unresolved(C′)**: the procedure stopped without deciding.
   Guarantees only (i). Compilation receives nothing; the diagnostic must
   say the checker could not decide, never that the program is wrong.
+
+### 2.2 Signatures: does every permitted instance have a solution?
+
+The problem is `∀ā. D ⇒ ∃b̄. B`: rigid `ā` with the declared clauses
+`D`, flexible `b̄` with the body's constraints `B`.
+
+- **Solved(B′)**: guarantees that for every `θR` satisfying `D` some
+  `θF` satisfies `B`. One satisfying pair `(θR, θF)` does not establish
+  it, and `D ∧ B` can have solutions while the signature fails: a body
+  that writes `admin` beside `...r` needs `r lacks { admin }`, which
+  some `θR` meet and `θR(r) = { admin: Int }` does not. The residual
+  `B′` keeps the rigid and flexible variables apart and the quantifier
+  order: it is `∀ā. D ⇒ ∃b̄. B′`, and any part of it that mentions
+  rigid variables only must be entailed by `D`, or the verdict is not
+  Solved.
+- **Contradiction(θR, E)**: two parts, both required. `θR` is a rigid
+  assignment that satisfies `D` (checkable by evaluation), and `E` is a
+  call-site Contradiction (§2.1) for `B` with `θR` substituted: no
+  flexible assignment works for that instance. The instance alone shows
+  which declared inputs fail, not that the search for `θF` is empty.
+- **Unresolved(B′)**: as for calls; no claim about the signature.
+
+### 2.3 Declarations
+
+Author's decision (2026-10-20): a declaration whose `where` clauses `D`
+are unsatisfiable is refused, reporting that its requirements are
+contradictory, and its body is not checked against them vacuously.
+`D` is checked as a call-site problem with `ā` treated as flexible:
+Contradiction refuses the declaration; Unresolved is reported as
+Unresolved, never as a contradiction.
+
+### 2.4 Soundness and completeness
 
 A procedure is *sound* if Solved and Contradiction always meet their
 guarantees, *refutation-complete* if it never answers Unresolved for an
@@ -144,20 +180,33 @@ Wand's typability gives:
 
 - **C6, a satisfying split exists** (C3): some assignment of `r` and `s`
   satisfies the problem. Decides acceptance and the negative controls.
-- **C7, a placement is forced** (derived from Jones, FPCA 1995 §4.1,
-  published: improvement is sound iff it does not change the set of
-  solutions). `l ∈ r : τ` may be added to `C` iff `C ⊨ l ∈ r : τ`. By
-  D5 that holds iff `C ∧ r lacks { l }` is unsatisfiable, so forced
-  placement is decided by C6's procedure, once per label and part.
-  Sulzmann's REC5-REC6 are instances (published, axioms; his printed
-  closure misses the closed-result case, assessment §4.10).
+- **C7, a placement is forced.** Improvement (Jones, FPCA 1995 §4.1,
+  published) may add `l ∈ r : τ` to `C` iff `C ⊨ l ∈ r : τ`. That has
+  two parts, presence and type, and they are separate claims:
+  - **C7a, presence** (derived; D5). `C ⊨ l ∈ dom r` iff `C ∧ r lacks
+    { l }` is unsatisfiable. So forced presence is decided by C6's
+    procedure, once per label and part.
+  - **C7b, type** (derived; D3). Presence fixes no type: if `C` fixes
+    `r = { x: Bool }`, then `C ∧ r lacks { x }` is unsatisfiable while
+    `C ⊭ x ∈ r : Int`. (The first version of this dossier stated C7 as
+    "`C ⊨ l ∈ r : τ` iff `C ∧ r lacks { l }` is unsatisfiable", which
+    this example refutes.) The claim: if `C ⊨ l ∈ dom r` and every
+    solution gives the composition's result `θ(r) ⊎ θ(s)` the field `l
+    : τ`, then `C ⊨ l ∈ r : τ`, because a disjoint union takes `l`'s
+    field from the part that holds it. Programs 4 and 5 meet both
+    premises: the result is the caller's known record.
+
+  Sulzmann's REC5-REC6 state C7a and C7b together for `concat` (published,
+  axioms; his printed closure misses the closed-result case, assessment
+  §4.10).
 - **C8, the split does not matter to meaning** (unresolved). See §4.
 
-Program 4's split is forced (C7): with `r ⊎ s = { admin }` and `s
-lacks { admin }`, adding `r lacks { admin }` leaves no solution. The
-same interface called without the `lacks` fact has two solutions; C6
-holds, C7 holds for neither placement, and only C8 could let the
-program compile.
+Program 4's split is forced: with `r ⊎ s = { admin: Bool }` and `s
+lacks { admin }`, adding `r lacks { admin }` leaves no solution (C7a),
+and the result's `admin` is `Bool`, so `r`'s is (C7b). The same
+interface called without the `lacks` fact has two solutions; C6 holds,
+C7a holds for neither placement, and the program compiles only under
+§4's policy.
 
 ### 3.3 Signatures
 
@@ -169,18 +218,21 @@ program compile.
   van de Pol handle rigid variables as ∀∃ in Boolean unification
   (OOPSLA 2020 §3.2, published, for Boolean formulas, not rows). Routes
   to examine, not designs.
-- **C10** (derived; D2, D6). A Contradiction for a signature has a
-  checkable witness: the counter-instance `θR`. Program 6's negative
-  control has one for every `θR` (the promised `extra` never appears in
-  `θ(r) ⊎ θ(s)` when `r`, `s` lack it; if they may hold it, the instance
-  where they do not).
+- **C10** (derived; D2, D6, §2.2). A signature's Contradiction has
+  checkable evidence in two parts: an instance `θR` satisfying `D`, and
+  a call-site Contradiction for the body at that instance. For program
+  6's negative control every `θR` satisfying `D` (`r disjoint s`, both
+  lacking `extra`) is such an instance: the parameter types are exact
+  records, so the flexible parts of `join`'s instantiation must equal
+  `θR(r)` and `θR(s)`, and then the promised `{ extra } ⊎ θR(r) ⊎
+  θR(s)` differs from the body's `θR(r) ⊎ θR(s)`; no flexible
+  assignment remains.
 - **C11** (derived). The syntactic case suffices for program 6: the
   body's constraint `r disjoint s` (from instantiating `join` at the
   rigid `r`, `s`) is literally one of the declared clauses, so `D ⊨ B`
   by inclusion. This decides program 6, not the general C9.
-- **Question for the author.** A signature whose clauses `D` have no
-  solution makes D6 hold vacuously. Should a declaration with
-  unsatisfiable clauses be refused (C6 applied to `D`)?
+- **Unsatisfiable clauses** make D6 hold vacuously; §2.3 records the
+  author's decision to refuse such declarations.
 
 ## 4. When alternatives may remain
 
@@ -191,11 +243,15 @@ one layout (Palsberg and Zhao's `S_R`, Def 5.6; Wand's first unifiable
 disjunct) shows the program has a meaning for that layout. It does not
 show the program means the same for every layout.
 
-- **C8, split irrelevance** (unresolved). If no construct of the
-  language can observe how a record of type `{ ...r, ...s }` divides
-  between `r` and `s`, then every satisfying split gives the same
-  observable behaviour, and the checker may fix the witness `W`
-  deterministically (for example, the least split in label order).
+- **C8, split irrelevance for a fragment** (unresolved). For a stated
+  fragment of the language: if no construct in it can observe how a
+  record of type `{ ...r, ...s }` divides between `r` and `s`, then
+  every satisfying split gives the same observable behaviour, and the
+  checker may fix the witness `W` deterministically (for example, the
+  least split in label order). This is a theorem about a fragment. It
+  is not a procedure that recognizes every program whose split is
+  irrelevant, and none is promised: deciding whether two executions
+  behave the same is not attempted.
   Assumption to establish by inventory, construct by construct: field
   access, `without`, rest binders, spreads, equality, `show`, effects
   and handlers, specialization keys (the generated code differs in names
@@ -203,10 +259,14 @@ show the program means the same for every layout.
   caller's argument), and any future class instance selected by a row.
   A construct that observes the split makes C8 false for programs that
   use it; those programs would need the split forced (C7) or written.
-- **Policy, for the author** (decision 3). Alternatives may remain past
-  checking only when C8 holds for the program; otherwise the checker
-  refuses with a diagnostic naming the undetermined variable and its
-  alternatives. That diagnostic is not a Contradiction.
+- **Policy** (author's decision, 2026-10-20; decision 3). An arbitrary
+  split must not change observable behaviour. Initially the checker
+  requires a split that is forced (C7) or written by the programmer;
+  otherwise it refuses with a diagnostic naming the undetermined
+  variable and its alternatives, which is not a Contradiction. Once C8
+  is established for a fragment, programs within that fragment may
+  leave the split undetermined and compile with the deterministic
+  witness.
 
 ## 5. The programs and controls against the claims
 
@@ -214,13 +274,13 @@ show the program means the same for every layout.
 |---|---|---|---|
 | 3 `join({ name }, { age })` | `r ⊎ s` with both known | Solved, no residual | C2, C3 |
 | 3 overlap `join({ a }, { a })` | `r ⊎ s`, both hold `a` | Contradiction (Wand's D7 accepts: the transfer difference) | C1, C2 |
-| 4 `acceptsParts({ admin: false })` | `r ⊎ s = { admin }`, `s lacks { admin }` | Solved; `r = { admin: Bool }`, `s = {}` forced | C3, C7 |
+| 4 `acceptsParts({ admin: false })` | `r ⊎ s = { admin }`, `s lacks { admin }` | Solved; `r = { admin: Bool }`, `s = {}` forced | C3, C7a, C7b |
 | 4, negative | both lack `admin` | Contradiction | C3 |
-| 4 without `lacks` | `r ⊎ s = { admin }` | Solved with `r`, `s` undetermined; compiles only under C8 | C3, C8 |
-| 5 `composeRequirements(join, restricted)` | `u ⊎ v = { x, y }`, `u lacks { y }`, `v lacks { x }` | Solved; `u = { x }`, `v = { y }` forced | C3, C7 |
+| 4 without `lacks` | `r ⊎ s = { admin }` | Solved with `r`, `s` undetermined; refused as undetermined under §4's policy until C8 covers it | C3, C8 |
+| 5 `composeRequirements(join, restricted)` | `u ⊎ v = { x, y }`, `u lacks { y }`, `v lacks { x }` | Solved; `u = { x }`, `v = { y }` forced | C3, C7a, C7b |
 | 5, both lack `y` | `u ⊎ v = { x, y }`, `u`, `v` lack `y` | Contradiction | C3 |
 | 6 `forwarded` | body `r disjoint s` under declared `r disjoint s` | Solved | C11 |
-| 6, negative (promises `extra`) | `{ extra, ...r, ...s } = { ...r, ...s }` for all `θR` | Contradiction, counter-instance | C10 |
+| 6, negative (promises `extra`) | `{ extra, ...r, ...s } = { ...r, ...s }` | Contradiction: an instance `θR` and no flexible assignment for it | C10 |
 | 11 `both` | `q lacks { a }`; `q ⊎ { a: Int }`, `q ⊎ { a: Bool }` | Solved, two independent results | C2, C5 |
 | 11, negative `both({ name, a: 2 })` | `q = { name, a }`, `q lacks { a }` | Contradiction | C3 |
 
@@ -240,9 +300,10 @@ research/composition-assessment/wand/):
 | `(r ⊎ s).x` used as Int and as Text | Gonzalez: accepted with contradictory residual constraints | Contradiction (Solved needs (ii)) |
 | `x: (k: k x + k x) (y: 0)` | Gonzalez: occurs check on `a = a` | Solved |
 | a composition nested in a field's type, then that field's field used at the wrong type | Gonzalez: accepted (substitution misses nested fields) | Contradiction |
-| `concat(α, β, { admin })` with `β lacks admin` | Sulzmann's printed closure: placement not derived for a closed result | `α` holds `admin`, forced (C7) |
+| `concat(α, β, { admin })` with `β lacks admin` | Sulzmann's printed closure: placement not derived for a closed result | `α` holds `admin`, forced (C7a, C7b) |
 | overlap of two known records | Wand, Gonzalez: accepted (biased) | Contradiction (C2) |
-| program 4 and 5 calls | Waxwing today: D4, Unresolved | Solved (C3, C7) |
+| program 4 and 5 calls | Waxwing today: D4, Unresolved | Solved (C3, C7a, C7b) |
+| `r = { x: Bool }`, asked whether `x ∈ r : Int` is forced | the first version of C7 | not forced: presence is, the type is `Bool` (C7a, C7b) |
 
 ## 7. Obligations, by status
 
@@ -254,35 +315,45 @@ research/composition-assessment/wand/):
 | C4 | finite label reduction with D5's atoms | partly published; unresolved | argument |
 | C5 | per-record field types | published | program 11 probes (Wand, run) |
 | C6 | a split exists | = C3 | |
-| C7 | forced placement = entailment, by refutation | derived (Jones); checked on programs 4, 5 | proof |
-| C8 | split irrelevance | unresolved | construct inventory |
+| C7a | forced presence = refutation of `lacks` | derived (Jones); checked on programs 4, 5 | proof |
+| C7b | forced type from a known result under ⊎ | derived; checked on programs 4, 5 and the counterexample | proof |
+| C8 | split irrelevance for a stated fragment | unresolved | construct inventory |
 | C9 | signature checking decidable | unresolved | examine the three routes |
-| C10 | signature Contradiction has a counter-instance | derived; checked on program 6's control | proof, with C9 |
+| C10 | signature Contradiction = instance + call-site Contradiction | derived; checked on program 6's control | proof, with C9 |
 | C11 | program 6 by inclusion | derived | |
 | - | `let`-generalization with residual constraints (program 8) | published in general (HM(X)); with D8, unresolved | after C9 |
 | - | lowering preserves checking's meaning | unresolved | translation and differential tests |
 
-"Oracle" means a bounded enumerator over small label sets and base
-types: evidence, not a complete reference (C4 is what would make it
-one).
+"Oracle" means a bounded enumerator over a fixed small domain of labels
+and base types: evidence on that domain. C4 would not make it complete:
+a reduction's finite bound depends on the input, so no fixed domain
+covers every input. A complete reference procedure would need C4 proved
+and a decision procedure for the reduced problems.
 
 ## 8. Counterexample exploration, and what comes next
 
-Run (2026-10-20): research/composition-assessment/oracle/oracle.mjs
-enumerates every row over five labels and three base types (1,048,576
-pairs) and checks C1, C2 (all 64 presence triples), C7 on programs 4
-and 5 (entailment and refutation agree; not forced without the
-`lacks`), C10 on program 6's control (2,401 declared instances, each a
-counter-instance) and every row of §5 except 6 and the implementation
-counterexamples of §6, which need a checker, not an enumerator. 18 of
-18 checks hold. Two mutants show the checks can fail: biased union in
-place of ⊎ fails C1, program 3's overlap and program 4 without its
-`lacks` (5 solutions instead of 2); D8 without `f = absent` fails C2.
-No counterexample was found. The oracle evaluates ground assignments,
-so it says nothing about C4, C8 or C9, which stay unresolved.
+Run (2026-10-20, second revision): research/composition-assessment/
+oracle/oracle.mjs enumerates every row over five labels and three base
+types (1,048,576 pairs) and checks C1, C2 (all 64 presence triples),
+C7a and C7b on programs 4 and 5 (and not forced without the `lacks`),
+the counterexample that refutes the first statement of C7, C10 on
+program 6's control (for each of 2,401 declared instances, every
+flexible pair meeting the parameter types) and every row of §5 except 6
+and the implementation counterexamples of §6, which need a checker, not
+an enumerator. 23 of 23 checks hold. Mutants show the checks can fail:
+biased union in place of ⊎ fails C1, program 3's overlap and program 4
+without its `lacks`; D8 without `f = absent` fails C2; program 6's
+promise without `extra` fails C10. The oracle evaluates ground
+assignments over a fixed domain, so it says nothing about C4, C8 or C9.
 
-Next, on the author's word: no proofs, no solver design and no compiler
-change before the author approves, edits or cuts the claims.
-The author then approves, edits or cuts the claims; proofs and any
-adoption come after, as ADR 014 and the assessment's decision 1 set
-out.
+Revision history: the second revision (after the author's review)
+split C7 into presence and type (C7a, C7b; the first statement was
+false), required a call-site Contradiction beside the counter-instance
+in C10, stated the verdicts separately for calls and signatures (§2),
+recorded the author's decisions on unsatisfiable clauses (§2.3) and on
+undetermined splits (§4), restated C8 as a theorem about a fragment,
+and withdrew the remark that C4 would make the oracle complete.
+
+Next: no proofs, solver design or compiler change until the author
+approves the revised statements. Proofs and any adoption come after,
+as ADR 014 and the assessment's decision 1 set out.
