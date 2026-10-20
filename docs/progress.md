@@ -7521,3 +7521,24 @@ assessment.md.
   until C8 is established for a fragment); C8 restated for a fragment;
   the oracle is bounded evidence only. Oracle: 23 of 23; three mutants
   fail it. Proofs await approval of the revised statements.
+
+## Record composition: first proof milestone (2026-10-20)
+
+- Authorized after the dossier's second revision. Dossier §2 made
+  precise first: Solved keeps the binding equations `eq(σ)`; signature
+  failure is the false quantified statement, not unsatisfiability of
+  `D ∧ B`.
+- Lean 4.35.0 (elan via Homebrew; `~/.elan` 2.8 GB), no Mathlib:
+  research/composition-proofs/. Proved: C1, C2 (and D7 = biased), C7a,
+  C7b, the refutation of the first C7, signature failure's
+  characterization, C10's evidence principle, C11, §2.2's example, and
+  programs 3 (overlap), 4, 4 without `lacks`, 5, 6, 11 with their
+  negative controls. Clean build, no warnings, no `sorry`; axioms:
+  `propext`, `Quot.sound`, and `Classical.choice` in `sigFails_iff`
+  only. Mutant: program 4 without its `lacks` fails its placement
+  proofs.
+- Not formalized: §2.1's binding equations, C3, C4, C8, C9; the step
+  from Waxwing source to each program's constraint (written by hand).
+- Awaiting the author's review of the exact statements (dossier §9).
+  No decision procedure or compiler change. Verify not run (docs,
+  research and proofs only).

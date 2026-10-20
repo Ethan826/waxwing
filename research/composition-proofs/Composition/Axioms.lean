@@ -3,10 +3,8 @@ Axiom dependencies of every headline theorem. Run:
 `lake env lean Composition/Axioms.lean`; the output is in axioms.out.
 -/
 import Composition.Programs
-import Composition.Sig.Adversarial
-import Composition.Sig.Soundness
 
-open Composition Composition.Programs Composition.Syntax
+open Composition Composition.Programs
 
 #print axioms c1
 #print axioms c2_label
@@ -34,58 +32,3 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms p6_holds
 #print axioms p6_negative_refuted
 #print axioms p6_negative_fails
-#print axioms compose_assoc
-#print axioms composeAll_append
-#print axioms composeAll_perm
-#print axioms composeAll_none_iff
-#print axioms disjoint_composeAll
-#print axioms evalT_record
-#print axioms rowOf_eval
-#print axioms expandTails_eval
-#print axioms subst_evalT
-#print axioms subst_lacks
-#print axioms subst_disjoint
-#print axioms subst_atom
-#print axioms subst_sat
-#print axioms binding_correspondence
-#print axioms bindings_needed
-#print axioms evalT_restrict
-#print axioms r1
-#print axioms sat_congr
-#print axioms evalF_patternFields
-#print axioms r2Closed
-#print axioms r2_forward
-#print axioms r2_backward
-#print axioms r2
-#print axioms r2Enum
-#print axioms freshAlloc_fresh
-#print axioms not_part_self
-#print axioms occurs_unsat
-#print axioms record_step
-#print axioms holds_arrow_iff
-#print axioms unify_sound
-#print axioms unify_complete
-#print axioms r3
-#print axioms decideCall_correct
-#print axioms lacks_sat_not_valid
-#print axioms unnamed_labels_matter
-#print axioms declared_disjoint_valid
-#print axioms rigid_type_not_valid
-#print axioms p6Sig_valid
-#print axioms depSig_valid
-#print axioms depSig_needs_dependence
-#print axioms splitSig_valid
-#print axioms wholeRest_fails
-#print axioms recSig_not_valid
-#print axioms recSig_hard_instance_solvable
-#print axioms hRow_disjoint
-#print axioms hRow_union
-#print axioms composeAll_hRow
-#print axioms hRow_genRow
-#print axioms combine_hAssign
-#print axioms interp_evalT
-#print axioms interp_fin
-#print axioms consistent_presenceOf
-#print axioms holds_interp
-#print axioms s1
-#print axioms s1_fin
