@@ -108,77 +108,40 @@ def patternSubst (π : Nat → Label → Bool) (fresh : Nat → Label → Nat)
     (rs : List Nat) (L : List Label) : Subst Label B :=
   ⟨[], rs.map fun r => (r, (patternFields π fresh r L, []))⟩
 
-/-- A list without repeats, keeping last occurrences. -/
-def dedup {α : Type} [DecidableEq α] : List α → List α
-  | [] => []
-  | x :: xs => if x ∈ xs then dedup xs else x :: dedup xs
-
-/-- The labels written in a problem, each once. -/
-def labs (C : Problem Label B) : List Label := dedup (labelsOf C)
-
-/-- The fresh variables, for the finitely many pairs a pattern uses (a
-row variable of `C` and a label of `C`), are distinct from each other
-and from `C`'s own type variables. Nothing is required of other pairs. -/
+/-- The fresh variables are distinct from each other and from the
+problem's own type variables. -/
 def FreshFor (C : Problem Label B) (fresh : Nat → Label → Nat) : Prop :=
-  (∀ r ∈ rowVarsOf C, ∀ l ∈ labelsOf C, ∀ r' ∈ rowVarsOf C,
-    ∀ l' ∈ labelsOf C, fresh r l = fresh r' l' → r = r' ∧ l = l') ∧
-  ∀ r ∈ rowVarsOf C, ∀ l ∈ labelsOf C, fresh r l ∉ tyVarsOf C
+  (∀ r l r' l', fresh r l = fresh r' l' → r = r' ∧ l = l') ∧
+    ∀ r l, fresh r l ∉ tyVarsOf C
 
 /-- A problem is closed when no row variable occurs in it. -/
 def Closed (C : Problem Label B) : Prop := rowVarsOf C = []
 
-/-- The closed problem one presence pattern gives. -/
-def patternProblem (C : Problem Label B) (π : Nat → Label → Bool)
-    (fresh : Nat → Label → Nat) : Problem Label B :=
-  substProblem (patternSubst π fresh (rowVarsOf C) (labs C)) C
-
-/-- R2, presence patterns: a call-site problem has a solution iff some
-presence pattern's closed problem has one. This preserves existence
-across the alternatives; one pattern's problem does not in general have
-the same solutions as `C` (a pattern adds equations that other solutions
-of `C` violate). Each row variable's field at each label gets its own
-type variable. -/
+/-- R2, presence patterns: a call-site problem has a solution iff, for
+some presence pattern over its row variables and written labels, the
+closed problem the pattern gives has one. Each row variable's field at
+each label gets its own type variable. -/
 def R2 (Label B : Type) [DecidableEq Label] : Prop :=
   ∀ (C : Problem Label B) (fresh : Nat → Label → Nat), FreshFor C fresh →
-    (Satisfiable C ↔ ∃ π, Satisfiable (patternProblem C π fresh))
+    (Satisfiable C ↔ ∃ π : Nat → Label → Bool,
+      Satisfiable (substProblem
+        (patternSubst π fresh (rowVarsOf C) (labelsOf C).eraseDups) C))
 
-/-- R2′, closedness: a pattern's problem has no row variables. -/
+/-- R2′, closedness: a pattern's problem has no row variables, so R3
+applies to it. Only the patterns' values on the problem's row variables
+and written labels matter, so finitely many patterns need trying. -/
 def R2Closed (Label B : Type) [DecidableEq Label] : Prop :=
   ∀ (C : Problem Label B) (fresh : Nat → Label → Nat)
-    (π : Nat → Label → Bool), Closed (patternProblem C π fresh)
+    (π : Nat → Label → Bool),
+    Closed (substProblem
+      (patternSubst π fresh (rowVarsOf C) (labelsOf C).eraseDups) C)
 
-/-- The pairs a pattern decides: row variables of `C` with labels of
-`C`, each once. -/
-def pairsOf (C : Problem Label B) : List (Nat × Label) :=
-  (dedup (rowVarsOf C)).flatMap fun r => (labs C).map (r, ·)
-
-/-- All sublists of a list (2^n of them). -/
-def subsets {α : Type} : List α → List (List α)
-  | [] => [[]]
-  | x :: xs => subsets xs ++ (subsets xs).map (x :: ·)
-
-/-- The pattern that makes exactly the pairs in `S` present. -/
-def patternOf (S : List (Nat × Label)) (r : Nat) (l : Label) : Bool :=
-  decide ((r, l) ∈ S)
-
-/-- R2-enumerated: finitely many patterns, one per subset of `pairsOf
-C`, cover every pattern. -/
-def R2Enum (Label B : Type) [DecidableEq Label] : Prop :=
-  ∀ (C : Problem Label B) (fresh : Nat → Label → Nat), FreshFor C fresh →
-    (Satisfiable C ↔ ∃ S ∈ subsets (pairsOf C),
-      Satisfiable (patternProblem C (patternOf S) fresh))
-
-/-- An explicit allocation: past every type variable of `C`, numbered by
-position in `pairsOf C`. -/
-def freshAlloc (C : Problem Label B) (r : Nat) (l : Label) : Nat :=
-  (tyVarsOf C).foldr max 0 + 1 + (pairsOf C).idxOf (r, l)
-
-/-- R3, the specification a closed-problem decider must meet. It needs
-decidable equality of base types (`DecidableEq B`) as well as labels. A
-`Prop` like this is trivially met by a classical (noncomputable) choice,
-so R3 means decidability only for `f` given as a computable definition
-(dossier §11 proposes the algorithm). -/
-def R3Spec [DecidableEq B] (f : Problem Label B → Bool) : Prop :=
+/-- R3, the specification a closed-problem decider must meet. A `Prop`
+like this is trivially met by a classical (noncomputable) choice, so R3
+means decidability only for `f` given as a computable definition:
+Robinson's unification with occurs check over base types, functions
+and closed records, comparing label sets (to be written). -/
+def R3Spec (f : Problem Label B → Bool) : Prop :=
   ∀ C : Problem Label B, Closed C → (f C = true ↔ Satisfiable C)
 
 end Composition.Syntax

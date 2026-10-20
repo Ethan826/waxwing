@@ -7542,3 +7542,28 @@ assessment.md.
 - Awaiting the author's review of the exact statements (dossier §9).
   No decision procedure or compiler change. Verify not run (docs,
   research and proofs only).
+
+## Record composition: call-site foundation, second milestone (2026-10-20)
+
+- The author accepted the first milestone with qualifications (finite
+  witnesses for later existence results; no algorithm proved; six-label
+  examples), recorded in dossier §9.
+- Proved (Lean, research/composition-proofs/): constraint syntax with
+  nested type expressions, type and row variables, and records as
+  fields plus tails; partial composition's algebra (associativity,
+  permutation, flattening, domains); substitution with row bindings;
+  `subst_sat` and `binding_correspondence` (a problem that entails its
+  binding equations has exactly the solutions of the equations plus the
+  substituted problem); `bindings_needed` (the `x = true` example).
+  Clean build, no `sorry`; axioms `propext`, `Quot.sound`,
+  `Classical.choice` (composition defined classically). Mutant: `lacks`
+  ignoring a bound row's fields fails `subst_lacks`.
+- Stated, not proved (Reduction.lean, `Prop` definitions): R1
+  (existential reduction to written labels; no stand-in needed at a
+  call site), R2 (presence patterns with a fresh type variable per row
+  and label), R2′ (closedness), R3 (closed-problem decider spec;
+  meaningful only for a computable definition). Dossier §10 has the
+  statements, the unnamed-label and field-independence discussion, and
+  the proof plan with its known obstacles.
+- Awaiting the author's review of the reduction statements before any
+  proof. No compiler change; verify not run (docs, research, proofs).

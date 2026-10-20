@@ -2,3 +2,10 @@ import Composition.Rows
 import Composition.Forced
 import Composition.Signatures
 import Composition.Programs
+import Composition.Compose
+import Composition.Syntax
+import Composition.Subst
+import Composition.Evaluate
+import Composition.Correspond
+import Composition.Binding
+import Composition.Reduction
