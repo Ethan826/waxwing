@@ -90,7 +90,9 @@ test('colliding names are qualified, each by its own declaration', () => {
 // Decision 5 of 2026-10-17: the renderers' metadata is kept apart from
 // every satisfiability decision. No solving module imports it or a
 // renderer; only where rows and predicates are made writes it.
-const makers = ['Desugar.purs', 'Occurrence.purs', 'Use.purs'];
+// Chain is Desugar's predicate chain, split out before Task 7.
+const makers = ['Chain.purs', 'Desugar.purs', 'Occurrence.purs',
+  'Use.purs'];
 const metadata = ['Features.Check.PartOrigin', 'Features.Check.OriginStore',
   'Features.Check.MergeParts', 'Features.Check.Unresolved',
   'Features.Check.Contradicted', 'Features.Check.Exclusion',
