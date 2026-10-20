@@ -5,6 +5,7 @@ module Features.Check.Unify
   , module Features.Check.UnifyFailure
   , unify
   , reexamine
+  , unifyPlain
   , settleRows
   ) where
 
@@ -71,7 +72,11 @@ unify subst left right = unifyAt 1 subst left right >>= reexamine
 -- this after making a step's rows, as the research prototype's driver
 -- does).
 reexamine ∷ Subst → Either Failure Subst
-reexamine = improve (unifyAt 1)
+reexamine = improve unifyPlain
+
+-- The unifier without re-examination, as a solving case uses it.
+unifyPlain ∷ Subst → Ty Flex → Ty Flex → Either Failure Subst
+unifyPlain = unifyAt 1
 
 -- Retries the postponed row pairs, in order, until a pass decides none
 -- (a pair is decided when it unifies or fails; the first failure is the

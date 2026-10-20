@@ -1,36 +1,38 @@
 // Judges the compiler's row solver against the oracle on one problem in
-// several orders (R005 Tranche B plan, Task 4, §3.2 since B3): S (Solved:
-// the emitted solution, every free meta empty, satisfies every
-// constraint), L (it is the least solution), H (Contradiction: no
-// solution), order (one verdict for every order), property E (a state's
-// solutions, read back independently with its waiting predicates, are
-// exactly the problem's: for accepted runs and for runs that end waiting
-// at P5), the lineage lemma (rules §5: the labels one predicate's case-3
-// moves carry are pairwise disjoint and at most the problem's labels),
-// the second reference (research/row-merge-qt's QT-strict+Sym+2g, H off
-// until B4: accept, refuse and D4 against accept, refuse and P5), and the
-// bounds on state changes (L3) and on solver-made metas (L4). A limit or
-// an internal failure (the tail occurs guard, the two-unknown guard, the
-// rescan's bound) makes the runner throw (test/row-merge-entry.mjs
-// `classify`): a test failure. A run that ends waiting is `skipped`,
-// counted by its order's position, never an agreement.
+// several orders (R005 Tranche B plan, Task 4, §3.2 since B3, B4's H): S
+// (Solved: the emitted solution, every free meta empty, satisfies every
+// constraint), L (it is the least solution), H (Contradiction, H's
+// refusal at the end of a body included: no solution), order (one
+// verdict for every order), property E (a state's solutions, read back
+// independently with its waiting predicates, are exactly the problem's:
+// for accepted runs and for Unresolved ones), the lineage lemma (rules
+// §5: the labels one predicate's case-3 moves carry are pairwise
+// disjoint and at most the problem's labels), the second reference
+// (research/row-merge-qt's QT-strict+Sym+2g+H: accept, refuse and D4
+// against accept, refuse and Unresolved), the bounds on state changes
+// (L3) and on solver-made metas (L4), and with `hOff` H as
+// classification only (plan §4.2: the same run without H differs only
+// by Unresolved where H refused, with the same state). A limit or an
+// internal failure (the tail occurs guard, the two-unknown guard, the
+// rescan's bound, an unfinished fixpoint) makes the runner throw
+// (test/row-merge-entry.mjs `classify`): a test failure. A skipped run
+// (a placeholder) is a defect since B4.
 import { allSolutions, isMeta, keyOf, leastOf, sat }
   from './row-merge-oracle.mjs';
-import { changes, lineages, run, solverMetas, stateOf }
+import { byH, changes, finishWithoutH, lineages, run, solverMetas, stateOf }
   from './row-merge-entry.mjs';
 import { emitted, stateKeys } from './row-merge-readback.mjs';
 import { verdictQT } from '../research/row-merge-qt/qt-drive.mjs';
 
-// The research prototype's configuration B3 matches: QT-strict with Sym
-// and case 2g (option `g2`, plan §10 decision 17), before H (B4).
-export const B3_REFERENCE = { qts: true, selfApart: false, pairwise: false,
-  sym: true, g2: true, hEnd: false };
-const P5 = 'merge predicates still waiting at the end of a body are '
-  + 'classified in Task B4';
-const fromReference = { accept: 'accept', refuse: 'refuse', D4: 'skipped' };
+// The research prototype's configuration B4 matches: QT-strict with Sym,
+// case 2g (option `g2`, plan §10 decision 17) and H at the end.
+export const B4_REFERENCE = { qts: true, selfApart: false, pairwise: false,
+  sym: true, g2: true, hEnd: true };
+const fromReference = { accept: 'accept', refuse: 'refuse', D4: 'unresolved' };
 
 export const newTally = () => ({ problems: 0, runs: 0, accept: 0, refuse: 0,
-  skipped: 0, skippedByOrder: {}, agreeSolved: 0, agreeContradiction: 0,
+  unresolved: 0, skipped: 0, unresolvedByOrder: {}, hRefuse: 0,
+  hOffChecked: 0, hDiff: 0, agreeSolved: 0, agreeContradiction: 0,
   solvedViolates: 0, notLeast: 0, unsound: 0, dishonest: 0, orderDiff: 0,
   stateChecked: 0, waitingChecked: 0, stateSkipped: 0, stateDiff: 0,
   corruptCaught: 0, mergeCorruptCaught: 0, measureOver: 0, freshOver: 0,
@@ -80,15 +82,21 @@ export function judge(p, orders, t, options = {}) {
     }
     if (solverMetas(v.subst) > bound) defect(t, 'freshOver', p, order);
     classes.add(v.v);
+    if (options.hOff) hOnlyClassifies(p, order, v, t);
     if (v.v === 'skipped') {
-      t.skippedByOrder[position] = (t.skippedByOrder[position] ?? 0) + 1;
-      if (v.what !== P5) t.otherSkip++;
-      else if (options.state && t.waitingChecked < (options.waitingCap
+      defect(t, 'otherSkip', p, order, v.what);
+      return;
+    }
+    if (v.v === 'unresolved') {
+      t.unresolvedByOrder[position] = (t.unresolvedByOrder[position] ?? 0)
+        + 1;
+      if (options.state && t.waitingChecked < (options.waitingCap
         ?? Infinity)) checkState(p, order, v, known, t, 'waiting');
       else t.waitingUnchecked++;
       return;
     }
     if (v.v === 'refuse') {
+      if (v.atEnd && byH(v.failure)) t.hRefuse++;
       if (sols.length) defect(t, 'dishonest', p, order);
       else t.agreeContradiction++;
       return;
@@ -99,10 +107,22 @@ export function judge(p, orders, t, options = {}) {
 }
 
 function reference(p, order, v, t) {
-  const found = verdictQT(p.hyp, order, B3_REFERENCE).v;
+  const found = verdictQT(p.hyp, order, B4_REFERENCE).v;
   if (fromReference[found] !== v.v) {
     defect(t, 'referenceDiff', p, order, found, v.v);
   }
+}
+
+// H off (plan §4.2): the verdict is the same, or Unresolved where H
+// refused; an accepted or Unresolved run's state is the same.
+function hOnlyClassifies(p, order, v, t) {
+  const off = run(p.hyp, order, finishWithoutH);
+  t.hOffChecked++;
+  const hRefused = v.v === 'refuse' && v.atEnd && byH(v.failure);
+  const same = off.v === v.v || (hRefused && off.v === 'unresolved');
+  const kept = !['accept', 'unresolved'].includes(v.v)
+    || JSON.stringify(stateOf(off.subst)) === JSON.stringify(stateOf(v.subst));
+  if (!same || !kept) defect(t, 'hDiff', p, order, v.v, off.v);
 }
 
 function lineage(v, labels, p, order, t) {
@@ -163,7 +183,7 @@ function checkState(p, order, v, known, t, kind) {
 
 export const DEFECTS = ['solvedViolates', 'notLeast', 'unsound', 'dishonest',
   'orderDiff', 'stateDiff', 'measureOver', 'freshOver', 'lineage',
-  'referenceDiff', 'otherSkip'];
+  'referenceDiff', 'otherSkip', 'hDiff'];
 
 // The tally without its examples, and the defects it found.
 export const defects = t => DEFECTS.filter(k => t[k] > 0)

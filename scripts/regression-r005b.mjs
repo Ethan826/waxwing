@@ -154,7 +154,7 @@ export const r005bRows = [
     replacement: '    Waits → Right\n'
       + '      (const Waits (oriented unify swapped merge subst))\n',
     probe: 'r005b-sym',
-    message: /Sym disabled: E_INTERNAL R005B placeholder: merge predicates /
+    message: /Sym disabled: E_INTERNAL R005B placeholder: unresolved merge /
   },
   {
     // A part with only a rigid tail counted as closed: case 1 then drops
@@ -174,11 +174,13 @@ export const r005bRows = [
       + '      && holdsAll right result then subtract\n',
     replacement: '  else if false then subtract\n',
     probe: 'r005b-case2g',
-    message: /2g absent: E_INTERNAL R005B placeholder: merge predicates /
+    message: /2g absent: E_INTERNAL R005B placeholder: unresolved merge /
   },
   {
     // The superseded 2g proposal: a missing atom makes 2g claim the
-    // predicate and wait, which keeps case 3 from a refusal.
+    // predicate and wait, which keeps case 3 from a refusal. Since B4 H
+    // refuses the waiting predicate at the end of the body, at its site:
+    // the location tells the two refusals apart.
     name: 'r005b-case2g-claim',
     file: 'src/Features/Check/RowMerge/Cases.purs',
     needle: '  else if\n    unknownless right && unknownless result\n'
@@ -186,7 +188,9 @@ export const r005bRows = [
     replacement: '  else if unknownless right && unknownless result then\n'
       + '    if holdsAll right result then subtract else Right Waits\n',
     probe: 'r005b-case2g-claim',
-    message: /missing atom claimed: E_INTERNAL R005B placeholder: merge /
+    message: new RegExp('missing atom claimed: E_INTERNAL R005B '
+      + 'placeholder: contradictions from merge predicates are reported in '
+      + 'Task B5 @pickR\\(x, q\\)')
   },
   {
     // 2g without its rigid-tail test: a rigid tail of the right part that
@@ -210,13 +214,15 @@ export const r005bRows = [
   {
     // A settling round retries its postponed pairs without re-examining
     // the predicates (plan §2.9): a predicate a retry unblocks still
-    // waits at the end of the body.
+    // waits at the end of the body, where (since B4) the end's check that
+    // nothing could progress reports the unfinished fixpoint.
     name: 'r005b-end-fixpoint', file: 'src/Features/Check/Unify.purs',
     needle: '  retry reached pair = settled reached <$> unifyRowsTraced unify '
       + 'pair.mode\n',
     replacement: '  retry reached pair = settled reached <$> unifyRowsTraced '
       + '(unifyAt 1) pair.mode\n',
     probe: 'r005b-end-fixpoint',
-    message: /retry not re-examined: E_INTERNAL R005B placeholder: merge /
+    message: new RegExp('retry not re-examined: E_INTERNAL a waiting '
+      + 'predicate could still progress at the end of a body')
   }
 ];

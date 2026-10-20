@@ -1,5 +1,5 @@
 module Features.Check.RowResidue
-  ( Atom(..)
+  ( module Features.Check.Atom
   , Constant(..)
   , Side
   , Residue
@@ -22,21 +22,13 @@ import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Domain.Type (Ty)
 import Domain.Type.Record (RecordRow, recordRow)
+import Features.Check.Atom (Atom(..))
 import Features.Check.FlatRecord (Flat)
 import Features.Check.Subst (Flex(..))
 
 -- What may go into a meta of the other side: a label with its field
 -- type, or a rigid tail.
 data Constant = Field String (Ty Flex) | RigidTail Flex
-
--- A constant without its field type: what a row may hold that a meta can
--- be asked to hold, a label or a signature's rigid tail (an opaque row,
--- held whole or not at all). R005 Tranche B design §2.5; since B2 read
--- only by the exclusion test (Features.Check.Homes).
-data Atom = LabelAtom String | RigidAtom Flex
-
-derive instance eqAtom ∷ Eq Atom
-derive instance ordAtom ∷ Ord Atom
 
 -- One side of an equation once the labels both sides hold have unified
 -- and the tails both hold cancelled (R005 Tranche B design §2.1 steps

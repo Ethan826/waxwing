@@ -78,8 +78,16 @@ function shape(f, file) {
   return out;
 }
 
+// The superseded design's class of the fixtures the adopted design
+// reclassified (R005 Tranche B B4, plan §4.5, decision 2): this
+// directory is that design's archive, so its claim is checked against
+// the class it gave; test/fixtures keeps the adopted one.
+const SUPERSEDED = { 'design-forced-bound': 'Solved', 'design-quiet': 'Solved',
+  'diag-14-fix': 'Solved', same: 'Contradiction' };
+
 // The claim of one fixture's rows, as messages.
-function claim(f) {
+function claim(fixture) {
+  const f = { ...fixture, result: SUPERSEDED[fixture.name] ?? fixture.result };
   const { hyp, steps, orders } = f.rows;
   const metas = metasOf(steps), universe = atomsOf(steps);
   const sols = allSolutions(metas, universe, hyp, steps);

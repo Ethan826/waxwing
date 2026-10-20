@@ -101,6 +101,9 @@ expectType env state expected actual span = do
     Unexpected what → Left (problemAt (Internal what) span)
     FromMerge cause inner → mergedAt env state.subst span cause inner
     Exhausted what → Left (problemAt (Internal what) span)
+    -- Made only inside `FromMerge`, at the end of a body (B4).
+    Homeless _ → Left
+      (problemAt (Internal "H's refusal outside a predicate") span)
   -- The label's trail is where it arose, as far as the state knows it.
   rowFailure label row occurrence = do
     name ← labelName env span label

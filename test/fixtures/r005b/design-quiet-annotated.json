@@ -1,0 +1,42 @@
+{
+  "name": "design-quiet-annotated",
+  "from": "design-quiet with the annotation of plan §5 (decision 2)",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply0(f: (a, b) -> c, g: (d, e) -> c): Int = 0;\nfn main(): Int = apply0(fn(p: {}, q) => merge(p, q), fn(p: {}, q) => merge(p, q));\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":[],"tails":["m2","m3"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  },
+  "remark": "The smallest annotation (node qt-adopted.mjs examples: m0 = {}, m2 = {}); it narrows, excluding 3 of 5 solutions counted with one extra label."
+}

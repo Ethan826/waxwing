@@ -13,6 +13,7 @@ import { r001Rows } from './regression-r001.mjs';
 import { r004Rows } from './regression-r004.mjs';
 import { r005Rows } from './regression-r005.mjs';
 import { r005bRows } from './regression-r005b.mjs';
+import { r005bEndRows } from './regression-r005b-end.mjs';
 import { r012Rows } from './regression-r012.mjs';
 import { ieRows } from './regression-ie.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
@@ -25,7 +26,7 @@ import { ieRows } from './regression-ie.mjs';
 const chosen = process.argv.slice(2);
 const proved = [...coreRows, ...fnRows, ...fx008Rows, ...fxRows,
   ...textRows, ...fx020Rows, ...r001Rows, ...r004Rows, ...r005Rows,
-  ...r005bRows, ...r012Rows, ...ieRows]
+  ...r005bRows, ...r005bEndRows, ...r012Rows, ...ieRows]
   .filter(row => chosen.length === 0 || chosen.includes(row.name));
 const base = '.build/regression';
 const failures = '.build/regression-failed';

@@ -2,7 +2,7 @@ module Features.Check.Function (environment, recheck) where
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either(..), either)
+import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
@@ -20,10 +20,9 @@ import Features.Check.Functional (Functional)
 import Features.Check.Infer (Env, infer)
 import Features.Check.Mark (violation)
 import Features.Check.MarkReport (reportViolation)
-import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Printable (printable)
 import Features.Check.Require (require, tooDeepAt)
-import Features.Check.RowMerge.End (endOfBody, stillWaiting, waitingSite)
+import Features.Check.EndReport (endReport)
 import Features.Check.Scheme (State, firstTooDeep, holes, resolved, start)
 import Features.Check.Seed (joined, required, seeded)
 import Features.Check.Settle (settleRestricted)
@@ -111,18 +110,10 @@ checkFunction holders env function = do
   where
   parameterType parameter = rigid parameter.ty
 
--- R005 Tranche B B3: a `Merge` predicate still waiting once the body is
--- settled is placeholder P5 (Features.Check.RowMerge.End), at the
--- earliest waiting predicate's site; B4 classifies it.
+-- R005 Tranche B B4: once the body is settled, a `Merge` predicate still
+-- waiting is classified by H and reported (Features.Check.EndReport).
 waitingAtEnd ∷ Resolved.FunctionDecl → Subst → Either Diagnostic Unit
-waitingAtEnd function subst = either reported (const (Right unit))
-  (endOfBody subst)
-  where
-  reported _ = Left
-    ( placeholderAt
-        (maybe function.span identity (waitingSite subst))
-        stillWaiting
-    )
+waitingAtEnd function = endReport function.span
 
 -- The state a body starts in: the signature's variables are numbered
 -- before any meta, and its record tails lack what it says (R001 design §2),
