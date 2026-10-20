@@ -1,12 +1,11 @@
 module Features.Check.RowMerge.Desugar
   ( desugaredRow
   , desugaredType
-  , severalUnknownBy
+  , module Features.Check.RowMerge.Several
   ) where
 
 import Prelude
 import Prim hiding (Row)
-import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (foldM, foldl)
@@ -24,6 +23,7 @@ import Features.Check.Refused (Solving)
 import Features.Check.Lacks (addLacks)
 import Features.Check.RowMerge.Merge (Row)
 import Features.Check.RowMerge.Predicate (made)
+import Features.Check.RowMerge.Several (severalUnknownBy)
 import Features.Check.RowStore (Because(..), plain)
 import Features.Check.Subst (Flex(..), Subst(..))
 import Features.Check.UnifyFailure (Failure)
@@ -183,30 +183,6 @@ labelled site subst (Label effect arguments mark) = over relabel
 
 over ∷ ∀ a b. (a → b) → Built a → Built b
 over change found = { accum: found.accum, value: change found.value }
-
--- Whether some record row in the type has two tails `unknown` holds of,
--- by a loop along arrow spines, a handler's own rows included.
-severalUnknownBy ∷ ∀ v. (v → Boolean) → Ty v → Boolean
-severalUnknownBy unknown = several
-  where
-  several ty = tailRec step ty
-  step = case _ of
-    TRecord row → Done
-      (twoUnknown row.tails || Array.any fieldHolds row.fields)
-    TData _ arguments rows → Done
-      (Array.any several arguments || Array.any rowHolds rows)
-    TFun parameter row result
-      | several parameter || rowHolds row → Done true
-      | otherwise → Loop result
-    THandler label rows → Done
-      ( labelHolds label || rowHolds rows.inference
-          || maybe false rowHolds rows.clauses
-      )
-    _ → Done false
-  fieldHolds (Tuple _ part) = several part
-  twoUnknown tails = Array.length (Array.filter unknown tails) > 1
-  rowHolds (EffectRow.Row labels _) = Array.any labelHolds labels
-  labelHolds (Label _ arguments _) = Array.any several arguments
 
 isMeta ∷ Flex → Boolean
 isMeta = case _ of
