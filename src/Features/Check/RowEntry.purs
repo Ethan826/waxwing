@@ -40,7 +40,7 @@ import Features.Check.Disjoint
 import Features.Check.Lacks (addLacks)
 import Features.Check.RecordTail (solvingWith)
 import Features.Check.Refused (Solving)
-import Features.Check.RowMerge.Desugar (desugaredRow)
+import Features.Check.RowMerge.Chain (desugaredRow)
 import Features.Check.RowMerge.End (Judge, endOfBody, homeless, withoutH)
 import Features.Check.RowMerge.Predicate (waiting)
 import Features.Check.RowOutcome
