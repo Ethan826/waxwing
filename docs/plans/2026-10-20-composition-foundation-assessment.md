@@ -22,7 +22,15 @@ or from reading its paper or source (reading).
 
 The narrow question (§4.8): can a published approach keep independent
 field types (program 11) while accepting programs 4 and 5 and refusing
-their negative controls? Among the systems examined, no. They divide:
+their negative controls? Yes for those three programs: Wand's
+inference for record concatenation (LICS 1989, §4.11), run through
+Gonzalez's implementation, infers both splits, refuses their negative
+controls and keeps program 11; Sulzmann's HM(RECc) (§4.10) has the same
+deduction in its axioms. What neither supplies is the open question
+now: disjoint composition, checking declared polymorphic signatures,
+and how unresolved alternatives reach compilation. The earlier
+three-program conflict (below, as the third revision stated it) is not
+established. The systems examined first divide:
 
 - **Rows as type variables** (PureScript, Ur/Web, Waxwing today; probes)
   keep program 11 and the forwarding wrapper, and do not infer the
@@ -43,11 +51,11 @@ their negative controls? Among the systems examined, no. They divide:
   incomplete comparison of schemes, for a system without concatenation
   or conditional constraints (§4.8).
 
-So the concrete conflict: deciding a split from facts needs reasoning
-about field presence, and the published systems that do it either share
-one type per field (Simon) or check only satisfiability under subtyping
-(Pottier); the systems that keep field types independent do not decide
-splits. Nothing here proposes a way around it.
+The third revision concluded from these that deciding a split needs
+either one type per field (Simon) or satisfiability under subtyping
+(Pottier). Wand's per-occurrence presence constraints (§4.11) do
+neither: each concatenation has its own result fields, and a `lacks`
+fact selects the disjunct. That conclusion is withdrawn.
 
 Elsewhere: program 8 (§5.1) and program 9 (§5.2, W as the baseline)
 follow the author's dispositions; program 7 (§6) is a separate
@@ -317,6 +325,12 @@ Program 11 (added to the requirements, eae3188's document, §11): a
 record `q` that lacks `a`, extended once with `a: 1` and once with `a:
 true`. Rows: P = probe (the system run), R = reading.
 
+Complexity results (NP-completeness, polynomial fragments) are recorded
+as facts about worst cases, not as reasons to refuse a candidate. The
+requirements ask for programs to be accepted or refused; they do not ask
+for polynomial inference or a single principal type, and this
+assessment does not add those requirements.
+
 | System | 3, 6 | 4 | 4's negative control | 5 | 11 | Declared signatures checked |
 |---|---|---|---|---|---|---|
 | Waxwing today (QT-strict+Sym+H) | accepted (P) | refused, Unresolved (P) | refused (P) | refused, Unresolved (P) | accepted (P) | yes |
@@ -326,6 +340,8 @@ true`. Rows: P = probe (the system run), R = reading.
 | Makholm and Wells 2005 (Bowtie; `bowtini` 1.3) | accepted (P) | not expressible (no declarations); encoded, accepted with no split visible to callers (P) | **not refused**: free set variables are solved by ⊥ (P; R: ICFP Lemma 5.9) | encoded, accepted; an unsatisfiable variant accepted too (P) | **refused**, one row per join (P; R: TR §3, ICFP §5); accepted with a written `\\ a` per use (P) | no: checking a given typing is NP-complete (R: TR App. B.4); a Church-style check promised, not given |
 | Sulzmann, HM(REC) (TAPOS 1999 §7) | not expressible: no extension or concatenation (R) | not expressible (R) | not expressible (R) | not expressible (R) | not expressible (R) | no annotation rule; entailment a parameter of X (R) |
 | Sulzmann, HM(RECc), thesis 2000 (§5.1.2, A.2; §4.10) | 3 accepted, overlap also accepted (R); 6: no signatures | accepted by satisfiability; REC5 entails `admin` in `r`, printed closure does not derive it (R) | unsatisfiable, refused only given a satisfiability test not supplied for RECc (R) | accepted by satisfiability; REC5-6 entail the split (R) | **accepted**, refused negative control (R) | no: no annotations; entailment procedure not given (R) |
+| Wand 1989, via Gonzalez's REPL (b4a63ba; §4.11) | accepted; overlap also accepted, biased (P; R §2) | **split inferred**: `{ admin: Boolean }`, `{ admin ? absent }` (P; R §5) | refused at the call; the interface alone accepted (P); no disjunct (R §5) | **split inferred**; negatives refused (P) | **accepted**, independent per concatenation (P; R §5) | no: no annotations (P, R); Wand decides only whether a monotype is a type (R §6) |
+| Palsberg and Zhao 2004 (I&C; no implementation; §4.12) | 3 accepted, overlap refused (R: §2.1, Def 5.3(3)); 6 monomorphic only (R) | not expressible (no row variables; `⊕` only in constraints); encoded by selection, accepted by search over rule F, split given by `S_R` (R, traced) | not expressible; encoded, refused (R, traced) | not expressible; encoded, accepted by search (R, traced) | **accepted**, negative control refused (R, traced) | no: no annotations (R §3) |
 | Pottier 2000 (Wallace toy) | accepted (P: disjoint union typed, overlap refused) | not expressible: the toy has no declarations (P) | not refused under its rules (R) | satisfiable, so not refused (R) | **accepted** (P) | not in the toy (P); the 1998 thesis's typer checks module signatures by a sound, incomplete scheme comparison, without concatenation or conditionals (R) |
 
 **Pottier, read** (NJC 2000 §5.1-§5.2; LICS 2003; Wallace's source):
@@ -521,6 +537,131 @@ from `lacks` is published, in a system that keeps program 11. It is a
 thesis, not peer-reviewed in this form; its symmetric variant is axioms
 only; and what it does not supply is listed above.
 
+### 4.11 Wand (LICS 1989), run through Gonzalez's implementation (2026)
+
+Reading: Wand, Type inference for record concatenation and multiple
+inheritance (LICS 1989, all; the I&C 1991 version could not be
+retrieved). Probes: Gabriella Gonzalez's reference implementation of
+Wand's system (github.com/Gabriella439/record-concatenation, b4a63ba,
+BSD-3; built with GHC 9.4.8, not copied here), described in her post
+Mechanized type inference for record concatenation (haskellforall.com,
+July 2026; an implementation exposition, not a peer-reviewed proof; its
+rules are images and were read through the code). Inputs, outputs and
+build notes: research/composition-assessment/wand/.
+
+**What it is.** Wand's concatenation `M ‖ N` is biased: the right
+record wins (§2). Each field of each record has a presence variable,
+`pres(t)` or `absent`; each occurrence of `‖` gives, per label, the
+disjunction `(g = pres(t) ∧ h = g) ∨ (g = absent ∧ h = f)` with its own
+result variable `h` (§5). A program is typable iff some disjunct of the
+constraint's disjunctive normal form unifies (§5 Theorem, §6 Theorem
+and Corollary): inference yields a finite complete set of types, not one
+principal type. Gonzalez keeps the disjunction as stuck constraints on
+one type (a field-merge monoid, several row variables per record,
+union-find over sibling rows) instead of enumerating the complete set;
+her `let` is monomorphic, and `without` is hers.
+
+**On the programs** (P unless marked; `{ ...a, ...b }` encoded as `a //
+b`, `lacks` as the part restricted by `without`, a signature's parts as
+extra parameters so the call shows the inferred split):
+
+- Program 3 accepted, swapped and in both groupings; its overlap
+  control accepted (biased, as Wand's semantics says).
+- Program 4: the split is inferred. The call shows `{ admin: Boolean }`
+  for `r` and `{ admin ? absent }` for `s`: from `g = absent` the
+  disjunction leaves `h = f = pres(Boolean)` (R §5). The negative
+  control is refused at the call (no disjunct); the interface alone is
+  accepted. Without the `lacks`, a stuck constraint `p q = present
+  Boolean` remains: the split is undetermined, not refused.
+- Program 5: the split is inferred (`{ x: Number, y ? absent }`, `{ x ?
+  absent, y: Number }`); its negative variants are refused; the
+  explicit spelling is accepted.
+- Program 6 accepted. Its negative control is accepted at the
+  definition (there are no rigid variables to hold it to) and refused at
+  the call.
+- Program 11 accepted in all three forms, `a: Number` and `a: Boolean`
+  independent (each `‖` has its own `h`); its negative control refused.
+
+**Two kinds of evidence.** That Wand's system decides these programs
+rests on his §5-§6 decision procedure (R). The probes show particular
+deductions in Gonzalez's code (P), and the code omits Wand's
+satisfiability test, so a printed type with residual constraints is not
+counted as a successful check: the README classifies every output
+(accepted with none; with residual constraints, satisfiable by hand or
+not; refused). Every call of programs 4, 5 and 11 types with no
+residual constraints. The upstream revision, the two local patches
+(the dependency fix and the nested-field diagnostic) and the outputs
+of both builds are recorded there; the nested-field defect is bounded
+by avoiding nested records in the probes, not resolved.
+
+**Defects in the implementation** (P; not Wand's): residual constraints
+are never tested for satisfiability, so `(r // s).x` used as a Number
+and as a String is accepted with contradictory stuck constraints; a
+variable unified with itself fails the occurs check; and substitution
+does not reach fields nested inside a field's type, which accepts
+`((q: { f = q // { a = 1; }; }) { name = "Ada"; }).f.name + 1` as a
+Number. A local build with recursive substitution refuses that term and
+gives the same output on every other probe, so the record probes above
+avoid nesting. The post's claim of equivalence to Wand rests on the
+monoid laws and a truth table; the first defect accepts a term Wand's
+§5 Theorem gives no type (R).
+
+**Disjointness, signatures, complexity.** Wand has only overwriting
+concatenation; Gonzalez says a conflict-refusing operator would be
+"easier to type check" and gives none. Symmetric concatenation over
+Wand's style of constraints is Makholm and Wells's Casino ("essentially
+Wand's system, except with symmetric concatenation … no row variables",
+TR §2, Fig. 2), whose typability they prove NP-complete. Neither Wand
+nor Gonzalez checks a declared polymorphic type: Wand's §6 decides
+whether a monotype is an instance of the complete set. Wand bounds the
+complete set by `2^{kn}` (n labels, k concatenations, §5) and states no
+hardness result; Makholm and Wells call Wand's algorithm exponential
+(App. A); whether their NP-hardness transfers to Wand's exact system
+was not determined.
+
+**Faithful, and what Waxwing would add.** A faithful implementation of
+Wand gives the `lacks`-driven splits of programs 4 and 5, refuses
+their negative controls by its typability test, and keeps program 11.
+Waxwing would need:
+
+| Missing for Waxwing | Status |
+|---|---|
+| disjoint spreads that refuse overlap | not with Wand's algorithm; Casino (Makholm and Wells, TR §2), Harper and Pierce 1991, Ur/Web |
+| checking declared signatures (rigid rows, `lacks`/`disjoint` clauses) against a complete set | not published for this system |
+| a satisfiability test on residual constraints | Wand's DNF gives it; the Gonzalez code lacks it |
+| `let`-generalization with pending constraints | sketched in Wand §7, not detailed; HM(X) (Odersky, Sulzmann and Wehr) in general |
+| grounding a disjunct for monomorphized Go | not published |
+| the implementation's three defects | implementation only |
+
+### 4.12 Palsberg and Zhao (I&C 2004)
+
+Reading only (author copy, §1-§7; no implementation exists: the paper's
+conclusion and Zhao's thesis list one as future work; research/
+composition-assessment/palsberg-zhao/). The calculus is Abadi and
+Cardelli's object calculus with concatenation: no lambda, `let`,
+polymorphism or declarations; inference is whole-program. Record types
+are regular trees marked exact (`0`, concatenable) or width-subtyped
+(`→`); fields are invariant. Concatenation is symmetric and defined
+only on exact records with disjoint labels; overlap is refused by
+sat-consistency (Def 5.3, condition 3). Field types belong to each
+record, so program 11 is kept. There is no `lacks` and no row variable;
+`⊕` appears only in constraints, so programs 4 and 5 cannot be stated.
+Encoded through selections (traced by hand, as in §4.10), closure rule
+F (Def 5.1) requires a part to carry a field selected from the result,
+the choice is checked by condition 3, and the constructed solution
+`S_R` (Def 5.6) gives a ground split: a search, not a deduction from a
+`lacks` fact. Solvability is decided by guessing a polynomial-size
+closed superset and checking it (Thm 5.15-5.16); type inference is
+NP-complete (Thm 6.4), the hardness lying in rule F's choice; the LICS
+2002 version's polynomial claim is withdrawn in the journal's
+acknowledgments (a lemma was false). Not principal (§1.3); no declared
+types (§3, a sketch in §1.2). Its relevance to Waxwing is narrower than
+Wand's: it is the published system here that refuses overlap in
+symmetric concatenation while keeping per-record field types, and its
+`S_R` is a published ground witness, which bears on grounding for
+monomorphization; it gives no row variables, generic functions or
+signatures.
+
 **The conflict, stated on the programs.** Program 4's call supplies a
 record where `{ ...r, ...s }` is expected and must decide, from `s lacks
 { admin }`, that `admin` is in `r`. In a system whose parts are type
@@ -540,7 +681,13 @@ keeping program 11 and checking declared signatures; Makholm and Wells
 first half: its axioms make the deduction from `lacks` and keep
 program 11. It does not check declared signatures, refuse overlap, or
 give the closure rule and satisfiability test that programs 4 and 5's
-negative controls need; those are listed in §4.10, not supplied.
+negative controls need; those are listed in §4.10, not supplied. Wand's
+system (§4.11) infers both splits, refuses their negative controls and
+keeps program 11: from his §5 Theorem (reading), and shown on these
+programs by Gonzalez's implementation (probe, whose defects §4.11
+lists). So the three-program conflict is not established. What remains
+open is the rest of the row: Wand's concatenation is biased, and no
+examined system checks declared signatures against these constraints.
 
 ## 5. Programs 8 and 9
 
@@ -643,24 +790,20 @@ typing to be designed. A separate milestone.
 The author's dispositions of 2026-10-20 (second review) are recorded;
 what remains open:
 
-1. **Records**: not Simon (it refuses program 11, which is to be kept),
-   and no examined system resolves §4.8's conflict. The author's choice
-   is among: requirements that keep program 11 and accept that 4 and 5
-   need what no examined system provides (a published improving function
-   for merges and `lacks` would have to be found, or one argued and
-   approved as new under ADR 014); or a semantics with one type per field
-   across joins (Simon; Makholm and Wells, §4.9), giving up program 11;
-   or a satisfiability-only reading under subtyping (Pottier), changing
-   what a record type means, with signatures checked, if at all, by a
-   sound and incomplete comparison published only without concatenation
-   (§4.8). Sulzmann's HM(RECc) (§4.10) is now a fourth candidate: it
-   has the deduction and keeps program 11, with seven obligations
-   listed there (disjointness, a closure rule, satisfiability, A.2's
-   algorithm, signature entailment, grounding, diagnostics), some
-   published elsewhere and some not. Whether a
-   current SMT theory of algebraic datatypes supplies the conditional
-   unification Simon's §5 lacked in 2014 stays unexamined; the bounded
-   pass stops at these candidates.
+1. **Records**: not Simon or Makholm and Wells (both refuse program
+   11). Wand (§4.11) is the leading candidate foundation: published,
+   implemented independently, and it decides programs 4, 5 and 11 and
+   their negative controls. Sulzmann's HM(RECc) (§4.10) has the same
+   deduction in a qualified-types setting. Open, for either: disjoint
+   composition that refuses overlap; checking declared polymorphic
+   signatures (rigid rows, `lacks`/`disjoint` clauses); and how
+   unresolved alternatives reach compilation (decision 3). Next, per the
+   author's direction: a statements-first dossier (definitions, claims,
+   each labelled published, derived, experimentally checked or
+   unresolved) with Wand as the candidate, for the author's approval
+   before any proof or implementation. Not examined: whether a current
+   SMT theory of algebraic datatypes supplies the conditional
+   unification Simon's §5 lacked in 2014.
 2. **Fast paths**: deferred until a foundation is chosen; equivalence to
    it must be established.
 3. **Undetermined splits**: a system that keeps the alternatives without
