@@ -7596,3 +7596,20 @@ assessment.md.
 - Clean build, no `sorry`. Not covered: selecting a split, Solved with
   residual, C8, C9, compiler integration. Awaiting the author's review.
   Verify not run (docs, research, proofs only).
+
+## Record composition: C9 (signature checking), statements first (2026-10-20)
+
+- The author accepted the R3 milestone. Proof README corrected (the
+  decider is written). Dossier §13: the quantified language (rigid and
+  flexible variables, `D` over rigid only, every flexible variable may
+  depend on every rigid one), the account of unnamed labels in rigid
+  rows (written part and rest; rests may be non-empty and may overlap
+  unless declared disjoint; R1 does not transfer), procedure P9
+  (patterns over rigid rows, rigid type and rest constants, a
+  declared-disjointness side condition), its sources and departures,
+  and claims S1-S5, all unproved.
+- Lean (Sig/): `Valid` and checked examples: satisfiable but invalid
+  (`lacks`, rigid type), `unnamed_labels_matter` (valid over rows
+  restricted to written labels, invalid in general), program 6 valid,
+  and a signature valid only with a rigid-dependent flexible solution.
+  Clean build, no `sorry`. No procedure written. Awaiting review.

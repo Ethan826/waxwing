@@ -705,3 +705,155 @@ signatures (C9) or split irrelevance (C8). It tries up to
 `2^|pairsOf C|` patterns, a worst-case fact. The step from Waxwing
 source to constraint problems is not formalized; the examples are
 written by hand.
+
+The author accepted this milestone (2026-10-20): for every problem in
+the formalized call-site language, a terminating, computable function
+decides satisfiability, with checked soundness and completeness. Not
+established: a complete Waxwing checker. The translation from Waxwing
+source is hand-written, and the formal language does not cover every
+type construct of the compiler.
+
+## 13. C9, signature checking: statements first
+
+Authorized: the quantified language, a proposed procedure with its
+sources and departures, separate claims, examples separating
+satisfiability from validity, and an account of unnamed labels in
+rigid rows. Not authorized: proofs of the procedure, the procedure's
+implementation, C8, extracting a split, residual alternatives, compiler
+integration. Lean: research/composition-proofs/Composition/Sig/
+(definitions and checked examples only; no procedure).
+
+### 13.1 The quantified language (Lean: `SigProblem`, `Valid`)
+
+A signature problem has rigid type variables and rigid row variables
+(the declaration's `∀`, read inside the body), declared clauses `D`,
+and body constraints `B`, all in the call-site atoms of §10 (`=`,
+`lacks`, `disjoint`, `ff`).
+
+- **Scope** (`Scoped`): `D` mentions rigid variables only. In Waxwing,
+  `D` is the `where` clauses (`lacks` with written labels, `disjoint`
+  between rigid rows); `B` is everything the body's checking produces,
+  including the instantiations of called functions (flexible) and the
+  links between parameters, results and their uses.
+- **Quantifiers** (`Valid`): for every rigid assignment satisfying `D`
+  there is a flexible assignment satisfying `B`, rigid variables taking
+  their values from the first and flexible ones from the second
+  (`combine`). Every flexible variable may depend on every rigid one; no
+  rigid variable depends on a flexible one; there is no further
+  alternation. Rigid variables are never bound by solving.
+- **Range of rigid rows.** A rigid row ranges over all rows: any labels,
+  written or not, at any field types, and possibly empty.
+- **Assumption for the completeness claim (S2).** Infinitely many
+  labels (Waxwing's labels are identifiers). Base types may be finite.
+
+### 13.2 Examples (Lean, proved: Sig/Validity.lean, Sig/Examples.lean)
+
+| Problem | Satisfiable `D ∧ B` | Valid | Lean |
+|---|---|---|---|
+| `∀ r.` body needs `r lacks { l }`, no clause | yes | no | `lacks_sat_not_valid` |
+| `∀ r s.` body needs `r disjoint s`, no clause, no label written | yes | no; yes over rows restricted to written labels | `unnamed_labels_matter` |
+| the same with `where r disjoint s` | yes | yes | `declared_disjoint_valid` |
+| `∀ a.` body needs `a = Int` | yes | no | `rigid_type_not_valid` |
+| program 6, `forwarded` with `where r disjoint s` | yes | yes | `p6Sig_valid` |
+| `∀ r s. r disjoint s ⇒ ∃ u v. { ...u, ...v } = { ...r, ...s }, u lacks admin` | yes | yes, with `u`, `v` chosen by which of `r`, `s` holds `admin` | `depSig_valid` |
+| the same, either fixed choice of `u` | | fails for some `r`, `s` | `depSig_needs_dependence` |
+
+The second row is the reason the existential reduction must not be
+reused: restricting rigid rows to the written labels (`ValidWithin`)
+validates a signature that fails when both rows hold the same unwritten
+label. The last two rows show that the flexible solution must be
+allowed to depend on the rigid assignment.
+
+### 13.3 Unnamed labels in rigid rows
+
+A rigid row is split into its **written part** (its presence and field
+types at the labels written in `D` and `B`) and its **rest** (every
+other label). No atom names a label of the rest, so no constraint can
+require a particular unwritten label to be present or absent. Three
+facts about rests matter, and the procedure keeps each:
+
+1. Rests may be non-empty, at arbitrary field types. Equating `{ ...r }`
+   with a closed record therefore fails for some instance.
+2. The rests of two rigid rows may overlap, unless `D` declares them
+   disjoint (`unnamed_labels_matter`). A composition containing both
+   is defined for every instance only under that declaration.
+3. Different rigid rows' rests are not equal unless the rows are the
+   same variable.
+
+R1 does not transfer: it restricts existential solutions, and a rigid
+row is universal. The restriction it licenses for flexible rows is
+unaffected.
+
+### 13.4 Proposed procedure P9 (restricted; not implemented)
+
+Input: a scoped signature problem whose `D` consists of `lacks` and
+`disjoint` atoms (Waxwing's clauses). Let `L` be the labels written in
+`D` and `B`, and `R` the rigid rows.
+
+0. If `D` has no solution (decided by `decideCall`, rigid variables
+   read as flexible), the declaration is refused (§2.3).
+1. Enumerate the **rigid presence patterns**: for each rigid row and
+   each label of `L`, present or absent, consistent with `D` (a `lacks`
+   clause forces absence; a `disjoint` clause forbids presence in both).
+2. For each pattern, form `B_π`: replace each rigid row `r` by the
+   record of its present labels at fresh **rigid type constants**
+   `a(r, l)`, with one **rest constant** `ρ̂r` as its tail. Rigid type
+   variables become rigid type constants.
+3. Decide whether `B_π` has a flexible solution, where a rigid type
+   constant equals only itself (or a flexible variable bound to it), a
+   rest constant is an opaque part that a flexible row may contain
+   wholly or not at all, and a composition containing both `ρ̂r` and `ρ̂s`
+   is defined only if `D` declares `r disjoint s` (or `s disjoint r`).
+4. Valid iff step 3 succeeds for every pattern. Otherwise the failing
+   pattern, its generic instance (S2) and the step-3 refutation form the
+   Contradiction evidence C10 asks for.
+
+| Part | Source | Status |
+|---|---|---|
+| rigid type variables as constants (skolemization) | Odersky and Läufer, POPL 1996; Peyton Jones, Vytiniotis, Weirich and Shields, JFP 2007; standard in GHC, PureScript, Koka | published; cited, not re-read for this section |
+| rigid row variables as opaque tails | implemented in PureScript (probe: program 6 compiles) and Koka's effect rows | implemented elsewhere; a formal source to be found |
+| entailment of declared `lacks` and `disjoint` | Gaster and Jones 1996 (`lacks` in qualified types); Chlipala, Ur, PLDI 2010 (disjointness from assumptions) | published; cited, not read |
+| patterns over rigid rows and written labels | §10's R2 with `∀` in place of `∃` | derived |
+| rests as opaque parts with a declared-disjointness side condition | this dossier | derived; the departure needing proof |
+| step 3's solver | R3's unifier extended with constants | derived; to be written and proved |
+
+### 13.5 Claims (statements; none proved)
+
+- **S1, soundness**: if P9 answers valid, the signature is valid.
+  Argument to formalize: a step-3 solution is generic, so for any rigid
+  assignment consistent with a pattern, mapping each `a(r, l)` to its
+  value and each `ρ̂r` to `r`'s rest turns it into a solution (a
+  homomorphism that commutes with evaluation); compositions containing
+  two rests stay defined because their rows are declared disjoint.
+  Unresolved.
+- **S2, completeness**: if the signature is valid, P9 answers valid.
+  Argument to formalize: for each pattern, choose a generic instance
+  `θ*`: rigid type constants as pairwise distinct ground values that
+  nothing in `B` can denote (records over fresh labels, needing
+  infinitely many labels), and rests as fresh labels, with one fresh
+  label shared by both rests of every pair not declared disjoint. A
+  solution at `θ*` then corresponds to a step-3 solution (fresh values
+  behave as constants), and undeclared compositions of two rests fail
+  at `θ*` as step 3 says. The genericity lemma ("fresh values behave as
+  constants") and the claim that rests may be taken non-empty without
+  loss (no atom can require an unwritten label to be absent, except
+  through a closed record, which then fails at `θ*` as it must) are the
+  main obligations. Unresolved.
+- **S3, termination**: finitely many patterns (at most `2^(|R|·|L|)`),
+  each decided by a terminating step 3. Unresolved until step 3 exists.
+- **S4, dependence**: within one pattern a single generic solution
+  serves every instance (part of S1); across patterns the solutions may
+  differ, as `depSig_valid` and `depSig_needs_dependence` require.
+- **S5, evidence**: a failing pattern's `θ*` is a concrete rigid
+  assignment satisfying `D`, and step 3's refutation transfers to it
+  (part of S2), so the evidence meets C10 (`c10`, proved).
+
+### 13.6 What remains outside
+
+- Program 8 (local generalization), effect rows, and type constructors
+  other than base types, functions and records.
+- Selecting a split for compilation, residual alternatives, C8 (still
+  waiting under the forced-or-written policy), compiler integration.
+- Complexity: exponential in the rigid rows times the written labels,
+  then in step 3's own patterns; a worst-case fact, not a reason to
+  refuse (§4.8).

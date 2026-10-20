@@ -33,10 +33,8 @@ def combine (P : SigProblem Label B) (θR θF : Assign Label B) :
 def Scoped (P : SigProblem Label B) : Prop :=
   (∀ n ∈ tyVarsOf P.D, n ∈ P.rigidTy) ∧ ∀ r ∈ rowVarsOf P.D, r ∈ P.rigidRow
 
-/-- The signature holds over all partial maps, infinite rows included
-(dossier D6, §2.2). Named `Valid` until §14.8; Waxwing's own semantics,
-finite rows and values, is `ValidFin` (Sig/Finite.lean). -/
-def ValidAll (P : SigProblem Label B) : Prop :=
+/-- The signature holds (dossier D6, §2.2). -/
+def Valid (P : SigProblem Label B) : Prop :=
   ∀ θR, Sat θR P.D → ∃ θF, Sat (combine P θR θF) P.B
 
 /-- Validity over rigid assignments restricted to labels `L` only: what
@@ -54,7 +52,7 @@ def oneField (z : Label) : Row Label (G Label B) := single z emptyG
 not valid. -/
 theorem lacks_sat_not_valid (l : Label) :
     let P : SigProblem Label B := ⟨[], [0], [], [.lacks 0 l]⟩
-    Satisfiable (P.D ++ P.B) ∧ ¬ ValidAll P := by
+    Satisfiable (P.D ++ P.B) ∧ ¬ Valid P := by
   refine ⟨⟨⟨fun _ => emptyG, fun _ _ => none⟩, by simp [Sat, Holds]⟩, ?_⟩
   intro hv
   obtain ⟨θF, h⟩ := hv ⟨fun _ => emptyG, fun _ => oneField l⟩ (by simp [Sat])
@@ -69,7 +67,7 @@ R1 must not be reused for rigid rows. -/
 theorem unnamed_labels_matter (z : Label) :
     let P : SigProblem Label B := ⟨[], [0, 1], [], [.disjoint 0 1]⟩
     Satisfiable (P.D ++ P.B) ∧ ValidWithin (labelsOf (P.D ++ P.B)) P ∧
-      ¬ ValidAll P := by
+      ¬ Valid P := by
   refine ⟨⟨⟨fun _ => emptyG, fun _ _ => none⟩, ?_⟩, ?_, ?_⟩
   · simp [Sat, Holds, Composition.Disjoint]
   · intro θR hw _
@@ -90,7 +88,7 @@ theorem unnamed_labels_matter (z : Label) :
 
 /-- With the clause declared, the same body holds. -/
 theorem declared_disjoint_valid :
-    ValidAll (⟨[], [0, 1], [.disjoint 0 1], [.disjoint 0 1]⟩ :
+    Valid (⟨[], [0, 1], [.disjoint 0 1], [.disjoint 0 1]⟩ :
       SigProblem Label B) := by
   intro θR hd
   refine ⟨θR, ?_⟩
@@ -103,7 +101,7 @@ theorem declared_disjoint_valid :
 /-- A rigid type variable: `a = Int` is satisfiable, not valid. -/
 theorem rigid_type_not_valid (b : B) :
     let P : SigProblem Label B := ⟨[0], [], [], [.eq (.tvar 0) (.base b)]⟩
-    Satisfiable (P.D ++ P.B) ∧ ¬ ValidAll P := by
+    Satisfiable (P.D ++ P.B) ∧ ¬ Valid P := by
   refine ⟨⟨⟨fun _ => .base b, fun _ _ => none⟩, ?_⟩, ?_⟩
   · simp [Sat, Holds, evalT]
   · intro hv
