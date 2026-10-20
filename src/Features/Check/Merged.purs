@@ -1,12 +1,14 @@
-module Features.Check.Merged (mergedAt, causedByMerge) where
+module Features.Check.Merged (mergedAt) where
 
 import Prelude
 import Data.Either (Either(..))
-import Data.Map (Map)
-import Data.Maybe (maybe)
+import Data.Maybe (maybe, maybe')
 import Domain.Syntax (Diagnostic, Span)
+import Data.Map (Map)
+import Domain.Resolved (EffectInfo)
+import Features.Check.TypeName (Names)
+import Features.Check.Contradicted (contradicted)
 import Features.Check.Lacked (refusedAt)
-import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Subst (Subst)
 import Features.Check.UnifyFailure (Cause, Failure(..))
 
@@ -14,20 +16,20 @@ import Features.Check.UnifyFailure (Cause, Failure(..))
 -- location when it was found while re-examining (else where the caller
 -- was checking). A broken fact keeps its own approved text (D1, D2, D3,
 -- D3', D3'': R10.2's principle, plan §10 decision 5); anything else is
--- placeholder P2 until B5 renders D6.
+-- D6 (B5, Features.Check.Contradicted), or, when no part explains it,
+-- `ordinary`'s text for the failure.
 mergedAt
   ∷ ∀ r a
-  . { variables ∷ Array String, introduced ∷ Map String Span | r }
+  . Names (effects ∷ Array EffectInfo, introduced ∷ Map String Span | r)
   → Subst
   → Span
   → Cause
   → Failure
+  → (Failure → Either Diagnostic a)
   → Either Diagnostic a
-mergedAt env subst span cause failure = Left case failure of
-  Refused refusal → refusedAt env subst at refusal
-  _ → placeholderAt at causedByMerge
+mergedAt env subst span cause failure ordinary = case failure of
+  Refused refusal → Left (refusedAt env subst at refusal)
+  _ → maybe' plain Left (contradicted env subst span cause failure)
   where
   at = maybe span identity cause.at
-
-causedByMerge ∷ String
-causedByMerge = "contradictions from merge predicates are reported in Task B5"
+  plain _ = ordinary failure

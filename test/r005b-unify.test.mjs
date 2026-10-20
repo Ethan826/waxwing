@@ -8,12 +8,10 @@ import { assertDiagnostic } from './r005b-support.mjs';
 // sources with no literal of two spreads (plan, "Test stages"). Since B3
 // a row made with two unknown tails is one unknown tail and a `Merge`
 // predicate (plan §2.1); a predicate no case decides waits to the end of
-// the body; since B4 an Unresolved body is placeholder P6 at the use
-// that made it; a row of several tails under a specialization key
-// reaches Task 8's.
+// the body; since B4 an Unresolved body is reported, since B5 as D4 at
+// the predicate's location (T6); a row of several tails under a
+// specialization key reaches Task 8's.
 const main = ' fn main(): Int = 0;';
-const waits = 'R005B placeholder: unresolved merge predicates are reported '
-  + 'in Task B5';
 const lowered = 'R005B placeholder: rows with several tails are lowered in '
   + 'Task 8';
 const at = (text, nth = 0) => ({ text, nth });
@@ -27,11 +25,12 @@ test('common tails cancel: a row equals its tails in another order', () => {
 // Before B3 the lone meta took both holes and only lowering stopped it;
 // now nothing fixes how `t` splits between `r` and `s`: it waits (QT-strict
 // leaves it Unresolved).
-test('a lone meta against two holes: Unresolved (P6)', () => {
+test('a lone meta against two holes: Unresolved (D4)', () => {
   const source = 'fn pick2(w: { ...r, ...s }): Int = 0; '
     + 'fn wrap(f: ({ ...t }) -> Int): Int = 0; fn main(): Int = wrap(pick2);';
-  const found = rejected(source, 'E_INTERNAL');
-  assert.equal(found.message, waits);
+  const found = rejected(source, 'E_TYPE');
+  assert.equal(found.message, 'Cannot tell what pick2\'s r and s hold; pass '
+    + 'a lambda with annotated parameters in place of pick2');
   assert.deepEqual(found.span, spanAt(source, 'pick2', 1));
 });
 
@@ -54,13 +53,14 @@ test('a field written beside two tails is read; one not written is missing',
     assert.deepEqual(found.span, spanAt(source, 'a', 0));
   });
 
-test('a constant with two homes: Unresolved, P6 at the call',
+test('a constant with two homes: Unresolved, D4 at the argument',
   () => {
     const source = 'fn f(w: { ...r, ...s }): Int = 0; '
       + 'fn main(): Int = f({ a: 1 });';
-    const found = rejected(source, 'E_INTERNAL');
-    assert.equal(found.message, waits);
-    assert.deepEqual(found.span, spanAt(source, 'f({ a: 1 })'));
+    const found = rejected(source, 'E_TYPE');
+    assert.equal(found.message, 'Cannot tell whether f\'s r or s has field '
+      + 'a; no annotation can decide r and s, which belong to this call of f');
+    assert.deepEqual(found.span, spanAt(source, '{ a: 1 }'));
   });
 
 // Two unknown tails against labels: before B2 a bound the written lacks
@@ -68,30 +68,37 @@ test('a constant with two homes: Unresolved, P6 at the call',
 // was reported (R10.2), and with one tail lacking the label a commit put
 // it in the other. Both were the removed machinery's; from B3 both
 // waited at the end of the body. Since B4 H refuses the first (recovery
-// obligations O1, O2): `admin` has no home, both tails lacking it; the
-// predicate's contradiction is placeholder P2 at the call until B5
-// renders it, with the written fact's text preferred (R10.2's principle,
-// plan §10 decision 5). The second stays Unresolved (O4, an accepted
-// limitation: no annotation at the call can fix it), P6 at the call. The
-// one-tail fixtures lone-meta-lack and -two keep D1 through the bind
-// rule.
+// obligations O1, O2): `admin` has no home, both tails lacking it. B5
+// renders H's refusal as its approved D6 (`neither … can have field`,
+// `excluded here` at each written lack), at the use whose seeding stated
+// the lacks (T4), here the call. The second stays Unresolved (O4, an
+// accepted limitation: no annotation at the call can fix it), D4 at the
+// argument (T6). The one-tail fixtures lone-meta-lack and -two keep D1
+// through the bind rule.
 const granted = clauses => 'fn granted2(p: { ...r, ...s }): Bool '
   + `where ${clauses} = true; `;
-const contradicted = 'R005B placeholder: contradictions from merge '
-  + 'predicates are reported in Task B5';
+const neither = row => `granted2's { ...r, ...s } must be ${row}, but `
+  + 'neither r nor s can have field admin';
+const kept = 'no annotation can decide r and s, which belong to this call of '
+  + 'granted2';
 
 test('two tails against labels: H refuses O1, O2; O4 is Unresolved', () => {
-  for (const [clauses, message] of [
-    ['r lacks { admin }, s lacks { admin }', contradicted],
-    ['s lacks { admin }', waits]]) {
-    for (const argument of ['{ admin: false }',
-      '{ name: 1, admin: false }']) {
-      const source = `${granted(clauses)}`
-        + `fn main(): Int = { let b = granted2(${argument}); 0 };`;
-      const found = rejected(source, 'E_INTERNAL');
-      assert.equal(found.message, message, clauses);
-      assert.deepEqual(found.span, spanAt(source, `granted2(${argument})`));
-    }
+  const both = 'r lacks { admin }, s lacks { admin }';
+  for (const [clauses, argument, message, at] of [
+    [both, '{ admin: false }', neither('{ admin: Bool }'),
+      'granted2({ admin: false })'],
+    [both, '{ name: 1, admin: false }', neither('{ admin: Bool, name: Int }'),
+      'granted2({ name: 1, admin: false })'],
+    ['s lacks { admin }', '{ admin: false }', 'Cannot tell how granted2\'s r '
+      + `and s split { admin: Bool }; ${kept}`, '{ admin: false }'],
+    ['s lacks { admin }', '{ name: 1, admin: false }', 'Cannot tell '
+      + `whether granted2's r or s has field name; ${kept}`,
+    '{ name: 1, admin: false }']]) {
+    const source = `${granted(clauses)}`
+      + `fn main(): Int = { let b = granted2(${argument}); 0 };`;
+    const found = rejected(source, 'E_TYPE');
+    assert.equal(found.message, message, clauses);
+    assert.deepEqual(found.span, spanAt(source, at));
   }
 });
 

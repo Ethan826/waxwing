@@ -49,6 +49,7 @@ rejected env state origin failure = case failure of
   Placeholder what → Left (placeholderAt span what)
   Unexpected what → Left (problemAt (Internal what) span)
   FromMerge cause inner → mergedAt env state.subst span cause inner
+    (rejected env state origin)
   Exhausted what → Left (problemAt (Internal what) span)
   _ → Left (problemAt (Internal "Effect row consumption failed") span)
   where

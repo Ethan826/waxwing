@@ -53,7 +53,8 @@ endOfBody unify judge subst =
   judged merges = maybe (Right (Undecided subst merges)) Left
     (Array.findMap refused (NonEmpty.toArray merges))
   refused merge = refusal merge <$> judge subst merge
-  refusal merge atom = FromMerge { predicate: merge.id, at: merge.site }
+  refusal merge atom = FromMerge
+    { predicate: merge.id, at: merge.site, within: Just subst }
     (Homeless atom)
 
 ended ∷ ∀ a. (Subst → a) → (Subst → NonEmptyArray Merge → a) → Ended → a

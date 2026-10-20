@@ -56,6 +56,8 @@ environment program function =
   , locals: Map.fromFoldable
       (Array.mapWithIndex parameterLocal function.parameters)
   , introduced: function.introduced
+  , parameterSyntax: Array.take (Array.length function.parameters)
+      function.syntax
   }
   where
   row = current function
@@ -84,7 +86,7 @@ checkFunction holders env function = do
   -- relays; keeping those would move the span and notes of rejections
   -- (witness/ec2, argbind), so the whole settled state is not used.
   let settledSubst = restricted.subst
-  waitingAtEnd function settledSubst
+  waitingAtEnd env function settledSubst
   let ended = finished { subst = settledSubst }
   judgeDeferrals env ended body.value
   let marked = markConstraints env.variables ended
@@ -112,8 +114,8 @@ checkFunction holders env function = do
 
 -- R005 Tranche B B4: once the body is settled, a `Merge` predicate still
 -- waiting is classified by H and reported (Features.Check.EndReport).
-waitingAtEnd ∷ Resolved.FunctionDecl → Subst → Either Diagnostic Unit
-waitingAtEnd function = endReport function.span
+waitingAtEnd ∷ Env → Resolved.FunctionDecl → Subst → Either Diagnostic Unit
+waitingAtEnd env function = endReport env function.span
 
 -- The state a body starts in: the signature's variables are numbered
 -- before any meta, and its record tails lack what it says (R001 design §2),

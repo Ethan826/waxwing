@@ -1,7 +1,8 @@
 // R005 Tranche B B4 regression probes (the end of a body: H and
 // Unresolved), imported through test/regression-probes.mjs; the rows are
 // in scripts/regression-r005b-end.mjs.
-import { done, expect, p6, pickR, same } from './regression-r005b.mjs';
+import { annotate, done, expect, pickR, pickRHolds, rsWritten, same }
+  from './regression-r005b.mjs';
 
 const apply = 'fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): '
   + 'Int = 0; ';
@@ -20,7 +21,8 @@ export const r005bEndProbes = {
       `${pickR}${same}fn g(x: { ...r }): Int where r lacks { a } = `
         + '{ let f = fn(q, w) => same(pickR(x, q), { a: 1, ...w }); 0 }; '
         + 'fn main(): Int = 0;',
-      `E_INTERNAL ${p6} @pickR(x, q)`);
+      'E_TYPE Cannot tell how pickR\'s r and s split { a: Int, ..._ }; '
+        + `${annotate} @pickR(x, q) ${rsWritten}`);
     done(context);
   },
   // H only at the end of a body: diag-14's shape (x has no home) is
@@ -41,7 +43,8 @@ export const r005bEndProbes = {
     const source = `${pickR}fn h(${parameters.join(', ')}): Int = 0; `
       + `fn main(): Int = h(${uses.map(() => 'pickR').join(', ')});`;
     expect(context, 'quiet predicates kept going', source,
-      `E_INTERNAL ${p6} @pickR`);
+      `E_TYPE ${pickRHolds}pass a lambda with annotated parameters in `
+        + `place of pickR @pickR ${rsWritten}`);
     if (Date.now() - started >= QUIET_MS) {
       console.error('quiet predicates slow');
       process.exit(1);
@@ -54,7 +57,9 @@ export const r005bEndProbes = {
     expect(context, 'waiting predicates dropped',
       'fn split(p: { ...r, ...s }): Int where r disjoint s = 0; '
         + 'fn main(): Int = split({ x: 1, y: 2 });',
-      `E_INTERNAL ${p6} @split({ x: 1, y: 2 })`);
+      'E_TYPE Cannot tell whether split\'s r or s has field x; no annotation '
+        + 'can decide r and s, which belong to this call of split '
+        + `@{ x: 1, y: 2 } ${rsWritten}`);
     done(context);
   }
 };

@@ -1,6 +1,6 @@
 module Domain.Note where
 
-import Domain.Problem (AbortCause)
+import Domain.Problem (AbortCause, TypeName)
 
 -- Why a note is attached (FX001 design §6); Format.Diagnostic.Note gives
 -- each its text. `ContinuesInto` is internal: Features.Check replaces it,
@@ -41,3 +41,10 @@ data NoteReason
   | ClauseAborts AbortCause
   | SignatureMayFail String String
   | MarkVariableHere String String
+  -- R005 Tranche B B5, diagnostics R8: an owner's written row and the
+  -- parts it holds; an unnamed part's expression; the written type the
+  -- other side came from; a fact's reason that excluded a part.
+  | PartsWrittenHere (Array String)
+  | PartComesFromHere String
+  | RowRequiredHere TypeName
+  | ExcludedHere

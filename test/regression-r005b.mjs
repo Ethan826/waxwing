@@ -36,11 +36,12 @@ export const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 export const same = 'fn same(a: z, b: z): Int = 0; ';
 const placeholder = 'R005B placeholder: ';
-export const p2 = `${placeholder}contradictions from merge predicates are `
-  + 'reported in Task B5';
 const p4 = `${placeholder}rows with several tails are lowered in Task 8`;
-export const p6 = `${placeholder}unresolved merge predicates are reported `
-  + 'in Task B5';
+// B5's D4 and D6 texts (plan §2.10, §10 decisions 20, 21).
+export const rsWritten = '[r and s are written here @{ ...r, ...s }]';
+export const pickRHolds = 'Cannot tell what pickR\'s r and s hold; ';
+export const annotate = 'annotate this lambda\'s parameters';
+export const mustBe = row => `pickR's { ...r, ...s } must be ${row}, so `;
 
 export const r005bProbes = {
   // A written clause is cited over an implied fact, for a lack (P1) and
@@ -140,17 +141,21 @@ export const r005bProbes = {
         + 'fn main(): Int = { let f = fn(x, y, w) => { let k = noA(x); '
         + 'let s = same(pickR(x, y), { ...w, a: 1 }); '
         + 'same({ ...w, b: 2 }, { ...x, c: 3 }) }; 0 };',
-      `E_INTERNAL ${p2} @{ ...x, c: 3 }`);
+      `E_TYPE ${mustBe('{ a: Int, c: Int, ..._ }')}r cannot have field b `
+        + '@{ ...x, c: 3 } [required here @pickR(x, y)]');
     done(context);
   },
-  // B3: case 2 binds `p` to `{ a: Int }`; the clash on it is the
-  // predicate's (P2 until B5).
+  // B3: case 2 binds `p` to `{ a: Int }`; the field `c` arriving in it
+  // later is the predicate's contradiction: D6 since B5 (R10.1 extended
+  // to case 2). (A clash of `a`'s type there keeps its own text: no D6
+  // form describes a field type against a later requirement.)
   'r005b-case2-reason': context => {
     expect(context, 'case binding lost its predicate',
       `${pickR}${same}fn main(): Int = { let f = fn(p, q) => { `
         + 'let x = same(pickR(p, q), { a: 1, b: 2 }); '
-        + 'let y = same(q, { b: 2 }); same(p, { a: true }) }; 0 };',
-      `E_INTERNAL ${p2} @{ a: true }`);
+        + 'let y = same(q, { b: 2 }); same(p, { a: 1, c: 3 }) }; 0 };',
+      `E_TYPE ${mustBe('{ a: Int, b: Int }')}r cannot have field c `
+        + '@{ a: 1, c: 3 } [required here @pickR(p, q)]');
     done(context);
   },
   // B3: one part unknown is solved by Sym's 1' (only lowering stops it).
@@ -167,7 +172,7 @@ export const r005bProbes = {
     expect(context, 'rigid part counted closed',
       `${pickR}${same}fn g(x: { ...u }): Int = { let f = fn(q, w) => `
         + 'same(pickR(x, q), w); 0 }; fn main(): Int = 0;',
-      `E_INTERNAL ${p6} @pickR(x, q)`);
+      `E_TYPE ${pickRHolds}${annotate} @pickR(x, q) ${rsWritten}`);
     done(context);
   },
   // 2g: the self-call's `Merge U ?v { ...U, ...V }` gives ?v := V.
@@ -183,7 +188,8 @@ export const r005bProbes = {
       `${pickR}${same}fn g(x: { ...r }): Int where r lacks { a, c } = `
         + '{ let f = fn(q, w) => { let k = same(pickR(x, q), { c: 1 }); '
         + 'same(q, { a: 1, ...w }) }; 0 };' + main,
-      `E_INTERNAL ${p2} @{ a: 1, ...w }`);
+      `E_TYPE ${mustBe('{ c: Int }')}r cannot hold r @{ a: 1, ...w } `
+        + '[required here @pickR(x, q)]');
     done(context);
   },
   // 2g: `Merge ?y S R` has no 2g (S is not in R's row): it waits, and at
@@ -193,7 +199,7 @@ export const r005bProbes = {
       `${pickR}fn g(x: { ...r }, z: { ...s }, h: ({ ...r }) -> Int): Int `
         + 'where r disjoint s = { let f = fn(y) => h(pickR(y, z)); 0 };'
         + main,
-      `E_INTERNAL ${p2} @pickR(y, z)`);
+      `E_TYPE ${mustBe('{ ...r }')}s cannot hold s @pickR(y, z)`);
     done(context);
   },
   // B3: a constructor's row of two unknown tails is desugared at its use.
@@ -201,7 +207,10 @@ export const r005bProbes = {
     expect(context, 'creation point missed',
       'type Both(...r, ...s) = Both({ ...r, ...s }); '
         + 'fn main(): Int = { let b = Both({ x: 1, y: 2 }); 0 };',
-      `E_INTERNAL ${p6} @Both({ x: 1, y: 2 })`);
+      'E_TYPE Cannot tell whether Both\'s r or s has field x; write Both\'s '
+        + 'row arguments in the enclosing signature or in a lambda '
+        + 'parameter\'s annotation @{ x: 1, y: 2 } '
+        + `${rsWritten}`);
     done(context);
   },
   // B3: the settling retry binds q's tail, which solves pickR(q, z).

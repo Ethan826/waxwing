@@ -1,3 +1,19 @@
+# Waxwing / R005 Tranche B: B5 done, for review, unmerged (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). B5
+implemented on top of decisions 20 and 21: D4 and D6 rendered, P2 and P6
+removed; verify 2363/2363, 59/59, 174 proofs; differential: 47
+differences, every one a placeholder replaced. Evidence and seven points
+for the user in docs/progress.md "R005 Tranche B B5: implementation".
+
+**Next, needs the user's review:** B5, and those seven points (field
+type clashes keeping their own text; O1/O2 as H's D6; colliding names;
+lambda names and handler positions waiting for Task 7; design-holes'
+location under T6; tests written after the code; the machinery added).
+Task 7 stays blocked until B5 is reviewed.
+
+---
+
 # Waxwing / R005 Tranche B: B5 started, texts pinned (2026-10-19)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Hint

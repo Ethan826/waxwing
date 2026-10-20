@@ -162,6 +162,7 @@ select env state record label = do
     FromMerge cause inner → mergedAt env state.subst (Checked.spanOf record)
       cause
       inner
+      failed
     Exhausted what → Left (problemAt (Internal what) (Checked.spanOf record))
     _ → notSelected env state record label
 

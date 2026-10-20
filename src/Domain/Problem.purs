@@ -1,10 +1,19 @@
 module Domain.Problem
   ( module Domain.Problem
   , module Domain.Problem.Names
+  , module Domain.Problem.Merge
   ) where
 
 import Data.Maybe (Maybe)
-import Domain.Problem.Names
+import Domain.Problem.Merge
+  ( Fault(..)
+  , MergeAtom(..)
+  , MergeHint(..)
+  , MustBe
+  , Subject(..)
+  , Undetermined
+  )
+import Domain.Problem.Names (LabelName, RowText, TypeName(..), Witness(..))
 
 -- What went wrong, as data. Features never write diagnostic text; Format
 -- renders it, so a change of surface syntax changes only Format.
@@ -137,6 +146,10 @@ data Problem
   -- rigid tail in both rows (D3').
   | InBothRecords String String String
   | InBothRows String
+  -- Tranche B B5: D4 (the body undetermined) and D6 (a predicate's
+  -- contradiction), Domain.Problem.Merge.
+  | CannotTell Undetermined
+  | MustBeRow MustBe
   | DeferMayFail String
   | DeferMayPerform String
   | RowEquality RowText RowText String

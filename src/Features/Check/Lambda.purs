@@ -14,6 +14,8 @@ import Features.Check.Stages (arrowType, stages)
 import Features.Check.Context (CheckEnv, Infer, Locals, bindAll)
 import Features.Check.MarkUse (localMarks)
 import Features.Check.Match (Typed)
+import Features.Check.OriginStore (onOrigins)
+import Features.Check.PartOrigin (parameterMade)
 import Features.Check.Scheme (State, Threaded, threadAll)
 
 type LambdaEnv r = CheckEnv (locals ∷ Locals | r)
@@ -33,7 +35,7 @@ checkLambda
   → Either Diagnostic (Threaded Checked.Expr)
 checkLambda infer env state span parameters body = do
   let row = openRow (Hole state.next)
-  typed ← threadAll (parameterType env.variables row)
+  typed ← threadAll (parameterType env.variables row span)
     (state { next = state.next + 1 })
     parameters
   let
@@ -64,10 +66,11 @@ checkLambda infer env state span parameters body = do
 parameterType
   ∷ Array String
   → TyRow Open
+  → Span
   → State
   → Resolved.Param
   → Either Diagnostic (Threaded Checked.Param)
-parameterType variables row state parameter = Right
+parameterType variables row span state parameter = Right
   (maybe' fresh annotated parameter.ty)
   where
   annotated ty = named
@@ -80,9 +83,14 @@ parameterType variables row state parameter = Right
   annotationRow id
     | id == Resolved.VarId (Array.length variables - 1) = row
     | otherwise = openRow (Rigid id)
+  -- Recorded for R9's hint (diagnostic metadata).
   fresh _ =
     { value: { local: parameter.local, ty: TVar (Hole state.next) }
-    , state: state { next = state.next + 1 }
+    , state: state
+        { next = state.next + 1
+        , subst = onOrigins (parameterMade { meta: state.next, lambda: span })
+            state.subst
+        }
     }
 
 -- The named parameters as locals; `_` binds nothing.

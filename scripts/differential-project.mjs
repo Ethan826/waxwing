@@ -72,12 +72,14 @@ const booleanRests = { NoRest: false, IgnoredRest: true };
 // R005 Task 2: a resolved declaration gained `introduced`, where each of
 // its record row variables is introduced, derived from the signature the
 // resolve phase compares anyway. Compared without it, with the empty
-// `constraints` of Task 1.
+// `constraints` of Task 1. R005 Tranche B B5 added `syntax`, the
+// signature's written types (source references kept for D4's notes),
+// compared without it too: the resolved types it was read into are.
 export const withoutIntroduced = program => ({
   ...program,
   ctors: program.ctors.map(withoutNoJoined),
   functions: program.functions.map(declaration => {
-    const { introduced: _, ...rest } = withoutNoConstraints(
+    const { introduced: _, syntax: __, ...rest } = withoutNoConstraints(
       { functions: [declaration] }).functions[0];
     return withoutNoJoined(rest);
   })

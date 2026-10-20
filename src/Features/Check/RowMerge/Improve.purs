@@ -93,7 +93,9 @@ located subst merge failure = case failure of
   FromMerge _ inner → caused inner
   _ → caused failure
   where
-  caused inner = FromMerge { predicate: merge.id, at: latest spans } inner
+  caused inner = FromMerge
+    { predicate: merge.id, at: latest spans, within: Just subst }
+    inner
   store = storeOf subst
   metas = metasThrough subst (rowTails merge)
   spans = Array.catMaybes

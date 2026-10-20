@@ -9,7 +9,7 @@ module Features.Check.Call
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved (CtorId(..), FunctionId(..), Ty(..), VarId)
@@ -20,10 +20,12 @@ import Features.Check.Consume (consumeAt)
 import Features.Check.Apply (applyAll, calleeOf, functionLike)
 import Features.Check.Sync (sync)
 import Features.Check.Argument (refused)
+import Features.Check.ArgumentOrigin (notedArgument)
 import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.Require (require)
 import Features.Check.Scheme (State, Threaded, threadAll)
-import Features.Check.Use (Use, ctorUse, functionUse)
+import Features.Check.PartOrigin (OwnerKind(..))
+import Features.Check.Use (Use, Using, ctorUse, functionUse)
 
 type Checked = Either Diagnostic (Threaded Checked.Expr)
 
@@ -42,8 +44,10 @@ checkCall
   → Array Resolved.Expr
   → Checked
 checkCall infer env state span id arguments = do
-  use ← functionUse env state span id
+  use ← functionUse env state (using span arguments kind) id
   named infer env span (Checked.Call id) use arguments
+  where
+  kind = if partial env id arguments then PartlyApplied else Call
 
 checkConstruct
   ∷ ∀ r
@@ -55,8 +59,23 @@ checkConstruct
   → Array Resolved.Expr
   → Checked
 checkConstruct infer env state span id arguments = do
-  use ← ctorUse env state span id
+  use ← ctorUse env state (using span arguments Construction) id
   named infer env span (Checked.Construct id) use arguments
+
+-- Where a named use is and how (R005 Tranche B T6): its span, each
+-- supplied argument's.
+using ∷ Span → Array Resolved.Expr → OwnerKind → Using
+using span arguments kind =
+  { span, arguments: map Resolved.exprSpan arguments, kind }
+
+-- Fewer arguments than the function's parameters (FN001's partial
+-- application).
+partial ∷ ∀ r. CheckEnv r → FunctionId → Array Resolved.Expr → Boolean
+partial env (FunctionId index) arguments = maybe false fewer
+  (Array.index env.functions index)
+  where
+  fewer function = Array.length arguments
+    < Array.length function.parameters
 
 -- The declared result of a resolved named call or construction written
 -- with exactly its declared count of arguments (a bare nullary
@@ -179,9 +198,12 @@ supplied infer env span node use arguments = do
     ( Left <<< refused env reached use.value pair.index pair.ty pair.actual
         (namedArgument pair.index)
     )
-    (Right <<< threadedUnit)
+    (Right <<< threadedUnit <<< noted pair)
     (require env reached pair.ty pair.actual)
   threadedUnit reached = { value: unit, state: reached }
+  noted pair = notedArgument env (Array.index use.value.written pair.index)
+    (Array.index arguments pair.index)
+    { parameter: pair.ty, argument: Checked.typeOf pair.actual }
 
 arityAt ∷ ∀ a. Span → Either Diagnostic a
 arityAt span = Left (problemAt Arity span)

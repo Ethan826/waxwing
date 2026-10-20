@@ -9,6 +9,7 @@ import Data.String as String
 import Data.Traversable (mapAccumL)
 import Domain.Syntax (Note, NoteReason(..), Span)
 import Format.Diagnostic.Mark as Mark
+import Format.Diagnostic.Merge (partsList)
 import Format.Diagnostic.Name (typeName)
 import Format.Diagnostic.Row
   ( maxCharacters
@@ -126,3 +127,7 @@ noteText = case _ of
     (shortLabel label)
   MarkVariableHere variable label → Mark.markVariableHere variable
     (shortLabel label)
+  PartsWrittenHere parts → partsList parts <> " are written here"
+  PartComesFromHere part → part <> " comes from here"
+  RowRequiredHere row → typeName row <> " is required here"
+  ExcludedHere → "excluded here"

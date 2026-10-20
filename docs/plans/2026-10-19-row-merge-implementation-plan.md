@@ -599,8 +599,8 @@ compiler); each is checked by the tests named.
   | P3 | Task 2 (be42baf) | Check/SeveralTails `withinOneTail` | `rest binders and removal over several tails are typed in Task 7` | 7 |
   | P4 | Task 4 (e63f7f4) | Specialize/Record `recordType` | `rows with several tails are lowered in Task 8` | 8 |
   | P5 | B3 | RowMerge/End `endOfBody` (Check/Function after settling, Check/Failure before an open Fail family, RowEntry `finish`): a predicate still waits; at the earliest waiting predicate's site | `merge predicates still waiting at the end of a body are classified in Task B4` | **B4** (removed) |
-  | P2′ | B3 | Check/Merged `mergedAt`: a failure a predicate caused, other than a broken fact | `contradictions from merge predicates are reported in Task B5` | B5 |
-  | P6 | B4 | Check/EndReport (Check/Function, Check/Failure): an Unresolved body, at the earliest waiting predicate's site; H's Contradiction uses P2's text at the predicate's site | `unresolved merge predicates are reported in Task B5` | B5 |
+  | P2′ | B3 | Check/Merged `mergedAt`: a failure a predicate caused, other than a broken fact | `contradictions from merge predicates are reported in Task B5` | **B5** (removed: D6, Check/Contradicted, or the failure's own text when no part explains it) |
+  | P6 | B4 | Check/EndReport (Check/Function, Check/Failure): an Unresolved body, at the earliest waiting predicate's site; H's Contradiction uses P2's text at the predicate's site | `unresolved merge predicates are reported in Task B5` | **B5** (removed: D4, Check/Unresolved; H's refusal D6 at T4's location) |
 
 - **Go output** of existing programs stays byte-identical in every task
   (bootstrap snapshots; the differential's emit and compile phases for
@@ -1353,7 +1353,7 @@ and Contradicted.purs (D6: R1-R3, R5-R8, R10.1, H's form and location), both
 taking only `RowOutcome` payloads; Check/TypeName (split row printing first);
 Problem, Format/Diagnostic/Records; P2 and P6 removed.
 
-- [ ] Failing renderer tests (test/r005b-fixtures.test.mjs): the
+- [x] Failing renderer tests (test/r005b-fixtures.test.mjs): the
   fixtures at `stages.text` 6 (`diag-06`, `diag-07`,
   `design-both-plain`); `render-*` fixtures for each form a source
   without a multi-spread literal can produce (function reference, three
@@ -1361,11 +1361,16 @@ Problem, Format/Diagnostic/Records; P2 and P6 removed.
   `neither`, `none of`, nested), built from `pick`-style signatures,
   texts derived by R1-R11 and pinned in the task's first commit;
   `same-name-parts` (R3) and `participation-control` (R10.1's limit).
-- [ ] A structural test: no solving module imports PartOrigin or reads
-  a predicate's metadata.
-- [ ] R11's tie-break: two waiting predicates at one source span are
-  reported identically in every order of making them.
-- [ ] Actionable hints told apart (§10 decisions 17, 20): a lambda
+  Pinned in 20fb98c and 29ec312; `none of` and `same-name-parts` moved
+  to Task 7 (decision 21), `render-none-control` added.
+- [x] A structural test: no solving module imports PartOrigin or reads
+  a predicate's metadata (test/r005b-render.test.mjs).
+- [x] R11's tie-break: two waiting predicates at one source span are
+  reported identically in every order of making them. Checked where the
+  order of making and R11's source order differ (a nested row's
+  predicate is made first; the outer row is reported), with regression
+  row `r005b-tie-break`.
+- [x] Actionable hints told apart (§10 decisions 17, 20): a lambda
   annotation offered where at least one candidate part can take one,
   each hinted text with an annotated companion that is decided; for
   rows of a call's own instantiation (O4), the limitation explained
@@ -1373,9 +1378,12 @@ Problem, Format/Diagnostic/Records; P2 and P6 removed.
   in the first commit (`render-*`, diag-06; docs/progress.md "R005
   Tranche B B5"); `none of` and `same-name-parts` deferred to Task 7
   (decision 21).
-- [ ] Solving-time diagnostics (L2): only after the user decides the
-  gate's proposal (§10, decision 13).
-- [ ] Implement; verify; differential: 0 on existing sources; commit.
+- [x] Solving-time diagnostics (L2, approved in decision 15): D6 at the
+  L2 location.
+- [x] Implement; verify; differential: 0 on existing sources; commit.
+  docs/progress.md "R005 Tranche B B5: implementation": verify 2363/2363,
+  59/59, 174 proofs; differential: every difference a placeholder
+  replaced (47), none elsewhere.
 
 ### Task 7: The merge literal, access, removal and rest binders
 
@@ -1514,7 +1522,10 @@ kept as planned (`r005b-precedence`, `-provenance`, `-mixed-lacks`,
 | `r005b-bound-reason` | planned; **drop proposed** | R10.3 | — | — |
 | `r005b-defer` | planned; **reworded** | a predicate solved by guessing a part | `apply2(merge, { y: 2 }, { x: 1 })` stays accepted with each label in its argument's part | 7 |
 | `r005b-quiet` | **landed, B4; reworded again** | a rescan that counts a pass where no case fired as a change | `h(pick × 12)` Unresolved (P6) within 2 s | B4 |
-| `r005b-pending-dedup` → `r005b-nested-once` | reworded | a nested predicate reported twice | draft 3 §2.6's nested program, one D4 | B5 |
+| `r005b-pending-dedup` → `r005b-nested-once` | reworded; **superseded in B5** by `r005b-nested-path` | a nested predicate reported twice | one diagnostic per program holds by construction (R11 reports one occurrence); the row that can fail is the nested path's: `wrapR` passed on reads `(in field inner)` | B5 |
+| `r005b-site-argument`, `-hint-own-call`, `-hint-lambda`, `-tie-break`, `-required-callee`, `-required-own`, `-h-location`, `-within`, `-case-bound`, `-nested-path` | **new, B5** | T6 undone; decision 20's two kinds undone, each way; R11 by identity; R8's third note from either side; T4 undone; D6 reading the caller's state; R10.1's case-bound part; R6's path | test/regression-r005b-render.mjs | B5 |
+| `r005b-participation` | planned; **not built in B5** | every binding that took part in a predicate reports D6 | two guards stand between: attribution only through a case's own binding, and D6 only for a part at fault; no single restorable defect, nor both together, changes `participation-control`'s text (the clash does not pass through the attribution). The fixture stays the control | — |
+| `r005b-part-identity` | planned; **moved to Task 7** with `same-name-parts` (decision 21) | parts deduplicated by printed name | — | 7 |
 | `r005b-pending-end` → `r005b-predicate-end` | **landed, B4** | waiting predicates dropped at the end | `split({ x: 1, y: 2 })` passes checking (lowering's P4) instead of P6 | B4 |
 | `r005b-drain-text` → `r005b-case-text` | reworded | a case's failure uses Require's own text | `apply2(merge, { z: 1 }, { y: 2 })` reads `Expected { ..._ }, found …` | 7 |
 | `r005b-drained-reason` → `r005b-solved-reason` | reworded | a binding a case made loses its predicate (R10.1) | Example 17 reads `Expected {}, found { z: Int }` | 7 |

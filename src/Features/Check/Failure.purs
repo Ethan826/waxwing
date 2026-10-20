@@ -76,7 +76,7 @@ settleKeys env state body = either failed checked (settleRows state.subst)
   checked settled = maybe' (noUnresolved settled) (unresolved settled)
     (firstUnkeyed settled body)
   noUnresolved settled _ = Right settled
-  unresolved settled span = Left (familyUnknown settled span)
+  unresolved settled span = Left (familyUnknown env settled span)
 
 -- The keys settled for good, after the deferred rows are. A row pair still
 -- set aside then met a Fail payload no family key decides. Signatures and
@@ -90,14 +90,14 @@ settleFinal env state body = settleKeys env state body >>= leftover
   where
   leftover settled@(Subst bindings) =
     if Array.null bindings.postponed then Right settled
-    else Left (familyUnknown settled (failureSpan body))
+    else Left (familyUnknown env settled (failureSpan body))
 
 -- A Fail payload whose family no key decides. R005 Tranche B (plan F-7):
 -- a `Merge` predicate still waiting is reported before the family it may
 -- leave unknown, as the end of a body reports it (B4).
-familyUnknown ∷ Subst → Span → Diagnostic
-familyUnknown subst span = either identity (const concrete)
-  (endReport span subst)
+familyUnknown ∷ ∀ r. CheckEnv r → Subst → Span → Diagnostic
+familyUnknown env subst span = either identity (const concrete)
+  (endReport env span subst)
   where
   concrete = problemAt FailNeedsConcrete span
 

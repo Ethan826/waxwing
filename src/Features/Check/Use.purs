@@ -1,5 +1,6 @@
 module Features.Check.Use
   ( module Features.Check.DeclarationUse
+  , module Features.Check.UseOrigin
   , withOrigin
   , functionUse
   , ctorUse
@@ -23,19 +24,31 @@ import Features.Check.DeclarationUse (Callee, Use, declarationUse)
 import Features.Check.MarkUse (openHandlers)
 import Features.Check.Provenance (Consumed(..))
 import Features.Check.ResultClauses (ownClauses)
+import Features.Check.PartOrigin (OwnerKind(..))
 import Features.Check.RowMerge.Use (desugaredUse)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.UseFacts (joinedUse, requiredUse, seededUse)
+import Features.Check.UseOrigin (Using, lacksStated)
 import Features.Check.Tables (ownerType)
 
 type Used = Either Diagnostic (Threaded Use)
 
-functionUse ∷ ∀ r. CheckEnv r → State → Span → FunctionId → Used
-functionUse env state span (FunctionId index) =
+functionUse ∷ ∀ r. CheckEnv r → State → Using → FunctionId → Used
+functionUse env state using (FunctionId index) =
   maybe' missing found (Array.index env.functions index)
   where
+  span = using.span
   missing _ = Left (problemAt (Internal "Invalid resolved function") span)
-  found function = Right (desugaredUse span (used function))
+  found function = Right $ lacksStated span function.constraints
+    (desugaredUse (made function) (used function))
+  made function =
+    { site: span
+    , arguments: using.arguments
+    , name: function.name
+    , kind: using.kind
+    , variables: function.variables
+    , syntax: function.syntax
+    }
   used function =
     ( withOrigin (CallOf function.name) (Just (calleeOf function))
         ( requiredUse function.constraints
@@ -86,16 +99,25 @@ withOrigin consumed callee use = use
   { value = use.value { consumed = consumed, callee = callee } }
 
 -- A constructor's scheme is its owner's parameters.
-ctorUse ∷ ∀ r. CheckEnv r → State → Span → CtorId → Used
-ctorUse env state span (CtorId index) =
+ctorUse ∷ ∀ r. CheckEnv r → State → Using → CtorId → Used
+ctorUse env state using (CtorId index) =
   maybe' missing found (Array.index env.ctors index)
   where
+  span = using.span
   missing _ = Left
     (problemAt (Internal "Invalid resolved constructor") span)
   found ctor = maybe' missingType (owned ctor) (ownerOf ctor.owner)
   missingType _ = Left (problemAt (Internal "Invalid resolved type") span)
   ownerOf (TypeId owner) = Array.index env.types owner
-  owned ctor info = Right $ desugaredUse span
+  made ctor info =
+    { site: span
+    , arguments: using.arguments
+    , name: ctor.name
+    , kind: Construction
+    , variables: info.variables
+    , syntax: ctor.fieldSyntax
+    }
+  owned ctor info = Right $ desugaredUse (made ctor info)
     ( withOrigin (CallOf ctor.name) Nothing
         ( joinedUse ctor.joined info.variables
             ( seededUse env info.sorts
@@ -117,7 +139,7 @@ checkFunctionRef
   → FunctionId
   → Either Diagnostic (Threaded Checked.Expr)
 checkFunctionRef env state span id = reference span (Checked.FunctionRef id)
-  <$> functionUse env state span id
+  <$> functionUse env state { span, arguments: [], kind: Reference } id
 
 checkCtorRef
   ∷ ∀ r
@@ -127,7 +149,7 @@ checkCtorRef
   → CtorId
   → Either Diagnostic (Threaded Checked.Expr)
 checkCtorRef env state span id = reference span (Checked.CtorRef id)
-  <$> ctorUse env state span id
+  <$> ctorUse env state { span, arguments: [], kind: Construction } id
 
 reference
   ∷ Span
