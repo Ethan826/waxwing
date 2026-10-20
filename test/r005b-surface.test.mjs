@@ -10,12 +10,12 @@ import { checked, rejected, spanAt } from './support.mjs';
 // same sources are now solved, refused for a reason, or, since B3, wait:
 // the two tails become a `Merge` predicate, which no case can decide when
 // nothing fixes how the argument splits between them, so it is still
-// waiting at the end of the body, placeholder P5 at the use (B4 makes it
-// Unresolved; docs/plans/2026-10-19-row-merge-implementation-plan.md,
+// waiting at the end of the body: since B4 Unresolved, placeholder P6 at
+// the use (docs/plans/2026-10-19-row-merge-implementation-plan.md,
 // Global Constraints).
 const main = ' fn main(): Int = 0;';
-const waits = 'R005B placeholder: merge predicates still waiting at the end '
-  + 'of a body are classified in Task B4';
+const waits = 'R005B placeholder: unresolved merge predicates are reported '
+  + 'in Task B5';
 const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
 
 const placeholder = (source, message) => {
@@ -45,7 +45,7 @@ for (const [name, source] of [
   ['two calls of one generic', 'fn id(w: { ...r, ...s }): { ...r, ...s } = w; '
     + 'fn main(): Int = { let a = id({ x: 1 }); 0 };']
 ]) {
-  test(`two unknown tails, a split nothing fixes: P5: ${name}`, () => {
+  test(`two unknown tails, a split nothing fixes: P6: ${name}`, () => {
     const found = placeholder(source, waits);
     assert.ok(found.span.start.offset < source.length);
   });

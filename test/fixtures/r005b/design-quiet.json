@@ -2,11 +2,23 @@
   "name": "design-quiet",
   "from": "design (draft 3) §7, no constants: quiet, never D4",
   "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn apply0(f: (a, b) -> c, g: (d, e) -> c): Int = 0;\nfn main(): Int = apply0(merge, merge);\n",
-  "result": "Solved",
-  "diagnostic": null,
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell what merge's r and s hold; pass a lambda with annotated parameters in place of merge",
+    "at": {"text":"merge","nth":1},
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {"text":"{ ...r, ...s }","nth":0}
+      }
+    ]
+  },
   "before": null,
-  "output": "0\n",
-  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "output": null,
+  "solutions": 1,
+  "stages": {"solver":5,"check":7,"text":7,"run":null},
   "rows": {
     "hyp": {"lacks":{},"apart":[]},
     "steps": [
@@ -27,5 +39,6 @@
       }
     ],
     "orders": "all"
-  }
+  },
+  "remark": "Reclassified Solved -> Unresolved in B4 (plan §4.5, decision 2); the text is the approved D4 form; its notes and exact location are pinned in B5. One solution over its own labels, five with one extra label (S1); its annotation narrows."
 }

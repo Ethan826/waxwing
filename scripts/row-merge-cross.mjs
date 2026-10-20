@@ -32,7 +32,7 @@ for (let i = 0; i < Number(count); i++) {
     const mine = run(p.hyp, order);
     const key = `${proto.v}${waited ? '+wait' : ''}->${mine.v}`;
     pairs[key] = (pairs[key] ?? 0) + 1;
-    const agrees = mine.v === proto.v || (waited && mine.v === 'skipped');
+    const agrees = mine.v === proto.v || (waited && mine.v === 'unresolved');
     if (!agrees && wrong.length < 5) wrong.push({ key, p, order });
   }
 }

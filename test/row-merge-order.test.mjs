@@ -44,7 +44,7 @@ for (const directory of ['research/row-merge-qt/fixtures',
       for (const { name, p, orders } of problemsOf(directory)) {
         const before = { ...tally };
         judge(p, orders, tally, { state: true });
-        verdicts[name] = ['accept', 'refuse', 'skipped']
+        verdicts[name] = ['accept', 'refuse', 'unresolved']
           .filter(v => tally[v] > before[v]).join('/');
       }
       t.diagnostic(JSON.stringify(verdicts));

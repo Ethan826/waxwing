@@ -18,11 +18,11 @@ const seen = (context, source) => {
   return `${wired.code} ${wired.message} @${covered(wired.span)}${notes}`;
 };
 
-const expect = (context, label, source, wanted) => {
+export const expect = (context, label, source, wanted) => {
   const found = seen(context, source);
   if (found !== wanted) fail(`${label}: ${found}`);
 };
-const done = context => console.log(
+export const done = context => console.log(
   `${context.probe} regression detects the defect`);
 
 const main = ' fn main(): Int = 0;';
@@ -32,15 +32,15 @@ const f = 'fn f(p: { name: Int, ...r }): { admin: Bool, name: Int, ...r }\n'
 const tagged = clauses => `${g}fn tagged(p: { id: Int, ...r }, `
   + `q: { ...s }): Int${clauses} = g(p, q);${main}`;
 const required = '[required here @r disjoint s]';
-const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
+export const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
-const same = 'fn same(a: z, b: z): Int = 0; ';
+export const same = 'fn same(a: z, b: z): Int = 0; ';
 const placeholder = 'R005B placeholder: ';
-const p2 = `${placeholder}contradictions from merge predicates are reported `
-  + 'in Task B5';
+export const p2 = `${placeholder}contradictions from merge predicates are `
+  + 'reported in Task B5';
 const p4 = `${placeholder}rows with several tails are lowered in Task 8`;
-const p5 = `${placeholder}merge predicates still waiting at the end of a body `
-  + 'are classified in Task B4';
+export const p6 = `${placeholder}unresolved merge predicates are reported `
+  + 'in Task B5';
 
 export const r005bProbes = {
   // A written clause is cited over an implied fact, for a lack (P1) and
@@ -167,7 +167,7 @@ export const r005bProbes = {
     expect(context, 'rigid part counted closed',
       `${pickR}${same}fn g(x: { ...u }): Int = { let f = fn(q, w) => `
         + 'same(pickR(x, q), w); 0 }; fn main(): Int = 0;',
-      `E_INTERNAL ${p5} @pickR(x, q)`);
+      `E_INTERNAL ${p6} @pickR(x, q)`);
     done(context);
   },
   // 2g: the self-call's `Merge U ?v { ...U, ...V }` gives ?v := V.
@@ -186,13 +186,14 @@ export const r005bProbes = {
       `E_INTERNAL ${p2} @{ a: 1, ...w }`);
     done(context);
   },
-  // 2g: `Merge ?y S R` has no 2g (S is not in R's row): it waits.
+  // 2g: `Merge ?y S R` has no 2g (S is not in R's row): it waits, and at
+  // the end of the body H refuses it (S has no home; B4).
   'r005b-case2g-atoms': context => {
     expect(context, 'rigid tail dropped',
       `${pickR}fn g(x: { ...r }, z: { ...s }, h: ({ ...r }) -> Int): Int `
         + 'where r disjoint s = { let f = fn(y) => h(pickR(y, z)); 0 };'
         + main,
-      `E_INTERNAL ${p5} @pickR(y, z)`);
+      `E_INTERNAL ${p2} @pickR(y, z)`);
     done(context);
   },
   // B3: a constructor's row of two unknown tails is desugared at its use.
@@ -200,7 +201,7 @@ export const r005bProbes = {
     expect(context, 'creation point missed',
       'type Both(...r, ...s) = Both({ ...r, ...s }); '
         + 'fn main(): Int = { let b = Both({ x: 1, y: 2 }); 0 };',
-      `E_INTERNAL ${p5} @Both({ x: 1, y: 2 })`);
+      `E_INTERNAL ${p6} @Both({ x: 1, y: 2 })`);
     done(context);
   },
   // B3: the settling retry binds q's tail, which solves pickR(q, z).

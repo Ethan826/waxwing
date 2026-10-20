@@ -27,43 +27,65 @@ const start = hyp => entry.hypotheses(
   Object.entries(hyp.lacks).map(([r, ls]) => Tuple.create(flexOf(r))(ls)))(
   (hyp.apart ?? []).map(([r, s]) => Tuple.create(flexOf(r))(flexOf(s))));
 
-const step = (subst, c) => {
+const stepOf = (subst, c) => {
   if (c.k === 'eq') return entry.equate(subst)(rowOf(c.l))(rowOf(c.r));
   if (c.k === 'dis') return entry.separate(subst)(rowOf(c.l))(rowOf(c.r));
   return entry.lacking(subst)(flexOf(c.v))(c.l);
 };
 
-// One step's outcome as the runner reads it: `{ skipped: what }` for a
-// placeholder (work a later task does), `{ refuse: failure }` for a
-// contradiction, `{ subst }` when solved. A limit reached or an internal
-// failure is no verdict and no skip: it fails the run (throws), so a
-// runner can never count it as an honest refusal.
+// One step's outcome as the runner reads it (RowOutcome `stepped`):
+// `{ skipped: what }` for a placeholder (work a later task does),
+// `{ refuse: failure }` for a contradiction, `{ subst }` when it went on.
+// A limit reached or an internal failure is no verdict and no skip: it
+// fails the run (throws), so a runner can never count it as an honest
+// refusal.
 export function classify(found) {
-  if (found.constructor.name === 'Left') {
-    const stop = found.value0;
-    if (stop.constructor.name === 'Unfinished') return { skipped: stop.value0 };
-    throw new Error(`row solver stopped: ${stop.constructor.name} ${
-      stop.value0 ?? ''}`);
-  }
+  if (found.constructor.name === 'Left') return stopped(found.value0);
   const result = found.value0;
-  if (result.constructor.name === 'Contradiction') {
+  if (result.constructor.name === 'Left') {
     return { refuse: result.value0.failure };
   }
-  if (result.constructor.name === 'Solved') return { subst: result.value0 };
-  throw new Error(`unexpected outcome ${result.constructor.name}`);
+  return { subst: result.value0 };
 }
 
-export const outcomeOf = either => entry.outcome(either);
+// The end of a body as the runner reads it (RowOutcome `concluded`):
+// `{ subst }` Solved, `{ unresolved: subst, merges }`, `{ refuse:
+// failure }` (H's refusal among them), or a placeholder's skip.
+export function classifyEnd(found) {
+  if (found.constructor.name === 'Left') return stopped(found.value0);
+  const result = found.value0;
+  const name = result.constructor.name;
+  if (name === 'Contradiction') return { refuse: result.value0.failure };
+  if (name === 'Solved') return { subst: entry.settledSubst(result.value0) };
+  if (name === 'Unresolved') {
+    return { unresolved: entry.settledSubst(result.value0),
+      merges: result.value1 };
+  }
+  throw new Error(`unexpected outcome ${name}`);
+}
 
-// { v: 'accept' | 'refuse' | 'skipped', subst, base, failure?, what? }.
-// `base` is the state after the hypotheses, for counting changes. Since
-// B3 the run ends at the end of a body (RowEntry `finish`): a predicate
-// still waiting there is placeholder P5, a skipped run.
-export function run(hyp, order) {
+const stopped = stop => {
+  if (stop.constructor.name === 'Unfinished') return { skipped: stop.value0 };
+  throw new Error(`row solver stopped: ${stop.constructor.name} ${
+    stop.value0 ?? ''}`);
+};
+
+export const outcomeOf = either => entry.stepped(either);
+
+// Whether a failure is H's refusal (B4): `Homeless` inside its predicate.
+export const byH = failure => failure?.constructor.name === 'FromMerge'
+  && failure.value1.constructor.name === 'Homeless';
+
+// { v: 'accept' | 'refuse' | 'unresolved' | 'skipped', subst, base,
+// failure?, what? }. `base` is the state after the hypotheses, for
+// counting changes. The run ends at the end of a body (RowEntry
+// `finish`, or `end` given: `finishWithoutH` for H off, or a judge):
+// since B4 a predicate still waiting there is H's refusal or Unresolved.
+export function run(hyp, order, end = entry.finish) {
   const base = start(hyp);
   let subst = base;
   for (const c of order) {
-    const found = classify(entry.outcome(step(subst, c)));
+    const found = classify(entry.stepped(stepOf(subst, c)));
     if ('skipped' in found) {
       return { v: 'skipped', what: found.skipped, subst, base };
     }
@@ -72,9 +94,18 @@ export function run(hyp, order) {
     }
     subst = found.subst;
   }
-  const end = classify(entry.finish(subst));
-  if ('skipped' in end) return { v: 'skipped', what: end.skipped, subst, base };
-  return { v: 'accept', subst, base };
+  const last = classifyEnd(end(subst));
+  if ('skipped' in last) {
+    return { v: 'skipped', what: last.skipped, subst, base };
+  }
+  if ('refuse' in last) {
+    return { v: 'refuse', failure: last.refuse, subst, base, atEnd: true };
+  }
+  if ('unresolved' in last) {
+    return { v: 'unresolved', subst: last.unresolved, base,
+      merges: last.merges };
+  }
+  return { v: 'accept', subst: last.subst, base };
 }
 
 // The state read out raw, in the research encoding: each binding one
@@ -99,5 +130,9 @@ export const lineages = subst => entry.lineages(subst);
 export const changes = subst => entry.changes(subst);
 export const solverMetas = subst => entry.solverMetas(subst);
 
-export const step1 = step;
+export const step1 = stepOf;
 export const start1 = start;
+
+// The end of a body without H, or with an injected judge (plan §4.2).
+export const finishWithoutH = subst => entry.finishWithoutH(subst);
+export const finishWith = judge => subst => entry.finishWith(judge)(subst);

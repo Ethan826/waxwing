@@ -6,6 +6,9 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { compile } from '../output/Program.Compile/index.js';
 import { Left } from '../output/Data.Either/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
+import { parse } from '../output/Format.Parse/index.js';
+import { resolve } from '../output/Features.Resolve/index.js';
+import { check } from '../output/Features.Check/index.js';
 
 const directory = 'test/fixtures/r005b';
 
@@ -34,6 +37,18 @@ export const offsets = (source, at) => {
 export const wired = source => {
   const result = compile(source);
   return result instanceof Left ? wire(result.value0) : null;
+};
+
+// The wired diagnostic of the first phase up to Check that rejects the
+// source, or null when it checks: a Solved fixture at its `check` stage,
+// before lowering (Task 8) can take it.
+export const checkWired = source => {
+  const parsed = parse(source);
+  if (parsed instanceof Left) return wire(parsed.value0);
+  const resolved = resolve(parsed.value0);
+  if (resolved instanceof Left) return wire(resolved.value0);
+  const checked = check(resolved.value0);
+  return checked instanceof Left ? wire(checked.value0) : null;
 };
 
 const spanOffsets = span => [span.start.offset, span.end.offset];

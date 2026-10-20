@@ -9,15 +9,15 @@ import { checkedPoly, checkRejectedAt } from './phases.mjs';
 // at their uses (plan §2.1), which PureScript's cases and Sym solve as the
 // arguments are checked (§2.3), re-examined after each top-level
 // unification and in each settling round (§2.4, §2.9). A predicate still
-// waiting at the end of a body is placeholder P5 at the use that made it;
+// waiting at the end of a body is placeholder P6 at the use that made it;
 // a contradiction a predicate caused is placeholder P2 (B5 renders D6),
 // located by the user's L2 rule. Each program is checked within a time
 // bound.
 const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 const same = 'fn same(a: z, b: z): Int = 0; ';
-const P5 = 'R005B placeholder: merge predicates still waiting at the end of '
-  + 'a body are classified in Task B4';
+const P6 = 'R005B placeholder: unresolved merge predicates are reported in '
+  + 'Task B5';
 const P2 = 'R005B placeholder: contradictions from merge predicates are '
   + 'reported in Task B5';
 const BOUND_MS = 2000;
@@ -31,7 +31,7 @@ const timed = (run, source, ...rest) => {
 const checks = source => timed(checkedPoly, source);
 const waitsAt = (source, text, nth = 0) => {
   const found = timed(checkRejectedAt, source, 'E_INTERNAL', text, nth);
-  assert.equal(found.message, P5);
+  assert.equal(found.message, P6);
 };
 const causedAt = (source, text, nth = 0) => {
   const found = timed(checkRejectedAt, source, 'E_INTERNAL', text, nth);
@@ -54,7 +54,7 @@ test('one part unknown: Sym (1\') solves it either way round', () => {
     + '{ let f = fn(p) => pickR({ a: 1 }, p); 0 };');
 });
 
-test('both parts unknown: the predicate waits (P5) at its use', () => {
+test('both parts unknown: the predicate waits (P6) at its use', () => {
   waitsAt(`${pickR}fn main(): Int = { let f = fn(p, q) => pickR(p, q); 0 };`,
     'pickR(p, q)', 1);
 });
@@ -198,4 +198,42 @@ test('a record of two tails in a handler\'s row is desugared', () => {
     + 'fn main(): Int = f(mk(), { a: 1 }, { b: 2 });', '{ b: 2 }');
   waitsAt(`${effects}fn g(h: Handler(Log with State({ ...r, ...t }))): Int `
     + `= 0; ${mk('{ a: Int }')}fn main(): Int = g(mk());`, 'g(mk())');
+});
+
+// B4: the end of a body classifies what waits (plan §4.5's shapes with
+// `pickR` for `merge`). S1, program 11 and `same` are Unresolved, P6 at
+// the first use (`same` has no solution, which Unresolved does not
+// claim either way); their annotations decide them. `diag-14`'s shape is
+// H's refusal, P2 at the use; `diag-14-fix`'s is Unresolved (O5).
+const firstUse = 2;
+const apply = 'fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): '
+  + 'Int = 0; ';
+const noX = lacked => 'fn noX(p: { ...u }, q: { ...v }): Int where '
+  + `${lacked} = 0; `;
+
+test('S1, program 11 and same are Unresolved; annotated, accepted', () => {
+  const apply0 = 'fn apply0(f: (a, b) -> c, g: (d, e) -> c): Int = 0; ';
+  const both = 'fn both(f: (p, q) -> { x: Int }, g: (p, w) -> { y: Int }): '
+    + 'Int = 0; ';
+  const same2 = 'fn same2(f: (p, q) -> { x: Int }, g: (p, q) -> '
+    + '{ y: Int }): Int = 0; ';
+  const lambda = 'fn(p: {}, q) => pickR(p, q)';
+  waitsAt(`${pickR}${apply0}fn main(): Int = apply0(pickR, pickR);`,
+    'pickR', firstUse);
+  checks(`${pickR}${apply0}fn main(): Int = apply0(${lambda}, ${lambda});`);
+  waitsAt(`${pickR}${both}fn main(): Int = both(pickR, pickR);`, 'pickR',
+    firstUse);
+  checks(`${pickR}${both}fn main(): Int = both(${lambda}, pickR);`);
+  waitsAt(`${pickR}${same2}fn main(): Int = same2(pickR, pickR);`, 'pickR',
+    firstUse);
+});
+
+test('diag-14\'s shape is H\'s refusal; diag-14-fix\'s is Unresolved', () => {
+  causedAt(`${pickR}${apply}${noX('u lacks { x }, v lacks { x }')}`
+    + 'fn main(): Int = apply(pickR, noX);', 'pickR', firstUse);
+  const fix = noX('u lacks { y }, v lacks { x }');
+  waitsAt(`${pickR}${apply}${fix}fn main(): Int = apply(pickR, noX);`,
+    'pickR', firstUse);
+  checks(`${pickR}${apply}${fix}fn main(): Int = `
+    + 'apply(fn(p: { x: Int }, q) => pickR(p, q), noX);');
 });

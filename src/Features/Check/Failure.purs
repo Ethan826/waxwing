@@ -20,11 +20,9 @@ import Domain.Type.Parts (typeHead)
 import Features.Check.Context (CheckEnv, Infer, Locals)
 import Features.Check.Consume (consumeAt)
 import Features.Check.Provenance (Consumed(FailOf))
-import Features.Check.Placeholder (placeholderAt)
 import Features.Check.Reject (rejected)
 import Features.Check.Require (require)
-import Features.Check.RowMerge.End (stillWaiting, waitingSite)
-import Features.Check.RowMerge.Predicate (anyWaiting)
+import Features.Check.EndReport (endReport)
 import Features.Check.Scheme (State, Threaded, opened, resolved)
 import Features.Check.TypeName (typeNames)
 import Features.Check.Unify (Failure(..), Flex, Subst(..), settleRows)
@@ -94,16 +92,14 @@ settleFinal env state body = settleKeys env state body >>= leftover
     if Array.null bindings.postponed then Right settled
     else Left (familyUnknown settled (failureSpan body))
 
--- A Fail payload whose family no key decides. R005 Tranche B B3 (plan
--- F-7): a `Merge` predicate still waiting is reported before the family
--- it may leave unknown, placeholder P5 at its site until B4 classifies
--- it.
+-- A Fail payload whose family no key decides. R005 Tranche B (plan F-7):
+-- a `Merge` predicate still waiting is reported before the family it may
+-- leave unknown, as the end of a body reports it (B4).
 familyUnknown ∷ Subst → Span → Diagnostic
-familyUnknown subst span
-  | anyWaiting subst = placeholderAt
-      (maybe' (const span) identity (waitingSite subst))
-      stillWaiting
-  | otherwise = problemAt FailNeedsConcrete span
+familyUnknown subst span = either identity (const concrete)
+  (endReport span subst)
+  where
+  concrete = problemAt FailNeedsConcrete span
 
 failureSpan ∷ Checked.Expr → Span
 failureSpan body = maybe' noFailure identity (firstFail body)

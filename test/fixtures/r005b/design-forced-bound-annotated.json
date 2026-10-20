@@ -1,0 +1,47 @@
+{
+  "name": "design-forced-bound-annotated",
+  "from": "design-forced-bound with the annotation of plan §5 (decision 2)",
+  "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn both(f: (p, q) -> { x: Int }, g: (p, w) -> { y: Int }): Int = 0;\nfn main(): Int = both(fn(p: {}, q) => merge(p, q), merge);\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {"solver":5,"check":7,"text":null,"run":8},
+  "rows": {
+    "hyp": {"lacks":{},"apart":[]},
+    "steps": [
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m1"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0","m1"]},
+        "r": {"fields":["x"],"tails":[]}
+      },
+      {
+        "k": "dis",
+        "l": {"fields":[],"tails":["m2"]},
+        "r": {"fields":[],"tails":["m3"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":["m2"]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m2","m3"]},
+        "r": {"fields":["y"],"tails":[]}
+      },
+      {
+        "k": "eq",
+        "l": {"fields":[],"tails":["m0"]},
+        "r": {"fields":[],"tails":[]}
+      }
+    ],
+    "orders": "all"
+  },
+  "remark": "The smallest annotation (node qt-adopted.mjs examples: m0 = {}); it excludes none of the solutions."
+}

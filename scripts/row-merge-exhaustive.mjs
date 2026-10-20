@@ -2,7 +2,7 @@
 // test/row-merge-domains.mjs) through the compiler's row solver, every
 // problem in every order, judged against the independent oracle as
 // test/row-merge-domains.test.mjs judges its sample (S, H, L, C2,
-// property E, the measure bounds, no occurs on a tail; placeholders
+// property E, the measure bounds, no occurs on a tail; Unresolved runs
 // counted by order). Not part of verify: domain A is about 19 million
 // runs. Needs a built output/. Exit 1 on any defect.
 // Usage: node scripts/row-merge-exhaustive.mjs [A|B] [workers]
@@ -15,9 +15,10 @@ import { DEFECTS, judge, newTally } from '../test/row-merge-judge.mjs';
 const add = (into, tally) => {
   for (const [key, value] of Object.entries(tally)) {
     if (key === 'examples') into.examples.push(...value);
-    else if (key === 'skippedByOrder') {
+    else if (key === 'unresolvedByOrder') {
       for (const [order, n] of Object.entries(value)) {
-        into.skippedByOrder[order] = (into.skippedByOrder[order] ?? 0) + n;
+        into.unresolvedByOrder[order] = (into.unresolvedByOrder[order] ?? 0)
+          + n;
       }
     } else into[key] += value;
   }

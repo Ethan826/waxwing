@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { classify } from './row-merge-entry.mjs';
+import { classify, classifyEnd } from './row-merge-entry.mjs';
 import { run as reference } from '../research/row-merge-typed/tr-cases.mjs';
 import { canonical, least, namesOf, solutions, typing }
   from '../research/row-merge-typed/tr-oracle.mjs';
@@ -15,8 +15,9 @@ import { assocProblems, nestedProblems }
 // `Bool`, a type unknown, or a record whose row may have unknown tails;
 // and three typed arguments merged in both groupings) go through the
 // compiler's entry, rows made at every depth, and each run is judged:
-//   reference  the research solver with Sym and without H (B4 adds H):
-//              accept, refuse and D4 against accept, refuse and P5;
+//   reference  the research solver with Sym and H (B4; no rigid tail
+//              here, so 2g cannot fire): accept, refuse and D4 against
+//              accept, refuse and Unresolved;
 //   H          a refusal has no solution (the typed oracle);
 //   S/L        an accepted run's label sets are the least solution's;
 //   G          its types are that solution's most general typing, up to
@@ -44,19 +45,23 @@ const tyOf = t => {
 const rowOf = r => entry.typedRow(r.fields.map(([k, t]) =>
   Tuple.create(k)(tyOf(t))))(r.tails.map(metaOf));
 
-// One order through the compiler: 'accept', 'refuse' or 'skipped'.
+// One order through the compiler: 'accept', 'refuse', 'unresolved' or
+// 'skipped' (a placeholder; none is expected since B4).
 const compiled = steps => {
   let subst = entry.hypotheses([])([]);
   for (const c of steps) {
     const step = c.k === 'eq' ? entry.equate : entry.separate;
-    const found = classify(entry.outcome(step(subst)(rowOf(c.l))(
+    const found = classify(entry.stepped(step(subst)(rowOf(c.l))(
       rowOf(c.r))));
     if ('skipped' in found) return { v: 'skipped' };
     if ('refuse' in found) return { v: 'refuse' };
     subst = found.subst;
   }
-  const end = classify(entry.finish(subst));
-  return 'skipped' in end ? { v: 'skipped' } : { v: 'accept', subst };
+  const end = classifyEnd(entry.finish(subst));
+  if ('skipped' in end) return { v: 'skipped' };
+  if ('refuse' in end) return { v: 'refuse' };
+  if ('unresolved' in end) return { v: 'unresolved' };
+  return { v: 'accept', subst: end.subst };
 };
 
 // The state's answer in the oracle's terms, followed by this test.
@@ -90,7 +95,8 @@ const answer = (subst, names) => {
   };
 };
 
-const fromReference = { accept: 'accept', refuse: 'refuse', D4: 'skipped' };
+const fromReference = { accept: 'accept', refuse: 'refuse',
+  D4: 'unresolved' };
 const bump = (t, k) => { t[k] = (t[k] ?? 0) + 1; };
 
 function judge(t, meaning, programs) {
@@ -101,7 +107,8 @@ function judge(t, meaning, programs) {
     for (const order of orders) {
       const found = compiled(order);
       bump(t, found.v);
-      if (fromReference[reference(order, { sym: true }).v] !== found.v) {
+      if (fromReference[reference(order, { sym: true, hEnd: true }).v]
+        !== found.v) {
         bump(t, 'referenceDiff');
       }
       if (found.v === 'refuse' && sols.length) bump(t, 'H-violated');
@@ -147,7 +154,8 @@ for (const seed of [1, 2]) {
     }
     t.diagnostic(JSON.stringify(tally));
     assert.deepEqual(defects(tally), []);
-    assert.ok(tally['G-checked'] > 0 && tally.refuse > 0 && tally.skipped > 0);
+    assert.ok(tally['G-checked'] > 0 && tally.refuse > 0
+      && tally.unresolved > 0 && !tally.skipped);
   });
 }
 

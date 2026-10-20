@@ -60,6 +60,6 @@ for (const name of ['A', 'B']) {
       const { examples, ...counts } = tally;
       t.diagnostic(JSON.stringify(counts));
       assert.deepEqual(defects(tally), []);
-      assert.ok(tally.stateChecked > 0 && tally.skipped > 0);
+      assert.ok(tally.stateChecked > 0 && tally.unresolved > 0);
     });
 }

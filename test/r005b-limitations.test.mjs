@@ -13,15 +13,15 @@ import { checkedPoly, checkRejectedAt } from './phases.mjs';
 // agrees on these probes. O4 is kept as an accepted limitation: nothing
 // written at the call names its row arguments, and only the `lacks`
 // clause decides the split.
-const P5 = 'R005B placeholder: merge predicates still waiting at the end of '
-  + 'a body are classified in Task B4';
+const P6 = 'R005B placeholder: unresolved merge predicates are reported in '
+  + 'Task B5';
 const main = ' fn main(): Int = 0;';
 const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 const both = 'fn both(x: { ...u }, k: ({ ...u }) -> { ...u, ...v }): '
   + '{ ...u, ...v } where u disjoint v = k(x); ';
 const waits = (source, text, nth = 0) => assert.equal(
-  checkRejectedAt(source, 'E_INTERNAL', text, nth).message, P5);
+  checkRejectedAt(source, 'E_INTERNAL', text, nth).message, P6);
 
 test('a recursive self-call whose result names a free variable (2g)', () => {
   checkedPoly(`fn both(x: { ...u }): { ...u, ...v } = both(x);${main}`);

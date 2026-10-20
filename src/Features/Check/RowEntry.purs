@@ -10,6 +10,8 @@ module Features.Check.RowEntry
   , changes
   , solverMetas
   , finish
+  , finishWith
+  , finishWithoutH
   , merges
   , lineages
   , causes
@@ -39,9 +41,15 @@ import Features.Check.Lacks (addLacks)
 import Features.Check.RecordTail (solvingWith)
 import Features.Check.Refused (Solving)
 import Features.Check.RowMerge.Desugar (desugaredRow)
-import Features.Check.RowMerge.End (endOfBody)
+import Features.Check.RowMerge.End (Judge, endOfBody, homeless, withoutH)
 import Features.Check.RowMerge.Predicate (waiting)
-import Features.Check.RowOutcome (RowOutcome(..), Stop, outcome)
+import Features.Check.RowOutcome
+  ( RowOutcome(..)
+  , Stop(..)
+  , concluded
+  , settledSubst
+  , stepped
+  )
 import Features.Check.RowStore
   ( Because(..)
   , RowStore(..)
@@ -50,7 +58,7 @@ import Features.Check.RowStore
   , plain
   )
 import Features.Check.Subst (Flex, Subst(..), empty, storeOf)
-import Features.Check.Unify (reexamine, unify)
+import Features.Check.Unify (reexamine, unify, unifyPlain)
 import Features.Check.UnifyFailure (Failure)
 import Features.Check.UnifyParts (mismatch)
 
@@ -105,9 +113,16 @@ lacking subst tail label =
   where
   one = row [] [ tail ]
 
--- The end of the body (Features.Check.RowMerge.End), classified.
+-- The end of the body (Features.Check.RowMerge.End), classified, with H;
+-- `finishWith` takes the judge (`withoutH` for H off, plan §4.2).
 finish ∷ Subst → Either Stop RowOutcome
-finish subst = outcome (endOfBody subst)
+finish = finishWith homeless
+
+finishWith ∷ Judge → Subst → Either Stop RowOutcome
+finishWith judge subst = concluded (endOfBody unifyPlain judge subst)
+
+finishWithoutH ∷ Subst → Either Stop RowOutcome
+finishWithoutH = finishWith withoutH
 
 -- The waiting predicates, their rows as stored (not followed).
 merges

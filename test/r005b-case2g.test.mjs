@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checkedPoly, checkRejectedAt } from './phases.mjs';
-import { run, stateOf } from './row-merge-entry.mjs';
+import { byH, finishWithoutH, run, stateOf } from './row-merge-entry.mjs';
 import { allOrders } from './row-merge-gen.mjs';
 
 // R005 Tranche B, case 2g (user, 2026-10-19, plan §10 decision 17): case
@@ -51,17 +51,21 @@ test('labels beside the rigid tails are taken by name', () => {
   assert.deepEqual(bound(found, 'm0'), row(['b'], ['S']));
 });
 
-test('a rigid tail the result lacks leaves the predicate waiting', () => {
+// No 2g: the predicate waits to the end of the body, where H (B4) finds
+// S with no home (the result has no unknown) and refuses; m0 was never
+// bound.
+test('a rigid tail the result lacks: no 2g, H refuses at the end', () => {
   const found = run(apart, [eq(row([], ['m1']), row([], ['S'])),
     eq(row([], ['m0', 'm1']), row([], ['R']))]);
-  assert.equal(found.v, 'skipped');
+  assert.equal(found.v, 'refuse');
+  assert.ok(found.atEnd && byH(found.failure));
   assert.equal(bound(found, 'm0'), undefined);
 });
 
-test('an unknown tail in the result leaves it waiting', () => {
+test('an unknown tail in the result leaves it Unresolved', () => {
   const found = run(apart, [eq(row([], ['m1']), row([], ['S'])),
     eq(row([], ['m0', 'm1']), row([], ['S', 'm2']))]);
-  assert.equal(found.v, 'skipped');
+  assert.equal(found.v, 'unresolved');
   assert.equal(bound(found, 'm0'), undefined);
 });
 
@@ -78,7 +82,8 @@ test('a label the result lacks: no 2g, the mirror\'s case 3 refuses',
 // mirror meets 2g's preconditions; R is missing from `{c}`. Waiting there
 // kept case 3 from moving `a` into `{c}`, so some orders waited where
 // every order refused before 2g. It has no solution; it refuses in every
-// order.
+// order, and with H off too (B4: H would refuse it at the end anyway,
+// which must not hide that case 3 is kept from it).
 test('a missing atom never keeps case 3 from a refusal, in any order', () => {
   const hyp = { lacks: { R: ['a', 'b', 'c'] }, apart: [] };
   const steps = [eq(row([], ['m2']), row([], ['R'])),
@@ -88,6 +93,8 @@ test('a missing atom never keeps case 3 from a refusal, in any order', () => {
     eq(row([], ['m0', 'm1']), row(['c']))];
   for (const order of allOrders(steps)) {
     assert.equal(run(hyp, order).v, 'refuse', JSON.stringify(order));
+    const off = run(hyp, order, finishWithoutH);
+    assert.ok(off.v === 'refuse' && !off.atEnd, JSON.stringify(order));
   }
 });
 
