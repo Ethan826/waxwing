@@ -64,3 +64,7 @@
 'Composition.Syntax.p6Sig_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Syntax.depSig_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Syntax.depSig_needs_dependence' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.splitSig_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.wholeRest_fails' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.recSig_not_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Syntax.recSig_hard_instance_solvable' depends on axioms: [propext, Classical.choice, Quot.sound]

@@ -777,8 +777,10 @@ facts about rests matter, and the procedure keeps each:
 2. The rests of two rigid rows may overlap, unless `D` declares them
    disjoint (`unnamed_labels_matter`). A composition containing both
    is defined for every instance only under that declaration.
-3. Different rigid rows' rests are not equal unless the rows are the
-   same variable.
+3. Different rigid rows' rests may be equal (both empty, for instance)
+   and may differ; nothing guarantees either. (The first text said they
+   are not equal; corrected after review, §13.7.) Distinct constants in
+   a procedure must not stand for "their instances differ".
 
 R1 does not transfer: it restricts existential solutions, and a rigid
 row is universal. The restriction it licenses for flexible rows is
@@ -826,7 +828,8 @@ Input: a scoped signature problem whose `D` consists of `lacks` and
   homomorphism that commutes with evaluation); compositions containing
   two rests stay defined because their rows are declared disjoint.
   Unresolved.
-- **S2, completeness**: if the signature is valid, P9 answers valid.
+- **S2, completeness** (refuted for P9 as written, §13.7): if the
+  signature is valid, P9 answers valid.
   Argument to formalize: for each pattern, choose a generic instance
   `θ*`: rigid type constants as pairwise distinct ground values that
   nothing in `B` can denote (records over fresh labels, needing
@@ -844,9 +847,10 @@ Input: a scoped signature problem whose `D` consists of `lacks` and
 - **S4, dependence**: within one pattern a single generic solution
   serves every instance (part of S1); across patterns the solutions may
   differ, as `depSig_valid` and `depSig_needs_dependence` require.
-- **S5, evidence**: a failing pattern's `θ*` is a concrete rigid
-  assignment satisfying `D`, and step 3's refutation transfers to it
-  (part of S2), so the evidence meets C10 (`c10`, proved).
+- **S5, evidence** (construction inadequate, §13.7): a failing pattern's
+  `θ*` is a concrete rigid assignment satisfying `D`, and step 3's
+  refutation transfers to it (part of S2), so the evidence meets C10
+  (`c10`, proved).
 
 ### 13.6 What remains outside
 
@@ -857,3 +861,71 @@ Input: a scoped signature problem whose `D` consists of `lacks` and
 - Complexity: exponential in the rigid rows times the written labels,
   then in step 3's own patterns; a worst-case fact, not a reason to
   refuse (§4.8).
+
+### 13.7 Review: P9's completeness refuted; restrictions and challenges
+
+The author's review (2026-10-20) found two counterexamples. Both are
+checked independently in the semantic model
+(research/composition-proofs/Composition/Sig/Adversarial.lean):
+
+- **Divided rests** (`splitSig_valid`, `wholeRest_fails`). `∀ r s t. s
+  disjoint t ⇒ ∃ u v. r = u ⊎ v ∧ u disjoint s ∧ v disjoint t` is
+  valid: `u` takes `r`'s fields at labels `s` lacks, `v` the rest. No
+  label is written, and `r = u ⊎ v` confines `u` and `v` to `r`, so
+  P9's whole-rest placement allows only `u = r` or `u` empty; each
+  fails for some permitted assignment. **S2 is refuted for P9 as
+  written.**
+- **Fresh records are not opaque** (`recSig_not_valid`,
+  `recSig_hard_instance_solvable`). `∀ α. ∃ r. α = { ...r }` is invalid
+  (α may be a function type), but at S2's proposed hard instance, α a
+  record over a fresh label, the body has a solution: a row variable
+  absorbs the record whole. Fresh labels prevent naming fields; they do
+  not make a value uninspectable. **S5's hard-instance construction is
+  inadequate.**
+
+Following the author's process direction (docs/engineering.md,
+"Adversarial review of proposed procedures"), every restriction P9's
+representation adds beyond the semantics, and a challenge to each:
+
+| Restriction | Believed harmless because | Challenge | Status |
+|---|---|---|---|
+| a rest is placed in a flexible row wholly or not at all | no atom names an unwritten label | `splitSig`: a valid signature divides `r`'s rest by membership in `s` | refuted (completeness) |
+| one generic solution per written-label pattern | instances agree on written labels | the same: the solution depends on unwritten labels' membership in other rigid rows | refuted as stated |
+| rigid type constants stand for arbitrary types; a fresh record realizes one | fresh labels cannot be named | `recSig`: a row variable absorbs any record; an arrow is matched by `∃ x y. α = x → y`; a base type by `α = Int` | refuted: no single ground value is opaque in `G` |
+| distinct rest constants | rows are different variables | instances may make rests equal or overlapping; a success relying on distinctness is unsound | soundness obligation (below) |
+| a composition holding two rests needs a declared `disjoint` | undeclared rests may overlap | soundness pass: `∀ r s. ∃ u v. u = r ∧ v = s ∧ u disjoint v`, no clause, is invalid; a side condition on compositions alone would accept it, since `u` and `v` hold distinct rests | side condition must cover every requirement that two rests be disjoint: compositions, `disjoint` atoms, and records holding both |
+
+**Revised standing.**
+
+- **P9 becomes a candidate sound, incomplete checker (P9s).** Failure
+  to find a whole-rest solution means Unresolved, not Contradiction,
+  unless independent counter-instance evidence is found (C10: an
+  instance satisfying `D` and a refutation of the body at it). Its
+  soundness claim **S1** stands, restated: the disjointness side
+  condition covers every requirement that two rests be disjoint.
+  Unresolved; it must survive a soundness adversarial pass before any
+  proof.
+- **S2 refuted for P9; S5's construction inadequate.** Counter-instances
+  must be found per failure; no uniform hard instance exists in this
+  model.
+- **For completeness, a finer representation (statement only).**
+  Partition the unwritten labels by their membership in the rigid rows
+  (the Venn regions of the rigid rows' domains). A declared `r disjoint
+  s` empties every region in both; each region is present in each of
+  its rows at that row's own field types, so the opaque parts are
+  (region, row) pairs. `splitSig`'s `u` is the regions in `r` but not
+  `s`, its `v` those in `r` and `s`. Conjecture **CR**: no constraint
+  in this language distinguishes two unwritten labels of the same
+  region, so region granularity suffices. Unresolved; a lead, not read:
+  Kuncak, Nguyen and Rinard, Deciding Boolean Algebra with Presburger
+  Arithmetic (JAR 2006), which decides set constraints through Venn
+  regions. Before any proof, CR gets its own restrictions table and the
+  bounded oracle below.
+- **Bounded ∀∃ oracle (proposed, not built).** Enumerate small
+  signature problems, evaluate validity over rigid assignments drawn
+  from the written labels plus two unwritten ones and a small type
+  universe, and compare with P9s's answers (it must never say valid
+  when the bounded evaluation says invalid) and with the region
+  representation's. The concrete-row oracle of §8 could not expose this
+  gap. Bounded evidence still.
+- C9's decidability is not refuted; only this procedure's completeness.
