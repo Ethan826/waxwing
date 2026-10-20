@@ -4,17 +4,15 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (maybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Syntax as Syntax
 import Features.Resolve.Entry (entryPoint)
 import Features.Resolve.Expression (expression)
 import Features.Resolve.Fresh (runFresh)
-import Features.Resolve.Types (resolveTypeWith, typeTable)
-import Features.Resolve.Marks (signatureMarkVariables)
-import Features.Resolve.Requirements (resolveRequirements)
-import Features.Resolve.Row (resolveRow)
+import Features.Resolve.Types (typeTable)
+import Features.Resolve.Signature (Signature, resolveSignature, writtenSpan)
 import Features.Resolve.Effect as Effect
 import Features.Resolve.Imports as Imports
 import Features.Resolve.ArgumentClash (Tables, programClashes)
@@ -25,20 +23,8 @@ import Features.Resolve.Lacking (signatureLacking)
 import Features.Resolve.Occurrences (Declared, resolvedDeclared)
 import Features.Resolve.TypeIndices (typeIndices)
 import Features.Resolve.Scope (Bindings)
-import Features.Resolve.Variables (sortedVariables)
 import Domain.Resolved (Global)
-import Domain.Type (TyRow)
 import Domain.Resolved as Resolved
-
-type Signature =
-  { variables ∷ Array String
-  , markVariables ∷ Array String
-  , sorts ∷ Array Syntax.Sort
-  , row ∷ TyRow Resolved.VarId
-  , parameters ∷ Array Resolved.Parameter
-  , result ∷ Resolved.Ty Resolved.VarId
-  , constraints ∷ Array Resolved.Requirement
-  }
 
 type Definition =
   { index ∷ Int
@@ -123,64 +109,6 @@ functionGlobal index function =
 ctorGlobal ∷ Int → Resolved.CtorInfo → Global
 ctorGlobal index info =
   { name: info.name, ref: Resolved.GlobalCtor (Resolved.CtorId index) }
-
-resolveSignature
-  ∷ Declared
-  → Tables
-  → Array { name ∷ String, arity ∷ Int }
-  → Syntax.FunctionDecl
-  → Either Syntax.Diagnostic Signature
-resolveSignature declared known effects function = do
-  occurrences ← sortedVariables declared references function.row
-  let written = Array.sortWith sort occurrences
-  let
-    variables = map name written <> [ "" ]
-    sorts = map sort written <> [ Syntax.RowSort ]
-    ambient = Just (Resolved.VarId (Array.length written))
-    resolved = resolveTypeWith known effects variables ambient
-    -- A label's arguments have no ambient row (FX024, Resolve.TypeRef).
-    bare = resolveTypeWith known effects variables Nothing
-  parameters ← traverse (parameter resolved) function.parameters
-  result ← resolved function.result
-  row ← resolveRow effects variables ambient bare function.row
-  constraints ← resolveRequirements { variables, sorts } function.constraints
-  pure
-    { variables
-    , markVariables
-    , sorts
-    , parameters
-    , result
-    , row
-    , constraints
-    }
-  where
-  markVariables = signatureMarkVariables
-    (Array.snoc (map parameterType function.parameters) function.result)
-    function.row
-  references = Array.snoc (map parameterType function.parameters)
-    function.result
-  parameterType entry = entry.ty
-  name variable = variable.name
-  sort variable = variable.sort
-  parameter resolved declaration = withType declaration <$> resolved
-    declaration.ty
-  withType declaration ty =
-    { name: declaration.name
-    , ty
-    , span: declaration.span
-    , rowSpan: annotationSpan declaration.ty
-    }
-
-writtenSpan ∷ Maybe Syntax.RowRef → Maybe Syntax.Span
-writtenSpan = map rowSpan
-  where
-  rowSpan (Syntax.RowRef span _ _) = span
-
--- The span of a parameter's written `with` row, if it is an arrow's.
-annotationSpan ∷ Syntax.TypeRef → Maybe Syntax.Span
-annotationSpan = case _ of
-  Syntax.FunRef _ _ (Just (Syntax.RowRef span _ _)) _ → Just span
-  _ → Nothing
 
 resolveFunction
   ∷ Array Global
