@@ -7567,3 +7567,14 @@ assessment.md.
   the proof plan with its known obstacles.
 - Awaiting the author's review of the reduction statements before any
   proof. No compiler change; verify not run (docs, research, proofs).
+- Reduction statements revised after the author's review (directional
+  evaluation lemma; freshness only for the finite pairs used, with an
+  explicit allocation; R2 by the pointwise correspondence, preserving
+  existence across patterns, not one pattern's solutions; `DecidableEq
+  B` for R3), then proved: R1, R2, R2′, R2Enum (2^|pairs| patterns
+  cover all), `freshAlloc_fresh`. Clean build, no `sorry`. Mutant: one
+  shared fresh variable per label fails `r2_forward`.
+- R3 proposed in dossier §11 (Robinson/Martelli-Montanari unification
+  on closed problems; lexicographic measure; U1 soundness, U2
+  completeness, U3 termination; call-site decider over patterns), not
+  implemented. Awaiting the author's review.

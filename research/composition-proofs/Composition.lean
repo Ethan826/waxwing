@@ -9,3 +9,10 @@ import Composition.Evaluate
 import Composition.Correspond
 import Composition.Binding
 import Composition.Reduction
+import Composition.Restrict
+import Composition.R1
+import Composition.Closed
+import Composition.Pattern
+import Composition.Closedness
+import Composition.R2
+import Composition.Enum

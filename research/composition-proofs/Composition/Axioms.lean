@@ -3,7 +3,7 @@ Axiom dependencies of every headline theorem. Run:
 `lake env lean Composition/Axioms.lean`; the output is in axioms.out.
 -/
 import Composition.Programs
-import Composition.Reduction
+import Composition.Enum
 
 open Composition Composition.Programs Composition.Syntax
 
@@ -48,3 +48,13 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms subst_sat
 #print axioms binding_correspondence
 #print axioms bindings_needed
+#print axioms evalT_restrict
+#print axioms r1
+#print axioms sat_congr
+#print axioms evalF_patternFields
+#print axioms r2Closed
+#print axioms r2_forward
+#print axioms r2_backward
+#print axioms r2
+#print axioms r2Enum
+#print axioms freshAlloc_fresh
