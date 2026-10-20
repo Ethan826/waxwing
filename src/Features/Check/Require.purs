@@ -99,7 +99,7 @@ expectType env state expected actual span = do
     Refused refusal → Left (refusedAt env state.subst span refusal)
     Placeholder what → Left (placeholderAt span what)
     Unexpected what → Left (problemAt (Internal what) span)
-    FromMerge cause inner → mergedAt env state.subst span cause inner
+    FromMerge cause inner → mergedAt env state.subst span cause inner failed
     Exhausted what → Left (problemAt (Internal what) span)
     -- Made only inside `FromMerge`, at the end of a body (B4).
     Homeless _ → Left

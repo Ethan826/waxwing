@@ -13,15 +13,13 @@ import { checkedPoly, checkRejectedAt } from './phases.mjs';
 // agrees on these probes. O4 is kept as an accepted limitation: nothing
 // written at the call names its row arguments, and only the `lacks`
 // clause decides the split.
-const P6 = 'R005B placeholder: unresolved merge predicates are reported in '
-  + 'Task B5';
 const main = ' fn main(): Int = 0;';
 const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 const both = 'fn both(x: { ...u }, k: ({ ...u }) -> { ...u, ...v }): '
   + '{ ...u, ...v } where u disjoint v = k(x); ';
-const waits = (source, text, nth = 0) => assert.equal(
-  checkRejectedAt(source, 'E_INTERNAL', text, nth).message, P6);
+const waits = (source, text, nth, message) => assert.equal(
+  checkRejectedAt(source, 'E_TYPE', text, nth).message, message);
 
 test('a recursive self-call whose result names a free variable (2g)', () => {
   checkedPoly(`fn both(x: { ...u }): { ...u, ...v } = both(x);${main}`);
@@ -46,8 +44,12 @@ test('control: both parts given, the wrapper is solved (1g)', () => {
     + `where a disjoint b = pickR(x, y);${main}`);
 });
 
+// B5 (plan §10 decisions 20, 21): D4 at the argument (T6), explaining
+// that no annotation can decide the call's own rows.
 test('O4, kept: a split only a lacks clause decides waits at the call', () => {
   waits('fn granted2(p: { ...r, ...s }): Bool where s lacks { admin } = '
     + 'true; fn main(): Int = { let b = granted2({ admin: false }); 0 };',
-  'granted2({ admin: false })');
+  '{ admin: false }', 0, 'Cannot tell how granted2\'s r and s split '
+    + '{ admin: Bool }; no annotation can decide r and s, which belong to '
+    + 'this call of granted2');
 });

@@ -9,6 +9,7 @@ import Domain.Syntax (Span)
 import Features.Check.Atom (Atom)
 import Features.Check.Because (Because, Pair, WrittenLack)
 import Features.Check.Flex (Flex)
+import Features.Check.Subst (Subst)
 
 -- Types and rows are resolved under the substitution reached at the
 -- failure: a mismatch names the first pair of subterms that differ, left
@@ -58,7 +59,10 @@ data Failure
   | Exhausted String
   | Homeless Atom
 
-type Cause = { predicate ∷ Int, at ∷ Maybe Span }
+-- `within`: the substitution the predicate failed in, which the caller's
+-- state, taken before the failing step, does not hold (diagnostic data
+-- for D6's part at fault; no rule reads it).
+type Cause = { predicate ∷ Int, at ∷ Maybe Span, within ∷ Maybe Subst }
 
 -- A fact of the row store broken, with its reason. `Forbidden` (R005):
 -- a label bound into a record tail that a written `lacks` forbids it.

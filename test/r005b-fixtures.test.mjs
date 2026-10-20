@@ -8,15 +8,13 @@ import { assertDiagnostic, checkWired, fixtures, wired }
 // docs/plans/2026-10-17-open-row-merge-plan.md, "Executable example
 // fixtures") through the compiler, at the stages its `stages` field
 // names. From `check` the result class and code; from `text` the exact
-// message, primary span and notes (between the two, the placeholder's
-// E_INTERNAL; for an Unresolved fixture, since B4, exactly placeholder
-// P6); from `run`, the output through Go. A fixture before its stage is
-// skipped by that field only, never because it fails. `task` is the
-// plan's task this tree has reached, in the 2026-10-17 plan's numbering
-// that `stages` uses: R005 Tranche B's B5 is its Task 6.
+// message, primary span and notes (between the two, a placeholder's
+// E_INTERNAL; B5 removed P6, so an Unresolved fixture reaches its text
+// with its check); from `run`, the output through Go. A fixture before
+// its stage is skipped by that field only, never because it fails. `task`
+// is the plan's task this tree has reached, in the 2026-10-17 plan's
+// numbering that `stages` uses: R005 Tranche B's B5 is its Task 6.
 const task = 6;
-const P6 = 'R005B placeholder: unresolved merge predicates are reported in '
-  + 'Task B5';
 const reached = stage => stage !== null && stage <= task;
 
 const checkStage = fixture => {
@@ -30,7 +28,6 @@ const checkStage = fixture => {
     assert.notEqual(found, null, 'accepted');
     assert.equal(found.code, 'E_INTERNAL', found.message);
     assert.ok(found.message.startsWith('R005B placeholder: '), found.message);
-    if (fixture.result === 'Unresolved') assert.equal(found.message, P6);
   }
 };
 

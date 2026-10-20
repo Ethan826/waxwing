@@ -25,7 +25,8 @@ import Features.Check.Scheme (Scheme, State, Threaded, at, instantiate)
 -- so a direct call never builds the curried arrow (plan, linear cost).
 -- `consumed` names what a saturated use consumes (design §6); `callee`
 -- is the named function it instantiates, for the notes of an argument's
--- rejection: its parameters' spans, and its declaration.
+-- rejection: its parameters' spans, and its declaration. `written`: its
+-- written parameter types (R005 Tranche B diagnostics R8), if any.
 type Use =
   { fields ∷ Array (Ty Open)
   , result ∷ Ty Open
@@ -34,6 +35,7 @@ type Use =
   , rows ∷ Array (TyRow Open)
   , consumed ∷ Consumed
   , callee ∷ Maybe Callee
+  , written ∷ Array Syntax.TypeRef
   }
 
 type Callee =
@@ -65,6 +67,7 @@ declarationUse state variables markNames sorts fields result row =
       , rows: staged.value
       , consumed: Application Nothing
       , callee: Nothing
+      , written: []
       }
   , state: staged.state
   }

@@ -109,6 +109,9 @@ type FunctionDecl =
   , introduced ∷ Map String Span
   -- The pairs of record row variables its types write into one record.
   , joined ∷ Array Joined
+  -- The written parameter types, then the result's: R005 Tranche B's
+  -- D4 notes point into them (diagnostics R8).
+  , syntax ∷ Array Syntax.TypeRef
   }
 
 type Program =

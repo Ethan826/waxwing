@@ -2,16 +2,14 @@ module Features.Check.Infer (Env, infer) where
 
 import Prelude
 import Data.Either (Either(..))
-import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe, maybe')
+import Data.Maybe (maybe')
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved (Ty(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Operator, Span, problemAt)
-import Domain.Type (TyRow)
 import Features.Check.Show (showCall, showRef)
 import Features.Check.Operation
   ( operationCall
@@ -28,7 +26,7 @@ import Features.Check.Handle as Handle
 import Features.Check.Handler as Handler
 import Features.Check.Failure as Failure
 import Features.Check.Call (checkCall, checkConstruct)
-import Features.Check.Context (Locals)
+import Features.Check.Context (CheckEnv, Locals)
 import Features.Check.Lambda (checkLambda)
 import Features.Check.Pipe (checkPipe)
 import Features.Check.Record (checkAccess, checkLiteral, checkUpdate)
@@ -38,23 +36,8 @@ import Features.Check.Use (checkCtorRef, checkFunctionRef)
 import Features.Check.Require (bounded, require)
 import Features.Check.Scheme (State, Threaded, threadAll)
 import Features.Check.Sync (sync)
-import Features.Check.Site (Site)
 
-type Env =
-  { current ∷ TyRow Open
-  , sites ∷ Array Site
-  , functionName ∷ String
-  , functionSpan ∷ Span
-  , rowSpan ∷ Maybe Span
-  , effects ∷ Array Resolved.EffectInfo
-  , functions ∷ Array Resolved.FunctionDecl
-  , types ∷ Array Resolved.TypeInfo
-  , ctors ∷ Array Resolved.CtorInfo
-  , variables ∷ Array String
-  , markVariables ∷ Array String
-  , locals ∷ Locals
-  , introduced ∷ Map String Span
-  }
+type Env = CheckEnv (locals ∷ Locals)
 
 type Inferred = Either Diagnostic (Threaded Checked.Expr)
 

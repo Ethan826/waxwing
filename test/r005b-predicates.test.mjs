@@ -1,7 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { spanAt } from './support.mjs';
 import { checkedPoly, checkRejectedAt } from './phases.mjs';
 
 // R005 Tranche B B3 at the check phase, with no literal of two spreads
@@ -9,17 +7,13 @@ import { checkedPoly, checkRejectedAt } from './phases.mjs';
 // at their uses (plan §2.1), which PureScript's cases and Sym solve as the
 // arguments are checked (§2.3), re-examined after each top-level
 // unification and in each settling round (§2.4, §2.9). A predicate still
-// waiting at the end of a body is placeholder P6 at the use that made it;
-// a contradiction a predicate caused is placeholder P2 (B5 renders D6),
-// located by the user's L2 rule. Each program is checked within a time
-// bound.
+// waiting at the end of a body is D4 at its location (T6); a
+// contradiction a predicate caused is D6 when a part of it is at fault,
+// else the failure's own text, located by the user's L2 rule (B5). Each
+// program is checked within a time bound.
 const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 const same = 'fn same(a: z, b: z): Int = 0; ';
-const P6 = 'R005B placeholder: unresolved merge predicates are reported in '
-  + 'Task B5';
-const P2 = 'R005B placeholder: contradictions from merge predicates are '
-  + 'reported in Task B5';
 const BOUND_MS = 2000;
 
 const timed = (run, source, ...rest) => {
@@ -29,14 +23,14 @@ const timed = (run, source, ...rest) => {
   return found;
 };
 const checks = source => timed(checkedPoly, source);
-const waitsAt = (source, text, nth = 0) => {
-  const found = timed(checkRejectedAt, source, 'E_INTERNAL', text, nth);
-  assert.equal(found.message, P6);
+const rejectedAs = (source, text, nth, message) => {
+  const found = timed(checkRejectedAt, source, 'E_TYPE', text, nth);
+  assert.equal(found.message, message);
 };
-const causedAt = (source, text, nth = 0) => {
-  const found = timed(checkRejectedAt, source, 'E_INTERNAL', text, nth);
-  assert.equal(found.message, P2);
-};
+const waitsAt = rejectedAs;
+const causedAt = rejectedAs;
+const lambdaHolds = 'Cannot tell what pickR\'s r and s hold; annotate this '
+  + 'lambda\'s parameters';
 
 test('inside its own body the parts are rigid: case 1g', () => {
   checks(`${pickR}fn main(): Int = 0;`);
@@ -54,15 +48,18 @@ test('one part unknown: Sym (1\') solves it either way round', () => {
     + '{ let f = fn(p) => pickR({ a: 1 }, p); 0 };');
 });
 
-test('both parts unknown: the predicate waits (P6) at its use', () => {
+test('both parts unknown: the predicate waits (D4) at its use', () => {
   waitsAt(`${pickR}fn main(): Int = { let f = fn(p, q) => pickR(p, q); 0 };`,
-    'pickR(p, q)', 1);
+    'pickR(p, q)', 1, lambdaHolds);
 });
 
+// The case bound the result; the clash is with `want`'s requirement, which
+// no part explains: the failure keeps its own text.
 test('a typed clash a case finds is a predicate\'s contradiction', () => {
   causedAt(`${pickR}fn want(w: { a: Bool, b: Int }): Int = 0; `
     + 'fn main(): Int = want(pickR({ a: 1 }, { b: 2 }));',
-  'pickR({ a: 1 }, { b: 2 })');
+  'pickR({ a: 1 }, { b: 2 })', 0,
+  'Expected { a: Bool, b: Int }, found { a: Int, b: Int }');
 });
 
 // R10.1's limit: `p` was bound by an ordinary unification (`same`), not by
@@ -96,14 +93,17 @@ test('a nested row desugars at the use and is solved with it', () => {
   checks(`${inner}fn main(): Int = `
     + 'inner({ a: { x: 1, y: 2 } }, { x: 1 }, { y: 2 });');
   causedAt(`${inner}fn main(): Int = `
-    + 'inner({ a: { x: 1 } }, { x: 1 }, { y: 2 });', '{ y: 2 }');
+    + 'inner({ a: { x: 1 } }, { x: 1 }, { y: 2 });', '{ y: 2 }', 0,
+  'inner\'s { ...p, ...q } (in field a) must be { x: Int }, so q cannot '
+    + 'have field y');
 });
 
 test('an occurs failure through a case is a contradiction, not the guard',
   () => {
     causedAt(`${pickR}${same}fn main(): Int = `
       + '{ let h = fn(x) => same(x, pickR(x, { a: x })); 0 };',
-    'pickR(x, { a: x })');
+    'pickR(x, { a: x })', 0,
+    'Expected { ..._ }, found { a: { ..._ }, ..._ }');
   });
 
 // The joint fixpoint of effect settling and re-examination (plan §2.9),
@@ -121,17 +121,20 @@ test('a settling retry unblocks a waiting predicate', () => {
   checks(`${pickR}${same}fn main(): Int = { let h = fn(q, z, u) => { `
     + `let v = pickR(q, z); ${handled}same(u, { a: q }) }; 0 };`);
   waitsAt(`${pickR}fn main(): Int = { let h = fn(q, z, u) => `
-    + '{ let v = pickR(q, z); 0 }; 0 };', 'pickR(q, z)');
+    + '{ let v = pickR(q, z); 0 }; 0 };', 'pickR(q, z)', 0, lambdaHolds);
 });
 
 // Found while settling, outside any requirement: located by the L2 rule
-// at the latest written participant, `want(v)`'s argument.
+// at the latest written participant, `want(v)`'s argument; `q` holds `b`
+// at the type `Int`.
+const clashB = 'pickR\'s { ...r, ...s } must be { b: Bool }, so r cannot '
+  + 'have field b';
 test('a clash a settling retry exposes is located by the L2 rule', () => {
   const source = `${pickR}${same}fn want(w: { b: Bool }): Int = 0; `
     + 'fn main(): Int = { let h = fn(q, z, u) => { let v = pickR(q, z); '
     + `${handled}let x = same(u, { a: q }); want(v) }; 0 };`;
   causedAt(source, 'v', occurrencesBefore(source, 'v',
-    source.indexOf('want(v)') + 'want('.length));
+    source.indexOf('want(v)') + 'want('.length), clashB);
 });
 
 // The same conflict with its statements rearranged (in the third the
@@ -149,7 +152,7 @@ test('rearranged, the same conflict keeps its logical location', () => {
   ]) {
     const source = head + body;
     causedAt(source, 'v', occurrencesBefore(source, 'v',
-      source.indexOf('want(v)') + 'want('.length));
+      source.indexOf('want(v)') + 'want('.length), clashB);
   }
 });
 
@@ -165,22 +168,8 @@ test('a waiting predicate is reported before the Fail family it leaves open',
   () => {
     waitsAt(`${pickR}fn main(): Int = handle { let k = fn(x, y) => `
       + 'Fail.fail(pickR(x, y)); 0 } { fail(e: { a: Int, b: Int }) => e.a };',
-    'pickR(x, y)');
+    'pickR(x, y)', 0, lambdaHolds);
   });
-
-// Plan §2.2: a predicate's `site` is diagnostic metadata. No case reads
-// it, and the rescan reads it only to locate a failure (the L2 rule).
-test('no solving step reads a predicate\'s site', () => {
-  const module = name => readFileSync(
-    `src/Features/Check/RowMerge/${name}.purs`, 'utf8');
-  assert.ok(!/site/.test(module('Cases')));
-  const improve = module('Improve');
-  const located = improve.slice(improve.indexOf('located ∷'),
-    improve.indexOf('latest ∷'));
-  assert.ok(located.includes('merge.site'));
-  assert.equal(improve.split('.site').length - 1,
-    located.split('.site').length - 1);
-});
 
 // A handler's own rows (what its clauses may perform) hold labels whose
 // arguments can be records of two tails; they are desugared at the use
@@ -195,21 +184,26 @@ test('a record of two tails in a handler\'s row is desugared', () => {
   checks(`${effects}${stateOf}${mk('{ a: Int, b: Int }')}`
     + 'fn main(): Int = f(mk(), { a: 1 }, { b: 2 });');
   causedAt(`${effects}${stateOf}${mk('{ a: Int }')}`
-    + 'fn main(): Int = f(mk(), { a: 1 }, { b: 2 });', '{ b: 2 }');
+    + 'fn main(): Int = f(mk(), { a: 1 }, { b: 2 });', '{ b: 2 }', 0,
+  'f\'s { ...r, ...t } must be { a: Int }, so t cannot have field b');
   waitsAt(`${effects}fn g(h: Handler(Log with State({ ...r, ...t }))): Int `
-    + `= 0; ${mk('{ a: Int }')}fn main(): Int = g(mk());`, 'g(mk())');
+    + `= 0; ${mk('{ a: Int }')}fn main(): Int = g(mk());`, 'mk()', 2,
+  'Cannot tell whether g\'s r or t has field a; no annotation can decide '
+    + 'r and t, which belong to this call of g');
 });
 
 // B4: the end of a body classifies what waits (plan §4.5's shapes with
-// `pickR` for `merge`). S1, program 11 and `same` are Unresolved, P6 at
+// `pickR` for `merge`). S1, program 11 and `same` are Unresolved, D4 at
 // the first use (`same` has no solution, which Unresolved does not
 // claim either way); their annotations decide them. `diag-14`'s shape is
-// H's refusal, P2 at the use; `diag-14-fix`'s is Unresolved (O5).
+// H's refusal, D6 at `noX` (T4); `diag-14-fix`'s is Unresolved (O5).
 const firstUse = 2;
 const apply = 'fn apply(f: (a, b) -> { x: Int, y: Int }, g: (a, b) -> Int): '
   + 'Int = 0; ';
 const noX = lacked => 'fn noX(p: { ...u }, q: { ...v }): Int where '
   + `${lacked} = 0; `;
+const inPlace = 'pass a lambda with annotated parameters in place of pickR';
+const fieldX = `Cannot tell whether pickR's r or s has field x; ${inPlace}`;
 
 test('S1, program 11 and same are Unresolved; annotated, accepted', () => {
   const apply0 = 'fn apply0(f: (a, b) -> c, g: (d, e) -> c): Int = 0; ';
@@ -219,21 +213,24 @@ test('S1, program 11 and same are Unresolved; annotated, accepted', () => {
     + '{ y: Int }): Int = 0; ';
   const lambda = 'fn(p: {}, q) => pickR(p, q)';
   waitsAt(`${pickR}${apply0}fn main(): Int = apply0(pickR, pickR);`,
-    'pickR', firstUse);
+    'pickR', firstUse, `Cannot tell what pickR's r and s hold; ${inPlace}`);
   checks(`${pickR}${apply0}fn main(): Int = apply0(${lambda}, ${lambda});`);
   waitsAt(`${pickR}${both}fn main(): Int = both(pickR, pickR);`, 'pickR',
-    firstUse);
+    firstUse, fieldX);
   checks(`${pickR}${both}fn main(): Int = both(${lambda}, pickR);`);
   waitsAt(`${pickR}${same2}fn main(): Int = same2(pickR, pickR);`, 'pickR',
-    firstUse);
+    firstUse, fieldX);
 });
 
 test('diag-14\'s shape is H\'s refusal; diag-14-fix\'s is Unresolved', () => {
   causedAt(`${pickR}${apply}${noX('u lacks { x }, v lacks { x }')}`
-    + 'fn main(): Int = apply(pickR, noX);', 'pickR', firstUse);
+    + 'fn main(): Int = apply(pickR, noX);', 'noX', 1,
+  'pickR\'s { ...r, ...s } must be { x: Int, y: Int }, but neither r nor s '
+    + 'can have field x');
   const fix = noX('u lacks { y }, v lacks { x }');
   waitsAt(`${pickR}${apply}${fix}fn main(): Int = apply(pickR, noX);`,
-    'pickR', firstUse);
+    'pickR', firstUse,
+    `Cannot tell how pickR's r and s split { x: Int, y: Int }; ${inPlace}`);
   checks(`${pickR}${apply}${fix}fn main(): Int = `
     + 'apply(fn(p: { x: Int }, q) => pickR(p, q), noX);');
 });

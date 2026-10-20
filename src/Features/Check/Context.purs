@@ -9,7 +9,7 @@ import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Resolved (LocalId)
 import Domain.Resolved as Resolved
-import Domain.Syntax (Diagnostic, Span)
+import Domain.Syntax (Diagnostic, Span, TypeRef)
 import Domain.Type (Ty, TyRow)
 import Features.Check.Scheme (State, Threaded)
 import Features.Check.Site (Site)
@@ -37,6 +37,9 @@ type CheckEnv r =
   -- Where each of the signature's record row variables is introduced,
   -- by name (Resolved.FunctionDecl `introduced`).
   , introduced ∷ Map String Span
+  -- Its written parameter types, by parameter (R005 Tranche B
+  -- diagnostics R8: where an argument's record is written).
+  , parameterSyntax ∷ Array TypeRef
   | r
   }
 

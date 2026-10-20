@@ -98,14 +98,15 @@ test('a missing atom never keeps case 3 from a refusal, in any order', () => {
   }
 });
 
-const P2 = 'R005B placeholder: contradictions from merge predicates are '
-  + 'reported in Task B5';
 const pickR = 'fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s } '
   + 'where r disjoint s = pickR(p, q); ';
 const same = 'fn same(a: z, b: z): Int = 0; ';
 const main = ' fn main(): Int = 0;';
-const caused = (source, text, nth = 0) => assert.equal(
-  checkRejectedAt(source, 'E_INTERNAL', text, nth).message, P2);
+// A clash a predicate caused that no part of it explains keeps the
+// failure's own text (B5: Features.Check.Contradicted renders D6 only for
+// a part at fault).
+const caused = (source, text, nth, message) => assert.equal(
+  checkRejectedAt(source, 'E_TYPE', text, nth).message, message);
 const last = (source, text) => source.split(text).length - 2;
 
 // `y` is the unknown part beside `x: { ...a }`; `h` fixes the result.
@@ -118,7 +119,7 @@ test('the cancelled part is the other rigid tail, either way round', () => {
     const body = `h(${call}); let s = same(y, z)`;
     checkedPoly(lambda('{ ...a, ...b }', body));
     const clash = lambda('{ ...a, ...b }', `h(${call}); let s = same(y, x)`);
-    caused(clash, 'x', last(clash, 'x'));
+    caused(clash, 'x', last(clash, 'x'), 'Expected { ...b }, found { ...a }');
   }
 });
 
@@ -127,7 +128,8 @@ test('a shared field\'s types are unified: a clash is refused', () => {
   const clauses = ', a lacks { n }';
   checkedPoly(lambda(result, 'h(pickR(y, { n: 1, ...x }))', clauses));
   const call = 'pickR(y, { n: true, ...x })';
-  caused(lambda(result, `h(${call})`, clauses), call);
+  caused(lambda(result, `h(${call})`, clauses), call, 0,
+    'Expected { n: Int, ...a, ...b }, found { n: Bool, ..._ }');
 });
 
 // `w` is bound to `{ m: Int }` by the shared field; a later clash on it

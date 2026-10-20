@@ -7201,3 +7201,101 @@ approval first. Nothing merged or pushed.
   contradiction) pinned; `none of` and `same-name-parts` deferred to
   Task 7. Red: 29 pass, 17 fail, each on its placeholder;
   research/open-row-merge `node fixtures.mjs`: 101 fixtures, 0 failing.
+
+## R005 Tranche B B5: implementation (2026-10-20)
+
+D4 and D6 are rendered; P2 and P6 are gone. Code on top of 29ec312
+(splits a90a625, f23d294; the needle fix cc3a089; the code commit
+follows this entry).
+
+- **Metadata** (diagnostic only, plan §0 decision 5 of 2026-10-17):
+  Check/PartOrigin, held by the substitution. Desugar records each
+  occurrence (its predicates, steps from the type's root, parts, the
+  tail that replaced them, its row, its location) through
+  RowMerge/Occurrence; RowMerge/Use gives it its owner (name, how it
+  was used, its variables' names, the written row through the new
+  `Resolved.FunctionDecl.syntax` and Check/WrittenRef) and places
+  predicates by T6; Check/UseOrigin records the written lacks each use
+  states (T4); Check/Lambda records unannotated parameters (R9).
+  Check/Required, called from Check/ArgumentOrigin after each argument
+  meets its parameter, records where the record supplying a predicate's
+  constants is written (R8's third note), from the callee's written
+  parameter type or the enclosing function's own (`parameterSyntax` in
+  the environment); a loop over an explicit stack, so 80,000-parameter
+  callees keep a shallow stack (its first, recursive form failed
+  test/fn-linear*.serial in verify; fixed and rerun).
+  `UnifyFailure.Cause` gained `within`, the substitution a predicate
+  failed in, which the caller's state, taken before the failing step,
+  lacks.
+- **D4** (Check/Unresolved): R11 orders occurrences by location, field
+  path, then where the owner writes the row; R4's constant, R3's
+  candidates (through Check/Homes's exclusion test), R1/R2 names, R6's
+  path, R9's hints as decision 20 chose them, R8's notes 1 and 3.
+- **D6** (Check/Contradicted, Check/Fault, Check/Exclusion): H's refusal
+  of an atom no part can hold reads `neither`/`none of`, at T4's
+  location with `excluded here` at each fact's reason; an atom a part
+  holds that the other side cannot is that part's fault. A case's
+  failure names the part at fault: a field (or rigid tail) it holds that
+  the other side cannot take, a field it holds at another type, or (R10.1
+  extended to case 2) a field of the failing records that a part the
+  case closed cannot take. Where no part explains a failure it keeps its
+  own text. Format/Diagnostic/Merge writes both texts from
+  Domain/Problem/Merge's data.
+- **Tests.** test/r005b-fixtures.test.mjs at `task` 6: 46/46 (red
+  before: 17 on placeholders). New test/r005b-render.test.mjs: R11
+  where the order of making and the source order differ, the structural
+  test (no solving module imports the metadata or a renderer), the
+  renderer-level `none of` wording, and the predicate-site test moved
+  from r005b-predicates. Expectations of P2/P6 replaced with exact texts
+  in r005b-case2g, -limitations, -predicates, -surface, -unify (each
+  text read against the rules before pinning).
+- **Regression rows**: ten new (scripts/regression-r005b-render.mjs:
+  `r005b-site-argument`, `-hint-own-call`, `-hint-lambda`,
+  `-tie-break`, `-required-callee`, `-required-own`, `-h-location`,
+  `-within`, `-case-bound`, `-nested-path`), each proved; the B3/B4
+  rows' texts updated (`r005b-case2-reason` now probes a label arriving
+  in the part case 2 closed; its type-clash form keeps its own text);
+  `fx-label-argument-ambient`'s needle follows the a90a625 split.
+  `r005b-participation` not built: see the plan's §8.
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: exit 0
+  (2363/2363, 59/59, 174 regression proofs;
+  .build/evidence/r005b-b5-verify.log). Runs before it failed on a
+  comment 84 columns wide and on Required's recursion (above).
+- Differential against 29ec312 (`--corpus all --regenerate`, harvest
+  runs exited 0, 0; the resolve projection now leaves out `syntax`, as
+  it does `introduced`; .build/evidence/r005b-b5-diff.log): fuzz,
+  isName, matches 0; harvested 46, mutations 1, every one at check with
+  a placeholder in the baseline: P6 → D4 30; P2 → D6 12; P2 → the
+  failure's own text 5 (the cancelled rigid tail twice, the shared
+  field's type, a field type against a later requirement, the occurs
+  case). No other source changed.
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
+- **For the user** (B5's departures and findings, none decided):
+  1. *Field type clashes.* §2.10 lists field mismatches among D6's
+     causes. D6 is given where a part of the predicate holds the field
+     at another type (`so r cannot have field b`); a clash between a
+     predicate's result and a later requirement (`want(pickR({ a: 1 },
+     { b: 2 }))` against `{ a: Bool, b: Int }`) keeps `Expected …,
+     found …`, as do the occurs case and the cancelled rigid tails: no
+     D6 form says which side of a later requirement is at fault.
+  2. *O1, O2* (both parts lack `admin`) read as H's approved D6
+     (`neither r nor s can have field admin`, `excluded here` at each
+     lack), not D1; a B4 test comment had read R10.2 as preferring D1.
+  3. *Names that collide.* An owner's variable and the enclosing
+     function's rigid tail can share a name (`pickR's { ...r, ...s }
+     must be { ...r }, so s cannot hold s`, in the `r005b-case2g-atoms`
+     probe); R3's numbering covers parts only.
+  4. *Not yet available*: lambda parameters' names (R1 rule 2; the
+     resolved parameter has none) and the `written here` note for a row
+     inside a handler's or applied type's argument (WrittenRef names
+     fields and arrows only). Both meet Task 7's literal first.
+  5. *design-holes* (stage 7) was approved at `k`; under T6 its D4 is at
+     `merge`, as diag-18's was amended. To amend with Task 7.
+  6. *Order of work.* The structural, R11 and renderer-level tests were
+     written after the code; each defect they guard is proved by a
+     regression row instead (except the structural test, a source scan).
+  7. *Machinery added* (ADR 014 asks for it to be flagged): the
+     provenance walk for R8's third note (Required, at arguments) and
+     `Cause.within`. Both are diagnostic data read only by the
+     renderers; neither is a published primitive, both compose the
+     existing unification's results.

@@ -12,8 +12,8 @@ export const r005bEndRows = [
     needle: '      && Array.all (lacks subst label) rigidPartners\n',
     replacement: '      && Array.null rigidPartners\n',
     probe: 'r005b-h-exclusion',
-    message: new RegExp('exclusion without entailment: E_INTERNAL R005B '
-      + 'placeholder: contradictions')
+    message: new RegExp('exclusion without entailment: E_TYPE pickR\'s '
+      + '\\{ \\.\\.\\.r, \\.\\.\\.s \\} must be')
   },
   {
     // H run inside re-examination instead of at the end of a body: its
@@ -31,13 +31,14 @@ export const r005bEndRows = [
         needle: '    Waits → Right found\n',
         replacement: '    Waits → maybe (Right found)\n'
           + '      (Left <<< FromMerge\n'
-          + '        { predicate: merge.id, at: merge.site }\n'
+          + '        { predicate: merge.id, at: merge.site\n'
+          + '        , within: Just found.subst }\n'
           + '        <<< Homeless)\n'
           + '      (homeless found.subst merge)\n'
       }
     ],
     probe: 'r005b-h-binds',
-    message: /H before the end: E_INTERNAL R005B placeholder: contradictions/
+    message: /H before the end: E_TYPE pickR's \{ \.\.\.r, \.\.\.s \} must be/
   },
   {
     // A rescan that counts a pass where no case fired as a change: quiet

@@ -162,5 +162,8 @@ resolveFunction globals declared tables effects effectInfos definition =
     , introduced: maybe Map.empty introducedOf scope.lacking
     , joined: joinedPairs tables definition.signature.variables
         (signatureTypes definition.function)
+    , syntax: Array.snoc (map parameterType definition.function.parameters)
+        definition.function.result
     }
   introducedOf lacking = lacking.introduced
+  parameterType parameter = parameter.ty

@@ -154,7 +154,7 @@ export const r005bRows = [
     replacement: '    Waits → Right\n'
       + '      (const Waits (oriented unify swapped merge subst))\n',
     probe: 'r005b-sym',
-    message: /Sym disabled: E_INTERNAL R005B placeholder: unresolved merge /
+    message: /Sym disabled: E_TYPE Cannot tell what pickR's r and s hold/
   },
   {
     // A part with only a rigid tail counted as closed: case 1 then drops
@@ -174,13 +174,14 @@ export const r005bRows = [
       + '      && holdsAll right result then subtract\n',
     replacement: '  else if false then subtract\n',
     probe: 'r005b-case2g',
-    message: /2g absent: E_INTERNAL R005B placeholder: unresolved merge /
+    message: /2g absent: E_TYPE Cannot tell /
   },
   {
     // The superseded 2g proposal: a missing atom makes 2g claim the
     // predicate and wait, which keeps case 3 from a refusal. Since B4 H
-    // refuses the waiting predicate at the end of the body, at its site:
-    // the location tells the two refusals apart.
+    // refuses the waiting predicate at the end of the body, at its site
+    // (B5: T4, no use states the clause's lack): the location tells the
+    // two refusals apart.
     name: 'r005b-case2g-claim',
     file: 'src/Features/Check/RowMerge/Cases.purs',
     needle: '  else if\n    unknownless right && unknownless result\n'
@@ -188,9 +189,8 @@ export const r005bRows = [
     replacement: '  else if unknownless right && unknownless result then\n'
       + '    if holdsAll right result then subtract else Right Waits\n',
     probe: 'r005b-case2g-claim',
-    message: new RegExp('missing atom claimed: E_INTERNAL R005B '
-      + 'placeholder: contradictions from merge predicates are reported in '
-      + 'Task B5 @pickR\\(x, q\\)')
+    message: new RegExp('missing atom claimed: E_TYPE pickR\'s .* '
+      + '@pickR\\(x, q\\)')
   },
   {
     // 2g without its rigid-tail test: a rigid tail of the right part that
@@ -206,7 +206,7 @@ export const r005bRows = [
     // A creation point not desugared (a constructor's use): its row of
     // two unknown tails reaches the unifier's guard (plan §2.1).
     name: 'r005b-one-unknown', file: 'src/Features/Check/Use.purs',
-    needle: '  owned ctor info = Right $ desugaredUse span\n',
+    needle: '  owned ctor info = Right $ desugaredUse (made ctor info)\n',
     replacement: '  owned ctor info = Right $ identity\n',
     probe: 'r005b-one-unknown',
     message: /creation point missed: E_INTERNAL a record row holds two /

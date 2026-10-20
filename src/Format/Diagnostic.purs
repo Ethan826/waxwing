@@ -19,6 +19,7 @@ import Domain.Syntax (Diagnostic, Span)
 import Format.Diagnostic.Callback as Callback
 import Format.Diagnostic.Code (code, codeName)
 import Format.Diagnostic.Mark as Mark
+import Format.Diagnostic.Merge as Merge
 import Format.Diagnostic.Name as Name
 import Format.Diagnostic.Note (WireNote, wireNotes)
 import Format.Diagnostic.Qualify as Qualify
@@ -88,6 +89,8 @@ message = case _ of
   NotKnownDisjoint one other → Records.notKnownDisjoint one other
   InBothRecords label one other → Records.inBothRecords label one other
   InBothRows name → Records.inBothRows name
+  CannotTell found → Merge.undetermined typeName found
+  MustBeRow found → Merge.mustBe typeName found
   TypeAsRecordRow name → Records.typeAsRecordRow name
   DeferMayFail label → "defer must not fail, but it performs "
     <> shortLabel label
@@ -139,6 +142,8 @@ noted = case _ of
   NotKnownDisjoint _ _ → true
   InBothRecords _ _ _ → true
   InBothRows _ → true
+  CannotTell _ → true
+  MustBeRow _ → true
   UnhandledEffect _ → true
   MustBePure _ → true
   RowEquality _ _ _ → true

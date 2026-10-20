@@ -88,7 +88,8 @@ attributed subst left right = either caused Right
         (maybe failure (byPredicate failure) (causeIn subst tails))
     | otherwise = Left failure
   tails = left.tails <> right.tails
-  byPredicate failure predicate = FromMerge { predicate, at: Nothing }
+  byPredicate failure predicate = FromMerge
+    { predicate, at: Nothing, within: Just subst }
     failure
   open = case _ of
     TooDeep → false

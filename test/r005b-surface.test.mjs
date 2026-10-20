@@ -10,12 +10,9 @@ import { checked, rejected, spanAt } from './support.mjs';
 // same sources are now solved, refused for a reason, or, since B3, wait:
 // the two tails become a `Merge` predicate, which no case can decide when
 // nothing fixes how the argument splits between them, so it is still
-// waiting at the end of the body: since B4 Unresolved, placeholder P6 at
-// the use (docs/plans/2026-10-19-row-merge-implementation-plan.md,
-// Global Constraints).
+// waiting at the end of the body: since B4 Unresolved, and since B5 D4 at
+// the argument whose row made the predicate (T6, plan §10 decision 21).
 const main = ' fn main(): Int = 0;';
-const waits = 'R005B placeholder: unresolved merge predicates are reported '
-  + 'in Task B5';
 const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
 
 const placeholder = (source, message) => {
@@ -35,19 +32,30 @@ for (const [name, source] of [
   });
 }
 
-for (const [name, source] of [
+const own = (owner, subject) => `Cannot tell whether ${owner}'s r or s `
+  + `${subject}; no annotation can decide r and s, which belong to this `
+  + `call of ${owner}`;
+
+for (const [name, source, [at, nth], message] of [
   ['calling with a record', 'fn f(w: { ...r, ...s }): Int = 0; '
-    + 'fn main(): Int = f({ a: 1 });'],
+    + 'fn main(): Int = f({ a: 1 });', ['{ a: 1 }', 0],
+  own('f', 'has field a')],
   ['passing a generic row on', 'fn f(w: { ...r, ...s }): Int = 0; '
-    + 'fn g(v: { ...a, ...b }): Int = f(v);' + main],
+    + 'fn g(v: { ...a, ...b }): Int = f(v);' + main, ['v', 1],
+  own('f', 'holds a')],
   ['a constructor with two tails', `${both}fn main(): Int = { let b = `
-    + 'Both({ x: 1, y: 2 }); 0 };'],
+    + 'Both({ x: 1, y: 2 }); 0 };', ['{ x: 1, y: 2 }', 0],
+  'Cannot tell whether '
+    + 'Both\'s r or s has field x; write Both\'s row arguments in the '
+    + 'enclosing signature or in a lambda parameter\'s annotation'],
   ['two calls of one generic', 'fn id(w: { ...r, ...s }): { ...r, ...s } = w; '
-    + 'fn main(): Int = { let a = id({ x: 1 }); 0 };']
+    + 'fn main(): Int = { let a = id({ x: 1 }); 0 };', ['{ x: 1 }', 0],
+  own('id', 'has field x')]
 ]) {
-  test(`two unknown tails, a split nothing fixes: P6: ${name}`, () => {
-    const found = placeholder(source, waits);
-    assert.ok(found.span.start.offset < source.length);
+  test(`two unknown tails, a split nothing fixes: D4: ${name}`, () => {
+    const found = rejected(source, 'E_TYPE');
+    assert.equal(found.message, message);
+    assert.deepEqual(found.span, spanAt(source, at, nth));
   });
 }
 
@@ -57,11 +65,11 @@ test('a field neither written nor in a tail is missing (Task 4)', () => {
   assert.equal(found.message, 'a is not a field of { ...r, ...s }');
 });
 
-test('the placeholder is at the use that made the predicate', () => {
+test('D4 is at the argument whose row made the predicate (T6)', () => {
   const source = 'fn f(w: { ...r, ...s }): Int = 0; '
     + 'fn main(): Int = f({ a: 1 });';
-  const found = placeholder(source, waits);
-  assert.deepEqual(found.span, spanAt(source, 'f({ a: 1 })'));
+  const found = rejected(source, 'E_TYPE');
+  assert.deepEqual(found.span, spanAt(source, '{ a: 1 }'));
 });
 
 test('a signature with several tails and no record use is accepted', () => {
