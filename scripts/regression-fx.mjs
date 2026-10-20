@@ -125,7 +125,7 @@ const checkRows = [
           + 'variables ambient reference\n'
       },
       {
-        file: 'src/Features/Resolve.purs',
+        file: 'src/Features/Resolve/Signature.purs',
         needle: '    bare = resolveTypeWith known effects variables Nothing\n',
         replacement: '    bare = resolveTypeWith known effects variables '
           + 'ambient\n'
