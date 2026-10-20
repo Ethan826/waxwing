@@ -1,8 +1,9 @@
 # Record composition: definitions and claims (statements-first dossier)
 
-Date: 2026-10-20, revised the same day after the author's review (§8).
-Status: draft for the author's review; direction approved, statements
-revised, proofs not yet authorized. Approval of
+Date: 2026-10-20, revised the same day after the author's review (§8);
+first proof milestone the same day (§9). Status: for the author's
+review at the milestone; no decision procedure or compiler change
+authorized. Approval of
 this phase covers definitions, claim statements and counterexample
 exploration. It does not cover proofs, adopting solver machinery or
 changing the compiler; those come back to the author with the completed
@@ -93,11 +94,15 @@ stated for each. Compilation may use only what a verdict guarantees.
 The problem `C` has flexible variables only.
 
 - **Solved(σ, C′, W)**: `σ` is a substitution, `C′` a residual
-  constraint set and `W` an assignment. Guarantees: (i) `C` and `C′σ`
-  have the same solutions on the problem's variables; (ii) `W`
-  satisfies `C′`, so `C` is satisfiable. Compilation receives `σ`,
-  `C′`, and the variables `C′` leaves *undetermined* (several values in
-  `sol(C′)`); §4 says what it may do with them.
+  constraint set and `W` an assignment. Write `eq(σ)` for the binding
+  equations `x = σ(x)`, one per variable `σ` binds. Guarantees: (i)
+  `C` and `eq(σ) ∧ C′` have the same solutions on the problem's
+  variables (the bindings are kept: applying `σ` to `C′` alone would
+  lose them, since solving `x = Int` leaves `σ = [x ↦ Int]` and an
+  empty `C′`); (ii) `W` satisfies `eq(σ) ∧ C′`, so `C` is
+  satisfiable. Compilation receives `σ`, `C′`, and the variables left
+  *undetermined* (several values among the solutions); §4 says what it
+  may do with them.
 - **Contradiction(E)**: `sol(C)` is empty. `E` is evidence a reader or
   test can check: a refutation from the rules or an exhausted case
   split. Compilation receives nothing; the program is ill-typed.
@@ -110,15 +115,17 @@ The problem `C` has flexible variables only.
 The problem is `∀ā. D ⇒ ∃b̄. B`: rigid `ā` with the declared clauses
 `D`, flexible `b̄` with the body's constraints `B`.
 
-- **Solved(B′)**: guarantees that for every `θR` satisfying `D` some
-  `θF` satisfies `B`. One satisfying pair `(θR, θF)` does not establish
-  it, and `D ∧ B` can have solutions while the signature fails: a body
-  that writes `admin` beside `...r` needs `r lacks { admin }`, which
-  some `θR` meet and `θR(r) = { admin: Int }` does not. The residual
-  `B′` keeps the rigid and flexible variables apart and the quantifier
-  order: it is `∀ā. D ⇒ ∃b̄. B′`, and any part of it that mentions
-  rigid variables only must be entailed by `D`, or the verdict is not
-  Solved.
+- **Solved(σ, B′)**: guarantees the quantified statement itself: for
+  every `θR` satisfying `D` some `θF` satisfies `B`. One satisfying
+  pair `(θR, θF)` does not establish it, and `D ∧ B` can have
+  solutions while the signature fails: a body that writes `admin`
+  beside `...r` needs `r lacks { admin }`, which some `θR` meet and
+  `θR(r) = { admin: Int }` does not. The residual
+  `B′`, with `σ` binding flexible variables only, keeps the rigid and
+  flexible variables apart and the quantifier order: `∀ā. D ⇒ ∃b̄. B`
+  and `∀ā. D ⇒ ∃b̄. eq(σ) ∧ B′` must be equivalent, and any part of
+  `B′` that mentions rigid variables only must be entailed by `D`, or
+  the verdict is not Solved.
 - **Contradiction(θR, E)**: two parts, both required. `θR` is a rigid
   assignment that satisfies `D` (checkable by evaluation), and `E` is a
   call-site Contradiction (§2.1) for `B` with `θR` substituted: no
@@ -138,8 +145,12 @@ Unresolved, never as a contradiction.
 ### 2.4 Soundness and completeness
 
 A procedure is *sound* if Solved and Contradiction always meet their
-guarantees, *refutation-complete* if it never answers Unresolved for an
-unsatisfiable problem, and *complete* if it never answers Unresolved.
+guarantees, *refutation-complete* if it never answers Unresolved for a
+problem that fails, and *complete* if it never answers Unresolved. A
+call fails when `C` has no solution. A signature fails when its
+quantified statement is false: some `θR` satisfies `D` and no `θF`
+satisfies `B` for it. That is not the unsatisfiability of `D ∧ B`,
+which can have solutions while the signature fails (§2.2).
 An incomplete procedure is acceptable only if it answers Unresolved,
 never Contradiction, where it cannot decide, and if the required
 programs (4, 5, 11 and their controls) never reach Unresolved.
@@ -309,18 +320,18 @@ research/composition-assessment/wand/):
 
 | Id | Claim | Status | Next evidence |
 |---|---|---|---|
-| C1 | disjoint = biased + disjointness | derived; checked (oracle) | proof |
-| C2 | D8 encodes ⊎ | derived; checked (oracle, all 64 triples) | proof |
+| C1 | disjoint = biased + disjointness | proved (Lean, `c1`) | |
+| C2 | D8 encodes ⊎ | proved (Lean, `c2`; D7 encodes biased, `d7_biased`) | |
 | C3 | call-site satisfiability decidable | published (D4); derived (D8) | depends on C4 |
 | C4 | finite label reduction with D5's atoms | partly published; unresolved | argument |
 | C5 | per-record field types | published | program 11 probes (Wand, run) |
 | C6 | a split exists | = C3 | |
-| C7a | forced presence = refutation of `lacks` | derived (Jones); checked on programs 4, 5 | proof |
-| C7b | forced type from a known result under ⊎ | derived; checked on programs 4, 5 and the counterexample | proof |
+| C7a | forced presence = refutation of `lacks` | proved (Lean, `c7a`) | |
+| C7b | forced type from a known result under ⊎ | proved (Lean, `c7b`; first C7 refuted, `first_c7_false`) | |
 | C8 | split irrelevance for a stated fragment | unresolved | construct inventory |
 | C9 | signature checking decidable | unresolved | examine the three routes |
-| C10 | signature Contradiction = instance + call-site Contradiction | derived; checked on program 6's control | proof, with C9 |
-| C11 | program 6 by inclusion | derived | |
+| C10 | signature Contradiction = instance + call-site Contradiction | proved (Lean, `c10`, `sigFails_iff`) | finding evidence is C9 |
+| C11 | program 6 by inclusion | proved (Lean, `c11`, `p6_holds`) | |
 | - | `let`-generalization with residual constraints (program 8) | published in general (HM(X)); with D8, unresolved | after C9 |
 | - | lowering preserves checking's meaning | unresolved | translation and differential tests |
 
@@ -354,6 +365,62 @@ recorded the author's decisions on unsatisfiable clauses (§2.3) and on
 undetermined splits (§4), restated C8 as a theorem about a fragment,
 and withdrew the remark that C4 would make the oracle complete.
 
-Next: no proofs, solver design or compiler change until the author
-approves the revised statements. Proofs and any adoption come after,
-as ADR 014 and the assessment's decision 1 set out.
+## 9. First proof milestone (Lean 4)
+
+Authorized by the author after the second revision: definitions, C1-C2,
+C7a-C7b with the counterexample, C10's evidence principle and C11, and
+the required programs. Proofs: research/composition-proofs/ (its README
+has commands, files and every definitional choice); Lean 4.35.0, no
+Mathlib. A clean build checks every proof with no warnings; no `sorry`,
+`admit`, `native_decide` or declared axiom.
+
+Exact theorem statements, in the dossier's terms (Lean names in
+brackets):
+
+- C1 [`c1`]: if `Disjoint r s` then `union r s = biased r s` and
+  `union r s = biased s r`.
+- C2 [`c2`]: `DUnion r s u ↔ ∀ l, D8 (r l) (s l) (u l)`; per label
+  [`c2_label`]; and Wand's D7 at every label iff `u = biased r s`
+  [`d7_biased`].
+- C7a [`c7a`]: for any problem `C`, part and label, `C ⊨ part has l`
+  iff `C ∧ part lacks l` has no solution.
+- C7b [`c7b`]: if `C ⊨ r has l`, `C ⊨ DUnion r s u` and `C ⊨ u l =
+  τ`, then `C ⊨ r l = τ`.
+- First C7 refuted [`first_c7_false`]: with one label and `C` fixing `r
+  = { x: Bool }`, the first statement's two sides differ.
+- Signature failure [`sigFails_iff`]: "some `θR` satisfies `D` and no
+  `θF` satisfies `B`" iff the quantified statement is false (classical).
+- C10 [`c10`]: a `θR` with `D θR` and a proof that no `θF` satisfies
+  `B θR` give signature failure. No procedure to find them is assumed.
+  [`instance_alone_insufficient`]: an instance satisfying `D` is not by
+  itself failure.
+- C11 [`c11`]: if `B ρ φ ↔ P ρ ∧ E ρ φ`, `D ⊨ P` and every `ρ` has some
+  `φ` with `E ρ φ`, the signature holds.
+- §2.2's example [`fails_while_satisfiable`]: `D ∧ B` has a solution and
+  the signature fails.
+- Programs [`p3_overlap`, `p4_solved`, `p4_admin_forced` (through `c7a`
+  and `c7b`), `p4_split_forced`, `p4_negative`,
+  `p4_no_lacks_two_solutions`, `p5_solved`, `p5_split_forced`,
+  `p5_negative`, `p11`, `p11_negative`, `p6_holds`,
+  `p6_negative_refuted` (every declared instance), `p6_negative_fails`].
+
+Assumption dependencies (`#print axioms`, axioms.out): only `propext`,
+`Quot.sound` and, in `sigFails_iff` alone, `Classical.choice`.
+
+Changed or added definitions: rows are all functions to `Option Ty`
+(finiteness not assumed; the theorems hold for every finite map);
+problems are predicates on assignments, not constraint syntax; the
+programs are stated at their deciding constraint, written by hand, so
+the step from Waxwing source to constraint is not formalized; program
+6's body constraint is written by hand. §2.1's binding equations
+(`eq(σ)`), C3, C4, C8 and C9 are not formalized.
+
+Not vacuous: each Solved problem is shown satisfiable, and mutants
+fail to check (program 4 without its `lacks`: `p4_admin_forced` and
+`p4_split_forced`; `DUnion` without disjointness: `c2`, and program
+proofs whose failures are partly structural).
+
+Remaining targets, unchanged: C4 (finite reduction), C8 (irrelevance
+for a fragment), C9 (signature checking, a conjecture to establish or
+narrow). Next review point: the author's reading of these statements,
+before any decision procedure or compiler change.

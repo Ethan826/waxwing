@@ -1,0 +1,26 @@
+'Composition.c1' depends on axioms: [propext, Quot.sound]
+'Composition.c2_label' depends on axioms: [propext]
+'Composition.c2' depends on axioms: [propext, Quot.sound]
+'Composition.d7_biased' depends on axioms: [propext, Quot.sound]
+'Composition.c7a' does not depend on any axioms
+'Composition.c7b' depends on axioms: [propext]
+'Composition.first_c7_false' depends on axioms: [propext]
+'Composition.sigFails_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.c10' does not depend on any axioms
+'Composition.instance_alone_insufficient' does not depend on any axioms
+'Composition.c11' does not depend on any axioms
+'Composition.fails_while_satisfiable' depends on axioms: [propext]
+'Composition.Programs.p3_overlap' depends on axioms: [propext, Quot.sound]
+'Composition.Programs.p4_solved' depends on axioms: [propext, Quot.sound]
+'Composition.Programs.p4_admin_forced' depends on axioms: [propext]
+'Composition.Programs.p4_split_forced' depends on axioms: [propext, Quot.sound]
+'Composition.Programs.p4_negative' depends on axioms: [propext]
+'Composition.Programs.p4_no_lacks_two_solutions' depends on axioms: [propext, Quot.sound]
+'Composition.Programs.p5_solved' depends on axioms: [propext]
+'Composition.Programs.p5_split_forced' depends on axioms: [propext, Quot.sound]
+'Composition.Programs.p5_negative' depends on axioms: [propext]
+'Composition.Programs.p11' depends on axioms: [propext]
+'Composition.Programs.p11_negative' depends on axioms: [propext]
+'Composition.Programs.p6_holds' does not depend on any axioms
+'Composition.Programs.p6_negative_refuted' depends on axioms: [propext]
+'Composition.Programs.p6_negative_fails' depends on axioms: [propext]
