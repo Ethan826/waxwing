@@ -7496,3 +7496,19 @@ assessment.md.
 - Next: a statements-first dossier with Wand as the candidate, for the
   author's approval. Task 7 stays checkpointed. No compiler code
   changed; verify not run (docs and research only).
+
+## Record composition dossier, statements first (2026-10-20)
+
+- At the author's direction (definitions, claim statements and
+  counterexample exploration only): docs/plans/2026-10-20-record-
+  composition-dossier.md. Disjoint composition defined directly (D3)
+  and related to Wand's biased composition (C1, C2); the three verdicts
+  with what each gives compilation (§2); finding a split, forcing a
+  placement and checking a signature as separate claims (C6, C7, C9);
+  when alternatives may remain (C8, §4); programs, controls and the
+  implementations' counterexamples (§5, §6); claims by status (§7).
+- Oracle (research/composition-assessment/oracle/): 18 of 18 checks
+  hold over 1,048,576 row pairs; two mutants fail it (biased union;
+  D8 without disjointness). C4, C8 and C9 unresolved.
+- Awaiting the author's review of the claims. No proofs, solver design
+  or compiler change. Verify not run (docs and research only).
