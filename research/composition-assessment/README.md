@@ -36,6 +36,17 @@ Research only; not part of `npm run verify`.
 - ghc/ (GHC 9.4.8, `runghc [-XMonoLocalBinds] G<n>.hs`): local helpers
   G1-G6 used at two record types through `HasField` (assessment §5.1).
 
+- purs/P11.purs: program 11 with `Prim.Row`'s `Lacks` and `Cons`
+  (compiles).
+- urweb/ (Ur/Web 20200209, Homebrew; `urweb -tc base`, `-tc p4`, `-tc
+  p5`; results.txt): programs 3, 6 and 11 accepted, 4 and 5 refused
+  ("Stuck unifying these records after canceling matching pieces").
+  `Name` is reserved in Ur (the kind of field names), so the probes use
+  `Who`.
+- wallace/: Pottier's Wallace toy (2000), its own README.
+- programs/p11*.wxw: program 11 (requirements §11), its lambda form and
+  its negative control.
+
 ## Sources read for the assessment (2026-10-20)
 
 Author or institutional copies; the ACM library refused direct access.
@@ -65,6 +76,15 @@ Author or institutional copies; the ACM library refused direct access.
 Earlier reads still relied on: Jones, Simplifying and improving
 qualified types (FPCA 1995), §4, and the other sources of the QT
 re-plan's §11.5.
+
+Third revision: Pottier, A versatile constraint-based type inference
+system (Nordic Journal of Computing 7(4), 2000, §5.1-§5.2, §8, Appendix
+A), A constraint-based presentation and generalization of rows (LICS
+2003, long version, Example 1, §2, §4), his thesis (1998: no
+concatenation), Wallace's source (toy/engine.ml, wallace/core.ml);
+Pottier and Rémy, The essence of ML type inference (ATTAPL ch. 10,
+§10.8: neither concatenation nor conditional constraints); Jones,
+Simplifying and improving qualified types (FPCA 1995, §4.1, re-read).
 
 Not accessed (cited only where stated): Martin and Nipkow (JSC 1989)
 beyond the abstract; Büttner and Simonis 1987; Baader 1998 beyond the
