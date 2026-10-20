@@ -7613,3 +7613,14 @@ assessment.md.
   restricted to written labels, invalid in general), program 6 valid,
   and a signature valid only with a rigid-dependent flexible solution.
   Clean build, no `sorry`. No procedure written. Awaiting review.
+- Review (same day) refuted P9's completeness (`splitSig`: a valid
+  signature divides a rigid row's unwritten labels by membership in
+  another) and S5's hard instances (`recSig`: a row variable absorbs a
+  fresh record); both checked in Lean (Sig/Adversarial.lean). Dossier
+  §13.7: restrictions table with a challenge per restriction; P9
+  reclassified as a candidate sound, incomplete checker (failure is
+  Unresolved); S1's side condition widened to every requirement that
+  two rests be disjoint (found in the soundness pass); region
+  representation and a bounded ∀∃ oracle proposed. Rests wording
+  corrected (they may be equal). New review convention in
+  docs/engineering.md: adversarial review of proposed procedures.

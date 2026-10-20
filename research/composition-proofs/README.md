@@ -59,6 +59,7 @@ A clean `lake build` reports no errors and no warnings. No file uses
 | Composition/Unify/Examples.lean | executable examples | `#guard` on programs 3, 4, 5, 11, controls, counterexamples |
 | Composition/Sig/Validity.lean | C9 statements: `SigProblem`, `Valid` | `lacks_sat_not_valid`, `unnamed_labels_matter`, `declared_disjoint_valid`, `rigid_type_not_valid` |
 | Composition/Sig/Examples.lean | C9 examples | `p6Sig_valid`, `depSig_valid`, `depSig_needs_dependence` |
+| Composition/Sig/Adversarial.lean | §13.7, the review's counterexamples | `splitSig_valid`, `wholeRest_fails`, `recSig_not_valid`, `recSig_hard_instance_solvable` |
 | Composition/Axioms.lean | | `#print axioms` for each theorem above |
 
 ## Assumption dependencies (axioms.out)

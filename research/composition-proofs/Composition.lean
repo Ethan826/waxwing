@@ -30,3 +30,4 @@ import Composition.Unify.Decider
 import Composition.Unify.Examples
 import Composition.Sig.Validity
 import Composition.Sig.Examples
+import Composition.Sig.Adversarial
