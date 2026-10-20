@@ -1,3 +1,40 @@
+# Waxwing / record composition foundation: C9 under review (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed), last commit
+2bd2aec. No compiler code changed in this thread; Task 7 stays
+checkpointed (`r005b-task7-wip`). Verify last run before this thread.
+
+**Read, in order.**
+1. docs/plans/2026-10-20-composition-foundation-assessment.md (why:
+   systems surveyed; Wand is the leading candidate, §4.11; decision 1).
+2. docs/plans/2026-10-20-record-composition-dossier.md (the work):
+   §2 verdicts; §§9-12 proved milestones (Lean): elementary claims,
+   substitution and binding equations, finite reduction R1/R2, the
+   closed-problem decider and `decideCall_correct` (call-site
+   satisfiability decidable); §13 C9 signature checking, statements
+   first; §13.7 P9's completeness refuted (`split`, `recSig`),
+   restrictions table, P9 reclassified as candidate sound and
+   incomplete (P9s); §13.8 bounded ∀∃ oracle and BAPA reading.
+3. research/composition-proofs/README.md (Lean 4.35, `lake build`;
+   no `sorry`); research/composition-assessment/sig-oracle/README.md;
+   research/composition-assessment/bapa/README.md.
+4. docs/engineering.md "Adversarial review of proposed procedures"
+   (the author's convention: restrictions table, separate soundness and
+   completeness passes, claim-level oracles, adversarial reviewers).
+
+**How the author works here.** Reviews arrive pasted (often from
+another model); each phase is authorized explicitly (statements first;
+proofs only after approval; no compiler change until a dossier is
+adopted). Labels: published / derived / checked / unresolved.
+
+**Next, needs the author:** review of §13.8. Open questions listed
+there: whether emptiness per region suffices for Waxwing's positive
+atoms; whether flexible rows need part of a region; how per-label field
+types are quantified and equated. CR is not to be pursued as stated.
+Not authorized: proofs of CR, adopting P9s, compiler changes.
+
+---
+
 # Waxwing / R005 Tranche B: B5 complete, for final acceptance (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). B5 with
