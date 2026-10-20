@@ -1,13 +1,14 @@
 {
   "name": "diag-18",
   "from": "diagnostics Example 18",
+  "remark": "primary amended from p to merge (plan §10 decision 21, T6: a predicate from the result type is located at the use); the note at { ...t } keeps where it is required",
   "source": "fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n  where r disjoint s = { ...a, ...b };\nfn use(f: (a, b) -> { ...r }, p: { ...r }): Int = 0;\nfn outer(p: { ...t }): Int = use(merge, p);\nfn main(): Int = outer({ x: 1 });\n",
   "result": "Unresolved",
   "diagnostic": {
     "id": "D4",
     "code": "E_TYPE",
     "message": "Cannot tell whether merge's r or s holds t; pass a lambda with annotated parameters in place of merge",
-    "at": {"text":"p","nth":2},
+    "at": {"text":"merge","nth":1},
     "notes": [
       {
         "message": "r and s are written here",

@@ -94,7 +94,7 @@ Small runs (each a few seconds at most), last run 2026-10-17:
 | `node odd-cycle.mjs` | D4 without several solutions | `solutions: []`; `verdict: D4 pending=3` |
 | `node unresolved.mjs` | Unresolved with zero, one and several solutions | `zero (odd-cycle.mjs): D4, 0 solutions`, `one (determinate.mjs): D4, 1 solutions`, `many (a two-part sum): D4, 4 solutions`; exit 0 |
 | `node diag.mjs .` | the diagnostics plan's example classes | identical to the output printed in that plan's Appendix A (compared with `diff` on 2026-10-17) |
-| `node fixtures.mjs` | the executable example fixtures (72 written in Task 0; 99 at R005 Tranche B B5's first commit, the later ones without `rows`) | one line each; `odd-cycle` asserted 0, `determinate` 1, `diag-01` 4; `99 fixtures, 0 failing`; exit 0 |
+| `node fixtures.mjs` | the executable example fixtures (72 written in Task 0; 101 at R005 Tranche B B5 (decision 21), the later ones without `rows`) | one line each; `odd-cycle` asserted 0, `determinate` 1, `diag-01` 4; `101 fixtures, 0 failing`; exit 0 |
 | `node exhaustive.mjs A` | domain A (labels a, b; rigid R; metas m0-m2; two equations, plus one `lacks` or `dis`) | 3,339,712 problems, 19,305,292 runs; accept 870,440, refuse 18,374,712, D4 60,140; `equivChecked` 930,580; D4 by solutions 466 / 120 / 59,554; `defects: none`; about 53 s on 10 workers |
 | `node exhaustive.mjs B` | domain B (label a; metas m0-m3; quiet equations) | 79,825 problems, 453,550 runs; accept 193,376, refuse 249,746, D4 10,428; quiet in 6,518 runs; `defects: none`; about 4 s |
 | `STATE=1 node perm.mjs 21 2000` | perm.mjs plus property E | the counts of `node perm.mjs 21 2000` plus `stateChecked` 2345, no `stateDiff` or `stateSkipped` |

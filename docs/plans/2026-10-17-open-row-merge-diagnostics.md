@@ -1082,7 +1082,7 @@ fn main(): Int = outer({ x: 1 });
 |---|---|
 | Diagnostic | D4, Approved; E_TYPE |
 | Text | `Cannot tell whether merge's r or s holds t; pass a lambda with annotated parameters in place of merge` |
-| Primary | the argument `p` (line 4): `merge`'s result had already become `use`'s `r` (step 6); `p` brought the constant `t` |
+| Primary | the argument `merge` (line 4), amended 2026-10-20 (implementation plan §10 decision 21, T6: a predicate from the result type is located at the use); approved first as the argument `p`, which brought the constant `t` |
 | Note 1 | `r and s are written here`, at merge's result type, line 1 |
 | Note 2 | `{ ...t } is required here`, at outer's parameter type, line 4 |
 
@@ -1093,7 +1093,7 @@ fn main(): Int = outer({ x: 1 });
 3 | fn use(f: (a, b) -> { ...r }, p: { ...r }): Int = 0;
 4 | fn outer(p: { ...t }): Int = use(merge, p);
   |             -------- 2
-  |                                         ^ error
+  |                                  ^^^^^ error
 5 | fn main(): Int = outer({ x: 1 });
 ```
 

@@ -1371,8 +1371,8 @@ Problem, Format/Diagnostic/Records; P2 and P6 removed.
   rows of a call's own instantiation (O4), the limitation explained
   with no annotation suggested. Wording approved (decision 20); pinned
   in the first commit (`render-*`, diag-06; docs/progress.md "R005
-  Tranche B B5"), which leaves `render-d6-none` and `same-name-parts`
-  open for the user.
+  Tranche B B5"); `none of` and `same-name-parts` deferred to Task 7
+  (decision 21).
 - [ ] Solving-time diagnostics (L2): only after the user decides the
   gate's proposal (§10, decision 13).
 - [ ] Implement; verify; differential: 0 on existing sources; commit.
@@ -1821,6 +1821,30 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     - **Deferred:** a note explaining that a part is not inferred to
       hold a field because the other parts lack it (O4); it would need
       new metadata and is not part of B5.
+
+21. **T6 approved; `none of` and `same-name-parts` deferred** (user,
+    2026-10-20).
+    - **T6, the location of a predicate's diagnostic.** A predicate
+      made from a supplied parameter's written row is located at that
+      argument; one from the result type at the use (the call, the
+      partial application or the function value); nested predicates
+      inherit their location (T3); a parameter with no argument
+      supplied keeps the use's span. `diag-18`'s primary is amended
+      from `p` to `merge`, as `render-holds` is pinned at `pickR`; its
+      note at `{ ...t }` keeps where the row is required. Provenance
+      stays separate from solving: T6 changes no processing order, no
+      rule and no acceptance.
+    - **`none of` (D6).** Source-level coverage is deferred. H is not
+      strengthened and no fact is propagated to produce the message.
+      The three-part program is kept as the Unresolved control
+      `render-none-control` (its annotated companion exposes D1), with
+      why the chain's intermediate part keeps H from refusing it.
+      Task 7 reassesses reachability with the merge literal and
+      records it if the form stays unreachable; a renderer-level test
+      may exercise the wording, labelled as such.
+    - **`same-name-parts`** moves to Task 7; its requirement stays open:
+      distinct part identities with identical displayed names, numbered
+      and ordered stably.
 
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
