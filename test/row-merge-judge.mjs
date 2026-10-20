@@ -114,14 +114,16 @@ function reference(p, order, v, t) {
 }
 
 // H off (plan §4.2): the verdict is the same, or Unresolved where H
-// refused; an accepted or Unresolved run's state is the same.
+// refused; and the state is the same in every run, H's refusals
+// included (the state H read against the one left Unresolved without
+// it; user's review of B4, 2026-10-19).
 function hOnlyClassifies(p, order, v, t) {
   const off = run(p.hyp, order, finishWithoutH);
   t.hOffChecked++;
   const hRefused = v.v === 'refuse' && v.atEnd && byH(v.failure);
   const same = off.v === v.v || (hRefused && off.v === 'unresolved');
-  const kept = !['accept', 'unresolved'].includes(v.v)
-    || JSON.stringify(stateOf(off.subst)) === JSON.stringify(stateOf(v.subst));
+  const kept = JSON.stringify(stateOf(off.subst))
+    === JSON.stringify(stateOf(v.subst));
   if (!same || !kept) defect(t, 'hDiff', p, order, v.v, off.v);
 }
 
