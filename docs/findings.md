@@ -734,3 +734,18 @@ Learned while retargeting mutants for the fifteen new rows
    silently off, and a variant run with it measured nothing new until
    the field was added. Check that a new option changes some verdict
    before reading its measurements.
+4. Once H classifies at the end of a body, a regression that only turns
+   a refusal into a wait (the superseded 2g) is refused anyway, so a
+   test of the refusal's class no longer catches it. Keep a check with
+   H off (the entry's `finishWithoutH`) wherever an earlier rule's
+   refusal is what is being protected; at the check phase, compare the
+   location, since H refuses at the predicate's site (B4,
+   `r005b-case2g-claim`).
+5. scripts/width.mjs reads `git ls-files`, so a new file is not checked
+   until it is added; B3 and B4 both met this (lines over 80 in new
+   files reported clean). Run `git add -N <path>` on new files before
+   checking widths; verify, which runs on a committed tree, is not
+   affected.
+6. `readdirSync(...).sort()` orders `diag-06-fix.json` before
+   `diag-06.json` (`-` sorts before `.`), so lists of fixture names in
+   tests follow that order, not the names' own.

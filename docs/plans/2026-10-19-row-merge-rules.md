@@ -413,6 +413,17 @@ Contradiction with a solution, on research/row-merge-qt's families and
 research/row-merge-typed's; H ignoring lacks is caught (1,352
 Contradictions with solutions).
 
+**In the compiler (B4).** RowMerge/End `homeless` with Check/Homes
+`admits` negated, after a check that no waiting predicate could still
+progress. **Checked** (test/row-merge-h.test.mjs; the exhaustive runs of
+docs/progress.md "R005 Tranche B B4"): with H off, every run has the same
+verdict, or Unresolved where H refused, and an accepted or Unresolved run
+the same state; every H refusal has no solution by the brute-force
+oracle (domain A whole 636,722, domain B whole 25,716, none with a
+solution); H is never asked when no predicate waits; the defect "a rigid
+partner excludes a label its hypothesis lets the meta hold" is caught
+(`r005b-h-exclusion`).
+
 **Location (approved 2026-10-19; replaces the plan's first draft).** The first
 draft's "the latest site at which a fact or binding arrived" depends on
 the order of processing. The rule is, from provenance only: each
@@ -493,8 +504,8 @@ beyond §3's remark for 1g.
 | M3 (L1, gate before B3; proposed closed, for the user's review) | re-examination terminates | argued for every predicate graph (§5: a lineage moves at most `\|Λ\|` times; no graph assumption); cyclic graphs shown reachable; checked on every family and a cyclic one, with a sensitivity check; the effect rounds' joint fixpoint is M13's |
 | M4 | Solved is a solution, the least | argued (§6); S, L, G checked |
 | M5 | Contradiction has no solution | argued (§2, §7); H checked |
-| M6 | Unresolved with 0, 1, several | `odd-cycle` 0, `determinate` 1, `diag-01` 4 under the adopted configuration (`node qt-fixtures.mjs programs`) |
-| M7 | H changes no acceptance or type | by construction; `baseDiff` 0 |
+| M6 | Unresolved with 0, 1, several | `odd-cycle` 0, `determinate` 1, `diag-01` 4 under the adopted configuration (`node qt-fixtures.mjs programs`); in the compiler (B4) with `same` 0 and the three reclassified fixtures 1, each count asserted and shown failing when wrong |
+| M7 | H changes no acceptance or type | by construction; `baseDiff` 0; in the compiler (B4) H on against H off, `hDiff` 0 on sampled domains and the generators |
 | M8 | order independence | measured, not proved |
 | M9 | swapped arguments change nothing | measured (`mirrorDiff` 0) |
 | M10 | association changes nothing | measured (§10); argued for 1g only |

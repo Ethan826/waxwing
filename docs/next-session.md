@@ -1,3 +1,20 @@
+# Waxwing / R005 Tranche B: B4 done, for review, unmerged (2026-10-19)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). B4 (the end
+of a body: H and Unresolved) is done on top of B3 and 2g (decisions 17,
+18): code commit 3157b6d; verify 2334/2334, 59/59, 164 proofs; evidence
+in docs/progress.md "R005 Tranche B B4". P5 is gone; Unresolved bodies
+report P6 and H's refusals P2's text until B5. The three approved
+reclassifications and `same` are in test/fixtures.
+
+**Next, needs the user's review:** B4. B5 (diagnostics D4 and D6,
+metadata) is not authorized; its first step is to bring back the exact
+wording of the two kinds of hint for approval (decision 17).
+
+The working method and design notes below still apply.
+
+---
+
 # Waxwing / R005 Tranche B: B3 with case 2g, for review, unmerged (2026-10-19)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). The user
