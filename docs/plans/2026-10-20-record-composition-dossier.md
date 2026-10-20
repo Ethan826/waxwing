@@ -424,3 +424,124 @@ Remaining targets, unchanged: C4 (finite reduction), C8 (irrelevance
 for a fragment), C9 (signature checking, a conjecture to establish or
 narrow). Next review point: the author's reading of these statements,
 before any decision procedure or compiler change.
+
+The author accepted this milestone (2026-10-20) with qualifications,
+recorded here: rows as arbitrary maps suit the universal identities,
+but existence and decision results must guarantee finite witnesses;
+problems as predicates prove no algorithm; the program proofs use a
+fixed six-label universe and do not show that further labels can be
+ignored (that is the reduction's work). The milestone does not
+establish inference completeness, signature decidability or compiler
+correctness.
+
+## 10. Second milestone: the call-site foundation
+
+Authorized: constraint syntax and its interpretation; substitution and
+the binding-equation correspondence, proved; the finite-reduction
+theorem for existential call-site satisfiability, stated and brought
+back before any proof. C8 and the general C9 are deferred; forced or
+written splits (§4) let C8 wait.
+
+### 10.1 Syntax and interpretation (definitions; Lean: Syntax.lean)
+
+Type variables and row variables are numbered, and at a call site all
+are flexible. Type expressions: base types, functions, type variables,
+and record types written as fields plus row tails, `{ l1: t1, ...,
+...r, ...s }`, nested to any depth. Atoms: `t = u`, `r lacks { l }`,
+`r disjoint s`, and the unsatisfiable `ff`. A problem is a finite list
+of atoms. Ground types are base types, functions and records whose rows
+map labels to ground types. A record type denotes the disjoint
+composition of its field rows and tails, and is undefined if two of
+them share a label; an equation holds when both sides are defined and
+equal. User-defined type constructors are not modelled.
+
+### 10.2 Substitution and binding equations (proved; Lean:
+Subst.lean, Correspond.lean, Binding.lean)
+
+A substitution is a finite list of bindings, type variables to type
+expressions and row variables to fields plus tails, applied once and in
+parallel. `eqs σ` is `x = σ(x)` for each binding (for a row variable,
+`{ ...r } = { fields, ...tails }`). Proved:
+
+- `subst_evalT`: if an assignment satisfies `eqs σ`, every expression
+  and its substitution have the same value (both undefined, or both
+  defined and equal).
+- `subst_sat`: under `eqs σ`, a problem and its substitution have the
+  same solutions; `lacks` and `disjoint` on a bound row variable become
+  the corresponding facts about its written fields (checked statically)
+  and its tails.
+- `binding_correspondence` (§2.1 (i)): if every solution of `C`
+  satisfies `eqs σ`, then `C` and `eqs σ ++ Cσ` have exactly the same
+  solutions.
+- `bindings_needed`: the equations cannot be dropped. With `C` the
+  single atom `x = true` and `σ = [x ↦ true]`, `Cσ` is `true = true`,
+  satisfied by an assignment with `x = false`, which `C` excludes.
+
+Dependencies: `propext`, `Quot.sound`, `Classical.choice` (partial
+composition is defined classically; disjointness of arbitrary maps is
+not decidable). Mutant: with `lacks` ignoring a bound row's fields,
+`subst_lacks` fails.
+
+### 10.3 The finite reduction, stated (Lean: Reduction.lean, `Prop`
+definitions only; nothing proved or assumed)
+
+- **R1, existential reduction** (`R1`). A call-site problem `C` has a
+  solution iff it has one in which every row, at every depth (inside
+  type variables' values and inside field types), has its labels among
+  those written in `C` (`labelsOf C`: record fields and `lacks` atoms).
+  Such a witness is finite.
+- **R2, presence patterns** (`R2`). Let `L` be `labelsOf C` without
+  repeats, and `fresh r l` a type variable for each row variable `r`
+  and label `l`, distinct from each other and from `C`'s. For a
+  presence pattern `π` (which labels of `L` each row variable has), let
+  `σπ` bind each row variable `r` of `C` to the closed record `{ l:
+  fresh r l | l ∈ L, π r l }`. Then `C` has a solution iff some `Cσπ`
+  has one.
+- **R2′, closedness** (`R2Closed`). Every `Cσπ` has no row variables.
+  Only `π`'s values on `C`'s row variables and `L` matter, so finitely
+  many patterns (at most `2^(rows × labels)`) need trying.
+- **R3, closed problems** (`R3Spec f`). A function `f` answers `true`
+  exactly for the satisfiable closed problems. As a `Prop`, R3Spec is
+  met by a classical choice of `f`, so it means decidability only for
+  `f` written as a computable definition: Robinson's unification with
+  occurs check (published, Robinson 1965) over base types, functions and
+  closed records (equal label sets, fields unified pointwise), plus the
+  static checks that `ff` fails and no record repeats a label.
+- **Call-site decidability** follows from R1-R3: try each pattern, run
+  `f` on `Cσπ`. Not stated separately yet; its statement needs the
+  enumeration of patterns as a computable definition.
+
+**What represents unnamed labels.** Nothing, at a call site. R1 says
+the labels written in `C` suffice: restricting every row (at every
+depth) to them preserves every atom, because restriction is a function
+applied to both sides of an equation and commutes with evaluation
+(written fields keep their labels; unions and disjointness survive
+removal of labels), and it only removes fields, so `lacks` and
+`disjoint` stay true. This is an argument for R1, to be proved, not a
+proof. It holds only because every variable is existential: a rigid
+row ranges over all rows, including labels nobody wrote, so a
+signature's reduction (C9) needs a stand-in for "the rest" of each
+rigid row, and R1 does not transfer to it.
+
+**Why field types stay independent.** In R2 each row variable gets its
+own type variable at each label (`fresh r l`), and each record
+expression written in `C` is a separate expression with its own field
+types. Nothing relates two of them unless an equation in `C` does.
+Program 11: `q`'s pattern has `a` absent (its `lacks`), and `{ ...q, a:
+1 }` and `{ ...q, a: true }` are two expressions whose `a` fields are
+unrelated. Simon's translation, by contrast, gives a field one type
+term across joined rows (assessment §4.3).
+
+**Proof plan, for approval, not started.** R1 by defining restriction
+on ground types and proving that it commutes with evaluation;
+R2 forward from R1 (read `π` and the fresh variables' values off the
+restricted solution; then `binding_correspondence`), backward by
+building each row from its pattern's fields and using
+`binding_correspondence` again, since `Cσπ` mentions no row variable;
+R2′ by computation on the syntax; R3 by writing and verifying the
+unification algorithm, the largest part. Known obstacles: restriction
+is recursion through rows that are functions (the nested `Option`
+inside `G`), which Lean's structural recursion may not accept, and may
+need a well-founded measure or a finite representation of ground rows;
+R3 needs a termination argument for unification (a standard measure on
+variables and term size).
