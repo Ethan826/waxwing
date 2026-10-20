@@ -3,7 +3,7 @@ Axiom dependencies of every headline theorem. Run:
 `lake env lean Composition/Axioms.lean`; the output is in axioms.out.
 -/
 import Composition.Programs
-import Composition.Unify.Examples
+import Composition.Sig.Examples
 
 open Composition Composition.Programs Composition.Syntax
 
@@ -66,3 +66,10 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms unify_complete
 #print axioms r3
 #print axioms decideCall_correct
+#print axioms lacks_sat_not_valid
+#print axioms unnamed_labels_matter
+#print axioms declared_disjoint_valid
+#print axioms rigid_type_not_valid
+#print axioms p6Sig_valid
+#print axioms depSig_valid
+#print axioms depSig_needs_dependence

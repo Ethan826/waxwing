@@ -57,6 +57,8 @@ A clean `lake build` reports no errors and no warnings. No file uses
 | Composition/Unify/Complete.lean | U2 | `unify_complete` |
 | Composition/Unify/Decider.lean | R3, call sites | `decideClosed`, `r3`, `decideCall`, `decideCall_correct` |
 | Composition/Unify/Examples.lean | executable examples | `#guard` on programs 3, 4, 5, 11, controls, counterexamples |
+| Composition/Sig/Validity.lean | C9 statements: `SigProblem`, `Valid` | `lacks_sat_not_valid`, `unnamed_labels_matter`, `declared_disjoint_valid`, `rigid_type_not_valid` |
+| Composition/Sig/Examples.lean | C9 examples | `p6Sig_valid`, `depSig_valid`, `depSig_needs_dependence` |
 | Composition/Axioms.lean | | `#print axioms` for each theorem above |
 
 ## Assumption dependencies (axioms.out)
@@ -67,9 +69,12 @@ milestone `Classical.choice` appears only in `sigFails_iff` (the
 direction "not holds implies fails" is classical). In the second it
 appears in every theorem about `compose`: disjointness of arbitrary
 maps is not decidable, so partial composition is defined classically.
-These definitions are semantics, not an algorithm; a decision procedure
-(R3) must be computable and is not yet written. `c7a`, `c10`, `c11`,
-`instance_alone_insufficient` and `p6_holds` depend on no axioms.
+These definitions are semantics, not an algorithm. The decision
+procedure is separate and computable (`unify`, `decideClosed`,
+`decideCall`, third milestone); its correctness theorems use the
+classical semantics, so they too list `Classical.choice`. `c7a`, `c10`,
+`c11`, `instance_alone_insufficient`, `p6_holds` and `not_part_self`
+depend on no axioms.
 
 ## Definitional choices to review
 
