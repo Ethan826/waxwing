@@ -3,9 +3,11 @@
 Machine-checked proofs for
 docs/plans/2026-10-20-record-composition-dossier.md: the elementary
 claims (first milestone, dossier §9) and the call-site foundation's
-syntax, substitution and binding equations, with the finite-reduction
-statements unproved (second milestone, §10). Research only; separate
-from the compiler and not part of `npm run verify`.
+syntax, substitution, binding equations and finite reduction (R1, R2,
+R2′, enumeration, fresh allocation; second milestone, §10). R3, the
+closed-problem decider, is proposed in §11 and not implemented.
+Research only; separate from the compiler and not part of `npm run
+verify`.
 
 ## Build and check
 
@@ -34,7 +36,14 @@ A clean `lake build` reports no errors and no warnings. No file uses
 | Composition/Evaluate.lean | records as compositions of parts | `evalT_record`, `fieldRows_none_iff`, `fieldRows_disjoint` |
 | Composition/Correspond.lean | substitution preserves values | `rowOf_eval`, `expandTails_eval`, `subst_evalT` |
 | Composition/Binding.lean | §2.1 (i) | `subst_atom`, `subst_sat`, `binding_correspondence`, `bindings_needed` |
-| Composition/Reduction.lean | R1, R2, R2′, R3 | statements only (`Prop` definitions; nothing proved or assumed) |
+| Composition/Reduction.lean | R1, R2, R2′, R2Enum, R3 | statements (`Prop` definitions), `dedup`, `pairsOf`, `subsets`, `freshAlloc` |
+| Composition/Restrict.lean | R1's directional lemma | `evalT_restrict`, `composeAll_rrow` |
+| Composition/R1.lean | R1 | `r1`, `holds_restrict`, `assignWithin_restrict` |
+| Composition/Closed.lean | congruence | `sat_congr`, `evalT_congr` |
+| Composition/Pattern.lean | pattern rows | `evalF_patternFields`, `mem_dedup`, `nodup_dedup` |
+| Composition/Closedness.lean | R2′ | `r2Closed` |
+| Composition/R2.lean | R2 | `r2_forward`, `r2_backward`, `r2` |
+| Composition/Enum.lean | enumeration, allocation | `r2Enum`, `freshAlloc_fresh` |
 | Composition/Axioms.lean | | `#print axioms` for each theorem above |
 
 ## Assumption dependencies (axioms.out)
@@ -93,3 +102,6 @@ These definitions are semantics, not an algorithm; a decision procedure
   `lacks` case ignoring a bound row's written fields, `subst_lacks` no
   longer checks; the mutated statement is false (a row bound to `{ l:
   Int }` would "lack" `l`).
+- R1/R2: `freshAlloc_fresh` discharges R2's premise for every problem.
+  Mutant (scratch copy, not kept): with one fresh type variable per
+  label shared by every row variable, `r2_forward` no longer checks.

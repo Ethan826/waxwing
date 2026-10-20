@@ -482,66 +482,142 @@ composition is defined classically; disjointness of arbitrary maps is
 not decidable). Mutant: with `lacks` ignoring a bound row's fields,
 `subst_lacks` fails.
 
-### 10.3 The finite reduction, stated (Lean: Reduction.lean, `Prop`
-definitions only; nothing proved or assumed)
+### 10.3 The finite reduction: revised statements, proved
 
-- **R1, existential reduction** (`R1`). A call-site problem `C` has a
-  solution iff it has one in which every row, at every depth (inside
-  type variables' values and inside field types), has its labels among
-  those written in `C` (`labelsOf C`: record fields and `lacks` atoms).
-  Such a witness is finite.
-- **R2, presence patterns** (`R2`). Let `L` be `labelsOf C` without
-  repeats, and `fresh r l` a type variable for each row variable `r`
-  and label `l`, distinct from each other and from `C`'s. For a
-  presence pattern `π` (which labels of `L` each row variable has), let
-  `σπ` bind each row variable `r` of `C` to the closed record `{ l:
-  fresh r l | l ∈ L, π r l }`. Then `C` has a solution iff some `Cσπ`
-  has one.
-- **R2′, closedness** (`R2Closed`). Every `Cσπ` has no row variables.
-  Only `π`'s values on `C`'s row variables and `L` matter, so finitely
-  many patterns (at most `2^(rows × labels)`) need trying.
-- **R3, closed problems** (`R3Spec f`). A function `f` answers `true`
-  exactly for the satisfiable closed problems. As a `Prop`, R3Spec is
-  met by a classical choice of `f`, so it means decidability only for
-  `f` written as a computable definition: Robinson's unification with
-  occurs check (published, Robinson 1965) over base types, functions and
-  closed records (equal label sets, fields unified pointwise), plus the
-  static checks that `ff` fails and no record repeats a label.
-- **Call-site decidability** follows from R1-R3: try each pattern, run
-  `f` on `Cσπ`. Not stated separately yet; its statement needs the
-  enumeration of patterns as a computable definition.
+The author's review of the first statements (2026-10-20) found four
+points; each is applied:
 
-**What represents unnamed labels.** Nothing, at a call site. R1 says
-the labels written in `C` suffice: restricting every row (at every
-depth) to them preserves every atom, because restriction is a function
-applied to both sides of an equation and commutes with evaluation
-(written fields keep their labels; unions and disjointness survive
-removal of labels), and it only removes fields, so `lacks` and
-`disjoint` stay true. This is an argument for R1, to be proved, not a
-proof. It holds only because every variable is existential: a rigid
-row ranges over all rows, including labels nobody wrote, so a
-signature's reduction (C9) needs a stand-in for "the rest" of each
-rigid row, and R1 does not transfer to it.
+1. **Directional evaluation.** Restriction preserves a successful
+   evaluation but not an undefined one: two rows overlapping only at an
+   unwritten label compose once it is removed. R1 needs only the
+   directional lemma `evalT_restrict` (if `t` evaluates to `g` under
+   `θ`, and `t`'s written labels are in `L`, then `t` evaluates to `g`
+   restricted to `L` under `θ` restricted to `L`). The first text's
+   "commutes with evaluation" was too strong.
+2. **Finite freshness.** `FreshFor` now asks for distinct fresh indices
+   only for the pairs a pattern uses (a row variable of `C`, a label of
+   `C`) and only that they avoid `C`'s type variables. `freshAlloc`
+   allocates them explicitly (past the largest type variable, numbered
+   by position in `pairsOf C`), and `freshAlloc_fresh` proves it meets
+   `FreshFor`. Enumeration is now its own statement, `R2Enum`.
+3. **Pointwise, not global.** One pattern adds equations that other
+   solutions of `C` violate, so `binding_correspondence` does not
+   apply. R2 is proved with the pointwise `subst_sat`, building in each
+   direction an assignment that satisfies the chosen pattern's
+   equations. R2 preserves existence across the enumerated patterns; no
+   single pattern preserves `C`'s solutions.
+4. **Decidable base types.** `R3Spec` now takes `DecidableEq B`.
 
-**Why field types stay independent.** In R2 each row variable gets its
-own type variable at each label (`fresh r l`), and each record
-expression written in `C` is a separate expression with its own field
-types. Nothing relates two of them unless an equation in `C` does.
-Program 11: `q`'s pattern has `a` absent (its `lacks`), and `{ ...q, a:
-1 }` and `{ ...q, a: true }` are two expressions whose `a` fields are
-unrelated. Simon's translation, by contrast, gives a field one type
-term across joined rows (assessment §4.3).
+Proved (Lean; clean build, no `sorry`; axioms `propext`, `Quot.sound`,
+`Classical.choice`):
 
-**Proof plan, for approval, not started.** R1 by defining restriction
-on ground types and proving that it commutes with evaluation;
-R2 forward from R1 (read `π` and the fresh variables' values off the
-restricted solution; then `binding_correspondence`), backward by
-building each row from its pattern's fields and using
-`binding_correspondence` again, since `Cσπ` mentions no row variable;
-R2′ by computation on the syntax; R3 by writing and verifying the
-unification algorithm, the largest part. Known obstacles: restriction
-is recursion through rows that are functions (the nested `Option`
-inside `G`), which Lean's structural recursion may not accept, and may
-need a well-founded measure or a finite representation of ground rows;
-R3 needs a termination argument for unification (a standard measure on
-variables and term size).
+- **R1** (`r1`): `C` has a solution iff it has one in which every row,
+  at every depth, has its labels among those written in `C`
+  (`AssignWithin (labelsOf C)`). Such a witness is finite.
+- **R2** (`r2`): for any `fresh` with `FreshFor C fresh`, `C` has a
+  solution iff some pattern `π` gives a closed problem
+  `patternProblem C π fresh` with a solution.
+- **R2′** (`r2Closed`): every pattern's problem mentions no row
+  variable.
+- **R2Enum** (`r2Enum`): the same with `π` ranging over the finitely
+  many patterns `patternOf S`, `S` a sublist of `pairsOf C`
+  (`2^|pairsOf C|` of them); every pattern agrees on `pairsOf C` with
+  one of them (`patternProblem_congr`, `filter_mem_subsets`).
+- **Allocation** (`freshAlloc_fresh`): `FreshFor C (freshAlloc C)` for
+  every `C`, so R2 and R2Enum apply to every problem.
+
+Supporting results: `sat_congr` (a problem's truth depends only on the
+variables it mentions), `evalF_patternFields` (a pattern's record over
+labels without repeats evaluates to its pattern row), `dedup` with
+`mem_dedup` and `nodup_dedup` (the written labels without repeats).
+
+Not vacuous: `freshAlloc_fresh` discharges R2's premise for every
+problem. Mutant (scratch copy, not kept): with every row variable
+sharing one fresh type variable per label (`fresh 0 l` for `fresh r
+l`), R2's forward proof fails where it reads each row variable's own
+field types: the independence the reduction relies on.
+
+**What represents unnamed labels.** Nothing, at a call site: R1. The
+argument holds only because every variable is existential; a rigid
+row ranges over labels nobody wrote, so signature checking (C9) needs a
+stand-in for "the rest" of each rigid row, and R1 does not transfer.
+
+**Why field types stay independent.** Each row variable gets its own
+type variable at each label (`fresh r l`), and each record written in
+`C` is a separate expression; nothing relates two of them unless an
+equation in `C` does. The mutant above shows the proof depends on it.
+Program 11: `q`'s pattern has `a` absent, and `{ ...q, a: 1 }` and `{
+...q, a: true }` are two expressions with unrelated `a` fields.
+
+## 11. R3 proposed: deciding closed problems (not implemented)
+
+For the author's review before any implementation.
+
+**Input.** A closed problem: atoms `t = u` and `ff` only (R2′; no
+`lacks` or `disjoint`, which mention row variables), over base types,
+functions, type variables and records written as fields with no tails.
+
+**Algorithm** (Robinson 1965; in the transformation form of Martelli
+and Montanari 1982, published), as a computable Lean definition:
+
+1. If `ff` occurs, answer false.
+2. If any record written in the problem repeats a label, answer false:
+   its value is undefined, so the atom containing it fails. Otherwise
+   every expression in the problem is defined (a lemma to prove), and
+   an atom `t = u` holds iff `t` and `u` have equal values.
+3. Unify the list of equations, carrying a substitution:
+   - `t = t` (syntactically equal): drop.
+   - `x = t` or `t = x`, `x` a type variable: if `x` occurs in `t`
+     (and `t` is not `x`), answer false (occurs check: ground types are
+     finite trees); otherwise substitute `t` for `x` in the remaining
+     equations and record the binding.
+   - `b = b'` (base types): drop if equal (`DecidableEq B`), else false.
+   - `t → u = t' → u'`: replace by `t = t'` and `u = u'`.
+   - two records: false unless their label sets are equal (each
+     without repeats, by step 2); otherwise one equation per label
+     between its two field types, in any order.
+   - any other pair of constructors: false.
+   - no equations left: true.
+
+**Termination measure** (Martelli and Montanari; Baader and Snyder,
+Handbook of Automated Reasoning, §2): lexicographic on (the number of
+distinct type variables in the equations, the total size of the
+equations, the number of equations of the form `t = x` with `t` not a
+variable). Each step lowers it: eliminating a variable removes one from
+the equations (the occurs check ensures it does not reappear);
+decomposition and dropping keep the variables and lower the size;
+orienting `t = x` to `x = t` lowers the third component. Records count
+as the sum of their field sizes plus one.
+
+**Correctness statements to prove** (with `f` the computable
+definition above):
+
+- **U1, soundness**: if `f C = true` then `C` has a solution. Witness:
+  the final substitution, with every unbound type variable given the
+  empty record `{}`, which exists for any `B`.
+- **U2, completeness**: if `C` has a solution then `f C = true`. Each
+  transformation preserves the set of solutions (on the problem's
+  variables), and each false answer has no solution (a constructor
+  clash, an occurs-check failure on finite trees, unequal label sets,
+  a repeated label, or `ff`).
+- **U3, termination**: by the measure, as Lean's well-founded
+  recursion requires.
+- **R3**: `R3Spec f` from U1 and U2.
+- **Call sites**: `decideCall C`, which tries `f` on `patternProblem C
+  (patternOf S) (freshAlloc C)` for each sublist `S` of `pairsOf C`,
+  answers `true` iff `C` has a solution (R2Enum, `freshAlloc_fresh`,
+  R2′, R3).
+
+**What this does not give.** `decideCall` decides whether a call has a
+solution: it can find a pattern, but choosing one is not solving, since
+one pattern does not preserve the call's solutions (§10.3, point 3). A
+Solved verdict with a residual (§2.1) needs more: either the
+alternatives kept, or a pattern shown forced (C7). Signatures (C9) and
+split irrelevance (C8) are untouched. The search tries up to
+`2^|pairsOf C|` patterns (a worst-case fact, §4.8's complexity note).
+
+**Lean obstacles expected.** Decidable equality for the mutual type of
+expressions (derived or written by hand); substitution inside the
+algorithm reusing `substT` with a type-only substitution; the measure's
+proof for the record case; and the lemma that every expression of a
+closed problem with label-distinct records is defined.
