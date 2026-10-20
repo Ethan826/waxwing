@@ -891,7 +891,7 @@ representation adds beyond the semantics, and a challenge to each:
 |---|---|---|---|
 | a rest is placed in a flexible row wholly or not at all | no atom names an unwritten label | `splitSig`: a valid signature divides `r`'s rest by membership in `s` | refuted (completeness) |
 | one generic solution per written-label pattern | instances agree on written labels | the same: the solution depends on unwritten labels' membership in other rigid rows | refuted as stated |
-| rigid type constants stand for arbitrary types; a fresh record realizes one | fresh labels cannot be named | `recSig`: a row variable absorbs any record; an arrow is matched by `∃ x y. α = x → y`; a base type by `α = Int` | refuted: no single ground value is opaque in `G` |
+| rigid type constants stand for arbitrary types; a fresh record realizes one | fresh labels cannot be named | `recSig`: a row variable absorbs any record; similarly an arrow is matched by `∃ x y. α = x → y` | the proposed construction refuted; whether any uniform hard instance exists is open |
 | distinct rest constants | rows are different variables | instances may make rests equal or overlapping; a success relying on distinctness is unsound | soundness obligation (below) |
 | a composition holding two rests needs a declared `disjoint` | undeclared rests may overlap | soundness pass: `∀ r s. ∃ u v. u = r ∧ v = s ∧ u disjoint v`, no clause, is invalid; a side condition on compositions alone would accept it, since `u` and `v` hold distinct rests | side condition must cover every requirement that two rests be disjoint: compositions, `disjoint` atoms, and records holding both |
 
@@ -905,9 +905,10 @@ representation adds beyond the semantics, and a challenge to each:
   condition covers every requirement that two rests be disjoint.
   Unresolved; it must survive a soundness adversarial pass before any
   proof.
-- **S2 refuted for P9; S5's construction inadequate.** Counter-instances
-  must be found per failure; no uniform hard instance exists in this
-  model.
+- **S2 refuted for P9; S5's construction inadequate.** The proposed
+  single hard-instance construction fails (`recSig`); whether some other
+  uniform hard instance exists is not established. Until one is,
+  counter-instances are found per failure.
 - **For completeness, a finer representation (statement only).**
   Partition the unwritten labels by their membership in the rigid rows
   (the Venn regions of the rigid rows' domains). A declared `r disjoint
@@ -929,3 +930,71 @@ representation adds beyond the semantics, and a challenge to each:
   representation's. The concrete-row oracle of §8 could not expose this
   gap. Bounded evidence still.
 - C9's decidability is not refuted; only this procedure's completeness.
+
+### 13.8 Bounded ∀∃ oracle and the BAPA reading
+
+Authorized (2026-10-20): the research oracle, source reading and
+adversarial exploration. Not authorized: proofs of CR, adopting P9s,
+compiler changes. A good bounded comparison earns another statement
+review; it does not establish completeness.
+
+**The oracle** (research/composition-assessment/sig-oracle/, README
+there). Bounded semantics: the written labels plus two unwritten ones;
+rigid rows over `Int`/`Bool`; type variables over `Int`, `Bool`, `{}`,
+`(Int->Int)`; flexible rows over those four; flexible type variables
+also over the values the problem's own subexpressions build. "Invalid"
+means invalid in the bounded model, a candidate counter-instance only.
+P9s runs in its generic model with the widened side condition.
+
+| Run | Problems | P9s valid, bounded invalid | Bounded valid, P9s unresolved |
+|---|---|---|---|
+| hand challenges (aliases, chains, rest equality, rigid types, nested records, field types, empty regions) | 20 | 0 | 1 (`split`) |
+| generated, plain grammar | 3000 | 0 | 0 |
+| generated, split-biased grammar | 5000 | 0 | 16, all the `split` shape up to symmetry |
+
+Power checks: P9s without its side condition gives 15 candidate
+unsoundnesses in 300 problems, each still invalid with larger bounds;
+the plain grammar has little power against completeness (it never
+produced `split`), so the biased mode was added. Two of my challenge
+predictions were wrong and are recorded in the README (a trivially
+valid challenge, and a bounded-domain artifact that was then fixed).
+
+Reading of the evidence: no case was found where P9s accepts an invalid
+problem, within these bounds and shapes. That is bounded evidence for
+S1, not a proof; S1 stays unresolved.
+
+**The BAPA reading** (research/composition-assessment/bapa/README.md;
+Kuncak, Nguyen and Rinard, JAR 2006, read in full from the author
+preprint; FroCoS 2009 and VMCAI 2010 skimmed).
+
+- What transfers. The **presence part** of a signature problem, with
+  labels as elements and row domains as sets, is expressible in BAPA
+  (the reader's encoding, not the paper's): `disjoint` as an empty
+  intersection, `lacks l` as non-membership of a singleton, the
+  definedness of a composition as an emptiness atom, record equations'
+  presence half as set equality. BAPA allows ∀∃ over sets and is
+  decidable (Theorem 3, p.15). So the label-membership half of C9 has a
+  published decision procedure; it is not CR.
+- What it says against CR as stated. In BAPA an existential set may take
+  part of a region (Lemma 1, p.13), and under quantifier alternation
+  region cardinalities matter beyond emptiness (Lemma 10, p.20). The
+  paper proves the region reduction for a language with no symbols for
+  individual elements and states no indistinguishability lemma.
+- What it leaves open: per-label field types (one label at different
+  types in two rows), rigid field types quantified per label, field-type
+  equations across rows, nested records and type variables that may be
+  records (`recSig`). Nothing read covers a quantified logic of sets
+  with per-element attributes; VMCAI 2010 shows quantified BAPA with
+  one unary function is undecidable, by a cardinality argument that
+  Waxwing's language lacks, so it does not settle Waxwing's case.
+
+**Revised standing of CR.** CR as stated (whole regions suffice, by
+indistinguishability) has no support in the reading and is not to be
+pursued as stated. The reading's open obligations for a typed version,
+in its list: whether Waxwing's positive atoms (no negation, no
+cardinality) need only emptiness per region; whether flexible rows ever
+need part of a region (in `split` whole regions suffice); how
+per-label field types are quantified and equated; nested records and
+record-valued type variables; finite rows over infinitely many labels
+(§8.1 of the paper states the lemma without the algorithm). These are
+questions for the next statement review, not claims.

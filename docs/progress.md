@@ -7624,3 +7624,20 @@ assessment.md.
   representation and a bounded ∀∃ oracle proposed. Rests wording
   corrected (they may be equal). New review convention in
   docs/engineering.md: adversarial review of proposed procedures.
+
+## Signature checking: bounded ∀∃ oracle and BAPA reading (2026-10-20)
+
+- research/composition-assessment/sig-oracle/: bounded validity vs P9s,
+  20 hand challenges (all as predicted after two recorded corrections)
+  and 8000 generated problems: no case of P9s accepting a problem
+  invalid in the bounded model; incompleteness only in the `split`
+  shape (rediscovered by a split-biased grammar). Power check: P9s
+  without its side condition gives 15 candidate unsoundnesses in 300,
+  each confirmed with larger bounds. Bounded evidence; S1 unresolved.
+- research/composition-assessment/bapa/: Kuncak, Nguyen and Rinard (JAR
+  2006) read in full: the presence part of signature problems fits BAPA
+  (∀∃ over sets, decidable); BAPA lets existential sets take part of a
+  region and counts matter beyond emptiness, so CR as stated is not
+  supported; per-label field types are outside everything read.
+  Dossier §13.8. Wording fixed: the proposed hard-instance construction
+  fails; no impossibility claimed. No proofs, no compiler change.

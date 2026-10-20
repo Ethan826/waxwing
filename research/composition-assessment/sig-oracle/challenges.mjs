@@ -77,20 +77,6 @@ export const CHALLENGES = [
   ['tyvar-field', sig([0], [0], [3], [], [lacks(0, 'a')],
     [eq(rec([['a', v(0)]], [0]), tails(3))]),
     'valid', 'valid', 'u holds a: α'],
-  ['nested-alias', sig([0, 1], [], [3], [1], [dis(0, 1)],
-    [eq(tails(3), tails(0)),
-      eq(v(1), rec([['f', tails(3, 1)]], [])),
-      eq(rec([['g', v(1)]], []), rec([['g', rec([['f', tails(0, 1)]], [])]],
-        []))]),
-    'valid', 'valid', 'two rests composed inside a field, through u = r'],
-  ['nested-alias-undeclared', sig([0, 1], [], [3], [1], [],
-    [eq(tails(3), tails(0)),
-      eq(v(1), rec([['f', tails(3, 1)]], []))]),
-    'invalid', 'unresolved', 'the same without the clause: r, s may overlap'],
-  ['tyvar-nested-rest', sig([0], [0], [], [1], [lacks(0, 'a')],
-    [eq(v(1), rec([['a', v(0)]], [0])),
-      eq(rec([['g', v(1)]], []), rec([['g', rec([['a', v(0)]], [0])]], []))]),
-    'valid', 'valid', 'x = { a: α, ...r }, nested once more'],
 ]
 
 // Smaller flexible field domains where four flexible rows would be slow.

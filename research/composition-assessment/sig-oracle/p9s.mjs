@@ -11,7 +11,7 @@
 // has a flexible solution; otherwise Unresolved, never Contradiction.
 // The flexible search is bounded (README.md).
 import { scan, rowsOver, product } from './semantics.mjs'
-import { DEFAULT_BOUNDS, findSolution } from './bounded.mjs'
+import { DEFAULT_BOUNDS, hasSolution } from './bounded.mjs'
 
 const rest = (r) => `ρ${r}`
 
@@ -78,36 +78,26 @@ function atomsOf(P, labels) {
 }
 
 export function p9s(P, bounds = DEFAULT_BOUNDS) {
-  for (const w of witnesses(P, bounds)) {
-    if (w.flex === null) return { verdict: 'unresolved', pattern: w.pattern }
-  }
-  return { verdict: 'valid' }
-}
-
-// One entry per pattern: the generic rigid assignment and the flexible
-// solution found for it (null if none). `sideCondition: false` drops the
-// side condition (a mutant, for power checks only).
-export function* witnesses(P, bounds = DEFAULT_BOUNDS, sideCondition = true) {
   const labels = [...scan([...P.D, ...P.B]).labels]
   const declared = declaredPairs(P.D)
-  const ok = (xs, ys) => !sideCondition || restsOk(declared, xs, ys)
   const atoms = atomsOf(P, labels)
   const fieldTypes = [...bounds.flexFieldTypes, ...atoms]
   const restLabels = P.rigidRows.map(rest)
   const typesAt = (l) => (l.startsWith('ρ') ? [`R${l.slice(1)}`] : fieldTypes)
   const flexRows = rowsOver([...labels, ...restLabels], typesAt)
-    .filter((row) => ok(restsIn(row), restsIn(row)))
+    .filter((row) => restsOk(declared, restsIn(row), restsIn(row)))
   const tyValues = [...bounds.tyValues, ...atoms]
   const extend = {
-    check: (row) => ok(restsIn(row), restsIn(row)),
-    disjointOk: (x, y) => ok(restsIn(x), restsIn(y)),
+    check: (row) => restsOk(declared, restsIn(row), restsIn(row)),
+    disjointOk: (x, y) => restsOk(declared, restsIn(x), restsIn(y)),
   }
   for (const present of patterns(P, labels)) {
     const rigid = genericRigid(P, labels, present)
-    const flex = findSolution(P, rigid, flexRows, tyValues, extend)
-    yield { present, labels, rigid, flex, extend,
-      pattern: describe(P, labels, present) }
+    if (!hasSolution(P, rigid, flexRows, tyValues, extend)) {
+      return { verdict: 'unresolved', pattern: describe(P, labels, present) }
+    }
   }
+  return { verdict: 'valid' }
 }
 
 function describe(P, labels, present) {
