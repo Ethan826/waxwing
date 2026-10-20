@@ -7067,3 +7067,79 @@ code commit ae295d1.
 B4 stays blocked until the user reviews 2g. O1-O6 open (O4 kept as a
 limitation). B5's hint wording comes back for approval. Nothing merged
 or pushed.
+
+## R005 Tranche B B4: the end of a body, H and Unresolved (2026-10-19)
+
+Authorized by the user (plan §10 decision 18, with 2g accepted), on
+branch `r005b-replan`; code commit 3157b6d. Plan §7 Task B4 lists what
+was built and the departures.
+
+- Red first (.build/evidence/r005b-b4-red.log: the new and changed
+  tests against an isolated build of b9f3c45): 40 of 83 fail. The
+  solver-level ones fail early, because the pre-B4 entry has no
+  `stepped` or `settledSubst` (a weaker red than a behavioural one); the
+  check-phase ones fail on behaviour (P5 where P6 or H's refusal is
+  due). The three bucket counts each fail when asserted wrong
+  (.build/evidence/r005b-b4-buckets-red.log: odd-cycle 1 for 0,
+  determinate 2 for 1, diag-01 3 for 4).
+- Compiler oracle, the second reference now QT-strict+Sym+2g+H (0 S, L,
+  H, E, order, lineage, reference defects; no skipped run anywhere).
+  Accept / refuse (of which H) / Unresolved:
+  - domain A whole (566 s, .build/evidence/r005b-b4-exhaustive-A.log):
+    185,276 / 17,220,172 (636,722) / 1,899,844 of 19,305,292; at 2g
+    185,276 / 16,583,450 / 2,536,566 waiting, so H moved 636,722 runs
+    from waiting to refused and changed no acceptance.
+  - domain B whole (35 s): 8,352 / 130,548 (25,716) / 314,650 of
+    453,550, the prototype's numbers with H exactly.
+  - fixtures, every order (76 now): 28,011 / 11,988 / 1,274 of 41,273;
+    stage 5 by class: Solved 27,229, Unresolved 1,274, Contradiction
+    6,882 runs, each order taking its fixture's class.
+  - generators (400 problems, five orders): raw 260 / 1,490 (15) / 250;
+    dense 110 / 70 (70) / 1,820; raw programs 405 / 1,355 (5) / 240;
+    shaped 685 / 960 (30) / 355; shared 660 / 1,085 (25) / 255.
+  - typed families (verify's sizes): the reference with H agrees run
+    for run, no H, S/L or G violation.
+- H as classification only (test/row-merge-h.test.mjs, in verify): H on
+  against H off on domain A one in 400 (48,362 runs, H 1,506), domain B
+  one in 10 (50,560, H 1,994) and the five generators (5,000, H 75):
+  `hDiff` 0 (same verdict or Unresolved where H refused; same state for
+  accepted and Unresolved runs). A counting judge is never asked when no
+  predicate waits and once per waiting predicate otherwise. diag-14 is
+  refused by H alone (Unresolved without it); diag-03 and diag-05 are
+  refused before the end.
+- Recovery obligations (plan §4.7): O1, O2 H's refusal (P2 at the call);
+  O3 diag-14 H's refusal in all 24 orders; O4 Unresolved (P6), kept as
+  an accepted limitation; O5 diag-14-fix Unresolved in all 24 orders;
+  O6 no run without a solution accepted in either domain, and H's
+  refusals counted above against B2's (A 15,026,498, B 153,080 refused).
+- Fixtures: design-forced-bound, diag-14-fix, design-quiet Unresolved
+  (solutions 1 each), their `-annotated` companions Solved, `same` added
+  (0 solutions). The fixture test reached `task` 5, activating diag-06,
+  diag-07, design-both-plain (P6) and design-both-annotated,
+  diag-07-fix (checked, not lowered). research/open-row-merge
+  fixtures.mjs keeps the superseded classes: 76 fixtures, 0 failing;
+  `node qt-adopted.mjs controls` and `node qt-fixtures.mjs fixtures`
+  exit 0.
+- Regression rows (.build/evidence/r005b-b4-rows*.log, each: fixed
+  passes, defect fails): new `r005b-h-exclusion`, `-h-binds`, `-quiet`,
+  `-predicate-end`; re-proved with changed symptoms: `r005b-sym`,
+  `-case2g` (P6), `-case2g-claim` (H's refusal at the predicate's site
+  against case 3's at the argument), `-case2g-atoms` (H's refusal),
+  `-end-fixpoint` (the end's progress check), `-one-unknown`,
+  `-sym-rigid`.
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify` on 3157b6d:
+  exit 0 (2334/2334, 59/59, 164 regression proofs;
+  .build/evidence/r005b-b4-verify.log). The first run, before amending,
+  failed the structural gates (`case` on Maybe and Either in
+  RowMerge/End where named `maybe`/`either` helpers are required);
+  rewritten, and the `r005b-predicate-end` needle moved with it.
+- Differential against b9f3c45 (`--corpus all --regenerate`, harvest
+  runs exited 0, 0; .build/evidence/r005b-b4-diff.log, all listed in
+  -diff-harvested.log): fuzz, isName, matches, mutations 0; harvested
+  8,679, 21 differences, every one at the same span: P5 → P6 18; P5 →
+  H's contradiction (P2) 3 (diag-14's shape, O1, O2).
+- .build/r005b-base, .build/regression and .build/go-cache deleted.
+
+B5 is not authorized. Its hint wording (a lambda annotation where it
+helps; the limitation explained for a call's own rows) comes back for
+approval first. Nothing merged or pushed.

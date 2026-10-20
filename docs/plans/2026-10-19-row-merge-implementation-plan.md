@@ -3,7 +3,7 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps
-> use checkbox (`- [ ]`) syntax for tracking. **Tasks B1, B2 and B3
+> use checkbox (`- [ ]`) syntax for tracking. **Tasks B1, B2, B3 and B4
 > were authorized** (the user, 2026-10-19, each alone) and are done. Do not
 > start any later task, or the gate tasks L1 and L2, until the user
 > authorizes it, and then only the task the user names. Two gates (§10,
@@ -598,9 +598,9 @@ compiler); each is checked by the tests named.
   | P2 | Task 4 (e63f7f4) | Check/Lacked `refusedAt`: a refusal whose reason was an equation (`Outside`, `Derived`, an `Equated` reason) | was `contradictions from equations are reported in Task 6` | **B2**: its every cause went with the sum rule and bounds, so it was removed, not reworded. A refusal caused by a predicate's binding (R10.1) first exists in B3, which adds its placeholder (`contradictions from merge predicates are reported in Task B5`) with the cause; B5 removes it |
   | P3 | Task 2 (be42baf) | Check/SeveralTails `withinOneTail` | `rest binders and removal over several tails are typed in Task 7` | 7 |
   | P4 | Task 4 (e63f7f4) | Specialize/Record `recordType` | `rows with several tails are lowered in Task 8` | 8 |
-  | P5 | B3 | RowMerge/End `endOfBody` (Check/Function after settling, Check/Failure before an open Fail family, RowEntry `finish`): a predicate still waits; at the earliest waiting predicate's site | `merge predicates still waiting at the end of a body are classified in Task B4` | B4 |
+  | P5 | B3 | RowMerge/End `endOfBody` (Check/Function after settling, Check/Failure before an open Fail family, RowEntry `finish`): a predicate still waits; at the earliest waiting predicate's site | `merge predicates still waiting at the end of a body are classified in Task B4` | **B4** (removed) |
   | P2′ | B3 | Check/Merged `mergedAt`: a failure a predicate caused, other than a broken fact | `contradictions from merge predicates are reported in Task B5` | B5 |
-  | P6 | B4 | the report of an `Unresolved` outcome (Check/Function) and of H's Contradiction (Check/Lacked, P2's text) | `unresolved merge predicates are reported in Task B5` | B5 |
+  | P6 | B4 | Check/EndReport (Check/Function, Check/Failure): an Unresolved body, at the earliest waiting predicate's site; H's Contradiction uses P2's text at the predicate's site | `unresolved merge predicates are reported in Task B5` | B5 |
 
 - **Go output** of existing programs stays byte-identical in every task
   (bootstrap snapshots; the differential's emit and compile phases for
@@ -854,12 +854,12 @@ fixtures changed).
 
 | # | Was (Task 4) | Now (B2) | Expected (prototype, every order) | Shown in |
 |---|---|---|---|---|
-| O1 | `granted2({ admin: false })`, both tails `lacks { admin }`: D1 `admin is not allowed here: r lacks { admin }` at the argument | P1 | Contradiction by H, 0 solutions; text: D1 preferred to D6 (decision 5) | B4 (class), B5 (text) |
-| O2 | the same with `{ name: 1, admin: false }`: D1 | P1 | as O1 | B4, B5 |
-| O3 | `diag-14` rows: refused in 16 of 24 orders, skipped in 8 | P1 in all 24 | Contradiction by H (fixture class unchanged), the approved `noX` location (T4) | B4 (rows and class), B5 (text) |
-| O4 | `granted2(…)`, only `s lacks { admin }`, both arguments: accepted (a commit) | P1 | Unresolved, 1 and 2 solutions; no annotation can fix it at the call (§5), so it is a finding for the user, not only a cost | B4 (class); its report and any remedy are the user's decision |
-| O5 | `diag-14-fix` rows: accepted in 16 of 24 orders | P1 in all 24 | Unresolved (approved reclassification, decision 2) | B4 |
-| O6 | labels-only runs Task 4 refused and B2 skips: domain A 17,705,571 → 15,026,498 refusals, domain B 233,144 → 153,080, generators likewise (docs/progress.md "R005 Tranche B B2") | P1 | each either Contradiction or Unresolved, never accepted (they have no solution); the count H recovers reported against these | B4's oracle runs |
+| O1 | `granted2({ admin: false })`, both tails `lacks { admin }`: D1 `admin is not allowed here: r lacks { admin }` at the argument | P1 | Contradiction by H, 0 solutions; text: D1 preferred to D6 (decision 5) | **B4: class shown** (H's refusal, P2 at the call); B5 (text) |
+| O2 | the same with `{ name: 1, admin: false }`: D1 | P1 | as O1 | **B4: class shown**; B5 |
+| O3 | `diag-14` rows: refused in 16 of 24 orders, skipped in 8 | P1 in all 24 | Contradiction by H (fixture class unchanged), the approved `noX` location (T4) | **B4: shown**, H's refusal in all 24 orders, Unresolved with H off; B5 (text, location) |
+| O4 | `granted2(…)`, only `s lacks { admin }`, both arguments: accepted (a commit) | P1 | Unresolved, 1 and 2 solutions; no annotation can fix it at the call (§5), so it is a finding for the user, not only a cost | **B4: shown** Unresolved (P6); kept as an accepted limitation (decision 17); B5 explains it without an annotation hint |
+| O5 | `diag-14-fix` rows: accepted in 16 of 24 orders | P1 in all 24 | Unresolved (approved reclassification, decision 2) | **B4: shown**, Unresolved in all 24 orders |
+| O6 | labels-only runs Task 4 refused and B2 skips: domain A 17,705,571 → 15,026,498 refusals, domain B 233,144 → 153,080, generators likewise (docs/progress.md "R005 Tranche B B2") | P1 | each either Contradiction or Unresolved, never accepted (they have no solution); the count H recovers reported against these | **B4: shown**, no acceptance without a solution in either domain; refusals at B4 A 17,220,172 (H 636,722), B 130,548 (H 25,716); docs/progress.md "R005 Tranche B B4" |
 
 ## 5. The annotation burden, at the compiler level
 
@@ -1272,19 +1272,75 @@ H's argument); Check/Function and Check/Failure (the Unresolved report
 before `Fail needs a concrete error family`); Check/RowEntry (the H-off
 option); tests.
 
-- [ ] Failing tests: the buckets (`odd-cycle` 0, `determinate` 1,
+- [x] Failing tests: the buckets (`odd-cycle` 0, `determinate` 1,
   `diag-01` 4) Unresolved with their counts asserted, each assertion
   shown failing with a wrong count; test/row-merge-h.test.mjs (§4.2);
   test/row-merge-order.test.mjs completed with verdict kinds; the
   reclassified fixtures at solver level, **only if the user approved
   them** (otherwise the task stops before this step); the injection
   tests of §3.5 through `endOfBody`.
-- [ ] Check-phase: `split({ x: 1, y: 2 })` (`diag-06`) and the
+- [x] Check-phase: `split({ x: 1, y: 2 })` (`diag-06`) and the
   unannotated `Both` (`diag-07`, `design-both-plain`) end Unresolved,
   asserting P6's E_INTERNAL; `same`-shaped and S1-shaped `pick`
   programs Unresolved.
-- [ ] Implement; verify; differential classified (P5 → P6 or a
+- [x] Implement; verify; differential classified (P5 → P6 or a
   contradiction).
+
+**B4 results and departures** (2026-10-19, decision 18; docs/progress.md
+"R005 Tranche B B4" has the counts):
+
+- RowMerge/End: `endOfBody` takes the unifier and H as a `Judge`
+  (injected: `homeless`, or `withoutH` through the entry's
+  `finishWithoutH`); `homeless` is §2.5 over Check/RowResidue's residue
+  and Check/Homes `admits` negated. Before H it checks that no waiting
+  predicate could progress: a stop from that examination passes
+  through, any progress or other failure is `Unexpected` (§2.5's
+  "the fixpoint did not finish").
+- H's refusal is a new failure, `Homeless Atom`, made only inside its
+  predicate's `FromMerge` (at the predicate's site; B5 gives the
+  approved location), classified a Contradiction. `Atom` moved to its
+  own module (Check/Atom) so UnifyFailure can name it.
+- RowOutcome: `outcome` split into `stepped` (a step: went on, a
+  contradiction, a stop) and `concluded` (the end of a body);
+  `Solved` and `Unresolved` carry `Settled`, whose constructor is not
+  exported and which only `concluded` makes from End's `Ended`;
+  `Unresolved`'s payload is the waiting `Merge`s (the old `Pending`
+  went).
+- Check/EndReport reports the end for Check/Function and, before `Fail
+  needs a concrete error family`, Check/Failure: H's refusal as P2's
+  text at the predicate, Unresolved as P6 at the earliest waiting
+  predicate's site. P5 is gone.
+- Fixtures reclassified as approved (decision 2), each with its
+  `-annotated` companion (the smallest annotation of `node
+  qt-adopted.mjs examples`), and `same` added (0 solutions). The
+  fixture test's `task` is 5 (the 2026-10-17 numbering `stages` uses);
+  a Solved fixture at its check stage is now judged by the checker
+  alone (`checkWired`), since full compilation stops at P4 until Task
+  8. research/open-row-merge's fixtures.mjs keeps the superseded
+  classes of the four in a table, as §4.5 says that archive does.
+- O1-O5 shown individually (test/row-merge.test.mjs, test/r005b-
+  unify.test.mjs, test/r005b-limitations.test.mjs); O6 in the
+  exhaustive runs (progress).
+- Regression rows landed: `r005b-h-exclusion` (as planned);
+  `r005b-predicate-end` (its defect's symptom is lowering's P4, the body
+  passing checking, not an acceptance); **reworded**: `r005b-h-binds`
+  restores H inside re-examination, and its probe is diag-14's shape
+  followed by an ordinary mismatch, which the body must report first (H
+  refusing early cannot change a class, since its exclusions only grow);
+  `r005b-quiet` restores a rescan that counts a pass where nothing fired
+  as a change, so twelve quiet predicates reach the rescan's bound
+  instead of Unresolved within 2 s (the adopted design makes no
+  predicates while re-examining, so "multiplying predicates" has no
+  whole-form defect).
+- Rows whose symptom changed: `r005b-end-fixpoint` is now caught by the
+  end's progress check (`a waiting predicate could still progress at the
+  end of a body`); `r005b-sym` and `r005b-case2g` read P6;
+  `r005b-case2g-claim`'s superseded wait is refused by H at the end,
+  told apart by location (the predicate's site against case 3's at the
+  argument), and the solver-level counterexample test now also runs
+  with H off, where case 3's refusal must come before the end (the user:
+  H must not conceal that regression); `r005b-case2g-atoms`'s probe is
+  H's refusal (P2).
 
 ### Task B5: Diagnostics (D4, D6) and metadata
 
@@ -1454,15 +1510,15 @@ kept as planned (`r005b-precedence`, `-provenance`, `-mixed-lacks`,
 | `r005b-upper` | planned, never landed; **drop proposed** | no upper bounds | `both(merge, merge)` is Unresolved by design | — |
 | `r005b-bound-reason` | planned; **drop proposed** | R10.3 | — | — |
 | `r005b-defer` | planned; **reworded** | a predicate solved by guessing a part | `apply2(merge, { y: 2 }, { x: 1 })` stays accepted with each label in its argument's part | 7 |
-| `r005b-quiet` | planned; **reworded** | re-examination that multiplies predicates | `h(pick × 12)` within a time bound (now Unresolved, D4) | B4 |
+| `r005b-quiet` | **landed, B4; reworded again** | a rescan that counts a pass where no case fired as a change | `h(pick × 12)` Unresolved (P6) within 2 s | B4 |
 | `r005b-pending-dedup` → `r005b-nested-once` | reworded | a nested predicate reported twice | draft 3 §2.6's nested program, one D4 | B5 |
-| `r005b-pending-end` → `r005b-predicate-end` | reworded | waiting predicates dropped at the end | `split({ x: 1, y: 2 })` accepted | B4 |
+| `r005b-pending-end` → `r005b-predicate-end` | **landed, B4** | waiting predicates dropped at the end | `split({ x: 1, y: 2 })` passes checking (lowering's P4) instead of P6 | B4 |
 | `r005b-drain-text` → `r005b-case-text` | reworded | a case's failure uses Require's own text | `apply2(merge, { z: 1 }, { y: 2 })` reads `Expected { ..._ }, found …` | 7 |
 | `r005b-drained-reason` → `r005b-solved-reason` | reworded | a binding a case made loses its predicate (R10.1) | Example 17 reads `Expected {}, found { z: Int }` | 7 |
 | `r005b-sym` | **new** | Sym disabled | S2 (`ignore(fn(p) => merge(p, { a: 1 }))`) Unresolved | B3 |
 | `r005b-sym-rigid` | **new** | Sym's closed test true for a part with a rigid tail | a generic caller B0 finds by the oracle, refused or accepted wrongly | B3 |
-| `r005b-h-exclusion` | **new** | H's exclusion without entailment (`cannotHold` reduced to the meta's own facts) | a program B0 finds (the order-A-lacks shape) refused although it has a solution, or `diag-14-fix` refused | B4 |
-| `r005b-h-binds` | **new** | H run before the end (inside re-examination) | `diag-14-fix`-shaped program: a verdict before the end where Unresolved is due | B4 |
+| `r005b-h-exclusion` | **landed, B4** | H's exclusion without entailment (a rigid partner excludes a label whether or not it lacks it) | `Merge R ?q { a, ...w }` with `r lacks { a }` refused although it has a solution | B4 |
+| `r005b-h-binds` | **landed, B4; reworded** | H run before the end (inside re-examination) | diag-14's shape then an ordinary mismatch: H's refusal pre-empts it | B4 |
 | `r005b-one-unknown` | **new** | a creation point not desugared | a constructor or effect-operation use with `{ ...r, ...s }`: E_INTERNAL (the invariant guard) where a verdict is due | B3 |
 | `r005b-case2-reason` | **new, B3** (moved from B2, user 2026-10-19) | a binding case 2 made loses its predicate as cause | the shape of `node qt-render.mjs case2`'s problem 1558 as a Waxwing program | B3 |
 | `r005b-lineage-lacks` | **new, proposed by L1** | the bind rule not passing a meta's lacks to a meta rest (Check/RecordTail `passed`) | a cyclic program (a merge result unified with its own part holding a label) reaches the step counter's `Stop Limit` instead of its Contradiction | B3 |
