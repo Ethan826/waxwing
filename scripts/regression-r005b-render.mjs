@@ -6,6 +6,8 @@
 const unresolved = 'src/Features/Check/Unresolved.purs';
 const contradicted = 'src/Features/Check/Contradicted.purs';
 const argumentOrigin = 'src/Features/Check/ArgumentOrigin.purs';
+// The written-here note last: R8's third note is missing.
+const writtenLast = 'written here @\\{ \\.\\.\\.r, \\.\\.\\.s \\}\\]\\n$';
 
 export const r005bRenderRows = [
   {
@@ -48,7 +50,7 @@ export const r005bRenderRows = [
     needle: '    (requiredBy fieldsWritten subst (flexible types.argument))\n',
     replacement: '    (const (const subst) (flexible types.argument))\n',
     probe: 'r005b-required-callee',
-    message: /callee side not recorded: .*written here @\{ \.\.\.r, \.\.\.s \}\]\n$/
+    message: new RegExp('callee side not recorded: .*' + writtenLast)
   },
   {
     // Nor from the enclosing function's own parameter.
@@ -56,13 +58,14 @@ export const r005bRenderRows = [
     needle: '    (requiredBy anyWritten subst (flexible types.parameter))\n',
     replacement: '    (const (const subst) (flexible types.parameter))\n',
     probe: 'r005b-required-own',
-    message: /own parameter not recorded: .*written here @\{ \.\.\.r, \.\.\.s \}\]\n$/
+    message: new RegExp('own parameter not recorded: .*' + writtenLast)
   },
   {
     // T4 undone: H's refusal at the predicate's location.
     name: 'r005b-h-location', file: contradicted,
     needle: '  primary = maybe\' located identity\n',
-    replacement: '  primary = const (located unit) $ maybe\' located identity\n',
+    replacement: '  primary = const (located unit) $ maybe\' located '
+      + 'identity\n',
     probe: 'r005b-h-location',
     message: /H at the predicate: E_TYPE .* @pickR \[excluded here/
   },
@@ -92,5 +95,27 @@ export const r005bRenderRows = [
     replacement: '  (rebuilt site steps subst part)\n',
     probe: 'r005b-nested-path',
     message: /nested path lost: E_TYPE Cannot tell whether wrapR's r or s has /
+  },
+  {
+    // D6's field blame on mere inequality (an unknown type differs from
+    // `Int` yet unifies with it): the earlier, compatible field blamed.
+    name: 'r005b-clash-established',
+    edits: [
+      {
+        file: 'src/Features/Check/Fault.purs',
+        needle: '    | typed failure && clashes subst ty (snd other) =\n',
+        replacement: '    | typed failure && resolve subst ty /= resolve subst '
+          + '(snd other) =\n'
+      },
+      {
+        file: 'src/Features/Check/Fault.purs',
+        needle: 'import Features.Check.Subst (Flex(..), Subst, storeOf, '
+          + 'walk)\n',
+        replacement: 'import Features.Check.Subst (Flex(..), Subst, resolve, '
+          + 'storeOf, walk)\n'
+      }
+    ],
+    probe: 'r005b-clash-established',
+    message: /unknown field blamed: .*so r cannot have field a /
   }
 ];

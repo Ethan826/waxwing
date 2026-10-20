@@ -7299,3 +7299,35 @@ in 0d5a146).
      `Cause.within`. Both are diagnostic data read only by the
      renderers; neither is a published primitive, both compose the
      existing unification's results.
+
+## R005 Tranche B B5: review correction (2026-10-20)
+
+- The user's counterexample (plan §10 decision 22): `need(pickR, { a: w,
+  b: true })` read `so r cannot have field a`; with `b: 1` it is
+  accepted. Check/Fault took unequal resolved types for a clash, and an
+  unknown type differs from `Int` while unifying with it. Now
+  Check/Clash claims a clash only between different heads neither of
+  which is an unbound meta (or such a pair inside one head); otherwise no
+  part is blamed and the failure keeps its own text.
+- Obligation, stated (docs/engineering.md "Blame needs evidence"): D6
+  names a field only when its types are established to conflict. The
+  snapshot D6 reads (`Cause.within`) was checked for the user's question:
+  bindings made earlier inside the failing case are not in it, so an
+  earlier compatible field can look unresolved there; Clash treats that
+  as no evidence, which is the conservative reading.
+- Tests: test/r005b-render.test.mjs, the family (compatible field
+  before the conflicting one, after it, and with the labels' order
+  reversed against the literal's), each blaming the conflicting field,
+  and each with its value made compatible accepted by checking; row
+  `r005b-clash-established` (the inequality test restored blames `a`),
+  proved.
+- Decisions recorded (§10 decision 22): §2.10 amended for the
+  ordinary-text fallback; O1/O2's §4.7 rows corrected; Task 7's
+  acceptance items for the gaps; `design-holes`' primary moved to
+  `merge` (fixture amended, its requirement note kept). Colliding names:
+  wording proposed to the user, not pinned.
+- `rm -rf output && GOTOOLCHAIN=go1.26.4 npm run verify`: exit 0
+  (2364/2364, 59/59, 175 regression proofs;
+  .build/evidence/r005b-b5-fix-verify.log). Width now also reads
+  scripts/regression-r005b-render.mjs, untracked when B5's verify ran:
+  three of its lines were over 80 and are reflowed.

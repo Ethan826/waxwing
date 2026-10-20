@@ -1,3 +1,15 @@
+# Waxwing / R005 Tranche B: B5 corrected, colliding-names wording pending (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). The user's
+B5 review (plan §10 decision 22): D6's field blame corrected
+(Check/Clash), decisions 1-7 recorded; verify 2364/2364, 59/59, 175.
+
+**Next.** The user's answer on the colliding-names wording (proposed in
+chat, not pinned); then implement it in B5, verify, and bring B5 back for
+acceptance. Task 7 stays blocked.
+
+---
+
 # Waxwing / R005 Tranche B: B5 done, for review, unmerged (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). B5

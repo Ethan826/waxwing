@@ -12,7 +12,8 @@ import Features.Check.Homes (admits)
 import Features.Check.MergeParts (View)
 import Features.Check.RowMerge.Reach (metasThrough)
 import Features.Check.RowStore (mergesOf)
-import Features.Check.Subst (Flex(..), Subst, resolve, storeOf, walk)
+import Features.Check.Clash (clashes)
+import Features.Check.Subst (Flex(..), Subst, storeOf, walk)
 import Features.Check.UnifyFailure (Failure(..))
 
 type Fault = { part ∷ Int, atom ∷ Atom }
@@ -20,11 +21,12 @@ type Fault = { part ∷ Int, atom ∷ Atom }
 -- The part a failure puts at fault (D6's `so A cannot have field l`,
 -- R005 Tranche B diagnostics R10), in the parts' order: a field a part
 -- holds that the other side cannot take, or, for a clash of field types,
--- holds at another type; a rigid tail a part holds that the other side
--- cannot take; else (R10.1, a binding predicate `predicate`'s case made
--- that failed later) a part that case bound and a field of the failing
--- types it cannot take. Nothing when no part explains the failure: its
--- own text then stands.
+-- holds at a type established as different (Features.Check.Clash: an
+-- unresolved type is no evidence); a rigid tail a part holds that the
+-- other side cannot take; else (R10.1, a binding predicate `predicate`'s
+-- case made that failed later) a part that case bound and a field of the
+-- failing types it cannot take. Nothing when no part explains the
+-- failure: its own text then stands.
 faultIn ∷ Subst → Int → View → Failure → Maybe Fault
 faultIn subst predicate view failure =
   maybe' (caseBound subst predicate view failure) Just
@@ -42,7 +44,7 @@ faultIn subst predicate view failure =
         Just { part, atom: LabelAtom label }
     | otherwise = Nothing
   clashing part label ty other
-    | typed failure && resolve subst ty /= resolve subst (snd other) =
+    | typed failure && clashes subst ty (snd other) =
         Just { part, atom: LabelAtom label }
     | otherwise = Nothing
   tailAt part tail
