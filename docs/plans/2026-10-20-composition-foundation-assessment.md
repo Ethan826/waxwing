@@ -1,65 +1,36 @@
 # Composition requirements: foundation assessment
 
-Date: 2026-10-20, revised three times the same day after the author's
-reviews (the first version recommended an improvement rule of its own,
-§4.4; the third adds program 11, Pottier's system and the narrow
-question of §4.8; the fourth, a bounded pass, adds Makholm and Wells,
-§4.9, and Sulzmann, §4.10, and scopes the claims about Pottier and
-signatures). Status: assessment for the author's decision. No
-implementation is proposed for authorization here.
+Date: 2026-10-20. Status: assessment for the author's decision. No
+implementation is proposed for authorization here, and nothing in this
+document changes the compiler.
 
 Requirements: docs/plans/2026-10-20-composition-acceptance-programs.md
-(eae3188; program 11 added since). Evidence:
-research/composition-assessment/ (program variants and runner;
-probes run with PureScript 0.15.16, Koka 3.2.3, GHC 9.4.8, Ur/Web
-20200209 and Pottier's Wallace toy of 2000-02-11); Waxwing's
-own runs use the Task 7 checkpoint build (branch `r005b-task7-wip`,
-4d741a1, which accepts several spreads in a literal). Each claim about
-another system says whether it comes from running that system (probe)
-or from reading its paper or source (reading).
+(programs 1-10 and the author's response of 2026-10-20). Evidence:
+research/composition-assessment/ (each program variant, the runner, and
+the PureScript probes), run on the Task 7 checkpoint build (branch
+`r005b-task7-wip`, 4d741a1, which accepts several spreads in a literal).
 
 ## 0. In brief
 
-The narrow question (§4.8): can a published approach keep independent
-field types (program 11) while accepting programs 4 and 5 and refusing
-their negative controls? Yes for those three programs: Wand's
-inference for record concatenation (LICS 1989, §4.11), run through
-Gonzalez's implementation, infers both splits, refuses their negative
-controls and keeps program 11; Sulzmann's HM(RECc) (§4.10) has the same
-deduction in its axioms. What neither supplies is the open question
-now: disjoint composition, checking declared polymorphic signatures,
-and how unresolved alternatives reach compilation. The earlier
-three-program conflict (below, as the third revision stated it) is not
-established. The systems examined first divide:
-
-- **Rows as type variables** (PureScript, Ur/Web, Waxwing today; probes)
-  keep program 11 and the forwarding wrapper, and do not infer the
-  splits of programs 4 and 5. Jones's improvement (FPCA 1995 §4.1) is
-  the published frame for adding that, but it supplies no improving
-  function for merges and `lacks`; that function would be new.
-- **Presence flags over a shared type term** (Simon 2014; reading)
-  accept 4 and 5 by satisfiability and refuse program 11, because a
-  field has one type wherever records are joined.
-- **Conditional subtyping constraints** (Pottier 2000; reading, and a
-  probe of his Wallace toy) keep program 11 (accepted, with one pending
-  conditional per use), but records have width subtyping, a definition
-  is checked only for satisfiability (a function whose parts both lack
-  `admin` and that reads `.admin` is accepted until it is called), the
-  toy has no declared signatures to check, and program 4 as written
-  cannot be stated in it. That absence is the toy's, not a proof about
-  the approach: Pottier's thesis checks module signatures by a sound,
-  incomplete comparison of schemes, for a system without concatenation
-  or conditional constraints (§4.8).
-
-The third revision concluded from these that deciding a split needs
-either one type per field (Simon) or satisfiability under subtyping
-(Pottier). Wand's per-occurrence presence constraints (§4.11) do
-neither: each concatenation has its own result fields, and a `lacks`
-fact selects the disjunct. That conclusion is withdrawn.
-
-Elsewhere: program 8 (§5.1) and program 9 (§5.2, W as the baseline)
-follow the author's dispositions; program 7 (§6) is a separate
-milestone. Decisions: §7.
+- **Now**: programs 1, 2, 10 run; 3 and 6 check (lowering waits for
+  Task 8); 4 and 5 are refused as Unresolved; 7 needs classes; 8A is
+  refused (monomorphic `let`); 9 is refused by the effect rows' equal-row
+  rule. PureScript, whose `Union` the current solver follows, refuses 4
+  and 5 too (§2).
+- **Records** (§3, §4): what 4 and 5 lack is improvement from facts.
+  Rose (Morris and McKinna) has only the forward dependency; Boolean
+  unification (Flix) gives principal solutions but is used for effects
+  and variants, not records, and would change the type language.
+  Recommended: Jones's improvement (1995), decided exactly on Rémy's
+  presence flags as Simon (2014) reads records: place a label only when
+  every solution places it there. Meets 1-6 with no annotation; an
+  undetermined split stays an error.
+- **Elsewhere** (§5, §6): program 8 by GHC's closed-binding
+  generalization with the value restriction; program 9 by injection
+  (Koka's `mask`, Biernacki et al.'s `lift`) or Frank's ambient-relative
+  rows; program 7 after classes, through a row map (Ur/Web; Hubers and
+  Morris 2023).
+- **Decisions**: §7. Task 7 is checkpointed and waits on decision 1.
 
 ## 1. Where the work stands, and what the requirements supersede
 
@@ -108,12 +79,11 @@ lowered yet).
 | 4 a split decided by a `lacks` fact | **rejected**: D4 `Cannot tell how acceptsParts's r and s split { admin: Bool }` | rejected (H: neither part can hold `admin`) | **inference limitation** (§3) |
 | 5 `composeRequirements(join, restricted)` | **rejected**: D4 `Cannot tell how join's r and s split { x: Int, y: Int }` | none | **inference limitation**; the annotated spelling checks |
 | 6 a forwarding wrapper | checks | rejected (promised `extra` not supplied) | lowering only |
-| 7 overlap by chosen semigroups | rejected: `mergeWith` unbound | none | **unavailable feature**: a typing that maps a type over a row's fields (§6); explicit dictionaries are ordinary values |
+| 7 overlap by chosen semigroups | rejected: `mergeWith` unbound | none | **unavailable feature**: classes and instances, and a typing for per-field policies (§6) |
 | 8A a local row-polymorphic helper | **rejected**: second use mismatches the first | none | **semantic choice** (monomorphic `let`, language.md) |
 | 8B the named generic helper | runs | none | nothing |
-| 9 layered service fulfillment | **rejected** as written: `action must allow every effect at this call (Users + Database + Log), but its row is Users`; with the callback's row widened to `Users + Database + Log + ...e`, runs, `User("Ada")` | test replacement runs (`User("Test user")`); `profile` without `Users` rejected | **semantic choice** in the effect system (FX017/FX018 equal-row rule, §5) |
+| 9 layered service fulfillment | **rejected**: `action must allow every effect at this call (Users + Database + Log), but its row is Users` | test replacement runs (`User("Test user")`); `profile` without `Users` rejected | **semantic choice** in the effect system (FX017/FX018 equal-row rule, §5) |
 | 10 typed failures, one family removed | runs, `Guest`; with `(1, false)`, `Forbidden` | rejected (pure `guestGreeting` leaves `Denied`) | nothing |
-| 11 extend one input at two field types (added) | runs, `0` (generic and lambda forms) | rejected (D1, `r lacks { a }`) | nothing; the two-spread form checks (lowering defect on the checkpoint, §2 below) |
 
 The same two record programs in PureScript 0.15.16 (research/
 composition-assessment/purs; `purs compile P4.purs`, …): program 4 and
@@ -123,719 +93,306 @@ improves only through its three functional dependencies (two rows known
 determine the third) and its `Lacks` facts never inform `Union`, so the
 foundation the current solver copies cannot decide either program.
 
-Found while probing (checkpoint build only): a literal of two spreads
-whose rows are all known passes checking and emits Go that does not
-build (`programs/shared-type-*.wxw`, `undefined:
-waxwingBasewaxwingLocal0`); Task 8's lowering placeholder guards several
-tails, not several spreads. Recorded in docs/findings.md (Task 7, item
-5).
+## 3. What programs 4 and 5 need, in the three senses
 
-## 3. What programs 4 and 5 ask of a foundation
+Both are calls into interfaces written with `{ ...r, ...s }` and facts
+(`lacks`, `disjoint`). On the labels alone each has exactly one
+solution: program 4 puts `admin` in `r` and leaves `s` empty; program 5
+puts `x` in the first part and `y` in the second (the research oracle's
+counts: `diag-14-fix`, plan §4.5, 1 solution; O4 with `{ admin: false
+}`, limitations file, 1 solution). Three different questions are asked
+of a foundation, and finding one satisfying assignment answers none of
+them alone:
 
-Both call interfaces written with `{ ...r, ...s }` and facts (`lacks`,
-`disjoint`). On the labels alone each has one solution: program 4 puts
-`admin` in `r` and leaves `s` empty; program 5 puts `x` in the first
-part and `y` in the second (`diag-14-fix`, plan §4.5, 1 solution; O4
-with `{ admin: false }`, limitations file, 1 solution). Three questions
-are asked of a foundation:
-
-1. **Satisfiability.** Can the facts be met at all? Needed to refuse the
-   negative controls (program 4 with both parts lacking `admin`).
-2. **Useful inferred types.** What does the rest of the program learn
-   about the types? In the current design that means deciding which part
-   holds a label, because each part is its own row.
-3. **Checking quantified signatures.** Inside a generic function the
-   signature's rows are rigid: the body must type for every instance of
-   them (the forwarding wrapper of program 6).
-
-The current design answers 1 partially, 2 only through PureScript's
-dependencies (two rows known determine the third; a `lacks` fact never
-counts), and 3 by the cases it has for rigid tails (1g, 2g).
+1. **Satisfiability.** Is there any placement of the labels in the parts
+   that meets every fact? Needed to refuse the negative controls with a
+   true contradiction (program 4 with both parts lacking `admin`).
+2. **A useful inferred type.** Is a placement *forced*, the same in
+   every solution? Program 4's `admin` is forced into `r`, program 5's
+   `x` and `y` into their parts. A placement that is not forced must not
+   be chosen silently, since the author ruled out guessing. This is what the
+   current design lacks: PureScript's dependencies need two of the three
+   rows known, and a `lacks` fact never counts as knowing a row.
+3. **Checking a quantified signature.** Inside a generic function (the
+   forwarding wrapper of program 6), the signature's rows are rigid: a
+   wanted placement must hold for every instance of them, so the
+   question is "for all rigid rows, is there a placement", not "is there
+   a placement". The current design answers it for the shapes it has
+   cases for (1g, 2g; program 6 checks).
 
 ## 4. Candidate foundations for records
 
+Sources were read for this assessment where marked; research/
+composition-assessment/README.md lists them with sections.
+
 ### 4.1 The current design: PureScript's `Union` (QT-strict+Sym+H)
 
-PureScript 0.15.16's `unionRows` and `Union`'s three dependencies (Jones
-2000), with the approved adaptations 1g, 2g, Sym and H (plan §2).
-Programs 1, 2, 3, 6 (lowering aside); not 4 or 5, in Waxwing or in
-PureScript (probe, §2). Sound for what it decides; programs 4 and 5 are
-outside what its rules decide, so keeping it means restricting the
-requirements.
+Follows PureScript 0.15.16's `unionRows` and `Union`'s three functional
+dependencies (Jones 2000), with the approved adaptations 1g, 2g, Sym and
+H (plan §2).
+
+- Programs: 1, 2, 3, 6 (lowering aside); not 4 or 5, with or without
+  H; PureScript itself refuses both (§2).
+- Satisfiability: partial. A contradiction is found when a case's
+  unification fails or when H shows a constant no part can hold;
+  otherwise a body with no solution can end Unresolved (`odd-cycle`).
+- Forced placements: only those the dependencies give. A `lacks` fact
+  never forces a placement.
+- Quantified signatures: by the cases on rigid tails (1g, 2g).
+- Verdict: sound for what it decides. Programs 4 and 5 are outside what
+  its rules can decide, so keeping it means restricting the
+  requirements.
 
 ### 4.2 Rose: Morris and McKinna, POPL 2019
 
-Reading. Containment and combination predicates over an abstract row
-theory, principal types by Jones's qualified types (§4.5, Theorem 11);
-the only dependency is the forward one (coherence, Def. 13-14), with no
-improvement rules and no lacks predicate. It states what Waxwing's
-`Merge` already is and adds nothing programs 4 and 5 need. Its sequel
-(Hubers and Morris, ICFP 2023) bears on program 7 (§6).
+Containment `ρ1 ≲ ρ2` and combination `ρ1 ⊙ ρ2 ~ ρ3` as qualified-type
+predicates over an abstract row theory; principal types by Jones's
+qualified types (§4.5, Theorem 11).
 
-### 4.3 Simon, Optimal inference of fields in row-polymorphic records
+- Read: the paper's only dependency is the forward one (known parts
+  determine the combination; coherence, Def. 13-14, using Jones 2000's
+  closure). It has no improvement rules and no lacks predicate; nothing
+  recovers the parts from the result plus facts.
+- Programs: as 4.1 on records; not 4 or 5.
+- Verdict: it states what Waxwing's `Merge` already is and adds nothing
+  programs 4 and 5 need. Its sequel (Hubers and Morris, ICFP 2023)
+  matters for program 7 (§6).
 
-Reading of the paper (PLDI 2014; author's copy). What it is:
+### 4.3 Improvement decided exactly on presence flags (recommended)
 
-- **Two domains** (§2.3). A record type is a Rémy-style type term,
-  `{N1.f1 : t1, …, a.fa}`, unified as usual; each field and each type
-  variable also carries a Boolean flag, "this field exists". Flags are
-  related by a Boolean function in CNF (the "flow"). A program is
-  ill-typed when the type terms do not unify or the flow is
-  unsatisfiable (§1).
-- **Rules** (Fig. 3). Application equates the flags of formal and actual
-  (`⇔`); a conditional relates its result's flags to each branch's by
-  implication (`⇒`), not equality; the empty record sets its flags
-  false; selecting `N` requires `fN`; an update leaves the other
-  fields' flags unchanged.
-- **Generalization** (Fig. 3, LETREC; §2.4). Let-bound variables are
-  generalized (Milner-Mycroft, polymorphic recursion included); a type
-  scheme carries the flow projected onto its own flags (existential
-  projection), and instantiation duplicates the flow onto fresh flags
-  (`applyS`, `expand`, Def. 2, Fig. 4).
-- **Concatenation** (§5). Asymmetric concatenation gives Horn clauses
-  (linear time). Symmetric concatenation, "a type error if a field
-  exists in both records", needs `¬(f1 ∧ f2)`, which is not Horn:
-  "satisfiability and existential projection can be computed using a
-  SAT solver [Brauer, King and Kriener, CAV 2011], it is questionable if
-  this operation justifies this increase in complexity". In §5 both
-  arguments and the result of a concatenation have the same type term
-  and differ only in their flags.
-- **Field types.** A field has one type within a type term even where it
-  is absent: Simon rejects `f {foo = "bad"}` where Pottier's system
-  accepts it, and keeps that choice (§1.1). Typing fields only where
-  they exist needs conditional unification constraints, "an SMT solver
-  with a theory of unification constraints … as far as we know, no
-  state-of-the-art SMT solver features" one (§5). That is Simon's
-  report of 2014, not a finding about solvers available now.
-- **Implementation** (§6): select and update only, a 2-SAT solver, in a
-  22,000-line DSL toolchain; "we never had the need for record
-  concatenation". No implementation of the §5 concatenation was found.
-- **Optimality** (§1.2, §3): the inferred types are backward complete
-  relative to an abstract semantics in which `if` is a nondeterministic
-  choice, and with polymorphic recursion.
+This keeps the qualified-types frame and the current representation,
+and replaces "improve only by the dependencies" with Jones's own
+definition of improvement, decided exactly.
 
-**Why it fits programs 4 and 5.** There is no part to decide. `{ ...r,
-...s }` is the result of a symmetric concatenation: one type term, the
-flags of the result being "in r or in s, not both", `s lacks { admin }`
-being "s's flag for `admin` is false". Program 4's call fixes the result's
-flags (`admin` present, nothing else), the formula is satisfiable, and
-the program types; which assignment satisfies it is not part of any
-type. Program 5 likewise; their negative controls make the formula
-unsatisfiable. `apply0(merge)` and O4's two-solution variant type too:
-under this treatment "undetermined by labels" is not an ambiguity, as
-the author's note on decision 3 anticipated.
+- **Jones, Simplifying and improving qualified types (FPCA 1995), §4**
+  (read for the QT re-plan, §11.5): a substitution `S` improves a
+  predicate set `P` when `P` and `S P` have the same satisfiable
+  instances and `S` introduces only new variables. Applying an
+  improvement never loses a solution, so it is never a guess.
+- **Presence flags.** For each label (and each rigid tail, treated as
+  one indivisible constant, as now), "part `m` holds it" is a yes/no
+  variable. `Merge l r t` says, per label, `t` holds it exactly when
+  one of `l`, `r` does and not both; `m lacks { a }` says `m` does not
+  hold `a`; `m disjoint n`, not both; a known row fixes its flags. This
+  is Rémy's field presence (`pre`/`abs`, in Rémy, Typing record
+  concatenation for free, 1992, §2.1, read) read as Boolean variables,
+  as Simon does for row-polymorphic records (Optimal inference of fields
+  in row-polymorphic records, PLDI 2014, read: one Boolean flag per
+  field beside an ordinary type term; symmetric concatenation needs
+  exactly the clause "not in both", §1.1).
+- **The rule.** At a waiting predicate, a placement is applied when the
+  flags force it: in every solution of the current facts the label is
+  in that part (bind the part to hold it, over a fresh tail) or in none
+  (record the lack). That substitution is an improvement in Jones's
+  sense, because it is true in every solution. Field types are unified
+  when a placement is applied, by the ordinary unifier.
+- **The three senses.** Satisfiability: the flags have a solution or
+  the body is a contradiction, so H becomes a special case and
+  `odd-cycle`-like bodies become proved contradictions. Forced
+  placements: exactly the improvement test. Quantified signatures: a
+  rigid tail's flags for labels it may hold are universally quantified
+  ("for all rigid rows, is there a placement"), the ∀∃ form Madsen and
+  van de Pol use for rigid variables (OOPSLA 2020 §3.2, read; Π2p-
+  complete in general, Baader 1998, read in abstract). Rows a body never
+  places stay `{}` as today (unchanged defaulting).
+- **Programs.** 1, 2, 3, 6 as now; 4 and 5 accepted with no annotation
+  (each placement is forced); their negative controls refused as
+  contradictions. A placement that is not forced still waits and ends
+  Unresolved (D4): `apply0(merge)` (`diag-01`), F2's family, and O4's
+  variant `granted2({ name: 1, admin: false })`, where `name` may be in
+  either part (2 solutions). The requirements ask only for the uniquely
+  determined call, so this is within them; whether an undetermined split
+  could be chosen freely is a separate question (§7, decision 3).
+- **Order.** Improvements are true in every solution, and more facts
+  only remove solutions, so an applied placement is never undone; the
+  final outcome is a function of the body's final facts, not of the
+  order they arrived in. This replaces "measured, not proved" (plan §6,
+  M8) with an argument, to be checked by the existing order tests.
+- **Cost and assumptions.** The flag problem for one label can need
+  search in the worst case (each `Merge` is an "exactly one of two"
+  constraint; Simon notes symmetric concatenation is not Horn and needs a
+  SAT solver, §1.1, §6). The problems are per label and per connected
+  group of predicates, small in written programs; a step bound keeps the
+  `Stop Limit` channel. Assumed, to be argued and checked: that labels
+  are independent once rigid tails are treated as constants (rows are
+  well formed, so a label and a rigid tail in one row never overlap);
+  that field types never decide a placement (if a label's placement is
+  open on labels alone but one choice makes field types clash, this
+  rule leaves it Unresolved rather than deciding it: incomplete, never
+  wrong).
+- **What is ours.** The composition, not a component: no published
+  record system applies improvement to merge predicates this way (the
+  source check found Simon's flags with SAT for inference, Flix's
+  Boolean unification for effects and variants, and no record system
+  with both). The per-label reduction and the treatment of rigid tails
+  are the parts to argue and approve (ADR 014).
+- **Burden.** Keeps the representation, the unifier, the cases (1, 2,
+  2g, Sym become fast paths of the same test), the facts, the
+  diagnostics' metadata and the three-way result. Adds one module that
+  builds the flag problem for a group of waiting predicates and answers
+  "solvable?" and "forced?" by a small exact search, and the research
+  oracle's brute force as its reference. Re-does B4's end of a body and
+  the D4/D6 classification on top of it.
 
-**The translation**, construct by construct, and its source:
+### 4.4 Boolean unification of presence (Flix's method on records)
 
-| Waxwing | Simon form | Source |
-|---|---|---|
-| record type `{ l: T, ...r }` | type term `{l.f : T, ρ.fρ}` | §2.3, as written |
-| `{ ...r, ...s }` | the result of a symmetric concatenation of two occurrences of one term `ρ`, flags `fr`, `fs`: per field `f ⇔ fr ∨ fs` and `¬(fr ∧ fs)` | §5, analysed, not implemented; `⇔` in place of `⇒` (below) |
-| `where r lacks { a }` | `ρ` holds `a`, and `r`'s flag for it is false | as the empty record and selection rules do (Fig. 3) |
-| `where r disjoint s` | `¬(fr ∧ fs)` per field and for the row | §5's clause |
-| a literal `{ ...a, x: v, ...b }` | concatenations, the field as a one-field record | §5 |
-| `.l`, `e without { l }`, `{ l, ...rest }` | selection; removal (§5: two-variable Horn) | as written; removal analysed |
-| exact records: both branches of `if`, an argument and its parameter, have the same fields | flags equated (`⇔`) everywhere; Simon's conditional uses implications | **Waxwing's**: a restriction of Simon's rules |
-| a declared signature, rigid row variables | not in Simon (inference only): rigid terms as constants; the body's flow, projected onto the signature's flags, must follow from the signature's clauses | **Waxwing's**; the entailment of qualified types (Jones 1992 §1, read for the QT re-plan) with Boolean predicates |
-| `let` of a lambda | generalized with its projected flow | as written (Waxwing has no polymorphic recursion to infer) |
-| monomorphized Go layouts | not in Simon (his records are dynamic) | **Waxwing's**: every constructed value's flags must be fixed; to be argued (a value of type `{ ...r }` alone comes only from a position typed `{ ...r }`, so free flags fix no layout) and checked |
+Martin and Nipkow (1989) and Büttner and Simonis (1987): unification in
+Boolean rings has most general unifiers, with or without constants
+(Baader and Snyder, Handbook of Automated Reasoning, §3.4, read).
+Madsen and van de Pol (OOPSLA 2020, read) put it inside Hindley-Milner
+with let-generalization and keep principal types modulo Boolean
+equivalence, at about 1.4× inference time, and only with formula
+simplification (without it the compiler ran out of memory).
 
-**What would change in Waxwing.** Record types gain flags beside their
-terms; a row variable of a signature becomes a flag over a type term
-shared with the other rows it is joined to; the `Merge` predicates, the
-case table (1, 2, 2g, Sym, 1g), H and the Unresolved class go, replaced
-by a Boolean store with satisfiability and existential projection (a
-SAT procedure, textbook; projection by resolution or Brauer et al.);
-specialization keys come from flags; D1-D6 have to be recovered from an
-unsatisfiable formula, which is new diagnostic work. Tasks B1-B5 survive
-as tests and fixtures, not as solver code.
+- Would give: everything 4.3 gives, plus a most general solution for an
+  undetermined split (the free flag stays a variable), which is what
+  local generalization of a helper that merges records would need.
+- Against it now: Flix applies it to effects and variant case sets, not
+  records (its record rows are ordinary rows, RecordConstraintSolver,
+  read); no published record system does this (source check). Types
+  would carry Boolean formulas over flags, which Waxwing's surface
+  (`{ ...r, ...s }`, `lacks`, `disjoint`) cannot print; field types
+  under a free flag need conditional constraints; and the
+  representation of rows changes throughout.
+- Verdict: the route if principal types with free splits become a
+  requirement; more invention and more change than the programs need.
 
-**What it would refuse that the compiler accepts today.** Sharing one
-type term means a field has one type wherever records are joined, even
-where it is absent. `programs/shared-type-lambda.wxw` and
-`shared-type-generic.wxw` merge one record `q` (which lacks `a`) with `{
-a: 1 }` and, separately, with `{ a: true }`: checking accepts both now;
-under the translation `q`'s term would need `a: Int` and `a: Bool`, a
-type error. Keeping today's behaviour needs Pottier-style conditional
-constraints, for which Simon knew of no solver in 2014 (§5; a 2014
-statement, not checked against what exists now). This is the concrete
-tradeoff of this foundation.
+### 4.5 A general solver (SMT, or a SAT library)
 
-**Assessment.** Simon's two domains are an established, implemented
-technique (also Glynn, Stuckey and Sulzmann 2001, cited in §7), and his
-§5 gives the constraint symmetric concatenation needs. The parts Waxwing
-would add (exact records as `⇔`, signature checking by entailment, fixed
-layouts) are each standard in form, but the whole is not a system anyone
-has implemented with symmetric concatenation; it is a translation to
-argue, with the four questions of §7 decision 1.
-
-### 4.4 The first version's proposal, withdrawn
-
-The first version recommended "place a field in a part only when every
-solution places it there" (Jones's improvement, decided exactly on
-presence flags). That is a correctness criterion for a rule, not an
-algorithm: it leaves open how the Boolean problem represents Waxwing's
-typing problem, how rigid rows are represented, which field-type
-relations are kept, and how substitutions, residual constraints and
-defaulting interact, and it rested on two unproved assumptions. Simon
-answers those questions differently and in print (no placement at all;
-one type term; flow projection), so 4.3 replaces it.
-
-### 4.5 Boolean unification of presence (Flix's method)
-
-Reading. Unification in Boolean rings has most general unifiers, with
-and without constants (Baader and Snyder, Handbook of Automated
-Reasoning, §3.4); Madsen and van de Pol (OOPSLA 2020) put it inside
-Hindley-Milner with let-generalization and principal types modulo
-Boolean equivalence, at about 1.4× inference time and only with formula
-simplification. Flix applies it to effects and restrictable variants
-(over a finite declared label set), not records: its record rows are
-ordinary rows (RecordConstraintSolver.scala). Applied to records it
-would give principal flag solutions where 4.3 keeps a projected formula;
-it shares 4.3's field-type question and adds a change to the type
-language (types carrying Boolean formulas). Not preferred over 4.3.
-
-### 4.6 A general solver (SMT, or a SAT library)
-
-Answers satisfiability; gives no types, generalization or texts; Z3 in
+Would answer satisfiability and, with one query per flag, forcedness;
+it does not give inferred types, generalization or the texts, and Z3 in
 the checker was assessed and refused for layering and determinism
-(alternatives file §8.3). 4.3 needs a SAT procedure inside the checker,
-not a general solver.
+(alternatives file §8.3). 4.3's search is the small part of a SAT
+procedure it needs, on problems of a few flags; no general solver is
+recommended.
 
-### 4.7 What was searched
+## 5. Programs 8 and 9: generalization and layered handlers
 
-"No published record system does this" is bounded by what was read:
-Simon 2014; Rémy 1992 (RR-1739); Morris and McKinna 2019; Hubers and
-Morris 2023; Castagna and Peyrot (arXiv 2404.00338); the Flix papers and
-repository; PureScript's source; Pottier (Nordic Journal of Computing
-2000, LICS 2003, the 1998 thesis, Wallace's source; §4.8); Jones FPCA
-1995 §4.1; Makholm and Wells 2005 (§4.9); Sulzmann's HM(REC) (TAPOS
-1999 §7; §4.10). Not read: Wand 1991; Sulzmann's thesis (2000), the
-work ATTAPL ch. 10 §10.8 cites for record extension and concatenation,
-and his RR-1128 (1997), neither of which could be retrieved (§4.10).
-Simon's
-2014 statement that no SMT solver had a theory of unification
-constraints is his, of 2014; whether a solver for SMT's theory of
-algebraic datatypes now provides what his §5 calls for was not
-examined.
+These are not row-merge inference; each has an established answer that
+composes with §4.3. Sources were read by the source check of 2026-10-20
+(research/composition-assessment/README.md).
 
-### 4.8 The narrow question, against the systems examined
+**Program 8A, a local row-polymorphic helper.** Generalize a local `let`
+when it is closed (its free variables are top-level declarations or
+already-generalized locals) and its right side is a lambda. This is
+GHC's rule under MonoLocalBinds (User's Guide, "Let-generalisation": a
+binding group is generalized if each of its free variables is closed),
+which keeps the generalization Vytiniotis, Peyton Jones and Schrijvers
+argue is safe (Let should not be generalised, TLDI 2010; OutsideIn(X),
+JFP 2011 §4.2: for bindings with no free type variables "generalization
+poses no difficulties"), with the value restriction for effects (only a
+lambda, a value, is generalized; Koka's papers generalize only total
+expressions, POPL 2017 §3.1). `getName` is closed, so it gets `∀ r. ({
+name: a, ...r }) -> a` (Gaster and Jones's row polymorphism with its
+`lacks`), and both uses check. Residual predicates (a `Merge` the helper
+leaves waiting) are generalized with it, as Jones's qualified types do.
+Lowering: a closed local is lifted to a top-level declaration and
+specialized per use like any other (Waxwing specializes every
+declaration). Not covered: a helper that captures a local variable stays
+monomorphic, as in GHC; whether that is acceptable is decision 4.
+For comparison, PureScript never generalizes an unannotated local let
+(TypeChecker/Types.hs `inferLetBinding`), and Koka generalizes a local
+`fun` but not a local `val`.
 
-Program 11 (added to the requirements, eae3188's document, §11): a
-record `q` that lacks `a`, extended once with `a: 1` and once with `a:
-true`. Rows: P = probe (the system run), R = reading.
+**Program 9, layered fulfillment.** Koka, Biernacki et al.'s calculus,
+Frank and Effekt all reject the wrapper as written: inside the handler
+the row is `Users + Database + Log + ...e`, the callback's is `Users +
+...e`, and effect rows must match at a call (Koka POPL 2017 §3.2; Koka's
+automatic `open` adds a tail only to a closed row, so it does not apply
+to `...e`). The established remedy is injection: `mask<l>` in Koka (book
+§3.4.7: `(action: () -> e a) -> <l|e> a`), `lift` in Biernacki,
+Piróg, Polesiuk and Sieczkowski (Handle with care, POPL 2018, Fig. 5:
+from `e : τ / ε` to `[e]_l : τ / ⟨l | ε⟩`, "skip the nearest handler for
+l", which is what stops accidental handling), adaptors in Frank (Convent
+et al., JFP 2020 §3). Two faithful ways to get program 9:
 
-Complexity results (NP-completeness, polynomial fragments) are recorded
-as facts about worst cases, not as reasons to refuse a candidate. The
-requirements ask for programs to be accepted or refused; they do not ask
-for polynomial inference or a single principal type, and this
-assessment does not add those requirements.
+- *Explicit.* The wrapper writes the injection: `mask(Database, Log) {
+  action(()) }` (spelling open). It types, and its meaning is right even
+  when `...e` itself holds `Database`: the action's operations skip to
+  the outer handler. Smallest change; the program gains one line.
+- *Relative to the ambient.* Frank's ports (Lindley, McBride and
+  McLaughlin, POPL 2017 §3.1): a callback parameter's ability is the
+  ambient one plus an adjustment (`<Users>`), so the call needs no
+  injection. A change in what a callback's written row means.
 
-| System | 3, 6 | 4 | 4's negative control | 5 | 11 | Declared signatures checked |
-|---|---|---|---|---|---|---|
-| Waxwing today (QT-strict+Sym+H) | accepted (P) | refused, Unresolved (P) | refused (P) | refused, Unresolved (P) | accepted (P) | yes |
-| PureScript 0.15.16 (`Union`, `Lacks`) | 6 accepted (P) | refused (P) | not run | refused (P) | accepted (P, purs/P11.purs) | yes |
-| Ur/Web 20200209 (`$(r ++ s)`, `[r ~ s]`) | accepted (P) | refused: "Stuck unifying these records" (P) | not run | refused, same (P) | accepted (P) | yes |
-| Simon 2014, translated (§4.3) | accepted (R) | accepted by satisfiability (R) | refused (R) | accepted (R) | **refused** (R) | to be added |
-| Makholm and Wells 2005 (Bowtie; `bowtini` 1.3) | accepted (P) | not expressible (no declarations); encoded, accepted with no split visible to callers (P) | **not refused**: free set variables are solved by ⊥ (P; R: ICFP Lemma 5.9) | encoded, accepted; an unsatisfiable variant accepted too (P) | **refused**, one row per join (P; R: TR §3, ICFP §5); accepted with a written `\\ a` per use (P) | no: checking a given typing is NP-complete (R: TR App. B.4); a Church-style check promised, not given |
-| Sulzmann, HM(REC) (TAPOS 1999 §7) | not expressible: no extension or concatenation (R) | not expressible (R) | not expressible (R) | not expressible (R) | not expressible (R) | no annotation rule; entailment a parameter of X (R) |
-| Sulzmann, HM(RECc), thesis 2000 (§5.1.2, A.2; §4.10) | 3 accepted, overlap also accepted (R); 6: no signatures | accepted by satisfiability; REC5 entails `admin` in `r`, printed closure does not derive it (R) | unsatisfiable, refused only given a satisfiability test not supplied for RECc (R) | accepted by satisfiability; REC5-6 entail the split (R) | **accepted**, refused negative control (R) | no: no annotations; entailment procedure not given (R) |
-| Wand 1989, via Gonzalez's REPL (b4a63ba; §4.11) | accepted; overlap also accepted, biased (P; R §2) | **split inferred**: `{ admin: Boolean }`, `{ admin ? absent }` (P; R §5) | refused at the call; the interface alone accepted (P); no disjunct (R §5) | **split inferred**; negatives refused (P) | **accepted**, independent per concatenation (P; R §5) | no: no annotations (P, R); Wand decides only whether a monotype is a type (R §6) |
-| Palsberg and Zhao 2004 (I&C; no implementation; §4.12) | 3 accepted, overlap refused (R: §2.1, Def 5.3(3)); 6 monomorphic only (R) | not expressible (no row variables; `⊕` only in constraints); encoded by selection, accepted by search over rule F, split given by `S_R` (R, traced) | not expressible; encoded, refused (R, traced) | not expressible; encoded, accepted by search (R, traced) | **accepted**, negative control refused (R, traced) | no: no annotations (R §3) |
-| Pottier 2000 (Wallace toy) | accepted (P: disjoint union typed, overlap refused) | not expressible: the toy has no declarations (P) | not refused under its rules (R) | satisfiable, so not refused (R) | **accepted** (P) | not in the toy (P); the 1998 thesis's typer checks module signatures by a sound, incomplete scheme comparison, without concatenation or conditionals (R) |
-
-**Pottier, read** (NJC 2000 §5.1-§5.2; LICS 2003; Wallace's source):
-field types are `Abs`, `Pre τ`, `Either τ`, `Any` with `Pre τ` and
-`Abs` incomparable and a common supertype, so records have width
-subtyping; there is no `lacks` predicate (absence is an upper bound `φ ≤
-Abs`). Symmetric concatenation is four conditional constraints, `Abs ≤
-φ1 ? φ2 ≤ φ3`, `Abs ≤ φ2 ? φ1 ≤ φ3`, `Pre ≤ φ1 ? φ2 ≤ Abs`, `Pre ≤ φ2 ?
-φ1 ≤ Abs` ("any one of these two constraints would in fact suffice";
-the toy implements three, toy/engine.ml). A condition tests only a lower
-bound on a head constructor, which keeps the solver polynomial (LICS
-2003 §2). Implications run from the parts to the result: a lower bound
-on the result (a record passed where `{ ...r, ...s }` is expected) puts
-nothing on the parts, which is why program 4's negative control is not
-refused. Inference is an HM(X) instance with closed constrained schemes
-and lazy simplification ("ignore any conditional constraints whose
-condition has not yet been fulfilled", NJC Example 4). The toy's
-declaration form is commented out.
-
-**Pottier and signatures, scoped.** The missing facility is the toy's.
-The remark "no complete entailment algorithm is currently known"
-(wallace/core.ml, 2000) is an implementation comment on simplification:
-it explains why the joining of two constraint leaves does not test
-whether one is already greater. It says nothing about declarations. The
-thesis (1998, ch. 4, 8, 9, read) is the precise statement: entailment
-and the comparison of constrained schemes were, in 1998, of open
-decidability for its constraints; chapter 9 gives a sound, incomplete
-comparison (generalizing Trifonov and Smith), and the thesis's typer
-uses it to compare an inferred scheme with the one a module signature
-declares (introduction; ch. 8 opening). So under Pottier's approach a
-declared signature can be checked soundly, and some correct declarations
-may be refused. Three limits on what follows for Waxwing: the thesis's
-system has no concatenation and no conditional constraints, and whether
-its comparison extends to them was not examined; "open" and "currently
-known" are statements of 1998 and 2000, not checked against later work
-on subtype entailment; and a sound, incomplete check would refuse some
-valid declarations, which the requirements have not been asked about.
-
-**Pottier, run**: Wallace 2000-02-11 (cambium.inria.fr/~fpottier/
-wallace; "Distributed only by permission", so the archive and the
-port's patches stay outside the repository), built with OCaml 5.5.1
-after mechanical changes (renamed library functions aliased; `&` and
-`or` written `&&` and `||`; the lexer's string buffer moved to `Bytes`;
-one cast of a parser result whose type parameter is phantom, its `info`
-always `None`). Inputs and outputs: research/composition-assessment/
-wallace/. Program 11's lambda form gets type `int` and keeps one pending
-conditional per use (`if RAbs < -a then RPre int < R1`, and `RPre
-bool`); with `q` holding `a` it is refused ("Constraint
-inconsistency"). A function taking `r` and `s`, both made to lack
-`admin`, that reads `(r @@ s).admin` is accepted with fourteen pending
-conditionals and refused only when applied to `{}` and `{}`; the same
-with only `s` lacking `admin`, applied to `{ admin = false }` and `{}`,
-gives `bool`.
-
-### 4.9 Makholm and Wells, Bowtie (2005)
-
-Reading (TR HW-MACS-TR-0030 v1.0.2, all; ICFP 2005, §1, §4-§5, §7) and
-probes of their tool, `bowtini` 1.3 (Moscow ML; research/composition-
-assessment/makholm-wells/, inputs, outputs and build notes; the archive,
-marked "PERHAPS_GPL_EVENTUALLY", stays outside the repository). A record
-type is `{[R / S]}`: a row `R` of field types and a label set `S`;
-no subtyping; concatenation (TConcat) requires both parts and the
-result to share one `R`, so a field has one type across a join. The
-papers name the consequence "row pollution" and their own example is
-program 11's shape; their remedy, hiding (`\\ l`), "cannot be applied
-fully automatically" (ICFP §5). Set constraints are `S1 ⊎ S2 = S`, `S1 \
-L = S2` and `S ∋ l`; there is no `lacks` (it is encoded by a dummy
-concatenation). Their hardness results: typability of the naive system
-with exact label sets is NP-complete, for symmetric and overriding
-concatenation alike (TR Thm 2.1; ICFP Thm 4.1, 4.7), and they restrict
-the system rather than search: a set variable left free is solved by ⊥,
-which satisfies every constraint whose parts are unknown. Hence program
-4's negative control is not refused; refusing it needs ⊥-free
-solvability, NP-complete even with one label (TR Lemma B.5). Inference
-is principal and near-linear; there is no `let` in the tool and no
-declared signatures. As a foundation it shares Simon's refusal of
-program 11 and Pottier's acceptance of program 4's negative control,
-and decides no split.
-
-### 4.10 Sulzmann, HM(RECc) (thesis, 2000)
-
-Reading: Sulzmann, A general framework for Hindley/Milner type systems
-with constraints (Yale PhD thesis, 2000; the ResearchGate copy,
-retrieved by Waxwing's author, not stored in the repository):
-§5.1.1-§5.1.2 (pp. 120-127, Figures 5.1-5.2, Remark 5, Theorem
-21), Appendix A.2 (p. 174), §4.2 on normal forms (p. 89: entailment
-and uniqueness), §2 on annotations (p. 9). Also HM(REC) (Odersky,
-Sulzmann and Wehr, TAPOS 1999 §7). No implementation was found or
-run; the thesis's record systems are not those of Chameleon
-(research/composition-assessment/sulzmann/README.md). Every outcome
-below is R.
-
-**What it is.** Ohori's records in HM(X). A record type is exact, `{l1
-: τ1, …}`; polymorphism is a kinded variable `(α :: {{l : τ}})`, "α
-has field `l` of type `τ`"; REC2 gives a field one type within one
-record (one variable). Two further predicates: `(α\l)`, α lacks `l`,
-and `concat(α, β, γ)`. Its axioms, with Fig. 5.2's closure rules 6-7:
-
-    REC5 concat(α, β, γ) ∧ (γ :: {{l : δ}}) ∧ (β\l) ⊢e (α :: {{l : δ}})
-    REC6 concat(α, β, γ) ∧ (γ :: {{l : δ}}) ∧ (α\l) ⊢e (β :: {{l : δ}})
-
-This is the deduction §4.8 found missing: a field of the result
-belongs to the part whose partner lacks it. Fig. 5.2 also refuses a
-variable that both has and lacks a label (rule 8) and a closed record
-said to lack a field it has (rule 9). Inference closes the constraint,
-unifies the equalities it produces and repeats to a fixed point (p.
-126); Theorem 21 states the principal constraint property "by
-application of the lifting method"; uniqueness of principal types is
-conjectured (p. 127).
-
-**Not Waxwing's merge, as published.** §5.1.2 models asymmetric,
-overriding concatenation (Remark 5: "the first record takes
-precedence"; REC7's label set, `(l̄ \ l̄') ∪ l̄'`, and rule 10, which
-keeps the first record's fields, read differently on which side wins).
-Appendix A.2 gives a "symmetric" variant: REC3 and REC4 also require the
-other part to lack the label; it gives axioms only, no closure figure,
-and its principal property is stated "along the lines" of §5.1.2, with
-no proof. Neither version refuses overlap: REC7 holds of every pair of
-closed records, so `concat({a: 1}, {a: true}, γ)` is satisfiable. There
-is no predicate for two parts being disjoint.
-
-**Remark 5 and program 11.** Remark 5 says `typeof` "should also be
-seen as parameterized in the record because the same label might
-possibly have different types in different records". Program 11 is
-kept for the reason that remark states: each concatenation result is
-its own variable, and REC2 equates field types only within one
-variable. No rule relates `γ1` to `γ2`.
-
-**Trace** (Waxwing's `{ ...r, ...s }` read as `concat(ρr, ρs, γ)`,
-`r lacks { l }` as `(ρr\l)`; that reading is itself an adaptation for
-disjointness, see "Missing" below):
-
-- **Program 3.** `join : concat(α, β, γ) ⇒ α → β → γ`. At `join({ name
-  }, { age })` rule 10 gives `γ = { name, age }`. Accepted; swapped and
-  regrouped likewise. Its overlap control (`join({ a }, { a })`) is
-  accepted, not refused: no rule refuses overlap.
-- **Program 4.** At the call, `γ := { admin: Bool }`, leaving
-  `concat(α, β, { admin: Bool }) ∧ (β\admin)`. REC5 entails `(α ::
-  {{admin : Bool}})`, by REC1 for the closed result. Fig. 5.2's rule 6
-  needs `(γ :: {{admin : δ}})` in the closure as a constraint, and no
-  rule of Fig. 5.2 puts the fields of a closed record there (rules 13
-  and 16 need a kind on the variable side; rules 10-12, 15, 17-18 need
-  closed parts). So the printed closure stops with the constraint
-  unchanged, which is a solved form if it is satisfiable; it is (α =
-  `{ admin }`, β = `{}`). Accepted; `α`'s field is entailed by the
-  axioms, not produced by the printed closure, and `α = { admin: Bool
-  }`, `β = {}` are not derived by either (a kind is a lower bound).
-- **Program 4's negative control.** `concat(α, β, { admin: Bool }) ∧
-  (α\admin) ∧ (β\admin)`: unsatisfiable by REC7 (the result's labels
-  come from the parts). REC5 with rule 8 would give ⊥, but rule 6 does
-  not fire, as above. Refused only by the satisfiability test the
-  solved forms presuppose ("all satisfiable … constraints"), which §5.1.2
-  does not give (it gives one for RECl, NP-complete, p. 129).
-- **Program 5.** Unification makes `join`'s parts `restricted`'s
-  parameters: `concat(α, β, { x: Int, y: Int }) ∧ (α\y) ∧ (β\x)`.
-  REC5 and REC6 entail `α` has `x`, `β` has `y`; as in program 4 the
-  printed rules 6-7 do not fire on a closed result. Satisfiable;
-  accepted.
-- **Program 6.** No signatures (below). The inferred scheme of
-  `forwarded` is `join`'s, `concat(α, β, γ) ⇒ α → β → γ`.
-- **Program 11.** `concat(α, { a: Int }, γ1) ∧ concat(α, { a: Bool },
-  γ2) ∧ (α\a)` (or `extend_a`, §5.1.1). No rule relates `γ1` and `γ2`;
-  accepted. Negative control: `α := { name: Text, a: Int }` with `(α\a)`
-  gives ⊥ by rule 9; refused.
-
-**Declared signatures.** Not provided. The thesis's programs "do not
-contain type annotations" (p. 9; Odersky and Läufer 1996 cited for
-them); Appendix A.3's rule for polymorphic recursion takes a written
-scheme as a typing rule only. Entailment for RECc is defined by the
-axioms; no decision procedure for it is given, and the thesis notes
-that uniqueness of solved forms "requires a decidable entailment test"
-(§4.2, p. 89). Program 6's check would need `concat(α, β, γ) ⊢e concat(α, β,
-γ)`, which is trivial; a general check of declared clauses is not.
-
-**Faithful, and what Waxwing would add.** A faithful HM(RECc) gives
-exact records, independent field types per record (program 11), the
-lacks deduction in its axioms, inference by closure and unification,
-and acceptance of programs 3, 4 and 5 by satisfiability. Waxwing would
-need, each named here and not designed:
-
-| Missing for Waxwing | Status |
-|---|---|
-| refusing overlap: a disjointness constraint on two parts, or making `concat` disjoint | not in the thesis; disjointness constraints are published (Harper and Pierce, POPL 1991; Ur/Web's `[r ~ s]`, Chlipala 2010), not with this closure |
-| a closure rule giving a closed record's fields (REC1) where rules 6-7 need them | not in Fig. 5.2; the axioms entail it; adding it is a change to the printed algorithm |
-| a satisfiability test for RECc (refusing program 4's negative control) | presupposed by the solved forms, not given for RECc |
-| A.2's closure algorithm and proof of principality | stated "along the lines of" §5.1.2, not given |
-| checking declared signatures (entailment of RECc constraints) | not provided; decidability not stated |
-| grounding parts for monomorphized Go (program 4's `α`, `β`) | not in the thesis; a kind is a lower bound, so a witness must be chosen; decision 3 |
-| D1-D6 diagnostics from ⊥ or unsatisfiability | Waxwing's |
-
-So the reviewer's lead is confirmed on its central point: the deduction
-from `lacks` is published, in a system that keeps program 11. It is a
-thesis, not peer-reviewed in this form; its symmetric variant is axioms
-only; and what it does not supply is listed above.
-
-### 4.11 Wand (LICS 1989), run through Gonzalez's implementation (2026)
-
-Reading: Wand, Type inference for record concatenation and multiple
-inheritance (LICS 1989, all; the I&C 1991 version could not be
-retrieved). Probes: Gabriella Gonzalez's reference implementation of
-Wand's system (github.com/Gabriella439/record-concatenation, b4a63ba,
-BSD-3; built with GHC 9.4.8, not copied here), described in her post
-Mechanized type inference for record concatenation (haskellforall.com,
-July 2026; an implementation exposition, not a peer-reviewed proof; its
-rules are images and were read through the code). Inputs, outputs and
-build notes: research/composition-assessment/wand/.
-
-**What it is.** Wand's concatenation `M ‖ N` is biased: the right
-record wins (§2). Each field of each record has a presence variable,
-`pres(t)` or `absent`; each occurrence of `‖` gives, per label, the
-disjunction `(g = pres(t) ∧ h = g) ∨ (g = absent ∧ h = f)` with its own
-result variable `h` (§5). A program is typable iff some disjunct of the
-constraint's disjunctive normal form unifies (§5 Theorem, §6 Theorem
-and Corollary): inference yields a finite complete set of types, not one
-principal type. Gonzalez keeps the disjunction as stuck constraints on
-one type (a field-merge monoid, several row variables per record,
-union-find over sibling rows) instead of enumerating the complete set;
-her `let` is monomorphic, and `without` is hers.
-
-**On the programs** (P unless marked; `{ ...a, ...b }` encoded as `a //
-b`, `lacks` as the part restricted by `without`, a signature's parts as
-extra parameters so the call shows the inferred split):
-
-- Program 3 accepted, swapped and in both groupings; its overlap
-  control accepted (biased, as Wand's semantics says).
-- Program 4: the split is inferred. The call shows `{ admin: Boolean }`
-  for `r` and `{ admin ? absent }` for `s`: from `g = absent` the
-  disjunction leaves `h = f = pres(Boolean)` (R §5). The negative
-  control is refused at the call (no disjunct); the interface alone is
-  accepted. Without the `lacks`, a stuck constraint `p q = present
-  Boolean` remains: the split is undetermined, not refused.
-- Program 5: the split is inferred (`{ x: Number, y ? absent }`, `{ x ?
-  absent, y: Number }`); its negative variants are refused; the
-  explicit spelling is accepted.
-- Program 6 accepted. Its negative control is accepted at the
-  definition (there are no rigid variables to hold it to) and refused at
-  the call.
-- Program 11 accepted in all three forms, `a: Number` and `a: Boolean`
-  independent (each `‖` has its own `h`); its negative control refused.
-
-**Two kinds of evidence.** That Wand's system decides these programs
-rests on his §5-§6 decision procedure (R). The probes show particular
-deductions in Gonzalez's code (P), and the code omits Wand's
-satisfiability test, so a printed type with residual constraints is not
-counted as a successful check: the README classifies every output
-(accepted with none; with residual constraints, satisfiable by hand or
-not; refused). Every call of programs 4, 5 and 11 types with no
-residual constraints. The upstream revision, the two local patches
-(the dependency fix and the nested-field diagnostic) and the outputs
-of both builds are recorded there; the nested-field defect is bounded
-by avoiding nested records in the probes, not resolved.
-
-**Defects in the implementation** (P; not Wand's): residual constraints
-are never tested for satisfiability, so `(r // s).x` used as a Number
-and as a String is accepted with contradictory stuck constraints; a
-variable unified with itself fails the occurs check; and substitution
-does not reach fields nested inside a field's type, which accepts
-`((q: { f = q // { a = 1; }; }) { name = "Ada"; }).f.name + 1` as a
-Number. A local build with recursive substitution refuses that term and
-gives the same output on every other probe, so the record probes above
-avoid nesting. The post's claim of equivalence to Wand rests on the
-monoid laws and a truth table; the first defect accepts a term Wand's
-§5 Theorem gives no type (R).
-
-**Disjointness, signatures, complexity.** Wand has only overwriting
-concatenation; Gonzalez says a conflict-refusing operator would be
-"easier to type check" and gives none. Symmetric concatenation over
-Wand's style of constraints is Makholm and Wells's Casino ("essentially
-Wand's system, except with symmetric concatenation … no row variables",
-TR §2, Fig. 2), whose typability they prove NP-complete. Neither Wand
-nor Gonzalez checks a declared polymorphic type: Wand's §6 decides
-whether a monotype is an instance of the complete set. Wand bounds the
-complete set by `2^{kn}` (n labels, k concatenations, §5) and states no
-hardness result; Makholm and Wells call Wand's algorithm exponential
-(App. A); whether their NP-hardness transfers to Wand's exact system
-was not determined.
-
-**Faithful, and what Waxwing would add.** A faithful implementation of
-Wand gives the `lacks`-driven splits of programs 4 and 5, refuses
-their negative controls by its typability test, and keeps program 11.
-Waxwing would need:
-
-| Missing for Waxwing | Status |
-|---|---|
-| disjoint spreads that refuse overlap | not with Wand's algorithm; Casino (Makholm and Wells, TR §2), Harper and Pierce 1991, Ur/Web |
-| checking declared signatures (rigid rows, `lacks`/`disjoint` clauses) against a complete set | not published for this system |
-| a satisfiability test on residual constraints | Wand's DNF gives it; the Gonzalez code lacks it |
-| `let`-generalization with pending constraints | sketched in Wand §7, not detailed; HM(X) (Odersky, Sulzmann and Wehr) in general |
-| grounding a disjunct for monomorphized Go | not published |
-| the implementation's three defects | implementation only |
-
-### 4.12 Palsberg and Zhao (I&C 2004)
-
-Reading only (author copy, §1-§7; no implementation exists: the paper's
-conclusion and Zhao's thesis list one as future work; research/
-composition-assessment/palsberg-zhao/). The calculus is Abadi and
-Cardelli's object calculus with concatenation: no lambda, `let`,
-polymorphism or declarations; inference is whole-program. Record types
-are regular trees marked exact (`0`, concatenable) or width-subtyped
-(`→`); fields are invariant. Concatenation is symmetric and defined
-only on exact records with disjoint labels; overlap is refused by
-sat-consistency (Def 5.3, condition 3). Field types belong to each
-record, so program 11 is kept. There is no `lacks` and no row variable;
-`⊕` appears only in constraints, so programs 4 and 5 cannot be stated.
-Encoded through selections (traced by hand, as in §4.10), closure rule
-F (Def 5.1) requires a part to carry a field selected from the result,
-the choice is checked by condition 3, and the constructed solution
-`S_R` (Def 5.6) gives a ground split: a search, not a deduction from a
-`lacks` fact. Solvability is decided by guessing a polynomial-size
-closed superset and checking it (Thm 5.15-5.16); type inference is
-NP-complete (Thm 6.4), the hardness lying in rule F's choice; the LICS
-2002 version's polynomial claim is withdrawn in the journal's
-acknowledgments (a lemma was false). Not principal (§1.3); no declared
-types (§3, a sketch in §1.2). Its relevance to Waxwing is narrower than
-Wand's: it is the published system here that refuses overlap in
-symmetric concatenation while keeping per-record field types, and its
-`S_R` is a published ground witness, which bears on grounding for
-monomorphization; it gives no row variables, generic functions or
-signatures.
-
-**The conflict, stated on the programs.** Program 4's call supplies a
-record where `{ ...r, ...s }` is expected and must decide, from `s lacks
-{ admin }`, that `admin` is in `r`. In a system whose parts are type
-variables (Waxwing, PureScript, Ur/Web), that is improvement from a
-`lacks` fact, and Jones's framework (FPCA 1995 §4.1, read: "the
-typing algorithm … might be parameterized by the choice of an improving
-function"; its record example improves only two `has` predicates on one
-field) leaves the improving function to the language: none of the
-examined systems has one for merges. Simon avoids the decision by
-sharing the parts' type term, which is what refuses program 11. Pottier
-keeps program 11 by conditional constraints, but checks satisfiability
-of constraints that run only from parts to result, under subtyping;
-signature checking in that setting is published only without
-concatenation (above). No examined system decides programs 4 and 5 while
-keeping program 11 and checking declared signatures; Makholm and Wells
-(§4.9) do not change that. Sulzmann's HM(RECc) (§4.10) changes the
-first half: its axioms make the deduction from `lacks` and keep
-program 11. It does not check declared signatures, refuse overlap, or
-give the closure rule and satisfiability test that programs 4 and 5's
-negative controls need; those are listed in §4.10, not supplied. Wand's
-system (§4.11) infers both splits, refuses their negative controls and
-keeps program 11: from his §5 Theorem (reading), and shown on these
-programs by Gonzalez's implementation (probe, whose defects §4.11
-lists). So the three-program conflict is not established. What remains
-open is the rest of the row: Wand's concatenation is biased, and no
-examined system checks declared signatures against these constraints.
-
-## 5. Programs 8 and 9
-
-### 5.1 Program 8: local generalization
-
-Probes (research/composition-assessment/ghc, GHC 9.4.8, `HasField`
-standing in for row polymorphism; each helper used at two record types):
-
-| Helper | GHC default | `-XMonoLocalBinds` |
-|---|---|---|
-| G1 closed: `getName p = getField @"name" p` | runs | runs |
-| G2 captures a closed local constant | runs | runs |
-| G3 uses another generalized local helper | runs | runs |
-| G4 captures an enclosing parameter | runs | **refused** (second use mismatches) |
-| G5 captures a local computed from a parameter | runs | **refused** |
-| G6 = G4 with a signature on the helper | runs | runs |
-
-Koka 3.2.3 (research/composition-assessment/koka/localgen*.kk): a local
-`fun` that captures a parameter is generalized (prints `p:1 p:one`); a
-local `val` bound to a lambda is not (refused at the second use).
-
-GHC's rule (User's Guide, "Let-generalisation", read): a local binding
-group is generalized if each of its free variables is closed (imported,
-or let-bound with a closed signature or a fully generalized type); so
-G2 and G3 generalize under MonoLocalBinds and G4, G5 do not. The reason
-(Vytiniotis, Peyton Jones and Schrijvers, TLDI 2010 §2.2; OutsideIn(X)
-§4.2, read) is local type assumptions: GADT matches, type families and
-local constraints make generalizing an open local binding costly and
-fragile. Waxwing has no construct that brings a type assumption into
-scope locally (no GADTs, existentials or type families; `where` clauses
-only on signatures, docs/language.md). So the proposal is the Damas-
-Milner rule for let-bound lambdas, captures included (G1-G5 all
-accepted), not MonoLocalBinds.
-
-What is Waxwing's own policy, not GHC's: only a lambda (a value) is
-generalized, as the value restriction does and as Koka's papers require
-of generalized expressions (total, POPL 2017 §3.1); a generalized
-local's effect row is generalized with it and opened where it is used,
-as a declaration's is (ADR 010 opens a closed row at a declaration's
-instantiation). Residual row constraints are generalized with the type
-(qualified types; under 4.3, the projected flow). Lowering: a local used
-at several types is specialized per use; one that captures locals needs
-its captures as parameters (lambda lifting) before it can be
-specialized like a declaration.
-
-### 5.2 Program 9: which handler receives an operation
-
-Probe: Koka 3.2.3 refuses program 9 as written ("effects do not match":
-inferred `<users|e>`, expected `<users,database,log|_>`;
-koka/repo.kk), as Waxwing does. Two spellings make it type; they mean
-different things. Run in Koka (koka/layers.kk, masked-*.kk) and, for W,
-in Waxwing (programs/p9-wide.wxw, p9-layers.wxw). The scenario
-callback `busy` writes to `Log`, fetches from `Database`, then calls
-`profile(7)`:
-
-| Spelling | Program 9's `profile(7)`, one layer of each | `busy`, one layer of each | `busy`, two nested layers (inner and outer) of each |
-|---|---|---|---|
-| **W**: callback row widened to `Users + Database + Log + ...e`; no injection | runs, `User("Ada")` (Waxwing) | runs; every log and fetch goes to that layer | every operation, the callback's and the repository's, goes to the inner layer (Koka and Waxwing agree) |
-| **M**: callback row `Users + ...e` as written; the wrapper writes `mask(Database, Log) { action(()) }` (Koka's `mask<l>`) | runs, `User(db-name-7)` | **refused** (Koka: "unhandled effect: database"): the callback's own Database and Log must come from a further, outer layer | the callback's operations go to the outer layer, the repository's to the inner (`[outer log] callback: …`, `[inner log] repository: …`) |
-
-So W means "the callback shares the services the repository uses"; M
-means "the callback's own services are separate from the repository's
-dependencies, supplied further out". When the repository and the
-callback should use the same service (one log), W gives it; M cannot,
-by construction. Program 9's own callback uses only `Users`, so both
-give the same result there.
-
-Systems not run, from their papers: Biernacki et al.'s `lift` (Handle
-with care, POPL 2018, Fig. 5) is M; Frank's adaptors are M (Convent et
-al., JFP 2020 §3), and Frank's ports (callback abilities relative to the
-ambient one, POPL 2017 §3.1) would accept the narrow row without writing
-anything, with W's sharing;
-Effekt's capabilities avoid the question (its documentation). The
-reading of Frank's ports is an inference from §3.1 (adjustments are "the
-difference between the ambient effects and the effects of the input"),
-not a run. No system read inserts M's injection implicitly.
+Not recommended: letting the checker insert the injection itself when
+the callback's row is a sub-row of the ambient. No system the check
+found does that; it would be a local rule.
 
 ## 6. Program 7: overlap by chosen semigroups
 
-Two separate capabilities. **Explicit dictionaries** need no classes: a
-policy is an ordinary value (a record `{ combine: (Int, Int) -> Int }`,
-or a function), and `{ port: last }` is a record of such values; classes
-would add implicit selection and named instances, which the author left
-open. **The typing of `mergeWith`** is what is missing: with the overlap
-written as its own row `o`, the inputs `{ ...o, ...a }` and `{ ...o, ...b
-}`, `o`, `a`, `b` pairwise disjoint and the result `{ ...o, ...a, ...b }`,
-the policy record has `o`'s labels with each field's type `T` replaced
-by a combiner of `T`. That is a type constructor mapped over a row's
-fields: Ur/Web's `map` (Chlipala 2010) and Hubers and Morris's
-row-indexed types (ICFP 2023, `rapply : Π(f ⇒ g) → Π f → Π g` and a
-record of per-field dictionaries, §3.3; explicitly typed, no inference
-algorithm). With it, `debug` is kept by construction, a whole-record
-`last` is a different, ill-typed argument, and an `Int` field meeting a
-`Text` field cannot be in `o` (one type per label). Under 4.3 the
-overlap row is a flag pattern over the shared term, which leaves this
-typing to be designed. A separate milestone.
+Unavailable rather than inferred differently: Waxwing has no classes or
+instances yet (docs/plans/2026-10-10-modules-and-instance-selection-
+direction.md), and `mergeWith` needs a typing of its own. One that uses
+only what §4.3 already has: write the overlap as its own row `o`, the
+left record `{ ...o, ...a }`, the right `{ ...o, ...b }`, with `o`, `a`,
+`b` pairwise disjoint, and the result `{ ...o, ...a, ...b }`; the policy
+argument is a record over the same labels as `o`, each field a
+semigroup dictionary for that field's type. The last part needs one
+operation Waxwing lacks: a record type made from a row by applying a
+type constructor to each field (Ur/Web's `map` over rows, Chlipala 2010;
+Hubers and Morris, Generic programming with extensible data types, ICFP
+2023, read: `rapply : Π(f ⇒ g) → Π f → Π g`, and a record of per-field
+dictionaries, `fmapΠ : Π(Functor z) → Functor(Π z)`, §3.3; their system
+is explicitly typed, with no inference algorithm). With it, `{ port: last
+}` against `defaults` and `{ port: 9090 }` gives `o = { port: Int }`,
+`a = { debug: Bool }`, `b = {}`, so `debug` is kept by construction and
+a `last` for the whole record is a different, ill-typed argument. An
+`Int` field meeting a `Text` field cannot be in `o` (one type per
+label), which is the negative control. This is a separate milestone
+(classes, then the row map); nothing in §4.3 depends on it.
 
-## 7. Decisions for the author
+## 7. Recommendation and decisions for the author
 
-The author's dispositions of 2026-10-20 (second review) are recorded;
-what remains open:
+**Recommended foundation for records: §4.3.** In one sentence: Waxwing
+keeps qualified types with `lacks`, `disjoint` and `Merge` predicates
+(Gaster and Jones; Ur/Web; PureScript's `Union` restricted to disjoint
+rows), and improves a waiting predicate as Jones (1995) defines
+improvement, exactly: a label is placed in a part when every solution
+of the facts places it there, the solutions being read on Rémy's
+presence flags as Simon (2014) does for records. The syntax translates
+unchanged (`{ ...r, ...s }` is `Merge` over its parts, as now). The
+departures to own: the per-label reduction with rigid tails as
+indivisible constants; field types never deciding a placement; an
+undetermined split staying an error. It meets programs 1-6; §5 and §6
+give programs 8, 9 and 7 an established route each, and program 10
+already runs.
 
-1. **Records**: not Simon or Makholm and Wells (both refuse program
-   11). Wand (§4.11) is the leading candidate foundation: published,
-   implemented independently, and it decides programs 4, 5 and 11 and
-   their negative controls. Sulzmann's HM(RECc) (§4.10) has the same
-   deduction in a qualified-types setting. Open, for either: disjoint
-   composition that refuses overlap; checking declared polymorphic
-   signatures (rigid rows, `lacks`/`disjoint` clauses); and how
-   unresolved alternatives reach compilation (decision 3). Next, per the
-   author's direction: a statements-first dossier (definitions, claims,
-   each labelled published, derived, experimentally checked or
-   unresolved) with Wand as the candidate, for the author's approval
-   before any proof or implementation. Not examined: whether a current
-   SMT theory of algebraic datatypes supplies the conditional
-   unification Simon's §5 lacked in 2014.
-2. **Fast paths**: deferred until a foundation is chosen; equivalence to
-   it must be established.
-3. **Undetermined splits**: a system that keeps the alternatives without
-   choosing one could be acceptable; whether they may stay unresolved
-   through compilation follows from the chosen system's account.
-4. **Program 8**: captures allowed (approved experience). The plan must
-   cite the precise published rules: ordinary let-polymorphism, which
-   does not generalize variables free in the enclosing environment
-   (Damas and Milner), with an established treatment of effects (the
-   value restriction; Koka's generalization of total expressions). GHC's
-   default accepts all of G1-G6 (§5.1).
-5. **Program 9**: W, sharing the surrounding services, as the baseline;
-   M stays an explicit, deliberate isolation. W's wider callback row is a
-   concrete spelling under review, not yet the best surface.
-6. **Program 7**: a separate milestone: dictionaries are values; generic
-   row mapping needs its own established typing.
-7. **Task 7**: semantic expansion paused; the checkpoint
-   (`r005b-task7-wip`) and its lowering defect stay recorded.
+**Decisions** (none taken here):
+
+1. Adopt §4.3 as the record foundation, with its assumptions (§4.3,
+   "Cost and assumptions") to be argued in a rules file and checked
+   against the research oracle before any code. Alternative: keep 4.1
+   and restrict the requirements (programs 4 and 5 refused).
+2. Whether H, 2g and the case table stay as fast paths of the exact test
+   or are retired once it exists (no change proposed now).
+3. Undetermined splits (`granted2({ name: 1, admin: false })`,
+   `apply0(merge)`): remain D4 (recommended; within the requirements),
+   or be accepted with a canonical choice on the argument that a record
+   value does not depend on which part holds a field. That argument is
+   not made or checked here.
+4. Program 8: generalize closed local lambdas (GHC's rule); locals that
+   capture variables stay monomorphic. Or ask for more, which the
+   sources above argue against.
+5. Program 9: explicit injection (`mask`), or Frank-style rows relative
+   to the ambient.
+6. Program 7: a separate milestone after classes and instances, typed
+   through an overlap row and a row map (§6).
+7. Task 7: the literal, removal by one requirement and the lowering
+   (Task 8) do not depend on this choice; the end-of-body classification
+   and the D4/D6 texts of the fixtures whose class changes (diag-14-fix,
+   O4, `design-forced-bound` and the like) do. Resume Task 7 only after
+   decision 1.
 
 ## 8. Evidence and limits
 
-- Probes run: Waxwing (checkpoint build) on every program variant;
-  PureScript 0.15.16 on programs 4-6 and 11; Koka 3.2.3 on program 9's
-  spellings and local generalization; GHC 9.4.8 on G1-G6; Ur/Web
-  20200209 on programs 3-6 and 11; Wallace's toy on program 11 and
-  encodings of program 4's facts. Each is in research/composition-
-  assessment with its command. Ur/Web and OCaml were installed with
-  Homebrew for this (bottles; Homebrew's automatic cleanup ran with the
-  install).
-- Reading only: Simon's algorithm (not run; his implementation has no
-  concatenation), Rose, Flix's Boolean unification, Frank, Effekt,
-  Biernacki et al., and Pottier's treatment of programs 4 and 5 (the toy
-  cannot state them). No candidate was implemented; 4.3's outcomes on
-  programs 4 and 5 follow from the formulas, not from a run.
-- Sources and what could not be accessed: the README there.
+- Run: the program variants on the checkpoint build (§2); PureScript
+  0.15.16 on programs 4-6. Not run: any candidate. §4.3's outcomes on
+  programs 4 and 5 follow from their label-only solution counts (1
+  each), not from an implementation; field types, effect rows and texts
+  are not modelled.
+- Sources: read through two source checks, author or institutional
+  copies where the ACM library refused (README lists each, with what
+  could not be accessed: Martin and Nipkow's full text, Wright 1995, the
+  Effekt paper, Madsen et al. 2023).
+- The order argument in §4.3 is an argument, not yet a check.

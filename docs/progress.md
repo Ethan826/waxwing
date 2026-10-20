@@ -7384,3 +7384,37 @@ in 0d5a146).
 - Carried into Task 7's acceptance: `none of` and `same-name-parts`,
   lambda-parameter names, the `written here` note inside a handler's or
   an applied type's argument, and the stage-7 locations under T6.
+
+## R005 Tranche B Task 7: stopped at a checkpoint (2026-10-20)
+
+The author clarified the language requirements
+(docs/plans/2026-10-20-composition-acceptance-programs.md) and asked for
+a bounded foundation assessment before Task 7 continues; Task 7 stopped
+there. Assessment: docs/plans/2026-10-20-composition-foundation-
+assessment.md.
+
+- On `r005b-replan`: three behaviour-preserving splits (fa57f41
+  Check/Overlap, 0a36ae3 Check/RestBinder, 22d3631 RowMerge/Chain),
+  differential against 1337bd3 0 differences (harvested 8,713, fuzz
+  1,029, isName 1,085, matches 1,000, mutations 1,000;
+  .build/evidence/r005b-t7-split-diff.log). 22d3631 failed one test,
+  the structural metadata test (it named Desugar, not Chain), seen in the
+  differential's harvest; fixed in 43b3a28 (findings, Task 7, item 1).
+  Verify not run on 43b3a28; the record suites (r004, r005, r005b,
+  row-merge) were run only on the checkpoint below.
+- Checkpoint `r005b-task7-wip` (4d741a1, not for merging): builds with 0
+  warnings; does not pass verify; differential and regression rows not
+  run. The red log of its tests before the implementation:
+  .build/evidence/r005b-t7-red.log (74 failing of 138). On its build:
+  every stage-7 fixture matched in a survey (59 of 59, check and text);
+  record suites 486 of 493 passing, failing: five tests that pin P3
+  (now removed), the hinted-companion test, and the structural test
+  (since fixed on `r005b-replan`). Open in it: the `written here` note
+  inside an applied type's or handler's argument (started, not built),
+  `same-name-parts`, the annotation tests (§4.4), `diag-14` in every
+  order of its source, the Task 7 regression rows, docs.
+- Findings (docs/findings.md, Task 7): the precedence hiding D2' found
+  late (item 3); B5's case-bound blame naming a part the failing record
+  is not (item 4).
+- .build/r005b-base, .build/r005b-split, .build/regression and
+  .build/go-cache deleted.

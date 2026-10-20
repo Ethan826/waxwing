@@ -17,12 +17,7 @@ const outcome = source => {
   if (checked) return `rejected: ${shown(source, checked)}`;
   const compiled = wired(source);
   if (compiled) return `checks; compile stops: ${shown(source, compiled)}`;
-  try {
-    return `runs, prints ${JSON.stringify(runGo(source))}`;
-  } catch (failure) {
-    return `checks and emits Go; Go build or run fails: ${
-      String(failure.message).split('\n')[0].slice(0, 80)}`;
-  }
+  return `runs, prints ${JSON.stringify(runGo(source))}`;
 };
 for (const name of readdirSync(dir).filter(file => file.endsWith('.wxw'))
   .sort()) {

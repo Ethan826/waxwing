@@ -749,3 +749,36 @@ Learned while retargeting mutants for the fifteen new rows
 6. `readdirSync(...).sort()` orders `diag-06-fix.json` before
    `diag-06.json` (`-` sorts before `.`), so lists of fixture names in
    tests follow that order, not the names' own.
+
+## R005 Tranche B Task 7: stopped for the foundation assessment (2026-10-20)
+
+1. A behaviour-preserving split can break a test that names files: the
+   structural metadata test (test/r005b-render.test.mjs) listed the
+   modules that write metadata by file name, so RowMerge/Chain, split
+   from Desugar in 22d3631, read as a solving module and the test
+   failed. The split was committed after a build and the formatter
+   only, with no test run; the differential's harvest, which runs the
+   suite in the frozen copy, caught it. Run the suite on a split commit's
+   own tree before committing it. Fixed in 43b3a28.
+2. A differential run reads the candidate's output/ while it runs:
+   rebuilding output/ in the working tree mid-run invalidated one run
+   (module not found). Run the candidate from a frozen copy
+   (`git archive` of the commit, built there).
+3. The approved provenance precedence (written lacks, written disjoint,
+   implied, spread) hides D2' found late when a solving case binds
+   between the two items' arguments: the case's binding states the
+   second part's lack as `Implied` (a row the checker made), which ranks
+   before `Spread`, so `f({ a: 1 }, { a: 2 })` through `fn(p, q) => {
+   ...p, ...q }` reads Tranche A's shape text. D2' late is reached when
+   one unification binds both parts (a callback whose parameter types
+   are given; one argument holding both). On `r005b-task7-wip`, pinned
+   as `d2-late` and a control; the precedence is the author's to change.
+4. B5's case-bound blame (Check/Fault, R10.1 as amended by decision 22)
+   took any field of either failing record that a case-bound part cannot
+   take: `.x` on a removal's rest after `drop({ y: 2 }, { x: 1 })` read
+   `so s cannot have field y`, though `y` is on the record that is fine
+   and `x` was removed. On `r005b-task7-wip`, blame is limited to a label
+   one record holds and the other cannot take, on a part the lacking
+   record is (built through it, or equal to its row); `design-removal-
+   right` and `diag-17` then read as approved. Not merged; it changes an
+   accepted B5 behaviour and needs the author's review with Task 7.

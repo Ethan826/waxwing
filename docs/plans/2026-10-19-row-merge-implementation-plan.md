@@ -90,7 +90,10 @@ repository, an optional research oracle).
 **Status:** B0 accepted; B1-B5 done and accepted (2026-10-19 to
 2026-10-20), each authorized alone; L1 accepted and L2's limited
 location rule approved (§10, decision 15). Task 7 authorized (§10,
-decision 24); nothing after it is.
+decision 24), then stopped at a checkpoint (branch `r005b-task7-wip`)
+when the author clarified the requirements (2026-10-20): see
+docs/plans/2026-10-20-composition-foundation-assessment.md; it resumes
+only after the author's decision there.
 
 Written on branch `r005b-replan` from main 1d43341. Docs only: no
 compiler source, test, script or test fixture changed; nothing built;
