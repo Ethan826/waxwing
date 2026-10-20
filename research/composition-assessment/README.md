@@ -103,3 +103,9 @@ record systems. Read: Makholm and Wells, TR HW-MACS-TR-0030 v1.0.2
 copy the author retrieved; Odersky, Sulzmann and Wehr, TAPOS 1999 (§3,
 Fig. 2, §6.1, §7); Pottier's thesis (1998), introduction, ch. 4, ch. 8
 opening, on entailment and signatures.
+
+Fifth revision: wand/, Wand's inference (LICS 1989) through Gonzalez's
+reference implementation (b4a63ba; inputs, outputs of the stock and
+nested-field builds, verdicts including residual constraints, the
+patches stated exactly); palsberg-zhao/, the retrieval log for Palsberg
+and Zhao (I&C 2004; reading only, no implementation exists).

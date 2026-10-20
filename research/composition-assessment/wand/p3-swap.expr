@@ -1,0 +1,1 @@
+let join = a: b: a // b; in join { age = 36; } { name = "Ada"; }

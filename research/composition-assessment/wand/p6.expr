@@ -1,0 +1,2 @@
+let join = a: b: a // b; in let forwarded = a: b: join a b; in let p = forwarded { name = "Ada"; } { age = 36; }; in p.name
+let join = a: b: a // b; in let forwarded = a: b: join a b; in forwarded

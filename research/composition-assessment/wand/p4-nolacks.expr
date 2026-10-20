@@ -1,0 +1,2 @@
+let acceptsParts = p: a: b: ((k: (x: y: x) (k p) (k (a // b))) (z: true)); in acceptsParts
+let acceptsParts = p: a: b: ((k: (x: y: x) (k p) (k (a // b))) (z: true)); in acceptsParts { admin = false; }

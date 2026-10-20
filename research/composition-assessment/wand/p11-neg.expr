@@ -1,0 +1,1 @@
+r: let both = q: let first = q // { a = 1; }; in let second = q // { a = true; }; in (x: y: x) 0 ((j: j q + j (r without a)) (z: 0)); in both { name = "Ada"; a = 2; }

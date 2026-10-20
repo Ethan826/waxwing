@@ -1,0 +1,2 @@
+(a: b: a // b) ((a: b: a // b) { name = "Ada"; } { age = 36; }) { active = true; }
+(a: b: a // b) { name = "Ada"; } ((a: b: a // b) { age = 36; } { active = true; })

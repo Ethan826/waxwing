@@ -7473,3 +7473,26 @@ assessment.md.
   for closed results, a satisfiability test and signature entailment.
 - Task 7 stays checkpointed. No compiler code changed; verify not run
   (docs and research only).
+
+## Composition foundation assessment: Wand, Palsberg and Zhao (2026-10-20)
+
+- At the author's direction, Wand (LICS 1989) through Gonzalez's
+  reference implementation (b4a63ba, built locally; §4.11) and Palsberg
+  and Zhao (I&C 2004, reading; §4.12), in parallel.
+- Wand's system infers the splits of programs 4 and 5, refuses their
+  negative controls and keeps program 11 (his §5 Theorem, read; shown
+  on the programs by the implementation, every call with no residual
+  constraints). The third revision's three-program conflict is
+  withdrawn (§0, §4.8). Open: disjoint composition, declared
+  signatures, unresolved alternatives in compilation.
+- Gonzalez's code: residual constraints never tested for
+  satisfiability, a self-unification occurs-check failure, nested
+  fields not substituted. Verdicts for every probe and the two patches
+  are in research/composition-assessment/wand/README.md; both builds
+  reproduced byte for byte from a fresh clone.
+- Palsberg and Zhao: symmetric concatenation refusing overlap, per-record
+  field types, NP-complete inference by search, no row variables or
+  signatures; no implementation.
+- Next: a statements-first dossier with Wand as the candidate, for the
+  author's approval. Task 7 stays checkpointed. No compiler code
+  changed; verify not run (docs and research only).
