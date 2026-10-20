@@ -93,3 +93,13 @@ abstract; Madsen, van de Pol and Henriksen, OOPSLA 2023; Zullo, POPL
 restriction, through OutsideIn(X) §4.2.4); the Effekt paper (OOPSLA
 2020; its documentation only); Rémy's "Type inference for records in a
 natural extension of ML"; Pottier's conditional constraints.
+
+Fourth revision (bounded pass): makholm-wells/, Makholm and Wells's
+`bowtini` 1.3 (its own README; inputs, outputs, build notes; the
+archive is not stored). sulzmann/, the retrieval log for Sulzmann's
+record systems. Read: Makholm and Wells, TR HW-MACS-TR-0030 v1.0.2
+(all) and ICFP 2005 (§1, §4-§5, §7); Sulzmann's thesis (Yale, 2000;
+§2 p. 9, §4.2 p. 89, §5.1.1-§5.1.2, Appendix A.2), from the ResearchGate
+copy the author retrieved; Odersky, Sulzmann and Wehr, TAPOS 1999 (§3,
+Fig. 2, §6.1, §7); Pottier's thesis (1998), introduction, ch. 4, ch. 8
+opening, on entailment and signatures.

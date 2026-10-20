@@ -7454,3 +7454,22 @@ assessment.md.
   checking declared signatures; the conflict is stated on the programs.
   Simon's 2014 "no solver" kept as a historical statement.
 - No compiler code changed; verify not run (docs and research only).
+
+## Composition foundation assessment, bounded pass (2026-10-20)
+
+- At the author's direction, one bounded pass over two candidates, with
+  no new algorithm: Makholm and Wells (assessment §4.9) and Sulzmann
+  (§4.10). Pottier's signature claims scoped (§0, §4.8): the toy lacks
+  declarations; his 1998 thesis checks module signatures by a sound,
+  incomplete scheme comparison, without concatenation.
+- Makholm and Wells: `bowtini` 1.3 built (Moscow ML 2.10.1, Homebrew)
+  and run (research/composition-assessment/makholm-wells/). Program 11
+  refused (one row per join); program 4's negative control not
+  refused (⊥); no declared signatures.
+- Sulzmann's thesis (read from the author's ResearchGate copy): HM(RECc)
+  axioms REC5-REC6 (Fig. 5.2, rules 6-7) give the deduction from
+  `lacks`, and program 11 is kept. Traced on programs 3-6 and 11; seven
+  obligations listed (§4.10), including disjointness, a closure rule
+  for closed results, a satisfiability test and signature entailment.
+- Task 7 stays checkpointed. No compiler code changed; verify not run
+  (docs and research only).
