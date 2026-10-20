@@ -1768,6 +1768,21 @@ docs/plans/2026-10-19-row-merge-proposals.md.
     cannot repair with the available annotations; B5's hint wording
     comes back for approval. No merge or push.
 
+19. **B4 accepted; B5 authorized** (user, 2026-10-19), within the
+    approved plan, with any new hint wording brought back before it is
+    pinned. No blocking findings: H runs only after the fixpoint and only
+    when predicates remain, binds nothing, Unresolved claims nothing
+    about solutions, the unfinished-fixpoint check is an internal
+    failure, the 2g counterexample stays sensitive with H off; the
+    departures of `r005b-h-binds` and `r005b-quiet` are reasonable. One
+    nonblocking gap, closed the same day: the judge's H-off comparison
+    now compares states in every run, H's refusals included. The
+    reviewer ran 67 focused tests (one fixture failed only on the
+    sandbox's Go cache and passed with filesystem access), about 104,000
+    H on/off comparisons, not verify. B5 keeps a lambda annotation that
+    can resolve an ambiguity apart from O4's limitation, which callers
+    cannot repair with the available annotations.
+
 **Reporting correction (user, 2026-10-19).** The prototype renders no
 text. Its comparisons across orders are "modelled diagnostic selection
 and location checks": they model which constraint is reported and where,

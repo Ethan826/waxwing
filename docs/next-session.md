@@ -7,9 +7,11 @@ in docs/progress.md "R005 Tranche B B4". P5 is gone; Unresolved bodies
 report P6 and H's refusals P2's text until B5. The three approved
 reclassifications and `same` are in test/fixtures.
 
-**Next, needs the user's review:** B4. B5 (diagnostics D4 and D6,
-metadata) is not authorized; its first step is to bring back the exact
-wording of the two kinds of hint for approval (decision 17).
+**Next: B5 is authorized** (decision 19; B4 accepted, its one test gap
+closed). Before pinning any new hint wording, bring it back for
+approval: a lambda annotation offered only where it can resolve the
+constraint; for a call's own rows (O4) the limitation explained, with
+no annotation suggested (decisions 17, 19).
 
 The working method and design notes below still apply.
 
