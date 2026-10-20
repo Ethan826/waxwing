@@ -53,8 +53,8 @@ for (const fixture of fixtures) {
 // solver-stage fixtures run in test/row-merge.test.mjs); Task 5 (B4)
 // activates the three Unresolved fixtures without a literal of two
 // spreads and the two annotated programs that fix diag-07's shape; Task 6
-// (B5) the `render-*` fixtures, their annotated companions and
-// participation-control.
+// (B5) the `render-*` fixtures, their annotated companions,
+// participation-control and render-none-control (decision 21).
 test('the fixtures this task activates are the activation table\'s', () => {
   const active = fixtures.filter(fixture => reached(fixture.stages.check))
     .map(fixture => fixture.name);
@@ -67,7 +67,9 @@ test('the fixtures this task activates are the activation table\'s', () => {
     'render-d6-neither', 'render-d6-nested', 'render-d6-one',
     'render-holds-annotated', 'render-holds', 'render-lambda-annotated',
     'render-lambda', 'render-mixed-annotated', 'render-mixed',
-    'render-nested-annotated', 'render-nested', 'render-partial-annotated',
+    'render-nested-annotated', 'render-nested',
+    'render-none-control-annotated', 'render-none-control',
+    'render-partial-annotated',
     'render-partial', 'render-quiet-annotated', 'render-quiet',
     'render-reference-annotated', 'render-reference',
     'render-split-annotated', 'render-split', 'render-three-annotated',

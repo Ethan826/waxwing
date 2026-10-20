@@ -1,0 +1,33 @@
+{
+  "name": "render-none-control-annotated",
+  "from": "render-none-control annotated: the annotation exposes the contradiction (D1)",
+  "source": "fn pick3(p: { ...r }, q: { ...s }, w: { ...t }): { ...r, ...s, ...t }\n  where r disjoint s, r disjoint t, s disjoint t = pick3(p, q, w);\nfn apply(f: (a, b, c) -> { x: Int, y: Int }, g: (a, b, c) -> Int): Int = 0;\nfn noX(p: { ...u }, q: { ...v }, w: { ...o }): Int\n  where u lacks { x }, v lacks { x }, o lacks { x } = 0;\nfn main(): Int = apply(fn(p: { x: Int }, q: {}, w: { y: Int }) => pick3(p, q, w), noX);\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D1",
+    "code": "E_TYPE",
+    "message": "x is not allowed here: u lacks { x }",
+    "at": {
+      "text": "noX",
+      "nth": 1
+    },
+    "notes": [
+      {
+        "message": "required here",
+        "at": {
+          "text": "x",
+          "nth": 1
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

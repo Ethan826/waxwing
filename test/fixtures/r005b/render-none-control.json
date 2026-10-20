@@ -1,0 +1,41 @@
+{
+  "name": "render-none-control",
+  "from": "three parts all lacking x: an Unresolved control (plan §10 decision 21)",
+  "remark": "derived by R1-R11 (B5). No solution exists (the annotated companion exposes D1), but H cannot refuse it: the desugared chain Merge r s m, Merge m t result leaves m, the intermediate part, with no fact, so H cannot rule x out of it. R4 then names y, the first field with two or more candidate parts. Not a D6 none-of fixture.",
+  "source": "fn pick3(p: { ...r }, q: { ...s }, w: { ...t }): { ...r, ...s, ...t }\n  where r disjoint s, r disjoint t, s disjoint t = pick3(p, q, w);\nfn apply(f: (a, b, c) -> { x: Int, y: Int }, g: (a, b, c) -> Int): Int = 0;\nfn noX(p: { ...u }, q: { ...v }, w: { ...o }): Int\n  where u lacks { x }, v lacks { x }, o lacks { x } = 0;\nfn main(): Int = apply(pick3, noX);\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell which of pick3's r, s or t has field y; pass a lambda with annotated parameters in place of pick3",
+    "at": {
+      "text": "pick3",
+      "nth": 2
+    },
+    "notes": [
+      {
+        "message": "r, s and t are written here",
+        "at": {
+          "text": "{ ...r, ...s, ...t }",
+          "nth": 0
+        }
+      },
+      {
+        "message": "{ x: Int, y: Int } is required here",
+        "at": {
+          "text": "{ x: Int, y: Int }",
+          "nth": 0
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

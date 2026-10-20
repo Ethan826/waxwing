@@ -7193,3 +7193,11 @@ approval first. Nothing merged or pushed.
      in a literal of two spreads). Proposed: move the fixture to Task 7.
 - The R11 tie-break test, the structural test (no solving module reads
   PartOrigin) and the regression rows come with the code they test.
+- Decision 21 (user, 2026-10-20): T6 approved; diag-18's primary
+  amended from `p` to `merge` (diagnostics file Example 18 too);
+  `render-none-control` (Unresolved; three parts all lacking `x`, no
+  solution, H cannot refuse it through the chain's intermediate part)
+  and its companion `render-none-control-annotated` (D1, exposing the
+  contradiction) pinned; `none of` and `same-name-parts` deferred to
+  Task 7. Red: 29 pass, 17 fail, each on its placeholder;
+  research/open-row-merge `node fixtures.mjs`: 101 fixtures, 0 failing.
