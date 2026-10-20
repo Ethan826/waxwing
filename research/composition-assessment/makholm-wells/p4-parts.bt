@@ -1,0 +1,5 @@
+## program 4 with the parts as real arguments: the caller chooses the
+## split itself (admin in the first part, the second empty). `s lacks
+## { admin }` is the dummy concatenation b ++ {admin = 0}.
+(\acceptsParts. acceptsParts {admin = 0} {})
+  (\a.\b. (\k. true) {p = a ++ b, lb = b ++ {admin = 0}})

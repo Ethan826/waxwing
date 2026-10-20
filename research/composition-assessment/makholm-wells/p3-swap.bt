@@ -1,0 +1,2 @@
+## program 3, arguments exchanged
+(\join. (join {age = 36} {name = 1}).name) (\a.\b. a ++ b)

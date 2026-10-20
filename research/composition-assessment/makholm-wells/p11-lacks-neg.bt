@@ -1,0 +1,4 @@
+## program 11's negative control: the argument already has a
+(\both. both {name = 1, a = 2})
+  (\q. (\k. 0) {lacks = q ++ {a = 0},
+                first = q \\ a ++ {a = 1}, second = q \\ a ++ {a = true}})

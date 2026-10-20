@@ -1,0 +1,12 @@
+## program 5, encoded. `u lacks { y }` is written p ++ {y = 0} (Bowtie
+## has no lacks form for exported fields; a disjoint concatenation with
+## a literal is the nearest constraint). composeRequirements forces
+## make's result to be exactly { x, y } through an `if` with a literal,
+## and feeds the same a and b to make and use.
+(\join. \restricted. \composeRequirements.
+   composeRequirements join restricted)
+  (\a.\b. a ++ b)
+  (\p.\q. (\k. 0) {u = p ++ {y = 0}, v = q ++ {x = 0}})
+  (\make.\use. (\k. 0)
+     (\a.\b. {m = if true then make a b else {x = 0, y = 0},
+              n = use a b}))

@@ -1,0 +1,2 @@
+## the papers' own example (ICFP 2005 section 5; TR section 3)
+\x. {a = x \\ f ++ {f = 5}, b = x \\ f ++ {f = true}}

@@ -1,9 +1,11 @@
 # Composition requirements: foundation assessment
 
-Date: 2026-10-20, revised twice the same day after the author's reviews
-(the first version recommended an improvement rule of its own, §4.4;
-the third adds program 11, Pottier's system and the narrow question of
-§4.8). Status: assessment for the author's decision. No
+Date: 2026-10-20, revised three times the same day after the author's
+reviews (the first version recommended an improvement rule of its own,
+§4.4; the third adds program 11, Pottier's system and the narrow
+question of §4.8; the fourth, a bounded pass, adds Makholm and Wells,
+§4.9, and Sulzmann, §4.10, and scopes the claims about Pottier and
+signatures). Status: assessment for the author's decision. No
 implementation is proposed for authorization here.
 
 Requirements: docs/plans/2026-10-20-composition-acceptance-programs.md
@@ -34,10 +36,12 @@ their negative controls? Among the systems examined, no. They divide:
   probe of his Wallace toy) keep program 11 (accepted, with one pending
   conditional per use), but records have width subtyping, a definition
   is checked only for satisfiability (a function whose parts both lack
-  `admin` and that reads `.admin` is accepted until it is called), there
-  are no declared signatures to check (no entailment algorithm, per
-  Wallace's own source), and program 4 as written cannot be stated in
-  the implementation.
+  `admin` and that reads `.admin` is accepted until it is called), the
+  toy has no declared signatures to check, and program 4 as written
+  cannot be stated in it. That absence is the toy's, not a proof about
+  the approach: Pottier's thesis checks module signatures by a sound,
+  incomplete comparison of schemes, for a system without concatenation
+  or conditional constraints (§4.8).
 
 So the concrete conflict: deciding a split from facts needs reasoning
 about field presence, and the published systems that do it either share
@@ -297,8 +301,11 @@ Simon 2014; Rémy 1992 (RR-1739); Morris and McKinna 2019; Hubers and
 Morris 2023; Castagna and Peyrot (arXiv 2404.00338); the Flix papers and
 repository; PureScript's source; Pottier (Nordic Journal of Computing
 2000, LICS 2003, the 1998 thesis, Wallace's source; §4.8); Jones FPCA
-1995 §4.1. Not read: Wand 1991, Makholm and Wells 2005, Sulzmann's
-record constraints (cited by Pottier and Rémy, ATTAPL ch. 10). Simon's
+1995 §4.1; Makholm and Wells 2005 (§4.9); Sulzmann's HM(REC) (TAPOS
+1999 §7; §4.10). Not read: Wand 1991; Sulzmann's thesis (2000), the
+work ATTAPL ch. 10 §10.8 cites for record extension and concatenation,
+and his RR-1128 (1997), neither of which could be retrieved (§4.10).
+Simon's
 2014 statement that no SMT solver had a theory of unification
 constraints is his, of 2014; whether a solver for SMT's theory of
 algebraic datatypes now provides what his §5 calls for was not
@@ -316,7 +323,10 @@ true`. Rows: P = probe (the system run), R = reading.
 | PureScript 0.15.16 (`Union`, `Lacks`) | 6 accepted (P) | refused (P) | not run | refused (P) | accepted (P, purs/P11.purs) | yes |
 | Ur/Web 20200209 (`$(r ++ s)`, `[r ~ s]`) | accepted (P) | refused: "Stuck unifying these records" (P) | not run | refused, same (P) | accepted (P) | yes |
 | Simon 2014, translated (§4.3) | accepted (R) | accepted by satisfiability (R) | refused (R) | accepted (R) | **refused** (R) | to be added |
-| Pottier 2000 (Wallace toy) | accepted (P: disjoint union typed, overlap refused) | not expressible: the toy has no declarations (P) | not refused under its rules (R) | satisfiable, so not refused (R) | **accepted** (P) | no |
+| Makholm and Wells 2005 (Bowtie; `bowtini` 1.3) | accepted (P) | not expressible (no declarations); encoded, accepted with no split visible to callers (P) | **not refused**: free set variables are solved by ⊥ (P; R: ICFP Lemma 5.9) | encoded, accepted; an unsatisfiable variant accepted too (P) | **refused**, one row per join (P; R: TR §3, ICFP §5); accepted with a written `\\ a` per use (P) | no: checking a given typing is NP-complete (R: TR App. B.4); a Church-style check promised, not given |
+| Sulzmann, HM(REC) (TAPOS 1999 §7) | not expressible: no extension or concatenation (R) | not expressible (R) | not expressible (R) | not expressible (R) | not expressible (R) | no annotation rule; entailment a parameter of X (R) |
+| Sulzmann, HM(RECc), thesis 2000 (§5.1.2, A.2; §4.10) | 3 accepted, overlap also accepted (R); 6: no signatures | accepted by satisfiability; REC5 entails `admin` in `r`, printed closure does not derive it (R) | unsatisfiable, refused only given a satisfiability test not supplied for RECc (R) | accepted by satisfiability; REC5-6 entail the split (R) | **accepted**, refused negative control (R) | no: no annotations; entailment procedure not given (R) |
+| Pottier 2000 (Wallace toy) | accepted (P: disjoint union typed, overlap refused) | not expressible: the toy has no declarations (P) | not refused under its rules (R) | satisfiable, so not refused (R) | **accepted** (P) | not in the toy (P); the 1998 thesis's typer checks module signatures by a sound, incomplete scheme comparison, without concatenation or conditionals (R) |
 
 **Pottier, read** (NJC 2000 §5.1-§5.2; LICS 2003; Wallace's source):
 field types are `Abs`, `Pre τ`, `Either τ`, `Any` with `Pre τ` and
@@ -332,9 +342,27 @@ on the result (a record passed where `{ ...r, ...s }` is expected) puts
 nothing on the parts, which is why program 4's negative control is not
 refused. Inference is an HM(X) instance with closed constrained schemes
 and lazy simplification ("ignore any conditional constraints whose
-condition has not yet been fulfilled", NJC Example 4). Wallace's core
-says "no complete entailment algorithm is currently known", and the
-toy's declaration form is commented out.
+condition has not yet been fulfilled", NJC Example 4). The toy's
+declaration form is commented out.
+
+**Pottier and signatures, scoped.** The missing facility is the toy's.
+The remark "no complete entailment algorithm is currently known"
+(wallace/core.ml, 2000) is an implementation comment on simplification:
+it explains why the joining of two constraint leaves does not test
+whether one is already greater. It says nothing about declarations. The
+thesis (1998, ch. 4, 8, 9, read) is the precise statement: entailment
+and the comparison of constrained schemes were, in 1998, of open
+decidability for its constraints; chapter 9 gives a sound, incomplete
+comparison (generalizing Trifonov and Smith), and the thesis's typer
+uses it to compare an inferred scheme with the one a module signature
+declares (introduction; ch. 8 opening). So under Pottier's approach a
+declared signature can be checked soundly, and some correct declarations
+may be refused. Three limits on what follows for Waxwing: the thesis's
+system has no concatenation and no conditional constraints, and whether
+its comparison extends to them was not examined; "open" and "currently
+known" are statements of 1998 and 2000, not checked against later work
+on subtype entailment; and a sound, incomplete check would refuse some
+valid declarations, which the requirements have not been asked about.
 
 **Pottier, run**: Wallace 2000-02-11 (cambium.inria.fr/~fpottier/
 wallace; "Distributed only by permission", so the archive and the
@@ -352,6 +380,147 @@ conditionals and refused only when applied to `{}` and `{}`; the same
 with only `s` lacking `admin`, applied to `{ admin = false }` and `{}`,
 gives `bool`.
 
+### 4.9 Makholm and Wells, Bowtie (2005)
+
+Reading (TR HW-MACS-TR-0030 v1.0.2, all; ICFP 2005, §1, §4-§5, §7) and
+probes of their tool, `bowtini` 1.3 (Moscow ML; research/composition-
+assessment/makholm-wells/, inputs, outputs and build notes; the archive,
+marked "PERHAPS_GPL_EVENTUALLY", stays outside the repository). A record
+type is `{[R / S]}`: a row `R` of field types and a label set `S`;
+no subtyping; concatenation (TConcat) requires both parts and the
+result to share one `R`, so a field has one type across a join. The
+papers name the consequence "row pollution" and their own example is
+program 11's shape; their remedy, hiding (`\\ l`), "cannot be applied
+fully automatically" (ICFP §5). Set constraints are `S1 ⊎ S2 = S`, `S1 \
+L = S2` and `S ∋ l`; there is no `lacks` (it is encoded by a dummy
+concatenation). Their hardness results: typability of the naive system
+with exact label sets is NP-complete, for symmetric and overriding
+concatenation alike (TR Thm 2.1; ICFP Thm 4.1, 4.7), and they restrict
+the system rather than search: a set variable left free is solved by ⊥,
+which satisfies every constraint whose parts are unknown. Hence program
+4's negative control is not refused; refusing it needs ⊥-free
+solvability, NP-complete even with one label (TR Lemma B.5). Inference
+is principal and near-linear; there is no `let` in the tool and no
+declared signatures. As a foundation it shares Simon's refusal of
+program 11 and Pottier's acceptance of program 4's negative control,
+and decides no split.
+
+### 4.10 Sulzmann, HM(RECc) (thesis, 2000)
+
+Reading: Sulzmann, A general framework for Hindley/Milner type systems
+with constraints (Yale PhD thesis, 2000; the ResearchGate copy,
+retrieved by Waxwing's author, not stored in the repository):
+§5.1.1-§5.1.2 (pp. 120-127, Figures 5.1-5.2, Remark 5, Theorem
+21), Appendix A.2 (p. 174), §4.2 on normal forms (p. 89: entailment
+and uniqueness), §2 on annotations (p. 9). Also HM(REC) (Odersky,
+Sulzmann and Wehr, TAPOS 1999 §7). No implementation was found or
+run; the thesis's record systems are not those of Chameleon
+(research/composition-assessment/sulzmann/README.md). Every outcome
+below is R.
+
+**What it is.** Ohori's records in HM(X). A record type is exact, `{l1
+: τ1, …}`; polymorphism is a kinded variable `(α :: {{l : τ}})`, "α
+has field `l` of type `τ`"; REC2 gives a field one type within one
+record (one variable). Two further predicates: `(α\l)`, α lacks `l`,
+and `concat(α, β, γ)`. Its axioms, with Fig. 5.2's closure rules 6-7:
+
+    REC5 concat(α, β, γ) ∧ (γ :: {{l : δ}}) ∧ (β\l) ⊢e (α :: {{l : δ}})
+    REC6 concat(α, β, γ) ∧ (γ :: {{l : δ}}) ∧ (α\l) ⊢e (β :: {{l : δ}})
+
+This is the deduction §4.8 found missing: a field of the result
+belongs to the part whose partner lacks it. Fig. 5.2 also refuses a
+variable that both has and lacks a label (rule 8) and a closed record
+said to lack a field it has (rule 9). Inference closes the constraint,
+unifies the equalities it produces and repeats to a fixed point (p.
+126); Theorem 21 states the principal constraint property "by
+application of the lifting method"; uniqueness of principal types is
+conjectured (p. 127).
+
+**Not Waxwing's merge, as published.** §5.1.2 models asymmetric,
+overriding concatenation (Remark 5: "the first record takes
+precedence"; REC7's label set, `(l̄ \ l̄') ∪ l̄'`, and rule 10, which
+keeps the first record's fields, read differently on which side wins).
+Appendix A.2 gives a "symmetric" variant: REC3 and REC4 also require the
+other part to lack the label; it gives axioms only, no closure figure,
+and its principal property is stated "along the lines" of §5.1.2, with
+no proof. Neither version refuses overlap: REC7 holds of every pair of
+closed records, so `concat({a: 1}, {a: true}, γ)` is satisfiable. There
+is no predicate for two parts being disjoint.
+
+**Remark 5 and program 11.** Remark 5 says `typeof` "should also be
+seen as parameterized in the record because the same label might
+possibly have different types in different records". Program 11 is
+kept for the reason that remark states: each concatenation result is
+its own variable, and REC2 equates field types only within one
+variable. No rule relates `γ1` to `γ2`.
+
+**Trace** (Waxwing's `{ ...r, ...s }` read as `concat(ρr, ρs, γ)`,
+`r lacks { l }` as `(ρr\l)`; that reading is itself an adaptation for
+disjointness, see "Missing" below):
+
+- **Program 3.** `join : concat(α, β, γ) ⇒ α → β → γ`. At `join({ name
+  }, { age })` rule 10 gives `γ = { name, age }`. Accepted; swapped and
+  regrouped likewise. Its overlap control (`join({ a }, { a })`) is
+  accepted, not refused: no rule refuses overlap.
+- **Program 4.** At the call, `γ := { admin: Bool }`, leaving
+  `concat(α, β, { admin: Bool }) ∧ (β\admin)`. REC5 entails `(α ::
+  {{admin : Bool}})`, by REC1 for the closed result. Fig. 5.2's rule 6
+  needs `(γ :: {{admin : δ}})` in the closure as a constraint, and no
+  rule of Fig. 5.2 puts the fields of a closed record there (rules 13
+  and 16 need a kind on the variable side; rules 10-12, 15, 17-18 need
+  closed parts). So the printed closure stops with the constraint
+  unchanged, which is a solved form if it is satisfiable; it is (α =
+  `{ admin }`, β = `{}`). Accepted; `α`'s field is entailed by the
+  axioms, not produced by the printed closure, and `α = { admin: Bool
+  }`, `β = {}` are not derived by either (a kind is a lower bound).
+- **Program 4's negative control.** `concat(α, β, { admin: Bool }) ∧
+  (α\admin) ∧ (β\admin)`: unsatisfiable by REC7 (the result's labels
+  come from the parts). REC5 with rule 8 would give ⊥, but rule 6 does
+  not fire, as above. Refused only by the satisfiability test the
+  solved forms presuppose ("all satisfiable … constraints"), which §5.1.2
+  does not give (it gives one for RECl, NP-complete, p. 129).
+- **Program 5.** Unification makes `join`'s parts `restricted`'s
+  parameters: `concat(α, β, { x: Int, y: Int }) ∧ (α\y) ∧ (β\x)`.
+  REC5 and REC6 entail `α` has `x`, `β` has `y`; as in program 4 the
+  printed rules 6-7 do not fire on a closed result. Satisfiable;
+  accepted.
+- **Program 6.** No signatures (below). The inferred scheme of
+  `forwarded` is `join`'s, `concat(α, β, γ) ⇒ α → β → γ`.
+- **Program 11.** `concat(α, { a: Int }, γ1) ∧ concat(α, { a: Bool },
+  γ2) ∧ (α\a)` (or `extend_a`, §5.1.1). No rule relates `γ1` and `γ2`;
+  accepted. Negative control: `α := { name: Text, a: Int }` with `(α\a)`
+  gives ⊥ by rule 9; refused.
+
+**Declared signatures.** Not provided. The thesis's programs "do not
+contain type annotations" (p. 9; Odersky and Läufer 1996 cited for
+them); Appendix A.3's rule for polymorphic recursion takes a written
+scheme as a typing rule only. Entailment for RECc is defined by the
+axioms; no decision procedure for it is given, and the thesis notes
+that uniqueness of solved forms "requires a decidable entailment test"
+(§4.2, p. 89). Program 6's check would need `concat(α, β, γ) ⊢e concat(α, β,
+γ)`, which is trivial; a general check of declared clauses is not.
+
+**Faithful, and what Waxwing would add.** A faithful HM(RECc) gives
+exact records, independent field types per record (program 11), the
+lacks deduction in its axioms, inference by closure and unification,
+and acceptance of programs 3, 4 and 5 by satisfiability. Waxwing would
+need, each named here and not designed:
+
+| Missing for Waxwing | Status |
+|---|---|
+| refusing overlap: a disjointness constraint on two parts, or making `concat` disjoint | not in the thesis; disjointness constraints are published (Harper and Pierce, POPL 1991; Ur/Web's `[r ~ s]`, Chlipala 2010), not with this closure |
+| a closure rule giving a closed record's fields (REC1) where rules 6-7 need them | not in Fig. 5.2; the axioms entail it; adding it is a change to the printed algorithm |
+| a satisfiability test for RECc (refusing program 4's negative control) | presupposed by the solved forms, not given for RECc |
+| A.2's closure algorithm and proof of principality | stated "along the lines of" §5.1.2, not given |
+| checking declared signatures (entailment of RECc constraints) | not provided; decidability not stated |
+| grounding parts for monomorphized Go (program 4's `α`, `β`) | not in the thesis; a kind is a lower bound, so a witness must be chosen; decision 3 |
+| D1-D6 diagnostics from ⊥ or unsatisfiability | Waxwing's |
+
+So the reviewer's lead is confirmed on its central point: the deduction
+from `lacks` is published, in a system that keeps program 11. It is a
+thesis, not peer-reviewed in this form; its symmetric variant is axioms
+only; and what it does not supply is listed above.
+
 **The conflict, stated on the programs.** Program 4's call supplies a
 record where `{ ...r, ...s }` is expected and must decide, from `s lacks
 { admin }`, that `admin` is in `r`. In a system whose parts are type
@@ -363,9 +532,15 @@ field) leaves the improving function to the language: none of the
 examined systems has one for merges. Simon avoids the decision by
 sharing the parts' type term, which is what refuses program 11. Pottier
 keeps program 11 by conditional constraints, but checks satisfiability
-of constraints that run only from parts to result, under subtyping, with
-no signatures. No examined system decides programs 4 and 5 while keeping
-program 11 and checking declared signatures.
+of constraints that run only from parts to result, under subtyping;
+signature checking in that setting is published only without
+concatenation (above). No examined system decides programs 4 and 5 while
+keeping program 11 and checking declared signatures; Makholm and Wells
+(§4.9) do not change that. Sulzmann's HM(RECc) (§4.10) changes the
+first half: its axioms make the deduction from `lacks` and keep
+program 11. It does not check declared signatures, refuse overlap, or
+give the closure rule and satisfiability test that programs 4 and 5's
+negative controls need; those are listed in §4.10, not supplied.
 
 ## 5. Programs 8 and 9
 
@@ -474,12 +649,18 @@ what remains open:
    need what no examined system provides (a published improving function
    for merges and `lacks` would have to be found, or one argued and
    approved as new under ADR 014); or a semantics with one type per field
-   across joins (Simon), giving up program 11; or a satisfiability-only
-   reading under subtyping (Pottier), changing what a record type means
-   and giving up checked signatures. Unread leads that could change §4.8:
-   Sulzmann's record constraints, Makholm and Wells 2005, and whether a
+   across joins (Simon; Makholm and Wells, §4.9), giving up program 11;
+   or a satisfiability-only reading under subtyping (Pottier), changing
+   what a record type means, with signatures checked, if at all, by a
+   sound and incomplete comparison published only without concatenation
+   (§4.8). Sulzmann's HM(RECc) (§4.10) is now a fourth candidate: it
+   has the deduction and keeps program 11, with seven obligations
+   listed there (disjointness, a closure rule, satisfiability, A.2's
+   algorithm, signature entailment, grounding, diagnostics), some
+   published elsewhere and some not. Whether a
    current SMT theory of algebraic datatypes supplies the conditional
-   unification Simon's §5 lacked in 2014.
+   unification Simon's §5 lacked in 2014 stays unexamined; the bounded
+   pass stops at these candidates.
 2. **Fast paths**: deferred until a foundation is chosen; equivalence to
    it must be established.
 3. **Undetermined splits**: a system that keeps the alternatives without

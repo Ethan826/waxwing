@@ -1,0 +1,2 @@
+## the distribution's example: symmetric concatenation of two unknowns
+\x.\y. x ++ y

@@ -1,0 +1,2 @@
+## program 3: join, used at two disjoint literals; select name
+(\join. (join {name = 1} {age = 36}).name) (\a.\b. a ++ b)

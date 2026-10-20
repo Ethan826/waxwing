@@ -1,0 +1,363 @@
+== p11-hide-exports.bt 
+File "p11-hide-exports.bt", line 5, characters 24-29:
+!   (\q. (\k. 0) {first = q \ a ++ {a = 1}, second = q \ a ++ {a = true}})
+!                         ^^^^^
+
+! Type constructor mismatch (int/bool) while unifying int with bool
+! Top-level unification was int vs. bool
+Error. Terminating.
+[exit 255]
+== p11-hide-exports.bt --solve
+File "p11-hide-exports.bt", line 5, characters 24-29:
+!   (\q. (\k. 0) {first = q \ a ++ {a = 1}, second = q \ a ++ {a = true}})
+!                         ^^^^^
+
+! Type constructor mismatch (int/bool) while unifying int with bool
+! Top-level unification was int vs. bool
+Error. Terminating.
+[exit 255]
+== p11-hide-exports.bt --noreduce
+< ⊢ int | {name} \ {name} ⊆ q0, {name} ∩ {a} = s0, {name} \ s0 = s1,
+	  (name: int, r0 = a: int, r1)\s0, {a} \ {a} ⊆ q1, s1 ⊎ {a} = s2,
+	  q1 \ s1 ⊆ q2, q0 \ {a} ⊆ q2, {name} ∩ {a} = s3, {name} \ s3 = s4,
+	  (name: int, r0 = a: bool, r2)\s3, {a} \ {a} ⊆ q3, s4 ⊎ {a} = s5,
+	  q3 \ s4 ⊆ q4, q0 \ {a} ⊆ q4, {first,second} \ {first,second} ⊆ q5>
+[exit 0]
+== p11-hide-neg.bt 
+< ⊢ int>
+[exit 0]
+== p11-hide-neg.bt --solve
+< ⊢ int>
+[exit 0]
+== p11-hide-neg.bt --noreduce
+< ⊢ int | {a,name} \ {a,name} ⊆ q0, q0 ∩ {a} ⊆ ∅, {a,name} \ {a} = s0,
+	  {a} \ {a} ⊆ q1, s0 ⊎ {a} = s1, q1 \ s0 ⊆ q2, q0 \ {a} ⊆ q2,
+	  q0 ∩ {a} ⊆ ∅, {a,name} \ {a} = s2, {a} \ {a} ⊆ q3, s2 ⊎ {a} = s3,
+	  q3 \ s2 ⊆ q4, q0 \ {a} ⊆ q4, {first,second} \ {first,second} ⊆ q5>
+[exit 0]
+== p11-hide.bt 
+< ⊢ int>
+[exit 0]
+== p11-hide.bt --solve
+< ⊢ int>
+[exit 0]
+== p11-hide.bt --noreduce
+< ⊢ int | {name} \ {name} ⊆ q0, q0 ∩ {a} ⊆ ∅, {name} \ {a} = s0,
+	  {a} \ {a} ⊆ q1, s0 ⊎ {a} = s1, q1 \ s0 ⊆ q2, q0 \ {a} ⊆ q2,
+	  q0 ∩ {a} ⊆ ∅, {name} \ {a} = s2, {a} \ {a} ⊆ q3, s2 ⊎ {a} = s3,
+	  q3 \ s2 ⊆ q4, q0 \ {a} ⊆ q4, {first,second} \ {first,second} ⊆ q5>
+[exit 0]
+== p11-lacks-neg.bt 
+File "p11-lacks-neg.bt", line 3, characters 26-28:
+!   (\q. (\k. 0) {lacks = q ++ {a = 0},
+!                           ^^
+
+! Failed constraint: {a,name} ⊎ {a} = s0
+Error. Terminating.
+[exit 255]
+== p11-lacks-neg.bt --solve
+File "p11-lacks-neg.bt", line 3, characters 26-28:
+!   (\q. (\k. 0) {lacks = q ++ {a = 0},
+!                           ^^
+
+! Failed constraint: {a,name} ⊎ {a} = s0
+Error. Terminating.
+[exit 255]
+== p11-lacks-neg.bt --noreduce
+< ⊢ int
+ | {a,name} \ {a,name} ⊆ q0, {a} \ {a} ⊆ q1, {a,name} ⊎ {a} = s0,
+   q1 \ {a,name} ⊆ q2, q0 \ {a} ⊆ q2, q0 ∩ {a} ⊆ ∅, {a,name} \ {a} = s1,
+   {a} \ {a} ⊆ q3, s1 ⊎ {a} = s2, q3 \ s1 ⊆ q4, q0 \ {a} ⊆ q4, q0 ∩ {a} ⊆ ∅,
+   {a,name} \ {a} = s3, {a} \ {a} ⊆ q5, s3 ⊎ {a} = s4, q5 \ s3 ⊆ q6,
+   q0 \ {a} ⊆ q6, {first,lacks,second} \ {first,lacks,second} ⊆ q7>
+[exit 0]
+== p11-lacks.bt 
+< ⊢ int>
+[exit 0]
+== p11-lacks.bt --solve
+< ⊢ int>
+[exit 0]
+== p11-lacks.bt --noreduce
+< ⊢ int | {name} \ {name} ⊆ q0, {a} \ {a} ⊆ q1, {name} ⊎ {a} = s0,
+	  q1 \ {name} ⊆ q2, q0 \ {a} ⊆ q2, q0 ∩ {a} ⊆ ∅, {name} \ {a} = s1,
+	  {a} \ {a} ⊆ q3, s1 ⊎ {a} = s2, q3 \ s1 ⊆ q4, q0 \ {a} ⊆ q4,
+	  q0 ∩ {a} ⊆ ∅, {name} \ {a} = s3, {a} \ {a} ⊆ q5, s3 ⊎ {a} = s4,
+	  q5 \ s3 ⊆ q6, q0 \ {a} ⊆ q6,
+	  {first,lacks,second} \ {first,lacks,second} ⊆ q7>
+[exit 0]
+== p11-lambda.bt 
+File "p11-lambda.bt", line 3, characters 15-63:
+!   (\q. (\k. 0) {first = q ++ {a = 1}, second = q ++ {a = true}})
+!                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+! Type constructor mismatch (int/bool) while unifying int with bool
+! Top-level unification was {a: bool, r0} vs. {a: bool, r0}
+Error. Terminating.
+[exit 255]
+== p11-lambda.bt --solve
+File "p11-lambda.bt", line 3, characters 15-63:
+!   (\q. (\k. 0) {first = q ++ {a = 1}, second = q ++ {a = true}})
+!                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+! Type constructor mismatch (int/bool) while unifying int with bool
+! Top-level unification was {a: bool, r0} vs. {a: bool, r0}
+Error. Terminating.
+[exit 255]
+== p11-lambda.bt --noreduce
+File "p11-lambda.bt", line 3, characters 15-63:
+!   (\q. (\k. 0) {first = q ++ {a = 1}, second = q ++ {a = true}})
+!                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+! Type constructor mismatch (int/bool) while unifying int with bool
+! Top-level unification was {a: bool, r0} vs. {a: bool, r0}
+Error. Terminating.
+[exit 255]
+== p3-overlap.bt 
+File "p3-overlap.bt", line 2, characters 53-55:
+! (\join. (join {name = 1} {name = 2}).name) (\a.\b. a ++ b)
+!                                                      ^^
+
+! Failed constraint: {name} ⊎ {name} = s0
+Error. Terminating.
+[exit 255]
+== p3-overlap.bt --solve
+File "p3-overlap.bt", line 2, characters 53-55:
+! (\join. (join {name = 1} {name = 2}).name) (\a.\b. a ++ b)
+!                                                      ^^
+
+! Failed constraint: {name} ⊎ {name} = s0
+Error. Terminating.
+[exit 255]
+== p3-overlap.bt --noreduce
+< ⊢ int | {name} \ {name} ⊆ q0, {name} \ {name} ⊆ q1, s0 ∋ name,
+	  {name} ⊎ {name} = s0, q1 \ {name} ⊆ ∅, q0 \ {name} ⊆ ∅>
+[exit 0]
+== p3-swap.bt 
+< ⊢ int>
+[exit 0]
+== p3-swap.bt --solve
+< ⊢ int>
+[exit 0]
+== p3-swap.bt --noreduce
+< ⊢ int | {age} \ {age} ⊆ q0, {name} \ {name} ⊆ q1, s0 ∋ name,
+	  {age} ⊎ {name} = s0, q1 \ {age} ⊆ ∅, q0 \ {name} ⊆ ∅>
+[exit 0]
+== p3-three-join.bt 
+File "p3-three-join.bt", line 4, characters 14-63:
+! (\join. {l = (join (join {name = 1} {age = 36}) {active = true}).name,
+!               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+! Cannot unify label sets {age} and {active}
+! Top-level unification was {active: bool, age: int, r0} → {name: int, r1} 
+			vs. {active: bool, age: int, r0} → {name: int, r1}
+Error. Terminating.
+[exit 255]
+== p3-three-join.bt --solve
+File "p3-three-join.bt", line 4, characters 14-63:
+! (\join. {l = (join (join {name = 1} {age = 36}) {active = true}).name,
+!               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+! Cannot unify label sets {age} and {active}
+! Top-level unification was {active: bool, age: int, r0} → {name: int, r1} 
+			vs. {active: bool, age: int, r0} → {name: int, r1}
+Error. Terminating.
+[exit 255]
+== p3-three-join.bt --noreduce
+File "p3-three-join.bt", line 4, characters 14-63:
+! (\join. {l = (join (join {name = 1} {age = 36}) {active = true}).name,
+!               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+! Cannot unify label sets {age} and {active}
+! Top-level unification was {active: bool, age: int, r0} → {name: int, r1} 
+			vs. {active: bool, age: int, r0} → {name: int, r1}
+Error. Terminating.
+[exit 255]
+== p3-three.bt 
+< ⊢ {l: int, r: int, r0 / q0 ⇒ l,r}>
+[exit 0]
+== p3-three.bt --solve
+< ⊢ {l: int, r: int, r0 / q0 ⇒ l,r}>
+[exit 0]
+== p3-three.bt --noreduce
+< ⊢ {l: int, r: int, r0 / q0 ⇒ l,r}
+ | {name} \ {name} ⊆ q1, {age} \ {age} ⊆ q2, {name} ⊎ {age} = s0,
+   q2 \ {name} ⊆ q3, q1 \ {age} ⊆ q3, {active} \ {active} ⊆ q4,
+   s0 ⊎ {active} = s1, q4 \ s0 ⊆ ∅, q3 \ {active} ⊆ ∅, s1 ∋ name,
+   {name} \ {name} ⊆ q5, {age} \ {age} ⊆ q6, {active} \ {active} ⊆ q7,
+   {age} ⊎ {active} = s2, q7 \ {age} ⊆ q8, q6 \ {active} ⊆ q8,
+   {name} ⊎ s2 = s3, q8 \ {name} ⊆ ∅, q5 \ s2 ⊆ ∅, s3 ∋ name,
+   {l,r} \ {l,r} ⊆ q0>
+[exit 0]
+== p3.bt 
+< ⊢ int>
+[exit 0]
+== p3.bt --solve
+< ⊢ int>
+[exit 0]
+== p3.bt --noreduce
+< ⊢ int | {name} \ {name} ⊆ q0, {age} \ {age} ⊆ q1, s0 ∋ name,
+	  {name} ⊎ {age} = s0, q1 \ {name} ⊆ ∅, q0 \ {age} ⊆ ∅>
+[exit 0]
+== p4-iface.bt 
+< ⊢ {admin: 'a, r0 / q0 ⇒ s0} → bool>
+[exit 0]
+== p4-iface.bt --solve
+< ⊢ {admin: 'a, r0 / q0 ⇒ ⊥} → bool>
+[exit 0]
+== p4-iface.bt --noreduce
+< ⊢ {admin: 'a, r0 / q0 ⇒ s0} → bool
+ | q1 ∩ {admin} ⊆ ∅, s1 \ {admin} = s2, s3 ⊎ s2 = s0, q1 \ s3 ⊆ q0,
+   q2 \ s2 ⊆ q0>
+[exit 0]
+== p4-lacks-neg.bt 
+< ⊢ bool>
+[exit 0]
+== p4-lacks-neg.bt --solve
+< ⊢ bool>
+[exit 0]
+== p4-lacks-neg.bt --noreduce
+< ⊢ bool | {admin} \ {admin} ⊆ q0, s0 ⊎ s1 = {admin}, q1 \ s0 ⊆ q0,
+	   q2 \ s1 ⊆ q0, {admin} \ {admin} ⊆ q3, s0 ⊎ {admin} = s2,
+	   q3 \ s0 ⊆ q4, q2 \ {admin} ⊆ q4, {admin} \ {admin} ⊆ q5,
+	   s1 ⊎ {admin} = s3, q5 \ s1 ⊆ q6, q1 \ {admin} ⊆ q6,
+	   {e,la,lb} \ {e,la,lb} ⊆ q7>
+[exit 0]
+== p4-lacks.bt 
+< ⊢ bool>
+[exit 0]
+== p4-lacks.bt --solve
+< ⊢ bool>
+[exit 0]
+== p4-lacks.bt --noreduce
+< ⊢ bool | {admin} \ {admin} ⊆ q0, s0 ⊎ s1 = {admin}, q1 \ s0 ⊆ q0,
+	   q2 \ s1 ⊆ q0, {admin} \ {admin} ⊆ q3, s1 ⊎ {admin} = s2,
+	   q3 \ s1 ⊆ q4, q1 \ {admin} ⊆ q4, {e,lb} \ {e,lb} ⊆ q5>
+[exit 0]
+== p4-neg-iface.bt 
+< ⊢ {admin: 'a, r0 / q0 ⇒ s0} → bool>
+[exit 0]
+== p4-neg-iface.bt --solve
+< ⊢ {admin: 'a, r0 / q0 ⇒ ⊥} → bool>
+[exit 0]
+== p4-neg-iface.bt --noreduce
+< ⊢ {admin: 'a, r0 / q0 ⇒ s0} → bool
+ | q1 ∩ {admin} ⊆ ∅, s1 \ {admin} = s2, q2 ∩ {admin} ⊆ ∅, s3 \ {admin} = s4,
+   s2 ⊎ s4 = s0, q2 \ s2 ⊆ q0, q1 \ s4 ⊆ q0>
+[exit 0]
+== p4-neg.bt 
+< ⊢ bool>
+[exit 0]
+== p4-neg.bt --solve
+< ⊢ bool>
+[exit 0]
+== p4-neg.bt --noreduce
+< ⊢ bool | {admin} \ {admin} ⊆ q0, q1 ∩ {admin} ⊆ ∅, s0 \ {admin} = s1,
+	   q2 ∩ {admin} ⊆ ∅, s2 \ {admin} = s3, s1 ⊎ s3 = {admin},
+	   q2 \ s1 ⊆ q0, q1 \ s3 ⊆ q0>
+[exit 0]
+== p4-parts-neg.bt 
+File "p4-parts-neg.bt", line 3, characters 41-43:
+!   (\a.\b. (\k. true) {p = a ++ b, la = a ++ {admin = 0},
+!                                          ^^
+
+! Failed constraint: {admin} ⊎ {admin} = s0
+Error. Terminating.
+[exit 255]
+== p4-parts-neg.bt --solve
+File "p4-parts-neg.bt", line 3, characters 41-43:
+!   (\a.\b. (\k. true) {p = a ++ b, la = a ++ {admin = 0},
+!                                          ^^
+
+! Failed constraint: {admin} ⊎ {admin} = s0
+Error. Terminating.
+[exit 255]
+== p4-parts-neg.bt --noreduce
+< ⊢ bool
+ | {admin} \ {admin} ⊆ q0, ∅ ⊆ q1, {admin} ⊎ ∅ = s0, q1 \ {admin} ⊆ q2,
+   q0 ⊆ q2, {admin} \ {admin} ⊆ q3, {admin} ⊎ {admin} = s1, q3 \ {admin} ⊆ q4,
+   q0 \ {admin} ⊆ q4, {admin} \ {admin} ⊆ q5, ∅ ⊎ {admin} = s2, q5 ⊆ q6,
+   q1 \ {admin} ⊆ q6, {la,lb,p} \ {la,lb,p} ⊆ q7>
+[exit 0]
+== p4-parts.bt 
+< ⊢ bool>
+[exit 0]
+== p4-parts.bt --solve
+< ⊢ bool>
+[exit 0]
+== p4-parts.bt --noreduce
+< ⊢ bool | {admin} \ {admin} ⊆ q0, ∅ ⊆ q1, {admin} ⊎ ∅ = s0, q1 \ {admin} ⊆ q2,
+	   q0 ⊆ q2, {admin} \ {admin} ⊆ q3, ∅ ⊎ {admin} = s1, q3 ⊆ q4,
+	   q1 \ {admin} ⊆ q4, {lb,p} \ {lb,p} ⊆ q5>
+[exit 0]
+== p4.bt 
+< ⊢ bool>
+[exit 0]
+== p4.bt --solve
+< ⊢ bool>
+[exit 0]
+== p4.bt --noreduce
+< ⊢ bool | {admin} \ {admin} ⊆ q0, q1 ∩ {admin} ⊆ ∅, s0 \ {admin} = s1,
+	   s2 ⊎ s1 = {admin}, q1 \ s2 ⊆ q0, q2 \ s1 ⊆ q0>
+[exit 0]
+== p5-neg.bt 
+< ⊢ int>
+[exit 0]
+== p5-neg.bt --solve
+< ⊢ int>
+[exit 0]
+== p5-neg.bt --noreduce
+< ⊢ int | s0 ⊎ s1 = {x,y}, q0 \ s0 ⊆ q1, q2 \ s1 ⊆ q1, {x,y} \ {x,y} ⊆ q3,
+	  s0 ⊎ {x,y} = s2, q3 \ s0 ⊆ q4, q2 \ {x,y} ⊆ q4, {x,y} \ {x,y} ⊆ q5,
+	  s1 ⊎ {x,y} = s3, q5 \ s1 ⊆ q6, q0 \ {x,y} ⊆ q6, {u,v} \ {u,v} ⊆ q7,
+	  {x,y} \ {x,y} ⊆ q1, {m,n} \ {m,n} ⊆ q8>
+[exit 0]
+== p5.bt 
+< ⊢ int>
+[exit 0]
+== p5.bt --solve
+< ⊢ int>
+[exit 0]
+== p5.bt --noreduce
+< ⊢ int | s0 ⊎ s1 = {x,y}, q0 \ s0 ⊆ q1, q2 \ s1 ⊆ q1, {y} \ {y} ⊆ q3,
+	  s0 ⊎ {y} = s2, q3 \ s0 ⊆ q4, q2 \ {y} ⊆ q4, {x} \ {x} ⊆ q5,
+	  s1 ⊎ {x} = s3, q5 \ s1 ⊆ q6, q0 \ {x} ⊆ q6, {u,v} \ {u,v} ⊆ q7,
+	  {x,y} \ {x,y} ⊆ q1, {m,n} \ {m,n} ⊆ q8>
+[exit 0]
+== p6.bt 
+< ⊢ int>
+[exit 0]
+== p6.bt --solve
+< ⊢ int>
+[exit 0]
+== p6.bt --noreduce
+< ⊢ int | {name} \ {name} ⊆ q0, {age} \ {age} ⊆ q1, s0 ∋ name,
+	  {name} ⊎ {age} = s0, q1 \ {name} ⊆ ∅, q0 \ {age} ⊆ ∅>
+[exit 0]
+== paper-hide.bt 
+< ⊢ {f: 'a, r0 / s0}
+    → {a: {f: int, r0 / q1 ⇒ s1}, b: {f: bool, r0 / q2 ⇒ s2}, r1 / q0 ⇒ a,b}
+ | s0 \ {f} = s3, s3 ⊎ {f} = s1, q3 \ s3 ⊆ q1, s0 \ {f} = s4, s4 ⊎ {f} = s2,
+   q4 \ s4 ⊆ q2>
+[exit 0]
+== paper-hide.bt --solve
+< ⊢ {f: 'a, r0 / ⊥}
+    → {a: {f: int, r0 / ⊥}, b: {f: bool, r0 / ⊥}, r1 / q0 ⇒ a,b}>
+[exit 0]
+== paper-hide.bt --noreduce
+< ⊢ {f: 'a, r0 / q0 ⇒ s0}
+    → {a: {f: int, r0 / q2 ⇒ s1}, b: {f: bool, r0 / q3 ⇒ s2}, r1 / q1 ⇒ a,b}
+ | q0 ∩ {f} ⊆ ∅, s0 \ {f} = s3, {f} \ {f} ⊆ q4, s3 ⊎ {f} = s1, q4 \ s3 ⊆ q2,
+   q0 \ {f} ⊆ q2, q0 ∩ {f} ⊆ ∅, s0 \ {f} = s4, {f} \ {f} ⊆ q5, s4 ⊎ {f} = s2,
+   q5 \ s4 ⊆ q3, q0 \ {f} ⊆ q3, {a,b} \ {a,b} ⊆ q1>
+[exit 0]
+== smoke.bt 
+< ⊢ {r0 / q0 ⇒ s0} → {r0 / q1 ⇒ s1} → {r0 / q2 ⇒ s2}
+ | s0 ⊎ s1 = s2, q1 \ s0 ⊆ q2, q0 \ s1 ⊆ q2>
+[exit 0]
+== smoke.bt --solve
+< ⊢ {r0 / q0 ⇒ ⊥} → {r0 / q1 ⇒ ⊥} → {r0 / q2 ⇒ ⊥}>
+[exit 0]
+== smoke.bt --noreduce
+< ⊢ {r0 / q0 ⇒ s0} → {r0 / q1 ⇒ s1} → {r0 / q2 ⇒ s2}
+ | s0 ⊎ s1 = s2, q1 \ s0 ⊆ q2, q0 \ s1 ⊆ q2>
+[exit 0]

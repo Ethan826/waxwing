@@ -1,0 +1,4 @@
+## the same with both parts lacking admin: refused once values exist
+(\acceptsParts. acceptsParts {admin = 0} {})
+  (\a.\b. (\k. true) {p = a ++ b, la = a ++ {admin = 0},
+                      lb = b ++ {admin = 0}})

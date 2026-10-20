@@ -1,0 +1,5 @@
+## program 11 with the implementation's single-backslash hiding, which
+## frees a field's type only where the field is present (not the
+## papers' rule; the papers' rule is `\\`, used in p11-hide.bt)
+(\both. both {name = 1})
+  (\q. (\k. 0) {first = q \ a ++ {a = 1}, second = q \ a ++ {a = true}})
