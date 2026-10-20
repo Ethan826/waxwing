@@ -1,0 +1,8 @@
+fn mark(p: { ...r }): { reviewed: Bool, ...r }
+  where r lacks { reviewed } =
+  { ...p, reviewed: true };
+
+fn main(): Text = {
+  let marked = mark({ name: "Ada", age: 36 });
+  marked.name
+};

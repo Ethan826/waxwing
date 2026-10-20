@@ -1,0 +1,25 @@
+type MissingUser = MissingUser(Int);
+type Denied = Denied;
+
+fn lookup(id: Int): Text with Fail(MissingUser) =
+  if id == 0 then Fail.fail(MissingUser(id))
+  else "Ada";
+
+fn authorize(allowed: Bool): Unit with Fail(Denied) =
+  if allowed then () else Fail.fail(Denied);
+
+fn greeting(id: Int, allowed: Bool): Text
+  with Fail(MissingUser) + Fail(Denied) = {
+    authorize(allowed);
+    lookup(id)
+  };
+
+fn guestGreeting(id: Int, allowed: Bool): Text =
+  handle greeting(id, allowed) {
+    fail(error: MissingUser) => "Guest"
+  };
+
+fn main(): Text =
+  handle guestGreeting(0, true) {
+    fail(error: Denied) => "Forbidden"
+  };

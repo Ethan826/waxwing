@@ -1,0 +1,6 @@
+fn acceptsParts(p: { ...r, ...s }): Bool
+  where r lacks { admin }, s lacks { admin } =
+  true;
+
+fn main(): Bool =
+  acceptsParts({ admin: false });

@@ -1,0 +1,7 @@
+fn getName(p: { name: Text, ...r }): Text = p.name;
+
+fn main(): Int = {
+  let first = getName({ name: "Ada", age: 36 });
+  let second = getName({ name: "Grace", active: true });
+  0
+};

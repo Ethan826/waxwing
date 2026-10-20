@@ -1,0 +1,6 @@
+fn main(): Int = {
+  let getName = fn(p) => p.name;
+  let first = getName({ name: "Ada", age: 36 });
+  let second = getName({ name: "Grace", active: true });
+  0
+};

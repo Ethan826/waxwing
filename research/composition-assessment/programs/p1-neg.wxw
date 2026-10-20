@@ -1,0 +1,5 @@
+fn greeting(person: { name: Text, ...r }): Text =
+  "Hello, ${person.name}!";
+
+fn main(): Text =
+  greeting({ age: 36 });

@@ -1,0 +1,9 @@
+fn main(): Int = {
+  let defaults = { port: 8080, debug: false };
+  let settings = mergeWith(
+    { port: last },
+    defaults,
+    { port: 9090 }
+  );
+  settings.port
+};
