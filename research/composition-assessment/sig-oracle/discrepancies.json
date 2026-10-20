@@ -1,0 +1,11 @@
+{
+ "count": 3000,
+ "seed": "7",
+ "tally": {
+  "agree": 3000,
+  "incomplete": 0,
+  "unsound?": 0
+ },
+ "unsound": [],
+ "incomplete": []
+}
