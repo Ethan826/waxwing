@@ -7418,3 +7418,22 @@ assessment.md.
   is not (item 4).
 - .build/r005b-base, .build/r005b-split, .build/regression and
   .build/go-cache deleted.
+
+## Composition foundation assessment, revised (2026-10-20)
+
+- The author reviewed the first version (8d5ec13), committed the
+  requirements (eae3188) and asked for a focused revision with probes,
+  not a solver. The improvement rule it recommended is withdrawn
+  (assessment §4.4).
+- Probes added (research/composition-assessment): Koka 3.2.3 on program
+  9 (as written refused; wide and masked spellings under one and two
+  layers of handlers), Waxwing on the wide spelling (runs, and agrees
+  with Koka on handler selection), GHC 9.4.8 on six local helpers with
+  and without MonoLocalBinds, Koka on local `fun`/`val`, Waxwing on two
+  programs a translation to Simon would refuse.
+- Simon (PLDI 2014) read in full and assessed as an algorithmic
+  foundation, with a construct-by-construct translation (§4.3); not
+  adopted; its four open points are decision 1.
+- Found: the checkpoint's lowering of a two-spread literal with known
+  rows emits Go that does not build (findings, Task 7, item 5).
+- No compiler code changed; verify not run (docs and research only).

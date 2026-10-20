@@ -20,6 +20,22 @@ Research only; not part of `npm run verify`.
   <scratch>`): P4 and P5 refused (`NoInstanceFound`, "The instance head
   contains unknown type variables"), P6 compiles.
 
+- programs/shared-type-*.wxw: a record that lacks `a` merged with `{ a:
+  1 }` and, separately, with `{ a: true }`; accepted by checking now,
+  refused under the translation to Simon (assessment §4.3). On the
+  checkpoint build their Go does not build (docs/findings.md, Task 7,
+  item 5). programs/p9-wide.wxw and p9-layers.wxw: program 9 with the
+  callback's row widened, and that spelling under two nested layers of
+  `Database` and `Log`.
+- koka/ (Koka 3.2.3, `koka -e <file>.kk`): repo.kk, program 9 as
+  written (refused); layers.kk, the wide (W) and masked (M) spellings
+  under one and two layers; masked-one.kk (M, one layer, a callback using
+  `Database`: refused), masked-profile.kk (M, program 9's own callback:
+  runs); localgen.kk and localgen-fun.kk, a local `val` lambda (not
+  generalized) and a local `fun` capturing a parameter (generalized).
+- ghc/ (GHC 9.4.8, `runghc [-XMonoLocalBinds] G<n>.hs`): local helpers
+  G1-G6 used at two record types through `HasField` (assessment §5.1).
+
 ## Sources read for the assessment (2026-10-20)
 
 Author or institutional copies; the ACM library refused direct access.
@@ -35,7 +51,7 @@ Author or institutional copies; the ACM library refused direct access.
 | Rémy, Typing record concatenation for free (INRIA RR-1739, 1992) | §2.1-§2.3 |
 | Morris and McKinna, Abstracting extensible data types, POPL 2019 | §2.1, §3, §4.5, Def. 13-14 |
 | Hubers and Morris, Generic programming with extensible data types, ICFP 2023 (arXiv 2307.08759) | §3.3, Fig. 7 |
-| Simon, Optimal inference of fields in row-polymorphic records, PLDI 2014 | abstract, §1.1, §6 |
+| Simon, Optimal inference of fields in row-polymorphic records, PLDI 2014 (author's copy) | all; in detail §1-§2.4, §5, §6, §7 |
 | Castagna and Peyrot, Polymorphic records for dynamic languages (arXiv 2404.00338) | no principal types; no concatenation |
 | Koka book, §3.4.7 Masking effects; Leijen MSFP 2014 §2.4.1, §2.6, §3.2; Leijen POPL 2017 §3.1-§3.2 | `mask`, `inject`, open and close, generalization of total expressions |
 | koka-lang/koka (dev, 198fc3bb): Type/InferMonad.hs, Type/Infer.hs | local `val` not generalized, local `fun` generalized |

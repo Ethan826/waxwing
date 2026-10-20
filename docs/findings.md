@@ -782,3 +782,10 @@ Learned while retargeting mutants for the fifteen new rows
    record is (built through it, or equal to its row); `design-removal-
    right` and `diag-17` then read as approved. Not merged; it changes an
    accepted B5 behaviour and needs the author's review with Task 7.
+5. On the Task 7 checkpoint (`r005b-task7-wip`), a literal of two
+   spreads whose rows are all known passes checking and emits Go that
+   does not build (`undefined: waxwingBasewaxwingLocal0`;
+   research/composition-assessment/programs/shared-type-*.wxw). Task 8's
+   placeholder P4 guards rows of several tails, not literals of several
+   spreads, so lowering takes the one-spread path. To fix with Task 7
+   (a placeholder at the literal's lowering until Task 8) if it resumes.
