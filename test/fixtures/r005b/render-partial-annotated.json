@@ -1,0 +1,16 @@
+{
+  "name": "render-partial-annotated",
+  "from": "render-partial annotated",
+  "source": "fn pick3(p: { ...r }, q: { ...s }, w: { ...t }): { ...r, ...s, ...t }\n  where r disjoint s, r disjoint t, s disjoint t = pick3(p, q, w);\nfn apply0(f: (b, c) -> { x: Int, y: Int, z: Int }): Int = 0;\nfn main(): Int =\n  apply0(fn(q: { y: Int }, w: { z: Int }) => pick3({ x: 1 }, q, w));\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": null,
+    "run": 8
+  },
+  "rows": null
+}

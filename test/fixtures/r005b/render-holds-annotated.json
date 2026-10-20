@@ -1,0 +1,16 @@
+{
+  "name": "render-holds-annotated",
+  "from": "render-holds annotated",
+  "source": "fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s }\n  where r disjoint s = pickR(p, q);\nfn use(f: (a, b) -> { ...r }, p: { ...r }): Int = 0;\nfn outer(p: { ...t }): Int = use(fn(a: { ...t }, b: {}) => pickR(a, b), p);\nfn main(): Int = outer({ x: 1 });\n",
+  "result": "Solved",
+  "diagnostic": null,
+  "before": null,
+  "output": "0\n",
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": null,
+    "run": 8
+  },
+  "rows": null
+}

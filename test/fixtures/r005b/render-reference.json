@@ -1,0 +1,41 @@
+{
+  "name": "render-reference",
+  "from": "D4, a function reference (pickR)",
+  "remark": "derived by R1-R11 (B5; hints by plan §10 decision 20)",
+  "source": "fn pickR(p: { ...r }, q: { ...s }): { ...r, ...s }\n  where r disjoint s = pickR(p, q);\nfn apply0(f: (a, b) -> { x: Int, y: Int }): Int = 0;\nfn main(): Int = apply0(pickR);\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether pickR's r or s has field x; pass a lambda with annotated parameters in place of pickR",
+    "at": {
+      "text": "pickR",
+      "nth": 2
+    },
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {
+          "text": "{ ...r, ...s }",
+          "nth": 0
+        }
+      },
+      {
+        "message": "{ x: Int, y: Int } is required here",
+        "at": {
+          "text": "{ x: Int, y: Int }",
+          "nth": 0
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

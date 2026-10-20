@@ -1,0 +1,34 @@
+{
+  "name": "render-d6-nested",
+  "from": "D6, nested",
+  "remark": "derived by R1-R11 (B5; hints by plan §10 decision 20)",
+  "source": "fn wrapR(p: { ...r }, q: { ...s }): { inner: { ...r, ...s } }\n  where r disjoint s = wrapR(p, q);\nfn apply1(f: (a, b) -> { inner: { x: Int, y: Int } }, q: b): Int = 0;\nfn main(): Int = apply1(wrapR, { z: 1 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D6",
+    "code": "E_TYPE",
+    "message": "wrapR's { ...r, ...s } (in field inner) must be { x: Int, y: Int }, so s cannot have field z",
+    "at": {
+      "text": "{ z: 1 }",
+      "nth": 0
+    },
+    "notes": [
+      {
+        "message": "required here",
+        "at": {
+          "text": "wrapR",
+          "nth": 2
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

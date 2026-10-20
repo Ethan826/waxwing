@@ -252,7 +252,7 @@ annotation the language permits (draft 3's §10, docs/language.md):
 | a partial application | `pass a lambda with annotated parameters in place of this partial application of O` |
 | a lambda's unannotated parameters, or unnamed parts inside a lambda | `annotate this lambda's parameters` |
 | a constructor | `write O's row arguments in the enclosing signature or in a lambda parameter's annotation` |
-| a named call whose other types never mention the variables | none: no annotation at the use decides it (Example 6) |
+| a named call whose other types never mention the variables | `no annotation can decide A and B, which belong to this call of O` (amended 2026-10-19, implementation plan §10 decision 20; was: none, Example 6) |
 
 Draft 3's optional suffix `or state the parts in the enclosing
 signature` (inside a generic function) is not exercised by any example
@@ -580,8 +580,11 @@ fn split(p: { ...r }): Int = 0;
 fn main(): Int = split({ x: 1, y: 2 });
 ```
 
-No hint (rule R9): no annotation at this call can resolve it, because
-nothing in `split`'s type outside the parameter mentions `r` or `s`. The
+Hint (rule R9, amended 2026-10-19 by the implementation plan's §10
+decision 20; the text was approved with no hint): `; no annotation can
+decide r and s, which belong to this call of split`. No annotation at
+this call can resolve it, because nothing in `split`'s type outside the
+parameter mentions `r` or `s`. The
 edit is to the signature: a function that never separates the parts
 needs one tail. The other side is the primary expression itself, so
 there is no `is required here` note.

@@ -1,0 +1,41 @@
+{
+  "name": "render-nested",
+  "from": "D4, a nested field",
+  "remark": "derived by R1-R11 (B5; hints by plan §10 decision 20)",
+  "source": "fn wrapR(p: { ...r }, q: { ...s }): { inner: { ...r, ...s } }\n  where r disjoint s = wrapR(p, q);\nfn apply0(f: (a, b) -> { inner: { x: Int, y: Int } }): Int = 0;\nfn main(): Int = apply0(wrapR);\n",
+  "result": "Unresolved",
+  "diagnostic": {
+    "id": "D4",
+    "code": "E_TYPE",
+    "message": "Cannot tell whether wrapR's r or s (in field inner) has field x; pass a lambda with annotated parameters in place of wrapR",
+    "at": {
+      "text": "wrapR",
+      "nth": 2
+    },
+    "notes": [
+      {
+        "message": "r and s are written here",
+        "at": {
+          "text": "{ ...r, ...s }",
+          "nth": 0
+        }
+      },
+      {
+        "message": "{ x: Int, y: Int } is required here",
+        "at": {
+          "text": "{ x: Int, y: Int }",
+          "nth": 0
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 6,
+    "text": 6,
+    "run": null
+  },
+  "rows": null
+}

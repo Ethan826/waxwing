@@ -6,7 +6,7 @@
   "diagnostic": {
     "id": "D4",
     "code": "E_TYPE",
-    "message": "Cannot tell whether split's r or s has field x",
+    "message": "Cannot tell whether split's r or s has field x; no annotation can decide r and s, which belong to this call of split",
     "at": {"text":"{ x: 1, y: 2 }","nth":0},
     "notes": [
       {

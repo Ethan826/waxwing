@@ -1,3 +1,20 @@
+# Waxwing / R005 Tranche B: B5 started, texts pinned (2026-10-19)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Hint
+wording approved (plan §10 decision 20). B5's first commit pins the
+texts: diag-06's amended hint, 13 `render-*` fixtures with 9 annotated
+companions, participation-control; test/r005b-fixtures.test.mjs at
+`task` 6 is red on 16 fixtures, each on its placeholder (evidence in
+docs/progress.md "R005 Tranche B B5").
+
+**Next.** The user's answers on three points in that entry: T6 (D4 at
+the argument for a parameter's row; diag-18's approved `p` not met),
+`none of` unreachable, `same-name-parts` to Task 7. Then PartOrigin,
+Unresolved.purs and Contradicted.purs, R11's tie-break test, the
+structural test, P2 and P6 removed, verify, the differential.
+
+---
+
 # Waxwing / R005 Tranche B: B4 done, for review, unmerged (2026-10-19)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). B4 (the end
