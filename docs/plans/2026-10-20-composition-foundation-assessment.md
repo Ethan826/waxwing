@@ -1,49 +1,53 @@
 # Composition requirements: foundation assessment
 
-Date: 2026-10-20, revised the same day after the author's review (the
-first version recommended an improvement rule of its own; §4.4 says why
-that is withdrawn). Status: assessment for the author's decision. No
+Date: 2026-10-20, revised twice the same day after the author's reviews
+(the first version recommended an improvement rule of its own, §4.4;
+the third adds program 11, Pottier's system and the narrow question of
+§4.8). Status: assessment for the author's decision. No
 implementation is proposed for authorization here.
 
 Requirements: docs/plans/2026-10-20-composition-acceptance-programs.md
-(eae3188). Evidence: research/composition-assessment/ (program variants
-and runner; probes run with PureScript 0.15.16, Koka 3.2.3 and GHC
-9.4.8), run on the Task 7 checkpoint build (branch `r005b-task7-wip`,
+(eae3188; program 11 added since). Evidence:
+research/composition-assessment/ (program variants and runner;
+probes run with PureScript 0.15.16, Koka 3.2.3, GHC 9.4.8, Ur/Web
+20200209 and Pottier's Wallace toy of 2000-02-11); Waxwing's
+own runs use the Task 7 checkpoint build (branch `r005b-task7-wip`,
 4d741a1, which accepts several spreads in a literal). Each claim about
 another system says whether it comes from running that system (probe)
 or from reading its paper or source (reading).
 
 ## 0. In brief
 
-- **Now** (§2): programs 1, 2, 10 run; 3 and 6 check (lowering waits
-  for Task 8); 4 and 5 are refused as Unresolved; 7 needs a row-mapping
-  typing; 8A is refused (monomorphic `let`); 9 is refused as written and
-  runs with the callback's row widened. PureScript refuses 4 and 5
-  (probe).
-- **Records** (§3, §4): the candidate worth examining as an algorithm
-  is Simon (PLDI 2014): a record type is one type term with a Boolean
-  presence flag per field, and a program types when the flag formula is
-  satisfiable. Waxwing's `{ ...r, ...s }` translates to Simon's
-  symmetric concatenation (§5 of his paper), which he analysed (it needs
-  SAT and existential projection) but did not implement. Under that
-  translation programs 4 and 5 type with no split chosen, but a field
-  has one type wherever records are joined, so two programs the current
-  compiler accepts would be refused (§4.3); signatures, monomorphized
-  layouts and exact (not width-subtyped) records are Waxwing's to add.
-  Not recommended for adoption yet; the translation's open points are
-  listed for decision.
-- **Program 8** (§5.1): GHC's default generalizes every local helper;
-  its MonoLocalBinds stops at a helper that captures an enclosing
-  parameter (probe). Its reason, local type assumptions, does not arise
-  in Waxwing; generalizing let-bound lambdas, captures included, is the
-  proposal, with its effect interaction stated as Waxwing policy.
-- **Program 9** (§5.2): two spellings with different meanings, run in
-  Koka and, for one, in Waxwing: a wide callback row (shared services,
-  works today) or masking (the callback's own services come from a
-  separate, outer layer).
-- **Program 7** (§6): explicit dictionaries are ordinary values; what is
-  missing is a typing that maps a type over a row's fields.
-- **Decisions**: §7.
+The narrow question (§4.8): can a published approach keep independent
+field types (program 11) while accepting programs 4 and 5 and refusing
+their negative controls? Among the systems examined, no. They divide:
+
+- **Rows as type variables** (PureScript, Ur/Web, Waxwing today; probes)
+  keep program 11 and the forwarding wrapper, and do not infer the
+  splits of programs 4 and 5. Jones's improvement (FPCA 1995 §4.1) is
+  the published frame for adding that, but it supplies no improving
+  function for merges and `lacks`; that function would be new.
+- **Presence flags over a shared type term** (Simon 2014; reading)
+  accept 4 and 5 by satisfiability and refuse program 11, because a
+  field has one type wherever records are joined.
+- **Conditional subtyping constraints** (Pottier 2000; reading, and a
+  probe of his Wallace toy) keep program 11 (accepted, with one pending
+  conditional per use), but records have width subtyping, a definition
+  is checked only for satisfiability (a function whose parts both lack
+  `admin` and that reads `.admin` is accepted until it is called), there
+  are no declared signatures to check (no entailment algorithm, per
+  Wallace's own source), and program 4 as written cannot be stated in
+  the implementation.
+
+So the concrete conflict: deciding a split from facts needs reasoning
+about field presence, and the published systems that do it either share
+one type per field (Simon) or check only satisfiability under subtyping
+(Pottier); the systems that keep field types independent do not decide
+splits. Nothing here proposes a way around it.
+
+Elsewhere: program 8 (§5.1) and program 9 (§5.2, W as the baseline)
+follow the author's dispositions; program 7 (§6) is a separate
+milestone. Decisions: §7.
 
 ## 1. Where the work stands, and what the requirements supersede
 
@@ -97,6 +101,7 @@ lowered yet).
 | 8B the named generic helper | runs | none | nothing |
 | 9 layered service fulfillment | **rejected** as written: `action must allow every effect at this call (Users + Database + Log), but its row is Users`; with the callback's row widened to `Users + Database + Log + ...e`, runs, `User("Ada")` | test replacement runs (`User("Test user")`); `profile` without `Users` rejected | **semantic choice** in the effect system (FX017/FX018 equal-row rule, §5) |
 | 10 typed failures, one family removed | runs, `Guest`; with `(1, false)`, `Forbidden` | rejected (pure `guestGreeting` leaves `Denied`) | nothing |
+| 11 extend one input at two field types (added) | runs, `0` (generic and lambda forms) | rejected (D1, `r lacks { a }`) | nothing; the two-spread form checks (lowering defect on the checkpoint, §2 below) |
 
 The same two record programs in PureScript 0.15.16 (research/
 composition-assessment/purs; `purs compile P4.purs`, …): program 4 and
@@ -187,8 +192,9 @@ Reading of the paper (PLDI 2014; author's copy). What it is:
   is absent: Simon rejects `f {foo = "bad"}` where Pottier's system
   accepts it, and keeps that choice (§1.1). Typing fields only where
   they exist needs conditional unification constraints, "an SMT solver
-  with a theory of unification constraints … no state-of-the-art SMT
-  solver features" one (§5).
+  with a theory of unification constraints … as far as we know, no
+  state-of-the-art SMT solver features" one (§5). That is Simon's
+  report of 2014, not a finding about solvers available now.
 - **Implementation** (§6): select and update only, a 2-SAT solver, in a
   22,000-line DSL toolchain; "we never had the need for record
   concatenation". No implementation of the §5 concatenation was found.
@@ -239,8 +245,9 @@ where it is absent. `programs/shared-type-lambda.wxw` and
 a: 1 }` and, separately, with `{ a: true }`: checking accepts both now;
 under the translation `q`'s term would need `a: Int` and `a: Bool`, a
 type error. Keeping today's behaviour needs Pottier-style conditional
-constraints, for which Simon reports no available solver (§5). This is
-the concrete tradeoff of this foundation.
+constraints, for which Simon knew of no solver in 2014 (§5; a 2014
+statement, not checked against what exists now). This is the concrete
+tradeoff of this foundation.
 
 **Assessment.** Simon's two domains are an established, implemented
 technique (also Glynn, Stuckey and Sulzmann 2001, cited in §7), and his
@@ -288,12 +295,77 @@ not a general solver.
 "No published record system does this" is bounded by what was read:
 Simon 2014; Rémy 1992 (RR-1739); Morris and McKinna 2019; Hubers and
 Morris 2023; Castagna and Peyrot (arXiv 2404.00338); the Flix papers and
-repository; PureScript's source. Not read: Pottier's constraint-based
-record inference (Nordic Journal of Computing 2000; known here through
-Simon §1.1), Wand 1991, Makholm and Wells 2005, Ur/Web's implementation
-beyond Chlipala 2010. Among the sources read, none implements symmetric
-concatenation with inferred presence; an appropriate system may exist
-among those not read, Pottier's first.
+repository; PureScript's source; Pottier (Nordic Journal of Computing
+2000, LICS 2003, the 1998 thesis, Wallace's source; §4.8); Jones FPCA
+1995 §4.1. Not read: Wand 1991, Makholm and Wells 2005, Sulzmann's
+record constraints (cited by Pottier and Rémy, ATTAPL ch. 10). Simon's
+2014 statement that no SMT solver had a theory of unification
+constraints is his, of 2014; whether a solver for SMT's theory of
+algebraic datatypes now provides what his §5 calls for was not
+examined.
+
+### 4.8 The narrow question, against the systems examined
+
+Program 11 (added to the requirements, eae3188's document, §11): a
+record `q` that lacks `a`, extended once with `a: 1` and once with `a:
+true`. Rows: P = probe (the system run), R = reading.
+
+| System | 3, 6 | 4 | 4's negative control | 5 | 11 | Declared signatures checked |
+|---|---|---|---|---|---|---|
+| Waxwing today (QT-strict+Sym+H) | accepted (P) | refused, Unresolved (P) | refused (P) | refused, Unresolved (P) | accepted (P) | yes |
+| PureScript 0.15.16 (`Union`, `Lacks`) | 6 accepted (P) | refused (P) | not run | refused (P) | accepted (P, purs/P11.purs) | yes |
+| Ur/Web 20200209 (`$(r ++ s)`, `[r ~ s]`) | accepted (P) | refused: "Stuck unifying these records" (P) | not run | refused, same (P) | accepted (P) | yes |
+| Simon 2014, translated (§4.3) | accepted (R) | accepted by satisfiability (R) | refused (R) | accepted (R) | **refused** (R) | to be added |
+| Pottier 2000 (Wallace toy) | accepted (P: disjoint union typed, overlap refused) | not expressible: the toy has no declarations (P) | not refused under its rules (R) | satisfiable, so not refused (R) | **accepted** (P) | no |
+
+**Pottier, read** (NJC 2000 §5.1-§5.2; LICS 2003; Wallace's source):
+field types are `Abs`, `Pre τ`, `Either τ`, `Any` with `Pre τ` and
+`Abs` incomparable and a common supertype, so records have width
+subtyping; there is no `lacks` predicate (absence is an upper bound `φ ≤
+Abs`). Symmetric concatenation is four conditional constraints, `Abs ≤
+φ1 ? φ2 ≤ φ3`, `Abs ≤ φ2 ? φ1 ≤ φ3`, `Pre ≤ φ1 ? φ2 ≤ Abs`, `Pre ≤ φ2 ?
+φ1 ≤ Abs` ("any one of these two constraints would in fact suffice";
+the toy implements three, toy/engine.ml). A condition tests only a lower
+bound on a head constructor, which keeps the solver polynomial (LICS
+2003 §2). Implications run from the parts to the result: a lower bound
+on the result (a record passed where `{ ...r, ...s }` is expected) puts
+nothing on the parts, which is why program 4's negative control is not
+refused. Inference is an HM(X) instance with closed constrained schemes
+and lazy simplification ("ignore any conditional constraints whose
+condition has not yet been fulfilled", NJC Example 4). Wallace's core
+says "no complete entailment algorithm is currently known", and the
+toy's declaration form is commented out.
+
+**Pottier, run**: Wallace 2000-02-11 (cambium.inria.fr/~fpottier/
+wallace; "Distributed only by permission", so the archive and the
+port's patches stay outside the repository), built with OCaml 5.5.1
+after mechanical changes (renamed library functions aliased; `&` and
+`or` written `&&` and `||`; the lexer's string buffer moved to `Bytes`;
+one cast of a parser result whose type parameter is phantom, its `info`
+always `None`). Inputs and outputs: research/composition-assessment/
+wallace/. Program 11's lambda form gets type `int` and keeps one pending
+conditional per use (`if RAbs < -a then RPre int < R1`, and `RPre
+bool`); with `q` holding `a` it is refused ("Constraint
+inconsistency"). A function taking `r` and `s`, both made to lack
+`admin`, that reads `(r @@ s).admin` is accepted with fourteen pending
+conditionals and refused only when applied to `{}` and `{}`; the same
+with only `s` lacking `admin`, applied to `{ admin = false }` and `{}`,
+gives `bool`.
+
+**The conflict, stated on the programs.** Program 4's call supplies a
+record where `{ ...r, ...s }` is expected and must decide, from `s lacks
+{ admin }`, that `admin` is in `r`. In a system whose parts are type
+variables (Waxwing, PureScript, Ur/Web), that is improvement from a
+`lacks` fact, and Jones's framework (FPCA 1995 §4.1, read: "the
+typing algorithm … might be parameterized by the choice of an improving
+function"; its record example improves only two `has` predicates on one
+field) leaves the improving function to the language: none of the
+examined systems has one for merges. Simon avoids the decision by
+sharing the parts' type term, which is what refuses program 11. Pottier
+keeps program 11 by conditional constraints, but checks satisfiability
+of constraints that run only from parts to result, under subtyping, with
+no signatures. No examined system decides programs 4 and 5 while keeping
+program 11 and checking declared signatures.
 
 ## 5. Programs 8 and 9
 
@@ -393,41 +465,53 @@ typing to be designed. A separate milestone.
 
 ## 7. Decisions for the author
 
-The author's dispositions of 2026-10-20 are kept; what each needs now:
+The author's dispositions of 2026-10-20 (second review) are recorded;
+what remains open:
 
-1. **Record foundation: not yet.** Before adopting 4.3, decide its four
-   open points: (a) one type per field across joined records, refusing
-   the two `shared-type` programs, or keep them and accept conditional
-   constraints with no available solver; (b) exact records as `⇔`
-   throughout, a restriction of Simon's rules whose effect on his
-   optimality result is not established here; (c) signature checking
-   as entailment of the projected flow (standard in form, to be written
-   out); (d) the layout argument for monomorphization. Then a rules
-   file, checked against the research oracle, before code.
-2. **Existing rules as fast paths**: after the foundation is chosen;
-   under 4.3 they would not survive as solver rules.
-3. **Undetermined splits**: no silent choice; under 4.3 a split is not
-   chosen at all, and the formula's satisfiability is the verdict, so
-   "undetermined by labels" stops being an error class (subject to 1d).
-4. **Program 8**: generalize let-bound lambdas with captures (§5.1, all
-   of G1-G5), value restriction for effects; the alternative is GHC's
-   MonoLocalBinds, which refuses G4 and G5.
-5. **Program 9**: W (shared services, works today, the callback's row
-   is written wide) or M (separate layers, a `mask` in the wrapper), or
-   Frank-style relative rows, which accept the narrow spelling with W's
-   meaning but change what a callback's written row means.
-6. **Program 7**: a separate milestone: the row-mapping typing first;
-   dictionaries as values need nothing new.
-7. **Task 7**: the checkpoint stays; semantic expansion paused.
+1. **Records**: not Simon (it refuses program 11, which is to be kept),
+   and no examined system resolves §4.8's conflict. The author's choice
+   is among: requirements that keep program 11 and accept that 4 and 5
+   need what no examined system provides (a published improving function
+   for merges and `lacks` would have to be found, or one argued and
+   approved as new under ADR 014); or a semantics with one type per field
+   across joins (Simon), giving up program 11; or a satisfiability-only
+   reading under subtyping (Pottier), changing what a record type means
+   and giving up checked signatures. Unread leads that could change §4.8:
+   Sulzmann's record constraints, Makholm and Wells 2005, and whether a
+   current SMT theory of algebraic datatypes supplies the conditional
+   unification Simon's §5 lacked in 2014.
+2. **Fast paths**: deferred until a foundation is chosen; equivalence to
+   it must be established.
+3. **Undetermined splits**: a system that keeps the alternatives without
+   choosing one could be acceptable; whether they may stay unresolved
+   through compilation follows from the chosen system's account.
+4. **Program 8**: captures allowed (approved experience). The plan must
+   cite the precise published rules: ordinary let-polymorphism, which
+   does not generalize variables free in the enclosing environment
+   (Damas and Milner), with an established treatment of effects (the
+   value restriction; Koka's generalization of total expressions). GHC's
+   default accepts all of G1-G6 (§5.1).
+5. **Program 9**: W, sharing the surrounding services, as the baseline;
+   M stays an explicit, deliberate isolation. W's wider callback row is a
+   concrete spelling under review, not yet the best surface.
+6. **Program 7**: a separate milestone: dictionaries are values; generic
+   row mapping needs its own established typing.
+7. **Task 7**: semantic expansion paused; the checkpoint
+   (`r005b-task7-wip`) and its lowering defect stay recorded.
 
 ## 8. Evidence and limits
 
 - Probes run: Waxwing (checkpoint build) on every program variant;
-  PureScript 0.15.16 on programs 4-6; Koka 3.2.3 on program 9's
-  spellings and local generalization; GHC 9.4.8 on G1-G6. Each is in
-  research/composition-assessment with its command.
+  PureScript 0.15.16 on programs 4-6 and 11; Koka 3.2.3 on program 9's
+  spellings and local generalization; GHC 9.4.8 on G1-G6; Ur/Web
+  20200209 on programs 3-6 and 11; Wallace's toy on program 11 and
+  encodings of program 4's facts. Each is in research/composition-
+  assessment with its command. Ur/Web and OCaml were installed with
+  Homebrew for this (bottles; Homebrew's automatic cleanup ran with the
+  install).
 - Reading only: Simon's algorithm (not run; his implementation has no
   concatenation), Rose, Flix's Boolean unification, Frank, Effekt,
-  Biernacki et al. No candidate was implemented; 4.3's outcomes on
+  Biernacki et al., and Pottier's treatment of programs 4 and 5 (the toy
+  cannot state them). No candidate was implemented; 4.3's outcomes on
   programs 4 and 5 follow from the formulas, not from a run.
 - Sources and what could not be accessed: the README there.

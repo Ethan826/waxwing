@@ -7437,3 +7437,20 @@ assessment.md.
 - Found: the checkpoint's lowering of a two-spread literal with known
   rows emits Go that does not build (findings, Task 7, item 5).
 - No compiler code changed; verify not run (docs and research only).
+
+## Composition foundation assessment, third revision (2026-10-20)
+
+- Program 11 (one input extended at two field types) added to the
+  requirements (§11) at the author's direction; it runs today (generic
+  and lambda forms, `0`; negative control D1).
+- New probes: Ur/Web 20200209 (programs 3, 6, 11 accepted; 4, 5
+  refused), PureScript on program 11 (accepted), Pottier's Wallace toy
+  of 2000, built locally with OCaml 5.5.1 (program 11 accepted with
+  pending conditionals; facts of program 4 checked only for
+  satisfiability; no declarations). Homebrew installed `urweb` and
+  `ocaml` (its automatic cleanup ran during the install).
+- Assessment §4.8 answers the narrow question: among the systems
+  examined, none decides programs 4 and 5 while keeping program 11 and
+  checking declared signatures; the conflict is stated on the programs.
+  Simon's 2014 "no solver" kept as a historical statement.
+- No compiler code changed; verify not run (docs and research only).

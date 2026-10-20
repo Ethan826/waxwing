@@ -1,0 +1,76 @@
+? 
+(fun q ->
+let m1 = @@ (.a<- {} _int) q in let m2 = @@ (.a<- {} _bool) q in _int)
+(.b<- {} _int)
+
+int where:
+
+? 
+(fun q ->
+let m1 = @@ (.a<- {} _int) q in let m2 = @@ (.a<- {} _bool) q in _int)
+(.a<- (.b<- {} _int) _int)
+
+Constraint inconsistency.
+
+? 
+fun q ->
+let m1 = @@ (.a<- {} _int) q in let m2 = @@ (.a<- {} _bool) q in _int
+
+{ <a: -a; -b> } -> int where:
+if RAbs < -b then \RAbs < \R1
+-a < RAbs
+if RAbs < -a then RPre int < R1
+if RAbs < -a then RPre bool < R1
+
+? 
+fun r ->
+fun s ->
+let x = @@ r (.admin<- {} _unit) in
+let y = @@ s (.admin<- {} _unit) in .admin (@@ r s)
+
+{ <admin: %a; %b> } -> { <admin: %c; %d> } -> %e where:
+if RAbs < %b then \RAbs < \R1
+if RAbs < %b then %d < \R1
+if RPre < %b then \RAbs < \RAbs
+if RPre < %b then %d < \RAbs
+if RAbs < %d then \RAbs < \R1
+if RAbs < %d then %b < \R1
+if RPre < %d then \RAbs < \RAbs
+if RAbs < %a then RPre unit < R1
+if RAbs < %a then %c < RPre %e
+if RPre < %a then RPre unit < RAbs
+if RPre < %a then %c < RAbs
+if RAbs < %c then RPre unit < R1
+if RAbs < %c then %a < RPre %e
+if RPre < %c then RPre unit < RAbs
+
+? 
+(fun r ->
+fun s ->
+let x = @@ r (.admin<- {} _unit) in
+let y = @@ s (.admin<- {} _unit) in .admin (@@ r s)) {} {}
+
+Constraint inconsistency.
+
+? 
+fun r -> fun s -> let y = @@ s (.admin<- {} _unit) in .admin (@@ r s)
+
+{ <admin: %a; %b> } -> { <admin: %c; %d> } -> %e where:
+if RAbs < %b then %d < \R1
+if RPre < %b then %d < \RAbs
+if RAbs < %d then \RAbs < \R1
+if RAbs < %d then %b < \R1
+if RPre < %d then \RAbs < \RAbs
+if RAbs < %a then %c < RPre %e
+if RPre < %a then %c < RAbs
+if RAbs < %c then RPre unit < R1
+if RAbs < %c then %a < RPre %e
+if RPre < %c then RPre unit < RAbs
+
+? 
+(fun r -> fun s -> let y = @@ s (.admin<- {} _unit) in .admin (@@ r s))
+(.admin<- {} _bool) {}
+
+bool where:
+
+? Fatal error: exception End_of_file

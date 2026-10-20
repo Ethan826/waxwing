@@ -1,0 +1,7 @@
+(fun q -> let m1 = { a = 1 } @@ q in let m2 = { a = true } @@ q in 0) { b = 1 };;
+(fun q -> let m1 = { a = 1 } @@ q in let m2 = { a = true } @@ q in 0) { a = 2; b = 1 };;
+fun q -> let m1 = { a = 1 } @@ q in let m2 = { a = true } @@ q in 0;;
+fun r -> fun s -> let x = r @@ { admin = () } in let y = s @@ { admin = () } in (r @@ s).admin;;
+(fun r -> fun s -> let x = r @@ { admin = () } in let y = s @@ { admin = () } in (r @@ s).admin) {} {};;
+fun r -> fun s -> let y = s @@ { admin = () } in (r @@ s).admin;;
+(fun r -> fun s -> let y = s @@ { admin = () } in (r @@ s).admin) { admin = false } {};;

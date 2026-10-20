@@ -1,0 +1,7 @@
+fn both(q: { ...r }): Int where r lacks { a } = {
+  let first = { ...q, a: 1 };
+  let second = { ...q, a: true };
+  0
+};
+
+fn main(): Int = both({ name: "Ada", a: 2 });
