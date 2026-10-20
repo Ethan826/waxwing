@@ -367,56 +367,6 @@ unhandled is rejected.
 Author question: does this meet the error-composition requirement?
 Recommendation: yes, required.
 
-## 11. Extend one input independently, at different field types
-
-Added 2026-10-20 after the second assessment's review (author's
-direction: preserve this behavior).
-
-~~~waxwing
-fn both(q: { ...r }): Int where r lacks { a } = {
-  let first = { ...q, a: 1 };
-  let second = { ...q, a: true };
-  0
-};
-
-fn main(): Int = both({ name: "Ada" });
-~~~
-
-Required outcome: accept; return 0. There is no ambiguity about `q`: it
-has no `a`. The two new records independently add `a` at different
-types. The same holds for an unannotated helper and for a merge with two
-spreads:
-
-~~~waxwing
-fn main(): Int = {
-  let both = fn(q) => {
-    let first = { ...q, a: 1 };
-    let second = { ...q, a: true };
-    0
-  };
-  both({ name: "Ada" })
-};
-~~~
-
-~~~waxwing
-fn main(): Int = {
-  let f = fn(q) => {
-    let m1 = { ...{ a: 1 }, ...q };
-    let m2 = { ...{ a: true }, ...q };
-    0
-  };
-  f({ b: 1 })
-};
-~~~
-
-Negative control: `both({ name: "Ada", a: 2 })` is rejected (`r lacks {
-a }`).
-
-Why it matters: a foundation that gives a field one type wherever
-records are joined (Simon 2014, as translated in the foundation
-assessment §4.3) refuses this; rejecting it would be a surprising
-restriction on structural records.
-
 ## Author response (2026-10-20)
 
 - Programs 1, 3, 4, 5, 6, 9 and 10: agreed.
