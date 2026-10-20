@@ -6,7 +6,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (maybe)
 import Data.Tuple (Tuple(..))
-import Domain.Problem (Hint(..), Problem(..))
+import Domain.Problem (DuplicateKind(..), Hint(..), Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span)
 import Domain.Type (VarId(..))
 import Features.Check.RowStore (Because(..), arrival)
@@ -25,7 +25,10 @@ type Named r =
 -- label both rows hold, noted where it arrived and why the rows are
 -- disjoint; D3'', a rigid tail that may hold the label, noted where the
 -- tail is introduced and why; D3, two rigid tails not known disjoint, with
--- its hint; D3', one rigid tail in both rows. D3, D3' and D3'' name the
+-- its hint; D3', one rigid tail in both rows; D2', a label two items of
+-- one literal both hold, found after the literal (Task 7: the literal
+-- reports one it finds itself at the later item, Tranche A's form),
+-- noted at both items. D3, D3' and D3'' name the
 -- enclosing signature's rigids (location rule 4). (Placeholder P2, for a
 -- refusal an equation caused, lost its last cause with the sum rule and
 -- bounds in B2; B5 renders the refusals B3's predicates cause.)
@@ -45,6 +48,10 @@ refusedAt env subst span = case _ of
     )
     (requiredAt because)
   Twice tail because → at (InBothRows (named tail)) (requiredAt because)
+  Repeated label items → at (Duplicate DuplicateField label)
+    [ { span: items.earlier, reason: FirstWrittenHere }
+    , { span: items.later, reason: WrittenAgainHere }
+    ]
   where
   at problem related = { problem, span, related }
   arrived from = maybe span identity (arrival (storeOf subst) =<< from)

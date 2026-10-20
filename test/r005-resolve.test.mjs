@@ -31,16 +31,9 @@ test('a removal resolves its receiver and keeps its labels', () => {
   assert.deepEqual(body.value2.map(label => label.name), ['fa', 'fb']);
 });
 
-test('a second spread is E_TYPE at the second spread', () => {
-  const source = `fn f(p: Int, q: Int): Int = { ...p, fa: 1, ...q };${main}`;
-  const found = resolveRejectedAt(source, 'E_TYPE', '...q');
-  assert.equal(found.message, 'A record literal accepts at most one spread');
-});
-
-test('with three spreads the second is the one reported', () => {
-  const source = `fn f(p: Int): Int = { ...p, ...p, ...p };${main}`;
-  resolveRejectedAt(source, 'E_TYPE', '...p', 1);
-});
+// Tranche A refused a second spread (`A record literal accepts at most
+// one spread`); the text retired in R005 Tranche B Task 7, as approved on
+// 2026-10-17, and both sources are checked now (test/r005b-literal).
 
 test('a repeated label in a literal is Duplicate field at the second', () => {
   const source = `fn f(p: Int): Int = { ...p, fa: 1, fa: 2 };${main}`;

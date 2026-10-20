@@ -7,11 +7,9 @@ module Features.Resolve.Record
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either(..))
 import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
-import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax as Syntax
 import Features.Resolve.Fresh (Fresh, liftEither)
@@ -40,16 +38,15 @@ recordUpdate nested span base fields = Resolved.RecordUpdate span
   <*> fieldValues nested fields
 
 -- R005 design §1: a literal holding a spread keeps its items in written
--- order. A second spread is refused first (until Tranche B), at the second;
--- then a label written twice, as in any literal; then the items are
--- resolved in written order, which is evaluation order.
+-- order. A label written twice is refused, as in any literal; then the
+-- items are resolved in written order, which is evaluation order. Any
+-- number of spreads (Tranche B Task 7: Tranche A refused a second).
 recordExtension
   ∷ (Syntax.Expr → Fresh Resolved.Expr)
   → Syntax.Span
   → Array Syntax.LiteralItem
   → Fresh Resolved.Expr
 recordExtension nested span items = do
-  liftEither (singleSpread items)
   liftEither (traverse_ repeatedField (repeatedLabel (given items)))
   Resolved.RecordExtension span <$> traverse item items
   where
@@ -68,16 +65,6 @@ recordRemoval
 recordRemoval nested span receiver labels = do
   liftEither (traverse_ repeatedField (repeatedLabel labels))
   Resolved.RecordRemoval span <$> nested receiver <*> pure labels
-
--- The spans of the spreads past the first are errors.
-singleSpread ∷ Array Syntax.LiteralItem → Either Syntax.Diagnostic Unit
-singleSpread items = maybe (Right unit) tooMany (Array.index spreads 1)
-  where
-  spreads = Array.mapMaybe spreadAt items
-  spreadAt = case _ of
-    Syntax.Spreading at _ → Just at
-    Syntax.Given _ → Nothing
-  tooMany at = Left (Syntax.problemAt SecondSpread at)
 
 given ∷ Array Syntax.LiteralItem → Array Syntax.FieldValue
 given = Array.mapMaybe fieldOf

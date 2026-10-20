@@ -116,6 +116,7 @@ noteText = case _ of
   FirstImportedHere → "first imported here"
   FirstBoundHere → "first bound here"
   FirstWrittenHere → "first written here"
+  WrittenAgainHere → "written again here"
   IntroducedHere name → name <> " is introduced here"
   RequiredHere → "required here"
   InnermostHere label → "the innermost " <> shortLabel label <> " is here"

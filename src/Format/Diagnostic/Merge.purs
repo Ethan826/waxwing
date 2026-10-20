@@ -4,6 +4,7 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (maybe)
 import Data.String (joinWith)
+import Data.String as String
 import Domain.Problem.Merge
   ( Fault(..)
   , MergeAtom(..)
@@ -31,7 +32,11 @@ undetermined name found = "Cannot tell " <> subject <> maybe "" hint found.hint
       <> " split "
       <> maybe "" possessive otherOwner
       <> name other
+  -- Example 10: no owner and no part named, the parts as one row.
   choice
+    | ownerless && Array.all unnamed found.parts = "which part of { "
+        <> joinWith ", " found.parts
+        <> " }"
     | Array.length found.parts == 2 = "whether " <> owned
         <> joinWith " or " found.parts
     | otherwise = "which of " <> owned <> alternatives found.parts
@@ -47,6 +52,8 @@ undetermined name found = "Cannot tell " <> subject <> maybe "" hint found.hint
       <> ", which belong to this call of "
       <> owner
   lambda = "; pass a lambda with annotated parameters in place of "
+  ownerless = maybe true (const false) found.owner
+  unnamed part = String.take 4 part == "..._"
 
 mustBe ∷ (TypeName → String) → MustBe → String
 mustBe name found = maybe "" possessive found.owner <> name found.row

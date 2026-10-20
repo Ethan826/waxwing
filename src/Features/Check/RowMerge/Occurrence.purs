@@ -3,6 +3,7 @@ module Features.Check.RowMerge.Occurrence (nextPredicate, recorded) where
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
+import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Domain.Syntax (Span)
 import Domain.Type.Record (recordRow)
@@ -35,6 +36,7 @@ recorded site steps first written result subst =
     , row: recordRow written.fields
         (Array.filter rigid written.tails <> [ result ])
     , owner: Nothing
+    , items: Map.empty
     }
 
 rigid ∷ Flex → Boolean

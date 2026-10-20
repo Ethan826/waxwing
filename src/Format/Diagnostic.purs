@@ -83,7 +83,6 @@ message = case _ of
   ExpectedRecord ty → Records.expectedRecord (typeName ty)
   PatternMissingField label → Records.patternMissingField label
   PatternMissingRest ty → Records.patternMissingRest (typeName ty)
-  SecondSpread → Records.secondSpread
   RepeatedTail name → Records.repeatedTail name
   SameDisjoint → Records.sameDisjoint
   NotKnownDisjoint one other → Records.notKnownDisjoint one other

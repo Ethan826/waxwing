@@ -71,7 +71,10 @@ type Cause = { predicate ∷ Int, at ∷ Maybe Span, within ∷ Maybe Subst }
 -- binding brought the label (D2); `MayHold`, a signature's rigid tail
 -- asked to lack a label a pair needs (D3''); `Unproven`, two rigid tails
 -- asked to be disjoint without the hypothesis (D3); `Twice`, one rigid
--- tail asked to be disjoint from itself (D3'). Each keeps its reason.
+-- tail asked to be disjoint from itself (D3'). Task 7: `Repeated`, a
+-- label bound into a tail that lacks it because two items of one literal
+-- are disjoint (`Spread`), with the two items (D2'). Each keeps its
+-- reason.
 -- (Task 4's `Outside` and `Derived`, refusals only upper bounds and the
 -- sum rule made, went with them in B2.)
 data Refusal
@@ -80,3 +83,4 @@ data Refusal
   | MayHold Flex String Because
   | Unproven Flex Flex Because
   | Twice Flex Because
+  | Repeated String { earlier ∷ Span, later ∷ Span }

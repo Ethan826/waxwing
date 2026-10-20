@@ -4,9 +4,10 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Features.Check.Atom (Atom(..))
-import Features.Check.MergeParts (View, partNames)
+import Features.Check.MergeParts (View)
+import Features.Check.PartNames (partNames)
 import Features.Check.RowName (tailName)
-import Features.Check.Subst (Flex(..))
+import Features.Check.Subst (Flex(..), Subst)
 
 -- How one D4 or D6 names what it mentions (plan §10 decision 23): when a
 -- callee's part and a rigid tail of the enclosing function share a name,
@@ -24,11 +25,12 @@ type Naming =
 naming
   ∷ ∀ r
   . { variables ∷ Array String, functionName ∷ String | r }
+  → Subst
   → View
   → Array Atom
   → Array Flex
   → Naming
-naming env view atoms tails =
+naming env subst view atoms tails =
   if Array.null (Array.intersect owned enclosing) then
     { part: identity, rigid: identity, row: Nothing }
   else
@@ -37,7 +39,7 @@ naming env view atoms tails =
     , row: if Array.any rigid tails then Just env.functionName else Nothing
     }
   where
-  owned = partNames view view.parts
+  owned = partNames subst view view.parts
   enclosing = map (tailName env)
     (Array.filter rigid (tails <> Array.mapMaybe rigidOf atoms))
   ownerName = map nameOf view.owner

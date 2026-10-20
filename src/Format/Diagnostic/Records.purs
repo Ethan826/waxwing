@@ -13,7 +13,6 @@ module Format.Diagnostic.Records
   , notKnownDisjoint
   , inBothRecords
   , inBothRows
-  , secondSpread
   , typeAsRecordRow
   ) where
 
@@ -53,9 +52,6 @@ patternMissingField label = "Pattern is missing field " <> label
 patternMissingRest ∷ String → String
 patternMissingRest ty = "Pattern is missing the rest of " <> ty
   <> "; end the pattern with ..."
-
-secondSpread ∷ String
-secondSpread = "A record literal accepts at most one spread"
 
 -- R005 Tranche B (approved 2026-10-17, design §10 D8, D9, D3).
 repeatedTail ∷ String → String

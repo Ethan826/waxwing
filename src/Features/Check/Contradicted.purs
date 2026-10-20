@@ -16,6 +16,7 @@ import Domain.Resolved (EffectInfo)
 import Domain.Syntax (Diagnostic, Note, Span)
 import Features.Check.Atom (Atom(..))
 import Features.Check.Collision (naming)
+import Features.Check.PartNames (partNames)
 import Features.Check.Exclusion (exclusions)
 import Features.Check.Fault (faultIn)
 import Features.Check.MergeOther (wholeName, writtenName)
@@ -24,7 +25,6 @@ import Features.Check.MergeParts
   ( View
   , atomName
   , holds
-  , partNames
   , pathOf
   , viewById
   )
@@ -124,18 +124,18 @@ reported env subst view primary found notes =
   mustBe ∷ TypeName → MustBe
   mustBe other =
     { owner: map ownerName view.owner
-    , row: writtenName (partNames view view.parts) view
+    , row: writtenName (partNames subst view view.parts) view
     , path: pathOf view
     , other
     , otherOwner: names.row
     , fault: found.fault
-    , parts: map names.part (partNames view found.parts)
+    , parts: map names.part (partNames subst view found.parts)
     , atom: case found.atom of
         LabelAtom label → FieldAtom label
         RigidAtom _ → TailAtom (names.rigid (atomName env found.atom))
     }
   -- Decision 23: names qualified when a part and a rigid tail collide.
-  names = naming env view [ found.atom ] view.whole.tails
+  names = naming env subst view [ found.atom ] view.whole.tails
   ownerName owner = owner.name
   at span note = note.span == span
 

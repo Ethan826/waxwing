@@ -73,7 +73,8 @@ parameter annotations syntax = boundOf <$> liftEither annotation
     syntax.ty
   issue name = localNamed name <$> fresh
   boundOf ty found =
-    { param: { local: map localId found, ty, span: syntax.span }
+    { param:
+        { local: map localId found, name: syntax.name, ty, span: syntax.span }
     , local: found
     }
   localId local = local.id

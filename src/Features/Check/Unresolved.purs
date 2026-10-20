@@ -13,6 +13,7 @@ import Domain.Resolved (EffectInfo)
 import Domain.Syntax (Diagnostic, Note, Span, TypeRef, typeRefSpan)
 import Features.Check.Atom (Atom(..))
 import Features.Check.Collision (naming)
+import Features.Check.PartNames (partNames, partNotes)
 import Features.Check.MergeOther (otherName, wholeName)
 import Features.Check.MergeParts
   ( View
@@ -20,7 +21,6 @@ import Features.Check.MergeParts
   , candidatesOf
   , constantsOf
   , lambdaPart
-  , partNames
   , pathOf
   , viewOf
   )
@@ -69,7 +69,7 @@ reported env fallback subst view = report
   constants = constantsOf view
   parts = maybe view.parts candidatesOf' split
   candidatesOf' found = found.candidates
-  names = partNames view parts
+  names = partNames subst view parts
   report other whole =
     { problem: CannotTell
         { owner: map ownerName view.owner
@@ -86,12 +86,13 @@ reported env fallback subst view = report
   splitSubject found = case found.atom of
     LabelAtom label → HasField label
     RigidAtom _ → HoldsTail
-      ((naming env view [ found.atom ] []).rigid (atomName env found.atom))
+      ((naming env subst view [ found.atom ] []).rigid (atomName env found.atom))
   unsplit other _
     | Array.null constants = Holds
-    | otherwise = Splits (naming env view [] view.other.tails).row other
-  notes whole = Array.catMaybes
-    [ written names view, required site subst view whole ]
+    | otherwise = Splits (naming env subst view [] view.other.tails).row other
+  notes whole = Array.fromFoldable (written names view)
+    <> partNotes subst view parts
+    <> Array.fromFoldable (required site subst view whole)
   ownerName owner = owner.name
 
 -- R4: the first constant two or more parts may still hold.

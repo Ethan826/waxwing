@@ -3,7 +3,7 @@ module Features.Check.Lambda (checkLambda) where
 import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (maybe')
+import Data.Maybe (Maybe(..), maybe')
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Resolved as Resolved
@@ -47,6 +47,7 @@ checkLambda infer env state span parameters body = do
         { locals = bindAll (bound typed.value) env.locals
         , current = row
         , sites = []
+        , lambda = Just span
         }
     )
     staged.state
@@ -88,7 +89,10 @@ parameterType variables row span state parameter = Right
     { value: { local: parameter.local, ty: TVar (Hole state.next) }
     , state: state
         { next = state.next + 1
-        , subst = onOrigins (parameterMade { meta: state.next, lambda: span })
+        , subst = onOrigins
+            ( parameterMade
+                { meta: state.next, lambda: span, name: parameter.name }
+            )
             state.subst
         }
     }

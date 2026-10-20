@@ -46,7 +46,6 @@ code = case _ of
   ExpectedRecord _ → Code.TypeMismatch
   PatternMissingField _ → Code.TypeMismatch
   PatternMissingRest _ → Code.TypeMismatch
-  SecondSpread → Code.TypeMismatch
   RepeatedTail _ → Code.TypeMismatch
   SameDisjoint → Code.TypeMismatch
   NotKnownDisjoint _ _ → Code.TypeMismatch

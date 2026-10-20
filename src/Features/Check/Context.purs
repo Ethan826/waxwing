@@ -28,6 +28,9 @@ type CheckEnv r =
   , functionName ∷ String
   , functionSpan ∷ Span
   , rowSpan ∷ Maybe Span
+  -- The innermost lambda whose body is being checked, if any: where a
+  -- record literal's predicates are located (R005 Tranche B Task 7).
+  , lambda ∷ Maybe Span
   , effects ∷ Array Resolved.EffectInfo
   , functions ∷ Array Resolved.FunctionDecl
   , types ∷ Array Resolved.TypeInfo

@@ -3,6 +3,8 @@ module Features.Check.Fault (faultIn) where
 import Prelude
 import Data.Array as Array
 import Data.Map as Map
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Type (Ty(..))
@@ -53,33 +55,58 @@ faultIn subst predicate view failure =
         Just { part, atom: RigidAtom tail }
     | otherwise = Nothing
 
--- R10.1: the parts predicate `predicate`'s case bound, and the first
--- field of the failing types one of them cannot take.
+-- R10.1: a part predicate `predicate`'s case bound that the failure puts
+-- at fault: a label one failing record holds and the other cannot take
+-- (decision 22: evidence, not inequality), blamed on a part that cannot
+-- take it either and that the lacking record is: built through it, or,
+-- as the failure may hold it flattened, with the part's own row. A part
+-- that is not the lacking record explains nothing (Task 7: a removal's
+-- rest lacks the label it removed, whatever the parts hold).
 caseBound ∷ Subst → Int → View → Failure → Unit → Maybe Fault
-caseBound subst predicate view failure _ = Array.findMap faulted bound
+caseBound subst predicate view failure _ = Array.findMap faulted
+  (missingLabels subst failure)
   where
   bound = Array.filter boundHere view.parts
   boundHere part = Array.any (byThis <<< flip Map.lookup boundBy)
     (Array.fromFoldable (metasThrough subst [ Meta part ]))
   byThis = eq (Just predicate)
   boundBy = (mergesOf (storeOf subst)).boundBy
-  faulted part = map (atPart part)
-    (Array.find (refusedBy part) (failingLabels subst failure))
-  atPart part label = { part, atom: LabelAtom label }
-  refusedBy part label = not (holdsLabel label (rowOf subst part))
-    && refuses subst (rowOf subst part).tails (LabelAtom label)
+  faulted missing = map (atPart missing.label)
+    (Array.find (refusedBy missing) bound)
+  atPart label part = { part, atom: LabelAtom label }
+  refusedBy missing part = lackingIs missing part
+    && not (holdsLabel missing.label (rowOf subst part))
+    && refuses subst (rowOf subst part).tails (LabelAtom missing.label)
   holdsLabel label row = Array.any (eq label <<< fst) row.fields
+  lackingIs missing part = Set.member part missing.through
+    || missing.row == rowOf subst part
 
--- The fields of the records a unification failed on, in label order.
-failingLabels ∷ Subst → Failure → Array String
-failingLabels subst = case _ of
-  Mismatch one other → Array.sort (Array.nub (labelsOf one <> labelsOf other))
-  FromMerge _ inner → failingLabels subst inner
+-- The labels one record of a failed unification holds and the other
+-- cannot take, in label order, each with the metas the lacking record was
+-- built through and its row.
+missingLabels
+  ∷ Subst
+  → Failure
+  → Array { label ∷ String, through ∷ Set Int, row ∷ Flat }
+missingLabels subst = case _ of
+  Mismatch one other → Array.sortWith labelOf
+    (lacking (rowIn one) (rowIn other) <> lacking (rowIn other) (rowIn one))
+  FromMerge _ inner → missingLabels subst inner
   _ → []
   where
-  labelsOf ty = case walk subst ty of
-    TRecord row → map fst (flatten subst row).fields
-    _ → []
+  labelOf found = found.label
+  rowIn ty = case walk subst ty of
+    TRecord row → Just row
+    _ → Nothing
+  lacking (Just holder) (Just lacker) = Array.mapMaybe
+    (missing (flatten subst lacker) (metasThrough subst lacker.tails))
+    (map fst (flatten subst holder).fields)
+  lacking _ _ = []
+  missing flat through label
+    | Array.any (eq label <<< fst) flat.fields = Nothing
+    | refuses subst flat.tails (LabelAtom label) =
+        Just { label, through, row: flat }
+    | otherwise = Nothing
 
 -- No tail of a row can take the atom: a rigid tail never does (rules:
 -- rigid tails are cancelled by identity, never given labels), a meta

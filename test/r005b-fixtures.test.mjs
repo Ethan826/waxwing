@@ -13,8 +13,9 @@ import { assertDiagnostic, checkWired, fixtures, wired }
 // with its check); from `run`, the output through Go. A fixture before
 // its stage is skipped by that field only, never because it fails. `task`
 // is the plan's task this tree has reached, in the 2026-10-17 plan's
-// numbering that `stages` uses: R005 Tranche B's B5 is its Task 6.
-const task = 6;
+// numbering that `stages` uses: R005 Tranche B's B5 was its Task 6, and
+// Task 7 keeps its number.
+const task = 7;
 const reached = stage => stage !== null && stage <= task;
 
 const checkStage = fixture => {
@@ -44,33 +45,20 @@ for (const fixture of fixtures) {
   }
 }
 
-// Task 3 activates the precedence fixtures and their controls, the two
+// Task 3 activated the precedence fixtures and their controls, the two
 // lone-meta fixtures and diag-06-fix (the plan's activation table); Task
-// 4 activates none here (no fixture's `check` or `run` stage is 4: its
-// solver-stage fixtures run in test/row-merge.test.mjs); Task 5 (B4)
-// activates the three Unresolved fixtures without a literal of two
+// 4 none here (its solver-stage fixtures run in test/row-merge.test.mjs);
+// Task 5 (B4) the three Unresolved fixtures without a literal of two
 // spreads and the two annotated programs that fix diag-07's shape; Task 6
 // (B5) the `render-*` fixtures, their annotated companions,
-// participation-control and render-none-control (decision 21).
+// participation-control and render-none-control (decision 21). Task 7,
+// with the merge literal, activates every remaining fixture's checking:
+// none waits for a later task's `check` stage.
 test('the fixtures this task activates are the activation table\'s', () => {
-  const active = fixtures.filter(fixture => reached(fixture.stages.check))
+  const waiting = fixtures.filter(fixture => !reached(fixture.stages.check))
     .map(fixture => fixture.name);
-  assert.deepEqual(active, ['design-both-annotated', 'design-both-plain',
-    'diag-06-fix', 'diag-06', 'diag-07-fix', 'diag-07', 'lone-meta-lack-two',
-    'lone-meta-lack', 'participation-control', 'precedence-control-hole-base',
-    'precedence-control-no-clause', 'precedence-control-two-clauses',
-    'precedence-p1', 'precedence-p2', 'precedence-p3', 'precedence-p4',
-    'precedence-p5', 'precedence-p6', 'precedence-p7', 'render-call',
-    'render-d6-neither', 'render-d6-nested', 'render-d6-one',
-    'render-holds-annotated', 'render-holds', 'render-lambda-annotated',
-    'render-lambda', 'render-mixed-annotated', 'render-mixed',
-    'render-nested-annotated', 'render-nested',
-    'render-none-control-annotated', 'render-none-control',
-    'render-partial-annotated',
-    'render-partial', 'render-quiet-annotated', 'render-quiet',
-    'render-reference-annotated', 'render-reference',
-    'render-split-annotated', 'render-split', 'render-three-annotated',
-    'render-three']);
+  assert.deepEqual(waiting, []);
+  assert.equal(fixtures.length, 102);
 });
 
 // Plan §10 decision 20: a hint that suggests an annotation is pinned only

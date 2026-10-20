@@ -1,0 +1,41 @@
+{
+  "name": "d2-late",
+  "from": "plan (2026-10-17) F11, D2' found late (rule 1 wins)",
+  "remark": "approved D2' text and notes (plan 2026-10-17, Approved texts); the overlap completes when the lambda meets g's parameter type, one unification binding both parts after the literal was checked. Two arguments of one call do not reach it: the solving case's binding between them states the lack as Implied, which the approved precedence prefers (docs/findings.md, Task 7)",
+  "source": "fn g(k: ({ a: Int }, { a: Int }) -> Int): Int = 0;\nfn main(): Int = g(fn(p, q) => { let m = { ...p, ...q }; 0 });\n",
+  "result": "Contradiction",
+  "diagnostic": {
+    "id": "D2'",
+    "code": "E_DUPLICATE",
+    "message": "Duplicate field a",
+    "at": {
+      "text": "fn(p, q) => { let m = { ...p, ...q }; 0 }",
+      "nth": 0
+    },
+    "notes": [
+      {
+        "message": "first written here",
+        "at": {
+          "text": "...p",
+          "nth": 0
+        }
+      },
+      {
+        "message": "written again here",
+        "at": {
+          "text": "...q",
+          "nth": 0
+        }
+      }
+    ]
+  },
+  "before": null,
+  "output": null,
+  "stages": {
+    "solver": null,
+    "check": 7,
+    "text": 7,
+    "run": null
+  },
+  "rows": null
+}

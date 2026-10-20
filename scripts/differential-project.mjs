@@ -118,6 +118,18 @@ const refAsBefore = item => {
     { value2: tail });
 };
 
+// R005 Tranche B Task 7: a resolved lambda parameter gained `name`, as
+// written, for D4's part names (diagnostic data); compared without it, as
+// `syntax` is above: the local it binds is compared.
+const isParam = item => item !== null && typeof item === 'object'
+  && !Array.isArray(item) && Object.keys(item).sort().join() ===
+  'local,name,span,ty';
+const paramAsBefore = item => {
+  if (!isParam(item)) return item;
+  const { name: _, ...rest } = item;
+  return rest;
+};
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack. With
 // `monomorphic` the IR's records are hashed as they were before R005.
 export const digest = (value, monomorphic = false) => {
@@ -125,8 +137,9 @@ export const digest = (value, monomorphic = false) => {
   const pending = [value];
   while (pending.length > 0) {
     const popped = pending.pop();
-    const item = tailAsBefore(refAsBefore(
-      popped?.constructor?.name === 'PRecord' ? restAsBefore(popped) : popped));
+    const record = popped?.constructor?.name === 'PRecord';
+    const item = paramAsBefore(tailAsBefore(refAsBefore(
+      record ? restAsBefore(popped) : popped)));
     if (item?.constructor?.name in booleanRests) {
       hash.update(`boolean:${booleanRests[item.constructor.name]};`);
     } else if (item === null || typeof item !== 'object') {

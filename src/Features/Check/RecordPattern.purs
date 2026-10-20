@@ -49,9 +49,9 @@ recordAgainst against env state expected written = do
       | growable row written → extended against env state expected written
           (unknown row written)
       | otherwise → fromRecord against env state expected { ty, row } written
-          >>= matched expected written
+          >>= matched env expected written
     TVar (Hole _) → fromHole against env state expected written
-      >>= matched expected written
+      >>= matched env expected written
     _ → notRecord unit
   where
   ty = resolved state.subst expected

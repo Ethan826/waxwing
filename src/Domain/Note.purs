@@ -28,6 +28,9 @@ data NoteReason
   | FirstBoundHere
   -- R001: the first of two uses of a field label or a row variable.
   | FirstWrittenHere
+  -- R005 Tranche B Task 7: the later of two literal items that both hold
+  -- a field, when the overlap is found after the literal (D2' late).
+  | WrittenAgainHere
   -- R001: the signature's `...r` that introduces a record row variable.
   | IntroducedHere String
   -- R005: the label of a written `where r lacks { … }` a call violates.

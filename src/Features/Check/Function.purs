@@ -47,6 +47,7 @@ environment program function =
   , functionName: function.name
   , functionSpan: function.span
   , rowSpan: function.rowSpan
+  , lambda: Nothing
   , effects: program.effects
   , functions: program.functions
   , types: program.types

@@ -13,6 +13,7 @@ import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
 import Features.Check.Context (CheckEnv, Infer)
 import Features.Check.FreshRecord (freshRest)
+import Features.Check.MergeLiteral (mergeLiteral)
 import Features.Check.Overlap (Added, Base, fields, fromRecord)
 import Features.Check.Require (bounded, expectType, typeName)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
@@ -22,7 +23,9 @@ type Checked a = Either Diagnostic (Threaded a)
 -- R005 design §1. Items are checked in written order, which is
 -- evaluation order; then the base's type, under the substitution, must
 -- hold none of the fields. The result has the base's fields and tail and
--- the literal's fields.
+-- the literal's fields. A literal of two or more spreads is Tranche B's
+-- (Features.Check.MergeLiteral, Task 7); one of a single spread keeps
+-- Tranche A's rules unchanged.
 checkExtension
   ∷ ∀ r
   . Infer r
@@ -33,8 +36,10 @@ checkExtension
   → Checked Checked.Expr
 checkExtension infer env state span items = do
   threaded ← threadAll (literalItem infer env) state items
-  base ← maybe' (noSpread span) Right (Array.findMap baseOf threaded.value)
-  extended ← extend env threaded.state base threaded.value
+  extended ←
+    if Array.length (Array.mapMaybe baseOf threaded.value) > 1 then
+      mergeLiteral env threaded.state span threaded.value
+    else single threaded
   pure
     { value: Checked.Expr
         { ty: extended.value
@@ -45,6 +50,9 @@ checkExtension infer env state span items = do
     }
   where
   itemOf added = added.item
+  single threaded = do
+    base ← maybe' (noSpread span) Right (Array.findMap baseOf threaded.value)
+    extend env threaded.state base threaded.value
 
 literalItem
   ∷ ∀ r. Infer r → CheckEnv r → State → Resolved.LiteralItem → Checked Added

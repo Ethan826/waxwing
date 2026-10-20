@@ -181,5 +181,5 @@ failReference ∷ Maybe (Ty VarId) → Syntax.Span → Fresh Resolved.Expr
 failReference family span = eta <$> fresh
   where
   eta payload = Resolved.Lambda span
-    [ { local: Just payload, ty: family, span } ]
+    [ { local: Just payload, name: Nothing, ty: family, span } ]
     (Resolved.Fail span Nothing (Resolved.Local span payload))

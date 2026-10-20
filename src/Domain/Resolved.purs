@@ -83,8 +83,14 @@ type FailClause =
 data Item = Let Span (Maybe LocalId) Expr | Defer Span Expr | Discard Expr
 
 -- A lambda parameter: a local, or `_` (Nothing), which binds nothing. Its
--- annotation names only the enclosing signature's variables.
-type Param = { local ∷ Maybe LocalId, ty ∷ Maybe (Ty VarId), span ∷ Span }
+-- annotation names only the enclosing signature's variables. `name`, as
+-- written, names its row in a diagnostic (R005 Tranche B R1 rule 2).
+type Param =
+  { local ∷ Maybe LocalId
+  , name ∷ Maybe String
+  , ty ∷ Maybe (Ty VarId)
+  , span ∷ Span
+  }
 
 -- `VarId i` in a signature is `variables !! i`: the i-th distinct type
 -- variable in first-occurrence order, parameters then result. The mark

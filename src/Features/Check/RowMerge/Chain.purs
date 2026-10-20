@@ -1,5 +1,6 @@
 module Features.Check.RowMerge.Chain
   ( desugaredRow
+  , desugaredWith
   , predicateFor
   , pairedWith
   , finished
@@ -23,7 +24,7 @@ import Features.Check.Refused (Solving)
 import Features.Check.RowMerge.Merge (Row)
 import Features.Check.RowMerge.Occurrence (nextPredicate, recorded)
 import Features.Check.RowMerge.Predicate (made)
-import Features.Check.RowStore (Because(..), plain)
+import Features.Check.RowStore (Because(..), Lack, plain)
 import Features.Check.Subst (Flex(..), Subst(..))
 import Features.Check.UnifyFailure (Failure)
 
@@ -49,7 +50,20 @@ desugaredRow
   → Row
   → Subst
   → Either Failure { row ∷ Row, subst ∷ Subst }
-desugaredRow solving site written subst =
+desugaredRow solving site = desugaredWith solving site (const plain)
+
+-- The same, each part required apart from what precedes it in the chain
+-- for the reason `reasonOf part` gives: a literal's (Task 7) is the
+-- literal's own, `Spread`, never the `Implied` a type states, which the
+-- precedence would prefer.
+desugaredWith
+  ∷ Solving
+  → Maybe Span
+  → (Flex → Lack)
+  → Row
+  → Subst
+  → Either Failure { row ∷ Row, subst ∷ Subst }
+desugaredWith solving site reasonOf written subst =
   if Array.length metas < 2 then Right { row: written, subst }
   else finished site [] (nextPredicate subst) written
     <$> foldM required { tail: first, subst } rest
@@ -58,7 +72,8 @@ desugaredRow solving site written subst =
   first = maybe (Meta 0) identity (Array.head metas)
   rest = Array.drop 1 metas
   required found part = pairedWith (predicateFor site found part)
-    <$> requireApart solving plain (predicateFor site found part).subst
+    <$> requireApart solving (reasonOf part)
+      (predicateFor site found part).subst
       found.tail
       part
 

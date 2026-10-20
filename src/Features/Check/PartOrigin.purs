@@ -11,6 +11,7 @@ module Features.Check.PartOrigin
   , occurrencesFrom
   , anyOccurrence
   , owned
+  , itemsAt
   , occurrenceOf
   , occurrenceKey
   , requiredAt
@@ -50,7 +51,7 @@ newtype PartOrigin = PartOrigin
   { occurrences ∷ Map Int Occurrence
   , predicates ∷ Map Int Int
   , required ∷ Map Int Span
-  , parameters ∷ Map Int Span
+  , parameters ∷ Map Int { lambda ∷ Span, name ∷ Maybe String }
   , seeded ∷ Array Seeded
   }
 
@@ -58,8 +59,9 @@ newtype PartOrigin = PartOrigin
 -- where it sits in the type it was written in (`steps`, from that type's
 -- root), its unknown tails in tail order (`parts`), the fresh tail that
 -- replaced them (`result`), the row it became (`row`: the written fields
--- and rigid tails with `result`) and, when a declaration's use made it,
--- its owner.
+-- and rigid tails with `result`), when a declaration's use made it, its
+-- owner, and, for a literal's, the expression each part came from (`items`,
+-- R8's `..._n comes from here`).
 type Occurrence =
   { site ∷ Maybe Span
   , steps ∷ Array Step
@@ -67,6 +69,7 @@ type Occurrence =
   , result ∷ Flex
   , row ∷ RecordRow (Ty Flex) Flex
   , owner ∷ Maybe Owner
+  , items ∷ Map Int Span
   }
 
 -- R1's owner: the callee or constructor, how it was used (R9), the
@@ -92,10 +95,10 @@ data Step = Field String | Parameter | Result | Other
 
 derive instance eqStep ∷ Eq Step
 
--- An unannotated lambda parameter: its type's meta and its lambda (R9's
--- `annotate this lambda's parameters`). R1's parameter names arrive with
--- the merge literal (Task 7), which alone can name them.
-type Parameter = { meta ∷ Int, lambda ∷ Span }
+-- An unannotated lambda parameter: its type's meta, its lambda (R9's
+-- `annotate this lambda's parameters`) and its name, if it has one (R1
+-- rule 2, Task 7).
+type Parameter = { meta ∷ Int, lambda ∷ Span, name ∷ Maybe String }
 
 -- A written `lacks` a use stated on one of its metas: the use's span, the
 -- meta, and the label's span (Because's `Lacks` reason).
@@ -164,7 +167,8 @@ requiredOf meta (PartOrigin origins) = Map.lookup meta origins.required
 -- logarithmic time (an array copied per parameter made it quadratic).
 parameterMade ∷ Parameter → PartOrigin → PartOrigin
 parameterMade parameter (PartOrigin origins) = PartOrigin origins
-  { parameters = Map.insert parameter.meta parameter.lambda
+  { parameters = Map.insert parameter.meta
+      { lambda: parameter.lambda, name: parameter.name }
       origins.parameters
   }
 
@@ -172,7 +176,15 @@ parametersOf ∷ PartOrigin → Array Parameter
 parametersOf (PartOrigin origins) = map parameterOf
   (Map.toUnfoldable origins.parameters)
   where
-  parameterOf (Tuple meta lambda) = { meta, lambda }
+  parameterOf (Tuple meta found) =
+    { meta, lambda: found.lambda, name: found.name }
+
+-- The occurrence keyed `key`, each part's expression given.
+itemsAt ∷ Int → Map Int Span → PartOrigin → PartOrigin
+itemsAt key items (PartOrigin origins) = PartOrigin origins
+  { occurrences = Map.update withItems key origins.occurrences }
+  where
+  withItems found = pure found { items = items }
 
 seededAt ∷ Array Seeded → PartOrigin → PartOrigin
 seededAt added (PartOrigin origins) = PartOrigin origins

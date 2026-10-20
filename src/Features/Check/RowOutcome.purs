@@ -103,3 +103,4 @@ refusalReason = case _ of
   MayHold _ _ because → Just because
   Unproven _ _ because → Just because
   Twice _ because → Just because
+  Repeated _ items → Just (Spread items)
