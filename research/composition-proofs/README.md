@@ -4,8 +4,9 @@ Machine-checked proofs for
 docs/plans/2026-10-20-record-composition-dossier.md: the elementary
 claims (first milestone, dossier §9) and the call-site foundation's
 syntax, substitution, binding equations and finite reduction (R1, R2,
-R2′, enumeration, fresh allocation; second milestone, §10). R3, the
-closed-problem decider, is proposed in §11 and not implemented.
+R2′, enumeration, fresh allocation; second milestone, §10), and the
+closed-problem decider with call-site decidability (R3; third
+milestone, §12).
 Research only; separate from the compiler and not part of `npm run
 verify`.
 
@@ -44,6 +45,18 @@ A clean `lake build` reports no errors and no warnings. No file uses
 | Composition/Closedness.lean | R2′ | `r2Closed` |
 | Composition/R2.lean | R2 | `r2_forward`, `r2_backward`, `r2` |
 | Composition/Enum.lean | enumeration, allocation | `r2Enum`, `freshAlloc_fresh` |
+| Composition/Unify/Occurs.lean | occurs check against `G` | `acc_part`, `not_part_self`, `occurs_part` |
+| Composition/Unify/Wf.lean | well-formed closed expressions | `wf_defined`, `evalF_dom`, `evalF_nodup` |
+| Composition/Unify/Record.lean | one field at a time | `removeField_eval`, `removeField_labels` |
+| Composition/Unify/Steps.lean | step semantics | `defined_wf`, `holds_eq_iff`, `record_step` |
+| Composition/Unify/Measure.lean | termination measure | `nvars_lt`, `nvars_le`, `nodup_length_le` |
+| Composition/Unify/Elim.lean | `[x ↦ t]` | `substT_elim_vars`, `substT_elim_wf` |
+| Composition/Unify/Algo.lean | the unifier (U3: termination) | `unify`, `tyVarsOf_elim_gen`, `dec_elim` |
+| Composition/Unify/Facts.lean | per-step facts | `elim_sound`, `elim_complete`, `occurs_unsat`, `clash_unsat` |
+| Composition/Unify/Sound.lean | U1 | `unify_sound` |
+| Composition/Unify/Complete.lean | U2 | `unify_complete` |
+| Composition/Unify/Decider.lean | R3, call sites | `decideClosed`, `r3`, `decideCall`, `decideCall_correct` |
+| Composition/Unify/Examples.lean | executable examples | `#guard` on programs 3, 4, 5, 11, controls, counterexamples |
 | Composition/Axioms.lean | | `#print axioms` for each theorem above |
 
 ## Assumption dependencies (axioms.out)
@@ -105,3 +118,11 @@ These definitions are semantics, not an algorithm; a decision procedure
 - R1/R2: `freshAlloc_fresh` discharges R2's premise for every problem.
   Mutant (scratch copy, not kept): with one fresh type variable per
   label shared by every row variable, `r2_forward` no longer checks.
+- Third milestone: the `#guard` examples are checked by Lean's
+  evaluator at build time (a planted false `#guard` fails the build);
+  they rest on the compiler and interpreter, not on the kernel, and
+  `decideCall_correct` is what gives them meaning. Mutant (scratch copy,
+  not kept): with a base-type mismatch answering true, `unify_sound`
+  no longer checks. Mutants that add or remove a recursive call fail
+  earlier, in the positional termination proofs, which is structural
+  and weaker evidence.

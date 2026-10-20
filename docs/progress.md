@@ -7578,3 +7578,21 @@ assessment.md.
   on closed problems; lexicographic measure; U1 soundness, U2
   completeness, U3 termination; call-site decider over patterns), not
   implemented. Awaiting the author's review.
+
+## Record composition: closed-problem decider, third milestone (2026-10-20)
+
+- Authorized after the reduction milestone was accepted. Proved in
+  Lean: the unifier (Robinson/Martelli-Montanari on closed problems,
+  records one field at a time) terminates (U3), is sound (U1) and
+  complete (U2); R3 for `decideClosed`; call-site decidability
+  (`decideCall_correct`). The occurs check is justified against `G`
+  itself (immediate parts well-founded by `G`'s induction); eliminated
+  bindings through the binding equation, witnesses rebuilt as the
+  recursion returns (chains checked).
+- Executable `#guard` examples (programs 3, 4, 5, 11, controls,
+  Gonzalez's three counterexamples, occurs, chains, repeated label) all
+  as expected; evaluator-checked, not kernel-checked. Mutant: a
+  base-type mismatch answering true fails `unify_sound`.
+- Clean build, no `sorry`. Not covered: selecting a split, Solved with
+  residual, C8, C9, compiler integration. Awaiting the author's review.
+  Verify not run (docs, research, proofs only).

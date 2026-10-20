@@ -621,3 +621,87 @@ expressions (derived or written by hand); substitution inside the
 algorithm reusing `substT` with a type-only substitution; the measure's
 proof for the record case; and the lemma that every expression of a
 closed problem with label-distinct records is defined.
+
+## 12. Third milestone: the closed-problem decider (R3) and call sites
+
+Authorized after the author accepted the reduction milestone. Proved in
+Lean (research/composition-proofs/Composition/Unify/; clean build, no
+`sorry`; axioms `propext`, `Quot.sound`, `Classical.choice`, the last
+from the classical semantics of composition, not from the decider).
+
+**The decider.** `unify` is §11's algorithm as a computable Lean
+definition over lists of equations: drop `x = x`; eliminate `x = t` and
+`t = x` by `[x ↦ t]` after the occurs check; compare base types
+(`DecidableEq B`); decompose functions; decompose records one field at
+a time (`removeField`: the left record's first label must occur in the
+right record, the field types are equated, and the remaining fields are
+compared); anything else is false. `decideClosed` first checks that
+every atom is an equation between well-formed sides (no tails, no
+repeated label), and `decideCall` tries `decideClosed` on every
+enumerated pattern with the explicit fresh allocation.
+
+**Statements proved.**
+
+- U3, termination: `unify` is accepted by Lean's well-founded recursion
+  on the measure (distinct type variables, total size), each of its
+  eight recursive calls proved to lower it, the record step included
+  (`removeField_size`: two fewer units).
+- U1, soundness (`unify_sound`): on equations between well-formed
+  sides, `unify E = true` gives a solution.
+- U2, completeness (`unify_complete`): on such equations, a solution
+  gives `unify E = true`.
+- R3 (`r3`): `R3Spec decideClosed`, from U1, U2 and two facts about
+  closed problems: a well-formed expression is always defined
+  (`wf_defined`), and a closed expression that evaluates is well formed
+  (`defined_wf`), so a problem failing the check has no solution.
+- Call sites (`decideCall_correct`): `decideCall C = true` iff `C` has a
+  solution, for every call-site problem, from R2Enum, `freshAlloc_fresh`,
+  R2′ and R3.
+
+**The reviewer's two points.**
+
+- Eliminated bindings: elimination is justified through the binding
+  equation `x = t` (`eqs_elim`) and the pointwise `subst_sat`, in both
+  directions (`elim_sound`, `elim_complete`), not through the remaining
+  equations alone. The witness is built as the recursion returns: the
+  solution of the substituted rest is extended with `x` set to the value
+  of `t` under it, so a chain `x = y, y = Bool` resolves `y` first and
+  then `x`; the examples check both a consistent and an inconsistent
+  chain.
+- The occurs check against the actual model: `G`'s records hold
+  arbitrary functions, so ground values are not assumed to be finite
+  trees. The immediate-part relation is proved well-founded by `G`'s own
+  induction (`acc_part`, through the nested `Option`), so no value is a
+  proper part of itself (`not_part_self`, which depends on no axioms);
+  a variable inside an expression that is not a variable denotes a
+  proper part of its value (`proper_occurs`), so `x = t` then has no
+  solution (`occurs_unsat`).
+
+**Executable examples** (`Examples.lean`, `#guard`, checked at build
+time by Lean's evaluator; a planted false guard fails the build):
+program 4 (true), its negative control (false), program 4 without its
+`lacks` (true: satisfiable, two splits); program 5 (true) and both
+parts lacking `y` (false); program 11 (true) and its negative control
+(false); program 3's overlap (false); Gonzalez's contradictory residual
+(false, and true with one use), self-unification (true), and nested
+field substitution (false at the wrong type, true at the right one);
+the occurs check `x = x → Int` (false); chains (true, false); a record
+repeating a label (false). These rest on Lean's compiler and evaluator,
+not its kernel; `decideCall_correct` gives them their meaning.
+
+**Mutant.** With a base-type mismatch answering true, `unify_sound` no
+longer checks. Mutants that add or remove a recursive call fail first
+in the positional termination proofs, a structural failure and weaker
+evidence.
+
+**Semantic model.** Unchanged: the same syntax, ground values (rows as
+arbitrary maps) and semantics as §10. Added: the computable checks
+`wfT`, `noDupB`, and the decider; R3Spec's `DecidableEq B` (§10.3).
+
+**What this does not give.** `decideCall` decides whether a call has a
+solution. It does not select a split for compilation, does not justify
+a compiler's Solved verdict with a residual (§2.1), and does not touch
+signatures (C9) or split irrelevance (C8). It tries up to
+`2^|pairsOf C|` patterns, a worst-case fact. The step from Waxwing
+source to constraint problems is not formalized; the examples are
+written by hand.
