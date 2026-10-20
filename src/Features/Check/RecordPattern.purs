@@ -7,14 +7,12 @@ import Data.Foldable (lookup)
 import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Domain.Checked.Internal (Open(..))
-import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, problemAt)
 import Domain.Type (Ty(..))
-import Domain.Type.Record (withoutLabels)
 import Features.Check.FreshRecord (freshRecord)
-import Features.Check.Matched (Against, Matched, PatternEnv, Typed)
+import Features.Check.Matched (Against, Matched, PatternEnv)
 import Features.Check.PatternRow
   ( KnownRow
   , Written
@@ -25,14 +23,11 @@ import Features.Check.PatternRow
   , writtenLabels
   )
 import Features.Check.Require (bounded, expectType, typeName)
+import Features.Check.RestBinder (Labelled, matched)
 import Features.Check.Scheme (State, Threaded, resolved, threadAll)
-import Features.Check.SeveralTails (withinOneTail)
 
 -- A field to check: its label, the type expected of it, and its pattern.
 type Expected = { label ∷ String, ty ∷ Ty Open, pattern ∷ Resolved.Pattern }
-
--- A field's label and its checked pattern.
-type Labelled = { label ∷ String, matched ∷ Matched }
 
 -- R004 design §2: the type expected, under the substitution, decides. A
 -- record type, closed or open, supplies the fields' types; one whose tail
@@ -162,51 +157,3 @@ fieldsAgainst against env state typed = threadAll checkField state typed
     labelled field <$> against env reached field.ty field.pattern
   labelled field checked = checked
     { value = { label: field.label, matched: checked.value } }
-
-matched
-  ∷ Ty Open
-  → Written
-  → Threaded (Array Labelled)
-  → Either Diagnostic (Threaded Matched)
-matched expected written checked = built <$> restOf checked.state expected
-  written
-  where
-  built rest =
-    { value:
-        { pattern: Checked.Pattern
-            { ty: expected
-            , span: written.span
-            , shape: Checked.Record (map fieldOf checked.value) rest
-            }
-        , locals: Array.concatMap localsOf checked.value <> restLocals rest
-        }
-    , state: checked.state
-    }
-  fieldOf field = { label: field.label, pattern: field.matched.pattern }
-  localsOf field = field.matched.locals
-
--- R005 design §3: a named rest is the matched record without the written
--- labels, its tail kept (the open rest, or the closed remainder, `{}`
--- when none is left). The record is the expected type as the fields'
--- checks left it, which holds every written label by then. Over several
--- tails it is a placeholder (Features.Check.SeveralTails).
-restOf
-  ∷ State → Ty Open → Written → Either Diagnostic Checked.Rest
-restOf state expected written = case written.rest of
-  Resolved.NoRest → Right Checked.NoRest
-  Resolved.IgnoredRest → Right Checked.IgnoredRest
-  Resolved.NamedRest id →
-    Checked.NamedRest id (remainder known)
-      <$ withinOneTail written.span state.subst known
-  where
-  known = resolved state.subst expected
-  remainder = case _ of
-    TRecord row → TRecord (withoutLabels (writtenLabels written) row)
-    other → other
-
--- A named rest is a binder of its arm.
-restLocals ∷ Checked.Rest → Array Typed
-restLocals = case _ of
-  Checked.NamedRest id ty → [ { id, ty } ]
-  Checked.NoRest → []
-  Checked.IgnoredRest → []
