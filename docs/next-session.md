@@ -1,3 +1,19 @@
+# Waxwing / record composition foundation: K7 statements (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Checker
+milestone accepted. No compiler code changed. Task 7 stays
+checkpointed (`r005b-task7-wip`).
+
+**Read.** Dossier §16 (K7 statements, optional K8, restrictions table,
+adversarial review).
+
+**Next, needs the author:** §16.4: approve K7a-K7c, the lifting lemma
+and K7; whether K8 (`¬ Accepts splitSig`) joins; the file plan. Then
+Lean. Not authorized: proofs before approval, adopting P9s, compiler
+changes.
+
+---
+
 # Waxwing / record composition foundation: verified certificate checker (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). P9s

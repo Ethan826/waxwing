@@ -7719,3 +7719,16 @@ assessment.md.
   duplicates vs overlapping compositions. Mutant without D2 in
   `checkAtom`: K4's proof breaks, and the broken-certificate `#guard`
   fails. Verify not run (docs, research and proofs only).
+
+## Signature checking: K7 statements (2026-10-20)
+
+- The author accepted the certificate-checker milestone (general
+  implication kernel-checked; the 49 acceptances are evaluator
+  `#guard`s). Dossier §16: statements for K7, no loss against
+  `Accepts` (`Accepts P ↔ ∃ T, checkAll P T = true` with K6), via
+  congruence (K7a), representation (K7b) and the checker's
+  completeness per atom (K7c); optional K8, `¬ Accepts splitSig`
+  (P9s's incompleteness in the model). Adversarial review: no false
+  statement; K7d dropped as unnecessary; a lifting lemma added; K8
+  proved by the reviewer in scratch (not in the repository). Nothing
+  proved in the repository; awaiting approval.
