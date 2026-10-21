@@ -92,4 +92,5 @@ import Composition.Typed.LiftCommute
 import Composition.Typed.Realize
 import Composition.Typed.Vacuity
 import Composition.Typed.Complete
+import Composition.Typed.BridgeDefs
 import Composition.TypedAttack.ShapeSplit
