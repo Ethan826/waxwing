@@ -7,17 +7,18 @@
 // joined coarsely); a group joins its variables and carries its labels.
 // Coarse joining only merges components, so the sliced counts are upper
 // bounds on what that slicing gives (a measurement, not a proved lemma).
+import { Components, consistentCount, log2Sum } from './counting.mjs';
 
-const kind = value => value?.constructor?.name;
+export const kind = value => value?.constructor?.name;
 
-const flexNode = (flex, row) => {
+export const flexNode = (flex, row) => {
   const index = flex.value0;
   if (kind(flex) === 'Rigid') return `${row ? 'R' : 'T'}${index}`;
   return `${row ? 'm' : 't'}${index}`;
 };
 
 // Every variable and record label inside a type, at any depth.
-const everything = (ty, into) => {
+export const everything = (ty, into) => {
   switch (kind(ty)) {
     case 'TVar': into.vars.add(flexNode(ty.value0, false)); break;
     case 'TRecord':
@@ -49,14 +50,14 @@ const everything = (ty, into) => {
 };
 
 // An effect row's label arguments may hold records; its tail does not.
-const effectRow = (row, into) => {
+export const effectRow = (row, into) => {
   for (const label of row.value0) labelArguments(label, into);
 };
 const labelArguments = (label, into) => {
   for (const argument of label.value1) everything(argument, into);
 };
 
-const fresh = () => ({ vars: new Set(), labels: new Set() });
+export const fresh = () => ({ vars: new Set(), labels: new Set() });
 
 // Groups of an equation: shapes met in step are cut apart; anything
 // else is one coarse group of both sides.
@@ -115,7 +116,7 @@ const recordLevel = (rows, groups) => {
 
 // The groups of one atom, each tagged D (the body's hypotheses: a fact
 // seeded on rigid tails) or B (everything else).
-const atomGroups = (atom, keysOf) => {
+export const atomGroups = (atom, keysOf) => {
   const groups = [];
   switch (atom.kind) {
     case 'eq': equation(atom.left, atom.right, groups); break;
@@ -142,47 +143,46 @@ const atomGroups = (atom, keysOf) => {
   return groups;
 };
 
-const isD = atom => atom.origin === 'seed' &&
+export const isD = atom => atom.origin === 'seed' &&
   (atom.kind === 'lacks' ? kind(atom.tail) === 'Rigid'
     : kind(atom.one) === 'Rigid' && kind(atom.other) === 'Rigid');
 
-// log2 of a sum of powers of two given by their exponents.
-const log2Sum = exponents => {
-  if (exponents.length === 0) return null;
-  const top = Math.max(...exponents);
-  return top + Math.log2(exponents.reduce((sum, e) => sum + 2 ** (e - top), 0));
+// The atoms counted: seeding passes every tail a table, empty when its
+// types imply none, and those are skipped; Chain.purs:49 and :60 apply
+// `predicateFor` twice per predicate and keep one, so the same Merge is
+// logged twice with the same result meta, and is kept once.
+export const keptAtoms = (atoms, keysOf) => {
+  const merges = new Set();
+  return atoms.filter(atom => {
+    if (atom.kind === 'lacks' && atom.table &&
+      keysOf(atom.table).length === 0) return false;
+    if (atom.kind !== 'merge') return true;
+    const key = atom.result.tails.map(tail => flexNode(tail, true)).join();
+    if (merges.has(key)) return false;
+    merges.add(key);
+    return true;
+  });
 };
 
-// For one label: how many subsets of the rigid rows `rows` hold it
-// consistently with D (no row lacking it, no two declared-disjoint rows).
-const consistentCount = (rows, label, lacks, disjoint) => {
-  const allowed = rows.filter(row => !lacks.get(row)?.has(label));
-  if (allowed.length > 20) return 2 ** allowed.length;
-  let count = 0;
-  for (let mask = 0; mask < 2 ** allowed.length; mask++) {
-    const chosen = allowed.filter((_, index) => mask & (1 << index));
-    const clash = chosen.some(one => chosen.some(other =>
-      one < other && disjoint.has(`${one}|${other}`)));
-    if (!clash) count++;
+// D as tables: the labels each rigid row lacks, and the pairs of rigid
+// rows declared disjoint (each pair sorted, joined by '|').
+export const hypotheses = (kept, keysOf) => {
+  const lacks = new Map();
+  const disjoint = new Set();
+  for (const atom of kept.filter(isD)) {
+    if (atom.kind === 'lacks') {
+      const node = flexNode(atom.tail, true);
+      if (!lacks.has(node)) lacks.set(node, new Set());
+      atomGroups(atom, keysOf)[0].labels
+        .forEach(label => lacks.get(node).add(label));
+    } else {
+      const pair =
+        [flexNode(atom.one, true), flexNode(atom.other, true)].sort();
+      disjoint.add(pair.join('|'));
+    }
   }
-  return count;
+  return { lacks, disjoint };
 };
-
-class Components {
-  constructor() { this.parent = new Map(); }
-  find(node) {
-    if (!this.parent.has(node)) this.parent.set(node, node);
-    const up = this.parent.get(node);
-    if (up === node) return node;
-    const top = this.find(up);
-    this.parent.set(node, top);
-    return top;
-  }
-  join(nodes) {
-    const [first, ...rest] = nodes;
-    for (const node of rest) this.parent.set(this.find(node), this.find(first));
-  }
-}
 
 export const measureFunction = (definition, atoms, keysOf) => {
   const sorts = definition.sorts.map(sort => kind(sort));
@@ -190,36 +190,14 @@ export const measureFunction = (definition, atoms, keysOf) => {
     sort === 'RecordSort' ? [`R${index}`] : []);
   const rigidTypes = sorts.filter(sort => sort === 'TypeSort').length;
   const groups = [];
-  const lacks = new Map();
-  const disjoint = new Set();
   const counts = { eq: 0, lacks: 0, apart: 0, merge: 0, D: 0 };
-  const merges = new Set();
-  for (const atom of atoms) {
-    // Seeding passes every tail a table, empty when its types imply none.
-    if (atom.kind === 'lacks' && atom.table &&
-      keysOf(atom.table).length === 0) continue;
-    // Chain.purs:49 and :60 apply `predicateFor` twice per predicate and
-    // keep one: the same Merge is logged twice, with the same result meta.
-    if (atom.kind === 'merge') {
-      const key = atom.result.tails.map(tail => flexNode(tail, true)).join();
-      if (merges.has(key)) continue;
-      merges.add(key);
-    }
+  const kept = keptAtoms(atoms, keysOf);
+  for (const atom of kept) {
     counts[atom.kind]++;
-    const made = atomGroups(atom, keysOf);
-    groups.push(...made);
-    if (!isD(atom)) continue;
-    counts.D++;
-    if (atom.kind === 'lacks') {
-      const node = flexNode(atom.tail, true);
-      if (!lacks.has(node)) lacks.set(node, new Set());
-      made[0].labels.forEach(label => lacks.get(node).add(label));
-    } else {
-      const pair =
-        [flexNode(atom.one, true), flexNode(atom.other, true)].sort();
-      disjoint.add(pair.join('|'));
-    }
+    groups.push(...atomGroups(atom, keysOf));
+    if (isD(atom)) counts.D++;
   }
+  const { lacks, disjoint } = hypotheses(kept, keysOf);
   const labels = new Set(groups.flatMap(group => [...group.labels]));
   const vars = new Set(groups.flatMap(group => [...group.vars]));
   const mentioned = [...vars].filter(node => node.startsWith('R'));

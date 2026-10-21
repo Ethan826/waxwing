@@ -13,11 +13,16 @@ const skipped = new Set(
   ['node_modules', '.git', '.claude', '.build', 'output', '.lake',
     '.history', '.spago']);
 
+// Stream 9's application-shaped programs are measured on their own
+// (apps/measure-apps.mjs), so they do not change this corpus.
+const ownPrograms = 'research/division-campaign/integration/apps';
+
 const walk = (root, directory, keep) => {
   const found = [];
   for (const name of readdirSync(directory)) {
     if (skipped.has(name)) continue;
     const path = join(directory, name);
+    if (relative(root, path) === ownPrograms) continue;
     if (statSync(path).isDirectory()) found.push(...walk(root, path, keep));
     else if (keep(name)) found.push(path);
   }
@@ -40,8 +45,10 @@ const fixtures = root =>
 const fenced = new RegExp('```(?:waxwing|wxw)\\n([\\s\\S]*?)```'
   + '|~~~(?:waxwing|wxw)\\n([\\s\\S]*?)~~~', 'g');
 
-// This stream's own documents quote the join it adds; they are skipped.
-const ownDocs = ['measurements.md', 'recorder-interface.md']
+// This stream's and stream 9's documents quote the join and the
+// application programs; they are skipped.
+const ownDocs = ['measurements.md', 'recorder-interface.md',
+  'app-measurements.md']
   .map(name => `research/division-campaign/integration/${name}`);
 
 const markdown = root => [

@@ -1,0 +1,49 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+    where r disjoint s =
+  { ...a, ...b };
+
+fn withPort(x: { ...r }, port: Int): { port: Int, ...r }
+    where r lacks { port } =
+  { ...x, port: port };
+
+fn withHost(x: { ...r }, host: Text): { host: Text, ...r }
+    where r lacks { host } =
+  { ...x, host: host };
+
+fn portOf(x: { port: Int, ...r }): Int = x.port;
+
+fn timeoutOf(x: { timeout: Int, ...r }): Int = x.timeout;
+
+fn nameOf(x: { name: Text, ...r }): Text = x.name;
+
+fn retried(x: { retries: Int, ...r }): { retries: Int, ...r } =
+  x { retries = x.retries + 1 };
+
+fn layered(
+  defaults: { timeout: Int, retries: Int, ...d },
+  site: { name: Text, region: Text, ...s },
+  user: { theme: Text, ...u },
+  secrets: { token: Text, key: Text, ...k }
+): { host: Text, port: Int, timeout: Int, retries: Int, name: Text,
+    region: Text, theme: Text, ...d, ...s, ...u }
+    where d disjoint s, d disjoint u, s disjoint u, k disjoint u,
+      d lacks { port, host, name, region, theme },
+      s lacks { port, host, timeout, retries, theme },
+      u lacks { port, host, timeout, retries, name, region },
+      k lacks { theme } = {
+  let base = join(defaults, site);
+  let all = join(base, user);
+  let ported = withPort(all, 8080);
+  let hosted = withHost(ported, nameOf(site));
+  let again = retried(hosted);
+  let limit = timeoutOf(again) + portOf(again);
+  let hidden = secrets without { token, key };
+  let private = join(hidden, user);
+  again
+};
+
+fn main(): Unit with Console = Console.print(layered(
+  { timeout: 30, retries: 2, verbose: false },
+  { name: "site", region: "eu", owner: "ops" },
+  { theme: "dark", lang: "en" },
+  { token: "t", key: "k", vault: 1 }));

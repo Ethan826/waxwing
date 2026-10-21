@@ -1,0 +1,59 @@
+fn nameOf(x: { name: Text, ...r }): Text = x.name;
+
+fn ageOf(x: { age: Int, ...r }): Int = x.age;
+
+fn rename(x: { name: Text, ...r }, n: Text): { name: Text, ...r } =
+  x { name = n };
+
+fn older(x: { age: Int, ...r }): { age: Int, ...r } = x { age = x.age + 1 };
+
+fn tag(x: { ...r }, t: Text): { tag: Text, ...r } where r lacks { tag } =
+  { ...x, tag: t };
+
+fn untag(x: { tag: Text, ...r }): { ...r } = x without { tag };
+
+fn greet(x: { name: Text, ...r }): Text = "hi ${nameOf(x)}";
+
+fn birthday(x: { name: Text, age: Int, ...r }):
+    { name: Text, age: Int, ...r } =
+  rename(older(x), greet(x));
+
+fn tagged(x: { name: Text, age: Int, ...r }):
+    { tag: Text, name: Text, age: Int, ...r }
+    where r lacks { tag } =
+  tag(birthday(x), nameOf(x));
+
+fn summary(x: { name: Text, age: Int, ...r }): { name: Text, years: Int } =
+  { name: nameOf(x), years: ageOf(x) };
+
+fn roundTrip(x: { name: Text, age: Int, ...r }):
+    { name: Text, age: Int, ...r }
+    where r lacks { tag } =
+  untag(tagged(x));
+
+fn pairUp(x: { name: Text, ...r }, y: { age: Int, ...s }):
+    { left: Text, right: Int } =
+  { left: nameOf(x), right: ageOf(y) };
+
+fn contact(x: { email: Text, ...r }): { email: Text, verified: Bool } =
+  { email: x.email, verified: false };
+
+fn process(
+  person: { name: Text, age: Int, email: Text, ...r },
+  account: { id: Int, age: Int, ...s }
+): { summary: { name: Text, years: Int }, pair: { left: Text, right: Int },
+    contact: { email: Text, verified: Bool }, id: Int }
+    where r lacks { tag } = {
+  let trip = roundTrip(person);
+  let pair = pairUp(trip, account);
+  {
+    summary: summary(birthday(trip)),
+    pair: pair,
+    contact: contact(person),
+    id: account.id
+  }
+};
+
+fn main(): Unit with Console = Console.print(process(
+  { name: "Ada", age: 36, email: "ada@example.org", city: "London" },
+  { id: 7, age: 2, plan: "pro" }));
