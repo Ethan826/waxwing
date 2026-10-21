@@ -30,7 +30,7 @@ def p6Sig : SigProblem Label B :=
     .disjoint 2 3,
     .eq (.record .nil [2, 3]) (.record .nil [0, 1])]⟩
 
-theorem p6Sig_valid : Valid (p6Sig : SigProblem Label B) := by
+theorem p6Sig_valid : ValidAll (p6Sig : SigProblem Label B) := by
   intro θR hd
   have hdis : Disjoint (θR.row 0) (θR.row 1) :=
     hd (.disjoint 0 1) (by simp [p6Sig])
@@ -62,7 +62,7 @@ def place (θR : Assign Label B) (i j : Nat) : Assign Label B :=
   ⟨θR.ty, fun r => if r = 2 then θR.row i else θR.row j⟩
 
 theorem depSig_valid (admin : Label) :
-    Valid (depSig admin : SigProblem Label B) := by
+    ValidAll (depSig admin : SigProblem Label B) := by
   intro θR hd
   have hdis : Disjoint (θR.row 0) (θR.row 1) :=
     hd (.disjoint 0 1) (by simp [depSig])

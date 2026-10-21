@@ -4,6 +4,7 @@ Axiom dependencies of every headline theorem. Run:
 -/
 import Composition.Programs
 import Composition.Sig.Adversarial
+import Composition.Sig.Soundness
 
 open Composition Composition.Programs Composition.Syntax
 
@@ -77,3 +78,14 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms wholeRest_fails
 #print axioms recSig_not_valid
 #print axioms recSig_hard_instance_solvable
+#print axioms hRow_disjoint
+#print axioms hRow_union
+#print axioms composeAll_hRow
+#print axioms hRow_genRow
+#print axioms combine_hAssign
+#print axioms interp_evalT
+#print axioms interp_fin
+#print axioms consistent_presenceOf
+#print axioms holds_interp
+#print axioms s1
+#print axioms s1_fin

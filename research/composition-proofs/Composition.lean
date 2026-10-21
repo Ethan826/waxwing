@@ -31,3 +31,9 @@ import Composition.Unify.Examples
 import Composition.Sig.Validity
 import Composition.Sig.Examples
 import Composition.Sig.Adversarial
+import Composition.Sig.Finite
+import Composition.Sig.Generic
+import Composition.Sig.Interp
+import Composition.Sig.Commute
+import Composition.Sig.FinitePres
+import Composition.Sig.Soundness
