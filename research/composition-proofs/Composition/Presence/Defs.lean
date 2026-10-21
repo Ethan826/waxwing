@@ -5,11 +5,12 @@ ONLY: each claim is a `Prop` definition, proved elsewhere (Presence/O1,
 O2, O3, D2). This file is the shared interface; changing it needs the
 author's review.
 
-Model. Labels are any type with decidable equality; label sets are
-predicates. Rigid and flexible set variables are numbered and assigned
-by functions `Nat → LSet Label`. Rows are finite: every quantified set
-is finite (`FinSet`). Written labels are the label constants and
-`lacks` labels of the problem. Atoms all say "something is empty".
+Model. Labels are any type (no decidable equality is assumed; the proofs
+are classical); label sets are predicates. Rigid and flexible set
+variables are numbered and assigned by functions `Nat → LSet Label`.
+Rows are finite: every quantified set is finite (`FinSet`). Written
+labels are the label constants and `lacks` labels of the problem. Atoms
+all say "something is empty".
 -/
 namespace Composition.Presence
 
@@ -72,7 +73,9 @@ def PAtom.flexFree : PAtom Label → Prop
   | .lacks _ a => a.flexFree
   | .eq a b => a.flexFree ∧ b.flexFree
 
-/-- `D` mentions rigid sets only. -/
+/-- `D` mentions rigid sets only. Not enforced by the semantics: `D` is
+always evaluated with no flexible set (`noFlex`), so a flexible variable
+in `D` reads as empty; O1 and O3 hold without this hypothesis. -/
 def Scoped (P : PProblem Label) : Prop := ∀ a ∈ P.D, a.flexFree
 
 def SExpr.labels : SExpr Label → List Label
