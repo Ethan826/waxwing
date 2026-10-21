@@ -1,8 +1,9 @@
 # Cell checker: first soundness tranche, parallel proof plan
 
 Authorized by the author in dossier §18.54, after a targeted re-review
-of the fixes in statements.md §10. Launch waits for that re-review; any
-statement it changes is fixed here before streams start. Statements
+of the fixes in statements.md §10. The re-review (§10.3) found nothing
+blocking and changed no statement; its N1 adds QX3's soundness
+direction to stream C as a lemma. Statements
 only change through the coordinator.
 
 ## Interface
@@ -30,7 +31,7 @@ Each stream: its own worktree from `main`, its own file
 |---|---|---|
 | A, instantiation | CI2 `CInstFin`, CI1 `PieceIsSubRow` | none |
 | B, syntax | CD1 `DupRefused`, CD4 `EqBothSides`, CB1 `BodyAll`, CB4 `EvalWf`, `cellCheck → certOkC` | none |
-| C, queries | CV2 `ImplSound`, CD2 `ApartSound`, CB3 `EqSound` | none (CD2, CB3 take `QSound` as their own premise) |
+| C, queries | CV2 `ImplSound` (with QX3's → and QX2's ← as lemmas), CD2 `ApartSound`, CB3 `EqSound` | none (CD2, CB3 take `QSound` as their own premise) |
 | D, coverage | CV1 `CoverFree`, CG `FragmentIff` | none |
 | E, evaluator | CI3 `EvalCommutes`, CD3 `EvalDefined` | CI1, CD1, CD2, CB3, CB4 |
 | F, assembly | CB2 `AtomSound`, CM `CellSound`, `CellOpen`, `CellOpenImpl` | CI2, CI3, CD3, CD4, CB1, CB3, CB4, CV1, CV2, CG, `cellCheck → certOkC`; B5 and the bridge as proved |

@@ -4759,3 +4759,14 @@ against the acceptance scenarios before any implementation plan.
 **Not authorized:** source translation or compiler integration. The
 paused worktrees and remote checkpoints are left alone unless cleanup
 is requested separately.
+
+### 18.55 Targeted re-review; proof streams launched (2026-10-21)
+
+statements.md §10.3. The fixes after §18.53's reviews are sound: no
+blocking finding, no reviewed definition changed, and `CellOpen`
+follows from CG, CV1 at `thetaFree`, CM and B5. Four non-blocking
+findings: N1, CV2 needs QX3's soundness direction, proved within the
+tranche as a lemma (QX3's ← stays deferred; no statement changed); N2,
+a misquote corrected; N3, stale wording; N4, `CellShapeNeeded` refutes
+CM-without-`CellShape` only together with `ScRoute`'s acceptance and
+CV2 (said in §4). Seven parallel proof streams per proof-plan.md.

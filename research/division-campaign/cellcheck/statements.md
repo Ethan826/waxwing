@@ -225,7 +225,10 @@ stays empty at `[1, 2]`. `D` still holds. Coverage holds because no
 instance has a label in cell `[1, 2]`. `WithinC` holds. But `route`'s
 certificate puts row 0's cell `[1, 2]` into `v` (cube `[(1, true)]`),
 and `v disjoint x` then fails at that cell. So CM without `CellShape`
-is false for this certificate. `thetaFree` has the shape (CV1), so
+is false for this certificate. `CellShapeNeeded` alone does not refute
+it: the refutation also needs the certificate's acceptance
+(`checkI routeP routeCert = true`, in `ScRoute`) and CV2 for `implQ`
+(re-review N4). `thetaFree` has the shape (CV1), so
 nothing is lost for CM-open.
 
 **CM-open** (`CellOpen`): `QSound P Q → cellCheck P Q σ = true →
@@ -399,8 +402,8 @@ What is known and what is not:
 ## 7. Reuse
 
 The author's rule governs this section: "the evaluator's shape is
-reusable, but its correctness theorem is not automatically
-target-independent". Each reused definition, and what changes:
+reusable; its correctness theorem is not automatically
+target-independent" (§18.51). Each reused definition, and what changes:
 
 | reused | from | what changes |
 |---|---|---|
@@ -510,7 +513,7 @@ Everything else reuses this repository's model.
 Two independent reviewers read the draft (commit 38fc009): one for
 soundness, one for completeness. Both worked read-only, with scratch
 Lean outside the repository. Neither met a tool denial. Their findings
-and the fixes follow. The fixes were not re-reviewed.
+and the fixes follow. The fixes were re-reviewed (§10.3).
 
 ### 10.1 Soundness reviewer
 
@@ -578,6 +581,33 @@ intended verdicts. Accepted: divide3 through `ofProjCert`, m = 0..3;
 declared split; `disjoint r r`; the pinwheel through `checkI`.
 Refused: star-cross, n = 2..5; `agreeP`; the four certificate-validation
 cases.
+
+### 10.3 Targeted re-review of the fixes (2026-10-21)
+
+Asked for by the author before the first proof tranche (§18.54). One
+reviewer, read-only, scratch Lean outside the repository; no tool
+denial. **Verdict: the fixes are sound, no blocking finding.** All of
+S1-S7 and C1-C14 resolved; C15 partly (a misquote, N2). No reviewed
+definition changed (the diff since 0af660e touches only the Cell files
+and the import list). `CellOpen` follows from what the tranche proves:
+CG, CV1 at `thetaFree`, CM, then B5, whose premise is available there.
+
+Scratch evidence (not repository proofs): `CellShape P (thetaFree P
+π)` for every `P` with no fragment premise; `FragmentIff`; CI1's first
+conjunct (using `WithinC`); `CellShapeNeeded`'s third and fourth
+conjuncts (failing at `disjoint 4 6`, cell `[1, 2]`); `ScRoute` in
+full at arbitrary `Label`, `B`; every scenario verdict as intended;
+`CheckTautology` on 969 cube lists; a presence oracle over every subset
+of free slots (a superset of the region), about 6,150 accepted
+certificates, 0 violations, discriminating (1,767 of 1,817 refused
+certificates fail somewhere).
+
+| # | finding | resolution |
+|---|---|---|
+| N1 | CV2 needs the soundness half of QX3 (`CoverExact`'s →), which §18.54 deferred with QX3 | that direction is proved inside the tranche (stream C, proof-plan.md) as a lemma; only QX3's ← stays deferred; no statement changed |
+| N2 | §7 misquoted the author | quote corrected |
+| N3 | "not re-reviewed" stale | this section |
+| N4 | `CellShapeNeeded` alone does not refute CM without `CellShape` | §4 says what else the refutation needs; statement unchanged |
 
 ## 11. Questions for the author
 

@@ -8151,3 +8151,6 @@ unrelated README/backlog/direction-plan edits remain untouched.
   conservative query soundness; coverage at `thetaFree`; CM, `CellOpen`,
   `CellOpenImpl`; with `route` and `CellShapeNeeded`. First a targeted
   re-review of §10's fixes. No source translation or integration.
+- Targeted re-review clean (dossier §18.55, statements.md §10.3); N1
+  puts QX3's soundness direction into stream C. Seven proof streams
+  launched in parallel worktrees (proof-plan.md).
