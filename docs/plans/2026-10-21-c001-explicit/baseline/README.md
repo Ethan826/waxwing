@@ -2,7 +2,8 @@
 
 Status: bounded exploratory results and current-behavior replay gate,
 2026-10-21. No compiler, solver or language-policy change. The class
-alternative and the four C001 decisions remain open.
+alternative is deferred. The [author rulings](../README.md) select ordinary
+records and hold the unknown-type rule open.
 
 Thirteen sources compile under the default Int stand-in. All sixty-three
 successful Go executions match their expected output across Int, Bool, Text,

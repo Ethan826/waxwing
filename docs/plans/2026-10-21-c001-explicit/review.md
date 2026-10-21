@@ -132,3 +132,31 @@ relative-link and probe line/width checks passed. Width checking caught long
 prose lines introduced during revision; reflow corrected them. No npm
 verification or Lean work ran. The rebase changed only this branch; shared
 source, research and tracking documents remain untouched.
+
+## Author ruling: prose catalogue before recording
+
+The author agreed to the four recommended rulings in this chat on
+2026-10-21 and asked that agreement be recorded.
+
+| Exact passage | Problem and reader cost | Correction |
+|---|---|---|
+| README: "The author must choose the representation before implementation planning." | Stale status makes the reader reconstruct an approved choice from chat | Record A as the chosen design direction and B as deferred |
+| README: "All type metas must be solved in this core" | A blanket condition would appear approved with the scope boundary | Separate the approved scope from the held unknown-type rule |
+| handoff: "Review the four decisions in README." | Gives the next reader a completed action | Link the recorded rulings and retain separate authorization for further work |
+| baseline README: "the four C001 decisions remain open" | Misstates the current status of evidence reviewed by the author | Link the partial approval and identify the remaining hold |
+
+Apply Humanizer and Garner by putting the rulings first, naming the author,
+and retaining the distinction between design approval and implementation
+permission. Historical review entries remain records of their own stage.
+
+### Ruling re-review and checks
+
+Re-read the revised README, handoff and status cross-references under
+Humanizer/Garner. The approved direction and the hold are stated first;
+examples and evidence retain their original qualifications. B remains a
+comparison, and the all-meta paragraph is explicitly unapproved. No new
+language rule, implementation or proof is claimed. No further prose
+findings remained. Width checking found long lines during revision;
+reflow corrected them. Final width, relative-link and whitespace checks
+passed. No npm verification, compiler rerun or Lean work was needed for
+this documentation-only ruling record.

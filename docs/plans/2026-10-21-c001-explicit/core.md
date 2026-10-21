@@ -1,8 +1,10 @@
 # Proposed core typing and dictionary elaboration
 
-Status: proposed rules, no implementation. `D(C, T)`, `evidence`, `project`,
-`forall` and angle-bracket type arguments below are metalanguage or proposed
-syntax. Choose source representation A or B in [README](README.md).
+Status: proposed rules, no implementation. The author selected A; B is
+retained for comparison. The all-meta restriction below is held open.
+`D(C, T)`, `evidence`, `project`, `forall` and angle-bracket type arguments
+below are metalanguage or proposed syntax. See the
+[author rulings](README.md) for the approved design boundary.
 [Sources](sources.md) distinguish published rules from adaptations.
 
 ## Fragment and environments
@@ -169,7 +171,9 @@ unused ordinary records with residual type holes. Those observations are
 consistent with existing handling, but do not establish harmless stand-in
 substitution. Its printing probes also show a stand-in-dependent
 specialization rejection. The rule above remains a proposed restriction
-pending the author's decision; the experiments settle no replacement rule.
+held open by the author; it is not an approved condition of the core. A
+follow-up must define permitted operations and admissible stand-ins; the
+experiments settle no replacement rule.
 
 ## Evaluation and specialization
 

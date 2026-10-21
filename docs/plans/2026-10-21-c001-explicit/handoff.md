@@ -3,12 +3,16 @@
 2026-10-21. Review branch `design/c001-explicit-evidence`, worktree
 `/private/tmp/waxwing-c001-design`, rebased onto `c341109` after the
 original `5a46e96` base. Only this tranche's files belong to its commits. No
-merge or push. No compiler changes, Lean work, language-policy adoption or
-resumed record-composition research.
+merge or push. The author approved the design direction recorded below. No
+compiler changes, Lean work or resumed record-composition research.
 
-Start with [README](README.md), whose four decisions are the requested
-author review. It compares ordinary operation records and dedicated class
-evidence without selecting either. The remaining artifacts provide:
+Start with the [author rulings](README.md): A is selected, the pure closed
+rank-1 scope is approved, and the unknown-type rule is held open. Retained
+collection policies with explicit rebuilding, runtime dictionary passing
+and the separate assurance gates are approved as design direction.
+Dedicated class evidence and structural reuse remain deferred. These
+rulings authorize no compiler implementation or new proofs. The remaining
+artifacts provide:
 
 - [Programs](programs.md): proposed sum/product/last, generic clients,
   fixed-field composition, returned captures, two same-typed evidence
@@ -30,9 +34,10 @@ evidence without selecting either. The remaining artifacts provide:
 ## Review-sensitive limits
 
 A record's phantom carrier can disappear; nominal evidence preserves that
-index. To avoid dictionary-origin tracking, the small annotated core rejects
-residual metas in all expressions/reference instantiations. This is a
-proposed conservative boundary, not a change to P001's existing
+index. The small annotated model proposed rejecting residual metas in all
+expressions/reference instantiations to avoid dictionary-origin tracking.
+The author held this conservative boundary open. It is not a change to P001's
+existing
 unconstrained-hole behavior. Written type vectors are illustrative ways to
 resolve otherwise unconstrained phantom instantiations.
 
@@ -85,21 +90,24 @@ new tranche files were staged/committed. Shared backlog, progress, handoff,
 provenance and direction files were not edited; coordinate with their owner
 before adding links or status updates there.
 
-## Next authorized action
+## Recorded ruling and remaining work
 
-Review the four decisions in README. Acceptance of this design would not
-itself authorize compiler implementation or new proofs. After the author
-chooses a representation and scope, write the required arguments and
-implementation/evidence plan under a separate authorization. Do not make
-that plan depend on unfinished record-solver internals.
+The author agreed to the four recommended rulings in this chat on
+2026-10-21 and asked that they be recorded. The remaining design question is
+the operation-specific ambiguity boundary: specify permitted operations
+and admissible stand-ins, accounting for h1/h2 printability. The blanket
+all-meta restriction is not adopted. Further design, implementation plans,
+compiler work and new proofs require separate authorization. Keep future
+work independent of unfinished record-solver internals.
 
 ## Author-review revision
 
 Replaced invented local `where fn` helpers with existing capturing lambdas;
 the expected types keep the enclosing signature's rigid variables in scope.
 A examples use ordinary colon-field records. B's nominal constructor is
-shown separately and remains unselected. Removed the unused `using` binder
-and lastFor's inference-only seed; decision 2 now concerns scope. Both probe
+shown separately; it was unselected at that revision and is now deferred.
+Removed the unused `using` binder and lastFor's inference-only seed; decision 2
+now concerns scope. Both probe
 counterexamples are labelled demonstrations.
 
 Read dossier §18.29-§18.31 and rebased this branch onto `c341109` without a
@@ -120,7 +128,8 @@ explicit choices and captures, challenge the all-meta restriction, and
 commit programs/report. The intervening scope clarification excluded
 compiler changes, shared documents, class machinery and record-solver work.
 That is the approval this handoff records; it is not acceptance of the four
-design decisions or any language-policy change.
+design decisions or any language-policy change at that stage. The later
+author rulings are recorded at the start of this handoff.
 
 The [report](baseline/README.md), [runner](baseline/run.mjs), fixtures and
 raw evidence stay within the tranche. Unchanged c341109 compiler sources
@@ -140,7 +149,7 @@ three original discarded/unused/phantom observations are acceptance evidence
 only. h1/h2 put an unknown element type under printing and reject the
 function stand-in during specialization. The separate uniformity gate exits
 1 on these known acceptance differences; no wrong runtime value or
-type-safety defect is shown. No ambiguity policy is adopted.
+type-safety defect is shown. No replacement ambiguity policy is adopted.
 
 The broader [effects-syntax finding](effects-syntax-usability.md) is now a
 separate note for the author, beyond CB002's local diagnostic entry. No
