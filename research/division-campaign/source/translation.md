@@ -523,9 +523,14 @@ answered forced for c21 and c22. A caller-side annotation counts as
 written when it actually determines the split (corrected 2026-10-21,
 §18.24 decision 1).
 
-## 6. Current compiler behaviour
+## 6. Compiler behaviour at the original stream base
 
-**F0, the tree does not build.** At b5647cc (tip of r005b-replan),
+Historical observation: the missing module was later restored in 2d175e3;
+§18.18 and the integration review record later checker probes. Keep the
+following predictions and observations at their original base distinct
+from those later runs.
+
+**F0, the stream-base tree does not build.** At b5647cc,
 `npm run build` fails with `ModuleNotFound Features.Check.SeveralTails`,
 imported by src/Features/Check/Removal.purs:14 and RestBinder.purs:15;
 commit 43b3a28 deleted the module. Restoring it in this worktree was

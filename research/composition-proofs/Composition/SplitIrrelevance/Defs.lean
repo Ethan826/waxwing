@@ -27,7 +27,8 @@ type at site `k`; `ann k e` is any other typed position (a lambda's
 parameter, a comparison's operand): `e` at run time, but its type at
 site `k` must be defined, and meet the site's requirement, at every
 key; `project k e` (excluded, E3) keeps the labels of the type at site
-`k`. -/
+`k`. An `ann` site for comparison represents the operand-type
+requirement only; the result of equality is not modeled. -/
 inductive Tm (Label : Type) where
   | var : Nat → Tm Label
   | num : Nat → Tm Label
@@ -206,10 +207,9 @@ def Accepted (P : Prog Label B) (θ : Assign Label B) (t : Tm Label) :
     Prop :=
   ∀ k θ', SiteAt P θ t k θ' → SiteOk P θ' k
 
-/-- The model counts every specialization-time requirement: (i) a key
-satisfying a declaration's interface makes its local sites defined and
-meet their requirements at the copy's local key, and (ii) every call's
-witness meets the callee's interface. -/
+/-- Coverage of modeled requirement sites: an interface-satisfying
+key meets local site requirements and every reached callee's interface.
+Caller body equations are not represented and are presupposed. -/
 def Covers (P : Prog Label B) : Prop :=
   ∀ f θ, P.Req f θ →
     (∀ k, LocalSite (P.body f) k → SiteOk P (P.loc f θ) k) ∧

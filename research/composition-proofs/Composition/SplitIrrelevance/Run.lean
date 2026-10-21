@@ -3,7 +3,8 @@ Run-time irrelevance (statements.md §4, R) for the reference evaluator:
 two splits of a projection-free program evaluate every projection-free
 term to the same result at every fuel. A sanity lemma about this
 semantics (review finding S4): the evaluator reads keys only at
-`project`. Compiled Go is not modeled (assumption A-go).
+`project`. Equality's runtime result is not represented. Compiled Go
+is not modeled (assumption A-go).
 -/
 import Composition.SplitIrrelevance.Defs
 

@@ -40,3 +40,14 @@ on this worktree's branch, in the "WIP checkpoint (paused)" commit.
 ## Exact next step
 
 Edit the Acceptance.lean comments listed in item 1.
+
+## Completed by Codex (2026-10-21)
+
+All listed Lean comment changes are applied. Non-comment text in the four
+edited files matches the prior revision after removing comments and
+whitespace. The full integrated Lean library builds (97 jobs), no warnings
+or errors; .build/codex-campaign-integrated-lean.log. The three stream
+prose documents were reread, and stream 5's old missing-module observation
+is now explicitly historical. No definitions, theorem statements or proof
+terms changed. Independent final review is pending; see
+codex-completion-prose-review.md.
