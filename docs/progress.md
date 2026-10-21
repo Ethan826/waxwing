@@ -8080,3 +8080,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   examples, B2/B2f/B2c/B2g/B2n and B3a/B3e/B3f proved and instantiated;
   option-B completeness for the equation-free and flat fragments holds
   with no open existence premise. F6 closed. Soundness track pending.
+- Completeness tranche independently reviewed (dossier §18.42): the
+  headline claim holds; `WithinC` and `ConstsInC` shown necessary for
+  the back map; wording fixes and audit additions applied. The general
+  composition with `d3bExistsWithin` goes through without W; it waits
+  for the soundness track.

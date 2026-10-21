@@ -41,3 +41,13 @@ import Composition
 #print axioms Composition.Typed.d3bCompleteOpen
 #print axioms Composition.Typed.d3bOpenCompleteEqFree
 #print axioms Composition.Typed.d3bOpenCompleteFlat
+#print axioms Composition.Typed.satSubstBase
+#print axioms Composition.Typed.shapeSplitSeparates
+#print axioms Composition.Typed.routeOpen
+#print axioms Composition.Typed.agreeOpen
+#print axioms Composition.Typed.closedBoundary
+#print axioms Composition.Typed.routeFreshOn
+#print axioms Composition.Typed.intArmOpen
+#print axioms Composition.Typed.intArmFreshOn
+#print axioms Composition.Typed.twoBaseInjective
+#print axioms Composition.Typed.openToFin
