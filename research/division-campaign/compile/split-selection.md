@@ -450,10 +450,15 @@ the last `src` commit (43b3a28, a refactor and a test count). Rebuild
 with `npm run build` to confirm.
 
 ~~~sh
-node run.mjs <repo>/output a.wxw a.go   # exit 0
-node run.mjs <repo>/output b.wxw b.go   # E_TYPE Expected a printable value, found { f: Int -> Int }
-node run.mjs <repo>/output c.wxw c.go   # E_TYPE Cannot tell how divide's u and v split { a: Int, b: Int }
-node run.mjs <repo>/output d.wxw d.go   # E_INTERNAL R005B placeholder: rows with several tails are lowered in Task 8
+# a: exit 0
+node run.mjs <repo>/output a.wxw a.go
+# b: E_TYPE Expected a printable value, found { f: Int -> Int }
+node run.mjs <repo>/output b.wxw b.go
+# c: E_TYPE Cannot tell how divide's u and v split { a: Int, b: Int }
+node run.mjs <repo>/output c.wxw c.go
+# d: E_INTERNAL R005B placeholder: rows with several tails are lowered
+# in Task 8
+node run.mjs <repo>/output d.wxw d.go
 ~~~
 
 `run.mjs` sets `process.argv` to `waxwing emit IN OUT` and calls

@@ -152,7 +152,8 @@ for (const p of problems) {
   }
   const count = regions.filter((g) => !isZero(g.b))
     .reduce((n, g) => n * g.permitted.length, 1);
-  console.log(`  outside every rigid row the empty vector is permitted: ${zeroOk}`);
+  console.log('  outside every rigid row the empty vector is permitted: ' +
+    `${zeroOk}`);
   for (const g of regions.filter((h) => !isZero(h.b))) {
     const show = g.permitted.map((s) =>
       p.flex.filter((_, j) => s[j]).join('+') || '-').join(' | ');
@@ -191,5 +192,6 @@ for (const m of splits) {
   const canon = perLabel.every(({ l, choices }) => choices[0] === m[l]);
   console.log(`  u = {${u.join(',')}} v = {${v.join(',')}}` +
     `${canon ? ' (canonical)' : ''}: whole's layout ${layout}, result "ok"; ` +
-    `print site at { ...u }: ${printable ? 'accepted' : 'E_TYPE not printable'}`);
+    `print site at { ...u }: ` +
+    `${printable ? 'accepted' : 'E_TYPE not printable'}`);
 }
