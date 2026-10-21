@@ -107,3 +107,8 @@
 'Composition.Syntax.SourceBoundary.exported_all_pass' depends on axioms: [propext, Quot.sound]
 'Composition.Syntax.SourceBoundary.routeSig_not_accepts' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Syntax.SourceBoundary.routeSig_validFin' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.o1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.o2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.o3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.d2_of' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.d2' depends on axioms: [propext, Classical.choice, Quot.sound]

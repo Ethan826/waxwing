@@ -53,3 +53,5 @@ import Composition.Presence.Defs
 import Composition.Presence.O1
 import Composition.Presence.O2
 import Composition.Presence.O3
+import Composition.Presence.D2
+import Composition.Presence.Main
