@@ -8091,3 +8091,9 @@ unrelated README/backlog/direction-plan edits remain untouched.
   the characterization `openCharacterization`. Independent integrated
   review of soundness and composition pending; executable procedure and
   source correspondence remain separate obligations.
+- Soundness and composition independently reviewed (dossier §18.45):
+  B5 right, the characterization holds; general option-B completeness
+  and the characterization can be stated as established for the
+  research model, with premises `Scoped`, `∃ z, FreshLabels` (infinite
+  labels), finite values. Coverage shown load-bearing. Two comment fixes
+  in fixed statement files await the author's approval.

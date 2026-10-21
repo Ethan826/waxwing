@@ -27,7 +27,9 @@ d3b/) were read, not edited.
 Status labels: **proved** (a Lean theorem, named); **derived** (argued
 here, not mechanized); **conjectured** (believed, argument incomplete);
 **checked** (executable evidence); **proposed** (a statement awaiting
-approval). Every statement in §3 is *proposed and unproved*. The
+approval). Every statement in §3 was *proposed and unproved* when
+written; for current status (E1-E6, B0, B2-B2n, B3a/B3e/B3f, B4f, B5
+and C proved; B1, B4, W, BS-c1/c2 not) see dossier §18.40-§18.45. The
 "sketch strength" column grades the argument offered, not a proof.
 
 History: a first draft was reviewed by two independent agents, one
