@@ -3940,3 +3940,46 @@ occupies cell `[0]`), `routeP_eta_not_generic`, `routeP_allowed_r`,
 check was false; forms changed only by generalising (`route` and
 `splitFree` for any `Label`, `B` with one label; π universally
 quantified) or strengthening (for every MGU, not just one).
+
+### 18.40 First bridge tranche: completeness side proved (2026-10-21)
+
+Proved in three parallel worktrees, integrated by the coordinator
+(four `Composition.lean` import conflicts kept both sides; clashing
+helper names in the freshness files renamed: `fin_mapG`, `fin_mapGO`,
+`basesWithin_mono`, `basesWithinO_mono`). Statement files unchanged.
+Clean build (147 jobs, no warnings); no `sorry`, `admit`,
+`native_decide` or axiom; standard axioms only (several E-lemmas use
+`propext` and `Quot.sound` only).
+
+- **E1-E6** (ProofExtension, ProofSat, ProofSupport, ProofSubstFacts):
+  `mapBaseId`, `satMapBase` (E2), `satSubstBase` (E2′, value-substitution
+  positivity, through one core lemma `evalT_subst`), `finSupport` (E3),
+  `mapBaseComp`, `mapBaseSyntax`, `mapBaseClift`; the §10.6 helpers.
+- **B0** `openToFin`. **Examples** N1 `shapeSplitSeparates`, N2
+  `routeOpen`, N2′ `agreeOpen`, N3 `closedBoundary` (refutes the finite
+  form, as stated), N4 `routeFreshOn`, N5 `intArmOpen`, N6
+  `intArmFreshOn`, N7 `twoBaseInjective`.
+- **Finite freshness** (ProofFresh*): B2c `freshGivesFreshOn`; B2f, B2,
+  B2g and B2n from E-hypotheses. B2's finite-extension round trip
+  inverts on θs's constants: the back map checks `U`'s images first, so
+  a collision of a fresh base with an unwritten base is harmless
+  (`backOn_e`, `backOn_j`, `up_dn_on`). B2n allocates explicitly into
+  `B ⊕ Fin n` (`allocIdx`: first occurrence in `U`, `n - 1` otherwise;
+  `allocIdx_inj` on distinct members); edge cases `U = []`, `n = 1`
+  over `Empty`; repeated constants; two written bases over `Bool`. Its
+  docstring states that `U.length < n` is sufficient, not optimal, and
+  the author's practical meaning and limits.
+- **B3a, B3e, B3f** (ProofComplete) from B2 and B2f; B3e and B3f use
+  `d3bEqFree`/`d3bFlat` for existence, every premise kept.
+- **Instantiated** (ProofInstantiate.lean, coordinator):
+  `d3bCompleteOn`, `constsFinite`, `completeOnGivesComplete`,
+  `d3bCompleteFinExt`, `d3bCompleteOpen`, and **`d3bOpenCompleteEqFree`,
+  `d3bOpenCompleteFlat`: option-B completeness for the equation-free and
+  flat fragments, with no open existence premise** (their scope,
+  label-freshness and fragment premises remain). Added to the audit.
+
+Observations from the proofs (not statement changes): B2 never uses
+`j`'s injectivity beyond the written bases, nor `GenericInst`'s coverage
+conjunct; B2g's `WithinC` premise is unused; B3a needs `ValidOpen` at a
+single extension, `B ⊕ CConst Label`. **Pending:** the option-B
+soundness track (BS-c1f, B4f, B5), separately reviewed.

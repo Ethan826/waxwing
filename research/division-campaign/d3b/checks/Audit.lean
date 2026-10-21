@@ -34,3 +34,10 @@ import Composition
 #print axioms Composition.Typed.agreeP_thetaStar_solvable
 #print axioms Composition.Typed.agreeP_thetaStar_exists
 #print axioms Composition.Typed.splitFree_thetaStar_unsolvable
+#print axioms Composition.Typed.d3bCompleteOn
+#print axioms Composition.Typed.constsFinite
+#print axioms Composition.Typed.completeOnGivesComplete
+#print axioms Composition.Typed.d3bCompleteFinExt
+#print axioms Composition.Typed.d3bCompleteOpen
+#print axioms Composition.Typed.d3bOpenCompleteEqFree
+#print axioms Composition.Typed.d3bOpenCompleteFlat
