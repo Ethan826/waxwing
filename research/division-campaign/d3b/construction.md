@@ -1,8 +1,10 @@
 # D3b: a generic instance per written-label pattern
 
 D3b stream of the campaign (dossier §18.13), reviewed 2026-10-21.
-Transfer, soundness, two restricted constructions and conditional
-completeness are proved. General generic-instance existence is open.
+Transfer, soundness, two restricted constructions, general existence
+of a generic instance (`d3bExists`) and its parts (`mguExists`,
+`cellIndependence`, `universality`) are proved. Completeness is proved
+only under `Fresh` (§7); existence does not settle completeness.
 
 Lean definitions: `Composition/Typed/Model.lean` and `Typed/Defs.lean`.
 Proofs: the other `Composition/Typed/` modules. Oracle checks: `run.mjs`
@@ -68,9 +70,9 @@ the rigid variables take their values from `θs`.
    of its compositions depend only on presence, which `τ` cannot change;
    `D`'s equations become first-order equations between finite terms
    (records are constructors with a fixed label set). This is ordinary
-   syntactic unification, Robinson 1965 (published; the term algebra
-   here has infinitely many record constructors, one per label set, which
-   the algorithm does not care about).
+   syntactic unification in the sense of Robinson 1965. §6.1 sets out
+   where this model departs from Robinson's term language; the theorem
+   used here is proved directly for this model (`robinson`).
 3. **Allowed cells.** Cell `S` is allowed when `D` is unifiable with `S`
    as the only cell (`Allowed`, `allowedCells`). A cell is refused when
    `D` declares two of its rows disjoint, when a composition in `D`
@@ -99,10 +101,9 @@ S` in every cell holding
   label (§5). Fields of rigid rows are never given structure the
   hypotheses do not force.
 - **θ*_π satisfies D** (requirement 3): it is a unifier by construction
-  (`IsMGU` includes `UnifiesD`). The proved
-  `instanceIffUnifiable` concerns the pre-instance with no cells.
-  Existence over all allowed cells still needs `CellIndependence` and
-  `MGUExists`; coverage still needs `Universality`.
+  (`IsMGU` includes `UnifiesD`). Existence over all allowed cells is
+  `cellIndependence`, the MGU is `mguExists`, and coverage is
+  `universality` (§6).
 - **Transfer** (requirement 4): §5 and §6.
 
 When no instance exists (`D` impossible in π: a cycle such as
@@ -159,45 +160,117 @@ witnesses `ValidFinIn P π`. Immediate from Transfer.
 **D3bValidAll**: solved generic instances for every pattern with an
 instance give `ValidAll P` (and `ValidFin P` with finite ones).
 
-## 6. Why θ*_π covers every instance (Universality, open)
+## 6. Why θ*_π covers every instance (Universality, proved)
 
-`Universality` remains a `Prop` definition, without a proof: for Scoped
-`P`, a pattern with an instance and an `IsMGU` over all allowed cells,
-`thetaStar` must be a `GenericInst` and satisfy `WithinC`. `WithinC`
-restricts `inl` labels and bases to those written in the problem, at
-every depth; it permits arbitrary cell labels and constants.
+`universality` proves `Universality`: for Scoped `P`, a pattern with an
+instance and any `IsMGU` `τ` over the allowed cells, `thetaStar P π τ`
+is a `GenericInst` and satisfies `WithinC`. `cellIndependence` and
+`mguExists` supply such a `τ`, so `d3bExists` proves `D3bExists`. None
+of these uses `Fresh`; each holds for every label type with decidable
+equality and every base type `B`. The reviewed five-step route was
+followed:
 
-The reviewed proof route has five obligations:
+1. **Occupied cells are allowed** (`occupied_allowed`, UnivOcc.lean).
+   Collapse an instance onto its written labels and one unwritten label
+   `k`, read as `k`'s cell `S`, at every depth (`up` with `srcK`). The
+   image is the singleton-cell pre-instance under a substitution and
+   satisfies `D`. Uses `Scoped`.
+2. **Cell locality** (`CS`, UnifCS.lean). A value is cell-shaped when
+   its `inl` labels are written, its bases are in `basesOf P`, every
+   `X r S` sits directly under `inr S` with `r ∈ S` and `S ∈ C`, and no
+   cell constant occurs elsewhere. The values of `D`'s sides at the
+   pre-instance are cell-shaped (`eval_cs`), and substitutions sending
+   non-cell constants to cell-shaped values and each `X r S` to some
+   `X r' S` keep the shape (`cs_subst`). The invariant is carried through
+   every elimination step, including occurrences inside bindings of `T`
+   and `A`, by the `Compat` part of `MguSpec`.
+3. **Cell independence and the MGU.** The disagreement step (`dis`)
+   finds, for two different cell-shaped values, a clash in the written
+   projection or in one single-cell projection (`pr`), a binding of a
+   non-cell constant, or a binding `X r S := X r' S` between constants
+   of one cell. `ci_core` runs Robinson's induction on projections:
+   a non-cell binding holds in every projection, a cell binding holds in
+   the projection onto its cell and leaves the others unchanged. With
+   presence handled label by label (`defOk_cells`), this gives
+   `cellIndependence`. `robinson` runs the same induction on the full
+   pairs and gives `mguExists` (§6.1).
+4. **Factoring the canonical valuation.** `robinson` returns a unifier
+   `μ` with `MguSpec`: besides `τ = τ ∘ μ` for every unifier `τ`, every
+   `hv` reading that satisfies `D`'s equations is a fixed point of `μ`
+   at the positions `hv` reads (`Agree`: non-cell constants at the top
+   context, `X r S` at unwritten labels of cell `S`). Unoccupied cells
+   are never read, so their bindings need nothing. For the statement's
+   arbitrary `IsMGU` `τ`, the MGU property gives `μ = τ'' ∘ τ`; `τ''`
+   is replaced by a finite substitution on the constants that matter,
+   and `hv ν0 ∘ τ''` is the covering valuation. No claim is made that
+   every MGU has `μ`'s syntactic form.
+5. **Conclusion components.** Finite rigid values (`RigidFinC`),
+   satisfaction of `D`, pattern agreement, finite-valued coverage and
+   `WithinC` (the problem's labels and bases pass back through
+   substitution, `within_of_subst`) are all proved in Universality.lean.
 
-1. Collapse an occupied unwritten label `k` to its cell `S`, retaining
-   written labels at every depth. Show that the resulting assignment is
-   a substituted singleton-cell pre-instance satisfying `D`, so `S` is
-   allowed. The label-reading maps in `Vacuity.lean` prove the empty-cell
-   case; the occupied-cell statement remains open.
-2. Show cell locality through unification. Initially, `X r S` occurs
-   directly under `inr S`; equations at those positions compare cell
-   constants for that cell. Prove that elimination and substitution
-   preserve this invariant, including occurrences nested inside bindings
-   of `T` and `A`. Initial positions alone do not prove the invariant.
-3. Derive simultaneous unifiability of all allowed cells from that
-   locality argument (`CellIndependence`). Then establish a finite MGU
-   in this term model (`MGUExists`). Robinson supplies the general
-   method; its application to these definitions is unproved.
-4. Factor the canonical valuation through the chosen MGU. For each
-   occupied label, prove that substitutions preserve the value read at
-   that label; account for unoccupied cells being dropped. `hv` is not
-   globally injective on records because it drops labels. A proof for a
-   normalized unifier must also justify the statement's arbitrary
-   `IsMGU`, rather than assume every MGU has the same syntactic form.
-5. Obtain equality on rigid types and rows, finite-valued coverage,
-   `RigidFinC`, satisfaction of `D`, pattern agreement and `WithinC`.
-   These are all components of the requested conclusion.
+`instanceIffUnifiable` (vacuity) remains as before. `HasInstance` is a
+premise of `Universality` but the proof does not use it: without an
+instance, coverage is vacuous.
 
-`instanceIffUnifiable` is proved for Scoped `P`: `HasInstance P π` iff
-`UnifiesD P π [] τ` for some `τ`. This settles vacuity, without proving
-simultaneous cells or an MGU. `Universality`, `CellIndependence` and
-`MGUExists` together would give `D3bExists`; that assembly and general
-existence remain unproved here.
+### 6.1 Correspondence with Robinson's unification theorem
+
+**Source.** J. A. Robinson, "A Machine-Oriented Logic Based on the
+Resolution Principle", J. ACM 12(1):23-41, 1965: the Unification
+Theorem, that the unification algorithm applied to a finite nonempty
+unifiable set of expressions terminates with a most general unifier.
+The section number was not checked against the paper.
+
+**What it applies to.** First-order terms built from variables and
+function symbols of fixed finite arity, as finite trees; equality is
+syntactic identity; a substitution replaces finitely many variables
+simultaneously by terms; the occurs check refuses to bind a variable to
+a term properly containing it.
+
+**Our representation.**
+
+| Robinson | Here | Holds as is? |
+|---|---|---|
+| variable | constant `cv c`, `c : CConst Label` (`T`, `A`, `X`) | yes |
+| constant symbol | base `inl b` | yes |
+| binary symbol | `arrow` | yes |
+| symbol with argument list | `record f`, one symbol per finite domain, arguments indexed by label | yes for finite records; see 1, 3 |
+| term | `CG Label B` value | no: see 1 |
+| substitution | `CSubst`, total, applied at every depth (`substG`) | see 4 |
+| unifier, MGU | `UnifiesD`, `IsMGU` | see 2 |
+| occurs check | `occurs_no_unifier` | proved directly, see 1 |
+| fresh variables | none introduced by either | yes |
+
+Departures and how they are handled:
+
+1. **Infinite values.** `CG` records are functions from labels, so a
+   value may branch infinitely; `IsMGU` quantifies over substitutions
+   with such values. Robinson's terms are finite. The proof uses only
+   constructor injectivity and disjointness and well-foundedness of
+   proper parts (`psub_acc`), all proved for `CG`, so infinite unifiers
+   are covered; the MGU itself has finite values (`FinG`).
+2. **Rows.** Rigid rows are not unification variables: the pre-instance
+   fixes each row's presence (written labels by π, cells by `C`). Row
+   composition is evaluated before unification; definedness, `lacks` and
+   `disjoint` are presence conditions no substitution changes
+   (`DefOk`, `unifiesD_iff`). What remains is a finite list of equations
+   between values (`eqPairs`). Flexible rows of the body do not occur.
+3. **Records modulo order.** A record is a function, so there is no
+   field order and no equality modulo permutation to handle. A record
+   symbol is identified by its label set, compared extensionally.
+4. **Substitutions.** `CSubst` is total; `robinson`'s result leaves
+   every constant outside the equations fixed. `IsMGU` asks for finite
+   values, not finite support.
+5. **Cells.** Cell labels are ordinary labels `inr S`; cell constants
+   are ordinary variables. No cell map enters unification. Cell locality
+   (`CS`) is an extra invariant needed for `cellIndependence` and
+   `universality`, not for `mguExists`.
+
+Because of 1, the published theorem is not applied as a black box.
+`robinson` (UnifMain.lean) reproves it for this model by induction on
+the number of constants, with the disagreement step `dis`. Its
+conclusion is stronger than most generality: every unifier `τ`
+satisfies `τ = τ ∘ μ` on every constant.
 
 ## 7. The converse (completeness of the reduction)
 
@@ -237,8 +310,14 @@ those equations to actual Waxwing semantics. The singleton
 `ShapeSplit` is an actual `SigProblem` and is now in the default build.
 See [the exact boundary](../finite-base-followup/README.md).
 
-A full validity reduction would still need general existence, these
-freshness premises and a justified finite call-site encoding for the
+`thetaStar_valid_iff_fresh` (Conditional.lean) combines the two halves
+with every premise shown: Scoped `P`, `HasInstance P π`, an `IsMGU` over
+the allowed cells, and `Fresh P z e`; it concludes `ValidIn P π ↔
+SolvableAt P (thetaStar P π τ)` and the finite version. Existence needs
+no `Fresh`; this equivalence does. Whether Waxwing's type universe
+supplies `Fresh` is not settled by any theorem here (dossier §18.27;
+the bridge statements are a separate stream). A full validity reduction
+would still need that and a justified finite call-site encoding for the
 chosen instance. There is no completed general decision procedure here.
 Realizing opaque constants as records changes what equations can inspect:
 `∀ α. ∃ u. α = { ...u }` holds at a record and fails at a base. That
@@ -278,19 +357,34 @@ transfer gives uniform witnesses in that wider sense only.
 
 ## 10. Lean statements and status
 
-| Lean | Meaning | Status |
-|---|---|---|
-| `Transfer` | a generic solution at θs maps by `hv` to a solution at every θR θs covers; finite if both are | proved: `transfer` |
-| `D3bSound` | generic instance + solvable at it ⇒ `ValidIn`; finite version | proved |
-| `D3bValidAll` | solved generic instances for all patterns ⇒ `ValidAll`, `ValidFin` | proved |
-| `D3bEqFree` | `thetaFree` is a generic instance for equation-free `D` | proved |
-| `D3bFlat` | `thetaFlat` is a semantic generic instance for flat `D` | proved: `d3bFlat` |
-| `InstanceIffUnifiable` | π has an instance ⇔ `D` unifiable with no cell | proved |
-| `D3bComplete` | with fresh labels and bases: `ValidIn` ⇒ solvable at θs | proved |
-| `Universality` | an mgu over the allowed cells gives a generic instance | open (§6 argument) |
-| `CellIndependence` | the allowed cells are unifiable together | open (§6 step 2) |
-| `MGUExists` | unifiable ⇒ a finite mgu exists | published (Robinson); not formalized here |
-| `D3bExists` | every pattern with an instance has a generic instance | open; would follow from the three above |
+Every theorem is for all `Label` with decidable equality and all `B`.
+"No freshness" means the premises shown are the only ones.
+
+| Lean | Premises (all of them) | Conclusion | Status |
+|---|---|---|---|
+| `Transfer` | `Covers P θs θR`; `σ` solves `(cliftP P).B` at `θs` | some `θF` solves `P.B` at `θR`; finite if `σ` and θR's rigid values are | proved: `transfer` |
+| `D3bSound` | `GenericInst P π θs` | `SolvableAt P θs → ValidIn P π`; `SolvableFinAt → ValidFinIn` | proved: `d3bSound` |
+| `D3bValidAll` | solved generic instances for every π with an instance | `ValidAll P`; finite version `ValidFin P` | proved: `d3bValidAll` |
+| `D3bEqFree` | Scoped `P`; `EqFree P`; `HasInstance P π` | `GenericInst P π (thetaFree P π)` ∧ `WithinC` | proved: `d3bEqFree` |
+| `D3bFlat` | Scoped `P`; `FlatD P`; `HasInstance P π` | `GenericInst P π (thetaFlat P π)` ∧ `WithinC` | proved: `d3bFlat` |
+| `InstanceIffUnifiable` | Scoped `P` | `HasInstance P π ↔ ∃ τ, UnifiesD P π [] τ` | proved: `instanceIffUnifiable` |
+| `MGUExists` | `∃ τ, UnifiesD P π C τ` (any `C`; no Scoped) | `∃ τ, IsMGU P π C τ` | proved: `mguExists` |
+| `CellIndependence` | Scoped `P`; `HasInstance P π` | `∃ τ, UnifiesD P π (allowedCells P π) τ` | proved: `cellIndependence` |
+| `Universality` | Scoped `P`; `HasInstance P π`; `IsMGU P π (allowedCells P π) τ` | `GenericInst P π (thetaStar P π τ)` ∧ `WithinC` | proved: `universality` |
+| `D3bExists` | Scoped `P`; `HasInstance P π` | `∃ θs, GenericInst P π θs` | proved: `d3bExists` |
+| `D3bComplete` | `Fresh P z e`; `WithinC P θs`; `GenericInst P π θs` | `ValidIn P π → SolvableAt P θs`; finite version | proved: `d3bComplete` |
+| (corollary) | Scoped `P`; `HasInstance P π`; `IsMGU` over allowed cells; `Fresh P z e` | `ValidIn P π ↔ SolvableAt P (thetaStar P π τ)`; finite version | proved: `thetaStar_valid_iff_fresh` |
+
+Supporting results: `robinson` (Robinson's theorem for finite
+cell-shaped pairs, with `MguSpec`), `ci_core` (unifiable projections
+give a unifier), `occupied_allowed`, `occurs_no_unifier`.
+
+`Fresh P z e` asks for an injection of every cell into labels outside
+`written P` and of every constant of `CConst Label`, infinitely many,
+into bases outside `basesOf P`. It is unavailable for finite `B`.
+The existence results above do not depend on it, so they hold whether
+the generic universe is closed per program or extensible; only the
+completeness rows depend on that choice, through `Fresh`.
 
 ## 11. Worked examples
 
@@ -343,12 +437,12 @@ the record of `s ⊎ t`; `B`: `{ f: { ...u, ...v } } = r`, `u = s`.
 |---|---|---|---|
 | one label per cell in θ* | atoms are positive and per label: they cannot count a cell's labels; `hv` expands one cell label into all of θR's labels there | `route`, `split` with two unwritten labels in one cell at different types | proved: `transfer`; bounded evidence below |
 | one constant per (row, cell), valued per label | `hv` values `X r S` at each label of the cell separately (context) | `contextFree` mutant (one value per constant) | targeted power check detects it (§15) |
-| cells allowed one at a time, then taken together | `D`'s constraints are per label; a cell's admissibility depends only on `D`'s skeleton (§6 step 2) | `CellIndependence` failures sought in every run | open; bounded: never failed |
+| cells allowed one at a time, then taken together | `D`'s constraints are per label; a cell's admissibility depends only on `D`'s skeleton (§6 step 2) | `CellIndependence` failures sought in every run | proved: `cellIndependence`; bounded: never failed |
 | hypotheses by unification (shared constants) | hypotheses identify fields; independent constants violate `D` | `noUnify` mutant on `agreement-hypothesis`, `shared-part-equal-rows`, `nested-agreement` | bounded: mutant puts θ* outside `D` (§13) |
 | constants are opaque bases, cells are labels outside `Label` | needed for completeness (no structure a solver could exploit); soundness does not care | realizing constants as records: `∀ α. ∃ u. α = { ...u }` | soundness proved; converse assumes `Fresh` (§7) |
 | `hv` drops unwritten `inl` labels and empty cells | dropping a label everywhere preserves positive atoms and definedness | solutions using spare labels | proved in transfer |
 | patterns fix only top-level written labels of rigid rows | everything deeper is inside an opaque constant or built from rows by `D` | written labels inside rigid values (`nested-same`, `tyvar-nested-rest`) | bounded: checked |
-| `D` Scoped | non-rigid variables in `D` would be read from θ* arbitrarily | — | assumed in Universality, D3bEqFree, D3bFlat, InstanceIffUnifiable |
+| `D` Scoped | non-rigid variables in `D` would be read from θ* arbitrarily | — | assumed in Universality, CellIndependence, D3bExists, D3bEqFree, D3bFlat, InstanceIffUnifiable; not in MGUExists |
 | fresh bases for the converse | constants must not be realizable by values the problem can decompose | finite bases (`Int`, `Bool` only) | `Fresh` unavailable for finite B; equation obstruction (§7) |
 
 ## 13. Oracle checks (bounded evidence, not proof)
@@ -368,8 +462,14 @@ values `D`'s row expressions build):
 - **covers**: `hv` with the canonical valuation maps θ*_π onto the
   instance (interp.mjs);
 - **verdict**: `B` at θ*_π (solve.mjs: exact for flat problems after
-  normalize.mjs's rewriting, bounded otherwise) against bounded
-  validity. D3b valid with bounded invalid would be a failure.
+  normalize.mjs's rewriting, and exact refusal when an equation's sides
+  clash at fields both are forced to have, clash.mjs; bounded
+  otherwise) against bounded validity. D3b valid with bounded invalid
+  would be a failure.
+
+Report mode (the default) prints and exits 0. `--assert` exits 1 on a
+named verdict that differs from its expectation or on any invariant
+failure; only an assert-mode exit status may be cited as a pass.
 
 Historical and new runs are distinguished in §15.
 
@@ -406,6 +506,42 @@ Items 1-4 expose variants of the construction or interpretation; the
 finite-base obstruction and completeness boundary are recorded in §7.
 
 ## 15. Results
+
+**Claude stream, 2026-10-21 (this checkpoint).** Same 2048 MiB heap
+cap and unchanged label/type/field bounds. The machine was shared with
+another agent's run, so wall times are upper bounds, not benchmarks.
+
+- Full named suite, assert mode, 3600-second limit:
+  `node --max-old-space-size=2048 run.mjs --assert 0 3` completed all
+  59 cases in 425.4 seconds: 36 valid/valid, 23 invalid/invalid, no
+  verdict mismatches, no invariant failures, exit 0
+  (`checks/named-full.log`). This supersedes the 180-second partial
+  prefixes below as the full named result. The full `contextFree`
+  mutant was not rerun.
+- `join3`, the case after `forwarded`, alone: 32.3 seconds
+  (`checks/profile-join3.log`).
+- `record-constant` is now `d3b invalid` by exact refusal (clash.mjs).
+  With the d7113d7 solve.mjs restored the same assert command exits 1
+  with `d3b unknown` (`checks/clash-old.log`, `checks/clash-new.log`).
+- Assert mode: a planted expectation mismatch exits 1, report mode 0;
+  the `contextFree` mutant on four targeted cases exits 1 with three
+  `covers` failures (`checks/assert-*.log`, `checks/report-planted.log`).
+- Generated problems, assert mode, 120 each: seed 3 in 292.3 seconds
+  (70 valid/valid, 50 invalid/invalid), seed 11 in 111.1 seconds
+  (84 valid/valid, 36 invalid/invalid); no invariant failures, exit 0.
+  Generated problems carry no expectation, so assert mode checks only
+  invariants and soundness against bounded validity there
+  (`checks/generated-3.log`, `checks/generated-11.log`).
+- Lean: `lake build` passed with 127 jobs and no warnings
+  (`checks/lake-build.log`, an incremental build). `checks/Audit.lean`
+  now lists 23 results, including `mguExists`, `cellIndependence`,
+  `universality`, `d3bExists`, `robinson`, `ci_core` and
+  `thetaStar_valid_iff_fresh`; every one depends only on `propext`,
+  `Classical.choice` and `Quot.sound` (`checks/axioms.log`). No
+  `sorry`, `admit`, declared axiom or `native_decide` in the new files.
+
+Earlier evidence follows.
+
 
 Historical checkpoint evidence (RESUME.md; not rerun in full here):
 58 named problems, 36 valid and 22 invalid, no failures; 120 generated
@@ -476,13 +612,16 @@ documentation only, as authorized.
 
 ## 16. Review scope and remaining work
 
+The proofs of `mguExists`, `cellIndependence`, `universality` and
+`d3bExists` in this checkpoint have not yet had an independent review;
+the statements were reviewed before the attempt and are unchanged.
 The two previous adversarial passes and the separate flat-fragment pass
 reported no false or vacuous theorem. Their proof-route requests are in
 §6; the label-reading correction and exact freshness premises are in §7.
 The flat constructor's comment already avoids claiming agreement with
 MGU classes. The documentation review found stale proof status and an
 unsupported weakening of `Fresh` to the used constants; those claims are
-corrected here. No new proof of general existence is claimed.
+corrected here.
 
 Suggested next statements remain unproved: P9s no-loss,
 `Accepts P → HasInstance P π → SolvableFinAt P (thetaStar P π τ)`
