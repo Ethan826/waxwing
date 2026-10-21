@@ -7870,3 +7870,8 @@ assessment.md.
   irrelevance for the reference evaluator, and acceptance irrelevance
   conditional on the recorder establishing `Covers`. A disagreement with
   stream 5 is under review.
+- The author's review of §18.21 (dossier §18.22): inference stays a goal
+  (requirements represented in interfaces, possibly inferred); specialization
+  checks become internal only once the invariant is established; R010
+  stays, validity and admissibility kept separate; the narrowed result
+  accepted about its model, pending review corrections.
