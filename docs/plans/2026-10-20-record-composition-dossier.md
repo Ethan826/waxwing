@@ -1581,3 +1581,114 @@ the oracle (which stays untrusted), completeness, the policy for
 Unresolved signatures, source-to-constraint translation, compiler
 integration. This milestone gives a checked guarantee for supplied
 certificates; it adopts nothing.
+
+**Accepted** (the author's review, 2026-10-20). The guarantee: for any
+supplied certificate table, if `checkAll` returns true, the modeled
+signature is valid, with finite witnesses for finite callers. The
+search may be buggy or incomplete without weakening it. Qualification
+kept: the general implication is kernel-checked; the 49 individual
+acceptances are `#guard`s, run by Lean's evaluator. No compiler
+adoption or integration follows.
+
+## 16. K7, no loss against `Accepts`: statements first
+
+Proposed by the author (2026-10-20) as the next bounded milestone:
+whether every semantic certificate can be replaced by a finite
+syntactic one that `checkAll` accepts. Statements for approval; nothing
+proved. K7 would close the gap between §14's semantic acceptance rule
+and §15's executable representation. It would not make P9s complete
+for valid signatures: `split` is valid and the search finds no
+certificate for it. Whether `Accepts splitSig` fails is not proved
+(`wholeRest_fails`, §13.7, is about ground placements, not about
+`Accepts`); see the optional K8 below.
+
+### 16.1 Statements (proposed; none proved)
+
+- **K7a, congruence.** `HoldsG P Γ a` depends only on the type and row
+  variables `a` mentions: if `Γ` and `Γ'` agree on them, `HoldsG P Γ a
+  ↔ HoldsG P Γ' a`. (D2 reads `Γ.row x` and `Γ.row y` only, so the
+  variables of the `disjoint` atom suffice; the equation case uses
+  `evalT_congr`, Closed.lean.)
+- **K7b, representation.** Every finite generic value is a denotation:
+  `FinG g → ∃ s, den s = g`; and every row `f` with
+  `FinG (.record f)` is `denRow fs` for some list `fs`.
+- **K7c, the checker is complete for one atom.** The converse of
+  `checkAtom_sound`: `HoldsG P (genAssign P (patternOf p) (denCert C))
+  a → checkAtom P p C a = true`. (Argument: K3 is an equation, and K2's
+  three decisions are equivalences.)
+- **K7d, dropped after review.** It said `checkCert` reads a pattern
+  only as a set. True, but not needed: if `lookupCert` returns an entry
+  stored under `q` with the same pairs as `p`, then `patternOf q =
+  patternOf p` as functions, so that entry's certificate already
+  certifies `patternOf p`, and K7c applies at `p` directly.
+- **Lifting keeps variables** (a small lemma K7 needs):
+  `atomTyVars (liftAtom a) = atomTyVars a`, and likewise for row
+  variables.
+- **K7, no loss.** `Accepts P → ∃ T, checkAll P T = true`. With K6:
+  `Accepts P ↔ ∃ T, checkAll P T = true`.
+
+Argument to formalize for K7: for each consistent finite pattern `p`,
+`Accepts` gives a certificate `σ` for `patternOf p`; K7b represents
+`σ`'s values at the finitely many variables of `B` as a syntactic
+certificate `C`; `denCert C` agrees with `σ` on those variables (other
+variables denote `{}`), so by K7a the generic atoms still hold, and by
+K7c `checkCert P p C = true`. The table lists one such entry per
+consistent pattern; whichever entry `lookupCert` finds has the same
+pairs, hence the same `patternOf`. Repeated pairs are the ordinary case
+(`written P` repeats a label whenever it is written twice), not an edge
+case.
+
+What K7 does not give: a way to compute `T` (it is an existence
+statement over semantic certificates), any claim that the oracle's
+bounded search finds `T`, or completeness of P9s.
+
+### 16.2 Restrictions table, completeness pass
+
+The direction is reversed from §15.4: the question is whether the
+syntactic side loses any semantic certificate.
+
+| Restriction of the syntax | Believed harmless because | Challenge | Status |
+|---|---|---|---|
+| finitely many bindings, the rest `{}` | `B` mentions finitely many variables (K7a) | a semantic certificate binding every variable to a non-empty value (§15.6's review) | K7a |
+| records are finite lists | `Certifies` requires `FinAssign`: every row finite at every depth | a value finite at the top with an infinite nested row: excluded by `FinG`'s depth | K7b |
+| base types and constants as `GB` | `SG.base` takes any `GB` | none | definitional |
+| patterns looked up by set | an entry with the same pairs has the same `patternOf` | two sublists with the same pairs in `patterns P` (routine: any label written twice) | by `patternOf`'s definition |
+| `DecidableEq B` | needed only to run the checker | none for existence | assumption |
+
+Distinguishing example for K7 (to check after proof): a problem
+writing a label twice, so `patterns P` holds lists with the same pairs,
+and a table built from semantic certificates passes.
+
+### 16.3 Optional: K8, P9s's incompleteness in the formal model
+
+- **K8** (statement only, offered, not proposed by default):
+  `¬ Accepts splitSig` while `ValidAll splitSig` (proved,
+  `splitSig_valid`). It would show, in the model rather than in the
+  bounded oracle, that `Accepts` is strictly stronger than validity,
+  so the incompleteness §13.7 found is a property of P9s's acceptance
+  rule and not only of the oracle's search. Argument: no label is
+  written, so every pattern gives the same generic assignment; the
+  equation makes `u ⊎ v` equal `r`'s generic row `{ inr 0: R(0) }`
+  (which also excludes arbitrary generic labels in `u` or `v`, W1 not
+  needed), so exactly one of them holds `inr 0`; D2 then needs
+  `Declared 0 1` or `Declared 0 2`, and `D` declares neither. The
+  adversarial reviewer proved this in a scratch Lean file (about 45
+  lines, no `sorry`); it is not in the repository and waits for your
+  decision.
+
+### 16.4 For the author
+
+1. Approve or amend K7a-K7c, the lifting lemma, and K7.
+2. Whether K8 joins this milestone.
+3. Proposed files: Sig/Congr.lean (K7a), Sig/Represent.lean (K7b),
+   Sig/Complete.lean (K7c, K7), and Sig/SplitNotAccepted.lean if K8
+   is included.
+
+**Adversarial review** (independent reviewer, 2026-10-20): no false
+statement. K7d's stated role was wrong (it is not needed; dropped). The
+lifting lemma was missing (added). Confirmed by hand: K7a (D2 reads
+only the atom's two rows), K7b (classically, filtering the `FinRow`
+list to present labels), K7c for all four atoms (the equation case's
+`wfS` on one side suffices, since both sides denote the same value),
+K7's argument (`consistentS_iff` gives each pattern's consistency
+directly; `pattern_cover` is not needed). K8 proved in scratch Lean.
