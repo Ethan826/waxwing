@@ -107,14 +107,19 @@ def substAssign (s : B → G Label B') (θ : Assign Label B) :
     Assign Label B' :=
   ⟨fun n => substBase s (θ.ty n), fun r k => substBaseO s (θ.row r k)⟩
 
-/-- E2′. Positivity for value substitutions: replacing bases by values
-preserves satisfaction of `P`'s atoms, provided every written base `b`
-becomes the base `f b`. -/
+/-- E2′. Positivity for value substitutions: for `P`'s atoms renamed
+along `g`, replacing bases by values preserves satisfaction, provided
+every written base's image `g b` becomes the base `h b`. Both maps start
+at `P`'s bases, so no map back into a possibly empty type is needed:
+`g = j`, `h = id` maps an extension back to `B` (B4f, B5); `g = id` is
+the one-map form (second review, §10). -/
 def SatSubstBase : Prop :=
-  ∀ (P : SigProblem Label B) (B₁ : Type) (f : B → B₁)
-    (s : B → G Label B₁) (θ : Assign Label B) (C : Problem Label B),
-    (∀ b ∈ basesOf P, s b = .base (f b)) → (∀ a ∈ C, a ∈ P.D ++ P.B) →
-    Sat θ C → Sat (substAssign s θ) (C.map (mapBaseAtom f))
+  ∀ (P : SigProblem Label B) (B₁ B₂ : Type) (g : B → B₁) (h : B → B₂)
+    (s : B₁ → G Label B₂) (θ : Assign Label B₁) (C : Problem Label B),
+    (∀ b ∈ basesOf P, s (g b) = .base (h b)) →
+    (∀ a ∈ C, a ∈ P.D ++ P.B) →
+    Sat θ (C.map (mapBaseAtom g)) →
+      Sat (substAssign s θ) (C.map (mapBaseAtom h))
 
 /-- E4. Renamings compose. -/
 def MapBaseComp : Prop :=

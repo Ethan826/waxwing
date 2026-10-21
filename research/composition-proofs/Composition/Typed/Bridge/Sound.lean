@@ -1,6 +1,6 @@
 /-
 The P-1 bridge, statements only: soundness under option B (B4f, B4,
-B5) and the equivariance statements BS-c1 and BS-c2.
+B5) and two renaming properties (BS-c1, BS-c1f, BS-c2).
 -/
 import Composition.Typed.Bridge.Valid
 import Composition.Typed.Defs
@@ -36,7 +36,14 @@ def D3bSoundOpen : Prop :=
     (∀ π, HasInstance P π → ∃ θs, GenericInst P π θs ∧ SolvableFinAt P θs) →
     ValidOpen P
 
-/-! ### Equivariance: checking is stable under extension -/
+/-! ### Two renaming properties (not whole-checker stability) -/
+
+/-- BS-c1f. The forward half of BS-c1, without injectivity: what B5's
+argument uses. Second review, §10. -/
+def SolvableMapBaseFwd : Prop :=
+  ∀ (P : SigProblem Label B) (θs : CAssign Label B) (B₁ : Type)
+    (j : B → B₁),
+    SolvableFinAt P θs → SolvableFinAt (P.mapBase j) (mapC j θs)
 
 /-- BS-c1. Solvability at a generic instance survives renaming. -/
 def SolvableMapBase : Prop :=

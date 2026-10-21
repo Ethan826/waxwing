@@ -53,14 +53,16 @@ def D3bOpenCompleteAt : Prop :=
     ValidOpen P → ∀ π, HasInstance P π →
       ∃ θs, GenericInst P π θs ∧ WithinC P θs ∧ SolvableFinAt P θs
 
-/-- B3e. Unconditional on the equation-free fragment (existence there is
-`d3bEqFree`, proved). -/
+/-- B3e. On the equation-free fragment, with no open existence premise
+(existence there is `d3bEqFree`, proved); the scope, label-freshness
+and fragment premises remain. -/
 def D3bOpenCompleteEqFree : Prop :=
   ∀ P : SigProblem Label B, Scoped P → EqFree P →
     (∃ z, FreshLabels P z) → ValidOpen P → ∀ π, HasInstance P π →
       SolvableFinAt P (thetaFree P π)
 
-/-- B3f. Unconditional on the flat fragment (`d3bFlat`, proved). -/
+/-- B3f. The same on the flat fragment (`d3bFlat`, proved); scope,
+label-freshness and fragment premises remain. -/
 def D3bOpenCompleteFlat : Prop :=
   ∀ P : SigProblem Label B, Scoped P → FlatD P →
     (∃ z, FreshLabels P z) → ValidOpen P → ∀ π, HasInstance P π →

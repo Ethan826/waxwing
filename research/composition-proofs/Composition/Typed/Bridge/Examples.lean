@@ -74,4 +74,17 @@ def IntArmFreshOn : Prop :=
     WithinC (intArmP b) (thetaFree (intArmP b) π) ∧
     GenericInst (intArmP b) π (thetaFree (intArmP b) π)
 
+/-- Two written bases, both required of α. With injective extensions
+`D` is unsatisfiable; identifying the bases makes it satisfiable while
+the body `ff` stays false. -/
+def twoBaseP (b₁ b₂ : B) : SigProblem Nat B :=
+  ⟨[0], [], [.eq (.tvar 0) (.base b₁), .eq (.tvar 0) (.base b₂)], [.ff]⟩
+
+/-- N7. Why extensions are injective (§1): a non-injective map changes
+`D`'s satisfiability. Second review, §10. -/
+def TwoBaseInjective : Prop :=
+  ∀ b₁ b₂ : B, b₁ ≠ b₂ →
+    ValidOpen (twoBaseP b₁ b₂) ∧
+      ¬ ValidFin ((twoBaseP b₁ b₂).mapBase (fun _ => ()))
+
 end Composition.Typed
