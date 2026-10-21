@@ -7905,3 +7905,22 @@ assessment.md.
   claims. **Paused** for the usage limit: six streams checkpointing on
   their worktree branches (list in §18.26); a quiet-machine verify is
   still owed (BACKLOG R005B-BUILD).
+- Paused checkpoints (worktree branches `worktree-agent-<id>`; integrate
+  through the coordinator, then resume each from its RESUME note):
+  - D3b (aa6be01…): 6e8bd62, 57265e9 proved (`transfer`, `d3bSound`,
+    `d3bEqFree`, `d3bFlat`, `d3bComplete` with fresh base types); 410be66
+    RESUME.md. Open: general `D3bExists`; completeness with finitely many
+    base types; construction.md stale.
+  - D3a attack (a521d0…): 56aa801 (frozen), fcea952, 1865f41, 9c3b9b7.
+    **Separation with one base type** (`shape-split`, Lean
+    TypedAttack/ShapeSplit.lean, not yet imported); grammar G-A gaps
+    (depth, tail-node written fields); runs R3, R4 unfinished.
+  - Typed oracle (a7fa161…): f61726e freeze, 0fea334, c2b7085, 94d6a33.
+    Confirmation run: 75 named + 240 generated agree, no separation
+    (two base types, consistent with `shape-split`); results.md unwritten.
+  - Slicing (a03f084…): eee61d8 statements and hunt (nine naive-slicing
+    breakers; 7b's measured cut unsound on a ground group); §18.26 items
+    not yet written.
+  - Corrections (a8a3cab…): 9b55cf3, documents done; Lean comments left.
+  - Recorder spec (ae79b80…): e7ce17a, 60 rows drafted, counts and
+    citations unverified.
