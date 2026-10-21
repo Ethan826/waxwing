@@ -3143,3 +3143,50 @@ enumerator with its lemma as a proposed statement; whether `star` must
 be supported at scale, and by which approach; whether a ported real
 program is needed before planning; whether measurements wait for
 several-tail lowering.
+
+### 18.26 The author's review of §18.25 (2026-10-21)
+
+1. **S1 is stated over the residual constraints after a validated
+   substitution, with a separate theorem connecting them to the original
+   problem.** The chain: original recorded constraints; substitution
+   with its binding equations retained; residual constraints;
+   independent slices whose combined solutions preserve the residual
+   problem. For signatures the rigid/flexible distinction and the
+   quantifiers are preserved: a substitution for one concrete instance
+   cannot justify discarding other permitted rigid assignments. The
+   binding-correspondence work (§10.2) may apply; that must be
+   established. "After substitution" must not be circular: identify what
+   the existing solver resolves cheaply before the expensive signature
+   procedure.
+2. **`star` is supported at useful scale** and kept as an explicit
+   acceptance benchmark. Polynomial worst case is not required; avoiding
+   eager enumeration on routine cases, measured resource limits and
+   honest failure are. Investigate declaration-consistent patterns,
+   symbolic representations or other established techniques before
+   inventing machinery.
+3. **A ported real program** (small, coherent: shared context,
+   independent helpers, nested records) is required before production
+   performance claims or completing implementation; it does not block a
+   research or design plan.
+
+**Architectural qualification:** search plus certificates does not by
+itself solve signature scalability. Concrete call-site bindings are cheap
+to check; the signature checker still needs coverage of all relevant
+patterns, and a larger certificate table only relocates the exponential
+cost.
+
+**Authorized for the slicing stream (statements and design proposals
+only; new proof scopes need review):** the post-substitution theorem and
+its preservation dependency; a declaration-consistent-pattern
+enumerator with a completeness statement; measurements of search cost,
+certificate size and checking cost separately. Exhaustive enumeration
+stays the reference baseline. The measurements justify refining the
+architecture, not narrowing the language around the current algorithm.
+
+**Paused 2026-10-21** (usage limit): every running stream was told to
+commit a "WIP checkpoint (paused)" on its worktree branch and write a
+resume note. Not yet integrated: stream 1 (D3b), stream 2 (D3a attack),
+stream 4 (typed oracle), stream 10 (slicing), the in-place corrections
+(§18.24), the reconciled recorder specification. To resume: integrate
+each branch's checkpoint through the coordinator, then send each stream
+its resume note.

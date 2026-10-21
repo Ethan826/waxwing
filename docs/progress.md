@@ -7899,3 +7899,9 @@ assessment.md.
   shared-constraint shapes are not helped by any slicing (`star`
   unreduced). Supports search plus certificate checking; exhaustive
   enumeration only as a bounded reference.
+- The author's review of §18.25 (dossier §18.26): S1 after a validated
+  substitution with a connecting theorem; `star` supported at scale as an
+  acceptance benchmark; a ported program before production performance
+  claims. **Paused** for the usage limit: six streams checkpointing on
+  their worktree branches (list in §18.26); a quiet-machine verify is
+  still owed (BACKLOG R005B-BUILD).
