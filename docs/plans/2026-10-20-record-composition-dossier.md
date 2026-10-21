@@ -3474,3 +3474,78 @@ completeness boundary. The bridge needs statements and review first.
 **Authorized:** recording this direction; proposing the bridge
 statements. **Not authorized:** typed completeness as a claim, new class
 machinery, compiler integration.
+
+### 18.32 Bridge statements for option B (P-1, P-3): for review (2026-10-21)
+
+research/division-campaign/bridge/statements.md; Lean
+Composition/Typed/BridgeDefs.lean (`def … : Prop` only: no theorem, no
+`sorry`, no axiom; imported; `lake build` 105 jobs). **Nothing proved.**
+No existing definition or statement changed.
+
+**Definitions.** An extension is an injective `j : B → B₁` renaming
+bases at every depth (`mapBase`, `mapG`, `mapAssign`, `mapC`); labels,
+variables, rigid lists, atom shapes, arrows and records unchanged;
+written base constants keep their identity, so `j` is injective;
+unwritten bases are atoms. **`ValidOpen P`** (the proposed formal
+reading of option B): `ValidFin (P.mapBase i)` for every injective `i`.
+`ValidAtoms P`: `ValidFin` at `B ⊕ Nat`. New premises: `FreshLabels`
+(the label half of `Fresh`, verbatim); `FreshBasesOn P j U e`;
+`ConstsInC P U θs`.
+
+**Statements (proposed, unproved).** E1-E6 building blocks (identity,
+positivity of base renaming and substitution, finitely many bases per
+finite value, composition, preservation of `written`/`Scoped`); B0
+`ValidOpen → ValidFin`; B1 `ValidAtoms ↔ ValidOpen` (one direction
+immediate, the converse argued); BS and BS-c1/c2, stability under
+injective extension, for validity and for the checker (the author's
+"stable under unrelated additions"); **B2 `D3bCompleteOn`**,
+`d3bComplete` with `Fresh`'s base half replaced by finite freshness on
+the constants θ*_π uses (B2f a finite `U` exists; B2g recovers
+`D3bComplete`); B3a (generic instance within symbols and `ValidOpen`
+give solvability, no existence premise); W, trimming any generic
+instance to the problem's symbols; B3 `BridgeComposition`
+(`D3bExists → D3bOpenComplete`, existence kept separate) and **B3e/B3f,
+completeness under option B for the equation-free and flat fragments,
+with no open premise** (existence from `d3bEqFree`, `d3bFlat`); B4f,
+B4, B5, option-B soundness; C `OpenCharacterization`, for a Scoped
+problem with existence within symbols, `ValidOpen` iff every pattern
+has a solvable generic instance. Instances: N1 shape-split is
+`ValidFin` over `Unit` and not `ValidOpen`; N2 `route`, `agree`
+`ValidOpen`; N3 `ClosedBoundary`; N4-N6 B2's premises jointly
+satisfiable (`route`, `intArmP`).
+
+**Boundary (P-3).** C is the exact boundary, conditional on unproved
+statements. Outside: closed validity (N3; the finite-base family, which
+has no `SigProblem` encoding); data types, effect arrows and handlers;
+dependency interfaces; D3a's template depth gaps and D3a under B;
+written abstract, host or applied types; infinite values (only
+`ValidFin` has an open form); a finite label type; non-Scoped problems;
+`D3bExists`; computability, θ*'s call-site encoding and pattern cost;
+the correspondence with source.
+
+**Review** (two independent read-only reviewers, soundness and
+completeness separately): no statement false as written. Fixed: B4's
+marker-label argument replaced, dropping premises that made B4/B5
+vacuous at a finite label type; missing building blocks added; W
+needs a new label-deleting map; an empty-extension edge case
+(`Fin (|U|+1)`); W per instance; the unconditional fragment results
+(B3e/B3f); the boundary as a characterization (C); checker stability
+(BS-c); degenerate instances replaced (`intArmP`). Not re-reviewed after
+the fixes.
+
+**Existing definitions that do not fit option B** (reported, not
+edited): `Fresh`'s base half injects every `CConst` into `B` itself
+(stronger than needed, impossible for finite `B`); `D3bExists` lacks
+`WithinC`, so it does not compose with `d3bComplete` directly;
+`d3bValidAll` concludes closed `ValidFin` only; `GenericInst`'s coverage
+ranges over instances at `B` only; §13.1's S2 assumption and the
+oracle's two bases are closed assumptions. Observation: `d3bComplete`'s
+proof never uses `GenericInst`'s coverage part.
+
+Questions for the author (statements.md): approve `ValidOpen` as the
+formal reading of option B; infinite labels as an accepted assumption,
+or finite-fresh labels too; B2 with full `GenericInst` or only the used
+parts; B3 through W or conditioned on `Universality ∧ CellIndependence
+∧ MGUExists`; whether option-B soundness (B4f, B5, C, BS-c) is in P-1's
+scope; B1 unrestricted or with `[Nonempty B]`; which to prove first
+(proposed: E1-E6, B2f, B2c, B2, B2g, B3a, B3e, B3f).
