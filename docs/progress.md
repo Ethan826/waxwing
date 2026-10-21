@@ -7854,3 +7854,7 @@ assessment.md.
   makes a problem vacuous (proved); run against the repaired compiler,
   `route` is refused by H's false contradiction and P9s-certified
   `wrapAccepts`, `routeNarrowed` by "Cannot tell".
+- Stream 7b integrated (dossier §18.19): on the repository's corpus,
+  signature checking's enumeration stays at most `2^4` patterns per
+  function; deciding call sites by the written search does not scale
+  (232 `main`s over `2^40`). A recorder interface is proposed, not built.

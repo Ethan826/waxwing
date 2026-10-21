@@ -2734,3 +2734,55 @@ whether R010 should accept divided or composed row arguments; Unresolved
 rather than contradiction for a rigid row no part can hold whole;
 pattern semantics on flexible rows; a later pass for effect rows and
 Fail payload families.
+
+### 18.19 Campaign results: size measurements and a recorder interface (stream 7b)
+
+research/division-campaign/integration/measurements.md,
+recorder-interface.md and measure/ (read-only; instruments a scratch copy
+of the compiler output; reproduced by the coordinator on the repaired
+build, 2026-10-21).
+
+**Measured (checked; six hand-computed expectations, `route` and a
+synthetic `wide`, must pass before the corpus runs).** 863 sources, 2,676
+functions, 486 with a rigid record row (178 hand-written, 308
+generated); 44 sources refused at parse or Resolve left out. Literals
+with two spreads, refused at Resolve today, are measured through a
+stand-in call `wxJoin` (same labels and rigid rows, more flexible rows;
+217 functions, marked `(j)`).
+
+- `|R| ≤ 4`; where `|R| > 0`, `|L| ≤ 2` hand-written and `≤ 4`
+  generated.
+- `checkAll` patterns `2^(|R|·|L|)`: at most `2^4` per function;
+  `bitCheck` at most `2^9` where `|R| > 0`.
+- **`writtenCheck` (the presence decider's written search) blocks**: 232
+  functions exceed `2^40`, all `main`s with `|R| = 0`, i.e. call-site
+  problems, not signature problems.
+- So, on this corpus, enumeration is **not** a blocker for signature
+  checking, and is one for deciding call sites. The corpus is the
+  record-rule test suite of small functions; it says nothing about
+  application-sized programs (`wide`: two rigid rows beside a ground
+  20-field record give `2^42` patterns).
+- Slicing by connected components of constraint variables (measured,
+  not proved; candidate lemmas S1 independence, S2 irrelevant pairs, not
+  stated in Lean): hand-written maximum `2^2.6`, `wide` `2^2`.
+
+**Recorder interface (proposal, not implemented).** `B` kept as data in
+the row store (reverts with the substitution), atoms `Equal`, `Lacking`,
+`Apart`, `Union`, each tagged with a `Maker` naming the site; hook
+points with file:line; propagation and retries not recorded; `D`
+computed as `own` does, not recorded. Findings: `predicateFor` is called
+twice per `Merge` (a side-channel log would double-count); Overlap's
+rigid-base lack check writes nothing to the store. A JSON bridge to
+sig-oracle's format, reporting out-of-fragment parts as `Outside`.
+Completeness tests: differentials against §17.1 and stream 5's
+translation, refusal agreement with bounded.mjs, agreement with the
+measurement, hook mutation, `Maker` coverage. Trust boundary as in
+§18.17 item 6: "verified checker, tested recorder, tested port".
+
+Questions for the author (measurements.md, recorder-interface.md): does
+this corpus settle the size risk for now, or should an
+application-shaped program come first; should call-site bodies only ever
+be checked from the solver's certificate, never decided by enumeration;
+is the `wxJoin` stand-in acceptable; should S1 and S2 enter the dossier
+as candidates; recorder in the store or injected; Overlap's rigid branch
+writing its fact; effect rows dropped or `Outside` in a first recorder.
