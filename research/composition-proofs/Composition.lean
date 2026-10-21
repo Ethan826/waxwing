@@ -139,3 +139,4 @@ import Composition.Typed.Cell.Proofs.E
 import Composition.Typed.Cell.Proofs.F
 import Composition.Typed.Cell.Proofs.G
 import Composition.Typed.Cell.Proofs.B
+import Composition.Typed.Cell.Proofs.C
