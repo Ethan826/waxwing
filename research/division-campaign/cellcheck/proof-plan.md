@@ -58,3 +58,14 @@ QX3, QR1-QR5 (query exactness), QX4 and `CheckTautology`, the other
 scenario families, CI4/CI4′/CI4″/CI5. They can run as a second parallel
 wave against the same interface. No polynomial coverage claim, source
 translation or compiler work.
+
+## Status (2026-10-21)
+
+All seven streams proved their targets with no statement changed and
+no false statement found; integrated and instantiated (Main.lean,
+axioms.out; dossier §18.56). Hypotheses actually used: E needs only
+CI1 and CD2; F's CM needs CB2, CI2, CB1 and `cellCheck_certOk` (CD3,
+CD4 surplus). Isolation-guard refusals of compound shell commands
+(D, E, F, G, C) were followed by the prescribed split into plain
+commands inside each worktree; no policy denial. Independent review
+pending.

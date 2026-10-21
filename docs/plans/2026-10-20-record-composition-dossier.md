@@ -4770,3 +4770,47 @@ tranche as a lemma (QX3's ← stays deferred; no statement changed); N2,
 a misquote corrected; N3, stale wording; N4, `CellShapeNeeded` refutes
 CM-without-`CellShape` only together with `ScRoute`'s acceptance and
 CV2 (said in §4). Seven parallel proof streams per proof-plan.md.
+
+### 18.56 First soundness tranche proved, for review (2026-10-21)
+
+Seven parallel streams (proof-plan.md), integrated onto `main` and
+instantiated in Composition/Typed/Cell/Proofs/Main.lean; clean build
+(171 jobs); no `sorry`, `admit`, new `axiom` or `native_decide`;
+research/division-campaign/cellcheck/axioms.out lists only `propext`,
+`Classical.choice`, `Quot.sound` (23 theorems). **Independent review
+pending; not yet accepted.**
+
+**Proved, for the research model (no statement changed):**
+
+- **CM `cellSound`:** for any conservative queries and any untrusted
+  certificate the checker accepts, the instantiated certificate solves
+  the original body at every generic instance with `HasInstance`,
+  `GenericInst`, `WithinC` and `CellShape`, at finite values.
+- **`cellOpen`:** acceptance under conservative queries gives
+  `ValidOpen` (through CG, CV1 at `thetaFree`, CM and B5).
+- **`cellOpenImpl`:** acceptance with the proposed queries `implQ`
+  gives `ValidOpen`, with no premise.
+- Supporting: CI1, CI2, CI3, CD1-CD4, CB1-CB4, CV1 (with
+  `cellShape_thetaFree`: `thetaFree` has the shape for every problem,
+  no fragment premise), CV2, CG, and the soundness directions of QX1,
+  QX2 and QX3 (`coverS_sound`) as lemmas; the converse directions are
+  not claimed.
+- **Premise checks:** `scRoute` (`route`, outside `Accepts`, is
+  accepted and `ValidOpen`); `cellShapeNeeded` (all four conjuncts,
+  every π, without its `HasInstance` premise being used);
+  `routeP_hasInstance`. With `scRoute` and CV2, CM without `CellShape`
+  is false.
+
+**Observed surplus:** CM uses neither CD3 nor CD4; CI3 and CD3 use
+neither `certOkC` nor the `GenericInst`/`CellShape` parts of the
+region (the evaluator's own checks suffice); `cellShapeNeeded` does not
+use `HasInstance`. Surplus premises, not vacuous ones.
+
+**Not established (§18.54):** query exactness (QX3's ←, QR1-QR5), QX4
+and `CheckTautology`; the scenario families other than `route` (`star`
+for every n remains a proof target); any completeness of the checker;
+any polynomial bound on `cover`. Nothing about the PureScript or Go
+implementation, source translation or integration.
+
+Follow-up in progress: files over 250 lines (B, C, E, F) split without
+changing any statement; F's duplicate of CD2 replaced by `apartSound`.

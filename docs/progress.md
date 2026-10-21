@@ -8154,3 +8154,7 @@ unrelated README/backlog/direction-plan edits remain untouched.
 - Targeted re-review clean (dossier §18.55, statements.md §10.3); N1
   puts QX3's soundness direction into stream C. Seven proof streams
   launched in parallel worktrees (proof-plan.md).
+- First soundness tranche proved (dossier §18.56): `cellSound`,
+  `cellOpen`, `cellOpenImpl` instantiated with no open statement;
+  `scRoute`, `cellShapeNeeded`; standard axioms only. Independent
+  reviews and file splits running in parallel.
