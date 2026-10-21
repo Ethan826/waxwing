@@ -147,4 +147,5 @@ nonprintable. Discarding an unknown value supplies acceptance evidence only.
 The runner's eight result-record mutations check its exit gate; they do not
 satisfy the proposed source/compiler mutation tests above. No universal
 preservation, completeness or representative-independence claim follows. The
-core's all-meta restriction remains a decision for review.
+author approved the assurance gates and held the core's all-meta
+restriction open; no replacement ambiguity rule is adopted.

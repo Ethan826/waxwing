@@ -1,9 +1,10 @@
 # C001: explicit instances and dictionary passing
 
-Status: bounded design proposal, 2026-10-21. Nothing here adopts language
-policy or implements compiler behavior. Design examples use proposed syntax;
-the executable baseline is labelled separately. The author must choose the
-representation before implementation planning.
+Status: author-approved design direction with the unknown-type rule held
+open, 2026-10-21. The author agreed to the rulings below in this chat and
+asked that they be recorded. Examples remain proposed syntax; the
+executable baseline is labelled separately. Implementation and new proof
+work require separate authorization.
 
 A client should accept a chosen implementation as a value. Two clients at
 `Int` can use sum and product in the same program. A constructor can combine
@@ -14,7 +15,7 @@ Read [acceptance programs](programs.md), [the core rules](core.md),
 [collection policies](collections.md), [source mapping](sources.md), and
 [assurance obligations](assurance.md). [Review notes](review.md) retain the
 adversarial findings and Humanizer/Garner review. [Handoff](handoff.md)
-records the branch, checks and outstanding decisions.
+records the branch, checks and remaining hold.
 
 ## Scope and representation alternatives
 
@@ -38,32 +39,35 @@ ban closures or functions that return dictionaries.
 
 Both proposed translations use products of monomorphic function values at
 each use. That common target does not settle their source equivalence. The
-rules use `D(C, T)` for whichever representation the author chooses. It is
-not a third representation. All source constructors and projections must
+comparison rules use `D(C, T)` for either representation. The approved
+direction interprets it as A; it is not a third representation. All source
+constructors and projections must
 remain available to user-defined interfaces, with no special status for
 Semigroup, Eq, Ord or Show.
 
-Recommendation for review: try A first because records of functions already
-exist. B merits adoption if nominal interface identity or a later checked
-class interface has a demonstrated benefit. Neither is selected here.
-Neither requires open-row composition or the unfinished record solver.
+The author selected A: ordinary structural operation records. B remains a
+comparison alternative for future review; dedicated class evidence is
+deferred. A uses existing records of functions and requires no open-row
+composition or unfinished record-solver internals.
 
-## Decisions for the author
+## Author rulings, 2026-10-21
 
-1. Choose A or B for source dictionaries. If B, approve explicit public
-   construction and nominal class identity without implicit search.
-2. Approve this pure, closed-signature, rank-1 tranche as a design boundary.
-   Methods have no inferred effects or local polymorphic fields. All type
-   metas must be solved in this core, including phantom reference
-   instantiations. These restrictions limit
-   this tranche only; P001's broader hole policy remains unchanged.
-3. Approve the collection contract: retain the governing dictionary;
+1. Approved A for source dictionaries. Dedicated class evidence is deferred.
+2. Approved the pure, closed-signature, rank-1 design boundary, with no
+   inferred method effects or locally polymorphic fields. The unknown-type
+   rule is held open: the blanket requirement to solve every type meta is
+   not adopted. A follow-up must specify permitted operations and
+   admissible stand-ins, including why a printable Int stand-in may be
+   used. P001's current hole behavior remains unchanged.
+3. Approved the collection contract: retain the governing dictionary;
    lookup and update take no replacement policy; cross-policy combination
-   rebuilds under a written destination and collision rule. A fast raw
-   merge needs a separate compatibility witness design.
-4. Approve runtime dictionary parameters through specialization and the
-   focused assurance gates. Further proofs need reviewed statements and
-   separate authorization. No Lean work is proposed for execution now.
+   rebuilds under a written destination and collision rule. Structural
+   reuse remains deferred pending a compatibility witness design.
+4. Approved runtime dictionary parameters through specialization and the
+   focused assurance gates. Preserve written choices; assess typing,
+   selection/coherence, resolution termination and algebraic laws
+   separately. Further proofs need reviewed statements and separate
+   authorization. No Lean work is authorized here.
 
 No approval is requested for implicit instance search, automatic derivation,
 higher-kinded classes, law-dependent optimization, or full modules. Those
@@ -88,8 +92,8 @@ The author's C001 request in this chat authorizes "design documents,
 illustrative programs and bounded exploratory probes" and explicitly asks
 for "ordinary operation records and dedicated class evidence" to be
 compared. That is the authority for documenting option B. It authorizes no
-class implementation or language-policy adoption; representation selection
-remains a decision for the author.
+class implementation or language-policy adoption. The later agreement
+records A as the design direction; it adds no implementation authorization.
 
 The branch was rebased onto `c341109`, including the record-composition
 dossier §18.29-§18.31. §18.31's ban on new class machinery in that research
@@ -113,4 +117,7 @@ handling, not evidence that arbitrary stand-ins are harmless. Additional
 printing probes accept four stand-ins but reject a function stand-in as
 nonprintable during specialization. These acceptance differences are
 recorded; no type-safety failure or replacement ambiguity policy is claimed.
-Decision 2's all-meta restriction remains pending.
+Decision 2 holds the all-meta restriction open. The h1/h2 difference is an
+acceptance difference; it establishes no safety defect or differing printed
+result. The next design question is the operation-specific ambiguity
+boundary. Recording this question authorizes no additional work.
