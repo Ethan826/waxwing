@@ -366,10 +366,12 @@ DNF. So any checker that is sound **and complete** for this format
 (its `cover` exact, as QR4) decides DNF tautology, which is coNP-hard
 when the number of rigid rows is unbounded (standard coNP-completeness
 of DNF tautology). A sound but incomplete checker may refuse in
-polynomial time; the hardness is about the exact query. Argued, not
-checked; QX4 and `CheckTautology` are the precise statements it rests
-on, and a scratch run accepts the five-cube "pinwheel" through
-`checkI`.
+polynomial time; the hardness is about the exact query. It concerns
+exact checking of this unrestricted certificate format and does not
+establish a lower bound for every possible Waxwing inference algorithm
+(the author, §18.54). Argued, not checked; QX4 and `CheckTautology`
+are the precise statements it rests on, and a scratch run accepts the
+five-cube "pinwheel" through `checkI`.
 
 What is known and what is not:
 
@@ -597,3 +599,12 @@ cases.
    QX2, CV2, CV1, CD2, CB4, CI3 with CD3, CB3, CB2, CM, CM-open, CM-impl;
    then the scenarios and `CellShapeNeeded`, then QX3, QX4,
    `CheckTautology` and QR1-QR5.
+
+**Answered 2026-10-21 (dossier §18.54):** 1, `CellShape` stays an
+evidence premise; 2 and 4, guard kept at `LDFragment`, equations in
+`D` and field references deferred, `agreeP` recorded as uncertified;
+3, multi-cube selectors and `coverS` stay the exact reference, no
+split-tree hint adopted, no polynomial coverage promised; 5, the core
+soundness order approved after a targeted re-review of §10's fixes,
+with `route` and `CellShapeNeeded` in the tranche; QX3, QX4,
+`CheckTautology`, QR1-QR5 and other scenarios later.

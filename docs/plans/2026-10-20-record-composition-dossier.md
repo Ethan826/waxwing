@@ -4712,3 +4712,50 @@ proof order (CI2 … CM, CM-open, CM-impl; scenarios; QX3, QX4, QR1-QR5).
 
 **Paused 2026-10-21** (usage limit) after this integration; nothing
 running. Next: the author's review of §18.53.
+
+### 18.54 Decision: first soundness proof tranche (2026-10-21)
+
+**The author approved a first soundness proof tranche** over the
+existing fragment, with `CellShape` as a separate premise; the broader
+architecture choices stay open. Answers to statements.md §11:
+
+1. **`CellShape` stays explicit evidence.** The reviewed definition of
+   `GenericInst` is unchanged. The proofs show that the chosen
+   construction supplies `CellShape`: a requirement on the checker's
+   mathematical representation, not a new restriction on Waxwing
+   programs.
+2. **The guard stays at `LDFragment`** (`lacks`/`disjoint`
+   declarations). Equations in declarations and field references are
+   deferred. `agreeP` is recorded as a valid problem this checker
+   cannot yet certify. The accepting scenarios, including `star` for
+   every n, are proof targets, not established guarantees.
+3. **Multi-cube selectors and `coverS` stay the exact reference.**
+   Selector representation and coverage evidence are separate choices.
+   A certificate-supplied split tree could later help justify coverage,
+   but needs its own statements and review; it is not adopted. The
+   coNP-hardness remark (§6.3) concerns exact checking of this
+   unrestricted certificate format; it does **not** establish that
+   every possible Waxwing inference algorithm has that lower bound.
+4. **Core proof order approved, after a targeted re-review of the
+   fixes applied after §10's reviews** (statements.md §10, S1-S7 and
+   C1-C15), which were not re-reviewed:
+   - instantiation and finiteness;
+   - definedness and original-body checking;
+   - conservative query soundness;
+   - coverage using `thetaFree` and its evidence;
+   - CM, `CellOpen` and `CellOpenImpl`.
+
+   The concrete `route` acceptance and `CellShapeNeeded` come into the
+   tranche as checks of the premises. Full query exactness (QX3,
+   QR1-QR5), the tautology reduction (QX4, `CheckTautology`) and the
+   remaining scenario families follow separately and do not delay the
+   core result.
+
+**Qualification: polynomial coverage is not promised.** The soundness
+contract comes first. A bounded or incomplete implementation may
+conservatively refuse coverage, but its supported cases are measured
+against the acceptance scenarios before any implementation plan.
+
+**Not authorized:** source translation or compiler integration. The
+paused worktrees and remote checkpoints are left alone unless cleanup
+is requested separately.

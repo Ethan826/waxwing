@@ -8144,3 +8144,10 @@ unrelated README/backlog/direction-plan edits remain untouched.
   limit; no agents running. Next: the author's review of §18.53 (the
   `CellShape` premise, the guard, `cover`'s representation, proof
   order).
+- The author's review of §18.53 (dossier §18.54): first soundness proof
+  tranche approved over `LDFragment`, `CellShape` a separate premise,
+  `coverS` the exact reference, no polynomial coverage promised. Order:
+  instantiation and finiteness; definedness and body checking;
+  conservative query soundness; coverage at `thetaFree`; CM, `CellOpen`,
+  `CellOpenImpl`; with `route` and `CellShapeNeeded`. First a targeted
+  re-review of §10's fixes. No source translation or integration.
