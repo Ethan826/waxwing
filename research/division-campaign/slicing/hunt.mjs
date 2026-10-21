@@ -62,10 +62,13 @@ export function p9sSliced(P, bounds) {
 
 function run() {
   let flagged = 0
+  let zeroChecked = 0
   for (const prob of PROBLEMS) {
     const bounds = { ...DEFAULT_BOUNDS, ...(prob.bounds ?? {}) }
     const P = prob.P
-    const whole = boundedValid(P, bounds).verdict
+    const evaluated = boundedValid(P, bounds)
+    const whole = evaluated.verdict
+    if (evaluated.checked === 0) zeroChecked += 1
     const s1 = s1Verdict(P, bounds)
     const wrong = Object.entries(SLICINGS)
       .filter(([, f]) => slicedVerdict(f, P, bounds) !== whole)
@@ -83,11 +86,13 @@ function run() {
       same(p9sWrong, prob.p9sWrong ?? [])
     if (!expected) flagged += 1
     console.log(`${prob.name}: whole ${whole}, S1 ${s1}` +
+      `; rigid instances checked ${evaluated.checked}` +
       `; slicings wrong: ${wrong.join(', ') || 'none'}` +
       `; P9s ${p.whole}, changed by: ${p9sWrong.join(', ') || 'none'}` +
       ` (${expected ? 'as predicted' : 'CHECK'}; ${prob.why})`)
   }
-  console.log(`${PROBLEMS.length} problems, ${flagged} flagged`)
+  console.log(`${PROBLEMS.length} problems, ${flagged} flagged; ` +
+    `${zeroChecked} with zero rigid instances (bounded vacuity)`)
 }
 
 const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x))

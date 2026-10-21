@@ -51,6 +51,11 @@ import Composition.Sig.SplitNotAccepted
 import Composition.Sig.SourceBoundary
 import Composition.Sig.SourceCampaign
 import Composition.Sig.SliceDefs
+import Composition.Sig.SliceExamples
+import Composition.Sig.SliceSubst
+import Composition.Sig.SlicePatterns
+import Composition.Sig.SlicePatternExamples
+import Composition.Sig.SliceRefinements
 import Composition.Presence.Defs
 import Composition.Presence.O1
 import Composition.Presence.O2
