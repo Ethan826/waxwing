@@ -2786,3 +2786,46 @@ be checked from the solver's certificate, never decided by enumeration;
 is the `wxJoin` stand-in acceptable; should S1 and S2 enter the dossier
 as candidates; recorder in the store or injected; Overlap's rigid branch
 writing its fact; effect rows dropped or `Outside` in a first recorder.
+
+### 18.20 The author's review of §18.19 (2026-10-21)
+
+The measurements are accepted as evidence for architecture, not as
+clearance on scalability: they support search plus certificate checking
+in production, with exhaustive enumeration kept as a bounded reference.
+Decisions:
+
+1. **An application-shaped measurement comes before implementation
+   planning**: a larger function with mostly independent record
+   operations, and one with genuinely shared constraints. `wide` already
+   shows the test corpus cannot settle signature-checking cost.
+2. **Certificates for successful call-site solving.** A concrete
+   substitution or witness is checked against the complete recorded
+   constraints. Bounded enumeration stays for testing and reference
+   comparison, not the production default. Failure to find a certificate
+   is **Unresolved**, not Contradiction; refusals need separate
+   justification.
+3. **`wxJoin` accepted as a labelled measurement surrogate.** It does
+   not establish the cost of literal spreads; repeat once their
+   translation exists.
+4. **Slicing S1/S2 become proposed statements**, definitions reviewed
+   before proving or implementing. Independence must cover shared type
+   variables, nested fields and hypotheses, not just row variables; ground
+   contradictions that mention no variable are retained.
+5. **Recorder placement is provisional.** The critical invariant: the
+   record preserves the original obligations; solver simplification must
+   not erase what the checker needs. Rollback behavior for speculative
+   checking and retries must be specified explicitly.
+6. **The rigid-overlap obligation is recorded.** A check that writes no
+   fact (Overlap's rigid-base lack check) can still contribute a
+   necessary constraint; capture it before the checking branch consumes
+   or rejects it. Solver behavior is not changed to make recording
+   convenient.
+7. **`Outside` for unsupported semantics.** Effect rows and other
+   unsupported components are never silently dropped to certify a
+   reduced problem as if it covered the whole function. Independently
+   supported slices may be checked, their limited scope explicit.
+
+The recorder remains a proposal; nothing here authorizes its
+implementation. **The next integration gate:** a complete recorder
+specification, a scalable search strategy, and a checker whose
+guarantees cover exactly what was recorded.
