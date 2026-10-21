@@ -8035,3 +8035,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   and recorder obligations; D3a's bounded runs (R3a, R4a) and the
   base-per-alternative oracle challenge, which follow that decision; any
   integration scope.
+- Language direction recorded (dossier §18.31): generic functions work
+  with opaque types, including later ones (option B); checking stable
+  under unrelated additions; unused functions checked. Memo corrected
+  in place (four claims). Next: bridge statements (P-1) for review; no
+  typed completeness claim, class machinery or integration authorized.

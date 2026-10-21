@@ -3424,3 +3424,53 @@ route P-1, P-2 or P-3; whether data types, effect arrows and handlers
 must be modelled before any typed completeness claim; whether a
 counter-instance may name a hypothetical type; an atom base in the
 oracle before further D3a/D3b runs.
+
+### 18.31 Language direction: generic functions over opaque types (2026-10-21)
+
+**Recorded direction (the author, 2026-10-21): option B.** Generic
+functions must work with opaque types, including types introduced
+later. The rule:
+
+> A generic function may rely on its written constraints and dependency
+> interfaces. It cannot assume that the types currently declared exhaust
+> every type its callers could supply.
+
+This permits record splitting by field presence, `lacks` and
+`disjoint`; it forbids reasoning such as "every type must be one of
+these built-in shapes, because nothing else exists today". The author's
+answers to the memo's main questions:
+
+- **Opaque types are included.** Generic code cannot inspect a module's
+  hidden representation or an opaque foreign type without an operation
+  explicitly permitting that.
+- **Checking is stable under unrelated additions.** Adding an unrelated
+  type must not invalidate an existing generic function. Changing an
+  interface it depends on can legitimately affect it ("signature and
+  body alone" carries that qualification).
+- **Unused functions remain checked.** Monomorphization determines
+  generated code, not which generic bodies must satisfy their contracts.
+
+**B does not presently sacrifice a demonstrated desired feature**: the
+known separating examples (`shape-split`, the finite-base family)
+exploit exhaustive knowledge of type shapes; no evidence shows that the
+acceptance programs require that capability.
+
+**Memo corrections, applied in place** (decision-memo.md, "Corrections"
+list; earlier text in Git): (1) (A) and (B) each imply (I) at reached
+permitted instantiations; (I) can accept more; not "incomparable". (2)
+Open-world validity is not a proved parametricity result. (3) The claim
+that skolems are complete for Haskell because Haskell is parametric is
+withdrawn; a precise result for a specified checking judgment is needed
+(the cited arbitrary-rank paper discusses undecidability and annotation
+requirements). (4) C001 evidence is a possible future mechanism, not a
+demonstrated solution: operation dictionaries, shape evidence and
+evidence for a row decomposition are distinct designs.
+
+**Proofs: P-1 plus P-3.** Establish the finite-freshness or extension
+bridge (from `Fresh` over infinitely many atoms to the finitely many
+constants θ*_π uses, or to `ValidOpen`), and document the exact
+completeness boundary. The bridge needs statements and review first.
+
+**Authorized:** recording this direction; proposing the bridge
+statements. **Not authorized:** typed completeness as a claim, new class
+machinery, compiler integration.

@@ -142,7 +142,9 @@ is conjectured: the family has not been extended to n-ary heads
 
 Extensibility, kind (2), is one *justification* for atoms in X. It is
 not necessary. A closed whole-program language can still give generic
-variables a parametric meaning, as System F does (§5). Nor is it
+variables a parametric meaning, as System F does (§5; but see §5's
+qualification: open-world validity is not itself a parametricity
+result). Nor is it
 sufficient without a definition that quantifies over extensions. Kinds
 (1) and (3) answer neither question. The options in §2 are restated on
 the two axes.
@@ -212,6 +214,12 @@ split, such as a C001 class dictionary with one instance per head
 something the checker infers from the absence of other types. In the
 model, this is (B) for a problem whose `B` receives the evidence's
 results as extra rigid inputs (derived; not formalized).
+**Qualification (corrected 2026-10-21, dossier §18.31):** C001 evidence
+is a possible future mechanism, not a demonstrated solution. Three
+designs are distinct: a dictionary supplying operations; evidence
+describing a type's shape; and evidence justifying a type-level row
+decomposition. Ordinary classes do not automatically discharge the
+obligation; (C) names a direction, not a design.
 
 The two axes give this grid:
 
@@ -241,10 +249,14 @@ The two axes give this grid:
   atom is positive (equations, `lacks`, `disjoint`; `ff` is never
   satisfied), so any function preserves satisfaction (derived; the same
   pattern as `transfer`). Right to left: instantiate. Not formalized.
-- **C4. (I) is not comparable with either.** It accepts any function
-  whose reached instantiations happen to be solvable, including ones
-  invalid under (A), and accepts every unused function (derived from
-  the definition).
+- **C4. (A) and (B) each imply (I); (I) implies neither** (corrected
+  2026-10-21, dossier §18.31; an earlier draft called (I)
+  incomparable). If a signature is valid for every permitted
+  assignment, it is solvable at every reached permitted instantiation.
+  (I) can accept additional programs: any function whose reached
+  instantiations happen to be solvable, including ones invalid under
+  (A), and every unused function. The converse implication generally
+  fails (derived from the definitions).
 
 ### 3.2 Result by result
 
@@ -415,8 +427,9 @@ C001's direction is explicit dictionaries with several instances per
 type and optional implicit selection (modules direction note; polymorphism
 design §11).
 
-- Under (C), a type-dependent split is a class, `Shape(a)` with one
-  instance per head, and the dictionary supplies the case. A new type
+- Under (C), a type-dependent split could be a class, `Shape(a)` with
+  one instance per head, and the dictionary would supply the case (a
+  possible mechanism, §2 (C)'s qualification; not a design). A new type
   needs a new instance, written where the type is. A missing instance is
   an error at the call that needs it. This follows the open-world
   discipline of Haskell and Rust coherence (§5).
@@ -468,6 +481,12 @@ semantics give X2 outright. A variable's meaning is fixed with no
 reference to which types a program declares, and a body that branches
 on α's head is not parametric. `shape-split`'s witness branches on the
 head of α at the type level, so it is not parametric in this sense.
+**Qualification (corrected 2026-10-21, dossier §18.31):** validity over
+every extension by opaque types (`ValidOpen`) is not a proved
+parametricity result. Quantifying over additional opaque types does not
+by itself establish the behavioral guarantees of System F or relational
+parametricity; this memo uses System F only as prior art for the range
+of a type variable, not as a theorem about Waxwing.
 
 **Abstract types.** Mitchell and Plotkin, "Abstract types have
 existential type" (TOPLAS 1988): a client must work for every
@@ -485,9 +504,14 @@ extend. That is (B) justified by extension, kind (2).
 **Skolems in checking.** GHC checks a signature by replacing its
 variables with skolem constants (Peyton Jones, Vytiniotis, Weirich and
 Shields, "Practical type inference for arbitrary-rank types", JFP 2007).
-My inference: these are kind (1). They are complete for Haskell
-because Haskell's semantics is parametric. They do not create the
-parametricity.
+My inference: these are kind (1). **Corrected 2026-10-21 (dossier
+§18.31):** an earlier draft said skolems "are complete for Haskell
+because Haskell's semantics is parametric". That is too broad. The
+cited paper's results are about its specified checking and inference
+judgments; it discusses undecidability for arbitrary rank and requires
+annotations. Any completeness claim for skolem-based checking needs a
+precise result for a specified checking judgment, which this memo does
+not supply. Skolems do not create parametricity either.
 
 **Haskell and PureScript.** Neither allows a case on a type variable's
 head without a class constraint (`Typeable`, or a user class). Type
@@ -582,8 +606,10 @@ The author asked that this be presented as an option. It is.
 - **P-1 (under (B)).** Replace `Fresh` with an injection of only the
   constants θ*_π uses, or prove C3 and apply `d3bComplete` at
   `B ⊕ CConst Label` (§3.2). Either removes the gap between "infinitely
-  many atoms at once" and "finitely many per extension". Conjectured
-  routine. The realization `dn` touches only constants that occur in
+  many atoms at once" and "finitely many per extension". Not
+  established: the bridge needs its own statements and review
+  (corrected 2026-10-21, dossier §18.31; "conjectured routine" is not
+  evidence). The realization `dn` touches only constants that occur in
   `WithinG` values, but that has to be checked against `up (dn g) = g`.
 - **P-2 (under (A)).** State and prove a new completeness theorem for a
   procedure with head case splits, and restate D3a with type-dependent
@@ -706,3 +732,16 @@ polymorphism design has an uncommitted "Assurance follow-up" paragraph
 at the start of §8 that points to the type-system assurance register. Neither
 addition changes anything this memo relies on. The memo cites only
 HEAD text.
+
+## Corrections (2026-10-21, dossier §18.31)
+
+Applied after the author's review; the earlier text is in Git history.
+
+1. C4: (A) and (B) each imply (I); (I) can accept more; not
+   "incomparable".
+2. §5: open-world validity is not a proved parametricity result.
+3. §5: the skolem completeness claim for Haskell is withdrawn; a precise
+   result for a specified checking judgment would be needed.
+4. §2 (C), §4.8: C001 evidence is a possible future mechanism, not a
+   demonstrated solution; three distinct designs named.
+5. §6.3: the P-1 bridge is "not established", not "conjectured routine".
