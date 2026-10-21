@@ -4773,44 +4773,73 @@ CV2 (said in §4). Seven parallel proof streams per proof-plan.md.
 
 ### 18.56 First soundness tranche proved, for review (2026-10-21)
 
-Seven parallel streams (proof-plan.md), integrated onto `main` and
-instantiated in Composition/Typed/Cell/Proofs/Main.lean; clean build
-(171 jobs); no `sorry`, `admit`, new `axiom` or `native_decide`;
-research/division-campaign/cellcheck/axioms.out lists only `propext`,
-`Classical.choice`, `Quot.sound` (23 theorems). **Independent review
-pending; not yet accepted.**
+Seven parallel streams (research/division-campaign/cellcheck/
+proof-plan.md), integrated onto `main` and instantiated in
+Composition/Typed/Cell/Proofs/Main.lean. Clean build; no `sorry`,
+`admit`, new `axiom` or `native_decide`; cellcheck/axioms.out lists
+only `propext`, `Classical.choice` and `Quot.sound` (23 theorems). No
+statement file changed (empty diff since f829525). Files over 250 lines
+were then split (B, C, E) and F's copy of CD2 replaced by `apartSound`;
+axioms.out regenerates byte-identically. **The author's acceptance is
+pending.**
 
-**Proved, for the research model (no statement changed):**
+**Proved, for the research model:**
 
 - **CM `cellSound`:** for any conservative queries and any untrusted
   certificate the checker accepts, the instantiated certificate solves
   the original body at every generic instance with `HasInstance`,
   `GenericInst`, `WithinC` and `CellShape`, at finite values.
 - **`cellOpen`:** acceptance under conservative queries gives
-  `ValidOpen` (through CG, CV1 at `thetaFree`, CM and B5).
-- **`cellOpenImpl`:** acceptance with the proposed queries `implQ`
-  gives `ValidOpen`, with no premise.
-- Supporting: CI1, CI2, CI3, CD1-CD4, CB1-CB4, CV1 (with
-  `cellShape_thetaFree`: `thetaFree` has the shape for every problem,
-  no fragment premise), CV2, CG, and the soundness directions of QX1,
-  QX2 and QX3 (`coverS_sound`) as lemmas; the converse directions are
-  not claimed.
+  `ValidOpen` (through CG, CV1 at `thetaFree`, CM and B5, the proved
+  `d3bSoundOpen`).
+- **`cellOpenImpl`:** acceptance with the model's query functions
+  `implQ` gives `ValidOpen`; CV2 discharges `QSound`, so acceptance is
+  the only premise.
+- Supporting: CI1, CI2, CI3, CD1-CD4, CB1-CB4, CV1, CV2, CG; and, as
+  lemmas, QX1's ← (`freeS_of_free`), QX2's ← (`cellPossS_complete`) and
+  QX3's → (`coverS_sound`), the directions query soundness needs.
+- **`cellShape_thetaFree`** discharges §18.54's requirement: `CellShape`
+  holds for the construction the proof uses (`thetaFree`), for every
+  problem and pattern. It is a property of that representation, not a
+  restriction on programs.
 - **Premise checks:** `scRoute` (`route`, outside `Accepts`, is
   accepted and `ValidOpen`); `cellShapeNeeded` (all four conjuncts,
-  every π, without its `HasInstance` premise being used);
-  `routeP_hasInstance`. With `scRoute` and CV2, CM without `CellShape`
-  is false.
+  every π); `routeP_hasInstance`. With `scRoute`, CV2 and
+  `routeP_hasInstance`, CM without `CellShape` is false. This corollary
+  is not stated in the repository; the soundness reviewer proved it in
+  scratch Lean (`not_cellSoundNoShape`). It holds while `QSound`'s
+  region keeps `CellShape` (§18.55, N4).
 
-**Observed surplus:** CM uses neither CD3 nor CD4; CI3 and CD3 use
-neither `certOkC` nor the `GenericInst`/`CellShape` parts of the
-region (the evaluator's own checks suffice); `cellShapeNeeded` does not
-use `HasInstance`. Surplus premises, not vacuous ones.
+**Observed surplus:** CM uses neither CD3 nor CD4; CI3 and CD3 do not
+use `certOkC` (the evaluator's own checks suffice); `cellShapeNeeded`
+does not use `HasInstance`. CI3's and CD3's own argument reads only
+`WithinC`, but the rest of the region, `CellShape` included, reaches
+them through CD2's query soundness: both reviewers found this, and the
+soundness reviewer refuted CD3 without `CellShape` in scratch Lean
+(`{...4, ...6}` on `route` at `routeJunk`). An earlier draft of this
+entry said otherwise; corrected.
 
-**Not established (§18.54):** query exactness (QX3's ←, QR1-QR5), QX4
-and `CheckTautology`; the scenario families other than `route` (`star`
-for every n remains a proof target); any completeness of the checker;
-any polynomial bound on `cover`. Nothing about the PureScript or Go
-implementation, source translation or integration.
+**Not established (§18.54):** query exactness (QX1's and QX2's →,
+QX3's ←, QR1-QR5); QX4 and `CheckTautology`; CI4, CI4′, CI4″, CI5; the
+scenario families other than `route` (`star` for every n remains a
+proof target); any completeness of the checker; any polynomial bound
+on `cover`. The soundness theorems are implications from acceptance:
+apart from `route` (`scRoute`), they show no problem is accepted.
+`agreeP` stays valid but outside this checker's guard. Nothing about
+the PureScript or Go implementation, source translation or
+integration.
 
-Follow-up in progress: files over 250 lines (B, C, E, F) split without
-changing any statement; F's duplicate of CD2 replaced by `apartSound`.
+**Reviews** (independent, read-only, scratch Lean; no tool denial).
+Soundness: the headline results are sound as stated; every theorem
+matches its statement at general `Label`, `B`; CM's premises are
+jointly satisfiable on `route` with an accepted certificate and a
+non-empty instance, and `cellOpenImpl` yields `ValidOpen routeP`;
+`ValidOpen` is not trivial (`shapeSplitSeparates`); no `partial`,
+`unsafe`, `set_option` or `extern`; `Classical` only as
+`byContradiction`. Claims: scope respected, nothing done outside
+§18.54; corrections applied here (the surplus sentence; the
+unstated corollary; "no premise"; QX directions named; omissions in
+"Not established"; `CellShape`'s discharge), in proof-plan.md (the
+refusal record covered six streams, not five) and in statements.md
+(stale "nothing proved" status). Informational: `Cells.routeP_hasInstance`
+shares its name with a lemma in another namespace.

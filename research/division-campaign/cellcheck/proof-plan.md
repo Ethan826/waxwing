@@ -65,7 +65,9 @@ All seven streams proved their targets with no statement changed and
 no false statement found; integrated and instantiated (Main.lean,
 axioms.out; dossier §18.56). Hypotheses actually used: E needs only
 CI1 and CD2; F's CM needs CB2, CI2, CB1 and `cellCheck_certOk` (CD3,
-CD4 surplus). Isolation-guard refusals of compound shell commands
-(D, E, F, G, C) were followed by the prescribed split into plain
-commands inside each worktree; no policy denial. Independent review
-pending.
+CD4 surplus). Worktree-isolation guard refusals of compound shell
+commands (streams B, C, D, E, F, G, and the split agents) were followed
+by the remedy each refusal prescribed (separate plain commands, or the
+same command from the worktree without the redirect); none was a
+permission denial. Both reviews done, corrections applied (dossier
+§18.56); the author's acceptance pending.

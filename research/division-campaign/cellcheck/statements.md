@@ -7,6 +7,10 @@ The Lean files hold `def`s and `def … : Prop` only, with no `theorem`,
 no `sorry` and no axiom. They are imported from Composition.lean, and
 `lake build` passes.
 
+Status (2026-10-21): the first soundness tranche is proved in
+Cell/Proofs/ (dossier §18.56), pending the author's acceptance; the
+statements here are unchanged.
+
 Files, all under research/composition-proofs/Composition/Typed/Cell/:
 
 - Format.lean: the certificate format, its denotation at a generic
