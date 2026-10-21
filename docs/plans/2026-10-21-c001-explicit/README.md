@@ -52,9 +52,9 @@ Neither requires open-row composition or the unfinished record solver.
 1. Choose A or B for source dictionaries. If B, approve explicit public
    construction and nominal class identity without implicit search.
 2. Approve this pure, closed-signature, rank-1 tranche as a design boundary.
-   Empty-fold behavior is explicit; methods have no inferred effects or
-   local polymorphic fields. All type metas must be solved in this core,
-   including phantom reference instantiations. These restrictions limit
+   Methods have no inferred effects or local polymorphic fields. All type
+   metas must be solved in this core, including phantom reference
+   instantiations. These restrictions limit
    this tranche only; P001's broader hole policy remains unchanged.
 3. Approve the collection contract: retain the governing dictionary;
    lookup and update take no replacement policy; cross-policy combination
@@ -80,3 +80,21 @@ preserving written choices. Its scope, ambiguity and termination rules
 remain undesigned. Automatic derivation would construct dictionaries by
 these same public rules, subject to its own design. Algebraic law evidence
 and optimization permissions require separate contracts.
+
+## Authorization and later record decisions
+
+The author's C001 request in this chat authorizes "design documents,
+illustrative programs and bounded exploratory probes" and explicitly asks
+for "ordinary operation records and dedicated class evidence" to be
+compared. That is the authority for documenting option B. It authorizes no
+class implementation or language-policy adoption; representation selection
+remains a decision for the author.
+
+The branch was rebased onto `c341109`, including the record-composition
+dossier §18.29-§18.31. §18.31's ban on new class machinery in that research
+scope remains in force. Its adopted direction also applies here: generic
+bodies are checked under rigid, opaque variables, including unused bodies;
+adding an unrelated type must not change their acceptance. This is not a
+parametricity theorem or a typed-completeness claim. Operation dictionaries
+here supply methods. They supply neither type-shape evidence nor evidence
+for row decomposition and do not solve the record-research obligations.

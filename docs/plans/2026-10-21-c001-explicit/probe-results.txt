@@ -1,5 +1,5 @@
 Selected numeric/value-flow observations from P1-P4: pass
 C1-C2 retained equality, updates and destination rebuilding: pass
-C3 raw policy relabel defect misses 3: detected
-Per-carrier default replacement changes 6 to 5: detected
+C3 policy-relabel counterexample misses 3: demonstrated
+Sum and product choices yield 5 and 6: demonstrated
 Limits: Python model only; no Waxwing parsing, typing or lowering

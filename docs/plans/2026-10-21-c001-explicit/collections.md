@@ -6,6 +6,8 @@ They require abstract representations; the acceptance semantics can be
 modelled by association lists and rebuilt sorted lists without a module
 system or record-composition solver. Production abstraction waits for a
 separate library/M001 decision. Class versus record evidence is still open.
+The examples show A's ordinary record literals; B would explicitly wrap
+those payloads as illustrated in programs.md.
 
 ## Retention, compatibility and rebuilding
 
@@ -63,14 +65,14 @@ termination.
 
 ## C1: equality changes lookup and update
 
-All code blocks are proposed pseudocode. For this example keys are Text
-restricted by the test generator to ASCII letters. `asciiFold` maps A-Z to
-a-z and preserves other ASCII characters. It is an illustrative helper, not
-a Unicode case-folding or standard-library proposal.
+All code blocks are proposed pseudocode. These examples use ASCII-letter
+Text keys. `asciiFold` maps A-Z to a-z and preserves other ASCII characters.
+It is an illustrative helper, not a Unicode case-folding or standard-library
+proposal.
 
 ```text
-exact = make Eq<Text> { equal = textEqual }
-folded = make Eq<Text> { equal = foldedEqual }
+exact = { equal: textEqual }
+folded = { equal: foldedEqual }
 foldedEqual(x,y) = textEqual(asciiFold(x),asciiFold(y))
 
 a = fromEntries(exact, [("A",1),("a",2)], takeLast)
@@ -112,7 +114,7 @@ parallel reduction or merge optimization is licensed.
 ## C3: ordering changes structure without changing equality
 
 ```text
-up = make Ord<Int> { compare = ascendingInt }
+up = { compare: ascendingInt }
 down = reverseOrd(up)
 u = orderedFrom(up, [(1,"one"),(2,"two"),(3,"three")], takeLast)
 d = orderedFrom(down, [(1,"uno"),(2,"dos"),(3,"tres")], takeLast)

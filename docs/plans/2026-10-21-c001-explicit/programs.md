@@ -1,11 +1,23 @@
 # Proposed acceptance programs
 
 All syntax here is proposed and illustrative. These are future acceptance
-contracts, not programs accepted by today's compiler. `D(Semigroup,a)` means
-either representation in [the comparison](README.md); `make` and `.combine`
-stand for its checked construction and projection. Record type names such as
-`Stats` are explanatory abbreviations, not new alias syntax. `List`, `Maybe`
-and `Pair` are ordinary proposed ADTs for these examples.
+contracts, not programs checked by this task. P1-P4 use option A's ordinary
+record literals and field access. `D(Semigroup,a)` abbreviates the closed
+record `{ combine: a -> a -> a }`; it is not a new source type constructor.
+Record type names such as `Stats` are also explanatory abbreviations, not
+new alias syntax. `List`, `Maybe` and `Pair` are ordinary proposed ADTs.
+
+Option B would instead wrap each dictionary payload with its checked nominal
+evidence constructor and project methods from that evidence. For example,
+proposed B-only syntax for the sum constructor would be:
+
+```text
+fn sumB(): D(Semigroup,Int) =
+  evidence Semigroup<Int>({ combine: add });
+```
+
+This separate spelling illustrates the representation choice; it does not
+add an evidence-construction form to A or select either alternative.
 
 ## P1: three choices at the same carrier
 
@@ -16,9 +28,9 @@ type Pair(a,b) = Pair(a,b);
 fn add(x: Int, y: Int): Int = x + y;
 fn multiply(x: Int, y: Int): Int = x * y;
 fn takeLast(x: a, y: a): a = y;
-fn sum(): D(Semigroup,Int) = make { combine = add };
-fn product(): D(Semigroup,Int) = make { combine = multiply };
-fn lastFor(seed: a): D(Semigroup,a) = make { combine = takeLast };
+fn sum(): D(Semigroup,Int) = { combine: add };
+fn product(): D(Semigroup,Int) = { combine: multiply };
+fn lastFor(): D(Semigroup,a) = { combine: takeLast };
 
 fn foldFrom(d: D(Semigroup,a), seed: a, xs: List(a)): a =
   match xs {
@@ -29,31 +41,29 @@ fn foldFrom(d: D(Semigroup,a), seed: a, xs: List(a)): a =
 fn main(): Pair(Int,Pair(Int,Int)) =
   Pair(foldFrom(sum(),2,Cons(3,Cons(4,Nil))),
     Pair(foldFrom(product(),2,Cons(3,Cons(4,Nil))),
-      foldFrom(lastFor(0),2,Cons(3,Cons(4,Nil)))));
+      foldFrom(lastFor(),2,Cons(3,Cons(4,Nil)))));
 ```
 
 Expected: `Pair(9,Pair(24,4))`. Each evidence operand has carrier `Int`. For
 every dictionary value d, `foldFrom(d,2,Nil)` returns `2` without invoking
 combine. The seed is an explicit initial value, not an asserted identity. A
 diverging dictionary expression still diverges before the call. Last has no
-two-sided identity at Int. `lastFor` uses its seed only to determine the
-carrier, without invoking a method. Int arithmetic wraps as currently
-specified; this example does not rely on overflow. No numeric instance is
-implicitly selected.
+two-sided identity at Int. The surrounding fold or method call fixes the
+carrier of `lastFor()`; no inference-only seed parameter is needed. Int
+arithmetic wraps as currently specified; this example avoids overflow. No
+numeric instance is implicitly selected.
 
 ## P2: explicit construction and composition
 
 ```text
 fn fromCombine(op: a -> a -> a): D(Semigroup,a) =
-  make { combine = op };
+  { combine: op };
 
 fn reverse(d: D(Semigroup,a)): D(Semigroup,a) =
-  make { combine = swapped }
-  where
-    fn swapped(x: a, y: a): a = d.combine(y,x);
+  { combine: fn(x, y) => d.combine(y,x) };
 ```
 
-Expected: `foldFrom(reverse(lastFor(0)),2,Cons(3,Cons(4,Nil))) = 2`.
+Expected: `foldFrom(reverse(lastFor()),2,Cons(3,Cons(4,Nil))) = 2`.
 `fromCombine` checks a function signature. It cannot establish a law:
 `fromCombine(subtract)` is well typed and non-associative. A public name
 Semigroup records an intended law obligation, not a proof certificate.
@@ -64,14 +74,12 @@ D(Semigroup,Int)` and `latest: D(Semigroup,Int)`.
 
 ```text
 fn statsEvidence(p: StatsPolicies): D(Semigroup,Stats) =
-  make { combine = combineStats }
-  where
-    fn combineStats(x: Stats, y: Stats): Stats =
+  { combine: fn(x, y) =>
       { count: p.count.combine(x.count,y.count),
-        latest: p.latest.combine(x.latest,y.latest) };
+        latest: p.latest.combine(x.latest,y.latest) } };
 
 fn statsExample(): Stats =
-  statsEvidence({ count: sum(), latest: lastFor(0) }).combine(
+  statsEvidence({ count: sum(), latest: lastFor() }).combine(
     { count: 2, latest: 10 }, { count: 3, latest: 20 });
 ```
 
@@ -88,22 +96,21 @@ dictionaries without HKTs or polymorphic fields.
 fn client(d: D(Semigroup,a), x: a, y: a): a =
   foldFrom(d,x,Cons(y,Nil));
 
-fn configured(d: D(Semigroup,a)): a -> a -> a = applyChosen
-  where
-    fn applyChosen(x: a, y: a): a = client(d,x,y);
+fn configured(d: D(Semigroup,a)): a -> a -> a =
+  fn(x, y) => client(d,x,y);
 
 fn choose(flag: Bool): D(Semigroup,Int) =
   if flag then sum() else product();
 
 fn runtimeExample(flag: Bool): Pair(Int,Int) =
   Pair(configured(choose(flag))(2)(3),
-    configured(lastFor(0))(2)(3));
+    configured(lastFor())(2)(3));
 ```
 
 Expected at true: `Pair(5,3)`; at false: `Pair(6,3)`. Test both calls in one
 program, then reverse their source order. `configured` returns a closure
 capturing the exact dictionary value. Specializing `client` at Int once must
-preserve both flows. `configured(reverse(lastFor(0)))(2)(3) = 2` checks a
+preserve both flows. `configured(reverse(lastFor()))(2)(3) = 2` checks a
 constructed dictionary with a capture, rather than only globals. A future
 specialization oracle must compare observations against ordinary
 unspecialized evaluation, not merely count function copies.
@@ -117,8 +124,8 @@ fn both(d: D(Semigroup,a), e: D(Semigroup,a), x: a, y: a): Pair(a,a) =
 
 `both(sum(),product(),2,3)` must give `Pair(5,6)`; swapping the operands
 gives `Pair(6,5)`. A checker that deduplicates equal dictionary types
-silently changes the program. The explicit binder sugar, if adopted, needs
-two lexical names here just as ordinary parameters do.
+silently changes the program. Both choices are ordinary parameters with
+distinct lexical names; no additional evidence binder is proposed.
 
 ## Negative and boundary programs
 
@@ -126,7 +133,7 @@ two lexical names here just as ordinary parameters do.
 |---|---|---|
 | N1 | `foldFrom(sum(),true,Nil)` | Reject at Bool seed: wrong carrier |
 | N2 | `foldFrom(2,Cons(3,Nil))` | Reject missing evidence/arity; do not search |
-| N3 | `make Semigroup<Int> { combine = fn(x: Int) => true }` | Reject method type/arity |
+| N3 | `fromCombine(fn(x) => true)` at carrier Int | Reject method type/arity |
 | N4 | An effectful `combine` supplied to a pure dictionary | Reject effect mismatch; no silent effect erasure |
 | N5 | `both(sum(),sum(),2,3)` | Accept `Pair(5,5)`; distinct parameters may hold the same value |
 | N6 | Helper omits d without supplying another operand | Reject missing operand; no implicit default exists. Explicitly passing declared sum() is well typed and deliberately changes the choice |
@@ -137,7 +144,10 @@ two lexical names here just as ordinary parameters do.
 | N11 | A type meta remains in any expression or named-reference instantiation, including a phantom carrier | Report ambiguity in this annotated core; no Int representative; a written type vector may fix it |
 | N12 | `Tag(Int)` and `Tag(Bool)` dictionaries whose only field has type `Unit -> Unit` | A permits interchange at that shape; B rejects the distinct carrier index |
 
-The helper syntax permits named captures solely for these illustrations; it
-does not add local polymorphic schemes. Newtypes for Dollars versus Meters
-would still prevent accidental domain mixing; none is required solely to
-select sum versus product over Int.
+All named functions above are top-level. Lambda parameters get their
+monotypes from the expected function type. In reverse and configured, that
+type contains the enclosing declaration's rigid `a`; the lambda neither
+introduces a new `a` nor generalizes its captures. `where` is not used for
+helpers; its existing Waxwing meaning is a row-constraint clause. Newtypes
+for Dollars versus Meters would still prevent accidental domain mixing; none
+is required solely to select sum versus product over Int.

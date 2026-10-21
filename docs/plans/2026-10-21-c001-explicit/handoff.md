@@ -1,9 +1,10 @@
 # C001 design tranche handoff
 
 2026-10-21. Review branch `design/c001-explicit-evidence`, worktree
-`/private/tmp/waxwing-c001-design`, base `5a46e96`. Commit only this
-tranche's files. No merge or push. No compiler changes, Lean work,
-language-policy adoption or resumed record-composition research.
+`/private/tmp/waxwing-c001-design`, rebased onto `c341109` after the
+original `5a46e96` base. Only this tranche's files belong to its commits. No
+merge or push. No compiler changes, Lean work, language-policy adoption or
+resumed record-composition research.
 
 Start with [README](README.md), whose four decisions are the requested
 author review. It compares ordinary operation records and dedicated class
@@ -61,10 +62,12 @@ The [probe](probe.py) passed all its frozen selected observations; output is
 retained in [probe-results.txt](probe-results.txt). It evaluates selected
 numeric/value-flow cases, retained equality, update/rebuilding and the
 ascending-tree/descending-search failure. Stats checks component results
-only; the P4 check uses projections, not the generic helper. It detects
-per-carrier default replacement changing 6 to 5. Python uses small integers
-here, so this does not validate Waxwing overflow or numeric laws. It parses
-no Waxwing and establishes no typing, compiler or lowering result.
+only; the P4 check uses projections, not the generic helper. It demonstrates
+that sum and product choices yield 5 and 6, and that relabelling a tree's
+policy can miss key 3. It constructs no default-replacement evaluator and
+runs no mutants. Python uses small integers here, so this does not validate
+Waxwing overflow or numeric laws. It parses no Waxwing and establishes no
+typing, compiler or lowering result.
 
 The width check reports zero lines over 80 columns across the worktree. No
 whitespace errors were reported by the final staged diff check. A
@@ -72,14 +75,15 @@ tranche-local relative-link check passed for Markdown links. No npm
 verification or Lean build ran. The probe is an exploratory model, not a
 compiler implementation.
 
-The original checkout's consulted file hashes remained unchanged after
-commit. All original status entries remained except one untracked Claude
-agent-worktree entry, `.claude/worktrees/agent-a3a836bc18c839110/`, which
-was no longer listed at the final comparison. This task issued no removal
-command or source-file edit there; the concurrent workspace can advance.
-Only the isolated branch's new tranche files were staged/committed. Shared
-backlog, progress, handoff, provenance and direction files were not edited;
-coordinate with their owner before adding links or status updates there.
+At the original delivery, the consulted source file hashes remained
+unchanged after commit. All original status entries remained except one
+untracked Claude agent-worktree entry,
+`.claude/worktrees/agent-a3a836bc18c839110/`, which was no longer listed at
+the final comparison. This task issued no removal command or source-file
+edit there; the concurrent workspace can advance. Only the isolated branch's
+new tranche files were staged/committed. Shared backlog, progress, handoff,
+provenance and direction files were not edited; coordinate with their owner
+before adding links or status updates there.
 
 ## Next authorized action
 
@@ -88,3 +92,23 @@ itself authorize compiler implementation or new proofs. After the author
 chooses a representation and scope, write the required arguments and
 implementation/evidence plan under a separate authorization. Do not make
 that plan depend on unfinished record-solver internals.
+
+## Author-review revision
+
+Replaced invented local `where fn` helpers with existing capturing lambdas;
+the expected types keep the enclosing signature's rigid variables in scope.
+A examples use ordinary colon-field records. B's nominal constructor is
+shown separately and remains unselected. Removed the unused `using` binder
+and lastFor's inference-only seed; decision 2 now concerns scope. Both probe
+counterexamples are labelled demonstrations.
+
+Read dossier §18.29-§18.31 and rebased this branch onto `c341109` without a
+merge commit. The C001 request in this chat separately authorizes design
+comparison of dedicated evidence. It grants no implementation approval.
+Generic code relies on written interfaces under opaque rigid variables;
+operation dictionaries provide no row-decomposition or shape evidence.
+Follow-up input hashes are in [revision-inputs.json](revision-inputs.json).
+
+The earlier missing agent-worktree entry remains absent from Git's current
+worktree list. This read-only glance cannot establish who removed it; no
+cleanup or recovery was attempted by this task.
