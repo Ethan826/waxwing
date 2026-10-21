@@ -8161,3 +8161,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   surplus claim was wrong (CI3/CD3 need `CellShape` through CD2) and is
   corrected with the other wording fixes. The author's acceptance
   pending.
+- **Tranche accepted** (dossier §18.57); milestone closed and published
+  to `main`. Refutation statements added (Cell/Refutations.lean, to be
+  proved in wave 2). Second proof wave authorized and launched: nine
+  parallel streams (proof-plan.md, "Wave 2"). 11 tranche worktrees
+  removed, branches kept.

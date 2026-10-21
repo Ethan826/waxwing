@@ -4843,3 +4843,37 @@ unstated corollary; "no premise"; QX directions named; omissions in
 refusal record covered six streams, not five) and in statements.md
 (stale "nothing proved" status). Informational: `Cells.routeP_hasInstance`
 shares its name with a lemma in another namespace.
+
+### 18.57 Tranche accepted; second proof wave authorized (2026-10-21)
+
+**The author accepted the tranche as recorded in §18.56**, having
+checked the assembled signatures and the corrected scope: for the
+research model, this cell-based checker's acceptance implies
+`ValidOpen` with no outstanding proof hypothesis, and the concrete
+`route` acceptance makes the guarantee non-vacuous. Rulings:
+
+1. **Milestone closed;** the accepted proofs and record are published
+   to `main`. Deferred claims stay deferred.
+2. **Both scratch refutations become repository theorems,** as
+   regression guards against removing `CellShape`, included in the
+   axiom audit. The reviewer's compiled scratch text no longer exists
+   (deleted under its brief; it declined to reconstruct it), so the
+   statements are restated by the coordinator from the review's
+   description: Cell/Refutations.lean, `CellSoundNoShape` (CM without
+   the `CellShape` premise) and `EvalDefinedNoShape` (CD3 with the
+   region replaced by `HasInstance`, `GenericInst`, `WithinC`), both
+   with `QSound` unchanged.
+3. **Second proof wave authorized** against the existing reviewed
+   statements, prioritizing query exactness, the scenario families
+   (especially `star` for every n), and CI4/CI5 representation
+   correspondence. The tautology reduction runs independently and does
+   not delay them; its conclusion concerns this certificate-checking
+   problem, not all Waxwing inference.
+
+A failing statement stops that proof with a counterexample; nothing is
+weakened to complete the wave. Not in scope: compiler integration, any
+polynomial-coverage claim, any checker-completeness claim. No `npm run
+verify` for this tranche: Lean build, axiom audit, width and
+whitespace checks. The 11 tranche worktrees (the record earlier said
+13, a miscount) were confirmed committed, integrated and idle, then
+removed; their branches are kept. Plan: proof-plan.md, "Wave 2".

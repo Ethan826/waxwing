@@ -133,6 +133,7 @@ import Composition.Typed.Cell.Statements
 import Composition.Typed.Cell.Exact
 import Composition.Typed.Cell.Scenarios
 import Composition.Typed.Cell.ScenariosMore
+import Composition.Typed.Cell.Refutations
 import Composition.Typed.Cell.Proofs.A
 import Composition.Typed.Cell.Proofs.D
 import Composition.Typed.Cell.Proofs.E

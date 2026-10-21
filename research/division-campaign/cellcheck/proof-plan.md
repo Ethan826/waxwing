@@ -71,3 +71,30 @@ by the remedy each refusal prescribed (separate plain commands, or the
 same command from the worktree without the redirect); none was a
 permission denial. Both reviews done, corrections applied (dossier
 §18.56); the author's acceptance pending.
+
+## Wave 2 (authorized 2026-10-21, dossier §18.57)
+
+Same interface rules as wave 1: statement files fixed (now including
+Refutations.lean), one file per stream under
+`Cell/Proofs/W<n>/` or `Cell/Proofs/W<n>.lean`, helpers in
+`Composition.Typed.Cells.ProofsW<n>`, no `sorry`/`admit`/`axiom`/
+`native_decide`, at most 250 lines per file, and a false statement
+stops that target with a counterexample. Wave-1 theorems may be used
+freely (notably `cellOpenImpl`: a problem that is not `ValidOpen` is
+refused by every certificate).
+
+| Stream | Proves | May assume |
+|---|---|---|
+| W1, computational exactness | QX1 `FreeSIff`, QX2 `CellPossExact`, QX3 `CoverExact` | none |
+| W2, region exactness, labels | QR1 `PossWExact`, QR2 `PossBothExact`, QR5 `RegionTrivialities` | none |
+| W3, region exactness, cells | QR3 `CellBothExact`, QR4 `CoverRegionExact` | QX2, QX3 |
+| W4, `star` | `ScStar` (every n), `ScStarRead` (every n) | none |
+| W5, `star` controls | `ScStarUnlacked`, `ScStarUndeclared`, `ScStarCross` | none |
+| W6, families | `ScDep`, `ScDivide3`, `ScIntArm`, `ScSplitSig`, `ScSelfDisjoint`, `ScBroken`, `ScCertRefusals` | none |
+| W7, controls and guards | `ScShapeSplit`, `ScSplitFree`, `ScOutsideFragment`, `ScDivide5`; `¬ CellSoundNoShape`, `¬ EvalDefinedNoShape` | none |
+| W8, representation | CI4 `ProjPieceDen`, CI4′ `ProjGuardRefused`, CI4″ `SchPieceDen`, CI5 `DeclaredIsNoCommonCell` | none |
+| W9, tautology (independent) | QX4 `CoverTautology`, `CheckTautology` | QX3 |
+
+`ScDivide5`'s `ValidOpen` conjunct was argued, never checked (§18.47);
+if it fails, W7 reports it. Integration as in wave 1: one build,
+instantiation, axioms.out extended, then two independent reviews.
