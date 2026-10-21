@@ -2603,3 +2603,53 @@ Unresolved or today's behavior outside the fragment; Lean in verify or
 not; certificates in the checked IR; whether a P9s-only step lands
 before D4 (it changes pinned D4 fixtures); an internal error when a
 certificate built from a Solved substitution fails `checkAll`.
+
+### 18.17 The author's review of §18.15-18.16 (2026-10-21)
+
+The findings raise a language-policy question; they are not a reason to
+adopt a canonical split. Split selection stays separate from signature
+validity. Decisions:
+
+1. **Clean-build repair authorized** as a narrow exception to the
+   campaign's no-compiler-change boundary (restore `SeveralTails.purs`
+   after checking the parent version against its callers, with compiler
+   verification). Not authorization to integrate the solver.
+2. **No lexicographic split selection.** Declaration order deciding
+   whether a function type-checks would be a substantial language rule.
+   Open question, to settle before any canonical witness: does the `show`
+   example (E2, §18.15) show genuinely observable differences between
+   otherwise valid splits, or an incomplete constraint model that calls
+   a split valid before all requirements (printability, checked after
+   specialization) are counted? Neither follows from the run-time
+   argument. Stream 5 answers first: does the source-to-constraint
+   specification include every condition that can later reject a
+   specialization?
+3. **Decision 3 stays.** `route` establishes signature validity;
+   permission to compile it under an unforced split is a separate
+   obligation, not lifted until the constraints are complete and a
+   selection rule is justified.
+4. **A small split-irrelevance theorem**, statements first: the exact
+   fragment, observable behavior and allowed operations, with
+   specialization-time requirements in the surrounding account.
+   Run-time non-observability alone does not establish stable
+   compilation acceptance. Generated tests support; they do not prove
+   the universal claim.
+5. **Per-specialization ground checking: investigate, do not adopt.** It
+   could check that concrete bindings satisfy the recorded body
+   constraints; it cannot replace the universally quantified signature
+   proof, nor show that the recorder captured every relevant constraint.
+6. **The certificate gate stays the preferred architecture** (untrusted
+   search, verified checking). **Trust boundary:** a PureScript port of
+   `checkAll` with differential tests against Lean is evidence; it does
+   not inherit Lean's theorem.
+7. **H's false contradiction on `route` is a diagnostic correctness
+   defect** (BACKLOG SIG-ROUTE-H): an inability to divide a rigid row is
+   not evidence that no solution exists. Its desired classification is
+   recorded separately from whether the language permits compiling an
+   unforced split. Repair outside this campaign unless separately
+   scoped.
+
+Integration reconnaissance: **approved**, read-only size measurements of
+real functions (`|R|`, `|L|` and pattern counts) and a proposed
+constraint-recorder interface. **Deferred:** recorder implementation, IR
+changes, fallback policy, any P9s-only integration step.
