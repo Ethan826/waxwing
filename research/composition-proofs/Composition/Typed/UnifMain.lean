@@ -1,7 +1,7 @@
 /-
-Robinson's theorem in the generic model (see UnifRobinson.lean for the
-source and construction.md §6.1 for the correspondence): finite
-cell-shaped pairs with a unifier have a most general one satisfying
+An adaptation of Robinson's theorem, reproved for the generic model
+(see UnifRobinson.lean for the source and construction.md §6.1 for
+the correspondence): finite cell-shaped pairs with a unifier have a most general one satisfying
 `MguSpec`. Induction on the number of constants: a clash contradicts
 the unifier, and a binding eliminates one constant.
 -/

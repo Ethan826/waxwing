@@ -3601,8 +3601,8 @@ Coordinator checks: clean `lake build` (128 jobs, no warnings); no
 `sorry`, `admit`, `native_decide` or `axiom` in Composition/Typed/; the
 23 audited results (d3b/checks/Audit.lean) depend only on `propext`,
 `Classical.choice`, `Quot.sound`. Defs.lean's statements unchanged; each
-theorem's type is the reviewed Prop. **Independent review of the proofs
-is in progress; not yet accepted.**
+theorem's type is the reviewed Prop. **Independent review of the proofs:
+done, §18.36 (all sound; wording findings corrected).**
 
 | Statement | Lean | Premises, in full | Status |
 |---|---|---|---|
@@ -3633,9 +3633,10 @@ equations); records are functions, so equality modulo permutation never
 arises; substitutions are total, `IsMGU` asks only for finite values;
 cells are ordinary labels, with cell locality an extra invariant. So
 the published theorem is not used as a black box: `robinson` reproves
-it for this model, by induction on the number of constants, with an
-occurs check by well-foundedness (`psub_acc`); its result is stronger
-than most-general (every unifier τ satisfies τ = τ∘μ).
+an adaptation of it for this model (corrected, §18.36), by
+induction on the number of constants, with an occurs check by
+well-foundedness (`psub_acc`); its result is stronger than
+most-general (every unifier τ satisfies τ = τ∘μ).
 
 **Oracle work.** An exact recursive clash check (clash.mjs): the
 `record-constant` case is now exactly `invalid`; with the old
@@ -3693,3 +3694,51 @@ disclosed `unknown`, and assertion mode makes mismatches fail visibly.
 Next: finish the independent proof review, then connect this existence
 theorem to the authorized finite-freshness and option-B soundness work.
 No new trimming machinery, no compiler integration.
+
+### 18.36 Independent review of the D3b existence proofs (2026-10-21)
+
+research/division-campaign/reviews/d3b-existence-review.md (independent
+reviewer, at d41eea7; scratch non-vacuity Lean outside the repository).
+
+**Verdict: all seven theorems are proved and sound; none false or
+vacuous.** `mguExists`, `cellIndependence`, `universality` and
+`d3bExists` have exactly the reviewed Props' types; `d3bExistsWithin`
+has the bridge's `D3bExistsWithin` shape; `robinson` proves `MguSpec`,
+stronger than `IsMGU`; `thetaStar_valid_iff_fresh`'s `Fresh` premise is
+explicit and satisfiable. Defs.lean's statements unchanged since
+d7113d7. `IsMGU`'s generality clause covers every `CSubst`, infinite
+values included. `psub_acc` is structural recursion (no axioms); no
+`termination_by`; classical reasoning only inside proofs; the
+`Agree`/`MguSpec` fixed-point argument checks step by step;
+`universality` handles a non-cell-shaped MGU through `μ`. 24 audited
+results, standard axioms only. Non-vacuity (scratch): `route`'s generic
+instance must occupy cell `[0]` (allowed; `[1,2]` refused); `agree`
+solvable at `thetaStar` under `Fresh`; `splitFree` unsolvable at
+`thetaStar` for every MGU without freshness; some `CG` values are
+infinite.
+
+**The claim holds as stated:** "D3b general existence is proved, with no
+freshness premise", with its full premises (`Scoped P`,
+`HasInstance P π`, decidable equality on `Label`, any `B`);
+`d3bExistsWithin` adds `WithinC`. Limits on record still apply: θ* is
+classical and not executable; the result is about the research model,
+not Waxwing source; completeness stays conditional on `Fresh` (option B
+through the bridge).
+
+**Findings (wording or evidence; none affects a proof), and fixes by the
+coordinator:** F1 `WithinC` described too narrowly (Defs.lean
+docstrings and construction.md corrected to "written labels and bases,
+plus symbolic cell labels and generic constants"; comments in
+Complete.lean, FlatMain.lean, UnivCover.lean say "the problem's
+symbols", which `WithinC` defines, left as is); F2 cell shape is needed
+for `mguExists` too, and §6.1 item 1 omitted it (corrected); F3 the
+"constants outside the equations stay fixed" claim is unproved (marked),
+and "ordinary syntactic unification in the sense of Robinson" replaced
+by "an adaptation" in construction.md §4, Defs.lean, MGUExists.lean,
+UnifMain.lean; F4 θ* is classical, fixed only up to the MGU (stated in
+construction.md); F5 the bridge's "W is needed" reasoning superseded by
+`d3bExistsWithin` (statements.md); F7 §18.34 says `robinson` reproves an
+adaptation (corrected). **Open, F6:** `thetaStar` is not checked on a
+concrete problem in the repository (examples use `thetaFree`,
+`thetaFlat`); the review's scratch checks could be added to Examples
+and the audit.

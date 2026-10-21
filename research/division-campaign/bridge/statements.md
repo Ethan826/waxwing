@@ -313,7 +313,12 @@ altered. The per-problem form lets proved fragments compose: B3e and
 B3f need no open premise, so they are the strongest P-1 results
 available once B2 is proved.
 
-**Why W is needed.** `D3bExists` gives `GenericInst` but not `WithinC`,
+**Superseded (2026-10-21, dossier §18.35-§18.36):** `d3bExistsWithin`
+(Universality.lean, reviewed) gives `GenericInst ∧ WithinC` from
+`Scoped` and `HasInstance`, so W is on no path; the paragraph below is
+kept as the earlier reasoning.
+
+**Why W was needed.** `D3bExists` gives `GenericInst` but not `WithinC`,
 and `d3bComplete` (and B2) need `WithinC`. `Universality` does carry
 `WithinC`; `D3bExists` as stated does not (both reviewers confirmed).
 W is stated per instance, so it applies whatever the source of θs.
@@ -510,8 +515,9 @@ is proved; no typed completeness is claimed. Outside C:
    placed at `B`. `FreshBasesOn` with an extension `j` is the proposed
    replacement; `d3bComplete` is left as it is.
 2. **`D3bExists`** (Typed/Defs.lean) omits `WithinC`, so it does not
-   compose with `d3bComplete` directly. W bridges it. `Universality`
-   already includes `WithinC`.
+   compose with `d3bComplete` directly. `Universality` already
+   includes `WithinC`, and `d3bExistsWithin` (proved, reviewed;
+   §18.36) supplies existence with `WithinC`, so W is not needed.
 3. **`d3bValidAll`'s `ValidFin` conclusion** is closed validity at `B`.
    Under option B it does not give acceptance; B4f and B5 are needed.
 4. **`GenericInst`** quantifies coverage over instances at `B` only.
