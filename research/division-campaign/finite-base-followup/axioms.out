@@ -1,0 +1,12 @@
+'Composition.TypedAttack.FiniteShapes.general_family_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.general_family_no_uniform' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Composition.TypedAttack.FiniteShapes.family_compatible' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.missing_base' depends on axioms: [propext, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.two_base_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.two_base_not_uniform' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.four_base_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.general_family_missing_base' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

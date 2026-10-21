@@ -7924,3 +7924,29 @@ assessment.md.
   - Corrections (a8a3cab…): 9b55cf3, documents done; Lean comments left.
   - Recorder spec (ae79b80…): e7ce17a, 60 rows drafted, counts and
     citations unverified.
+
+## Codex finite-base follow-up while Claude is paused (2026-10-21)
+
+- Authorized narrowly by the author: investigate the standing finite-base
+  question, use an independent agent, and leave a handoff for Claude.
+  The six campaign streams were not resumed.
+- Original checkpoint ShapeSplit.lean at 9c3b9b7 builds independently in
+  an isolated proof copy. New modules TypedAttack/FiniteShapes,
+  FiniteCompatibility, FiniteEquations and FiniteObstruction prove the
+  semantic equation-family extension for any complete nonempty finite
+  base list. Parts, targets and remainders are finite for finite inputs;
+  every solution forces type-dependent presence. Two-/four-base instances
+  and an omitted-base negative control are included.
+- Full proof library builds, no warnings or proof placeholders; axiom
+  report uses only propext, Classical.choice and Quot.sound. Independent
+  review confirmed scope. Evidence and detailed handoff:
+  research/division-campaign/finite-base-followup/README.md.
+- No proof connects this branch-indexed family to a generated SigProblem
+  or Waxwing source. Three source scaffolds parse/resolve and stop at
+  Check's unresolved split, using existing compiled modules. Their generic
+  four-base form does not cover actual TData/handler/effectful-arrow types.
+  No valid full-Waxwing counterexample or desired-feature failure is shown.
+- Next: settle the generic type universe, then reassess the finite-base
+  and fresh-opaque-base completeness assumptions. Presence results stand.
+  No new witness policy, D4 or compiler integration adopted; no npm or
+  quiet-machine compiler verification run. Other owners' edits untouched.

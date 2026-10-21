@@ -1,3 +1,29 @@
+# Codex finite-base follow-up for Claude (2026-10-21)
+
+The six campaign streams remain paused. The author asked Codex to investigate
+only the standing finite-base question while Claude waits for its reset.
+Read research/division-campaign/finite-base-followup/README.md first, then
+dossier §18.27. New proofs are imported by Composition.lean and build.
+
+**Result:** the counterexample extends to every complete nonempty finite
+base list at the semantic row-equation level, including finite remainder
+rows. Two-/four-base instances are included; an omitted base invalidates
+the family. The Nat-indexed SigProblem encoding is not formalized. A source
+gate generates the shape and parses/resolves, but is not established valid
+for Waxwing's richer universe. No desired source feature is shown broken.
+
+**Next:** pin down the intended generic type universe before continuing
+D3a/D3b completeness. See the note's six scoped actions. The original
+singleton target at 9c3b9b7 built separately; its paused branch is not
+integrated here. No production source change, D4 adoption or push.
+
+**Evidence:** full Lean library build and new axiom report in the follow-up
+directory. Source probes use existing output modules, not a clean compiler
+build. The quiet-machine verify is still owed before campaign resumption.
+Other sessions' README/backlog/direction edits were preserved unstaged.
+
+---
+
 # Waxwing / record composition foundation: presence fragment decided (2026-10-21)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). For the

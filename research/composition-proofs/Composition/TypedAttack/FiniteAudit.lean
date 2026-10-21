@@ -1,0 +1,10 @@
+import Composition.TypedAttack.FiniteObstruction
+
+#print axioms Composition.TypedAttack.FiniteShapes.general_family_valid
+#print axioms Composition.TypedAttack.FiniteShapes.general_family_no_uniform
+#print axioms Composition.TypedAttack.FiniteShapes.family_compatible
+#print axioms Composition.TypedAttack.FiniteShapes.missing_base
+#print axioms Composition.TypedAttack.FiniteShapes.two_base_valid
+#print axioms Composition.TypedAttack.FiniteShapes.two_base_not_uniform
+#print axioms Composition.TypedAttack.FiniteShapes.four_base_valid
+#print axioms Composition.TypedAttack.FiniteShapes.general_family_missing_base

@@ -1,0 +1,12 @@
+type Box = Box;
+fn recordAny(): { ...w } with pure = crash("unreachable");
+fn gate(
+ whole: { ...ui, ...ub, ...uu, ...ut, ...ua, ...ur },
+ intPart: { ...ui, ...mi }, boolPart: { ...ub, ...mb },
+ unitPart: { ...uu, ...mu }, textPart: { ...ut, ...mt },
+ arrowPart: { ...ua, ...ma }, recordPart: { ...ur, ...mr }
+): Unit with pure = ();
+fn route(x: { f: Box }): Unit with pure =
+ gate(x, { f: 0 }, { f: true }, { f: () }, { f: "x" },
+ { f: (fn(z) => crash("unreachable")) }, { f: recordAny() });
+fn main(): Int = 0;

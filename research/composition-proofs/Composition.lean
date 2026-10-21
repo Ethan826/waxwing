@@ -67,3 +67,4 @@ import Composition.SplitIrrelevance.Run
 import Composition.SplitIrrelevance.Acceptance
 import Composition.SplitIrrelevance.Examples
 import Composition.SplitIrrelevance.Boundary
+import Composition.TypedAttack.FiniteObstruction

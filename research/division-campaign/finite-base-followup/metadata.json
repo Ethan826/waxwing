@@ -1,0 +1,11 @@
+{
+  "baseline": "7268c774ae10ea304065176fe113b990106b0cb1",
+  "singleton_checkpoint": "9c3b9b7",
+  "compiler_probes": "existing output modules; no fresh compiler build",
+  "compiler_module_sha256": {
+    "output/Format.Parse/index.js": "8595d6a824fb43cca17c689f405cfaca699dd722bccee2afdf60405c2d91a98c",
+    "output/Features.Resolve/index.js": "57a9648dcce43a5baeda6e668e8db9a811cecd4de1ba67eb0dd5fc7542fbc0e0",
+    "output/Features.Check/index.js": "c2e68ddf77b702567a5dee517c9c9d8b0e61aae79df1f654ba3bbc67306b37b6",
+    "output/Format.Diagnostic/index.js": "12882b9df47bf2e1bedd6f47ffd09bca57aa92758b562b26f5e8c58cb0227697"
+  }
+}
