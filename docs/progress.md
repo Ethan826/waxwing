@@ -7841,4 +7841,5 @@ assessment.md.
   merging and publishing remain unauthorized. In flight.
 - Stream 3 integrated: a computable presence witness procedure with
   soundness and completeness (`witness_sound`, `witness_complete`,
-  `valid_iff_witness`). Dossier §18.14.
+  `valid_iff_witness`). Dossier §18.14. The author accepted it as the
+  executable presence baseline; the caller checks patterns against `D`.
