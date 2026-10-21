@@ -6,7 +6,9 @@ claims (first milestone, dossier §9) and the call-site foundation's
 syntax, substitution, binding equations and finite reduction (R1, R2,
 R2′, enumeration, fresh allocation; second milestone, §10), and the
 closed-problem decider with call-site decidability (R3; third
-milestone, §12).
+milestone, §12), and the soundness of the candidate signature checker
+P9s over all partial maps and over finite values (`s1`, `s1_fin`;
+§14.8).
 Research only; separate from the compiler and not part of `npm run
 verify`.
 
@@ -57,9 +59,15 @@ A clean `lake build` reports no errors and no warnings. No file uses
 | Composition/Unify/Complete.lean | U2 | `unify_complete` |
 | Composition/Unify/Decider.lean | R3, call sites | `decideClosed`, `r3`, `decideCall`, `decideCall_correct` |
 | Composition/Unify/Examples.lean | executable examples | `#guard` on programs 3, 4, 5, 11, controls, counterexamples |
-| Composition/Sig/Validity.lean | C9 statements: `SigProblem`, `Valid` | `lacks_sat_not_valid`, `unnamed_labels_matter`, `declared_disjoint_valid`, `rigid_type_not_valid` |
+| Composition/Sig/Validity.lean | C9 statements: `SigProblem`, `ValidAll` | `lacks_sat_not_valid`, `unnamed_labels_matter`, `declared_disjoint_valid`, `rigid_type_not_valid` |
 | Composition/Sig/Examples.lean | C9 examples | `p6Sig_valid`, `depSig_valid`, `depSig_needs_dependence` |
 | Composition/Sig/Adversarial.lean | §13.7, the review's counterexamples | `splitSig_valid`, `wholeRest_fails`, `recSig_not_valid`, `recSig_hard_instance_solvable` |
+| Composition/Sig/Finite.lean | §14.8: finite semantics | `FinG`, `FinAssign`, `ValidFin` (definitions) |
+| Composition/Sig/Generic.lean | §14.2, §14.8: P9s's generic model | `Accepts`, `Certifies`, `HoldsG` (D1, D2), `WFG` (definitions) |
+| Composition/Sig/Interp.lean | §14.3, L2 | `interp`, `hRow`, `restWit_unique`, `hRow_disjoint`, `hRow_union`, `composeAll_hRow` |
+| Composition/Sig/Commute.lean | L3 | `hRow_genRow`, `combine_hAssign`, `interp_evalT`, `interp_fieldRows` |
+| Composition/Sig/FinitePres.lean | finiteness preserved | `interp_fin` |
+| Composition/Sig/Soundness.lean | L1, L4, S1, S1-fin | `consistent_presenceOf`, `holds_interp`, `s1`, `s1_fin` |
 | Composition/Axioms.lean | | `#print axioms` for each theorem above |
 
 ## Assumption dependencies (axioms.out)
@@ -76,6 +84,10 @@ procedure is separate and computable (`unify`, `decideClosed`,
 classical semantics, so they too list `Classical.choice`. `c7a`, `c10`,
 `c11`, `instance_alone_insufficient`, `p6_holds` and `not_part_self`
 depend on no axioms.
+P9s's soundness theorems (`s1`, `s1_fin` and their lemmas) use all
+three: the interpretation picks, classically, the rigid row whose rest
+supplies an unwritten label (`restAt`), and composition is classical
+as above.
 
 ## Definitional choices to review
 

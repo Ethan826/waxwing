@@ -8,22 +8,33 @@
 //   L4  every atom of B holds at θ with flexible part h(σ).
 // Patterns are checked even when another pattern fails (the lemma is
 // per pattern). `mutant` drops P9s's side condition, to show the check
-// can fail. Bounded evidence, not proof.
+// can fail. `rich` widens the rigid side: rigid rows' fields include
+// records, rigid type variables include labeled and nested records. The
+// hand-built certificates of deliberate.mjs run first. Bounded evidence,
+// not proof.
 // Run: node check-interpretation.mjs [count] [seed] [mutant] [larger]
+//   [rich]
 import { evalT, sat, rowsOver, product } from './semantics.mjs'
 import { DEFAULT_BOUNDS, labelsOf, makeTheta } from './bounded.mjs'
 import { witnesses } from './p9s.mjs'
 import { interpretation, Clash } from './interpret.mjs'
 import { generator } from './grammar.mjs'
 import { CHALLENGES } from './challenges.mjs'
+import { DELIBERATE } from './deliberate.mjs'
 
 const count = Number(process.argv[2] ?? 300)
 const seed = Number(process.argv[3] ?? 5)
 const mutant = process.argv.includes('mutant')
-const bounds = process.argv.includes('larger')
-  ? { ...DEFAULT_BOUNDS, unwritten: ['z1', 'z2', 'z3'],
-    rigidRowTypes: ['Int', 'Bool', '{}'] }
-  : DEFAULT_BOUNDS
+const RICH = { rigidRowTypes: ['Int', '{z1:Int}', '{a:Bool}'],
+  rigidTyValues: ['Int', '{a:Int}', '{z1:Bool}', '{a:{z1:Int}}',
+    '({z1:Int}->Int)'] }
+const bounds = {
+  ...DEFAULT_BOUNDS,
+  ...(process.argv.includes('larger')
+    ? { unwritten: ['z1', 'z2', 'z3'], rigidRowTypes: ['Int', 'Bool', '{}'] }
+    : {}),
+  ...(process.argv.includes('rich') ? RICH : {}),
+}
 const REST_TYPES = ['Int', '(Int->Int)']
 const tally = { problems: 0, patterns: 0, instances: 0, L2: 0, L3: 0, L4: 0 }
 const failures = []
@@ -52,7 +63,7 @@ function* rigidAssignments(P) {
   const keys = [...P.rigidRows.map((r) => `r${r}`),
     ...P.rigidTys.map((n) => `t${n}`)]
   for (const rigid of product(keys,
-    (k) => (k[0] === 'r' ? rows : bounds.tyValues))) {
+    (k) => (k[0] === 'r' ? rows : bounds.rigidTyValues ?? bounds.tyValues))) {
     if (sat(makeTheta(rigid, new Map()), P.D)) yield rigid
   }
 }
@@ -116,6 +127,29 @@ function checkOne(name, P, w, rigid, restType) {
   }
 }
 
+// A hand-built certificate: it must hold in the generic model first.
+function checkDeliberate(name, P, pattern, flexObject) {
+  const w = [...witnesses(P, bounds)].find((x) => x.pattern === pattern)
+  if (w === undefined) throw new Error(`${name}: no pattern ${pattern}`)
+  const flex = new Map(Object.entries(flexObject))
+  if (!sat({ ...makeTheta(w.rigid, flex), ...w.extend }, P.B)) {
+    throw new Error(`${name}: not a generic solution`)
+  }
+  tally.problems += 1
+  tally.patterns += 1
+  const solved = { ...w, flex }
+  for (const rigid of rigidAssignments(P)) {
+    if (!matches(P, solved, makeTheta(rigid, new Map()))) continue
+    for (const restType of REST_TYPES) {
+      checkOne(name, P, solved, rigid, restType)
+    }
+  }
+}
+
+for (const [name, P, pattern, flex] of DELIBERATE) {
+  checkDeliberate(name, P, pattern, flex)
+}
+console.log(JSON.stringify({ deliberate: DELIBERATE.length, tally }))
 for (const [name, P] of CHALLENGES) checkProblem(name, P)
 for (const split of [false, true]) {
   const generate = generator(seed, split)

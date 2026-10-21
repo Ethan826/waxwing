@@ -7666,3 +7666,23 @@ assessment.md.
   (absent-label constants, L4's rigid `lacks` reason, S1-fin needs a
   finite `c`, two table rows claimed checks that never ran, three §13.9
   slips). Verify not run (docs and research only).
+
+## Signature checking: P9s soundness proved in Lean (2026-10-20)
+
+- The author approved proof work on L1-L4, S1, S1-fin with two
+  clarifications (semantic vs executable certificates; L3's scope) and
+  decided: S1-fin primary; `Valid` renamed `ValidAll`, `ValidFin` added;
+  the rest encoding authorized for proof under ADR 014, not for the
+  compiler. Dossier §14.8.
+- Lean (Sig/Finite, Generic, Interp, Commute, FinitePres, Soundness):
+  `s1 : Accepts P → ValidAll P` and `s1_fin : Accepts P → ValidFin P`
+  with L1-L4. Clean build, no warnings, no `sorry`, standard axioms.
+  Mutants with D1 or D2 weakened to `True` break L4's equation and
+  `disjoint` cases.
+- Found during formalization, for the author's review: the proof needs
+  neither W1 nor W2, and W3 only on values equations build (D1), so the
+  theorem assumes less than §14.2 states.
+- sig-oracle: deliberate certificates (standalone constants, rigid
+  record types, nested rigid fields) and a `rich` rigid domain: 0
+  failures (162, 352, 6,864, 242,354 instances); corrupting `h` makes
+  L3 fail. Verify not run (docs, research and proofs only).

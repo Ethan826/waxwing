@@ -723,7 +723,7 @@ implementation, C8, extracting a split, residual alternatives, compiler
 integration. Lean: research/composition-proofs/Composition/Sig/
 (definitions and checked examples only; no procedure).
 
-### 13.1 The quantified language (Lean: `SigProblem`, `Valid`)
+### 13.1 The quantified language (Lean: `SigProblem`, `ValidAll`)
 
 A signature problem has rigid type variables and rigid row variables
 (the declaration's `∀`, read inside the body), declared clauses `D`,
@@ -735,12 +735,13 @@ and body constraints `B`, all in the call-site atoms of §10 (`=`,
   between rigid rows); `B` is everything the body's checking produces,
   including the instantiations of called functions (flexible) and the
   links between parameters, results and their uses.
-- **Quantifiers** (`Valid`): for every rigid assignment satisfying `D`
-  there is a flexible assignment satisfying `B`, rigid variables taking
-  their values from the first and flexible ones from the second
-  (`combine`). Every flexible variable may depend on every rigid one; no
-  rigid variable depends on a flexible one; there is no further
-  alternation. Rigid variables are never bound by solving.
+- **Quantifiers** (`ValidAll`, named `Valid` until §14.8): for every
+  rigid assignment satisfying `D` there is a flexible assignment
+  satisfying `B`, rigid variables taking their values from the first
+  and flexible ones from the second (`combine`). Every flexible
+  variable may depend on every rigid one; no rigid variable depends on
+  a flexible one; there is no further alternation. Rigid variables are
+  never bound by solving.
 - **Range of rigid rows.** A rigid row ranges over all rows: any labels,
   written or not, at any field types, and possibly empty.
 - **Assumption for the completeness claim (S2).** Infinitely many
@@ -1032,7 +1033,7 @@ Four semantics are in play and differ:
 | Semantics | Labels | Rows | Where |
 |---|---|---|---|
 | Waxwing | infinitely many (identifiers) | finite | the language |
-| the dossier's `Valid` | any type `Label` | any partial map, infinite ones included | Rows.lean, a definitional choice "for review" |
+| the dossier's `Valid` (now `ValidAll`) | any type `Label` | any partial map, infinite ones included | Rows.lean, a definitional choice "for review" |
 | JAR BAPA (main text) | a finite universe `U`, `MAXC = \|U\|` | every set is finite | syntax Fig. 3, p.5; `MAXC` p.6 |
 | JAR BAPA §8.1 | a countable universe | finite or infinite, `inf(b)` flags | pp.25-26, a sketch |
 
@@ -1136,10 +1137,12 @@ reports is an acceptance in the sense below.
   in `W_π` such that `combine(γ_π, σ_π) ⊨Δ B`. Otherwise it answers
   Unresolved, never Contradiction (§13.7).
 
-The family `(σ_π)` is a **certificate**: finitely many patterns, each
-checked by evaluating `B` once in the generic model, so checking a
-certificate is decidable. Finding one is a separate question (S3, the
-step-3 solver), not needed for soundness.
+The family `(σ_π)` is a **certificate**. As defined here it is
+semantic: `σ_π`'s rows are functions, so W1 and equality of values are
+not decidable on it (the author's review, §14.8). Checking certificates
+mechanically needs a finite syntactic representation of generic values;
+that is deferred. Finding one is a separate question again (S3, the
+step-3 solver). Neither is needed for soundness.
 
 ### 14.3 The interpretation
 
@@ -1182,7 +1185,7 @@ field type), and `A(r, l)` with `¬π(r, l)`, carry no information about
   written labels, for a rigid `r` because `π_θ = π` (the rigid side of
   `combine(θ, hσ)` is `θ`, not an image under `h`); `disjoint` by (D2),
   W3 and `θ ⊨ D`, rests lying outside `L`; `ff` never holds.
-- **S1, soundness.** If P9s accepts `P`, then `Valid P`. Shape: given
+- **S1, soundness.** If P9s accepts `P`, then `ValidAll P`. Shape: given
   `θ ⊨ D`, L1 gives a consistent pattern, the certificate gives
   `σ_{π_θ}`, and `hσ` satisfies `B` at `θ` by L4.
 - **S1-fin, soundness for Waxwing's finite semantics.** The same for
@@ -1260,3 +1263,89 @@ Fig. 3, the finite-rows sentence).
 4. Proposed Lean files after approval: Sig/Generic.lean (generic model,
    `W_π`, `⊨Δ`), Sig/Interp.lean (`h`, L2, L3), Sig/Soundness.lean (L1,
    L4, S1, S1-fin).
+
+### 14.8 Approval, amendments, and the proofs (Lean)
+
+The author's review (2026-10-20) approved proof work on L1-L4, S1 and
+S1-fin, with two clarifications, and decided the four points of §14.7:
+
+- **Certificates.** Semantic certificates and executable ones are
+  separate. §14.2 now says so; this milestone proves the semantic S1.
+- **L3's scope.** L3 covers expressions whose labels are written labels
+  of the problem; expressions of `B` meet it. Rigid variables need no
+  separate premise (the generic assignment gives each its constant).
+- **Machinery.** The rest-label encoding and its expansion by `h` are
+  authorized for investigation and proof under ADR 014. This does not
+  authorize adopting P9s in the compiler.
+- **Finite semantics.** S1-fin is the primary Waxwing result. `Valid`
+  is renamed `ValidAll` (all partial maps, infinite rows included), and
+  `ValidFin` is added beside it: rigid values and flexible witnesses
+  are finite at every depth. No earlier statement changed meaning.
+- **Files.** Generic model, interpretation and soundness separate;
+  finite values in their own modules.
+- **D's satisfiability** stays separate: `Accepts ⇒ ValidAll` holds
+  vacuously when `D` is impossible, and Waxwing refuses such a
+  declaration (§2.3).
+
+**A change found during formalization, for review.** The proofs need
+less than §14.2 states, and they assume only what they need:
+
+| §14.2 | In the proof | Why |
+|---|---|---|
+| W1 (rows hold only written labels and rests) | dropped | `h` reads a row only at written labels and at rests of rigid rows; an unwritten `inl` label is ignored |
+| W2 (a rest only at `R(r)`) | dropped | `h` ignores the field at a rest label |
+| W3 on every row of `σ` | only on values the body's equations build (D1) | `h` needs a unique source for an unwritten label only inside a composition; D2 covers `disjoint` atoms |
+| `h(A(r, l))`, `h(T(n))` | `c` also when `r` or `n` is not rigid | keeps `h` finite (S1-fin) without assuming anything of `θ`'s non-rigid values |
+| certificates | finite at every depth (`FinAssign`), used only for S1-fin | |
+
+The acceptance rule is therefore weaker, and S1 stronger, than
+approved. W1-W3 remain what P9s's search produces (the oracle's
+certificates satisfy them); they are no longer premises of the theorem.
+
+**Proved** (research/composition-proofs/Composition/Sig/; Lean 4.35,
+`lake build` clean, no `sorry`, standard axioms only):
+
+| Statement | Lean | File |
+|---|---|---|
+| generic model, D1, D2, `Accepts` | `Const`, `liftT`, `WFG`, `genAssign`, `HoldsG`, `Certifies`, `Accepts` | Generic.lean |
+| finite semantics | `FinG`, `FinAssign`, `ValidFin` | Finite.lean |
+| `h` | `interp`, `hRow`, `hAssign` | Interp.lean |
+| L2 | `restWit_unique`, `hRow_disjoint`, `hRow_union`, `composeAll_hRow` | Interp.lean |
+| rigid rows map to `θ` | `hRow_genRow`, `combine_hAssign` | Commute.lean |
+| L3 | `interp_evalT`, `interp_fieldRows` | Commute.lean |
+| finiteness preserved | `interp_fin` | FinitePres.lean |
+| L1 | `consistent_presenceOf` | Soundness.lean |
+| L4 | `holds_interp` | Soundness.lean |
+| S1 | `s1 : Accepts P → ValidAll P` | Soundness.lean |
+| S1-fin | `s1_fin : Accepts P → ValidFin P` (with `c` the empty record) | Soundness.lean |
+
+Mutants (isolated copies, deleted): replacing D1's well-formedness with
+`True` breaks L4's equation case, and replacing D2's declared pair with
+`True` breaks its `disjoint` case. This shows the proof uses both
+obligations. The oracle's mutant (§14.6) shows that without them
+acceptance would be unsound.
+
+**The disclosed gaps, exercised deliberately**
+(sig-oracle/deliberate.mjs). Five hand-built certificates, each first
+checked in the generic model: `R(r)` as a type on its own, alongside
+the rest it names; `A(r, l)` for a label the pattern marks absent, in a
+flexible row and a type variable; a rigid type variable inside a record
+with a rest; a rigid row holding a written label, nested in a field; and
+the same with the label absent. The `rich` rigid domain adds rigid
+fields `{z1:Int}` and `{a:Bool}`, and rigid type variables `{a:Int}`,
+`{z1:Bool}`, `{a:{z1:Int}}`, `({z1:Int}->Int)`.
+
+| Run | Instances | L2, L3, L4 failures |
+|---|---|---|
+| deliberate, default domain | 162 | 0 |
+| deliberate, `rich` | 352 | 0 |
+| challenges, `rich` | 6,864 | 0 |
+| generated `300 5 rich` (both grammars, with the above) | 242,354 | 0 |
+| power: `h` corrupted on present constants, `rich` | 352 deliberate, 6,864 challenges | L3 96 and 5,376 |
+
+Infinite rows still have no executable check; S1 covers them by proof.
+
+**Still open, as separate decisions:** completeness (Q1-Q3, `split`),
+the search for certificates and an executable certificate format, the
+final acceptance policy for signatures P9s leaves Unresolved, and
+compiler integration.

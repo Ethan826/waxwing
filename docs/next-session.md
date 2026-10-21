@@ -1,3 +1,22 @@
+# Waxwing / record composition foundation: P9s soundness proved (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). No
+compiler code changed in this thread; Task 7 stays checkpointed
+(`r005b-task7-wip`). Verify last run before this thread.
+
+**Read.** Dossier §14.8 (approval, the amendments found while proving,
+the Lean table, deliberate checks); research/composition-proofs/
+README.md (Sig/ rows).
+
+**Next, needs the author:** review of the milestone, in particular the
+weakened premises (W1, W2 dropped; W3 only through D1). Open as
+separate decisions: completeness (Q1-Q3, `split`), certificate search
+and an executable certificate format, policy for Unresolved
+signatures, compiler integration. Not authorized: adopting P9s in the
+compiler, CR.
+
+---
+
 # Waxwing / record composition foundation: P9s soundness statements (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). No

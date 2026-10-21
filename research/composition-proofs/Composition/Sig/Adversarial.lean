@@ -27,7 +27,7 @@ def outside (r s : Row Label (G Label B)) : Row Label (G Label B) :=
 def inside (r s : Row Label (G Label B)) : Row Label (G Label B) :=
   fun l => if s l = none then none else r l
 
-theorem splitSig_valid : Valid (splitSig : SigProblem Label B) := by
+theorem splitSig_valid : ValidAll (splitSig : SigProblem Label B) := by
   intro θR hd
   have hst : Disjoint (θR.row 1) (θR.row 2) :=
     hd (.disjoint 1 2) (by simp [splitSig])
@@ -94,7 +94,7 @@ theorem wholeRest_fails (z : Label) (uTakesR : Bool) :
 def recSig : SigProblem Label B :=
   ⟨[0], [], [], [.eq (.tvar 0) (.record .nil [1])]⟩
 
-theorem recSig_not_valid : ¬ Valid (recSig : SigProblem Label B) := by
+theorem recSig_not_valid : ¬ ValidAll (recSig : SigProblem Label B) := by
   intro hv
   obtain ⟨θF, h⟩ := hv ⟨fun _ => .arrow emptyG emptyG, fun _ _ => none⟩
     (by simp [Sat, recSig])
