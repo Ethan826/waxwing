@@ -8040,3 +8040,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   under unrelated additions; unused functions checked. Memo corrected
   in place (four claims). Next: bridge statements (P-1) for review; no
   typed completeness claim, class machinery or integration authorized.
+- Bridge statements for option B integrated (dossier §18.32):
+  `ValidOpen` proposed as the formal reading; finite-freshness form of
+  `d3bComplete`; completeness under B for the equation-free and flat
+  fragments stated without open premises; boundary as a
+  characterization. Statements only; reviewed; awaiting the author.
