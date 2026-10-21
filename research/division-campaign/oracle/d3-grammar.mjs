@@ -59,7 +59,9 @@ export function d3Generator(initialSeed) {
         const lhs = alpha && chance(0.3) ? v(0) : tails(pick(rigid))
         return ['eq', w(lhs), w(tails(x, other(x)))]
       }
-      if (kind === 'alias') return ['eq', w(tails(pick(flex))), w(tails(pick(any)))]
+      if (kind === 'alias') {
+        return ['eq', w(tails(pick(flex))), w(tails(pick(any)))]
+      }
       if (kind === 'disjoint') {
         const x = pick(flex)
         return ['disjoint', x, other(x)]
