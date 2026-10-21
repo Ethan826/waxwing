@@ -22,7 +22,8 @@
 // labels and nested fields, and each conjunct is answered by a region
 // query, so the quantifier over patterns is never enumerated. On a
 // failure it reports a bit (r, l) when splitting on it might help.
-import { possible, must, declared, nonEmpty } from './region.mjs'
+import { possible as possibleQ, must, declared, nonEmpty, fragmentS }
+  from './region.mjs'
 
 export const empty = () => ({ k: 'r', fields: [], pieces: [] })
 export const constA = (r, l) => `A${r}${l}`
@@ -36,6 +37,37 @@ class Fail extends Error {
 
 const fail = (reason, bit) => { throw new Fail(reason, bit) }
 
+// `possibleS` (Sig/SchematicCert.lean) is false on an empty region; the
+// certificate check below runs before the region is known non-empty.
+const possible = (ctx, r, l) => !ctx.empty && possibleQ(ctx.region, r, l)
+
+// A certificate is a list of bindings [key, value]; a Map stands for the
+// list of its entries. Shadowing belongs to this representation only: a
+// key bound twice is read at its first binding (`List.lookup`, as in
+// checkAll, dossier §15.7), and `certOk` still checks every binding.
+// Two parts of one record sharing a label is a different matter
+// (composition, `compose`), and is refused, never read at a first
+// occurrence (sc-statements.md §2).
+export const bindings = (cert) => (cert instanceof Map ? [...cert] : cert)
+
+function firstBindings(list) {
+  const out = new Map()
+  for (const [k, v] of list) if (!out.has(k)) out.set(k, v)
+  return out
+}
+
+// `certOkY` (Sig/SchematicDefs.lean): every binding, shadowed or not,
+// is well formed at every depth (`wf`), and every row binding is a
+// record. Keys outside `r<n>` and `t<n>` have no counterpart in the
+// model and are refused.
+function certOk(ctx, list) {
+  for (const [k, v] of list) {
+    if (!/^[rt]\d+$/.test(k)) fail(`binding key ${k}`)
+    wf(ctx, v)
+    if (k[0] === 'r' && v.k !== 'r') fail(`row ${k} bound to a non-record`)
+  }
+}
+
 // The value of an expression of B under a certificate, checked defined at
 // every pattern of the region (D1: no label from two parts; every pair of
 // distinct rests declared disjoint).
@@ -44,7 +76,7 @@ function evalT(ctx, t) {
     case 'b': return t
     case 'v':
       if (ctx.rigidTys.has(t.n)) return { k: 'b', b: `T${t.n}` }
-      return wf(ctx, ctx.cert.get(`t${t.n}`) ?? empty())
+      return ctx.cert.get(`t${t.n}`) ?? empty()
     case 'f': return { k: 'f', a: evalT(ctx, t.a), c: evalT(ctx, t.c) }
     case 'r': {
       const parts = [{ k: 'r', fields: t.fields.map(([l, ft]) =>
@@ -62,14 +94,21 @@ function rowOf(ctx, r) {
   }
   const value = ctx.cert.get(`r${r}`) ?? empty()
   if (value.k !== 'r') fail(`row ${r} bound to a non-record`)
-  return wf(ctx, value)
+  return value
 }
 
-// A certificate value is checked like a record expression, at any depth.
+// A certificate value is checked like a record expression, at any depth
+// (`wfY`): its fields and pieces are composed as separate parts, and
+// every piece is on a rigid row. Bindings are checked once, by
+// `certOk`, before any atom reads them.
 function wf(ctx, value) {
   if (value.k === 'f') return { k: 'f', a: wf(ctx, value.a),
     c: wf(ctx, value.c) }
-  if (value.k !== 'r') return value
+  if (value.k === 'b') return value
+  if (value.k !== 'r') fail(`value of kind ${value.k}`)
+  for (const p of value.pieces) {
+    if (!ctx.rigid.has(p.r)) fail(`piece on non-rigid row ${p.r}`)
+  }
   return compose(ctx, [{ k: 'r', pieces: value.pieces,
     fields: value.fields.map(([l, ft]) => [l, wf(ctx, ft)]) }])
 }
@@ -98,7 +137,7 @@ function compose(ctx, parts) {
   }
   for (const [l] of fields) {
     for (const p of pieces) {
-      if (!p.ex.includes(l) && possible(ctx.region, p.r, l)) {
+      if (!p.ex.includes(l) && possible(ctx, p.r, l)) {
         fail(`written ${l} may clash with row ${p.r}`, [p.r, l])
       }
     }
@@ -154,7 +193,7 @@ function sameHolders(ctx, xs, ys, l) {
     if (!holds(p, l)) continue
     const q = ys.find((q) => q.r === p.r)
     if (q && holds(q, l)) continue
-    if (possible(ctx.region, p.r, l)) {
+    if (possible(ctx, p.r, l)) {
       fail(`row ${p.r} may hold ${l} on one side only`, [p.r, l])
     }
   }
@@ -163,7 +202,7 @@ function sameHolders(ctx, xs, ys, l) {
 function lacking(ctx, row, l) {
   if (row.fields.some(([k]) => k === l)) fail(`row holds ${l}`)
   for (const p of row.pieces) {
-    if (holds(p, l) && possible(ctx.region, p.r, l)) {
+    if (holds(p, l) && possible(ctx, p.r, l)) {
       fail(`row ${p.r} may hold ${l}`, [p.r, l])
     }
   }
@@ -194,12 +233,26 @@ function checkAtom(ctx, a) {
   throw new Error(`unknown atom ${a[0]}`)
 }
 
-// { ok: true } or { ok: false, reason, atom, bit }. An empty region holds
-// no pattern and passes.
+const inFragment = new WeakMap()
+
+// { ok: true } or { ok: false, reason, atom, bit }. In the order of
+// `checkSym` (Sig/SchematicDefs.lean): the fragment guard, then the
+// certificate's well-formedness (on an empty region too), then every
+// atom; an empty region holds no pattern and passes the atoms.
 export function checkAtoms(P, labels, region, cert, atoms) {
-  if (!nonEmpty(region)) return { ok: true, vacuous: true }
-  const ctx = { P, labels, region, cert, rigid: new Set(P.rigidRows),
+  if (!inFragment.has(P)) inFragment.set(P, fragmentS(P))
+  if (!inFragment.get(P)) return { ok: false, reason: 'outside fragment' }
+  const list = bindings(cert)
+  const ctx = { P, labels, region, cert: firstBindings(list),
+    empty: !nonEmpty(region), rigid: new Set(P.rigidRows),
     rigidTys: new Set(P.rigidTys) }
+  try {
+    certOk(ctx, list)
+  } catch (e) {
+    if (!(e instanceof Fail)) throw e
+    return { ok: false, reason: `certificate: ${e.message}`, bit: e.bit }
+  }
+  if (ctx.empty) return { ok: true, vacuous: true }
   for (let i = 0; i < atoms.length; i++) {
     try {
       checkAtom(ctx, atoms[i])

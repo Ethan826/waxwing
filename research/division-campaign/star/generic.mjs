@@ -78,14 +78,22 @@ export function checkPattern(P, labels, present, cert, side) {
   return sat(theta, P.B)
 }
 
+// Rigid rows that may hold l: not lacking it, and not declared disjoint
+// from themselves (`disjoint r r` makes r empty; sc-statements.md
+// §10.1).
+function candidates(P, l, pairs) {
+  const lacking = new Set(P.D.filter((a) => a[0] === 'lacks' && a[2] === l)
+    .map((a) => a[1]))
+  return P.rigidRows.filter((r) => !lacking.has(r) &&
+    !pairs.has(`${r}|${r}`))
+}
+
 // Allowed holder sets of one label: subsets of rigid rows avoiding rows
 // that lack it and declared disjoint pairs. Listed by extension, so the
 // count is the factor's size, not 2^|R|, when D restricts it.
 export function holderSets(P, l) {
-  const lacking = new Set(P.D.filter((a) => a[0] === 'lacks' && a[2] === l)
-    .map((a) => a[1]))
   const pairs = declaredPairs(P.D)
-  const rows = P.rigidRows.filter((r) => !lacking.has(r))
+  const rows = candidates(P, l, pairs)
   let sets = [[]]
   for (const r of rows) {
     const next = []
@@ -110,13 +118,16 @@ export function consistentCount(P, labels) {
     if (!lacksOf.has(a[2])) lacksOf.set(a[2], new Set())
     lacksOf.get(a[2]).add(a[1])
   }
+  const pairs = declaredPairs(P.D)
+  const self = (r) => pairs.has(`${r}|${r}`)
   const apart = P.D.filter((a) => a[0] === 'disjoint' && a[1] !== a[2] &&
     rigid.has(a[1]) && rigid.has(a[2]))
   let log2 = 0
   for (const l of labels) {
     const lacking = lacksOf.get(l) ?? new Set()
-    const rows = P.rigidRows.filter((r) => !lacking.has(r))
-    const free = apart.every((a) => lacking.has(a[1]) || lacking.has(a[2]))
+    const out = (r) => lacking.has(r) || self(r)
+    const rows = P.rigidRows.filter((r) => !out(r))
+    const free = apart.every((a) => out(a[1]) || out(a[2]))
     if (free) log2 += rows.length
     else if (rows.length <= 20) log2 += Math.log2(holderSets(P, l).length)
     else return null

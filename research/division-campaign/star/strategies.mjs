@@ -5,12 +5,24 @@
 import { rowsOver } from '../../composition-assessment/sig-oracle/semantics.mjs'
 import { findSolution }
   from '../../composition-assessment/sig-oracle/bounded.mjs'
-import { makeIndex, makeRegion, newStats, extend, isFixed }
+import { makeIndex, makeRegion, newStats, extend, isFixed, fragmentS }
   from './region.mjs'
 import { checkAtoms, empty, instRow, instValue } from './schematic.mjs'
 import { unifyProblem, expander } from './unify.mjs'
 import { writtenLabels, consistentPatterns, consistentCount, patternKey,
   presentOf, checkPattern, sideCondition, genericRigid } from './generic.mjs'
+
+// The prototype's version, recorded in every run's output. 'star-v2'
+// fixes the two defects of sc-statements.md §10 and adds the fragment
+// guard and certificate validation (`fragmentS`, `certOkY`; dossier
+// §18.51). The historical results (results/) came from 'star-v1', the
+// code of commit 2ea79ef, unchanged up to 044c287; they are reproduced
+// from that commit. Results of this version go to results-v2/.
+export const VERSION = 'star-v2'
+
+// Outside SC2's fragment no strategy answers (sc-statements.md §5).
+const outside = (out) => ({ ...out, verdict: 'unresolved',
+  cause: 'outside fragment' })
 
 export const LIMITS = { patternsLog2: 22, leaves: 2 ** 16,
   candidates: 2 ** 20 }
@@ -63,8 +75,9 @@ function searchAt(P, labels, comps, index, side, present) {
 export function runE(P) {
   const labels = writtenLabels(P)
   const { log2, countMs } = counted(P, labels)
-  const out = { strategy: 'E', consistentLog2: log2, countMs,
-    rawLog2: P.rigidRows.length * labels.length }
+  const out = { version: VERSION, strategy: 'E', consistentLog2: log2,
+    countMs, rawLog2: P.rigidRows.length * labels.length }
+  if (!fragmentS(P)) return outside(out)
   if (log2 === null || log2 > LIMITS.patternsLog2) {
     return { ...out, verdict: 'unresolved', cause: 'budget: patterns' }
   }
@@ -116,7 +129,9 @@ export function runE(P) {
 export function runA(P) {
   const labels = writtenLabels(P)
   const { log2, countMs } = counted(P, labels)
-  const out = { strategy: 'A', consistentLog2: log2, countMs }
+  const out = { version: VERSION, strategy: 'A', consistentLog2: log2,
+    countMs }
+  if (!fragmentS(P)) return outside(out)
   let t = now()
   const index = makeIndex(P, labels)
   const indexNs = now() - t
@@ -335,7 +350,9 @@ function refine(P, sub, labels, region, uniform, acc) {
 export function runB(P) {
   const labels = writtenLabels(P)
   const { log2, countMs } = counted(P, labels)
-  const out = { strategy: 'B', consistentLog2: log2, countMs }
+  const out = { version: VERSION, strategy: 'B', consistentLog2: log2,
+    countMs }
+  if (!fragmentS(P)) return outside(out)
   let t = now()
   const index = makeIndex(P, labels)
   const comps = components(P)

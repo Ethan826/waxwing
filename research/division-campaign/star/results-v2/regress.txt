@@ -1,0 +1,54 @@
+# Defect 1: disjoint r r
+PASS d1 possible(0, a) and possibleBoth(0, 0, a) false (possible false, possibleBoth false)
+PASS d1 holderSets(a) = [[]] ([[]])
+PASS d1 nonEmpty false when the cube forces (0, a); check vacuous (nonEmpty false, check {"ok":true,"vacuous":true})
+PASS d1 consistentCount = enumeration = P9s count (example) (log2 0, enumerated 1, P9s 1)
+PASS d1 consistentCount = enumeration = P9s count (two rows, free path) (log2 1, enumerated 2, P9s 2)
+PASS d1 E, A and B valid on the example (valid; valid; valid)
+
+# Defect 2: forced unwritten label
+PASS d2 nonEmpty false when the cube forces (0, z), z unwritten (nonEmpty false)
+PASS d2 check vacuous on that region (B leaves no longer refuse) ({"ok":true,"vacuous":true})
+PASS d2 control: without the forced z, lacks 0 a still refused ({"ok":false,"reason":"row 0 may hold a","atom":0,"bit":[0,"a"]})
+
+# Region queries against brute force
+PASS queries exact on 4000 random problems and cubes (48000 (row, label) cases)
+
+# Fragment guard
+PASS guard: D = [ff], B = [] unresolved in E, A, B (unresolved (outside fragment); unresolved (outside fragment); unresolved (outside fragment))
+PASS guard: D = [{...r0} = {}] unresolved in E, A, B (unresolved (outside fragment); unresolved (outside fragment); unresolved (outside fragment))
+PASS guard: lacks on a flexible row in D unresolved in E, A, B (unresolved (outside fragment); unresolved (outside fragment); unresolved (outside fragment))
+PASS guard: disjoint with an undeclared row unresolved in E, A, B (unresolved (outside fragment); unresolved (outside fragment); unresolved (outside fragment))
+PASS guard: checkAtoms refuses outside the fragment ({"ok":false,"reason":"outside fragment"})
+PASS guard: fragmentS true on the recorded families and examples
+
+# Certificate validation (certOkY)
+PASS cert: u2 := r0 accepted ({"ok":true})
+PASS cert: unused piece on a non-rigid row refused ({"ok":false,"reason":"certificate: piece on non-rigid row 2","bit":null})
+PASS cert: used piece on a non-rigid row refused ({"ok":false,"reason":"certificate: piece on non-rigid row 3","bit":null})
+PASS cert: unused undeclared pieces {...r0, ...r1} refused (W3) ({"ok":false,"reason":"certificate: rests 0, 1 not declared disjoint","bit":null})
+PASS cert: non-rigid piece nested in an arrow and a field refused ({"ok":false,"reason":"certificate: piece on non-rigid row 3","bit":null})
+PASS cert: unused row bound to a non-record refused ({"ok":false,"reason":"certificate: row r3 bound to a non-record","bit":null})
+PASS cert: unused written field clashing with a piece refused ({"ok":false,"reason":"certificate: written a may clash with row 0","bit":[0,"a"]})
+PASS cert: duplicate field labels refused (composition) ({"ok":false,"reason":"certificate: label a twice","bit":null})
+
+# Shadowing (first binding read, every binding checked)
+PASS shadow: first binding read (u2 := r0 then u2 := r1) accepted ({"ok":true})
+PASS shadow: first binding read (u2 := r1 then u2 := r0) refused ({"ok":false,"reason":"rests differ","atom":0,"bit":null})
+PASS shadow: ill-formed shadowed binding refused ({"ok":false,"reason":"certificate: piece on non-rigid row 3","bit":null})
+
+# certOkY on an empty region (cube forces unwritten z)
+PASS empty region: wrong but well-formed certificate passes ({"ok":true,"vacuous":true})
+PASS empty region: non-rigid piece still refused ({"ok":false,"reason":"certificate: piece on non-rigid row 3","bit":null})
+PASS empty region: undeclared pieces still refused ({"ok":false,"reason":"certificate: rests 0, 1 not declared disjoint","bit":null})
+PASS empty region: field beside a piece passes (possibleS false) ({"ok":true,"vacuous":true})
+
+# Controls
+PASS control: star 1: E, A, B valid, valid, valid (valid; valid; valid)
+PASS control: star 2: E, A, B valid, valid, valid (valid; valid; valid)
+PASS control: divide3 2: E, A, B valid, unresolved, valid (valid; unresolved (check: row 0 may hold a1); valid)
+PASS control: dep 2: E, A, B valid, unresolved, valid (valid; unresolved (check: row 0 may hold a); valid)
+PASS control: star-undeclared 2 unresolved in E, A, B (unresolved (no certificate); unresolved (check: certificate: rests 2, 0 not declared disjoint); unresolved (no certificate: certificate: rests 2, 0 not declared disjoint))
+PASS control: version recorded in outputs
+
+0 failed

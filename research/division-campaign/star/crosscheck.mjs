@@ -2,6 +2,8 @@
 // oracle on small sizes, instantiation of every accepted certificate at
 // every consistent pattern, and P9s's pattern count against E's.
 // Run: node research/division-campaign/star/crosscheck.mjs
+// (star-v2's output is kept in results-v2/crosscheck.txt; results/ holds
+// star-v1's, from commit 2ea79ef.)
 import { scan, sat, product, rowsOver }
   from '../../composition-assessment/sig-oracle/semantics.mjs'
 import { boundedValid, findSolution, labelsOf, makeTheta }
@@ -12,7 +14,8 @@ import { CHALLENGES }
 import { SOURCE }
   from '../../composition-assessment/sig-oracle/source-boundary.mjs'
 import { FAMILIES } from './problems.mjs'
-import { runE, runA, runB, components, certAt } from './strategies.mjs'
+import { runE, runA, runB, components, certAt, VERSION }
+  from './strategies.mjs'
 import { writtenLabels, consistentPatterns, consistentCount, presentOf,
   checkPattern, sideCondition } from './generic.mjs'
 
@@ -87,6 +90,7 @@ function crossInstantiate(name, P, a, b) {
   return parts.join(', ') || 'no certificate'
 }
 
+console.log(`# Prototype ${VERSION}\n`)
 console.log('# Regression set (recorded bounded and P9s verdicts)')
 const regression = [
   ...CHALLENGES.map(([name, P, bounded, p9s]) => ({ name, P, bounded, p9s })),

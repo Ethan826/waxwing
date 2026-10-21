@@ -18,6 +18,18 @@
 // report.md; nothing here proves it. The counters measure coverage
 // work (protocol.md, "Costs").
 
+// SC2's declaration fragment (sc-statements.md §5; `fragmentS` in
+// Sig/SchematicDefs.lean): every atom of D is `lacks r l` or
+// `disjoint r s` on rigid rows. The per-label product above describes
+// D's models only inside it, so every strategy answers Unresolved
+// outside it.
+export function fragmentS(P) {
+  const rigid = new Set(P.rigidRows)
+  return P.D.every((a) =>
+    (a[0] === 'lacks' && rigid.has(a[1])) ||
+    (a[0] === 'disjoint' && rigid.has(a[1]) && rigid.has(a[2])))
+}
+
 export function makeIndex(P, labels) {
   const rigid = new Set(P.rigidRows)
   const lacks = new Map()
@@ -57,11 +69,18 @@ export function newStats() {
   return { queries: 0, queryNs: 0n }
 }
 
+// A holder set is allowed at l when l is written (patterns hold
+// written labels only; sc-statements.md §10.2), every holder is rigid,
+// lacks no l and is not forced absent, and no declared pair is among
+// the holders. `disjoint r r` declares r apart from itself: r holds
+// nothing (holdersOK, Sig/SlicePatterns.lean; sc-statements.md §10.1).
 function allowed(region, l, holders) {
   const { index, cube } = region
+  if (!index.labels.has(l)) return false
   const lacking = index.lacks.get(l)
   for (const r of holders) {
     if (!index.rigid.has(r)) return false
+    if (declared(index, r, r)) return false
     if (lacking && lacking.has(r)) return false
     if (cube.get(bitKey(r, l)) === false) return false
   }
@@ -87,7 +106,7 @@ const forcedAt = (region, l) => region.forced.get(l) ?? []
 // Labels outside the problem's written labels are never held by a
 // generic rigid row (only written labels and rests are).
 export function possible(region, r, l) {
-  return timed(region, () => region.index.labels.has(l) &&
+  return timed(region, () =>
     allowed(region, l, [...forcedAt(region, l), r]))
 }
 
@@ -96,7 +115,7 @@ export function must(region, r, l) {
 }
 
 export function possibleBoth(region, r, s, l) {
-  return timed(region, () => region.index.labels.has(l) &&
+  return timed(region, () =>
     allowed(region, l, [...forcedAt(region, l), r, s]))
 }
 
