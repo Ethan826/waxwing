@@ -112,3 +112,26 @@ Follow-up input hashes are in [revision-inputs.json](revision-inputs.json).
 The earlier missing agent-worktree entry remains absent from Git's current
 worktree list. This read-only glance cannot establish who removed it; no
 cleanup or recovery was attempted by this task.
+
+## Executable ordinary-record baseline
+
+The author then approved a separate bounded probe tranche. Its
+[report](baseline/README.md), [runner](baseline/run.mjs), fixtures and raw
+evidence are confined to baseline/. The compiler sources remain unchanged at
+c341109; a fresh private build reports zero warnings/errors.
+
+Twenty-one sources were examined, with staged amendments recorded before
+their runs. Eleven generated programs produce expected Go output under both
+Int and Bool hole representatives. Eight of those also agree with the
+existing interpreter on the exact source. Six candidates reject because an
+earlier operation stage remains ambient; three accepted cases with explicit
+per-stage rows exceed the interpreter parser's grammar. The c7 Stats result
+still has an ambient first stage. The runner exits 1 with those nine unmet
+expectations. No assertion was weakened to make it green; see the raw
+reports and local backlog.
+
+These observations show useful A behavior already exists. They motivate
+reviewing the all-meta restriction but adopt no new policy or typing rule.
+No class implementation, record-composition solver change, shared-file edit,
+Lean work or npm verification ran. Checkpoint and hash manifests record the
+exact compiler used; no mutable shared output was loaded.

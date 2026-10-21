@@ -1,0 +1,7 @@
+type Pair(a, b) = Pair(a, b);
+
+fn lastFor(): { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => y };
+
+fn main(): Pair(Bool, Text) =
+  Pair(lastFor().combine(true, false), lastFor().combine("old", "new"));

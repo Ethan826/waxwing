@@ -1,0 +1,6 @@
+fn lastFor(): { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => y };
+
+fn discard(x: a): Int = 7;
+
+fn main(): Int = discard(lastFor());

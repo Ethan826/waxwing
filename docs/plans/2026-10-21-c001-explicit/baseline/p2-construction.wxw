@@ -1,0 +1,39 @@
+type Results = Results(Int, Int, Int, Int);
+
+fn add(x: Int, y: Int): Int = x + y;
+
+fn smallProduct(x: Int, y: Int): Int =
+  if y == 0 then 0 else x + smallProduct(x, y + -1);
+
+fn fromCombine(op: (a, a) -> a with pure):
+    { combine: (a, a) -> a with pure } = { combine: op };
+
+fn lastFor(): { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => y };
+
+fn reverse(d: { combine: (a, a) -> a with pure }):
+    { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => d.combine(y, x) };
+
+fn statsEvidence(p: {
+    count: { combine: (Int, Int) -> Int with pure },
+    latest: { combine: (Int, Int) -> Int with pure } }):
+    { combine: ({ count: Int, latest: Int },
+      { count: Int, latest: Int }) ->
+      { count: Int, latest: Int } with pure } =
+  { combine: fn(x, y) =>
+      { count: p.count.combine(x.count, y.count),
+        latest: p.latest.combine(x.latest, y.latest) } };
+
+fn main(): Results = {
+  let sumStats = statsEvidence(
+    { count: fromCombine(add), latest: lastFor() });
+  let productStats = statsEvidence(
+    { count: fromCombine(smallProduct), latest: lastFor() });
+  let first = { count: 2, latest: 10 };
+  let second = { count: 3, latest: 20 };
+  let s = sumStats.combine(first, second);
+  let p = productStats.combine(first, second);
+  Results(s.count, s.latest, p.count,
+    reverse(lastFor()).combine(2, 3))
+};

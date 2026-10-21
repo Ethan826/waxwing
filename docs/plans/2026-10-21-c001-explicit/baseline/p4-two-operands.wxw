@@ -1,0 +1,18 @@
+type Pair(a, b) = Pair(a, b);
+
+fn add(x: Int, y: Int): Int = x + y;
+
+fn smallProduct(x: Int, y: Int): Int =
+  if y == 0 then 0 else x + smallProduct(x, y + -1);
+
+fn sum(): { combine: (Int, Int) -> Int with pure } = { combine: add };
+
+fn product(): { combine: (Int, Int) -> Int with pure } =
+  { combine: smallProduct };
+
+fn both(d: { combine: (a, a) -> a with pure },
+    e: { combine: (a, a) -> a with pure }, x: a, y: a): Pair(a, a) =
+  Pair(d.combine(x, y), e.combine(x, y));
+
+fn main(): Pair(Pair(Int, Int), Pair(Int, Int)) =
+  Pair(both(sum(), product(), 2, 3), both(product(), sum(), 2, 3));

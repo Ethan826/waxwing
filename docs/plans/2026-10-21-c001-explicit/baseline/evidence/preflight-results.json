@@ -1,0 +1,553 @@
+{
+  "node": "v26.6.0",
+  "purs": "0.15.16",
+  "go": "go version go1.26.4 darwin/arm64",
+  "grammar": "Twelve hand-written closed-record cases; no generation",
+  "amendments": [
+    "Original p2/p3 rejected with identical printed expected/found types; six controls added after that observation, before their execution",
+    "Published local FX001 stage-row syntax: with pure annotates only nearest arrow; two explicit all-stage-pure controls added before execution"
+  ],
+  "buildDiagnostics": {
+    "warnings": [],
+    "errors": []
+  },
+  "results": [
+    {
+      "name": "p1-choices",
+      "expected": "Results(9, 24, 4, 2)\n",
+      "sha256": "7ed8b3df1070f77de4af8fe7d6940469ded56af45bfa4d04c2d58d1ea412d000",
+      "interpreter": {
+        "stdout": "Results(9, 24, 4, 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 4,
+        "TypeArgument": 1,
+        "TVar": 42,
+        "TData": 19,
+        "TInt": 94,
+        "TBool": 1,
+        "TRecord": 13,
+        "Tuple": 13,
+        "TFun": 34,
+        "Hole": 5
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "foldFrom",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa",
+      "go": "Results(9, 24, 4, 2)\n",
+      "boolRepresentative": "Results(9, 24, 4, 2)\n",
+      "status": "pass"
+    },
+    {
+      "name": "p2-construction",
+      "expected": "Results(5, 20, 6, 2)\n",
+      "sha256": "b42a5f46787b170d93e699586de124261f2ffbaeeb6890961ecfd89001bad2c4",
+      "interpreter": {
+        "stdout": "Results(5, 20, 6, 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "status": "unexpected",
+      "error": "{\"code\":\"E_TYPE\",\"message\":\"Expected { combine: a -> a -> a }, found { combine: a -> a -> a }\",\"span\":{\"start\":{\"line\":16,\"offset\":454,\"column\":3},\"end\":{\"line\":16,\"offset\":494,\"column\":43}},\"related\":[]}"
+    },
+    {
+      "name": "p3-runtime",
+      "expected": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+      "sha256": "a46ddf10e073b465d5a609f403ab0c14e1938b6c032ebebbdfb2b7c5cc7f6105",
+      "interpreter": {
+        "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "status": "unexpected",
+      "error": "{\"code\":\"E_TYPE\",\"message\":\"Expected a -> a -> a, found a -> a -> a\",\"span\":{\"start\":{\"line\":21,\"offset\":632,\"column\":29},\"end\":{\"line\":21,\"offset\":659,\"column\":56}},\"related\":[]}"
+    },
+    {
+      "name": "p4-two-operands",
+      "expected": "Pair(Pair(5, 6), Pair(6, 5))\n",
+      "sha256": "d03b64b181c05c41043fa6026b4ccd1e8a933bf0bef3bc3c6cdef3629ba38bfb",
+      "interpreter": {
+        "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 5,
+        "TVar": 34,
+        "TInt": 72,
+        "TBool": 1,
+        "TRecord": 12,
+        "Tuple": 12,
+        "TFun": 32,
+        "TData": 12,
+        "Hole": 5
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "both",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e",
+      "go": "Pair(Pair(5, 6), Pair(6, 5))\n",
+      "boolRepresentative": "Pair(Pair(5, 6), Pair(6, 5))\n",
+      "status": "pass"
+    },
+    {
+      "name": "a1-discard-dictionary",
+      "expected": "7\n",
+      "sha256": "e9e899cbb9048509c03e7ada05a204c75d8e88b2e6260a9299e717e5f7a157ae",
+      "interpreter": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 2,
+        "TRecord": 4,
+        "Tuple": 4,
+        "TFun": 10,
+        "TVar": 20,
+        "TInt": 4,
+        "Hole": 10,
+        "typeHoleOccurrences": 7
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "discard",
+          "arguments": [
+            "TRecord"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "5bf96c038b6b1c3744993245a6fdf7928ca9d5c9de8cab58f3883d69741c94ab",
+      "go": "7\n",
+      "boolRepresentative": "7\n",
+      "status": "pass"
+    },
+    {
+      "name": "a2-unused-local",
+      "expected": "7\n",
+      "sha256": "a9bee6b6bc35acd1816ccd5da037494c18df2e35f263968253a3dd1669ad97eb",
+      "interpreter": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 1,
+        "TRecord": 3,
+        "Tuple": 3,
+        "TFun": 8,
+        "TVar": 16,
+        "TInt": 3,
+        "Hole": 6,
+        "typeHoleOccurrences": 4
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "5868ce139a9c30563d2a7f48c7e1915004a338efd20d921f9d2fbcc8bb2ec22b",
+      "go": "7\n",
+      "boolRepresentative": "7\n",
+      "status": "pass"
+    },
+    {
+      "name": "a3-fixed-carriers",
+      "expected": "Pair(false, \"new\")\n",
+      "sha256": "75d79090471bcf2f70847d8c2d745d3548ad455ceb012be766cd80afe86178be",
+      "interpreter": {
+        "stdout": "Pair(false, \"new\")\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 5,
+        "TVar": 14,
+        "TRecord": 4,
+        "Tuple": 4,
+        "TFun": 14,
+        "TData": 2,
+        "TBool": 13,
+        "TText": 13,
+        "Hole": 5,
+        "Text": 2
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TBool"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TText"
+          ]
+        }
+      ],
+      "goSha256": "836e44f11b7161a713ec8eaefb4378cd5d4c311ff13bdbc46895a0786706223e",
+      "go": "Pair(false, \"new\")\n",
+      "boolRepresentative": "Pair(false, \"new\")\n",
+      "status": "pass"
+    },
+    {
+      "name": "a4-phantom",
+      "expected": "7\n",
+      "sha256": "6b9ccb5e57b910a8efbeaeb36b66067027f26ddc534d02284370b9c392b5d9b5",
+      "interpreter": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 4,
+        "TRecord": 2,
+        "Tuple": 2,
+        "TFun": 3,
+        "TUnit": 8,
+        "TData": 4,
+        "TVar": 7,
+        "TInt": 4,
+        "Hole": 4,
+        "typeHoleOccurrences": 3
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "discard",
+          "arguments": [
+            "TData"
+          ]
+        },
+        {
+          "name": "tag",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "c18c68a8d9f6ebfc65411ac9d4c8e3be66a102258b1a0336f85c83c9fa0085ef",
+      "go": "7\n",
+      "boolRepresentative": "7\n",
+      "status": "pass"
+    },
+    {
+      "name": "c1-annotated-construction",
+      "expected": "Results(5, 20, 6, 2)\n",
+      "sha256": "734fe5d3921f2971a9beec32332d2c903c55d361ebb4c27f7093cdc64b630428",
+      "interpreter": {
+        "stdout": "Results(5, 20, 6, 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "status": "unexpected",
+      "error": "{\"code\":\"E_TYPE\",\"message\":\"Expected { combine: a -> a -> a }, found { combine: a -> a -> a }\",\"span\":{\"start\":{\"line\":16,\"offset\":454,\"column\":3},\"end\":{\"line\":16,\"offset\":500,\"column\":49}},\"related\":[]}"
+    },
+    {
+      "name": "c2-annotated-runtime",
+      "expected": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+      "sha256": "c6da168a26b349dd8b64b744fd76f6ff0c40a7e1a4fbb837f5003d199d478e23",
+      "interpreter": {
+        "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "status": "unexpected",
+      "error": "{\"code\":\"E_TYPE\",\"message\":\"Expected a -> a -> a, found a -> a -> a\",\"span\":{\"start\":{\"line\":21,\"offset\":632,\"column\":29},\"end\":{\"line\":21,\"offset\":665,\"column\":62}},\"related\":[]}"
+    },
+    {
+      "name": "c3-concrete-capture",
+      "expected": "2\n",
+      "sha256": "aa3c9a4b41931fdd34785321dac746d886debbb9388649519ba8bb1e2f779061",
+      "interpreter": {
+        "stdout": "2\n",
+        "stderr": "",
+        "status": 0
+      },
+      "status": "unexpected",
+      "error": "{\"code\":\"E_TYPE\",\"message\":\"Expected { combine: Int -> Int -> Int }, found { combine: Int -> Int -> Int }\",\"span\":{\"start\":{\"line\":3,\"offset\":106,\"column\":3},\"end\":{\"line\":3,\"offset\":146,\"column\":43}},\"related\":[]}"
+    },
+    {
+      "name": "c4-unary-inferred",
+      "expected": "7\n",
+      "sha256": "a10fba4881b81d297daf22e26fd814e0b83a3ef1a102dea10205d307572b13f8",
+      "interpreter": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 1,
+        "TFun": 6,
+        "TVar": 11,
+        "TInt": 10,
+        "Hole": 1
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "wrap",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "e5354d88c12f18f8e4306fa9ef31f8a80caa9ce42ebdae742107a2f6f6a17d6d",
+      "go": "7\n",
+      "boolRepresentative": "7\n",
+      "status": "pass"
+    },
+    {
+      "name": "c5-unary-annotated",
+      "expected": "7\n",
+      "sha256": "933fe1a6feb978097e96e6dcd8c573c1cd1840cdfe7abd1f4faf412a6483a013",
+      "interpreter": {
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "checkedTypes": {
+        "TypeSort": 1,
+        "TFun": 6,
+        "TVar": 11,
+        "TInt": 10,
+        "Hole": 1
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "wrap",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "goSha256": "e5354d88c12f18f8e4306fa9ef31f8a80caa9ce42ebdae742107a2f6f6a17d6d",
+      "go": "7\n",
+      "boolRepresentative": "7\n",
+      "status": "pass"
+    },
+    {
+      "name": "c6-named-partial",
+      "expected": "2\n",
+      "sha256": "6d13cb5f1d177564103159011fa05aa361e773c2799ed3ca10fcfcec098d8bee",
+      "interpreter": {
+        "stdout": "2\n",
+        "stderr": "",
+        "status": 0
+      },
+      "status": "unexpected",
+      "error": "{\"code\":\"E_TYPE\",\"message\":\"Expected { combine: a -> a -> a }, found { combine: a -> a -> a }\",\"span\":{\"start\":{\"line\":5,\"offset\":181,\"column\":42},\"end\":{\"line\":5,\"offset\":206,\"column\":67}},\"related\":[]}"
+    },
+    {
+      "name": "c7-pure-stages-construction",
+      "expected": "Results(5, 20, 6, 2)\n",
+      "sha256": "85a14669f0d2ef9b005f01232de71c108d1dc715757fe84c9a2ea43639750bb9",
+      "status": "unexpected",
+      "error": "oracle: expected ) at token 74"
+    },
+    {
+      "name": "c8-pure-stages-runtime",
+      "expected": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+      "sha256": "58eb4fa8352d3fe173c03f96bf5f2abb1e5b78ae4c2521c555404175c2a1a412",
+      "status": "unexpected",
+      "error": "oracle: expected } at token 100"
+    },
+    {
+      "name": "n1-rigid-comparison",
+      "expectedProblem": "NotComparable",
+      "sha256": "41ffe468fc4e3badfee6e9723c9335770282a44e85f47448e79d04a5969aa3de",
+      "problem": "NotComparable",
+      "diagnostic": {
+        "code": "E_TYPE",
+        "message": "Type a is not comparable",
+        "span": {
+          "start": {
+            "line": 1,
+            "offset": 28,
+            "column": 29
+          },
+          "end": {
+            "line": 1,
+            "offset": 29,
+            "column": 30
+          }
+        },
+        "related": []
+      },
+      "status": "pass"
+    },
+    {
+      "name": "n2-hole-comparison",
+      "expectedProblem": "AmbiguousType",
+      "sha256": "b77305730db38f8fcd3aefe18db0d4952e8ff10c5cc86470f2aff611a9c5f6cb",
+      "problem": "AmbiguousType",
+      "diagnostic": {
+        "code": "E_TYPE",
+        "message": "Ambiguous type List(_) in comparison",
+        "span": {
+          "start": {
+            "line": 3,
+            "offset": 58,
+            "column": 19
+          },
+          "end": {
+            "line": 3,
+            "offset": 61,
+            "column": 22
+          }
+        },
+        "related": []
+      },
+      "status": "pass"
+    },
+    {
+      "name": "n3-function-print",
+      "expectedProblem": "NotPrintable",
+      "sha256": "fb7dae70b1c519d464e2494329c70e00b0d095cd264342e62b51c5f58ec534d4",
+      "problem": "NotPrintable",
+      "diagnostic": {
+        "code": "E_TYPE",
+        "message": "Expected a printable value, found { combine: _ -> _ -> _ }",
+        "span": {
+          "start": {
+            "line": 4,
+            "offset": 105,
+            "column": 24
+          },
+          "end": {
+            "line": 4,
+            "offset": 114,
+            "column": 33
+          }
+        },
+        "related": []
+      },
+      "status": "pass"
+    },
+    {
+      "name": "n4-multiplication",
+      "expectedProblem": "Lexical",
+      "sha256": "558ca4c162a808cf558d90fcf3333ee7de3e419ded174e8eb087a362931f6993",
+      "problem": "Lexical",
+      "diagnostic": {
+        "code": "E_LEX",
+        "message": "Unexpected character",
+        "span": {
+          "start": {
+            "line": 1,
+            "offset": 19,
+            "column": 20
+          },
+          "end": {
+            "line": 1,
+            "offset": 20,
+            "column": 21
+          }
+        },
+        "related": []
+      },
+      "status": "pass"
+    }
+  ],
+  "unexpected": [
+    "p2-construction",
+    "p3-runtime",
+    "c1-annotated-construction",
+    "c2-annotated-runtime",
+    "c3-concrete-capture",
+    "c6-named-partial",
+    "c7-pure-stages-construction",
+    "c8-pure-stages-runtime"
+  ]
+}
