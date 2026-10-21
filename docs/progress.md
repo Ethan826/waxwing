@@ -8064,3 +8064,9 @@ unrelated README/backlog/direction-plan edits remain untouched.
   open: concrete `thetaStar` checks in the repository (F6). Bridge
   statements split into six files and re-reviewed (statements.md §10);
   first proof tranche running in four parallel streams.
+- `star` at useful scale (dossier §18.37): schematic certificates (A)
+  and per-component lazy refinement (B) certify `star` to n = 12,288
+  with linear certificates and separately timed coverage; exhaustive
+  enumeration stops at n = 4. Research code against unproved
+  obligations SC1-SC4, SB1-SB3; `divide3` stays exponential for B.
+- Bridge B3a, B3e, B3f proved from B2 and B2f (hypotheses), integrated.
