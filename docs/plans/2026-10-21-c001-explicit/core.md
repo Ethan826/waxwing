@@ -165,11 +165,11 @@ necessary, or that these rejected programs are unsound, is made. No new
 diagnostic wording or error-code policy is adopted here.
 
 The later [executable baseline](baseline/README.md) accepts discarded and
-unused ordinary records with residual type holes, with unchanged outputs for
-the two tested representatives. Its recommendation is to revisit this
-annotation boundary for A. The rule above remains a proposed restriction
-pending the author's decision, not an implementation requirement derived
-from those observations.
+unused ordinary records with residual type holes. Those observations are
+consistent with existing handling, but do not establish harmless stand-in
+substitution. Its printing probes also show a stand-in-dependent
+specialization rejection. The rule above remains a proposed restriction
+pending the author's decision; the experiments settle no replacement rule.
 
 ## Evaluation and specialization
 

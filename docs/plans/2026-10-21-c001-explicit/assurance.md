@@ -137,10 +137,14 @@ handler.
 
 ## Executable baseline evidence, separate from the proof plan
 
-The later [baseline](baseline/README.md) checks selected existing-language
-record programs through the compiler and generated Go, including captures,
-two same-typed operands, source-order reversal and two hole representatives.
-It records all source-contract and interpreter-parser failures. It neither
-establishes the universal statements above nor completes the proposed
-source-fixture, mutation or generated-oracle work. The core's all-meta
-boundary remains a decision for review in light of the accepted hole cases.
+The later [baseline](baseline/README.md) checks existing record programs
+through the compiler and Go, including captures, two same-typed operands,
+source-order reversal and five stand-ins for unknown types. It distinguishes
+matches to recorded current behavior from the separate uniformity gate. The
+latter fails on the printing cases because the function stand-in is
+nonprintable. Discarding an unknown value supplies acceptance evidence only.
+
+The runner's eight result-record mutations check its exit gate; they do not
+satisfy the proposed source/compiler mutation tests above. No universal
+preservation, completeness or representative-independence claim follows. The
+core's all-meta restriction remains a decision for review.

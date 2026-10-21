@@ -1,0 +1,6 @@
+type List(a) = Nil | Cons(a, List(a));
+
+fn lastFor(): { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => y };
+
+fn main(): Bool = lastFor().combine(Nil, Nil) == Nil;

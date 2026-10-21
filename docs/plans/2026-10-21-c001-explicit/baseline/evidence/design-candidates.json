@@ -1,0 +1,43 @@
+{
+  "grammar": "Twelve hand-written closed-record cases; no generation",
+  "positive": {
+    "p1-choices": "Results(9, 24, 4, 2)\n",
+    "p2-construction": "Results(5, 20, 6, 2)\n",
+    "p3-runtime": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+    "p4-two-operands": "Pair(Pair(5, 6), Pair(6, 5))\n",
+    "a1-discard-dictionary": "7\n",
+    "a2-unused-local": "7\n",
+    "a3-fixed-carriers": "Pair(false, \"new\")\n",
+    "a4-phantom": "7\n"
+  },
+  "negative": {
+    "n1-rigid-comparison": "NotComparable",
+    "n2-hole-comparison": "AmbiguousType",
+    "n3-function-print": "NotPrintable",
+    "n4-multiplication": "Lexical"
+  },
+  "follow_up": {
+    "reason": "Original p2/p3 rejected with identical printed expected/found types; six controls added after that observation, before their execution",
+    "positive": {
+      "c1-annotated-construction": "Results(5, 20, 6, 2)\n",
+      "c2-annotated-runtime": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+      "c3-concrete-capture": "2\n",
+      "c4-unary-inferred": "7\n",
+      "c5-unary-annotated": "7\n",
+      "c6-named-partial": "2\n"
+    }
+  },
+  "stage_follow_up": {
+    "reason": "Local FX001 stage-row syntax: with pure annotates only nearest arrow; controls make supplied Int/generic carrier-operation stages pure. The c7 Stats result still has an ambient first stage.",
+    "positive": {
+      "c7-pure-stages-construction": "Results(5, 20, 6, 2)\n",
+      "c8-pure-stages-runtime": "Results(Pair(5, 3), Pair(6, 3), 2)\n"
+    }
+  },
+  "order_follow_up": {
+    "reason": "Once corrected carrier-stage controls checked, add reversed source call order before executing that variant",
+    "positive": {
+      "c9-source-order": "Results(Pair(6, 3), Pair(5, 3), 2)\n"
+    }
+  }
+}

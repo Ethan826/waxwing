@@ -102,13 +102,15 @@ for row decomposition and do not solve the record-research obligations.
 
 ## Executable baseline follow-up
 
-The [ordinary-record baseline](baseline/README.md) runs existing syntax in a
-private fresh compiler build. Eleven sources emit Go with the expected
-results, including construction and captures with explicitly pure stages for
-their supplied carrier operations. The Stats result retains an ambient first
-stage, as the baseline report explains. It also records six rejected
-candidate contracts and three reference-parser gaps; its runner exits 1
-rather than declaring a complete pass. Discarded/unused operation records
-can retain type holes and run with either tested representative. That
-evidence motivates revisiting decision 2's all-meta restriction for A; no
-decision is adopted here.
+The [ordinary-record baseline](baseline/README.md) records current compiler,
+Go and interpreter outcomes separately. Its gate exits 0 only when those
+pinned outcomes match. Known contract rejections and parser gaps remain
+explicit. The [effects-syntax note](effects-syntax-usability.md) explains
+the broader usability concern exposed by the per-stage pure annotations.
+
+The original discarded-value probes are consistent with current hole
+handling, not evidence that arbitrary stand-ins are harmless. Additional
+printing probes accept four stand-ins but reject a function stand-in as
+nonprintable during specialization. These acceptance differences are
+recorded; no type-safety failure or replacement ambiguity policy is claimed.
+Decision 2's all-meta restriction remains pending.

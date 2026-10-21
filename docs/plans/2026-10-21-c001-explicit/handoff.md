@@ -113,25 +113,37 @@ The earlier missing agent-worktree entry remains absent from Git's current
 worktree list. This read-only glance cannot establish who removed it; no
 cleanup or recovery was attempted by this task.
 
-## Executable ordinary-record baseline
+## Executable ordinary-record baseline and review corrections
 
-The author then approved a separate bounded probe tranche. Its
-[report](baseline/README.md), [runner](baseline/run.mjs), fixtures and raw
-evidence are confined to baseline/. The compiler sources remain unchanged at
-c341109; a fresh private build reports zero warnings/errors.
+The author wrote "Okay, do it" after the proposal to translate P1-P4, probe
+explicit choices and captures, challenge the all-meta restriction, and
+commit programs/report. The intervening scope clarification excluded
+compiler changes, shared documents, class machinery and record-solver work.
+That is the approval this handoff records; it is not acceptance of the four
+design decisions or any language-policy change.
 
-Twenty-one sources were examined, with staged amendments recorded before
-their runs. Eleven generated programs produce expected Go output under both
-Int and Bool hole representatives. Eight of those also agree with the
-existing interpreter on the exact source. Six candidates reject because an
-earlier operation stage remains ambient; three accepted cases with explicit
-per-stage rows exceed the interpreter parser's grammar. The c7 Stats result
-still has an ambient first stage. The runner exits 1 with those nine unmet
-expectations. No assertion was weakened to make it green; see the raw
-reports and local backlog.
+The [report](baseline/README.md), [runner](baseline/run.mjs), fixtures and
+raw evidence stay within the tranche. Unchanged c341109 compiler sources
+were built privately with zero warnings/errors. The earlier exploratory
+runner always exited 1; its report is retained as pre-review-results.json.
+The revised runner pins actual current outcomes and exits 0 on a match, with
+separate compiler, Go, specialization and interpreter observations. A new
+difference exits 1. Eight deliberate result-record mutations test that exit
+gate; they are not compiler or source mutation proofs.
 
-These observations show useful A behavior already exists. They motivate
-reviewing the all-meta restriction but adopt no new policy or typing rule.
-No class implementation, record-composition solver change, shared-file edit,
-Lean work or npm verification ran. Checkpoint and hash manifests record the
-exact compiler used; no mutable shared output was loaded.
+The reviewed set has 24 fixed sources and five stand-ins: Int, Bool, Text,
+record and pure function. Thirteen sources compile by default; 63 Go
+executions match expected output. Ten accepted sources have exact-source
+interpreter agreement; c7-c9 retain known parser errors. Six written
+contracts remain rejected, alongside five builtin/syntax rejections. The
+three original discarded/unused/phantom observations are acceptance evidence
+only. h1/h2 put an unknown element type under printing and reject the
+function stand-in during specialization. The separate uniformity gate exits
+1 on these known acceptance differences; no wrong runtime value or
+type-safety defect is shown. No ambiguity policy is adopted.
+
+The broader [effects-syntax finding](effects-syntax-usability.md) is now a
+separate note for the author, beyond CB002's local diagnostic entry. No
+compiler implementation, record solver, shared tracking file, Lean proof,
+merge,
+push or npm verification is included in the corrections.

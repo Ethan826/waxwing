@@ -1,43 +1,1247 @@
 {
-  "grammar": "Twelve hand-written closed-record cases; no generation",
-  "positive": {
-    "p1-choices": "Results(9, 24, 4, 2)\n",
-    "p2-construction": "Results(5, 20, 6, 2)\n",
-    "p3-runtime": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
-    "p4-two-operands": "Pair(Pair(5, 6), Pair(6, 5))\n",
-    "a1-discard-dictionary": "7\n",
-    "a2-unused-local": "7\n",
-    "a3-fixed-carriers": "Pair(false, \"new\")\n",
-    "a4-phantom": "7\n"
-  },
-  "negative": {
-    "n1-rigid-comparison": "NotComparable",
-    "n2-hole-comparison": "AmbiguousType",
-    "n3-function-print": "NotPrintable",
-    "n4-multiplication": "Lexical"
-  },
-  "follow_up": {
-    "reason": "Original p2/p3 rejected with identical printed expected/found types; six controls added after that observation, before their execution",
-    "positive": {
-      "c1-annotated-construction": "Results(5, 20, 6, 2)\n",
-      "c2-annotated-runtime": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
-      "c3-concrete-capture": "2\n",
-      "c4-unary-inferred": "7\n",
-      "c5-unary-annotated": "7\n",
-      "c6-named-partial": "2\n"
-    }
-  },
-  "stage_follow_up": {
-    "reason": "Local FX001 stage-row syntax: with pure annotates only nearest arrow; controls make supplied Int/generic carrier-operation stages pure. The c7 Stats result still has an ambient first stage.",
-    "positive": {
-      "c7-pure-stages-construction": "Results(5, 20, 6, 2)\n",
-      "c8-pure-stages-runtime": "Results(Pair(5, 3), Pair(6, 3), 2)\n"
-    }
-  },
-  "order_follow_up": {
-    "reason": "Once corrected carrier-stage controls checked, add reversed source call order before executing that variant",
-    "positive": {
-      "c9-source-order": "Results(Pair(6, 3), Pair(5, 3), 2)\n"
+  "version": 2,
+  "scope": "24 fixed sources. Matches current behavior, not the proposed C001 acceptance boundary. Original intended outcomes remain in evidence/design-candidates.json.",
+  "representatives": [
+    "Int",
+    "Bool",
+    "Text",
+    "Record",
+    "Function"
+  ],
+  "cases": {
+    "p1-choices": {
+      "sourceSha256": "7ed8b3df1070f77de4af8fe7d6940469ded56af45bfa4d04c2d58d1ea412d000",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Results(9, 24, 4, 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa",
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "foldFrom",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "p2-construction": {
+      "sourceSha256": "b42a5f46787b170d93e699586de124261f2ffbaeeb6890961ecfd89001bad2c4",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "TypeMismatch",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected { combine: a -> a -> a }, found { combine: a -> a -> a }",
+          "span": {
+            "start": {
+              "line": 16,
+              "offset": 454,
+              "column": 3
+            },
+            "end": {
+              "line": 16,
+              "offset": 494,
+              "column": 43
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Results(5, 20, 6, 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {}
+    },
+    "p3-runtime": {
+      "sourceSha256": "a46ddf10e073b465d5a609f403ab0c14e1938b6c032ebebbdfb2b7c5cc7f6105",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "TypeMismatch",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected a -> a -> a, found a -> a -> a",
+          "span": {
+            "start": {
+              "line": 21,
+              "offset": 632,
+              "column": 29
+            },
+            "end": {
+              "line": 21,
+              "offset": 659,
+              "column": 56
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {}
+    },
+    "p4-two-operands": {
+      "sourceSha256": "d03b64b181c05c41043fa6026b4ccd1e8a933bf0bef3bc3c6cdef3629ba38bfb",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e",
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "both",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "a1-discard-dictionary": {
+      "sourceSha256": "e9e899cbb9048509c03e7ada05a204c75d8e88b2e6260a9299e717e5f7a157ae",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "5bf96c038b6b1c3744993245a6fdf7928ca9d5c9de8cab58f3883d69741c94ab",
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "discard",
+          "arguments": [
+            "TRecord"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "requiresTypeHole": true
+    },
+    "a2-unused-local": {
+      "sourceSha256": "a9bee6b6bc35acd1816ccd5da037494c18df2e35f263968253a3dd1669ad97eb",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "5868ce139a9c30563d2a7f48c7e1915004a338efd20d921f9d2fbcc8bb2ec22b",
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "requiresTypeHole": true
+    },
+    "a3-fixed-carriers": {
+      "sourceSha256": "75d79090471bcf2f70847d8c2d745d3548ad455ceb012be766cd80afe86178be",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Pair(false, \"new\")\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Pair(false, \"new\")\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Pair(false, \"new\")\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Pair(false, \"new\")\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Pair(false, \"new\")\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Pair(false, \"new\")\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "836e44f11b7161a713ec8eaefb4378cd5d4c311ff13bdbc46895a0786706223e",
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TBool"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TText"
+          ]
+        }
+      ]
+    },
+    "a4-phantom": {
+      "sourceSha256": "6b9ccb5e57b910a8efbeaeb36b66067027f26ddc534d02284370b9c392b5d9b5",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "c18c68a8d9f6ebfc65411ac9d4c8e3be66a102258b1a0336f85c83c9fa0085ef",
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "discard",
+          "arguments": [
+            "TData"
+          ]
+        },
+        {
+          "name": "tag",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ],
+      "requiresTypeHole": true
+    },
+    "c1-annotated-construction": {
+      "sourceSha256": "734fe5d3921f2971a9beec32332d2c903c55d361ebb4c27f7093cdc64b630428",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "TypeMismatch",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected { combine: a -> a -> a }, found { combine: a -> a -> a }",
+          "span": {
+            "start": {
+              "line": 16,
+              "offset": 454,
+              "column": 3
+            },
+            "end": {
+              "line": 16,
+              "offset": 500,
+              "column": 49
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Results(5, 20, 6, 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {}
+    },
+    "c2-annotated-runtime": {
+      "sourceSha256": "c6da168a26b349dd8b64b744fd76f6ff0c40a7e1a4fbb837f5003d199d478e23",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "TypeMismatch",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected a -> a -> a, found a -> a -> a",
+          "span": {
+            "start": {
+              "line": 21,
+              "offset": 632,
+              "column": 29
+            },
+            "end": {
+              "line": 21,
+              "offset": 665,
+              "column": 62
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {}
+    },
+    "c3-concrete-capture": {
+      "sourceSha256": "aa3c9a4b41931fdd34785321dac746d886debbb9388649519ba8bb1e2f779061",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "TypeMismatch",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected { combine: Int -> Int -> Int }, found { combine: Int -> Int -> Int }",
+          "span": {
+            "start": {
+              "line": 3,
+              "offset": 106,
+              "column": 3
+            },
+            "end": {
+              "line": 3,
+              "offset": 146,
+              "column": 43
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "2\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {}
+    },
+    "c4-unary-inferred": {
+      "sourceSha256": "a10fba4881b81d297daf22e26fd814e0b83a3ef1a102dea10205d307572b13f8",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "e5354d88c12f18f8e4306fa9ef31f8a80caa9ce42ebdae742107a2f6f6a17d6d",
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "wrap",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "c5-unary-annotated": {
+      "sourceSha256": "933fe1a6feb978097e96e6dcd8c573c1cd1840cdfe7abd1f4faf412a6483a013",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "7\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "7\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "e5354d88c12f18f8e4306fa9ef31f8a80caa9ce42ebdae742107a2f6f6a17d6d",
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "wrap",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "c6-named-partial": {
+      "sourceSha256": "6d13cb5f1d177564103159011fa05aa361e773c2799ed3ca10fcfcec098d8bee",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "TypeMismatch",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected { combine: a -> a -> a }, found { combine: a -> a -> a }",
+          "span": {
+            "start": {
+              "line": 5,
+              "offset": 181,
+              "column": 42
+            },
+            "end": {
+              "line": 5,
+              "offset": 206,
+              "column": 67
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "2\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {}
+    },
+    "c7-pure-stages-construction": {
+      "sourceSha256": "85a14669f0d2ef9b005f01232de71c108d1dc715757fe84c9a2ea43639750bb9",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "error",
+        "message": "oracle: expected ) at token 74"
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "bc05cf39d7cfec507406e9c09de546bf82e6d71cc55eb9a7e7fbfb33a692112d",
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "statsEvidence",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "fromCombine",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "reverse",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "c8-pure-stages-runtime": {
+      "sourceSha256": "58eb4fa8352d3fe173c03f96bf5f2abb1e5b78ae4c2521c555404175c2a1a412",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "error",
+        "message": "oracle: expected } at token 100"
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Results(Pair(5, 3), Pair(6, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "3324db9ef5c670d176f7e92523902b2ee2fa53008a8573e1f091786fadbd1b64",
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "choose",
+          "arguments": []
+        },
+        {
+          "name": "runtime",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "configured",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "reverse",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "client",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "c9-source-order": {
+      "sourceSha256": "b5e96886b495d664706b5355c1993cbca6f2bf13da9c43063f56934360d74ef7",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "error",
+        "message": "oracle: expected } at token 100"
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Results(Pair(6, 3), Pair(5, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Results(Pair(6, 3), Pair(5, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Results(Pair(6, 3), Pair(5, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Results(Pair(6, 3), Pair(5, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Results(Pair(6, 3), Pair(5, 3), 2)\n",
+          "stderr": "",
+          "exit": 0
+        }
+      },
+      "defaultGoSha256": "f87bb03b5df63574063aa6ff704628ee8fdb1b8d4d5987898e9584284c76c5d3",
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "choose",
+          "arguments": []
+        },
+        {
+          "name": "runtime",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "configured",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "reverse",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "client",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    "n1-rigid-comparison": {
+      "sourceSha256": "41ffe468fc4e3badfee6e9723c9335770282a44e85f47448e79d04a5969aa3de",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "NotComparable",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Type a is not comparable",
+          "span": {
+            "start": {
+              "line": 1,
+              "offset": 28,
+              "column": 29
+            },
+            "end": {
+              "line": 1,
+              "offset": 29,
+              "column": 30
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "representatives": {}
+    },
+    "n2-hole-comparison": {
+      "sourceSha256": "b77305730db38f8fcd3aefe18db0d4952e8ff10c5cc86470f2aff611a9c5f6cb",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "AmbiguousType",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Ambiguous type List(_) in comparison",
+          "span": {
+            "start": {
+              "line": 3,
+              "offset": 58,
+              "column": 19
+            },
+            "end": {
+              "line": 3,
+              "offset": 61,
+              "column": 22
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "representatives": {}
+    },
+    "n3-function-print": {
+      "sourceSha256": "fb7dae70b1c519d464e2494329c70e00b0d095cd264342e62b51c5f58ec534d4",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "NotPrintable",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Expected a printable value, found { combine: _ -> _ -> _ }",
+          "span": {
+            "start": {
+              "line": 4,
+              "offset": 105,
+              "column": 24
+            },
+            "end": {
+              "line": 4,
+              "offset": 114,
+              "column": 33
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "representatives": {}
+    },
+    "n4-multiplication": {
+      "sourceSha256": "558ca4c162a808cf558d90fcf3333ee7de3e419ded174e8eb087a362931f6993",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "Lexical",
+        "diagnostic": {
+          "code": "E_LEX",
+          "message": "Unexpected character",
+          "span": {
+            "start": {
+              "line": 1,
+              "offset": 19,
+              "column": 20
+            },
+            "end": {
+              "line": 1,
+              "offset": 20,
+              "column": 21
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "representatives": {}
+    },
+    "h1-print-empty": {
+      "sourceSha256": "ff7f03f8e7c9a0256310c30559d40c6c62299b1ad63102272766376a451b82d2",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Nil\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "rejected",
+          "problem": "NotPrintable",
+          "diagnostic": {
+            "code": "E_TYPE",
+            "message": "Expected a printable value, found List(Int -> Int)",
+            "span": {
+              "start": {
+                "line": 3,
+                "offset": 63,
+                "column": 24
+              },
+              "end": {
+                "line": 3,
+                "offset": 66,
+                "column": 27
+              }
+            },
+            "related": []
+          }
+        }
+      },
+      "requiresTypeHole": true
+    },
+    "h2-print-chosen": {
+      "sourceSha256": "3063566cfbc0f5dc68b6c9a5ddcf0a2bf29161dfb8194d45305362e32759ffb0",
+      "compiler": {
+        "kind": "accepted"
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Nil\n",
+        "stderr": "",
+        "status": 0
+      },
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Nil\n",
+          "stderr": "",
+          "exit": 0
+        },
+        "Function": {
+          "kind": "rejected",
+          "problem": "NotPrintable",
+          "diagnostic": {
+            "code": "E_TYPE",
+            "message": "Expected a printable value, found List(Int -> Int)",
+            "span": {
+              "start": {
+                "line": 6,
+                "offset": 145,
+                "column": 24
+              },
+              "end": {
+                "line": 6,
+                "offset": 172,
+                "column": 51
+              }
+            },
+            "related": []
+          }
+        }
+      },
+      "requiresTypeHole": true
+    },
+    "h3-compare-chosen": {
+      "sourceSha256": "36a665774a1e89b664b0b27d002000e83be179681691de04be9855db344a4592",
+      "compiler": {
+        "kind": "rejected",
+        "problem": "AmbiguousType",
+        "diagnostic": {
+          "code": "E_TYPE",
+          "message": "Ambiguous type List(_) in comparison",
+          "span": {
+            "start": {
+              "line": 6,
+              "offset": 140,
+              "column": 19
+            },
+            "end": {
+              "line": 6,
+              "offset": 167,
+              "column": 46
+            }
+          },
+          "related": []
+        }
+      },
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "representatives": {}
     }
   }
 }

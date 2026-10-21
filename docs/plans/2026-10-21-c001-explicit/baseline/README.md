@@ -1,174 +1,193 @@
 # Executable ordinary-record baseline
 
-Status: bounded exploratory results, 2026-10-21. No compiler, solver or
-language-policy change. This tranche runs existing Waxwing syntax with
-closed record types expanded in full. The proposed class alternative and all
-four C001 decisions remain open.
+Status: bounded exploratory results and current-behavior replay gate,
+2026-10-21. No compiler, solver or language-policy change. The class
+alternative and the four C001 decisions remain open.
 
-Changing the hole representative from Int to Bool left eleven program
-outputs unchanged. Those programs compile and print their hand-derived
-expected Go output, including P2-style construction and P3-style captures
-after making both stages of their supplied carrier operations pure. The
-discarded dictionary, unused local and phantom-instantiation cases retain
-type holes and run successfully. Their observations do not motivate blanket
-rejection of those holes. No universal preservation or hole-representative
-theorem follows.
+Thirteen sources compile under the default Int stand-in. All sixty-three
+successful Go executions match their expected output across Int, Bool, Text,
+a closed record and a pure function stand-in. Two printing sources reject
+the function stand-in during specialization, so uniform stand-in
+substitution, including acceptance, fails for those examples. The original
+discarded-value cases establish acceptance, not harmless substitution. Those
+observations are consistent with existing hole handling and do not settle
+the proposed all-meta restriction.
 
-## Results and limits
+## A baseline gate that detects changes
 
-[cases.json](cases.json) froze twelve initial cases before their first
-compiler run. After observing failures, six controls were added, then two
-controls with both stages of supplied carrier operations pure, then a
-reversed-source-order case. These are labelled amendments, not a predeclared
-exhaustive grammar. There are twenty-one final sources: seventeen intended
-positive candidates and four intended rejections. No generator or
-property-testing campaign ran.
+[cases.json](cases.json) pins the expected current outcome for each of
+24 sources. It checks source hashes, exact compiler diagnostic codes,
+problem constructors, messages, spans and related notes. Interpreter
+outcomes and representative-specific compilation/runtime outcomes are
+checked separately. The original eleven default Go hashes and their recorded
+function keys are also checked. A missing or additional case or
+representative fails the comparison. Private compiler source/output hashes
+and the zero-warning build record are checked during live runs.
 
-| Cases | Current compiler / Go result | Interpretation |
+| Recorded outcome | Cases | Meaning of a match |
 |---|---|---|
-| p1-choices | `Results(9, 24, 4, 2)` | Sum, bounded product, last and empty fold use explicit operations |
-| p4-two-operands | `Pair(Pair(5, 6), Pair(6, 5))` | Two operands of the same record type retain their independent choices |
-| c7-pure-stages-construction | `Results(5, 20, 6, 2)` | Constructs dictionaries, selects Stats field policies and reverses last via a capture |
-| c8-pure-stages-runtime | `Results(Pair(5, 3), Pair(6, 3), 2)` | Runtime branch, forwarding and returned captures retain choices |
-| c9-source-order | `Results(Pair(6, 3), Pair(5, 3), 2)` | Reversed call order retains both choices |
-| a1-discard-dictionary, a2-unused-local, a4-phantom | Each prints `7` with Int or Bool as hole representative | Actual type-hole occurrences survive checking; these outputs do not depend on that choice |
-| a3-fixed-carriers | `Pair(false, "new")` | Generic last independently instantiates at Bool and Text |
-| c4-unary-inferred, c5-unary-annotated | Each prints `7` | Generic function application in a capturing lambda works with one arrow |
-| p2, p3, c1, c2, c3, c6 | TypeMismatch; no Go program | The original arrow spelling leaves an earlier stage ambient; parameter annotations, concrete carrier and named partial application do not repair that contract |
-| n1-rigid-comparison | NotComparable in an unused generic body | No built-in comparison at rigid a; unused bodies are checked |
-| n2-hole-comparison | AmbiguousType | Unconstrained comparison still rejects |
-| n3-function-print | NotPrintable | An operation record remains a function-containing value |
-| n4-multiplication | Lexical | Current Int syntax does not include `*` |
+| Accept and execute | p1, p4, a1-a4, c4, c5 | Expected output for all five stand-ins; direct interpreter output agrees |
+| Reject the written contract | p2, p3, c1-c3, c6 | Exact TypeMismatch; no Go execution; untyped interpreter result is independent of typing acceptance |
+| Go passes, interpreter cannot parse | c7-c9 | Expected output for all five stand-ins and exact known interpreter error; Go success remains visible |
+| Builtin/syntax rejection | n1-n4 | Exact NotComparable, AmbiguousType, NotPrintable or Lexical diagnostic |
+| Unknown element reaches printing | h1, h2 | Nil for four stand-ins; exact NotPrintable rejection for Function |
+| Unknown element reaches comparison | h3 | Exact AmbiguousType diagnostic before specialization |
 
-[results.json](evidence/results.json) records source hashes, diagnostics,
-function keys, type-hole occurrence counts, Go outputs and the alternate
-representative outputs. Hole counts are occurrences, not distinct unknowns;
-`Hole` is an aggregate of type-variable and row-tail occurrences.
-`typeHoleOccurrences` separately counts only `TVar(Hole)`.
+The six original contract rejections and three interpreter grammar gaps are
+still present. A baseline exit of 0 means these recorded outcomes all match;
+it does not mean the rejected design candidates now compile or the
+interpreter supports c7-c9. Any new difference exits 1. Compiler, Go and
+interpreter failures cannot replace each other's status.
 
-Eight accepted sources agree with the existing independent interpreter on
-the exact source and expected output. Six rejected candidates also execute
-to the expected values in that untyped interpreter; that does not make their
-contracts well typed. The interpreter cannot parse the explicit per-stage
-rows in c7-c9. Their generated Go is checked against hand-derived expected
-outputs, not an interpreter result from another source. No parser was
-patched, bypassed or described as supporting those inputs.
+[results.json](evidence/results.json) contains the observations and
+baseline comparison. Its nonuniformRepresentatives list names h1/h2.
+`--require-uniform` is a separate gate that exits 1 for those differences
+even when the baseline itself matches. Unknown or malformed CLI options
+exit 2; they cannot silently omit the requested gate.
 
-The exploratory runner exits 1 with nine unmet original expectations: six
-typing rejections and three interpreter parse gaps. All eleven emitted
-programs match expected stdout, with exit 0 and empty stderr, both under
-default specialization and Bool representative substitution: twenty-two Go
-executions. Four negative diagnostic checks pass. The runner executes
-compiler/Go checks even when interpreter parsing fails. It does not turn
-these limitations into a green conformance suite.
+[check-runner.mjs](check-runner.mjs) runs the real replay CLI against
+copies of the result data. Healthy replay exits 0; eight deliberate
+result-record mutations each exit 1. They alter a compiler outcome, a Go
+output, the known parser error, a representative, the printing result, the
+printability rejection, or the case census. These are checker sensitivity
+tests, not source or compiler mutation tests. The separate uniformity gate
+is also checked to fail on the healthy recorded data.
 
-## Arrow-stage translation
+## Program observations
 
-The local FX001 design states that a row suffix annotates the nearest arrow
-to its left; `(A, B) -> C with E` is `A -> B -> C with E`. An unwritten
-arrow row uses its named declaration's ambient row. Therefore:
+| Cases | Default Go output |
+|---|---|
+| p1-choices | `Results(9, 24, 4, 2)` |
+| p4-two-operands | `Pair(Pair(5, 6), Pair(6, 5))` |
+| c7-pure-stages-construction | `Results(5, 20, 6, 2)` |
+| c8-pure-stages-runtime | `Results(Pair(5, 3), Pair(6, 3), 2)` |
+| c9-source-order | `Results(Pair(6, 3), Pair(5, 3), 2)` |
+| a1, a2, a4, c4, c5 | `7` |
+| a3-fixed-carriers | `Pair(false, "new")` |
+| h1-print-empty, h2-print-chosen | `Nil` |
+
+Construction, runtime branch selection, captures, forwarding and reversed
+call order work in these programs. c7 makes both stages of its supplied
+carrier operations pure but retains an ambient first stage in its Stats
+result. It is not a fully all-pure Stats dictionary.
+
+Default-specialization keys include one Int copy each of client, configured
+and reverse in c8/c9, despite their different runtime policies. P4 has one
+Int copy of both. The manifest checks those recorded keys; the outputs
+independently check the observed behavior. No dictionary value or closure
+environment was added to a specialization key.
+
+Ten accepted sources agree with the existing independent interpreter on the
+exact source and expected output. Six rejected contract candidates also
+execute to their expected values in that untyped interpreter; that does not
+make their contracts well typed. c7-c9 retain the parser gaps. No reference
+parser was changed or bypassed to manufacture agreement.
+
+## Unknown-type observations and their limits
+
+[unknown-plan.md](unknown-plan.md) froze the additional h1-h3 scope before
+execution. The stand-ins use the existing specializeWith entry point: Int,
+Bool, Text, `{ probe: Int }`, and `Int -> Int with pure`.
+
+- a1/a2/a4 pass the unknown value to discard or leave it unused. They
+  contain actual TVar(Hole) occurrences but output 7 regardless of their
+  contents. Trying more stand-ins does not make these strong evidence
+  of representative independence. a4 uses a nominal phantom ADT; it
+  does not test structural alias identity or nominal class evidence.
+- h1 applies show to Nil with an unknown element type. h2 first passes
+  Nil through an explicitly selected last dictionary, then applies show.
+  They put the unknown element type under a builtin printability check.
+  Int/Bool/Text/record stand-ins print Nil. Function substitution returns
+  NotPrintable during specialization, before emitting Go for that variant.
+- h3 applies built-in comparison to the chosen empty List. It rejects
+  with AmbiguousType. An explicit last operation does not supply Eq/Ord
+  evidence or determine the inner unknown type.
+
+The generated Int and record versions of h1 have different dormant Cons
+payload types. The Nil constructor initializes only the tag, leaving those
+payload slots at their Go zero values; its printer uses the tag and prints
+Nil. The successful outputs check that no such payload leaks in these
+executions. Source code cannot directly read an inactive payload or
+fabricate an arbitrary unknown value; no unsafe operation was added.
+
+h1/h2 demonstrate a stand-in-dependent acceptance difference. They do not
+show different printed values between successful variants, nor a current
+type-safety defect. Unqualified representative independence is not an
+outcome of this experiment. A future ambiguity rule must state which
+operations and stand-ins it admits; this report adopts no such policy. The
+proposed all-meta restriction remains pending.
+
+## Effects syntax is a separate usability finding
+
+See the author-facing [effects-syntax note](../effects-syntax-usability.md).
+In named signatures, a row suffix marks only the nearest arrow:
 
 ```text
 (a, a) -> a with pure
 ```
 
-marks only the final stage pure. The proposed first-order C001 core uses
-pure arrows throughout. Its current-syntax operation type needs:
+leaves an earlier stage ambient. To write both operation stages pure:
 
 ```text
 a -> a with pure -> a with pure
 ```
 
-The failed p2/p3 spellings and c1-c6 controls are retained. Changing only
-the operation-arrow signatures in c7/c8 makes the same runtime bodies check.
-c3 also rejects at concrete Int, so the failure is not evidence that rigid
-generic variables or the record-composition solver are broken. The current
-diagnostic prints identical expected and found types because it omits the
-distinguishing rows; this is recorded in the local backlog.
+The six contract rejections arose from this distinction. Parameter
+annotations, a concrete carrier and named partial application do not repair
+the written contract. Changing carrier-operation stage signatures makes
+c7/c8 check. The diagnostic still prints identical expected/found types
+because it omits the distinguishing rows; CB002 records that issue. This is
+not evidence of a record-solver defect.
 
-Source correspondence: `docs/plans/2026-10-09-effects-design.md`, §1 type
-syntax and §2 staged rows; `src/Format/Parse/Chain.purs`, `folded` and
-`combined`; `src/Features/Check/Lambda.purs`, `checkLambda`; and
-`src/Features/Check/Stages.purs`. These explain the stage-row contract; no
-new inference rule or record-solver claim is made.
+Source correspondence: the local effects design §1 syntax and §2 typing;
+Format.Parse.Chain folded/combined; Features.Check.Lambda checkLambda; and
+Features.Check.Stages. No new inference rule follows.
 
-P1/P4 use the shorter, final-stage-pure contract and already work. c7/c8
-make every stage of their supplied Int/generic carrier operations pure. c7
-still leaves the first stage of the constructed Stats combine result
-ambient. It demonstrates construction under that contract, not a fully
-all-pure Stats dictionary. These are observations about current contracts;
-they do not validate every type in the proposed all-pure core.
+## Reproduction and history
 
-## What this says about the all-meta boundary
-
-The current compiler accepts `discard(lastFor())`, an unused local holding a
-last dictionary, and an unconstrained phantom ADT reference. All three
-contain `TVar(Hole)` in checked IR and print `7` under both tested hole
-representatives. a4 uses a nominal phantom ADT; it does not test structural
-alias identity or nominal class evidence.
-
-Recommendation for decision 2: keep P001's existing hole discipline for
-ordinary operation records unless a concrete operation requires a stronger
-rule. The global all-meta restriction rejects useful existing programs and
-is not justified by these observations. Its proposed rule remains pending;
-this report does not replace it with a new language policy. A future class
-predicate, implicit selection or type-dependent evidence operation would
-need its own ambiguity account. Existing built-in comparison and printing
-already enforce their distinct restrictions, as n1-n3 demonstrate.
-
-This is bounded evidence. Changing one representative in eleven programs
-cannot establish independence for every accepted record program, nor settle
-future evidence construction or local generalization with effects.
-
-## Specialization observations
-
-Default-specialization keys include one Int instance each of client,
-configured and reverse in c8 and c9, despite their different runtime
-policies. P4 has one Int key for both. Multiple values therefore share these
-function copies in the measured programs. Keys alone do not show correct
-behavior; the emitted Go outputs supply the separate observation. No
-dictionary value or closure environment was added to a key.
-
-## Reproduction and provenance
-
-A fresh private compiler build compiled unchanged checkpoint sources at
-`c341109` plus the existing pinned dependency sources, with zero warnings
-and errors. No mutable compiled output from the shared checkout was used.
-[compiler-manifest.json](evidence/compiler-manifest.json) records all source
-and compiled-JavaScript hashes and the spago.lock hash. Only that fresh
-output was loaded by the runner. The build does not run style tools or the
-whole verification suite and is not a full `npm run verify` result.
-
-From `/private/tmp/waxwing-c001-design`:
+The private fresh compiler build uses unchanged c341109 compiler sources and
+existing pinned dependency sources, with zero warnings/errors.
+[compiler-manifest.json](evidence/compiler-manifest.json) records source
+and compiled-JavaScript hashes. This is not full npm verification. From
+`/private/tmp/waxwing-c001-design`, with that private build available:
 
 ```text
-mkdir -p .build/c001-baseline
+node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs \
+  docs/plans/2026-10-21-c001-explicit/baseline/evidence/results.json
+node docs/plans/2026-10-21-c001-explicit/baseline/check-runner.mjs
+node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs \
+  --replay docs/plans/2026-10-21-c001-explicit/baseline/evidence/results.json
+```
+
+All three commands should exit 0 for this baseline. Adding
+`--require-uniform` to replay should exit 1. A live run executes 63 Go
+programs serially in a private cache; replay invokes no compiler or Go. Each
+runtime observation includes exit status, stderr and generated hash.
+
+To recreate the private compiler output, first create
+`.build/c001-baseline`, then run:
+
+```text
 purs compile 'src/**/*.purs' \
   '/Users/ethan/Desktop/waxwing/.spago/p/*/src/**/*.purs' \
   --output .build/c001-baseline/output --json-errors \
   > .build/c001-baseline/compiler-build.json \
   2> .build/c001-baseline/compiler-build.stderr
-node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs \
-  docs/plans/2026-10-21-c001-explicit/baseline/evidence/results.json
 ```
 
-The final command intentionally reports the nine limitations above and exits
-1. Runtime versions are in the results. The runner uses a private Go cache
-and local toolchain, needs no dependency download, and leaves generated
-Go/cache files under `.build/c001-baseline/`.
+The original twelve-case candidate set was amended after observations with
+six controls, two carrier-stage controls and a source-order control. Its
+scope and intended outcomes remain in
+[design-candidates.json](evidence/design-candidates.json).
+The old always-nonzero runner's final report is retained in
+[pre-review-results.json](evidence/pre-review-results.json). Earlier
+[initial-harness.json](evidence/initial-harness.json),
+[initial-compiler.json](evidence/initial-compiler.json) and
+[preflight-results.json](evidence/preflight-results.json) preserve the
+harness failure, contract rejections and discovery of parser gaps. Their old
+labels describe historical runs, not the current baseline gate.
 
-Current syntax has no multiplication operator. smallProduct uses repeated
-addition solely for the small nonnegative fixture arguments. No full-domain
-multiplication, law or termination claim is checked. No standard-library API
-follows from this helper.
-
-The initial harness mistakenly read `checked.value0.functions` even though
-Checked.Program is an erased newtype; fixing that read to checked.functions
-allowed the six initially accepted sources to reach Go. The initial failure
-report is preserved in
-[initial-harness.json](evidence/initial-harness.json).
-[initial-compiler.json](evidence/initial-compiler.json) retains the next run,
-with two compiler rejections.
-[preflight-results.json](evidence/preflight-results.json) records the
-extended run that first exposed the interpreter grammar gaps. No assertions,
-compiler checks or diagnostics were disabled for a pass.
+smallProduct supplies repeated addition only for the small nonnegative
+fixture arguments. No full-domain arithmetic law or termination claim is
+checked. No compiler implementation, record-solver or policy change is
+included.
