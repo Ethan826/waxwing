@@ -2897,8 +2897,12 @@ keys and holes defaulted against a recorded atom. Cannot establish
 universal validity, recorder completeness, or split-independent
 acceptance if it refuses with a user error (safe only as an internal
 assertion under `Covers`). Evidence, not an inheritance of Lean's
-theorem; it does close the gap between a certificate and the layouts
-lowered, which `interp` (noncomputable) leaves open.
+theorem. It can check concrete bindings against the recorded
+constraints; it does not by itself prove that lowering implements those
+bindings (corrected per §18.22; the earlier wording, "closes the gap
+between a certificate and the layouts lowered", was too broad). "Linear"
+is in the size of the representation traversed, expansion included
+(qualification pending review).
 
 **Disagreement with stream 5, unresolved** (statements.md §8):
 comparison (stream 5's row C2 says it never separates splits; h3/h4
@@ -2912,3 +2916,50 @@ comparability in interfaces (C needs that declared form; inferred
 interfaces bring back (a) through E2′); `checkSites` as an internal
 error once printability is counted; R010 relaxed or admissibility in
 split validity; a typed or Go-level semantics for R after Task 8.
+
+### 18.22 The author's review of §18.21 (2026-10-21)
+
+**Inference stays a goal.** Handwritten interfaces are not required
+merely because the current theorem assumes them; the findings expose
+requirements the inference design must handle.
+
+1. **Printability and comparability must be represented in interfaces,
+   and may be inferred.** A function's contract carries the requirements
+   its implementation imposes; users can write them explicitly; INF001
+   and C001 decide how they are inferred and propagated. E2′ shows a
+   problem with choosing a split first and then inferring an interface
+   from that choice; it does not show that inference must make
+   acceptance arbitrary. To investigate: preserving the relevant
+   constraints until interface inference and ambiguity checking are
+   complete. Until that design exists, explicit annotations may be a
+   documented conservative fallback, not permanent policy by accident.
+2. **Specialization checks become internal assertions only after the
+   invariant they assert is established.** For a supported fragment
+   whose complete requirements have been checked, a later printability
+   failure is a compiler defect. Today `checkSites` still catches
+   requirements absent from checking; its user errors are not converted
+   wholesale. First establish that the earlier checker accounts for them,
+   caller-side requirements and concrete instantiations included.
+   Unsupported cases keep their documented treatment.
+3. **R010 stays. Semantic validity and compiler admissibility are
+   separate properties.** A split can satisfy the semantic constraints
+   and fail the specialization-termination restriction. Executable
+   witness selection must account for both; the mathematical validity
+   theorem is not redefined to conceal R010's limitation. Relaxing R010
+   needs a replacement termination argument and its own approval.
+
+**Accepted:** the narrowed split-irrelevance result, as a result about
+its stated model, subject to the pending review corrections. It
+supports further work; it does not justify arbitrary split selection in
+Waxwing.
+
+**For the independent reviewer**, before the broader conclusions are
+accepted: comparison can affect acceptance through the instantiated
+type, distinct from producing different run-time output; an applied
+`peek` counterexample must supply a well-typed argument without silently
+adding projection or fixing the split; ground checking checks concrete
+bindings against recorded constraints and does not by itself prove that
+lowering implements them (§18.21 corrected); "linear" cost is qualified
+by the representation traversed, including any expansion.
+
+No new compiler-policy change; the running streams continue.
