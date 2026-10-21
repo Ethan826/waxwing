@@ -25,6 +25,9 @@ only; not part of `npm run verify`. Bounded evidence, not proof.
 - source-boundary.mjs, run-source-boundary.mjs: Waxwing functions with
   hand-translated signature problems (dossier §17), against predicted
   verdicts.
+- templates.mjs, typed-oracle.mjs, typed-challenges.mjs,
+  typed-grammar.mjs: the typed term-witness oracle (dossier §18.6-18.7,
+  below).
 - export-lean.mjs: writes the certificates the search finds as Lean
   data (research/composition-proofs/Composition/Sig/CheckData.lean) for
   the verified checker (dossier §15.8). The search stays untrusted:
@@ -36,7 +39,7 @@ Run (from this directory): `node run-challenges.mjs`;
 `node check-interpretation.mjs 300 9 larger`;
 `node check-interpretation.mjs 0 5 mutant`;
 `node check-interpretation.mjs 300 5 rich`; `node export-lean.mjs 100 7`;
-`node run-source-boundary.mjs`.
+`node run-source-boundary.mjs`; `node typed-oracle.mjs 300 3`.
 
 ## The bounded semantics
 
@@ -147,3 +150,34 @@ fields `{z1:Int}`, `{a:Bool}`; rigid type variables `{a:Int}`,
 corrupted on present constants fails L3 on these cases. Results are in
 the dossier, §14.8. Lean proves the same lemmas for all values
 (research/composition-proofs, Sig/Soundness.lean).
+
+## The typed term-witness oracle (dossier §18.6-18.7)
+
+Three checks per problem over the same bounded rigid assignments, kept
+independent:
+
+- **bounded validity** (bounded.mjs): every rigid assignment has some
+  flexible assignment in the bounded domain;
+- **uniform templates** (templates.mjs): for each written-label pattern,
+  one typed template works for every rigid assignment in the pattern
+  satisfying `D`. A template gives each flexible row, per written label,
+  absent or a field template, and per Venn cell of the rigid rows,
+  absent or a source row in the cell; a flexible type variable gets a
+  field or record template. The space is finite and searched
+  exhaustively (no depth limit);
+- **per-assignment templates**: a template chosen after seeing each
+  assignment (weaker), computed only when no uniform template exists.
+
+When bounded validity fails at an assignment θ*, a uniform template
+would have to work at θ* too, so one search at θ* settles both "no
+uniform template" and whether the bounded flexible domain was too small.
+First pass: problems with records nested in fields are left out and
+listed. Power checks (scratch copies, not kept): templates copying a
+fixed type instead of the source's are caught as separations and as P9s
+inconsistencies; templates not grouped by pattern turn `depSig` into
+"no uniform, per-assignment found", the type-dependent signature.
+
+Results (2026-10-20; dossier §18.7): 36 named problems, all as
+predicted, and 300 generated problems for each of seeds 3 and 11. No
+separation and no power or P9s flag. typed-discrepancies.json keeps the
+seed-11 run.
