@@ -5,7 +5,7 @@ export const r005Rows = [
   {
     // A label the spread's type has is no overlap: the literal checks and
     // the record row would hold the label twice.
-    name: 'r005-overlap', file: 'src/Features/Check/Extension.purs',
+    name: 'r005-overlap', file: 'src/Features/Check/Overlap.purs',
     needle: '(Array.find known withLabels)',
     replacement: '(Array.find known (Array.take 0 withLabels))',
     probe: 'r005-overlap',
@@ -13,7 +13,7 @@ export const r005Rows = [
   },
   {
     // The overlap is reported at the item, whichever was written first.
-    name: 'r005-overlap-order', file: 'src/Features/Check/Extension.purs',
+    name: 'r005-overlap-order', file: 'src/Features/Check/Overlap.purs',
     needle: '  earlier = if baseFirst then base.span else item.span\n'
       + '  later = if baseFirst then item.span else base.span\n',
     replacement: '  earlier = if baseFirst then base.span else base.span\n'
@@ -55,7 +55,7 @@ export const r005Rows = [
   },
   {
     // The rest binder has the whole matched type.
-    name: 'r005-rest-type', file: 'src/Features/Check/RecordPattern.purs',
+    name: 'r005-rest-type', file: 'src/Features/Check/RestBinder.purs',
     needle: '    TRecord row → TRecord (withoutLabels (writtenLabels '
       + 'written) row)\n',
     replacement: '    TRecord row → TRecord (withoutLabels (Array.take 0 '
