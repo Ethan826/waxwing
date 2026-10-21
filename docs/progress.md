@@ -7875,3 +7875,9 @@ assessment.md.
   checks become internal only once the invariant is established; R010
   stays, validity and admissibility kept separate; the narrowed result
   accepted about its model, pending review corrections.
+- Integration review of streams 5 and 8 (dossier §18.23): stream 8 right
+  on comparison and the applied `peek`; three stream 5 claims false
+  (comparison never separating splits, printability timing, `peek`
+  showing (a)); caller-side comparison and printability are missing
+  requirements (b), refused at check. The two models do not yet combine
+  into a recorder specification (M1-M9).
