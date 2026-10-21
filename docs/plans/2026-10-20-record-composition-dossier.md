@@ -4389,3 +4389,100 @@ exactness result.
 architecture decision**, showing the old and new acceptance targets and
 the reusable proof obligations. No prototype or proof work before that
 review.
+
+### 18.49 SC1-SC4, statements only (2026-10-21)
+
+research/division-campaign/star/sc-statements.md; Lean
+Composition/Sig/SchematicCert.lean and SchematicDefs.lean (`def`s and
+`def … : Prop` only; no theorem, no `sorry`); integrated onto `main`
+(declarations clashing with option C's ProjectionDefs.lean renamed:
+`SV`, `SCert`, `Piece`, `InRegion`, `pieceRow` get a `Sch` prefix; no
+definition or statement changed); clean build, 156 jobs. **For the
+author's review; nothing proved, nothing adopted.**
+
+**Acceptance boundary: P9s's `Accepts`.** SC4 concludes `Accepts P ∧
+ValidAll P ∧ ValidFin P` and nothing more; it says nothing about
+`ValidOpen` or `openCharacterization` (`ValidFin` only at `P`'s own
+bases, no implication to `ValidOpen` stated). `split` and `route` stay
+outside (K8, `routeSig_not_accepts`).
+
+**Definitions** (computable research models, not the prototype): an
+**untrusted** schematic certificate (`ty`/`row` binding lists of values
+with pieces `{r, ex}`); its denotation and instantiation at a pattern;
+regions (`InRegion`: consistent patterns agreeing with a cube) and the
+four exact queries built on `holdersOK`; the fragment `LDFragment`
+(every `D` atom `lacks r l` or `disjoint r s` on declared rigid rows)
+and its check `fragmentS`; the checker
+`checkSym P c σ := fragmentS P && certOkY P c σ && (!nonEmptyS P c ||
+P.B.all (atomY P c σ))`, which re-checks every atom of the original
+`P.B` (binding equations included; no trusted residual). Shadowing in
+the certificate (duplicate bindings read at the first occurrence, still
+checked by `wfY`) is kept distinct from composition (overlapping record
+parts refused at every pattern of the region); the conservative choice
+is not an exactness result. Pieces must lie on rigid rows (`wfY`, at
+every depth). Definedness in the body is enforced by evaluation
+(duplicate labels, overlapping parts, nested subterms fail; an equation
+needs both sides to evaluate); the `lacks`/`disjoint` restriction
+applies only to `D`.
+
+**Statements (strategy A, empty cube):** SC1 (denotation commutes with
+instantiation); SC2 (`LDFragment P →` the four queries exact) with
+SC2Frag (`fragmentS ↔ LDFragment`; CP and antitonicity, which hold for
+every `P`; outside the fragment `checkSym` refuses, i.e. Unresolved),
+SC2Real (inside the fragment every consistent pattern is realized by a
+rigid assignment satisfying `D`), SC2Boundary and SC2Boundary′ (it
+fails outside, with `D = [ff]` and `D = [{...r0} = {}]`); SC3
+(`checkSym P [] σ →` the instantiated certificate passes `checkCert` at
+every pattern in the region, for every σ); SC4 (`checkSym P [] σ →
+Accepts P ∧ ValidAll P ∧ ValidFin P`, through K5, SC3, K4, `s1`,
+`s1_fin`; no table built); SC3′ optional (the converse, under
+`fragmentS` and `certOkY`, both necessary); SC2B, SC3B cube-general,
+for strategy B, deferred. One obligation recorded for the SC3 proof: W3
+of an equation's value from declared-disjoint pieces with `certOkY`.
+Cost of the guard: with `D = [ff]`, `B = []`, `checkAll` accepts and
+`checkSym` refuses; none of the 226 recorded problems is outside the
+fragment.
+
+**Prototype defects (open, not corrected).** (1) `allowed` (and
+generic.mjs `holderSets`, `consistentCount`) treats `disjoint r r` as
+two distinct rows instead of forcing `r` empty; minimal example
+`D = [disjoint 0 0]`, `B = [lacks 0 a]`: E, A and B answer Unresolved;
+correct answer valid. (2) `nonEmpty` does not check that labels a cube
+forces are written; correct: a cube forcing an unwritten label gives an
+empty region (B only). Both are permissive in the region, so **neither
+can produce a false acceptance; both can produce false refusals**.
+Historical results: no recorded input has `disjoint r r` in `D` (226
+scanned); rerunning B over 2,505,538 cube entries found no forced
+unwritten label; remaining gaps covered by code reading only
+(Unresolved B runs, which return no tree, and B's `star` runs above
+n = 64). Regression checks and the cross-check rerun after a correction:
+sc-statements.md §10.4.
+
+**Reviews inside the stream:** soundness, no false, vacuous or
+mis-quantified statement and nothing trusts the solver (brute force: SC3
+and SC3′ 1,048,576 cases, SC3B 4,718,592, queries/CP/antitonicity 87,808
+pairs, 0 failures); one false prose claim corrected ("SC3 does not need
+`certOkY`"). Completeness: requirements met; its fixes applied.
+Non-vacuity by scratch `#eval` of the model (not proofs): `star` 1-3 and
+64 pass; invalid controls, a broken certificate, `ff` in `D` and `split`
+refused; `disjoint r r` handled correctly. One worktree-guard denial in
+the completeness review, stopped and quoted.
+
+**Transfer to option B** (§7): the untrusted-certificate discipline,
+evaluator shape and SC4's pattern transfer; Venn-cell pieces (`X r S`),
+a region from `HasInstance`, `SolvableFinAt` in place of
+`checkCert`/`HoldsG`, and the `←` direction of `openCharacterization`
+as target need replacement. A semantic theorem can take θs with
+`GenericInst`/`WithinC` as premises; only an executable checker needs a
+computed θ*. The definitions would generalize to option C's
+`⟨r, S, rest?⟩` pieces.
+
+Questions for the author (sc-statements.md): approve or amend SC1-SC4,
+SC3′ included or not; `LDFragment` as SC2's scope and as the guard, or
+only in SC2Real and the guard; who corrects the prototype defects, and
+whether the prototype should also get the guard and `certOkY` so the A
+measured is the A proved; the scratch checks and defect examples as
+committed fixtures; restate SC1-SC4 over the general projection piece
+before any proof. **With §18.47-18.48 this is the input to the combined
+architecture decision** (old target `Accepts`, new target `ValidOpen`,
+shared obligations).
