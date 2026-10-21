@@ -47,8 +47,11 @@ leaves free. Those `n(n-1)` bits change what the certificate *denotes*:
 the generic row of `r_j` lists its present `f_i` fields. They do not
 change whether it works. A pattern-indexed table still has to spell
 each one out, because `checkAll`'s values are explicit field lists
-(§15.2, `SG`). The exponential is in the certificate representation,
-not in the validity question.
+(§15.2, `SG`). For this family, the exponential is in the explicit
+certificate representation: `star` has a compact candidate certificate
+whose checking avoids enumeration. That says nothing about the
+complexity of validity in general (corrected 2026-10-21, dossier
+§18.39; an earlier sentence said "not in the validity question").
 
 **What is genuinely dependent.**
 
@@ -262,8 +265,10 @@ results/crosscheck.txt (rerun after amendment 5). 0 flagged.
   `dep`, `divide`, `divide2`, `divide3` valid at 1-2; `route` valid.
   Every acceptance by A or B is of a problem the oracle finds valid
   (or, for `star-read` 3, did not finish).
-- **Instantiation**: every certificate A or B accepted was instantiated
-  at every consistent pattern (up to 64 per problem here) and checked
+- **Instantiation (small cross-check instances only, not the large
+  measurements)**: every certificate A or B accepted on the cross-check
+  problems was instantiated at every consistent pattern (up to 64 per
+  problem here) and checked
   with sig-oracle's generic semantics and P9s's side condition: no
   failure. Wherever A's symbolic check failed, some instantiation failed
   too (e.g. `star-unlacked` 3: 64 of 80 pass), so no case showed the

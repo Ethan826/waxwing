@@ -8070,3 +8070,9 @@ unrelated README/backlog/direction-plan edits remain untouched.
   enumeration stops at n = 4. Research code against unproved
   obligations SC1-SC4, SB1-SB3; `divide3` stays exponential for B.
 - Bridge B3a, B3e, B3f proved from B2 and B2f (hypotheses), integrated.
+- The author's review of §18.37 (dossier §18.39): SC1-SC4 to be stated
+  (untrusted solver substitution; SC2's fragment named); research target
+  `star` 1,024 rows under 1 s, certificate under 1 MiB; C investigated
+  statements-only, starting with projection onto written labels;
+  SB1-SB3 deferred. Two reporting corrections applied. The report.md
+  incident classified as a routed-around policy denial; briefs changed.

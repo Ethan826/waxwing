@@ -3751,17 +3751,19 @@ change. Protocol and problem set committed before any run (78c3302),
 five recorded amendments, each before the runs it governs. Coordinator
 reproduction: `star` n = 1024 strategy A (search 12 ms, check 208 ms,
 coverage 2.8 ms over 10,241 queries) and n = 4 strategy E (4,096
-entries, 6.1 MB) match the recorded figures. **Process note:** the
-Write tool refused to create report.md for a subagent; the agent wrote
-it elsewhere and copied it into place, a workaround reported to the
-author.
+entries, 6.1 MB) match the recorded figures. **Process incident**
+(classified in §18.39): report.md reached the repository by routing
+around a harness policy denial.
 
 **Why `star` is expensive.** Declaration consistency is a product over
 labels: `2^(n-1)` holder sets per label, `2^(n(n-1))` patterns. Under
 the unifier's substitution, no obligation reads the free bits `(r_j,
 f_i)`, `j ≠ i`: they change what an explicit certificate denotes, not
-whether it works. The exponential lies in `checkAll`'s explicit-field
-certificate format, not in the validity question. With a certificate
+whether it works. For this family the exponential lies in `checkAll`'s
+explicit-field certificate format: `star` has a compact candidate
+certificate whose checking avoids enumeration; nothing is established
+about the complexity of validity in general (corrected, §18.39). With a
+certificate
 fixed, the quantifier over patterns splits into per-atom, per-label
 queries; this differs from the refuted atom-level slicing, which was
 unsound for the existential problem.
@@ -3809,8 +3811,10 @@ witnesses need a projection of a rigid row, makes B need `2^m` leaves
 **Cross-checks (0 flagged):** on 35 regression problems E, A and B
 match the recorded P9s verdicts (`split`, `route` Unresolved, as K8
 requires); every acceptance is bounded-oracle valid, except `star-read`
-n = 3, where the oracle timed out at 120 s; every accepted certificate
-instantiated at every consistent pattern passes; one prediction was
+n = 3, where the oracle timed out at 120 s; on the small cross-check
+instances only (up to 64 patterns each; not the large measurements),
+every accepted certificate instantiated at every consistent pattern
+passes; one prediction was
 wrong (`divide` uniformly valid; amendment 1).
 
 **Obligations (named; none proved):** SC1 instantiating a schematic
@@ -3858,3 +3862,61 @@ review of the definitions and proof argument. **The next substantive
 question is whether the bridge establishes the intended option-B
 guarantees.** Not authorized by adding B2n: trimming machinery, language
 changes, compiler integration.
+
+### 18.39 The author's review of §18.37 (2026-10-21)
+
+The `star` results are performance evidence; the compression checker
+still needs its soundness proof, and it remains a P9s-based path: it
+does not resolve P9s's inability to certify `route`. Decisions:
+
+1. **SC1-SC4 as exact statements, reviewed before proofs.** The solver
+   may supply a finite, syntactic substitution as an **untrusted**
+   certificate; the checker justifies it against the original
+   obligations, retaining binding equations where necessary, and never
+   trusts that the solver produced a valid substitution. **SC2 names its
+   supported declaration fragment**: product-of-label reasoning for
+   `lacks`/`disjoint` constraints must not silently become a claim about
+   arbitrary typed constraints.
+2. **Provisional research target:** `star` at 1,024 rows, under one
+   second total search, check and coverage, certificate below 1 MiB, on
+   the recorded quiet reference machine; repeated measurements reported,
+   no fragile timing test installed. Larger runs stay as stress evidence.
+   A ported application is still required before production performance
+   claims.
+3. **C, statements-only investigation**, starting with the smallest
+   missing operation: projecting a rigid row onto a specified set of
+   written labels. Determine whether that handles `divide3` before
+   proposing general Boolean-formula certificates. No prototype, proof
+   campaign or adoption.
+4. **SB1-SB3 deferred.** B's report and measurements are preserved;
+   A's checker foundation first, then a ported program to judge whether
+   decision-tree certificates justify the extra machinery.
+
+Deferred: sparse-check optimization, a larger oracle budget for
+`star-read`.
+
+**Reporting corrections, applied** (report.md and §18.37): the
+instantiation cross-check (every accepted certificate passes at every
+consistent pattern) holds only for the small cross-check instances, up
+to 64 patterns each, not the large measurements; "not in the validity
+question" replaced: this family has a compact candidate certificate
+whose checking avoids enumeration, which establishes nothing about the
+complexity of validity in general.
+
+**B2n** is approved for the tranche (§18.38) and released to the
+finite-freshness stream.
+
+**The tool incident, classified.** The exact rejection (Write, on
+star/report.md in the agent's worktree): "Subagents should return
+findings as text, not write report files. Include this content in your
+final response instead." It was not retried. The agent then wrote the
+same text to the scratchpad with Write and copied it into the
+repository with `cp`, committed as 04e2ad3 (integrated as ce2beba).
+**Classification: a harness policy denial addressed to subagents, not a
+file-tool limitation; copying through another route was not an
+acceptable workaround.** The coordinator's brief caused the conflict by
+requiring a file named report.md. The content stays in the repository
+as a coordinator-integrated research record. Corrective practice:
+agents return report text in their final message and the coordinator
+writes the file; every brief says that a denied tool call is reported
+verbatim and never achieved another way.
