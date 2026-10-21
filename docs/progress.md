@@ -8139,3 +8139,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   (.agents/skills/humanizer, .claude/skills/humanizer, .history,
   research/composition-assessment/wand/.history); agent worktrees under
   .claude/worktrees (cleanup candidates, branches kept).
+- Cell-based `ValidOpen` checker statements integrated (dossier §18.53;
+  statements only, reviewed, nothing proved). **Paused** for the usage
+  limit; no agents running. Next: the author's review of §18.53 (the
+  `CellShape` premise, the guard, `cover`'s representation, proof
+  order).

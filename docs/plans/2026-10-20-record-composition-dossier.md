@@ -4635,3 +4635,80 @@ stay outside that claim); **the recorded timings describe star-v1**,
 not the corrected prototype. No further prototype work or large timing
 runs now; the cell-based `ValidOpen` statements are reviewed (semantics,
 coverage obligations, acceptance examples) before any proof.
+
+### 18.53 Cell-based checker for `ValidOpen`: statements, for review (2026-10-21)
+
+research/division-campaign/cellcheck/statements.md; Lean
+Composition/Typed/Cell/ (Format, Query, Check, Statements, Exact,
+Scenarios, ScenariosMore; `def`s and `def … : Prop` only, no theorem,
+no `sorry`); integrated onto `main` (no name clash); clean build, 163
+jobs. **Nothing proved; for the author's review before any proof
+(§18.51).** Fixes after the two reviews were not re-reviewed.
+
+**Format.** A piece `⟨r, labels, cubes⟩` copies rigid row `r`'s own
+entries out of θs at its listed written labels and at every Venn cell
+satisfying one of its cubes (conjunctions of membership literals), so
+field types are always the source row's (CI1). Certificates reach θs
+only through pieces and `rty n`; pieces on non-rigid variables denote
+`{}` and are refused. Strategy A's `{r, ex}` and option C's guard-free
+pieces embed; guarded pieces have no image. They agree with A and C on
+written labels only (CI4, CI4″): P9s's private rest becomes cells shared
+with other rows; "no common free cell" is exactly `declared r s` (CI5).
+
+**Main shape (CM, `CellSound`):** for `QSound P Q` and any untrusted σ
+with `cellCheck P Q σ = true`, for all π, θs with `HasInstance`,
+`GenericInst`, `WithinC` and **`CellShape`** (a new evidence premise:
+a cell a rigid row holds is a free candidate cell containing that row;
+`CellShapeNeeded` gives a `route` instance where CM fails without it),
+the certificate instantiated at θs solves the body (finite values).
+Corollaries `CellOpen` (with B5, `ValidOpen`) and `CellOpenImpl` (for
+the proposed queries). No computed θ*. Guard: `LDFragment`.
+
+**Separate obligations:** instantiation (CI1-CI5, CG `FragmentIff`);
+original body (CB1 every atom of `P.B`, CB2-CB4); definedness (CD1
+duplicate labels, CD2 overlapping parts, CD3 nested subterms, CD4 both
+sides of an equation); coverage (CV1 every pattern with an instance at
+`thetaFree` with its evidence, CV2).
+
+**Region queries.** The old four do not fit (`nonEmpty`, `must` constant
+on the fragment); needed: `possW`, `possBoth`, `cellBoth`, and `cover`
+(cube-list cover over a row's occupied cells). Soundness needs only the
+region evidence; computational exactness (QX1-QX3) holds for every `P`;
+exactness over the region (QR1-QR4) needs `LDFragment`. **`cover` has no
+known efficient exact form:** with `D = []`, a piece passes exactly when
+its DNF is a tautology (QX4, `CheckTautology`), so a complete checker is
+coNP-hard for unbounded rows; a sound incomplete checker can refuse in
+polynomial time; single-cube pieces without declarations are
+polynomial; with declarations, open.
+
+**Scenarios** (intended verdicts, matched by scratch `#eval` of the
+model, evidence not proof): accepted, `route` (with `¬Accepts` and
+`ValidOpen`), `star` for all n, `divide3`, `star-read`, `intArmP`,
+`dep`, `divide`, `divide2`, declared `split`, `disjoint r r`; refused,
+`star-unlacked`, `star-undeclared`, `star-cross`, `shapeSplit ()`,
+`splitFree` (each with `¬ValidOpen` and refused by every certificate),
+a broken `route` certificate, four validation cases; refused as recorded
+incompleteness, `agreeP` and `D = [ff]` (both `ValidOpen`, outside the
+guard); known limitation, `divide5` with written labels (no guard-free
+certificate; `ValidOpen` argued only).
+
+**Reviews:** soundness, no false, vacuous or unsound statement, nothing
+trusts the certificate or a solver, no P9s correctness claim carried
+over (brute force of the queries and the tautology reduction; an
+independent semantic oracle at `thetaFree`, 5,570 accepted random
+cases, none wrong); fixed: `CellShape` weakened to the direction used,
+guards no longer silently dropped, agreement with P9s stated, missing
+`¬ValidOpen` conjuncts, cost wording. Completeness: requirements met,
+no wrong verdict; fixed: missing `FragmentIff`, statements for
+`CellShapeNeeded` and `CheckTautology`, scenario and boundary gaps.
+
+Questions for the author (statements.md §11): approve `CellShape` as an
+evidence premise (else a stronger generic-instance definition, changing
+reviewed definitions); keep the guard at `LDFragment` or widen to
+`EqFree ∧ Scoped` (equations in `D` deferred either way); `cover`: DNF
+selectors (exponential worst case), single-cube pieces, or an untrusted
+split-tree hint; defer field references with the fragment; the proposed
+proof order (CI2 … CM, CM-open, CM-impl; scenarios; QX3, QX4, QR1-QR5).
+
+**Paused 2026-10-21** (usage limit) after this integration; nothing
+running. Next: the author's review of §18.53.
