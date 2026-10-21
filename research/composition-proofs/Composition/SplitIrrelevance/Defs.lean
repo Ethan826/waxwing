@@ -76,7 +76,11 @@ def keysOf (fs : List (Label × V Label)) : List Label := fs.map Prod.fst
 
 variable [DecidableEq Label]
 
-/-- The reference evaluator, with fuel. Only `project` reads the key. -/
+/-- The reference evaluator, with fuel. Only `project` reads the key.
+`app` runs a closure's body at the key where it is applied, not where
+it was created; only the excluded `project` could tell the difference
+(a projecting closure returned from a callee would read the caller's
+key). -/
 noncomputable def eval (P : Prog Label B) :
     Assign Label B → Nat → List (V Label) → Tm Label → Option (V Label)
   | _, 0, _, _ => none
