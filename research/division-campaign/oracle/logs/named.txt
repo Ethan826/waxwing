@@ -1,0 +1,85 @@
+{"name":"shared-part","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":12,"secs":0.285}
+{"name":"equal-rests","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.001}
+{"name":"types-independent","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":81,"secs":105.527}
+{"name":"src-mark","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":9,"secs":0.002}
+{"name":"src-routeNarrowed","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":121,"secs":206.822}
+{"name":"agree-some-cells-bad","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":27,"secs":0.117}
+{"name":"fn-around-divided-bad","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":10,"secs":0.026}
+{"name":"written-in-nested-tail","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":27,"secs":0.037}
+exit 0 secs 313
+{"name":"shared-part-equal-rows","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":9,"secs":0.016}
+{"name":"self-disjoint","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.001}
+{"name":"empty-split","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":25,"secs":0.002}
+{"name":"src-markForwarded","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":9,"secs":0.002}
+{"name":"division-in-field","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":3375,"secs":264.539}
+{"name":"agree-unforced-pair","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":28,"secs":0.137}
+{"name":"fn-codomain-divided","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":1125,"secs":0.791}
+{"name":"written-in-nested-tail-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":10,"secs":0.016}
+exit 0 secs 265
+{"name":"shared-part-no-disjoint","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":81,"secs":3.148}
+{"name":"rigid-type-eq","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0}
+{"name":"forced-empty","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.007}
+{"name":"src-join","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":25,"secs":0.001}
+{"name":"division-in-function","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":225,"secs":0.654}
+{"name":"agree-nested-hyp","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":125,"secs":5.113}
+{"name":"three-rows-shared","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":25,"secs":0.019}
+{"name":"written-label-in-nested-tail-of-flex","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":81,"secs":64.619}
+exit 0 secs 73
+{"name":"agreement-hypothesis","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":25,"secs":0.075}
+{"name":"rigid-type-free","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":5,"secs":0.001}
+{"name":"nested-same","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":27,"secs":0.06}
+{"name":"src-forwarded","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":25,"secs":0.048}
+{"name":"division-record-rigid-var","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":100,"secs":0.031}
+{"name":"tyvar-nested-hyp-divided","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":500,"secs":0.615}
+{"name":"three-rows-shared-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.038}
+{"name":"written-in-nested-tail-forced","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":54,"secs":0.196}
+exit 0 secs 1
+{"name":"split","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":225,"secs":0.267}
+{"name":"rec-sig","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":1,"secs":0.001}
+{"name":"nested-two","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.001}
+{"name":"src-join3","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":49,"secs":85.013}
+{"name":"nested-agreement","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":27,"secs":0.13}
+{"name":"tyvar-divided-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":1,"secs":0.002}
+{"name":"three-rows-all-equal","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":9,"secs":0.009}
+{"name":"written-in-nested-tail-forced-bad","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":1,"secs":4.319}
+exit 0 secs 90
+{"name":"split-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":92,"secs":0.158}
+{"name":"arrow-sig","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":1,"secs":0.078}
+{"name":"tyvar-field","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":45,"secs":0.042}
+{"name":"src-both","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":9,"secs":0.009}
+{"name":"nested-agreement-missing","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":12,"secs":0.218}
+{"name":"tyvar-two-rows-hyp","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":13,"secs":0.018}
+{"name":"three-rows-partial-hyp","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.037}
+exit 0 secs 0
+{"name":"alias","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":11,"secs":0.026}
+{"name":"lacks-declared","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":9,"secs":0.004}
+{"name":"nested-alias","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":625,"secs":4.087}
+{"name":"src-wrapAccepts","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":27,"secs":0.01}
+{"name":"function-from-rigid","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":5,"secs":0}
+{"name":"division-depth2","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":3375,"secs":135.549}
+{"name":"three-compose","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":49,"secs":0.115}
+exit 0 secs 140
+{"name":"alias-declared","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":25,"secs":0.065}
+{"name":"lacks-missing","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":10,"secs":0.009}
+{"name":"nested-alias-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":29,"secs":0.105}
+{"name":"src-undeclaredMerge","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":11,"secs":0.001}
+{"name":"record-from-rigid","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":45,"secs":0.009}
+{"name":"division-depth2-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":758,"secs":47.239}
+{"name":"vacuous-D","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":0,"secs":0}
+exit 0 secs 47
+{"name":"alias-chain","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":11,"secs":0.404}
+{"name":"split","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":225,"secs":0.184}
+{"name":"tyvar-nested-rest","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":135,"secs":0.016}
+{"name":"src-missingField","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":1,"secs":0.006}
+{"name":"nested-rigid-mismatch","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":2,"secs":0.001}
+{"name":"division-depth2-tyvar","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":3375,"secs":310.011}
+{"name":"vacuous-pattern","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":1,"secs":0.001}
+exit 0 secs 310
+{"name":"compose-undeclared","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":11,"secs":0.013}
+{"name":"types-differ","bounded":"invalid","uniform":"none","p9s":"unresolved","kind":"agree","expect":["invalid","none","unresolved"],"predicted":true,"checked":12,"secs":0.243}
+{"name":"src-greeting","bounded":"valid","uniform":"found","p9s":"valid","kind":"agree","expect":["valid","found","valid"],"predicted":true,"checked":9,"secs":0.03}
+{"name":"src-route","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":225,"secs":307.628}
+{"name":"agree-some-cells","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":121,"secs":0.149}
+{"name":"fn-around-divided","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":225,"secs":0.549}
+{"name":"vacuous-tyvar","bounded":"valid","uniform":"found","p9s":"unresolved","kind":"agree","expect":["valid","found","unresolved"],"predicted":true,"checked":0,"secs":0}
+exit 0 secs 308
