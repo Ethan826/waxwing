@@ -4583,3 +4583,45 @@ architecture shows a dependency. Publishing these statements on `main`
 is compatible with their proposal status. **No cell-based checker
 proofs or compiler implementation before the new statements receive
 adversarial review.**
+
+### 18.52 Prototype maintenance: star-v2 (2026-10-21)
+
+research/division-campaign/star/ (region.mjs, generic.mjs, schematic.mjs,
+strategies.mjs, crosscheck.mjs changed; regress.mjs, results-v2/ new);
+done in its own worktree and integrated. Historical results (results/)
+stay **star-v1, commit 2ea79ef**; the corrected prototype is labelled
+**star-v2** (`VERSION` recorded in every output; outputs in
+results-v2/).
+
+- **Defect 1 fixed** (`disjoint r r`): `allowed` refuses a holder
+  declared disjoint from itself; `holderSets` and `consistentCount`
+  leave self-disjoint rows out. The minimal example (`D = [disjoint 0
+  0]`, `B = [lacks 0 a]`) is now valid in E, A and B.
+- **Defect 2 fixed** (forced unwritten label): `allowed` requires a
+  written label, as Lean's `allowedS` does, so `nonEmpty` is false when
+  a cube forces an unwritten label.
+- **Contract alignment:** the fragment guard (`fragmentS`; outside it,
+  "unresolved (outside fragment)") and `certOk` (well-formed values at
+  every depth, pieces on rigid rows, row bindings records, key forms),
+  checked before the atoms as in `checkSym`; shadowed bindings checked,
+  kept distinct from composition clashes.
+- **Regression checks** (`node research/division-campaign/star/
+  regress.mjs`, 39 checks, exit code = failures; coordinator rerun on
+  `main`: 0 failed): the §10.4 items, a brute-force comparison of the
+  four queries with P9s patterns (48,000 cases), the guard,
+  validation and shadowing. **Shown to fail on the old code:** star-v1,
+  27 failures (every defect, guard and validation check); defect 1's
+  lines alone restored, 7; defect 2's alone, 5.
+- **No historical verdict changes.** Cross-check rerun: 0 flagged, every
+  verdict and instantiation count as in results/crosscheck.txt (only
+  timings and one timeout's assignment count differ). All recorded
+  measurement entries under 3 s rerun (355 of 409): 0 verdict changes;
+  93 Unresolved causes reworded (the validation now catches ill-formed
+  bindings first). §18.49's code-reading gaps now covered by a check:
+  across 410,697 regions (B on the 35 regression problems and 178
+  recorded B runs, `star` to n = 6144), 0 forced unwritten labels.
+  Not rerun: B `star` at n = 8192 and 12288 (code reading plus that
+  scan); timings (deferred; `certOk` adds a pass, so star-v2 timings
+  may differ).
+- sc-statements.md §10 status updated; its §10.4 item 6 corrected
+  (`divide3` 2 keeps its recorded verdicts; A answers Unresolved there).

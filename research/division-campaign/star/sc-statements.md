@@ -475,6 +475,12 @@ reviewer's enumerations (§11) add tens of thousands of cases where
 
 ## 10. Prototype defects (open until impact and corrections are reviewed)
 
+**Status (2026-10-21, dossier §18.52): corrected in the prototype
+labelled star-v2** (region.mjs, generic.mjs; regress.mjs, 39 checks,
+each defect check shown to fail on star-v1); the fragment guard and
+`certOkY` added. No historical verdict changed. Historical results
+(results/) remain star-v1, commit 2ea79ef.
+
 Nothing is corrected here, and the prototype is not edited. The Lean
 model avoids both defects.
 
@@ -609,7 +615,10 @@ reproduced the first scan independently.
    with P9s's `patterns`, over random small `D` and random cubes. `D`
    should include self-disjoint atoms and flexible rows, and cubes
    should include unwritten labels and contradictory bits.
-6. Controls: `star` 2 and `divide3` 2 stay valid in E, A and B.
+6. Controls: `star` 2 stays valid in E, A and B; `divide3` 2 keeps its
+   recorded verdicts (A answers Unresolved there, as predicted and
+   recorded; corrected 2026-10-21, an earlier line said "valid in E, A
+   and B").
 
 **Reruns** (small; no performance runs):
 
