@@ -1,0 +1,3253 @@
+From 2c7292d7e7618d06fcc99ba671f0e0013d500a84 Mon Sep 17 00:00:00 2001
+From: Ethan Kent <ekent@jd11.law.harvard.edu>
+Date: Sun, 18 Oct 2026 09:49:46 -0400
+Subject: [PATCH 1/3] docs: R005 Tranche B Task 5, interfaces keep the Stop
+ channel
+
+The user's requirement (2026-10-18): drain and endOfBody preserve the
+outer Stop channel (Limit, Internal, Unfinished) and never collapse a
+stop into a verdict; a successful unification is not Solved. Task 5's
+interface sketch now has drain inside unification (a Failure, wrapped
+Drained), endOfBody the only producer of Solved and Unresolved (a
+Settled witness without an exported constructor), and concluded for a
+whole run; the per-equation version becomes the reads index (L32).
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015RiUuHtvDyhWsrB8KaMeKB
+---
+ docs/plans/2026-10-17-open-row-merge-plan.md | 47 +++++++++++++++++---
+ 1 file changed, 42 insertions(+), 5 deletions(-)
+
+diff --git a/docs/plans/2026-10-17-open-row-merge-plan.md b/docs/plans/2026-10-17-open-row-merge-plan.md
+index 9c039c4..e9b8ad9 100644
+--- a/docs/plans/2026-10-17-open-row-merge-plan.md
++++ b/docs/plans/2026-10-17-open-row-merge-plan.md
+@@ -6,8 +6,8 @@
+ > use checkbox (`- [ ]`) syntax for tracking. The user accepted Task 0
+ > and authorized Task 1 (2026-10-17); the user then authorized Task 2
+ > alone (2026-10-17), then Task 3 alone (2026-10-17), then Task 4 alone
+-> (2026-10-17). Tasks 5-10 are not authorized: do not start Task 5 before
+-> the user reviews Task 4 and authorizes it.
++> (2026-10-17), then Task 5 alone (2026-10-18). Tasks 6-10 are not
++> authorized.
+ 
+ **Goal:** `fn merge(a: { ...r }, b: { ...s }): { ...r, ...s } where r
+ disjoint s = { ...a, ...b };` and everything it needs: record rows with
+@@ -925,9 +925,46 @@ Failure.purs (210: extract `settleFinal`'s caller first; the
+ Check/Function.purs (the end-of-body sequence of design §6),
+ `RowPair` keeps its site for re-deferral at retry; placeholders (table).
+ 
+-**Interfaces:** `type Pending = Equation & { residue ∷ Residue, seen ∷
+-Int, quiet ∷ Boolean }`; `drain ∷ Subst → Either Contradiction Subst`;
+-`endOfBody ∷ Subst → RowOutcome`.
++**Interfaces** (revised before implementation at the user's direction,
++2026-10-18: the outer `Stop` channel, `Limit | Internal | Unfinished`,
++survives the drain and the end of a body, and no single unification is
++a verdict):
++
++```
++type Pending =
++  { equation ∷ Equation, residue ∷ Residue, quiet ∷ Boolean
++  , reads ∷ Set Flex }          -- what its rules read (the wake-up index)
++drain ∷ Subst → Either Failure Subst
++endOfBody ∷ Subst → Either Stop RowOutcome
++concluded ∷ Either Failure Subst → Either Stop RowOutcome
++data RowOutcome
++  = Solved Settled
++  | Contradiction Contradiction
++  | Unresolved Settled (NonEmptyArray Pending)
++```
++
++- `drain` runs inside unification, as `unify` does: a failure stays a
++  `Failure` (wrapped `Drained Equation Failure`, so a renderer knows the
++  drain found it) and is classified only at the boundary, never turned
++  into a verdict there. A limit (`TooDeep`) or a broken invariant
++  (`Unexpected`) met while re-examining an equation is still a `Stop`
++  once classified.
++- `endOfBody` is the only producer of `Solved` and `Unresolved`:
++  `Settled` (a substitution the end of a body has classified) has no
++  exported constructor, so a successful unification cannot be read as
++  `Solved` (Task 4's `outcome`, which mapped `Right` to `Solved`, is
++  replaced by `concluded`). It returns `Left (Internal …)` if an
++  equation is still woken (the joint fixpoint did not drain), never a
++  verdict.
++- `concluded` classifies a whole run: a failure by rules §11b
++  (`Contradiction` or a `Stop`), a success through `endOfBody`. The
++  oracle runner fails on `Limit` and `Internal`; tests inject both
++  through `drain` (`Drained`) and `endOfBody`.
++- The plan's `seen ∷ Int` (a version per equation) becomes `reads`, the
++  set of variables whose facts the equation's rules read (its residue's
++  metas and rigids and their partners, ledger L32); a change to any of
++  them wakes it. A reference that rescans every pending equation to a
++  fixpoint is injected in its place by the test entry.
+ 
+ - [ ] Failing solver tests in test/row-merge.test.mjs: every fixture
+   with `stages.solver` 5 runs its `rows` (`diag-11` and `design-defer`
+-- 
+2.50.1 (Apple Git-155)
+
+
+From 85ca98ebf8c90f01b5f0f52b0d3c1d7bdc5e7430 Mon Sep 17 00:00:00 2001
+From: Ethan Kent <ekent@jd11.law.harvard.edu>
+Date: Sun, 18 Oct 2026 09:51:41 -0400
+Subject: [PATCH 2/3] refactor: R005 Tranche B Task 5, a settle round's change
+ test extracted
+
+Features.Check.Settle (240 lines) is extended by Task 5 (each round
+ends with a drain); its round's change test, the retry after (d) and
+the label count move to Features.Check.SettleChange first, unchanged.
+Behaviour-preserving.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015RiUuHtvDyhWsrB8KaMeKB
+---
+ src/Features/Check/Settle.purs       | 38 ++++-------------
+ src/Features/Check/SettleChange.purs | 62 ++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+), 30 deletions(-)
+ create mode 100644 src/Features/Check/SettleChange.purs
+
+diff --git a/src/Features/Check/Settle.purs b/src/Features/Check/Settle.purs
+index 5ae5cd5..09ede06 100644
+--- a/src/Features/Check/Settle.purs
++++ b/src/Features/Check/Settle.purs
+@@ -28,9 +28,10 @@ import Features.Check.Restricted (matchedInstallation)
+ import Features.Check.Scheme (State)
+ import Features.Check.SettleEntry (Donor, Entry, EntryTail(..))
+ import Features.Check.SettleEntry as Entries
++import Features.Check.SettleChange (labelCount, moved, retry)
+ import Features.Check.Sync (syncSettling)
+ import Features.Check.TailPass (tailPass)
+-import Features.Check.Unify (Failure(..), Flex, Subst(..))
++import Features.Check.Unify (Failure(..), Flex, Subst)
+ 
+ type Env r = CheckEnv (locals ∷ Locals | r)
+ 
+@@ -65,36 +66,13 @@ round env body state = do
+   rejectCycle env keyed entries rows feeds
+   consumed ← foldM (consume env entries rows) keyed (feedOrder rows feeds)
+   retried ← retry env body consumed
+-  pure (continued (decided settled) (changed entries consumed) retried consumed)
+-  where
+-  continued decidedNow changedNow retried consumed =
+-    if decidedNow || changedNow || retried then Loop consumed
+-    else Done consumed
+-  -- (a) decided a pair: fewer are set aside than at the round's start.
+-  decided keyed = postponedCount keyed.subst < postponedCount state.subst
+-  changed entries consumed = counts entries consumed.subst
+-    /= counts entries state.subst
+-  counts entries subst = map (labelCount subst) entries
+-
+--- After (d): could a pair still set aside be decided now? The bindings of
+--- (d) may give a deferred `Fail` key its head, which only (a) sees, so the
+--- loop does not end until (a), run after (d), decides nothing.
+-retry ∷ ∀ r. Env r → Checked.Expr → State → Either Diagnostic Boolean
+-retry env body consumed =
+-  if postponedCount consumed.subst == 0 then Right false
+-  else decidable <$> settleKeys env consumed body
+-  where
+-  decidable subst = postponedCount subst < postponedCount consumed.subst
+-
+-postponedCount ∷ Subst → Int
+-postponedCount (Subst bindings) = Array.length bindings.postponed
+-
+--- How many labels a row resolves to now: rows only grow at their tails,
+--- so a change in the count is a change in the row.
+-labelCount ∷ Subst → Entry → Int
+-labelCount subst entry = Array.length labels
++  pure
++    ( continued consumed
++        (moved { start: state, settled, consumed, entries, retried })
++    )
+   where
+-  Row labels _ = walkedRow subst entry.own
++  continued consumed movedNow =
++    if movedNow then Loop consumed else Done consumed
+ 
+ feedRow ∷ Subst → Entry → FeedRow
+ feedRow subst entry =
+diff --git a/src/Features/Check/SettleChange.purs b/src/Features/Check/SettleChange.purs
+new file mode 100644
+index 0000000..c041eb9
+--- /dev/null
++++ b/src/Features/Check/SettleChange.purs
+@@ -0,0 +1,62 @@
++module Features.Check.SettleChange
++  ( Round
++  , moved
++  , retry
++  , postponedCount
++  , labelCount
++  ) where
++
++import Prelude
++import Data.Array as Array
++import Data.Either (Either(..))
++import Domain.Checked.Internal as Checked
++import Domain.Row (Row(..))
++import Domain.Syntax (Diagnostic)
++import Features.Check.Context (CheckEnv)
++import Features.Check.Failure (settleKeys)
++import Features.Check.Scheme (State)
++import Features.Check.SettleEntry (Entry)
++import Features.Check.Unify (Subst(..))
++import Features.Check.Walked (walkedRow)
++
++-- One settle round's states: as it began, after (a) settled the keys,
++-- and after (d) consumed every row; its entries; and whether (a), run
++-- again after (d), could decide a pair.
++type Round =
++  { start ∷ State
++  , settled ∷ State
++  , consumed ∷ State
++  , entries ∷ Array Entry
++  , retried ∷ Boolean
++  }
++
++-- Whether the round moved: (a) decided a pair (fewer are set aside than
++-- at the round's start), some row's label count changed, or (a) could
++-- decide one after (d).
++moved ∷ Round → Boolean
++moved found = decided || changed || found.retried
++  where
++  decided = postponedCount found.settled.subst
++    < postponedCount found.start.subst
++  changed = counts found.consumed.subst /= counts found.start.subst
++  counts subst = map (labelCount subst) found.entries
++
++-- After (d): could a pair still set aside be decided now? The bindings of
++-- (d) may give a deferred `Fail` key its head, which only (a) sees, so the
++-- loop does not end until (a), run after (d), decides nothing.
++retry ∷ ∀ r. CheckEnv r → Checked.Expr → State → Either Diagnostic Boolean
++retry env body consumed =
++  if postponedCount consumed.subst == 0 then Right false
++  else decidable <$> settleKeys env consumed body
++  where
++  decidable subst = postponedCount subst < postponedCount consumed.subst
++
++postponedCount ∷ Subst → Int
++postponedCount (Subst bindings) = Array.length bindings.postponed
++
++-- How many labels a row resolves to now: rows only grow at their tails,
++-- so a change in the count is a change in the row.
++labelCount ∷ Subst → Entry → Int
++labelCount subst entry = Array.length labels
++  where
++  Row labels _ = walkedRow subst entry.own
+-- 
+2.50.1 (Apple Git-155)
+
+
+From 51061521e3dde77006c762b9ed02efce8b6b5b9c Mon Sep 17 00:00:00 2001
+From: Ethan Kent <ekent@jd11.law.harvard.edu>
+Date: Sun, 18 Oct 2026 10:12:14 -0400
+Subject: [PATCH 3/3] wip: R005 Tranche B Task 5, stopped mid-implementation
+ (not verified)
+
+Stopped 2026-10-18 at the user's request pending an alternatives
+assessment. Unbuilt, unverified work in progress; kept for reference
+only. Do not merge.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015RiUuHtvDyhWsrB8KaMeKB
+---
+ src/Features/Check/Drain.purs        |  92 +++++++++++++++++++
+ src/Features/Check/Drained.purs      |  36 ++++++++
+ src/Features/Check/EndReport.purs    |  38 ++++++++
+ src/Features/Check/LackOutside.purs  |  30 ++++++
+ src/Features/Check/Lacked.purs       |  11 +--
+ src/Features/Check/Pending.purs      | 131 +++++++++++++++++++++++++++
+ src/Features/Check/Placeholder.purs  |  14 ++-
+ src/Features/Check/Record.purs       |   3 +
+ src/Features/Check/RecordTail.purs   |   2 +-
+ src/Features/Check/Reject.purs       |   2 +
+ src/Features/Check/Require.purs      |   4 +
+ src/Features/Check/RowEntry.purs     | 100 ++++++++++++++++----
+ src/Features/Check/RowOutcome.purs   | 119 +++++++++++++++---------
+ src/Features/Check/RowResidue.purs   |  19 +---
+ src/Features/Check/RowSettle.purs    |  42 ++++-----
+ src/Features/Check/RowStore.purs     |  74 ++++++++++-----
+ src/Features/Check/Settle.purs       |  20 ++--
+ src/Features/Check/SettleChange.purs |  36 ++++++--
+ src/Features/Check/Subst.purs        |  16 +++-
+ src/Features/Check/Unify.purs        |  48 ++++++++--
+ src/Features/Check/UnifyFailure.purs |   9 +-
+ src/Features/Check/UnifyRecord.purs  |  32 ++++++-
+ src/Features/Check/Waits.purs        | 105 +++++++++++++++++++++
+ test/r005b-both.test.mjs             |  49 ++++++++++
+ test/r005b-fixtures.test.mjs         |  28 ++++--
+ test/r005b-nested.test.mjs           |  62 +++++++++++++
+ test/r005b-outcome.test.mjs          |  70 ++++++++++----
+ test/r005b-paths.test.mjs            |  72 +++++++++++++++
+ test/r005b-pending.test.mjs          |  61 +++++++++++++
+ test/r005b-settle.test.mjs           | 100 ++++++++++++++++++++
+ test/r005b-support.mjs               |   7 ++
+ test/row-merge-domains.test.mjs      |  10 +-
+ test/row-merge-entry.mjs             |  88 +++++++++++-------
+ test/row-merge-gen.mjs               |  14 +++
+ test/row-merge-judge.mjs             |  64 ++++++++++---
+ test/row-merge-older.test.mjs        |  40 ++++++++
+ test/row-merge-pending.test.mjs      |  98 ++++++++++++++++++++
+ test/row-merge-readback.mjs          |  13 ++-
+ test/row-merge-rescan.mjs            |  53 +++++++++++
+ test/row-merge-rescan.test.mjs       |  74 +++++++++++++++
+ test/row-merge.test.mjs              |  61 +++++++------
+ 41 files changed, 1689 insertions(+), 258 deletions(-)
+ create mode 100644 src/Features/Check/Drain.purs
+ create mode 100644 src/Features/Check/Drained.purs
+ create mode 100644 src/Features/Check/EndReport.purs
+ create mode 100644 src/Features/Check/LackOutside.purs
+ create mode 100644 src/Features/Check/Pending.purs
+ create mode 100644 src/Features/Check/Waits.purs
+ create mode 100644 test/r005b-both.test.mjs
+ create mode 100644 test/r005b-nested.test.mjs
+ create mode 100644 test/r005b-paths.test.mjs
+ create mode 100644 test/r005b-pending.test.mjs
+ create mode 100644 test/r005b-settle.test.mjs
+ create mode 100644 test/row-merge-older.test.mjs
+ create mode 100644 test/row-merge-pending.test.mjs
+ create mode 100644 test/row-merge-rescan.mjs
+ create mode 100644 test/row-merge-rescan.test.mjs
+
+diff --git a/src/Features/Check/Drain.purs b/src/Features/Check/Drain.purs
+new file mode 100644
+index 0000000..79c03d6
+--- /dev/null
++++ b/src/Features/Check/Drain.purs
+@@ -0,0 +1,92 @@
++module Features.Check.Drain
++  ( Wake
++  , Reexamine
++  , drainWith
++  , indexed
++  , rescan
++  ) where
++
++import Prelude
++import Control.Monad.Rec.Class (Step(..), tailRecM)
++import Data.Either (Either(..), either)
++import Data.Foldable (foldM)
++import Data.Map as Map
++import Data.Maybe (Maybe(..), maybe)
++import Data.Set as Set
++import Features.Check.Pending (Pending)
++import Features.Check.RowStore (RowStore)
++import Features.Check.Subst (Subst, onStore, storeOf)
++import Features.Check.UnifyFailure (Failure(..))
++import Features.Check.Waits
++  ( entryOf
++  , nested
++  , nestingOf
++  , pendingIds
++  , unwake
++  , versionOf
++  , waitingOf
++  , withdraw
++  )
++
++-- One pending equation examined again: the same forced moves, on its
++-- residue (Features.Check.UnifyRecord `reexamine`), passed in so that
++-- tests can inject a re-examination that stops.
++type Reexamine = Subst → Pending → Either Failure Subst
++
++-- Which pending equations a drain re-examines (ledger L32). `ready`: the
++-- drain has anything to do; `due`: whether a pass examines this one;
++-- `again`: whether another pass follows, from the store before and after
++-- the pass. Injected, never chosen by a flag: the checker uses `indexed`,
++-- and tests compare it with `rescan`, the reference.
++type Wake =
++  { ready ∷ RowStore → Boolean
++  , due ∷ RowStore → Int → Boolean
++  , again ∷ RowStore → RowStore → Boolean
++  }
++
++-- The equations a change woke (the index of every variable their rules
++-- read, Features.Check.Waits `readsOf`), until none is woken.
++indexed ∷ Wake
++indexed = { ready: woken, due: wokenAt, again: stillWoken }
++  where
++  woken store = not (Set.isEmpty (waitingOf store).woken)
++  wokenAt store id = Set.member id (waitingOf store).woken
++  stillWoken _ after = woken after
++
++-- Every pending equation, pass after pass, until a pass changes no
++-- variable: the full rescan the indexed drain must agree with.
++rescan ∷ Wake
++rescan = { ready: anyWaiting, due: always, again: moved }
++  where
++  anyWaiting store = not (Map.isEmpty (waitingOf store).entries)
++  always _ _ = true
++  moved before after = versionOf before /= versionOf after
++
++-- The drain (design §2.6, rules §9): each pass visits the pending
++-- equations oldest first and re-examines those `wake` makes due, one at
++-- a time, each taken out of the table first so that waiting again
++-- replaces it (and one nested in it takes its site); passes repeat while
++-- `wake` asks. Each re-examination keeps the solutions, so the drain does.
++-- It runs inside unification: a failure stays a `Failure`, marked as the
++-- drain's (`Drained`, with the equation re-examined), and is classified
++-- only at the boundary (Features.Check.RowOutcome): a limit or a broken
++-- invariant is still a stop, never a verdict. Terminates: a pass that
++-- changes nothing wakes nothing (rules §13).
++drainWith ∷ Wake → Reexamine → Subst → Either Failure Subst
++drainWith wake reexamine subst =
++  if wake.ready (storeOf subst) then tailRecM pass subst else Right subst
++  where
++  pass reached = next reached <$> foldM visit reached (pendingIds reached)
++  next before after =
++    if wake.again (storeOf before) (storeOf after) then Loop after
++    else Done after
++  visit reached id = maybe (Right reached) (visited reached id)
++    (entryOf reached id)
++  visited reached id pending =
++    if wake.due (storeOf reached) id then examined reached id pending
++    else Right (unwake id reached)
++  examined reached id pending = either (Left <<< Drained pending.equation)
++    (Right <<< onStore (nested (nestingOf (storeOf reached))))
++    (reexamine (opened reached id pending) pending)
++  opened reached id pending = onStore (nested (Just pending.equation))
++    (withdraw id reached)
+diff --git a/src/Features/Check/Drained.purs b/src/Features/Check/Drained.purs
+new file mode 100644
+index 0000000..cb206da
+--- /dev/null
++++ b/src/Features/Check/Drained.purs
+@@ -0,0 +1,36 @@
++module Features.Check.Drained (classifiedAt, stoppedAt, siteOfFailure) where
++
++import Data.Either (either)
++import Data.Maybe (Maybe(..))
++import Domain.Problem (Problem(TypeTooDeep))
++import Domain.Problem as Problem
++import Domain.Syntax (Diagnostic, Span, problemAt)
++import Features.Check.Because (Equation(..))
++import Features.Check.Binding (inferredTypeLimit)
++import Features.Check.Placeholder (fromEquations, placeholderAt)
++import Features.Check.RowOutcome (Stop(..), refusal)
++import Features.Check.UnifyFailure (Failure(..))
++
++-- A failure the drain met re-examining a pending equation (`Drained`),
++-- rendered at `span` by what it establishes (Features.Check.RowOutcome
++-- `refusal`): a limit as the depth limit, a broken invariant as
++-- E_INTERNAL, a placeholder as itself, and a contradiction, which the
++-- equation established, as D6 from Task 6 (its placeholder until then).
++classifiedAt ∷ Span → Failure → Diagnostic
++classifiedAt span failure = either (stoppedAt span) contradicted
++  (refusal failure)
++  where
++  contradicted _ = placeholderAt span fromEquations
++
++-- Why solving stopped, at `span`.
++stoppedAt ∷ Span → Stop → Diagnostic
++stoppedAt span = case _ of
++  Limit → problemAt (TypeTooDeep inferredTypeLimit) span
++  Internal what → problemAt (Problem.Internal what) span
++  Unfinished what → placeholderAt span what
++
++-- Where the drain's failure was met: its equation's site, if any.
++siteOfFailure ∷ Failure → Maybe Span
++siteOfFailure = case _ of
++  Drained (Equation equation) _ → equation.site
++  _ → Nothing
+diff --git a/src/Features/Check/EndReport.purs b/src/Features/Check/EndReport.purs
+new file mode 100644
+index 0000000..3ba5222
+--- /dev/null
++++ b/src/Features/Check/EndReport.purs
+@@ -0,0 +1,38 @@
++module Features.Check.EndReport (endReport) where
++
++import Prelude
++import Data.Array.NonEmpty as NonEmpty
++import Data.Either (Either(..), either)
++import Data.Maybe (fromMaybe)
++import Domain.Checked.Internal as Checked
++import Domain.Syntax (Diagnostic, Span)
++import Features.Check.Because (Equation(..))
++import Features.Check.Drained (classifiedAt, stoppedAt)
++import Features.Check.Pending (Pending)
++import Features.Check.Placeholder (placeholderAt, unresolvedEquations)
++import Features.Check.RowOutcome (RowOutcome(..), endOfBody)
++import Features.Check.Subst (Subst)
++
++-- The end of a body (R005 Tranche B design §6, steps 1-2), after the
++-- settle rounds and the drain reached their joint fixpoint and before
++-- `settleFinal`, so that a Fail payload whose key waits on a record
++-- equation reports the equation. Solved: nothing to report. Unresolved:
++-- D4 at the earliest site of an equation still waiting with a constant
++-- (R7, R11), Task 6's text, its placeholder until then. A stop is
++-- reported as itself at the body; no contradiction arises here (the
++-- drain reports its own where it meets it).
++endReport ∷ Checked.Expr → Subst → Either Diagnostic Unit
++endReport body subst = either stopped reported (endOfBody subst)
++  where
++  span = Checked.spanOf body
++  stopped stop = Left (stoppedAt span stop)
++  reported = case _ of
++    Solved _ → Right unit
++    Unresolved _ waiting → Left
++      (placeholderAt (siteOf span (NonEmpty.head waiting)) unresolvedEquations)
++    Contradiction found → Left (classifiedAt span found.failure)
++
++siteOf ∷ Span → Pending → Span
++siteOf body pending = fromMaybe body equation.site
++  where
++  Equation equation = pending.equation
+diff --git a/src/Features/Check/LackOutside.purs b/src/Features/Check/LackOutside.purs
+new file mode 100644
+index 0000000..2fd21b2
+--- /dev/null
++++ b/src/Features/Check/LackOutside.purs
+@@ -0,0 +1,30 @@
++module Features.Check.LackOutside (lackedOutside) where
++
++import Data.Either (Either(..))
++import Data.Set (Set)
++import Features.Check.Lacks (addLacks)
++import Features.Check.Narrow (prune)
++import Features.Check.RecordTail (solvingWith)
++import Features.Check.Subst (Flex(..), Subst)
++import Features.Check.UnifyFailure (Failure(..))
++
++-- A lack added outside the row rules (R005 Tranche B Task 5, the user's
++-- review of Task 4): Check/Extension makes a spread's unbound tail lack
++-- the literal's own labels, as Tranche A did, and since equations wait
++-- and bounds persist, that lack must do what the row rules' `requireLack`
++-- does on an unbound meta: record the labels (the store wakes the pending
++-- equations that read the meta) and prune its upper bound (U2), binding it
++-- to `{}` if nothing is left (U4). A rigid has no bound. The tail must be
++-- unbound or rigid (the caller walks to it). Binding a meta to `{}`
++-- cannot be refused (the empty image has no constant for a lack, a bound
++-- or a pair to exclude), so the caller's mismatch is never asked for; if
++-- it were, that is a broken invariant, not a program's error.
++lackedOutside ∷ Flex → Set String → Subst → Either Failure Subst
++lackedOutside tail labels subst = case tail of
++  Meta meta → prune solving lacked meta
++  Rigid _ → Right lacked
++  where
++  lacked = addLacks tail labels subst
++  solving = solvingWith unrefusable
++  unrefusable _ = Left
++    (Unexpected "The empty binding of a pruned record tail was refused")
+diff --git a/src/Features/Check/Lacked.purs b/src/Features/Check/Lacked.purs
+index 1e61bf4..5a40620 100644
+--- a/src/Features/Check/Lacked.purs
++++ b/src/Features/Check/Lacked.purs
+@@ -9,7 +9,7 @@ import Data.Tuple (Tuple(..))
+ import Domain.Problem (Hint(..), Problem(..))
+ import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span)
+ import Domain.Type (VarId(..))
+-import Features.Check.Placeholder (placeholderAt)
++import Features.Check.Placeholder (fromEquations, placeholderAt)
+ import Features.Check.RowStore (Because(..), arrival)
+ import Features.Check.Subst (Flex(..), Subst, storeOf)
+ import Features.Check.UnifyFailure (Refusal(..))
+@@ -30,7 +30,7 @@ type Named r =
+ -- enclosing signature's rigids (location rule 4).
+ refusedAt ∷ ∀ r. Named r → Subst → Span → Refusal → Diagnostic
+ refusedAt env subst span refusal
+-  | fromEquation refusal = placeholderAt span equations
++  | fromEquation refusal = placeholderAt span fromEquations
+   | otherwise = refusedFor env subst span refusal
+ 
+ -- D6, a contradiction an equation established (a bound violated, or a
+@@ -49,9 +49,6 @@ fromEquation = case _ of
+     Equated _ → true
+     _ → false
+ 
+-equations ∷ String
+-equations = "contradictions from equations are reported in Task 6"
+-
+ refusedFor ∷ ∀ r. Named r → Subst → Span → Refusal → Diagnostic
+ refusedFor env subst span = case _ of
+   Forbidden label lack → at (LackedField label lack.variable)
+@@ -68,8 +65,8 @@ refusedFor env subst span = case _ of
+     )
+     (requiredAt because)
+   Twice tail because → at (InBothRows (named tail)) (requiredAt because)
+-  Outside _ _ → placeholderAt span equations
+-  Derived _ _ → placeholderAt span equations
++  Outside _ _ → placeholderAt span fromEquations
++  Derived _ _ → placeholderAt span fromEquations
+   where
+   at problem related = { problem, span, related }
+   arrived from = maybe span identity (arrival (storeOf subst) =<< from)
+diff --git a/src/Features/Check/Pending.purs b/src/Features/Check/Pending.purs
+new file mode 100644
+index 0000000..9ca5ee4
+--- /dev/null
++++ b/src/Features/Check/Pending.purs
+@@ -0,0 +1,131 @@
++module Features.Check.Pending
++  ( Side
++  , Residue
++  , Pending
++  , Waiting
++  , noneWaiting
++  , idOf
++  , waitOn
++  , withdrawn
++  , wake
++  , unwoken
++  , quietResidue
++  ) where
++
++import Prelude
++import Data.Array as Array
++import Data.Foldable (foldl)
++import Data.Map (Map)
++import Data.Map as Map
++import Data.Maybe (Maybe(..), maybe, maybe')
++import Data.Set (Set)
++import Data.Set as Set
++import Data.Tuple (Tuple)
++import Domain.Type (Ty)
++import Features.Check.Because (Equation(..))
++import Features.Check.Flex (Flex)
++
++-- One side of an equation once the labels both sides hold have unified
++-- and the tails both hold cancelled (R005 Tranche B design §2.1 steps
++-- 2-4, rules §2-§4): its labels with their types, its rigid tails, and
++-- its unbound meta tails, each sorted, repeats kept.
++type Side =
++  { fields ∷ Array (Tuple String (Ty Flex))
++  , rigids ∷ Array Flex
++  , metas ∷ Array Int
++  }
++
++type Residue = { mine ∷ Side, theirs ∷ Side }
++
++-- An equation that waits (design §2.6, rules §9): its identity, site and
++-- rows as met (`equation`), its residue when it was last examined,
++-- whether it is quiet (no constant on either side, so the empty default
++-- meets it, design §2.2), and `reads`, every variable whose facts or
++-- binding its rules read (its residue's tails and their partners, ledger
++-- L32): a change to one of them wakes it.
++type Pending =
++  { equation ∷ Equation
++  , residue ∷ Residue
++  , quiet ∷ Boolean
++  , reads ∷ Set Flex
++  }
++
++-- The pending equations by identity; for each variable, the equations
++-- that read it (the wake-up index); and those woken since they were last
++-- examined.
++type Waiting =
++  { entries ∷ Map Int Pending
++  , watchers ∷ Map Flex (Set Int)
++  , woken ∷ Set Int
++  }
++
++noneWaiting ∷ Waiting
++noneWaiting = { entries: Map.empty, watchers: Map.empty, woken: Set.empty }
++
++idOf ∷ Pending → Int
++idOf pending = identity
++  where
++  Equation { id: identity } = pending.equation
++
++-- The equation stored under its identity, replacing what it held. One
++-- whose normal form (its residue, sides in either order) equals another
++-- entry's is the same constraint: the younger of the two is dropped and
++-- the older identity and site kept (design §2.6; rules §9, §14).
++waitOn ∷ Pending → Waiting → Waiting
++waitOn pending waiting = maybe' (const (inserted pending waiting)) kept
++  (Array.find same (Array.fromFoldable (Map.values waiting.entries)))
++  where
++  same other = idOf other /= idOf pending
++    && sameResidue other.residue pending.residue
++  kept other
++    | idOf other < idOf pending = withdrawn (idOf pending) waiting
++    | otherwise = inserted pending (withdrawn (idOf other) waiting)
++
++-- The entry removed, with its watches and its wake-up.
++withdrawn ∷ Int → Waiting → Waiting
++withdrawn id waiting = maybe waiting removed (Map.lookup id waiting.entries)
++  where
++  removed pending = waiting
++    { entries = Map.delete id waiting.entries
++    , watchers = foldl unwatched waiting.watchers pending.reads
++    , woken = Set.delete id waiting.woken
++    }
++  unwatched watchers tail = Map.update (nonEmpty <<< Set.delete id) tail
++    watchers
++
++-- The equations that read `tail` woken: its facts or binding changed.
++wake ∷ Flex → Waiting → Waiting
++wake tail waiting = maybe waiting woke (Map.lookup tail waiting.watchers)
++  where
++  woke ids = waiting { woken = Set.union ids waiting.woken }
++
++unwoken ∷ Int → Waiting → Waiting
++unwoken id waiting = waiting { woken = Set.delete id waiting.woken }
++
++-- No constant on either side.
++quietResidue ∷ Residue → Boolean
++quietResidue found = bare found.mine && bare found.theirs
++  where
++  bare side = Array.null side.fields && Array.null side.rigids
++
++inserted ∷ Pending → Waiting → Waiting
++inserted pending waiting = waiting
++  { entries = Map.insert (idOf pending) pending waiting.entries
++  , watchers = foldl watched waiting.watchers pending.reads
++  }
++  where
++  watched watchers tail = Map.insertWith Set.union tail
++    (Set.singleton (idOf pending))
++    watchers
++
++sameResidue ∷ Residue → Residue → Boolean
++sameResidue one other =
++  sameSide one.mine other.mine && sameSide one.theirs other.theirs
++    || sameSide one.mine other.theirs && sameSide one.theirs other.mine
++
++sameSide ∷ Side → Side → Boolean
++sameSide one other = one.fields == other.fields && one.rigids == other.rigids
++  && one.metas == other.metas
++
++nonEmpty ∷ Set Int → Maybe (Set Int)
++nonEmpty ids = if Set.isEmpty ids then Nothing else Just ids
+diff --git a/src/Features/Check/Placeholder.purs b/src/Features/Check/Placeholder.purs
+index 98cc436..f58acbe 100644
+--- a/src/Features/Check/Placeholder.purs
++++ b/src/Features/Check/Placeholder.purs
+@@ -1,4 +1,8 @@
+-module Features.Check.Placeholder (placeholderAt) where
++module Features.Check.Placeholder
++  ( placeholderAt
++  , fromEquations
++  , unresolvedEquations
++  ) where
+ 
+ import Prelude
+ import Domain.Problem (Problem(..))
+@@ -11,3 +15,11 @@ import Domain.Syntax (Diagnostic, Span, problemAt)
+ placeholderAt ∷ Span → String → Diagnostic
+ placeholderAt span what =
+   problemAt (Internal ("R005B placeholder: " <> what)) span
++
++-- D6, a contradiction an equation established, until Task 6 renders it.
++fromEquations ∷ String
++fromEquations = "contradictions from equations are reported in Task 6"
++
++-- D4, a body that ends with an equation waiting, until Task 6.
++unresolvedEquations ∷ String
++unresolvedEquations = "unresolved row equations are reported in Task 6"
+diff --git a/src/Features/Check/Record.purs b/src/Features/Check/Record.purs
+index 6555e96..39bd67b 100644
+--- a/src/Features/Check/Record.purs
++++ b/src/Features/Check/Record.purs
+@@ -26,6 +26,7 @@ import Features.Check.Scheme
+   , resolved
+   , threadAll
+   )
++import Features.Check.Drained (classifiedAt)
+ import Features.Check.Placeholder (placeholderAt)
+ import Features.Check.Unify (Failure(..), unify)
+ 
+@@ -158,6 +159,8 @@ select env state record label = do
+     -- field (Features.Check.Placeholder).
+     Placeholder what → Left (placeholderAt (Checked.spanOf record) what)
+     Unexpected what → Left (problemAt (Internal what) (Checked.spanOf record))
++    -- The drain's failure is a waiting equation's, not this access's.
++    failure@(Drained _ _) → Left (classifiedAt (Checked.spanOf record) failure)
+     _ → notSelected env state record label
+ 
+ notSelected
+diff --git a/src/Features/Check/RecordTail.purs b/src/Features/Check/RecordTail.purs
+index 089e12e..c5ac275 100644
+--- a/src/Features/Check/RecordTail.purs
++++ b/src/Features/Check/RecordTail.purs
+@@ -99,7 +99,7 @@ repaired solving binding placed =
+   where
+   meta = binding.meta
+   settled = withoutPairs (Meta meta) <<< stamped meta <<< withoutBound meta
+-    <<< counted
++    <<< counted meta
+   pairedWith reached (Tuple partner because) = requireDisjoint solving
+     { because, from: Just meta }
+     reached
+diff --git a/src/Features/Check/Reject.purs b/src/Features/Check/Reject.purs
+index cb8e3a2..de4da66 100644
+--- a/src/Features/Check/Reject.purs
++++ b/src/Features/Check/Reject.purs
+@@ -16,6 +16,7 @@ import Domain.Problem (Problem(..))
+ import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span, problemAt)
+ import Features.Check.Callback (callbackLacks)
+ import Features.Check.Context (CheckEnv)
++import Features.Check.Drained (classifiedAt)
+ import Features.Check.Occurrence (OccurrenceId(..))
+ import Features.Check.Provenance (Boundary(..), Hop, Origin, trail)
+ import Features.Check.Report
+@@ -47,6 +48,7 @@ rejected env state origin failure = case failure of
+   Refused refusal → Left (refusedAt env state.subst span refusal)
+   Placeholder what → Left (placeholderAt span what)
+   Unexpected what → Left (problemAt (Internal what) span)
++  Drained _ _ → Left (classifiedAt span failure)
+   _ → Left (problemAt (Internal "Effect row consumption failed") span)
+   where
+   span = origin.span
+diff --git a/src/Features/Check/Require.purs b/src/Features/Check/Require.purs
+index 733e47f..a412124 100644
+--- a/src/Features/Check/Require.purs
++++ b/src/Features/Check/Require.purs
+@@ -24,6 +24,7 @@ import Features.Check.TypeName (Names, typeName, typeNames)
+ import Domain.Syntax (Diagnostic, Span, problemAt)
+ import Domain.Type (Ty(..))
+ import Features.Check.Context (CheckEnv)
++import Features.Check.Drained (classifiedAt)
+ import Features.Check.Hint (hinted)
+ import Features.Check.Lacked (refusedAt)
+ import Features.Check.Placeholder (placeholderAt)
+@@ -98,6 +99,9 @@ expectType env state expected actual span = do
+     Refused refusal → Left (refusedAt env state.subst span refusal)
+     Placeholder what → Left (placeholderAt span what)
+     Unexpected what → Left (problemAt (Internal what) span)
++    -- The drain's failure is the equation's (D6), at the expression being
++    -- checked (design §2.6; Task 6's text).
++    failure@(Drained _ _) → Left (classifiedAt span failure)
+   -- The label's trail is where it arose, as far as the state knows it.
+   rowFailure label row occurrence = do
+     name ← labelName env span label
+diff --git a/src/Features/Check/RowEntry.purs b/src/Features/Check/RowEntry.purs
+index 9b14614..0b02162 100644
+--- a/src/Features/Check/RowEntry.purs
++++ b/src/Features/Check/RowEntry.purs
+@@ -4,12 +4,16 @@ module Features.Check.RowEntry
+   , equate
+   , separate
+   , lacking
++  , lackingOlder
++  , lackingOlderRaw
+   , bindings
+   , facts
++  , pending
+   , exclusions
+   , changes
+   , solverMetas
+   , module Features.Check.RowOutcome
++  , module Features.Check.Drain
+   ) where
+ 
+ import Prelude
+@@ -21,6 +25,7 @@ import Data.Map as Map
+ import Data.Maybe (Maybe(..))
+ import Data.Set as Set
+ import Data.Tuple (Tuple(..), fst)
++import Domain.Syntax (Span)
+ import Domain.Type (Ty(..))
+ import Domain.Type.Record (RecordRow, recordRow)
+ import Features.Check.Disjoint
+@@ -29,30 +34,45 @@ import Features.Check.Disjoint
+   , seedApart
+   , wellFormed
+   )
++import Features.Check.Drain (Wake, drainWith, indexed, rescan)
+ import Features.Check.FlatRecord (flatten)
+ import Features.Check.Homes (admits)
++import Features.Check.LackOutside (lackedOutside)
+ import Features.Check.Lacks (addLacks)
++import Features.Check.Pending (Side, idOf)
+ import Features.Check.RecordTail (solvingWith)
+ import Features.Check.Refused (Solving)
+-import Features.Check.RowOutcome (RowOutcome(..), outcome)
++import Features.Check.RowOutcome
++  ( RowOutcome(..)
++  , Stop(..)
++  , concluded
++  , endOfBody
++  , refusal
++  , settledSubst
++  )
+ import Features.Check.RowResidue (atomOf, constants, residue)
+ import Features.Check.RowStore
+   ( Atom(..)
+   , Because(..)
++  , Equation(..)
+   , RowStore(..)
+   , changesOf
+   , plain
+   )
+-import Features.Check.Subst (Flex, Subst(..), empty, storeOf)
+-import Features.Check.Unify (unify)
++import Features.Check.Subst (Flex(..), Subst(..), empty, storeOf)
++import Features.Check.Unify (drainBy, unifyBy)
+ import Features.Check.UnifyFailure (Failure)
+ import Features.Check.UnifyParts (mismatch)
++import Features.Check.Waits (pendingOf)
+ 
+--- The row solver's entry for tests (R005 Tranche B plan, Task 4): labels-
+--- only constraint problems, as the prototype and the oracle encode them
+--- (research/open-row-merge/README.md), run through the compiler's own
+--- unification, decomposition and lacks, and the state read out raw so
+--- that a test can interpret it itself. A label's field type is Int.
++-- The row solver's entry for tests (R005 Tranche B plan, Tasks 4-5):
++-- labels-only constraint problems, as the prototype and the oracle encode
++-- them (research/open-row-merge/README.md), run through the compiler's
++-- own unification, decomposition and lacks, each step ending with a drain
++-- whose wake-up the test injects (`indexed`, the checker's, or `rescan`,
++-- the reference), and the state read out raw so that a test can
++-- interpret it itself; a run's result is `concluded`. A label's field
++-- type is Int.
+ 
+ type Row = RecordRow (Ty Flex) Flex
+ 
+@@ -72,23 +92,43 @@ hypotheses lacks pairs = foldl paired (foldl lacked empty lacks) pairs
+ -- `left = right`, after each row's own disjointness is recorded where it
+ -- is made (the creation-site obligation, design §1.4), as the
+ -- prototype's driver does.
+-equate ∷ Subst → Row → Row → Either Failure Subst
+-equate subst left right = made subst left >>= flip made right
++equate ∷ Wake → Subst → Row → Row → Either Failure Subst
++equate wake subst left right = made subst left >>= flip made right
+   >>= unifying
+   where
+-  unifying reached = unify reached (TRecord left) (TRecord right)
++  unifying reached = unifyBy wake reached (TRecord left) (TRecord right)
+ 
+--- `left # right`, likewise after each row's own disjointness.
+-separate ∷ Subst → Row → Row → Either Failure Subst
+-separate subst left right = made subst left >>= flip made right
++-- `left # right`, likewise after each row's own disjointness, drained.
++separate ∷ Wake → Subst → Row → Row → Either Failure Subst
++separate wake subst left right = made subst left >>= flip made right
+   >>= disjoined
++  >>= drainBy wake
+   where
+   disjoined reached = requireDisjoint (solving left right) plain reached left
+     right
+ 
+--- `tail lacks label`.
+-lacking ∷ Subst → Flex → String → Either Failure Subst
+-lacking subst tail label = requireLack (solving one one) plain subst tail label
++-- `tail lacks label`, by the row rules, drained.
++lacking ∷ Wake → Subst → Flex → String → Either Failure Subst
++lacking wake subst tail label = requireLack (solving one one) plain subst
++  tail
++  label >>= drainBy wake
++  where
++  one = row [] [ tail ]
++
++-- The same lack added the older way (Features.Check.LackOutside, as
++-- Check/Extension adds it), drained, or not (`lackingOlderRaw`). The
++-- checker adds such a lack only to an unbound tail, so a tail bound here
++-- takes the row rules' lack instead.
++lackingOlder ∷ Wake → Subst → Flex → String → Either Failure Subst
++lackingOlder wake subst tail label = lackingOlderRaw subst tail label
++  >>= drainBy wake
++
++lackingOlderRaw ∷ Subst → Flex → String → Either Failure Subst
++lackingOlderRaw subst tail label =
++  if (flatten subst one).tails == [ tail ] && Array.null
++    (flatten subst one).fields then lackedOutside tail (Set.singleton label)
++    subst
++  else requireLack (solving one one) plain subst tail label
+   where
+   one = row [] [ tail ]
+ 
+@@ -129,6 +169,28 @@ facts subst =
+     , rigids: Array.mapMaybe rigidAtom (Array.fromFoldable bound.atoms)
+     }
+ 
++-- The pending equations, oldest first: identity, site, whether quiet,
++-- and each side's labels and tails.
++pending
++  ∷ Subst
++  → Array
++      { id ∷ Int
++      , quiet ∷ Boolean
++      , site ∷ Maybe Span
++      , left ∷ { labels ∷ Array String, tails ∷ Array Flex }
++      , right ∷ { labels ∷ Array String, tails ∷ Array Flex }
++      }
++pending subst = map entry (pendingOf subst)
++  where
++  entry found =
++    { id: idOf found
++    , quiet: found.quiet
++    , site: siteOf found.equation
++    , left: sided found.residue.mine
++    , right: sided found.residue.theirs
++    }
++  siteOf (Equation equation) = equation.site
++
+ -- For `left = right` under `subst`, each constant of the residue and each
+ -- meta of the other side that homes excludes (design §2.1 step 7), as
+ -- `{ meta, label }` or `{ meta, rigid }`: a test checks that no solution
+@@ -171,6 +233,10 @@ solving left right = solvingWith failed
+   where
+   failed reached = mismatch reached (TRecord left) (TRecord right)
+ 
++sided ∷ Side → { labels ∷ Array String, tails ∷ Array Flex }
++sided side =
++  { labels: map fst side.fields, tails: side.rigids <> map Meta side.metas }
++
+ labelAtom ∷ Atom → Maybe String
+ labelAtom = case _ of
+   LabelAtom label → Just label
+diff --git a/src/Features/Check/RowOutcome.purs b/src/Features/Check/RowOutcome.purs
+index d81113a..53381a5 100644
+--- a/src/Features/Check/RowOutcome.purs
++++ b/src/Features/Check/RowOutcome.purs
+@@ -1,41 +1,50 @@
+ module Features.Check.RowOutcome
+   ( RowOutcome(..)
+   , Stop(..)
++  , Settled
+   , Contradiction
+-  , Pending
+-  , outcome
++  , settledSubst
++  , refusal
++  , endOfBody
++  , concluded
+   , reasonOf
+   ) where
+ 
+ import Prelude
++import Data.Array as Array
+ import Data.Array.NonEmpty (NonEmptyArray)
++import Data.Array.NonEmpty as NonEmpty
+ import Data.Either (Either(..), either)
+-import Data.Maybe (Maybe(..))
+-import Features.Check.FlatRecord (Flat)
++import Data.Maybe (Maybe(..), maybe)
++import Data.Set as Set
++import Features.Check.Pending (Pending)
+ import Features.Check.RowStore (Because(..))
+-import Features.Check.Subst (Subst)
++import Features.Check.Subst (Subst, storeOf)
+ import Features.Check.UnifyFailure (Failure(..), Refusal(..))
++import Features.Check.Waits (pendingOf, waitingOf)
+ 
+ -- How row solving ends (R005 Tranche B plan, "An explicit three-way
+ -- result"; docs/engineering.md, "Evidence for solvers and diagnostics").
+--- `Solved`: no equation waits, and the substitution read with every
+--- unsolved tail empty is a solution. `Contradiction`: the solver
+--- established that no solution exists; its failure and the reason of the
+--- fact it broke, if any. `Unresolved`: neither was established, and the
+--- equations still waiting; it claims nothing about how many solutions
+--- exist. Renderers take only this value: a contradiction's text only from
+--- `Contradiction`, an unresolved text only from `Unresolved`'s payload.
+--- Task 4 makes the first two; `Unresolved` is made only at the end of a
+--- body, by Task 5, which also gives `Pending` its identity and site.
++-- `Solved`: no equation with a constant waits, and the substitution read
++-- with every unsolved tail empty is a solution, the least (rules §12).
++-- `Contradiction`: the solver established that no solution exists; its
++-- failure and the reason of the fact it broke, if any. `Unresolved`:
++-- neither was established, and the equations still waiting with a
++-- constant, earliest site first; it claims nothing about how many
++-- solutions exist. Renderers take only this value: a contradiction's text
++-- only from `Contradiction`, an unresolved text only from `Unresolved`'s
++-- payload. Only the end of a body classifies a substitution (`Settled`
++-- has no exported constructor), so a unification that succeeds is never
++-- read as `Solved` while an equation may wait (Task 5).
+ data RowOutcome
+-  = Solved Subst
++  = Solved Settled
+   | Contradiction Contradiction
+-  | Unresolved Subst (NonEmptyArray Pending)
++  | Unresolved Settled (NonEmptyArray Pending)
+ 
+-type Contradiction = { failure ∷ Failure, because ∷ Maybe Because }
++-- A substitution the end of a body classified.
++newtype Settled = Settled Subst
+ 
+--- An equation that waits: its residue's two sides (Task 5 adds the rest).
+-type Pending = { left ∷ Flat, right ∷ Flat }
++type Contradiction = { failure ∷ Failure, because ∷ Maybe Because }
+ 
+ -- Why solving stopped without a semantic outcome: a limit reached (the
+ -- type grew past `inferredTypeLimit`), an invariant the rules' arguments
+@@ -43,35 +52,61 @@ type Pending = { left ∷ Flat, right ∷ Flat }
+ -- (a placeholder). None of them says anything about the solutions.
+ data Stop = Limit | Internal String | Unfinished String
+ 
+--- The outcome of solving that ended in `found`, or why it stopped
+--- without one. Every failure is classified by name, so a new constructor
+--- forces a decision on what it establishes (docs/plans/2026-10-17-open-
+--- row-merge-rules.md §11b): only a refusal a rejection rule argues, or a
+--- unifier refusal of field types that has no unifier, is a
+--- `Contradiction`.
+-outcome ∷ Either Failure Subst → Either Stop RowOutcome
+-outcome = either classified (Right <<< Solved)
++settledSubst ∷ Settled → Subst
++settledSubst (Settled subst) = subst
++
++-- A whole run's outcome: a failure classified, or the substitution it
++-- reached classified by the end of a body.
++concluded ∷ Either Failure Subst → Either Stop RowOutcome
++concluded = either (map Contradiction <<< refusal) endOfBody
++
++-- The end of a body (design §6 steps 1-2, rules §12): the state the
++-- joint fixpoint drained, classified. An equation with a constant still
++-- waiting is `Unresolved` (the default cannot meet it); otherwise every
++-- fact and quiet equation is met by the empty default, `Solved`. An
++-- equation woken and not examined again means the drain did not reach
++-- its fixpoint: a checker defect, `Internal`, never a verdict.
++endOfBody ∷ Subst → Either Stop RowOutcome
++endOfBody subst
++  | not (Set.isEmpty (waitingOf (storeOf subst)).woken) = Left
++      (Internal "A pending row equation was woken and not drained")
++  | otherwise = Right
++      (maybe (Solved settled) (Unresolved settled) (NonEmpty.fromArray open))
++  where
++  settled = Settled subst
++  open = Array.sortWith equationOf
++    (Array.filter (not <<< quietOf) (pendingOf subst))
++  equationOf pending = pending.equation
++  quietOf pending = pending.quiet
++
++-- A unification's failure classified. Every failure is classified by
++-- name, so a new constructor forces a decision on what it establishes
++-- (docs/plans/2026-10-17-open-row-merge-rules.md §11b): only a refusal a
++-- rejection rule argues, or a unifier refusal of field types that has no
++-- unifier, is a `Contradiction`; the drain's failure is its inner one's.
++refusal ∷ Failure → Either Stop Contradiction
++refusal failure = case failure of
++  Mismatch _ _ → contradiction
++  Occurs _ _ → contradiction
++  RowMissing _ _ _ → contradiction
++  RowExtra _ _ _ → contradiction
++  RowPayload _ _ _ → contradiction
++  RowSharedTail _ _ → contradiction
++  RowMismatch _ _ → contradiction
++  RowOccurs _ _ → contradiction
++  Refused _ → contradiction
++  TooDeep → Left Limit
++  Unexpected what → Left (Internal what)
++  Placeholder what → Left (Unfinished what)
++  Drained _ inner → either Left (const contradiction) (refusal inner)
+   where
+-  contradiction failure = Right
+-    (Contradiction { failure, because: reasonOf failure })
+-  classified failure = case failure of
+-    Mismatch _ _ → contradiction failure
+-    Occurs _ _ → contradiction failure
+-    RowMissing _ _ _ → contradiction failure
+-    RowExtra _ _ _ → contradiction failure
+-    RowPayload _ _ _ → contradiction failure
+-    RowSharedTail _ _ → contradiction failure
+-    RowMismatch _ _ → contradiction failure
+-    RowOccurs _ _ → contradiction failure
+-    Refused _ → contradiction failure
+-    TooDeep → Left Limit
+-    Unexpected what → Left (Internal what)
+-    Placeholder what → Left (Unfinished what)
++  contradiction = Right { failure, because: reasonOf failure }
+ 
+ -- The reason of the fact a failure broke, if it broke one.
+ reasonOf ∷ Failure → Maybe Because
+ reasonOf = case _ of
+   Refused found → refusalReason found
++  Drained _ inner → reasonOf inner
+   _ → Nothing
+ 
+ refusalReason ∷ Refusal → Maybe Because
+diff --git a/src/Features/Check/RowResidue.purs b/src/Features/Check/RowResidue.purs
+index ca60cd6..17b19cb 100644
+--- a/src/Features/Check/RowResidue.purs
++++ b/src/Features/Check/RowResidue.purs
+@@ -1,8 +1,7 @@
+ module Features.Check.RowResidue
+   ( Constant(..)
+   , Exam
+-  , Side
+-  , Residue
++  , module Features.Check.Pending
+   , residue
+   , common
+   , constants
+@@ -23,25 +22,15 @@ import Data.Tuple (Tuple(..))
+ import Domain.Type (Ty)
+ import Domain.Type.Record (RecordRow, recordRow)
+ import Features.Check.FlatRecord (Flat)
++import Features.Check.Pending (Residue, Side)
+ import Features.Check.RowStore (Atom(..), Equation)
+ import Features.Check.Subst (Flex(..), Subst)
+ 
+ -- What may go into a meta of the other side: a label with its field
+--- type, or a rigid tail.
++-- type, or a rigid tail. A residue's sides (`Side`, `Residue`) are
++-- Features.Check.Pending's, where an equation that waits keeps them.
+ data Constant = Field String (Ty Flex) | RigidTail Flex
+ 
+--- One side of an equation once the labels both sides hold have unified
+--- and the tails both hold cancelled (R005 Tranche B design §2.1 steps
+--- 2-4, rules §2-§4): its labels with their types, its rigid tails, and
+--- its unbound meta tails, repeats kept.
+-type Side =
+-  { fields ∷ Array (Tuple String (Ty Flex))
+-  , rigids ∷ Array Flex
+-  , metas ∷ Array Int
+-  }
+-
+-type Residue = { mine ∷ Side, theirs ∷ Side }
+-
+ -- One equation's examination so far (Features.Check.UnifyRecord): the
+ -- substitution reached, and the one before the last sum-rule step (where
+ -- a refusal U4 caused is printed, as it was before U4, R10.2); the labels
+diff --git a/src/Features/Check/RowSettle.purs b/src/Features/Check/RowSettle.purs
+index e699301..d6a38e6 100644
+--- a/src/Features/Check/RowSettle.purs
++++ b/src/Features/Check/RowSettle.purs
+@@ -5,7 +5,7 @@ import Prim hiding (Row)
+ import Control.Monad.Rec.Class (Step(..))
+ import Data.Array as Array
+ import Data.Either (Either(..))
+-import Data.Maybe (Maybe(..), maybe')
++import Data.Maybe (Maybe(..), maybe, maybe')
+ import Domain.Type (Ty)
+ import Domain.Type.Record (RecordRow)
+ import Features.Check.Commit (commit, commitAnyway)
+@@ -22,13 +22,11 @@ import Features.Check.RowResidue
+   )
+ import Features.Check.RowStore (Equation(..), equationId, siteOf)
+ import Features.Check.Subst (Flex(..), Subst, onStore, storeOf)
+-import Features.Check.UnifyFailure (Failure(..))
++import Features.Check.UnifyFailure (Failure)
++import Features.Check.Waits (nestingOf, waitFor)
+ 
+ type Row = RecordRow (Ty Flex) Flex
+ 
+--- A constant and the metas of the other side that may hold it.
+-type Placing = { constant ∷ Constant, homes ∷ Array Int, metas ∷ Array Int }
+-
+ -- Steps 6-8 of R005 Tranche B design §2.1, once the sum rule changes
+ -- nothing (rules §6, §8). A side that is one meta alone is bound to the
+ -- other side (of two bare metas the newer, the larger, to the older, as
+@@ -51,17 +49,22 @@ settle failed left right exam found
+       found
+   | otherwise = placing failed left right exam found
+ 
+--- The equation's identity, taken when it first derives a fact.
++-- The equation's identity, taken when it first derives a fact or waits.
++-- Its site is the requirement being checked, or, for an equation met
++-- while the drain re-examines a pending one, that equation's: a nested
++-- equation keeps its outer equation's site (design §2.6).
+ equationOf ∷ Row → Row → Exam → { equation ∷ Equation, subst ∷ Subst }
+ equationOf left right exam = maybe' taken kept exam.equation
+   where
+   kept equation = { equation, subst: exam.subst }
+   taken _ =
+-    { equation: Equation
+-        { id: next.id, site: siteOf (storeOf exam.subst), left, right }
++    { equation: Equation { id: next.id, site, left, right }
+     , subst: onStore (const next.store) exam.subst
+     }
+-  next = equationId (storeOf exam.subst)
++  next = equationId store
++  store = storeOf exam.subst
++  site = maybe (siteOf store) outerSite (nestingOf store)
++  outerSite (Equation outer) = outer.site
+ 
+ placing
+   ∷ Failed → Row → Row → Exam → Residue → Either Failure (Step Exam Subst)
+@@ -77,9 +80,12 @@ placing failed left right exam found =
+     entry.constant
+   committing _ = maybe' waiting
+     (forced failed exam (equationOf left right exam))
+-    (Array.find onlyHome plan)
+-  onlyHome entry = Array.length entry.homes == 1
+-  waiting _ = Left (Placeholder waits)
++    (Array.findMap onlyHome plan)
++  onlyHome entry = case entry.homes of
++    [ meta ] → Just { constant: entry.constant, meta }
++    _ → Nothing
++  waiting _ = Right (Done (wait (equationOf left right exam)))
++  wait taken = waitFor taken.equation found taken.subst
+ 
+ -- A constant with one home, committed there; the equation is examined
+ -- again.
+@@ -87,19 +93,13 @@ forced
+   ∷ Failed
+   → Exam
+   → { equation ∷ Equation, subst ∷ Subst }
+-  → Placing
++  → { constant ∷ Constant, meta ∷ Int }
+   → Either Failure (Step Exam Subst)
+-forced failed exam taken entry = maybe' waiting committed
+-  (Array.head entry.homes)
++forced failed exam taken home = again
++  <$> commit failed taken.equation taken.subst home.meta home.constant
+   where
+-  waiting _ = Left (Placeholder waits)
+-  committed meta = again
+-    <$> commit failed taken.equation taken.subst meta entry.constant
+   again subst = Loop exam { subst = subst, equation = Just taken.equation }
+ 
+-waits ∷ String
+-waits = "equations that wait are solved in Task 5"
+-
+ bareMetas ∷ Failed → Subst → Residue → Either Failure Subst
+ bareMetas failed subst found = maybe' (const (Right subst)) bound
+   (metaPair found)
+diff --git a/src/Features/Check/RowStore.purs b/src/Features/Check/RowStore.purs
+index cee1e3a..0e65c6b 100644
+--- a/src/Features/Check/RowStore.purs
++++ b/src/Features/Check/RowStore.purs
+@@ -41,6 +41,7 @@ import Features.Check.Because
+   , rank
+   )
+ import Features.Check.Flex (Flex(..))
++import Features.Check.Pending (Waiting, noneWaiting, wake)
+ import Features.Check.RowBound (Atom(..), Bound, Narrowing, narrowedBy)
+ 
+ -- What the record tails of a substitution are known to satisfy (R005
+@@ -60,8 +61,13 @@ import Features.Check.RowBound (Atom(..), Bound, Narrowing, narrowedBy)
+ -- Task 6); `equations`, the next equation's identity; `changes`,
+ -- how many times the solver's state changed (a binding, a new lack, a new
+ -- pair's meta side, a bound set or narrowed): the termination measure's
+--- counter (rules §13, ledger L3). Pending equations and their index
+--- arrive with Task 5.
++-- counter (rules §13, ledger L3). Task 5: `waiting`, the pending
++-- equations and their wake-up index (Features.Check.Pending); every change
++-- above to a variable (a binding, a new lack or pair, a bound set or
++-- narrowed, a pair removed) wakes the equations that read it and moves
++-- `version`; `nesting`, the pending equation being re-examined, whose site
++-- an equation nested in it takes (design §2.6). Their accessors are in
++-- Features.Check.Waits.
+ newtype RowStore = RowStore
+   { lacks ∷ Map Flex (Map String Lack)
+   , apart ∷ Map Flex (Map Flex Because)
+@@ -72,6 +78,9 @@ newtype RowStore = RowStore
+   , boundBy ∷ Map Int Equation
+   , equations ∷ Int
+   , changes ∷ Int
++  , waiting ∷ Waiting
++  , nesting ∷ Maybe Equation
++  , version ∷ Int
+   }
+ 
+ emptyStore ∷ RowStore
+@@ -85,6 +94,9 @@ emptyStore = RowStore
+   , boundBy: Map.empty
+   , equations: 0
+   , changes: 0
++  , waiting: noneWaiting
++  , nesting: Nothing
++  , version: 0
+   }
+ 
+ -- The labels a tail lacks, each with its reason.
+@@ -98,14 +110,16 @@ lackTable (RowStore store) tail = maybe Map.empty identity
+ withLacks ∷ Flex → Map String Lack → RowStore → RowStore
+ withLacks tail found (RowStore store)
+   | Map.isEmpty found = RowStore store
+-  | otherwise =
+-      RowStore store
+-        { lacks = Map.insertWith (Map.unionWith preferLack) tail found
+-            store.lacks
+-        , changes = store.changes + Map.size (Map.difference found known)
+-        }
++  | otherwise = woken
++      ( RowStore store
++          { lacks = Map.insertWith (Map.unionWith preferLack) tail found
++              store.lacks
++          , changes = store.changes + new
++          }
++      )
+       where
+-      known = lackTable (RowStore store) tail
++      new = Map.size (Map.difference found (lackTable (RowStore store) tail))
++      woken = if new == 0 then identity else touched tail
+ 
+ -- The tails this one is apart from, each with its reason.
+ partnersOf ∷ RowStore → Flex → Map Flex Because
+@@ -115,11 +129,14 @@ partnersOf (RowStore store) tail = maybe Map.empty identity
+ -- The pair recorded both ways, the preferred reason kept; a new pair is a
+ -- change on each of its meta sides.
+ withApart ∷ Flex → Flex → Because → RowStore → RowStore
+-withApart one other because (RowStore store) = RowStore store
+-  { apart = added other one (added one other store.apart)
+-  , changes = store.changes + if known then 0 else metaSides
+-  }
++withApart one other because (RowStore store) = woken
++  ( RowStore store
++      { apart = added other one (added one other store.apart)
++      , changes = store.changes + if known then 0 else metaSides
++      }
++  )
+   where
++  woken = if known then identity else touched one <<< touched other
+   added from to = Map.insertWith (Map.unionWith prefer) from
+     (Map.singleton to because)
+   known = Map.member other (partnersOf (RowStore store) one)
+@@ -131,11 +148,14 @@ withApart one other because (RowStore store) = RowStore store
+ -- The tail's pairs removed from both sides (it was bound: its pairs are
+ -- re-required on its image).
+ withoutPairs ∷ Flex → RowStore → RowStore
+-withoutPairs tail store@(RowStore found) = RowStore found
+-  { apart = Map.delete tail
+-      (foldl dropped found.apart (Map.keys (partnersOf store tail)))
+-  }
++withoutPairs tail store@(RowStore found) =
++  foldl (flip touched)
++    ( RowStore found
++        { apart = Map.delete tail (foldl dropped found.apart partners) }
++    )
++    partners
+   where
++  partners = Map.keys (partnersOf store tail)
+   dropped table partner = Map.update (Just <<< Map.delete tail) partner table
+ 
+ -- Where a meta was bound, if a requirement was being checked.
+@@ -162,8 +182,12 @@ boundOf (RowStore store) meta = Map.lookup meta store.upper
+ 
+ -- The meta's bound set or narrowed: a change.
+ withBound ∷ Int → Bound → RowStore → RowStore
+-withBound meta bound (RowStore store) = RowStore store
+-  { upper = Map.insert meta bound store.upper, changes = store.changes + 1 }
++withBound meta bound (RowStore store) = touched (Meta meta)
++  ( RowStore store
++      { upper = Map.insert meta bound store.upper
++      , changes = store.changes + 1
++      }
++  )
+ 
+ -- The bound of a meta just bound (U3: its image took it over).
+ withoutBound ∷ Int → RowStore → RowStore
+@@ -191,9 +215,15 @@ equationId (RowStore store) =
+   , store: RowStore store { equations = store.equations + 1 }
+   }
+ 
+--- One more change (a meta bound).
+-counted ∷ RowStore → RowStore
+-counted (RowStore store) = RowStore store { changes = store.changes + 1 }
++-- One more change: `meta` bound.
++counted ∷ Int → RowStore → RowStore
++counted meta (RowStore store) = touched (Meta meta)
++  (RowStore store { changes = store.changes + 1 })
+ 
+ changesOf ∷ RowStore → Int
+ changesOf (RowStore store) = store.changes
++
++-- The variable changed: the equations that read it are woken.
++touched ∷ Flex → RowStore → RowStore
++touched tail (RowStore store) = RowStore store
++  { waiting = wake tail store.waiting, version = store.version + 1 }
+diff --git a/src/Features/Check/Settle.purs b/src/Features/Check/Settle.purs
+index 09ede06..178dcfb 100644
+--- a/src/Features/Check/Settle.purs
++++ b/src/Features/Check/Settle.purs
+@@ -28,7 +28,8 @@ import Features.Check.Restricted (matchedInstallation)
+ import Features.Check.Scheme (State)
+ import Features.Check.SettleEntry (Donor, Entry, EntryTail(..))
+ import Features.Check.SettleEntry as Entries
+-import Features.Check.SettleChange (labelCount, moved, retry)
++import Features.Check.SettleChange (drainedRound, labelCount, moved, retry)
++import Features.Check.EndReport (endReport)
+ import Features.Check.Sync (syncSettling)
+ import Features.Check.TailPass (tailPass)
+ import Features.Check.Unify (Failure(..), Flex, Subst)
+@@ -41,12 +42,17 @@ type Env r = CheckEnv (locals ∷ Locals | r)
+ -- finite solution (c) and consumes each row in the graph's order (d). It
+ -- ends after a round in which (a) decided no pair and no row's label count
+ -- changed, whatever the binding that changed it, and (a) run after (d)
+--- still decides nothing. A pair still set aside then is `Fail needs a
+--- concrete error family`.
++-- still decides nothing; since R005 Tranche B Task 5 each round ends with
++-- a drain of the pending record equations, and a round whose drain moved
++-- counts as changed (the joint fixpoint, design §6). The record
++-- equations are then classified (Features.Check.EndReport: one still
++-- waiting with a constant is D4), and only then is a pair still set
++-- aside `Fail needs a concrete error family`.
+ settleRestricted
+   ∷ ∀ r. Env r → State → Checked.Expr → Either Diagnostic State
+ settleRestricted env state body = do
+   exited ← tailRecM (round env body) state
++  endReport body exited.subst
+   settled ← settleFinal env exited body
+   tailPass env (exited { subst = settled })
+ 
+@@ -66,13 +72,13 @@ round env body state = do
+   rejectCycle env keyed entries rows feeds
+   consumed ← foldM (consume env entries rows) keyed (feedOrder rows feeds)
+   retried ← retry env body consumed
++  drained ← drainedRound env body consumed
+   pure
+-    ( continued consumed
+-        (moved { start: state, settled, consumed, entries, retried })
++    ( continued drained
++        (moved { start: state, settled, consumed, drained, entries, retried })
+     )
+   where
+-  continued consumed movedNow =
+-    if movedNow then Loop consumed else Done consumed
++  continued drained movedNow = if movedNow then Loop drained else Done drained
+ 
+ feedRow ∷ Subst → Entry → FeedRow
+ feedRow subst entry =
+diff --git a/src/Features/Check/SettleChange.purs b/src/Features/Check/SettleChange.purs
+index c041eb9..43f36bb 100644
+--- a/src/Features/Check/SettleChange.purs
++++ b/src/Features/Check/SettleChange.purs
+@@ -2,13 +2,15 @@ module Features.Check.SettleChange
+   ( Round
+   , moved
+   , retry
++  , drainedRound
+   , postponedCount
+   , labelCount
+   ) where
+ 
+ import Prelude
+ import Data.Array as Array
+-import Data.Either (Either(..))
++import Data.Either (Either(..), either)
++import Data.Maybe (fromMaybe)
+ import Domain.Checked.Internal as Checked
+ import Domain.Row (Row(..))
+ import Domain.Syntax (Diagnostic)
+@@ -16,26 +18,34 @@ import Features.Check.Context (CheckEnv)
+ import Features.Check.Failure (settleKeys)
+ import Features.Check.Scheme (State)
+ import Features.Check.SettleEntry (Entry)
+-import Features.Check.Unify (Subst(..))
++import Features.Check.Drained (classifiedAt, siteOfFailure)
++import Features.Check.Subst (storeOf)
++import Features.Check.Unify (Subst(..), drain)
++import Features.Check.Waits (versionOf)
+ import Features.Check.Walked (walkedRow)
+ 
+ -- One settle round's states: as it began, after (a) settled the keys,
+--- and after (d) consumed every row; its entries; and whether (a), run
+--- again after (d), could decide a pair.
++-- after (d) consumed every row, and after its drain; its entries; and
++-- whether (a), run again after (d), could decide a pair.
+ type Round =
+   { start ∷ State
+   , settled ∷ State
+   , consumed ∷ State
++  , drained ∷ State
+   , entries ∷ Array Entry
+   , retried ∷ Boolean
+   }
+ 
+ -- Whether the round moved: (a) decided a pair (fewer are set aside than
+--- at the round's start), some row's label count changed, or (a) could
+--- decide one after (d).
++-- at the round's start), some row's label count changed, (a) could
++-- decide one after (d), or the round's drain changed a variable (R005
++-- Tranche B design §6: the rounds stop only when neither the effect rows
++-- nor the record equations move).
+ moved ∷ Round → Boolean
+-moved found = decided || changed || found.retried
++moved found = decided || changed || found.retried || drainedSome
+   where
++  drainedSome = versionOf (storeOf found.drained.subst)
++    /= versionOf (storeOf found.consumed.subst)
+   decided = postponedCount found.settled.subst
+     < postponedCount found.start.subst
+   changed = counts found.consumed.subst /= counts found.start.subst
+@@ -51,6 +61,18 @@ retry env body consumed =
+   where
+   decidable subst = postponedCount subst < postponedCount consumed.subst
+ 
++-- The round's drain (design §6, the joint fixpoint): a retry or a
++-- consumption binds metas outside a top-level unification, so the record
++-- equations they woke are examined here. A failure is the equation's,
++-- reported at its site, or at the body.
++drainedRound
++  ∷ ∀ r. CheckEnv r → Checked.Expr → State → Either Diagnostic State
++drainedRound _ body consumed = either failed drained (drain consumed.subst)
++  where
++  drained subst = Right consumed { subst = subst }
++  failed failure = Left (classifiedAt (siteOf failure) failure)
++  siteOf failure = fromMaybe (Checked.spanOf body) (siteOfFailure failure)
++
+ postponedCount ∷ Subst → Int
+ postponedCount (Subst bindings) = Array.length bindings.postponed
+ 
+diff --git a/src/Features/Check/Subst.purs b/src/Features/Check/Subst.purs
+index 8f3e12c..f9bbd8f 100644
+--- a/src/Features/Check/Subst.purs
++++ b/src/Features/Check/Subst.purs
+@@ -26,6 +26,7 @@ import Data.Map as Map
+ import Data.Maybe (Maybe, maybe)
+ import Data.Tuple (Tuple, snd)
+ import Domain.Row (Label(..), Row(..), isBare, isPure, mapHandlerRows, openRow)
++import Domain.Syntax (Span)
+ import Domain.Type
+   ( Substitution
+   , Ty(..)
+@@ -40,7 +41,7 @@ import Features.Check.Flex (Flex(..), metaOf)
+ import Features.Check.MarkStore (MarkStore, RowMode, emptyMarks, resolveMark)
+ import Features.Check.Occurrence (OccurrenceId, Sides)
+ import Features.Check.PartOrigin (PartOrigin, noOrigins)
+-import Features.Check.RowStore (RowStore, emptyStore)
++import Features.Check.RowStore (RowStore, emptyStore, siteOf)
+ import Features.Check.Search (Stack(..), stackItems)
+ import Features.Check.TailWatch (TailWatch, emptyWatch)
+ 
+@@ -77,10 +78,16 @@ newtype Subst = Subst
+   , origins ∷ PartOrigin
+   }
+ 
+--- A postponed pair keeps where its sides were written and how it treats
+--- marks, for its retry.
++-- A postponed pair keeps where its sides were written, how it treats
++-- marks, and the requirement it was met in (R005 Tranche B design §6: a
++-- record equation its retry defers again takes that site), for its retry.
+ type RowPair =
+-  { left ∷ TyRow Flex, right ∷ TyRow Flex, sides ∷ Sides, mode ∷ RowMode }
++  { left ∷ TyRow Flex
++  , right ∷ TyRow Flex
++  , sides ∷ Sides
++  , mode ∷ RowMode
++  , site ∷ Maybe Span
++  }
+ 
+ empty ∷ Subst
+ empty = Subst
+@@ -129,6 +136,7 @@ postpone (Subst bindings) pair = Subst bindings
+       , right: pair.right
+       , sides: pair.sides
+       , mode: pair.mode
++      , site: siteOf bindings.store
+       }
+   }
+ 
+diff --git a/src/Features/Check/Unify.purs b/src/Features/Check/Unify.purs
+index 3f8bc49..a68ee2c 100644
+--- a/src/Features/Check/Unify.purs
++++ b/src/Features/Check/Unify.purs
+@@ -3,7 +3,11 @@ module Features.Check.Unify
+   , module Features.Check.Binding
+   , module Features.Check.Compose
+   , module Features.Check.UnifyFailure
++  , module Features.Check.Drain
+   , unify
++  , unifyBy
++  , drain
++  , drainBy
+   , settleRows
+   ) where
+ 
+@@ -19,6 +23,8 @@ import Domain.Type (Ty(..), TyRow)
+ import Features.Check.Binding (exceedsLimit, inferredTypeLimit)
+ import Features.Check.Binding as Binding
+ import Features.Check.Compose (compose)
++import Features.Check.Drain (Reexamine, Wake, drainWith, indexed, rescan)
++import Features.Check.RowStore (atSite, siteOf)
+ import Features.Check.Subst
+   ( Flex(..)
+   , Subst(..)
+@@ -28,7 +34,8 @@ import Features.Check.Subst
+   , substituteRow
+   , walk
+   , walkRow
+-
++  , onStore
++  , storeOf
+   , resolve
+   , resolveRow
+   )
+@@ -40,7 +47,7 @@ import Features.Check.UnifyParts
+   , sameLength
+   , unifyClauses
+   )
+-import Features.Check.UnifyRecord (unifyRecord)
++import Features.Check.UnifyRecord (reexamine, unifyRecord)
+ import Features.Check.UnifyRow
+   ( unifyRows
+   , unifyRowsIgnoring
+@@ -58,13 +65,35 @@ import Features.Check.UnifyRow
+ -- fails with TooDeep instead of recursing further (ruling R7, fix round 2).
+ -- Rows unify by scoped labels (Features.Check.UnifyRow, FX001); records'
+ -- fields one level deeper, by label (Features.Check.UnifyRecord, R001).
++-- Since R005 Tranche B Task 5 every top-level unification ends with a
++-- drain (design P8): the pending record equations a change woke are
++-- examined again (Features.Check.Drain, the indexed wake-up).
+ unify ∷ Subst → Ty Flex → Ty Flex → Either Failure Subst
+-unify = unifyAt 1
++unify = unifyBy indexed
++
++-- The same, with the drain's wake-up injected (the test entry compares
++-- `indexed` with `rescan`, ledger L32).
++unifyBy ∷ Wake → Subst → Ty Flex → Ty Flex → Either Failure Subst
++unifyBy wake subst left right = unifyAt 1 subst left right >>= drainBy wake
++
++drain ∷ Subst → Either Failure Subst
++drain = drainBy indexed
++
++-- A pending equation's residue is a record row met at the top, so its
++-- fields unify one level down.
++drainBy ∷ Wake → Subst → Either Failure Subst
++drainBy wake = drainWith wake again
++  where
++  again ∷ Reexamine
++  again = reexamine (unifyAt fieldLevel)
+ 
+ -- Retries the postponed row pairs, in order, until a pass decides none
+ -- (a pair is decided when it unifies or fails; the first failure is the
+ -- result). Pairs still undecidable stay in `postponed`: FX001 Task 5
+--- reports them (`Fail needs a concrete error family`).
++-- reports them (`Fail needs a concrete error family`). A retry is
++-- checked at its pair's site, so an equation it defers again takes that
++-- site (design §6); it does not drain: each settle round ends with one
++-- (Features.Check.Settle).
+ settleRows ∷ Subst → Either Failure Subst
+ settleRows = tailRecM pass
+   where
+@@ -73,16 +102,21 @@ settleRows = tailRecM pass
+     bindings.postponed
+   next original found =
+     if found.decided then Loop found.subst else Done original
+-  retry reached pair = settled reached <$> unifyRowsTraced unify pair.mode
++  retry reached pair = settled reached <$> unifyRowsTraced (unifyAt 1)
++    pair.mode
+     pair.sides
+-    reached.subst
++    (onStore (atSite pair.site) reached.subst)
+     pair.left
+     pair.right
+   settled reached traced =
+-    { subst: linked traced.events traced.subst
++    { subst: onStore (atSite (siteOf (storeOf reached.subst)))
++        (linked traced.events traced.subst)
+     , decided: reached.decided || not traced.postponed
+     }
+ 
++fieldLevel ∷ Int
++fieldLevel = 2
++
+ unifyAt ∷ Int → Subst → Ty Flex → Ty Flex → Either Failure Subst
+ unifyAt level subst left right =
+   if level > inferredTypeLimit then Left TooDeep
+diff --git a/src/Features/Check/UnifyFailure.purs b/src/Features/Check/UnifyFailure.purs
+index fd08a63..d152cee 100644
+--- a/src/Features/Check/UnifyFailure.purs
++++ b/src/Features/Check/UnifyFailure.purs
+@@ -5,7 +5,7 @@ import Domain.Row (Label)
+ import Domain.Type (Ty, TyRow)
+ import Features.Check.Occurrence (OccurrenceId)
+ import Data.Maybe (Maybe)
+-import Features.Check.Because (Because, Lack, Pair, WrittenLack)
++import Features.Check.Because (Because, Equation, Lack, Pair, WrittenLack)
+ import Features.Check.Flex (Flex)
+ import Features.Check.RowBound (Atom, Narrowing)
+ 
+@@ -28,7 +28,11 @@ import Features.Check.RowBound (Atom, Narrowing)
+ -- `Placeholder` (R005 Tranche B): the work a later task does, named for
+ -- the E_INTERNAL it is reported as. `Unexpected`: an invariant the
+ -- argument for a rule establishes found broken, reported as E_INTERNAL
+--- with its text (a checker defect, never a program's).
++-- with its text (a checker defect, never a program's). `Drained` (Task
++-- 5): the failure the drain met re-examining a pending equation, with
++-- that equation; it establishes what its inner failure establishes
++-- (Features.Check.RowOutcome `refusal`), and is rendered from the
++-- equation (D6, Task 6).
+ data Failure
+   = Mismatch (Ty Flex) (Ty Flex)
+   | Occurs Int (Ty Flex)
+@@ -42,6 +46,7 @@ data Failure
+   | Refused Refusal
+   | Placeholder String
+   | Unexpected String
++  | Drained Equation Failure
+ 
+ -- A fact of the row store broken, with its reason. `Forbidden` (R005):
+ -- a label bound into a record tail that a written `lacks` forbids it.
+diff --git a/src/Features/Check/UnifyRecord.purs b/src/Features/Check/UnifyRecord.purs
+index f9296a0..6af6d07 100644
+--- a/src/Features/Check/UnifyRecord.purs
++++ b/src/Features/Check/UnifyRecord.purs
+@@ -1,4 +1,4 @@
+-module Features.Check.UnifyRecord (unifyRecord) where
++module Features.Check.UnifyRecord (unifyRecord, reexamine) where
+ 
+ import Prelude
+ import Prim hiding (Row)
+@@ -14,12 +14,14 @@ import Domain.Type.Record (RecordRow)
+ import Features.Check.FlatRecord (Flat, flatten)
+ import Features.Check.Homeless (homeless, homelessReport)
+ import Features.Check.RecordTail (solvingWith)
++import Features.Check.Pending (Pending)
+ import Features.Check.RowResidue
+   ( Exam
+   , Residue
+   , common
+   , residue
+   , settledResidue
++  , sideRow
+   )
+ import Features.Check.RowSettle (equationOf, settle)
+ import Features.Check.RowStore (changesOf)
+@@ -41,9 +43,10 @@ type Row = RecordRow (Ty Flex) Flex
+ -- (Features.Check.Homeless); (5) the sum rule, and if it changed the
+ -- state, again from (1); then (6-8) Features.Check.RowSettle: one meta
+ -- alone, the shared remainder, a commit (again from (1)), or the
+--- equation waits, which Task 5 solves (a placeholder until then). Each
+--- step keeps the solutions, each refusal has none. With one tail a side
+--- these are ADR 013's rules 1-6.
++-- equation waits among the store's pending equations (Task 5), to be
++-- examined again by the drain (`reexamine`). Each step keeps the
++-- solutions, each refusal has none. With one tail a side these are ADR
++-- 013's rules 1-6.
+ unifyRecord
+   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
+   → Subst
+@@ -59,6 +62,27 @@ unifyRecord unifyField subst left right = tailRecM
+   , seen: { mine: Set.empty, theirs: Set.empty }
+   }
+ 
++-- A pending equation examined again (design §2.6, the drain): the same
++-- steps on its residue, which the substitution may have changed since,
++-- under its own identity, so that waiting again replaces its entry.
++-- Labels that now cancel unify their field types here, once.
++reexamine
++  ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
++  → Subst
++  → Pending
++  → Either Failure Subst
++reexamine unifyField subst pending = tailRecM
++  (examine unifyField left right)
++  { subst
++  , before: subst
++  , done: Set.empty
++  , equation: Just pending.equation
++  , seen: { mine: Set.empty, theirs: Set.empty }
++  }
++  where
++  left = sideRow pending.residue.mine
++  right = sideRow pending.residue.theirs
++
+ examine
+   ∷ (Subst → Ty Flex → Ty Flex → Either Failure Subst)
+   → Row
+diff --git a/src/Features/Check/Waits.purs b/src/Features/Check/Waits.purs
+new file mode 100644
+index 0000000..2fb3655
+--- /dev/null
++++ b/src/Features/Check/Waits.purs
+@@ -0,0 +1,105 @@
++module Features.Check.Waits
++  ( waitFor
++  , withdraw
++  , unwake
++  , entryOf
++  , pendingIds
++  , pendingOf
++  , waitingOf
++  , nestingOf
++  , nested
++  , versionOf
++  , readsOf
++  ) where
++
++import Prelude
++import Data.Array as Array
++import Data.Map as Map
++import Data.Maybe (Maybe)
++import Data.Set (Set)
++import Data.Set as Set
++import Features.Check.Pending
++  ( Pending
++  , Residue
++  , Waiting
++  , quietResidue
++  , unwoken
++  , waitOn
++  , withdrawn
++  )
++import Features.Check.RowStore (Equation, RowStore(..), partnersOf)
++import Features.Check.Subst (Flex(..), Subst, onStore, storeOf)
++
++-- The pending equations of a substitution's row store (R005 Tranche B
++-- design §2.6, Features.Check.Pending), kept there so that a postponed
++-- effect pair that reverts the substitution reverts them, their index and
++-- their wake-ups with every fact (rules §12, ledger L19).
++
++-- `equation` waits on `found`, its residue now: stored under its identity
++-- (replacing its entry, or dropped as the duplicate of an older one), and
++-- watched through every variable its rules read.
++waitFor ∷ Equation → Residue → Subst → Subst
++waitFor equation found subst = onStore (onWaiting (waitOn pending)) subst
++  where
++  pending =
++    { equation
++    , residue: found
++    , quiet: quietResidue found
++    , reads: readsOf subst found
++    }
++
++-- The entry taken out, to be examined again or dropped.
++withdraw ∷ Int → Subst → Subst
++withdraw id = onStore (onWaiting (withdrawn id))
++
++-- Its wake-up spent: about to be examined, or passed over.
++unwake ∷ Int → Subst → Subst
++unwake id = onStore (onWaiting (unwoken id))
++
++entryOf ∷ Subst → Int → Maybe Pending
++entryOf subst id = Map.lookup id (waitingOf (storeOf subst)).entries
++
++-- The identities waiting, oldest first.
++pendingIds ∷ Subst → Array Int
++pendingIds subst = Array.fromFoldable
++  (Map.keys (waitingOf (storeOf subst)).entries)
++
++-- Every pending equation, by identity.
++pendingOf ∷ Subst → Array Pending
++pendingOf subst = Array.fromFoldable (Map.values (waitingOf (storeOf subst))
++  .entries)
++
++-- What a residue's rules read (ledger L32; rules §9a): the binding and
++-- the facts of each of its tails, metas and rigids, and the facts of each
++-- partner of its metas, which the sum rule's apart derivation reads
++-- (`sharedPartners`, `disjointFrom`) and homes read for rigid partners. A
++-- tail bound or given a fact, or a partner given one, changes what the
++-- rules can derive; nothing else they read changes inside a body (a
++-- rigid's lacks and rigid pairs are the signature's hypotheses).
++readsOf ∷ Subst → Residue → Set Flex
++readsOf subst found = Set.fromFoldable (tails <> partners)
++  where
++  metas = map Meta (found.mine.metas <> found.theirs.metas)
++  tails = metas <> found.mine.rigids <> found.theirs.rigids
++  partners = Array.concatMap partnersOfTail metas
++  partnersOfTail tail = Array.fromFoldable
++    (Map.keys (partnersOf (storeOf subst) tail))
++
++waitingOf ∷ RowStore → Waiting
++waitingOf (RowStore store) = store.waiting
++
++nestingOf ∷ RowStore → Maybe Equation
++nestingOf (RowStore store) = store.nesting
++
++-- The store while `equation` is re-examined: an equation met inside it
++-- takes its site (design §2.6, nested equations).
++nested ∷ Maybe Equation → RowStore → RowStore
++nested nesting (RowStore store) = RowStore store { nesting = nesting }
++
++-- How many times a variable's facts or binding changed.
++versionOf ∷ RowStore → Int
++versionOf (RowStore store) = store.version
++
++onWaiting ∷ (Waiting → Waiting) → RowStore → RowStore
++onWaiting change (RowStore store) = RowStore store
++  { waiting = change store.waiting }
+diff --git a/test/r005b-both.test.mjs b/test/r005b-both.test.mjs
+new file mode 100644
+index 0000000..79cd717
+--- /dev/null
++++ b/test/r005b-both.test.mjs
+@@ -0,0 +1,49 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { checkRejectedAt, checkedPoly } from './phases.mjs';
++import { unresolved } from './r005b-support.mjs';
++
++// R005 Tranche B Task 5, `r005b-both-annotation` (design §8; review F9;
++// fixtures design-both-annotated and diag-07-fix): a declared type's
++// record-row arguments fix what its payload equation leaves open. The
++// payload `{ ...?r, ...?s } ~ { x: Int, y: Int }` waits; the result
++// `Both(...?r, ...?s)` against the annotation binds `?r` and `?s` one
++// argument at a time (R012); the drain then finds the equation holds.
++// Met in the other order (the expected result first) the payload is an
++// ordinary closed equation: the same verdict (C2). It runs from Task 8.
++const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
++const annotated = `${both}fn example(): Both({ x: Int }, { y: Int }) = `
++  + 'Both({ x: 1, y: 2 }); fn main(): Int = { let b = example(); 0 };';
++
++test('the annotated Both is accepted (argument first)', () => {
++  checkedPoly(annotated);
++});
++
++// `build(Both, example(), payload)`: `k` fixes `p` and `b` from Both's
++// type, `x` binds Both's row arguments from the annotated value, and only
++// then is the payload checked, against a row already known.
++const build = 'fn build(k: (p) -> b, x: b, y: p): Int = 0; ';
++const value = `${both}fn example(): Both({ x: Int }, { y: Int }) = `
++  + 'Both({ x: 1, y: 2 }); ';
++
++test('the annotated Both, expected result first, is accepted', () => {
++  checkedPoly(`${value}${build}`
++    + 'fn main(): Int = build(Both, example(), { x: 1, y: 2 });');
++});
++
++test('payload first, through the same helper, is accepted too', () => {
++  checkedPoly(`${value}fn build2(k: (p) -> b, y: p, x: b): Int = 0; `
++    + 'fn main(): Int = build2(Both, { x: 1, y: 2 }, example());');
++});
++
++test('a wrong annotation is refused, not Unresolved', () => {
++  const source = `${both}fn example(): Both({ x: Int }, { z: Int }) = `
++    + 'Both({ x: 1, y: 2 }); fn main(): Int = 0;';
++  assert.throws(() => checkedPoly(source));
++});
++
++test('the unannotated Both is Unresolved at the argument', () => {
++  const source = `${both}fn main(): Int = { let b = Both({ x: 1, y: 2 }); 0 };`;
++  const found = checkRejectedAt(source, 'E_INTERNAL', '{ x: 1, y: 2 }');
++  assert.equal(found.message, unresolved);
++});
+diff --git a/test/r005b-fixtures.test.mjs b/test/r005b-fixtures.test.mjs
+index 8b7f82d..d3cf875 100644
+--- a/test/r005b-fixtures.test.mjs
++++ b/test/r005b-fixtures.test.mjs
+@@ -1,7 +1,9 @@
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+ import { runGo } from './support.mjs';
+-import { assertDiagnostic, fixtures, wired } from './r005b-support.mjs';
++import { checkedPoly } from './phases.mjs';
++import { assertDiagnostic, fixtures, fromEquations, unresolved, wired }
++  from './r005b-support.mjs';
+ 
+ // R005 Tranche B: every executable example fixture (test/fixtures/r005b,
+ // docs/plans/2026-10-17-open-row-merge-plan.md, "Executable example
+@@ -10,12 +12,20 @@ import { assertDiagnostic, fixtures, wired } from './r005b-support.mjs';
+ // message, primary span and notes (between the two, the placeholder's
+ // E_INTERNAL); from `run`, the output through Go. A fixture before its
+ // stage is skipped by that field only, never because it fails. `task` is
+-// the plan's task this tree has reached.
+-const task = 4;
++// the plan's task this tree has reached. A Solved fixture whose `run`
++// stage is later is checked through the check phase alone: its rows of
++// several tails reach Task 8's lowering placeholder when compiled.
++const task = 5;
+ const reached = stage => stage !== null && stage <= task;
++// Between `check` and `text` a result's class is pinned by Task 6's
++// placeholders: D4 for Unresolved, D6 for a contradiction an equation
++// established.
++const placeholderOf = { Unresolved: unresolved, Contradiction: fromEquations };
+ 
+ const checkStage = fixture => {
+-  if (fixture.result === 'Solved') {
++  if (fixture.result === 'Solved' && !reached(fixture.stages.run)) {
++    checkedPoly(fixture.source);
++  } else if (fixture.result === 'Solved') {
+     const found = wired(fixture.source);
+     assert.equal(found, null, JSON.stringify(found));
+   } else if (reached(fixture.stages.text)) {
+@@ -24,7 +34,7 @@ const checkStage = fixture => {
+     const found = wired(fixture.source);
+     assert.notEqual(found, null, 'accepted');
+     assert.equal(found.code, 'E_INTERNAL', found.message);
+-    assert.ok(found.message.startsWith('R005B placeholder: '), found.message);
++    assert.equal(found.message, placeholderOf[fixture.result], found.message);
+   }
+ };
+ 
+@@ -44,11 +54,15 @@ for (const fixture of fixtures) {
+ // Task 3 activates the precedence fixtures and their controls, the two
+ // lone-meta fixtures and diag-06-fix (the plan's activation table); Task
+ // 4 activates none here (no fixture's `check` or `run` stage is 4: its
+-// solver-stage fixtures run in test/row-merge.test.mjs).
++// solver-stage fixtures run in test/row-merge.test.mjs); Task 5 the five
++// with `check` 5: design-both-plain, diag-06 and diag-07 (Unresolved, the
++// placeholder until Task 6), design-both-annotated and diag-07-fix
++// (Solved at the check phase; they run from Task 8).
+ test('the fixtures this task activates are the activation table\'s', () => {
+   const active = fixtures.filter(fixture => reached(fixture.stages.check))
+     .map(fixture => fixture.name);
+-  assert.deepEqual(active, ['diag-06-fix', 'lone-meta-lack-two',
++  assert.deepEqual(active, ['design-both-annotated', 'design-both-plain',
++    'diag-06', 'diag-06-fix', 'diag-07', 'diag-07-fix', 'lone-meta-lack-two',
+     'lone-meta-lack', 'precedence-control-hole-base',
+     'precedence-control-no-clause', 'precedence-control-two-clauses',
+     'precedence-p1', 'precedence-p2', 'precedence-p3', 'precedence-p4',
+diff --git a/test/r005b-nested.test.mjs b/test/r005b-nested.test.mjs
+new file mode 100644
+index 0000000..ba44aef
+--- /dev/null
++++ b/test/r005b-nested.test.mjs
+@@ -0,0 +1,62 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { checkRejectedAt, checkedPoly } from './phases.mjs';
++import { unresolved } from './r005b-support.mjs';
++
++// R005 Tranche B Task 5, nested equations (design §2.6; rules §9; ledger
++// L17; review F4): a label that cancels unifies its field types, and if
++// they meet a row of several tails that inner equation waits under its
++// own identity with the outer equation's site; the outer equation's
++// re-examination sees no label `a` again, so it never defers the inner
++// one twice. Check-phase sources, no literal of two spreads.
++const nest = 'fn nest(w: { a: { ...p, ...q }, ...r, ...s }): '
++  + '{ a: { ...p, ...q }, ...r, ...s } = w; ';
++const take = 'fn take(f: (c) -> { a: { x: Int, y: Int }, z: Int }): Int = 0; ';
++
++test('§2.6: the inner equation waits once, reported at the outer site', () => {
++  const source = `${nest}${take}fn main(): Int = take(nest);`;
++  const found = checkRejectedAt(source, 'E_INTERNAL', 'nest', 1);
++  assert.equal(found.message, unresolved);
++});
++
++test('the same outer equation met twice: still one report', () => {
++  const source = `${nest}fn take(f: (c) -> { a: { x: Int, y: Int }, z: Int }, `
++    + 'v: c): Int = 0; fn main(): Int = take(nest, '
++    + '{ a: { x: 1, y: 2 }, z: 3 });';
++  const found = checkRejectedAt(source, 'E_INTERNAL', 'nest', 1);
++  assert.equal(found.message, unresolved);
++});
++
++// Later arguments fix `?p` (the inner equation is then solved by the
++// drain) and `?r` (the outer one).
++const fixed = 'fn nest(w: { a: { ...p, ...q }, ...r, ...s }, v: { ...p }, '
++  + 'u: { ...r }): { a: { ...p, ...q }, ...r, ...s } = w; '
++  + 'fn take(f: (c, d, e) -> { a: { x: Int, y: Int }, z: Int }, v: d, '
++  + 'u: e): Int = 0; ';
++
++test('solved when later arguments fix ?p and ?r', () => {
++  checkedPoly(`${fixed}fn main(): Int = take(nest, { x: 1 }, { z: 1 });`);
++});
++
++test('fixing ?p alone leaves the outer equation, at its site', () => {
++  const source = 'fn nest(w: { a: { ...p, ...q }, ...r, ...s }, '
++    + 'v: { ...p }): { a: { ...p, ...q }, ...r, ...s } = w; '
++    + 'fn take(f: (c, d) -> { a: { x: Int, y: Int }, z: Int }, v: d): Int '
++    + '= 0; fn main(): Int = take(nest, { x: 1 });';
++  const found = checkRejectedAt(source, 'E_INTERNAL', 'nest', 1);
++  assert.equal(found.message, unresolved);
++});
++
++// The inner equation arises only when the drain re-examines the outer
++// one, during a later requirement (`inner`): it keeps the outer site, the
++// argument `{ a: { x: 1, y: 2 } }`, not the expression being checked
++// (row r005b-nested-field).
++const two = 'fn two(w: { ...r, ...s }, f: ({ ...r }) -> Int): Int = 0; '
++  + 'fn inner(w: { a: { ...p, ...q }, ...t }): Int = 0; ';
++
++test('a nested equation the drain finds keeps the outer site', () => {
++  const source = `${two}fn main(): Int = two({ a: { x: 1, y: 2 } }, inner);`;
++  const found = checkRejectedAt(source, 'E_INTERNAL',
++    '{ a: { x: 1, y: 2 } }');
++  assert.equal(found.message, unresolved);
++});
+diff --git a/test/r005b-outcome.test.mjs b/test/r005b-outcome.test.mjs
+index b3acd76..82b6860 100644
+--- a/test/r005b-outcome.test.mjs
++++ b/test/r005b-outcome.test.mjs
+@@ -2,22 +2,26 @@ import test from 'node:test';
+ import assert from 'node:assert/strict';
+ import { pathToFileURL } from 'node:url';
+ import { resolve } from 'node:path';
+-import { classify, outcomeOf, run } from './row-merge-entry.mjs';
++import { classify, concluded, entry, flexOf, Left, Right, run }
++  from './row-merge-entry.mjs';
+ 
+ // R005 Tranche B Task 4, the user's review of 2026-10-18: only a genuine
+ // inconsistency (a rejection the rules file argues) is a `Contradiction`.
+ // A limit reached (`TooDeep`), an invariant broken (`Unexpected`) and a
+ // placeholder are outside the semantic outcome, on its outer channel
+ // (Features.Check.RowOutcome `Stop`), and the oracle runner fails on the
+-// first two rather than counting them as refusals.
++// first two rather than counting them as refusals. Task 5 (the user,
++// 2026-10-18): the channel survives the drain and the end of a body, and
++// a successful unification is no verdict: `Solved` and `Unresolved` are
++// made only by the end of a body (`concluded` on a whole run).
+ const output = pathToFileURL(resolve(process.env.WAXWING_OUTPUT ?? 'output'));
+ const load = name => import(`${output.href}/${name}/index.js`);
+-const { Left, Right } = await load('Data.Either');
+ const failures = await load('Features.Check.UnifyFailure');
+ const { empty } = await load('Features.Check.Subst');
+ 
+ const row = (fields, tails = []) => ({ fields, tails });
+ const none = { lacks: {}, apart: [] };
++const waits = [{ k: 'eq', l: row([], ['m0', 'm1']), r: row(['x', 'y']) }];
+ 
+ test('a genuine inconsistency is a Contradiction', () => {
+   const found = run(none, [{ k: 'eq', l: row(['a']), r: row(['b']) }]);
+@@ -27,30 +31,64 @@ test('a genuine inconsistency is a Contradiction', () => {
+   assert.equal(lacked.v, 'refuse');
+ });
+ 
+-test('depth exhaustion is no verdict: the Limit stop', () => {
+-  const found = outcomeOf(new Left(failures.TooDeep.value));
+-  assert.equal(found.constructor.name, 'Left');
+-  assert.equal(found.value0.constructor.name, 'Limit');
++test('a successful unification is no verdict: an equation still waits', () => {
++  const step = entry.equate(entry.indexed)(empty)(entry.row([])([flexOf('m0'),
++    flexOf('m1')]))(entry.row(['x', 'y'])([]));
++  assert.ok(step instanceof Right);
++  const found = concluded(step);
++  assert.equal(found.value0.constructor.name, 'Unresolved');
++  assert.equal(run(none, waits).v, 'D4');
+ });
+ 
+-test('a broken invariant is no verdict: the Internal stop', () => {
+-  const found = outcomeOf(new Left(new failures.Unexpected('broken')));
+-  assert.equal(found.constructor.name, 'Left');
++const stops = [[() => failures.TooDeep.value, 'Limit'],
++  [() => new failures.Unexpected('broken'), 'Internal']];
++
++test('depth exhaustion and a broken invariant are no verdict', () => {
++  for (const [failure, name] of stops) {
++    const found = concluded(new Left(failure()));
++    assert.equal(found.constructor.name, 'Left');
++    assert.equal(found.value0.constructor.name, name);
++  }
++});
++
++// A re-examination that stops, injected through the drain: the stop
++// survives, wrapped as the drain's (`Drained`), never a verdict.
++test('a limit or a broken invariant met by the drain is still a stop', () => {
++  const waiting = entry.equate(entry.indexed)(empty)(entry.row([])(
++    [flexOf('m0'), flexOf('m1')]))(entry.row(['x', 'y'])([])).value0;
++  const woken = entry.lackingOlderRaw(waiting)(flexOf('m0'))('z').value0;
++  for (const [failure, name] of stops) {
++    const failing = () => () => new Left(failure());
++    const drained = entry.drainWith(entry.indexed)(failing)(woken);
++    assert.equal(drained.constructor.name, 'Left');
++    assert.equal(drained.value0.constructor.name, 'Drained');
++    const found = concluded(drained);
++    assert.equal(found.value0.constructor.name, name);
++    assert.throws(() => classify(found), /row solver stopped/);
++  }
++});
++
++// The end of a body classifies a drained state; an equation woken and
++// not re-examined is a checker defect, Internal, never a verdict.
++test('the end of a body with an equation left woken is Internal', () => {
++  const waiting = entry.equate(entry.indexed)(empty)(entry.row([])(
++    [flexOf('m0'), flexOf('m1')]))(entry.row(['x', 'y'])([])).value0;
++  const woken = entry.lackingOlderRaw(waiting)(flexOf('m0'))('z').value0;
++  const found = concluded(new Right(woken));
+   assert.equal(found.value0.constructor.name, 'Internal');
+-  assert.equal(found.value0.value0, 'broken');
++  assert.throws(() => classify(found), /row solver stopped: Internal/);
+ });
+ 
+ test('a placeholder is no verdict: the Unfinished stop, a skipped run', () => {
+-  const found = outcomeOf(new Left(new failures.Placeholder('later')));
++  const found = concluded(new Left(new failures.Placeholder('later')));
+   assert.equal(found.value0.constructor.name, 'Unfinished');
+   assert.deepEqual(classify(found), { skipped: 'later' });
+ });
+ 
+ test('the runner fails on a limit or an internal failure', () => {
+-  for (const failure of [failures.TooDeep.value,
+-    new failures.Unexpected('broken')]) {
+-    assert.throws(() => classify(outcomeOf(new Left(failure))),
++  for (const [failure] of stops) {
++    assert.throws(() => classify(concluded(new Left(failure()))),
+       /row solver stopped/);
+   }
+-  assert.ok('subst' in classify(outcomeOf(new Right(empty))));
++  assert.ok('subst' in classify(concluded(new Right(empty))));
+ });
+diff --git a/test/r005b-paths.test.mjs b/test/r005b-paths.test.mjs
+new file mode 100644
+index 0000000..8a70f90
+--- /dev/null
++++ b/test/r005b-paths.test.mjs
+@@ -0,0 +1,72 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { check } from '../output/Features.Check/index.js';
++import { Left } from '../output/Data.Either/index.js';
++import { wire } from '../output/Format.Diagnostic/index.js';
++import { checkedPoly, resolved } from './phases.mjs';
++
++// R005 Tranche B Task 5, the older paths that add a lack or a pair
++// outside the row rules (the user's review of Task 4, 2026-10-18): once
++// equations wait, a lack a record extension adds to a spread's tail
++// (Check/Extension), the lacks of a fresh record (Check/FreshRecord, field
++// access) and the facts a use seeds (Check/Seed through Check/UseFacts)
++// must prune the bound (U2, U4) and wake the equations that read them.
++// Each program is checked in both orders, the equation first and the
++// older path first, and must reach the same verdict (C2).
++const outcomeOf = source => {
++  const result = check(resolved(source));
++  return result instanceof Left ? wire(result.value0).code : 'accepted';
++};
++const bothOrders = (first, second) => {
++  const found = [outcomeOf(first), outcomeOf(second)];
++  assert.equal(found[0], found[1], JSON.stringify(found));
++  return found[0];
++};
++
++// Check/Extension: `{ ...p, x: 1, y: 2 }` makes p's tail lack x and y.
++const extended = 'fn(p) => { let e = { ...p, x: 1, y: 2 }; 0 }';
++
++test('an extension\'s lacks prune and wake: accepted in both orders', () => {
++  assert.equal(bothOrders(
++    'fn two(f: ({ ...r }) -> Int, w: { ...r, ...s }): Int = 0; '
++      + `fn main(): Int = two(${extended}, { x: 1, y: 2 });`,
++    'fn two(w: { ...r, ...s }, f: ({ ...r }) -> Int): Int = 0; '
++      + `fn main(): Int = two({ x: 1, y: 2 }, ${extended});`), 'accepted');
++});
++
++test('extensions lacking a label in both parts: refused in both orders',
++  () => {
++    const lambdas = `${extended}, ${extended}`;
++    assert.notEqual(bothOrders(
++      'fn three(f: ({ ...r }) -> Int, g: ({ ...s }) -> Int, '
++        + 'w: { ...r, ...s }): Int = 0; '
++        + `fn main(): Int = three(${lambdas}, { x: 1, y: 2 });`,
++      'fn three(w: { ...r, ...s }, f: ({ ...r }) -> Int, '
++        + 'g: ({ ...s }) -> Int): Int = 0; '
++        + `fn main(): Int = three({ x: 1, y: 2 }, ${lambdas});`), 'accepted');
++  });
++
++// Check/FreshRecord through field access: `p.x` gives p's row the label.
++test('a field access binds a part: the same verdict in both orders', () => {
++  const clause = ' where s lacks { y }';
++  assert.equal(bothOrders(
++    `fn get(f: ({ ...r }) -> Int, w: { ...r, ...s }): Int${clause} = 0; `
++      + 'fn main(): Int = get(fn(p) => p.x, { x: 1, y: 2 });',
++    `fn get(w: { ...r, ...s }, f: ({ ...r }) -> Int): Int${clause} = 0; `
++      + 'fn main(): Int = get({ x: 1, y: 2 }, fn(p) => p.x);'), 'accepted');
++});
++
++// Check/Seed and Check/UseFacts: a callee's clauses seed its use's fresh
++// metas, whose binding passes the lacks to the parts that wait.
++const g = 'fn g(a: { ...u }, b: { ...v }): Int '
++  + 'where u disjoint v, v lacks { x, y } = 0; ';
++
++test('a use\'s seeded facts reach a waiting equation in both orders', () => {
++  assert.equal(bothOrders(
++    `${g}fn three(w: { ...r, ...s }, f: ({ ...r }, { ...s }) -> Int): Int `
++      + '= 0; fn main(): Int = three({ x: 1, y: 2 }, fn(p, q) => g(p, q));',
++    `${g}fn three(f: ({ ...r }, { ...s }) -> Int, w: { ...r, ...s }): Int `
++      + '= 0; fn main(): Int = three(fn(p, q) => g(p, q), { x: 1, y: 2 });'),
++  'accepted');
++  checkedPoly(`${g}fn main(): Int = 0;`);
++});
+diff --git a/test/r005b-pending.test.mjs b/test/r005b-pending.test.mjs
+new file mode 100644
+index 0000000..32dd1c3
+--- /dev/null
++++ b/test/r005b-pending.test.mjs
+@@ -0,0 +1,61 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { checkRejectedAt, checkedPoly } from './phases.mjs';
++import { unresolved } from './r005b-support.mjs';
++
++// R005 Tranche B Task 5 (plan, Task 5): equations that wait, on
++// check-phase sources with no literal of two spreads. A body that ends
++// with an equation holding a constant is Unresolved; its text is Task 6's
++// (D4), so until then the placeholder's E_INTERNAL, at the earliest site
++// of such an equation (R7, R11). Quiet equations are met by the empty
++// default and never reported.
++const split = 'fn split(p: { ...r, ...s }): Int = 0; ';
++const both = 'type Both(...r, ...s) = Both({ ...r, ...s }); ';
++
++test('split({ x: 1, y: 2 }) waits to the end: Unresolved, at the argument',
++  () => {
++    const source = `${split}fn main(): Int = split({ x: 1, y: 2 });`;
++    const found = checkRejectedAt(source, 'E_INTERNAL', '{ x: 1, y: 2 }');
++    assert.equal(found.message, unresolved);
++  });
++
++test('a split whose label one part lacks is accepted', () => {
++  checkedPoly('fn split(p: { ...r, ...s }): Int where s lacks { x } = 0; '
++    + 'fn main(): Int = split({ x: 1 });');
++});
++
++test('the unannotated Both is Unresolved at the argument', () => {
++  for (const body of ['fn main(): Int = { let b = Both({ x: 1, y: 2 }); 0 };',
++    'fn example(): Int = { let b = Both({ x: 1, y: 2 }); 0 }; '
++      + 'fn main(): Int = example();']) {
++    const source = `${both}${body}`;
++    const found = checkRejectedAt(source, 'E_INTERNAL', '{ x: 1, y: 2 }');
++    assert.equal(found.message, unresolved);
++  }
++});
++
++test('of two waiting equations the earlier site is reported', () => {
++  const source = `${split}fn main(): Int = split({ x: 1, y: 2 }) `
++    + '+ split({ a: 1, b: 2 });';
++  const found = checkRejectedAt(source, 'E_INTERNAL', '{ x: 1, y: 2 }');
++  assert.equal(found.message, unresolved);
++});
++
++// h(pick × 12): each pick's result meets d's binding with metas on both
++// sides and no constant, a quiet equation; accepted (the empty default),
++// no basis built (review F5, row r005b-quiet).
++const pick = 'fn pick(w: { ...r, ...s }): { ...r, ...s } = w; ';
++const parameters = n => Array.from({ length: n }, (_, i) =>
++  `f${i + 1}: (c) -> d`).join(', ');
++const quiet = n => `${pick}fn h(${parameters(n)}): Int = 0; `
++  + `fn main(): Int = h(${Array(n).fill('pick').join(', ')});`;
++const QUIET_BOUND_MS = 5000;
++
++test('quiet equations are accepted: h(pick x 12) within a bound', t => {
++  checkedPoly(quiet(2));
++  const started = performance.now();
++  checkedPoly(quiet(12));
++  const took = performance.now() - started;
++  t.diagnostic(`h(pick x 12): ${took.toFixed(1)} ms`);
++  assert.ok(took < QUIET_BOUND_MS, `${took} ms`);
++});
+diff --git a/test/r005b-settle.test.mjs b/test/r005b-settle.test.mjs
+new file mode 100644
+index 0000000..645dbf7
+--- /dev/null
++++ b/test/r005b-settle.test.mjs
+@@ -0,0 +1,100 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { Right } from '../output/Data.Either/index.js';
++import { Just } from '../output/Data.Maybe/index.js';
++import { Tuple } from '../output/Data.Tuple/index.js';
++import { TInt, TRecord } from '../output/Domain.Type/index.js';
++import * as unifier from '../output/Features.Check.Unify/index.js';
++import * as rows from '../output/Features.Check.UnifyRow/index.js';
++import { atSite } from '../output/Features.Check.RowStore/index.js';
++import * as entry from '../output/Features.Check.RowEntry/index.js';
++import { onStore } from '../output/Features.Check.Subst/index.js';
++import { FailEffect, Label, Plain, Row, UserEffect, normalMark }
++  from '../output/Domain.Row/index.js';
++import { toTy } from './unify-support.mjs';
++import { checkRejectedAt, checkedPoly } from './phases.mjs';
++import { unresolved } from './r005b-support.mjs';
++
++// R005 Tranche B Task 5, the end of a body with postponed effect pairs
++// (design §6; rules §12; ledger L18, L19; review F7). The row store lives
++// in the substitution, so a postponed pair that reverts it reverts the
++// pending equations, the facts, the wake-up index and the metadata made
++// inside it, together, and its retry defers them again with the pair's
++// site. The settle rounds and the drain alternate until neither moves.
++
++const span = (start, end) => ({ start: { offset: start, line: 1,
++  column: start + 1 }, end: { offset: end, line: 1, column: end + 1 } });
++const record = (labels, tails) => TRecord.create({
++  fields: labels.map(label => Tuple.create(label)(TInt.value)),
++  tails: tails.map(n => new unifier.Meta(n)) });
++const labelOf = (effect, args) =>
++  Label.create(effect)(args)(normalMark(effect)(Plain.value));
++const meta = n => toTy({ k: 'meta', n });
++
++// A pair whose first label's argument makes a record equation wait, and
++// whose Fail label (key still deferred) postpones it all.
++const left = () => Row.create([
++  labelOf(UserEffect.create(1), [record([], [20, 21])]),
++  labelOf(FailEffect.value, [meta(0)])])(new Just(new unifier.Meta(10)));
++const right = () => Row.create([
++  labelOf(UserEffect.create(1), [record(['x', 'y'], [])])])(
++  new Just(new unifier.Meta(11)));
++
++test('a postponed pair reverts the whole store, pending equations too', () => {
++  const site = span(3, 9);
++  const start = onStore(atSite(new Just(site)))(unifier.empty);
++  const result = rows.unifyRows(unifier.unify)(start)(left())(right());
++  assert.ok(result instanceof Right, result.value0?.constructor.name);
++  const reverted = result.value0;
++  assert.equal(reverted.postponed.length, 1);
++  assert.deepEqual(reverted.store, start.store);
++  assert.deepEqual(reverted.postponed[0].site, new Just(site));
++});
++
++test('the retry defers the equation again, with the pair\'s site', () => {
++  const site = span(3, 9);
++  const start = onStore(atSite(new Just(site)))(unifier.empty);
++  const postponed = rows.unifyRows(unifier.unify)(start)(left())(right())
++    .value0;
++  const keyed = unifier.unify(onStore(atSite(Just.create(span(20, 25))))(
++    postponed))(meta(0))(TInt.value);
++  assert.ok(keyed instanceof Right);
++  const settled = unifier.settleRows(keyed.value0);
++  assert.ok(settled instanceof Right, settled.value0?.constructor.name);
++  assert.equal(settled.value0.postponed.length, 0);
++  const waiting = entry.pending(settled.value0);
++  assert.equal(waiting.length, 1);
++  assert.deepEqual(waiting[0].site, new Just(site));
++});
++
++const pick = 'fn pick(w: { ...r, ...s }): { ...r, ...s } = w; ';
++
++test('a Fail payload whose key waits reports the unresolved equation', () => {
++  const source = `${pick}fn main(): Int = handle { Fail.fail(pick({ x: 1, `
++    + 'y: 2 })) } { fail(e: { x: Int, y: Int }) => 0 };';
++  const found = checkRejectedAt(source, 'E_INTERNAL', '{ x: 1, y: 2 }');
++  assert.equal(found.message, unresolved);
++});
++
++// Joint fixpoint, both directions (row r005b-end-fixpoint). An effect
++// retry gives `?r` its labels through a Fail payload's field once the
++// payload's key is known; the round's drain then solves the equation that
++// waited on `?r`. And a drain binds the meta a postponed pair's key
++// waits on, so a later round settles that pair.
++const pair = 'fn pair(p: { ...r, ...s }, f: ({ ...r }) -> Int): Int = 0; ';
++
++test('a body whose effect retry unblocks a record equation is accepted',
++  () => {
++    checkedPoly(`${pair}fn main(): Int = handle { let g = fn(e) => `
++      + 'Fail.fail(e); pair({ x: 1, y: 2 }, fn(q) => g({ code: 1, w: q })) } '
++      + '{ fail(e: { code: Int, w: { x: Int } }) => 0 };');
++  });
++
++test('a drain that binds a postponed pair\'s key settles that pair', () => {
++  checkedPoly(`${pair}fn main(): Int = handle { let g = fn(e) => `
++    + 'Fail.fail(e); let h = fn(e) => Fail.fail(e); '
++    + 'pair({ x: 1, y: 2 }, fn(q) => g({ code: 1, w: q })) '
++    + '+ pair({ a: 1 }, fn(q) => h({ tag: 1, ...q })) } '
++    + '{ fail(e: { code: Int, w: { x: Int } }) => 0, '
++    + 'fail(e: { a: Int, tag: Int }) => 1 };');
++});
+diff --git a/test/r005b-support.mjs b/test/r005b-support.mjs
+index 93a8f56..9a362e5 100644
+--- a/test/r005b-support.mjs
++++ b/test/r005b-support.mjs
+@@ -51,3 +51,10 @@ export const assertDiagnostic = (source, expected) => {
+     expected.notes.map(note => [note.message, ...offsets(source, note.at)]));
+   return found;
+ };
++
++// Task 5's placeholders for Task 6's texts: an Unresolved body (D4) and a
++// contradiction an equation established (D6).
++export const unresolved = 'R005B placeholder: unresolved row equations are '
++  + 'reported in Task 6';
++export const fromEquations = 'R005B placeholder: contradictions from '
++  + 'equations are reported in Task 6';
+diff --git a/test/row-merge-domains.test.mjs b/test/row-merge-domains.test.mjs
+index a582c65..cb2c5e9 100644
+--- a/test/row-merge-domains.test.mjs
++++ b/test/row-merge-domains.test.mjs
+@@ -11,7 +11,8 @@ import { defects, judge, newTally } from './row-merge-judge.mjs';
+ // compiler's row solver, every problem in every order of its constraints
+ // (test/row-merge-domains.mjs). The one-tail problems in full, against
+ // ADR 013's rules (ledger L1); domain B in full and domain A as a
+-// deterministic sample here, with property E; the whole of domain A by
++// deterministic sample here, with property E (on Unresolved states too,
++// since Task 5) and C1, C3; the whole of domain A by
+ // `node scripts/row-merge-exhaustive.mjs A`, outside verify (about ten
+ // minutes of one core).
+ 
+@@ -49,6 +50,10 @@ const atoms = value => [...value.fields,
+   ...(value.tail !== null && !isMeta(value.tail) ? [value.tail] : [])].sort();
+ 
+ const SAMPLE = { A: 50, B: 1 };
++// C3's recorded ceiling for a whole domain (rules §0: the prototype's
++// Unresolved runs with a least solution, 120 in A and 80 in B); the
++// sample of A has none recorded.
++const CEILING = { B: 80 };
+ 
+ for (const name of ['A', 'B']) {
+   test(`domain ${name}, one candidate in ${SAMPLE[name]}, every order`,
+@@ -60,6 +65,7 @@ for (const name of ['A', 'B']) {
+       const { examples, ...counts } = tally;
+       t.diagnostic(JSON.stringify(counts));
+       assert.deepEqual(defects(tally), []);
+-      assert.ok(tally.stateChecked > 0 && tally.skipped > 0);
++      assert.ok(tally.stateChecked > 0 && tally.D4 > 0);
++      assert.ok(tally.d4WithLeast <= (CEILING[name] ?? Infinity));
+     });
+ }
+diff --git a/test/row-merge-entry.mjs b/test/row-merge-entry.mjs
+index 36b78c2..ab2303d 100644
+--- a/test/row-merge-entry.mjs
++++ b/test/row-merge-entry.mjs
+@@ -1,20 +1,26 @@
+ // The compiler's row solver driven on labels-only problems (R005 Tranche
+-// B plan, Task 4), through Features.Check.RowEntry: each 'eq' and 'dis'
++// B plan, Tasks 4-5), through Features.Check.RowEntry: each 'eq' and 'dis'
+ // step records both rows' own disjointness first, as the prototype's
+-// driver does (research/open-row-merge/drive.mjs), and every step's
+-// result is read through the three-way outcome. A placeholder (work a
+-// later task does) is never a verdict: the run is `skipped`. Encoding as
+-// the research scripts': labels lowercase, metas `m<n>`, rigids R and S.
++// driver does (research/open-row-merge/drive.mjs), and every step drains
++// the pending equations (design P8). A run's result is read only through
++// the three-way outcome of the whole run (`concluded`): a step's failure
++// classified, the last state through the end of a body. A single
++// successful step is no verdict (Task 5). Encoding as the research
++// scripts': labels lowercase, metas `m<n>`, rigids R and S. `wake` picks
++// which pending equations a drain re-examines: the indexed wake-up the
++// checker uses, or `rescan` (every one, to a fixpoint), the reference.
+ import { pathToFileURL } from 'node:url';
+ import { resolve } from 'node:path';
+ 
+ const output = pathToFileURL(resolve(process.env.WAXWING_OUTPUT ?? 'output'));
+ const load = name => import(`${output.href}/${name}/index.js`);
+-const entry = await load('Features.Check.RowEntry');
++export const entry = await load('Features.Check.RowEntry');
+ const { Meta, Rigid } = await load('Features.Check.Flex');
+ const { Tuple } = await load('Data.Tuple');
++const { Left, Right } = await load('Data.Either');
+ 
+ const RIGIDS = ['R', 'S'];
++export const WAKES = { indexed: entry.indexed, rescan: entry.rescan };
+ 
+ export const flexOf = name => (name.startsWith('m')
+   ? new Meta(Number(name.slice(1))) : new Rigid(RIGIDS.indexOf(name)));
+@@ -27,17 +33,23 @@ const start = hyp => entry.hypotheses(
+   Object.entries(hyp.lacks).map(([r, ls]) => Tuple.create(flexOf(r))(ls)))(
+   (hyp.apart ?? []).map(([r, s]) => Tuple.create(flexOf(r))(flexOf(s))));
+ 
+-const step = (subst, c) => {
+-  if (c.k === 'eq') return entry.equate(subst)(rowOf(c.l))(rowOf(c.r));
+-  if (c.k === 'dis') return entry.separate(subst)(rowOf(c.l))(rowOf(c.r));
+-  return entry.lacking(subst)(flexOf(c.v))(c.l);
++const step = (wake, subst, c) => {
++  if (c.k === 'eq') return entry.equate(wake)(subst)(rowOf(c.l))(rowOf(c.r));
++  if (c.k === 'dis') {
++    return entry.separate(wake)(subst)(rowOf(c.l))(rowOf(c.r));
++  }
++  if (c.k === 'lacksOlder') {
++    return entry.lackingOlder(wake)(subst)(flexOf(c.v))(c.l);
++  }
++  return entry.lacking(wake)(subst)(flexOf(c.v))(c.l);
+ };
+ 
+-// One step's outcome as the runner reads it: `{ skipped: what }` for a
+-// placeholder (work a later task does), `{ refuse: failure }` for a
+-// contradiction, `{ subst }` when solved. A limit reached or an internal
+-// failure is no verdict and no skip: it fails the run (throws), so a
+-// runner can never count it as an honest refusal.
++// The outcome of a whole run as the runner reads it: `{ skipped: what }`
++// for a placeholder (work a later task does), `{ refuse: failure }` for a
++// contradiction, `{ subst }` when solved, `{ subst, unresolved }` when
++// equations still wait. A limit reached or an internal failure is no
++// verdict and no skip: it fails the run (throws), so a runner can never
++// count it as an honest refusal.
+ export function classify(found) {
+   if (found.constructor.name === 'Left') {
+     const stop = found.value0;
+@@ -46,37 +58,46 @@ export function classify(found) {
+       stop.value0 ?? ''}`);
+   }
+   const result = found.value0;
+-  if (result.constructor.name === 'Contradiction') {
+-    return { refuse: result.value0.failure };
++  const name = result.constructor.name;
++  if (name === 'Contradiction') return { refuse: result.value0.failure };
++  if (name === 'Solved') return { subst: entry.settledSubst(result.value0) };
++  if (name === 'Unresolved') {
++    return { subst: entry.settledSubst(result.value0), unresolved: true };
+   }
+-  if (result.constructor.name === 'Solved') return { subst: result.value0 };
+-  throw new Error(`unexpected outcome ${result.constructor.name}`);
++  throw new Error(`unexpected outcome ${name}`);
+ }
+ 
+-export const outcomeOf = either => entry.outcome(either);
++export const concluded = either => entry.concluded(either);
+ 
+-// { v: 'accept' | 'refuse' | 'skipped', subst, base, failure?, what? }.
+-// `base` is the state after the hypotheses, for counting changes.
+-export function run(hyp, order) {
++// { v: 'accept' | 'refuse' | 'D4' | 'skipped', subst, base, failure?,
++// what? }. `base` is the state after the hypotheses, for counting changes.
++export function run(hyp, order, wake = WAKES.indexed) {
+   const base = start(hyp);
+   let subst = base;
+   for (const c of order) {
+-    const found = classify(entry.outcome(step(subst, c)));
+-    if ('skipped' in found) {
+-      return { v: 'skipped', what: found.skipped, subst, base };
+-    }
+-    if ('refuse' in found) {
++    const next = step(wake, subst, c);
++    if (next instanceof Left) {
++      const found = classify(concluded(next));
++      if ('skipped' in found) {
++        return { v: 'skipped', what: found.skipped, subst, base };
++      }
+       return { v: 'refuse', failure: found.refuse, subst, base };
+     }
+-    subst = found.subst;
++    subst = next.value0;
++  }
++  const found = classify(concluded(new Right(subst)));
++  if ('skipped' in found) {
++    return { v: 'skipped', what: found.skipped, subst, base };
+   }
+-  return { v: 'accept', subst, base };
++  return { v: found.unresolved ? 'D4' : 'accept', subst: found.subst, base };
+ }
+ 
+ // The state read out raw, in the research encoding: each binding one
+-// level deep, and the facts. Interpreting it is the test's own business.
++// level deep, the facts and the pending equations (each side's labels
++// and tails). Interpreting it is the test's own business.
+ export function stateOf(subst) {
+   const facts = entry.facts(subst);
++  const side = s => ({ fields: s.labels, tails: s.tails.map(nameOf) });
+   return {
+     bindings: new Map(entry.bindings(subst).map(b =>
+       [`m${b.meta}`, { fields: b.labels, tails: b.tails.map(nameOf) }])),
+@@ -84,6 +105,8 @@ export function stateOf(subst) {
+     apart: facts.apart.map(p => [nameOf(p.value0), nameOf(p.value1)]),
+     upper: facts.upper.map(u => ({ meta: `m${u.meta}`,
+       atoms: [...u.labels, ...u.rigids.map(nameOf)] })),
++    pending: entry.pending(subst).map(p => ({ id: p.id, quiet: p.quiet,
++      l: side(p.left), r: side(p.right) })),
+   };
+ }
+ 
+@@ -95,5 +118,6 @@ export const exclusions = (subst, c) =>
+   entry.exclusions(subst)(rowOf(c.l))(rowOf(c.r)).map(e => ({
+     meta: `m${e.meta}`, atom: e.labels[0] ?? nameOf(e.rigids[0]) }));
+ 
+-export const step1 = step;
++export const step1 = (subst, c) => step(WAKES.indexed, subst, c);
+ export const start1 = start;
++export { Left, Right };
+diff --git a/test/row-merge-gen.mjs b/test/row-merge-gen.mjs
+index 4c639af..9a02325 100644
+--- a/test/row-merge-gen.mjs
++++ b/test/row-merge-gen.mjs
+@@ -143,3 +143,17 @@ export const fiveOrders = (rnd, cs) => {
+ export const allOrders = xs => (xs.length <= 1 ? [xs]
+   : xs.flatMap((x, i) => allOrders([...xs.slice(0, i), ...xs.slice(i + 1)])
+     .map(p => [x, ...p])));
++
++// A fixture's orders as research/open-row-merge/fixtures.mjs names them:
++// every one (`all`), the given one, or a number: the given order, its
++// reverse and shuffles seeded with 1, that many in all.
++export const fixtureOrders = rows => {
++  if (rows.orders === 'all') return allOrders(rows.steps);
++  if (rows.orders === 'given') return [rows.steps];
++  const sample = sampleWith(mulberry(1));
++  const out = [rows.steps, [...rows.steps].reverse()];
++  while (out.length < rows.orders) {
++    out.push(sample(rows.steps, rows.steps.length));
++  }
++  return out;
++};
+diff --git a/test/row-merge-judge.mjs b/test/row-merge-judge.mjs
+index 5ff054b..9c737ad 100644
+--- a/test/row-merge-judge.mjs
++++ b/test/row-merge-judge.mjs
+@@ -1,24 +1,31 @@
+ // Judges the compiler's row solver against the oracle on one problem in
+-// several orders (R005 Tranche B plan, Task 4): S (Solved: the emitted
++// several orders (R005 Tranche B plan, Tasks 4-5): S (Solved: the emitted
+ // solution, every free meta empty, satisfies every constraint), L (it is
+ // the least solution), H (Contradiction: no solution), C2 (one verdict
+-// for every order that reached one), property E (a solved state's
+-// solutions, read back independently, are exactly the problem's), the
+-// measure bound on state changes (L3) and on solver-made metas (L4). A
+-// limit or an internal failure (the tail occurs guard, L33) makes the
+-// runner throw (test/row-merge-entry.mjs `classify`): a test failure. A
+-// run that reaches a placeholder is `skipped`, counted by its order's
+-// position, and never judged as agreement.
++// for every order), property E (a state's solutions, read back
++// independently with its pending equations, are exactly the problem's;
++// on Solved and Unresolved states), the measure bound on state changes
++// (L3) and on solver-made metas (L4). Unresolved (`D4`) claims nothing
++// about the number of solutions; it is counted by that number (0, 1,
++// several), and C1 (never with exactly one pending equation while a least
++// solution exists) and C3 (with a least solution, two pending equations
++// share a meta) are checked, `d4WithLeast` counting the measured
++// incompleteness. A limit or an internal failure (the tail occurs guard,
++// L33) makes the runner throw (test/row-merge-entry.mjs `classify`): a
++// test failure. A run that reaches a placeholder is `skipped`, counted by
++// its order's position, and never judged as agreement.
+ import { allSolutions, isMeta, keyOf, leastOf, sat }
+   from './row-merge-oracle.mjs';
+ import { changes, run, solverMetas, stateOf } from './row-merge-entry.mjs';
+ import { emitted, stateKeys } from './row-merge-readback.mjs';
+ 
+ export const newTally = () => ({ problems: 0, runs: 0, accept: 0, refuse: 0,
+-  skipped: 0, skippedByOrder: {}, agreeSolved: 0, agreeContradiction: 0,
+-  solvedViolates: 0, notLeast: 0, unsound: 0, dishonest: 0, orderDiff: 0,
+-  stateChecked: 0, stateSkipped: 0, stateDiff: 0, corruptCaught: 0,
+-  measureOver: 0, freshOver: 0, examples: [] });
++  D4: 0, skipped: 0, skippedByOrder: {}, agreeSolved: 0,
++  agreeContradiction: 0, unresolved0: 0, unresolved1: 0, unresolvedMany: 0,
++  d4WithLeast: 0, solvedViolates: 0, notLeast: 0, unsound: 0, dishonest: 0,
++  orderDiff: 0, c1fail: 0, c3fail: 0, stateChecked: 0, stateSkipped: 0,
++  stateDiff: 0, corruptCaught: 0, measureOver: 0, freshOver: 0,
++  examples: [] });
+ 
+ const metasOf = cs => [...new Set(cs.flatMap(c => (c.k === 'lacks' ? [c.v]
+   : [...c.l.tails, ...c.r.tails])).filter(isMeta))].sort();
+@@ -66,6 +73,11 @@ export function judge(p, orders, t, options = {}) {
+       else t.agreeContradiction++;
+       return;
+     }
++    if (v.v === 'D4') {
++      unresolved(p, order, v, { metas, least, sols }, t);
++      readBack(p, order, v, { metas, keys }, t, options);
++      return;
++    }
+     solved(p, order, v, { metas, least, keys }, t, options);
+   });
+   if (classes.size > 1) defect(t, 'orderDiff', p, [...classes]);
+@@ -88,7 +100,32 @@ function solved(p, order, v, known, t, options) {
+     defect(t, 'notLeast', p, order, got, least);
+   }
+   if (fine) t.agreeSolved++;
++  readBack(p, order, v, known, t, options);
++}
++
++// Unresolved: counted by the number of solutions; C1 and C3.
++function unresolved(p, order, v, known, t) {
++  const n = known.sols.length;
++  t[n === 0 ? 'unresolved0' : n === 1 ? 'unresolved1' : 'unresolvedMany']++;
++  if (!known.least) return;
++  t.d4WithLeast++;
++  const pending = stateOf(v.subst).pending;
++  if (pending.length === 1) defect(t, 'c1fail', p, order);
++  if (!shareAMeta(pending)) defect(t, 'c3fail', p, order);
++}
++
++const shareAMeta = pending => {
++  const sets = pending.map(e => new Set([...e.l.tails, ...e.r.tails]
++    .filter(isMeta)));
++  return sets.some((a, i) => sets.slice(i + 1).some(b =>
++    [...a].some(x => b.has(x))));
++};
++
++// Property E on the state reached, with its sensitivity check.
++function readBack(p, order, v, known, t, options) {
++  const { metas, keys } = known;
+   if (!options.state) return;
++  const state = stateOf(v.subst);
+   const found = stateKeys(state, p.hyp, p.universe, metas);
+   if (found === null) {
+     t.stateSkipped++;
+@@ -104,7 +141,8 @@ function solved(p, order, v, known, t, options) {
+ }
+ 
+ export const DEFECTS = ['solvedViolates', 'notLeast', 'unsound', 'dishonest',
+-  'orderDiff', 'stateDiff', 'measureOver', 'freshOver'];
++  'orderDiff', 'stateDiff', 'measureOver', 'freshOver', 'c1fail', 'c3fail',
++  'skipped'];
+ 
+ // The tally without its examples, and the defects it found.
+ export const defects = t => DEFECTS.filter(k => t[k] > 0)
+diff --git a/test/row-merge-older.test.mjs b/test/row-merge-older.test.mjs
+new file mode 100644
+index 0000000..b26663c
+--- /dev/null
++++ b/test/row-merge-older.test.mjs
+@@ -0,0 +1,40 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { isMeta } from './row-merge-oracle.mjs';
++import { run, stateOf } from './row-merge-entry.mjs';
++import { emitted } from './row-merge-readback.mjs';
++import { everyOrder, problems } from './row-merge-domains.mjs';
++
++// R005 Tranche B Task 5, the older lack-adding path (the user's review of
++// Task 4, 2026-10-18): a lack Check/Extension or Check/FreshRecord adds
++// outside the row rules (Features.Check.Lacks `lackedOutside`, through
++// the test entry's `lackingOlder`) must prune the bound and wake the
++// waiting equations as the row rules' `requireLack` does. Domain B's
++// problems with a `lacks`, in every order, through either path: the same
++// verdict and the same emitted solution, so order independence holds
++// through the older path too.
++const metasOf = cs => [...new Set(cs.flatMap(c => (c.k === 'lacks' ? [c.v]
++  : [...c.l.tails, ...c.r.tails])).filter(isMeta))].sort();
++const older = c => (c.k === 'lacks' ? { ...c, k: 'lacksOlder' } : c);
++
++test('domain B: a lack added the older way decides as the row rule does',
++  t => {
++    let runs = 0;
++    let waited = 0;
++    for (const p of problems('B')) {
++      if (!p.cs.some(c => c.k === 'lacks')) continue;
++      const metas = metasOf(p.cs);
++      for (const order of everyOrder(p.cs)) {
++        runs++;
++        const rule = run(p.hyp, order);
++        const path = run(p.hyp, order.map(older));
++        assert.equal(path.v, rule.v, JSON.stringify(order));
++        if (rule.v === 'D4') waited++;
++        if (rule.v !== 'accept') continue;
++        assert.deepEqual(emitted(stateOf(path.subst), metas),
++          emitted(stateOf(rule.subst), metas), JSON.stringify(order));
++      }
++    }
++    t.diagnostic(`${runs} runs, ${waited} Unresolved`);
++    assert.ok(runs > 0 && waited > 0);
++  });
+diff --git a/test/row-merge-pending.test.mjs b/test/row-merge-pending.test.mjs
+new file mode 100644
+index 0000000..670528a
+--- /dev/null
++++ b/test/row-merge-pending.test.mjs
+@@ -0,0 +1,98 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { readdirSync, readFileSync } from 'node:fs';
++import { allSolutions, isMeta } from './row-merge-oracle.mjs';
++import { run, solverMetas, stateOf } from './row-merge-entry.mjs';
++import { fixtureOrders } from './row-merge-gen.mjs';
++
++// R005 Tranche B Task 5 (plan, Task 5; evidence rule 1): equations that
++// wait. The three permanent Unresolved fixtures pin the buckets of the
++// result that claims nothing about the number of solutions: their counts
++// are asserted here through the compiler's solver (as research
++// fixtures.mjs asserts them through the prototype), each run ends
++// Unresolved in every order named, and the test fails if a count changes
++// or a bucket loses its fixture. Quiet equations do not multiply (L7).
++
++const fixtures = readdirSync('test/fixtures/r005b').sort()
++  .map(name => JSON.parse(readFileSync(`test/fixtures/r005b/${name}`, 'utf8')));
++const BUCKETS = { 'odd-cycle': 0, determinate: 1, 'diag-01': 4 };
++
++const atomsOf = rows => [...new Set([
++  ...rows.steps.flatMap(c => (c.k === 'lacks' ? [c.l]
++    : [...c.l.fields, ...c.r.fields, ...c.l.tails, ...c.r.tails])),
++  ...Object.keys(rows.hyp.lacks)])].filter(a => !isMeta(a)).sort();
++const metasOf = cs => [...new Set(cs.flatMap(c => (c.k === 'lacks' ? [c.v]
++  : [...c.l.tails, ...c.r.tails])).filter(isMeta))].sort();
++
++for (const [name, count] of Object.entries(BUCKETS)) {
++  test(`bucket fixture ${name}: Unresolved, ${count} solutions`, t => {
++    const fixture = fixtures.find(f => f.name === name);
++    assert.ok(fixture, `bucket fixture ${name} is missing`);
++    assert.equal(fixture.result, 'Unresolved');
++    assert.equal(fixture.solutions, count);
++    const { hyp, steps } = fixture.rows;
++    const sols = allSolutions(metasOf(steps), atomsOf(fixture.rows), hyp,
++      steps);
++    assert.equal(sols.length, count, `${name}: solutions`);
++    const orders = fixtureOrders(fixture.rows);
++    for (const order of orders) {
++      const found = run(hyp, order);
++      assert.equal(found.v, 'D4', `${name}: ${JSON.stringify(order)}`);
++      assert.ok(stateOf(found.subst).pending.some(p => !p.quiet));
++    }
++    t.diagnostic(`${orders.length} orders, each Unresolved`);
++  });
++}
++
++test('the asserted counts cover zero, one and several solutions', () => {
++  const counted = fixtures.filter(f => f.solutions !== undefined)
++    .map(f => f.solutions);
++  assert.ok(counted.includes(0) && counted.includes(1)
++    && counted.some(n => n >= 2), JSON.stringify(counted));
++});
++
++// research/open-row-merge/chain.mjs: h(merge, ..., merge) with n
++// callbacks sharing a result; n - 1 quiet equations, no solver meta.
++const tail = t => ({ fields: [], tails: [t] });
++const chain = n => Array.from({ length: n }, (_, i) => [
++  { k: 'dis', l: tail(`m${2 * i}`), r: tail(`m${2 * i + 1}`) },
++  ...(i > 0 ? [{ k: 'eq', l: { fields: [], tails: ['m0', 'm1'] },
++    r: { fields: [], tails: [`m${2 * i}`, `m${2 * i + 1}`] } }] : [])]).flat();
++const QUIET_BOUND_MS = 2000;
++
++test('a quiet chain of 12 is accepted, within a generous bound', t => {
++  const started = performance.now();
++  const found = run({ lacks: {}, apart: [] }, chain(12));
++  const took = performance.now() - started;
++  assert.equal(found.v, 'accept');
++  const pending = stateOf(found.subst).pending;
++  assert.equal(pending.length, 11);
++  assert.ok(pending.every(p => p.quiet));
++  assert.equal(solverMetas(found.subst), 0);
++  assert.ok(took < QUIET_BOUND_MS, `${took} ms`);
++  t.diagnostic(`${took.toFixed(1)} ms`);
++});
++
++// Identity and deduplication (design §2.6; rows r005b-pending-dedup): a
++// re-examined equation that waits again replaces its entry under the same
++// id, and an equation equal to an older one (the same normal form) is
++// dropped, the older id kept.
++const none = { lacks: {}, apart: [] };
++const waits = { k: 'eq', l: { fields: [], tails: ['m0', 'm1'] },
++  r: { fields: ['x', 'y'], tails: [] } };
++const idsOf = found => stateOf(found.subst).pending.map(p => p.id);
++
++test('a re-examined equation that waits again keeps its one entry', () => {
++  const first = idsOf(run(none, [waits]));
++  assert.equal(first.length, 1);
++  const woken = run(none, [waits, { k: 'lacks', v: 'm0', l: 'z' }]);
++  assert.equal(woken.v, 'D4');
++  assert.deepEqual(idsOf(woken), first);
++});
++
++test('an equation met twice waits once, under the older id', () => {
++  const first = idsOf(run(none, [waits]));
++  const twice = run(none, [waits, { ...waits, l: { fields: [],
++    tails: ['m1', 'm0'] }, r: { fields: ['y', 'x'], tails: [] } }]);
++  assert.deepEqual(idsOf(twice), first);
++});
+diff --git a/test/row-merge-readback.mjs b/test/row-merge-readback.mjs
+index 129c3e9..9a2fb93 100644
+--- a/test/row-merge-readback.mjs
++++ b/test/row-merge-readback.mjs
+@@ -3,8 +3,10 @@
+ // 2026-10-17): the test follows the exported bindings itself, one level
+ // at a time, never calling the compiler's flattener. The state's free
+ // variables are its unbound metas; its constraints are the recorded lacks
+-// on metas, the pairs with a meta side, the upper bounds, and each free
+-// meta's own well-formedness (rigid facts are the hypotheses). Property E
++// on metas, the pairs with a meta side, the upper bounds, each pending
++// equation (Task 5: its two sides read through the bindings, as
++// multisets), and each free meta's own well-formedness (rigid facts are
++// the hypotheses). Property E
+ // (rules §0): the program metas' values over the state's solutions are
+ // exactly the problem's solutions. `skipNested` corrupts the traversal
+ // (a bound tail inside a binding read as empty), for the sensitivity
+@@ -41,6 +43,8 @@ export function freeMetas(state, metas) {
+   state.lacks.forEach(f => visit(f.tail));
+   state.apart.forEach(([a, b]) => { visit(a); visit(b); });
+   state.upper.forEach(u => visit(u.meta));
++  (state.pending ?? []).forEach(p => [...p.l.tails, ...p.r.tails]
++    .forEach(visit));
+   return [...free].sort();
+ }
+ 
+@@ -62,6 +66,11 @@ function constraints(state, hyp, options) {
+   for (const u of state.upper) {
+     out.push(asg => value(asg, u.meta).every(x => u.atoms.includes(x)));
+   }
++  const atoms = (asg, r) => [...r.fields,
++    ...r.tails.flatMap(t => value(asg, t))].sort().join();
++  for (const p of state.pending ?? []) {
++    out.push(asg => atoms(asg, p.l) === atoms(asg, p.r));
++  }
+   return out;
+ }
+ 
+diff --git a/test/row-merge-rescan.mjs b/test/row-merge-rescan.mjs
+new file mode 100644
+index 0000000..77fdf55
+--- /dev/null
++++ b/test/row-merge-rescan.mjs
+@@ -0,0 +1,53 @@
++// The wake-up comparison of R005 Tranche B Task 5 (ledger L32, the user's
++// requirement of 2026-10-17): the drain the checker uses re-examines only
++// the pending equations a change woke (Features.Check.Drain `indexed`,
++// over the index of every variable an equation's rules read); the
++// reference re-examines every pending equation, pass after pass, until a
++// pass changes nothing (`rescan`). Both run each problem in each order;
++// they must agree exactly: the verdict, the failure's kind, and the whole
++// state read out (bindings, facts, bounds and pending equations, ids
++// included), so the index loses no re-examination that would change
++// anything. `compare` tallies runs and differences; the sensitivity
++// check passes a deliberately incomplete wake-up in place of `indexed`.
++import { run, stateOf, WAKES } from './row-merge-entry.mjs';
++
++const plain = v => JSON.stringify({ v: v.v,
++  failure: v.failure?.constructor.name ?? null,
++  state: v.subst === undefined ? null : stateOf(v.subst) },
++(key, value) => (value instanceof Map ? [...value] : value));
++
++// A candidate that stops (an equation left woken at the end, Internal)
++// differs from the reference; the reference itself may not stop.
++const stopped = attempt => {
++  try {
++    return attempt();
++  } catch (error) {
++    return { v: `stopped: ${error.message}` };
++  }
++};
++
++export const newComparison = () => ({ runs: 0, same: 0, different: 0,
++  verdicts: {}, examples: [] });
++
++// One problem in these orders, the candidate wake-up against `rescan`.
++export function compare(p, orders, t, candidate = WAKES.indexed) {
++  for (const order of orders) {
++    t.runs++;
++    const mine = stopped(() => run(p.hyp, order, candidate));
++    const reference = run(p.hyp, order, WAKES.rescan);
++    t.verdicts[reference.v] = (t.verdicts[reference.v] ?? 0) + 1;
++    if (plain(mine) === plain(reference)) t.same++;
++    else {
++      t.different++;
++      if (t.examples.length < 5) {
++        t.examples.push({ p, order, mine: mine.v, reference: reference.v });
++      }
++    }
++  }
++}
++
++// A wake-up that never re-examines a pending equation, and one that runs
++// a single pass: incomplete on purpose, for the sensitivity check.
++export const NEVER = { ready: () => true, due: () => () => false,
++  again: () => () => false };
++export const ONE_PASS = { ...WAKES.indexed, again: () => () => false };
+diff --git a/test/row-merge-rescan.test.mjs b/test/row-merge-rescan.test.mjs
+new file mode 100644
+index 0000000..a53bb5d
+--- /dev/null
++++ b/test/row-merge-rescan.test.mjs
+@@ -0,0 +1,74 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { readdirSync, readFileSync } from 'node:fs';
++import { fiveOrders, fixtureOrders, mulberry, permProblem, rawProblem,
++  shapedProblem } from './row-merge-gen.mjs';
++import { everyOrder, problems } from './row-merge-domains.mjs';
++import { compare, newComparison, NEVER } from './row-merge-rescan.mjs';
++
++// R005 Tranche B Task 5, ledger L32: the indexed wake-up against the
++// reference that rescans every pending equation to a fixpoint
++// (test/row-merge-rescan.mjs), on the fixtures in every order named, the
++// five generators in five orders and samples of the exhaustive domains in
++// every order; the whole domains by `node scripts/row-merge-exhaustive.mjs
++// A rescan` (and B), outside verify. Any difference fails.
++const fixtures = readdirSync('test/fixtures/r005b').sort()
++  .map(name => JSON.parse(readFileSync(`test/fixtures/r005b/${name}`, 'utf8')))
++  .filter(fixture => fixture.rows);
++
++const report = (t, tally) => {
++  const { examples, ...counts } = tally;
++  t.diagnostic(JSON.stringify(counts));
++  assert.equal(tally.different, 0, JSON.stringify(examples));
++};
++
++test('fixtures: indexed and rescanned drains agree in every order', t => {
++  const tally = newComparison();
++  for (const fixture of fixtures) {
++    compare({ hyp: fixture.rows.hyp }, fixtureOrders(fixture.rows), tally);
++  }
++  report(t, tally);
++  assert.ok(tally.verdicts.D4 > 0 && tally.verdicts.accept > 0);
++});
++
++const GENERATORS = [
++  [rnd => permProblem(rnd, false), 21], [rnd => permProblem(rnd, true), 22],
++  [rnd => rawProblem(rnd), 23], [rnd => shapedProblem(rnd, false), 24],
++  [rnd => shapedProblem(rnd, true), 25]];
++
++test('generators, five orders: indexed and rescanned drains agree', t => {
++  const tally = newComparison();
++  for (const [generate, seed] of GENERATORS) {
++    const rnd = mulberry(seed);
++    for (let i = 0; i < 400; i++) {
++      const p = generate(rnd);
++      compare(p, fiveOrders(rnd, p.cs), tally);
++    }
++  }
++  report(t, tally);
++});
++
++const SAMPLE = { A: 200, B: 5 };
++
++for (const name of ['A', 'B']) {
++  test(`domain ${name}, one candidate in ${SAMPLE[name]}: drains agree`, t => {
++    const tally = newComparison();
++    for (const p of problems(name, { stride: SAMPLE[name] })) {
++      compare(p, everyOrder(p.cs), tally);
++    }
++    report(t, tally);
++    assert.ok(tally.verdicts.D4 > 0);
++  });
++}
++
++// Sensitivity: a drain that never re-examines differs from the reference.
++test('the comparison catches a drain that misses its wake-ups', t => {
++  const tally = newComparison();
++  const rnd = mulberry(22);
++  for (let i = 0; i < 200; i++) {
++    const p = permProblem(rnd, true);
++    compare(p, fiveOrders(rnd, p.cs), tally, NEVER);
++  }
++  t.diagnostic(`${tally.different} of ${tally.runs} runs differ`);
++  assert.ok(tally.different > 0);
++});
+diff --git a/test/row-merge.test.mjs b/test/row-merge.test.mjs
+index f1080bb..bca8416 100644
+--- a/test/row-merge.test.mjs
++++ b/test/row-merge.test.mjs
+@@ -3,39 +3,38 @@ import assert from 'node:assert/strict';
+ import { readdirSync, readFileSync } from 'node:fs';
+ import { isMeta } from './row-merge-oracle.mjs';
+ import { run } from './row-merge-entry.mjs';
+-import { allOrders, fiveOrders, mulberry, permProblem, rawProblem,
++import { fiveOrders, fixtureOrders, mulberry, permProblem, rawProblem,
+   shapedProblem } from './row-merge-gen.mjs';
+ import { defects, judge, newTally } from './row-merge-judge.mjs';
+ import { checkExclusions } from './row-merge-homes.mjs';
+ 
+-// R005 Tranche B Task 4, level 1 of the oracle (plan, Task 4): the
++// R005 Tranche B Tasks 4-5, level 1 of the oracle (plan, Tasks 4-5): the
+ // compiler's row solver (Features.Check.RowEntry) against the
+ // independent brute force (test/row-merge-oracle.mjs) on labels-only
+-// problems, each in several orders. Forced moves only: a run whose
+-// equation would wait reaches Task 5's placeholder and is `skipped`,
+-// counted by its order's position and printed, never a verdict. The
+-// exhaustive domains are in test/row-merge-domains.test.mjs.
++// problems, each in several orders. Since Task 5 equations wait and are
++// drained, so every run ends Solved, Contradiction or Unresolved; a
++// skipped run (a placeholder) is a defect. The exhaustive domains are in
++// test/row-merge-domains.test.mjs, Task 5's pending tests in
++// test/row-merge-pending.test.mjs, the wake-up reference in
++// test/row-merge-rescan.test.mjs.
+ 
+ const fixtures = readdirSync('test/fixtures/r005b').sort()
+   .map(name => JSON.parse(readFileSync(`test/fixtures/r005b/${name}`, 'utf8')));
+-const verdictOf = { Solved: 'accept', Contradiction: 'refuse' };
++const verdictOf = { Solved: 'accept', Contradiction: 'refuse',
++  Unresolved: 'D4' };
+ 
+ const atomsOf = rows => [...new Set([
+   ...rows.steps.flatMap(c => (c.k === 'lacks' ? [c.l]
+     : [...c.l.fields, ...c.r.fields, ...c.l.tails, ...c.r.tails])),
+   ...Object.keys(rows.hyp.lacks)])].filter(a => !isMeta(a)).sort();
+ 
+-// The orders a fixture names: every one, or the given one.
+-const ordersOf = rows => (rows.orders === 'all' ? allOrders(rows.steps)
+-  : [rows.steps]);
+-
+ const problemOf = fixture => ({ hyp: fixture.rows.hyp,
+   cs: fixture.rows.steps, universe: atomsOf(fixture.rows) });
+ 
+ test('fixtures at solver stage 4 never wait and keep their class', () => {
+   const t = newTally();
+   for (const fixture of fixtures.filter(f => f.stages.solver === 4)) {
+-    const orders = ordersOf(fixture.rows);
++    const orders = fixtureOrders(fixture.rows);
+     for (const order of orders) {
+       const found = run(fixture.rows.hyp, order);
+       assert.equal(found.v, verdictOf[fixture.result],
+@@ -47,33 +46,36 @@ test('fixtures at solver stage 4 never wait and keep their class', () => {
+   assert.equal(t.problems, 25);
+ });
+ 
+-test('fixtures at solver stage 5: a verdict never contradicts the class', t => {
+-  const skipped = {};
++test('fixtures at solver stage 5 keep their class in every order', () => {
++  const t = newTally();
+   for (const fixture of fixtures.filter(f => f.stages.solver === 5)) {
+-    for (const order of ordersOf(fixture.rows)) {
++    const orders = fixtureOrders(fixture.rows);
++    for (const order of orders) {
+       const found = run(fixture.rows.hyp, order);
+-      if (found.v === 'skipped') {
+-        skipped[fixture.result] = (skipped[fixture.result] ?? 0) + 1;
+-      } else {
+-        assert.notEqual(fixture.result, 'Unresolved', fixture.name);
+-        assert.equal(found.v, verdictOf[fixture.result], fixture.name);
+-      }
++      assert.equal(found.v, verdictOf[fixture.result],
++        `${fixture.name}: ${found.what ?? ''}`);
+     }
++    judge(problemOf(fixture), orders, t, { state: true });
+   }
+-  t.diagnostic(`stage 5 runs skipped by class: ${JSON.stringify(skipped)}`);
+-  assert.ok(skipped.Unresolved > 0 && skipped.Solved > 0);
++  assert.deepEqual(defects(t), []);
++  assert.equal(t.problems, 47);
+ });
+ 
++// C3's recorded ceiling (plan, Task 5; design §2.2): Unresolved runs
++// with a least solution, the measured incompleteness, at most the
++// prototype's on the same problems and orders (research/open-row-merge/
++// drive.mjs, measured 2026-10-18: raw 0, dense 20, the rest 0). A rise
++// is a defect; a fall a change to record.
+ const GENERATORS = [
+-  ['raw (perm.mjs)', rnd => permProblem(rnd, false), 21],
+-  ['dense (perm.mjs DENSE=1)', rnd => permProblem(rnd, true), 22],
+-  ['raw (programs-gen.mjs)', rnd => rawProblem(rnd), 23],
+-  ['program-shaped', rnd => shapedProblem(rnd, false), 24],
+-  ['program-shaped, shared', rnd => shapedProblem(rnd, true), 25],
++  ['raw (perm.mjs)', rnd => permProblem(rnd, false), 21, 0],
++  ['dense (perm.mjs DENSE=1)', rnd => permProblem(rnd, true), 22, 20],
++  ['raw (programs-gen.mjs)', rnd => rawProblem(rnd), 23, 0],
++  ['program-shaped', rnd => shapedProblem(rnd, false), 24, 0],
++  ['program-shaped, shared', rnd => shapedProblem(rnd, true), 25, 0],
+ ];
+ const PROBLEMS = 400;
+ 
+-for (const [name, generate, seed] of GENERATORS) {
++for (const [name, generate, seed, ceiling] of GENERATORS) {
+   test(`random problems, five orders: ${name}, seed ${seed}`, t => {
+     const rnd = mulberry(seed);
+     const tally = newTally();
+@@ -85,6 +87,7 @@ for (const [name, generate, seed] of GENERATORS) {
+     t.diagnostic(JSON.stringify(counts));
+     assert.deepEqual(defects(tally), []);
+     assert.ok(tally.agreeSolved > 0 && tally.agreeContradiction > 0);
++    assert.ok(tally.d4WithLeast <= ceiling, `C3 ceiling ${ceiling}`);
+   });
+ }
+ 
+-- 
+2.50.1 (Apple Git-155)
+

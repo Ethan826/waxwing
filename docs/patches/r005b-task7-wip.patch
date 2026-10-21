@@ -1,0 +1,1913 @@
+From 4d741a1f7e99f86729ca8c12da64cb2b8636dd36 Mon Sep 17 00:00:00 2001
+From: Ethan Kent <ekent@jd11.law.harvard.edu>
+Date: Tue, 20 Oct 2026 12:17:21 -0400
+Subject: [PATCH] wip: R005 Tranche B Task 7 checkpoint (does not pass verify)
+
+Checkpoint before the foundation assessment the user asked for on
+2026-10-20; not for merging. Builds with 0 warnings. Not run: verify,
+the differential, regression rows.
+
+In it: several spreads accepted (SecondSpread retired);
+Check/MergeLiteral (items pairwise disjoint for Spread, D2' immediate
+and late, the literal's unknown tails desugared through
+RowMerge/Chain desugaredWith, located at the innermost lambda);
+removal and named rests by one requirement (Check/Remainder, P3 and
+SeveralTails removed); lambda parameter names and same-name numbering
+(Check/PartNames), part-origin notes, the ownerless numbered D4 form;
+Check/Fault's case-bound blame limited to a part the lacking record is.
+Every stage-7 fixture matched in a survey; the new literal and removal
+tests partly red; tests that pin P3 still to update; the hint-companion
+test fails. See docs/progress.md on r005b-replan.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015RiUuHtvDyhWsrB8KaMeKB
+---
+ scripts/differential-project.mjs            |  17 +-
+ src/Domain/Note.purs                        |   3 +
+ src/Domain/Problem.purs                     |   6 +-
+ src/Domain/Resolved.purs                    |  10 +-
+ src/Features/Check/Collision.purs           |  10 +-
+ src/Features/Check/Context.purs             |   3 +
+ src/Features/Check/Contradicted.purs        |   8 +-
+ src/Features/Check/Extension.purs           |  14 +-
+ src/Features/Check/Fault.purs               |  59 ++++--
+ src/Features/Check/Function.purs            |   1 +
+ src/Features/Check/Lacked.purs              |  11 +-
+ src/Features/Check/Lambda.purs              |   8 +-
+ src/Features/Check/MergeLiteral.purs        | 220 ++++++++++++++++++++
+ src/Features/Check/MergeParts.purs          |  58 +++---
+ src/Features/Check/PartNames.purs           |  80 +++++++
+ src/Features/Check/PartOrigin.purs          |  30 ++-
+ src/Features/Check/RecordPattern.purs       |   4 +-
+ src/Features/Check/Refused.purs             |   9 +-
+ src/Features/Check/Remainder.purs           |  42 ++++
+ src/Features/Check/Removal.purs             |  36 ++--
+ src/Features/Check/RestBinder.purs          |  60 +++---
+ src/Features/Check/RowMerge/Chain.purs      |  21 +-
+ src/Features/Check/RowMerge/Occurrence.purs |   2 +
+ src/Features/Check/RowOutcome.purs          |   1 +
+ src/Features/Check/UnifyFailure.purs        |   6 +-
+ src/Features/Check/Unresolved.purs          |  13 +-
+ src/Features/Resolve/Lambda.purs            |   3 +-
+ src/Features/Resolve/Qualified.purs         |   2 +-
+ src/Features/Resolve/Record.purs            |  21 +-
+ src/Format/Diagnostic.purs                  |   1 -
+ src/Format/Diagnostic/Code.purs             |   1 -
+ src/Format/Diagnostic/Merge.purs            |   7 +
+ src/Format/Diagnostic/Note.purs             |   1 +
+ src/Format/Diagnostic/Records.purs          |   4 -
+ test/fixtures/r005b/d2-late.json            |  41 ++++
+ test/r005-resolve.test.mjs                  |  13 +-
+ test/r005b-fixtures.test.mjs                |  36 ++--
+ test/r005b-literal.test.mjs                 | 139 +++++++++++++
+ test/r005b-removal.test.mjs                 |  65 ++++++
+ 39 files changed, 870 insertions(+), 196 deletions(-)
+ create mode 100644 src/Features/Check/MergeLiteral.purs
+ create mode 100644 src/Features/Check/PartNames.purs
+ create mode 100644 src/Features/Check/Remainder.purs
+ create mode 100644 test/fixtures/r005b/d2-late.json
+ create mode 100644 test/r005b-literal.test.mjs
+ create mode 100644 test/r005b-removal.test.mjs
+
+diff --git a/scripts/differential-project.mjs b/scripts/differential-project.mjs
+index 19dd862..e6aa7e9 100644
+--- a/scripts/differential-project.mjs
++++ b/scripts/differential-project.mjs
+@@ -118,6 +118,18 @@ const refAsBefore = item => {
+     { value2: tail });
+ };
+ 
++// R005 Tranche B Task 7: a resolved lambda parameter gained `name`, as
++// written, for D4's part names (diagnostic data); compared without it, as
++// `syntax` is above: the local it binds is compared.
++const isParam = item => item !== null && typeof item === 'object'
++  && !Array.isArray(item) && Object.keys(item).sort().join() ===
++  'local,name,span,ty';
++const paramAsBefore = item => {
++  if (!isParam(item)) return item;
++  const { name: _, ...rest } = item;
++  return rest;
++};
++
+ // Iterative, so a deeply nested IR cannot overflow the JS stack. With
+ // `monomorphic` the IR's records are hashed as they were before R005.
+ export const digest = (value, monomorphic = false) => {
+@@ -125,8 +137,9 @@ export const digest = (value, monomorphic = false) => {
+   const pending = [value];
+   while (pending.length > 0) {
+     const popped = pending.pop();
+-    const item = tailAsBefore(refAsBefore(
+-      popped?.constructor?.name === 'PRecord' ? restAsBefore(popped) : popped));
++    const record = popped?.constructor?.name === 'PRecord';
++    const item = paramAsBefore(tailAsBefore(refAsBefore(
++      record ? restAsBefore(popped) : popped)));
+     if (item?.constructor?.name in booleanRests) {
+       hash.update(`boolean:${booleanRests[item.constructor.name]};`);
+     } else if (item === null || typeof item !== 'object') {
+diff --git a/src/Domain/Note.purs b/src/Domain/Note.purs
+index 64ba152..2020e50 100644
+--- a/src/Domain/Note.purs
++++ b/src/Domain/Note.purs
+@@ -28,6 +28,9 @@ data NoteReason
+   | FirstBoundHere
+   -- R001: the first of two uses of a field label or a row variable.
+   | FirstWrittenHere
++  -- R005 Tranche B Task 7: the later of two literal items that both hold
++  -- a field, when the overlap is found after the literal (D2' late).
++  | WrittenAgainHere
+   -- R001: the signature's `...r` that introduces a record row variable.
+   | IntroducedHere String
+   -- R005: the label of a written `where r lacks { … }` a call violates.
+diff --git a/src/Domain/Problem.purs b/src/Domain/Problem.purs
+index 36ccced..69089e7 100644
+--- a/src/Domain/Problem.purs
++++ b/src/Domain/Problem.purs
+@@ -125,9 +125,9 @@ data Problem
+   -- (the first in label order), or the open rest of its type (the type).
+   | PatternMissingField String
+   | PatternMissingRest TypeName
+-  -- R005: a second `...` in one record literal (until Tranche B), and a
+-  -- `where` constraint on a type variable, by name (design §2, §5).
+-  | SecondSpread
++  -- R005: a `where` constraint on a type variable, by name (design §5).
++  -- (Tranche A's refusal of a second `...` in one literal retired in
++  -- Tranche B Task 7.)
+   | TypeAsRecordRow String
+   -- R001: a record row variable of the enclosing signature and a label a
+   -- type written in the body puts beside it, which it may already hold.
+diff --git a/src/Domain/Resolved.purs b/src/Domain/Resolved.purs
+index 707f790..05dffff 100644
+--- a/src/Domain/Resolved.purs
++++ b/src/Domain/Resolved.purs
+@@ -83,8 +83,14 @@ type FailClause =
+ data Item = Let Span (Maybe LocalId) Expr | Defer Span Expr | Discard Expr
+ 
+ -- A lambda parameter: a local, or `_` (Nothing), which binds nothing. Its
+--- annotation names only the enclosing signature's variables.
+-type Param = { local ∷ Maybe LocalId, ty ∷ Maybe (Ty VarId), span ∷ Span }
++-- annotation names only the enclosing signature's variables. `name`, as
++-- written, names its row in a diagnostic (R005 Tranche B R1 rule 2).
++type Param =
++  { local ∷ Maybe LocalId
++  , name ∷ Maybe String
++  , ty ∷ Maybe (Ty VarId)
++  , span ∷ Span
++  }
+ 
+ -- `VarId i` in a signature is `variables !! i`: the i-th distinct type
+ -- variable in first-occurrence order, parameters then result. The mark
+diff --git a/src/Features/Check/Collision.purs b/src/Features/Check/Collision.purs
+index c9ae205..168b37b 100644
+--- a/src/Features/Check/Collision.purs
++++ b/src/Features/Check/Collision.purs
+@@ -4,9 +4,10 @@ import Prelude
+ import Data.Array as Array
+ import Data.Maybe (Maybe(..), maybe)
+ import Features.Check.Atom (Atom(..))
+-import Features.Check.MergeParts (View, partNames)
++import Features.Check.MergeParts (View)
++import Features.Check.PartNames (partNames)
+ import Features.Check.RowName (tailName)
+-import Features.Check.Subst (Flex(..))
++import Features.Check.Subst (Flex(..), Subst)
+ 
+ -- How one D4 or D6 names what it mentions (plan §10 decision 23): when a
+ -- callee's part and a rigid tail of the enclosing function share a name,
+@@ -24,11 +25,12 @@ type Naming =
+ naming
+   ∷ ∀ r
+   . { variables ∷ Array String, functionName ∷ String | r }
++  → Subst
+   → View
+   → Array Atom
+   → Array Flex
+   → Naming
+-naming env view atoms tails =
++naming env subst view atoms tails =
+   if Array.null (Array.intersect owned enclosing) then
+     { part: identity, rigid: identity, row: Nothing }
+   else
+@@ -37,7 +39,7 @@ naming env view atoms tails =
+     , row: if Array.any rigid tails then Just env.functionName else Nothing
+     }
+   where
+-  owned = partNames view view.parts
++  owned = partNames subst view view.parts
+   enclosing = map (tailName env)
+     (Array.filter rigid (tails <> Array.mapMaybe rigidOf atoms))
+   ownerName = map nameOf view.owner
+diff --git a/src/Features/Check/Context.purs b/src/Features/Check/Context.purs
+index cf7d389..4dee2db 100644
+--- a/src/Features/Check/Context.purs
++++ b/src/Features/Check/Context.purs
+@@ -28,6 +28,9 @@ type CheckEnv r =
+   , functionName ∷ String
+   , functionSpan ∷ Span
+   , rowSpan ∷ Maybe Span
++  -- The innermost lambda whose body is being checked, if any: where a
++  -- record literal's predicates are located (R005 Tranche B Task 7).
++  , lambda ∷ Maybe Span
+   , effects ∷ Array Resolved.EffectInfo
+   , functions ∷ Array Resolved.FunctionDecl
+   , types ∷ Array Resolved.TypeInfo
+diff --git a/src/Features/Check/Contradicted.purs b/src/Features/Check/Contradicted.purs
+index 305c4bb..64d549c 100644
+--- a/src/Features/Check/Contradicted.purs
++++ b/src/Features/Check/Contradicted.purs
+@@ -16,6 +16,7 @@ import Domain.Resolved (EffectInfo)
+ import Domain.Syntax (Diagnostic, Note, Span)
+ import Features.Check.Atom (Atom(..))
+ import Features.Check.Collision (naming)
++import Features.Check.PartNames (partNames)
+ import Features.Check.Exclusion (exclusions)
+ import Features.Check.Fault (faultIn)
+ import Features.Check.MergeOther (wholeName, writtenName)
+@@ -24,7 +25,6 @@ import Features.Check.MergeParts
+   ( View
+   , atomName
+   , holds
+-  , partNames
+   , pathOf
+   , viewById
+   )
+@@ -124,18 +124,18 @@ reported env subst view primary found notes =
+   mustBe ∷ TypeName → MustBe
+   mustBe other =
+     { owner: map ownerName view.owner
+-    , row: writtenName (partNames view view.parts) view
++    , row: writtenName (partNames subst view view.parts) view
+     , path: pathOf view
+     , other
+     , otherOwner: names.row
+     , fault: found.fault
+-    , parts: map names.part (partNames view found.parts)
++    , parts: map names.part (partNames subst view found.parts)
+     , atom: case found.atom of
+         LabelAtom label → FieldAtom label
+         RigidAtom _ → TailAtom (names.rigid (atomName env found.atom))
+     }
+   -- Decision 23: names qualified when a part and a rigid tail collide.
+-  names = naming env view [ found.atom ] view.whole.tails
++  names = naming env subst view [ found.atom ] view.whole.tails
+   ownerName owner = owner.name
+   at span note = note.span == span
+ 
+diff --git a/src/Features/Check/Extension.purs b/src/Features/Check/Extension.purs
+index 3cdb96c..a39ca94 100644
+--- a/src/Features/Check/Extension.purs
++++ b/src/Features/Check/Extension.purs
+@@ -13,6 +13,7 @@ import Domain.Syntax (Diagnostic, Span, problemAt)
+ import Domain.Type (Ty(..))
+ import Features.Check.Context (CheckEnv, Infer)
+ import Features.Check.FreshRecord (freshRest)
++import Features.Check.MergeLiteral (mergeLiteral)
+ import Features.Check.Overlap (Added, Base, fields, fromRecord)
+ import Features.Check.Require (bounded, expectType, typeName)
+ import Features.Check.Scheme (State, Threaded, resolved, threadAll)
+@@ -22,7 +23,9 @@ type Checked a = Either Diagnostic (Threaded a)
+ -- R005 design §1. Items are checked in written order, which is
+ -- evaluation order; then the base's type, under the substitution, must
+ -- hold none of the fields. The result has the base's fields and tail and
+--- the literal's fields.
++-- the literal's fields. A literal of two or more spreads is Tranche B's
++-- (Features.Check.MergeLiteral, Task 7); one of a single spread keeps
++-- Tranche A's rules unchanged.
+ checkExtension
+   ∷ ∀ r
+   . Infer r
+@@ -33,8 +36,10 @@ checkExtension
+   → Checked Checked.Expr
+ checkExtension infer env state span items = do
+   threaded ← threadAll (literalItem infer env) state items
+-  base ← maybe' (noSpread span) Right (Array.findMap baseOf threaded.value)
+-  extended ← extend env threaded.state base threaded.value
++  extended ←
++    if Array.length (Array.mapMaybe baseOf threaded.value) > 1 then
++      mergeLiteral env threaded.state span threaded.value
++    else single threaded
+   pure
+     { value: Checked.Expr
+         { ty: extended.value
+@@ -45,6 +50,9 @@ checkExtension infer env state span items = do
+     }
+   where
+   itemOf added = added.item
++  single threaded = do
++    base ← maybe' (noSpread span) Right (Array.findMap baseOf threaded.value)
++    extend env threaded.state base threaded.value
+ 
+ literalItem
+   ∷ ∀ r. Infer r → CheckEnv r → State → Resolved.LiteralItem → Checked Added
+diff --git a/src/Features/Check/Fault.purs b/src/Features/Check/Fault.purs
+index 0d841d1..2951ea2 100644
+--- a/src/Features/Check/Fault.purs
++++ b/src/Features/Check/Fault.purs
+@@ -3,6 +3,8 @@ module Features.Check.Fault (faultIn) where
+ import Prelude
+ import Data.Array as Array
+ import Data.Map as Map
++import Data.Set (Set)
++import Data.Set as Set
+ import Data.Maybe (Maybe(..), maybe')
+ import Data.Tuple (Tuple(..), fst, snd)
+ import Domain.Type (Ty(..))
+@@ -53,33 +55,58 @@ faultIn subst predicate view failure =
+         Just { part, atom: RigidAtom tail }
+     | otherwise = Nothing
+ 
+--- R10.1: the parts predicate `predicate`'s case bound, and the first
+--- field of the failing types one of them cannot take.
++-- R10.1: a part predicate `predicate`'s case bound that the failure puts
++-- at fault: a label one failing record holds and the other cannot take
++-- (decision 22: evidence, not inequality), blamed on a part that cannot
++-- take it either and that the lacking record is: built through it, or,
++-- as the failure may hold it flattened, with the part's own row. A part
++-- that is not the lacking record explains nothing (Task 7: a removal's
++-- rest lacks the label it removed, whatever the parts hold).
+ caseBound ∷ Subst → Int → View → Failure → Unit → Maybe Fault
+-caseBound subst predicate view failure _ = Array.findMap faulted bound
++caseBound subst predicate view failure _ = Array.findMap faulted
++  (missingLabels subst failure)
+   where
+   bound = Array.filter boundHere view.parts
+   boundHere part = Array.any (byThis <<< flip Map.lookup boundBy)
+     (Array.fromFoldable (metasThrough subst [ Meta part ]))
+   byThis = eq (Just predicate)
+   boundBy = (mergesOf (storeOf subst)).boundBy
+-  faulted part = map (atPart part)
+-    (Array.find (refusedBy part) (failingLabels subst failure))
+-  atPart part label = { part, atom: LabelAtom label }
+-  refusedBy part label = not (holdsLabel label (rowOf subst part))
+-    && refuses subst (rowOf subst part).tails (LabelAtom label)
++  faulted missing = map (atPart missing.label)
++    (Array.find (refusedBy missing) bound)
++  atPart label part = { part, atom: LabelAtom label }
++  refusedBy missing part = lackingIs missing part
++    && not (holdsLabel missing.label (rowOf subst part))
++    && refuses subst (rowOf subst part).tails (LabelAtom missing.label)
+   holdsLabel label row = Array.any (eq label <<< fst) row.fields
++  lackingIs missing part = Set.member part missing.through
++    || missing.row == rowOf subst part
+ 
+--- The fields of the records a unification failed on, in label order.
+-failingLabels ∷ Subst → Failure → Array String
+-failingLabels subst = case _ of
+-  Mismatch one other → Array.sort (Array.nub (labelsOf one <> labelsOf other))
+-  FromMerge _ inner → failingLabels subst inner
++-- The labels one record of a failed unification holds and the other
++-- cannot take, in label order, each with the metas the lacking record was
++-- built through and its row.
++missingLabels
++  ∷ Subst
++  → Failure
++  → Array { label ∷ String, through ∷ Set Int, row ∷ Flat }
++missingLabels subst = case _ of
++  Mismatch one other → Array.sortWith labelOf
++    (lacking (rowIn one) (rowIn other) <> lacking (rowIn other) (rowIn one))
++  FromMerge _ inner → missingLabels subst inner
+   _ → []
+   where
+-  labelsOf ty = case walk subst ty of
+-    TRecord row → map fst (flatten subst row).fields
+-    _ → []
++  labelOf found = found.label
++  rowIn ty = case walk subst ty of
++    TRecord row → Just row
++    _ → Nothing
++  lacking (Just holder) (Just lacker) = Array.mapMaybe
++    (missing (flatten subst lacker) (metasThrough subst lacker.tails))
++    (map fst (flatten subst holder).fields)
++  lacking _ _ = []
++  missing flat through label
++    | Array.any (eq label <<< fst) flat.fields = Nothing
++    | refuses subst flat.tails (LabelAtom label) =
++        Just { label, through, row: flat }
++    | otherwise = Nothing
+ 
+ -- No tail of a row can take the atom: a rigid tail never does (rules:
+ -- rigid tails are cancelled by identity, never given labels), a meta
+diff --git a/src/Features/Check/Function.purs b/src/Features/Check/Function.purs
+index 4b0adf7..6681600 100644
+--- a/src/Features/Check/Function.purs
++++ b/src/Features/Check/Function.purs
+@@ -47,6 +47,7 @@ environment program function =
+   , functionName: function.name
+   , functionSpan: function.span
+   , rowSpan: function.rowSpan
++  , lambda: Nothing
+   , effects: program.effects
+   , functions: program.functions
+   , types: program.types
+diff --git a/src/Features/Check/Lacked.purs b/src/Features/Check/Lacked.purs
+index 1789645..a2980af 100644
+--- a/src/Features/Check/Lacked.purs
++++ b/src/Features/Check/Lacked.purs
+@@ -6,7 +6,7 @@ import Data.Map (Map)
+ import Data.Map as Map
+ import Data.Maybe (maybe)
+ import Data.Tuple (Tuple(..))
+-import Domain.Problem (Hint(..), Problem(..))
++import Domain.Problem (DuplicateKind(..), Hint(..), Problem(..))
+ import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span)
+ import Domain.Type (VarId(..))
+ import Features.Check.RowStore (Because(..), arrival)
+@@ -25,7 +25,10 @@ type Named r =
+ -- label both rows hold, noted where it arrived and why the rows are
+ -- disjoint; D3'', a rigid tail that may hold the label, noted where the
+ -- tail is introduced and why; D3, two rigid tails not known disjoint, with
+--- its hint; D3', one rigid tail in both rows. D3, D3' and D3'' name the
++-- its hint; D3', one rigid tail in both rows; D2', a label two items of
++-- one literal both hold, found after the literal (Task 7: the literal
++-- reports one it finds itself at the later item, Tranche A's form),
++-- noted at both items. D3, D3' and D3'' name the
+ -- enclosing signature's rigids (location rule 4). (Placeholder P2, for a
+ -- refusal an equation caused, lost its last cause with the sum rule and
+ -- bounds in B2; B5 renders the refusals B3's predicates cause.)
+@@ -45,6 +48,10 @@ refusedAt env subst span = case _ of
+     )
+     (requiredAt because)
+   Twice tail because → at (InBothRows (named tail)) (requiredAt because)
++  Repeated label items → at (Duplicate DuplicateField label)
++    [ { span: items.earlier, reason: FirstWrittenHere }
++    , { span: items.later, reason: WrittenAgainHere }
++    ]
+   where
+   at problem related = { problem, span, related }
+   arrived from = maybe span identity (arrival (storeOf subst) =<< from)
+diff --git a/src/Features/Check/Lambda.purs b/src/Features/Check/Lambda.purs
+index f0dd933..9314fcb 100644
+--- a/src/Features/Check/Lambda.purs
++++ b/src/Features/Check/Lambda.purs
+@@ -3,7 +3,7 @@ module Features.Check.Lambda (checkLambda) where
+ import Prelude
+ import Data.Array as Array
+ import Data.Either (Either(..))
+-import Data.Maybe (maybe')
++import Data.Maybe (Maybe(..), maybe')
+ import Domain.Checked.Internal (Open(..))
+ import Domain.Checked.Internal as Checked
+ import Domain.Resolved as Resolved
+@@ -47,6 +47,7 @@ checkLambda infer env state span parameters body = do
+         { locals = bindAll (bound typed.value) env.locals
+         , current = row
+         , sites = []
++        , lambda = Just span
+         }
+     )
+     staged.state
+@@ -88,7 +89,10 @@ parameterType variables row span state parameter = Right
+     { value: { local: parameter.local, ty: TVar (Hole state.next) }
+     , state: state
+         { next = state.next + 1
+-        , subst = onOrigins (parameterMade { meta: state.next, lambda: span })
++        , subst = onOrigins
++            ( parameterMade
++                { meta: state.next, lambda: span, name: parameter.name }
++            )
+             state.subst
+         }
+     }
+diff --git a/src/Features/Check/MergeLiteral.purs b/src/Features/Check/MergeLiteral.purs
+new file mode 100644
+index 0000000..ff4a4bf
+--- /dev/null
++++ b/src/Features/Check/MergeLiteral.purs
+@@ -0,0 +1,220 @@
++module Features.Check.MergeLiteral (mergeLiteral) where
++
++import Prelude
++import Prim hiding (Row)
++import Data.Array as Array
++import Data.Either (Either(..), either)
++import Data.Foldable (foldM)
++import Data.Map as Map
++import Data.Maybe (Maybe(..), isJust, maybe)
++import Data.Tuple (Tuple(..))
++import Domain.Checked.Internal (Open(Hole))
++import Domain.Checked.Internal as Checked
++import Domain.Problem (DuplicateKind(..), Problem(..))
++import Domain.Syntax (Diagnostic, NoteReason(..), Span, problemAt)
++import Domain.Type (Ty(..))
++import Domain.Type.Record (recordRow)
++import Features.Check.Context (CheckEnv)
++import Features.Check.Disjoint (requireDisjoint)
++import Features.Check.FreshRecord (freshRest)
++import Features.Check.Lacked (refusedAt)
++import Features.Check.OriginStore (onOrigins)
++import Features.Check.Overlap (Added)
++import Features.Check.PartOrigin (itemsAt)
++import Features.Check.Require (bounded, expectType, typeName)
++import Features.Check.RowMerge.Chain (desugaredWith)
++import Features.Check.RowMerge.Merge (Row)
++import Features.Check.RowMerge.Occurrence (nextPredicate)
++import Features.Check.RowStore (Because(..), Lack)
++import Features.Check.Scheme
++  ( State
++  , Threaded
++  , flexible
++  , opened
++  , resolved
++  , threadAll
++  )
++import Features.Check.Subst (Flex(..), Subst)
++import Features.Check.UnifyFailure (Failure(..), Refusal(..))
++
++type Checked a = Either Diagnostic (Threaded a)
++
++-- One item of the literal as a row: a field's, or a spread's type as the
++-- substitution has it. `value` is a spread's expression (R8's `comes from
++-- here`); `field`, whether the item is a field.
++type Piece =
++  { span ∷ Span, value ∷ Maybe Span, row ∷ Row, field ∷ Boolean }
++
++-- R005 Tranche B Task 7 (design draft 3 §1.4; plan §2.1): a literal of
++-- two or more spreads, its items checked already in written order. Each
++-- spread must be a record (a hole becomes `{ ...ρ }`); every two items,
++-- in written order, are required disjoint for the reason `Spread` (D2',
++-- D3, D3', D3''); the result holds every item's fields and tails, its
++-- unknown tails made into `Merge` predicates located at the innermost
++-- lambda, else at the literal.
++mergeLiteral
++  ∷ ∀ r. CheckEnv r → State → Span → Array Added → Checked (Ty Open)
++mergeLiteral env state span added = do
++  pieces ← threadAll (pieceOf env) state added
++  apart ← foldM (paired env pieces.value) pieces.state.subst
++    (pairsOf (Array.length pieces.value))
++  joined env site pieces.value (pieces.state { subst = apart })
++  where
++  site = maybe span identity env.lambda
++
++pieceOf ∷ ∀ r. CheckEnv r → State → Added → Checked Piece
++pieceOf env state added = case added.given of
++  Just (Tuple label ty) → Right
++    { value: fieldPiece label ty, state }
++  Nothing → spreadPiece env state added
++  where
++  fieldPiece label ty =
++    { span: added.span
++    , value: Nothing
++    , row: recordRow [ Tuple label (flexible ty) ] []
++    , field: true
++    }
++
++-- A spread's type, under the substitution, is a record; a hole becomes
++-- `{ ...ρ }` (ρ fresh: what it must lack is required pairwise below).
++spreadPiece ∷ ∀ r. CheckEnv r → State → Added → Checked Piece
++spreadPiece env state added = do
++  bounded state ty added.span
++  case resolved state.subst ty of
++    TRecord row → Right { value: piece (flexible (TRecord row)), state }
++    TVar (Hole _) → fromHole unit
++    other → notRecord other
++  where
++  value = map Checked.spanOf (spreadValue added)
++  ty = maybe (TRecord (recordRow [] [])) Checked.typeOf
++    (spreadValue added)
++  fresh = freshRest state []
++  fromHole _ = do
++    reached ← expectType env fresh.state ty fresh.record added.span
++    pure { value: piece (flexible fresh.record), state: reached }
++  piece found =
++    { span: added.span, value, row: rowOf found, field: false }
++  notRecord other = do
++    name ← typeName env added.span other
++    Left (problemAt (ExpectedRecord name) added.span)
++
++spreadValue ∷ Added → Maybe Checked.Expr
++spreadValue added = case added.item of
++  Checked.Spreading found → Just found
++  Checked.Given _ → Nothing
++
++rowOf ∷ Ty Flex → Row
++rowOf = case _ of
++  TRecord row → row
++  _ → recordRow [] []
++
++-- Every two items, the earlier first, but no two fields (Resolve refused
++-- a label written twice).
++pairsOf ∷ Int → Array (Tuple Int Int)
++pairsOf count = do
++  earlier ← Array.range 0 (count - 2)
++  later ← Array.range (earlier + 1) (count - 1)
++  pure (Tuple earlier later)
++
++-- Two items' rows required disjoint for the reason `Spread`. A label both
++-- already hold is D2' at the later item (Tranche A's form); a rigid tail
++-- that may hold a field is D3'' at the field; any other refusal at the
++-- later item.
++paired
++  ∷ ∀ r
++  . CheckEnv r
++  → Array Piece
++  → Subst
++  → Tuple Int Int
++  → Either Diagnostic Subst
++paired env pieces subst (Tuple one other) =
++  case Array.index pieces one, Array.index pieces other of
++    Just earlier, Just later
++      | earlier.field && later.field → Right subst
++      | otherwise → either (refused earlier later) Right
++          ( requireDisjoint { failed: unexpected } (lack earlier later) subst
++              earlier.row
++              later.row
++          )
++    _, _ → Right subst
++  where
++  lack earlier later =
++    { because: Spread { earlier: earlier.span, later: later.span }
++    , from: Nothing
++    }
++  unexpected _ = Left (Unexpected "a literal's items refused as a shape")
++  refused earlier later = case _ of
++    Refused (Repeated label items) → Left
++      { problem: Duplicate DuplicateField label
++      , span: items.later
++      , related: [ { span: items.earlier, reason: FirstWrittenHere } ]
++      }
++    Refused found@(MayHold _ _ _) → Left
++      (refusedAt env subst (fieldSpan earlier later) found)
++    Refused found → Left (refusedAt env subst later.span found)
++    _ → Left (problemAt (Internal "a literal's items failed") later.span)
++  fieldSpan earlier later = if earlier.field then earlier.span else later.span
++
++-- The result: every item's fields and tails, its unknown tails desugared
++-- (each part paired with the one before it in the chain for the reason
++-- of their two items), each part's expression recorded.
++joined
++  ∷ ∀ r. CheckEnv r → Span → Array Piece → State → Checked (Ty Open)
++joined env site pieces state =
++  either failed made
++    ( desugaredWith { failed: unexpected } (Just site) reasonOf written
++        state.subst
++    )
++  where
++  written = recordRow (Array.concatMap fieldsOf pieces)
++    (Array.concatMap tailsOf pieces)
++  fieldsOf piece = piece.row.fields
++  tailsOf piece = piece.row.tails
++  first = nextPredicate state.subst
++  made found =
++    Right
++      { value: opened (TRecord found.row)
++      , state: state
++          { subst = onOrigins (itemsAt first (itemSpans pieces)) found.subst }
++      }
++  unexpected _ = Left (Unexpected "a literal's parts refused as a shape")
++  failed = case _ of
++    Refused found → Left (refusedAt env state.subst site found)
++    _ → Left (problemAt (Internal "a literal's parts failed") site)
++  metas = Array.filter isMeta written.tails
++  reasonOf part = itemReason site pieces (previous part) part
++  previous part = maybe part identity
++    (Array.index metas =<< map (_ - 1) (Array.elemIndex part metas))
++
++-- `Spread` between the items of two parts, the earlier in written order
++-- first (a part's item: the spread whose row holds it; every part has
++-- one, the literal's span standing in otherwise).
++itemReason ∷ Span → Array Piece → Flex → Flex → Lack
++itemReason literal pieces one other =
++  { because: Spread
++      { earlier: min (itemOf one) (itemOf other)
++      , later: max (itemOf one) (itemOf other)
++      }
++  , from: Nothing
++  }
++  where
++  itemOf part = maybe literal spanOf (Array.find (holding part) pieces)
++  holding part piece = Array.elem part piece.row.tails
++  spanOf piece = piece.span
++
++-- Each unknown part's spread expression.
++itemSpans ∷ Array Piece → Map.Map Int Span
++itemSpans pieces = Map.fromFoldable (Array.concatMap entries pieces)
++  where
++  entries piece = maybe [] (spansOf piece) piece.value
++  spansOf piece span = Array.mapMaybe (entry span) piece.row.tails
++  entry span = case _ of
++    Meta meta → Just (Tuple meta span)
++    Rigid _ → Nothing
++
++isMeta ∷ Flex → Boolean
++isMeta = isJust <<< metaOf
++  where
++  metaOf = case _ of
++    Meta meta → Just meta
++    Rigid _ → Nothing
+diff --git a/src/Features/Check/MergeParts.purs b/src/Features/Check/MergeParts.purs
+index 8cfe29a..81d949d 100644
+--- a/src/Features/Check/MergeParts.purs
++++ b/src/Features/Check/MergeParts.purs
+@@ -4,7 +4,6 @@ module Features.Check.MergeParts
+   , viewById
+   , constantsOf
+   , candidatesOf
+-  , partNames
+   , lambdaPart
+   , pathOf
+   , atomName
+@@ -13,10 +12,13 @@ module Features.Check.MergeParts
+ 
+ import Prelude
+ import Data.Array as Array
++import Data.Map (Map)
+ import Data.Map as Map
+ import Data.Maybe (Maybe(..), maybe, maybe')
+ import Data.Set as Set
+-import Data.Tuple (Tuple(..), fst)
++import Control.Monad.Rec.Class as Rec
++import Data.Tuple (Tuple(..), fst, snd)
++import Domain.Type (Ty(..))
+ import Domain.Syntax (Span)
+ import Features.Check.Atom (Atom(..))
+ import Features.Check.FlatRecord (Flat, flatten)
+@@ -33,7 +35,7 @@ import Features.Check.PartOrigin
+ import Features.Check.RowMerge.Merge (Merge)
+ import Features.Check.RowMerge.Reach (metasThrough)
+ import Features.Check.RowName (tailName)
+-import Features.Check.Subst (Flex(..), Subst)
++import Features.Check.Subst (Flex(..), Subst, walk)
+ 
+ -- What the renderers read of one waiting or refused predicate (R005
+ -- Tranche B diagnostics R1-R6): the written row it came from, through
+@@ -41,8 +43,8 @@ import Features.Check.Subst (Flex(..), Subst)
+ -- (`parts`), the other side (`reach`, the tails it was replaced by;
+ -- `other`, them flattened: what the parts share; `whole`, with the
+ -- fields and rigid tails written beside them), the owner and the steps
+--- to the row. A
+--- predicate no occurrence records stands for itself. `key` identifies
++-- to the row, and a literal's part expressions (`items`). A predicate no
++-- occurrence records stands for itself. `key` identifies
+ -- the occurrence; `site` is the predicate's location (T6).
+ type View =
+   { key ∷ Int
+@@ -53,6 +55,7 @@ type View =
+   , whole ∷ Flat
+   , owner ∷ Maybe Owner
+   , steps ∷ Array Step
++  , items ∷ Map Int Span
+   }
+ 
+ viewOf ∷ Subst → Merge → View
+@@ -69,6 +72,7 @@ viewOf subst merge = maybe' alone found
+     , whole: flatten subst merge.result
+     , owner: Nothing
+     , steps: []
++    , items: Map.empty
+     }
+ 
+ -- The view of a predicate by its identity alone, as its occurrence
+@@ -87,6 +91,7 @@ viewFrom subst id occurrence =
+   , whole: flatten subst occurrence.row
+   , owner: occurrence.owner
+   , steps: occurrence.steps
++  , items: occurrence.items
+   }
+ 
+ -- The other side's constants (R4): its labels in label order, then its
+@@ -104,31 +109,36 @@ candidatesOf subst view atom =
+   if Array.any (holds atom <<< partRow subst) view.parts then []
+   else Array.filter (mayHold subst atom <<< partRow subst) view.parts
+ 
+--- R1, R2: each part as its owner's variable, else numbered `..._n` in
+--- the order given (`..._` when only one is unnamed).
+-partNames ∷ View → Array Int → Array String
+-partNames view parts = map name parts
+-  where
+-  names = maybe Map.empty ownerNames view.owner
+-  ownerNames owner = owner.names
+-  unnamed = Array.filter (not <<< flip Map.member names) parts
+-  name part = maybe' (numbered part) identity (Map.lookup part names)
+-  numbered part _
+-    | Array.length unnamed == 1 = "..._"
+-    | otherwise = "..._" <> maybe "" (show <<< add 1)
+-        (Array.elemIndex part unnamed)
+-
+--- Whether the part is, or is bound with, an unannotated lambda
+--- parameter's row (R9's `annotate this lambda's parameters`).
++-- Whether the part is, or is bound with, a row anywhere in an unannotated
++-- lambda parameter's type (R9's `annotate this lambda's parameters`: the
++-- parameter's own row, or one inside it, such as a function parameter's
++-- result, Example 10).
+ lambdaPart ∷ Subst → Int → Boolean
+ lambdaPart subst part = Array.any linked
+   (parametersOf (originsOf subst))
+   where
+   reached = metasThrough subst [ Meta part ]
+   linked parameter = not Set.isEmpty
+-    ( Set.intersection reached
+-        (Set.delete parameter.meta (metasThrough subst [ Meta parameter.meta ]))
+-    )
++    (Set.intersection reached (metasWithin subst (TVar (Meta parameter.meta))))
++
++-- The unbound metas a type holds at any depth under the substitution
++-- (record tails and type variables), by a loop: a long arrow is deep.
++metasWithin ∷ Subst → Ty Flex → Set.Set Int
++metasWithin subst ty = Rec.tailRec step { pending: [ ty ], seen: Set.empty }
++  where
++  step found = maybe (Rec.Done found.seen) (next found.seen)
++    (Array.uncons found.pending)
++  next seen { head, tail } = Rec.Loop (visit (walk subst head) tail seen)
++  visit walked rest seen = case walked of
++    TVar (Meta meta) → { pending: rest, seen: Set.insert meta seen }
++    TRecord row → recordIn (flatten subst row) rest seen
++    TFun parameter _ result → { pending: [ parameter, result ] <> rest, seen }
++    TData _ arguments _ → { pending: arguments <> rest, seen }
++    _ → { pending: rest, seen }
++  recordIn flat rest seen =
++    { pending: map snd flat.fields <> rest
++    , seen: Set.union seen (Set.fromFoldable (Array.mapMaybe metaOf flat.tails))
++    }
+ 
+ -- R6: the field labels from the type's root to the row.
+ pathOf ∷ View → Array String
+diff --git a/src/Features/Check/PartNames.purs b/src/Features/Check/PartNames.purs
+new file mode 100644
+index 0000000..ce09228
+--- /dev/null
++++ b/src/Features/Check/PartNames.purs
+@@ -0,0 +1,80 @@
++module Features.Check.PartNames (partNames, partNotes) where
++
++import Prelude
++import Data.Array as Array
++import Data.Map as Map
++import Data.Maybe (Maybe(..), maybe, maybe')
++import Data.Tuple (Tuple(..))
++import Domain.Note (NoteReason(..))
++import Domain.Syntax (Note)
++import Domain.Type (Ty(..))
++import Features.Check.FlatRecord (flatten)
++import Features.Check.MergeParts (View)
++import Features.Check.OriginStore (originsOf)
++import Features.Check.PartOrigin (Parameter, parametersOf)
++import Features.Check.Subst (Flex(..), Subst, walk)
++
++-- R1-R3 (R005 Tranche B diagnostics): each part as its owner's variable;
++-- else, as the unannotated lambda parameter whose whole record row it is
++-- (rule 2, Task 7); else numbered `..._n` (`..._` when only one is
++-- unnamed). Distinct parts whose names would print alike are numbered
++-- instead (R3: never told apart by a name they share), each with an
++-- origin note where one is known. Unnamed parts are numbered by where
++-- their expressions are written (a literal's items), then in the parts'
++-- order, never by when they were made.
++partNames ∷ Subst → View → Array Int → Array String
++partNames subst view parts = map (nameIn subst view parts) parts
++
++-- R8's second note: `..._n comes from here` at each unnamed part's
++-- expression, in number order.
++partNotes ∷ Subst → View → Array Int → Array Note
++partNotes subst view parts = Array.mapMaybe note (unnamedIn subst view parts)
++  where
++  note part = Map.lookup part view.items >>= at part
++  at part span = Just
++    { span, reason: PartComesFromHere (nameIn subst view parts part) }
++
++nameIn ∷ Subst → View → Array Int → Int → String
++nameIn subst view parts part = maybe' numbered identity
++  (Map.lookup part (keptNames subst view parts))
++  where
++  unnamed = unnamedIn subst view parts
++  numbered _
++    | Array.length unnamed == 1 = "..._"
++    | otherwise = "..._" <> maybe "" (show <<< add 1)
++        (Array.elemIndex part unnamed)
++
++-- The parts that keep a name: those whose name no other part shares.
++keptNames ∷ Subst → View → Array Int → Map.Map Int String
++keptNames subst view parts = Map.filter alone given
++  where
++  given = Map.fromFoldable (Array.mapMaybe named parts)
++  named part = Tuple part <$> nameOf subst view part
++  alone name = Map.size (Map.filter (eq name) given) == 1
++
++unnamedIn ∷ Subst → View → Array Int → Array Int
++unnamedIn subst view parts = Array.sortWith writtenAt
++  (Array.filter (not <<< flip Map.member kept) parts)
++  where
++  kept = keptNames subst view parts
++  writtenAt part = maybe top startOf (Map.lookup part view.items)
++  startOf span = span.start.offset
++  -- After every offset a source can have; the sort is stable.
++  top = 2147483647
++
++nameOf ∷ Subst → View → Int → Maybe String
++nameOf subst view part = maybe' lambdaName Just
++  (Map.lookup part =<< map ownerNames view.owner)
++  where
++  ownerNames owner = owner.names
++  lambdaName _ = Array.findMap (wholeOf subst part)
++    (parametersOf (originsOf subst))
++
++-- A parameter's name when the part is its whole record row: the two rows
++-- are the same under the substitution.
++wholeOf ∷ Subst → Int → Parameter → Maybe String
++wholeOf subst part parameter = case walk subst (TVar (Meta parameter.meta)) of
++  TRecord row
++    | flatten subst row == flatten subst { fields: [], tails: [ Meta part ] } →
++        parameter.name
++  _ → Nothing
+diff --git a/src/Features/Check/PartOrigin.purs b/src/Features/Check/PartOrigin.purs
+index 01e7cb0..c6729d7 100644
+--- a/src/Features/Check/PartOrigin.purs
++++ b/src/Features/Check/PartOrigin.purs
+@@ -11,6 +11,7 @@ module Features.Check.PartOrigin
+   , occurrencesFrom
+   , anyOccurrence
+   , owned
++  , itemsAt
+   , occurrenceOf
+   , occurrenceKey
+   , requiredAt
+@@ -50,7 +51,7 @@ newtype PartOrigin = PartOrigin
+   { occurrences ∷ Map Int Occurrence
+   , predicates ∷ Map Int Int
+   , required ∷ Map Int Span
+-  , parameters ∷ Map Int Span
++  , parameters ∷ Map Int { lambda ∷ Span, name ∷ Maybe String }
+   , seeded ∷ Array Seeded
+   }
+ 
+@@ -58,8 +59,9 @@ newtype PartOrigin = PartOrigin
+ -- where it sits in the type it was written in (`steps`, from that type's
+ -- root), its unknown tails in tail order (`parts`), the fresh tail that
+ -- replaced them (`result`), the row it became (`row`: the written fields
+--- and rigid tails with `result`) and, when a declaration's use made it,
+--- its owner.
++-- and rigid tails with `result`), when a declaration's use made it, its
++-- owner, and, for a literal's, the expression each part came from (`items`,
++-- R8's `..._n comes from here`).
+ type Occurrence =
+   { site ∷ Maybe Span
+   , steps ∷ Array Step
+@@ -67,6 +69,7 @@ type Occurrence =
+   , result ∷ Flex
+   , row ∷ RecordRow (Ty Flex) Flex
+   , owner ∷ Maybe Owner
++  , items ∷ Map Int Span
+   }
+ 
+ -- R1's owner: the callee or constructor, how it was used (R9), the
+@@ -92,10 +95,10 @@ data Step = Field String | Parameter | Result | Other
+ 
+ derive instance eqStep ∷ Eq Step
+ 
+--- An unannotated lambda parameter: its type's meta and its lambda (R9's
+--- `annotate this lambda's parameters`). R1's parameter names arrive with
+--- the merge literal (Task 7), which alone can name them.
+-type Parameter = { meta ∷ Int, lambda ∷ Span }
++-- An unannotated lambda parameter: its type's meta, its lambda (R9's
++-- `annotate this lambda's parameters`) and its name, if it has one (R1
++-- rule 2, Task 7).
++type Parameter = { meta ∷ Int, lambda ∷ Span, name ∷ Maybe String }
+ 
+ -- A written `lacks` a use stated on one of its metas: the use's span, the
+ -- meta, and the label's span (Because's `Lacks` reason).
+@@ -164,7 +167,8 @@ requiredOf meta (PartOrigin origins) = Map.lookup meta origins.required
+ -- logarithmic time (an array copied per parameter made it quadratic).
+ parameterMade ∷ Parameter → PartOrigin → PartOrigin
+ parameterMade parameter (PartOrigin origins) = PartOrigin origins
+-  { parameters = Map.insert parameter.meta parameter.lambda
++  { parameters = Map.insert parameter.meta
++      { lambda: parameter.lambda, name: parameter.name }
+       origins.parameters
+   }
+ 
+@@ -172,7 +176,15 @@ parametersOf ∷ PartOrigin → Array Parameter
+ parametersOf (PartOrigin origins) = map parameterOf
+   (Map.toUnfoldable origins.parameters)
+   where
+-  parameterOf (Tuple meta lambda) = { meta, lambda }
++  parameterOf (Tuple meta found) =
++    { meta, lambda: found.lambda, name: found.name }
++
++-- The occurrence keyed `key`, each part's expression given.
++itemsAt ∷ Int → Map Int Span → PartOrigin → PartOrigin
++itemsAt key items (PartOrigin origins) = PartOrigin origins
++  { occurrences = Map.update withItems key origins.occurrences }
++  where
++  withItems found = pure found { items = items }
+ 
+ seededAt ∷ Array Seeded → PartOrigin → PartOrigin
+ seededAt added (PartOrigin origins) = PartOrigin origins
+diff --git a/src/Features/Check/RecordPattern.purs b/src/Features/Check/RecordPattern.purs
+index 428a98c..6d8450a 100644
+--- a/src/Features/Check/RecordPattern.purs
++++ b/src/Features/Check/RecordPattern.purs
+@@ -49,9 +49,9 @@ recordAgainst against env state expected written = do
+       | growable row written → extended against env state expected written
+           (unknown row written)
+       | otherwise → fromRecord against env state expected { ty, row } written
+-          >>= matched expected written
++          >>= matched env expected written
+     TVar (Hole _) → fromHole against env state expected written
+-      >>= matched expected written
++      >>= matched env expected written
+     _ → notRecord unit
+   where
+   ty = resolved state.subst expected
+diff --git a/src/Features/Check/Refused.purs b/src/Features/Check/Refused.purs
+index c0c6ef7..6553e3d 100644
+--- a/src/Features/Check/Refused.purs
++++ b/src/Features/Check/Refused.purs
+@@ -18,15 +18,18 @@ type Solving = { failed ∷ Failed }
+ 
+ -- A label a tail may not take, by why it lacks it: D1 for a written
+ -- `lacks`; for a pair's reason D2 when the label was being bound, D3''
+--- when a rigid tail may hold it; otherwise the caller's mismatch, the
+--- shape text Tranche A gives an implied lack.
++-- when a rigid tail may hold it; for a literal's items D2' (Task 7), D3''
++-- likewise; otherwise the caller's mismatch, the shape text Tranche A
++-- gives an implied lack.
+ refusedBy
+   ∷ Failed → Subst → Maybe Flex → Tuple String Lack → Either Failure Subst
+ refusedBy failed subst rigid (Tuple label lack) = case lack.because of
+   Lacks written → Left (Refused (Forbidden label written))
+   Disjoint pair → paired pair
+   Joined pair → paired pair
+-  _ → failed subst
++  Spread items → Left
++    (Refused (maybe (Repeated label items) held rigid))
++  Implied → failed subst
+   where
+   paired pair = Left (Refused (maybe (Overlap label pair lack.from) held rigid))
+   held tail = MayHold tail label lack.because
+diff --git a/src/Features/Check/Remainder.purs b/src/Features/Check/Remainder.purs
+new file mode 100644
+index 0000000..513a640
+--- /dev/null
++++ b/src/Features/Check/Remainder.purs
+@@ -0,0 +1,42 @@
++module Features.Check.Remainder (remainder) where
++
++import Prelude
++import Data.Array as Array
++import Data.Either (Either)
++import Data.Map (Map)
++import Domain.Checked.Internal (Open(..))
++import Domain.Resolved (EffectInfo)
++import Domain.Syntax (Diagnostic, Span)
++import Domain.Type (Ty(..))
++import Domain.Type.Record (recordRow)
++import Features.Check.FreshRecord (freshRecord)
++import Features.Check.Require (Names, expectType)
++import Features.Check.Scheme (State, Threaded)
++
++-- R005 Tranche B design §5.2 (approved, user decision 6; Task 7): what is
++-- left of a record once `labels` are taken from it, for `e without { … }`
++-- and a record pattern's named rest. The record is required against `{
++-- l1: α1, …, ln: αn, ...ρ }`, ρ and the αi fresh and ρ lacking the
++-- labels, in one requirement; the result is ρ. Never a subtraction from
++-- a resolved type: over a label with two possible homes, a part not yet
++-- known, the subtraction removed nothing and the label came back (review
++-- F1); ρ lacks it at once, and is what is left once the parts are known.
++remainder
++  ∷ ∀ r
++  . Names
++      ( effects ∷ Array EffectInfo
++      , introduced ∷ Map String Span
++      , functionName ∷ String
++      | r
++      )
++  → State
++  → Ty Open
++  → Array String
++  → Span
++  → Either Diagnostic (Threaded (Ty Open))
++remainder env state record labels span = left
++  <$> expectType env fresh.state record fresh.record span
++  where
++  fresh = freshRecord state labels true
++  rest = TRecord (recordRow [] [ Hole (state.next + Array.length labels) ])
++  left reached = { value: rest, state: reached }
+diff --git a/src/Features/Check/Removal.purs b/src/Features/Check/Removal.purs
+index b9f1dbb..59eb679 100644
+--- a/src/Features/Check/Removal.purs
++++ b/src/Features/Check/Removal.purs
+@@ -1,26 +1,23 @@
+ module Features.Check.Removal (checkRemoval) where
+ 
+ import Prelude
+-import Data.Either (Either(..))
+-import Domain.Checked.Internal (Open)
++import Data.Either (Either)
+ import Domain.Checked.Internal as Checked
+-import Domain.Problem (Problem(..))
+ import Domain.Resolved as Resolved
+-import Domain.Syntax (Diagnostic, FieldName, Span, problemAt)
+-import Domain.Type (Ty(..))
+-import Domain.Type.Record (withoutLabels)
++import Domain.Syntax (Diagnostic, FieldName, Span)
+ import Features.Check.Context (CheckEnv, Infer)
+ import Features.Check.Record (select)
+-import Features.Check.SeveralTails (withinOneTail)
+-import Features.Check.Scheme (State, Threaded, resolved, threadAll)
++import Features.Check.Remainder (remainder)
++import Features.Check.Scheme (State, Threaded, threadAll)
+ 
+ type Checked a = Either Diagnostic (Threaded a)
+ 
+ -- R005 design §3: `e without { l, … }`. The receiver is checked, then
+ -- each label in written order is a field of it by `.l`'s rule (Check/
+--- Record `select`): a hole receiver, or a hole tail, grows by the label
+--- over a fresh tail lacking it. The result is the receiver's type
+--- without the labels: the remaining fields and the tail, `{}` when no
++-- Record `select`, whose texts are Tranche A's): a hole receiver, or a
++-- hole tail, grows by the label over a fresh tail lacking it. The result
++-- is what is left (Tranche B design §5.2, Task 7: ρ of one requirement
++-- against `{ l1: α1, …, ...ρ }`, Features.Check.Remainder), `{}` when no
+ -- field and no tail remain.
+ checkRemoval
+   ∷ ∀ r
+@@ -33,24 +30,15 @@ checkRemoval
+   → Checked Checked.Expr
+ checkRemoval infer env state span record labels = do
+   found ← infer env state record
+-  withinOneTail (Checked.spanOf found.value) found.state.subst
+-    (Checked.typeOf found.value)
+   selected ← threadAll (selectedIn found.value) found.state labels
+-  ty ← remainder span
+-    (resolved selected.state.subst (Checked.typeOf found.value))
+-    names
++  left ← remainder env selected.state (Checked.typeOf found.value) names
++    span
+   pure
+     { value: Checked.Expr
+-        { ty, span, node: Checked.RecordRemoval found.value names }
+-    , state: selected.state
++        { ty: left.value, span, node: Checked.RecordRemoval found.value names }
++    , state: left.state
+     }
+   where
+   names = map labelName labels
+   labelName label = label.name
+   selectedIn receiver reached label = select env reached receiver label
+-
+--- Every label was selected, so the receiver's type is a record.
+-remainder ∷ Span → Ty Open → Array String → Either Diagnostic (Ty Open)
+-remainder span ty names = case ty of
+-  TRecord row → Right (TRecord (withoutLabels names row))
+-  _ → Left (problemAt (Internal "Removal from a non-record") span)
+diff --git a/src/Features/Check/RestBinder.purs b/src/Features/Check/RestBinder.purs
+index d2fd644..9ee353a 100644
+--- a/src/Features/Check/RestBinder.purs
++++ b/src/Features/Check/RestBinder.purs
+@@ -7,12 +7,11 @@ import Domain.Checked.Internal (Open)
+ import Domain.Checked.Internal as Checked
+ import Domain.Resolved as Resolved
+ import Domain.Syntax (Diagnostic)
+-import Domain.Type (Ty(..))
+-import Domain.Type.Record (withoutLabels)
+-import Features.Check.Matched (Matched, Typed)
++import Domain.Type (Ty)
++import Features.Check.Matched (Matched, PatternEnv, Typed)
+ import Features.Check.PatternRow (Written, writtenLabels)
+-import Features.Check.Scheme (State, Threaded, resolved)
+-import Features.Check.SeveralTails (withinOneTail)
++import Features.Check.Remainder (remainder)
++import Features.Check.Scheme (State, Threaded)
+ 
+ -- A record pattern's result once its fields are checked: the checked
+ -- pattern, its binders, and a named rest's type. A module of its own so
+@@ -23,45 +22,52 @@ import Features.Check.SeveralTails (withinOneTail)
+ type Labelled = { label ∷ String, matched ∷ Matched }
+ 
+ matched
+-  ∷ Ty Open
++  ∷ ∀ r
++  . PatternEnv r
++  → Ty Open
+   → Written
+   → Threaded (Array Labelled)
+   → Either Diagnostic (Threaded Matched)
+-matched expected written checked = built <$> restOf checked.state expected
+-  written
++matched env expected written checked = built
++  <$> restOf env checked.state expected written
+   where
+   built rest =
+     { value:
+         { pattern: Checked.Pattern
+             { ty: expected
+             , span: written.span
+-            , shape: Checked.Record (map fieldOf checked.value) rest
++            , shape: Checked.Record (map fieldOf checked.value) rest.value
+             }
+-        , locals: Array.concatMap localsOf checked.value <> restLocals rest
++        , locals: Array.concatMap localsOf checked.value
++            <> restLocals rest.value
+         }
+-    , state: checked.state
++    , state: rest.state
+     }
+   fieldOf field = { label: field.label, pattern: field.matched.pattern }
+   localsOf field = field.matched.locals
+ 
+--- R005 design §3: a named rest is the matched record without the written
+--- labels, its tail kept (the open rest, or the closed remainder, `{}`
+--- when none is left). The record is the expected type as the fields'
+--- checks left it, which holds every written label by then. Over several
+--- tails it is a placeholder (Features.Check.SeveralTails).
++-- R005 design §3, Tranche B design §5.2 (user decision 6, Task 7): a
++-- named rest's type is ρ, the matched record required, once its fields
++-- are checked, against `{ l1: α1, …, ln: αn, ...ρ }` with ρ and the αi
++-- fresh and ρ lacking the labels: never a subtraction from a resolved
++-- type, which over a label with two possible homes would remove nothing.
++-- The fields' checks have put every written label in the record by then,
++-- so the requirement only names what is left.
+ restOf
+-  ∷ State → Ty Open → Written → Either Diagnostic Checked.Rest
+-restOf state expected written = case written.rest of
+-  Resolved.NoRest → Right Checked.NoRest
+-  Resolved.IgnoredRest → Right Checked.IgnoredRest
+-  Resolved.NamedRest id →
+-    Checked.NamedRest id (remainder known)
+-      <$ withinOneTail written.span state.subst known
++  ∷ ∀ r
++  . PatternEnv r
++  → State
++  → Ty Open
++  → Written
++  → Either Diagnostic (Threaded Checked.Rest)
++restOf env state expected written = case written.rest of
++  Resolved.NoRest → Right { value: Checked.NoRest, state }
++  Resolved.IgnoredRest → Right { value: Checked.IgnoredRest, state }
++  Resolved.NamedRest id → named id <$> remainder env state expected
++    (writtenLabels written)
++    written.span
+   where
+-  known = resolved state.subst expected
+-  remainder = case _ of
+-    TRecord row → TRecord (withoutLabels (writtenLabels written) row)
+-    other → other
++  named id found = found { value = Checked.NamedRest id found.value }
+ 
+ -- A named rest is a binder of its arm.
+ restLocals ∷ Checked.Rest → Array Typed
+diff --git a/src/Features/Check/RowMerge/Chain.purs b/src/Features/Check/RowMerge/Chain.purs
+index c50e8c4..7bc1610 100644
+--- a/src/Features/Check/RowMerge/Chain.purs
++++ b/src/Features/Check/RowMerge/Chain.purs
+@@ -1,5 +1,6 @@
+ module Features.Check.RowMerge.Chain
+   ( desugaredRow
++  , desugaredWith
+   , predicateFor
+   , pairedWith
+   , finished
+@@ -23,7 +24,7 @@ import Features.Check.Refused (Solving)
+ import Features.Check.RowMerge.Merge (Row)
+ import Features.Check.RowMerge.Occurrence (nextPredicate, recorded)
+ import Features.Check.RowMerge.Predicate (made)
+-import Features.Check.RowStore (Because(..), plain)
++import Features.Check.RowStore (Because(..), Lack, plain)
+ import Features.Check.Subst (Flex(..), Subst(..))
+ import Features.Check.UnifyFailure (Failure)
+ 
+@@ -49,7 +50,20 @@ desugaredRow
+   → Row
+   → Subst
+   → Either Failure { row ∷ Row, subst ∷ Subst }
+-desugaredRow solving site written subst =
++desugaredRow solving site = desugaredWith solving site (const plain)
++
++-- The same, each part required apart from what precedes it in the chain
++-- for the reason `reasonOf part` gives: a literal's (Task 7) is the
++-- literal's own, `Spread`, never the `Implied` a type states, which the
++-- precedence would prefer.
++desugaredWith
++  ∷ Solving
++  → Maybe Span
++  → (Flex → Lack)
++  → Row
++  → Subst
++  → Either Failure { row ∷ Row, subst ∷ Subst }
++desugaredWith solving site reasonOf written subst =
+   if Array.length metas < 2 then Right { row: written, subst }
+   else finished site [] (nextPredicate subst) written
+     <$> foldM required { tail: first, subst } rest
+@@ -58,7 +72,8 @@ desugaredRow solving site written subst =
+   first = maybe (Meta 0) identity (Array.head metas)
+   rest = Array.drop 1 metas
+   required found part = pairedWith (predicateFor site found part)
+-    <$> requireApart solving plain (predicateFor site found part).subst
++    <$> requireApart solving (reasonOf part)
++      (predicateFor site found part).subst
+       found.tail
+       part
+ 
+diff --git a/src/Features/Check/RowMerge/Occurrence.purs b/src/Features/Check/RowMerge/Occurrence.purs
+index fe9c62d..f03ded4 100644
+--- a/src/Features/Check/RowMerge/Occurrence.purs
++++ b/src/Features/Check/RowMerge/Occurrence.purs
+@@ -3,6 +3,7 @@ module Features.Check.RowMerge.Occurrence (nextPredicate, recorded) where
+ import Prelude
+ import Prim hiding (Row)
+ import Data.Array as Array
++import Data.Map as Map
+ import Data.Maybe (Maybe(..))
+ import Domain.Syntax (Span)
+ import Domain.Type.Record (recordRow)
+@@ -35,6 +36,7 @@ recorded site steps first written result subst =
+     , row: recordRow written.fields
+         (Array.filter rigid written.tails <> [ result ])
+     , owner: Nothing
++    , items: Map.empty
+     }
+ 
+ rigid ∷ Flex → Boolean
+diff --git a/src/Features/Check/RowOutcome.purs b/src/Features/Check/RowOutcome.purs
+index 648aa4e..a781797 100644
+--- a/src/Features/Check/RowOutcome.purs
++++ b/src/Features/Check/RowOutcome.purs
+@@ -103,3 +103,4 @@ refusalReason = case _ of
+   MayHold _ _ because → Just because
+   Unproven _ _ because → Just because
+   Twice _ because → Just because
++  Repeated _ items → Just (Spread items)
+diff --git a/src/Features/Check/UnifyFailure.purs b/src/Features/Check/UnifyFailure.purs
+index 5f8720e..464baf4 100644
+--- a/src/Features/Check/UnifyFailure.purs
++++ b/src/Features/Check/UnifyFailure.purs
+@@ -71,7 +71,10 @@ type Cause = { predicate ∷ Int, at ∷ Maybe Span, within ∷ Maybe Subst }
+ -- binding brought the label (D2); `MayHold`, a signature's rigid tail
+ -- asked to lack a label a pair needs (D3''); `Unproven`, two rigid tails
+ -- asked to be disjoint without the hypothesis (D3); `Twice`, one rigid
+--- tail asked to be disjoint from itself (D3'). Each keeps its reason.
++-- tail asked to be disjoint from itself (D3'). Task 7: `Repeated`, a
++-- label bound into a tail that lacks it because two items of one literal
++-- are disjoint (`Spread`), with the two items (D2'). Each keeps its
++-- reason.
+ -- (Task 4's `Outside` and `Derived`, refusals only upper bounds and the
+ -- sum rule made, went with them in B2.)
+ data Refusal
+@@ -80,3 +83,4 @@ data Refusal
+   | MayHold Flex String Because
+   | Unproven Flex Flex Because
+   | Twice Flex Because
++  | Repeated String { earlier ∷ Span, later ∷ Span }
+diff --git a/src/Features/Check/Unresolved.purs b/src/Features/Check/Unresolved.purs
+index 0df47c6..8653ec9 100644
+--- a/src/Features/Check/Unresolved.purs
++++ b/src/Features/Check/Unresolved.purs
+@@ -13,6 +13,7 @@ import Domain.Resolved (EffectInfo)
+ import Domain.Syntax (Diagnostic, Note, Span, TypeRef, typeRefSpan)
+ import Features.Check.Atom (Atom(..))
+ import Features.Check.Collision (naming)
++import Features.Check.PartNames (partNames, partNotes)
+ import Features.Check.MergeOther (otherName, wholeName)
+ import Features.Check.MergeParts
+   ( View
+@@ -20,7 +21,6 @@ import Features.Check.MergeParts
+   , candidatesOf
+   , constantsOf
+   , lambdaPart
+-  , partNames
+   , pathOf
+   , viewOf
+   )
+@@ -69,7 +69,7 @@ reported env fallback subst view = report
+   constants = constantsOf view
+   parts = maybe view.parts candidatesOf' split
+   candidatesOf' found = found.candidates
+-  names = partNames view parts
++  names = partNames subst view parts
+   report other whole =
+     { problem: CannotTell
+         { owner: map ownerName view.owner
+@@ -86,12 +86,13 @@ reported env fallback subst view = report
+   splitSubject found = case found.atom of
+     LabelAtom label → HasField label
+     RigidAtom _ → HoldsTail
+-      ((naming env view [ found.atom ] []).rigid (atomName env found.atom))
++      ((naming env subst view [ found.atom ] []).rigid (atomName env found.atom))
+   unsplit other _
+     | Array.null constants = Holds
+-    | otherwise = Splits (naming env view [] view.other.tails).row other
+-  notes whole = Array.catMaybes
+-    [ written names view, required site subst view whole ]
++    | otherwise = Splits (naming env subst view [] view.other.tails).row other
++  notes whole = Array.fromFoldable (written names view)
++    <> partNotes subst view parts
++    <> Array.fromFoldable (required site subst view whole)
+   ownerName owner = owner.name
+ 
+ -- R4: the first constant two or more parts may still hold.
+diff --git a/src/Features/Resolve/Lambda.purs b/src/Features/Resolve/Lambda.purs
+index 78cefb6..3596234 100644
+--- a/src/Features/Resolve/Lambda.purs
++++ b/src/Features/Resolve/Lambda.purs
+@@ -73,7 +73,8 @@ parameter annotations syntax = boundOf <$> liftEither annotation
+     syntax.ty
+   issue name = localNamed name <$> fresh
+   boundOf ty found =
+-    { param: { local: map localId found, ty, span: syntax.span }
++    { param:
++        { local: map localId found, name: syntax.name, ty, span: syntax.span }
+     , local: found
+     }
+   localId local = local.id
+diff --git a/src/Features/Resolve/Qualified.purs b/src/Features/Resolve/Qualified.purs
+index 331b912..a584129 100644
+--- a/src/Features/Resolve/Qualified.purs
++++ b/src/Features/Resolve/Qualified.purs
+@@ -181,5 +181,5 @@ failReference ∷ Maybe (Ty VarId) → Syntax.Span → Fresh Resolved.Expr
+ failReference family span = eta <$> fresh
+   where
+   eta payload = Resolved.Lambda span
+-    [ { local: Just payload, ty: family, span } ]
++    [ { local: Just payload, name: Nothing, ty: family, span } ]
+     (Resolved.Fail span Nothing (Resolved.Local span payload))
+diff --git a/src/Features/Resolve/Record.purs b/src/Features/Resolve/Record.purs
+index a792164..be9ba0f 100644
+--- a/src/Features/Resolve/Record.purs
++++ b/src/Features/Resolve/Record.purs
+@@ -7,11 +7,9 @@ module Features.Resolve.Record
+ 
+ import Prelude
+ import Data.Array as Array
+-import Data.Either (Either(..))
+ import Data.Foldable (traverse_)
+-import Data.Maybe (Maybe(..), maybe)
++import Data.Maybe (Maybe(..))
+ import Data.Traversable (traverse)
+-import Domain.Problem (Problem(..))
+ import Domain.Resolved as Resolved
+ import Domain.Syntax as Syntax
+ import Features.Resolve.Fresh (Fresh, liftEither)
+@@ -40,16 +38,15 @@ recordUpdate nested span base fields = Resolved.RecordUpdate span
+   <*> fieldValues nested fields
+ 
+ -- R005 design §1: a literal holding a spread keeps its items in written
+--- order. A second spread is refused first (until Tranche B), at the second;
+--- then a label written twice, as in any literal; then the items are
+--- resolved in written order, which is evaluation order.
++-- order. A label written twice is refused, as in any literal; then the
++-- items are resolved in written order, which is evaluation order. Any
++-- number of spreads (Tranche B Task 7: Tranche A refused a second).
+ recordExtension
+   ∷ (Syntax.Expr → Fresh Resolved.Expr)
+   → Syntax.Span
+   → Array Syntax.LiteralItem
+   → Fresh Resolved.Expr
+ recordExtension nested span items = do
+-  liftEither (singleSpread items)
+   liftEither (traverse_ repeatedField (repeatedLabel (given items)))
+   Resolved.RecordExtension span <$> traverse item items
+   where
+@@ -69,16 +66,6 @@ recordRemoval nested span receiver labels = do
+   liftEither (traverse_ repeatedField (repeatedLabel labels))
+   Resolved.RecordRemoval span <$> nested receiver <*> pure labels
+ 
+--- The spans of the spreads past the first are errors.
+-singleSpread ∷ Array Syntax.LiteralItem → Either Syntax.Diagnostic Unit
+-singleSpread items = maybe (Right unit) tooMany (Array.index spreads 1)
+-  where
+-  spreads = Array.mapMaybe spreadAt items
+-  spreadAt = case _ of
+-    Syntax.Spreading at _ → Just at
+-    Syntax.Given _ → Nothing
+-  tooMany at = Left (Syntax.problemAt SecondSpread at)
+-
+ given ∷ Array Syntax.LiteralItem → Array Syntax.FieldValue
+ given = Array.mapMaybe fieldOf
+   where
+diff --git a/src/Format/Diagnostic.purs b/src/Format/Diagnostic.purs
+index a9198a2..72094ec 100644
+--- a/src/Format/Diagnostic.purs
++++ b/src/Format/Diagnostic.purs
+@@ -83,7 +83,6 @@ message = case _ of
+   ExpectedRecord ty → Records.expectedRecord (typeName ty)
+   PatternMissingField label → Records.patternMissingField label
+   PatternMissingRest ty → Records.patternMissingRest (typeName ty)
+-  SecondSpread → Records.secondSpread
+   RepeatedTail name → Records.repeatedTail name
+   SameDisjoint → Records.sameDisjoint
+   NotKnownDisjoint one other → Records.notKnownDisjoint one other
+diff --git a/src/Format/Diagnostic/Code.purs b/src/Format/Diagnostic/Code.purs
+index 1c9ef2d..5dc0967 100644
+--- a/src/Format/Diagnostic/Code.purs
++++ b/src/Format/Diagnostic/Code.purs
+@@ -46,7 +46,6 @@ code = case _ of
+   ExpectedRecord _ → Code.TypeMismatch
+   PatternMissingField _ → Code.TypeMismatch
+   PatternMissingRest _ → Code.TypeMismatch
+-  SecondSpread → Code.TypeMismatch
+   RepeatedTail _ → Code.TypeMismatch
+   SameDisjoint → Code.TypeMismatch
+   NotKnownDisjoint _ _ → Code.TypeMismatch
+diff --git a/src/Format/Diagnostic/Merge.purs b/src/Format/Diagnostic/Merge.purs
+index 1ec7573..81adf5a 100644
+--- a/src/Format/Diagnostic/Merge.purs
++++ b/src/Format/Diagnostic/Merge.purs
+@@ -4,6 +4,7 @@ import Prelude
+ import Data.Array as Array
+ import Data.Maybe (maybe)
+ import Data.String (joinWith)
++import Data.String as String
+ import Domain.Problem.Merge
+   ( Fault(..)
+   , MergeAtom(..)
+@@ -31,7 +32,11 @@ undetermined name found = "Cannot tell " <> subject <> maybe "" hint found.hint
+       <> " split "
+       <> maybe "" possessive otherOwner
+       <> name other
++  -- Example 10: no owner and no part named, the parts as one row.
+   choice
++    | ownerless && Array.all unnamed found.parts = "which part of { "
++        <> joinWith ", " found.parts
++        <> " }"
+     | Array.length found.parts == 2 = "whether " <> owned
+         <> joinWith " or " found.parts
+     | otherwise = "which of " <> owned <> alternatives found.parts
+@@ -47,6 +52,8 @@ undetermined name found = "Cannot tell " <> subject <> maybe "" hint found.hint
+       <> ", which belong to this call of "
+       <> owner
+   lambda = "; pass a lambda with annotated parameters in place of "
++  ownerless = maybe true (const false) found.owner
++  unnamed part = String.take 4 part == "..._"
+ 
+ mustBe ∷ (TypeName → String) → MustBe → String
+ mustBe name found = maybe "" possessive found.owner <> name found.row
+diff --git a/src/Format/Diagnostic/Note.purs b/src/Format/Diagnostic/Note.purs
+index 20995ca..a9fa3fe 100644
+--- a/src/Format/Diagnostic/Note.purs
++++ b/src/Format/Diagnostic/Note.purs
+@@ -116,6 +116,7 @@ noteText = case _ of
+   FirstImportedHere → "first imported here"
+   FirstBoundHere → "first bound here"
+   FirstWrittenHere → "first written here"
++  WrittenAgainHere → "written again here"
+   IntroducedHere name → name <> " is introduced here"
+   RequiredHere → "required here"
+   InnermostHere label → "the innermost " <> shortLabel label <> " is here"
+diff --git a/src/Format/Diagnostic/Records.purs b/src/Format/Diagnostic/Records.purs
+index dd1725b..6acca02 100644
+--- a/src/Format/Diagnostic/Records.purs
++++ b/src/Format/Diagnostic/Records.purs
+@@ -13,7 +13,6 @@ module Format.Diagnostic.Records
+   , notKnownDisjoint
+   , inBothRecords
+   , inBothRows
+-  , secondSpread
+   , typeAsRecordRow
+   ) where
+ 
+@@ -54,9 +53,6 @@ patternMissingRest ∷ String → String
+ patternMissingRest ty = "Pattern is missing the rest of " <> ty
+   <> "; end the pattern with ..."
+ 
+-secondSpread ∷ String
+-secondSpread = "A record literal accepts at most one spread"
+-
+ -- R005 Tranche B (approved 2026-10-17, design §10 D8, D9, D3).
+ repeatedTail ∷ String → String
+ repeatedTail name = "..." <> name <> " is written twice in one record"
+diff --git a/test/fixtures/r005b/d2-late.json b/test/fixtures/r005b/d2-late.json
+new file mode 100644
+index 0000000..2fce1c8
+--- /dev/null
++++ b/test/fixtures/r005b/d2-late.json
+@@ -0,0 +1,41 @@
++{
++  "name": "d2-late",
++  "from": "plan (2026-10-17) F11, D2' found late (rule 1 wins)",
++  "remark": "approved D2' text and notes (plan 2026-10-17, Approved texts); the overlap completes when the lambda meets g's parameter type, one unification binding both parts after the literal was checked. Two arguments of one call do not reach it: the solving case's binding between them states the lack as Implied, which the approved precedence prefers (docs/findings.md, Task 7)",
++  "source": "fn g(k: ({ a: Int }, { a: Int }) -> Int): Int = 0;\nfn main(): Int = g(fn(p, q) => { let m = { ...p, ...q }; 0 });\n",
++  "result": "Contradiction",
++  "diagnostic": {
++    "id": "D2'",
++    "code": "E_DUPLICATE",
++    "message": "Duplicate field a",
++    "at": {
++      "text": "fn(p, q) => { let m = { ...p, ...q }; 0 }",
++      "nth": 0
++    },
++    "notes": [
++      {
++        "message": "first written here",
++        "at": {
++          "text": "...p",
++          "nth": 0
++        }
++      },
++      {
++        "message": "written again here",
++        "at": {
++          "text": "...q",
++          "nth": 0
++        }
++      }
++    ]
++  },
++  "before": null,
++  "output": null,
++  "stages": {
++    "solver": null,
++    "check": 7,
++    "text": 7,
++    "run": null
++  },
++  "rows": null
++}
+diff --git a/test/r005-resolve.test.mjs b/test/r005-resolve.test.mjs
+index 9226e9e..3a9444d 100644
+--- a/test/r005-resolve.test.mjs
++++ b/test/r005-resolve.test.mjs
+@@ -31,16 +31,9 @@ test('a removal resolves its receiver and keeps its labels', () => {
+   assert.deepEqual(body.value2.map(label => label.name), ['fa', 'fb']);
+ });
+ 
+-test('a second spread is E_TYPE at the second spread', () => {
+-  const source = `fn f(p: Int, q: Int): Int = { ...p, fa: 1, ...q };${main}`;
+-  const found = resolveRejectedAt(source, 'E_TYPE', '...q');
+-  assert.equal(found.message, 'A record literal accepts at most one spread');
+-});
+-
+-test('with three spreads the second is the one reported', () => {
+-  const source = `fn f(p: Int): Int = { ...p, ...p, ...p };${main}`;
+-  resolveRejectedAt(source, 'E_TYPE', '...p', 1);
+-});
++// Tranche A refused a second spread (`A record literal accepts at most
++// one spread`); the text retired in R005 Tranche B Task 7, as approved on
++// 2026-10-17, and both sources are checked now (test/r005b-literal).
+ 
+ test('a repeated label in a literal is Duplicate field at the second', () => {
+   const source = `fn f(p: Int): Int = { ...p, fa: 1, fa: 2 };${main}`;
+diff --git a/test/r005b-fixtures.test.mjs b/test/r005b-fixtures.test.mjs
+index 94f4906..2c4b437 100644
+--- a/test/r005b-fixtures.test.mjs
++++ b/test/r005b-fixtures.test.mjs
+@@ -13,8 +13,9 @@ import { assertDiagnostic, checkWired, fixtures, wired }
+ // with its check); from `run`, the output through Go. A fixture before
+ // its stage is skipped by that field only, never because it fails. `task`
+ // is the plan's task this tree has reached, in the 2026-10-17 plan's
+-// numbering that `stages` uses: R005 Tranche B's B5 is its Task 6.
+-const task = 6;
++// numbering that `stages` uses: R005 Tranche B's B5 was its Task 6, and
++// Task 7 keeps its number.
++const task = 7;
+ const reached = stage => stage !== null && stage <= task;
+ 
+ const checkStage = fixture => {
+@@ -44,33 +45,20 @@ for (const fixture of fixtures) {
+   }
+ }
+ 
+-// Task 3 activates the precedence fixtures and their controls, the two
++// Task 3 activated the precedence fixtures and their controls, the two
+ // lone-meta fixtures and diag-06-fix (the plan's activation table); Task
+-// 4 activates none here (no fixture's `check` or `run` stage is 4: its
+-// solver-stage fixtures run in test/row-merge.test.mjs); Task 5 (B4)
+-// activates the three Unresolved fixtures without a literal of two
++// 4 none here (its solver-stage fixtures run in test/row-merge.test.mjs);
++// Task 5 (B4) the three Unresolved fixtures without a literal of two
+ // spreads and the two annotated programs that fix diag-07's shape; Task 6
+ // (B5) the `render-*` fixtures, their annotated companions,
+-// participation-control and render-none-control (decision 21).
++// participation-control and render-none-control (decision 21). Task 7,
++// with the merge literal, activates every remaining fixture's checking:
++// none waits for a later task's `check` stage.
+ test('the fixtures this task activates are the activation table\'s', () => {
+-  const active = fixtures.filter(fixture => reached(fixture.stages.check))
++  const waiting = fixtures.filter(fixture => !reached(fixture.stages.check))
+     .map(fixture => fixture.name);
+-  assert.deepEqual(active, ['design-both-annotated', 'design-both-plain',
+-    'diag-06-fix', 'diag-06', 'diag-07-fix', 'diag-07', 'lone-meta-lack-two',
+-    'lone-meta-lack', 'participation-control', 'precedence-control-hole-base',
+-    'precedence-control-no-clause', 'precedence-control-two-clauses',
+-    'precedence-p1', 'precedence-p2', 'precedence-p3', 'precedence-p4',
+-    'precedence-p5', 'precedence-p6', 'precedence-p7', 'render-call',
+-    'render-d6-neither', 'render-d6-nested', 'render-d6-one',
+-    'render-holds-annotated', 'render-holds', 'render-lambda-annotated',
+-    'render-lambda', 'render-mixed-annotated', 'render-mixed',
+-    'render-nested-annotated', 'render-nested',
+-    'render-none-control-annotated', 'render-none-control',
+-    'render-partial-annotated',
+-    'render-partial', 'render-quiet-annotated', 'render-quiet',
+-    'render-reference-annotated', 'render-reference',
+-    'render-split-annotated', 'render-split', 'render-three-annotated',
+-    'render-three']);
++  assert.deepEqual(waiting, []);
++  assert.equal(fixtures.length, 102);
+ });
+ 
+ // Plan §10 decision 20: a hint that suggests an annotation is pinned only
+diff --git a/test/r005b-literal.test.mjs b/test/r005b-literal.test.mjs
+new file mode 100644
+index 0000000..b674330
+--- /dev/null
++++ b/test/r005b-literal.test.mjs
+@@ -0,0 +1,139 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { checkedPoly, resolved } from './phases.mjs';
++import { checkWired, offsets } from './r005b-support.mjs';
++
++// R005 Tranche B Task 7 (plan §7; design draft 3 §1.4): a literal of
++// several spreads. Each spread's row joins the result's tails and its
++// unknown tails become predicates (plan §2.1); every two items are
++// required disjoint for the reason `Spread`, so an overlap is D2' (the
++// existing `Duplicate field a`): at the later item when the items' types
++// already show it, at the expression that completes it otherwise, noted
++// at both items. The result's type is read back through a missing
++// field's text, which prints it.
++const merge = 'fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n'
++  + '  where r disjoint s = { ...a, ...b };\n';
++// Sources span lines, so spans are compared as offsets.
++const spanOf = span => [span.start.offset, span.end.offset];
++const rejects = (source, code, text, nth, message) => {
++  const found = checkWired(source);
++  assert.notEqual(found, null, `accepted: ${source}`);
++  assert.deepEqual([found.code, found.message, ...spanOf(found.span)],
++    [code, message, ...offsets(source, { text, nth })]);
++  return found;
++};
++const typeIs = (body, type) => rejects(`${merge}fn main(): Int = ${body};`,
++  'E_TYPE', 'zz', 0, `zz is not a field of ${type}`);
++const notes = found => found.related.map(note => note.message);
++// Each note's message and span, against `[message, text, nth]`.
++const notedAt = (found, source, expected) => assert.deepEqual(
++  found.related.map(note => [note.message, ...spanOf(note.span)]),
++  expected.map(([message, text, nth]) =>
++    [message, ...offsets(source, { text, nth })]));
++
++test('merge is checked: its literal joins both tails', () => {
++  checkedPoly(`${merge}fn main(): Int = 0;`);
++  typeIs('merge({ x: 1 }, { y: 2 }).zz', '{ x: Int, y: Int }');
++});
++
++test('a lambda of two spreads is typed once its parts are known', () => {
++  typeIs('{ let f = fn(p, q) => { ...p, ...q }; f({ x: 1 }, { y: 2 }).zz }',
++    '{ x: Int, y: Int }');
++});
++
++test('a field between two spreads joins the result', () => {
++  typeIs('{ let f = fn(p, q) => { ...p, x: 1, ...q }; '
++    + 'f({ y: 2 }, { z: 3 }).zz }', '{ x: Int, y: Int, z: Int }');
++});
++
++test('three spreads, generic and through a lambda', () => {
++  const merge3 = 'fn merge3(a: { ...r }, b: { ...s }, c: { ...t }): '
++    + '{ ...r, ...s, ...t } = { ...a, ...b, ...c };\n';
++  checkedPoly(`${merge3}fn main(): Int = 0;`);
++  rejects(`${merge3}fn main(): Int = merge3({ x: 1 }, { y: 2 }, { z: 3 })`
++    + '.zz;', 'E_TYPE', 'zz', 0,
++  'zz is not a field of { x: Int, y: Int, z: Int }');
++  typeIs('{ let f = fn(p, q, w) => { ...p, ...q, ...w }; '
++    + 'f({ x: 1 }, { y: 2 }, { z: 3 }).zz }', '{ x: Int, y: Int, z: Int }');
++});
++
++test('a spread of a merge result', () => {
++  checkedPoly(`${merge}fn m3(a: { ...r }, b: { ...s }, c: { ...t }): `
++    + '{ ...r, ...s, ...t } = { ...merge(a, b), ...c };\n'
++    + 'fn main(): Int = 0;');
++  typeIs('{ ...merge({ x: 1 }, { y: 2 }), ...merge({ z: 3 }, { w: 4 }) }.zz',
++    '{ w: Int, x: Int, y: Int, z: Int }');
++});
++
++// The literal's unknown tails are a predicate's parts: nothing decides an
++// unused lambda's, so the body ends Unresolved (D4, no constant; R1's
++// lambda parameter names; R9's lambda hint), at the lambda.
++test('a literal over unknown tails makes a predicate', () => {
++  const found = rejects('fn main(): Int = { let f = fn(p, q) => '
++    + '{ ...p, ...q }; 0 };', 'E_TYPE', 'fn(p, q) => { ...p, ...q }', 0,
++  'Cannot tell what p and q hold; annotate this lambda\'s parameters');
++  assert.deepEqual(notes(found), []);
++});
++
++test('D2\' found at once: the later item, noted at the earlier', () => {
++  const two = 'fn main(): Int = { ...{ a: 1 }, ...{ a: 2 } }.a;';
++  notedAt(rejects(two, 'E_DUPLICATE', '...{ a: 2 }', 0, 'Duplicate field a'),
++    two, [['first written here', '...{ a: 1 }', 0]]);
++  const field = 'fn main(): Int = { ...{ a: 1 }, a: 2, ...{ b: 3 } }.a;';
++  notedAt(rejects(field, 'E_DUPLICATE', 'a', 2, 'Duplicate field a'), field,
++    [['first written here', '...{ a: 1 }', 0]]);
++});
++
++// Late: one unification binds both parts after the literal was checked.
++// Through two arguments of one call the case that solves the predicate
++// between them states the second part's lack as `Implied` (a row the
++// checker made), which the approved precedence prefers to `Spread`, so
++// that form keeps Tranche A's shape text (docs/findings.md, Task 7).
++test('D2\' found late: the completing expression, noted at both items',
++  () => {
++    const source = 'fn g(k: ({ a: Int }, { a: Int }) -> Int): Int = 0;\n'
++      + 'fn main(): Int = g(fn(p, q) => { let m = { ...p, ...q }; 0 });';
++    notedAt(rejects(source, 'E_DUPLICATE',
++      'fn(p, q) => { let m = { ...p, ...q }; 0 }', 0, 'Duplicate field a'),
++    source, [['first written here', '...p', 0],
++      ['written again here', '...q', 0]]);
++    const fields = 'fn main(): Int = { let f = fn(w) => { ...w.l, ...w.r }; '
++      + 'f({ l: { a: 1 }, r: { a: 2 } }).a };';
++    notedAt(rejects(fields, 'E_DUPLICATE', '{ l: { a: 1 }, r: { a: 2 } }', 0,
++      'Duplicate field a'), fields, [['first written here', '...w.l', 0],
++      ['written again here', '...w.r', 0]]);
++    const calls = 'fn main(): Int = { let f = fn(p, q) => { ...p, ...q }; '
++      + 'f({ a: 1 }, { a: 2 }).a };';
++    notedAt(rejects(calls, 'E_TYPE', '{ a: 2 }', 0,
++      'Expected { ..._ }, found { a: Int }'), calls, []);
++  });
++
++// The rigid forms keep their approved texts, at the later item, with no
++// note for a literal's reason (D3, D3'), D3'' at the field.
++test('rigid spreads: D3, D3\' and D3\'\'', () => {
++  rejects('fn f(a: { ...r }, b: { ...s }): Int = { let c = { ...a, ...b }; '
++    + '0 };\nfn main(): Int = 0;', 'E_TYPE', '...b', 0,
++  'r and s are not known to be disjoint; require r disjoint s in the '
++    + 'signature');
++  rejects('fn f(p: { ...r }): Int = { let c = { ...p, ...p }; 0 };\n'
++    + 'fn main(): Int = 0;', 'E_TYPE', '...p', 1,
++  'r is in both records and may have fields');
++  const mayHave = 'fn f(a: { ...r }, b: { ...s }): Int where r disjoint s '
++    + '= { let c = { ...a, x: 1, ...b }; 0 };\nfn main(): Int = 0;';
++  notedAt(rejects(mayHave, 'E_TYPE', 'x', 0, 'r may already have field x'),
++    mayHave, [['r is introduced here', '...r', 0]]);
++});
++
++// The sources Tranche A refused with `A record literal accepts at most
++// one spread` (test/r005-resolve.test.mjs): resolved now, and judged by
++// checking.
++test('former second-spread sources resolve and are checked', () => {
++  const two = 'fn f(p: Int, q: Int): Int = { ...p, fa: 1, ...q };\n'
++    + 'fn main(): Int = 0;';
++  const three = 'fn f(p: Int): Int = { ...p, ...p, ...p };\n'
++    + 'fn main(): Int = 0;';
++  resolved(two);
++  resolved(three);
++  rejects(two, 'E_TYPE', '...p', 0, 'Expected a record, found Int');
++  rejects(three, 'E_TYPE', '...p', 0, 'Expected a record, found Int');
++});
+diff --git a/test/r005b-removal.test.mjs b/test/r005b-removal.test.mjs
+new file mode 100644
+index 0000000..276e3ec
+--- /dev/null
++++ b/test/r005b-removal.test.mjs
+@@ -0,0 +1,65 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { checkedPoly } from './phases.mjs';
++import { checkWired, offsets } from './r005b-support.mjs';
++
++// R005 Tranche B Task 7 (design draft 3 §5.2, user decision 6): `e
++// without { l1, …, ln }` requires `e` against `{ l1: α1, …, ln: αn, ...ρ
++// }` in one requirement and has type ρ, never a subtraction from a
++// resolved type; a record pattern's named rest likewise. So a label
++// removed from a merge whose parts are not yet known is gone from the
++// rest at once, and, once they are, the rest is what is left whichever
++// part held it (review F1: a subtraction while the label had two homes
++// removed nothing, and the label came back). Before Task 7 a removal or
++// rest over several tails was a placeholder (P3).
++const merge = 'fn merge(a: { ...r }, b: { ...s }): { ...r, ...s }\n'
++  + '  where r disjoint s = { ...a, ...b };\n';
++// Sources span lines, so spans are compared as offsets.
++const rejects = (source, text, nth, message) => {
++  const found = checkWired(source);
++  assert.notEqual(found, null, `accepted: ${source}`);
++  assert.deepEqual(
++    [found.code, found.message, found.span.start.offset, found.span.end.offset],
++    ['E_TYPE', message, ...offsets(source, { text, nth })]);
++};
++const dropped = (removed, uses) => `${merge}fn main(): Int = {\n`
++  + `  let drop = fn(p, q) => ${removed};\n  ${uses}\n};\n`;
++const restOf = 'match merge(p, q) { { x, ...rest } => rest }';
++
++test('without: x in the left part or the right, the rest is { y: Int }',
++  () => {
++    const removed = 'merge(p, q) without { x }';
++    for (const call of ['drop({ x: 1 }, { y: 2 })',
++      'drop({ y: 2 }, { x: 1 })']) {
++      checkedPoly(dropped(removed, `${call}.y`));
++      rejects(dropped(removed, `${call}.x`), 'x', 2,
++        'x is not a field of { y: Int }');
++    }
++  });
++
++test('a named rest: x in either part, the rest is { y: Int }', () => {
++  for (const call of ['drop({ x: 1 }, { y: 2 })',
++    'drop({ y: 2 }, { x: 1 })']) {
++    checkedPoly(dropped(restOf, `${call}.y`));
++    rejects(dropped(restOf, `${call}.x`), 'x', 2,
++      'x is not a field of { y: Int }');
++  }
++});
++
++test('.x on the rest is refused while the predicate waits', () => {
++  rejects(dropped('{ let rest = merge(p, q) without { x }; rest.x }', '0'),
++    'x', 1, 'x is not a field of { ..._ }');
++  rejects(dropped(`{ let rest = ${restOf}; rest.x }`, '0'), 'x', 1,
++    'x is not a field of { ..._ }');
++});
++
++// Over several rigid tails nothing waits: the rest is the other tails.
++test('removal and a named rest over several rigid tails', () => {
++  const tails = '{ x: Int, ...r, ...s }';
++  checkedPoly(`fn f(p: ${tails}): { ...r, ...s } = p without { x };\n`
++    + 'fn main(): Int = 0;');
++  checkedPoly(`fn f(p: ${tails}): { ...r, ...s } = `
++    + 'match p { { x, ...rest } => rest };\nfn main(): Int = 0;');
++  rejects(`fn f(p: ${tails}): Int = (p without { x }).x;\n`
++    + 'fn main(): Int = 0;', 'x', 2, 'x is not a field of { ...r, ...s }');
++});
+-- 
+2.50.1 (Apple Git-155)
+
