@@ -13,8 +13,10 @@ branch. Those paths are absent from this checkout until integration. If the
 worktree is unavailable, use:
 
 ```text
-git show design/c001-explicit-evidence:docs/plans/2026-10-21-c001-explicit/README.md
-git show design/c001-explicit-evidence:docs/plans/2026-10-21-c001-explicit/handoff.md
+git show \
+  design/c001-explicit-evidence:docs/plans/2026-10-21-c001-explicit/README.md
+git show \
+  design/c001-explicit-evidence:docs/plans/2026-10-21-c001-explicit/handoff.md
 ```
 
 Recorded author rulings: ordinary structural operation records (A);
