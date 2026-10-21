@@ -183,7 +183,8 @@ def D3bExists : Prop :=
     HasInstance P π → ∃ θs, GenericInst P π θs
 
 /-- The construction: an mgu over the allowed cells gives a generic
-instance, within the problem's labels and bases. -/
+instance within the problem's symbols (`WithinC`: written labels and
+bases, plus symbolic cell labels and generic constants). -/
 def Universality : Prop :=
   ∀ (P : SigProblem Label B) (π : Pattern Label) (τ : CSubst Label B),
     Scoped P → HasInstance P π → IsMGU P π (allowedCells P π) τ →
@@ -194,8 +195,8 @@ def CellIndependence : Prop :=
   ∀ (P : SigProblem Label B) (π : Pattern Label), Scoped P →
     HasInstance P π → ∃ τ, UnifiesD P π (allowedCells P π) τ
 
-/-- Robinson's theorem for the pre-instance: unifiable means a finite
-mgu exists. -/
+/-- An adaptation of Robinson's theorem for the pre-instance:
+unifiable means a finite mgu exists. -/
 def MGUExists : Prop :=
   ∀ (P : SigProblem Label B) (π : Pattern Label) (C : List Cell),
     (∃ τ, UnifiesD P π C τ) → ∃ τ, IsMGU P π C τ
@@ -229,7 +230,7 @@ def D3bValidAll : Prop :=
       ∃ θs, GenericInst P π θs ∧ SolvableFinAt P θs) → ValidFin P)
 
 /-- D3b's completeness half: with fresh labels and bases, a generic
-instance within the problem's labels and bases is realized by a rigid
+instance within the problem's symbols (`WithinC`) is realized by a rigid
 assignment, so validity in the pattern gives a solution at the generic
 instance. -/
 def D3bComplete : Prop :=

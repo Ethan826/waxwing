@@ -8057,3 +8057,10 @@ unrelated README/backlog/direction-plan edits remain untouched.
   `Fresh` kept separate. Clean build, standard axioms. Independent
   review of the proofs in progress. Oracle: exact clash check and assert
   mode, full named suite 59/59.
+- D3b existence proofs independently reviewed (dossier §18.36): all
+  seven theorems sound, none false or vacuous; "general existence with
+  no freshness premise" holds with its full premises. Wording findings
+  corrected (WithinC's meaning, the Robinson adaptation, θ* classical);
+  open: concrete `thetaStar` checks in the repository (F6). Bridge
+  statements split into six files and re-reviewed (statements.md §10);
+  first proof tranche running in four parallel streams.

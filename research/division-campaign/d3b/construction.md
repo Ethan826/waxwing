@@ -69,8 +69,9 @@ the rigid variables take their values from `θs`.
    pre-instance, `D`'s `lacks` and `disjoint` atoms and the definedness
    of its compositions depend only on presence, which `τ` cannot change;
    `D`'s equations become first-order equations between finite terms
-   (records are constructors with a fixed label set). This is ordinary
-   syntactic unification in the sense of Robinson 1965. §6.1 sets out
+   (records are constructors with a fixed label set). This is an
+   adaptation of Robinson's 1965 syntactic unification (corrected
+   2026-10-21, review F3; not an unchanged application). §6.1 sets out
    where this model departs from Robinson's term language; the theorem
    used here is proved directly for this model (`robinson`).
 3. **Allowed cells.** Cell `S` is allowed when `D` is unifiable with `S`
@@ -206,8 +207,12 @@ followed:
    every MGU has `μ`'s syntactic form.
 5. **Conclusion components.** Finite rigid values (`RigidFinC`),
    satisfaction of `D`, pattern agreement, finite-valued coverage and
-   `WithinC` (the problem's labels and bases pass back through
-   substitution, `within_of_subst`) are all proved in Universality.lean.
+   `WithinC` (values use only the problem's written labels and bases
+   plus symbolic cell labels and generic constants; they pass back
+   through substitution, `within_of_subst`) are all proved in
+   Universality.lean. **θ* is classical, not computed** (review F4):
+   `allowedCells` and the MGU are obtained classically, and θ* is fixed
+   only up to the choice of MGU.
 
 `instanceIffUnifiable` (vacuity) remains as before. `HasInstance` is a
 premise of `Universality` but the proof does not use it: without an
@@ -254,10 +259,12 @@ Departures and how they are handled:
 
 1. **Infinite values.** `CG` records are functions from labels, so a
    value may branch infinitely; `IsMGU` quantifies over substitutions
-   with such values. Robinson's terms are finite. The proof uses only
-   constructor injectivity and disjointness and well-foundedness of
-   proper parts (`psub_acc`), all proved for `CG`, so infinite unifiers
-   are covered; the MGU itself has finite values (`FinG`).
+   with such values. Robinson's terms are finite. The proof uses
+   constructor injectivity and disjointness, well-foundedness of proper
+   parts (`psub_acc`), and the cell shape of the pairs with their cell
+   projections (corrected 2026-10-21, review F2), all proved for `CG`,
+   so infinite unifiers are covered; the MGU itself has finite values
+   (`FinG`).
 2. **Rows.** Rigid rows are not unification variables: the pre-instance
    fixes each row's presence (written labels by π, cells by `C`). Row
    composition is evaluated before unification; definedness, `lacks` and
@@ -267,13 +274,16 @@ Departures and how they are handled:
 3. **Records modulo order.** A record is a function, so there is no
    field order and no equality modulo permutation to handle. A record
    symbol is identified by its label set, compared extensionally.
-4. **Substitutions.** `CSubst` is total; `robinson`'s result leaves
-   every constant outside the equations fixed. `IsMGU` asks for finite
-   values, not finite support.
+4. **Substitutions.** `CSubst` is total. That `robinson`'s result
+   leaves every constant outside the equations fixed is believed
+   derivable but is not stated or proved in Lean (corrected 2026-10-21,
+   review F3). `IsMGU` asks for finite values, not finite support.
 5. **Cells.** Cell labels are ordinary labels `inr S`; cell constants
    are ordinary variables. No cell map enters unification. Cell locality
-   (`CS`) is an extra invariant needed for `cellIndependence` and
-   `universality`, not for `mguExists`.
+   (`CS`) is an extra invariant. `robinson` is proved only for
+   cell-shaped pairs, and `mguExists` goes through it, so cell shape is
+   needed there too, as well as for `cellIndependence` and
+   `universality` (corrected 2026-10-21, review F2).
 
 Because of 1, the published theorem is not applied as a black box.
 `robinson` (UnifMain.lean) reproves it for this model by induction on
