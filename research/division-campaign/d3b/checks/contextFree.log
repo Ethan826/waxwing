@@ -1,0 +1,94 @@
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '0', '3', 'contextFree']
+wall limit: 180s
+alias: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+alias-declared: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+alias-chain: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+compose-undeclared: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+equal-rests: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+self-disjoint: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+rigid-type-eq: d3b invalid, bounded invalid, expect invalid
+rigid-type-free: d3b valid, bounded valid, expect valid
+rec-sig: d3b invalid, bounded invalid, expect invalid
+arrow-sig: d3b invalid, bounded invalid, expect invalid
+lacks-declared: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+lacks-missing: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{a:Int,z2:Int}","want":"{a:Int,z2:Bool}"}
+split: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+types-differ: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+types-independent: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+empty-split: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+forced-empty: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+nested-same: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+nested-two: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+tyvar-field: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+nested-alias: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{g:Int,z2:Int}","want":"{g:Int,z2:Bool}"}
+nested-alias-undeclared: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+tyvar-nested-rest: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{g:Int,z2:Int}","want":"{g:Int,z2:Bool}"}
+shared-part: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+shared-part-equal-rows: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+shared-part-no-disjoint: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+agreement-hypothesis: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+split: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+split-undeclared: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+division-in-field: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+division-in-function: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+division-record-rigid-var: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+nested-agreement: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+nested-agreement-missing: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+function-from-rigid: d3b valid, bounded valid, expect valid
+record-from-rigid: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+nested-rigid-mismatch: d3b invalid, bounded invalid, expect invalid
+greeting: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+mark: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+markForwarded: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+join: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+forwarded: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+TIMEOUT (partial output retained)
+elapsed: 180.01s

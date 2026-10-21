@@ -1,0 +1,46 @@
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '0', '3']
+wall limit: 180s
+alias: d3b invalid, bounded invalid, expect invalid
+alias-declared: d3b valid, bounded valid, expect valid
+alias-chain: d3b invalid, bounded invalid, expect invalid
+compose-undeclared: d3b invalid, bounded invalid, expect invalid
+equal-rests: d3b invalid, bounded invalid, expect invalid
+self-disjoint: d3b invalid, bounded invalid, expect invalid
+rigid-type-eq: d3b invalid, bounded invalid, expect invalid
+rigid-type-free: d3b valid, bounded valid, expect valid
+rec-sig: d3b invalid, bounded invalid, expect invalid
+arrow-sig: d3b invalid, bounded invalid, expect invalid
+lacks-declared: d3b valid, bounded valid, expect valid
+lacks-missing: d3b invalid, bounded invalid, expect invalid
+split: d3b valid, bounded valid, expect valid
+types-differ: d3b invalid, bounded invalid, expect invalid
+types-independent: d3b valid, bounded valid, expect valid
+empty-split: d3b valid, bounded valid, expect valid
+forced-empty: d3b invalid, bounded invalid, expect invalid
+nested-same: d3b valid, bounded valid, expect valid
+nested-two: d3b invalid, bounded invalid, expect invalid
+tyvar-field: d3b valid, bounded valid, expect valid
+nested-alias: d3b valid, bounded valid, expect valid
+nested-alias-undeclared: d3b invalid, bounded invalid, expect invalid
+tyvar-nested-rest: d3b valid, bounded valid, expect valid
+shared-part: d3b invalid, bounded invalid, expect invalid
+shared-part-equal-rows: d3b valid, bounded valid, expect valid
+shared-part-no-disjoint: d3b valid, bounded valid, expect valid
+agreement-hypothesis: d3b valid, bounded valid, expect valid
+split: d3b valid, bounded valid, expect valid
+split-undeclared: d3b invalid, bounded invalid, expect invalid
+division-in-field: d3b valid, bounded valid, expect valid
+division-in-function: d3b valid, bounded valid, expect valid
+division-record-rigid-var: d3b valid, bounded valid, expect valid
+nested-agreement: d3b valid, bounded valid, expect valid
+nested-agreement-missing: d3b invalid, bounded invalid, expect invalid
+function-from-rigid: d3b valid, bounded valid, expect valid
+record-from-rigid: d3b valid, bounded valid, expect valid
+nested-rigid-mismatch: d3b invalid, bounded invalid, expect invalid
+greeting: d3b valid, bounded valid, expect valid
+mark: d3b valid, bounded valid, expect valid
+markForwarded: d3b valid, bounded valid, expect valid
+join: d3b valid, bounded valid, expect valid
+forwarded: d3b valid, bounded valid, expect valid
+TIMEOUT (partial output retained)
+elapsed: 180.01s

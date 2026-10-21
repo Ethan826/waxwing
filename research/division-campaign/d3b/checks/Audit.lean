@@ -1,0 +1,17 @@
+import Composition
+#print axioms Composition.Typed.transfer
+#print axioms Composition.Typed.d3bSound
+#print axioms Composition.Typed.d3bValidAll
+#print axioms Composition.Typed.d3bEqFree
+#print axioms Composition.Typed.d3bFlat
+#print axioms Composition.Typed.instanceIffUnifiable
+#print axioms Composition.Typed.d3bComplete
+#print axioms Composition.Typed.routeP_valid
+#print axioms Composition.Typed.splitFree_unsolvable
+#print axioms Composition.Typed.splitFree_not_valid
+#print axioms Composition.Typed.agreeP_valid
+#print axioms Composition.TypedAttack.shapeSplit_valid
+#print axioms Composition.TypedAttack.shapeSplit_validFin
+#print axioms Composition.TypedAttack.shapeSplit_not_valid
+#print axioms Composition.TypedAttack.no_uniform_presence
+#print axioms Composition.TypedAttack.validity_not_extension_stable
