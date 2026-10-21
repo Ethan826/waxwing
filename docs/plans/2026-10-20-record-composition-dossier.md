@@ -3190,3 +3190,54 @@ stream 4 (typed oracle), stream 10 (slicing), the in-place corrections
 (§18.24), the reconciled recorder specification. To resume: integrate
 each branch's checkpoint through the coordinator, then send each stream
 its resume note.
+
+
+### 18.27 Codex finite-base follow-up (2026-10-21)
+
+The author asked Codex to investigate this question while Claude remains
+paused. Detailed handoff, source probes, build and axiom evidence:
+research/division-campaign/finite-base-followup/. The other campaign
+streams remain paused; their checkpoints were not integrated by this task.
+
+**Checked:** the original singleton ShapeSplit target at checkpoint
+9c3b9b7 builds independently. The new Lean modules
+Composition/TypedAttack/Finite*.lean prove the finite-base extension at
+the level of a branch-indexed semantic row-equation family. A complete,
+duplicate-free finite base list, plus arrow and record alternatives,
+provides finite targets, parts and remainders for every finite input type
+(`general_family_valid`). Every solution forces a named base arm to hold
+`f` exactly when the input has that base type, preventing uniform presence
+(`general_family_no_uniform`, through `family_compatible`). The existence
+construction is not assumed by the negative argument. Two-base and
+four-base instances are included; an unlisted base invalidates the family
+(`general_family_missing_base`). Thus adding a second oracle base without
+adding its alternative makes the singleton problem invalid and does not
+address the generalized separation.
+
+**Boundary:** this family uses the existing G/Row/compose semantics, but
+there is no Nat-indexed SigProblem generator or correspondence proof.
+Do not call the general SigProblem theorem proved. The full library builds
+with no warnings or placeholders; axioms are propext, Classical.choice and
+Quot.sound. An independent agent reviewed both the necessary conditions
+and the later full row equations, including finite remainder witnesses.
+
+**Source:** a generic gate call can generate the equation shape through
+fresh instantiation; no special existential source syntax is required.
+Three probes (generic input, Int input, nominal Box input) parse/resolve
+and stop at the current checker's unresolved split. They use the existing
+output modules, not a fresh compiler build, and were not run as programs.
+The scaffold deliberately uses crashing helpers. Its four-base generic
+form is not established valid for Waxwing: actual types include nominal
+applications, effect-bearing arrows and handlers outside this model. The
+current refusal therefore isolates neither a valid source counterexample
+nor a practical feature failure.
+
+**Next for the coordinator:** state whether the intended generic universe
+is closed per program or extensible with fresh opaque nominal types.
+Infinitely many constructed types do not by themselves supply fresh opaque
+base constants. Neither interpretation is selected here. Then reassess
+D3a/D3b completeness and add a base-per-alternative oracle challenge.
+Richer type-dependent witnesses are a proposal, not an adopted feature.
+The presence proofs and D3b's sound transfer results are not refuted by this
+finite-base completeness obstruction. Production integration, D4 and the
+other paused streams remain under their existing approval boundaries.
