@@ -3319,3 +3319,32 @@ typed completeness; review the proposed slicing/recorder obligations;
 then authorize any further proof, search or integration scope explicitly.
 No desired-feature failure in the full Waxwing universe is demonstrated,
 and no desired feature is removed by this checkpoint.
+
+### 18.29 Resumed scopes and the author's boundaries (2026-10-21)
+
+Resumed at d7113d7 on three scopes under existing approvals (progress,
+"campaign resumed on remaining work"): D3b existence lemmas and its
+local backlog; `star` at useful scale; a decision memo on the generic
+type universe. Boundaries:
+
+1. **General D3b existence and completeness for Waxwing stay separate
+   claims**, each theorem with its exact premises. A result conditional
+   on `Fresh` is useful but does not discharge whether Waxwing satisfies
+   `Fresh`.
+2. **"Robinson's result" needs an explicit correspondence**: the term
+   language, equality, substitutions and occurs check the published
+   theorem applies to, and the adaptation to this representation (rows,
+   cells, constructors, constants). The adaptation is what needs
+   checking, not standard unification.
+3. **The universe memo examines whether "closed versus extensible" is
+   the right distinction.** Fresh skolems during checking, fresh nominal
+   types introduced by modules, and additional inhabitants of the
+   semantic type universe are different things; neither extensibility
+   nor infinitely many constructed types automatically supplies the fresh
+   opaque bases D3b assumes. The language is not constrained merely to
+   satisfy the current proof.
+4. **`star` measurements include coverage verification**: search,
+   certificate size, checking, and the cost of establishing that a
+   compressed certificate covers every required case, reported
+   separately; compared with exhaustive enumeration where feasible, with
+   larger cases where that comparison cannot finish disclosed.
