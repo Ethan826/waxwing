@@ -36,28 +36,19 @@
     as predicted; minimizer shrank function-from-rigid's bounds.
     logs/power/M1.txt.
 
-## In flight when paused (killed)
+## Completed in the resumed task
 
-- M2 (cell source = highest row only): 47 of 75 named done; 3
-  SEPARATION (split x2, division-in-function) and 3 FLAG
-  (shared-part-no-disjoint, types-independent, src-routeNarrowed).
-  Detector fires as predicted; src-route not reached. logs/power/M2-partial.txt.
-- supplementary brute 1e10-1e13: 65 of 75 named listed, 1 more match;
-  the rest beyond 1e13 or unreached. logs/brute-supplementary-1e13-partial.txt.
+- Re-ran A and C and retained their logs: A has 36 problems and zero
+  mismatches; C has six problems and zero mismatches.
+- Added `results.md` with frozen hashes, tallies, timings, brute skips,
+  power-control status and the limits of the generated set.
+- Reflowed the 84-character alias line in `d3-grammar.mjs` without a
+  semantic change. The original frozen hash remains above; the amended
+  file hash and unchanged list hashes are recorded in `results.md`.
+- M2 remains a 47/75 partial control: 41 agree, 3 separations and 3
+  flags. It is separate from the frozen confirmation run.
 
-## Next step
-
-1. Optionally finish M2: copy sig-oracle and oracle to scratch, apply
-   in nested-search.mjs `for (const src of [null, ...S])` ->
-   `[null, S[S.length - 1]]`, run `node d3-oracle.mjs named
-   --shard=i/2`, then delete the copy.
-2. Rerun parts A and C to store logs (commands above).
-3. Write results.md (tables: problems, agreement, flags; commands;
-   timings) from logs/, then delete scratch copies
-   (scratchpad/power/{M1,M2,M3,BR}) and commit.
-4. Report: no separation within the frozen grammar; generator yields few
-   P9s-incomplete problems (8 of 240), so generated runs have low power
-   against division gaps; the named new challenges carry that load.
+See `results.md` for completed results and reproduction commands.
 
 ## Reproduce (from research/division-campaign/oracle)
 

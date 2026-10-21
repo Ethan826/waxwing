@@ -1,0 +1,11 @@
+gen0: start
+gen0: invalid; 2 ms
+gen1: start
+gen1: valid, uniform; 3 ms
+gen2: start
+gen2: invalid; 0 ms
+gen3: start
+gen3: invalid; 1 ms
+gen4: start
+gen4: invalid; 0 ms
+seed 17, 5 problems, 6 ms: {"invalid":4,"valid, uniform":1}
