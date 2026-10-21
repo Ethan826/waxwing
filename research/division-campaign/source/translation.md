@@ -8,6 +8,27 @@ Lean definitions. Labels for claims follow the dossier's head:
 **checked** (run), **derived** (argued here, not proved), **predicted**
 (expected compiler behaviour read from its code and tests, not run).
 
+**Corrected in place on 2026-10-21** after the independent review of
+streams 5 and 8 (research/division-campaign/reviews/streams-5-8-review.md,
+dossier §18.23) and the author's decisions on it (§18.24). Each
+correction is marked inline; the list is at the end. The earlier
+version is in Git history, and the review is the audit trail.
+
+**Kinds of evidence** (corrected 2026-10-21, dossier §18.23, §18.24).
+Four kinds are kept apart, and each claim about acceptance or behaviour
+says which it is:
+
+- **check-time refusal**: the checker refuses the program before
+  specialization;
+- **specialization-time refusal**: the specializer refuses it after
+  check has passed;
+- **reference-model behaviour**: what a Lean model or its evaluator
+  does (stream 8's λ-split), not the compiler;
+- **observed generated-code behaviour**: the output of Go the compiler
+  emitted and ran. None exists for several tails: no program with two
+  tails passes specialization today (Task 8 placeholder, row S2), so no
+  claim here is of this kind.
+
 Contents:
 
 1. The intended fragment
@@ -68,7 +89,9 @@ binders, calls of generic functions (instantiation), and type variables
 instantiated at record types.
 
 Outside the fragment (not translated): effects and handlers, `Fail`
-payload families, comparison and printability (side conditions, §3),
+payload families, comparison and printability (requirements that §2
+does not yet translate; §3 says how they would enter; corrected
+2026-10-21, dossier §18.23 F1, F2),
 coverage, declared parameterized types other than as abbreviations for
 the records they write (Lean's `TExpr` has no type constructors), local
 generalization (program 8A), the merge API of program 7.
@@ -225,14 +248,28 @@ The projection leaves the presence fragment, and the typed questions
 ## 3. Specialization-time requirements (the author's priority question)
 
 Question: does this specification include every condition that can
-later reject a specialization? **No.** One condition does not appear in
-§2's translation and depends on the instantiation: printability at the
-ground type (row S1 below). R010 (row C1) is checked before
-specialization but judges the shape of the chosen instantiation, which
-the translation also does not model. Everything else is either already
-a constraint, a conservative check at the generic type (so it cannot
-separate two valid splits), an implementation placeholder or a
-compiler invariant.
+later reject a specialization? **No.** Two requirement kinds do not
+appear in §2's translation and depend on the instantiation (corrected
+2026-10-21, dossier §18.23 F1, F2):
+
+- **printability** (row S1). At a site whose type is the caller's own,
+  solved by a callee's instantiation, it is judged at check time on the
+  instantiated type (check-time refusal: h1, pr-cf in the review). At a
+  site whose type mentions a generic callee's rigid rows, the check-time
+  judgment passes and the requirement is judged after specialization
+  (specialization-time refusal: E2, row S1);
+- **comparability** (row C2). Inside a generic function it is refused
+  whatever the split. In a caller whose operand type the instantiation
+  solves, it is judged at check time on that type, so it depends on the
+  split (check-time refusal: h3, cmp-cf in the review).
+
+Both are missing requirements, a (b) in §18.17's sense, not observable
+differences between valid splits. R010 (row C1) is checked before
+specialization but judges the form of the chosen instantiation, which
+the translation also does not model; it decides admissibility, not
+validity (corrected 2026-10-21, dossier §18.23 F13). Everything else is
+either already a constraint, an implementation placeholder, a resource
+limit or a compiler invariant.
 
 ### 3.1 Inventory
 
@@ -243,15 +280,15 @@ an instantiation rather than a type. File:line at b5647cc.
 
 | # | Check | Where | Phase | Depends on the split? | In §2's translation? | How it would enter |
 |---|---|---|---|---|---|---|
-| S1 | printability of `show`, `Console.print`, `crash` arguments: no function or handler at any depth | sites noted at Specialize/Body.purs:92-94; judged in Specialize/Printable.purs:55-63 (`checkSites`), 99-113 (`refuse`, `notPrintable`); called at Specialize.purs:95. Check-time part: Check/Printable.purs:54-58 judges the generic type, where a tail or type variable never "contains a function", so it passes | after specialization, at every reached site, including sites in lambdas never applied | **yes**: which fields reach `{ ...u }` decides | **no** | a unary atom `printable τ` in `B` at each site; for it to be checkable at the declaration, a clause `r printable` (or a class constraint) in `D`, implied to callers by R11 as `lacks` is (§3.3) |
+| S1 | printability of `show`, `Console.print`, `crash` arguments: no function or handler at any depth | check time: Check/Printable.purs:54-58 judges the site's type as the checker has solved it. A tail or type variable never "contains a function", so a site at a generic callee's rigid row passes; a site at the caller's own type, solved by the instantiation, is refused there when that type holds a function (h1, pr-cf). After specialization: sites noted at Specialize/Body.purs:92-94; judged in Specialize/Printable.purs:55-63 (`checkSites`), 99-113 (`refuse`, `notPrintable`); called at Specialize.purs:95 (corrected 2026-10-21, dossier §18.23 F2) | caller-side sites: **check time**, on the instantiated type (check-time refusal). Sites at a generic callee's rigid rows: after specialization, at every reached site, including sites in lambdas never applied (specialization-time refusal) | **yes**: which fields reach `{ ...u }` decides, at either phase | **no** | a unary atom `printable τ` in `B` at each site. At a caller-side site it is recorded at check time on the instantiated type, flexible variables included; the caller's operation does not become a declaration on the callee. A site inside a generic callee puts the requirement in the callee's contract (written, or by the eventual inference rules), passed to callers through instantiation by R11 as `lacks` is. Both feed one constraint problem (corrected 2026-10-21, dossier §18.23, §18.24 decision 2; §3.3) |
 | S2 | several-tails lowering placeholder, E_INTERNAL `R005B placeholder: rows with several tails are lowered in Task 8` | Specialize/Record.purs:38-44 | specialization of every reached type with two tails | no (every such program) | n/a: implementation gap | none; it is a missing feature, not a requirement |
 | S3 | duplicate label in a lowered record, E_INTERNAL | Specialize/Record.purs:57-58 | specialization | would, if reached | yes: R5's definedness atoms | already a constraint; the guard only fires on a checker defect |
 | S4 | specialization limit, more than 10,000 polymorphic keys | Specialize/Keys.purs:146-153 (`claim`), used at Keys.purs:94, 126 and Effects.purs:44 | specialization | in principle (different splits, different key sets); a global count | no | not a typing atom; a resource limit, as `E_NESTING` |
 | S5 | Fail family keys must fit, E_INTERNAL `Fail without a family` | Format/Go/Families.purs:52-61 (`keyed`); Specialize/Handlers.purs:112 | after specialization | no: families must be concrete at check time (language.md: `Fail needs a concrete error family`) | no (outside the fragment) | none needed while families are closed label sets known at check time |
 | S6 | undetermined holes: types to the representative (Int), record rows to the **empty rest** | Specialize.purs:49-53; Specialize/Record.purs:20-25 (and Values.purs) | specialization | yes, if an undetermined split reached it | no | today the checker refuses undetermined merges (Unresolved) before this; if it ever stopped doing so, this is a silent canonical split (empty), which decision 3 rules out |
 | S7 | compiler invariants (invalid ids, syntax mismatch, invalid entry) | Specialize.purs:99-100; Body.purs:32; Keys.purs:39, 62, 76, 80, 95; Lower.purs:85, 128, 190, 200, 203, 207, 222; Values.purs:67; Ground.purs:76, 80; Effects.purs:71 | specialization | no | n/a | none; defects |
-| C1 | R010 instantiation rule: inside a recursive group a type or row argument must be a bare variable of the caller or ground | Check/Instantiation.purs:53-70 (`judgeCall`, `PolymorphicRecursion`); types: Check/Nested.purs:166 | check, on the solved instantiation | **yes**: a divided witness `r|T` or a composed `{ ...r, ...s }` is neither bare nor ground | no | a side condition on witnesses, not an atom: it restricts which solutions count (§3.3) |
-| C2 | comparison: operand ground, no function | Check/Comparable.purs:18-24, 76-80 | check, generic type | no: any rigid tail or variable is refused (`not comparable`), any hole is `Ambiguous type` | no (side condition) | not needed for validity: it is conservative at the generic type, so it never separates two splits; an undetermined split part in a comparison is refused as ambiguous |
+| C1 | R010 instantiation rule: inside a recursive group a type or row argument must be a bare variable of the caller or ground | Check/Instantiation.purs:53-70 (`judgeCall`, `PolymorphicRecursion`); types: Check/Nested.purs:166 | check, on the solved instantiation | **yes**: a divided witness `r|T` or a composed `{ ...r, ...s }` is neither bare nor ground | no | a side condition on witnesses, not an atom: it restricts which valid solutions are admissible, and leaves validity unchanged (corrected 2026-10-21, dossier §18.23 F13; §3.3) |
+| C2 | comparison: operand ground, no function | Check/Comparable.purs:18-24, 76-80 | check, on the operand's type as solved | inside a generic function, no: any rigid tail or variable is refused (`not comparable`), any hole is `Ambiguous type`. **In a caller whose operand type the instantiation solves, yes** (check-time refusal): of two splits of one `divide` call, both meeting its clauses, `u = { c }` passes check and `u = { c, f }` is refused with `Type { c: Int, f: Int -> Int } is not comparable` (cmp-c, cmp-cf in the review; h3/h4 with one tail) (corrected 2026-10-21, dossier §18.23 F1) | no | a missing requirement: a unary atom `comparable τ`, recorded at check time on the instantiated type, flexible variables included, and not a declaration on the callee (§18.24 decision 2). Inside a generic function, an undetermined split part in a comparison is refused as ambiguous |
 | C3 | `main`'s result printable and ground | Check.purs:56-65 | check | no (ground) | no | none needed |
 | C4 | inferred type depth over 1,000 | the unifier's `TooDeep` (e.g. Check/Record.purs:157) | check | in principle (size of the solution) | no | a resource limit |
 
@@ -263,7 +300,8 @@ Nothing in Format/Go refuses a program except S5 (searched: the only
 Stream 6's example: inside `divide`, a never-applied
 `let peek = fn(p: { ...u }) => show(p);`. With the split giving
 `u = {}` it compiles; with `u = { f }`, `f` a function field, S1 refuses
-it.
+it after specialization (specialization-time refusal; the site is in
+the generic callee, at its rigid row).
 
 **Under this specification it is (b), an incomplete constraint model.**
 The argument:
@@ -283,21 +321,67 @@ The argument:
    may print an open record, and the type is checked at each
    instantiation"): a template-style rule, not a ∀ rule.
 
-**The same construct also shows (a)** once `peek` is applied and both
-splits are printable: `show(p)` prints `u`'s fields, so the program's
-output depends on which valid split was chosen. That is a genuine,
-observable difference between two valid splits (a coherence question,
-like an ambiguous instance). It is the reason decision 3
-(forced-or-explicit splits) is needed even with a complete constraint
-model, and it is independent of S1.
+When the `show` site is in the caller instead, in a lambda whose
+parameter type the split solves (E2c; pr-cf in the review), the
+refusal comes at check time, on the caller's instantiated type
+(check-time refusal). That requirement is the caller's: it is recorded
+as a check-time constraint on the instantiated type, flexible variables
+included, and does not become a declaration on `divide` (corrected
+2026-10-21, dossier §18.23 F2; §18.24 decision 2).
 
-So the reported refusal is (b); the observable output is (a). Fixing
-(b) does not remove (a), and decision 3 already covers (a).
+**The applied `peek`: claim withdrawn** (corrected 2026-10-21, dossier
+§18.23 F3; §18.24 decision 4). The earlier version said that once
+`peek` is applied and both splits are printable, the printed output
+differs between two valid splits, a genuine (a). No such distinction
+has been demonstrated. A counterexample must give `peek` a well-typed
+argument of type `{ ...u }` without adding a projection and without
+fixing the split. The candidates the review tried each fail, and they
+are kept here as evidence; they do not exhaust the language:
+
+- `peek(whole)` and `peek(left)` are ill-typed (check-time refusal for
+  `whole`: `Expected { ...u }, found { ...u, ...v }`);
+- a parameter `part: { ...u }`, a parameter that holds `{ ...u }` in a
+  field or an extension, or a callback returning a written record, fixes
+  `u` through the caller's value;
+- a function of type `({ ...p, ...q }) -> { ...p }` needs a projection
+  (stream 8's E3, outside the projection-free fragment);
+- a callback `g: (Int) -> { ...u }` passed `fn(n) => crash("boom")`,
+  with the split written by a second lambda, or a divergent
+  `fn absurd(n: Int): { ...p } = absurd(n)`, is well typed, projects
+  nothing and fixes nothing, but never gives `show` a value. The crash
+  or divergence is the same under both splits (derived; the crash pair
+  passes check and stops at the Task 8 placeholder, and `absurd` with
+  the split left open is refused at check by `CannotTell`, so neither
+  ran end to end).
+
+In stream 8's reference model, run-time irrelevance (`eval_split`)
+holds for every projection-free term, so no projection-free argument
+makes the model's results differ (reference-model behaviour). No
+generated code was observed. Comparison output is not covered by that
+model either (stream 8, F5).
+
+So the reported refusal is (b). This example gives no (a) and no
+reason for decision 3. Decision 3 (forced or written splits) stands on
+the author's rulings: §18.17 item 3 and §18.22 (corrected 2026-10-21,
+dossier §18.23 F3).
+
+**Written splits** (corrected 2026-10-21, §18.24 decision 1). Today an
+unforced split passes check only when the caller writes it, by
+annotating a lambda parameter of type `({ ...u }) -> …` (the checker's
+own `CannotTell` diagnostic asks for this). Such a caller-side
+annotation counts as a written split under decision 3 when it actually
+determines the relevant split; one that leaves the same ambiguity
+unresolved does not. A written split must still satisfy every caller
+and callee requirement: cmp-cf writes a split that the caller's own
+comparison then refuses at check time.
 
 ### 3.3 Where signature validity and compile acceptance differ
 
 1. **S1, printability** (above). Validity says yes for every `u`;
-   acceptance depends on the instance. With a `printable` atom, the
+   acceptance depends on the instance, at check time for caller-side
+   sites and after specialization for sites at a generic callee's rigid
+   rows (corrected 2026-10-21, dossier §18.23 F2). With a `printable`
+   atom, the
    requirement is a unary predicate that distributes over composition
    (`printable(x ⊎ y)` iff both) and holds of `∅`, like `lacks` with
    one flag per row: a row-level clause keeps it within set terms over
@@ -305,23 +389,38 @@ So the reported refusal is (b); the observable output is (a). Fixing
    `u`). A field-level reading (place each label by whether its type
    is printable) would be a type-dependent placement, outside set terms
    (the §18.4 challenge "type-agreement placement" in another form).
-2. **C1, R010.** Validity quantifies over all witnesses; R010 accepts
+   A row-level clause is a shorthand: it needs an explicit translation
+   to the corresponding requirement on the record type, and the
+   recorder specification keeps a requirement's origin (caller or
+   callee) apart from the type it operates on (corrected 2026-10-21,
+   §18.24 decision 2; the choice between the two readings is the
+   review's M1, left to the reconciled specification).
+2. **C2, comparability** (corrected 2026-10-21, dossier §18.23 F1).
+   Inside a generic function the check is conservative and does not
+   depend on the split. In a caller, it judges the operand's
+   instantiated type at check time, and two splits that both meet the
+   callee's clauses differ in acceptance (check-time refusal, cmp-c and
+   cmp-cf). This is a missing requirement, like S1, recorded at check
+   time on the instantiated type (§18.24 decision 2).
+3. **C1, R010.** Validity quantifies over all witnesses; R010 admits
    only witnesses whose row arguments are bare or ground within a
    recursive group. A recursive generic function that is valid only
-   through a divided or composed witness is refused. Example shape: a
-   self-recursive `route` (its call of itself would need `u := r|T`).
-   Not run (no build, §6).
-3. **S4 and C4**, resource limits: acceptance can fail on a valid
+   through a divided or composed witness has no admissible witness, and
+   is refused at check time. Validity is unchanged; R010 decides
+   admissibility, a separate property (corrected 2026-10-21, dossier
+   §18.23 F13; §18.22 item 3). Example shape: a self-recursive `route`
+   (its call of itself would need `u := r|T`). Not run (no build, §6).
+4. **S4 and C4**, resource limits: acceptance can fail on a valid
    program by size. Not a constraint question.
-4. **S2**, the lowering placeholder: every valid program whose reached
+5. **S2**, the lowering placeholder: every valid program whose reached
    types have two tails is refused today. An implementation gap.
-5. **S6**: if an undetermined split were ever lowered, the empty rest
+6. **S6**: if an undetermined split were ever lowered, the empty rest
    would be chosen silently. Today Unresolved refusal prevents it; a
    future solver that accepts undetermined splits must not reach S6.
 
 No check found depends on the split in a way the current atoms already
-express; the two that depend on it (S1, C1) are outside the
-translation.
+express; the three that depend on it (S1, C2 at caller sites, C1) are
+outside the translation (corrected 2026-10-21, dossier §18.23 F1).
 
 ## 4. Region sizes: §18.4's open row
 
@@ -419,8 +518,10 @@ whether a solution exists and whether the split is forced).
 Where the verdicts differ: P9s and typed division differ only on p11
 (`route`); presence-only and typed differ on n14 and on n15's top-level
 projection. The call-site rows (S) are not signature problems; their
-second question is decision 3's (is the split forced?), answered yes
-for c21 and c22.
+second question is decision 3's (is the split forced or written?),
+answered forced for c21 and c22. A caller-side annotation counts as
+written when it actually determines the split (corrected 2026-10-21,
+§18.24 decision 1).
 
 ## 6. Current compiler behaviour
 
@@ -517,11 +618,18 @@ findings, not fixes. Each says whether it was run or predicted.
   call-site splits of programs 4 and 5 (c21, c22s), all forced by a
   `lacks` or a single possible part. The acceptance programs require 4
   and 5.
-- **F5 (code read).** Printability is checked per instantiation (S1),
-  so acceptance depends on the split while validity does not (§3).
+- **F5 (code read; caller side run by the review).** Printability and
+  comparability depend on the split while validity does not (§3). At
+  caller-side sites both are judged at check time on the instantiated
+  type (check-time refusal: h1, h3, pr-cf, cmp-cf in the review);
+  printability at a generic callee's rigid rows is judged after
+  specialization (specialization-time refusal, S1) (corrected
+  2026-10-21, dossier §18.23 F1, F2).
 - **F6 (code read).** R010 judges the solved instantiation (C1): any
   solution that divides or composes rigid rows inside a recursive group
-  is refused, so division and recursion cannot combine today.
+  is not admissible and is refused, so division and recursion cannot
+  combine today. The solution stays valid; admissibility is a separate
+  property (corrected 2026-10-21, dossier §18.23 F13).
 - **F7 (code read).** Undetermined record rows are lowered as the empty
   rest (S6). Harmless while the checker refuses undetermined splits; a
   canonical split by another name if that ever changes.
@@ -554,6 +662,12 @@ Ambiguities in the intended source behaviour, not resolved here:
    requirement: a `where r printable` clause, or a class constraint
    from the instance-selection direction, implied to callers like
    `lacks` (§3.3)? A field-level reading would place labels by type.
+   *Answered* (§18.22 item 1, §18.24 decision 2; corrected 2026-10-21):
+   printability and comparability are represented in interfaces and
+   may be inferred. Caller-side ones are check-time constraints on the
+   instantiated types, flexible variables included; ones from inside a
+   generic callee appear in its contract. The row-level versus
+   field-level reading is left to the reconciled specification.
 5. **R010 and division.** Should a recursive group accept row arguments
    that are divided (`r|T`) or composed (`{ ...r, ...s }`) parts of the
    caller's rigid rows, or does division stop at recursion?
@@ -605,3 +719,36 @@ it prints `check unavailable` after Resolve.
 
 Disk: the worktree's output/ and .spago/ (about 80 MB, ignored by git)
 were removed after the run; no Go build cache was created.
+
+## Corrections
+
+Corrected in place on 2026-10-21 after the review in
+research/division-campaign/reviews/streams-5-8-review.md (dossier
+§18.23), following the author's decisions (§18.24). The earlier text is
+in Git history.
+
+- **Kinds of evidence** (head): check-time refusal, specialization-time
+  refusal, reference-model behaviour and observed generated-code
+  behaviour are named and kept apart; none of the last kind exists for
+  several tails.
+- **F1** (§3 intro, row C2, §3.3, F5): comparison in a caller is judged
+  at check time on the instantiated type and depends on the split
+  (cmp-c, cmp-cf). It is a missing requirement (b). The earlier row
+  said it never separates two valid splits.
+- **F2** (§3 intro, row S1, §3.2, §3.3, F5): caller-side printability is
+  judged at check time, not after specialization; only sites at a
+  generic callee's rigid rows wait for specialization.
+- **F3, decision 4** (§3.2): the applied-`peek` (a) claim is withdrawn.
+  The failed candidates are kept as evidence, without a claim that they
+  exhaust the language. `peek` is no longer given as a reason for
+  decision 3, which stands on §18.17 item 3 and §18.22.
+- **Decision 2** (rows S1, C2, §3.2, §3.3, question 4): caller-side
+  printability and comparability are check-time constraints on the
+  instantiated types, flexible variables included, not new declarations
+  on the callee; a row-level clause needs an explicit translation to the
+  record-type requirement.
+- **Decision 1** (§3.2, §5): a caller-side annotation counts as a
+  written split when it actually determines the split, and must still
+  satisfy every caller and callee requirement.
+- **F13** (row C1, §3 intro, §3.3, F6): R010 decides admissibility, not
+  validity.

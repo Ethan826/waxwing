@@ -16,6 +16,27 @@ The review found three false statements; this version corrects them.
 The corrections are listed in §6, with the original wording, and none
 is silent.
 
+**Corrected in place on 2026-10-21** after a third, independent review
+of streams 5 and 8 (research/division-campaign/reviews/streams-5-8-review.md,
+dossier §18.23) and the author's decisions on it (§18.24). Each
+correction is marked inline; the list is at the end. The earlier
+version is in Git history, and the review is the audit trail.
+
+**Kinds of evidence** (corrected 2026-10-21, dossier §18.23, §18.24).
+Four kinds are kept apart, and each claim about acceptance or behaviour
+says which it is:
+
+- **check-time refusal**: the checker refuses the program before
+  specialization;
+- **specialization-time refusal**: the specializer refuses it after
+  check has passed;
+- **reference-model behaviour**: what λ-split's evaluator or its
+  acceptance predicate does (Lean), not the compiler;
+- **observed generated-code behaviour**: the output of Go the compiler
+  emitted and ran. None exists here: no program with two tails passes
+  specialization today (Task 8 placeholder), so no pair of splits was
+  run end to end.
+
 ## 1. Diagnosis of E2 (done first)
 
 E2 (split-selection.md §3.4): a never-applied `fn(p: { ...u }) =>
@@ -33,15 +54,24 @@ it. Once counted, it makes `u = { f }` invalid and leaves one split, so
 E2's call is then forced *at that ground key*. Three qualifications
 follow (§1.3-§1.5):
 
-- the same holds for comparability at caller-side sites;
-- if requirements are *inferred* through a split rather than fixed in
-  an interface, the difference is genuine (a) again (E2′);
+- the same holds for comparability at caller-side sites (check-time
+  refusal: h3, and with two tails cmp-cf in the review);
+- if a generic caller's interface is inferred from a split chosen
+  first inside it, two splits give two interfaces, and a caller of it
+  is accepted under one and refused under the other (E2′). This is a
+  finding about that strategy only. It does not show that inference in
+  general requires split-dependent interfaces (corrected 2026-10-21,
+  dossier §18.23 F14; §18.24 decision 5);
 - the polymorphic-recursion rule R010 is a different kind of
   dependence: a syntactic rule on the witness's *form*, not a missing
   requirement. Two splits valid in every semantic model can differ in
-  acceptance through it (E5). That is (a) for today's rules, unless
-  R010 is relaxed or its admissibility is counted as part of split
-  validity.
+  admissibility under it, and in a recursive group admissibility, not
+  validity, decides acceptance (E5; a check-time refusal). Validity is
+  unchanged, and nothing differs at run time, so this is not (a) in
+  §18.17's sense. The remedies are to choose among witnesses that are
+  both valid and admissible, or to relax R010 with a replacement
+  termination argument (corrected 2026-10-21, dossier §18.23 F13;
+  §18.22 item 3).
 
 ### 1.1 Evidence from the code
 
@@ -80,21 +110,32 @@ follow (§1.3-§1.5):
    checkout's `output/`, built 2026-10-21 08:42 (scratch files, run
    with Stream 6's `run.mjs`):
 
-   | Probe | Fixed by | Result |
-   |---|---|---|
-   | a.wxw: `probe(fn(y) => 0)`; `probe` holds a never-applied `fn(x: { ...r }) => show(x)` | nothing (hole, defaulted to `{}`) | exit 0 |
-   | b.wxw: `probe(fn(y: { f: (Int) -> Int }) => 0)` | the argument | E_TYPE `Expected a printable value, found { f: Int -> Int }` |
-   | g.wxw: `peek({ f: fn(n: Int) => n })`, where `peek(x: { ...r })` holds the same lambda | the argument | the same E_TYPE |
-   | h1.wxw: `probe(k: ({ ...r }) -> Text, w: { ...r })`; `main` passes `fn(p) => show(p)` and `{ f: fn }` | the instantiation, in the caller | the same E_TYPE, at `p` in `main` |
-   | h2.wxw: h1 with `{ a: 1 }` | the instantiation | exit 0 |
-   | h3.wxw: h1 with `-> Bool` and `fn(p) => p == p` | the instantiation, in the caller | E_TYPE `Type { f: Int -> Int } is not comparable` (check time) |
-   | h4.wxw: h3 with `{ a: 1 }` | the instantiation | exit 0 |
+   | Probe | Fixed by | Result | Kind of evidence (corrected 2026-10-21, dossier §18.23) |
+   |---|---|---|---|
+   | a.wxw: `probe(fn(y) => 0)`; `probe` holds a never-applied `fn(x: { ...r }) => show(x)` | nothing (hole, defaulted to `{}`) | exit 0 | accepted by the run |
+   | b.wxw: `probe(fn(y: { f: (Int) -> Int }) => 0)` | the argument | E_TYPE `Expected a printable value, found { f: Int -> Int }` | specialization-time refusal (the site is in the callee at its rigid row, item 2; the phase is read from the code, the run reported the message) |
+   | g.wxw: `peek({ f: fn(n: Int) => n })`, where `peek(x: { ...r })` holds the same lambda | the argument | the same E_TYPE | specialization-time refusal (as b.wxw) |
+   | h1.wxw: `probe(k: ({ ...r }) -> Text, w: { ...r })`; `main` passes `fn(p) => show(p)` and `{ f: fn }` | the instantiation, in the caller | the same E_TYPE, at `p` in `main` | check-time refusal (review §0) |
+   | h2.wxw: h1 with `{ a: 1 }` | the instantiation | exit 0 | accepted by the run |
+   | h3.wxw: h1 with `-> Bool` and `fn(p) => p == p` | the instantiation, in the caller | E_TYPE `Type { f: Int -> Int } is not comparable` | check-time refusal |
+   | h4.wxw: h3 with `{ a: 1 }` | the instantiation | exit 0 | accepted by the run |
 
-   h1-h4 are the reviewer's probes (§6), re-run here. In a.wxw the
-   defaulted row satisfies a constraint that nobody recorded. In the
-   others, the determined row violates it. E2 is the several-tail
-   version of g.wxw, and E2c is the several-tail version of h1. In
-   both, the "default" or "determination" is a split.
+   "Accepted by the run" means `waxwing emit` wrote Go
+   (split-selection.md §7); no Go was built or run. h1-h4 are the
+   reviewer's probes (§6), re-run here. In a.wxw the defaulted row
+   satisfies a constraint that nobody recorded. In the others, the
+   determined row violates it. E2 is the several-tail version of g.wxw,
+   and E2c is the several-tail version of h1. In both, the "default" or
+   "determination" is a split.
+
+   The third review ran the several-tail versions at the caller
+   (corrected 2026-10-21, dossier §18.23). Two splits of one `divide`
+   call, both meeting its clauses, written by annotating the caller's
+   lambda: with `u = { c }` the caller's `p == p` (cmp-c) or `show(p)`
+   (pr-c) passes check and stops at the Task 8 placeholder; with
+   `u = { c, f }` (cmp-cf, pr-cf) it is refused at check (check-time
+   refusal: `Type { c: Int, f: Int -> Int } is not comparable`,
+   `Expected a printable value, found { c: Int, f: Int -> Int }`).
 
 ### 1.2 Argument from the constraint model
 
@@ -107,7 +148,9 @@ callers must meet it at the instantiated key, or specialization
 refuses.
 
 - In a model **with** `Pr` counted (model M1, §4: `divide`'s
-  requirement interface is `D ∧ Pr(u)`), E2's witness `u = { f }`
+  requirement interface is `D ∧ Pr(u)`; Examples.lean writes this
+  interface by hand as an instance of M1, corrected 2026-10-21, dossier
+  §18.23 F15), E2's witness `u = { f }`
   violates `divide`'s interface at `main`'s key, so it is not a valid
   split. The only split satisfying both `u disjoint s` (`s = { a }`)
   and `Pr(u)` is `u = {}`, `v = { a, f }`. Disjointness keeps `a` out
@@ -120,8 +163,9 @@ refuses.
   split-selection.md §3.1).
 - In a model **without** `Pr` (model M0, today's), the requirement
   interface is `D` only. Both splits are "valid", and acceptance
-  differs (`e2_m0_valid`, `e2_refused`, `e2_accepted₂`). That is the
-  incompleteness of (b).
+  differs (`e2_m0_valid`, `e2_refused`, `e2_accepted₂`: reference-model
+  behaviour; in the compiler the refusal is at specialization time).
+  That is the incompleteness of (b).
 
 So E2 does not show that two valid splits differ observably. It shows
 that "valid" was computed before printability was counted.
@@ -141,35 +185,57 @@ lambda the caller passes, and its type is the caller's own flexible
 variable, solved through the callee's instantiation. With several
 tails (`divide(..., k: ({ ...u }) -> Text)`, `main` passing `fn(p) =>
 show(p)`), the split decides `p`'s type in `main`. The requirement is
-then on the caller's flexible variable, not on `divide`'s rigid row. A
-complete model needs `Ok` atoms on flexible variables, counted in the
-caller's own obligations at its local key (clause (i) of `Covers`,
-§4). Proved for the model: `e2c_refused`, `e2c_covers₂`,
-`e2c_not_covers₁`, `e2c_accepted₂`.
+then on the caller's flexible variable, not on `divide`'s rigid row,
+and the compiler judges it at check time (check-time refusal: h1;
+pr-cf with two tails, §1.1). A complete model needs `Ok` atoms on
+flexible variables, counted in the caller's own obligations at its
+local key (clause (i) of `Covers`, §4). The author's decision: such a
+caller-side requirement is recorded as a check-time constraint on the
+instantiated type, flexible variables included, and does not become a
+declaration on the callee (corrected 2026-10-21, §18.24 decision 2).
+Proved for the model (reference-model behaviour): `e2c_refused`,
+`e2c_covers₂`, `e2c_not_covers₁`, `e2c_accepted₂`.
 
 Comparison behaves the same way at check time: h3/h4 (refused with a
-function field, accepted with `{ a: 1 }`). If the part is left as a
-hole instead, ADR 007 makes the comparison `Ambiguous`. So acceptance
-also depends on whether a part is chosen or defaulted (row "witness
-form" in §5). Comparability is a second requirement kind. The model is
-generic in the requirement (`Prog.ok`, per site).
+function field, accepted with `{ a: 1 }`), and with two tails cmp-c and
+cmp-cf (§1.1). If the part is left as a hole instead, ADR 007 makes the
+comparison `Ambiguous`. So acceptance also depends on whether a part is
+chosen or defaulted (row "witness form" in §5). With several tails and
+the split left open, though, `CannotTell` refuses first (cmp-open in the
+review), so the `Ambiguous` route is not what the user sees there
+(corrected 2026-10-21, dossier §18.23; review §3.2). Comparability is a second
+requirement kind. The model is generic in the requirement (`Prog.ok`,
+per site).
 
-### 1.4 Inferred interfaces (E2′)
+**Where the written split sits** (corrected 2026-10-21, dossier §18.23
+F12). Today an unforced split passes check only when the caller writes
+it, by annotating a lambda parameter of type `({ ...u }) -> …`, as the
+`CannotTell` diagnostic asks. Two splits are then two texts that differ
+in that annotation, and the annotation is itself a typed site: cmp-cf's
+refusal is at it. Such an annotation counts as a written split under
+decision 3 when it actually determines the split; it must still satisfy
+every caller and callee requirement (§18.24 decision 1).
 
-Counting `Pr` can take two forms, and they differ.
+### 1.4 Interfaces inferred from a split chosen first (E2′)
+
+(Restricted to this strategy: corrected 2026-10-21, dossier §18.23
+F14; §18.24 decision 5. Inference stays a goal, §18.22 item 1.)
+
+Counting `Pr` can take several forms. Two are compared here.
 
 - **Declared** (fixed by the text). Every function's requirement
   interface is fixed independently of any split inside it, for
   instance by a C001-style `where` clause, or by a rule that refuses
   `show` at a rigid row without one. A generic caller is then checked
   against the callee's fixed interface at every key, so the same
-  interface decides whether each of two splits is valid. §4's (C)
-  covers this form: split variants share `Req`.
-- **Inferred through the split.** Here the interface of a generic
-  caller is whatever its body needs under the split chosen inside it:
-  today's template semantics, lifted to interfaces. Two splits inside
-  one function then give two interfaces, and callers of that function
-  are accepted under one and refused under the other.
+  interface decides whether each of two splits is valid. §4's (C) is
+  proved for interfaces that both split variants share, and this form
+  gives that.
+- **Inferred from a split chosen first.** Here the interface of a
+  generic caller is whatever its body needs under the split already
+  chosen inside it: today's template semantics, lifted to interfaces.
+  Two splits inside one function then give two interfaces, and callers
+  of that function are accepted under one and refused under the other.
 
   Example (derived; the reviewer checked it, §6 S10): `route` (dossier
   §17.3) calls `divide` with the `show` site above, and `s disjoint t`
@@ -177,19 +243,23 @@ Counting `Pr` can take two forms, and they differ.
   `route` needs `Pr(r ∩ t ∖ s)`. Under split B (free labels to `u`),
   `u = r ∖ s` and it needs `Pr(r ∖ s)`. A caller passing `x = { f: fn
   }` with `f` outside `s` and `t` is accepted under A and refused under
-  B. Each split is valid in its own inferred model, so the difference
-  is genuine: (a).
+  B. Under this strategy each split is valid in its own inferred
+  interface, and acceptance of the caller differs between them.
 
-  In this example a weakest inferred interface exists: per region,
-  either "printable" or "no requirement". But choosing it is a
-  selection rule again (free labels away from print sites). With two
-  incomparable requirement kinds, say printability and a future `Eq`,
-  a weakest interface need not exist. None of this is proved.
+  This shows that choosing a split first and then inferring an
+  interface from it is unstable. It does not show that inference must
+  make acceptance depend on the split. In this example a weakest
+  interface exists: per region, either "printable" or "no
+  requirement". Computing it together with the split would be a
+  principal-interface computation, not an arbitrary split selection.
+  With two incomparable requirement kinds, say printability and a
+  future `Eq`, whether such an interface exists in general is open.
+  None of this is proved.
 
-  In the Lean model this case falls outside (C)'s hypothesis by
-  construction: `Req₁` (M1 in general, Defs.lean) depends on `loc`,
-  which varies with the split, so inferred interfaces are not split
-  variants.
+  In the Lean model the split-first case falls outside (C)'s
+  hypothesis by construction: `Req₁` (M1 in general, Defs.lean) depends
+  on `loc`, which varies with the split, so interfaces inferred that
+  way are not shared by the split variants.
 
 ### 1.5 The instantiation rule R010 (E5)
 
@@ -212,10 +282,14 @@ The witness `u' ↦ u, v' ↦ v` is admitted. The witness `u' ↦ {}, v' ↦ {
 finitely many keys. But `v'` is not a bare row, so the call is refused.
 No requirement is missing: R010 is a rule on the witness's *syntax*,
 there to guarantee finitely many keys. Under today's rules, then, two
-semantically valid splits can differ in acceptance through it. It
-leaves this theorem's scope (§2, excluded). The author has two ways to
-remove it: relax R010 to admit restrictions (split-selection.md §2.3),
-or make "admissible under R010" part of what makes a split valid.
+semantically valid splits can differ in admissibility, and so in
+acceptance (a check-time refusal; derived from the code, not run). It
+leaves this theorem's scope (§2, excluded). Validity and admissibility
+stay separate properties (§18.22 item 3): witness selection must choose
+among witnesses that are both valid and admissible, and R010 stays
+unless it is relaxed to admit restrictions (split-selection.md §2.3)
+with a replacement termination argument and its own approval
+(corrected 2026-10-21, dossier §18.23 F13).
 
 ## 2. The fragment
 
@@ -241,7 +315,7 @@ number `k` into the program's tables.
 | `t(t')` | application |
 | `f_k(t)` | call of declaration `f`; site `k` names the call's **witness** |
 | `show_k(t)` | a `show`-like class operation; site `k` names its argument type |
-| `ann_k(t)` | any other typed position (a lambda parameter's annotation, a comparison operand): `t` at run time, but its type must be defined and meet site `k`'s requirement |
+| `ann_k(t)` | any other typed position (a lambda parameter's annotation, a comparison operand): `t` at run time, but its type must be defined and meet site `k`'s requirement. For `==` it models only the operand's type; the Boolean result is not modelled (corrected 2026-10-21, dossier §18.23 F5) |
 | `project_k(t)` | **excluded** (E3): restrict a record to the labels of the type at site `k` |
 
 **Programs.** A program `P` has these parts:
@@ -272,6 +346,14 @@ derived fact: nothing ties `loc` to `wit` (E2c sets `main`'s row 4 to
 the witness's `u` by hand, Boundary.lean:25-26). `Req` is the same text
 in both; this is the declared form of §1.4.
 
+What the convention hides (corrected 2026-10-21, dossier §18.23 F12):
+today an unforced split reaches past `CannotTell` only when the caller
+writes it as an annotation on a lambda parameter (§1.3). The two splits
+are then two source texts, and the annotation is itself a typed site,
+where a caller-side requirement fails (cmp-cf). "Same bodies and `ty`"
+holds only because the model encodes the annotation as `wit` and `loc`,
+not as text.
+
 **Allowed operations**: every row of the table except `project_k`. A
 program is *projection-free* if no body contains `project_k`.
 
@@ -282,11 +364,14 @@ program is *projection-free* if no body contains `project_k`.
 | row-variable projection (`project_k`, E3), any primitive or row-polymorphic foreign function returning `{ ...p }` from `{ ...p, ...q }` | its result is the split, so R fails (E3, proved: `e3_differs`) |
 | type-directed operations whose run-time behaviour reads a type argument (type case, class dictionaries chosen per instance, `Fail` families keyed by a type's label set) | the same reason |
 | `Fail` payloads | open record payloads are refused at check time (language.md, "Failure payloads"); data payloads that mention a row, such as `Fail(List({ ...u }))`, are untested (assumed refused) |
-| R010, the instantiation rule (E5, §1.5) | a rule on witness form; two valid splits can differ (proved nowhere; derived from the code) |
+| R010, the instantiation rule (E5, §1.5) | a rule on witness form; two valid splits can differ in admissibility, and so in acceptance; validity is unchanged (proved nowhere; derived from the code; corrected 2026-10-21, dossier §18.23 F13) |
+| the caller's and callee's body equations (`B`: access, literals, annotations as equations) | λ-split has no equations; `SiteOk` tests only definedness and `ok`. A split that meets `D` can still be refused at check time by the caller's own equation (eq-c passes check, eq-d is refused: `Expected { c: Int, ..._ } -> Bool, found { d: Int } -> Bool`). "Valid in the model" presupposes that the split solves `B`; `Covers` does not establish it (corrected 2026-10-21, dossier §18.23 F6; §18.24 decision 3) |
+| `==`'s run-time result | no equality operator in λ-split; R does not cover comparison output (corrected 2026-10-21, dossier §18.23 F5) |
 | holes versus chosen parts | a defaulted hole and a chosen `{}` lower alike but differ at check time (comparison `Ambiguous`; R010 counts a hole as ground; ADR 007 condition 1) |
 | `CannotTell` (Unresolved.purs:74) | today's refusal of splits the checker cannot determine, forced ones included (c.wxw, O4); decision 3 and O4, not a split-dependent outcome |
 | data types, effects, handlers, `print` as an effect, record update, record patterns, `if`/`match`, interpolation, text and bool literals, pipe, `let` | not modeled; believed harmless (they read written labels or no record at all) but unexamined; `show` stands for the print sites (all three are judged by one check) |
 | the 10,000-key limit (`E_SPECIALIZATION`, Specialize/Keys.purs:150) | two splits may reach different numbers of keys (split-selection.md E4); a resource bound, outside (C) |
+| the type-depth limit (the unifier's `TooDeep`, more than 1,000 levels; Unify.purs:105; Stream 5's C4) | a check-time refusal whose trigger depends on the size of the solution, so in principle on the split; a resource bound, outside (C) (corrected 2026-10-21, dossier §18.23 F11) |
 | several-tail lowering and Go (Task 8) | not implemented (Record.purs:39 placeholder); assumption A-go (§5) |
 
 ## 3. Observations
@@ -298,8 +383,10 @@ program is *projection-free* if no body contains `project_k`.
    rendering of it. `none` means stuck or out of fuel, so equal results
    at every fuel `n` mean equal results, stuck states and divergence.
    There is no output channel: `print`, exit status and the crash
-   report are not modeled, and a discarded `shown v` is invisible. Only
-   `project_k` reads the key.
+   report are not modeled, and a discarded `shown v` is invisible.
+   There is no equality operator, so `==`'s result is not modelled
+   either (corrected 2026-10-21, dossier §18.23 F5). Only `project_k`
+   reads the key.
 2. **Compile acceptance (specialization).** Specializing `t` at local
    key `θ` *reaches* site `k` at `θ` when `t` contains `show_k` or
    `ann_k` under any lambda, applied or not. It reaches it at `θ'` when
@@ -310,8 +397,12 @@ program is *projection-free* if no body contains `project_k`.
    refuses, as Record.purs:58 does with E_INTERNAL.
 3. **Compile acceptance (check time).** In the model, a declaration's
    own obligations at its local key (clause (i) of `Covers`) stand for
-   the check-time judgments that see the instantiation: comparison and
-   printability at caller-side sites (h1-h4). R010 and `CannotTell` are
+   the check-time *requirement* judgments that see the instantiation:
+   comparison and printability at caller-side sites (h1-h4, cmp-cf,
+   pr-cf). They do not stand for the caller's own equations, which are
+   also check-time judgments that see the instantiation (eq-d, §2): the
+   model has none, and they are presupposed (corrected 2026-10-21,
+   dossier §18.23 F6). R010, `CannotTell` and the type-depth limit are
    not modeled (§2).
 4. **Diagnostics.** The compiler reports the first failing site in
    specialization order, and that order depends on the keys, hence on
@@ -321,17 +412,25 @@ program is *projection-free* if no body contains `project_k`.
 
 ## 4. The constraint model and the statements
 
-**Coverage**, meaning the model counts every specialization-time
-requirement: `Covers P` holds if for every declaration `f` and rigid key
-`θ` with `Req f θ`:
+**Coverage**, meaning the model counts every requirement *site* it
+has (specialization-time sites, and caller-side sites that check time
+judges on the instantiated type): `Covers P` holds if for every
+declaration `f` and rigid key `θ` with `Req f θ`:
 
 - (i) every site `k` local to `f`'s body (not inside a callee) is
   `SiteOk` at `loc f θ`; and
 - (ii) every call `g_k` in `f`'s body satisfies `Req g (wit k (loc f
   θ))`.
 
+`Covers` says nothing about body equations (`B`): the model has none
+(corrected 2026-10-21, dossier §18.23 F6; §18.24 decision 3).
+
 A split at a call is **valid in the model** when the caller's (i) holds
-at its local key and the call's (ii) holds.
+at its local key and the call's (ii) holds. This presupposes that the
+split solves the caller's and the callee's body equations `B`; `Covers`
+does not establish that, and a split meeting (i) and (ii) can still be
+refused at check time by the caller's own equation (eq-d, §2)
+(corrected 2026-10-21, dossier §18.23 F6).
 
 - Model M0 (today): `Req₀ f θ := Sat θ (D f)`, with no requirement
   atoms.
@@ -340,8 +439,8 @@ at its local key and the call's (ii) holds.
   `Covers` reduces to (ii) (`covers_req₁_iff`). The obligation then
   falls entirely on the witness search. Because `Req₁` depends on
   `loc`, it is the declared form only when a declaration's own sites do
-  not mention its own splits; otherwise it is the inferred form of
-  §1.4.
+  not mention its own splits; otherwise it is the form inferred from a
+  split chosen first, §1.4.
 
 Statements, with their status after the proofs:
 
@@ -355,7 +454,9 @@ Statements, with their status after the proofs:
   code rests on assumption A-go (§5), for which no evidence exists in
   this fragment: no several-tail Go exists, so no differential can run.
   Stream 6's C8-rt argument (relations at equal label sets, phantom
-  positions, layout identity) lives inside A-go.
+  positions, layout identity) lives inside A-go. R is reference-model
+  behaviour only. It does not cover `==`'s result, which λ-split does
+  not model (corrected 2026-10-21, dossier §18.23 F5).
 - **R-boundary, E3** (proved, `e3_differs`, with `e3_variant`,
   `sat_divide₁`, `sat_divide₂`, `param_image`). There are split
   variants whose witnesses both satisfy `divide`'s `D` and give `{
@@ -365,10 +466,14 @@ Statements, with their status after the proofs:
   `accepted_of_covers`). If `Covers P` and `Req f θ`, then `f`'s body
   is accepted at `loc f θ`.
 - **Ground check silent** (proved, `req_of_covers`). Under `Covers`,
-  every copy that specialization creates meets its callee's interface.
-  When the interface includes the callee's clauses (`Req₀`, `Req₁`),
-  a call-edge ground check of `D` never fires (ground-check.md). The
-  copy-placement check of `B` is not covered: `B` is not in this model.
+  every copy that specialization creates, starting from any declaration
+  and key whose interface holds (`Req f θ`), meets its callee's
+  interface. Copies reached from a root whose own interface fails are
+  not covered; under `Req₁`, E2c's split-1 `main` is such a root
+  (corrected 2026-10-21, dossier §18.23 F7). When the interface
+  includes the callee's clauses (`Req₀`, `Req₁`), a call-edge ground
+  check of `D` never fires there (ground-check.md). The copy-placement
+  check of `B` is not covered: `B` is not in this model.
 - **C, acceptance irrelevance** (proved, `accepted_split`). Let `P₁`
   and `P₂` be split variants, both satisfying `Covers`. Then at every
   declaration `f` and rigid key `θ` with `Req f θ`, both are accepted.
@@ -380,27 +485,62 @@ Statements, with their status after the proofs:
   only to transport `Req`: C holds for any two programs that share
   `Req` and both satisfy `Covers`, and uses nothing else about splits.
   Its content is in the definitions: what "the model counts every
-  requirement" must mean (`Covers`, with caller-side sites at local
-  keys), and the fact that under it, *modeled* specialization-time
-  refusal cannot depend on the split. The key limit, R010 and the
+  requirement site" must mean (`Covers`, with caller-side sites at
+  local keys), and the fact that under it, *modeled* refusal at
+  requirement sites cannot depend on the split (reference-model
+  behaviour). The key limit, the type-depth limit, R010 and the
   several-tail placeholder (Record.purs:39) remain outside. When
   `Req f θ` fails, C says nothing.
+  *Narrowed* (corrected 2026-10-21, dossier §18.23 F6; §18.24
+  decision 3): C is about requirement sites and call interfaces only.
+  The caller's and callee's body equations (`B`) are presupposed, not
+  established by `Covers`. A split that both variants' `Covers` admit
+  can still be refused at check time by the caller's own equation
+  (eq-d, §2). C does not claim acceptance irrelevance for the complete
+  recorder; C+ below is the proposed statement for that.
+- **C+, acceptance irrelevance with body equations** (*proposed*,
+  unproved, not formalized; corrected 2026-10-21, §18.24 decision 3).
+  Extend a program with per-declaration body equations `B f`, a
+  `Problem` over `f`'s local key, and let split variants also agree on
+  `B`. Let `Covers⁺ P` be `Covers P` together with: for every `f` and
+  `θ` with `Req f θ`, `Sat (loc f θ) (B f)`. Let `Accepted⁺ P θ t` be
+  `Accepted P θ t` together with: every copy of a declaration `g` that
+  specializing `t` at `θ` reaches, at local key `θ'`, has
+  `Sat θ' (B g)`. Proposed statement: if `P₁` and `P₂` are split
+  variants and both satisfy `Covers⁺`, then at every declaration `f` and
+  rigid key `θ` with `Req f θ`, both are `Accepted⁺` at `loc f θ`.
+  Status: a statement for review, not a theorem. Whether
+  `Sat (loc f θ) (B f)` faithfully stands for check-time success of the
+  caller's equations, and how `B` relates to Stream 5's translation
+  (review M5), are part of what review must settle. It would also cover
+  ground-check.md's copy-placement check of `B`. The prose claim for C
+  is not enlarged until a proof of C+ exists.
 - **E2-formal** (proved, Examples.lean). With `ok = Pr`, take `P₁` (`u
   = { f }`, `v = { a }`) and `P₂` (`u = {}`, `v = { a, f }`), split
   variants of E2's `main`/`divide`. Both witnesses satisfy `divide`'s
   `D` (`e2_m0_valid`), and `{ ...u, ...v }` has the same image under
   both (`param_image`). The run-time results are equal (`e2_run`) and
   are `0` (`e2_result`). `P₂` is accepted (`e2_accepted₂`) and `P₁` is
-  refused (`e2_refused`). Under M1, `Covers P₂` holds (`e2_covers₂`)
-  and `Covers P₁` fails (`e2_not_covers₁`).
+  refused (`e2_refused`). With `divide`'s interface `D ∧ Pr(u)`,
+  `Covers P₂` holds (`e2_covers₂`) and `Covers P₁` fails
+  (`e2_not_covers₁`). That interface is a hand-written instance of M1:
+  `e2`'s `Req` is written out in Examples.lean, equal to `Req₁ (e2 w)`
+  by inspection, and no lemma states the equality (corrected
+  2026-10-21, dossier §18.23 F15). All of this is reference-model
+  behaviour.
 - **E2c-formal** (proved, Boundary.lean). The same with the site in
   `main`'s lambda, typed through `loc`: `e2c_refused`, `e2c_covers₂`,
   `e2c_not_covers₁`, `e2c_accepted₂`.
-- **E2′** (derived, §1.4; not formalized). With interfaces inferred
-  through the split, two splits of one generic call give callers
-  different acceptance.
+- **E2′** (derived, §1.4; not formalized). With a generic caller's
+  interface inferred from a split chosen first inside it, two splits
+  of one generic call give that caller's callers different acceptance.
+  Restricted to that strategy: it does not establish that inference
+  generally requires split-dependent interfaces (corrected 2026-10-21,
+  dossier §18.23 F14; §18.24 decision 5).
 - **E5** (derived from the code, §1.5; not formalized). R010 can refuse
-  one of two semantically valid witnesses.
+  one of two semantically valid witnesses at check time: a difference
+  in admissibility, not in validity (corrected 2026-10-21, dossier
+  §18.23 F13).
 
 ## 5. Restrictions table
 
@@ -411,7 +551,10 @@ Statements, with their status after the proofs:
 | witnesses are functions of the caller's key | covers every witness's *meaning* (§2) | R010 (E5) and holes versus chosen parts (h3, ADR 007): the *form* matters to check-time rules | real limit: form-sensitive rules are excluded, not covered |
 | split variants agree on `ty`; the caller's split-dependent types go through `loc` | review finding S1: caller-side sites are typed through the instantiation | h1, h3; E2c | addressed by `loc` (proved examples); `ty` stays shared |
 | `Req` is a semantic predicate on keys | any clause language denotes one | a clause language that cannot express what (i) needs (`Pr` of a restriction `r|T`, E2′) | real limit: (C) holds for the model; whether a syntactic checker can establish `Covers` is separate |
-| interfaces fixed by the text (declared form) | needed: E2′ | E2′; `Req₁` depends on `loc` | (C) is stated only for this form |
+| interfaces shared by both split variants (the declared form gives this) | C is proved for shared interfaces; interfaces inferred from a split chosen first are not shared (E2′) | E2′; `Req₁` depends on `loc`; a principal inference that computes the requirement with the split is not examined | (C) is stated only for shared interfaces; inference stays a goal (§18.22 item 1) (corrected 2026-10-21, dossier §18.23 F14) |
+| no body equations (`B`) | the model's subject is requirement sites | eq-c/eq-d: a caller's equation refuses one of two splits that meet `D` | real limit: `B` presupposed, not established by `Covers`; C+ proposed, unproved (§4) (corrected 2026-10-21, dossier §18.23 F6) |
+| no equality operator | `ann_k` stands for a comparison operand's type | `==`'s result under two splits | not modelled; R does not cover it (corrected 2026-10-21, dossier §18.23 F5) |
+| type-depth limit excluded | resource bound | a solution over 1,000 levels deep under one split only | excluded, like the key limit (corrected 2026-10-21, dossier §18.23 F11) |
 | undefined site types refuse | Record.purs:58 refuses a repeated label | none (corrected from the first draft, S5) | modeled |
 | every typed position is a site | lowering lowers every node's type (Body.purs:37-39, 55-57) | a typed position not written as `ann_k` | modeling convention: a program must annotate every typed position for "accepted" to mean the compiler's acceptance. The E2 examples do not annotate `divide`'s parameter types; `param_image` proves their definedness separately |
 | sites are reached by an inductive relation (finite derivations) | the compiler copies finitely many keys (R010, ADR 007 §4.2) | polymorphic recursion with unbounded keys | harmless for (C), which quantifies over every reached site |
@@ -468,7 +611,10 @@ commit:
 | W6 | the examples break "every typed position is a site" | stated: `divide`'s parameter types are not `ann` sites; `param_image` proves their definedness separately |
 | modeling note | `app` runs a closure at the applying key | comment added in Defs.lean; only the excluded `project` reads the key |
 
-The fixes after the second review were not reviewed again.
+The fixes after the second review were reviewed by a third,
+independent reviewer (dossier §18.23, 2026-10-21). It confirmed them
+except F7 and F10 (G1's "silently" kept too much); its corrections are
+applied in place and listed under Corrections at the end.
 
 ## 7. Status and narrowing
 
@@ -491,47 +637,105 @@ one coming from the shared `compose`/`evalT`):
 **Narrowing, stated explicitly.** The theorem is about this model, not
 about the compiler:
 
-- run time is about the reference evaluator, not about Go (A-go);
-- acceptance covers specialization-time requirements and the
-  check-time judgments that see the instantiation (as clause (i)). It
-  does not cover R010, holes versus chosen parts, `CannotTell` or the
-  key limit;
-- interfaces must be declared (fixed by the text). Inferred interfaces
-  are E2′;
+- run time is about the reference evaluator, not about Go (A-go), and
+  not about `==`'s result, which is not modelled (corrected 2026-10-21,
+  dossier §18.23 F5);
+- acceptance covers requirement sites: specialization-time
+  requirements and the check-time requirement judgments that see the
+  instantiation (as clause (i)). The caller's and callee's body
+  equations are check-time judgments that see the instantiation too,
+  and they are presupposed, not covered (corrected 2026-10-21, dossier
+  §18.23 F6; §18.24 decision 3; C+ in §4 is the proposed extension,
+  unproved). It does not cover R010, holes versus chosen parts,
+  `CannotTell`, the key limit or the type-depth limit (corrected
+  2026-10-21, dossier §18.23 F11);
+- C is proved for interfaces both split variants share; the declared
+  form gives that. Interfaces inferred from a split chosen first are
+  E2′; other inference strategies are not examined (corrected
+  2026-10-21, dossier §18.23 F14; §18.24 decision 5);
 - the fragment omits data types, effects, handlers, `Fail`, update,
   patterns and control flow.
 
 What C establishes is conditional: *if* a recorder and checker
-establish `Covers` (every requirement counted, caller-side included),
-*then* specialization-time acceptance is split-independent. Whether the
-source-to-constraint specification counts every requirement is Stream
-5's question. This note does not answer it, beyond the inventory in §2
-and §5.
+establish `Covers` (every requirement site counted, caller-side
+included), and the split solves the body equations, *then* modelled
+acceptance at requirement sites is split-independent (reference-model
+behaviour). Whether the source-to-constraint specification counts
+every requirement is Stream 5's question. This note does not answer
+it, beyond the inventory in §2 and §5.
 
 ## 8. Coordination with Stream 5
 
 Stream 5's translation.md (its worktree, read 2026-10-21, not yet
 integrated) inventories the checks independently. It agrees on
 printability (its S1, the verdict (b), §3.2) and on R010 (its C1, a
-side condition on witnesses). Two points differ, both for the
-coordinator:
+side condition on witnesses). Two points differed. The independent
+review (dossier §18.23) resolved both in this note's favour, and
+translation.md is corrected accordingly:
 
-- **Comparison.** Its row C2 says comparison "never separates two
+- **Comparison.** Its row C2 said comparison "never separates two
   splits", because the check is conservative at the generic type. That
   holds for comparisons *in the generic function*. It fails for a
   comparison in the *caller*, at a type the instantiation fixes (h3/h4
   above: refused with `{ f: fn }`, accepted with `{ a: 1 }`). With
   several tails the instantiation of a split part is the split (E2c's
-  shape with `==`).
+  shape with `==`), and the review ran it: cmp-c passes check, cmp-cf
+  is refused at check (check-time refusal; §1.1). This is a missing
+  requirement (b), not an observable difference between valid splits.
 - **"The same construct also shows (a)"** (its §3.2: once `peek` is
-  applied, the output depends on the split). Inside `divide`, `peek`
-  can be applied only to a value of type `{ ...u }`, and the fragment
-  has no way to build one from `whole` without a projection (E3).
-  Either the value comes from a parameter of type `{ ...u }`, and then
-  that argument fixes `u` and the split is no longer free, or it needs
-  a projection, which is excluded. So in the projection-free fragment
-  the claim contradicts R (for the reference semantics; compiled code
-  rests on A-go). If Stream 5 has a construction that applies `peek`
-  without either, it would be a counterexample to R's fragment and
-  should be added here.
+  applied, the output depends on the split; withdrawn there by the
+  author, §18.24 decision 4). The earlier version of this item argued
+  by a two-way case split on where a value of type `{ ...u }` comes
+  from (a parameter of that type, or a projection). That enumeration
+  was incomplete: `{ ...u }` can also come from a callback's result or
+  from a field or extension of a parameter, and well-typed expressions
+  of that type exist that fix nothing (a crashing callback, a divergent
+  function) (corrected 2026-10-21, dossier §18.23 F4). The conclusion
+  rests instead on R: `eval_split` holds for every projection-free
+  term, whatever its type and wherever its values come from, so in the
+  reference model no projection-free program makes the two splits'
+  results differ (reference-model behaviour). The bottom-typed
+  expressions crash or diverge, so `show` never receives a value; the
+  model's `none` covers both (it has no `crash`), and in the compiler
+  the crash report does not depend on the split (derived). Compiled
+  code rests on A-go; no generated code was observed.
 
+
+## Corrections
+
+Corrected in place on 2026-10-21 after the third review
+(research/division-campaign/reviews/streams-5-8-review.md, dossier
+§18.23), following the author's decisions (§18.24). No theorem
+statement or proof changed; Lean comments were corrected to match.
+
+- **Kinds of evidence** (head, §1.1 table, §4): check-time refusal,
+  specialization-time refusal, reference-model behaviour and observed
+  generated-code behaviour are named and labelled; there is none of
+  the last kind.
+- **F4** (§8): the two-way case split on where `{ ...u }` comes from is
+  replaced by a citation of R, with a note on bottom-typed expressions.
+- **F5** (§2, §3.1, §4 R, §5, §7): `==`'s result is not modelled; R does
+  not cover comparison output.
+- **F6, decision 3** (§2, §3.3, §4, §5, §7): C narrowed to requirement
+  sites and call interfaces; body equations `B` are presupposed, not
+  established by `Covers` (eq-c/eq-d). C+ added as a clearly labelled
+  *proposed* statement covering the equations, unproved.
+- **F7** (§4): "ground check silent" now states the premise that the
+  starting declaration's interface holds.
+- **F11** (§2, §3.3, §5, §7): the type-depth limit added to the
+  exclusions, beside the key limit; the review's other missing items
+  (body equations, `==`'s result) added too.
+- **F12** (§1.3, §2): the written split is a caller-side annotation,
+  itself a typed site where caller-side requirements fail; decision 1
+  recorded.
+- **F13** (§1, §1.5, §2, §4 E5): R010 decides admissibility, not
+  validity; E5 is not (a).
+- **F14, decision 5** (§1, §1.4, §4 E2′, §5, §7): E2′ restricted to
+  inferring an interface from a split chosen first; principal
+  inference left open.
+- **F15** (§1.2, §4 E2-formal): `e2`'s interface is a hand-written
+  instance of M1.
+- **Decision 2** (§1.3): caller-side requirements are check-time
+  constraints on the instantiated type, not declarations on the callee.
+- §1.1 gains the review's several-tail probes (cmp-c, cmp-cf, pr-c,
+  pr-cf); §6 notes the third review; §8 records the resolution.
