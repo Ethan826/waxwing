@@ -76,10 +76,13 @@ function tailWitness(rigid) {
 // outside s or outside t. Rows: x1-x4 = 3-6, y1 = 7, y2 = 8, x3' = 9,
 // m = 10, y3 = 11. Valid exactly when rigid fields cannot be pairwise
 // distinct: an artifact of two field types, not semantic validity.
+// Amendment after a run (speed only): the atoms are listed with the
+// four-part equation last, so the searches, which assign variables in the
+// order atoms mention them, prune before it. The conjunction is unchanged.
 const pigeonhole = sig([0, 1, 2], [], [3, 4, 5, 6, 7, 8, 9, 10, 11], [], [], [
-  eq(tails(0), tails(3, 4, 5, 6)), eq(tails(3, 7), tails(1)),
-  eq(tails(4, 8), tails(2)), eq(tails(9, 10), tails(1)), dis(5, 10),
-  eq(tails(9, 11), tails(2)), dis(6, 2)])
+  eq(tails(3, 7), tails(1)), eq(tails(4, 8), tails(2)),
+  eq(tails(9, 10), tails(1)), dis(5, 10), eq(tails(9, 11), tails(2)),
+  dis(6, 2), eq(tails(0), tails(3, 4, 5, 6))])
 
 // R5. Ties between a row's labels and a nested field's labels (§18.10),
 // vacuity through type equations, record-valued rigid type variables.
