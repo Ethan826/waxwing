@@ -2081,7 +2081,7 @@ would need nested records, which this pass does not enumerate.
 
 | Run | Problems | Bounded invalid, no template | Valid, template, P9s certifies | Valid, template, P9s Unresolved | Separations, power or P9s flags |
 |---|---|---|---|---|---|
-| named: 6 typed challenges, 19 first-pass challenges, 12 source programs (all as predicted) | 36 | 15 | 16 | 5 (`split` twice, `route`, `shared-part-equal-rows`, `agreement-hypothesis`) | 0 |
+| named: 6 typed challenges, 18 first-pass challenges, 12 source programs (all as predicted) | 36 | 15 | 16 | 5 (`split` twice, `route`, `shared-part-equal-rows`, `agreement-hypothesis`) | 0 |
 | generated, seed 3 | 300 | 115 | 181 | 4 | 0 |
 | generated, seed 11 | 300 | 94 | 199 | 7 | 0 |
 
@@ -2117,3 +2117,183 @@ would need nested records, which this pass does not enumerate.
 - Next, each a separate approval: a second pass covering records nested
   in fields (finite but larger template spaces); the D3b construction;
   then proofs of D1 and D2 if approved; D4 after that.
+
+### 18.8 Second pass: grammar and bounds, fixed before running
+
+The author's review of §18.7 (2026-10-21) approved a focused second pass
+for nested records and deferred D3b until it is reviewed. Corrections:
+
+- **"Exhaustive" means within the stated template grammar** (and bounds).
+  It does not show that the grammar expresses every necessary witness;
+  §18.7's first-pass result is "no separation within that grammar".
+- **D3a's type-template grammar was incomplete.** The semantic language
+  has function types: `∀ α. ∃ β. β = α → α` is valid and needs a
+  template that builds a function type. D3a now uses the grammar below,
+  function templates included.
+
+**Template grammar (D3a, and the second pass).**
+
+- Leaves: `A(r, l)` (rigid row `r`'s field at written label `l`, under
+  a pattern where `r` holds `l`), `T(n)` (rigid type variable `n`), and
+  ground types `g` (the problem's base types, `Int`, `Bool`).
+- Skeletons `Sk(P)`: the constructor shapes of the problem's own type
+  subexpressions. An arrow's skeleton is the arrow of its parts'
+  skeletons, and a record's is its written labels with their fields'
+  skeletons and one cell map for its tails. A base type or type variable
+  becomes a hole.
+- `Temp₀` is the leaves. `Temp_{k+1}` is `Temp_k` together with every
+  skeleton of `Sk(P)` whose holes are filled from `Temp_k` and whose
+  record nodes each get a cell map (per cell, absent or a source row in
+  the cell) if the skeleton's record has tails; a record written
+  without tails has no cell map. (Refinement recorded before running.)
+- Flexible type variables range over `Temp₂`. Flexible rows: each
+  written label absent or a template from `Temp₁`, and a cell map.
+- **Exhaustive within this grammar**: every combination is enumerated
+  (the cell maps and field-source choices included). A separation found
+  inside it is real for that grammar; finding none says nothing about
+  witnesses outside it (for instance a shape the problem never writes,
+  or nesting beyond `Temp₂`).
+
+**Bounds.** Labels: the problem's written labels plus `z1`, `z2`. Rigid
+row fields: absent, `Int` or `{q:Int}` (a record, so nested field
+values occur in rigid rows). Rigid type variables: `Int`, `Bool`,
+`{}`, `{q:Int}`, `(Int->Int)` (record- and function-valued; the same
+list bounded validity uses for flexible type variables). Bounded
+validity's flexible domain: `Int`, `Bool`, `{}`, `(Int->Int)`,
+`{q:Int}` and the values the problem's own subexpressions build.
+
+**Uniformity** as before: one template per written-label pattern,
+fixed before any rigid assignment is seen, for every assignment of the
+pattern satisfying `D`. The template may not change with nested field
+values or their equalities.
+
+**Problems.** The five excluded challenges; new ones combining division
+with nested field types, record-valued rigid type variables, and
+hypotheses requiring nested types to agree; passing controls for
+template construction (a nested record assembled from rigid inputs, a
+function type assembled from a rigid type variable) and P9s-certified
+cases; broken controls. Stop at a separation or at the end of the pass.
+
+**Search method (recorded before running; it changes speed, not the
+grammar).** Every atom is a conjunction over (position, label) pairs,
+and the labels split into the Venn cells of the rigid rows (per rigid
+assignment) and the rest. So the search first fixes each template's
+shape (constructors, leaves, written fields) and checks the atoms on
+the labels outside every cell; then, for each cell independently, it
+chooses the cell-map entries of every record node and checks the atoms
+projected onto that cell's labels, for every rigid assignment. A
+template exists iff a shape passes and every cell has entries. The
+projection applies to every record at every depth, rigid values
+included. Cross-check: on §18.7's first-pass problems the new search
+must agree with the first-pass engine.
+
+### 18.9 Second pass: what happened
+
+Recorded in the order it happened, because two problems were found
+during the pass.
+
+**1. A search bug, caught by the cross-check.** The first version of
+the decomposed search projected inputs but not the values an equation's
+sides evaluate to, and dropped a written field's whole subtree from the
+cell blocks. Part A (the decomposed search against the first-pass
+engine, on §18.7's 36 problems) showed two mismatches (`tyvar-field`,
+`src-both`). The fix partitions positions by path: a position reached
+through non-cell labels only is in the block outside the cells; a cell
+label's whole subtree is in its cell's block; equation values are
+projected after evaluation. After the fix: part A, 0 mismatches of 36.
+A first part-B run made with the earlier version is void (it showed a
+spurious "template at the counter-instance" for `nested-two`).
+
+**2. An independent check of nested positions.** Part A cannot test
+nested positions (the first-pass problems have none), so
+sig-oracle/nested-brute.mjs searches the same grammar without
+decomposition: every shape and every cell-map entry of every record
+node, checked on whole values. Part C compares it with the decomposed
+search on the six nested problems small enough to enumerate: 0
+mismatches, in both grammars below.
+
+**3. A gap in the grammar as specified (§18.8).** A record node with
+tails stands for rows that, under a pattern, may hold written labels;
+the grammar gave such a node a cell map but no written fields (only
+flexible rows had them). So `nested-same` (`x = { f: { ...r } }` where
+`r` may hold the written label `f`) has no template in the grammar, yet
+P9s certifies it: P9s's own witness falls outside §18.8's grammar. The
+pass flags this as "P9s without template", which is what the flag is
+for. This is a defect of the grammar written in advance, not evidence
+about division.
+
+**Amended grammar, after a run (for review).** A record node with tails
+also gets, at each written label its skeleton does not write, absent or
+a leaf template, as a flexible row does. Both grammars are reported
+below, separately; nothing about the specified grammar's results is
+replaced.
+
+**Results** (both grammars, each on the same 29 problems: the five the
+first pass excluded, the eight nested challenges, sixteen P9s-certified
+named problems; eight parallel shards):
+
+| Grammar | Agree (as predicted) | Flagged |
+|---|---|---|
+| as specified (§18.8) | 25 | `nested-same`, `nested-alias`, `tyvar-nested-rest`: P9s certifies, no template; `division-in-field`: bounded valid, no template ("beyond the grammar"). All four are the tail-node gap of item 3 |
+| amended (item 3) | 29 | none |
+
+Under the amended grammar every prediction holds: division inside a
+field and inside a function type, a record-valued rigid type variable
+divided by another row, and a hypothesis making nested types agree all
+have uniform templates; the broken controls (`nested-two`,
+`nested-alias-undeclared`, `nested-agreement-missing`,
+`nested-rigid-mismatch`) have none; the template-construction controls
+(`function-from-rigid`, `record-from-rigid`) and every P9s-certified case
+pass. Cross-checks: part A (against the first-pass engine) 0 mismatches
+of 36 in both grammars; part C (against brute force) 0 of 6 in both.
+Power check (scratch copy, deleted): with function skeletons removed,
+`division-in-function` becomes "beyond the grammar" and
+`function-from-rigid` is flagged.
+
+### 18.10 Adversarial review of §18.6-18.9, and further reading
+
+An independent reviewer (2026-10-21) found no disagreement between the
+decomposed and brute-force searches (196 random small problems with
+cell labels at nested positions, inside arrows and in rigid type
+variables' values; and a hand argument for the path partition). Defects
+found, all corrected or recorded:
+
+- §18.7's table counted 19 first-pass challenges; there are 18 (fixed).
+- **The first-pass grammar was not exhaustive for its own fragment.**
+  `inFirstPass` admits records inside arrows, but `needsRecord` offers a
+  record template only to a type variable equated with a record at the
+  top of an equation, and the first pass has no function templates. Two
+  problems (`∀ r. ∃ β. β → Int = {...r} → Int`; `∀ α. ∃ β. β = α → α`)
+  are valid and P9s-certified but have no first-pass template; the
+  second-pass search finds both. §18.7's "exhaustively" holds only for
+  that narrower grammar; its results stand as a statement about it.
+- The flag "BUG: P9s without template" conflated a grammar gap with a
+  P9s defect. Renamed "P9s witness outside the grammar, or a P9s
+  defect" in both oracles.
+- When a template is found at the counter-instance θ* (the power case),
+  nothing follows about uniformity; both classifiers reported
+  `uniform: false`. They now report it unknown. No run had that case.
+- §18.9 promised results it did not yet contain (now added above).
+- **The presence fragment is exact only for flat rows.** With nesting
+  or type variables, an equation can tie a row's labels to a value
+  (`{ f: {...Y} } = {...X}` makes `Y`'s labels those of `X`'s field
+  `f`), which no set atom over `X`, `Y` states. D1 and D2 are about the
+  presence fragment as defined, not about the presence of every typed
+  problem; transferring them needs the problem's equations to relate
+  flat record expressions, or a separate argument.
+- **D3b must handle hypotheses tying rigid type variables to rows**
+  (`α = { ...r }`, `{ f: { ...r } } = { f: α }`): the generic `α` must
+  be built from the generic `r`. P9s's patterns ignore `D`'s equations
+  (sound, §14) so its generic instance can fall outside `D` there.
+
+Further reading (research/composition-assessment/division/
+concatenation-leads.md): Pottier's filters (LICS 2003; Leijen's citation
+was to this paper, not ESOP 2000) are constant label sets; his theorems
+decide satisfiability, not entailment. Rémy 1992 types concatenation as
+composition of row transformers and cannot split a row. Harper and
+Pierce 1991 forbid `a \ l` for a variable `a` and read disjointness only
+from declarations. Baader 1998: Boolean unification with constants is
+the conjunctive ∀∃ fragment, Π₂ᴾ-complete, and a single-equation
+sentence holds in all Boolean algebras iff in the two-element one
+(Thm 6); constants are uninterpreted and field types are not covered.
+None divides a row by membership in another from assumptions.

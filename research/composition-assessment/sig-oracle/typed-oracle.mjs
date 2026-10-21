@@ -75,12 +75,15 @@ export function classify(P, bounds = DEFAULT_BOUNDS) {
     const power = templateAt(P, rigid, bounds)
     const kind = power ? 'POWER: bounded domain'
       : p9 ? 'BUG: P9s valid, bounded invalid' : 'agree'
-    return { bounded, uniform: false, perAssign: power, p9, kind }
+    // A template at θ* says nothing about uniformity: unknown (null).
+    return { bounded, uniform: power ? null : false,
+      perAssign: power ? null : false, p9, kind }
   }
   const { uniform, perAssign } = terms(P, bounds)
   let kind = 'agree'
-  if (p9 && !uniform) kind = 'BUG: P9s without template'
-  else if (!uniform) {
+  if (p9 && !uniform) {
+    kind = 'FLAG: P9s witness outside the grammar, or a P9s defect'
+  } else if (!uniform) {
     kind = perAssign ? 'SEPARATION: type-dependent' : 'SEPARATION: beyond terms'
   }
   return { bounded, uniform, perAssign, p9, kind }
