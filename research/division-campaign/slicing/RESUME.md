@@ -78,3 +78,23 @@ review only; no proofs, no implementation.
 
 Nothing in this directory or SliceDefs.lean after the checkpoint.
 Scratch outputs (not in the repo) are in the session scratchpad.
+
+## Completeness review (handed back after the pause; not yet applied)
+
+No → direction found false (argument only). Findings to act on:
+
+1. Rigid type variables and D-only links make slices too coarse;
+   bounded checks (493 problems, 0 disagreements) support S1r-acc and
+   an S2r (relevance per flexible-only component). Propose both.
+2. C3's `checkAllOn` enumerates a product over slices, so it only
+   drops `wide`-style labels; only `checkSliced` gives the sum. Say so.
+3. `written` keeps duplicates, so `pairs`/`relevantPairs` repeat and
+   `subsets` doubles per repeat; dedup `relevantPairs`, note `pairs`,
+   fix the `twoParts` docstring ("three of four" vs 2 distinct of 4).
+4. State a per-slice refusal lemma (¬Valid Q, other slices' D
+   satisfiable ⇒ ¬Valid P) and its precondition for `Outside` slices.
+5. Oracle gap: rigid field types Int/Bool only, so D `r = {a: {b: Int}}`
+   reads as impossible; flag zero-checked cases in hunt.mjs or widen
+   rigidRowTypes.
+6. DSat ↔ DSatFin via `r1` (argument): S1Fin could use DSat.
+(Its note about unfilled placeholders is stale: they were filled.)
