@@ -102,4 +102,5 @@ import Composition.Typed.Bridge.Fresh
 import Composition.Typed.Bridge.Complete
 import Composition.Typed.Bridge.Sound
 import Composition.Typed.Bridge.Examples
+import Composition.Typed.Bridge.ProofComplete
 import Composition.TypedAttack.ShapeSplit
