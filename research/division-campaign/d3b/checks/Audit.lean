@@ -6,6 +6,12 @@ import Composition
 #print axioms Composition.Typed.d3bFlat
 #print axioms Composition.Typed.instanceIffUnifiable
 #print axioms Composition.Typed.d3bComplete
+#print axioms Composition.Typed.mguExists
+#print axioms Composition.Typed.cellIndependence
+#print axioms Composition.Typed.universality
+#print axioms Composition.Typed.d3bExists
+#print axioms Composition.Typed.robinson
+#print axioms Composition.Typed.ci_core
 #print axioms Composition.Typed.routeP_valid
 #print axioms Composition.Typed.splitFree_unsolvable
 #print axioms Composition.Typed.splitFree_not_valid

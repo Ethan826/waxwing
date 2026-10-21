@@ -93,4 +93,7 @@ import Composition.Typed.Realize
 import Composition.Typed.Vacuity
 import Composition.Typed.Complete
 import Composition.Typed.BridgeDefs
+import Composition.Typed.MGUExists
+import Composition.Typed.CellIndep
+import Composition.Typed.Universality
 import Composition.TypedAttack.ShapeSplit
