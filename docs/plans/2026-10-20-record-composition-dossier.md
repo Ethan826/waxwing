@@ -4345,3 +4345,47 @@ unification does not produce `r|A`) before or after checking; prove PW
 now; a frozen-grammar oracle for whether any problem in `Accepts` needs
 two-literal guards; restate option C against `ValidOpen` before SC
 proof work, or keep it beside `checkAll` at `Accepts`.
+
+### 18.48 The author's direction on option C, before the SC proposal (2026-10-21)
+
+Proofs wait for the SC1-SC4 proposal; avoid building a substantial
+checker around a boundary already intended to be exceeded.
+
+1. **Keep the existing statements explicitly about `Accepts`** and add
+   an option-B counterpart before choosing the proof tranche; never
+   retarget silently. Identify which definitions and lemmas transfer to
+   the cell-based model and which need replacement. **Correction:** a
+   computed θ* is necessary for an executable construction, not for
+   stating a semantic soundness theorem, which can take a generic
+   instance and its required evidence as premises (§18.47's "blocked on
+   a computed generic instance" applies to execution only). Executable
+   representation and validation remain separate obligations.
+2. **Guard-free projection pieces are the proposed common
+   representation**, with strategy A's `{r, ex}` a special case, so the
+   instantiation foundation is not duplicated. Not authorized: guarded
+   checking, or proving the whole projection checker now.
+3. **Guards deferred.** `divide5` shows a limitation of projection-only
+   certificates on a constructed family, not a reason to adopt another
+   mechanism; the example and the complexity results stay, labelled
+   unproved.
+4. **Checking first, then bounded search work**: establish exactly what
+   a certificate proves before improving how it is found. The
+   implementation plan must eventually include search acceptance
+   examples; a compact certificate format alone does not deliver useful
+   inference.
+5. **PW's proof deferred.** First an exact Lean statement (scope,
+   treatment of impossible declarations), then whether the selected
+   architecture needs it.
+
+Details for the combined proposal: `Piece` now permits non-rigid row
+identifiers; either validate rigidity or state exactly how such pieces
+are interpreted, with the same scope in executable and explanatory
+text. First-occurrence shadowing in a certificate's representation stays
+distinct from disjoint composition; a soundness-only checker may
+conservatively reject shadowed representations, but that is not an
+exactness result.
+
+**Next:** the SC and projection proposals brought together as **one
+architecture decision**, showing the old and new acceptance targets and
+the reusable proof obligations. No prototype or proof work before that
+review.
