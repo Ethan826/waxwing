@@ -116,3 +116,4 @@ import Composition.Typed.Bridge.ProofFreshComplete
 import Composition.Typed.Bridge.ProofFresh
 import Composition.Typed.Bridge.ProofFreshFinExt
 import Composition.TypedAttack.ShapeSplit
+import Composition.Typed.Bridge.ProofInstantiate

@@ -8076,3 +8076,7 @@ unrelated README/backlog/direction-plan edits remain untouched.
   statements-only, starting with projection onto written labels;
   SB1-SB3 deferred. Two reporting corrections applied. The report.md
   incident classified as a routed-around policy denial; briefs changed.
+- First bridge tranche, completeness side (dossier §18.40): E1-E6, B0,
+  examples, B2/B2f/B2c/B2g/B2n and B3a/B3e/B3f proved and instantiated;
+  option-B completeness for the equation-free and flat fragments holds
+  with no open existence premise. F6 closed. Soundness track pending.
