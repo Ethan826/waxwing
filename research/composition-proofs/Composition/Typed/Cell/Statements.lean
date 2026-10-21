@@ -66,14 +66,33 @@ def EvalCommutes : Prop :=
       evalT (combine (cliftP P) θs (cinst P θs σ)) (cliftT t) =
         some (cvDen P θs v)
 
-/-- CI4. Option C's guard-free pieces keep their meaning on written
-labels; their rest becomes every cell of the row, or none. -/
+/-- CI4. Option C's guard-free pieces have an image and denote, on
+written labels, the labels option C's `pieceRow` holds at the same
+pattern (compared at `thetaFree`, entry presence only; values differ by
+model). Their rest becomes every cell of the row, or none. -/
 def ProjPieceDen : Prop :=
-  ∀ (P : SigProblem Label B) (θs : CAssign Label B) (q : Piece Label),
-    q.row ∈ P.rigidRow →
-    cpieceRow P θs (ofProjPiece q) = fun
-      | .inl l => if l ∈ q.labels then θs.row q.row (.inl l) else none
-      | .inr S => if q.rest then θs.row q.row (.inr S) else none
+  ∀ (P : SigProblem Label B) (π : Pattern Label) (q : Piece Label),
+    q.guard = [] → q.row ∈ P.rigidRow →
+    ∃ c, ofProjPiece q = some c ∧
+      (∀ l ∈ written P, (cpieceRow P (thetaFree P π) c (.inl l)).isSome =
+        (pieceRow P π q (.inl l)).isSome) ∧
+      ∀ θs S, cpieceRow P θs c (.inr S) =
+        if q.rest then θs.row q.row (.inr S) else none
+
+/-- CI4′. A guarded piece has no image. -/
+def ProjGuardRefused : Prop :=
+  ∀ q : Piece Label, q.guard ≠ [] → ofProjPiece q = none
+
+/-- CI4″. Strategy A's `{r, ex}`: on written labels, the labels A's
+`SchpieceRow` holds at the same pattern (presence, at `thetaFree`); on
+cells, every cell of the row. -/
+def SchPieceDen : Prop :=
+  ∀ (P : SigProblem Label B) (π : Pattern Label) (q : SchPiece Label),
+    q.1 ∈ P.rigidRow →
+    (∀ l ∈ written P,
+      (cpieceRow P (thetaFree P π) (ofSchPiece P q) (.inl l)).isSome =
+        (SchpieceRow P π q (.inl l)).isSome) ∧
+    ∀ θs S, cpieceRow P θs (ofSchPiece P q) (.inr S) = θs.row q.1 (.inr S)
 
 /-- CI5. Where P9s needed `declared r s` between two rests, the cell
 model needs no common free cell; for distinct rigid rows these agree
@@ -84,6 +103,11 @@ def DeclaredIsNoCommonCell : Prop :=
     (cellPossS P [(r, true), (s, true)] = false ↔
       declaredS P r s = true ∨ Atom.disjoint r r ∈ P.D ∨
         Atom.disjoint s s ∈ P.D)
+
+/-- CG. The guard computes the fragment (SC2Frag's first conjunct,
+restated here because CM-open depends on it). -/
+def FragmentIff : Prop :=
+  ∀ P : SigProblem Label B, fragmentS P = true ↔ LDFragment P
 
 /-! ### CB: the original body -/
 
@@ -127,7 +151,7 @@ the region (overlapping record parts are refused). -/
 def ApartSound : Prop :=
   ∀ (P : SigProblem Label B) (Q : CellQ Label), QSound P Q →
     ∀ θs, InCellRegion P θs → ∀ x y : CRow Label B,
-      (∀ q ∈ x.2 ++ y.2, q.row ∈ P.rigidRow) → apartC Q x y = true →
+      apartC Q x y = true →
       Composition.Disjoint
         (union (cvDenFields P θs x.1) (cpiecesRow P θs x.2))
         (union (cvDenFields P θs y.1) (cpiecesRow P θs y.2))

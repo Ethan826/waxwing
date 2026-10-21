@@ -129,8 +129,24 @@ def ofSchPiece (P : SigProblem Label B) (q : SchPiece Label) :
   ⟨q.1, (written P).filter (· ∉ q.2), [[]]⟩
 
 /-- Option C's guard-free `⟨r, S, rest?⟩` (`Piece` with `guard = []`):
-the rest becomes every cell or none. Guards have no image (deferred). -/
-def ofProjPiece (q : Piece Label) : CellPiece Label :=
-  ⟨q.row, q.labels, if q.rest then [[]] else []⟩
+the rest becomes every cell or none. A guarded piece has no image
+(`none`): guards are deferred. -/
+def ofProjPiece (q : Piece Label) : Option (CellPiece Label) :=
+  if q.guard.isEmpty then some ⟨q.row, q.labels, if q.rest then [[]] else []⟩
+  else none
+
+/-- One row binding of option C's certificate, with no written fields. -/
+def ofProjRow (e : Nat × (List (Label × SV Label B) × List (Piece Label))) :
+    Option (Nat × CellV Label B) :=
+  if e.2.1.isEmpty then
+    (e.2.2.mapM ofProjPiece).map fun ps => (e.1, .record [] ps)
+  else none
+
+/-- Option C's certificate, when it has no type bindings, no written
+fields in row bindings and no guards; otherwise `none`. -/
+def ofProjCert (σ : SCert Label B) : Option (CellCert Label B) :=
+  if σ.ty.isEmpty then
+    (σ.row.mapM ofProjRow).map fun rs => ⟨[], rs⟩
+  else none
 
 end Composition.Typed.Cells

@@ -5,11 +5,11 @@ stated in Cell/Statements.lean.
 
 The region is the set of generic instances the checker answers for: a
 generic instance of some pattern with an instance, within the problem's
-symbols, whose occupied cells are exactly the free cells
-(`CellShape`, the evidence `thetaFree` provides on the equation-free
-fragment). Queries are injected (`CellQ`): the checker's soundness needs
-only that each answer is conservative (`QSound`); `implQ` is the
-proposed implementation.
+symbols, whose occupied cells are among the free cells (`CellShape`,
+evidence `thetaFree` provides on the equation-free fragment). Queries
+are injected (`CellQ`): the checker's soundness needs only that each
+answer is conservative (`QSound`); `implQ` is the proposed
+implementation.
 -/
 import Composition.Typed.Cell.Format
 
@@ -21,11 +21,12 @@ variable {Label B : Type} [DecidableEq Label]
 
 /-! ### The region -/
 
-/-- Rigid row `r` holds cell `S` in `θs` exactly when `S` is a candidate
-cell containing `r` with no declared disjoint pair inside. -/
+/-- Rigid row `r` holds cell `S` in `θs` only when `S` is a candidate
+cell containing `r` with no declared disjoint pair inside. Only this
+direction is needed (review S1); `thetaFree` has both. -/
 def CellShape (P : SigProblem Label B) (θs : CAssign Label B) : Prop :=
   ∀ r ∈ P.rigidRow, ∀ S : Cell,
-    (θs.row r (.inr S)).isSome = true ↔
+    (θs.row r (.inr S)).isSome = true →
       S ∈ cellCands P ∧ FreeCell P S ∧ r ∈ S
 
 /-- The generic instances the checker answers for. -/

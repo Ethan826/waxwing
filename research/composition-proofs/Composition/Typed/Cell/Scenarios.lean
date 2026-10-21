@@ -9,6 +9,7 @@ recorded limitation.
 import Composition.Typed.Cell.Statements
 import Composition.Typed.ExamplesValid
 import Composition.TypedAttack.ShapeSplit
+import Composition.Sig.SourceBoundary
 
 namespace Composition.Typed.Cells
 
@@ -28,9 +29,13 @@ def routeCert : CellCert Label B :=
         (4, .record [] [⟨0, [], [[(1, true)]]⟩]),
         (5, .record [] [⟨1, [], [[]]⟩]), (6, .record [] [⟨2, [], [[]]⟩])]⟩
 
-/-- Intended: accepted. -/
+/-- Intended: accepted. `routeP` is `routeSig`, outside `Accepts`
+(`routeSig_not_accepts`) and `ValidOpen` (`routeOpen`). -/
 def ScRoute (Label B : Type) [DecidableEq Label] [DecidableEq B] : Prop :=
-  checkI (routeP : SigProblem Label B) routeCert = true
+  (routeP : SigProblem Label B) = SourceBoundary.routeSig ∧
+    ¬ Accepts (SourceBoundary.routeSig : SigProblem Label B) ∧
+    ValidOpen (routeP : SigProblem Label B) ∧
+    checkI (routeP : SigProblem Label B) routeCert = true
 
 /-- A broken certificate for a valid problem: `u := r` overlaps `v`. -/
 def routeBroken : CellCert Label B :=
@@ -94,16 +99,11 @@ def ScStarUndeclared (B : Type) [DecidableEq B] (b : B) : Prop :=
 
 /-! ### `divide3` and `divide5` (Sig/ProjectionDefs.lean) -/
 
-/-- Option C's `sigma3` through `ofProjPiece`: `u := r|as`, `t := r`'s
-rest (every cell of `r`). -/
-def divide3Cert (as : List Label) : CellCert Label B :=
-  ⟨[], [(2, .record [] [ofProjPiece ⟨0, as, [], false⟩]),
-        (3, .record [] [ofProjPiece ⟨0, [], [], true⟩])]⟩
-
-/-- Intended: accepted, for every list of labels. -/
+/-- Intended: accepted, for every list of labels, with option C's
+`sigma3` (`u := r|as`, `t := r`'s rest) through `ofProjCert`. -/
 def ScDivide3 (Label B : Type) [DecidableEq Label] [DecidableEq B] : Prop :=
-  ∀ as : List Label, checkI (divide3Sig (B := B) as)
-    (divide3Cert as) = true
+  ∀ as : List Label, ∃ c, ofProjCert (sigma3 (B := B) as) = some c ∧
+    checkI (divide3Sig (B := B) as) c = true
 
 /-- Recorded limitation, guards deferred: `divide5` is valid (argued in
 §18.47, unchecked) and no guard-free cell certificate passes. -/
@@ -117,6 +117,7 @@ def ScDivide5 (Label B : Type) [DecidableEq Label] [DecidableEq B] : Prop :=
 /-- `shapeSplit ()`: `ValidFin` over `Unit`, not `ValidOpen` (N1).
 Intended: refused by every certificate. -/
 def ScShapeSplit : Prop :=
+  ¬ ValidOpen (TypedAttack.shapeSplit () : SigProblem Nat Unit) ∧
   ∀ σ : CellCert Nat Unit,
     checkI (TypedAttack.shapeSplit ()) σ = false
 
@@ -126,6 +127,7 @@ def ScSplitFree (B : Type) [DecidableEq B] : Prop :=
   checkI (splitFree : SigProblem Nat B)
       ⟨[], [(3, .record [] [⟨0, [], [[(1, false)]]⟩]),
             (4, .record [] [⟨0, [], [[(1, true)]]⟩])]⟩ = false ∧
+    ¬ ValidOpen (splitFree : SigProblem Nat B) ∧
     ∀ σ, checkI (splitFree : SigProblem Nat B) σ = false
 
 end Composition.Typed.Cells

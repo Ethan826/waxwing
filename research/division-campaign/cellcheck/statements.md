@@ -20,7 +20,10 @@ Files, all under research/composition-proofs/Composition/Typed/Cell/:
   separate obligations CI, CB, CD, CV.
 - Exact.lean: exactness of the region queries and the reduction behind
   the complexity remark (QX, QR).
-- Scenarios.lean: acceptance scenarios with intended verdicts (Sc).
+- Scenarios.lean, ScenariosMore.lean: acceptance scenarios with intended
+  verdicts (Sc), and the checks behind two claims of this note
+  (`CellShapeNeeded`, `CheckTautology`). ScenariosMore.lean was added
+  after the completeness review (§10.2).
 
 ## 1. Target and boundary
 
@@ -102,9 +105,10 @@ parts are disjoint, so the union is the composition.
 
 | representation | image here | semantics matches? |
 |---|---|---|
-| A's `{r, ex}` (`SchPiece`) | `ofSchPiece P (r, ex) = ⟨r, written P ∖ ex, [[]]⟩` | on written labels yes; on the rest **no**, see below |
-| C's `⟨r, S, [], rest⟩` (`Piece`, no guard) | `ofProjPiece = ⟨r, S, rest ? [[]] : []⟩` | on written labels yes (CI4); on the rest the same caveat |
-| C's guarded pieces | none | guards are deferred (§18.48) |
+| A's `{r, ex}` (`SchPiece`) | `ofSchPiece P (r, ex) = ⟨r, written P ∖ ex, [[]]⟩` | on written labels, the same labels are held at the same pattern (presence at `thetaFree`, CI4″); values are each model's own constant; on the rest **no**, see below |
+| C's `⟨r, S, [], rest⟩` (`Piece`, no guard) | `ofProjPiece q = some ⟨r, S, rest ? [[]] : []⟩` | on written labels, presence as for A (CI4); on the rest the same caveat |
+| C's guarded pieces | `ofProjPiece q = none` (CI4′) | guards are deferred (§18.48) |
+| C's certificate `sigma3` | `ofProjCert` (no type bindings, no written fields, no guards) | used for `divide3` (`ScDivide3`) |
 | the whole row `r` | `wholePiece P r` | yes (CI1) |
 
 The caveat is this. P9s's rest of `r` is one label, `inr r`, private
@@ -123,7 +127,8 @@ image in A or C.
 
 **Only the syntactic embedding is reused.** No denotation, instantiation
 or checking statement of SC1-SC4 or PI1/PI2 is claimed for the images.
-CI4 is a new statement about the new denotation.
+CI4 and CI4″ are new statements about the new denotation; they compare
+only which written labels are held, which is all the two models share.
 
 ### 2.3 Rigidity, shadowing and the untrusted certificate
 
@@ -183,9 +188,11 @@ reason for the guard (§9).
 **The region** (`InCellRegion P θs`): `θs` is a generic instance of
 some pattern `π` with an instance (`HasInstance`, `GenericInst`),
 within the problem's symbols (`WithinC`), and has the **cell shape**
-(`CellShape`): for each rigid row `r` and each cell `S`, `θs.row r
-(inr S)` is present iff `S` is a candidate cell (`cellCands`) with no
-declared disjoint pair inside (`FreeCell`) and `r ∈ S`.
+(`CellShape`): for each rigid row `r` and each cell `S`, if `θs.row r
+(inr S)` is present then `S` is a candidate cell (`cellCands`) with no
+declared disjoint pair inside (`FreeCell`) and `r ∈ S`. (The first
+draft stated an iff; only this direction is used, and the converse
+excluded generic instances for no reason: review S1.)
 
 **CM** (`CellSound`). For every `P`, every injected `Q`, and every
 (untrusted) `σ`:
@@ -209,8 +216,9 @@ solver. CV2 discharges it for `implQ`.
 
 **Why `CellShape` is a premise.** `GenericInst ∧ WithinC` leaves a
 generic instance free at cells that no instance occupies, because
-coverage never reads them. Here is an example, argued and not checked
-in Lean, for the reviewers to test. Take `route` (`D = [disjoint 1 2]`,
+coverage never reads them. `CellShapeNeeded` (ScenariosMore.lean)
+states the example; the soundness reviewer reproduced it in a scratch
+semantic oracle (§10.1). Take `route` (`D = [disjoint 1 2]`,
 no written labels) and `thetaFree` with two extra entries. Row 0 gets a
 value at cell `[1, 2]`, and row 2 gets one there too, while row 1
 stays empty at `[1, 2]`. `D` still holds. Coverage holds because no
@@ -222,10 +230,11 @@ nothing is lost for CM-open.
 
 **CM-open** (`CellOpen`): `QSound P Q → cellCheck P Q σ = true →
 ValidOpen P`. The route of a later proof: the guard gives `LDFragment
-P`; CV1 gives `thetaFree P π` with the evidence for every `π` with an
-instance; CM gives `SolvableFinAt`; B5 gives `ValidOpen`. It has no
-`Scoped` or fresh-label premise. `LDFragment` implies `Scoped` and
-`EqFree`, which `d3bEqFree` needs, and B5 needs neither.
+P` (CG, `FragmentIff`, restated here because SC2Frag is an unproved
+`Accepts`-side proposal); CV1 gives `thetaFree P π` with the evidence
+for every `π` with an instance; CM gives `SolvableFinAt`; B5 gives
+`ValidOpen`. It has no `Scoped` or fresh-label premise. `LDFragment`
+implies `Scoped` and `EqFree`, which `d3bEqFree` needs, and B5 needs neither.
 
 **CM-impl** (`CellOpenImpl`): the same with `implQ P` and no premise
 at all (CV2 discharges `QSound`).
@@ -247,8 +256,10 @@ Each is its own `Prop` in Statements.lean.
   θs σ)) (cliftT t) = some (cvDen P θs v)`. Evaluating symbolically and
   then denoting at `θs` agrees with instantiating at `θs` and then
   evaluating.
-- CI4 `ProjPieceDen`, CI5 `DeclaredIsNoCommonCell`: the relation to
-  option C and to P9s's `declared`. (§2.2)
+- CI4 `ProjPieceDen`, CI4′ `ProjGuardRefused`, CI4″ `SchPieceDen`,
+  CI5 `DeclaredIsNoCommonCell`: the relation to option C, strategy A
+  and P9s's `declared`. (§2.2)
+- CG `FragmentIff`: the guard computes `LDFragment`.
 
 **Original-body checking (CB).**
 
@@ -290,7 +301,7 @@ Certificate values are checked by `wfC`/`certOkC` at every depth.
   every pattern with an instance.
 
 Proof dependencies, for planning only: CM uses CI2, CI3 (with CD2,
-CD3), CB1-CB4 and CD4. CM-open uses CM, CV1 and B5. CM-impl uses
+CD3), CB1-CB4 and CD4. CM-open uses CM, CG, CV1 and B5. CM-impl uses
 CM-open and CV2.
 
 ## 6. Region queries
@@ -304,9 +315,9 @@ the region of §4 (generic instances, not finite patterns):
 
 | query | meaning when `false` / `true` | used by | implementation (`implQ`) | cost |
 |---|---|---|---|---|
-| `possW r l` | false: no `θs` gives `r` the written label `l` | `lackC`, `sameW` | `l ∈ written P && holdersOK P l [r]` | O(\|D\| + \|written P\|) |
+| `possW r l` | false: no `θs` gives `r` the written label `l` | `lackC`, `sameW` | `l ∈ written P && holdersOK P l [r]` | O(\|D\| + \|written P\|) with `written P` precomputed (the model recomputes it per call) |
 | `possBoth r s l` | false: no `θs` gives both | `piecesApart` | `l ∈ written P && holdersOK P l [r, s]` | the same |
-| `cellBoth r s K` | false: no `θs` has a cell satisfying `K` where both `r` and `s` are present | `piecesApart` | `cellPossS P ((r,true) :: (s,true) :: K)`: the least candidate cell, then `freeS` | O(\|rigidRow\|·\|K\| + \|K\|² + \|cell\|²·\|D\|) |
+| `cellBoth r s K` | false: no `θs` has a cell satisfying `K` where both `r` and `s` are present | `piecesApart` | `cellPossS P ((r,true) :: (s,true) :: K)`: the least candidate cell, then `freeS` | O(\|rigidRow\|·\|K\| + \|cell\|²·\|D\|) |
 | `cover r L R` | true: every occupied cell of `r` that `L` selects, `R` selects too | `sameCells` | `coverS`: subsumption, else split on a row `R` mentions (Shannon expansion) | exponential in the number of splits, worst case |
 
 `nonEmpty` and `must` are not asked. QR5 states that on the fragment
@@ -348,16 +359,22 @@ QX4 (`CoverTautology`) states the reduction. Take `D = []` and rigid
 rows `r :: xs`. Then "`R` covers all of `r`" (`coverS P r [[]] R`) is
 the tautology problem for the DNF `R` over the rows `xs`. A certificate
 realizes the reduction directly: the body `{ ...r } = { ...u }`, with
-`u` bound to one piece of `r` whose cubes are `R`. Checking that
-untrusted certificate is therefore coNP-hard. This uses only the
-standard coNP-completeness of DNF tautology. Within one piece, cubes
-may overlap, so `R` is an arbitrary DNF. The hardness is argued and
-not checked. QX4 is the precise statement it rests on.
+`u` bound to one piece of `r` whose cubes are `R`; `CheckTautology`
+(ScenariosMore.lean) states that `checkI` passes exactly when `R` is a
+tautology. Within one piece, cubes may overlap, so `R` is an arbitrary
+DNF. So any checker that is sound **and complete** for this format
+(its `cover` exact, as QR4) decides DNF tautology, which is coNP-hard
+when the number of rigid rows is unbounded (standard coNP-completeness
+of DNF tautology). A sound but incomplete checker may refuse in
+polynomial time; the hardness is about the exact query. Argued, not
+checked; QX4 and `CheckTautology` are the precise statements it rests
+on, and a scratch run accepts the five-cube "pinwheel" through
+`checkI`.
 
 What is known and what is not:
 
-- `coverS` is exact always (QX3). Its cost is O(2^d · \|R\| ·
-  cellPoss), where d is the number of splits it makes. The scenarios
+- `coverS` is exact always (QX3). Its cost is O(2^d · (literals of
+  R) · cellPoss), where d is the number of splits it makes. The scenarios
   need d = 0 (`star`, `divide3`) or d = 1 (`route`, splitting on `s`).
   A scratch evaluation (not a proof) shows the splitting also handles a
   partition that pairwise merging cannot reduce (the five-cube
@@ -366,7 +383,10 @@ What is known and what is not:
 - **Single-cube pieces.** If each piece carried one cube, the cover
   inputs would be pairwise disjoint over free cells, because the
   pieces of one row on one side must be apart. With no declarations,
-  disjoint-DNF cover is polynomial by counting. With declarations,
+  disjoint-DNF cover is polynomial by counting inclusion as
+  \|L ∧ R\| = Σ \|K ∧ K′\| (the pairwise intersections are disjoint);
+  disjointness of the inputs needs an exact `cellBoth` (`implQ`'s is),
+  not only a sound one. With declarations,
   counting becomes counting independent sets, which is #P-hard, so
   counting gives no efficient form. Whether another method does is
   **open**.
@@ -376,19 +396,30 @@ What is known and what is not:
 
 ## 7. Reuse
 
-Each reused definition, and what changes:
+The author's rule governs this section: "the evaluator's shape is
+reusable, but its correctness theorem is not automatically
+target-independent". Each reused definition, and what changes:
 
 | reused | from | what changes |
 |---|---|---|
 | `GenericInst`, `WithinC`, `HasInstance`, `cliftP`, `cliftT`, `cliftAtom`, `SolvableFinAt`, `ValidOpen`, `d3bSoundOpen` (B5) | Typed/ | nothing; used as defined and proved |
 | `cellCands`, `FreeCell`, `freeCells`, `thetaFree`, `d3bEqFree` | Typed/Defs.lean, EqFree.lean | nothing; `CellShape` restates `thetaFree`'s cell occupancy as a premise |
-| `LDFragment`, `fragmentS` | Sig/SchematicDefs.lean | none in definition (a predicate on `D`). Role changed: in SC the guard gave the region SC2Real's meaning; here it makes pattern coverage (CV1) and query exactness (QR) hold |
+| `LDFragment`, `fragmentS` | Sig/SchematicDefs.lean | none in definition (a predicate on `D`). Role changed: in SC the guard gave the region SC2Real's meaning; here it makes pattern coverage (CV1) and query exactness (QR) hold. SC2Frag's first conjunct (`fragmentS ↔ LDFragment`) is needed and restated as CG |
 | `holdersOK` | Sig/SlicePatterns.lean | none in definition; its exactness is restated against `HasInstance` at generic instances (QR1, QR2), not against `consistentS` |
 | `declaredS` | Sig/WellFormed.lean | only in CI5, as the comparison point |
-| `Piece`, `SchPiece`, `divide3Sig`, `divide5Sig` | Sig/ProjectionDefs.lean, SchematicCert.lean | syntax only; `ofProjPiece`/`ofSchPiece` give new denotations (§2.2) |
+| `Piece`, `SchPiece`, `SCert`, `sigma3`, `divide3Sig`, `divide5Sig` | Sig/ProjectionDefs.lean, SchematicCert.lean | syntax only; `ofProjPiece`/`ofSchPiece`/`ofProjCert` give new denotations (§2.2); a guarded `Piece` has no image |
+| `pieceRow`, `SchpieceRow` | ProjectionDefs.lean, SchematicCert.lean | only as comparison points in CI4, CI4″ |
+| `splitSig`, `agreeP`, `intArmP` | Sig/Adversarial.lean, Typed/ExamplesFlat.lean, Typed/Bridge/Examples.lean | nothing |
+| `written`, `subsets`, `Sat`, `Holds`, `evalT`, `combine`, `FinAssign`, `RigidFinC`, `union`, `emptyG`, `Composition.Disjoint` | the base model | nothing |
 | `routeP`, `splitFree`, `shapeSplit` | Typed/Examples, ExamplesValid, TypedAttack | nothing |
 | evaluator shape (`evalY`, `composeY`, `wfY`, `eqY`, `atomY`, `checkSym`) | Sig/SchematicDefs.lean | re-implemented for cells (§3 table); **no correctness statement carried over**: SC3's soundness is about `checkCert` at P9s patterns, CB2-CB4 are about `Sat` at generic instances |
 | the four queries and `QueriesExact` | SchematicCert.lean, SchematicDefs.lean | not reused (§6.1) |
+
+Re-encoded, not reused: `cStar`, `cStarR`, `depFam` and `divideSig`
+translate star/problems.mjs's `star`, `star-read`/`star-cross`, `dep`
+and `divide`/`divide2` with `Nat` labels (`f_i = i`; `a = 0`, `b = 1`;
+`c = 0`, `a_j = j`); the translation is by hand and unchecked against
+the JavaScript.
 
 Not reused, deliberately: SC1 and PI1/PI2 (instantiation into a P9s
 `Cert`), `checkCert`/`HoldsG` (D1/D2 have no counterpart), `Accepts`,
@@ -402,15 +433,23 @@ repository. It is evidence for the intended verdict, not a proof.
 
 | scenario | statement | intended verdict | scratch |
 |---|---|---|---|
-| `route` | `ScRoute`: `routeCert` (`u` = cells of `r` without `s`, `v` = with `s`, `w := s`, `x := t`) | accepted; outside `Accepts`, inside `ValidOpen` | accepted (Nat labels and bases) |
+| `route` | `ScRoute`: `routeP = routeSig`, `¬ Accepts routeSig`, `ValidOpen routeP`, and `routeCert` (`u` = cells of `r` without `s`, `v` = with `s`, `w := s`, `x := t`) accepted | accepted; outside `Accepts`, inside `ValidOpen` | accepted (Nat labels and bases) |
 | `star` n | `ScStar b`: `cStarCert` (`a_i := {f_i: Int, ...r_i}`, `b_i := {...h}`, `v_i := a_i ⊎ b_i`), every n | accepted at every n, including n = 1, 2, 3 | accepted, n = 0..5 and 64 |
-| `divide3` | `ScDivide3`: option C's `sigma3` through `ofProjPiece` | accepted, every label list | accepted, m = 0..5 |
+| `divide3` | `ScDivide3`: option C's `sigma3` through `ofProjCert` | accepted, every label list | accepted, m = 0..5 |
+| `star-read` n | `ScStarRead b`: plus `w_i := Int`, `c_i := {...r_i, ...h}` | accepted | accepted, n = 0..4 |
+| `star-cross` n | `ScStarCross b`: natural certificate refused; `¬ ValidOpen`; every certificate refused | refused | refused, n = 2..5 |
+| `intArmP` (rigid type variable) | `ScIntArm`: `β := α` (`rty 0`); `ValidOpen` (N5) | accepted | accepted |
+| `dep` k, `divide` m, `divide2` m | `ScDep`: pattern-dependent written witnesses as projections | accepted | accepted, k, m = 0..3 |
+| declared split | `ScSplitSig`: `route`'s division | accepted | accepted |
+| `disjoint r r` | `ScSelfDisjoint`: `D = [disjoint 0 0]`, `B = [lacks 0 a, {...0} = {}]` | accepted (row 0 is empty) | accepted |
+| outside the fragment | `ScOutsideFragment`: `agreeP` and `D = [ff]`, both `ValidOpen` | refused by every certificate: recorded incompleteness | `agreeP` refused |
+| certificate validation | `ScCertRefusals`: flexible-row piece, flexible `rty`, ill-formed shadowed binding, unused non-record row binding | each refused | each refused |
 | `star-unlacked` n | `ScStarUnlacked`: the star certificate refused; `¬ ValidOpen`; every certificate refused | refused | refused, n = 1..5 |
 | `star-undeclared` n | `ScStarUndeclared`: the same (`h`, `r_n` may share a cell) | refused | refused, n = 1..5 |
-| `shapeSplit ()` | `ScShapeSplit`: every certificate refused (N1: `ValidFin` over `Unit`, not `ValidOpen`) | refused | not run (universal) |
-| undeclared split | `ScSplitFree`: `route`'s division refused (`v disjoint t` meets free cell `[0,1,2]`); every certificate refused | refused | the division refused |
+| `shapeSplit ()` | `ScShapeSplit`: `¬ ValidOpen` (N1) and every certificate refused | refused | not run (universal) |
+| undeclared split | `ScSplitFree`: `route`'s division refused (`v disjoint t` meets free cell `[0,1,2]`); `¬ ValidOpen`; every certificate refused | refused | the division refused |
 | broken certificate | `ScBroken`: `route` with `u := r` overlapping `v` | refused (the problem is valid) | refused |
-| `divide5` (limitation) | `ScDivide5`: `ValidOpen` (argued in §18.47, unchecked) and every certificate refused | refused: a known limitation, guards deferred | one projection attempt refused |
+| `divide5` (limitation) | `ScDivide5`: for `as ≠ []`, `ValidOpen` (argued in §18.47, unchecked) and every certificate refused | refused: a known limitation, guards deferred | one projection attempt refused; with `as = []` accepted (completeness reviewer), so the premise is needed |
 
 **Why `divide5` cannot pass** (the argument `ScDivide5` states). For a
 label `a`, `possW 0 a` holds, so `sameW` requires that some row-0 piece
@@ -427,14 +466,17 @@ written.
 
 | restriction | believed harmless because | challenge | status |
 |---|---|---|---|
-| `D` in `LDFragment`; `cellCheck` false outside | `route`, `star`, `divide3`, `divide5` and all 226 recorded star problems (SC §10.3) are inside; coverage (CV1) and exactness (QR) are established only there | `agreeP` (flat equation in `D`, `ValidOpen`): refused | proposed; question 2 |
-| `CellShape` as evidence | `thetaFree` has it (CV1); CM is false without it (§4 example) | a generic instance from the mgu construction outside the fragment | proposed; question 1 |
+| `D` in `LDFragment`; `cellCheck` false outside | `route`, `star`, `divide3`, `divide5` and all 226 recorded star problems (SC §10.3) are inside; coverage (CV1) and exactness (QR) are established only there; the guard's meaning is CG | `agreeP` (flat equation in `D`) and `D = [ff]` (empty region, vacuously valid): both `ValidOpen`, both refused (`ScOutsideFragment`) | proposed; question 2 |
+| `CellShape` as evidence (one direction: occupied cells are free) | `thetaFree` has it (CV1); CM is false without it (`CellShapeNeeded`) | a generic instance from the mgu construction outside the fragment | proposed; question 1 |
 | no generic constants, no single-field references in certificates | a certificate is read at every `θs`; on the fragment no written label is ever forced present (QR5), so a field reference could never be defined everywhere | a body reading `r.a` where `D` forces `a`: outside the fragment anyway | by construction; question 4 |
 | written labels selected without guards | guards deferred (§18.48) | `divide5`: refused by every certificate | recorded limitation |
-| cell selection by lists of cubes | the scenarios need at most one cube per piece | `cover` is coNP-hard for this format (§6.3) | proposed; question 3 |
+| cell selection by lists of cubes; cubes inside one piece may overlap and are never refused | the scenarios need at most one cube per piece | overlapping cubes make `cover` an arbitrary DNF, hence coNP-hard for an exact checker (§6.3) | proposed; question 3 |
+| cube literals on non-rigid rows allowed | `(x, false)` always holds and `(x, true)` never does on candidate cells | a solver writing them: harmless (completeness reviewer, scratch) | by construction |
+| piece labels and certificate fields at unwritten labels allowed | pieces hold nothing there (`WithinC`); fields there cannot clash with pieces | `{ z: Int }` with `z` unwritten | by construction, as SC |
+| `P.rigidRow` not assumed duplicate-free | `cellCands` then holds duplicate sublists, harmlessly (soundness reviewer, brute force); only QX4 and `CheckTautology` assume `Nodup` | duplicates in `rigidRow` | no premise needed |
 | pieces and `rty` on rigid variables only; others denote `{}` and are refused | §18.48 asked for validation or a stated meaning; both are given | a solver emitting a piece of a flexible row: Unresolved | by construction |
 | equality by source identity | sound at every `θs`; complete where distinct sources are distinct constants (`thetaFree`, argued) | two rows that `D` equates: outside the fragment | proposed |
-| a written field never equals a piece's entry | `must` is constant false on the fragment (QR5), so the piece is absent in some instance | none inside the fragment | exact on the fragment (argued) |
+| a written field never equals a piece's entry | `must` is constant false on the fragment, so the piece is absent in some instance (QR5's second conjunct states it) | none inside the fragment | exact on the fragment, by QR5 |
 | shadowed bindings checked too (`certOkC`) | refusal only | an ill-formed unused binding | proposed, as SC |
 | row bindings must be records | a non-record row binding denotes `{}`, almost surely a solver error | a row bound to `Int` | proposed, as SC |
 | finite values only | `ValidOpen` is defined through `ValidFin` | infinite values | inherited (§18.45) |
@@ -463,13 +505,85 @@ Everything else reuses this repository's model.
 
 ## 10. Independent review
 
-To be completed (§10.1 soundness, §10.2 completeness).
+Two independent reviewers read the draft (commit 38fc009): one for
+soundness, one for completeness. Both worked read-only, with scratch
+Lean outside the repository. Neither met a tool denial. Their findings
+and the fixes follow. The fixes were not re-reviewed.
+
+### 10.1 Soundness reviewer
+
+**Verdict: no false, vacuous or unsound statement.** CM and its
+corollaries survived every counterexample tried. The reviewer checked
+every statement in Statements.lean and Exact.lean, every scenario, and
+these odd inputs: shadowed bindings, duplicate fields, overlapping
+cubes, same-row pieces on both sides, non-record bindings,
+`disjoint r r`, unwritten labels in pieces, duplicates in `rigidRow`,
+non-rigid literals, and an asymmetric `Q`. `piecesApart` asks one
+orientation, and EvalWf still holds. Nothing trusts the certificate or
+a solver. `QSound` is a stated premise, discharged by CV2. No SC or
+PI/PC correctness claim is used.
+
+Scratch evidence (not proofs):
+
+- 6,000 random cases of CellPossExact and CoverExact, plus 3,000 of
+  CoverTautology, all against enumerated free cells: no mismatch.
+- An independent finite semantic oracle at `thetaFree`, over 160,000
+  random fragment problems and certificates. 5,570 were accepted, with
+  `implQ` or with an asymmetric over-conservative `Q`, and none violated
+  the body. The oracle discriminates: 18,385 of 20,000 random
+  certificates fail it. It tests `thetaFree` only.
+- The §4 `route` example reproduced: `v disjoint x` fails.
+
+| # | finding | fix |
+|---|---|---|
+| S1 | `CellShape` as an iff is stronger than needed. Only "occupied ⇒ free candidate containing `r`" is used, and the converse excludes valid generic instances | weakened to that direction (Query.lean); §4 updated |
+| S2 | CI4 quantified over guarded pieces while `ofProjPiece` dropped the guard | `ofProjPiece` now returns `none` on a guard (CI4′); CI4 requires `guard = []` |
+| S3 | §2.2 claimed semantic agreement on written labels with no statement behind it; `ofSchPiece` had none | CI4 and CI4″ now compare written-label presence with `pieceRow` and `SchpieceRow` at `thetaFree`; the table says exactly that |
+| S4 | `ScShapeSplit`, `ScSplitFree` lacked their `¬ ValidOpen` conjuncts | added |
+| S5 | cost wording: `written P` is recomputed per call; `cellBoth`'s \|K\|² term; `coverS` per node counts literals | §6.1, §6.3 corrected |
+| S6 | hardness binds a complete checker only, for unbounded rows; counting needs an exact `cellBoth` | §6.3 qualified |
+| S7 | cosmetic: ApartSound's rigidity premise is unnecessary | premise dropped. Not changed: PieceIsSubRow keeps its `WithinC` premise, which its first conjunct needs |
+
+### 10.2 Completeness reviewer
+
+**Verdict:** requirements 2 and 3 fully met. Requirements 1, 4 and 5
+are met except as listed below. The reviewer found no wrong verdict;
+every stated verdict matched its scratch evaluation. The region queries
+are sufficient for the checker as defined: it reads the region only
+through `Q`, and every `Q` call is on a row known to be rigid.
+
+| # | finding | fix |
+|---|---|---|
+| C1 | CM-open's route needs `fragmentS ↔ LDFragment`, stated only in SC2Frag, an unproved `Accepts`-side proposal | CG `FragmentIff` added; listed in CM-open's dependencies and §7 |
+| C2 | no statement for `ofSchPiece` | CI4″ `SchPieceDen` |
+| C3 | `ofProjPiece` drops guards; CI4 only unfolded `cpieceRow` | as S2, S3 |
+| C4 | the necessity of `CellShape` was prose only | `CellShapeNeeded` (ScenariosMore.lean) |
+| C5 | hardness claimed for checking, but QX4 is about `coverS`; the soundness-and-exactness qualifier was missing | `CheckTautology` added; §6.3 qualified |
+| C6 | no accepting scenario with a rigid type variable | `ScIntArm` |
+| C7 | `star-read`, `star-cross` missing | `ScStarRead`, `ScStarCross` |
+| C8 | `dep`, `divide`, `divide2` missing | `ScDep` |
+| C9 | no positive twin of `ScSplitFree` | `ScSplitSig` |
+| C10 | `disjoint r r` (prototype defect 1) untested | `ScSelfDisjoint` |
+| C11 | `agreeP`, `D = [ff]` without statements; `ff` row missing in §9 | `ScOutsideFragment`; §9 row extended |
+| C12 | rigidity validation and certificate refusals prose only | `ScCertRefusals` |
+| C13 | `ScRoute` lacked the boundary facts; `divide3Cert` was a hand copy of `sigma3` | `ScRoute` conjoins `routeP = routeSig`, `¬ Accepts`, `ValidOpen`; `ScDivide3` goes through `ofProjCert (sigma3 as)` |
+| C14 | restrictions rows missing: `ff`, CG, unwritten labels, non-rigid literals, overlapping cubes, `rigidRow` duplicates, QR5 citation | §9 rows added or extended |
+| C15 | reuse rows missing; the author's sentence not quoted | §7 extended; sentence quoted; re-encodings named |
+
+After the fixes, scratch `#eval` of the new scenarios gives the
+intended verdicts. Accepted: divide3 through `ofProjCert`, m = 0..3;
+`ScIntArm`; star-read, n = 0..4; dep, divide and divide2 at 0..3; the
+declared split; `disjoint r r`; the pinwheel through `checkI`.
+Refused: star-cross, n = 2..5; `agreeP`; the four certificate-validation
+cases.
 
 ## 11. Questions for the author
 
-1. Approve `CellShape` as an evidence premise of CM? The alternative is
-   a stronger generic-instance notion that fixes occupancy of
-   unoccupied cells, which would be a change to reviewed definitions.
+1. Approve `CellShape` (occupied cells are free cells containing the
+   row) as an evidence premise of CM? It is necessary
+   (`CellShapeNeeded`). The alternative is a stronger generic-instance
+   notion forbidding entries at unoccupied cells, which would change
+   reviewed definitions.
 2. Keep the guard at `LDFragment` (as SC), or widen it to `EqFree ∧
    Scoped`, which admits `ff`? Problems with equations in `D` (such as
    `agreeP`) would need a different region analysis. Defer them?
@@ -479,6 +593,7 @@ To be completed (§10.1 soundness, §10.2 completeness).
    split tree as an untrusted hint?
 4. Field references (`r.a` as a value) need `must` and declarations
    that force presence. Defer them with the fragment?
-5. Proposed proof order, once approved: CI2, CD1, CD4, CB1, QX1, QX2,
-   CV2, CV1, CD2, CB4, CI3 with CD3, CB3, CB2, CM, CM-open, CM-impl;
-   then the scenarios, then QX3, QX4 and QR1-QR5.
+5. Proposed proof order, once approved: CI2, CD1, CD4, CB1, CG, QX1,
+   QX2, CV2, CV1, CD2, CB4, CI3 with CD3, CB3, CB2, CM, CM-open, CM-impl;
+   then the scenarios and `CellShapeNeeded`, then QX3, QX4,
+   `CheckTautology` and QR1-QR5.
