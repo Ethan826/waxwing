@@ -2507,3 +2507,99 @@ research reference and optimization waits. Two details kept explicit:
     for. A problem with no admissible pattern is vacuously valid
     (`noPattern` in WitnessExamples.lean), while `witness` returns
     `none` there.
+
+### 18.15 Campaign results: compilation and split selection (stream 6)
+
+research/division-campaign/compile/split-selection.md, with a flat
+presence prototype split-model.mjs (research only; independent of
+sig-oracle and Lean). A design analysis; no compiler change.
+
+- **Derived:** under whole-program monomorphization every rigid row is
+  a concrete label set before Go emission, so a witness such as
+  `r|(dom r ∖ dom s)` is evaluated once per specialized copy, at compile
+  time. Every witness form (P9s, term, typed template) selects layouts
+  and moves no value; `route` passes `x` unchanged. A forced split costs
+  nothing at run time. **Assumed:** that layout identity survives R005B
+  Task 8's canonical form. Checked: records with several tails are not
+  lowered yet (`E_INTERNAL R005B placeholder`).
+- Lowering would need the witness in each call's instantiation
+  (`Array (Ty Open)` cannot express `r|T`) and R010's rule for recursive
+  calls widened to restrictions of the caller's rows; the analysis
+  proposes a ground re-check of the callee's constraints per copy
+  instead of a certificate.
+- **Multiplicity, checked:** `route` has 2 uniform presence witnesses, a
+  three-way division 24. Stream 3's `witness` for `route` (`u = r ∖ s`)
+  differs from the canonical rule proposed below.
+- **Run time, derived (not proved):** no permitted split is observable
+  in the current fragment, by a parametricity-style argument relying on
+  the absence of any construct projecting a record onto one of its row
+  variables (E1). A projection primitive or row-polymorphic foreign
+  function would break this (E3).
+- **Compile time, checked today with one tail:** the choice is
+  observable. A never-applied `fn(p: { ...u }) => show(p)` is accepted
+  with `u = {}` and refused with `u = {f}` (printability is re-checked
+  after specialization) (E2).
+- **Proposed canonical rule** (not adopted): per label, the
+  lexicographically least flexible membership vector (flexible rows in
+  declaration order, absent before present). Checked at the set level
+  over three labels (0 failures; a broken witness fails). No canonical
+  rule removes E2.
+- Side finding: a split forced by its clauses (c.wxw) is still refused
+  today ("Cannot tell how divide's u and v split"): the known O4
+  limitation, not decision 3.
+
+Questions for the author: (1) `route`'s split is not forced, so decision
+3 (§4) refuses it even once division is decidable; should a run-time
+non-observability claim plus a specified canonical rule be the basis for
+lifting it? (2) free labels to the last part or the first? (3) E2:
+document that the canonical rule decides acceptance, or refuse phantom
+print sites as ambiguous until C001? (4) evidence as a table or as set
+terms; is a per-copy ground re-check wanted? (5) prove run-time
+non-observability in a small Lean calculus, or back it with generated
+programs after Task 8?
+
+### 18.16 Campaign results: integration reconnaissance (stream 7)
+
+research/division-campaign/integration/recon.md (read-only; file:line
+map). The map:
+
+- Records are checked by one unification pass with rigid variables as
+  constants, facts in a store and waiting `Merge` predicates; rule H
+  decides at the end of a body. **No explicit `B` is ever built**, so
+  the first integration step is a recorder (equations through
+  `Check/Unify.purs` `unify`; facts through `Disjoint.purs`; callees'
+  clauses through `UseFacts.purs`; two-tail rows through
+  `RowMerge/Desugar.purs`). `D` comes from `Function.purs` via
+  `Seed.purs`.
+- Plug point: `RowMerge/End.purs` `endOfBody` already takes an injected
+  `Judge`; the three-way `RowOutcome` can be reused. Layering: problem
+  and certificate types in Domain if IR or Format must see them; the
+  checker in `Features.Check.Sig.*`; witnesses in the checked IR,
+  evaluated per specialization key; Go lowering untouched.
+- Proof-to-code link recommended: a PureScript port of `checkAll`
+  tested differentially against Lean on exported tables, translation
+  validation of compiler-exported (problem, table) pairs outside verify,
+  and bounded.mjs as a third reference.
+- Lowering fills unsolved holes with `{}` or `Int`, which breaks `B` for
+  rows the signature constrains but does not determine (`route`'s `u`);
+  a computable `interp` (now `noncomputable`) would be a new obligation.
+
+Checked by probes: the valid `route` is refused today with a false
+contradiction ("neither u nor v can hold r"), from H's rigid-atom
+exclusion treating a rigid row as indivisible; `routeNarrowed` and
+`wrapAccepts` (P9s-certified, §17.2) get "Cannot tell…"; the branch tip
+does not build from a clean checkout (43b3a28 deleted
+`Features/Check/SeveralTails.purs`; `Removal.purs` and `RestBinder.purs`
+still import it; confirmed by the coordinator).
+
+Top risks: exponential pattern enumeration (`2^(|R|·|L|)` with `L`
+every written label of a body; a shadow run should measure `|R|`, `|L|`
+first); the unproved link from source to `B`; fragment gaps (data types
+over rows, handlers, effect rows on arrows); no computable witness map
+or IR slot; no counter-instance producer for contradictions (D3b is the
+candidate). Questions for the author are in the report, §"Questions":
+solver as search with the checker as a gate, or generate-then-decide;
+Unresolved or today's behavior outside the fragment; Lean in verify or
+not; certificates in the checked IR; whether a P9s-only step lands
+before D4 (it changes pinned D4 fixtures); an internal error when a
+certificate built from a Solved substitution fails `checkAll`.
