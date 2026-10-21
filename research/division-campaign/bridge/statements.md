@@ -6,11 +6,23 @@ a restrictions table and an independent adversarial review. **Nothing
 here is proved.** No proof scope is authorized until the author has
 reviewed these statements (proof dossier policy).
 
-Lean: research/composition-proofs/Composition/Typed/BridgeDefs.lean.
-Every claim is a `def … : Prop`; the file has no theorem, `sorry` or
-axiom, and builds in the default target. No existing statement or
-definition was changed. The D3b stream's files (`Typed/*.lean` other
-than BridgeDefs, d3b/) were read, not edited.
+Lean: research/composition-proofs/Composition/Typed/Bridge/, six files
+split from the former BridgeDefs.lean (§18.33; the split changed no
+statement, §10):
+
+| File | Contents |
+|---|---|
+| Extension.lean | `mapBase` and relatives, `BasesWithin`, `substBase`, E1-E6 |
+| Valid.lean | `ValidOpen`, `ValidAtoms`, B0, B1, BS |
+| Fresh.lean | `constIn`, `ConstsInC`, `FreshLabels`, `FreshBasesOn`, B2f, B2c, B2, B2g |
+| Complete.lean | `D3bExistsWithin`, B3a, W, B3, B3e, B3f, C |
+| Sound.lean | B4f, B4, B5, BS-c1, BS-c2 |
+| Examples.lean | `intArmP`, N1-N6 |
+
+Every claim is a `def … : Prop`; the files have no theorem, `sorry` or
+axiom, and build in the default target. No existing statement or
+definition was changed. The D3b stream's files (other `Typed/*.lean`,
+d3b/) were read, not edited.
 
 Status labels: **proved** (a Lean theorem, named); **derived** (argued
 here, not mechanized); **conjectured** (believed, argument incomplete);
@@ -63,7 +75,7 @@ closed-valid problems would be exactly `ValidFin P ∧ ¬ ValidOpen P`.
 ## 1. What an extension is
 
 An extension is an injective function `j : B → B₁` between base types.
-It acts by renaming bases and nothing else (`mapBase`, BridgeDefs):
+It acts by renaming bases and nothing else (`mapBase`, Bridge/Extension.lean):
 
 | Thing | Action of `j` |
 |---|---|
@@ -100,7 +112,7 @@ supply is infinite. The completeness statements assume it, through
 injection of `Cell = List Nat` into the unwritten labels. So the
 "finite freshness" here is for bases only; labels still get an
 infinite injection. That is harmless for Waxwing and is asymmetric on
-purpose (§10, question 2).
+purpose (§11, question 2; answered in §18.33).
 
 **Checks** (scratch file, not committed; `lake env lean`, exit 0):
 by `rfl`, `(shapeSplit ()).mapBase (fun _ => false) = shapeSplit
@@ -109,7 +121,7 @@ false` (memo C2's renaming), `routeP.mapBase inl = routeP`,
 .base (.inr (.T 0))` and `basesOf (intArmP ()) = [()]`. Both reviewers
 repeated the first three independently.
 
-## 2. Definitions (BridgeDefs.lean)
+## 2. Definitions (Typed/Bridge/)
 
 - `mapBaseT`, `mapBaseF`, `mapBaseAtom`, `SigProblem.mapBase`: rename
   written bases along any `f : B → B'`.
@@ -260,7 +272,7 @@ soundness reviewer checked this route and found no gap.
 Observation (read from Complete.lean): `d3bComplete`'s proof discards
 the coverage conjunct of `GenericInst` (`obtain ⟨hfin, hD, hpat, _⟩`).
 B2 keeps the full `GenericInst` premise anyway, to mirror
-`D3bComplete` exactly; weakening it is a question for the author (§10).
+`D3bComplete` exactly; weakening it is a question for the author (§11).
 
 ### B3: completeness under option B, existence kept separate
 
@@ -554,7 +566,32 @@ Not adopted: none. F5's two-written-base negative instance is noted in
 §4 as not added. The revised file builds (`lake build`, 105 jobs).
 The revision itself was not re-reviewed.
 
-## 10. Questions for the author
+## 10. Second review (§18.33)
+
+### 10.1 The split
+
+`BridgeDefs.lean` (413 lines) was split into the six files of
+Typed/Bridge/ listed at the top, by dependency: Extension imports
+Typed/Model; Valid imports Extension; Fresh imports Extension and
+Typed/Defs; Complete imports Valid and Fresh; Sound imports Valid and
+Typed/Defs; Examples imports Valid, Fresh, Typed/Examples,
+Typed/ExamplesFlat and TypedAttack/ShapeSplitCore. Only section
+headings and file headers were written; every declaration was copied
+by line range. `lake build`: 110 jobs, no warnings.
+
+How "no statement changed" was checked (scratch scripts, not
+committed):
+
+1. Elaborated terms. A Lean file runs `set_option pp.all true` and,
+   for each of the 59 definitions, `#print` and `#check @`, once
+   importing the old `BridgeDefs` (at fd1d22b) and once importing the
+   six new files. The two outputs (45,034 bytes) are byte-identical
+   (`diff`; SHA-1 2e3bc9c2…).
+2. Source text. Every declaration block (doc comment and `def` or
+   `mutual`, up to a blank line) was whitespace-normalized; the old
+   file and the six new files give the same multiset of 59 blocks.
+
+## 11. Questions for the author (answered in dossier §18.33)
 
 1. Approve `ValidOpen` (injective base extensions, labels fixed,
    written bases kept distinct) as the formal reading of option B?

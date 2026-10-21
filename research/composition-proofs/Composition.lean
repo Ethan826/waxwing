@@ -92,9 +92,14 @@ import Composition.Typed.LiftCommute
 import Composition.Typed.Realize
 import Composition.Typed.Vacuity
 import Composition.Typed.Complete
-import Composition.Typed.BridgeDefs
 import Composition.Typed.MGUExists
 import Composition.Typed.CellIndep
 import Composition.Typed.Universality
 import Composition.Typed.Conditional
+import Composition.Typed.Bridge.Extension
+import Composition.Typed.Bridge.Valid
+import Composition.Typed.Bridge.Fresh
+import Composition.Typed.Bridge.Complete
+import Composition.Typed.Bridge.Sound
+import Composition.Typed.Bridge.Examples
 import Composition.TypedAttack.ShapeSplit
