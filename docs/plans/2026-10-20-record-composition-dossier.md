@@ -1833,9 +1833,11 @@ rule refuses it (`routeSig_not_accepts`), so no table certifies it.
 
 What a programmer meets: a generic function passing its own record to an
 API whose two-tailed parameter has a disjointness requirement on each
-part, against different other arguments. The only change P9s certifies
-is a narrower signature, `where r disjoint s`, which callers passing a
-`x` that overlaps `y` would then fail to satisfy.
+part, against different other arguments. One narrower-signature
+workaround P9s certifies is `where r disjoint s` (`where r disjoint t`
+also gives an immediate placement); either changes the contract, and
+callers whose `x` overlaps that argument would then be rejected. It is
+a documented workaround, not equivalent behaviour.
 
 Whether this occurs in practice is not settled here. In the eleven
 acceptance programs no signature check has this shape (by reading:
@@ -1849,8 +1851,130 @@ programs.
 
 Which missing cases need further research: `route`'s shape (a
 rigid row divided by membership in other rigid rows) is the only valid
-family the oracle and this section have found that P9s cannot certify.
+family found so far, in this investigation (the oracle's runs and this
+section), that P9s cannot certify. That scopes the search done; it is
+not a characterization of every case P9s misses.
 The choice is yours: research a procedure that divides rigid rests
 (Q1-Q3 of §13.9 become its questions), or accept the narrower-signature
 workaround for now, recorded as a known limitation, not as final
 policy.
+
+**Accepted** (the author's review, 2026-10-20), with the two wording
+corrections above. Direction: research division of rigid rests before
+compiler integration; keep P9s as the proved conservative baseline for
+comparing candidates. The source-to-constraint translation stays a
+separate, stated assumption. Authorized: a focused research proposal
+(§18), not a new solver, and not the workaround as language policy.
+
+## 18. Dividing rigid rows: a research proposal
+
+Authorized (the author's review of §17, 2026-10-20): a focused research
+proposal. Not authorized: a solver, proofs, the workaround as policy,
+compiler integration. P9s stays the proved conservative baseline: any
+candidate must accept everything P9s accepts and be compared with it on
+the same problems. Source reading:
+research/composition-assessment/division/ (three notes; what was read,
+from where, and which sentences are the readers' inferences).
+
+### 18.1 The capability, stated exactly
+
+P9s's witnesses take each rigid row's rest whole or not at all. The
+missing capability is a **term witness**: a flexible row's value may be
+a rigid row restricted to a set term over the rigid rows' domains and
+the written labels.
+
+- Set terms: `T ::= ∅ | dom r | {l} | T ∪ T | T ∩ T | T ∖ T`, for rigid
+  rows `r` and written labels `l`. No absolute complement: rows are
+  finite.
+- A typed term witness for a flexible row is `⊎ᵢ rᵢ|Tᵢ ⊎ F`: parts of
+  rigid rows, each restricted to a set term, the parts pairwise
+  disjoint, plus written fields `F`. Field types come with the parts
+  (`rᵢ`'s type at each label of `rᵢ|Tᵢ`).
+- P9s's witnesses are the special case `Tᵢ ∈ {∅, dom rᵢ ∖ L}` together
+  with written fields; `route` needs `u = r|(dom r ∖ dom s)`.
+
+The research question, in two halves:
+
+- **Presence.** Are term witnesses enough for every valid problem's
+  label sets, and is validity then decidable by elimination plus a
+  check over regions?
+- **Types.** Are typed term witnesses enough when field types are
+  independent per row and per label, so that the same label may carry
+  different types in two rigid rows?
+
+### 18.2 What the sources give
+
+| Finding | Source | Status |
+|---|---|---|
+| ∃-elimination: `f(x̄) = 0` is solvable iff `f(0, …)·f(1, …) = 0` is; the witness is a Boolean term in the remaining variables and constants (Boole's reproductive and particular solutions; Löwenheim's) | Martin and Nipkow, JSC 1989, Lemma 3.3, Thms 3.4, 3.6, §6.2; Rudeanu 1974 via Wernhard | published; read (author preprint), Rudeanu second-hand |
+| holds in any Boolean algebra; Boolean unification is unitary; solvability can be decided in the finite subalgebra the constants generate; hypotheses on constants by presented algebras (Lemma 4.5) | Martin and Nipkow, §§3-5 | published; read |
+| cardinalities enter only with negated atoms or counting atoms; positive equations ask only whether regions are empty | KNR (BAPA) TR §2, Lemma 1; Jeřábek's notes, Thms 2, 3, 17 | the count statements are published; "positive equations ask only emptiness" is the reader's inference |
+| ∀∃ Boolean problems in HM inference: successive variable elimination with rigid variables as constants, then a validity check; complete for its problem; Π₂ᴾ | Madsen and van de Pol, OOPSLA 2020, §3.2, §3.5, Thm 3.15; Flix compiler source | published and implemented elsewhere; read |
+| no implemented type system handles hypotheses relating rigid variables (our `s disjoint t`) | the same, and S2, S5, S7 of the note | absence in what was read |
+| Flix's current effect solver: finite and cofinite constant sets in an infinite universe, element constants, Zhegalkin normal forms | Flix source (`SetFormula`, `CofiniteIntSet`) | implemented; read (code comments) |
+| typed row theories (Rose, Rω, Ur) can state a split but derive none from assumptions on rigid rows; none claims complete entailment; none relates field types of overlapping rows | Morris and McKinna 2019; Hubers and Morris 2023, §3.4, §4.5, §7; Chlipala 2010, §§1, 4 | published; read in full |
+
+Gaps the readers found, none covered by a source read:
+
+- **Finite rows.** Finite sets of an infinite universe form a Boolean
+  ring without unit, not a Boolean algebra. The reader conjectures that
+  witnesses can stay within the rigid rows' domains and the written
+  labels (§13.9's obligation (a) is the same claim).
+- **Written labels as constants.** `{l} ≠ ∅` is not an equation, so a
+  plain identity check is sound and incomplete when hypotheses could
+  contradict it (the reader's counterexample: `∀ X. c = ∅ ⇒ X = ∅`).
+  P9s enumerates written-label patterns instead of treating labels as
+  algebra constants, which may avoid this; not checked.
+- **Per-label field types.** Nothing read combines Boolean constraints
+  with types indexed by elements.
+
+### 18.3 Proposed statements (for approval; none argued yet)
+
+Labels as at the head of the dossier.
+
+- **D1, presence elimination** (derived from Martin and Nipkow): for the
+  presence abstraction of a problem (§13.9), with written labels fixed
+  by a pattern, validity equals validity of the problem obtained by
+  eliminating each flexible set by Boole's rule, decided by a check over
+  the regions of the rigid sets.
+- **D2, term witnesses suffice for presence** (derived): a valid
+  presence problem has witnesses that are set terms (§18.1), hence
+  unions of whole regions; in particular finite (the gap above).
+- **D3, typed transfer** (unresolved, the main question): a valid typed
+  problem has typed term witnesses; equivalently, validity can be tested
+  at a generic instance where every (rigid row, region) pair carries
+  its own fresh field types.
+- **D4, a candidate checker** (to design only after D1-D3 are
+  reviewed): P9s's generic model with one opaque part per (rigid row,
+  region) instead of one rest per rigid row. Its soundness should
+  follow §14's interpretation, with `h` expanding each part; its
+  completeness would rest on D2 and D3.
+
+### 18.4 Restrictions table, challenged before any proof
+
+| Restriction | Believed harmless because | Challenge | Status |
+|---|---|---|---|
+| existential rows take whole regions | Boole's solutions are terms over the rigid sets (published, for Boolean algebras) | finite rows are not a Boolean algebra; BAPA lets existential sets take part of a region (Lemma 1), with negation or counts | the author's caution: not assumed; D2 must be argued for Waxwing's positive atoms and finite rows |
+| no region sizes | Waxwing's atoms are all equations to `∅` (`lacks`, `disjoint`, record equations, composition definedness) | find a Waxwing atom or source construct that expresses `≠ ∅` or a count | to check against §17.1's translation |
+| one opaque part per (rigid row, region) carries independent types | labels of one region are interchangeable for presence | **type-agreement placement**: a valid problem whose witness must place a shared label by whether `r` and `s` give it the same type, which is not a set term over domains | open; the first target for the bounded oracle |
+| written labels by patterns, not as algebra constants | patterns fix each written label's presence, so `{l} ≠ ∅` never needs to be an equation | the reader's `c = ∅ ⇒ X = ∅` family, under patterns | to check |
+| witnesses within the rigid domains and written labels | a fresh label removed from every flexible row preserves positive atoms (§13.9 (a)) | a constraint that holds only with a flexible row non-empty outside the rigid domains | to argue |
+| nested records and record-valued type variables are outside the presence part | handled by `h` as in §14 | `recSig`-like problems combined with division | open |
+
+### 18.5 Proposed next steps (each for approval)
+
+1. A typed bounded oracle for D3: rigid rows over shared labels at
+   different types, flexible rows ranging over typed term witnesses,
+   compared with bounded validity; aimed first at type-agreement
+   placements. P9s and the term-witness model run side by side.
+2. Statement review of D1-D3 with the oracle's results, then proofs in
+   Lean if approved (the presence half first, building on §13.9's
+   translation).
+3. Only then D4's design, with its own restrictions table, compared
+   with P9s on the challenges, the generated problems and §17's source
+   programs; `route` must be certified and nothing P9s certifies lost.
+
+Leads not yet read: Rudeanu's and Brown's books, Büttner and Simonis,
+Baader 1998, Flix's OOPSLA 2023 and 2025 and POPL 2026 papers (behind
+access checks), Harper and Pierce 1991, Pottier ESOP 2000, Rémy's
+"Typing record concatenation for free".

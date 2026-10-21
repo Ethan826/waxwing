@@ -1,3 +1,19 @@
+# Waxwing / record composition foundation: dividing rigid rows (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). §17
+accepted; §18 research proposal written. No compiler code changed.
+Task 7 stays checkpointed (`r005b-task7-wip`). Website fix complete
+(`7130dfc`, per the author).
+
+**Read.** Dossier §18; research/composition-assessment/division/.
+
+**Next, needs the author:** approval of §18.3's statements D1-D3 (D4
+only as a later design) and of §18.5's first step, the typed bounded
+oracle aimed at type-agreement placements. Not authorized: a solver,
+proofs, the narrower-signature workaround as policy, compiler changes.
+
+---
+
 # Waxwing / record composition foundation: source-level boundary (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Proved:
