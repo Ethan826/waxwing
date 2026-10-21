@@ -115,5 +115,10 @@ import Composition.Typed.Bridge.ProofFreshBack
 import Composition.Typed.Bridge.ProofFreshComplete
 import Composition.Typed.Bridge.ProofFresh
 import Composition.Typed.Bridge.ProofFreshFinExt
+import Composition.Typed.Bridge.ProofSoundObligations
+import Composition.Typed.Bridge.ProofSoundBasic
+import Composition.Typed.Bridge.ProofSoundSeparate
+import Composition.Typed.Bridge.ProofSoundMatch
+import Composition.Typed.Bridge.ProofSoundMain
 import Composition.TypedAttack.ShapeSplit
 import Composition.Typed.Bridge.ProofInstantiate
