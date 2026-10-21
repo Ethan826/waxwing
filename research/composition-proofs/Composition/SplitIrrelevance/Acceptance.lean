@@ -1,9 +1,10 @@
 /-
 Acceptance irrelevance (statements.md §4, C-local and C): when the
-model counts every specialization-time requirement (`Covers`), a key
-satisfying a declaration's interface is accepted, and every call edge
-reached meets its callee's interface (a ground check there never
-fires). Two splits that both satisfy `Covers` are both accepted.
+model covers its requirement sites (`Covers`), a key satisfying the
+starting declaration's interface is accepted and every reached call edge
+meets its callee's interface. Body equations are presupposed, not modeled.
+Two splits satisfying `Covers` are accepted wherever their common
+interface holds; this is not whole-compiler acceptance irrelevance.
 -/
 import Composition.SplitIrrelevance.Defs
 
@@ -34,8 +35,9 @@ theorem accepted_of_covers {P : Prog Label B} (hc : Covers P) {f : Nat}
   obtain ⟨hl, hk⟩ := hc f θ hr
   exact siteOk_of_reach hc h hl hk
 
-/-- Under `Covers`, every copy specialization creates meets its
-callee's interface: a ground check at call edges is silent. -/
+/-- Under `Covers`, a reached copy meets its callee's interface when
+all direct calls of the starting term meet their interfaces (`hk`).
+The root-interface premise is supplied by `req_of_covers`. -/
 theorem req_of_keyAt {P : Prog Label B} (hc : Covers P)
     {θ : Assign Label B} {t : Tm Label} {g : Nat} {θ' : Assign Label B}
     (h : KeyAt P θ t g θ')
@@ -44,14 +46,16 @@ theorem req_of_keyAt {P : Prog Label B} (hc : Covers P)
   | here hci => exact hk _ _ hci
   | call hci _ ih => exact ih (hc _ _ (hk _ _ hci)).2
 
+/-- From a root whose declared interface holds (`hr`), all copies
+reached under `Covers` meet their callee interfaces. -/
 theorem req_of_covers {P : Prog Label B} (hc : Covers P) {f g : Nat}
     {θ θ' : Assign Label B} (hr : P.Req f θ)
     (h : KeyAt P (P.loc f θ) (P.body f) g θ') : P.Req g θ' :=
   req_of_keyAt hc h (hc f θ hr).2
 
-/-- C, acceptance irrelevance: two splits, each valid in a model that
-counts every requirement, are both accepted, at every declaration and
-key its interface admits. -/
+/-- C: two splits covering the modeled requirement sites are accepted
+at keys their shared declared interface admits. Caller body equations
+are presupposed; this theorem does not establish their validity. -/
 theorem accepted_split {P₁ P₂ : Prog Label B} (hv : SplitVariant P₁ P₂)
     (h₁ : Covers P₁) (h₂ : Covers P₂) {f : Nat} {θ : Assign Label B}
     (hr : P₁.Req f θ) :

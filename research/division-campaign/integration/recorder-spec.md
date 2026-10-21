@@ -32,16 +32,16 @@ every observed behaviour cited comes from the review's probes (§0 of the
 review; its texts are repeated there) or from stream 5's coordinator run
 (§18.18).
 
-## Resume (paused 2026-10-21)
+## Completion audit (Codex, 2026-10-21)
 
-WIP checkpoint, paused by the coordinator. Rows done: all 60 rows of §3
-are drafted (A1-A7, B1-B15, D1-D5, F1-F9, C1-C8, H1-H7, O1-O9), with
-§4-§11. Rows remaining: none to draft; none verified. Not done: a width
-check (`node scripts/width.mjs`), a re-count of §7's coverage summary
-against the table (corrected to 36/10/14 of 60 at the checkpoint), a
-re-read of every file:line in §3 and §5.2, a humanizer pass on the
-prose. Exact next step: run `node scripts/width.mjs`, fix wide lines,
-re-verify §7's counts row by row, then commit without "WIP".
+The paused 60-row draft is complete as a proposal. The table's IDs and
+36/10/14 evidence inventory were recounted; explicit source references
+were checked for existence/range, with critical hook/rollback code read.
+The audit corrected predicate scope, soundness/completeness wording and
+refusal-log observability. See recorder-audit.md and
+../reviews/codex-completion-prose-review.md. Independent review is pending.
+No recorder implementation, source-translation proof or new language
+policy is established by completing this document.
 
 Contents:
 
@@ -157,8 +157,8 @@ The remaining parts have no Lean counterpart yet (§7, §8).
 ### 2.2 Body atoms
 
 As recorder-interface.md §2 (`Equal`, `Lacking`, `Apart`, `Union`), each
-tagged with a `Maker` naming its hook. Four makers are added by this
-specification:
+tagged with a `Maker` naming its hook. This specification adds the
+following makers:
 
 | Maker | Hook | Why new |
 |---|---|---|
@@ -172,12 +172,18 @@ specification:
 A requirement atom is a predicate on a type expression `τ` (Lean's
 `TExpr`), judged on τ's ground image:
 
-- `pr τ` holds at `θ` iff `evalT θ τ = some g` and `g` holds no arrow and
-  no handler at any depth (`Printable`, SplitIrrelevance/Defs.lean;
-  Specialize/Printable.purs:34-35 `groundPrintable`);
-- `cmp τ` holds at `θ` iff `evalT θ τ = some g` and `g` holds no arrow at
-  any depth (Check/Comparable.purs:79 via `containsFunction`,
-  Check/Functional.purs:45-52).
+- `pr τ` holds at `θ` iff `evalT θ τ = some g` and `g` is printable.
+- `cmp τ` holds at `θ` iff `evalT θ τ = some g` and `g` is comparable.
+
+In the current Lean `G` fragment, the ground predicate excludes arrows at
+any depth; that model has no handler or nominal-data constructor. In the
+compiler both ground checks use `containsFunction`, which also excludes
+handlers and accounts for functions stored in declared data types and
+mentioned in their type arguments (Check/Functional.purs:43-52;
+Specialize/Printable.purs:34-35; Check/Comparable.purs:79). Handlers and
+data over rows remain outside the recorder's checked fragment. The
+check-time rejection of rigid or unsolved comparison types is a separate
+current restriction, listed in C6/C8, not a ground predicate on `G`.
 
 Both include definedness: an undefined τ fails, as `SiteOk` does in
 λ-split.
@@ -328,7 +334,7 @@ time judgment.
 |---|---|---|---|---|---|---|---|
 | H1 | **R010 admissibility**: inside a recursive component, each type or record slot of a call's witness is the caller's bare variable or mentions no rigid variable | body (the call's witness) | the witness's form | admissibility record (§2.4); never an atom, never part of validity | check, after every body: Check.purs:35 `instantiationRule` → Check/Instantiation.purs:60-70; Check/NestedArguments.purs:45-48 | test/r010-record-instantiation.test.mjs; no theorem; E5 derived (statements.md §1.5) | in, as a separate property |
 | H2 | decision 3: a divided or composed split is accepted only if forced, or written by an annotation that determines it | body | the call's witness | policy record (§2.4) | today: Check/Unresolved.purs:74 `CannotTell` refuses splits the checker cannot determine, forced ones included (O4) | none (policy) | in, as a separate property |
-| H3 | **holes**: metas unsolved at the end of a body | body | flexible variable | kept as a flexible variable in every atom that mentions it; never replaced by its default in the record. A hole mentioned by a requirement atom is ambiguous (ADR 007 condition 1) | check: Check/Scheme.purs:190 `holes` (Check/Function.purs:108) | none; a.wxw (statements.md §1.1) shows the defaulted case | in for the checker; lowering of a constrained hole: H4 |
+| H3 | **holes**: metas unsolved at the end of a body | body | flexible variable | kept as a flexible variable in every atom that mentions it; never replaced by its default in the record. A hole mentioned by a requirement atom is ambiguous (ADR 007 condition 1) | check: Check/Scheme.purs:190 `holes` (Check/Function.purs:107) | none; a.wxw (statements.md §1.1) shows the defaulted case | in for the checker; lowering of a constrained hole: H4 |
 | H4 | **defaults**: a record-sorted hole lowers as the empty rest, a type hole as the representative `Int` | — (lowering) | hole | none: lowering may default only holes no atom mentions; a constrained hole needs the certificate's witness at the key | spec: Specialize/Values.purs:96-98; Specialize/Lower.purs:52 | none (needs a computable `interp`, recon.md §2.3) | in for unconstrained holes; `Outside` for constrained ones until a witness slot exists |
 | H5 | type-depth limit: inferred types over 1,000 levels | — (resource) | any | not recorded; reported as a resource refusal, which may depend on the solution's size, hence on the split (F11) | check: Check/Unify.purs:105 (`inferredTypeLimit`, Check/Binding.purs:41); Check/Function.purs:80 `firstTooDeep` | test/depth.test.mjs, test/poly-depth.test.mjs | `Outside` the semantic problem (resource bound) |
 | H6 | specialization-count limit: more than 10,000 polymorphic keys | — (resource) | the specialized program | not recorded; may differ between splits (E4) | spec: Specialize/Keys.purs:146-153 `claim` | test/r001-go-keys.test.mjs, test/poly-run.test.mjs | `Outside` the semantic problem (resource bound) |
@@ -408,7 +414,7 @@ code. The paths, each **read**:
 
 | Path | file:line | What happens to atoms |
 |---|---|---|
-| a postponed effect row pair reverts to the substitution it started from | Check/RowFinish.purs:51-61 (`postponed`); test/r005b-rollback.test.mjs pins the revert of bindings and predicates | atoms made inside the attempt revert with it |
+| a postponed effect row pair reverts to the substitution it started from | Check/RowFinish.purs:61-69 (`postponed`); test/r005b-rollback.test.mjs pins the revert of bindings and predicates | atoms made inside the attempt revert with it |
 | a postponed pair retried by `settleRows` | Check/Unify.purs:84-100 | the retry re-unifies a pair whose atoms were recorded at its generation site; retries record nothing new (they are not hooks) |
 | `predicateFor` evaluated twice per predicate | Check/RowMerge/Chain.purs:60-61; Desugar.purs:49-50 | only the second evaluation's substitution is kept, so one `Union` survives (checked by stream 7b's measurement: a side-channel log counts two) |
 | a hint's synced state | Check/Require.purs:61-62 | the branch returns `Left`; nothing escapes |
@@ -417,10 +423,13 @@ code. The paths, each **read**:
 | `settleRestricted` | Check/Function.purs:81-89 | the settled substitution is kept, so atoms made while settling persist. They come only from effect consumption (O2, `Outside`) or propagation (not recorded). A record-sorted equation made there is reported `Outside EffectArgument`, never dropped |
 | another declaration re-checked to relocate a diagnostic | Check.purs:49 (`hush (rechecked definition)`) | a separate run whose log is discarded; the recorded problem of a declaration comes only from Check.purs:22 |
 
-The specification is that the recorded problem of a declaration equals
-the log of the substitution that `checkFunction` keeps. No path above
-adds an atom that the kept substitution's generation did not make.
-§10 T7 tests each path.
+For a successful declaration, the intended invariant is that its recorded
+problem equals the obligation log retained with `checkFunction`'s state.
+This is a design requirement, not a proved property of a recorder. A
+refusal returns no state today; recovering a prefix log is separate from
+success-path recording (open question 10). §10 T7 must test rollback and
+retry behavior on the successful paths, and must state how any proposed
+failure-log interface is observed before testing refusal paths.
 
 ### 5.3 Normalization must not erase
 
@@ -451,8 +460,11 @@ supply it (n03 without the clause; p02 with it). It is recorded so:
 The `lacks` table, every predicate, and every other part of the
 substitution are the same as without the recorder, so solver behaviour
 does not change. Only `recorded` grows. If the arm refuses, the body's
-check fails and the recorded problem (read for diagnostics or tests)
-contains the atom that `D` does not entail. A counter-instance (`r = {
+check fails. The current `Either Diagnostic State` interface discards the
+updated state, so it does not expose the recorded atom on that path.
+Exporting a diagnostic prefix log would require an explicit interface
+proposal (open question 10); no such interface is selected here. For a
+successful body, the recorded atom remains in its state. A counter-instance (`r = {
 l: … }`) exists, so the refusal is consistent with ∀∃ (dossier §2.1).
 If it succeeds, the atom is entailed by `D` and the checker sees it as a
 `B` atom over a rigid row. Recorder-interface.md §3.3 proposed adding a
@@ -500,12 +512,13 @@ about whether the recording is complete (L1, L2), nor about the port
 4. Lowering and Go (H4, H7, L9, L10): not covered.
 5. Every `Outside` row: not covered, by design, and reported.
 
-Summary of the table's 60 rows by the strongest coverage of the row's
-representation (recording itself is untested for all of them):
+Inventory of the table's 60 rows by the strongest referenced evidence
+about a representation. These are not counts of proved source translations
+or complete recorder coverage; recording is untested for every row:
 
 | Coverage | Rows | Count |
 |---|---|---|
-| a Lean theorem covers the verdict on the representation | A1-A7, B1-B8, B10-B12, B14, B15, D1-D5, F1-F7, F9, C1, C3, C7 | 36 |
+| a model theorem is referenced (qualifications below) | A1-A7, B1-B8, B10-B12, B14, B15, D1-D5, F1-F7, F9, C1, C3, C7 | 36 |
 | an oracle or test only | C2, C4-C6, C8, H1, H5, H6, O4, O7 | 10 |
 | nothing yet | B9, B13, F8, H2, H3, H4, H7, O1-O3, O5, O6, O8, O9 | 14 |
 
@@ -542,14 +555,15 @@ ValidFinR P := ∀ finite θR, Sat θR D → SatR θR Q →
   never arises from source. Believed by the argument of
   `clauseOnly_down`: removing fields keeps a type printable.
 - P1b (a checker): a computable `checkAllR` with
-  `checkAllR P T = true → ValidFinR P`. Not believed provable with
-  `checkAll`'s label-blind patterns alone: a requirement on a flexible
-  part of a rigid row (`pr { ...u' }`, `u' ⊆ r`) with no `r printable`
-  in `Q` can be met only by placing labels by their field types, and a
-  pattern does not see field types. Under the row-level shorthand in
-  `Q` (every rigid row a requirement touches carries it), the patterns
-  stay label-blind. Which of the two the language wants is open
-  question 2.
+  `checkAllR P T = true → ValidFinR P`. This is a soundness statement,
+  not a completeness promise: a conservative checker may leave valid
+  problems Unresolved. Supporting type-directed placement is separate.
+  For example, `pr { ...u' }` with `u' ⊆ r` may hold when a split keeps
+  non-printable fields out of `u'`, without requiring all of `r` to be
+  printable. Label-only patterns do not encode that choice. Evidence for
+  a particular part, or the stronger `r printable` hypothesis, can also
+  establish the requirement. Any completeness claim must name its witness
+  grammar and supported fragment. No such policy is selected here.
 
 **P2 (C⁺). Caller equations in split acceptance.** Extend λ-split's
 `Prog` with per-declaration body constraints `Bc f : Problem`, shared
@@ -706,9 +720,10 @@ oracle extension.
    requires `pr { ...u }` and the caller's `u'` is a part of its rigid
    row `r`, may the caller meet it without `r printable` by keeping
    `r`'s non-printable labels out of `u'` (type-directed placement)? If
-   yes, the checker needs typed certificates (P1b) and a split chosen
-   by field types. If no, the caller's contract must carry `r
-   printable`, and the patterns stay label-blind.
+   yes, the checker needs typed evidence (P1b) and a way to justify
+   type-directed placement. If no, it still may establish the chosen
+   part's printability from annotations or other constraints; the stronger
+   `r printable` is one sufficient condition, not the only alternative.
 3. **Callee-origin comparability.** Keep today's refusal of any rigid
    operand (C6) until C001 gives `cmp` a contract form, or record
    `cmp` in `Q` now, like printability?
@@ -736,3 +751,10 @@ oracle extension.
 9. **Result-only and contravariant implied clauses** (A3; stream 5's
    §8 Q2, Q3) remain open; the table records them as today's compiler
    does.
+
+10. **Recording on refusal.** The successful-state recorder design returns
+    no log when `Either` returns a diagnostic. Is a diagnostic prefix-log
+    interface needed for negative tests, or should the first recorder
+    specification limit its observable output to successful declarations?
+    A prefix is not a complete body constraint set. No interface change
+    is authorized here.

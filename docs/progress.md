@@ -7950,3 +7950,42 @@ assessment.md.
   and fresh-opaque-base completeness assumptions. Presence results stand.
   No new witness policy, D4 or compiler integration adopted; no npm or
   quiet-machine compiler verification run. Other owners' edits untouched.
+
+## Codex takeover of the paused campaign (2026-10-21)
+
+The author asked Codex to take over the paused work and parallelize it.
+Research/proof-attempt scopes continue; production integration, D4 adoption,
+merging and publishing remain unauthorized. Original Claude worktrees and
+branches are preserved. New isolated worktrees are under /private/tmp/.
+
+Integrated checkpoints, before launching agents:
+
+- Corrections 9b55cf3 → 17e37d4; recorder draft e7ce17a → fca92c9.
+- Oracle f61726e/0fea334/c2b7085/94d6a33 →
+  635cbc0/7d97e0b/49f08f1/0c59884.
+- D3a 56aa801/fcea952/1865f41/9c3b9b7 →
+  6ccd2d8/cfbd4c0/d6869d8/82eebdd.
+- D3b 6e8bd62/57265e9/410be66 → 25a7347/697f9f6/b248793.
+- Slicing eee61d8/295bf15 → d33a389/69cd61f.
+- Shared Composition.lean imports were merged by retaining both sets.
+
+Quiet verification completed before any new agent workload (initial load
+1.39/2.00/4.09). npm run verify exited 0: parallel tests 2366/2366,
+serial tests 59/59, regression proofs 176/176. Full log:
+.build/codex-campaign-quiet-verify.log. Source code is unchanged by the
+checkpoint integration. Research-library builds and final width checks
+follow separately.
+
+Parent work: Lean comments corrected to match the narrowed split model;
+non-comment code compared unchanged in four files. Recorder draft inventory
+recounted (60 unique rows; 36/10/14 evidence categories, not source proof
+coverage); explicit source references checked for existence/range. Fixed
+soundness/completeness wording, ground comparability's handler exclusion,
+and a promise to expose a failed branch's log that current Either cannot
+fulfill. Refusal-prefix logging is an open interface question, not a new
+implementation. Full review and stream completion are in progress.
+
+Three isolated agents then started: D3b checkpoint/proof integration,
+oracle/D3a bounded evidence, and slicing statements. No recursive agent
+spawning or production implementation is authorized. The parent retains
+central documentation and recorder/corrections audit ownership.

@@ -140,7 +140,8 @@ theorem param_image :
 def divideBody : Tm Nat := .app (.lam (.num 0)) (.lam (.site 0 (.var 0)))
 
 /-- E2 with split `w`. `divide`'s interface (declared, the same text for
-both splits) is its clauses and `u` printable: model M1. -/
+both splits) is its clauses and `u` printable: a hand-written M1
+instance, not proved equal to the inferred `Req₁`. -/
 def e2 (w : Assign Nat Unit) : Prog Nat Unit where
   body f := if f = 0 then .call 1 0 arg else if f = 1 then divideBody
     else .num 0
