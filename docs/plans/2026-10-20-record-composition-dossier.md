@@ -2349,6 +2349,7 @@ no warnings, no `sorry`, the three standard axioms):
 | O3: valid iff `D` impossible on written labels, or `WrittenValid ∧ RestValid` | `o3` | O3.lean | its own worktree |
 | O1: with infinitely many labels, `RestValid ↔ BitValid` | `o1` | O1Bits.lean, O1.lean | its own worktree |
 | D2 (presence): uniform complement-free term witnesses per pattern | `d2_of` (from O1, O2, O3), `d2` | D2Terms.lean, D2.lean, Main.lean | its own worktree; instantiated at integration |
+| the rest part is a finite, computable check | `bitCheck_iff`, `restValid_iff_bitCheck` | Decide.lean | its own worktree |
 | non-vacuity | `split_valid`, `split_bit`, `bad_not_valid`, `tiny_rest`, `tiny_not_bit`, `infNat`, `not_infBool` | Examples.lean | the reviewer, restyled |
 
 Integration: one owner (this session) copied the four results into the
@@ -2378,7 +2379,20 @@ equivalence fails, so its hypothesis does work. Points recorded:
 - Nothing here transfers to typed records; D3a and D3b are untouched,
   and the presence fragment is exact only for flat rows (§18.10).
 
+**The finite check** (Decide.lean, proved in its own worktree,
+integrated): `bitCheck`, a computable `Bool` check over the bit vectors
+on the mentioned rigid and flexible indices, with `bitCheck_iff :
+bitCheck P = true ↔ BitValid P` (no `Classical.choice`) and
+`restValid_iff_bitCheck : InfiniteLabels Label → (RestValid P ↔
+bitCheck P = true)` (built from O1's two halves, so without `Scoped`).
+`#guard`s: the presence `split` gives true; without its clause, false;
+`r₀ ∩ r₀ = ∅`, false.
+
 **Standing.** O1-O3 and D2 hold for the presence fragment as defined,
-with finite rows, declared hypotheses and per-pattern uniformity. D1 is
-"decided" once the finite-check lemma lands. Not established: any
-typed statement (D3a, D3b), a constructive witness procedure, D4.
+with finite rows, declared hypotheses and per-pattern uniformity. The
+**rest part is decided** (`restValid_iff_bitCheck`). The written part
+is not yet formally decided: `WrittenValid` still quantifies over
+functions, though it ranges over finitely many patterns and choices in
+principle; a finite check for it is the remaining step before D1 can be
+called decided as a whole. Not established: any typed statement (D3a,
+D3b), a constructive witness procedure, D4.
