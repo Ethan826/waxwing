@@ -7839,3 +7839,6 @@ assessment.md.
   oracle expansion, source-to-constraint specification, compilation and
   split selection, integration reconnaissance. Production integration,
   merging and publishing remain unauthorized. In flight.
+- Stream 3 integrated: a computable presence witness procedure with
+  soundness and completeness (`witness_sound`, `witness_complete`,
+  `valid_iff_witness`). Dossier §18.14.
