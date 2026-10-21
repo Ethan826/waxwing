@@ -16,31 +16,29 @@ Paused 2026-10-21 at the coordinator's request.
   into attack.md (b).
 - attack.md sections (a)-(e) drafted, including the positive argument.
 
-## In flight (killed, no results)
+## Original confirmation runs (incomplete)
 
-- R3 `pigeonhole` (`node run.mjs R3`): bounded search over 729 rigid
-  assignments with nine flexible rows did not finish in about 40
-  minutes, even after reordering atoms.
-- R4 (`node agreement.mjs 500 5`, then seed 17): seed 5 did not finish
-  in about 40 minutes; no line was printed (no separation reported
-  before the kill, but the run is incomplete and proves nothing).
+The original R3 used 729 rigid assignments and was killed after about
+40 minutes. Original R4 seed 5 at 500 problems was killed after about
+40 minutes; seed 17 was not run. Neither original run has a result.
 
-attack.md still has the placeholders `RESULT-R3` and `RESULT-R4`, and
-its Verdict item 3 claims R3/R4 outcomes that are NOT yet established.
-Fix those before reporting.
+## Bounded diagnostics
 
-## Exact next step
+- R3a was amended and committed before each replacement. The first
+  reduced run used one unwritten label (27 assignments); the second also
+  limited flexible field types to the rigid types. Both were stopped at
+  120 seconds without output. Logs are in `../oracle/logs/R3a-timeout*.txt`.
+- R4a completed five problems for each of seeds 5 and 17 with one
+  unwritten label. Seed 5: two valid and uniform, three invalid. Seed 17:
+  one valid and uniform, four invalid. The ten cases do not establish the
+  result of the original 500-case runs. Logs are in `../oracle/logs/`.
+- `attack.md` incorporates the finite-base follow-up: the generalized
+  finite-base family differs from the singleton example and is not a
+  Waxwing source theorem. `prose-review.md` retains the before/after
+  prose catalogue.
 
-1. Make R3 tractable: reduce `pigeonhole`'s rigid domain (for example
-   unwritten labels `z1` only: 27 rigid assignments), recorded as an
-   amendment in attack.md, then `node run.mjs R3`.
-2. Make R4 tractable: add a progress line and a per-problem time log to
-   agreement.mjs, try `node agreement.mjs 20 5` to find the slow
-   problems, and if needed record a smaller count or bound as an
-   amendment; then run seeds 5 and 17.
-3. Fill `RESULT-R3`, `RESULT-R4`, correct Verdict item 3, run
-   `node scripts/width.mjs`, run `lake build` (default target), commit,
-   and report.
+There are no pending R3/R4 result placeholders. See `attack.md` for the
+run limits and scope.
 
 ## Reproduction
 
@@ -50,5 +48,4 @@ From research/division-campaign/d3a/: `node run.mjs check|R1|R2|R2W|R3|R5|R5a`,
 
 ## Uncommitted
 
-Nothing after the paused checkpoint commits. Scratch output in the
-session scratchpad only (no repo copies).
+Resumed work is recorded in the commits and logs on this branch.

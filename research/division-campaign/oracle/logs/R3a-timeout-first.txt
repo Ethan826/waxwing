@@ -1,0 +1,6 @@
+R3a diagnostic timeout, attempt 1
+Command: node run.mjs R3
+Bounds: one unwritten label z1; 27 rigid assignments; original FIRST
+flexible field type list (Int, Bool, {}, (Int->Int)).
+Stopped after 120 seconds with exit status 130. No classification line
+was emitted. The run is incomplete and has no verdict.
