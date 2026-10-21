@@ -3090,3 +3090,56 @@ equations, comparability, printability and definedness, and marks
 unsupported constructs `Outside`. Authorized within the research
 campaign: these corrections and the specification. Not authorized:
 recorder implementation, any change to split policy.
+
+### 18.25 Campaign results: application-shaped measurements (stream 9)
+
+research/division-campaign/integration/app-measurements.md, apps/ (four
+synthetic programs, seven scaling families, hand checks asserted before
+output), and measure/ refactored (the stream 7b corpus output is
+byte-identical before and after). Reproduced by the coordinator on the
+repaired build. Synthetic programs written for the measurement, not
+ported applications; every sliced count is unproved; `wxJoin` (`(j)`) is
+a labelled surrogate.
+
+Slicings: (i) row variables only; (ii) also joining through type
+variables, nested fields and `D`, as §18.20 item 4 requires; (ii)σ, (ii)
+applied after the solver's substitution (approximated by the last
+top-level `unify`).
+
+| function | R | L | patterns (log2) | consistent | (i) | (ii) | (ii)σ |
+|---|---|---|---|---|---|---|---|
+| A `serve`, request handling, mostly independent | 4 | 34 | 136 | 126 | 12 (3 slices) | 120 (1 slice) | 12 |
+| B `layered`, shared constraints (j) | 4 | 9 | 36 | 10 | 36 | 36 | 36 |
+| C `assemble`, service assembly (j) | 2 | 12 | 24 | 9.5 | 24 | 24 | 24 |
+| D `process`, 14 helpers | 2 | 12 | 24 | 18 | 4.3 | 11 | 4.3 |
+
+- **A under (ii) collapses to one slice**: the fresh type metas of field
+  reads all meet in one nested record literal; after substitution they
+  are ground, so (ii)σ returns to `2^12`. Call sites (no rigid row) have
+  `writtenCheck` from `2^56` to `2^120`.
+- **Scaling, past `2^30`:** independent shapes (`stages`, `ground`) pass
+  it unsliced at n = 4 and stay at `2^3`-`2^5` under every slicing to
+  n = 64. Shared shapes are not helped by any slicing: `chain` n = 6,
+  `star` n = 6, `shared` n = 11, one-row `helpers` n = 31. Their
+  patterns consistent with `D` are exactly 1 for `chain`, `shared` and
+  `helpers` at every n (the joins force every rigid row to lack every
+  written label); `star` (a context row joined separately with n rows)
+  has `n(n−1)`, past `2^30` at n = 7, reduced by nothing measured.
+- Acceptance: A and D accepted through specialization; B, C and the join
+  families pass Check and stop at the several-tail lowering placeholder.
+
+**Reading** (the stream's, not established): exhaustive `checkAll`
+serves only as a bounded reference (A alone `2^136`); the independent
+shape is cheap only with lemma-backed slicing applied after the
+certificate's substitution; shared components need an enumerator over
+consistent patterns only (a new definition needing a lemma that it lists
+exactly what `checkAll` keeps; B `2^36` to `2^10`, `chain` 12 `2^144` to
+`2^0`); `star` needs per-label relevance within a component or a
+symbolic checker; call sites stay with solver plus certificate.
+
+Questions for the author: S1 over the recorded constraints or after the
+certificate's substitution (A: `2^120` vs `2^12`); a consistent-only
+enumerator with its lemma as a proposed statement; whether `star` must
+be supported at scale, and by which approach; whether a ported real
+program is needed before planning; whether measurements wait for
+several-tail lowering.
