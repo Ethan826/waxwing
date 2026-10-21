@@ -8085,3 +8085,9 @@ unrelated README/backlog/direction-plan edits remain untouched.
   the back map; wording fixes and audit additions applied. The general
   composition with `d3bExistsWithin` goes through without W; it waits
   for the soundness track.
+- Completeness tranche accepted (dossier §18.43). Soundness track proved
+  (B4f, B5, BS-c1f) and integrated; the bridge composed:
+  `d3bOpenComplete` (general option-B completeness, research model) and
+  the characterization `openCharacterization`. Independent integrated
+  review of soundness and composition pending; executable procedure and
+  source correspondence remain separate obligations.

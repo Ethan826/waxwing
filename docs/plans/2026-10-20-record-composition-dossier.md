@@ -4111,3 +4111,64 @@ and re-ran the same operations (reset, diff, axiom checks) as plain
 commands without stopping first. That follows the guard's remedy, the
 procedure the author approved, but not the letter of the brief, which
 said to stop on any denial.
+
+### 18.43 Soundness proved; the bridge composed (2026-10-21)
+
+**The author accepted the completeness tranche** (2026-10-21) with its
+scope, label-freshness and fragment premises retained: the review
+checked hypothesis discharge, the back map's necessary premises,
+allocation and non-vacuity. The allocation examples stay labelled as
+typing and totality checks; they do not demonstrate the round trip. No
+further completeness searches or premise minimization before closing
+this milestone.
+
+**Soundness track** (proved in its own worktree, integrated; five new
+files ProofSound*.lean): BS-c1f `solvableMapBaseFwd_of` (E2 at
+`CL`/`CB`, E6), B4f `genericInstExtFin_of` (E1, E2′, E5), B5
+`d3bSoundOpen_of` (E1, E2, E2′, E5, E6, through B4f, BS-c1f and
+`transfer`). E5 was needed (only its `written` conjunct), beyond the
+brief's dependency list. B4f's argument: walk generic and ground roots
+in lockstep (`Reach`), value each constant by the ground subtree it
+reaches, separate any mismatch by one back substitution
+(`j b ↦ base b`, other bases to `emptyG` or `arrow emptyG emptyG`),
+and use coverage at the substituted instance. **Two reviews inside the
+track:** before proving, the obligations (two of the agent's own lemma
+statements, `SeparateArrow`, `SeparateRecord`, were false without
+`Function.Injective j`, counterexample checked in Lean; fixed;
+`BackSubstExists` added; `HvSubst`, `InPatternSubst` superfluous, kept
+and marked unused); after proving, sound (types exactly the reviewed
+Props; `GenericInst` satisfiable, `ValidOpen` non-trivial; B4f and B5
+non-vacuous at a finite `Label` and empty `B`, checked in Lean; no
+hidden label-supply, `Fresh` or `WithinC` premise). Two
+`linter.unusedSectionVars` suppressions in mutual blocks, harmless. No
+reviewed statement changed.
+
+**Instantiated and composed** (ProofInstantiateSound.lean,
+coordinator; clean build, 153 jobs; standard axioms; in the audit):
+`solvableMapBaseFwd`, `genericInstExtFin`, `d3bSoundOpen` (B5);
+**`d3bOpenComplete`**, stated directly from `d3bExistsWithin` and B3a
+(not through `BridgeComposition`, whose `D3bExists` premise would go
+unused); **`openCharacterization`** (C: `→` from `d3bOpenComplete`,
+`←` from B5) and `openCharacterization_scoped` (C with its existence
+premise discharged by `d3bExistsWithin`; a corollary of the reviewed
+C, not a separately reviewed statement).
+
+**Claims kept separate (the author, 2026-10-21):**
+
+- **General option-B completeness for the research model:**
+  established by the composition (`d3bOpenComplete`), premises `Scoped`,
+  `∃ z, FreshLabels`, `ValidOpen`, `HasInstance`.
+- **Full characterization:** needed B5; B5 is now proved and reviewed
+  twice inside its track, and C follows. An independent integrated
+  review of the soundness track and the composition is the remaining
+  step before C is presented as established.
+- **Executable decision procedure:** still needs computable construction
+  and checking (θ* is classical).
+- **Waxwing inference:** still needs the source/constraint
+  correspondence and integration.
+
+**Process (the author):** recording the reviewer's departure (§18.42)
+suffices. Future briefs distinguish a **prescribed command
+simplification within the authorized worktree** (follow it) from a
+**denial requiring further authorization** (stop); an ambiguous denial
+still triggers a stop and the exact quotation.

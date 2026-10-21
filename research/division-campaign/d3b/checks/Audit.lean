@@ -51,3 +51,9 @@ import Composition
 #print axioms Composition.Typed.intArmFreshOn
 #print axioms Composition.Typed.twoBaseInjective
 #print axioms Composition.Typed.openToFin
+#print axioms Composition.Typed.solvableMapBaseFwd
+#print axioms Composition.Typed.genericInstExtFin
+#print axioms Composition.Typed.d3bSoundOpen
+#print axioms Composition.Typed.d3bOpenComplete
+#print axioms Composition.Typed.openCharacterization
+#print axioms Composition.Typed.openCharacterization_scoped

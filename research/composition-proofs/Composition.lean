@@ -122,3 +122,4 @@ import Composition.Typed.Bridge.ProofSoundMatch
 import Composition.Typed.Bridge.ProofSoundMain
 import Composition.TypedAttack.ShapeSplit
 import Composition.Typed.Bridge.ProofInstantiate
+import Composition.Typed.Bridge.ProofInstantiateSound
