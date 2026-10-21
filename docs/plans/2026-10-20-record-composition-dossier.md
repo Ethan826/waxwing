@@ -4172,3 +4172,27 @@ suffices. Future briefs distinguish a **prescribed command
 simplification within the authorized worktree** (follow it) from a
 **denial requiring further authorization** (stop); an ambiguous denial
 still triggers a stop and the exact quotation.
+
+### 18.44 The central theoretical milestone, pending review (2026-10-21)
+
+The author: general existence, option-B completeness and soundness now
+compose into a characterization of validity **for the research model**.
+Final acceptance waits for the independent integrated review, which must
+confirm that the exact extension quantifiers, genericity requirements
+and remaining premises survive composition.
+
+**Boundary (the author):** this characterization does not establish
+principal inferred types, completeness of source-level inference, or
+correct compilation; each needs its own argument.
+
+After the review passes, the work changes character: (1) make the
+construction executable and establish its correspondence with the proved
+classical construction; (2) connect Waxwing source to the modelled
+constraints, preserving all obligations; (3) integrate and measure the
+resulting checker.
+
+Meanwhile no expansion. SC1-SC4 and option C stay statements-only until
+their proposals are reviewed, and each must say precisely whether it
+targets P9s's `Accepts` (the `checkAll`/K-theorem boundary, which cannot
+certify `route`) or the option-B characterization (`ValidOpen`,
+`openCharacterization`); these are different acceptance boundaries.
