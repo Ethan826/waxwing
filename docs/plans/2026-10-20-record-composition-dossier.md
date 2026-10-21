@@ -2453,3 +2453,34 @@ minimized counterexamples stay in the record. No added axioms, no
 accepted proof placeholders. Shared models: the typed streams use
 `Composition/Sig` (`SigProblem`, §13.1) and `Composition/Presence`; no
 stream builds a second formalization of the same thing.
+
+### 18.14 Campaign results: constructive presence witnesses (stream 3)
+
+Composition/Presence/Witness.lean and WitnessExamples.lean (proved in
+its own worktree, integrated; one build, no warnings, no `sorry`).
+`witness P ps` is computable (`#print axioms`: `propext`, `Quot.sound`
+only): per region of the mentioned rigid indices it takes the first
+flexible bit vector satisfying `B` (D2.lean's construction with
+`Classical.choose` replaced by search), builds each term as the union of
+the regions whose chosen bit is set, and searches the written choices.
+
+- `witness_sound`: a returned `(Q, t)` satisfies D2's property for the
+  pattern (uniform, complement-free, inside the rigid rests). Its only
+  hypothesis is that the pattern lies within the written labels.
+- `witness_complete` (with `InfiniteLabels` and `Scoped`): a valid
+  problem gets `some` at every pattern `D` allows.
+- `valid_iff_witness` (with `InfiniteLabels`, `Scoped`): validity iff
+  `witness` succeeds at every pattern `D` allows. `witness_d2` covers an
+  arbitrary pattern `π`; `d2_witness` re-proves D2 through `witness`.
+- Uniformity needs no extra condition: the terms are built from bit
+  vectors alone; a rest label lies in exactly its own region, and a
+  label outside every rest lies in no term (no complement).
+- Examples: `split` gives `u = R₀ ∖ R₁`, `v = R₀ ∩ R₁` (checked by
+  evaluation on every allowed bit vector; wrong formulas fail); invalid
+  controls give `none`; `keepOut` without its clause fails only at the
+  pattern holding the written label.
+
+Limits: `witness` does not check `D` on the pattern (soundness still
+holds there); terms are unsimplified unions of up to `2^|rigid|`
+regions; cost is exponential, the same order as `validCheck`. This is
+presence only: nothing transfers to typed records.

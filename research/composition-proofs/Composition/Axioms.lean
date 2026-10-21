@@ -8,6 +8,7 @@ import Composition.Sig.SourceBoundary
 import Composition.Presence.Main
 import Composition.Presence.Decide
 import Composition.Presence.DecideValid
+import Composition.Presence.WitnessExamples
 
 open Composition Composition.Programs Composition.Syntax
   Composition.Syntax.SourceBoundary
@@ -130,3 +131,8 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms Composition.Presence.restValid_iff_bitCheck
 #print axioms Composition.Presence.writtenCheck_iff
 #print axioms Composition.Presence.valid_iff_validCheck
+#print axioms Composition.Presence.witness
+#print axioms Composition.Presence.witness_sound
+#print axioms Composition.Presence.witness_complete
+#print axioms Composition.Presence.valid_iff_witness
+#print axioms Composition.Presence.witness_d2
