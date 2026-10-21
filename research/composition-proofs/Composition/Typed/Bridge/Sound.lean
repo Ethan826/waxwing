@@ -11,7 +11,7 @@ open Composition Composition.Syntax
 
 variable {Label B B' : Type} [DecidableEq Label]
 
-/-! ### B4, B5: soundness for option B (for a decision procedure) -/
+/-! ### B4, B5: soundness for option B from solved generic instances -/
 
 /-- B4f. A generic instance over `B` covers every finite instance over
 any injective extension. -/

@@ -1,8 +1,9 @@
 /-
 The P-1 bridge, statements only: completeness under option B. B3a has
 no existence premise; W trims to the problem's symbols; B3 composes
-with existence (`D3bExists`, open) as an implication; B3e and B3f are
-the fragment forms; C is the characterization (P-3).
+with existence (`D3bExists`, proved: `d3bExists`; with `WithinC`,
+`d3bExistsWithin`, Universality.lean) as an implication; B3e and B3f
+are the fragment forms; C is the characterization (P-3).
 -/
 import Composition.Typed.Bridge.Valid
 import Composition.Typed.Bridge.Fresh
@@ -76,7 +77,8 @@ def D3bOpenComplete : Prop :=
     ValidOpen P → ∀ π, HasInstance P π →
       ∃ θs, GenericInst P π θs ∧ WithinC P θs ∧ SolvableFinAt P θs
 
-/-- B3. The composition, conditional on the open existence claim. -/
+/-- B3. The composition, as an implication from `D3bExists` (proved;
+`d3bOpenComplete` states the result directly from `d3bExistsWithin`). -/
 def BridgeComposition : Prop :=
   D3bExists (Label := Label) (B := B) →
     D3bOpenComplete (Label := Label) (B := B)

@@ -4250,3 +4250,24 @@ now points to current status (fixed). **For the author's approval**
 section heading "soundness for option B (for a decision procedure)",
 suggested "(what accepting solved generic instances relies on)"; W2,
 Complete.lean's header calling `D3bExists` "open".
+
+### 18.46 Milestone accepted (2026-10-21)
+
+**The author accepted the milestone:** general option-B completeness and
+the validity characterization are established **for the research
+model**, with the stated scope (`Scoped`), label-freshness (infinite
+labels) and finite-value premises retained. Not established by it:
+principal inferred types, completeness of source-level inference,
+correct compilation, an executable decision procedure.
+
+Comment-only fixes approved and applied (definitions and theorem
+statements unchanged; freezing statements need not freeze inaccurate
+comments): W1, Sound.lean's heading now "soundness for option B from
+solved generic instances"; W2, Complete.lean's header and B3's docstring
+give `D3bExists`'s proved status and point to `d3bExistsWithin`.
+
+**Next, not started:** executable construction, source translation and
+integration, each to be scoped around the established theorem, with
+separate obligations for inference and principality and for compilation
+correctness. Until then only the two statements-only streams (SC1-SC4,
+option C) finish.
