@@ -8014,3 +8014,24 @@ Dossier §18.28 and stream reports give the exact boundaries.
 The author requested stopping to preserve usage. No further searches,
 proof attempts or compiler work will run. No merge or push. Existing
 unrelated README/backlog/direction-plan edits remain untouched.
+
+## Signature checking: campaign resumed on remaining work (2026-10-21)
+
+- Resumed at d7113d7 after Codex's integration (dossier §18.27-18.28,
+  docs/next-session.md). Assigned only work under existing approvals and
+  independent of the open generic-universe decision:
+  - D3b: proof attempts on `CellIndependence`, `MGUExists` (Robinson),
+    `Universality`, assembling `D3bExists`, proving only statements true
+    under either universe reading and reporting any dependency; the
+    local backlog's exact recursive clash check (with a regression shown
+    failing on the old check) and an assertion mode for run.mjs.
+  - `star` at useful scale (§18.26): established techniques surveyed,
+    one or two strategies with certificate/checker split, search cost,
+    certificate size and checking cost measured separately against
+    exhaustive enumeration; no proofs or compiler work.
+  - A decision memo on the generic type universe (closed per program
+    vs extensible), for the author; no interpretation selected.
+- Waiting for the author: the universe decision; review of the slicing
+  and recorder obligations; D3a's bounded runs (R3a, R4a) and the
+  base-per-alternative oracle challenge, which follow that decision; any
+  integration scope.
