@@ -23,3 +23,14 @@ import Composition
 #print axioms Composition.TypedAttack.no_uniform_presence
 #print axioms Composition.TypedAttack.validity_not_extension_stable
 #print axioms Composition.Typed.d3bExistsWithin
+#print axioms Composition.Typed.routeP_generic_occupies
+#print axioms Composition.Typed.routeP_eta_not_generic
+#print axioms Composition.Typed.routeP_allowed_r
+#print axioms Composition.Typed.routeP_not_allowed_st
+#print axioms Composition.Typed.routeP_thetaStar_occupies
+#print axioms Composition.Typed.routeP_exists_occupies
+#print axioms Composition.Typed.agreeP_not_allowed_r
+#print axioms Composition.Typed.agreeP_fresh
+#print axioms Composition.Typed.agreeP_thetaStar_solvable
+#print axioms Composition.Typed.agreeP_thetaStar_exists
+#print axioms Composition.Typed.splitFree_thetaStar_unsolvable

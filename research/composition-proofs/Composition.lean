@@ -96,6 +96,7 @@ import Composition.Typed.MGUExists
 import Composition.Typed.CellIndep
 import Composition.Typed.Universality
 import Composition.Typed.Conditional
+import Composition.Typed.ExamplesThetaStar
 import Composition.Typed.Bridge.Extension
 import Composition.Typed.Bridge.Valid
 import Composition.Typed.Bridge.Fresh
