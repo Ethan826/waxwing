@@ -7881,3 +7881,8 @@ assessment.md.
   showing (a)); caller-side comparison and printability are missing
   requirements (b), refused at check. The two models do not yet combine
   into a recorder specification (M1-M9).
+- The author's decisions on §18.23 (dossier §18.24): correct the stream
+  documents in place; caller-side annotations count as written splits
+  when they determine the split; caller-side requirements are check-time
+  constraints on instantiated types; C narrowed; the `peek` claim
+  withdrawn; E2′ restricted. Next: one reconciled recorder specification.
