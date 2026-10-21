@@ -560,15 +560,14 @@ assertion and its hand computation; restored, the run passes.
 ## 8. Reproduction
 
 ~~~sh
-git checkout 43b3a28^ -- src/Features/Check/SeveralTails.purs  # build only
+# SeveralTails.purs is restored in the branch since 2d175e3
 npm run build
 node research/division-campaign/integration/apps/measure-apps.mjs \
   <scratch-dir> --json <scratch-dir>/apps.json
 # the stream 7b corpus, unchanged:
 node research/division-campaign/integration/measure/measure.mjs \
   <scratch-dir> --json <scratch-dir>/results.json
-git rm --cached -q src/Features/Check/SeveralTails.purs
-rm src/Features/Check/SeveralTails.purs; rm -rf <scratch-dir>
+rm -rf <scratch-dir>
 ~~~
 
 measure-apps.mjs takes about 20 seconds after the build. `<scratch-dir>`

@@ -7893,3 +7893,9 @@ assessment.md.
   `partialFirst`: T003/T007), regression 176/176 (run separately after
   verify stopped). A quiet-machine verify is still owed. Evidence:
   .build/evidence/r005b-build-repair-*.log.
+- Stream 9 integrated (dossier §18.25): application-shaped
+  measurements. Unsliced, a request-handling function needs `2^136`
+  patterns; full-dependency slicing helps only after the substitution;
+  shared-constraint shapes are not helped by any slicing (`star`
+  unreduced). Supports search plus certificate checking; exhaustive
+  enumeration only as a bounded reference.
