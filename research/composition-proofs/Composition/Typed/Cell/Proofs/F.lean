@@ -2,9 +2,11 @@
 Proof stream F (cell checker, assembly): CB2 `AtomSound`, CM
 `CellSound`, `CellOpen`, `CellOpenImpl` (dossier §18.54-18.55; plan
 research/division-campaign/cellcheck/proof-plan.md). Other streams'
-statements enter as hypotheses; B5 is `d3bSoundOpen`.
+statements enter as hypotheses; B5 is `d3bSoundOpen`. Row lemmas reuse
+stream C's proved `apartSound` (CD2) and `ProofsC.lackC_sound`.
 -/
 import Composition.Typed.Cell.Statements
+import Composition.Typed.Cell.Proofs.C
 import Composition.Typed.Bridge.ProofInstantiateSound
 
 namespace Composition.Typed.Cells.ProofsF
@@ -42,15 +44,6 @@ theorem cpiecesRow_ne_none (P : SigProblem Label B) (θs : CAssign Label B)
     · obtain ⟨q', hq', h'⟩ := ih h
       exact ⟨q', List.mem_cons_of_mem _ hq', h'⟩
 
-theorem cvDenFields_inr (P : SigProblem Label B) (θs : CAssign Label B)
-    (fs : List (Label × CellV Label B)) (S : Cell) :
-    cvDenFields P θs fs (.inr S) = none := by
-  induction fs with
-  | nil => rfl
-  | cons e rest ih =>
-    obtain ⟨l, v⟩ := e
-    simp [cvDenFields, ih]
-
 theorem cvDenFields_inl_ne_none (P : SigProblem Label B)
     (θs : CAssign Label B) {fs : List (Label × CellV Label B)} {l : Label}
     (h : cvDenFields P θs fs (.inl l) ≠ none) : l ∈ fs.map Prod.fst := by
@@ -62,23 +55,6 @@ theorem cvDenFields_inl_ne_none (P : SigProblem Label B)
     · subst hl; simp
     · simp only [cvDenFields, Sum.inl.injEq, hl, ↓reduceIte] at h
       exact List.mem_cons_of_mem _ (ih h)
-
-theorem cpieceRow_inl_ne_none (P : SigProblem Label B) (θs : CAssign Label B)
-    {q : CellPiece Label} {l : Label} (h : cpieceRow P θs q (.inl l) ≠ none) :
-    q.row ∈ P.rigidRow ∧ l ∈ q.labels ∧ θs.row q.row (.inl l) ≠ none := by
-  simp only [cpieceRow] at h
-  split at h
-  · rename_i hc; exact ⟨hc.1, hc.2, h⟩
-  · exact absurd rfl h
-
-theorem cpieceRow_inr_ne_none (P : SigProblem Label B) (θs : CAssign Label B)
-    {q : CellPiece Label} {S : Cell} (h : cpieceRow P θs q (.inr S) ≠ none) :
-    q.row ∈ P.rigidRow ∧ q.selects S = true ∧
-      θs.row q.row (.inr S) ≠ none := by
-  simp only [cpieceRow] at h
-  split at h
-  · rename_i hc; exact ⟨hc.1, hc.2, h⟩
-  · exact absurd rfl h
 
 variable [DecidableEq B]
 
@@ -146,92 +122,23 @@ section Region
 variable {P : SigProblem Label B} {Q : CellQ Label} {θs : CAssign Label B}
 
 omit [DecidableEq B] in
-theorem qs_possW (hQ : QSound P Q) (hreg : InCellRegion P θs) {r : Nat}
-    (hr : r ∈ P.rigidRow) {l : Label} (h : Q.possW r l = false) :
-    θs.row r (.inl l) = none :=
-  (hQ θs hreg r hr r hr).1 l h
-
-omit [DecidableEq B] in
-/-- A `lackC` part has no piece holding `l`. -/
+/-- A `lackC` part has no piece holding `l` (from stream C's per-piece
+`ProofsC.lackC_sound`). -/
 theorem lackC_sound (hQ : QSound P Q) (hreg : InCellRegion P θs)
     {ps : List (CellPiece Label)} {l : Label} (h : lackC Q ps l = true) :
     cpiecesRow P θs ps (.inl l) = none := by
   apply Classical.byContradiction; intro hne
   obtain ⟨q, hq, hne⟩ := cpiecesRow_ne_none P θs hne
-  obtain ⟨hr, hl, hθ⟩ := cpieceRow_inl_ne_none P θs hne
-  have h1 := List.all_eq_true.1 h q hq
-  simp only [hl, decide_true, Bool.not_true, Bool.false_or,
-    Bool.not_eq_eq_eq_not, Bool.not_true] at h1
-  exact hθ (qs_possW hQ hreg hr h1)
+  exact hne (ProofsC.lackC_sound hQ hreg h q hq)
 
 omit [DecidableEq B] in
-/-- Apart parts denote disjoint rows (CD2's content, proved here for the
-parts `atomC` reads). -/
+/-- Apart parts denote disjoint rows: CD2, stream C's `apartSound`. -/
 theorem apartC_sound (hQ : QSound P Q) (hreg : InCellRegion P θs)
     {x y : CRow Label B} (h : apartC Q x y = true) :
     Composition.Disjoint
       (union (cvDenFields P θs x.1) (cpiecesRow P θs x.2))
-      (union (cvDenFields P θs y.1) (cpiecesRow P θs y.2)) := by
-  simp only [apartC, Bool.and_eq_true, List.all_eq_true] at h
-  obtain ⟨⟨hxf, hyf⟩, hpp⟩ := h
-  intro k
-  apply Classical.byContradiction; intro hk
-  simp only [not_or] at hk
-  obtain ⟨ha, hb⟩ := hk
-  rcases union_ne_none ha with ha | ha <;>
-    rcases union_ne_none hb with hb | hb
-  · -- field / field
-    cases k with
-    | inr S => exact ha (cvDenFields_inr P θs _ S)
-    | inl l =>
-      obtain ⟨e, he, rfl⟩ := List.mem_map.1 (cvDenFields_inl_ne_none P θs ha)
-      obtain ⟨e', he', hee⟩ := List.mem_map.1 (cvDenFields_inl_ne_none P θs hb)
-      have := hxf e he
-      simp only [Bool.not_eq_eq_eq_not, Bool.not_true, List.any_eq_false,
-        decide_eq_true_eq] at this
-      exact this.1 e' he' hee
-  · -- field / piece
-    cases k with
-    | inr S => exact ha (cvDenFields_inr P θs _ S)
-    | inl l =>
-      obtain ⟨e, he, rfl⟩ := List.mem_map.1 (cvDenFields_inl_ne_none P θs ha)
-      have := (hxf e he).2
-      exact hb (lackC_sound hQ hreg this)
-  · -- piece / field
-    cases k with
-    | inr S => exact hb (cvDenFields_inr P θs _ S)
-    | inl l =>
-      obtain ⟨e, he, rfl⟩ := List.mem_map.1 (cvDenFields_inl_ne_none P θs hb)
-      exact ha (lackC_sound hQ hreg (hyf e he))
-  · -- piece / piece
-    obtain ⟨q, hq, ha⟩ := cpiecesRow_ne_none P θs ha
-    obtain ⟨q', hq', hb⟩ := cpiecesRow_ne_none P θs hb
-    have hap := hpp q hq q' hq'
-    simp only [piecesApart, Bool.and_eq_true, List.all_eq_true] at hap
-    cases k with
-    | inl l =>
-      obtain ⟨hr, hl, hθ⟩ := cpieceRow_inl_ne_none P θs ha
-      obtain ⟨hr', hl', hθ'⟩ := cpieceRow_inl_ne_none P θs hb
-      have h1 := hap.1 l hl
-      simp only [hl', decide_true, Bool.not_true, Bool.false_or,
-        Bool.not_eq_eq_eq_not] at h1
-      rcases (hQ θs hreg q.row hr q'.row hr').2.1 l h1 with h2 | h2
-      · exact hθ h2
-      · exact hθ' h2
-    | inr S =>
-      obtain ⟨hr, hs, hθ⟩ := cpieceRow_inr_ne_none P θs ha
-      obtain ⟨hr', hs', hθ'⟩ := cpieceRow_inr_ne_none P θs hb
-      simp only [CellPiece.selects, List.any_eq_true] at hs hs'
-      obtain ⟨K, hK, hKS⟩ := hs
-      obtain ⟨K', hK', hKS'⟩ := hs'
-      have h1 := hap.2 K hK K' hK'
-      simp only [Bool.not_eq_eq_eq_not, Bool.not_true] at h1
-      have hsat : cubeSat S (K ++ K') = true := by
-        simp only [cubeSat, List.all_append, Bool.and_eq_true] at hKS hKS' ⊢
-        exact ⟨hKS, hKS'⟩
-      rcases (hQ θs hreg q.row hr q'.row hr').2.2.1 _ S h1 hsat with h2 | h2
-      · exact hθ h2
-      · exact hθ' h2
+      (union (cvDenFields P θs y.1) (cpiecesRow P θs y.2)) :=
+  apartSound P Q hQ θs hreg x y h
 
 end Region
 
@@ -245,8 +152,8 @@ open Composition.Typed.Cells.ProofsF
 variable {Label B : Type} [DecidableEq Label] [DecidableEq B]
 
 /-- CB2, from CI3 (`EvalCommutes`), CB3 (`EqSound`) and CB4 (`EvalWf`).
-Rows (`lacks`, `disjoint`) are proved here from `QSound` and `WithinC`
-directly. -/
+Rows (`lacks`, `disjoint`) follow from `QSound` and `WithinC`, through
+stream C's `lackC_sound` and `apartSound`. -/
 theorem atomSound_of
     (hCI3 : EvalCommutes (Label := Label) (B := B))
     (hCB3 : EqSound (Label := Label) (B := B))
