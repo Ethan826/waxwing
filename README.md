@@ -50,7 +50,7 @@ records the exact rules and current restrictions.
 | Structural record rows | Ask for a few fields, preserve the rest, add fresh fields and remove named fields. | PureScript-style rows and lacks constraints; [ADR 013](docs/adr/013-records.md) records Waxwing's unique-label rules and adaptations. Compiler tests and interpreter/Go comparisons cover implemented operations. |
 | Effect rows and handlers | Dependencies and typed failures appear in function types; handlers discharge them. | [Koka's row-polymorphic effects][koka-paper] and scoped-label matching. Waxwing's failure-family keys, cleanup marks and handler restrictions are local design; they are tested, not covered by the record proofs below. |
 | Disjoint record composition | Combine independent pieces without silent overwrites; infer a field's location when the constraints force it. | Foundation research: a Lean-checked constraint decider and signature soundness result, described below. The replacement foundation is not integrated into the compiler. |
-| Explicit instance selection | Choose or construct different lawful operations for the same type without mandatory newtype wrappers. | Planned class/module design, informed by fp-ts dictionaries and Haskell/PureScript; [direction note](docs/plans/2026-10-10-modules-and-instance-selection-direction.md). Ordinary records of functions already work. |
+| Explicit instance selection | Choose or construct different lawful operations for the same type without mandatory newtype wrappers. | Planned class/module design, informed by `fp-ts` dictionaries and Haskell/PureScript; [direction note](docs/plans/2026-10-10-modules-and-instance-selection-direction.md). Ordinary records of functions already work. |
 
 Rust informs practical language and API choices; ownership, borrowing and
 Rust's trait system are outside the current design. The
@@ -292,13 +292,14 @@ comparison for `age`; if those values are equal, it uses the Text comparison for
 are not comparable or printable. Comparison also requires a ground type: one
 with no remaining type or row variables.
 
-The planned class system would express these component requirements as Eq, Ord,
-and Show constraints. A generic equality function could require `Eq(a)` instead
+The planned class system would express these component requirements as
+`Eq`, `Ord`, and `Show` constraints. A generic equality function could
+require `Eq(a)` instead
 of needing to know a concrete `a` when its body is checked. That constraint
 syntax is illustrative; it has not been designed. Derived record instances would
 use the instance selected independently for each field. Two Text fields could
 therefore use different selected comparison instances. Selection rules and the
-relationship between the selected Eq and Ord instances still need design.
+relationship between the selected `Eq` and `Ord` instances still need design.
 
 Int is signed 32-bit, addition wraps, and `+` is the only arithmetic operator so
 far.
@@ -397,7 +398,7 @@ Adding an operation with a new error family can require edits to callers' rows.
 The inference goal is to let named functions compose without those lists, while
 keeping explicit contracts available.
 
-Effect and ZIO are references for this design: providing services changes the
+Effect and `ZIO` are references for this design: providing services changes the
 dependencies and errors that remain. Waxwing aims to express that composition
 through rows and handlers, without a separate layer abstraction. The proposed
 behavior is:
@@ -464,7 +465,7 @@ The [backlog](BACKLOG.md) tracks the remaining work:
 - Complete open-row merge checking and lowering; integrate an approved
   composition foundation. Record patterns, single-spread extension,
   removal and written lacks constraints are already implemented.
-- Higher-kinded types and kind checking; type classes with Eq/Ord/Show and
+- Higher-kinded types and kind checking; type classes with `Eq`/`Ord`/`Show` and
   derived instances; modules and packages.
 - Local let-polymorphism, including helpers that capture local values,
   with established rules for effects and residual constraints.
@@ -579,15 +580,11 @@ and tool errors use E_IO and E_TOOL.
 
 [thih]: https://web.cecs.pdx.edu/~mpj/thih/TypingHaskellInHaskell.html
 [maranget]: https://pauillac.inria.fr/~maranget/papers/warn/index.html
-[koka-paper]:
-  https://www.microsoft.com/en-us/research/publication/koka-programming-with-row-polymorphic-effect-types/
-[wand]:
-  https://www.cs.tufts.edu/comp/150FP/archive/mitch-wand/types-simple-objects.pdf
-[sulzmann]:
-  https://www.researchgate.net/publication/213884919_A_General_Framework_for_HindleyMilner_Type_Systems_with_Constraints
+[koka-paper]:https://www.microsoft.com/en-us/research/publication/koka-programming-with-row-polymorphic-effect-types/
+[wand]:https://www.cs.tufts.edu/comp/150FP/archive/mitch-wand/types-simple-objects.pdf
+[sulzmann]:https://www.researchgate.net/publication/213884919_A_General_Framework_for_HindleyMilner_Type_Systems_with_Constraints
 [cs-sources]: docs/plans/2026-10-20-cs-source-traceability.md
 [composition-programs]: docs/plans/2026-10-20-composition-acceptance-programs.md
-[composition-assessment]:
-  docs/plans/2026-10-20-composition-foundation-assessment.md
+[composition-assessment]:docs/plans/2026-10-20-composition-foundation-assessment.md
 [composition-dossier]: docs/plans/2026-10-20-record-composition-dossier.md
 [composition-proofs]: research/composition-proofs/README.md

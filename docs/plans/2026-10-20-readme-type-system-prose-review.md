@@ -56,3 +56,22 @@ prose rewrite. Source titles and established names retain their punctuation.
 
 Documentation checks only, as requested by the author: width, whitespace
 and local reference destinations. No npm commands or compiler tests.
+
+## Website link and identifier follow-up
+
+The site uses Jekyll/kramdown. The earlier width reflow put four link
+reference destinations on continuation lines; kramdown rendered those
+definitions as paragraphs. Keep each definition on one line, with no
+space after the colon so long destinations remain a single token under
+the width rule. The labels, destinations and prose remain unchanged.
+
+Catalogue before the formatting change: fp-ts, ZIO, and the API names
+Eq, Ord, Show appeared in ordinary prose styling. The author asked for
+code styling for such identifiers, expressly excluding Effect. The
+second review retains Effect as prose and checks that code spans are
+limited to library/API identifiers. No technical claims or code examples
+change in this follow-up.
+
+Validation: reproduce the unresolved Wand reference with kramdown, then
+render the fixed README and check every reference destination; width and
+whitespace checks. No npm commands or compiler tests.
