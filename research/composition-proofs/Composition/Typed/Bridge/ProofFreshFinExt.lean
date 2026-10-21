@@ -94,7 +94,10 @@ theorem d3bCompleteFinExt_of
 /-! ### Edge cases -/
 
 /-- The empty case: `U = []`, `n = 1`, over an empty base type. Every
-constant goes to the spare atom, and B2's base premise holds. -/
+constant goes to the spare atom, and B2's base premise holds. This
+confirms typing and totality: `FreshBasesOn P inl [] e` holds for every
+`e`, so its only content is that `Fin 1` is inhabited (with `n = 0` no
+allocation exists). -/
 example (P : SigProblem Label Empty) :
     FreshBasesOn P (Sum.inl : Empty → Empty ⊕ Fin 1) []
       (allocFin [] 1 Nat.one_pos) :=
@@ -116,7 +119,9 @@ example : allocIdx dupU 4 (by decide) (.T 0) ≠
     allocIdx dupU 4 (by decide) (.T 1) := by decide
 
 /-- Multiple written bases: `D` equates the two bases of `Bool`, so
-both are written, and the allocated atoms avoid both. -/
+both are written, and the allocated atoms avoid both. The avoidance is
+structural (`inr ≠ inl`); this confirms typing and `basesOf`, not a
+nontrivial property. -/
 def twoBases : SigProblem Nat Bool :=
   ⟨[], [], [.eq (.base true) (.base false)], []⟩
 

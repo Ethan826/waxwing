@@ -3946,7 +3946,9 @@ quantified) or strengthening (for every MGU, not just one).
 Proved in three parallel worktrees, integrated by the coordinator
 (four `Composition.lean` import conflicts kept both sides; clashing
 helper names in the freshness files renamed: `fin_mapG`, `fin_mapGO`,
-`basesWithin_mono`, `basesWithinO_mono`). Statement files unchanged.
+`basesWithin_mono`, `basesWithinO_mono`). Bridge statement files
+unchanged; Defs.lean changed in three docstrings only (67d40a6, §18.36),
+no definition.
 Clean build (147 jobs, no warnings); no `sorry`, `admit`,
 `native_decide` or axiom; standard axioms only (several E-lemmas use
 `propext` and `Quot.sound` only).
@@ -3978,8 +3980,9 @@ Clean build (147 jobs, no warnings); no `sorry`, `admit`,
   flat fragments, with no open existence premise** (their scope,
   label-freshness and fragment premises remain). Added to the audit.
 
-Observations from the proofs (not statement changes): B2 never uses
-`j`'s injectivity beyond the written bases, nor `GenericInst`'s coverage
+Observations from the proofs (not statement changes): B2 uses only
+that no other base maps onto `j b` for a written `b` (corrected,
+§18.42), and never `GenericInst`'s coverage
 conjunct; B2g's `WithinC` premise is unused; B3a needs `ValidOpen` at a
 single extension, `B ⊕ CConst Label`. **Pending:** the option-B
 soundness track (BS-c1f, B4f, B5), separately reviewed.
@@ -4049,3 +4052,62 @@ affected cross-check reruns after correction. `disjoint r r` requires
 cube avoids the forced-label case, but that does not establish that
 all historical results are unaffected. B stays deferred; no further
 large performance runs.
+
+### 18.42 Independent review of the completeness tranche (2026-10-21)
+
+Independent reviewer at cfd6742 (no repository writes; scratch Lean
+outside the repository). **Verdict: the headline claim holds.**
+`d3bOpenCompleteEqFree` and `d3bOpenCompleteFlat` prove option-B
+completeness for the equation-free and flat fragments with no open
+existence or freshness premise; remaining premises `Scoped`, the
+fragment premise, `∃ z, FreshLabels`, `HasInstance`, `ValidOpen`. No
+false or vacuous statement, no overclaim in the headline.
+
+- **Discharged hypotheses:** each `_of` hypothesis is the named Prop;
+  the discharging theorems are polymorphic, so E2 is exactly E2 at every
+  instance and E3 at `CL Label`/`CB Label B`. Bridge statement files
+  byte-identical; Defs.lean changed only in three docstrings (§18.40
+  wording corrected).
+- **Finite support (B2f):** U is a genuine support for `ConstsInC`
+  (`constOf` drops only `inl` bases, which `constIn U` accepts).
+- **Back-map collisions:** `up_dn_on` needs exactly `WithinC` and
+  `ConstsInC`, no hidden assumption. Shown in scratch: without
+  `WithinC`, a fresh base equal to an unwritten base reads back wrongly;
+  without `ConstsInC`, a colliding off-list constant reads back as the
+  wrong constant. So both premises are necessary; repeated constants
+  are harmless.
+- **Allocation:** `allocIdx_inj` is exactly `FreshBasesOn`'s first
+  conjunct at `j = inl`; the local `DecidableEq (CConst Label)` is sound
+  (`cconstCode_inj`, `propext` only) and clashes with no instance. The
+  `U = []` and two-bases examples confirm typing and totality only
+  (docstrings corrected); the duplicate-constant `#guard`s check real
+  computation; `n = 0` admits no allocation (scratch).
+- **Non-vacuity (scratch):** B3e fires on `routeP` over `Unit` and
+  `Empty`; B3f on `agreeP`. The conclusion has content: with `ValidFin`
+  in place of `ValidOpen`, B3e is refutable on `shapeSplit ()` (N3), and
+  B3e alone re-derives `¬ ValidOpen (shapeSplit ())`. `∃ z,
+  FreshLabels` makes B3e/B3f vacuous for finite label types, consistent
+  with §18.33's infinite-labels assumption.
+- **Unused premises:** confirmed, all over-premising, none a weaker
+  statement. One wording correction: B2's proof uses that no other base
+  maps onto `j b` for a written `b` (not merely injectivity on
+  `basesOf P`); corrected in statements.md and §18.40.
+- **Axioms:** standard only; the audit lacked N1-N7, E2′ and B0, now
+  added (all standard axioms).
+- **Renames:** pure; same statements and bodies as before; the
+  same-named helpers elsewhere state the same claims.
+
+**For the composition with `d3bExistsWithin`:** it goes through as is
+(in scratch, `D3bOpenComplete` follows in three lines from
+`d3bExistsWithin` and `d3bCompleteOpen`; no W, no statement change).
+`BridgeComposition` would then hold by ignoring its `D3bExists`
+premise, a check that checks nothing; state `D3bOpenComplete` directly.
+C's converse direction still needs B5 (soundness pending).
+
+**Process:** the reviewer met three worktree-guard denials (commands
+naming git, or running `lake` on a runtime value, "too complex to
+verify"), each prescribing "split it into plain, separate commands",
+and re-ran the same operations (reset, diff, axiom checks) as plain
+commands without stopping first. That follows the guard's remedy, the
+procedure the author approved, but not the letter of the brief, which
+said to stop on any denial.

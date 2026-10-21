@@ -255,7 +255,10 @@ halves of `d3bComplete` (B2g).
 
 Every other premise is `d3bComplete`'s, unchanged: `FreshLabels`
 (its label half, verbatim), `WithinC`, `GenericInst`. `Injective j` is
-more than the argument uses (injective on `basesOf P` would do).
+more than the argument uses. The proof as written uses only that no
+other base maps onto `j b` for a written `b`; injectivity on
+`basesOf P` would suffice with a back map that prefers written
+preimages (corrected 2026-10-21, dossier §18.42).
 
 Argument (route only). Realize `θs` over `B₁`: problem base `inl b ↦
 j b`, constant `inr c ↦ e c`, cell label `inr S ↦ z S`, as `dn` does.
