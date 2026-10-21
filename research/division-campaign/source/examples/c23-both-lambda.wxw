@@ -1,0 +1,8 @@
+fn main(): Int = {
+  let both = fn(q) => {
+    let first = { ...q, a: 1 };
+    let second = { ...q, a: true };
+    0
+  };
+  both({ name: "Ada" })
+};

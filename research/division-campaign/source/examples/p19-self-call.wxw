@@ -1,0 +1,3 @@
+fn both(x: { ...u }): { ...u, ...v } = both(x);
+
+fn main(): Int = 0;

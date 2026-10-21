@@ -1,0 +1,4 @@
+fn older(p: { age: Int, ...r }): { age: Int, ...r } =
+  p { age = p.age + 1 };
+
+fn main(): Int = older({ age: 36, name: "Ada" }).age;

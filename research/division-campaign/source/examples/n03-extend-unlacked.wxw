@@ -1,0 +1,3 @@
+fn tag(p: { ...r }): Bool = { ...p, reviewed: true }.reviewed;
+
+fn main(): Int = 0;

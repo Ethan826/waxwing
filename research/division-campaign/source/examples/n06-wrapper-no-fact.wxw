@@ -1,0 +1,5 @@
+fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = 0;
+
+fn w(a: { ...u }, b: { ...v }): Int = g(a, b);
+
+fn main(): Int = 0;

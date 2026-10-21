@@ -1,0 +1,6 @@
+fn c(p: { ...r, ...s }): Int = {
+  let f = fn(q: { ...r, ...s }) => 0;
+  0
+};
+
+fn main(): Int = 0;

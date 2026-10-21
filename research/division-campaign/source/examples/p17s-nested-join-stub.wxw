@@ -1,0 +1,9 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  join(a, b);
+
+fn nest(x: { box: { ...r } }, y: { ...s }): { box: { ...r, ...s } }
+  where r disjoint s =
+  { box: join(x.box, y) };
+
+fn main(): Int = 0;

@@ -1,0 +1,12 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  { ...a, ...b };
+
+fn forwarded(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  join(a, b);
+
+fn main(): Text = {
+  let p = forwarded({ name: "Ada" }, { age: 36 });
+  p.name
+};

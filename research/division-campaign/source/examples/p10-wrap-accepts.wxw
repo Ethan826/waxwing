@@ -1,0 +1,7 @@
+fn acceptsParts(p: { ...a, ...b }): Bool
+  where b lacks { admin } =
+  true;
+
+fn wrapAccepts(x: { ...r }): Bool = acceptsParts(x);
+
+fn main(): Int = 0;

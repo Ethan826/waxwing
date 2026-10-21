@@ -1,0 +1,5 @@
+fn g(p: { box: { ...u }, ...v }): Int = 0;
+
+fn f(x: { ...r }): Int = g(x);
+
+fn main(): Int = 0;

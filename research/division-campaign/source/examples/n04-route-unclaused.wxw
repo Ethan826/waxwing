@@ -1,0 +1,8 @@
+fn divide(whole: { ...u, ...v }, left: { ...s }, right: { ...t }): Int
+  where u disjoint s, v disjoint t =
+  0;
+
+fn route(x: { ...r }, y: { ...s }, z: { ...t }): Int =
+  divide(x, y, z);
+
+fn main(): Int = 0;

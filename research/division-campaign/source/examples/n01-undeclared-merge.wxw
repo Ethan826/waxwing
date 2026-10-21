@@ -1,0 +1,6 @@
+fn bad(a: { ...r }, b: { ...s }): Int = {
+  let m = { ...a, ...b };
+  0
+};
+
+fn main(): Int = 0;

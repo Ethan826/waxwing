@@ -1,0 +1,3 @@
+fn retype(p: { a: Int, ...r }): { a: Bool, ...r } = p;
+
+fn main(): Int = 0;

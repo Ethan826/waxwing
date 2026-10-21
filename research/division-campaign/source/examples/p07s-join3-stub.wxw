@@ -1,0 +1,9 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  join(a, b);
+
+fn join3(a: { ...r }, b: { ...s }, c: { ...t }): { ...r, ...s, ...t }
+  where r disjoint s, s disjoint t, r disjoint t =
+  join(join(a, b), c);
+
+fn main(): Int = 0;

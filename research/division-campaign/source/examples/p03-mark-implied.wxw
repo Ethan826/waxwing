@@ -1,0 +1,7 @@
+fn mark(p: { ...r }): { reviewed: Bool, ...r } =
+  { ...p, reviewed: true };
+
+fn main(): Text = {
+  let marked = mark({ name: "Ada", age: 36 });
+  marked.name
+};

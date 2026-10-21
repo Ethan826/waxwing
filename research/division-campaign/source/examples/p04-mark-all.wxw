@@ -1,0 +1,9 @@
+fn mark(p: { ...r }): { reviewed: Bool, ...r }
+  where r lacks { reviewed } =
+  { ...p, reviewed: true };
+
+fn markAll(p: { ...r }): { reviewed: Bool, ...r }
+  where r lacks { reviewed } =
+  mark(p);
+
+fn main(): Text = markAll({ name: "Ada" }).name;
