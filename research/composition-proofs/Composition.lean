@@ -37,3 +37,10 @@ import Composition.Sig.Interp
 import Composition.Sig.Commute
 import Composition.Sig.FinitePres
 import Composition.Sig.Soundness
+import Composition.Sig.Syntactic
+import Composition.Sig.Check
+import Composition.Sig.WellFormed
+import Composition.Sig.Decide
+import Composition.Sig.Patterns
+import Composition.Sig.CheckData
+import Composition.Sig.CheckExamples

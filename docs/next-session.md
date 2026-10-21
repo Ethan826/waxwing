@@ -1,3 +1,20 @@
+# Waxwing / record composition foundation: verified certificate checker (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). P9s
+soundness accepted; the certificate checker (K1-K6) proved, for review.
+No compiler code changed. Task 7 stays checkpointed
+(`r005b-task7-wip`).
+
+**Read.** Dossier §15.7-15.8; research/composition-proofs/README.md
+(Sig/ rows); sig-oracle/README.md (export-lean.mjs).
+
+**Next, needs the author:** review of the checker milestone. Open as
+separate decisions: K7, certificate search, completeness, Unresolved
+policy, source-to-constraint translation, compiler integration. Not
+authorized: adopting P9s, compiler changes.
+
+---
+
 # Waxwing / record composition foundation: certificate checker statements (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). P9s

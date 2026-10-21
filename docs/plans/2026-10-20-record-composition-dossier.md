@@ -1283,9 +1283,11 @@ S1-fin, with two clarifications, and decided the four points of §14.7:
   are finite at every depth. No earlier statement changed meaning.
 - **Files.** Generic model, interpretation and soundness separate;
   finite values in their own modules.
-- **D's satisfiability** stays separate: `Accepts ⇒ ValidAll` holds
-  vacuously when `D` is impossible, and Waxwing refuses such a
-  declaration (§2.3).
+- **D's satisfiability** stays separate: when `D` is impossible,
+  `ValidAll` and `ValidFin` hold vacuously, but `Accepts` (and
+  `checkAll`, §15) need not accept, since pattern consistency ignores
+  equations and `ff` (wording corrected in the author's review of §15).
+  Waxwing refuses such a declaration separately (§2.3).
 
 **A change found during formalization, for review.** The proofs need
 less than §14.2 states, and they assume only what they need:
@@ -1467,7 +1469,7 @@ Not stated for this milestone, so that the gap is explicit:
 | order-insensitive equality | two lists in different orders denote one row | `{a, b}` against `{b, a}`; nested records in different orders | K2 |
 | unbound variables denote the empty record | for soundness nothing is needed: K4 is a claim about `⟦Ĉ⟧`, which binds them to `{}` (whether this loses certificates is K7's congruence question) | a certificate omitting a variable `B` uses: `checkAtom` must evaluate it as `{}`, not fail open | K3 |
 | patterns only over `rigidRow × written P` | `genAssign` reads nothing else | an unscoped `D` naming a non-rigid row in `lacks`: `π_p` is false there, which consistency allows | K5 |
-| `D`'s satisfiability not checked | soundness holds vacuously when `D` is impossible; Waxwing refuses such declarations separately (§2.3) | with only `lacks` and `disjoint`, `D` is always satisfiable (all rigid rows empty); an impossible `D` needs `ff` or an equation | outside the checker, as approved |
+| `D`'s satisfiability not checked | when `D` is impossible, `ValidAll` and `ValidFin` hold vacuously, while `Accepts` and `checkAll` need not accept; Waxwing refuses such declarations separately (§2.3) | with only `lacks` and `disjoint`, `D` is always satisfiable (all rigid rows empty); an impossible `D` needs `ff` or an equation | outside the checker, as approved |
 | decidable base types | equality of `B` is compared | none in the semantics; a cost on the type `B` | assumption |
 
 ### 15.5 Proposed evidence besides the proofs
@@ -1504,3 +1506,78 @@ off, and both clauses of `Consistent` are antitone), K6 from `s1` and
 noted: `Consistent` ignores `eq` and `ff` atoms in `D`, so even
 `D = [ff]` demands a certificate per pattern; `Accepts` is never
 vacuously true.
+
+### 15.7 Approval and the three details
+
+The author's review (2026-10-20) approved K1-K6 and the file plan, kept
+K7 out (its absence limits representation completeness, not the
+guarantee for certificates that pass, and K7 would not make P9s
+complete), and accepted `DecidableEq B` and an instance for `Const`
+derived from its constructors (no axiom). Three details made explicit:
+
+- **Duplicate variable bindings**: read at the first occurrence
+  (`List.lookup`), in the denotation (`denCert`) and in the evaluator
+  (`tyS`, `rowS`) alike; K3 proves the two agree.
+- **Certificate tables**: a list of pattern and certificate entries
+  (`CertTable`). `lookupCert` finds the first entry holding the same
+  set of pairs (`samePattern`, so order and repetition in a pattern do
+  not matter); a missing pattern gets the empty certificate.
+- **Duplicates belong only to the representation.** A list may repeat a
+  label; it denotes its first occurrence. A composition whose parts
+  share a label is still undefined (`composeS`), so Waxwing's rule that
+  overlapping spreads are rejected is unchanged. Tested both ways
+  (`dupList`, `overlap`).
+
+### 15.8 The proofs (Lean) and the evidence
+
+Proved (research/composition-proofs/Composition/Sig/; clean build, no
+warnings, no `sorry`):
+
+| Statement | Lean | File |
+|---|---|---|
+| `SG`, `den`, `Cert`, `denCert` | definitions | Syntactic.lean |
+| K1 | `fin_denCert` | Syntactic.lean |
+| evaluator, K3 | `evalS`, `evalT_den` (`evalT` is `evalS` mapped by `den`, defined or not) | Check.lean |
+| K2, equality | `eqS_iff` | Decide.lean |
+| K2, well-formedness | `wfS_iff`, `declaredS_iff`, `restsOkS_iff` | WellFormed.lean |
+| K4 | `checkAtom_sound`, `checkCert_sound` | Decide.lean |
+| K2, consistency | `consistentS_iff` | Patterns.lean |
+| K5 | `pattern_cover` | Patterns.lean |
+| K6 | `checkAll_accepts`, `checkAll_validAll`, `checkAll_validFin` | Patterns.lean |
+
+`Check.lean` of the approved plan is split in three (Check, WellFormed,
+Decide) to keep files under the 250-line limit. `checkAll` itself
+depends on `propext` and `Quot.sound` only: it is computable, and
+`#guard` runs it. The theorems about it use `Classical.choice` through
+§14's classical semantics.
+
+**Evidence** (Sig/CheckExamples.lean, `#guard`, evaluated, not
+kernel-checked):
+
+- **Oracle certificates.** sig-oracle/export-lean.mjs writes
+  Sig/CheckData.lean (generated): the 49 problems P9s's untrusted search
+  accepts among the challenges, the five deliberate certificates and
+  100 generated problems, with one certificate per consistent pattern.
+  All 49 pass `checkAll`, so by `checkAll_validFin` each signature is
+  valid in Waxwing's finite semantics.
+- **Representation boundaries**, each with a passing control: an
+  omitted needed binding fails; an omitted unneeded one does not; a
+  missing table entry fails; shadowed duplicate bindings and entries
+  pass when the first is right and fail when it is wrong; reordered
+  fields in a nested record pass; a wrong field type fails; the same
+  certificate fails once `D`'s clause is removed (D2).
+- **Duplicates against overlap**: a list `[a: Int, a: Int]` is one
+  field and passes (`dupList`); a composition `{ ...u, ...r }` with both
+  holding `a` is refused (`overlap`, and `evalS` returns none).
+- **A gap the checker caught in a hand-written example**: `nested` first
+  omitted `r lacks b`, so the pattern where `r` holds `b` had no
+  certificate and `checkAll` refused it. It is kept as a test.
+- **Mutant** (isolated copy, deleted): dropping D2 from `checkAtom`
+  breaks K4's proof; with that proof stubbed out, the broken-certificate
+  `#guard` fails too.
+
+**Still open, as separate decisions:** K7, certificate search beyond
+the oracle (which stays untrusted), completeness, the policy for
+Unresolved signatures, source-to-constraint translation, compiler
+integration. This milestone gives a checked guarantee for supplied
+certificates; it adopts nothing.

@@ -7700,3 +7700,22 @@ assessment.md.
   certificates. K7 (no loss against `Accepts`) stated as unresolved,
   not proposed. Adversarial review: no false statement; six
   corrections applied. Nothing written in Lean; awaiting approval.
+
+## Signature checking: verified certificate checker (2026-10-20)
+
+- The author approved K1-K6 and the file plan, kept K7 out, accepted the
+  `DecidableEq` assumptions, and asked for three details (duplicate
+  bindings, certificate tables, duplicates only in the representation)
+  and a wording fix (an impossible `D` makes `ValidAll`/`ValidFin`
+  vacuous, not `Accepts`). Dossier §15.7.
+- Lean (Sig/Syntactic, Check, WellFormed, Decide, Patterns): K1-K6
+  proved; `checkAll_validFin : checkAll P T = true → ValidFin P`.
+  `checkAll` computable (no `Classical.choice`). Clean build, no
+  warnings, no `sorry`.
+- Evidence: sig-oracle/export-lean.mjs exports the untrusted search's
+  certificates (49 problems) to Sig/CheckData.lean (generated); all pass
+  `checkAll`. Boundary `#guard`s: omitted, shadowed and reordered
+  entries and bindings, missing table entries, broken certificates,
+  duplicates vs overlapping compositions. Mutant without D2 in
+  `checkAtom`: K4's proof breaks, and the broken-certificate `#guard`
+  fails. Verify not run (docs, research and proofs only).
