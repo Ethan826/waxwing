@@ -4008,3 +4008,24 @@ soundness track; (3) then compose the bridge with `d3bExistsWithin` for
 the general option-B characterization, as a composition of established
 results without W. The unused-premise observations stay documented; the
 approved statements stay unchanged until this tranche closes.
+
+**SC1-SC4 statements stream: a denied tool call (2026-10-21).** The
+agent stopped as briefed. Exact rejection, a worktree-isolation guard
+on a compound command (heredoc to the scratchpad, then `lake`): "This
+agent is isolated in the worktree … but this command is too complex to
+verify that it stays inside the worktree. Refusing to run it — a
+worktree-isolated agent's git operations must target its own worktree.
+Split it into plain, separate commands and run them from <its
+worktree>." Classified: an isolation guard whose own text prescribes the
+remedy, not a policy against the action. The coordinator authorized the
+route that satisfies it: scratch file inside the worktree, uncommitted
+and deleted before committing, plain separate commands; any further
+denial is reported verbatim. Draft findings so far (unreviewed): the
+JavaScript prototype's `allowed` mishandles `disjoint r r`, and its
+`nonEmpty` does not check that a cube-forced label is written (strategy
+B only); to be assessed against the recorded `star` verdicts. Answers
+given: no "definedness" constructor exists (definedness appears as
+`disjoint` atoms, the coordinator's brief wording); binding equations
+are retained by re-checking the original `P.B` under the untrusted
+certificate; statements primarily for strategy A (empty cube), B
+deferred.
