@@ -7830,3 +7830,12 @@ assessment.md.
   computable check) and `valid_iff_validCheck` (validity of a presence
   problem is decided by a computable check), each proved in a worktree
   and integrated. D1 holds for the presence fragment. §18.12.
+
+## Signature checking: parallel campaign after presence (2026-10-21)
+
+- The author accepted the presence milestone and §18.9's amendment
+  (qualifications in dossier §18.13) and authorized streams 1-7: D3b
+  construction, D3a attack, constructive presence witnesses, typed
+  oracle expansion, source-to-constraint specification, compilation and
+  split selection, integration reconnaissance. Production integration,
+  merging and publishing remain unauthorized. In flight.

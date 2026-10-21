@@ -2407,3 +2407,49 @@ holds (uniform complement-free term witnesses, existence only). Not
 established: any typed statement (D3a, D3b), a constructive witness
 procedure, D4. The presence fragment is exact for typed problems only
 with flat rows (§18.10).
+
+### 18.13 Acceptance of the presence milestone; the parallel campaign
+
+The author (2026-10-21) accepted the presence milestone and §18.9's
+grammar amendment within their stated scope. This closes the
+presence-only decision problem, not typed row division. Qualifications
+kept prominent:
+
+- **Flat presence only.** Nested typed equations need a separate
+  transfer argument; nothing here establishes D3a.
+- **Validity includes vacuity.** An impossible `D` makes the
+  implication valid; refusing unsatisfiable declarations is a separate
+  policy that needs its own check.
+- **Witness existence is not witness generation.** `validCheck` answers
+  validity; D2 gives no executable procedure for the terms.
+- **`Scoped` stays on the public result** (`valid_iff_validCheck`) even
+  where intermediate lemmas do not need it: the broader reading
+  evaluates flexible variables in hypotheses as empty, which is not the
+  intended declaration language.
+- The amended-grammar runs (§18.9) are exploratory evidence. Future
+  confirmation runs freeze their grammar beforehand.
+
+**Authorized, in parallel** (streams 1-7; the assurance stream 8 was
+not taken): (1) the D3b construction, statements first, then proof
+attempts after an independent adversarial review of its exact
+statements (soundness and completeness passes separately); (2) an
+attack on D3a, kept a separate conjecture; (3) a constructive presence
+witness procedure, proved in Lean; (4) typed oracle expansion under a
+frozen grammar; (5) a source-to-constraint specification for the
+intended record fragment; (6) compilation and split selection; (7)
+read-only integration reconnaissance. D4 may be drafted as a candidate
+design, with an isolated prototype separating proved components from
+assumptions. Not authorized: production compiler integration, merging,
+publishing.
+
+Rules: preserve the semantic definitions and intended source behavior;
+one owner (this session) coordinates shared definitions, integrates,
+and alone edits this dossier, progress, handoff and backlog; streams own
+separate files. A proved candidate establishes its formal statement,
+not its adoption as design. Changed assumptions, narrower fragments,
+altered source behavior and unresolved ambiguity are reported, never
+used silently to obtain a proof. Unsuccessful constructions and
+minimized counterexamples stay in the record. No added axioms, no
+accepted proof placeholders. Shared models: the typed streams use
+`Composition/Sig` (`SigProblem`, §13.1) and `Composition/Presence`; no
+stream builds a second formalization of the same thing.
