@@ -4,7 +4,7 @@ Axiom dependencies of every headline theorem. Run:
 -/
 import Composition.Programs
 import Composition.Sig.Adversarial
-import Composition.Sig.Soundness
+import Composition.Sig.Patterns
 
 open Composition Composition.Programs Composition.Syntax
 
@@ -89,3 +89,14 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms holds_interp
 #print axioms s1
 #print axioms s1_fin
+#print axioms fin_denCert
+#print axioms evalT_den
+#print axioms eqS_iff
+#print axioms wfS_iff
+#print axioms consistentS_iff
+#print axioms checkCert_sound
+#print axioms pattern_cover
+#print axioms checkAll_accepts
+#print axioms checkAll_validAll
+#print axioms checkAll_validFin
+#print axioms checkAll

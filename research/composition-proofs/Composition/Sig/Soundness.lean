@@ -4,8 +4,9 @@ assignment satisfying `D` has a consistent pattern. L4: each generic atom
 of a certificate holds under `h`. S1: acceptance implies `ValidAll`;
 S1-fin: acceptance implies `ValidFin`, Waxwing's finite semantics, with
 the empty record as `c`. Acceptance does not check that `D` is
-satisfiable: a declaration with impossible clauses is valid vacuously,
-and refused separately (§2.3).
+satisfiable: with impossible clauses `ValidAll` and `ValidFin` hold
+vacuously (`Accepts` need not), and Waxwing refuses such a declaration
+separately (§2.3).
 -/
 import Composition.Sig.FinitePres
 
