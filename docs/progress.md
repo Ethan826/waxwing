@@ -7843,3 +7843,8 @@ assessment.md.
   soundness and completeness (`witness_sound`, `witness_complete`,
   `valid_iff_witness`). Dossier §18.14. The author accepted it as the
   executable presence baseline; the caller checks patterns against `D`.
+- Streams 6 and 7 integrated (dossier §18.15, §18.16): split choice is
+  not observable at run time in the current fragment (derived) but is
+  at compile time (checked); integration would start with a recorder
+  for `B`. Probes found `route` refused by a false contradiction and the
+  branch tip not building (BACKLOG).
