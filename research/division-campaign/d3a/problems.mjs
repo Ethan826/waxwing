@@ -87,6 +87,25 @@ const nestedTy = { ...SECOND, tyValues: ['Int', '{f:{}}', '{f:{z1:Int}}',
   '{f:{z1:Int,z2:Int}}', '{f:{z2:{q:Int}}}'] }
 const recTy = { ...SECOND, tyValues: ['Int', '{}', '{z1:Int}',
   '{z1:Int,z2:{q:Int}}', '(Int->Int)'] }
+// Explicit G-W templates for R2 (checked for membership in G-W, then
+// instantiated by the search with these as the only shapes).
+const T0 = { k: 'T', n: 0 }
+const IntG = { k: 'g', g: 'Int' }
+const arr = (a, c) => ({ k: 'arr', a, c })
+const sq = (a) => arr(a, a)
+const row = (fields) => ({ k: 'rec', tails: true, fields })
+const GW_TEMPLATES = {
+  'depth-row': { rows: [row({ f: sq(sq(T0)) })], tys: [sq(T0)] },
+  'depth-ty': { rows: [], tys: [sq(sq(sq(T0))), sq(sq(T0)), sq(T0)] },
+  'tail-written': { rows: [row({ g: sq(IntG) })], tys: [row({ g: sq(IntG) })] },
+}
+
+// Amendment after a run (attack.md (b), R5): with rigid fields `Int` and
+// `{q:Int}` no rigid assignment satisfies the tie problems' `D` (a
+// field must be the record of another rigid row over z1, z2), so the
+// frozen bounds were vacuous for them. Rerun with record fields.
+const tieBounds = { ...SECOND, rigidRowTypes: ['Int', '{}', '{z1:Int}'] }
+
 const copy = (pairs) => (rigid) => new Map(pairs.map(([k, from]) =>
   [k, rigid.get(from)]))
 
@@ -109,6 +128,8 @@ export const PROBLEMS = [
     } },
   { run: 'R2', name: 'tail-written', P: tailWritten, bounds: SECOND,
     expect: ['valid', 'none'], witness: tailWitness },
+  ...Object.entries(GW_TEMPLATES).map(([name, gw]) => ({ run: 'R2W', name,
+    gw })),
   { run: 'R3', name: 'pigeonhole', P: pigeonhole, bounds: FIRST,
     expect: ['valid', 'none'] },
   { run: 'R3', name: 'pigeonhole-3types', P: pigeonhole,
@@ -121,6 +142,15 @@ export const PROBLEMS = [
     [eq(tails(0), rec([['f', tails(1)]], [2]))],
     [eq(tails(0), rec([['f', tails(3)]], [4]))]),
   bounds: SECOND, expect: ['valid', 'found'],
+  witness: copy([['r3', 'r1'], ['r4', 'r2']]) },
+  { run: 'R5a', name: 'tie-decomposed-a', P: sig([0, 1], [], [2], [],
+    [eq(tails(0), one('f', tails(1)))], [eq(one('f', tails(2)), tails(0))]),
+  bounds: tieBounds, expect: ['valid', 'found'],
+  witness: copy([['r2', 'r1']]) },
+  { run: 'R5a', name: 'tie-two-level-a', P: sig([0, 1, 2], [], [3, 4], [],
+    [eq(tails(0), rec([['f', tails(1)]], [2]))],
+    [eq(tails(0), rec([['f', tails(3)]], [4]))]),
+  bounds: tieBounds, expect: ['valid', 'found'],
   witness: copy([['r3', 'r1'], ['r4', 'r2']]) },
   { run: 'R5', name: 'tie-nested-division', P: sig([0, 1, 2], [0], [3, 4], [],
     [eq(v(0), one('f', tails(0))), dis(1, 2)],
