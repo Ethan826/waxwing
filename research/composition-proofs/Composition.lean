@@ -104,4 +104,11 @@ import Composition.Typed.Bridge.Complete
 import Composition.Typed.Bridge.Sound
 import Composition.Typed.Bridge.Examples
 import Composition.Typed.Bridge.ProofComplete
+import Composition.Typed.Bridge.ProofExtension
+import Composition.Typed.Bridge.ProofSat
+import Composition.Typed.Bridge.ProofSupport
+import Composition.Typed.Bridge.ProofSubstFacts
+import Composition.Typed.Bridge.ProofValid
+import Composition.Typed.Bridge.ProofExamples
+import Composition.Typed.Bridge.ProofExamplesFresh
 import Composition.TypedAttack.ShapeSplit
