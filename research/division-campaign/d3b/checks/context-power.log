@@ -1,0 +1,6 @@
+command: ['node', '--max-old-space-size=2048', 'checks/context-power.mjs']
+wall limit: 30s
+normal coverage: PASS
+contextFree detected: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+exit: 0
+elapsed: 0.04s
