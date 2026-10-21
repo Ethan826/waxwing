@@ -3831,3 +3831,30 @@ now or after a ported program shows pattern-dependent witnesses;
 investigate C as new machinery; a numeric target for "useful scale";
 measure a sparse version of A's check now; a larger oracle budget for
 `star-read` n = 3.
+
+### 18.38 B2n joins the tranche; F6 to be closed (2026-10-21)
+
+The author checked B2n's statement and included it **as a corollary of
+B2** in the first proof tranche. Its practical meaning: for this
+particular generic instance, finitely many fresh opaque types suffice
+for the completeness argument, which removes the need to realize
+infinitely many generic constants at once. It does not establish a
+minimal bound, an efficient algorithm, or option-B validity by itself.
+Conditions: derive B2n from B2 by an explicit allocation into
+`B ⊕ Fin n`; preserve every stated premise; cover the empty case
+(`U = []`, `n = 1`), repeated constants in `U`, and a problem with
+several written bases; `U.length < n` is a sufficient allocation bound,
+not a claimed optimal one.
+
+**F6 (§18.36) is to be closed now:** the reviewer's concrete θ* checks
+for `route`, `agree` and `splitFree` go into a maintained example file
+and the axiom audit, as theorem-level checks about the classical
+construction (θ* is chosen classically), not as execution of a computed
+construction.
+
+The independent review materially strengthens the existence milestone:
+general existence is supported by kernel checking and by a separate
+review of the definitions and proof argument. **The next substantive
+question is whether the bridge establishes the intended option-B
+guarantees.** Not authorized by adding B2n: trimming machinery, language
+changes, compiler integration.
