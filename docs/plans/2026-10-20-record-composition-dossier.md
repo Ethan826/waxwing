@@ -3348,3 +3348,79 @@ type universe. Boundaries:
    compressed certificate covers every required case, reported
    separately; compared with exhaustive enumeration where feasible, with
    larger cases where that comparison cannot finish disclosed.
+
+### 18.30 The generic type universe: decision memo (2026-10-21)
+
+research/division-campaign/universe/decision-memo.md (for the author;
+no interpretation selected). Coordinator spot-check: the cited theorems
+(`validity_not_extension_stable`, `general_family_valid`,
+`general_family_no_uniform`) exist; ADR 007's condition 4 reads as cited.
+Prior art is cited from memory without section or page checks; the
+memo labels its own readings of sources.
+
+**The distinction, examined (§18.29 item 3).** `Fresh` needs an
+unbounded supply of opaque bases the problem can neither name nor
+decompose. Of the three kinds of freshness: skolems introduced during
+checking give soundness for any base set (`transfer`, `d3bSound`) and
+completeness only if the semantics already contains such atoms
+(`shape-split`); nominal types from modules supply atoms only if
+validity is *defined* to quantify over extensions, and then finitely
+many at a time, while `Fresh` asks for infinitely many (a gap closable
+on the proof side); infinitely many constructed types supply nothing,
+being decomposable (proved for arrows and records,
+`general_family_valid`, `general_family_no_uniform`; conjectured for
+data types, handlers and effect arrows). The memo restates the question
+on two axes: **X**, what a rigid type variable ranges over (closed
+finite set of heads, or a range including opaque atoms); **Y**, checking
+once per signature or per program/instantiation.
+
+**Options.** (A) closed heads, per whole program (`ValidFin` at the
+program's bases); (A-unit) per compilation unit, unsound for later
+clients without rechecking; (I) per instantiation after
+monomorphization (unused functions vacuously accepted); (B) atom-rich,
+per signature (proposed `ValidOpen`, valid over every injective
+extension of the bases, and `ValidAtoms`, one fixed atom supply; not in
+Lean); (C) (B) plus explicit C001 evidence for any head-dependent split.
+(B) implies (A) (derived); (A) does not imply (B)
+(`validity_not_extension_stable`); `ValidAtoms ↔ ValidOpen`
+conjectured.
+
+**Effect on results.** Presence, P9s soundness, `decideCall_correct`,
+`transfer`, `d3bSound`, `d3bEqFree`, `d3bFlat`, `instanceIffUnifiable`
+hold under every option. Under (A), `d3bComplete` is vacuous and D3a/D3b
+completeness false. Under (B), D3b completeness stays open (needs
+`D3bExists`, the `ValidAtoms ↔ ValidOpen` bridge or a weaker `Fresh`,
+and a call-site encoding of θ*); D3a over infinitely many atoms
+conjectured; the template grammar's depth gaps remain either way.
+
+**Effect on the language (derived from the model; no source program
+yet shown to flip).** Under (A), adding a type anywhere (a module, an
+abstract type, an FFI host type) can change whether an existing generic
+function is accepted; an abstract type's hidden representation can
+affect validity; ADR 007's hole-representative argument (condition 4)
+is undermined.
+
+**Proof-side options**, alongside language ones: P-1, weaken `Fresh` to
+the constants θ* uses; P-2, a completeness theorem with head case splits
+for (A); P-3, state completeness for one semantics and document the
+other as a boundary.
+
+**The memo's recommendation (its own, not adopted):** (B), with (C) as
+the route to any head-dependent behavior later, and P-1 plus P-3;
+justified by language goals (signature stability, libraries checked
+once, opaque variables, coverage without a complete head set, checking
+unused functions, inference and diagnostics depending on the function
+alone, prior art), with `d3bComplete`'s applicability a consequence, not
+a reason. Risks: (B) rejects (A)-valid idioms such as `shape-split`; its
+diagnostics would name a hypothetical type; its completeness still
+depends on open obligations.
+
+Questions for the author (memo §"Questions"): X1 or X2 in the definition
+of validity; whether acceptance must depend only on signature and body;
+whether checking unused functions stands (rules out (I)); whether M001
+abstract and I001 host types are opaque to generic code; head-dependent
+placement by explicit C001 evidence or implicit case analysis; proof
+route P-1, P-2 or P-3; whether data types, effect arrows and handlers
+must be modelled before any typed completeness claim; whether a
+counter-instance may name a hypothetical type; an atom base in the
+oracle before further D3a/D3b runs.
