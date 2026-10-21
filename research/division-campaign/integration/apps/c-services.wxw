@@ -1,0 +1,62 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+    where r disjoint s =
+  { ...a, ...b };
+
+fn withDb(env: { ...r }, url: Text): { db: { url: Text, pool: Int }, ...r }
+    where r lacks { db } =
+  { ...env, db: { url: url, pool: 4 } };
+
+fn withLog(env: { ...r }, level: Int): { log: { level: Int }, ...r }
+    where r lacks { log } =
+  { ...env, log: { level: level } };
+
+fn withClock(env: { ...r }, at: Int): { clock: { at: Int }, ...r }
+    where r lacks { clock } =
+  { ...env, clock: { at: at } };
+
+fn withCache(env: { ...r }, size: Int):
+    { cache: { size: Int, hits: Int }, ...r }
+    where r lacks { cache } =
+  { ...env, cache: { size: size, hits: 0 } };
+
+fn dbUrl(env: { db: { url: Text, ...d }, ...r }): Text = env.db.url;
+
+fn logLevel(env: { log: { level: Int, ...l }, ...r }): Int = env.log.level;
+
+fn now(env: { clock: { at: Int, ...k }, ...r }): Int = env.clock.at;
+
+fn assemble(config: { name: Text, port: Int, ...c }, plugins: { ...p }): {
+    db: { url: Text, pool: Int },
+    log: { level: Int },
+    clock: { at: Int },
+    cache: { size: Int, hits: Int },
+    name: Text,
+    port: Int,
+    ...c,
+    ...p
+  }
+    where c disjoint p, c lacks { db, log, clock, cache },
+      p lacks { db, log, clock, cache, name, port } = {
+  let base = join(config, plugins);
+  let withData = withDb(base, "pg://local");
+  let logged = withLog(withData, 2);
+  let timed = withClock(logged, 0);
+  let cached = withCache(timed, 64);
+  let health = {
+    db: dbUrl(cached),
+    level: logLevel(cached),
+    port: cached.port,
+    started: now(cached),
+    up: true
+  };
+  let routes = { users: "/users", orders: "/orders", status: "/health" };
+  cached
+};
+
+fn start(): Int = {
+  let app = assemble({ name: "shop", port: 80, debug: false },
+    { metrics: true, tracing: 1 });
+  logLevel(app) + now(app) + app.port
+};
+
+fn main(): Unit with Console = Console.print(start());

@@ -1,0 +1,74 @@
+fn withTrace(req: { ...r }, id: Int): { traceId: Int, ...r }
+    where r lacks { traceId } =
+  { ...req, traceId: id };
+
+fn accepted(h: { accept: Text, ...r }): Text = h.accept;
+
+fn withoutAuth(h: { auth: Text, ...r }): { ...r } = h without { auth };
+
+fn stamped(x: { ...r }, at: Int): { at: Int, ...r }
+    where r lacks { at } =
+  { ...x, at: at };
+
+fn withStatus(resp: { status: Int, ...r }, code: Int): { status: Int, ...r } =
+  resp { status = code };
+
+fn bump(c: { hits: Int, ...r }): { hits: Int, ...r } = c { hits = c.hits + 1 };
+
+fn ownerOf(u: { name: Text, ...r }): Text = u.name;
+
+fn serve(
+  req: { path: Text, method: Text, headers: { auth: Text, accept: Text, ...h },
+    ...r },
+  env: { region: Text, ...e },
+  cache: { hits: Int, misses: Int, ...c }
+): { status: Int, body: Text, trace: Int, region: Text, hits: Int }
+    where r lacks { traceId }, e lacks { at } = {
+  let traced = withTrace(req, 7);
+  let clean = withoutAuth(req.headers);
+  let kind = accepted(clean);
+  let started = stamped(env, 100);
+  let user = { name: "anon", roles: 0, session: 1 };
+  let promoted = { ...user, admin: false };
+  let owner = ownerOf(promoted);
+  let meta = { region: env.region, kind: kind, at: started.at };
+  let draft = { status: 200, body: "ok", length: 2, contentType: kind };
+  let sent = withStatus(draft, 201);
+  let counted = bump(cache);
+  let audit = {
+    path: req.path,
+    method: req.method,
+    status: sent.status,
+    trace: traced.traceId,
+    owner: owner
+  };
+  let quota = { limit: 100, used: counted.hits, window: 60 };
+  let retry = { after: quota.window, attempts: 3, backoff: 2 };
+  let link = { href: req.path, rel: "self", hits: counted.misses };
+  let summary = {
+    audit: audit,
+    quota: quota,
+    retry: retry,
+    link: link,
+    meta: meta
+  };
+  {
+    status: summary.audit.status,
+    body: sent.body,
+    trace: traced.traceId,
+    region: summary.meta.region,
+    hits: counted.hits
+  }
+};
+
+fn main(): Unit with Console = {
+  let request = {
+    path: "/users",
+    method: "GET",
+    headers: { auth: "token", accept: "json", lang: "en" },
+    id: 4
+  };
+  let reply = serve(request, { region: "eu", zone: 2 },
+    { hits: 0, misses: 0, size: 10 });
+  Console.print(reply)
+};
