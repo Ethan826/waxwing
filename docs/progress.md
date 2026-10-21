@@ -7886,3 +7886,10 @@ assessment.md.
   when they determine the split; caller-side requirements are check-time
   constraints on instantiated types; C narrowed; the `peek` claim
   withdrawn; E2′ restricted. Next: one reconciled recorder specification.
+- Build repair (the author's exception, §18.17): `SeveralTails.purs`
+  restored (2d175e3); three regression rows moved to the files the
+  fa57f41 and 0a36ae3 splits created (0f9e05b). Verify under load 11-52:
+  gates pass, parallel 2366/2366, serial 57/59 (fn-linear-timing `over`,
+  `partialFirst`: T003/T007), regression 176/176 (run separately after
+  verify stopped). A quiet-machine verify is still owed. Evidence:
+  .build/evidence/r005b-build-repair-*.log.
