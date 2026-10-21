@@ -23,3 +23,12 @@ The full named and contextFree runs each timed out at 180 seconds after
 42 completed cases. Their saved prefixes are partial evidence only.
 Next full run: profile the next case after `forwarded`, preserve all
 current bounds, and allocate an explicit larger wall budget if justified.
+
+## Diagnostic runner exit status does not assert the verdicts
+
+Independent review found run.mjs exits zero even when it displays a
+verdict mismatch or invariant failure. The retained reports inspect
+actual output and disclose the record-constant mismatch; process exit
+zero must not be cited as a passing suite. Next action: separate the
+exploratory report mode from an explicit assertion mode, with a planted
+mismatch proving the assertion mode fails. No such mode is added here.

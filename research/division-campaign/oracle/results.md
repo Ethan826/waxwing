@@ -14,8 +14,7 @@ the named problem list is
 Generated list hash, seed 5:
 `055f87cfbb5e4c886fe2ce53566244fa1cf154fbd6fe2d3b04fc2ad3d8ab60cb`
 Seed 13:
-`45b251e7b004ad93ed724cd96c2c2d0295ced1f5250df10243648bb7c1310365`
-for seed 13.
+`45b251e7b004ad93ed724cd96c2c2d0295ced1f5250df10243648bb7c1310365`.
 
 | Set | Results | Timing |
 |---|---|---|

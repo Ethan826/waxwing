@@ -21,6 +21,28 @@ two spreads go through the `wxJoin` surrogate (§1.3), marked `(j)`. That
 gives the same rigid rows and labels, but it says nothing about what
 literal spreads will cost once they are translated.
 
+## Correction after the slicing hunt (2026-10-21)
+
+Every `7b` column, A's `2^23` comparison and the related scaling claims
+inherit a cut that drops variable-free contradictions. They are not
+sound-checker speedups. The row-only cut (i) has separate counterexamples
+through shared type variables and nested rows. Whole-atom (ii) and
+residual (ii)σ remain proposals; no theorem or corrected cost measurement
+is established here.
+
+A residual checker must retain `eqs σ`, the rigid lists and declaration
+quantifiers. Connecting that residual to the original requires a
+substitution-soundness obligation; equivalence requires the stronger
+binding-preservation obligation. A concrete-instance substitution cannot
+stand for every permitted rigid assignment. A's `2^120` to `2^12`
+comparison illustrates the potential of already-ground field-read metas,
+without accounting for that full binding-preservation cost.
+
+`star` remains a required useful-scale benchmark, not an accepted language
+restriction. Measure search, certificate size and checking separately:
+large tables can relocate exponential work. Detailed affected entries
+and the proposed replacement obligations are in ../slicing/amendments.md.
+
 ## 0. In brief
 
 - **A (`serve`, request handling, mostly independent).** `|R| = 4`,
@@ -52,11 +74,11 @@ literal spreads will cost once they are translated.
   joins and extensions force it. In `star` the consistent count grows as
   n(n-1) and passes 2^30 at 7.
 - **Implication (§6).** Exhaustive checkAll over 2^(|R|·|L|) is not a
-  production procedure for application-shaped bodies. What scales on
-  these programs is a lemma-backed slicing (S1, S2), applied after the
-  certificate's substitution, together with an enumerator over
-  consistent patterns only (a new definition that needs its own lemma)
-  or a symbolic checker. Even with all three, `star` stays exponential.
+  production procedure for application-shaped bodies. Candidate
+  optimizations are a proved slicing after substitution with bindings
+  retained, declaration-consistent enumeration, or a symbolic checker.
+  The measurements do not establish their combined cost or preservation.
+  The measured `star` count stays exponential.
 
 ## 1. What was measured
 
@@ -488,10 +510,12 @@ once it carries more than 30/k labels.
   definition decides whether it does.** Over the recorded `B`, the
   slicing the author requires (ii) keeps A at 2^120, because type metas
   tie unrelated rows together. Over `B` after the certificate's
-  substitution it gives 2^12. A certificate checker sees the
-  substitution anyway (§18.20 item 2), so slicing `B[σ]` costs nothing
-  extra. The question is whether S1 holds there. The ground checks it
-  leaves (21 in A) are kept and checked once each.
+  substitution it gives 2^12. That count does not include the full
+  binding-preserving chain: a residual checker must keep `eqs σ`, the
+  rigid lists and declaration quantifiers. Those equations can reconnect
+  components. Separate substitution-soundness and equivalence obligations
+  connect the residual to the original. The 21 residual ground checks
+  in A are not evidence that the complete checking cost is preserved.
 - **Shared components need something other than slicing.** B, C, `chain`
   and `shared` are single components by construction, and slicing
   leaves them alone. Their consistent counts are small, often one

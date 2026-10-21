@@ -1,0 +1,12 @@
+'Composition.Presence.valid_iff_validCheck' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.witness_sound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.witness_complete' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.valid_iff_witness' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.general_family_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.TypedAttack.FiniteShapes.general_family_no_uniform' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Composition.TypedAttack.FiniteShapes.general_family_missing_base' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Composition.TypedAttack.validity_not_extension_stable' depends on axioms: [propext, Classical.choice, Quot.sound]

@@ -2739,6 +2739,15 @@ Fail payload families.
 
 ### 18.19 Campaign results: size measurements and a recorder interface (stream 7b)
 
+**Correction, 2026-10-21:** the later slicing hunt refuted the stream-7b
+cut's preservation: it drops variable-free contradictions. Its sliced
+counts, and application comparisons using that cut, remain historical
+operation sizes; their sound-checker cost interpretation is withdrawn.
+Residual counts need binding equations retained before claiming
+preservation. Exact affected entries: research/division-campaign/slicing/
+amendments.md. Unsliced counts are unaffected by this defect. No corrected
+slicing cost or useful-scale `star` result is claimed.
+
 research/division-campaign/integration/measurements.md,
 recorder-interface.md and measure/ (read-only; instruments a scratch copy
 of the compiler output; reproduced by the coordinator on the repaired
@@ -3093,6 +3102,15 @@ recorder implementation, any change to split policy.
 
 ### 18.25 Campaign results: application-shaped measurements (stream 9)
 
+**Correction, 2026-10-21:** the later slicing hunt refuted the stream-7b
+cut's preservation: it drops variable-free contradictions. Its sliced
+counts, and application comparisons using that cut, remain historical
+operation sizes; their sound-checker cost interpretation is withdrawn.
+Residual counts need binding equations retained before claiming
+preservation. Exact affected entries: research/division-campaign/slicing/
+amendments.md. Unsliced counts are unaffected by this defect. No corrected
+slicing cost or useful-scale `star` result is claimed.
+
 research/division-campaign/integration/app-measurements.md, apps/ (four
 synthetic programs, seven scaling families, hand checks asserted before
 output), and measure/ refactored (the stream 7b corpus output is
@@ -3241,3 +3259,63 @@ Richer type-dependent witnesses are a proposal, not an adopted feature.
 The presence proofs and D3b's sound transfer results are not refuted by this
 finite-base completeness obstruction. Production integration, D4 and the
 other paused streams remain under their existing approval boundaries.
+
+
+### 18.28 Codex campaign stopping point (2026-10-21)
+
+The author authorized takeover of the six paused streams, then requested
+a stopping point to preserve usage. All checkpoints and scoped completion
+commits are integrated locally on r005b-replan. No production compiler
+change, D4 adoption, policy change, merge or push occurred. Original
+Claude worktrees remain untouched.
+
+**Proof integration:** ShapeSplit is in the default build, split into
+two files without changing its existing public statements. The added
+`validity_not_extension_stable` proves the fixed problem finite-valid
+over Unit bases and invalid over Bool bases. It is a model boundary,
+not a full-Waxwing counterexample. D3b's transfer and conditional
+completeness results are checked; Fresh injects all CConst into the base
+universe. General existence and finite-base applicability remain open.
+The earlier semantic finite-base family still lacks its general
+SigProblem/source correspondence proof. See d3b/construction.md and
+finite-base-followup/README.md under research/division-campaign/.
+
+**Bounded evidence:** the typed oracle's retained frozen confirmation
+has 75 named and 240 generated cases, with its original hashes and
+bounds preserved. Recreated A/C cross-checks have 36/6 cases and no
+mismatches. M2 remains partial. D3a's R3a attempts both timed out at
+120 seconds without classification; R4a completed only ten diagnostic
+cases. D3b's full named/mutant runs timed out after 42 cases each;
+targeted checks preserve an unknown-versus-invalid record-constant
+mismatch in its local backlog. These are disclosed limits, not passing
+full campaigns. See oracle/results.md, d3a/attack.md and d3b/BACKLOG.md.
+
+**Slicing:** tightened statements retain binding equations, rigid lists
+and declaration quantifiers. They are Prop definitions, not new proofs.
+All 58 exported CP/C4 guards pass; the hunt has 20 named and 30 new
+generated problems, with zero-instance coverage reported separately.
+Independent review corrected a cost formula that ignored duplicate
+pairs. The measured 7b cut drops ground contradictions, so its sliced
+cost/speedup interpretation is withdrawn in §18.19, §18.25 and both
+measurement reports. Raw historical counts remain. Star still needs a
+useful-scale result. See slicing/amendments.md and validation.md.
+
+**Recorder and corrections:** the 60-row specification was audited,
+including 100 explicit source references. Its 36/10/14 inventory is
+not proved source coverage. The review corrected failed-state log
+promises: Either discards that state; a prefix-log interface is still
+an open question. Ground requirement scope, annotation evidence and the
+split model's comments are corrected. No recorder is implemented.
+Independent review found and checked those corrections, not completeness.
+
+**Verification:** quiet compiler verification completed before agents:
+2366/2366 parallel tests, 59/59 serial tests, 176/176 regression proofs.
+The integrated Lean library builds all 104 jobs without warnings;
+headline axiom reports contain only propext, Classical.choice and
+Quot.sound. Research artifacts remain separate from compiler verify.
+
+**Next:** settle the intended generic type universe before asserting
+typed completeness; review the proposed slicing/recorder obligations;
+then authorize any further proof, search or integration scope explicitly.
+No desired-feature failure in the full Waxwing universe is demonstrated,
+and no desired feature is removed by this checkpoint.

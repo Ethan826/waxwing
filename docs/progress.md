@@ -7989,3 +7989,28 @@ Three isolated agents then started: D3b checkpoint/proof integration,
 oracle/D3a bounded evidence, and slicing statements. No recursive agent
 spawning or production implementation is authorized. The parent retains
 central documentation and recorder/corrections audit ownership.
+
+### Codex campaign stop requested by author
+
+All three completion agents have finished. Integrated D3b f3fe0b6,
+slicing 4bd24a5 and oracle/D3a b07bcf0/2668f29/39991f5. Parent audit
+02ac74a records the successful quiet compiler verification and closes
+R005B-BUILD; existing timing-headroom work remains separate.
+
+Final integrated Lean build: 104 jobs, no errors/warnings. Baseline,
+D3b, split-irrelevance and presence/finite-base axiom reports use only
+standard axioms. Local logs: .build/codex-campaign-final-lean.log and
+.build/codex-campaign-*-axioms.log; retained headline audit:
+research/division-campaign/reviews/final-axioms.{lean,out}.
+
+Independent reviews found no new false proved statement. Corrected
+recorder negative-log test promises, type-directed-placement wording,
+slicing duplicate-enumeration cost and stale D3a citations. Earlier
+measured slicing is unsound as a preserving cut; its speedup claims
+are withdrawn, with raw historical numbers retained. Oracle timeouts
+and the record-constant mismatch remain explicit, not hidden by reruns.
+Dossier §18.28 and stream reports give the exact boundaries.
+
+The author requested stopping to preserve usage. No further searches,
+proof attempts or compiler work will run. No merge or push. Existing
+unrelated README/backlog/direction-plan edits remain untouched.

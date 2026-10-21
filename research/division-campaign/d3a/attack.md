@@ -60,8 +60,8 @@ say so.
   absent or a template from the level being filled from (`Temp_k` when
   building `Temp_{k+1}`), not only a leaf. G-W exists only to show that
   a G-A gap is a gap of depth or of tail-node fields and not of
-  uniformity. Implementation: d3a/widened.mjs (new; same search as
-  `findNested`, with the domains injected).
+  uniformity. Implementation: d3a/grammars.mjs and d3a/search.mjs
+  (`findNested`, with the domains injected).
 - **Grammar-independent check.** For the finite-base candidate (R1), the
   claim does not depend on any grammar: every typed template, in any
   grammar where a flexible row's presence at a written label is fixed
@@ -265,9 +265,10 @@ research/composition-proofs/Composition/TypedAttack/ShapeSplit.lean
 template language in which a flexible row's presence at a written label
 is chosen per pattern, which D3a's is. The step from "D3a template" to
 "presence fixed per pattern" is D3a's definition (§18.6), not a Lean
-definition; no template syntax is formalized. The file is not imported
-from `Composition.lean` (the owner integrates shared files); it builds
-with `lake build Composition.TypedAttack.ShapeSplit`.
+definition; no template syntax is formalized. The integrated default
+`Composition.lean` imports ShapeSplit, now split into ShapeSplitCore and
+ShapeSplit with the same public statements. The individual target also
+builds with `lake build Composition.TypedAttack.ShapeSplit`.
 
 ## (d) The positive direction
 
