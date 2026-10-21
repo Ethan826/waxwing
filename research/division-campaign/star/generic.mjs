@@ -103,14 +103,20 @@ export function holderSets(P, l) {
 // subset is allowed). Otherwise the factor is listed if it has at most
 // 20 candidates, and the count is null (not computed) beyond that.
 export function consistentCount(P, labels) {
-  const pairs = declaredPairs(P.D)
+  const rigid = new Set(P.rigidRows)
+  const lacksOf = new Map()
+  for (const a of P.D) {
+    if (a[0] !== 'lacks' || !rigid.has(a[1])) continue
+    if (!lacksOf.has(a[2])) lacksOf.set(a[2], new Set())
+    lacksOf.get(a[2]).add(a[1])
+  }
+  const apart = P.D.filter((a) => a[0] === 'disjoint' && a[1] !== a[2] &&
+    rigid.has(a[1]) && rigid.has(a[2]))
   let log2 = 0
   for (const l of labels) {
-    const lacking = new Set(P.D.filter((a) => a[0] === 'lacks' &&
-      a[2] === l).map((a) => a[1]))
+    const lacking = lacksOf.get(l) ?? new Set()
     const rows = P.rigidRows.filter((r) => !lacking.has(r))
-    const free = rows.every((r) => rows.every((s) =>
-      r === s || !pairs.has(`${r}|${s}`)))
+    const free = apart.every((a) => lacking.has(a[1]) || lacking.has(a[2]))
     if (free) log2 += rows.length
     else if (rows.length <= 20) log2 += Math.log2(holderSets(P, l).length)
     else return null

@@ -43,7 +43,7 @@ function evalT(ctx, t) {
   switch (t.k) {
     case 'b': return t
     case 'v':
-      if (ctx.P.rigidTys.includes(t.n)) return { k: 'b', b: `T${t.n}` }
+      if (ctx.rigidTys.has(t.n)) return { k: 'b', b: `T${t.n}` }
       return wf(ctx, ctx.cert.get(`t${t.n}`) ?? empty())
     case 'f': return { k: 'f', a: evalT(ctx, t.a), c: evalT(ctx, t.c) }
     case 'r': {
@@ -57,7 +57,7 @@ function evalT(ctx, t) {
 }
 
 function rowOf(ctx, r) {
-  if (ctx.P.rigidRows.includes(r)) {
+  if (ctx.rigid.has(r)) {
     return { k: 'r', fields: [], pieces: [{ r, ex: [] }] }
   }
   const value = ctx.cert.get(`r${r}`) ?? empty()
@@ -198,7 +198,8 @@ function checkAtom(ctx, a) {
 // no pattern and passes.
 export function checkAtoms(P, labels, region, cert, atoms) {
   if (!nonEmpty(region)) return { ok: true, vacuous: true }
-  const ctx = { P, labels, region, cert }
+  const ctx = { P, labels, region, cert, rigid: new Set(P.rigidRows),
+    rigidTys: new Set(P.rigidTys) }
   for (let i = 0; i < atoms.length; i++) {
     try {
       checkAtom(ctx, atoms[i])
