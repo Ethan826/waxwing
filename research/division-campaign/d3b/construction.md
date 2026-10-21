@@ -221,6 +221,15 @@ Theorem, that the unification algorithm applied to a finite nonempty
 unifiable set of expressions terminates with a most general unifier.
 The section number was not checked against the paper.
 
+**Status of the correspondence (2026-10-21, dossier §18.35).**
+Bibliographic details checked (J. ACM 12(1), January 1965, pp. 23-41);
+the theorem's statement and location are not yet checked against the
+paper's text, so the correspondence is not fully source-checked.
+Attribution and scope: the published theorem is the source of the
+method; `robinson` reproves an adaptation for this representation,
+which justifies the departures listed below. The D3b result is
+therefore not an unchanged application of Robinson's theorem.
+
 **What it applies to.** First-order terms built from variables and
 function symbols of fixed finite arity, as finite trees; equality is
 syntactic identity; a substitution replaces finitely many variables

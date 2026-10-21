@@ -22,3 +22,4 @@ import Composition
 #print axioms Composition.TypedAttack.shapeSplit_not_valid
 #print axioms Composition.TypedAttack.no_uniform_presence
 #print axioms Composition.TypedAttack.validity_not_extension_stable
+#print axioms Composition.Typed.d3bExistsWithin

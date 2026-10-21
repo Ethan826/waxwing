@@ -102,4 +102,16 @@ theorem d3bExists : D3bExists (Label := Label) (B := B) := by
   obtain ⟨τ, hτ⟩ := mguExists P π _ (cellIndependence P π hS hI)
   exact ⟨_, (universality P π τ hS hI hτ).1⟩
 
+/-- `D3bExists` with `WithinC` kept: the generic instance `universality`
+builds is also within the problem's symbols. `WithinC` admits the
+problem's written labels and bases together with symbolic cell labels
+and generic constants; it does not say that θ* is written in the
+program. The bridge's `D3bExistsWithin` (dossier §18.32) is this
+statement. -/
+theorem d3bExistsWithin (P : SigProblem Label B) (π : Pattern Label)
+    (hS : Scoped P) (hI : HasInstance P π) :
+    ∃ θs, GenericInst P π θs ∧ WithinC P θs := by
+  obtain ⟨τ, hτ⟩ := mguExists P π _ (cellIndependence P π hS hI)
+  exact ⟨_, universality P π τ hS hI hτ⟩
+
 end Composition.Typed
