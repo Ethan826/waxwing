@@ -8050,3 +8050,10 @@ unrelated README/backlog/direction-plan edits remain untouched.
   B0, B2f/B2c/B2/B2g, B3a/B3e/B3f, B4f/B5 as a separate soundness
   track), after BridgeDefs.lean is split and the revised statements
   re-reviewed.
+- D3b general existence proved (dossier §18.34): `mguExists`,
+  `cellIndependence`, `universality` (gives `WithinC`), `d3bExists`,
+  none with a freshness premise; Robinson's theorem reproved for this
+  model with the correspondence recorded; completeness conditional on
+  `Fresh` kept separate. Clean build, standard axioms. Independent
+  review of the proofs in progress. Oracle: exact clash check and assert
+  mode, full named suite 59/59.

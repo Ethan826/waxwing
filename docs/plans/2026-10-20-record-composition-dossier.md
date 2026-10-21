@@ -3590,3 +3590,67 @@ Scope qualifications:
 
 **Deferred:** B1, general trimming, infinite-value B4, executable
 checker integration.
+
+### 18.34 D3b existence proved; the Robinson correspondence (2026-10-21)
+
+Lean, Composition/Typed/ (Unif*, Cell*, Univ*, MGUExists,
+Universality, Conditional; 23 new files, each under 250 lines); proved
+in its own worktree, integrated (6369135, 18d3bc7, 45b75d5; one import
+conflict in Composition.lean resolved by keeping both sides).
+Coordinator checks: clean `lake build` (128 jobs, no warnings); no
+`sorry`, `admit`, `native_decide` or `axiom` in Composition/Typed/; the
+23 audited results (d3b/checks/Audit.lean) depend only on `propext`,
+`Classical.choice`, `Quot.sound`. Defs.lean's statements unchanged; each
+theorem's type is the reviewed Prop. **Independent review of the proofs
+is in progress; not yet accepted.**
+
+| Statement | Lean | Premises, in full | Status |
+|---|---|---|---|
+| `MGUExists` | `mguExists` | `∃ τ, UnifiesD P π C τ` for any cell list `C` | proved |
+| `CellIndependence` | `cellIndependence` | `Scoped P`; `HasInstance P π` | proved |
+| `Universality` | `universality` | `Scoped P`; `HasInstance P π` (unused by the proof); `IsMGU` over the allowed cells | proved; gives `WithinC` |
+| `D3bExists` | `d3bExists` | `Scoped P`; `HasInstance P π` | proved, from the three above |
+| completeness at θ* | `thetaStar_valid_iff_fresh` | `Scoped`, `HasInstance`, `IsMGU`, **`Fresh P z e`** | proved; conditional |
+
+**Existence and completeness stay separate (§18.29 item 1).** No
+existence result has a freshness premise; they hold for every `Label`
+with decidable equality and every base set, under either reading of the
+universe. Completeness depends on the universe only through `Fresh`,
+which is not restated or weakened; no theorem says whether Waxwing
+satisfies `Fresh`. Under option B the bridge (§18.32-18.33) is the route.
+
+**Robinson correspondence (§18.29 item 2; construction.md §6.1).**
+Source: Robinson, "A Machine-Oriented Logic Based on the Resolution
+Principle", J. ACM 12(1), 1965, the unification theorem (section not
+checked against the paper). Mapping: the constants `T`, `A`, `X` play
+Robinson's variables; bases are constant symbols; `arrow` a binary
+symbol; a finite record one symbol per label set with arguments indexed
+by label. Departures: `CG` admits infinitely branching values and
+`IsMGU` quantifies over unifiers with them (Robinson's terms are
+finite); rows are not variables (composition is evaluated first, its
+presence conditions independent of the substitution, leaving plain
+equations); records are functions, so equality modulo permutation never
+arises; substitutions are total, `IsMGU` asks only for finite values;
+cells are ordinary labels, with cell locality an extra invariant. So
+the published theorem is not used as a black box: `robinson` reproves
+it for this model, by induction on the number of constants, with an
+occurs check by well-foundedness (`psub_acc`); its result is stronger
+than most-general (every unifier τ satisfies τ = τ∘μ).
+
+**Oracle work.** An exact recursive clash check (clash.mjs): the
+`record-constant` case is now exactly `invalid`; with the old
+outer-constructor check restored it is `unknown` and assert mode exits 1
+(reproduced by the coordinator: new check exact `invalid`, exit 0).
+`--assert` mode exits nonzero on a verdict mismatch or invariant
+failure (planted mismatch and the `contextFree` mutant both fail it);
+report mode unchanged. Full named suite in assert mode: 59 cases (36
+valid, 23 invalid) in 425 s, 0 mismatches, 0 invariant failures;
+generated seeds 3 and 11 (120 each) pass invariants (they carry no
+expected verdicts). Wall times on a shared machine are upper bounds.
+The full `contextFree` mutant run was not repeated at a longer limit.
+
+**For the bridge:** `universality` proves `WithinC` (every label and
+base inside θ* is written in the problem), which bears on §18.33's
+preference for an existence theorem returning `WithinC` over W's
+trimming. "θ* uses finitely many constants" is suggested by the
+construction and not proved.
