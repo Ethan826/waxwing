@@ -5,6 +5,7 @@ Axiom dependencies of every headline theorem. Run:
 import Composition.Programs
 import Composition.Sig.Adversarial
 import Composition.Sig.SourceBoundary
+import Composition.Presence.Main
 
 open Composition Composition.Programs Composition.Syntax
   Composition.Syntax.SourceBoundary
@@ -118,3 +119,8 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms exported_all_pass
 #print axioms routeSig_not_accepts
 #print axioms routeSig_validFin
+#print axioms Composition.Presence.o1
+#print axioms Composition.Presence.o2
+#print axioms Composition.Presence.o3
+#print axioms Composition.Presence.d2_of
+#print axioms Composition.Presence.d2
