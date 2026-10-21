@@ -2653,3 +2653,84 @@ Integration reconnaissance: **approved**, read-only size measurements of
 real functions (`|R|`, `|L|` and pattern counts) and a proposed
 constraint-recorder interface. **Deferred:** recorder implementation, IR
 changes, fallback policy, any P9s-only integration step.
+
+### 18.18 Campaign results: source-to-constraint specification (stream 5)
+
+research/division-campaign/source/translation.md, run.mjs and 44
+example programs (examples/*.wxw); Lean Composition/Sig/
+SourceCampaign.lean (proved in its own worktree; integrated; clean
+build, standard axioms).
+
+**The author's priority question: does the specification include every
+condition that can later reject a specialization? No** (translation.md
+§3, inventory with file:line):
+
+- **Printability** is judged per instantiation after specialization
+  (Specialize/Printable.purs, called from Specialize.purs); the
+  check-time part passes any record with a tail. Not in the
+  translation. As a constraint it would need a `printable τ` atom in
+  `B` and a declarable requirement in `D`, passed to callers as `lacks`
+  is.
+- **R010** (Check/Instantiation.purs) judges the solved instantiation
+  at check time: a divided (`r|T`) or composed witness is neither bare
+  nor ground, so it is refused inside a recursive group. Not modelled.
+- Comparison requires a ground type at the generic type (conservative;
+  never separates two valid splits). Also: the several-tail lowering
+  placeholder, the duplicate-label guard (covered by definedness atoms),
+  the 10,000-specialization limit, the type-depth limit, the Fail-family
+  key guard, invariant guards, `main` printable.
+- Undetermined record holes lower as the empty rest
+  (Specialize/Record.purs): a hidden canonical split, harmless only while
+  the checker refuses undetermined merges.
+
+**E2 (§18.15), per stream 5:** as observed, (b), an incomplete model: no
+atom covers `show(p)`, so both splits satisfy the modelled problem; read
+as a ∀ statement, `divide`'s own body needs `u` printable for every
+`u`, which its clauses cannot say. The requirement belongs to `divide`,
+not to the split. Separately, once `peek` is applied and both splits are
+printable, the printed output differs between two valid splits, which
+is (a); fixing (b) does not remove (a), and decision 3 is what handles
+(a). Stream 8 is diagnosing E2 independently; not yet reconciled.
+
+**The translation** (§2): rigid variables are the signature's; flexible
+ones are fresh per call and per construct; `D` is the written clauses
+plus clauses implied by parameter and result types (a tail lacks the
+labels beside it; two tails in one record are disjoint); `B` one atom
+per construct (R1-R16). Proved (`clauseOnly_down`, `clauseOnly_empty`,
+`clauseOnly_satisfiable`): source `D` contains only `lacks` and
+`disjoint` atoms, is closed downwards and holds when every row is
+empty, so **vacuity never arises from source**. Presence projection
+exact under stated conditions (flat equations, nested records written
+on both sides, no type agreement). **Finding F8:** D3b's
+agreement-forcing hypotheses and §18.9's record-valued rigid type
+variables cannot be written in this source grammar.
+
+**No region sizes** (§18.4): no construct gives `≠ ∅` or a count; ones
+that would if added: presence-dependent instance selection, row
+reflection, an empty-rest pattern test, a `has` clause.
+
+**Run against the repaired compiler** (coordinator, 2026-10-21, the
+`SeveralTails` repair in the working tree;
+.build/evidence/stream5-examples-run.log; Parse to Specialize, no Go):
+stream 5 could run only Parse and Resolve, so its Check verdicts were
+predictions; they are now observed:
+
+- `p11-route` (valid, `routeSig_validFin`) refused with the false
+  contradiction "neither u nor v can hold r" (F2; BACKLOG SIG-ROUTE-H);
+- `p10-wrap-accepts`, `p12-route-narrowed` (P9s-certified) refused with
+  "Cannot tell how … split" (F4);
+- every literal with two spreads refused at Resolve ("A record literal
+  accepts at most one spread", F1): `p05-join`, `p06-forwarded`,
+  `p07-join3`, `c22`, `c24`, and the negative controls `n01`, `n08`,
+  `n12` refused for the wrong reason;
+- the other positives accepted through specialization; the other
+  negatives refused at check.
+
+Questions for the author (translation.md §8): several spreads in the
+intended fragment; whether a `lacks` implied by a result type alone is
+intended; whether records in callback parameter types imply clauses;
+printability as per-instantiation check or declared requirement;
+whether R010 should accept divided or composed row arguments; Unresolved
+rather than contradiction for a rigid row no part can hold whole;
+pattern semantics on flexible rows; a later pass for effect rows and
+Fail payload families.

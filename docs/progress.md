@@ -7848,3 +7848,9 @@ assessment.md.
   at compile time (checked); integration would start with a recorder
   for `B`. Probes found `route` refused by a false contradiction and the
   branch tip not building (BACKLOG).
+- Stream 5 integrated (dossier §18.18): the source-to-constraint
+  specification does not yet include every condition that can reject a
+  specialization (printability, R010 and others); source `D` never
+  makes a problem vacuous (proved); run against the repaired compiler,
+  `route` is refused by H's false contradiction and P9s-certified
+  `wrapAccepts`, `routeNarrowed` by "Cannot tell".
