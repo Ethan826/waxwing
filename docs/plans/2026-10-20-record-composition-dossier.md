@@ -4130,7 +4130,8 @@ files ProofSound*.lean): BS-c1f `solvableMapBaseFwd_of` (E2 at
 brief's dependency list. B4f's argument: walk generic and ground roots
 in lockstep (`Reach`), value each constant by the ground subtree it
 reaches, separate any mismatch by one back substitution
-(`j b ↦ base b`, other bases to `emptyG` or `arrow emptyG emptyG`),
+(`j b ↦ base b`; each other base, chosen per base, to `emptyG` or
+`arrow emptyG emptyG`),
 and use coverage at the substituted instance. **Two reviews inside the
 track:** before proving, the obligations (two of the agent's own lemma
 statements, `SeparateArrow`, `SeparateRecord`, were false without
@@ -4196,3 +4197,56 @@ their proposals are reviewed, and each must say precisely whether it
 targets P9s's `Accepts` (the `checkAll`/K-theorem boundary, which cannot
 certify `route`) or the option-B characterization (`ValidOpen`,
 `openCharacterization`); these are different acceptance boundaries.
+
+### 18.45 Independent review of soundness and the composition (2026-10-21)
+
+Independent reviewer at 7f58764 (no repository writes; one worktree
+guard denial prescribing "split into plain, separate commands",
+followed as a prescribed simplification, per §18.43).
+
+**Verdict: B5 is right and the characterization holds.** No false,
+vacuous or weaker-than-intended statement, no gap. **"General option-B
+completeness and the characterization hold for the research model" can
+be stated as established**, with C's premises attached: `Scoped`,
+`∃ z, FreshLabels` (so `Label` infinite, §18.33's accepted assumption),
+and finite values only (`ValidFin`, `SolvableFinAt`). B5 itself needs
+none of those premises.
+
+- **Fidelity:** statement files and Universality/Model/Transfer
+  unchanged; Defs.lean docstrings only; `D3bSoundOpen`,
+  `D3bOpenComplete`, `OpenCharacterization` typecheck as the reviewed
+  Props; E2 exact at `CL`/`CB`; E5 genuinely needed.
+- **B5's meaning:** `ValidOpen` quantifies over every injective
+  extension, bases outside the image included (handled by the back
+  substitution); the premise requires genuine `GenericInst` (with
+  coverage). Scratch checks: B5 derives `ValidOpen routeP` over `Nat`,
+  `Unit` from `d3bEqFree` and a direct solution; B5's premise fails at
+  `shapeSplit ()`, consistently with N1, N3 and
+  `openCharacterization_scoped`. **Coverage is load-bearing:** at
+  `shapeSplit ()` an assignment satisfying `D` with a finitely solvable
+  body exists but fails coverage, so a premise of "some solvable
+  assignment satisfying `D`" would make B5 false.
+- **B4f's argument:** the back substitution is defined for every base
+  (an image point to its unique preimage, by injectivity; every other
+  base, chosen per base, to `emptyG` or `arrow emptyG emptyG`);
+  separation is complete case by case; injectivity comes from
+  `ValidOpen` and is used exactly where needed.
+- **Composition:** every premise used; the ← direction drops `WithinC`
+  harmlessly; `ExistsWithinAt` unused now that existence is proved;
+  `openCharacterization_scoped` is an honest corollary (only
+  `DecidableEq Label`); `BridgeComposition` neither used nor claimed;
+  B4, BS-c1, BS-c2 unproved and not claimed.
+- **Claims kept separate:** no "decides", "decision procedure" or
+  "Waxwing inference" in the new text.
+- **Axioms and placeholders:** standard only; none. The two linter
+  suppressions hide only uses through mutual partners (checked by
+  compiling without them).
+
+**Wording findings:** W3 (MGUExists.lean's header garbled by the
+coordinator's rewording) fixed; W4 (the per-base choice in §18.43's
+B4f description) fixed; W2 statements.md §0's "proposed and unproved"
+now points to current status (fixed). **For the author's approval**
+(both in fixed statement files, comments only): W1, Sound.lean's
+section heading "soundness for option B (for a decision procedure)",
+suggested "(what accepting solved generic instances relies on)"; W2,
+Complete.lean's header calling `D3bExists` "open".

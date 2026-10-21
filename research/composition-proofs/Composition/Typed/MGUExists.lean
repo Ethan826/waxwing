@@ -1,10 +1,9 @@
 /-
 `MGUExists`, proved. `D` at a substituted pre-instance is a fixed
 presence condition plus the equations `eqPairs` (UnifEval.lean); those
-are finite cell-shaped pairs (UnifCSEval.lean, UnifFin.lean), so
-An adaptation of Robinson's theorem, reproved for the generic model
-(UnifMain.lean), gives a most
-general unifier with finite values. Correspondence with Robinson 1965:
+are finite cell-shaped pairs (UnifCSEval.lean, UnifFin.lean), so an
+adaptation of Robinson's theorem, reproved for the generic model
+(UnifMain.lean), gives a most general unifier with finite values. Correspondence with Robinson 1965:
 construction.md §6.1.
 -/
 import Composition.Typed.UnifMain
