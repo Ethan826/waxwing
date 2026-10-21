@@ -62,3 +62,8 @@ import Composition.Presence.DecideWritten
 import Composition.Presence.DecideValid
 import Composition.Presence.Witness
 import Composition.Presence.WitnessExamples
+import Composition.SplitIrrelevance.Defs
+import Composition.SplitIrrelevance.Run
+import Composition.SplitIrrelevance.Acceptance
+import Composition.SplitIrrelevance.Examples
+import Composition.SplitIrrelevance.Boundary
