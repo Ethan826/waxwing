@@ -321,7 +321,7 @@ states the backward deduction from a result field and the other part's
 absence. Their biased concatenation allows overwrites; Waxwing requires
 disjoint composition. Robinson's unification and the Martelli–Montanari
 formulation supply the closed-type solving method. The
-[assessment][composition-assessment]
+[assessment][assessment]
 records the sources, executable probes, mismatches and implementation bugs.
 Each adaptation needs its own justification beyond the cited framework.
 
@@ -562,7 +562,7 @@ and tool errors use E_IO and E_TOOL.
 - [CS source traceability][cs-sources] and
   [reference provenance](docs/provenance.md)
 - [Composition acceptance programs][composition-programs],
-  [foundation assessment][composition-assessment] and
+  [foundation assessment][assessment] and
   [proof dossier][composition-dossier]
 - [Lean proofs and reproduction instructions][composition-proofs]
 - [Self-hosting roadmap](docs/bootstrap.md)
@@ -585,6 +585,6 @@ and tool errors use E_IO and E_TOOL.
 [sulzmann]:https://www.researchgate.net/publication/213884919_A_General_Framework_for_HindleyMilner_Type_Systems_with_Constraints
 [cs-sources]: docs/plans/2026-10-20-cs-source-traceability.md
 [composition-programs]: docs/plans/2026-10-20-composition-acceptance-programs.md
-[composition-assessment]:docs/plans/2026-10-20-composition-foundation-assessment.md
+[assessment]: docs/plans/2026-10-20-composition-foundation-assessment.md
 [composition-dossier]: docs/plans/2026-10-20-record-composition-dossier.md
 [composition-proofs]: research/composition-proofs/README.md

@@ -75,3 +75,9 @@ change in this follow-up.
 Validation: reproduce the unresolved Wand reference with kramdown, then
 render the fixed README and check every reference destination; width and
 whitespace checks. No npm commands or compiler tests.
+
+The live-site check also caught a relative-link rewrite requirement:
+Jekyll's plugin needs a space after the reference colon to turn a local
+Markdown destination into its HTML URL. The assessment reference now
+uses the shorter identifier `assessment`, so the definition fits on one
+line with that space. The destination and visible link text are unchanged.
