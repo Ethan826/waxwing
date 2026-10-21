@@ -63,9 +63,28 @@ def D3bCompleteOn : Prop :=
       (ValidIn (P.mapBase j) π → SolvableAt P θs) ∧
       (ValidFinIn (P.mapBase j) π → SolvableFinAt P θs)
 
-/-- B2g. B2 gives back `D3bComplete`, both halves (with B2c, B2f, E1). -/
+/-- B2g. B2 generalizes `D3bComplete`: its premises give B2's at
+`j = id`, `B₁ = B`, and `mapBase id` is the identity, so B2's
+conclusion there is `D3bComplete`'s, both halves. (An implication
+`D3bCompleteOn → D3bComplete` would be trivial: `d3bComplete` is
+proved. Second review, §10.) -/
 def CompleteOnGivesComplete : Prop :=
-  D3bCompleteOn (Label := Label) (B := B) →
-    D3bComplete (Label := Label) (B := B)
+  ∀ (P : SigProblem Label B) (π : Pattern Label) (θs : CAssign Label B)
+    (z : Cell → Label) (e : CConst Label → B),
+    Fresh P z e → WithinC P θs → GenericInst P π θs →
+      ∃ U, FreshLabels P z ∧ FreshBasesOn P id U e ∧
+        ConstsInC P U θs ∧ P.mapBase id = P
+
+/-- B2n. Finitely many fresh atoms suffice: validity at `B ⊕ Fin n`,
+for any `n` above the number of constants listed in `U`, gives the
+finite half of B2's conclusion (B2 at `j = inl`, `e` indexing `U`; the
+spare atom keeps `e` total). Second review, §10. -/
+def D3bCompleteFinExt : Prop :=
+  ∀ (P : SigProblem Label B) (π : Pattern Label) (θs : CAssign Label B)
+    (z : Cell → Label) (U : List (CConst Label)) (n : Nat),
+    U.length < n → FreshLabels P z → ConstsInC P U θs → WithinC P θs →
+    GenericInst P π θs →
+    ValidFinIn (P.mapBase (Sum.inl : B → B ⊕ Fin n)) π →
+      SolvableFinAt P θs
 
 end Composition.Typed

@@ -3,8 +3,8 @@
 Date: 2026-10-21. Base: c341109 (dossier §18.31). Scope: definitions,
 exact statements, the completeness boundary (P-3), intended instances,
 a restrictions table and an independent adversarial review. **Nothing
-here is proved.** No proof scope is authorized until the author has
-reviewed these statements (proof dossier policy).
+here is proved.** Dossier §18.33 approved `ValidOpen` and authorized a
+first proof tranche, to start after the second review (§10).
 
 Lean: research/composition-proofs/Composition/Typed/Bridge/, six files
 split from the former BridgeDefs.lean (§18.33; the split changed no
@@ -14,10 +14,10 @@ statement, §10):
 |---|---|
 | Extension.lean | `mapBase` and relatives, `BasesWithin`, `substBase`, E1-E6 |
 | Valid.lean | `ValidOpen`, `ValidAtoms`, B0, B1, BS |
-| Fresh.lean | `constIn`, `ConstsInC`, `FreshLabels`, `FreshBasesOn`, B2f, B2c, B2, B2g |
+| Fresh.lean | `constIn`, `ConstsInC`, `FreshLabels`, `FreshBasesOn`, B2f, B2c, B2, B2g, B2n |
 | Complete.lean | `D3bExistsWithin`, B3a, W, B3, B3e, B3f, C |
-| Sound.lean | B4f, B4, B5, BS-c1, BS-c2 |
-| Examples.lean | `intArmP`, N1-N6 |
+| Sound.lean | B4f, B4, B5, BS-c1, BS-c1f, BS-c2 |
+| Examples.lean | `intArmP`, `twoBaseP`, N1-N7 |
 
 Every claim is a `def … : Prop`; the files have no theorem, `sorry` or
 axiom, and build in the default target. No existing statement or
@@ -52,13 +52,16 @@ Existence is kept apart throughout:
 
 - B3a is completeness at any given generic instance, with no existence
   premise;
-- W trims any generic instance to the problem's symbols, because
-  `D3bExists` does not carry the `WithinC` premise `d3bComplete` needs;
-- B3 composes these with existence, either per problem or from
-  `D3bExists` exactly as stated (open, owned by the D3b stream);
+- `D3bExists` does not carry the `WithinC` premise `d3bComplete`
+  needs. W (trimming) would bridge that, but §18.33 deprioritized it in
+  favour of existence theorems that already return `WithinC`:
+  `d3bEqFree`, `d3bFlat`, and the D3b stream's `universality` and
+  `d3bExistsWithin` (§10.4);
+- B3 composes these with existence, per problem or globally;
 - B3e and B3f would give option-B completeness on the equation-free
-  and flat fragments with **no open premise**, because existence there
-  is already proved (`d3bEqFree`, `d3bFlat`).
+  and flat fragments with **no open existence premise**, because
+  existence there is already proved (`d3bEqFree`, `d3bFlat`); their
+  scope, label-freshness and fragment premises remain.
 
 The memo's `ValidAtoms ↔ ValidOpen` (B1) is **not** on the critical
 path for completeness: B3a uses `ValidOpen` directly at `B ⊕ CConst`.
@@ -145,7 +148,8 @@ repeated the first three independently.
 - `D3bExistsWithin`: `D3bExists` with `WithinC` added to the witness.
   `ExistsWithinAt P`: the same for one problem.
 - `intArmP b`: a test problem with a written base and a rigid type
-  variable (§4).
+  variable (§4). `twoBaseP b₁ b₂`: two written bases required of one
+  rigid α (N7).
 
 ## 3. Statements (all proposed, all unproved)
 
@@ -158,7 +162,7 @@ text. `Label` has decidable equality throughout, as in Typed/.
 |---|---|---|
 | E1 `MapBaseId` | `P.mapBase id = P` | derived (structural) |
 | E2 `SatMapBase` | `Sat θ C → Sat (mapAssign f θ) (C.map (mapBaseAtom f))`, any `f` | derived: positivity |
-| E2′ `SatSubstBase` | the same for a value substitution `s` with `s b = .base (f b)` on written bases, for atoms of `P` | derived: positivity |
+| E2′ `SatSubstBase` | for atoms of `P` renamed along `g`, a value substitution `s` with `s (g b) = .base (h b)` on written bases maps satisfaction to the atoms renamed along `h` | derived: positivity |
 | E3 `FinSupport` | `FinG g → ∃ bs : List B, BasesWithin (· ∈ bs) g` | derived |
 | E4 `MapBaseComp` | `(P.mapBase f).mapBase g = P.mapBase (g ∘ f)` | derived (structural) |
 | E5 `MapBaseSyntax` | `written` unchanged, `basesOf` mapped, `Scoped` unchanged | derived (structural) |
@@ -223,7 +227,8 @@ below.
 | B2f `ConstsFinite` | `RigidFinC P θs → ∃ U, ConstsInC P U θs` | derived |
 | B2c `FreshGivesFreshOn` | `Fresh P z e → FreshLabels P z ∧ ∀ U, FreshBasesOn P id U e` | derived (unfold) |
 | B2 `D3bCompleteOn` | see below | conjectured with argument |
-| B2g `CompleteOnGivesComplete` | `D3bCompleteOn → D3bComplete` | derived from B2c, B2f, E1 |
+| B2g `CompleteOnGivesComplete` | `Fresh P z e → WithinC P θs → GenericInst P π θs → ∃ U, FreshLabels P z ∧ FreshBasesOn P id U e ∧ ConstsInC P U θs ∧ P.mapBase id = P` | derived from B2c, B2f, E1 |
+| B2n `D3bCompleteFinExt` | `U.length < n →` B2's premises `→ ValidFinIn (P.mapBase inl) π` over `B ⊕ Fin n` `→ SolvableFinAt P θs` | derived from B2 |
 
 ```lean
 def D3bCompleteOn : Prop :=
@@ -356,17 +361,22 @@ uses only B4f, through `transfer` (proved), which works per instance.
 B5 from B4f: for `B₁` and a finite instance θR over `B₁` of pattern
 π′, `HasInstance P π′` holds over `B` (substitute back by E2′), so a
 solved θs exists; B4f covers θR by `mapC j θs`; `SolvableFinAt`
-transports along `j` (BS-c1); `transfer` gives a finite solution at θR.
+transports along `j` (BS-c1f, the forward half, needing no
+injectivity); `transfer` gives a finite solution at θR.
 
-### BS-c: the checker is stable under extension
+### BS-c: two renaming properties (not whole-checker stability)
 
 The author's sentence is about *checking*, not only validity. A
 checker that answers Unresolved is stable only if its inputs commute
-with extension.
+with extension. BS-c1 and BS-c2 are particular renaming properties
+(§18.33); they do not establish the stability of the whole checker.
+Instance construction, search and diagnostics need their own
+connection (§5, item 12).
 
 | Name | Statement | Sketch strength |
 |---|---|---|
 | BS-c1 `SolvableMapBase` | `Injective j → (SolvableFinAt P θs ↔ SolvableFinAt (P.mapBase j) (mapC j θs))` | derived: E2 forward; backward by a back map as in B2 |
+| BS-c1f `SolvableMapBaseFwd` | `SolvableFinAt P θs → SolvableFinAt (P.mapBase j) (mapC j θs)`, any `j` | derived: E2, E6; what B5 uses |
 | BS-c2 `ThetaFreeMapBase` | `thetaFree (P.mapBase j) π = mapC j (thetaFree P π)` | derived: `freeCells` reads only `disjoint` atoms; constants are kept |
 
 `thetaFlat` is semantic over instances at `B`, so its equivariance
@@ -388,6 +398,15 @@ Neither is stated.
 | W, B3, B3e, B3f | `route`, `agree`, `intArmP`: `d3bEqFree`, `d3bFlat` give generic instances *with* `WithinC` (proved) | B3's conclusion inhabited without `D3bExists` |
 | B4f, B4, B5, BS-c | `route`, `intArmP` over `Unit` carried to `Unit ⊕ Nat` | derived |
 | N3 boundary | `shape-split` over `Unit` | N3 `ClosedBoundary`: two conjuncts by `d3bEqFree`, one by `shapeSplit_validFin`; the fourth derived (α = `inr (T 0)` matches no arm) |
+
+N7 `TwoBaseInjective` (`twoBaseP b₁ b₂`: `α = b₁`, `α = b₂`, body
+`ff`) backs §1's reason for injectivity: option-B valid for distinct
+bases (`D` unsatisfiable under every injective extension), not
+closed-valid once both bases are identified in `Unit`. Caveat on N5:
+`intArmP` has `D = []` and its witness ignores `b` and α, so N5 does
+not test that a written base stays distinct from an atom; N6 exercises
+the written base only through `FreshBasesOn`'s disjointness, and N7
+through `D`.
 
 Not added: a negative instance with two or more *written* bases that
 is closed-valid and not option-B valid (e.g. `shape-split` with arms
@@ -415,8 +434,9 @@ stated on their own.
 
 ## 5. The exact completeness boundary (P-3)
 
-Statement C is the exact boundary: *if* B2, B3a, W, B4f and B5 are
-proved, then for every Scoped problem with existence within symbols,
+Statement C is the exact boundary: *if* B2, B3a, B4f and B5 are
+proved (W is not used: C takes existence within symbols as a
+premise), then for every Scoped problem with existence within symbols,
 D3b's check (a solvable generic instance per pattern) holds exactly
 when the problem is option-B valid. Its rejections among closed-valid
 problems are then exactly `ValidFin P ∧ ¬ ValidOpen P`. None of this
@@ -456,7 +476,8 @@ is proved; no typed completeness is claimed. Outside C:
    suffice there.
 7. **Labels.** Assumed infinite in B2-B3 (`FreshLabels`). A finite
    `Label` makes those statements vacuous, and can make a problem
-   closed-valid by running out of labels; not addressed.
+   closed-valid by running out of labels. Infinitely many labels are
+   an accepted semantic assumption (§18.33).
 8. **Scope.** `Scoped P` is a premise of B3, B3e, B3f and C. Problems
    whose `D` mentions flexible variables are outside.
 9. **Existence.** `D3bExists` and its parts are open and owned by the
@@ -471,6 +492,13 @@ is proved; no typed completeness is claimed. Outside C:
     `SigProblem` beyond the existing source-boundary work. Unused
     functions remain checked: `ValidOpen` is a property of the
     signature problem alone, consistent with §18.31.
+12. **Whole-checker stability.** BS-c1/c2 are renaming properties
+    only; instance construction, search and diagnostics are not shown
+    stable under extension (§18.33).
+13. **Deferred** (§18.33): B1, general trimming (W), infinite-value B4,
+    executable checker integration. General B3 therefore rests on
+    existence within symbols (`ExistsWithinAt`, or the D3b stream's
+    `d3bExistsWithin`, §10.4), not on W.
 
 ## 6. Existing definitions that do not fit option B (reported, not edited)
 
@@ -514,11 +542,12 @@ is proved; no typed completeness is claimed. Outside C:
 
 ## 8. Proof order, if authorized
 
-Not authorized here. Suggested order: E1-E6 (structural, positivity);
-B2f, B2c; B2 (needs the `U`-relative round trip); B2g; B3a; B3e, B3f
-(no open premise); W; B3 per problem and `BridgeComposition`. Then B1,
-BS; BS-c; B4f, B5, C; B4 last, as the strongest. Nothing depends on
-`D3bExists` except `BridgeComposition`, and only as an antecedent.
+Authorized by §18.33, after the second review (§10). Completeness
+track: E1-E6; B0 and the examples (N1-N7); B2f, B2c; B2 (needs the
+`U`-relative round trip); B2g, B2n; B3a; B3e, B3f. Soundness track,
+reviewed separately: E2′ (back to `B`), BS-c1f, B4f, B5. Deferred: B1,
+W, infinite-value B4. Not in the tranche: BS, BS-c1/c2, B3 and C (B3
+and C become derivable from B3a, B5 and `d3bExistsWithin`, §10.4).
 
 ## 9. Independent adversarial review
 
@@ -591,6 +620,138 @@ committed):
    `mutual`, up to a blank line) was whitespace-normalized; the old
    file and the six new files give the same multiset of 59 blocks.
 
+### 10.2 Reviewers and method
+
+Two fresh agents, neither shown §9, reviewed the split files and this
+file (§0-§8) read-only, with scratch Lean checks (`lake env lean`):
+one for soundness (false, vacuous, mis-quantified?), one for
+completeness (does anything miss §18.33 or fail to express option B
+for the current model?). Changed and new statements were sent back to
+the reviewer concerned (§10.5).
+
+### 10.3 Findings and fixes, by area
+
+**(a) B4f, B4, B5 (soundness track).** Soundness: B4f, B4 and B5 true
+for every `P`, including non-Scoped `P`, finite `Label` and empty
+`B`; the single-substitution argument works, and dropping
+`FreshLabels` and `WithinC` is right. Completeness: B4f is the shape B5
+needs.
+
+| # | Finding | Severity | Fix |
+|---|---|---|---|
+| R1 | E2′ took a total `f : B → B₁`; B4f and B5 map back from an extension to `B`, and B1b into `B₁`. When the target is `Empty` and the source is not, no such map exists, so E2′ could not be used in the cases it was added for (both reviewers; scratch check: `(Unit → Empty) → False`) | statement unusable as intended | E2′ restated with two forward maps `g`, `h` from `P`'s bases and `s : B₁ → G Label B₂`; the old form is `g = id` |
+| R2 | B5's argument uses BS-c1, outside the tranche; only the forward half is needed, without injectivity | missing | BS-c1f `SolvableMapBaseFwd` added (Sound.lean) |
+| R3 | the `hv`-after-substitution step of B4f (and `cellOf` under substitution, for every base, since B4f has no `WithinC`) is unstated | missing (proof-internal) | not stated; listed as a proof obligation (§10.6) |
+
+**(b) Finite freshness.** Soundness: B2f, B2c, B2 true (B2 checked
+against `d3bComplete`'s proof: the back map `e c ↦ inr c` on `U`,
+`j b ↦ inl b`, anything else ↦ `inr (T 0)`, is well defined from
+`FreshBasesOn` and `Injective j`); `B ⊕ Fin (|U|+1)` suffices, with
+`e c = inr (idxOf c U)`.
+
+| # | Finding | Severity | Fix |
+|---|---|---|---|
+| R4 | B2g `D3bCompleteOn → D3bComplete` was provable as `fun _ => d3bComplete` (soundness): it checked nothing | vacuous as a check | B2g restated as the premise translation: `Fresh`, `WithinC`, `GenericInst` give `∃ U`, B2's premises at `j = id`, and `P.mapBase id = P` |
+| R5 | "`B ⊕ Fin (|U|+1)` suffices" was prose only; B3a uses the infinite `B ⊕ CConst` (completeness) | missing | B2n `D3bCompleteFinExt` added (Fresh.lean) |
+| R6 | the `U`-relative back map is named only in prose | unclear | listed as a proof obligation (§10.6) |
+
+**(c) B3e, B3f.** Both reviewers: true, derivable from B3a and
+`d3bEqFree` / `d3bFlat`, at the right instances; every scope,
+label-freshness and fragment premise is present (Scoped and the
+fragment premise for `d3bEqFree`/`d3bFlat`, `∃ z, FreshLabels P z`
+for B3a, `HasInstance`, `ValidOpen`) and none is extraneous.
+
+| # | Finding | Severity | Fix |
+|---|---|---|---|
+| R7 | docstrings said "Unconditional" without §18.33's qualification | overclaim | docstrings and §0 reworded: no open existence premise; scope, label-freshness and fragment premises remain |
+| R8 | conclusions give only `SolvableFinAt`, not `GenericInst ∧ WithinC` | unclear | not adopted: not wrong; `d3bEqFree`/`d3bFlat` give the rest |
+| R9 | a fragment characterization (B3e with B5) has no open premise and is stronger than C | proposal | not adopted; recorded for the author (§11) |
+
+**(d) E1-E6.** Soundness: all true; E2′ true for every atom shape
+(definedness depends only on row domains, which substitution keeps);
+E5 true exactly as lists; E6 type-correct (instances checked by
+`rfl`). The issue was usability (R1). Completeness: the helper lemmas
+in §10.6 are unstated (R3, R6); accepted as proof-internal provided
+they are listed.
+
+**(e) B0 and N1-N6.** Soundness: all true; N4 and N6 hold for every
+π (`routeP_hasInstance`; `HasInstance (intArmP ()) π` checked in Lean
+for all π). `written (intArmP ())` is `[0,0,0]` (duplicates kept;
+harmless).
+
+| # | Finding | Severity | Fix |
+|---|---|---|---|
+| R10 | N5 is weak: `intArmP` has `D = []`, and the witness ignores `b` and α | degenerate | caveat in §4; not changed |
+| R11 | §1's reason for injectivity had no Lean instance | missing check | N7 `TwoBaseInjective`, `twoBaseP` added (Examples.lean) |
+| R12 | no Lean instance for "ValidOpen false and closed-false" (`splitFree`) | minor | noted, not added |
+
+**Prose (completeness).** §5 said C needs W (it takes existence as a
+premise): fixed. Header, §0 and §8 were stale against §18.33: fixed.
+"BS-c: the checker is stable" contradicted §18.33: retitled in §3 and
+Sound.lean. Boundary §5: item 7 updated, items 12 and 13 added.
+
+### 10.4 Existence that returns `WithinC` (W)
+
+§18.33: "prefer an existence theorem that already returns `WithinC`".
+
+- **B3e, B3f: yes, without W.** `D3bEqFree` and `D3bFlat`
+  (Typed/Defs.lean) conclude `GenericInst ∧ WithinC` for
+  `thetaFree`/`thetaFlat`. The proofs construct `WithinC` directly:
+  `d3bEqFree` (EqFree.lean) by `eta_within`, `d3bFlat` (FlatMain.lean)
+  by `flatRow_within`.
+- **General B3 and C: yes, via the D3b stream** (upstream of this
+  branch; proved, not yet independently reviewed). `universality`
+  (Typed/Universality.lean) concludes `GenericInst ∧ WithinC` for
+  `thetaStar` under `Scoped`, `HasInstance`, `IsMGU`, with no freshness
+  premise. `d3bExists` keeps only the first conjunct, so `D3bExists`
+  as defined (Defs.lean, unchanged) still lacks `WithinC`. The
+  corollary `d3bExistsWithin` (d41eea7) is this file's
+  `D3bExistsWithin` per problem, so `ExistsWithinAt P` holds for every
+  Scoped `P`. B3's conclusion `D3bOpenComplete` then follows from B3a
+  and `d3bExistsWithin`; `BridgeComposition` and `ExistsToWithin` hold
+  because their conclusions do; C's existence premise is discharged.
+  W is on no path. No statement was changed to use this.
+- `WithinC` admits the problem's written labels and bases **plus**
+  cell labels and generic constants (`WithinG`: `.base (.inr _)` is
+  unrestricted; only `.inl` record keys must be written). Nothing here
+  relies on a stronger reading.
+
+### 10.5 Recheck
+
+Changed or new: E2′, B2g, B2n, BS-c1f, N7, `twoBaseP`; docstrings of
+B3e, B3f; Sound.lean's headings. The completeness reviewer confirmed
+that each adopted fix addresses its finding and that no decline
+blocks the tranche. The soundness reviewer rechecked each changed or
+new statement and found all true, none vacuous or mis-quantified:
+E2′ now serves B4f/B5 (`g = j`, `h = id`; `s (j b) = base b`, other
+bases to `emptyG` or `arrow emptyG emptyG`) and B1b (`g = inl`,
+`h = i`), empty base types included; the proof needs `mapBaseAtom id
+a = a` (from E1 or by induction). B2g is true and follows from no
+proved theorem (its `WithinC` premise is unused); B2n is true given B2
+(`e c = inr ⟨idxOf c U, _⟩` on `U`, `inr ⟨n-1, _⟩` off it) and not
+vacuous (`n = |U| + 1`); BS-c1f is true without injectivity (E2 at
+`Sum.map j id`, E6); N7 is true (collapsed half checked in Lean for
+`twoBaseP true false` over `Bool`). The `d3bExistsWithin` route
+(§10.4) was not reviewed by either reviewer: proved upstream,
+unreviewed.
+
+### 10.6 Proof obligations not stated as statements
+
+Proof-internal lemmas, to be stated by the proof owner; the B4f/B5
+reviewer checks `HvSubst` as written before the proof starts, since
+an over-strong lemma could slip in there:
+
+- `HvSubst`, `CellOfSubst`: `hv` and `cellOf` commute with a value
+  substitution that sends `j b` to `base b`, for **every** `b` (B4f
+  has no `WithinC`);
+- the `U`-relative back map `eBackOn U` and its round trip `up_dn_on`
+  under `ConstsInC ∧ WithinC` (B2; `eBack`, `up_dn` and `freshOk`
+  cannot be reused);
+- a `holds_up` variant from `P.mapBase j`'s atoms to `cliftP P`'s (B2);
+- `FinMapG`, `FinSubstBase` (finiteness under renaming and
+  substitution), `MapAssignComp`, `CombineMap` (`combine` commutes
+  with `mapAssign`), `InPatternSubst` (B5's `HasInstance P π′`).
+
 ## 11. Questions for the author (answered in dossier §18.33)
 
 1. Approve `ValidOpen` (injective base extensions, labels fixed,
@@ -610,3 +771,7 @@ committed):
    `[Nonempty B]` as the memo states?
 7. Which statements to authorize for proof first? Suggested: E1-E6,
    B2f, B2c, B2, B2g, B3a, B3e, B3f, in that order (§8).
+8. (Second review, R9; open.) Add the fragment characterizations
+   `Scoped P → EqFree P → (∃ z, FreshLabels P z) → (ValidOpen P ↔ ∀ π,
+   HasInstance P π → SolvableFinAt P (thetaFree P π))` and the flat
+   analogue? They follow from B3e and B5 with no open premise.
