@@ -4029,3 +4029,23 @@ given: no "definedness" constructor exists (definedness appears as
 are retained by re-checking the original `P.B` under the untrusted
 certificate; statements primarily for strategy A (empty cube), B
 deferred.
+
+**The author's clarification (2026-10-21).** The revised tool procedure
+is appropriate (it follows the guard's remedy and keeps worktree
+isolation). Correction to the coordinator's answer: "definedness shows up
+as `disjoint` atoms" is too broad. The declaration fragment may be
+restricted to `lacks` and `disjoint` on declared rigid rows; the body
+checker must still enforce expression definedness (overlapping record
+parts, duplicate written labels, nested expressions), and an equation
+holds only when both sides evaluate. SC3 keeps that explicit;
+re-checking the original body under the certificate is the boundary,
+with no trusted residual simplification. **The two prototype defects
+stay open** until impact and corrections are reviewed, each with a
+minimal failing example and the correct result; false acceptance and
+false refusal assessed separately; the recorded inputs inspected for
+which historical results exercised the fault; focused regressions and
+affected cross-check reruns after correction. `disjoint r r` requires
+`r` empty and is not an ordinary distinct-row pair. Strategy A's empty
+cube avoids the forced-label case, but that does not establish that
+all historical results are unaffected. B stays deferred; no further
+large performance runs.
