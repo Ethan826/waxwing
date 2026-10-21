@@ -65,6 +65,57 @@ stale amendment label calling c7/c8 collectively all-stage-pure; narrowed
 that label to carrier-stage controls. Historical raw reports retain their
 original wording; the final report uses the corrected manifest metadata.
 Final width/whitespace, relative-link, source-hash, result-count and
-specialization-key audits passed. The scoped runner itself remains exit 1
-for the nine explicitly recorded expectations; no full-suite pass is
+specialization-key audits passed. At that checkpoint the scoped runner still
+exited 1 for the nine recorded expectations. The second author-review
+corrections below supersede that runner contract; no full-suite pass was
 claimed.
+
+## Second author review: baseline gate and unknown types
+
+The author reproduced the earlier data and identified three corrections. The
+earlier nine-difference runner was an exploratory record, not an adequate
+regression gate. A current-outcome manifest is now separate from the
+original design-candidate expectations. Known TypeMismatch diagnostics and
+interpreter parser errors are exact expected outcomes; new differences must
+fail. Compiler, runtime and interpreter outcomes remain separate.
+
+Humanizer/Garner catalogue before rewriting:
+
+| Exact passage | Problem / reader cost | Rewrite |
+|---|---|---|
+| "Recommendation for decision 2: keep P001's existing hole discipline" | The experiments discard the unknown value; the recommendation gives them more weight than their observations justify | Say the observations are consistent with the existing discipline and do not settle policy |
+| "The exploratory runner exits 1 with nine unmet original expectations" | Describes a historical limitation as the current checking contract | Explain that known outcomes are pinned and any new difference exits 1 |
+| "The author then approved a separate bounded probe tranche" | Omits the actual message and can sound like a broader formal approval | Quote "Okay, do it" and identify the immediately preceding proposal and scope |
+
+Additional bounded scope was written in unknown-plan.md before executing
+h1-h3. The predicted function-stand-in rejection was confirmed. This is an
+acceptance difference, not a different printed value in a successful run.
+Int/Bool/Text/record cases print Nil. The discarded-value observations
+remain acceptance evidence only. No unknown-type-independence theorem is
+claimed, and a uniformity gate must fail on h1/h2.
+
+The effects syntax finding now has its own author-facing note. Shared
+backlog, progress, source and language-policy files remain untouched.
+
+## Second-review validation
+
+The independent reviewer found no failure-blending bug or substantive
+false statement in the revised matrix, stand-in results or zero-payload
+account. They checked the recorded 24/13/63/10 counts and the two
+Function-stand-in rejections. They suggested rejecting unknown CLI flags
+so a misspelled uniformity option cannot silently disable that gate. The
+runner now exits 2 for invalid options; two CLI checks cover that behavior.
+Eight result-record mutations remain separate from these option checks.
+
+Humanizer/Garner re-review after rewriting preserved the acceptance versus
+execution distinction, proposal limits and precise authorization quote.
+The evidence now says consistent with current handling, not that the
+experiments justify a new hole policy. Long edited prose lines were
+reflowed without changing their claims. No further prose findings remained.
+
+Final live run: baseline differences 0, with the two printing cases listed
+as nonuniform; 63 Go executions and all 24 source hashes match their
+expectations. Replay/sensitivity checks pass, including eight altered
+result records and two invalid-option checks. The explicit uniformity
+check exits 1 as expected. Width, whitespace, source-limit and 45 local
+link checks pass. No npm verification or compiler implementation ran.

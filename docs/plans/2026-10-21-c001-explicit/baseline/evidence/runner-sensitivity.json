@@ -1,0 +1,40 @@
+{
+  "healthyReplayExit": 0,
+  "uniformityGateExit": 1,
+  "invalidOptionChecks": 2,
+  "scope": "Result-record mutations exercise the real CLI exit gate. They are not source or compiler mutations.",
+  "checks": [
+    {
+      "name": "compiler",
+      "exit": 1
+    },
+    {
+      "name": "goOutput",
+      "exit": 1
+    },
+    {
+      "name": "oracleError",
+      "exit": 1
+    },
+    {
+      "name": "missingRepresentative",
+      "exit": 1
+    },
+    {
+      "name": "typeSensitiveOutput",
+      "exit": 1
+    },
+    {
+      "name": "changedPrintability",
+      "exit": 1
+    },
+    {
+      "name": "missingCase",
+      "exit": 1
+    },
+    {
+      "name": "extraCase",
+      "exit": 1
+    }
+  ]
+}
