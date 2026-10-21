@@ -4543,3 +4543,43 @@ cause a false acceptance; correction and reruns per sc-statements.md
 §10.4); whether the prototype gets the guard and `certOkY` so that the
 measured A is the proved A; search acceptance examples before any
 implementation plan (§18.48 item 4).
+
+### 18.51 Decision: target `ValidOpen` directly (2026-10-21)
+
+**The author chose option 2 of §18.50**: target `ValidOpen`, the
+intended language boundary, now with a proved characterization. A full
+compressed P9s checker would spend proof effort while keeping the
+`route` limitation.
+
+**Authorized, statements and architecture only:**
+
+- the cell-based certificate format and its interpretation, preserving
+  each source row's field types;
+- the semantic checker theorem parameterized by a generic instance and
+  the evidence it needs (no computed θ* at this stage);
+- certificate instantiation, original-body checking, definedness and
+  pattern-coverage obligations, stated separately;
+- the precise hypotheses needed for efficient region queries, without
+  assuming the old four queries remain sufficient;
+- acceptance scenarios: `route`, `star`, `divide3`, negative controls;
+  guards deferred.
+
+Shared work is reused only where its semantics matches: **the
+evaluator's shape is reusable; its correctness theorem is not
+automatically target-independent** (P9s's single-row rests and the new
+model's Venn cells are interpreted differently).
+
+**Authorized, prototype maintenance** before further measurements: fix
+both disclosed defects (§18.49) with focused regression checks; add the
+fragment guard and certificate validation that align the prototype with
+its stated contract; preserve historical results and label the corrected
+prototype separately; rerun affected small cross-checks; large timing
+sweeps deferred.
+
+Kept as evidence and comparison material, without a proof campaign: the
+P9s proposals (SC1-SC4, option C's `Accepts` statements) and the
+reference checker. Deferred: SC3′ exactness and PW unless the new
+architecture shows a dependency. Publishing these statements on `main`
+is compatible with their proposal status. **No cell-based checker
+proofs or compiler implementation before the new statements receive
+adversarial review.**
