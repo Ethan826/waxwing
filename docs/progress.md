@@ -7858,3 +7858,9 @@ assessment.md.
   signature checking's enumeration stays at most `2^4` patterns per
   function; deciding call sites by the written search does not scale
   (232 `main`s over `2^40`). A recorder interface is proposed, not built.
+- The author's review of §18.19 (dossier §18.20): certificates for
+  call-site solving (failure to find one is Unresolved); an
+  application-shaped measurement and slicing statements S1/S2 next; the
+  recorder stays a proposal. Next integration gate: a complete recorder
+  specification, a scalable search, a checker covering exactly what was
+  recorded.
