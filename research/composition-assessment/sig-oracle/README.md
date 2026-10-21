@@ -22,6 +22,9 @@ only; not part of `npm run verify`. Bounded evidence, not proof.
   dossier §14.3 and a direct check of its lemmas (below).
 - deliberate.mjs: hand-built certificates for cases the search never
   produces (dossier §14.8).
+- source-boundary.mjs, run-source-boundary.mjs: Waxwing functions with
+  hand-translated signature problems (dossier §17), against predicted
+  verdicts.
 - export-lean.mjs: writes the certificates the search finds as Lean
   data (research/composition-proofs/Composition/Sig/CheckData.lean) for
   the verified checker (dossier §15.8). The search stays untrusted:
@@ -32,7 +35,8 @@ Run (from this directory): `node run-challenges.mjs`;
 `node check-interpretation.mjs 1000 5`;
 `node check-interpretation.mjs 300 9 larger`;
 `node check-interpretation.mjs 0 5 mutant`;
-`node check-interpretation.mjs 300 5 rich`; `node export-lean.mjs 100 7`.
+`node check-interpretation.mjs 300 5 rich`; `node export-lean.mjs 100 7`;
+`node run-source-boundary.mjs`.
 
 ## The bounded semantics
 

@@ -1,10 +1,31 @@
+# Waxwing / record composition foundation: source-level boundary (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Proved:
+P9s soundness, the verified checker, K7, K8, and the source-level
+boundary (§17). No compiler code changed. Task 7 stays checkpointed
+(`r005b-task7-wip`). The website fix is complete: the author reports it
+pushed through `7130dfc` (on `main`) and verified live.
+
+**Read.** Dossier §17; research/composition-proofs/README.md
+(SourceBoundary row); sig-oracle/source-boundary.mjs.
+
+**Next, needs the author:** §17.4: research a procedure that divides
+rigid rests (`route`'s shape), or record the narrower-signature
+workaround as a known limitation for now. Also open: whether the
+compiler's constraints match §17.1's hand translation, how accepted
+constraints justify compilation and split selection, compiler
+integration. Not authorized: adopting P9s or its boundary as policy,
+compiler changes.
+
+---
+
 # Waxwing / record composition foundation: K7 and K8 proved (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Proved:
 P9s soundness, the verified checker, no loss against `Accepts` (K7),
 and that `Accepts` refuses the valid `split` (K8). No compiler code
 changed. Task 7 stays checkpointed (`r005b-task7-wip`). The author
-notes the website fix remains paused.
+notes the website fix remains paused (superseded: complete, see above).
 
 **Read.** Dossier §16.5; research/composition-proofs/README.md.
 

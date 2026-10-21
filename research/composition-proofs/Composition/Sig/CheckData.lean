@@ -89,6 +89,60 @@ def ex_nested_rigid_field_absent : SigProblem String String :=
 def tab_nested_rigid_field_absent : CertTable String String :=
   [([], ⟨[(1, (.record [(.inl "h", (.record [(.inr 0, (.base (.inr (.R 0))))]))]))], [(3, [(.inr 0, (.base (.inr (.R 0))))])]⟩), ([(0, "h")], ⟨[(1, (.record [(.inl "h", (.record [(.inl "h", (.base (.inr (.A 0 "h")))), (.inr 0, (.base (.inr (.R 0))))]))]))], [(3, [(.inl "h", (.base (.inr (.A 0 "h")))), (.inr 0, (.base (.inr (.R 0))))])]⟩)]
 
+def ex_src_greeting : SigProblem String String :=
+  ⟨[], [0], [.lacks 0 "name"], [.eq (.record (.cons "name" (.base "Text") .nil) [0]) (.record (.cons "name" (.tvar 1) .nil) [3]), .eq (.tvar 1) (.base "Text")]⟩
+
+def tab_src_greeting : CertTable String String :=
+  [([], ⟨[(1, (.base (.inl "Text")))], [(3, [(.inr 0, (.base (.inr (.R 0))))])]⟩)]
+
+def ex_src_mark : SigProblem String String :=
+  ⟨[], [0], [.lacks 0 "reviewed"], [.eq (.record (.cons "reviewed" (.base "Bool") .nil) [0]) (.record (.cons "reviewed" (.base "Bool") .nil) [0])]⟩
+
+def tab_src_mark : CertTable String String :=
+  [([], ⟨[], []⟩)]
+
+def ex_src_markForwarded : SigProblem String String :=
+  ⟨[], [0], [.lacks 0 "reviewed"], [.eq (.record .nil [0]) (.record .nil [3]), .lacks 3 "reviewed", .eq (.record (.cons "reviewed" (.base "Bool") .nil) [3]) (.record (.cons "reviewed" (.base "Bool") .nil) [0])]⟩
+
+def tab_src_markForwarded : CertTable String String :=
+  [([], ⟨[], [(3, [(.inr 0, (.base (.inr (.R 0))))])]⟩)]
+
+def ex_src_join : SigProblem String String :=
+  ⟨[], [0, 1], [.disjoint 0 1], [.eq (.record .nil [0, 1]) (.record .nil [0, 1])]⟩
+
+def tab_src_join : CertTable String String :=
+  [([], ⟨[], []⟩)]
+
+def ex_src_forwarded : SigProblem String String :=
+  ⟨[], [0, 1], [.disjoint 0 1], [.eq (.record .nil [3]) (.record .nil [0]), .eq (.record .nil [4]) (.record .nil [1]), .disjoint 3 4, .eq (.record .nil [3, 4]) (.record .nil [0, 1])]⟩
+
+def tab_src_forwarded : CertTable String String :=
+  [([], ⟨[], [(4, [(.inr 1, (.base (.inr (.R 1))))]), (3, [(.inr 0, (.base (.inr (.R 0))))])]⟩)]
+
+def ex_src_join3 : SigProblem String String :=
+  ⟨[], [0, 1, 2], [.disjoint 0 1, .disjoint 1 2, .disjoint 0 2], [.eq (.record .nil [0]) (.record .nil [3]), .eq (.record .nil [1]) (.record .nil [4]), .disjoint 3 4, .eq (.record .nil [3, 4]) (.record .nil [5]), .eq (.record .nil [2]) (.record .nil [6]), .disjoint 5 6, .eq (.record .nil [5, 6]) (.record .nil [0, 1, 2])]⟩
+
+def tab_src_join3 : CertTable String String :=
+  [([], ⟨[], [(6, [(.inr 2, (.base (.inr (.R 2))))]), (5, [(.inr 0, (.base (.inr (.R 0)))), (.inr 1, (.base (.inr (.R 1))))]), (4, [(.inr 1, (.base (.inr (.R 1))))]), (3, [(.inr 0, (.base (.inr (.R 0))))])]⟩)]
+
+def ex_src_both : SigProblem String String :=
+  ⟨[], [0], [.lacks 0 "a"], [.eq (.tvar 1) (.record (.cons "a" (.base "Int") .nil) [0]), .eq (.tvar 2) (.record (.cons "a" (.base "Bool") .nil) [0])]⟩
+
+def tab_src_both : CertTable String String :=
+  [([], ⟨[(2, (.record [(.inl "a", (.base (.inl "Bool"))), (.inr 0, (.base (.inr (.R 0))))])), (1, (.record [(.inl "a", (.base (.inl "Int"))), (.inr 0, (.base (.inr (.R 0))))]))], []⟩)]
+
+def ex_src_wrapAccepts : SigProblem String String :=
+  ⟨[], [0], [], [.eq (.record .nil [0]) (.record .nil [3, 4]), .lacks 4 "admin", .disjoint 3 4]⟩
+
+def tab_src_wrapAccepts : CertTable String String :=
+  [([], ⟨[], [(4, []), (3, [(.inr 0, (.base (.inr (.R 0))))])]⟩), ([(0, "admin")], ⟨[], [(4, []), (3, [(.inl "admin", (.base (.inr (.A 0 "admin")))), (.inr 0, (.base (.inr (.R 0))))])]⟩)]
+
+def ex_src_routeNarrowed : SigProblem String String :=
+  ⟨[], [0, 1, 2], [.disjoint 1 2, .disjoint 0 1], [.eq (.record .nil [0]) (.record .nil [3, 4]), .eq (.record .nil [1]) (.record .nil [5]), .eq (.record .nil [2]) (.record .nil [6]), .disjoint 3 5, .disjoint 4 6, .disjoint 3 4]⟩
+
+def tab_src_routeNarrowed : CertTable String String :=
+  [([], ⟨[], [(6, [(.inr 2, (.base (.inr (.R 2))))]), (5, [(.inr 1, (.base (.inr (.R 1))))]), (4, []), (3, [(.inr 0, (.base (.inr (.R 0))))])]⟩)]
+
 def ex_gen2 : SigProblem String String :=
   ⟨[], [], [], [.eq (.tvar 1) (.record .nil [4]), .eq (.tvar 1) (.record .nil []), .eq (.tvar 1) (.record .nil [])]⟩
 
@@ -307,6 +361,6 @@ def tab_gen94 : CertTable String String :=
 
 def exported : List (String × SigProblem String String ×
     CertTable String String) :=
-  [("alias-declared", ex_alias_declared, tab_alias_declared), ("rigid-type-free", ex_rigid_type_free, tab_rigid_type_free), ("lacks-declared", ex_lacks_declared, tab_lacks_declared), ("types-independent", ex_types_independent, tab_types_independent), ("empty-split", ex_empty_split, tab_empty_split), ("nested-same", ex_nested_same, tab_nested_same), ("tyvar-field", ex_tyvar_field, tab_tyvar_field), ("nested-alias", ex_nested_alias, tab_nested_alias), ("tyvar-nested-rest", ex_tyvar_nested_rest, tab_tyvar_nested_rest), ("absent-A", ex_absent_A, tab_absent_A), ("rigid-record-ty", ex_rigid_record_ty, tab_rigid_record_ty), ("nested-rigid-field", ex_nested_rigid_field, tab_nested_rigid_field), ("nested-rigid-field-absent", ex_nested_rigid_field_absent, tab_nested_rigid_field_absent), ("gen2", ex_gen2, tab_gen2), ("gen3", ex_gen3, tab_gen3), ("gen4", ex_gen4, tab_gen4), ("gen7", ex_gen7, tab_gen7), ("gen8", ex_gen8, tab_gen8), ("gen9", ex_gen9, tab_gen9), ("gen14", ex_gen14, tab_gen14), ("gen15", ex_gen15, tab_gen15), ("gen18", ex_gen18, tab_gen18), ("gen22", ex_gen22, tab_gen22), ("gen23", ex_gen23, tab_gen23), ("gen28", ex_gen28, tab_gen28), ("gen32", ex_gen32, tab_gen32), ("gen34", ex_gen34, tab_gen34), ("gen35", ex_gen35, tab_gen35), ("gen37", ex_gen37, tab_gen37), ("gen38", ex_gen38, tab_gen38), ("gen39", ex_gen39, tab_gen39), ("gen41", ex_gen41, tab_gen41), ("gen44", ex_gen44, tab_gen44), ("gen46", ex_gen46, tab_gen46), ("gen48", ex_gen48, tab_gen48), ("gen50", ex_gen50, tab_gen50), ("gen52", ex_gen52, tab_gen52), ("gen57", ex_gen57, tab_gen57), ("gen59", ex_gen59, tab_gen59), ("gen65", ex_gen65, tab_gen65), ("gen66", ex_gen66, tab_gen66), ("gen68", ex_gen68, tab_gen68), ("gen71", ex_gen71, tab_gen71), ("gen76", ex_gen76, tab_gen76), ("gen78", ex_gen78, tab_gen78), ("gen80", ex_gen80, tab_gen80), ("gen83", ex_gen83, tab_gen83), ("gen91", ex_gen91, tab_gen91), ("gen94", ex_gen94, tab_gen94)]
+  [("alias-declared", ex_alias_declared, tab_alias_declared), ("rigid-type-free", ex_rigid_type_free, tab_rigid_type_free), ("lacks-declared", ex_lacks_declared, tab_lacks_declared), ("types-independent", ex_types_independent, tab_types_independent), ("empty-split", ex_empty_split, tab_empty_split), ("nested-same", ex_nested_same, tab_nested_same), ("tyvar-field", ex_tyvar_field, tab_tyvar_field), ("nested-alias", ex_nested_alias, tab_nested_alias), ("tyvar-nested-rest", ex_tyvar_nested_rest, tab_tyvar_nested_rest), ("absent-A", ex_absent_A, tab_absent_A), ("rigid-record-ty", ex_rigid_record_ty, tab_rigid_record_ty), ("nested-rigid-field", ex_nested_rigid_field, tab_nested_rigid_field), ("nested-rigid-field-absent", ex_nested_rigid_field_absent, tab_nested_rigid_field_absent), ("src-greeting", ex_src_greeting, tab_src_greeting), ("src-mark", ex_src_mark, tab_src_mark), ("src-markForwarded", ex_src_markForwarded, tab_src_markForwarded), ("src-join", ex_src_join, tab_src_join), ("src-forwarded", ex_src_forwarded, tab_src_forwarded), ("src-join3", ex_src_join3, tab_src_join3), ("src-both", ex_src_both, tab_src_both), ("src-wrapAccepts", ex_src_wrapAccepts, tab_src_wrapAccepts), ("src-routeNarrowed", ex_src_routeNarrowed, tab_src_routeNarrowed), ("gen2", ex_gen2, tab_gen2), ("gen3", ex_gen3, tab_gen3), ("gen4", ex_gen4, tab_gen4), ("gen7", ex_gen7, tab_gen7), ("gen8", ex_gen8, tab_gen8), ("gen9", ex_gen9, tab_gen9), ("gen14", ex_gen14, tab_gen14), ("gen15", ex_gen15, tab_gen15), ("gen18", ex_gen18, tab_gen18), ("gen22", ex_gen22, tab_gen22), ("gen23", ex_gen23, tab_gen23), ("gen28", ex_gen28, tab_gen28), ("gen32", ex_gen32, tab_gen32), ("gen34", ex_gen34, tab_gen34), ("gen35", ex_gen35, tab_gen35), ("gen37", ex_gen37, tab_gen37), ("gen38", ex_gen38, tab_gen38), ("gen39", ex_gen39, tab_gen39), ("gen41", ex_gen41, tab_gen41), ("gen44", ex_gen44, tab_gen44), ("gen46", ex_gen46, tab_gen46), ("gen48", ex_gen48, tab_gen48), ("gen50", ex_gen50, tab_gen50), ("gen52", ex_gen52, tab_gen52), ("gen57", ex_gen57, tab_gen57), ("gen59", ex_gen59, tab_gen59), ("gen65", ex_gen65, tab_gen65), ("gen66", ex_gen66, tab_gen66), ("gen68", ex_gen68, tab_gen68), ("gen71", ex_gen71, tab_gen71), ("gen76", ex_gen76, tab_gen76), ("gen78", ex_gen78, tab_gen78), ("gen80", ex_gen80, tab_gen80), ("gen83", ex_gen83, tab_gen83), ("gen91", ex_gen91, tab_gen91), ("gen94", ex_gen94, tab_gen94)]
 
 end Composition.Syntax.CheckData

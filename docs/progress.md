@@ -7745,3 +7745,19 @@ assessment.md.
   excluded by that rule. Clean build, no warnings, no `sorry`.
   Mutant: the K8 script on `splitSig` plus `disjoint 0 1` fails at the
   undeclared-pair step. Verify not run (docs and proofs only).
+
+## Signature checking: source-level boundary (2026-10-20)
+
+- The author accepted K7 and K8. Dossier §17: Waxwing functions with
+  hand-translated signature problems (rules in §17.1, from
+  docs/language.md). Certified, each kernel-checked by `decide`:
+  `greeting`, `mark`, `markAll`, `join`, `forwarded`, `join3`, `both`,
+  `wrapAccepts`, and `route` narrowed with `r disjoint s`. Invalid
+  controls Unresolved. `route` (a generic caller of a two-tailed
+  `divide` with per-part `disjoint` clauses) is valid
+  (`routeSig_validFin`) and refused (`routeSig_not_accepts`): the split
+  pattern arises from the intended fragment, though no acceptance
+  program has that shape.
+- `exported_all_pass`: all 58 exported certificate tables kernel-checked
+  by `decide` (the earlier 49 were evaluator `#guard`s).
+- Verify not run (docs, research and proofs only).
