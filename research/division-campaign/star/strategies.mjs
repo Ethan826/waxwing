@@ -20,6 +20,14 @@ const ms = (ns) => Number(ns) / 1e6
 
 const certJson = (cert) => JSON.stringify([...cert])
 
+// The consistent-pattern count, for reporting only, timed apart
+// (protocol.md, amendment 5).
+function counted(P, labels) {
+  const t = now()
+  const log2 = consistentCount(P, labels)
+  return { log2, countMs: ms(now() - t) }
+}
+
 // ---- E: one certificate per consistent pattern -------------------------
 
 // Search at one pattern: unification on the whole problem; failing
@@ -54,8 +62,8 @@ function searchAt(P, labels, comps, index, side, present) {
 
 export function runE(P) {
   const labels = writtenLabels(P)
-  const log2 = consistentCount(P, labels)
-  const out = { strategy: 'E', consistentLog2: log2,
+  const { log2, countMs } = counted(P, labels)
+  const out = { strategy: 'E', consistentLog2: log2, countMs,
     rawLog2: P.rigidRows.length * labels.length }
   if (log2 === null || log2 > LIMITS.patternsLog2) {
     return { ...out, verdict: 'unresolved', cause: 'budget: patterns' }
@@ -107,7 +115,8 @@ export function runE(P) {
 
 export function runA(P) {
   const labels = writtenLabels(P)
-  const out = { strategy: 'A', consistentLog2: consistentCount(P, labels) }
+  const { log2, countMs } = counted(P, labels)
+  const out = { strategy: 'A', consistentLog2: log2, countMs }
   let t = now()
   const index = makeIndex(P, labels)
   const indexNs = now() - t
@@ -143,13 +152,11 @@ function varsOf(t, out) {
   return out
 }
 
-function flexVarsOfAtom(P, a) {
+function flexVarsOfAtom(flex, a) {
   const vs = []
   if (a[0] === 'eq') { varsOf(a[1], vs); varsOf(a[2], vs) }
   if (a[0] === 'lacks') vs.push(`r${a[1]}`)
   if (a[0] === 'disjoint') vs.push(`r${a[1]}`, `r${a[2]}`)
-  const flex = new Set([...P.flexRows.map((r) => `r${r}`),
-    ...P.flexTys.map((n) => `t${n}`)])
   return [...new Set(vs.filter((v) => flex.has(v)))]
 }
 
@@ -158,10 +165,15 @@ function flexVarsOfAtom(P, a) {
 export function components(P) {
   const parent = new Map()
   const find = (x) => {
-    while (parent.get(x) !== x) x = parent.get(x)
+    while (parent.get(x) !== x) {
+      parent.set(x, parent.get(parent.get(x)))
+      x = parent.get(x)
+    }
     return x
   }
-  const vars = P.B.map((a) => flexVarsOfAtom(P, a))
+  const flex = new Set([...P.flexRows.map((r) => `r${r}`),
+    ...P.flexTys.map((n) => `t${n}`)])
+  const vars = P.B.map((a) => flexVarsOfAtom(flex, a))
   for (const vs of vars) {
     for (const v of vs) if (!parent.has(v)) parent.set(v, v)
     for (const v of vs.slice(1)) parent.set(find(v), find(vs[0]))
@@ -322,7 +334,8 @@ function refine(P, sub, labels, region, uniform, acc) {
 
 export function runB(P) {
   const labels = writtenLabels(P)
-  const out = { strategy: 'B', consistentLog2: consistentCount(P, labels) }
+  const { log2, countMs } = counted(P, labels)
+  const out = { strategy: 'B', consistentLog2: log2, countMs }
   let t = now()
   const index = makeIndex(P, labels)
   const comps = components(P)

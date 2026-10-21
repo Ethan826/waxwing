@@ -158,6 +158,19 @@ budget or time.
    holders carry no declared disjoint pair (generic.mjs). This affects
    reporting only.
 
+5. **Reporting cost moved out of the strategies' time; star sizes
+   extended** (after a first measurement run, stopped and discarded).
+   That run hit the 60 s limit for A and B at `star` n = 1024, but the
+   time was spent in the closed-form pattern count used for reporting
+   (cubic as written) and, for B, in a quadratic set rebuild inside
+   component computation, not in search, checking or coverage proper.
+   The count is now linear in `D` per label and timed apart as
+   `countMs`; the component code builds its set once. Neither changes
+   a verdict. Because A and B then finish every fixed size, the star
+   sizes continue (1536 up to 32768) until a limit is reached, as this
+   protocol requires. The cross-checks are rerun after this amendment;
+   results/crosscheck.txt is that rerun.
+
 ## Reported
 
 For each strategy: the largest size finished, the first size that hit a

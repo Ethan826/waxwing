@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url'
 import { FAMILIES } from './problems.mjs'
 
 const STAR = [1, 2, 3, 4, 5, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
-  256, 384, 512, 768, 1024]
+  256, 384, 512, 768, 1024,
+  // AMENDMENT 5 (protocol.md): continued until a limit is reached.
+  1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384, 32768]
 const SIZES = { star: STAR, 'star-read': STAR, 'star-undeclared': STAR,
   'star-unlacked': STAR, 'star-cross': STAR.filter((n) => n >= 2),
   dep: [1, 2, 3, 4, 6, 8, 12, 16, 32, 64, 128],
