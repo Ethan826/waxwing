@@ -59,3 +59,5 @@ import Composition.Presence.Examples
 import Composition.Presence.Decide
 import Composition.Presence.DecideWritten
 import Composition.Presence.DecideValid
+import Composition.Presence.Witness
+import Composition.Presence.WitnessExamples
