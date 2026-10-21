@@ -112,8 +112,10 @@ refuses.
   split. The only split satisfying both `u disjoint s` (`s = { a }`)
   and `Pr(u)` is `u = {}`, `v = { a, f }`. Disjointness keeps `a` out
   of `u` and printability keeps `f` out, so the split is forced *at
-  this ground key*. (Proved for the model: `e2_not_covers₁`,
-  `e2_covers₂`.) "Forced" here does not mean accepted today: a forced
+  this ground key*. (Proved for the model: `e2_not_covers₁`, the
+  `f`-in-`u` split fails, and `e2_covers₂`, the other passes.
+  Uniqueness over all splits of `{ a, f }` is derived above, not
+  proved.) "Forced" here does not mean accepted today: a forced
   split is still refused by `CannotTell` (c.wxw, the O4 limitation,
   split-selection.md §3.1).
 - In a model **without** `Pr` (model M0, today's), the requirement
@@ -230,7 +232,7 @@ number `k` into the program's tables.
 |---|---|
 | `x` | variable |
 | `n` | a literal (natural number) |
-| `{}` | the empty record (not a source literal; language.md has no `{}` expression) |
+| `{}` | the empty record (no source literal, but `{ ...rest }` with an empty rest denotes it, language.md:933) |
 | `{ l: t, ...t' }` | extension, defined iff `t'` lacks `l` |
 | `{ ...t, ...t' }` | composition, defined iff the label sets are disjoint (R005B's multi-spread: intended semantics, one spread today) |
 | `t.l` | field access |
@@ -265,8 +267,10 @@ holes versus chosen parts) are outside it (§5).
 **Split variants.** `P₁` and `P₂` are split variants if they agree on
 bodies, `ty`, `ok`, `D` and `Req`. They may differ on `wit` and `loc`.
 Two splits of one call, including the caller-side typing they induce,
-give two split variants. `Req` is the same text in both; this is the
-declared form of §1.4.
+are *encoded* as two split variants. That is a convention, not a
+derived fact: nothing ties `loc` to `wit` (E2c sets `main`'s row 4 to
+the witness's `u` by hand, Boundary.lean:25-26). `Req` is the same text
+in both; this is the declared form of §1.4.
 
 **Allowed operations**: every row of the table except `project_k`. A
 program is *projection-free* if no body contains `project_k`.
@@ -280,7 +284,7 @@ program is *projection-free* if no body contains `project_k`.
 | `Fail` payloads | open record payloads are refused at check time (language.md, "Failure payloads"); data payloads that mention a row, such as `Fail(List({ ...u }))`, are untested (assumed refused) |
 | R010, the instantiation rule (E5, §1.5) | a rule on witness form; two valid splits can differ (proved nowhere; derived from the code) |
 | holes versus chosen parts | a defaulted hole and a chosen `{}` lower alike but differ at check time (comparison `Ambiguous`; R010 counts a hole as ground; ADR 007 condition 1) |
-| `CannotTell` (Unresolved.purs:74) | today's refusal of unforced splits; decision 3, not a split-dependent outcome |
+| `CannotTell` (Unresolved.purs:74) | today's refusal of splits the checker cannot determine, forced ones included (c.wxw, O4); decision 3 and O4, not a split-dependent outcome |
 | data types, effects, handlers, `print` as an effect, record update, record patterns, `if`/`match`, interpolation, text and bool literals, pipe, `let` | not modeled; believed harmless (they read written labels or no record at all) but unexamined; `show` stands for the print sites (all three are judged by one check) |
 | the 10,000-key limit (`E_SPECIALIZATION`, Specialize/Keys.purs:150) | two splits may reach different numbers of keys (split-selection.md E4); a resource bound, outside (C) |
 | several-tail lowering and Go (Task 8) | not implemented (Record.purs:39 placeholder); assumption A-go (§5) |
@@ -359,19 +363,28 @@ Statements, with their status after the proofs:
   differ: `{ f: … }` against `{}`.
 - **C-local, coverage gives acceptance** (proved,
   `accepted_of_covers`). If `Covers P` and `Req f θ`, then `f`'s body
-  is accepted at `loc f θ`. Also `req_of_covers`: every copy that
-  specialization creates meets its callee's interface, so a call-edge
-  ground check never fires (ground-check.md).
+  is accepted at `loc f θ`.
+- **Ground check silent** (proved, `req_of_covers`). Under `Covers`,
+  every copy that specialization creates meets its callee's interface.
+  When the interface includes the callee's clauses (`Req₀`, `Req₁`),
+  a call-edge ground check of `D` never fires (ground-check.md). The
+  copy-placement check of `B` is not covered: `B` is not in this model.
 - **C, acceptance irrelevance** (proved, `accepted_split`). Let `P₁`
   and `P₂` be split variants, both satisfying `Covers`. Then at every
   declaration `f` and rigid key `θ` with `Req f θ`, both are accepted.
   This covers every seeded monomorphic declaration
-  (Specialize/Seeds.purs:35-36), taking `θ` as the empty key.
-  *Standing:* C is C-local applied twice. Its content is in the
-  definitions: what "the model counts every requirement" must mean
-  (`Covers`, with caller-side sites at local keys), and the fact that
-  under it, specialization-time refusal cannot depend on the split.
-  When `Req f θ` fails, C says nothing.
+  (Specialize/Seeds.purs:35-36), at any key, *provided* `Req f θ`
+  holds there (under `Req₁`, E2c's split-1 `main` fails it, and C is
+  silent).
+  *Standing:* C is C-local applied twice. The proof uses `SplitVariant`
+  only to transport `Req`: C holds for any two programs that share
+  `Req` and both satisfy `Covers`, and uses nothing else about splits.
+  Its content is in the definitions: what "the model counts every
+  requirement" must mean (`Covers`, with caller-side sites at local
+  keys), and the fact that under it, *modeled* specialization-time
+  refusal cannot depend on the split. The key limit, R010 and the
+  several-tail placeholder (Record.purs:39) remain outside. When
+  `Req f θ` fails, C says nothing.
 - **E2-formal** (proved, Examples.lean). With `ok = Pr`, take `P₁` (`u
   = { f }`, `v = { a }`) and `P₂` (`u = {}`, `v = { a, f }`), split
   variants of E2's `main`/`divide`. Both witnesses satisfy `divide`'s
@@ -400,7 +413,7 @@ Statements, with their status after the proofs:
 | `Req` is a semantic predicate on keys | any clause language denotes one | a clause language that cannot express what (i) needs (`Pr` of a restriction `r|T`, E2′) | real limit: (C) holds for the model; whether a syntactic checker can establish `Covers` is separate |
 | interfaces fixed by the text (declared form) | needed: E2′ | E2′; `Req₁` depends on `loc` | (C) is stated only for this form |
 | undefined site types refuse | Record.purs:58 refuses a repeated label | none (corrected from the first draft, S5) | modeled |
-| every typed position is a site | lowering lowers every node's type (Body.purs:37-39, 55-57) | a typed position not written as `ann_k` | modeling convention: a program must annotate every typed position for "accepted" to mean the compiler's acceptance |
+| every typed position is a site | lowering lowers every node's type (Body.purs:37-39, 55-57) | a typed position not written as `ann_k` | modeling convention: a program must annotate every typed position for "accepted" to mean the compiler's acceptance. The E2 examples do not annotate `divide`'s parameter types; `param_image` proves their definedness separately |
 | sites are reached by an inductive relation (finite derivations) | the compiler copies finitely many keys (R010, ADR 007 §4.2) | polymorphic recursion with unbounded keys | harmless for (C), which quantifies over every reached site |
 | requirement kinds as `ok k` per site | printability and comparability are the type checks that see split parts (Specialize.purs:95; Check/Comparable.purs) | Stream 5's inventory | generic in `ok`; the list of kinds is the recorder's completeness, not proved |
 | key limit excluded | resource bound | E4: different splits, different key counts | excluded; a counterexample at the limit is expected, not constructed |
@@ -432,12 +445,30 @@ fixed by the instantiation, nor check-time rules on the witness.
 | S8 (unjustified) | "Counted, it makes `u = { f }` invalid … forced" | "forced at the ground key"; `Pr` is not a shared atom and breaks the presence abstraction; forced is not accepted today (`CannotTell`) |
 | S9 (wording) | "equal … output"; "a ground printer reads only the value's type" | "output" dropped; the printer claim marked derived |
 | S10 (checked) | E2′ | confirmed correct |
-| C1-C10 (completeness) | missing refusals, check-time and form-sensitive rules, lambdas and references, Go acceptance, unmodeled operations, `Fail` data payloads, diagnostics order, table rows | all added to §2, §3 and §5. Function references (Body.purs:73-74) create keys as calls do; the model treats a reference as an eta-expanded call |
+| C1-C10 (completeness) | missing refusals, check-time and form-sensitive rules, lambdas and references, Go acceptance, unmodeled operations, `Fail` data payloads, diagnostics order, table rows | all added to §2, §3 and §5. Function references (Body.purs:83-84) create keys as calls do; the model treats a reference as an eta-expanded call |
 
-After the corrections, no statement in §4 is known to be false. The
-proofs followed the corrected statements. The corrected version was not
-sent back to the reviewer, because the run's instructions asked for one
-review. It should be re-reviewed before the author relies on it.
+The proofs followed the corrected statements.
+
+**Second review** (the same reviewer, of a9cf06a: the corrected text,
+the Lean definitions and statements, and ground-check.md). It found no
+false statement in §4 and confirmed that the Lean definitions and
+theorems match §2-§4. Its remaining findings, all fixed in the next
+commit:
+
+| Finding | Was | Fix |
+|---|---|---|
+| G1 (false, ground-check.md §3) | a lowering defect "gives malformed Go (a duplicated field)" | Record.purs:58 already refuses a repeated label with E_INTERNAL; only "a silently wrong layout" kept |
+| G2 (unjustified) | "C-local shows the call-edge check holds at every reached key" | the lemma is `req_of_covers`; it covers call edges only when interfaces include `D` (`Req₀`, `Req₁`); the copy-placement check of `B` is not covered |
+| W1, W8 (citations) | function references at Body.purs:73-74; "language.md has no `{}` expression"; ground-check.md's calls row citing Body.purs:84 | Body.purs:83-84 (references) and :69 (calls); no empty-record literal, but `{ ...rest }` with an empty rest denotes `{}` (language.md:933) |
+| W2 (overclaim) | the split "forced" marked proved | only that one split fails and the other passes is proved; uniqueness derived |
+| W3 | `CannotTell` refuses "unforced splits" | it refuses splits the checker cannot determine, forced ones included |
+| W4, W5 | C "covers every seeded declaration … the empty key"; refusal "cannot depend on the split" | only where `Req f θ` holds, at any key; *modeled* refusal |
+| V1 (vacuity) | C's dependence on splits | stated: the proof uses only the shared `Req` |
+| V2 | split variants "give" the caller-side typing | an encoding convention: nothing ties `loc` to `wit` |
+| W6 | the examples break "every typed position is a site" | stated: `divide`'s parameter types are not `ann` sites; `param_image` proves their definedness separately |
+| modeling note | `app` runs a closure at the applying key | comment added in Defs.lean; only the excluded `project` reads the key |
+
+The fixes after the second review were not reviewed again.
 
 ## 7. Status and narrowing
 
@@ -476,3 +507,31 @@ establish `Covers` (every requirement counted, caller-side included),
 source-to-constraint specification counts every requirement is Stream
 5's question. This note does not answer it, beyond the inventory in §2
 and §5.
+
+## 8. Coordination with Stream 5
+
+Stream 5's translation.md (its worktree, read 2026-10-21, not yet
+integrated) inventories the checks independently. It agrees on
+printability (its S1, the verdict (b), §3.2) and on R010 (its C1, a
+side condition on witnesses). Two points differ, both for the
+coordinator:
+
+- **Comparison.** Its row C2 says comparison "never separates two
+  splits", because the check is conservative at the generic type. That
+  holds for comparisons *in the generic function*. It fails for a
+  comparison in the *caller*, at a type the instantiation fixes (h3/h4
+  above: refused with `{ f: fn }`, accepted with `{ a: 1 }`). With
+  several tails the instantiation of a split part is the split (E2c's
+  shape with `==`).
+- **"The same construct also shows (a)"** (its §3.2: once `peek` is
+  applied, the output depends on the split). Inside `divide`, `peek`
+  can be applied only to a value of type `{ ...u }`, and the fragment
+  has no way to build one from `whole` without a projection (E3).
+  Either the value comes from a parameter of type `{ ...u }`, and then
+  that argument fixes `u` and the split is no longer free, or it needs
+  a projection, which is excluded. So in the projection-free fragment
+  the claim contradicts R (for the reference semantics; compiled code
+  rests on A-go). If Stream 5 has a construction that applies `peek`
+  without either, it would be a counterexample to R's fragment and
+  should be added here.
+

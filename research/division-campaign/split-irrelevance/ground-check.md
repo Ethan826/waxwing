@@ -33,7 +33,7 @@ Two placements, which check different things:
 | a call's key is computed | src/Features/Specialize/Values.purs:44-51 (`callee`), instantiation lowered at :82-94 (`instantiated`) | `instantiated scope span sorts instantiation >>= called scope.env span id` | between the two: the callee's clauses at the lowered arguments (call-edge placement) |
 | a key is looked up or created | src/Features/Specialize/Keys.purs:60-70 (`called`), :146-154 (`claim`, the key limit) | memo table of keys | nothing; the check belongs before, once per (call, key) or once per key |
 | a copy is filled | src/Features/Specialize/Body.purs:30-41 (`fillFunction`) | parameters, result and body copied at `work.arguments` | the copy's recorded `B` at its key (copy placement) |
-| calls inside a body | src/Features/Specialize/Body.purs:69, :84 (`callee`) | each call's key | as the first row |
+| calls and bare references inside a body | src/Features/Specialize/Body.purs:69 (calls), :83-84 (`FunctionRef`), both through `callee` | each call's key | as the first row |
 | a record type at a key | src/Features/Specialize/Record.purs:53-59 (`singleTail`) | E_INTERNAL `Duplicate record label` when a written label is also in the tail's image | already a ground `lacks` check, for one atom kind, as an internal error |
 | print sites at ground types | src/Features/Specialize.purs:95 → src/Features/Specialize/Printable.purs:55-63, :99-104 | E_TYPE `Expected a printable value` | already a ground requirement check, as a **user** error (E2's source) |
 | the checked declaration | src/Domain/Checked/Internal.purs:45-54 (`FunctionDecl`) | no clauses, no recorded `B` | a slot for `D` and the recorded `B` (or a per-call list of instantiated callee clauses) |
@@ -49,10 +49,10 @@ and an evaluation of term witnesses at a key (split-selection.md §2.3).
   checker or an untrusted search produced but which fails `B` or the
   callee's `D` at a key that the program actually reaches; a lowering
   that evaluates a correct witness wrongly (a set term computed on the
-  wrong labels, a field type copied from the wrong row). Today such a
-  defect gives malformed Go (a duplicated field) or a silently wrong
-  layout; the check turns it into E_INTERNAL at a source span, as
-  Record.purs:58 does for one atom kind.
+  wrong labels, a field type copied from the wrong row). Today a
+  repeated label is already refused with E_INTERNAL (Record.purs:58);
+  any other such defect would give a silently wrong layout. The check
+  turns those into E_INTERNAL at a source span too.
 - **Mismatch between what the checker solved and what the specializer
   lowers**: the default holes (`Int`, `{}`, ADR 007, ADR 013) where a
   constrained row was left undetermined (recon.md: lowering fills
@@ -106,9 +106,13 @@ recon.md's size measurements (`|R|`, `|L|`) bound the atom counts.
    statements.md, under which E2 is refused or accepted by the split.
    It is safe for split irrelevance only as an internal assertion that
    never fires when the model is complete (`Covers`). Under `Covers`,
-   statements.md's C-local shows the call-edge check holds at every
-   reached key, so a firing check is evidence of a defect in the
-   checker, the recorder or the lowering, never a user error.
+   `req_of_covers` (statements.md §4) gives every reached call edge
+   its callee's interface; when interfaces include the callee's
+   clauses (`Req₀`, `Req₁`), the call-edge check of `D` holds there, so
+   a firing call-edge check is evidence of a defect in the checker,
+   the recorder or the lowering, never a user error. The copy-placement
+   check of `B` is not covered by any theorem here (`B` is not in the
+   model).
 4. **It does not certify uniformity.** A witness that happens to work at
    every reached key may still not be a uniform witness (dossier §18.6,
    D2's per-assignment versus uniform distinction). Lowering does not
