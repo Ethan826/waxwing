@@ -34,6 +34,29 @@ would do that bookkeeping, including errors from constructing services as well
 as calling them. Programmers could still write signatures to limit what a
 function is allowed to do.
 
+## Type system at a glance
+
+Implemented features include rank-1 generic functions and ADTs, structural
+record rows, algebraic effects, handlers and typed failure families. Named
+functions have explicit signatures; local bindings are not generalized.
+Higher-kinded types (HKTs), type classes and inferred signatures for named
+functions remain planned. The [language specification](docs/language.md)
+records the exact rules and current restrictions.
+
+| Capability | What it gives you | Foundation and current evidence |
+|---|---|---|
+| Rank-1 polymorphism | A definition works for every type its signature permits; each use is checked independently. | Hindley–Milner-style unification; Jones's [Typing Haskell in Haskell][thih] is a semantic reference. Compiler tests cover instantiation, occurs checks and specialization restrictions. |
+| Closed ADTs and exhaustive patterns | Parameterized data, nested matches, missing-case witnesses and redundant-arm errors. | [Maranget's usefulness algorithm][maranget], extended to account for types with no possible values; checked against an independent brute-force oracle. |
+| Structural record rows | Ask for a few fields, preserve the rest, add fresh fields and remove named fields. | PureScript-style rows and lacks constraints; [ADR 013](docs/adr/013-records.md) records Waxwing's unique-label rules and adaptations. Compiler tests and interpreter/Go comparisons cover implemented operations. |
+| Effect rows and handlers | Dependencies and typed failures appear in function types; handlers discharge them. | [Koka's row-polymorphic effects][koka-paper] and scoped-label matching. Waxwing's failure-family keys, cleanup marks and handler restrictions are local design; they are tested, not covered by the record proofs below. |
+| Disjoint record composition | Combine independent pieces without silent overwrites; infer a field's location when the constraints force it. | Foundation research: a Lean-checked constraint decider and signature soundness result, described below. The replacement foundation is not integrated into the compiler. |
+| Explicit instance selection | Choose or construct different lawful operations for the same type without mandatory newtype wrappers. | Planned class/module design, informed by fp-ts dictionaries and Haskell/PureScript; [direction note](docs/plans/2026-10-10-modules-and-instance-selection-direction.md). Ordinary records of functions already work. |
+
+Rust informs practical language and API choices; ownership, borrowing and
+Rust's trait system are outside the current design. The
+[source index][cs-sources] distinguishes published rules,
+reference-compiler behavior, local adaptations and unresolved obligations.
+
 ## Dependencies as effects
 
 An effect declares operations. A function names the effects it uses, and a
@@ -102,8 +125,16 @@ converting it to a different record type.
 
 That gives a function a narrow requirement while letting callers supply wider
 records. It does not discard fields or cast a value to a smaller type. An update
-cannot add fields or change their types. Extension and removal syntax are
-planned.
+cannot add fields or change their types. Extension uses a spread such as
+`{ ...p, reviewed: true }`, with `where r lacks { reviewed }` when `p`
+has type `{ ...r }`. Removal uses `p without { name, age }`; record patterns
+can bind the remainder with `{ name, ...rest }`. These operations and
+written lacks constraints are implemented. Overlapping fields are errors.
+
+Merging several open rows is under active foundation work. The current
+implementation is incomplete; the [acceptance programs][composition-programs]
+state the intended behavior. The Lean research model establishes the
+constraint results described under "Record composition" below.
 
 Records retain checked field types, but they do not have the distinct identity
 of [nominal types][nominal]. Two records with the same labels and field types
@@ -272,6 +303,86 @@ relationship between the selected Eq and Ord instances still need design.
 Int is signed 32-bit, addition wraps, and `+` is the only arithmetic operator so
 far.
 
+## Record composition: prior art and checked results
+
+The research asks whether record pieces can compose with disjoint fields,
+independent field types, useful inference and checked generic signatures.
+For example, if `r` and `s` combine to `{ admin: Bool }` and `s` lacks
+`admin`, the field must belong to `r`. Separately extending one input with
+`a: Int` and with `a: Bool` must not equate those result types.
+
+### Prior art
+
+[Wand's record-concatenation work][wand]
+(LICS 1989; expanded in 1991) supplies per-field alternatives and a decision
+procedure. [Sulzmann's thesis][sulzmann] (2000, section 5.1.2) explicitly
+states the backward deduction from a result field and the other part's
+absence. Their biased concatenation allows overwrites; Waxwing requires
+disjoint composition. Robinson's unification and the Martelli–Montanari
+formulation supply the closed-type solving method. The
+[assessment][composition-assessment]
+records the sources, executable probes, mismatches and implementation bugs.
+Each adaptation needs its own justification beyond the cited framework.
+
+### What we have proved
+
+The Lean project checks these adaptations and constructions developed for
+Waxwing. Their novelty relative to the wider literature is not established.
+
+- Disjoint per-field constraints describe disjoint record union exactly.
+  Forced field presence and its type are separate proved claims.
+- To decide whether a call's record requirements can be satisfied, the
+  algorithm tries finitely many patterns of which fields each row holds.
+  It keeps a separate field-type unknown for each row and label. A
+  computable unifier and pattern search terminate and answer correctly in
+  both directions: acceptance means a solution exists, and every solvable
+  problem is accepted (`decideCall_correct`). Worst-case pattern search is
+  exponential.
+- The candidate signature method P9s represents an unknown remainder by a
+  symbolic rest label, then interprets it as the caller's actual remainder.
+  A certificate is an assignment of symbolic types and rows that meets
+  the method's conditions. We proved that such certificates establish a
+  signature for every permitted caller, over arbitrary rows (`s1`) and
+  finite rows at every depth (`s1_fin`). P9s is incomplete: some valid
+  signatures have no accepted certificate.
+
+### Checking the proofs
+
+The [Lean project][composition-proofs] uses Lean 4.35.0 without Mathlib.
+Lean checks the proofs; executable examples, bounded oracles, adversarial
+counterexamples and mutation checks supplement them. The recorded theorem
+dependencies are Lean's standard `propext`, `Quot.sound` and
+`Classical.choice`; there are no admitted proofs or custom axioms. Classical
+choice is used in the semantic model and proofs; the call-site decider is
+computable. Reproduce the build separately from compiler verification:
+
+```sh
+cd research/composition-proofs
+lake build
+lake env lean Composition/Axioms.lean
+```
+
+### Scope and unfinished work
+
+The model covers base types, functions and nested records. These proofs do
+not cover source-to-constraint translation, effects, local generalization
+or user-defined type constructors. A search may find several ways to divide
+fields between rows. The current policy requires a forced or explicitly
+written split unless we establish that the choice cannot affect behavior.
+
+The executable certificate checker is specified in the
+[dossier, section 15][composition-dossier], but is not yet implemented or
+proved. It is intended to check certificates found by untrusted search.
+Full signature completeness and whether split choices can be ignored remain
+open. A Contradiction verdict needs evidence of impossibility or a refuted
+signature instance; Unresolved reports that the checker could not establish
+the result.
+
+P9s has not been adopted, and the replacement record foundation is not
+integrated into the compiler. The compiler as a whole is not formally
+verified. [ADR 014](docs/adr/014-composition-not-invention.md) requires us to
+identify and justify local machinery and obtain the author's approval.
+
 ## Inferred dependencies and errors
 
 This is planned work. Today named functions must declare their own effects and
@@ -350,9 +461,13 @@ been designed.
 
 The [backlog](BACKLOG.md) tracks the remaining work:
 
-- Record patterns, followed by extension, merge, and removal with written
-  lacks constraints.
-- Type classes with Eq/Ord/Show and derived instances; modules and packages.
+- Complete open-row merge checking and lowering; integrate an approved
+  composition foundation. Record patterns, single-spread extension,
+  removal and written lacks constraints are already implemented.
+- Higher-kinded types and kind checking; type classes with Eq/Ord/Show and
+  derived instances; modules and packages.
+- Local let-polymorphism, including helpers that capture local values,
+  with established rules for effects and residual constraints.
 - More numeric types and operators, built-in collections, and a standard
   library. Lists currently have to be defined as ADTs.
 - A typed Go FFI for calling Go libraries.
@@ -443,7 +558,12 @@ and tool errors use E_IO and E_TOOL.
 - [Language direction][direction] and [backlog](BACKLOG.md)
 - [Architecture](docs/architecture.md) and [decisions](docs/adr/)
 - [Progress](docs/progress.md) and [next-session handoff](docs/next-session.md)
-- [Reference provenance](docs/provenance.md)
+- [CS source traceability][cs-sources] and
+  [reference provenance](docs/provenance.md)
+- [Composition acceptance programs][composition-programs],
+  [foundation assessment][composition-assessment] and
+  [proof dossier][composition-dossier]
+- [Lean proofs and reproduction instructions][composition-proofs]
 - [Self-hosting roadmap](docs/bootstrap.md)
 
 [inf001]: docs/plans/2026-10-11-requirement-and-error-inference-milestone.md
@@ -456,3 +576,18 @@ and tool errors use E_IO and E_TOOL.
 [classes]: https://www.haskell.org/tutorial/classes.html
 [function-records]: https://discourse.haskell.org/t/747
 [errors]: https://www.parsonsmatt.org/2018/11/03/trouble_with_typed_errors.html
+
+[thih]: https://web.cecs.pdx.edu/~mpj/thih/TypingHaskellInHaskell.html
+[maranget]: https://pauillac.inria.fr/~maranget/papers/warn/index.html
+[koka-paper]:
+  https://www.microsoft.com/en-us/research/publication/koka-programming-with-row-polymorphic-effect-types/
+[wand]:
+  https://www.cs.tufts.edu/comp/150FP/archive/mitch-wand/types-simple-objects.pdf
+[sulzmann]:
+  https://www.researchgate.net/publication/213884919_A_General_Framework_for_HindleyMilner_Type_Systems_with_Constraints
+[cs-sources]: docs/plans/2026-10-20-cs-source-traceability.md
+[composition-programs]: docs/plans/2026-10-20-composition-acceptance-programs.md
+[composition-assessment]:
+  docs/plans/2026-10-20-composition-foundation-assessment.md
+[composition-dossier]: docs/plans/2026-10-20-record-composition-dossier.md
+[composition-proofs]: research/composition-proofs/README.md

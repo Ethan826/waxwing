@@ -1,0 +1,5 @@
+## its negative control: both parts lack admin
+(\acceptsParts. acceptsParts {admin = 0})
+  (\p. (\k. true)
+         (\a.\b. {e = if true then p else a ++ b, la = a ++ {admin = 0},
+                  lb = b ++ {admin = 0}}))

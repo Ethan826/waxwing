@@ -1,0 +1,5 @@
+## program 4 as in p4.bt, with `s lacks { admin }` written as the dummy
+## concatenation b ++ {admin = 0} instead of hiding
+(\acceptsParts. acceptsParts {admin = 0})
+  (\p. (\k. true)
+         (\a.\b. {e = if true then p else a ++ b, lb = b ++ {admin = 0}}))

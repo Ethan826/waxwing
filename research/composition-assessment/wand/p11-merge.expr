@@ -1,0 +1,4 @@
+let f = q: let m1 = { a = 1; } // q; in let m2 = { a = true; } // q; in c: c m1 m2; in f { b = 1; }
+let f = q: let m1 = { a = 1; } // q; in let m2 = { a = true; } // q; in c: c m1 m2; in f
+let f = q: c: c ({ a = 1; } // q).a ({ a = true; } // q).a; in f
+let f = q: c: c ({ a = 1; } // q).a ({ a = true; } // q).a; in f { a = "s"; }

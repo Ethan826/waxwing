@@ -1,0 +1,3 @@
+## program 3: three disjoint pieces, two groupings, with ++ inline
+{l = (({name = 1} ++ {age = 36}) ++ {active = true}).name,
+ r = ({name = 1} ++ ({age = 36} ++ {active = true})).name}

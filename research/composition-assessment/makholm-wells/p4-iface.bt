@@ -1,0 +1,2 @@
+## program 4's interface alone: the typing inferred for acceptsParts
+\p. (\k. true) (\a.\b. if true then p else a ++ (b \\ admin))

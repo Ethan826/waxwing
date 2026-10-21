@@ -1,0 +1,2 @@
+## the negative control's interface alone
+\p. (\k. true) (\a.\b. if true then p else (a \\ admin) ++ (b \\ admin))

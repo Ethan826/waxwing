@@ -1,0 +1,79 @@
+== let-mono.expr
+>>> Type mismatch
+Number
+Boolean
+>>> Type mismatch
+Number
+Boolean
+== nested.expr
+>>> Number
+>>> { f : { a ? e f, name ? g } }
+>>> { f : { a : Number, name ? e } }
+>>> { a ? d, b } -> { f : { a ? d e, b } }
+== p11-lambda.expr
+>>> ({ a : Number, name : String } -> { a : Boolean, name : String } -> h) -> h
+>>> { a ? k, d } -> ({ a : Number, d } -> { a : Boolean, d } -> h) -> h
+== p11-merge.expr
+>>> ({ a : Number, b : Number } -> { a : Boolean, b : Number } -> h) -> h
+>>> { a ? l, e } -> ({ a ? present Number l, e } -> { a ? present Boolean l, e } -> h) -> h
+>>> (present Number p = present e, present Boolean p = present j) => { a ? p, k } -> (e -> j -> l) -> l
+>>> (String -> String -> l) -> l
+== p11-neg.expr
+>>> Field mismatch
+== p11.expr
+>>> { a ? l, name : String } -> Number
+>>> { a ? o, name : String } -> ({ a : Number, name : String } -> { a : Boolean, name : String } -> k) -> k
+>>> { a ? o, name : String } -> ({ a : Number, name : String } -> { a : Boolean, name : String } -> k) -> k
+>>> { a ? o, p } -> { a ? absent, p } -> ({ a : Number, p } -> { a : Boolean, p } -> k) -> k
+== p3-overlap.expr
+>>> { name : Number }
+== p3-swap.expr
+>>> { age : Number, name : String }
+== p3-three-join.expr
+>>> Field mismatch
+== p3-three.expr
+>>> { active : Boolean, age : Number, name : String }
+>>> { active : Boolean, age : Number, name : String }
+== p3.expr
+>>> String
+>>> { age : Number, name : String }
+== p4-left.expr
+>>> { admin ? u } -> { admin ? absent } -> { admin : Boolean } -> Boolean
+== p4-neg.expr
+>>> { admin ? x, y } -> { admin ? a32, a33 } -> { admin ? absent, a33 y } -> { admin ? absent, a33 } -> { admin ? absent, y } -> Boolean
+>>> Field mismatch
+== p4-nolacks.expr
+>>> { i j } -> { i } -> { j } -> Boolean
+>>> (p q = present Boolean) => { admin ? p } -> { admin ? q } -> Boolean
+== p4.expr
+>>> { admin ? u, v } -> { admin ? a26, l v } -> { admin ? a26, l } -> { admin ? absent, v } -> Boolean
+>>> { admin ? u } -> { admin : Boolean } -> { admin ? absent } -> Boolean
+== p5-explicit.expr
+>>> { x : Number, y ? k } -> { x ? r, y : Number } -> { x : Number } -> { x ? absent, y : Number } -> Number
+== p5-neg.expr
+>>> Field mismatch
+>>> Field mismatch
+== p5.expr
+>>> { y ? k, l } -> { x ? r, s } -> { y ? absent, l } -> { x ? absent, s } -> Number
+>>> { y ? k, l } -> { x ? r, s } -> (y -> z -> { x : Number, y : Number }) -> (y -> z -> Number) -> y -> z -> Number
+>>> { x : Number, y ? k } -> { x ? r, y : Number } -> { x : Number, y ? absent } -> { x ? absent, y : Number } -> Number
+== p6-neg.expr
+>>> (v w = present Boolean, n o = n o) => { done ? v, n } -> { done ? w, o } -> { done ? v w, n o }
+>>> Field mismatch
+== p6.expr
+>>> String
+>>> { c } -> { d } -> { c d }
+== residual.expr
+>>> (z a26 = present String, z a26 = present Number) => { x ? z, m } -> { x ? a26, n } -> Number
+>>> Type mismatch
+Number
+String
+== self-unify.expr
+>>> Occurs check failed
+>>> d -> Number
+>>> Occurs check failed
+== smoke.expr
+>>> (g h = present Number) => { x ? g, c } -> { x ? h, d } -> Number
+>>> { x : Number, e } -> { x ? c, f } -> Number
+>>> Field mismatch
+>>> (i j = present g) => { x ? i, c } -> { x ? j, d } -> { other : { x ? absent, c d }, x : g }

@@ -1,0 +1,3 @@
+## program 4's negative control: both parts lack admin
+(\acceptsParts. acceptsParts {admin = 0})
+  (\p. (\k. true) (\a.\b. if true then p else (a \\ admin) ++ (b \\ admin)))

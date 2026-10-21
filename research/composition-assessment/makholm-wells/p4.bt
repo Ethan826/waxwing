@@ -1,0 +1,7 @@
+## program 4, encoded. Bowtie has no declared signatures and no way to
+## split one record into parts, so the interface { ...r, ...s } with
+## s lacks { admin } is stated as a type equation: p is given the type
+## of a ++ (b \\ admin) through the two branches of an `if`, inside a
+## function that is never called (a and b never receive values).
+(\acceptsParts. acceptsParts {admin = 0})
+  (\p. (\k. true) (\a.\b. if true then p else a ++ (b \\ admin)))

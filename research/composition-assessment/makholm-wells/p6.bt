@@ -1,0 +1,5 @@
+## program 6: a forwarding wrapper around join (no declarations exist,
+## so the wrapper is a lambda; its contract is whatever is inferred)
+(\join. (\forwarded. (forwarded {name = 1} {age = 36}).name)
+          (\a.\b. join a b))
+  (\a.\b. a ++ b)

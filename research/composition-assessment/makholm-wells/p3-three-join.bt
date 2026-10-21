@@ -1,0 +1,6 @@
+## program 3: three pieces, two groupings, through one lambda-bound join
+## (used at four label-set types; the tool has no let, so join is
+## monomorphic)
+(\join. {l = (join (join {name = 1} {age = 36}) {active = true}).name,
+         r = (join {name = 1} (join {age = 36} {active = true})).name})
+  (\a.\b. a ++ b)

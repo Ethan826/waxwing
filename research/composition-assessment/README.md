@@ -1,0 +1,115 @@
+# Composition acceptance programs: evidence for the assessment
+
+Evidence for docs/plans/2026-10-20-composition-foundation-assessment.md.
+Research only; not part of `npm run verify`.
+
+## Contents
+
+- programs/: each program of docs/plans/2026-10-20-composition-
+  acceptance-programs.md as written, with its variants and negative
+  controls (`-neg`), one file each. `p9-test-alone` and `p9-neg-alone`
+  leave out `withRepository`, which the compiler refuses on its own.
+- run.mjs: checks, compiles and runs each through the compiler built in
+  output/ (`GOTOOLCHAIN=go1.26.4 node research/composition-assessment/
+  run.mjs`). The assessment's table was produced on the Task 7
+  checkpoint build (branch `r005b-task7-wip`, 4d741a1); on
+  `r005b-replan`'s build every program with two spreads in a literal
+  stops at Tranche A's one-spread refusal instead.
+- purs/: programs 4, 5 and 6 in PureScript (`Prim.Row` only), compiled
+  with the installed `purs` 0.15.16 (`purs compile P4.purs -o
+  <scratch>`): P4 and P5 refused (`NoInstanceFound`, "The instance head
+  contains unknown type variables"), P6 compiles.
+
+- programs/shared-type-*.wxw: a record that lacks `a` merged with `{ a:
+  1 }` and, separately, with `{ a: true }`; accepted by checking now,
+  refused under the translation to Simon (assessment §4.3). On the
+  checkpoint build their Go does not build (docs/findings.md, Task 7,
+  item 5). programs/p9-wide.wxw and p9-layers.wxw: program 9 with the
+  callback's row widened, and that spelling under two nested layers of
+  `Database` and `Log`.
+- koka/ (Koka 3.2.3, `koka -e <file>.kk`): repo.kk, program 9 as
+  written (refused); layers.kk, the wide (W) and masked (M) spellings
+  under one and two layers; masked-one.kk (M, one layer, a callback using
+  `Database`: refused), masked-profile.kk (M, program 9's own callback:
+  runs); localgen.kk and localgen-fun.kk, a local `val` lambda (not
+  generalized) and a local `fun` capturing a parameter (generalized).
+- ghc/ (GHC 9.4.8, `runghc [-XMonoLocalBinds] G<n>.hs`): local helpers
+  G1-G6 used at two record types through `HasField` (assessment §5.1).
+
+- purs/P11.purs: program 11 with `Prim.Row`'s `Lacks` and `Cons`
+  (compiles).
+- urweb/ (Ur/Web 20200209, Homebrew; `urweb -tc base`, `-tc p4`, `-tc
+  p5`; results.txt): programs 3, 6 and 11 accepted, 4 and 5 refused
+  ("Stuck unifying these records after canceling matching pieces").
+  `Name` is reserved in Ur (the kind of field names), so the probes use
+  `Who`.
+- wallace/: Pottier's Wallace toy (2000), its own README.
+- programs/p11*.wxw: program 11 (requirements §11), its lambda form and
+  its negative control.
+
+## Sources read for the assessment (2026-10-20)
+
+Author or institutional copies; the ACM library refused direct access.
+
+| Source | Read |
+|---|---|
+| Baader and Snyder, Unification Theory (Handbook of Automated Reasoning) | §3.4: Boolean rings unitary for elementary unification and with constants; complexity classes |
+| Madsen and van de Pol, Polymorphic Types and Effects with Boolean Unification, OOPSLA 2020 | §3.2 (successive variable elimination, rigid variables as ∀∃), §3.3 (generalization, principal types), §5 (cost, simplification) |
+| Madsen and van de Pol, Relational Nullable Types with Boolean Unification, OOPSLA 2021 | abstract, §5.3 |
+| de Vries, Plasmeijer and Abrahamson, Uniqueness Typing Simplified, IFL 2007 | §5, §7 |
+| Madsen, Starup and Lutze, Restrictable Variants, ECOOP 2023 | §3 (finite label universe, set unification) |
+| flix/flix, RecordConstraintSolver.scala (master) | record rows are ordinary rows, no Boolean calls |
+| Rémy, Typing record concatenation for free (INRIA RR-1739, 1992) | §2.1-§2.3 |
+| Morris and McKinna, Abstracting extensible data types, POPL 2019 | §2.1, §3, §4.5, Def. 13-14 |
+| Hubers and Morris, Generic programming with extensible data types, ICFP 2023 (arXiv 2307.08759) | §3.3, Fig. 7 |
+| Simon, Optimal inference of fields in row-polymorphic records, PLDI 2014 (author's copy) | all; in detail §1-§2.4, §5, §6, §7 |
+| Castagna and Peyrot, Polymorphic records for dynamic languages (arXiv 2404.00338) | no principal types; no concatenation |
+| Koka book, §3.4.7 Masking effects; Leijen MSFP 2014 §2.4.1, §2.6, §3.2; Leijen POPL 2017 §3.1-§3.2 | `mask`, `inject`, open and close, generalization of total expressions |
+| koka-lang/koka (dev, 198fc3bb): Type/InferMonad.hs, Type/Infer.hs | local `val` not generalized, local `fun` generalized |
+| Biernacki, Piróg, Polesiuk and Sieczkowski, Handle with care, POPL 2018 | §1, §2.2, Fig. 5, §4.4, §5.4 |
+| Lindley, McBride and McLaughlin, Do be do be do, POPL 2017 (arXiv 1611.09259) | §2.6, §3.1 |
+| Convent, Lindley, McBride and McLaughlin, Doo bee doo bee doo, JFP 2020 | §3 |
+| Vytiniotis, Peyton Jones and Schrijvers, Let should not be generalised, TLDI 2010; OutsideIn(X), JFP 2011 | §2.2, §3.4, §4.2-§4.3; §4.2, §4.2.4 |
+| GHC User's Guide, Let-generalisation | the closed-binding rule |
+| purescript/purescript v0.15.16: TypeChecker/Types.hs, Entailment.hs | local lets not generalized; `Unsolved` only when generalizing a top-level group |
+
+Earlier reads still relied on: Jones, Simplifying and improving
+qualified types (FPCA 1995), §4, and the other sources of the QT
+re-plan's §11.5.
+
+Third revision: Pottier, A versatile constraint-based type inference
+system (Nordic Journal of Computing 7(4), 2000, §5.1-§5.2, §8, Appendix
+A), A constraint-based presentation and generalization of rows (LICS
+2003, long version, Example 1, §2, §4), his thesis (1998: no
+concatenation), Wallace's source (toy/engine.ml, wallace/core.ml);
+Pottier and Rémy, The essence of ML type inference (ATTAPL ch. 10,
+§10.8: neither concatenation nor conditional constraints); Jones,
+Simplifying and improving qualified types (FPCA 1995, §4.1, re-read).
+
+Not accessed (cited only where stated): Martin and Nipkow (JSC 1989)
+beyond the abstract; Büttner and Simonis 1987; Baader 1998 beyond the
+abstract; Madsen, van de Pol and Henriksen, OOPSLA 2023; Zullo, POPL
+2026, and Lee et al., OOPSLA 2025 (abstracts only); Wright 1995 (value
+restriction, through OutsideIn(X) §4.2.4); the Effekt paper (OOPSLA
+2020; its documentation only); Rémy's "Type inference for records in a
+natural extension of ML"; Pottier's conditional constraints.
+
+Fourth revision (bounded pass): makholm-wells/, Makholm and Wells's
+`bowtini` 1.3 (its own README; inputs, outputs, build notes; the
+archive is not stored). sulzmann/, the retrieval log for Sulzmann's
+record systems. Read: Makholm and Wells, TR HW-MACS-TR-0030 v1.0.2
+(all) and ICFP 2005 (§1, §4-§5, §7); Sulzmann's thesis (Yale, 2000;
+§2 p. 9, §4.2 p. 89, §5.1.1-§5.1.2, Appendix A.2), from the ResearchGate
+copy the author retrieved; Odersky, Sulzmann and Wehr, TAPOS 1999 (§3,
+Fig. 2, §6.1, §7); Pottier's thesis (1998), introduction, ch. 4, ch. 8
+opening, on entailment and signatures.
+
+Fifth revision: wand/, Wand's inference (LICS 1989) through Gonzalez's
+reference implementation (b4a63ba; inputs, outputs of the stock and
+nested-field builds, verdicts including residual constraints, the
+patches stated exactly); palsberg-zhao/, the retrieval log for Palsberg
+and Zhao (I&C 2004; reading only, no implementation exists).
+
+oracle/: the bounded enumerator for the record composition dossier
+(docs/plans/2026-10-20-record-composition-dossier.md, §8); its own
+README.

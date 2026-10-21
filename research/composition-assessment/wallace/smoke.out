@@ -1,0 +1,21 @@
+? 
+@@ (.a<- {} _int) (.b<- {} _bool)
+
+{ <a: RPre int; b: RPre bool; \RAbs> } where:
+
+? 
+.b (@@ (.a<- {} _int) (.b<- {} _bool))
+
+bool where:
+
+? 
+@@ (.a<- {} _int) (.a<- {} _bool)
+
+Constraint inconsistency.
+
+? 
+.c (@@ (.a<- {} _int) (.b<- {} _bool))
+
+Constraint inconsistency.
+
+? Fatal error: exception End_of_file

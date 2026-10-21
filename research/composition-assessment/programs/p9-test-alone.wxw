@@ -1,0 +1,24 @@
+type User = User(Text);
+
+effect Users {
+  fn find(id: Int): User;
+};
+
+effect Database {
+  fn fetchName(id: Int): Text;
+};
+
+effect Log {
+  fn write(message: Text): Unit;
+};
+
+fn profile(id: Int): User with Users =
+  Users.find(id);
+
+fn testProfile(): User =
+  with handler Users {
+    find(id) => User("Test user")
+  } {
+    profile(7)
+  };
+fn main(): User = testProfile();

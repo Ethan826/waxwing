@@ -1,0 +1,9 @@
+## not in the requirements: program 5 with restricted's facts made
+## unsatisfiable (both inputs lack both x and y)
+(\join. \restricted. \composeRequirements.
+   composeRequirements join restricted)
+  (\a.\b. a ++ b)
+  (\p.\q. (\k. 0) {u = p ++ {x = 0, y = 0}, v = q ++ {x = 0, y = 0}})
+  (\make.\use. (\k. 0)
+     (\a.\b. {m = if true then make a b else {x = 0, y = 0},
+              n = use a b}))

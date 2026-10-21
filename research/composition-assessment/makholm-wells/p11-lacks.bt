@@ -1,0 +1,5 @@
+## program 11 with `r lacks { a }` stated as a dummy concatenation
+## q ++ {a = 0}, and the two extensions made through hiding
+(\both. both {name = 1})
+  (\q. (\k. 0) {lacks = q ++ {a = 0},
+                first = q \\ a ++ {a = 1}, second = q \\ a ++ {a = true}})

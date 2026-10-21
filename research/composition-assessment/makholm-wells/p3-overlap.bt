@@ -1,0 +1,2 @@
+## control for program 3: overlapping literals must be refused
+(\join. (join {name = 1} {name = 2}).name) (\a.\b. a ++ b)

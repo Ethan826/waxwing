@@ -1,0 +1,54 @@
+type User = User(Text);
+
+effect Users {
+  fn find(id: Int): User;
+};
+
+effect Database {
+  fn fetchName(id: Int): Text;
+};
+
+effect Log {
+  fn write(message: Text): Unit;
+};
+
+fn profile(id: Int): User with Users =
+  Users.find(id);
+
+fn withRepository(
+  action: (Unit) -> a with Users + Database + Log + ...e
+): a with Database + Log + ...e =
+  with handler Users {
+    find(id) => {
+      Log.write("repository: loading a user");
+      User(Database.fetchName(id))
+    }
+  } {
+    action(())
+  };
+
+fn busy(u: Unit): User with Users + Database + Log = {
+  Log.write("callback: starting");
+  let extra = Database.fetchName(99);
+  Log.write("callback: fetched ${extra}");
+  profile(7)
+};
+
+fn main(): User with Console =
+  with handler Database {
+    fetchName(id) => "outer-db"
+  } {
+    with handler Log {
+      write(message) => Console.print("[outer log] ${message}")
+    } {
+      with handler Database {
+        fetchName(id) => "inner-db"
+      } {
+        with handler Log {
+          write(message) => Console.print("[inner log] ${message}")
+        } {
+          withRepository(busy)
+        }
+      }
+    }
+  };

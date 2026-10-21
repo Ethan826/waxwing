@@ -1,0 +1,20 @@
+== urweb -tc base
+exit 0
+== urweb -tc p4
+p4.ur:4:29: (to 4:44) Error in final record unification
+Can't unify record constructors
+Have:  [Admin = bool]
+Need:  <UNIF:C::{Type}> ++ <UNIF:B::{Type}>
+p4.ur:4:29: (to 4:44) Stuck unifying these records after canceling matching pieces:
+Have:  [Admin = bool]
+Need:  <UNIF:B::{Type}> ++ <UNIF:C::{Type}>
+exit 1
+== urweb -tc p5
+p5.ur:10:35: (to 10:42) Error in final record unification
+Can't unify record constructors
+Have:  <UNIF:E::{Type}> ++ <UNIF:D::{Type}>
+Need:  [X = int, Y = int]
+p5.ur:10:35: (to 10:42) Stuck unifying these records after canceling matching pieces:
+Have:  <UNIF:D::{Type}> ++ <UNIF:E::{Type}>
+Need:  [X = int, Y = int]
+exit 1

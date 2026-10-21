@@ -603,6 +603,64 @@ First applied in docs/plans/2026-10-17-open-row-merge-plan.md (R005
 Tranche B); its rule arguments are
 docs/plans/2026-10-17-open-row-merge-rules.md.
 
+## Adversarial review of proposed procedures
+
+Directed by the user on 2026-10-20, after a review refuted the
+completeness claim of a proposed signature checker (record composition
+dossier, §13.7) and, earlier, a forced-placement claim (§3.2, C7).
+Both defects had the same shape: the examples exercised cases where two
+different properties happened to coincide. Before a proposed procedure
+or a claim about one is approved for proof or implementation:
+
+- **Restrictions table.** List every restriction the proposed
+  representation introduces beyond the semantics (for example
+  "indivisible rests", "fresh records stand for arbitrary types", "one
+  generic solution per pattern"), why each is believed harmless, and
+  an example built to challenge it: something the semantics permits
+  that the representation cannot express.
+- **Separate passes.** Soundness: try to make the procedure accept an
+  invalid problem. Completeness: start from a valid construction and
+  try to make the procedure reject it.
+- **Distinguishing examples.** For each claim, at least one example
+  built to separate it from its nearest weaker or stronger variant,
+  not only the motivating programs.
+- **Bounded oracle at the level of the claim.** Where a claim
+  quantifies over problems (validity, ∀∃), the oracle enumerates small
+  problems and compares the proposal with bounded evaluation of the
+  semantics, not only concrete assignments. Bounded evidence still.
+- **Adversarial reviewer.** An independent reviewer gets the task
+  "find a false statement or a missing case", not "does this look
+  reasonable". A reviewer's counterexamples are checked independently
+  too (they are arguments, not conclusions).
+
+Review convention; no gate checks it.
+
+## Prose review for READMEs and explanatory docs
+
+Review convention (not automated), adopted 2026-10-19 at the user's
+request. Applies to READMEs and documents written to explain a design to
+readers (not to plans, logs or progress records).
+
+1. **Catalog before rewriting.** For each problem, record the exact
+   passage, the pattern it shows, and why it weakens this particular text
+   (what a reader misreads, skips or has to reconstruct). Patterns include
+   the AI-writing signs the `humanizer` skill lists (not-X-but-Y contrasts,
+   one-line closers, staged openers, forced triads, dash overuse, inflated
+   claims, sales language, stock words, bold labels, filler) and Bryan A.
+   Garner's plain-English concerns (*Garner's Modern English Usage*; *Legal
+   Writing in Plain English*): needless words, buried nominalizations
+   ("make a determination" for "determine"), passive voice that hides the
+   actor, abstract nouns where a concrete example would serve, unexplained
+   jargon, inconsistent terms for one idea, and points buried mid-paragraph
+   instead of stated first.
+2. **Rewrite** to fix the catalogued findings.
+3. **Review the rewrite the same way** and fix what remains.
+4. **Preserve** facts, qualifications ("measured, not proved"), technical
+   distinctions and the author's intentional voice. Don't manufacture
+   informality, and don't drop a hedge that records a real limit.
+5. The `humanizer` skill is the tool for steps 1-3 where available; record
+   the catalogue in the commit or review notes.
+
 ## Known gaps in enforcement (A001)
 
 Review conventions only: the layer names describe reasons to change, which no

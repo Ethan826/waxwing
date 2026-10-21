@@ -1,0 +1,2 @@
+let both = q: let first = q // { a = 1; }; in let second = q // { a = true; }; in c: c first second; in both { name = "Ada"; }
+let both = q: let first = q // { a = 1; }; in let second = q // { a = true; }; in c: c first second; in both

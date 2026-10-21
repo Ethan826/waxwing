@@ -1,0 +1,512 @@
+{
+ "count": 5000,
+ "seed": "11",
+ "tally": {
+  "agree": 4984,
+  "incomplete": 16,
+  "unsound?": 0
+ },
+ "unsound": [],
+ "incomplete": [
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     4,
+     1
+    ],
+    [
+     "disjoint",
+     3,
+     2
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     1,
+     3
+    ],
+    [
+     "disjoint",
+     2,
+     4
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     1,
+     4
+    ],
+    [
+     "disjoint",
+     2,
+     3
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     3,
+     2
+    ],
+    [
+     "disjoint",
+     4,
+     1
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     3,
+     2
+    ],
+    [
+     "disjoint",
+     1,
+     4
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     3,
+     1
+    ],
+    [
+     "disjoint",
+     2,
+     4
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     4,
+     2
+    ],
+    [
+     "disjoint",
+     3,
+     1
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     4,
+     1
+    ],
+    [
+     "disjoint",
+     2,
+     3
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     1,
+     4
+    ],
+    [
+     "disjoint",
+     3,
+     2
+    ]
+   ]
+  },
+  {
+   "rigidRows": [
+    0,
+    1,
+    2
+   ],
+   "flexRows": [
+    3,
+    4
+   ],
+   "rigidTys": [],
+   "flexTys": [],
+   "D": [
+    [
+     "disjoint",
+     1,
+     2
+    ]
+   ],
+   "B": [
+    [
+     "eq",
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       0
+      ]
+     },
+     {
+      "k": "r",
+      "fields": [],
+      "tails": [
+       3,
+       4
+      ]
+     }
+    ],
+    [
+     "disjoint",
+     2,
+     3
+    ],
+    [
+     "disjoint",
+     4,
+     1
+    ]
+   ]
+  }
+ ]
+}

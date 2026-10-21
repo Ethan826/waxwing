@@ -1,0 +1,4 @@
+((q: { f = q // { a = 1; }; }) { name = "Ada"; }).f.name + 1
+(q: { f = q // { a = 1; }; }) { name = "Ada"; }
+(q: { f = q with a = 1; }) { name = "Ada"; }
+(q: { f = q // { a = 1; }; })

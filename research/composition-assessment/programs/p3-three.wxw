@@ -1,0 +1,9 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  { ...a, ...b };
+
+fn main(): Text = {
+  let left = join(join({ name: "Ada" }, { age: 36 }), { active: true });
+  let right = join({ name: "Ada" }, join({ age: 36 }, { active: true }));
+  right.name
+};

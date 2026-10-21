@@ -1,0 +1,39 @@
+type User = User(Text);
+
+effect Users {
+  fn find(id: Int): User;
+};
+
+effect Database {
+  fn fetchName(id: Int): Text;
+};
+
+effect Log {
+  fn write(message: Text): Unit;
+};
+
+fn profile(id: Int): User with Users =
+  Users.find(id);
+
+fn withRepository(
+  action: (Unit) -> a with Users + Database + Log + ...e
+): a with Database + Log + ...e =
+  with handler Users {
+    find(id) => {
+      Log.write("loading a user");
+      User(Database.fetchName(id))
+    }
+  } {
+    action(())
+  };
+
+fn main(): User =
+  with handler Database {
+    fetchName(id) => "Ada"
+  } {
+    with handler Log {
+      write(message) => ()
+    } {
+      withRepository(fn(_) => profile(7))
+    }
+  };

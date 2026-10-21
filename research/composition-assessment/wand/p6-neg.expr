@@ -1,0 +1,2 @@
+let join = a: b: a // b; in let forwarded = a: b: (k: (x: y: x) (k (join a b)) (k ((a // b) with done = true))) (z: z); in forwarded
+let join = a: b: a // b; in let forwarded = a: b: (k: (x: y: x) (k (join a b)) (k ((a // b) with done = true))) (z: z); in forwarded { name = "Ada"; } { age = 36; }

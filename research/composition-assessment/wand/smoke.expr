@@ -1,0 +1,4 @@
+r: s: (r // s).x + 1
+r: s: (r // (s without x)).x + 1
+r: s: ((r without x) // (s without x)).x + 1
+r: s: let m = r // s; in { x = m.x; other = m without x; }
