@@ -68,3 +68,11 @@ import Composition.SplitIrrelevance.Acceptance
 import Composition.SplitIrrelevance.Examples
 import Composition.SplitIrrelevance.Boundary
 import Composition.TypedAttack.FiniteObstruction
+import Composition.Typed.Model
+import Composition.Typed.Defs
+import Composition.Typed.Interp
+import Composition.Typed.Commute
+import Composition.Typed.Transfer
+import Composition.Typed.EqFree
+import Composition.Typed.Examples
+import Composition.Typed.ExamplesValid
