@@ -8114,9 +8114,18 @@ unrelated README/backlog/direction-plan edits remain untouched.
   `checkpoint/codex-campaign-{d3b,oracles,slicing}`. The ~40
   `worktree-agent-*` branches were not pushed: their content is in
   r005b-replan by cherry-pick. Nothing merged; `main` unchanged.
-- A research-only branch off `main` (accepted Lean proofs, supporting
-  research, provenance, status index) is being assembled for review
-  before push and PR; compiler changes get their own review.
+- Superseded the same day (the author: get everything onto `main`,
+  nothing broken): r005b-replan was rebased onto `main` (no merge
+  commit; main's README and prose-review link fixes restored after the
+  rebase), plus the C001 design docs, the R005B Task 5 and Task 7 work in
+  progress as patches under docs/patches/ (not built), and the other
+  sessions' uncommitted docs (applied three-way). Fast-forwarded and
+  pushed: `main` at f6dcadb. Compiler sources are identical to the
+  quiet-verified tree (02ac74a); only documents and patches changed.
+  Deleting the remote `checkpoint/*` branches was denied by the
+  permission classifier and is left to the author; their content is all
+  on `main`. Not committed: docs/writing/ (the user's), the humanizer
+  skill folders and editor .history folders.
 - **Uncommitted work, not backed up by the push** (other sessions' or
   the user's; not committed here): modified BACKLOG.md, README.md and
   five direction plans (docs/plans/2026-10-08-language-direction,
