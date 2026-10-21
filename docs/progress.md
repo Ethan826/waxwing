@@ -8097,3 +8097,9 @@ unrelated README/backlog/direction-plan edits remain untouched.
   research model, with premises `Scoped`, `∃ z, FreshLabels` (infinite
   labels), finite values. Coverage shown load-bearing. Two comment fixes
   in fixed statement files await the author's approval.
+- **Milestone accepted** (dossier §18.46): general option-B completeness
+  and the validity characterization established for the research model
+  (premises `Scoped`, infinite labels, finite values). W1, W2 comment
+  fixes applied. Executable construction, source translation and
+  integration not started; to be scoped with separate obligations for
+  inference/principality and compilation correctness.
