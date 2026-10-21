@@ -123,6 +123,21 @@ budget or time.
 4. **E agreement.** Wherever E finishes, its verdict is compared with
    A's and B's.
 
+## Amendments
+
+1. **`divide2` added** (after a pilot of E, A and B at sizes 2 and 3 of
+   every family, before any measurement or oracle run). The pilot showed
+   `divide` uniformly valid by `u := r`, `t := {}`, so its prediction
+   for A was wrong and it does not exercise pattern-dependent witnesses.
+   `divide2` adds `u lacks c`, which forces the division. Sizes as
+   `divide`; oracle at 1 and 2. `divide` stays in the set with its
+   wrong prediction recorded. The pilot also changed E's per-pattern
+   search: unification alone guesses at splits, so E fell back to no
+   certificate on `dep`. E now falls back, per flexible component, to
+   the bounded generic search at that pattern (P9s's search restricted
+   to the component). E is the reference, so its search should be at
+   least as strong as B's.
+
 ## Reported
 
 For each strategy: the largest size finished, the first size that hit a
