@@ -8045,3 +8045,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   `d3bComplete`; completeness under B for the equation-free and flat
   fragments stated without open premises; boundary as a
   characterization. Statements only; reviewed; awaiting the author.
+- `ValidOpen` approved as option B's formal reading for the current
+  model (dossier §18.33); first bridge proof tranche authorized (E1-E6,
+  B0, B2f/B2c/B2/B2g, B3a/B3e/B3f, B4f/B5 as a separate soundness
+  track), after BridgeDefs.lean is split and the revised statements
+  re-reviewed.
