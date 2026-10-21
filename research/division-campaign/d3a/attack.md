@@ -97,7 +97,7 @@ and explained by the larger domain.
 |---|---|---|---|---|---|
 | R1 shape split | `shape-split` (finite base types) | written + `q` | none | `Int`, `Bool`, `{}`, `{q:Int}`, `(Int->Int)`; R1' adds base `Str` | second-pass list (`Int`, `Bool`, `{}`, `(Int->Int)`, `{q:Int}`); R1' adds `Str` |
 | R2 grammar gaps | `depth-row`, `depth-ty`, `tail-written` | written + `z1`, `z2` | absent, `Int`, `{q:Int}` | the second-pass list | the second-pass list; validity by hand witness only |
-| R3a pigeonhole diagnostic | `pigeonhole` (flat, three rigid rows) | `z1` | `Int`, `Bool`; R3' adds `{}` | none | first-pass list (`Int`, `Bool`, `{}`, `(Int->Int)`) |
+| R3a pigeonhole diagnostic | `pigeonhole` (flat, three rigid rows) | `z1` | `Int`, `Bool`; R3' adds `{}` | none | `Int`, `Bool`; R3' adds `{}` |
 | R4a agreement diagnostic | 5 problems each for seeds 5 and 17 | `z1` | `Int`, `Bool`, `{}` (three, so three rigid rows can differ pairwise) | none | first-pass list |
 | R5 named nested | §18.10 label ties, vacuity, record-valued rigid variables | written + `z1`, `z2` | absent, `Int`, `{q:Int}` | the second-pass list | the second-pass list |
 
@@ -210,9 +210,11 @@ The original run used 729 rigid assignments and was killed after about
 40 minutes without a result. It remains incomplete.
 
 **R3a diagnostic amendment.** The replacement uses one unwritten label
-`z1`, giving 27 rigid assignments, with the same two field types. A
-three-type control uses the same label bound. This shrinks the assignment
-space while retaining the pair-agreement question.
+`z1`, giving 27 rigid assignments, and limits flexible field values to
+the two rigid types. A three-type control adds `{}` to both domains.
+This keeps the assignment types available as flexible values while
+shrinking the search space. The finite flexible domain makes this a
+diagnostic only.
 
 RESULT-R3
 
