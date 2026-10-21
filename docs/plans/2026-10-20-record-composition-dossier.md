@@ -2690,7 +2690,9 @@ as a ∀ statement, `divide`'s own body needs `u` printable for every
 not to the split. Separately, once `peek` is applied and both splits are
 printable, the printed output differs between two valid splits, which
 is (a); fixing (b) does not remove (a), and decision 3 is what handles
-(a). Stream 8 is diagnosing E2 independently; not yet reconciled.
+(a). **Corrected in §18.23:** the applied-`peek` (a) claim is false as
+stated; comparison and printability in the caller are refused at check,
+not after specialization.
 
 **The translation** (§2): rigid variables are the signature's; flexible
 ones are fresh per call and per construct; `D` is the written clauses
@@ -2861,6 +2863,8 @@ Qualifications:
    witnesses in a recursive group by its form alone
    (`v' ↦ {...u,...v}` is not bare): (a) under today's rules, removed
    only by relaxing R010 or counting admissibility in split validity.
+   (§18.22: validity and admissibility stay separate properties; this
+   is an admissibility difference, not a validity one.)
 
 **Statements and status** (narrowed explicitly, statements.md §7):
 
@@ -2912,8 +2916,9 @@ there is no value of type `{...u}` to apply it to without fixing `u` or
 projecting, which R excludes). Under review.
 
 Questions for the author: declare requirements such as printability and
-comparability in interfaces (C needs that declared form; inferred
-interfaces bring back (a) through E2′); `checkSites` as an internal
+comparability in interfaces (C needs that declared form; E2′ shows
+only that choosing a split first and then inferring is unstable, §18.22,
+§18.23 F14); `checkSites` as an internal
 error once printability is counted; R010 relaxed or admissibility in
 split validity; a typed or Go-level semantics for R after Task 8.
 
@@ -2963,3 +2968,80 @@ lowering implements them (§18.21 corrected); "linear" cost is qualified
 by the representation traversed, including any expansion.
 
 No new compiler-policy change; the running streams continue.
+
+### 18.23 Integration review of streams 5 and 8 (2026-10-21)
+
+research/division-campaign/reviews/streams-5-8-review.md (independent
+reviewer; findings F1-F15, recorder mismatches M1-M9). **Limit:** no
+program with two tails passes specialization today (Task 8 placeholder),
+so no pair of splits was run end to end; verdicts about printed output
+are derived or from the Lean model, never observed. An unforced split
+passes check only when the caller writes it by annotating a lambda
+parameter, so each probe pair is two programs differing in that
+annotation.
+
+**Comparison (1a).** Acceptance: stream 8 is right; **stream 5's row C2
+is false (F1)**. Two splits of `divide`'s call both satisfying its
+clauses (`u = {c}`, `u = {c, f}`), with the caller comparing the part
+(`p == p`): the first passes check, the second is refused at check
+(`Type { c: Int, f: Int -> Int } is not comparable`). C2 holds only for
+a comparison inside the generic function, on a rigid row. Stream 5's
+printability timing (S1) has the same mistake: the `show` probe is
+refused at check, not after specialization (F2). This is a missing
+requirement (b), not an observable difference (a). Run-time output: no
+difference shown; the Lean model has no equality operator, so `R`
+(`eval_split`) does not cover `==`'s result (gap F5).
+
+**The applied `peek` (1b).** Stream 8 is right; **stream 5's claim that
+applying `peek` makes output differ between two valid splits is false
+as stated (F3)**. Candidates were tested against the author's
+conditions (well typed, no hidden projection, split not fixed):
+`peek(whole)` is ill-typed; a `{ ...u }` parameter or a callback
+returning a written record fixes `u`; a projecting function needs
+projection; a diverging callback (`crash`) or a divergent
+`fn absurd(): { ...p }` meets all three but never gives `show` a value,
+so output is the same. Stream 8's §8 case split is incomplete (F4); its
+conclusion stands because `R` holds for every projection-free term.
+**Consequence:** stream 5 also gave the `peek` claim as a justification
+for decision 3; decision 3 stands on its own (§18.17 item 3, §18.22).
+
+**The author's added points.** Ground checking checks the bindings
+computed at each key against the recorded constraints; it does not check
+Go structs, field order or layout identity (F8). "Linear" means linear
+in the size of the lowered ground types at each key, after tails are
+flattened and nested records lowered, with a log factor from interning;
+the number of keys can be exponential in source size and is capped only
+at 10,000 (F9). Other defects may fail `go build` rather than give a
+silently wrong layout (F10).
+
+**Stream 8, third review:** no statement in its §4 is false against the
+Lean; the second-review fixes are confirmed except F7 ("ground check
+silent" drops the premise that the starting interface holds) and F10.
+Gaps: F6, the caller's own body equations are not in `Covers`, yet
+§3.3/§7 say all check-time judgments that see the instantiation are
+covered (a run shows a split refused through `p.c`); F11, the type-depth
+limit is not listed among exclusions; F15, `e2`'s interface is a
+hand-written instance of M1, not proved equal to `Req₁`. Wording: F12
+(today's written split is caller-side annotation text), F13 (R010
+admissibility treated as validity, both streams and this dossier;
+corrected above), F14 ("inferred interfaces bring back (a)"; corrected
+above).
+
+**Recorder specification: the two streams do not yet combine** (M1-M9).
+Most important: M1, stream 5 records printability as a row-level clause,
+stream 8 checks it on the field-level ground type; M2, stream 5 does not
+record comparability; M3, stream 5 judges caller-side requirements after
+specialization, stream 8 (correctly) at check time; M5, stream 5 records
+every body constraint, stream 8 none, so C does not cover them; M6,
+stream 5 translates patterns and updates, stream 8's fragment excludes
+them.
+
+The stream documents themselves (translation.md, statements.md,
+ground-check.md) are not yet corrected; the review gives replacement
+text. Questions for the author: does a caller-side annotation count as a
+"written" split under decision 3; should caller-site comparability and
+printability be check-time atoms on flexible variables or a declared
+clause on the callee's row; should C be extended with the caller's
+equations or stay a claim about requirement sites; should stream 5
+withdraw the `peek` (a) claim; should stream 8 restate inference as a
+claim only about inferring from a split chosen first.
