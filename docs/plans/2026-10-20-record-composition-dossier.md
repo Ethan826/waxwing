@@ -4625,3 +4625,13 @@ results-v2/).
   may differ).
 - sc-statements.md §10 status updated; its §10.4 item 6 corrected
   (`divide3` 2 keeps its recorded verdicts; A answers Unresolved there).
+
+**The author's acceptance (2026-10-21).** The prototype-maintenance
+tranche is complete: the regressions distinguish both defects,
+historical results remain reproducible, and star-v2 is separated from
+the measured version. Qualifications kept attached: historical verdicts
+are preserved **for the rerun cases** (B `star` at n = 8192 and 12288
+stay outside that claim); **the recorded timings describe star-v1**,
+not the corrected prototype. No further prototype work or large timing
+runs now; the cell-based `ValidOpen` statements are reviewed (semantics,
+coverage obligations, acceptance examples) before any proof.
