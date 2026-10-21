@@ -12,6 +12,7 @@ import Composition
 #print axioms Composition.Typed.d3bExists
 #print axioms Composition.Typed.robinson
 #print axioms Composition.Typed.ci_core
+#print axioms Composition.Typed.thetaStar_valid_iff_fresh
 #print axioms Composition.Typed.routeP_valid
 #print axioms Composition.Typed.splitFree_unsolvable
 #print axioms Composition.Typed.splitFree_not_valid

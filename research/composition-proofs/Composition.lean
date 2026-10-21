@@ -96,4 +96,5 @@ import Composition.Typed.BridgeDefs
 import Composition.Typed.MGUExists
 import Composition.Typed.CellIndep
 import Composition.Typed.Universality
+import Composition.Typed.Conditional
 import Composition.TypedAttack.ShapeSplit

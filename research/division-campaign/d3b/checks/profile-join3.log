@@ -1,0 +1,7 @@
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '--assert', '0', '3', '', 'join3']
+wall limit: 600s
+join3: d3b valid, bounded valid, expect valid
+{"total":1,"valid/valid":1}
+assert: 0 verdict mismatches, 0 invariant failures
+exit: 0
+elapsed: 32.33s

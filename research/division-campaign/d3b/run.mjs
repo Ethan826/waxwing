@@ -17,6 +17,9 @@
 // Run: node run.mjs [count] [seed] [mutant] (count 0: the named
 // problems; otherwise that many generated ones). Optional fourth argument:
 // comma-separated exact named problems, retaining all original bounds.
+// Report mode (the default) prints and exits 0 whatever it finds. With
+// --assert (anywhere in the arguments) the run exits 1 if a named
+// verdict differs from its expectation or any invariant check fails.
 // Mutants: noUnify (fresh constants, D's equations ignored),
 // allCells (every cell, allowed or
 // not), contextFree (cell constants valued at one fixed label).
@@ -39,10 +42,12 @@ import { rigidOf, render, coversFails, cellOfLabel } from './interp.mjs'
 import { solveAt } from './solve.mjs'
 import { D3B } from './challenges.mjs'
 
-const count = Number(process.argv[2] ?? 0)
-const seed = Number(process.argv[3] ?? 3)
-const mutant = process.argv[4] ?? ''
-const selected = new Set((process.argv[5] ?? '').split(',').filter(Boolean))
+const assertMode = process.argv.includes('--assert')
+const argv = process.argv.slice(2).filter((a) => a !== '--assert')
+const count = Number(argv[0] ?? 0)
+const seed = Number(argv[1] ?? 3)
+const mutant = argv[2] ?? ''
+const selected = new Set((argv[3] ?? '').split(',').filter(Boolean))
 const RIGID_FIELDS = ['Int', 'Bool', '{q:Int}']
 
 function named() {
@@ -155,6 +160,8 @@ function selectedItem(item) {
 
 function main() {
   const stats = { total: 0 }
+  let mismatches = 0
+  let failures = 0
   const items = count > 0 ? [] : named()
   const names = new Set(items.map(itemName))
   for (const name of selected) {
@@ -164,6 +171,8 @@ function main() {
   }
   for (const item of items.filter(selectedItem)) {
     const out = check(item, stats)
+    if (out.d3b !== item.expect) mismatches += 1
+    failures += out.fails.length
     const mark = out.d3b === item.expect ? '' : '  (differs from expect)'
     console.log(`${item.name}: d3b ${out.d3b}, bounded ${out.bounded}` +
       `, expect ${item.expect}${mark}`)
@@ -175,11 +184,16 @@ function main() {
   for (let i = 0; i < count; i++) {
     const P = gen()
     const out = check({ P }, stats)
+    failures += out.fails.length
     for (const f of out.fails.slice(0, 1)) {
       console.log(`generated ${i}: FAIL ${f.kind} ${JSON.stringify(P)}`)
     }
   }
   console.log(JSON.stringify(stats))
+  if (!assertMode) return
+  console.log(`assert: ${mismatches} verdict mismatches, ` +
+    `${failures} invariant failures`)
+  if (mismatches > 0 || failures > 0) process.exitCode = 1
 }
 
 main()

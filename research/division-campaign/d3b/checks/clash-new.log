@@ -1,0 +1,7 @@
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '--assert', '0', '3', '', 'record-constant']
+wall limit: 60s
+record-constant: d3b invalid, bounded invalid, expect invalid
+{"total":1,"invalid/invalid":1}
+assert: 0 verdict mismatches, 0 invariant failures
+exit: 0
+elapsed: 0.19s
