@@ -3741,7 +3741,8 @@ construction.md); F5 the bridge's "W is needed" reasoning superseded by
 adaptation (corrected). **Open, F6:** `thetaStar` is not checked on a
 concrete problem in the repository (examples use `thetaFree`,
 `thetaFlat`); the review's scratch checks could be added to Examples
-and the audit.
+and the audit. **Closed (§18.38): Composition/Typed/ExamplesThetaStar.lean,
+theorem-level checks about the classical construction, in the audit.**
 
 ### 18.37 `star` at useful scale: strategies and measurements (2026-10-21)
 
@@ -3920,3 +3921,22 @@ as a coordinator-integrated research record. Corrective practice:
 agents return report text in their final message and the coordinator
 writes the file; every brief says that a denied tool call is reported
 verbatim and never achieved another way.
+
+**F6 closed (2026-10-21).** Composition/Typed/ExamplesThetaStar.lean
+(200 lines; proved in its own worktree, integrated; clean build, 135
+jobs; no `sorry`, `#eval` or new axiom; 11 entries added to
+d3b/checks/Audit.lean, standard axioms only, `agreeP_fresh` `propext`
+only). Its header states these are theorem-level facts about a
+classical construction (`allowedCells` a classical filter; θ* fixed only
+up to the choice of MGU); nothing evaluates `allowedCells` or
+`thetaStar`. Proved: `routeP_generic_occupies` (every generic instance
+occupies cell `[0]`), `routeP_eta_not_generic`, `routeP_allowed_r`,
+`routeP_not_allowed_st` (`[1, 2]` refused), `routeP_thetaStar_occupies`
+(for every MGU over the allowed cells), `routeP_exists_occupies` (from
+`d3bExistsWithin`); `agreeP_not_allowed_r`, `agreeP_fresh`,
+`agreeP_thetaStar_solvable` (for every such MGU, `SolvableAt` and
+`SolvableFinAt`), `agreeP_thetaStar_exists`;
+`splitFree_thetaStar_unsolvable` (for every such MGU, no `Fresh`). No
+check was false; forms changed only by generalising (`route` and
+`splitFree` for any `Label`, `B` with one label; π universally
+quantified) or strengthening (for every MGU, not just one).
