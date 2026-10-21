@@ -1,9 +1,10 @@
-command: ['node', '--max-old-space-size=2048', 'run.mjs', '0', '3', '', 'record-constant,arrow-hypothesis,arrow-hypothesis-missing,agreement-hypothesis']
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '--assert', '0', '3', '', 'record-constant,arrow-hypothesis,arrow-hypothesis-missing,agreement-hypothesis']
 wall limit: 60s
 agreement-hypothesis: d3b valid, bounded valid, expect valid
 arrow-hypothesis: d3b valid, bounded valid, expect valid
 arrow-hypothesis-missing: d3b invalid, bounded invalid, expect invalid
-record-constant: d3b unknown, bounded invalid, expect invalid  (differs from expect)
-{"total":4,"valid/valid":2,"invalid/invalid":1,"unknown/invalid":1}
+record-constant: d3b invalid, bounded invalid, expect invalid
+{"total":4,"valid/valid":2,"invalid/invalid":2}
+assert: 0 verdict mismatches, 0 invariant failures
 exit: 0
 elapsed: 0.24s

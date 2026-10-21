@@ -7,7 +7,8 @@
 // matters) or ground (no flexible variable; evaluated once), and no
 // flexible type variable is left; or some equation is a clash (two
 // sides of different constructors, neither a type variable, which no
-// assignment makes equal). Every other atom is a conjunction
+// assignment makes equal; or, recursively, fields both sides are forced
+// to have that clash: clash.mjs). Every other atom is a conjunction
 // over labels, and at a label outside θ*'s rows and B's fields
 // everything is absent, so B is solvable iff each label of θ* and of B
 // has its own choice of flexible fields. A choice gives each flexible
@@ -20,6 +21,7 @@ import { evalT, holds, scan, rowsOver }
 import { DEFAULT_BOUNDS, findSolution, makeTheta }
   from '../../composition-assessment/sig-oracle/bounded.mjs'
 import { normalize } from './normalize.mjs'
+import { fixedClash } from './clash.mjs'
 
 const BIG = 2e6
 
@@ -34,20 +36,22 @@ function mentionsFlex(P, t) {
   return false
 }
 
-export function kindOf(P, a) {
+// `theta` (θ*_π, symbolic) enables the recursive clash check.
+export function kindOf(P, a, theta = null) {
   if (a[0] !== 'eq') return 'atom'
   if (!mentionsFlex(P, a[1]) && !mentionsFlex(P, a[2])) return 'ground'
   if (JSON.stringify(a[1]) === JSON.stringify(a[2])) return 'self'
   const shape = (t) => (t.k === 'v' ? null : t.k)
   const [x, y] = [shape(a[1]), shape(a[2])]
   if (x !== null && y !== null && x !== y) return 'clash'
+  if (theta !== null && fixedClash(P, theta, a[1], a[2])) return 'clash'
   const flatRec = (t) => t.k === 'r' &&
     t.fields.every(([, ft]) => ft.k === 'b')
   return flatRec(a[1]) && flatRec(a[2]) ? 'flat' : 'other'
 }
 
-export function isFlat(P) {
-  const kinds = P.B.map((a) => kindOf(P, a))
+export function isFlat(P, theta = null) {
+  const kinds = P.B.map((a) => kindOf(P, a, theta))
   return kinds.includes('clash') ||
     (P.flexTys.length === 0 && !kinds.includes('other'))
 }
@@ -132,9 +136,9 @@ function* choices(flex, opts) {
   }
 }
 
-function solveFlat(P, rigid) {
+function solveFlat(P, rigid, sym) {
   const theta = makeTheta(rigid, new Map())
-  const kinds = P.B.map((a) => kindOf(P, a))
+  const kinds = P.B.map((a) => kindOf(P, a, sym))
   for (let i = 0; i < P.B.length; i++) {
     if (kinds[i] === 'clash') return { solved: false, exact: true, atom: i }
     if (kinds[i] === 'ground' && !holds(theta, P.B[i])) {
@@ -177,5 +181,6 @@ function solveBounded(P, rigid, extraTys) {
 // variables (the rendered values of θ*'s type variables).
 export function solveAt(P0, theta, rigid, extraTys = []) {
   const P = normalize(P0, theta)
-  return isFlat(P) ? solveFlat(P, rigid) : solveBounded(P, rigid, extraTys)
+  return isFlat(P, theta) ? solveFlat(P, rigid, theta)
+    : solveBounded(P, rigid, extraTys)
 }

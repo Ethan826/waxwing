@@ -1,0 +1,13 @@
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '--assert', '0', '3', 'contextFree', 'record-constant,arrow-hypothesis,arrow-hypothesis-missing,agreement-hypothesis']
+wall limit: 60s
+agreement-hypothesis: d3b valid, bounded valid, expect valid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+arrow-hypothesis: d3b valid, bounded valid, expect valid
+arrow-hypothesis-missing: d3b invalid, bounded invalid, expect invalid
+record-constant: d3b invalid, bounded invalid, expect invalid
+  FAIL covers: {"at":"r0","got":"{z1:Int,z2:Int}","want":"{z1:Int,z2:Bool}"}
+  FAIL covers: {"at":"r0","got":"{f:Int,z2:Int}","want":"{f:Int,z2:Bool}"}
+{"total":4,"valid/valid":2,"covers":3,"invalid/invalid":2}
+assert: 0 verdict mismatches, 3 invariant failures
+exit: 1
+elapsed: 0.29s
