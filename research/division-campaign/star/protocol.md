@@ -138,6 +138,26 @@ budget or time.
    to the component). E is the reference, so its search should be at
    least as strong as B's.
 
+2. **Search strengthened** (pilot only, before measurement or oracle
+   runs). B's brute-force leaf search exceeded its `2^20` candidate
+   budget on `divide2` at m = 2. Search is untrusted, so it was
+   extended, not the budget: (a) a split guess in the unifier assigns
+   each leftover label to the first open tail that no `lacks` atom
+   forbids, and a rest (`ρ<r>` or a piece) to the first tail no
+   `disjoint` atom with a rigid row forbids; (b) B tries unification at
+   the cube's representative pattern, lifted, before the brute-force
+   search. Checking and coverage are unchanged.
+3. **`divide3` added** (same pilot). With (2), `divide2` needs one bit
+   at every m, so it no longer tests pattern-dependent witnesses at
+   scale. `divide3` forces a projection that no schematic value
+   expresses (problems.mjs). Prediction: valid; A Unresolved; B valid
+   with `2^m` leaves. Sizes and oracle sizes as `divide`.
+4. The pilot also showed that counting consistent patterns by listing
+   each label's holder sets runs out of heap at `star` n = 64. The
+   count is now computed in closed form when a label's candidate
+   holders carry no declared disjoint pair (generic.mjs). This affects
+   reporting only.
+
 ## Reported
 
 For each strategy: the largest size finished, the first size that hit a
