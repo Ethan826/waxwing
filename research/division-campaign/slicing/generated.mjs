@@ -107,14 +107,21 @@ function problems() {
 }
 
 const tally = { problems: 0, multiSlice: 0, s1: 0, p9sSliced: 0, s2: 0,
-  atomRelevant: 0, wholeValid: 0, p9sValid: 0 }
+  atomRelevant: 0, wholeValid: 0, p9sValid: 0, zeroChecked: 0,
+  nonVacuous: 0, rigidInstancesChecked: 0 }
 for (const name of Object.keys(SLICINGS)) tally[name] = 0
 for (const { name, P, bounds } of problems()) {
   tally.problems += 1
   const cut = proposed(P)
   if (cut.slices.length + (cut.ground.D.length + cut.ground.B.length > 0)
     > 1) tally.multiSlice += 1
-  const whole = boundedValid(P, bounds).verdict
+  const evaluated = boundedValid(P, bounds)
+  const whole = evaluated.verdict
+  tally.rigidInstancesChecked += evaluated.checked
+  if (evaluated.checked === 0) {
+    tally.zeroChecked += 1
+    console.log(`zero rigid instances on ${name}: bounded vacuity only`)
+  } else tally.nonVacuous += 1
   if (whole === 'valid') tally.wholeValid += 1
   const report = (what) => {
     tally[what] += 1
