@@ -1,18 +1,15 @@
-# Waxwing / record composition foundation: presence proofs in flight (2026-10-21)
+# Waxwing / record composition foundation: presence proofs done (2026-10-21)
 
-**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Typed
-oracle second pass done (§18.9, amended grammar 29/29); review fixes
-(§18.10). Presence proof interface committed (§18.11,
-Composition/Presence/Defs.lean). Four proof agents were launched in
-isolated worktrees: O1, O2, O3 (each a theorem `o1`/`o2`/`o3`) and D2
-from O1 and O3 (`d2_of`). If they did not report back, their worktree
-branches hold whatever they committed; integration (copying their files
-into Composition/Presence/, one `lake build`, axioms check) and an
-adversarial review of the combined statements are still to do.
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). O1-O3 and
+D2 (presence) proved and integrated (§18.12, Composition/Presence/).
+One agent is proving that `BitValid` is a finite, computable check
+(Presence/Decide.lean, in a worktree); integrate it and record D1 as
+decided, or record what failed. No compiler code changed. Task 7 stays
+checkpointed (`r005b-task7-wip`).
 
-**Next.** Integrate, review, then report to the author. Not authorized:
-D3b (deferred until the nested pass is reviewed), D4, compiler changes,
-solver integration.
+**Next, needs the author:** review of §18.12. Still deferred or
+unauthorized: D3b (until the nested pass is reviewed), D4, compiler
+changes, solver integration.
 
 ---
 

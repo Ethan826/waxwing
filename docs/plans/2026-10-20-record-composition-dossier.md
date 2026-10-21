@@ -2337,3 +2337,48 @@ problem has, per pattern satisfying `D`, one written choice and one
 tuple of set terms over the rests, without complement, working for
 every finite rest assignment satisfying `D`, the witnesses inside the
 rigid rests).
+
+### 18.12 Presence proofs: results
+
+Proved (research/composition-proofs/Composition/Presence/; one build,
+no warnings, no `sorry`, the three standard axioms):
+
+| Statement | Lean | File | Proved in |
+|---|---|---|---|
+| O2: the written/rest split is exact, each part local | `o2` | O2.lean | its own worktree |
+| O3: valid iff `D` impossible on written labels, or `WrittenValid ∧ RestValid` | `o3` | O3.lean | its own worktree |
+| O1: with infinitely many labels, `RestValid ↔ BitValid` | `o1` | O1Bits.lean, O1.lean | its own worktree |
+| D2 (presence): uniform complement-free term witnesses per pattern | `d2_of` (from O1, O2, O3), `d2` | D2Terms.lean, D2.lean, Main.lean | its own worktree; instantiated at integration |
+| non-vacuity | `split_valid`, `split_bit`, `bad_not_valid`, `tiny_rest`, `tiny_not_bit`, `infNat`, `not_infBool` | Examples.lean | the reviewer, restyled |
+
+Integration: one owner (this session) copied the four results into the
+main checkout; four helper names that two worktrees had defined
+independently (`SExpr.rigids`, `PAtom.rigids`, `evalB_zero`,
+`labels_written`) were renamed in D2's files; the worktrees were then
+removed (their branches kept). No statement was changed during the
+proofs; the only finding before them was O3's vacuity disjunct
+(§18.11).
+
+**Adversarial review of the combined statements** (independent reviewer,
+2026-10-21): no false and no vacuous theorem; each has content, checked
+in Lean (the examples above). `split` in presence form is valid through
+`o3` and `o1` and `d2` applies to it; with one label (`Unit`), O1's
+equivalence fails, so its hypothesis does work. Points recorded:
+
+- **"Decided" is not yet formal.** `BitValid` still quantifies over
+  functions `Nat → Bool`; a lemma that it equals a finite check over the
+  mentioned indices, with a computable checker, is needed before D1 can
+  be called decided. Being proved now (within D1's authorization).
+- **D2 is existence only**: its terms are chosen classically; producing
+  them needs a separate constructive statement.
+- **`Scoped` is decorative**: `D` is evaluated with no flexible set, so
+  a flexible variable in `D` reads as empty; O1 and O3 hold without it.
+  Recorded in Defs.lean.
+- D2 is stronger than stated: its terms do not depend on the pattern.
+- Nothing here transfers to typed records; D3a and D3b are untouched,
+  and the presence fragment is exact only for flat rows (§18.10).
+
+**Standing.** O1-O3 and D2 hold for the presence fragment as defined,
+with finite rows, declared hypotheses and per-pattern uniformity. D1 is
+"decided" once the finite-check lemma lands. Not established: any
+typed statement (D3a, D3b), a constructive witness procedure, D4.
