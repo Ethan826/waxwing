@@ -4271,3 +4271,77 @@ integration, each to be scoped around the established theorem, with
 separate obligations for inference and principality and for compilation
 correctness. Until then only the two statements-only streams (SC1-SC4,
 option C) finish.
+
+### 18.47 Option C, statements only: projection onto written labels (2026-10-21)
+
+research/division-campaign/star/projection-statements.md; Lean
+Composition/Sig/ProjectionDefs.lean (`def`s and `def … : Prop` only; no
+theorem, no `sorry`; imported); clean build (154 jobs). **For the
+author's review; nothing proved, nothing adopted.**
+
+**Acceptance boundary: every proposed checker statement targets P9s's
+`Accepts`**, not option B's `ValidOpen` (PC3 ends in `checkCert`, PC4 in
+`Accepts`); by K7 these checkers can never certify `route` or `split`.
+`divide3` and a new family `divide5` lie inside both boundaries (the
+`ValidOpen` side argued, not checked in Lean); `route` lies outside
+`Accepts` (K8) and inside `ValidOpen`. An option-B counterpart (PB4) is
+a shape only, the `←` direction of `openCharacterization`, blocked on a
+computed generic instance and on pieces over Venn cells (constants
+`X r S`), which have no region or typing analysis.
+
+**Verdict: projection onto written labels handles `divide3`** with one
+uniform certificate (`u := r|A`, `t := ⟨r, ∅, rest⟩`, size O(m)), using
+only SC2's four region queries plus `declared`, but four local changes
+to `checkSym` (clashes between rest-less pieces of different rows; two
+pieces of one row in a record; rest obligations only between pieces
+carrying a rest; pieces of one row on both sides of `disjoint`).
+Lower bound (PD3⁻): pieces that always carry their rest need `2^m`
+certificates; B's 65,536 leaves at m = 16 meet it, conditional on SC3.
+Evidence: the certificate passes the sig-oracle reference at every
+pattern for m = 1..10 and the proved `checkCert` by `#eval` for m = 1..4
+(counts of pattern lists); exhaustive search at m = 1, 2 confirms no
+rest-carrying-only certificate is uniform.
+
+**The smallest further operation** is not needed for `divide3`; on
+`divide5` (rigid `r`, `s`, `s₂` with `s disjoint s₂`; `r = u ⊎ t ⊎ q`,
+`u disjoint s`, `t disjoint s₂`, `q lacks a_j`; valid, in `Accepts`) no
+certificate of projection pieces is uniform (PD5⁻; exhaustive at
+m = 1). The smallest sufficient operation is a projection with a
+one-literal guard over another rigid row at the same label
+(`r|(S ∖ dom s)`, `r|(S ∩ dom s)`); its certificate passes for
+m = 1..8. Cost (PG): guards of up to two literals keep per-label
+checking in 2-SAT; arbitrary guards make checking an untrusted
+certificate coNP-hard per label; three or more literals open. Guards
+are proposed for no further work.
+
+Proposed statements (none proved): PI1, PI2 (piece instantiation),
+PQ (the guard-free check reads the region only through the four
+queries and `declared`), PC3, PC4, PD3, PD3⁻, PD5, PD5⁻ (in Lean); PG,
+PW (prose; PW, a uniform written-part analogue of D2's selection).
+Novel under ADR 014: the schematic certificate format with rest-less
+and guarded pieces; SC2's region exactness; the four checker rules; the
+reduction of guarded checking to 2-SAT; rigid-presence formulas as
+certificates for ∀∃ problems with hypotheses relating rigids. One
+unpublished reading (projection as shared Rémy flags on an expanded
+rigid row) is the agent's inference.
+
+Independent review inside the stream: F1-F9 fixed (among them counts
+are of pattern lists; checker rule 4 added; unread citations marked;
+`possibleBoth` corrected), F7 noted (Lean `Piece` does not require a
+rigid row), F10-F12 noted; PD3⁻ and PD5⁻ confirmed independently by
+exhaustive Lean and Node runs.
+
+**Process:** the agent and its reviewer met worktree-guard refusals
+naming their own remedy ("split it into plain, separate commands") and
+followed it (Write then a plain `node`; Edit then a plain `lake
+build`). The stream's brief predates the refinement in §18.43 and said
+to stop on any denial: a departure from its brief, consistent with the
+refined rule. The agent flagged it for judgement.
+
+Questions for the author (projection-statements.md): state SC1-SC4
+over the general piece or keep `{r, ex}`; projection only, guards
+deferred until a ported program shows a `divide5` shape; search (row
+unification does not produce `r|A`) before or after checking; prove PW
+now; a frozen-grammar oracle for whether any problem in `Accepts` needs
+two-literal guards; restate option C against `ValidOpen` before SC
+proof work, or keep it beside `checkAll` at `Accepts`.
