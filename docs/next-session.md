@@ -1,3 +1,45 @@
+# C001 design: committed branch awaiting integration (2026-10-21)
+
+The author asked that this completed design work be discoverable for future
+integration into `main`. Branch `design/c001-explicit-evidence` retains five
+tranche commits after base `c341109`, ending at `25a735c`:
+`c7af763`, `7d37ff1`, `7d2000a`, `55eddcb`, `25a735c`.
+Worktree: `/private/tmp/waxwing-c001-design`. The branch, rather than the
+temporary worktree, is the durable Git reference; preserve it until the
+tranche is integrated.
+
+Read `docs/plans/2026-10-21-c001-explicit/README.md` and `handoff.md` on that
+branch. Those paths are absent from this checkout until integration. If the
+worktree is unavailable, use:
+
+```text
+git show design/c001-explicit-evidence:docs/plans/2026-10-21-c001-explicit/README.md
+git show design/c001-explicit-evidence:docs/plans/2026-10-21-c001-explicit/handoff.md
+```
+
+Recorded author rulings: ordinary structural operation records (A);
+pure, closed-signature, rank-1 design scope; retained collection policies
+with explicit destination rebuilding; runtime dictionary parameters through
+specialization and separate assurance obligations. The blanket all-meta
+restriction is held open. Dedicated class evidence and structural reuse
+remain deferred. This is design approval, with no compiler implementation
+or new Lean proof authorization.
+
+For the next authorized integration into `main`, include these tranche
+commits. Rebase or cherry-pick them in order as appropriate; avoid merge
+commits and preserve concurrent edits. Only the tranche directory belongs
+to this work; do not replace unrelated record-composition work. Recheck the
+documentation and bounded evidence as appropriate after integration, keeping
+known h1/h2 stand-in acceptance differences visible. Update the shared C001
+tracking entry when integrating; it still describes the earlier scope.
+
+No automatic merger or scheduled follow-up is configured. The existing
+no-merge/no-push instruction remains in force until the author authorizes
+integration. This entry records pending work for the next agent; it does
+not authorize restarting either research campaign.
+
+---
+
 # Codex campaign stopped at the author's request (2026-10-21)
 
 All six paused checkpoints and three Codex completion streams are
