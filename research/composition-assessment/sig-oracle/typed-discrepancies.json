@@ -1,0 +1,20 @@
+{
+ "count": 300,
+ "seed": 11,
+ "tally": {
+  "agree": 336
+ },
+ "shapes": {
+  "bounded invalid / uniform none / P9s unresolved": 109,
+  "bounded valid / uniform found / P9s unresolved": 12,
+  "bounded valid / uniform found / P9s valid": 215
+ },
+ "outside": [
+  "nested-same",
+  "nested-two",
+  "nested-alias",
+  "nested-alias-undeclared",
+  "tyvar-nested-rest"
+ ],
+ "found": []
+}

@@ -1,3 +1,19 @@
+# Waxwing / record composition foundation: typed oracle, first pass (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). §18's
+statements amended (§18.6); the typed term-witness oracle's first pass
+run (§18.7): no separation. No compiler code changed. Task 7 stays
+checkpointed (`r005b-task7-wip`).
+
+**Read.** Dossier §18.6-18.7; sig-oracle/README.md, "The typed
+term-witness oracle".
+
+**Next, needs the author:** review of the amended D1-D3 and the oracle
+results; whether to run a second pass with records nested in fields,
+and the D3b construction. Not authorized: proofs, D4, compiler changes.
+
+---
+
 # Waxwing / record composition foundation: dividing rigid rows (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). §17

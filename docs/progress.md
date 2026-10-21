@@ -7778,3 +7778,20 @@ assessment.md.
   approval, restrictions table (whole regions not assumed; a
   type-agreement placement challenge), next steps. Nothing proved, no
   solver.
+
+## Signature checking: typed term-witness oracle, first pass (2026-10-20)
+
+- The author approved the typed bounded oracle and asked for D1-D3 to be
+  amended: D1 a proposed adaptation with obligations O1-O3 (finite rows,
+  exact written/rest split, written choices per pattern); D2 requires
+  uniform witnesses per pattern; D3 split into D3a (typed term
+  witnesses) and D3b (a generic instance, respecting hypotheses that
+  force agreement). Dossier §18.6.
+- sig-oracle/templates.mjs, typed-oracle.mjs: bounded validity, uniform
+  templates per pattern (exhaustive over cells and field sources) and
+  per-assignment templates, kept independent. 36 named problems and 600
+  generated (seeds 3, 11): no separation; `route` and `split` have
+  uniform templates, also at larger bounds. Power checks in scratch
+  copies. Nested-record problems excluded from this pass. §18.7.
+- Stopped at the oracle results and revised statements, as directed. No
+  proofs, no D4, no compiler change.

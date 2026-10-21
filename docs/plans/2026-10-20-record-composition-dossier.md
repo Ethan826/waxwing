@@ -1978,3 +1978,142 @@ Leads not yet read: Rudeanu's and Brown's books, Büttner and Simonis,
 Baader 1998, Flix's OOPSLA 2023 and 2025 and POPL 2026 papers (behind
 access checks), Harper and Pierce 1991, Pottier ESOP 2000, Rémy's
 "Typing record concatenation for free".
+
+### 18.6 Amended statements (the author's review of §18, 2026-10-20)
+
+The review approved the typed bounded oracle, asked for D1-D3 to be
+amended before they become proof targets, and kept D4, proofs and
+compiler integration as separate approvals. The amendments replace
+§18.3's D1-D3.
+
+**The presence fragment.** Labels form an infinite set `ℒ`; `L ⊆ ℒ` is
+the finite set of written labels. Set variables: rigid `X₁…Xₙ` and
+flexible `Y₁…Yₘ`, ranging over **finite** subsets of `ℒ`. Set
+expressions `e ::= X | Y | {l} | e ∪ e` (`l ∈ L`), the presence of a
+record expression's parts. Atoms, each of the form "something is
+empty":
+
+- `e₁ ∩ e₂ = ∅`, from `disjoint` and from the definedness of a
+  composition (one atom per pair of its parts);
+- `l ∉ e`, from `lacks`;
+- `e₁ = e₂`, the presence half of a record equation (`e₁ ∖ e₂ = ∅` and
+  `e₂ ∖ e₁ = ∅`).
+
+A presence problem is `∀ X̄. D(X̄) ⇒ ∃ Ȳ. B(X̄, Ȳ)`, `D` over rigid
+variables only (declared and implied clauses, §17.1), `B` the body's
+atoms. Hypotheses mean exactly that: only rigid assignments satisfying
+`D` are quantified over.
+
+**Written labels by patterns.** A pattern `π` fixes `Xᵢ ∩ L`. Write each
+rigid set as `Xᵢ = Pᵢ ∪ Rᵢ`, with `Pᵢ ⊆ L` fixed by `π` and `Rᵢ ⊆ ℒ ∖ L`
+its rest, and each flexible set as `Yⱼ = Qⱼ ∪ Sⱼ`, `Qⱼ ⊆ L` and
+`Sⱼ ⊆ ℒ ∖ L`. Every atom then splits exactly into a written part (over
+the `Pᵢ` and `Qⱼ`, finitely many cases) and a rest part (over the `Rᵢ`
+and `Sⱼ`, with no constants), because each atom is a conjunction over
+labels and `L` and `ℒ ∖ L` are disjoint. Labels are thus never algebra
+constants, which is meant to avoid the singleton gap (§18.2); that the
+split is exact is obligation O2 below.
+
+- **D1, presence elimination** (a **proposed adaptation** of Martin and
+  Nipkow's Lemma 3.3 and Boole's method, §18.2; not derived until
+  O1-O3 are discharged): for each pattern `π` and each written choice
+  `Q̄`, the rest part is valid iff the result of eliminating `S̄` by
+  Boole's rule is implied by `D`'s rest part, and that implication is
+  decided region by region (on `{0, 1}` per region of the `Rᵢ`).
+  - O1: elimination and the identity check are correct for finite
+    subsets of an infinite set, which form a Boolean ring without unit,
+    not a Boolean algebra.
+  - O2: the split into written and rest parts is exact for every atom
+    of the fragment, `D`'s included.
+  - O3: a written choice `Q̄` that works may depend on `π` but not on
+    the rests; and the rests' problem does not depend on `Q̄` beyond
+    the written part.
+- **D2, uniform term witnesses for presence** (unresolved): if a
+  presence problem is valid, then for each pattern `π` there are one
+  written choice `Q̄` and one tuple of set terms `t̄` (over `R̄`, with
+  `∪`, `∩`, `∖`, no complement) such that `Sⱼ := tⱼ(R̄)` satisfies `B`
+  for **every** `R̄` in `π` satisfying `D`. Finding a term for each
+  assignment separately is a weaker property and does not suffice.
+  Witnesses stay finite and inside the rigid rests: each `tⱼ(R̄) ⊆ ⋃ Rᵢ`
+  because no term uses a complement. `route`: `S_u = R_r ∖ R_s`.
+
+**Types.** "Equivalently" is withdrawn: D3a and D3b are separate
+conjectures, and neither currently establishes the other.
+
+- **D3a, uniform typed term witnesses** (unresolved): if a typed problem
+  is valid, then for each pattern `π` there is one **typed template**
+  that works for every rigid assignment in `π` satisfying `D`. A typed
+  template gives each flexible row, at each written label, absent or a
+  field template (a rigid row's field there, a rigid type variable, a
+  ground type), and at each Venn cell of the rigid rows (a nonempty set
+  `S` of rigid rows holding the label), absent or one source row
+  `r ∈ S` whose field it copies; a flexible type variable gets a field
+  template or a record template.
+- **D3b, a generic instance suffices** (unresolved, needs its own
+  construction and transfer argument): for each pattern `π`, a
+  specified generic rigid assignment `θ*_π` such that solvability of
+  `B` at `θ*_π` implies validity in `π`. The construction must respect
+  hypotheses that force field types to agree: where `D` makes `r` and
+  `s` equal on a cell (`r = s`, `r = s ⊎ t`), the generic instance must
+  give both one shared fresh type there. Independently fresh types
+  would violate those hypotheses and make `θ*_π` fall outside `D`.
+- **D4** stays a later design, after D1-D3 are reviewed with the
+  oracle's results.
+
+### 18.7 The typed bounded oracle: first pass
+
+sig-oracle/templates.mjs and typed-oracle.mjs (README, "The typed
+term-witness oracle"). Three independent checks over the same bounded
+rigid assignments (written labels plus `z1`, `z2`; rigid fields `Int`,
+`Bool`; so two unwritten labels of one cell can relate equally or
+unequally across rows): bounded validity with unrestricted witnesses;
+**uniform** templates, one per written-label pattern for every rigid
+assignment of it; per-assignment templates, only where no uniform one
+exists. Templates are searched exhaustively over cells and field-source
+choices, with no expression-depth limit. When bounded validity fails at
+an assignment θ*, one search at θ* decides both that no uniform
+template exists and whether the bounded flexible domain was too small.
+
+First pass excludes problems with records nested in fields
+(`nested-same`, `nested-two`, `nested-alias`,
+`nested-alias-undeclared`, `tyvar-nested-rest`): their field templates
+would need nested records, which this pass does not enumerate.
+
+| Run | Problems | Bounded invalid, no template | Valid, template, P9s certifies | Valid, template, P9s Unresolved | Separations, power or P9s flags |
+|---|---|---|---|---|---|
+| named: 6 typed challenges, 19 first-pass challenges, 12 source programs (all as predicted) | 36 | 15 | 16 | 5 (`split` twice, `route`, `shared-part-equal-rows`, `agreement-hypothesis`) | 0 |
+| generated, seed 3 | 300 | 115 | 181 | 4 | 0 |
+| generated, seed 11 | 300 | 94 | 199 | 7 | 0 |
+
+- **No separation**: every bounded-valid problem has a uniform typed
+  template, so no type-dependent placement and nothing beyond term
+  witnesses was found in this fragment at these bounds.
+- **`route` and `split`** have uniform templates (`u` takes the cells of
+  `r` outside `s`, `v` those inside), as do problems whose hypotheses
+  force agreement (`r = s`, `r = s ⊎ t`) and the controls with shared
+  parts. Every problem P9s certifies has a template (no P9s flag).
+- **Larger bounds** (three unwritten labels, `{}` as a rigid field
+  type): the uniform templates of `split`, `route`, `forwarded`,
+  `join3`, `agreement-hypothesis` and the two shared-part controls still
+  hold (up to 21,952 rigid assignments each).
+- **Controls**: the invalid challenges (`alias`, `compose-undeclared`,
+  `equal-rests`, `types-differ`, `shared-part`, `split-undeclared`, the
+  two source `bad` functions) have no template at their counter-instance.
+- **Power** (scratch copies, deleted): templates copying a fixed type
+  rather than the source's are flagged as separations and as P9s
+  inconsistencies; templates not grouped by pattern make `depSig` show
+  "no uniform template, per-assignment found", so the detector reports
+  the distinction the author asked to preserve.
+
+**Revised standing.**
+
+- D2 and D3a: bounded evidence only, within the first-pass fragment (no
+  records nested in fields, one written label, at most three rigid and
+  three flexible rows). Not established: larger fragments, nested
+  records, record-valued type variables in fields.
+- D3b: not tested; it needs its generic-instance construction first
+  (§18.6), which this pass does not provide.
+- D1: unchanged, a proposed adaptation with obligations O1-O3.
+- Next, each a separate approval: a second pass covering records nested
+  in fields (finite but larger template spaces); the D3b construction;
+  then proofs of D1 and D2 if approved; D4 after that.
