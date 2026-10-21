@@ -2480,7 +2480,30 @@ the regions whose chosen bit is set, and searches the written choices.
   controls give `none`; `keepOut` without its clause fails only at the
   pattern holding the written label.
 
-Limits: `witness` does not check `D` on the pattern (soundness still
-holds there); terms are unsimplified unions of up to `2^|rigid|`
-regions; cost is exponential, the same order as `validCheck`. This is
-presence only: nothing transfers to typed records.
+Limits: terms are unsimplified unions of up to `2^|rigid|` regions;
+cost is exponential, the same order as `validCheck`. This is presence
+only: nothing transfers to typed records.
+
+**The author's review (2026-10-21).** Accepted as the executable
+presence baseline for the typed work; its cost is acceptable for a
+research reference and optimization waits. Two details kept explicit:
+
+- **"No complement" means no absolute complement.** Terms use `∪`, `∩`
+  and relative difference `∖` (`u = R₀ ∖ R₁` in `split`); what is
+  excluded is `ℒ ∖ T`, which would leave the rigid rests.
+- **The caller checks the pattern against `D`** (`dOn P ps`;
+  `valid_iff_witness` quantifies only over patterns with `dOn`
+  true). `witness` does not. `Works` (Witness.lean) assumes `D` only on
+  the rest labels, never on the pattern's written part, so for a
+  pattern `D` rules out:
+  - **success** is not vacuous: `Q` and `t` satisfy `B` at that pattern
+    for every finite rest satisfying `D`'s rest part
+    (`witness_sound`). It is not evidence of validity, because that
+    pattern is no permitted instance;
+  - **failure** says nothing about validity. Either the rest check
+    `restOk` fails (independent of the pattern; with some admissible
+    pattern this makes the problem invalid, by O3 and O1) or no written
+    choice satisfies `B` at that pattern, which validity never asks
+    for. A problem with no admissible pattern is vacuously valid
+    (`noPattern` in WitnessExamples.lean), while `witness` returns
+    `none` there.
