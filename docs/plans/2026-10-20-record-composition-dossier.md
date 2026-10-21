@@ -3608,7 +3608,7 @@ is in progress; not yet accepted.**
 |---|---|---|---|
 | `MGUExists` | `mguExists` | `∃ τ, UnifiesD P π C τ` for any cell list `C` | proved |
 | `CellIndependence` | `cellIndependence` | `Scoped P`; `HasInstance P π` | proved |
-| `Universality` | `universality` | `Scoped P`; `HasInstance P π` (unused by the proof); `IsMGU` over the allowed cells | proved; gives `WithinC` |
+| `Universality` | `universality` | `Scoped P`; `HasInstance P π` (unused by the proof); `IsMGU` over the allowed cells | proved; also gives `WithinC` |
 | `D3bExists` | `d3bExists` | `Scoped P`; `HasInstance P π` | proved, from the three above |
 | completeness at θ* | `thetaStar_valid_iff_fresh` | `Scoped`, `HasInstance`, `IsMGU`, **`Fresh P z e`** | proved; conditional |
 
@@ -3649,8 +3649,47 @@ generated seeds 3 and 11 (120 each) pass invariants (they carry no
 expected verdicts). Wall times on a shared machine are upper bounds.
 The full `contextFree` mutant run was not repeated at a longer limit.
 
-**For the bridge:** `universality` proves `WithinC` (every label and
-base inside θ* is written in the problem), which bears on §18.33's
+**For the bridge:** `universality` proves `WithinC` (θ* uses only the
+problem's written labels and bases, plus symbolic cell labels and
+generic constants; corrected in §18.35), which bears on §18.33's
 preference for an existence theorem returning `WithinC` over W's
 trimming. "θ* uses finitely many constants" is suggested by the
 construction and not proved.
+
+### 18.35 The author's review of §18.34 (2026-10-21)
+
+Subject to the independent proof review (in progress): **existence** of
+a generic instance is now established for every permitted, inhabited
+pattern in the modelled constraint language, without freshness.
+**Option-B completeness and soundness** still require the bridge
+(§18.32-18.33). **A usable compiler implementation** still requires
+executable construction, performance evidence and source-to-constraint
+correspondence. The author checked the theorem statements and their
+assembly, not the whole proof development.
+
+1. **The stronger existence result, used directly.** Proved by the
+   coordinator: `d3bExistsWithin` (Universality.lean): from `Scoped P`
+   and `HasInstance P π`, `∃ θs, GenericInst P π θs ∧ WithinC P θs`,
+   which is the bridge's `D3bExistsWithin` statement (§18.32). Clean
+   build; axioms `propext`, `Classical.choice`, `Quot.sound`; added to
+   d3b/checks/Audit.lean. The bridge consumes it; W's trimming
+   machinery is unnecessary on this route.
+2. **`WithinC`, stated correctly.** It does not mean everything in θ*
+   was literally written in the program. It admits the problem's written
+   labels and bases **plus symbolic cell labels and generic constants**
+   (`WithinG`: `.base (.inr _)` unrestricted; only `.inl` record keys
+   must be written). §18.34 corrected.
+3. **The Robinson adaptation, attributed and scoped.** Reproving it for
+   this representation gives checked justification for the departures;
+   the result is not an unchanged application of Robinson's published
+   theorem. The citation's bibliographic details were checked (J. ACM
+   12(1), January 1965, pp. 23-41); the theorem's statement and location
+   are not yet checked against the paper, so the correspondence is not
+   marked fully source-checked (construction.md §6.1).
+
+The oracle repairs close evidence gaps: exact rejection replaces the
+disclosed `unknown`, and assertion mode makes mismatches fail visibly.
+
+Next: finish the independent proof review, then connect this existence
+theorem to the authorized finite-freshness and option-B soundness work.
+No new trimming machinery, no compiler integration.
