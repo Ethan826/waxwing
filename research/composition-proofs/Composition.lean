@@ -50,3 +50,6 @@ import Composition.Sig.Complete
 import Composition.Sig.SplitNotAccepted
 import Composition.Sig.SourceBoundary
 import Composition.Presence.Defs
+import Composition.Presence.O1
+import Composition.Presence.O2
+import Composition.Presence.O3
