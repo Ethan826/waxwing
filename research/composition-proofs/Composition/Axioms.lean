@@ -7,6 +7,7 @@ import Composition.Sig.Adversarial
 import Composition.Sig.SourceBoundary
 import Composition.Presence.Main
 import Composition.Presence.Decide
+import Composition.Presence.DecideValid
 
 open Composition Composition.Programs Composition.Syntax
   Composition.Syntax.SourceBoundary
@@ -127,3 +128,5 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms Composition.Presence.d2
 #print axioms Composition.Presence.bitCheck_iff
 #print axioms Composition.Presence.restValid_iff_bitCheck
+#print axioms Composition.Presence.writtenCheck_iff
+#print axioms Composition.Presence.valid_iff_validCheck

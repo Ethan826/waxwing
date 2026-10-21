@@ -7826,3 +7826,7 @@ assessment.md.
   "decided" needs a finite-check lemma (in progress); D2 is existence
   only; `Scoped` is decorative. Dossier §18.12. Verify not run (proofs
   and docs only).
+- Later the same day: `bitCheck_iff` (the rest part is a finite,
+  computable check) and `valid_iff_validCheck` (validity of a presence
+  problem is decided by a computable check), each proved in a worktree
+  and integrated. D1 holds for the presence fragment. §18.12.
