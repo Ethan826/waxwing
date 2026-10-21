@@ -7795,3 +7795,20 @@ assessment.md.
   copies. Nested-record problems excluded from this pass. §18.7.
 - Stopped at the oracle results and revised statements, as directed. No
   proofs, no D4, no compiler change.
+
+## Signature checking: typed oracle, second pass (nested records) (2026-10-21)
+
+- Grammar and bounds fixed in the dossier before running (§18.8). The
+  decomposed search (blocks by Venn cell) had a projection bug, caught
+  by the cross-check against the first-pass engine and fixed; an
+  independent brute-force search agrees on nested problems. The
+  specified grammar lacked written fields at nested tail nodes (P9s's
+  own witnesses fall outside it); an amended grammar, recorded as
+  amended after a run, gives 29/29 as predicted, including division in
+  fields, in function types and in record-valued rigid type variables.
+  §18.9.
+- Adversarial review: count fix, first-pass grammar not exhaustive for
+  its fragment (records under arrows, functions), flag renamed, unknown
+  uniformity in the power case, presence fragment exact only for flat
+  rows, D3b must handle rigid type variables tied to rows. Further
+  reading: Pottier, Rémy, Harper and Pierce, Baader. §18.10.
