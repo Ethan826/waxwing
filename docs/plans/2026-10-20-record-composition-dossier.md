@@ -1349,3 +1349,158 @@ Infinite rows still have no executable check; S1 covers them by proof.
 the search for certificates and an executable certificate format, the
 final acceptance policy for signatures P9s leaves Unresolved, and
 compiler integration.
+
+**Accepted** (the author's review, 2026-10-20), including the weakened
+premises, with one precision kept: `Accepts` still requires finite
+certificate assignments; the milestone removes W1-W3 as blanket
+restrictions, not every premise. What is proved: the formal semantic
+acceptance rule guarantees signature validity, with finite flexible
+witnesses for finite rigid inputs. What is not: the executable oracle's
+acceptances are not certified (§15). This accepts the soundness result;
+it does not adopt P9s as Waxwing's checker.
+
+## 15. A verified certificate checker: statements first
+
+Proposed by the author (2026-10-20) as the next bounded milestone: a
+checked connection from an executable certificate format to `Accepts`.
+Search stays untrusted; whatever it produces must pass a checker proved
+to imply `Accepts`. Under the proof-dossier policy these are statements
+for approval; nothing here is written in Lean yet, and nothing is
+proved.
+
+### 15.1 Source
+
+| Part | Source | Status |
+|---|---|---|
+| untrusted search, certificate, verified checker | certifying algorithms: McConnell, Mehlhorn, Näher and Schweitzer, *Certifying algorithms*, Computer Science Review 5(2), 2011; translation validation, Pnueli, Siegel and Singerman, TACAS 1998, and Necula, PLDI 2000 | published; cited, not re-read for this section |
+| finite association lists for records, order-insensitive equality | standard representation of finite maps | standard; no single source |
+| the checker's evaluator, the pattern enumeration | this dossier, over §14's definitions | derived |
+
+No new semantic machinery: the checker soundly checks `Certifies` for
+finitely represented values (K4, one direction; the converse is not
+claimed), and §14's theorems do the rest.
+
+### 15.2 Definitions (proposed)
+
+Assumptions: `DecidableEq Label` and `DecidableEq B` (base types must be
+compared; R3 makes the same assumption, Reduction.lean), and an instance
+`DecidableEq (Const Label)`, to be written in the new file (Generic.lean
+derives none). `SG` is a nested inductive, and Lean 4.35 cannot derive
+`DecidableEq` for it; `eqS` and the recursions of K2 and K3 are written
+by hand.
+
+- **Syntactic generic values** `SG`: `base (b : GB)`, `arrow SG SG`,
+  `record (List (GL × SG))`. A record's list may be in any order; its
+  denotation looks a label up by its first occurrence, so every list
+  denotes a finite row.
+- **Denotation** `⟦·⟧ : SG → GG`, and for rows `⟦fs⟧ : Row GL GG`.
+- **Syntactic certificate** `Ĉ` for a pattern: finite lists of type
+  variable and row variable bindings; an unbound variable denotes the
+  empty record. `⟦Ĉ⟧ : Assign GL GB`.
+- **Finite patterns.** A finite pattern is a list of pairs `(r, l)`
+  with `r ∈ P.rigidRow` and `l ∈ written P`; it denotes
+  `π_p r l = ((r, l) ∈ p)`. `patterns P` enumerates every sublist of
+  `P.rigidRow × written P` (deduplicated), one per subset.
+- **Executable evaluator** `evalS P p Ĉ : TExpr GL GB → Option SG`.
+  Its rigid part is `genRow` in list form for `π_p` and mirrors its
+  checks: `inl l` only if `l ∈ written P` and `(r, l) ∈ p`, rigid rows
+  only for `r ∈ P.rigidRow`, constants `T(n)` only for
+  `n ∈ P.rigidTy`. Compositions are defined iff the parts' denoted label
+  sets are disjoint (decided on the lists).
+- **Decidable checks**, each on denotations, never on raw lists: a
+  record is read at the first occurrence of each label, so `wfS`
+  recurses only into first-occurrence entries, and `eqS` compares the
+  two lookups over the union of both lists' labels. `wfS` decides `WFG`
+  (W3 at every depth); `eqS` decides equality of denotations;
+  `checkAtom` decides `HoldsG` for one lifted atom, with D1 and D2 (D2
+  ranges over the finite `P.rigidRow`; `ff` gives false);
+  `consistentS` decides `Consistent` for `π_p` over `D`'s atoms.
+- **The checker.** `checkCert P p Ĉ := ∀ a ∈ P.B, checkAtom` and
+  `checkAll P certs := ∀ p ∈ patterns P, consistentS P p →
+  checkCert P p (certs p)`, both `Bool`, both computable (no
+  `noncomputable`, no classical choice), so `#eval` and `#guard` run
+  them.
+
+### 15.3 Statements (proposed; none proved)
+
+- **K1, denotation is finite.** `FinAssign ⟦Ĉ⟧` for every `Ĉ`.
+- **K2, decisions are correct.** `eqS s t = true ↔ ⟦s⟧ = ⟦t⟧`;
+  `wfS s = true ↔ WFG P ⟦s⟧`; `consistentS P p = true ↔
+  Consistent P π_p`.
+- **K3, evaluation agrees**, for every list `p` (not only those in
+  `patterns P`, since `evalS` makes `genRow`'s checks). `evalS P p Ĉ t =
+  some s →
+  evalT (genAssign P π_p ⟦Ĉ⟧) t = some ⟦s⟧`, and `evalS P p Ĉ t = none →
+  evalT (genAssign P π_p ⟦Ĉ⟧) t = none`. (Only the first is needed for
+  soundness; the second makes a rejection mean the certificate fails,
+  not that the evaluator gave up.)
+- **K4, one pattern.** `checkCert P p Ĉ = true →
+  Certifies P π_p ⟦Ĉ⟧`.
+- **K5, pattern coverage.** For every `π` with `Consistent P π` there
+  is `p ∈ patterns P` with `Consistent P π_p` and `genAssign P π σ =
+  genAssign P π_p σ` for every `σ`. (Argument to formalize: `genAssign`
+  reads `π` only at rigid rows and written labels; restricting `π`
+  there keeps consistency, since restriction only turns presences
+  off.)
+- **K6, the checker implies acceptance.** `checkAll P certs = true →
+  Accepts P`, hence (with §14.8) `ValidAll P` and `ValidFin P`.
+
+Not stated for this milestone, so that the gap is explicit:
+
+- **K7, no loss against `Accepts`** (unresolved, not proposed): every
+  semantic certificate can be replaced by the denotation of a syntactic
+  one. Without it a signature could be accepted semantically and still
+  have no certificate the checker can see. Not a representation fact
+  alone: `FinAssign σ` bounds each value but not how many variables
+  `σ` binds, so K7 needs a congruence lemma for `HoldsG` (it depends
+  only on the variables an atom mentions, including the rows D2 reads;
+  `sat_congr` covers `Holds` only). Left out to keep the milestone
+  bounded.
+- Anything about search: when the oracle fails to find a certificate,
+  the answer stays Unresolved.
+
+### 15.4 Restrictions table, soundness pass
+
+| Restriction | Believed harmless because | Challenge | Status |
+|---|---|---|---|
+| records as lists, first occurrence wins | the denotation is fixed by the lookup; duplicates never change what K4 claims about `⟦Ĉ⟧` | `record [(inl a, {}), (inl a, record [(inr 0, _), (inr 1, _)])]`, rows 0 and 1 undeclared: the denotation is well-formed, so a `wfS` walking every entry would make K2's ← false (found by the adversarial reviewer); `wfS` and `eqS` read first occurrences only | K2, with §15.2 as amended |
+| order-insensitive equality | two lists in different orders denote one row | `{a, b}` against `{b, a}`; nested records in different orders | K2 |
+| unbound variables denote the empty record | for soundness nothing is needed: K4 is a claim about `⟦Ĉ⟧`, which binds them to `{}` (whether this loses certificates is K7's congruence question) | a certificate omitting a variable `B` uses: `checkAtom` must evaluate it as `{}`, not fail open | K3 |
+| patterns only over `rigidRow × written P` | `genAssign` reads nothing else | an unscoped `D` naming a non-rigid row in `lacks`: `π_p` is false there, which consistency allows | K5 |
+| `D`'s satisfiability not checked | soundness holds vacuously when `D` is impossible; Waxwing refuses such declarations separately (§2.3) | with only `lacks` and `disjoint`, `D` is always satisfiable (all rigid rows empty); an impossible `D` needs `ff` or an equation | outside the checker, as approved |
+| decidable base types | equality of `B` is compared | none in the semantics; a cost on the type `B` | assumption |
+
+### 15.5 Proposed evidence besides the proofs
+
+- `#guard checkAll` on the accepted challenges (`alias-declared`,
+  `nested-alias`, `tyvar-nested-rest`, `nested-same`, `lacks-declared`,
+  `tyvar-field`, `rigid-type-free`, `empty-split`), with certificates
+  exported from the untrusted oracle: the oracle finds, Lean checks.
+- `#guard` that `checkAll` rejects deliberately broken certificates (a
+  rest composed with an undeclared rest; a flexible row missing a
+  required label), so the checker is not vacuous.
+
+Files (proposed): Sig/Syntactic.lean (`SG`, denotation, K1),
+Sig/Check.lean (`evalS`, `eqS`, `wfS`, `checkAtom`, K2-K4),
+Sig/Patterns.lean (`patterns`, K5, K6), Sig/CheckExamples.lean
+(§15.5).
+
+### 15.6 For the author
+
+1. Approve or amend K1-K6 and the definitions in §15.2.
+2. Whether K7 (no loss against `Accepts`) belongs in this milestone.
+3. The assumptions `DecidableEq B` and the new `DecidableEq (Const
+   Label)` instance.
+
+**Adversarial review** (independent reviewer, 2026-10-20): no false
+statement among K1-K6. Corrections taken: `wfS` and `eqS` defined on
+denotations (a naive walk makes K2 false); the missing `DecidableEq
+(Const Label)`; `SG`'s equality written by hand; `evalS` takes `P`
+and `p` and mirrors `genRow`'s checks, so K3 holds for every `p`;
+"decides" weakened to "soundly checks"; K7's gap is congruence, not
+representation. Confirmed: K1, K5 (restriction only turns presences
+off, and both clauses of `Consistent` are antitone), K6 from `s1` and
+`s1_fin` (neither needs `Scoped`), and the satisfiability row. Also
+noted: `Consistent` ignores `eq` and `ff` atoms in `D`, so even
+`D = [ff]` demands a certificate per pattern; `Accepts` is never
+vacuously true.

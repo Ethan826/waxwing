@@ -7686,3 +7686,17 @@ assessment.md.
   record types, nested rigid fields) and a `rich` rigid domain: 0
   failures (162, 352, 6,864, 242,354 instances); corrupting `h` makes
   L3 fail. Verify not run (docs, research and proofs only).
+
+## Signature checking: certificate checker, statements first (2026-10-20)
+
+- The author accepted the P9s soundness milestone, weakened premises
+  included (`Accepts` still requires finite certificates); P9s is not
+  adopted. Recorded at the end of dossier §14.8.
+- Dossier §15: statements for a verified checker of finite syntactic
+  certificates (K1-K6: finite denotation, decision correctness,
+  evaluator agreement, one pattern, pattern coverage, checker implies
+  `Accepts`), sources (certifying algorithms, translation validation),
+  restrictions table, proposed `#guard` evidence with oracle-exported
+  certificates. K7 (no loss against `Accepts`) stated as unresolved,
+  not proposed. Adversarial review: no false statement; six
+  corrections applied. Nothing written in Lean; awaiting approval.
