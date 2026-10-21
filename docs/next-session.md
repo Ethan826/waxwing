@@ -1,3 +1,20 @@
+# Waxwing / record composition foundation: certificate checker statements (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). P9s
+soundness (`s1`, `s1_fin`) accepted; P9s not adopted. No compiler code
+changed. Task 7 stays checkpointed (`r005b-task7-wip`).
+
+**Read.** Dossier §14.8 (end: acceptance) and §15 (checker statements,
+restrictions table, adversarial review).
+
+**Next, needs the author:** approval or amendment of §15.6 (K1-K6 and
+§15.2's definitions; whether K7 joins the milestone; the `DecidableEq`
+assumptions). Then Lean: Sig/Syntactic, Check, Patterns,
+CheckExamples. Not authorized: proofs before approval, adopting P9s,
+compiler changes.
+
+---
+
 # Waxwing / record composition foundation: P9s soundness proved (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). No
