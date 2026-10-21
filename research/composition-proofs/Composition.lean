@@ -111,4 +111,8 @@ import Composition.Typed.Bridge.ProofSubstFacts
 import Composition.Typed.Bridge.ProofValid
 import Composition.Typed.Bridge.ProofExamples
 import Composition.Typed.Bridge.ProofExamplesFresh
+import Composition.Typed.Bridge.ProofFreshBack
+import Composition.Typed.Bridge.ProofFreshComplete
+import Composition.Typed.Bridge.ProofFresh
+import Composition.Typed.Bridge.ProofFreshFinExt
 import Composition.TypedAttack.ShapeSplit
