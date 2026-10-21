@@ -50,3 +50,26 @@ Optionally widen RIGID_FIELDS in run.mjs (reviewer: ties like
     node run.mjs 120 3; node run.mjs 120 11; node run.mjs 0 3 noUnify
 
 Uncommitted: nothing besides this file at pause time.
+
+## Codex checkpoint, 2026-10-21 (supersedes in-flight steps above)
+
+`construction.md` now distinguishes proved transfer, soundness,
+equation-free and semantic flat-D constructions, and conditional
+completeness from unproved general existence. `Fresh` injects every
+constant, not just those used by an instance. Read the finite-base
+follow-up for the proved equation-family obstruction and missing bridge.
+
+The default Lean build imports the singleton ShapeSplit, split into
+Core and main below the maintained-code line limit. Public statements
+are preserved. `validity_not_extension_stable` adds the direct Unit/Bool
+finite-validity comparison. Build and 16-result axiom audit passed;
+only standard propext, Classical.choice and Quot.sound appear.
+
+Full named and contextFree reruns hit their 180-second limits after
+42 completed cases each. They are partial evidence. Four named targets
+completed at unchanged bounds; record-constant was unknown despite
+its invalid expectation. The local BACKLOG.md preserves that precision
+issue and next action. The targeted mutant detected three covers failures;
+a direct two-label power check also detected the expected defect.
+Exact commands, outcomes and logs are in construction.md §15 and checks/.
+No generated 120+120 rerun, npm, compiler integration or D4 adoption.

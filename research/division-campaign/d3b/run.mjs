@@ -15,8 +15,10 @@
 // fresh atoms and labels are values of the string semantics). Compared
 // with bounded validity: D3b valid and bounded invalid is a failure.
 // Run: node run.mjs [count] [seed] [mutant] (count 0: the named
-// problems; otherwise that many generated ones); mutants: noUnify (fresh
-// constants, D's equations ignored), allCells (every cell, allowed or
+// problems; otherwise that many generated ones). Optional fourth argument:
+// comma-separated exact named problems, retaining all original bounds.
+// Mutants: noUnify (fresh constants, D's equations ignored),
+// allCells (every cell, allowed or
 // not), contextFree (cell constants valued at one fixed label).
 import { sat, scan, rowsOver, product, builtValues }
   from '../../composition-assessment/sig-oracle/semantics.mjs'
@@ -40,6 +42,7 @@ import { D3B } from './challenges.mjs'
 const count = Number(process.argv[2] ?? 0)
 const seed = Number(process.argv[3] ?? 3)
 const mutant = process.argv[4] ?? ''
+const selected = new Set((process.argv[5] ?? '').split(',').filter(Boolean))
 const RIGID_FIELDS = ['Int', 'Bool', '{q:Int}']
 
 function named() {
@@ -144,9 +147,22 @@ function check(item, stats) {
   return { d3b, bounded, fails }
 }
 
+function itemName(item) { return item.name }
+
+function selectedItem(item) {
+  return selected.size === 0 || selected.has(item.name)
+}
+
 function main() {
   const stats = { total: 0 }
-  for (const item of count > 0 ? [] : named()) {
+  const items = count > 0 ? [] : named()
+  const names = new Set(items.map(itemName))
+  for (const name of selected) {
+    if (!names.has(name)) {
+      throw new Error(`unknown named problem: ${name}`)
+    }
+  }
+  for (const item of items.filter(selectedItem)) {
     const out = check(item, stats)
     const mark = out.d3b === item.expect ? '' : '  (differs from expect)'
     console.log(`${item.name}: d3b ${out.d3b}, bounded ${out.bounded}` +
