@@ -280,6 +280,14 @@ groundness, coverage) → Specialize → Go.
 
 ## 8. Testing and proofs
 
+Assurance follow-up (2026-10-21): the
+[register](2026-10-21-type-system-assurance-register.md) keeps the existing
+§4.2 termination argument and the checks below. Adding kinds, dictionaries
+or new recursion rules must revisit their assumptions. This is no new
+proof requirement for the completed P001 milestone and no claim that its
+argument proves whole-compiler soundness. Local let-generalization with
+effects requires a separate reviewed design and soundness argument.
+
 Every rejection row asserts exact code, span and text.
 
 - Syntax and declarations: each E_SYNTAX form of section 1; unbound and

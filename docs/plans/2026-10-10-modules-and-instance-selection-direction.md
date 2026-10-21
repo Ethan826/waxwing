@@ -91,6 +91,23 @@ optimization relies on a law, specify exactly what justifies the rewrite,
 including effect order and observable failures. Modules/classes alone do not
 prove laws, race freedom, or deterministic execution.
 
+## Assurance gate (2026-10-21)
+
+Apply the [assurance register][assurance] before implementation planning.
+State dictionary elaboration's typing guarantee, the coherence promise for
+any implicit selection, and its termination argument. Explicit evidence
+must survive elaboration and specialization without changing the selected
+implementation. Follow published qualified-type rules and flag departures
+under ADR 014; select a mechanized proof scope only after the rules exist.
+
+For collections, state how lookup/update retain the governing instance and
+how cross-module operations handle incompatible instances. For modules,
+state abstraction and type-identity guarantees. Keep evidence of class laws
+separate from type safety and selection: property tests are bounded
+checks, and law-dependent rewrites need an explicit justification.
+
+[assurance]: 2026-10-21-type-system-assurance-register.md
+
 ## Design acceptance scenarios and open decisions
 
 Before implementation plans, specify examples that demonstrate:

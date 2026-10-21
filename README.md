@@ -93,7 +93,11 @@ binding when the inner one has an incompatible type.
 
 The [services example](examples/services.wxw) combines a database, clock, and
 logger, with fakes installed by the tests. Those handlers return fixed values.
-Connecting them to external services needs the planned Go FFI.
+Connecting them to external services needs planned typed FFI bindings.
+The intended adapter model lets a Waxwing service contract be fulfilled by
+host libraries or fakes. A Logger could use Pino, Winston, or a browser
+implementation without changing application code that uses Logger. The
+binding and service-assembly rules still need design.
 
 ## Records
 
@@ -471,7 +475,8 @@ The [backlog](BACKLOG.md) tracks the remaining work:
   with established rules for effects and residual constraints.
 - More numeric types and operators, built-in collections, and a standard
   library. Lists currently have to be defined as ADTs.
-- A typed Go FFI for calling Go libraries.
+- Typed FFI bindings and service adapters, prioritizing JavaScript libraries
+  for the planned JS backend; Go bindings remain target-specific work.
 - Local state, concurrency, general resumable handlers, and less
   restrictive callback and cleanup rules.
 - Type-aware editor tooling, executable documentation, property-based tests,
@@ -485,10 +490,17 @@ limits are in the [language specification](docs/language.md).
 
 ## Compilation targets
 
-Go was chosen because it is the author's day-job language and made a practical
-first target. It is not a commitment to Go as the permanent backend. WebAssembly
-and JavaScript are the preferred long-term directions, with LLVM another
-possibility. Only the Go target exists today.
+JavaScript is the first-priority production backend to develop, with LLVM
+next for native compilation. The JS target should make common libraries easy
+to use through typed FFI bindings and Waxwing service adapters. WebAssembly
+remains an optional alternative web target.
+
+Only the Go target exists today. Go made a practical first target because
+it is the author's day-job language; it remains a convenience for compiler
+development and bootstrapping. It may later become disfavored or deprecated
+once the preferred backends meet their needs. No retirement is scheduled.
+The [backend decision](docs/adr/015-backend-priorities-and-service-bindings.md)
+records the priorities and the implementation work still to design.
 
 ## Generated Go and compiler checks
 

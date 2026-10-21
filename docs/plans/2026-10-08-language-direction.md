@@ -5,13 +5,27 @@ Status: durable direction and hypotheses, not an implementation spec.
 Each subsystem needs its own reviewed design and implementation plan.
 P001 is complete; this adds no work to its scope or FN001's approved delivery.
 
+## Assurance planning (2026-10-21)
+
+The [assurance register](2026-10-21-type-system-assurance-register.md)
+tracks guarantees, published foundations and evidence gates across the
+type system and compiler. It adds no implementation or proof authorization.
+Prioritize local generalization with effects and requirement/cleanup
+inference for focused proof proposals. Standard HKTs and generics need
+source correspondence and explicit arguments; departures require review.
+Classes must address dictionary typing, implicit-selection coherence and
+instance-sensitive collections separately from algebraic laws. Source
+translation and backend preservation remain separate from solver proofs.
+
 ## Intended language and audience
 
 The user wants a language they enjoy: practical qualities associated with
 Rust, a stronger commitment to functional programming, and PureScript-like
 capabilities with more Algol-like syntax. Row polymorphism is a central
-hypothesis, not a secondary convenience. Go is the first target because
-the user's current job uses Go and they dislike working in it.
+hypothesis, not a secondary convenience. Go was the first target because
+the user's current job uses Go and they dislike working in it. The adopted
+2026-10-20 priority is JavaScript, then LLVM; Go remains a development
+convenience (ADR 015).
 
 Long-term ambition: a well-implemented language usable for full-stack web
 development and potentially native applications. Language semantics and
@@ -348,23 +362,28 @@ boundary; A002 can give the lowered IR concrete work. The exact shape and
 any generic lowering before specialization still need a design.
 Textual inspection need not imply a stable serialized or binary format.
 
-Routes considered:
+### Adopted backend priorities (user, 2026-10-20)
 
-- Go to WASM: retain Go runtime and use its browser/WASI build support;
-  needs host integration and compatible foreign bindings.
-- LLVM: add lowering, data layouts, memory management, linking and runtime
-  support; LLVM can also target WASM, but supplies no garbage collector.
-- Direct WASM: choose linear-memory or WasmGC representation, host imports,
-  exports and runtime support.
-- Waxwing VM: useful for a concrete embedding need, but requires its own
-  execution, memory, interface and resource-control design.
+[ADR 015](../adr/015-backend-priorities-and-service-bindings.md) supersedes
+the earlier suggestion to evaluate JavaScript alongside Go:
 
-Assistant recommendation, not a user-selected target: JavaScript alongside
-Go is a useful earlier full-stack route; assess it with a browser UI and
-Go service sharing pure domain modules and explicit serialization contracts.
+- JavaScript is the first-priority production backend to develop. Easy
+  access to common libraries through typed FFI and service adapters is
+  central to its web role. Plan ESM integration, callbacks and async
+  boundaries with I001 and PKG001.
+- LLVM follows for native compilation. Its design must supply data layouts,
+  memory management, linking and runtime support.
+- Go is the existing target of convenience during development and
+  bootstrapping. It may later become disfavored or deprecated. This
+  decision does not deprecate it or authorize removing it.
+- WebAssembly is an optional alternative web target, not a required stage
+  after JavaScript or before LLVM. Go-to-Wasm and direct Wasm remain
+  possible approaches if a concrete need warrants a design.
+
 Native application integration remains an ambition with no selected UI
-framework, OS API, runtime or schedule. Self-hosting can continue through Go
-independently of additional output targets.
+framework or OS API. A Waxwing VM remains unselected. Self-hosting can
+continue through Go independently of additional output targets. Backend
+priorities do not authorize implementation or settle runtime mechanisms.
 
 Full-stack use also needs strings/text with explicit encoding semantics,
 numeric types beyond Int32 with defined arithmetic, practical collections,

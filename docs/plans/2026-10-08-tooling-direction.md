@@ -104,12 +104,16 @@ model/tool versions and failures, not promise universal LLM correctness.
 
 ## PKG001: Libraries, host integration and package management
 
-The user requires an ecosystem that distinguishes three composable roles:
+The user requires an ecosystem that distinguishes three composable roles.
+The 2026-10-20 [backend decision][backends] prioritizes JavaScript, then
+LLVM; Go remains the existing development target.
+
+[backends]: ../adr/015-backend-priorities-and-service-bindings.md
 
 | Role | Responsibility | Proposed example |
 |---|---|---|
 | Waxwing library | Waxwing source compiled with the application to its selected target; portable when its dependencies and semantics are portable | Domain validation, collection operations, shared application logic |
-| FFI binding | Typed access to a specific host library/API, with explicit conversion and foreign-value validation | A Go logger or AWS SDK binding |
+| FFI binding | Typed access to a specific host library/API, with explicit conversion and foreign-value validation | A JavaScript logger or a Go SDK binding |
 | Service implementation | Fulfill a Waxwing-owned capability contract using a binding, Waxwing code or a test fake | Logging or object storage implemented by a chosen host library |
 
 These are roles, not mandatory package kinds: a package may contain several,
@@ -124,6 +128,10 @@ introduction](https://effect.website/docs/v4/platform/introduction)
 is a conceptual precedent: abstract services are fulfilled by implementations
 selected for the runtime. Review its versioned sources in LA001; this is
 not adoption of Effect's specific layer, context or runtime mechanisms.
+A Waxwing Logger could use a Pino or Winston FFI adapter, a browser
+implementation or a fake. This resembles the interchangeable logger
+implementations discussed for Nest. The adapter fulfills the Waxwing
+contract; application code need not import the chosen logger library.
 For Waxwing, service records versus effect handlers remains C001/R001/FX001
 design work. Separate compilation targets from runtime availability: one
 target can have several hosts, and a host may lack a required capability.
@@ -139,9 +147,9 @@ Package management must describe and resolve the combined dependency graph:
 Waxwing modules/packages, service contracts/implementations and host packages.
 Evaluate a manifest and lockfile with compiler/language compatibility,
 target/runtime support, package versions, source identity and selected
-host-dependency versions. Prefer integrating Go's dependency tooling for Go
-libraries, and evaluate the corresponding ecosystem tooling for later
-targets, rather than independently reimplementing their resolvers.
+host-dependency versions. Prioritize npm integration for JavaScript and
+use Go's dependency tooling for Go libraries. Assess the corresponding
+native ecosystem when designing LLVM bindings. Reuse those resolvers.
 
 Define who owns generated host manifests and how applications reconcile
 host constraints from multiple Waxwing dependencies. Decide version conflict
@@ -155,14 +163,20 @@ does not authorize publishing packages or choosing a registry.
 Pure/shared application code should not import a concrete SDK merely to use
 its capability. FFI adapters must define foreign errors versus defects,
 resource lifetime and any async/cancellation mapping in coordination with
-I001/FX001. Implementations claiming the same service contract need shared
+I001/FX001. Constructing a resource may require other services and may fail;
+operations on an acquired service carry their own requirements. The
+resource's scope owns cleanup. Foreign declarations are trusted contracts,
+so external data still needs parsing into typed values. TypeScript types
+can help draft bindings but do not prove their runtime correctness.
+Implementations claiming the same service contract need shared
 conformance tests; availability and operational differences must be explicit.
 
 Proposed acceptance scenarios:
 
-- Compile a Waxwing library into a Go application and verify its host-facing
-  API if library export support is chosen. Later targets require their own
-  equivalent proof before portability is claimed.
+- For the JavaScript backend, consume a common npm library through a typed
+  binding and export a Waxwing library with a usable ESM API if library
+  export support is chosen. Keep an equivalent Go scenario for the existing
+  backend. Each target needs its own evidence before portability is claimed.
 - Run one application against a fake logger/storage provider and a real
   host-library adapter without changing its domain logic. Test malformed
   foreign values, typed failures and provider contract behavior.

@@ -165,6 +165,20 @@ Document which current accepted/rejected programs change and why.
 
 ## Evidence and completion gate
 
+The [assurance register][assurance] adds a design gate: state why inferred
+schemes justify checking and preserve requirements, typed failures and
+FX008 marks. Cover callbacks, residual constraints, handler provision,
+recovery, local generalization and recursive declaration groups. Specify
+completeness, principal schemes and termination as separate claims.
+
+Compare the published rules used with Waxwing's adaptations. Require a
+reviewed local soundness argument before implementation planning; propose
+focused Lean statements for distinctive generalization/cleanup interactions
+where practical. This schedules an evidence decision, not proof work.
+The existing record proofs do not discharge these obligations.
+
+[assurance]: 2026-10-21-type-system-assurance-register.md
+
 Before an implementation plan, write and review a language design covering
 the decisions above, including syntax, solving/termination, diagnostics,
 error-family identity, setup-versus-execution behavior and FX008 marks.
