@@ -1,0 +1,5 @@
+fn same(p: a, q: a): Int = 0;
+
+fn twice(x: { ...r }): Int = same(x, x);
+
+fn main(): Int = twice({ name: "Ada" });

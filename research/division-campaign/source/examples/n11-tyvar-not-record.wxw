@@ -1,0 +1,3 @@
+fn bad(x: a): Text = x.name;
+
+fn main(): Int = 0;

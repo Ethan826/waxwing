@@ -1,0 +1,5 @@
+fn first(p: { a: Int, ...r }): Int = match p {
+  { a } => a,
+};
+
+fn main(): Int = 0;

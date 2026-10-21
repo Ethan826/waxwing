@@ -49,6 +49,7 @@ import Composition.Sig.Represent
 import Composition.Sig.Complete
 import Composition.Sig.SplitNotAccepted
 import Composition.Sig.SourceBoundary
+import Composition.Sig.SourceCampaign
 import Composition.Presence.Defs
 import Composition.Presence.O1
 import Composition.Presence.O2

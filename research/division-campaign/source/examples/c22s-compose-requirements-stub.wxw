@@ -1,0 +1,15 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  join(a, b);
+
+fn composeRequirements(
+  make: (a, b) -> { x: Int, y: Int },
+  use: (a, b) -> Int
+): Int = 0;
+
+fn restricted(p: { ...u }, q: { ...v }): Int
+  where u lacks { y }, v lacks { x } =
+  0;
+
+fn main(): Int =
+  composeRequirements(join, restricted);

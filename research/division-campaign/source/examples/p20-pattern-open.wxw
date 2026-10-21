@@ -1,0 +1,5 @@
+fn name(p: { name: Text, ...r }): Text = match p {
+  { name, ... } => name,
+};
+
+fn main(): Text = name({ name: "Ada", age: 36 });

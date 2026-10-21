@@ -1,0 +1,3 @@
+fn drop(p: { a: Int, ...r }): { ...r } = p without { a };
+
+fn main(): Text = drop({ a: 1, name: "Ada" }).name;

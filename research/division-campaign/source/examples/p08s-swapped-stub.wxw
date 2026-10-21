@@ -1,0 +1,9 @@
+fn join(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  join(a, b);
+
+fn swapped(a: { ...r }, b: { ...s }): { ...r, ...s }
+  where r disjoint s =
+  join(b, a);
+
+fn main(): Int = 0;

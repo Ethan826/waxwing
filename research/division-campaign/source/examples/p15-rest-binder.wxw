@@ -1,0 +1,5 @@
+fn rest(p: { a: Int, ...r }): { ...r } = match p {
+  { a, ...others } => others,
+};
+
+fn main(): Text = rest({ a: 1, name: "Ada" }).name;

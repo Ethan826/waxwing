@@ -1,0 +1,3 @@
+fn f(x: { box: { ...r } }): { box: { a: Int, ...r } } = x;
+
+fn main(): Int = 0;
