@@ -7864,3 +7864,9 @@ assessment.md.
   recorder stays a proposal. Next integration gate: a complete recorder
   specification, a scalable search, a checker covering exactly what was
   recorded.
+- Stream 8 integrated (dossier §18.21): the `show` example is an
+  incomplete model (b); inferred interfaces (E2′) and R010 (E5) give
+  genuine acceptance differences (a). Proved, narrowed: run-time
+  irrelevance for the reference evaluator, and acceptance irrelevance
+  conditional on the recorder establishing `Covers`. A disagreement with
+  stream 5 is under review.

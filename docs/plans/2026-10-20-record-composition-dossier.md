@@ -2829,3 +2829,86 @@ The recorder remains a proposal; nothing here authorizes its
 implementation. **The next integration gate:** a complete recorder
 specification, a scalable search strategy, and a checker whose
 guarantees cover exactly what was recorded.
+
+### 18.21 Campaign results: split irrelevance and ground checking (stream 8)
+
+research/division-campaign/split-irrelevance/statements.md,
+ground-check.md; Lean Composition/SplitIrrelevance/ (proved in its own
+worktree, integrated; one build, no `sorry`, 22 theorems on the
+standard axioms). The first draft is kept (its own commit) so the
+review's corrections stay visible.
+
+**E2 verdict: (b), an incomplete model, with three qualifications.**
+Check-time printability passes for any type variable or tail
+(Check/Printable.purs via `containsFunction`, false for variables); the
+requirement is re-checked only after specialization
+(Specialize/Printable.purs `checkSites`); no constraint carries it
+(`FunctionDecl` has no slot for requirements; the split decision sees
+only equations, `lacks`, `disjoint`). With `Pr(u)` in `divide`'s
+interface (model M1), `u = {f}` is invalid and the split forced at that
+key (`e2_not_covers₁`, `e2_covers₂` proved; no third split derived).
+Qualifications:
+
+1. **E2c:** the requirement can sit on the caller's flexible variable
+   (printability or comparison in the caller, typed through the
+   instantiation; probes h1, h3 refused, h2, h4 accepted); the model
+   needs requirement atoms at the caller's key.
+2. **E2′ (derived):** if a generic caller's interface is inferred through
+   the split chosen inside it, two splits of `route` give different
+   interfaces, and a caller passing `{f: fn}` is accepted under one and
+   refused under the other: genuinely (a).
+3. **E5 (derived):** R010 can refuse one of two semantically valid
+   witnesses in a recursive group by its form alone
+   (`v' ↦ {...u,...v}` is not bare): (a) under today's rules, removed
+   only by relaxing R010 or counting admissibility in split validity.
+
+**Statements and status** (narrowed explicitly, statements.md §7):
+
+- **R, run-time irrelevance** (`eval_split`, proved): projection-free
+  split variants evaluate every projection-free term alike, at every
+  pair of keys. About the reference evaluator only; compiled Go rests
+  on assumption A-go, with no evidence yet (no several-tail Go).
+- **E3** (`e3_differs`, proved): a projection makes splits differ.
+- **C, acceptance irrelevance** (`accepted_split`, proved): two split
+  variants that both satisfy `Covers` are both accepted wherever the
+  shared interface `Req` holds; `accepted_of_covers`, `req_of_covers`
+  (ground checks silent under `Covers`), `covers_req₁_iff`.
+- Non-vacuity: E2 and E2c proved as examples (same run-time result; one
+  split refused, the other accepted under the incomplete model M0).
+- **Narrowing:** C covers modelled specialization-time requirements and
+  check-time judgments that see the instantiation; it excludes R010,
+  holes versus chosen parts, `CannotTell`, the key limit and the
+  several-tail placeholder; it assumes interfaces declared in the text,
+  not inferred; no data types, effects, handlers, `Fail`, update,
+  patterns or control flow. **C is conditional**: if the recorder
+  establishes `Covers`, acceptance does not depend on the split.
+
+**Reviews.** First review (of the draft): three false statements, all
+corrected (caller-side types through the instantiation; "refusal before
+specialization does not see the split"; comparison "never
+split-dependent"), plus vacuity, undefined types, and completeness gaps
+C1-C10. Second review: no false statement in the theorems; one false
+claim and overclaims in ground-check.md, fixed and not re-reviewed.
+
+**Ground checking (item B; investigated, not adopted).** Linear, no
+solver; it would sit at each call edge in Specialize/Values.purs and per
+copy in `fillFunction`. Catches witness and lowering defects at reached
+keys and holes defaulted against a recorded atom. Cannot establish
+universal validity, recorder completeness, or split-independent
+acceptance if it refuses with a user error (safe only as an internal
+assertion under `Covers`). Evidence, not an inheritance of Lean's
+theorem; it does close the gap between a certificate and the layouts
+lowered, which `interp` (noncomputable) leaves open.
+
+**Disagreement with stream 5, unresolved** (statements.md §8):
+comparison (stream 5's row C2 says it never separates splits; h3/h4
+contradict that for a comparison in the caller), and the applied `peek`
+(§18.18 says applying it shows (a); in the projection-free fragment
+there is no value of type `{...u}` to apply it to without fixing `u` or
+projecting, which R excludes). Under review.
+
+Questions for the author: declare requirements such as printability and
+comparability in interfaces (C needs that declared form; inferred
+interfaces bring back (a) through E2′); `checkSites` as an internal
+error once printability is counted; R010 relaxed or admissibility in
+split validity; a typed or Go-level semantics for R after Task 8.
