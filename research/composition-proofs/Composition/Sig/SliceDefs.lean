@@ -47,7 +47,9 @@ may lie in several slices. -/
 structure IsSlicing (P : SigProblem Label B) (S : List (SigProblem Label B)) :
     Prop where
   sub : ∀ Q ∈ S, (∀ a ∈ Q.D, a ∈ P.D) ∧ ∀ a ∈ Q.B, a ∈ P.B
-  sort : ∀ Q ∈ S, ∀ x ∈ varsOf (Q.D ++ Q.B), RigidIn Q x ↔ RigidIn P x
+  sort : ∀ Q ∈ S, (∀ n ∈ Q.rigidTy, n ∈ P.rigidTy) ∧
+    (∀ r ∈ Q.rigidRow, r ∈ P.rigidRow) ∧
+    ∀ x ∈ varsOf (Q.D ++ Q.B), RigidIn Q x ↔ RigidIn P x
   cover : (∀ a ∈ P.D, ∃ Q ∈ S, a ∈ Q.D) ∧ ∀ a ∈ P.B, ∃ Q ∈ S, a ∈ Q.B
   apart : S.Pairwise fun Q Q' =>
     ∀ x ∈ varsOf (Q.D ++ Q.B), x ∉ varsOf (Q'.D ++ Q'.B)
@@ -111,6 +113,21 @@ def S0 (Label B : Type) [DecidableEq Label] [DecidableEq B] : Prop :=
 def DSatSplit (Label B : Type) [DecidableEq Label] : Prop :=
   ∀ (P : SigProblem Label B) S, IsSlicing P S → (DSat P ↔ ∀ Q ∈ S, DSat Q)
 
+/-- Finite-rigid satisfiability splits under the same relation. -/
+def DSatFinSplit (Label B : Type) [DecidableEq Label] : Prop :=
+  ∀ (P : SigProblem Label B) S, IsSlicing P S →
+    (DSatFin P ↔ ∀ Q ∈ S, DSatFin Q)
+
+/-- A bad slice refutes the whole only when the other declarations
+are satisfiable. Unsupported slices cannot silently supply this fact. -/
+def SliceRefusal (Label B : Type) [DecidableEq Label] : Prop :=
+  ∀ (P Q : SigProblem Label B) S, IsSlicing P S → Q ∈ S →
+    (∀ R ∈ S, R ≠ Q → DSat R) → ¬ ValidAll Q → ¬ ValidAll P
+
+def SliceRefusalFin (Label B : Type) [DecidableEq Label] : Prop :=
+  ∀ (P Q : SigProblem Label B) S, IsSlicing P S → Q ∈ S →
+    (∀ R ∈ S, R ≠ Q → DSatFin R) → ¬ ValidFin Q → ¬ ValidFin P
+
 /-- S1, independence: valid iff `D` is impossible or every slice is
 valid. The disjunct is needed: `D` impossible in one slice makes `P`
 valid while another slice may be invalid (`vacuity-one-slice`). -/
@@ -145,7 +162,7 @@ def S1Acc (Label B : Type) [DecidableEq Label] [DecidableEq B] : Prop :=
 /-- The pairs some slice makes relevant: its rigid rows with the labels
 written in it. -/
 def relevantPairs (P : SigProblem Label B) : List (Nat × Label) :=
-  (slices P).flatMap pairs
+  ((slices P).flatMap pairs).eraseDups
 
 /-- P9s's rule, asking only for patterns that hold no irrelevant pair. -/
 def AcceptsOn (P : SigProblem Label B) (keep : List (Nat × Label)) : Prop :=
@@ -184,53 +201,5 @@ def C3 (Label B : Type) [DecidableEq Label] [DecidableEq B] : Prop :=
   ∀ P : SigProblem Label B,
     (∀ T, checkAllOn P T = true → ValidAll P ∧ ValidFin P) ∧
     ((∃ T, checkAll P T = true) ↔ ∃ T, checkAllOn P T = true)
-
-/-! ### What the definitions compute (statements.md §5.1) -/
-
-section Examples
-
-/-- A record of tails only. -/
-def rows (ts : List Nat) : TExpr String String := .record .nil ts
-
-/-- `x = {..r}`, `x = {..s}`: one slice through the flexible `x`. -/
-def sharedTy : SigProblem String String :=
-  ⟨[], [0, 1], [], [.eq (.tvar 1) (rows [0]), .eq (.tvar 1) (rows [1])]⟩
-
-#guard (componentSets sharedTy).length == 1
-
-/-- `u = r` and `u = s` inside a field `f`: one slice. -/
-def nestedRow : SigProblem String String :=
-  let f (r : Nat) : TExpr String String :=
-    .record (.cons "f" (rows [r]) .nil) []
-  ⟨[], [0, 1], [], [.eq (f 3) (f 0), .eq (f 3) (f 1)]⟩
-
-#guard (componentSets nestedRow).length == 1
-
-/-- `ff` beside `u = r`: kept in the ground slice. -/
-def groundFF : SigProblem String String :=
-  ⟨[], [0], [], [.eq (rows [3]) (rows [0]), .ff]⟩
-
-#guard (groundSlice groundFF).B.length == 1
-#guard (componentSets groundFF).length == 1
-
-/-- `u = r`, `u lacks a`: `(0, "a")` is relevant though no atom names
-row 0 and `a` together. -/
-def atomRel : SigProblem String String :=
-  ⟨[], [0], [], [.eq (rows [3]) (rows [0]), .lacks 3 "a"]⟩
-
-#guard relevantPairs atomRel == [(0, "a")]
-
-/-- Two independent parts: two slices, three relevant pairs of four. -/
-def twoParts : SigProblem String String :=
-  ⟨[], [0, 1], [.lacks 1 "b"],
-   [.eq (rows [3]) (rows [0]),
-    .eq (.record (.cons "b" (.base "Int") .nil) [1]) (rows [4]),
-    .lacks 4 "a"]⟩
-
-#guard (componentSets twoParts).length == 2
-#guard (relevantPairs twoParts).eraseDups.length == 2
-#guard (pairs twoParts).eraseDups.length == 4
-
-end Examples
 
 end Composition.Syntax

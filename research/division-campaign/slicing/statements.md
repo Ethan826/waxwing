@@ -8,8 +8,8 @@ counterexample hunt against naive slicings, and an independent
 adversarial review. Written 2026-10-21 against `68cee4a`.
 
 **Status.** Statements only. Nothing here is proved, and no slicing is
-implemented in the compiler or in `checkAll`. The Lean file is
-research/composition-proofs/Composition/Sig/SliceDefs.lean:
+implemented in the compiler or in `checkAll`. The Lean modules are
+research/composition-proofs/Composition/Sig/Slice*.lean:
 definitions, each claim a `Prop`, and `#guard`s that run the computable
 definitions on five examples. Status labels: **proposed** (a statement
 for review), **checked (bounded)** (sig-oracle evaluation at the bounds
@@ -47,12 +47,11 @@ stated), **argument only** (a sketch, no check).
 - **The cut stream 7b measured is unsound as a slicing.** It drops
   variable-free groups inside an atom. `{ a: Bool } = { a: Int, ...u }`
   loses its only contradiction (`field-clash`, found by the generated
-  run). Its counts are measurements, not verdicts, so nothing reported
-  as a verdict is wrong. The counts are of a slicing that S1 does not
-  cover (§5.2).
+  run). Its sliced counts cannot support a sound-checker speedup claim.
+  The affected published counts are identified in amendments.md (§5.2).
 - **No counterexample to S1, S1-acc or S2** (bounded) in 20 named
   problems, sig-oracle's 23 challenges and 1,100 generated problems
-  (§5.3).
+  (§5.3). Historical runs did not report zero-instance coverage.
 
 ## 1. The model sliced
 
@@ -64,7 +63,10 @@ satisfying `B` (`combine`). `ValidFin` is the same over finite values.
 `D`. `checkAll P T` checks a table, pattern by pattern, over
 `patterns P = subsets (pairs P)`, `pairs P = rigidRow × written P`.
 
-The cost to cut is `2^(|rigidRow| · |written P|)`. The synthetic `wide`
+The raw enumeration cost is `2^(P.rigidRow.length · (written P).length)`.
+`written` keeps repeated occurrences, so distinct pair counts can be smaller.
+Neither `pairs` nor the reference `patterns` is changed here. The synthetic
+`wide`
 (measurements.md §6.1) gives `2^42` because every label written
 anywhere in the body pairs with every rigid row.
 
@@ -95,7 +97,8 @@ are the finest slicing S1 covers.
 
 1. **sub**: each slice's `D` and `B` are drawn from `P.D` and `P.B`;
 2. **sort**: on its own variables a slice agrees with `P` about which
-   are rigid (`RigidIn Q x ↔ RigidIn P x`);
+   are rigid (`RigidIn Q x ↔ RigidIn P x`), and both of its rigid
+   lists are subsets of the corresponding lists of `P`;
 3. **cover**: every atom of `P.D` lies in some slice's `D`, and every
    atom of `P.B` in some slice's `B`;
 4. **apart**: two slices at different positions share no variable
@@ -161,6 +164,12 @@ appears).
 - **DSatSplit.** For a slicing, `D` is satisfiable iff each slice's `D`
   is. Argument: glue the slices' solutions (variables are apart; ground
   atoms hold anywhere if they hold somewhere).
+- **DSatFinSplit.** The same equivalence for `DSatFin`. The subset
+  requirement on rigid lists prevents extra finite-rigid obligations.
+- **SliceRefusal**, and its finite counterpart: for `Q ∈ S` with
+  `IsSlicing P S`, `¬ValidAll Q` implies `¬ValidAll P` only if every
+  other slice has satisfiable `D`. The finite statement needs `DSatFin`
+  for those slices. An `Outside` slice cannot silently supply that fact.
 - **S1, independence.**
   `IsSlicing P S → (ValidAll P ↔ ¬ DSat P ∨ ∀ Q ∈ S, ValidAll Q)`.
   - ←: glue the slices' flexible solutions; congruence (`sat_congr`)
@@ -202,11 +211,16 @@ appears).
     common `l` and the expansion stays defined. Slices' certificates
     have disjoint flexible variables and are glued.
 - **S2, irrelevant pairs.** `relevantPairs P` holds each slice's
-  `pairs`: its rigid rows with the labels written in it.
+  distinct `pairs`: its rigid rows with the labels written in it.
   `AcceptsOn P keep` is P9s's rule, asking only for patterns with no
   presence outside `keep`. S2: `Accepts P ↔ AcceptsOn P (relevantPairs
-  P)`. → is immediate. ← is the expansion of S1-acc applied inside one
-  problem. Which components can be dropped: every `(r, l)` with `l`
+  P)`. → is immediate. For ←, restrict each certificate to one slice
+  and erase labels that slice neither writes nor keeps as its own
+  rigid rests, before expansion and gluing as in S1-acc. Expanding a
+  whole certificate directly is insufficient: a flexible `u` can still
+  hold `b` written only in another slice, so `u disjoint r` can fail
+  after expanding `r` at `b`. Which components can be dropped: every `(r, l)`
+with `l`
   written in no atom of `r`'s slice. That includes every `l` written
   only in the ground slice, and every pair of a rigid row that no atom
   mentions.
@@ -225,16 +239,26 @@ appears).
   over `subsets (relevantPairs P)`. Soundness:
   `checkAllOn P T = true → ValidAll P ∧ ValidFin P`. Verdict:
   `(∃ T, checkAll P T = true) ↔ ∃ T, checkAllOn P T = true`.
+  `checkAllOn` enumerates a product of relevant-pair choices across
+  components. Only `checkSliced` replaces that product by a sum of
+  per-slice checks; these are different cost claims.
 
-**The weaker relation, stated plainly.** For validity, S1's
+**Validity and checker acceptance.** For validity, S1's
 equivalence holds only with its vacuity disjunct. For the checker,
 C1's one-way implication is what soundness needs. C2 and C3 say that
-slicing never changes `checkAll`'s verdict, whichever table is
-supplied. They do not make P9s complete: `split-plus` stays
+the existence of passing tables is preserved. They do not assert
+that arbitrary supplied tables agree after changing their shape. They do not
+make P9s complete: `split-plus` stays
 Unresolved, sliced or not. Nor does slicing repair vacuity: a `D`
 impossible in one slice gives Unresolved, whole or sliced
 (`vacuity-one-slice`). Source `D` is never impossible
 (`clauseOnly_satisfiable`).
+
+S1rAcc and S2r in SliceRefinements.lean propose the acceptance and
+relevance counterparts for flexible-only slices retaining all of `D`
+and the rigid lists. They require `Scoped P`; no pruning of `D` follows.
+The separate post-substitution and consistent-pattern proposals are in
+design.md, SliceSubst.lean and SlicePatterns.lean.
 
 **Not stated.**
 
@@ -263,7 +287,7 @@ impossible in one slice gives Unresolved, whole or sliced
 | a flexible index in an unscoped `D` links with the same index in `B` | over-linking only merges slices | none built | argument only |
 | slices are checked with their own written labels and the oracle's unwritten ones | validity does not depend on which unwritten labels exist (S1 has no label condition) | the generated runs (§5.3) | checked (bounded) |
 | P9s's incompleteness is unchanged by slicing | S1-acc | `split-plus`; 1,100 generated, P9s sliced and whole agree | checked (bounded) |
-| `closeN` runs `C.length` rounds | each productive round adds an atom's variables | `#guard`s in SliceDefs.lean | part of S0 |
+| `closeN` runs `C.length` rounds | each productive round adds an atom's variables | `#guard`s in SliceExamples.lean | part of S0 |
 
 ## 5. Counterexample hunt
 
@@ -365,14 +389,21 @@ sides of its group, so each group is again an equation.
   three problems `generated.mjs plain 300 7` found).
 - Otherwise the cut agreed with the whole in the named problems.
 
-The measurement reports sizes, not verdicts, so no verdict reported
-there is wrong. Its "sliced" counts measure a slicing that S1 does not
-justify. They would be justified by S1 only after (a) groups with no
+The published sliced-pattern, sliced-bitCheck and sliced-writtenCheck
+counts describe this unsound cut. They remain historical measurements
+of that operation; their interpretation as costs or upper bounds for a
+sound checker is withdrawn. amendments.md identifies every affected
+section and the application report's 7b columns. Unsliced counts are
+unaffected by this counterexample. They would be justified by S1 only after
+(a) groups with no
 variable are kept, in the ground slice or in their atom's slice, and
 (b) a decomposition lemma shows the remaining cut pointwise
 equivalent. Without the cut, atom-level slicing can only merge the
-measured components, so its counts are the same or larger. Whether
-`wide` stays at `2^2` is not checked; it should, since its 20-field
+measured components, so its component variable sets can only be the same or
+larger.
+The total checking cost also includes retained ground and flexible-only
+obligations; the old rigid-slice counts omit those costs. Whether `wide` stays
+at `2^2` is not checked; it should, since its 20-field
 record shares no variable with `r` or `s` (argument only).
 
 ### 5.3 Generated runs (checked, bounded)
@@ -421,15 +452,23 @@ two written labels, one or two unwritten labels.
 
 ## 6. Adversarial review
 
-Paused before completion; see RESUME.md. Soundness pass (independent
-reviewer, 2026-10-21): no false statement found; S0 fuzzed in Lean on
-4,000 problems, 0 failures. Three points, not yet applied:
-(1) S2's ← sketch must erase per slice before expanding (otherwise
-`u disjoint r` with `u` holding `b` from another slice breaks);
-(2) S1Fin ← needs finite values at a slice's unmentioned extra rigid
-variables, or `sort` tightened to `Q`'s rigid lists ⊆ `P`'s;
-(3) state a `DSatFin` split beside DSatSplit. The completeness pass was
-stopped by the pause.
+The paused soundness review reported no false statement and 4,000 Lean
+S0 cases with no failures (historical reviewer evidence, not rerun).
+Its three changes are now applied: per-slice erasure in S2, subset plus
+agreement in `IsSlicing.sort`, and DSatFinSplit. Examples moved to
+SliceExamples.lean; `relevantPairs` now deduplicates pairs.
+
+The completeness review's handoff is recorded in RESUME.md. Applied:
+S1rAcc and S2r proposals, product versus sum costs, duplicate-pair
+accounting, refusal with satisfiable other declarations, and explicit
+zero-instance reporting. DSat versus DSatFin equivalence remains an
+unproved possible simplification; the statements keep both predicates.
+
+The strongest remaining attacks are shared rigid rows after erasure,
+binding equations that reconnect residual slices, and arbitrary `D`
+whose equations make declaration-consistent patterns unrealizable.
+The last case must not be mistaken for semantic declaration filtering.
+Independent review of the completed statements is still required.
 
 ## 7. For the author
 
@@ -451,3 +490,19 @@ stopped by the pause.
 6. **Presence slicing**: whether `bitCheck` and `writtenCheck` should
    get their own S1, since measurements.md reports sliced counts for
    them too.
+
+
+## 8. Fresh bounded coverage (2026-10-21)
+
+The harness now prints the number of rigid assignments actually checked
+per named problem and totals zero-instance generated cases separately.
+`checked` stops at the first invalid instance; its sum measures executed
+checks, not the size of the full rigid domain. No oracle domain changed.
+Historical §5.3 counts did not include this information and cannot be
+reclassified retrospectively as non-vacuous agreement.
+
+In particular, `D: r = {a: {b: Int}}` has zero instances when rigid row
+fields range only over Int and Bool. Such a case provides no coverage of
+that declaration's intended nested values. Existing zero-instance cases
+are reported as bounded vacuity, not semantic impossibility over all G.
+Fresh bounded results and commands are retained in validation.md.
