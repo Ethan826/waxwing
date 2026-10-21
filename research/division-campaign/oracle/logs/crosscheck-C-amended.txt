@@ -1,0 +1,7 @@
+C nested-same: brute found, decomposed found
+C nested-two: brute none, decomposed none
+C tyvar-nested-rest: brute found, decomposed found
+C function-from-rigid: brute found, decomposed found
+C record-from-rigid: brute found, decomposed found
+C nested-rigid-mismatch: brute none, decomposed none
+C: 6 problems, 0 mismatches

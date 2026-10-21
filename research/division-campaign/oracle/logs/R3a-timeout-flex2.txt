@@ -1,0 +1,7 @@
+R3a diagnostic timeout, attempt 2
+Command: node run.mjs R3
+Bounds: one unwritten label z1; 27 rigid assignments; flexible field
+types Int and Bool for pigeonhole. Its three-type control adds {} to
+the rigid row and flexible field type lists.
+Stopped after 120 seconds with exit status 130. No classification line
+was emitted. The run is incomplete and has no verdict.

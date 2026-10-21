@@ -15,10 +15,11 @@ say so.
    ones) and no witness family can fix a flexible row's presence at a
    written label across its rigid assignments (Lean). Its single pattern
    therefore has no template in any grammar of D3a's form. The finite-base
-   follow-up extends the construction to any complete finite list of base
-   constants, with one arm per constant. A second base makes the original
-   one-arm example invalid; it does not dismiss the generalized family.
-   The bounded oracle's universe (`Int`, `Bool`) is finite, so its
+   follow-up extends the construction to any complete, duplicate-free
+   finite list of base constants, with one arm per constant. A second
+   base invalidates the
+   original one-arm example; the follow-up restores coverage with one arm
+   per base. The bounded oracle's universe (`Int`, `Bool`) is finite, so its
    semantics admits the same issue (R1).
 2. **G-A has two gaps unrelated to uniformity**: fixed depth (`Temp₁`
    for rows' written fields, `Temp₂` for type variables) and leaf-only
@@ -209,29 +210,31 @@ three must go to one of `x1` (needs `r = s` there), `x2` (`r = t`) or
 The original run used 729 rigid assignments and was killed after about
 40 minutes without a result. It remains incomplete.
 
-**R3a diagnostic amendment.** The replacement uses one unwritten label
-`z1`, giving 27 rigid assignments, and limits flexible field values to
-the two rigid types. A three-type control adds `{}` to both domains.
-This keeps the assignment types available as flexible values while
-shrinking the search space. The finite flexible domain makes this a
-diagnostic only.
+**R3a diagnostic amendment.** The first replacement used one unwritten
+label `z1`, giving 27 rigid assignments, with the original flexible
+field domain. It produced no output in 120 seconds and was stopped. A
+second amendment limited flexible field values to the two rigid types;
+its three-type control adds `{}` to both domains. That run also produced
+no output in 120 seconds and was stopped. Both timeout logs are retained
+as `logs/R3a-timeout*.txt`. R3a remains incomplete and has no result.
 
-RESULT-R3
-
-The pigeonhole observation concerns this particular bounded example. It
-does not dismiss the generalized finite-base separation: the follow-up
-constructs one base branch for each constant in a complete finite list.
+The pigeonhole observation concerns this particular bounded example.
+The finite-base follow-up constructs one base branch for each constant
+in a complete finite list.
 
 **Original R4, agreement generator.** Seed 5 at 500 problems was killed
 after about 40 minutes before printing a result; seed 17 was not run.
 Both original confirmation runs remain incomplete.
 
-**R4a diagnostic amendment.** Run five generated problems for each seed,
-with one unwritten label `z1`; other generator and type bounds stay the
-same. The driver logs each problem's start and elapsed time so an
-external timeout leaves useful progress evidence.
-
-RESULT-R4
+**R4a diagnostic amendment.** Five generated problems per seed were
+classified with one unwritten label `z1`; other generator and type
+bounds stayed the same. Every case completed in 4 ms for seed 5 and 6 ms
+for seed 17. Seed 5 had two bounded-valid cases, both uniform, and three
+invalid cases. Seed 17 had one bounded-valid case, uniform, and four
+invalid cases. No separation appeared in these ten cases. This small
+diagnostic does not establish the result of the original 500-case runs.
+The per-case logs are in `../oracle/logs/R4a-seed5.txt` and
+`../oracle/logs/R4a-seed17.txt`.
 
 ## (c) Counterexample, minimized, and its Lean refutation
 
@@ -345,10 +348,10 @@ a search), the depth bound, or a result for finite base types. The
 finite-base follow-up proves the semantic equation family for any
 complete, duplicate-free finite list of base constants and proves that
 its witnesses cannot fix a named base branch's presence across inputs.
-It also shows that the original singleton example becoming invalid with
-a second base does not dismiss the enlarged family. These are branch
-indexed equations over the `G` model, not a Nat-indexed `SigProblem` or a
-Waxwing source theorem.
+The singleton arm stops covering the two-base universe; adding one branch
+for each base restores validity and nonuniformity. These are
+branch-indexed equations over the `G` model, not a Nat-indexed
+`SigProblem` or a Waxwing source theorem.
 
 Waxwing has `TData`, effect-bearing `TFun` and `THandler`, as well as
 builtins and records (`src/Domain/Type/Core.purs`). The follow-up does not
@@ -365,7 +368,7 @@ From research/division-campaign/d3a/ (Node 20 or later):
     node run.mjs R1      # shape-split: witness, presence, bounded
     node run.mjs R2      # G-A gaps: witness, G-A search
     node run.mjs R2W     # explicit G-W templates
-    node run.mjs R3      # reduced R3a: pigeonhole and three-type control
+    node run.mjs R3      # R3a attempt; timed out at the recorded bounds
     node run.mjs R5      # named nested problems (frozen bounds)
     node run.mjs R5a     # tie problems at amended bounds
     node agreement.mjs 5 5  # reduced R4a, one unwritten label
