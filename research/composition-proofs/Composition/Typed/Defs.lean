@@ -99,6 +99,65 @@ noncomputable def thetaFree (P : SigProblem Label B) (π : Pattern Label) :
     CAssign Label B :=
   eta P π (freeCells P)
 
+/-! ### Flat row hypotheses (`r = s`, `r = s ⊎ t`) -/
+
+/-- `lacks`, `disjoint`, `ff`, or an equation between compositions of
+rows with no written field. -/
+def FlatAtom : Atom Label B → Prop
+  | .eq (.record .nil _) (.record .nil _) => True
+  | .eq _ _ => False
+  | _ => True
+
+def FlatD (P : SigProblem Label B) : Prop := ∀ a ∈ P.D, FlatAtom a
+
+/-- The instances of pattern `π` that satisfy `D`. -/
+def Inst (P : SigProblem Label B) (π : Pattern Label) (θR : Assign Label B) :
+    Prop :=
+  Sat θR P.D ∧ InPattern P π θR
+
+/-- Every instance gives rows `r` and `s` the same field at `l`. -/
+def AgreeAt (P : SigProblem Label B) (π : Pattern Label) (l : Label)
+    (r s : Nat) : Prop :=
+  ∀ θR, Inst P π θR → θR.row r l = θR.row s l
+
+/-- Every instance gives `r` and `s` the same field at every unwritten
+label of cell `S`. -/
+def AgreeIn (P : SigProblem Label B) (π : Pattern Label) (S : Cell)
+    (r s : Nat) : Prop :=
+  ∀ θR, Inst P π θR → ∀ k, k ∉ written P → cellOf P θR k = S →
+    θR.row r k = θR.row s k
+
+/-- Some instance holds an unwritten label in cell `S`. -/
+def Occupied (P : SigProblem Label B) (π : Pattern Label) (S : Cell) :
+    Prop :=
+  ∃ θR, Inst P π θR ∧ ∃ k, k ∉ written P ∧ cellOf P θR k = S
+
+open Classical in
+noncomputable def occupiedCells (P : SigProblem Label B) (π : Pattern Label) :
+    List Cell :=
+  (cellCands P).filter fun S => decide (Occupied P π S)
+
+open Classical in
+/-- The first rigid row related to `r`, or `r`. -/
+noncomputable def repBy (P : SigProblem Label B) (rel : Nat → Nat → Prop)
+    (r : Nat) : Nat :=
+  (P.rigidRow.find? fun s => decide (rel s r)).getD r
+
+/-- The generic rows for flat hypotheses: one constant per class of rows
+that every instance gives equal fields, per written label and per
+occupied cell. Semantic (classical), not computed; that it agrees with
+the mgu construction is not claimed. -/
+noncomputable def flatRow (P : SigProblem Label B) (π : Pattern Label)
+    (r : Nat) : Row (CL Label) (CG Label B)
+  | .inl l => if l ∈ written P ∧ π r l = true then
+      some (.base (.inr (.A (repBy P (AgreeAt P π l) r) l))) else none
+  | .inr S => if S ∈ occupiedCells P π ∧ r ∈ S then
+      some (.base (.inr (.X (repBy P (AgreeIn P π S) r) S))) else none
+
+noncomputable def thetaFlat (P : SigProblem Label B) (π : Pattern Label) :
+    CAssign Label B :=
+  ⟨fun n => .base (.inr (.T n)), flatRow P π⟩
+
 /-! ### Statements -/
 
 /-- Transfer: a generic solution at `θs` maps by `hv` to a solution at
@@ -153,6 +212,12 @@ def D3bEqFree : Prop :=
   ∀ (P : SigProblem Label B) (π : Pattern Label), Scoped P → EqFree P →
     HasInstance P π →
       GenericInst P π (thetaFree P π) ∧ WithinC P (thetaFree P π)
+
+/-- D3b for flat row hypotheses, with the explicit instance. -/
+def D3bFlat : Prop :=
+  ∀ (P : SigProblem Label B) (π : Pattern Label), Scoped P → FlatD P →
+    HasInstance P π →
+      GenericInst P π (thetaFlat P π) ∧ WithinC P (thetaFlat P π)
 
 /-- Assembly: a solved generic instance for every pattern that has an
 instance gives validity, over all values and over finite ones. -/

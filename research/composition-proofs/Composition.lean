@@ -76,3 +76,13 @@ import Composition.Typed.Transfer
 import Composition.Typed.EqFree
 import Composition.Typed.Examples
 import Composition.Typed.ExamplesValid
+import Composition.Typed.Pick
+import Composition.Typed.FlatCols
+import Composition.Typed.Flat
+import Composition.Typed.FlatMain
+import Composition.Typed.ExamplesFlat
+import Composition.Typed.Lift
+import Composition.Typed.LiftCommute
+import Composition.Typed.Realize
+import Composition.Typed.Vacuity
+import Composition.Typed.Complete
