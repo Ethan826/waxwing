@@ -7732,3 +7732,16 @@ assessment.md.
   statement; K7d dropped as unnecessary; a lifting lemma added; K8
   proved by the reviewer in scratch (not in the repository). Nothing
   proved in the repository; awaiting approval.
+
+## Signature checking: K7 and K8 proved (2026-10-20)
+
+- The author approved K7a-K7c, the lifting lemma, K7, and K8 with
+  `ValidFin splitSig`. Dossier §16.5.
+- Lean (Sig/Congr, Represent, Complete, SplitNotAccepted):
+  `accepts_iff_checkAll : Accepts P ↔ ∃ T, checkAll P T = true`;
+  `splitSig_not_accepts`, `splitSig_validFin`;
+  `semantic_rule_boundary`: every signature the semantic rule admits
+  has a finite table the checker accepts, and some valid signatures are
+  excluded by that rule. Clean build, no warnings, no `sorry`.
+  Mutant: the K8 script on `splitSig` plus `disjoint 0 1` fails at the
+  undeclared-pair step. Verify not run (docs and proofs only).

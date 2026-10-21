@@ -4,7 +4,7 @@ Axiom dependencies of every headline theorem. Run:
 -/
 import Composition.Programs
 import Composition.Sig.Adversarial
-import Composition.Sig.Patterns
+import Composition.Sig.SplitNotAccepted
 
 open Composition Composition.Programs Composition.Syntax
 
@@ -100,3 +100,14 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms checkAll_validAll
 #print axioms checkAll_validFin
 #print axioms checkAll
+#print axioms holdsG_congr
+#print axioms atomVars_liftAtom
+#print axioms represent
+#print axioms represent_record
+#print axioms checkAtom_complete
+#print axioms checkCert_of_certifies
+#print axioms accepts_checkAll
+#print axioms accepts_iff_checkAll
+#print axioms splitSig_not_accepts
+#print axioms splitSig_validFin
+#print axioms semantic_rule_boundary
