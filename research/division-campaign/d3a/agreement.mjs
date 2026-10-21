@@ -10,7 +10,7 @@ import { boundedValidBT, rigidAssignments } from './bt.mjs'
 
 const count = Number(process.argv[2] ?? 500)
 const seed0 = Number(process.argv[3] ?? 5)
-const BOUNDS = { unwritten: ['z1', 'z2'], rigidRowTypes: ['Int', 'Bool', '{}'],
+const BOUNDS = { unwritten: ['z1'], rigidRowTypes: ['Int', 'Bool', '{}'],
   flexFieldTypes: ['Int', 'Bool', '{}', '(Int->Int)'],
   tyValues: ['Int', 'Bool', '{}', '(Int->Int)'] }
 const LARGER = { ...BOUNDS, unwritten: ['z1', 'z2', 'z3'],
@@ -106,9 +106,12 @@ const tally = {}
 const generate = generator(seed0)
 const t0 = Date.now()
 for (let i = 0; i < count; i++) {
+  const problemStart = Date.now()
+  console.log(`gen${i}: start`)
   const P = generate()
   const kind = classify(P, BOUNDS)
   tally[kind] = (tally[kind] ?? 0) + 1
+  console.log(`gen${i}: ${kind}; ${Date.now() - problemStart} ms`)
   if (kind.startsWith('SEPARATION')) {
     const small = minimize(P, kind)
     console.log(`gen${i}: ${kind}; minimized ${JSON.stringify(small)}; ` +

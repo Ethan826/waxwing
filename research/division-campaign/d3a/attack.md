@@ -14,22 +14,23 @@ say so.
    is valid with one base type (Lean, over all values and over finite
    ones) and no witness family can fix a flexible row's presence at a
    written label across its rigid assignments (Lean). Its single pattern
-   therefore has no template in any grammar of D3a's form. With a second
-   base type the same problem is invalid (Lean). The bounded oracle's
-   universe (base types `Int`, `Bool`) is finite, so the oracle's own
-   semantics admits this separation (R1).
+   therefore has no template in any grammar of D3a's form. The finite-base
+   follow-up extends the construction to any complete finite list of base
+   constants, with one arm per constant. A second base makes the original
+   one-arm example invalid; it does not dismiss the generalized family.
+   The bounded oracle's universe (`Int`, `Bool`) is finite, so its
+   semantics admits the same issue (R1).
 2. **G-A has two gaps unrelated to uniformity**: fixed depth (`Temp₁`
    for rows' written fields, `Temp₂` for type variables) and leaf-only
    written fields on record nodes with tails. Three valid problems have
    no G-A template and have one in the widened grammar G-W (R2). Any
    fixed depth fails the same way; the grammar needs a problem-dependent
    depth.
-3. **Within the frozen bounds no other separation was found**:
-   type-agreement placement, hypotheses forcing agreement on some cells,
-   §18.10's label ties, vacuity through type equations and record-valued
-   rigid variables all have uniform templates where valid (R4, R5). The
-   one apparent type-dependent case (R3, `pigeonhole`) is an artifact of
-   two rigid field types and is invalid in the semantics.
+3. **R3 and R4 remain incomplete.** Their original runs were killed after
+   about 40 minutes. Reduced diagnostic runs below cover smaller spaces;
+   they do not settle the original claims. Completed R5 runs found
+   uniform templates for the tested label ties, vacuity and record-valued
+   rigid variables.
 4. **Positive direction**: with infinitely many labels and enough base
    types not written in the problem, D3a for an unbounded-depth grammar
    reduces to D3b (Stream 1's generic instance) plus three normalization
@@ -96,8 +97,8 @@ and explained by the larger domain.
 |---|---|---|---|---|---|
 | R1 shape split | `shape-split` (finite base types) | written + `q` | none | `Int`, `Bool`, `{}`, `{q:Int}`, `(Int->Int)`; R1' adds base `Str` | second-pass list (`Int`, `Bool`, `{}`, `(Int->Int)`, `{q:Int}`); R1' adds `Str` |
 | R2 grammar gaps | `depth-row`, `depth-ty`, `tail-written` | written + `z1`, `z2` | absent, `Int`, `{q:Int}` | the second-pass list | the second-pass list; validity by hand witness only |
-| R3 pigeonhole | `pigeonhole` (flat, three rigid rows) | `z1`, `z2` | `Int`, `Bool`; R3' adds `{}` | none | first-pass list (`Int`, `Bool`, `{}`, `(Int->Int)`) |
-| R4 agreement generator | 500 problems each for seeds 5 and 17 (below) | `z1`, `z2` | `Int`, `Bool`, `{}` (three, so three rigid rows can differ pairwise) | none | first-pass list |
+| R3a pigeonhole diagnostic | `pigeonhole` (flat, three rigid rows) | `z1` | `Int`, `Bool`; R3' adds `{}` | none | first-pass list (`Int`, `Bool`, `{}`, `(Int->Int)`) |
+| R4a agreement diagnostic | 5 problems each for seeds 5 and 17 | `z1` | `Int`, `Bool`, `{}` (three, so three rigid rows can differ pairwise) | none | first-pass list |
 | R5 named nested | §18.10 label ties, vacuity, record-valued rigid variables | written + `z1`, `z2` | absent, `Int`, `{q:Int}` | the second-pass list | the second-pass list |
 
 R4's generator (d3a/agreement.mjs): rigid rows 0-2, flexible rows 3-6,
@@ -151,8 +152,8 @@ stated bounds only.
 | finite base types: a witness that cases on a rigid variable's shape | `shape-split` (R1) | **separation**: valid with finitely many base types, no template in any per-pattern grammar | Lean (c); R1 hand witness 5/5, presence check (one admissible `uᵢ` per `α`, a different one per shape); invalid with a third base type (R1', bt at `α = Str`; Lean `shapeSplit_not_valid`) |
 | nesting deeper than `Temp₂`; rows' written fields deeper than `Temp₁` | `depth-ty`, `depth-row` (R2) | **gap of G-A**: valid, no G-A template, G-W template | hand witness 5/5 each; G-A search none; explicit G-W template uniform (R2W) |
 | a shape the problem writes, but not at a tail node's extra written label | `tail-written` (R2) | **gap of G-A**: valid, no G-A template, G-W template | hand witness 9/9; G-A none; explicit G-W template uniform |
-| type-agreement placement | `pigeonhole` (R3); R4's generator | **no separation**; R3 is a bounded artifact | R3 and R4 below |
-| hypotheses forcing equality on some cells only | R4 (equations among rigid rows in `D`) | no separation | R4 |
+| type-agreement placement | `pigeonhole` (R3a); R4a's sample | diagnostic runs only | R3 and R4 below |
+| hypotheses forcing equality on some cells only | R4a sample | diagnostic run only | R4 below |
 | §18.10 ties between a row's labels and a nested field's labels | `tie-decomposed-a`, `tie-two-level-a`, `tie-nested-division` (R5, R5a) | uniform template, as predicted | hand witness 2/2 and 32/32; bt valid at 500 assignments; G-A, the search copy and G-W all find one |
 | record-valued rigid type variables | `rigid-tyvar-record`, control `rigid-tyvar-undeclared` (R5) | as predicted: template when `D` gives the shape, invalid otherwise | hand witness 3/3; control bounded invalid at `α = Int` |
 | vacuity through type equations | `vacuity-type` (R5) | trivial: no rigid assignment, template vacuously | bt 0 assignments |
@@ -202,23 +203,33 @@ template. A chain of `n` type variables needs `Temp_n`, so no fixed
 depth suffices: the depth must depend on the problem (bound conjectured
 in (d), P3).
 
-**R3, `pigeonhole`** (three rigid rows `r`, `s`, `t`). A label in all
+**Original R3, `pigeonhole`** (three rigid rows `r`, `s`, `t`). A label in all
 three must go to one of `x1` (needs `r = s` there), `x2` (`r = t`) or
 `x3` (`s = t`); `x4` and `x3` serve labels outside `t` or outside `s`.
-With two rigid field types some pair always agrees, so the problem is
-bounded valid and its placement depends on which pair: the oracle
-would report "SEPARATION: type-dependent". With a third field type the
-three fields can differ and the problem is invalid, which is its
-semantic status (rigid fields range over all ground types).
+The original run used 729 rigid assignments and was killed after about
+40 minutes without a result. It remains incomplete.
+
+**R3a diagnostic amendment.** The replacement uses one unwritten label
+`z1`, giving 27 rigid assignments, with the same two field types. A
+three-type control uses the same label bound. This shrinks the assignment
+space while retaining the pair-agreement question.
+
 RESULT-R3
 
-So the typed oracle's bounds must give rigid fields at least as many
-types as there are rigid rows sharing a cell, or a reported
-type-dependent separation may be this artifact. §18.7's runs used two
-types with up to three rigid rows; they reported no separation, so no
-reported result is affected.
+The pigeonhole observation concerns this particular bounded example. It
+does not dismiss the generalized finite-base separation: the follow-up
+constructs one base branch for each constant in a complete finite list.
 
-**R4, agreement generator.** RESULT-R4
+**Original R4, agreement generator.** Seed 5 at 500 problems was killed
+after about 40 minutes before printing a result; seed 17 was not run.
+Both original confirmation runs remain incomplete.
+
+**R4a diagnostic amendment.** Run five generated problems for each seed,
+with one unwritten label `z1`; other generator and type bounds stay the
+same. The driver logs each problem's start and elapsed time so an
+external timeout leaves useful progress evidence.
+
+RESULT-R4
 
 ## (c) Counterexample, minimized, and its Lean refutation
 
@@ -328,12 +339,21 @@ decomposition are the largest pieces; neither is formalized in this
 repository.
 
 What D3a-∞ would not give: a procedure (finding the solution at `θ*` is
-a search), the depth bound, or anything for finite base types. Whether
-Waxwing's signatures should quantify over a closed, finite set of types
-is for the author: a checked body elaborates once for every `α`, so an
-open universe (A2) looks like the intended reading, and under a closed
-one `ValidAll` calls `shape-split` valid although no single elaboration
-exists.
+a search), the depth bound, or a result for finite base types. The
+finite-base follow-up proves the semantic equation family for any
+complete, duplicate-free finite list of base constants and proves that
+its witnesses cannot fix a named base branch's presence across inputs.
+It also shows that the original singleton example becoming invalid with
+a second base does not dismiss the enlarged family. These are branch
+indexed equations over the `G` model, not a Nat-indexed `SigProblem` or a
+Waxwing source theorem.
+
+Waxwing has `TData`, effect-bearing `TFun` and `THandler`, as well as
+builtins and records (`src/Domain/Type/Core.purs`). The follow-up does not
+prove that its four-base scaffold covers these forms or establish a
+source-level counterexample. A checked body elaborates once for every
+`α`; whether its generic universe is closed or admits fresh nominal types
+remains a language-policy question.
 
 ## (e) Reproduction
 
@@ -343,11 +363,11 @@ From research/division-campaign/d3a/ (Node 20 or later):
     node run.mjs R1      # shape-split: witness, presence, bounded
     node run.mjs R2      # G-A gaps: witness, G-A search
     node run.mjs R2W     # explicit G-W templates
-    node run.mjs R3      # pigeonhole: bounded, G-1 uniform, per-assignment
+    node run.mjs R3      # reduced R3a: pigeonhole and three-type control
     node run.mjs R5      # named nested problems (frozen bounds)
     node run.mjs R5a     # tie problems at amended bounds
-    node agreement.mjs 500 5
-    node agreement.mjs 500 17
+    node agreement.mjs 5 5  # reduced R4a, one unwritten label
+    node agreement.mjs 5 17 # reduced R4a, one unwritten label
 
 From research/composition-proofs/:
 
