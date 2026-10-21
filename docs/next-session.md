@@ -1,3 +1,21 @@
+# Waxwing / record composition foundation: K7 and K8 proved (2026-10-20)
+
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Proved:
+P9s soundness, the verified checker, no loss against `Accepts` (K7),
+and that `Accepts` refuses the valid `split` (K8). No compiler code
+changed. Task 7 stays checkpointed (`r005b-task7-wip`). The author
+notes the website fix remains paused.
+
+**Read.** Dossier §16.5; research/composition-proofs/README.md.
+
+**Next, needs the author:** review of this milestone. Open as separate
+decisions: which valid signatures P9s leaves Unresolved, whether source
+produces the intended constraints, how accepted constraints justify
+compilation and split selection, compiler integration. Not authorized:
+adopting P9s or its boundary as language policy, compiler changes.
+
+---
+
 # Waxwing / record composition foundation: K7 statements (2026-10-20)
 
 **State.** Branch `r005b-replan` (UNMERGED; nothing pushed). Checker

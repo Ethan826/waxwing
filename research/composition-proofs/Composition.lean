@@ -44,3 +44,7 @@ import Composition.Sig.Decide
 import Composition.Sig.Patterns
 import Composition.Sig.CheckData
 import Composition.Sig.CheckExamples
+import Composition.Sig.Congr
+import Composition.Sig.Represent
+import Composition.Sig.Complete
+import Composition.Sig.SplitNotAccepted

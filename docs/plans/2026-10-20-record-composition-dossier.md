@@ -1692,3 +1692,55 @@ list to present labels), K7c for all four atoms (the equation case's
 `wfS` on one side suffices, since both sides denote the same value),
 K7's argument (`consistentS_iff` gives each pattern's consistency
 directly; `pattern_cover` is not needed). K8 proved in scratch Lean.
+
+### 16.5 Approval and the proofs (Lean)
+
+The author's review (2026-10-20) approved K7a-K7c, the lifting lemma
+and K7, included K8, and asked for `ValidFin splitSig` alongside the
+unrestricted result. Details kept: K7a compares complete assigned
+values, nested field types included; K7b is an existence result and is
+not described as a conversion algorithm; the lookup step is explicit.
+
+Proved (research/composition-proofs/Composition/Sig/; clean build, no
+warnings, no `sorry`):
+
+| Statement | Lean | File |
+|---|---|---|
+| K7a | `holdsG_congr` (hypotheses: equal values at the atom's variables) | Congr.lean |
+| lifting keeps variables | `atomVars_liftAtom` | Congr.lean |
+| K7b | `represent`, `represent_record` | Represent.lean |
+| K7c | `checkAtom_complete` | Complete.lean |
+| a semantic certificate has a syntactic one, valid at every pattern with the same `patternOf` | `checkCert_of_certifies` | Complete.lean |
+| the lookup step | `patternOf_same`, `table_exists` | Complete.lean |
+| K7 | `accepts_checkAll`; with K6, `accepts_iff_checkAll : Accepts P ↔ ∃ T, checkAll P T = true` | Complete.lean |
+| K8 | `splitSig_not_accepts` (adapted from the §16 reviewer's scratch proof) | SplitNotAccepted.lean |
+| `split` valid in the finite semantics | `splitSig_validFin`, with `finG_part` (parts of a finite row are finite) | SplitNotAccepted.lean |
+| the boundary | `semantic_rule_boundary` | SplitNotAccepted.lean |
+
+**The distinction, as proved** (`semantic_rule_boundary`): every
+signature admitted by the semantic rule has some finite table the
+executable checker accepts. Some valid signatures are nevertheless
+excluded by that semantic rule: `splitSig` is valid over all partial
+maps and over finite values, and `Accepts` refuses it.
+
+Notes:
+
+- `represent` needs no `Classical.choice` (it eliminates existentials
+  inside `Prop`); it is still not executable, since it speaks of
+  semantic values whose records are functions. The theorems using it
+  depend on all three standard axioms through the classical semantics.
+- Mutant (scratch, deleted): the same proof script run on a copy of
+  `splitSig` that also declares `disjoint 0 1` fails exactly where it
+  needs that pair undeclared (`hnd01`).
+- The distinguishing example of §16.2 (a label written twice, so
+  `patterns P` holds lists with the same pairs) is the ordinary case:
+  `lacks_declared` and most exported problems write a label more than
+  once, and they pass `checkAll` (§15.8). The table K7 constructs is
+  not computable, so it has no `#guard`.
+
+**Still open, as separate decisions:** which valid signatures P9s
+leaves Unresolved (`split` is one; a complete procedure is research),
+whether Waxwing source produces the intended constraints, how accepted
+constraints justify compilation and split selection, and compiler
+integration. None is adopted by this milestone; neither is the
+boundary as final language policy.
