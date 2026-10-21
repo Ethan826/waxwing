@@ -1,15 +1,27 @@
-# Waxwing / record composition foundation: presence proofs done (2026-10-21)
+# Waxwing / record composition foundation: presence fragment decided (2026-10-21)
 
-**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). O1-O3 and
-D2 (presence) proved and integrated (§18.12, Composition/Presence/).
-One agent is proving that `BitValid` is a finite, computable check
-(Presence/Decide.lean, in a worktree); integrate it and record D1 as
-decided, or record what failed. No compiler code changed. Task 7 stays
-checkpointed (`r005b-task7-wip`).
+**State.** Branch `r005b-replan` (UNMERGED; nothing pushed). For the
+presence fragment (finite rows, declared hypotheses, infinitely many
+labels): O1-O3 and D2 proved, and validity decided by a computable check
+(`valid_iff_validCheck`). Dossier §18.11-18.12;
+research/composition-proofs/Composition/Presence/ (Defs.lean is the
+shared interface; Examples.lean the non-vacuity fixtures). Typed oracle
+passes: §18.7 (first), §18.8-18.9 (second, nested; amended grammar
+29/29), review §18.10. No compiler code changed. Task 7 stays
+checkpointed (`r005b-task7-wip`). Agent worktrees removed; their
+branches (`worktree-agent-*`) kept.
 
-**Next, needs the author:** review of §18.12. Still deferred or
-unauthorized: D3b (until the nested pass is reviewed), D4, compiler
-changes, solver integration.
+**Read, in order.** This entry; dossier §18 from §18.6 (statements),
+§18.9-18.12 (results and reviews); docs/progress.md, the last three
+entries.
+
+**Next, needs the author:** review of §18.9 (the amended grammar, chosen
+after a run) and §18.12 (presence results). Open, each a separate
+approval: D3b's construction (deferred until the nested pass is
+reviewed; must handle nested structure, every equality `D` requires,
+and rigid type variables tied to rows), D3a beyond bounded evidence, a
+constructive witness procedure, D4, compiler changes, solver
+integration.
 
 ---
 

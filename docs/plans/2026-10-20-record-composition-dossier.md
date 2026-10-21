@@ -2350,6 +2350,7 @@ no warnings, no `sorry`, the three standard axioms):
 | O1: with infinitely many labels, `RestValid ↔ BitValid` | `o1` | O1Bits.lean, O1.lean | its own worktree |
 | D2 (presence): uniform complement-free term witnesses per pattern | `d2_of` (from O1, O2, O3), `d2` | D2Terms.lean, D2.lean, Main.lean | its own worktree; instantiated at integration |
 | the rest part is a finite, computable check | `bitCheck_iff`, `restValid_iff_bitCheck` | Decide.lean | its own worktree |
+| validity is a finite, computable check | `writtenCheck_iff`, `dWritten_iff`, `valid_iff_validCheck` | DecideWritten.lean, DecideValid.lean | its own worktree |
 | non-vacuity | `split_valid`, `split_bit`, `bad_not_valid`, `tiny_rest`, `tiny_not_bit`, `infNat`, `not_infBool` | Examples.lean | the reviewer, restyled |
 
 Integration: one owner (this session) copied the four results into the
@@ -2388,11 +2389,21 @@ bitCheck P = true)` (built from O1's two halves, so without `Scoped`).
 `#guard`s: the presence `split` gives true; without its clause, false;
 `r₀ ∩ r₀ = ∅`, false.
 
-**Standing.** O1-O3 and D2 hold for the presence fragment as defined,
-with finite rows, declared hypotheses and per-pattern uniformity. The
-**rest part is decided** (`restValid_iff_bitCheck`). The written part
-is not yet formally decided: `WrittenValid` still quantifies over
-functions, though it ranges over finitely many patterns and choices in
-principle; a finite check for it is the remaining step before D1 can be
-called decided as a whole. Not established: any typed statement (D3a,
-D3b), a constructive witness procedure, D4.
+**The written part and the whole** (DecideWritten.lean,
+DecideValid.lean; proved in its own worktree, integrated; assumes
+`DecidableEq Label` there only): `writtenCheck_iff : writtenCheck P =
+true ↔ WrittenValid P`, `dWritten_iff` for the vacuity disjunct, and
+`valid_iff_validCheck : InfiniteLabels Label → Scoped P → (Valid P ↔
+validCheck P = true)` with `validCheck P = !dSatCheck P || (writtenCheck
+P && bitCheck P)`, computable. `#guard`s: split valid, and invalid
+without its clause; `keepOut` invalid because of its written part alone
+(`bitCheck` true, `writtenCheck` false), valid with `lacks`; a problem
+whose `D` is impossible on written labels, vacuously valid.
+
+**Standing.** For the presence fragment as defined (finite rows,
+declared hypotheses, per-pattern uniformity, infinitely many labels),
+**D1 holds and validity is decided** by a computable check, and D2
+holds (uniform complement-free term witnesses, existence only). Not
+established: any typed statement (D3a, D3b), a constructive witness
+procedure, D4. The presence fragment is exact for typed problems only
+with flat rows (§18.10).
