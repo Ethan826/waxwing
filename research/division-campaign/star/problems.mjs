@@ -94,6 +94,15 @@ export function divide(m) {
     D: [], B }
 }
 
+// AMENDMENT 1 (protocol.md): `divide` is uniformly valid (u := r,
+// t := {}), against its prediction. `divide2` m constrains both parts:
+// `u lacks c` as well, so u must take exactly r's a_j fields and t the
+// rest. Added after a pilot at sizes 2 and 3; `divide` is kept.
+export function divide2(m) {
+  const P = divide(m)
+  return { ...P, B: [...P.B, lacks(1, 'c')] }
+}
+
 // `route` (dossier §17.3; sig-oracle/source-boundary.mjs): valid, and
 // P9s's semantic rule refuses it (routeSig_not_accepts). Every strategy
 // here accepts only what that rule accepts, so it must stay Unresolved.
@@ -119,6 +128,8 @@ export const FAMILIES = [
     expect: ['invalid', 'unresolved', 'unresolved'] },
   { name: 'dep', make: dep, expect: ['valid', 'unresolved', 'valid'] },
   { name: 'divide', make: divide,
+    expect: ['valid', 'unresolved', 'valid'] },
+  { name: 'divide2', make: divide2, amendment: 1,
     expect: ['valid', 'unresolved', 'valid'] },
   { name: 'route', make: () => route, fixed: true,
     expect: ['valid', 'unresolved', 'unresolved'] },
