@@ -3983,3 +3983,28 @@ Observations from the proofs (not statement changes): B2 never uses
 conjunct; B2g's `WithinC` premise is unused; B3a needs `ValidOpen` at a
 single extension, `B ⊕ CConst Label`. **Pending:** the option-B
 soundness track (BS-c1f, B4f, B5), separately reviewed.
+
+### 18.41 The author's review of §18.40 (2026-10-21)
+
+The instantiated signatures support the claim: the seven results
+discharge the proof streams' hypotheses and keep the approved premises.
+**A finite supply of fresh opaque types now suffices for the
+completeness argument**, and the equation-free and flat fragment results
+no longer depend on an unproved existence or freshness lemma.
+
+Boundaries: these are completeness results for the research model, not
+an executable checker or a Waxwing source-level guarantee; option-B
+soundness is pending (completeness says valid problems have the required
+solutions; soundness must establish that accepting them justifies
+validity). Not settled: certificate search, scalability, source
+translation, compiler integration.
+
+Next, in order: (1) an independent review of the integrated
+completeness tranche (the finite-support restriction, back-map
+collisions, allocation edge cases, discharged hypotheses), because a
+clean build checks proofs against statements and review checks that the
+statements express the intended claim; (2) finish and review the
+soundness track; (3) then compose the bridge with `d3bExistsWithin` for
+the general option-B characterization, as a composition of established
+results without W. The unused-premise observations stay documented; the
+approved statements stay unchanged until this tranche closes.
