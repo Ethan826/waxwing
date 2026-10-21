@@ -4486,3 +4486,60 @@ committed fixtures; restate SC1-SC4 over the general projection piece
 before any proof. **With §18.47-18.48 this is the input to the combined
 architecture decision** (old target `Accepts`, new target `ValidOpen`,
 shared obligations).
+
+### 18.50 Architecture decision for review: certificate checking (2026-10-21)
+
+The SC1-SC4 statements (§18.49) and option C (§18.47), brought together
+as one decision (§18.48). Nothing here is proved or adopted.
+
+**Acceptance targets.**
+
+| | Old target: P9s's `Accepts` | New target: option B's `ValidOpen` |
+|---|---|---|
+| Meaning | some finite `checkAll` table exists (K6, K7) | valid at every injective base extension; characterized by `openCharacterization` (proved, §18.45) |
+| `route`, `split` | outside (K8) | inside |
+| `divide3`, `divide5` | inside | inside (argued, not checked) |
+| What a certificate must justify | `checkCert` at every consistent pattern | `SolvableFinAt` at a generic instance per pattern with an instance (the `←` direction, B5) |
+| Proposed statements | SC1-SC4; option C's PI1, PI2, PQ, PC3, PC4 | none yet; a semantic counterpart can take θs with `GenericInst`/`WithinC` as premises |
+
+**Common representation (proposed, §18.48 item 2).** Guard-free
+projection pieces `⟨r, S, rest?⟩`, with strategy A's `{r, ex}` as a
+special case; untrusted certificates; the checker re-checks the
+original body (binding equations included), enforces body definedness
+by evaluation, keeps certificate shadowing distinct from composition,
+and requires pieces on rigid rows. Guards deferred (`divide5` stays a
+recorded limitation, PG unproved).
+
+**Reusable across both targets:** the untrusted-certificate discipline;
+SC1/PI1-style instantiation (denotation commutes with instantiation);
+the evaluator shape (`evalY`, `wfY`, definedness); SC4's pattern
+(checker passes ⇒ the target's acceptance, with no table built).
+**Specific to `Accepts`:** pattern regions from `consistentS`, the four
+exact queries and SC2's `LDFragment` scope, `checkCert`/`HoldsG` as the
+per-pattern judgment. **Needs replacement for `ValidOpen`:** pieces
+over Venn cells (constants `X r S`), the region from `HasInstance`,
+`SolvableFinAt` as the judgment, the generic instance θs as a premise
+(semantic theorem) or a computed θ* (executable checker), and its own
+region and typing analysis.
+
+**Options for the author.**
+
+1. **`Accepts` first:** prove SC1-SC4 over the common piece (A as a
+   special case), then build the `ValidOpen` counterpart. Gains an early
+   proved checker for the measured `star` path; costs proof effort on a
+   boundary that excludes `route`.
+2. **`ValidOpen` first:** state the cell-based counterpart (semantic,
+   θs as premise) and prove it, reusing only the shared parts; `Accepts`
+   statements stay as recorded proposals. Aims straight at the intended
+   boundary; delays a proved compressed checker, and the cell-based
+   region analysis is new work.
+3. **Shared foundation, then both:** prove only the target-independent
+   parts first (instantiation over the common piece, evaluator
+   definedness), then decide. Least committal; postpones any proved
+   acceptance result.
+
+Open in either case: the two prototype defects (§18.49; neither can
+cause a false acceptance; correction and reruns per sc-statements.md
+§10.4); whether the prototype gets the guard and `certOkY` so that the
+measured A is the proved A; search acceptance examples before any
+implementation plan (§18.48 item 4).
