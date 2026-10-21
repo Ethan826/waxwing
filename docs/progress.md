@@ -7761,3 +7761,20 @@ assessment.md.
 - `exported_all_pass`: all 58 exported certificate tables kernel-checked
   by `decide` (the earlier 49 were evaluator `#guard`s).
 - Verify not run (docs, research and proofs only).
+
+## Signature checking: dividing rigid rows, research proposal (2026-10-20)
+
+- The author accepted §17 and directed research on dividing rigid rests
+  before compiler integration, with P9s as the conservative baseline;
+  two wording corrections applied (§17.3, §17.4).
+- Source reading (research/composition-assessment/division/, three
+  notes by independent readers): Boolean elimination gives term
+  witnesses in any Boolean algebra (Martin and Nipkow 1989); Flix
+  implements ∀∃ Boolean unification with rigid constants (OOPSLA 2020)
+  but no system handles hypotheses relating rigid variables; typed row
+  theories (Rose, Rω, Ur) cannot derive a split. Gaps: finite rows (a
+  ring without unit), written labels as constants, per-label types.
+- Dossier §18: the capability (term witnesses), statements D1-D4 for
+  approval, restrictions table (whole regions not assumed; a
+  type-agreement placement challenge), next steps. Nothing proved, no
+  solver.
