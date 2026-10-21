@@ -3045,3 +3045,48 @@ clause on the callee's row; should C be extended with the caller's
 equations or stay a claim about requirement sites; should stream 5
 withdraw the `peek` (a) claim; should stream 8 restate inference as a
 claim only about inferring from a split chosen first.
+
+### 18.24 The author's decisions on §18.23 (2026-10-21)
+
+The stream documents are corrected in place; earlier versions stay in
+Git, each correction links to §18.23, and the review is the audit
+trail.
+
+1. **A caller-side annotation counts as a written split when it actually
+   determines the relevant split.** No special split syntax is required.
+   An annotation that leaves the same ambiguity unresolved does not
+   satisfy decision 3. The selected split must still satisfy every caller
+   and callee requirement.
+2. **Caller-side printability and comparability are recorded as
+   check-time constraints on the instantiated types**, flexible variables
+   included. A caller's operation does not become a new declaration on
+   the callee. Requirements originating inside a generic callee appear in
+   its contract, explicitly or through the eventual inference rules; both
+   feed the same constraint problem through instantiation. The recorder
+   specification distinguishes a requirement's **origin** from the type
+   it operates on; a row-level shorthand has an explicit translation to
+   the corresponding record-type requirement.
+3. **C is narrowed now to what its proof covers**: caller body
+   constraints are presupposed, not established by `Covers`. An extended
+   statement covering those equations is proposed separately before
+   acceptance irrelevance is claimed for the complete recorder. The prose
+   claim is not enlarged without enlarging the proof.
+4. **The applied-`peek` claim is withdrawn.** It supplies no
+   demonstrated run-time distinction under the stated conditions. The
+   failed candidates are kept as evidence, without claiming they exhaust
+   the language.
+5. **E2′ is restricted to the investigated strategy**: inferring an
+   interface after choosing a split. It does not establish that inference
+   generally requires split-dependent interfaces.
+
+Also: apply F7, F10 and the missing exclusions (F11), and keep explicit
+the distinction between check-time refusal, specialization-time
+refusal, reference-model behavior and observed generated-code behavior.
+
+**Next recorder deliverable: one reconciled specification**, with a
+table of each source obligation, its constraint representation, when it
+is recorded, and which theorem or test covers it; it includes caller
+equations, comparability, printability and definedness, and marks
+unsupported constructs `Outside`. Authorized within the research
+campaign: these corrections and the specification. Not authorized:
+recorder implementation, any change to split policy.
