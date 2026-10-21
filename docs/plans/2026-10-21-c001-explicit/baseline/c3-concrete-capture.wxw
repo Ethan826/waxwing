@@ -1,0 +1,5 @@
+fn reverse(d: { combine: (Int, Int) -> Int with pure }):
+    { combine: (Int, Int) -> Int with pure } =
+  { combine: fn(x, y) => d.combine(y, x) };
+
+fn main(): Int = reverse({ combine: fn(x, y) => y }).combine(2, 3);

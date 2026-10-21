@@ -1,0 +1,7 @@
+type Tag(a) = Tag({ tag: Unit -> Unit with pure });
+
+fn tag(): Tag(a) = Tag({ tag: fn(x) => x });
+
+fn discard(x: a): Int = 7;
+
+fn main(): Int = discard(tag());

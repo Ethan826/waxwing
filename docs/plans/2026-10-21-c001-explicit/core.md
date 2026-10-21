@@ -164,6 +164,13 @@ policy is unchanged. No claim that the restriction is semantically
 necessary, or that these rejected programs are unsound, is made. No new
 diagnostic wording or error-code policy is adopted here.
 
+The later [executable baseline](baseline/README.md) accepts discarded and
+unused ordinary records with residual type holes, with unchanged outputs for
+the two tested representatives. Its recommendation is to revisit this
+annotation boundary for A. The rule above remains a proposed restriction
+pending the author's decision, not an implementation requirement derived
+from those observations.
+
 ## Evaluation and specialization
 
 Dictionary expressions are ordinary computations returning products of

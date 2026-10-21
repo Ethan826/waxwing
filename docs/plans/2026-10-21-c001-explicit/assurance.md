@@ -134,3 +134,13 @@ generic sites, and resolve the Console-handler polymorphic-argument gap
 noted in D001/D002. A pure `Show(a): a -> Text` can be composed with
 effectful output; that observation does not implement a polymorphic Console
 handler.
+
+## Executable baseline evidence, separate from the proof plan
+
+The later [baseline](baseline/README.md) checks selected existing-language
+record programs through the compiler and generated Go, including captures,
+two same-typed operands, source-order reversal and two hole representatives.
+It records all source-contract and interpreter-parser failures. It neither
+establishes the universal statements above nor completes the proposed
+source-fixture, mutation or generated-oracle work. The core's all-meta
+boundary remains a decision for review in light of the accepted hole cases.

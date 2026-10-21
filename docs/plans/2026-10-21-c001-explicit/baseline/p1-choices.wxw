@@ -1,0 +1,27 @@
+type List(a) = Nil | Cons(a, List(a));
+type Results = Results(Int, Int, Int, Int);
+
+fn add(x: Int, y: Int): Int = x + y;
+
+fn smallProduct(x: Int, y: Int): Int =
+  if y == 0 then 0 else x + smallProduct(x, y + -1);
+
+fn sum(): { combine: (Int, Int) -> Int with pure } = { combine: add };
+
+fn product(): { combine: (Int, Int) -> Int with pure } =
+  { combine: smallProduct };
+
+fn lastFor(): { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => y };
+
+fn foldFrom(d: { combine: (a, a) -> a with pure }, seed: a,
+    xs: List(a)): a = match xs {
+  Nil => seed,
+  Cons(x, rest) => foldFrom(d, d.combine(seed, x), rest),
+};
+
+fn main(): Results = Results(
+  foldFrom(sum(), 2, Cons(3, Cons(4, Nil))),
+  foldFrom(product(), 2, Cons(3, Cons(4, Nil))),
+  foldFrom(lastFor(), 2, Cons(3, Cons(4, Nil))),
+  foldFrom(lastFor(), 2, Nil));

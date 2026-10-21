@@ -1,8 +1,9 @@
 # C001: explicit instances and dictionary passing
 
 Status: bounded design proposal, 2026-10-21. Nothing here adopts language
-policy or implements compiler behavior. Every program uses proposed syntax.
-The author must choose the representation before implementation planning.
+policy or implements compiler behavior. Design examples use proposed syntax;
+the executable baseline is labelled separately. The author must choose the
+representation before implementation planning.
 
 A client should accept a chosen implementation as a value. Two clients at
 `Int` can use sum and product in the same program. A constructor can combine
@@ -98,3 +99,16 @@ adding an unrelated type must not change their acceptance. This is not a
 parametricity theorem or a typed-completeness claim. Operation dictionaries
 here supply methods. They supply neither type-shape evidence nor evidence
 for row decomposition and do not solve the record-research obligations.
+
+## Executable baseline follow-up
+
+The [ordinary-record baseline](baseline/README.md) runs existing syntax in a
+private fresh compiler build. Eleven sources emit Go with the expected
+results, including construction and captures with explicitly pure stages for
+their supplied carrier operations. The Stats result retains an ambient first
+stage, as the baseline report explains. It also records six rejected
+candidate contracts and three reference-parser gaps; its runner exits 1
+rather than declaring a complete pass. Discarded/unused operation records
+can retain type holes and run with either tested representative. That
+evidence motivates revisiting decision 2's all-meta restriction for A; no
+decision is adopted here.

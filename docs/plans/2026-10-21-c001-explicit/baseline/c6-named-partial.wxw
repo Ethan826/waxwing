@@ -1,0 +1,7 @@
+fn backwards(d: { combine: (a, a) -> a with pure }, x: a, y: a): a =
+  d.combine(y, x);
+
+fn reverse(d: { combine: (a, a) -> a with pure }):
+    { combine: (a, a) -> a with pure } = { combine: backwards(d) };
+
+fn main(): Int = reverse({ combine: fn(x, y) => y }).combine(2, 3);

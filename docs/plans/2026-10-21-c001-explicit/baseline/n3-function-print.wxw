@@ -1,0 +1,4 @@
+fn lastFor(): { combine: (a, a) -> a with pure } =
+  { combine: fn(x, y) => y };
+
+fn main(): Text = show(lastFor());
