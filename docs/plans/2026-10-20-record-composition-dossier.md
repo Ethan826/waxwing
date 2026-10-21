@@ -3549,3 +3549,44 @@ parts; B3 through W or conditioned on `Universality ∧ CellIndependence
 ∧ MGUExists`; whether option-B soundness (B4f, B5, C, BS-c) is in P-1's
 scope; B1 unrestricted or with `[Nonempty B]`; which to prove first
 (proposed: E1-E6, B2f, B2c, B2, B2g, B3a, B3e, B3f).
+
+### 18.33 `ValidOpen` approved; first bridge proof tranche (2026-10-21)
+
+**Approved:** `ValidOpen` as the formal reading of option B **for the
+current model**. Injective base extensions preserve existing types'
+identities while admitting additional opaque types. This does not yet
+specify all Waxwing types or establish a complete checker; nominal
+applications, handlers, effect-bearing arrows and dependency interfaces
+still need correspondence work. **Infinitely many labels** are accepted
+as a semantic assumption (source identifiers supply an unbounded set;
+a compiler's finite internal identifiers are a separate representation
+issue). **Option-B soundness is in scope**, B4f and B5 (finite values)
+first; B4's infinite-value form deferred unless something requires it.
+
+**Authorized first proof tranche:**
+
+- E1-E6, including value-substitution positivity;
+- B0 and the concrete positive and negative examples;
+- finite support and freshness: B2f, B2c, B2, B2g;
+- B3a and the equation-free and flat fragment results B3e, B3f;
+- B4f and B5, as a separately reviewed soundness track.
+
+**Before any proof:** reviewers recheck the revised statements, in
+particular the replacement B4f argument and the finite-freshness round
+trip; review of the earlier revision does not cover those changes.
+`BridgeDefs.lean` (413 lines) is split into cohesive files under the
+repository's 250-line limit first.
+
+Scope qualifications:
+
+- "Unconditional fragments" means no open existence conjecture; their
+  explicit scope, label-freshness and fragment premises remain.
+- BS-c1/c2 do not establish stability of the whole checker; they are
+  particular renaming properties. Instance construction, search and
+  diagnostics need their own connection.
+- W's new trimming machinery is not a priority: prefer an existence
+  theorem that already returns `WithinC` where the existing construction
+  supports it. General existence stays separate from the bridge.
+
+**Deferred:** B1, general trimming, infinite-value B4, executable
+checker integration.
