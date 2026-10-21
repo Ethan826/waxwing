@@ -126,3 +126,9 @@ import Composition.Typed.Bridge.ProofSoundMain
 import Composition.TypedAttack.ShapeSplit
 import Composition.Typed.Bridge.ProofInstantiate
 import Composition.Typed.Bridge.ProofInstantiateSound
+import Composition.Typed.Cell.Format
+import Composition.Typed.Cell.Query
+import Composition.Typed.Cell.Check
+import Composition.Typed.Cell.Statements
+import Composition.Typed.Cell.Exact
+import Composition.Typed.Cell.Scenarios
