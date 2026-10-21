@@ -103,6 +103,21 @@ export function divide2(m) {
   return { ...P, B: [...P.B, lacks(1, 'c')] }
 }
 
+// AMENDMENT 3 (protocol.md): `divide2` turned out to need one bit (c)
+// once search assigns labels per tail. `divide3` m forces a projection:
+// rigid rows r = 0 and s = 1, `s lacks a_j` in D; B: `{ ...r } =
+// { ...u, ...t }`, `t lacks a_j`, `u disjoint s`. u may not hold r's
+// rest (r, s undeclared), so u is exactly r's a_j fields. A schematic
+// piece holds a rigid row's rest, so no single schematic value is u at
+// every pattern: B's tree should need every a_j bit.
+export function divide3(m) {
+  const D = range(m).map((j) => lacks(1, `a${j}`))
+  const B = [eq(tails(0), tails(2, 3)), dis(2, 1)]
+  for (const j of range(m)) B.push(lacks(3, `a${j}`))
+  return { rigidRows: [0, 1], rigidTys: [], flexRows: [2, 3], flexTys: [],
+    D, B }
+}
+
 // `route` (dossier §17.3; sig-oracle/source-boundary.mjs): valid, and
 // P9s's semantic rule refuses it (routeSig_not_accepts). Every strategy
 // here accepts only what that rule accepts, so it must stay Unresolved.
@@ -130,6 +145,8 @@ export const FAMILIES = [
   { name: 'divide', make: divide,
     expect: ['valid', 'unresolved', 'valid'] },
   { name: 'divide2', make: divide2, amendment: 1,
+    expect: ['valid', 'unresolved', 'valid'] },
+  { name: 'divide3', make: divide3, amendment: 3,
     expect: ['valid', 'unresolved', 'valid'] },
   { name: 'route', make: () => route, fixed: true,
     expect: ['valid', 'unresolved', 'unresolved'] },
