@@ -48,5 +48,11 @@ listed in section 8. Section 11 retains the author's decisions, including
 whether refusal-prefix logging is wanted. No syntax, split policy,
 compiler source change or proof scope is adopted by this audit.
 
-Prose review: reviews/codex-completion-prose-review.md. Independent review
-of this completed draft is still to run before final acceptance.
+Independent review found residual failed-log promises in T7/T9, an
+unqualified type-directed-placement claim and a slicing cost formula
+that ignored duplicate pairs. All three are corrected. The review found
+no false soundness implication in the slicing substitution proposals;
+it does not prove the proposed recorder or slicing claims.
+
+Prose review: ../reviews/codex-completion-prose-review.md. Completing
+this audit does not adopt its proposed interfaces or proof extensions.

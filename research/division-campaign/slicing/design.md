@@ -108,10 +108,14 @@ The reference `pairs` and `written` keep duplicates: list enumeration
 can cost more than the number of distinct patterns. `relevantPairs`
 deduplicates, but `checkAllOn` still enumerates a product over slices.
 For disjoint relevant-pair sets of sizes `k_i`, its raw count is
-`2^(sum k_i)`; `checkSliced` instead runs `sum 2^k_i`, including the
-ground slice and flexible-only components. Neither count includes the
-cost of finding certificates. `checkAllCons` reduces the product's
-factors only where declared facts restrict them.
+`2^(sum k_i)`. By contrast, current `checkSliced` calls the reference
+`checkAll` on each slice: with raw per-slice pair-list lengths `m_i`,
+it visits `sum 2^m_i` list patterns, including the ground slice and
+flexible-only components. Duplicates can make `m_i` exceed `k_i`.
+A deduplicated per-slice loop would need its own equality argument before
+claiming `sum 2^k_i`. Neither count includes certificate search.
+`checkAllCons` reduces product factors only where declared facts restrict
+them.
 
 `star` remains a required acceptance benchmark at useful scale. Its
 measured declarations leave `2^(n(n-1))` consistent patterns (n = 7

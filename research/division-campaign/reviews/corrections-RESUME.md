@@ -51,3 +51,9 @@ prose documents were reread, and stream 5's old missing-module observation
 is now explicitly historical. No definitions, theorem statements or proof
 terms changed. Independent final review is pending; see
 codex-completion-prose-review.md.
+
+Independent review completed: four edited Lean files are comment-only
+and match the narrowed premises. The historical source observations are
+kept distinct from the later repaired-build evidence. The completed
+recorder review is recorded in integration/recorder-audit.md; no whole
+compiler acceptance or Go-equivalence theorem is claimed.

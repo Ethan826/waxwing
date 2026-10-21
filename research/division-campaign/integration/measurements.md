@@ -9,6 +9,23 @@ Status labels follow recon.md. **Checked** means computed by the tool
 in measure/. **Not proved** marks the slicing numbers. They measure what
 a slicing would leave, and no lemma says that slicing is sound.
 
+## Correction after the slicing hunt (2026-10-21)
+
+The measured cut is unsound as a validity-preserving decomposition: it
+drops variable-free groups, including contradictory fields inside
+otherwise non-ground atoms. For example, dropping the ground clash in
+`{a: Bool} = {a: Int, ...u}` changes satisfiability. The raw counts below
+are retained as historical sizes of that operation. Their interpretation
+as sound-checker cost bounds or justified speedups is withdrawn.
+
+This applies to every sliced column in §3, the `wide` `2^42` to `2^2`
+comparison, §5's `2^2.6` and `2^7` summaries, and the sliced hand checks
+in §6.1. Unsliced and declaration-consistent counts are unaffected by
+this defect. Corrected counts need a preserving decomposition that keeps
+ground obligations; none is claimed here. Presence checking needs its
+own slicing statement, not just Sig S1. See
+../slicing/amendments.md and ../slicing/statements.md §5.1–5.2.
+
 ## 0. In brief
 
 - **Corpus.** 864 distinct sources resolved: 140 `.wxw` files, 99 JSON
@@ -145,7 +162,8 @@ group of everything in both. A slice is a connected component of the
 variables, together with the labels of its groups. Groups with no
 variable (ground records) belong to no slice. The coarse groups only
 ever join components, so each sliced count is an upper bound for this
-slicing.
+measured operation. This does not bound a sound checker: the operation
+drops ground contradictions, as the correction above explains.
 
 ### 2.4 The corpus and what was left out
 

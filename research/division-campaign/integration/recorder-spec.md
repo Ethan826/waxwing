@@ -39,7 +39,8 @@ The paused 60-row draft is complete as a proposal. The table's IDs and
 were checked for existence/range, with critical hook/rollback code read.
 The audit corrected predicate scope, soundness/completeness wording and
 refusal-log observability. See recorder-audit.md and
-../reviews/codex-completion-prose-review.md. Independent review is pending.
+../reviews/codex-completion-prose-review.md. Independent review found
+three scope/interface issues; the corrections are recorded there.
 No recorder implementation, source-translation proof or new language
 policy is established by completing this document.
 
@@ -206,9 +207,11 @@ compositional: `pr { l̄: τ̄, ...r1, ..., ...rk }` holds iff the
 composition is defined, every `τi` is printable, and every `{ ...rj }` is
 printable. So a requirement on a split part `{ ...u' }` with `u' ⊆ r`
 holds whenever `r printable` holds, and can also hold without it, when
-the split keeps `r`'s non-printable labels out of `u'`. The second case
-places labels by their type. That is outside the presence results and
-outside `checkAll`'s label-blind patterns (§8, P1; open question 2).
+the split keeps `r`'s non-printable labels out of `u'`. An annotation or
+other constraints may determine that part without type-directed choice.
+Selecting a part by inspecting field types is another proposed route;
+that route is outside the presence results and `checkAll`'s label-blind
+patterns (§8, P1; open question 2).
 
 **Origin is metadata.** An atom's meaning does not depend on its origin.
 The origin decides only where it goes: `Q` (contract, a hypothesis in
@@ -464,8 +467,8 @@ check fails. The current `Either Diagnostic State` interface discards the
 updated state, so it does not expose the recorded atom on that path.
 Exporting a diagnostic prefix log would require an explicit interface
 proposal (open question 10); no such interface is selected here. For a
-successful body, the recorded atom remains in its state. A counter-instance (`r = {
-l: … }`) exists, so the refusal is consistent with ∀∃ (dossier §2.1).
+successful body, the recorded atom remains in its state. A counter-instance
+(`r = { l: … }`) exists, so the refusal is consistent with ∀∃ (dossier §2.1).
 If it succeeds, the atom is entailed by `D` and the checker sees it as a
 `B` atom over a rigid row. Recorder-interface.md §3.3 proposed adding a
 store write here. That is withdrawn: it would change the store that
@@ -642,7 +645,10 @@ withdrawn (§6); the `t = t` normalization keeps definedness atoms
 Adapted from recorder-interface.md §5 (tests 1-6) to the reconciled
 table, plus tests for what this specification adds. None exists yet,
 since nothing is implemented. Incompleteness is the dangerous direction
-throughout.
+throughout. Tests of a refused declaration's diagnostic can run through
+the current interface; tests inspecting its prefix log depend on the
+explicit interface decision in question 10. No negative test may assume
+that a diagnostic carries the discarded state.
 
 1. **T1, against the §17.1 hand translations** (sig-oracle/
    source-boundary.mjs). As before, with §5.3's normalization: keep
@@ -667,9 +673,11 @@ throughout.
 7. **T7, rollback** (§5.2). One fixture per path: a postponed effect
    pair that reverts after making a record atom; a `settleRows` retry;
    two-spread literals and two-tail uses (`predicateFor` twice); a
-   refused argument with a hint. The recorded problem must equal the
-   hand expectation: no orphan atom from a discarded substitution, no
-   duplicate `Union`.
+   refused argument with a hint. On successful paths, the recorded
+   problem must equal the hand expectation: no orphan atom from a
+   discarded substitution, no duplicate `Union`. The refused argument's
+   diagnostic remains a control; inspecting its prefix log waits for
+   question 10's interface and cannot assert a complete body problem.
 8. **T8, preservation** (§5.1). (a) Certificate soundness: for every
    body the online solver accepts, its substitution read as a
    certificate passes `checkAll` on the recorded problem (recon.md §6
@@ -677,11 +685,13 @@ throughout.
    recorded requirement atom mentions a flexible variable, never only
    its solved ground type (cmp-c and cmp-cf must record the same atom
    and differ only in `B`).
-9. **T9, the rigid-overlap obligation** (§6). n03 (refused) and p02
-   (accepted) both record `lacks r reviewed`. A differential compares
-   the whole substitution with and without the recorder, except
-   `recorded`, on the corpus: it must be equal (solver behaviour
-   unchanged).
+9. **T9, the rigid-overlap obligation** (§6). p02 (accepted) records
+   `lacks r reviewed`; n03 retains its refused diagnostic. Inspecting
+   n03's corresponding obligation requires question 10's prefix-log
+   interface and is deferred without it. A differential compares
+   successful substitutions with and without the recorder, except
+   `recorded`, and compares refusal diagnostics on the corpus: solver
+   behavior must be unchanged.
 10. **T10, origin and type.** Fixtures from the review's probes: h1-h4,
     cmp-c, cmp-cf, pr-c, pr-cf, eq-c, eq-d, E2's `peek` in `divide`.
     Each records its requirement atoms with the expected origin (body
@@ -705,9 +715,12 @@ throughout.
     variable, flagged ambiguous); `route`'s `u` (constrained by `B`;
     lowering must not default it).
 
-Order: T4 and T9 need only hooks; T1, T7, T8a and T12 need the
+Order: T4 and T9's successful-path check need only hooks. T9's
+refusal-prefix check and T7's refused-path inspection additionally need
+question 10's interface. T1, T7's successful paths, T8a and T12 need the
 translation; T2, T3 and T10 need the independent translator and the
-oracle extension.
+oracle extension. The same interface condition applies to any refused
+fixture elsewhere in this plan whose recorded atoms would be inspected.
 
 ## 11. Open questions for the author
 

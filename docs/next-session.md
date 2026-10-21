@@ -1,24 +1,35 @@
-# Codex takeover in progress (2026-10-21)
+# Codex campaign stopped at the author's request (2026-10-21)
 
-The author authorized Codex to finish the paused campaign and parallelize.
-All six checkpoints are integrated locally through 69cd61f; their original
-branches/worktrees are untouched. The finite-base follow-up is de03232.
-No production compiler integration, D4 adoption, merge or push authorized.
+All six paused checkpoints and three Codex completion streams are
+integrated locally on r005b-replan. Read dossier §18.28 and the latest
+docs/progress.md entry first. No merge or push; no production compiler
+integration, D4 or language-policy adoption. No agents/searches remain
+running. Original Claude worktrees are preserved; Codex temporary
+worktrees are removed after integration, with branches retained.
 
-Quiet verify passed before new agent workloads: 2366 parallel tests, 59
-serial tests and 176 regression proofs; command exited 0. See
-.build/codex-campaign-quiet-verify.log and the latest docs/progress.md entry.
-New isolated worktrees: /private/tmp/waxwing-campaign-{d3b,oracles,slicing}.
-They are not Claude's original worktrees. Agents campaign_d3b,
-campaign_oracles and campaign_slicing are now active in those directories.
+Verification: quiet compiler run passed 2366 parallel tests, 59 serial
+and 176 regression proofs. Final Lean build passed 104 jobs without
+warnings. Axiom audits use only standard axioms. No further npm run is
+needed for these final documentation-only corrections.
 
-Work to finish: conditional D3b report/build; integrate/split the singleton
-Lean file and close the D3a reports; oracle evidence and targeted controls;
-post-substitution slicing statements and review; corrected Lean comments;
-recorder audit and independent review. Parent owns central docs/backlog.
-All semantic-policy questions remain explicit, especially the generic type
-universe after the finite-base obstruction. Preserve existing uncommitted
-README, backlog and direction-plan edits.
+Main result: no demonstrated full-Waxwing feature failure. Typed
+completeness still depends on the intended generic type universe; Fresh
+requires all CConst, not merely used constants. The finite-base family
+has no general source/constraint bridge. Presence results stand.
+
+Do not mistake completion of reports for completion of the mathematics:
+D3b general existence is open; R3a timed out twice; R4a has only ten
+new diagnostic cases; D3b full runs stopped after 42 cases; its
+record-constant mismatch has a local backlog. Slicing claims are still
+unproved statements. The old measured cut is unsound, and its cost
+interpretation is withdrawn. Recorder remains a proposal, not tested
+implementation. Star useful-scale support is still required.
+
+Next work needs a new scope: generic-universe decision, typed proof
+obligations, slicing/recorder statement review, then separately authorized
+integration. Preserve unrelated uncommitted README, BACKLOG and direction
+plan edits. The author asked to stop because of usage; do not restart the
+campaign automatically.
 
 ---
 
