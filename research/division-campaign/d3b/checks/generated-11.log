@@ -1,0 +1,6 @@
+command: ['node', '--max-old-space-size=2048', 'run.mjs', '--assert', '120', '11']
+wall limit: 3600s
+{"total":120,"valid/valid":84,"invalid/invalid":36}
+assert: 0 verdict mismatches, 0 invariant failures
+exit: 0
+elapsed: 111.13s

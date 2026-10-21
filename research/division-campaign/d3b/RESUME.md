@@ -73,3 +73,14 @@ issue and next action. The targeted mutant detected three covers failures;
 a direct two-label power check also detected the expected defect.
 Exact commands, outcomes and logs are in construction.md §15 and checks/.
 No generated 120+120 rerun, npm, compiler integration or D4 adoption.
+
+## Claude stream, 2026-10-21 (supersedes "Open" items above)
+
+Proved, no freshness premise, for all `Label`/`B`: `mguExists`,
+`cellIndependence`, `universality`, `d3bExists`, plus `robinson`,
+`ci_core` and the corollary `thetaStar_valid_iff_fresh` (which does
+assume `Fresh`). Files: Composition/Typed/Unif*.lean, Cell*.lean,
+Univ*.lean, MGUExists.lean, Universality.lean, Conditional.lean.
+Robinson correspondence: construction.md §6.1. Status table with full
+premises: §10. Solver: recursive clash check (clash.mjs), assert mode
+in run.mjs; evidence in BACKLOG.md and checks/.
