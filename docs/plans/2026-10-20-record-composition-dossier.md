@@ -3742,3 +3742,92 @@ adaptation (corrected). **Open, F6:** `thetaStar` is not checked on a
 concrete problem in the repository (examples use `thetaFree`,
 `thetaFlat`); the review's scratch checks could be added to Examples
 and the audit.
+
+### 18.37 `star` at useful scale: strategies and measurements (2026-10-21)
+
+research/division-campaign/star/ (report.md, protocol.md, prototypes,
+results/). Research code against **unproved** obligations; no compiler
+change. Protocol and problem set committed before any run (78c3302),
+five recorded amendments, each before the runs it governs. Coordinator
+reproduction: `star` n = 1024 strategy A (search 12 ms, check 208 ms,
+coverage 2.8 ms over 10,241 queries) and n = 4 strategy E (4,096
+entries, 6.1 MB) match the recorded figures. **Process note:** the
+Write tool refused to create report.md for a subagent; the agent wrote
+it elsewhere and copied it into place, a workaround reported to the
+author.
+
+**Why `star` is expensive.** Declaration consistency is a product over
+labels: `2^(n-1)` holder sets per label, `2^(n(n-1))` patterns. Under
+the unifier's substitution, no obligation reads the free bits `(r_j,
+f_i)`, `j ≠ i`: they change what an explicit certificate denotes, not
+whether it works. The exponential lies in `checkAll`'s explicit-field
+certificate format, not in the validity question. With a certificate
+fixed, the quantifier over patterns splits into per-atom, per-label
+queries; this differs from the refuted atom-level slicing, which was
+unsound for the existential problem.
+
+**Strategies** (search / certificate / checking / coverage, measured
+separately per §18.29 item 4):
+
+- **E**, exhaustive baseline: one explicit certificate per consistent
+  pattern; coverage re-enumerates and looks each up.
+- **A**, one schematic certificate: values may contain pieces
+  `{r, ex}` (rigid row `r` without written labels `ex`); search is row
+  unification plus a per-label split guess; `checkSym` evaluates the body
+  once with four exact per-label region queries; coverage is the
+  per-label index plus those answers, exact only because the pattern
+  space is a product closed under removing a holder (obligation SC2),
+  timed separately.
+- **B**, per-component lazy refinement (CEGAR): a decision tree over
+  bits per component, schematic certificates at the leaves, splitting on
+  the failing bit; coverage a separate walk (components partition atoms,
+  leaves bind only their component, complementary children), timed
+  separately.
+- C (proposed, not prototyped; new machinery under ADR 014): projection
+  pieces or Boolean presence formulas (Flix-style), for witnesses that
+  differ by pattern.
+
+| n | strategy | search | certificate | check | coverage |
+|---|---|---|---|---|---|
+| 4 | E | 177 ms | 4,096 entries, 6.1 MB | 103 ms | 3.1 ms |
+| 5 | E | 60 s limit | | | |
+| 1024 | A | 10.4 ms | 258 KB | 203 ms | 2.3 ms |
+| 16384 | A | 545 ms | 4.3 MB | 55.5 s | 38 ms |
+| 32768 | A | 60 s limit | | | |
+| 12288 | B | 335 ms | 3.4 MB | 34.7 s | 79 ms |
+| 16384 | B | 60 s limit | | | |
+
+The largest n compared with E is 4 (E hits 60 s at n = 5); E, A and B
+agree for n ≤ 4, and nothing beyond is compared with E. A's certificate
+and coverage are linear in n; its check is quadratic as implemented
+(`equal` visits every written label per record equation), and that is
+what reaches the limit. Invalid controls are always Unresolved. `dep`
+k: B uses 2 leaves per component. **Negative result:** `divide3` m, whose
+witnesses need a projection of a rigid row, makes B need `2^m` leaves
+(65,536 at m = 16, 43 MB); compression does not help there.
+
+**Cross-checks (0 flagged):** on 35 regression problems E, A and B
+match the recorded P9s verdicts (`split`, `route` Unresolved, as K8
+requires); every acceptance is bounded-oracle valid, except `star-read`
+n = 3, where the oracle timed out at 120 s; every accepted certificate
+instantiated at every consistent pattern passes; one prediction was
+wrong (`divide` uniformly valid; amendment 1).
+
+**Obligations (named; none proved):** SC1 instantiating a schematic
+certificate gives an ordinary one; SC2 the four region queries are exact
+(needs CP and antitonicity); SC3 `checkSym` implies `checkCert` at
+every pattern in the region; SC4 with K4, K5, `Accepts` without a table;
+SB1 components checkable separately; SB2 the tree walk proves coverage;
+SB3 B implies `Accepts`. Both end in `Accepts`, so by K7 they certify
+nothing some `checkAll` table could not: new theorems beside K6, not
+replacements. **Still exponential:** E; B where witnesses need a
+projection (`divide3`); B's brute-force fallback (budget hit on
+`star-cross` n = 2). **Unresolved:** a failed check naming no free bit,
+no candidate from search, any limit, anything outside `Accepts`.
+
+Questions for the author (report.md): state SC1-SC4 for proof beside
+`checkAll`, with the solver's substitution as the certificate; SB1-SB3
+now or after a ported program shows pattern-dependent witnesses;
+investigate C as new machinery; a numeric target for "useful scale";
+measure a sparse version of A's check now; a larger oracle budget for
+`star-read` n = 3.
