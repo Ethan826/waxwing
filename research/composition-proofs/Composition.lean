@@ -56,3 +56,4 @@ import Composition.Presence.O3
 import Composition.Presence.D2
 import Composition.Presence.Main
 import Composition.Presence.Examples
+import Composition.Presence.Decide

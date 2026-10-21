@@ -112,3 +112,5 @@
 'Composition.Presence.o3' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Presence.d2_of' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Composition.Presence.d2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Composition.Presence.bitCheck_iff' depends on axioms: [propext, Quot.sound]
+'Composition.Presence.restValid_iff_bitCheck' depends on axioms: [propext, Classical.choice, Quot.sound]
