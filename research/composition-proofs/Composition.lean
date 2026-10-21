@@ -49,3 +49,4 @@ import Composition.Sig.Represent
 import Composition.Sig.Complete
 import Composition.Sig.SplitNotAccepted
 import Composition.Sig.SourceBoundary
+import Composition.Presence.Defs

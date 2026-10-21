@@ -2297,3 +2297,43 @@ the conjunctive ∀∃ fragment, Π₂ᴾ-complete, and a single-equation
 sentence holds in all Boolean algebras iff in the two-element one
 (Thm 6); constants are uninterpreted and field types are not covered.
 None divides a row by membership in another from assumptions.
+
+### 18.11 Presence proofs: the shared interface
+
+Authorized (the author, 2026-10-21): proof work on D1's O1-O3 and on D2
+for presence, in parallel, with one owner for the shared definitions and
+exact statements, isolated worktrees, integration through that owner,
+and an adversarial review of the combined statements and assumptions.
+Finite rows, declared hypotheses, per-pattern uniformity and the stated
+witness grammar are preserved; any change comes back for review. D3b,
+D4, compiler changes and solver integration stay unauthorized.
+
+The interface is research/composition-proofs/Composition/Presence/
+Defs.lean (statements only). Two findings while writing it, before any
+proof:
+
+- **O3 as first conceived is false.** "Valid iff the written part is
+  valid per pattern and the rest part is valid" fails when `D` is
+  impossible on the written labels (for example `{a} ∩ {a} = ∅`): the
+  problem is then valid vacuously while the rest part can fail. O3 now
+  has the disjunct "or `D` is impossible on the written labels". This is
+  a missing assumption, reported; it is the vacuity case of §14.8, not a
+  change to the model.
+- **O1 takes the per-region form.** Every atom is a per-label condition,
+  so the rest part over finite sets is valid iff for every membership
+  vector `b` (a label's membership in the rigid sets) that `D` allows,
+  some flexible vector `s` satisfies `B`: the two-valued check region by
+  region. Boole's rule (`∃ y. f(y) ⇔ f(0) ∨ f(1)` at one label) is one
+  way to compute that inner existential; the substance of O1 is the
+  reduction, where finite rows and infinitely many labels are used
+  (`InfiniteLabels`).
+
+Statements (Lean names): `O2` (each atom splits exactly into its
+written and rest parts, each part local, written labels empty on the
+rest); `O3` (validity iff `D` impossible on written labels, or
+`WrittenValid ∧ RestValid`); `O1` (with infinitely many labels,
+`RestValid ↔ BitValid`); `D2` (with infinitely many labels, a valid
+problem has, per pattern satisfying `D`, one written choice and one
+tuple of set terms over the rests, without complement, working for
+every finite rest assignment satisfying `D`, the witnesses inside the
+rigid rests).
