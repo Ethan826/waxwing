@@ -4,9 +4,10 @@ Axiom dependencies of every headline theorem. Run:
 -/
 import Composition.Programs
 import Composition.Sig.Adversarial
-import Composition.Sig.SplitNotAccepted
+import Composition.Sig.SourceBoundary
 
 open Composition Composition.Programs Composition.Syntax
+  Composition.Syntax.SourceBoundary
 
 #print axioms c1
 #print axioms c2_label
@@ -111,3 +112,9 @@ open Composition Composition.Programs Composition.Syntax
 #print axioms splitSig_not_accepts
 #print axioms splitSig_validFin
 #print axioms semantic_rule_boundary
+#print axioms greeting_validFin
+#print axioms join3_validFin
+#print axioms routeNarrowed_validFin
+#print axioms exported_all_pass
+#print axioms routeSig_not_accepts
+#print axioms routeSig_validFin

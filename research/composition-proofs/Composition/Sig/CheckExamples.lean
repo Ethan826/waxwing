@@ -20,7 +20,7 @@ def refused : List String :=
   (exported.filter fun e => !checkAll e.2.1 e.2.2).map (·.1)
 
 #guard refused == []
-#guard exported.length == 49
+#guard exported.length == 58
 
 abbrev S := SG String String
 

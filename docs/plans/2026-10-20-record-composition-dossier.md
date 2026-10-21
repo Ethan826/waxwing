@@ -1744,3 +1744,113 @@ whether Waxwing source produces the intended constraints, how accepted
 constraints justify compilation and split selection, and compiler
 integration. None is adopted by this milestone; neither is the
 boundary as final language policy.
+
+**Accepted** (the author's review, 2026-10-20). Three things are now
+distinguished: call-site satisfiability has a terminating, sound and
+complete decision procedure (§12); the executable checker loses
+nothing relative to `Accepts` (K7); `Accepts` excludes some valid
+signatures (K8), a gap in the semantic rule, not in the table format
+or the oracle's search. More searching cannot make this checker certify
+`splitSig`. Not approved: P9s's boundary as language policy, compiler
+integration.
+
+## 17. The source-level boundary
+
+Requested by the author (2026-10-20) before any further procedure:
+ordinary Waxwing functions the checker certifies, valid functions it
+cannot, and whether `splitSig`'s pattern arises from the intended
+source fragment. Programs and translations:
+sig-oracle/source-boundary.mjs; Lean: Sig/SourceBoundary.lean.
+
+### 17.1 Translation (by hand; no translator is implemented)
+
+These rules are this dossier's reading of docs/language.md and of the
+convention §13.1 and `p6Sig` already use. The compiler's own constraint
+generation is not consulted, so a translation is a claim about the
+intended language, not about the implementation.
+
+| Source | Signature problem |
+|---|---|
+| a declaration's row and type variables | rigid |
+| written `where` clauses | atoms of `D` |
+| a tail written beside fields, `{ a: T, ...r }` | `r lacks a` in `D` (language.md: "each tail lacks the labels written beside it") |
+| two tails in one signature record, `{ ...r, ...s }` | `r disjoint s` in `D` (language.md, Tranche B: "a parameter or result type that writes both into one record") |
+| a call `f(e1, ...)` | fresh flexible copies of `f`'s variables; each argument's type equals the instantiated parameter type; `f`'s clauses, written and implied, as atoms of `B` |
+| a field access `e.l` | `type(e) = { l: α, ...ρ }`, with `α`, `ρ` flexible |
+| a record literal `{ ...e, l: e' }` | the record type of its parts (defined only if they are disjoint) |
+| `let x = e` | `x` has `e`'s type (monomorphic, as today) |
+| the body | its type equals the declared result |
+
+Not modeled: string interpolation (so `greeting` returns `person.name`
+rather than the program 1 string), effects (programs 9, 10), the merge
+API of program 7 (unspecified), local generalization (program 8A).
+
+### 17.2 Results
+
+| Function | Source shape | Bounded | P9s | Lean |
+|---|---|---|---|---|
+| `greeting` | field access through a rigid tail | valid | certified | `greeting_validFin` |
+| `mark` (program 2) | extension under `lacks` | valid | certified | `mark_validFin` |
+| `markAll` | forwards to `mark` | valid | certified | `markForwarded_validFin` |
+| `join` (program 3) | two spreads under `disjoint` | valid | certified | `join_validFin` |
+| `forwarded` (program 6) | forwards to `join` | valid | certified | `forwarded_validFin` |
+| `join3` | `join(join(a, b), c)`, a part holding two rests | valid | certified | `join3_validFin` |
+| `both` (program 11) | one input extended at two field types | valid | certified | `both_validFin` |
+| `wrapAccepts` | a generic caller of program 4's `acceptsParts` | valid | certified | `wrapAccepts_validFin` |
+| `bad`: `{ ...a, ...b }` without a clause | | invalid | Unresolved | |
+| `bad`: `p.name` through `{ ...r }` | | invalid | Unresolved | |
+| `route` | a generic caller of `divide` (below) | valid | Unresolved | `routeSig_validFin`, `routeSig_not_accepts` |
+| `route` with `r disjoint s` added | | valid | certified | `routeNarrowed_validFin` |
+
+"Certified" means: the untrusted search found a table, and the kernel
+checks it (`checkAll ... = true` by `decide`), so `checkAll_validFin`
+gives validity of the translated problem in the finite semantics. The
+same holds for every exported table, the earlier 49 included
+(`exported_all_pass`, kernel `decide`): §15.8's qualification that those
+acceptances were evaluator checks no longer applies. The two invalid
+controls are Unresolved, as P9s never answers Contradiction; the
+bounded oracle finds counter-instances for both.
+
+### 17.3 Does `splitSig`'s pattern arise from source?
+
+Yes, from features the intended fragment already contains:
+
+~~~waxwing
+fn divide(whole: { ...u, ...v }, left: { ...s }, right: { ...t }): Int
+  where u disjoint s, v disjoint t = 0;
+
+fn route(x: { ...r }, y: { ...s }, z: { ...t }): Int
+  where s disjoint t =
+  divide(x, y, z);
+~~~
+
+`divide`'s two-tailed parameter is program 4's shape; its clauses are
+program 3's; the generic call is program 6's. Checking `route` gives
+`splitSig` plus aliases: `r` must be divided between `u` and `v` by
+membership in `s`. It is valid (`routeSig_validFin`: `u` takes `r`'s
+fields outside `s`, `v` those inside, which `t` lacks), and the semantic
+rule refuses it (`routeSig_not_accepts`), so no table certifies it.
+
+What a programmer meets: a generic function passing its own record to an
+API whose two-tailed parameter has a disjointness requirement on each
+part, against different other arguments. The only change P9s certifies
+is a narrower signature, `where r disjoint s`, which callers passing a
+`x` that overlaps `y` would then fail to satisfy.
+
+Whether this occurs in practice is not settled here. In the eleven
+acceptance programs no signature check has this shape (by reading:
+programs 1, 2, 3, 6 and 11 are certified above; program 4's and 5's
+bodies are trivial and their calls are in `main`, decided at the call
+site; 7, 8A, 9 and 10 are outside the model). So the limitation is
+reachable from the intended fragment, and absent from the acceptance
+programs.
+
+### 17.4 For the author
+
+Which missing cases need further research: `route`'s shape (a
+rigid row divided by membership in other rigid rows) is the only valid
+family the oracle and this section have found that P9s cannot certify.
+The choice is yours: research a procedure that divides rigid rests
+(Q1-Q3 of §13.9 become its questions), or accept the narrower-signature
+workaround for now, recorded as a known limitation, not as final
+policy.

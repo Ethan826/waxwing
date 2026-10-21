@@ -5,13 +5,16 @@
 // certificate table, one entry per consistent pattern. Lean's
 // `checkAll` then decides, independently, whether to believe it.
 // Deliberate certificates (deliberate.mjs) replace the search's for
-// their pattern. Run: node export-lean.mjs [count] [seed]
+// their pattern; the source-level programs P9s accepts
+// (source-boundary.mjs) are exported as `src-*`.
+// Run: node export-lean.mjs [count] [seed]
 import { writeFileSync } from 'node:fs'
 import { witnesses, p9s } from './p9s.mjs'
 import { parse } from './interpret.mjs'
 import { generator } from './grammar.mjs'
 import { CHALLENGES } from './challenges.mjs'
 import { DELIBERATE } from './deliberate.mjs'
+import { SOURCE } from './source-boundary.mjs'
 
 const count = Number(process.argv[2] ?? 100)
 const seed = Number(process.argv[3] ?? 7)
@@ -105,6 +108,9 @@ function add(name, P, override) {
 for (const [name, P] of CHALLENGES) add(name, P)
 for (const [name, P, pat, flex] of DELIBERATE) {
   add(name, P, { pattern: pat, flex: new Map(Object.entries(flex)) })
+}
+for (const { name, P } of SOURCE) {
+  if (p9s(P).verdict === 'valid') add(`src-${name}`, P)
 }
 const generate = generator(seed, false)
 for (let i = 0; i < count; i++) {

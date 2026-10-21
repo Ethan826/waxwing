@@ -48,3 +48,4 @@ import Composition.Sig.Congr
 import Composition.Sig.Represent
 import Composition.Sig.Complete
 import Composition.Sig.SplitNotAccepted
+import Composition.Sig.SourceBoundary
