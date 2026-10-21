@@ -8103,3 +8103,30 @@ unrelated README/backlog/direction-plan edits remain untouched.
   fixes applied. Executable construction, source translation and
   integration not started; to be scoped with separate obligations for
   inference/principality and compilation correctness.
+
+## Housekeeping: checkpoint push and research-only branch (2026-10-21)
+
+- At the author's request, committed work was pushed to the public
+  origin (github.com/Ethan826/waxwing) as checkpoint branches, verified
+  against local heads: `checkpoint/r005b-replan-2026-10-21` (8945918),
+  `checkpoint/r005b-task7-wip`, `checkpoint/r005b-task5`,
+  `checkpoint/design-c001-explicit-evidence`,
+  `checkpoint/codex-campaign-{d3b,oracles,slicing}`. The ~40
+  `worktree-agent-*` branches were not pushed: their content is in
+  r005b-replan by cherry-pick. Nothing merged; `main` unchanged.
+- A research-only branch off `main` (accepted Lean proofs, supporting
+  research, provenance, status index) is being assembled for review
+  before push and PR; compiler changes get their own review.
+- **Uncommitted work, not backed up by the push** (other sessions' or
+  the user's; not committed here): modified BACKLOG.md, README.md and
+  five direction plans (docs/plans/2026-10-08-language-direction,
+  -polymorphism-design, -tooling-direction,
+  2026-10-10-modules-and-instance-selection-direction,
+  2026-10-11-requirement-and-error-inference-milestone); untracked
+  docs/adr/015-backend-priorities-and-service-bindings.md,
+  docs/plans/2026-10-20-backend-direction-prose-review.md,
+  docs/plans/2026-10-21-type-system-assurance-{register,prose-review}.md,
+  docs/writing/ (the user's); tooling and editor state
+  (.agents/skills/humanizer, .claude/skills/humanizer, .history,
+  research/composition-assessment/wand/.history); agent worktrees under
+  .claude/worktrees (cleanup candidates, branches kept).
