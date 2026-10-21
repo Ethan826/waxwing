@@ -3,7 +3,8 @@
 import { readFileSync } from 'node:fs'
 
 const rows = JSON.parse(readFileSync(process.argv[2], 'utf8'))
-const fmt = (x) => (x === undefined ? '' : x < 10 ? x.toFixed(2)
+const fmt = (x) => (x === undefined ? '' : x === null ? 'n/c'
+  : x < 10 ? x.toFixed(2)
   : x < 1000 ? x.toFixed(1) : Math.round(x).toString())
 const size = (r) => {
   if (r.strategy === 'E') {

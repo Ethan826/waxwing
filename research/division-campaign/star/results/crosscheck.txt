@@ -1,0 +1,87 @@
+# Regression set (recorded bounded and P9s verdicts)
+alias: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+alias-declared: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+alias-chain: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+compose-undeclared: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+equal-rests: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+self-disjoint: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+rigid-type-eq: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+rigid-type-free: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+rec-sig: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+arrow-sig: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+lacks-declared: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+lacks-missing: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 1/2
+split: recorded bounded valid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+types-differ: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+types-independent: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+empty-split: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+forced-empty: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+nested-same: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 2/2, B 2/2
+nested-two: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+tyvar-field: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+nested-alias: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 9/9, B 9/9
+nested-alias-undeclared: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/4
+tyvar-nested-rest: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 2/2, B 2/2
+source:greeting: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:mark: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:markForwarded: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:join: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:forwarded: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:join3: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:both: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+source:wrapAccepts: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 2/2, B 2/2
+source:undeclaredMerge: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+source:missingField: recorded bounded invalid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst no certificate
+source:route: recorded bounded valid, P9s unresolved; E unresolved, A unresolved, B unresolved; inst A 0/1
+source:routeNarrowed: recorded bounded valid, P9s valid; E valid, A valid, B valid; inst A 1/1, B 1/1
+
+# Families at oracle sizes
+star 1: bounded valid (5 rigid, 0.0s), E valid, A valid, B valid; inst A 1/1, B 1/1
+  control: boundedValid unsplit valid (5 rigid)
+star 2: bounded valid (99 rigid, 0.1s), E valid, A valid, B valid; inst A 4/4, B 4/4
+star 3: bounded valid (21141 rigid, 42.0s), E valid, A valid, B valid; inst A 64/64, B 64/64
+star-read 1: bounded valid (5 rigid, 0.0s), E valid, A valid, B valid; inst A 1/1, B 1/1
+star-read 2: bounded valid (99 rigid, 42.5s), E valid, A valid, B valid; inst A 4/4, B 4/4
+star-read 3: bounded timeout (34 rigid, 121.1s), E valid, A valid, B valid; inst A 64/64, B 64/64
+star-undeclared 1: bounded invalid (5 rigid, 0.0s), E unresolved, A unresolved, B unresolved; inst A 0/1
+star-undeclared 2: bounded invalid (17 rigid, 0.0s), E unresolved, A unresolved, B unresolved; inst A 0/4
+star-undeclared 3: bounded invalid (893 rigid, 1.3s), E unresolved, A unresolved, B unresolved; inst A 0/64
+star-unlacked 1: bounded invalid (4 rigid, 0.0s), E unresolved, A unresolved, B unresolved; inst A 1/2
+star-unlacked 2: bounded invalid (4 rigid, 0.0s), E unresolved, A unresolved, B unresolved; inst A 4/6
+star-unlacked 3: bounded invalid (4 rigid, 0.1s), E unresolved, A unresolved, B unresolved; inst A 64/80
+star-cross 2: bounded invalid (1 rigid, 0.7s), E unresolved, A unresolved, B unresolved; inst no certificate
+star-cross 3: bounded invalid (1 rigid, 19.2s), E unresolved, A unresolved, B unresolved; inst no certificate
+dep 1: bounded valid (27 rigid, 0.0s), E valid, A unresolved, B valid; inst A 2/4, B 4/4
+dep 2: bounded valid (729 rigid, 0.7s), E valid, A unresolved, B valid; inst A 4/16, B 16/16
+divide 1: bounded valid (9 rigid, 0.0s), E valid, A valid, B valid; inst A 2/2, B 2/2
+  CHECK A predicted unresolved
+divide 2: bounded valid (27 rigid, 0.0s), E valid, A valid, B valid; inst A 4/4, B 4/4
+  CHECK A predicted unresolved
+divide2 1: bounded valid (27 rigid, 0.0s), E valid, A unresolved, B valid; inst A 2/4, B 4/4
+divide2 2: bounded valid (81 rigid, 0.0s), E valid, A unresolved, B valid; inst A 4/8, B 8/8
+divide3 1: bounded valid (27 rigid, 0.0s), E valid, A unresolved, B valid; inst A 1/2, B 2/2
+divide3 2: bounded valid (81 rigid, 0.0s), E valid, A unresolved, B valid; inst A 1/4, B 4/4
+route 0: bounded valid (15 rigid, 0.0s), E unresolved, A unresolved, B unresolved; inst A 0/1
+
+# P9s pattern count against E's enumeration
+star 1: P9s 1, consistentPatterns 1
+star 2: P9s 4, consistentPatterns 4
+star 3: P9s 64, consistentPatterns 64
+star 4: P9s 4096, consistentPatterns 4096
+star-read 1: P9s 1, consistentPatterns 1
+star-read 2: P9s 4, consistentPatterns 4
+star-read 3: P9s 64, consistentPatterns 64
+star-read 4: P9s 4096, consistentPatterns 4096
+star-undeclared 1: P9s 1, consistentPatterns 1
+star-undeclared 2: P9s 4, consistentPatterns 4
+star-undeclared 3: P9s 64, consistentPatterns 64
+star-undeclared 4: P9s 4096, consistentPatterns 4096
+star-unlacked 1: P9s 2, consistentPatterns 2
+star-unlacked 2: P9s 6, consistentPatterns 6
+star-unlacked 3: P9s 80, consistentPatterns 80
+star-unlacked 4: P9s 4608, consistentPatterns 4608
+star-cross 2: P9s 4, consistentPatterns 4
+star-cross 3: P9s 64, consistentPatterns 64
+star-cross 4: P9s 4096, consistentPatterns 4096
+
+0 flagged
