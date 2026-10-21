@@ -7812,3 +7812,17 @@ assessment.md.
   uniformity in the power case, presence fragment exact only for flat
   rows, D3b must handle rigid type variables tied to rows. Further
   reading: Pottier, Rémy, Harper and Pierce, Baader. §18.10.
+
+## Signature checking: presence proofs (O1-O3, D2) (2026-10-21)
+
+- The author authorized O1-O3 and D2 (presence only) in parallel with
+  one owner for the interface. Interface Composition/Presence/Defs.lean
+  (O3 needed a vacuity disjunct, found while writing it). Four agents in
+  isolated worktrees proved `o1`, `o2`, `o3` and `d2_of`; integrated
+  here (`d2 := d2_of o1 o2 o3`), four clashing helper names renamed, one
+  build, no warnings, standard axioms. Worktrees removed, branches kept.
+- Adversarial review: no false or vacuous theorem (non-vacuity in
+  Examples.lean: split valid, O1 needs infinitely many labels). Open:
+  "decided" needs a finite-check lemma (in progress); D2 is existence
+  only; `Scoped` is decorative. Dossier §18.12. Verify not run (proofs
+  and docs only).
