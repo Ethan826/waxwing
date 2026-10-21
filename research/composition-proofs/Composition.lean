@@ -56,6 +56,7 @@ import Composition.Sig.SliceSubst
 import Composition.Sig.SlicePatterns
 import Composition.Sig.SlicePatternExamples
 import Composition.Sig.SliceRefinements
+import Composition.Sig.ProjectionDefs
 import Composition.Presence.Defs
 import Composition.Presence.O1
 import Composition.Presence.O2
