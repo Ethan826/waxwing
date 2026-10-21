@@ -72,9 +72,11 @@ projections without a generic `both` helper.
 ## Checks and corrected failures
 
 The bounded Python probe checks selected value-flow and collection
-observations and detects two deliberately bad semantic transformations. It
-does not parse Waxwing, decide typing, or establish a universal claim. Its
-declared cases were written before execution. Results and invocation are in
+observations. It demonstrates the policy-relabel counterexample and the
+observable difference between sum and product choices. It constructs no
+faulty per-carrier-default evaluator and runs no mutation test. It does not
+parse Waxwing, decide typing, or establish a universal claim. Its declared
+cases were written before execution. Results and invocation are in
 handoff.md and probe-results.txt.
 
 The width check initially passed, then failed on five lines introduced by
@@ -89,3 +91,44 @@ any edit, and the corrected marker inserted the intended explicit method
 signatures. Both checks then passed. Initial staging required filesystem
 escalation for the worktree index in the original Git directory and
 succeeded with only the explicit tranche paths.
+
+## Author review corrections and prose catalogue
+
+The author's follow-up identified two required corrections and six related
+points. These supersede the earlier review's clean-reading claims where
+those claims missed a problem.
+
+Catalogue before rewriting, under Humanizer and Garner:
+
+| Exact passage | Problem and reader cost | Planned correction |
+|---|---|---|
+| programs: "The helper syntax permits named captures solely for these illustrations" | Hides a missing typing rule behind an illustration disclaimer; `where` already means row constraints | Use existing lambdas and explain rigid-variable scope in their expected types |
+| review: "detects two deliberately bad semantic transformations" | Overstates the checked evidence; the reader may infer mutation testing occurred | Label both cases demonstrations and say no mutants ran |
+| README decision 2: "Empty-fold behavior is explicit" | Buries the scope choice among an example's properties | Remove it from the approval item; retain P1's behavior |
+| handoff: "base `5a46e96`" | Omits later relevant decisions and leaves integration work implicit | Record the rebase and separate C001 design authority from §18.31 research authority |
+
+Technical changes also remove the unused `using` syntax, use colon-field
+record literals for A, remove lastFor's inference-only seed, and separate
+B's explicit evidence constructor from A's ordinary records. Review the
+rewritten prose again after these edits; retain all proposal/proof limits.
+
+### Follow-up re-review
+
+Re-read the revised explanatory prose under Humanizer/Garner after the
+catalogued changes. No further prose findings remained; proposal status,
+conditional guarantees, attribution limits and the four open decisions
+remain explicit. The probe output now calls both cases demonstrations.
+
+The independent adversarial reviewer confirmed the revised lambda scope, A/B
+construction split, parameterless lastFor(), removal of using, and §18.31
+compatibility. They found a stale statement that a test generator restricted
+the collection examples to ASCII letters; no generator ran. Changed it to
+say the examples use ASCII-letter keys. Also aligned the source ledger with
+the core's all-meta boundary. No new soundness counterexample was reported.
+This remains review evidence, not a proof.
+
+The revised probe passed and its stdout matches probe-results.txt. The
+relative-link and probe line/width checks passed. Width checking caught long
+prose lines introduced during revision; reflow corrected them. No npm
+verification or Lean work ran. The rebase changed only this branch; shared
+source, research and tracking documents remain untouched.

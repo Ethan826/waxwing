@@ -13,10 +13,12 @@ Figure 1, gives variable, application, abstraction, qualification and
 quantification rules; §3, Figure 2, makes evidence abstraction/application
 explicit. The latter correspond to introducing an evidence parameter and
 applying it. Its evidence beta rule substitutes the supplied evidence. These
-are the foundations for the optional explicit binder in core.md. Waxwing's
-annotated declarations and explicit operands omit inference of predicate
-entailments. This proposal does not inherit the paper's principal inference
-result for Waxwing.
+supply the translation precedent for ordinary evidence parameters here. The
+proposed source uses ordinary arrow introduction/elimination, not the
+paper's qualification syntax or a new evidence binder. Waxwing's annotated
+declarations and explicit operands omit inference of predicate entailments.
+This proposal does not inherit the paper's principal inference result for
+Waxwing.
 
 [Jones, Coherence for qualified types, RR-989][coherence], §1.1 Figure 1,
 states entailment properties, including substitution closure; §1.3 Figure 2
@@ -61,13 +63,13 @@ incompatible type is made.
 
 | Proposed component | Published foundation | Waxwing adaptation and evidence still owed |
 |---|---|---|
-| Explicit evidence binder/application | Jones revised §3 Fig. 2; RR-989 §1.3 Fig. 2, qualification introduction/elimination | Operand is written; preserve lexical identity and evaluation order; local typing induction |
+| Ordinary explicit evidence parameters/application | Jones revised §3 Fig. 2; RR-989 §1.3 Fig. 2, qualification introduction/elimination | Operand is written; preserve lexical identity and evaluation order; local typing induction |
 | Named generic instantiation | Jones revised §2 Fig. 1 quantification; existing P001/FN001 | Mandatory schemes, rigid body variables, no local generalization; audit substitution |
 | Record construction/projection | Existing R001 closed records and FN001 function values | A uses those rules; B adds nominal class checking and erases wrappers; prove its construction/projection cases locally |
 | Dictionary constructors | fp-ts Semigroup last/reverse/struct | Ordinary named functions; fixed closed shape; no derive engine |
 | Evidence substitution | Jones revised §3 evidence beta; RR-989 Fig. 1 trans/close | CBV value substitution, closures, exactly-once evaluation; behavior preservation argument required |
 | Selection stability | Explicit operands plus the translation above | Deterministic lexical translation for a fixed typed program; no theorem about forgotten evidence or global search |
-| Specialization | P001 §4.2 finite-key argument; FN001 §6 value-reference extension | Runtime dictionary parameters; audit hidden named references and dictionary carrier holes; differential checks still needed |
+| Specialization | P001 §4.2 finite-key argument; FN001 §6 value-reference extension | Runtime dictionary parameters; audit hidden named references and all residual type metas; differential checks still needed |
 | Collection rebuilding | Explicit Eq/collision API precedent in fp-ts ReadonlyMap | Retain one governing policy and rebuild every source entry under destination; insertion invariant conditional on laws |
 | Abstract-family alternative | OCaml 5.3 Map.Make/Set.Make API | M001 type identity and abstraction not designed here |
 
@@ -131,3 +133,15 @@ ownership or a claim the source checkout cannot advance.
 [ord]: https://gcanti.github.io/fp-ts/modules/Ord.ts.html
 [mlmap]: https://ocaml.org/manual/5.3/api/Map.Make.html
 [mlset]: https://ocaml.org/manual/5.3/api/Set.Make.html
+
+## Follow-up context
+
+Read the original checkout's dossier §18.29-§18.31, then rebased onto its
+`c341109` checkpoint. §18.31 adopts opaque generic variables and stable
+checking under unrelated type additions; it explicitly distinguishes
+operation dictionaries from type-shape and row-decomposition evidence. This
+tranche relies only on written interfaces and supplies no bridge to the
+record proof model. Its option B comparison is authorized by the separate
+C001 request in this chat, within the design-only scope recorded in README.
+The dossier's research authorization does not authorize class machinery or
+compiler integration.

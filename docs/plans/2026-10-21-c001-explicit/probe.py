@@ -1,7 +1,7 @@
 """Bounded semantic probe, not a Waxwing compiler or typing oracle.
 
 Frozen cases: selected numeric/value-flow examples from P1-P4,
-C1-C2 and C3's relabel counterexample, plus default replacement.
+C1-C2 and demonstrations of policy relabelling and distinct choices.
 The Stats check evaluates component results, not record composition.
 No generation, completeness claim or Lean.
 """
@@ -121,6 +121,6 @@ descending = lambda x, y: ascending(y, x)
 assert tree_lookup(ascending, tree, 3) == "three"
 assert tree_lookup(descending, tree, 3) is None
 assert configured(sum_d)(2, 3) != configured(product_d)(2, 3)
-print("C3 raw policy relabel defect misses 3: detected")
-print("Per-carrier default replacement changes 6 to 5: detected")
+print("C3 policy-relabel counterexample misses 3: demonstrated")
+print("Sum and product choices yield 5 and 6: demonstrated")
 print("Limits: Python model only; no Waxwing parsing, typing or lowering")

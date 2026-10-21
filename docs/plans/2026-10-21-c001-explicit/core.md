@@ -1,8 +1,8 @@
 # Proposed core typing and dictionary elaboration
 
-Status: proposed rules, no implementation. `D(C, T)`, `make`, `project`,
-`using`, `forall` and angle-bracket type arguments below are metalanguage or
-proposed syntax. Choose source representation A or B in [README](README.md).
+Status: proposed rules, no implementation. `D(C, T)`, `evidence`, `project`,
+`forall` and angle-bracket type arguments below are metalanguage or proposed
+syntax. Choose source representation A or B in [README](README.md).
 [Sources](sources.md) distinguish published rules from adaptations.
 
 ## Fragment and environments
@@ -69,8 +69,11 @@ abbreviations in A, and maps other types structurally.
   rigid variables and an occurs check. Record the type vector on `f` in
   checked IR. Explicit instantiation can fix a phantom parameter that an
   expanded record shape cannot determine.
-- Function: under `Gamma,x:T`, checking `e:U => E` yields a function
-  `T -> U`, elaborated to `lambda(x:|T|). E`.
+- Function: check a lambda against the expected `T -> U`. Bind `x:T`
+  monomorphically in `Gamma`, check `e:U => E`, and elaborate to
+  `lambda(x:|T|). E`. Multiple parameters are nested arrows. Rigid type
+  variables in T/U keep their identity from the enclosing named signature;
+  lambdas introduce no type scheme and capture their lexical environment.
 - Application: check `e:T -> U` and `v:T`; elaborate to `E V : |U|`.
   Evaluate the callee and arguments once in source left-to-right order.
 - Products: check each distinct field against its declared monotype;
@@ -94,42 +97,43 @@ arithmetic, Bool branching and Text literals keep existing semantics.
 ## Construction and use
 
 For every method `li:Ui(a)` in `Methods(C,a)`, require `Gamma |- ei : Ui(T)
-=> Ei`. Then:
+=> Ei`. A uses ordinary records and projection:
 
 ```text
-Gamma |- make C<T> { li = ei } : D(C,T) => { li = Ei }
+Gamma |- { li: ei } : { li: Ui(T) } => { li: Ei }
+Gamma |- d : { li: Ui(T) } => E
+-----------------------------------------------
+Gamma |- d.li : Ui(T) => E.li
+```
+
+These schemas stand for the full distinct label set. In A, `D(C,T)` is only
+an abbreviation for that record type. No `make` or other special
+construction form is introduced. B instead checks the nominal class ID,
+carrier and exact field set through its proposed explicit constructor:
+
+```text
+Gamma |- evidence C<T>({ li: ei }) : D(C,T) => { li: Ei }
 Gamma |- d : D(C,T) => E
 -----------------------------------------------
 Gamma |- project C.li(d) : Ui(T) => E.li
 ```
 
-A uses ordinary record construction and projection for these rules. B checks
-the exact class label set and nominal class ID before erasing its wrapper. A
-record with B's field shape does not silently become evidence; its explicit
-constructor must be used. `Eq` and `Ord` share no automatic entailment rule.
-A named adapter can construct Eq from an Ord comparison. If an interface
-includes both, consistency is a law obligation.
+B erases its wrapper after checking. A record with B's payload shape does
+not silently become evidence; its explicit constructor must be used. Eq and
+Ord share no automatic entailment rule. A named adapter can construct Eq
+from an Ord comparison. If an interface includes both, consistency is a law
+obligation.
 
 A pure constructor such as `reverse(d)` or `pairEvidence(da,db)` is an
 ordinary named function. Its signature fixes all intermediate types.
 Constructing an instance does not register it anywhere. No search or
 repeated type-directed construction happens during checking.
 
-For an optional explicit evidence binder, use this proposed sugar:
-
-```text
-fn f using (d: C(a)) (x: T): U = e
-    => f : forall a. D(C,a) -> T -> U
-       f = lambda(d). lambda(x). E
-f using (q) (v) => f q v
-```
-
-The caller writes every evidence operand, including two operands of the same
-dictionary type. `d` is a lexical variable, not a predicate to solve. Each
-method occurrence names its operand. There is no unqualified method
-selection, superclass insertion, constraint reordering or deduplication. The
-direct parameter form `f(d,x)` expresses the same contract without new
-evidence-binder syntax; the examples use that simpler form.
+Every evidence operand is an ordinary explicit parameter, including two
+operands of the same dictionary type. Each method occurrence names its
+operand. There is no new evidence binder, unqualified method selection,
+superclass insertion, constraint reordering or deduplication. The target
+abstraction/application is ordinary function abstraction/application.
 
 ## Inference boundary and errors
 
@@ -153,8 +157,8 @@ checking, including those in named-reference instantiation vectors. Rigid
 signature variables remain allowed. Otherwise report ambiguity; do not
 choose P001's Int hole representative here. This is a general annotation
 boundary, not special dictionary-origin tracking in A. It rejects
-`discard(lastFor(Nil))` and an unconstrained phantom `tag()` reference even
-if their result ignores the carrier. The existing P001 allowance for
+`discard(lastFor())` and an unconstrained phantom `tag()` reference even if
+their result ignores the carrier. The existing P001 allowance for
 unconstrained holes remains outside this narrower core; its broader language
 policy is unchanged. No claim that the restriction is semantically
 necessary, or that these rejected programs are unsound, is made. No new
