@@ -297,7 +297,8 @@ carry that judgement for inlined bindings, which have no `NameEntry`
 (reconciliation C3). Proposed:
 
 ~~~text
-data Basis = Forced Evidence | Written AtomId | Selected SelectionTag
+data Basis
+  = Forced ForcednessEvidence | Written AtomId | Selected SelectionTag
 type SplitJudgement = Map Var Basis
   -- domain: every Var in a split site's slots, whatever its Binding
 ~~~
@@ -422,7 +423,8 @@ termination argument, uniqueness claim or G3 choice rests on it (T-R0e
 status is `AdmittedPendingR019` has no finite-reachable-key theorem, so
 it must not reach specialization once Task 8 removes the several-tail
 placeholder, unless FK-U is proved and adopted; it is then refused for
-compilation (Unsupported `PendingR019`, §5.3). Before Task 8 nothing
+compilation (T-R0e's `ComposedTailsUnjustified`, §5.3). Before Task 8
+nothing
 changes: every key with such a slot lowers a row with several tails,
 and the placeholder already stops specialization there
 (src/Features/Specialize/Record.purs:38-44, cited; argued that every
@@ -616,11 +618,12 @@ auxiliary ones (§3.2), and `ρ = θR ∪ σ ∪ α`:
   that have a checked-IR position; `α` is computed from their defining
   atoms by evaluation (§3.2), never by solving, and RC2 then checks
   every atom, the defining atoms included.
-- **RC3, requirements:** each `BQ_f` atom at `ρ`, only when the
-  strategy that produced the verdict validated `BQ` (until `ValidOpenR`
-  is stated, a problem with non-empty `BQ` is Unsupported, requirements
-  §11 item 2, so RC3 never runs on it; which `BQ` atoms trigger that is
-  pending author Q2).
+- **RC3, requirements:** each `BQ_f` atom at `ρ` that the producing
+  strategy validated. Under the proposed default (pending author Q2),
+  that includes ground atoms judged by the stated ground rule; atoms
+  mentioning a variable make the problem Unsupported for every strategy
+  whose `Sound_F` does not cover them, so RC3 meets them only under such
+  a strategy.
 - **RC4, call edge:** for each reference at path `p` in `f`'s copy to
   `g`, at the callee key `k'` that lowering actually created:
   `Sat κ(k') D_g`, **and** `κ(k') = ρ(⟨p, inst i⟩)` slot by slot, that
@@ -634,8 +637,9 @@ auxiliary ones (§3.2), and `ρ = θR ∪ σ ∪ α`:
   `vars` and `types` name (recorder-rules §5.2): `groundType (lower_k
   ty_c) = evalT ρ (types(p))` for a node or pattern position at path
   `p` (`NodeType p`, `PatternType p`), and `groundType (lower_k ty_c)
-  = ρ(v)` for the variable `v` whose position is a `Slot`, `ParamType`
-  or `RestType` `c`; `ty_c` is the checked IR's `Ty Open` at `c`.
+  = ρ(v)` for the variable `v` whose position is a `Slot`, `ParamType`,
+  `LambdaBody` or `RestType` `c`; `ty_c` is the checked IR's `Ty Open`
+  at `c`.
 
 RC4's equation and RC6 are the corrections of the adversarial review's
 finding 2: without them, (a) a callee key created with two disjoint
@@ -759,7 +763,7 @@ syntactic, checkable at the adapter's output; reconciliation B3,
 adversarial finding 6). Every flexible variable whose `vars` position
 is not `Auxiliary` has exactly one `Binding` in `bindings`;
 auxiliaries have none and are determined by their defining atoms
-(T-R0b §5.3, checked by its T-vars), evaluated by §3.2's `aux_k`;
+(T-R0b §5.3, checked by RT7), evaluated by §3.2's `aux_k`;
 every `Named n` occurring in the checked IR or in `bindings` has an
 entry in `names`; terms satisfy Sc1-Sc3 (§1.3); `Free` variables
 satisfy the hole contract (§1.5). Must prove: none (a validator); its
@@ -858,13 +862,15 @@ Each item is the canonical definition; the other streams cite it.
   and is never conjoined into `B` (recorder-spec §2.4, cited).
 - **Support** is `support(n)` (§2.3), offered for diagnostics and
   dependency order only.
-- **Unsupported reasons owned here** (names; T-R0e owns the ADT,
-  reconciliation C7): `NoCompilationWitness NoWitnessReason`, covering
-  `NonConstructive` (§1.6) and `AdapterUnsupported FieldReference`
-  (§1.4); `HoleContract Var` (§1.5; T-R0e's `ConstrainedHole`);
-  several tails before Task 8 (§2.7 U-c; T-R0e's
-  `SeveralTailLowering`); `PendingR019` after Task 8 (§2.3); and RC's
-  unsupported path (§3.3; T-R0e's `UncheckedPath`).
+- **Unsupported reasons owned here** (names; T-R0a §6 owns
+  `CompileRefusal`, T-R0e §3.1 its `Construct`; reconciliation C7,
+  re-check R1): T-R0a's `AtS (NoCompilation NoWitnessReason)`, covering
+  `NonConstructive` (§1.6), `AdapterUnsupported FieldReference` (§1.4)
+  and `HoleContract Var` (§1.5); `HoleContract Var` is a
+  `NoWitnessReason`, not a separate `Construct`. Several tails before
+  Task 8 (§2.7 U-c; T-R0e's `SeveralTailLowering`); composed tails
+  without FK-U after Task 8 (§2.3; T-R0e's `ComposedTailsUnjustified`);
+  and RC's unsupported path (§3.3; T-R0e's `UncheckedPath`).
 - **Policy:** decision 3 is judged per `split` site by P (T-R0e §2);
   P's `SplitJudgement` records the result per variable (§1.7); a
   `Forced` basis without U's evidence is not forced.
@@ -1007,3 +1013,24 @@ reconciliation of the §18.66 design tranche, both read-only.
   checked, that the placeholder already stops them, so "compiled as
   today" and the decision-3 gap do not conflict; a probe should confirm
   that every such key reaches the placeholder.
+
+### Consistency re-check (39320ad)
+
+Edits from the consistency re-check of the R0 documents; no design
+decision changed.
+
+- R1: §5.3 cites T-R0a §6's `CompileRefusal`; no witness is T-R0a's
+  `AtS (NoCompilation NoWitnessReason)`, and `HoleContract Var` is a
+  `NoWitnessReason`, not a separate `Construct` (T-R0e's
+  `ConstrainedHole` mapping dropped).
+- R4: RC3 restated for the common requirement-atom wording: validated
+  `BQ` atoms, ground atoms by the stated ground rule under the
+  proposed default (pending author Q2).
+- R8: RC6 adds T-R0b §5.2's `LambdaBody` position.
+- R9: Cov's auxiliaries are checked by RT7, not "T-vars".
+- R10: the post-Task-8 refusal is T-R0e's `ComposedTailsUnjustified`
+  (§2.3, §5.3); `AdmittedPendingR019`'s definition (§2.3) stays the
+  canonical one.
+- R11: "T-R0e Q2" and "T-R0e Q9" kept; T-R0e §7 maps its old numbers.
+- R13: `Basis`'s `Forced Evidence` renamed `Forced ForcednessEvidence`,
+  apart from T-R0a's contradiction `Evidence`.
