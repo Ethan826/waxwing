@@ -141,8 +141,22 @@ EOF
 
 The author asked for no new agents before the reset. Two were running:
 
-1. **Cross-document consistency re-check** of the six R0 documents
-   (read-only). If its result is lost, rerun it (scope in §3).
+1. **Cross-document consistency re-check** of the six R0 documents:
+   DONE. Saved at scratchpad/r0-reviews/consistency-recheck.md. Verdict:
+   21 of 26 reconciliation and all 9 adversarial findings resolved
+   everywhere; no contradiction of §18.65-18.66. Residual edits R1-R13:
+   two `CompileRefusal` ADTs (T-R0e defers to T-R0a §6); T-R0a still on
+   `WitnessMeta` (adopt W's `Witness`, `SplitJudgement`, `AdmStatus`);
+   W RC3 to the common requirement-atom wording; verdict for a failing
+   ground BQ atom (new, under Q2); CX-P/CX-KP and CX-PR now stated
+   (update T-R0a §3.4/§5, T-R0c §7.2); RC6 add `LambdaBody`; RC1-RC6
+   and other stale labels; `AdmittedPendingR019` wording and
+   post-Task-8 constructor name; T-R0e §7 question numbers; T-R0e's
+   stale `Defect` note; B9 fallback, `Evidence` name clash, second
+   spread site. It also gives the consolidated author questions Q1-Q10
+   plus new ones (CX `ValidR`, `crash` reference, B9, B13). Apply R1-R13
+   (small, mechanical; the coordinator can do them directly or by one
+   editor per document), then §18.67 with that question list.
 2. **Assessment editor** applying the accuracy review (20 findings,
    saved at scratchpad/papers/assessment-review.md; statuses O20, O16,
    O5, O7 change; O9, O6 narrowed; EMLTI concatenation citation
