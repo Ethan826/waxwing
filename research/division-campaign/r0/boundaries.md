@@ -136,7 +136,8 @@ Why this order (argued):
    (T-R0b §10) and applied at V (§1.5). A second spread is in-model
    (T-R0b E25); S1 reads the spread count from T-R0b's `vars` entries
    with role `spread j` (T-R0b §3.3), if the author classifies it S1
-   (pending author Q4).
+   (pending author Q4), applied at V, like the `outside` markers
+   (§1.5; T-R0a §5.3 rule 1′).
 4. The re-check last, because it validates lowering's output (the
    keys' layouts and callee keys) against the problem (W §3.1-3.2,
    cited); it is downstream of every choice it re-examines, and it
@@ -202,9 +203,10 @@ lets "forced" (§2) include requirements without P re-deciding them.
 | Refusal | T-R0a's `AtA (Inadmissible site i)`, `i` the slot that fails (T-R0a §6): today E_SPECIALIZATION `Recursive call to f changes its type arguments` (Instantiation.purs:70, cited); unchanged code |
 | Must not | enter `B`, change validity (§18.22 item 3, cited), or decide forcedness (§18.62 item 1) |
 
-**Decision 2 applied** (proposed). A's result for a slot is
-three-valued, W's `AdmStatus` (W §2.3); it is the admissibility result
-W's `Lowerable` reads (adversarial review, finding 3). T-R0a records
+**Decision 2 applied** (proposed). A's result for a component is
+three-valued, W's `AdmStatus` (W §2.3), computed from its slots' rows;
+it is the admissibility result W's `Lowerable` reads (adversarial
+review, finding 3). T-R0a records
 the two admitted values as its `AdmittedStatus` in `Admitted.status`
 and the third as `AtA (Inadmissible site i)` (T-R0a §6):
 
@@ -235,8 +237,8 @@ placeholder for any row with more than one tail, holes included
 program that compiles today (argued; that every several-tail slot of a
 key reaches `recordType` is unchecked). After Task 8, the proposed
 outcome is an S refusal, `AtS (NotLowerable ComposedTailsUnjustified
-site)` (§3.1), `site` the `adm` call site, pending author Q5; W uses the
-same constructor (reconciliation C2; consistency re-check R10).
+site)` (§3.1), `site` the `adm` entry's origin, pending author Q5; W
+uses the same constructor (reconciliation C2; consistency re-check R10).
 
 Pure unions of caller row variables as an extension are
 **investigation** (R019, §18.66 decision 2), with their own termination
@@ -257,7 +259,7 @@ sources):
 | several-tail lowering (Task 8; recorder-spec H7) | Specialize/Record.purs:38-44 | E_INTERNAL "R005B placeholder: rows with several tails are lowered in Task 8" | valid problems exist (W3) |
 | removal and rest binders over several tails (Task 7; B9) | Check/SeveralTails.purs:19-27 | E_INTERNAL "R005B placeholder: … typed in Task 7" | in-model if T-R0b §11 item 1 is accepted; then the placeholder is a hint and the reason is `Unsupported (GuardOutsideFragment …)` while no strategy's guard covers several tails |
 | other check-time placeholders | EndReport.purs:39, Require.purs:105, Record.purs:160 | E_INTERNAL "R005B placeholder: …" | — |
-| a second spread in a literal (B3) | Resolve/Record.purs:73-80 | E_TYPE "A record literal accepts at most one spread" | in-model (T-R0b E25; `join_validFin` and others, recorder-spec §4 B3, cited); S1 reads T-R0b's `vars` entries with role `spread j` (T-R0b §3.3), pending author Q4 |
+| a second spread in a literal (B3) | Resolve/Record.purs:73-80 | E_TYPE "A record literal accepts at most one spread" | in-model (T-R0b E25; `join_validFin` and others, recorder-spec §4 B3, cited); S1 reads T-R0b's `vars` entries with role `spread j` (T-R0b §3.3), pending author Q4; applied at V, like the `outside` markers (T-R0a §5.3 rule 1′) |
 | constructs outside the model (O1-O8) | recorder-spec §3.7 | each construct's own rules | `outside` markers (T-R0b `OutsideKind`) |
 | a hole the hole contract does not cover, at lowering (H4) | Specialize/Values.purs:96-98 | defaulted silently | W §1.5: `NoWitness (HoleContract …)`; T-R0a's `AtS (NoCompilation …)` |
 | a Solved verdict without a compilation witness | — | — | W §1.6: `NoWitness (NonConstructive …)`, `NoWitness (AdapterUnsupported FieldReference)`; T-R0a's `AtS (NoCompilation …)` |
@@ -327,7 +329,9 @@ theorem; S2 keeps it a limit.
   an unresolved text only from verdict-stage Unresolved
   (docs/engineering.md:556-561, cited), extended: an admission text only
   from P, an admissibility text only from A, a support text only from
-  S or the re-check's unsupported path.
+  S or the re-check's unsupported path. S1 constructs applied at V
+  (the `outside` markers, a second spread; §1.1, §1.5) give
+  verdict-stage `Unresolved (Unsupported …)`.
 
 Checks that would back these (proposed, per the claims-backed-by-checks
 rule; for the implementation plan): for I1 and I2, a property over the
@@ -478,7 +482,7 @@ data Layered
 data Construct
   = SeveralTailLowering                -- Task 8 (W3)
   | ComposedTailsUnjustified           -- §1.4, after Task 8; the Site
-                                       -- is the adm call site; Q5
+                                       -- is the adm entry's origin; Q5
   | UncheckedPath                      -- W §3.3's unsupported path
 ```
 
@@ -510,7 +514,7 @@ C5), so `layerOf` reads the layer from the tag:
 - S, `AtS`: `NotLowerable Construct Site` (S1, and the re-check's
   unsupported path as `AtS (NotLowerable UncheckedPath site)`, W §3.3);
   `NoCompilation NoWitnessReason` (W §1.6, including `HoleContract
-  Var`); `AdmissionLimit LimitReached` (S2).
+  Var`); `AdmissionLimit LimitAt` (S2).
 
 Design points (proposed):
 
@@ -557,6 +561,9 @@ Design points (proposed):
 
 ### 3.2 Mapping from today's diagnostics (proposed; cited sources)
 
+In the targets, a reason written singly stands for a one-element
+array: `Unsupported SecondSpread` is `Unsupported [SecondSpread]`.
+
 | Today (code, problem, source) | Class (requirements §2.3) | Target |
 |---|---|---|
 | E_TYPE `CannotTell` (D4), EndReport.purs:35, Unresolved.purs:74 | e | verdict Unresolved (Inference NoCandidate), D4 as a hint, unless some strategy Solves; then P: admitted if forced, `SplitUnforced` with two witnesses, else `ForcednessUndecided`. See §2.3 |
@@ -573,7 +580,7 @@ Design points (proposed):
 | E_INTERNAL `Unexpected`, "the end of a body failed outside its predicates", invalid ids | defect | Internal, unchanged; never Unresolved, never invalid (pending author Q1(a)) |
 | E_NESTING `TypeTooDeep` (inferred) | e | Unresolved (Limit InferredTypeDepth) |
 | E_NESTING `NestingTooDeep` (source) | a | unchanged |
-| E_SPECIALIZATION `SpecializationLimit` | e | Solved; `NotCompiled` (AtS (AdmissionLimit SpecializationKeys)) |
+| E_SPECIALIZATION `SpecializationLimit` | e | Solved; `NotCompiled` (AtS (AdmissionLimit { limit: SpecializationKeys 10000, site })) |
 | E_SPECIALIZATION `PolymorphicRecursion`, `NestedDatatype` | A | `AtA (Inadmissible site i)`, unchanged code; name-free slots `bareRow` admits and no active `Adm_W` row does are recorded `AdmittedPendingR019` (§1.4) |
 | E_TYPE `SecondSpread` (Resolve) | a today | Unresolved (Unsupported SecondSpread), pending author Q4 |
 | E_TYPE `SameDisjoint`, `RepeatedTail` in a signature | b′ | unchanged, worded as policy |
@@ -865,3 +872,20 @@ Residual mismatches with T-R0a left by R1, resolved here and in T-R0a:
 - `NoAdmissibleWitnessFound` cites T-R0a §6's note that
   `PolicyRefusal` gains it only if G3's contract is adopted (§2.4,
   §3.1).
+
+### Verifier fixes (2b73666)
+
+From the read-only verification of 2b73666 (findings 3, 4, 6, 7, 10):
+
+- §1.1 item 3 and §1.5's table: a second spread, if classified S1, is
+  applied at V, like the `outside` markers (T-R0a §5.3 rule 1′). I4
+  notes that S1 constructs applied at V give verdict-stage
+  `Unresolved (Unsupported …)`.
+- §1.4 and §3.1's `Construct`: the `ComposedTailsUnjustified` site is
+  the `adm` entry's origin, not the call site.
+- §3.1 and §3.2: `AdmissionLimit LimitAt`; the `SpecializationKeys`
+  target is `AtS (AdmissionLimit { limit: SpecializationKeys 10000,
+  site })`, so every limit has `LimitAt.site`.
+- §3.2: a reason written singly stands for a one-element array.
+- §1.4: A's three-valued result is per component, computed from its
+  slots' rows, matching W §2.3.

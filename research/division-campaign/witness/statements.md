@@ -299,6 +299,8 @@ carry that judgement for inlined bindings, which have no `NameEntry`
 ~~~text
 data Basis
   = Forced ForcednessEvidence | Written AtomId | Selected SelectionTag
+  -- ForcednessEvidence: type owned by the forcedness decider;
+  -- unassigned, Q7
 type SplitJudgement = Map Var Basis
   -- domain: every Var in a split site's slots, whatever its Binding
 ~~~
@@ -694,7 +696,8 @@ auxiliary the evaluator cannot evaluate at a key, such as an `outside`
 construct, a reserved `Field`, or an auxiliary without a single-tail
 defining atom), reported with an Unsupported reason (T-R0e's
 `UncheckedPath`). Whether the internal case is a separate outcome or a
-reason inside Unresolved is pending author Q1 (T-R0a Q-A1, T-R0e Q9);
+reason inside Unresolved is pending author Q1 (T-R0a Q1(a), formerly
+Q-A1; T-R0e §7's `Internal` row);
 every placement keeps it apart from invalidity. Never Contradiction,
 never a user diagnostic, never CX evidence: RC tests one flexible
 assignment, CX refutes all of them (§5.4). **A failed re-check is never
@@ -821,7 +824,9 @@ Each item is the canonical definition; the other streams cite it.
 - **`Solution.compilation ∷ Compilation`** (§1.6) replaces `witness ∷
   Maybe NameWitness`; the strategy adapter returns `Compilation`;
   `Attempt.Accepted StrategyName Valid Compilation`; `Admitted
-  Witness`; T-R0a's `NameWitness` is this file's `Witness`
+  { witness ∷ Witness, splits ∷ SplitJudgement, status ∷
+  AdmittedStatus }` (T-R0a §6); T-R0a's `NameWitness` is this file's
+  `Witness`
   (reconciliation B1, B2). Placement beside the verdict instead:
   pending author Q1.
 - Invariant: `Witnessed` occurs only inside a Solved verdict (by
@@ -1036,7 +1041,8 @@ decision changed.
 - R10: the post-Task-8 refusal is T-R0e's `ComposedTailsUnjustified`
   (§2.3, §5.3); `AdmittedPendingR019`'s definition (§2.3) stays the
   canonical one.
-- R11: "T-R0e Q2" and "T-R0e Q9" kept; T-R0e §7 maps its old numbers.
+- R11: "T-R0e Q2" kept; T-R0e §7 maps its old numbers. ("T-R0e Q9"
+  was corrected later; see the verifier fixes below.)
 - R13: `Basis`'s `Forced Evidence` renamed `Forced ForcednessEvidence`,
   apart from T-R0a's contradiction `Evidence`.
 
@@ -1044,3 +1050,15 @@ decision changed.
 
 - §2.3: records how T-R0a carries `AdmStatus`: `AdmittedStatus` for
   the two admitted values, `AtA (Inadmissible site i)` for the third.
+
+### Verifier fixes (2b73666)
+
+From the read-only verification of 2b73666 (findings 1, 5, 9):
+
+- §5.1: `Admitted { witness ∷ Witness, splits ∷ SplitJudgement,
+  status ∷ AdmittedStatus }` (T-R0a §6) replaces `Admitted Witness`.
+- §3.3: the internal-outcome question is T-R0a Q1(a) (formerly Q-A1)
+  and T-R0e §7's `Internal` row, not "T-R0e Q9" (old Q9 is
+  `Exhausted`); the R11 log line is adjusted.
+- §1.7: `ForcednessEvidence` is owned by the forcedness decider,
+  unassigned (Q7).

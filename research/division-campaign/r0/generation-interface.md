@@ -32,7 +32,7 @@ particular W's and T-R0e's `StrategyTag` is this document's
 |---|---|---|
 | the shape and translation rules of the recorded problem; `vars`, `types`, `OutsideKind`, origins | T-R0b, r0/recorder-rules.md | `RecordedProblem` (its §10), assumptions As1-As8 in §8 |
 | evidence: classification of each existing refusal, probes | T-R0c, r0/refusal-audit.md | cited per entry |
-| counter-instance and c1 statements | CX, refute/statements.md | `CXChecked`, `RefuteSound`, C1-P, C1-H, C1-O, C1-E |
+| counter-instance and c1 statements | CX, refute/statements.md | `CXChecked`, `RefuteSound`, CX-KP, CX-PR, C1-P, C1-H, C1-O, C1-E |
 | witness and termination types | W, witness/statements.md | `Compilation`, `Witness`, `SplitJudgement`, `AdmStatus`, `WitnessMeta`, `NoWitnessReason`, `Adm_W`, RC1-RC6 |
 | layers (V, V2, P, A, S), their codes, decision 3, R010, Task 8, support boundaries | T-R0e, r0/boundaries.md | the layer tags of §6, `Construct` |
 
@@ -171,6 +171,9 @@ data Verdict
   | Contradiction Evidence
   | Unresolved Unresolved
 ```
+
+`Site`, here and below, is the origin path of the recorded entry
+(T-R0b `Entry.origin`, its `path`).
 
 `StaticCode` and `PolicyCode` are ADTs over today's `Problem`
 constructors (cited Domain/Problem.purs:77-160) that requirements §2.3
@@ -330,17 +333,18 @@ Proposed. Notes:
 - `NoAcceptedCertificate` is the reason requirements §7 gives `submit`
   under the cell strategy (cited table, "cell strategy" row).
 - **A refusal reached through solver-chosen bindings is a hint, never
-  a reason of its own.** T-R0e's `UnprovedRefusal` has no counterpart
-  here: that case is `Inference NoCandidate` with the refusal kept as
-  a `SearchHint` (§4.2). T-R0e's `NoStrategyAccepted` is this
-  document's `InferenceFailure` together with the attempt log. T-R0e's
-  `ForcednessUndecided` and `NoAdmissibleWitnessFound` are compilation
-  refusals (§6), not verdict reasons; the latter exists only if G3's
-  contract is adopted (§6). T-R0e's class-f case is not an inference
-  failure; T-R0e §3.1 settles it as the `Unsupport` constructor
-  `ClassF Question`, pending author Q3. T-R0e's second spread, if
-  classified as a support boundary, is `SecondSpread` (pending author
-  Q4).
+  a reason of its own.** T-R0e's former `UnprovedRefusal` has no
+  counterpart here: that case is `Inference NoCandidate` with the
+  refusal kept as a `SearchHint` (§4.2). T-R0e's former
+  `NoStrategyAccepted` is this document's `InferenceFailure` together
+  with the attempt log. T-R0e's `ForcednessUndecided` and
+  `NoAdmissibleWitnessFound` are compilation refusals (§6), not
+  verdict reasons; the latter exists only if G3's contract is adopted
+  (§6). T-R0e's class-f case is not an inference failure; T-R0e §3.1
+  settles it as the `Unsupport` constructor `ClassF Question`, pending
+  author Q3; `Question` tags which Q3 sub-question the construct falls
+  under. T-R0e's second spread, if classified as a support boundary,
+  is `SecondSpread` (pending author Q4), produced by §5.3 rule 1′.
 - **D4 "Cannot tell" is not decision 3.** It is the online search
   stopping, so it is a hint, and absent another strategy's Solved the
   reason is `Inference NoCandidate`. T-R0c's c21 shows D4 refusing a
@@ -540,8 +544,9 @@ type RefuterSpec =
 variables to ground expressions at `B ⊕ Nat`, `decideCall` true on the
 substituted `D` and false on the substituted body. It is total and
 decidable, and it is the only way to mint `Refuted`. Its soundness is
-CX-K, and the interface property is `RefuteSound` (CX-R; the Lean name,
-requirements' `Refute_sound`). Whether `BQ` atoms and non-record heads
+CX-KP (CX-K when `body` is the whole of `B`), and the interface
+property is `RefuteSound` (CX-R; the Lean name, requirements'
+`Refute_sound`). Whether `BQ` atoms and non-record heads
 (`Int` against `Bool`) are refutable by CX is that stream's (Q-d1,
 pending author Q10).
 
@@ -607,6 +612,11 @@ Proposed rule:
    unmodelled obligations only add constraints (argued; it needs each
    recorded atom to be a genuine obligation, recorder correctness
    **R**, requirements §4.3).
+
+   1′. **Second spread** (**pending author Q4**). Until the author
+   rules Q4, a node with a `spread j`, j ≥ 2, blocks a whole-
+   declaration Solved, as rule 1 does; the reason is `Unsupported
+   SecondSpread`; rules and refuters still run.
 2. Rules, then strategies in order, then refuters (seeded with the
    strategies' hints). The first `Accepted` gives Solved; a checked
    derivation or `Refuted` gives Contradiction.
@@ -664,17 +674,21 @@ data PolicyRefusal                       -- P: decision 3, per split site
   = SplitUnforced CallSite (Tuple Witness Witness)
                                          -- two valid witnesses differing
   | ForcednessUndecided CallSite         -- Q1(c), Q7
-  -- No G3 constructor: G3 is held (dossier §18.66 decisions 6-7).
+  -- No G3 constructor: G3 is held (dossier §18.66 decision 6).
 
 data AdmissibilityRefusal                -- A: R010, judged by Adm_W
   = Inadmissible CallSite Int            -- the judged slot i that fails
-                                         -- (T-R0b's `Slot p i`)
+                                         -- i indexes CallSite.slots
+                                         -- (the callee's variable
+                                         -- order; T-R0b's `Slot p i`,
+                                         -- p the adm entry's origin
+                                         -- path)
   | ComponentBlocked FunctionName        -- a member not Solved; Q7
 
 data SupportRefusal                      -- S
   = NotLowerable Construct Site          -- T-R0e §3.1's Construct
   | NoCompilation NoWitnessReason        -- W §1.6, incl. HoleContract
-  | AdmissionLimit LimitReached          -- e.g. SpecializationKeys
+  | AdmissionLimit LimitAt               -- e.g. SpecializationKeys
 ```
 
 Proposed. Points this interface is responsible for:
@@ -714,8 +728,8 @@ Proposed. Points this interface is responsible for:
   name-free, admitted by `bareRow`. It compiles as today and is never
   a premise. After Task 8 it is refused, unless FK-U is proved and
   adopted, as `AtS (NotLowerable ComposedTailsUnjustified site)`,
-  T-R0e's constructor, `site` the `adm` call site. Whether users see
-  it is **pending author Q5**.
+  T-R0e's constructor, `site` the `adm` entry's origin. Whether users
+  see it is **pending author Q5**.
 - **Several tails.** Lowering a row with several tails is `AtS
   (NotLowerable SeveralTailLowering site)` until Task 8 (T-R0e
   §3.1).
@@ -1106,6 +1120,27 @@ Residual mismatches with T-R0e left by R1, resolved here and in T-R0e:
   `AdmittedStatus` and `AtA (Inadmissible site i)`.
 - §6 notes that `PolicyRefusal` gains `NoAdmissibleWitnessFound
   CallSite` only if G3's contract is adopted (G3 held, §18.66
-  decisions 6-7); §3.5 cross-refers.
+  decision 6); §3.5 cross-refers.
 - `ComposedTailsUnjustified` takes no argument: the refusal is `AtS
   (NotLowerable ComposedTailsUnjustified site)`.
+
+### Verifier fixes (2b73666)
+
+From the read-only verification of 2b73666 (findings 2, 3, 4, 6, 8):
+
+- §5.1: the refuter's soundness is CX-KP (CX-K when `body` is the
+  whole of `B`); §0's CX row adds CX-KP and CX-PR.
+- §5.3 rule 1′: until the author rules Q4, a second spread blocks a
+  whole-declaration Solved as `outside` markers do, with reason
+  `Unsupported SecondSpread`; rules and refuters still run. This gives
+  `SecondSpread` a producer; §3.5's note points to it.
+- §3.2 defines `Site` as the origin path of the recorded entry (T-R0b
+  `Entry.origin`); §3.5 says `Question` in `ClassF Question` is the Q3
+  sub-question tag. §6: `Inadmissible`'s `Int` indexes
+  `CallSite.slots`; a `NotLowerable` site is the `adm` entry's origin,
+  not the call site.
+- §6: `AdmissionLimit LimitAt`, so a compilation-stage limit has a
+  site, as reconciliation D4 promised.
+- §3.5 calls `UnprovedRefusal` and `NoStrategyAccepted` T-R0e's
+  former names; the G3 note cites §18.66 decision 6 alone, here and
+  in the residual-harmonization log.
