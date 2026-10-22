@@ -51,15 +51,18 @@ problem type is independent of the checking strategy is conditional.
 
 - `checkFunction` is one `Either` chain (src/Features/Check/
   Function.purs:77-98): a refusal ends generation for that body, and
-  `check` (Check.purs:22) then skips every later declaration.
+  `check` (src/Features/Check.purs:22) then skips every later
+  declaration.
 - The end of a body is not where `B` ends. `waitingAtEnd` (Function.purs:
   89; EndReport.purs:30-47) runs before the printability and
   comparability walks (Function.purs:96-97) that produce the
-  requirement atoms `BQ`. Its two failures, D4 "Cannot tell" and D6
-  "must be row", return no state, so `B` and `BQ` are both lost.
+  requirement atoms `BQ`. Its failures (D4 "Cannot tell …", undecided;
+  D6, H's refusal "must be …, but neither … can hold …"; and
+  placeholder, depth and internal errors; EndReport.purs:36-42) return
+  no state, so `B` and `BQ` are both lost.
 - Rule H runs at two sites: at the end of the body, and earlier inside
   `settleRestricted` through `familyUnknown` (Failure.purs:79, 93,
-  105-109).
+  98-102).
 - **Moving the end-of-body gate alone does not suffice:** a refusal
   during generation leaves only a prefix of `B` (§18.61).
 
@@ -69,15 +72,16 @@ Not every error needs a signature counter-instance (§18.61). Classes:
 
 | Class | Justification | Examples (R7 §1) | May stop generation? |
 |---|---|---|---|
-| a | the language's static rules (syntax, names, sorts, kinds, arity, effect rules, coverage) | Resolve/*, SortConflict, Arity, Coverage; effect-row unifier failures (`RowMissing` etc. are effect rows, not records) | yes; effect refusals only while the record bindings they consume are forced |
+| a | the language's static rules (syntax, names, sorts, kinds, arity, effect rules, coverage) | Resolve/*, SortConflict, Arity, Coverage; effect-row unifier failures (`RowMissing` etc. are effect rows, not records) | yes; effect refusals only when they do not depend on record metas bound by the online solver (otherwise class f) |
 | b′ | policy on a satisfiable but degenerate declared `D` | `r disjoint r`, `{...r, ...r}` in a signature | yes, worded as policy |
 | b | contradictory declared hypotheses | none reachable: source `D` is always satisfiable (`clauseOnly_satisfiable`, checked) | — |
-| c | a true contradiction of the record model, with a counter-instance | ground head clash, occurs check, a constant label against a fixed side, `lacks`/`disjoint` failures **when every binding in the premise is forced** | yes, if the premise's bindings are forced or a refuter checked a counter-instance |
+| c | a semantic contradiction: (c1) derived from original recorded atoms and `D` alone, never from the online substitution's choices, by a rule proved sound for `ValidOpen` over the divisible typed model under the ∀rigid/∃flexible structure (its premises imply some rigid assignment satisfying `D` admits no flexible solution); or (c2) a checked counter-instance (CX: a finite rigid assignment satisfying `D` at which `B` is refuted) | candidates, each pending a soundness statement: a ground head clash between original atoms, an occurs check on original atoms, `lacks`/`disjoint` refutations whose premises are original atoms only | yes, recording the rule's soundness theorem (c1) or the checked counter-instance (c2) as evidence; verdict Contradiction |
 | d | assumes an indivisible rigid row or a uniform per-label choice | H's rigid atom (Homes.purs:31-34; false for `route`, checked; predicted for `submit`); H's label atom (Homes.purs:29-30); `lacks`/`disjoint` failures after `shareTails` with flexible field types; printability/comparability judged on an unforced settled type | **no** |
-| e | solver incompleteness, limits, defects, unsupported constructs | D4 "Cannot tell"; depth and fuel limits; Internal; the several-tail placeholder | **no** (Unresolved, Unsupported or defect) |
-| f | unclear | principality of `shareTails`; pattern growth and arm order; effect refusals caused by record-solved metas | until settled by the evidence R7 names |
+| e | solver incompleteness, limits, defects, unsupported constructs; **and any refusal that relies on bindings the online solver chose ("bound so far"), or on a c1 rule whose soundness is not yet proved** | D4 "Cannot tell"; depth and fuel limits; Internal; the several-tail placeholder; today's `lacks`/`disjoint`/head-clash refusals on substituted atoms | **no** (Unresolved, Unsupported or defect; the problem is preserved for a later strategy) |
+| f | unclear | principality of `shareTails`; pattern growth and arm order; effect refusals caused by record-solved metas | **no** (until settled by the evidence R7 names) |
 
-**The `walk` probe's three refusals stay separate** (§18.63; checked
+**The `walk` probe's three findings (two refusals and one
+admission) stay separate** (§18.63; checked
 run): W1, D4 "Cannot tell whether walk's u or v holds walk's u" at
 check (class e; the problem is valid with the identity split, argued);
 W2, R010 admissibility, whose code (`bareRow`, NestedArguments.purs:
@@ -103,11 +107,24 @@ result covers only the forms tested.
   rigid ones; the `vars` map from problem variables to checker metas
   and checked-IR names keeps that structure and composes the online
   substitution (cited recorder-spec §2.1; recorder-interface §2).
-- **Who may stop early:** classes a, b′; c under the stated condition.
-  Classes d, e, f do not stop generation, and an unjustified refusal
-  in one declaration does not hide later declarations.
+- **Three grounds, kept apart** (§18.64 follow-up): (1) a
+  contradiction derived from the complete premises available by a rule
+  proved sound for the semantics; (2) a checked counter-instance
+  refuting the signature (CX); (3) failure of the current solver to
+  find a solution. Only (1) and (2) justify a semantic rejection; (3)
+  preserves the problem for a later strategy. A rule applied to
+  original recorded atoms and `D` is monotone, so it stays sound on a
+  prefix of `B`; a rule applied to atoms rewritten by the online
+  substitution is not, because the substitution embeds choices.
+- **Who may stop early:** classes a and b′ (static rules and policy,
+  worded as such); class c only on ground (1) or (2). A contradiction
+  reached only through bindings the online solver chose is not
+  semantic evidence: it is class e, does not stop generation, and
+  preserves the complete problem. An unjustified refusal in one
+  declaration does not hide later declarations.
 - **New acceptance test** (proposed, T-R0): for each refusal in classes
-  d and e, a fixture whose online solver refuses partway, and whose
+  d and e, and each refusal that today rests on solver-chosen
+  bindings, a fixture whose online solver refuses partway, and whose
   recorded problem equals an independent syntax-directed translation,
   not a prefix.
 - **Two designs, for the author** (recon §6 Q1): (i) generate-then-
@@ -129,7 +146,8 @@ result covers only the forms tested.
 
 ### 3.1 Why it comes before representation (§18.64)
 
-R010 justifies termination of specialization (ADR 007 §4.2): within a
+R010 justifies termination of specialization (design spec §4.2,
+summarized in ADR 007 "The instantiation rule"): within a
 recursive component, each type argument is a bare variable of the
 caller or mentions no variable, and **a hole counts as ground** because
 specialization fixes it to one ground type (cited Instantiation.purs:
@@ -241,18 +259,19 @@ unchanged; the verdict type gains only reason constructors.
 accepted); Contradiction (separate evidence: a finite rigid assignment
 over the bases plus fresh ones, satisfying `D`, and a refutation of
 `B` there); Unresolved (everything else, with a reason ADT). Proposed
-**CX**, unstated in Lean: for a ground substitution ρ of the rigid
-variables denoting θR (finite at every depth), `Sat θR
-(P.mapBase i).D`, and `decideCall` false on `B` under ρ, `¬ ValidOpen
-P`; it needs a substitution lemma and `DecidableEq` on the extended
+**CX**, unstated in Lean: for an injective `i : B → B₁` and a ground
+substitution ρ of the rigid variables denoting a finite θR (finite at
+every depth), `Sat θR (P.mapBase i).D` and `decideCall` false on
+`(P.mapBase i).B` under ρ imply `¬ ValidOpen P`; it needs a substitution lemma
+and `DecidableEq` on the extended
 bases. `divide5` refused by every current certificate is Unresolved.
 
 ## 5. G3: compiling an unforced split
 
 ### 5.1 Four obligations, stated separately (§18.62)
 
-- **Semantic validity:** the problem is `ValidOpen` (a certificate or
-  CX decides it).
+- **Semantic validity:** a certificate establishes `ValidOpen`, CX
+  refutes it; otherwise the verdict is Unresolved.
 - **Acceptance requirements:** "forced" accounts for the complete
   semantic typing obligations, including printability and
   comparability wherever required; a split satisfying only the row
@@ -262,9 +281,11 @@ bases. `divide5` refused by every current certificate is Unresolved.
   *only admissible split*, not a forced one. Selection respects both
   without conflating them.
 - **Behavior preservation:** no behavioral difference between valid
-  splits has been demonstrated. The split-irrelevance result
-  (`eval_split`) holds for the λ-split reference evaluator only (cited
-  §18.21); compiled Go agreeing with it is assumed (A-go), and the
+  splits has been demonstrated. The exact proved fragment
+  (`eval_split`, §18.21): projection-free split variants evaluate every
+  projection-free λ-split term alike at every pair of keys, for the
+  λ-split reference evaluator only; compiled Go agreeing with it is assumed
+  (A-go), and the
   same-layout claim assumes Task 8's canonical form and M14 (cited
   split-selection §2.1, §5). It is not a whole-language theorem.
 
@@ -276,7 +297,7 @@ bases. `divide5` refused by every current certificate is Unresolved.
 | A1 printability on a part (E2) | acceptance: one split prints, another is refused | lex accepts; "u = r∖s" refuses |
 | D-acc `divide5` with `show` on `q` | acceptance, the reverse way | `d5Wit` accepts; `sigma5` and lex refuse: no fixed directional rule is safe |
 | A2 comparability (cmp-open) | acceptance; and swapping tail order flips lex | presentation sensitivity, the substance of §18.17 item 2 |
-| A3 `walk` (R010) | admissibility: one admissible split among valid ones | probe: today refused earlier, at check (W1) |
+| A3 `walk` (R010) | admissibility: under the documented single-tail rule, one admissible split among valid ones; today's code also admits the composed-tail split (R019, open) | probe: today refused earlier, at check (W1) |
 | A4 interface inferred after choosing | which callers are accepted | selection must follow inference |
 | A5 limits | key count under the 10,000 limit | the rule must be a function of (callee, key) |
 | B2, B3 (future: projection; class-driven synthesis) | behavior | would break invariance; a rule must not apply outside the established fragment |
@@ -321,14 +342,15 @@ evidence premise (argued; soundness review). New query, corrected:
 `possWL r l K = decide (l ∈ written P) && cellPossS P ((r,true) :: K ++
 [(x,false) | lacks x l ∈ D])`, polynomial by Horn least models with one
 literal; two literals give 2-SAT; three or more open. Partition
-(argued, true on the fragment): one literal splits a label two ways by
+(argued; the soundness review agreed): one literal splits a label two ways by
 one rigid row; **one literal suffices at `l` iff some rigid `x` (or
 none) gives a two-way split `{x present, x absent}` whose sides each
 have a target admitted on that whole side.** `divide5`: three pieces,
-O(m) labels. **`chain3`** needs two literals (valid by bounded
-evaluation and by the routing "not c → u2; c ∧ not d → u3; c ∧ d → u1";
+O(m) labels. **`chain3`** needs two literals (valid: argued by the
+routing "not c → u2; c ∧ not d → u3; c ∧ d → u1";
 refusal by every one-literal certificate argued by enumerating the
-exclusive literal pairs). Proposed as a separate checker beside the
+exclusive literal pairs; a reviewer's unrecorded bounded evaluation
+agrees on validity). Proposed as a separate checker beside the
 reviewed one, with a conservative-extension theorem, so no accepted
 theorem changes.
 
@@ -384,13 +406,15 @@ Measured precedent: strategy B, `divide3` at m = 16, 65,536 leaves,
 | precedent | `sigma5` (projection format) is already one-literal guarded; novel: guards on written labels in the cell format | P9s `checkAll`, strategy B; novel: positive literals as neighbour `lacks`, the case split, the cell size bound |
 | author's earlier ruling | — | a certificate-supplied split tree; §18.54 item 3 left it unadopted pending its own statements and review |
 
-**G2** (argued; bounded evaluation): rigid `r`; flexible `x, y, β`;
+**G2** (argued; a reviewer's unrecorded bounded evaluation agrees): rigid `r`;
+flexible `x, y, β`;
 `D = []`; `{...r, ...x} = {a: β, ...y}` is valid, and no certificate
 value denotes `r`'s field type at a generic instance (no `CellV`
 reaches it; `rty` reaches rigid type variables only), so every
 certificate is refused under any guard language and selection tree.
 The earlier `pick` example is withdrawn: with `q`, `s` rigid it is
-invalid at `q = s = {}` (bounded evaluation); with only `q` rigid it is
+invalid at `q = s = {}` (argued; a reviewer's unrecorded
+bounded evaluation agrees); with only `q` rigid it is
 this example renamed. G2 stays under the field-reference deferral
 (§18.54).
 
@@ -403,11 +427,12 @@ q lacks {id}`, and `submit(doc: {...r}, inbox: {...s}, archive:
 translation `route5Sig [id]` (a name for this translation; not a Lean
 definition) keeps the call's copies `s'`, `s2'` and `file`'s implied
 pairwise disjointness; equivalence with `divide5Sig [id]` is argued,
-not proved, and bounded evaluation finds both valid.
+not proved; a reviewer's unrecorded bounded evaluation finds both
+valid.
 
 | Stage | Today | With R0 | With a G1 remedy | Compilation |
 |---|---|---|---|---|
-| record | lost if H refuses (predicted D6, as checked for `route`) | complete `B`, `BQ` | same | — |
+| record | lost if H refuses (predicted D6 "neither … can hold …", as checked for `route`) | complete `B`, `BQ` | same | — |
 | cell strategy | — | refused → Unresolved (NoAcceptedCertificate) | — | — |
 | guard strategy | — | — | `sigma5`-shaped certificate, once G-obligations are proved → Solved | — |
 | selection strategy | — | — | root literal on `(s, id)`, two leaves (m = 1; this program does not exercise the 2^m bound) → Solved | — |
@@ -434,8 +459,9 @@ not proved, and bounded evaluation finds both valid.
    and the online solver demoted to a search; (ii) keeps the solver but
    needs outcome types, tainting and a substitution-independence proof
    for every hook. Remaining obligations either way: T-R0 fixtures; the
-   refusal audit (class c with counter-instances; `shareTails`
-   principality); CX. Candidate tranches (R7, none started): T-R0a
+   refusal audit (class c: a soundness statement for each c1 rule, or
+   counter-instance fixtures for c2; `shareTails` principality); CX. Candidate
+   tranches (R7, none started): T-R0a
    generation/verdict interface; T-R0b syntax-directed recorder
    specification; T-R0c refusal audit with counter-instance fixtures
    (can start independently); T-R0d CX and a refuter; T-R0e separating
@@ -520,6 +546,14 @@ restrictions tables, missed couplings) and soundness (`pick` false;
 query equivalence, `possWL`, byte-identical Go, reuse claims
 overstated; `chain3`, R3's example, the partition lemma, the case
 split, the 2^m bound and CX's core hold). This revision applies both
-and the author's rulings §18.61-18.64. Restrictions tables for the
+and the author's rulings §18.61-18.64. A targeted re-review of this
+revision (at 7a8610a) found the rulings and promised corrections
+applied, 23 of 26 citations accurate, and twelve findings, all applied
+here: the class-c conflation of semantic grounds with solver state
+(the author's added check), `walk`'s admissible split stated without
+its condition, three citations, CX's missing `i`, and labelling of
+unrecorded evaluations. The parts' and reviews' reports are not stored
+in the repository; their findings are summarized here and in the
+dossier. Restrictions tables for the
 witness options are in R8's report and summarized in §4.2; for guards
-and selection in §6. This revision has not itself been re-reviewed.
+and selection in §6.

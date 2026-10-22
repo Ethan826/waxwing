@@ -5179,3 +5179,23 @@ final proposal puts **R0 and the termination contract ahead of
 representation choice**, then compares the smallest viable witness
 interfaces against those contracts. No compiler changes or new
 termination-proof campaign before that review.
+
+### 18.65 Blocker-first proposal re-reviewed; a decision document (2026-10-21)
+
+research/division-campaign/remedy/requirements.md, revision 2. A
+targeted re-review (at 7a8610a) found the rulings of §18.61-18.64 and
+the promised corrections applied, scope clean, 23 of 26 citations
+accurate, and twelve findings, now applied. The substantive one is the
+author's added check: **forced bindings alone do not justify a class-c
+refusal.** The proposal now keeps three grounds apart: (1) a
+contradiction derived from original recorded atoms and `D` by a rule
+proved sound for `ValidOpen` under the ∀rigid/∃flexible structure; (2)
+a checked counter-instance (CX); (3) failure of the current solver to
+find a solution, including any contradiction reached through bindings
+the online solver chose. Only (1) and (2) justify a semantic rejection;
+(3) is class e, does not stop generation and preserves the problem.
+Other fixes: `walk`'s admissible split stated with its condition
+(§18.63), three citations, CX's injective `i`, the exact proved
+fragment of `eval_split`, and unrecorded bounded evaluations labelled
+as such. **Ready as a decision document; nine decisions for the
+author (its §9); no candidate tranche started.**

@@ -8188,3 +8188,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   revision in order R0 (complete constraint problem or justified
   rejection), typed witness and lowering contracts, G3 requirements,
   then the G1 comparison. No `route` repair, recorder or selection rule.
+- `divide5` blocker-first proposal re-reviewed and corrected (dossier
+  §18.65): R0, termination contract, witness interfaces, G3, then G1;
+  class-c refusals only on a sound rule from original atoms or a
+  checked counter-instance. Decision document for the author; nothing
+  started.
