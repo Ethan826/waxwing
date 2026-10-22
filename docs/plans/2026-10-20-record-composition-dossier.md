@@ -5330,7 +5330,7 @@ and T-R0e §7 also maps its pre-revision numbers):
    placeholder today (argued only; a probe is proposed).
 6. Witness representation: names only for non-`Ty Open` terms; keep
    `ChooseT`; syntactic hole-contract check; auxiliaries evaluated,
-   never bound [all yes].
+   never bound [all yes; the last superseded by §18.69 item 6].
 7. Forcedness: who decides it and whether the decider reads the
    problem or the `Solution` [unassigned; open]; `ComponentBlocked` is
    tagged A and rendered with E_SPECIALIZATION [yes].
