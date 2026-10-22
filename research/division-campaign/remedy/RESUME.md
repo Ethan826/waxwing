@@ -194,3 +194,26 @@ editors' work. Order on resume: finish §4's steps for the assessment
 (apply the accuracy review, cross-references) first, since the
 extension builds on the corrected assessment; then start this request,
 with bounded readers on disjoint outputs and one integration owner.
+
+## 6. Overnight session (2026-10-21/22)
+
+The author asked for as much parallel work as possible overnight and a
+morning list of everything for an external (ChatGPT) review. Session
+scratchpad: /private/tmp/claude-501/-Users-ethan-Desktop-waxwing/
+a3e077fb-fe27-4631-aa97-02bdd128535a/scratchpad/ (morning-checklist.md
+is the running review list; ext/ holds six reader reports; r0/ holds
+the R0 verifier report).
+
+Done on `main` (none pushed): assessment accuracy review (7661170);
+cross-references (39320ad); R0 re-check R1-R13 applied by four editors
+plus a T-R0a/T-R0e harmonization; dossier §18.67 (2b73666, corrected
+6c65c2f) with the author questions; verifier findings 1-10 (e1487a4)
+and two rounds of coordinator fixes (61565ac, 8d3373a).
+
+Running: one integration owner for the inference-foundations extension
+(queued request), writing docs/plans/2026-10-22-inference-foundations-
+extension.md and correcting the assessment, from the six reader
+reports in ext/. If lost, relaunch it with the same scope from main.
+After it: adversarial review of statuses and citations, fixes, then
+cross-reference lines and a progress line. The implementation plan
+still waits for the author's answers to §18.67.
