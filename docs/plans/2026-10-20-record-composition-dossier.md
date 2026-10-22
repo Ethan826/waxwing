@@ -5503,3 +5503,64 @@ Research decisions (inference extension §10):
 The reviewer recommends pushing the documents and statements as a
 research checkpoint once these are recorded and the final edits
 rechecked, with every unproved status left unmistakable.
+
+### 18.70 G-switch, the O24 questions and the first tranche (2026-10-22)
+
+The author forwarded a third external review (focused on the switch,
+the O24 revisions and their dependencies, not a full audit of the
+plan) and adopted its recommendations.
+
+**G-switch: shadow first (option A now), earned exemptions (option E)
+as the destination.** The checker's current coverage boundary must not
+silently become the language boundary. The new path is implemented and
+measured in shadow, preserving today's acceptance; the full switch
+waits for the treatment of effects, data and requirements that the
+exemptions need. Option C (a per-declaration window) stays possible as
+a temporary migration step if the census shows it delivers useful
+improvements safely, with explicit limits and tests. Option B (broad
+narrowing) is rejected. Option D is rejected: a declaration is not
+called Solved when the check deliberately omits acceptance-relevant
+obligations, whatever its label. The final switch is not chosen now;
+the census informs it.
+
+**O24 questions** (note §3.4):
+
+1. Definedness: option A, `eq T2 T2` among the induced problem's
+   assumptions; declaration well-formedness and satisfiability checks
+   are kept separately, so vacuous inclusion cannot make an invalid
+   declaration acceptable.
+2. Countability: `ValidOpen` unchanged. First investigate a model
+   refinement: constructor names indexed by the original countable
+   `B`, `base b` interpreted as the atom `i(b)`, and arbitrary further
+   atoms in the carrier over `B₁` (EMLTI Def. 10.2.5 allows carrier
+   elements no closed type names). Proposed for statement review, not
+   proved; it reuses GI-Atoms' vocabulary/carrier distinction.
+3. GI: formalize the concrete fragment first; no generic many-sorted
+   framework only to generalize this lemma.
+4. `Apart` stays a premise; clients get a capture-avoiding renaming
+   operation, with invariance under renaming checked.
+5. V: a later side result, off GI-Open's critical path.
+6. Tuples: curried arrows, Waxwing's existing meaning.
+
+Qualification to counterexample 2: the raw scheme is a valid
+model-level counterexample, but source Waxwing adds implied
+disjointness through Sig7, so omitting an explicit `where` clause does
+not omit those generated assumptions.
+
+**Plan changes before approval:** (1) checker limitations stay local
+to the checker: Task 4.2's `entailedGround` limit is not a global
+prohibition on other strategies judging requirement atoms, and an
+incomplete recorded problem is distinguished from a complete
+requirement G0 cannot discharge; (2) D1's sequencing deliberate:
+bring the generation continuation before the live switch, or justify
+the temporary read-back bridge and its removal; (3) the first
+execution tranche ends with reviewed interfaces, characterization
+probes, generated problems and shadow comparisons, and authorizes
+neither Task 4.6, live refutation, Phase 6 nor the O24 proof tranche.
+Remaining technical gates are settled by evidence and reviewed
+proposals, not posed as language-design questions.
+
+**Next authorization:** a bounded shadow tranche, after a re-review of
+the revised plan. Proof work is scoped separately. The reviewer
+recommends pushing the reviewed documents as a checkpoint with their
+unproved status intact.
