@@ -162,3 +162,21 @@ questions to the author. Nothing since 67ba706 is pushed; push only
 when the author asks. Leftover worktrees under .claude/worktrees from
 this tranche are idle once their commits are on `main`; remove them
 only when the author asks, keeping branches.
+
+## 5. Queued after the reset: the inference-foundations extension
+
+The author checkpointed a further request to begin after the reset:
+research/division-campaign/remedy/queued-request-inference-extension.md
+(verbatim). It accepts the assessment's central distinction, lists five
+corrections, and asks for a research extension (documents and proposed
+statements only) covering six parts: verify the foundation (HM(X)
+against rendered PDF pages; §9 cases A and B), typed elaboration
+(Pottier ICFP 2014, Inferno), coherence (Jones), specialization
+termination (Jones-Gomard-Sestoft), conditional witnesses, field
+references and certified checking (LRAT), and assurance mapping (Leroy,
+Haack-Wells, Leijen 2017, constructor classes, modular type classes).
+It is separate from the R0 reconciliation and must not take over those
+editors' work. Order on resume: finish §4's steps for the assessment
+(apply the accuracy review, cross-references) first, since the
+extension builds on the corrected assessment; then start this request,
+with bounded readers on disjoint outputs and one integration owner.
