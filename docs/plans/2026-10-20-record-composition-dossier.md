@@ -4884,46 +4884,79 @@ Nine parallel streams (proof-plan.md, "Wave 2"), integrated onto
 `main`; W3's and W9's hypothesis forms instantiated with W1's results
 in Cell/Proofs/Wave2.lean. Clean build (203 jobs); no `sorry`, `admit`,
 new `axiom`, `native_decide`, `partial`, `unsafe` or `set_option`;
-every Cell file at most 250 lines. cellcheck/axioms.out now lists 55
-theorems, each using only `propext`, `Quot.sound` and, for most,
-`Classical.choice`; its first 23 lines (wave 1) are unchanged. No
-statement or bridge file changed since 94a86e1. No stream found a
-false statement. **Independent review pending; not yet accepted.**
+every Cell file at most 250 lines. cellcheck/axioms.out lists 55
+theorems, each using a subset of `propext`, `Classical.choice` and
+`Quot.sound`; its first 23 lines (wave 1) are unchanged. No statement
+or bridge file changed since 94a86e1, apart from a corrected comment
+pointer in Refutations.lean. No stream found a false statement.
+**The author's acceptance is pending.**
 
 **Proved, for the research model:**
 
-- **Query exactness.** QX1 `freeSIff`, QX2 `cellPossExact`, QX3
-  `coverExact` (full iffs); over the region on `LDFragment`, QR1
+- **Query exactness,** both directions under each statement's
+  premises: QX1 `freeSIff`; QX2 `cellPossExact` (cubes with a positive
+  literal); QX3 `coverExact` (rigid `r`); and on `LDFragment`, QR1
   `possWExact`, QR2 `possBothExact`, QR3 `cellBothExact`, QR4
-  `coverRegionExact`, QR5 `regionTrivialities`. With wave 1, the
-  proposed queries `implQ` are exact, not only conservative, on the
-  fragment.
+  `coverRegionExact`, QR5 `regionTrivialities`. With wave 1, all four
+  of `implQ`'s queries are exact over the region (which includes
+  `CellShape`), for rigid rows, on the fragment. Exact queries do not
+  make the checker complete (`scDivide5`, below).
 - **Scenarios, accepted** (the stated certificate passes `checkI`):
   `scStar` and `scStarRead` for every n; `scDep` for every k, m and
   both `divide` variants; `scDivide3` for every list of labels;
-  `scIntArm` (with `ValidOpen`); `scSplitSig`; `scSelfDisjoint`.
-- **Scenarios, refused:** `scStarUnlacked`, `scStarUndeclared`,
-  `scStarCross` (every n in range), `scShapeSplit`, `scSplitFree`: each
-  not `ValidOpen` and refused by every certificate (via `cellOpenImpl`);
-  `scBroken`, `scCertRefusals` (specific certificates refused).
-- **Valid but not certified by this checker:** `scOutsideFragment`
-  (`agreeP`, `D = [ff]`: refused by the guard) and `scDivide5`:
-  `divide5` is `ValidOpen` for every list of labels, which §18.47 had
-  only argued, and every certificate is refused (proved directly). Both
-  are recorded incompleteness, not defects.
+  `scIntArm` (with `ValidOpen`); `scSplitSig`; `scSelfDisjoint`. With
+  `cellOpenImpl`, each accepted problem is `ValidOpen` (for example
+  `star` at every n); that one-step corollary is not stated as a
+  theorem.
+- **Scenarios, refused:** `scStarUnlacked`, `scStarUndeclared` (n ≥ 1),
+  `scStarCross` (n ≥ 2), `scShapeSplit`, `scSplitFree`: each not
+  `ValidOpen`, hence refused by every certificate (via `cellOpenImpl`).
+  For the three `star` controls the natural certificate's refusal is an
+  instance of the universal one; where it is refused was not checked in
+  Lean (the soundness reviewer checked it by evaluation for small n).
+  `scBroken`, `scCertRefusals`: specific certificates refused.
+- **Valid problems this checker does not certify.** `scOutsideFragment`:
+  `agreeP` and `D = [ff]` are valid and refused by the guard; they lie
+  outside the fragment. `scDivide5`: `divide5` is `ValidOpen` for every
+  list of labels (`d5_open`; §18.47 had only argued this), and for every
+  non-empty list every certificate is refused (`d5_refused`, proved
+  directly). `divide5` lies inside `LDFragment` and needs guarded
+  pieces, which the format lacks (CI4′). With the empty list it is
+  accepted (shown by the soundness reviewer in scratch Lean). The
+  programs are valid; the gap is this checker's.
 - **`CellShape` regression guards:** `not_cellSoundNoShape` and
-  `not_evalDefinedNoShape` (statements in Cell/Refutations.lean, as
-  restated in §18.57).
-- **Representation correspondence:** CI4 `projPieceDen`, CI4′
-  `projGuardRefused`, CI4″ `schPieceDen`, CI5 `declaredIsNoCommonCell`
-  (which does not use its `r ≠ s` premise).
+  `not_evalDefinedNoShape`, for every `Label`, `B`. Their statements
+  (Cell/Refutations.lean) are the coordinator's restatement of the
+  review's description (§18.57); the reviewer's scratch statements no
+  longer exist, so equivalence to them is unchecked. The soundness
+  reviewer confirmed each drops exactly the intended premise and that
+  every other premise is instantiated with a proved fact.
+- **Representation correspondence:** CI4 `projPieceDen` and CI4″
+  `schPieceDen` (presence of written labels at `thetaFree`; values
+  differ by model, as stated), CI4′ `projGuardRefused`, CI5
+  `declaredIsNoCommonCell`.
 - **Tautology reduction, independent:** QX4 `coverTautology`,
   `checkTautology`. They concern exact checking of this certificate
   format; no complexity statement is made in Lean, and nothing here
-  bounds Waxwing inference in general.
+  gives a lower bound for Waxwing inference in general.
+- Unused premises: CI5's `r ≠ s`; QR2's `s ∈ P.rigidRow`; QR5's inner
+  `r ∈ P.rigidRow`.
 
-**Not established:** completeness of the checker (every `ValidOpen`
-problem in the fragment has an accepted certificate); any polynomial
-bound on `cover`; acceptance beyond the stated certificates and
-families; anything about the PureScript or Go implementation, source
-translation or integration.
+**Completeness does not hold:** the checker is incomplete on the
+fragment (`scDivide5`). **Not established:** which `ValidOpen`
+problems in the fragment it certifies, beyond the proved families;
+any polynomial bound on `cover`; anything about the PureScript or Go
+implementation, source translation or integration.
+
+**Reviews** (independent, read-only, scratch Lean; no tool denial).
+Soundness: sound as claimed; every headline theorem has its
+statement's type at general types; parametric scenarios proved for
+every parameter and the families match star/problems.mjs; the guard
+passes every negative control, so no refusal comes from it by accident;
+`divide5`'s validity witness checked; axioms.out regenerates
+identically. Claims: scope respected, nothing done outside §18.54 and
+§18.57; corrections applied here (checker incompleteness on the
+fragment, `divide5`'s non-empty premise, premises of the exactness
+claims, the corollary marked as unstated, the refutations'
+provenance, ranges, axiom wording), in Refutations.lean (comment
+pointer), proof-plan.md (status) and progress.md.

@@ -98,3 +98,18 @@ refused by every certificate).
 `ScDivide5`'s `ValidOpen` conjunct was argued, never checked (§18.47);
 if it fails, W7 reports it. Integration as in wave 1: one build,
 instantiation, axioms.out extended, then two independent reviews.
+
+### Wave 2 status (2026-10-21)
+
+All nine streams proved their targets; no stream found a false
+statement. W3 and W9, written against QX2 and QX3 as hypotheses, are
+instantiated with W1's results in Proofs/Wave2.lean; axioms.out lists
+55 theorems, wave 1's 23 lines unchanged (dossier §18.58).
+`ScDivide5`'s `ValidOpen` conjunct, previously only argued (§18.47),
+holds for every list (`d5_open`); with `d5_refused` it shows the
+checker incomplete on the fragment. Every stream met worktree-isolation
+guard refusals of compound shell commands; each was followed by the
+remedy the refusal prescribed (separate plain commands, or the same
+command from the worktree without the redirect); none was a permission
+denial. Both reviews done, corrections applied; the author's acceptance
+pending.

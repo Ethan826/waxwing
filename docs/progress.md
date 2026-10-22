@@ -8168,6 +8168,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   removed, branches kept.
 - Second wave proved (dossier §18.58): query exactness (QX1-QX3,
   QR1-QR5), `star`/`star-read` for every n and the other scenario
-  families, `divide5` valid but uncertified, CI4/CI5, the `CellShape`
-  guards, the tautology reduction; 55 theorems, standard axioms.
-  Independent reviews running.
+  families, CI4/CI5, the `CellShape` guards, the tautology reduction;
+  55 theorems, standard axioms. `divide5` (valid, inside the fragment,
+  refused by every certificate) shows the checker incomplete on the
+  fragment. Two reviews: sound as claimed; wording corrected. The
+  author's acceptance pending.

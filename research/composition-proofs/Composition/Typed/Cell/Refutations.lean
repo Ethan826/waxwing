@@ -1,7 +1,7 @@
 /-
 Two regression guards against removing `CellShape` (dossier §18.57).
 STATEMENTS ONLY (`def … : Prop`); the proofs are in
-Cell/Proofs/Refutations.lean. Restated from the soundness review's
+Cell/Proofs/W7.lean (with W7/Refute.lean). Restated from the soundness review's
 description (§18.56): its scratch Lean was deleted under its brief, so
 these are the coordinator's statements of the same claims.
 -/
