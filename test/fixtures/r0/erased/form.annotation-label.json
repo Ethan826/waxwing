@@ -6,6 +6,7 @@
     "annotation"
   ],
   "marked": true,
+  "inferredRow": true,
   "against": null,
   "note": "a lambda annotation writes a record label argument",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(): Int = { let k = fn(q: Unit -> Unit with State({ x: Int })) => 0; 0 }; fn main(): Int = 0;",

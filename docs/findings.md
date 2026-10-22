@@ -1254,10 +1254,11 @@ Task 0.7 of the first R0 shadow tranche, for gate G-erased. The design
 note is docs/plans/r0-erased-rows.md; this section records its runs.
 Nothing in the compiler changed.
 
-**Probe (checked).** test/r0-erased.test.mjs runs the 23 fixtures in
-test/fixtures/r0/erased/ through `refusalOf` and pins each outcome
-(phase, code, text, covered text). `node --test
-test/r0-erased.test.mjs`: 4 of 4 pass. Results:
+**Probe (checked).** test/r0-erased.test.mjs runs the fixtures in
+test/fixtures/r0/erased/ (23 in the first round, 27 after fix round
+1) through `refusalOf` and pins each outcome (phase, code, text,
+covered text). `node --test test/r0-erased.test.mjs`: 4 of 4 pass.
+First-round results:
 
 - obligation-record/refused, `apply(h, { y: 1 })` where `apply`'s
   `a` is fixed only by the `State` label argument of `h`'s row:
@@ -1305,6 +1306,66 @@ refused programs report `Expected Unit -> Unit, found Unit -> Unit`:
 the types differ only in their rows, which the text omits, so it
 names two equal-looking types as a mismatch. BACKLOG FX031.
 
-**Limits.** The fixtures' `sources` and `marked` are the criterion's
-predictions, not checked until Task 3.5's detector runs them. Data
-types with row parameters have no fixture.
+**Limits (first round).** The fixtures' `sources` and `marked` were
+the criterion's predictions, unchecked, and data types with row
+parameters had no fixture. Fix round 1 removes both limits (below).
+
+**Fix round 1 (task review Important 1-2; G-erased gate findings
+1-7).** *Amended after the first round's runs (reason: the task
+review found the `operation` source ambiguous and the prediction test
+tautological).* The `operation` source is split into `perform`
+(OperationRef and Perform: the performed label and the operation's
+declared types) and `clause` (handler clauses: the declared types
+only); types are read as declared; a `Fail` node contributes to
+`fail` only. Every fixture's `sources` was re-derived by hand from the
+revised table, and a new field `inferredRow` records the part (ii)
+predicate P-ii (note §7), also by hand. test/r0-erased-criterion.mjs
+is a reference reading of both tables over resolved syntax; the test
+"each fixture has the criterion's answers for g" compares it with the
+hand-derived fields of all 27 fixtures and replaces the vocabulary
+test (M4 above tested the replaced test). The hand derivation and the
+reference reading agreed on the first run.
+
+New fixtures (checked, `node --test test/r0-erased.test.mjs`, 4 of 4
+pass):
+
+- obligation-rowvar/refused (gate P1): `link(h, k)` with `h: Unit ->
+  Unit with Reg(Unit -> Unit with Log + ...e)` and `k: Unit -> Unit
+  with Clock + ...e` against `link(h: … Reg(Unit -> Unit with ...r),
+  k: Unit -> Unit with ...r)`: check, E_EFFECT `k must allow every
+  effect of link's parameter k (Log), but its row is Clock; a
+  function value passed as an argument must have its parameter's row
+  (FX018)`. Control (`k` with `Log + ...e`): compiled. Unmarked.
+- obligation-data/refused (gate P2): `type Job(...e) = Job(Unit ->
+  Unit with ...e)`, `apply(j: Job(State(a)), x: a)`, `g(j:
+  Job(State({ x: Int }))) = apply(j, { y: 1 })`: check, E_TYPE
+  `Expected { x: Int }, found { y: Int }`. Control: compiled. Marked
+  by `own` and `callee`.
+
+Mutant runs (recorded; same method as above, on a fresh isolated
+copy that also held test/r0-erased-criterion.mjs; 4 of 4 pass
+unpatched; deleted afterwards):
+
+- M1 again (the UnifyRow patch above) on the 27 fixtures. 1 test
+  failed, "every erased-row fixture gives its recorded outcome".
+  Listing every outcome: exactly the five refused obligation fixtures
+  (record, annotation, data, ground, rowvar) changed, each to
+  compiled.
+- M5, the performed label ignores the effect's parameters
+  (test/r0-erased-criterion.mjs: `program.effects[node.value1]
+  .parameters.length > 0 || fires(…)` became `fires(…)`). 1 test
+  failed, "each fixture has the criterion's answers for g", at
+  form/perform-parameterized.
+- M6, P-ii ignores row tails (`row.value1.constructor.name ===
+  'Just' ||` removed from `openRows`). The same test failed at
+  obligation-ground/control.
+- M7, variables do not make a label argument record-capable (the
+  `TVar` disjunct removed from `recordOrVariable`). The same test
+  failed at form/callee-signature.
+
+Gate probe P6 re-run (checked by a scratch script, not a test): with
+`effect Op { fn op(): Int with State({ x: Int }); }`, `fn g(): Int
+with Op = Op.op()` compiles, and so does the same with `with Log`.
+An operation's own row is dropped at Resolve (Resolve/Effect.purs:
+47-58). Recorded as BACKLOG FX032, an observation for the author; not
+fixed.

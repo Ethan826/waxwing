@@ -6,6 +6,7 @@
     "own"
   ],
   "marked": true,
+  "inferredRow": false,
   "against": null,
   "note": "a record label argument in the declaration own signature",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(h: Unit -> Unit with State({ x: Int })): Unit with State({ x: Int }) = h(()); fn main(): Int = 0;",

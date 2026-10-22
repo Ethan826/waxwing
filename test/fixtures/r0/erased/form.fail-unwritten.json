@@ -7,6 +7,7 @@
     "fail"
   ],
   "marked": true,
+  "inferredRow": false,
   "against": null,
   "note": "Fail.fail(E): the family is the payload type, not written (also FailFamily)",
   "source": "type E = E; fn g(): Int = handle Fail.fail(E) { fail(error: E) => 0 }; fn main(): Int = 0;",

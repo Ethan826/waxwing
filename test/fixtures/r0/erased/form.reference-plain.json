@@ -4,6 +4,7 @@
   "node": "OperationRef",
   "sources": [],
   "marked": false,
+  "inferredRow": true,
   "against": null,
   "note": "Log has no parameter",
   "source": "effect Log { fn log(n: Int): Unit; }; fn g(): Unit with Log = { let f = Log.log; f(1) }; fn main(): Int = 0;",

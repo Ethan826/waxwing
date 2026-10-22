@@ -1,0 +1,15 @@
+{
+  "name": "obligation-rowvar/control",
+  "kind": "obligation",
+  "node": null,
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": null,
+  "note": "the same with agreeing rows",
+  "source": "effect Reg(f) { fn put(v: f): Unit; }; effect Log { fn log(n: Int): Unit; }; effect Clock { fn now(): Int; }; fn link(h: Unit -> Unit with Reg(Unit -> Unit with ...r), k: Unit -> Unit with ...r): Unit = (); fn g(h: Unit -> Unit with Reg(Unit -> Unit with Log + ...e), k: Unit -> Unit with Log + ...e): Unit = link(h, k); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

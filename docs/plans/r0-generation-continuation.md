@@ -1065,6 +1065,12 @@ after erasure (§9), and Task 4.6 stays blocked. The scope of T2 is
 then narrower than the brief's "same checked IR", and says so in its
 name.
 
+Task 0.7 (docs/plans/r0-erased-rows.md §6) adds two points to E-a:
+rows inside `Inline` images are witness content no atom checks, and,
+since §9 keeps image metas in the online numbering, E-a suffices only
+with that note's (b-joint) restriction, or with effect-row metas in
+images named; under E-a, T2 and T8's effect-erased scope is revisited.
+
 ### 12.2 T-R0b amendments the derived positions predict
 
 Under D1 a variable's position follows from what `build` reads (Pos),

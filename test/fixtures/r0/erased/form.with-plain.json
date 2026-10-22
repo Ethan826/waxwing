@@ -4,6 +4,7 @@
   "node": "With",
   "sources": [],
   "marked": false,
+  "inferredRow": true,
   "against": null,
   "note": "with over a Log handler (HandlerType still marks it)",
   "source": "effect Log { fn log(n: Int): Unit; }; fn g(): Unit = with handler Log { log(n) => () } { Log.log(1) }; fn main(): Int = 0;",

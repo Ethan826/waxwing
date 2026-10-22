@@ -191,6 +191,21 @@ compiling form fixtures carrying the criterion's predicted answers.
 Four mutant runs are recorded in findings. Found on the way: BACKLOG
 FX031 (`Expected Unit -> Unit, found Unit -> Unit`). Corpus re-pinned
 (new fixtures with a `source`). Stopped at G-erased.
+Fix round 1 (task review Important 1-2; G-erased gate findings 1-7):
+the `operation` source split into `perform` and `clause`, types read
+as declared, `Fail` precedence stated; the part (ii) trigger P-ii
+defined (it holds for pure declarations too) and added to the census;
+the unmarked-declaration argument restated (K1 there binds only
+effect-row variables) and K1g widened to K1e; K3 corrected (handler
+and `crash` rows; instantiations hold no row slots); E-a given names
+and stated as dependent on (b-joint), with a note in D1 §12.1; the
+demoted non-online Solved gets a reason distinct from `ClassF`; the
+online effect part labelled Pending assurance; the author's ruling
+points listed. 27 fixtures (new: obligation-rowvar, obligation-data
+pairs), hand-derived `sources`/`inferredRow` checked against a
+reference reading (test/r0-erased-criterion.mjs); mutants M1 (re-run)
+and M5-M7 recorded. BACKLOG FX032 (an operation's `with` row is
+ignored; gate P6). Corpus re-pinned.
 
 ## Language direction recorded (2026-10-08)
 

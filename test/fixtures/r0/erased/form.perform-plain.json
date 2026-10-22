@@ -4,6 +4,7 @@
   "node": "Perform",
   "sources": [],
   "marked": false,
+  "inferredRow": false,
   "against": null,
   "note": "Log has no parameter",
   "source": "effect Log { fn log(n: Int): Unit; }; fn g(): Unit with Log = Log.log(1); fn main(): Int = 0;",

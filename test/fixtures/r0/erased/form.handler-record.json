@@ -6,6 +6,7 @@
     "handler"
   ],
   "marked": true,
+  "inferredRow": true,
   "against": null,
   "note": "written record label argument",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(): Int = { let h = handler State({ x: Int }) { get() => { x: 0 }, put(value) => () }; 0 }; fn main(): Int = 0;",

@@ -1,0 +1,18 @@
+{
+  "name": "obligation-data/refused",
+  "kind": "obligation",
+  "node": null,
+  "sources": [
+    "own",
+    "callee"
+  ],
+  "marked": true,
+  "inferredRow": true,
+  "against": "obligation-data/control",
+  "note": "a = { x: Int } reaches apply only through the label in a data type row argument (gate P2)",
+  "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; type Job(...e) = Job(Unit -> Unit with ...e); fn apply(j: Job(State(a)), x: a): Unit = (); fn g(j: Job(State({ x: Int }))): Unit = apply(j, { y: 1 }); fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_TYPE",
+  "text": "Expected { x: Int }, found { y: Int }",
+  "at": "{ y: 1 }"
+}

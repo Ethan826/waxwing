@@ -4,6 +4,7 @@
   "node": "Lambda",
   "sources": [],
   "marked": false,
+  "inferredRow": true,
   "against": null,
   "note": "annotationRow only: the bare arrow gets the lambda row; no label is added",
   "source": "effect Log { fn log(n: Int): Unit; }; fn g(h: Unit -> Unit with Log): Unit with Log = { let k = fn(q: Unit -> Unit) => q(()); k(h) }; fn main(): Int = 0;",

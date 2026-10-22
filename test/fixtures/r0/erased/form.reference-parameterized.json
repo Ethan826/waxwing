@@ -3,9 +3,10 @@
   "kind": "form",
   "node": "OperationRef",
   "sources": [
-    "operation"
+    "perform"
   ],
   "marked": true,
+  "inferredRow": true,
   "against": null,
   "note": "an operation used as a value (also EffectArgument)",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(): Unit with State(Int) = { let f = State.put; f(1) }; fn main(): Int = 0;",

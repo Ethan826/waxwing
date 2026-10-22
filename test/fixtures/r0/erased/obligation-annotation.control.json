@@ -7,6 +7,7 @@
     "callee"
   ],
   "marked": true,
+  "inferredRow": true,
   "against": null,
   "note": "the same with the record the label argument fixes",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn apply(f: Unit -> Unit with State(a), x: a): Unit with State(a) = f(()); fn g(h: Unit -> Unit with State({ x: Int })): Unit with State({ x: Int }) = { let k = fn(q: Unit -> Unit) => apply(q, { x: 1 }); k(h) }; fn main(): Int = 0;",

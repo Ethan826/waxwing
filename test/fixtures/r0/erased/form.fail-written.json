@@ -5,6 +5,7 @@
   "family": "written",
   "sources": [],
   "marked": false,
+  "inferredRow": false,
   "against": null,
   "note": "the imported fail writes the ground family E",
   "source": "type E = E; fn g(): Int with Fail(E) { fail } = fail(E); fn main(): Int = 0;",

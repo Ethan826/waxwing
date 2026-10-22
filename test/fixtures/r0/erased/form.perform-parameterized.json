@@ -3,9 +3,10 @@
   "kind": "form",
   "node": "Perform",
   "sources": [
-    "operation"
+    "perform"
   ],
   "marked": true,
+  "inferredRow": false,
   "against": null,
   "note": "the performed label State(s) has a fresh variable argument (also EffectArgument)",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(): Unit with State(Int) = State.put(1); fn main(): Int = 0;",

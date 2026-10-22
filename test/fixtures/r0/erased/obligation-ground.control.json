@@ -4,6 +4,7 @@
   "node": null,
   "sources": [],
   "marked": false,
+  "inferredRow": true,
   "against": null,
   "note": "the same with agreeing arguments",
   "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn one(f: Unit -> Unit with State(Bool)): Unit with State(Bool) = f(()); fn g(h: Unit -> Unit with State(Bool)): Unit with State(Bool) = one(h); fn main(): Int = 0;",

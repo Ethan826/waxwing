@@ -8,6 +8,7 @@
     "fail"
   ],
   "marked": true,
+  "inferredRow": false,
   "against": null,
   "note": "the written family is a record",
   "source": "fn g(): Int with Fail({ e: Int }) { fail } = fail({ e: 1 }); fn main(): Int = 0;",

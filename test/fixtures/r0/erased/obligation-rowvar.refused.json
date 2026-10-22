@@ -1,0 +1,15 @@
+{
+  "name": "obligation-rowvar/refused",
+  "kind": "obligation",
+  "node": null,
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": "obligation-rowvar/control",
+  "note": "K1 binds the row variable r inside a label argument: unmarked, effect-only (gate P1)",
+  "source": "effect Reg(f) { fn put(v: f): Unit; }; effect Log { fn log(n: Int): Unit; }; effect Clock { fn now(): Int; }; fn link(h: Unit -> Unit with Reg(Unit -> Unit with ...r), k: Unit -> Unit with ...r): Unit = (); fn g(h: Unit -> Unit with Reg(Unit -> Unit with Log + ...e), k: Unit -> Unit with Clock + ...e): Unit = link(h, k); fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "k must allow every effect of link's parameter k (Log), but its row is Clock; a function value passed as an argument must have its parameter's row (FX018)",
+  "at": "k"
+}
