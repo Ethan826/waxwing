@@ -28,7 +28,7 @@ refusals are rendered with. It cites, and does not redefine:
 
 - witness/statements.md ("W") for `Adm_W` (§2.3), the
   finite-reachable-key statements FK-0, FK-W, FK-U (§2.4, §2.7), the
-  re-check obligations RC1-RC5 (§3), `Compilation` and its
+  re-check obligations RC1-RC6 (§3), `Compilation` and its
   `NoWitnessReason` (§1.6), and `Lowerable` (§5.1);
 - r0/generation-interface.md ("T-R0a") for the outcome and verdict
   types (`DeclOutcome`, `Verdict`, `UnresolvedReason`, the admission
@@ -44,12 +44,12 @@ The layer classification of §3 is **derived** from T-R0a's types
 
 **Naming** (reconciliation I2). The letters V, P, A, S, the kinds S1
 and S2, V1 and V2, and the invariants I1-I4 are local to this
-document. They are not W's term-scope rules S1-S3 (proposed to become
-Sc1-Sc3), W's P1/P2, T-R0c's statements P1-P3, T-R0a's assumptions
-A1-A8, or requirements §11 item 11's slicing S1/S2. G1-G3 here are the
-dossier's gaps (§18.66 decisions 6-8), not T-R0b's declaration rules
-(proposed to become Sig1-Sig10). W1-W3 are the `walk` findings (§5),
-not the witness document, which is cited as "W" or by path.
+document. They are not W's term-scope rules S1-S3 (now Sc1-Sc3), W's
+P1/P2, T-R0c's statements P1-P3, T-R0a's assumptions As1-As8, or
+requirements §11 item 11's slicing S1/S2. G1-G3 here are the dossier's
+gaps (§18.66 decisions 6-8), not T-R0b's declaration rules (now
+Sig1-Sig10). W1-W3 are the `walk` findings (§5), not the witness
+document, which is cited as "W" or by path.
 
 ## 0. Summary
 
@@ -134,8 +134,9 @@ Why this order (argued):
    specialized program, which exists only once a witness is admitted
    and admissible. The `outside` markers are recorded at generation
    (T-R0b §10) and applied at V (§1.5). A second spread is in-model
-   (T-R0b E25); S1 reads the spread count from syntax, the problem's
-   E25 sites, if the author classifies it S1 (pending author Q4).
+   (T-R0b E25); S1 reads the spread count from T-R0b's `vars` entries
+   with role `spread j` (T-R0b §3.3), if the author classifies it S1
+   (pending author Q4).
 4. The re-check last, because it validates lowering's output (the
    keys' layouts and callee keys) against the problem (W §3.1-3.2,
    cited); it is downstream of every choice it re-examines, and it
@@ -205,14 +206,16 @@ lets "forced" (§2) include requirements without P re-deciding them.
 three-valued; it is the admissibility result W's `Lowerable` reads
 (adversarial review, finding 3):
 
-- `Admissible`: admitted by an FK-0 row of `Adm_W` (or an FK-W row,
-  if FK-W is adopted);
-- `Inadmissible`: refused by today's code (refused, as today);
-- `AdmittedPendingR019`: admitted by today's `bareRow`
-  (NestedArguments.purs:78-81, cited) but by no FK-0 or FK-W row of
-  `Adm_W`. This covers a field-free union of rigid tails
-  (`{ ...u, ...v }`, `Adm_W`'s FK-U row before FK-U is adopted) and a
-  mixed rigid-and-hole union (`{ ...r, ...h }`, which no row admits).
+- `Admissible`: admitted by an active row of `Adm_W` (FK-0's; FK-W's
+  and FK-U's once adopted);
+- `Inadmissible`: refused by today's code (refused, as today), or
+  mentioning a name and matching no active row (W §2.3);
+- `AdmittedPendingR019` (W §2.3's wording): matches no active row of
+  `Adm_W` (FK-W/FK-U rows active once adopted), name-free, admitted by
+  today's `bareRow` (NestedArguments.purs:78-81, cited). This covers a
+  field-free union of rigid tails (`{ ...u, ...v }`, until FK-U's row
+  is adopted) and a mixed rigid-and-hole union (`{ ...r, ...h }`,
+  which no row admits).
 
 A union of holes only (`{ ...h1, ...h2 }`) has no rigid variable and
 no name, so it is `Admissible` under FK-0 (W §2.3 record row 2).
@@ -229,10 +232,9 @@ placeholder for any row with more than one tail, holes included
 (Specialize/Record.purs:38-40, cited), so the restriction refuses no
 program that compiles today (argued; that every several-tail slot of a
 key reaches `recordType` is unchecked). After Task 8, the proposed
-outcome is an S refusal, `Unsupported (ComposedTailsUnjustified)`
-(§3.1), pending author Q5. This aligns with W, whose `Adm_W` is
-proposed to say the same of slots `bareRow` admits and no FK-0/FK-W
-row does (reconciliation C2).
+outcome is an S refusal, `AtS (NotLowerable
+(ComposedTailsUnjustified …))` (§3.1), pending author Q5; W uses the
+same constructor (reconciliation C2; consistency re-check R10).
 
 Pure unions of caller row variables as an extension are
 **investigation** (R019, §18.66 decision 2), with their own termination
@@ -253,10 +255,10 @@ sources):
 | several-tail lowering (Task 8; recorder-spec H7) | Specialize/Record.purs:38-44 | E_INTERNAL "R005B placeholder: rows with several tails are lowered in Task 8" | valid problems exist (W3) |
 | removal and rest binders over several tails (Task 7; B9) | Check/SeveralTails.purs:19-27 | E_INTERNAL "R005B placeholder: … typed in Task 7" | in-model if T-R0b §11 item 1 is accepted; then the placeholder is a hint and the reason is `Unsupported (GuardOutsideFragment …)` while no strategy's guard covers several tails |
 | other check-time placeholders | EndReport.purs:39, Require.purs:105, Record.purs:160 | E_INTERNAL "R005B placeholder: …" | — |
-| a second spread in a literal (B3) | Resolve/Record.purs:73-80 | E_TYPE "A record literal accepts at most one spread" | in-model (T-R0b E25; `join_validFin` and others, recorder-spec §4 B3, cited); S1 reads the E25 sites, pending author Q4 |
+| a second spread in a literal (B3) | Resolve/Record.purs:73-80 | E_TYPE "A record literal accepts at most one spread" | in-model (T-R0b E25; `join_validFin` and others, recorder-spec §4 B3, cited); S1 reads T-R0b's `vars` entries with role `spread j` (T-R0b §3.3), pending author Q4 |
 | constructs outside the model (O1-O8) | recorder-spec §3.7 | each construct's own rules | `outside` markers (T-R0b `OutsideKind`) |
-| a hole the hole contract does not cover, at lowering (H4) | Specialize/Values.purs:96-98 | defaulted silently | W §1.5: `NoWitness (HoleContract …)` |
-| a Solved verdict without a compilation witness | — | — | W §1.6: `NoWitness (NonConstructive …)`, `NoWitness (AdapterUnsupported FieldReference)` |
+| a hole the hole contract does not cover, at lowering (H4) | Specialize/Values.purs:96-98 | defaulted silently | W §1.5: `NoWitness (HoleContract …)`; T-R0a's `AtS (NoCompilation …)` |
+| a Solved verdict without a compilation witness | — | — | W §1.6: `NoWitness (NonConstructive …)`, `NoWitness (AdapterUnsupported FieldReference)`; T-R0a's `AtS (NoCompilation …)` |
 | requirement atoms mentioning a variable | — | judged on a settled type | `ValidOpenR` unstated (§1.3) |
 
 Evidence: the construct and its site, and the named boundary (task or
@@ -441,9 +443,13 @@ verdict stays Solved (code pending author Q1).
 
 ### 3.1 The layer classification (proposed; illustrative names)
 
-The outcome and verdict types are T-R0a's (§3.2-§3.5, §6-§7). This
-document adds only a total, derived classification used for rendering
-and codes (reconciliation D1):
+The outcome and verdict types are T-R0a's (§3.2-§3.5, §6-§7), and so
+are the compilation refusals: `CompileRefusal` with its layer tags
+`AtP`, `AtA`, `AtS`, and `PolicyRefusal`, `AdmissibilityRefusal` and
+`SupportRefusal` (T-R0a §6, canonical). This document adds only a
+total, derived classification used for rendering and codes
+(reconciliation D1), and the `Construct` that T-R0a's `NotLowerable`
+carries:
 
 ```
 -- Derived from T-R0a's DeclReport; not a second outcome type.
@@ -457,7 +463,7 @@ data Layered
   | Unresolved (NonEmptyArray Reason)          -- V: no verdict; the
                                                -- Unresolved code
   | NotCompiled (NonEmptyArray CompileRefusal) -- Solved; refused by
-                                               -- P, A, S or re-check
+                                               -- P, A or S (T-R0a §6)
   | Internal InternalFault                     -- E_INTERNAL (Q1(a))
 
 -- Verdict-stage reasons: T-R0a §3.5's families, with its constructors.
@@ -467,25 +473,10 @@ data Reason
   | Unsupported Construct Site
   | Limit LimitReached Site
 
--- Every constructor belongs to exactly one layer (reconciliation C5).
-data CompileRefusal
-  = Policy PolicyRefusal               -- P
-  | Admissibility CallSite Slot        -- A: Adm_W refused (today's
-                                       -- E_SPECIALIZATION)
-  | Support SupportRefusal             -- S
-  | ReCheck Construct Site             -- the re-check's unsupported
-                                       -- path (W §3.3)
-
-data PolicyRefusal
-  = SplitUnforced CallSite (Tuple WitnessMeta WitnessMeta)
-                                       -- two valid witnesses (§2.2)
-  | ForcednessUndecided CallSite       -- decider absent or undecided
-  | NoAdmissibleWitnessFound CallSite  -- G3 search (future)
-
-data SupportRefusal
-  = UnsupportedConstruct Construct Site   -- S1
-  | LimitAt LimitReached Site             -- S2
-
+-- Carried by T-R0a's AtS (NotLowerable …), with the Site field T-R0a
+-- adds. A missing compilation witness, including a hole the hole
+-- contract does not cover, is T-R0a's AtS (NoCompilation r), with r
+-- W §1.6's NoWitnessReason; it is not a Construct.
 data Construct
   = SeveralTailLowering                -- Task 8 (W3)
   | SeveralTailSubtraction             -- Task 7, until T-R0b §11
@@ -494,11 +485,6 @@ data Construct
   | SecondSpread                       -- B3, pending author Q4
   | Outside OutsideKind                -- T-R0b §10 (§1.5)
   | RequirementAtoms                   -- §1.3, pending author Q2
-  | NoCompilationWitness NoWitnessReason
-                                       -- W §1.6: NonConstructive,
-                                       -- AdapterUnsupported
-                                       -- FieldReference
-  | HoleContract Var                   -- W §1.5 (H4)
   | ComposedTailsUnjustified CallSite  -- §1.4, after Task 8,
                                        -- pending author Q5
   | UncheckedPath                      -- W §3.3's unsupported path
@@ -514,18 +500,34 @@ data LimitReached
   | StrategyBudget StrategyName        -- verdict stage, future
 ```
 
+Each T-R0a constructor belongs to exactly one layer (reconciliation
+C5), so `layerOf` reads the layer from the tag:
+
+- P, `AtP`: `SplitUnforced CallSite (Tuple Witness Witness)`, two
+  valid witnesses differing on the split (§2.2; `Witness` is W's B2
+  record, W §1.6); `ForcednessUndecided CallSite`; and, if G3 is
+  adopted, `NoAdmissibleWitnessFound CallSite` (§2.4), which T-R0a's
+  `PolicyRefusal` would gain then.
+- A, `AtA`: `Inadmissible CallSite`, `Adm_W` refused (today's
+  E_SPECIALIZATION). `AtA (ComponentBlocked f)` renders with
+  E_SPECIALIZATION's layer (pending Q7).
+- S, `AtS`: `NotLowerable` with a `Construct` (S1, and the re-check's
+  unsupported path as `AtS (NotLowerable UncheckedPath)`, W §3.3);
+  `NoCompilation NoWitnessReason` (W §1.6, including `HoleContract
+  Var`); `AdmissionLimit LimitReached` (S2).
+
 Design points (proposed):
 
 - **No `Stage` on Unresolved** (reconciliation D2). Verdict-stage
   Unresolved is the only `Unresolved`; a Solved declaration refused
   later is `NotCompiled`, tagged by layer, and keeps its verdict
   (T-R0a §6: "no admission refusal changes the verdict"; I3). W3 is
-  Solved with `Support (UnsupportedConstruct SeveralTailLowering …)`.
+  Solved with `AtS (NotLowerable SeveralTailLowering …)`.
 - **Codes by layer** (proposed default, pending author Q1(c)):
   Contradiction keeps E_TYPE; verdict-stage Unresolved gets the new
-  Unresolved code; `Policy SplitUnforced` gets its own admission code;
-  `Admissibility` keeps E_SPECIALIZATION; `Support`, `ReCheck`,
-  `ForcednessUndecided` and `NoAdmissibleWitnessFound` are rendered
+  Unresolved code; `AtP SplitUnforced` gets its own admission code;
+  `AtA` keeps E_SPECIALIZATION; `AtS` (the re-check's unsupported path
+  included), `ForcednessUndecided` and `NoAdmissibleWitnessFound` are rendered
   with the Unresolved code and their reason family, because decision 9
   names unsupported features and resource limits among the Unresolved
   reasons. Their text states that the declaration is valid (Solved)
@@ -534,9 +536,9 @@ Design points (proposed):
   author Q1(a)), with E_INTERNAL, never Unresolved: a search/check
   disagreement or a failed re-check is not a limit, a missing feature
   or the program's fault (docs/engineering.md, "Result boundary
-  classification"; W §3.3). T-R0a currently proposes `Defect` as a
-  fourth Unresolved reason (its Q-A1); the two documents converge once
-  the author answers.
+  classification"; W §3.3). T-R0a proposes the same (`Faulted`, its
+  §3.2); `Defect` as an Unresolved reason is the kept alternative
+  (Q1(a)).
 - **No solver refusal is a reason** (reconciliation D4). A refusal
   resting on solver-chosen bindings, or on a c1 rule not yet proved,
   is a hint of the online search (T-R0a §4.2); the reason is
@@ -568,15 +570,15 @@ Design points (proposed):
 | E_TYPE `NotPrintable`, `NotComparable` at check on an unforced settled type | d | recorded in `BQ`; V2 decides. Not reachable today: D4 refuses first (T-R0c f03); the live cases are f01, f02, f05 |
 | E_TYPE `NotPrintable` per key, Specialize/Printable.purs:55-63 (E017) | transitional | until contracts carry `Q`: keeps its code, labelled transitional (pending author Q2); after: part of the re-check (§4) |
 | E_TYPE `AmbiguousType` (ADR 007 condition 2) | e, or P policy, pending author Q4 | P policy on an observed undetermined type if the author so rules; otherwise class e (Unresolved). Code unchanged meanwhile |
-| E_INTERNAL "R005B placeholder: rows with several tails …", Specialize/Record.purs:42-44 | e | Solved; `NotCompiled` (Support (UnsupportedConstruct SeveralTailLowering)) |
+| E_INTERNAL "R005B placeholder: rows with several tails …", Specialize/Record.purs:42-44 | e | Solved; `NotCompiled` (AtS (NotLowerable SeveralTailLowering …)) |
 | E_INTERNAL "R005B placeholder: …" at check in SeveralTails (B9) | e | a hint; verdict Unresolved (Unsupported (GuardOutsideFragment …)) while no strategy covers several tails, if T-R0b §11 item 1 puts B9 in-model; else Unresolved (Unsupported SeveralTailSubtraction) |
 | E_INTERNAL "R005B placeholder: …" at check (EndReport, Require, Record) | e | Unresolved (Unsupported, the named task) |
 | E_INTERNAL `Exhausted` | e | Unresolved (Limit ReexaminationSteps), pending author Q1(b); also defect evidence while argued unreachable |
 | E_INTERNAL `Unexpected`, "the end of a body failed outside its predicates", invalid ids | defect | Internal, unchanged; never Unresolved, never invalid (pending author Q1(a)) |
 | E_NESTING `TypeTooDeep` (inferred) | e | Unresolved (Limit InferredTypeDepth) |
 | E_NESTING `NestingTooDeep` (source) | a | unchanged |
-| E_SPECIALIZATION `SpecializationLimit` | e | Solved; `NotCompiled` (Support (LimitAt SpecializationKeys)) |
-| E_SPECIALIZATION `PolymorphicRecursion`, `NestedDatatype` | A | `Admissibility`, unchanged code; slots `bareRow` admits and no FK-0/FK-W row does are recorded `AdmittedPendingR019` (§1.4) |
+| E_SPECIALIZATION `SpecializationLimit` | e | Solved; `NotCompiled` (AtS (AdmissionLimit SpecializationKeys)) |
+| E_SPECIALIZATION `PolymorphicRecursion`, `NestedDatatype` | A | `AtA (Inadmissible …)`, unchanged code; name-free slots `bareRow` admits and no active `Adm_W` row does are recorded `AdmittedPendingR019` (§1.4) |
 | E_TYPE `SecondSpread` (Resolve) | a today | Unsupported SecondSpread, pending author Q4 |
 | E_TYPE `SameDisjoint`, `RepeatedTail` in a signature | b′ | unchanged, worded as policy |
 | syntax, names, arity, sorts, coverage, effect and handler codes | a | unchanged (effect refusals consuming record-solved metas: class f, `ClassF`, pending author Q3) |
@@ -590,7 +592,7 @@ the implementation plan (decision 9).
 ## 4. The ground re-check (decision 5)
 
 What it checks, how it obtains the key and the bindings, what failure
-means and what it does not cover are W §3 (RC1-RC5, §3.1-§3.4, cited);
+means and what it does not cover are W §3 (RC1-RC6, §3.1-§3.4, cited);
 the keys it runs at are bounded by FK-0 (FK-W, FK-U if adopted; W
 §2.4, §2.7). This document fixes only its position and the outcome its
 results map to.
@@ -607,7 +609,7 @@ in a checking build) are the author's (Q8; W Q6).
 | Re-check result | Outcome |
 |---|---|
 | passes | continue to Go emission; narrows the adapter's trust only (§18.64 item 3, cited) |
-| fails on an unsupported path (W §3.3: an atom the evaluator cannot evaluate at a key, such as an `outside` construct or a reserved `Field`) | `NotCompiled` (ReCheck UncheckedPath …); code pending author Q1(c) |
+| fails on an unsupported path (W §3.3: an atom the evaluator cannot evaluate at a key, such as an `outside` construct or a reserved `Field`) | `NotCompiled` (AtS (NotLowerable UncheckedPath …)); code pending author Q1(c) |
 | fails otherwise | Internal (E_INTERNAL, W §3.3) |
 
 It never yields Contradiction, NotAdmitted or Inadmissible, and its
@@ -627,8 +629,8 @@ run, cited); requirements §2.3.
 | Finding | Today | Layer | Target outcome alone |
 |---|---|---|---|
 | W1 | E_TYPE "Cannot tell whether walk's u or v holds walk's u", at check | V, then P | V: valid with the identity split (argued); the verdict is Solved once a strategy accepts, and until then Unresolved (Inference NoCandidate), D4 as a hint. P, once Solved: argued not forced: the identity and the composed split both pass check once pinned through a changed signature (an extra `uonly` parameter; checked run, evidence about `walk`'s splits, not proof for the original signature), and no tested annotation decides it; so `SplitUnforced` with those two witnesses, or `ForcednessUndecided` until a decider exists |
-| W2 | R010 admits `u' = {}`, `v' = { ...u, ...v }` | A | `AdmittedPendingR019` for the composed witness (`bareRow` admits it, no FK-0 row does); the identity witness `Admissible` (FK-0's single-rigid-tail row). Identity is the only admissible split under the documented rule only (§18.63, cited) |
-| W3 | E_INTERNAL Task 8 placeholder at specialize, with a caller | S1 | Solved; `NotCompiled` (Support (UnsupportedConstruct SeveralTailLowering)) |
+| W2 | R010 admits `u' = {}`, `v' = { ...u, ...v }` | A | `AdmittedPendingR019` for the composed witness (`bareRow` admits it, no active `Adm_W` row does while FK-U is not adopted); the identity witness `Admissible` (FK-0's single-rigid-tail row). Identity is the only admissible split under the documented rule only (§18.63, cited) |
+| W3 | E_INTERNAL Task 8 placeholder at specialize, with a caller | S1 | Solved; `NotCompiled` (AtS (NotLowerable SeveralTailLowering …)) |
 
 **Why fixing one discharges none of the others** (argued):
 
@@ -705,22 +707,24 @@ regression row, per AGENTS.md, in its implementation plan.
 ## 7. Open questions
 
 The reconciliation review grouped every stream's questions as Q1-Q10;
-this document's questions map onto them.
+this document's questions map onto them. The "was" column gives each
+question's old local number (§7 at 88c052d), which other documents
+still cite ("T-R0e Q3", "§7 Q5"); "—" marks a question added since.
 
-| This document's question | Status |
-|---|---|
-| T-R0a: does the interface carry the problem in every outcome, and expose a forcedness query? | carrying: answered by T-R0a with reconciliation A1. Forcedness query: open, Q7 |
-| Should `AdmittedPendingR019` be visible to users? | open, Q5 |
-| Second spread: language rule (a) or support boundary (S1)? | open, Q4 |
-| Per-key E017 before contracts carry `Q`: a transitional V2 refusal or Unresolved? | open, Q2 |
-| `AmbiguousType`: P policy or class e? | open, Q4 |
-| Which O-kinds make acceptance depend on the record slice? | open, Q3; default meanwhile: every non-empty `outside` blocks a whole-function Solved (§1.5) |
-| Identifiers of the re-check, its binding source and the key theorem | closed: W §0 (RC1-RC5, `vars`/`Binding`, FK-0/FK-W/FK-U) |
-| NotAdmitted: must two witnesses be exhibited? | open, Q1(d); default: yes |
-| `Exhausted`: limit or defect? | open, Q1(b); default: Limit |
-| `Internal`: a separate outcome or an Unresolved reason? | open, Q1(a); default: separate |
-| Codes for a Solved declaration refused by P, A, S or the re-check | open, Q1(c); default in §3.1 |
-| Requirement-atom trigger | open, Q2; default: §1.3's common wording |
+| was | This document's question | Status |
+|---|---|---|
+| Q1 | T-R0a: does the interface carry the problem in every outcome, and expose a forcedness query? | carrying: answered by T-R0a with reconciliation A1. Forcedness query: open, Q7 |
+| Q2 | Should `AdmittedPendingR019` be visible to users? | open, Q5 |
+| Q3 | Second spread: language rule (a) or support boundary (S1)? | open, Q4 |
+| Q4 | Per-key E017 before contracts carry `Q`: a transitional V2 refusal or Unresolved? | open, Q2 |
+| Q5 | `AmbiguousType`: P policy or class e? | open, Q4 |
+| Q6 | Which O-kinds make acceptance depend on the record slice? | open, Q3; default meanwhile: every non-empty `outside` blocks a whole-function Solved (§1.5) |
+| Q7 | Identifiers of the re-check, its binding source and the key theorem | closed: W §0 (RC1-RC6, `vars`/`Binding`, FK-0/FK-W/FK-U) |
+| Q8 | NotAdmitted: must two witnesses be exhibited? | open, Q1(d); default: yes |
+| Q9 | `Exhausted`: limit or defect? | open, Q1(b); default: Limit |
+| — | `Internal`: a separate outcome or an Unresolved reason? | open, Q1(a); default: separate |
+| — | Codes for a Solved declaration refused by P, A, S or the re-check | open, Q1(c); default in §3.1 |
+| — | Requirement-atom trigger | open, Q2; default: §1.3's common wording |
 
 ## Revision log (reviews of 88c052d)
 
@@ -809,3 +813,35 @@ consequence (ii), that W would refuse rigid-plus-hole tails, is
 resolved by the definition adopted (they are `AdmittedPendingR019`,
 not refused); it depends on W adopting the matching sentence in its
 §2.3.
+
+### Consistency re-check (39320ad)
+
+The consistency re-check of the parallel revisions found residual
+mismatches between the R0 documents. Only items that edit this
+document are listed.
+
+- R1: §3.1 no longer defines `CompileRefusal`, `PolicyRefusal` or
+  `SupportRefusal`; it cites T-R0a §6 (canonical) and keeps
+  `Construct`, `Layered` and `layerOf`, with a per-layer list of
+  T-R0a's constructors. `NoCompilationWitness` and `HoleContract Var`
+  leave `Construct`: both are T-R0a's `AtS (NoCompilation r)`, `r`
+  from W's `NoWitnessReason`. The `ReCheck` tag becomes `AtS
+  (NotLowerable UncheckedPath)`; `AtA (ComponentBlocked f)` renders
+  with E_SPECIALIZATION's layer (pending Q7). Uses in §1.4, §1.5,
+  §3.1, §3.2, §4 and §5 follow T-R0a's tags.
+- R2: `SplitUnforced CallSite (Tuple Witness Witness)`, with W's B2
+  `Witness` (§3.1).
+- R9: RC1-RC6 (preamble, §4, §7); the naming note says "now Sc1-Sc3"
+  and "now Sig1-Sig10", and cites T-R0a's assumptions As1-As8.
+- R10: `AdmittedPendingR019` takes W §2.3's wording (no active `Adm_W`
+  row, FK-W/FK-U rows active once adopted; name-free; admitted by
+  `bareRow`), and `Admissible` reads "an active row" to match (§1.4,
+  §3.2, §5). `ComposedTailsUnjustified` stays the post-Task-8
+  constructor; W adopts it.
+- R11: §7 gains a "was" column with each question's local number at
+  88c052d.
+- R12: the `Defect` note in §3.1 describes T-R0a's current proposal
+  (`Faulted`), with `Defect` the kept alternative.
+- R13: S1 reads T-R0b's `vars` entries with role `spread j` (T-R0b
+  §3.3), not E25 sites, which E25 does not emit (§1.1, §1.5).
+  `SeveralTailSubtraction` stays, for T-R0a to cite.
