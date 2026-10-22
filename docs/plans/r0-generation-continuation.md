@@ -69,8 +69,8 @@ new algorithm; each is a small local rule that needs the gate's
 approval:
 
 - N1. `untracked`, the value-level seal check (§5, layer 2): uses
-  against the problem's `vars`, with sorts, auxiliary sites and
-  duplicate `fresh` calls.
+  against the problem's `vars`, with sorts, auxiliary sites,
+  duplicate `fresh` calls and duplicate sites.
 - N2. `ElabFault`'s four constructors and their mapping to
   `BrokenInvariant` (§8).
 - N3. `elaborate`'s pre-`build` checks: `untracked`, the `Judged`
@@ -102,39 +102,66 @@ salt", extension §2, cited); citing §4.3 cites a design, not a theorem.
 
 ### 3.1 Modules and import rules
 
-Every module below has an explicit export list; none re-exports an
-Internal module (`module …Internal` in an export list is forbidden by
-review and by T3c (v)).
+**Placement.** In PureScript a newtype's type and its constructor
+are declared in one module, and a module can export an imported type
+only by re-exporting a module. So each hidden-constructor type is
+declared in an `.Internal` module, and its public module re-exports
+the type by name in **the allowed form**, the only re-export this
+design permits:
 
-| Module | Holds | Importers |
+```purescript
+module Domain.Elaborating (module Exports, problem, requests, …) where
+import Domain.Elaborating.Internal (Elaborating) as Exports
+-- the import list names the type without (..): no constructor
+```
+
+Every module below has an explicit export list. No export list
+contains `module M` for a restricted module (rules E1-E5) other than
+that allowed form, which re-exports named types only, from the
+`.Internal` module the table below pairs it with (for
+`Generate.Gen`, `Generate.Elab.Internal`), never constructors and
+never values (rule E6). `purs graph` cannot see re-exports (the
+reviewer showed a module importing only `Gen` calling a function `Gen`
+re-exported), so E6 is checked from the export lists in the source,
+in T3b.
+
+| Module | Declares or holds | Importers |
 |---|---|---|
-| `Domain.Elaborating` | `Elaborating`'s type, the accessors `problem`, `requests`, `untracked`, `positionsOf`; `ElabFault`, `SealFault`, `Use` | anyone |
+| `Domain.Elaborating.Internal` | `Elaborating` (type and constructor) | `Domain.Elaborating`, `Domain.Elaborating.Build`, `Features.Check.Generate.Elab` only (rule E2) |
+| `Domain.Elaborating` | re-exports the type `Elaborating`; the accessors `problem`, `requests`, `untracked`, `positionsOf`; `ElabFault`, `SealFault`, `Use`, `UseSort` | anyone |
 | `Domain.Elaborating.Build` | the accessor `build` | `Features.Check.Elaborate` only (rule E1) |
-| `Domain.Elaborating.Internal` | `Elaborating`'s constructor | `^Features\.Check\.Generate\.Elab$` only (rule E2) |
-| `Features.Check.Generate.Elab` | `Elab`, its instances, `readType`, `readRow`, `seal` | `^Features\.Check\.Generate(\.|$)` only (rule E3) |
-| `Features.Check.Generate.Elab.Internal` | `Elab`'s and `Handle`'s constructors, `orFault`, `elabTy`, `elabSlots` | `^Features\.Check\.Generate\.(Elab|Gen)$` only (rule E4) |
-| `Features.Check.Generate.Gen` | `Gen`, `fresh`, `nodeType`, `slots` | `^Features\.Check\.Generate(\.|$)` only (rule E3) |
-| `Features.Check.Generate.Body` | `generateIn` | `^Features\.Check\.Generate(\.|$)` only (rule E3) |
-| `Features.Check.Generate` | `generate` | anyone in Features or later |
+| `Domain.Verdict.Internal` | `Judged` (type and constructor, §6.2) | `Domain.Verdict`, `Features.Check.Decide` only (rule E5) |
+| `Domain.Verdict` | re-exports the type `Judged`; `judgedProblem`, `judgedSolution` | anyone |
+| `Features.Check.Generate.Elab.Internal` | `Handle`, `Elab` and `Gen` (types, constructors, and all their instances, so none is an orphan); `orFault`, `elabTy`, `elabSlots` | `Features.Check.Generate.Elab`, `Features.Check.Generate.Gen` only (rule E4) |
+| `Features.Check.Generate.Elab` | re-exports the types `Handle` and `Elab`; `Ref` and `GenTy` (public constructors, §3.2); `readType`, `readRow`, `seal` | Generate* (rule E3) |
+| `Features.Check.Generate.Gen` | re-exports the type `Gen`; `fresh`, `positioned`, `slots` | Generate* (rule E3) |
+| `Features.Check.Generate.Body` and every other `Features.Check.Generate.*` module (rule modules) | `generateIn` and the rules | Generate* (rule E3) |
+| `Features.Check.Generate` | `generate` only: its export list is exactly `(generate)` | anyone in Features or later |
 | `Features.Check.Elaborate` | `elaborate`, `covDomain` | the driver; tests |
-| `Domain.Verdict.Internal` | `Judged`'s constructor (§6.2) | `^Features\.Check\.Decide(\.|$)` only (rule E5) |
 
-Every regex is anchored as written (`(\.|$)` or `$`), so that, for
-example, `Features.Check.GenerateX` does not match. Why rule E3
-matters (adversarial finding 1): without it any module, including
-today's checker, which holds `State`, could write `seal (map (map
-(const solved)) (generateIn t s d))`. That value has the real problem
-and the real `uses`, so `untracked`, Cov and the problem check all
-pass, while `build` returns IR read outside tracking. Restricting who
-imports `Gen`, `Elab` and `generateIn` to Generate* modules, and
-checking that Generate* modules reach no checker state (T10, below,
-transitively), closes it. `Elaborating` itself has no `Functor`
+Rule E3 covers **every** module matching `^Features\.Check\.Generate\.`:
+each is importable only by modules matching
+`^Features\.Check\.Generate(\.|$)`. The only public generator module
+is `Features.Check.Generate`, and it exports `generate` and nothing
+else. Every regex is anchored as written, so that, for example,
+`Features.Check.GenerateX` matches neither.
+
+Why (adversarial finding 1, and N1 of its re-review): without these
+rules any module, including today's checker, which holds `State`,
+could write `seal (map (map (const solved)) (generateIn t s d))`. That
+value has the real problem and the real `uses`, so `untracked`, Cov
+and the problem check all pass, while `build` returns IR read outside
+tracking. E3 keeps `seal`, `Gen`, `Elab` and `generateIn` inside
+Generate*; E6 stops `Features.Check.Generate` (or any module) from
+laundering them by re-export; T10 checks that Generate* modules reach
+no checker state, transitively. `Elaborating` itself has no `Functor`
 instance and no `map`-like function, for the same reason (§3.4).
 
 `Elaborating` lives in Domain because `DeclReport` (Domain.Verdict,
 ruling R2) will carry it from Task 4.6; it has no Features type in it.
-Rules E1-E5 go into scripts/structure.mjs, docs/engineering.md and
-AGENTS.md's Internal-boundary bullet in Task 7.1's commit.
+Rules E1-E6 go into scripts/structure.mjs (E6 as a source check of
+export lists), docs/engineering.md and AGENTS.md's Internal-boundary
+bullet in Task 7.1's commit.
 
 ### 3.2 Handles and `Elab`
 
@@ -164,7 +191,9 @@ cannot see the constructors (checked by the reviewer with purs
 import it, so the roles are needed.
 
 `Handle`'s constructor is hidden, so a handle exists only where
-`fresh` (§3.3) made one. `Elab`'s instances live in its own module:
+`fresh` (§3.3) made one. `Elab`'s instances live in
+`Generate.Elab.Internal`, where the type is declared (an instance
+anywhere else is an orphan, which purs rejects):
 
 ```purescript
 instance Functor (Elab s)      -- uses unchanged; run mapped
@@ -174,7 +203,8 @@ instance Applicative (Elab s)  -- pure: no uses; run: Right
 ```
 
 PureScript forbids orphan instances, so `Bind (Elab s)` can be
-declared only in `Elab`'s module or in the module of a class `Bind`;
+declared only in `Generate.Elab.Internal` or in the module of a class
+`Bind`;
 neither will hold one. A module that defines its own class may give
 `Elab` an instance, which is harmless: it cannot be implemented
 without the hidden constructor.
@@ -208,6 +238,17 @@ splices a `TRecord` image and renames a `TVar` one. `NamedUnread`
 never occurs through `elaborate`, which refuses `Named` bindings first
 (§8.3); it exists so that `build` is total.
 
+Generator types, in `Generate.Elab` with **public** constructors, so
+rule modules can build them. This is safe: `FlexRef` only wraps a
+handle that `fresh` already minted, and `Ref s` inherits `Handle`'s
+nominal role.
+
+```purescript
+-- A generator type: signature variables rigid, fresh ones handles.
+data Ref s = RigidRef VarId | FlexRef (Handle s)
+type GenTy s = Ty (Ref s)
+```
+
 Internal helpers (in `Generate.Elab.Internal`, used only by `Gen`'s
 primitives of §3.3):
 
@@ -215,10 +256,6 @@ primitives of §3.3):
 -- Lets a pure check on values already read fail the run; reads
 -- nothing; uses unchanged.
 orFault ∷ ∀ s a b. (a → Either ElabFault b) → Elab s a → Elab s b
-
--- A generator type: signature variables rigid, fresh ones handles.
-data Ref s = RigidRef VarId | FlexRef (Handle s)
-type GenTy s = Ty (Ref s)
 
 -- Reads every handle in the type, the sort fixed by its position:
 -- TVar positions with readType, record tails with readRow, effect-row
@@ -239,18 +276,21 @@ variable has that sort (§5, §12.1).
 
 With `orFault`, `elabTy` and `elabSlots` Internal, the public API that
 can build an `Elab` is `readType`, `readRow`, `pure`, `map`, `apply`,
-`traverse`, and `Gen`'s `nodeType` and `slots` (§3.3), whose only
+`traverse`, and `Gen`'s `positioned` and `slots` (§3.3), whose only
 fault beyond the read faults is `elabTy`'s `DuplicateLabel`.
 
 ### 3.3 `Gen`: generation, which never sees a witness
 
 ```purescript
--- Writer over the problem's parts (vars, types, B, BQ, markers,
--- sites); hand-written, since pure layers import no Control.Monad.*
--- except Rec.Class (scripts/structure.mjs:19-22).
+-- Features.Check.Generate.Elab.Internal (constructor hidden, rule
+-- E4; re-exported as a type by Generate.Gen). Writer over the
+-- problem's parts (vars, types, B, BQ, markers, sites) plus the
+-- `fresh` counts and the site table; hand-written, since pure layers
+-- import no Control.Monad.* except Rec.Class
+-- (scripts/structure.mjs:19-22).
 newtype Gen s a = Gen { value ∷ a, parts ∷ Parts }
 type role Gen nominal representational
-instance Monad (Gen s)
+instance Monad (Gen s)          -- in the same module: not an orphan
 
 -- The only way to obtain a handle: it writes the VarInfo of
 -- ⟨path, role⟩ (sort, quant Exists, origin) into `parts.vars` and
@@ -258,20 +298,46 @@ instance Monad (Gen s)
 -- (§5, `DuplicateFresh`).
 fresh ∷ ∀ s. Path → Role → RuleId → Span → Gen s (Handle s)
 
--- The only way to elaborate a generator type: records it as
--- types(p) (T-R0b §2.2's ⟦·⟧, handles forgotten to their Var), emits
--- the definedness entries T-R0b's rule for that position requires,
--- and returns the read.
-nodeType ∷ ∀ s. CheckedName → GenTy s → Gen s (Elab s (Ty Open))
+-- The only way to elaborate a generator type: records it under its
+-- site (table below; T-R0b §2.2's ⟦·⟧, handles forgotten to their
+-- Var) and returns the read.
+positioned ∷ ∀ s. CheckedName → GenTy s → Gen s (Elab s (Ty Open))
+-- The same for an instantiation, recorded under Slot p i.
 slots
   ∷ ∀ s. Path → Array (Tuple UseSort (GenTy s))
   → Gen s (Elab s Instantiation)
 ```
 
-A node's recorded type and its checked type therefore come from one
-call, so a `GenTy` cannot be elaborated without being recorded, and
-R1's definedness covers every record type `build` splices (§8.1,
-`DuplicateLabel`).
+Gen's constructor is hidden (rule E4), so no Generate* module can
+rebuild a `Gen` with edited `parts`, for example with the `fresh`
+counts dropped, which would defeat `DuplicateFresh` and Mint.
+
+**How recording is keyed, per `CheckedName` site** (T-R0b §5.2's
+constructors, plus the proposed `ClauseParamType`, §12.2). T-R0b's
+`types` is a `Map Path RTExpr` holding the type of every expression
+and pattern node; the other sites share a path with a node, so they
+go to a separate site table that is part of `Elaborating`, not of the
+`RecordedProblem` (Task 3.2's problem is unchanged).
+
+| Site | Where `positioned` records it | Definedness R1 needs |
+|---|---|---|
+| `NodeType p` | `types(p)`; a second write at `p` is `DuplicateSite` | the node's rule emits it (T-R0b §3); unchanged |
+| `PatternType p` (`p` a pattern path) | `types(p)`; same uniqueness | the pattern rule's equation (P1-P7) |
+| `Slot p i` (through `slots`) | site table, under `Slot p i` | `θ(D_g)` of the reference's rule (E3-E6, E17, E20) |
+| `ParamType p k` | site table | the type is a handle, or a written annotation whose definedness is T-R0b's annotation rule; nothing new |
+| `LambdaBody p` | site table | the type is a handle (E18's `res`); nothing new |
+| `RestType p` | site table | `{ ...⟨p, rest⟩ }`, one tail, always defined |
+| `ClauseParamType p c k` (proposed) | site table | the clause parameter's declared type at `θ` (E20); written, so T-R0b's rule |
+| `RigidName i` | not recorded: a rigid type is `pure (TVar (Rigid i))`, no read | none |
+| `Auxiliary` | never: `AuxiliarySite` (§5) | — |
+
+Every site is written at most once (`DuplicateSite`, §3.4). So a
+type's recorded form and its checked form come from one call, a
+`GenTy` cannot be elaborated without being recorded, and every record
+type `build` splices is either a node or pattern type, whose
+definedness the recorder emits (R1), or one of the site-table types
+above, each a handle, a written annotation or a one-tail record
+(§8.1, `DuplicateLabel`).
 
 `Gen` may be monadic: what it sequences are generation-time values
 (handles, tables, children's results), never a solution. T-R0b §4's
@@ -287,6 +353,7 @@ newtype Elaborating a = Elaborating
   { problem ∷ RecordedProblem
   , uses    ∷ Set Use
   , fresh   ∷ Map Var Int          -- `fresh` calls per Var
+  , sites   ∷ Map CheckedName RTExpr -- the site table (§3.3)
   , build   ∷ Witness → Either ElabFault a
   }
 -- no Functor instance, no map-like function (§3.1)
@@ -303,6 +370,7 @@ data SealFault
   | SortClash Var           -- use sort ≠ the variable's sort
   | AuxiliarySite Var       -- a use whose site is `Auxiliary`
   | DuplicateFresh Var      -- `fresh` called twice for one Var
+  | DuplicateSite CheckedName -- a site recorded twice (§3.3)
 
 -- Features.Check.Generate.Elab
 seal ∷ ∀ a. (∀ s. Gen s (Elab s a)) → Elaborating a
@@ -319,7 +387,8 @@ and site; `requests` is derived from it.
 
 `seal` runs the generator once, assembles the `RecordedProblem` from
 `parts` (Domain.Recorded's constructor is Generate*-only, ruling R4),
-copies the `Elab`'s `uses` and the `fresh` counts, and wraps its `run`
+copies the `Elab`'s `uses`, the `fresh` counts and the site table,
+and wraps its `run`
 as `build w = run w.bindings`. Because the argument is `∀ s.`, a
 handle cannot leave the generation that minted it: `a` is bound
 outside `s`'s scope, so `a = Handle s` is a skolem escape and does not
@@ -368,10 +437,12 @@ order, each a named arm:
 1. `untracked e` non-empty: `Broken (BrokenInvariant …)` (§5);
 2. `judged.problem ≠ problem e`: `Broken (BrokenInvariant
    "elaboration: problem mismatch")` (§6.2);
-3. `NoWitness r`: `NotCompiled r`;
-4. a `Named` binding: `NotCompiled (AdapterUnsupported NameMarker)`
+3. `covDomain` failing (`recon ∩ requests ≠ ∅`): `Broken` (§7); it
+   needs no witness, so it runs before the witness steps and a broken
+   `Recon` premise is reported even for a declaration with none;
+4. `NoWitness r`: `NotCompiled r`;
+5. a `Named` binding: `NotCompiled (AdapterUnsupported NameMarker)`
    (§8.3);
-5. `covDomain` failing (`recon ∩ requests ≠ ∅`): `Broken` (§7);
 6. Task 4.4's `coverage` over that domain refusing: `NotCompiled`;
 7. `build`: `Right d` is `Elaborated d`; `Left f` is `Broken
    (BrokenInvariant (render f))` (§8).
@@ -393,7 +464,7 @@ Each is stated so a test can falsify it; §10 names the test.
   no binding outside `uses`. Argued by induction on construction:
   `readType`/`readRow` read exactly the variable they record; `pure`
   reads none; `map` and `orFault` keep uses and reads; `apply` unions
-  both; `nodeType` and `slots` are built from these. (Check: T4a.)
+  both; `positioned` and `slots` are built from these. (Check: T4a.)
 - **Def (definedness of reads).** If every `v ∈ requests e` has a
   binding that is `Inline` or `Free`, with a `RecordSort` use bound to
   `Free`, a `TRecord` or a `TVar`, then `readType` and `readRow` never
@@ -403,14 +474,15 @@ Each is stated so a test can falsify it; §10 names the test.
 - **Mint (declared handles).** Every handle in scope `s` came from
   `fresh` in the same `Gen s`, which wrote its `VarInfo` with `quant =
   Exists`. Hence `requests (seal g) ⊆ flex(problem (seal g))` for code
-  that obeys rules E1-E5 and does not use Runtime FFI on these values
+  that obeys rules E1-E6 and does not use Runtime FFI on these values
   (§11.2 S10). (By hidden constructors, nominal roles and `seal`'s
   rank-2 type; checks T3b, T3c.)
 - **Sc (seal check).** `untracked (seal g) = []` iff every use `u`
   has `u.var ∈ flex(problem)`, `u.sort` equal to the variable's sort
   (`TypeSort` for T-R0b's `Type`, `RecordSort` for `Row`; no variable
   has `EffectRowSort` before §12.1 is settled), and `u.site ≠
-  Auxiliary`; and `fresh` was called at most once per `Var`.
+  Auxiliary`; `fresh` was called at most once per `Var`; and every
+  site was recorded at most once.
   (Check: T3a.)
 - **Id (problem identity).** A handle minted by one `seal` is not
   usable in another (rank-2 and roles, check T3c); `elaborate` builds
@@ -450,25 +522,28 @@ before any witness is read, by a different layer.
    `run` is built only by the combinators of §3.2-§3.3, each of which
    records what it reads (Tr). No `Bind` means no read can be chosen
    from a value read earlier. Enforcement: hidden constructors of
-   `Elab`, `Handle` and `Elaborating`; nominal roles; explicit export
-   lists with no Internal re-export; rules E1-E5 (§3.1), which also
-   stop a non-Generate module from mapping solver state into an `Elab`
-   (adversarial finding 1). scripts/structure.mjs already rejects
-   `unsafe*` and `Partial` (:23, :85) and FFI outside Runtime
-   (:103-105). This layer cannot be checked by running `seal` (an
-   under-declared `run` looks the same from outside); it is checked by
-   the Tr property over the public API (T4a), the import rules (T3b,
-   T10) and the compile fixtures (T3c).
+   `Elab`, `Handle`, `Gen` and `Elaborating`; nominal roles; explicit
+   export lists re-exporting only named types in the allowed form;
+   rules E1-E6 (§3.1), which also stop a non-Generate module from
+   mapping solver state into an `Elab`, directly or through a
+   re-export (adversarial finding 1; re-review N1).
+   scripts/structure.mjs already rejects `unsafe*` and `Partial` (:23,
+   :85) and FFI outside Runtime (:103-105). This layer cannot be
+   checked by running `seal` (an under-declared `run` looks the same
+   from outside); it is checked by the Tr property over the public API
+   (T4a), the import rules (T3b, T10) and the compile fixtures (T3c).
 2. **A read of a variable that is not a flexible variable of this
-   problem, at the wrong sort, at an `Auxiliary` site, or of a `Var`
-   minted twice.** `untracked` compares `uses` and the `fresh` counts
-   with `problem.vars` (Sc). Mint makes `UntrackedRead` unreachable
+   problem, at the wrong sort, at an `Auxiliary` site, of a `Var`
+   minted twice, or at a site recorded twice.** `untracked` compares
+   `uses`, the `fresh` counts and the site table with `problem.vars`
+   (Sc). Mint makes `UntrackedRead` unreachable
    from code obeying the rules. The others are reachable from a
    faulty generator: `SortClash` (a handle minted for a `Type`
    variable placed in a record tail, or any handle in an effect-row
    tail), `AuxiliarySite` (a caller passing `Auxiliary` as a site),
    `DuplicateFresh` (two rules minting one ⟨p, role⟩, which would
-   merge two intended variables). **Placement:** `untracked` is
+   merge two intended variables), `DuplicateSite` (two rules
+   recording one site). **Placement:** `untracked` is
    `elaborate`'s first step (§3.5), and the driver (and Task 7.1's
    shadow harness) also runs it immediately after `generate`, before
    `decide`. A non-empty result is `Faulted problem (BrokenInvariant
@@ -510,7 +585,8 @@ path-relative `Var`s, and T-R0a §3.3's `Solution` carries no problem
 verdict a hidden-constructor pair
 
 ```purescript
--- Domain.Verdict; constructor in Domain.Verdict.Internal (rule E5)
+-- Domain.Verdict.Internal (rule E5); Domain.Verdict re-exports the
+-- type in the allowed form (§3.1) with the two accessors
 newtype Judged = Judged { problem ∷ RecordedProblem
                         , solution ∷ Solution }
 judgedProblem  ∷ Judged → RecordedProblem
@@ -585,7 +661,7 @@ data ElabFault
 | `Unbound v` | Cov over `covDomain` ⊇ `requests` (§7) | Cov's validator (Task 4.4) |
 | `SortMismatch v` | Sc (each use's sort is the variable's, `untracked`, step 1) together with Cov-S: a `Row` variable's binding is `Free`, `Inline (TRecord _)` or `Inline (TVar _)` of a record-sorted variable (W §5.2 "sorts are preserved"; proposed as an explicit Cov clause, §12.3). Cov-S compares against `vars`, Sc ties `vars` to the use, so neither alone suffices | `seal`'s check; Cov's validator |
 | `NamedUnread v` | `elaborate`'s step 4 (§3.5) | `elaborate` itself |
-| `DuplicateLabel v l` | Adapt-N's conclusion: every recorded atom is defined at every key; and R1: the recorder emits the definedness of every record type it builds, which covers every type `build` splices because `nodeType` records each elaborated type (§3.3) | the adapter's owner; the recorder's |
+| `DuplicateLabel v l` | Adapt-N's conclusion: every recorded atom is defined at every key; and R1: the recorder emits the definedness of every record type it builds, which covers every type `build` splices because `positioned` records each elaborated type under its site, and the site-table types are handles, written annotations or one-tail records (§3.3) | the adapter's owner; the recorder's |
 
 With `Recon` empty, Cov's domain is every flexible variable, so
 `Unbound` is impossible outright; the others rest on trusted premises
@@ -672,17 +748,17 @@ serialization is test/r0-canonical.mjs, which Task 3.3 step 1 creates
 |---|---|---|---|
 | T1 | EL1: for every corpus declaration the online strategy accepts with a `Witnessed w` that passes Cov, `elaborate` gives `Elaborated` | EL1 | the R0 corpus (test/r0-corpus.mjs); Task 4.3's online certificate |
 | T2 | Same checked IR as read-back: `build w` equals the certificate's `checked` (canonical serialization), both sides effect-erased and renumbered by `holes` after erasure until §12.1 is settled (the test's name says so). Instantiation slots compared as stored, with no `slotType` normalisation (§3.2). Exact for declarations with no variable in `Amb`; otherwise at every site whose type and slots mention no `Amb` variable, up to one hole bijection per declaration. `Amb` is the set of flexible variables occurring in a record of some `types(p)` with two or more flexible tails (T-R0b §5.3's ambiguity criterion). The test prints the excluded-site count | EL1, AI-IR, Hole | corpus; effect rows per §12.1 |
-| T3a | `untracked` rejects, before any witness, one case per `SealFault`: an `Elab` forged through the Internal module that reads a `Var` absent from `vars` (`UntrackedRead`); a `Type` handle in a record tail, and any handle in an effect-row tail (`SortClash`); a use with site `Auxiliary` (`AuxiliarySite`); two `fresh` calls for one ⟨p, role⟩ (`DuplicateFresh`). The shadow harness then gives `Faulted … BrokenInvariant`, an injected stub strategy records that `decide` was never called, and `elaborate` given the same value returns `Broken` without calling `build` | Sc, §5 layer 2 | injected generators |
-| T3b | Import rules E1-E5: only the listed modules import each restricted module; one case per rule in which a module outside the regex (for example `Features.Check.Function` importing `Features.Check.Generate.Elab`, and `Features.Check.GenerateX` importing it) is a finding | Mint, §5 layer 1 | test/structure.test.mjs |
-| T3c | Compile-time rejection: fixture modules that (i) return a handle out of `seal`, (ii) use a handle from one `seal` inside another, (iii) use `bind` on `Elab`, (iv) `coerce` a `Handle s` to `Handle t` or an `Elab s a` to `Elab t a`, (v) import only `Generate.Elab` and pattern-match `Elab { … }` or `Handle _`, each fail to compile with the expected error class (escaped skolem; no `Bind` instance; type mismatch from the nominal role; unknown constructor). The compile reuses existing output as externs and cleans its copy up; the fixtures obey the style rules, which scripts/structure.mjs applies to every .purs under test/ | Id, Tr, Mint | `test/fixtures/r0/elab-scope/*.purs`; real `purs` |
-| T4 | Tr and Def as properties: random `Elab` terms over the public API (`readType`, `readRow`, `pure`, `map`, `apply`, `traverse`, `nodeType`, `slots`) inside one `seal`; (a) bindings changed outside `requests` never change the result; (b) witnesses binding exactly `requests` with `Inline`/`Free` values of the right sort never give `Unbound`, `SortMismatch` or `NamedUnread` | Tr, Def | seeded generator |
+| T3a | `untracked` rejects, before any witness, one case per `SealFault`: an `Elab` forged through the Internal module that reads a `Var` absent from `vars` (`UntrackedRead`); a `Type` handle in a record tail, and any handle in an effect-row tail (`SortClash`); a use with site `Auxiliary` (`AuxiliarySite`); two `fresh` calls for one ⟨p, role⟩ (`DuplicateFresh`); two `positioned` calls for one site (`DuplicateSite`). The shadow harness then gives `Faulted … BrokenInvariant`, an injected stub strategy records that `decide` was never called, and `elaborate` given the same value returns `Broken` without calling `build` | Sc, §5 layer 2 | injected generators |
+| T3b | Import rules E1-E6, one case per rule, each a finding: a module outside the importer regex importing a restricted module (for example `Features.Check.Function` importing `Features.Check.Generate.Elab`, `Features.Check.GenerateX` importing it, a non-Generate module importing any `Features.Check.Generate.*` helper, `Domain.Recorded` importing `Domain.Verdict.Internal`); `Features.Check.Generate`'s export list being anything but `(generate)`; an export list containing `module M` for a restricted module other than the allowed form (for example `module Features.Check.Generate (generate, module Features.Check.Generate.Elab)`), read from the source because `purs graph` does not show re-exports; a Runtime module importing `Domain.Elaborating*` or `Features.Check.Generate*` | Mint, §5 layer 1 | test/structure.test.mjs |
+| T3c | Compile-time rejection: fixture modules that (i) return a handle out of `seal`, (ii) use a handle from one `seal` inside another, (iii) use `bind` on `Elab`, (iv) `coerce` a `Handle s` to `Handle t` or an `Elab s a` to `Elab t a`, (v) import only `Generate.Elab` and pattern-match `Elab { … }` or `Handle _`, (vi) import only `Features.Check.Generate` and call `seal` or `generateIn` (the finding-1 cheat from outside Generate*), each fail to compile with the expected error class (escaped skolem; no `Bind` instance; type mismatch from the nominal role; unknown constructor; unknown value). The compile reuses existing output as externs and cleans its copy up; the fixtures obey the style rules, which scripts/structure.mjs applies to every .purs under test/ | Id, Tr, Mint | `test/fixtures/r0/elab-scope/*.purs`; real `purs` |
+| T4 | Tr and Def as properties: random `Elab` terms over the public API (`readType`, `readRow`, `pure`, `map`, `apply`, `traverse`, `positioned`, `slots`) inside one `seal`; (a) bindings changed outside `requests` never change the result; (b) witnesses binding exactly `requests` with `Inline`/`Free` values of the right sort never give `Unbound`, `SortMismatch` or `NamedUnread` | Tr, Def | seeded generator |
 | T5 | Positions against T-R0b: for every corpus declaration, `v ∉ requests` iff T-R0b's stored `position v = Auxiliary`, and a stored non-auxiliary position lies in `positionsOf e ! v`; disagreements fail except the rows §12.2 lists, each asserted by name | Pos | corpus; Task 3.2's `vars` |
 | T5b | Positions against the IR: bind each requested variable to a distinct marker type (a fresh rigid `Rigid (VarId k)` outside the signature, or a distinct `TData`), run `build`, walk the IR, and check that the set of sites where each marker occurs equals `positionsOf e ! v` | Pos | corpus |
 | T6 | Cov's domain: `covDomain ∅ e = Right flex(P)`; with an injected `recon` disjoint from `requests`, `Right (flex(P) ∖ recon)`; with one containing a requested variable, `Left (BrokenInvariant …)` and `elaborate` returns `Broken` | Dom | unit |
 | T7 | Each `ElabFault` constructor injected into `elaborate` gives `Broken (BrokenInvariant …)` and the driver stops; a non-empty `untracked` gives `Broken` before `build`; `NoWitness` and a `Named` binding give `NotCompiled` and `build` is not run | §3.5, §8 | injected `Elaborating` values |
 | T8 | `Free`: a witness binding two variables `Free 5` and one `Free 2` yields two holes numbered as `holes` numbers them; on hole-bearing corpus declarations the effect-erased projection, renumbered after erasure, equals today's | Hole | unit; corpus subset of T2 |
 | T9 | Applicative laws for `Elab` (identity, composition, homomorphism, interchange) on both `uses` and `run` | §3.2 | seeded generator |
-| T10 | T-R0b §4's invariant, transitively: the import closure of every `Features.Check.Generate*` module reaches no `Features.Check.*` module outside an explicit allowlist (the moved `holes` module and named pure helpers, listed in the test), hence no checker `State` and no `Witness` accessor outside `Generate.Elab` | AI-IR, Mint | import graph (`purs graph`) |
+| T10 | T-R0b §4's invariant, transitively: the import closure of every `Features.Check.Generate*` module reaches no `Features.Check.*` module outside an explicit allowlist. The allowlist is `^Features\.Check\.Generate(\.|$)` (the generator's own modules), the moved `holes` module and named pure helpers, all listed in the test; hence no checker `State` and no `Witness` accessor outside `Generate.Elab` | AI-IR, Mint | import graph (`purs graph`) |
 | T11 | `elaborate` with a `Judged` for another declaration's problem gives `Broken (BrokenInvariant "elaboration: problem mismatch")` | Id | two declarations with equal `Var` sets |
 | T11b | No public way to pair a problem with another declaration's solution: `Judged`'s constructor is reachable only from `Features.Check.Decide` (rule E5, T3b), and a test-built `Judged` (through the Internal module, in JS) holding `f`'s problem and `g`'s solution, given to `g`'s `Elaborating`, gives `Broken` | Id | two declarations with equal `Var` sets |
 
@@ -707,7 +783,11 @@ table and the two passes. The independent reviewer, told to find a
 read that escapes tracking, reported findings 1-19
 (.superpowers/sdd/2026-10-22-r0-implementation-plan/
 gate-D1-adversarial.md); fix round 1 applied all of them, and the rows
-below cite them where they changed.
+below cite them where they changed. A scoped re-review of that round
+(task-0.3-rereview1.md, same directory) found N1-N6; fix round 2
+applied them (§3.1 rules E3 and E6 and the allowed re-export form,
+§3.3 site keying and `Gen`'s hidden constructor, §3.5 step order,
+T3b, T3c (vi), T10).
 
 ### 11.1 Restrictions table
 
@@ -721,7 +801,7 @@ below cite them where they changed.
 | R6 | Each use carries a sort fixed by its position (`TVar`, record tail, effect-row tail; slots by declared sort) | `Ty` itself does not separate them: a record tail is a type-sorted `v` (`substituteRecord` uses `substitution.types`, Core.purs:186-191), and Core.purs:54-55's "one sort, type or row" means type versus effect row. The position rule (N7) and Sc supply the separation | a generator bug placing a `Type` handle as a tail, or any handle in an effect-row tail: `SortClash` (T3a) |
 | R7 | `Elaborating`'s constructor is hidden; `build` is reachable only from `Elaborate` | the brief's fields stay readable through accessors; production elaboration goes through `elaborate` | a record literal with an arbitrary `build`, or a direct `build` call skipping Cov: does not compile outside the allowed modules (rules E1-E2) |
 | R8 | Effect rows are not problem variables, so `build` cannot read them | none yet: this is open | §12.1 |
-| R9 | `Gen`, `Elab` and `generateIn` are importable only by Generate* modules | the driver needs only `generate` and `elaborate` | a checker module mapping its own IR into `generateIn`'s `Elab`: rule E3 (finding 1; T3b) |
+| R9 | Every `Features.Check.Generate.*` module is importable only by Generate* modules; `Features.Check.Generate` exports only `generate`; no restricted module is re-exported | the driver needs only `generate` and `elaborate` | a checker module mapping its own IR into `generateIn`'s `Elab`, directly or through a module that re-exports `Generate.Elab`: rules E3 and E6 (finding 1, re-review N1; T3b, T3c (vi)) |
 | R10 | A solution reaches `elaborate` only inside `Judged` | `decide` is where problem and solution meet | an `elaborate` call with `f`'s problem and `g`'s solution: unrepresentable outside `Decide` (finding 2; T11b) |
 
 ### 11.2 Soundness pass: making `build` read outside tracking, or
@@ -766,7 +846,15 @@ succeed wrongly
 - S12. Constructors leaked by a re-export (finding 16): explicit
   export lists, no Internal re-export, T3c (v).
 - S13. Solver state mapped into a real generator's `Elab` by a
-  non-Generate module (finding 1): rule E3, T3b, T10.
+  non-Generate module (finding 1): rule E3, T3b, T10. Through a
+  re-export by a public module, or through an unrestricted
+  `Generate.*` helper (re-review N1): rule E3 now covers every
+  `Generate.*` module, `Features.Check.Generate` exports only
+  `generate`, and rule E6 forbids re-exporting restricted modules
+  (T3b, T3c (vi)).
+- S14. A Generate* module rebuilding a `Gen` with edited `parts`
+  (re-review N4): `Gen`'s constructor is in `Generate.Elab.Internal`,
+  under rule E4.
 
 ### 11.3 Completeness pass: making a valid construction fail
 
@@ -895,7 +983,7 @@ Listed for their owners; this task edits none of them.
    after `generate`, keeping `generate` total (§3.5, §5 layer 2).
 3. The newtype for `Elaborating` instead of a record alias, with
    `build` reachable only from `Elaborate` (§3.4).
-4. Import rules E1-E5 (§3.1).
+4. Import rules E1-E6 and the allowed re-export form (§3.1).
 5. `covDomain` faulting on `Recon ∩ requests` (§7).
 6. N1-N8 as local machinery (§2).
 7. §12.1's routing to Task 0.7: E-a recommended; Task 7.1 may land the

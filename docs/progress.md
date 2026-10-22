@@ -71,7 +71,15 @@ images as today's `TVar` form, `DuplicateFresh` and `AuxiliarySite`,
 `covDomain` faulting on `Recon ∩ requests`, `nodeType` recording every
 elaborated type, T5b and T11b, row `r0-elab-phantom-role`. The
 effect-row gap is routed to Task 0.7; G-D1 cannot close until it is
-settled there.
+settled there. Fix round 2 (re-review N1-N6): every
+`Features.Check.Generate.*` module Generate*-only and
+`Features.Check.Generate` exporting only `generate`, re-exports of
+restricted modules forbidden except named types from the own
+`.Internal` (rule E6, checked from export lists), corrected E2/E5
+importers, types and instances declared in `.Internal`, `positioned`
+keyed per `CheckedName` site with a site table and `DuplicateSite`,
+public `Ref`, `Gen`'s constructor hidden, `covDomain` before the
+witness steps, T10's allowlist stated.
 
 ## Language direction recorded (2026-10-08)
 
