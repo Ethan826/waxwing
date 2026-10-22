@@ -789,3 +789,37 @@ Learned while retargeting mutants for the fifteen new rows
    placeholder P4 guards rows of several tails, not literals of several
    spreads, so lowering takes the one-spread path. To fix with Task 7
    (a placeholder at the literal's lowering until Task 8) if it resumes.
+
+## R010 and composed rows: the `walk` probe (2026-10-21)
+
+Narrow probe authorized in dossier §18.62 item 2, run against a scratch
+copy of today's compiler (src identical to `main` at 6ee4144; nothing
+in the repository changed). Program: `fn walk(whole: { ...u, ...v },
+left: { ...s }, n: Int): Int where u disjoint s = if n == 0 then 0 else
+walk(whole, left, n + -1);` (the language has no binary minus).
+
+1. `walk` as written is refused at **check** with E_TYPE "Cannot tell
+   whether walk's u or v holds walk's u; no annotation can decide u and
+   v, which belong to this call of walk", at the recursive call's
+   `whole`; the same with or without a caller and with or without the
+   `where` clause. Annotating a lambda parameter `{ ...u, ...v }` does
+   not decide the split (same diagnostic). It is a refusal, not a
+   selection of the identity split; it is E_TYPE, not E_SPECIALIZATION.
+2. Pinning the split needs a changed signature (an extra `uonly: {
+   ...u }` parameter). Pinned to the identity split, or to `u' = {}`,
+   `v' = { ...u, ...v }`, check passes; with no caller both build and
+   run (print `0`); with a caller both stop at specialize with
+   E_INTERNAL "R005B placeholder: rows with several tails are lowered in
+   Task 8", as does a non-recursive two-tail function (not tied to
+   recursion).
+3. **The `u' = {}`, `v' = { ...u, ...v }` recursion is not refused by
+   R010.** Cause, read from the code: `bareRow`
+   (src/Features/Check/NestedArguments.purs:78-81) accepts a composed
+   row with no fields, while docs/language.md describes the rule as the
+   calling function's bare `{ ...r }` and dossier §18.18 says a composed
+   witness is refused. Which is intended is open; BACKLOG R019.
+4. docs/language.md's Tranche B paragraph ("stops at E_INTERNAL R005B
+   placeholder" for a `disjoint` clause) is stale: such functions now
+   pass check, and the placeholder appears at specialization of several
+   tails. Recorded here; the language doc is not changed in this
+   research tranche.
