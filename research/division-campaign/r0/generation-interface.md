@@ -168,14 +168,15 @@ data DeclOutcome
   | Decided RecordedProblem Decision
   | Faulted RecordedProblem InternalFault -- decided, Q1 (§18.69)
 
--- The structured outcome record (decided, Q13 option A-i, §18.69).
--- Every decided outcome keeps its attempts, so a refused candidate
--- followed by Solved or Contradiction still leaves a trace.
+-- The structured outcome record (behaviour decided, Q13 option A-i
+-- (§18.69); this encoding proposed). Every decided outcome keeps its
+-- attempts, so a refused candidate followed by Solved or
+-- Contradiction still leaves a trace.
 type Decision =
-  { verdict  ∷ Verdict
-  , attempts ∷ Array Attempt             -- every strategy, refuter and
+  { verdict      ∷ Verdict
+  , attempts     ∷ Array Attempt         -- every strategy, refuter and
                                          -- shadow refuter run (§4.1)
-  , faults   ∷ Array SearchFault         -- suspected search defects
+  , searchFaults ∷ Array SearchFault     -- suspected compiler defects
                                          -- that did not stop the run
   }
 
@@ -343,8 +344,10 @@ data InferenceFailure
 
 data Unsupport
   = Outside OutsideKind                  -- T-R0b §3.5, §10
-  | RequirementAtoms                     -- not ground after reduction;
-                                         -- decided, Q2 (§18.69)
+  | RequirementAtoms                     -- no covering Sound_F after
+                                         -- reduction, or a ground
+                                         -- failure with no registered
+                                         -- rule; Q2
   | GuardOutsideFragment StrategyName    -- e.g. not in LDFragment
   | SeveralTailSubtraction               -- T-R0e §3.2; B9 fallback, §10
   | SecondSpread                         -- T-R0e §3.2, B3; decided, Q4
@@ -363,25 +366,35 @@ data LimitReached
 -- Not an Unresolved reason (reconciliation D3): a separate outcome,
 -- `Faulted` (§3.2), rendered with E_INTERNAL. Decided, Q1 (§18.69).
 -- Each stops the declaration's run: a trusted component failed or an
--- invariant broke (decided, Q13, §18.69). `ReCheckFailed` arises
--- after the verdict, so it blocks emission instead (W §3): it goes
--- into `DeclReport.faults` (§7), and the outcome stays `Decided`
--- with a Solved verdict (§6, "No compilation refusal changes the
--- verdict").
+-- invariant broke (decided, Q13, §18.69).
 data InternalFault
-  = BothVerdicts StrategyName RefuterName       -- Solved and refuted
+  = BothVerdicts StrategyName Evidence          -- Solved and a checked
+                                                -- contradiction (rule
+                                                -- or refuter; §5.3
+                                                -- rule 4; proposed)
   | DerivationRefused RuleName Unsound          -- a registered rule's
                                                 -- derivation fails
                                                 -- checkDerivation (§5.2)
-  | ReCheckFailed FunctionName Key              -- W §3.3, T-R0e §4
   | BrokenInvariant String                      -- incl. an argued-
                                                 -- unreachable bound
 
--- Does not stop the run (decided, Q13 option A-i, §18.69); kept in
--- `Decision.faults`. A candidate that its untrusted search presented as
--- a solution of every atom (the online solver's `Solved` end) and that
--- the trusted check refused: a suspected search defect, never evidence
--- about the program.
+-- A fault found after the verdict, at emission (proposed, recheck
+-- after §18.69). It does not stop the declaration's run: it blocks
+-- emission (W §3), goes into `DeclReport.reCheckFaults` (§7), and the
+-- outcome stays `Decided` with a Solved verdict (§6, "No compilation
+-- refusal changes the verdict"). Rendered with E_INTERNAL (T-R0e
+-- §3.1, `Internal`).
+data EmissionFault
+  = ReCheckFailed FunctionName Key              -- W §3.3, T-R0e §4
+
+-- Does not stop the run (behaviour decided, Q13 option A-i (§18.69);
+-- this encoding proposed); kept in `Decision.searchFaults`. A
+-- candidate that its untrusted search presented as a solution of
+-- every atom (the online solver's `Solved` end) and that the trusted
+-- check refused: a suspected defect of the search, its read-back or
+-- the recorder; not attributable at run time; never evidence about
+-- the program. Rendered as a suspected-compiler-defect note, never as
+-- an error in the program (proposed; AT8).
 data SearchFault
   = CandidateRefused StrategyName CheckRefusal
 ```
@@ -444,7 +457,7 @@ Proposed. Notes:
   verdict is `Unsupported RequirementAtoms`. E017, today's per-key
   printability check, stays explicitly transitional (§10). The
   rejected alternatives were requirements §11 item 2 as written (any
-  non-empty `Q` or `BQ`) and T-R0e §1.3 (only atoms that mention a
+  non-empty `BQ`) and T-R0e §1.3 (only atoms that mention a
   split part).
 - `ReexaminationSteps` (**decided, Q1, §18.69 item 1**): genuine
   budget exhaustion is a limit; an invariant violation is a fault.
@@ -462,7 +475,10 @@ Proposed. Notes:
   docs/engineering.md ("Result boundary classification") keeps
   internal errors as their own class, as T-R0e §3.1 and W §3.3 do.
   Hence the separate outcome (decided, Q1, §18.69 item 1); `Defect
-  InternalFault` as a fourth `UnresolvedReason` is not adopted.
+  InternalFault` as a fourth `UnresolvedReason` is not adopted. A
+  failed re-check is an `EmissionFault` beside a Solved verdict, not a
+  `Faulted` outcome, and is rendered as an internal error too (§7;
+  T-R0e §3.1; proposed).
 - The code: one new `ErrorCode` constructor for Unresolved (decision
   9). Today D4 maps to `TypeMismatch` (cited Format/Diagnostic/
   Code.purs:55). Whether each reason gets its own code is deferred to
@@ -659,9 +675,10 @@ type RefuterSpec =
   , check  ∷ RecordedProblem → CX → Either RefuteRefusal CheckedCX
   }
 
--- The only two ways to make a runnable refuter (decided, Q10,
--- §18.69). No flag chooses between them: the caller injects one or
--- the other, and only the first can mint `Refuted`.
+-- The only two ways to make a runnable refuter (behaviour decided,
+-- Q10 (§18.69); this encoding proposed). No flag chooses between
+-- them: the caller injects one or the other, and only the first can
+-- mint `Refuted`.
 trustedRefuter ∷ TheoremRef → RefuterSpec → Refuter  -- RefuteSound
                                                       -- proved; hidden
                                                       -- registry, as
@@ -738,10 +755,10 @@ head clashes, cancellation, row occurs checks through tails and
 `lacks`/`disjoint` refutations are unstated in CX (CX Q4); T-R0c's
 probes are evidence for them, not statements (reconciliation F4).
 **Decided, Q10 (§18.69):** unstated rules stay candidates; none is
-registered until stated and proved. C1-E (Q-c3) gets no special case:
-it is stated and expected true, and qualifies only once proved. C1-X (a clash
-after an arbitrary substitution) is expected false and is never a
-rule.
+registered until stated and proved. Q-c3 is narrowed by Q10: C1-E
+gets no special case; it is stated and expected true, and qualifies
+only once proved. Whether it is the line (CX §8 Q5) stays open (§11). C1-X (a
+clash after an arbitrary substitution) is expected false and is never a rule.
 
 ### 5.3 `decide`
 
@@ -798,21 +815,26 @@ Proposed rule (decided points marked):
 3. Otherwise Unresolved. If rule 1 or 1′ applies, the reason is
    `Unsupported` (the markers' `Outside` kinds, or `SecondSpread`, plus
    any declining guards' reasons). Otherwise the reason is computed
-   from the attempts: `Limit` if any attempt ran out of budget and
-   none was refused by check; `Unsupported` if every strategy
-   declined; `Inference` otherwise (`NoAcceptedCertificate` when
-   candidates were refused). When check refuses a candidate that its
-   search presented as a solution of every atom (`ClaimsComplete`: the
-   online solver's `Solved` end; recon §6 Q7 proposed an internal
-   error there), the refusal is also kept in `Decision.faults` as
-   `CandidateRefused`; the verdict is whatever the remaining attempts
-   give (decided, Q13 option A-i, §18.69 item 13).
+   from the attempts, in this order (proposed; §18.69 does not rule
+   on it, §11): `Limit` if any attempt ran out of budget and no
+   `ClaimsComplete` candidate was refused, so an expected `Heuristic`
+   refusal does not hide a budget limit; `Unsupported` if every
+   strategy declined; `Inference` otherwise (`NoAcceptedCertificate`
+   when candidates were refused). When check refuses a candidate that
+   its search presented as a solution of every atom (`ClaimsComplete`:
+   the online solver's `Solved` end; recon §6 Q7 proposed an internal
+   error there), the refusal is also kept in `Decision.searchFaults`
+   as `CandidateRefused`; the verdict is whatever the remaining
+   attempts give (decided, Q13 option A-i, §18.69 item 13).
 4. **What stops.** A trusted-component failure or a broken invariant
    stops the run with `Left fault`, reported as `Faulted`:
    `checkDerivation` refusing a registered rule's derivation
-   (`DerivationRefused`), a violated invariant (`BrokenInvariant`), or
-   `BothVerdicts` from rule 5. An untrusted search's failure never
-   stops it.
+   (`DerivationRefused`), a violated invariant (`BrokenInvariant`),
+   `BothVerdicts` from rule 5, or an `Accepted` together with a
+   checked derivation or `Refuted` in one run (possible whenever rule
+   1 or 1′ makes every strategy run), also `BothVerdicts`: under Q13
+   it is a trusted-checker failure. An untrusted search's failure
+   never stops it.
 5. A test-only `Checking` value may run every strategy and refuter and
    report `BothVerdicts` if both succeed (§9 AT7). This is a different
    injected value, not a flag.
@@ -900,9 +922,10 @@ data PolicyRefusal                       -- P: decision 3, per split site
   | ForcednessUndecided CallSite         -- neither proved nor refuted
   -- No G3 constructor: G3 is held (dossier §18.66 decision 6).
 
--- Evidence that a split is not forced (decided, Q1, §18.69 item 1).
--- Hidden constructor: minted only by the forcedness component's
--- checker (Q7). Syntactic difference alone never makes one.
+-- Evidence that a split is not forced (behaviour decided, Q1
+-- (§18.69); this encoding proposed). Hidden constructor: minted only
+-- by `ForcednessPolicy.check` (Q7). Syntactic difference alone never
+-- makes one.
 data NonForced
   = Alternatives
       { at    ∷ RigidAssignment          -- one permitted assignment
@@ -911,20 +934,37 @@ data NonForced
       }                                  -- on the split
   | NonForcedness NonForcednessEvidence  -- equivalent checked evidence
 
--- The forcedness component (decided, Q7, §18.69 item 7): a separate
--- policy component, injected, owned with P by T-R0e. It reads the
--- immutable complete problem and the split site; a candidate
--- solution may seed its search for evidence but never defines
--- forcedness.
+-- The forcedness component (behaviour decided, Q7 (§18.69); this
+-- encoding proposed): a separate policy component, injected, owned
+-- with P by T-R0e (proposed). Split as `StrategySpec` and
+-- `RefuterSpec` are: an untrusted search, which may take candidate
+-- solutions as seeds, and a trusted check, which reads only the
+-- immutable complete problem, the split site and the claim.
 type ForcednessPolicy =
-  { judge ∷ RecordedProblem → Site → Array Solution → Forcedness }
-data Forcedness                          -- `Forced` shares its name
+  { search ∷ RecordedProblem → Site → Array Solution
+           → Maybe ForcednessClaim       -- untrusted; seeds only
+  , check  ∷ RecordedProblem → Site → ForcednessClaim
+           → Either ForcednessRefusal CheckedForcedness
+  }                                      -- trusted; reads no Solution
+
+-- Minted only by `check`: `ForcednessEvidence` and `NonForced` have
+-- hidden constructors, so no other component builds either answer.
+data CheckedForcedness                   -- `Forced` shares its name
   = Forced ForcednessEvidence            -- with W's `Basis.Forced`;
                                          -- separate modules. Evidence
                                          -- named in W §1.7; its shape
                                          -- is this component's (open)
   | NotForced NonForced
+
+-- P's answer at one split site: `check`'s answer on `search`'s
+-- claim, or `Undecided` when search finds nothing or check refuses.
+data Forcedness
+  = Checked CheckedForcedness
   | Undecided
+
+judgeSplit
+  ∷ ForcednessPolicy → RecordedProblem → Site → Array Solution
+  → Forcedness
 
 data AdmissibilityRefusal                -- A: R010, judged by Adm_W
   = Inadmissible CallSite Int            -- the judged slot that fails:
@@ -974,12 +1014,21 @@ Proposed. Points this interface is responsible for:
   evidence"; T-R0e §2.2). When forcedness is neither proved nor
   refuted, the refusal is `ForcednessUndecided`, never
   `SplitUnforced`. **Decided, Q7 (§18.69 item 7):** a separate policy
-  component, `ForcednessPolicy`, decides forcedness from the
-  immutable complete problem and the split site; the `Solution` may
-  seed its search but cannot define the answer. P runs only on Solved
-  declarations (D5). **Open:** the representation of `Alternative`,
-  `RigidAssignment` and `NonForcednessEvidence` (T-R0e and W's, with
-  the component).
+  component decides forcedness from the immutable complete problem
+  and the split site; the `Solution` may seed its search but cannot
+  define the answer. **Proposed encoding:** `ForcednessPolicy` splits
+  that component into an untrusted `search` and a trusted `check`.
+  Only `check`, which reads no `Solution`, mints `Forced e` or
+  `NotForced n` (hidden constructors on `ForcednessEvidence` and
+  `NonForced`); `judgeSplit` gives `Undecided` when `search` returns
+  `Nothing` or `check` refuses its claim. So seeds can move the answer
+  only between `Undecided` and a checked answer, never between
+  `Forced` and `NotForced` (argued: given a sound `check`, both
+  answers cannot pass it for one site, whatever the seeds). P runs
+  only on Solved declarations (reconciliation D5). **Open:** the
+  representation of `Alternative`, `RigidAssignment`,
+  `NonForcednessEvidence`, `ForcednessClaim` and `ForcednessRefusal`
+  (T-R0e and W's, with the component).
 - **A's status values** are W's `AdmStatus` (§2.3; T-R0e §1.4).
   `Admitted.status ∷ AdmittedStatus` records the two admitted values;
   W's `Inadmissible` is `AtA (Inadmissible site i)`, naming the slot
@@ -1014,8 +1063,8 @@ Proposed. Points this interface is responsible for:
   cost is reconsidered only after measurement. A failure on a path
   the layering marks unsupported is `AtS (NotLowerable UncheckedPath
   site)`; any other failure is `ReCheckFailed`, a trusted-check
-  failure reported as a fault (§7). Neither is ever Contradiction or
-  evidence of invalidity (decision 5).
+  failure recorded as an `EmissionFault` (§3.5, §7; proposed). Neither is ever
+  Contradiction or evidence of invalidity (decision 5).
 - **`ComponentBlocked`.** R010 judges a recursive component as a whole
   (Check/Instantiation.purs:28-29). If one member is Unresolved, the
   others are still Solved and reported so; only their admission waits.
@@ -1044,12 +1093,12 @@ type Report =
   }
 
 type DeclReport =
-  { name      ∷ FunctionName
-  , outcome   ∷ DeclOutcome
-  , admission ∷ Admission
-  , faults    ∷ Array InternalFault      -- re-check faults (§6);
-  }                                      -- not Decision.faults, which
-                                         -- holds SearchFaults (§3.5)
+  { name          ∷ FunctionName
+  , outcome       ∷ DeclOutcome
+  , admission     ∷ Admission
+  , reCheckFaults ∷ Array EmissionFault  -- §6; proposed. Search
+  }                                      -- faults stay in
+                                         -- Decision.searchFaults
 ```
 
 Proposed:
@@ -1133,7 +1182,7 @@ T-R0b §9 item 1's independent translator.
 | AT5 | G-grounds: every Contradiction carries evidence that passes an independent check: premises are original `B` ids and the rule is registered; or `CXChecked (withBody (toSig P) body) rho` re-evaluates to true by brute force | `routeUndeclared` (CX `s = t = {x}`, recon §4.1); `markNoClause` (rigid overlap) |
 | AT6 | A derivation citing a substituted atom, citing a `D` atom as a premise, or applied to a `D`-subset, or an unregistered rule, is refused by `checkDerivation` | injected bad derivations |
 | AT7 | Monotonicity and conditional order independence, given sound trusted components and no broken invariant, under §5.3's conditions (same problem, independent budgets per strategy and per refuter with no shared bound, stable hint inputs, no shared mutable search state; hints passed as a set are not enough) and rule 2 (every strategy run when markers block Solved): adding a strategy never removes a Solved or Contradiction verdict; it may turn Unresolved into Solved or Contradiction (through new hints); permuting `strategies` or `refuters` never changes the verdict class. A refused candidate never makes Faulted (§5.3 rule 2). The conditions are the test's premises, not an implementation promise (decided, Q13, §18.69). The test-only `Checking` reports `BothVerdicts` on an injected unsound strategy | random problems over a small grammar, fixed before running; permutations of injected stubs |
-| AT8 | The online solver is never a verdict, and a refused candidate does not stop the run (decided, Q13 option A-i): a stub search returning "refused" gives Unresolved; a stub returning a wrong σ with `ClaimsComplete` is refused by check, recorded as a `CheckFailed` attempt and a `SearchFault` (`CandidateRefused`) in `Decision`, and a later stub strategy that accepts still gives Solved with that record kept; with no later acceptance the verdict is `Unresolved (Inference NoAcceptedCertificate)`, not `Faulted`. A `Heuristic` candidate refused by check is a failed attempt only, with no `SearchFault`. An injected trusted-component failure (`DerivationRefused`) or broken invariant gives `Faulted` and stops | stubs injected as `Strategy` and `SoundRule` values |
+| AT8 | The online solver is never a verdict, and a refused candidate does not stop the run (decided, Q13 option A-i): a stub search returning "refused" gives Unresolved; a stub returning a wrong σ with `ClaimsComplete` is refused by check, recorded as a `CheckFailed` attempt and a `SearchFault` (`CandidateRefused`) in `Decision`, and a later stub strategy that accepts still gives Solved with that record kept; with no later acceptance the verdict is `Unresolved (Inference NoAcceptedCertificate)`, not `Faulted`. A `Heuristic` candidate refused by check is a failed attempt only, with no `SearchFault`. A recorded `SearchFault` is rendered as a suspected-compiler-defect note, never as an error in the program (proposed). An injected trusted-component failure (`DerivationRefused`) or broken invariant gives `Faulted` and stops | stubs injected as `Strategy` and `SoundRule` values |
 | AT9 | G-lower: a stub strategy accepting with `NoWitness (NonConstructive …)` gives Solved and `AtS (NoCompilation …)`; specialization does not run | stub |
 | AT10 | Static refusals stay static: `r disjoint r` is `Policy`, an arity error `StaticRule`; neither is a `Verdict`; the declaration keeps its problem; codes unchanged | existing SameDisjoint and Arity fixtures |
 | AT11 | `outside` blocks Solved (`Unsupported`), for every kind counted acceptance-relevant (§5.3 rule 1; all kinds under the conservative boundary, decided Q3); the marker alone gives no Contradiction, and a separately justified one (c1 rule or CX) on recorded atoms is still reported | an `EffectArgument` construct beside a refutable atom |
@@ -1141,9 +1190,9 @@ T-R0b §9 item 1's independent translator.
 | AT13 | Independence: changing `f`'s body (not its signature), including adding a call that merges `f` and `g` into one component, leaves `g`'s problem and verdict unchanged | pairs of programs; needs T-R0b's component-free sites (§2 item 3) |
 | AT14 | `ComponentBlocked`: in a recursive component with an Unresolved member, the Solved members stay Solved | `walk`-shaped pair |
 | AT15 | Rendering: an Unresolved text never says the program is wrong, has the Unresolved code, and shows hints as the solver's limit | D4 fixtures in test/fixtures/r005b (recon §4.2) |
-| AT16 | Result boundary: each reason, compilation refusal and fault constructor is produced by a test that injects it directly | classifier tests (docs/engineering.md) |
+| AT16 | Result boundary: each reason, compilation refusal and fault constructor (`InternalFault`, `EmissionFault`, `SearchFault`) is produced by a test that injects it directly | classifier tests (docs/engineering.md) |
 | AT17 | Shadow refuters never decide (decided, Q10): a `shadowRefuter` whose check accepts a counter-instance leaves a `Shadow` record in `Decision.attempts` and the verdict it would have had without it; `Refuted` is reachable only through `trustedRefuter` | an injected refuter run both ways on one problem |
-| AT18 | Non-forcedness needs semantic evidence (decided, Q1): two alternatives that differ only syntactically, or at different rigid assignments, are refused by the forcedness checker and give `ForcednessUndecided`, not `SplitUnforced`; two checked alternatives at one permitted rigid assignment that differ on the split give `SplitUnforced` | injected alternatives; the forcedness component given the problem and split site only |
+| AT18 | Non-forcedness needs semantic evidence (decided, Q1): two alternatives that differ only syntactically, or at different rigid assignments, are refused by the forcedness checker and give `ForcednessUndecided`, not `SplitUnforced`; two checked alternatives at one permitted rigid assignment that differ on the split give `SplitUnforced` | injected alternatives; the forcedness checker given the problem and split site only; a seeded search whose claim check refuses gives `ForcednessUndecided` |
 | AT19 | Requirement atoms reduce through entailed equalities (decided, Q2): a `BQ` atom whose variable is fixed to a ground type by an equality entailed by the original atoms is judged by the ground rule and is not `Unsupported` merely because it mentions a variable; a failing ground judgement reached only through a solver-chosen binding is never Contradiction; an atom still mentioning a rigid variable that `D` does not decide gives `Unsupported RequirementAtoms` when no strategy accepts | a `print` of a variable equated to `Int` by an original atom (Solved); a `print` whose operand is a function type only under the solver's σ (not Contradiction); a `print` at a rigid type |
 
 ## 10. Migration map from today's code
@@ -1278,8 +1327,8 @@ Redirected, now decided or narrowed by §18.69:
   today's pre-end bindings are forced, which is C1-E's premise. Per
   §18.65, forcedness alone is not originality: a rule qualifies only
   as C1-E states it, over every solution of the original body, and
-  only once proved. Decided by Q10's general ruling (§5.2): no
-  special case.
+  only once proved. Narrowed by Q10: C1-E qualifies only once
+  proved; whether it is the line (CX Q5) stays open (§5.2).
 - **Q-c1** (coverage; `NotComparable` on rigid operands): the
   criterion is decided (Q4: a check depending on a solver-selected
   type is semantic); applying it to each check is open (§3.2, §10).
@@ -1292,7 +1341,9 @@ Redirected, now decided or narrowed by §18.69:
   (untrusted).
 - **Q-e1** (`ComponentBlocked`; does the forcedness decider take the
   `Solution` or the problem?): decided, Q7: the problem and the split
-  site; the `Solution` may only seed the search (§6).
+  site; the `Solution` may only seed the search (§6). The encoding
+  (an untrusted `search` given seeds, a trusted `check` given none)
+  is proposed.
 
 Decided by the author (dossier §18.69; the reconciliation's
 numbering), with where each lands:
@@ -1351,6 +1402,22 @@ Still open after §18.69:
 - D1's mechanism, to be specified before implementation (§4.2).
 - Whether an implementation meets §5.3's order-independence
   conditions; not promised.
+- The order of reasons in §5.3 rule 3 (proposed: `Limit` when an
+  attempt ran out of budget and no `ClaimsComplete` candidate was
+  refused).
+- Whether C1-E is the line for c1 rules (CX §8 Q5; Q-c3 narrowed by
+  Q10, §5.2).
+- **Interpretation for the author to confirm:** a `ClaimsComplete`
+  refusal that a recorder defect may have caused does not stop the
+  run. Read this way it is consistent with "a broken invariant still
+  stops" (Q13): the refusal cannot be attributed to one component
+  (search, read-back or recorder), and a recorder defect that causes
+  a refusal makes the recorded problem stricter, so it can only cost
+  completeness. The unsound direction, a dropped obligation, shows as
+  acceptance, which no run-time check catches; every Solved already
+  rests on R (W §3.4 item 1). Conditions: the `SearchFault` is
+  rendered and attributed as §3.5 says, and RT8 and AT8 treat it as a
+  test failure.
 
 ## 12. Provenance
 
@@ -1636,3 +1703,49 @@ stale cross-references they left. No decision changed.
   component's, open. `AdmittedPendingR019` reads FK-W's rows as
   active once its obligations are met, not "once adopted".
 - §11: the open list names every forcedness evidence type.
+
+### Recheck after §18.69 (181fa54)
+
+A read-only recheck of 181fa54 raised 16 findings; those that edit
+this document are applied. No decision changed; new encodings are
+labelled proposed.
+
+- **1 (blocking).** `ForcednessPolicy` split into an untrusted
+  `search` (may take solutions as seeds; `Maybe ForcednessClaim`) and
+  a trusted `check` (problem, site and claim only; the only minter of
+  `Forced` and `NotForced`, through `CheckedForcedness`).
+  `ForcednessEvidence` gets a hidden constructor as `NonForced` has.
+  `judgeSplit` gives `Undecided` when search finds nothing or check
+  refuses, so seeds move the answer only between `Undecided` and a
+  checked answer (§6). AT18 names the checker; Q-e1 notes the
+  encoding is proposed.
+- **2.** The `Decision`, `SearchFault`, refuter constructors,
+  `NonForced` and `ForcednessPolicy` comments read "behaviour decided,
+  Q<n> (§18.69); this encoding proposed"; P's ownership of the policy
+  is "(proposed)".
+- **4.** `ReCheckFailed` moved out of `InternalFault` into a new
+  `EmissionFault`; `DeclReport.faults` is now `reCheckFaults ∷ Array
+  EmissionFault`, and `Decision.faults` is `searchFaults` (§3.2, §3.5,
+  §5.3, §6, §7; proposed). The §3.5 note on `Faulted` says a failed
+  re-check is not `Faulted`.
+- **5.** `SearchFault` blames the search, its read-back or the
+  recorder, is not attributable at run time, and is rendered as a
+  suspected-compiler-defect note (§3.5; AT8). AT16 lists the three
+  fault types.
+- **6.** §5.3 rule 3's order of reasons labelled proposed; `Limit`
+  now applies when no `ClaimsComplete` candidate was refused; added to
+  §11 "Still open".
+- **7.** Rule 4: an `Accepted` together with a checked derivation or
+  `Refuted` in one run is `BothVerdicts`, reachable whenever rule 1
+  or 1′ makes every strategy run. `BothVerdicts` now carries
+  `Evidence` in place of `RefuterName`, so a rule's derivation fits
+  (proposed).
+- **8.** §3.5's rejected alternative reads "any non-empty `BQ`".
+- **10.** Q-c3 is narrowed by Q10, not decided; whether C1-E is the
+  line stays open (§5.2, §11).
+- **11.** `RequirementAtoms`' comment covers a ground failure with no
+  registered rule.
+- **14.** "(D5)" in §6 reads "(reconciliation D5)".
+- §11 "Still open" records, as an interpretation for the author to
+  confirm, that a `ClaimsComplete` refusal possibly caused by a
+  recorder defect does not stop the run.

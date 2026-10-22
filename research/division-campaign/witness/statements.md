@@ -360,14 +360,19 @@ inputs are the immutable complete recorded problem and the `split`
 site. A candidate solution (a `Solution`, `Witness` or certificate)
 may help it search for evidence, but never defines forcedness:
 forcedness is a property of the problem's solution set (U), not of
-any candidate. When it answers `Forced e`, P records `Forced e` in
-`Basis`; the two constructors share a name and live in separate
-modules. The opposite finding, `SplitUnforced CallSite NonForced`
-(T-R0a's refusal), meets §18.69 item 1's standard: two checked
-alternatives at the **same** permitted rigid assignment that differ
-semantically on the split, or equivalent checked evidence of
-non-forcedness; two syntactically different witnesses alone are not
-enough.
+any candidate. T-R0a's encoding (proposed) splits it into an
+untrusted `search`, which may take solutions as seeds, and a trusted
+`check`, which reads only the problem, the site and the claim and is
+the only minter of `Forced e` and `NotForced n` (`ForcednessEvidence`
+and `NonForced` have hidden constructors); the answer is `Undecided`
+when search finds nothing or check refuses, so seeds move it only
+between `Undecided` and a checked answer. When it answers `Forced e`, P records
+`Forced e` in `Basis`; the two constructors share a name and live in separate
+modules. The opposite finding, `SplitUnforced CallSite NonForced` (T-R0a's
+refusal), meets §18.69 item 1's standard: two checked alternatives at the
+**same** permitted rigid assignment that differ semantically on the split, or
+equivalent checked evidence of non-forcedness; two syntactically different
+witnesses alone are not enough.
 
 ## 2. Termination (decision 3)
 
@@ -506,7 +511,7 @@ that would check it. **§18.69 item 5:** that compatibility probe runs
 behaviour is neither silently narrowed nor declared justified. The
 probe is a dependency inside the implementation plan, not a blocker to
 writing it. Whether the status is user-visible is not ruled on by
-§18.69; the proposed default (not visible) stands (T-R0e Q2).
+§18.69; not being visible remains a proposal (T-R0e Q2).
 
 **Component-safe (CS) terms** (proposed; the syntactic form T3 asks
 for): a `RowTerm` built from `Restrict r S`, `Union`, `Choose`, CS
@@ -804,17 +809,16 @@ evaluator cannot evaluate at a key, such as an `outside` construct or
 a reserved `Field`), reported as a support refusal (T-R0a's `AtS
 (NotLowerable UncheckedPath site)`, T-R0e's `UncheckedPath`). Under
 §18.69 item 1 the internal case is an internal fault, **separate from
-Unresolved**: T-R0a's `InternalFault` `ReCheckFailed`, recorded in
-`DeclReport.faults` while the verdict stays Solved (T-R0a §3.5, §7;
-formerly Q-A1), rendered as T-R0e's `Internal` with E_INTERNAL (T-R0e
-§3.1, §7). An invariant violation is a fault, while genuine budget
-exhaustion is a limit, which RC never reports. It stays apart from
-invalidity. Never Contradiction, never a user diagnostic, never CX
-evidence: RC tests one flexible assignment, CX refutes all of them
-(§5.4). **A failed re-check is never
-evidence that the program is invalid** (decision 5). Under acceptance
-with Adapt-N, Lay and R, RC never fires (argued; ground-check.md
-§5.3).
+Unresolved**: T-R0a's `EmissionFault` `ReCheckFailed` (proposed),
+recorded in `DeclReport.reCheckFaults` while the verdict stays Solved
+(T-R0a §3.5, §7; formerly Q-A1), rendered as T-R0e's `Internal` with
+E_INTERNAL (T-R0e §3.1, §7). An invariant violation is a fault, while genuine
+budget exhaustion is a limit, which RC never reports. It stays apart from
+invalidity. Never Contradiction, never a type-error diagnostic, never CX
+evidence: RC tests one flexible assignment, CX refutes all of them (§5.4). **A
+failed re-check is never evidence that the program is invalid** (decision 5).
+Under acceptance with Adapt-N, Lay and R, RC never fires (argued;
+ground-check.md §5.3).
 
 ### 3.4 What it does not cover (argued; ground-check.md §5)
 
@@ -900,7 +904,7 @@ record (D1; until that mechanism is specified, the variables whose
 `vars` position is not `Auxiliary`), and every other flexible
 variable not in `Recon` (§1.6), has exactly one `Binding` in
 `bindings`; members of `Recon` have none and are reconstructed from
-their defining atoms (T-R0b §5.3, checked on fixtures by RT7) by
+their defining atoms (argued in T-R0b §5.3; RT7 not yet run) by
 §3.2's `aux_k`. Auxiliary position alone never exempts a variable.
 Further, every `Named n` occurring in the checked IR or in `bindings`
 has an entry in `names`; terms satisfy Sc1-Sc3 (§1.3); `Free`
@@ -927,8 +931,11 @@ in P's `SplitJudgement` (§1.7): for every finite `θR ⊨ D` and all
 `B`. Must prove: the forcedness policy component's owner (§18.69
 item 7: a separate component reading the immutable complete problem
 and the split site, §1.7, T-R0a's `ForcednessPolicy`, placed with P
-in T-R0e; requirements §11 item 5). A candidate
-solution may help find evidence but never defines forcedness.
+in T-R0e (proposed); requirements §11 item 5). A candidate
+solution may help find evidence but never defines forcedness: in
+T-R0a's proposed encoding only the trusted `check`, which reads no
+solution, mints `Forced`, so U is `check`'s soundness obligation for
+`Forced`; the untrusted `search` given seeds carries none.
 
 **R, recorder.** R1: the recorded problem is the syntax-directed
 translation of the body (T-R0b's rules), so that `Sat (θR ∪ σ) (B ∪
@@ -1094,22 +1101,25 @@ proposed here until the author rules.
    FK-U first; §2.3, T-R0e §1.4) is decided only after T-R0e §1.4's
    compatibility probe runs; meanwhile current behaviour is neither
    narrowed nor declared justified. Still open: that decision itself,
-   and whether `AdmittedPendingR019` is user-visible (default no; not
-   ruled on by §18.69).
+   and whether `AdmittedPendingR019` is user-visible (proposed: no;
+   not ruled on by §18.69).
 8. **`Compilation` placement and internal failures:** decided
    (§18.69 item 1). Inside `Solution` (§1.6); an internal re-check
    failure is a fault, separate from Unresolved (§3.3).
 9. **Auxiliaries:** decided (§18.69 item 6). Bound unless their
    deterministic reconstruction is established (`Recon`, §1.6). Open:
    who establishes reconstruction, and how; T-R0b §5.3 proposes per
-   rule, by proof or by RT7's check accepted as that rule's evidence.
+   rule, by proof (proposed; whether RT7's fixture check could count
+   is for the author).
    Until then `Recon` is empty.
 10. **Forcedness:** decided (§18.69 item 7). A separate policy
     component, reading the immutable complete problem and the split
     site, owns it and `ForcednessEvidence` (§1.7). T-R0a §6 types it
-    as `ForcednessPolicy` and places it with P in T-R0e (proposed).
-    Open: the representation of `ForcednessEvidence` and of T-R0a's
-    `NonForced` evidence.
+    as `ForcednessPolicy` (proposed: an untrusted `search` given
+    seeds, a trusted `check` given none, the only minter of answers)
+    and places it with P in T-R0e (proposed). Open: the
+    representation of `ForcednessEvidence` and of T-R0a's `NonForced`
+    evidence.
 11. **D1's tracked requests** (§18.69 D1): the mechanism that makes
     `Req`, Cov's domain, is to be specified before implementation
     (§1.6, §4). It changes T-R0a's and T-R0b's interfaces (inference
@@ -1357,3 +1367,25 @@ stale cross-references they left. No decision changed.
   `AtS (NotLowerable UncheckedPath site)`.
 - §7 item 9: cites T-R0b §5.3's proposal for establishing
   reconstruction (per rule, by proof or by RT7's check).
+
+### Recheck after §18.69 (181fa54)
+
+From the read-only recheck of 181fa54 (findings 1, 4, 9, 13 and 15
+edit this file). No decision changed.
+
+- 1: §1.7, §4 U and §7 item 10 describe T-R0a's split
+  `ForcednessPolicy` (proposed): an untrusted `search` that may take
+  solutions as seeds, and a trusted `check` that reads only the
+  problem, site and claim and is the only minter of `Forced` and
+  `NotForced` (now constructors of T-R0a's `CheckedForcedness`);
+  `Undecided` when search finds nothing or check refuses. U is
+  `check`'s soundness obligation for `Forced`.
+- 4: §3.3: a failed re-check is T-R0a's `EmissionFault`
+  `ReCheckFailed` in `DeclReport.reCheckFaults` (proposed).
+- 9: §4 Cov says reconstruction is argued in T-R0b §5.3 and RT7 has
+  not run; §7 item 9 marks establishment by proof as proposed, with
+  RT7's fixture check for the author.
+- 13: §2.3 and §7 item 7: `AdmittedPendingR019` not being visible
+  remains a proposal, not ruled by §18.69.
+- 15: §3.3: "never a type-error diagnostic", since the fault is
+  reported as E_INTERNAL.

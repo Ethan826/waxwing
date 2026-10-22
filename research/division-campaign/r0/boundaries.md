@@ -188,10 +188,11 @@ checking does not stop the run: the attempt is kept in T-R0a's
 `Decision.attempts`, and V goes on to the next strategy. A heuristic
 candidate rejected as expected is a failed attempt only, not a
 compiler defect; a refused candidate that its search presented as a
-complete solution is also kept in `Decision.faults` as a
-`SearchFault`, a suspected search defect, which still does not stop
-the run and is not Internal (T-R0a §3.5). A failure of a trusted
-checker or a broken invariant stops, as Internal (§3.1).
+complete solution is also kept in `Decision.searchFaults` as a
+`SearchFault`: a suspected defect of the search, its read-back or the
+recorder; not attributable at run time; never evidence about the
+program. It does not stop the run and is not Internal (T-R0a §3.5). A failure of
+a trusted checker or a broken invariant stops, as Internal (§3.1).
 
 ### 1.3 V2: acceptance requirements
 
@@ -498,16 +499,21 @@ with W (open).
 
 **Who decides forcedness** (decided, §18.69 Q7). A separate policy
 component owns forcedness. Its inputs are the immutable complete
-recorded problem and the `split` site; it does not read V's
-`Solution`. A candidate solution may help it search for evidence (one
-alternative to try), but never defines forcedness: a split is not
-forced because one strategy's solution chose it. P calls this
-component; neither V nor A decides forcedness. T-R0a §6 types it as
-the injected `ForcednessPolicy` (`judge`: problem, split site, and
-solutions as seeds only, to `Forced`, `NotForced NonForced` or
-`Undecided`) and places it with P in this document (proposed); its
-evidence types, W's `ForcednessEvidence` among them, are still to be
-represented (open).
+recorded problem and the `split` site; its checker does not read V's
+`Solution`; its untrusted search may take solutions as seeds. A
+candidate solution may help it search for evidence (one alternative
+to try), but never defines forcedness: a split is not forced because
+one strategy's solution chose it. P calls this component; neither V
+nor A decides forcedness. T-R0a §6 types it as the injected
+`ForcednessPolicy` (proposed encoding): an untrusted `search` (problem,
+split site, solutions as seeds, to `Maybe ForcednessClaim`) and a
+trusted `check` (problem, split site and claim only), the only minter
+of `Forced` and `NotForced NonForced`; the result is `Undecided` when
+search finds nothing or check refuses, so seeds can move the answer
+only between `Undecided` and a checked answer, never between `Forced`
+and `NotForced`. T-R0a places it with P in this document (proposed);
+its evidence types, W's `ForcednessEvidence` among them (hidden
+constructor, as `NonForced`), are still to be represented (open).
 
 **NotAdmitted is not Unresolved and not a contradiction** (proposed):
 the program is valid and the obstacle is policy. It gets its own code
@@ -620,10 +626,14 @@ data Layered
                                                -- Unresolved code
   | NotCompiled (NonEmptyArray CompileRefusal) -- Solved; refused by
                                                -- P, A or S (T-R0a §6)
-  | Internal InternalFault                     -- E_INTERNAL; T-R0a's
-                                               -- Faulted (§18.69 Q1),
-                                               -- or a ReCheckFailed in
-                                               -- DeclReport.faults
+  | Internal Fault                             -- E_INTERNAL
+
+-- What Internal renders (proposed, recheck after §18.69).
+data Fault
+  = Stopped InternalFault                      -- T-R0a's Faulted
+                                               -- (§18.69 Q1)
+  | AtEmission (NonEmptyArray EmissionFault)   -- Solved; non-empty
+                                               -- reCheckFaults
 
 -- Carried by T-R0a's AtS (NotLowerable Construct Site): S1 after
 -- Solved. A missing compilation witness, including a hole the hole
@@ -639,11 +649,13 @@ data Construct
 ```
 
 `layerOf` reads the verdict of T-R0a's `Decided p d` as `d.verdict`.
-`d.attempts` and `d.faults` (the structured outcome record of §18.69
-Q13, `SearchFault`s included) may be rendered as notes; they never
-change the layer and never give `Internal`. A `ReCheckFailed` in
-`DeclReport.faults` gives `Internal` although the verdict stays Solved
-(T-R0a §3.5, §7).
+`d.attempts` (the structured outcome record of §18.69 Q13) may be
+rendered as notes; `d.searchFaults` are rendered, as a
+suspected-compiler-defect note, never as an error in the program
+(proposed; T-R0a §3.5, AT8). Neither changes the layer or gives
+`Internal`. A non-empty `DeclReport.reCheckFaults` (T-R0a's
+`EmissionFault`s) gives `Internal (AtEmission …)` although the verdict
+stays Solved (T-R0a §3.5, §7; proposed).
 
 S1 constructs that stop a verdict are T-R0a's `Unsupport` values, not
 `Construct`s, and give `Unresolved (Unsupported …)`: `Outside
@@ -700,8 +712,10 @@ Design points (proposed):
   reasons. Their text states that the declaration is valid (Solved)
   and names the layer. The alternative is a per-layer code for each.
 - **`Internal` is a separate outcome** (reconciliation D3; decided,
-  §18.69 Q1), T-R0a's `Faulted` (its §3.2), with E_INTERNAL, never
-  Unresolved: a failure of a trusted checker (a failed re-check
+  §18.69 Q1), with E_INTERNAL, never Unresolved. It renders T-R0a's
+  `Faulted` outcome (its §3.2), and also a `ReCheckFailed` in
+  `DeclReport.reCheckFaults` while the verdict stays Solved (proposed
+  encoding). A failure of a trusted checker (a failed re-check
   included) or a broken invariant is not a limit, a missing feature
   or the program's
   fault (docs/engineering.md, "Result boundary classification"; W
@@ -711,12 +725,12 @@ Design points (proposed):
   structured outcome record (`Decision.attempts`), and the run
   continues. A heuristic candidate rejected as expected is nothing
   more; one its search presented as complete is also a `SearchFault`
-  in `Decision.faults` (T-R0a §3.5), a suspected search defect that
-  is neither `Internal` nor a stop. If nothing else decides, the
-  verdict is `Unresolved (Inference NoAcceptedCertificate)` (T-R0a
-  §5.3 rule 3). A trusted-component failure or a broken invariant
-  stops the run.
-  Genuine budget exhaustion is a limit, not a fault (§18.69 Q1).
+  in `Decision.searchFaults` (T-R0a §3.5): a suspected defect of the
+  search, its read-back or the recorder; not attributable at run time;
+  never evidence about the program; neither `Internal` nor a stop. If nothing
+  else decides, the verdict is `Unresolved (Inference NoAcceptedCertificate)`
+  (T-R0a §5.3 rule 3). A trusted-component failure or a broken invariant stops
+  the run. Genuine budget exhaustion is a limit, not a fault (§18.69 Q1).
 - **Order independence is conditional** (§18.69 Q13). The verdict
   class does not depend on strategy order when the same problem is
   given, budgets are independent, hint inputs are stable and no
@@ -937,7 +951,7 @@ question added since.
 | — | After Task 8, are `AdmittedPendingR019` components refused, compiled via the current path, or covered by proving FK-U first? | order decided (§18.69 Q5): the compatibility probe runs first, a dependency inside the plan; FK-W in the design, inactive until its obligations are met; FK-U inactive. The choice among the three options: open, no default (§1.4) |
 | Q3 | Second spread: language rule (a) or support boundary (S1)? | decided (§18.69 Q4): a support limitation, `Unsupported SecondSpread`, applied at V (§1.5) |
 | Q4 | Per-key E017 before contracts carry `Q`: a transitional V2 refusal or Unresolved? | decided (§18.69 Q2): E017 keeps its code, explicitly transitional, until it moves into the re-check (§4) |
-| Q5 | `AmbiguousType`: P policy or class e? | decided (§18.69 Q4): Unresolved (class e) unless a language policy deliberately says otherwise; a check depending on a solver-selected type is semantic (§3.2) |
+| Q5 | `AmbiguousType`: P policy or class e? | decided (§18.69 Q4): Unresolved (class e) unless a language policy deliberately says otherwise; a check depending on a solver-selected type is semantic (§3.2). Which `UnresolvedReason` constructor: open (T-R0a §3.2) |
 | Q6 | Which O-kinds make acceptance depend on the record slice? | decided (§18.69 Q3): the conservative boundary for now, every non-empty `outside` blocks a whole-function Solved; a construct is exempted only once its omitted obligations are shown unable to affect the result; no effect/record independence assumed (§1.5). Which O-kinds can be so shown: future work, none exempt today |
 | Q7 | Identifiers of the re-check, its binding source and the key theorem | closed: W §0 (RC1-RC6, `vars`/`Binding`, FK-0/FK-W/FK-U) |
 | Q8 | NotAdmitted: must two witnesses be exhibited? | decided (§18.69 Q1): two checked alternatives at the same permitted rigid assignment, differing semantically on the split, or equivalent checked evidence of non-forcedness; syntax alone is not enough (§2.2). T-R0a §6's `NonForced` carries both forms; open: the representation of its evidence types (§2.2) |
@@ -1224,3 +1238,25 @@ stale cross-references they left. No decision changed.
 - §3.2: the class-a row separates arity at a declared result
   (structural) from arity at an instantiated callee type (semantic),
   following T-R0b §3.2 and §11 item 7; coverage's split stays open.
+
+### Recheck after §18.69 (181fa54)
+
+From the read-only recheck of 181fa54 (findings 1, 3, 4, 5, 16 edit
+this document). No decision changed.
+
+- 1: §2.2 says the forcedness checker does not read V's `Solution`
+  and its untrusted search may take solutions as seeds; it describes
+  T-R0a's split `ForcednessPolicy` (`search`, `check`; proposed),
+  `check` as the only minter of `Forced` and `NotForced`, and
+  `Undecided` when search finds nothing or check refuses.
+- 3, 4: `Layered.Internal` carries a `Fault`, either `Stopped
+  InternalFault` (T-R0a's `Faulted`) or `AtEmission` with the
+  non-empty `DeclReport.reCheckFaults` (T-R0a's new `EmissionFault`),
+  the verdict staying Solved; §3.1's `layerOf` note and `Internal`
+  note say so (proposed). `Decision.faults` is now `searchFaults`.
+- 5: §1.2 and §3.1 attribute a `SearchFault` to the search, its
+  read-back or the recorder, not attributable at run time; §3.1 says
+  it is rendered as a suspected-compiler-defect note, never as an
+  error in the program (proposed; T-R0a AT8).
+- 16: §7's Q5 row adds that `AmbiguousType`'s `UnresolvedReason`
+  constructor is open (T-R0a §3.2).

@@ -622,8 +622,8 @@ sub-pattern's path; `rest` of P7 ↦ `RestType p`; every other `field`,
   bound) is withdrawn: "auxiliary" alone does not justify omitting a
   binding. A witness binds every auxiliary, except an auxiliary of a
   rule for which deterministic reconstruction from its defining atom
-  is established (proved, or checked by RT7 and accepted as that
-  rule's evidence); none is established yet. What follows is the
+  is established (proposed: by proof; whether RT7's fixture check
+  could count is for the author); none is established yet. What follows is the
   proposed establishment, argued, not checked. Each auxiliary `a` has
   exactly one **defining atom**, emitted by the rule that introduces
   it:
@@ -717,14 +717,14 @@ ValidR p  :=
 
 `p.q` is empty today (Sig9); a non-empty `Q` would be a hypothesis
 beside `D`, and its meaning is unstated: such a problem is Unsupported
-(§18.69 Q2). `ReqG` evaluates the atom's type to a ground value and
-applies the stated ground rule: `pr v` and `cmp v` fail exactly when
-`v` holds a function type at some depth (through record fields and
-`app` arguments). The rule's value at a base atom outside Waxwing's
-bases, and at declared types whose constructors hold functions, is
-**not yet fixed**. Since `ValidR` is owned here, this document must
-fix it, in agreement with the language's printability and
-comparability as today's checks judge them (Check/Printable.purs,
+(proposed: `Q`'s meaning is unstated, §11 item 16; under Q2's "other
+judgments stay Unsupported"). `ReqG` evaluates the atom's type to a ground value
+and applies the stated ground rule: `pr v` and `cmp v` fail exactly when `v`
+holds a function type at some depth (through record fields and `app` arguments).
+The rule's value at a base atom outside Waxwing's bases, and at declared types
+whose constructors hold functions, is **not yet fixed**. Since `ValidR` is owned
+here, this document must fix it, in agreement with the language's printability
+and comparability as today's checks judge them (Check/Printable.purs,
 Check/Comparable.purs, Specialize/Printable.purs; §11 item 16).
 
 **Unsupported constructs, explicitly.** `ValidR` gives meaning to the
@@ -735,8 +735,8 @@ recorded entries only:
 2. Effect rows are erased (§2.2); their obligations are missing.
 3. A requirement atom that is not ground and is not made ground by
    entailed equalities is meaningful in `ValidR`, but no judgment of
-   it is supported (§18.69 Q2): a verdict that rests on it is
-   Unsupported.
+   it is supported by any current strategy (§18.69 Q2): a verdict that rests on
+   it is Unsupported.
 4. A second spread is in `ValidR` (E25's atoms); it is a support
    limitation of strategies (§18.69 Q4), not of the meaning.
 
@@ -816,7 +816,7 @@ AtomId = { decl : FunctionId, path : Path, index : Int }
 | A1, A2 | Sig4, Sig5 | none |
 | A3, A4 | Sig6, Sig7 | none; open questions (translation.md §8 Q2, Q3) unchanged |
 | A5 | Sig8 | none |
-| A6, A7 | Sig9 | `Outside RequirementAtom` withdrawn; a non-empty `Q` is Unsupported (§18.69 Q2) [VOR] |
+| A6, A7 | Sig9 | `Outside RequirementAtom` withdrawn; a non-empty `Q` is Unsupported (proposed: `Q`'s meaning is unstated, §11 item 16; under Q2's "other judgments stay Unsupported") [VOR] |
 | B1 | Sig3, E5-E16, P3, P4 | one rule per agreement instead of one hook |
 | B2, B3 | E25 (E24 for no spread) | several spreads in-rule, no marker; a support limitation, S1 (§18.69 Q4); Resolve still refuses them until the change lands (§3.3) |
 | B4 | E26 | `lacks ρ l` folded into definedness |
@@ -1272,3 +1272,16 @@ stale cross-references they left. No decision changed.
 - §9 RT8: a failed candidate is a test failure exposing a defect; at
   run time the same refusal is a failed attempt and a `SearchFault`
   in T-R0a's `Decision`, not `Faulted` (§18.69 Q13).
+
+### Recheck after §18.69 (181fa54)
+
+From the read-only recheck of 181fa54 (findings 8, 9 and 12 edit
+this document). No decision changed.
+
+- 8: a non-empty `Q` is Unsupported as a proposal, not by Q2's
+  ruling: `Q`'s meaning is unstated (§11 item 16), and Q2's "other
+  judgments stay Unsupported" covers it (§5.4, §7 row A6-A7).
+- 9: §5.3's route to established reconstruction is marked proposed:
+  by proof; whether RT7's fixture check could count is for the author.
+- 12: §5.4's `ValidR` item 3 says no judgment is supported "by any
+  current strategy", matching the preamble and T-R0a.
