@@ -145,3 +145,4 @@ import Composition.Typed.Cell.Proofs.Main
 import Composition.Typed.Cell.Proofs.W3
 import Composition.Typed.Cell.Proofs.W1
 import Composition.Typed.Cell.Proofs.W2
+import Composition.Typed.Cell.Proofs.W8
