@@ -668,7 +668,8 @@ Order also affects cost and which strategy's witness is used. Witness
 choice when several strategies accept is a G3 question (decision 6),
 not decided here.
 
-**Design consequence** (proposed, not decided; flagged for the author):
+**Design consequence** (proposed, not decided; flagged for the author
+as dossier §18.68 Q13):
 
 - **Option A: a refused candidate does not stop the run.** Record
   `CandidateRefused` in the attempt log, go on with the remaining
@@ -1060,7 +1061,7 @@ For the author (the reconciliation's numbering):
 - **Q5:** visibility of `AdmittedPendingR019` (§6). Its post-Task-8
   treatment is a separate compatibility decision (§18.66 decision 2;
   T-R0e §1.4's options and probe).
-- **New, not yet numbered (external review, 2026-10-22):** does a
+- **Q13 (dossier §18.68; external review, 2026-10-22):** does a
   refused candidate stop the run (§5.3 "Order", option A or B)?
 - **Q6:** which flexible variables a witness must bind (§3.3).
 - **Q7:** the forcedness decider and `ComponentBlocked` (§6).

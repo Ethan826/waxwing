@@ -90,7 +90,7 @@ These are foundations or leads, not proofs of Waxwing's adaptations:
 - [Inference foundations](2026-10-22-inference-foundations-assessment.md)
   §11 is the obligations index for inference, elaboration, coherence,
   specialization termination and lowering (63 rows: 2 proved, 19
-  argued, 1 experimentally checked, 17 proposed, 24 unresolved); its
+  argued, 1 experimentally checked, 18 proposed, 23 unresolved); its
   [companion](2026-10-22-inference-foundations-extension.md) holds the
   source readings. Soundness, completeness and principality stay
   separate.

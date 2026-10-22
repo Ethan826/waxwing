@@ -225,7 +225,7 @@ over open types.
    depend on the caller's rigid variables (ADR 007; recorder-rules
    §5.1). That is EMLTI-style instantiation, under which σ_inf is above
    σ_w, assuming Waxwing's row model corresponds to an EMLTI model and
-   ground inclusion matches `ValidOpen` (O24, unresolved). The
+   ground inclusion matches `ValidOpen` (O24, proposed). The
    correspondence needs an encoding: EMLTI's models interpret type
    constructors as total functions (Definition 10.2.5, printed
    p. 411), and disjoint composition is partial. The substitution
@@ -270,8 +270,12 @@ undefined on overlapping fields, so the encoding must represent
 composition differently, for example as a relation with definedness
 obligations. EMLTI does not treat open-world interpretations, though it
 says adopting Odersky et al.'s approach "would not be extensive"
-(printed p. 423) (O24, unresolved; a narrow correspondence note,
-docs/plans/2026-10-22-o24-emlti-correspondence.md, is in progress).
+(printed p. 423). The O24 note
+(docs/plans/2026-10-22-o24-emlti-correspondence.md) finds direct
+identification fails (argued) and recommends encoding (a): composition
+as a ternary predicate U(t, r, s), constructors total. Its GI-Open
+states, without proof, that ground inclusion at every injective base
+extension then coincides with `ValidOpen` (O24, proposed).
 (b) State annotation checking as entailment of the body's
 instantiation constraint; EMLTI has no annotations (O25, proposed).
 **Depends on** IF1's declarative relation and O2.
@@ -337,8 +341,12 @@ Waxwing's disjoint composition is partial: it is undefined when fields
 overlap. So the row model is not such an X as it stands, and the
 theorems transfer to Waxwing only through an encoding, for example
 composition as a relation with definedness obligations, shown to agree
-with `ValidOpen` (O24; a narrow correspondence note,
-docs/plans/2026-10-22-o24-emlti-correspondence.md, is in progress).
+with `ValidOpen` (O24, proposed). The O24 note
+(docs/plans/2026-10-22-o24-emlti-correspondence.md) recommends that
+encoding as a ternary predicate U(t, r, s) with total constructors,
+and states M0, T1, T2, V, GI and GI-Open (unproved) for it; schemes
+then become U-chains, so a flattening lemma F is needed, and EMLTI's
+solver and row laws do not cover U.
 Given such an encoding, principality read as "least specific
 constraint" needs no normal-form, regularity or
 principal-constraint-property obligation. Determinacy (Definition
@@ -1109,8 +1117,10 @@ dependency is named. None authorizes proofs or prototypes.
    continuation versus read-back, coverage of `build`'s requests
    enforced or proved, values only after the verdict (O27, O28, O31;
    decision D1).
-3. **Foundation statements:** the narrow O24 correspondence note
-   (partial composition, in progress), IF1's declarative relation,
+3. **Foundation statements:** statement review of the O24 note's
+   §3 (encoding (a), composition as the predicate U; M0, T1, T2, V,
+   GI, GI-Open, GI-Atoms, GI-Fin and F, all proposed), IF1's
+   declarative relation,
    then IF4 with the open-world match and annotation checking (O24,
    O25), then
    IF5 and IF6 with projection (O26, O17), then EL3 (O29).
@@ -1179,9 +1189,13 @@ inference (O12) is an explicit non-goal.
   and generation is sound and complete for any model meeting
   Definition 10.2.5, but that definition requires total type
   constructors and disjoint composition is partial, so Waxwing needs
-  an encoding of its row model (for example, composition as a relation
-  with definedness obligations) before EMLTI's theorems apply. That
-  encoding, the open-world match (O24) and a solver are Waxwing's own.
+  an encoding of its row model before EMLTI's theorems apply. The O24
+  note recommends encoding (a), composition as a ternary predicate
+  U(t, r, s) with total constructors (statements proposed, unproved).
+  Its costs: schemes are no longer type-shaped (σ_inf becomes a
+  U-chain under ∀), so exported L0 schemes need the flattening lemma
+  F; and EMLTI's solver and its row laws do not cover U. The encoding,
+  the open-world match (O24, GI-Open) and a solver are Waxwing's own.
   Scheme language: *L0* keeps exported schemes writable today; *L1*
   (∃ in constraints,
   internal) gives type-shaped principal schemes that do not serialize
@@ -1407,3 +1421,15 @@ assessment's §18 records its own changes. Here:
   recommendations, pending the author's confirmation. The statuses
   paragraph says that "argued" is a conditional argument, not an
   implementation guarantee.
+
+**O24 note integrated, 2026-10-22.** The note
+(docs/plans/2026-10-22-o24-emlti-correspondence.md) is written. It
+finds that direct identification fails (argued: ⊎ is partial against
+Definition 10.2.5's total constructors), recommends encoding (a),
+composition as a ternary predicate U(t, r, s) with total
+constructors, and proposes M0, T1, T2, V, GI, GI-Open, GI-Atoms,
+GI-Fin and F (statements only). §1.2 (a), §1.4, §9 step 3 and D2 now
+cite those findings in place of "in progress"; D2's EMLTI option names
+(a)'s costs (lemma F for non-type-shaped schemes; EMLTI's solver and
+row laws do not cover U). O24 is proposed in the assessment's matrix;
+counts there are recomputed.
