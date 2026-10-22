@@ -5319,10 +5319,13 @@ and T-R0e §7 also maps its pre-revision numbers):
    policy [yes].
 5. R019 and admissibility: FK-W in the first design [W proposes yes];
    FK-U inactive until proved [yes]; `AdmittedPendingR019` not
-   user-visible [yes]; refused after Task 8 unless FK-U is proved
-   [yes]; T1-a's explicit classifier required [yes]. Unverified: that
-   every `AdmittedPendingR019` key reaches the Task 8 placeholder today
-   (argued only; a probe is proposed).
+   user-visible [yes]; T1-a's explicit classifier required [yes].
+   After Task 8, `AdmittedPendingR019` programs: refuse, keep compiling
+   through the current path, or prove FK-U first. This is a behaviour
+   change for programs accepted today, so it is an explicit
+   compatibility decision (decision 2), with no default (§18.68).
+   Unverified: that every `AdmittedPendingR019` key reaches the Task 8
+   placeholder today (argued only; a probe is proposed).
 6. Witness representation: names only for non-`Ty Open` terms; keep
    `ChooseT`; syntactic hole-contract check; auxiliaries evaluated,
    never bound [all yes].
@@ -5355,3 +5358,44 @@ and T-R0e §7 also maps its pre-revision numbers):
 
 **Next:** the author's answers; then the concrete implementation plan
 (writing-plans; nothing implemented), as §18.66 asked.
+
+### 18.68 External review of the overnight work; correction pass (2026-10-22)
+
+The author forwarded an external review of the overnight work (it did
+not rebuild Lean or audit all 63 matrix rows). It found the foundation
+recommendation promising and asked for a focused correction pass
+before the implementation plan:
+
+1. O24 must deal with partial composition: EMLTI's Definition 10.2.5
+   requires constructors to denote total functions, and disjoint
+   composition is undefined on overlapping fields, so the
+   correspondence needs an encoding (composition as a relation with
+   definedness obligations, say), not an identification of models.
+2. A builder continuation does not give binding coverage by
+   construction: `Witness → Either ElabFault a` can still ask for an
+   absent binding. Coverage needs tracked requests, a restricted
+   builder interface or a coverage theorem.
+3. T-R0a's claim that strategy order never changes the verdict class
+   is false: one strategy's refused candidate gives `Faulted` where
+   another's certificate gives Solved. Soundness only rules out a
+   sound acceptance and a sound refutation disagreeing.
+4. The post-Task-8 refusal of `AdmittedPendingR019` is a proposed
+   behaviour change and needs an explicit compatibility decision, not
+   a maintenance default (Q5 above amended).
+5. The "no principal writable `where` clause" result is bounded
+   evidence from a scratch search, not a universal impossibility.
+6. Unsupported syntax alone supplies no contradiction; a separately
+   justified contradiction (§18.65's grounds 1 and 2) may still exist.
+   The documents should say so consistently.
+
+The review's recommendations on the extension's decisions, recorded
+as the reviewer's and **pending the author's confirmation**: D1,
+develop the continuation with coverage enforced or proved; D2, pursue
+EMLTI as the candidate but investigate O24 before adopting the
+correspondence or freezing L0 exports; D3, statements once the
+interfaces are stable, no selection rule; D4 deferred; D5 and D6 as
+recorded.
+
+**Held:** blanket acceptance of Q1-Q12 and the implementation plan,
+until the correction pass and a narrow O24 correspondence note are
+back.
