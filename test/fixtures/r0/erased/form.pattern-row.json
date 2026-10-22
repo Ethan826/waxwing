@@ -1,0 +1,15 @@
+{
+  "name": "form/pattern-row",
+  "kind": "form",
+  "node": "Ctor",
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": null,
+  "note": "a constructor pattern instantiates the owner row parameter (Check/Match.purs:110); only the pattern triggers P-ii",
+  "source": "effect Log { fn log(n: Int): Unit; }; type Job(...e) = Job(Unit -> Unit with ...e); fn g(j: Job(Log)): Int = match j { Job(f) => 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

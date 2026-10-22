@@ -206,6 +206,13 @@ pairs), hand-derived `sources`/`inferredRow` checked against a
 reference reading (test/r0-erased-criterion.mjs); mutants M1 (re-run)
 and M5-M7 recorded. BACKLOG FX032 (an operation's `with` row is
 ignored; gate P6). Corpus re-pinned.
+Fix round 2 (re-review N1, gate finding 2): fresh effect-row sites in
+Features.Check enumerated by grep into note §2.1 (file:line, whether
+the row reaches the checked IR, probed where unclear, P-ii trigger,
+E-a slot); P-ii and the reference `inferredRow` now cover bare
+`show`, any apply or pipe, partial applications and constructor
+patterns; seven fixtures (34 in all) and mutants M8-M12 recorded.
+Corpus re-pinned.
 
 ## Language direction recorded (2026-10-08)
 

@@ -1,0 +1,15 @@
+{
+  "name": "form/partial-call",
+  "kind": "form",
+  "node": "Call",
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": null,
+  "note": "a partial call: the remaining stages have fresh rows (Check/Stages.purs:23, Call.purs:191); only partiality triggers P-ii",
+  "source": "fn add(x: Int, y: Int): Int = x + y; fn g(): Int = { let f = add(1); 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

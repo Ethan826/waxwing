@@ -1,0 +1,15 @@
+{
+  "name": "form/partial-construct",
+  "kind": "form",
+  "node": "Construct",
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": null,
+  "note": "a partial construction; only partiality triggers P-ii",
+  "source": "type P = P(Int, Int); fn g(): Int = { let f = P(1); 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

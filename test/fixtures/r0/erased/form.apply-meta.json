@@ -1,0 +1,15 @@
+{
+  "name": "form/apply-meta",
+  "kind": "form",
+  "node": "Apply",
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": null,
+  "note": "applying a meta-typed value binds it to an arrow with a fresh row (Check/Apply.purs:182); only Apply triggers P-ii",
+  "source": "type Opt(a) = None | Some(a); fn g(): Int = { let n = None; match n { Some(f) => f(1), None => 0 } }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

@@ -1369,3 +1369,60 @@ with Op = Op.op()` compiles, and so does the same with `with Log`.
 An operation's own row is dropped at Resolve (Resolve/Effect.purs:
 47-58). Recorded as BACKLOG FX032, an observation for the author; not
 fixed.
+
+**Fix round 2 (re-review N1; gate finding 2).** *Amended after fix
+round 1's runs (reason: the re-review found two fresh-row sites
+reaching the checked IR that P-ii missed: bare `show` and applying a
+meta-typed value).* The fresh effect-row sites of src/Features/Check
+were enumerated mechanically (note §2.1: `grep -rn "openRow (Hole\|Hole
+(state.next\|Hole state.next\|(Just (Hole\|Just (Meta\|Meta fresh"`
+and `grep -rn "TFun [a-z(]"` over src/Features/Check, with the helpers
+they call). The enumeration found a third missed site: a partial
+application's remaining stages (Stages.purs:23 via Call.purs:191),
+and a fourth trigger, constructor patterns (Match.purs:110).
+
+Probes (checked; a scratch script ran parse, resolve and check on the
+worktree's `output/` and printed `g`'s checked body and its count of
+rows with a `Hole` tail; `node ir.mjs "<source>"`; deleted after):
+
+- `fn k(x: a): Int = 0; fn g(): Int = k(show);`: 2 hole rows;
+  `Call(0 [TFun(TVar(Hole(0)) Row([] Just(Hole(1))) TText)] [Lambda …])`.
+- `type Opt(a) = None | Some(a); fn g(): Int = { let n = None; match
+  n { Some(f) => f(1), None => 0 } };`: 0 hole rows, but
+  `Construct(0 [TFun(TInt Row([] Just(Rigid(0))) TInt)] [])` and the
+  same arrow in the pattern and local types; no row is written. The
+  same with `1 |> f`.
+- `fn add(x: Int, y: Int): Int = x + y; fn g(): Int = { let f =
+  add(1); 0 };`: 1 hole row, `TFun(TInt Row([] Just(Hole(0))) TInt)`.
+  Likewise `type P = P(Int, Int)` with `P(1)`, and `effect Two { fn
+  two(a: Int, b: Int): Unit; }` with `Two.two(1)` (row `Two` plus a
+  hole tail).
+- `type Job(...e) = Job(Unit -> Unit with ...e); fn g(j: Job(Log)):
+  Int = match j { Job(f) => 0 };`: the pattern types hold the
+  instantiated row parameter, solved to `Log` with `g`'s rigid tail.
+- defer-plain, `fn g(): Int = { defer (); 0 };` and the `nofail Log`
+  form with `defer Log.log(1)`: no row in the IR
+  (`Block([Defer(Expr(… UnitValue))] …)`).
+- `fn g(): Text = show(1);` and `fn g(): Int = crash(1);`: no row
+  (`Show(…)`, `Crash(…)`); only the bare references make one.
+
+P-ii and the reference reading's `inferredRow` gained `ShowRef`, any
+`Apply` or `Pipe`, partial applications and constructor patterns.
+Seven form fixtures were added (show-reference, apply-meta, pipe-meta,
+partial-call, partial-construct, partial-perform, pattern-row; each
+compiles, `sources` `[]`, `inferredRow` true by hand, and each
+triggers P-ii by its own disjunct only). Re-derived by hand:
+form/own-signature's `inferredRow` becomes true (`h(())` is an
+`Apply`); the reference reading agreed with every other fixture.
+`node --test test/r0-erased.test.mjs`: 4 of 4 pass on 34 fixtures.
+
+Mutant runs (recorded; isolated copy as before; 4 of 4 pass
+unpatched; deleted afterwards). Each drops one site from
+test/r0-erased-criterion.mjs `inferredRow`, and each failed "each
+fixture has the criterion's answers for g" at that site's fixture:
+
+- M8, `'ShowRef'` removed from the `made` list: form/show-reference.
+- M9, `'Apply'` removed: form/apply-meta.
+- M10, `'Pipe'` removed: form/pipe-meta.
+- M11, partiality ignored (`partial ||` removed): form/partial-call.
+- M12, the constructor-pattern line removed: form/pattern-row.

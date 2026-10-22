@@ -33,7 +33,7 @@ const familyOf = node => node.value1.constructor.name === 'Just'
 
 // A deliberate pin: adding or removing a fixture is a table change.
 test('every erased-row fixture gives its recorded outcome', () => {
-  assert.equal(fixtures.length, 27);
+  assert.equal(fixtures.length, 34);
   for (const f of fixtures)
     assert.deepEqual(today(f), outcome(f), f.name);
 });

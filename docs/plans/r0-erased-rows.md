@@ -42,10 +42,41 @@ obligation.
 | K1, label arguments | Two rows meet; labels with one key pair up and their arguments unify with the type unifier, so a row equation can bind or refute a type or record variable | Check/UnifyRow.purs:159-163 (`foldM unifyPair` over the label arguments); a `Fail` label's key reads its payload's solved head, :136 (`failHead`) | checked: obligation-record, obligation-annotation, obligation-data |
 | K1e, effect-only arguments | The same with arguments that hold no record and no type or record variable. They may hold effect-row variables (inside an arrow's row, which the translation erases), so the equation binds only effect-row variables or is a closed fact | as K1 | checked: obligation-ground (a closed fact), obligation-rowvar (binds a row variable; gate P1) |
 | K2, rows met through types | A type equation between arrows, data or handler types also equates their rows, so the record solution decides which rows meet | Check/Unify.purs:151-163 (`unifyRowsAt`, `unifyArrows`, `unifyInference`) | checked in Task 0.5: every check-time effect refusal reads `state.subst`, and the `selected` variants show the verdict following the solver's record choice (docs/findings.md, "Effect and coverage audit") |
-| K3, values | The inferred rows the checked IR stores: a lambda's row (Check/Lambda.purs:37); a handler literal's inference and clause rows (Check/Clauses.purs:73-74); `crash` used as a value, whose built lambda has a fresh row (Check/Operation.purs:123); instances of a callee's or constructor's `RowSort` variables, which surface only inside the types of subexpressions (a function reference's arrow, a lambda passed to an effect-polymorphic callee); and rows inside the solved image of any type or record variable. The checked `Instantiation` holds type and record slots only (D1 §8, S8; gate P7: `fn g(): Int = k()` checks to `Call(0 [] [])`) | src/Domain/Checked/Internal.purs:45-54; D1 §12.1 | argued, with gate P7's printed IR |
+| K3, values | The inferred rows the checked IR stores: every fresh row created at a site of §2.1's enumeration that reaches the checked IR, and rows inside the solved image of any type or record variable. The checked `Instantiation` holds type and record slots only (D1 §8, S8; gate P7: `fn g(): Int = k()` checks to `Call(0 [] [])`) | §2.1; src/Domain/Checked/Internal.purs:45-54; D1 §12.1 | checked per site (§2.1's probes) |
 
 Mark obligations (`nofail`, mark variables) are effect-only and fall
 under K2 (Task 0.5's MarkReport rows; gate P5).
+
+### 2.1 Where fresh effect rows are made (K3, enumerated)
+
+*Added in fix round 2 (re-review N1: bare `show` and applying a
+meta-typed value were missing).* Method: every match in
+src/Features/Check of `grep -rn "openRow (Hole\|Hole (state.next\|Hole
+state.next\|(Just (Hole\|Just (Meta\|Meta fresh"` and of `grep -rn
+"TFun [a-z(]"`, read with the helpers they call (Stages, Scheme,
+DeclarationUse). Type-sorted metas (`TVar (Hole …)`) and record rows
+(RowMerge) are left out; a type meta's image holds only rows made
+elsewhere in this table. "Reaches the IR" was probed where the code
+did not settle it, by printing `g`'s checked body (a scratch script
+running parse, resolve and check on the worktree's `output/`; the
+probes and their outputs are in docs/findings.md, fix round 2).
+
+| Site | Fresh row | Reaches the checked IR | P-ii trigger | E-a slot |
+|---|---|---|---|---|
+| Check/Lambda.purs:37 and Stages.purs:23 (`stages`, via Lambda.purs:42) | a lambda's row and its inner stages' rows | yes: the lambda's arrow type | `Lambda` | `⟨p, effect⟩`, `⟨p, stage k⟩` |
+| Check/Clauses.purs:73-74 | a handler literal's inference and clause rows | yes: the THandler type (gate P7) | `Handler` | `⟨p, handler⟩`, `⟨p, clauses⟩` |
+| Check/Operation.purs:123 (`crashRef`) | `crash` as a value: its lambda's row | yes (gate P7) | `CrashRef` | `⟨p, effect⟩` |
+| Check/Show.purs:47 (`showRef`) | bare `show`: its lambda's row | yes: probe show-reference, `TFun(TVar(Hole(0)) Row([] Just(Hole(1))) TText)` | `ShowRef` (new) | `⟨p, effect⟩` |
+| Check/Apply.purs:182 (`bindArrow`, :176-184) | applying a value whose type is a meta binds it to an arrow with a fresh row | yes, solved: probe apply-meta stores `TFun(TInt Row([] Just(Rigid(0))) TInt)` in the `Construct`, pattern and local types, though no row is written | any `Apply` or `Pipe` (new) | `⟨p, apply⟩` |
+| Check/Scheme.purs:126 (`instantiate`) with DeclarationUse.purs:75-81 (`openedRow`, Stages.purs:35; `stages`, Stages.purs:23) | at a use of a function, constructor or operation: instances of its `RowSort` variables, its own row opened with a fresh tail, and fresh rows for its stages | yes, in a reference's arrow (`FunctionRef`, `CtorRef`, `OperationRef`), in the remaining stages of a partial application (Call.purs:191; probes partial-call, partial-construct, partial-perform), and wherever a declared type with an open row is instantiated | a reference; a partial `Call`, `Construct` or `Perform`; an application whose declared types hold an open row | `⟨p, inst i⟩`, `⟨p, opened⟩`, `⟨p, stage k⟩` |
+| Check/Match.purs:110 (`instantiate` of the owner) | a constructor pattern's instances of the owner's row parameters | yes, solved: probe pattern-row stores the instance in the pattern types | a constructor pattern whose fields hold an open row (new) | `⟨p, inst i⟩` |
+| Check/Defer.purs:84 | the deferred expression's row | no: the checked `Defer` item holds only its expression (src/Domain/Checked/Internal.purs:109); probe defer-plain | none needed | none |
+| Check/Consume.purs:113, :226 | the throwaway tail of a consumed stage | no: an operand of consumption, never stored in an expression (argued from the code) | none needed | none |
+| Check/Binding.purs:134-136, UnifyRow.purs:200, RowFinish.purs:100, Groups.purs:102 | the fresh tail when a row meta is extended, and a handler group's remainder | only inside the image of a row meta made above (derived, argued) | that row's | inside that slot's image |
+| Check/TailPass.purs:116, :129; RowFinish.purs:112 | none: they re-bind an existing meta | as that meta | that meta's | that meta's |
+| Check/Operation.purs:84 (`printRef`), :137 | `Console`, closed and written | not inferred | none needed | none |
+| Check/MarkUse.purs:113-129 (`freshRow`) | fresh marks only; labels and tails unchanged | not a new row | none needed | none |
+| Check/ArgumentRow.purs:155 | a hypothetical arrow for a diagnostic | no | none needed | none |
 
 **The five obligation pairs (checked).** Each is a refused program and
 a control that differs in one record, type or label
@@ -178,8 +209,8 @@ solved type (T-R0b §3.5).
 this table over resolved syntax. Each fixture's `sources`, `marked`
 and `inferredRow` (§7) were derived by hand from the table, and
 test/r0-erased.test.mjs checks them against the reference reading for
-all 27 fixtures. Three mutants of the reference reading are each
-caught (findings, M5-M7). It is a check of the fixtures' answers, not
+all 34 fixtures. The mutants of the reference reading are each
+caught (findings, M5-M7 and M8-M12). It is a check of the fixtures' answers, not
 Task 3.5's detector.
 
 **What counts, in the brief's terms.** Effect operations: a perform
@@ -272,11 +303,10 @@ Two realizations:
 - **E-a.** Effect-row metas become atom-free flexible variables of
   sort `EffectRowSort` with canonical names; the witness binds them;
   the online adapter reads them back. Names (proposed, extending
-  §12.1's `⟨p, effect⟩` and `⟨p, inst i⟩`): `⟨p, effect⟩` for a
-  lambda's row and for the lambda that `crash` used as a value builds
-  at `p`; `⟨p, handler⟩` and `⟨p, clauses⟩` for a handler literal's
-  inference and clause rows; `⟨p, inst i⟩` for an instance of a
-  callee's or constructor's `RowSort` variable `i`.
+  §12.1's `⟨p, effect⟩` and `⟨p, inst i⟩`): one per IR-reaching site
+  of §2.1's table, in its last column (`⟨p, effect⟩`, `⟨p, stage k⟩`,
+  `⟨p, handler⟩`, `⟨p, clauses⟩`, `⟨p, apply⟩`, `⟨p, inst i⟩`,
+  `⟨p, opened⟩`).
   **Clarification (argued; amended after gate finding 3).** K3 also
   holds rows inside images. A witness binding `Inline τ` is a
   `Ty Open` (D1 §3.2's table), whose arrows, data and handler types
@@ -301,19 +331,26 @@ Two realizations:
 
 ## 7. Recommended default (policy, for the author)
 
-**Part (ii)'s trigger, P-ii (proposed).** P-ii(`f`) holds when
-`f.body`, dead code included, contains a `Lambda`, a `Handler`
-literal, `CrashRef` or `Crash`, a `FunctionRef`, `CtorRef` or
-`OperationRef`; or a `Call`, `Construct` or `Perform` whose callee's,
-constructor's or operation's declared parameter or result types hold
-a row with a tail variable or a label with a variable argument. It
-is a syntactic over-approximation of "the checked IR of `f` holds an
-inferred effect row" (K3); the exact property would need the
-provenance of each row in the checked IR, which today's IR does not
-keep. **It holds for pure declarations too:** any declaration with a
-lambda or a function reference, such as `fn g(): Int = k(fn(u: Unit)
-=> (), 1)` (gate P7). The reference reading implements it, and the
-fixtures' `inferredRow` field records it.
+**Part (ii)'s trigger, P-ii (proposed; revised in fix round 2).**
+P-ii(`f`) holds when `f.body`, dead code included, contains a
+`Lambda`, a `Handler` literal, `CrashRef`, `Crash`, `ShowRef`, a
+`FunctionRef`, `CtorRef` or `OperationRef`, or any `Apply` or `Pipe`;
+or a `Call`, `Construct` or `Perform` that is partial (fewer arguments
+than declared parameters) or whose declared parameter or result types
+hold a row with a tail variable or a label with a variable argument;
+or a constructor pattern whose constructor's fields hold such a row.
+Each disjunct is the trigger of an IR-reaching site of §2.1's
+enumeration, so P-ii holds whenever one of those sites is in `f`
+(argued from the enumeration; each new disjunct has a fixture and a
+mutant, findings). It over-approximates "the checked IR of `f` holds
+an inferred effect row" (K3): an `Apply` of a parameter of known arrow
+type triggers it without making a row. The exact property would need
+the provenance of each row in the checked IR, which today's IR does
+not keep. **It holds for pure declarations too:** any declaration with
+a lambda, a function reference or an application of a local, such as
+`fn g(): Int = k(fn(u: Unit) => (), 1)` (gate P7). The reference
+reading implements it, and the fixtures' `inferredRow` field records
+it.
 
 1. **Part (i): option (a).** `ErasedRow` by C-erased, joining T-R0a
    §5.3 rule 1 (plan Task 4.1: "After G-erased, its ruled marker or
@@ -362,7 +399,7 @@ and adds no code beyond syntactic detectors.
    settle; it is needed before Task 4.6, not in this tranche.
 3. The Unresolved reason for a demoted non-online Solved: not
    `ClassF`; named by the T-R0a owner.
-4. E-a, stated as dependent on (b-joint) and with the full K3 list,
+4. E-a, stated as dependent on (b-joint) and with the K3 list of §2.1,
    so that G-D1 can close.
 5. Whether an operation's ignored `with` row (gate P6; BACKLOG FX032)
    is a live-checker defect.
@@ -421,11 +458,12 @@ measures its cost.
 |---|---|
 | The five obligation pairs: refused and compiling as stated | checked (test/r0-erased.test.mjs) |
 | Those refusals need label-argument unification | checked (mutant M1, findings) |
-| The 17 form fixtures compile today and contain their form | checked |
-| The fixtures' `sources`, `marked` and `inferredRow` are the tables' answers | checked against the reference reading (mutants M5-M7); Task 3.5's detector checks them again |
+| The 24 form fixtures compile today and contain their form | checked |
+| The fixtures' `sources`, `marked` and `inferredRow` are the tables' answers | checked against the reference reading (mutants M5-M12); Task 3.5's detector checks them again |
 | obligation-record's recorded problem is satisfiable | argued (hand translation) |
 | Claim A (A1-A4) and the unmarked-declaration argument | argued, with citations; gate review found no counterexample |
-| P-ii over-approximates inferred rows in the checked IR | argued |
+| §2.1 lists every fresh effect-row site in Features.Check | checked by grep (method in §2.1); "reaches the IR" probed where unclear |
+| P-ii triggers at every IR-reaching site of §2.1 | argued from the table; each disjunct has a fixture and a mutant (M8-M12) |
 | (b-joint) narrows nothing | argued |
 | Rows inside witness images are unchecked by G0 | argued from D1 §3.2 and §9 |
 

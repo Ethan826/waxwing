@@ -1,0 +1,15 @@
+{
+  "name": "form/show-reference",
+  "kind": "form",
+  "node": "ShowRef",
+  "sources": [],
+  "marked": false,
+  "inferredRow": true,
+  "against": null,
+  "note": "bare show is a lambda with a fresh row (Check/Show.purs:47); only ShowRef triggers P-ii",
+  "source": "fn k(x: a): Int = 0; fn g(): Int = k(show); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

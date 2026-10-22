@@ -71,15 +71,27 @@ const openRows = types => types.some(ty => nodesNamed(ty, 'Row')
   .some(row => row.value1.constructor.name === 'Just'
     || row.value0.some(label => label.value1.some(recordOrVariable))));
 
-// Part (ii)'s predicate: `f`'s checked IR may hold an inferred row.
+// Part (ii)'s predicate, P-ii: `f`'s checked IR may hold an inferred
+// row. Each line names its rows in the note's §2 enumeration table.
 export const inferredRow = (program, f) => {
   const all = name => nodesNamed(f.body, name);
-  const made = ['Lambda', 'Handler', 'CrashRef', 'Crash', 'FunctionRef',
-    'CtorRef', 'OperationRef'].some(name => all(name).length > 0);
-  const applied = [
-    ...all('Call').map(n => typesOf(functionOf(program, n.value1))),
-    ...all('Construct').map(n => program.ctors[n.value1].fields),
-    ...all('Perform').map(n => typesOf(operationOf(program, n))),
+  // Lambda (and its stages), handler literal, crash, bare show, any
+  // reference (its opened row and stages), apply and pipe (bindArrow).
+  const made = ['Lambda', 'Handler', 'CrashRef', 'Crash', 'ShowRef',
+    'FunctionRef', 'CtorRef', 'OperationRef', 'Apply', 'Pipe']
+    .some(name => all(name).length > 0);
+  const callee = n => functionOf(program, n.value1);
+  const operation = n => operationOf(program, n);
+  // An application whose declared types hold an open row (an instance
+  // of a row variable), or that is partial (the remaining stages' rows).
+  const uses = [
+    ...all('Call').map(n => [typesOf(callee(n)),
+      n.value2.length < callee(n).parameters.length]),
+    ...all('Construct').map(n => [program.ctors[n.value1].fields,
+      n.value2.length < program.ctors[n.value1].fields.length]),
+    ...all('Perform').map(n => [typesOf(operation(n)),
+      n.value3.length < operation(n).parameters.length]),
+    ...all('Ctor').map(n => [program.ctors[n.value1].fields, false]),
   ];
-  return made || applied.some(openRows);
+  return made || uses.some(([types, partial]) => partial || openRows(types));
 };
