@@ -281,6 +281,16 @@ bijection. They hold only on the finite carrier, where ∂ is restricted.
 
 ## 4. Recommendation
 
+**Decided (D2, dossier §18.69, 2026-10-22).** The author adopted
+encoding (a). M0, T1, T2, V, GI, F and GI-Open go to statement review
+for a focused proof tranche; the tranche itself is not yet authorized.
+GI-Atoms stays conditional on B1b. GI-Fin is not named in the decision
+and stays proposed. Current exported syntax is kept for now, but L0
+is not frozen as sufficient for future principal inference. Every
+statement below is still proposed and unproved; the decision chooses
+the encoding and adds no evidence. The recommendation that follows is
+kept as written.
+
 **State (a) next: M0, T1, T2, V, GI and GI-Open, with F.** It is the
 smallest encoding. It adds one predicate and no junk, and its ground
 types are exactly Waxwing's finite values. Waxwing's `Holds` already
@@ -399,3 +409,12 @@ applied.
 
 No status changes. The assessment's O24 row and IF4 are updated to the
 X_W^atoms(B) name and the family reading.
+
+## 7. Author's decisions (§18.69), 2026-10-22
+
+The author decided D2 (dossier §18.69): encoding (a); M0, T1, T2, V,
+GI, F and GI-Open to statement review for a focused proof tranche;
+GI-Atoms conditional on B1b; current exported syntax kept, with L0 not
+frozen as sufficient for future principal inference. §4 records the
+decision. No status changes: the model-condition checks stay argued
+and every lemma statement stays proposed.

@@ -541,17 +541,20 @@ values for RC2, evaluated from their defining atoms (recorder-rules
 whose auxiliary `⟨p, rest⟩` has no checked-IR position. **Proposed**,
 conditional on D1 adopting the continuation and choosing a coverage
 mechanism (argued before the external review of 2026-10-22, §12).
+D1 chose both (§18.69: tracked applicative requests, so Cov's domain
+is the tracked set); the row stays proposed, since the mechanism is
+not yet specified and nothing is proved.
 
-**O32. Field references (G2), interface only.** If D1 adopts the
-continuation (O27): Pottier's value type is a parameter, so adding
-`Field r l` to `TyTerm` (reserved in W §1.4) changes neither
-`generate`'s type nor EL1 (statement EL5). The new obligation is
-partiality: `Field r l` is undefined when `r` lacks `l`, so `build`
-returns `Either` from the start, and each use carries a definedness
-condition (guarded by `Choose (r, l, true)` or entailed by `D`).
-*Separating program:* requirements §6.3's `{ ...r, ...x } = { a: β, ...y
-}`. G2 stays deferred (decision 8). ADR 014: partial, key-dependent
-decoded values. **Argued** (compatibility only).
+**O32. Field references (G2), interface only.** Under D1's
+continuation (O27; chosen at §18.69, unproved): Pottier's value type
+is a parameter, so adding `Field r l` to `TyTerm` (reserved in W §1.4)
+changes neither `generate`'s type nor EL1 (statement EL5). The new
+obligation is partiality: `Field r l` is undefined when `r` lacks `l`,
+so `build` returns `Either` from the start, and each use carries a
+definedness condition (guarded by `Choose (r, l, true)` or entailed by
+`D`). *Separating program:* requirements §6.3's `{ ...r, ...x } = { a:
+β, ...y }`. G2 stays deferred (decision 8). ADR 014: partial,
+key-dependent decoded values. **Argued** (compatibility only).
 
 **O33. Meaning preservation.** *Statement* EL4: at a split site whose
 basis is forced, any two valid witnesses give equal lowered programs
@@ -1119,10 +1122,13 @@ dependency is named. None authorizes proofs or prototypes.
 2. **R0 interface note** (after the R0 owners' statement review):
    continuation versus read-back, coverage of `build`'s requests
    enforced or proved, values only after the verdict (O27, O28, O31;
-   decision D1).
+   decision D1). Decided (§18.69): the continuation, with tracked
+   applicative requests, specified before implementation.
 3. **Foundation statements:** statement review of the O24 note's
    §3 (encoding (a), composition as the predicate U; M0, T1, T2, V,
-   GI, GI-Open, GI-Atoms, GI-Fin and F, all proposed), IF1's
+   GI, GI-Open, GI-Atoms, GI-Fin and F, all proposed; D2 (§18.69)
+   sends M0, T1, T2, V, GI, F and GI-Open to review for a focused
+   proof tranche, with GI-Atoms conditional on B1b), IF1's
    declarative relation,
    then IF4 with the open-world match and annotation checking (O24,
    O25), then
@@ -1130,12 +1136,14 @@ dependency is named. None authorizes proofs or prototypes.
 4. **Termination statements:** P2 for FK-W (O41); U-a/U-b kept
    inactive (O42); the DAG induction (O45).
 5. **C8-J note** (after IF6 and step 4, since O22c is cited): O34-O39,
-   then EL4 (O33) and the extended R (O35). Decision D3.
+   then EL4 (O33) and the extended R (O35). Decision D3, decided
+   (§18.69): once the witness and termination interfaces stabilize;
+   no selection rule.
 6. **Guards** (after R0, termination and the witness contract, per
    decision 7): PF1 and the finite-rows lemma (O46), the coupling search
    (O47), the field-reference interface note (O48, O49; when G2 is
-   authorized), and ENC-S only if `cover` needs it (O50). Decision D4;
-   D5 is a recorded default and D6 is deferred with G2.
+   authorized), and ENC-S only if `cover` needs it (O50). Decision D4
+   (decided, §18.69: deferred); D5's default and D6's deferral stand.
 7. **Designs that own their rows:** IF7's two statements and the frame
    correspondence in INF001 (O16, O56); `V_k` and the preservation
    statement in J001 (O51, O52); O57 in FX006/J001; O59 in K001; O60
@@ -1143,12 +1151,21 @@ dependency is named. None authorizes proofs or prototypes.
 
 ## 10. Decisions for the author
 
-D1-D4 ask a question; each explains the options and consequences
+The author decided D1-D6 on 2026-10-22 (dossier §18.69), adopting the
+external review's recommendations below. Each item now ends with the
+decision; the options and consequences before it are kept as
+background. A decision is not evidence: every status below stays as
+it was, and the decisions authorize neither implementation nor proof
+work (§18.69: the implementation plan may be written; implementation
+and proofs stay separately unauthorized).
+
+D1-D4 asked a question; each explains the options and consequences
 before asking, and states this document's recommendation or the
-default where it has one. D5 and D6 ask nothing now: D5 records a
+default where it has one. D5 and D6 asked nothing: D5 records a
 default and D6 is deferred with G2. The assessment's §14 Q1 and Q2
 overlap D2 and point to it; §14 Q1 also asks whether complete
-inference (O12) is an explicit non-goal.
+inference (O12) is an explicit non-goal, which §18.69 does not
+decide.
 
 - **D1. How R0 obtains the checked IR (O27).** *Read-back* (today's
   recorder-rules §5.3): the strategy's adapter matches settled types
@@ -1184,6 +1201,17 @@ inference (O12) is an explicit non-goal.
   Either way G3 still decides the split. O31 (proposed) and O32
   (argued) hold only on the condition that D1 adopts the
   continuation, O31 also on the choice of mechanism.
+  *Decided (§18.69):* the generation continuation, with tracked
+  applicative requests. Reads are introduced through constructors
+  that also record their dependencies, not through a separately
+  written dependency list. This is (a) refined: the declared set is
+  produced by the constructors that perform the reads, not kept
+  beside them. (b)'s scoped handles are an optional addition, to
+  enforce problem identity if needed. (c) is not chosen. The mechanism
+  is to be specified before implementation. O27's choice between
+  read-back and continuation is thereby made; O31's Cov domain is the
+  tracked set. O27 and O31 stay proposed and O32 argued: the design is
+  chosen, and nothing about it is proved.
 - **D2. Instance order and scheme language for IF4 (O10, O11, O24;
   assessment §14 Q1, Q2).** *This document's recommendation (argued,
   §1.2, §1.4; conditional on O24's encoding of partial composition):*
@@ -1213,6 +1241,14 @@ inference (O12) is an explicit non-goal.
   `u`, `t`, `q`, which reach `file`'s key undetermined, so σ″ violates
   IF6 as stated; *L2* (Boolean row terms) makes case A a substitution
   instance through G1's split and is a new combination tied to D4.
+  *Decided (§18.69):* pursue encoding (a), composition as the
+  predicate U. The O24 note's M0, T1, T2, V, GI, F and GI-Open go to
+  statement review, for a focused proof tranche that is not yet
+  authorized; GI-Atoms stays conditional on B1b (GI-Fin is not named
+  and stays proposed). Current exported syntax is kept for now, but L0
+  is not frozen as sufficient for future principal inference: whether
+  principal schemes need L1 or another language stays open (O4, O10,
+  O11, IF4). O24 stays proposed.
 - **D3. When and in what form decision 6's restricted C8 argument is
   stated (O39).** Dossier §18.66 decision 6 already adopted a
   restricted C8 argument and a selection contract, with no rule chosen,
@@ -1226,6 +1262,10 @@ inference (O12) is an explicit non-goal.
   unforced splits stay rejected (Jones's own practice), with no new
   combinations, at the cost of refusing programs whose splits are
   behaviourally irrelevant.
+  *Decided (§18.69):* proceed with the restricted C8 statements once
+  the relevant witness and termination interfaces stabilize. No
+  selection rule is chosen, so forcedness only remains the behaviour
+  until then. O39 stays proposed.
 - **D4. Whether the guards investigation may begin (O46).** Decision 7
   defers G1's remedies until R0, termination and the witness contract.
   *Default: wait (decision 7).* It follows decision 7's order and
@@ -1233,6 +1273,8 @@ inference (O12) is an explicit non-goal.
   7):* PF1 and the finite-rows lemma are independent of those
   documents' wording, but a later change to the witness representation
   could invalidate them.
+  *Decided (§18.69):* guards stay deferred (decision 7 stands). O46
+  stays proposed; its note waits.
 - **D5. `cover` (O50): recorded default, not asked now.** `coverS`,
   proving QX3: exact, inside Lean, adequate for the recorded scenarios
   (Shannon depth at most 1). LRAT only on demonstrated need: LRAT
@@ -1242,6 +1284,7 @@ inference (O12) is an explicit non-goal.
   (ENC-S) to the trust base, their search and certificate size are
   unbounded in general, and ADR 014 clause 4 asks for a demonstrated
   need first. No need is demonstrated today.
+  *Decided (§18.69):* the recorded default stands. O50 stays proposed.
 - **D6. Exported field references (O48, O49): deferred with G2.** G2
   is deferred (decision 8), and the brief asked for compatibility
   only. What is in scope now is what W §1.4 reserves: `Field r l` as
@@ -1254,11 +1297,14 @@ inference (O12) is an explicit non-goal.
   report that restriction as a type operator cost most general
   unifiers. *Witness metadata only (option B, no export):* no scheme
   change; references stay internal.
+  *Decided (§18.69):* the deferral stands. O48 stays argued and O49
+  unresolved.
 
-**External review recommendations (2026-10-22, pending the author's
-confirmation).** An external reviewer, in a review the author
-forwarded, recommended the following. They are recorded here as the
-reviewer's; none is a decision, and D1-D6 above stay as they were.
+**External review recommendations (2026-10-22), adopted
+(§18.69).** An external reviewer, in a review the author forwarded,
+recommended the following. The author adopted them, refined as the
+decisions under D1-D6 above record; the list is kept as the
+reviewer's wording.
 
 - *D1:* develop the continuation design, with coverage enforced or
   proved explicitly.
@@ -1274,7 +1320,10 @@ describe conditional arguments and must not be read as established
 implementation guarantees. The reviewer's next step is these
 corrections plus a narrowly scoped O24 correspondence note, not a
 broad campaign, with blanket acceptance of Q1-Q12 and the
-implementation plan held until the correction pass is back.
+implementation plan held until the correction pass is back. That pass
+is back, and a second review found it substantially satisfactory;
+§18.69 records the author's answers to Q1-Q13 and permits the
+implementation plan to be written.
 
 ## 11. Proposals outside this document
 
@@ -1465,3 +1514,20 @@ mechanisms each one sentence short of coherent. Applied:
   to the problem by type (rank-2) and issues none for auxiliaries.
 
 No status changes; O31 stays proposed.
+
+**Author's decisions (§18.69), 2026-10-22.** The author forwarded a
+second external review and adopted its recommendations on D1-D6
+(dossier §18.69). §10 now ends each decision with what was decided,
+keeping the options as background, and the external review's block
+is marked adopted. §2's O31 and O32 and §9 steps 2, 3, 5 and 6 note
+the decisions. In brief: D1, the continuation with tracked applicative
+requests (option (a) refined; (b)'s scoped handles optional; (c) not
+chosen), specified before implementation; D2, encoding (a), with M0,
+T1, T2, V, GI, F and GI-Open to statement review for a focused proof
+tranche, GI-Atoms conditional on B1b, current exported syntax kept and
+L0 not frozen as sufficient for future principal inference; D3,
+restricted C8 statements once the witness and termination interfaces
+stabilize, no selection rule; D4, guards deferred; D5 and D6 as
+recorded. A decision is not evidence, and no status changed here; the
+assessment's §20 records its matrix changes. Implementation and proof
+work stay unauthorized.
