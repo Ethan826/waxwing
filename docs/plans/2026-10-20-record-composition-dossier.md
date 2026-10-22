@@ -5256,3 +5256,95 @@ coordinated through one interface owner; CX's exact statements, without
 a refuter implementation; T-R0e (separating validity, policy,
 admissibility and support boundaries). A concrete implementation plan
 comes back once those interfaces and obligations are reviewed.
+
+### 18.67 The R0 design tranche, reviewed and revised; questions for the author (2026-10-22)
+
+The six documents authorized in §18.66 (research/division-campaign/:
+r0/generation-interface.md T-R0a, r0/recorder-rules.md T-R0b,
+r0/refusal-audit.md T-R0c with 21 probes, witness/statements.md W,
+refute/statements.md CX with Lean statements only, r0/boundaries.md
+T-R0e) were written in parallel, then reviewed at 88c052d twice: a
+reconciliation review (26 findings, one canonical owner per topic) and
+an adversarial review (9 findings: FK-W's key universe false as
+stated; re-check coverage overclaimed, with pass-while-wrong cases;
+CX-S needed `Nodup` in `Denotes`; `outside`-marker and auxiliary-
+variable conflicts; audit wording against §18.65). Each document was
+revised by its own editor, then a read-only consistency re-check found
+21 of 26 and 9 of 9 resolved everywhere and 13 residual
+inconsistencies (R1-R13), now applied, with a final harmonization of
+T-R0a's and T-R0e's refusal types. No document contradicts §18.65 or
+the nine decisions of §18.66. Each document ends with a revision log.
+
+**Ownership.** T-R0a owns the outcome, verdict and `CompileRefusal`
+types (§6); W owns `Witness`, `SplitJudgement`, `AdmStatus`,
+`NoWitnessReason`, `Adm_W`, the termination statements (FK-0, FK-W,
+FK-U) and the re-check obligations RC1-RC6; T-R0b owns the recorded
+problem's shape (Sc1-Sc3, Sig1-Sig10, E-rules); T-R0e owns layers,
+codes, `Construct` and `layerOf`; CX owns refutation (CX-K, CX-P,
+CX-KP, CX-PR, CX-S); T-R0c owns the evidence. Two coordinator choices
+in the re-check: the post-Task-8 refusal of composed tails is T-R0e's
+`ComposedTailsUnjustified`; T-R0e §7 keeps a "was" column so older
+question numbers still resolve.
+
+**Status.** Statements and designs only. Nothing new is proved; CX's
+Lean file states CX-K, CX-P, CX-KP, CX-PR and builds. FK-W and FK-U
+rows stay inactive until adopted and proved.
+
+**Questions for the author** (proposed defaults in brackets; the
+documents that depend on each are listed in T-R0e §7 and the re-check):
+
+1. Outcome taxonomy: (a) a separate `Faulted` outcome or `Defect` as an
+   Unresolved reason [separate]; (b) `Exhausted` [`Limit
+   ReexaminationSteps`]; (c) codes for Solved declarations refused
+   after validation [T-R0e's: Unresolved code plus family; own code for
+   `SplitUnforced`; A keeps E_SPECIALIZATION]; (d) must `SplitUnforced`
+   exhibit two witnesses [yes]; (e) `Compilation` inside `Solution`
+   [yes].
+2. Requirement atoms: ground `BQ` atoms judged by a stated ground rule,
+   atoms with variables Unsupported [yes]; a failing ground atom gives
+   Contradiction only through a registered proved rule, otherwise
+   Unsupported [yes]; E017 keeps its code as transitional [yes].
+3. `outside` markers: non-empty `outside` blocks a whole-function
+   Solved, never Contradiction [yes]; open: free type-constructor nodes,
+   conservative `FailFamily`/`EffectArgument` markers, effect-row
+   independence, the lambda effect-row annotation.
+4. Static boundary: second spread generated in-model, S1 Unsupported
+   [yes]; Resolve's body-type `lacks`/`disjoint` checks move into
+   generation [yes]; arity at a fixed result class a [yes]; coverage a
+   class-a static pass [yes]; `AmbiguousType` class e unless made P
+   policy [yes].
+5. R019 and admissibility: FK-W in the first design [W proposes yes];
+   FK-U inactive until proved [yes]; `AdmittedPendingR019` not
+   user-visible [yes]; refused after Task 8 unless FK-U is proved
+   [yes]; T1-a's explicit classifier required [yes]. Unverified: that
+   every `AdmittedPendingR019` key reaches the Task 8 placeholder today
+   (argued only; a probe is proposed).
+6. Witness representation: names only for non-`Ty Open` terms; keep
+   `ChooseT`; syntactic hole-contract check; auxiliaries evaluated,
+   never bound [all yes].
+7. Forcedness: who decides it and whether the decider reads the
+   problem or the `Solution` [unassigned; open].
+8. Ground re-check: after lowering computes layouts and callee keys,
+   before Go emission [settled]; placement and cost (per copy, per
+   edge; always on or a checking build) [open].
+9. Assurance and migration: `Pending` assurance allowed on Solved until
+   statements are approved [yes]; whole-program result kept, all
+   outcomes reported [yes]; steps 4 and 5 together or with a
+   documented window [open].
+10. CX and class c1: unstated rules stay "c1 candidate" [yes]; C1-E as
+    the line between original and solver-chosen atoms; total binding
+    of unused rigid variables; scoped `D` (T-R0b gives `D` only over
+    rigid variables, which suggests closing it); certificate cost;
+    B1b first or a sound incomplete refuter; `BQ` and non-record heads
+    under CX; may a refuter register while CX-K/CX-KP/CX-PR is
+    unproved [T-R0a's `RefuterSpec` permits `Pending`; rules require a
+    proof].
+11. `ValidR`: which document defines the recorded problem's validity
+    (CX Q8) [no default; T-R0b is the natural owner]. CX-PR waits on it.
+12. Confirm the `crash` reference's checked `Lambda` is built like
+    `showRef`'s, so `LambdaBody` is right [assumed; checked when RT7 is
+    implemented]. B9 in-model, class e, `GuardOutsideFragment` [yes].
+    B13: no `Outside PatternGrowth` [yes; unchecked until RT1 runs].
+
+**Next:** the author's answers; then the concrete implementation plan
+(writing-plans; nothing implemented), as §18.66 asked.
