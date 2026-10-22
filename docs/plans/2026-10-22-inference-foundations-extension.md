@@ -1252,8 +1252,13 @@ decide.
   stated (note §3.1); the revised GI-Open takes `Closed`, `Apart` and
   the induced problem `ind`, rests on the new GI-Fin-Iff and F rather
   than on V and GI, and M0 assumes countable `Label` and B. The
-  tranche plan and six questions for the author are in note §3.3-3.4,
-  proposed. Current exported syntax is kept for now, but L0
+  tranche plan is in note §3.3, proposed. The author answered the
+  note's six questions (§18.70; note §3.4, §9): `ValidOpen`
+  unchanged, with a refined model X_W(B, i) (vocabulary indexed by B,
+  carriers over B₁) proposed for statement review so that every
+  extension is an EMLTI model; `Apart` a premise, with a proposed
+  renaming lemma; V a later side result. Current exported syntax is
+  kept for now, but L0
   is not frozen as sufficient for future principal inference: whether
   principal schemes need L1 or another language stays open (O4, O10,
   O11, IF4). O24 stays proposed.
