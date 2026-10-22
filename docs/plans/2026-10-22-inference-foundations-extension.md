@@ -344,7 +344,8 @@ composition as a relation with definedness obligations, shown to agree
 with `ValidOpen` (O24, proposed). The O24 note
 (docs/plans/2026-10-22-o24-emlti-correspondence.md) recommends that
 encoding as a ternary predicate U(t, r, s) with total constructors,
-and states M0, T1, T2, V, GI and GI-Open (unproved) for it; schemes
+and states M0, T1, T2, V, GI, GI-Fin-Iff and GI-Open (unproved,
+revised after statement review, note §3.1) for it; schemes
 then become U-chains, so a flattening lemma F is needed, and EMLTI's
 solver and row laws do not cover U.
 Given such an encoding, principality read as "least specific
@@ -1126,9 +1127,11 @@ dependency is named. None authorizes proofs or prototypes.
    applicative requests, specified before implementation.
 3. **Foundation statements:** statement review of the O24 note's
    §3 (encoding (a), composition as the predicate U; M0, T1, T2, V,
-   GI, GI-Open, GI-Atoms, GI-Fin and F, all proposed; D2 (§18.69)
-   sends M0, T1, T2, V, GI, F and GI-Open to review for a focused
-   proof tranche, with GI-Atoms conditional on B1b), IF1's
+   GI, F, GI-Fin-Iff, GI-Open, GI-Atoms and GI-Fin, all proposed;
+   D2 (§18.69) sends M0, T1, T2, V, GI, F and GI-Open to review for
+   a focused proof tranche, with GI-Atoms conditional on B1b; the
+   review found the first GI-Open false as stated, and the note's
+   §3 now holds revised statements, GI-Fin-Iff among them), IF1's
    declarative relation,
    then IF4 with the open-world match and annotation checking (O24,
    O25), then
@@ -1245,7 +1248,12 @@ decide.
   predicate U. The O24 note's M0, T1, T2, V, GI, F and GI-Open go to
   statement review, for a focused proof tranche that is not yet
   authorized; GI-Atoms stays conditional on B1b (GI-Fin is not named
-  and stays proposed). Current exported syntax is kept for now, but L0
+  and stays proposed). The review found the first GI-Open false as
+  stated (note §3.1); the revised GI-Open takes `Closed`, `Apart` and
+  the induced problem `ind`, rests on the new GI-Fin-Iff and F rather
+  than on V and GI, and M0 assumes countable `Label` and B. The
+  tranche plan and six questions for the author are in note §3.3-3.4,
+  proposed. Current exported syntax is kept for now, but L0
   is not frozen as sufficient for future principal inference: whether
   principal schemes need L1 or another language stays open (O4, O10,
   O11, IF4). O24 stays proposed.
@@ -1531,3 +1539,11 @@ stabilize, no selection rule; D4, guards deferred; D5 and D6 as
 recorded. A decision is not evidence, and no status changed here; the
 assessment's §20 records its matrix changes. Implementation and proof
 work stay unauthorized.
+
+**O24 statement review, 2026-10-22.** A read-only statement review of
+the O24 note's §3 found the first GI-Open false as stated, by three
+counterexamples checked by hand against the Lean definitions (note
+§3.1). §1.4, §9 step 3 and D2 now name the revised list, with the new
+GI-Fin-Iff, and point to the note's revised statements (§3.2), tranche
+proposal (§3.3, not authorized) and questions (§3.4). No status
+changed; the assessment's §21 records its matrix changes.

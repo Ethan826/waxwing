@@ -6,8 +6,10 @@ covers one matrix row, O24, of
 docs/plans/2026-10-22-inference-foundations-assessment.md §11, with the
 companion docs/plans/2026-10-22-inference-foundations-extension.md §1.2
 and §1.4. It changes no compiler code, adds no Lean proof and runs no
-prototype. Every lemma statement below is proposed and awaits statement
-review; the model-condition checks in §1 and §2 are argued.
+prototype. Every lemma statement below is proposed. §3 was revised
+after one statement review (§8), which found the first GI-Open false
+as stated; the revised statements await the author's answers (§3.4)
+and are unproved. The model-condition checks in §1 and §2 are argued.
 
 The question: can Waxwing's row model be presented as a model X of
 Pottier and Rémy's *The Essence of ML Type Inference* (EMLTI, ATTAPL
@@ -192,92 +194,297 @@ text extraction only) become citable for the composition-free fragment.
 
 ## 3. Ground inclusion against `ValidOpen`
 
-All statements here are **proposed** (statements only, not proved).
-Fix X_W(B) from (a). ⟦·⟧ translates `TExpr`, atoms and problems, with
-fresh ∃-bound variables for intermediate rows.
+All statements here are **proposed**: statements only, none proved,
+none in Lean. They were revised on 2026-10-22 after a statement review
+(§8). §3.1 records why the first GI-Open and GI-Atoms were false as
+stated; §3.2 gives the revised statements; §3.3 proposes a proof
+tranche, which is not authorized; §3.4 lists the questions the
+revision leaves for the author. Fix X_W(B) from (a). ⟦·⟧ translates
+`TExpr`, atoms and problems, with fresh ∃-bound auxiliary variables
+for intermediate rows.
 
-- **M0 (model).** X_W(B) satisfies Definition 10.2.5, C-Arrow (as
-  equality: T1 → T2 = T1′ → T2′ ≡ T1 = T1′ ∧ T2 = T2′), and → is isolated
-  against Π and every `base b`.
+### 3.1 Counterexamples to the first statements
+
+**Verdict: the first GI-Open and the first GI-Atoms biconditional are
+false as stated**, the latter whether or not B1b holds. In both, the
+direction "inclusion → `ValidOpen` P(σ2 ≤ σ1)" fails, where
+P(σ2 ≤ σ1) had rigid = X̄2, D = C2 and body C1 ∧ eq(T1, T2).
+Counterexamples 1 and 2 refute it; neither refutes the other
+direction. Counterexample 3 refutes M0 as stated for uncountable B or
+`Label`. Each was checked by hand here against the Lean definitions
+(`evalT`, `evalF`, `Holds`, `Sat` in Syntax.lean; `SigProblem`,
+`combine`, `Scoped` in Sig/Validity.lean; `FinG`, `FinAssign`,
+`ValidFin` in Sig/Finite.lean; `ValidOpen` in Typed/Bridge/Valid.lean)
+and, for 3, against the rendered p. 400. None is in Lean. Variable
+indices are `Nat`s.
+
+1. **Shared variable names.** σ1 = ∀[ty 0].tvar 0 and σ2 =
+   ∀[ty 0].Int, with Int some b ∈ B. P(σ2 ≤ σ1) = ⟨[0], [], [], [eq
+   (tvar 0) Int]⟩ is `Scoped`, since D is empty. Take θR.ty 0 =
+   `emptyG`, which is finite. `combine` reads type variable 0 from θR,
+   so the `eq` atom needs `emptyG` = Int and fails for every θF.
+   `ValidFin` fails at i = id, so `ValidOpen` fails. Ground inclusion
+   holds at every X_W(B₁): σ2's only instance is Int, and σ1's
+   instances are all of 𝓜★. Cause: GI needs X̄1 # X̄2, but neither
+   P(·) nor GI-Open renamed the schemes apart.
+2. **σ2's type undefined; definedness in the body.** σ2 = ∀ rows 0, 1.
+   {...0, ...1} (`TExpr.record .nil [0, 1]`, no constraint), and σ1
+   the same over rows 2, 3. P = ⟨[], [0, 1], [], [eq {...2, ...3}
+   {...0, ...1}]⟩ is `Scoped`. Take θR.row 0 = θR.row 1 = `single` ℓ
+   `emptyG` for some label ℓ: both finite. `composeAll` meets
+   overlapping rows, so the right side's `evalT` is `none` whatever
+   θF is, and `Holds eq` fails. `ValidFin` and `ValidOpen` fail, even
+   though σ1 is σ2 renamed. Read through F, both schemes have the
+   instances {Π(r ∪ s) | r # s, both finite}, so inclusion holds.
+   Cause: P put T2's definedness in the body, inside eq(T1, T2),
+   while F's instance set takes it from the scheme's own constraint.
+   - Waxwing can write this σ2: a parameter or result type that writes
+     two tails into one record joins them, with no `disjoint` clause
+     (language.md, the Tranche B paragraph after the empty record).
+     W3 (`WFRow`, Sig/Generic.lean:59: two rigid rows' rests in one
+     row are declared disjoint in D) does not hold for it, so results
+     assuming W3 do not cover it.
+   - σ2 = ∀[].{a: Int, a: Int} fails the same way. `evalF` is
+     undefined on the repeated label, so σ2 has no instances and
+     inclusion holds vacuously, yet the body's `eq` never holds.
+     `TExpr` admits this type; the surface rejects it.
+   - Case A is unaffected: each of σ_w's records has one tail and no
+     fields, so its type is always defined.
+3. **Countability.** Definition 10.1.14 (p. 400, rendered page read):
+   "Let F range over a finite or denumerable set of type
+   constructors". X_W(B) has one `base b` per b ∈ B and one `single_ℓ`
+   per ℓ ∈ `Label`, so it is an EMLTI model only when B and `Label`
+   are countable. `ValidOpen` ranges over every `B₁ : Type`,
+   uncountable ones included, so the first GI-Open's "X_W(B₁) is an
+   ordinary fixed model" fails for those B₁.
+
+The reviewer also searched for counterexamples to T1, T2, V and GI and
+found none: duplicate labels and tails, empty rows, `disjoint r r`,
+`lacks` (which needs 𝓜★ ≠ ∅), empty B, finite and infinite `Label`,
+rigid variables absent from D or B, record-valued fields and nested
+spreads. That search was not repeated here.
+
+### 3.2 Revised statements
+
+**Shared definitions.**
+
 - **Variables.** Waxwing numbers type variables and row variables in
   two separate `Nat` namespaces (`Assign.ty` and `Assign.row`,
-  Syntax.lean:42-44). ⟦·⟧ maps them to two disjoint sets of kinded
-  EMLTI variables: type variable n ↦ X_n of kind ★ (`tvar n`), row
-  variable n ↦ ρ_n of kind row (record tails, `lacks`, `disjoint`).
-  An `Assign` is total, so it has no domain to extend. A θ with
-  `FinAssign θ` (Sig/Finite.lean:38) is read as the ground assignment
-  φ_θ with φ_θ(X_n) = θ.ty n ∈ 𝓜★ and φ_θ(ρ_n) = θ.row n ∈ 𝓜row,
-  and any fixed carrier element on the fresh variables ⟦·⟧ adds.
-- **T1 (expressions).** Let ⟦t⟧ = (T_t, C_t), and let Ȳ_t be the fresh
-  variables ⟦t⟧ introduces (intermediate rows), disjoint from the
-  translations of t's variables. For every θ with `FinAssign θ`, every
-  t and every g: `evalT θ t = some g` ↔ there are values ȳ for Ȳ_t
-  such that φ_θ[Ȳ_t ↦ ȳ] ⊨ C_t and φ_θ[Ȳ_t ↦ ȳ](T_t) = g. Likewise
-  for `evalF`, with a row term and a row in place of T_t and g.
+  Syntax.lean:42-44). ⟦·⟧ maps type variable n to X_n of kind ★
+  (`tvar n`) and row variable n to ρ_n of kind row (record tails,
+  `lacks`, `disjoint`). Auxiliary variables are tagged with their
+  position in the term (kinded variables `Nat ⊕ AuxTag`, tags kept
+  disjoint by kind), so they are apart from *every* original
+  variable, not only from those of the term at hand. An `Assign` is
+  total. A θ with `FinAssign θ` (Sig/Finite.lean:38) is read as φ_θ
+  with φ_θ(X_n) = θ.ty n ∈ 𝓜★ and φ_θ(ρ_n) = θ.row n ∈ 𝓜row; φ_θ ⊕ ȳ
+  also sets the auxiliary variables to ȳ.
+- **Schemes.** `Scheme := ⟨ty row : List Nat, C : Problem, T :
+  TExpr⟩`, its bound variables, constraint and type.
+- `Closed σ := tyVarsOf (σ.C ++ [eq σ.T σ.T]) ⊆ σ.ty ∧ rowVarsOf (σ.C
+  ++ [eq σ.T σ.T]) ⊆ σ.row`.
+- `Apart σ1 σ2`: their `ty` lists are disjoint, and their `row` lists
+  are disjoint.
+- `GW σ := {g | ∃ θ, FinAssign θ ∧ Sat θ σ.C ∧ evalT θ σ.T = some g}`,
+  the scheme's instances read through `evalT`.
+- `flatten σ := ∀(σ's variables ∪ aux(σ.T))[⟦σ.C⟧ ∧ C_T].T_T`, an
+  EMLTI scheme.
+- `ind σ2 σ1 := ⟨σ2.ty, σ2.row, σ2.C ++ [eq σ2.T σ2.T], σ1.C ++ [eq
+  σ1.T σ2.T]⟩` replaces P(σ2 ≤ σ1). Every variable outside σ2's lists
+  is flexible. The added `eq σ2.T σ2.T` holds exactly when σ2's type
+  is defined (option A of §3.4 Q1). `Scoped (ind σ2 σ1)` follows from
+  `Closed σ2`.
+- σ^i is σ with its bases renamed by i.
+- (φ)σ is Fig. 10-5's (φ, ψ)σ; ψ plays no part, since these
+  constraints have no `def` or x ⪯ T forms. In an equality model ↑ is
+  the identity.
+
+**Statements.**
+
+- **M0 (model).** `[Countable Label] [Countable B]`. X_W(B) satisfies
+  Definition 10.1.14 (directions, kinds and each kind's variables are
+  countable by construction), Definition 10.2.5 and C-Arrow as
+  equality (T1 → T2 = T1′ → T2′ ≡ T1 = T1′ ∧ T2 = T2′). Isolation in
+  EMLTI's terms (p. 416): → is declared isolated and is the only
+  isolated constructor, so the requirement that isolated pairs be
+  incompatible is vacuous. M0 also states the stronger facts: for all
+  T̄ and T̄′, each of `arrow T1 T2 = Π R`, `arrow T1 T2 = base b`, `Π
+  R = base b` and `base b = base b′` (b ≠ b′) is unsatisfiable. In a
+  typed Lean encoding the totality and homomorphism clauses of
+  Definitions 10.2.5 and 10.2.10 hold by construction; the trust point
+  is whether the encoding transcribes EMLTI faithfully, which stage 0
+  of §3.3 reviews.
+- **T1 (expressions).** ∀ θ, `FinAssign θ` → ∀ t g, `evalT θ t = some
+  g` ↔ ∃ ȳ, (φ_θ ⊕ ȳ) ⊨ C_t ∧ ↑((φ_θ ⊕ ȳ)(T_t)) = g, where ↑ takes a
+  carrier element to its underlying value. Hence also `FinAssign θ →
+  evalT θ t = some g → FinG g`. Likewise for `evalF`, with a row term
+  and a row in place of T_t and g.
 - **T2 (atoms).** For θ with `FinAssign θ`, `Holds θ a` ↔ φ_θ ⊨ ⟦a⟧,
   with ⟦eq t u⟧ = ∃Ȳ.(C_t ∧ C_u ∧ T_t = T_u), ⟦disjoint r s⟧ =
   ∃ρ. U(ρ, r, s), ⟦lacks r ℓ⟧ = ∃X ρ. U(ρ, r, single_ℓ X), and ⟦ff⟧ =
-  false.
+  false. In ⟦eq t u⟧ the auxiliary variables of t and u are apart
+  (tagged 0:: and 1::). With it, a free-variable lemma: the free
+  variables of ⟦a⟧ are exactly the translations of a's original
+  variables.
 - **V (closed validity is entailment).** For every P with `Scoped P`:
-  `ValidFin P` ↔ ⟦P.D⟧ ⊩ ∃F̄. ⟦P.B⟧ in X_W(B), where F̄ is the set of
-  variables of P.B outside P's rigid lists. The quantifier structure is
-  ∀ finite rigid θR ⊨ D, ∃ finite flexible θF, combined ⊨ B; that is
-  EMLTI's ∀φ (Definition 10.2.11) with the ∃ of CM-Exists.
-- **GI (ground inclusion is entailment; any equality model).** For
-  closed σ1 = ∀X̄1[C1].T1 and σ2 = ∀X̄2[C2].T2 with X̄1 # X̄2: (∅)σ2 ⊆
-  (∅)σ1 ↔ C2 ⊩ ∃X̄1.(C1 ∧ T1 = T2), read with X̄2 free. This follows
-  from Fig. 10-5, Definition 10.2.3 and Definition 10.2.11 (argued; it
-  is nearly definitional).
-- **P(σ2 ≤ σ1).** For σ1, σ2 written in L0, the induced problem has
-  rigid = X̄2, D = C2, and body C1 ∧ eq(T1, T2); flexible = X̄1.
-- **GI-Open.** For σ1, σ2 in L0 with P(σ2 ≤ σ1) Scoped: (∀B₁, ∀i : B →
-  B₁ injective, (∅)σ2^i ⊆ (∅)σ1^i in X_W(B₁)) ↔ `ValidOpen` P(σ2 ≤ σ1),
-  where σ^i renames σ's bases by i. The quantifiers run ∀ injective
-  extension, ∀ finite rigid instance satisfying C2, ∃ finite flexible
-  witness. GI is stated for EMLTI schemes ∀X̄[C].T, and an L0 scheme
-  with spreads becomes one only after flattening, so (∅)σ for an L0 σ
-  is read through F. The proof route (argued): F, T1/T2 and V, then GI
-  at each B₁, plus `mapBase` commuting with ⟦·⟧ and preserving
-  `Scoped`. No open-world variant of EMLTI is needed, because each
-  X_W(B₁) is an ordinary fixed model and `ValidOpen` is a conjunction
-  over them. Reading EMLTI's order as this ∀ over a family of models
-  is itself Waxwing's choice (§4, ADR 014 item 5).
+  `ValidFin P` ↔ ⟦P.D⟧ ⊩ ∃F̄. ⟦P.B⟧ in X_W(B), with F̄ per kind: {X_n
+  | n ∈ tyVarsOf P.B, n ∉ P.rigidTy} ∪ {ρ_r | r ∈ rowVarsOf P.B, r ∉
+  P.rigidRow}. Without `Scoped`, `ValidFin` ranges over infinite
+  values of D's non-rigid variables, which entailment does not see.
+  The quantifier structure is ∀ finite rigid θR ⊨ D, ∃ finite
+  flexible θF, combined ⊨ B: EMLTI's ∀φ (Definition 10.2.11) with the
+  ∃ of CM-Exists. Status unchanged (proposed). V is no longer on
+  GI-Open's critical path; it links `ValidFin` to EMLTI's ⊩ as a side
+  result.
+- **GI (ground inclusion is entailment).** For σ1 = ∀X̄1[C1].T1 and
+  σ2 = ∀X̄2[C2].T2, each closed (ftv(Ci) ∪ ftv(Ti) ⊆ X̄i), with
+  X̄1 # X̄2: for every φ, (φ)σ2 ⊆ (φ)σ1 ↔ C2 ⊩ ∃X̄1.(C1 ∧ T1 = T2),
+  read with X̄2 free. Stating it for every φ also shows that the
+  inclusion does not depend on φ. Argued from Fig. 10-5, Definition
+  10.2.3 and Definition 10.2.11, using a free-variable agreement lemma
+  and X̄1 ∉ ftv(T2). The version for any equality model stays argued.
+  *Proposed formal target (pending the author's approval, §3.4 Q3):*
+  the concrete constraint fragment of X_W(B). The generic version
+  needs a many-sorted signature with direction-indexed arities (about
+  200 more lines) and adds no Waxwing claim.
+- **F (flattening).** `Closed σ → ∀ φ, ↑ '' (φ)(flatten σ) = GW σ`.
+  It holds for every scheme, including those whose C contains `eq`,
+  so the old "with spreads" restriction is dropped. It is essentially
+  a corollary of T1 and T2.
+- **GI-Fin-Iff (new; pure Waxwing, no translation).** `Closed σ1 →
+  Closed σ2 → Apart σ1 σ2 → (GW σ2 ⊆ GW σ1 ↔ ValidFin (ind σ2 σ1))`.
+  It holds for any B and uses no injectivity. The reviewer reports it
+  proved on paper in both directions with `sat_congr` and
+  `evalT_congr` (Closed.lean). That is the reviewer's claim; its
+  sketch was read here and is argued, not checked.
+- **GI-Open.** Under `Closed σ1`, `Closed σ2` and `Apart σ1 σ2`:
+  (∀ (B₁ : Type) (i : B → B₁), `Injective i` → ∀ φ, (φ)(flatten
+  σ2^i) ⊆ (φ)(flatten σ1^i) in X_W(B₁)) ↔ `ValidOpen (ind σ2 σ1)`.
+  Proof route (argued): F at each B₁, then GI-Fin-Iff on σ1^i and
+  σ2^i, then `ind σ2^i σ1^i = (ind σ2 σ1).mapBase i` (from
+  `List.map_append`), with closedness preserved by `tyVarsOf_map` and
+  `rowVarsOf_map` (Typed/Bridge/ProofExtension.lean:139, 146). This
+  replaces the first route: GI, V and "`mapBase` commutes with ⟦·⟧"
+  are not needed. For uncountable B₁ the inclusion is still
+  well-defined, but X_W(B₁) is not formally an EMLTI model (§3.4 Q2).
+  No open-world variant of EMLTI is needed, because `ValidOpen` is a
+  conjunction over the models X_W(B₁). Reading EMLTI's order as this
+  ∀ over a family of models is Waxwing's choice (§4, ADR 014 item 5).
 - **GI-Atoms (one model).** Let X_W^atoms(B) have X_W(B ⊕ ℕ)'s
   carriers (finite ground types over the bases B ⊕ ℕ) and predicates,
   but the constructors `base (inl b)` for b ∈ B only, with →, Π, ∅ and
-  `single_ℓ`. Then (∅)σ2 ⊆ (∅)σ1 in X_W^atoms(B) ↔ `ValidOpen`
-  P(σ2 ≤ σ1). The ← direction follows from B1a (`OpenToAtoms`; argued,
-  derived with i = inl, not in Lean). The → direction needs B1b
-  (`AtomsToOpen`), which is *conjectured with argument*
+  `single_ℓ`. Under GI-Open's premises and `[Countable B]` (so that B
+  ⊕ ℕ is countable): (∀ φ, (φ)(flatten σ2^inl) ⊆ (φ)(flatten σ1^inl)
+  in X_W^atoms(B)) ↔ `ValidOpen (ind σ2 σ1)`. The ← direction follows
+  from B1a (`OpenToAtoms`), GI-Fin-Iff, F, and the fact that
+  X_W^atoms(B) and X_W(B ⊕ ℕ) have the same carriers and predicates.
+  B1a is a one-line instantiation at i := inl, which is injective, so
+  it can be proved now rather than left argued. The → direction needs
+  B1b (`AtomsToOpen`), which is *conjectured with argument*
   (research/division-campaign/bridge/statements.md, B0-B1 table), not
   proved. The `inr n` atoms are carrier elements that no constructor
   produces, so no closed type names them; Definition 10.2.5 permits
   such elements, since it asks only that each constructor denote a
   total function into the carrier (argued).
-- **GI-Fin (no extension).** `ValidOpen` P → inclusion in X_W(B)
-  follows from V and `openToFin` (B0, proved, Typed/Bridge/
-  ProofValid.lean:15). The converse fails in general: statements.md
-  records a derived example, not in Lean, valid over the base set
-  {Int, a} and invalid once a second fresh atom exists.
+- **GI-Fin (no extension).** `ValidOpen (ind σ2 σ1)` → inclusion in
+  X_W(B), from `openToFin` (B0, proved, Typed/Bridge/
+  ProofValid.lean:15), GI-Fin-Iff and F. The converse fails in
+  general: statements.md records a derived example, not in Lean,
+  valid over the base set {Int, a} and invalid once a second fresh
+  atom exists. (GI-Fin-Iff makes inclusion in X_W(B) coincide with
+  `ValidFin`, not `ValidOpen`.)
 - **Labels.** No quantifier ranges over label extensions; `Label` is
   fixed in X_W. Fresh labels enter only as the hypothesis ∃z.
   `FreshLabels P z` (injective `z : Cell → Label` avoiding written
   labels) of `openCharacterization_scoped` (Typed/Bridge/
   ProofInstantiateSound.lean:60, proved). That theorem connects
   `ValidOpen` to generic instances; GI-Open does not use it.
-- **F (flattening).** For L0 schemes with spreads in types, the
-  flattened scheme (U-chains, Π ρ) has the same ground instances as the
-  scheme read through `evalT`.
-- **Case A corollary.** With σ_w and σ_inf of companion §1.2, and
-  given `ValidOpen` P(σ_w ≤ σ_inf) (argued in companion §1.2, with a
-  labels-only scratch check that ignores field types; not checked),
-  σ_w is below σ_inf in EMLTI's order at every X_W(B₁) (GI-Open), and
-  hence in X_W^atoms(B) (GI-Atoms, ← direction).
+- **Case A corollary.** Take σ_w and σ_inf of companion §1.2 as
+  schemes, with σ_inf's variables renamed apart from σ_w's (both name
+  `s` and `s2`), so `Apart σ_inf σ_w` holds; both are `Closed`. Their
+  "tuple" parameter is the parameter list of a curried arrow
+  (language.md:76: `(A, B) -> C` is exactly `A -> B -> C`), which
+  `TExpr.arrow` expresses (§3.4 Q6). σ_w's type is always defined, so
+  the added D atom `eq T_w T_w` of `ind σ_w σ_inf` holds at every
+  finite instance. Given `ValidOpen (ind σ_w σ_inf)` (argued in
+  companion §1.2 for the variables read apart, with a labels-only
+  scratch check that ignores field types; not checked), σ_w is below
+  σ_inf in EMLTI's order at every X_W(B₁), an EMLTI model for
+  countable `Label` and B₁ (GI-Open), and in X_W^atoms(B) for
+  countable B (GI-Atoms, ← direction).
 
-**Under (b)** GI must read (∅)σ2 ∩ Def ⊆ (∅)σ1, and GI-Open also needs
+**Under (b)** GI must read (φ)σ2 ∩ Def ⊆ (φ)σ1, and GI-Open also needs
 J. Without guards, inclusion fails on junk instances, as in §2(b2).
 **Under (c)** the statements are (a)'s, transported along the abs/none
 bijection. They hold only on the finite carrier, where ∂ is restricted.
+
+### 3.3 Proposed proof tranche (not authorized)
+
+This is the reviewer's plan, recorded as a proposal. D2 (§18.69) sent
+the statements to review for a focused tranche; the tranche itself is
+not authorized, and nothing here starts it. One owner holds the
+statements; workers prove in parallel worktrees, and the results are
+integrated, then reviewed.
+
+- **Stage 0 (owner only).** One interface file pair of about 250
+  lines: `EK`; kinded variables VarStar and VarRow, each `Nat ⊕
+  AuxTag`; mutual `ETy`/`ERow` with base, arrow, pi, empty and
+  single_ℓ; `ECon` with true, false, ∧, ∃ per kind, =★, =row and U;
+  the carriers `{g // FinG g}` and `{f // FinG (.record f)}`;
+  assignments, models, entailment and scheme instances; ⟦·⟧, mutual
+  over `TExpr` and `Fields`; `Scheme`, `Closed`, `Apart`, `GW`,
+  `flatten`, `ind`; every statement as a `def … : Prop`, as in
+  Bridge/Valid.lean. Before any proof starts, the interface is
+  reviewed for fidelity to Definitions 10.1.14-10.1.16, 10.2.5,
+  10.2.10 and 10.2.11 and Fig. 10-5.
+- **Stage 1 (parallel worktrees).** (a) M0; (b) GI, on EMLTI's
+  definitions only; (c) T1 then T2, one worker; (d) GI-Fin-Iff, the
+  `ind`/`mapBase` commutation and B1a, pure Waxwing with no
+  translation.
+- **Stage 2 (parallel).** (e) F, after T1 and T2; (f) V, after T2.
+- **Stage 3.** GI-Open, from F, GI-Fin-Iff and the commutation; then
+  GI-Atoms ←, from B1a and the shared carriers and predicates of
+  X_W^atoms(B) and X_W(B ⊕ ℕ). GI-Atoms → stays conditional on B1b.
+- **Last.** Integrate, then review. GI and V are side results linking
+  the instance sets to EMLTI's ⊩, not prerequisites for GI-Open.
+
+Rough sizes (reviewer's estimates): M0 about 80 lines, T1 and T2
+250-300, GI about 100, GI-Fin-Iff about 120, F about 100, V about 150,
+GI-Open about 60; roughly 1,100-1,200 lines with the interface.
+Reused: `evalT_congr`, `fieldRows_congr`, `holds_congr` and
+`sat_congr` (Closed.lean); `compose_eq_some`, `composeAll_append` and
+`composeAll_perm` (Compose.lean); `finG_emptyG` and `FinRow`
+(Sig/Finite.lean); `tyVarsOf_map`, `rowVarsOf_map`, `mapBaseSyntax`
+and `mapBaseId` (ProofExtension.lean); `openToFin`. New small lemmas:
+`finRow_union`; a general `finG_single` (the one in
+TypedAttack/ShapeSplit.lean is for `Label = Nat` only); `evalT_fin`.
+
+### 3.4 Questions for the author, with proposed defaults
+
+1. **How does the definedness of σ2's type enter?** (A) `eq T2 T2` in
+   D, as in `ind`; or (B) D = C2 with a premise that σ2's type is
+   defined whenever C2 holds on finite values. *Default: (A).* Open
+   with it: which option matches how R0 and the recorder build
+   signature problems when a parameter type joins two tails without a
+   `disjoint` clause (counterexample 2). That was not checked here.
+2. **Countability.** *Default:* M0 assumes `[Countable Label]
+   [Countable B]`; GI-Open quantifies over every `B₁ : Type`, and
+   "X_W(B₁) is an EMLTI model" is claimed only for countable B₁. The
+   alternative restricts GI-Open to countable B₁ and adds a downward
+   lemma (a counterexample at B₁ gives one at a countable
+   sub-extension, via E2 and E3; unproved).
+3. **GI's formal target.** *Default: yes,* weaken GI from "any
+   equality model" to the concrete fragment of X_W(B) for
+   formalization; the generic version stays argued.
+4. **Apart.** *Default: a premise* of GI-Fin-Iff, GI-Open and
+   GI-Atoms. The alternative has `ind` rename σ1's variables apart
+   itself.
+5. **V.** *Default: keep it* in the tranche as a side result, in a
+   later stage (stage 2), since GI-Open no longer depends on it.
+6. **Case A's tuple types**, which `TExpr` lacks. *Default: curried
+   arrows.* Waxwing has no tuple type in this position: `(A, B) -> C`
+   is exactly `A -> B -> C` (language.md:76), so σ_w and σ_inf lower
+   to curried arrows, which `TExpr.arrow` already expresses.
 
 ## 4. Recommendation
 
@@ -289,7 +496,9 @@ and stays proposed. Current exported syntax is kept for now, but L0
 is not frozen as sufficient for future principal inference. Every
 statement below is still proposed and unproved; the decision chooses
 the encoding and adds no evidence. The recommendation that follows is
-kept as written.
+kept as written. The statement review (§8) then revised §3: GI-Open
+now takes `Closed`, `Apart` and the induced problem `ind`, M0 assumes
+countable `Label` and B, and GI-Fin-Iff is new.
 
 **State (a) next: M0, T1, T2, V, GI and GI-Open, with F.** It is the
 smallest encoding. It adds one predicate and no junk, and its ground
@@ -303,15 +512,17 @@ on every scheme.
 Once these statements are proved, the assessment could claim the
 following.
 
-- X_W(B) is an EMLTI model, so Theorems 10.4.4 and 10.4.8 apply at each
-  base set. This covers EMLTI's expression language with record
-  operations as Γ0 constants, not Waxwing's full surface.
+- X_W(B) is an EMLTI model for countable `Label` and B (M0), so
+  Theorems 10.4.4 and 10.4.8 apply at each such base set. This
+  covers EMLTI's expression language with record operations as Γ0
+  constants, not Waxwing's full surface.
 - EMLTI's order, in this family reading (EMLTI's per-model order
   quantified over every injective base extension; ADR 014 item 5),
-  *is* `ValidOpen` on the induced problem. With B1b it is also the
-  order at the one model X_W^atoms(B).
+  *is* `ValidOpen` on the induced problem `ind σ2 σ1`, for closed
+  schemes whose variables are apart (GI-Open, §3.2). With B1b it is
+  also the order at the one model X_W^atoms(B) (countable B).
 - Case A's σ_w is an instance of σ_inf in that order, given
-  `ValidOpen` P(σ_w ≤ σ_inf), which is argued, not checked.
+  `ValidOpen (ind σ_w σ_inf)`, which is argued, not checked.
 
 The assessment could not claim:
 
@@ -356,8 +567,9 @@ EMLTI rendered pages read: printed 407-419 (§10.2 syntax, Definition
 10.2.5, model examples, Definition 10.2.10, Fig. 10-5, Definition
 10.2.11, C-Arrow, isolation, Definition 10.2.14, Fig. 10-6, Example
 10.2.16), 422-424 (Fig. 10-7 and the open-world remark), 433-434
-(Theorems 10.4.4 and 10.4.8), 472-473 and 488. Read from a text
-extraction only: 400-401 (Definitions 10.1.14 and 10.1.15), 465-468 (row
+(Theorems 10.4.4 and 10.4.8), 472-473 and 488; in the statement
+review pass, 400-401 (Definitions 10.1.14-10.1.16), 414 and 416. Read
+from a text extraction only: 465-468 (row
 kinds, Definition 10.8.3), 471, 487 and 489. Not read: 420-421 (solved
 forms), Lemma 10.3.1, §10.5 beyond p. 434, §10.6, Example 10.8.8 itself,
 and the papers EMLTI cites (Odersky et al. 1999, Sulzmann 2000,
@@ -418,3 +630,40 @@ GI-Atoms conditional on B1b; current exported syntax kept, with L0 not
 frozen as sufficient for future principal inference. §4 records the
 decision. No status changes: the model-condition checks stay argued
 and every lemma statement stays proposed.
+
+## 8. Statement review, 2026-10-22
+
+A read-only statement review of §3 (model output, kept outside the
+repository) for the D2 proof tranche (dossier §18.69) found the first
+GI-Open false as stated. Its counterexamples were checked here against
+the Lean definitions and the rendered p. 400 before use (§3.1); none
+is in Lean. Changes:
+
+- **§3.1 (new).** Three counterexamples: shared variable names (1),
+  σ2's type undefined with its definedness in the body (2), and
+  countability (3). Verdict: the first GI-Open and the first GI-Atoms
+  biconditional are false as stated, GI-Atoms whether or not B1b
+  holds; M0 as stated fails for uncountable B or `Label`.
+- **§3.2.** M0 takes `[Countable Label] [Countable B]`, states
+  isolation in EMLTI's terms and adds the stronger incompatibility
+  facts. T1 has its exact form, with auxiliary variables tagged and
+  apart from every original variable. T2 keeps each side's auxiliary
+  variables apart and adds a free-variable lemma. V states F̄ per kind
+  and is off GI-Open's critical path. GI uses (φ, ψ)σ and closedness,
+  with the concrete X_W(B) fragment as its proposed formal target. F
+  is restated with `Scheme`, `GW`, `flatten` and `Closed`. GI-Fin-Iff
+  is new. GI-Open takes `Closed`, `Apart` and `ind` (with `eq T2 T2`
+  in D, option A) and has a new proof route. GI-Atoms takes GI-Open's
+  premises and `Countable B`, and notes that B1a is provable now. The
+  case A corollary is restated for the new premises.
+- **§3.3 (new).** The reviewer's tranche plan, as a proposal; not
+  authorized.
+- **§3.4 (new).** Six questions for the author, with proposed
+  defaults.
+- **§1, §4, §5.** The opening paragraph, §4's decision note and claim
+  list, and the reading status follow the revision.
+
+No status changes: every statement stays proposed and unproved,
+GI-Fin-Iff's "proved on paper" is the reviewer's claim (argued), and
+the model-condition checks stay argued. The assessment's O24 row and
+IF4 and the companion's D2 now name GI-Fin-Iff and the revision.
