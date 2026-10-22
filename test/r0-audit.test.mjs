@@ -35,7 +35,7 @@ const rows = () => {
 
 // A deliberate pin: adding or removing a fixture is a table change.
 test('every audit fixture gives its recorded refusal', () => {
-  assert.equal(fixtures.length, 79);
+  assert.equal(fixtures.length, 78);
   for (const f of fixtures)
     assert.deepEqual(now(f), outcome(f), f.name);
 });

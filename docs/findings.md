@@ -1075,7 +1075,7 @@ derived from the cited lines.
 | Refusal | Raise site | Reads (cited) | Decisive fixtures | What they show | Class |
 | --- | --- | --- | --- | --- | --- |
 | EffectNotAllowed | Check/Reject.purs:69 | a consumption's `RowMissing`/`RowExtra` under `state.subst` (Reject.purs:41-48, 75-77; Consume.purs:182-194) | effect-not-allowed inferred, selected | the same lambda; refused when the argument `h` performs Log, compiles when it does not | f, checked |
-| EffectNotAllowed | Check/Require.purs:123 | `unify` under `state.subst` (Require.purs:86-99), `RowMissing` with a non-pure row (121-123); at the top level ArgumentRow.purs:62 rewrites it into CallbackRowLacks (FX018) | effect-not-allowed-require inferred, selected (and written) | a nested record argument `{ f: g }`: `This function performs Log…`; with `h` for `g` in the argument, compiles | f, checked |
+| EffectNotAllowed | Check/Require.purs:123 | `unify` under `state.subst` (Require.purs:86-99), `RowMissing` with a non-pure row (121-123); at the top level ArgumentRow.purs:62 rewrites it into CallbackRowLacks (FX018) | effect-not-allowed-require inferred, selected (and written) | a nested record argument `{ f: g }`: `This function performs Log…`; with the lambda's first argument `{ f: h }` changed to `{ f: g }` (outside the refused `{ f: g }`), compiles | f, checked |
 | MustBePure | Check/Require.purs:122 | as above | must-be-pure inferred, selected, pinned-selection | refused, and refused the same with `r` pinned to the selected type; compiles with a pure `h` | f, checked |
 | RowEquality | Check/Argument.purs:70 | the conflict re-derived for its tail: `unify state.subst` (Argument.purs:65) and `resolveRow state.subst` (:111) | row-equality inferred, selected | `r` carries p's row to q; compiles when q's row is p's (the change is in `both`'s q, not in the lambda) | f, checked |
 | RowEquality | Check/RowName.purs:96 | `RowSharedTail` from `unify` under `state.subst` (Require.purs:100; `RowMismatch` there, :101, is TypeMismatch) and `RowSharedTail`/`RowMismatch` from a consumption (Reject.purs:45-46, 78) | none decisive; raised in the pinned forms of effect-not-allowed, callback-row-lacks, unhandled-effect | reads `state.subst` | f, argued |
@@ -1086,7 +1086,7 @@ derived from the cited lines.
 | DeferHandlerMayFail | Check/MarkReport.purs:49 | the mark graph from settled rows (Frames.purs:28-34), edges added by unification (UnifyMark.purs:132), searched in `Subst.marks` (Function.purs:92-94) | defer-handler-may-fail inferred, selected | compiles when the stored function performs nothing | f, checked |
 | DeferHandlerVariable | Check/MarkReport.purs:48 | as above | defer-handler-variable inferred, selected | as above | f, checked |
 | ExpectedNofail | Check/MarkReport.purs:74 | as above | expected-nofail inferred, selected | compiles when `work` is plain `Log` | f, checked |
-| HandlerMayFail | Check/MarkReport.purs:61 | as above | handler-may-fail inferred, selected | compiles with a handler that does not fail (the pinned form and a control are kept) | f, checked |
+| HandlerMayFail | Check/MarkReport.purs:61 | as above | handler-may-fail inferred, selected | compiles when the lambda no longer passes `r` to `use` (outside the refused handler literal); the pinned form is kept | f, checked |
 | ExpectedHandler | Check/Handler.purs:75 | `headOf handlerValue.state` (Handler.purs:61-63) | expected-handler inferred, pinned-selection | `with r.h` at a meta is refused; pinned to exactly the selected `Handler(Log)`, compiles | f, checked |
 | FailNeedsConcrete | Check/Failure.purs:102 | `typeHead (resolved subst ty)` of each payload, settled (Failure.purs:73-79, 214) | fail-needs-concrete-check inferred, applied | refused while `r` is unbound; compiles once applied to `{ e: E }` | f, checked |
 | FailNeedsConcrete | Resolve/Row.purs:82 | the written payload (Row.purs:79-93) | fail-needs-concrete-resolve | raised in Resolve | a, checked |
@@ -1232,6 +1232,15 @@ was deleted afterwards.
   substitution (bounded evidence on these programs).
 - must-be-pure/clock-row, the 79th fixture (BACKLOG FX030), was added
   after these runs; the test then passed 8 of 8 with it.
+
+**Fix round 2 (re-review N1).** Two `selected` variants changed text
+inside their base's refusal span, against the definition above:
+effect-not-allowed-require/selected (`g` to `h` inside `{ f: g }`)
+and handler-may-fail/selected (the handler literal itself). The first
+now changes the lambda's other argument (`{ f: h }` to `{ f: g }`);
+the second is the former control (`use(r)` to `0`), now
+`role: "selected"`, and the in-span variant is removed. Both compile,
+and both rows stay checked. 78 fixtures.
 
 **Limit of the tests (argued).** The class tests check that the
 evidence is consistent with each class; they do not derive it, and

@@ -166,6 +166,9 @@ Argument.purs:70 and RowName.purs:96 (the latter argued). The reason
 for `AmbiguousType` is re-derived through rule 3 and left to the
 author (options with consequences, none chosen). New BACKLOG FX030
 for two misleading effect diagnostics. Corpus re-pinned.
+Fix round 2 (re-review N1): the selected variants of Require.purs:123
+and HandlerMayFail now change text outside the refusal span (details
+in findings); both rows stay checked; 78 fixtures; corpus re-pinned.
 
 ## Language direction recorded (2026-10-08)
 

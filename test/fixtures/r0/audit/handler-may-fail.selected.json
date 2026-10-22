@@ -8,11 +8,11 @@
   "role": "selected",
   "against": "handler-may-fail/inferred",
   "changes": [
-    "Fail.fail(E",
-    "("
+    "use(r)",
+    "0"
   ],
   "note": "pinned and inferred agree; the control shows the nofail demand reaches the handler only through use(r), that is through r",
-  "source": "type E = E; effect Log { fn log(n: Int): Unit; }; fn use(r: { h: Handler(nofail Log with Fail(E)) }): Int = 0; fn k(): Int = { let go = fn(r) => use(r); go({ h: handler Log { log(n) => () } }) }; fn main(): Int = 0;",
+  "source": "type E = E; effect Log { fn log(n: Int): Unit; }; fn use(r: { h: Handler(nofail Log with Fail(E)) }): Int = 0; fn k(): Int = { let go = fn(r) => 0; go({ h: handler Log { log(n) => Fail.fail(E) } }) }; fn main(): Int = 0;",
   "phase": "compiled",
   "code": null,
   "text": null,
