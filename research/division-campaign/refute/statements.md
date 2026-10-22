@@ -11,9 +11,9 @@ Lean: research/composition-proofs/Composition/Typed/Refute/:
 
 | File | Contents |
 |---|---|
-| Statements.lean | `GroundT`, `GroundF`, `Denotes`, `RigidFin`; CX-D1, CX-D2, CX-S, CX-FM; `CounterAt`, CX, CX-C, CX-CA; `CXChecked`, CX-K, CX-KC; `RefuteSound`, `RealizesCX`, CX-R |
-| Rules.lean | `C1Rule`, C1, C1-P, C1-M, C1-T; `HeadClash`, `BindsTo`, `ClashIn`, `OccursIn`, `ClashRule`, `OccursRule`; C1-H, C1-O, C1-U, C1-X, C1-E |
-| Examples.lean | `unlRho`, `unlTheta`, `clashP`, `occursP`, `flexP`, `badChoice`; X1-X6 |
+| Statements.lean | `withBody`, `GroundT`, `GroundF`, `Denotes`, `RigidFin`; CX-D1, CX-D2, CX-S, CX-FM; `CounterAt`, CX, CX-C, CX-CA, CX-P; `CXChecked`, CX-K, CX-KC, CX-KP; `RefuteSound`, `RealizesCX`, CX-R; CX-PR |
+| Rules.lean | `C1Rule`, C1, C1-P, C1-M, C1-T, `withD`, C1-D; `HeadClash`, `BindsTo`, `ClashIn`, `OccursIn`, `ClashRule`, `OccursRule`; C1-H, C1-O, C1-U, C1-X, C1-E |
+| Examples.lean | `unlRho`, `unlTheta`, `clashP`, `occursP`, `flexP`, `badChoice`, `badArrow`, `pinP`; X1-X7, X6b |
 
 Every claim is a `def … : Prop`. The files contain no `theorem`,
 `sorry` or `axiom`, and build in the default target (imported from
@@ -33,13 +33,16 @@ check, so the rigid assignment is given as syntax: a substitution `ρ`
   forbids row tails at every depth and repeated labels in a record, so
   a ground expression has no variable of either sort and always
   evaluates. **`GroundF fs`** is `GroundT (.record fs [])`.
-- **`Denotes P ρ θR`**: `ρ` binds only rigid variables of `P`; every
+- **`Denotes P ρ θR`**: `ρ`'s keys are duplicate-free
+  (`(ρ.ty.map Prod.fst).Nodup`, the same for `ρ.row`); `ρ` binds only
+  rigid variables of `P`; every
   rigid type variable `n` is bound to a ground `t` with
   `evalT θR t = some (θR.ty n)`; every rigid row variable `r` is bound
   to ground fields with no tail, denoting `θR.row r`. Binding a
   flexible variable is forbidden: it would fix a choice that
   `ValidOpen` leaves to the existential side, and CX would become
-  unsound.
+  unsound. Duplicate keys are forbidden because `lookup` reads only
+  the first binding of a key while `eqs ρ` keeps every pair (§2).
 - **`RigidFin P θR`**: `ValidFin`'s finiteness premise on the rigid
   part, factored out.
 
@@ -60,7 +63,18 @@ problem `C`,
 Expected true. Route: the proved `subst_sat` (Binding.lean) gives
 `Sat θ C ↔ Sat θ (substProblem ρ C)` whenever `Sat θ (eqs ρ)`. Take
 `θ := combine P θR θF`: it satisfies `eqs ρ` by `Denotes` (ground
-bindings evaluate the same under every assignment). The substituted
+bindings evaluate the same under every assignment). This step
+needs `Denotes`'s duplicate-free keys: `eqs ρ` has one equation per
+pair, shadowed pairs included, while `Denotes` constrains only what
+`lookup` returns. The adversarial review of 88c052d proved a
+counterexample without the condition: with `B = Bool`,
+`ρ.ty = [(0, base true), (0, base false)]`, `rigidTy = [0]` and
+`θR.ty 0 = base true` satisfy the old
+`Denotes`, yet no `θF` gives `Sat (combine …) (eqs ρ)`. CX-S itself
+held even then, since substitution reads only through `lookup`; the
+alternative fix, a lookup-only substitution lemma, was not taken. With
+duplicate-free keys, every pair of `ρ` is the pair `lookup` returns.
+The substituted
 problem mentions no rigid variable (every rigid variable is bound, to
 ground syntax, and `ρ` is applied once in parallel), so on it
 `combine P θR θF` and `θF` agree; congruence (`evalT_congr`,
@@ -84,6 +98,7 @@ over all assignments while `ValidFin` asks for a finite witness.
 | CX | for injective `i : B → B₁`: `CounterAt P i ρ θR → ¬ ValidOpen P` | expected true |
 | CX-C `CXComplete` | `¬ ValidOpen P → ∃ B₁, DecidableEq B₁, injective i, ρ, θR, CounterAt P i ρ θR` | expected true |
 | CX-CA `CXCompleteAtoms` | `¬ ValidOpen P → ∃ ρ θR, CounterAt P Sum.inl ρ θR` at `B ⊕ Nat` | unsure: needs B1b |
+| CX-P `CXPrefix` | for injective `i`: `B₀ ⊆ P.B → CounterAt (withBody P B₀) i ρ θR → ¬ ValidOpen P` | expected true: CX on `withBody P B₀`, then C1-M |
 
 **CX, argument.** Assume `ValidOpen P`. Instantiate at `B₁`, `i`: this
 is why `i` must be injective, since `ValidOpen` quantifies only over
@@ -106,6 +121,14 @@ decidable equality on `B₁` is classical; this is why it sits under
 `∃` in the statement. CX-C needs no fresh bases beyond those
 `¬ ValidOpen` supplies, but it does not say where to look.
 
+**CX-P, a counter-instance to part of the body.** `withBody P B₀`
+keeps the rigid lists and the whole `D` and replaces the body by a
+sublist `B₀`. CX refutes `withBody P B₀`; C1-M (more body atoms, fewer
+valid signatures) carries this to `P`. This is the form bounded
+evidence uses when it keeps only the atoms a refusal needs. Only the
+body may be cut: a counter-instance to a sub-`D` is not one to `P`
+(C1-D, §5).
+
 **CX-CA, the searchable converse.** A refuter needs one fixed supply,
 `B ⊕ Nat`. The argument is CX-C's, preceded by B1b
 (`AtomsToOpen`, Bridge/Valid.lean: conjectured, unproved, flagged at an
@@ -116,7 +139,8 @@ exactly as B1b is.** Soundness (CX, CX-K) does not depend on it.
 ## 4. Checked certificates and `Refute_sound`
 
 **`CXChecked P ρ`** is the certificate condition at `B ⊕ Nat`, built
-from decidable parts only: `Scoped P`; `ρ` binds only rigid
+from decidable parts only: `Scoped P`; `ρ`'s keys are duplicate-free
+(as in `Denotes`); `ρ` binds only rigid
 variables, every rigid variable, each to a ground expression (rows: to
 ground fields and no tail); `decideCall` is true on `ρ` applied to the
 renamed `D` and false on `ρ` applied to the renamed body. No `θR` is
@@ -130,9 +154,14 @@ the check read `D` through `decideCall`: once `ρ` is applied, a scoped
 | CX-KC `CXCheckedComplete` | `Scoped P → ¬ ValidOpen P → ∃ ρ, CXChecked P ρ` | unsure: needs B1b |
 | `RefuteSound check` | `check P c = true → ¬ ValidOpen P` | the interface (requirements.md's `Refute_sound`) |
 | CX-R `RefuteSoundOfCX` | `RealizesCX check → RefuteSound check` | expected true |
+| CX-KP `CXCheckedPrefixSound` | `B₀ ⊆ P.B → CXChecked (withBody P B₀) ρ → ¬ ValidOpen P` | expected true: CX-K on `withBody P B₀` (same `D`, so `Scoped` is unchanged), then C1-M |
 
-**CX-K, argument.** Define `θR` from `ρ`'s bindings (ground and
-well-formed, so each evaluates). Then `Denotes`. `decideCall` true on
+**CX-K, argument.** Define `θR` by lookup: `θR.ty n` is the value of
+`ρ.ty.lookup n` and `θR.row r` that of `ρ.row.lookup r` (ground and
+well-formed, so each evaluates; any value off the rigid lists). Then
+`Denotes`: its value conditions hold by construction, and its
+duplicate-free keys are part of `CXChecked`, so every pair of `ρ` is
+the one `lookup` read. `decideCall` true on
 the substituted `D` gives an assignment satisfying it; CX-S `←` and
 scoping (`D` reads only rigid variables, where the combined assignment
 is `θR`) give `Sat θR D′`. Apply CX with `i = Sum.inl`. Needs, beyond
@@ -140,14 +169,68 @@ CX: "ground and well-formed implies `evalT` defined" (not yet stated
 anywhere; expected true by induction, using `wfT`'s duplicate check)
 and `Scoped` preserved by `mapBase` (E5, proved).
 
+**The certificate `{rho, body}`.** CX-KP fixes the shape: a ground
+substitution `rho : Subst Label (B ⊕ Nat)` and `body`, a sublist of
+`P.B` given as atom ids, checked as `CXChecked (withBody P body) rho`.
+The check reads the whole `D`; the certificate never names a subset of
+`D`. There is no `θR` and no base map `i` in it: `CXChecked` is fixed
+at `B ⊕ Nat` with `i = Sum.inl`, and `θR` is what `rho` denotes.
+CX-K is the case `body = P.B`.
+
 **`RefuteSound` is the interface,** generic in the certificate type:
 any refuting strategy supplies a proof of it for its own `check`.
 `RealizesCX check` says each acceptance is backed by a `CXChecked`
 certificate; CX-R says that suffices. A future refuter with a
 different certificate (say, a c1 rule's evidence) supplies
-`RefuteSound` its own way. The Lean name is `RefuteSound`, after the
-file's convention for `Prop` definitions; it is requirements.md's
-`Refute_sound`.
+`RefuteSound` its own way.
+
+**Naming.** The Lean `RefuteSound` is requirements.md's
+`Refute_sound`: the same statement, named after the Lean files'
+convention for `Prop` definitions. Documents should write
+`RefuteSound` and may note the requirements name.
+
+### 4.1 The projection from the recorded problem
+
+T-R0b's `RecordedProblem` is richer than `SigProblem`: `app h args`
+nodes outside `TExpr`, requirement atoms (`pr`, `cmp`), canonical
+variable names, atoms inside `outside` constructs. Everything above is
+stated over `SigProblem`, so rules and refuters read a projection
+`toSig : RecordedProblem → SigProblem`. `RecordedProblem` and its
+validity are not in Lean, so **CX-PR `ProjectionSound ValidR toSig`**
+is stated over an abstract type `R`, a validity `ValidR` and `toSig`:
+`∀ p, ¬ ValidOpen (toSig p) → ¬ ValidR p`. Composed with any
+`RefuteSound check`, an acceptance of `check (toSig p) c` refutes `p`.
+
+Conditions on `toSig` for CX-PR to hold:
+
+1. **Names.** Canonical names map injectively to `Nat`, per sort;
+   rigid variables stay rigid and flexible ones stay flexible.
+2. **`D` whole.** `D` is translated atom for atom; nothing is dropped
+   or generalized. A `D` atom outside `TExpr` (an `app`, a requirement
+   atom, an atom under an `outside` marker) leaves `toSig` undefined
+   for that problem, and no refutation through it applies. Weakening
+   `D` admits more rigid assignments (C1-D, §5).
+3. **Body atoms dropped.** A body atom outside the fragment may be
+   dropped. By C1-M, dropping can only add solutions.
+4. **`app` generalized.** Each occurrence of `app h args` in a kept
+   body atom becomes its own fresh flexible type variable, mentioned
+   nowhere else (not shared between occurrences: sharing would assert
+   that two occurrences are equal). Given a solution of the recorded
+   body at a rigid assignment, setting each fresh variable to the
+   value of its occurrence solves the generalized body. This needs
+   `ValidR`'s values of `app` nodes to be values of `G` over an
+   injective extension of the bases (for example a fresh base atom
+   per applied type), finite at every depth (`ValidFin` asks for a
+   finite `θF`), and chosen after the rigid assignment, which a
+   flexible variable allows.
+5. **Bases.** `ValidR` quantifies over injective base extensions at
+   least as `ValidOpen` does, so that its validity at every extension
+   gives `ValidOpen (toSig p)`.
+
+Status: **unsure**, because `ValidR` is not defined anywhere. Under
+conditions 1-5 the argument is expected true: conditions 3 and 4 make
+every recorded solution a solution of the projection, so
+`ValidR p → ValidOpen (toSig p)`, which is CX-PR's contrapositive.
 
 ## 5. Class c1: rules on original atoms and `D`
 
@@ -162,15 +245,27 @@ lists, `D`, original body atoms. **`C1Rule`** is just
 | C1-P `C1SoundPrefix rule` | `B₀ ⊆ P.B → rule (withBody P B₀) → ¬ ValidOpen P` | the schema, on a prefix |
 | C1-M `ValidOpenAntitone` | `B₀ ⊆ P.B → ValidOpen P → ValidOpen (withBody P B₀)` | expected true: the same `θF` serves |
 | C1-T `C1SoundToPrefix` | `C1Sound rule → C1SoundPrefix rule` | expected true, from C1-M |
+| C1-D `SubDAntitone` | `D₀ ⊆ P.D → ¬ ValidOpen (withD P D₀) → ¬ ValidOpen P` | **expected false** (X7) |
 | C1-U `UnsatBodySound` | `(∃ θR, RigidFin ∧ Sat θR D) → ¬ Satisfiable P.B → ¬ ValidOpen P` | expected true |
 | C1-H `ClashSound` | `C1Sound ClashRule` | expected true, via C1-U |
 | C1-O `OccursSound` | `C1Sound OccursRule` | expected true, via C1-U |
-| C1-X `ClashAfterSubstSound` | the clash rule on `substProblem σ P.B`, any `σ`, refutes `P` | **expected false** (X6) |
+| C1-X `ClashAfterSubstSound` | the clash rule on `substProblem σ P.B`, any `σ`, refutes `P` | **expected false** at every inhabited `B` (X6) |
 | C1-E `ClashAfterEntailedSound` | the same, when every solution of `P.B` satisfies `eqs σ` | expected true |
 
 C1-P is the form §2.4 relies on: generation that stops early leaves a
 prefix of `B`, and a rule that fires on the prefix must still be
 evidence about the whole signature. C1-T reduces it to C1.
+
+**Whole `D`, sublist of `B`.** A c1 rule reads the whole `D` and a
+sublist of `B` (`withBody P B₀` keeps `P.D`), never a sub-`D`.
+`ValidOpen` is antitone in the body but not in `D`: dropping `D` atoms
+admits more rigid assignments, so a refutation of `⟨D₀, B₀⟩` with
+`D₀ ⊂ D` does not refute `⟨D, B₀⟩`. C1-D states the tempting converse
+and X7 refutes it: `pinP b` declares and requires `x = Int`, `x`
+rigid, and is valid; with `D` dropped, `x := {}` is a rigid assignment
+no body solution survives. A checker that re-runs a rule must
+therefore re-run it on `withBody P premises`, premises drawn from `B`
+only.
 
 **The candidate rules.** `HeadClash t u`: top-level constructors
 differ (base, arrow, record), or two different bases; neither side a
@@ -198,18 +293,36 @@ function-valued rows, so the proof is by induction on `G`, not by
 **C1-X and C1-E: where "original" ends.** Today's head-clash, `lacks`
 and `disjoint` refusals read atoms rewritten by the online
 substitution (§2.3 row e). C1-X states that reading as a rule, and X6
-refutes it: `x = Int`, `x` flexible, is valid, but under the choice
-`x := Bool` the rewritten body is `Bool = Int`. C1-E is the boundary:
-if `σ` is entailed by the original body (every solution of `P.B`
-satisfies `eqs σ`, as for a most general unifier of original
-equations), the rule is sound, by `binding_correspondence` (proved,
+refutes it at every inhabited base type, `Unit` included: `x = Int`,
+`x` flexible, is valid, but under the choice `x := Int -> Int` the
+rewritten body is `(Int -> Int) = Int`. (The two-base form, with
+`x := Bool`, is X6b; it is vacuous when `B` has at most one element.)
+C1-E is the boundary: if `σ` is entailed by the original body (every
+solution of `P.B` satisfies `eqs σ`, as for a most general unifier of
+original equations), the rule is sound, by `binding_correspondence` (proved,
 Binding.lean) and C1-H. Entailment is semantic; whether the online
 solver's substitution is entailed is exactly what bindings chosen by
 `H` or `shareTails` can break.
 
-**Not stated here** (questions 4, 5): `lacks`/`disjoint` refutations
-on original atoms, the third candidate of §2.3; nested head clashes;
-an occurs check through row tails (`r = { l: t, ...r }`).
+**Which c1 rules are stated.** Stated: C1-H (top-level head clash,
+including two equations binding one type variable to clashing heads)
+and C1-O (the type-variable occurs check), each with the `ClauseOnly`
+gate on `D`. **Not stated, so not yet c1** (questions 4, 5):
+
+- nested head clashes, through arrows or inside record fields (for
+  example `{a: Bool, ...r} = {a: Int, ...r}`);
+- record-field clashes generally: `HeadClash` makes record against
+  record `False`, and records are equal modulo label order and
+  disjoint union, so a free-term-algebra argument does not carry over;
+- cancellation (removing equal parts from both sides);
+- `lacks`/`disjoint` refutations on original atoms, the third
+  candidate of §2.3;
+- the occurs check through row tails (`r = { l: t, ...r }`).
+
+Their statement shapes are left unwritten: each needs a decomposition
+of record equality that this tranche has not fixed, and a wrong shape
+would be worse than none. A document that labels any of them "c1"
+should say "c1 candidate; unstated".
 
 ## 6. Non-vacuity
 
@@ -231,9 +344,17 @@ recorded only here, support them.
 - **X4 `ClashFires`**, **X5 `OccursFires`**: `Int = Bool` and
   `x = x -> Int`, nothing declared; each rule fires and the problem is
   not `ValidOpen`.
-- **X6 `ClashAfterSubstRefuted`**: `flexP b` is valid; the clash rule
-  fires on its body under `badChoice c`; so C1-X fails at any base
-  type with two distinct elements.
+- **X6 `ClashAfterSubstRefuted`**: at every `b : B`, `flexP b` is
+  valid; the clash rule fires on its body under `badArrow b`
+  (`x := b -> b`); so C1-X fails at every inhabited `B`, `Unit` included.
+  The adversarial review proved `¬ ClashAfterSubstSound` at `Bool` and
+  at `Unit` in a scratch copy.
+- **X6b `ClashAfterSubstRefuted2`**: the earlier form, with
+  `badChoice c` and `b ≠ c`. It is vacuous when `B` has at most one
+  element, which is why X6 now uses `badArrow`.
+- **X7 `SubDRefuted`** (F1): at every `b`, `pinP b` (rigid `x`, `D`
+  and body both `x = b`) is valid, `withD (pinP b) []` is not (take
+  `x := {}`), so C1-D fails.
 
 **Checked** (bounded evaluation, `B = Bool`, `#eval` in a scratch
 file importing Composition.Typed.Refute.Examples, not committed):
@@ -249,8 +370,17 @@ file importing Composition.Typed.Refute.Examples, not committed):
 | `clashP true false`, no `ρ` | false | — |
 | `occursP true`, no `ρ` | false | — |
 | `flexP true`; under `badChoice false` | true; false | — |
+| `flexP ()` at `Unit`; under `badArrow ()` | true; false | — |
+| `pinP true`, `D` dropped; `x := {}` | false | — |
+| `pinP true`, whole `D`; `x := {}` | — | false |
 
-The last control shows why `D` is checked: `unlRho` violates the valid
+The `badArrow` and `pinP` rows were evaluated at the revision of
+§9, the same way (a scratch file, deleted). The `pinP` rows show
+X7's point as a certificate: `x := {}` refutes the body with `D`
+dropped, but violates the whole `D`, so it certifies nothing about
+`pinP`.
+
+The `cStar` control shows why `D` is checked: `unlRho` violates the valid
 `star`'s `D` (`h lacks f_n`), so it is no counter-instance there even
 though the body fails. The second file, which included `n = 3`, took
 6 min 49 s; `decideCall` enumerates pattern subsets, so a checker's
@@ -269,6 +399,9 @@ cost grows quickly (question 3).
 | CX-CA, CX-KC | CX-C's needs and **B1b (unproved)** |
 | CX-K | CX, CX-S, E5, "ground and `wfT` implies defined" (new) |
 | CX-R | CX-K |
+| CX-P | CX, C1-M |
+| CX-KP | CX-K, C1-M |
+| CX-PR | conditions 1-5 of §4.1; C1-M; a definition of `ValidR` (**not yet given**) |
 | C1-T | C1-M |
 | C1-U | B0 (`openToFin`) |
 | C1-H, C1-O | C1-U, `clauseOnly_satisfiable`, head/occurs facts (new) |
@@ -289,9 +422,10 @@ cost grows quickly (question 3).
    unification per pattern), or is this acceptable for the rare
    Contradiction verdict?
 4. **Scope of c1.** Only top-level head clash and the type-variable
-   occurs check are stated. Should this tranche also state the
-   `lacks`/`disjoint` refutations on original atoms, nested clashes and
-   the row occurs check?
+   occurs check are stated (§5 lists the rest). Should this tranche
+   also state the `lacks`/`disjoint` refutations on original atoms,
+   nested and record-field clashes, cancellation and the row occurs
+   check?
 5. **C1-E as the criterion.** Is "every solution of the original body
    satisfies `eqs σ`" the intended line between original and
    solver-chosen atoms, so that an mgu-based rule counts as c1?
@@ -299,5 +433,44 @@ cost grows quickly (question 3).
    searchable supply (CX-CA, CX-KC) stands or falls with B1b. Should
    B1b be proved before a refuter is planned, or is a sound,
    incomplete refuter enough for the Contradiction verdict?
-7. **Name.** `RefuteSound` in Lean for requirements.md's
-   `Refute_sound`; rename either?
+7. **Name.** Settled by review: documents write `RefuteSound` (the
+   Lean name), noting that it is requirements.md's `Refute_sound`
+   (§4).
+8. **`ValidR`.** CX-PR needs the recorded problem's validity. Which
+   document defines it, and does it meet conditions 4 and 5 of §4.1?
+
+## 9. Revision log (reviews of 88c052d)
+
+Two reviews of 88c052d (an interface reconciliation and an
+adversarial soundness review) led to these changes. Nothing is proved;
+every claim is still a `def … : Prop`.
+
+- **Adversarial 4 (CX-S route).** Chosen fix: duplicate-free keys,
+  `(ρ.ty.map Prod.fst).Nodup` and the same for `ρ.row`, added to
+  `Denotes` and `CXChecked`; not a lookup-only substitution lemma.
+  CX-S's argument (§2) and CX-K's construction of `θR` (§4, now by
+  `lookup`) cite the condition. X1 and X2 still inhabit: `unlRho n`
+  binds row 0 and rows `1..n` once each.
+- **Adversarial 9(a) (X6).** X6 now uses `badArrow b` and holds at
+  every inhabited `B`, `Unit` included; the two-base form is kept as
+  X6b, noted as vacuous when `B` has at most one element. C1-X's
+  status reads "expected false at every inhabited `B`".
+- **F1 (whole `D`).** §5 states that c1 rules read the whole `D` and a
+  sublist of `B`; new `withD`, C1-D `SubDAntitone` (expected false)
+  and X7 `SubDRefuted` with `pinP` (expected true; bounded check in
+  §6).
+- **F2 (projection).** New §4.1 and CX-PR `ProjectionSound`, over an
+  abstract recorded type, with conditions 1-5 in prose. Status
+  unsure: `ValidR` is not defined. New question 8.
+- **F3 (sub-body evidence).** New CX-P `CXPrefix` and CX-KP
+  `CXCheckedPrefixSound` (expected true, from CX or CX-K and C1-M);
+  certificate shape `{rho, body}` in §4. `withBody` moved from
+  Rules.lean to Statements.lean so CX-P can use it.
+- **F4 (c1 scope).** §5 lists what is stated (C1-H, C1-O) and what is
+  not (nested and record-field clashes, cancellation,
+  `lacks`/`disjoint`, row occurs); shapes left unwritten, with the
+  reason. Rules.lean carries the same list.
+- **F6 (naming).** §4 notes that Lean `RefuteSound` is requirements'
+  `Refute_sound`; question 7 marked settled.
+- One Lean section heading said "lemma"; renamed so the Refute files
+  contain none of `theorem`, `lemma`, `sorry`, `axiom`.

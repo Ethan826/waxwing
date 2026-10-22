@@ -28,14 +28,10 @@ signature is not `ValidOpen`. -/
 def C1Sound (rule : C1Rule Label B) : Prop :=
   ∀ P : SigProblem Label B, rule P → ¬ ValidOpen P
 
-/-- The same signature with body `B₀`. -/
-def withBody (P : SigProblem Label B) (B₀ : Problem Label B) :
-    SigProblem Label B :=
-  ⟨P.rigidTy, P.rigidRow, P.D, B₀⟩
-
 /-- C1-P. Sound on a prefix: a rule firing on any sublist of the
 recorded body (a prefix included, as generation stopped early) refutes
-the whole signature. -/
+the whole signature. The rule reads the whole `D` (`withBody` keeps
+it), never a sub-`D`: see `SubDAntitone`. -/
 def C1SoundPrefix (rule : C1Rule Label B) : Prop :=
   ∀ (P : SigProblem Label B) (B₀ : Problem Label B),
     (∀ a ∈ B₀, a ∈ P.B) → rule (withBody P B₀) → ¬ ValidOpen P
@@ -48,6 +44,18 @@ def ValidOpenAntitone : Prop :=
 /-- C1-T. Hence a sound rule is sound on prefixes. -/
 def C1SoundToPrefix : Prop :=
   ∀ rule : C1Rule Label B, C1Sound rule → C1SoundPrefix rule
+
+/-- The same signature with declared constraints `D₀`. -/
+def withD (P : SigProblem Label B) (D₀ : Problem Label B) :
+    SigProblem Label B :=
+  ⟨P.rigidTy, P.rigidRow, D₀, P.B⟩
+
+/-- C1-D (expected false, X7). Refuting a sub-`D` would refute the
+signature. Dropping `D` atoms admits more rigid assignments, so
+`ValidOpen` is not antitone in `D`: a rule must read the whole `D`. -/
+def SubDAntitone : Prop :=
+  ∀ (P : SigProblem Label B) (D₀ : Problem Label B),
+    (∀ a ∈ D₀, a ∈ P.D) → ¬ ValidOpen (withD P D₀) → ¬ ValidOpen P
 
 /-! ### Candidate c1 rules (requirements.md §2.3, row c) -/
 
@@ -118,5 +126,14 @@ def ClashAfterEntailedSound : Prop :=
   ∀ (P : SigProblem Label B) (σ : Subst Label B), ClauseOnly P.D →
     (∀ θ, Sat θ P.B → Sat θ (eqs σ)) →
     ClashIn (substProblem σ P.B) → ¬ ValidOpen P
+
+/-! ### Not stated (statements.md §5, question 4)
+
+Only the top-level clash (C1-H) and the type-variable occurs check
+(C1-O) are stated. Unstated, so not yet c1: nested head clashes
+(through arrows or record fields), record-field clashes (records are
+equal modulo label order and disjoint union, so a free-algebra argument
+does not carry over), cancellation, `lacks`/`disjoint` refutations on
+original atoms, and the occurs check through row tails. -/
 
 end Composition.Typed.Refute

@@ -64,11 +64,35 @@ def flexP (b : B) : SigProblem Nat B := ⟨[], [], [], [.eq (.tvar 0) (.base b)]
 /-- A solver's choice `x := Bool`. -/
 def badChoice (c : B) : Subst Nat B := ⟨[(0, .base c)], []⟩
 
-/-- X6. `ClashAfterSubstSound` is false: `flexP b` is valid, yet the
-clash rule fires on its body rewritten by `badChoice c`. -/
+/-- A solver's choice `x := Int -> Int`, available at every inhabited
+`B` (one base suffices). -/
+def badArrow (b : B) : Subst Nat B := ⟨[(0, .arrow (.base b) (.base b))], []⟩
+
+/-- X6. `ClashAfterSubstSound` is false at every inhabited `B`, `Unit`
+included: `flexP b` is valid, yet the clash rule (arrow against base)
+fires on its body rewritten by `badArrow b`. -/
 def ClashAfterSubstRefuted : Prop :=
+  ∀ b : B,
+    ValidOpen (flexP b) ∧ ClashIn (substProblem (badArrow b) (flexP b).B) ∧
+      ¬ ClashAfterSubstSound (Label := Nat) (B := B)
+
+/-- X6b. The two-base form (`x := Bool`). Vacuous when `B` has at most
+one element; X6 is the form that covers every inhabited `B`. -/
+def ClashAfterSubstRefuted2 : Prop :=
   ∀ b c : B, b ≠ c →
     ValidOpen (flexP b) ∧ ClashIn (substProblem (badChoice c) (flexP b).B) ∧
       ¬ ClashAfterSubstSound (Label := Nat) (B := B)
+
+/-! ### Whole `D` (F1) -/
+
+/-- `x = Int` declared and required, `x` rigid: valid. -/
+def pinP (b : B) : SigProblem Nat B :=
+  ⟨[0], [], [.eq (.tvar 0) (.base b)], [.eq (.tvar 0) (.base b)]⟩
+
+/-- X7. `SubDAntitone` is false: `pinP b` is valid, but with its `D`
+dropped it is not (take `x := {}`). -/
+def SubDRefuted : Prop :=
+  ∀ b : B, ValidOpen (pinP b) ∧ ¬ ValidOpen (withD (pinP b) []) ∧
+    ¬ SubDAntitone (Label := Nat) (B := B)
 
 end Composition.Typed.Refute

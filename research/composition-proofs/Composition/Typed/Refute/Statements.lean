@@ -16,6 +16,11 @@ open Composition Composition.Syntax Composition.Typed
 
 variable {Label B : Type} [DecidableEq Label]
 
+/-- The same signature with body `B₀` (whole `D`, rigid lists kept). -/
+def withBody (P : SigProblem Label B) (B₀ : Problem Label B) :
+    SigProblem Label B :=
+  ⟨P.rigidTy, P.rigidRow, P.D, B₀⟩
+
 /-! ### Ground substitutions and what they denote -/
 
 /-- A ground, evaluable type expression: no type variable and, at every
@@ -27,12 +32,15 @@ def GroundT (t : TExpr Label B) : Prop :=
 def GroundF (fs : Fields Label B) : Prop :=
   GroundT (.record fs [])
 
-/-- `ρ` binds exactly the rigid variables of `P`, each to a ground
-expression (a row to ground fields and no tail), and denotes `θR` on
-them. Bindings of flexible variables are forbidden: they would fix a
-choice that `ValidOpen` leaves to the existential side. -/
+/-- `ρ` binds exactly the rigid variables of `P`, each once, to a
+ground expression (a row to ground fields and no tail), and denotes `θR`
+on them. Bindings of flexible variables are forbidden: they would fix a
+choice that `ValidOpen` leaves to the existential side. The keys are
+duplicate-free: `lookup` reads only the first binding, but `eqs ρ`
+keeps every pair, so a shadowed binding would break CX-S's route. -/
 def Denotes (P : SigProblem Label B) (ρ : Subst Label B)
     (θR : Assign Label B) : Prop :=
+  (ρ.ty.map Prod.fst).Nodup ∧ (ρ.row.map Prod.fst).Nodup ∧
   (∀ p ∈ ρ.ty, p.1 ∈ P.rigidTy) ∧ (∀ p ∈ ρ.row, p.1 ∈ P.rigidRow) ∧
   (∀ n ∈ P.rigidTy, ∃ t, ρ.ty.lookup n = some t ∧ GroundT t ∧
     evalT θR t = some (θR.ty n)) ∧
@@ -56,7 +64,7 @@ def FinDenotable : Prop :=
   ∀ (P : SigProblem Label B) (θR : Assign Label B),
     RigidFin P θR → ∃ ρ : Subst Label B, Denotes P ρ θR
 
-/-! ### The substitution lemma -/
+/-! ### The substitution statement -/
 
 /-- CX-S. Applying `ρ` to a problem does not change its truth under
 the combined assignment: rigid variables read from `θR` (which `ρ`
@@ -105,17 +113,29 @@ def CXCompleteAtoms [DecidableEq B] : Prop :=
     ∃ (ρ : Subst Label (B ⊕ Nat)) (θR : Assign Label (B ⊕ Nat)),
       CounterAt P Sum.inl ρ θR
 
+/-- CX-P. A counter-instance to a sublist `B₀` of the body, with the
+whole `D`, refutes the signature (from CX and C1-M). Never a sub-`D`:
+see `SubDAntitone` (Rules.lean). -/
+def CXPrefix : Prop :=
+  ∀ (P : SigProblem Label B) (B₀ : Problem Label B) (B₁ : Type)
+    [DecidableEq B₁] (i : B → B₁), Function.Injective i →
+    ∀ (ρ : Subst Label B₁) (θR : Assign Label B₁),
+      (∀ a ∈ B₀, a ∈ P.B) → CounterAt (withBody P B₀) i ρ θR →
+        ¬ ValidOpen P
+
 /-! ### Checked counter-instances and the refuter interface -/
 
 /-- A checkable certificate at `B ⊕ Nat`: decidable conditions only.
-`ρ` binds exactly the rigid variables, each to a ground evaluable
-expression; `D` is scoped, so `ρ` closes it and `decideCall` reads it;
+`ρ` binds exactly the rigid variables, each once (no duplicate keys),
+to a ground evaluable expression; `D` is scoped, so `ρ` closes it and
+`decideCall` reads it;
 the substituted `D` holds and the substituted body does not. No `θR`
 is given: it is the one `ρ` denotes. -/
 def CXChecked [DecidableEq B] (P : SigProblem Label B)
     (ρ : Subst Label (B ⊕ Nat)) : Prop :=
   let P' := P.mapBase (Sum.inl : B → B ⊕ Nat)
   Scoped P ∧
+  (ρ.ty.map Prod.fst).Nodup ∧ (ρ.row.map Prod.fst).Nodup ∧
   (∀ p ∈ ρ.ty, p.1 ∈ P.rigidTy) ∧ (∀ p ∈ ρ.row, p.1 ∈ P.rigidRow) ∧
   (∀ n ∈ P.rigidTy, ∃ t, ρ.ty.lookup n = some t ∧ GroundT t) ∧
   (∀ r ∈ P.rigidRow, ∃ fs, ρ.row.lookup r = some (fs, []) ∧ GroundF fs) ∧
@@ -132,7 +152,15 @@ def CXCheckedComplete [DecidableEq B] : Prop :=
   ∀ P : SigProblem Label B, Scoped P → ¬ ValidOpen P →
     ∃ ρ : Subst Label (B ⊕ Nat), CXChecked P ρ
 
-/-- `Refute_sound` (requirements.md §4.4), the interface a refuting
+/-- CX-KP. The certificate `{rho, body}`: `rho` checked against the
+whole `D` and the sublist `body` of `B` refutes the signature. -/
+def CXCheckedPrefixSound [DecidableEq B] : Prop :=
+  ∀ (P : SigProblem Label B) (B₀ : Problem Label B)
+    (ρ : Subst Label (B ⊕ Nat)),
+    (∀ a ∈ B₀, a ∈ P.B) → CXChecked (withBody P B₀) ρ → ¬ ValidOpen P
+
+/-- `Refute_sound` (requirements.md §4.4; the Lean name is
+`RefuteSound`), the interface a refuting
 strategy supplies: whatever its certificate type, a certificate its
 check accepts refutes option-B validity. -/
 def RefuteSound {Cert : Type} (check : SigProblem Label B → Cert → Bool) :
@@ -148,5 +176,17 @@ def RealizesCX [DecidableEq B] {Cert : Type}
 def RefuteSoundOfCX [DecidableEq B] : Prop :=
   ∀ {Cert : Type} (check : SigProblem Label B → Cert → Bool),
     RealizesCX check → RefuteSound check
+
+/-! ### Projection from the recorded problem (F2) -/
+
+/-- CX-PR. Refuting the projection refutes the recorded problem. `R`
+stands for T-R0b's `RecordedProblem` (not in Lean), `ValidR` for its
+validity (not yet defined) and `toSig` for a projection that keeps the
+rigid lists and the whole `D`, and drops body atoms outside `TExpr` or
+generalizes each `app` occurrence to a fresh flexible variable. The
+conditions on `toSig` and `ValidR` are in prose (statements.md §4.1). -/
+def ProjectionSound {R : Type} (ValidR : R → Prop)
+    (toSig : R → SigProblem Label B) : Prop :=
+  ∀ p : R, ¬ ValidOpen (toSig p) → ¬ ValidR p
 
 end Composition.Typed.Refute
