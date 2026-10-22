@@ -8173,3 +8173,9 @@ unrelated README/backlog/direction-plan edits remain untouched.
   refused by every certificate) shows the checker incomplete on the
   fragment. Two reviews: sound as claimed; wording corrected. The
   author's acceptance pending.
+- **Wave 2 accepted** (dossier §18.59) and published to `main`;
+  corollaries added (63 theorems audited). Exact queries do not make up
+  for a certificate language that cannot express `divide5`'s witness.
+  Next, authorized: a requirements-and-statements tranche comparing
+  one-literal guards with pattern-dependent certificate selection; no
+  prototype or proofs.

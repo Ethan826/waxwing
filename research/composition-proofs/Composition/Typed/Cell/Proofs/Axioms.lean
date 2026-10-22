@@ -6,6 +6,7 @@ research/division-campaign/cellcheck/axioms.out.
 -/
 import Composition.Typed.Cell.Proofs.Main
 import Composition.Typed.Cell.Proofs.Wave2
+import Composition.Typed.Cell.Proofs.Corollaries
 
 open Composition.Typed.Cells
 
@@ -79,3 +80,12 @@ open Composition.Typed.Cells
 -- Wave 2: the tautology reduction, this certificate format only (W9).
 #print axioms coverTautology
 #print axioms checkTautology
+-- Corollaries: accepted problems are `ValidOpen`; empty-list `divide5`.
+#print axioms star_validOpen
+#print axioms starRead_validOpen
+#print axioms dep_validOpen
+#print axioms divide_validOpen
+#print axioms divide3_validOpen
+#print axioms splitSig_validOpen
+#print axioms selfDisjoint_validOpen
+#print axioms divide5_nil_accepted

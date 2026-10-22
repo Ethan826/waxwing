@@ -4960,3 +4960,45 @@ fragment, `divide5`'s non-empty premise, premises of the exactness
 claims, the corollary marked as unstated, the refutations'
 provenance, ranges, axiom wording), in Refutations.lean (comment
 pointer), proof-plan.md (status) and progress.md.
+
+### 18.59 Wave 2 accepted; next, a requirements-and-statements tranche (2026-10-21)
+
+**The author accepted wave 2 as recorded in §18.58**, having checked
+the `divide5` statements: validity holds for every label list, and
+universal refusal needs the stated non-empty premise. Recording it as
+proved checker incompleteness is correct. Rulings:
+
+1. **Wave closed and published to `main`.** The distinction stays
+   prominent: **exact queries cannot compensate for a certificate
+   language that cannot express the witness.** QR1-QR5 make every
+   query the checker asks exact on the fragment, and `divide5` is still
+   refused, because no certificate in the current format describes
+   its split.
+2. **Two small theorem groups added** (Cell/Proofs/Corollaries.lean,
+   in the axiom audit, now 63 theorems): `divide5_nil_accepted`, the
+   wave-2 soundness review's scratch theorem verbatim; and `ValidOpen`
+   corollaries of the accepted families via `cellOpenImpl`:
+   `star_validOpen`, `starRead_validOpen` (every n), `dep_validOpen`
+   (every k), `divide_validOpen` (every m, both variants),
+   `divide3_validOpen` (every list), `splitSig_validOpen`,
+   `selfDisjoint_validOpen`. `scRoute` and `scIntArm` already state
+   `ValidOpen`.
+3. **Guarded pieces are not adopted.** The result proves that this
+   checker, with one uniform certificate in its current format, cannot
+   handle `divide5`. Guards are one possible remedy;
+   pattern-dependent certificate selection is another. **Authorized: a
+   small requirements-and-statements tranche:**
+   - a proposed Waxwing program with `divide5`'s shape and its
+     hand-translated constraints;
+   - the programmer-visible behavior wanted;
+   - a comparison of one-literal guards on written labels with
+     pattern-dependent certificate selection;
+   - the smallest proposed extension, its soundness obligations and
+     expected costs.
+
+   No prototype or proofs. Equations in declarations stay deferred. A
+   constructed counterexample warrants investigation but does not by
+   itself settle the next mechanism.
+4. **The nine wave-2 worktrees removed** after confirming their commits
+   are integrated, their trees clean and their processes stopped;
+   branches kept.
