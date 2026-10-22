@@ -804,8 +804,9 @@ walk(whole, left, n + -1);` (the language has no binary minus).
    `whole`; the same with or without a caller and with or without the
    `where` clause. The one annotation form tested, a lambda parameter
    annotated `{ ...u, ...v }`, does not decide the split (same
-   diagnostic); the probe does not show that every annotation fails. It is a refusal, not a
-   selection of the identity split; it is E_TYPE, not E_SPECIALIZATION.
+   diagnostic); the probe does not show that every annotation fails.
+   It is a refusal, not a selection of the identity split; it is
+   E_TYPE, not E_SPECIALIZATION.
 2. Pinning the split needs a changed signature (an extra `uonly: {
    ...u }` parameter). Pinned to the identity split, or to `u' = {}`,
    `v' = { ...u, ...v }`, check passes; with no caller both build and
