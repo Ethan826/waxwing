@@ -9,6 +9,10 @@ grounds: (1) a rule on original recorded atoms and `D`, proved sound for
 `ValidOpen` under ∀rigid/∃flexible; (2) a checked counter-instance, CX;
 (3) solver failure; only (1) and (2) justify a semantic rejection).
 
+The author's decisions of dossier §18.69 (Q1-Q13, D1-D6) are reflected
+and marked "(§18.69)"; "author Q<n>" means §18.67's numbering, which
+keeps the reconciliation's.
+
 Labels: **cited** (file:line or section), **checked** (a run recorded in
 §7, today's compiler or the bounded oracle), **argued** (reasoning, not
 checked), **proposed** (a statement or design choice for the author).
@@ -32,7 +36,7 @@ itself stays unstated in Lean (requirements.md §4.4).
   Every "c1" below is a **c1 candidate**: CX states only the top-level
   C1-H and C1-O (refute/statements.md §5, both expected true, not
   proved); nested, record-field, cancellation and `lacks`/`disjoint`
-  rules are unstated (CX Q4; pending author Q10).
+  rules are unstated and **stay candidates** (CX Q4; §18.69 Q10).
 - **In every probe of those kinds a counter-instance exists and was
   checked in the bounded model** (17 problems, §7.2). No probe found one
   of them rejecting a valid program. A refuter built on the single-label
@@ -54,9 +58,10 @@ itself stays unstated in Lean (requirements.md §4.4).
 - Resolve-time `lacks` and disjointness refusals on body types are
   semantic, not static (c2 counter-instances checked in the bounded
   model). Resolve runs no CX check, so they belong in generation as
-  definedness atoms decided by CX (§6 item 3; pending author Q4). `A
-  record literal accepts at most one spread` is proposed as
-  Unsupported, pending boundaries §7 Q3 / author Q4 (§6 item 4).
+  definedness atoms decided by CX (§6 item 3; **decided, §18.69 Q4**;
+  not implemented). `A record literal accepts at most one spread` is
+  a support limitation, Unsupported (**decided, §18.69 Q4**; §6
+  item 4).
 
 ## 1. Where premises come from (cited)
 
@@ -102,7 +107,7 @@ This forcedness argument is the premise CX's C1-E needs
 (`ClashAfterEntailedSound`, refute/statements.md §5: a clash after a
 substitution entailed by the original body is sound). It is argued
 here, not checked, and C1-E's use as the line between original and
-chosen atoms is CX Q5 (pending author Q10). Even with C1-E proved,
+chosen atoms is CX Q5, which §18.69 left open. Even with C1-E proved,
 the argument covers head clashes only; the record refusals of
 §3.3-3.5 and §3.9 need their own rules on original atoms.
 
@@ -203,8 +208,10 @@ research/division-campaign/source/examples/, run again here.
   a record decomposition step needs its own argument. **n14** (a field
   type `Int` against `Bool` under one rigid tail, `{ a: Bool, ...r } ≐
   { a: Int, ...r }`) is a clash nested in a record: it needs the
-  nested-clash rule, which CX does not state (CX Q4; pending author
-  Q10). Named types are not in CX's Lean model.
+  nested-clash rule, which CX does not state (CX Q4; a candidate,
+  §18.69 Q10). Named types are not in CX's Lean model, and the initial
+  proved-model scope keeps further type constructors apart (§18.69
+  Q10).
 - **c2, a rigid type variable against a head** (a02: `fn f(x: a): Int
   = x`, `E_TYPE 1:19 Expected Int, found a`). Counter-instance
   `a ↦ Bool`, checked in the bounded model. Two rigid type variables:
@@ -248,7 +255,7 @@ Probes: a05 (`p: { ...r }` returned as `{ b: Int, ...r }`, `E_TYPE 1:39
 Expected { b: Int, ...r }, found { ...r }`; a c1 candidate after
 cancellation, and c2 by `θ_∅`, checked); a04 (c1 candidate, row occurs
 by cancellation, unstated in CX; invalid with no rigid variable,
-checked). The rules in this list are pending author Q10. A label twice
+checked). The rules in this list stay candidates (§18.69 Q10). A label twice
 on one side
 (UnifyRecord.purs:113-119) is said to be unreachable (cited, not
 probed).
@@ -273,7 +280,8 @@ b02 is `ext(p, { b: 1 })` with `ext`'s `s disjoint t` and `p: { ...r }`:
 `E_TYPE 4:35 r may already have field b`. b04 reaches `MayHold` after
 `shareTails` (§4): `s may already have field b`, where `b` came to `x`
 only through `if … then x else y`. The `lacks`/`disjoint` rules of
-this table are unstated in CX (CX Q4; pending author Q10).
+this table are unstated in CX and stay candidates (CX Q4; §18.69
+Q10).
 
 ### 3.5 The one-spread literal (Overlap.purs:42-61, 65-75, 100-110)
 
@@ -281,7 +289,8 @@ this table are unstated in CX (CX Q4; pending author Q10).
 
 - `Duplicate field a` (E_DUPLICATE), a label the base's row already
   holds: c1 candidate (`base ⊎ { a }` needs the base to lack `a`;
-  a definedness rule unstated in CX, CX Q4, pending author Q10) when
+  a definedness rule unstated in CX, CX Q4, a candidate by §18.69
+  Q10) when
   the holding is original, as in d01 (`p: { a: Int, ...r }`,
   `{ ...p, a: 2 }`, `E_DUPLICATE 1:42`; checked).
 - `r may already have field reviewed`, a rigid tail not known to lack
@@ -294,7 +303,9 @@ a` (n11). **Premises:** the resolved head (`headOf state ty`). **Class
 by code path: e.** n02: c2 by `θ_∅` (checked). n11: c2 by `a ↦ Int`
 (argued; the shape of sig-oracle challenge `rec-sig`, cited). A
 receiver of several tails reports a placeholder (Record.purs:160-161):
-e.
+e. That classification is recorder-rules' B9 reading (several tails
+in-model, a search failure), **kept proposed pending its named tests**
+(recorder-rules RT2's several-tail fixtures and RT1; §18.69 Q12).
 
 ### 3.7 Rule H (RowMerge/End.purs:47-63, 69-80; Homes.purs:21-34)
 
@@ -359,7 +370,8 @@ is left), so D4 refuses even when no choice exists (argued). Also f03
 - `Pattern is missing the rest of { a: Int, ...r }` (n07, a closed
   pattern): c2 by `θ_{{r},z1}`, checked.
 - `Pattern is missing field b` (e03): c1 candidate on closed known
-  rows (record-field rule unstated in CX, CX Q4; pending author Q10).
+  rows (record-field rule unstated in CX, CX Q4; a candidate,
+  §18.69 Q10).
 - **Arm order** (requirements.md §2.3, class f). e02 and e03 are one
   match with its two arms swapped (`{ a }` and `{ a, b, ... }` on a
   lambda's parameter). Both are refused, with different texts: e02
@@ -370,22 +382,32 @@ is left), so D4 refuses even when no choice exists (argued). Also f03
   unstated in CX). **Evidence that arm order
   changes the text, not the verdict, for this pair**; the general claim
   stays f. Growth by a hole tail binds the most general record holding
-  the written labels (argued; RecordPattern.purs:62-64 says so).
+  the written labels (argued; RecordPattern.purs:62-64 says so). That
+  P5-P7's per-pattern equations accept exactly what growth accepts
+  (recorder-rules B13, no `Outside PatternGrowth`) is **kept proposed
+  pending its named test**, RT1 (§18.69 Q12).
 
 ### 3.10 Comparability (Comparable.purs:70-80)
 
 Judged on the settled body (Function.purs:96). **The requirement atoms
-`BQ` have no `ValidOpenR` yet** (requirements.md §11 item 2), so every
-c below is conditional on it.
+`BQ` have no `ValidOpenR` yet** (requirements.md §11 item 2). **Decided
+(§18.69 Q2):** ground atoms, and atoms made ground by entailed
+equalities, are judged by a stated ground rule; any other requirement
+judgment is Unsupported. Their meaning is now owned by recorder-rules
+§5.4 (`ValidR`, proposed). Every c below is conditional on that rule
+being stated and proved.
 
 - `Type { ...r } is not comparable` (f01, `p == p` on `{ ...r }`): c2
   conditional, `θ: r ↦ { f: Int -> Int }` (argued; the oracle has no
-  comparability atom).
+  comparability atom). Under §18.69 Q2 the atom `cmp { ...r }` names
+  a rigid variable that no entailed equality makes ground, so the
+  judgment is **Unsupported**, not Contradiction, until a requirement
+  refuter covers it; the counter-instance stays evidence only.
 - `Ambiguous type _ in comparison` (f02, `fn(x) => x == x`, never
   called): the problem is valid with `x ↦ Int` (argued). Not a semantic
-  refusal: **e** (Unresolved) unless boundaries §7 Q5 makes it a P
-  policy (pending author Q4). The two differ in text and code: e is an
-  Unresolved verdict, P a refusal of a valid problem.
+  refusal: **e** (Unresolved). **Decided (§18.69 Q4):** `AmbiguousType`
+  stays Unresolved unless a language policy deliberately says
+  otherwise; no such policy exists.
 - "Judged on an unforced settled type" (requirements.md §2.3, class
   d): **not reached today.** f03 compares `left(w)` with a function in
   `w`; D4 refuses first, `E_TYPE 5:8 Cannot tell whether left's u or v
@@ -395,16 +417,21 @@ c below is conditional on it.
 ### 3.11 Printability (Printable.purs:54-57; Specialize/Printable.purs:113)
 
 - At check, on a ground type: f04, `show(fn(n: Int) => n)`, `E_TYPE
-  1:24 Expected a printable value, found Int -> Int`. c1 candidate,
-  conditional on `ValidOpenR` (or on a ground definitional rule for
-  `BQ`, pending author Q2): a type holding a function is not printable
-  (a definition), on an original atom. CX states no `BQ` rule.
+  1:24 Expected a printable value, found Int -> Int`. c1 candidate on
+  a ground original atom, judged by the ground definitional rule
+  adopted in §18.69 Q2: a type holding a function is not printable. It
+  gives a trusted Contradiction only once that rule is stated and
+  proved; CX states no `BQ` rule, and `BQ` lies outside CX's initial
+  proved-model scope (§18.69 Q10).
 - At a specialization key: f05, `shown(p: { ...r }) = show(p)` called
   with `{ f: fn … }`, **refused at specialize**, `E_TYPE 1:36 Expected
   a printable value, found { f: Int -> Int }`. The key is forced by
   `main`'s call; the refusal judges `main`'s problem at that key. It is
   a semantic refusal outside the checker's verdicts (no Contradiction
-  carries it); its class waits on `ValidOpenR` for `BQ`: **f**.
+  carries it); its class waits on `ValidOpenR` for `BQ`: **f**. Under
+  §18.69 Q2, `shown`'s own atom `pr { ...r }` is rigid and not made
+  ground by entailed equalities, so `shown`'s problem is Unsupported
+  there (argued).
 
 ### 3.12 Resolve-time refusals (original by construction)
 
@@ -419,15 +446,18 @@ c below is conditional on it.
   `where r disjoint r`; Requirements.purs:72): **b′**. `...r` twice
   through a declared type (Apart.purs:82-91): b′ (cited, not probed).
 - `A record literal accepts at most one spread` (n01): not a rule of
-  `ValidOpen`; **proposed: Unsupported (a support boundary), pending
-  boundaries §7 Q3 / author Q4** (§6 item 4).
+  `ValidOpen`; **Unsupported, a support limitation (decided, §18.69
+  Q4; boundaries §7 Q3)**; not implemented, so today's Resolve still
+  refuses it (§6 item 4).
 
 The two body-type refusals above are c2 only as evidence: their
 counter-instances were checked in the bounded model, but Resolve runs
 no CX check, so today's refusal is not itself the c2 ground. Under R0
 they belong in generation as the annotation's definedness atoms
 (recorder-rules E13, `eq σ_k σ_k`), decided by CX like any other atom
-(pending author Q4).
+(**decided, §18.69 Q4**: semantic body-type checks move into
+generation as atoms; structural arity and coverage checks stay
+separate). Not implemented.
 
 ### 3.13 Limits, defects and placeholders
 
@@ -435,7 +465,17 @@ they belong in generation as the annotation's definedness atoms
 (UnifyFailure.purs:45-60; RowMerge/End.purs:107-113) are **e**: limits, broken
 invariants, or work a later task does (cited). The several-tail
 placeholder at specialization is W3 (requirements.md §2.3). Effect-row
-refusals are outside this audit.
+refusals are outside this audit. Effect/record independence is **not
+assumed** (§18.69 Q3), so effect refusals that read record-solved
+types stay class f and unaudited here; a marker alone establishes no
+contradiction.
+
+**Arity** (cited, Check/Pipe.purs:33, 36; not probed here). The
+over-application refusal at a declared result that can never be a
+function (`fixedResult`) is structural, class a; the one read from an
+instantiated callee type (`functionLike callee.state`) depends on a
+solver-selected type, so by §18.69 Q4 it is semantic: e by code path,
+with E5's recorded head-clash atom as a c1 candidate.
 
 ## 4. `shareTails` and principality (argued; bounded checks)
 
@@ -510,17 +550,23 @@ end of the body (b03, class d), not `shareTails`.
    `ValidOpen`: then generate-then-decide (§18.66 decision 1) can apply
    it to the complete problem. Candidates are listed per entry; none is
    proved, and only the top-level C1-H and C1-O are stated in CX (the
-   rest is CX Q4; pending author Q10).
+   rest is CX Q4; candidates, §18.69 Q10).
 2. **Refuter from Lemma SL.** Use the refusal only to propose `θ` (the
    lemma's instance from the atom and the facts it named), then check
    `Sat θ D` and `decideCall` false on the original `B`. This needs CX
    and no soundness proof per rule; a refusal whose `θ` fails the
    check stays Unresolved. It covers every c2 row of §7.2 except
-   comparability and printability, which wait on `ValidOpenR`.
+   comparability and printability, which wait on `ValidOpenR`. This is
+   the **sound, possibly incomplete refuter** §18.69 Q10 chose to start
+   with; B1b does not block it. While its soundness obligation (CX-K
+   or CX-KP, and CX-PR for the recorded problem) is undischarged it
+   may run for shadow evidence only and mints no trusted
+   Contradiction. It checks against the whole `D`, with a justified
+   sub-body where the refusal used only part of `B` (CX-KP).
 
 Either route keeps H, D4 and Ambiguous out of Contradiction: H is d
-(§3.7), D4 is e, and Ambiguous is e unless boundaries §7 Q5 makes it a
-P policy (pending author Q4; neither is a Contradiction).
+(§3.7), D4 is e, and Ambiguous is e (§18.69 Q4: Unresolved unless a
+language policy says otherwise).
 
 ## 6. Points that contradict or refine requirements.md §2
 
@@ -541,15 +587,16 @@ P policy (pending author Q4; neither is a Contradiction).
    refusals at resolve (d02, n16) are semantic: each has a
    counter-instance checked in the bounded model, so the label "static
    rule" is inaccurate. They cannot stop generation as c2 refusals,
-   because c2 needs a CX check that resolve does not run. Proposed:
-   carry them into generation as recorder-rules E13 definedness atoms
-   and let CX decide them (pending author Q4); a program-wide Resolve
-   stop would also hide every other declaration.
+   because c2 needs a CX check that resolve does not run. **Decided
+   (§18.69 Q4):** carry them into generation as recorder-rules E13
+   definedness atoms and let CX decide them; a program-wide Resolve
+   stop would also hide every other declaration. Not implemented.
 4. **`A record literal accepts at most one spread`** (n01) is a
    resolve-time refusal reported as E_TYPE; docs/language.md states it
-   as a language rule. **Proposed: Unsupported (a support boundary),
-   pending boundaries §7 Q3 / author Q4.** If the author agrees,
-   T-R0e's support boundaries should name it. Unsupported blocks
+   as a language rule. **Decided (§18.69 Q4): a support limitation,
+   Unsupported.** T-R0e's support boundaries should name it, and
+   docs/language.md's statement of it as a language rule changes when
+   the decision is implemented. Unsupported blocks
    Solved only: the second spread alone supplies no contradiction,
    while rules and refuters still run on the recorded atoms, and a
    separately justified contradiction (a proved c1 rule over original
@@ -718,13 +765,21 @@ document's reading of the sources.
 - Lemma SL was found true as stated by review; Corollary SL-H is still
   a statement for review. The refutation half needs CX's `decideCall`
   and substitution lemma.
-- `ValidOpenR` for `BQ` (or a ground definitional rule) decides
-  §3.10-3.11 (pending author Q2).
+- §3.10-3.11: §18.69 Q2 adopted the ground rule with reduction
+  through entailed equalities; the rule itself is still to be stated
+  (in recorder-rules §5.4's `ValidR`, which owns it) and proved before
+  f04 can be a Contradiction. `ValidOpenR` stays unstated.
 - The arm-order claim is checked for one pair only.
-- Every c1 candidate waits on CX stating its rule (CX Q4, Q5; pending
-  author Q10).
-- The second spread (§3.12, §6 item 4), the resolve-time body-type
-  checks (§6 item 3) and Ambiguous (§3.10) wait on author Q4.
+- Every c1 candidate stays a candidate until CX states and proves its
+  rule (CX Q4; §18.69 Q10). C1-E as the line (CX Q5) is still open.
+- B9 (§3.6) and B13 (§3.9) stay proposed classifications pending their
+  named tests, recorder-rules RT2 and RT1 (§18.69 Q12).
+- Decided but not implemented (§18.69 Q4): the second spread as a
+  support limitation (§3.12, §6 item 4), the resolve-time body-type
+  checks moving into generation (§6 item 3), Ambiguous as Unresolved
+  (§3.10), arity at an instantiated result as semantic (§3.13).
+- Effect-row refusals that read record-solved types are unaudited and
+  stay f; independence is not assumed (§18.69 Q3).
 
 ## Revision log (reviews of 88c052d)
 
@@ -799,3 +854,27 @@ An external review forwarded by the author (issue 6 applies here):
   Solved only; the spread alone supplies no contradiction, and a
   separately justified one (c1 rule or CX, §18.65) may still yield
   Contradiction, as in generation-interface §5.3 rule 1′.
+
+### Author's decisions (§18.69)
+
+- Q2: ground requirement rules adopted, with reduction through
+  entailed equalities. f04 is a c1 candidate under that rule, trusted
+  only once the rule is stated and proved; f01's rigid `cmp` atom is
+  Unsupported; f05 stays f, with `shown`'s atom Unsupported (§3.10,
+  §3.11, §8).
+- Q3: a marker alone establishes no contradiction; effect/record
+  independence not assumed, so effect refusals reading record-solved
+  types stay f and unaudited (§3.13, §8).
+- Q4: second spread a support limitation; body-type checks move into
+  generation; Ambiguous stays Unresolved; structural arity separate
+  from arity at an instantiated result, which is semantic (§0, §3.10,
+  §3.12, §3.13, §5, §6 items 3-4, §8). Nothing implemented.
+- Q10: every unstated rule stays a c1 candidate; route 2 (§5) is the
+  sound, possibly incomplete refuter to start with, shadow-only until
+  its soundness obligation is discharged; whole `D`, justified
+  sub-bodies (§0, §1, §3.1-3.5, §3.9, §5, §8). C1-E (CX Q5) left open.
+- Q12: B9 (§3.6) and B13 (§3.9) kept proposed pending their named
+  tests. The `crash` position question does not touch this audit.
+
+No probe was rerun and no classification changed on new evidence: the
+changes record decisions only.

@@ -5,7 +5,8 @@ Scope: exact statements for ground (2) of requirements.md §2.4 (a
 checked counter-instance), the refuter interface `Refute_sound`
 (requirements.md §4.4), and the shape of ground (1), class c1 (§2.3).
 **Nothing here is proved.** No refuter is implemented and no compiler
-code changed.
+code changed. The author's decisions of dossier §18.69 (Q10, Q11) are
+reflected below and marked "(§18.69)".
 
 Lean: research/composition-proofs/Composition/Typed/Refute/:
 
@@ -135,6 +136,10 @@ body may be cut: a counter-instance to a sub-`D` is not one to `P`
 empty `B₁` in bridge/statements.md §3). Without B1b, an invalid
 signature might be refutable only over a richer base type. **Unsure,
 exactly as B1b is.** Soundness (CX, CX-K) does not depend on it.
+**Decided (§18.69 Q10):** the first refuter is sound and possibly
+incomplete; B1b's completeness does not block it. An invalid
+signature that the refuter cannot refute stays Unresolved, never
+Solved.
 
 ## 4. Checked certificates and `Refute_sound`
 
@@ -189,6 +194,21 @@ different certificate (say, a c1 rule's evidence) supplies
 convention for `Prop` definitions. Documents should write
 `RefuteSound` and may note the requirements name.
 
+**Pending refuters (§18.69 Q10).** A refuter whose soundness
+obligation is not yet discharged (CX-K, CX-KP or CX-R for a
+`CXChecked` refuter, plus CX-PR when it reads a recorded problem; or
+its own `RefuteSound` proof) may run for research or shadow evidence.
+It **must not mint the trusted Contradiction** until that obligation
+is discharged: its acceptances are recorded as shadow evidence, and
+the verdict they would have given stays Unresolved. T-R0a's
+`RefuterSpec` `Pending` status carries this; rules still require a
+proof.
+
+**Sub-bodies and the whole `D` (§18.69 Q10).** The full `D` is always
+preserved (C1-D, X7); a certificate may name a justified sub-body
+`body ⊆ P.B` (CX-KP), "justified" meaning that the check is run on
+`withBody P body` with the whole `D`, never on a sub-`D`.
+
 ### 4.1 The projection from the recorded problem
 
 T-R0b's `RecordedProblem` is richer than `SigProblem`: `app h args`
@@ -200,6 +220,23 @@ validity are not in Lean, so **CX-PR `ProjectionSound ValidR toSig`**
 is stated over an abstract type `R`, a validity `ValidR` and `toSig`:
 `∀ p, ¬ ValidOpen (toSig p) → ¬ ValidR p`. Composed with any
 `RefuteSound check`, an acceptance of `check (toSig p) c` refutes `p`.
+
+**Whose `ValidR` (§18.69 Q11).** CX-PR's `ValidR` is T-R0b's
+definition, r0/recorder-rules.md §5.4 (a proposed sketch: ground
+values with free `app` nodes, `D` as hypothesis, every recorded body
+atom, requirement atoms by the stated ground rule, unsupported
+constructs listed). CX consumes it and does not define it; validity
+is never defined by whichever checker succeeds. The sketch states
+VR-CX, its argument that conditions 4 and 5 below hold (an injective
+encoding of `app` values as fresh base atoms), and VR-sub, which
+carries `¬ ValidR p` to the declaration.
+
+**Initial proved-model scope (§18.69 Q10).** CX's statements, and the
+first proofs, stay over `SigProblem` (`TExpr`: base, arrow, type
+variable, record). Requirement atoms (`BQ`) and further type
+constructors (`app`) are kept apart from that scope: they reach CX
+only through `toSig`, which drops or generalizes them (conditions 3,
+4), never as new cases of `CXChecked`.
 
 Conditions on `toSig` for CX-PR to hold:
 
@@ -229,10 +266,12 @@ Conditions on `toSig` for CX-PR to hold:
    least as `ValidOpen` does, so that its validity at every extension
    gives `ValidOpen (toSig p)`.
 
-Status: **unsure**, because `ValidR` is not defined anywhere. Under
-conditions 1-5 the argument is expected true: conditions 3 and 4 make
-every recorded solution a solution of the projection, so
-`ValidR p → ValidOpen (toSig p)`, which is CX-PR's contrapositive.
+Status: **unsure**. `ValidR` now has an owner and a proposed sketch
+(T-R0b §5.4), but no formal definition, and its conditions are
+argued, not checked. Under conditions 1-5 the argument is expected
+true: conditions 3 and 4 make every recorded solution a solution of
+the projection, so `ValidR p → ValidOpen (toSig p)`, which is CX-PR's
+contrapositive.
 
 ## 5. Class c1: rules on original atoms and `D`
 
@@ -324,7 +363,9 @@ gate on `D`. **Not stated, so not yet c1** (questions 4, 5):
 Their statement shapes are left unwritten: each needs a decomposition
 of record equality that this tranche has not fixed, and a wrong shape
 would be worse than none. A document that labels any of them "c1"
-should say "c1 candidate; unstated".
+should say "c1 candidate; unstated". **Decided (§18.69 Q10):**
+unstated rules stay candidates; none is used as a ground for
+Contradiction until it is stated and proved.
 
 ## 6. Non-vacuity
 
@@ -403,13 +444,16 @@ cost grows quickly (question 3).
 | CX-R | CX-K |
 | CX-P | CX, C1-M |
 | CX-KP | CX-K, C1-M |
-| CX-PR | conditions 1-5 of §4.1; C1-M; a definition of `ValidR` (**not yet given**) |
+| CX-PR | conditions 1-5 of §4.1; C1-M; T-R0b's `ValidR` (§5.4: **sketched, proposed; not formal**) |
 | C1-T | C1-M |
 | C1-U | B0 (`openToFin`) |
 | C1-H, C1-O | C1-U, `clauseOnly_satisfiable`, head/occurs facts (new) |
 | C1-E | `binding_correspondence`, C1-H's unsatisfiability fact |
 
 ## 8. Questions for review
+
+The author's decisions (§18.69 Q10, Q11) settle questions 4 (in part),
+6 and 8; questions 1, 2, 3 and 5 stay open.
 
 1. **Rigid-only domain.** `Denotes` forbids binding flexible variables
    and requires binding every rigid one. Is total binding of the rigid
@@ -427,19 +471,27 @@ cost grows quickly (question 3).
    occurs check are stated (§5 lists the rest). Should this tranche
    also state the `lacks`/`disjoint` refutations on original atoms,
    nested and record-field clashes, cancellation and the row occurs
-   check?
+   check? **Decided in part (§18.69 Q10):** unstated rules stay "c1
+   candidate; unstated"; this tranche states none of them. Whether a
+   later tranche states them is open.
 5. **C1-E as the criterion.** Is "every solution of the original body
    satisfies `eqs σ`" the intended line between original and
    solver-chosen atoms, so that an mgu-based rule counts as c1?
 6. **Fresh bases.** Soundness never needs them. Completeness at a
    searchable supply (CX-CA, CX-KC) stands or falls with B1b. Should
    B1b be proved before a refuter is planned, or is a sound,
-   incomplete refuter enough for the Contradiction verdict?
+   incomplete refuter enough for the Contradiction verdict? **Decided
+   (§18.69 Q10):** start with a sound, possibly incomplete refuter;
+   B1b does not block it (§3).
 7. **Name.** Settled by review: documents write `RefuteSound` (the
    Lean name), noting that it is requirements.md's `Refute_sound`
    (§4).
 8. **`ValidR`.** CX-PR needs the recorded problem's validity. Which
    document defines it, and does it meet conditions 4 and 5 of §4.1?
+   **Decided (§18.69 Q11):** T-R0b defines it (r0/recorder-rules.md
+   §5.4), with requirements and unsupported constructs explicit; CX
+   consumes it. T-R0b's sketch argues conditions 4 and 5 (VR-CX); a
+   check or proof is still owed, so CX-PR stays unsure.
 
 ## 9. Revision log (reviews of 88c052d)
 
@@ -483,3 +535,20 @@ every claim is still a `def … : Prop`.
   arise from source, since T-R0b's `d` (recorder-rules §10, Sig4-Sig8)
   holds only `lacks`/`disjoint` over rigid variables and its
   `outside` markers carry no atoms (re-check R7).
+
+### Author's decisions (§18.69)
+
+- Q10: a sound, possibly incomplete refuter first; B1b does not block
+  it (§3, question 6). Unstated rules stay candidates (§5, question
+  4). The whole `D` is preserved and justified sub-bodies are
+  permitted (§4). The initial proved-model scope is `SigProblem`,
+  kept apart from `BQ` and further type constructors (§4.1). Pending
+  refuters may run for research or shadow evidence but do not mint
+  the trusted Contradiction before their soundness obligation is
+  discharged (§4).
+- Q11: CX-PR's `ValidR` is T-R0b's (r0/recorder-rules.md §5.4,
+  proposed); §4.1, §7 and question 8 updated. CX-PR's status stays
+  unsure.
+- Still open: questions 1 (total binding of unused rigid variables),
+  2 (scoped `D`), 3 (certificate cost) and 5 (C1-E as the line).
+  Statements.lean is unchanged (no Lean edits in this revision).

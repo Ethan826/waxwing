@@ -17,9 +17,13 @@ RT2 (§9; T-R0a's AT1 cites it). **Owned elsewhere:** witness, bindings
 and termination (witness/statements.md, "W"); outcome and verdict
 types and the pipeline (r0/generation-interface.md, T-R0a); layers and
 codes (r0/boundaries.md, T-R0e); refutation (refute/statements.md,
-CX); refusal evidence (r0/refusal-audit.md, T-R0c). Where a rule here
-waits on an author ruling, it gives the proposed default and says
-"pending author Q<n>" (the reconciliation review's Q1-Q10).
+CX); refusal evidence (r0/refusal-audit.md, T-R0c). Also canonical
+here: **the recorded problem's declarative meaning `ValidR`** (§5.4;
+dossier §18.69 Q11), which CX consumes. Question numbers are those of
+dossier §18.67 (Q1-Q12; the reconciliation review's Q1-Q10 under the
+same numbers) and §18.68 (Q13). The author decided Q1-Q13 and D1-D6
+in §18.69; a decided item is marked "(§18.69)". A decision fixes a
+design; it implements nothing, and today's compiler is unchanged.
 
 Labels, as in requirements.md: **cited** (file:line or section; source
 lines at 67ba706), **argued** (reasoning, unchecked), **proposed** (a
@@ -27,24 +31,28 @@ design choice for the author). Nothing here is checked: no fixture or
 translator has been run.
 
 **[VOR]** marks every rule, atom and test that involves requirement
-atoms (`Q`, `BQ`: printability and comparability). Their semantics,
-`ValidOpenR`, is **unstated** (requirements.md §11 item 2; recorder-spec
-P1 states only `ValidFinR`). The recorder records them in full, with
-their origins, whatever the verdict rule. Recording them now keeps the
-problem complete for when the semantics arrives.
+atoms (`Q`, `BQ`: printability and comparability). Their open
+semantics, `ValidOpenR`, is **unstated** (requirements.md §11 item 2;
+recorder-spec P1 states only `ValidFinR`); §5.4's `ValidR` sketch
+gives them a pointwise meaning on ground values (proposed). The
+recorder records them in full, with their origins, whatever the
+verdict rule. Recording them now keeps the problem complete for when
+the semantics arrives.
 
-The rule for judging them is not the recorder's, and is **pending
-author Q2**. requirements.md §11 item 2 reads "a problem with a
-non-empty `Q` or `BQ` is Unsupported for every strategy"; taken
-literally that makes every program Unsupported, since Sig10 puts
-`pr ⟦R⟧` of `main` into `BQ` always. Proposed default (the common
-wording of the reconciliation review, finding E2): **`BQ` atoms over
-ground types are judged by a stated ground rule** (a function type is
-neither printable nor comparable: a definition, not `ValidOpenR`);
-**`BQ` atoms that mention a flexible or rigid variable make the
-problem Unsupported for every strategy whose `Sound_F` does not cover
-them.** No verdict rests on a non-ground requirement atom until
-`ValidOpenR` is stated.
+The rule for judging them is not the recorder's. **Decided
+(§18.69 Q2):** ground requirement rules are adopted (a function type
+is neither printable nor comparable: a definition, not `ValidOpenR`),
+**with reduction through entailed equalities**: a requirement atom
+whose variables every solution of the original `B` fixes to ground
+types (entailed equalities, the same notion as CX's C1-E) is judged
+by the ground rule at those types, so a variable's presence in the
+syntax does not by itself make the problem Unsupported. Any other
+requirement judgment stays Unsupported for every strategy whose
+`Sound_F` does not cover it. E017 is explicitly transitional. This
+replaces the earlier reading of requirements.md §11 item 2 ("a
+non-empty `Q` or `BQ` is Unsupported for every strategy"), which would
+make every program Unsupported, since Sig10 puts `pr ⟦R⟧` of `main`
+into `BQ` always.
 
 Sources read: dossier §18.60-18.66; research/division-campaign/remedy/
 requirements.md (revision 2, esp. §2); source/translation.md (whole);
@@ -125,7 +133,12 @@ recovery from solver-chosen bindings. Consequences for recorder-spec
   total over the resolved AST: it never stops and never fails, and a
   statically refused declaration still has its problem (T-R0a's
   `Refused (NonEmptyArray StaticRefusal) RecordedProblem`). This
-  answers T-R0a Q-b4: no (proposed; §2.4, §10).
+  answers T-R0a Q-b4: no (proposed; §2.4, §10). **The boundary
+  (§18.69 Q4):** only genuinely structural checks (arity read from a
+  signature, coverage, entry rules) stay in `staticRules`. Semantic
+  body-type checks move into generation as atoms (§3.2 note, §8), and
+  a check that depends on a solver-selected type is semantic, never
+  static (§11 item 7).
 
 What stays from recorder-spec: the vocabulary of origins and kinds
 (§1.1, §1.2), the parts of the problem (§2.1), field-level requirement
@@ -277,10 +290,15 @@ Notes (argued unless marked):
 - E5's over-application and E15 read only syntax: the declared count
   `n` comes from `g`'s signature (Resolved/Core.purs:62,
   `GlobalFunction FunctionId Int`). Today's arity refusal when `θ(R)`
-  can never be a function (Check/Pipe.purs:15-21, cited) is class a,
-  judged separately; the atom `eq θ(⟦R⟧) (… → ⟨p, res⟩)` is recorded
-  either way, and with a ground non-arrow `R` it is a head clash on
-  original atoms (a class c1 candidate, CX's to state (CX Q4)).
+  can never be a function (Check/Pipe.purs:15-21, cited) has two
+  cases (§18.69 Q4; §11 item 7): a **declared** result that can never
+  be a function (`fixedResult`, Pipe.purs:33, read from the
+  signature) is structural, class a, judged separately; an
+  **instantiated** one (`functionLike callee.state`, Pipe.purs:36)
+  depends on a solver-selected type and is semantic. The atom
+  `eq θ(⟦R⟧) (… → ⟨p, res⟩)` is recorded either way, and with a
+  ground non-arrow `R` it is a head clash on original atoms (a class
+  c1 candidate, CX's to state (CX Q4)).
 - E3-E6 never record a `Union` (recorder-interface §2): a callee
   parameter with several tails, matched against one argument row (F4),
   is the ordinary atom `eq τ_e θ({ ...l, ...r })`. Definedness of the
@@ -290,7 +308,8 @@ Notes (argued unless marked):
   ones (no record with two parts, no label beside a tail) may be dropped
   by the same normalization on both sides of a comparison.
 - **Body-type `lacks`/`disjoint` checks move into generation**
-  (proposed, from T-R0c §3.12 and §6 item 3; **pending author Q4**).
+  (from T-R0c §3.12 and §6 item 3; **decided, §18.69 Q4**: semantic
+  body-type checks move into generation as atoms).
   Today Resolve refuses an annotation such as `{ a: Int, ...r }`
   without `r lacks a` in `D` (Features/Resolve/Lacking.purs:126-167,
   d02) and `{ ...r, ...s }` without `r disjoint s` (Features/Resolve/
@@ -301,8 +320,9 @@ Notes (argued unless marked):
   `D`, so a missing clause gives an invalid problem with a checked
   counter-instance (T-R0c: d02 at `r ↦ { a: Int }`, n16 at `r, s ↦
   { z1: Int }`), decided by CX, not by a Resolve stop. Nothing is
-  dropped: the obligation is the same atom, now with its origin. Until
-  Q4 rules, Resolve still refuses and §8's exception does not apply.
+  dropped: the obligation is the same atom, now with its origin. The
+  decision is not implemented: today's Resolve still refuses, and §8's
+  exception applies once the implementation lands.
 
 ### 3.3 Expressions: operators, control and records
 
@@ -328,10 +348,13 @@ Notes (argued unless marked):
   operand's atom would be equivalent. Under the ∀rigid reading, `cmp`
   of a type mentioning a rigid variable fails at a function-valued
   instance, so today's C6 refusal reappears as a semantic consequence of
-  an empty `Q` rather than a separate rule [VOR]. C8 (`Ambiguous type`
-  at a hole) does **not** reappear: an unconstrained flexible variable
-  can be chosen comparable, so C8 is a policy or admissibility rule
-  (ADR 007 condition 2), not validity (§11 item 9).
+  an empty `Q` rather than a separate rule [VOR]; under §18.69 Q2 such
+  an atom, which no entailed equality makes ground, is judged
+  Unsupported, not Contradiction. C8 (`Ambiguous type` at a hole) does
+  **not** reappear: an unconstrained flexible variable can be chosen
+  comparable, so C8 is not validity. `AmbiguousType` stays Unresolved
+  unless a language policy deliberately says otherwise (§18.69 Q4;
+  §11 item 9).
 - E25 covers one spread (today's extension), several spreads (†,
   refused at Resolve today, Resolve/Record.purs:80 `SecondSpread`,
   cited recorder-spec B3) and both kinds of base: if `τ_{s_j}` is
@@ -343,11 +366,12 @@ Notes (argued unless marked):
 - **The second spread is in-model; generation emits no marker and no
   support record for it.** E25's several-spread atoms are ordinary
   `eq` atoms, and an `outside` marker would wrongly say the model
-  cannot judge them. Whether a second spread is a language rule (class
-  a: Resolve keeps refusing it, so E25's several-spread case is never
-  reached) or a support boundary (S1) is T-R0e's §7 Q3, **pending
-  author Q4**. Either way S1 reads the spread count from the problem:
-  the `vars` entries with role `spread j` at the node's path (§2.3).
+  cannot judge them. **Decided (§18.69 Q4): a second spread is a
+  support limitation** (S1, T-R0e's §7 Q3), not a language rule. Not
+  implemented: today's Resolve still refuses it, so E25's
+  several-spread case is not reached until the change lands. S1 reads
+  the spread count from the problem: the `vars` entries with role
+  `spread j` at the node's path (§2.3).
   Under S1 the second spread blocks Solved but alone supplies no
   contradiction; rules and refuters still run on E25's atoms, and a
   separately justified contradiction (a proved c1 rule over original
@@ -374,7 +398,8 @@ Each arm's pattern contributes its own equation against the shared
 `τ_s`. Conjunction is order-free, so arm order cannot change the
 problem (argued). Today's growth rule (Check/PatternRow.purs:76
 `growable`, :84; recorder-spec B13) is solver behaviour, and no
-`Outside PatternGrowth` is emitted (proposed; §11 item 2).
+`Outside PatternGrowth` is emitted (proposed, kept proposed by
+§18.69 Q12 pending its named test, RT1; §11 item 2).
 
 ### 3.5 Builtins, effects and outside markers
 
@@ -401,12 +426,17 @@ today: lambdas and `let`s are monomorphic, Check/Lambda.purs:22-26
 cited). Coverage is **not** a constructor: it is a static pass, class
 a (T-R0e §3.2; requirements.md §2.3), unless T-R0c's answer to T-R0a
 Q-c1 says otherwise. Effect rows on arrows are erased (§2.2), not
-marked; the independence of effect checking from record solutions stays
-an assumption (requirements.md §11 item 13; recorder-spec Q4).
+marked. **Effect/record independence is not assumed (§18.69 Q3)**,
+so the erasure drops obligations whenever effect checking reads a
+record-solved type, and a Solved claim may not rest on it. How the
+recorder accounts for them (a marker decided syntactically, or a
+check that the erased obligations cannot affect the claimed result)
+is open (§11 item 6; requirements.md §11 item 13; recorder-spec Q4).
 
 **A non-empty `outside` blocks a whole-function Solved** (decision 1;
-adversarial review finding 5; T-R0a §5.3 rule 1 and AT11), **pending
-author Q3**. Some rules record no equation for an obligation they
+adversarial review finding 5; T-R0a §5.3 rule 1 and AT11). **Decided
+(§18.69 Q3):** this conservative support boundary holds for now.
+Some rules record no equation for an obligation they
 cannot express (the "dropped" column); decision 1 allows that only
 because the marker then blocks Solved. A marker alone supplies no
 contradiction, and it never blocks one: rules and refuters still run,
@@ -425,14 +455,18 @@ obligations and refuting a subset refutes the whole (CX's C1-M,
 | `Deferred` | E16 | none known: `eq τ_e Unit` is recorded; the marker carries recorder-spec O6's gap |
 | `LocalGeneralization` | none | not emitted |
 
-The reconciliation review (finding E1) proposes instead that only
+The reconciliation review (finding E1) proposed instead that only
 markers of acceptance-relevant kinds block Solved, since otherwise
-most realistic programs (any `Option(a)`) are Unsupported. This
-document keeps the conservative rule until Q3 is ruled, and states the
-condition any refinement must meet: a kind may stop blocking Solved
-only if its rules leave no obligation unrecorded (a "no" row above),
-or a slice theorem states that the recorded atoms imply the omitted
-ones, with a check (§11 items 4-6).
+most realistic programs (any `Option(a)`) are Unsupported. The author
+kept the conservative rule (§18.69 Q3) and fixed the exemption
+condition: **a construct is exempted only after its omitted
+obligations are shown unable to affect the claimed result.** For a
+"no" row above nothing is omitted from the atoms, but the model cannot
+judge them, so the exemption needs a model that does (a free
+constructor node, kept apart from the initial proved-model scope,
+§18.69 Q10). For a "yes" row it needs a slice theorem that the
+recorded atoms imply the omitted ones, with a check (§11 items 4-6).
+A marker alone establishes no contradiction.
 
 ## 4. Shape-dependent constructs without a solved shape
 
@@ -461,6 +495,20 @@ are free. Either way the atom does not depend on which case a solver
 meets first. This is translation.md §2.2's table, rows "each spread"
 and "each access, update, removal, record pattern" (cited).
 
+**The applicative invariant** (stated explicitly at §18.69 D1; it
+held implicitly in every rule above): **no generation rule branches
+on a solved shape, a solver's state or a witness.** Each rule's
+entries, fresh variables and result type are fixed by the node, its
+path, `Γ`, its children's results and the tables (G-local), so the
+generator is applicative in Pottier's sense (Hindley-Milner
+Elaboration in Applicative Style, ICFP 2014, §4.3, cited in
+docs/plans/2026-10-22-inference-foundations-extension.md O27): it
+needs no bind. The chosen continuation (§5.3, D1) relies on this. A
+future rule that must branch on a solved shape would break the
+invariant, and with it the continuation design; such a rule needs an
+explicit design change, not a local exception (extension §2,
+"Challenges", item 2).
+
 ## 5. The `vars` map and the ∀rigid/∃flexible structure
 
 ### 5.1 Quantifier structure (proposed, from requirements.md §2.4)
@@ -472,9 +520,11 @@ There is no nested quantifier: lambdas and `let`s are monomorphic, and
 a callee's own rigid variables never appear in `f`'s problem; each
 occurrence gets flexible copies (E3-E6, P4). Lambda annotations name only
 `f`'s variables, so they introduce no new rigid one (cited Resolved.purs:
-85-86). The problem's meaning is `ValidOpen` of `⟨rigidTy, rigidRow, D,
-B⟩` (requirements.md §1), and, once stated, `ValidOpenR` with `Q`, `BQ`
-[VOR].
+85-86). On the fragment (no `app`, no requirement atoms) the
+problem's meaning is `ValidOpen` of `⟨rigidTy, rigidRow, D, B⟩`
+(requirements.md §1); in general it is `ValidR` (§5.4, proposed),
+which agrees with `ValidOpen` there and gives `app` nodes and `BQ`
+[VOR] an explicit meaning.
 
 ### 5.2 The map
 
@@ -523,8 +573,11 @@ for E17 and E20); `res` of E5, E11, E12, E14, E19, E21-E23, E25 ↦
 `NodeType p`; `param k` ↦ `ParamType p k` (a builtin reference is a
 checked `Lambda`, Check/Show.purs:44-56, so E18's `π` is `ParamType p
 0`); E18's `crash` result ↦ `LambdaBody p` (the synthesized body's
-`ty`, as `showRef` builds it, Show.purs:47-55; `crash`'s reference is
-built the same way by the comment at :41-43, not read); `field l` of
+`ty`, as `showRef` builds it, Show.purs:47-55; **closed by inspection,
+§18.69 Q12:** `crashRef`, src/Features/Check/Operation.purs:120-133,
+builds a checked `Lambda` whose body has the fresh result type
+`TVar (Hole (state.next + 1))`, so `LambdaBody p` is the right
+position); `field l` of
 E26 ↦ `NodeType p`; `field l` of P5-P7 ↦ `PatternType` of the
 sub-pattern's path; `rest` of P7 ↦ `RestType p`; every other `field`,
 `rest`, `upd`, `updrest` and `spread` ↦ `Auxiliary`.
@@ -542,10 +595,33 @@ sub-pattern's path; `rest` of P7 ↦ `RestType p`; every other `field`,
   adds an atom. Matching is unique where each record in `types(p)` has
   at most one flexible tail; with several, the read is ambiguous (row
   matching is not unique) and is left to the strategy's adapter
-  (argued).
-- **Auxiliaries are determined by evaluation, not bound by a witness**
-  (proposed; checked by RT7). Each auxiliary `a` has exactly one
-  **defining atom**, emitted by the rule that introduces it:
+  (argued). This read-back is today's route.
+- **The chosen direction: a generation continuation with tracked
+  applicative requests** (§18.69 D1; inference extension O27, O31,
+  D1 (a)). `generate` will return, with the problem, a pure `build`
+  from a witness to the checked IR. Reads of the witness are
+  introduced only through constructors that also record the variable
+  they read, so the set of requested variables is built with `build`
+  and is static, never a separately written list; scoped handles may
+  enforce that a request names a variable of this problem. Cov's
+  domain becomes the requested set, and `position` (§5.2) is then a
+  derived view of it, not a second source. Read-back above stays the
+  route until the continuation lands; the continuation removes its
+  ambiguity at several flexible tails. **The mechanism is to be
+  specified before implementation** (the request constructors, how a
+  read outside the set is rejected when the value is built, the
+  handle scoping, and the changed `generate` type, which T-R0a
+  carries). It relies on §4's applicative invariant.
+- **Auxiliaries: kept unless deterministic reconstruction is
+  established** (§18.69 Q6). The earlier proposal (auxiliaries never
+  bound) is withdrawn: "auxiliary" alone does not justify omitting a
+  binding. A witness binds every auxiliary, except an auxiliary of a
+  rule for which deterministic reconstruction from its defining atom
+  is established (proved, or checked by RT7 and accepted as that
+  rule's evidence); none is established yet. What follows is the
+  proposed establishment, argued, not checked. Each auxiliary `a` has
+  exactly one **defining atom**, emitted by the rule that introduces
+  it:
 
   | Rule | Defining atom | Fresh on the right |
   |---|---|---|
@@ -575,29 +651,126 @@ sub-pattern's path; `rest` of P7 ↦ `RestType p`; every other `field`,
   and `{ l̄: β̄, ...ρ }` is defined only when `ρ` lacks `l̄`, so the
   extension is **unique** when it exists (argued). Hence a satisfying
   assignment of all flexible variables exists iff the unique extension
-  of `σ` satisfies `B`; exempting auxiliaries from the witness loses no
-  solution and adds none.
+  of `σ` satisfies `B`; once this is established for a rule, omitting
+  that rule's auxiliaries from the witness would lose no solution and
+  add none.
 
   **Proposed wording for W's Cov** (W owns it; reconciliation B3,
-  adversarial finding 6): "every flexible variable whose
-  `VarInfo.position ≠ Auxiliary` has exactly one `Binding`;
-  auxiliaries have none and are determined by their defining atoms
-  (T-R0b §5.3)". RC2 then reads: extend `σ` to auxiliaries by
+  adversarial finding 6; revised for §18.69 Q6): "every flexible
+  variable has exactly one `Binding`, except an auxiliary of a rule
+  whose deterministic reconstruction is established (T-R0b §5.3);
+  such an auxiliary has none and is determined by its defining atom".
+  Under D1 the bound set is the tracked request set plus the retained
+  auxiliaries. RC2 reads: extend `σ` to omitted auxiliaries by
   determination, then check `Sat (θR ∪ σ) B_f` over the original
   atoms; a failed determination is an RC2 failure (internal), never
-  per-key solving. If W prefers that adapters bind auxiliaries too,
-  the determination above is the check that their bindings are right.
+  per-key solving. For a retained auxiliary, the determination above
+  is a check that its binding is right.
 - **Witness and lowering** (decision 4; requirements.md §4.1) bind per
   name, and the checked IR already carries names in every position a
   divided part reaches. `CheckedName` is that position, so the adapter
   or representation correspondence (requirements.md §4.3) can be stated
   per variable. A ground re-check may compare a position's lowered
   type with `types(p)` evaluated at the key (adversarial finding 2's
-  check, W RC6).
+  check, W RC6; always on initially, §18.69 Q8).
 
 The structure is preserved because `quant` is fixed by Sig1 and §2.3
 alone and no rule ever changes it; a strategy's candidate assigns only
 `Exists` variables, as functions of the `Forall` ones (argued).
+
+### 5.4 `ValidR`: the recorded problem's declarative meaning
+
+**Ownership (§18.69 Q11).** This document owns the meaning of a
+`RecordedProblem`, with its requirement atoms and its unsupported
+constructs stated explicitly. CX consumes it: CX-PR's `ValidR` is
+this definition (refute/statements.md §4.1). **Validity is never
+defined by whichever checker succeeds:** the definition mentions no
+strategy, solver, witness, outcome or diagnostic, and a checker's
+acceptance or refusal is evidence about `ValidR`, never its
+definition. Everything in this section is **proposed**, at statement
+level: no Lean definition exists, nothing is proved or checked.
+
+**Values.** For a base set `B₁` with an injective map from
+Waxwing's bases, `GA(B₁)` is the ground types over `B₁`: `base b`,
+`arrow`, records (finite label maps, finite at every depth, as
+`ValidFin` asks) and a **free constructor node** `app h [v̄]` per
+declared type or handler head `h` of §2.1. Composition `{ …, ...ρ }`
+is defined only on disjoint parts, as in Lean's `evalT`. A rigid
+assignment `θR` maps each `Forall` variable to a value of its sort; a
+flexible assignment `θF` each `Exists` variable.
+
+**Definition sketch.**
+
+```text
+ValidR p  :=
+  ∀ B₁ (injective extension of the bases), ∀ θR finite over GA(B₁),
+    Sat θR p.d  →
+    ∃ θF finite over GA(B₁),
+        Sat (θR ∪ θF) p.b                       -- every recorded atom
+      ∧ ∀ a ∈ p.bq, ReqG (θR ∪ θF) a            -- [VOR], ground rule
+```
+
+`p.q` is empty today (Sig9); a non-empty `Q` would be a hypothesis
+beside `D`, and its meaning is unstated: such a problem is Unsupported
+(§18.69 Q2). `ReqG` evaluates the atom's type to a ground value and
+applies the stated ground rule: `pr v` and `cmp v` fail exactly when
+`v` holds a function type at some depth (through record fields and
+`app` arguments). The rule's value at a base atom outside Waxwing's
+bases, and at declared types whose constructors hold functions, is
+**not yet fixed**. Since `ValidR` is owned here, this document must
+fix it, in agreement with the language's printability and
+comparability as today's checks judge them (Check/Printable.purs,
+Check/Comparable.purs, Specialize/Printable.purs; §11 item 16).
+
+**Unsupported constructs, explicitly.** `ValidR` gives meaning to the
+recorded entries only:
+
+1. `outside` markers carry no atom and are ignored by `ValidR`. The
+   obligations of a "yes" row of §3.5's table are missing from `p.b`.
+2. Effect rows are erased (§2.2); their obligations are missing.
+3. A requirement atom that is not ground and is not made ground by
+   entailed equalities is meaningful in `ValidR`, but no judgment of
+   it is supported (§18.69 Q2): a verdict that rests on it is
+   Unsupported.
+4. A second spread is in `ValidR` (E25's atoms); it is a support
+   limitation of strategies (§18.69 Q4), not of the meaning.
+
+**Obligations the definition must meet** (statement-level; each
+needs its check or proof before the plan relies on it):
+
+- **VR-sub (refutation direction).** Every recorded entry is an
+  original obligation of the declaration (G-dead, §3), and items 1-2
+  only omit obligations. So a declaration valid under the language's
+  full rules has `ValidR (generate f)`, and `¬ ValidR p` is evidence
+  against the declaration. A marker or an erased row never supplies
+  that evidence (§3.5).
+- **VR-solved (acceptance direction).** `ValidR p` is what a
+  whole-function Solved certifies **only when** `p.outside` is empty,
+  no requirement judgment is Unsupported (item 3), and the erased
+  effect obligations are accounted for (§3.5; effect/record
+  independence is not assumed, §18.69 Q3). Otherwise `ValidR p` is
+  necessary, not sufficient, and no Solved rests on it.
+- **VR-agree.** On problems with no `app` node and empty `q`, `bq`,
+  `ValidR p ↔ ValidOpen (toSig p)` (names mapped as CX §4.1
+  condition 1). Expected by construction: the clauses coincide.
+- **VR-CX (CX §4.1 conditions 4 and 5).** Quantification is over
+  injective base extensions at least as `ValidOpen`'s (condition 5).
+  Encoding each distinct `app h [v̄]` value as a fresh base atom,
+  homomorphically through `arrow` and records, maps `GA(B₁)` injectively
+  into ground types over an injective extension of `B₁`, preserves
+  labels (so definedness) and finiteness, and is applied after `θR`
+  is fixed; so a recorded solution gives a solution of the
+  generalized projection (condition 4). Argued.
+- **VR-ground.** At a ground atom, and at an atom whose variables
+  entailed equalities fix to ground types, `ReqG` agrees with the
+  stated ground rule (Q2's reduction is sound by this definition).
+- **VR-independent.** The definition reads only the `RecordedProblem`;
+  §9's RT3 (generation independent of the strategy) then makes
+  `ValidR (generate f)` independent of every strategy.
+
+Not covered: the meaning of `Q` (contract requirements), `ValidOpenR`
+in requirements.md's open sense, and a Lean rendering of `GA`, which
+the initial proved-model scope keeps apart (§18.69 Q10).
 
 ## 6. Origins
 
@@ -638,16 +811,16 @@ AtomId = { decl : FunctionId, path : Path, index : Int }
 | A1, A2 | Sig4, Sig5 | none |
 | A3, A4 | Sig6, Sig7 | none; open questions (translation.md §8 Q2, Q3) unchanged |
 | A5 | Sig8 | none |
-| A6, A7 | Sig9 | `Outside RequirementAtom` withdrawn; Unsupported [VOR] |
+| A6, A7 | Sig9 | `Outside RequirementAtom` withdrawn; a non-empty `Q` is Unsupported (§18.69 Q2) [VOR] |
 | B1 | Sig3, E5-E16, P3, P4 | one rule per agreement instead of one hook |
-| B2, B3 | E25 (E24 for no spread) | several spreads in-rule, no marker; Resolve still refuses them today (class pending author Q4, §3.3) |
+| B2, B3 | E25 (E24 for no spread) | several spreads in-rule, no marker; a support limitation, S1 (§18.69 Q4); Resolve still refuses them until the change lands (§3.3) |
 | B4 | E26 | `lacks ρ l` folded into definedness |
 | B5, B6 | E25 | §6's hook replaced by definedness (§3.3) |
 | B7, B8 | E27, E28 | none |
-| B9 | E28, P7 | **in-model** (proposed): several tails need no special form; today's refusal is a search failure (class e), reported as T-R0a's reasons give it (§11 item 1) |
+| B9 | E28, P7 | **in-model** (proposed; kept proposed pending its named tests, §18.69 Q12): several tails need no special form; today's refusal is a search failure (class e), reported as T-R0a's reasons give it (§11 item 1) |
 | B10-B12 | P7, P6, P5 | none |
-| B13 | P5-P7 | `Outside PatternGrowth` dropped (proposed; §11 item 2) |
-| B14 | E13 | none; it also carries the body-type `lacks`/`disjoint` checks now made at Resolve (§3.2 note; pending author Q4) |
+| B13 | P5-P7 | `Outside PatternGrowth` dropped (proposed; kept proposed pending RT1, §18.69 Q12; §11 item 2) |
+| B14 | E13 | none; it also carries the body-type `lacks`/`disjoint` checks now made at Resolve (§3.2 note; §18.69 Q4) |
 | B15 | all | nested equations recorded undecomposed, as before |
 | D1 | E25 | none |
 | D2 | E13 | none |
@@ -663,8 +836,8 @@ AtomId = { decl : FunctionId, path : Path, index : Int }
 | F9 | all | `main` and other declarations without rigid rows: same rules, empty `Forall` |
 | C1-C4 | E18, E19 | generated at the site; no walk [VOR] |
 | C5 | Sig10 | `pr` recorded; groundness static [VOR] |
-| C6, C7 | E10 | `cmp` recorded on both; C6's refusal becomes a consequence [VOR] |
-| C8 | E10 | not a semantic refusal (§3.3 note; §11 item 9) |
+| C6, C7 | E10 | `cmp` recorded on both; C6's refusal becomes a consequence, judged under §18.69 Q2 [VOR] |
+| C8 | E10 | not a semantic refusal; `AmbiguousType` stays Unresolved (§18.69 Q4; §3.3 note; §11 item 9) |
 | H1, H2 | E3, E5 sites | sites only; judged on a witness by T-R0e |
 | H3 | §5.2 | a `Hole` in a candidate is a variable to choose |
 | H4-H7 | — | lowering, resource limits, Task 8: not generated |
@@ -704,10 +877,10 @@ before, and independently of, any strategy. Consequences:
   They are class a (requirements.md §2.3), **except** the body-type
   `lacks`/disjointness checks (Features/Resolve/Lacking.purs:126-167,
   Features/Resolve/Apart.purs:141-158), which T-R0c §3.12 shows are
-  semantic (c2, checked counter-instances). Proposed: they move into
-  generation as E13 definedness atoms and are decided by CX (§3.2
-  note), so they stop hiding every other declaration; **pending author
-  Q4**. Until then they remain Resolve refusals.
+  semantic (c2, checked counter-instances). **Decided (§18.69 Q4):**
+  they move into generation as E13 definedness atoms and are decided
+  by CX (§3.2 note), so they stop hiding every other declaration. Not
+  implemented: until the change lands they remain Resolve refusals.
 
 ## 9. Acceptance tests (stated, not implemented)
 
@@ -827,17 +1000,21 @@ What T-R0b assumes of T-R0a:
 - static (class a, b′) refusals are judged by `staticRules` and
   reported beside the problem, as `Refused (NonEmptyArray
   StaticRefusal) RecordedProblem`, not by stopping generation;
-- requirement atoms are judged as the preamble's proposed default
-  says (ground atoms by a stated ground rule; atoms over variables
-  Unsupported for every strategy whose `Sound_F` does not cover them),
-  **pending author Q2** [VOR];
+- requirement atoms are judged as the preamble says (§18.69 Q2):
+  ground atoms, and atoms made ground by entailed equalities, by the
+  stated ground rule; any other requirement judgment Unsupported for
+  every strategy whose `Sound_F` does not cover it [VOR];
 - **non-empty `outside` prevents a whole-function Solved** (§3.5;
-  decision 1), **pending author Q3**; the markers alone supply no
+  decision 1; §18.69 Q3); the markers alone supply no
   contradiction, and they never prevent one: rules and refuters still
   run, and a separately justified contradiction (a proved c1 rule over
   original atoms, or a checked CX counter-instance; §18.65) still
-  gives Contradiction. A second spread, if classified S1, follows the
-  same policy (§3.3; T-R0a §5.3 rule 1′);
+  gives Contradiction. A second spread, a support limitation S1
+  (§18.69 Q4), follows the same policy (§3.3; T-R0a §5.3 rule 1′);
+- validity is `ValidR` (§5.4), never the success of a strategy;
+- under D1 (§18.69), `generate` returns the problem with a `build`
+  continuation and its tracked requests (§5.3); the changed type is
+  T-R0a's to carry once the mechanism is specified;
 - any slicing between recorder and strategy quantifies over this
   original problem (requirements.md §11 item 11);
 - `adm` and `split` are judged against a strategy's witness by the
@@ -846,20 +1023,23 @@ What T-R0b assumes of T-R0a:
 
 ## 11. Conflicts and questions
 
-"Pending author Q<n>" refers to the reconciliation review's open
-questions Q1-Q10.
+Question numbers are dossier §18.67's (the reconciliation review's
+Q1-Q10 under the same numbers); the author decided them in §18.69.
 
-1. **B9 in-model** (proposed). Removal and rest binders over several
-   tails are recorder-spec `Outside` (Task 7 placeholder). E28 and P7
-   express them with no special form; today's refusal
-   (`withinOneTail`, Check/Removal.purs:14) and the `Placeholder` at a
-   several-tail receiver become search failures, class e: the online
-   solver's message is a hint, and the reason is T-R0a's
-   `Unsupported (GuardOutsideFragment …)` while no strategy's guard
-   covers several tails, `Inference` otherwise. They are not constructs
-   outside the model (reconciliation A7). Lowering several tails stays
-   Task 8 (H7). Accept?
-2. **B13, pattern growth** (proposed). P5-P7 give every pattern its own
+1. **B9 in-model** (proposed; **kept proposed pending its named
+   tests, §18.69 Q12**: RT2's several-tail removal and `Placeholder`
+   fixtures, and RT1). Removal and rest binders over several tails are
+   recorder-spec `Outside` (Task 7 placeholder). E28 and P7 express
+   them with no special form; today's refusal (`withinOneTail`,
+   Check/Removal.purs:14) and the `Placeholder` at a several-tail
+   receiver become search failures, class e: the online solver's
+   message is a hint, and the reason is T-R0a's `Unsupported
+   (GuardOutsideFragment …)` while no strategy's guard covers several
+   tails, `Inference` otherwise. They are not constructs outside the
+   model (reconciliation A7). Lowering several tails stays Task 8
+   (H7).
+2. **B13, pattern growth** (proposed; **kept proposed pending its
+   named test, §18.69 Q12**). P5-P7 give every pattern its own
    equation; no `Outside PatternGrowth`. Whether today's growth rule
    accepts exactly the problems P5-P7 make valid is unchecked; RT1
    disagreements would show it (recorder-spec Q5).
@@ -867,50 +1047,74 @@ questions Q1-Q10.
    records a witness's form per call; a generator cannot. For T-R0e:
    the admission judgement takes `(site, witness)` and filters `adm` by
    component; R019's contract (§18.66 decision 2) applies there.
-4. **Data applications** (pending author Q3). Lean's `TExpr` has no
-   type constructors, so `Option(a)`-like uses get `Outside
-   DataApplication` (new) and, under §3.5's rule, cannot be Solved.
-   The atom is recorded in full (§3.5 table: nothing left out), so a
-   free constructor node in the model, or a slice theorem, would let
-   this kind stop blocking Solved. A modelling question for the
-   statement owner.
-5. **Conservative markers** (pending author Q3). `FailFamily` and
+4. **Data applications** (§18.69 Q3, Q10). Lean's `TExpr` has no type
+   constructors, so `Option(a)`-like uses get `Outside
+   DataApplication` (new) and, under §3.5's conservative rule (kept),
+   cannot be Solved. The atom is recorded in full (§3.5 table), and
+   `ValidR` gives `app` a meaning (§5.4). The kind stops blocking
+   Solved only once its omitted judgment is shown unable to affect the
+   claimed result, for example by a model with free constructor nodes;
+   that model is kept apart from the initial proved-model scope
+   (§18.69 Q10). Open: who states it, and when.
+5. **Conservative markers** (decided, §18.69 Q3). `FailFamily` and
    `EffectArgument` are decided syntactically (§3.5) and so mark more
-   functions than today's solved-shape rule would, and both leave an
-   obligation unrecorded, so they must block Solved under decision 1.
-   Acceptable?
-6. **Effect rows erased** (pending author Q3). Independence of effect
-   checking from record solutions is assumed (requirements.md §11 item
-   13); effect refusals that consume record-solved metas are class f.
-7. **Arity at a fixed result** (E5; pending author Q4): class a or a c1
-   head clash on original atoms? The atom is recorded either way.
+   functions than today's solved-shape rule would; both leave an
+   obligation unrecorded and block Solved. Accepted for now; a kind is
+   exempted only once its omitted obligations are shown unable to
+   affect the claimed result.
+6. **Effect rows erased** (§18.69 Q3: independence **not** assumed).
+   The erasure stays in the atoms, but no Solved may rest on effect/
+   record independence (requirements.md §11 item 13). **Open:** how
+   the dropped obligations are accounted for: a syntactic marker where
+   an erased row could carry a record obligation (proposed default, in
+   keeping with item 5), or a check that they cannot affect the
+   claimed result. Effect refusals that consume record-solved metas
+   stay class f.
+7. **Arity at a fixed result** (decided in principle, §18.69 Q4;
+   E5 note): a declared result that can never be a function is a
+   structural class-a check; the instantiated case reads a
+   solver-selected type and is semantic, judged on E5's recorded
+   atom (a c1 candidate head clash, CX Q4). This reading of the two
+   code paths is this document's (argued).
 8. **Canonical form versus hand translations.** §2.3 introduces fewer
    fresh variables than translation.md §2.2; RT4 must eliminate
    defining equations, and that normalization is a comparison tool, not
    a validity-preserving theorem (as recorder-interface §5 test 1).
-9. **C8 is not validity** (pending author Q4; T-R0e §7 Q5). `cmp` at
-   an unconstrained flexible variable is satisfiable, so today's
-   `Ambiguous type` is a policy or admissibility refusal (ADR 007
-   condition 2), or class e, for T-R0e [VOR].
+9. **C8 is not validity** (decided, §18.69 Q4; T-R0e §7 Q5). `cmp` at
+   an unconstrained flexible variable is satisfiable; `AmbiguousType`
+   stays Unresolved unless a language policy deliberately says
+   otherwise [VOR].
 10. **Lambda effect-row annotation.** Check/Lambda.purs's
     `annotationRow` treats the signature's last `VarId` specially; it is
     an effect row and erased here. Confirm no record obligation hides
-    in it.
-11. **`ValidOpenR`** [VOR; pending author Q2]: every rule marked [VOR]
-    waits for it; the field-level reading and P6's distribution
-    (recorder-spec §2.3, §8) are assumed by Sig10, E10, E18, E19. The
-    preamble's proposed default applies until then.
+    in it. Since independence is not assumed (item 6), this is now a
+    precondition of any exemption for erased rows.
+11. **`ValidOpenR`** [VOR; §18.69 Q2 decided the judging rule]: ground
+    atoms and atoms made ground by entailed equalities are judged by
+    the ground rule; others stay Unsupported. The open semantics stays
+    unstated; §5.4 gives `BQ` a pointwise meaning in `ValidR`. The
+    field-level reading and P6's distribution (recorder-spec §2.3, §8)
+    are assumed by Sig10, E10, E18, E19.
 12. **Interface overlap with T-R0a.** Closed: the shape in §10 is
     canonical; sites inside the problem, judgements beside it
     (reconciliation A4).
-13. **Second spread** (pending author Q4; T-R0e §7 Q3). Language rule
-    (class a) or support boundary? Generation records it in-model
-    either way, with no marker (§3.3).
-14. **Body-type `lacks`/`disjoint` at Resolve** (pending author Q4).
-    Move into generation as E13 definedness atoms (§3.2, §8)?
-15. **E18's `LambdaBody` position.** The `crash` reference's checked
-    `Lambda` is assumed to be built like `showRef`'s (Show.purs:41-55);
-    to confirm when RT7 is implemented.
+13. **Second spread** (decided, §18.69 Q4): a support limitation (S1),
+    generated in-model with no marker (§3.3). Not implemented.
+14. **Body-type `lacks`/`disjoint` at Resolve** (decided, §18.69 Q4):
+    they move into generation as E13 definedness atoms (§3.2, §8). Not
+    implemented.
+15. **E18's `LambdaBody` position.** Closed by inspection (§18.69
+    Q12): `crashRef` (src/Features/Check/Operation.purs:120) builds a
+    checked `Lambda` whose body has the fresh result type, so
+    `LambdaBody` is right. RT7 still checks it once implemented.
+16. **`ValidR` (§5.4), new.** Owned here (§18.69 Q11). Open: the
+    ground rule's value at fresh base atoms and at declared types
+    whose constructors hold functions; the meaning of a non-empty `Q`;
+    proofs or checks of VR-sub, VR-agree and VR-CX; a Lean rendering.
+17. **D1's continuation mechanism (§5.3), new.** The request
+    constructors, the build-time rejection of an untracked read, the
+    handle scoping and the new `generate` type are to be specified
+    before implementation (§18.69 D1).
 
 ## Revision log (reviews of 88c052d)
 
@@ -1004,3 +1208,43 @@ An external review forwarded by the author (issue 6 applies here):
   whole-function Solved, never Contradiction" (E1 above) means the
   marker never blocks a Contradiction, not that the declaration can
   never be one.
+
+### Author's decisions (§18.69)
+
+The author decided Q1-Q13 and D1-D6 (dossier §18.69). The "pending
+author" rulings listed above are decided; that list is kept as the
+record of what was pending at the time. Changes here:
+
+- Q2: ground requirement rules adopted, with reduction through
+  entailed equalities; other requirement judgments Unsupported; E017
+  transitional (preamble, §3.3 E10 note, §7 A6/A7 and C6/C7, §10,
+  §11 item 11).
+- Q3: the conservative support boundary kept for now; exemption only
+  once a construct's omitted obligations are shown unable to affect
+  the claimed result; a marker alone gives no contradiction;
+  effect/record independence no longer assumed, so the accounting for
+  erased effect rows is open (§3.5, §10, §11 items 4-6, 10).
+- Q4: structural checks (arity from a signature, coverage) stay in
+  `staticRules`; semantic body-type checks move into generation;
+  solver-selected-type checks are semantic, so arity at an
+  instantiated result is semantic (E5 note); second spread a support
+  limitation; `AmbiguousType` stays Unresolved (§1, §3.2, §3.3, §7,
+  §8, §10, §11 items 7, 9, 13, 14). None of this is implemented.
+- Q6: auxiliaries are bound unless deterministic reconstruction is
+  established per rule; §5.3's "never bound" withdrawn; the proposed
+  Cov wording for W revised (§5.3).
+- Q8: the ground re-check is always on initially (§5.3, one clause).
+- Q11: new §5.4, `ValidR`, owned here, with values, a definition
+  sketch, the unsupported constructs listed and the obligations
+  VR-sub, VR-solved, VR-agree, VR-CX, VR-ground, VR-independent; all
+  proposed. "Canonical here" and §5.1 point to it; §11 item 16.
+- Q12: `crashRef` (Operation.purs:120) confirms `LambdaBody`; §5.2
+  cites it; §11 item 15 closed. B9 and B13 stay proposed pending their
+  named tests (§3.4, §7, §11 items 1-2).
+- D1: the generation continuation with tracked applicative requests
+  recorded as the chosen direction; read-back stays today's route;
+  the mechanism is to be specified before implementation (§5.3, §10,
+  §11 item 17). §4 now states the applicative invariant explicitly.
+
+Not applied here (other owners): Q1, Q5, Q7, Q9, Q13 (T-R0a, W,
+T-R0e); D2-D6.
