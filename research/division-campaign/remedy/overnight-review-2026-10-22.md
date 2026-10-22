@@ -217,3 +217,24 @@ them; two reconciliation and recheck rounds were applied.
     atoms at type variables (e.g. `fn p(item: a): Text = show(item)`).
   - It offers options A-E. C and D amend a decision; A, B and E don't.
     The census tasks supply the numbers before anyone chooses.
+
+## 6. Shadow first, and the first tranche (2026-10-22)
+
+Dossier §18.70 records the author's decisions:
+- **G-switch:** option A now (shadow), option E as the destination.
+  Option C is possible later as a limited window; options B and D are
+  rejected.
+- **O24:** the six questions are answered, and the note adds the model
+  refinement X_W(B, i). Its vocabulary is indexed by the original B,
+  and its carrier ranges over B₁. `ValidOpen` is unchanged and no
+  downward-countability lemma is needed. Both are proposed, not
+  proved.
+- **The plan:** its new "First execution tranche" section authorizes
+  neither Task 4.6, live refutation, Phase 6 nor proofs.
+  - It was re-reviewed at 38c045e (verdict: needs one more revision;
+    two blocking findings), and all findings were applied (ee227af).
+    That last revision has not been reviewed again.
+  - What to check: the tranche order; Task 5.1 inside it with an
+    empty registry; the defects rule (only test-only and shadow code
+    is fixed inside the tranche); `RequirementOpen`; JSON Lines for the
+    CLI; the reading G-Q13.
