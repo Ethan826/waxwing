@@ -45,6 +45,24 @@ test/fixtures/r0/corpus-manifest.json; re-pin with
 `node scripts/r0-corpus-pin.mjs`. measure/instrument.mjs exports its
 copy-and-patch as `patchedCopy` (patched copies unchanged).
 
+## R0 shadow tranche, Task 0.3: D1's mechanism specified (2026-10-22)
+
+Design only; no compiler change. docs/plans/r0-generation-continuation.md
+specifies the generation continuation with tracked requests: an
+applicative `Elab s` (static uses beside a reader over bindings,
+Pottier 2014 §4.3; no `Bind`), handles minted only by `fresh` with
+their `vars` entry, rank-2 problem scope (adopted: `Var`s are
+path-relative, so a value check alone cannot tell declarations apart),
+a hidden-constructor `Elaborating`, `untracked` run after `generate`
+and before `decide`, `covDomain = requests ∪ (flex ∖ Recon)`,
+`ElabFault` after Cov as `BrokenInvariant` (stops the run), `Free` as
+today's renumbered hole, and Task 7.1's tests T1-T11 with four
+regression rows. Open for the gate: effect rows are erased by the
+recorder yet present in the checked IR, so no witness read can produce
+them (§12.1; E-a recommended; blocks Task 4.6); T-R0b position
+amendments for E28's `rest` and P4's `inst i` (§12.2). G-D1 waits on
+the controller's adversarial review.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/
