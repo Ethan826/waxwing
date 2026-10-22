@@ -300,8 +300,11 @@ data Unsupport
   | RequirementAtoms                     -- ValidOpenR unstated; Q2
   | GuardOutsideFragment StrategyName    -- e.g. not in LDFragment
   | SeveralTailSubtraction               -- T-R0e §3.2; B9 fallback, §10
+  | SecondSpread                         -- T-R0e §3.2, B3; Q4
+  | ClassF Question                      -- T-R0e §3.2, class f; Q3
 
 -- One list for verdict and compilation stages: T-R0e §3.1's names.
+-- T-R0e cites these types and adds only the layer of each.
 type LimitAt = { limit ∷ LimitReached, site ∷ Site }
 data LimitReached
   = InferredTypeDepth Int                -- 1,000 (H5)
@@ -332,9 +335,12 @@ Proposed. Notes:
   a `SearchHint` (§4.2). T-R0e's `NoStrategyAccepted` is this
   document's `InferenceFailure` together with the attempt log. T-R0e's
   `ForcednessUndecided` and `NoAdmissibleWitnessFound` are compilation
-  refusals (§6), not verdict reasons. T-R0e's `Unsettled` (class f) is
-  not an inference failure; whether it is a hint or an `Unsupport`
-  constructor is T-R0e's to settle.
+  refusals (§6), not verdict reasons; the latter exists only if G3's
+  contract is adopted (§6). T-R0e's class-f case is not an inference
+  failure; T-R0e §3.1 settles it as the `Unsupport` constructor
+  `ClassF Question`, pending author Q3. T-R0e's second spread, if
+  classified as a support boundary, is `SecondSpread` (pending author
+  Q4).
 - **D4 "Cannot tell" is not decision 3.** It is the online search
   stopping, so it is a hint, and absent another strategy's Solved the
   reason is `Inference NoCandidate`. T-R0c's c21 shows D4 refusing a
@@ -644,7 +650,8 @@ data Admission
   | NotCompiled (NonEmptyArray CompileRefusal)
   | NotJudged                            -- not Solved; nothing to admit
 
--- W's AdmStatus without Inadmissible, which goes through AtA.
+-- W's AdmStatus without Inadmissible, which goes through AtA. Its
+-- constructors share W's names, so the two need separate modules.
 data AdmittedStatus = Admissible | AdmittedPendingR019
 
 -- Canonical; T-R0e §3.1 cites it and adds only Construct and layerOf.
@@ -657,9 +664,11 @@ data PolicyRefusal                       -- P: decision 3, per split site
   = SplitUnforced CallSite (Tuple Witness Witness)
                                          -- two valid witnesses differing
   | ForcednessUndecided CallSite         -- Q1(c), Q7
+  -- No G3 constructor: G3 is held (dossier §18.66 decisions 6-7).
 
 data AdmissibilityRefusal                -- A: R010, judged by Adm_W
-  = Inadmissible CallSite
+  = Inadmissible CallSite Int            -- the judged slot i that fails
+                                         -- (T-R0b's `Slot p i`)
   | ComponentBlocked FunctionName        -- a member not Solved; Q7
 
 data SupportRefusal                      -- S
@@ -670,6 +679,10 @@ data SupportRefusal                      -- S
 
 Proposed. Points this interface is responsible for:
 
+- **G3's refusal.** If G3's selection contract is adopted (T-R0e §2.4),
+  `PolicyRefusal` gains `NoAdmissibleWitnessFound CallSite`: inside the
+  contract's fragment, no valid, `Admissible` witness was found. The
+  verdict stays Solved. Until then the constructor does not exist.
 - **Validity is not admission.** A Solved declaration whose
   `compilation` is `NoWitness reason` gets `AtS (NoCompilation
   reason)` (decision 4: "a strategy may establish validity without
@@ -693,13 +706,16 @@ Proposed. Points this interface is responsible for:
   suffices is **pending author Q1(d)**; who decides forcedness, and
   whether the decider takes the problem or the `Solution`, is
   **pending author Q7**. P runs only on Solved declarations (D5).
-- **A's status values** are W's (§2.3; T-R0e §1.4), recorded in
-  `Admitted.status`. `AdmittedPendingR019`: matches no active row of
-  `Adm_W` (FK-W/FK-U rows active once adopted), name-free, admitted by
-  `bareRow`. It compiles as today and is never a premise. After Task 8
-  it is refused, unless FK-U is proved and adopted, as `AtS
-  (NotLowerable (ComposedTailsUnjustified site) site)`, T-R0e's
-  constructor. Whether users see it is **pending author Q5**.
+- **A's status values** are W's `AdmStatus` (§2.3; T-R0e §1.4).
+  `Admitted.status ∷ AdmittedStatus` records the two admitted values;
+  W's `Inadmissible` is `AtA (Inadmissible site i)`, naming the slot
+  that fails (T-R0e §1.4's evidence). `AdmittedPendingR019`: matches
+  no active row of `Adm_W` (FK-W/FK-U rows active once adopted),
+  name-free, admitted by `bareRow`. It compiles as today and is never
+  a premise. After Task 8 it is refused, unless FK-U is proved and
+  adopted, as `AtS (NotLowerable ComposedTailsUnjustified site)`,
+  T-R0e's constructor, `site` the `adm` call site. Whether users see
+  it is **pending author Q5**.
 - **Several tails.** Lowering a row with several tails is `AtS
   (NotLowerable SeveralTailLowering site)` until Task 8 (T-R0e
   §3.1).
@@ -1076,3 +1092,20 @@ Applied from the consistency re-check of the R0 documents:
 
 R11 needs no edit here: T-R0e §7 maps its old question numbers, so the
 citations of T-R0e Q3, Q5 and Q6 stand.
+
+### Residual harmonization
+
+Residual mismatches with T-R0e left by R1, resolved here and in T-R0e:
+
+- T-R0e §3.1 now cites `UnresolvedReason`, `Unsupport`, `LimitAt` and
+  `LimitReached` instead of defining its own `Reason`. `Unsupport`
+  gains `SecondSpread` (Q4) and `ClassF Question` (Q3), T-R0e's
+  verdict-stage constructs; §3.5's note on class f is updated.
+- `Inadmissible CallSite Int` names the slot that fails (T-R0e §1.4's
+  evidence); §6 says how W's three-valued `AdmStatus` maps to
+  `AdmittedStatus` and `AtA (Inadmissible site i)`.
+- §6 notes that `PolicyRefusal` gains `NoAdmissibleWitnessFound
+  CallSite` only if G3's contract is adopted (G3 held, §18.66
+  decisions 6-7); §3.5 cross-refers.
+- `ComposedTailsUnjustified` takes no argument: the refusal is `AtS
+  (NotLowerable ComposedTailsUnjustified site)`.
