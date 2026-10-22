@@ -1169,9 +1169,12 @@ inference (O12) is an explicit non-goal.
   unifiers. *Witness metadata only (option B, no export):* no scheme
   change; references stay internal.
 
-## 11. Proposals outside this document (not applied)
+## 11. Proposals outside this document
 
-**R0 documents** (their editors decide; nothing here edits them):
+**R0 documents** (their editors decide; nothing here edits them). The
+decision-free items (FK-0's target, RC in Leroy's terms, forcedness
+versus coherence, interfaces before selection) were added as labelled
+notes at 2443479; the rest wait for D1 or §18.67 Q6 (EL3):
 
 - r0/recorder-rules.md §4 and §5.3: record the continuation alternative
   (O27) and the applicative invariant it relies on; note that Cov could
