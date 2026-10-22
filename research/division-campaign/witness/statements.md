@@ -484,7 +484,9 @@ data AdmStatus = Admissible | Inadmissible | AdmittedPendingR019
 In T-R0a's types (generation-interface.md §6), the two admitted values
 are `Admitted.status ∷ AdmittedStatus` (`Admissible |
 AdmittedPendingR019`); `Inadmissible` is the refusal `AtA (Inadmissible
-site i)`, `i` the failing slot's index.
+site i)`, `i` the failing slot's callee `VarId` (T-R0b's `inst i`, at
+position `Slot p i`), not an index into `CallSite.slots`, which omits
+`RowSort` variables.
 
 This neither narrows nor endorses today's behaviour (decision 2): what
 `bareRow` admits beyond the active rows keeps its acceptance at check,
@@ -1389,3 +1391,10 @@ edit this file). No decision changed.
   remains a proposal, not ruled by §18.69.
 - 15: §3.3: "never a type-error diagnostic", since the fault is
   reported as E_INTERNAL.
+
+### R0 plan alignment (76cd373)
+
+- §2.3: `Inadmissible`'s `i` is the failing slot's callee `VarId`
+  (T-R0b's `inst i`), not an index into `CallSite.slots`, matching
+  T-R0a §6; it read "the failing slot's index". Raised by the R0
+  implementation plan's §8 item 3. No decision changed.

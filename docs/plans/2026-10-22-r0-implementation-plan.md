@@ -51,7 +51,9 @@ Node ≥22.5 test runner (`node --test`), Go 1.26.4 for emitted code.
   (D1).
 
 Line citations below are at 181fa54; `src/` there equals 67ba706,
-which the R0 documents cite.
+which the R0 documents cite. The plan follows the R0 documents as
+revised at 76cd373 (the recheck fixes): `Decision.searchFaults`,
+`EmissionFault`, the split `ForcednessPolicy` and T-R0e's `Fault`.
 
 ## Global Constraints
 
@@ -130,8 +132,8 @@ avoided.
 
 | Path | Responsibility |
 |---|---|
-| src/Domain/Verdict.purs | `DeclOutcome`, `Decision`, `Verdict`, `UnresolvedReason`, `Unsupport`, `LimitAt`, `InternalFault`, `SearchFault`, `Attempt`, `Admission`, `CompileRefusal` and their parts (T-R0a §3, §6). Split by family if over 250 lines: Verdict/Reason.purs, Verdict/Admission.purs |
-| src/Domain/Verdict/Internal.purs | hidden constructors: `Valid`, `Refuted`, `NonForced`; minted only by trusted checkers |
+| src/Domain/Verdict.purs | `DeclOutcome`, `Decision`, `Verdict`, `UnresolvedReason`, `Unsupport`, `LimitAt`, `InternalFault`, `EmissionFault`, `SearchFault`, `Attempt`, `Admission`, `CompileRefusal` and their parts (T-R0a §3, §6). Split by family if over 250 lines: Verdict/Reason.purs, Verdict/Admission.purs |
+| src/Domain/Verdict/Internal.purs | hidden constructors: `Valid`, `Refuted`, `NonForced`, `ForcednessEvidence`; minted only by trusted checkers |
 | src/Domain/Recorded.purs, Recorded/Atom.purs, Recorded/Origin.purs | `RecordedProblem`, `Entry`, `Atom`, `ReqAtom`, `OutsideKind`, `CallSite`, `Origin`, `AtomId`, `Var`, `VarInfo`, `RTExpr` (T-R0b §2.1, §5.2, §6, §10) |
 | src/Features/Check/Generate.purs | `generate`, `staticRules` (As1) |
 | src/Features/Check/Generate/{Signature,Expr,Record,Pattern,Builtin,Fresh}.purs | T-R0b Sig1-Sig10; E1-E16; E24-E28; P1-P7; E17-E23 and markers; fresh variables and `vars` |
@@ -140,11 +142,11 @@ avoided.
 | src/Features/Check/Strategy.purs | `StrategySpec`, `Strategy`, `strategy`, `Budget` use |
 | src/Features/Check/Strategy/{Online,ReadBack,Substitution,Witness}.purs | `onlineSearch`; read-back through `vars`/`types`; `checkSubstitution` (G0); `substitutionWitness`, Cov, hole contract |
 | src/Features/Check/Refute/{Project,Rules,Counter}.purs | `toSig`; `SoundRule` registry and `checkDerivation`; CX search and check |
-| src/Features/Check/Admit.purs, Admit/Forcedness.purs | `admit`, `AdmissionRules`; `ForcednessPolicy` |
+| src/Features/Check/Admit.purs, Admit/Forcedness.purs | `admit`, `AdmissionRules`; `ForcednessPolicy` (`search`, `check`), `CheckedForcedness`, `Forcedness`, `judgeSplit` |
 | src/Features/Check/Outcomes.purs | `checkProgram`, `DeclReport`, `Report` (T-R0a §7) |
 | src/Features/Specialize/ReCheck.purs, ReCheck/Eval.purs | RC1-RC6 per key, cache; ground evaluation of recorded atoms |
 | src/Format/Diagnostic/Verdict.purs | rendering of outcomes, reasons, hints and refusals by `layerOf` |
-| src/Format/Diagnostic/Layer.purs | `layerOf`, `Layered`, `Construct` (T-R0e §3.1) |
+| src/Format/Diagnostic/Layer.purs | `layerOf`, `Layered`, `Fault` (`Stopped`, `AtEmission`), `Construct` (T-R0e §3.1) |
 | src/Program/Compile.purs | the composition root: injects `Checking`, `AdmissionRules`, `ForcednessPolicy`; `compileReport` |
 | test/r0-*.test.mjs, test/r0-*.mjs | tests and helpers (one per task, named below) |
 | test/fixtures/r0/*.json | fixtures in docs/engineering.md's form (source, result class, exact text, primary location, notes) |
@@ -192,13 +194,13 @@ unless the R0 documents state one, and this plan assumes none.
 | G-switch | Steps 4 and 5 together, or a specified window (item 11)? And may the switch narrow what compiles today, given the conservative boundary? | author | Task 3.5's census; Task 4.5's window table | Task 4.6, Task 6.5 |
 | G-ValidR | `ReqG` at fresh base atoms and at declared types whose constructors hold functions; meaning of a non-empty `Q` (item 9) | author, on T-R0b's owner's proposal | Task 0.4's design note and its probe of today's printability and comparability | the `BQ` part of Task 4.2; RC3 in Task 6.4 |
 | G-D1 | The D1 mechanism: request constructors, rejection of untracked reads, handle scoping, the new `generate` type (item 8) | author, after review | Task 0.3's specification and its adversarial review | Task 7.1 |
-| G-forced | Representation of `ForcednessEvidence`, `Alternative`, `RigidAssignment`, `NonForcednessEvidence`; placing `ForcednessPolicy` with P (item 6) | author | Task 0.6's design note | Task 6.3 |
+| G-forced | Representation of `ForcednessEvidence`, `Alternative`, `RigidAssignment`, `NonForcednessEvidence`, `ForcednessClaim`, `ForcednessRefusal`; confirming T-R0a §6's proposed split of `ForcednessPolicy` into an untrusted `search` (solutions as seeds) and a trusted `check` (reads no `Solution`; the only minter of `CheckedForcedness`); placing the policy with P (item 6) | author | Task 0.6's design note | Task 6.3 |
 | G-6b | Split D4 at P: a language change (forced splits admitted, acceptance widens; T-R0e §6 step 6b) | author | Task 6.3's before/after fixture table (O4, c21, cmp-open) | Task 6.3's last step |
 | G-Recon | Who establishes auxiliary reconstruction, and whether RT7's check counts as a rule's evidence (item 7). Until then `Recon` is empty and every flexible variable is bound | author | Task 3.4's RT7 results per rule | any omission of an auxiliary binding (none in this plan) |
 | G-effects | Which effect refusals read record metas (item 4, Q-c2), so which stay class a and which become `ClassF` | author | Task 0.5's audit table | Task 2.3's effect rows |
 | G-coverage | The split of `coverage` into structural and semantic parts; which Unresolved reason `AmbiguousType` gets (item 3; that it is Unresolved is decided, §18.69 Q4) | author | Task 0.5's audit table | Task 2.3's coverage rows; the reason (not the code) of `AmbiguousType` in Task 2.2 |
 | G-exempt | Exempting an `outside` kind, with its argument; how erased effect-row obligations are accounted for, including the lambda effect-row annotation (item 4; T-R0b §11 items 4-6, 10) | author, after review of the argument | a per-kind slice argument with a check (none exists) | no task; until ruled, no kind is exempt and no Solved rests on effect/record independence |
-| G-A-i | Interpretive points: (a) a `ClaimsComplete` refusal caused by a recorder or read-back defect surfaces only as Unresolved plus a `SearchFault`; (b) rule 3 ranks `NoAcceptedCertificate` above `Limit`; (c) this plan's split of `InternalFault` (Task 1.1) | author | none beyond this plan | Task 1.1's type split; Task 4.1's rule 3 |
+| G-A-i | Confirm T-R0a's proposed encodings (T-R0a §3.5, §5.3, §7, §11): (a) the interpretation that a `ClaimsComplete` refusal a recorder or read-back defect may have caused does not stop the run, surfacing as Unresolved plus a rendered `SearchFault` in `Decision.searchFaults`; (b) rule 3's order, `Limit` first when an attempt ran out of budget and no `ClaimsComplete` candidate was refused; (c) the fault records: `EmissionFault = ReCheckFailed FunctionName Key` in `DeclReport.reCheckFaults`, outside `InternalFault`; (d) rule 4's `BothVerdicts StrategyName Evidence`, reachable in production when rule 1 or 1′ makes every strategy run | author | T-R0a §5.3 and §11 ("Still open": the interpretation and its conditions) | none: Tasks 1.1 and 4.1 build the proposed encodings, and a declined point reworks them |
 
 Items the plan settles by test rather than by a gate:
 
@@ -417,12 +419,18 @@ Task 2.3 implements the ruled classes only.
 - Create: docs/plans/r0-forcedness-policy.md
 
 - [ ] **Step 1: Specify the types.** That means `ForcednessEvidence`,
-  `Alternative`, `RigidAssignment` and `NonForcednessEvidence`, and
-  the checker that mints `NonForced` (hidden constructor). Respect
-  §18.69 Q1: two checked alternatives at the same permitted rigid
-  assignment that differ semantically on the split, or equivalent
-  checked evidence. Respect Q7: the policy reads the immutable
-  problem and the split site, and a `Solution` only seeds the search.
+  `Alternative`, `RigidAssignment`, `NonForcednessEvidence`,
+  `ForcednessClaim` and `ForcednessRefusal`, and the trusted `check`
+  that alone mints `CheckedForcedness` (`Forced` and `NotForced`;
+  hidden constructors on `ForcednessEvidence` and `NonForced`).
+  Respect §18.69 Q1: two checked alternatives at the same permitted
+  rigid assignment that differ semantically on the split, or
+  equivalent checked evidence. Respect Q7 as T-R0a §6 encodes it
+  (proposed): the untrusted `search` may take solutions as seeds;
+  `check` reads only the problem, the split site and the claim; and
+  `judgeSplit` gives `Undecided` when `search` finds nothing or
+  `check` refuses, so seeds move the answer only between `Undecided`
+  and a checked answer.
   State what "differ semantically" is checked by (a ground
   evaluation at one rigid assignment showing the split parts
   differ), and run the adversarial review on AT18's two refusal
@@ -441,15 +449,22 @@ Task 2.3 implements the ruled classes only.
 
 **Interfaces:**
 - Produces: the types of T-R0a §3.2-§3.5, §4.1 (`Attempt`, `Claim`,
-  `SearchEnd`), §5.1 (`RefuterEnd`, `ShadowRecord`) and §6, with one
-  change proposed for G-A-i(c). `InternalFault` keeps
-  `BothVerdicts`, `DerivationRefused` and `BrokenInvariant`, and a
-  separate `ReCheckFault = ReCheckFailed FunctionName Key` goes in
-  `DeclReport.reCheckFaults`. Then `decide ∷ … → Either InternalFault
-  Decision` cannot return a re-check failure, and the two `faults`
-  fields no longer share a name. If the author declines, use T-R0a's
-  shape unchanged.
-- Produces: `Valid`, `Refuted`, `NonForced` with hidden constructors.
+  `SearchEnd`), §5.1 (`RefuterEnd`, `ShadowRecord`), §6 and §7 as
+  revised at 76cd373 (proposed encodings, G-A-i):
+  - `Decision = { verdict, attempts, searchFaults ∷ Array
+    SearchFault }`;
+  - `InternalFault = BothVerdicts StrategyName Evidence |
+    DerivationRefused RuleName Unsound | BrokenInvariant String`, so
+    `decide ∷ … → Either InternalFault Decision` cannot return a
+    re-check failure;
+  - `EmissionFault = ReCheckFailed FunctionName Key`, carried in
+    `DeclReport.reCheckFaults ∷ Array EmissionFault` beside a Solved
+    verdict;
+  - `CheckedForcedness = Forced ForcednessEvidence | NotForced
+    NonForced` and `Forcedness = Checked CheckedForcedness |
+    Undecided` (the policy itself lands in Task 6.3).
+- Produces: `Valid`, `Refuted`, `NonForced` and `ForcednessEvidence`
+  with hidden constructors.
   The structure rule allows only `Features.Check.Strategy.*`,
   `Features.Check.Refute.*` and `Features.Check.Admit.Forcedness` to
   import Domain.Verdict.Internal.
@@ -458,7 +473,8 @@ Task 2.3 implements the ruled classes only.
   gets a case that a module outside the allowed list importing
   Domain.Verdict.Internal is a finding.
   test/r0-verdict.test.mjs constructs each constructor through the
-  compiled output (AT16's first half).
+  compiled output (AT16's first half: `InternalFault`,
+  `EmissionFault` and `SearchFault` among them).
 - [ ] **Step 2: Run them; expect FAIL** (module not found):
   `node scripts/build.mjs && node --test test/r0-verdict.test.mjs
   test/structure.test.mjs`
@@ -795,9 +811,18 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     j ≥ 2, blocks Solved, and every strategy still runs.
   - Rule 2: the order is rules, strategies, trusted refuters seeded
     with hints, then shadows.
-  - Rule 3: the reason computation, with `NoAcceptedCertificate`
-    ranked above `Limit` as written, subject to G-A-i(b).
-  - Rule 4: what stops the run.
+  - Rule 3: the reason computation in T-R0a's proposed order
+    (G-A-i(b)): `Limit` if any attempt ran out of budget and no
+    `ClaimsComplete` candidate was refused, so an expected
+    `Heuristic` refusal does not hide a budget limit; `Unsupported`
+    if every strategy declined; `Inference` otherwise
+    (`NoAcceptedCertificate` when candidates were refused). A
+    refused `ClaimsComplete` candidate also goes into
+    `Decision.searchFaults` as `CandidateRefused`.
+  - Rule 4: what stops the run, including `BothVerdicts` in
+    production: an `Accepted` together with a checked derivation or
+    `Refuted` in one run, possible whenever rule 1 or 1′ makes every
+    strategy run (G-A-i(d)).
   - Rule 5: the test-only `Checking` that reports `BothVerdicts`.
 - Order-independence conditions met by construction (item 11):
   - fuel is per strategy and per refuter, and `Budget` has no
@@ -814,8 +839,8 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   module.
   - AT8: a stub search returning "refused" gives Unresolved. A wrong
     σ claimed complete gives `CheckFailed` plus `CandidateRefused` in
-    `faults`, and a later accepting stub still gives Solved with both
-    records kept. With no acceptance the result is `Unresolved
+    `searchFaults`, and a later accepting stub still gives Solved
+    with both records kept. With no acceptance the result is `Unresolved
     (Inference NoAcceptedCertificate)`, never `Faulted`. A
     `Heuristic` refusal leaves no `SearchFault`. An injected
     `DerivationRefused` or a broken invariant gives `Left`.
@@ -823,10 +848,22 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   - AT11: a marker beside a refutable atom gives no Solved. With a
     stub trusted refuter the result is Contradiction.
   - AT12: a zero budget gives `Limit`, and the problem is unchanged.
+  - `rule 3: Limit is not hidden by a Heuristic refusal`: one stub
+    runs out of budget and another's `Heuristic` candidate is
+    refused; the verdict is `Unresolved (Limit …)`.
+  - `rule 3: a refused ClaimsComplete candidate outranks Limit`: one
+    stub runs out of budget and another's `ClaimsComplete` candidate
+    is refused; the verdict is `Unresolved (Inference
+    NoAcceptedCertificate)`, with the `SearchFault` recorded.
+  - `rule 4: BothVerdicts in production`: with a marker blocking
+    Solved (rule 1, so every strategy runs), an accepting stub and a
+    stub trusted refuter (or test-only registered rule) that refutes
+    give `Left (BothVerdicts …)` through the production `Checking`,
+    not only the test-only one of rule 5.
   - AT17: a shadow refuter that accepts leaves a `Shadow` record and
     the verdict it would have had without it.
-  - AT16: each reason constructor is produced by a direct
-    injection.
+  - AT16: each reason and fault constructor (`InternalFault`,
+    `SearchFault`) is produced by a direct injection.
   - AT7 (property): over random problems in a grammar fixed in the
     test file before the first run, adding a strategy never removes
     a Solved or Contradiction, and permuting `strategies` or
@@ -839,6 +876,9 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 - [ ] **Step 5: Regression rows:**
   - `r0-refused-stops` makes `CheckFailed` stop the run, and AT8's
     probe expects Solved from the later stub;
+  - `r0-limit-hidden` ranks `NoAcceptedCertificate` above `Limit`
+    for every refusal, and rule 3's `Heuristic` probe expects
+    `Limit`;
   - `r0-marker-ignored` drops rule 1, and AT11's probe expects no
     Solved;
   - `r0-shadow-decides` lets a `Shadow` acceptance set the verdict,
@@ -979,7 +1019,10 @@ exempted.
 
 - [ ] **Step 1: Failing test.** test/r0-window.test.mjs asserts each
   window.json row's **R0** class, code and text through `compile`.
-  It fails because `compile` still gives today's.
+  It fails because `compile` still gives today's. It also asserts
+  that a recorded `SearchFault` renders as a suspected-compiler-defect
+  note, never as an error in the program, and leaves the layer
+  unchanged (AT8; T-R0e §3.1).
 - [ ] **Step 2: Run; expect FAIL.**
 - [ ] **Step 3: Switch the driver.** `checkFunction` is now reached
   only through `onlineSearch`. Solved carries `Pending` assurance,
@@ -1079,8 +1122,8 @@ from `BQ` and `app` (§18.69 Q10).
   member gives the others `AtA (ComponentBlocked member)`, keeping
   E_SPECIALIZATION, with the text naming the member (§18.69 Q7).
   `Inadmissible site i` keeps today's code and text. Here `i` is the
-  callee's `VarId`, following T-R0a §6, which differs from W §2.3's
-  wording (§8 item 3).
+  callee's `VarId` (T-R0a §6, W §2.3), not an index into
+  `CallSite.slots`.
 - The status is recorded and not shown to users (G-R019-visible).
 - `Adm_W`'s active rows are FK-0's, which today's R010 code decides
   (NestedArguments.purs). FK-W's and FK-U's rows stay inactive
@@ -1121,15 +1164,25 @@ from `BQ` and `app` (§18.69 Q10).
   test/r0-forcedness.test.mjs
 
 **Interfaces:**
-- Produces: `ForcednessPolicy = { judge ∷ RecordedProblem → Site →
-  Array Solution → Forcedness }`, injected (T-R0a §6), with evidence
-  types per G-forced. `SplitUnforced CallSite NonForced` is minted
-  only by its checker.
+- Produces: `ForcednessPolicy = { search ∷ RecordedProblem → Site →
+  Array Solution → Maybe ForcednessClaim, check ∷ RecordedProblem →
+  Site → ForcednessClaim → Either ForcednessRefusal CheckedForcedness
+  }`, injected (T-R0a §6; proposed, G-forced), with evidence types
+  per G-forced. `search` is untrusted and takes solutions as seeds
+  only; `check` is trusted, reads no `Solution`, and is the only
+  minter of `Forced` and `NotForced`. `judgeSplit ∷ ForcednessPolicy
+  → RecordedProblem → Site → Array Solution → Forcedness` gives
+  `Checked c` or `Undecided` (search found nothing, or check
+  refused). `SplitUnforced CallSite NonForced` is built only from a
+  `NotForced` that `check` minted.
 
 - [ ] **Step 1: Failing tests (AT18).** Two alternatives that differ
-  only syntactically, or at different rigid assignments, give
-  `ForcednessUndecided`. Two checked alternatives at one permitted
-  assignment that differ on the split give `SplitUnforced`.
+  only syntactically, or at different rigid assignments, are refused
+  by `check` and give `ForcednessUndecided`. Two checked alternatives
+  at one permitted assignment that differ on the split give
+  `SplitUnforced`. A seeded `search` whose claim `check` refuses
+  gives `ForcednessUndecided`. `check` is called with the problem,
+  site and claim only (its type admits no `Solution`).
 - [ ] **Steps 2-4:** run (FAIL), implement, run (PASS).
 - [ ] **Step 5 (after G-6b): admit forced splits.** O4, c21 and
   cmp-open now compile, which is a language change. Fixtures move in
@@ -1149,9 +1202,10 @@ from `BQ` and `app` (§18.69 Q10).
   Either ReCheckResult Unit`, covering RC1-RC6 at `θR = κ(k)` with
   `σ` from `bindings` and `α` from `Recon`, which is empty. A failure
   on an unsupported path gives `AtS (NotLowerable UncheckedPath
-  site)`. Any other failure gives `ReCheckFailed` in
-  `DeclReport.reCheckFaults`, rendered E_INTERNAL, with the verdict
-  still Solved. Each key is checked once, its result is cached by
+  site)`. Any other failure gives the `EmissionFault` `ReCheckFailed`
+  in `DeclReport.reCheckFaults`, rendered as T-R0e's `Internal
+  (AtEmission …)` with E_INTERNAL, with the verdict still Solved and
+  the run not stopped. Each key is checked once, its result is cached by
   key, and nothing turns the check off. RC3 follows G-ValidR.
 
 - [ ] **Step 1: Failing tests.**
@@ -1160,6 +1214,9 @@ from `BQ` and `app` (§18.69 Q10).
     at the wrong IR position fails RC6.
   - A key reached twice is checked once (cache).
   - E017 keeps its code and text (transitional, §18.69 Q2).
+  - An injected RC failure leaves the outcome `Decided` with a Solved
+    verdict, puts one `ReCheckFailed` in `reCheckFaults`, and
+    `layerOf` gives `Internal (AtEmission …)`, not `Stopped`.
   - No corpus program that compiles fails RC (any failure is a
     defect, fixed with a fixture).
 - [ ] **Steps 2-4:** run (FAIL), implement, run (PASS).
@@ -1274,33 +1331,30 @@ imports no checker state.
    work and unauthorized. "Land 4 and 5 together" therefore means
    waiting for proofs, and §10's "No order keeps today's false
    contradictions" holds only with a window.
-3. **`Inadmissible CallSite Int`.** T-R0a §6, after recheck fix
-   61565ac, says the `Int` is the callee's `VarId`, not an index into
-   `CallSite.slots`. W §2.3 still says "`i` the failing slot's index".
-   This plan follows T-R0a.
-4. **`ReCheckFailed` inside `InternalFault`.** `decide`'s `Either
-   InternalFault Decision` admits a value `decide` must never
-   produce, and two fields are named `faults`. Task 1.1 proposes a
-   split (G-A-i(c)).
-5. **Unaudited effect refusals during migration.** T-R0a §3.2 makes an
+3. **Unaudited effect refusals during migration.** T-R0a §3.2 makes an
    effect refusal class f unless shown not to read record metas,
    while T-R0e §3.2's last row keeps effect codes "unchanged"
    (class a) except where a check reads a solver-selected type. It
    is ambiguous which applies before the audit. This plan keeps
    today's codes until G-effects (Tasks 0.5, 2.3).
-6. **Second spread placement.** T-R0a §10 step 4 says the plan places
+4. **Second spread placement.** T-R0a §10 step 4 says the plan places
    it, while T-R0e §1.5 and §6 put it at 6f, after step 6. This plan
    follows T-R0e (Task 6.5) and gates it on G-switch, since it
    depends on `decide` being the user-visible path.
-7. **Removing Resolve's body-type refusals needs G0's definedness
+5. **Removing Resolve's body-type refusals needs G0's definedness
    check** (Task 4.2). The documents argue the move but do not name
    this precondition; without it an invalid lambda annotation could
    be Solved.
-8. **`ValidR`'s ground rule is unfixed at declared types holding
+6. **`ValidR`'s ground rule is unfixed at declared types holding
    functions**, yet Sig10 records `pr ⟦R⟧` for `main` in every
    program. Until G-ValidR, G0 cannot judge some programs'
    requirement atoms. Task 4.2 refuses them visibly instead of
    guessing.
+
+Re-verified against 76cd373: two former items are resolved and
+dropped. `Inadmissible`'s `Int` is the callee's `VarId` in W §2.3 as
+in T-R0a §6, and `ReCheckFailed` is now T-R0a's `EmissionFault`,
+outside `InternalFault`. Items 1-6 above still hold at 76cd373.
 
 Nothing found blocks writing the plan. Items 1 and 2 decide whether
 step 4 can land without narrowing what compiles today.
