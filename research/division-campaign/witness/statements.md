@@ -17,6 +17,11 @@ proved theorem, the citation says so. "Pending author Q<n>" marks a
 proposed default that waits for the author's ruling on the
 reconciliation review's question Q<n>; it is not decided here.
 
+**The author's decisions (dossier §18.69)** on Q1-Q13 and D1-D6 are
+applied; a point they decided is marked "(§18.69)". A decided
+mechanism stays **proposed** as a statement: the decisions authorize
+writing the implementation plan, not implementation or proof.
+
 **This file is the canonical source** for the names defined in §0. The
 parallel streams (T-R0a, T-R0b, T-R0e, CX) use these definitions and
 point here; a stream that needs a different shape raises it with the
@@ -39,15 +44,18 @@ their identities and the `vars` map are T-R0b's (r0/recorder-rules.md
 | `Field r l` | the reserved field-reference node (decision 8; not implemented) | §1.4 |
 | hole contract | when a flexible variable may stay a `Hole` | §1.5 |
 | `Witness` | `{ bindings, names }`: a compilation witness | §1.6 |
-| `Binding` | what `bindings` maps a non-auxiliary flexible variable to | §1.6 |
+| `Binding` | what `bindings` maps a flexible variable in Cov's domain to | §1.6 |
 | `Compilation` | `Witnessed Witness` or `NoWitness NoWitnessReason` | §1.6 |
 | `Basis` | P's judgement of a variable in a `split` site's slots | §1.7 |
+| `ForcednessEvidence` | `Forced`'s evidence, owned by the forcedness policy component | §1.7 |
 | `κ` | key arguments read as a rigid assignment `θR` | §2.2 |
 | `Pool`, `U_row`, `U_ty`, `U_C(E)` | the finite key universe of a component | §2.2 |
 | `Adm_W`, CS | the admissibility rule over names; component-safe terms | §2.3 |
 | `AdmStatus` | `Admissible`, `Inadmissible`, `AdmittedPendingR019` | §2.3 |
 | FK-0, FK-W, FK-U | the finite-reachable-key statements | §2.4, §2.7 |
-| `aux_k` | evaluation of auxiliary variables from their defining atoms | §3.2 |
+| `Req` | the dependencies `build`'s tracked requests record (D1) | §1.6 |
+| `Recon` | auxiliaries whose deterministic reconstruction is established | §1.6 |
+| `aux_k` | reconstruction of `Recon` from defining atoms | §3.2 |
 | RC1-RC6 | the ground re-check's obligations | §3 |
 | K, V, Lay, U, R, T, Adapt-N, Cov | correspondence statements | §4 |
 | `Lowerable` | the conjunction that authorizes lowering | §5.1 |
@@ -160,7 +168,9 @@ Lit     ::= (r, l, Bool)              -- "r holds l" is Bool
 `r` ranges over the declaration's rigid record variables, `l` over its
 **written labels** (labels occurring in its signature or body), and
 `Ty Open` over expressions in the declaration's rigid variables, holes
-and names with a smaller `NameId`.
+and names with a smaller `NameId`. `ChooseT`, the type-sorted guard,
+is kept as a proposed mechanism (§18.69 item 6); pattern-dependent
+types are not restricted to rows' field types.
 
 **Scope (proposed, Sc1-Sc3).** Sc1: a term mentions only those. Sc2:
 name references are acyclic (dependency order is `NameId` order). Sc3:
@@ -213,6 +223,13 @@ D3b constants `A(r, l)` and `T(n)` (dossier lines 1114-1120, cited),
 and the component restriction of §2.6. The cell constants `X(r, S)`
 need no node: a restriction copies field types per label.
 
+With D1's generation continuation (§18.69), the extension must also
+meet EL5's compatibility condition (inference extension O32, argued):
+`build` returns `Either` from the start, so a `Field` that is
+undefined at a key is a value the continuation can report, and each
+`Field` use carries its definedness condition. D6 keeps exported
+references deferred with G2; `Field` stays an internal term.
+
 ### 1.5 The hole contract (proposed)
 
 A flexible variable may stay `Hole` (`Free` in §1.6) only if, at every
@@ -238,8 +255,11 @@ does not depend on it. A flexible variable that fails the check must
 be inlined or named; otherwise the declaration is `NoWitness
 (HoleContract v)` with `v ∷ Var`. Example (cited, split-irrelevance/
 ground-check.md §3): lowering fills `route`'s `u` with `{}` today,
-which breaks `B`. How strict the check should be is pending author Q6
-(W Q4).
+which breaks `B`. This conservative check is kept as the proposed
+mechanism (§18.69 item 6), not replaced by a stricter one. EL3
+(inference extension O29, the hole contract as the precondition of
+quantifier defaulting) is still not applied: it also depends on IF6,
+which is undecided.
 
 ### 1.6 The compilation witness, and validity without one
 
@@ -247,8 +267,8 @@ Proposed:
 
 ~~~text
 type Witness =
-  { bindings ∷ Map Var Binding   -- every flexible Var whose
-                                 -- position ≠ Auxiliary (Cov, §4)
+  { bindings ∷ Map Var Binding   -- every flexible Var not in
+                                 -- Recon (Cov, §4)
   , names    ∷ WitnessMeta       -- §1.2
   }
 data Binding = Inline (Ty Open) | Named NameId | Free Int
@@ -263,29 +283,48 @@ data NoWitnessReason
   part of the immutable recorded problem (T-R0b §5.2; T-R0e I1). A G0
   substitution witness is a `Witnessed` value with empty `names`: every
   binding `Inline` or `Free` (answers T-R0a Q-w1).
+- **Which variables are bound** (proposed, after §18.69 item 6 and
+  D1). `Req` is the set of dependencies `build`'s tracked applicative
+  requests record: reads are introduced through constructors that
+  record what they read, not through a separately written list, and
+  scoped handles may enforce problem identity (D1). That mechanism is
+  to be specified before implementation; until it is, `Req` stands
+  for the variables whose `vars` position is not `Auxiliary` (T-R0b
+  §5.2), the reading this file used before D1. `Recon` is the set of
+  flexible variables outside `Req` whose **deterministic
+  reconstruction is established**: each has a defining atom of T-R0b
+  §5.3's table whose operand mentions only rigid variables, bound
+  variables and earlier members of `Recon`, and the uniqueness of
+  §3.2's determination from that atom is established, not only
+  argued. Every flexible variable outside `Recon`, auxiliaries
+  included, is **retained** with a `Binding`; being auxiliary alone
+  never justifies omission. Today T-R0b §5.3 argues uniqueness and
+  RT7 checks it on fixtures, so who establishes it, and how, is part
+  of the statement review; until then `Recon` is empty and every
+  flexible variable is bound.
 - `Binding.Named` and `Open.Named` carry the same `NameId`, so the
   constructor name is shared deliberately (reconciliation B5); a
   `Named n` binding's variable is `n`'s `origin`, injectively.
-- **Placement** (proposed, following T-R0a's: reconciliation B1):
-  `Compilation` sits inside T-R0a's `Solution` as `compilation ∷
+- **Placement** (§18.69 item 1; following T-R0a's: reconciliation
+  B1): `Compilation` sits inside T-R0a's `Solution` as `compilation ∷
   Compilation`, replacing `witness ∷ Maybe NameWitness`. Then
   "witnessed only with Solved" holds by construction, and the earlier
-  draft's `NotSolved` reason is dropped. The alternative, a
-  `Compilation` beside the verdict (`Decided RecordedProblem Verdict
-  Compilation`), stays open if the author prefers it (pending author
-  Q1).
+  draft's `NotSolved` reason is dropped. The alternative placement
+  beside the verdict is not taken.
 - A strategy that proves `ValidOpen` without a constructive witness
   gives verdict Solved with `NoWitness (NonConstructive name)`. The
   verdict is unchanged; validity and compilation are separate (§18.60
   bullets 3-5).
 - `NoWitness` **cannot authorize lowering.** The declaration is
   refused for compilation with an Unsupported reason (decision 9's
-  reason ADT; wording belongs to T-R0a, its code pending author Q1),
-  never Contradiction. T-R0a's admission refusal for it is
-  `NoCompilation NoWitnessReason` (reconciliation B5).
+  reason ADT; wording belongs to T-R0a, its code to T-R0a and T-R0e:
+  §18.69 does not rule on Q1(c)'s codes), never Contradiction.
+  T-R0a's admission refusal for it is `NoCompilation NoWitnessReason`
+  (reconciliation B5).
 - **No per-key solving fallback** (decision 4): Specialize never solves
-  `B` at a key to fill a missing witness, and the re-check's auxiliary
-  evaluation (§3.2) is evaluation of defining atoms, not solving.
+  `B` at a key to fill a missing witness, and the re-check's
+  reconstruction of `Recon` (§3.2) is evaluation of defining atoms,
+  not solving.
   Option D (requirements §4.2) would be a separate, explicitly adopted
   strategy with its own Adapt statement, not an implicit path.
 
@@ -299,19 +338,30 @@ carry that judgement for inlined bindings, which have no `NameEntry`
 ~~~text
 data Basis
   = Forced ForcednessEvidence | Written AtomId | Selected SelectionTag
-  -- ForcednessEvidence: type owned by the forcedness decider;
-  -- unassigned, Q7
+  -- ForcednessEvidence: type owned by the forcedness policy
+  -- component (§18.69 item 7)
 type SplitJudgement = Map Var Basis
   -- domain: every Var in a split site's slots, whatever its Binding
 ~~~
 
 `SplitJudgement` is P's output and lives beside the problem with A's
 judgement (T-R0e I2 as reconciled by A4), never inside `vars` or the
-`Witness`. `Forced` claims U (§4) and carries the forcedness decider's
-evidence; `Written` names an annotation atom that determines the
-value; `Selected` names a selection rule (none is chosen; §18.62).
-Who decides forcedness, and whether the decider reads the problem or
-the `Solution`, is pending author Q7.
+`Witness`. `Forced` claims U (§4) and carries the forcedness policy
+component's evidence; `Written` names an annotation atom that
+determines the value; `Selected` names a selection rule (none is
+chosen; §18.62).
+
+**Who decides forcedness (§18.69 item 7).** A separate policy
+component owns forcedness and `ForcednessEvidence`. Its inputs are the
+immutable complete recorded problem and the `split` site. A candidate
+solution (a `Solution`, `Witness` or certificate) may help it search
+for evidence, but never defines forcedness: forcedness is a property
+of the problem's solution set (U), not of any candidate.
+The opposite finding, `SplitUnforced` (T-R0a's refusal), meets §18.69
+item 1's standard: two checked alternatives at the **same** permitted
+rigid assignment that differ semantically on the split, or equivalent
+checked evidence of non-forcedness; two syntactically different
+witnesses alone are not enough.
 
 ## 2. Termination (decision 3)
 
@@ -393,9 +443,12 @@ At an intra-C reference, each judged slot (NestedArguments.purs:55-58,
 | record | `{ ...n }`: no field, one tail, `n` a CS name | FK-W |
 | record | no field, two or more tails, each rigid (or a CS name, with FK-W) | FK-U (R019), **only if FK-U is adopted** |
 
-FK-W's rows are active only if FK-W is in the first design (pending
-author Q5, W Q3); FK-U's row only if FK-U is adopted and proved
-(pending author Q5, W Q7). An inactive row admits nothing.
+FK-W is in the design (§18.69 item 5), but its rows stay **inactive
+until its obligations are met**: FK-W proved, with P1 and P2 (§2.4),
+and T1-a in place (§1.1). FK-U's row stays inactive (§18.69 item 5)
+until FK-U is adopted and proved. An inactive row admits nothing, so
+until then a slot mentioning a name is `Inadmissible` inside a
+component.
 
 **The admissibility result is three-valued** (T-R0e §1.4's status,
 adopted here as canonical; reconciliation C2, adversarial finding 3):
@@ -442,8 +495,12 @@ key with such a slot lowers a row with several tails, and the
 placeholder stops specialization there
 (src/Features/Specialize/Record.purs:38-44, cited), but that every such
 key reaches it is argued, not checked; T-R0e §1.4 proposes the probe
-that would check it. Whether the status is user-visible is pending
-author Q5 (T-R0e Q2).
+that would check it. **§18.69 item 5:** that compatibility probe runs
+**before** the post-Task-8 behaviour is decided; meanwhile current
+behaviour is neither silently narrowed nor declared justified. The
+probe is a dependency inside the implementation plan, not a blocker to
+writing it. Whether the status is user-visible is not ruled on by
+§18.69; the proposed default (not visible) stands (T-R0e Q2).
 
 **Component-safe (CS) terms** (proposed; the syntactic form T3 asks
 for): a `RowTerm` built from `Restrict r S`, `Union`, `Choose`, CS
@@ -471,7 +528,8 @@ every key reached from `E` along intra-C references lies in `U_C(E)`.
 This is the statement ADR 007's 2026-10-15 note argues for record rows
 (cited) and §4.2 lacks; it is the baseline theorem to prove first.
 
-**FK-W (proposed; with names; restated after review).** Let `C` be a
+**FK-W (proposed; with names; restated after review; in the design,
+inactive until its obligations are met, §2.3, §18.69).** Let `C` be a
 component whose every judged slot matches an FK-0 or FK-W row, with
 `Pool` and `U_ty` as in §2.2 (names used transitively; ground leaves
 of type names' CS terms included). If evaluation is **functional**
@@ -639,25 +697,38 @@ emission**. RC4-RC6 read lowering's output, so the check cannot run
 before lowering; it must run before emission so that no copy it fails
 is emitted.
 
+**Placement and cost (§18.69 item 8).** The re-check is **always on**
+initially, in every build, not only a checking build. Each reached
+specialization is checked **once**, as one unit: its copy's
+obligations (RC1-RC3, RC5, RC6), including its computed layouts
+(RC5), together with every outgoing instantiation (RC4 for each
+reference in the copy). All of it runs before emission. A completed
+check is **cached** by key, so a key reached again is not checked
+again. Cost is reconsidered only after it is measured.
+
 ### 3.1 What it checks at a key (proposed)
 
 At each copy of declaration `f` at key `k`, with `θR = κ(k)`, `σ` the
-assignment of the non-auxiliary flexible variables and `α` that of the
-auxiliary ones (§3.2), and `ρ = θR ∪ σ ∪ α`:
+assignment of the bound flexible variables (every one outside
+`Recon`, §1.6) and `α` that of `Recon` (§3.2), and `ρ = θR ∪ σ ∪ α`:
 
 - **RC1, key:** `Sat θR D_f` (K at this key).
 - **RC2, body:** `Sat ρ B_f`, over the **original recorded atoms**
   (R0's complete `B`), never atoms rewritten by the online
-  substitution (requirements §2.4, cited). `σ` covers the variables
-  that have a checked-IR position; `α` is computed from their defining
-  atoms by evaluation (§3.2), never by solving, and RC2 then checks
-  every atom, the defining atoms included.
+  substitution (requirements §2.4, cited). `σ` covers every variable
+  the `Witness` binds, retained auxiliaries included (§18.69 item 6);
+  `α` is computed for `Recon` from defining atoms by evaluation
+  (§3.2), never by solving, and RC2 then checks every atom, the
+  defining atoms included. For a retained auxiliary, its defining
+  atom is checked against its binding like any other atom.
 - **RC3, requirements:** each `BQ_f` atom at `ρ` that the producing
-  strategy validated. Under the proposed default (pending author Q2),
-  that includes ground atoms judged by the stated ground rule; atoms
-  mentioning a variable make the problem Unsupported for every strategy
-  whose `Sound_F` does not cover them, so RC3 meets them only under such
-  a strategy.
+  strategy validated. Under §18.69 item 2 that includes atoms judged
+  by the adopted ground requirement rules, among them atoms that
+  mention a variable but reduce, through entailed equalities, to a
+  judgement those rules decide: a variable's presence alone does not
+  make the problem Unsupported. Other requirement judgements stay
+  Unsupported for every strategy whose `Sound_F` does not cover them,
+  so RC3 meets them only under such a strategy.
 - **RC4, call edge:** for each reference at path `p` in `f`'s copy to
   `g`, at the callee key `k'` that lowering actually created:
   `Sat κ(k') D_g`, **and** `κ(k') = ρ(⟨p, inst i⟩)` slot by slot, that
@@ -673,7 +744,10 @@ auxiliary ones (§3.2), and `ρ = θR ∪ σ ∪ α`:
   `p` (`NodeType p`, `PatternType p`), and `groundType (lower_k ty_c)
   = ρ(v)` for the variable `v` whose position is a `Slot`, `ParamType`,
   `LambdaBody` or `RestType` `c`; `ty_c` is the checked IR's `Ty Open`
-  at `c`.
+  at `c`. The `crash` reference's position is `LambdaBody`: `crashRef`
+  builds a checked lambda whose body has the fresh result type
+  (src/Features/Check/Operation.purs:120; closed by inspection,
+  §18.69 item 12).
 
 RC4's equation and RC6 are the corrections of the adversarial review's
 finding 2: without them, (a) a callee key created with two disjoint
@@ -686,24 +760,25 @@ right while lowering emits `n`'s value elsewhere.
 - **The key** is the copy's work item (`Work.arguments`, State.purs:
   52-58), slot `i` mapped to the variable by the declaration's sorts
   without row sorts, as `instantiated` does (Values.purs:82-94).
-- **`σ`, the named bindings,** come through the `Witness`'s
-  `bindings` (§1.6), never through `vars`: a rigid variable reads
-  `κ(k)`; `Inline τ` is `evalT` at `θR` and the names; `Named n` is
-  `eval_k(n)`; `Free` is the default.
-- **`α`, the auxiliaries** (variables whose position is `Auxiliary`,
-  T-R0b §5.2), by `aux_k`: in the defining order T-R0b §5.3 argues
-  exists, each auxiliary is read from one defining atom whose other
-  side is already evaluated: from `eq τ { l̄: β̄, ...ν }` with `τ`
-  ground, `ν` is `τ` without `l̄` and an auxiliary `β_i` is `τ` at
-  `l_i`; from `eq τ { ...ν }`, `ν` is `τ`; an auxiliary occurring in
-  some `types(p)` is read by matching against `groundType (lower_k
-  ty_p)` with exactly one unknown tail. Each step is a function of
-  ground values, with no search. If `τ` is not a record holding `l̄`,
-  the atom is false and RC2 fails; if no defining atom of that form
-  exists, or a match would leave more than one unknown tail, the
-  auxiliary is an **unsupported path** (§3.3), never solved for
-  (decision 4). Whether adapters should bind auxiliaries instead is
-  pending author Q6 (reconciliation B3).
+- **`σ`, the bindings,** come through the `Witness`'s `bindings`
+  (§1.6), never through `vars`: a rigid variable reads `κ(k)`; `Inline
+  τ` is `evalT` at `θR` and the names; `Named n` is `eval_k(n)`;
+  `Free` is the default. Retained auxiliaries are read the same way.
+- **`α`, the reconstructed variables** (`Recon`, §1.6), by `aux_k`:
+  in the defining order T-R0b §5.3 argues exists, each is read from
+  one defining atom whose other side is already evaluated: from `eq τ
+  { l̄: β̄, ...ν }` with `τ` ground, `ν` is `τ` without `l̄` and a
+  reconstructed `β_i` is `τ` at `l_i`; from `eq τ { ...ν }`, `ν` is
+  `τ`. Each step is a function of ground values, with no search. If
+  `τ` is not a record holding `l̄`, the atom is false and RC2 fails.
+  A variable enters `Recon` only once this reconstruction is
+  established for it (§18.69 item 6), so "no defining atom of that
+  form" cannot arise for a member of `Recon`; a variable without one
+  is retained and bound, never solved for (decision 4). The earlier
+  draft also read an auxiliary by matching against `groundType
+  (lower_k ty_p)` with one unknown tail; that reads lowering's output,
+  which RC6 is meant to check, and nothing establishes it, so it does
+  not qualify a variable for `Recon` (proposed).
 - **The same evaluator lowering uses.** RC reads names through the one
   `eval_k` lowering calls, and reads lowered types back through
   `groundType` (Ground.purs:62-86). With RC4's key equation and RC6 it
@@ -718,14 +793,15 @@ right while lowering emits `n`'s value elsewhere.
 
 An **internal inconsistency** (a strategy, adapter, evaluator, lowering
 or recorder-translation defect), reported as E_INTERNAL at the
-reference or declaration span, or an **unsupported path** (an atom or
-auxiliary the evaluator cannot evaluate at a key, such as an `outside`
-construct, a reserved `Field`, or an auxiliary without a single-tail
-defining atom), reported with an Unsupported reason (T-R0e's
-`UncheckedPath`). Whether the internal case is a separate outcome or a
-reason inside Unresolved is pending author Q1 (T-R0a Q1(a), formerly
-Q-A1; T-R0e §7's `Internal` row);
-every placement keeps it apart from invalidity. Never Contradiction,
+reference or declaration span, or an **unsupported path** (an atom the
+evaluator cannot evaluate at a key, such as an `outside` construct or
+a reserved `Field`), reported with an Unsupported reason (T-R0e's
+`UncheckedPath`). Under §18.69 item 1 the internal case is an internal
+fault, an outcome **separate from Unresolved** (T-R0a Q1(a)'s
+`Faulted`, formerly Q-A1; T-R0e §7's `Internal` row): an invariant
+violation is a fault, while genuine budget exhaustion is a limit,
+which RC never reports. It stays apart from invalidity. Never
+Contradiction,
 never a user diagnostic, never CX evidence: RC tests one flexible
 assignment, CX refutes all of them (§5.4). **A failed re-check is never
 evidence that the program is invalid** (decision 5). Under acceptance
@@ -736,7 +812,9 @@ with Adapt-N, Lay and R, RC never fires (argued; ground-check.md
 
 1. **R:** an obligation the recorder did not record passes (E2 is the
    instance, ground-check.md §5.2). The same holds for a wrong
-   defining atom: `α` is computed from it, so RC2 cannot detect it.
+   defining atom of a `Recon` variable: `α` is computed from it, so
+   RC2 cannot detect it. A retained auxiliary's defining atom is
+   checked against its binding.
 2. **V at unreached keys:** RC checks reached keys, not every `θR ⊨ D`.
    The pass-while-wrong cases (a) and (b) of §3.1 are caught at
    reached keys only.
@@ -751,9 +829,11 @@ with Adapt-N, Lay and R, RC never fires (argued; ground-check.md
    `types` name. A lowered type at a position the recorder does not
    name (a type lowering introduces itself, or a position T-R0b maps to
    `Auxiliary`) is checked only through the atoms that mention it.
-7. **Auxiliaries without a single-tail defining atom:** reported as
-   unsupported paths, so a declaration that needs one is not checked
-   at that key (and is not compiled, §3.3).
+7. **Retained auxiliaries have no RC6 comparison:** an auxiliary
+   outside `Recon` is bound (§1.6) but has no checked-IR position, so
+   RC checks its binding only through the atoms that mention it. (The
+   earlier draft reported auxiliaries without a single-tail defining
+   atom as unsupported paths; under §18.69 item 6 they are bound.)
 8. **Uniformity:** a witness that works at every reached key may not be
    uniform (ground-check.md §5.4).
 9. **Erased effect rows** and constructs outside the fragment.
@@ -795,7 +875,7 @@ lowering. Must prove: each strategy's owner.
 `A_F c = Witnessed w`, then for every finite `θR` with `Sat θR D`, the
 assignment `σ` given by `w.bindings` (names by `eval`, inlined
 expressions by `evalT`, holes by default), extended by `α = aux(θR,
-σ)` (§3.2), is defined and satisfies `Sat (θR ∪ σ ∪ α) B` and every
+σ)` on `Recon` (§3.2), is defined and satisfies `Sat (θR ∪ σ ∪ α) B` and every
 `BQ` atom `F` validated. Requirements §4.3's form ("the witness
 evaluated at a ground instance of pattern π equals the format's
 instantiation transferred to it") is a sufficient route: equality to
@@ -806,14 +886,22 @@ Must prove: each format's owner.
 
 **Cov, coverage and scope of names** (preconditions of Adapt-N;
 syntactic, checkable at the adapter's output; reconciliation B3,
-adversarial finding 6). Every flexible variable whose `vars` position
-is not `Auxiliary` has exactly one `Binding` in `bindings`;
-auxiliaries have none and are determined by their defining atoms
-(T-R0b §5.3, checked by RT7), evaluated by §3.2's `aux_k`;
-every `Named n` occurring in the checked IR or in `bindings` has an
-entry in `names`; terms satisfy Sc1-Sc3 (§1.3); `Free` variables
-satisfy the hole contract (§1.5). Must prove: none (a validator); its
-specification is here, its implementation later.
+adversarial finding 6; revised for §18.69 item 6 and D1). **Domain:**
+every variable in `Req`, the dependencies `build`'s tracked requests
+record (D1; until that mechanism is specified, the variables whose
+`vars` position is not `Auxiliary`), and every other flexible
+variable not in `Recon` (§1.6), has exactly one `Binding` in
+`bindings`; members of `Recon` have none and are reconstructed from
+their defining atoms (T-R0b §5.3, checked on fixtures by RT7) by
+§3.2's `aux_k`. Auxiliary position alone never exempts a variable.
+Further, every `Named n` occurring in the checked IR or in `bindings`
+has an entry in `names`; terms satisfy Sc1-Sc3 (§1.3); `Free`
+variables satisfy the hole contract (§1.5). Must prove: none for Cov
+itself (a validator; its specification is here, its implementation
+later). Its premises are not the validator's: that the tracked
+requests record every read `build` makes is D1's mechanism, to be
+specified before implementation, and membership of `Recon` needs its
+reconstruction established (§1.6).
 
 **Lay, layouts.** For every key `k` of `d` and every type expression
 `τ` over `d`'s rigid variables, names and holes, `groundType (lower_k
@@ -828,8 +916,10 @@ the lowering stream (Task 8's owner).
 in P's `SplitJudgement` (§1.7): for every finite `θR ⊨ D` and all
 `σ1`, `σ2` with `Sat (θR ∪ σi) (B ∪ BQ)`, `σ1` and `σ2` agree on `v`.
 `Written` is the same claim with the annotation's atom included in
-`B`. Must prove: the forcedness decider's owner (unassigned;
-requirements §11 item 5; pending author Q7).
+`B`. Must prove: the forcedness policy component's owner (§18.69
+item 7: a separate component reading the immutable complete problem
+and the split site, §1.7; requirements §11 item 5). A candidate
+solution may help find evidence but never defines forcedness.
 
 **R, recorder.** R1: the recorded problem is the syntax-directed
 translation of the body (T-R0b's rules), so that `Sat (θR ∪ σ) (B ∪
@@ -846,8 +936,8 @@ How they compose (argued): K + Lay + Adapt-N + R imply each emitted
 copy is a ground instance of a well-typed body; T makes the set of
 copies finite; U and the selection contract (G3) are what decision 3
 admission reads; RC re-establishes, **at reached keys only**, K (RC1,
-RC4), Adapt-N's conclusion for the named variables and the
-auxiliaries' defining atoms (RC2), Lay's type-level part at the
+RC4), Adapt-N's conclusion for the bound variables and `Recon`'s
+defining atoms (RC2), Lay's type-level part at the
 positions the recorder names and at callee keys (RC6, RC4), and layout
 definedness (RC5). That narrows the adapter's trust obligation without
 discharging R, U, T, Lay at unnamed positions or behavior preservation
@@ -865,13 +955,15 @@ Each item is the canonical definition; the other streams cite it.
   { witness ∷ Witness, splits ∷ SplitJudgement, status ∷
   AdmittedStatus }` (T-R0a §6); T-R0a's `NameWitness` is this file's
   `Witness`
-  (reconciliation B1, B2). Placement beside the verdict instead:
-  pending author Q1.
+  (reconciliation B1, B2). Placement inside `Solution` is decided
+  (§18.69 item 1).
 - Invariant: `Witnessed` occurs only inside a Solved verdict (by
   construction under the placement above).
 - **`Lowerable`** = Solved ∧ `Witnessed w` ∧ Cov(w) ∧ `AdmStatus =
   Admissible` for every component on the path (§2.3; before Task 8,
-  `AdmittedPendingR019` also compiles as today, §2.3) ∧ decision 3's
+  `AdmittedPendingR019` also compiles as today; after it, as decided
+  once the compatibility probe has run, §2.3, §18.69 item 5) ∧
+  decision 3's
   admission on every `split` site, read from P's `SplitJudgement`
   (§1.7). Lowering runs only on `Lowerable` declarations and their
   callees; any missing conjunct is an Unsupported or admissibility
@@ -886,10 +978,13 @@ Each item is the canonical definition; the other streams cite it.
   (`CheckedName`; the field `named` is renamed `position`,
   reconciliation B5). It holds no binding and no checker meta: T-R0b's
   generator is pure.
-- After the verdict and adapter, each non-auxiliary **flexible**
-  problem variable has exactly one `Binding` in the `Witness`'s
-  `bindings` (§1.6); `NameEntry.origin` is the inverse for `Named`
-  (injective). Auxiliaries are covered by §3.2's evaluation.
+- After the verdict and adapter, each **flexible** problem variable
+  outside `Recon` has exactly one `Binding` in the `Witness`'s
+  `bindings` (§1.6; §18.69 item 6), auxiliaries included unless their
+  deterministic reconstruction is established; `NameEntry.origin` is
+  the inverse for `Named` (injective). `Recon` is covered by §3.2's
+  reconstruction. Under D1 the bound set includes `Req`, which the
+  tracked requests record rather than a position list (§1.6).
 - Problem variables are T-R0b's canonical names `⟨p, role⟩` and are
   never renamed after recording; atoms refer to problem variables,
   never to solved metas. Identity is the path, never the span (T-R0b
@@ -918,12 +1013,17 @@ Each item is the canonical definition; the other streams cite it.
   `NoWitnessReason`, not a separate `Construct`. Several tails before
   Task 8 (§2.7 U-c; T-R0e's `SeveralTailLowering`); composed tails
   without FK-U after Task 8, only if the author's compatibility
-  decision chooses refusal (§2.3; T-R0e's `ComposedTailsUnjustified`);
+  decision, taken after the probe (§18.69 item 5), chooses refusal
+  (§2.3; T-R0e's `ComposedTailsUnjustified`);
   and RC's unsupported path (§3.3; T-R0e's `UncheckedPath`).
 - **Policy:** decision 3 is judged per `split` site by P (T-R0e §2);
   P's `SplitJudgement` records the result per variable (§1.7); a
-  `Forced` basis without U's evidence is not forced.
-- **The re-check** is defined in §3; T-R0e §4 keeps its position
+  `Forced` basis without U's evidence is not forced. Forcedness is
+  owned by a separate policy component that reads the immutable
+  complete problem and the split site (§18.69 item 7; §1.7), and
+  `SplitUnforced` meets §18.69 item 1's evidence standard.
+- **The re-check** is defined in §3, always on, once per reached
+  specialization and cached (§18.69 item 8); T-R0e §4 keeps its position
   (after lowering computes layouts and callee keys, before Go
   emission) and its outcomes (reconciliation C6, I1).
 
@@ -947,46 +1047,60 @@ Each item is the canonical definition; the other streams cite it.
 | one term per name for every key; no per-key table | pattern dependence is expressed by `Choose` and set terms | `divide5` under the selection format: ≥ 2^m leaves (requirements §6.2) become ≥ 2^m `Choose` leaves; size, not soundness |
 | the reuse rule: names only for terms outside `Ty Open` | inlined witnesses keep today's R010 and lowering | an adapter emitting `Restrict r (Dom r)` for the identity: FK-0 refuses it in a component though it equals `{ ...r }`; a sound canonicalization to `{ ...r }` is proposed |
 | inside components, CS terms only (no constructor over a rigid variable, name or reference) | mirrors R010's record-slot rule; outside components any term is safe | §2.5 example 1 (with `Field`): refused in a component, accepted outside; example 2's value is inlined and R010 refuses it |
-| auxiliaries carry no binding; the re-check evaluates them from single-tail defining atoms | T-R0b §5.3: each auxiliary is a function of named and rigid variables | an auxiliary whose only defining atom has two unknown tails: an unsupported path, not solved (§3.2) |
+| an auxiliary carries no binding only if its deterministic reconstruction is established (`Recon`); otherwise it is bound (§18.69 item 6) | T-R0b §5.3: each auxiliary is a function of bound and rigid variables, argued; omission waits until that is established | an auxiliary whose only defining atom has two unknown tails: retained and bound, not solved (§3.2) |
 | `Field r l` reserved, not implemented | decision 8 defers G2 without prohibiting it | G2 (requirements §6.3): Solved if some strategy proves it, then `NoWitness (AdapterUnsupported FieldReference)` |
 | holes only under the hole contract | the default satisfies whenever any value does (ADR 007; §1.5) | `route`'s `u` defaulted to `{}` today (ground-check.md §3): must be named or refused |
 | no witness, no lowering; no per-key solving | decision 4 | a non-constructive proof of `divide5`: Solved, not compiled |
-| record slots in components: single tail (FK-0) | decision 2's baseline | `walk`'s `{ ...u, ...v }` recursion, accepted by today's code (R019): `AdmittedPendingR019`, compiled as today before Task 8; after it, the author's compatibility decision (refuse, keep compiling via the current path, or prove FK-U first; §2.3) |
+| record slots in components: single tail (FK-0) | decision 2's baseline | `walk`'s `{ ...u, ...v }` recursion, accepted by today's code (R019): `AdmittedPendingR019`, compiled as today before Task 8; after it, the author's compatibility decision, taken only after the compatibility probe (refuse, keep compiling via the current path, or prove FK-U first; §2.3; §18.69 item 5) |
 | names never occur in declared types | declared types are over `VarId` (Internal.purs:142); §4.2's type half is unchanged | `Box({ ...n })` in a body: a type key per function key, finitely many per key |
 
 ## 7. Open points for the author
 
-Each is mapped to the reconciliation review's questions; the default
-proposed here stands until the author rules.
+Each is mapped to the reconciliation review's questions. Items the
+author decided in §18.69 are marked so; the rest keep the default
+proposed here until the author rules.
 
 1. **T1-a:** accept that the marker alone is insufficient and R010's
    generic predicates (`admissible`, `bareRow`) need an explicit
-   classifier (§1.1)? (Q5.)
+   classifier (§1.1)? (Q5; not ruled on by §18.69, default yes. It is
+   one of FK-W's activation obligations, §2.3.)
 2. **Reuse rule:** names only for non-`Ty` terms (§1.3), or every
-   divided part a name (uniform, but FK-0 then refuses more)? (Q6.)
-3. **FK-W in the first design**, or FK-0 only (names refused inside
-   components) until FK-0 is proved? (Q5.)
-4. **Hole contract:** the proposed syntactic check (§1.5), or a
-   stricter one (no atom may mention a hole)? (Q6.)
-5. **`ChooseT`:** keep type-sorted guards, or require pattern-dependent
-   types to be rows' field types only? (Q6.)
-6. **RC placement and cost:** per copy (RC1-RC3, RC5, RC6), per edge
-   (RC4), or both; always on, or in a checking build? (Q8.)
-7. **FK-U:** adopt the pool argument for pure unions of rigid tails,
-   which would justify today's `bareRow` on that class (§2.7 U-d)?
-   Should `AdmittedPendingR019` be user-visible? (Q5.) Separately, an
-   explicit compatibility decision (§18.66 decision 2): after Task 8,
-   refuse it for compilation, keep compiling it via the current path,
-   or prove FK-U first (§2.3; T-R0e §1.4)? Refusal is a behaviour
-   change; the claim that these cases already stop at the placeholder
-   is unverified, and T-R0e §1.4's probe should run first.
-8. **`Compilation` placement:** inside `Solution` (default) or beside
-   the verdict (§1.6)? Where do internal re-check failures sit (§3.3)?
-   (Q1.)
-9. **Auxiliaries:** evaluated by the re-check from defining atoms
-   (default, §3.2), or bound by adapters (Cov extended)? (Q6.)
-10. **Forcedness:** who decides it, and does the decider read the
-    problem or the `Solution` (§1.7)? (Q7.)
+   divided part a name (uniform, but FK-0 then refuses more)? (Q6;
+   not ruled on by §18.69, default: names only for non-`Ty` terms.)
+3. **FK-W in the design:** decided (§18.69 item 5). FK-W is in the
+   design, its rows inactive until FK-W, P1, P2 and T1-a are met
+   (§2.3).
+4. **Hole contract:** decided (§18.69 item 6). The conservative
+   syntactic check (§1.5) is kept as the proposed mechanism.
+5. **`ChooseT`:** decided (§18.69 item 6). Kept as a proposed
+   mechanism (§1.3).
+6. **RC placement and cost:** decided (§18.69 item 8). Always on,
+   each reached specialization once with its outgoing instantiations
+   and computed layouts, before emission, cached; cost reconsidered
+   after measurement (§3).
+7. **FK-U and the compatibility decision:** FK-U stays inactive
+   (§18.69 item 5). The post-Task-8 behaviour of `AdmittedPendingR019`
+   components (refuse, keep compiling via the current path, or prove
+   FK-U first; §2.3, T-R0e §1.4) is decided only after T-R0e §1.4's
+   compatibility probe runs; meanwhile current behaviour is neither
+   narrowed nor declared justified. Still open: that decision itself,
+   and whether `AdmittedPendingR019` is user-visible (default no; not
+   ruled on by §18.69).
+8. **`Compilation` placement and internal failures:** decided
+   (§18.69 item 1). Inside `Solution` (§1.6); an internal re-check
+   failure is a fault, separate from Unresolved (§3.3).
+9. **Auxiliaries:** decided (§18.69 item 6). Bound unless their
+   deterministic reconstruction is established (`Recon`, §1.6). Open:
+   who establishes reconstruction, and how; until then `Recon` is
+   empty.
+10. **Forcedness:** decided (§18.69 item 7). A separate policy
+    component, reading the immutable complete problem and the split
+    site, owns it and `ForcednessEvidence` (§1.7). Open: that
+    component's owner and its evidence type.
+11. **D1's tracked requests** (§18.69 D1): the mechanism that makes
+    `Req`, Cov's domain, is to be specified before implementation
+    (§1.6, §4). It changes T-R0a's and T-R0b's interfaces (inference
+    extension §11), whose editors carry it; this file consumes `Req`.
 
 ## Revision log (reviews of 88c052d)
 
@@ -1044,14 +1158,24 @@ reconciliation of the §18.66 design tranche, both read-only.
 
 - Q1: `Compilation` inside `Solution` (default) or beside the verdict;
   the outcome for internal re-check failures and for NoWitness.
+  (§18.69: inside `Solution`; internal faults separate from
+  Unresolved. NoWitness's code not ruled on.)
 - Q2: which `BQ` atoms make RC3 inapplicable (RC3 unchanged).
+  (§18.69: ground rules, with reduction through entailed equalities.)
 - Q5: FK-W and FK-U activation; `AdmittedPendingR019` visibility;
   refusal after Task 8 unless FK-U is proved; T1-a. (Superseded:
   compatibility decision, no default; External review 2026-10-22.)
+  (§18.69: FK-W in the design, inactive until its obligations are
+  met; FK-U inactive; the probe runs before the post-Task-8 decision.
+  Visibility and T1-a not ruled on.)
 - Q6: auxiliaries evaluated (default) or bound by adapters; hole
-  contract strictness; reuse rule; `ChooseT`.
-- Q7: the forcedness decider and its input (§1.7, U).
-- Q8: RC placement and cost.
+  contract strictness; reuse rule; `ChooseT`. (§18.69: auxiliaries
+  bound unless reconstruction is established; conservative hole check
+  and `ChooseT` kept. Reuse rule not ruled on.)
+- Q7: the forcedness decider and its input (§1.7, U). (§18.69: a
+  separate policy component reading the problem and the split site.)
+- Q8: RC placement and cost. (§18.69: always on, once per reached
+  specialization, cached.)
 
 **Disagreements and refinements.**
 
@@ -1145,3 +1269,56 @@ A read-only review of the correction pass (finding 1) noted that the
 historical "Pending (proposed default, not decided)" list still gave
 Q5 a refusal default. That entry now carries a supersession note
 pointing to the External review entry above; nothing else changed.
+
+### Author's decisions (§18.69)
+
+The author's decisions on Q1-Q13 and D1-D6 (dossier §18.69), applied
+where they bear on this file. Every decided mechanism stays proposed;
+nothing is proved or implemented.
+
+- Q1 (item 1): §1.6 places `Compilation` inside `Solution`, the
+  alternative dropped; §3.3 makes an internal re-check failure a fault
+  separate from Unresolved, a genuine budget exhaustion a limit; §1.7
+  and §5.3 cite the `SplitUnforced` evidence standard (two checked
+  alternatives at the same permitted rigid assignment differing
+  semantically on the split, or equivalent checked evidence;
+  syntactic difference alone insufficient). Q1(c)'s codes are not
+  ruled on.
+- Q2 (item 2): RC3 (§3.1) reads the adopted ground requirement rules
+  with reduction through entailed equalities; a variable's presence
+  alone no longer makes an atom Unsupported.
+- Q5 (item 5): §2.3 puts FK-W in the design, inactive until FK-W, P1,
+  P2 and T1-a are met; FK-U stays inactive; the compatibility probe
+  runs before the post-Task-8 behaviour is decided, which neither
+  narrows current behaviour nor declares it justified. §5.1, §5.3, §6
+  and §7 follow. `AdmittedPendingR019` visibility and T1-a keep their
+  proposed defaults.
+- Q6 (item 6): `ChooseT` (§1.3) and the conservative hole check
+  (§1.5) kept as proposed mechanisms. Auxiliaries are no longer
+  "evaluated, never bound": `Recon` (§1.6) holds only the variables
+  whose deterministic reconstruction is established, and every other
+  flexible variable, auxiliaries included, is bound. Cov (§4), RC2
+  (§3.1), §3.2's `α`, Adapt-N, §3.4 items 1 and 7, §5.2 and §6's row
+  are restated; the earlier draft's reading of an auxiliary from a
+  lowered type no longer qualifies it. `Recon` is empty until someone
+  establishes reconstruction (open).
+- Q7 (item 7): §1.7 gives forcedness and `ForcednessEvidence` to a
+  separate policy component reading the immutable complete problem
+  and the split site; a candidate solution may help find evidence but
+  never defines forcedness. U (§4) and §5.3 follow.
+- Q8 (item 8): §3 adds placement and cost: always on, each reached
+  specialization once with its outgoing instantiations (RC4) and
+  computed layouts (RC5), before emission, cached by key; cost
+  reconsidered after measurement. §7 item 6 closed.
+- Q12 (item 12): RC6 (§3.1) records that `crash`'s position is
+  `LambdaBody`, closed by inspection (Operation.purs:120).
+- D1: Cov's domain (§1.6, §4) includes `Req`, the dependencies the
+  tracked applicative requests record; the mechanism is to be
+  specified before implementation, and until then `Req` reads as the
+  non-`Auxiliary` positions. §1.4 adds EL5's compatibility condition
+  (O32), now applicable because D1 adopts the continuation; D6 keeps
+  `Field` internal. EL3 (O29, §1.5) stays unapplied: it also depends
+  on IF6.
+- Not bearing on this file: Q3, Q4, Q9-Q11, Q13, D2-D5. D3's
+  restricted C8 statements wait for this file's witness and
+  termination interfaces to stabilize.
