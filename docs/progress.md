@@ -8200,3 +8200,15 @@ unrelated README/backlog/direction-plan edits remain untouched.
   contract; G1 and G2 held; distinct Unresolved code. Design tranche
   authorized and launched: T-R0a/b, T-R0c, termination and witness
   statements (one owner), CX statements, T-R0e. Documents only.
+- **R0 design tranche reviewed and revised** (dossier §18.67): six
+  documents through reconciliation, adversarial and consistency
+  reviews, a type harmonization and two verifier rounds; one owner per
+  topic; statements only, nothing new proved. Twelve author questions
+  with proposed defaults; the implementation plan waits for answers.
+- **Inference foundations assessed and extended** (docs/plans/
+  2026-10-22-inference-foundations-assessment.md and -extension.md):
+  HM(X) re-checked on rendered pages against the 1999 journal version;
+  typed elaboration, coherence, specialization termination, guards and
+  certified checking, and assurance sources read by bounded readers;
+  one obligations index (63 rows); status and citation audits applied.
+  Six author decisions (companion §10). Documents only.
