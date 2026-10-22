@@ -177,13 +177,16 @@ focused Lean statements for distinctive generalization/cleanup interactions
 where practical. This schedules an evidence decision, not proof work.
 The existing record proofs do not discharge these obligations.
 
-Inference foundations: the [assessment][foundations] maps published
-inference conditions (HM(X), EMLTI, Jones 1995, OutsideIn(X), Koka) to
-this milestone; O10-O14, O16 and O18 are its open rows, IF7 and IF8 its
-candidate statements (proposals, not authorized proof work).
+Inference foundations: the [assessment][foundations] (§11, rows
+O1-O60) and its [companion][extension] map published inference,
+elaboration and coherence results to this milestone. IF4 (instance
+order), IF6 (determinacy) and IF7 (failure-family safety; cleanup
+abort-freedom) are candidate statements, proposals only; the author
+decisions are in the companion's §10.
 
 [assurance]: 2026-10-21-type-system-assurance-register.md
 [foundations]: 2026-10-22-inference-foundations-assessment.md
+[extension]: 2026-10-22-inference-foundations-extension.md
 
 Before an implementation plan, write and review a language design covering
 the decisions above, including syntax, solving/termination, diagnostics,

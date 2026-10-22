@@ -88,9 +88,12 @@ These are foundations or leads, not proofs of Waxwing's adaptations:
   collection invariants and class laws.
 - [Inference requirements][inference]: service and failure composition.
 - [Inference foundations](2026-10-22-inference-foundations-assessment.md)
-  §11 checks published inference rules against Waxwing: of 23
-  obligations, 2 proved, 2 argued, 1 experimentally checked, 7 proposed,
-  11 unresolved; soundness, completeness and principality kept separate.
+  §11 is the obligations index for inference, elaboration, coherence,
+  specialization termination and lowering (63 rows: 2 proved, 20
+  argued, 1 experimentally checked, 16 proposed, 24 unresolved); its
+  [companion](2026-10-22-inference-foundations-extension.md) holds the
+  source readings. Soundness, completeness and principality stay
+  separate.
 - [Record-composition dossier][records]: model, proofs and open bridges.
 - [ADR 014](../adr/014-composition-not-invention.md): departures require
   stated justification and explicit approval.
