@@ -136,3 +136,29 @@ EOF
   source traceability and BACKLOG INF001/AS001 (re-check each file is
   unchanged first), and record a progress line.
 - Nothing since 67ba706 is pushed.
+
+## 4. Handoff at reset (2026-10-21, final)
+
+The author asked for no new agents before the reset. Two were running:
+
+1. **Cross-document consistency re-check** of the six R0 documents
+   (read-only). If its result is lost, rerun it (scope in §3).
+2. **Assessment editor** applying the accuracy review (20 findings,
+   saved at scratchpad/papers/assessment-review.md; statuses O20, O16,
+   O5, O7 change; O9, O6 narrowed; EMLTI concatenation citation
+   corrected; §9 split count six, not three; §11 counts recomputed) in
+   its own worktree branch `worktree-agent-af3adaa672f328288` from
+   e2f0102. If it committed, cherry-pick its commit onto `main`; if
+   not, rerun with the same scope.
+
+Then, in order: (a) add the one-line cross-references (the assessment
+writer's proposals, with AS001 counts updated) to the INF001 milestone,
+the assurance register, source traceability and BACKLOG INF001/AS001,
+re-checking each file is unchanged first; (b) apply the re-check's
+residual edits; (c) record dossier §18.67 (revised R0 design and the
+consolidated author questions Q1-Q10, plus CX's `ValidR` question and
+the `crash`-reference confirmation) and a progress line; (d) bring the
+questions to the author. Nothing since 67ba706 is pushed; push only
+when the author asks. Leftover worktrees under .claude/worktrees from
+this tranche are idle once their commits are on `main`; remove them
+only when the author asks, keeping branches.
