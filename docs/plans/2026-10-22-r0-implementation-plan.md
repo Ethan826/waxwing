@@ -54,6 +54,8 @@ Line citations below are at 181fa54; `src/` there equals 67ba706,
 which the R0 documents cite. The plan follows the R0 documents as
 revised at 76cd373 (the recheck fixes): `Decision.searchFaults`,
 `EmissionFault`, the split `ForcednessPolicy` and T-R0e's `Fault`.
+Revised after the review of 99da55b; §10 lists each finding and what
+was done with it.
 
 ## Global Constraints
 
@@ -79,7 +81,22 @@ revised at 76cd373 (the recheck fixes): `Decision.searchFaults`,
   classifier is tested with every constructor injected directly.
 - A regression test is shown failing with its defect restored, in an
   isolated copy: a row in scripts/regression-r0.mjs (registered in
-  scripts/regression.mjs), with its probe in test/regression-r0.mjs.
+  scripts/regression.mjs), with its probe in test/regression-r0.mjs
+  (registered in test/regression-probes.mjs). A probe loads the
+  modules under test from the clone's output through
+  `context.compilerPath` (as test/regression-fx008.mjs does), never
+  from the working tree's output; this matters most for shadow-phase
+  probes, which import modules `compile` does not reach.
+- Docs upkeep in the same change (AGENTS.md): every task updates
+  docs/progress.md in its own commit, and docs/findings.md when it
+  records evidence. A task that adds or changes a structure rule
+  (1.1, 3.1) updates docs/engineering.md and the Internal-boundary
+  bullet of AGENTS.md. A task that changes what users see updates
+  docs/language.md in the same commit (4.6, 6.2's gated step, 6.3's
+  step 5, 6.5).
+- `*.serial.test.mjs` is reserved for suites that time heavy work
+  against fixed bounds (scripts/verify.mjs:31-34). A test gets the
+  suffix only when it does such timing or corpus-wide work.
 - Unresolved texts never say the program is wrong and never assert a
   number of solutions; Unresolved fixtures cover zero, one and
   several solutions (docs/engineering.md:562-565).
@@ -98,24 +115,49 @@ These five input classes are implied by the spec and the most likely
 to hurt a user, but no single AT/RT test exercises them. Each line
 names the test that pins it and the task that owns it.
 
-1. **Ordinary programs that use handlers, `fail`, effect arguments or
-   `Option(a)`-like data.** Under the conservative boundary (§18.69
-   Q3) every such declaration carries an `outside` marker and cannot
-   be Solved (T-R0b §11 item 4). Expected: no program compiled today
-   stops compiling without the author choosing it. Pinned by the
-   census in Task 3.5 and the window table in Task 4.6.
+1. **Ordinary programs that compile today but cannot be Solved under
+   R0 as decided.** Each class below stops a declaration from being
+   Solved at the switch, and since today's whole-program result is
+   kept, one such declaration stops its whole program from compiling.
+   - `outside` markers of every kind (§18.69 Q3; T-R0b §3.5):
+     `EffectArgument`, `FailFamily`, `HandlerType` (handlers, `fail`,
+     effect arguments), `DataApplication` and `DataOverRecords`
+     (`Option(a)`-like data, Sig8 signatures), `Deferred` (every
+     `defer`), `LocalGeneralization` (none produced today).
+   - Erased effect rows: effect/record independence is not assumed
+     (§18.69 Q3; T-R0b §11 item 6), so no Solved may rest on a row
+     erased without a marker. Gate G-erased.
+   - Requirement atoms at type variables: `fn p(item: a): Text =
+     show(item)` compiles today, checked per key (docs/language.md:
+     863-867, E017). Under §18.69 Q2 and T-R0a AT19, `pr a` at a
+     rigid `a` with empty `Q` (Sig9) is `Unsupported
+     RequirementAtoms`; so is a generic print, show or crash of an
+     open record. These stay Unsupported until contracts carry `Q`,
+     which is outside this plan; G-ValidR does not cover them.
+   - Requirement atoms at declared types holding functions and at
+     fresh bases (pending G-ValidR; Task 4.2).
+   - G0 refusals of the online solver's read-back (RT8; Task 4.3)
+     and ambiguous several-tail read-backs (T-R0b §5.3; Task 4.3).
+   Expected: no program compiled today stops compiling without the
+   author choosing it at G-switch. Pinned by the census in Task 3.5
+   (one category per class, with program counts) and the window
+   table in Task 4.5.
 2. **A file with several broken declarations.** Today the first
    `Left` hides the rest (Check.purs:22). Expected: every
-   declaration reported once, in declaration order, with the first
-   diagnostic unchanged. Pinned in Task 1.2
-   (`reports each broken declaration once, in order`).
+   declaration reported once, in the order Task 1.2 defines, with
+   the first diagnostic unchanged. Pinned in Task 1.2
+   (`reports each broken declaration once, in order` and the
+   first-diagnostic snapshot).
 3. **A recursive component with one Unresolved member.** Expected:
    the others stay Solved, and the text names the blocking member.
    Pinned in Task 6.1 (`ComponentBlocked names the member`).
 4. **`main` returning a declared type whose constructors may hold a
    function**, judged by the printability atom Sig10 always records.
-   Expected: today's verdict (Check.purs:56-67) kept. Pinned in Task
-   4.2 (`main's printability atom agrees with printableEntry`).
+   Expected: today's verdict (Check.purs:56-67) kept wherever the
+   ground rule is fixed; before G-ValidR, the function-holding
+   declared types are refused visibly instead. Pinned in Task 4.2
+   (`main's printability atom agrees with printableEntry`, restricted
+   to the fixtures whose atom G-ValidR does not wait on).
 5. **Large programs**: generation, `decide` and the always-on
    re-check add work on every declaration and every key. Expected:
    the existing timing suites (`*.serial.test.mjs`) still pass within
@@ -134,7 +176,8 @@ avoided.
 |---|---|
 | src/Domain/Verdict.purs | `DeclOutcome`, `Decision`, `Verdict`, `UnresolvedReason`, `Unsupport`, `LimitAt`, `InternalFault`, `EmissionFault`, `SearchFault`, `Attempt`, `Admission`, `CompileRefusal` and their parts (T-R0a §3, §6). Split by family if over 250 lines: Verdict/Reason.purs, Verdict/Admission.purs |
 | src/Domain/Verdict/Internal.purs | hidden constructors: `Valid`, `Refuted`, `NonForced`, `ForcednessEvidence`; minted only by trusted checkers |
-| src/Domain/Recorded.purs, Recorded/Atom.purs, Recorded/Origin.purs | `RecordedProblem`, `Entry`, `Atom`, `ReqAtom`, `OutsideKind`, `CallSite`, `Origin`, `AtomId`, `Var`, `VarInfo`, `RTExpr` (T-R0b §2.1, §5.2, §6, §10) |
+| src/Domain/Recorded.purs, Recorded/Internal.purs | `RecordedProblem` as an opaque type (Task 1.1); its constructor in Recorded/Internal.purs, importable only by Features.Check.Generate* |
+| src/Domain/Recorded/Atom.purs, Recorded/Origin.purs | `Entry`, `Atom`, `ReqAtom`, `OutsideKind`, `CallSite`, `Origin`, `AtomId`, `Var`, `VarInfo`, `RTExpr`; the fields of `RecordedProblem` (T-R0b §2.1, §5.2, §6, §10; Task 3.1) |
 | src/Features/Check/Generate.purs | `generate`, `staticRules` (As1) |
 | src/Features/Check/Generate/{Signature,Expr,Record,Pattern,Builtin,Fresh}.purs | T-R0b Sig1-Sig10; E1-E16; E24-E28; P1-P7; E17-E23 and markers; fresh variables and `vars` |
 | src/Features/Check/Generate/Static.purs | class a and b′ static rules beside generation |
@@ -142,7 +185,7 @@ avoided.
 | src/Features/Check/Strategy.purs | `StrategySpec`, `Strategy`, `strategy`, `Budget` use |
 | src/Features/Check/Strategy/{Online,ReadBack,Substitution,Witness}.purs | `onlineSearch`; read-back through `vars`/`types`; `checkSubstitution` (G0); `substitutionWitness`, Cov, hole contract |
 | src/Features/Check/Refute/{Project,Rules,Counter}.purs | `toSig`; `SoundRule` registry and `checkDerivation`; CX search and check |
-| src/Features/Check/Admit.purs, Admit/Forcedness.purs | `admit`, `AdmissionRules`; `ForcednessPolicy` (`search`, `check`), `CheckedForcedness`, `Forcedness`, `judgeSplit` |
+| src/Features/Check/Admit.purs, Admit/Forcedness.purs, Admit/Forcedness/Check.purs | `admit`, `AdmissionRules`; `ForcednessPolicy`, the untrusted `search`, `Forcedness`, `judgeSplit`; the trusted `check`, the only minter of `CheckedForcedness` |
 | src/Features/Check/Outcomes.purs | `checkProgram`, `DeclReport`, `Report` (T-R0a §7) |
 | src/Features/Specialize/ReCheck.purs, ReCheck/Eval.purs | RC1-RC6 per key, cache; ground evaluation of recorded atoms |
 | src/Format/Diagnostic/Verdict.purs | rendering of outcomes, reasons, hints and refusals by `layerOf` |
@@ -155,24 +198,28 @@ avoided.
 Modified: src/Features/Check.purs (driver), Check/Function.purs
 (becomes the body of `onlineSearch`), Check/EndReport.purs and
 Check/Require.purs:108, Check/Record.purs:166 (classification),
-Domain/Syntax/Core.purs:207 (`ErrorCode`), Format/Diagnostic/Code.purs,
+Domain/Syntax/Core.purs:207 (`ErrorCode`), Domain/Problem.purs (a
+check-time placeholder constructor, Task 2.2), Format/Diagnostic/Code.purs,
 Features/Specialize.purs (admission gate, re-check hook),
 Specialize/Record.purs:38-44 (placeholder as a support refusal),
 Resolve/Record.purs:73-80, Resolve/Lacking.purs:126-167,
 Resolve/Apart.purs:141-158 (Task 6.5 only), scripts/structure.mjs
-(the new Internal boundary), scripts/regression.mjs, test/support.mjs.
+(the new Internal boundaries), scripts/regression.mjs,
+test/regression-probes.mjs, test/support.mjs; docs/progress.md in
+every task, and docs/engineering.md, AGENTS.md, docs/language.md and
+a new ADR where the Global Constraints say.
 
 ## 2. Phases and authorization
 
 | Phase | T-R0a/T-R0e step | Tasks | Authorization once the plan is approved |
 |---|---|---|---|
-| 0 Evidence and specifications | before step 1 | 0.1-0.6 | none further; 0.3, 0.4, 0.6 end at review gates |
+| 0 Evidence and specifications | before step 1 | 0.1-0.7 | none further; 0.3, 0.4, 0.6, 0.7 end at review gates |
 | 1 Types and the collecting driver | step 1 | 1.1-1.3 | none further |
 | 2 Classify today's refusals | step 2 | 2.1-2.3 | none further, except 2.3's rows gated on G-effects and G-coverage |
 | 3 The generator beside the solver | step 3 | 3.1-3.6 | none further (test-only) |
-| 4 Generate, then search | step 4 | 4.1-4.5; 4.6 | 4.1-4.5 none (shadow only); **4.6 gated** on G-switch |
+| 4 Generate, then search | step 4 | 4.1-4.5; 4.6 | 4.1-4.5 none (shadow only); **4.6 gated** on G-switch and on G-erased (or an explicit amendment of §18.69 Q3) |
 | 5 Rules and refuters | step 5 | 5.1-5.2; 5.3 | 5.1-5.2 none (shadow only); **5.3 gated** on proofs P-C1 and P-CX |
-| 6 Admission, policy, re-check, support | step 6, 6a-6c, 6f | 6.1-6.5 | 6.1, 6.2 (with G-codes for texts), 6.4 none; **6.3 gated** on G-forced and G-6b; **6.5 gated** on G-switch |
+| 6 Admission, policy, re-check, support | step 6, 6a-6c, 6f | 6.1-6.5 | **all gated on G-switch**: each presupposes the R0 path is live (Task 4.6 landed), and no shadow form is specified. In addition, 6.2's `AtS (NoCompilation …)` rows and new texts wait on G-codes, **6.3** on G-forced and G-6b, and 6.4's RC3 on G-ValidR |
 | 7 The generation continuation (D1) | — | 7.1 | **gated** on G-D1 |
 | 8 Completion | — | 8.1 | none further |
 
@@ -190,8 +237,9 @@ unless the R0 documents state one, and this plan assumes none.
 |---|---|---|---|---|
 | G-R019 | After Task 8: refuse `AdmittedPendingR019` components, keep compiling them via the current path, or prove FK-U first (item 5). **No default** (§18.68, §18.69 Q5) | author | Task 0.1's probe result, recorded in docs/findings.md | Task 8's plan, not any task here |
 | G-R019-visible | Is `AdmittedPendingR019` user-visible (item 5)? §18.67 proposed "not visible"; §18.69 did not rule | author | Task 6.1's recorded statuses on the corpus | a user-visible note in 6.1 (none is added before the ruling) |
-| G-codes | Codes for compilation refusals after Solved, other than `ComponentBlocked` (item 1, Q1(c)). T-R0e §3.1 proposes the Unresolved code plus the reason family, own code for `SplitUnforced` | author | Task 6.2's list of refusals and the fixtures each would move | the new texts in 6.2; until then today's code and text are kept |
-| G-switch | Steps 4 and 5 together, or a specified window (item 11)? And may the switch narrow what compiles today, given the conservative boundary? | author | Task 3.5's census; Task 4.5's window table | Task 4.6, Task 6.5 |
+| G-codes | Codes for compilation refusals after Solved, other than `ComponentBlocked` (item 1, Q1(c)). T-R0e §3.1 proposes the Unresolved code plus the reason family, own code for `SplitUnforced` | author | Task 6.2's list of refusals and the fixtures each would move | the new texts in 6.2; until then today's code and text are kept where today has a counterpart. `AtS (NoCompilation …)` (`HoleContract`, `NonConstructive`) has no code today, so those rows wait for the ruling; this plan proposes no provisional code |
+| G-switch | Which of options A-E (§3.1) governs the switch the user sees (item 11; §18.69 Q3's "for now", Q9's specified window) | author | Task 3.5's census and Task 4.5's window table, both with B2's classes and program counts; neither is meaningful before G-erased's census category exists | Task 4.6; through it every Phase 6 task |
+| G-erased | How erased effect-row obligations are accounted for (T-R0b §11 items 6 and 10; requirements.md §11 item 13): a syntactic marker where a declaration's own or a callee's erased row could carry a record obligation (T-R0b's proposed default), or a check that the erased obligations cannot affect the claimed result | author | Task 3.5's erased-row census category; a design note with the marker's syntactic criterion or the check's argument, including the lambda annotation row (Check/Lambda.purs `annotationRow`) | Task 4.6: it cannot land until this is ruled and implemented, unless the author either accepts blocking every declaration the census counts (more narrowing) or explicitly amends §18.69 Q3 |
 | G-ValidR | `ReqG` at fresh base atoms and at declared types whose constructors hold functions; meaning of a non-empty `Q` (item 9) | author, on T-R0b's owner's proposal | Task 0.4's design note and its probe of today's printability and comparability | the `BQ` part of Task 4.2; RC3 in Task 6.4 |
 | G-D1 | The D1 mechanism: request constructors, rejection of untracked reads, handle scoping, the new `generate` type (item 8) | author, after review | Task 0.3's specification and its adversarial review | Task 7.1 |
 | G-forced | Representation of `ForcednessEvidence`, `Alternative`, `RigidAssignment`, `NonForcednessEvidence`, `ForcednessClaim`, `ForcednessRefusal`; confirming T-R0a §6's proposed split of `ForcednessPolicy` into an untrusted `search` (solutions as seeds) and a trusted `check` (reads no `Solution`; the only minter of `CheckedForcedness`); placing the policy with P (item 6) | author | Task 0.6's design note | Task 6.3 |
@@ -199,8 +247,8 @@ unless the R0 documents state one, and this plan assumes none.
 | G-Recon | Who establishes auxiliary reconstruction, and whether RT7's check counts as a rule's evidence (item 7). Until then `Recon` is empty and every flexible variable is bound | author | Task 3.4's RT7 results per rule | any omission of an auxiliary binding (none in this plan) |
 | G-effects | Which effect refusals read record metas (item 4, Q-c2), so which stay class a and which become `ClassF` | author | Task 0.5's audit table | Task 2.3's effect rows |
 | G-coverage | The split of `coverage` into structural and semantic parts; which Unresolved reason `AmbiguousType` gets (item 3; that it is Unresolved is decided, §18.69 Q4) | author | Task 0.5's audit table | Task 2.3's coverage rows; the reason (not the code) of `AmbiguousType` in Task 2.2 |
-| G-exempt | Exempting an `outside` kind, with its argument; how erased effect-row obligations are accounted for, including the lambda effect-row annotation (item 4; T-R0b §11 items 4-6, 10) | author, after review of the argument | a per-kind slice argument with a check (none exists) | no task; until ruled, no kind is exempt and no Solved rests on effect/record independence |
-| G-A-i | Confirm T-R0a's proposed encodings (T-R0a §3.5, §5.3, §7, §11): (a) the interpretation that a `ClaimsComplete` refusal a recorder or read-back defect may have caused does not stop the run, surfacing as Unresolved plus a rendered `SearchFault` in `Decision.searchFaults`; (b) rule 3's order, `Limit` first when an attempt ran out of budget and no `ClaimsComplete` candidate was refused; (c) the fault records: `EmissionFault = ReCheckFailed FunctionName Key` in `DeclReport.reCheckFaults`, outside `InternalFault`; (d) rule 4's `BothVerdicts StrategyName Evidence`, reachable in production when rule 1 or 1′ makes every strategy run | author | T-R0a §5.3 and §11 ("Still open": the interpretation and its conditions) | none: Tasks 1.1 and 4.1 build the proposed encodings, and a declined point reworks them |
+| G-exempt | Exempting an `outside` kind, with its argument (item 4; T-R0b §11 items 4-5); erased rows are G-erased's | author, after review of the argument | a per-kind slice argument with a check (none exists) | no task; until ruled, no kind is exempt |
+| G-A-i | Confirm T-R0a's proposed encodings (T-R0a §3.5, §5.3, §7, §11): (a) the interpretation that a `ClaimsComplete` refusal a recorder or read-back defect may have caused does not stop the run, surfacing as Unresolved plus a rendered `SearchFault` in `Decision.searchFaults`; (b) rule 3's order, `Limit` first when an attempt ran out of budget and no `ClaimsComplete` candidate was refused; (c) the fault records: `EmissionFault = ReCheckFailed FunctionName Key` in `DeclReport.reCheckFaults`, outside `InternalFault`; (d) rule 4's `BothVerdicts StrategyName Evidence`, reachable in production when rule 1 or 1′ makes every strategy run. Added after the review of 99da55b, each proposed by this plan: (e) a broken invariant inside an untrusted search's own code (today's `Unexpected`, and `Exhausted` if Task 0.2 maps it to a fault) is an untrusted search's failure, which never stops the run (T-R0a §5.3 rule 4's last sentence), recorded as a new `SearchFault` constructor `SearchBroke StrategyName String` and rendered as a suspected-defect note; on today's path (Task 2.1, before 4.6) it stays `AsFault (BrokenInvariant …)`. The alternative is that it stops the run; (f) a `BQ` atom that still mentions a rigid variable `D` does not decide after entailed reduction (AT19's third case), or, before G-ValidR, one at a declared type holding functions, is detected from the problem before search and blocks Solved as rule 1's markers do, with reason `Unsupported RequirementAtoms`; (g) a read-back at a record with several flexible tails, ambiguous by T-R0b §5.3 and left there to "the strategy's adapter (argued)", returns a `Heuristic` candidate, so its refusal is a failed attempt, not a `SearchFault` | author | T-R0a §5.3 and §11 ("Still open": the interpretation and its conditions); for (e)-(g), Tasks 4.1-4.3's tests | none: Tasks 1.1, 4.1, 4.2 and 4.3 build the proposed encodings, and a declined point reworks them before 4.6 |
 
 Items the plan settles by test rather than by a gate:
 
@@ -210,13 +258,40 @@ Items the plan settles by test rather than by a gate:
   corpus `D` is `Scoped`.
 - **Item 10, CX question 3 (certificate cost):** Task 5.2 measures it.
 - **Item 11, order independence:** Task 4.1 states which conditions
-  the implementation meets, and AT7 tests them.
+  the implementation meets, including the refuter's monotonicity in
+  its hint set, and AT7 tests them.
 - **Item 12, B9 and B13:** Tasks 3.3 and 3.4 (RT1, RT2).
 
 Items left with the proof tranches (§4): item 10's questions 1 and 5
 and the trusted refuter's scope, and item 13 (W §7 items 1-2: T1-a and
 the reuse rule). Both concern names under FK-W, which stays inactive,
 and no task here creates a name.
+
+### 3.1 G-switch: the options put to the author
+
+T-R0b §3.5 records that the author kept the conservative rule knowing
+that "any `Option(a)`" would be Unsupported. The question is therefore
+narrower than "steps 4 and 5 together, or a window": it is whether
+§18.69 Q3's "for now" covers the switch the user sees. The plan
+presents the options below and chooses none. Every number is a
+placeholder until Task 3.5's census and Task 4.5's window table
+exist, and those need G-erased's census category and the classes of
+Review Focus 1 first. Narrowing is counted per class of Review
+Focus 1, in declarations and in programs, since one Unresolved
+declaration stops its program.
+
+| Option | What happens | Declarations and programs that stop compiling | False contradictions kept | Decisions amended | Authorization needed |
+|---|---|---|---|---|---|
+| A. No switch yet; R0 runs in shadow only | Phases 0-5's shadow work lands; Task 4.6 and Phase 6 do not. User-visible changes are Phases 1-2 only: plural diagnostics, `E_UNRESOLVED`, classification | none (numbers from the census: 0 by construction) | all of D6's (numbers from the window table), since today's path keeps deciding | none; it postpones §18.66 decision 1's switch and §18.69 Q9's coordination | none beyond the plan; both paths are maintained until a later ruling |
+| B. Switch under the conservative boundary | Task 4.6 lands as written. Every class of Review Focus 1 is Unresolved | every census class (numbers from the census, per class and in programs). A language change: docs/language.md updated, fixtures moved | none of D6's; `a01`-style genuine contradictions become Unresolved until P-C1 (numbers from the window table) | none: §18.69 Q3 applied as written. G-erased must still be ruled first, or erased-row declarations are blocked too | the author's acceptance of the narrowing as a language change |
+| C. A specified per-declaration window (§18.69 Q9) | Declarations with no blocker take the R0 path; blocked ones keep today's path, labelled legacy. The path is selected by the problem's blocker set, which is data computed from the `RecordedProblem`, not a flag | none (numbers from the census: 0 if the legacy path is today's exactly) | those of blocked declarations (numbers from the window table, blocked rows only) | §18.66 decision 1 (the online solver only a search strategy), for blocked declarations | the window's specification and test (Q9); both paths maintained per declaration |
+| D. Labelled provisional acceptance | Blocked declarations that G0 accepts on the recorded atoms become Solved with a distinct assurance, e.g. `PendingExemption kinds`, never rendered as proved. One path | none, apart from G0 refusals and `BQ` at type variables (numbers from the census and the window table) | none of D6's; genuine ones as in B until P-C1 | §18.69 Q3 explicitly: a marker blocks Solved, and, where erased rows are accepted the same way, effect/record independence is not assumed | the Q3 amendment; a new assurance constructor and its rendering |
+| E. Earn exemptions first | The switch waits for per-kind slice arguments, the free-constructor model (for the `DataApplication` and `DataOverRecords` rows), contracts carrying `Q` (for type-variable `BQ`), G-erased's check, and P-C1/P-CX | only the classes still unearned when the author switches (numbers from the census, re-run then) | none once P-C1 and P-CX land | none | proof and design work that is unauthorized today and extends beyond R0 |
+
+Options C and D each amend a decision (§18.66 decision 1 and §18.69
+Q3 respectively). Options A, B and E amend none: A leaves in place
+the false contradictions R0 was chosen to remove, B narrows now, and
+E waits for work that is not yet authorized.
 
 ## 4. Proof dependencies (not tasks)
 
@@ -239,7 +314,14 @@ post-Task-8 choice stays the author's (G-R019), and no default is
 built.
 
 **Files:**
-- Create: test/r0-r019-probe.serial.test.mjs, test/fixtures/r0/r019/*.json
+- Create: test/r0-r019-probe.test.mjs, test/fixtures/r0/r019/*.json,
+  test/r0-probe-support.mjs (the helpers `phaseOf(source)`, which
+  runs test/phases.mjs's `resolved` and `checkedPoly`, then
+  specialization and `compile`, and reports the stage that stopped
+  with its code and text; and `fixturesIn(dir)`, which reads a
+  fixture directory). Neither helper exists today: test/phases.mjs
+  exports `resolved`, `resolveRejectedAt`, `checkedPoly` and
+  `checkRejectedAt`.
 
 **Interfaces:**
 - Consumes: `compile` (Program.Compile), `specializationKeys`
@@ -259,8 +341,8 @@ built.
 
 ```js
 test('R019 probe: every AdmittedPendingR019 shape, recorded', () => {
-  for (const f of fixtures('r0/r019')) {
-    const result = phases(f.source);  // test/phases.mjs
+  for (const f of fixturesIn('r0/r019')) {
+    const result = phaseOf(f.source);  // test/r0-probe-support.mjs
     assert.equal(result.phase, f.phase, f.name);
     assert.equal(result.text, f.text, f.name);
   }
@@ -269,19 +351,22 @@ test('R019 probe: every AdmittedPendingR019 shape, recorded', () => {
 
 - [ ] **Step 3: Run it.** Expect the first run to fail with the empty
   expectations. Record what is observed:
-  `node --test test/r0-r019-probe.serial.test.mjs`
+  `node --test test/r0-r019-probe.test.mjs`
 - [ ] **Step 4: Fill the expectations from the observed run, rerun,
   and expect PASS.** Then confirm that it is the test catching a
   change: edit one fixture's text and watch it fail.
 - [ ] **Step 5: Record the finding.** In docs/findings.md, record
-  whether every case stopped at E_INTERNAL "R005B placeholder: rows
-  with several tails are lowered in Task 8". If every case did,
-  option 1 of T-R0e §1.4 narrows nothing that compiles today; if one
-  compiled, it would. Either way G-R019 stays open. Commit:
+  each case's result, which takes one of three values: it compiled;
+  it stopped at E_INTERNAL "R005B placeholder: rows with several
+  tails are lowered in Task 8"; or it stopped earlier (for example
+  at D4 or R010). If no probed case compiled, that is bounded
+  evidence, over these three shapes only, that option 1 of T-R0e
+  §1.4 narrows nothing that compiles today; if one compiled, option
+  1 would narrow it. Either way G-R019 stays open. Commit:
 
 ```bash
-git add test/r0-r019-probe.serial.test.mjs test/fixtures/r0/r019/*.json \
-  docs/findings.md
+git add test/r0-r019-probe.test.mjs test/r0-probe-support.mjs \
+  test/fixtures/r0/r019/*.json docs/findings.md docs/progress.md
 git commit -m "test: R019 compatibility probe (T-R0e §1.4)"
 ```
 
@@ -292,15 +377,21 @@ pinned, and the finding is recorded with no decision taken.
 
 **Decision rule, fixed before running** (the author's rule "oracle
 grammar fixed before running"). The bound is P · (|Λ| + 1) + 1 passes
-(RowMerge/Improve.purs:35-52). The search domain is
+(RowMerge/Improve.purs:35-52). It is an argued upper bound, not a
+budget: the comment at Improve.purs:35-40 calls it "a limit the
+argument says never comes". The search domain is
 test/row-merge-gen.mjs's grammar at its current settings, seeds 1-2000,
-plus the corpus of measure/corpus.mjs. If any **valid** run (by
-test/row-merge-oracle.mjs) passes the bound, the bound is a genuine
-budget, and `Exhausted` maps to `Limit ReexaminationSteps`. If none
-does, and rules §5's argument (docs/plans/2026-10-17-open-row-merge-
-rules.md §5) is re-read and not refuted, `Exhausted` maps to `Faulted
-(BrokenInvariant …)`. A missing counterexample is bounded evidence.
-The mapping cites both the search and the argument.
+plus the corpus of measure/corpus.mjs. **Every** run counts, valid or
+not, since `improve` runs on invalid programs too.
+- If no run reaches the bound, and rules §5's argument
+  (docs/plans/2026-10-17-open-row-merge-rules.md §5) is re-read and
+  not refuted, `Exhausted` maps to `Faulted (BrokenInvariant …)`. The
+  mapping cites the search as bounded evidence (a missing
+  counterexample within the stated grammar) and the argument.
+- If a run reaches the bound, it refutes rules §5's argument. That is
+  a finding for the author, recorded in docs/findings.md with the
+  program, and the task stops; it does not show that the bound is a
+  genuine budget, and no mapping is chosen.
 
 **Files:**
 - Create: test/r0-exhausted.serial.test.mjs
@@ -310,24 +401,25 @@ The mapping cites both the search and the argument.
 - [ ] **Step 1: Write the measuring test.** For each problem it
   records `passes / bound` and asserts the ratio stays below 1.
 - [ ] **Step 2: Run it.** `node --test test/r0-exhausted.serial.test.mjs`
-  should PASS (or show a valid counterexample, which settles the
-  question the other way). Report the largest ratio.
-- [ ] **Step 3: Add regression row `r0-exhausted-guard`** in
-  scripts/regression-r0.mjs. It makes `pass` loop without
-  `changed`, and the probe expects the step-bound failure. Run
-  `node scripts/regression.mjs r0-exhausted-guard` and expect the
-  row proved.
+  should PASS. A run that reaches the bound stops the task for the
+  author, as the decision rule says. Report the largest ratio.
+- [ ] **Step 3: Reuse the existing guard.** No new regression row:
+  `r005b-quiet` (scripts/regression-r005b-end.mjs:46-52) already makes
+  `pass` loop regardless of `changed` and expects the bound's
+  failure. Run `node scripts/regression.mjs r005b-quiet` and expect
+  the row proved.
 - [ ] **Step 4: Commit**, with the mapping it settles noted in the
   commit message and in the task list of Task 2.1:
 
 ```bash
 git add test/r0-exhausted.serial.test.mjs test/r0-exhausted-support.mjs \
-  scripts/regression-r0.mjs test/regression-r0.mjs scripts/regression.mjs
-git commit -m "test: settle Exhausted as limit or fault (§18.69 Q1)"
+  docs/findings.md docs/progress.md
+git commit -m "test: settle Exhausted as a fault or a finding (§18.69 Q1)"
 ```
 
 **Acceptance:** §18.69 Q1's criterion applied with its evidence
-recorded. Task 2.1 classifies `Exhausted` from this result alone.
+recorded. Task 2.1 classifies `Exhausted` from this result alone; if
+the task stopped for the author, Task 2.1 waits for the ruling.
 
 #### Task 0.3: Specify D1's mechanism (design; gate G-D1)
 
@@ -437,15 +529,43 @@ Task 2.3 implements the ruled classes only.
   cases.
 - [ ] **Step 2: Commit; stop for G-forced.**
 
+#### Task 0.7: Erased effect rows (design; gate G-erased)
+
+T-R0b §11 item 6 leaves open how obligations dropped by erasing effect
+rows are accounted for, and §18.69 Q3 forbids a Solved that rests on
+effect/record independence. Nothing else in this plan implements
+that constraint, so this task prepares the ruling.
+
+**Files:**
+- Create: docs/plans/r0-erased-rows.md
+
+- [ ] **Step 1: Draft both alternatives.** (a) T-R0b's proposed
+  default: a syntactic marker wherever a declaration's own erased
+  row, or a callee's, could carry a record obligation, with the
+  syntactic criterion stated (which effect operations, handler types
+  and `fail` payload positions count) and the marker's kind name. (b)
+  A check that the erased obligations cannot affect the claimed
+  result, with its argument by kind (docs/engineering.md's written
+  argument before implementation). Both cover the lambda annotation
+  row (Check/Lambda.purs `annotationRow`; T-R0b §11 item 10).
+- [ ] **Step 2: Define the census category** Task 3.5 counts: the
+  declarations that compile today and that (a)'s criterion would
+  mark.
+- [ ] **Step 3: Commit; stop for G-erased.** Until the ruling is
+  implemented, Task 4.6 cannot land (§3, G-erased).
+
 ### Phase 1: types and the collecting driver (T-R0a step 1)
 
 #### Task 1.1: `Domain.Verdict` and its token boundary
 
 **Files:**
 - Create: src/Domain/Verdict.purs (split as §1 says if needed),
-  src/Domain/Verdict/Internal.purs, test/r0-verdict.test.mjs
-- Modify: scripts/structure.mjs:26-31 (add the Internal rule),
-  test/structure.test.mjs
+  src/Domain/Verdict/Internal.purs, src/Domain/Recorded.purs and
+  src/Domain/Recorded/Internal.purs (the opaque `RecordedProblem`,
+  with no fields yet; Task 3.1 fills them), test/r0-verdict.test.mjs
+- Modify: scripts/structure.mjs:26-31 (add the two Internal rules),
+  test/structure.test.mjs, docs/engineering.md and the
+  Internal-boundary bullet of AGENTS.md (the new rules)
 
 **Interfaces:**
 - Produces: the types of T-R0a §3.2-§3.5, §4.1 (`Attempt`, `Claim`,
@@ -459,19 +579,42 @@ Task 2.3 implements the ruled classes only.
     re-check failure;
   - `EmissionFault = ReCheckFailed FunctionName Key`, carried in
     `DeclReport.reCheckFaults ∷ Array EmissionFault` beside a Solved
-    verdict;
+    verdict. The specializer's own key is `Tuple Int (Array IR.Ty)`
+    (Specialize/State.purs:47), which Domain.Verdict cannot import
+    (Domain.IR.Internal's importers, scripts/structure.mjs:26-31).
+    `Key` here is therefore the Domain-level view already used for
+    tests, `{ declaration, function, effect, arguments ∷ Array (Ty
+    Void) }` over Domain.Type (Specialize.purs:37-42), moved to
+    Domain and built by Task 6.4 from the State key. The alternative,
+    placing `EmissionFault` in Features.Specialize.ReCheck, puts a
+    Features type into `DeclReport`; this plan proposes the first;
+  - `SearchFault = CandidateRefused StrategyName CheckRefusal |
+    SearchBroke StrategyName String` (the second proposed, G-A-i(e));
   - `CheckedForcedness = Forced ForcednessEvidence | NotForced
     NonForced` and `Forcedness = Checked CheckedForcedness |
     Undecided` (the policy itself lands in Task 6.3).
 - Produces: `Valid`, `Refuted`, `NonForced` and `ForcednessEvidence`
   with hidden constructors.
-  The structure rule allows only `Features.Check.Strategy.*`,
-  `Features.Check.Refute.*` and `Features.Check.Admit.Forcedness` to
-  import Domain.Verdict.Internal.
+  The structure rule allows only the trusted checkers to import
+  Domain.Verdict.Internal: `Features.Check.Strategy.Substitution`
+  (G0's `checkSubstitution`), `Features.Check.Refute.Rules`
+  (`checkDerivation`, `trustedRefuter`) and
+  `Features.Check.Admit.Forcedness.Check` (the forcedness `check`).
+  The untrusted `Strategy.Online` and `Strategy.ReadBack`, and
+  `Refute.Counter` (whose check "mints nothing"), are refused.
+- Produces: `RecordedProblem`, opaque. Its constructor is in
+  Domain.Recorded.Internal, which only Features.Check.Generate* may
+  import (a second structure rule). `emptyProblem ∷
+  Resolved.FunctionDecl → RecordedProblem` lives in
+  Features.Check.Generate (created here as a stub), so Task 1.2's
+  `DeclOutcome` can hold a problem before Task 3.1.
 
 - [ ] **Step 1: Write the failing tests.** test/structure.test.mjs
-  gets a case that a module outside the allowed list importing
-  Domain.Verdict.Internal is a finding.
+  gets cases that a module outside the allowed list importing
+  Domain.Verdict.Internal is a finding, naming `Strategy.Online`,
+  `Strategy.ReadBack` and `Refute.Counter` among the refused, and
+  that a module outside Features.Check.Generate* importing
+  Domain.Recorded.Internal is a finding.
   test/r0-verdict.test.mjs constructs each constructor through the
   compiled output (AT16's first half: `InternalFault`,
   `EmissionFault` and `SearchFault` among them).
@@ -485,7 +628,8 @@ Task 2.3 implements the ruled classes only.
 #### Task 1.2: The collecting driver (G-hide; AT3, AT13 part)
 
 **Files:**
-- Create: src/Features/Check/Outcomes.purs, test/r0-driver.test.mjs
+- Create: src/Features/Check/Outcomes.purs, test/r0-driver.test.mjs,
+  test/fixtures/r0/first-diagnostic.json (snapshot; data)
 - Modify: src/Features/Check.purs:19-52, src/Program/Compile.purs,
   src/Program/Command.purs (print every diagnostic),
   test/support.mjs (helper `rejectedAll`)
@@ -493,12 +637,18 @@ Task 2.3 implements the ruled classes only.
 **Interfaces:**
 - Produces: `checkProgram ∷ Resolved.Program → Report`, where at this
   step each `DeclReport.outcome` wraps today's `recheck` result as
-  `Decided`/`Refused` through an adapter (no generation yet;
-  `RecordedProblem` is a placeholder, `emptyProblem decl`, removed in
-  Task 4.6). `check ∷ Resolved.Program → Either Diagnostic
+  `Decided`/`Refused` through an adapter (no generation yet; the
+  problem is `emptyProblem decl` from Task 1.1, removed in Task
+  4.6). `check ∷ Resolved.Program → Either Diagnostic
   Checked.Program` is kept and derived from `Report`, returning the
-  first diagnostic in declaration order, so every existing
-  `rejected` assertion stays valid.
+  first diagnostic in the order below, so every existing `rejected`
+  assertion stays valid.
+- **Order** (today's, Check.purs:20-37): `main`'s printability
+  (`printableEntry`, judged before any body) first; then body-stage
+  diagnostics in declaration order; then the program-wide stages,
+  `instantiationRule` and then `coverage`, which at this step still
+  run only when every body passed, as today. The program-wide stages
+  move behind `admit` in Task 6.1.
 - Produces: `compileReport ∷ String → Either (NonEmptyArray
   Diagnostic) String`; `compile` stays as the first of them.
 - `explained` (Check.purs:43-51) reads the callee's `DeclReport`
@@ -513,11 +663,19 @@ test('reports each broken declaration once, in order', () => {
   assert.deepEqual(all.map(d => d.code), ['E_TYPE', 'E_TYPE']);
   assert.ok(all[0].start.line <= all[1].start.line);
 });
-test('the first diagnostic is today\'s', () => { /* every fixture in
-  test/fixtures: compileReport(...)[0] equals compile(...) */ });
+test('the first diagnostic is today\'s', () => { /* every program
+  in test/*programs.mjs, test/fixtures and the corpus:
+  wire(compileReport(src)[0]) equals the snapshot */ });
 test('AT3: an unresolved f and a contradictory g both reported', ...);
 ```
 
+  The snapshot, test/fixtures/r0/first-diagnostic.json, is the wire
+  output of today's `compile` over that whole set, written at the
+  task's parent commit before any source changes and committed with
+  the test. Comparing `compileReport` with `compile` would be a
+  tautology once `compile` is derived from it, so the comparison is
+  with the snapshot. (test/fixtures holds only r005b today, hence the
+  wider set.)
 - [ ] **Step 2: Run them; expect FAIL** (`compileReport` undefined).
 - [ ] **Step 3: Implement** `checkProgram` and `compileReport`; make
   `check` and `compile` derived views.
@@ -542,8 +700,9 @@ for confirmation with the plan's approval.
 - Create: test/r0-codes.test.mjs
 
 - [ ] **Step 1: Failing test:** `codeName` of the new constructor is
-  `E_UNRESOLVED`. Assert as well that no `Problem` maps to it yet,
-  since nothing renders it until Task 2.2.
+  `E_UNRESOLVED`. (Nothing renders it until Task 2.2; that no
+  `Problem` maps to it cannot be tested by injection, so it is not
+  asserted.)
 - [ ] **Steps 2-5: Run (FAIL), implement, run (PASS), verify,
   commit.**
 
@@ -572,9 +731,11 @@ for confirmation with the plan's approval.
 - [ ] **Step 3: Implement**, replacing EndReport.purs:43's catch-all.
 - [ ] **Step 4: Rerun; expect PASS.** Every existing E_TYPE and
   E_INTERNAL fixture must be unchanged: `npm run verify`.
-- [ ] **Step 5: Regression row `r0-classify-catchall`:** restore the
-  `_ →` arm, and the probe injects a new constructor and expects it
-  classified explicitly. Commit.
+- [ ] **Step 5: Regression row `r0-classify-catchall`:** the edit
+  deletes the `Exhausted` arm and adds `_ → AsMismatch`; the probe
+  injects `Exhausted` and expects Task 0.2's class. (A probe cannot
+  inject a constructor that does not exist, and a `_` arm beside all
+  15 arms changes nothing.) Commit.
 
 #### Task 2.2: Give verdict-stage Unresolved its code (AT15)
 
@@ -585,7 +746,13 @@ for confirmation with the plan's approval.
   `Unresolved`; check-time
   placeholders (EndReport.purs:39, Require.purs:105, Record.purs:160,
   SeveralTails.purs:19-27) → `Unresolved`), src/Format/Diagnostic/*.purs
-  texts for D4 and the placeholders
+  texts for D4 and the placeholders; src/Domain/Problem.purs (a new
+  constructor for check-time placeholders: today they are `Internal`
+  strings, Check/Placeholder.purs:13, which Code.purs:33 maps to
+  E_INTERNAL with every other `Internal`). The tests and probes that
+  find a placeholder by grepping "R005B placeholder" in an E_INTERNAL
+  text change to match the new constructor's code; each is listed in
+  the commit.
 - Modify (fixtures): test/fixtures/r005b/*.json, test/r005b-*.test.mjs,
   test/regression-r005b-end.mjs, scripts/regression-r005b-end.mjs
   (each listed by name in the commit)
@@ -616,18 +783,40 @@ codes until G-codes (Task 6.2).
   test/r0-static.test.mjs
 
 **Interfaces:**
-- Produces: `staticRules ∷ Tables → Resolved.FunctionDecl → Array
-  StaticRefusal`. It covers arity at a `fixedResult`, the entry rule,
-  `SameDisjoint` and `RepeatedTail` (b′, from Requirements.purs:72,
-  Apart.purs:82-91), and only the effect and coverage checks that
-  G-effects and G-coverage rule structural. Today's code reports
-  these from inside `checkFunction`. This step makes `staticRules`
-  report them first, with the same text and code, and the
-  declaration is then `Refused … problem`.
+- Produces: the `StaticRefusal` classification (`Policy`,
+  `StaticRule`) applied at each check's raise site, and
+  `staticRules ∷ Tables → Resolved.FunctionDecl → Array
+  StaticRefusal` for the checks that already run per declaration. It
+  classifies today's checks where they stand and moves none. They do
+  not all run inside `checkFunction`:
+  - `SameDisjoint` and `RepeatedTail` (b′) are Resolve refusals
+    (Resolve/Requirements.purs:72, Resolve/Apart.purs:82-91). They
+    stop the whole program at Resolve, so no `Resolved.FunctionDecl`
+    exists for `staticRules` to read. They stay in Resolve at this
+    step and are classified `Policy` there. Moving them to
+    per-declaration refusals changes which declarations are reported
+    and needs the Resolve changes and fixture moves that Task 6.5
+    makes for Resolve's body-type checks; this plan leaves that move
+    to a later ruling and records it (§8.1).
+  - Arity at a `fixedResult` sits mid-chain in `checkPipe`
+    (Check/Pipe.purs:33), after the left operand is inferred.
+    Reporting it before the body would change the first diagnostic
+    whenever the left operand also fails. It stays where it is and
+    is classified `StaticRule` at its raise site.
+  - The entry rule (`printableEntry`, Check.purs:56-67) is already
+    judged first; it is classified `StaticRule` in place.
+  - Effect and coverage checks: only those G-effects and G-coverage
+    rule structural, after the ruling.
+- **Ordering rule:** at this step every check keeps the position
+  where today's code raises it, so Task 1.2's first-diagnostic
+  snapshot is unchanged. `staticRules` as a separate pass before
+  generation (T-R0a §2) takes effect only with Task 4.6, which lists
+  any first diagnostic that moves.
 
 - [ ] **Step 1: Failing test (AT10).** `r disjoint r` (d03) gives
-  `Policy`, an arity error gives `StaticRule`, neither is a `Verdict`,
-  and both keep their codes.
+  `Policy` at Resolve, an arity error gives `StaticRule`, neither is
+  a `Verdict`, both keep their codes, and the first-diagnostic
+  snapshot is unchanged.
 - [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify,
   commit. **Gated rows:** the effect and coverage rows are added only
   after G-effects and G-coverage. Until then those checks stay where
@@ -640,18 +829,23 @@ No user-visible change in this phase: `generate` runs only in tests.
 #### Task 3.1: `Domain.Recorded`
 
 **Files:**
-- Create: src/Domain/Recorded.purs, Recorded/Atom.purs,
-  Recorded/Origin.purs, test/r0-recorded.test.mjs
+- Create: src/Domain/Recorded/Atom.purs, Recorded/Origin.purs,
+  test/r0-recorded.test.mjs
+- Modify: src/Domain/Recorded.purs, Recorded/Internal.purs (Task
+  1.1's opaque type gains its fields)
 
 **Interfaces:**
-- Produces: T-R0b §10's `RecordedProblem` verbatim (`decl`,
+- Produces: the fields of Task 1.1's opaque type, so that it becomes
+  T-R0b §10's `RecordedProblem` verbatim (`decl`,
   `rigidTy`, `rigidRow`, `flexTy`, `flexRow`, `d`, `q`, `b`, `bq`,
   `outside`, `adm`, `split`, `vars`, `types`); `Entry a = { origin,
   value }`; `Origin` and `AtomId = { decl, path, index }` (§6);
   `Var = ⟨p, role⟩` (§2.3); `OutsideKind` with the constructors of
-  §3.5; `Path` as T-R0b §6 defines it. The constructor of
-  `RecordedProblem` is exported only to Features.Check.Generate*
-  (T-R0a §2 property 2), enforced by a structure rule.
+  §3.5; `Path` as T-R0b §6 defines it. The constructor stays in
+  Domain.Recorded.Internal, importable only by
+  Features.Check.Generate* (T-R0a §2 property 2), under Task 1.1's
+  structure rule; this task updates docs/engineering.md if the rule's
+  wording changes.
 
 - [ ] Steps: a failing test that constructs and compares problems;
   implement; pass; verify; commit.
@@ -703,10 +897,15 @@ The T-R0b rules, split across three commits, each with its own tests:
   measure/corpus.mjs, rewritten for test/; that script is the
   reference, not an import)
 
-**Process constraint:** written by a different implementer, in its
-own worktree, from T-R0b alone and **without reading Task 3.2's
-code** (T-R0b §9 item 1). The reviewer checks the worktree's history
-for any read of src/Features/Check/Generate*.
+**Process constraint:** written by a different implementer, from
+T-R0b alone and **without reading Task 3.2's code** (T-R0b §9 item
+1). Git records no reads, and worktrees share one object database, so
+a worktree's history cannot show that the code was not read. The
+constraint is enforced by order instead: the translator (Steps 1-3)
+is written and committed before Task 3.2's first commit exists
+anywhere in the repository, and the comparison (Step 4) runs after
+Task 3.2. The reviewer checks that the translator's last commit
+precedes Task 3.2's first.
 
 - [ ] **Step 1: Write the comparison test.** For every corpus function
   and fixture, the two multisets of `(Origin.atom, entry)` and the two
@@ -714,11 +913,13 @@ for any read of src/Features/Check/Generate*.
   that every rule id of T-R0b §3 occurs in both, and that every
   `Outside` constructor maps to a fixture.
 - [ ] **Step 2: Run; expect FAIL** until the translator exists.
-- [ ] **Step 3: Write the translator.**
-- [ ] **Step 4: Run.** Each disagreement is a finding against one of
-  the two, decided by T-R0b's text. Fix the side at fault in its own
-  commit, with a fixture. B13 (pattern growth, T-R0b §11 item 2) is
-  settled here: record any disagreement on P5-P7.
+- [ ] **Step 3: Write the translator; commit it** (before Task 3.2
+  starts).
+- [ ] **Step 4: After Task 3.2, run.** Each disagreement is a finding
+  against one of the two, decided by T-R0b's text. Fix the side at
+  fault in its own commit, with a fixture. B13 (pattern growth,
+  T-R0b §11 item 2) is settled here: record any disagreement on
+  P5-P7.
 - [ ] **Step 5: Commit.**
 
 #### Task 3.4: RT2, RT4, RT8 preliminaries, RT9, RT10; AT1, AT4, AT13 (and B9)
@@ -758,29 +959,52 @@ for any read of src/Features/Check/Generate*.
 #### Task 3.5: Census of what the switch would block (G-switch evidence)
 
 **Files:**
-- Create: test/r0-census.serial.test.mjs, docs/plans/r0-census.md
-  (the recorded counts)
+- Create: test/r0-census.serial.test.mjs, test/fixtures/r0/census.json
+  (the pinned counts), docs/plans/r0-census.md (their reading)
 
 - [ ] **Step 1: Write a test** that generates every corpus function
-  and every program in test/*programs.mjs and test/fixtures. It
-  counts, per declaration: non-empty `outside` by kind; `BQ` atoms
-  not ground after reduction through entailed equalities (needs
-  G-ValidR's `ReqG`; until then, counted separately as "pending
-  G-ValidR"); second spreads; the share of declarations in programs
-  that compile today. It asserts that the counts are reproducible
-  (the same counts on two runs), and it times generation on the
-  scale programs against the serial suites' bounds.
-- [ ] **Step 2: Run; record the counts; commit.** These counts are
-  G-switch's main evidence: every compiled-today declaration with a
-  non-empty `outside` would become `Unresolved (Unsupported (Outside
-  kind))` at the switch (§18.69 Q3; T-R0b §11 item 4).
+  and every program in test/*programs.mjs and test/fixtures. Among
+  the declarations and programs that compile today, it counts one
+  category per class of Review Focus 1:
+  - non-empty `outside`, one category per kind (`EffectArgument`,
+    `FailFamily`, `HandlerType`, `DataApplication`,
+    `DataOverRecords`, `Deferred`, `LocalGeneralization`);
+  - erased effect rows: declarations whose own or callees' erased
+    rows could carry a record obligation, by Task 0.7's criterion
+    (G-erased);
+  - `BQ` atoms at type variables: still mentioning a rigid variable
+    after reduction through entailed equalities (AT19's third case;
+    Unsupported until contracts carry `Q`, not "pending G-ValidR");
+  - `BQ` atoms at declared types holding functions or at fresh bases
+    ("pending G-ValidR");
+  - second spreads (rule 1′; refused at Resolve today, so counted
+    for completeness, not as narrowing).
+  The two remaining classes, G0 refusals of the read-back and
+  ambiguous several-tail read-backs, need Tasks 4.2-4.3 and are
+  counted in Task 4.5's window table.
+  For each category it records declarations, and programs that
+  compile today and contain at least one such declaration; it also
+  records the union over all categories in programs, since today's
+  whole-program result is kept and one Unresolved declaration stops
+  its program. It asserts the counts equal census.json, so drift
+  fails (as window.json does), and it times generation on the scale
+  programs against the serial suites' bounds.
+- [ ] **Step 2: Run; pin the counts in census.json; record their
+  reading; commit.** These counts are G-switch's main evidence and
+  fill the "numbers from the census" of §3.1's options table: under
+  option B every counted declaration would become `Unresolved
+  (Unsupported …)` at the switch (§18.69 Q2, Q3; T-R0b §11 items 4,
+  6).
 
 #### Task 3.6: RT3, injection
 
 Generation must not consult a strategy. **Files:** create
 test/r0-injection.test.mjs. Run generation beside the online search
 and beside a stub search that refuses at once; the problems must be
-byte-identical over the corpus. (This lands with Task 4.1, since it
+byte-identical over the corpus, compared as the output of one named
+canonical serialization, `encodeProblem` in test/r0-canonical.mjs
+(JSON with object keys sorted, arrays kept in recorded order, every
+`Entry` written with its `Origin`). (This lands with Task 4.1, since it
 needs `Strategy`; listed here because it is RT3.)
 
 ### Phase 4: generate, then search (T-R0a step 4)
@@ -808,7 +1032,12 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   Decision`.
 - Implements T-R0a §5.3:
   - Rules 1 and 1′: a non-empty `outside`, or a `spread j` with
-    j ≥ 2, blocks Solved, and every strategy still runs.
+    j ≥ 2, blocks Solved, and every strategy still runs. Proposed
+    (G-A-i(f)): a `BQ` atom that `entailedGround` (Task 4.2) cannot
+    make ground, or, before G-ValidR, one at a declared type holding
+    functions, blocks Solved the same way, with reason `Unsupported
+    RequirementAtoms`. Until Task 4.2 lands the detector is injected
+    as a stub. After G-erased, its ruled marker or check joins here.
   - Rule 2: the order is rules, strategies, trusted refuters seeded
     with hints, then shadows.
   - Rule 3: the reason computation in T-R0a's proposed order
@@ -829,6 +1058,11 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     shared bound;
   - refuters run only when no strategy accepted, so every strategy
     has run, and they receive the hints sorted canonically;
+  - each refuter's search is monotone in its hint set: the unseeded
+    search and each hint get their own fuel, so adding a hint (which
+    adding a strategy may do) never removes a counter-instance found
+    without it. Canonical sorting alone does not give this (T-R0a
+    §5.3 lists hint dependence), and AT7's first clause needs it;
   - attempts share no mutable state, since every attempt is a pure
     function of `(Budget, RecordedProblem)`.
   The module comment states these as conditions met, not as a
@@ -869,6 +1103,18 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     a Solved or Contradiction, and permuting `strategies` or
     `refuters` never changes the verdict class. A refused candidate
     never gives `Faulted`.
+  - `refuter search is monotone in hints` (property): for a stub
+    refuter built with per-hint fuel, a hint set's superset never
+    loses a counter-instance the subset found. This is AT7's extra
+    premise, tested on its own.
+  - `an untrusted search's broken invariant does not stop the run`
+    (G-A-i(e)): a stub search whose own code reports a broken
+    invariant gives a `SearchBroke` record and the verdict the
+    other attempts give.
+  - `an unjudgeable BQ atom blocks Solved before search`
+    (G-A-i(f)): a problem with `pr a` at a rigid `a` and an accepting
+    stub gives `Unresolved (Unsupported RequirementAtoms)`, never a
+    `SearchFault`.
   - RT3 (Task 3.6).
 - [ ] **Step 2: Run; expect FAIL.**
 - [ ] **Step 3: Implement.**
@@ -901,12 +1147,28 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   atom ground. Assurance `Pending genericSubstitutionSound`.
 - Produces: `entailedGround ∷ RecordedProblem → Entry ReqAtom → Maybe
   GroundType`. It applies the most general unifier of the original
-  `eq` atoms only (CX's C1-E notion) and never a solver's binding.
-- The `BQ` part waits for G-ValidR. Before the ruling, the check
-  refuses any `BQ` atom at a declared type whose constructors hold
-  functions with `CheckRefusal RequirementUnjudged`, giving
-  `Unsupported RequirementAtoms`. Task 4.5 reports how many programs
-  that affects.
+  `eq` atoms only, never a solver's binding, and only where one
+  exists: unification of records with several tails is not unitary,
+  so an mgu may not exist. It is restricted to the unitary fragment
+  (syntactic unification, Robinson 1965; rows with at most one tail
+  variable per record, Rémy 1989/1994), and returns `Nothing` ("not
+  ground") outside it. It does not cite CX's C1-E, whose standing as
+  the criterion is CX §8 Q5, still open. Its written argument (a
+  rewrite preserves solutions, docs/engineering.md "Every solving
+  rule has a written argument") is committed and reviewed before
+  the implementation.
+- Produces: `unjudgeable ∷ RecordedProblem → Array (Entry ReqAtom)`,
+  the detector Task 4.1's rule 1 uses (proposed, G-A-i(f)): `BQ`
+  atoms `entailedGround` leaves not ground, and, before G-ValidR, any
+  at a declared type whose constructors hold functions. These give
+  `Unsupported RequirementAtoms` before search. Rule 3 has no path
+  from a check refusal to `Unsupported`: a refused `ClaimsComplete`
+  candidate yields `NoAcceptedCertificate` and a `SearchFault`,
+  rendered as a suspected compiler defect, which would blame the
+  compiler without evidence. `checkSubstitution` still refuses such
+  an atom with `CheckRefusal RequirementUnjudged` as a backstop; Task
+  4.3's RT8 counts those refusals as expected. Task 4.5 reports how
+  many programs this affects.
 
 - [ ] **Step 1: Failing tests.**
   - AT19's three cases: an original equation fixes the variable, so
@@ -914,12 +1176,21 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     is never Contradiction; a rigid type gives `Unsupported
     RequirementAtoms` when no strategy accepts.
   - `main's printability atom agrees with printableEntry`: for every
-    fixture, Sig10's atom judged by the ground rule agrees with
+    fixture whose `main` result is not a declared type holding
+    functions (those wait on G-ValidR and are refused visibly),
+    Sig10's atom judged by the ground rule agrees with
     Check.purs:56-67 (Review Focus 4).
   - Definedness: d02's lambda annotation (E13's `eq σ_k σ_k`)
     under any σ is refused, because `D` does not entail `r lacks a`.
     Task 6.5 relies on this.
-- [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify, commit.
+  - `entailedGround` returns `Nothing` on an equation set with two
+    tail variables in one record that has no mgu, and never consults
+    a candidate σ.
+- [ ] **Step 2: Write `entailedGround`'s argument; have it reviewed.**
+- [ ] **Steps 3-5:** run (FAIL), implement, run (PASS), verify.
+- [ ] **Step 6: Regression row `r0-definedness-dropped`:** drop the
+  definedness check from `checkSubstitution`; the probe uses d02 and
+  expects the refusal. Prove it, then commit.
 
 #### Task 4.3: `onlineSearch` and read-back (RT8)
 
@@ -936,17 +1207,31 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   `vars` and `types` (T-R0b §5.3; As3). On a `Left` it returns
   `NoCandidate Exhausted [hint]`, where the hint keeps the
   `Diagnostic` as advisory text. `TooDeep` becomes `NoCandidate
-  (OutOfBudget (InferredTypeDepth 1000))`.
+  (OutOfBudget (InferredTypeDepth 1000))`. A `Left` that today's
+  `classify` (Task 2.1) puts in `AsFault` (`Unexpected`, and
+  `Exhausted` if Task 0.2 made it a fault) is a broken invariant in
+  an untrusted search's own code: it gives `NoCandidate` and a
+  `SearchBroke` record, and does not stop the run (proposed,
+  G-A-i(e)).
   `online ∷ Strategy` is assembled as T-R0a §4.2 shows.
+- The online certificate (the `cert` of `StrategySpec cert`) is `{
+  σ, checked ∷ Checked.FunctionDecl }`: the substitution read back
+  and the checked declaration `checkFunction` produced with it.
+  Task 4.6 lowers exactly that declaration (the pre-D1 route).
 - Read-back of a record with several flexible tails is ambiguous
-  (T-R0b §5.3). Such a read returns `Heuristic`, so its refusal is a
-  failed attempt and not a `SearchFault`.
+  (T-R0b §5.3, which leaves it to "the strategy's adapter
+  (argued)"). Proposed (G-A-i(g)): such a read returns `Heuristic`,
+  so its refusal is a failed attempt and not a `SearchFault`.
 
 - [ ] **Step 1: Failing test (RT8).** For every corpus declaration
   the online solver accepts, the read-back candidate passes
-  `checkSubstitution`. Every failure is a defect (recorder,
-  read-back or search) to fix before Task 4.6, each fix with its
-  fixture.
+  `checkSubstitution`, except in two expected classes, which are
+  counted and listed rather than treated as defects: refusals with
+  `RequirementUnjudged` (Task 4.2), and ambiguous several-tail
+  read-backs (`Heuristic`). Every other failure is a defect
+  (recorder, read-back or search) to fix before Task 4.6, each fix
+  with its fixture. The expected classes' counts go to Task 4.5's
+  window table.
 - [ ] **Steps 2-5:** run (FAIL), implement, run, fix the defects
   found (separate commits), verify, commit.
 
@@ -971,7 +1256,10 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     (W §1.5's example).
   - A witness missing one auxiliary is refused by Cov.
   - Every RT8 candidate's witness passes Cov.
-- [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify, commit.
+- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS), verify.
+- [ ] **Step 5: Regression row `r0-cov-skipped`:** make `coverage`
+  accept every witness; the probe gives a witness missing one
+  auxiliary and expects Cov's refusal. Prove it, then commit.
 
 #### Task 4.5: Shadow run and the window table (G-switch evidence)
 
@@ -981,12 +1269,18 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 - [ ] **Step 1: Write the differential test.** For every program in
   the test suite's fixtures and the corpus, run today's `check` and
   the R0 path (`generate`, then `decide` with `Checking = { strategies:
-  [online], refuters: [], shadows: [cx], rules: [], budget }`) and
-  compare result classes.
+  [online], refuters: [], shadows: [], rules: [], budget }`) and
+  compare result classes. `cxSpec` does not exist until Task 5.2, so
+  the shadow list is empty here; Task 5.2 re-runs this test with
+  `shadows: [cx]` and updates the table (AT17 says the classes must
+  not move).
 - [ ] **Step 2: Run, and write every difference into window.json**
   as a fixture: source, today's class, code and text, the R0 class
-  and reason, and the target class once the named dependency lands
-  (P-C1, P-CX, G-exempt, G-ValidR, Task 6.5). Expected rows:
+  and reason, the Review Focus 1 class it belongs to, and the target
+  class once the named dependency lands (P-C1, P-CX, G-exempt,
+  G-erased, G-ValidR, contracts carrying `Q`, Task 6.5). A summary
+  block counts rows per class in declarations and in programs, which
+  fills the "numbers from the window table" of §3.1. Expected rows:
   - genuine contradictions such as a01 (`Int` against `Bool`) become
     `Unresolved (Inference NoCandidate)` with the old text as a hint;
     target Contradiction after P-C1;
@@ -995,51 +1289,97 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   - declarations with markers that compile today become `Unsupported
     (Outside kind)` and **stop compiling**; target: compiling again
     only through G-exempt;
-  - `BQ` atoms awaiting G-ValidR.
+  - erased-row declarations (Task 0.7's criterion), once G-erased
+    is ruled; target per the ruling;
+  - `BQ` atoms at type variables (`fn p(item: a): Text =
+    show(item)`): `Unsupported RequirementAtoms`; target: contracts
+    carrying `Q`, outside this plan;
+  - `BQ` atoms awaiting G-ValidR;
+  - RT8's expected classes: `RequirementUnjudged` refusals and
+    ambiguous several-tail read-backs (Task 4.3);
+  - the programs each class stops, since one Unresolved declaration
+    fails its program.
 - [ ] **Step 3: Assert the table**, so the test fails when a class
   moves without the table being updated. Commit.
 
-#### Task 4.6: The switch (**gated** on G-switch)
+#### Task 4.6: The switch (**gated** on G-switch and G-erased)
 
-The author decides on Tasks 3.5 and 4.5's evidence: land steps 4 and
-5 together, or accept the window table as the specified window
-(§18.69 Q9). Step 5's trusted parts need P-C1 and P-CX, and proof
-work is not authorized, so landing the two steps together means
-waiting for those proofs; without them a window is unavoidable. The
-markers row also narrows what compiles today unless kinds are
-exempted.
+The author decides on Tasks 3.5 and 4.5's evidence which of §3.1's
+options governs the switch. This task as written implements option
+B; options C and D change Step 3 (C: the path chosen per declaration
+by its blocker set; D: a `PendingExemption` assurance), and option A
+or E means it does not run yet. Step 5's trusted parts need P-C1 and
+P-CX, and proof work is not authorized, so landing steps 4 and 5
+together means waiting for those proofs; without them a window is
+unavoidable.
+
+**Erased rows (G-erased).** §18.69 Q3 says effect/record
+independence is not assumed, and T-R0b's VR-solved certifies `ValidR`
+only when "the erased effect obligations are accounted for". Rule 1
+blocks only on `outside` and second spreads, so without more this
+task would make effectful declarations Solved on exactly that
+independence. The task cannot land until one of these holds: (a)
+G-erased is ruled and its marker or check is implemented in rule 1
+(Task 4.1); (b) the author accepts blocking every declaration Task
+3.5's erased-row category counts (more narrowing); or (c) the author
+explicitly amends §18.69 Q3.
+
+**Where the checked IR comes from (pre-D1 route).** `Strategy.run`
+returns an `Attempt`, and `Solution` holds `Compilation`/`Witness`,
+not a `Checked.FunctionDecl`; D1's `build` is gated (Task 7.1). Until
+D1, the checked IR comes only from the online certificate (Task
+4.3): when the accepted solution is online's, `DeclReport` carries
+the certificate's `checked` declaration, the one whose read-back G0
+accepted, and `Report.program`, `instantiationRule`, `coverage`,
+`explained` and Specialize use exactly that declaration. An
+acceptance by any other strategy has no checked IR before D1: its
+`Compilation` is `NoWitness` with a reason that says so (proposed,
+§8.1), and the declaration is refused after Solved (`AtS`), not
+lowered.
 
 **Files:**
 - Modify: src/Features/Check/Outcomes.purs (`generate` then `decide`
-  per declaration; `emptyProblem` removed), src/Features/Check.purs,
+  per declaration; `emptyProblem` removed; the online certificate's
+  checked declaration carried in `DeclReport`), src/Features/Check.purs,
   src/Program/Compile.purs (injects `Checking`),
   src/Format/Diagnostic/Verdict.purs (renders `Decision` by
-  `layerOf`), every fixture named in window.json
-- Create: test/r0-window.test.mjs
+  `layerOf`), every fixture named in window.json, docs/language.md
+  (the changed diagnostics and what stops compiling), docs/adr/016-
+  generate-then-decide.md (new ADR), docs/progress.md
+- Create: test/r0-window.test.mjs, test/r0-lowered-ir.test.mjs
 
-- [ ] **Step 1: Failing test.** test/r0-window.test.mjs asserts each
+- [ ] **Step 1: Failing tests.** test/r0-window.test.mjs asserts each
   window.json row's **R0** class, code and text through `compile`.
   It fails because `compile` still gives today's. It also asserts
   that a recorded `SearchFault` renders as a suspected-compiler-defect
   note, never as an error in the program, and leaves the layer
-  unchanged (AT8; T-R0e §3.1).
+  unchanged (AT8; T-R0e §3.1). test/r0-lowered-ir.test.mjs asserts
+  that, for every corpus declaration Solved by `online`, the checked
+  declaration Specialize receives is the one in the accepted online
+  certificate (the one read back), and that a stub strategy's
+  acceptance gives `NoWitness` and `AtS` with no lowering.
 - [ ] **Step 2: Run; expect FAIL.**
 - [ ] **Step 3: Switch the driver.** `checkFunction` is now reached
   only through `onlineSearch`. Solved carries `Pending` assurance,
   rendered nowhere as proved. Hints render as "the current solver
-  stopped here".
+  stopped here". `staticRules` runs before generation (T-R0a §2);
+  any first diagnostic that moves is a window.json row.
 - [ ] **Step 4: Run; expect PASS; `npm run verify`.** Every moved
   fixture is listed in the commit message.
 - [ ] **Step 5: Regression rows:**
   - `r0-online-verdict` lets the online search's `Left` become a
     verdict, and the probe expects Unresolved for a01;
   - `r0-pending-as-proved` renders `Pending` as `Proved`, and the
-    probe expects the label.
+    probe expects the label;
+  - `r0-ir-not-read-back` lowers a declaration re-checked outside
+    the certificate, and the probe expects the certificate's.
   Prove each, then commit.
 
 **Rollback:** revert this one commit. Tasks 4.1-4.5 leave today's
-path intact, so the revert restores today's diagnostics exactly; the
-window test is reverted with it.
+path intact, so until any Phase 6 task lands the revert restores
+today's diagnostics exactly; the window test is reverted with it.
+Every Phase 6 task presupposes this switch, so once one has landed,
+rolling back means reverting those tasks first, newest first.
 
 ### Phase 5: rules and refuters (T-R0a step 5)
 
@@ -1068,7 +1408,10 @@ window test is reverted with it.
     module) gives evidence whose premises are original ids. The
     test re-evaluates it by brute force with
     research/composition-assessment/sig-oracle/bounded.mjs.
-- [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify, commit.
+- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS), verify.
+- [ ] **Step 5: Regression row `r0-d-premise`:** let
+  `checkDerivation` accept a `D` atom as a premise; AT6's probe
+  expects the refusal. Prove it, then commit.
 
 #### Task 5.2: The CX refuter, as a shadow (AT17; CX questions 2, 3)
 
@@ -1091,9 +1434,18 @@ window test is reverted with it.
   - CX question 2: every corpus `D` is `Scoped`.
   - CX question 3: the check's time per probe, recorded with its
     bound.
+  - Task 4.5's shadow test re-run with `shadows: [cx]`: no
+    window.json class moves.
 - [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify,
   commit. Record the question-2 and question-3 results in the
-  commit message and in refute/statements.md §8 (as evidence).
+  commit message and as evidence in refute/statements.md §8 (an R0
+  document change, proposed in §8.1, made only with its owner's
+  agreement).
+
+**Optional under §18.69 Q10** ("Pending refuters may run for
+research or shadow evidence"): if scope must shrink, this task can be
+dropped without changing any R0 verdict. AT17 then keeps a stub
+shadow refuter, and CX questions 2 and 3 stay open.
 
 #### Task 5.3: Trusted rules and the trusted refuter (**gated** on P-C1, P-CX)
 
@@ -1106,7 +1458,15 @@ from `BQ` and `app` (§18.69 Q10).
 
 ### Phase 6: admission, policy, re-check, support (T-R0a step 6; T-R0e 6a, 6b, 6c, 6f)
 
-#### Task 6.1: `admit`, R010 as A, `AdmittedPendingR019` recorded (AT14; 6a)
+**Every Phase 6 task is gated on G-switch and starts after Task 4.6.**
+`admit` reads `Decided` outcomes and `Witness`; 6.2 makes Specialize
+run only on `Admitted` declarations; 6.3 judges splits on the
+recorded problem and solutions; 6.4 needs witnesses from
+`substitutionWitness` and the checked IR Task 4.6 carries. All of
+them presuppose that the R0 path is live, and this plan specifies no
+shadow form. If the author picks option A of §3.1, Phase 6 waits.
+
+#### Task 6.1: `admit`, R010 as A, `AdmittedPendingR019` recorded (AT14; 6a; **gated** on G-switch)
 
 **Files:**
 - Create: src/Features/Check/Admit.purs, test/r0-admit.test.mjs
@@ -1136,9 +1496,12 @@ from `BQ` and `app` (§18.69 Q10).
   - `ComponentBlocked names the member` (Review Focus 3).
   - The Task 0.1 fixtures carry status `AdmittedPendingR019`.
   - Today's E_SPECIALIZATION fixtures are unchanged.
-- [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify, commit.
+- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS), verify.
+- [ ] **Step 5: Regression row `r0-blocked-admitted`:** stop
+  applying `ComponentBlocked`; AT14's probe expects the blocked
+  member named. Prove it, then commit.
 
-#### Task 6.2: Specialize only admitted declarations; support refusals
+#### Task 6.2: Specialize only admitted declarations; support refusals (**gated** on G-switch; `NoCompilation` rows on G-codes)
 
 **Files:**
 - Modify: src/Features/Specialize.purs:88-97 (runs only if every
@@ -1148,19 +1511,35 @@ from `BQ` and `app` (§18.69 Q10).
   test/r0-support.test.mjs
 
 - [ ] **Step 1: Failing tests.**
-  - AT9: Solved with `NoWitness` gives `AtS (NoCompilation …)`, and
-    specialization does not run.
   - W3 (`walk` with a caller): Solved plus `NotCompiled`.
-  - Today's texts and codes are kept for these refusals until
+  - Refusals that have a counterpart today (the several-tail
+    placeholder at Specialize/Record.purs:38-44, the specialization
+    limit at Keys.purs:146-154) keep today's texts and codes until
     G-codes.
-- [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify,
-  commit. **Gated step:** render the new texts and codes after
-  G-codes, moving the fixtures in a separate commit.
+  - Specialization does not run on a declaration that is not
+    `Admitted`.
+- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS), verify.
+- [ ] **Step 5: Regression row `r0-nowitness-specialized`:** let
+  Specialize run on a Solved declaration whose `Compilation` is
+  `NoWitness`; the probe (a stub acceptance, Task 4.6's pre-D1 case)
+  expects no lowering. Prove it, then commit.
+- [ ] **Step 6 (after G-codes): `AtS (NoCompilation …)`.** AT9's
+  rendered half: Solved with `NoWitness` (`HoleContract`,
+  `NonConstructive`, and Task 4.6's no-checked-IR reason) gives `AtS
+  (NoCompilation …)` with the ruled code and text. These refusals
+  have no code today, so choosing one would decide §18.69 Q1(c)
+  silently; until the ruling, a declaration in this state is
+  classified (`layerOf` tested by injection) but this plan proposes
+  no provisional code for its rendering. Then render the other new
+  texts and codes after G-codes, moving the fixtures in a separate
+  commit with the docs/language.md paragraph.
 
-#### Task 6.3: `ForcednessPolicy` and D4 at P (AT18; **gated** on G-forced, G-6b)
+#### Task 6.3: `ForcednessPolicy` and D4 at P (AT18; **gated** on G-switch, G-forced, G-6b)
 
 **Files:**
 - Create: src/Features/Check/Admit/Forcedness.purs,
+  Admit/Forcedness/Check.purs (the trusted `check`, the only module
+  of the policy allowed to import Domain.Verdict.Internal),
   test/r0-forcedness.test.mjs
 
 **Interfaces:**
@@ -1183,12 +1562,15 @@ from `BQ` and `app` (§18.69 Q10).
   `SplitUnforced`. A seeded `search` whose claim `check` refuses
   gives `ForcednessUndecided`. `check` is called with the problem,
   site and claim only (its type admits no `Solution`).
-- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS).
+- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS), verify;
+  regression row `r0-unchecked-forced` lets `judgeSplit` use
+  `search`'s claim without `check`, and AT18's seeded probe expects
+  `ForcednessUndecided`. Prove it, then commit.
 - [ ] **Step 5 (after G-6b): admit forced splits.** O4, c21 and
   cmp-open now compile, which is a language change. Fixtures move in
   their own commit, with the changed docs/language.md paragraph.
 
-#### Task 6.4: The ground re-check, always on, cached (6c; W §3)
+#### Task 6.4: The ground re-check, always on, cached (6c; W §3; **gated** on G-switch)
 
 **Files:**
 - Create: src/Features/Specialize/ReCheck.purs, ReCheck/Eval.purs,
@@ -1243,9 +1625,13 @@ from `BQ` and `app` (§18.69 Q10).
     files' other declarations are reported.
   - A file that today stops at Resolve on d02 now reports every
     declaration.
-- [ ] **Steps 2-5:** run (FAIL), implement, run (PASS), verify,
-  commit. **Precondition:** Task 4.2's definedness test passes, so
-  that removing the Resolve refusal cannot make d02 Solved.
+- [ ] **Steps 2-4:** run (FAIL), implement, run (PASS), verify.
+  **Precondition:** Task 4.2's definedness test passes, so that
+  removing the Resolve refusal cannot make d02 Solved.
+- [ ] **Step 5: Regression row `r0-second-spread-contradiction`:**
+  classify a second spread as a refutable atom instead of rule 1′'s
+  support limit; the probe on n01 expects `Unresolved (Unsupported
+  [SecondSpread])`. Prove it, then commit.
 
 ### Phase 7: the generation continuation (**gated** on G-D1)
 
@@ -1309,23 +1695,43 @@ imports no checker state.
 | 2 | A code or text change misses a pinned fixture, or `classify` gives `Exhausted` the wrong class. | Fixture moves are listed per commit, and Task 0.2's evidence is cited. Revert per commit. |
 | 3 | The generator disagrees with the checker in ways RT1 cannot settle; generation costs time on scale programs. | Phase 3 is test-only, so removing it changes nothing a user sees. Timing is measured in 3.5. |
 | 4 (4.1-4.5) | RT8 exposes recorder or read-back defects; G0's check refuses candidates today's solver accepts. | Shadow only. Defects are fixed before 4.6 or listed in window.json. |
-| 4.6 | **Narrowing**: marker-bearing declarations stop compiling; genuine contradictions become Unresolved until P-C1. | One commit. Reverting it restores today's path exactly. The author accepts the window table beforehand (G-switch). |
+| 4.6 | **Narrowing**: every class of Review Focus 1 stops compiling under option B; genuine contradictions become Unresolved until P-C1; a Solved resting on erased rows if G-erased is skipped; lowering an IR other than the one G0 accepted. | One commit. Reverting it restores today's path exactly until a Phase 6 task lands; after that, the Phase 6 tasks are reverted first, newest first. The author chooses an option of §3.1 beforehand (G-switch), and G-erased is ruled or Q3 amended. test/r0-lowered-ir.test.mjs pins the pre-D1 route. |
 | 5 | A shadow result leaks into a verdict; certificate checking is too slow (CX question 3). | `shadowRefuter` cannot mint `Refuted` by type, regression row `r0-shadow-decides` guards it, and cost is measured in 5.2. |
-| 6 | The re-check fails on programs accepted today (E_INTERNAL), or costs too much; removing Resolve's refusals lets an invalid lambda reach Solved. | The corpus run in 6.4 must be clean before landing, and its cost is measured. 6.5 waits on 4.2's definedness test and on G-switch. Each task is one revertible commit. |
+| 6 | The re-check fails on programs accepted today (E_INTERNAL), or costs too much; removing Resolve's refusals lets an invalid lambda reach Solved; a `NoCompilation` refusal gets a code by accident. | Every Phase 6 task waits on G-switch and Task 4.6. The corpus run in 6.4 must be clean before landing, and its cost is measured. 6.5 waits on 4.2's definedness test. 6.2's `NoCompilation` rendering waits on G-codes. Each task is one revertible commit. |
 | 7 | The continuation changes the checked IR at some site. | The read-back route stays until the corpus-wide equality passes, so reverting 7.1 restores read-back. |
 
 ## 8. Problems in the R0 documents found while planning
 
-1. **The conservative boundary conflicts with "keep today's
-   diagnostics."**
-   §18.69 Q3 keeps every `outside` kind blocking a whole-declaration
-   Solved. T-R0b §11 item 4 notes that this makes any `Option(a)`
-   use Unsupported, and E17, E20-E23 mark effect arguments, handlers
-   and `fail`. So step 4 cannot land without refusing programs that
-   compile today, unless kinds are exempted with arguments, and no
-   argument exists. No R0 document says what happens at the switch;
-   §18.69 Q9 only asks that the window be specified and tested. This
-   plan makes it G-switch's question, with census evidence (3.5).
+1. **R0 as decided narrows what compiles today, through several
+   classes.** No R0 document says what happens at the switch;
+   §18.69 Q9 only asks that the window be specified and tested. Each
+   class below stops a declaration that compiles today from being
+   Solved, and since today's whole-program result is kept, one such
+   declaration stops its program:
+   - `outside` markers (§18.69 Q3 keeps every kind blocking a
+     whole-declaration Solved): `DataApplication` (T-R0b §11 item 4:
+     any `Option(a)` use), `DataOverRecords` (Sig8 signatures),
+     `Deferred` (every `defer`), and E17, E20-E23's
+     `EffectArgument`, `HandlerType` and `FailFamily`;
+   - erased effect rows: independence is not assumed (Q3), and how
+     the dropped obligations are accounted for is open (T-R0b §11
+     item 6); no task implemented it before this revision (G-erased,
+     Task 0.7);
+   - requirement atoms at type variables: `fn p(item: a): Text =
+     show(item)` compiles today, checked per key (docs/language.md:
+     863-867, E017), but under Q2 and AT19 `pr a` at a rigid `a` with
+     empty `Q` (Sig9) is `Unsupported RequirementAtoms`; likewise a
+     generic print, show or crash of an open record. G-ValidR does
+     not cover these; only contracts carrying `Q` would;
+   - requirement atoms at declared types holding functions and at
+     fresh bases, until G-ValidR;
+   - G0 refusals of the online solver's read-back (RT8) and ambiguous
+     several-tail read-backs.
+   So step 4 cannot land without refusing programs that compile
+   today, unless kinds are exempted with arguments (none exists) or a
+   decision is amended. This plan makes it G-switch's question (§3.1's
+   options), with the census (3.5) giving one category per class and
+   program counts, and the window table (4.5) the rest.
 2. **The step 4/5 window cannot be closed by implementation.** Step
    5's trusted rules and refuter need P-C1 and P-CX, which are proof
    work and unauthorized. "Land 4 and 5 together" therefore means
@@ -1350,14 +1756,46 @@ imports no checker state.
    program. Until G-ValidR, G0 cannot judge some programs'
    requirement atoms. Task 4.2 refuses them visibly instead of
    guessing.
+7. **No document says where checked IR comes from before D1.**
+   `Solution` holds `Compilation`/`Witness`, not a checked
+   declaration, and D1's `build` is gated. Task 4.6 states the
+   pre-D1 route: the online certificate's checked declaration.
+8. **Rule 3 has no path from a check refusal to `Unsupported`.**
+   AT19's third case expects `Unsupported RequirementAtoms`, but a
+   `ClaimsComplete` candidate refused for an unjudgeable atom gives
+   `NoAcceptedCertificate` and a `SearchFault`. Tasks 4.1-4.2 detect
+   such atoms before search (proposed, G-A-i(f)).
+9. **`EmissionFault`'s `Key` has no Domain-level type.** The
+   specializer's key holds `IR.Ty`, which Domain.Verdict cannot
+   import. Task 1.1 proposes the Domain.Type view of the key.
 
 Re-verified against 76cd373: two former items are resolved and
 dropped. `Inadmissible`'s `Int` is the callee's `VarId` in W §2.3 as
 in T-R0a §6, and `ReCheckFailed` is now T-R0a's `EmissionFault`,
-outside `InternalFault`. Items 1-6 above still hold at 76cd373.
+outside `InternalFault`. Items 1-6 above still hold at 76cd373; items
+7-9 were added after the review of 99da55b.
 
 Nothing found blocks writing the plan. Items 1 and 2 decide whether
 step 4 can land without narrowing what compiles today.
+
+### 8.1 Proposed changes to the R0 documents
+
+This plan edits no R0 document. Each change below is proposed to the
+document's owner, and the plan builds the proposed form labelled as
+such until the owner and the author agree.
+
+| Document | Change | Why | Task |
+|---|---|---|---|
+| T-R0b §3.5, §11 item 6 | Add the erased-row marker kind (or record the check) once G-erased is ruled; state its syntactic criterion | §18.69 Q3: no Solved rests on effect/record independence, and nothing implements it | 0.7, 4.1, 4.6 |
+| T-R0a §3.5 | Add `SearchFault = … \| SearchBroke StrategyName String` for a broken invariant inside an untrusted search's own code | §5.3 says both "a broken invariant stops" and "an untrusted search's failure never stops it"; the plan proposes the second for search-internal invariants | 4.1, 4.3 (G-A-i(e)) |
+| T-R0a §5.3 rule 1, AT19 | An unjudgeable `BQ` atom (not ground after entailed reduction; before G-ValidR, at a declared type holding functions) blocks Solved before search, with reason `Unsupported RequirementAtoms` | rule 3 has no path from a check refusal to `Unsupported` | 4.1, 4.2 (G-A-i(f)) |
+| T-R0b §5.3 | Record the online adapter's choice: an ambiguous several-tail read-back is a `Heuristic` candidate | §5.3 leaves it to "the strategy's adapter (argued)" | 4.3 (G-A-i(g)) |
+| T-R0a §9 AT7 | Add the premise that each refuter's search is monotone in its hint set (per-hint fuel) | canonical sorting does not make adding a strategy safe for Contradiction | 4.1 |
+| T-R0a §3.3, §4.2; W §1.6 | The online certificate carries the checked declaration; a `NoWitnessReason` for an acceptance with no checked IR before D1 | `Solution` holds no checked IR, and D1 is gated | 4.3, 4.6, 6.2 |
+| T-R0a §3.5 (`EmissionFault`) | `Key` is the Domain.Type view of a specialization key | Domain.Verdict cannot import Domain.IR.Internal | 1.1, 6.4 |
+| T-R0a §5.3 / AT19, CX §4 | `entailedGround`'s mgu is restricted to the unitary fragment, with "not ground" outside it; it does not rely on C1-E | records with several tails have no unitary unification; C1-E's standing is CX §8 Q5 | 4.2 |
+| T-R0a §10 step 2, T-R0e §3.2 | `SameDisjoint` and `RepeatedTail` stay Resolve refusals classified `Policy` until a later move to per-declaration refusal; arity at a fixed result stays at its raise site until the switch | they are Resolve refusals today, and moving arity first changes the first diagnostic | 2.3 |
+| refute/statements.md §8 | Record CX questions 2 and 3's measurements as evidence | Task 5.2 produces them | 5.2 |
 
 ## 9. Execution handoff
 
@@ -1366,3 +1804,47 @@ reviewer per task. The tasks share interfaces tightly (Domain.Verdict
 and Domain.Recorded feed every later phase), RT1 requires an
 implementer who has not seen the generator, and a shipped mistake in
 `decide` or the re-check would mislabel programs as valid or invalid.
+
+## 10. Review of 99da55b
+
+A read-only review of this plan at 99da55b reported four blocking
+findings (B1-B4), sixteen should-fix (S1-S16), six nits (N1-N6) and a
+proposal for presenting G-switch. Each cited line was checked against
+the code and documents before acting. Every finding held and is
+applied; none is rejected. Where the plan chose between the
+alternatives a finding offered, the choice is stated.
+
+| Finding | Verdict | Where applied, and the choice made |
+|---|---|---|
+| B1 erased rows unenforced | applied | Gate G-erased (§3); Task 0.7 drafts the marker or check; census category (3.5); Task 4.6 cannot land without the ruling, blocking those declarations, or an explicit Q3 amendment; G-exempt narrowed to marker kinds |
+| B2 narrowing under-characterized | applied | Review Focus 1 and §8 item 1 list every class (markers including `Deferred` and `DataOverRecords`; erased rows; `BQ` at type variables, which G-ValidR does not cover; `BQ` pending G-ValidR; RT8/G0 refusals; ambiguous read-backs); census one category per class with program counts (3.5); window table the rest (4.5) |
+| B3 Phase 6 presupposes the switch | applied | All of Phase 6 gated on G-switch and after 4.6 (phase table, Phase 6 preamble, task headings); no shadow variants specified. 4.6's rollback qualified: exact only until a Phase 6 task lands |
+| B4 no checked-IR route after the switch | applied | Task 4.3's certificate carries `checked`; Task 4.6 states the pre-D1 route and adds test/r0-lowered-ir.test.mjs and row `r0-ir-not-read-back`; other strategies' acceptance gives `NoWitness`/`AtS` until D1 |
+| Item 4 options | applied | §3.1's table, options A-E with consequences, decisions amended, authorization and census placeholders; no option chosen. C amends §18.66 decision 1, D amends §18.69 Q3 |
+| S1 `cx` before 5.2 | applied | 4.5 uses `shadows: []`; 5.2 re-runs the table with `[cx]` |
+| S2 `RecordedProblem` in Phase 1 | applied | Opaque type and Internal module in Task 1.1; `emptyProblem` in Features.Check.Generate; 3.1 fills the fields |
+| S3 `EmissionFault` key layering | applied, with a third option | The review's second citation (Specialize.purs:37) is a record over Domain.Type, not the IR tuple; that record is Domain-importable, so the plan proposes it as `Key`, keeping placement in Features.Specialize.ReCheck as the alternative |
+| S4 trust boundary too wide | applied | Only `Strategy.Substitution`, `Refute.Rules` and `Admit.Forcedness.Check` may import Domain.Verdict.Internal; structure test names `Online`, `ReadBack`, `Counter` as refused |
+| S5 Task 2.3's premise | applied (second option) | b′ checks stay in Resolve, classified `Policy`; arity stays at its raise site; ordering rule stated; the per-declaration move recorded in §8.1 |
+| S6 tautological first-diagnostic test | applied | Snapshot of `compile`'s wire output over the whole set at the parent commit; order defined (entry, bodies, then program-wide stages) |
+| S7 Task 0.2's rule inverted | applied | Every run counts; none reaching the bound maps `Exhausted` to a fault as bounded evidence; one reaching it stops for the author; `r005b-quiet` reused |
+| S8 `Exhausted`/`Unexpected` after 4.3 | applied | G-A-i(e): search-internal broken invariants do not stop the run, recorded as proposed `SearchBroke`; today's path keeps `AsFault` |
+| S9 Task 4.2 | applied | (a) pre-search detection, G-A-i(f); (b) unitary fragment, Robinson and Rémy cited, C1-E not relied on, argument before code; (c) Review Focus 4's test restricted |
+| S10 ambiguous read-back | applied | Labelled proposed, G-A-i(g); RT8 counts and excludes the expected classes |
+| S11 `NoCompilation` codes | applied | Gated on G-codes; no provisional code proposed |
+| S12 AT7 | applied (stated and tested) | Hint-monotonicity condition (per-hint fuel) added to 4.1's conditions and tested on its own |
+| S13 regression rows | applied | Rows added for 4.2, 4.4, 5.1, 6.1, 6.2, 6.3, 6.5; `r0-classify-catchall` rewritten; probe registration and `context.compilerPath` in the Global Constraints |
+| S14 docs upkeep | applied | Global Constraints: docs/progress.md every task; engineering.md and AGENTS.md for 1.1, 3.1; ADR 016 and docs/language.md for 4.6 |
+| S15 Task 0.1 | applied | Bounded-evidence wording; three result values; helpers listed as files to create |
+| S16 unverifiable read check | applied | The translator is committed before Task 3.2's first commit; the reviewer checks commit order |
+| N1 `.serial` suffix | applied | 0.1 renamed; the suffix rule added to the Global Constraints. The other `.serial` files time or sweep the corpus and keep it |
+| N2 placeholder `Problem` | applied | Domain/Problem.purs added to 2.2; grep convention change noted |
+| N3 untestable assertion | applied | Dropped from 1.3 |
+| N4 5.2 optional | applied | Noted in 5.2 |
+| N5 canonical serialization | applied | `encodeProblem` named in 3.6 |
+| N6 pinned census | applied | test/fixtures/r0/census.json |
+
+Final gate list: G-R019, G-R019-visible, G-codes, G-switch (options
+§3.1), G-erased (new), G-ValidR, G-D1, G-forced, G-6b, G-Recon,
+G-effects, G-coverage, G-exempt (narrowed to marker kinds), G-A-i
+(extended with (e)-(g)).
