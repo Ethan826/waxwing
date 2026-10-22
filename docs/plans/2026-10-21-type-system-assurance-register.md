@@ -89,8 +89,8 @@ These are foundations or leads, not proofs of Waxwing's adaptations:
 - [Inference requirements][inference]: service and failure composition.
 - [Inference foundations](2026-10-22-inference-foundations-assessment.md)
   §11 is the obligations index for inference, elaboration, coherence,
-  specialization termination and lowering (63 rows: 2 proved, 20
-  argued, 1 experimentally checked, 16 proposed, 24 unresolved); its
+  specialization termination and lowering (63 rows: 2 proved, 19
+  argued, 1 experimentally checked, 17 proposed, 24 unresolved); its
   [companion](2026-10-22-inference-foundations-extension.md) holds the
   source readings. Soundness, completeness and principality stay
   separate.
