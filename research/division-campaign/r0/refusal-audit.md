@@ -28,7 +28,11 @@ itself stays unstated in Lean (requirements.md §4.4).
   single-label instance refutes (§2). What keeps them out of class c is
   premise status: each reads atoms rewritten by the online substitution
   (§1), so each is **class e by code path**, as requirements.md §2.3
-  says.
+  says. Forcedness of those bindings does not change that (§18.65).
+  Every "c1" below is a **c1 candidate**: CX states only the top-level
+  C1-H and C1-O (refute/statements.md §5, both expected true, not
+  proved); nested, record-field, cancellation and `lacks`/`disjoint`
+  rules are unstated (CX Q4; pending author Q10).
 - **In every probe of those kinds a counter-instance exists and was
   checked in the bounded model** (17 problems, §7.2). No probe found one
   of them rejecting a valid program. A refuter built on the single-label
@@ -48,8 +52,11 @@ itself stays unstated in Lean (requirements.md §4.4).
   H, not in `shareTails`. This moves one entry of requirements.md
   §2.3's class d (§6 item 1).
 - Resolve-time `lacks` and disjointness refusals on body types are
-  semantic, not static (c2, checked); `A record literal accepts at most
-  one spread` is a support boundary reported as E_TYPE (§6 items 3-4).
+  semantic, not static (c2 counter-instances checked in the bounded
+  model). Resolve runs no CX check, so they belong in generation as
+  definedness atoms decided by CX (§6 item 3; pending author Q4). `A
+  record literal accepts at most one spread` is proposed as
+  Unsupported, pending boundaries §7 Q3 / author Q4 (§6 item 4).
 
 ## 1. Where premises come from (cited)
 
@@ -91,6 +98,14 @@ author's added check (§18.65), forced bindings alone do not make a
 refusal class c; this audit therefore keeps them in e and offers two
 routes to c (§5).
 
+This forcedness argument is the premise CX's C1-E needs
+(`ClashAfterEntailedSound`, refute/statements.md §5: a clash after a
+substitution entailed by the original body is sound). It is argued
+here, not checked, and C1-E's use as the line between original and
+chosen atoms is CX Q5 (pending author Q10). Even with C1-E proved,
+the argument covers head clashes only; the record refusals of
+§3.3-3.5 and §3.9 need their own rules on original atoms.
+
 ## 2. The single-label counter-instance lemma (proposed; argued)
 
 **Setting.** `D` is a source signature's hypothesis set: `x lacks L`
@@ -115,6 +130,9 @@ closed type. Then `θ_{R,l,τ}` satisfies `D`, and every rigid row is
 (hypothesis 1), and `x` holds only `l`; on `x ∉ R` it holds of `{}`. A
 `disjoint` atom with an empty side holds; one with both sides in `R` is
 excluded (hypothesis 2). ∎
+
+*Review (88c052d):* the adversarial reviewer found Lemma SL true as
+stated. Corollary SL-H below was not separately confirmed.
 
 **Instances.** `R = ∅` (every rigid row empty): `θ_∅`, which satisfies
 every source `D`; it refutes any atom that requires a rigid row to
@@ -171,15 +189,22 @@ research/division-campaign/source/examples/, run again here.
 **Class by code path: e.** Per instance:
 
 - **c1 candidate, ground clash between original atoms** (a01:
-  `fn f(): Int = true`, `E_TYPE 1:15 Expected Int, found Bool`; n14,
-  a field type `Int` against `Bool` under one rigid tail). *Soundness
-  statement:* if `B` contains `τ ≐ σ` whose sides, decomposed
-  argument-wise through equal heads, reach two different head
-  constructors (base types, arrow, record, a named type of another name
-  or arity), then no flexible assignment satisfies `B` at any rigid
-  assignment; since every source `D` is satisfiable
-  (`clauseOnly_satisfiable`, cited), `¬ ValidOpen`. It rests on the
-  model's ground types being a free term algebra (argued).
+  `fn f(): Int = true`, `E_TYPE 1:15 Expected Int, found Bool`).
+  a01's atom is a top-level clash of base types, the shape CX's C1-H
+  (`ClashSound`) states; C1-H is expected true, not proved. *Soundness
+  statement for the wider rule (proposed):* if `B` contains `τ ≐ σ`
+  whose sides, decomposed argument-wise through equal heads, reach two
+  different head constructors (base types, arrow, record, a named type
+  of another name or arity), then no flexible assignment satisfies `B`
+  at any rigid assignment; since every source `D` is satisfiable
+  (`clauseOnly_satisfiable`, cited), `¬ ValidOpen`. The earlier
+  justification, "ground types are a free term algebra", does not hold
+  for records, which are equal modulo label order and disjoint union;
+  a record decomposition step needs its own argument. **n14** (a field
+  type `Int` against `Bool` under one rigid tail, `{ a: Bool, ...r } ≐
+  { a: Int, ...r }`) is a clash nested in a record: it needs the
+  nested-clash rule, which CX does not state (CX Q4; pending author
+  Q10). Named types are not in CX's Lean model.
 - **c2, a rigid type variable against a head** (a02: `fn f(x: a): Int
   = x`, `E_TYPE 1:19 Expected Int, found a`). Counter-instance
   `a ↦ Bool`, checked in the bounded model. Two rigid type variables:
@@ -193,7 +218,10 @@ path: e; c1 candidate on original atoms** (a03: `fn(x) => x(x)`,
 `E_TYPE 2:22 Infinite type: _ occurs in _ -> _`). *Soundness
 statement:* if `B` forces `α ≐ C[α]` with `C` a non-trivial context,
 no finite type solves it; model types are finite, so `B` has no
-solution at any rigid assignment (argued). A record tail equal to
+solution at any rigid assignment (argued). a03's atom `t1 ≐ t1 -> t2`
+is the top-level type-variable shape CX's C1-O (`OccursSound`) states,
+expected true and not proved; "forces" through other atoms, and the
+row occurs check, are unstated (CX Q4). A record tail equal to
 itself extended (a04, `m ≐ { a: Int, ...m }`) does not reach this check:
 the common tail cancels and §3.3 refuses it, `E_TYPE 2:40 Expected
 { ..._ }, found { a: Int, ..._ }`. The effect-row `RowOccurs` is out of
@@ -206,17 +234,22 @@ sides flattened through bindings; common labels unified first, common
 tails cancelled. **Class by code path: e.** The rule is sound for its
 premises (argued):
 
-- **Cancellation** (c1 rule): `X ⊎ M = Y ⊎ M` implies `X = Y` for
-  disjoint unions of finite rows, whether `M` is rigid or flexible.
+- **Cancellation** (c1 candidate; unstated in CX, CX Q4): `X ⊎ M = Y
+  ⊎ M` implies `X = Y` for disjoint unions of finite rows, whether `M`
+  is rigid or flexible.
 - **Residue label `l` against a side with no unknown:** if the other
-  side is closed, c1 (it lacks `l` at every instance); if it holds
-  rigid tails, c2 by `θ_∅`.
+  side is closed, c1 candidate (it lacks `l` at every instance;
+  record-field rule unstated in CX, CX Q4); if it holds rigid tails,
+  c2 by `θ_∅`.
 - **Residue rigid `r` against a side with no unknown:** c2 by
   `θ_{{r},z}`, `z` not named in `D`.
 
 Probes: a05 (`p: { ...r }` returned as `{ b: Int, ...r }`, `E_TYPE 1:39
-Expected { b: Int, ...r }, found { ...r }`; c1 after cancellation, and
-c2 by `θ_∅`, checked); a04 (c1, checked). A label twice on one side
+Expected { b: Int, ...r }, found { ...r }`; a c1 candidate after
+cancellation, and c2 by `θ_∅`, checked); a04 (c1 candidate, row occurs
+by cancellation, unstated in CX; invalid with no rigid variable,
+checked). The rules in this list are pending author Q10. A label twice
+on one side
 (UnifyRecord.purs:113-119) is said to be unreachable (cited, not
 probed).
 
@@ -230,8 +263,8 @@ Per kind, the rule and the evidence:
 
 | Refusal | Text | Rule (argued) | Probe | Evidence |
 |---|---|---|---|---|
-| `Forbidden` (D1) | `a is not allowed here: r lacks { a }` | a written lack against a label the row holds: c1 if the holding is forced | n10 | no rigid at the use; checked in the bounded model with `θ = {}` |
-| `Overlap` (D2) | `Field x is in both records: r disjoint s` | a label on both sides of a pair: c1 | b01 | checked, `θ = {}` |
+| `Forbidden` (D1) | `a is not allowed here: r lacks { a }` | a written lack against a label the row holds: a c1 candidate only when restated over original atoms (e.g. via a C1-E-style entailment) and proved; forcedness alone is insufficient | n10 | no rigid at the use; checked in the bounded model with `θ = {}` |
+| `Overlap` (D2) | `Field x is in both records: r disjoint s` | a label on both sides of a pair: a c1 candidate only when restated over original atoms and proved; forcedness alone is insufficient (b01 reaches the label only through equations) | b01 | checked, `θ = {}` |
 | `MayHold` (D3″) | `r may already have field b` | a rigid must lack `l`, `D` does not say so | b02, b04 | c2 by `θ_{{r},b}`, checked |
 | `Unproven` (D3) | `u and v are not known to be disjoint; …` | two rigids must be disjoint, `D` does not say so | n06 | c2 by `θ_{{u,v},z}`, checked |
 | `Twice` (D3′) | `t is in both records and may have fields` | a rigid apart from itself | n05 | c2 by `θ_{{t},z}`, checked |
@@ -239,15 +272,17 @@ Per kind, the rule and the evidence:
 b02 is `ext(p, { b: 1 })` with `ext`'s `s disjoint t` and `p: { ...r }`:
 `E_TYPE 4:35 r may already have field b`. b04 reaches `MayHold` after
 `shareTails` (§4): `s may already have field b`, where `b` came to `x`
-only through `if … then x else y`.
+only through `if … then x else y`. The `lacks`/`disjoint` rules of
+this table are unstated in CX (CX Q4; pending author Q10).
 
 ### 3.5 The one-spread literal (Overlap.purs:42-61, 65-75, 100-110)
 
 **Premises:** the base's row as resolved. **Class by code path: e.**
 
 - `Duplicate field a` (E_DUPLICATE), a label the base's row already
-  holds: c1 (`base ⊎ { a }` needs the base to lack `a`) when the
-  holding is original, as in d01 (`p: { a: Int, ...r }`,
+  holds: c1 candidate (`base ⊎ { a }` needs the base to lack `a`;
+  a definedness rule unstated in CX, CX Q4, pending author Q10) when
+  the holding is original, as in d01 (`p: { a: Int, ...r }`,
   `{ ...p, a: 2 }`, `E_DUPLICATE 1:42`; checked).
 - `r may already have field reviewed`, a rigid tail not known to lack
   the label (n03): c2 by `θ_{{r},reviewed}`, checked.
@@ -323,13 +358,16 @@ is left), so D4 refuses even when no choice exists (argued). Also f03
   a rigid tail never supplies a field; c2 by `θ_∅`, checked.
 - `Pattern is missing the rest of { a: Int, ...r }` (n07, a closed
   pattern): c2 by `θ_{{r},z1}`, checked.
-- `Pattern is missing field b` (e03): c1 on closed known rows.
+- `Pattern is missing field b` (e03): c1 candidate on closed known
+  rows (record-field rule unstated in CX, CX Q4; pending author Q10).
 - **Arm order** (requirements.md §2.3, class f). e02 and e03 are one
   match with its two arms swapped (`{ a }` and `{ a, b, ... }` on a
   lambda's parameter). Both are refused, with different texts: e02
   `E_TYPE 4:10 b is not a field of { a: _ }`, e03 `E_TYPE 4:5 Pattern
   is missing field b; …`. The translated problem is invalid with no
-  rigid variable (checked), so both are c1. **Evidence that arm order
+  rigid variable (checked), so both are c1 candidates (no rigid
+  variable, so `θ = {}` is also a counter-instance; the rule itself is
+  unstated in CX). **Evidence that arm order
   changes the text, not the verdict, for this pair**; the general claim
   stays f. Growth by a hole tail binds the most general record holding
   the written labels (argued; RecordPattern.purs:62-64 says so).
@@ -345,7 +383,9 @@ c below is conditional on it.
   comparability atom).
 - `Ambiguous type _ in comparison` (f02, `fn(x) => x == x`, never
   called): the problem is valid with `x ↦ Int` (argued). Not a semantic
-  refusal: **e**, or an admissibility rule for T-R0e.
+  refusal: **e** (Unresolved) unless boundaries §7 Q5 makes it a P
+  policy (pending author Q4). The two differ in text and code: e is an
+  Unresolved verdict, P a refusal of a valid problem.
 - "Judged on an unforced settled type" (requirements.md §2.3, class
   d): **not reached today.** f03 compares `left(w)` with a function in
   `w`; D4 refuses first, `E_TYPE 5:8 Cannot tell whether left's u or v
@@ -356,8 +396,9 @@ c below is conditional on it.
 
 - At check, on a ground type: f04, `show(fn(n: Int) => n)`, `E_TYPE
   1:24 Expected a printable value, found Int -> Int`. c1 candidate,
-  conditional on `ValidOpenR`: a type holding a function is not
-  printable (a definition), on an original atom.
+  conditional on `ValidOpenR` (or on a ground definitional rule for
+  `BQ`, pending author Q2): a type holding a function is not printable
+  (a definition), on an original atom. CX states no `BQ` rule.
 - At a specialization key: f05, `shown(p: { ...r }) = show(p)` called
   with `{ f: fn … }`, **refused at specialize**, `E_TYPE 1:36 Expected
   a printable value, found { f: Int -> Int }`. The key is forced by
@@ -377,8 +418,16 @@ c below is conditional on it.
 - `A disjoint constraint must name two different row variables` (d03,
   `where r disjoint r`; Requirements.purs:72): **b′**. `...r` twice
   through a declared type (Apart.purs:82-91): b′ (cited, not probed).
-- `A record literal accepts at most one spread` (n01): a support
-  boundary, not a rule of `ValidOpen` (§6 item 4).
+- `A record literal accepts at most one spread` (n01): not a rule of
+  `ValidOpen`; **proposed: Unsupported (a support boundary), pending
+  boundaries §7 Q3 / author Q4** (§6 item 4).
+
+The two body-type refusals above are c2 only as evidence: their
+counter-instances were checked in the bounded model, but Resolve runs
+no CX check, so today's refusal is not itself the c2 ground. Under R0
+they belong in generation as the annotation's definedness atoms
+(recorder-rules E13, `eq σ_k σ_k`), decided by CX like any other atom
+(pending author Q4).
 
 ### 3.13 Limits, defects and placeholders
 
@@ -406,7 +455,8 @@ types**: each field keeps its own type, flexible or not. *Argument:* a
 label of `F₂` is not in `F₁`, so `σ(m₁)` holds it with that field's
 type; symmetrically for `F₁`; the rest of each side is the same row
 `R`. The lacks it adds to `ρ` and the pairs it moves to the images
-(RecordTail.purs:73-94) are consequences of the same atoms.
+(RecordTail.purs:73-94) are consequences of the same atoms. *Review
+(88c052d):* the adversarial reviewer found P1 correct.
 
 **Statement P2 (proposed).** If a side's constants include a rigid tail
 `r`, `F₁ ⊎ m₁ ≐ F₂ ⊎ r ⊎ m₂`, the bind rule is **not** most general in
@@ -420,7 +470,9 @@ problem is **valid** (`share-rigid-flex`, β flexible), so that refusal
 would reject a valid problem (class d); with `b: Int` fixed it is
 **invalid** at `r ↦ { b: Bool }` (`share-rigid-fixed`), so there the
 refusal coincides with a counter-instance (c2). The labels-only case is
-valid (`share-labels`).
+valid (`share-labels`). *Review (88c052d):* the reviewer confirmed
+`share-rigid-flex` valid and `share-rigid-fixed` invalid at `r ↦ { b:
+Bool }`, as stated.
 
 **Statement P3 (proposed): P2's case is unreachable today.** No record
 row the checker builds holds both a rigid tail and an unknown one, so
@@ -436,12 +488,18 @@ unknown, `t` minus `R`, or `L`'s fields beside a fresh tail
 (Cases.purs:70-90); and each bind image takes one residue side's tails,
 which are homogeneous by the hypothesis. Not checked: the code has a
 path for rigid tails in desugared rows (Chain.purs:89-104), so an
-instrumented run is the natural check before relying on P3.
+instrumented run is the natural check before relying on P3. *Review
+(88c052d):* P3 is argued only. The case the reviewer names for the
+instrumentation is a row built by instantiation, such as `ext(p, y)`
+returning `{ ...s, ...t }` with `s` bound to `r`: it must be shown
+always desugared to one fresh tail before any binding reads it.
 
 **Answer to requirements.md §2.3's class-f question** (argued, given P1
 and P3): `shareTails` is principal on every input it can reach, so the
-`lacks`/`disjoint` refusals that follow it rest on forced bindings and
-coincide with counter-instances (b04, checked). The flexible-field-type
+`lacks`/`disjoint` refusals that follow it rest on forced bindings.
+Forced bindings do not make them class c (§18.65; §1). In b04 the
+refusal coincides with a counter-instance (checked); that is one
+probe, not a general claim. The flexible-field-type
 choice P2 describes does arise from source, but rule H meets it at the
 end of the body (b03, class d), not `shareTails`.
 
@@ -451,7 +509,8 @@ end of the body (b03, class d), not `shareTails`.
    state it over the recorded problem and prove it sound for
    `ValidOpen`: then generate-then-decide (§18.66 decision 1) can apply
    it to the complete problem. Candidates are listed per entry; none is
-   proved.
+   proved, and only the top-level C1-H and C1-O are stated in CX (the
+   rest is CX Q4; pending author Q10).
 2. **Refuter from Lemma SL.** Use the refusal only to propose `θ` (the
    lemma's instance from the atom and the facts it named), then check
    `Sat θ D` and `decideCall` false on the original `B`. This needs CX
@@ -460,7 +519,8 @@ end of the body (b03, class d), not `shareTails`.
    comparability and printability, which wait on `ValidOpenR`.
 
 Either route keeps H, D4 and Ambiguous out of Contradiction: H is d
-(§3.7), D4 and Ambiguous are e.
+(§3.7), D4 is e, and Ambiguous is e unless boundaries §7 Q5 makes it a
+P policy (pending author Q4; neither is a Contradiction).
 
 ## 6. Points that contradict or refine requirements.md §2
 
@@ -469,18 +529,27 @@ Either route keeps H, D4 and Ambiguous out of Contradiction: H is d
    argued); the same non-principal choice is reached and refused by H
    (b03, checked). Proposed: move the example to H's row and close the
    class-f question on `shareTails` principality once P3 is checked.
+   "A `lacks` refusal after `shareTails`" stays a valid **class-e**
+   fixture (b04); the class-d fixture is b03 (H). Fixture lists that
+   cite the old entry (generation-interface AT1, recorder-rules §9
+   item 2) should name b04 and b03 explicitly.
 2. **Class d, "printability/comparability judged on an unforced settled
    type":** not reached today; D4 refuses first (f03). The live cases
-   are Ambiguous (valid, refused: e or admissibility) and printability
-   at a specialization key (f, waiting on `ValidOpenR`).
+   are Ambiguous (valid, refused: e unless a P policy, §3.10) and
+   printability at a specialization key (f, waiting on `ValidOpenR`).
 3. **Class a lists "Resolve/*":** the body-type `lacks` and disjointness
-   refusals at resolve (d02, n16) are semantic, c2 with checked
-   counter-instances. They may stop generation on either ground; the
-   label "static rule" is inaccurate.
+   refusals at resolve (d02, n16) are semantic: each has a
+   counter-instance checked in the bounded model, so the label "static
+   rule" is inaccurate. They cannot stop generation as c2 refusals,
+   because c2 needs a CX check that resolve does not run. Proposed:
+   carry them into generation as recorder-rules E13 definedness atoms
+   and let CX decide them (pending author Q4); a program-wide Resolve
+   stop would also hide every other declaration.
 4. **`A record literal accepts at most one spread`** (n01) is a
-   resolve-time support boundary reported as E_TYPE. Under R0 it is
-   Unsupported, not a static rule of the language; T-R0e's support
-   boundaries should name it.
+   resolve-time refusal reported as E_TYPE; docs/language.md states it
+   as a language rule. **Proposed: Unsupported (a support boundary),
+   pending boundaries §7 Q3 / author Q4.** If the author agrees,
+   T-R0e's support boundaries should name it.
 5. **D4 refuses forced splits** (c21, checked valid): stronger than
    "solver incompleteness" in the usual sense, worth stating in T-R0a's
    reason ADT.
@@ -602,11 +671,107 @@ atoms the refusal needs (a selection's result type, for instance, is
 dropped); n10's `Text` field is `Int`. Comparability and printability
 have no oracle atom and were not run.
 
+**Dropped atoms and the verdicts (argued; reviewed).** Dropping atoms
+can only add solutions. For an **invalid** verdict that is harmless: a
+counter-instance of a sub-body refutes the whole body (C1-M; the
+whole-problem form is the CX-P statement the reconciliation review
+proposes for CX). For a **valid** verdict it is not sound in general,
+so each valid entry is justified here. The adversarial reviewer
+re-derived b03 and c01 (and b04, invalid) from the probe sources and
+found the dropped atoms to be defining equations or definedness-
+implied; c21 and p11 are argued the same way from their sources.
+
+- **b03.** Dropped: the instantiation of `ext`'s `s` to `p`'s `r` (a
+  defining equation; the translation writes `0` for it); `t` against
+  `y`'s parameter type, and the lambda's and `f`'s types (defining
+  equations of variables no other atom constrains); the selection's
+  result type (defining `t1`); `{ b: t1, ...4 }`'s `4 lacks b`
+  (definedness-implied by the kept equation); the body's `0` against
+  `Int` (trivially true). `ext`'s `s disjoint t` is kept, as `0 # 3`.
+- **c01.** Dropped: `divide`'s `s`, `t` instantiated to `route`'s `s`,
+  `t` (defining equations, substituted into the kept `3 # 0`, `4 #
+  1`); `3 # 4` from `{ ...u, ...v }` (definedness-implied by the kept
+  `{ x: Int } ≐ { ...3, ...4 }`); the literal's `1` against `Int` and
+  the result `Int` against `Int` (trivially true).
+- **c21.** Dropped: `3 # 4` from `{ ...r, ...s }` (definedness-implied
+  by the kept equation); `false` against `Bool` and the result `Bool`
+  against `Bool` (trivially true).
+- **p11.** Dropped: `divide`'s `s`, `t` instantiated to `route`'s `s`,
+  `t` and `x`'s row to `0` (defining equations, substituted into the
+  kept atoms); `3 # 4` (definedness-implied); the result `Int` against
+  `Int` (trivially true).
+
+The reviewer did not re-derive c21 and p11 under this heading
+(c21 is listed among its re-checked verdicts); their lists are this
+document's reading of the sources.
+
 ## 8. Open items
 
 - Check P3 (an instrumented run, or a proof over the row-making sites)
-  before closing the `shareTails` question.
-- Lemma SL and Corollary SL-H are statements for review, not proofs;
-  the refutation half needs CX's `decideCall` and substitution lemma.
-- `ValidOpenR` for `BQ` decides §3.10-3.11.
+  before closing the `shareTails` question; the run must cover rows
+  built by instantiation (§4, the reviewer's `ext(p, y)` case).
+- Lemma SL was found true as stated by review; Corollary SL-H is still
+  a statement for review. The refutation half needs CX's `decideCall`
+  and substitution lemma.
+- `ValidOpenR` for `BQ` (or a ground definitional rule) decides
+  §3.10-3.11 (pending author Q2).
 - The arm-order claim is checked for one pair only.
+- Every c1 candidate waits on CX stating its rule (CX Q4, Q5; pending
+  author Q10).
+- The second spread (§3.12, §6 item 4), the resolve-time body-type
+  checks (§6 item 3) and Ambiguous (§3.10) wait on author Q4.
+
+## Revision log (reviews of 88c052d)
+
+Two read-only reviews of the tranche at 88c052d: the interface
+reconciliation (findings A1-I2, author questions Q1-Q10) and the
+adversarial soundness review (findings 1-9). "Author Q<n>" below and
+above means the reconciliation's Q<n>.
+
+**Applied.**
+
+- Reconciliation A6: §3.12 and §6 item 4 now say "proposed:
+  Unsupported, pending boundaries §7 Q3 / author Q4"; §0 likewise.
+- Reconciliation F4: every c1 entry not stated in CX is relabelled a
+  c1 candidate (§0, §3.1, §3.2, §3.3, §3.4, §3.5, §3.9, §5); a01 and
+  a03 are placed under C1-H and C1-O (stated, not proved); n14 moves
+  to "needs nested clash"; the free-term-algebra argument is withdrawn
+  for records.
+- Reconciliation F5: §1 says its forcedness argument is the premise
+  CX's C1-E needs, and that it covers head clashes only.
+- Reconciliation G1 with adversarial 9(e): the body-type resolve
+  checks stay c2 as evidence; §3.12 and §6 item 3 now say resolve
+  cannot stop generation on c2 without a CX check, and propose
+  carrying them into generation as E13 definedness atoms.
+- Reconciliation G2: Ambiguous is e unless boundaries §7 Q5 makes it a
+  P policy (§3.10, §5, §6 item 2).
+- Reconciliation G4: §6 item 1 keeps b04 as the class-e fixture and
+  names b03 as the class-d one.
+- Adversarial 7: the `Forbidden`/`Overlap` rule column now says "a c1
+  candidate only when restated over original atoms and proved;
+  forcedness alone is insufficient"; §4's claim is limited to b04.
+- Adversarial 9(f): §7.2 lists, per valid entry (b03, c01, c21, p11),
+  the dropped atoms and why each is a defining equation,
+  definedness-implied or trivially true.
+- Reviewer confirmations recorded: Lemma SL true as stated (§2); P1
+  correct and P2's two problems as stated (§4); P3 argued only, with
+  the instantiation case to instrument (§4, §8).
+
+**Pending.**
+
+- Author Q4: the second spread, the resolve-time body-type checks and
+  Ambiguous.
+- Author Q10 (CX Q4, Q5): stating the nested-clash, record-field,
+  cancellation, row-occurs and `lacks`/`disjoint` rules, and C1-E as
+  the line for c1.
+- Author Q2: `BQ` before `ValidOpenR` (f04's ground rule, §3.10-3.11).
+- P3's instrumented run (no new probes in this revision).
+- c21's and p11's dropped-atom lists are this document's reading; the
+  reviewer re-derived b03, c01 and b04 only.
+- The whole-problem refutation of a sub-body (CX-P, reconciliation F3)
+  is cited as proposed; CX owns it.
+
+**Disagreements.** None. One scope note: reconciliation A6 also
+suggests that boundaries and recorder-rules change how the second
+spread is recorded; those edits belong to their documents and are not
+made here.
