@@ -210,10 +210,15 @@ plus a T-R0a/T-R0e harmonization; dossier §18.67 (2b73666, corrected
 6c65c2f) with the author questions; verifier findings 1-10 (e1487a4)
 and two rounds of coordinator fixes (61565ac, 8d3373a).
 
-Running: one integration owner for the inference-foundations extension
-(queued request), writing docs/plans/2026-10-22-inference-foundations-
-extension.md and correcting the assessment, from the six reader
-reports in ext/. If lost, relaunch it with the same scope from main.
-After it: adversarial review of statuses and citations, fixes, then
-cross-reference lines and a progress line. The implementation plan
-still waits for the author's answers to §18.67.
+Then the inference extension: six bounded readers, one integrator
+(4ce8f74: docs/plans/2026-10-22-inference-foundations-extension.md and
+assessment corrections), status and citation audits applied (95b809b),
+cross-references refreshed (a50db11), progress lines (b08c4d4),
+decision-free R0 notes from the extension (2443479, 453356c). The
+review list for the author's external reviewer is
+research/division-campaign/remedy/overnight-review-2026-10-22.md.
+
+**Next:** the author's answers to dossier §18.67 Q1-Q12 and to the
+extension's decisions D1-D4 (D5 a recorded default, D6 deferred with
+G2); then the R0 implementation plan (writing-plans). Nothing pushed
+since 67ba706.
