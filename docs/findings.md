@@ -802,13 +802,15 @@ walk(whole, left, n + -1);` (the language has no binary minus).
    whether walk's u or v holds walk's u; no annotation can decide u and
    v, which belong to this call of walk", at the recursive call's
    `whole`; the same with or without a caller and with or without the
-   `where` clause. Annotating a lambda parameter `{ ...u, ...v }` does
-   not decide the split (same diagnostic). It is a refusal, not a
+   `where` clause. The one annotation form tested, a lambda parameter
+   annotated `{ ...u, ...v }`, does not decide the split (same
+   diagnostic); the probe does not show that every annotation fails. It is a refusal, not a
    selection of the identity split; it is E_TYPE, not E_SPECIALIZATION.
 2. Pinning the split needs a changed signature (an extra `uonly: {
    ...u }` parameter). Pinned to the identity split, or to `u' = {}`,
    `v' = { ...u, ...v }`, check passes; with no caller both build and
-   run (print `0`); with a caller both stop at specialize with
+   run (print `0`), which does not validate specializing or running a
+   called `walk`; with a caller both stop at specialize with
    E_INTERNAL "R005B placeholder: rows with several tails are lowered in
    Task 8", as does a non-recursive two-tail function (not tied to
    recursion).
@@ -817,7 +819,9 @@ walk(whole, left, n + -1);` (the language has no binary minus).
    (src/Features/Check/NestedArguments.purs:78-81) accepts a composed
    row with no fields, while docs/language.md describes the rule as the
    calling function's bare `{ ...r }` and dossier §18.18 says a composed
-   witness is refused. Which is intended is open; BACKLOG R019.
+   witness is refused. Which is intended is open; BACKLOG R019. So
+   "the identity split is the only admissible split" holds under the
+   documented single-tail rule only, not for today's compiler.
 4. docs/language.md's Tranche B paragraph ("stops at E_INTERNAL R005B
    placeholder" for a `disjoint` clause) is stale: such functions now
    pass check, and the placeholder appears at specialization of several

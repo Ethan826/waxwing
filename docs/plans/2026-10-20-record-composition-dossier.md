@@ -5116,3 +5116,31 @@ validity proof. **No selection rule is chosen.** After R0 and the
 typed-witness review, the blocker-first proposal states semantic
 validity, acceptance requirements, admissibility and behavior
 preservation separately.
+
+### 18.63 The `walk` probe: sufficient; qualifications (2026-10-21)
+
+docs/findings.md "R010 and composed rows". The probe is sufficient; no
+further runs or compiler changes now. It establishes current behavior
+and exposes a specification/implementation mismatch to resolve
+separately. Qualifications carried into the blocker-first proposal:
+
+- "Identity is the only admissible split" is conditional on the
+  documented single-tail rule; today's implementation also admits the
+  composed-tail witness, so uniqueness is not established for the
+  current compiler.
+- Building without a caller does not validate specialization or
+  execution of `walk`; the caller cases stop at the several-tail
+  placeholder, leaving the end-to-end question open.
+- The annotation result is stated for the forms tested; the
+  signature-changing `uonly` control is evidence, not a proof that
+  every annotation fails.
+
+**R019 stays open:** allowing composed tails may be a defensible
+generalization but needs a termination argument; narrowing the
+implementation would reject accepted programs; the contract is decided
+first. For R0, the early "Cannot tell" refusal, R010 admissibility and
+the several-tail specialization placeholder stay separately
+classified; fixing one does not discharge the others. The proposed
+selection policy meets an earlier checker limitation and an unresolved
+admissibility contract; selecting the identity witness is not
+presented as an implemented or fully justified remedy.
