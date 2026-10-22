@@ -89,7 +89,11 @@ Task 1.1's `Domain.Verdict.Internal` untouched;
 `staticRules`, `Tables`, `Signatures` (no `emptyProblem`, ruling
 R2); an `emit` primitive and `Parts` as append-only logs, so
 `DuplicateSite` is detectable; E6 alias resolution, pinned export
-lists, and tests T3a/T3b/T6/T7/T12.
+lists, and tests T3a/T3b/T6/T7/T12. Fix round 4 (re-review 3,
+NB10): Sc again rejects a use whose site is `Auxiliary` or
+`RigidName`, so a direct `readType`/`readRow` there is reported;
+`GenEntry(..)` declared in `Generate.Gen`; `Generate.Elab` and
+`Generate.Gen` export lists pinned.
 
 ## Language direction recorded (2026-10-08)
 
