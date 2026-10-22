@@ -5046,3 +5046,35 @@ to widen the language, implement guarded pieces or begin compiler
 integration. The requirements-and-statements tranche continues; the
 proposed architecture and any unresolved coupling come back to the
 author.
+
+### 18.61 The `divide5` requirements draft: not ready; blocker-first revision (2026-10-21)
+
+The architecture review of research/division-campaign/remedy/
+requirements.md (draft, 17da85d) found it not ready for approval; the
+author agrees. The review found real architectural couplings; it does
+not undermine the established record-model proofs. Direction:
+
+- **R0 first:** for supported source programs, obtain the complete
+  constraint problem, or justify an earlier rejection, before depending
+  on an interchangeable checking strategy. Moving the end-of-body gate
+  alone does not fix generation that stops prematurely.
+- **Not every compiler error needs a signature counter-instance.**
+  Syntax, name and kind errors, and contradictory declared hypotheses,
+  have different justifications; the relevant generation refusals are
+  classified explicitly.
+- **A presence-only witness being insufficient does not necessarily
+  require presence formulas in Waxwing's type language.** Typed
+  internal witness metadata, existing type expressions and
+  correspondence proofs are another possibility; the choices are
+  compared explicitly.
+- Agreed: reuse claims conditional; the ∀/∃ structure preserved; leaf
+  coverage specified; the witness adapter inside the lowering trust
+  boundary. Overlapping leaves are fine for validity; choosing a
+  witness from them is a separate obligation.
+- **A short blocker-first revision**, not another broad plan: (1) R0
+  and the exact generation/checking boundary; (2) typed witness and
+  lowering contracts; (3) G3's acceptance and behavior requirements
+  and termination obligations; (4) only then the G1 remedy comparison.
+- **Not in scope:** repairing `route`, implementing the recorder,
+  adopting a selection rule. First establish which architectural
+  prerequisites need their own authorized tranche.

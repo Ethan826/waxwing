@@ -8184,3 +8184,7 @@ unrelated README/backlog/direction-plan edits remain untouched.
   not invalid, for `divide5`; lowering independent of receipts;
   validity separate from policy and limits. Architecture parts added
   to the running requirements tranche.
+- `divide5` requirements draft not ready (dossier §18.61): blocker-first
+  revision in order R0 (complete constraint problem or justified
+  rejection), typed witness and lowering contracts, G3 requirements,
+  then the G1 comparison. No `route` repair, recorder or selection rule.
