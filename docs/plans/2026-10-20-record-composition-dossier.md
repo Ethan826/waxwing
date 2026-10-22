@@ -5257,7 +5257,7 @@ a refuter implementation; T-R0e (separating validity, policy,
 admissibility and support boundaries). A concrete implementation plan
 comes back once those interfaces and obligations are reviewed.
 
-### 18.67 The R0 design tranche, reviewed and revised; questions for the author (2026-10-22)
+### 18.67 The R0 design tranche, reviewed and revised; questions for the author (2026-10-21)
 
 The six documents authorized in §18.66 (research/division-campaign/:
 r0/generation-interface.md T-R0a, r0/recorder-rules.md T-R0b,
@@ -5277,9 +5277,10 @@ the nine decisions of §18.66. Each document ends with a revision log.
 
 **Ownership.** T-R0a owns the outcome, verdict and `CompileRefusal`
 types (§6); W owns `Witness`, `SplitJudgement`, `AdmStatus`,
-`NoWitnessReason`, `Adm_W`, the termination statements (FK-0, FK-W,
-FK-U) and the re-check obligations RC1-RC6; T-R0b owns the recorded
-problem's shape (Sc1-Sc3, Sig1-Sig10, E-rules); T-R0e owns layers,
+`NoWitnessReason`, `Adm_W`, the term-scope rules Sc1-Sc3, the
+termination statements (FK-0, FK-W, FK-U) and the re-check obligations
+RC1-RC6; T-R0b owns the recorded problem's shape (Sig1-Sig10,
+E-rules); T-R0e owns layers,
 codes, `Construct` and `layerOf`; CX owns refutation (CX-K, CX-P,
 CX-KP, CX-PR, CX-S); T-R0c owns the evidence. Two coordinator choices
 in the re-check: the post-Task-8 refusal of composed tails is T-R0e's
@@ -5290,8 +5291,9 @@ question numbers still resolve.
 Lean file states CX-K, CX-P, CX-KP, CX-PR and builds. FK-W and FK-U
 rows stay inactive until adopted and proved.
 
-**Questions for the author** (proposed defaults in brackets; the
-documents that depend on each are listed in T-R0e §7 and the re-check):
+**Questions for the author** (proposed defaults in brackets; each
+document's open-questions section maps its questions to these numbers,
+and T-R0e §7 also maps its pre-revision numbers):
 
 1. Outcome taxonomy: (a) a separate `Faulted` outcome or `Defect` as an
    Unresolved reason [separate]; (b) `Exhausted` [`Limit
@@ -5307,10 +5309,12 @@ documents that depend on each are listed in T-R0e §7 and the re-check):
 3. `outside` markers: non-empty `outside` blocks a whole-function
    Solved, never Contradiction [yes]; open: free type-constructor nodes,
    conservative `FailFamily`/`EffectArgument` markers, effect-row
-   independence, the lambda effect-row annotation.
+   independence and the class-f construct (`ClassF Question` in T-R0a's
+   `Unsupport`), the lambda effect-row annotation.
 4. Static boundary: second spread generated in-model, S1 Unsupported
-   [yes]; Resolve's body-type `lacks`/`disjoint` checks move into
-   generation [yes]; arity at a fixed result class a [yes]; coverage a
+   [yes; until ruled, Resolve keeps refusing it]; Resolve's body-type
+   `lacks`/`disjoint` checks move into generation [yes; until ruled,
+   Resolve keeps refusing]; arity at a fixed result class a [yes]; coverage a
    class-a static pass [yes]; `AmbiguousType` class e unless made P
    policy [yes].
 5. R019 and admissibility: FK-W in the first design [W proposes yes];
@@ -5323,7 +5327,8 @@ documents that depend on each are listed in T-R0e §7 and the re-check):
    `ChooseT`; syntactic hole-contract check; auxiliaries evaluated,
    never bound [all yes].
 7. Forcedness: who decides it and whether the decider reads the
-   problem or the `Solution` [unassigned; open].
+   problem or the `Solution` [unassigned; open]; `ComponentBlocked` is
+   tagged A and rendered with E_SPECIALIZATION [yes].
 8. Ground re-check: after lowering computes layouts and callee keys,
    before Go emission [settled]; placement and cost (per copy, per
    edge; always on or a checking build) [open].
@@ -5336,9 +5341,11 @@ documents that depend on each are listed in T-R0e §7 and the re-check):
     of unused rigid variables; scoped `D` (T-R0b gives `D` only over
     rigid variables, which suggests closing it); certificate cost;
     B1b first or a sound incomplete refuter; `BQ` and non-record heads
-    under CX; may a refuter register while CX-K/CX-KP/CX-PR is
+    under CX; sub-body certificates: any non-empty sublist of `B`, via
+    CX-KP [yes]; may a refuter register while CX-K/CX-KP/CX-PR is
     unproved [T-R0a's `RefuterSpec` permits `Pending`; rules require a
-    proof].
+    proof]. T-R0c's open items: P3's instrumented run (the `ext(p, y)`
+    case), Corollary SL-H, an arm-order check beyond one pair.
 11. `ValidR`: which document defines the recorded problem's validity
     (CX Q8) [no default; T-R0b is the natural owner]. CX-PR waits on it.
 12. Confirm the `crash` reference's checked `Lambda` is built like
