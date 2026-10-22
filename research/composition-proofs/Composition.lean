@@ -102,6 +102,9 @@ import Composition.Typed.Conditional
 import Composition.Typed.ExamplesThetaStar
 import Composition.Typed.Bridge.Extension
 import Composition.Typed.Bridge.Valid
+import Composition.Typed.Refute.Statements
+import Composition.Typed.Refute.Rules
+import Composition.Typed.Refute.Examples
 import Composition.Typed.Bridge.Fresh
 import Composition.Typed.Bridge.Complete
 import Composition.Typed.Bridge.Sound
