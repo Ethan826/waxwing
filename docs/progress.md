@@ -95,6 +95,25 @@ NB10): Sc again rejects a use whose site is `Auxiliary` or
 `GenEntry(..)` declared in `Generate.Gen`; `Generate.Elab` and
 `Generate.Gen` export lists pinned.
 
+## R0 shadow tranche, Task 0.4: `ValidR` probe and draft (2026-10-22)
+
+Characterization and design only; no compiler source or diagnostic
+changed. test/r0-requirements-probe.test.mjs (7 tests, inline sources,
+no fixture files, so no corpus re-pin) pins today's printability and
+comparability: holder types (`Box(Int)`, `F`, `Outer`) refused at
+every argument; other declared types judged by their arguments, a
+phantom one included; `main` E_ENTRY exactly where `show` is refused;
+at a rigid variable printing is deferred to each key (E017 at
+specialize) and comparison refused at check; at a hole printing passes
+and comparison is AmbiguousType. Shown failing on two scratch mutants of
+a copy of output/ (holders ignored: 4 tests fail; rigid variables
+treated as possible functions: all 7 fail). Draft for G-ValidR:
+docs/plans/r0-validr-draft.md (policy options H, F, Pr, Q with a
+recommended default each; `ReqG` and `ValidR` under the defaults;
+checks for VR-sub, VR-agree, VR-CX). Findings in docs/findings.md
+"`ValidR` sketch and today's printability". Stopped at G-ValidR;
+T-R0b §5.4 unedited.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

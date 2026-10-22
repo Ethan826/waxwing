@@ -956,3 +956,39 @@ The brief cites docs/plans/2026-10-17-open-row-merge-rules.md §5 for the
 argument; that section is the sum rule. Improve.purs's "Rules §5" and
 the theorem are in docs/plans/2026-10-19-row-merge-rules.md §5, which
 is the one re-read here.
+
+## `ValidR` sketch and today's printability (2026-10-22)
+
+Evidence: test/r0-requirements-probe.test.mjs (Task 0.4); the draft is
+docs/plans/r0-validr-draft.md. Three findings for G-ValidR, none a
+defect in today's compiler:
+
+- **VR-sub fails under T-R0b §5.4's literal sketch.** With `Q` empty
+  and every finite `θR` quantified, `pr a` at a rigid `a` fails at
+  `θR(a) = Int -> Int`, so `fn p(item: a): Text = show(item)` has
+  `¬ ValidR`; yet it compiles, and only its instances are judged after
+  specialization (probe test 5). No verdict is wrong today (the plan
+  keeps such atoms Unsupported), but the meaning that CX-PR consumes
+  is. The draft's recommended reading adds an implicit printable
+  hypothesis at every rigid variable (Pr-1), a policy point for the
+  author.
+- **The ground rule needs the holder set.** Today a declared type
+  whose constructors hold a function (`Box(Int)` for `type Box(a) =
+  Box(a -> a)`) is neither printable nor comparable whatever its
+  arguments, and a phantom argument counts (`Tag(Int -> Int)` for
+  `type Tag(a) = Tag(Int)` is refused). The sketch's "through record
+  fields and `app` arguments" alone would accept `Box(Int)` (a
+  scratch mutant ignoring holders compiles `show(Box(inc))`). `ReqG`
+  therefore reads the program's holder set, which the recorded problem
+  must carry for VR-independent.
+- **VR-CX's encoding lands outside `ValidOpen`'s base set.** Encoding
+  `app` values injectively as fresh bases gives solutions over an
+  extension `B₂ ⊋ B₁`, while `ValidOpen` at `B₁` needs them over `B₁`.
+  A non-injective collapse (every `app` node to one fixed value)
+  suffices, since CX §4.1 condition 4 makes each occurrence its own
+  variable (argued; draft §5.3).
+
+Foreign base types cannot be written today (docs/language.md:182), so
+fresh bases reach `ReqG` only as rigid variables' instances. Closes
+with the probe (checked) for the first two; the third is argued and
+waits for a Lean rendering of `GA` (§18.69 item 10).
