@@ -24,6 +24,8 @@ recorded run or test in the repository), proposed, unresolved. A
 published theorem is *cited*: it supports an argued correspondence and
 is never "proved" for Waxwing. A check run only in a scratch copy is
 reported as such and does not make a row experimentally checked.
+"Argued" describes a conditional argument, not an implementation
+guarantee (assessment, labels).
 
 ## 0. Sources, reading status and method
 
@@ -222,8 +224,11 @@ over open types.
    sites already instantiate callees with flexible copies that may
    depend on the caller's rigid variables (ADR 007; recorder-rules
    §5.1). That is EMLTI-style instantiation, under which σ_inf is above
-   σ_w, assuming Waxwing's row model is an EMLTI model and ground
-   inclusion matches `ValidOpen` (O24, unresolved). The substitution
+   σ_w, assuming Waxwing's row model corresponds to an EMLTI model and
+   ground inclusion matches `ValidOpen` (O24, unresolved). The
+   correspondence needs an encoding: EMLTI's models interpret type
+   constructors as total functions (Definition 10.2.5, printed
+   p. 411), and disjoint composition is partial. The substitution
    order should be kept only to describe what the HM(X), OutsideIn(X)
    and Jones theorems cover.
 3. *A richer internal language changes the example.* With ∃ inside
@@ -238,26 +243,38 @@ over open types.
    equivalent, on labels, to "not (`id` ∈ r and `id` ∈ s and
    `id` ∈ s2)". Six writable atoms (`s # s2`, `r # s`, `r # s2` and
    `lacks {id}` on each of `r`, `s`, `s2`) each imply it, and none
-   implies another, so no conjunction of up to three writable atoms is
-   principal among writable signatures (reader's bounded check, scratch
-   only).
+   implies another. A reader's search, run in a scratch copy over
+   labels only and not recorded in the repository, found no
+   conjunction of up to three of these six atoms that is principal
+   among the signatures built from them. That is bounded evidence, not
+   a universal impossibility: whether any writable `where` clause is
+   principal is unresolved, and settling it needs a general argument
+   over an exactly stated scheme language.
 
 **Three layers, kept apart.** The *internal scheme language* needs
 nothing new for case A under EMLTI's order: σ_inf is writable in L0.
 ∃ in constraints is needed only to present a type-shaped principal
 scheme. *Serialized module interfaces* are written signatures today;
 σ_inf serializes with today's atoms, σ″ does not. *Annotation syntax*
-needs no change; requiring users to write the principal form would need
-disjunction, which this document does not recommend.
+needs no change. Requiring users to write a principal form for σ_w's
+variables alone would need disjunction if no writable clause is
+principal, which item 4 leaves unresolved; this document does not
+recommend disjunction.
 
-**Smallest missing adaptation.** (a) State Waxwing's row model as an
+**Smallest missing adaptation.** (a) Encode Waxwing's row model as an
 EMLTI model and argue that EMLTI's ground inclusion coincides with
-`ValidOpen`, which quantifies over injective base extensions; EMLTI
-does not treat open-world interpretations, though it says adopting
-Odersky et al.'s approach "would not be extensive" (printed p. 423)
-(O24, unresolved). (b) State annotation checking as entailment of the
-body's instantiation constraint; EMLTI has no annotations (O25,
-proposed). **Depends on** IF1's declarative relation and O2.
+`ValidOpen`, which quantifies over injective base extensions. The two
+cannot simply be identified: Definition 10.2.5 makes every type
+constructor denote "a total function", and disjoint composition is
+undefined on overlapping fields, so the encoding must represent
+composition differently, for example as a relation with definedness
+obligations. EMLTI does not treat open-world interpretations, though it
+says adopting Odersky et al.'s approach "would not be extensive"
+(printed p. 423) (O24, unresolved; a narrow correspondence note,
+docs/plans/2026-10-22-o24-emlti-correspondence.md, is in progress).
+(b) State annotation checking as entailment of the body's
+instantiation constraint; EMLTI has no annotations (O25, proposed).
+**Depends on** IF1's declarative relation and O2.
 **Next deliverable:** IF4 as revised in the assessment's §12.
 
 ### 1.3 Case B: constraint-only variables, projection, satisfiability
@@ -308,18 +325,28 @@ undetermined variables. **Next deliverable:** IF5 and IF6 as revised.
 
 ### 1.4 The smallest suitable foundation
 
-**Recommendation (argued): EMLTI's presentation of HM(X), with
-Waxwing's row model as X.** Its instantiation is by constraint, so it
-derives `ValidOpen`-style signatures whose witnesses depend on the
-rigid instance, matching Waxwing's call-site rule. Its generation is
-sound and complete for any X (Theorems 10.4.4 and 10.4.8, printed
-p. 433-434), so principality read as "least specific constraint" needs
-no normal-form, regularity or principal-constraint-property
-obligation. Determinacy (Definition 10.2.14) answers the ∀/∃ question
-for constraint-only variables.
+**Recommendation (argued): EMLTI's presentation of HM(X), with an
+encoding of Waxwing's row model as X.** Its instantiation is by
+constraint, so it derives `ValidOpen`-style signatures whose
+witnesses depend on the rigid instance, matching Waxwing's call-site
+rule. Its generation is sound and complete for any X (Theorems 10.4.4
+and 10.4.8, printed p. 433-434), where X is a model in the sense of
+Definition 10.2.5 (printed p. 411), whose type constructors denote
+total functions.
+Waxwing's disjoint composition is partial: it is undefined when fields
+overlap. So the row model is not such an X as it stands, and the
+theorems transfer to Waxwing only through an encoding, for example
+composition as a relation with definedness obligations, shown to agree
+with `ValidOpen` (O24; a narrow correspondence note,
+docs/plans/2026-10-22-o24-emlti-correspondence.md, is in progress).
+Given such an encoding, principality read as "least specific
+constraint" needs no normal-form, regularity or
+principal-constraint-property obligation. Determinacy (Definition
+10.2.14) answers the ∀/∃ question for constraint-only variables.
 
-**What it leaves:** the model conditions (Definition 10.2.5 and
-C-Arrow); the open-world match (O24); a Waxwing solver, since EMLTI's
+**What it leaves:** the encoding of partial composition and the other
+model conditions (Definition 10.2.5 and C-Arrow); the open-world match
+(O24); a Waxwing solver, since EMLTI's
 solver is proved for the equality free tree model only; presenting
 exported schemes, where case A's disjunction lives (O4); and
 elaboration, which EMLTI does not cover (§2).
@@ -438,13 +465,19 @@ interface and the single recursive generator that builds constraint and
 elaboration together (§4.3, §5.2, Fig. 8, p. 5-7). *Correspondence:*
 R0's G-total, G-local and G-fresh are the generator's properties;
 `vars.position` is a static list of the places a value will be read,
-which Pottier's `decode` calls replace; building inside the
-continuation makes W's R2 hold by construction. No bind is needed
+which Pottier's `decode` calls replace. Building inside the
+continuation removes the separate list, but it does not by itself make
+W's R2 or Cov hold: a `build` of type `Witness → Either ElabFault a`
+can still request a variable the witness does not bind. Coverage needs
+one of the mechanisms listed under D1 (tracked requests, a restricted
+builder interface, or an explicit coverage theorem). No bind is needed
 because no R0 rule branches on a solved shape (recorder-rules §4).
 *Smallest adaptation:* a pure `Elaborating a = { problem, build ∷
 Witness → Either ElabFault a }`, the analogue of Pottier's `rawco ×
 (witness → α)`. *Statement* EL1: for every `Witness` satisfying Cov and
 Adapt-N's conclusion, `build` is defined and yields the checked IR.
+EL1 presupposes that Cov's domain contains every variable `build`
+requests; D1's coverage mechanism is what makes that domain definite.
 *Depends on* T-R0a/T-R0b ownership and §18.67 Q1(e). *Next:* a design
 note for the R0 owners comparing both routes, with acceptance tests
 (the same IR at every unambiguous site; no read-back). **Proposed.**
@@ -487,12 +520,16 @@ key-dependent decoded values are a new combination. **Unresolved.**
 
 **O31. Compilation-relevant bindings.** In Inferno only the variables
 passed to `decode` or `instance`, or returned by `let`, get values
-(Solver docs). Under O27, Cov's domain becomes "the variables `build`
-reads", so a separate positional list cannot drift from it.
-Auxiliaries still need values for RC2, evaluated from their defining
-atoms (recorder-rules §5.3), a use Pottier never makes. *Separating
-program:* E26 `p.a`, whose auxiliary `⟨p, rest⟩` has no checked-IR
-position. **Argued**, conditional on D1 adopting the continuation.
+(Solver docs). Under O27, Cov's domain should become "the variables
+`build` requests", so that no separate positional list can drift from
+it. An opaque `build` does not expose that set: it is defined only if
+requests are tracked or the builder interface is restricted, and
+otherwise Cov needs a coverage theorem (D1). Auxiliaries still need
+values for RC2, evaluated from their defining atoms (recorder-rules
+§5.3), a use Pottier never makes. *Separating program:* E26 `p.a`,
+whose auxiliary `⟨p, rest⟩` has no checked-IR position. **Proposed**,
+conditional on D1 adopting the continuation and choosing a coverage
+mechanism (argued before the external review of 2026-10-22, §12).
 
 **O32. Field references (G2), interface only.** If D1 adopts the
 continuation (O27): Pottier's value type is a parameter, so adding
@@ -1010,10 +1047,12 @@ explicit operands would be a category error.
   (case A, case A's disjunction) are labelled unrecorded.
 - *Correspondences most at risk:* EMLTI's order coinciding with
   `ValidOpen` (O24) is the load-bearing assumption of §1.4 and is
-  unresolved; "σ_w is not derivable in OutsideIn(X)" (§1.2) rests on
-  VarCon's term instantiation, given X's type language is L0 (with L2
-  terms it would be derivable, §1.2 item 3), and the full rule set is
-  unchecked; "Inferno's levels would refuse `divide5`" (O29) rests on
+  unresolved, and it needs an encoding because EMLTI's type
+  constructors are total and disjoint composition is partial; "σ_w is
+  not derivable in OutsideIn(X)" (§1.2) rests on VarCon's term
+  instantiation, given X's type language is L0 (with L2 terms it would
+  be derivable, §1.2 item 3), and the full rule set is unchecked;
+  "Inferno's levels would refuse `divide5`" (O29) rests on
   O21, itself argued; Jones's AV pattern (O35) is a proof pattern, not a
   theorem; JGS's bounded static variation (O22c) is a property with a
   sketched proof in a different language.
@@ -1040,7 +1079,7 @@ explicit operands would be a category error.
 
 | Combination | Row | Components and sources |
 |---|---|---|
-| EMLTI's HM(X) instantiated with a disjoint-composition row model | O24 | EMLTI ch. 10; Waxwing's `ValidOpen` |
+| EMLTI's HM(X) instantiated with an encoding of a partial, disjoint-composition row model | O24 | EMLTI ch. 10; Waxwing's `ValidOpen` |
 | `has` over a composition, or `eq` with a constraint-only variable, in exported schemes | O26, O48 | Jones 1995; Rose (reused) |
 | key-dependent decoded values in an elaboration continuation | O30 | Pottier 2014; dossier §18.1 term grammar |
 | partial decoded values (`Field r l`) with a definedness condition | O32 | Pottier 2014; W §1.4 |
@@ -1067,10 +1106,13 @@ dependency is named. None authorizes proofs or prototypes.
    static variation, with the abstract/concrete distinction and the
    budget rule (O40, O43, O44, O45).
 2. **R0 interface note** (after the R0 owners' statement review):
-   continuation versus read-back, Cov derived from `build`, values only
-   after the verdict (O27, O28, O31; decision D1).
-3. **Foundation statements:** IF1's declarative relation, then IF4
-   with the open-world match and annotation checking (O24, O25), then
+   continuation versus read-back, coverage of `build`'s requests
+   enforced or proved, values only after the verdict (O27, O28, O31;
+   decision D1).
+3. **Foundation statements:** the narrow O24 correspondence note
+   (partial composition, in progress), IF1's declarative relation,
+   then IF4 with the open-world match and annotation checking (O24,
+   O25), then
    IF5 and IF6 with projection (O26, O17), then EL3 (O29).
 4. **Termination statements:** P2 for FK-W (O41); U-a/U-b kept
    inactive (O42); the DAG induction (O45).
@@ -1101,15 +1143,31 @@ inference (O12) is an explicit non-goal.
   read-back is ambiguous with several flexible tails and the position
   list is maintained separately from its uses. *Generation
   continuation* (Pottier 2014): the generator returns a pure `build`
-  over witnesses; one-variable-per-position and Cov's domain hold by
-  construction, but generation must stay applicative (no rule may
-  branch on a solved shape), and the R0 interfaces change, which those
-  documents' owners would carry. Either way G3 still decides the split.
-  O31 and O32 are argued only on the condition that D1 adopts the
-  continuation.
+  over witnesses, so no separate position list is kept. Generation
+  must stay applicative (no rule may branch on a solved shape), and
+  the R0 interfaces change, which those documents' owners would carry.
+  The continuation does not by itself give one variable per position
+  or Cov: a `build` of type `Witness → Either ElabFault a` can still
+  request a variable the witness does not bind. If D1 adopts the
+  continuation, coverage must come from one of three mechanisms, and
+  choosing among them is part of the decision:
+  (a) *Tracked requests:* the builder declares the variables it reads,
+  much as the static part of Pottier's applicative constraint records
+  where values are decoded; Cov's domain is that declared set, and a
+  read outside it is a construction error.
+  (b) *A restricted builder interface:* `build` reads the witness only
+  through handles the generator issued for this problem, so the issued
+  handles are Cov's domain and no other variable can be named.
+  (c) *An explicit coverage theorem:* `build` stays an unrestricted
+  function, and a stated theorem shows that every witness satisfying
+  Cov binds every variable `build` requests.
+  Either way G3 still decides the split. O31 (proposed) and O32
+  (argued) hold only on the condition that D1 adopts the
+  continuation, O31 also on the choice of mechanism.
 - **D2. Instance order and scheme language for IF4 (O10, O11, O24;
   assessment §14 Q1, Q2).** *This document's recommendation (argued,
-  §1.2, §1.4):* EMLTI's order, with the substitution order kept only
+  §1.2, §1.4; conditional on O24's encoding of partial composition):*
+  EMLTI's order, with the substitution order kept only
   to describe what the HM(X), OutsideIn(X) and Jones theorems cover
   (§1.2 calls it "the wrong one" for Waxwing); L0 as the scheme
   language for exported schemes, since σ_inf is writable in L0; ∃ in
@@ -1118,10 +1176,14 @@ inference (O12) is an explicit non-goal.
   theorems speak in it, but `submit : σ_w` is not derivable, so
   principality would concern a narrower relation than `ValidOpen`.
   *EMLTI's order* (ground inclusion): matches Waxwing's call-site rule,
-  and generation is complete for any model, but Waxwing must then meet
-  EMLTI's model conditions (Definition 10.2.5), and the open-world
-  match (O24) and a solver are Waxwing's own. Scheme language: *L0*
-  keeps exported schemes writable today; *L1* (∃ in constraints,
+  and generation is sound and complete for any model meeting
+  Definition 10.2.5, but that definition requires total type
+  constructors and disjoint composition is partial, so Waxwing needs
+  an encoding of its row model (for example, composition as a relation
+  with definedness obligations) before EMLTI's theorems apply. That
+  encoding, the open-world match (O24) and a solver are Waxwing's own.
+  Scheme language: *L0* keeps exported schemes writable today; *L1*
+  (∃ in constraints,
   internal) gives type-shaped principal schemes that do not serialize
   with today's atoms, and is constrained by IF6: σ″ projects case A's
   `u`, `t`, `q`, which reach `file`'s key undetermined, so σ″ violates
@@ -1169,6 +1231,27 @@ inference (O12) is an explicit non-goal.
   unifiers. *Witness metadata only (option B, no export):* no scheme
   change; references stay internal.
 
+**External review recommendations (2026-10-22, pending the author's
+confirmation).** An external reviewer, in a review the author
+forwarded, recommended the following. They are recorded here as the
+reviewer's; none is a decision, and D1-D6 above stay as they were.
+
+- *D1:* develop the continuation design, with coverage enforced or
+  proved explicitly.
+- *D2:* pursue EMLTI as the candidate; investigate O24 before adopting
+  its claimed correspondence or freezing L0 exports.
+- *D3:* proceed with statements once the relevant interfaces are
+  stable; no selection rule yet.
+- *D4:* keep deferred.
+- *D5 and D6:* retain the recorded defaults and deferrals.
+
+The reviewer added that "argued" labels are defensible where they
+describe conditional arguments and must not be read as established
+implementation guarantees. The reviewer's next step is these
+corrections plus a narrowly scoped O24 correspondence note, not a
+broad campaign, with blanket acceptance of Q1-Q12 and the
+implementation plan held until the correction pass is back.
+
 ## 11. Proposals outside this document
 
 **R0 documents** (their editors decide; nothing here edits them). The
@@ -1177,8 +1260,9 @@ versus coherence, interfaces before selection) were added as labelled
 notes at 2443479; the rest wait for D1 or §18.67 Q6 (EL3):
 
 - r0/recorder-rules.md §4 and §5.3: record the continuation alternative
-  (O27) and the applicative invariant it relies on; note that Cov could
-  be derived from `build` (O31).
+  (O27) and the applicative invariant it relies on; note that Cov's
+  domain could be the variables `build` requests, once D1 fixes how
+  requests are tracked, restricted or proved covered (O31).
 - r0/generation-interface.md: if D1 chooses the continuation,
   `generate` returns `Elaborating`, a pure problem plus `build` (O27).
 - witness/statements.md §1.4: EL5's compatibility condition (`build`
@@ -1190,8 +1274,8 @@ notes at 2443479; the rest wait for D1 or §18.67 Q6 (EL3):
   abstract/concrete distinction (O40, O43).
 - witness/statements.md §3.4: name RC's property in Leroy's terms, a
   validator for a weaker property (O53).
-- witness/statements.md §4 (Cov): domain = variables read by `build`
-  (O31).
+- witness/statements.md §4 (Cov): domain = variables `build` requests,
+  made definite by D1's coverage mechanism (O31).
 - r0/boundaries.md, layer P: forcedness is determinacy, a sufficient
   condition; coherence (O35) is separate; add "interfaces before
   selection" (O37) to the selection contract's obligations.
@@ -1290,3 +1374,36 @@ letrec elaboration and the claim that its System F checker confirms
 typability, not equality with the inferred type; Leroy's Definitions
 5-7 and Theorem 4 and the passes read by heading only; JGS §5.5.1
 (printed p. 118-119); Koka 2017 Fig. 1 (p. 6).
+
+**External review, 2026-10-22.** An external review forwarded by the
+author (the reviewer did not rebuild Lean or audit every row) raised
+six issues; 1, 2 and 5 bear on this document and the assessment, and
+3, 4 and 6 concern the R0 documents and are handled there. The
+assessment's §18 records its own changes. Here:
+
+- **O24, partial composition (issue 1).** EMLTI's Definition 10.2.5
+  was checked on the rendered page (printed p. 411): every type
+  constructor of signature K ⇒ κ denotes "a total function" from 𝓜_K
+  into 𝓜_κ. Disjoint composition is undefined on overlapping fields.
+  §1.2 item 2 and (a), §1.4, §7, §8 and D2 now say that the
+  correspondence needs an encoding (for example, composition as a
+  relation with definedness obligations), not an identification of
+  models; §1.4 no longer lets "sound and complete for any X" apply to
+  Waxwing without it. The narrow O24 correspondence note
+  (docs/plans/2026-10-22-o24-emlti-correspondence.md) is cited as in
+  progress.
+- **Coverage (issue 2).** "By construction" is withdrawn from O27 and
+  D1: a `build` of type `Witness → Either ElabFault a` can still
+  request an absent binding. D1 now presents three coverage mechanisms
+  (tracked requests, a restricted builder interface, an explicit
+  coverage theorem); EL1 says it presupposes one; O31 and §9 step 2
+  and §11's Cov proposals say the same. O31 argued → proposed.
+- **Writable principal signatures (issue 5).** §1.2 item 4 and the
+  annotation-syntax sentence now report only the bounded result (a
+  scratch search over labels only, not recorded, over conjunctions of
+  up to three of six candidate atoms) and mark the universal claim
+  unresolved.
+- **Recommendations and labels.** §10 records the reviewer's D1-D6
+  recommendations, pending the author's confirmation. The statuses
+  paragraph says that "argued" is a conditional argument, not an
+  implementation guarantee.
