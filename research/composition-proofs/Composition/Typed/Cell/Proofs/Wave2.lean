@@ -6,6 +6,7 @@ here every wave-2 result rests on no unproved statement.
 import Composition.Typed.Cell.Proofs.W1
 import Composition.Typed.Cell.Proofs.W2
 import Composition.Typed.Cell.Proofs.W3
+import Composition.Typed.Cell.Proofs.W4
 import Composition.Typed.Cell.Proofs.W5
 import Composition.Typed.Cell.Proofs.W6
 import Composition.Typed.Cell.Proofs.W7

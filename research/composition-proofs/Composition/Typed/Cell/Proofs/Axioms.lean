@@ -49,6 +49,9 @@ open Composition.Typed.Cells
 #print axioms cellBothExact
 #print axioms coverRegionExact
 #print axioms regionTrivialities
+-- Wave 2: `star` and `star-read` for every n (W4).
+#print axioms scStar
+#print axioms scStarRead
 -- Wave 2: `star` controls (W5).
 #print axioms scStarUnlacked
 #print axioms scStarUndeclared
