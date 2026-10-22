@@ -882,15 +882,19 @@ reassigns the copy's module-level `pass` (stream 7b's copy-and-patch,
 `patchedCopy` in
 research/division-campaign/integration/measure/instrument.mjs) to
 report, at each pass, the rescan's own counter `found.passes`
-(changing passes so far) and `bound(found.start)`. The theorem keeps
-`found.passes / bound` below 1; the compiler raises `Exhausted` only
-past `found.passes > bound` (and past its cheap count), two passes
-later. The domain, every run counted, valid or not: the five families
-of test/row-merge-gen.mjs as test/row-merge.test.mjs drives them, one
-problem per seed 1-2000, in its five orders (10,000 runs each,
-through test/row-merge-entry.mjs on the copy), and the 1,006 programs
-of the pinned R0 corpus (test/r0-corpus.mjs), compiled through the
-copy's `compile`.
+(changing passes so far) and `bound(found.start)`. The theorem allows
+at most P · (|Λ| + 1) = bound − 1 changing passes, so its maximum is
+`found.passes = bound − 1` and the ratio `found.passes / bound` stays
+below 1; at `found.passes = bound` the theorem is broken. The
+compiler raises `Exhausted` at `found.passes = bound + 1` (its check
+is `found.passes > bound`, and also past its cheap count): one pass
+after the theorem breaks, two after its maximum. The domain, every run
+counted, valid or not: the five families of test/row-merge-gen.mjs,
+the same generators and orders as test/row-merge.test.mjs but one seed
+per problem, seeds 1-2000, each problem in its five orders (10,000
+runs each, through test/row-merge-entry.mjs on the copy), and the
+1,006 programs of the pinned R0 corpus (test/r0-corpus.mjs), compiled
+through the copy's `compile`.
 
 | Domain | Runs | Rescans | Passes | Largest ratio |
 | --- | --- | --- | --- | --- |
@@ -901,14 +905,42 @@ copy's `compile`.
 | program-shaped, shared | 10,000 | 53,352 | 60,899 | 2/3 (seed 411) |
 | R0 corpus, compiled | 1,006 | 289 | 366 | 1/2 |
 
-No run reached the bound; no rescan made more than two changing
-passes. The argument, re-read (premises P1-P3, the lemma that a
-lineage's moved label sets are disjoint, the theorem), is not refuted:
-the runs agree with it and the re-reading found no step wrong. So
-`Exhausted` is a broken invariant: Task 2.1 maps it to
-`AsFault (BrokenInvariant …)`. The evidence is bounded: no
-counterexample within this grammar and corpus, plus the argument; it
-is not a proof.
+No run reached the bound. The theorem's maximum was attained exactly,
+though: the worst rescans have `found.passes = bound − 1` (1 at bound
+2, 2 at bound 3), so they made P · (|Λ| + 1) + 1 passes in all, the
+whole bound, in every family except dense and in the corpus. The
+largest ratio, 2/3, is the theorem's limit at those bounds, not slack
+below it; the bound is tight there and was not exceeded. The argument,
+re-read (premises P1-P3, the lemma that a lineage's moved label sets
+are disjoint, the theorem), is not refuted: the runs agree with it and
+the re-reading found no step wrong. So `Exhausted` is a broken
+invariant: Task 2.1 maps it to `AsFault (BrokenInvariant …)`. The
+evidence is bounded: no counterexample within this grammar and corpus,
+plus the argument; it is not a proof.
+
+**Amendment (labelled): the measured quantity.** The first run
+measured passes made, `found.passes + 1`, against the bound and
+asserted that ratio below 1. It failed at once, for example
+`{"made":2,"bound":2}` at program-shaped seed 24, program-shaped
+shared seed 16 and the corpus's
+research/division-campaign/r0/probes/b02-mayhold-forced.wxw (the
+output kept showed those three; the rest scrolled off): each a
+rescan that made exactly the bound's passes, which the theorem
+allows. The measure was then changed to `found.passes` before
+any result was read as a verdict, for two reasons. It is the brief's
+quantity ("records `found.passes` and `bound(found.start)`"). It is
+also the only reading under which reaching the bound refutes §5: the
+theorem allows `found.passes` up to bound − 1, so a ratio of 1 breaks
+it, while passes made equal to the bound is the theorem's own
+maximum. The domain and the rule were not changed.
+
+**For the author: the rule's wording.** "If a run reaches the bound"
+admits two readings: total passes made reach P · (|Λ| + 1) + 1 (which
+happened, within the theorem), or changing passes reach it,
+`found.passes ≥ bound` (which did not happen, and which alone breaks
+the theorem). This entry applies the second. If the author meant the
+first, the rule as worded would have stopped the task on runs that
+the theorem permits, and the mapping waits for a ruling.
 
 Checks: test/r0-exhausted.serial.test.mjs asserts the ratio stays below
 1 and that some pass was recorded (a changed output cannot measure

@@ -99,10 +99,10 @@ export const measuringCompiler = async (scratch,
 };
 
 // The decision rule's domain (plan Task 0.2, fixed before running): the
-// five families of test/row-merge-gen.mjs as test/row-merge.test.mjs
-// drives them, each problem from its own seed 1..2000, in its five
-// orders; and every corpus program, compiled. Every run counts, valid
-// or not.
+// five families of test/row-merge-gen.mjs, the same generators and
+// orders as test/row-merge.test.mjs but one seed per problem (seeds
+// 1..2000), each problem in its five orders; and every corpus program,
+// compiled. Every run counts, valid or not.
 export const families = [
   ['raw (perm.mjs)', rnd => permProblem(rnd, false)],
   ['dense (perm.mjs DENSE=1)', rnd => permProblem(rnd, true)],
