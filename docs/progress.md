@@ -8212,3 +8212,10 @@ unrelated README/backlog/direction-plan edits remain untouched.
   certified checking, and assurance sources read by bounded readers;
   one obligations index (63 rows); status and citation audits applied.
   Six author decisions (companion §10). Documents only.
+- **Author's decisions recorded** (dossier §18.68-18.69): an external
+  review's corrections applied; Q1-Q13 and D1-D6 decided; the R0
+  documents reconciled. O24 note written and its statements revised
+  after review (GI-Open corrected). R0 implementation plan written
+  and revised after review (docs/plans/2026-10-22-r0-implementation-
+  plan.md); implementation and proofs not authorized. Open: G-switch
+  and the plan's other gates.

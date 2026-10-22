@@ -189,3 +189,31 @@ unresolved.
 One read-only review checked the correction pass (nothing blocking;
 16 findings, all applied in the last commit). The last commit itself
 was not re-reviewed.
+
+## 5. Decisions recorded and the implementation plan (2026-10-22)
+
+The author's decisions on Q1-Q13 and D1-D6 are in dossier §18.69.
+The six R0 documents, the inference documents and the O24 note follow
+them; two reconciliation and recheck rounds were applied.
+
+- **O24 statements** were reviewed for the proof tranche. The old
+  GI-Open was false as stated: schemes sharing variable names, and a
+  σ2 whose type can be undefined. The editor confirmed both
+  counterexamples against the Lean definitions. M0 now needs
+  countability (EMLTI Def. 10.1.14). The revised statements include a
+  new pure-Waxwing lemma, GI-Fin-Iff, and the note's §3.4 has six
+  questions with defaults. Nothing is proved.
+- **Forcedness** is split into an untrusted `search` and a trusted
+  `check`, so a candidate solution cannot define forcedness (Q7).
+- **The implementation plan** is
+  docs/plans/2026-10-22-r0-implementation-plan.md. It is a plan only;
+  implementation and proofs are not authorized. It was reviewed once
+  (verdict: needs revision) and revised; the revision has not been
+  re-reviewed.
+  - **The main decision it surfaces** is G-switch (plan §3.1). Under
+    §18.69 Q3's conservative boundary, moving to the new decision path
+    would stop some programs that compile today from compiling: every
+    `outside` kind, erased effect rows (G-erased), and requirement
+    atoms at type variables (e.g. `fn p(item: a): Text = show(item)`).
+  - It offers options A-E. C and D amend a decision; A, B and E don't.
+    The census tasks supply the numbers before anyone chooses.

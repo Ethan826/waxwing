@@ -228,3 +228,13 @@ held until the author has seen it.
 and the extension's decisions D1-D4 (D5 a recorded default, D6 deferred with
 G2); then the R0 implementation plan (writing-plans). Nothing pushed
 since 67ba706.
+
+## 7. After the author's decisions (2026-10-22)
+
+Dossier §18.69 records the author's decisions on Q1-Q13 and D1-D6. All
+documents follow them. The implementation plan is
+docs/plans/2026-10-22-r0-implementation-plan.md, reviewed once and
+revised. Implementation and proofs are not authorized. Next: the
+author's choice at G-switch (plan §3.1, options A-E) and the other
+gates in plan §2; the O24 note's §3.4 questions before the proof
+tranche; a push, if the author asks.
