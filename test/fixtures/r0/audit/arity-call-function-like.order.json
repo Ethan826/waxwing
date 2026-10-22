@@ -1,0 +1,21 @@
+{
+  "name": "arity-call-function-like/order",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Call.purs:148",
+  "token": "functionLike",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "arity-call-function-like/inferred",
+  "changes": [
+    "get(r, 1)",
+    "{ let u = r.f + 1; get(r, 1) }"
+  ],
+  "note": "the same over-application: E_ARITY once an earlier r.f + 1 has made the solver bind f to Int, a hole (later E_TYPE) otherwise; selected-fn compiles",
+  "source": "fn inc(x: Int): Int = x + 1; fn get(r: { f: a }): a = r.f; fn k(): Int = { let go = fn(r) => { let u = r.f + 1; get(r, 1) }; go({ f: 2 }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_ARITY",
+  "text": "Wrong number of arguments",
+  "at": "get(r, 1)",
+  "notes": []
+}

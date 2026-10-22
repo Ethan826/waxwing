@@ -1,0 +1,21 @@
+{
+  "name": "effect-not-allowed/selected",
+  "refusal": "EffectNotAllowed",
+  "site": "src/Features/Check/Reject.purs:69",
+  "token": "EffectNotAllowed",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "effect-not-allowed/inferred",
+  "changes": [
+    "with Log = Log.log(x",
+    "= ("
+  ],
+  "note": "consumption of a label into k's ambient row; inferred: Log reaches it only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit = (); fn k(): Unit = { let call = fn(r) => r.f(1); call({ f: h }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

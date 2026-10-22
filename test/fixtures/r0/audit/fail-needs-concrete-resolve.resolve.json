@@ -4,6 +4,8 @@
   "site": "src/Features/Resolve/Row.purs:82",
   "token": "FailNeedsConcrete",
   "class": "structural",
+  "evidence": "checked",
+  "role": "resolve",
   "note": "raised by resolve on a written signature",
   "source": "fn k(): Unit with Fail(a) = (); fn main(): Int = 0;",
   "phase": "resolve",

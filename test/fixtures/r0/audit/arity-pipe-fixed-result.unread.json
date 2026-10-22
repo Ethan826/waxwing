@@ -4,6 +4,8 @@
   "site": "src/Features/Check/Pipe.purs:33",
   "token": "fixedResult",
   "class": "structural",
+  "evidence": "checked",
+  "role": "pinned",
   "note": "size's declared result Int is never a function: the same refusal pinned or inferred, before the argument is read (unread: r.x would be a MissingField)",
   "source": "fn size(r: { a: Int }): Int = r.a; fn k(): Int = { let go = fn(r: { a: Int }) => 1 |> size(r.x); go({ a: 2 }) }; fn main(): Int = 0;",
   "phase": "check",

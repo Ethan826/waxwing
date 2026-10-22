@@ -1,0 +1,21 @@
+{
+  "name": "defer-handler-may-fail/selected",
+  "refusal": "DeferHandlerMayFail",
+  "site": "src/Features/Check/MarkReport.purs:49",
+  "token": "DeferHandlerMayFail",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "defer-handler-may-fail/inferred",
+  "changes": [
+    "Log.log(n",
+    "("
+  ],
+  "note": "inferred: the deferred Log reaches the failing frame through r's record meta",
+  "source": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = handle with handler Log { log(n) => Fail.fail(E) } { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => () }) } { fail(error: E) => Console.print(9) };",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

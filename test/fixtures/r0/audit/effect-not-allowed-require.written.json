@@ -1,0 +1,16 @@
+{
+  "name": "effect-not-allowed-require/written",
+  "refusal": "EffectNotAllowed",
+  "site": "src/Features/Check/Require.purs:123",
+  "token": "EffectNotAllowed",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "written",
+  "note": "a nested record argument: g's row lacks Log; the same site is rewritten to CallbackRowLacks at the top level (ArgumentRow.purs:62)",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect Clock { fn now(): Int; }; fn h(x: Int): Unit with Log = Log.log(x); fn same(a: x, b: x): Int = 0; fn k(g: Int -> Unit with Clock + ...e): Int with ...e = same({ f: h }, { f: g }); fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "This function performs Log, which its signature does not allow",
+  "at": "{ f: g }",
+  "notes": []
+}

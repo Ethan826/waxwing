@@ -1,0 +1,21 @@
+{
+  "name": "unhandled-effect/selected",
+  "refusal": "UnhandledEffect",
+  "site": "src/Features/Check/Entry.purs:54",
+  "token": "UnhandledEffect",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "unhandled-effect/inferred",
+  "changes": [
+    "with Log = Log.log(x",
+    "= ("
+  ],
+  "note": "inferred: Log reaches main's final row only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit = (); fn main(): Unit = { let call = fn(r) => r.f(1); call({ f: h }) };",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

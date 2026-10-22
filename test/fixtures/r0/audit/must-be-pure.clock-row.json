@@ -1,0 +1,16 @@
+{
+  "name": "must-be-pure/clock-row",
+  "refusal": "MustBePure",
+  "site": "src/Features/Check/Require.purs:122",
+  "token": "MustBePure",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "written",
+  "note": "BACKLOG FX030: RowExtra at Require.purs:99 is reported with an empty row, so this reads `must be pure` although the expected row is Clock + ...",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect Clock { fn now(): Int; }; fn h(x: Int): Unit with Log = Log.log(x); fn same(a: x, b: x): Int = 0; fn k(g: Int -> Unit with Clock): Int with Clock = same(g, h); fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "This function must be pure, but it performs Log",
+  "at": "h",
+  "notes": []
+}

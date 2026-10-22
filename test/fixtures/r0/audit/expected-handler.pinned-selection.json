@@ -1,0 +1,21 @@
+{
+  "name": "expected-handler/pinned-selection",
+  "refusal": "ExpectedHandler",
+  "site": "src/Features/Check/Handler.purs:75",
+  "token": "ExpectedHandler",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "pinned-selection",
+  "against": "expected-handler/inferred",
+  "changes": [
+    "",
+    ": { h: Handler(Log) }"
+  ],
+  "note": "headOf of the handler value's type (Handler.purs:63-65): a meta at `with` is refused; pinned to exactly the type the solver selects, it compiles",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn k(): Int = { let go = fn(r: { h: Handler(Log) }) => with r.h { Log.log(1); 0 }; go({ h: handler Log { log(n) => () } }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

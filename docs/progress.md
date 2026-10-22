@@ -153,6 +153,19 @@ RequirementAtoms`. test/r0-probe-support.mjs gained `refusalOf`
 in findings. Found on the way: a new FX010 reproducer (E_INTERNAL
 from a user program), recorded in BACKLOG FX010 and not fixed.
 Stopped at G-effects and G-coverage.
+Fix round 1 (task review and gate re-derivation): 79 fixtures with a
+`role`; a semantic row is checked only by a `selected` or
+`pinned-selection` variant that differs from its base in stage or code
+(pinned against inferred alone is not evidence, an amendment recorded
+in findings). The gate's selected variants added; Require.purs:123
+now checked (reachable through a nested record); arity split into
+structural Pipe.purs:33 and Call.purs:144 and semantic Pipe.purs:36
+and Call.purs:148; rows added for ExpectedHandler (f), NofailOnFail
+and MarkVariableOutsideSignature (a); RowEquality cited at
+Argument.purs:70 and RowName.purs:96 (the latter argued). The reason
+for `AmbiguousType` is re-derived through rule 3 and left to the
+author (options with consequences, none chosen). New BACKLOG FX030
+for two misleading effect diagnostics. Corpus re-pinned.
 
 ## Language direction recorded (2026-10-08)
 

@@ -8,9 +8,13 @@ import { filesUnder } from '../scripts/structure.mjs';
 
 // Task 0.5 (gates G-effects, G-coverage): which effect, handler and
 // coverage refusals, `AmbiguousType` and arity read a type the online
-// solver bound. Each fixture is one variant of a program: the record
-// part `inferred` (a lambda parameter the solver binds), `pinned` by
-// annotation, or a `control`. Classes and their reading:
+// solver bound. Each fixture is one variant of a program, by `role`:
+// the record part `inferred` (a lambda parameter the solver binds),
+// `pinned` by annotation (to any type), `pinned-selection` (to the
+// type the solver selects), `selected` (the same refusal site, with
+// something outside it changed so the solver selects another type;
+// `against` names the variant it changes and `changes` the text), a
+// `control`, `written` or `resolve`. Classes and their reading:
 // docs/findings.md, "Effect and coverage audit". A characterization:
 // it decides nothing and changes no diagnostic.
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,7 +24,6 @@ const outcome = f => ({ phase: f.phase, code: f.code, text: f.text,
 // The class tests read today's outcomes, not the recorded ones.
 const live = new Map(fixtures.map(f => [f.name, refusalOf(f.source)]));
 const now = f => live.get(f.name);
-const same = (a, b) => JSON.stringify(now(a)) === JSON.stringify(now(b));
 const rows = () => {
   const found = new Map();
   for (const f of fixtures) {
@@ -30,8 +33,9 @@ const rows = () => {
   return [...found.values()];
 };
 
+// A deliberate pin: adding or removing a fixture is a table change.
 test('every audit fixture gives its recorded refusal', () => {
-  assert.equal(fixtures.length, 52);
+  assert.equal(fixtures.length, 79);
   for (const f of fixtures)
     assert.deepEqual(now(f), outcome(f), f.name);
 });
@@ -44,7 +48,7 @@ test('every audited refusal has a row', () => {
   const listed = [...code.matchAll(
     /^ {2}(\w+)\b[^\n]*→ Code\.(EffectError|HandlerError)$/gm)]
     .map(match => match[1]);
-  assert.equal(listed.length, 14);
+  assert.equal(listed.length, 14); // a deliberate pin, as above
   const audited = new Set(fixtures.map(f => f.refusal));
   for (const name of [...listed, 'FailNeedsConcrete', 'RedundantArm',
     'NonExhaustive', 'AmbiguousType', 'Arity'])
@@ -61,14 +65,42 @@ test('every cited site holds its token', () => {
   }
 });
 
-// Semantic: the refusal is raised by some variant, and the variants do
-// not all agree, so the outcome follows what the record part is.
-test('a semantic row has variants that differ', () => {
+// The text a variant changes against its base: the two sources less
+// their common prefix and suffix.
+const changed = (base, variant) => {
+  let start = 0;
+  while (start < base.length && base[start] === variant[start]) start += 1;
+  let end = 0;
+  while (end < base.length - start && end < variant.length - start
+    && base[base.length - 1 - end] === variant[variant.length - 1 - end])
+    end += 1;
+  return [base.slice(start, base.length - end),
+    variant.slice(start, variant.length - end)];
+};
+const byName = new Map(fixtures.map(f => [f.name, f]));
+test('every variant with a base changes exactly its recorded text', () => {
+  for (const f of fixtures.filter(found => found.against))
+    assert.deepEqual(changed(byName.get(f.against).source, f.source),
+      f.changes, f.name);
+});
+
+// Semantic and checked: a base raised at check, and a `selected` or
+// `pinned-selection` variant of it whose stage or code differs. Two
+// different texts differ anyway, so a pinned type unlike the solver's
+// selection, or a difference in text, span or notes alone, is not
+// evidence; such rows are `argued`.
+const decisive = f => ['selected', 'pinned-selection'].includes(f.role)
+  && now(byName.get(f.against)).phase === 'check'
+  && (now(f).phase !== now(byName.get(f.against)).phase
+    || now(f).code !== now(byName.get(f.against)).code);
+test('a checked semantic row has a decisive selected variant', () => {
   for (const variants of rows().filter(r => r[0].class === 'semantic')) {
     const name = variants[0].name;
-    assert.ok(variants.length >= 2, name);
     assert.ok(variants.some(f => now(f).phase === 'check'), name);
-    assert.ok(variants.some(f => !same(f, variants[0])), name);
+    const evidence = new Set(variants.map(f => f.evidence));
+    assert.equal(evidence.size, 1, name);
+    if (variants[0].evidence === 'checked')
+      assert.ok(variants.some(decisive), name);
   }
 });
 
@@ -76,7 +108,7 @@ test('a semantic row has variants that differ', () => {
 // refusal whatever the record part is.
 test('a structural row is resolve-time or agrees across variants', () => {
   for (const variants of rows().filter(r => r[0].class === 'structural')) {
-    const raised = variants.filter(f => f.name.split('/')[1] !== 'control');
+    const raised = variants.filter(f => f.role !== 'control');
     const first = raised[0];
     const resolved = raised.every(f => now(f).phase === 'resolve');
     assert.ok(resolved || raised.length >= 2, first.name);

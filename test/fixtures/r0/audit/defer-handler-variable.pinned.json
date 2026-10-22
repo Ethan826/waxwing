@@ -4,6 +4,8 @@
   "site": "src/Features/Check/MarkReport.purs:48",
   "token": "DeferHandlerVariable",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "pinned",
   "note": "inferred: the deferred Log reaches nofail(k) through r's record meta",
   "source": "effect Log { fn log(n: Int): Unit; }; fn f(): Unit with nofail(k) Log = { let go = fn(r: { f: Int -> Unit with Log }) => { defer r.f(1); () }; go({ f: fn(n: Int) => Log.log(n) }) }; fn main(): Int = 0;",
   "phase": "check",

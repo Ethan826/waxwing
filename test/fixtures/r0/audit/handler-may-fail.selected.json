@@ -1,0 +1,21 @@
+{
+  "name": "handler-may-fail/selected",
+  "refusal": "HandlerMayFail",
+  "site": "src/Features/Check/MarkReport.purs:61",
+  "token": "HandlerMayFail",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "handler-may-fail/inferred",
+  "changes": [
+    "Fail.fail(E",
+    "("
+  ],
+  "note": "pinned and inferred agree; the control shows the nofail demand reaches the handler only through use(r), that is through r",
+  "source": "type E = E; effect Log { fn log(n: Int): Unit; }; fn use(r: { h: Handler(nofail Log with Fail(E)) }): Int = 0; fn k(): Int = { let go = fn(r) => use(r); go({ h: handler Log { log(n) => () } }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

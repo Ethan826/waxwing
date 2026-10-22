@@ -1,0 +1,21 @@
+{
+  "name": "defer-handler-variable/selected",
+  "refusal": "DeferHandlerVariable",
+  "site": "src/Features/Check/MarkReport.purs:48",
+  "token": "DeferHandlerVariable",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "defer-handler-variable/inferred",
+  "changes": [
+    "Log.log(n",
+    "("
+  ],
+  "note": "inferred: the deferred Log reaches nofail(k) through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn f(): Unit with nofail(k) Log = { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => () }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

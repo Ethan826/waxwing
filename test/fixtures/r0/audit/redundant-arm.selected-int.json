@@ -4,6 +4,13 @@
   "site": "src/Features/Check/Coverage.purs:101",
   "token": "RedundantArm",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "redundant-arm/inferred",
+  "changes": [
+    "V",
+    "Int"
+  ],
   "note": "the `_` arm is redundant exactly when the solver selects Opt(V) for r's field; pinned at a rigid b it is not",
   "source": "type V = V(V); type Opt(a) = None | Some(a); fn f(n: Opt(Int)): Int = { let g = fn(r) => match r { { a: None } => 1, _ => 2 }; g({ a: n }) }; fn main(): Int = 1;",
   "phase": "compiled",

@@ -1035,97 +1035,150 @@ the copy was deleted afterwards. The unpatched probe passes 16/16.
 ## Effect and coverage audit (2026-10-22)
 
 Task 0.5 of the first R0 shadow tranche, for gates G-effects (Q-c2)
-and G-coverage (Q-c1). The criterion is the author's (dossier
-§18.69 Q4): a check that depends on a solver-selected type is
-semantic. Q3 sets the default for effects: an effect refusal is class
-a only where it is shown not to consume record metas the online
-solver bound, otherwise class f (`ClassF`). Nothing in the compiler
-changed.
+and G-coverage (Q-c1), with fix round 1 (task review and the gate's
+re-derivation). The criterion is the author's (dossier §18.69 Q4): a
+check that depends on a solver-selected type is semantic. Q3 sets the
+default for effects: an effect refusal is class a only where it is
+shown not to consume record metas the online solver bound, otherwise
+class f (`ClassF`). In the fixtures and the test, `semantic` is class
+f for an effect refusal and `structural` is class a. Nothing in the
+compiler changed.
 
 **Method.** Each row cites the raise site and the lines that say what
-the check reads. Each fixture pair in test/fixtures/r0/audit/ is one
-program in two forms: the record part `inferred` (a lambda parameter
-`r` whose record type the solver binds) and `pinned` (the same
-parameter annotated). Some rows add a third form: a `control`, or a
-`selected-*` program in which the solver picks a different field
-type. test/r0-audit.test.mjs records each outcome (stage, code, text,
-the text the span covers, and the notes). It also checks that a
-semantic row's forms do not all agree, that a structural row's forms
-agree or are all raised in Resolve, that each cited line still holds
-its token, and that no module `Features.Resolve` imports reaches
-`Features.Check.{Scheme,Subst,Unify,Infer,Context}`. In the table,
-"checked" means a recorded fixture difference backs the class;
-"argued" means the code reading backs it alone. File paths are under
-src/Features/.
+the check reads. Each fixture in test/fixtures/r0/audit/ is one
+variant of a program, by `role`: `inferred` (the record part is a
+lambda parameter `r` the solver binds), `pinned` (annotated with some
+type), `pinned-selection` (annotated with exactly the type the solver
+selects), `selected` (the refusal site unchanged, something outside
+it changed so that the solver selects another type), `control`,
+`written` or `resolve`. A `selected` or `pinned-selection` variant
+names its base (`against`) and the text it changes (`changes`; the
+test recomputes it). test/r0-audit.test.mjs records each outcome
+(stage, code, text, covered text, notes) and checks the class rules
+on today's outcomes.
 
-| Refusal | Raise site | Reads (cited) | Fixtures | Recorded difference | Class |
+*Amended in fix round 1 (reason: the task review found the first
+rule nearly vacuous).* Pinned against inferred alone is not evidence
+when the pinned type differs from the solver's selection: two
+different texts differ in text, span or notes anyway, and a lambda
+annotation `with L` means L plus the ambient row, so most pinned
+forms failed first for a new reason. A semantic row is now
+"checked" only when a `selected` or `pinned-selection` variant
+differs from its base, which check refuses, in stage or code. The
+first round's pinned fixtures are kept as records. Every effect row
+that was "checked" on a pinned difference now has a `selected`
+variant that compiles, so no row was downgraded; HandlerMayFail and
+Require.purs:123, argued in the first round, are now checked.
+Evidence still holds only for these programs; the class itself is
+derived from the cited lines.
+
+| Refusal | Raise site | Reads (cited) | Decisive fixtures | What they show | Class |
 | --- | --- | --- | --- | --- | --- |
-| EffectNotAllowed | Check/Reject.purs:69 | a consumption's `RowMissing`/`RowExtra` under `state.subst` (Reject.purs:41-48, 75-77) | effect-not-allowed | inferred: `k performs Log…` at `call({ f: h })`; pinned: RowEquality at `r.f(1)` | f, checked |
-| EffectNotAllowed | Check/Require.purs:123 | `unify` under `state.subst` (Require.purs:86-99); the same `rowProblem` as MustBePure (121-123) | none: no test reaches it; scratch probes (not recorded) gave MustBePure | — | f, argued |
-| MustBePure | Check/Require.purs:122 | as above | must-be-pure | inferred at `{ f: h }`, pinned at `r` | f, checked |
-| RowEquality | Check/RowName.purs:96 | `RowSharedTail`/`RowMismatch` from `unify` under `state.subst` (Require.purs:100; Reject.purs:45-46, 78; Argument.purs:64-65) | row-equality | inferred: RowEquality at the second `r`; pinned `with pure`: MustBePure | f, checked |
-| CallbackRowLacks | Check/CallbackParts.purs:63 | a consumption's `RowExtra` (Reject.purs:63-64 → Callback.purs:85; ArgumentRow.purs:107) | callback-row-lacks | inferred: CallbackRowLacks at `go({ f: q })`; pinned: RowEquality at `r.f(x)` | f, checked |
-| UnhandledEffect | Check/Entry.purs:54 | `main`'s row resolved under the settled `state.subst` (Entry.purs:44; Function.purs:88-90, 98) | unhandled-effect | inferred: at `call({ f: h })`; pinned: RowEquality | f, checked |
-| DeferMayFail | Check/Defer.purs:165 | the deferred row resolved after settling (Defer.purs:125; Function.purs:91), and at the item (Defer.purs:60-61) | defer-may-fail | same headline; notes `Fail(E) is raised here` (inferred) and `comes from this function value` (pinned) | f, checked |
-| DeferMayPerform | Check/Defer.purs:134 | the settled deferred row's rigid tail (Defer.purs:123-136) | defer-may-perform | inferred: DeferMayPerform; pinned `with pure`: E_TYPE at `{ f: g }` | f, checked |
-| DeferHandlerMayFail | Check/MarkReport.purs:49 | the mark graph built from settled rows (Frames.purs:28-34), with edges added by unification (UnifyMark.purs:132) and searched in `Subst.marks` (Function.purs:92-94) | defer-handler-may-fail | inferred: DeferHandlerMayFail; pinned: RowEquality | f, checked |
-| DeferHandlerVariable | Check/MarkReport.purs:48 | as above | defer-handler-variable | inferred: DeferHandlerVariable; pinned: EffectNotAllowed | f, checked |
-| ExpectedNofail | Check/MarkReport.purs:74 | as above | expected-nofail | inferred at `work()`; pinned: RowEquality at `r.f(())` | f, checked |
-| HandlerMayFail | Check/MarkReport.purs:61 | as above | handler-may-fail | inferred and pinned agree; control `fn(r) => 0` compiles, so the nofail demand reaches the handler only through `use(r)` | f, argued |
-| FailNeedsConcrete | Check/Failure.purs:102 | `typeHead (resolved subst ty)` of each payload, on the settled substitution (Failure.purs:73-79, 214) | fail-needs-concrete-check | inferred, never applied: refused; pinned and applied: compile | f, checked |
-| FailNeedsConcrete | Resolve/Row.purs:82 | the written payload type (Row.purs:79-93) | fail-needs-concrete-resolve | raised in Resolve | a, checked |
-| HandlerMissing | Resolve/Handler.purs:161 | the effect's declared operations against the clause names (Handler.purs:148-163) | handler-missing | raised in Resolve | a, checked |
+| EffectNotAllowed | Check/Reject.purs:69 | a consumption's `RowMissing`/`RowExtra` under `state.subst` (Reject.purs:41-48, 75-77; Consume.purs:182-194) | effect-not-allowed inferred, selected | the same lambda; refused when the argument `h` performs Log, compiles when it does not | f, checked |
+| EffectNotAllowed | Check/Require.purs:123 | `unify` under `state.subst` (Require.purs:86-99), `RowMissing` with a non-pure row (121-123); at the top level ArgumentRow.purs:62 rewrites it into CallbackRowLacks (FX018) | effect-not-allowed-require inferred, selected (and written) | a nested record argument `{ f: g }`: `This function performs Log…`; with `h` for `g` in the argument, compiles | f, checked |
+| MustBePure | Check/Require.purs:122 | as above | must-be-pure inferred, selected, pinned-selection | refused, and refused the same with `r` pinned to the selected type; compiles with a pure `h` | f, checked |
+| RowEquality | Check/Argument.purs:70 | the conflict re-derived for its tail: `unify state.subst` (Argument.purs:65) and `resolveRow state.subst` (:111) | row-equality inferred, selected | `r` carries p's row to q; compiles when q's row is p's (the change is in `both`'s q, not in the lambda) | f, checked |
+| RowEquality | Check/RowName.purs:96 | `RowSharedTail` from `unify` under `state.subst` (Require.purs:100; `RowMismatch` there, :101, is TypeMismatch) and `RowSharedTail`/`RowMismatch` from a consumption (Reject.purs:45-46, 78) | none decisive; raised in the pinned forms of effect-not-allowed, callback-row-lacks, unhandled-effect | reads `state.subst` | f, argued |
+| CallbackRowLacks | Check/CallbackParts.purs:63 | a consumption's `RowExtra` (Reject.purs:63-64 → Callback.purs:85; ArgumentRow.purs:107) | callback-row-lacks inferred, selected | compiles when q's row is `Log + M` | f, checked |
+| UnhandledEffect | Check/Entry.purs:54 | `main`'s row under the settled `state.subst` (Entry.purs:43-44; Function.purs:88-90, 98) | unhandled-effect inferred, selected | compiles with a pure `h`; mutant M5 | f, checked |
+| DeferMayFail | Check/Defer.purs:165 | the deferred row after settling (Defer.purs:125; Function.purs:91), and at the item (Defer.purs:60-61) | defer-may-fail inferred, selected | compiles when the stored function does not fail | f, checked |
+| DeferMayPerform | Check/Defer.purs:134 | the settled deferred row's rigid tail (Defer.purs:123-136) | defer-may-perform inferred, selected | compiles when `g` is `with pure` | f, checked |
+| DeferHandlerMayFail | Check/MarkReport.purs:49 | the mark graph from settled rows (Frames.purs:28-34), edges added by unification (UnifyMark.purs:132), searched in `Subst.marks` (Function.purs:92-94) | defer-handler-may-fail inferred, selected | compiles when the stored function performs nothing | f, checked |
+| DeferHandlerVariable | Check/MarkReport.purs:48 | as above | defer-handler-variable inferred, selected | as above | f, checked |
+| ExpectedNofail | Check/MarkReport.purs:74 | as above | expected-nofail inferred, selected | compiles when `work` is plain `Log` | f, checked |
+| HandlerMayFail | Check/MarkReport.purs:61 | as above | handler-may-fail inferred, selected | compiles with a handler that does not fail (the pinned form and a control are kept) | f, checked |
+| ExpectedHandler | Check/Handler.purs:75 | `headOf handlerValue.state` (Handler.purs:61-63) | expected-handler inferred, pinned-selection | `with r.h` at a meta is refused; pinned to exactly the selected `Handler(Log)`, compiles | f, checked |
+| FailNeedsConcrete | Check/Failure.purs:102 | `typeHead (resolved subst ty)` of each payload, settled (Failure.purs:73-79, 214) | fail-needs-concrete-check inferred, applied | refused while `r` is unbound; compiles once applied to `{ e: E }` | f, checked |
+| FailNeedsConcrete | Resolve/Row.purs:82 | the written payload (Row.purs:79-93) | fail-needs-concrete-resolve | raised in Resolve | a, checked |
+| NofailOnFail | Resolve/Row.purs:71 | the written label | nofail-on-fail | raised in Resolve | a, checked |
+| MarkVariableOutsideSignature | Resolve/Marks.purs:67 | written mark variables | mark-variable-outside-signature | raised in Resolve | a, checked |
+| HandlerMissing | Resolve/Handler.purs:161 | declared operations against clause names (Handler.purs:148-163) | handler-missing | raised in Resolve | a, checked |
 | HandlerDuplicate | Resolve/Handler.purs:142 | clause names (Handler.purs:133-146) | handler-duplicate | raised in Resolve | a, checked |
-| HandlerOperation | Resolve/Handler.purs:90, Imports.purs:131, Qualified.purs:152 | a name against the effect's declared operations | handler-operation-{clause,import,qualified} | raised in Resolve | a, checked |
-| NonExhaustive | Check/Coverage.purs:112 | the scrutinee's settled type (Coverage.purs:83; Function.purs:95, 107), inhabitedness per type application (Signature.purs `buildSignature`; Matrix.purs:59-63), record patterns widened by their settled type (Matrix.purs:139-149) | non-exhaustive | witness `{ a: false, b: _ }` (inferred) or `{ a: false, ... }` (pinned); selected `Opt(Int)` refused, `Opt(V)` compiles | semantic, checked |
-| RedundantArm | Check/Coverage.purs:101 | pattern types (Usefulness.purs:60; Matrix.purs:59-63, 137) | redundant-arm | `_` redundant at the selected `Opt(V)`; compiles pinned at a rigid `b` and at `Opt(Int)` | semantic, checked |
-| AmbiguousType | Check/Comparable.purs:78 | holes left in the settled operand type (Comparable.purs:76-84; Function.purs:95-96) | ambiguous-type | inferred, never applied: ambiguous; pinned and applied: compile | semantic, checked |
-| Arity (pipe) | Check/Pipe.purs:36 | `functionLike`: `headOf state`, the type solved so far (Apply.purs:147-151; Scheme.purs:161-164) | arity-pipe-function-like | inferred: a hole passes, then E_TYPE at `{ f: 2 }`; pinned: E_ARITY at `get(r)` | semantic, checked |
-| Arity (call) | Check/Call.purs:148 (and :144) | as above | arity-call-function-like | as for the pipe, at `get(r, 1)` | semantic, checked |
-| Arity (fixed result) | Check/Pipe.purs:33 | the callee's declared result and the argument count (Call.purs:83-106); no `State` | arity-pipe-fixed-result | E_ARITY at `size(r)` in both forms, and at `size(r.x)` before `r.x` is read (control: `size(r.x)` alone is E_TYPE) | a, checked |
+| HandlerOperation | Resolve/Handler.purs:90, Imports.purs:131, Qualified.purs:152 | a name against declared operations | handler-operation-{clause,import,qualified} | raised in Resolve | a, checked |
+| NonExhaustive | Check/Coverage.purs:112 | the scrutinee's settled type (Coverage.purs:83; Function.purs:95, 107), inhabitedness per type application (Signature.purs `buildSignature`; Matrix.purs:59-63), record patterns widened by their settled type (Matrix.purs:139-149) | non-exhaustive selected-int, selected-v | the same match: refused when the argument is `Opt(Int)`, compiles at `Opt(V)`; mutant M2 | semantic, checked |
+| RedundantArm | Check/Coverage.purs:101 | pattern types (Usefulness.purs:60; Matrix.purs:59-63, 137) | redundant-arm inferred, selected-int | `_` redundant at `Opt(V)`, not at `Opt(Int)`; mutant M2 | semantic, checked |
+| AmbiguousType | Check/Comparable.purs:78 | holes left in the settled operand type (Comparable.purs:76-84; Function.purs:95-96) | ambiguous-type inferred, applied | ambiguous while `e` is never applied; compiles once applied | semantic, checked |
+| Arity (pipe) | Check/Pipe.purs:36 | `functionLike`: `headOf state`, the type solved so far (Apply.purs:147-151; Scheme.purs:161-164) | arity-pipe-function-like inferred, order | E_ARITY once an earlier `r.f + 1` binds `f` to Int; otherwise a hole passes and E_TYPE comes later; mutant M1 | semantic, checked |
+| Arity (call) | Check/Call.purs:148 | `functionLike` at the call's result, after the arguments | arity-call-function-like inferred, order, selected-fn | as for the pipe; compiles with `inc` | semantic, checked |
+| Arity (call) | Check/Call.purs:144 | `functionLike` at the callee's freshly instantiated declared result, before any argument: a fixed head is never a function, a variable is an unbound hole | arity-call-fixed-result | E_ARITY at `size(r, 1)` pinned or inferred, before `r.x` is read (control: E_TYPE); mutant R3 | a, checked |
+| Arity (pipe) | Check/Pipe.purs:33 | the callee's declared result and the argument count (Call.purs:83-106); no `State` | arity-pipe-fixed-result | as for Call.purs:144 | a, checked |
 
-**Q-c2 (G-effects).** Every effect refusal that check raises is
-class f: each reads the online solver's substitution, and the inferred
-forms show a record meta on the path to the refusal. The class-a
-refusals are exactly those raised in Resolve: HandlerMissing,
-HandlerDuplicate, HandlerOperation (three sites) and the Resolve-time
-FailNeedsConcrete. Every E_HANDLER refusal is raised in Resolve.
+Other arity sites, cited and not probed: Call.purs:123 (a count
+against declared fields), Show.purs:27 and Operation.purs:64, 104
+(one argument): structural by the code, class a (argued). FieldArity,
+FunctionNeedsCall and TypeArguments were not examined.
+
+**Q-c2 (G-effects).** Every effect refusal raised by check is class f,
+ExpectedHandler included: each reads the online solver's state, and
+each row but RowName.purs:96 has a decisive selected variant. Q3
+speaks of record metas; Reject.purs:69 is also reached with none
+(`fn k(): Unit = h(1)`, the gate's probe ena-direct, not recorded
+here), which is consistent with a per-site class f. The class-a
+refusals are those raised in Resolve: HandlerMissing,
+HandlerDuplicate, HandlerOperation (three sites), NofailOnFail,
+MarkVariableOutsideSignature and the Resolve-time FailNeedsConcrete.
+Every E_HANDLER refusal is raised in Resolve.
 
 **Q-c1 (G-coverage).** Today's coverage has no structural part at a
-raise site. RedundantArm and NonExhaustive read settled types on every
-path (cited above), and the fixtures show both verdicts following the
-type the solver selects. Some individual matches read only written
-types (a parameter typed `Bool`), but telling them apart needs a
-predicate today's code does not compute: "no column type has a
-solver-bound part". Ruling R5 makes Task 2.3 a classification over
-`Problem` plus raise-site metadata, so it cannot split one raise site
-without that predicate, which would be new machinery and is not
+raise site: RedundantArm and NonExhaustive read settled types on
+every path (cited above), and the selected fixtures show both
+verdicts following the type the solver selects. Some matches read
+only written types (a parameter typed `Bool`), but telling them
+apart needs a predicate today's code does not compute ("no column
+type has a solver-bound part"). Task 2.3 classifies at each check's
+raise site (plan Task 2.3 "Interfaces": "applied at each check's
+raise site"; plan review rows S5 and N5), so it cannot split one
+site without that predicate, which would be new machinery and is not
 proposed. Recommendation (argued): both coverage refusals are
-semantic, and Task 2.3 adds no coverage `StaticRule` rows. The arity
-split of T-R0b §11 item 7 holds: `fixedResult` is structural and
-`functionLike` semantic (checked above).
+semantic, and Task 2.3 adds no coverage `StaticRule` rows. Arity has
+two structural sites (Pipe.purs:33, Call.purs:144) and two semantic
+ones (Pipe.purs:36, Call.purs:148). **Open:** semantic coverage runs on
+the accepted witness after `admit` (plan Task 6.1); what a semantic
+coverage refusal becomes when it is reached only through an unforced
+choice of the solver is not decided here.
 
-**`AmbiguousType`'s reason (G-coverage, for Task 2.2).** Two options
-come from T-R0a's `UnresolvedReason` (argued):
+**`AmbiguousType`'s reason (for the author; for Task 2.2).** Derived
+through T-R0a §5.3 rule 3 (generation-interface.md:815-828) with G0's
+guard and check as plan Task 4.2 specifies them (argued). f02's atom
+is `cmp α` at a flexible `α`. `g0Guard` declines only atoms that stay
+non-ground after `entailedGround` and mention a rigid variable, or lie
+outside the unitary fragment, so it admits this one. `online` then
+produces a candidate that keeps the hole, and G0's `check` either
+refuses it with the `RequirementUnjudged` backstop (a guard/check
+disagreement, which RT8 counts as a defect) or accepts it (Solved,
+which conflicts with the decided Unresolved of §18.69 Q4, since `cmp`
+at an unconstrained variable is satisfiable, T-R0b C8). No specified
+path gives a reason today. Options, not chosen:
 
-- A1: `Unsupported RequirementAtoms`. f02's `cmp α` sits at a flexible
-  `α` that no strategy's `Sound_F` covers, which matches that
-  constructor's definition ("no covering Sound_F after reduction").
-  Recommended.
-- A2: `Inference NoCandidate`. This would say that the search found
-  nothing, but the online search does find a solution, one that keeps
-  the hole (T-R0b C8 notes that `cmp` at a hole is satisfiable).
+- `Unsupported RequirementAtoms`. Needs a new mechanism: for example a
+  check refusal for a requirement at an unbound flexible variable that
+  rule 3 reads as `Unsupported RequirementAtoms`, as it reads
+  `RequirementOpen`. The guard cannot do it, because it cannot tell
+  f02's `α` from AT19's second case (an atom σ grounds, which must
+  reach check). Novel machinery; needs the author's approval.
+  Consequence: f02 is reported as outside the supported model, beside
+  `pr a` at a rigid `a`.
+- `Inference NoAcceptedCertificate`. What rule 3 gives if G0's check
+  refuses the candidate. Consequence: the online candidate is
+  `ClaimsComplete`, so the refusal is also a `CandidateRefused`
+  search fault, and the `RequirementUnjudged` backstop that RT8
+  counts as a defect becomes an expected path unless the check's
+  refusal is given its own kind.
+- `Inference NoCandidate`: rejected. It says the search found
+  nothing, but the online search finds a solution that keeps the hole.
 
 **Defect found (live checker; recorded, not fixed).**
 fx010-record-payload/pinned is a user program that ends in E_INTERNAL
 `Effect row consumption failed`, the catch-all at Check/Reject.purs:54.
 The same program with the record part inferred gets the user
 diagnostic `k performs Log, which its signature does not allow`. This
-is a new, smaller reproducer for BACKLOG FX010, and the backlog row
-records it. Which `Failure` constructor reaches the catch-all was not
-investigated.
+is a new, smaller reproducer for BACKLOG FX010. Which `Failure`
+constructor reaches the catch-all was not investigated. Two
+diagnostic problems found by the gate are in BACKLOG FX030
+(must-be-pure/clock-row, effect-not-allowed-require/written).
 
-**Mutant runs (recorded).** Each run used one isolated copy in the
+**Mutant runs (recorded, first round, against the first round's
+test and 52 fixtures).** Each run used one isolated copy in the
 session scratchpad: output/, src/, test/r0-audit.test.mjs,
 test/r0-probe-support.mjs, test/fixtures/r0/audit/ and
 scripts/structure.mjs, copied to the same paths. The copy was
@@ -1159,8 +1212,29 @@ pass.
   unhandled-effect/inferred compiles, because Log is in `main`'s row
   only through the solved binding of `r`.
 
+**Fix-round runs (recorded).** Same method, on a fresh copy of the
+fix-round test and its 78 fixtures; 8 of 8 pass unpatched. The copy
+was deleted afterwards.
+
+- R1, must-be-pure.selected.json removed. 2 tests failed: "every
+  audit fixture gives its recorded refusal" (the count pin) and "a
+  checked semantic row has a decisive selected variant"
+  (must-be-pure/inferred): its pinned and pinned-selection forms
+  alone do not pass the rule.
+- R2, M5's patch (Entry line 38, the empty substitution). 2 tests
+  failed: the recorded-refusal test and the decisive-variant test,
+  both at unhandled-effect/inferred, which compiles.
+- R3, Call.purs:144 given an empty substitution
+  (output/Features.Check.Call/index.js: `functionLike(usable)` became
+  `functionLike(Object.assign({}, usable, { subst:
+  Features_Check_Subst_M.empty }))`, with that module imported). 8 of
+  8 pass: the structural Call.purs:144 fixtures do not depend on the
+  substitution (bounded evidence on these programs).
+- must-be-pure/clock-row, the 79th fixture (BACKLOG FX030), was added
+  after these runs; the test then passed 8 of 8 with it.
+
 **Limit of the tests (argued).** The class tests check that the
-evidence is consistent with each class; they do not derive the class.
-A structural row relabelled semantic would still pass if one of its
-forms (a control, say) differed. The gate's reviewer re-derives each
-class from the cited lines.
+evidence is consistent with each class; they do not derive it, and
+they cannot check that a `selected` change lies outside the refusal
+site (the `changes` field records it for the reviewer). The gate's
+reviewer re-derives each class from the cited lines.

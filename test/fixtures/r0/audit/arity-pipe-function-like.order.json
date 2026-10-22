@@ -1,0 +1,21 @@
+{
+  "name": "arity-pipe-function-like/order",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Pipe.purs:36",
+  "token": "functionLike",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "arity-pipe-function-like/inferred",
+  "changes": [
+    "1 |> get(r)",
+    "{ let u = r.f + 1; 1 |> get(r) }"
+  ],
+  "note": "functionLike reads get(r)'s result as solved so far: a hole (inferred) passes and the mismatch surfaces later at { f: 2 }; Int (pinned) is E_ARITY",
+  "source": "fn inc(x: Int): Int = x + 1; fn get(r: { f: a }): a = r.f; fn k(): Int = { let go = fn(r) => { let u = r.f + 1; 1 |> get(r) }; go({ f: 2 }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_ARITY",
+  "text": "Wrong number of arguments",
+  "at": "get(r)",
+  "notes": []
+}

@@ -4,6 +4,8 @@
   "site": "src/Features/Resolve/Imports.purs:131",
   "token": "HandlerOperation",
   "class": "structural",
+  "evidence": "checked",
+  "role": "resolve",
   "note": "raised by resolve",
   "source": "effect Log { fn log(n: Int): Unit; fn warn(n: Int): Unit; }; fn k(): Unit with Log { nope } = (); fn main(): Int = 0;",
   "phase": "resolve",

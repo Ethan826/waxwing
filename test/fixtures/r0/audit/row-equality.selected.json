@@ -1,0 +1,21 @@
+{
+  "name": "row-equality/selected",
+  "refusal": "RowEquality",
+  "site": "src/Features/Check/Argument.purs:70",
+  "token": "RowEquality",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "row-equality/inferred",
+  "changes": [
+    "Log",
+    "Clock"
+  ],
+  "note": "inferred: the first argument binds r's record meta to p's type, whose row then meets q's; the tail is renamed to both's ...r at Argument.purs:70 (its note points at both)",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect Clock { fn now(): Int; }; fn both(p: { f: Int -> Int with Clock + ...r }, q: { f: Int -> Int with Clock + ...r }): Int = 0; fn main(): Int = { let go = fn(r) => both(r, r); go({ f: fn(x) => x }) };",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

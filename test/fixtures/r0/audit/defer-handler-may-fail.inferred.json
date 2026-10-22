@@ -4,6 +4,8 @@
   "site": "src/Features/Check/MarkReport.purs:49",
   "token": "DeferHandlerMayFail",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "inferred",
   "note": "inferred: the deferred Log reaches the failing frame through r's record meta",
   "source": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = handle with handler Log { log(n) => Fail.fail(E) } { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => Log.log(n) }) } { fail(error: E) => Console.print(9) };",
   "phase": "check",

@@ -1,0 +1,16 @@
+{
+  "name": "mark-variable-outside-signature/resolve",
+  "refusal": "MarkVariableOutsideSignature",
+  "site": "src/Features/Resolve/Marks.purs:67",
+  "token": "MarkVariableOutsideSignature",
+  "class": "structural",
+  "evidence": "checked",
+  "role": "resolve",
+  "note": "raised by resolve",
+  "source": "effect Log { fn log(n: Int): Unit; }; type T = T(Unit -> Unit with nofail(k) Log); fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_TYPE",
+  "text": "nofail(k) is allowed only in function signatures",
+  "at": "nofail(k)",
+  "notes": []
+}

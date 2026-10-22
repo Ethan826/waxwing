@@ -1,0 +1,21 @@
+{
+  "name": "arity-call-function-like/selected-fn",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Call.purs:148",
+  "token": "functionLike",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "arity-call-function-like/inferred",
+  "changes": [
+    "2",
+    "inc"
+  ],
+  "note": "the named over-application g(b1…bk, a) at an instantiated result, as Pipe.purs:36",
+  "source": "fn inc(x: Int): Int = x + 1; fn get(r: { f: a }): a = r.f; fn k(): Int = { let go = fn(r) => get(r, 1); go({ f: inc }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

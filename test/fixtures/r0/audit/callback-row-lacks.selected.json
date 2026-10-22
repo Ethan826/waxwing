@@ -1,0 +1,21 @@
+{
+  "name": "callback-row-lacks/selected",
+  "refusal": "CallbackRowLacks",
+  "site": "src/Features/Check/CallbackParts.purs:63",
+  "token": "CallbackRowLacks",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "callback-row-lacks/inferred",
+  "changes": [
+    "",
+    " + M"
+  ],
+  "note": "inferred: q reaches the call r.f(x) only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect M { fn m(n: Int): Unit; }; fn a(q: Int -> Unit with Log + M, x: Int): Unit with Log + M = { let go = fn(r) => r.f(x); go({ f: q }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

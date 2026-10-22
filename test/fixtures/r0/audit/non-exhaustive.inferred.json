@@ -4,6 +4,8 @@
   "site": "src/Features/Check/Coverage.purs:112",
   "token": "NonExhaustive",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "inferred",
   "note": "pinned: an open written row gives the witness `...`; inferred: the solver closes r's row from the argument, so the witness names b. selected: the same match, the field type chosen from the argument (Opt(V) has no inhabited Some)",
   "source": "fn f(): Int = { let g = fn(r) => match r { { a: true, ... } => 1 }; g({ a: true, b: 1 }) }; fn main(): Int = 1;",
   "phase": "check",

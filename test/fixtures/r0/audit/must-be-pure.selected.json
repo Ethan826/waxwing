@@ -1,0 +1,21 @@
+{
+  "name": "must-be-pure/selected",
+  "refusal": "MustBePure",
+  "site": "src/Features/Check/Require.purs:122",
+  "token": "MustBePure",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "must-be-pure/inferred",
+  "changes": [
+    "with Log = Log.log(x",
+    "= ("
+  ],
+  "note": "inferred: r's record meta is bound to run's pure parameter type, so the argument { f: h } is refused; pinned: r itself is",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit = (); fn run(r: { f: Int -> Unit with pure }): Unit = r.f(1); fn k(): Unit with Log = { let go = fn(r) => run(r); go({ f: h }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

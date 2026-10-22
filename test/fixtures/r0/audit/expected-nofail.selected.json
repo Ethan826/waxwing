@@ -1,0 +1,21 @@
+{
+  "name": "expected-nofail/selected",
+  "refusal": "ExpectedNofail",
+  "site": "src/Features/Check/MarkReport.purs:74",
+  "token": "ExpectedNofail",
+  "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "expected-nofail/inferred",
+  "changes": [
+    "nofail ",
+    ""
+  ],
+  "note": "inferred: work's nofail Log reaches caller's plain Log through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn work(): Unit with Log = (); fn caller(): Unit with Log = { let go = fn(r) => r.f(()); go({ f: fn(u: Unit) => work() }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

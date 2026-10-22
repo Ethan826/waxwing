@@ -4,6 +4,13 @@
   "site": "src/Features/Check/Comparable.purs:78",
   "token": "AmbiguousType",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "selected",
+  "against": "ambiguous-type/inferred",
+  "changes": [
+    "true",
+    "e({ a: 1 })"
+  ],
   "note": "f02 with a record: ambiguous only while r's record meta leaves a hole",
   "source": "fn k(): Bool = { let e = fn(r) => r.a == r.a; e({ a: 1 }) }; fn main(): Int = 0;",
   "phase": "compiled",

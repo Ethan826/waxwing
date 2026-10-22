@@ -4,6 +4,8 @@
   "site": "src/Features/Check/Require.purs:122",
   "token": "MustBePure",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "inferred",
   "note": "inferred: r's record meta is bound to run's pure parameter type, so the argument { f: h } is refused; pinned: r itself is",
   "source": "effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit with Log = Log.log(x); fn run(r: { f: Int -> Unit with pure }): Unit = r.f(1); fn k(): Unit with Log = { let go = fn(r) => run(r); go({ f: h }) }; fn main(): Int = 0;",
   "phase": "check",

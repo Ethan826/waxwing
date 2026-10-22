@@ -4,6 +4,8 @@
   "site": "src/Features/Check/Coverage.purs:101",
   "token": "RedundantArm",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "pinned",
   "note": "the `_` arm is redundant exactly when the solver selects Opt(V) for r's field; pinned at a rigid b it is not",
   "source": "type V = V(V); type Opt(a) = None | Some(a); fn f(r: { a: Opt(b) }): Int = match r { { a: None } => 1, _ => 2 }; fn main(): Int = 1;",
   "phase": "compiled",

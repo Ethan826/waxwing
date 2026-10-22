@@ -4,6 +4,8 @@
   "site": "src/Features/Check/Defer.purs:134",
   "token": "DeferMayPerform",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "inferred",
   "note": "inferred: g's rigid ambient tail reaches the deferred row after the defer, through r's record meta",
   "source": "fn k(g: Int -> Unit): Unit = { let go = fn(r) => { defer r.f(1); () }; go({ f: g }) }; fn main(): Int = 0;",
   "phase": "check",

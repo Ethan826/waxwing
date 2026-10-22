@@ -4,6 +4,8 @@
   "site": "src/Features/Resolve/Handler.purs:142",
   "token": "HandlerDuplicate",
   "class": "structural",
+  "evidence": "checked",
+  "role": "resolve",
   "note": "raised by resolve",
   "source": "effect Log { fn log(n: Int): Unit; fn warn(n: Int): Unit; }; fn mk(): Handler(Log) = handler Log { log(n) => (), warn(n) => (), log(n) => () }; fn main(): Int = 0;",
   "phase": "resolve",

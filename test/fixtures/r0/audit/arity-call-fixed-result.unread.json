@@ -1,0 +1,16 @@
+{
+  "name": "arity-call-fixed-result/unread",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Call.purs:144",
+  "token": "functionLike",
+  "class": "structural",
+  "evidence": "checked",
+  "role": "pinned",
+  "note": "functionLike at the callee's freshly instantiated declared result, before any argument: Int is never a function; same refusal pinned or inferred, before r.x is read (control: r.x alone is E_TYPE)",
+  "source": "fn size(r: { a: Int }): Int = r.a; fn k(): Int = { let go = fn(r: { a: Int }) => size(r.x, 1); go({ a: 2 }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_ARITY",
+  "text": "Wrong number of arguments",
+  "at": "size(r.x, 1)",
+  "notes": []
+}

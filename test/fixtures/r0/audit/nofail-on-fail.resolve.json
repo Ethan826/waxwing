@@ -1,0 +1,16 @@
+{
+  "name": "nofail-on-fail/resolve",
+  "refusal": "NofailOnFail",
+  "site": "src/Features/Resolve/Row.purs:71",
+  "token": "NofailOnFail",
+  "class": "structural",
+  "evidence": "checked",
+  "role": "resolve",
+  "note": "raised by resolve",
+  "source": "type E = E; fn k(): Unit with nofail Fail(E) = (); fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_TYPE",
+  "text": "nofail does not apply to Fail",
+  "at": "Fail(E)",
+  "notes": []
+}

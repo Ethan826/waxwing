@@ -4,6 +4,8 @@
   "site": "src/Features/Check/MarkReport.purs:74",
   "token": "ExpectedNofail",
   "class": "semantic",
+  "evidence": "checked",
+  "role": "pinned",
   "note": "inferred: work's nofail Log reaches caller's plain Log through r's record meta",
   "source": "effect Log { fn log(n: Int): Unit; }; fn work(): Unit with nofail Log = (); fn caller(): Unit with Log = { let go = fn(r: { f: Unit -> Unit with nofail Log }) => r.f(()); go({ f: fn(u: Unit) => work() }) }; fn main(): Int = 0;",
   "phase": "check",
