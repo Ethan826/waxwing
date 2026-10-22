@@ -1,0 +1,3 @@
+fn shown(p: { ...r }): Text = show(p);
+
+fn main(): Text = shown({ f: fn(n: Int) => n });

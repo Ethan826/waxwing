@@ -1,0 +1,3 @@
+fn f(p: { a: Int, ...r }): Int = { ...p, a: 2 }.a;
+
+fn main(): Int = 0;

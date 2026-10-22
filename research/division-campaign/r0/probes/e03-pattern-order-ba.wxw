@@ -1,0 +1,7 @@
+fn main(): Int = {
+  let f = fn(p) => match p {
+    { a, b, ... } => b,
+    { a } => a,
+  };
+  0
+};

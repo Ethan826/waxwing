@@ -1,0 +1,6 @@
+fn left(whole: { ...u, ...v }): { ...u } where u disjoint v = left(whole);
+
+fn main(): Bool = {
+  let w = { a: 1, f: fn(n: Int) => n };
+  left(w) == left(w)
+};

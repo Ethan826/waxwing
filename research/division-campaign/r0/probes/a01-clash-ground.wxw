@@ -1,0 +1,3 @@
+fn f(): Int = true;
+
+fn main(): Int = 0;

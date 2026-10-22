@@ -1,0 +1,6 @@
+fn ext(p: { ...s }, q: { ...t }): { ...s, ...t } where s disjoint t =
+  ext(p, q);
+
+fn use(p: { ...r }): Int = ext(p, { b: 1 }).b;
+
+fn main(): Int = 0;

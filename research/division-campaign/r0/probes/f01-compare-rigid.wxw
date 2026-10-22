@@ -1,0 +1,3 @@
+fn same(p: { ...r }): Bool = p == p;
+
+fn main(): Int = 0;

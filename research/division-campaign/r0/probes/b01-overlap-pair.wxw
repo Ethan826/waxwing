@@ -1,0 +1,6 @@
+fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = 0;
+
+fn main(): Int = {
+  let p = { x: 1 };
+  g(p, p)
+};

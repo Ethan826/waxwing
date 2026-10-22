@@ -1,0 +1,13 @@
+fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = 0;
+
+fn use(z: { ...s }): Int where s lacks { a } = {
+  let f = fn(x, y) => {
+    let one = x.a;
+    let two = y.b;
+    let both = if true then x else y;
+    g(x, z)
+  };
+  0
+};
+
+fn main(): Int = 0;

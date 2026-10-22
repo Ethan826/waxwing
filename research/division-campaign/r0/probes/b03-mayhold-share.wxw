@@ -1,0 +1,9 @@
+fn ext(p: { ...s }, q: { ...t }): { ...s, ...t } where s disjoint t =
+  ext(p, q);
+
+fn use(p: { ...r }): Int = {
+  let f = fn(y) => ext(p, y).b;
+  0
+};
+
+fn main(): Int = 0;

@@ -1,0 +1,3 @@
+fn f(p: { ...r }): Int where r disjoint r = 0;
+
+fn main(): Int = 0;

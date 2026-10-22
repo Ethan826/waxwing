@@ -1,0 +1,4 @@
+fn main(): Int = {
+  let g = fn(p) => if true then p else { ...p, a: 1 };
+  0
+};
