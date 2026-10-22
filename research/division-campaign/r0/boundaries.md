@@ -237,7 +237,7 @@ placeholder for any row with more than one tail, holes included
 program that compiles today (argued; that every several-tail slot of a
 key reaches `recordType` is unchecked). After Task 8, the proposed
 outcome is an S refusal, `AtS (NotLowerable ComposedTailsUnjustified
-site)` (§3.1), `site` the `adm` entry's origin, pending author Q5; W
+site)` (§3.1), `site` the `adm` entry's origin path, pending author Q5; W
 uses the same constructor (reconciliation C2; consistency re-check R10).
 
 Pure unions of caller row variables as an extension are
@@ -448,6 +448,10 @@ gains it only if this contract is adopted (T-R0a §6, "G3's refusal").
 
 ## 3. Codes and reasons by layer (decision 9)
 
+Throughout this document, a reason written singly stands for a
+one-element array: `Unsupported SecondSpread` is `Unsupported
+[SecondSpread]`, and §1.5's `Unsupported (Outside kind)` likewise.
+
 ### 3.1 The layer classification (proposed; illustrative names)
 
 The outcome and verdict types are T-R0a's (§3.2-§3.5, §6-§7): the
@@ -482,7 +486,7 @@ data Layered
 data Construct
   = SeveralTailLowering                -- Task 8 (W3)
   | ComposedTailsUnjustified           -- §1.4, after Task 8; the Site
-                                       -- is the adm entry's origin; Q5
+                                       -- is the adm entry's path; Q5
   | UncheckedPath                      -- W §3.3's unsupported path
 ```
 
@@ -561,8 +565,6 @@ Design points (proposed):
 
 ### 3.2 Mapping from today's diagnostics (proposed; cited sources)
 
-In the targets, a reason written singly stands for a one-element
-array: `Unsupported SecondSpread` is `Unsupported [SecondSpread]`.
 
 | Today (code, problem, source) | Class (requirements §2.3) | Target |
 |---|---|---|
@@ -889,3 +891,8 @@ From the read-only verification of 2b73666 (findings 3, 4, 6, 7, 10):
 - §3.2: a reason written singly stands for a one-element array.
 - §1.4: A's three-valued result is per component, computed from its
   slots' rows, matching W §2.3.
+
+### Recheck fixes (61565ac)
+
+- The single-reason shorthand note moved to the start of §3 and covers
+  the whole document; "origin" sites now say "origin path".

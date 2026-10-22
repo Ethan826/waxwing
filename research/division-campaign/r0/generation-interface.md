@@ -172,8 +172,8 @@ data Verdict
   | Unresolved Unresolved
 ```
 
-`Site`, here and below, is the origin path of the recorded entry
-(T-R0b `Entry.origin`, its `path`).
+`type Site = Path`, here and below: a node's path (T-R0b §6, "a site
+or entry by its `Path`"); for a recorded entry, `Entry.origin.atom.path`.
 
 `StaticCode` and `PolicyCode` are ADTs over today's `Problem`
 constructors (cited Domain/Problem.purs:77-160) that requirements §2.3
@@ -613,23 +613,27 @@ Proposed rule:
    recorded atom to be a genuine obligation, recorder correctness
    **R**, requirements §4.3).
 
-   1′. **Second spread** (**pending author Q4**). Until the author
-   rules Q4, a node with a `spread j`, j ≥ 2, blocks a whole-
-   declaration Solved, as rule 1 does; the reason is `Unsupported
-   SecondSpread`; rules and refuters still run.
+   1′. **Second spread** (**pending author Q4**). If the author
+   classifies a second spread as S1, a node with a `spread j`, j ≥ 2,
+   blocks a whole-declaration Solved, as rule 1 does; the reason is
+   `Unsupported [SecondSpread]`; rules and refuters still run. Until
+   ruled, Resolve keeps refusing it (dossier §18.67 Q4), so the rule
+   is not reached.
 2. Rules, then strategies in order, then refuters (seeded with the
    strategies' hints). The first `Accepted` gives Solved; a checked
    derivation or `Refuted` gives Contradiction.
-3. Otherwise Unresolved, with the reason computed from the attempts:
-   `Limit` if any attempt ran out of budget and none was refused by
-   check; `Unsupported` if every strategy declined, or if rule 1 or
-   1′ blocked a Solved (the markers' reasons, or `SecondSpread`);
-   `Inference` otherwise (`NoAcceptedCertificate` when a heuristic search's
-   candidates were refused, as a cell search adapting a partial σ may
-   be). When check refuses a candidate that its search presented as a
-   solution of every atom (the online solver's `Solved` end; recon §6
-   Q7 proposed an internal error there), the result is `Left
-   (CandidateRefused …)`, reported as `Faulted` (pending Q1(a)).
+3. Otherwise Unresolved. If rule 1 or 1′ applies, the reason is
+   `Unsupported` (the markers' `Outside` kinds, or `SecondSpread`, plus
+   any declining guards' reasons). Otherwise the reason is computed
+   from the attempts: `Limit` if any attempt ran out of budget and
+   none was refused by check; `Unsupported` if every strategy
+   declined; `Inference` otherwise (`NoAcceptedCertificate` when a
+   heuristic search's candidates were refused, as a cell search
+   adapting a partial σ may be). When check refuses a candidate that
+   its search presented as a solution of every atom (the online
+   solver's `Solved` end; recon §6 Q7 proposed an internal error
+   there), the result is `Left (CandidateRefused …)`, reported as
+   `Faulted` (pending Q1(a)).
 4. A test-only `Checking` value may run every strategy and refuter and
    report `BothVerdicts` if both succeed (§9 AT7). This is a different
    injected value, not a flag.
@@ -678,12 +682,13 @@ data PolicyRefusal                       -- P: decision 3, per split site
   -- No G3 constructor: G3 is held (dossier §18.66 decision 6).
 
 data AdmissibilityRefusal                -- A: R010, judged by Adm_W
-  = Inadmissible CallSite Int            -- the judged slot i that fails
-                                         -- i indexes CallSite.slots
-                                         -- (the callee's variable
-                                         -- order; T-R0b's `Slot p i`,
-                                         -- p the adm entry's origin
-                                         -- path)
+  = Inadmissible CallSite Int            -- the judged slot that fails:
+                                         -- i is the callee's VarId
+                                         -- (T-R0b's `inst i`, position
+                                         -- `Slot p i`, p the adm
+                                         -- entry's origin path); not
+                                         -- an index into CallSite.slots,
+                                         -- which omits RowSort vars
   | ComponentBlocked FunctionName        -- a member not Solved; Q7
 
 data SupportRefusal                      -- S
@@ -729,7 +734,7 @@ Proposed. Points this interface is responsible for:
   name-free, admitted by `bareRow`. It compiles as today and is never
   a premise. After Task 8 it is refused, unless FK-U is proved and
   adopted, as `AtS (NotLowerable ComposedTailsUnjustified site)`,
-  T-R0e's constructor, `site` the `adm` entry's origin. Whether users
+  T-R0e's constructor, `site` the `adm` entry's origin path. Whether users
   see it is **pending author Q5**.
 - **Several tails.** Lowering a row with several tails is `AtS
   (NotLowerable SeveralTailLowering site)` until Task 8 (T-R0e
@@ -1148,3 +1153,14 @@ From the read-only verification of 2b73666 (findings 2, 3, 4, 6, 8):
 - §5.3 rule 3 (coordinator, after the verifier fixes): `Unsupported`
   also when rule 1 or 1′ blocked a Solved; previously only "if every
   strategy declined", which left the blocked case without a reason.
+
+### Recheck fixes (61565ac)
+
+- §5.3 rule 1′ is conditional on an S1 ruling; until then Resolve
+  keeps refusing a second spread (§18.67 Q4), so the rule is not
+  reached. Rule 3: when rule 1 or 1′ applies the reason is
+  `Unsupported`, ahead of `Limit` and `Inference` (T-R0e §1.5).
+- §3.2: `type Site = Path`; an entry's site is `Entry.origin.atom.path`
+  (T-R0b's `Origin` has no `path` field).
+- §6: `Inadmissible`'s `Int` is the callee's `VarId`, not an index into
+  `CallSite.slots`.
