@@ -622,8 +622,9 @@ Proposed rule:
    derivation or `Refuted` gives Contradiction.
 3. Otherwise Unresolved, with the reason computed from the attempts:
    `Limit` if any attempt ran out of budget and none was refused by
-   check; `Unsupported` if every strategy declined; `Inference`
-   otherwise (`NoAcceptedCertificate` when a heuristic search's
+   check; `Unsupported` if every strategy declined, or if rule 1 or
+   1′ blocked a Solved (the markers' reasons, or `SecondSpread`);
+   `Inference` otherwise (`NoAcceptedCertificate` when a heuristic search's
    candidates were refused, as a cell search adapting a partial σ may
    be). When check refuses a candidate that its search presented as a
    solution of every atom (the online solver's `Solved` end; recon §6
@@ -1144,3 +1145,6 @@ From the read-only verification of 2b73666 (findings 2, 3, 4, 6, 8):
 - §3.5 calls `UnprovedRefusal` and `NoStrategyAccepted` T-R0e's
   former names; the G3 note cites §18.66 decision 6 alone, here and
   in the residual-harmonization log.
+- §5.3 rule 3 (coordinator, after the verifier fixes): `Unsupported`
+  also when rule 1 or 1′ blocked a Solved; previously only "if every
+  strategy declined", which left the blocked case without a reason.
