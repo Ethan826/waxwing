@@ -5409,3 +5409,97 @@ decides (the verdict class is then order-independent for sound
 components with per-strategy fuel, argued). Option B: yes; order may
 decide between Faulted and Solved, documented and exposed by the
 test-only `Checking` value. No default.
+
+### 18.69 The author's decisions on Q1-Q13 and D1-D6 (2026-10-22)
+
+The author forwarded a second external review, which found the
+corrections substantially satisfactory (no counterexample to revised
+T1 or GI-Atoms; the predicate encoding a credible next step, its
+correspondence unproved), and adopted its recommended answers.
+**The implementation plan may now be written. Implementation and proof
+work stay separately unauthorized.**
+
+1. **Outcomes.** Internal faults are separate from Unresolved; genuine
+   budget exhaustion is a limit, an invariant violation a fault.
+   `Compilation` stays inside `Solution`. `SplitUnforced` needs two
+   checked alternatives at the same permitted rigid assignment that
+   differ semantically on the split, or equivalent checked evidence of
+   non-forcedness; syntactic difference alone is not enough.
+2. **Requirements.** Ground requirement rules adopted, with reduction
+   through entailed equalities: a variable's presence in the syntax
+   does not by itself force Unsupported. Other unsupported requirement
+   judgments stay Unsupported. E017 is explicitly transitional.
+3. **`outside` markers.** The conservative support boundary, for now.
+   A construct is exempted only once its omitted obligations are shown
+   unable to affect the claimed result. A marker alone establishes no
+   contradiction. Effect/record independence is not assumed.
+4. **Static boundary.** A second spread is a support limitation.
+   Semantic body-type checks move into generation; genuinely structural
+   arity and coverage checks stay separate. A check that depends on a
+   solver-selected type is semantic. `AmbiguousType` stays Unresolved
+   unless a language policy deliberately says otherwise.
+5. **R019.** FK-W is in the design, inactive until its obligations are
+   met; FK-U stays inactive. The compatibility probe runs before the
+   post-Task-8 behaviour is decided: neither silently narrow current
+   behaviour nor declare the broader behaviour justified. This is a
+   dependency inside the plan, not a blocker to writing it.
+6. **Witnesses.** `ChooseT` and the conservative hole check kept as
+   proposed mechanisms. Auxiliary bindings are omitted only where
+   deterministic reconstruction is established; otherwise kept.
+7. **Forcedness.** Owned by a separate policy component that reads the
+   immutable complete problem and the split site. A candidate solution
+   may help find evidence but cannot define forcedness.
+   `ComponentBlocked` may keep the specialization diagnostic family,
+   naming the dependency.
+8. **Ground re-check.** Always on initially: each reached
+   specialization once, with its outgoing instantiations and computed
+   layouts, before emission; completed checks cached; cost reconsidered
+   only after measurement.
+9. **Migration.** Explicitly labelled Pending assurance allowed during
+   migration, never presented as proved. The complete outcome
+   collection kept. The switch to online-as-search coordinated with the
+   replacement decision path; any intermediate window specified and
+   tested before landing.
+10. **CX.** Start with a sound, possibly incomplete refuter; B1b
+    completeness does not block it. Unstated rules stay candidates.
+    Full `D` preserved; justified sub-bodies permitted. The initial
+    proved-model scope is kept apart from `BQ` and further type
+    constructors. Pending refuters may run for research or shadow
+    evidence but do not mint the trusted Contradiction before their
+    soundness obligation is discharged.
+11. **`ValidR`.** T-R0b owns the recorded problem's declarative
+    meaning, with requirements and unsupported constructs explicit. CX
+    consumes it; validity is never defined by whichever checker
+    succeeds.
+12. **Implementation facts.** The `crash` question is closed by
+    inspection: `crashRef` builds a checked lambda whose body has the
+    fresh result type (src/Features/Check/Operation.purs:120), so
+    `LambdaBody` is right. B9 and B13 stay proposed classifications
+    pending their named tests.
+13. **Refused candidates: option A-i.** An untrusted candidate that
+    fails checking does not stop the run; the attempt is kept in the
+    structured outcome record. A trusted-checker failure or a broken
+    invariant still stops. Heuristic candidates rejected as expected
+    are failed attempts, not compiler defects. Order independence is
+    stated conditionally (same problem, independent budgets, stable
+    hint inputs, no shared mutable search state; passing hints as a set
+    is not enough) and is not an implementation promise.
+
+Research decisions (inference extension §10):
+
+- **D1.** The generation continuation, with tracked applicative
+  requests: reads are introduced through constructors that record
+  their dependencies, not through a separately written list; scoped
+  handles may enforce problem identity. The mechanism is specified
+  before implementation.
+- **D2.** Encoding (a), composition as the predicate U. M0, T1, T2, V,
+  GI, F and GI-Open go to statement review for a focused proof tranche;
+  GI-Atoms stays conditional on B1b. Current exported syntax kept, but
+  L0 is not frozen as sufficient for future principal inference.
+- **D3.** Restricted C8 statements once the witness and termination
+  interfaces stabilize; no selection rule.
+- **D4.** Guards deferred. **D5, D6** as recorded.
+
+The reviewer recommends pushing the documents and statements as a
+research checkpoint once these are recorded and the final edits
+rechecked, with every unproved status left unmistakable.
