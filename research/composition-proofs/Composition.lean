@@ -150,3 +150,4 @@ import Composition.Typed.Cell.Proofs.W9
 import Composition.Typed.Cell.Proofs.W5
 import Composition.Typed.Cell.Proofs.W7
 import Composition.Typed.Cell.Proofs.W6
+import Composition.Typed.Cell.Proofs.Wave2
