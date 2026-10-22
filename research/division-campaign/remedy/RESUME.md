@@ -42,7 +42,13 @@ contradicted: 1 by T-R0e §6 step 3, possibly 2 by Adm_W and T-R0e §1.4,
 session scratchpad named in §2). Plan: once the adversarial review is
 in, apply both by one editing agent per document in parallel (each
 document's findings only), then a re-check, then §18.67 and the
-consolidated questions.
+consolidated questions. The adversarial review also finished; saved at
+scratchpad/r0-reviews/adversarial.md (FK-W's key universe false as
+stated, re-check coverage overclaimed with pass-while-wrong cases, CX-S
+route needs `Nodup` in `Denotes`, outside-marker and auxiliary-variable
+conflicts, audit wording against §18.65). Editing agents launched per
+document at 551f8ee; if lost, relaunch one per document with both
+review files.
 
 **Next:** apply both reviews' findings to the six documents (each owner
 keeps its topic canonical: witness owner for witness/termination; T-R0a
