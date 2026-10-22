@@ -148,3 +148,4 @@ import Composition.Typed.Cell.Proofs.W2
 import Composition.Typed.Cell.Proofs.W8
 import Composition.Typed.Cell.Proofs.W9
 import Composition.Typed.Cell.Proofs.W5
+import Composition.Typed.Cell.Proofs.W7
