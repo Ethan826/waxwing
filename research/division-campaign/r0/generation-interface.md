@@ -33,7 +33,7 @@ particular W's and T-R0e's `StrategyTag` is this document's
 | the shape and translation rules of the recorded problem; `vars`, `types`, `OutsideKind`, origins | T-R0b, r0/recorder-rules.md | `RecordedProblem` (its §10), assumptions As1-As8 in §8 |
 | evidence: classification of each existing refusal, probes | T-R0c, r0/refusal-audit.md | cited per entry |
 | counter-instance and c1 statements | CX, refute/statements.md | `CXChecked`, `RefuteSound`, C1-P, C1-H, C1-O, C1-E |
-| witness and termination types | W, witness/statements.md | `Compilation`, `WitnessMeta`, `NoWitnessReason`, `Adm_W`, RC1-RC5 |
+| witness and termination types | W, witness/statements.md | `Compilation`, `Witness`, `SplitJudgement`, `AdmStatus`, `WitnessMeta`, `NoWitnessReason`, `Adm_W`, RC1-RC6 |
 | layers (V, V2, P, A, S), their codes, decision 3, R010, Task 8, support boundaries | T-R0e, r0/boundaries.md | the layer tags of §6, `Construct` |
 
 Labels in this document: the requirements G-complete … G-inject (§1),
@@ -217,17 +217,15 @@ data Assurance = Proved TheoremRef | Pending StatementRef
 evidence that one injected checker accepted this problem, nothing more
 (requirements §4.4, `Sound_F`).
 
-`Compilation`, `WitnessMeta` and `NoWitnessReason` are W's (witness/
-statements.md §1.2, §1.6): `Compilation = Witnessed WitnessMeta |
-NoWitness NoWitnessReason`. If W adopts reconciliation B2,
-`Witnessed` carries `{ bindings ∷ Map ProblemVar Binding, names ∷
-WitnessMeta }`, and this document follows it unchanged; a G0
-substitution is then a `Witnessed` value with empty `names`. Which
-flexible variables need a binding (every one, or only those whose
-`VarInfo` position is not `Auxiliary`) is W's Cov, **pending author
-Q6**. A non-constructive strategy gives `NoWitness (NonConstructive
-name)`. The absence of a witness does not weaken the verdict; it
-blocks admission (§6).
+`Compilation`, `Witness`, `WitnessMeta` and `NoWitnessReason` are W's
+(witness/statements.md §1.2, §1.6): `Compilation = Witnessed Witness |
+NoWitness NoWitnessReason` (W §1.6, B2 adopted), where `Witness = {
+bindings ∷ Map Var Binding, names ∷ WitnessMeta }`; a G0 substitution
+is a `Witnessed` value with empty `names`. Which flexible variables
+need a binding (every one, or only those whose `VarInfo` position is
+not `Auxiliary`) is W's Cov, **pending author Q6**. A non-constructive
+strategy gives `NoWitness (NonConstructive name)`. The absence of a
+witness does not weaken the verdict; it blocks admission (§6).
 
 Placement (proposed; this document owns it): `compilation` sits
 inside `Solution`, so "`Witnessed` only with Solved" (W §5.1) holds by
@@ -272,11 +270,10 @@ evidence (memory "blame needs evidence"; recon §4.4).
 
 `CX` carries no `θR` and no atom field beyond `body`: `CXChecked` is a
 bare `rho` checked against the renamed `D` and body (refute/
-statements.md §4, CX-K). A proper sub-body is sound only by a
-statement CX does not yet contain (reconciliation F3's CX-P:
-`CounterAt (withBody P B₀) … ∧ B₀ ⊆ P.B → ¬ ValidOpen P`, argued from
-CX and C1-M). Until CX states it, the proposed default is that `body`
-is the whole of `B`; **pending author Q10**.
+statements.md §4, CX-K). Sub-body soundness is CX-KP (refute/
+statements.md §3-4: stated, expected true, unproved; CX-K is its case
+`body = B`). `body` may be any non-empty sublist of `B`; the refuter's
+assurance is CX-K/CX-KP's, **pending author Q10**.
 
 ### 3.5 Unresolved and its reasons
 
@@ -302,6 +299,7 @@ data Unsupport
   = Outside OutsideKind                  -- T-R0b §3.5, §10
   | RequirementAtoms                     -- ValidOpenR unstated; Q2
   | GuardOutsideFragment StrategyName    -- e.g. not in LDFragment
+  | SeveralTailSubtraction               -- T-R0e §3.2; B9 fallback, §10
 
 -- One list for verdict and compilation stages: T-R0e §3.1's names.
 type LimitAt = { limit ∷ LimitReached, site ∷ Site }
@@ -347,11 +345,15 @@ Proposed. Notes:
   stated ground rule (a function type is not printable or comparable:
   a definition, not `ValidOpenR`); `BQ` atoms that mention a flexible
   or rigid variable make the problem `Unsupported RequirementAtoms`
-  for every strategy whose `Sound_F` does not cover them. Alternatives
-  kept: (i) requirements §11 item 2 and T-R0b §10 as written, any
-  non-empty `Q` or `BQ` (with T-R0b G10's `pr ⟦R⟧` for `main`, every
-  program would be Unsupported); (ii) T-R0e §1.3, only a `BQ` atom
-  that mentions a split part, other atoms judged as today.
+  for every strategy whose `Sound_F` does not cover them. A ground
+  `BQ` atom that fails the ground rule gives Contradiction only once
+  that rule is registered as a `SoundRule` with a proved theorem over
+  the definitional extension (§5.2); until then `Unsupported
+  RequirementAtoms` (part of Q2). Alternatives kept: (i) requirements
+  §11 item 2 and T-R0b §10 as written, any non-empty `Q` or `BQ` (with
+  T-R0b Sig10's `pr ⟦R⟧` for `main`, every program would be
+  Unsupported); (ii) T-R0e §1.3, only a `BQ` atom that mentions a
+  split part, other atoms judged as today.
 - `ReexaminationSteps` (`Exhausted`, argued unreachable) is a limit
   under T-R0e's default; whether it is instead a fault is **pending
   author Q1(b)**.
@@ -499,8 +501,9 @@ changes the recorded problem (§18.60, last bullet).
 statements are over `SigProblem Label B`, not over `RecordedProblem`
 (which has `app` heads, `q`/`bq`, canonical names and `outside`
 entries). Rules and refuters therefore read `toSig P ∷ SigProblem`,
-which keeps atom ids. Proposed, and to be stated by CX
-(`¬ ValidOpen (toSig P) ⇒` the recorded problem is invalid):
+which keeps atom ids. Stated by CX as CX-PR, `ProjectionSound ValidR
+toSig` (refute/statements.md §4.1: `¬ ValidOpen (toSig P) ⇒` the
+recorded problem is invalid), under conditions on `toSig`:
 
 - `toSig` may drop `B` atoms outside CX's `TExpr`, or generalize an
   `app` occurrence in `B` to a fresh flexible variable. Dropping is
@@ -510,9 +513,10 @@ which keeps atom ids. Proposed, and to be stated by CX
   `TExpr` is out of scope for every rule and refuter (its verdict can
   only be Solved or Unresolved) until CX states otherwise.
 
-Until that statement exists, no rule or refuter is registered (§10
-step 5). `withBody` acts on the projection; building it inside a
-checker does not breach §2 property 2.
+Until CX-PR is proved for a defined `ValidR` (CX Q8; pending Q10), no
+rule or refuter is registered (§10 step 5). `withBody` acts on the
+projection; building it inside a checker does not breach §2's
+property 2.
 
 ### 5.1 Refuters (CX; statements owned by the CX stream)
 
@@ -632,17 +636,25 @@ admit
   → Array { name ∷ FunctionName, admission ∷ Admission }
 
 data Admission
-  = Admitted WitnessMeta                 -- or W's B2 record, if adopted
+  = Admitted
+      { witness ∷ Witness                -- W §1.6
+      , splits  ∷ SplitJudgement         -- P's output, W §1.7
+      , status  ∷ AdmittedStatus         -- A's, W §2.3
+      }
   | NotCompiled (NonEmptyArray CompileRefusal)
   | NotJudged                            -- not Solved; nothing to admit
 
+-- W's AdmStatus without Inadmissible, which goes through AtA.
+data AdmittedStatus = Admissible | AdmittedPendingR019
+
+-- Canonical; T-R0e §3.1 cites it and adds only Construct and layerOf.
 data CompileRefusal                      -- T-R0e's layers
   = AtP PolicyRefusal
   | AtA AdmissibilityRefusal
   | AtS SupportRefusal
 
 data PolicyRefusal                       -- P: decision 3, per split site
-  = SplitUnforced CallSite (Tuple WitnessMeta WitnessMeta)
+  = SplitUnforced CallSite (Tuple Witness Witness)
                                          -- two valid witnesses differing
   | ForcednessUndecided CallSite         -- Q1(c), Q7
 
@@ -651,8 +663,8 @@ data AdmissibilityRefusal                -- A: R010, judged by Adm_W
   | ComponentBlocked FunctionName        -- a member not Solved; Q7
 
 data SupportRefusal                      -- S
-  = NotLowerable Construct               -- T-R0e §3.1's Construct
-  | NoCompilation NoWitnessReason        -- W §1.6
+  = NotLowerable Construct Site          -- T-R0e §3.1's Construct
+  | NoCompilation NoWitnessReason        -- W §1.6, incl. HoleContract
   | AdmissionLimit LimitReached          -- e.g. SpecializationKeys
 ```
 
@@ -663,8 +675,9 @@ Proposed. Points this interface is responsible for:
   reason)` (decision 4: "a strategy may establish validity without
   supplying a compilation witness, but that alone cannot authorize
   lowering"). W's reasons survive, so `NonConstructive`,
-  `AdapterUnsupported FieldReference` and `HoleContract` stay
-  distinguishable.
+  `AdapterUnsupported FieldReference` and `HoleContract Var` stay
+  distinguishable. `HoleContract` is a `NoWitnessReason`, so it has
+  this one encoding and no `Construct` of its own.
 - **No compilation refusal changes the verdict** or the recorded
   problem (§18.60, last bullet; recorder-spec §2.4; T-R0e I3). A Solved
   declaration refused at admission, lowering or re-check stays Solved
@@ -680,17 +693,21 @@ Proposed. Points this interface is responsible for:
   suffices is **pending author Q1(d)**; who decides forcedness, and
   whether the decider takes the problem or the `Solution`, is
   **pending author Q7**. P runs only on Solved declarations (D5).
-- **A's status values** are T-R0e's (§1.4), including
-  `AdmittedPendingR019` (admitted by `bareRow`, by no FK-0/FK-W row of
-  `Adm_W`): it compiles as today and is never a premise. Whether users
-  see it is **pending author Q5**.
+- **A's status values** are W's (§2.3; T-R0e §1.4), recorded in
+  `Admitted.status`. `AdmittedPendingR019`: matches no active row of
+  `Adm_W` (FK-W/FK-U rows active once adopted), name-free, admitted by
+  `bareRow`. It compiles as today and is never a premise. After Task 8
+  it is refused, unless FK-U is proved and adopted, as `AtS
+  (NotLowerable (ComposedTailsUnjustified site) site)`, T-R0e's
+  constructor. Whether users see it is **pending author Q5**.
 - **Several tails.** Lowering a row with several tails is `AtS
-  (NotLowerable SeveralTailLowering)` until Task 8 (T-R0e §3.1).
+  (NotLowerable SeveralTailLowering site)` until Task 8 (T-R0e
+  §3.1).
 - **The ground re-check** (W §3 for content; T-R0e §4 for position,
   pending author Q8). A failure on a path the layering marks
-  unsupported is `AtS (NotLowerable UncheckedPath)`; any other failure
-  is `ReCheckFailed`, reported as a fault (§7). Neither is ever
-  Contradiction or evidence of invalidity (decision 5).
+  unsupported is `AtS (NotLowerable UncheckedPath site)`; any other
+  failure is `ReCheckFailed`, reported as a fault (§7). Neither is
+  ever Contradiction or evidence of invalidity (decision 5).
 - **`ComponentBlocked`.** R010 judges a recursive component as a whole
   (Check/Instantiation.purs:28-29). If one member is Unresolved, the
   others are still Solved and reported so; only their admission waits.
@@ -842,7 +859,7 @@ Each part of `checkFunction`, mapped (proposed):
 - `Placeholder` → a hint; the reason is `Unsupported
   (GuardOutsideFragment …)` while no strategy covers several tails, if
   T-R0b §11 item 1 (several-tail removal in-model) is accepted;
-  otherwise `Unsupported (Outside …)` as a construct outside the model
+  otherwise Unsupported with T-R0e's `SeveralTailSubtraction`
   (reconciliation A7).
 - `TooDeep` → `Limit InferredTypeDepth`.
 - `Unexpected` → `Faulted`; `Exhausted` → `Limit ReexaminationSteps`
@@ -875,7 +892,7 @@ its own tests):
    a Contradiction. AT5, AT6, AT7, AT11.
 6. **Admission split** (T-R0e): `instantiationRule` and decision 3's
    check move to `admit`; the several-tail lowering placeholder becomes
-   `AtS (NotLowerable SeveralTailLowering)`. AT14.
+   `AtS (NotLowerable SeveralTailLowering site)`. AT14.
 7. **Further strategies** (the cell format via its adapter; later G1
    formats): new `Strategy` values only, the goal of requirements
    §4.4 (conditional on R0).
@@ -1025,7 +1042,37 @@ Disagreements and tightenings (with reasons):
   outside `TExpr`; that is sound for `B` (C1-M) but not for `D`, by
   F1's own argument. `D` atoms are never dropped; such a problem is out
   of the refuters' scope.
-- **F3, tightened.** `CX.body` is the whole of `B` until CX states
-  CX-P; the reconciliation adopts the sub-body form at once.
+- **F3.** Revision 1 kept `CX.body` the whole of `B` until CX stated
+  CX-P; CX now states CX-P and CX-KP, so the sub-body form is adopted
+  (consistency re-check R6, below).
 - **C5, a choice the review left open:** `ComponentBlocked` is tagged
   A (R010's unit is the component), pending Q7.
+
+### Consistency re-check (39320ad)
+
+Applied from the consistency re-check of the R0 documents:
+
+- **R1.** §6's `CompileRefusal` is canonical; T-R0e §3.1 cites it.
+  `NotLowerable` carries a `Site`; `NoCompilation` takes W's
+  `NoWitnessReason`, which includes `HoleContract Var`; the re-check's
+  unsupported path stays `AtS (NotLowerable UncheckedPath site)`.
+- **R2.** `Compilation = Witnessed Witness | NoWitness
+  NoWitnessReason` (W §1.6, B2 adopted), the conditional dropped;
+  `SplitUnforced` exhibits two `Witness` values.
+- **R3.** `Admitted` carries `witness`, P's `splits ∷ SplitJudgement`
+  and A's `status` (W §1.7, §2.3); `Inadmissible` goes through `AtA`.
+- **R5.** §3.5: a ground `BQ` atom failing the ground rule is
+  Contradiction only through a registered, proved `SoundRule`;
+  otherwise `Unsupported RequirementAtoms` (Q2).
+- **R6.** §3.4: sub-body soundness is CX-KP; `body` is any non-empty
+  sublist of `B`; the F3 log entry above is corrected.
+- **R7.** §5 cites CX-PR; no rule or refuter is registered until it is
+  proved for a defined `ValidR` (CX Q8; Q10).
+- **R9.** RC1-RC6 in §0; "T-R0b Sig10" in §3.5.
+- **R10.** `AdmittedPendingR019` worded as W §2.3; after Task 8 it is
+  refused with T-R0e's `ComposedTailsUnjustified`.
+- **R13.** §10's B9 fallback is `SeveralTailSubtraction`, added to
+  `Unsupport`.
+
+R11 needs no edit here: T-R0e §7 maps its old question numbers, so the
+citations of T-R0e Q3, Q5 and Q6 stand.
