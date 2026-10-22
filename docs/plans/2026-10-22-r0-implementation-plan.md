@@ -63,7 +63,9 @@ revised at 76cd373 (the recheck fixes): `Decision.searchFaults`,
 Revised after the review of 99da55b; §10 lists each finding and what
 was done with it. Revised again for dossier §18.70 (shadow first,
 checker limits kept local, D1 brought forward, first tranche, gates
-sorted); §11 lists those changes.
+sorted); §11 lists those changes. Revised after the re-review of
+38c045e (Task 5.1 in the tranche, the acceptance promise, code
+alignment); §12 lists each finding and what was done with it.
 
 ## First execution tranche (proposed for authorization)
 
@@ -92,41 +94,94 @@ compiling, and none that is refused today starts compiling.
 | 2.2 | verdict-stage Unresolved gets `E_UNRESOLVED` | **yes**: see below |
 | 2.3 | static-rule classification in place; effect and coverage rows wait on their gates | no |
 | 3.1-3.6 | `RecordedProblem` fields, generation, RT1-RT10, census, RT3 | no (test-only) |
+| 5.1 | `toSig`, an **empty** rule registry, `checkDerivation`, `trustedRefuter` with no way to make a `TheoremRef` | no (test-only) |
 | 4.1-4.5 | `decide`, G0, `onlineSearch` and read-back, witness and Cov, shadow run and window table | no (shadow) |
+
+**Order inside the tranche.** Dependencies fix it: 0.1, 0.2 (which
+creates test/r0-corpus.mjs), 0.3, 0.4, 0.5, 0.7; 1.1, 1.2 (its CLI
+step last, as its own commit), 1.3; 2.1, 2.2 (per the choice below),
+2.3; 3.1; 3.3 Steps 1-3 (the translator, committed before Task 3.2
+starts); 3.2; 3.3 Steps 4-5; 3.4; 5.1; 4.1 with 3.6; 4.2; 3.5 (its
+two `BQ` categories read Task 4.2's `entailedGround` and
+`openRequirements`); 4.3; 4.4; 4.5.
 
 **Not in the tranche:** Task 0.6 (its only consumer, 6.3, is far
 behind the switch; it is drafted when Phase 6 is next in view);
-Tasks 5.1 and 5.2 (shadow refutation; proposed for a second shadow
-tranche with Task 7.1, since no census or window-table class depends
-on them); Task 7.1 (waits on G-D1, a technical gate closed by Task
-0.3's reviewed specification, then runs in shadow before any switch,
-§5 Phase 7); Task 4.6; Phase 6; Task 5.3; Task 8.1.
+Task 5.2 (the CX refuter in shadow; proposed for a second shadow
+tranche with Task 7.1: Task 4.5 runs with `shadows: []`, so no census
+or window-table class depends on it); Task 7.1 (waits on G-D1, a
+technical gate closed by Task 0.3's reviewed specification, then runs
+in shadow before any switch, §5 Phase 7); Task 4.6; Phase 6; Task
+5.3; Task 8.1. Task 5.1 is in the tranche because Tasks 4.1 and 4.2
+need its pieces: rule 2 runs the registered rules first through
+`checkDerivation`, 4.1 consumes `trustedRefuter`, and the stub
+trusted refuters and test-only registered rules of AT11, `rule 4:
+BothVerdicts in production`, `a refuter may judge a G0-declined atom`
+and `a G0 limit is local to G0` are built on 5.1's types.
 
 **What the tranche does not authorize:** Task 4.6 (the switch), live
 refutation (the trusted refuter and trusted rules of Task 5.3), any
 Phase 6 task, and the O24 proof tranche (§18.69 D2; scoped separately,
-§18.70). No proof work of any kind.
+§18.70). No proof work of any kind. Task 5.1 inside the tranche is
+not live refutation: its registry is empty, and only
+`Features.Check.Refute.Theorems` can make a `TheoremRef`. That
+module defines none, and a structure rule lets only Refute.Rules
+import it, for the type alone. So production code cannot build a
+trusted refuter or register a rule. Only tests mint them, through the
+compiled output, as test/r0-stubs.mjs mints `Valid`.
+
+**Defects found inside the tranche.** Today's acceptance is unchanged
+throughout, so a defect is fixed inside the tranche only when the fix
+is in test-only code that `compile` does not reach: RT8's recorder
+(the generator) and read-back defects, and likewise defects in the
+tranche's other new shadow modules (G0, `decide`). A defect
+attributed to the search, which is `checkFunction` and so today's
+path, is not fixed here. It is recorded in docs/findings.md
+and BACKLOG.md with its fixture and the evidence for the attribution
+(the author's rule "blame needs evidence"), and it becomes a
+window.json row (Task 4.5). Fixing it changes today's acceptance and
+needs a separate authorization, with its fixture moves listed.
 
 **User-visible tasks inside the tranche (proposed, not decided).** Two
 tasks change what a user sees, and neither changes what compiles:
 
 - Task 1.2's CLI output: `Program/Command.purs` prints every
-  diagnostic instead of the first. The library's `compile` keeps
+  diagnostic instead of the first. **This changes the CLI's
+  machine-readable output.** Today a failing run's stderr is one JSON
+  object
+  (`Outcome.stderr ∷ Maybe WireRecord`, Command.purs:20; written once
+  by Main.purs:21; README.md:564 "Diagnostics are JSON on stderr").
+  The proposed format is JSON Lines: one JSON object per line, in
+  Task 1.2's order. `wireText` is `JSON.stringify` with no
+  indentation (Runtime/Node.js:41) and `console.error` adds the
+  newline, so a run with one diagnostic writes exactly today's bytes,
+  and a consumer that parses only the first line keeps working. A
+  consumer that parses the whole of stderr as one value, as the CLI
+  tests do (shell.test.mjs:18, depth.test.mjs:37 and :72,
+  compiler.test.mjs:61, adt-coverage.test.mjs:84, text-utf8.test.mjs:33
+  and :88, fx-scale-labels.test.mjs:44), breaks only on runs with
+  several diagnostics. test/program.test.mjs:35 reads the in-process
+  `Outcome` and changes with its type. A JSON array
+  was rejected because it would break every such consumer on every
+  failing run. The CLI change is its own step and commit in Task 1.2,
+  so option (i) below can hold it back. The library's `compile` keeps
   returning today's first diagnostic (pinned by the snapshot). The
   shadow comparisons need `checkProgram` and `Report`, not the CLI
   change.
 - Task 2.2's codes and texts: D4's `CannotTell`, `AmbiguousType`,
   inferred `TypeTooDeep` and the check-time placeholders move from
   E_TYPE or E_INTERNAL to `E_UNRESOLVED`, with texts that no longer
-  claim invalidity. No later in-tranche task depends on it: Task 4.3
-  maps `TooDeep` without reading codes.
+  claim invalidity. These are first-diagnostic changes, so Task 1.2's
+  snapshot and any pinned Task 0.1 fixture move in Task 2.2's commit.
+  No later in-tranche task depends on it: Task 4.3 maps `TooDeep`
+  without reading codes.
 
 This plan proposes two ways and chooses neither. (i) **Keep both
 out of the first tranche**: Task 1.2 lands with its CLI step held
 back (`compileReport` exists, the CLI still prints the first
 diagnostic), and Task 2.2 waits for a later authorization; the first
 tranche then changes nothing a user sees. (ii) **Keep both in**:
-they are decided changes (decision 9; §18.69 Q4) that correct
+they are decided changes (§18.66 decision 9; §18.69 Q4) that correct
 messages (D4's E_TYPE today reports a solver limit with the code of
 a type error); acceptance is unchanged either way. The author chooses at
 authorization.
@@ -164,10 +219,11 @@ authorization.
 - Docs upkeep in the same change (AGENTS.md): every task updates
   docs/progress.md in its own commit, and docs/findings.md when it
   records evidence. A task that adds or changes a structure rule
-  (1.1, 3.1) updates docs/engineering.md and the Internal-boundary
+  (1.1, 3.1, 5.1) updates docs/engineering.md and the Internal-boundary
   bullet of AGENTS.md. A task that changes what users see updates
-  docs/language.md in the same commit (4.6, 6.2's gated step, 6.3's
-  step 5, 6.5).
+  docs/language.md in the same commit (2.2, 4.6, 6.2's gated step,
+  6.3's step 5, 6.5), and Task 1.2's CLI step updates README.md's
+  "Diagnostics are JSON on stderr" (README.md:564) to name JSON Lines.
 - `*.serial.test.mjs` is reserved for suites that time heavy work
   against fixed bounds (scripts/verify.mjs:31-34). A test gets the
   suffix only when it does such timing or corpus-wide work.
@@ -229,7 +285,8 @@ names the test that pins it and the task that owns it.
 2. **A file with several broken declarations.** Today the first
    `Left` hides the rest (Check.purs:22). Expected: every
    declaration reported once, in the order Task 1.2 defines, with
-   the first diagnostic unchanged. Pinned in Task 1.2
+   the first diagnostic unchanged except for Task 2.2's listed code
+   and text moves (if the author keeps 2.2 in). Pinned in Task 1.2
    (`reports each broken declaration once, in order` and the
    first-diagnostic snapshot).
 3. **A recursive component with one Unresolved member.** Expected:
@@ -269,7 +326,8 @@ avoided.
 | src/Features/Check/Decide.purs, Decide/Reason.purs | `decide`, rules 1-5 of T-R0a §5.3; reason computation |
 | src/Features/Check/Strategy.purs | `StrategySpec`, `Strategy`, `strategy`, `Budget` use |
 | src/Features/Check/Strategy/{Online,ReadBack,Substitution,Witness}.purs | `onlineSearch`; read-back through `vars`/`types`; `checkSubstitution` (G0); `substitutionWitness`, Cov, hole contract |
-| src/Features/Check/Refute/{Project,Rules,Counter}.purs | `toSig`; `SoundRule` registry and `checkDerivation`; CX search and check |
+| src/Features/Check/Refute/{Project,Rules,Counter}.purs | `toSig`; `SoundRule` registry, `checkDerivation` and `trustedRefuter`; CX search and check |
+| src/Features/Check/Refute/Theorems.purs | `TheoremRef`, the hidden registry module: the only module that can make a `TheoremRef`, importable only by Refute.Rules (type only); `theorems` empty until P-C1 or P-CX (Task 5.1) |
 | src/Features/Check/Admit.purs, Admit/Forcedness.purs, Admit/Forcedness/Check.purs | `admit`, `AdmissionRules`; `ForcednessPolicy`, the untrusted `search`, `Forcedness`, `judgeSplit`; the trusted `check`, the only minter of `CheckedForcedness` |
 | src/Features/Check/Outcomes.purs | `checkProgram`, `DeclReport`, `Report` (T-R0a §7) |
 | src/Features/Specialize/ReCheck.purs, ReCheck/Eval.purs | RC1-RC6 per key, cache; ground evaluation of recorded atoms |
@@ -280,9 +338,12 @@ avoided.
 | test/fixtures/r0/*.json | fixtures in docs/engineering.md's form (source, result class, exact text, primary location, notes) |
 | scripts/regression-r0.mjs, test/regression-r0.mjs | regression rows and probes |
 
-Modified: src/Features/Check.purs (driver), Check/Function.purs
-(becomes the body of `onlineSearch`), Check/EndReport.purs and
-Check/Require.purs:108, Check/Record.purs:166 (classification),
+Modified: src/Features/Check.purs (driver), Check/EndReport.purs,
+Check/Require.purs:108, Check/Record.purs:166, Check/Reject.purs:41-54,
+Check/RowOutcome.purs:67-91 (classification; Task 2.1),
+Check/UnifyRecord.purs:93-100 and Check/RowMerge/End.purs:108-113
+(reviewed against Task 0.2's mapping), Program/Command.purs and
+Program/Main.purs (the CLI step of Task 1.2), README.md:564,
 Domain/Syntax/Core.purs:207 (`ErrorCode`), Domain/Problem.purs (a
 check-time placeholder constructor, Task 2.2), Format/Diagnostic/Code.purs,
 Features/Specialize.purs (admission gate, re-check hook),
@@ -301,11 +362,11 @@ a new ADR where the Global Constraints say.
 | 0 Evidence and specifications | before step 1 | 0.1-0.7 | first tranche: 0.1-0.5, 0.7 (0.3, 0.4, 0.7 end at their gates); 0.6 later |
 | 1 Types and the collecting driver | step 1 | 1.1-1.3 | first tranche (1.2's CLI step per the author's choice above) |
 | 2 Classify today's refusals | step 2 | 2.1-2.3 | first tranche (2.2 per the author's choice above), except 2.3's rows gated on G-effects and G-coverage |
-| 3 The generator beside the solver | step 3 | 3.1-3.6 | first tranche (test-only) |
+| 3 The generator beside the solver | step 3 | 3.1-3.6 | first tranche (test-only; 3.5 runs after 4.2, 3.6 with 4.1) |
 | 4 Generate, then search | step 4 | 4.1-4.5; 4.6 | 4.1-4.5 first tranche (shadow only); **4.6 gated** on the G-switch timing ruling, G-erased, and Task 7.1 (or the bridge of Task 7.2's fallback) |
-| 5 Rules and refuters | step 5 | 5.1-5.2; 5.3 | 5.1-5.2 a later shadow tranche; **5.3 gated** on proofs P-C1 and P-CX |
+| 5 Rules and refuters | step 5 | 5.1-5.2; 5.3 | 5.1 first tranche, before 4.1 (empty registry, no `TheoremRef`); 5.2 a later shadow tranche; **5.3 gated** on proofs P-C1 and P-CX |
 | 6 Admission, policy, re-check, support | step 6, 6a-6c, 6f | 6.1-6.5 | **all gated on G-switch's timing ruling and on Task 4.6**: each presupposes the R0 path is live, and no shadow form is specified. In addition, 6.2's `AtS (NoCompilation …)` rows and new texts wait on G-codes, **6.3** on G-forced and G-6b, and 6.4's RC3 on G-ValidR |
-| 7 The generation continuation (D1) | — | 7.1; 7.2 | 7.1 a later shadow tranche, **gated** on G-D1 (technical), before Task 4.6; 7.2 only if the fallback bridge went live |
+| 7 The generation continuation (D1) | — | 7.1; 7.2 | 7.1 a later shadow tranche (with 5.2), **gated** on G-D1 (technical), before Task 4.6; 7.2 only if the fallback bridge went live |
 | 8 Completion | — | 8.1 | with the last tranche |
 
 Out of this plan: Task 8 (several-tail lowering), T-R0e step 6d's
@@ -322,7 +383,15 @@ proposal and are not posed to the author as language-design
 questions. A technical gate closes when its evidence is committed and
 the named reviewer reports no blocking finding; the closure, with the
 review, is recorded in docs/findings.md and reported to the author,
-who may reopen it. If a review finds that a technical gate in fact
+who may reopen it. The sign-off for a technical gate is the named
+reviewer's report of no blocking finding; the author is informed of
+the closure, not asked to rule it. "T-R0a's owner" and "T-R0b's
+owner" name documents, not people (§18.69 Q11 makes T-R0b, a
+document, the owner of `ValidR`'s meaning). In this plan an owner's
+agreement to a technical change means: the task's implementer edits
+the R0 document, the gate's independent reviewer checks the edit
+against the document's other statements, and the change is reported
+to the author with the closure. If a review finds that a technical gate in fact
 turns on a language or policy point, that point moves to §3.A with
 the finding. Some questions have both halves (G-erased, G-ValidR,
 G-exempt); each half is listed where it belongs. No gate has a
@@ -341,6 +410,7 @@ none.
 | G-R019-visible | Is `AdmittedPendingR019` user-visible (item 5)? §18.67 proposed "not visible"; §18.69 did not rule | Task 6.1's recorded statuses on the corpus | a user-visible note in 6.1 (none is added before the ruling) |
 | G-codes | Codes for compilation refusals after Solved, other than `ComponentBlocked` (item 1, Q1(c)). T-R0e §3.1 proposes the Unresolved code plus the reason family, own code for `SplitUnforced` | Task 6.2's list of refusals and the fixtures each would move | the new texts in 6.2; until then today's code and text are kept where today has a counterpart. `AtS (NoCompilation …)` (`HoleContract`, `NonConstructive`) has no code today, so those rows wait for the ruling; this plan proposes no provisional code |
 | G-6b | Split D4 at P: a language change (forced splits admitted, acceptance widens; T-R0e §6 step 6b) | Task 6.3's before/after fixture table (O4, c21, cmp-open) | Task 6.3's last step |
+| G-Q13 (reading; formerly G-A-i(e)) | A reading of §18.69 Q13 for the author to confirm. Q13 says "A trusted-checker failure or a broken invariant still stops." This plan reads "a broken invariant" as one in trusted code or in `decide` itself, and not one inside an untrusted search's own code (today's `Unexpected`, and `Exhausted` if Task 0.2 maps it to a fault). The proposed form: such a failure is the untrusted search's failure, which never stops the run (T-R0a §5.3 rule 4's last sentence), recorded as a new `SearchFault` constructor `SearchBroke StrategyName String` and rendered as a suspected-defect note; on today's path (Task 2.1) it stays `AsFault (BrokenInvariant …)`. The other reading: it stops the run | Tasks 4.1 and 4.3's tests, built on the proposed reading and labelled proposed | none in the tranche: Tasks 1.1, 4.1 and 4.3 build the proposed form, and the other reading reworks `SearchBroke` and 4.3's mapping before Task 4.6 |
 
 ### 3.B Technical gates (closed by evidence and a reviewed proposal)
 
@@ -354,12 +424,12 @@ docs/engineering.md's "Adversarial review of procedures"
 |---|---|---|---|---|
 | G-D1 (mechanism) | Request constructors, rejection of untracked reads, handle scoping, the new `generate` type (item 8) | Task 0.3's specification, with each component's published source (Pottier 2014 §4.3) and novel machinery flagged | adversarial review; the independent reviewer is told to find a read that escapes tracking | Task 7.1 (and so Task 4.6, §5 Phase 7) |
 | G-forced (representation) | Representation of `ForcednessEvidence`, `Alternative`, `RigidAssignment`, `NonForcednessEvidence`, `ForcednessClaim`, `ForcednessRefusal`; T-R0a §6's split of `ForcednessPolicy` into an untrusted `search` and a trusted `check` that reads no `Solution` and alone mints `CheckedForcedness`; the policy placed with P (item 6). Admitting forced splits is G-6b's, not this gate's | Task 0.6's design note, including what "differ semantically" is checked by | adversarial review on AT18's two refusal cases; the independent reviewer is told to find a claim `check` accepts without two checked alternatives at one permitted rigid assignment | Task 6.3 |
-| G-Recon | Who establishes auxiliary reconstruction, and whether RT7's check counts as a rule's evidence (item 7). Until closed `Recon` is empty and every flexible variable is bound | Task 3.4's RT7 determination results per rule | independent reviewer, checking the results against T-R0b §5.3's table | any omission of an auxiliary binding (none in this plan) |
-| G-A-i (encodings) | T-R0a's proposed encodings (T-R0a §3.5, §5.3, §7, §11) and this plan's additions, listed below as (a)-(g) | for (a)-(d), T-R0a §5.3 and §11 ("Still open"); for (e)-(g), Tasks 4.1-4.3's tests | independent reviewer at the end of the first tranche; T-R0a's and T-R0b's owners for the §8.1 rows | none in the tranche: Tasks 1.1, 4.1, 4.2 and 4.3 build the proposed encodings, and a declined point reworks them before 4.6 |
+| G-Recon | Who establishes auxiliary reconstruction, and whether RT7's check counts as a rule's evidence (item 7). Until closed `Recon` is empty and every flexible variable is bound | Task 4.3's RT7 determination results per rule | independent reviewer, checking the results against T-R0b §5.3's table | any omission of an auxiliary binding (none in this plan) |
+| G-A-i (encodings) | T-R0a's proposed encodings (T-R0a §3.5, §5.3, §7, §11) and this plan's additions, listed below as (a)-(d), (f) and (g); (e) moved to §3.A as G-Q13 | for (a)-(d), T-R0a §5.3 and §11 ("Still open"); for (f) and (g), Tasks 4.1-4.3's tests | independent reviewer at the end of the first tranche, who also checks the §8.1 rows' edits to T-R0a and T-R0b (see above for what an owner's agreement means) | none in the tranche: Tasks 1.1, 4.1, 4.2 and 4.3 build the proposed encodings, and a declined point reworks them before 4.6 |
 | G-effects (classification) | Which effect refusals read record metas (item 4, Q-c2), so which stay class a and which become `ClassF` | Task 0.5's audit table and fixture pairs (pinned versus inferred record part) | independent reviewer re-deriving each row from the code | Task 2.3's effect rows |
 | G-coverage (classification) | The split of `coverage` into structural and semantic parts; which Unresolved reason `AmbiguousType` gets (item 3; that it is Unresolved is decided, §18.69 Q4) | Task 0.5's audit table | independent reviewer re-deriving each row from the code | Task 2.3's coverage rows; the reason (not the code) of `AmbiguousType` in Task 2.2 |
 | G-erased (criterion) | That the marker's syntactic criterion covers every erased row that could carry a record obligation (effect operations, handler types, `fail` payloads, the lambda annotation row of Check/Lambda.purs `annotationRow`), or that the check's argument holds | Task 0.7's note; the census category; one fixture per effect operation and handler form | adversarial review; the independent reviewer is told to find an erased obligation the criterion misses | G-erased (policy), and so Task 4.6 |
-| G-ValidR (checks) | How VR-sub, VR-agree and VR-CX are checked, once the policy points are ruled | Task 0.4's draft and probe | independent reviewer; T-R0b's owner agrees (§18.69 Q11) | RC3 in Task 6.4; the formal `ValidR` P-CX needs |
+| G-ValidR (checks) | How VR-sub, VR-agree and VR-CX are checked, once the policy points are ruled | Task 0.4's draft and probe | independent reviewer, who also checks the edit to T-R0b §5.4 (§18.69 Q11; see above for what T-R0b's owner's agreement means) | RC3 in Task 6.4; the formal `ValidR` P-CX needs |
 | G-exempt (argument) | Whether a per-kind slice argument for an `outside` kind is correct, with its check | the argument and its check, per kind | adversarial review | G-exempt (policy) for that kind |
 
 The G-A-i points:
@@ -373,19 +443,19 @@ Key` in `DeclReport.reCheckFaults`, outside `InternalFault`;
 (d) rule 4's `BothVerdicts StrategyName Evidence`, reachable in
 production when rule 1 or 1′ makes every strategy run.
 Proposed by this plan after the review of 99da55b:
-(e) a broken invariant inside an untrusted search's own code
-(today's `Unexpected`, and `Exhausted` if Task 0.2 maps it to a
-fault) is an untrusted search's failure, which never stops the run
-(T-R0a §5.3 rule 4's last sentence), recorded as a new `SearchFault`
-constructor `SearchBroke StrategyName String` and rendered as a
-suspected-defect note; on today's path (Task 2.1) it stays `AsFault
-(BrokenInvariant …)`. The alternative is that it stops the run;
+(e) moved to §3.A as G-Q13 (reading) after the re-review of 38c045e:
+it reads the author's words in §18.69 Q13, so it is not an encoding
+choice;
 (f) **revised for §18.70** (§3.2): a `BQ` atom whose meaning `ValidR`
 leaves open (before G-ValidR: at a declared type holding functions,
 or at a fresh base) makes the recorded problem incomplete and blocks
 Solved for every strategy as rule 1's markers do, with reason
-`Unsupported RequirementAtoms`; a `BQ` atom that `entailedGround`
-leaves mentioning a rigid variable (AT19's third case) is a complete
+`Unsupported RequirementAtoms`; G0's `check` does not judge the atoms
+in `openRequirements(P)`, and an atom that only σ makes such a type
+is refused as `RequirementOpen`, classed with §3.2(a) and not as a
+`SearchFault` (revised after the re-review of 38c045e); a `BQ` atom
+that `entailedGround` leaves mentioning a rigid variable (AT19's
+third case) is a complete
 requirement that G0 cannot discharge, so the strategies whose check
 is G0 decline it through their guard (`OutOfScope
 RequirementAtoms`), and other strategies and trusted refuters judge
@@ -425,7 +495,7 @@ the switch, inform it (G-switch (timing), §3.A).
 
 | Option | What happens | Declarations and programs that stop compiling | False contradictions kept | Decisions amended | Ruling (§18.70) |
 |---|---|---|---|---|---|
-| A. No switch yet; R0 runs in shadow only | Phases 0-4's shadow work lands (the first tranche, then 5.1-5.2 and 7.1 in shadow); Task 4.6 and Phase 6 do not. The only user-visible changes possible are Phases 1-2's (plural diagnostics, `E_UNRESOLVED`, classification), at the author's choice, and none changes acceptance | none (0 by construction: today's path decides) | all of D6's (numbers from the window table), since today's path keeps deciding | none; it postpones §18.66 decision 1's switch and §18.69 Q9's coordination | **now**. Both paths are maintained until the switch |
+| A. No switch yet; R0 runs in shadow only | Phases 0-4's shadow work lands (the first tranche with 5.1, then 5.2 and 7.1 in shadow); Task 4.6 and Phase 6 do not. The only user-visible changes possible are Phases 1-2's (plural diagnostics, `E_UNRESOLVED`, classification), at the author's choice, and none changes acceptance | none (0 by construction: today's path decides) | all of D6's (numbers from the window table), since today's path keeps deciding | none; it postpones §18.66 decision 1's switch and §18.69 Q9's coordination | **now**. Both paths are maintained until the switch |
 | B. Switch under the conservative boundary | Task 4.6 lands with every class of Review Focus 1 Unresolved | every census class (numbers from the census, per class and in programs) | none of D6's; `a01`-style genuine contradictions become Unresolved until P-C1 | none: §18.69 Q3 applied as written | **rejected**: broad narrowing would let the checker's coverage boundary become the language boundary |
 | C. A specified per-declaration window (§18.69 Q9) | Declarations with no blocker take the R0 path; blocked ones keep today's path, labelled legacy. The path is selected by the problem's blocker set, which is data computed from the `RecordedProblem`, not a flag | none if the legacy path is today's exactly (numbers from the census) | those of blocked declarations (numbers from the window table, blocked rows only) | §18.66 decision 1 (the online solver only a search strategy), for blocked declarations, temporarily | **possible later**, as a temporary migration step only, if the census shows useful improvements it delivers safely; limits below |
 | D. Labelled provisional acceptance | Blocked declarations that G0 accepts on the recorded atoms become Solved with a distinct assurance | none, apart from G0 refusals and `BQ` at type variables | none of D6's | §18.69 Q3 | **rejected**: a declaration is not called Solved when the check deliberately omits acceptance-relevant obligations, whatever its label |
@@ -494,10 +564,24 @@ rule.
 
 `BQ` atoms that σ grounds are still judged inside G0's `check` under
 σ (AT19's second case); a failure there refuses that candidate and is
-never Contradiction. If G0's `check` meets an atom its guard admitted
-but cannot judge, it refuses with `RequirementUnjudged`. Guard and
-check of one strategy then disagree, which is a defect in that
-strategy, so RT8 counts it as a defect, not as an expected class.
+never Contradiction. Two kinds of atom are left out of that judgement
+because their meaning is open, which is §3.2(a), not G0's limit
+(revised after the re-review of 38c045e). First, G0's `check` does
+not judge the atoms in `openRequirements(P)` (Task 4.2), such as
+`main`'s Sig10 atom at a declared type holding functions: they
+already block Solved through rule 1, and G0 neither accepts nor
+refuses on them. Second, an atom that becomes such a type only under
+σ (a flexible variable σ binds to a declared type holding functions
+or to a fresh base) is not in `openRequirements(P)`, which is
+computed on the recorded problem; G0 refuses that candidate with
+`RequirementOpen`. That refusal is not a `SearchFault`, and rule 3
+reads it as `Unsupported RequirementAtoms` when no strategy accepts
+(Task 4.1). RT8 lists both as expected classes labelled (a). Only
+when G0's `check` meets an atom its guard admitted and that is in
+neither kind, and it cannot judge it, does it refuse with
+`RequirementUnjudged`. Guard and check of one strategy then disagree,
+which is a defect in that strategy, so RT8 counts it as a defect, not
+as an expected class.
 
 Tests (Tasks 4.1, 4.2): `a G0 limit is local to G0`, where `pr a`
 at a rigid `a` gives `Unsupported [RequirementAtoms]` with only
@@ -611,9 +695,40 @@ not, since `improve` runs on invalid programs too.
   genuine budget, and no mapping is chosen.
 
 **Files:**
-- Create: test/r0-exhausted.serial.test.mjs
-- Modify: none in src (the pass count is read through a test-only
-  wrapper of `improve`, test/r0-exhausted-support.mjs)
+- Create: test/r0-exhausted.serial.test.mjs,
+  test/r0-exhausted-support.mjs, test/r0-corpus.mjs (the corpus rules
+  of research/division-campaign/integration/measure/corpus.mjs,
+  rewritten for test/; that script is the reference, not an import;
+  Tasks 1.2, 3.3 and later reuse this module)
+- Modify: none in src.
+
+**How the passes are observed.** `improve` is the module's only
+export; the pass count and `bound` are local to `pass` and its
+`tailRecM` loop (Improve.purs:41-60), so a wrapper of `improve` sees
+no passes. test/r0-exhausted-support.mjs instead copies the built
+output/ to a scratch directory and patches the copy, as
+research/division-campaign/integration/measure/instrument.mjs does
+for its six functions: it appends to the copy's
+Features.Check.RowMerge.Improve/index.js a reassignment of the
+module's own `pass` that records `found.passes` and
+`bound(found.start)` and then calls the original. `pass` and `bound`
+are module-level `var` bindings in purs's output, and `improve`
+looks `pass` up at call time, so the reassignment takes effect. The
+helper fails if the binding it patches is missing, and the test fails
+if no pass was recorded, so a changed output cannot measure nothing.
+A small src export was considered and rejected: an export beside
+`improve` (such as `bound`) is test-visible but cannot see the passes
+made inside the paths the domain runs (`compile`, and
+Features.Check.RowEntry through Unify.purs:75 `reexamine`); exposing
+them would change `improve`'s type and its callers, which is more than
+a measuring task should touch.
+
+**What drives the problems.** test/row-merge-gen.mjs yields
+labels-only problems (`{ hyp, cs, universe }`), not programs. They
+are driven through test/row-merge-entry.mjs, with `WAXWING_OUTPUT`
+set to the patched copy (row-merge-entry.mjs:11 reads it). The corpus
+programs (test/r0-corpus.mjs) are compiled through the copy's
+`compile`.
 
 - [ ] **Step 1: Write the measuring test.** For each problem it
   records `passes / bound` and asserts the ratio stays below 1.
@@ -630,13 +745,18 @@ not, since `improve` runs on invalid programs too.
 
 ```bash
 git add test/r0-exhausted.serial.test.mjs test/r0-exhausted-support.mjs \
-  docs/findings.md docs/progress.md
+  test/r0-corpus.mjs docs/findings.md docs/progress.md
 git commit -m "test: settle Exhausted as a fault or a finding (§18.69 Q1)"
 ```
 
 **Acceptance:** §18.69 Q1's criterion applied with its evidence
 recorded. Task 2.1 classifies `Exhausted` from this result alone; if
-the task stopped for the author, Task 2.1 waits for the ruling.
+the task stopped for the author, Task 2.1 waits for the ruling. The
+mapping is made in Task 2.1, not here: if `Exhausted` becomes a
+fault, Task 2.1 also changes RowOutcome.purs:84-85 (`Exhausted _ →
+Left Limit`, commented "a safeguard: a limit") and the `r005b-quiet`
+row's comment (scripts/regression-r005b-end.mjs:44-45, "`Exhausted`,
+a limit").
 
 #### Task 0.3: Specify D1's mechanism (design; gate G-D1)
 
@@ -659,6 +779,15 @@ the task stopped for the author, Task 2.1 waits for the ruling.
     build ∷ Witness → Either ElabFault a }`;
   - how Cov's domain becomes `requests` plus the flexible variables
     outside `Recon` (W §1.6);
+  - what `build` returning `ElabFault` after a Cov-passing witness
+    means. With `Recon` empty, Cov's domain is every flexible
+    variable and so covers every request, so it should be
+    impossible: it is a broken invariant, carried as `InternalFault`'s
+    `BrokenInvariant String` (proposed), which stops the run under
+    §18.69 Q13 since `build` is not an untrusted search;
+  - how a `Free` binding (W's hole) elaborates: to today's hole, the
+    one `checkFunction` makes from a meta still unsolved at the end
+    (Function.purs:68-71);
   - the acceptance tests: EL1, the same checked IR as read-back at
     every unambiguous site, a rejected untracked read, `position`
     derived from `requests`.
@@ -808,7 +937,7 @@ that constraint, so this task prepares the ruling.
     placing `EmissionFault` in Features.Specialize.ReCheck, puts a
     Features type into `DeclReport`; this plan proposes the first;
   - `SearchFault = CandidateRefused StrategyName CheckRefusal |
-    SearchBroke StrategyName String` (the second proposed, G-A-i(e));
+    SearchBroke StrategyName String` (the second proposed, G-Q13);
   - `CheckedForcedness = Forced ForcednessEvidence | NotForced
     NonForced` and `Forcedness = Checked CheckedForcedness |
     Undecided` (the policy itself lands in Task 6.3).
@@ -850,8 +979,15 @@ that constraint, so this task prepares the ruling.
 - Create: src/Features/Check/Outcomes.purs, test/r0-driver.test.mjs,
   test/fixtures/r0/first-diagnostic.json (snapshot; data)
 - Modify: src/Features/Check.purs:19-52, src/Program/Compile.purs,
-  src/Program/Command.purs (print every diagnostic),
   test/support.mjs (helper `rejectedAll`)
+- Modify in Step 6 only (the CLI step, its own commit):
+  src/Program/Command.purs (`Outcome.stderr ∷ Maybe WireRecord`,
+  Command.purs:20, becomes `Array WireRecord`), src/Program/Main.purs
+  (writes each record on its own line, Main.purs:21), README.md:564
+  (JSON Lines on stderr), test/program.test.mjs (its `execute` helper,
+  :33-38), and the CLI tests whose program has several broken
+  declarations (each listed in the commit)
+- Uses: test/r0-corpus.mjs (Task 0.2)
 
 **Interfaces:**
 - Produces: `checkProgram ∷ Resolved.Program → Report`, where at this
@@ -898,18 +1034,25 @@ test('AT3: an unresolved f and a contradictory g both reported', ...);
 - [ ] **Step 2: Run them; expect FAIL** (`compileReport` undefined).
 - [ ] **Step 3: Implement** `checkProgram` and `compileReport`; make
   `check` and `compile` derived views.
-- [ ] **Step 4: Rerun; expect PASS; `npm run verify`.** The CLI's
-  changed output (several diagnostics per run) is the step's visible
-  change (T-R0a §10 step 1). Its fixtures in test/shell.test.mjs and
-  test/program.test.mjs move in this commit and are listed in its
-  message.
+- [ ] **Step 4: Rerun; expect PASS; `npm run verify`.** The CLI is
+  unchanged at this step: it still prints `compile`'s first
+  diagnostic.
 - [ ] **Step 5: Add regression row `r0-first-left-hides`.** It
   restores `traverse` stopping at the first `Left`, and the probe
   expects the second diagnostic. Prove it, then commit.
+- [ ] **Step 6 (held back under option (i)): the CLI prints every
+  diagnostic, as JSON Lines.** This changes the CLI's machine-readable
+  output (see "User-visible tasks inside the tranche"; T-R0a §10 step
+  1). Failing test first: a CLI run on the two-broken-declaration
+  program above writes two lines, each one JSON object, the first
+  equal to today's whole stderr. Then change `Outcome`, Main.purs and
+  README.md:564, move the CLI tests whose program has several broken
+  declarations, run `npm run verify`, and commit on its own, listing
+  each moved test and stating the format change in the message.
 
 #### Task 1.3: The Unresolved error code
 
-Decision 9 adopts a distinct code; this plan proposes its wire name,
+§18.66 decision 9 adopts a distinct code; this plan proposes its wire name,
 for confirmation with the plan's approval.
 
 **Files:**
@@ -932,7 +1075,20 @@ for confirmation with the plan's approval.
 **Files:**
 - Create: src/Features/Check/Classify.purs, test/r0-classify.test.mjs
 - Modify: src/Features/Check/EndReport.purs:36-45,
-  Check/Require.purs:105-108, Check/Record.purs:160-166
+  Check/Require.purs:105-108, Check/Record.purs:160-166,
+  Check/Reject.purs:41-54 (its `_ → … "Effect row consumption
+  failed"` catch-all at :54), Check/RowOutcome.purs:67-91
+  (`classified`, which `classify` builds on; and :84-85 if Task 0.2
+  made `Exhausted` a fault), scripts/regression-r005b-end.mjs:44-45
+  (the `r005b-quiet` comment, "a limit", under the same condition)
+- Review (changed only if the review finds a semantic claim):
+  Check/UnifyRecord.purs:93-100 (`open`) and
+  Check/RowMerge/End.purs:108-113 (`stop`), two boolean predicates
+  that match `Exhausted` by name and end in `_` arms. `Exhausted`
+  stops under either of Task 0.2's outcomes, so the mapping leaves
+  them unchanged; the task records, for each `_` arm, whether it
+  turns a failure into a semantic claim (docs/engineering.md "Result
+  boundary classification"), and gives it named arms if so.
 
 **Interfaces:**
 - Produces: `classify ∷ Failure → Classified`, with
@@ -940,14 +1096,26 @@ for confirmation with the plan's approval.
   String | AsFault InternalFault | AsMismatch`. It has one arm per
   `Failure` constructor (UnifyFailure.purs:45-60), with no `_` arm.
   `Exhausted` takes Task 0.2's mapping, and `Unexpected` becomes
-  `AsFault (BrokenInvariant …)`. EndReport, Require and Record render
-  from `Classified` with **unchanged texts and codes** at this step.
+  `AsFault (BrokenInvariant …)`. EndReport, Require, Record and Reject
+  render from `Classified` with **unchanged texts and codes** at this
+  step.
+- **One classifier, not two.** `Features.Check.RowOutcome.classified`
+  (RowOutcome.purs:67-91) already classifies every `Failure` by name
+  with no catch-all, into `Stop` (`Limit`, `Internal`, `Unfinished`)
+  or a contradiction. `classify` is built on it: the `Stop` arms give
+  `AsLimit`, `AsFault` and `AsPlaceholder`, and the contradiction arm
+  is refined into `AsMismatch` or `AsHint`. So one name-by-name match
+  over `Failure` remains, and a new constructor still forces a
+  decision in one place. If the refinement needs facts `classified`
+  does not keep, the module comment says why, and the test asserts
+  that the two agree on every shared arm.
 
 - [ ] **Step 1: Failing test.** Inject each of the 15 constructors
   directly and assert its class. The test fails until `classify`
   exists.
 - [ ] **Step 2: Run; expect FAIL.**
-- [ ] **Step 3: Implement**, replacing EndReport.purs:43's catch-all.
+- [ ] **Step 3: Implement**, replacing EndReport.purs:43's and
+  Reject.purs:54's catch-alls.
 - [ ] **Step 4: Rerun; expect PASS.** Every existing E_TYPE and
   E_INTERNAL fixture must be unchanged: `npm run verify`.
 - [ ] **Step 5: Regression row `r0-classify-catchall`:** the edit
@@ -964,7 +1132,8 @@ for confirmation with the plan's approval.
   §18.69 Q4; its reason waits on G-coverage); inferred `TypeTooDeep` →
   `Unresolved`; check-time
   placeholders (EndReport.purs:39, Require.purs:105, Record.purs:160,
-  SeveralTails.purs:19-27) → `Unresolved`), src/Format/Diagnostic/*.purs
+  SeveralTails.purs:19-27, Reject.purs:49) → `Unresolved`),
+  src/Format/Diagnostic/*.purs
   texts for D4 and the placeholders; src/Domain/Problem.purs (a new
   constructor for check-time placeholders: today they are `Internal`
   strings, Check/Placeholder.purs:13, which Code.purs:33 maps to
@@ -973,9 +1142,19 @@ for confirmation with the plan's approval.
   text change to match the new constructor's code; each is listed in
   the commit.
 - Modify (fixtures): test/fixtures/r005b/*.json, test/r005b-*.test.mjs,
-  test/regression-r005b-end.mjs, scripts/regression-r005b-end.mjs
-  (each listed by name in the commit)
+  test/regression-r005b-end.mjs, scripts/regression-r005b-end.mjs,
+  test/fixtures/r0/first-diagnostic.json (Task 1.2's snapshot: the
+  entries whose first diagnostic is one of these), and
+  test/fixtures/r0/r019/*.json if Task 0.1 pinned a check-time
+  placeholder (each listed by name in the commit)
+- Modify (docs): docs/language.md:219 (E_TYPE `Ambiguous type …`
+  becomes the Unresolved code) and every other docs/language.md
+  passage that names a moved code
 - Create: test/r0-unresolved-text.test.mjs
+
+This task changes first diagnostics. Review Focus 2's "first
+diagnostic unchanged" and §7's Phase 1 row therefore hold except for
+the code and text moves this task lists.
 
 `NestingTooDeep` at parse keeps E_NESTING (static). Inferred
 `TypeTooDeep` is verdict-stage `Limit InferredTypeDepth`, so it takes
@@ -1003,11 +1182,15 @@ codes until G-codes (Task 6.2).
 
 **Interfaces:**
 - Produces: the `StaticRefusal` classification (`Policy`,
-  `StaticRule`) applied at each check's raise site, and
+  `StaticRule`) applied at each check's raise site. It classifies
+  today's checks where they stand and moves none. The function
   `staticRules ∷ Tables → Resolved.FunctionDecl → Array
-  StaticRefusal` for the checks that already run per declaration. It
-  classifies today's checks where they stand and moves none. They do
-  not all run inside `checkFunction`:
+  StaticRefusal` is not defined here: it needs `Tables`, which Task
+  3.2 defines, and while every check stays where it is there is no
+  separate pass for it to be. Task 3.2 defines it beside `generate`,
+  returning the per-declaration static refusals this task classified;
+  it runs as a pass before generation only from Task 4.6. The checks
+  do not all run inside `checkFunction`:
   - `SameDisjoint` and `RepeatedTail` (b′) are Resolve refusals
     (Resolve/Requirements.purs:72, Resolve/Apart.purs:82-91). They
     stop the whole program at Resolve, so no `Resolved.FunctionDecl`
@@ -1088,6 +1271,11 @@ The T-R0b rules, split across three commits, each with its own tests:
   invariant; extension §2 challenge 2). `Tables = { types, ctors,
   effects }`, with no call graph. `adm` holds every function
   reference with no component flag.
+- Produces: `staticRules ∷ Tables → Resolved.FunctionDecl → Array
+  StaticRefusal` in Generate/Static.purs (deferred from Task 2.3),
+  returning the per-declaration static refusals Task 2.3 classified;
+  tested in test/r0-static.test.mjs against the raise-site
+  classification, and run before generation only from Task 4.6.
 
 - [ ] **Step 1 (each commit): failing tests.**
   - RT5: every constructor of `Resolved.Expr`, `Pattern`, `Rest`,
@@ -1111,10 +1299,8 @@ The T-R0b rules, split across three commits, each with its own tests:
 
 **Files:**
 - Create: test/r0-translator.mjs (independent; ≤250 lines per file,
-  split if needed), test/r0-rt1.serial.test.mjs, test/r0-corpus.mjs
-  (the corpus rules of research/division-campaign/integration/
-  measure/corpus.mjs, rewritten for test/; that script is the
-  reference, not an import)
+  split if needed), test/r0-rt1.serial.test.mjs
+- Uses: test/r0-corpus.mjs (Task 0.2)
 
 **Process constraint:** written by a different implementer, from
 T-R0b alone and **without reading Task 3.2's code** (T-R0b §9 item
@@ -1164,10 +1350,8 @@ precedes Task 3.2's first.
   - AT13 pairs programs: changing `f`'s body, including a call that
     merges `f` and `g` into one component, leaves `g`'s problem
     equal.
-  - RT7's determination check: at each accepted fixture's read-back
-    candidate, §5.3's determination reproduces the auxiliaries'
-    values. These results are G-Recon's evidence and decide nothing
-    here.
+  - RT7's determination check is not here: it reads the read-back
+    candidate, which Task 4.3 produces, so it moved to Task 4.3.
 - [ ] **Step 2: Run; expect FAIL; fix any generator defect found, each
   with its fixture.**
 - [ ] **Step 3: Record B9** (T-R0b §11 item 1). If RT1 and RT2 agree
@@ -1176,6 +1360,12 @@ precedes Task 3.2's first.
 - [ ] **Step 4: Verify; commit.**
 
 #### Task 3.5: Census of what the switch would block (G-switch evidence)
+
+**Runs after Task 4.2.** Two of its categories need Task 4.2's
+detectors: `BQ` atoms at type variables are those still mentioning a
+rigid variable after `entailedGround`'s reduction, and the "pending
+G-ValidR" atoms are `openRequirements`'s. The census is kept in one
+task rather than split with Task 4.5.
 
 **Files:**
 - Create: test/r0-census.serial.test.mjs, test/fixtures/r0/census.json
@@ -1192,12 +1382,12 @@ precedes Task 3.2's first.
     rows could carry a record obligation, by Task 0.7's criterion
     (G-erased);
   - `BQ` atoms at type variables: still mentioning a rigid variable
-    after reduction through entailed equalities (AT19's third case;
-    G0 declines them, §3.2(b); Unsupported while no injected
-    strategy covers them, for instance until contracts carry `Q`;
-    not "pending G-ValidR");
+    after reduction through entailed equalities (`entailedGround`,
+    Task 4.2; AT19's third case; G0 declines them, §3.2(b);
+    Unsupported while no injected strategy covers them, for instance
+    until contracts carry `Q`; not "pending G-ValidR");
   - `BQ` atoms at declared types holding functions or at fresh bases
-    ("pending G-ValidR");
+    (`openRequirements`, Task 4.2; "pending G-ValidR");
   - second spreads (rule 1′; refused at Resolve today, so counted
     for completeness, not as narrowing).
   The two remaining classes, G0 refusals of the read-back and
@@ -1249,12 +1439,15 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 - Produces: `StrategySpec cert`, `newtype Strategy`,
   `strategy ∷ ∀ cert. StrategySpec cert → Strategy` (T-R0a §4.1);
   `Checking = { strategies, refuters, shadows, rules, budget }`;
-  `shadowRefuter ∷ StatementRef → RefuterSpec → ShadowRefuter` and
-  `trustedRefuter ∷ TheoremRef → RefuterSpec → Refuter`, where
-  `trustedRefuter` takes a `TheoremRef` that only a hidden registry
-  module can make, so no trusted refuter exists until P-CX;
+  `shadowRefuter ∷ StatementRef → RefuterSpec → ShadowRefuter`;
   `decide ∷ Checking → RecordedProblem → Either InternalFault
   Decision`.
+- Consumes from Task 5.1: `checkDerivation` and the empty `registry`
+  (Refute/Rules.purs) for rule 2's rules, and `trustedRefuter ∷
+  TheoremRef → RefuterSpec → Refuter` (Refute/Rules.purs, the module
+  Task 1.1's structure rule names), whose `TheoremRef` only
+  Refute/Theorems.purs can make and does not, so no trusted refuter
+  exists in production until P-CX.
 - Implements T-R0a §5.3:
   - Rules 1 and 1′: a non-empty `outside`, or a `spread j` with
     j ≥ 2, blocks Solved, and every strategy still runs. Proposed
@@ -1276,7 +1469,11 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     if every strategy declined; `Inference` otherwise
     (`NoAcceptedCertificate` when candidates were refused). A
     refused `ClaimsComplete` candidate also goes into
-    `Decision.searchFaults` as `CandidateRefused`.
+    `Decision.searchFaults` as `CandidateRefused`. Proposed
+    (G-A-i(f), §3.2): a candidate refused with `RequirementOpen` (an
+    atom whose meaning is open under σ) is not a `SearchFault`, and
+    counts toward `Unsupported RequirementAtoms`, as a decline does,
+    not toward `NoAcceptedCertificate`.
   - Rule 4: what stops the run, including `BothVerdicts` in
     production: an `Accepted` together with a checked derivation or
     `Refuted` in one run, possible whenever rule 1 or 1′ makes every
@@ -1299,7 +1496,9 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 
 - [ ] **Step 1: Write the failing tests**, with stubs from
   test/r0-stubs.mjs that mint `Valid` through the compiled Internal
-  module.
+  module, and stub trusted refuters and test-only registered rules
+  built on Task 5.1's types, with a `TheoremRef` minted through the
+  compiled Refute.Theorems module (production code cannot).
   - AT8: a stub search returning "refused" gives Unresolved. A wrong
     σ claimed complete gives `CheckFailed` plus `CandidateRefused` in
     `searchFaults`, and a later accepting stub still gives Solved
@@ -1336,8 +1535,12 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     refuter built with per-hint fuel, a hint set's superset never
     loses a counter-instance the subset found. This is AT7's extra
     premise, tested on its own.
+  - `a RequirementOpen refusal is Unsupported` (G-A-i(f), §3.2(a)):
+    a stub strategy whose candidate is refused with `RequirementOpen`
+    gives `Unresolved (Unsupported RequirementAtoms)` and no
+    `SearchFault`.
   - `an untrusted search's broken invariant does not stop the run`
-    (G-A-i(e)): a stub search whose own code reports a broken
+    (G-Q13, proposed reading): a stub search whose own code reports a broken
     invariant gives a `SearchBroke` record and the verdict the
     other attempts give.
   - `an incomplete problem blocks every strategy` (G-A-i(f),
@@ -1409,12 +1612,22 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     attempt, so rule 3 reaches `Unsupported RequirementAtoms` only
     when every injected strategy declined, which is the path §8 item
     8 found missing, and other strategies and refuters judge the
-    atom within their own scope.
-  `checkSubstitution` still refuses an atom its guard admitted but
-  cannot judge, with `CheckRefusal RequirementUnjudged`, as a
-  backstop. Guard and check of one strategy then disagree, so Task
-  4.3's RT8 counts such a refusal as a defect, not as expected. Task
-  4.5 reports how many programs each detector affects.
+    atom within their own scope. The parenthesis "or lies outside the
+    unitary fragment" also declines flexible-only atoms that σ would
+    ground (AT19's second case) in problems with several tails. That
+    cost stays local to G0, and Task 4.5 counts it as its own
+    window-table row.
+  `checkSubstitution` does not judge the atoms in
+  `openRequirements(P)`: they block Solved through rule 1 already.
+  An atom that σ makes a declared type holding functions, or a fresh
+  base, is refused with `CheckRefusal RequirementOpen`, classed with
+  §3.2(a): not a `SearchFault`, and read by rule 3 as `Unsupported
+  RequirementAtoms` (Task 4.1). It still refuses any other atom its
+  guard admitted but that it cannot judge, with `CheckRefusal
+  RequirementUnjudged`, as a backstop. Guard and check of one strategy
+  then disagree, so Task 4.3's RT8 counts such a refusal as a defect,
+  not as expected. Task 4.5 reports how many programs each detector
+  affects.
 
 - [ ] **Step 1: Failing tests.**
   - AT19's three cases: an original equation fixes the variable, so
@@ -1429,6 +1642,13 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   - `openRequirements` and `g0Guard` are disjoint on the fixtures:
     no atom is in both, and `openRequirements` is unchanged when G0
     is replaced by a stub.
+  - `G0 leaves open atoms to §3.2(a)`: on a `main` returning a
+    declared type holding functions, `checkSubstitution` neither
+    accepts nor refuses on Sig10's atom, and `decide` gives
+    `Unsupported RequirementAtoms` through rule 1; on an atom at a
+    flexible variable that σ binds to such a type, the refusal is
+    `RequirementOpen`, never `RequirementUnjudged`, and leaves no
+    `SearchFault`.
   - `main's printability atom agrees with printableEntry`: for every
     fixture whose `main` result is not a declared type holding
     functions (those wait on G-ValidR and are `Unsupported` by
@@ -1455,13 +1675,26 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 
 **Files:**
 - Create: src/Features/Check/Strategy/Online.purs,
-  Strategy/ReadBack.purs, test/r0-rt8.serial.test.mjs
-- Modify: src/Features/Check/Function.purs (exports `checkFunction`
-  for the search; unchanged otherwise at this step)
+  Strategy/ReadBack.purs, test/r0-rt8.serial.test.mjs,
+  test/r0-rt7.test.mjs (RT7's determination, moved from Task 3.4)
+- Modify: none in Features.Check's existing modules. The search calls
+  `recheck` (Function.purs:34-40), already exported, which builds the
+  per-declaration `Env` from the program (`environment`,
+  Function.purs:42-61) and calls `checkFunction holders env function`
+  (Function.purs:72-77).
 
 **Interfaces:**
-- Produces: `onlineSearch ∷ Budget → RecordedProblem → Search
-  Substitution`. On a `Right` from `checkFunction` it returns
+- Produces: `type OnlineContext = { holders ∷ Functional, program ∷
+  Resolved.Program }`, the program context `checkFunction` needs and a
+  `RecordedProblem` does not carry. `onlineSearch ∷ OnlineContext →
+  Budget → RecordedProblem → Search Substitution` finds the
+  declaration the problem's `decl` names in `program` and runs
+  `recheck holders program` on it. `online ∷ OnlineContext →
+  Strategy` is injected from `Program.Compile`, and `checkProgram`
+  instantiates it once per program, so the `Checking` value is built
+  per program. RT3 is unaffected: generation still reads no strategy,
+  and the refusing stub of Task 3.6 ignores the context.
+  On a `Right` from `checkFunction` it returns
   `Candidate σ ClaimsComplete hints`, with σ read back through
   `vars` and `types` (T-R0b §5.3; As3). On a `Left` it returns
   `NoCandidate Exhausted [hint]`, where the hint keeps the
@@ -1470,9 +1703,9 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   `classify` (Task 2.1) puts in `AsFault` (`Unexpected`, and
   `Exhausted` if Task 0.2 made it a fault) is a broken invariant in
   an untrusted search's own code: it gives `NoCandidate` and a
-  `SearchBroke` record, and does not stop the run (proposed,
-  G-A-i(e)).
-  `online ∷ Strategy` is assembled as T-R0a §4.2 shows, with
+  `SearchBroke` record, and does not stop the run (proposed, G-Q13,
+  a reading the author confirms).
+  `online context` is assembled as T-R0a §4.2 shows, with
   `g0Guard` (Task 4.2) as its guard, so it declines §3.2(b)'s atoms
   before searching.
 - The online certificate (the `cert` of `StrategySpec cert`) is `{
@@ -1489,18 +1722,34 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 
 - [ ] **Step 1: Failing test (RT8).** For every corpus declaration
   the online solver accepts, the read-back candidate passes
-  `checkSubstitution`, except in two expected classes, which are
-  counted and listed rather than treated as defects: declarations
-  `online` declines through `g0Guard` (§3.2(b); a `Declined`
-  attempt, no candidate), and ambiguous several-tail read-backs
-  (`Heuristic`). A `RequirementUnjudged` refusal is not expected: it
-  means `g0Guard` admitted what G0's check cannot judge, a defect in
-  the strategy. Every other failure is likewise a defect
-  (recorder, read-back or search) to fix before Task 4.6, each fix
-  with its fixture. The expected classes' counts go to Task 4.5's
-  window table.
-- [ ] **Steps 2-5:** run (FAIL), implement, run, fix the defects
-  found (separate commits), verify, commit.
+  `checkSubstitution`, except in the expected classes, which are
+  counted and listed rather than treated as defects:
+  - labelled (b): declarations `online` declines through `g0Guard`
+    (§3.2(b); a `Declined` attempt, no candidate);
+  - labelled (a): declarations with atoms in `openRequirements(P)`
+    (G0 leaves them to rule 1), and candidates refused with
+    `RequirementOpen` (an atom open only under σ; §3.2);
+  - ambiguous several-tail read-backs (`Heuristic`, G-A-i(g)).
+  A `RequirementUnjudged` refusal is not expected: it means `g0Guard`
+  admitted what G0's check cannot judge, a defect in the strategy.
+  Every other failure is likewise a defect, of the recorder, the
+  read-back or the search. The expected classes' counts go to Task
+  4.5's window table.
+- [ ] **Step 2: RT7's determination check** (moved from Task 3.4):
+  at each accepted fixture's read-back candidate, T-R0b §5.3's
+  determination reproduces the auxiliaries' values. The results are
+  G-Recon's evidence and decide nothing here.
+- [ ] **Steps 3-5:** run (FAIL), implement, run; verify; commit.
+- [ ] **Step 6: Defects.** Each defect is attributed with its
+  evidence (the author's rule "blame needs evidence"). A recorder or
+  read-back defect (in the generator, ReadBack, or G0) is fixed in
+  this tranche, in its own commit with its fixture. A defect
+  attributed to the search, `checkFunction`, is today's path: fixing
+  it would change today's acceptance, which the tranche promises not
+  to do (see "Defects found inside the tranche"). It is recorded in
+  docs/findings.md and BACKLOG.md with its fixture, and it becomes a
+  window.json row in Task 4.5; its fix needs a separate
+  authorization, with its fixture moves listed.
 
 #### Task 4.4: The substitution witness, Cov and the hole contract (AT9 part)
 
@@ -1536,9 +1785,11 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
 - [ ] **Step 1: Write the differential test.** For every program in
   the test suite's fixtures and the corpus, run today's `check` and
   the R0 path (`generate`, then `decide` with `Checking = { strategies:
-  [online], refuters: [], shadows: [], rules: [], budget }`) and
-  compare result classes. `cxSpec` does not exist until Task 5.2, so
-  the shadow list is empty here; Task 5.2 re-runs this test with
+  [online context], refuters: [], shadows: [], rules: registry,
+  budget }`, built per program with Task 4.3's context and Task 5.1's
+  empty registry) and compare result classes. `cxSpec` does not
+  exist until Task 5.2, so the shadow list is empty here; Task 5.2
+  re-runs this test with
   `shadows: [cx]` and updates the table (AT17 says the classes must
   not move).
 - [ ] **Step 2: Run, and write every difference into window.json**
@@ -1563,15 +1814,25 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
     RequirementAtoms` with only `online` injected; target: Solved
     once a strategy whose `Sound_F` covers them is injected (for
     instance with contracts carrying `Q`, outside this plan);
-  - `BQ` atoms awaiting G-ValidR (§3.2(a));
-  - RT8's expected classes: `online`'s declines and ambiguous
-    several-tail read-backs (Task 4.3);
+  - `BQ` atoms awaiting G-ValidR (§3.2(a)), counted apart from the
+    candidates refused with `RequirementOpen` (an atom open only
+    under σ; also §3.2(a));
+  - `online`'s declines of flexible-only atoms that σ would ground,
+    in problems with several tails (`g0Guard`'s "outside the unitary
+    fragment"; §3.2(b)), as their own row, apart from the declines
+    of atoms at rigid variables;
+  - RT8's other expected classes: ambiguous several-tail read-backs
+    (Task 4.3);
+  - each defect Task 4.3 attributed to `checkFunction`, recorded but
+    not fixed in the tranche, with its findings entry; target: its
+    separately authorized fix;
   - the programs each class would stop, since one Unresolved
     declaration fails its program.
-  Each row is labelled §3.2(a) or §3.2(b). For option C's possible
-  later use (§3.1), the summary also lists the rows where R0's class
-  improves on today's without changing acceptance (for instance a
-  false contradiction that becomes Unresolved).
+  Each row is labelled §3.2(a) or §3.2(b), except the defect rows.
+  For option C's possible later use (§3.1), the summary also lists
+  the rows where R0's class improves on today's without changing
+  acceptance (for instance a false contradiction that becomes
+  Unresolved).
 - [ ] **Step 3: Assert the table**, so the test fails when a class
   moves without the table being updated. Commit.
 
@@ -1666,11 +1927,17 @@ rolling back means reverting those tasks first, newest first.
 
 ### Phase 5: rules and refuters (T-R0a step 5)
 
-#### Task 5.1: `toSig`, the rule registry, `checkDerivation` (AT5, AT6)
+#### Task 5.1: `toSig`, the rule registry, `checkDerivation`, `trustedRefuter` (AT5, AT6; first tranche, before Task 4.1)
+
+In the first tranche (re-review of 38c045e, B1): Tasks 4.1 and 4.2
+need `checkDerivation`, the registry and `trustedRefuter`. It runs
+after Tasks 1.1 and 3.1 (its types and `RecordedProblem`'s fields)
+and before Task 4.1. It is not live refutation: the registry is
+empty and no `TheoremRef` can be made in production.
 
 **Files:**
 - Create: src/Features/Check/Refute/Project.purs, Refute/Rules.purs,
-  test/r0-rules.test.mjs
+  Refute/Theorems.purs, test/r0-rules.test.mjs
 
 **Interfaces:**
 - Produces: `toSig ∷ RecordedProblem → Maybe SigProblem`. It keeps
@@ -1683,10 +1950,28 @@ rolling back means reverting those tasks first, newest first.
   `checkDerivation ∷ RecordedProblem → Derivation → Either Unsound
   Evidence`. It checks that premises are original `B` ids and re-runs
   the rule on `withBody (toSig P) premises`, never on a sub-`D`.
+- Produces: `TheoremRef` and its constructor in
+  Features.Check.Refute.Theorems, the hidden registry module, with
+  `theorems ∷ Array TheoremRef`, which is **empty** until P-C1 or
+  P-CX. A new structure rule lets only Features.Check.Refute.Rules
+  import Refute.Theorems, and Rules imports the type without its
+  constructor, so nothing in src can make a `TheoremRef`; tests mint
+  one through the compiled Theorems module, as test/r0-stubs.mjs mints
+  `Valid`. `trustedRefuter ∷ TheoremRef → RefuterSpec → Refuter`
+  lives in Refute/Rules.purs (Task 1.1's structure rule) and so has
+  no caller in production. Task 5.3 adds the first `TheoremRef`
+  values when their proofs land.
+- Modify: scripts/structure.mjs and test/structure.test.mjs (the
+  Refute.Theorems rule), docs/engineering.md and the Internal-boundary
+  bullet of AGENTS.md (Global Constraints).
 
 - [ ] **Step 1: Failing tests.**
   - AT6: a derivation citing a substituted atom, a `D` atom, a
     `D`-subset, or an unregistered rule is refused.
+  - `no TheoremRef in production`: a module other than Refute.Rules
+    importing Refute.Theorems is a structure finding; Rules' import
+    names the type without `(..)`; `theorems` and `registry` are
+    empty.
   - AT5: a test-only registered rule (through the compiled Internal
     module) gives evidence whose premises are original ids. The
     test re-evaluates it by brute force with
@@ -1929,7 +2214,7 @@ whose type it changes), on Task 4.3 (the online certificate's
 `checked`, its comparison baseline) and on Task 4.4 (`Witness` and
 Cov, which `build` consumes and whose domain it revises). It depends
 on nothing live: not on Task 4.6 and not on Phase 6. So it fits
-shadow first, in the second shadow tranche with Tasks 5.1-5.2.
+shadow first, in the second shadow tranche with Task 5.2.
 
 Why forward rather than the bridge: (1) with the bridge live, the IR
 lowered would be the one today's solver produced beside σ, and the
@@ -2016,7 +2301,7 @@ its failing test is `r0-lowered-ir`'s `build` assertion.
 | RT1 | 3.3 |
 | RT2, RT4, RT9, RT10 | 3.4 |
 | RT3 | 3.6 (with 4.1) |
-| RT5, RT6, RT7 | 3.2 (RT7's determination: 3.4) |
+| RT5, RT6, RT7 | 3.2 (RT7's determination: 4.3) |
 | RT8 | 4.3 |
 | Cov, hole contract | 4.4 (domain revised in 7.1) |
 | RC1-RC6 | 6.4 |
@@ -2028,10 +2313,10 @@ its failing test is `r0-lowered-ir`'s `build` assertion.
 | Phase | Risk | Rollback |
 |---|---|---|
 | 0 | A probe's characterization pins behaviour a later task must change. | Probes are tests only. A later task that changes the behaviour updates the fixture in the same commit, with the reason. |
-| 1 | Plural diagnostics break the CLI's consumers, and relocation through `explained` changes notes. | Revert the task's commit. `compile` stays the first diagnostic throughout, so the library tests are unaffected. |
+| 1 | Plural diagnostics break the CLI's consumers (JSON Lines: a run with one diagnostic is byte-identical, a whole-stderr parse fails on several), and relocation through `explained` changes notes. | Revert the CLI step's own commit, or hold it back (option (i)). `compile` stays the first diagnostic throughout, except for Task 2.2's listed code and text moves, so the library tests are otherwise unaffected. |
 | 2 | A code or text change misses a pinned fixture, or `classify` gives `Exhausted` the wrong class. | Fixture moves are listed per commit, and Task 0.2's evidence is cited. Revert per commit. |
 | 3 | The generator disagrees with the checker in ways RT1 cannot settle; generation costs time on scale programs. | Phase 3 is test-only, so removing it changes nothing a user sees. Timing is measured in 3.5. |
-| 4 (4.1-4.5) | RT8 exposes recorder or read-back defects; G0's check refuses candidates today's solver accepts. | Shadow only. Defects are fixed before 4.6 or listed in window.json. |
+| 4 (4.1-4.5) | RT8 exposes recorder or read-back defects; G0's check refuses candidates today's solver accepts; a defect is traced to `checkFunction`. | Shadow only. Recorder and read-back defects are fixed in the tranche; a `checkFunction` defect is recorded (findings, BACKLOG.md, a window.json row) and its fix waits for separate authorization, so today's acceptance does not move. |
 | 4.6 | **Narrowing** of a class the author has not accepted; genuine contradictions Unresolved until P-C1; a Solved resting on erased rows if G-erased is skipped; lowering an IR other than `build`'s from the accepted witness. | Not in the first tranche. Lands only on the G-switch (timing) ruling (option B is rejected, so no broad narrowing), after Task 7.1 (or under Task 7.2's bridge, removed before 6.4), and with G-erased closed or its class explicitly accepted. One commit: reverting it restores today's path exactly until a Phase 6 task lands; after that, the Phase 6 tasks are reverted first, newest first. test/r0-lowered-ir.test.mjs pins the IR route. |
 | 5 | A shadow result leaks into a verdict; certificate checking is too slow (CX question 3). | `shadowRefuter` cannot mint `Refuted` by type, regression row `r0-shadow-decides` guards it, and cost is measured in 5.2. |
 | 6 | The re-check fails on programs accepted today (E_INTERNAL), or costs too much; removing Resolve's refusals lets an invalid lambda reach Solved; a `NoCompilation` refusal gets a code by accident. | Every Phase 6 task waits on G-switch and Task 4.6. The corpus run in 6.4 must be clean before landing, and its cost is measured. 6.5 waits on 4.2's definedness test. 6.2's `NoCompilation` rendering waits on G-codes. Each task is one revertible commit. |
@@ -2129,14 +2414,21 @@ shadow-first ruling (§18.70) answers them for now.
 
 ### 8.1 Proposed changes to the R0 documents
 
-This plan edits no R0 document. Each change below is proposed to the
-document's owner, and the plan builds the proposed form labelled as
-such until the owner and the author agree.
+This plan edits no R0 document. Each change below is proposed, and
+the plan builds the proposed form labelled as such until the change
+is settled. Who settles it depends on the row (§3). A row that a
+technical gate covers (G-A-i, G-D1, G-ValidR (checks) and the like)
+is settled when that gate closes: its independent reviewer signs off,
+and the closure and the document edit are reported to the author,
+who may reopen them but is not asked to rule. A row that touches a
+language or policy point (G-erased (policy), G-Q13) waits for the
+author's ruling. The step-4 row records the author's ruling in
+§18.70.
 
 | Document | Change | Why | Task |
 |---|---|---|---|
 | T-R0b §3.5, §11 item 6 | Add the erased-row marker kind (or record the check) once G-erased is ruled; state its syntactic criterion | §18.69 Q3: no Solved rests on effect/record independence, and nothing implements it | 0.7, 4.1, 4.6 |
-| T-R0a §3.5 | Add `SearchFault = … \| SearchBroke StrategyName String` for a broken invariant inside an untrusted search's own code | §5.3 says both "a broken invariant stops" and "an untrusted search's failure never stops it"; the plan proposes the second for search-internal invariants | 4.1, 4.3 (G-A-i(e)) |
+| T-R0a §3.5 | Add `SearchFault = … \| SearchBroke StrategyName String` for a broken invariant inside an untrusted search's own code | §5.3 says both "a broken invariant stops" and "an untrusted search's failure never stops it"; the plan proposes the second for search-internal invariants, as a reading of §18.69 Q13 the author confirms before this row is made | 4.1, 4.3 (G-Q13) |
 | T-R0a §5.3 rule 1, §4.1, AT19 | Keep checker limits local (revised for §18.70): a `BQ` atom whose meaning `ValidR` leaves open (before G-ValidR) makes the problem incomplete and joins rule 1 with reason `Unsupported RequirementAtoms`; a complete `BQ` atom that G0 cannot discharge (rigid variable after entailed reduction, or outside the unitary fragment) is declined by the guard of the strategies whose check is G0 (`OutOfScope RequirementAtoms`), never by `decide`, so other strategies and refuters may judge it and rule 3's "every strategy declined" gives AT19's `Unsupported` | rule 3 had no path from a check refusal to `Unsupported`; the earlier proposal made G0's limit a global block, which §18.70 rejects | 4.1, 4.2, 4.3 (G-A-i(f)) |
 | T-R0b §5.3 | Record the online adapter's choice: an ambiguous several-tail read-back is a `Heuristic` candidate | §5.3 leaves it to "the strategy's adapter (argued)" | 4.3 (G-A-i(g)) |
 | T-R0a §9 AT7 | Add the premise that each refuter's search is monotone in its hint set (per-hint fuel) | canonical sorting does not make adding a strategy safe for Contradiction | 4.1 |
@@ -2166,10 +2458,10 @@ alternatives a finding offered, the choice is stated.
 
 | Finding | Verdict | Where applied, and the choice made |
 |---|---|---|
-| B1 erased rows unenforced | applied | Gate G-erased (§3); Task 0.7 drafts the marker or check; census category (3.5); Task 4.6 cannot land without the ruling, blocking those declarations, or an explicit Q3 amendment; G-exempt narrowed to marker kinds |
+| B1 erased rows unenforced (superseded, §11) | applied | Gate G-erased (§3); Task 0.7 drafts the marker or check; census category (3.5); Task 4.6 cannot land without the ruling, blocking those declarations, or an explicit Q3 amendment; G-exempt narrowed to marker kinds |
 | B2 narrowing under-characterized | applied | Review Focus 1 and §8 item 1 list every class (markers including `Deferred` and `DataOverRecords`; erased rows; `BQ` at type variables, which G-ValidR does not cover; `BQ` pending G-ValidR; RT8/G0 refusals; ambiguous read-backs); census one category per class with program counts (3.5); window table the rest (4.5) |
 | B3 Phase 6 presupposes the switch | applied | All of Phase 6 gated on G-switch and after 4.6 (phase table, Phase 6 preamble, task headings); no shadow variants specified. 4.6's rollback qualified: exact only until a Phase 6 task lands |
-| B4 no checked-IR route after the switch | applied | Task 4.3's certificate carries `checked`; Task 4.6 states the pre-D1 route and adds test/r0-lowered-ir.test.mjs and row `r0-ir-not-read-back`; other strategies' acceptance gives `NoWitness`/`AtS` until D1 |
+| B4 no checked-IR route after the switch (superseded, §11) | applied | Task 4.3's certificate carries `checked`; Task 4.6 states the pre-D1 route and adds test/r0-lowered-ir.test.mjs and row `r0-ir-not-read-back`; other strategies' acceptance gives `NoWitness`/`AtS` until D1 |
 | Item 4 options | applied | §3.1's table, options A-E with consequences, decisions amended, authorization and census placeholders; no option chosen. C amends §18.66 decision 1, D amends §18.69 Q3 |
 | S1 `cx` before 5.2 | applied | 4.5 uses `shadows: []`; 5.2 re-runs the table with `[cx]` |
 | S2 `RecordedProblem` in Phase 1 | applied | Opaque type and Internal module in Task 1.1; `emptyProblem` in Features.Check.Generate; 3.1 fills the fields |
@@ -2225,3 +2517,57 @@ G-exempt (argument).
 **Unchanged by this revision:** the O24 answers of §18.70 (they
 concern the proof tranche, which this plan does not schedule), and
 every task's internal steps other than those listed above.
+
+## 12. Re-review of 38c045e
+
+A read-only re-review of this plan at 38c045e reported two blocking
+findings (B1-B2), nine should-fix (S1-S9) and five nits (N1-N5), and
+found the earlier review's findings applied. Before acting, each code
+citation was checked at 38c045e: RowOutcome.purs:67-91 and :85,
+Reject.purs:49 and :54, UnifyRecord.purs:93-100, RowMerge/End.purs:
+108-113, Improve.purs:41-60, Command.purs:20, Main.purs:21,
+README.md:564, shell.test.mjs:18, program.test.mjs:35,
+Function.purs:72-77, docs/language.md:219,
+research/division-campaign/integration/measure/instrument.mjs and
+test/row-merge-entry.mjs. All hold. Every finding is applied; none is
+rejected.
+
+| Finding | Verdict | Where applied, and the choice made |
+|---|---|---|
+| B1 4.1-4.2 need Task 5.1 | applied | Task 5.1 joins the first tranche, ordered before 4.1 (tranche table and order, §2, Task 5.1's preamble). Its registry is empty, and `TheoremRef` can be made only in the new hidden registry module Features.Check.Refute.Theorems, which defines none and which only Refute.Rules may import, for the type alone (§1, Task 5.1, a structure rule). "Does not authorize" says 5.1 is not live refutation. The exclusion reason now applies to 5.2 only. 4.1 consumes `trustedRefuter` from 5.1 |
+| B2 "fix the defects" breaks the acceptance promise | applied | "Defects found inside the tranche" paragraph; Task 4.3 Steps 1 and 6; Task 4.5's defect rows; §7 Phase 4. Recorder and read-back defects (test-only code) are fixed in the tranche; a defect attributed to `checkFunction` goes to docs/findings.md and BACKLOG.md with its fixture and evidence, and becomes a window.json row; its fix needs separate authorization |
+| S1 §3.2(a) atoms reach G0 | applied | §3.2, G-A-i(f), Task 4.1 rule 3 and test, Task 4.2 interface and test `G0 leaves open atoms to §3.2(a)`, Task 4.3 RT8 classes labelled (a), Task 4.5 row. G0 does not judge `openRequirements(P)`; an atom open only under σ is refused as `RequirementOpen` (proposed), which is not a `SearchFault` and gives `Unsupported RequirementAtoms` |
+| S2 tasks before their dependencies | applied | Task 3.5 runs after 4.2 (kept whole rather than split with 4.5); RT7's determination moves to Task 4.3 (G-Recon's evidence row and the acceptance map updated); test/r0-corpus.mjs is created in Task 0.2, earlier than the review's 1.2, because 0.2's domain already includes the corpus |
+| S3 Task 2.1 misses existing code | applied | `classify` is built on RowOutcome's `classified`, one name-by-name match; Reject.purs (the :54 catch-all), RowOutcome.purs, and the `r005b-quiet` comment added to the files; UnifyRecord.purs and End.purs listed for review, unchanged by the mapping; Task 0.2's acceptance names RowOutcome.purs:84-85 |
+| S4 the CLI change is a wire-format change | applied | JSON Lines chosen, after checking the tests: `wireText` is unindented `JSON.stringify` and `console.error` adds the newline, so one-diagnostic runs are byte-identical and every existing whole-stderr `JSON.parse` keeps passing on them; a JSON array would break all of them. The CLI change is Task 1.2's Step 6, its own commit; `Outcome`, Main.purs, README.md:564 and program.test.mjs added; the user-visible paragraph says it changes machine-readable output |
+| S5 Task 2.2 incomplete | applied | Reject.purs:49, docs/language.md:219, the first-diagnostic snapshot and any pinned r019 fixture added to 2.2; 2.2 and 1.2's README line added to the docs constraint; Review Focus 2 and §7's Phase 1 row reworded |
+| S6 Task 0.2 can't see passes | applied (scratch-copy instrumentation) | The src-export route was weighed first, as preferred: it leaves acceptance unchanged and is test-visible, but an export beside `improve` cannot observe the passes made inside `compile` and RowEntry, and observing them would change `improve`'s type and callers. So test/r0-exhausted-support.mjs patches a scratch copy of output/ as instrument.mjs does, reassigning the module-level `pass`; problems run through test/row-merge-entry.mjs via `WAXWING_OUTPUT`, programs through the copy's `compile` |
+| S7 `onlineSearch` has no program context | applied | `OnlineContext = { holders, program }`; `onlineSearch ∷ OnlineContext → Budget → …` calls the exported `recheck`, which builds the per-declaration `Env`; `online ∷ OnlineContext → Strategy` injected from `Program.Compile` and instantiated per program by `checkProgram`; RT3 unaffected. The review's `Env` parameter was not used because `Env` is per declaration (Function.purs:42-61) and `checkFunction` also needs `holders`. Function.purs is no longer modified |
+| S8 G-A-i(e) changes an author decision | applied | Moved to §3.A as G-Q13 (reading), a reading of §18.69 Q13 for the author to confirm; 4.1 and 4.3 build the proposed form labelled as such; §8.1's row waits on the reading |
+| S9 Task 0.3's open outcomes | applied | `ElabFault` after a Cov-passing witness is a broken invariant, carried as `BrokenInvariant` (proposed) and stopping the run; `Free` elaborates to today's hole |
+| N1 superseded §10 rows | applied | B1 and B4 marked "(superseded, §11)" |
+| N2 who signs off | applied | §3: a technical gate's sign-off is its reviewer's report; "owner" names a document, and what an owner's agreement means is stated; §8.1's lead says which rows the author rules |
+| N3 "decision 9" | applied | "§18.66 decision 9" in the tranche section and Task 1.3 |
+| N4 `g0Guard`'s unitary-fragment declines | applied | Stated in Task 4.2; its own window-table row in 4.5 |
+| N5 `staticRules` before `Tables` | applied | Deferred to Task 3.2; Task 2.3 classifies at raise sites only |
+
+**First tranche, in order:** 0.1, 0.2, 0.3, 0.4, 0.5, 0.7; 1.1, 1.2
+(Step 6, the CLI, as its own commit, held back under option (i)),
+1.3; 2.1, 2.2 (per the author's choice), 2.3; 3.1; 3.3 Steps 1-3;
+3.2; 3.3 Steps 4-5; 3.4; 5.1; 4.1 with 3.6; 4.2; 3.5; 4.3; 4.4; 4.5.
+
+**For the author.** User-visible changes, all optional under (i):
+Task 1.2's CLI step changes the machine-readable output on stderr
+from one JSON object to JSON Lines (identical bytes when there is one
+diagnostic); Task 2.2 moves codes and texts to `E_UNRESOLVED`, which
+moves first diagnostics. Readings to confirm: G-Q13 (a broken
+invariant inside an untrusted search does not stop the run).
+Proposed encodings for the end-of-tranche review: `RequirementOpen`
+(G-A-i(f)) and the `OnlineContext` parameter.
+
+**Current gate lists.** Author decisions: G-switch (timing), G-erased
+(policy), G-ValidR (policy points), G-exempt (policy), G-R019,
+G-R019-visible, G-codes, G-6b, G-Q13 (reading). Technical gates:
+G-D1 (mechanism), G-forced (representation), G-Recon, G-A-i
+(encodings (a)-(d), (f), (g)), G-effects, G-coverage, G-erased
+(criterion), G-ValidR (checks), G-exempt (argument).
