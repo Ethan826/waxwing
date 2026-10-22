@@ -8193,3 +8193,10 @@ unrelated README/backlog/direction-plan edits remain untouched.
   class-c refusals only on a sound rule from original atoms or a
   checked counter-instance. Decision document for the author; nothing
   started.
+- **Revision 2 accepted as the planning basis** (dossier §18.66):
+  generate-then-decide; single-tail R010 baseline; finite-reachable-key
+  theorem per component; per-name typed witness metadata; ground
+  re-check as internal consistency; restricted C8 and a selection
+  contract; G1 and G2 held; distinct Unresolved code. Design tranche
+  authorized and launched: T-R0a/b, T-R0c, termination and witness
+  statements (one owner), CX statements, T-R0e. Documents only.

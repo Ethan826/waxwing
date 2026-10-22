@@ -5199,3 +5199,60 @@ Other fixes: `walk`'s admissible split stated with its condition
 fragment of `eval_split`, and unrecorded bounded evaluations labelled
 as such. **Ready as a decision document; nine decisions for the
 author (its §9); no candidate tranche started.**
+
+### 18.66 Revision 2 accepted as the planning basis; decisions; design tranche (2026-10-21)
+
+**The author accepted research/division-campaign/remedy/requirements.md
+revision 2 as the planning basis** (it identifies the blockers without
+claiming that the existing compiler satisfies the proposed boundaries)
+and asked for it to be pushed with the earlier records. Decisions:
+
+1. **R0: generate-then-decide.** Syntax-directed generation of the
+   complete problem; the online solver is a search strategy. Original
+   obligations and source origins preserved. The new architecture is
+   not built around tainting and recovery from solver-chosen bindings.
+2. **R019: the documented single-tail rule is the justified baseline.**
+   Pure unions of caller row variables are investigated as a possible
+   extension, with a termination argument. The implementation is
+   neither narrowed nor its broader behavior silently endorsed; the
+   compatibility decision stays explicit.
+3. **Termination: a finite-reachable-key theorem per recursive
+   component.** Witness-bound names are mechanically distinguishable
+   from unconstrained holes. Neither determinism nor the 10,000-key
+   limit substitutes for the theorem.
+4. **Witness representation: per-name typed metadata** as the design
+   direction, outside certificate-specific formats, reusing existing
+   type expressions where justified. A strategy may establish validity
+   without supplying a compilation witness, but that alone cannot
+   authorize lowering. Solving per specialization key is not an
+   implicit fallback.
+5. **Ground re-check** at specialization keys, as an internal
+   consistency check: which obligations it checks and how it obtains
+   the correct bindings are stated. Failure means an internal
+   inconsistency or unsupported path, never that the program is
+   invalid.
+6. **G3: a restricted C8 argument and a selection contract;** no rule
+   chosen. It respects the complete typing requirements and
+   admissibility, preserves forced and written choices, and applies
+   only where behavior preservation is justified.
+7. **G1: neither remedy proceeds yet.** Guards remain a candidate,
+   leaf selection an alternative. First R0, termination and the
+   witness contract; the `chain3` and partition claims are stated
+   precisely before being relied on.
+8. **G2: implementation deferred;** the witness interface acknowledges
+   field-type references as an extension requirement, so deferral is
+   not an architectural prohibition.
+9. **Unresolved gets a distinct error code,** with structured reasons
+   separating inference failure, unsupported features and resource
+   limits; wording and fixture migration belong in its implementation
+   plan.
+
+**Authorized design tranche** (documents, statements and focused
+probes; no compiler changes; no new proofs before statement review):
+T-R0a and T-R0b (generation/verdict interface; syntax-directed
+recorder specification); T-R0c (refusal audit and bounded evidence,
+independently); termination and per-name witness statements,
+coordinated through one interface owner; CX's exact statements, without
+a refuter implementation; T-R0e (separating validity, policy,
+admissibility and support boundaries). A concrete implementation plan
+comes back once those interfaces and obligations are reviewed.
