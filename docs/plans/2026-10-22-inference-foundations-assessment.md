@@ -21,8 +21,9 @@ for checked), proposed, unresolved.
 ## 0. The answer in brief
 
 - **What is established is a checking theory, not an inference
-  theory.** For the research model, `openCharacterization` (proved)
-  says when a *given* signature is valid (`ValidOpen`), and
+  theory.** For the research model, `openCharacterization` (proved,
+  for `Scoped` problems with fresh labels) says when a *given*
+  signature is valid (`ValidOpen`), and
   `cellOpenImpl` (proved) gives a sound but incomplete checker for it
   (`d5_refused`, proved). The published counterpart is checking an
   annotated binding against its declared type: OutsideIn(X)'s rule
@@ -35,17 +36,23 @@ for checked), proposed, unresolved.
   normal form. OutsideIn(X) needs the entailment requirements R1-R8
   and a sound, guess-free simplifier. **None of these is established
   for Waxwing.** Two Lean results are partial evidence: entailed
-  substitutions preserve solutions (`binding_correspondence`), and
-  source-derived `D` is satisfiable (`clauseOnly_satisfiable`).
+  substitutions preserve solutions (`binding_correspondence`), and a
+  clause-only `D` is satisfiable (`clauseOnly_satisfiable`). Source
+  signatures produce that form under recorder-rules G4-G8, which are
+  proposed.
 - **Three kinds of guarantee stay separate.** "Principal when it
   succeeds" (OutsideIn(X) Theorems 3.2 and 5.2), "every typable program
   has a principal type" (Jones 1995 Theorem 2; HM(X) Corollary 1, as
-  reconstructed) and complete inference (HM(X) Theorem 2, Koka
-  Theorem 4) have different hypotheses. OutsideIn(X) is incomplete by
-  design. Waxwing promises none of the three today.
+  reconstructed) and complete inference (HM(X) Theorem 2, as
+  reconstructed; Koka Theorem 4) have different hypotheses.
+  OutsideIn(X) is incomplete by design. Waxwing promises none of the
+  three today.
 - **Record composition is where the published row theories stop.**
-  Rémy-style rows do not support concatenation without disjunction or
-  ad hoc constraint forms (Pottier and Rémy, printed p. 488-489).
+  EMLTI's Rémy-style rows have no concatenation. The chapter cites
+  Sulzmann (2000), whose HM(X) instances add "new, ad hoc constraint
+  forms" for record extension and concatenation, and notes that Wand's
+  finite rows with duplicate labels already need "a four-way
+  disjunction" for extension (Pottier and Rémy, printed p. 488-489).
   Waxwing's ∀rigid/∃flexible validity admits witnesses that depend on
   the rigid instance, so a valid written signature need not be a
   substitution instance of the scheme inferred from its body (argued,
@@ -108,9 +115,10 @@ Facts the assessment maps against (cited):
   declaration (r0/recorder-rules.md §1, §2.4, proposed). One
   quantifier level per declaration: rigid variables universal,
   flexible ones existential and dependent on every rigid one
-  (recorder-rules §5.1, proposed). The online solver is a search
-  strategy and never returns a verdict (r0/generation-interface.md §1,
-  G-search).
+  (recorder-rules §5.1, proposed). Under decision 1 the online solver
+  becomes a search strategy that never returns a verdict
+  (r0/generation-interface.md §1, G-search, proposed); today's checker
+  still returns refusals from it (requirements §2.2).
 - **The problem's meaning is `ValidOpen`** of ⟨rigid variables, `D`,
   `B`⟩ (requirements.md §1; Typed/Bridge/Valid.lean:17). Requirement
   atoms (`pr`, `cmp`) are recorded, but their semantics `ValidOpenR` is
@@ -147,7 +155,7 @@ Facts the assessment maps against (cited):
   which interleaves generalization with unification (rule S-Pop-Let,
   printed p. 445), is proved correct only for an equality-only free
   tree model (printed p. 438; Lemmas 10.6.8-10.6.10, printed
-  p. 449-450).
+  p. 450).
 - HM(X)'s algorithm W interleaves the two: each rule combines its
   premises' constraints and normalizes them (§4.2, PDF p. 5).
   Generalization `gen` puts the whole normalized constraint into the
@@ -261,11 +269,11 @@ proofs:
   (§3, PDF p. 3); "the only condition that a simplifying function must
   satisfy is that P ⇔ (simp P)" (§7, PDF p. 9). Rule (Imp) applies a
   substitution S when S improves P: ⌊P⌋ = ⌊SP⌋, the satisfiable
-  instances are unchanged, and S introduces only new variables (§4.1,
-  PDF p. 4). With improvement the algorithm is no longer complete for
-  the ordinary instance order (§5, PDF p. 6); Jones moves to the
-  satisfiable-instance order ≤sat, which "is not preserved by
-  substitution" (footnote 3, PDF p. 6).
+  instances are unchanged, and any variable S involves that is not in
+  P is new (§4.1, PDF p. 4). With improvement the algorithm is no
+  longer complete for the ordinary instance order (§5, PDF p. 6); Jones
+  moves to the satisfiable-instance order ≤sat, which "is not
+  preserved by substitution" (footnote 3, PDF p. 6).
 - OutsideIn(X): a solution (Qr, θ) is sound when Q ∧ Qg ∧ Qr ⊩ θQw
   (S1) and guess-free when, in addition, Q ∧ Qg ∧ Qw ⊩ Qr ∧ Eθ (P1),
   where Eθ is θ read as equations (Definition 3.2, PDF p. 20). Only
@@ -281,21 +289,24 @@ proofs:
 - **Entailed substitutions preserve solutions:**
   `binding_correspondence` (proved, Binding.lean:110). If every
   solution of `C` satisfies σ's equations, then `C` and `eqs σ ∧ Cσ`
-  have the same solutions. This is OutsideIn(X)'s P1 condition, and
-  Jones's improvement condition, for equational bindings over the
-  model's atoms.
+  have the same solutions. For equational bindings over the model's
+  atoms and plain `Sat`, this matches OutsideIn(X)'s P1 condition and
+  is sufficient for Jones's improvement.
 - **The boundary of refusals.** C1-E (an entailed substitution
   followed by a clash refutes the signature) is expected true; C1-X
-  (the same after any substitution) is expected false, refuted by
-  example X6 (refute/statements.md §5; neither is proved). A
-  contradiction reached through a guessed binding is not evidence.
+  (the same after any substitution) is expected false. Example X6
+  states a refutation, which the adversarial review proved in a
+  scratch copy, not in the repository (refute/statements.md §5, §6;
+  neither C1-E nor C1-X is proved). A contradiction reached through a
+  guessed binding is not evidence.
 - **Which solver steps are guess-free.** `shareTails`'s binding is
   most general on labels, whatever the field types (statement P1,
   argued; refusal-audit.md §4). With a rigid tail beside an unknown it
   would not be (P2, checked in the bounded model), but that case is
-  unreachable today (P3, argued, not instrumented). Rule H assumes an
-  indivisible rigid row and rejects valid programs (`route`, c01, b03,
-  checked; class d).
+  unreachable today (P3, argued, not instrumented). Some of rule H's
+  exclusions are unsound: one on written labels, others that assume an
+  indivisible rigid row (refusal-audit §3.7). As a result rule H
+  rejects valid programs (`route`, c01, b03, checked; class d).
 
 **Consequence (argued).** Under decision 1 a non-entailed step is a
 search choice, which is harmless for validity because a candidate is
@@ -324,8 +335,8 @@ simplifier does not terminate — that is, it says nothing about
 completeness" (PDF p. 23), and that "the absence of completeness is by
 design" (PDF p. 51). EMLTI calls a sound and complete generator "the
 analog of the existence of principal type schemes" (printed p. 430), but
-its principal solved forms exist only for equality models (Lemmas
-10.2.19 and 10.2.21, printed p. 421-422).
+its principal solved forms are established only for the equality-only
+free tree model (Lemmas 10.2.19 and 10.2.21, printed p. 421-422).
 
 **Two inferences this document does not make.**
 
@@ -502,8 +513,9 @@ checking such signatures still stops at the R005B placeholder
 
 This exposes the question of order (argued). The author's written
 signature `submit(doc: { ...r }, inbox: { ...s }, archive: { ...s2 })
-where s disjoint s2` is valid (requirements §7: argued equivalent to
-`divide5Sig [id]`, for which `d5_open` is proved). Yet no substitution
+where s disjoint s2` is argued valid (requirements §7: argued
+equivalent to `divide5Sig [id]`, for which `d5_open` is proved; a
+reviewer's bounded evaluation, unrecorded, agrees). Yet no substitution
 of written record expressions over `r`, `s`, `s2` for `u`, `t`, `q`
 makes the written signature an instance of the inferred one. Record
 syntax has no "r restricted to labels outside s"; `without` removes
@@ -543,8 +555,9 @@ PDF p. 8-10).
 1. **An equation atom between compositions in `where`.** Today only
    `lacks` and `disjoint` are writable; equations in declarations are
    deferred (§18.54 item 2). Jones's `has` over a composition would
-   also serve, but Jones's table has `has` only on a row variable
-   (Fig. 1, PDF p. 2).
+   also serve. Jones's predicates take a record type `r` (Fig. 1,
+   PDF p. 2), but the paper has no record concatenation type to apply
+   `has` to.
 2. **A variable that occurs only in constraints.** `w` is ambiguous by
    Jones's syntactic test (PDF p. 5) but determined by `a` and `b` when
    `{ ...a, ...b }` holds `id`. A determinacy-based rule (EMLTI
@@ -555,15 +568,15 @@ PDF p. 8-10).
    (`a = { id: Int }`, `b = w = {}`); in general a check is required
    (§4).
 4. **A checker beyond `LDFragment`.** The scheme is `Scoped` (every
-   `D` variable is a signature variable), so the characterization
-   states its validity; the cell checker refuses it as outside its
-   guard, giving Unresolved.
+   `D` variable is a signature variable), so, given fresh labels, the
+   characterization states its validity. The cell checker's guard
+   returns false on the `eq` atom, which is read as Unresolved.
 
 **What retention does not settle.** Retaining the relationship moves
 the split to call sites. There it can still be unforced: a caller
-holding a ground record `{ x, y }` with `s = s2 = {}` has three valid
-splits into `u`, `t`, `q` (requirements §5.2, corrected table). G3
-remains.
+holding a ground record `{ x, y }` with `s = s2 = {}` has several
+valid splits into `u`, `t`, `q`: six when the lacked label is `x`
+(the corrected table in requirements §5.2 lists three). G3 remains.
 
 ## 10. Inferring a valid contract versus choosing a compilation witness
 
@@ -604,29 +617,29 @@ references are those of §1.
 | O2 | Decidable entailment (HM(X) Def. 1, PDF p. 3) | deciding `ValidOpen`, i.e. `D ⊩ ∃flex. B` | `openCharacterization` (Typed/Bridge/ProofInstantiateSound.lean:45) characterizes; `cellOpenImpl` sound; `d5_refused` incomplete; `decideCall_correct` decides satisfiability only | no executable decision procedure (§18.46) | none now; executable construction is a separate authorized step | unresolved |
 | O3 | Cylindric system E1-E4 and type axioms F1-F6 (HM(X) Defs. 2, 6, PDF p. 3-4, reconstructed) | ∃ over flexible variables; `eq` atoms | `subst_sat`, `binding_correspondence` bear on F4, F6 | axioms unstated for Waxwing's Sat-entailment | state IF2; check the printed PDF first | unresolved |
 | O4 | A minimal normalization exists (HM(X) Def. 8, PDF p. 5) | one most general residual per declaration | `mguExists` (Typed/MGUExists.lean:80): finite mgu per pattern and cell list | per-pattern, not per problem; §9 suggests none in written syntax | state IF4 with an explicit order | unresolved |
-| O5 | Entailment requirements R1-R8 (OutsideIn(X) Fig. 3, PDF p. 14) | Waxwing's semantic entailment | R1, R2 hold for any semantic entailment | R3 (substitution) and R8 (substitutivity) unstated | include in IF2 | argued |
-| O6 | Improvement preserves satisfiable instances (Jones §4.1, PDF p. 4); guess-free P1 (OutsideIn(X) Def. 3.2, PDF p. 20) | an entailed binding preserves the solution set | `binding_correspondence` (Binding.lean:110) | rows: field types and composition beyond equations | reuse in IF3 | proved |
-| O7 | A sound, guess-free simplifier (OutsideIn(X) Fig. 8, PDF p. 21; Fig. 15, PDF p. 42) | solver steps used for exported schemes are entailed by original atoms | `shareTails` P1 (refusal-audit §4); rule H known not guess-free (checked rejections) | no simplifier stated; P3's reachability not instrumented | state IF3 | argued |
-| O8 | Simplification needs only equivalence (Jones (Simp), §3, PDF p. 3; §7, PDF p. 9) | normalizing a recorded problem keeps its meaning, definedness atoms included | recorder-spec §5.3 normalization; C1-M `ValidOpenAntitone` stated (Typed/Refute/Rules.lean:44), expected true | not proved | prove C1-M when CX's statements are approved | proposed |
-| O9 | Satisfiability may be tested during or after inference (HM(X) Lemmas 8-9, PDF p. 7); reject obviously inconsistent constraints (OutsideIn(X) §7.3, PDF p. 56) | source-derived `D` is satisfiable | `clauseOnly_satisfiable` (Sig/SourceCampaign.lean:82) | exported equation atoms (§9 case B) fall outside it | state IF5 | proved |
+| O5 | Entailment requirements R1-R8 (OutsideIn(X) Fig. 3, PDF p. 14) | Waxwing's semantic entailment | R1, R2 (and R4-R7 for plain `Sat`) argued to hold for plain `Sat` entailment; entailment under `ValidOpen` undefined | R3 (substitution) and R8 (substitutivity) unstated | include in IF2 | unresolved |
+| O6 | Improvement preserves satisfiable instances (Jones §4.1, PDF p. 4); guess-free P1 (OutsideIn(X) Def. 3.2, PDF p. 20) | an equational binding σ whose equations every solution of `C` satisfies preserves `C`'s solution set, under plain `Sat` over the model's atoms (a sufficient condition for Jones's improvement) | `binding_correspondence` (Binding.lean:110) | lifting to `ValidOpen` (σ entailed under each rigid instance, binding only flexible variables) is not stated | reuse in IF3 | proved |
+| O7 | A sound, guess-free simplifier (OutsideIn(X) Fig. 8, PDF p. 21; Fig. 15, PDF p. 42) | solver steps used for exported schemes are entailed by original atoms | `shareTails` P1 argued (reviewer: correct; refusal-audit §4); P2 bounded-checked; rule H known not guess-free (checked rejections); P3 argued only | no simplifier stated; P3's reachability not instrumented | state IF3 | unresolved |
+| O8 | Simplification needs only equivalence (Jones (Simp), §3, PDF p. 3; §7, PDF p. 9) | normalizing a recorded problem keeps its meaning, definedness atoms included | recorder-spec §5.3 normalization; C1-M `ValidOpenAntitone` (stated, Typed/Refute/Rules.lean:44, expected true) gives only one direction: dropping atoms can make an invalid problem valid, which is why §5.3 keeps `Defined` atoms | not proved | prove C1-M when CX's statements are approved | proposed |
+| O9 | Satisfiability may be tested during or after inference (HM(X) Lemmas 8-9, PDF p. 7); reject obviously inconsistent constraints (OutsideIn(X) §7.3, PDF p. 56) | a clause-only `D` (`lacks`/`disjoint` only) is satisfiable by a finite assignment; that source declarations yield clause-only `D` follows from recorder-rules G4-G8 (proposed) | `clauseOnly_satisfiable` (Sig/SourceCampaign.lean:82) | exported equation atoms (§9 case B) fall outside it | state IF5 | proved |
 | O10 | Principal when it succeeds (OutsideIn(X) Thms 3.2, 5.2, PDF p. 23, 46) | an accepted inferred scheme is most general | none | needs O5, O7 and an instance order | decide whether INF001 promises it | unresolved |
 | O11 | Principal satisfiable types (Jones Thm 2, PDF p. 7; TV(A) = ∅, no redundant `let`s) | every typable declaration has a principal inferred scheme | none; §9 case A suggests order-dependence | instance order; record composition | IF4 first | unresolved |
 | O12 | Complete inference (HM(X) Thm 2, PDF p. 6-7, reconstructed; Koka Thm 4, PDF p. 8) | the inferring checker accepts every specified program | `d5_refused` shows the cell checker incomplete | completeness not promised anywhere | record as an explicit non-goal or a separate claim (register) | unresolved |
 | O13 | Recursion monomorphic inside its definition (EMLTI Ex. 10.7.6, printed p. 452); polymorphic recursion inference undecidable (same page) | inferred rows in a recursive component are shared within it, or written | signatures make today's recursion checked, not inferred | INF001 B6 termination | state IF8 | proposed |
 | O14 | Generalize only at the total effect (Koka GEN, Fig. 3, PDF p. 6-7) | named functions are values; `let` and lambdas stay monomorphic | language.md Effects ("`let` is monomorphic") | local generalization unplanned | none until local generalization is designed | argued |
-| O15 | Row unification terminates with the tail side condition (Koka Fig. 6, PDF p. 7-8) | effect-row unification | ADR 010; regression row `fx-side-condition` | proof deferred by Koka to [14], not read | read [14] when INF001's design starts | experimentally checked |
-| O16 | No uncaught exception when `exn` ∉ ε (Koka Thm 6, PDF p. 11) | no uncaught abort of a `Fail` family absent from the row | test/fx-*.test.mjs, test/fx008-*.test.mjs, oracle interpreters (language.md Effects) | per-family statement with shared keys and marks | state IF7 | experimentally checked |
+| O15 | Row unification terminates with the tail side condition (Koka Fig. 6, PDF p. 7-8) | effect-row unification | ADR 010; regression row `fx-side-condition` (scripts/regression-fx.mjs): removing the side condition makes the probe time out (necessity on one probe); termination with it is exercised only by the passing suite | proof deferred by Koka to [14], not read | read [14] when INF001's design starts | experimentally checked |
+| O16 | No uncaught exception when `exn` ∉ ε (Koka Thm 6, PDF p. 11) | no uncaught abort of a `Fail` family absent from the row | related differential and FX008 soundness tests (Go vs reference interpreter; no escape from cleanup); no test states the per-family property | per-family statement with shared keys and marks | state IF7 | proposed |
 | O17 | Ambiguous types rejected or determined (Jones §4.3, PDF p. 5; OutsideIn(X) §6.1, PDF p. 47; Def. 9.1, PDF p. 77) | holes and constraint-only variables are determined, or behavior is independent of them | ADR 007 holes; test/poly-properties.test.mjs; hole contract (witness §1.5) | residual constraints break ADR 007's condition 1 | state IF6 | proposed |
 | O18 | Elaboration into a typed core (OutsideIn(X) §8.1, PDF p. 70; no theorem in any source) | explicit dictionaries survive inference; per-name witnesses for rows | C001 assurance gates; witness §4 (K, V, Lay, Adapt-N) | no elaboration relation stated for inferred schemes | INF001 design states it (register row INF001) | proposed |
 | O19 | Coherence of elaborations (Jones, *Coherence for Qualified Types*; cited by the register, not inspected here) | permitted elaborations agree in meaning | none | source unread; G3's forcedness is the record analogue | read the source before INF001's design review | unresolved |
-| O20 | Concatenation needs disjunction or new constraint forms (EMLTI printed p. 488-489) | disjoint composition with its own validity theory | `openCharacterization`; `d3bExistsWithin` (Typed/Universality.lean:111) | a scheme-level (inference) account | IF4 | proved |
+| O20 | Rémy-style rows without concatenation; Sulzmann (2000) adds "new, ad hoc constraint forms" for extension and concatenation, and Wand's finite rows with duplicate labels need "a four-way disjunction" for extension (EMLTI printed p. 488-489) | disjoint composition with its own validity theory | checking-level validity characterized (`openCharacterization`, `d3bExistsWithin` (Typed/Universality.lean:111); Scoped, fresh labels) | a scheme-level (inference) account | IF4 | unresolved |
 | O21 | Annotated bindings solved completely by one substitution (OutsideIn(X) BindA, Fig. 7, PDF p. 19; PDF p. 41) | Waxwing checks ∀rigid ∃flexible, witnesses may depend on the rigid instance | `d5_open` (Typed/Cell/Proofs/W7/Divide5.lean:98) | that no uniform written substitution exists for `divide5` is argued only | include in IF4 | argued |
 | O22 | Termination of solving (OutsideIn(X) §7.7, PDF p. 67-69; EMLTI Lemma 10.6.8, equality model) | generation total; strategies under budgets; specialization keys finite | G-total (proposed); FK-0, FK-W (witness §2.4, proposed) | none proved | the termination stream, after statement review | proposed |
 | O23 | None: no source addresses witness selection, R010 or lowering | G3, R010, Lay stay separate obligations | boundaries §1; requirements §5 | as recorded in requirements §11 | keep out of inference claims | unresolved |
 
-Counts: proved 3 (O6, O9, O20); argued 4 (O5, O7, O14, O21);
-experimentally checked 2 (O15, O16); proposed 6 (O1, O8, O13, O17,
-O18, O22); unresolved 8 (O2, O3, O4, O10, O11, O12, O19, O23).
+Counts: proved 2 (O6, O9); argued 2 (O14, O21); experimentally
+checked 1 (O15); proposed 7 (O1, O8, O13, O16, O17, O18, O22);
+unresolved 11 (O2, O3, O4, O5, O7, O10, O11, O12, O19, O20, O23).
 
 ## 12. Recommended statements (statements only)
 
@@ -704,9 +717,9 @@ proof work (dossier §18.66: "no new proofs before statement review").
    foundation in a design, or is a reviewed prose argument enough for
    the first INF001 design?
 
-## 15. Prose review
+## 15. Review record
 
-Reviewed 2026-10-21 with the `humanized-prose-review` skill: a
+**Prose review.** Reviewed 2026-10-21 with the `humanized-prose-review` skill: a
 catalogued audit, a rewrite, a re-review, then an editorial pass on
 Garner's, Fowler's, Orwell's and Williams's plain-style principles.
 Findings fixed: an overstated claim in §0 (a valid signature "need not
@@ -720,3 +733,38 @@ unclear "caller's caller". Every fact, location and qualification was
 kept. Deliberate patterns kept: bold lead sentences in lists (the
 repository's plan style) and contrasts that correct a likely misreading
 (checking versus inference; Koka's scope).
+
+**Accuracy review.** A reviewer checked about 50 source locations
+against the converted texts (HM(X) 12, Jones 8, EMLTI 17, OutsideIn(X)
+16, Koka 12) and every cited Lean name at its line, and reported 20
+findings; all were applied on 2026-10-21. Corrections:
+
+- **Citation.** EMLTI does not say Rémy-style rows need disjunction or
+  ad hoc forms for concatenation: its rows have none, the ad hoc forms
+  are Sulzmann's (2000), and the four-way disjunction is Wand's, for
+  extension (§0, O20). Also corrected: the page of Lemmas
+  10.6.8-10.6.10 (§3), Jones's `has` taking a record type (§9 case B)
+  and the paraphrase of Jones's new-variable condition (§5).
+- **Statuses.** O20 proved → unresolved: only a checking-level
+  characterization is proved, and a narrower interpretation would not
+  match an inference requirement. O16 experimentally checked →
+  proposed: no test states the per-family property. O5 and O7 argued
+  → unresolved: entailment under `ValidOpen` is undefined, and one
+  argued rule is not an argued simplifier. Counts recomputed.
+- **Narrowed claims.** O9 and §0 now say clause-only `D`, with source
+  signatures producing it under proposed G4-G8; O6 and §5 restrict
+  `binding_correspondence` to plain `Sat` and call it sufficient for
+  Jones's improvement; `openCharacterization` carries `Scoped` and
+  fresh labels (§0, §9 case B); HM(X) Theorem 2 is marked
+  reconstructed in §0; EMLTI's solved forms are "established only" for
+  the free tree model (§6); §9 case A's validity is argued; X6 is a
+  refutation proved only in a scratch copy (§5).
+- **Wording.** The online solver's verdict-free role is proposed, not
+  current (§2); rule H's unsound exclusions are named, with the review's
+  "Rule H's exclusions are unsound" corrected to "some", since
+  refusal-audit §3.7 finds some of them sound; O8's C1-M evidence gives
+  one direction only; O15's regression row shows necessity on one
+  probe; §9's split count is six, not three.
+
+The changed passages were re-reviewed with the `humanized-prose-review`
+skill, keeping every fact and qualification.
