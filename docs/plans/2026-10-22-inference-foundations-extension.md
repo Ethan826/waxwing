@@ -531,8 +531,11 @@ passed to `decode` or `instance`, or returned by `let`, get values
 (Solver docs). Under O27, Cov's domain should become "the variables
 `build` requests", so that no separate positional list can drift from
 it. An opaque `build` does not expose that set: it is defined only if
-requests are tracked or the builder interface is restricted, and
-otherwise Cov needs a coverage theorem (D1). Auxiliaries still need
+requests are tracked or the builder interface is restricted (D1 (a),
+(b)). Otherwise (D1 (c)) Cov's domain is fixed independently, for
+example as the problem's non-auxiliary flexible variables, and a
+coverage theorem states that the variables `build` requests lie in
+it. Auxiliaries still need
 values for RC2, evaluated from their defining atoms (recorder-rules
 §5.3), a use Pottier never makes. *Separating program:* E26 `p.a`,
 whose auxiliary `⟨p, rest⟩` has no checked-IR position. **Proposed**,
@@ -1163,14 +1166,21 @@ inference (O12) is an explicit non-goal.
   choosing among them is part of the decision:
   (a) *Tracked requests:* the builder declares the variables it reads,
   much as the static part of Pottier's applicative constraint records
-  where values are decoded; Cov's domain is that declared set, and a
-  read outside it is a construction error.
+  where values are decoded; Cov's domain is that declared set. A read
+  outside it is rejected when the `Elaborating` value is built, before
+  any witness exists (the declared set is static, as in Pottier's
+  applicative structure), so `build` cannot fail for an absent binding.
   (b) *A restricted builder interface:* `build` reads the witness only
   through handles the generator issued for this problem, so the issued
-  handles are Cov's domain and no other variable can be named.
+  handles are Cov's domain and no other variable can be named. Handles
+  are scoped to the problem by type (rank-2), so a handle from another
+  problem does not typecheck, and none is issued for auxiliaries,
+  which Cov exempts.
   (c) *An explicit coverage theorem:* `build` stays an unrestricted
-  function, and a stated theorem shows that every witness satisfying
-  Cov binds every variable `build` requests.
+  function. Cov's domain is fixed independently of `build` (for
+  example, the problem's non-auxiliary flexible variables), and the
+  theorem states that, for every witness, the variables `build`
+  requests lie in that domain.
   Either way G3 still decides the split. O31 (proposed) and O32
   (argued) hold only on the condition that D1 adopts the
   continuation, O31 also on the choice of mechanism.
@@ -1288,8 +1298,9 @@ notes at 2443479; the rest wait for D1 or §18.67 Q6 (EL3):
   abstract/concrete distinction (O40, O43).
 - witness/statements.md §3.4: name RC's property in Leroy's terms, a
   validator for a weaker property (O53).
-- witness/statements.md §4 (Cov): domain = variables `build` requests,
-  made definite by D1's coverage mechanism (O31).
+- witness/statements.md §4 (Cov): domain = variables `build` requests
+  under D1 (a) or (b), or a domain fixed independently that `build`'s
+  requests provably lie in under D1 (c) (O31).
 - r0/boundaries.md, layer P: forcedness is determinacy, a sufficient
   condition; coherence (O35) is separate; add "interfaces before
   selection" (O37) to the selection contract's obligations.
@@ -1433,3 +1444,24 @@ cite those findings in place of "in progress"; D2's EMLTI option names
 (a)'s costs (lemma F for non-type-shaped schemes; EMLTI's solver and
 row laws do not cover U). O24 is proposed in the assessment's matrix;
 counts there are recomputed.
+
+**Review of the correction pass, 2026-10-22.** A read-only review
+(model output, kept outside the repository) found D1's three coverage
+mechanisms each one sentence short of coherent. Applied:
+
+- **(a) tracked requests (finding 14).** "A construction error" did
+  not say when. If it were raised when `build` runs, it would be an
+  `ElabFault` under another name. D1 (a) now says the read is rejected
+  when the `Elaborating` value is built, before any witness exists,
+  because the declared set is static.
+- **(c) coverage theorem (finding 15).** With Cov's domain defined as
+  "the variables `build` requests", the theorem was a tautology. Cov's
+  domain is now fixed independently (for example, the problem's
+  non-auxiliary flexible variables), and the theorem states that
+  `build`'s requests lie in it. O31's text here and in the
+  assessment's matrix, and §11's proposal for witness/statements.md
+  §4, say the same.
+- **(b) restricted builder (finding 16).** D1 (b) now scopes handles
+  to the problem by type (rank-2) and issues none for auxiliaries.
+
+No status changes; O31 stays proposed.

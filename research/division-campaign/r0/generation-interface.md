@@ -672,12 +672,30 @@ not decided here.
 as dossier §18.68 Q13):
 
 - **Option A: a refused candidate does not stop the run.** Record
-  `CandidateRefused` in the attempt log, go on with the remaining
-  strategies and refuters, and report `Faulted` only if nothing else
-  decides. With fuel per strategy and no shared bound, the verdict
-  class is then the same under every order for sound components
-  (argued, not checked); the fault stays visible in the log and in
-  AT8.
+  `CandidateRefused`, go on with the remaining strategies and
+  refuters, and report `Faulted` only if nothing else decides. The
+  verdict class is the same under every order, given sound checks
+  (each strategy's `check` and `checkDerivation`, each refuter's
+  `check`), under three premises (argued, not checked):
+  - fuel per strategy and per refuter, with no shared bound;
+  - refuter results independent of hint order (hints passed as a set),
+    since a budget-limited refuter seeded in one order can find a
+    counter-instance that it misses in another, flipping Contradiction
+    and Unresolved or Faulted;
+  - every strategy run when rule 1 or 1′ markers block Solved, since
+    otherwise a faulty strategy after the first blocked `Accepted` runs
+    under one order and not another, flipping Faulted and Unresolved
+    (`Unsupported`).
+  The premise is sound checks, not sound components: the search that
+  produced a refused candidate is by definition not sound.
+  Where the fault is recorded is part of Q13. Today only `Unresolved`
+  carries `attempts` (§3.5); `Solution` and `Evidence` carry no log,
+  so a refused candidate followed by Solved or Contradiction would
+  leave no trace in the verdict. Two choices:
+  - *A-i:* `Decided` gains `faults ∷ Array InternalFault` (proposed),
+    so every decided outcome keeps its refused candidates;
+  - *A-ii:* the verdict is unchanged, and the fault is recorded only
+    in a diagnostics channel and tested by AT8.
 - **Option B: order-dependence accepted and documented.** The first
   refused candidate ends the run as `Faulted`. The documents state
   that the order of `strategies` can decide between Faulted and
@@ -690,7 +708,7 @@ under "otherwise", after rule 2's first `Accepted`, which reads as
 option A; but no text says whether the run continues past a refused
 candidate, AT8 tests a single strategy, and §4.3 does not exclude a
 shared bound. AT7's monotonicity is restated to hold under option A
-only (§9).
+and its premises only (§9).
 
 ## 6. The boundary to admission and lowering
 
@@ -911,7 +929,7 @@ T-R0b §9 item 1's independent translator.
 | AT4 | G-BQ: a body whose solver stops before a `print` or `==` site has that site's `pr`/`cmp` atom in `BQ` | cmp-c and pr-c shapes (recorder-spec §4) |
 | AT5 | G-grounds: every Contradiction carries evidence that passes an independent check: premises are original `B` ids and the rule is registered; or `CXChecked (withBody (toSig P) body) rho` re-evaluates to true by brute force | `routeUndeclared` (CX `s = t = {x}`, recon §4.1); `markNoClause` (rigid overlap) |
 | AT6 | A derivation citing a substituted atom, citing a `D` atom as a premise, or applied to a `D`-subset, or an unregistered rule, is refused by `checkDerivation` | injected bad derivations |
-| AT7 | Monotonicity, for sound components with fuel per strategy and under §5.3's option A: adding a strategy leaves every Contradiction and every Solved verdict class unchanged, and turns Unresolved into Solved, or into Faulted when its candidate is refused; under option B it can also turn Solved into Faulted (§5.3, "Order"). The test-only `Checking` reports `BothVerdicts` on an injected unsound strategy | random problems over a small grammar, fixed before running |
+| AT7 | Monotonicity, given sound checks, under §5.3's option A and its premises (fuel per strategy and per refuter, no shared bound, hints passed as a set, every strategy run when markers block Solved): adding a strategy never removes a Solved or Contradiction verdict; it may turn Unresolved into Solved, Contradiction (through new hints) or Faulted, and Faulted into Solved or Contradiction. Under option B it can also turn Solved into Faulted (§5.3, "Order"). The test-only `Checking` reports `BothVerdicts` on an injected unsound strategy | random problems over a small grammar, fixed before running |
 | AT8 | The online solver is never a verdict: a stub search returning "refused" gives Unresolved; a stub returning a wrong σ is refused by check and gives `Faulted (CandidateRefused …)` (pending Q1(a)) | stubs injected as `Strategy` values |
 | AT9 | G-lower: a stub strategy accepting with `NoWitness (NonConstructive …)` gives Solved and `AtS (NoCompilation …)`; specialization does not run | stub |
 | AT10 | Static refusals stay static: `r disjoint r` is `Policy`, an arity error `StaticRule`; neither is a `Verdict`; the declaration keeps its problem; codes unchanged | existing SameDisjoint and Arity fixtures |
@@ -1062,7 +1080,9 @@ For the author (the reconciliation's numbering):
   treatment is a separate compatibility decision (§18.66 decision 2;
   T-R0e §1.4's options and probe).
 - **Q13 (dossier §18.68; external review, 2026-10-22):** does a
-  refused candidate stop the run (§5.3 "Order", option A or B)?
+  refused candidate stop the run (§5.3 "Order", option A or B)? Under
+  option A, is the fault kept in `Decided` (A-i) or only in
+  diagnostics and AT8 (A-ii)?
 - **Q6:** which flexible variables a witness must bind (§3.3).
 - **Q7:** the forcedness decider and `ComponentBlocked` (§6).
 - **Q8:** placement and cost of the ground re-check (§6).
@@ -1244,3 +1264,26 @@ here):
 - Issue 6: §5.3 rules 1 and 1′ and AT11 say that unsupported syntax
   alone supplies no contradiction, and that a separately justified
   one (c1 rule or CX, §18.65) still gives Contradiction.
+
+### Review of the correction pass (2026-10-22)
+
+A read-only review of the correction pass raised findings 11-13 here.
+Finding 3 (number the order question Q13) was already applied at
+ac689b8.
+
+- **Option A's premises (finding 11).** "The same under every order
+  for sound components" was too strong: refuters receive hints in
+  strategy order, so a budget-limited refuter can flip Contradiction
+  and Unresolved; and if the strategy loop stops at the first
+  `Accepted` blocked by markers, a later faulty strategy runs under
+  one order only. Option A now states its premises (sound checks;
+  fuel per strategy and per refuter; no shared bound; hints as a set;
+  every strategy run when markers block Solved).
+- **Where the fault is recorded (finding 12).** Only `Unresolved`
+  carries `attempts`. Option A now offers A-i (`faults ∷ Array
+  InternalFault` on `Decided`, proposed) and A-ii (diagnostics channel
+  and AT8 only), both part of Q13; §11's Q13 entry asks it.
+- **AT7 (finding 13).** Its transitions were too few: a new strategy
+  can turn Faulted into Solved, and its hints can turn Unresolved into
+  Contradiction. AT7 now says adding a strategy never removes a Solved
+  or Contradiction verdict and lists the permitted transitions.

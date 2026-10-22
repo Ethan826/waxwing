@@ -1046,7 +1046,8 @@ reconciliation of the §18.66 design tranche, both read-only.
   the outcome for internal re-check failures and for NoWitness.
 - Q2: which `BQ` atoms make RC3 inapplicable (RC3 unchanged).
 - Q5: FK-W and FK-U activation; `AdmittedPendingR019` visibility;
-  refusal after Task 8 unless FK-U is proved; T1-a.
+  refusal after Task 8 unless FK-U is proved; T1-a. (Superseded:
+  compatibility decision, no default; External review 2026-10-22.)
 - Q6: auxiliaries evaluated (default) or bound by adapters; hole
   contract strictness; reuse rule; `ChooseT`.
 - Q7: the forcedness decider and its input (§1.7, U).
@@ -1137,3 +1138,10 @@ An external review forwarded by the author (issue 4 applies here):
 - Issue 6 needs no edit here: W's "never Contradiction" sentences
   (§1.6, §3.3) concern compilation refusals and the re-check, not
   unsupported syntax.
+
+### Review of the correction pass (2026-10-22)
+
+A read-only review of the correction pass (finding 1) noted that the
+historical "Pending (proposed default, not decided)" list still gave
+Q5 a refusal default. That entry now carries a supersession note
+pointing to the External review entry above; nothing else changed.

@@ -146,9 +146,12 @@ Add junk to the carriers and make ⊎ a total constructor. The two
 variants fail in different ways.
 
 - *(b1) Strict ⊥.* 𝓜κ ∪ {⊥κ}, with every constructor strict. C-Arrow
-  fails: ⊥ → Int = ⊥ = ⊥ → Bool while Int ≠ Bool, and → is no longer
-  isolated, since ⊥ → X = ⊥ = Π ⊥. EMLTI requires C-Arrow (p. 416), so
-  (b1) is not an EMLTI model.
+  fails: ⊥ → Int = ⊥ = ⊥ → Bool while Int ≠ Bool. EMLTI requires
+  C-Arrow (p. 416), so (b1) is not an EMLTI model; that failure alone
+  settles (b1). Isolation fails too, but only if Π is declared
+  isolated: then → and Π are no longer incompatible (⊥ → X = ⊥ = Π ⊥).
+  EMLTI requires only isolated constructors to be pairwise
+  incompatible, and → stays incompatible with the nullary `base b`.
 - *(b2) Inert junk.* ⊥row is an ordinary row element, or Rémy-style
   per-label flags `abs | pre g | clash` with ⊎ total label by label.
   C-Arrow survives. Every Waxwing `eq` must then become T = T′ ∧ Def(T),
@@ -196,12 +199,25 @@ fresh ∃-bound variables for intermediate rows.
 - **M0 (model).** X_W(B) satisfies Definition 10.2.5, C-Arrow (as
   equality: T1 → T2 = T1′ → T2′ ≡ T1 = T1′ ∧ T2 = T2′), and → is isolated
   against Π and every `base b`.
-- **T1 (expressions).** For every finite θ and every t, `evalT θ t =
-  some g` ↔ ∃φ ⊇ θ on ftv(C_t) ∖ dom θ, with φ ⊨ C_t and φ(T_t) = g,
-  where ⟦t⟧ = (T_t, C_t). Likewise for `evalF`.
-- **T2 (atoms).** For finite θ, `Holds θ a` ↔ θ ⊨ ⟦a⟧, with ⟦eq t u⟧ =
-  ∃Ȳ.(C_t ∧ C_u ∧ T_t = T_u), ⟦disjoint r s⟧ = ∃ρ. U(ρ, r, s),
-  ⟦lacks r ℓ⟧ = ∃X ρ. U(ρ, r, single_ℓ X), and ⟦ff⟧ = false.
+- **Variables.** Waxwing numbers type variables and row variables in
+  two separate `Nat` namespaces (`Assign.ty` and `Assign.row`,
+  Syntax.lean:42-44). ⟦·⟧ maps them to two disjoint sets of kinded
+  EMLTI variables: type variable n ↦ X_n of kind ★ (`tvar n`), row
+  variable n ↦ ρ_n of kind row (record tails, `lacks`, `disjoint`).
+  An `Assign` is total, so it has no domain to extend. A θ with
+  `FinAssign θ` (Sig/Finite.lean:38) is read as the ground assignment
+  φ_θ with φ_θ(X_n) = θ.ty n ∈ 𝓜★ and φ_θ(ρ_n) = θ.row n ∈ 𝓜row,
+  and any fixed carrier element on the fresh variables ⟦·⟧ adds.
+- **T1 (expressions).** Let ⟦t⟧ = (T_t, C_t), and let Ȳ_t be the fresh
+  variables ⟦t⟧ introduces (intermediate rows), disjoint from the
+  translations of t's variables. For every θ with `FinAssign θ`, every
+  t and every g: `evalT θ t = some g` ↔ there are values ȳ for Ȳ_t
+  such that φ_θ[Ȳ_t ↦ ȳ] ⊨ C_t and φ_θ[Ȳ_t ↦ ȳ](T_t) = g. Likewise
+  for `evalF`, with a row term and a row in place of T_t and g.
+- **T2 (atoms).** For θ with `FinAssign θ`, `Holds θ a` ↔ φ_θ ⊨ ⟦a⟧,
+  with ⟦eq t u⟧ = ∃Ȳ.(C_t ∧ C_u ∧ T_t = T_u), ⟦disjoint r s⟧ =
+  ∃ρ. U(ρ, r, s), ⟦lacks r ℓ⟧ = ∃X ρ. U(ρ, r, single_ℓ X), and ⟦ff⟧ =
+  false.
 - **V (closed validity is entailment).** For every P with `Scoped P`:
   `ValidFin P` ↔ ⟦P.D⟧ ⊩ ∃F̄. ⟦P.B⟧ in X_W(B), where F̄ is the set of
   variables of P.B outside P's rigid lists. The quantifier structure is
@@ -218,17 +234,26 @@ fresh ∃-bound variables for intermediate rows.
   B₁ injective, (∅)σ2^i ⊆ (∅)σ1^i in X_W(B₁)) ↔ `ValidOpen` P(σ2 ≤ σ1),
   where σ^i renames σ's bases by i. The quantifiers run ∀ injective
   extension, ∀ finite rigid instance satisfying C2, ∃ finite flexible
-  witness. The proof route (argued): V and GI at each B₁, plus `mapBase`
-  commuting with ⟦·⟧. No open-world variant of EMLTI is needed, because
-  each X_W(B₁) is an ordinary fixed model and `ValidOpen` is a
-  conjunction over them.
-- **GI-Atoms (one model).** (∅)σ2 ⊆ (∅)σ1 in X_W(B ⊕ ℕ) ↔ `ValidOpen`
-  P(σ2 ≤ σ1). The ← direction follows from B1a (`OpenToAtoms`,
-  derived). The → direction needs B1b (`AtomsToOpen`), which is
-  *conjectured with argument* (research/division-campaign/bridge/
-  statements.md, B0-B1 table), not proved. The `inr n` atoms are ground
-  types that no closed type names; Definition 10.2.5 does not forbid
-  them (argued).
+  witness. GI is stated for EMLTI schemes ∀X̄[C].T, and an L0 scheme
+  with spreads becomes one only after flattening, so (∅)σ for an L0 σ
+  is read through F. The proof route (argued): F, T1/T2 and V, then GI
+  at each B₁, plus `mapBase` commuting with ⟦·⟧ and preserving
+  `Scoped`. No open-world variant of EMLTI is needed, because each
+  X_W(B₁) is an ordinary fixed model and `ValidOpen` is a conjunction
+  over them. Reading EMLTI's order as this ∀ over a family of models
+  is itself Waxwing's choice (§4, ADR 014 item 5).
+- **GI-Atoms (one model).** Let X_W^atoms(B) have X_W(B ⊕ ℕ)'s
+  carriers (finite ground types over the bases B ⊕ ℕ) and predicates,
+  but the constructors `base (inl b)` for b ∈ B only, with →, Π, ∅ and
+  `single_ℓ`. Then (∅)σ2 ⊆ (∅)σ1 in X_W^atoms(B) ↔ `ValidOpen`
+  P(σ2 ≤ σ1). The ← direction follows from B1a (`OpenToAtoms`; argued,
+  derived with i = inl, not in Lean). The → direction needs B1b
+  (`AtomsToOpen`), which is *conjectured with argument*
+  (research/division-campaign/bridge/statements.md, B0-B1 table), not
+  proved. The `inr n` atoms are carrier elements that no constructor
+  produces, so no closed type names them; Definition 10.2.5 permits
+  such elements, since it asks only that each constructor denote a
+  total function into the carrier (argued).
 - **GI-Fin (no extension).** `ValidOpen` P → inclusion in X_W(B)
   follows from V and `openToFin` (B0, proved, Typed/Bridge/
   ProofValid.lean:15). The converse fails in general: statements.md
@@ -243,9 +268,11 @@ fresh ∃-bound variables for intermediate rows.
 - **F (flattening).** For L0 schemes with spreads in types, the
   flattened scheme (U-chains, Π ρ) has the same ground instances as the
   scheme read through `evalT`.
-- **Case A corollary.** With σ_w and σ_inf of companion §1.2, σ_w is
-  below σ_inf in EMLTI's order at every X_W(B₁) (GI-Open), and hence
-  at X_W(B ⊕ ℕ).
+- **Case A corollary.** With σ_w and σ_inf of companion §1.2, and
+  given `ValidOpen` P(σ_w ≤ σ_inf) (argued in companion §1.2, with a
+  labels-only scratch check that ignores field types; not checked),
+  σ_w is below σ_inf in EMLTI's order at every X_W(B₁) (GI-Open), and
+  hence in X_W^atoms(B) (GI-Atoms, ← direction).
 
 **Under (b)** GI must read (∅)σ2 ∩ Def ⊆ (∅)σ1, and GI-Open also needs
 J. Without guards, inclusion fails on junk instances, as in §2(b2).
@@ -269,10 +296,12 @@ following.
 - X_W(B) is an EMLTI model, so Theorems 10.4.4 and 10.4.8 apply at each
   base set. This covers EMLTI's expression language with record
   operations as Γ0 constants, not Waxwing's full surface.
-- EMLTI's order, read at every injective extension, *is* `ValidOpen`
-  on the induced problem. With B1b it is also the order at the one
-  model X_W(B ⊕ ℕ).
-- Case A's σ_w is an instance of σ_inf in that order.
+- EMLTI's order, in this family reading (EMLTI's per-model order
+  quantified over every injective base extension; ADR 014 item 5),
+  *is* `ValidOpen` on the induced problem. With B1b it is also the
+  order at the one model X_W^atoms(B).
+- Case A's σ_w is an instance of σ_inf in that order, given
+  `ValidOpen` P(σ_w ≤ σ_inf), which is argued, not checked.
 
 The assessment could not claim:
 
@@ -288,7 +317,7 @@ The assessment could not claim:
 restate its interpretation: "Waxwing's row model, *with composition
 encoded as the predicate U* (this note §2a), is an EMLTI model; ground
 inclusion at every injective base extension coincides with `ValidOpen`
-(GI-Open); at X_W(B ⊕ ℕ) it does so given B1b." The model-condition
+(GI-Open); in X_W^atoms(B) it does so given B1b." The model-condition
 check is argued here, and the correspondence lemmas are stated but
 unreviewed and unproved. Direct identification **fails (argued)**
 by the partiality of ⊎ against Definition 10.2.5's totality, as the
@@ -303,10 +332,13 @@ account but stays unresolved.
    precedents cited by EMLTI (Berthomieu's =L, `lacks`, Sulzmann's
    forms, Pottier's ≤L) are predicate-based, but none is this predicate,
    and none was read.
-3. A fixed model with anonymous atoms (X_W(B ⊕ ℕ)) standing in for the
-   open-world family of models of Odersky et al. GI-Open avoids this
-   combination; GI-Atoms uses it.
+3. A fixed model with anonymous atoms (X_W^atoms(B)) standing in for
+   the open-world family of models of Odersky et al. GI-Atoms uses it.
 4. (b)'s Def guard, which is invented and not recommended.
+5. EMLTI's per-model order quantified over Waxwing's family of
+   injective base extensions (GI-Open). That reading is not EMLTI's
+   order, which is over one fixed model; the closest precedent, Odersky
+   et al. 1999's open world, was not read.
 
 ## 5. Reading status
 
@@ -326,3 +358,44 @@ ProofInstantiateSound}.lean, Typed/Refute/Statements.lean (`Denotes`),
 statements.md (B0-B1, BS), ADR 013 (2026-10-16 merge decision: "overlap
 is an error everywhere"), ADR 014, and language.md (the `disjoint`
 clause).
+
+## 6. Review of the correction pass, 2026-10-22
+
+A read-only review (model output, kept outside the repository) checked
+this note against the rendered EMLTI pages and the Lean sources and
+found nothing blocking. Its findings 4-10 bear on this note; all were
+applied.
+
+- **T1 (finding 4).** The old statement quantified over "ftv(C_t) ∖
+  dom θ", but `Assign` is total, so that set is empty, and g was
+  unbound. T1 now quantifies over every θ with `FinAssign θ`, every t
+  and every g, and asks for values of the fresh variables Ȳ_t. A new
+  **Variables** item says how Waxwing's two `Nat` namespaces
+  (`Assign.ty`, `Assign.row`) become kinded EMLTI variables X_n : ★ and
+  ρ_n : row, and defines φ_θ. T2 reads θ through φ_θ.
+- **GI-Atoms (finding 5).** X_W(B ⊕ ℕ) has a constructor `base (inr
+  n)` for each n, so "no closed type names the `inr n` atoms" was
+  false there. GI-Atoms now uses X_W^atoms(B): the same carriers, with
+  constructors `base (inl b)` only. §4 and ADR 014 item 3 use the new
+  name.
+- **GI-Open (finding 6).** GI is stated for EMLTI schemes, and an L0
+  scheme with spreads becomes one only through F. The proof route now
+  reads: F, T1/T2 and V, then GI at each B₁, plus `mapBase` commuting
+  with ⟦·⟧ and preserving `Scoped`.
+- **Case A corollary (finding 7).** It now states its premise,
+  `ValidOpen` P(σ_w ≤ σ_inf), which companion §1.2 argues with a
+  labels-only scratch check and which is not checked. §4's claim list
+  says the same.
+- **ADR 014 (finding 8).** Item 3 no longer says GI-Open avoids a
+  combination: GI-Open adds its own, now item 5 (EMLTI's per-model
+  order quantified over the injective-base-extension family; Odersky
+  et al. 1999 not read). §4's "*is* `ValidOpen`" is qualified as this
+  family reading.
+- **(b1) isolation (finding 9).** The C-Arrow failure alone settles
+  (b1). Isolation fails only if Π is declared isolated; → stays
+  incompatible with `base b`.
+- **B1a (finding 10).** "derived" is not one of this note's statuses.
+  B1a is now "argued, derived with i = inl, not in Lean".
+
+No status changes. The assessment's O24 row and IF4 are updated to the
+X_W^atoms(B) name and the family reading.

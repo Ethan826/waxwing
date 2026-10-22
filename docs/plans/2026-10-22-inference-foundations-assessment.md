@@ -89,13 +89,14 @@ they supply techniques, not ready-made Waxwing theorems.
   the rigid instance, so a valid written signature need not be a
   substitution instance of the scheme inferred from its body (argued, §9
   case A). Under EMLTI's constraint-based instantiation it is an
-  instance (argued, companion §1.2), assuming Waxwing's row model is an
-  EMLTI model and ground inclusion matches `ValidOpen` (O24,
-  proposed). That assumption needs an encoding: EMLTI's Definition
-  10.2.5 (printed p. 411) makes every type constructor denote a total
-  function, while Waxwing's disjoint composition is undefined when
-  fields overlap, so the models cannot be identified directly. The O24
-  note (docs/plans/2026-10-22-o24-emlti-correspondence.md) recommends
+  instance (argued, companion §1.2), assuming Waxwing's row model
+  corresponds, through an encoding, to an EMLTI model and ground
+  inclusion matches `ValidOpen` (O24, proposed). The encoding is
+  needed because EMLTI's Definition 10.2.5 (printed p. 411) makes
+  every type constructor denote a total function, while Waxwing's
+  disjoint composition is undefined when fields overlap, so the
+  models cannot be identified directly. The O24 note
+  (docs/plans/2026-10-22-o24-emlti-correspondence.md) recommends
   encoding composition as a ternary predicate U(t, r, s) with total
   constructors and states, without proving, the lemmas that would make
   the correspondence hold. Principality claims must therefore name
@@ -784,14 +785,14 @@ companion, which maps the readers' provisional IDs to them.
 | O22c | Finitely many reachable specialization keys: bounded static variation (JGS §14.2, printed p. 299-300; safety proof §14.4, p. 305-306) | from every entering key, a recursive component reaches finitely many keys (FK-0, FK-W, FK-U); two splits with the same meaning may still differ here | FK-0, FK-W (witness §2.4, proposed); R010 | none proved; JGS's proof is a sketch for a first-order language over naturals | O40-O45 | proposed |
 | O22d | Runtime termination (Koka 2013 Thm 8, for `div`) | not implied by O22a-c, and does not imply them | separating programs `spin` (keys finite, runtime diverges) and constructor growth (runtime terminates, keys infinite), companion §4 | none claimed | keep out of inference and specialization claims | argued |
 | O23 | None of the five sources addresses witness selection, R010 or lowering; the companion's sources bear on parts (O19, O22c, O51-O53) and none selects a witness | G3, R010, Lay stay separate obligations | boundaries §1; requirements §5 | as recorded in requirements §11 | keep out of inference claims | unresolved |
-| O24 | EMLTI's HM(X): generation sound and complete for any model X (Thms 10.4.4, 10.4.8, printed p. 433-434); model conditions (Def. 10.2.5, printed p. 411: every type constructor of signature K ⇒ κ denotes "a total function" from 𝓜_K into 𝓜_κ); open-world interpretations not treated, though adopting Odersky et al.'s approach "would not be extensive" (printed p. 423) | Waxwing's row model, with composition encoded as the predicate U (O24 note §2a: U(t, r, s) ⟺ Disjoint r s ∧ t = union r s; constructors base, →, Π, ∅, single_ℓ stay total), is an EMLTI model X_W(B); ground inclusion at every injective base extension coincides with `ValidOpen` (GI-Open), and at X_W(B ⊕ ℕ) it does so given B1b (GI-Atoms). Direct identification fails (argued): ⊎ is partial, against Def. 10.2.5's totality. This does not give principal types in L0 (O4, O11), a solver, soundness of record primitives (§10.5 unchecked), elaboration, any result for `ValidAll`'s infinite rows, or coincidence at the unextended X_W(B) (GI-Fin: one direction only) | docs/plans/2026-10-22-o24-emlti-correspondence.md: model-condition check argued (§1, §2); lemma statements M0, T1, T2, V, GI, GI-Open, GI-Atoms, GI-Fin, F proposed (§3), none reviewed or proved | statement review, then proofs of M0, T1, T2, V, GI, GI-Open and F (flattening: U-chain schemes are not type-shaped); EMLTI's solver and row laws do not cover U; B1b for GI-Atoms; ADR 014 combinations flagged (note §4: EMLTI with a disjoint-composition model; U as the only row primitive; X_W(B ⊕ ℕ) for the open-world family) | statement review of the O24 note's §3, then IF4 (companion §1.4) | proposed |
+| O24 | EMLTI's HM(X): generation sound and complete for any model X (Thms 10.4.4, 10.4.8, printed p. 433-434); model conditions (Def. 10.2.5, printed p. 411: every type constructor of signature K ⇒ κ denotes "a total function" from 𝓜_K into 𝓜_κ); open-world interpretations not treated, though adopting Odersky et al.'s approach "would not be extensive" (printed p. 423) | Waxwing's row model, with composition encoded as the predicate U (O24 note §2a: U(t, r, s) ⟺ Disjoint r s ∧ t = union r s; constructors base, →, Π, ∅, single_ℓ stay total), is an EMLTI model X_W(B); ground inclusion at every injective base extension coincides with `ValidOpen` (GI-Open, reading EMLTI's per-model order over that family), and in the one model X_W^atoms(B) (carriers over B ⊕ ℕ, constructors `base (inl b)` only) it does so given B1b (GI-Atoms). Direct identification fails (argued): ⊎ is partial, against Def. 10.2.5's totality. This does not give principal types in L0 (O4, O11), a solver, soundness of record primitives (§10.5 unchecked), elaboration, any result for `ValidAll`'s infinite rows, or coincidence at the unextended X_W(B) (GI-Fin: one direction only) | docs/plans/2026-10-22-o24-emlti-correspondence.md: model-condition check argued (§1, §2); lemma statements M0, T1, T2, V, GI, GI-Open, GI-Atoms, GI-Fin, F proposed (§3), none reviewed or proved | statement review, then proofs of M0, T1, T2, V, GI, GI-Open and F (flattening: U-chain schemes are not type-shaped); EMLTI's solver and row laws do not cover U; B1b for GI-Atoms; ADR 014 combinations flagged (note §4: EMLTI with a disjoint-composition model; U as the only row primitive; X_W^atoms(B) for the open-world family; EMLTI's order quantified over injective base extensions) | statement review of the O24 note's §3, then IF4 (companion §1.4) | proposed |
 | O25 | Instantiation by constraint (EMLTI hmx-Inst, hmx-Exists, Fig. 10-7, printed p. 423; weakening, Lemma 10.3.1) | a written signature is accepted when its constraint entails the instantiation constraint of its body (EMLTI has no annotations) | `d5_open`; recorder-rules §5.1 (call sites instantiate with flexible copies) | no statement relating annotation checking to EMLTI's entailment | include in IF4 | proposed |
 | O26 | Existential projection (HM(X) cylindric ∃, E1-E4; EMLTI hmx-Exists); Jones 1995 has neither ∃ nor composition | eliminating a constraint-only variable leaves a `has` over a composition, or keeps an `eq` atom with the variable | §9 case B: ∃w.(a disjoint b ∧ { ...a, ...b } = { id: Int, ...w }) is equivalent to a disjoint b ∧ ({ ...a, ...b } has id: Int) | internal atom form undecided; ADR 014 new combination | IF5 and IF6 restated; §14 Q2 | argued |
 | O27 | Constraints with a value (Pottier ICFP 2014, §3-§4.3 and Fig. 8, PDF p. 3-7): applicative, no bind | R0's generator returns the recorded problem with a pure continuation that builds the checked IR from a witness (EL1), instead of reading back settled types | recorder-rules §4 (no rule branches on a solved shape) and §5.3 (read-back ambiguous with several flexible tails) | EL1 unstated; T-R0a/T-R0b ownership; a `build` of type `Witness → Either ElabFault a` can still request a variable the witness does not bind, so coverage needs tracked requests, a restricted builder interface or a coverage theorem (D1) | a design note comparing read-back and continuation (companion §2, decision D1, §10) | proposed |
 | O28 | Elaboration after solving (Pottier §3, PDF p. 3, non-locality; §6, PDF p. 8, needs "some form of satisfiability witness") | values only after the verdict; `decode` corresponds to the per-strategy adapter (Adapt-N), never invoked on `NoWitness` | decisions 1 and 4 (§18.66); W §1.1 | Adapt-N unproved for every format | fold into the O27 note | argued |
 | O29 | Rigid then flexible binding (Inferno `letr1`, Solver docs); coercion of unconstrained quantifiers (Pottier App. B, PDF p. 10; Inferno `coerce`) | one ∀rigid/∃flexible prefix per declaration; a variable read by the elaboration but not determined may be defaulted only under the hole contract (EL3) | ADR 007; recorder-rules §5.1; `route` fails when `u` defaults to `{}` (split-irrelevance/ground-check.md §3) | Inferno's level discipline would refuse `divide5` (argued); EL3 unstated | state EL3 with IF6 | proposed |
 | O30 | Well-typed elaboration: no theorem; Inferno checks it with an independent System F checker on random terms (implementation evidence) | at every reached key the lowered checked IR, `Named` witness terms included, is well typed (EL2) | RC1-RC6 (proposed; reached keys only); witness §4 Cov, Adapt-N, R, Lay (proposed) | no symbolic checker for name-carrying checked IR; key-dependent decoded values are an ADR 014 new combination | specify, without building, a key-wise re-typer as an independent oracle | unresolved |
-| O31 | Only decoded variables get values (Inferno Solver docs: `decode`, `instance`, the variables `let` returns) | if D1 adopts the continuation (O27): Cov's domain should be the variables the continuation requests; auxiliaries are evaluated from defining atoms, never bound. An opaque `Witness → Either ElabFault a` does not expose that set, so the domain is defined only with tracked requests or a restricted builder interface, or else needs a coverage theorem | W §4 Cov; recorder-rules §5.3 | depends on O27 (proposed, D1) and on D1's coverage mechanism | one sentence offered to W's Cov owner, after D1 | proposed |
+| O31 | Only decoded variables get values (Inferno Solver docs: `decode`, `instance`, the variables `let` returns) | if D1 adopts the continuation (O27): Cov's domain should be the variables the continuation requests; auxiliaries are evaluated from defining atoms, never bound. An opaque `Witness → Either ElabFault a` does not expose that set, so the domain is defined only with tracked requests or a restricted builder interface; otherwise Cov's domain is fixed independently (for example, the non-auxiliary flexible variables) and a coverage theorem states that `build`'s requests lie in it (companion D1 (c)) | W §4 Cov; recorder-rules §5.3 | depends on O27 (proposed, D1) and on D1's coverage mechanism | one sentence offered to W's Cov owner, after D1 | proposed |
 | O32 | The continuation's value type is a parameter (Pottier §3, PDF p. 3) | if D1 adopts the continuation (O27): adding `Field r l` (G2) changes `TyTerm`, not the elaboration interface (EL5), and a `build` returning `Either` gives partiality a place | W §1.4 (reserved); decision 8 | depends on O27 (proposed, D1); definedness of partial values deferred with G2; ADR 014 new combination | record the condition in W §1.4 (proposal) | argued |
 | O33 | Meaning preservation: not stated by Pottier; HM to System F rests on type erasure | two valid witnesses lower to programs with the same behaviour at every key (EL4 for forced splits; O19 otherwise) | none; erasure fails because layouts and keys depend on types | EL4 unstated | after the C8-J note (O39) | unresolved |
 | O34 | Determinacy (EMLTI Def. 10.2.14, printed p. 417); Jones's Def. 5 (RR-989 p. 9) only under a free type algebra | the split is unique given the complete obligations, requirement atoms included (forcedness) | dossier program 4 (`acceptsParts`), argued for examples | determinacy over `ValidOpen` with `pr`/`cmp`; `ValidOpenR` unstated; the decider is unassigned (§18.67 Q7) | state forcedness as determinacy, with IF6 | unresolved |
@@ -860,8 +861,9 @@ EL1-EL5 (§2), which also await statement review.
   ground-instance inclusion). State for §9 case A that the written
   `submit` signature is below the inferred scheme in EMLTI's order and
   incomparable with it in the substitution order over L0. State that
-  EMLTI's order coincides with `ValidOpen` over Waxwing's row model
-  (O24; the O24 note's GI-Open, over encoding (a)) and that annotation
+  EMLTI's order, read over the family of injective base extensions,
+  coincides with `ValidOpen` over Waxwing's row model (O24; the O24
+  note's GI-Open, over encoding (a)) and that annotation
   checking is entailment of the body's
   instantiation constraint (O25). This fixes what a principality claim
   can mean.
@@ -1140,3 +1142,28 @@ confirmation. Changes here:
   cited in the row. §0, §3 and IF4 (§12) now cite the note.
   Counts recomputed from the matrix by script: proved 2, argued 19,
   experimentally checked 1, proposed 18, unresolved 23.
+
+## 19. Review of the correction pass, 2026-10-22
+
+A read-only review (model output, kept outside the repository) checked
+the correction pass and the O24 note's integration. Nothing blocked.
+Changes here:
+
+- **§0 wording (finding 2).** §0 now says Waxwing's row model
+  "corresponds, through an encoding, to an EMLTI model", as the
+  companion does. The §16 and §18 entries that say "is an EMLTI model"
+  are historical and stay.
+- **O24 row (findings 5 and 8).** The O24 note's GI-Atoms now uses
+  X_W^atoms(B) (carriers over B ⊕ ℕ, constructors `base (inl b)`
+  only), since X_W(B ⊕ ℕ) names the `inr n` atoms. The row uses that
+  name, says GI-Open reads EMLTI's per-model order over the family of
+  injective base extensions, and lists that reading among the ADR 014
+  flags. IF4 (§12) is qualified the same way. The note's other
+  corrections (T1, GI-Open's proof route, the Case A premise) change
+  none of the row's claims.
+- **O31 row (finding 15).** Under the coverage-theorem mechanism,
+  Cov's domain is fixed independently and the theorem states that
+  `build`'s requests lie in it; the old wording was circular. The
+  row's interpretation now says so.
+- **Counts.** No status changed: proved 2, argued 19, experimentally
+  checked 1, proposed 18, unresolved 23.
