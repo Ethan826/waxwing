@@ -607,18 +607,24 @@ Proposed rule:
    equations behind markers), **every kind counts as acceptance-
    relevant**, so the rule in force is T-R0b §10's: non-empty
    `outside` blocks Solved. Alternative kept: the kind-free rule
-   permanently. Rules and refuters still run: a contradiction among
-   modelled atoms is a contradiction of the whole, since the
-   unmodelled obligations only add constraints (argued; it needs each
-   recorded atom to be a genuine obligation, recorder correctness
-   **R**, requirements §4.3).
+   permanently. A marker alone supplies no contradiction. Rules and
+   refuters still run, and a separately justified contradiction (a
+   proved c1 rule over original atoms, or a checked CX
+   counter-instance; §18.65) still gives Contradiction: a
+   contradiction among modelled atoms is a contradiction of the
+   whole, since the unmodelled obligations only add constraints
+   (argued; it needs each recorded atom to be a genuine obligation,
+   recorder correctness **R**, requirements §4.3).
 
    1′. **Second spread** (**pending author Q4**). If the author
    classifies a second spread as S1, a node with a `spread j`, j ≥ 2,
    blocks a whole-declaration Solved, as rule 1 does; the reason is
-   `Unsupported [SecondSpread]`; rules and refuters still run. Until
-   ruled, Resolve keeps refusing it (dossier §18.67 Q4), so the rule
-   is not reached.
+   `Unsupported [SecondSpread]`. As with rule 1, the second spread
+   alone supplies no contradiction; rules and refuters still run, and
+   a separately justified contradiction (a proved c1 rule over
+   original atoms, or a checked CX counter-instance; §18.65) still
+   gives Contradiction. Until ruled, Resolve keeps refusing it
+   (dossier §18.67 Q4), so the rule is not reached.
 2. Rules, then strategies in order, then refuters (seeded with the
    strategies' hints). The first `Accepted` gives Solved; a checked
    derivation or `Refuted` gives Contradiction.
@@ -638,10 +644,52 @@ Proposed rule:
    report `BothVerdicts` if both succeed (§9 AT7). This is a different
    injected value, not a flag.
 
-Order affects cost and which strategy's witness is used, never which
-verdict class results (argued: Solved and Contradiction cannot both be
-sound for one problem). Witness choice when several strategies accept
-is a G3 question (decision 6), not decided here.
+**Order** (corrected after the external review of 2026-10-22).
+Soundness gives one guarantee: Solved and Contradiction cannot both be
+sound for one problem, so no ordering yields Solved under one order and
+Contradiction under another when both are produced by sound components
+(argued: a sound acceptance gives `ValidOpen`, a sound refutation its
+negation). It does not make the outcome independent of order. Among
+Solved, Unresolved and Faulted, the outcome can depend on the order of
+`strategies`, on faults and on budgets:
+
+- a strategy whose candidate check refuses yields `Faulted
+  (CandidateRefused …)` (rule 3) where a later strategy might have
+  produced an accepted certificate; if the refusal ends the run, the
+  order decides between Faulted and Solved;
+- a budget shared across attempts (any bound beyond §4.3's fuel per
+  strategy) is spent by earlier strategies, so a later one can reach
+  `Limit` under one order and accept under another;
+- the reason inside Unresolved (`Limit`, `Unsupported`, `Inference`)
+  is computed from the attempts that ran, so it inherits both
+  dependencies.
+
+Order also affects cost and which strategy's witness is used. Witness
+choice when several strategies accept is a G3 question (decision 6),
+not decided here.
+
+**Design consequence** (proposed, not decided; flagged for the author):
+
+- **Option A: a refused candidate does not stop the run.** Record
+  `CandidateRefused` in the attempt log, go on with the remaining
+  strategies and refuters, and report `Faulted` only if nothing else
+  decides. With fuel per strategy and no shared bound, the verdict
+  class is then the same under every order for sound components
+  (argued, not checked); the fault stays visible in the log and in
+  AT8.
+- **Option B: order-dependence accepted and documented.** The first
+  refused candidate ends the run as `Faulted`. The documents state
+  that the order of `strategies` can decide between Faulted and
+  Solved (and, with a shared budget, between `Limit` and Solved), and
+  a test-only `Checking` value (rule 4) that runs every strategy and
+  refuter under each order exposes it.
+
+What the documents currently imply: rule 3 places `CandidateRefused`
+under "otherwise", after rule 2's first `Accepted`, which reads as
+option A; but no text says whether the run continues past a refused
+candidate, AT8 tests a single strategy, and §4.3 does not exclude a
+shared bound. AT7's monotonicity is restated to hold under option A
+only (§9).
 
 ## 6. The boundary to admission and lowering
 
@@ -732,10 +780,17 @@ Proposed. Points this interface is responsible for:
   that fails (T-R0e §1.4's evidence). `AdmittedPendingR019`: matches
   no active row of `Adm_W` (FK-W/FK-U rows active once adopted),
   name-free, admitted by `bareRow`. It compiles as today and is never
-  a premise. After Task 8 it is refused, unless FK-U is proved and
-  adopted, as `AtS (NotLowerable ComposedTailsUnjustified site)`,
-  T-R0e's constructor, `site` the `adm` entry's origin path. Whether users
-  see it is **pending author Q5**.
+  a premise. What happens to it after Task 8 is a **proposed
+  behaviour change** (programs that check today would be refused for
+  compilation) and needs an **explicit compatibility decision by the
+  author** (§18.66 decision 2: "the compatibility decision stays
+  explicit"). T-R0e §1.4 lists the options (refuse after Task 8; keep
+  compiling via the current path; prove FK-U first), notes that the
+  claim that these cases already hit the Task 8 placeholder is argued,
+  not verified, and proposes the probe. If the author chooses refusal,
+  it is `AtS (NotLowerable ComposedTailsUnjustified site)`, T-R0e's
+  constructor, `site` the `adm` entry's origin path. Whether users see
+  the status is **pending author Q5**.
 - **Several tails.** Lowering a row with several tails is `AtS
   (NotLowerable SeveralTailLowering site)` until Task 8 (T-R0e
   §3.1).
@@ -855,11 +910,11 @@ T-R0b §9 item 1's independent translator.
 | AT4 | G-BQ: a body whose solver stops before a `print` or `==` site has that site's `pr`/`cmp` atom in `BQ` | cmp-c and pr-c shapes (recorder-spec §4) |
 | AT5 | G-grounds: every Contradiction carries evidence that passes an independent check: premises are original `B` ids and the rule is registered; or `CXChecked (withBody (toSig P) body) rho` re-evaluates to true by brute force | `routeUndeclared` (CX `s = t = {x}`, recon §4.1); `markNoClause` (rigid overlap) |
 | AT6 | A derivation citing a substituted atom, citing a `D` atom as a premise, or applied to a `D`-subset, or an unregistered rule, is refused by `checkDerivation` | injected bad derivations |
-| AT7 | Monotonicity: adding a strategy turns Unresolved into Solved only; Contradictions are unchanged. The test-only `Checking` reports `BothVerdicts` on an injected unsound strategy | random problems over a small grammar, fixed before running |
+| AT7 | Monotonicity, for sound components with fuel per strategy and under §5.3's option A: adding a strategy leaves every Contradiction and every Solved verdict class unchanged, and turns Unresolved into Solved, or into Faulted when its candidate is refused; under option B it can also turn Solved into Faulted (§5.3, "Order"). The test-only `Checking` reports `BothVerdicts` on an injected unsound strategy | random problems over a small grammar, fixed before running |
 | AT8 | The online solver is never a verdict: a stub search returning "refused" gives Unresolved; a stub returning a wrong σ is refused by check and gives `Faulted (CandidateRefused …)` (pending Q1(a)) | stubs injected as `Strategy` values |
 | AT9 | G-lower: a stub strategy accepting with `NoWitness (NonConstructive …)` gives Solved and `AtS (NoCompilation …)`; specialization does not run | stub |
 | AT10 | Static refusals stay static: `r disjoint r` is `Policy`, an arity error `StaticRule`; neither is a `Verdict`; the declaration keeps its problem; codes unchanged | existing SameDisjoint and Arity fixtures |
-| AT11 | `outside` blocks Solved (`Unsupported`) but not Contradiction, for every kind counted acceptance-relevant (§5.3 rule 1; all kinds until Q3) | an `EffectArgument` construct beside a refutable atom |
+| AT11 | `outside` blocks Solved (`Unsupported`), for every kind counted acceptance-relevant (§5.3 rule 1; all kinds until Q3); the marker alone gives no Contradiction, and a separately justified one (c1 rule or CX) on recorded atoms is still reported | an `EffectArgument` construct beside a refutable atom |
 | AT12 | A zero budget gives `Limit`, with the problem equal to the unlimited run's | injected `Budget` |
 | AT13 | Independence: changing `f`'s body (not its signature), including adding a call that merges `f` and `g` into one component, leaves `g`'s problem and verdict unchanged | pairs of programs; needs T-R0b's component-free sites (§2 item 3) |
 | AT14 | `ComponentBlocked`: in a recursive component with an Unresolved member, the Solved members stay Solved | `walk`-shaped pair |
@@ -1002,7 +1057,11 @@ For the author (the reconciliation's numbering):
 - **Q3:** which `outside` kinds block Solved (§5.3 rule 1); effect
   refusals.
 - **Q4:** the static boundary (§3.2, §7, §10).
-- **Q5:** visibility of `AdmittedPendingR019` (§6).
+- **Q5:** visibility of `AdmittedPendingR019` (§6). Its post-Task-8
+  treatment is a separate compatibility decision (§18.66 decision 2;
+  T-R0e §1.4's options and probe).
+- **New, not yet numbered (external review, 2026-10-22):** does a
+  refused candidate stop the run (§5.3 "Order", option A or B)?
 - **Q6:** which flexible variables a witness must bind (§3.3).
 - **Q7:** the forcedness decider and `ComponentBlocked` (§6).
 - **Q8:** placement and cost of the ground re-check (§6).
@@ -1164,3 +1223,23 @@ From the read-only verification of 2b73666 (findings 2, 3, 4, 6, 8):
   (T-R0b's `Origin` has no `path` field).
 - §6: `Inadmissible`'s `Int` is the callee's `VarId`, not an index into
   `CallSite.slots`.
+
+### External review (2026-10-22)
+
+An external review forwarded by the author (issues 3, 4 and 6 apply
+here):
+
+- Issue 3: §5.3's claim that order never changes the verdict class
+  was false. "Order" now states what soundness gives (no Solved under
+  one order and Contradiction under another from sound components)
+  and what it does not (Solved, Unresolved and Faulted can depend on
+  order, faults and budgets), with options A and B for the author and
+  a note on what the text implies; AT7 restated; §11 gains the
+  question.
+- Issue 4: §6's post-Task-8 refusal of `AdmittedPendingR019` is a
+  proposed behaviour change needing an explicit compatibility
+  decision (§18.66 decision 2), with T-R0e §1.4's options and probe;
+  §11's Q5 entry says so.
+- Issue 6: §5.3 rules 1 and 1′ and AT11 say that unsupported syntax
+  alone supplies no contradiction, and that a separately justified
+  one (c1 rule or CX, §18.65) still gives Contradiction.

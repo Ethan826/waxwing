@@ -426,17 +426,24 @@ This neither narrows nor endorses today's behaviour (decision 2): what
 `bareRow` admits beyond the active rows keeps its acceptance at check,
 recorded as `AdmittedPendingR019`, and **is never a premise**: no
 termination argument, uniqueness claim or G3 choice rests on it (T-R0e
-§1.4, cited). **Decision 3 gap closed (proposed):** a component whose
-status is `AdmittedPendingR019` has no finite-reachable-key theorem, so
-it must not reach specialization once Task 8 removes the several-tail
-placeholder, unless FK-U is proved and adopted; it is then refused for
-compilation (T-R0e's `ComposedTailsUnjustified`, §5.3). Before Task 8
-nothing
-changes: every key with such a slot lowers a row with several tails,
-and the placeholder already stops specialization there
-(src/Features/Specialize/Record.purs:38-44, cited; argued that every
-such key reaches it), so compilation is exactly as today. Whether the
-status is user-visible is pending author Q5 (T-R0e Q2).
+§1.4, cited). **Decision 3 gap (open; needs a compatibility
+decision):** a component whose status is `AdmittedPendingR019` has no
+finite-reachable-key theorem. What happens to it once Task 8 removes
+the several-tail placeholder is a **proposed behaviour change**
+(refusal would refuse for compilation programs that check today) and
+needs an **explicit compatibility decision by the author** (§18.66
+decision 2: "the compatibility decision stays explicit"; §2.7 U-d).
+The options are T-R0e §1.4's: refuse it after Task 8 (T-R0e's
+`ComposedTailsUnjustified`, §5.3); keep compiling it via the current
+path, with no theorem for its keys; or prove and adopt FK-U first,
+which covers rigid-tail unions only. None is approved as a default.
+Before Task 8, "nothing changes" rests on an unverified claim: every
+key with such a slot lowers a row with several tails, and the
+placeholder stops specialization there
+(src/Features/Specialize/Record.purs:38-44, cited), but that every such
+key reaches it is argued, not checked; T-R0e §1.4 proposes the probe
+that would check it. Whether the status is user-visible is pending
+author Q5 (T-R0e Q2).
 
 **Component-safe (CS) terms** (proposed; the syntactic form T3 asks
 for): a `RowTerm` built from `Restrict r S`, `Union`, `Choose`, CS
@@ -910,7 +917,8 @@ Each item is the canonical definition; the other streams cite it.
   and `HoleContract Var` (§1.5); `HoleContract Var` is a
   `NoWitnessReason`, not a separate `Construct`. Several tails before
   Task 8 (§2.7 U-c; T-R0e's `SeveralTailLowering`); composed tails
-  without FK-U after Task 8 (§2.3; T-R0e's `ComposedTailsUnjustified`);
+  without FK-U after Task 8, only if the author's compatibility
+  decision chooses refusal (§2.3; T-R0e's `ComposedTailsUnjustified`);
   and RC's unsupported path (§3.3; T-R0e's `UncheckedPath`).
 - **Policy:** decision 3 is judged per `split` site by P (T-R0e §2);
   P's `SplitJudgement` records the result per variable (§1.7); a
@@ -943,7 +951,7 @@ Each item is the canonical definition; the other streams cite it.
 | `Field r l` reserved, not implemented | decision 8 defers G2 without prohibiting it | G2 (requirements §6.3): Solved if some strategy proves it, then `NoWitness (AdapterUnsupported FieldReference)` |
 | holes only under the hole contract | the default satisfies whenever any value does (ADR 007; §1.5) | `route`'s `u` defaulted to `{}` today (ground-check.md §3): must be named or refused |
 | no witness, no lowering; no per-key solving | decision 4 | a non-constructive proof of `divide5`: Solved, not compiled |
-| record slots in components: single tail (FK-0) | decision 2's baseline | `walk`'s `{ ...u, ...v }` recursion, accepted by today's code (R019): `AdmittedPendingR019`, compiled as today before Task 8, refused for compilation after it unless FK-U is proved |
+| record slots in components: single tail (FK-0) | decision 2's baseline | `walk`'s `{ ...u, ...v }` recursion, accepted by today's code (R019): `AdmittedPendingR019`, compiled as today before Task 8; after it, the author's compatibility decision (refuse, keep compiling via the current path, or prove FK-U first; §2.3) |
 | names never occur in declared types | declared types are over `VarId` (Internal.purs:142); §4.2's type half is unchanged | `Box({ ...n })` in a body: a type key per function key, finitely many per key |
 
 ## 7. Open points for the author
@@ -966,8 +974,12 @@ proposed here stands until the author rules.
    (RC4), or both; always on, or in a checking build? (Q8.)
 7. **FK-U:** adopt the pool argument for pure unions of rigid tails,
    which would justify today's `bareRow` on that class (§2.7 U-d)?
-   Should `AdmittedPendingR019` be user-visible, and is refusing it for
-   compilation after Task 8 (unless FK-U is proved) acceptable? (Q5.)
+   Should `AdmittedPendingR019` be user-visible? (Q5.) Separately, an
+   explicit compatibility decision (§18.66 decision 2): after Task 8,
+   refuse it for compilation, keep compiling it via the current path,
+   or prove FK-U first (§2.3; T-R0e §1.4)? Refusal is a behaviour
+   change; the claim that these cases already stop at the placeholder
+   is unverified, and T-R0e §1.4's probe should run first.
 8. **`Compilation` placement:** inside `Solution` (default) or beside
    the verdict (§1.6)? Where do internal re-check failures sit (§3.3)?
    (Q1.)
@@ -1109,3 +1121,19 @@ Q1-Q12) bears on them; no design decision changed.
   speaks of variables read by `build`, which exists only if D1 adopts
   the continuation); §1.4's EL5 (O32) and §4's Cov domain (O31), both
   conditional on D1.
+
+### External review (2026-10-22)
+
+An external review forwarded by the author (issue 4 applies here):
+
+- The post-Task-8 refusal of `AdmittedPendingR019` is a proposed
+  behaviour change, not maintenance. §2.3's "Decision 3 gap closed"
+  becomes an open gap needing the author's explicit compatibility
+  decision (§18.66 decision 2), with T-R0e §1.4's three options
+  (refuse after Task 8; keep compiling via the current path; prove
+  FK-U first) and no default; the "already stopped at the
+  placeholder" claim is marked unverified, with T-R0e §1.4's probe.
+  §5.3, §6's table row and §7 item 7 follow.
+- Issue 6 needs no edit here: W's "never Contradiction" sentences
+  (§1.6, §3.3) concern compilation refusals and the re-check, not
+  unsupported syntax.

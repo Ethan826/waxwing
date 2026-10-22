@@ -549,7 +549,12 @@ P policy (pending author Q4; neither is a Contradiction).
    resolve-time refusal reported as E_TYPE; docs/language.md states it
    as a language rule. **Proposed: Unsupported (a support boundary),
    pending boundaries §7 Q3 / author Q4.** If the author agrees,
-   T-R0e's support boundaries should name it.
+   T-R0e's support boundaries should name it. Unsupported blocks
+   Solved only: the second spread alone supplies no contradiction,
+   while rules and refuters still run on the recorded atoms, and a
+   separately justified contradiction (a proved c1 rule over original
+   atoms, or a checked CX counter-instance; §18.65) may still yield
+   Contradiction (generation-interface §5.3 rule 1′).
 5. **D4 refuses forced splits** (c21, checked valid): stronger than
    "solver incompleteness" in the usual sense, worth stating in T-R0a's
    reason ADT.
@@ -785,3 +790,12 @@ made here.
 - §5 item 2: "CX (T-R0d)" is now "CX" (re-check R9).
 - Citations of boundaries' old §7 Q3 and Q5 are kept; T-R0e §7 maps
   old numbers to its rows (re-check R11).
+
+### External review (2026-10-22)
+
+An external review forwarded by the author (issue 6 applies here):
+
+- §6 item 4: the proposed Unsupported for the second spread blocks
+  Solved only; the spread alone supplies no contradiction, and a
+  separately justified one (c1 rule or CX, §18.65) may still yield
+  Contradiction, as in generation-interface §5.3 rule 1′.

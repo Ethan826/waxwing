@@ -348,6 +348,11 @@ Notes (argued unless marked):
   reached) or a support boundary (S1) is T-R0e's §7 Q3, **pending
   author Q4**. Either way S1 reads the spread count from the problem:
   the `vars` entries with role `spread j` at the node's path (§2.3).
+  Under S1 the second spread blocks Solved but alone supplies no
+  contradiction; rules and refuters still run on E25's atoms, and a
+  separately justified contradiction (a proved c1 rule over original
+  atoms, or a checked CX counter-instance; §18.65) still gives
+  Contradiction (T-R0a §5.3 rule 1′).
 - E24 needs no atom: its parts are fields only. A literal with a spread
   is a `RecordExtension` in the resolved AST (Resolved.purs:56-57).
 
@@ -403,10 +408,13 @@ an assumption (requirements.md §11 item 13; recorder-spec Q4).
 adversarial review finding 5; T-R0a §5.3 rule 1 and AT11), **pending
 author Q3**. Some rules record no equation for an obligation they
 cannot express (the "dropped" column); decision 1 allows that only
-because the marker then blocks Solved. A marker never blocks
-Contradiction: the recorded atoms are a subset of the obligations,
-and refuting a subset refutes the whole (CX's C1-M, `ValidOpen`
-antitone in `B`; T-R0a AT11).
+because the marker then blocks Solved. A marker alone supplies no
+contradiction, and it never blocks one: rules and refuters still run,
+and a separately justified contradiction (a proved c1 rule over
+original atoms, or a checked CX counter-instance; §18.65) still gives
+Contradiction, since the recorded atoms are a subset of the
+obligations and refuting a subset refutes the whole (CX's C1-M,
+`ValidOpen` antitone in `B`; T-R0a AT11).
 
 | Marker | Rules | An obligation left unrecorded? |
 |---|---|---|
@@ -823,8 +831,13 @@ What T-R0b assumes of T-R0a:
   says (ground atoms by a stated ground rule; atoms over variables
   Unsupported for every strategy whose `Sound_F` does not cover them),
   **pending author Q2** [VOR];
-- **non-empty `outside` prevents a whole-function Solved** and never
-  prevents Contradiction (§3.5; decision 1), **pending author Q3**;
+- **non-empty `outside` prevents a whole-function Solved** (§3.5;
+  decision 1), **pending author Q3**; the markers alone supply no
+  contradiction, and they never prevent one: rules and refuters still
+  run, and a separately justified contradiction (a proved c1 rule over
+  original atoms, or a checked CX counter-instance; §18.65) still
+  gives Contradiction. A second spread, if classified S1, follows the
+  same policy (§3.3; T-R0a §5.3 rule 1′);
 - any slicing between recorder and strategy quantifies over this
   original problem (requirements.md §11 item 11);
 - `adm` and `split` are judged against a strategy's witness by the
@@ -977,3 +990,17 @@ confirmation).
   state (CX Q4), not T-R0c's (re-check R9, F4).
 - Citations of T-R0e's old §7 Q3 and Q5 are kept; T-R0e §7 maps old
   numbers to its rows (re-check R11).
+
+### External review (2026-10-22)
+
+An external review forwarded by the author (issue 6 applies here):
+
+- Unsupported syntax alone supplies no contradiction; rules and
+  refuters still run, and a separately justified contradiction (a
+  proved c1 rule over original atoms or a checked CX
+  counter-instance, §18.65) may still yield Contradiction. Stated in
+  §3.3's second-spread note, §3.5's marker paragraph and §10's
+  assumption on `outside`. The earlier log line "blocks a
+  whole-function Solved, never Contradiction" (E1 above) means the
+  marker never blocks a Contradiction, not that the declaration can
+  never be one.

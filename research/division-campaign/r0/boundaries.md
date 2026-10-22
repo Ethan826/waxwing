@@ -145,8 +145,10 @@ Why this order (argued):
 
 Order of **reporting** (proposed): a declaration reports the first
 layer, in the order above, that does not pass. One exception: a
-Contradiction is reported even when the problem has `outside` markers,
-because a c1 rule or CX on recorded atoms refutes a subset of the
+Contradiction is reported even when the problem has `outside` markers
+(or, if classified S1, a second spread), which alone supply no
+contradiction, because a c1 rule or CX on recorded atoms refutes a
+subset of the
 obligations, and adding obligations cannot restore satisfiability
 (argued; conditional on recorder correctness, requirements §4.3 R; the
 same rule as T-R0a §5.3 rule 1). A later layer is not evaluated when
@@ -227,18 +229,49 @@ no name, so it is `Admissible` under FK-0 (W §2.3 record row 2).
 `AdmittedPendingR019` compiles exactly as today, so no accepted program
 is rejected, but it is recorded as such and **may not be used as a
 premise**: no uniqueness claim ("only admissible split"), no G3 choice,
-no termination argument rests on it. **It must not reach
-specialization once Task 8 lands, unless FK-U is adopted and proved**
-(adversarial review, finding 3): a component holding such a slot then
-has no finite-reachable-key theorem (decision 3). Until then, such a
-slot cannot be lowered anyway: `recordType` stops at the several-tail
-placeholder for any row with more than one tail, holes included
-(Specialize/Record.purs:38-40, cited), so the restriction refuses no
-program that compiles today (argued; that every several-tail slot of a
-key reaches `recordType` is unchecked). After Task 8, the proposed
-outcome is an S refusal, `AtS (NotLowerable ComposedTailsUnjustified
-site)` (§3.1), `site` the `adm` entry's origin path, pending author Q5; W
-uses the same constructor (reconciliation C2; consistency re-check R10).
+no termination argument rests on it. A component holding such a slot
+has no finite-reachable-key theorem (decision 3; adversarial review,
+finding 3).
+
+**After Task 8: a compatibility decision, not maintenance.** What
+happens to such a component once Task 8 removes the several-tail
+placeholder is a **proposed behaviour change**: under refusal, a
+program that passes check today would be refused for compilation. It
+needs an **explicit compatibility decision by the author** (§18.66
+decision 2: "the compatibility decision stays explicit"); no option
+below is approved, and none is a default. The options:
+
+1. **Refuse after Task 8.** The component is not specialized; the
+   outcome is an S refusal, `AtS (NotLowerable ComposedTailsUnjustified
+   site)` (§3.1), `site` the `adm` entry's origin path; W uses the
+   same constructor (reconciliation C2; consistency re-check R10).
+   Keeps decision 3's theorem-backed termination, at the cost of
+   refusing programs that check today.
+2. **Keep compiling via the current path.** Task 8 lowers these slots
+   as it lowers others, with the 10,000-key limit as the only guard.
+   Acceptance is unchanged, but no theorem covers these components'
+   keys, and the limit is "a resource guard, never the termination
+   argument" (ADR 007, cited; §1.5).
+3. **Prove FK-U first** (W §2.7). Adopt FK-U's row before Task 8, so
+   field-free unions of rigid tails become `Admissible` and compile
+   with a theorem. Mixed rigid-and-hole unions, which FK-U does not
+   cover (W §2.7 U-d), still need option 1 or 2.
+
+**The "already stopped" claim is unverified.** The claim that these
+cases already hit the Task 8 placeholder, so that option 1 refuses no
+program that compiles today, is argued only: `recordType` stops at the
+several-tail placeholder for any row with more than one tail, holes
+included (Specialize/Record.purs:38-40, cited), but that every
+several-tail slot of a key reaches `recordType` is unchecked.
+**Proposed probe** (before the decision): for each
+`AdmittedPendingR019` shape (`walk`'s `{ ...u, ...v }`, a mixed `{
+...r, ...h }`, and a component called from another component), build
+with a caller and record whether compilation stops at the Task 8
+placeholder. If every case stops there, option 1 changes no program
+that compiles today and refuses only what Task 8 would newly compile;
+a case that compiles today would make option 1 a narrowing of today's
+accepted programs as well. Whether the status is user-visible is a
+separate question (Q5).
 
 Pure unions of caller row variables as an extension are
 **investigation** (R019, §18.66 decision 2), with their own termination
@@ -277,10 +310,13 @@ obligation (adversarial review, finding 5). Until a slice theorem
 exists (requirements §11 item 11: slicing must quantify over the
 original problem), this document adopts T-R0a §5.3 rule 1 and T-R0b
 §10: **a non-empty `outside` gives no whole-function Solved**; the
-verdict is Unresolved (Unsupported (Outside kind)). Rules and refuters
-still run, so a Contradiction among recorded atoms is still reported
-(§1.1). The earlier proposal here, that a marker blocks Solved only
-when acceptance depends on a fact the slice cannot establish, becomes
+verdict is Unresolved (Unsupported (Outside kind)). A marker alone
+supplies no contradiction. Rules and refuters still run, so a
+separately justified contradiction among recorded atoms (a proved c1
+rule over original atoms, or a checked CX counter-instance; §18.65) is
+still reported as Contradiction (§1.1). The earlier proposal here,
+that a marker blocks Solved only when acceptance depends on a fact the
+slice cannot establish, becomes
 the relaxation a slice theorem would license; which O-kinds it would
 cover is the author's (Q3), with T-R0b and T-R0c.
 
@@ -288,7 +324,11 @@ The second spread is documented as a language rule (docs/language.md:
 897-898, cited). The brief lists it as a support boundary, and the
 model calls such programs valid; this document proposes classifying it
 S1, with an explicit compatibility decision for the author (Q4). T-R0c
-§6 item 4's "Unsupported" is a proposal under the same question.
+§6 item 4's "Unsupported" is a proposal under the same question. If it
+is S1, the policy is the markers': the second spread alone supplies no
+contradiction; rules and refuters still run, and a separately justified
+contradiction (c1 or CX, as above) still gives Contradiction (T-R0a
+§5.3 rule 1′).
 
 **S2, resource limits**:
 
@@ -331,7 +371,10 @@ theorem; S2 keeps it a limit.
   from P, an admissibility text only from A, a support text only from
   S or the re-check's unsupported path. S1 constructs applied at V
   (the `outside` markers, a second spread; §1.1, §1.5) give
-  verdict-stage `Unresolved (Unsupported …)`.
+  verdict-stage `Unresolved (Unsupported …)` when nothing else
+  decides. They alone never produce a contradiction text; a separately
+  justified Contradiction (c1 or CX on recorded atoms, §1.1) in the
+  same declaration is still reported with its own.
 
 Checks that would back these (proposed, per the claims-backed-by-checks
 rule; for the implementation plan): for I1 and I2, a property over the
@@ -509,8 +552,10 @@ data Layered
 -- W §1.6's NoWitnessReason; it is not a Construct.
 data Construct
   = SeveralTailLowering                -- Task 8 (W3)
-  | ComposedTailsUnjustified           -- §1.4, after Task 8; the Site
-                                       -- is the adm entry's path; Q5
+  | ComposedTailsUnjustified           -- §1.4 option 1, after Task 8,
+                                       -- only if the author chooses
+                                       -- refusal; the Site is the adm
+                                       -- entry's path
   | UncheckedPath                      -- W §3.3's unsupported path
 ```
 
@@ -608,7 +653,7 @@ Design points (proposed):
 | E_NESTING `NestingTooDeep` (source) | a | unchanged |
 | E_SPECIALIZATION `SpecializationLimit` | e | Solved; `NotCompiled` (AtS (AdmissionLimit { limit: SpecializationKeys 10000, site })) |
 | E_SPECIALIZATION `PolymorphicRecursion`, `NestedDatatype` | A | `AtA (Inadmissible site i)`, unchanged code; name-free slots `bareRow` admits and no active `Adm_W` row does are recorded `AdmittedPendingR019` (§1.4) |
-| E_TYPE `SecondSpread` (Resolve) | a today | Unresolved (Unsupported SecondSpread), pending author Q4 |
+| E_TYPE `SecondSpread` (Resolve) | a today | Unresolved (Unsupported SecondSpread), pending author Q4; Contradiction only from a separately justified c1 rule or CX on the recorded atoms, never from the spread alone (§1.5) |
 | E_TYPE `SameDisjoint`, `RepeatedTail` in a signature | b′ | unchanged, worded as policy |
 | syntax, names, arity, sorts, coverage, effect and handler codes | a | unchanged (effect refusals consuming record-solved metas: class f, `ClassF`, pending author Q3) |
 
@@ -678,9 +723,11 @@ run, cited); requirements §2.3.
 - **Implementing Task 8 alone** (W3) gives several-tail layouts, but
   `walk` never reaches specialization: it is refused at P (or, today,
   at check by W1). The composed witness, being `AdmittedPendingR019`,
-  must not reach specialization after Task 8 unless FK-U is adopted and
-  proved (§1.4). The probe's no-caller build does not validate
-  specializing or running a called `walk` (§18.63, cited).
+  reaches specialization after Task 8 or not according to the
+  author's compatibility decision (§1.4: refuse, keep compiling via
+  the current path, or prove FK-U first). The probe's no-caller build
+  does not validate specializing or running a called `walk` (§18.63,
+  cited).
 - **The end-to-end question** (does a called `walk` compile and run
   under an admitted, admissible witness?) needs all three: an admission
   route (forced, written via a changed signature, or a G3 contract), an
@@ -720,9 +767,14 @@ regression row, per AGENTS.md, in its implementation plan.
   decision 4, and W §3). Placed per §4; E017 moves into the re-check
   once contracts carry `Q` (Q2).
 - 6d. **Task 8** (S1 lowering) where its plan schedules it; it changes
-  only S1 outcomes. It lands with the §1.4 guard: an
-  `AdmittedPendingR019` component is not specialized unless FK-U is
-  adopted and proved (Q5).
+  only S1 outcomes, except for `AdmittedPendingR019` components,
+  whose treatment is the author's explicit compatibility decision
+  (§1.4; §18.66 decision 2): refuse after Task 8, keep compiling via
+  the current path, or prove FK-U first. Refusal is a behaviour change
+  (programs that check today would be refused for compilation), not
+  maintenance; §1.4's probe should run before the decision, since the
+  claim that these cases already stop at the placeholder is argued
+  only.
 - 6e. **G3's contract** (decision 6): only after a restricted C8
   argument is stated and accepted; it adds an admission route and
   touches no other layer.
@@ -744,6 +796,7 @@ still cite ("T-R0e Q3", "§7 Q5"); "—" marks a question added since.
 |---|---|---|
 | Q1 | T-R0a: does the interface carry the problem in every outcome, and expose a forcedness query? | carrying: answered by T-R0a with reconciliation A1. Forcedness query: open, Q7 |
 | Q2 | Should `AdmittedPendingR019` be visible to users? | open, Q5 |
+| — | After Task 8, are `AdmittedPendingR019` components refused, compiled via the current path, or covered by proving FK-U first? | open, an explicit compatibility decision (§1.4; §18.66 decision 2); no default; probe first |
 | Q3 | Second spread: language rule (a) or support boundary (S1)? | open, Q4 |
 | Q4 | Per-key E017 before contracts carry `Q`: a transitional V2 refusal or Unresolved? | open, Q2 |
 | Q5 | `AmbiguousType`: P policy or class e? | open, Q4 |
@@ -932,3 +985,23 @@ Notes from docs/plans/2026-10-22-inference-foundations-extension.md
   restricted C8 argument (extension §3, O34, O35).
 - §2.4: "interfaces before selection" as a proposed clause of the
   selection contract (extension §3, O37).
+
+### External review (2026-10-22)
+
+An external review forwarded by the author (issues 4 and 6 apply
+here):
+
+- Issue 4: the post-Task-8 refusal of `AdmittedPendingR019` is a
+  proposed behaviour change, not maintenance. §1.4 now lists the
+  options for the author's explicit compatibility decision (§18.66
+  decision 2: refuse after Task 8; keep compiling via the current
+  path; prove FK-U first), marks the "already stopped at the
+  placeholder" claim as argued, not verified, and proposes the probe.
+  §3.1's `Construct` comment, §5's `walk` note, §6's step 6d and §7
+  (a new row) follow; no option is a default.
+- Issue 6: unsupported syntax alone supplies no contradiction; rules
+  and refuters still run, and a separately justified contradiction (a
+  proved c1 rule over original atoms or a checked CX
+  counter-instance, §18.65) may still yield Contradiction. Stated in
+  §1.1's reporting exception, §1.5 (markers and second spread), I4
+  and §3.2's second-spread row.
