@@ -35,7 +35,14 @@ proposed edits, deduplicated author questions); (b) an adversarial
 review (termination FK-0/FK-W/FK-U, re-check RC1-RC5, CX statements'
 vacuity and quantifiers, generation dependence on solving, audit
 classifications, decision conformance). If their results are lost, run
-them again with those scopes.
+them again with those scopes. The reconciliation review finished: its
+full report (26 findings A1-I2, author questions Q1-Q10, decisions
+contradicted: 1 by T-R0e §6 step 3, possibly 2 by Adm_W and T-R0e §1.4,
+9 extended) is saved at scratchpad/r0-reviews/reconciliation.md (the
+session scratchpad named in §2). Plan: once the adversarial review is
+in, apply both by one editing agent per document in parallel (each
+document's findings only), then a re-check, then §18.67 and the
+consolidated questions.
 
 **Next:** apply both reviews' findings to the six documents (each owner
 keeps its topic canonical: witness owner for witness/termination; T-R0a
