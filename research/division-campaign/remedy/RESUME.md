@@ -115,3 +115,24 @@ assurance register, INF001; then a Humanizer pass and a Garner-style
 editorial review (humanized-prose-review skill), then adversarial
 review of the matrix's statuses; then cross-reference lines.
 EOF
+
+## 3. Status update (later the same night)
+
+- All six R0 documents revised per both reviews and integrated on
+  `main` (head 8a75d2b): each ends with a "Revision log (reviews of
+  88c052d)"; Lean Refute statements build clean (207 jobs), statements
+  only. A cross-document consistency re-check is running (read-only);
+  if lost, rerun it with the scope "each review finding resolved
+  consistently across all six; new contradictions; consolidated author
+  questions Q1-Q10 with defaults".
+- Next after it: apply any residual edits; record dossier §18.67 (the
+  revised design and the consolidated author questions); bring the
+  questions to the author; the implementation plan follows the answers.
+- The inference-foundations assessment is on `main` (b422545,
+  docs/plans/2026-10-22-inference-foundations-assessment.md). An
+  accuracy review of its matrix statuses and citations is running; if
+  lost, rerun it. After it: apply corrections, then add the writer's
+  proposed one-line cross-references to INF001, the assurance register,
+  source traceability and BACKLOG INF001/AS001 (re-check each file is
+  unchanged first), and record a progress line.
+- Nothing since 67ba706 is pushed.
