@@ -415,6 +415,11 @@ data AdmStatus = Admissible | Inadmissible | AdmittedPendingR019
   refusal, never invalidity. Names do not exist today, so refusing an
   unmatched name slot narrows nothing (decision 2).
 
+In T-R0a's types (generation-interface.md §6), the two admitted values
+are `Admitted.status ∷ AdmittedStatus` (`Admissible |
+AdmittedPendingR019`); `Inadmissible` is the refusal `AtA (Inadmissible
+site i)`, `i` the failing slot's index.
+
 This neither narrows nor endorses today's behaviour (decision 2): what
 `bareRow` admits beyond the active rows keeps its acceptance at check,
 recorded as `AdmittedPendingR019`, and **is never a premise**: no
@@ -1034,3 +1039,8 @@ decision changed.
 - R11: "T-R0e Q2" and "T-R0e Q9" kept; T-R0e §7 maps its old numbers.
 - R13: `Basis`'s `Forced Evidence` renamed `Forced ForcednessEvidence`,
   apart from T-R0a's contradiction `Evidence`.
+
+### Residual harmonization (168d446)
+
+- §2.3: records how T-R0a carries `AdmStatus`: `AdmittedStatus` for
+  the two admitted values, `AtA (Inadmissible site i)` for the third.
