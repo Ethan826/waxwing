@@ -6,6 +6,15 @@ It changes no compiler code, builds no prototype, adds no Lean proof
 and adopts no language policy. Statements in §12 are proposals for
 review, not authorized proof work.
 
+Companion: docs/plans/2026-10-22-inference-foundations-extension.md
+(the author's extension request, parts 1-6); §11 here stays the one
+obligations index.
+
+Revised 2026-10-21 after the author's corrections (research/
+division-campaign/remedy/queued-request-inference-extension.md) and
+a check of HM(X) on rendered pages, including the 1999 journal
+version; §16 lists the changes.
+
 The question: **which published conditions connect Waxwing's proved
 constraint theory to sound, predictable inference, and which of them
 has Waxwing established?**
@@ -16,36 +25,54 @@ Waxwing theorem, named), **checked** (a recorded run or test),
 **proposed** (a design or statement awaiting review), **unresolved**
 (no adequate argument yet). The matrix (§11) uses the five statuses the
 author fixed: proved, argued, experimentally checked (the matrix's name
-for checked), proposed, unresolved.
+for checked), proposed, unresolved. A published theorem is cited, not
+proved for Waxwing: its use here is at most argued until its
+hypotheses are shown to hold.
+
+"No source" and "none of the sources" below mean none of the five
+sources of §1 as inspected there. The companion reads further sources;
+they supply techniques, not ready-made Waxwing theorems.
 
 ## 0. The answer in brief
 
 - **What is established is a checking theory, not an inference
-  theory.** For the research model, `openCharacterization` (proved,
-  for `Scoped` problems with fresh labels) says when a *given*
-  signature is valid (`ValidOpen`), and
-  `cellOpenImpl` (proved) gives a sound but incomplete checker for it
-  (`d5_refused`, proved). The published counterpart is checking an
-  annotated binding against its declared type: OutsideIn(X)'s rule
-  BindA, or entailment between constrained types in HM(X). None of the
-  five sources derives principal inference from a validity
-  characterization, and this document does not either.
+  theory.** Three Lean theorems of the research model, each with its
+  premises: `openCharacterization` (proved for `Scoped` problems with
+  fresh labels) says when a *given* signature is valid (`ValidOpen`);
+  `cellOpenImpl` (proved) says that acceptance by the cell checker with
+  its proposed queries implies `ValidOpen`; and `d5_refused` (proved)
+  says that every cell certificate is refused for `divide5Sig as` with
+  `as` non-empty, although `d5_open` proves those problems valid. So the
+  cell checker is sound and incomplete. `d5_refused` is evidence about
+  that checker only: it does not show that another checking or
+  inference procedure must be incomplete. That a theorem exists does
+  not show that the compiler meets its premises. The published
+  counterpart is checking an annotated binding against its declared
+  type: OutsideIn(X)'s rule BindA, or entailment between constrained
+  types in HM(X). None of the five sources inspected here derives
+  principal inference from a validity characterization, and this
+  document does not either.
 - **The frameworks apply only after their hypotheses are checked for
   Waxwing's constraints.** HM(X) needs a cylindric constraint system
-  (E1-E4), equality axioms (F1-F6), decidable entailment and a minimal
-  normal form. OutsideIn(X) needs the entailment requirements R1-R8
-  and a sound, guess-free simplifier. **None of these is established
-  for Waxwing.** Two Lean results are partial evidence: entailed
-  substitutions preserve solutions (`binding_correspondence`), and a
-  clause-only `D` is satisfiable (`clauseOnly_satisfiable`). Source
-  signatures produce that form under recorder-rules G4-G8, which are
-  proposed.
+  (E1-E4) and equality axioms (F1-F6 in the 1996 workshop paper, D1-D6
+  in the 1999 journal version). Its completeness theorem also needs the
+  principal constraint property together with one of two further
+  conditions on the constraint system, and a realizable environment
+  (journal version, Theorem 12). OutsideIn(X) needs the entailment
+  requirements R1-R8 and a sound, guess-free simplifier. **None of
+  these is established for Waxwing.** Two Lean results are partial
+  evidence: entailed substitutions preserve solutions
+  (`binding_correspondence`), and a clause-only `D` is satisfiable
+  (`clauseOnly_satisfiable`). Source signatures produce that form under
+  recorder-rules G4-G8, which are proposed.
 - **Three kinds of guarantee stay separate.** "Principal when it
   succeeds" (OutsideIn(X) Theorems 3.2 and 5.2), "every typable program
-  has a principal type" (Jones 1995 Theorem 2; HM(X) Corollary 1, as
-  reconstructed) and complete inference (HM(X) Theorem 2, as
-  reconstructed; Koka Theorem 4) have different hypotheses.
-  OutsideIn(X) is incomplete by design. Waxwing promises none of the
+  has a principal type" (Jones 1995 Theorem 2; HM(X) workshop
+  Corollary 1 and the journal version's corollary to Theorem 12) and
+  complete inference (HM(X) journal Theorem 12; Koka Theorem 4) have
+  different hypotheses. They can coexist: OutsideIn(X) is incomplete
+  by design, yet a binding it accepts has a principal type, and that
+  is the type it finds (PDF p. 24, 51). Waxwing promises none of the
   three today.
 - **Record composition is where the published row theories stop.**
   EMLTI's Rémy-style rows have no concatenation. The chapter cites
@@ -56,19 +83,25 @@ for checked), proposed, unresolved.
   Waxwing's ∀rigid/∃flexible validity admits witnesses that depend on
   the rigid instance, so a valid written signature need not be a
   substitution instance of the scheme inferred from its body (argued,
-  §9 case A). Principality claims must therefore name their instance
-  order.
+  §9 case A). Under EMLTI's constraint-based instantiation it is an
+  instance (argued, companion §1.2). Principality claims must therefore
+  name their instance order and their scheme language.
 - **Effects: Koka is a foundation for row unification and
   generalization, not for Waxwing's whole effect system.** Its theorems
   cover a calculus with `exn`, `div` and `st`, a unit exception, no
   handlers and generalization only at the total effect. Waxwing's head-
   keyed `Fail` families, deep dynamically scoped handlers, `nofail`
   marks, ambient rows and record requirements are outside them.
-- **Inference does not choose compilation witnesses.** No source
-  resolves G3 (compiling an unforced split), R010 admissibility or
-  lowering. The nearest published notion is ambiguity: OutsideIn(X)
-  rejects ambiguous programs and Jones removes determined variables by
-  improvement. Neither selects one witness among several valid ones.
+- **Inference does not choose compilation witnesses.** None of the
+  five sources inspected here resolves G3 (compiling an unforced
+  split), R010 admissibility or lowering. The nearest notion among them
+  is ambiguity: OutsideIn(X) rejects ambiguous programs and Jones
+  removes determined variables by improvement. Neither selects one
+  witness among several valid ones. The companion adds sources that
+  bear on each: Jones's coherence work (equal meaning despite several
+  choices), partial evaluation (finitely many specialization keys) and
+  Leroy's simulation proofs (lowering). None of them selects a witness
+  either.
 
 ## 1. Sources and how they were read
 
@@ -79,24 +112,31 @@ marked "printed".
 
 | Source | Kind | Inspected | Caveat |
 |---|---|---|---|
-| Sulzmann, Odersky, Wehr, *Type Inference with Constrained Types* (HM(X)), 1996, https://publikationen.bibliothek.kit.edu/26696 | workshop paper, 12 pp. | whole text | pdftotext dropped Greek letters and most math glyphs; formulas below are **reconstructed**; proofs deferred to a technical report [Sul96] not read |
+| Sulzmann, Odersky, Wehr, *Type Inference with Constrained Types* (HM(X)), 1996, https://publikationen.bibliothek.kit.edu/26696 | workshop paper, 12 pp. | whole text; the formulas cited below were later transcribed from rendered pages (companion §1.1) | the PDF has no printed folios; proofs deferred to a technical report [Sul96], not accessed |
+| Odersky, Sulzmann, Wehr, same title, *Theory and Practice of Object Systems* 5(1), 1999; final preprint of 4 June 1998, https://infoscience.epfl.ch/record/64388 | journal paper (preprint) | §1-§6 and the appendix on rendered pages (companion §1.1); §7 not read | the authoritative version: it changes the instance relation, the normal-form requirement and the completeness hypotheses; lemma proofs deferred to [Sul97], not accessed |
 | Pottier, Rémy, *The Essence of ML Type Inference* (EMLTI), ATTAPL ch. 10, https://cambium.inria.fr/~fpottier/publis/emlti-final.pdf | book chapter | §10.1-10.8 and solutions | printed page = PDF page + 388 in the chapter body |
 | Jones, *Simplifying and Improving Qualified Types*, FPCA 1995, https://web.cecs.pdx.edu/~mpj/pubs/fpca95.pdf | conference paper | whole text | full proofs in a technical report (YALEU/DCS/RR-1040) not read |
 | Vytiniotis, Peyton Jones, Schrijvers, Sulzmann, *OutsideIn(X)*, JFP draft of 24 March 2011, https://simon.peytonjones.org/assets/pdfs/outsideinx.pdf | journal draft | whole text | the turnstile ⊩ and ⪯ were lost; reconstructed only where the prose fixes them |
 | Leijen, *Koka: Programming with Row-polymorphic Effect Types*, MSR-TR-2013-79, https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/koka-effects-2013.pdf | technical report | whole text | ε dropped throughout; p. 1 says an earlier version "contained a wrong lemma" in §5 |
 
-**HM(X)'s Theorems 1 and 2 must be checked against the printed PDF
-before anyone relies on them.** As reconstructed: Theorem 1
-(soundness, PDF p. 6) says that if algorithm W derives ψ; C; Γ ⊢W e : τ
-then C; ψΓ ⊢ e : τ (a second conclusion line is unrecoverable).
-Theorem 2 (completeness, PDF p. 6-7) says that whenever a logical
-derivation C′; Γ′ ⊢ e : σ′ exists under a suitable instance of the
-context, W succeeds and its generalized result is at least as general
-as σ′. Corollary 1 (principal types, PDF p. 7) specializes this to a
-closed context.
+**HM(X)'s theorems, checked on rendered pages (companion §1.1).** In
+the workshop paper, Theorem 1 (soundness, PDF p. 6) says that if
+ψ, C, Γ ⊢W e : τ then C, ψΓ ⊢ e : τ, ψC = C and ψτ = τ; the line the
+first version of this document called unrecoverable is ψC = C,
+ψτ = τ. Theorem 2 (completeness, PDF p. 6) says that if C′, Γ′ ⊢
+e : σ′ and C′ ⊢i φΓ ⪯ Γ′, then W succeeds and its generalized result
+is at least as general as σ′. Corollary 1 (PDF p. 7) specializes this
+to a closed context. **The 1999 journal version is authoritative and
+narrows completeness.** It states that the principal constraint
+property "is not sufficient" (p. 12, with Kennedy's dimension types
+as the counterexample). Its Theorem 12 (p. 12) assumes the constraint
+system is in one of two classes, 𝒳^a or 𝒳^r, and that the
+environment is realizable. It also requires every valid judgment's
+constraint to be satisfiable (p. 6). The appendix sketches the proof
+for 𝒳^r only; many lemmas are deferred to [Sul97], not accessed.
 
-Not read, though cited by Waxwing documents: Jones, *Coherence for
-Qualified Types* (linked from the assurance register), and Leijen's
+Read in the companion, not here: Jones, *Coherence for Qualified
+Types* (linked from the assurance register). Still not read: Leijen's
 scoped-labels paper, to which Koka defers its unification proofs.
 
 ## 2. Waxwing's starting point
@@ -206,7 +246,10 @@ so R0 gives no complete-problem generation for INF001's channels yet.
   rule has no satisfiability side condition (Fig. 2, PDF p. 4).
   Unsatisfiability propagates to the conclusion (Lemmas 8 and 9, PDF
   p. 7), so "it does not matter whether we test the satisfiability of
-  constraints during or after type inference" (PDF p. 7).
+  constraints during or after type inference" (PDF p. 7). That is the
+  workshop paper's position. The 1999 journal version requires the
+  constraint of a type scheme and of every valid judgment to be
+  satisfiable (p. 6).
 - EMLTI: rule hmx-Gen (Fig. 10-7, printed p. 423) and law C-LetAnd
   (Fig. 10-6, printed p. 418) keep the part of a constraint that does
   not mention the generalized variables outside the scheme. The solver's
@@ -264,7 +307,11 @@ proofs:
   mutual entailment (Definition 1, PDF p. 3). Normalization must exist
   and be minimal (Definition 8, PDF p. 5). Termination and minimality of
   the generic procedure are not proved in the paper; for System O they
-  are deferred to [WO96] (PDF p. 10).
+  are deferred to [WO96] (PDF p. 10). The journal version recasts this
+  as the principal constraint property: every constraint with a normal
+  form has a principal one (p. 10). Its completeness theorem assumes
+  that property but, by the authors' own account, the property alone
+  "is not sufficient" (p. 12).
 - Jones: rule (Simp) replaces a predicate set by any equivalent one
   (§3, PDF p. 3); "the only condition that a simplifying function must
   satisfy is that P ⇔ (simp P)" (§7, PDF p. 9). Rule (Imp) applies a
@@ -326,19 +373,27 @@ analogy is not a theorem.
 | Guarantee | Published form | Hypotheses | Waxwing |
 |---|---|---|---|
 | Principal when it succeeds | OutsideIn(X) Theorem 3.2 (PDF p. 23) and 5.2 (PDF p. 46) | R1-R8 (Fig. 3, PDF p. 14); guess-free simplifier (Fig. 8, PDF p. 21; Fig. 15, PDF p. 42); fuv(Γ) = ∅ | not promised; no simplifier shown guess-free |
-| Every typable program has a principal type | Jones 1995 Theorem 2 (PDF p. 7); HM(X) Corollary 1 (PDF p. 7, reconstructed); EMLTI's generation theorems read as principality (printed p. 430) | Jones: TV(A) = ∅, P0 sat, no redundant `let`s; HM(X): Definitions 1, 2, 6, 8 and a closed context | not promised; instance order undefined (§9) |
-| Complete inference | HM(X) Theorem 2 (PDF p. 6-7, reconstructed); Koka Theorem 4 (PDF p. 8) | HM(X): as above, proofs in [Sul96]; Koka: completeness against its syntax-directed rules, proofs "entirely standard", unification proofs deferred to [14] | not promised; the cell checker is incomplete (`d5_refused`) |
+| Every typable program has a principal type | Jones 1995 Theorem 2 (PDF p. 7); HM(X) workshop Corollary 1 (PDF p. 7) and journal corollary to Theorem 12 (p. 12-13); EMLTI's generation theorems read as principality (printed p. 430) | Jones: TV(A) = ∅, P0 sat, no redundant `let`s; HM(X) journal: X in 𝒳^a or 𝒳^r (principal constraint property plus satisfiable or simplified solved forms), Γ realizable in `true`, satisfiable judgments | not promised; instance order undefined (§9) |
+| Complete inference | HM(X) journal Theorem 12 (p. 12; the workshop Theorem 2, PDF p. 6, omits hypotheses the journal version adds after Kennedy's counterexample); Koka Theorem 4 (PDF p. 8) | HM(X): as above with Γ realizable in C′; appendix sketches 𝒳^r only, lemmas in [Sul97], not accessed; Koka: completeness against its syntax-directed rules, proofs "entirely standard", unification proofs deferred to [14] | not promised; the cell checker is incomplete (`d5_refused`), which says nothing about other procedures |
 
 OutsideIn(X) says plainly that Theorem 3.2 "says nothing about the
 situation where the algorithm fails to produce a type, or the
 simplifier does not terminate — that is, it says nothing about
 completeness" (PDF p. 23), and that "the absence of completeness is by
-design" (PDF p. 51). EMLTI calls a sound and complete generator "the
+design" (PDF p. 51). The same page gives the guarantee that survives:
+"if the algorithm accepts a definition, then that definition has a
+principal type, and that type is what the algorithm finds". So
+principality on success and incompleteness coexist; a design may
+promise the first with a documented acceptance boundary. The order in
+which OutsideIn(X)'s types are principal is its Definition 3.3 (PDF
+p. 22), which instantiates with type terms; companion §1.2 explains
+why Waxwing would need a different one. EMLTI calls a sound and
+complete generator "the
 analog of the existence of principal type schemes" (printed p. 430), but
 its principal solved forms are established only for the equality-only
 free tree model (Lemmas 10.2.19 and 10.2.21, printed p. 421-422).
 
-**Two inferences this document does not make.**
+**Three inferences this document does not make.**
 
 1. **Decidable validity does not supply principal inference.**
    `openCharacterization` decides nothing executable (§18.46), and even a
@@ -348,14 +403,21 @@ free tree model (Lemmas 10.2.19 and 10.2.21, printed p. 421-422).
    above every other.
 2. **A generic framework does not apply before its hypotheses are
    checked.** For HM(X): the cylindric axioms E1-E4 (Definition 2, PDF
-   p. 3), the type-constraint axioms F1-F6 (Definition 6, PDF p. 4),
-   decidable entailment (Definition 1, PDF p. 3) and the existence of a
-   minimal normalization (Definition 8, PDF p. 5). For OutsideIn(X):
-   R1-R8 and a sound, guess-free simplifier. For Waxwing's constraint
-   domain with ∀rigid/∃flexible validity none of these is stated, let
-   alone proved. `subst_sat` and `binding_correspondence` bear on F4
-   and F6 for the model's atoms; `mguExists` gives a finite most general
-   unifier per pattern and cell list, not one normal form per problem.
+   p. 3), the type-constraint axioms F1-F6 (Definition 6, PDF p. 4;
+   D1-D6 in the journal version, p. 5, where D5 is congruence for every
+   constructor, not only `→`), decidable entailment (Definition 1, PDF
+   p. 3), the existence of a minimal normalization (Definition 8, PDF
+   p. 5) and, for completeness, the journal version's class conditions
+   (𝒳^a or 𝒳^r, p. 12). For OutsideIn(X): R1-R8 and a sound, guess-free
+   simplifier. For Waxwing's constraint domain with ∀rigid/∃flexible
+   validity none of these is stated, let alone proved. `subst_sat` and
+   `binding_correspondence` bear on F4 and F6 for the model's atoms;
+   `mguExists` gives a most general unifier for each pattern and cell
+   list that has a unifier, not one normal form per problem.
+3. **An incomplete checker does not make every procedure incomplete.**
+   `d5_refused` shows that the cell checker refuses valid problems. It
+   says nothing about another checker or an inference procedure for
+   the same problems.
 
 **Ambiguity (cited, then argued).** Jones calls a type ambiguous when a
 variable appears left of ⇒ but not right of it (§4.3, PDF p. 5), and
@@ -375,9 +437,18 @@ For Waxwing, ambiguity appears in two places:
   constraints that condition fails, and the proposed hole contract
   (witness/statements.md §1.5) or a determinacy rule replaces it. C001
   holds its unknown-type rule open (c001-explicit/README.md, ruling 2).
-- **Splits.** Whether every valid split behaves alike is "forcedness"
-  (G3; requirements §5.1, §11 item 5). It is the record analogue of
-  coherence, and no source settles it (§10).
+- **Splits.** Two properties must be kept apart (author's correction
+  1). *Forcedness* means the split is uniquely determined (G3;
+  requirements §5.1, §11 item 5). It is the record analogue of Jones's
+  *unambiguity*, a determinacy condition that is sufficient for
+  coherence. *Coherence* means that the permitted alternatives, when
+  there are several, have equivalent behaviour. Establishing coherence
+  is how forcedness might safely be relaxed. Jones's coherence report
+  (read in companion §3) proves coherence from unambiguity under a
+  free type algebra and call-by-name equality, and his thesis weakens
+  unambiguity where evidence does not depend on a variable. Neither
+  result transfers literally, because `⊎` is not injective; none of
+  the five sources here addresses splits (§10).
 
 ## 7. Evidence and elaboration
 
@@ -397,9 +468,11 @@ For Waxwing, ambiguity appears in two places:
 - Koka gives no translation; "a proper monadic semantics" is future
   work (§8, PDF p. 12).
 
-So the sources supply typing conditions and a description of
+So these five sources supply typing conditions and a description of
 elaboration, not a theorem that elaborated programs mean what the
-source means.
+source means. Companion §2 reads Pottier's elaboration pearl and
+Inferno; they supply a design and a stated but unproved specification,
+with well-typedness tested, not a meaning-preservation theorem.
 
 **Waxwing (cited, then argued).** C001 chose explicit structural
 dictionaries (records of functions) with no instance search
@@ -420,8 +493,9 @@ does not arise for dictionaries. Two obligations remain for inference:
   rows ("Alternatives considered"). The record analogue of evidence is
   the per-name witness evaluated at each specialization key (decision
   4; witness/statements.md §1, §4: K, V, Lay, Adapt-N, all proposed),
-  narrowed by the ground re-check (RC1-RC5, proposed). No source covers
-  this route.
+  narrowed by the ground re-check (RC1-RC6, proposed). None of the
+  five sources covers this route, and none of the companion's sources
+  covers it whole (companion §2, §4).
 
 ## 8. Effects: what Koka establishes and where Waxwing differs
 
@@ -511,20 +585,50 @@ checking such signatures still stops at the R005B placeholder
 (language.md, "Tranche B, Task 2"). No split is chosen inside
 `submit`; its callers supply `u`, `t` and `q`.
 
-This exposes the question of order (argued). The author's written
-signature `submit(doc: { ...r }, inbox: { ...s }, archive: { ...s2 })
-where s disjoint s2` is argued valid (requirements §7: argued
-equivalent to `divide5Sig [id]`, for which `d5_open` is proved; a
-reviewer's bounded evaluation, unrecorded, agrees). Yet no substitution
-of written record expressions over `r`, `s`, `s2` for `u`, `t`, `q`
-makes the written signature an instance of the inferred one. Record
-syntax has no "r restricted to labels outside s"; `without` removes
-written labels only. So under the substitution-based instance order of
-HM(X) (Fig. 3, PDF p. 5) and OutsideIn(X) (Definition 3.3, PDF p. 22)
-the inferred scheme is not more general than a valid written one, while
-at every ground key each instance of the written signature is an
-instance of the inferred scheme. **Any principality statement for
-Waxwing must say which order it uses.**
+This exposes the question of order. The author's written signature
+`submit(doc: { ...r }, inbox: { ...s }, archive: { ...s2 }) where
+s disjoint s2` is argued valid (requirements §7: argued equivalent to
+`divide5Sig [id]`, for which `d5_open` is proved; a reviewer's bounded
+evaluation, unrecorded, agrees). Whether it is an instance of the
+inferred scheme depends on three things that must be fixed together
+(author's correction 4; companion §1.2 has the details):
+
+- **The scheme language.** Today's (L0): record types are fields plus
+  tails, constraints are conjunctions of `lacks` and `disjoint`, and
+  `without` is an expression form only, so there is no type-level
+  "r restricted to labels outside s".
+- **The admissible substitutions.** One vector of L0 row terms over
+  the written signature's variables, the same for every instance. This
+  is what HM(X)'s instance rule (∀⪯) (Fig. 3, PDF p. 5), OutsideIn(X)'s
+  Definition 3.3 (PDF p. 22) and Jones's generic instances use.
+- **The order.** Under that *substitution order* no choice works
+  (argued; a bounded check over three labels in a scratch copy, not
+  recorded, agrees): equating `{ ...u, ...t, ...q }` with `{ ...r }`
+  makes one of the three equal to `r` and the other two empty, and each
+  choice needs an atom the written `where` clause does not supply.
+  Under *ground-instance inclusion* (EMLTI Fig. 10-5, printed p. 414),
+  where the instantiating rows may differ at each ground instance,
+  every instance of the written signature is an instance of the
+  inferred scheme: put `r`'s labels outside `s` in `u`, the rest in
+  `t`, and leave `q` empty (argued).
+
+Three further points (argued, companion §1.2). First, in HM(X)'s and
+OutsideIn(X)'s own typing rules `submit` cannot even be given the
+written signature, because instantiation there takes type terms; their
+principality theorems concern a narrower relation than `ValidOpen`.
+EMLTI's presentation of HM(X) instantiates by constraint and does
+derive it. Second, a richer *internal* scheme language changes the
+example: with ∃ inside constraints the written and inferred schemes
+are both instances of a third scheme, and with Boolean row terms
+(`r` minus `s`) the written signature becomes a substitution instance
+through exactly the G1 conditional split. Third, the strongest
+constraint on `r`, `s`, `s2` alone is a disjunction, so no `where`
+clause of up to three `lacks`/`disjoint` atoms is principal among
+writable signatures (bounded, scratch only). None of this requires
+new surface syntax: the internal scheme language, serialized module
+interfaces and annotation syntax are separate choices. **Any
+principality statement for Waxwing must name its scheme language and
+its order.**
 
 **Case B: needs more expressiveness.** With written callees
 
@@ -562,7 +666,13 @@ PDF p. 8-10).
    Jones's syntactic test (PDF p. 5) but determined by `a` and `b` when
    `{ ...a, ...b }` holds `id`. A determinacy-based rule (EMLTI
    Definition 10.2.14; Stuckey and Sulzmann, OutsideIn(X) PDF p. 77)
-   and the hole contract are needed.
+   and the hole contract are needed. Not every constraint-only variable
+   is determined: in `{ ...a, ...b } = { ...w1, ...w2 }` neither `w1`
+   nor `w2` is. What needs determining is a variable that reaches a
+   callee's specialization key (companion §1.3, IF6). Alternatively,
+   projecting `w` away leaves `a disjoint b` plus "`{ ...a, ...b }` has
+   `id: Int`", a `has` over a composition that Jones 1995 cannot state
+   (argued).
 3. **A satisfiability check for the exported `D`.**
    `clauseOnly_satisfiable` no longer applies. This `D` is satisfiable
    (`a = { id: Int }`, `b = w = {}`); in general a check is required
@@ -580,7 +690,7 @@ valid splits into `u`, `t`, `q`: six when the lacked label is `x`
 
 ## 10. Inferring a valid contract versus choosing a compilation witness
 
-**The sources stop at types (cited).** Every result above concerns
+**The five sources stop at types (cited).** Every result above concerns
 typing judgments, schemes and, informally, evidence terms. None
 mentions specialization keys, monomorphization termination, record
 layouts or the choice among valid splits. The nearest notion is
@@ -599,52 +709,110 @@ witness/statements.md §1.6, `NoWitness`).
 
 **So (argued):** an inference design can deliver V for inferred
 contracts at most. It cannot resolve G3, because forcedness is a
-property of all solutions and the literature's answer to non-forced
-choices is rejection. It cannot resolve R010, because specialization
-termination (FK-0, FK-W, proposed) is about reachable keys, not types.
-It cannot resolve lowering, because layout correspondence (Lay,
-Adapt-N, proposed) is about witness values.
+property of all solutions. The five sources answer non-forced choices
+with rejection; Jones's coherence work permits any of several choices
+whose translations are provably equal, and selects none (companion
+§3). It cannot resolve R010, because specialization termination (FK-0,
+FK-W, proposed) is about reachable keys, not types; partial
+evaluation's bounded static variation is the published target
+property there (companion §4). It cannot resolve lowering, because
+layout correspondence (Lay, Adapt-N, proposed) is about witness values
+(companion §6).
 
 ## 11. Obligations matrix
 
-One status per row. "Proved" names a Lean-checked Waxwing theorem;
-paths are under research/composition-proofs/Composition/. Page
-references are those of §1.
+This is the one authoritative obligations index; the companion
+refers to it and keeps no index of its own. One status per row.
+"Proved" names a Lean-checked Waxwing theorem and holds only under
+that theorem's premises, as the row's interpretation states; a cited
+published theorem never makes a row proved. Paths are under
+research/composition-proofs/Composition/ unless they start with src/.
+Page references for the first five sources are those of §1; the
+companion's §0 lists its sources and page conventions. O22 is split
+into O22a-d (four kinds of termination). Rows O24-O60 come from the
+companion, which maps the readers' provisional IDs to them.
 
 | # | Published requirement (location) | Waxwing interpretation | Existing evidence | Remaining gap | Next action | Status |
 |---|---|---|---|---|---|---|
 | O1 | Sound and complete constraint generation for any X (EMLTI Thms 10.4.4, 10.4.8, printed p. 433-434) | the R0 recorder's problem is valid iff the declaration is well typed | recorder-rules §2.4 G-total, G-local, G-dead (proposed); acceptance tests stated, not run | no declarative Waxwing typing relation to correspond to; effect rows erased | state IF1 after a declarative relation for the record fragment exists | proposed |
 | O2 | Decidable entailment (HM(X) Def. 1, PDF p. 3) | deciding `ValidOpen`, i.e. `D ⊩ ∃flex. B` | `openCharacterization` (Typed/Bridge/ProofInstantiateSound.lean:45) characterizes; `cellOpenImpl` sound; `d5_refused` incomplete; `decideCall_correct` decides satisfiability only | no executable decision procedure (§18.46) | none now; executable construction is a separate authorized step | unresolved |
-| O3 | Cylindric system E1-E4 and type axioms F1-F6 (HM(X) Defs. 2, 6, PDF p. 3-4, reconstructed) | ∃ over flexible variables; `eq` atoms | `subst_sat`, `binding_correspondence` bear on F4, F6 | axioms unstated for Waxwing's Sat-entailment | state IF2; check the printed PDF first | unresolved |
-| O4 | A minimal normalization exists (HM(X) Def. 8, PDF p. 5) | one most general residual per declaration | `mguExists` (Typed/MGUExists.lean:80): finite mgu per pattern and cell list | per-pattern, not per problem; §9 suggests none in written syntax | state IF4 with an explicit order | unresolved |
+| O3 | Cylindric system E1-E4 and type axioms F1-F6 (HM(X) workshop Defs. 2, 6, PDF p. 3-4, checked on rendered pages; D1-D6 in the journal version, p. 5, where D5 is congruence for every constructor) | ∃ over flexible variables; `eq` atoms | `subst_sat`, `binding_correspondence` bear on F4, F6 | axioms unstated for Waxwing's Sat-entailment | state IF2 against the journal's D1-D6 | unresolved |
+| O4 | A minimal normalization exists (HM(X) workshop Def. 8, PDF p. 5); the journal's principal constraint property (p. 10), assumed by its completeness theorem but "not sufficient" without X in 𝒳^a or 𝒳^r (p. 12) | one most general residual per declaration, presentable as an exported scheme | `mguExists` (Typed/MGUExists.lean:80): a most general unifier per pattern and cell list | per pattern, not per problem; case B has two incomparable unifiers, so 𝒳^r's conditions are unlikely to hold (argued); for case A no `where` clause of up to three atoms is principal (bounded, scratch only) | IF4 restated on EMLTI's order (companion §1.4) removes this as a precondition of principality; keep it for presenting exported schemes | unresolved |
 | O5 | Entailment requirements R1-R8 (OutsideIn(X) Fig. 3, PDF p. 14) | Waxwing's semantic entailment | R1, R2 (and R4-R7 for plain `Sat`) argued to hold for plain `Sat` entailment; entailment under `ValidOpen` undefined | R3 (substitution) and R8 (substitutivity) unstated | include in IF2 | unresolved |
 | O6 | Improvement preserves satisfiable instances (Jones §4.1, PDF p. 4); guess-free P1 (OutsideIn(X) Def. 3.2, PDF p. 20) | an equational binding σ whose equations every solution of `C` satisfies preserves `C`'s solution set, under plain `Sat` over the model's atoms (a sufficient condition for Jones's improvement) | `binding_correspondence` (Binding.lean:110) | lifting to `ValidOpen` (σ entailed under each rigid instance, binding only flexible variables) is not stated | reuse in IF3 | proved |
 | O7 | A sound, guess-free simplifier (OutsideIn(X) Fig. 8, PDF p. 21; Fig. 15, PDF p. 42) | solver steps used for exported schemes are entailed by original atoms | `shareTails` P1 argued (reviewer: correct; refusal-audit §4); P2 bounded-checked; rule H known not guess-free (checked rejections); P3 argued only | no simplifier stated; P3's reachability not instrumented | state IF3 | unresolved |
-| O8 | Simplification needs only equivalence (Jones (Simp), §3, PDF p. 3; §7, PDF p. 9) | normalizing a recorded problem keeps its meaning, definedness atoms included | recorder-spec §5.3 normalization; C1-M `ValidOpenAntitone` (stated, Typed/Refute/Rules.lean:44, expected true) gives only one direction: dropping atoms can make an invalid problem valid, which is why §5.3 keeps `Defined` atoms | not proved | prove C1-M when CX's statements are approved | proposed |
-| O9 | Satisfiability may be tested during or after inference (HM(X) Lemmas 8-9, PDF p. 7); reject obviously inconsistent constraints (OutsideIn(X) §7.3, PDF p. 56) | a clause-only `D` (`lacks`/`disjoint` only) is satisfiable by a finite assignment; that source declarations yield clause-only `D` follows from recorder-rules G4-G8 (proposed) | `clauseOnly_satisfiable` (Sig/SourceCampaign.lean:82) | exported equation atoms (§9 case B) fall outside it | state IF5 | proved |
-| O10 | Principal when it succeeds (OutsideIn(X) Thms 3.2, 5.2, PDF p. 23, 46) | an accepted inferred scheme is most general | none | needs O5, O7 and an instance order | decide whether INF001 promises it | unresolved |
-| O11 | Principal satisfiable types (Jones Thm 2, PDF p. 7; TV(A) = ∅, no redundant `let`s) | every typable declaration has a principal inferred scheme | none; §9 case A suggests order-dependence | instance order; record composition | IF4 first | unresolved |
-| O12 | Complete inference (HM(X) Thm 2, PDF p. 6-7, reconstructed; Koka Thm 4, PDF p. 8) | the inferring checker accepts every specified program | `d5_refused` shows the cell checker incomplete | completeness not promised anywhere | record as an explicit non-goal or a separate claim (register) | unresolved |
+| O8 | Simplification needs only equivalence (Jones (Simp), §3, PDF p. 3; §7, PDF p. 9; HM(X) PDF p. 1) | normalizing a recorded problem preserves its meaning in both directions: the normalized problem is `ValidOpen` exactly when the original is, with the same solutions, definedness atoms included | recorder-spec §5.3 normalization, with no equivalence statement. C1-M `ValidOpenAntitone` (stated, Typed/Refute/Rules.lean:44, expected true) is a different property, validity monotonicity: removing body atoms keeps a valid problem valid and can make an invalid one valid. It is why §5.3 keeps `Defined` atoms, not evidence of equivalence | no equivalence statement for the normalizer | state normalization equivalence (both directions; solutions and validity) separately from C1-M | proposed |
+| O9 | Satisfiability may be tested during or after inference (HM(X) workshop Lemmas 8-9, PDF p. 7; the journal version instead requires satisfiable judgments, p. 6); reject obviously inconsistent constraints (OutsideIn(X) §7.3, PDF p. 56) | a clause-only `D` (`lacks`/`disjoint` only) is satisfiable by a finite assignment; that source declarations yield clause-only `D` follows from recorder-rules G4-G8 (proposed) | `clauseOnly_satisfiable` (Sig/SourceCampaign.lean:82) | exported equation or `has` atoms (§9 case B; O26, O48) fall outside it | state IF5 | proved |
+| O10 | Principal when it succeeds (OutsideIn(X) Thms 3.2, 5.2, PDF p. 23, 46); coexists with incompleteness (PDF p. 24, 51) | an accepted inferred scheme is most general, in a stated order | none | needs O5, O7 and an instance order; OutsideIn(X)'s order (Def. 3.3, PDF p. 22) instantiates with type terms, so its guess-free condition must be restated under `ValidOpen` and EMLTI's order (companion §1.5) | decide whether INF001 promises it, in which order and with which documented acceptance boundary (§14 Q1) | unresolved |
+| O11 | Principal satisfiable types (Jones Thm 2, PDF p. 7; TV(A) = ∅, no redundant `let`s); HM(X) journal corollary to Thm 12 (p. 12-13; X in 𝒳^a or 𝒳^r, Γ realizable in `true`) | every typable declaration has a principal inferred scheme | none; §9 case A: the written signature is not a substitution instance of the inferred scheme in today's scheme language, but is an instance by ground inclusion (argued) | instance order; scheme language; record composition; open-world match (O24) | IF4 restated | unresolved |
+| O12 | Complete inference (HM(X) journal Thm 12, p. 12; the workshop Thm 2, PDF p. 6, lacks its hypotheses; Koka Thm 4, PDF p. 8) | the inferring checker accepts every specified program | none; `d5_refused` shows only that the cell checker is incomplete, not that another procedure must be | completeness not promised anywhere | record as an explicit non-goal or a separate claim (register) | unresolved |
 | O13 | Recursion monomorphic inside its definition (EMLTI Ex. 10.7.6, printed p. 452); polymorphic recursion inference undecidable (same page) | inferred rows in a recursive component are shared within it, or written | signatures make today's recursion checked, not inferred | INF001 B6 termination | state IF8 | proposed |
 | O14 | Generalize only at the total effect (Koka GEN, Fig. 3, PDF p. 6-7) | named functions are values; `let` and lambdas stay monomorphic | language.md Effects ("`let` is monomorphic") | local generalization unplanned | none until local generalization is designed | argued |
 | O15 | Row unification terminates with the tail side condition (Koka Fig. 6, PDF p. 7-8) | effect-row unification | ADR 010; regression row `fx-side-condition` (scripts/regression-fx.mjs): removing the side condition makes the probe time out (necessity on one probe); termination with it is exercised only by the passing suite | proof deferred by Koka to [14], not read | read [14] when INF001's design starts | experimentally checked |
-| O16 | No uncaught exception when `exn` ∉ ε (Koka Thm 6, PDF p. 11) | no uncaught abort of a `Fail` family absent from the row | related differential and FX008 soundness tests (Go vs reference interpreter; no escape from cleanup); no test states the per-family property | per-family statement with shared keys and marks | state IF7 | proposed |
-| O17 | Ambiguous types rejected or determined (Jones §4.3, PDF p. 5; OutsideIn(X) §6.1, PDF p. 47; Def. 9.1, PDF p. 77) | holes and constraint-only variables are determined, or behavior is independent of them | ADR 007 holes; test/poly-properties.test.mjs; hole contract (witness §1.5) | residual constraints break ADR 007's condition 1 | state IF6 | proposed |
-| O18 | Elaboration into a typed core (OutsideIn(X) §8.1, PDF p. 70; no theorem in any source) | explicit dictionaries survive inference; per-name witnesses for rows | C001 assurance gates; witness §4 (K, V, Lay, Adapt-N) | no elaboration relation stated for inferred schemes | INF001 design states it (register row INF001) | proposed |
-| O19 | Coherence of elaborations (Jones, *Coherence for Qualified Types*; cited by the register, not inspected here) | permitted elaborations agree in meaning | none | source unread; G3's forcedness is the record analogue | read the source before INF001's design review | unresolved |
+| O16 | No uncaught exception when `exn` ∉ ε (Koka 2013 Thm 6, PDF p. 11); for user-defined effects, Koka POPL 2017 Lemma 4b (p. 9); Koka 2017 Thm 1 as printed needs a qualifier for a non-total ε (companion §6) | no uncaught abort of a `Fail` family absent from the row, per key; abort-freedom of cleanup stated separately | related differential and FX008 soundness tests (Go vs reference interpreter; no escape from cleanup); no test states the per-family property | per-family statement with shared keys and marks; neither Koka paper covers marks, `defer`, marker-aimed aborts or head-keyed families | state IF7 as two statements | proposed |
+| O17 | Ambiguous types rejected or determined (Jones §4.3, PDF p. 5; OutsideIn(X) §6.1, PDF p. 47; Def. 9.1, PDF p. 77; EMLTI Def. 10.2.14, printed p. 417) | holes, and projected constraint-only variables that reach a callee's specialization key, are determined, or behaviour is independent of them | ADR 007 holes; test/poly-properties.test.mjs; hole contract (witness §1.5) | residual constraints break ADR 007's condition 1; not every constraint-only variable is determined (`{ ...a, ...b } = { ...w1, ...w2 }`) | state IF6 as restated in §12 | proposed |
+| O18 | Elaboration into a typed core (OutsideIn(X) §8.1, PDF p. 70); Pottier ICFP 2014's relational specification (Fig. 9, PDF p. 9), stated and not proved (PDF p. 10); Inferno tests well-typedness | explicit dictionaries survive inference; per-name witnesses for rows | C001 assurance gates; witness §4 (K, V, Lay, Adapt-N) | no elaboration relation stated for inferred schemes | O27-O33; INF001 design states it (register row INF001) | proposed |
+| O19 | Coherence (Jones, *Coherence for Qualified Types*, Yale RR-989, Def. 5 and Theorem 5, p. 9; thesis §5.8.3, printed p. 77-78, the AV weakening) | when several splits are valid, their permitted elaborations agree in meaning. Forcedness (uniqueness) is the analogue of Jones's unambiguity, a sufficient condition, and is not itself coherence | `eval_split` (SplitIrrelevance/Run.lean:133; λ-split model, projection-free); `accepted_split` (SplitIrrelevance/Acceptance.lean:59; conditional on `Covers` and declared interfaces) | Jones's Theorem 5 assumes call-by-name βη equality, a free type algebra (false for `⊎`) and a principal translation, with no recursion or signatures | the C8-J statements note (O34-O39) | unresolved |
 | O20 | Rémy-style rows without concatenation; Sulzmann (2000) adds "new, ad hoc constraint forms" for extension and concatenation, and Wand's finite rows with duplicate labels need "a four-way disjunction" for extension (EMLTI printed p. 488-489) | disjoint composition with its own validity theory | checking-level validity characterized (`openCharacterization`, `d3bExistsWithin` (Typed/Universality.lean:111); Scoped, fresh labels) | a scheme-level (inference) account | IF4 | unresolved |
 | O21 | Annotated bindings solved completely by one substitution (OutsideIn(X) BindA, Fig. 7, PDF p. 19; PDF p. 41) | Waxwing checks ∀rigid ∃flexible, witnesses may depend on the rigid instance | `d5_open` (Typed/Cell/Proofs/W7/Divide5.lean:98) | that no uniform written substitution exists for `divide5` is argued only | include in IF4 | argued |
-| O22 | Termination of solving (OutsideIn(X) §7.7, PDF p. 67-69; EMLTI Lemma 10.6.8, equality model) | generation total; strategies under budgets; specialization keys finite | G-total (proposed); FK-0, FK-W (witness §2.4, proposed) | none proved | the termination stream, after statement review | proposed |
-| O23 | None: no source addresses witness selection, R010 or lowering | G3, R010, Lay stay separate obligations | boundaries §1; requirements §5 | as recorded in requirements §11 | keep out of inference claims | unresolved |
+| O22a | Termination of inference and solving (OutsideIn(X) §7.7, PDF p. 67-69; EMLTI Lemma 10.6.8, equality model); inferring polymorphic recursion is undecidable (EMLTI printed p. 452) | generation total; strategies under budgets; mandatory signatures avoid semi-unification | G-total (proposed) | none proved | the termination stream, after statement review | proposed |
+| O22b | Termination of witness construction and evaluation (JGS §5.5.1, printed p. 118-119, finite unfolding) | `eval_k` terminates at each key | witness §1.3: structural over `NameId` order (argued) | not stated apart from key finiteness | state with FK-W (O41) | argued |
+| O22c | Finitely many reachable specialization keys: bounded static variation (JGS §14.2, printed p. 299-300; safety proof §14.4, p. 305-306) | from every entering key, a recursive component reaches finitely many keys (FK-0, FK-W, FK-U); two splits with the same meaning may still differ here | FK-0, FK-W (witness §2.4, proposed); R010 | none proved; JGS's proof is a sketch for a first-order language over naturals | O40-O45 | proposed |
+| O22d | Runtime termination (Koka 2013 Thm 8, for `div`) | not implied by O22a-c, and does not imply them | separating programs `spin` (keys finite, runtime diverges) and constructor growth (runtime terminates, keys infinite), companion §4 | none claimed | keep out of inference and specialization claims | argued |
+| O23 | None of the five sources addresses witness selection, R010 or lowering; the companion's sources bear on parts (O19, O22c, O51-O53) and none selects a witness | G3, R010, Lay stay separate obligations | boundaries §1; requirements §5 | as recorded in requirements §11 | keep out of inference claims | unresolved |
+| O24 | EMLTI's HM(X): generation sound and complete for any model X (Thms 10.4.4, 10.4.8, printed p. 433-434); model conditions (Def. 10.2.5); open-world interpretations excluded (printed p. 424) | Waxwing's row model (infinite labels, field types, disjoint composition) is an EMLTI model, and ground-instance inclusion coincides with `ValidOpen`'s quantification over injective base extensions | none | the open-world match; the model conditions | state as part of IF4 (companion §1.4) | unresolved |
+| O25 | Instantiation by constraint (EMLTI hmx-Inst, hmx-Exists, Fig. 10-7, printed p. 423; weakening, Lemma 10.3.1) | a written signature is accepted when its constraint entails the instantiation constraint of its body (EMLTI has no annotations) | `d5_open`; recorder-rules §5.1 (call sites instantiate with flexible copies) | no statement relating annotation checking to EMLTI's entailment | include in IF4 | proposed |
+| O26 | Existential projection (HM(X) cylindric ∃, E1-E4; EMLTI hmx-Exists); Jones 1995 has neither ∃ nor composition | eliminating a constraint-only variable leaves a `has` over a composition, or keeps an `eq` atom with the variable | §9 case B: ∃w.(a disjoint b ∧ { ...a, ...b } = { id: Int, ...w }) is equivalent to a disjoint b ∧ ({ ...a, ...b } has id: Int) | internal atom form undecided; ADR 014 new combination | IF5 and IF6 restated; §14 Q2 | argued |
+| O27 | Constraints with a value (Pottier ICFP 2014, §3-§4.3 and Fig. 8, PDF p. 3-7): applicative, no bind | R0's generator returns the recorded problem with a pure continuation that builds the checked IR from a witness (EL1), instead of reading back settled types | recorder-rules §4 (no rule branches on a solved shape) and §5.3 (read-back ambiguous with several flexible tails) | EL1 unstated; T-R0a/T-R0b ownership | a design note comparing read-back and continuation (companion §7, decision D1) | proposed |
+| O28 | Elaboration after solving (Pottier §3, PDF p. 3, non-locality; §6, PDF p. 8, needs "some form of satisfiability witness") | values only after the verdict; `decode` corresponds to the per-strategy adapter (Adapt-N), never invoked on `NoWitness` | decisions 1 and 4 (§18.66); W §1.1 | Adapt-N unproved for every format | fold into the O27 note | argued |
+| O29 | Rigid then flexible binding (Inferno `letr1`, Solver docs); coercion of unconstrained quantifiers (Pottier App. B, PDF p. 10; Inferno `coerce`) | one ∀rigid/∃flexible prefix per declaration; a variable read by the elaboration but not determined may be defaulted only under the hole contract (EL3) | ADR 007; recorder-rules §5.1; `route` fails when `u` defaults to `{}` (split-irrelevance/ground-check.md §3) | Inferno's level discipline would refuse `divide5` (argued); EL3 unstated | state EL3 with IF6 | proposed |
+| O30 | Well-typed elaboration: no theorem; Inferno checks it with an independent System F checker on random terms (implementation evidence) | at every reached key the lowered checked IR, `Named` witness terms included, is well typed (EL2) | RC1-RC6 (proposed; reached keys only); witness §4 Cov, Adapt-N, R, Lay (proposed) | no symbolic checker for name-carrying checked IR; key-dependent decoded values are an ADR 014 new combination | specify, without building, a key-wise re-typer as an independent oracle | unresolved |
+| O31 | Only decoded variables get values (Inferno Solver docs: `decode`, `instance`, the variables `let` returns) | Cov's domain is the variables the continuation reads; auxiliaries are evaluated from defining atoms, never bound | W §4 Cov; recorder-rules §5.3 | depends on O27 | one sentence offered to W's Cov owner | argued |
+| O32 | The continuation's value type is a parameter (Pottier §3, PDF p. 3) | adding `Field r l` (G2) changes `TyTerm`, not the elaboration interface (EL5); `build` returns `Either` so partiality has a place | W §1.4 (reserved); decision 8 | definedness of partial values deferred with G2; ADR 014 new combination | record the condition in W §1.4 (proposal) | argued |
+| O33 | Meaning preservation: not stated by Pottier; HM to System F rests on type erasure | two valid witnesses lower to programs with the same behaviour at every key (EL4 for forced splits; O19 otherwise) | none; erasure fails because layouts and keys depend on types | EL4 unstated | after the C8-J note (O39) | unresolved |
+| O34 | Determinacy (EMLTI Def. 10.2.14, printed p. 417); Jones's Def. 5 (RR-989 p. 9) only under a free type algebra | the split is unique given the complete obligations, requirement atoms included (forcedness) | dossier program 4 (`acceptsParts`), argued for examples | determinacy over `ValidOpen` with `pr`/`cmp`; `ValidOpenR` unstated; the decider is unassigned (§18.67 Q7) | state forcedness as determinacy, with IF6 | unresolved |
+| O35 | Jones's AV weakening (thesis §5.8.3, printed p. 77-78): unambiguity relaxed where evidence does not depend on a variable | restricted C8: observable behaviour depends on a split only through its determined union | `eval_split` (proved; λ-split model, projection-free, no `==`, data, effects or handlers); C8-rt argued; `e3_differs` (SplitIrrelevance/Boundary.lean:83) shows projection breaks it | extend R to `==`, data, effects, handlers, `Fail` and update; Go rests on assumption A-go; Jones's βη equality is unsound for call-by-value | the extended R, stated in the C8-J note | argued |
+| O36 | None: Jones's equality concerns meaning, and Def. 5 rejects rather than filters | every valid split is accepted alike (printability, comparability) | `e2_not_covers₁`, `e2_covers₂` (SplitIrrelevance/Examples.lean:218, 198); `accepted_split` (conditional on `Covers` and declared interfaces) | requirement atoms in the selection contract | statement: the contract returns a witness satisfying the complete `BQ`, or Unresolved | unresolved |
+| O37 | Jones's order: principal type first, then the ambiguity test (RR-989 p. 9) | an exported (inferred) interface never depends on a split selection | E2′ (dossier §18, derived) | `accepted_split` assumes declared interfaces; needs IF4 | an "interfaces before selection" clause in the selection contract | argued |
+| O38 | Jones's `Erase C = id` (RR-989 Def. 3, p. 7); uniqueness of evidence would identify distinct dictionaries (p. 4); Dreyer et al. POPL 2007 §3.1 (p. 5): two instances, two typings; instance functors total (p. 2, 6) | explicit dictionary choices are observable values: inference, split selection and any future implicit layer preserve every dictionary operand term; implicit construction would need totality | C001 rulings 1 and 4; c001-explicit/assurance.md "explicit selection" gate (proposed) | the Dreyer-style and divergent-constructor programs are not fixtures | C001 acceptance and rejection examples, marked future | argued |
+| O39 | None selects among coherent alternatives; Jones only permits any of them (thesis printed p. 52) | a coherence theorem for an explicit fragment could make a deterministic choice an implementation freedom for run-time meaning, not for acceptance (O36), interfaces (O37) or key finiteness (O22c) | `eval_split`, `accepted_split` | Jones's Theorem 5 cannot be cited as the theorem; four ADR 014 new combinations (companion §3) | one statements-only C8-J note with one owner (decision D3) | proposed |
+| O40 | Bounded static variation (JGS §14.2, printed p. 299-300); safety by dependency chains and finite downward closure (§14.4, p. 305-306) | FK-0: on the single-tail baseline every slot takes values from entry components and written constants | ADR 007 (argued for rows); design §4.2 (types) | FK-0 not stated for type slots with tails | revise FK-0 to name bounded static variation as its target | proposed |
+| O41 | JGS's increasing, equal and decreasing descriptions (§14.3, p. 303); both static branches followed (p. 305) | FK-W: witness-bound names (`Restrict`, `Choose`) keep slot values within the bound U_C(E) | witness §2.3-2.4 (proposed); P2 argued | P2 unproved; union is the one constructor JGS classes as increasing | P2 lemma statement | proposed |
+| O42 | None: JGS §14.3 applied faithfully rejects a pure union on a self-loop (p. 304); the Trick (§4.8.3, p. 92-93) assumes a finite set already computed | FK-U: pure unions of caller row variables keep keys finite (the walk probe) | U-a, finite-powerset closure (witness §2.7, argued) | U-b definedness; U-c waits for Task 8; a local rule under ADR 014 | U-a/U-b statement, inactive until FK-U is adopted | unresolved |
+| O43 | A finite abstract analysis is not a finite set of concrete keys (JGS p. 303 versus §14.4) | Adm_W's table and R010's check are decidable; FK-0 and FK-W are the further argument | none beyond the distinction | JGS's §14.4 proof is a sketch | cite the distinction in the FK statements | argued |
+| O44 | Online size heuristics are not theorems (JGS §14.1, p. 297-298) | `specializationLimit = 10000` (src/Features/Specialize/State.purs:101) is a resource guard, never a termination argument | decision 3 (§18.66); ADR 007 | none | keep the limit as decision 9's resource-limit reason | argued |
+| O45 | One entry point, one `poly` (JGS); MLton duplicates a recursive group as a unit (implementation documentation) | per-component bounds compose over the component DAG with finite seeds and memoization | design §4.2 (argued) | the DAG induction, stated with FK-0 | state with O40 | argued |
+| O46 | Boolean unification (Martin–Nipkow, JSC 1989, Lemma 3.3, Thms 3.4, 3.6; Lemma 4.5 for presented algebras); Flix SVE (OOPSLA 2020 §3.2, §3.5) | G1 presence: on `LDFragment` with no flexible type variable at a field position, `ValidOpen` holds iff a certificate exists whose pieces are guarded by per-label Boolean formulas over rigid membership bits (PF1) | boolean-elimination.md Q-b (script-checked on 2³); `d5_refused` (cell certificates refuse `divide5`) | PF1 and a finite-rows lemma unstated (finite rows lack a unit); guards deferred (§18.48, decision 7); ADR 014 new combination | statements-only note, with an exhaustive check in a grammar fixed in advance if authorized (decision D4) | proposed |
+| O47 | Pottier LICS 2003 conditional constraints (§2.3, §4; satisfiability only) | typed field obligations per guarded region; flexible type variables shared across labels; nested types | `programs/shared-type-*.wxw` (shared-term flags refuse valid programs) | no ∀∃ typed account; per-label independence fails under shared type variables | counterexample search for cross-label coupling | unresolved |
+| O48 | Jones FPCA 1995 `r has l : t` with improvement (Fig. 1, PDF p. 2; §4.1, PDF p. 3-4); Gaster–Jones TR 96-3, extension plus `lacks` (Thms 1-2, p. 8) | a field reference forced by the declaration is "the unique t with r has l : t"; surface references only as `has`-bound variables, not as a `Ty` operator | witness option B (requirements §4.2) | exported `has` makes `D` not clause-only (IF5) | an interface note, statements only (decision D6) | argued |
+| O49 | None: Jones and Gaster–Jones need presence entailed; Pottier's guarded constraints decide satisfiability only | a reference whose presence is conditional (requirements §6.3) | none | depends on O46's guards; ADR 014 new combination | after O46 | unresolved |
+| O50 | LRAT checking (Cruz-Filipe et al., §4 Thm 1, PDF p. 8; Coq and ACL2 checkers, PDF p. 11-12; checking cost Thm 2, PDF p. 9) | an UNSAT certificate, checked by a verified checker, discharges cell `cover` for a fixed certificate; a SAT model is never a Contradiction (CX) | QX4 `CheckTautology` (coNP-hard, argued); `coverS` | ENC-S (soundness) and ENC-C (meaningful refusals) unstated; no demonstrated need (ADR 014 clause 4) | ENC-S/ENC-C statements only if `cover` needs them (decision D5) | proposed |
+| O51 | Leroy, JAR 2009, value relations for layouts (§11.3, p. 53; §12.3, p. 57) | at each key the lowered record value corresponds field by field to the source value (`V_k`); Lay is its type projection | fx differential suite (Go vs reference interpreter); record-layout coverage not checked | a label swap between same-typed fields passes every binding check | state `V_k`; same-typed-field mutants as a differential fixture family | unresolved |
+| O52 | Leroy Defs. 5-7, Thms 1, 2, 4 (§2.1-2.3, p. 3-9; §3.7, p. 16-17); resources not preserved (§17.4, p. 71-72) | preservation: value or divergence, plus console trace and defect report, modulo resource exhaustion; one simulation obligation per pass | fx differential suite; register: "no backend correctness proof claimed" | target determinism unstated; defects are behaviour, not "Wrong" | one-page preservation statement in J001's design | unresolved |
+| O53 | Translation validation (Leroy §2.2.2, p. 7, Def. 9, Thm 1) | RC validates a weaker property (typing, callee keys, layout definedness at reached keys), unverified; it answers "unsupported", never a verdict | witness §3.1, §3.3, §3.4 | wording only | one sentence naming RC's property in Leroy's terms (proposal for W) | argued |
+| O54 | Haack–Wells, ESOP 2003, Thms 5.2, 6.1, 6.2 (p. 11, 14, 15): minimal errors are faithful and accurate, for equality constraints | a diagnostic that names a culprit names a member of some minimal error; effect provenance names a path only | row `fx-provenance` (behaviour); docs/engineering.md "Blame needs evidence" | Haack–Wells covers established contradictions, not Unresolved; enumeration is exponential | classify diagnostics as path or participation claims; a two-site fixture pair | unresolved |
+| O55 | Haack–Wells monotonicity: a superset of an unsolvable set is unsolvable | diagnostic slicing is not constraint decomposition (S1/S2); under `ValidOpen` removing `D` hypotheses can break validity | fixtures `vacuity-one-slice`, `field-clash` (slicing/statements.md) | any minimal invalid core would be new (ADR 014) | record the distinction | argued |
+| O56 | Koka POPL 2017 operational semantics (Fig. 4, p. 8): deep handlers; a clause runs outside its handler | Waxwing's handler selection and clause context match, for the resume-free fragment; marker-aimed aborts and `defer` are Waxwing's own | pinned oracle rows (`fx-clause-context`; test/fx-oracle.test.mjs:79) | a written frame correspondence | part of INF001's design, as IF7's baseline | argued |
+| O57 | Koka 2017 §5, selective CPS with LAM-DUP (p. 10-12), with no correctness theorem | compiling a future `resume` (FX006) to JavaScript (J001) under ADR 010's row erasure | ADR 010 lists two options; LAM-DUP is a third | the CPS decision must precede erasure; ADR 014 new combination | source comparison in the FX006/J001 design | unresolved |
+| O58 | Koka 2017 OPEN and CLOSE (§3.2, p. 7; losslessness argued, not proved) | Waxwing opens a closed row only when a declaration reference is instantiated | ADR 010 (accepted local departure; eta-expansion workaround) | none | cite as the alternative in INF001's design | argued |
+| O59 | Jones FPCA 1993 Thm 1 (p. 8; kind-preserving mgu without constructor abstraction), §4.1-4.2 (p. 10; defaulting, synonyms); Koka 2017 Fig. 1 (p. 6) | K001: value, record-row and effect-row kinds with first-order constructor application; the two row sorts stay distinct | language.md "Row sorts" (shipped; unconstrained rows default to effect rows) | no source has a record row kind with disjoint composition; local rule under ADR 014 | K001 source-correspondence note | argued |
+| O60 | Dreyer et al. POPL 2007 canonical modules (p. 6) and `using` scope (§2.2, §3.2, p. 3, 5) | two collections share a compatible key policy | register: "Retaining a dictionary alone does not justify merging two collections" | identity holds only under one canonical instance per type; no source proves policy compatibility; ADR 014 new combination | none until M001's design | unresolved |
 
-Counts: proved 2 (O6, O9); argued 2 (O14, O21); experimentally
-checked 1 (O15); proposed 7 (O1, O8, O13, O16, O17, O18, O22);
-unresolved 11 (O2, O3, O4, O5, O7, O10, O11, O12, O19, O20, O23).
+Counts (63 rows): proved 2 (O6, O9); argued 20 (O14, O21, O22b,
+O22d, O26, O28, O31, O32, O35, O37, O38, O43, O44, O45, O48, O53,
+O55, O56, O58, O59); experimentally checked 1 (O15); proposed 16
+(O1, O8, O13, O16, O17, O18, O22a, O22c, O25, O27, O29, O39, O40,
+O41, O46, O50); unresolved 24 (O2, O3, O4, O5, O7, O10, O11, O12,
+O19, O20, O23, O24, O30, O33, O34, O36, O42, O47, O49, O51, O52,
+O54, O57, O60).
 
 ## 12. Recommended statements (statements only)
 
-None is authorized for proof. Each needs statement review before any
-proof work (dossier §18.66: "no new proofs before statement review").
+None is authorized for proof. These are proposals whose statements
+themselves need review before any proof work (dossier §18.66: "no new
+proofs before statement review"). IF2, IF4, IF5 and IF6 were revised
+after the author's corrections and companion §1; the companion adds
+EL1-EL5 (§2), which also await statement review.
 
 - **IF1, generation correspondence.** Given a declarative typing
   relation for the record fragment, a declaration is typable exactly
@@ -652,29 +820,49 @@ proof work (dossier §18.66: "no new proofs before statement review").
   Theorems 10.4.4 and 10.4.8. Prerequisite: that relation.
 - **IF2, framework hypotheses.** Waxwing's entailment (`Sat` over
   finite assignments, ∃ over flexible variables) satisfies HM(X)'s E1-E4
-  and F1-F6 and OutsideIn(X)'s R1-R8, each stated separately, with a
-  counterexample search for any expected to fail.
+  and the journal version's D1-D6, and OutsideIn(X)'s R1-R8, each stated
+  separately, with a counterexample search for any expected to fail. If
+  EMLTI's presentation is adopted as the foundation (companion §1.4),
+  its model conditions replace most of this list.
 - **IF3, guess-free steps.** A solver step σ may be used when producing
   an exported scheme only if every solution of the original atoms
   satisfies `eqs σ` (the premise of `binding_correspondence`), and
   `shareTails`'s labels-only binding is an instance (its P1).
-- **IF4, instance order.** Define a substitution-based and a
-  ground-instance order between constrained signatures, and state for
-  §9 case A that the written `submit` signature is an instance of the
-  inferred scheme in the ground-instance order but not in the
-  substitution order. This fixes what a principality claim can mean.
+- **IF4, scheme language and instance order (revised).** Fix the
+  scheme language (today's L0, or L0 with ∃ in constraints), the
+  admissible substitutions and their scope, and two orders: the
+  substitution order (one vector of row terms for all instances) and
+  EMLTI's order (entailment between instantiation constraints, read as
+  ground-instance inclusion). State for §9 case A that the written
+  `submit` signature is below the inferred scheme in EMLTI's order and
+  incomparable with it in the substitution order over L0. State that
+  EMLTI's order coincides with `ValidOpen` over Waxwing's row model
+  (O24) and that annotation checking is entailment of the body's
+  instantiation constraint (O25). This fixes what a principality claim
+  can mean.
 - **IF5, satisfiable exported hypotheses.** Before C1 or CX applies to
-  a scheme with exported equation atoms, some finite rigid assignment
-  satisfies its `D`: a generalization of `clauseOnly_satisfiable`, or a
-  decidable check.
-- **IF6, determined variables.** A scheme variable occurring only in
-  `D` is determined by the others (EMLTI Definition 10.2.14 adapted);
-  when it is, the hole contract (witness/statements.md §1.5) holds for
-  it at every key.
+  a scheme with exported `eq` or `has` atoms, some finite rigid
+  assignment satisfies its `D`: a generalization of
+  `clauseOnly_satisfiable`, or a decidable check.
+- **IF6, determinacy criterion (revised).** Not every constraint-only
+  variable is determined (`{ ...a, ...b } = { ...w1, ...w2 }`). The
+  semantic criterion: every projected variable that reaches a callee's
+  specialization key is determined by the scheme's type variables
+  (EMLTI Definition 10.2.14 adapted to `ValidOpen`). A candidate
+  sufficient syntactic test, to be checked: the variable occurs once,
+  as a whole tail, on one side of a single `eq` atom whose other
+  variables are determined (the analogue of EMLTI Lemma 10.6.7, which
+  covers only the free tree model). When a variable is determined, the
+  hole contract (witness/statements.md §1.5) holds for it at every key.
+  An undetermined variable that reaches a key, as `u`, `t`, `q` do in
+  §9 case A, is G3's business (rejection, or coherence, O19), not
+  IF6's.
 - **IF7, failure-family safety.** If a `Fail` key is absent from a
   checked row, no execution ends in an uncaught abort of that family,
   with shared keys (INF001 B5) and marks (B7) stated. Koka's Theorem 6
-  is the model.
+  is the model, and Koka 2017's Lemma 4b the closer one for user
+  effects. Abort-freedom of cleanup is a second, separate statement
+  (companion §6, O16).
 - **IF8, recursive groups.** Within a recursive component, inferred
   effect and error rows are shared (monomorphic recursion), and
   inference terminates or rejects with a source diagnostic (INF001 B6).
@@ -707,15 +895,23 @@ proof work (dossier §18.66: "no new proofs before statement review").
 
 ## 14. Questions for the author
 
-1. Should INF001 promise principality, and in which instance order
-   (IF4)? Or should it promise only soundness plus a predictable,
-   documented acceptance boundary, as OutsideIn(X) does?
+1. These are not alternatives: OutsideIn(X) promises soundness,
+   principality when it succeeds and a documented acceptance boundary
+   at once (§6). The question is which of these INF001 promises, and
+   for principality, in which scheme language and instance order
+   (IF4). Companion §1.4-1.5 explains the options and why EMLTI's order
+   fits Waxwing's call-site rule.
 2. When inference meets a residual relationship the signature language
-   cannot express (§9 case B): widen `where` with equation atoms,
-   refuse to generalize, or require an annotation?
+   cannot express (§9 case B): widen `where` with equation or `has`
+   atoms, keep the relationship only in an internal scheme language,
+   refuse to generalize, or require an annotation? Companion §1.3
+   separates the internal language, serialized interfaces and surface
+   syntax, which need not change together.
 3. Should IF2 be stated in Lean before any framework is cited as a
    foundation in a design, or is a reviewed prose argument enough for
    the first INF001 design?
+
+Companion §7 adds the decisions that arise from parts 2-6.
 
 ## 15. Review record
 
@@ -768,3 +964,43 @@ findings; all were applied on 2026-10-21. Corrections:
 
 The changed passages were re-reviewed with the `humanized-prose-review`
 skill, keeping every fact and qualification.
+
+## 16. Revision after the author's corrections (2026-10-21)
+
+**Corrections applied** (queued request, "First correct or qualify
+these points", and companion §1):
+
+- **Forcedness and coherence** (§6, O19): forcedness is uniqueness,
+  the analogue of Jones's unambiguity; coherence is equivalent meaning
+  across permitted alternatives.
+- **OutsideIn(X)** (§0, §6, O10, §14 Q1): principality on success and
+  incompleteness coexist; the question no longer offers a false choice.
+- **O8:** normalization equivalence (both directions) is separated from
+  C1-M's validity monotonicity.
+- **Reading scope** (§0, §7, §10, O23, labels): "no source" means none
+  of the five sources inspected here.
+- **Proved claims** (§0, §6, O12): the three Lean results in §0 carry
+  their premises; `d5_refused` is evidence about the cell checker only.
+  The matrix's proved rows remain O6 and O9.
+- **HM(X)** (§0, §1, §4-§6, O3, O4, O9, O11, O12, IF2): checked on
+  rendered pages; the 1999 journal version is cited as authoritative,
+  with its class conditions, realizable environments and satisfiable
+  judgments. The formulas are no longer marked reconstructed.
+- **§9 case A** re-specified (scheme language, substitutions, orders)
+  with its claims marked argued; case B gains the determinacy
+  counterexample and the projection to `has`.
+- **IF4-IF6** restated as proposals needing statement review; IF6 now
+  states a determinacy criterion instead of claiming every
+  constraint-only variable is determined.
+- **§11:** O22 split into O22a-d; rows O24-O60 added from the
+  companion; counts recomputed.
+
+**Prose review.** The changed passages were reviewed with the
+`humanized-prose-review` skill (catalogued audit, rewrite, re-review,
+editorial pass on Garner's, Fowler's, Orwell's and Williams's
+principles). Findings fixed: "every statement" claims narrowed to the
+five sources; a status sentence that let a theorem's existence imply
+the compiler meets its premises, now stated as a non-implication; an
+ambiguous "it" in §0's record bullet checked and kept (its antecedent
+is the written signature). Every fact, location and qualification was
+kept.
