@@ -79,7 +79,17 @@ restricted modules forbidden except named types from the own
 importers, types and instances declared in `.Internal`, `positioned`
 keyed per `CheckedName` site with a site table and `DuplicateSite`,
 public `Ref`, `Gen`'s constructor hidden, `covDomain` before the
-witness steps, T10's allowlist stated.
+witness steps, T10's allowlist stated. Fix round 3 (re-review 2,
+NB1-NB9): `Use`/`UseSort`/`ElabFault`/`SealFault` in an unrestricted
+`Domain.Elaborating.Types` and `Ref` in `Generate.Elab.Internal`
+(re-exported as a stated E6 exception) to remove two module cycles;
+`Judged` in its own `Domain.Verdict.Judged.Internal`, leaving plan
+Task 1.1's `Domain.Verdict.Internal` untouched;
+`Features.Check.Generate` exporting the allowlist `generate`,
+`staticRules`, `Tables`, `Signatures` (no `emptyProblem`, ruling
+R2); an `emit` primitive and `Parts` as append-only logs, so
+`DuplicateSite` is detectable; E6 alias resolution, pinned export
+lists, and tests T3a/T3b/T6/T7/T12.
 
 ## Language direction recorded (2026-10-08)
 
