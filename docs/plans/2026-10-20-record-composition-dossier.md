@@ -5078,3 +5078,41 @@ not undermine the established record-model proofs. Direction:
 - **Not in scope:** repairing `route`, implementing the recorder,
   adopting a selection rule. First establish which architectural
   prerequisites need their own authorized tranche.
+
+### 18.62 The author's answers on G3 and the leaf construction (2026-10-21)
+
+These findings change the draft remedies, not the established proofs.
+Dropping the false `pick` example (soundness review: with `q`, `s`
+rigid it is invalid at `q = s = {}`) and correcting the witness tables
+is appropriate.
+
+1. **"Forced" accounts for the complete semantic typing obligations**,
+   including printability and comparability wherever required; a split
+   satisfying only the row equations is insufficient. **R010
+   admissibility stays separate:** if several splits satisfy typing but
+   only one passes the compilation restriction, it is the *only
+   admissible split*, not a semantically forced one. Selection respects
+   both obligations without conflating them.
+2. **Probe `walk` narrowly against today's compiler,** with
+   explicit-witness controls where expressible, recording the exact
+   phase and diagnostic, and distinguishing current behavior from the
+   proposed rule. No compiler repair or broad test campaign.
+3. **Use the corrected key and table** (R6: at `r = {x, y}`, `s = {}`,
+   `s2 = {}`, `as = [x]`, `sigma5`, `d5Wit` and the rejected
+   lexicographic rule give three different splits), pointing to the
+   definitions (`sigma5`, Sig/ProjectionDefs.lean; `d5Wit`,
+   Cell/Proofs/W7/Divide5.lean). `sigma5` sends `r`'s unwritten labels
+   to `q`.
+
+Qualifications for the revision: replace "behavior cannot vary today"
+with the exact proved fragment, or state that no behavioral difference
+has been demonstrated; the split-irrelevance model is not a
+whole-language theorem. The selection leaf construction is **sound
+but potentially incomplete**: adding neighbours' `lacks` constraints
+does not necessarily express the positive path condition; state
+whether leaf conditions imply path conditions, the reverse, or
+neither, since the witness adapter needs an applicable leaf, not only a
+validity proof. **No selection rule is chosen.** After R0 and the
+typed-witness review, the blocker-first proposal states semantic
+validity, acceptance requirements, admissibility and behavior
+preservation separately.
