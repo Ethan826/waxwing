@@ -1,0 +1,8 @@
+{
+  "name": "component-in-component/no-caller",
+  "note": "a recursive component (outer) that calls another recursive component (inner), both over `{ ...r, ...h }`",
+  "source": "fn inner(p: { ...r, ...h }, q: { ...h }, n: Int): Int = if n == 0 then 0 else inner(p, q, n + -1); fn outer(p: { ...r, ...h }, q: { ...h }, n: Int): Int = if n == 0 then 0 else inner(p, q, n + -1) + outer(p, q, n + -1); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null
+}

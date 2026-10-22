@@ -1,0 +1,8 @@
+{
+  "name": "walk-pinned-identity/no-caller",
+  "note": "walk pinned to the identity split through the uonly parameter",
+  "source": "fn walk(whole: { ...u, ...v }, uonly: { ...u }, n: Int): Int = if n == 0 then 0 else walk(whole, uonly, n + -1); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null
+}

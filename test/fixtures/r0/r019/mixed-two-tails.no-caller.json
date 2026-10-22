@@ -1,0 +1,8 @@
+{
+  "name": "mixed-two-tails/no-caller",
+  "note": "a non-recursive function whose parameter is `{ ...r, ...h }`",
+  "source": "fn mix(p: { ...r, ...h }, q: { ...h }): Int = 0; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null
+}

@@ -1,0 +1,8 @@
+{
+  "name": "mixed-recursive/no-caller",
+  "note": "a self-recursive function with a `{ ...r, ...h }` parameter, passing its own arguments",
+  "source": "fn mix(p: { ...r, ...h }, q: { ...h }, n: Int): Int = if n == 0 then 0 else mix(p, q, n + -1); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null
+}

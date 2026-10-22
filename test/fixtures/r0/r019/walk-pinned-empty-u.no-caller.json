@@ -1,0 +1,8 @@
+{
+  "name": "walk-pinned-empty-u/no-caller",
+  "note": "walk pinned to u' = {}, v' = { ...u, ...v } (the empty record is `{ k: 1 } without { k }`)",
+  "source": "fn walk(whole: { ...u, ...v }, uonly: { ...u }, n: Int): Int = if n == 0 then 0 else walk(whole, { k: 1 } without { k }, n + -1); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null
+}

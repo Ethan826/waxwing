@@ -1,0 +1,8 @@
+{
+  "name": "component-in-component/caller",
+  "note": "a recursive component (outer) that calls another recursive component (inner), both over `{ ...r, ...h }`",
+  "source": "fn inner(p: { ...r, ...h }, q: { ...h }, n: Int): Int = if n == 0 then 0 else inner(p, q, n + -1); fn outer(p: { ...r, ...h }, q: { ...h }, n: Int): Int = if n == 0 then 0 else inner(p, q, n + -1) + outer(p, q, n + -1); fn main(): Int = outer({ a: 1, b: 2 }, { b: 2 }, 1);",
+  "phase": "specialize",
+  "code": "E_INTERNAL",
+  "text": "R005B placeholder: rows with several tails are lowered in Task 8"
+}

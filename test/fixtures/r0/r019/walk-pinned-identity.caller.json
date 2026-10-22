@@ -1,0 +1,8 @@
+{
+  "name": "walk-pinned-identity/caller",
+  "note": "walk pinned to the identity split through the uonly parameter",
+  "source": "fn walk(whole: { ...u, ...v }, uonly: { ...u }, n: Int): Int = if n == 0 then 0 else walk(whole, uonly, n + -1); fn main(): Int = walk({ a: 1, b: 2 }, { a: 1 }, 1);",
+  "phase": "specialize",
+  "code": "E_INTERNAL",
+  "text": "R005B placeholder: rows with several tails are lowered in Task 8"
+}

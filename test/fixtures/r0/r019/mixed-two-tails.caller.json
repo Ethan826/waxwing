@@ -1,0 +1,8 @@
+{
+  "name": "mixed-two-tails/caller",
+  "note": "a non-recursive function whose parameter is `{ ...r, ...h }`",
+  "source": "fn mix(p: { ...r, ...h }, q: { ...h }): Int = 0; fn main(): Int = mix({ a: 1, b: 2 }, { b: 2 });",
+  "phase": "specialize",
+  "code": "E_INTERNAL",
+  "text": "R005B placeholder: rows with several tails are lowered in Task 8"
+}

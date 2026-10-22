@@ -828,3 +828,38 @@ walk(whole, left, n + -1);` (the language has no binary minus).
    pass check, and the placeholder appears at specialization of several
    tails. Recorded here; the language doc is not changed in this
    research tranche.
+
+## R019 compatibility probe (2026-10-22)
+
+Task 0.1 of the first R0 shadow tranche. Characterization only: no
+source changed. `test/r0-r019-probe.test.mjs` pins, for seven shapes
+named in T-R0e §1.4 (each with a caller and without), the stage that
+stops today's compiler, its code and its exact text; fixtures are in
+`test/fixtures/r0/r019/`, run through `phaseOf`
+(test/r0-probe-support.mjs), which calls parse, resolve, check,
+`specializationKeys` and `compile` directly.
+
+| Shape | Without a caller | With a caller |
+| --- | --- | --- |
+| `walk` as written (`{ ...u, ...v }`, `where u disjoint s`) | stops at check, E_TYPE "Cannot tell whether walk's u or v holds walk's u; ..." | the same |
+| `walk`, identity split via `uonly` | compiled | stops at specialize, E_INTERNAL "R005B placeholder: rows with several tails are lowered in Task 8" |
+| `walk`, `u' = {}` via `uonly` | compiled | the placeholder |
+| mixed `{ ...r, ...h }`, non-recursive | compiled | the placeholder |
+| mixed with a named field before the tails | compiled | the placeholder |
+| mixed, self-recursive | compiled | the placeholder |
+| recursive component called from another recursive component | compiled | the placeholder |
+
+Reading, for the probed sources only:
+
+1. Every case that compiled is one in which the function is never
+   called, so specialization never reaches it. No probed program that
+   calls a multi-tail function compiled; all stopped at the Task 8
+   placeholder (or, for `walk` as written, earlier at check).
+2. So over these shapes, option 1 of T-R0e §1.4 narrows nothing that
+   compiles *when called*. It would narrow the uncalled definitions,
+   which compile today. This is evidence about seven sources, not about
+   the language; it does not show that no multi-tail program compiles.
+3. A spread literal `{ ...u, ...h }` is not a shape here: Resolve
+   refuses it first (E_TYPE "A record literal accepts at most one
+   spread"), so the shapes use `{ ...r, ...h }` in types only.
+4. No decision is taken. G-R019 stays open; no default is built.

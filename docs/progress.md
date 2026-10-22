@@ -20,6 +20,15 @@ output). Measured: regression 449 s (was 1,039.5 s), full verify 728.7 s
 (.build/evidence/t013-regression.log, t013-verify.log). Details:
 docs/plans/2026-10-17-verify-profile.md "Adopted (2026-10-17)".
 
+## R0 shadow tranche, Task 0.1: R019 probe (2026-10-22)
+
+Characterization test only (test/r0-r019-probe.test.mjs, 14 fixtures
+in test/fixtures/r0/r019/, helpers in test/r0-probe-support.mjs); no
+source or diagnostic changed. Result recorded in docs/findings.md
+"R019 compatibility probe": no probed called program compiled; calls to
+multi-tail functions stop at the Task 8 placeholder, uncalled
+definitions compile. G-R019 stays open.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

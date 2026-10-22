@@ -1,0 +1,8 @@
+{
+  "name": "walk-as-written/no-caller",
+  "note": "walk with `{ ...u, ...v }` in its signature, recursion passing its own arguments (findings.md R010 probe item 1)",
+  "source": "fn walk(whole: { ...u, ...v }, left: { ...s }, n: Int): Int where u disjoint s = if n == 0 then 0 else walk(whole, left, n + -1); fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_TYPE",
+  "text": "Cannot tell whether walk's u or v holds walk's u; no annotation can decide u and v, which belong to this call of walk"
+}

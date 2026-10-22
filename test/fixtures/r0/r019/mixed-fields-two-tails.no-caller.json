@@ -1,0 +1,8 @@
+{
+  "name": "mixed-fields-two-tails/no-caller",
+  "note": "the same with a named field before the tails",
+  "source": "fn mix(p: { x: Int, ...r, ...h }, q: { ...h }): Int = 0; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null
+}
