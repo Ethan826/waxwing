@@ -5564,3 +5564,40 @@ proposals, not posed as language-design questions.
 the revised plan. Proof work is scoped separately. The reviewer
 recommends pushing the reviewed documents as a checkpoint with their
 unproved status intact.
+
+### 18.71 First shadow tranche authorized; checkpoint push (2026-10-22)
+
+The author authorized the bounded first shadow tranche as defined in
+docs/plans/2026-10-22-r0-implementation-plan.md ("First execution
+tranche"), with these choices:
+
+1. **Held back:** Task 1.2's CLI-output step and all of Task 2.2.
+   Today's stderr format, first diagnostics, codes, texts and
+   acceptance are preserved. Internal collection and the unused
+   `E_UNRESOLVED` constructor may land.
+2. **G-Q13 reading confirmed (isolation-based).** A failure confined
+   to an untrusted search is recorded as `SearchBroke`; its partial
+   result is discarded and independent attempts continue. A
+   trusted-checker failure, an orchestration invariant violation, or
+   uncertainty about shared-state integrity stops the run. Not
+   implemented as a blanket exception catch.
+3. **Task 5.1 included** with its empty production registry; test-only
+   evidence stays unreachable from the production composition root.
+4. **Defects:** those in the new shadow machinery are fixed within the
+   tranche; those in today's live checker are recorded with fixtures
+   and evidence, and its acceptance is not changed under this
+   authorization.
+5. No further whole-plan review before starting; the task reviews and
+   technical gates already specified are kept. Work stops for a scope
+   or language-policy change.
+6. The tranche ends with the census, the window table, verification
+   evidence and an independent tranche review, and does not proceed
+   automatically to the next tranche.
+
+Still unauthorized: the live switch, live refutation, Phase 6, D1's
+implementation in the later tranche, and all proof work.
+
+The author authorized pushing the documentation and research
+checkpoint to `origin/main`; it publishes proposed statements as
+proposed, not as proved. Later implementation pushes need their own
+authorization.
