@@ -1,0 +1,14 @@
+{
+  "name": "form/print",
+  "kind": "form",
+  "node": "Print",
+  "sources": [],
+  "marked": false,
+  "against": null,
+  "note": "Console has no argument",
+  "source": "fn g(): Unit with Console = Console.print(1); fn main(): Unit with Console = g();",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

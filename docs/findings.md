@@ -1247,3 +1247,64 @@ evidence is consistent with each class; they do not derive it, and
 they cannot check that a `selected` change lies outside the refusal
 site (the `changes` field records it for the reviewer). The gate's
 reviewer re-derives each class from the cited lines.
+
+## Erased effect rows (2026-10-22)
+
+Task 0.7 of the first R0 shadow tranche, for gate G-erased. The design
+note is docs/plans/r0-erased-rows.md; this section records its runs.
+Nothing in the compiler changed.
+
+**Probe (checked).** test/r0-erased.test.mjs runs the 23 fixtures in
+test/fixtures/r0/erased/ through `refusalOf` and pins each outcome
+(phase, code, text, covered text). `node --test
+test/r0-erased.test.mjs`: 4 of 4 pass. Results:
+
+- obligation-record/refused, `apply(h, { y: 1 })` where `apply`'s
+  `a` is fixed only by the `State` label argument of `h`'s row:
+  check, E_TYPE `Expected { x: Int }, found { y: Int }` at
+  `{ y: 1 }`. The control `apply(h, { x: 1 })` compiles. No T-R0b
+  marker applies (argued), and the recorded problem is satisfiable by
+  hand translation (argued), so a strategy solving only the recorded
+  atoms would call it Solved.
+- obligation-annotation/refused, the same obligation through a
+  lambda annotation's shared row: E_TYPE `Expected Unit -> Unit,
+  found Unit -> Unit` at `h`; the control compiles.
+- obligation-ground/refused, `State(Int)` against `State(Bool)` with
+  no record or variable: the same text at `h`; the control compiles.
+- The 17 `form` fixtures (one per operation, handler and `fail` form,
+  signature, annotation and constructor source) all compile, and
+  each declaration `g` contains its resolved form (checked by walking
+  the resolved program).
+
+**Mutant runs (recorded).** One isolated copy in the session
+scratchpad: output/, package.json, test/r0-erased.test.mjs,
+test/r0-probe-support.mjs and test/fixtures/r0/erased/, at the same
+paths. Unpatched: 4 of 4 pass. Each mutant was restored before the
+next; the copy was deleted at the end.
+
+- M1, label arguments never unified
+  (output/Features.Check.UnifyRow/index.js line 74:
+  `bind(foldM(unifyPair)(pending.subst)(Data_Array.zip(entry.label.value1)(found.other.label.value1)))(marked)`
+  became `bind(new Data_Either.Right(pending.subst))(marked)`).
+  1 test failed, "every erased-row fixture gives its recorded
+  outcome". Listing every fixture's outcome under M1: exactly
+  obligation-record/refused, obligation-annotation/refused and
+  obligation-ground/refused changed, each to compiled. So the three
+  refusals come from label-argument unification
+  (Check/UnifyRow.purs:159-163).
+- M2, form/fail-written relabelled `"family": "unwritten"`. 1 test
+  failed, "each form fixture writes its resolved form in g", at
+  form/fail-written.
+- M3, form/reference-plain's `node` changed from `OperationRef` to
+  `Perform`. The same test failed at form/reference-plain.
+- M4, form/print relabelled `"marked": true` with no source. 1 test
+  failed, "predictions use the criterion vocabulary", at form/print.
+
+**Diagnostic found (live checker; recorded, not fixed).** Two of the
+refused programs report `Expected Unit -> Unit, found Unit -> Unit`:
+the types differ only in their rows, which the text omits, so it
+names two equal-looking types as a mismatch. BACKLOG FX031.
+
+**Limits.** The fixtures' `sources` and `marked` are the criterion's
+predictions, not checked until Task 3.5's detector runs them. Data
+types with row parameters have no fixture.

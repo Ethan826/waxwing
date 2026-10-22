@@ -1,0 +1,15 @@
+{
+  "name": "form/fail-written",
+  "kind": "form",
+  "node": "Fail",
+  "family": "written",
+  "sources": [],
+  "marked": false,
+  "against": null,
+  "note": "the imported fail writes the ground family E",
+  "source": "type E = E; fn g(): Int with Fail(E) { fail } = fail(E); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

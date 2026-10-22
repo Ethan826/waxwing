@@ -1,0 +1,17 @@
+{
+  "name": "form/fail-unwritten",
+  "kind": "form",
+  "node": "Handle",
+  "family": "unwritten",
+  "sources": [
+    "fail"
+  ],
+  "marked": true,
+  "against": null,
+  "note": "Fail.fail(E): the family is the payload type, not written (also FailFamily)",
+  "source": "type E = E; fn g(): Int = handle Fail.fail(E) { fail(error: E) => 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

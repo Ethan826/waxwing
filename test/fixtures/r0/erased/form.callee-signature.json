@@ -1,0 +1,16 @@
+{
+  "name": "form/callee-signature",
+  "kind": "form",
+  "node": "Call",
+  "sources": [
+    "callee"
+  ],
+  "marked": true,
+  "against": null,
+  "note": "own labels ground; the callee writes State(a)",
+  "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn apply(f: Unit -> Unit with State(a), x: a): Unit with State(a) = f(()); fn g(h: Unit -> Unit with State(Int)): Unit with State(Int) = apply(h, 1); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

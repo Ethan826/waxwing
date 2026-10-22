@@ -1,0 +1,14 @@
+{
+  "name": "form/perform-plain",
+  "kind": "form",
+  "node": "Perform",
+  "sources": [],
+  "marked": false,
+  "against": null,
+  "note": "Log has no parameter",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn g(): Unit with Log = Log.log(1); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

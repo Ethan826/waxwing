@@ -1,0 +1,17 @@
+{
+  "name": "obligation-record/control",
+  "kind": "obligation",
+  "node": null,
+  "sources": [
+    "own",
+    "callee"
+  ],
+  "marked": true,
+  "against": null,
+  "note": "the same with the record the label argument fixes",
+  "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn apply(f: Unit -> Unit with State(a), x: a): Unit with State(a) = f(()); fn g(h: Unit -> Unit with State({ x: Int })): Unit with State({ x: Int }) = apply(h, { x: 1 }); fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

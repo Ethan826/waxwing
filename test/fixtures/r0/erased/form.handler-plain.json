@@ -1,0 +1,14 @@
+{
+  "name": "form/handler-plain",
+  "kind": "form",
+  "node": "Handler",
+  "sources": [],
+  "marked": false,
+  "against": null,
+  "note": "Log has no parameter (HandlerType still marks it)",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn g(): Int = { let h = handler Log { log(n) => () }; 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

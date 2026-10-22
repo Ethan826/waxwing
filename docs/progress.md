@@ -170,6 +170,28 @@ Fix round 2 (re-review N1): the selected variants of Require.purs:123
 and HandlerMayFail now change text outside the refusal span (details
 in findings); both rows stay checked; 78 fixtures; corpus re-pinned.
 
+## R0 shadow tranche, Task 0.7: erased effect rows (2026-10-22)
+
+Design task; no compiler source or diagnostic changed. The note is
+docs/plans/r0-erased-rows.md; its runs are in docs/findings.md,
+"Erased effect rows". It treats the erased obligations and D1's
+effect-row values (§12.1, routed here) together, sorting the dropped
+obligations into record obligations hidden in label arguments and
+effect-only ones. It states the marker `ErasedRow` and its syntactic
+criterion C-erased (seven label sources; record-capable arguments),
+the check at the accepted witness with its argument by kind, and the
+census category for Task 3.5. Recommended default, for the author:
+the marker for record obligations, today's joint solve for the
+effect-only part (online witness only), and E-a with a clarification
+(rows inside witness images are unchecked too). test/r0-erased.test.mjs
+pins 23 fixtures in test/fixtures/r0/erased/: three refused/control
+pairs, one of them a record obligation that reaches a callee only
+through a label argument and that no T-R0b marker covers, and 17
+compiling form fixtures carrying the criterion's predicted answers.
+Four mutant runs are recorded in findings. Found on the way: BACKLOG
+FX031 (`Expected Unit -> Unit, found Unit -> Unit`). Corpus re-pinned
+(new fixtures with a `source`). Stopped at G-erased.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

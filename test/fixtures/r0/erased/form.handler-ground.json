@@ -1,0 +1,14 @@
+{
+  "name": "form/handler-ground",
+  "kind": "form",
+  "node": "Handler",
+  "sources": [],
+  "marked": false,
+  "against": null,
+  "note": "written ground label argument (HandlerType still marks it)",
+  "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(): Int = { let h = handler State(Int) { get() => 0, put(value) => () }; 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

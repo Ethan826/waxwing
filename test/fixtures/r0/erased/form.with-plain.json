@@ -1,0 +1,14 @@
+{
+  "name": "form/with-plain",
+  "kind": "form",
+  "node": "With",
+  "sources": [],
+  "marked": false,
+  "against": null,
+  "note": "with over a Log handler (HandlerType still marks it)",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn g(): Unit = with handler Log { log(n) => () } { Log.log(1) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}

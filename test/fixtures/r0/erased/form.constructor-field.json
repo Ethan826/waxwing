@@ -1,0 +1,16 @@
+{
+  "name": "form/constructor-field",
+  "kind": "form",
+  "node": "Construct",
+  "sources": [
+    "constructor"
+  ],
+  "marked": true,
+  "against": null,
+  "note": "a constructor field writes a record label argument",
+  "source": "effect State(s) { fn get(): s; fn put(value: s): Unit; }; type Box = Box(Unit -> Unit with State({ x: Int })); fn g(): Int = { let b = Box(fn(u: Unit) => ()); 0 }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null
+}
