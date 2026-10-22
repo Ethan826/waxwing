@@ -5144,3 +5144,38 @@ classified; fixing one does not discharge the others. The proposed
 selection policy meets an earlier checker limitation and an unresolved
 admissibility contract; selecting the identity witness is not
 presented as an implemented or fully justified remedy.
+
+### 18.64 The author on typed witness contracts (R8) (2026-10-21)
+
+R8 (comparison of witness representations A-D; nothing chosen) gives a
+plausible way to avoid rebuilding `Ty` and identifies a real
+obligation around recursive specialization. Options stay open until R7
+and the blocker-first proposal. Points to tighten:
+
+1. **Key-dependent witnesses cannot silently inherit "hole = ground".**
+   The existing termination argument would no longer apply; that does
+   not prove specialization diverges, it means its justification is
+   missing. Witness-bound names must be distinguishable from genuinely
+   unconstrained holes, by a constructor or enforced metadata.
+2. **Determinism and finite ingredients do not establish termination.**
+   A deterministic transformation can repeatedly wrap an input in a
+   fixed constructor. State a finite set of reachable specialization
+   keys, or a decreasing measure, and prove that recursive witness
+   evaluation preserves it.
+3. **A ground re-check narrows the adapter's trust obligation;** it
+   does not make the adapter irrelevant to correctness unless every
+   relevant obligation is checked against the correct key and bindings.
+   Recorder completeness, binding-to-layout correspondence,
+   admissibility and behavior preservation stay separate. A failed
+   internal re-check is never evidence that the source program is
+   invalid.
+4. **Option D still needs representation correspondence:** the
+   solver's bindings must reach specialization and lowering faithfully;
+   "no adapter needed" names exactly which adapter disappears.
+
+Per-name typed metadata stays a candidate (it addresses flow through
+types without necessarily adding type constructors); not selected. The
+final proposal puts **R0 and the termination contract ahead of
+representation choice**, then compares the smallest viable witness
+interfaces against those contracts. No compiler changes or new
+termination-proof campaign before that review.
