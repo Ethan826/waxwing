@@ -5002,3 +5002,47 @@ proved checker incompleteness is correct. Rulings:
 4. **The nine wave-2 worktrees removed** after confirming their commits
    are integrated, their trees clean and their processes stopped;
    branches kept.
+
+### 18.60 Design requirements: keep a route to fixing `divide5` (2026-10-21)
+
+The author, while the requirements tranche (§18.59) runs: as the
+connection between the proved model and Waxwing is planned, preserve a
+route to fixing the `divide5` gap without substantial rework. The
+general option-B theory supports programs the current cell-certificate
+checker cannot certify; **that is a limitation of the checker and the
+certificate format, not a language restriction.** Before
+implementation, document these boundaries:
+
+- **Source translation targets the general constraint model**,
+  preserving all obligations, rigid/flexible distinctions, quantifiers
+  and source origins; it never translates into the current certificate
+  format or drops constraints that format cannot handle.
+- **Solving and certificate checking have explicit interfaces:** what
+  an accepted result guarantees, and how a future certificate format
+  or checking strategy replaces the current one.
+- **The verdict distinction is preserved.** Failing to find or verify a
+  certificate means Unresolved unless separate evidence establishes a
+  contradiction; `divide5` must not become "invalid" because the
+  current checker refuses every certificate.
+- **Witness selection and lowering stay separate from certificate
+  representation.** Record layouts and emitted code do not depend on
+  incidental details of today's receipts; any necessary connection gets
+  an explicit contract and justification.
+- **Semantic validity stays separate from policy, admissibility and
+  resource limits;** those refusals never silently redefine the
+  modeled constraint problem.
+
+Deliverables: a concrete Waxwing example with `divide5`'s shape as an
+architectural test (source, hand-translated constraints, validity
+evidence, the current checker's limitation, and where a guarded-piece
+or pattern-dependent-certificate solution would enter); a short
+change-impact assessment (which modules, interfaces and proofs change
+when that extension arrives, which stay reusable). If substantial
+source translation, constraint recording or lowering work would need
+replacement, the boundary is revised before it is implemented.
+
+These are design requirements for the next plan, **not authorization**
+to widen the language, implement guarded pieces or begin compiler
+integration. The requirements-and-statements tranche continues; the
+proposed architecture and any unresolved coupling come back to the
+author.

@@ -8179,3 +8179,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   Next, authorized: a requirements-and-statements tranche comparing
   one-literal guards with pattern-dependent certificate selection; no
   prototype or proofs.
+- Design requirements recorded (dossier §18.60): translation targets
+  the general model; explicit solver/checker interfaces; Unresolved,
+  not invalid, for `divide5`; lowering independent of receipts;
+  validity separate from policy and limits. Architecture parts added
+  to the running requirements tranche.
