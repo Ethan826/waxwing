@@ -87,6 +87,10 @@ These are foundations or leads, not proofs of Waxwing's adaptations:
 - [Instance and module direction][instances]: explicit choices,
   collection invariants and class laws.
 - [Inference requirements][inference]: service and failure composition.
+- [Inference foundations](2026-10-22-inference-foundations-assessment.md)
+  §11 checks published inference rules against Waxwing: of 23
+  obligations, 2 proved, 2 argued, 1 experimentally checked, 7 proposed,
+  11 unresolved; soundness, completeness and principality kept separate.
 - [Record-composition dossier][records]: model, proofs and open bridges.
 - [ADR 014](../adr/014-composition-not-invention.md): departures require
   stated justification and explicit approval.

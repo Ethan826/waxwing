@@ -51,6 +51,7 @@ literature or implementation audit.
 | Abort tracking and settling rounds | ADR 010, FX008 design/plan | ADR 014 explicitly leaves their source audit open; do not certify all FX008 machinery by citing Koka |
 | Records, lacks and disjointness | ADR 013; row-merge implementation plan section 1.3 | Paper support versus PureScript v0.15.16 behavior; local Sym, 1g, 2g and H adaptations |
 | Composition requirements and candidate foundations | composition-foundation-assessment.md; research/composition-assessment/README.md | Paper readings versus executable translations; failures of a candidate versus impossibility results |
+| Inference (generation, generalization, principality, elaboration) | docs/plans/2026-10-22-inference-foundations-assessment.md §1: HM(X), EMLTI, Jones 1995, OutsideIn(X) and Koka 2013, locations checked, reconstructed formulas marked, accuracy review applied | Each use there is a local adaptation with stated obligations; HM(X) Theorems 1-2 await checking against the printed PDF |
 | Modules, instances and schemas | Direction notes linked from docs/provenance.md | Conceptual influence and future direction versus implemented algorithms |
 
 The source tables in the row-merge plans already record useful distinctions,
