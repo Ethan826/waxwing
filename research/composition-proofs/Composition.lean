@@ -143,3 +143,4 @@ import Composition.Typed.Cell.Proofs.B
 import Composition.Typed.Cell.Proofs.C
 import Composition.Typed.Cell.Proofs.Main
 import Composition.Typed.Cell.Proofs.W3
+import Composition.Typed.Cell.Proofs.W1
