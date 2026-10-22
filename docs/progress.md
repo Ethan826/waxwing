@@ -29,6 +29,22 @@ source or diagnostic changed. Result recorded in docs/findings.md
 multi-tail functions stop at the Task 8 placeholder, uncalled
 definitions compile. G-R019 stays open.
 
+## R0 shadow tranche, Task 0.2: `Exhausted` settled (2026-10-22)
+
+Evidence task; no compiler source changed.
+test/r0-exhausted.serial.test.mjs measures every re-examination
+rescan, on a patched copy of output/, against its bound
+P · (|Λ| + 1) + 1: 50,000 generator runs (five families, seeds
+1-2000, five orders) and the 1,006 programs of the R0 corpus. None
+reached it (largest `found.passes / bound` 2/3), so `Exhausted` is a
+broken invariant, mapped to a fault in Task 2.1 (docs/findings.md
+"`Exhausted` is not a budget"). New test/r0-corpus.mjs: the corpus
+rules of stream 7b's measure/corpus.mjs (refactored to export
+`corpusOf`, output unchanged) over `git ls-files`, pinned by
+test/fixtures/r0/corpus-manifest.json; re-pin with
+`node scripts/r0-corpus-pin.mjs`. measure/instrument.mjs exports its
+copy-and-patch as `patchedCopy` (patched copies unchanged).
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

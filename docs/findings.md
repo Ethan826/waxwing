@@ -863,3 +863,64 @@ Reading, for the probed sources only:
    refuses it first (E_TYPE "A record literal accepts at most one
    spread"), so the shapes use `{ ...r, ...h }` in types only.
 4. No decision is taken. G-R019 stays open; no default is built.
+
+## `Exhausted` is not a budget (2026-10-22)
+
+Task 0.2 of the first R0 shadow tranche (dossier §18.69 Q1: genuine
+budget exhaustion is a limit, an invariant violation a fault). The
+re-examination bound, P · (|Λ| + 1) + 1 passes
+(Features/Check/RowMerge/Improve.purs `bound`), is the theorem of
+docs/plans/2026-10-19-row-merge-rules.md §5 (L1): a lineage moves at
+most |Λ| labels and is removed once, so a rescan makes at most
+P · (|Λ| + 1) passes that change the state. The rule, fixed before
+running: if no run of the domain below reaches the bound, and the
+argument, re-read, is not refuted, `Exhausted` is a broken invariant;
+if one reaches it, the author decides and no mapping is chosen.
+
+How it was measured: test/r0-exhausted-support.mjs copies output/ and
+reassigns the copy's module-level `pass` (stream 7b's copy-and-patch,
+`patchedCopy` in
+research/division-campaign/integration/measure/instrument.mjs) to
+report, at each pass, the rescan's own counter `found.passes`
+(changing passes so far) and `bound(found.start)`. The theorem keeps
+`found.passes / bound` below 1; the compiler raises `Exhausted` only
+past `found.passes > bound` (and past its cheap count), two passes
+later. The domain, every run counted, valid or not: the five families
+of test/row-merge-gen.mjs as test/row-merge.test.mjs drives them, one
+problem per seed 1-2000, in its five orders (10,000 runs each,
+through test/row-merge-entry.mjs on the copy), and the 1,006 programs
+of the pinned R0 corpus (test/r0-corpus.mjs), compiled through the
+copy's `compile`.
+
+| Domain | Runs | Rescans | Passes | Largest ratio |
+| --- | --- | --- | --- | --- |
+| raw (perm.mjs) | 10,000 | 11,985 | 12,367 | 1/2 (seed 27) |
+| dense (perm.mjs DENSE=1) | 10,000 | 44,822 | 44,822 | 0 |
+| raw (programs-gen.mjs) | 10,000 | 6,499 | 6,611 | 1/2 (seed 300) |
+| program-shaped | 10,000 | 53,798 | 62,169 | 2/3 (seed 142) |
+| program-shaped, shared | 10,000 | 53,352 | 60,899 | 2/3 (seed 411) |
+| R0 corpus, compiled | 1,006 | 289 | 366 | 1/2 |
+
+No run reached the bound; no rescan made more than two changing
+passes. The argument, re-read (premises P1-P3, the lemma that a
+lineage's moved label sets are disjoint, the theorem), is not refuted:
+the runs agree with it and the re-reading found no step wrong. So
+`Exhausted` is a broken invariant: Task 2.1 maps it to
+`AsFault (BrokenInvariant …)`. The evidence is bounded: no
+counterexample within this grammar and corpus, plus the argument; it
+is not a proof.
+
+Checks: test/r0-exhausted.serial.test.mjs asserts the ratio stays below
+1 and that some pass was recorded (a changed output cannot measure
+nothing; the support also fails if `pass` or `bound` is no longer
+declared). Shown failing on a scratch copy of output/ with the
+`r005b-quiet` defect (every pass counts as a change): the corpus run
+reached ratio 16.5 (33 passes, bound 2, on
+research/division-campaign/r0/probes/b02-mayhold-forced.wxw) and the
+family run stopped with `Limit`. The source-level guard stays
+`r005b-quiet` (scripts/regression-r005b-end.mjs), proved again.
+
+The brief cites docs/plans/2026-10-17-open-row-merge-rules.md §5 for the
+argument; that section is the sum rule. Improve.purs's "Rules §5" and
+the theorem are in docs/plans/2026-10-19-row-merge-rules.md §5, which
+is the one re-read here.

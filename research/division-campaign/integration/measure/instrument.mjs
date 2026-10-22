@@ -34,20 +34,24 @@ const wrappers = {
       o(s)(l)(r)(t)))(made);`
 };
 
-const prepare = (root, copy) => {
-  if (!existsSync(join(root, 'output'))) {
-    throw new Error('build first: npm run build');
-  }
+// Copies `from` (a built output/) to `copy` and appends to each named
+// module, before its export list, the code given for it (`patches`:
+// module name to code). Shared with test/r0-exhausted-support.mjs.
+export const patchedCopy = (from, copy, patches, label) => {
+  if (!existsSync(from)) throw new Error('build first: npm run build');
   rmSync(copy, { recursive: true, force: true });
-  cpSync(join(root, 'output'), copy, { recursive: true });
-  for (const [module, code] of Object.entries(wrappers)) {
+  cpSync(from, copy, { recursive: true });
+  for (const [module, code] of Object.entries(patches)) {
     const file = join(copy, module, 'index.js');
     const text = readFileSync(file, 'utf8');
     const at = text.lastIndexOf('export {');
     writeFileSync(file,
-      `${text.slice(0, at)}// stream 7b recorder\n${code}\n${text.slice(at)}`);
+      `${text.slice(0, at)}// ${label}\n${code}\n${text.slice(at)}`);
   }
 };
+
+const prepare = (root, copy) =>
+  patchedCopy(join(root, 'output'), copy, wrappers, 'stream 7b recorder');
 
 // The instrumented phases. `resolved(source)` parses and resolves, as
 // written or, if Resolve refuses, with two-spread literals joined;

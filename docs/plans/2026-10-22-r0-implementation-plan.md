@@ -1090,6 +1090,11 @@ for confirmation with the plan's approval.
   turns a failure into a semantic claim (docs/engineering.md "Result
   boundary classification"), and gives it named arms if so.
 
+- **Task 0.2's result (2026-10-22):** no run reached the bound
+  (largest ratio 2/3; docs/findings.md "`Exhausted` is not a
+  budget"), so `Exhausted` is a fault: `AsFault (BrokenInvariant …)`,
+  and RowOutcome.purs:84-85 and the `r005b-quiet` comment change here.
+
 **Interfaces:**
 - Produces: `classify ∷ Failure → Classified`, with
   `data Classified = AsHint Hint | AsLimit LimitReached | AsPlaceholder
