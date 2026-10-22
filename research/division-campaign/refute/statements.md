@@ -208,7 +208,9 @@ Conditions on `toSig` for CX-PR to hold:
 2. **`D` whole.** `D` is translated atom for atom; nothing is dropped
    or generalized. A `D` atom outside `TExpr` (an `app`, a requirement
    atom, an atom under an `outside` marker) leaves `toSig` undefined
-   for that problem, and no refutation through it applies. Weakening
+   for that problem, and no refutation through it applies (T-R0b's
+   `d` holds only `lacks`/`disjoint` over rigid variables, so this
+   does not arise from source; markers carry no atoms). Weakening
    `D` admits more rigid assignments (C1-D, §5).
 3. **Body atoms dropped.** A body atom outside the fragment may be
    dropped. By C1-M, dropping can only add solutions.
@@ -474,3 +476,10 @@ every claim is still a `def … : Prop`.
   `Refute_sound`; question 7 marked settled.
 - One Lean section heading said "lemma"; renamed so the Refute files
   contain none of `theorem`, `lemma`, `sorry`, `axiom`.
+
+### Consistency re-check (39320ad)
+
+- §4.1 condition 2: notes that a `D` atom outside `TExpr` does not
+  arise from source, since T-R0b's `d` (recorder-rules §10, Sig4-Sig8)
+  holds only `lacks`/`disjoint` over rigid variables and its
+  `outside` markers carry no atoms (re-check R7).

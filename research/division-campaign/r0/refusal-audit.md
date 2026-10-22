@@ -514,8 +514,8 @@ end of the body (b03, class d), not `shareTails`.
 2. **Refuter from Lemma SL.** Use the refusal only to propose `θ` (the
    lemma's instance from the atom and the facts it named), then check
    `Sat θ D` and `decideCall` false on the original `B`. This needs CX
-   (T-R0d) and no soundness proof per rule; a refusal whose `θ` fails
-   the check stays Unresolved. It covers every c2 row of §7.2 except
+   and no soundness proof per rule; a refusal whose `θ` fails the
+   check stays Unresolved. It covers every c2 row of §7.2 except
    comparability and printability, which wait on `ValidOpenR`.
 
 Either route keeps H, D4 and Ambiguous out of Contradiction: H is d
@@ -674,8 +674,8 @@ have no oracle atom and were not run.
 **Dropped atoms and the verdicts (argued; reviewed).** Dropping atoms
 can only add solutions. For an **invalid** verdict that is harmless: a
 counter-instance of a sub-body refutes the whole body (C1-M; the
-whole-problem form is the CX-P statement the reconciliation review
-proposes for CX). For a **valid** verdict it is not sound in general,
+whole-problem form is CX-P/CX-KP, refute/statements.md §3-4, stated,
+expected true). For a **valid** verdict it is not sound in general,
 so each valid entry is justified here. The adversarial reviewer
 re-derived b03 and c01 (and b04, invalid) from the probe sources and
 found the dropped atoms to be defining equations or definedness-
@@ -768,10 +768,20 @@ above means the reconciliation's Q<n>.
 - P3's instrumented run (no new probes in this revision).
 - c21's and p11's dropped-atom lists are this document's reading; the
   reviewer re-derived b03, c01 and b04 only.
-- The whole-problem refutation of a sub-body (CX-P, reconciliation F3)
-  is cited as proposed; CX owns it.
+- The whole-problem refutation of a sub-body (reconciliation F3) is
+  CX-P/CX-KP (refute/statements.md §3-4, stated, expected true); CX
+  owns it.
 
 **Disagreements.** None. One scope note: reconciliation A6 also
 suggests that boundaries and recorder-rules change how the second
 spread is recorded; those edits belong to their documents and are not
 made here.
+
+### Consistency re-check (39320ad)
+
+- §7.2 and the pending list above: the sub-body refutation is cited
+  as CX-P/CX-KP (refute/statements.md §3-4, stated, expected true),
+  no longer as proposed (re-check R6).
+- §5 item 2: "CX (T-R0d)" is now "CX" (re-check R9).
+- Citations of boundaries' old §7 Q3 and Q5 are kept; T-R0e §7 maps
+  old numbers to its rows (re-check R11).

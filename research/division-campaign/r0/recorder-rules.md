@@ -280,7 +280,7 @@ Notes (argued unless marked):
   can never be a function (Check/Pipe.purs:15-21, cited) is class a,
   judged separately; the atom `eq θ(⟦R⟧) (… → ⟨p, res⟩)` is recorded
   either way, and with a ground non-arrow `R` it is a head clash on
-  original atoms (a class c1 candidate, T-R0c's to state).
+  original atoms (a class c1 candidate, CX's to state (CX Q4)).
 - E3-E6 never record a `Union` (recorder-interface §2): a callee
   parameter with several tails, matched against one argument row (F4),
   is the ordinary atom `eq τ_e θ({ ...l, ...r })`. Definedness of the
@@ -585,7 +585,7 @@ sub-pattern's path; `rest` of P7 ↦ `RestType p`; every other `field`,
   or representation correspondence (requirements.md §4.3) can be stated
   per variable. A ground re-check may compare a position's lowered
   type with `types(p)` evaluated at the key (adversarial finding 2's
-  RC6; W's to adopt).
+  check, W RC6).
 
 The structure is preserved because `quant` is fixed by Sig1 and §2.3
 alone and no rule ever changes it; a strategy's candidate assigns only
@@ -968,3 +968,12 @@ confirmation).
 - Reconciliation A6 offered, as an alternative, a support-site record
   for the second spread. Not adopted: `vars` already records the
   spread roles per path, so S1 can read the count without a new field.
+
+### Consistency re-check (39320ad)
+
+- §5.3: the ground re-check is cited as W RC6, which W has adopted
+  (re-check R9).
+- §3.2, E5 note: the head-clash rule on original atoms is CX's to
+  state (CX Q4), not T-R0c's (re-check R9, F4).
+- Citations of T-R0e's old §7 Q3 and Q5 are kept; T-R0e §7 maps old
+  numbers to its rows (re-check R11).
