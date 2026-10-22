@@ -1,0 +1,19 @@
+{
+  "name": "fx010-record-payload/inferred",
+  "refusal": "Internal",
+  "site": "src/Features/Check/Reject.purs:54",
+  "token": "Internal",
+  "class": "defect",
+  "note": "BACKLOG FX010: a user program reaches the consumption catch-all; inferred is effect-not-allowed's refusal",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect M { fn m(n: Int): Unit; }; fn h(x: Int): Unit with Log = Log.log(x); fn k(): Unit with Fail({ f: Int -> Unit with M }) = { let go = fn(r) => Fail.fail(r); go({ f: h }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "k performs Log, which its signature does not allow",
+  "at": "Fail.fail(r",
+  "notes": [
+    [
+      "with Fail({ f: Int -> Unit with M })",
+      "the signature of k does not allow Log"
+    ]
+  ]
+}

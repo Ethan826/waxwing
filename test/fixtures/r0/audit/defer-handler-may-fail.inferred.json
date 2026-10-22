@@ -1,0 +1,23 @@
+{
+  "name": "defer-handler-may-fail/inferred",
+  "refusal": "DeferHandlerMayFail",
+  "site": "src/Features/Check/MarkReport.purs:49",
+  "token": "DeferHandlerMayFail",
+  "class": "semantic",
+  "note": "inferred: the deferred Log reaches the failing frame through r's record meta",
+  "source": "type E = E; effect Log { fn log(n: Int): Unit; }; fn main(): Unit with Console = handle with handler Log { log(n) => Fail.fail(E) } { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => Log.log(n) }) } { fail(error: E) => Console.print(9) };",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "defer must not fail, but it performs Log, whose handler may fail",
+  "at": "defer r.f(1)",
+  "notes": [
+    [
+      "with handler Log { log(n) => Fail.fail(E) } { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => Log.log(n) }) }",
+      "Log is handled here"
+    ],
+    [
+      "log(n) => Fail.fail(E)",
+      "its clause for log fails with E"
+    ]
+  ]
+}

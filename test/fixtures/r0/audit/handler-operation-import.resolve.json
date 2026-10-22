@@ -1,0 +1,14 @@
+{
+  "name": "handler-operation-import/resolve",
+  "refusal": "HandlerOperation",
+  "site": "src/Features/Resolve/Imports.purs:131",
+  "token": "HandlerOperation",
+  "class": "structural",
+  "note": "raised by resolve",
+  "source": "effect Log { fn log(n: Int): Unit; fn warn(n: Int): Unit; }; fn k(): Unit with Log { nope } = (); fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_HANDLER",
+  "text": "nope is not an operation of Log",
+  "at": "nope",
+  "notes": []
+}

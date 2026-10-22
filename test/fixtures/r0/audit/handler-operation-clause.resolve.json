@@ -1,0 +1,14 @@
+{
+  "name": "handler-operation-clause/resolve",
+  "refusal": "HandlerOperation",
+  "site": "src/Features/Resolve/Handler.purs:90",
+  "token": "HandlerOperation",
+  "class": "structural",
+  "note": "raised by resolve",
+  "source": "effect Log { fn log(n: Int): Unit; fn warn(n: Int): Unit; }; fn mk(): Handler(Log) = handler Log { log(n) => (), warn(n) => (), nope(n) => () }; fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_HANDLER",
+  "text": "nope is not an operation of Log",
+  "at": "nope(n) => ()",
+  "notes": []
+}

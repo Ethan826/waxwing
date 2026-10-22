@@ -1,0 +1,14 @@
+{
+  "name": "ambiguous-type/pinned",
+  "refusal": "AmbiguousType",
+  "site": "src/Features/Check/Comparable.purs:78",
+  "token": "AmbiguousType",
+  "class": "semantic",
+  "note": "f02 with a record: ambiguous only while r's record meta leaves a hole",
+  "source": "fn k(): Bool = { let e = fn(r: { a: Int }) => r.a == r.a; true }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

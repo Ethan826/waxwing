@@ -1,0 +1,14 @@
+{
+  "name": "arity-call-function-like/inferred",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Call.purs:148",
+  "token": "functionLike",
+  "class": "semantic",
+  "note": "the named over-application g(b1…bk, a) at an instantiated result, as Pipe.purs:36",
+  "source": "fn inc(x: Int): Int = x + 1; fn get(r: { f: a }): a = r.f; fn k(): Int = { let go = fn(r) => get(r, 1); go({ f: 2 }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_TYPE",
+  "text": "Expected { f: Int -> _ }, found { f: Int }",
+  "at": "{ f: 2 }",
+  "notes": []
+}

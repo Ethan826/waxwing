@@ -1,0 +1,14 @@
+{
+  "name": "unhandled-effect/pinned",
+  "refusal": "UnhandledEffect",
+  "site": "src/Features/Check/Entry.purs:54",
+  "token": "UnhandledEffect",
+  "class": "semantic",
+  "note": "inferred: Log reaches main's final row only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit with Log = Log.log(x); fn main(): Unit = { let call = fn(r: { f: Int -> Unit with Log }) => r.f(1); call({ f: h }) };",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "Log + ... and ... cannot be made equal: both end in ...",
+  "at": "r.f(1)",
+  "notes": []
+}

@@ -1,0 +1,14 @@
+{
+  "name": "callback-row-lacks/pinned",
+  "refusal": "CallbackRowLacks",
+  "site": "src/Features/Check/CallbackParts.purs:63",
+  "token": "CallbackRowLacks",
+  "class": "semantic",
+  "note": "inferred: q reaches the call r.f(x) only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect M { fn m(n: Int): Unit; }; fn a(q: Int -> Unit with Log, x: Int): Unit with Log + M = { let go = fn(r: { f: Int -> Unit with Log }) => r.f(x); go({ f: q }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "Log + ... and ... cannot be made equal: both end in ...",
+  "at": "r.f(x)",
+  "notes": []
+}

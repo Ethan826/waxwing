@@ -1,0 +1,14 @@
+{
+  "name": "handler-operation-qualified/resolve",
+  "refusal": "HandlerOperation",
+  "site": "src/Features/Resolve/Qualified.purs:152",
+  "token": "HandlerOperation",
+  "class": "structural",
+  "note": "raised by resolve",
+  "source": "effect Log { fn log(n: Int): Unit; fn warn(n: Int): Unit; }; fn k(): Unit with Log = Log.nope(1); fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_HANDLER",
+  "text": "nope is not an operation of Log",
+  "at": "Log.nope(1)",
+  "notes": []
+}

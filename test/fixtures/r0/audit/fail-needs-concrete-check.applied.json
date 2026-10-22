@@ -1,0 +1,14 @@
+{
+  "name": "fail-needs-concrete-check/applied",
+  "refusal": "FailNeedsConcrete",
+  "site": "src/Features/Check/Failure.purs:102",
+  "token": "FailNeedsConcrete",
+  "class": "semantic",
+  "note": "the payload r.e is keyed only once the solver binds r's record meta (applied) or it is written (pinned)",
+  "source": "type E = E; fn k(): Unit with Fail(E) = { let go = fn(r) => Fail.fail(r.e); go({ e: E }) }; fn main(): Int = 0;",
+  "phase": "compiled",
+  "code": null,
+  "text": null,
+  "at": null,
+  "notes": []
+}

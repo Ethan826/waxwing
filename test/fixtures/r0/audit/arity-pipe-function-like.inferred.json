@@ -1,0 +1,14 @@
+{
+  "name": "arity-pipe-function-like/inferred",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Pipe.purs:36",
+  "token": "functionLike",
+  "class": "semantic",
+  "note": "functionLike reads get(r)'s result as solved so far: a hole (inferred) passes and the mismatch surfaces later at { f: 2 }; Int (pinned) is E_ARITY",
+  "source": "fn inc(x: Int): Int = x + 1; fn get(r: { f: a }): a = r.f; fn k(): Int = { let go = fn(r) => 1 |> get(r); go({ f: 2 }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_TYPE",
+  "text": "Expected { f: Int -> _ }, found { f: Int }",
+  "at": "{ f: 2 }",
+  "notes": []
+}

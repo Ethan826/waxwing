@@ -1,0 +1,19 @@
+{
+  "name": "defer-may-fail/inferred",
+  "refusal": "DeferMayFail",
+  "site": "src/Features/Check/Defer.purs:165",
+  "token": "DeferMayFail",
+  "class": "semantic",
+  "note": "inferred: Fail(E) reaches the deferred row after the defer, through r's record meta; the notes differ",
+  "source": "type E = E; fn k(): Unit with Fail(E) = { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => Fail.fail(E) }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "defer must not fail, but it performs Fail(E)",
+  "at": "defer r.f(1)",
+  "notes": [
+    [
+      "Fail.fail(E",
+      "Fail(E) is raised here"
+    ]
+  ]
+}

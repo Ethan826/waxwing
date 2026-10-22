@@ -16,21 +16,38 @@ const stopped = (phase, result) => {
   const { code, message } = wire(result.value0);
   return { phase, code, text: message };
 };
+const compiled = { phase: 'compiled', code: null, text: null };
+
+// The stages in order; `stop` reads the stage that refused.
+const stages = (source, stop, done) => {
+  const parsed = parse(source);
+  if (parsed instanceof Left) return stop('parse', parsed);
+  const named = resolve(parsed.value0);
+  if (named instanceof Left) return stop('resolve', named);
+  const typed = check(named.value0);
+  if (typed instanceof Left) return stop('check', typed);
+  const keys = specializationKeys(typed.value0);
+  if (keys instanceof Left) return stop('specialize', keys);
+  const built = compile(source);
+  if (built instanceof Left) return stop('compile', built);
+  return done;
+};
 
 // The stage that stopped `source`, with its code and exact text; phase
 // 'compiled' (code and text null) when every stage accepted it.
-export const phaseOf = source => {
-  const parsed = parse(source);
-  if (parsed instanceof Left) return stopped('parse', parsed);
-  const named = resolve(parsed.value0);
-  if (named instanceof Left) return stopped('resolve', named);
-  const typed = check(named.value0);
-  if (typed instanceof Left) return stopped('check', typed);
-  const keys = specializationKeys(typed.value0);
-  if (keys instanceof Left) return stopped('specialize', keys);
-  const built = compile(source);
-  if (built instanceof Left) return stopped('compile', built);
-  return { phase: 'compiled', code: null, text: null };
+export const phaseOf = source => stages(source, stopped, compiled);
+
+// `phaseOf` with where the refusal is (Task 0.5): `at`, the source text
+// its span covers, and `notes`, each [covered text, message].
+export const refusalOf = source => {
+  const covered = span => source.slice(span.start.offset, span.end.offset);
+  const note = found => [covered(found.span), found.message];
+  const placed = (phase, result) => {
+    const found = wire(result.value0);
+    return { ...stopped(phase, result), at: covered(found.span),
+      notes: found.related.map(note) };
+  };
+  return stages(source, placed, { ...compiled, at: null, notes: [] });
 };
 
 const here = dirname(fileURLToPath(import.meta.url));

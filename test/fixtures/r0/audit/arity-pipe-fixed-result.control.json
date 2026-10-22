@@ -1,0 +1,14 @@
+{
+  "name": "arity-pipe-fixed-result/control",
+  "refusal": "Arity",
+  "site": "src/Features/Check/Pipe.purs:33",
+  "token": "fixedResult",
+  "class": "structural",
+  "note": "size's declared result Int is never a function: the same refusal pinned or inferred, before the argument is read (unread: r.x would be a MissingField)",
+  "source": "fn size(r: { a: Int }): Int = r.a; fn k(): Int = { let go = fn(r: { a: Int }) => size(r.x); go({ a: 2 }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_TYPE",
+  "text": "x is not a field of { a: Int }",
+  "at": "x",
+  "notes": []
+}

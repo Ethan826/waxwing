@@ -1,0 +1,19 @@
+{
+  "name": "expected-nofail/inferred",
+  "refusal": "ExpectedNofail",
+  "site": "src/Features/Check/MarkReport.purs:74",
+  "token": "ExpectedNofail",
+  "class": "semantic",
+  "note": "inferred: work's nofail Log reaches caller's plain Log through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn work(): Unit with nofail Log = (); fn caller(): Unit with Log = { let go = fn(r) => r.f(()); go({ f: fn(u: Unit) => work() }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "Expected nofail Log, found Log",
+  "at": "work()",
+  "notes": [
+    [
+      "with Log",
+      "the signature of caller allows a failing Log handler; write with nofail Log"
+    ]
+  ]
+}

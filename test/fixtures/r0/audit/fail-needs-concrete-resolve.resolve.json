@@ -1,0 +1,19 @@
+{
+  "name": "fail-needs-concrete-resolve/resolve",
+  "refusal": "FailNeedsConcrete",
+  "site": "src/Features/Resolve/Row.purs:82",
+  "token": "FailNeedsConcrete",
+  "class": "structural",
+  "note": "raised by resolve on a written signature",
+  "source": "fn k(): Unit with Fail(a) = (); fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_TYPE",
+  "text": "Fail needs a concrete error family",
+  "at": "Fail(a)",
+  "notes": [
+    [
+      "Fail(a)",
+      "use ...e to pass through what a callback performs, a concrete family such as Fail(DbError), or return a Result"
+    ]
+  ]
+}

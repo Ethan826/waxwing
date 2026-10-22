@@ -1,0 +1,14 @@
+{
+  "name": "defer-may-perform/pinned",
+  "refusal": "DeferMayPerform",
+  "site": "src/Features/Check/Defer.purs:134",
+  "token": "DeferMayPerform",
+  "class": "semantic",
+  "note": "inferred: g's rigid ambient tail reaches the deferred row after the defer, through r's record meta",
+  "source": "fn k(g: Int -> Unit): Unit = { let go = fn(r: { f: Int -> Unit with pure }) => { defer r.f(1); () }; go({ f: g }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_TYPE",
+  "text": "Expected { f: Int -> Unit }, found { f: Int -> Unit }",
+  "at": "{ f: g }",
+  "notes": []
+}

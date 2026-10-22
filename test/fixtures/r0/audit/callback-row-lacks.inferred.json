@@ -1,0 +1,19 @@
+{
+  "name": "callback-row-lacks/inferred",
+  "refusal": "CallbackRowLacks",
+  "site": "src/Features/Check/CallbackParts.purs:63",
+  "token": "CallbackRowLacks",
+  "class": "semantic",
+  "note": "inferred: q reaches the call r.f(x) only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect M { fn m(n: Int): Unit; }; fn a(q: Int -> Unit with Log, x: Int): Unit with Log + M = { let go = fn(r) => r.f(x); go({ f: q }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "this function value must allow every effect of a (Log + M), but its row is Log; a function value's row must equal its caller's (FX017)",
+  "at": "go({ f: q })",
+  "notes": [
+    [
+      "with Log + M",
+      "a's row is written here"
+    ]
+  ]
+}

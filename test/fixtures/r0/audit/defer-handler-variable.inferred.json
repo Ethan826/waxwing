@@ -1,0 +1,19 @@
+{
+  "name": "defer-handler-variable/inferred",
+  "refusal": "DeferHandlerVariable",
+  "site": "src/Features/Check/MarkReport.purs:48",
+  "token": "DeferHandlerVariable",
+  "class": "semantic",
+  "note": "inferred: the deferred Log reaches nofail(k) through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn f(): Unit with nofail(k) Log = { let go = fn(r) => { defer r.f(1); () }; go({ f: fn(n: Int) => Log.log(n) }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "defer must not fail, but it performs nofail(k) Log, whose handler is fail-free only when the caller's is",
+  "at": "defer r.f(1)",
+  "notes": [
+    [
+      "with nofail(k) Log",
+      "nofail(k) Log is fail-free only when the caller's handler is"
+    ]
+  ]
+}

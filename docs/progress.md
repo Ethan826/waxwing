@@ -134,6 +134,26 @@ regression proof). The known class is BACKLOG T003 (earlier records:
 R005 B5, INF001); no bound changed, and the two failures stand as
 observed.
 
+## R0 shadow tranche, Task 0.5: effect and coverage audit (2026-10-22)
+
+Evidence task; no compiler source or diagnostic changed. The table
+and its reading are in docs/findings.md, "Effect and coverage audit".
+test/r0-audit.test.mjs runs 52 fixtures in test/fixtures/r0/audit/,
+each a program with its record part inferred, pinned by annotation,
+or a control. Results for G-effects: every check-time effect refusal
+is class f; HandlerMissing, HandlerDuplicate, HandlerOperation and
+the Resolve-time FailNeedsConcrete are class a. Results for
+G-coverage: RedundantArm, NonExhaustive, AmbiguousType and arity at
+`functionLike` are semantic, arity at `fixedResult` is structural,
+and today's coverage has no structural part at a raise site.
+Recommended reason for `AmbiguousType`: `Unsupported
+RequirementAtoms`. test/r0-probe-support.mjs gained `refusalOf`
+(`phaseOf` plus the span's text and the notes). The fixtures carry a
+`source`, so the corpus was re-pinned. Five mutant runs are recorded
+in findings. Found on the way: a new FX010 reproducer (E_INTERNAL
+from a user program), recorded in BACKLOG FX010 and not fixed.
+Stopped at G-effects and G-coverage.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

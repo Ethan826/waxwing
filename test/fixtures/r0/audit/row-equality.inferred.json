@@ -1,0 +1,19 @@
+{
+  "name": "row-equality/inferred",
+  "refusal": "RowEquality",
+  "site": "src/Features/Check/RowName.purs:96",
+  "token": "RowEquality",
+  "class": "semantic",
+  "note": "inferred: the first argument binds r's record meta to p's type, whose row then meets q's",
+  "source": "effect Log { fn log(n: Int): Unit; }; effect Clock { fn now(): Int; }; fn both(p: { f: Int -> Int with Clock + ...r }, q: { f: Int -> Int with Log + ...r }): Int = 0; fn main(): Int = { let go = fn(r) => both(r, r); go({ f: fn(x) => x }) };",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "Log + ...r and Clock + ...r cannot be made equal: both end in ...r",
+  "at": "r",
+  "notes": [
+    [
+      "fn both(p: { f: Int -> Int with Clock + ...r }, q: { f: Int -> Int with Log + ...r }): Int = 0;",
+      "...r is declared here"
+    ]
+  ]
+}

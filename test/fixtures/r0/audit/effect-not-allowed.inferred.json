@@ -1,0 +1,19 @@
+{
+  "name": "effect-not-allowed/inferred",
+  "refusal": "EffectNotAllowed",
+  "site": "src/Features/Check/Reject.purs:69",
+  "token": "EffectNotAllowed",
+  "class": "semantic",
+  "note": "consumption of a label into k's ambient row; inferred: Log reaches it only through r's record meta",
+  "source": "effect Log { fn log(n: Int): Unit; }; fn h(x: Int): Unit with Log = Log.log(x); fn k(): Unit = { let call = fn(r) => r.f(1); call({ f: h }) }; fn main(): Int = 0;",
+  "phase": "check",
+  "code": "E_EFFECT",
+  "text": "k performs Log, which its signature does not allow",
+  "at": "call({ f: h })",
+  "notes": [
+    [
+      "fn k(): Unit = { let call = fn(r) => r.f(1); call({ f: h }) };",
+      "the signature of k has an ambient row"
+    ]
+  ]
+}

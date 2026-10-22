@@ -1,0 +1,14 @@
+{
+  "name": "handler-missing/resolve",
+  "refusal": "HandlerMissing",
+  "site": "src/Features/Resolve/Handler.purs:161",
+  "token": "HandlerMissing",
+  "class": "structural",
+  "note": "raised by resolve",
+  "source": "effect Log { fn log(n: Int): Unit; fn warn(n: Int): Unit; }; fn mk(): Handler(Log) = handler Log { log(n) => () }; fn main(): Int = 0;",
+  "phase": "resolve",
+  "code": "E_HANDLER",
+  "text": "Missing clause for warn",
+  "at": "handler Log { log(n) => () }",
+  "notes": []
+}
