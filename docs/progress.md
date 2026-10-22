@@ -8166,3 +8166,8 @@ unrelated README/backlog/direction-plan edits remain untouched.
   proved in wave 2). Second proof wave authorized and launched: nine
   parallel streams (proof-plan.md, "Wave 2"). 11 tranche worktrees
   removed, branches kept.
+- Second wave proved (dossier §18.58): query exactness (QX1-QX3,
+  QR1-QR5), `star`/`star-read` for every n and the other scenario
+  families, `divide5` valid but uncertified, CI4/CI5, the `CellShape`
+  guards, the tautology reduction; 55 theorems, standard axioms.
+  Independent reviews running.

@@ -4877,3 +4877,53 @@ verify` for this tranche: Lean build, axiom audit, width and
 whitespace checks. The 11 tranche worktrees (the record earlier said
 13, a miscount) were confirmed committed, integrated and idle, then
 removed; their branches are kept. Plan: proof-plan.md, "Wave 2".
+
+### 18.58 Second proof wave proved, for review (2026-10-21)
+
+Nine parallel streams (proof-plan.md, "Wave 2"), integrated onto
+`main`; W3's and W9's hypothesis forms instantiated with W1's results
+in Cell/Proofs/Wave2.lean. Clean build (203 jobs); no `sorry`, `admit`,
+new `axiom`, `native_decide`, `partial`, `unsafe` or `set_option`;
+every Cell file at most 250 lines. cellcheck/axioms.out now lists 55
+theorems, each using only `propext`, `Quot.sound` and, for most,
+`Classical.choice`; its first 23 lines (wave 1) are unchanged. No
+statement or bridge file changed since 94a86e1. No stream found a
+false statement. **Independent review pending; not yet accepted.**
+
+**Proved, for the research model:**
+
+- **Query exactness.** QX1 `freeSIff`, QX2 `cellPossExact`, QX3
+  `coverExact` (full iffs); over the region on `LDFragment`, QR1
+  `possWExact`, QR2 `possBothExact`, QR3 `cellBothExact`, QR4
+  `coverRegionExact`, QR5 `regionTrivialities`. With wave 1, the
+  proposed queries `implQ` are exact, not only conservative, on the
+  fragment.
+- **Scenarios, accepted** (the stated certificate passes `checkI`):
+  `scStar` and `scStarRead` for every n; `scDep` for every k, m and
+  both `divide` variants; `scDivide3` for every list of labels;
+  `scIntArm` (with `ValidOpen`); `scSplitSig`; `scSelfDisjoint`.
+- **Scenarios, refused:** `scStarUnlacked`, `scStarUndeclared`,
+  `scStarCross` (every n in range), `scShapeSplit`, `scSplitFree`: each
+  not `ValidOpen` and refused by every certificate (via `cellOpenImpl`);
+  `scBroken`, `scCertRefusals` (specific certificates refused).
+- **Valid but not certified by this checker:** `scOutsideFragment`
+  (`agreeP`, `D = [ff]`: refused by the guard) and `scDivide5`:
+  `divide5` is `ValidOpen` for every list of labels, which §18.47 had
+  only argued, and every certificate is refused (proved directly). Both
+  are recorded incompleteness, not defects.
+- **`CellShape` regression guards:** `not_cellSoundNoShape` and
+  `not_evalDefinedNoShape` (statements in Cell/Refutations.lean, as
+  restated in §18.57).
+- **Representation correspondence:** CI4 `projPieceDen`, CI4′
+  `projGuardRefused`, CI4″ `schPieceDen`, CI5 `declaredIsNoCommonCell`
+  (which does not use its `r ≠ s` premise).
+- **Tautology reduction, independent:** QX4 `coverTautology`,
+  `checkTautology`. They concern exact checking of this certificate
+  format; no complexity statement is made in Lean, and nothing here
+  bounds Waxwing inference in general.
+
+**Not established:** completeness of the checker (every `ValidOpen`
+problem in the fragment has an accepted certificate); any polynomial
+bound on `cover`; acceptance beyond the stated certificates and
+families; anything about the PureScript or Go implementation, source
+translation or integration.
