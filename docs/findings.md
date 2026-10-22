@@ -959,7 +959,8 @@ is the one re-read here.
 
 ## `ValidR` sketch and today's printability (2026-10-22)
 
-Evidence: test/r0-requirements-probe.test.mjs (Task 0.4); the draft is
+Evidence: test/r0-requirements-probe.test.mjs (Task 0.4, 16 tests, one
+per case, in eight groups numbered in draft §2); the draft is
 docs/plans/r0-validr-draft.md. Three findings for G-ValidR, none a
 defect in today's compiler:
 
@@ -967,7 +968,7 @@ defect in today's compiler:
   and every finite `θR` quantified, `pr a` at a rigid `a` fails at
   `θR(a) = Int -> Int`, so `fn p(item: a): Text = show(item)` has
   `¬ ValidR`; yet it compiles, and only its instances are judged after
-  specialization (probe test 5). No verdict is wrong today (the plan
+  specialization (probe group 5). No verdict is wrong today (the plan
   keeps such atoms Unsupported), but the meaning that CX-PR consumes
   is. The draft's recommended reading adds an implicit printable
   hypothesis at every rigid variable (Pr-1), a policy point for the
@@ -977,18 +978,56 @@ defect in today's compiler:
   Box(a -> a)`) is neither printable nor comparable whatever its
   arguments, and a phantom argument counts (`Tag(Int -> Int)` for
   `type Tag(a) = Tag(Int)` is refused). The sketch's "through record
-  fields and `app` arguments" alone would accept `Box(Int)` (a
-  scratch mutant ignoring holders compiles `show(Box(inc))`). `ReqG`
-  therefore reads the program's holder set, which the recorded problem
-  must carry for VR-independent.
+  fields and `app` arguments" alone would accept `Box(Int)` (mutant 1
+  below compiles `show(Box(inc))`). `ReqG` therefore reads the
+  program's holder set, which the recorded problem must carry for
+  VR-independent (draft §3.5).
 - **VR-CX's encoding lands outside `ValidOpen`'s base set.** Encoding
   `app` values injectively as fresh bases gives solutions over an
   extension `B₂ ⊋ B₁`, while `ValidOpen` at `B₁` needs them over `B₁`.
   A non-injective collapse (every `app` node to one fixed value)
   suffices, since CX §4.1 condition 4 makes each occurrence its own
-  variable (argued; draft §5.3).
+  variable (argued; draft §5.3). CX §4.1 condition 4 needs the same
+  edit as T-R0b after the gate.
 
-Foreign base types cannot be written today (docs/language.md:182), so
-fresh bases reach `ReqG` only as rigid variables' instances. Closes
-with the probe (checked) for the first two; the third is argued and
-waits for a Lean rendering of `GA` (§18.69 item 10).
+Status of each: finding 2 is checked (the probe, plus mutant 1).
+Finding 1's "today" half (`p` compiles; its instances fail at
+specialize) is checked; its `¬ ValidR` half is argued from the
+definition. Finding 3 is argued and waits for a Lean rendering of
+`GA` (§18.69 item 10). Foreign base types cannot be written today
+(docs/language.md:182), so fresh bases reach `ReqG` only as rigid
+variables' instances.
+
+**Mutant runs (recorded, fix round 1).** Each on a fresh copy of
+output/ (`cp -cR output <scratch>/output`, with the probe and
+test/r0-probe-support.mjs copied to `<scratch>/test/`), patching only
+output/Features.Check.Functional/index.js, then
+`cd <scratch> && node --test test/r0-requirements-probe.test.mjs`;
+the copy was deleted afterwards. The unpatched probe passes 16/16.
+
+- Mutant 1, holders ignored (`TData` judged by arguments only):
+  `return member(v.value0)(found) || Data_Array.any(...)` became
+  `return Data_Array.any(...)`. Exit 1; 8 pass, 8 fail: "a holder
+  type at a function-free argument, Box(Int)", "a holder type of no
+  parameters, F", "a holder through the fixed point, Outer", "a type
+  that stores its argument, Wrap, at each argument", "a phantom
+  argument counts, Tag", "main returning each: E_ENTRY exactly where
+  show is refused", "print at a rigid variable: accepted at check,
+  judged per key", "print at a declared type over a rigid variable".
+  First failing rows: `show(Box(inc))`, `show(F(inc))`,
+  `show(Outer(Box(inc)))`, `show(Wrap(Box(inc)))`, `show(t())` at
+  `Tag(Box(Int))`, `main(): Box(Int)`, `p(Box(inc))`, `show` of a
+  `Box(a)` parameter, each with actual `{ phase: 'compiled', code:
+  null, text: null }`.
+- Mutant 2, a rigid variable or rigid record tail counts as a
+  function: three lines added at the top of `containsFunction`
+  (`TVar` holding a `Rigid` → true; `TRecord` with a `Rigid` tail →
+  true). Exit 1; 11 pass, 5 fail: "print at a rigid variable:
+  accepted at check, judged per key" (row `fn p(item: a): Text =
+  show(item); fn main(): Int = 1;`), "an uncalled caller of p(inc):
+  non-generic judged, generic not", "print reaching a rigid variable
+  through a lambda or a reference", "print at a declared type over a
+  rigid variable" (`s(Wrap(1))`) and "print at an open record: judged
+  per key", each with actual phase `check`, E_TYPE, `Expected a
+  printable value, found a` (or `Wrap(a)`, `{ a: Int, ...r }`). The
+  compare-at-rigid cases still pass: today refuses them already.

@@ -98,21 +98,41 @@ NB10): Sc again rejects a use whose site is `Auxiliary` or
 ## R0 shadow tranche, Task 0.4: `ValidR` probe and draft (2026-10-22)
 
 Characterization and design only; no compiler source or diagnostic
-changed. test/r0-requirements-probe.test.mjs (7 tests, inline sources,
+changed. test/r0-requirements-probe.test.mjs (inline sources,
 no fixture files, so no corpus re-pin) pins today's printability and
 comparability: holder types (`Box(Int)`, `F`, `Outer`) refused at
 every argument; other declared types judged by their arguments, a
 phantom one included; `main` E_ENTRY exactly where `show` is refused;
 at a rigid variable printing is deferred to each key (E017 at
 specialize) and comparison refused at check; at a hole printing passes
-and comparison is AmbiguousType. Shown failing on two scratch mutants of
-a copy of output/ (holders ignored: 4 tests fail; rigid variables
-treated as possible functions: all 7 fail). Draft for G-ValidR:
+and comparison is AmbiguousType. Shown failing on two scratch mutants
+of a copy of output/ (first run, 7 grouped tests: holders ignored, 4
+failed; rigid variables treated as possible functions, all 7 failed).
+Draft for G-ValidR:
 docs/plans/r0-validr-draft.md (policy options H, F, Pr, Q with a
 recommended default each; `ReqG` and `ValidR` under the defaults;
 checks for VR-sub, VR-agree, VR-CX). Findings in docs/findings.md
 "`ValidR` sketch and today's printability". Stopped at G-ValidR;
 T-R0b §5.4 unedited.
+Fix round 1 (task review): the probe is one test per case (16), with
+the generic `p` only in the cases that call it; both mutant runs
+re-run and recorded in docs/findings.md (8 and 5 of 16 fail); finding
+labels corrected (the `¬ ValidR` half of finding 1 argued); the
+holder-set source is policy point §3.5 (K-a recommended); CX §4.1
+condition 4 named for the same post-gate edit; RC3 point stated as
+conditional.
+Fix round 1's first full verify exited 1 on one timing bound only:
+test/fn-linear-timing.serial `partialFirst` took 938 ms (bound 930;
+2389/2389 parallel tests passed, 64/65 serial) under load average 7-8
+from other sessions; alone it then took 944, 880 and 933 ms. No
+compiler source changed in Task 0.4 (diff from d861957: three docs
+and the probe), and the round's first verify of the same output passed.
+The second run exited 1 on another timing bound only (test/match-lift
+`a five-thousand-arm integer match compiles`, 6.59 s; 2388/2389). The
+third, with no change between runs, exited 0 (2389/2389, 65/65, every
+regression proof). The known class is BACKLOG T003 (earlier records:
+R005 B5, INF001); no bound changed, and the two failures stand as
+observed.
 
 ## Language direction recorded (2026-10-08)
 
