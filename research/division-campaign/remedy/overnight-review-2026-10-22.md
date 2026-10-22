@@ -143,3 +143,49 @@ Commits 39320ad and a50db11 cover INF001, the assurance register,
 source traceability and the BACKLOG INF001 and AS001 rows; check that
 their counts match assessment §11. Commit b08c4d4 adds the progress
 lines, and the resume note (RESUME.md §6) records this night's state.
+
+## 4. Correction pass after the external review (2026-10-22)
+
+Commits 7e4a763 through the one that adds this section. The six issues
+and how they were answered:
+
+1. **O24 and partial composition.** New note:
+   docs/plans/2026-10-22-o24-emlti-correspondence.md. Disjoint
+   composition cannot be an EMLTI constructor (Def. 10.2.5, p. 411),
+   so it is encoded as a ternary predicate U with total constructors.
+   The lemma statements M0, T1, T2, V, GI, GI-Open, GI-Atoms, GI-Fin
+   and F are proposed; none is proved. O24 moved from unresolved to
+   proposed.
+   - Check T1 (rewritten after a review) and GI-Open's "family
+     reading" of EMLTI's order. That reading is flagged as a new
+     combination under ADR 014.
+2. **D1 coverage.** "By construction" is gone. Three mechanisms are
+   offered: (a) a statically declared read set, rejected when the
+   value is built; (b) problem-scoped handles; (c) a coverage theorem
+   over an independently fixed domain. O31 is now proposed.
+3. **Strategy order.** T-R0a §5.3 now states only what soundness
+   gives.
+   - Option A (a refused candidate doesn't stop the run) and option B
+     (order-dependence documented) are Q13 in dossier §18.68, with no
+     default.
+   - Option A's order-independence holds only under stated premises.
+   - AT7's transitions were rewritten.
+4. **R019 after Task 8.** This is an explicit compatibility decision
+   with three options and no default (T-R0e §1.4; dossier Q5 amended).
+   A probe is proposed before deciding.
+5. **The bounded "no principal writable clause" result** is narrowed
+   to what the scratch search showed; the universal claim is
+   unresolved.
+6. **Unsupported syntax** alone supplies no contradiction; a separately
+   justified one may still be reported. The documents now say this
+   consistently.
+
+The review's D1-D6 recommendations are recorded as the reviewer's,
+pending your confirmation (dossier §18.68; companion §10). Blanket
+acceptance of Q1-Q13 and the implementation plan are held. Counts: 63
+rows, 2 proved, 19 argued, 1 experimentally checked, 18 proposed, 23
+unresolved.
+
+One read-only review checked the correction pass (nothing blocking;
+16 findings, all applied in the last commit). The last commit itself
+was not re-reviewed.
