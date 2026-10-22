@@ -5307,7 +5307,9 @@ and T-R0e §7 also maps its pre-revision numbers):
    Contradiction only through a registered proved rule, otherwise
    Unsupported [yes]; E017 keeps its code as transitional [yes].
 3. `outside` markers: non-empty `outside` blocks a whole-function
-   Solved, never Contradiction [yes]; open: free type-constructor nodes,
+   Solved [yes]; the marker alone supplies no contradiction, though a
+   separately justified one (§18.65 grounds 1 and 2) may still be
+   reported (§18.68 item 6); open: free type-constructor nodes,
    conservative `FailFamily`/`EffectArgument` markers, effect-row
    independence and the class-f construct (`ClassF Question` in T-R0a's
    `Unsupport`), the lambda effect-row annotation.
@@ -5399,3 +5401,11 @@ recorded.
 **Held:** blanket acceptance of Q1-Q12 and the implementation plan,
 until the correction pass and a narrow O24 correspondence note are
 back.
+
+A further question from the correction pass (T-R0a §5.3 "Order"):
+**Q13.** Does a refused candidate stop the run? Option A: no; record
+`CandidateRefused`, continue, report `Faulted` only if nothing else
+decides (the verdict class is then order-independent for sound
+components with per-strategy fuel, argued). Option B: yes; order may
+decide between Faulted and Solved, documented and exposed by the
+test-only `Checking` value. No default.

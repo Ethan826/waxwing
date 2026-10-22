@@ -123,8 +123,10 @@ Check first:
    - The verifier's first wording of rule 1′ contradicted §18.67 Q4,
      so the rule changed twice.
 5. **The second spread at the verdict stage**: it is
-   `Unresolved (Unsupported [SecondSpread])`, never Contradiction,
-   consistent with §18.65.
+   `Unresolved (Unsupported [SecondSpread])` when nothing else decides.
+   The syntax alone supplies no contradiction, but a separately
+   justified one may still be reported (§18.65; corrected after the
+   external review, §18.68).
 6. **Notes added from the inference extension** (2443479):
    - FK-0's target property is JGS's bounded static variation;
    - RC in Leroy's terms: a validator for a weaker property;
