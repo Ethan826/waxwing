@@ -178,13 +178,20 @@ does not speculate about it.
 (requirements §4.4, cited), never invalid (§18.60).
 
 Two decided points bound V's evidence (§18.69 Q10, Q13). A refuter
-whose soundness obligation is still Pending may run for research or
-shadow evidence, but it never mints the trusted Contradiction; only a
-discharged c1 rule or a checked CX counter-instance does. An untrusted
-candidate that fails checking does not stop the run: the attempt is
-kept in the structured outcome record as a failed attempt, not a
-compiler defect, and V goes on to the next strategy; a failure of a
-trusted checker or a broken invariant still stops, as Internal (§3.1).
+whose soundness obligation is still pending may run for research or
+shadow evidence (T-R0a's `shadowRefuter`, §5.1), but it never mints
+the trusted Contradiction; only a proved c1 rule or a CX
+counter-instance checked by a trusted refuter (`trustedRefuter`,
+given a proved `RefuteSound`) does. The first trusted refuter is
+sound and possibly incomplete. An untrusted candidate that fails
+checking does not stop the run: the attempt is kept in T-R0a's
+`Decision.attempts`, and V goes on to the next strategy. A heuristic
+candidate rejected as expected is a failed attempt only, not a
+compiler defect; a refused candidate that its search presented as a
+complete solution is also kept in `Decision.faults` as a
+`SearchFault`, a suspected search defect, which still does not stop
+the run and is not Internal (T-R0a §3.5). A failure of a trusted
+checker or a broken invariant stops, as Internal (§3.1).
 
 ### 1.3 V2: acceptance requirements
 
@@ -237,8 +244,9 @@ and the third as `AtA (Inadmissible site i)` (T-R0a §6):
 - `Inadmissible`: refused by today's code (refused, as today), or
   mentioning a name and matching no active row (W §2.3);
 - `AdmittedPendingR019` (W §2.3's wording): matches no active row of
-  `Adm_W` (FK-W/FK-U rows active once adopted), name-free, admitted by
-  today's `bareRow` (NestedArguments.purs:78-81, cited). This covers a
+  `Adm_W` (FK-W's rows active once its obligations are met, FK-U's
+  only if it is later adopted), name-free, admitted by today's
+  `bareRow` (NestedArguments.purs:78-81, cited). This covers a
   field-free union of rigid tails (`{ ...u, ...v }`, until FK-U's row
   is adopted) and a mixed rigid-and-hole union (`{ ...r, ...h }`,
   which no row admits).
@@ -467,7 +475,7 @@ P runs only on a Solved declaration, per `split` site.
 |---|---|---|
 | forced | a forcedness decision over the complete obligations, by the forcedness policy component (decided, §18.69 Q7; below) | admitted; the witness passes to A |
 | written | the same, on the problem with the annotation | admitted |
-| not forced, not written | **two checked alternatives at the same permitted rigid assignment that differ semantically on the split**, or equivalent checked evidence of non-forcedness (decided, §18.69 Q1); a syntactic difference alone is not enough | NotAdmitted: "valid; split not determined", naming the part and the evidence, the alternatives when exhibited (dossier §4 policy, cited); T-R0a's `SplitUnforced` (reconciliation C4) |
+| not forced, not written | **two checked alternatives at the same permitted rigid assignment that differ semantically on the split**, or equivalent checked evidence of non-forcedness (decided, §18.69 Q1); a syntactic difference alone is not enough | NotAdmitted: "valid; split not determined", naming the part and the evidence, the alternatives when exhibited (dossier §4 policy, cited); T-R0a's `SplitUnforced CallSite NonForced` (reconciliation C4; T-R0a §6) |
 | undecided | none | P refusal `ForcednessUndecided`; the verdict stays Solved; its code is open (§3.1) |
 | G3 contract applies (future) | §2.4 | admitted with the contract's witness |
 
@@ -479,9 +487,14 @@ assignment (read here as: they differ on the split, not on the values
 given to rigid variables); they differ semantically, not just in
 syntax (two spellings of one row are one alternative); and a checked
 proof of non-forcedness without two exhibited alternatives is
-accepted as equivalent. "Same permitted rigid assignment" is the
-author's wording; its precise statement over W's `Witness` and the
-recorded problem is for the implementation plan, with W.
+accepted as equivalent. T-R0a §6 carries both forms as `NonForced`:
+`Alternatives { at, one, other }` (one `RigidAssignment`, two checked
+`Alternative`s) or `NonForcedness NonForcednessEvidence`, with a
+hidden constructor minted only by the forcedness component's checker.
+"Same permitted rigid assignment" is the author's wording; its
+precise statement over W's `Witness` and the recorded problem, and
+the representation of these types, are for the implementation plan,
+with W (open).
 
 **Who decides forcedness** (decided, §18.69 Q7). A separate policy
 component owns forcedness. Its inputs are the immutable complete
@@ -489,7 +502,12 @@ recorded problem and the `split` site; it does not read V's
 `Solution`. A candidate solution may help it search for evidence (one
 alternative to try), but never defines forcedness: a split is not
 forced because one strategy's solution chose it. P calls this
-component; neither V nor A decides forcedness.
+component; neither V nor A decides forcedness. T-R0a §6 types it as
+the injected `ForcednessPolicy` (`judge`: problem, split site, and
+solutions as seeds only, to `Forced`, `NotForced NonForced` or
+`Undecided`) and places it with P in this document (proposed); its
+evidence types, W's `ForcednessEvidence` among them, are still to be
+represented (open).
 
 **NotAdmitted is not Unresolved and not a contradiction** (proposed):
 the program is valid and the obstacle is policy. It gets its own code
@@ -603,7 +621,9 @@ data Layered
   | NotCompiled (NonEmptyArray CompileRefusal) -- Solved; refused by
                                                -- P, A or S (T-R0a §6)
   | Internal InternalFault                     -- E_INTERNAL; T-R0a's
-                                               -- Faulted (§18.69 Q1)
+                                               -- Faulted (§18.69 Q1),
+                                               -- or a ReCheckFailed in
+                                               -- DeclReport.faults
 
 -- Carried by T-R0a's AtS (NotLowerable Construct Site): S1 after
 -- Solved. A missing compilation witness, including a hole the hole
@@ -617,6 +637,13 @@ data Construct
                                        -- entry's path
   | UncheckedPath                      -- W §3.3's unsupported path
 ```
+
+`layerOf` reads the verdict of T-R0a's `Decided p d` as `d.verdict`.
+`d.attempts` and `d.faults` (the structured outcome record of §18.69
+Q13, `SearchFault`s included) may be rendered as notes; they never
+change the layer and never give `Internal`. A `ReCheckFailed` in
+`DeclReport.faults` gives `Internal` although the verdict stays Solved
+(T-R0a §3.5, §7).
 
 S1 constructs that stop a verdict are T-R0a's `Unsupport` values, not
 `Construct`s, and give `Unresolved (Unsupported …)`: `Outside
@@ -637,15 +664,13 @@ stage (`Limit`), `SpecializationKeys` in S2 (`AtS (AdmissionLimit …)`).
 Each T-R0a constructor belongs to exactly one layer (reconciliation
 C5), so `layerOf` reads the layer from the tag:
 
-- P, `AtP`: `SplitUnforced CallSite (Tuple Witness Witness)`, two
-  checked witnesses at the same permitted rigid assignment differing
-  semantically on the split (§2.2; `Witness` is W's B2 record, W
-  §1.6). §18.69 Q1 also accepts equivalent checked evidence of
-  non-forcedness, which this shape cannot carry; T-R0a, which owns the
-  constructor, is to widen its evidence field to admit it (open, for
-  T-R0a). `ForcednessUndecided CallSite`; and, if G3 is
-  adopted, `NoAdmissibleWitnessFound CallSite` (§2.4), which T-R0a's
-  `PolicyRefusal` gains then (T-R0a §6, "G3's refusal").
+- P, `AtP`: `SplitUnforced CallSite NonForced`, carrying two checked
+  alternatives at the same permitted rigid assignment differing
+  semantically on the split, or equivalent checked evidence of
+  non-forcedness (§2.2; T-R0a §6; §18.69 Q1). `ForcednessUndecided
+  CallSite`; and, if G3 is adopted, `NoAdmissibleWitnessFound
+  CallSite` (§2.4), which T-R0a's `PolicyRefusal` gains then (T-R0a
+  §6, "G3's refusal").
 - A, `AtA`: `Inadmissible CallSite Int`, `Adm_W` refused at slot `i`
   (today's E_SPECIALIZATION). `AtA (ComponentBlocked f)` may keep the
   specialization diagnostic family (E_SPECIALIZATION), its text
@@ -682,9 +707,15 @@ Design points (proposed):
   fault (docs/engineering.md, "Result boundary classification"; W
   §3.3). `Defect` as an Unresolved reason is dropped. Not every
   refusal is a fault (decided, §18.69 Q13, option A-i): an untrusted
-  candidate refused by checking, including an ordinary heuristic
-  candidate rejected as expected, is a failed attempt kept in the
-  structured outcome record; the run continues, and a fault stops it.
+  candidate refused by checking is a failed attempt kept in the
+  structured outcome record (`Decision.attempts`), and the run
+  continues. A heuristic candidate rejected as expected is nothing
+  more; one its search presented as complete is also a `SearchFault`
+  in `Decision.faults` (T-R0a §3.5), a suspected search defect that
+  is neither `Internal` nor a stop. If nothing else decides, the
+  verdict is `Unresolved (Inference NoAcceptedCertificate)` (T-R0a
+  §5.3 rule 3). A trusted-component failure or a broken invariant
+  stops the run.
   Genuine budget exhaustion is a limit, not a fault (§18.69 Q1).
 - **Order independence is conditional** (§18.69 Q13). The verdict
   class does not depend on strategy order when the same problem is
@@ -720,7 +751,7 @@ Design points (proposed):
 
 | Today (code, problem, source) | Class (requirements §2.3) | Target |
 |---|---|---|
-| E_TYPE `CannotTell` (D4), EndReport.purs:35, Unresolved.purs:74 | e | verdict Unresolved (Inference NoCandidate), D4 as a hint, unless some strategy Solves; then P: admitted if forced, `SplitUnforced` with two witnesses, else `ForcednessUndecided`. See §2.3 |
+| E_TYPE `CannotTell` (D4), EndReport.purs:35, Unresolved.purs:74 | e | verdict Unresolved (Inference NoCandidate), D4 as a hint, unless some strategy Solves; then P: admitted if forced, `SplitUnforced` with `NonForced` evidence (§2.2), else `ForcednessUndecided`. See §2.3 |
 | E_TYPE D6, H's `Homeless` via `contradicted`, EndReport.purs:37-38, Contradicted.purs | d | not a refusal; the atom is recorded and D6 is a hint; V decides (`route`: Solved if some strategy certifies it, else Unresolved (Inference NoCandidate or NoAcceptedCertificate)) |
 | E_TYPE row refusals on substituted atoms (`NotKnownDisjoint`, `InBothRecords`, `InBothRows`, `RowMayHaveField`, `LackedField`, head clashes) | e, c pending | Contradiction where a c1 rule stated by CX applies with its theorem, or a CX; otherwise a hint, and the verdict is Unresolved (Inference NoCandidate) |
 | E_TYPE `lacks`/disjointness checks on body types at Resolve (Resolve/Lacking.purs:126-167, Resolve/Apart.purs:141-158; T-R0c d02, n16) | a today; semantic per T-R0c §3.12 (c2 with checked counter-instances) | move into generation as T-R0b E13 definedness atoms; V decides (Contradiction only with c1 or CX). Decided, §18.69 Q4: semantic body-type checks move into generation, and any check that depends on a solver-selected type is semantic; until the plan step lands, Resolve keeps refusing |
@@ -738,7 +769,7 @@ Design points (proposed):
 | E_SPECIALIZATION `PolymorphicRecursion`, `NestedDatatype` | A | `AtA (Inadmissible site i)`, unchanged code; name-free slots `bareRow` admits and no active `Adm_W` row does are recorded `AdmittedPendingR019` (§1.4) |
 | E_TYPE `SecondSpread` (Resolve) | a today | Unresolved (Unsupported SecondSpread), a support limitation (decided, §18.69 Q4); Resolve keeps refusing until the plan step lands; Contradiction only from a separately justified c1 rule or CX on the recorded atoms, never from the spread alone (§1.5) |
 | E_TYPE `SameDisjoint`, `RepeatedTail` in a signature | b′ | unchanged, worded as policy |
-| syntax, names, arity, sorts, coverage, effect and handler codes | a | unchanged; genuinely structural arity and coverage checks stay separate from generation (decided, §18.69 Q4). Effect refusals consuming record-solved metas: class f, `ClassF`, Unsupported until effect/record independence is shown (§18.69 Q3) |
+| syntax, names, arity, sorts, coverage, effect and handler codes | a, except where a check reads a solver-selected type | unchanged; genuinely structural arity and coverage checks stay separate from generation (decided, §18.69 Q4). Arity at a declared result that can never be a function (`fixedResult`) is structural; arity at an instantiated callee type (`functionLike`) reads a solver-selected type, so it is semantic and judged on E5's recorded atom (T-R0b §3.2, §11 item 7; argued). Which parts of coverage read solved types is open (T-R0a Q-c1). Effect refusals consuming record-solved metas: class f, `ClassF`, Unsupported until effect/record independence is shown (§18.69 Q3) |
 
 Codes change for fixtures pinned to E_TYPE D4, the E_INTERNAL
 placeholders, E_NESTING `TypeTooDeep` and E_SPECIALIZATION's limit
@@ -751,7 +782,8 @@ fixture migration belong to the implementation plan (decision 9).
 What it checks, how it obtains the key and the bindings, what failure
 means and what it does not cover are W §3 (RC1-RC6, §3.1-§3.4, cited);
 the keys it runs at are bounded by FK-0 (FK-W once its obligations
-are met; FK-U only if adopted; W §2.4, §2.7; §18.69 Q5). This
+are met; FK-U, inactive, only if it is later adopted and proved; W
+§2.4, §2.7; §18.69 Q5). This
 document fixes only its position and the outcome its results map to.
 
 **Position** (decided, §18.69 Q8): **always on**, initially, not
@@ -790,7 +822,7 @@ run, cited); requirements §2.3.
 
 | Finding | Today | Layer | Target outcome alone |
 |---|---|---|---|
-| W1 | E_TYPE "Cannot tell whether walk's u or v holds walk's u", at check | V, then P | V: valid with the identity split (argued); the verdict is Solved once a strategy accepts, and until then Unresolved (Inference NoCandidate), D4 as a hint. P, once Solved: argued not forced: the identity and the composed split both pass check once pinned through a changed signature (an extra `uonly` parameter; checked run, evidence about `walk`'s splits, not proof for the original signature), and no tested annotation decides it; so `SplitUnforced` with those two witnesses once both are checked for the original signature at the same permitted rigid assignment (§2.2; §18.69 Q1), or `ForcednessUndecided` until then |
+| W1 | E_TYPE "Cannot tell whether walk's u or v holds walk's u", at check | V, then P | V: valid with the identity split (argued); the verdict is Solved once a strategy accepts, and until then Unresolved (Inference NoCandidate), D4 as a hint. P, once Solved: argued not forced: the identity and the composed split both pass check once pinned through a changed signature (an extra `uonly` parameter; checked run, evidence about `walk`'s splits, not proof for the original signature), and no tested annotation decides it; so `SplitUnforced` with those two as `NonForced` alternatives once both are checked for the original signature at the same permitted rigid assignment (§2.2; §18.69 Q1), or `ForcednessUndecided` until then |
 | W2 | R010 admits `u' = {}`, `v' = { ...u, ...v }` | A | `AdmittedPendingR019` for the composed witness (`bareRow` admits it, no active `Adm_W` row does while FK-U is not adopted); the identity witness `Admissible` (FK-0's single-rigid-tail row). Identity is the only admissible split under the documented rule only (§18.63, cited) |
 | W3 | E_INTERNAL Task 8 placeholder at specialize, with a caller | S1 | Solved; `NotCompiled` (AtS (NotLowerable SeveralTailLowering site)) |
 
@@ -855,11 +887,12 @@ regression row, per AGENTS.md, in its implementation plan.
   unless the author rules otherwise (visibility open, §7). Its value
   is in blocking later steps from relying on composed tails.
 - 6b. **Split D4 at P** (after the forcedness policy component,
-  §2.2; requirements §11 item 5; decided, §18.69 Q7). Once a strategy
-  Solves, forced splits are admitted (acceptance widens: O4, c21,
-  cmp-open); unforced ones get `SplitUnforced` with §2.2's evidence;
-  the rest `ForcednessUndecided`. Needs the author's approval as a
-  language change.
+  T-R0a's `ForcednessPolicy`, §2.2; requirements §11 item 5;
+  decided, §18.69 Q7). Once a strategy Solves, forced splits are
+  admitted (acceptance widens: O4, c21, cmp-open); unforced ones get
+  `SplitUnforced` with §2.2's evidence; the rest
+  `ForcednessUndecided`. Needs the author's approval as a language
+  change.
 - 6c. **Ground re-check and E017** (after the witness representation,
   decision 4, and W §3). Placed per §4, always on and cached (§18.69
   Q8); E017 moves into the re-check once contracts carry `Q`, and is
@@ -907,7 +940,7 @@ question added since.
 | Q5 | `AmbiguousType`: P policy or class e? | decided (§18.69 Q4): Unresolved (class e) unless a language policy deliberately says otherwise; a check depending on a solver-selected type is semantic (§3.2) |
 | Q6 | Which O-kinds make acceptance depend on the record slice? | decided (§18.69 Q3): the conservative boundary for now, every non-empty `outside` blocks a whole-function Solved; a construct is exempted only once its omitted obligations are shown unable to affect the result; no effect/record independence assumed (§1.5). Which O-kinds can be so shown: future work, none exempt today |
 | Q7 | Identifiers of the re-check, its binding source and the key theorem | closed: W §0 (RC1-RC6, `vars`/`Binding`, FK-0/FK-W/FK-U) |
-| Q8 | NotAdmitted: must two witnesses be exhibited? | decided (§18.69 Q1): two checked alternatives at the same permitted rigid assignment, differing semantically on the split, or equivalent checked evidence of non-forcedness; syntax alone is not enough (§2.2). Open, for T-R0a: `SplitUnforced`'s field to carry the second form (§3.1) |
+| Q8 | NotAdmitted: must two witnesses be exhibited? | decided (§18.69 Q1): two checked alternatives at the same permitted rigid assignment, differing semantically on the split, or equivalent checked evidence of non-forcedness; syntax alone is not enough (§2.2). T-R0a §6's `NonForced` carries both forms; open: the representation of its evidence types (§2.2) |
 | Q9 | `Exhausted`: limit or defect? | criterion decided (§18.69 Q1): genuine budget exhaustion is a limit, an invariant violation a fault. Which `Exhausted` is: open, for the plan with a check (§3.2) |
 | — | `Internal`: a separate outcome or an Unresolved reason? | decided (§18.69 Q1): separate (T-R0a's `Faulted`), never Unresolved; `Compilation` stays inside `Solution` (§3.1) |
 | — | Codes for a Solved declaration refused by P, A, S or the re-check | open: §18.69 does not rule on them; §3.1's proposal for the implementation plan. `ComponentBlocked`: decided (§18.69 Q7), may keep E_SPECIALIZATION, naming the dependency |
@@ -1165,3 +1198,29 @@ not.
 - Q12: B9 and B13 stay proposed classifications pending their named
   tests; §3.2's B9 row already reads conditionally, so no text
   changed. Q6, D1, D2, D4-D6 do not bear on this document's text.
+
+### Reconciliation after §18.69
+
+The four editors applied §18.69 in parallel; this pass removes the
+stale cross-references they left. No decision changed.
+
+- §1.2: a pending refuter is T-R0a's `shadowRefuter`; only a proved
+  c1 rule or a `trustedRefuter` (proved `RefuteSound`) gives
+  Contradiction, and the first trusted refuter is sound, possibly
+  incomplete. A refused candidate presented as complete is also a
+  `SearchFault` (T-R0a §3.5); only the heuristic case is a bare
+  failed attempt. §3.1's `Internal` note says the same and cites
+  T-R0a §5.3 rule 3.
+- §1.4: FK-W's rows are active once its obligations are met, not
+  "once adopted"; §4 likewise marks FK-U inactive.
+- §2.2, §3.1, §3.2, §5, §7 (Q8 row): `SplitUnforced CallSite
+  NonForced` replaces `(Tuple Witness Witness)`; T-R0a has widened
+  the field, so that open item is closed, and the representation of
+  the evidence types stays open. §2.2 and step 6b name T-R0a's
+  `ForcednessPolicy`, placed with P here (proposed).
+- §3.1: `layerOf` reads `d.verdict` from `Decided p d`; attempts and
+  `SearchFault`s never change the layer; a `ReCheckFailed` in
+  `DeclReport.faults` gives `Internal` with the verdict still Solved.
+- §3.2: the class-a row separates arity at a declared result
+  (structural) from arity at an instantiated callee type (semantic),
+  following T-R0b §3.2 and §11 item 7; coverage's split stays open.

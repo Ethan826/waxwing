@@ -135,7 +135,9 @@ recovery from solver-chosen bindings. Consequences for recorder-spec
   `Refused (NonEmptyArray StaticRefusal) RecordedProblem`). This
   answers T-R0a Q-b4: no (proposed; §2.4, §10). **The boundary
   (§18.69 Q4):** only genuinely structural checks (arity read from a
-  signature, coverage, entry rules) stay in `staticRules`. Semantic
+  signature, the structural part of coverage, entry rules) stay in
+  `staticRules`; which parts of today's coverage read solved types
+  is open (T-R0a §10, Q-c1). Semantic
   body-type checks move into generation as atoms (§3.2 note, §8), and
   a check that depends on a solver-selected type is semantic, never
   static (§11 item 7).
@@ -423,9 +425,10 @@ is emitted conservatively. Constructors, extending recorder-spec §2.5
 (new: `app` with arguments, §2.1), `HandlerType`, `FailFamily`,
 `Deferred`, `LocalGeneralization` (no resolved construct produces it
 today: lambdas and `let`s are monomorphic, Check/Lambda.purs:22-26
-cited). Coverage is **not** a constructor: it is a static pass, class
-a (T-R0e §3.2; requirements.md §2.3), unless T-R0c's answer to T-R0a
-Q-c1 says otherwise. Effect rows on arrows are erased (§2.2), not
+cited). Coverage is **not** a constructor: its structural part is a
+static pass, class a (T-R0e §3.2; requirements.md §2.3); by §18.69
+Q4 any part that reads a solver-selected type is semantic, and which
+parts do is open (T-R0a §10, Q-c1). Effect rows on arrows are erased (§2.2), not
 marked. **Effect/record independence is not assumed (§18.69 Q3)**,
 so the erasure drops obligations whenever effect checking reads a
 record-solved type, and a Solved claim may not rest on it. How the
@@ -604,14 +607,16 @@ sub-pattern's path; `rest` of P7 ↦ `RestType p`; every other `field`,
   they read, so the set of requested variables is built with `build`
   and is static, never a separately written list; scoped handles may
   enforce that a request names a variable of this problem. Cov's
-  domain becomes the requested set, and `position` (§5.2) is then a
-  derived view of it, not a second source. Read-back above stays the
-  route until the continuation lands; the continuation removes its
-  ambiguity at several flexible tails. **The mechanism is to be
-  specified before implementation** (the request constructors, how a
-  read outside the set is rejected when the value is built, the
-  handle scoping, and the changed `generate` type, which T-R0a
-  carries). It relies on §4's applicative invariant.
+  domain becomes the requested set plus every other flexible
+  variable whose reconstruction is not established (W §1.6, §4:
+  `Req` and the complement of `Recon`), and `position` (§5.2) is
+  then a derived view of the requested set, not a second source.
+  Read-back above stays the route until the continuation lands; the
+  continuation removes its ambiguity at several flexible tails.
+  **The mechanism is to be specified before implementation** (the
+  request constructors, how a read outside the set is rejected when
+  the value is built, the handle scoping, and the changed `generate`
+  type, which T-R0a carries). It relies on §4's applicative invariant.
 - **Auxiliaries: kept unless deterministic reconstruction is
   established** (§18.69 Q6). The earlier proposal (auxiliaries never
   bound) is withdrawn: "auxiliary" alone does not justify omitting a
@@ -935,8 +940,12 @@ implementation plan. Incompleteness stays the dangerous direction.
    the auxiliaries' read-back values where both exist.
 8. **RT8, candidate.** For each declaration the online solver accepts,
    the candidate read through `vars` (§5.3) satisfies `B` at a ground
-   instance of the rigid variables satisfying `D`. A failure is an
-   internal error, never evidence about the program (§18.64 item 3).
+   instance of the rigid variables satisfying `D`. A failure is a
+   test failure exposing a defect (recorder, read-back or search),
+   never evidence about the program (§18.64 item 3). At run time the
+   same refusal of the online candidate is not `Faulted`: it is a
+   failed attempt and a `SearchFault` in T-R0a's `Decision`, and the
+   run continues (§18.69 Q13; T-R0a §3.5).
    Turning the candidate into a certificate is per format and belongs
    to the strategy (requirements.md §10, recorder-spec T8a).
 9. **RT9, markers.** One fixture per `Outside` constructor; the problem's
@@ -1248,3 +1257,18 @@ record of what was pending at the time. Changes here:
 
 Not applied here (other owners): Q1, Q5, Q7, Q9, Q13 (T-R0a, W,
 T-R0e); D2-D6.
+
+### Reconciliation after §18.69
+
+The four editors applied §18.69 in parallel; this pass removes the
+stale cross-references they left. No decision changed.
+
+- §1 and §3.5: coverage stays static only in its structural part;
+  which parts of today's coverage read solved types is open (T-R0a
+  §10, Q-c1), no longer "unless T-R0c answers otherwise".
+- §5.3: under D1, Cov's domain is the requested set plus every other
+  flexible variable outside `Recon`, as W §1.6 and §4 state; not the
+  requested set alone.
+- §9 RT8: a failed candidate is a test failure exposing a defect; at
+  run time the same refusal is a failed attempt and a `SearchFault`
+  in T-R0a's `Decision`, not `Faulted` (§18.69 Q13).

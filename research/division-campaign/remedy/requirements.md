@@ -517,7 +517,9 @@ valid.
 1. R0's design (§9 item 1) and the refusal audit (class c premises).
 2. `ValidOpenR` for requirement atoms is unstated (recorder-spec P1
    states only `ValidFinR`); until then problems with non-empty `BQ`
-   are Unsupported for every strategy.
+   are Unsupported for every strategy. (Superseded by dossier §18.69
+   Q2: ground requirement rules with reduction through entailed
+   equalities; see r0/recorder-rules.md, preamble and §5.4.)
 3. CX and its substitution lemma.
 4. Termination (§3) and R019.
 5. Forcedness is a "for all solutions" property; who decides it on the

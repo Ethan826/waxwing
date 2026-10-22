@@ -210,11 +210,14 @@ structural arity and coverage checks stay separate static rules
 (class a); Resolve's semantic body-type checks move into generation
 (§7); a second spread is a support limitation (`SecondSpread`, §5.3
 rule 1′), not class a; `AmbiguousType` stays Unresolved unless a
-language policy deliberately says otherwise. **Open:** which parts of
-arity at a fixed result (T-R0b §11 item 7) and of coverage (Q-c1) are
-genuinely structural, judged by that criterion, and the Unresolved
-reason `AmbiguousType` gets (T-R0e Q5); the implementation plan
-classifies each check with its test.
+language policy deliberately says otherwise. For arity, T-R0b §3.2
+and §11 item 7 apply the criterion (argued): over-application at a
+declared result that can never be a function (`fixedResult`) is
+structural, class a; at an instantiated callee type (`functionLike`)
+it reads a solver-selected type and is semantic, judged on E5's
+recorded atom. **Open:** the same split for today's coverage (Q-c1),
+and the Unresolved reason `AmbiguousType` gets (T-R0e Q5); the
+implementation plan classifies each check with its test.
 
 **Decided, Q3 (§18.69 item 3):** effect/record independence is not
 assumed. An effect refusal is class a only where it is shown not to
@@ -270,8 +273,8 @@ witness does not weaken the verdict; it blocks admission (§6).
 Placement (**decided, Q1, §18.69 item 1**; this document owns it):
 `compilation` sits inside `Solution`, so "`Witnessed` only with
 Solved" (W §5.1) holds by construction and W's `NotSolved` reason is
-never needed here. W §5.1's placement beside the verdict is not
-adopted.
+never needed here. The alternative, `Compilation` beside the verdict
+(W's earlier draft), is not adopted; W §1.6 and §5.1 now say the same.
 
 ### 3.4 Contradiction and its evidence
 
@@ -360,7 +363,11 @@ data LimitReached
 -- Not an Unresolved reason (reconciliation D3): a separate outcome,
 -- `Faulted` (§3.2), rendered with E_INTERNAL. Decided, Q1 (§18.69).
 -- Each stops the declaration's run: a trusted component failed or an
--- invariant broke (decided, Q13, §18.69).
+-- invariant broke (decided, Q13, §18.69). `ReCheckFailed` arises
+-- after the verdict, so it blocks emission instead (W §3): it goes
+-- into `DeclReport.faults` (§7), and the outcome stays `Decided`
+-- with a Solved verdict (§6, "No compilation refusal changes the
+-- verdict").
 data InternalFault
   = BothVerdicts StrategyName RefuterName       -- Solved and refuted
   | DerivationRefused RuleName Unsound          -- a registered rule's
@@ -911,8 +918,11 @@ data NonForced
 -- forcedness.
 type ForcednessPolicy =
   { judge ∷ RecordedProblem → Site → Array Solution → Forcedness }
-data Forcedness
-  = Forced ForcednessEvidence            -- W §1.7's type
+data Forcedness                          -- `Forced` shares its name
+  = Forced ForcednessEvidence            -- with W's `Basis.Forced`;
+                                         -- separate modules. Evidence
+                                         -- named in W §1.7; its shape
+                                         -- is this component's (open)
   | NotForced NonForced
   | Undecided
 
@@ -974,8 +984,9 @@ Proposed. Points this interface is responsible for:
   `Admitted.status ∷ AdmittedStatus` records the two admitted values;
   W's `Inadmissible` is `AtA (Inadmissible site i)`, naming the slot
   that fails (T-R0e §1.4's evidence). `AdmittedPendingR019`: matches
-  no active row of `Adm_W` (FK-W/FK-U rows active once adopted),
-  name-free, admitted by `bareRow`. It compiles as today and is never
+  no active row of `Adm_W` (FK-W's rows active once its obligations
+  are met, FK-U's only if FK-U is later adopted; W §2.3), name-free,
+  admitted by `bareRow`. It compiles as today and is never
   a premise. What happens to it after Task 8 is a **proposed
   behaviour change** (programs that check today would be refused for
   compilation) and needs an **explicit compatibility decision by the
@@ -1036,8 +1047,9 @@ type DeclReport =
   { name      ∷ FunctionName
   , outcome   ∷ DeclOutcome
   , admission ∷ Admission
-  , faults    ∷ Array InternalFault      -- re-check faults (§6)
-  }
+  , faults    ∷ Array InternalFault      -- re-check faults (§6);
+  }                                      -- not Decision.faults, which
+                                         -- holds SearchFaults (§3.5)
 ```
 
 Proposed:
@@ -1330,7 +1342,9 @@ Still open after §18.69:
   effect refusals read record metas (Q-c2).
 - `AdmittedPendingR019`'s visibility and post-Task-8 behaviour, after
   the probe (§6).
-- The representation of non-forcedness evidence (§6).
+- The representation of forcedness and non-forcedness evidence
+  (`ForcednessEvidence`, `Alternative`, `RigidAssignment`,
+  `NonForcednessEvidence`; §6).
 - Whether steps 4 and 5 land together (§10).
 - When the trusted refuter's scope extends to `BQ` and further type
   constructors (§5.1).
@@ -1603,3 +1617,22 @@ and what stays open.
   mechanism is left to be specified before implementation, and
   read-back stays the stated interface until then.
 - Q12 and D2-D6 bear on other documents, not on this one.
+
+### Reconciliation after §18.69
+
+The four editors applied §18.69 in parallel; this pass removes the
+stale cross-references they left. No decision changed.
+
+- §3.2: arity cites T-R0b's application of the Q4 criterion
+  (`fixedResult` structural; `functionLike` semantic); coverage stays
+  open (Q-c1).
+- §3.3: W now places `Compilation` inside `Solution` too; the note
+  no longer says W §5.1 holds the rejected placement.
+- §3.5: `ReCheckFailed` goes into `DeclReport.faults` after the
+  verdict, which stays Solved; the other `InternalFault`s give
+  `Faulted`. §7 says `DeclReport.faults` is not `Decision.faults`.
+- §6: `Forcedness.Forced` and W's `Basis.Forced` share a constructor
+  name (separate modules); `ForcednessEvidence`'s shape is the
+  component's, open. `AdmittedPendingR019` reads FK-W's rows as
+  active once its obligations are met, not "once adopted".
+- §11: the open list names every forcedness evidence type.

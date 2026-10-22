@@ -199,10 +199,14 @@ obligation is not yet discharged (CX-K, CX-KP or CX-R for a
 `CXChecked` refuter, plus CX-PR when it reads a recorded problem; or
 its own `RefuteSound` proof) may run for research or shadow evidence.
 It **must not mint the trusted Contradiction** until that obligation
-is discharged: its acceptances are recorded as shadow evidence, and
-the verdict they would have given stays Unresolved. T-R0a's
-`RefuterSpec` `Pending` status carries this; rules still require a
-proof.
+is discharged: its acceptances are recorded as shadow evidence and
+never change the verdict, which is whatever the other components
+give. T-R0a carries this with two constructors, not a status field
+(r0/generation-interface.md §5.1): `shadowRefuter`, given the pending
+statement, logs `Shadow` records in the attempt log; only
+`trustedRefuter`, given a proved theorem, wraps a `CXChecked` as the
+token `Refuted`. Rules still require a proof. The first trusted
+refuter is sound and possibly incomplete (§3).
 
 **Sub-bodies and the whole `D` (§18.69 Q10).** The full `D` is always
 preserved (C1-D, X7); a certificate may name a justified sub-body
@@ -552,3 +556,15 @@ every claim is still a `def … : Prop`.
 - Still open: questions 1 (total binding of unused rigid variables),
   2 (scoped `D`), 3 (certificate cost) and 5 (C1-E as the line).
   Statements.lean is unchanged (no Lean edits in this revision).
+
+### Reconciliation after §18.69
+
+The four editors applied §18.69 in parallel; this pass removes the
+stale cross-references they left. No decision changed and no Lean
+file was edited.
+
+- §4, "Pending refuters": T-R0a no longer has a `Pending` status on
+  `RefuterSpec`; it injects either `shadowRefuter` (statement;
+  `Shadow` records only) or `trustedRefuter` (proved theorem; the only
+  maker of `Refuted`). A shadow result leaves the verdict to the other
+  components rather than forcing Unresolved.

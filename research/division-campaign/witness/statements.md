@@ -13,9 +13,10 @@ proof, no representation implemented, no selection rule chosen. Labels:
 **cited** (file:line or section, read at 67ba706), **argued**
 (reasoning, unchecked), **proposed** (a design statement awaiting
 review). Nothing here is **checked**; where a cited source holds a
-proved theorem, the citation says so. "Pending author Q<n>" marks a
-proposed default that waits for the author's ruling on the
-reconciliation review's question Q<n>; it is not decided here.
+proved theorem, the citation says so. In the revision log, "pending
+author Q<n>" marked a proposed default that waited for the author's
+ruling on the reconciliation review's question Q<n>; those questions
+are now decided (below), and the log keeps the label as history.
 
 **The author's decisions (dossier §18.69)** on Q1-Q13 and D1-D6 are
 applied; a point they decided is marked "(§18.69)". A decided
@@ -315,12 +316,13 @@ data NoWitnessReason
   gives verdict Solved with `NoWitness (NonConstructive name)`. The
   verdict is unchanged; validity and compilation are separate (§18.60
   bullets 3-5).
-- `NoWitness` **cannot authorize lowering.** The declaration is
-  refused for compilation with an Unsupported reason (decision 9's
-  reason ADT; wording belongs to T-R0a, its code to T-R0a and T-R0e:
-  §18.69 does not rule on Q1(c)'s codes), never Contradiction.
-  T-R0a's admission refusal for it is `NoCompilation NoWitnessReason`
-  (reconciliation B5).
+- `NoWitness` **cannot authorize lowering.** The declaration keeps
+  its Solved verdict and is refused for compilation with T-R0a's
+  support refusal `AtS (NoCompilation NoWitnessReason)`
+  (reconciliation B5), a compilation refusal rather than an
+  `UnresolvedReason`, never Contradiction. Its wording belongs to
+  T-R0a, its code to T-R0a and T-R0e; §18.69 does not rule on
+  Q1(c)'s codes.
 - **No per-key solving fallback** (decision 4): Specialize never solves
   `B` at a key to fill a missing witness, and the re-check's
   reconstruction of `Recon` (§3.2) is evaluation of defining atoms,
@@ -352,16 +354,20 @@ determines the value; `Selected` names a selection rule (none is
 chosen; §18.62).
 
 **Who decides forcedness (§18.69 item 7).** A separate policy
-component owns forcedness and `ForcednessEvidence`. Its inputs are the
-immutable complete recorded problem and the `split` site. A candidate
-solution (a `Solution`, `Witness` or certificate) may help it search
-for evidence, but never defines forcedness: forcedness is a property
-of the problem's solution set (U), not of any candidate.
-The opposite finding, `SplitUnforced` (T-R0a's refusal), meets §18.69
-item 1's standard: two checked alternatives at the **same** permitted
-rigid assignment that differ semantically on the split, or equivalent
-checked evidence of non-forcedness; two syntactically different
-witnesses alone are not enough.
+component owns forcedness and `ForcednessEvidence`: T-R0a §6's
+injected `ForcednessPolicy`, placed with P in T-R0e (proposed). Its
+inputs are the immutable complete recorded problem and the `split`
+site. A candidate solution (a `Solution`, `Witness` or certificate)
+may help it search for evidence, but never defines forcedness:
+forcedness is a property of the problem's solution set (U), not of
+any candidate. When it answers `Forced e`, P records `Forced e` in
+`Basis`; the two constructors share a name and live in separate
+modules. The opposite finding, `SplitUnforced CallSite NonForced`
+(T-R0a's refusal), meets §18.69 item 1's standard: two checked
+alternatives at the **same** permitted rigid assignment that differ
+semantically on the split, or equivalent checked evidence of
+non-forcedness; two syntactically different witnesses alone are not
+enough.
 
 ## 2. Termination (decision 3)
 
@@ -795,15 +801,17 @@ An **internal inconsistency** (a strategy, adapter, evaluator, lowering
 or recorder-translation defect), reported as E_INTERNAL at the
 reference or declaration span, or an **unsupported path** (an atom the
 evaluator cannot evaluate at a key, such as an `outside` construct or
-a reserved `Field`), reported with an Unsupported reason (T-R0e's
-`UncheckedPath`). Under §18.69 item 1 the internal case is an internal
-fault, an outcome **separate from Unresolved** (T-R0a Q1(a)'s
-`Faulted`, formerly Q-A1; T-R0e §7's `Internal` row): an invariant
-violation is a fault, while genuine budget exhaustion is a limit,
-which RC never reports. It stays apart from invalidity. Never
-Contradiction,
-never a user diagnostic, never CX evidence: RC tests one flexible
-assignment, CX refutes all of them (§5.4). **A failed re-check is never
+a reserved `Field`), reported as a support refusal (T-R0a's `AtS
+(NotLowerable UncheckedPath site)`, T-R0e's `UncheckedPath`). Under
+§18.69 item 1 the internal case is an internal fault, **separate from
+Unresolved**: T-R0a's `InternalFault` `ReCheckFailed`, recorded in
+`DeclReport.faults` while the verdict stays Solved (T-R0a §3.5, §7;
+formerly Q-A1), rendered as T-R0e's `Internal` with E_INTERNAL (T-R0e
+§3.1, §7). An invariant violation is a fault, while genuine budget
+exhaustion is a limit, which RC never reports. It stays apart from
+invalidity. Never Contradiction, never a user diagnostic, never CX
+evidence: RC tests one flexible assignment, CX refutes all of them
+(§5.4). **A failed re-check is never
 evidence that the program is invalid** (decision 5). Under acceptance
 with Adapt-N, Lay and R, RC never fires (argued; ground-check.md
 §5.3).
@@ -918,7 +926,8 @@ in P's `SplitJudgement` (§1.7): for every finite `θR ⊨ D` and all
 `Written` is the same claim with the annotation's atom included in
 `B`. Must prove: the forcedness policy component's owner (§18.69
 item 7: a separate component reading the immutable complete problem
-and the split site, §1.7; requirements §11 item 5). A candidate
+and the split site, §1.7, T-R0a's `ForcednessPolicy`, placed with P
+in T-R0e; requirements §11 item 5). A candidate
 solution may help find evidence but never defines forcedness.
 
 **R, recorder.** R1: the recorded problem is the syntax-directed
@@ -1020,7 +1029,8 @@ Each item is the canonical definition; the other streams cite it.
   P's `SplitJudgement` records the result per variable (§1.7); a
   `Forced` basis without U's evidence is not forced. Forcedness is
   owned by a separate policy component that reads the immutable
-  complete problem and the split site (§18.69 item 7; §1.7), and
+  complete problem and the split site (§18.69 item 7; §1.7; T-R0a's
+  `ForcednessPolicy`, placed with P), and
   `SplitUnforced` meets §18.69 item 1's evidence standard.
 - **The re-check** is defined in §3, always on, once per reached
   specialization and cached (§18.69 item 8); T-R0e §4 keeps its position
@@ -1091,12 +1101,15 @@ proposed here until the author rules.
    failure is a fault, separate from Unresolved (§3.3).
 9. **Auxiliaries:** decided (§18.69 item 6). Bound unless their
    deterministic reconstruction is established (`Recon`, §1.6). Open:
-   who establishes reconstruction, and how; until then `Recon` is
-   empty.
+   who establishes reconstruction, and how; T-R0b §5.3 proposes per
+   rule, by proof or by RT7's check accepted as that rule's evidence.
+   Until then `Recon` is empty.
 10. **Forcedness:** decided (§18.69 item 7). A separate policy
     component, reading the immutable complete problem and the split
-    site, owns it and `ForcednessEvidence` (§1.7). Open: that
-    component's owner and its evidence type.
+    site, owns it and `ForcednessEvidence` (§1.7). T-R0a §6 types it
+    as `ForcednessPolicy` and places it with P in T-R0e (proposed).
+    Open: the representation of `ForcednessEvidence` and of T-R0a's
+    `NonForced` evidence.
 11. **D1's tracked requests** (§18.69 D1): the mechanism that makes
     `Req`, Cov's domain, is to be specified before implementation
     (§1.6, §4). It changes T-R0a's and T-R0b's interfaces (inference
@@ -1322,3 +1335,25 @@ nothing is proved or implemented.
 - Not bearing on this file: Q3, Q4, Q9-Q11, Q13, D2-D5. D3's
   restricted C8 statements wait for this file's witness and
   termination interfaces to stabilize.
+
+### Reconciliation after §18.69
+
+The four editors applied §18.69 in parallel; this pass removes the
+stale cross-references they left. No decision changed.
+
+- Preamble: the "pending author Q<n>" label now describes the
+  revision log only; every such question is decided.
+- §1.6: a missing witness is T-R0a's support refusal `AtS
+  (NoCompilation …)` with the verdict still Solved, not an
+  Unsupported reason of decision 9's `UnresolvedReason`.
+- §1.7, §4 U, §5.3, §7 item 10: the forcedness component is T-R0a
+  §6's `ForcednessPolicy`, placed with P in T-R0e (proposed);
+  `SplitUnforced` carries T-R0a's `NonForced`; `Basis.Forced` and
+  T-R0a's `Forcedness.Forced` share a name in separate modules. Open:
+  the evidence types' representation.
+- §3.3: an internal re-check failure is T-R0a's `ReCheckFailed` in
+  `DeclReport.faults`, the verdict staying Solved, rendered as T-R0e's
+  `Internal`; it is not a `Faulted` outcome. The unsupported path is
+  `AtS (NotLowerable UncheckedPath site)`.
+- §7 item 9: cites T-R0b §5.3's proposal for establishing
+  reconstruction (per rule, by proof or by RT7's check).

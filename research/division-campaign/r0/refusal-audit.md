@@ -462,8 +462,14 @@ separate). Not implemented.
 ### 3.13 Limits, defects and placeholders
 
 `TooDeep`, `Exhausted`, `Unexpected` and `Placeholder`
-(UnifyFailure.purs:45-60; RowMerge/End.purs:107-113) are **e**: limits, broken
-invariants, or work a later task does (cited). The several-tail
+(UnifyFailure.purs:45-60; RowMerge/End.purs:107-113) are limits,
+broken invariants, or work a later task does (cited). By §18.69 Q1
+they no longer share one class: `TooDeep` and `Placeholder` are
+**e** (a limit; a support gap); `Unexpected`, a broken invariant, is
+an internal fault, T-R0a's `Faulted`, never Unresolved; `Exhausted`
+is a limit if its bound is a genuine budget and a fault if reaching
+it breaks an invariant, which one being open (T-R0a §3.5; boundaries
+§3.2). The several-tail
 placeholder at specialization is W3 (requirements.md §2.3). Effect-row
 refusals are outside this audit. Effect/record independence is **not
 assumed** (§18.69 Q3), so effect refusals that read record-solved
@@ -560,9 +566,11 @@ end of the body (b03, class d), not `shareTails`.
    the **sound, possibly incomplete refuter** §18.69 Q10 chose to start
    with; B1b does not block it. While its soundness obligation (CX-K
    or CX-KP, and CX-PR for the recorded problem) is undischarged it
-   may run for shadow evidence only and mints no trusted
-   Contradiction. It checks against the whole `D`, with a justified
-   sub-body where the refusal used only part of `B` (CX-KP).
+   may run for shadow evidence only (T-R0a's `shadowRefuter`) and
+   mints no trusted Contradiction; once discharged it runs as a
+   `trustedRefuter` (generation-interface §5.1). It checks against the
+   whole `D`, with a justified sub-body where the refusal used only
+   part of `B` (CX-KP).
 
 Either route keeps H, D4 and Ambiguous out of Contradiction: H is d
 (§3.7), D4 is e, and Ambiguous is e (§18.69 Q4: Unresolved unless a
@@ -594,7 +602,8 @@ language policy says otherwise).
 4. **`A record literal accepts at most one spread`** (n01) is a
    resolve-time refusal reported as E_TYPE; docs/language.md states it
    as a language rule. **Decided (§18.69 Q4): a support limitation,
-   Unsupported.** T-R0e's support boundaries should name it, and
+   Unsupported.** T-R0e's support boundaries name it (boundaries
+   §1.5, S1; T-R0a's `Unsupported [SecondSpread]`), and
    docs/language.md's statement of it as a language rule changes when
    the decision is implemented. Unsupported blocks
    Solved only: the second spread alone supplies no contradiction,
@@ -603,8 +612,9 @@ language policy says otherwise).
    atoms, or a checked CX counter-instance; §18.65) may still yield
    Contradiction (generation-interface §5.3 rule 1′).
 5. **D4 refuses forced splits** (c21, checked valid): stronger than
-   "solver incompleteness" in the usual sense, worth stating in T-R0a's
-   reason ADT.
+   "solver incompleteness" in the usual sense. T-R0a §3.5 records it:
+   D4 is a hint, the reason `Inference NoCandidate` unless a strategy
+   Solves, and P then judges forcedness.
 6. **H is not uniformly unsound:** its :29 exclusion and the "every
    holder apart from `r`" case are sound (§3.7); n04 and n09 are
    refused correctly. The class stays d because the rule as a whole is
@@ -878,3 +888,17 @@ An external review forwarded by the author (issue 6 applies here):
 
 No probe was rerun and no classification changed on new evidence: the
 changes record decisions only.
+
+### Reconciliation after §18.69
+
+The four editors applied §18.69 in parallel; this pass removes the
+stale cross-references they left. No decision changed and no probe
+was rerun.
+
+- §3.13: `Unexpected` is a fault (T-R0a's `Faulted`), not class e;
+  `Exhausted` follows §18.69 Q1's criterion, its case open;
+  `TooDeep` and `Placeholder` stay e.
+- §5 item 2: the shadow-only refuter is T-R0a's `shadowRefuter`, and
+  a `trustedRefuter` once its obligation is discharged.
+- §6 item 4: T-R0e now names the second spread (boundaries §1.5).
+  §6 item 5: T-R0a §3.5 records D4's refusal of forced splits.
