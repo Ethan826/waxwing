@@ -218,7 +218,13 @@ decision-free R0 notes from the extension (2443479, 453356c). The
 review list for the author's external reviewer is
 research/division-campaign/remedy/overnight-review-2026-10-22.md.
 
-**Next:** the author's answers to dossier §18.67 Q1-Q12 and to the
-extension's decisions D1-D4 (D5 a recorded default, D6 deferred with
+**Correction pass (2026-10-22, dossier §18.68):** an external review
+forwarded by the author; corrections applied through 99189b0,
+including the O24 note (docs/plans/2026-10-22-o24-emlti-
+correspondence.md) and Q13 (strategy order). Q1-Q13 and the plan are
+held until the author has seen it.
+
+**Next:** the author's answers to dossier §18.67 Q1-Q12, §18.68 Q13
+and the extension's decisions D1-D4 (D5 a recorded default, D6 deferred with
 G2); then the R0 implementation plan (writing-plans). Nothing pushed
 since 67ba706.
