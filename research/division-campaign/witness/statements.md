@@ -516,6 +516,26 @@ statement is a finite universe plus memoization, as §4.2 already uses.
 review (no proof campaign is authorized yet, §18.66). Requirements §3.2
 T2 is FK-0 for the baseline and FK-W (with P1, P2) for names.
 
+**Note: FK-0's target property (proposed; inference extension §4,
+rows O40, O43).** The property FK-0 should name is Jones, Gomard and
+Sestoft's *bounded static variation* (*Partial Evaluation and
+Automatic Program Generation*, printed p. 299-300): every type or row
+slot is static, and for each entering key the set of its values over
+the reached keys is finite, with a bound that depends on the entering
+key (their Example 14.1, p. 300); "poly is finite if and only if all
+static variables assume only finitely many different values"
+(p. 299). The statement must also cover type slots whose arguments
+carry record tails (`t[ρ̄]` in §2.2's `U_ty`): on the single-tail
+baseline they are increasing edges off any self-dependency cycle
+(row O40, proposed). A finite abstract analysis is not a finite set of
+concrete keys (row O43, argued): JGS's congruent division does not by
+itself make `poly` finite (p. 299), and §14.4 (p. 305-306) is the
+further argument; likewise `Adm_W`'s table and R010's check are
+decidable, and FK-0 and FK-W are the further argument. JGS argues by
+size, in a sketch for a first-order flow-chart language; FK argues by
+a finite universe plus memoization, so JGS supports the target, not
+the proof. FK-0 remains proposed and unproved.
+
 ### 2.5 Why determinism or the 10,000-key limit is not a substitute
 
 **Determinism (argued, §18.64 item 2).** Each example below is a
@@ -731,6 +751,17 @@ with Adapt-N, Lay and R, RC never fires (argued; ground-check.md
    uniform (ground-check.md §5.4).
 9. **Erased effect rows** and constructs outside the fragment.
 10. **Keys of separately compiled modules** (none exist today).
+
+**Note: RC in Leroy's terms (argued; inference extension §6, row
+O53).** In the terms of Leroy's Definition 9 and Theorem 1 (*A
+Formally Verified Compiler Back-end*, §2.2.2, p. 7), RC is a validator
+for a property weaker than semantic preservation: type-level agreement
+at reached keys (typing, callee keys and layout definedness). It is
+not translation validation of behaviour (items 4 and 5 above). Were RC
+verified, Theorem 1 would make the compiler verified for that property
+only; RC is unverified. It already follows Leroy's rule that a
+validator answers false when it cannot establish its property:
+unsupported paths are never verdicts (§3.3).
 
 ## 4. Correspondence statements
 
@@ -1062,3 +1093,19 @@ From the read-only verification of 2b73666 (findings 1, 5, 9):
   `Exhausted`); the R11 log line is adjusted.
 - §1.7: `ForcednessEvidence` is owned by the forcedness decider,
   unassigned (Q7).
+
+### Inference-extension notes (b08c4d4)
+
+Notes from docs/plans/2026-10-22-inference-foundations-extension.md
+§11, applied only where no pending author decision (D1-D6, §18.67
+Q1-Q12) bears on them; no design decision changed.
+
+- §2.4: a note naming bounded static variation as FK-0's target, the
+  type-slot-with-tail case, and the abstract/concrete distinction
+  (extension §4, O40 proposed, O43 argued). FK-0 stays proposed.
+- §3.4: a note naming RC's property in Leroy's terms (extension §6,
+  O53, argued).
+- Not applied: §1.5's EL3 (O29; it depends on IF6 and §18.67 Q6, and
+  speaks of variables read by `build`, which exists only if D1 adopts
+  the continuation); §1.4's EL5 (O32) and §4's Cov domain (O31), both
+  conditional on D1.

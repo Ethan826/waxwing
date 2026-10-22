@@ -362,6 +362,19 @@ forcedness on the admissible subset. Under decision 3 without G3,
 admissible-uniqueness admits nothing (argued from the policy text,
 dossier §4).
 
+**Note: forcedness is determinacy, not coherence (argued; inference
+extension §3, Correction 1; rows O34, O35).** Forcedness is the record
+analogue of Jones's *unambiguity* (*Coherence for Qualified Types*,
+Definition 5, p. 9): a sufficient condition for a single meaning,
+stated here as determinacy of the split over the complete obligations,
+because Definition 5 itself does not transfer under the non-injective
+`⊎` (compile/split-selection.md §3.2). Coherence, equivalent meaning
+across the permitted splits, is a separate property: it is decision
+6's restricted C8 argument (row O35, argued), for which Jones's AV
+weakening (thesis §5.8.3) is a proof pattern, not a theorem.
+Uniqueness of a split (row O34) stays unresolved, and this note
+changes neither what P computes nor who decides forcedness (Q7).
+
 ### 2.2 The admission step (proposed)
 
 P runs only on a Solved declaration, per `split` site.
@@ -439,6 +452,17 @@ It must not:
 - apply outside its fragment (B2, B3 in requirements §5.2, cited);
 - relax R010 (relaxing it needs its own termination argument and
   approval, §18.22 item 3, cited).
+
+**Note: interfaces before selection (proposed clause; inference
+extension §3, row O37).** A further obligation for this contract: an
+exported (inferred) interface never depends on a split selection. E2′
+(dossier §18) is the finding (argued): a generic caller's inferred
+`pr` lands on different regions under different splits, so its own
+callers are accepted under one and refused under the other. Jones's
+order (principal type first, then the ambiguity test; RR-989 p. 9)
+selects only after inference. Today the clause holds only vacuously,
+because interfaces are declared. Like the rest of the contract it is
+proposed, and no rule is chosen.
 
 Outside its fragment decision 3 stands and the outcome is NotAdmitted
 or `ForcednessUndecided` as in §2.2. Inside, failure to find a witness
@@ -896,3 +920,15 @@ From the read-only verification of 2b73666 (findings 3, 4, 6, 7, 10):
 
 - The single-reason shorthand note moved to the start of §3 and covers
   the whole document; "origin" sites now say "origin path".
+
+### Inference-extension notes (b08c4d4)
+
+Notes from docs/plans/2026-10-22-inference-foundations-extension.md
+§11 (layer P), applied only where no pending author decision (D1-D6,
+§18.67 Q1-Q12) bears on them; no design decision changed.
+
+- §2.1: a note that forcedness is determinacy, a sufficient condition
+  (Jones's unambiguity), and that coherence is separate, decision 6's
+  restricted C8 argument (extension §3, O34, O35).
+- §2.4: "interfaces before selection" as a proposed clause of the
+  selection contract (extension §3, O37).
