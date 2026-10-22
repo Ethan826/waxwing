@@ -25,6 +25,12 @@ src/Domain/Type/Core.purs, src/Features/Check/Function.purs,
 Scheme.purs, Lambda.purs, Call.purs, Failure.purs; scripts/
 structure.mjs.
 
+Terminology. `TypeSort` and `RecordSort` here are T-R0b's `VarInfo.sort`
+values `Type` and `Row` (record rows; effect rows are erased, T-R0b
+§2.2); `EffectRowSort` is new (§3.2, N7). `CheckedName` is T-R0b
+§5.2's. Revised in fix round 1 after the task review and the G-D1
+adversarial review (findings 1-19, §11).
+
 ## 1. What this settles
 
 | Item (brief; T-R0b §11 item 17; T-R0a §4.2 "Open") | Where |
@@ -56,64 +62,109 @@ point where Waxwing's witness is external to generation.
 | Type elaboration by substitution | today's `substitute` and `spliceRecord` (src/Domain/Type/Core.purs:152-196), cited | `elabTy` substitutes read images into a generator type |
 | Hidden constructors behind an import rule | AGENTS.md's Internal boundary; scripts/structure.mjs:27-31 | `Generate.Elab.Internal`, `Domain.Elaborating.Internal` |
 | Free bindings as holes | today's `holes` (src/Features/Check/Scheme.purs:187-198) and W §1.5 | §9 |
+| Nominal roles on scope-tagged types | PureScript's `Control.Monad.ST.Internal`: `type role ST nominal representational`, `type role STRef nominal representational` (.spago/p/st-6.2.0/src/Control/Monad/ST/Internal.purs:36, :114), cited | `type role Handle nominal`, `type role Elab nominal representational`, `type role Gen nominal representational` (§3.2, §3.3); part of the `ST` source, not new |
 
 **New, local machinery (flagged under ADR 014 clause 4).** None is a
 new algorithm; each is a small local rule that needs the gate's
 approval:
 
-- N1. `seal`'s value-level check (§5, layer 2): uses against the
-  problem's `vars`, with sorts.
-- N2. `ElabFault`'s three constructors and their mapping to
+- N1. `untracked`, the value-level seal check (§5, layer 2): uses
+  against the problem's `vars`, with sorts, auxiliary sites and
+  duplicate `fresh` calls.
+- N2. `ElabFault`'s four constructors and their mapping to
   `BrokenInvariant` (§8).
-- N3. The `elaborate` entry point's problem-equality check and its
-  pre-`T1` refusal of `Named` bindings (§6.2, §8.3).
+- N3. `elaborate`'s pre-`build` checks: `untracked`, the `Judged`
+  pairing of problem and solution (§6.2), and the refusal of `Named`
+  bindings before W's T1 (§8.3).
 - N4. The derived position view `positionsOf` (§3.5) replacing the
   stored `position` field's role as a second source.
 - N5. The split of Pottier's single `co` value into `Gen` (monadic,
   never sees a witness) and `Elab` (applicative, sees only bindings);
   argued harmless in §11.1 row R1.
+- N6. `orFault`, a fault-raising combinator that reads nothing. It is
+  Internal: the public API raises a fault only through `elabTy`'s
+  label check (§3.2).
+- N7. Sort fixed by position: `elabTy` reads a handle in a `TVar`
+  position as `TypeSort`, in a record tail as `RecordSort`, and in an
+  effect-row tail as `EffectRowSort`, which no variable has until
+  §12.1 is settled, so Sc rejects it (§3.2, §5).
+- N8. If E-a is adopted (§12.1): effect-row metas as atom-free
+  flexible variables of a third sort.
+
+Not new, but stated for completeness: the role annotations (from the
+`ST` source above) and the import rules (AGENTS.md's Internal
+boundary pattern).
 
 Pottier's own correctness statements are unproved ("with a grain of
 salt", extension §2, cited); citing §4.3 cites a design, not a theorem.
 
 ## 3. Types (PureScript, proposed)
 
-### 3.1 Modules
+### 3.1 Modules and import rules
+
+Every module below has an explicit export list; none re-exports an
+Internal module (`module …Internal` in an export list is forbidden by
+review and by T3c (v)).
 
 | Module | Holds | Importers |
 |---|---|---|
-| `Domain.Elaborating` | `Elaborating`'s type and read-only accessors, `ElabFault`, `SealFault`, `Use` | anyone |
-| `Domain.Elaborating.Internal` | `Elaborating`'s constructor | `Features.Check.Generate*` only (new structure rule) |
-| `Features.Check.Generate.Elab` | `Elab`, its instances, `readType`, `readRow`, `elabTy`, `seal` | Generate* |
-| `Features.Check.Generate.Elab.Internal` | `Elab`'s and `Handle`'s constructors | `Features.Check.Generate.Elab` and `Features.Check.Generate.Gen` only (new structure rule) |
-| `Features.Check.Generate.Gen` | `Gen`, `fresh` | Generate* |
+| `Domain.Elaborating` | `Elaborating`'s type, the accessors `problem`, `requests`, `untracked`, `positionsOf`; `ElabFault`, `SealFault`, `Use` | anyone |
+| `Domain.Elaborating.Build` | the accessor `build` | `Features.Check.Elaborate` only (rule E1) |
+| `Domain.Elaborating.Internal` | `Elaborating`'s constructor | `^Features\.Check\.Generate\.Elab$` only (rule E2) |
+| `Features.Check.Generate.Elab` | `Elab`, its instances, `readType`, `readRow`, `seal` | `^Features\.Check\.Generate(\.|$)` only (rule E3) |
+| `Features.Check.Generate.Elab.Internal` | `Elab`'s and `Handle`'s constructors, `orFault`, `elabTy`, `elabSlots` | `^Features\.Check\.Generate\.(Elab|Gen)$` only (rule E4) |
+| `Features.Check.Generate.Gen` | `Gen`, `fresh`, `nodeType`, `slots` | `^Features\.Check\.Generate(\.|$)` only (rule E3) |
+| `Features.Check.Generate.Body` | `generateIn` | `^Features\.Check\.Generate(\.|$)` only (rule E3) |
+| `Features.Check.Generate` | `generate` | anyone in Features or later |
 | `Features.Check.Elaborate` | `elaborate`, `covDomain` | the driver; tests |
+| `Domain.Verdict.Internal` | `Judged`'s constructor (§6.2) | `^Features\.Check\.Decide(\.|$)` only (rule E5) |
+
+Every regex is anchored as written (`(\.|$)` or `$`), so that, for
+example, `Features.Check.GenerateX` does not match. Why rule E3
+matters (adversarial finding 1): without it any module, including
+today's checker, which holds `State`, could write `seal (map (map
+(const solved)) (generateIn t s d))`. That value has the real problem
+and the real `uses`, so `untracked`, Cov and the problem check all
+pass, while `build` returns IR read outside tracking. Restricting who
+imports `Gen`, `Elab` and `generateIn` to Generate* modules, and
+checking that Generate* modules reach no checker state (T10, below,
+transitively), closes it. `Elaborating` itself has no `Functor`
+instance and no `map`-like function, for the same reason (§3.4).
 
 `Elaborating` lives in Domain because `DeclReport` (Domain.Verdict,
 ruling R2) will carry it from Task 4.6; it has no Features type in it.
-The structure rules go into scripts/structure.mjs, docs/engineering.md
-and AGENTS.md's Internal-boundary bullet in Task 7.1's commit.
+Rules E1-E5 go into scripts/structure.mjs, docs/engineering.md and
+AGENTS.md's Internal-boundary bullet in Task 7.1's commit.
 
 ### 3.2 Handles and `Elab`
 
 ```purescript
 -- Features.Check.Generate.Elab.Internal
 newtype Handle s = Handle Var      -- Var = ⟨p, role⟩ (T-R0b §2.3)
+type role Handle nominal
 
 newtype Elab s a = Elab
   { uses ∷ Set Use                 -- static: what `run` may read
   , run  ∷ Bindings → Either ElabFault a
   }
+type role Elab nominal representational
 
 -- Domain.Elaborating
-type Use = { var ∷ Var, sort ∷ VarSort, site ∷ CheckedName }
+type Use = { var ∷ Var, sort ∷ UseSort, site ∷ CheckedName }
+data UseSort = TypeSort | RecordSort | EffectRowSort
 type Bindings = Map Var Binding    -- W §1.6's Witness.bindings
 ```
 
-`s` is phantom. `Handle`'s constructor is hidden, so a handle exists
-only where `fresh` (§3.3) made one. `Elab`'s instances (in its own
-module; PureScript forbids orphan instances, so no other module can
-add one):
+`s` is phantom. Without the role annotations, `coerce ∷ Handle s →
+Handle t` and `coerce ∷ Elab s a → Elab t a` compile in a module that
+cannot see the constructors (checked by the reviewer with purs
+0.15.16; adversarial finding 3), which would defeat the rank-2 scope.
+`Safe.Coerce` is already outside the pure layers' library allowlist
+(scripts/structure.mjs:19-22), but Runtime, Program and tests may
+import it, so the roles are needed.
+
+`Handle`'s constructor is hidden, so a handle exists only where
+`fresh` (§3.3) made one. `Elab`'s instances live in its own module:
 
 ```purescript
 instance Functor (Elab s)      -- uses unchanged; run mapped
@@ -122,51 +173,74 @@ instance Applicative (Elab s)  -- pure: no uses; run: Right
 -- no Bind, no Monad, no Alt: nothing can choose a read from a value
 ```
 
-The request constructors, the only primitives that read the witness:
+PureScript forbids orphan instances, so `Bind (Elab s)` can be
+declared only in `Elab`'s module or in the module of a class `Bind`;
+neither will hold one. A module that defines its own class may give
+`Elab` an instance, which is harmless: it cannot be implemented
+without the hidden constructor.
+
+The request constructors, the only public primitives that read the
+witness:
 
 ```purescript
 readType ∷ ∀ s. CheckedName → Handle s → Elab s (Ty Open)
 readRow  ∷ ∀ s. CheckedName → Handle s → Elab s (Ty Open)
 ```
 
-`readType site (Handle v)` records `{ var: v, sort: TypeSort, site }`
-and, when run, returns the binding's image: `Inline τ` gives `τ`, `Free i` gives
-`TVar (Hole i)` (§9). `readRow` records `RecordSort` and returns a
-record image: `Inline (TRecord r)` gives it, `Free i` gives
-`TRecord { fields: [], tails: [Hole i] }`, `Inline` of anything else is
-`Left (SortMismatch v)`. A missing binding is `Left (Unbound v)`.
-`Named` bindings never reach them (§8.3).
+Both return the binding's image as it stands in a type position, the
+form today's checked IR stores in an instantiation slot (a RecordSort
+slot is `TVar (Hole n)` until solved, src/Features/Check/Scheme.purs:
+120 `instantiate`; src/Features/Specialize/Values.purs:96-99 `slotType`
+normalises it later):
 
-One more primitive reads nothing: it lets a pure check on values
-already read fail the run, and leaves `uses` unchanged.
+| Binding | `readType` | `readRow` |
+|---|---|---|
+| `Inline τ` | `τ` | `τ`, if `τ` is a `TRecord` or a `TVar`; otherwise `Left (SortMismatch v)` |
+| `Free i` | `TVar (Hole i)` (§9) | `TVar (Hole i)` |
+| `Named n` | `Left (NamedUnread v)` | `Left (NamedUnread v)` |
+| absent | `Left (Unbound v)` | `Left (Unbound v)` |
+
+`readType site (Handle v)` records `{ var: v, sort: TypeSort, site }`;
+`readRow` records `RecordSort`. A `TVar` image of a record tail is a
+renaming, exactly as Core's `imageOf` treats it (`TVar variable →
+Renamed variable`, src/Domain/Type/Core.purs:198-202), so `elabTy`
+splices a `TRecord` image and renames a `TVar` one. `NamedUnread`
+never occurs through `elaborate`, which refuses `Named` bindings first
+(§8.3); it exists so that `build` is total.
+
+Internal helpers (in `Generate.Elab.Internal`, used only by `Gen`'s
+primitives of §3.3):
 
 ```purescript
+-- Lets a pure check on values already read fail the run; reads
+-- nothing; uses unchanged.
 orFault ∷ ∀ s a b. (a → Either ElabFault b) → Elab s a → Elab s b
-```
 
-The friends are built from those three with `pure`, `map`, `apply` and
-`traverse` only:
-
-```purescript
 -- A generator type: signature variables rigid, fresh ones handles.
 data Ref s = RigidRef VarId | FlexRef (Handle s)
 type GenTy s = Ty (Ref s)
 
--- Reads every handle in the type (TVar positions with readType,
--- record tails with readRow), then substitutes the images
--- (Domain.Type.Core.substitute). Which handles are read is a
--- function of the GenTy alone.
+-- Reads every handle in the type, the sort fixed by its position:
+-- TVar positions with readType, record tails with readRow, effect-row
+-- tails with an EffectRowSort use (N7); then substitutes the images
+-- (Domain.Type.Core.substitute) and checks labels with orFault.
 elabTy ∷ ∀ s. CheckedName → GenTy s → Elab s (Ty Open)
 
--- The checked instantiation, in the callee's variable order.
-elabSlots ∷ ∀ s. Path → Array (GenTy s) → Elab s Instantiation
+-- The checked instantiation, in the callee's variable order; each
+-- slot read by its declared sort (RecordSort slots with readRow).
+elabSlots
+  ∷ ∀ s. Path → Array (Tuple UseSort (GenTy s)) → Elab s Instantiation
 ```
 
-`elabTy` returns `Left (DuplicateLabel v l)`, through `orFault`, when
-a spliced row image repeats a label already present (§8). `GenTy` also
-yields the recorded `RTExpr` (T-R0b §2.2's `⟦·⟧`, with handles
-forgotten to their `Var`), so a node's recorded type and its checked
-type come from one value.
+`elabTy` returns `Left (DuplicateLabel v l)` when a spliced row image
+repeats a label already present (§8). An effect-row tail handle is
+recorded, never dropped: its `EffectRowSort` use fails Sc while no
+variable has that sort (§5, §12.1).
+
+With `orFault`, `elabTy` and `elabSlots` Internal, the public API that
+can build an `Elab` is `readType`, `readRow`, `pure`, `map`, `apply`,
+`traverse`, and `Gen`'s `nodeType` and `slots` (§3.3), whose only
+fault beyond the read faults is `elabTy`'s `DuplicateLabel`.
 
 ### 3.3 `Gen`: generation, which never sees a witness
 
@@ -175,12 +249,29 @@ type come from one value.
 -- sites); hand-written, since pure layers import no Control.Monad.*
 -- except Rec.Class (scripts/structure.mjs:19-22).
 newtype Gen s a = Gen { value ∷ a, parts ∷ Parts }
+type role Gen nominal representational
 instance Monad (Gen s)
 
 -- The only way to obtain a handle: it writes the VarInfo of
--- ⟨path, role⟩ (sort, quant Exists, origin) into `parts.vars`.
+-- ⟨path, role⟩ (sort, quant Exists, origin) into `parts.vars` and
+-- counts the call, so a second `fresh` of the same Var is detected
+-- (§5, `DuplicateFresh`).
 fresh ∷ ∀ s. Path → Role → RuleId → Span → Gen s (Handle s)
+
+-- The only way to elaborate a generator type: records it as
+-- types(p) (T-R0b §2.2's ⟦·⟧, handles forgotten to their Var), emits
+-- the definedness entries T-R0b's rule for that position requires,
+-- and returns the read.
+nodeType ∷ ∀ s. CheckedName → GenTy s → Gen s (Elab s (Ty Open))
+slots
+  ∷ ∀ s. Path → Array (Tuple UseSort (GenTy s))
+  → Gen s (Elab s Instantiation)
 ```
+
+A node's recorded type and its checked type therefore come from one
+call, so a `GenTy` cannot be elaborated without being recorded, and
+R1's definedness covers every record type `build` splices (§8.1,
+`DuplicateLabel`).
 
 `Gen` may be monadic: what it sequences are generation-time values
 (handles, tables, children's results), never a solution. T-R0b §4's
@@ -195,16 +286,23 @@ The applicative restriction binds `Elab`, where the witness is.
 newtype Elaborating a = Elaborating
   { problem ∷ RecordedProblem
   , uses    ∷ Set Use
+  , fresh   ∷ Map Var Int          -- `fresh` calls per Var
   , build   ∷ Witness → Either ElabFault a
   }
+-- no Functor instance, no map-like function (§3.1)
 
 -- Domain.Elaborating: read-only accessors (as ruling R4)
-problem  ∷ ∀ a. Elaborating a → RecordedProblem
-requests ∷ ∀ a. Elaborating a → Set Var     -- map _.var uses
-build    ∷ ∀ a. Elaborating a → Witness → Either ElabFault a
+problem   ∷ ∀ a. Elaborating a → RecordedProblem
+requests  ∷ ∀ a. Elaborating a → Set Var    -- map _.var uses
 untracked ∷ ∀ a. Elaborating a → Array SealFault   -- §5
+-- Domain.Elaborating.Build (rule E1)
+build     ∷ ∀ a. Elaborating a → Witness → Either ElabFault a
 
-data SealFault = UntrackedRead Var | SortClash Var
+data SealFault
+  = UntrackedRead Var       -- not a flexible variable of the problem
+  | SortClash Var           -- use sort ≠ the variable's sort
+  | AuxiliarySite Var       -- a use whose site is `Auxiliary`
+  | DuplicateFresh Var      -- `fresh` called twice for one Var
 
 -- Features.Check.Generate.Elab
 seal ∷ ∀ a. (∀ s. Gen s (Elab s a)) → Elaborating a
@@ -214,15 +312,18 @@ This keeps the brief's fields `problem`, `requests` and `build`, as
 accessors of a newtype. **Deviation from the brief, with reason:** the
 brief writes `Elaborating` as a record alias. A record alias can be
 built anywhere with any `build`, which is a read that escapes tracking
-(§11.2 S2), so the constructor is hidden. `uses` refines `requests`
-with each read's sort and site; `requests` is derived from it.
+(§11.2 S2), so the constructor is hidden, and `build` is reachable
+only from `Features.Check.Elaborate` (rule E1), so no caller can skip
+`elaborate`'s checks. `uses` refines `requests` with each read's sort
+and site; `requests` is derived from it.
 
 `seal` runs the generator once, assembles the `RecordedProblem` from
 `parts` (Domain.Recorded's constructor is Generate*-only, ruling R4),
-copies the `Elab`'s `uses`, and wraps its `run` as `build w = run
-w.bindings`. Because the argument is `∀ s.`, a handle cannot leave the
-generation that minted it: `a` is bound outside `s`'s scope, so
-`a = Handle s` is a skolem escape and does not typecheck.
+copies the `Elab`'s `uses` and the `fresh` counts, and wraps its `run`
+as `build w = run w.bindings`. Because the argument is `∀ s.`, a
+handle cannot leave the generation that minted it: `a` is bound
+outside `s`'s scope, so `a = Handle s` is a skolem escape and does not
+typecheck. The nominal roles stop `coerce` from changing `s`.
 
 ### 3.5 `generate`, `positionsOf`, `elaborate`
 
@@ -233,7 +334,7 @@ generate
 generate tables signatures declaration =
   seal (generateIn tables signatures declaration)
 
-generateIn
+generateIn                        -- Generate.Body (rule E3)
   ∷ ∀ s. Tables → Signatures → Resolved.FunctionDecl
   → Gen s (Elab s Checked.FunctionDecl)
 
@@ -241,7 +342,8 @@ generateIn
 positionsOf ∷ ∀ a. Elaborating a → Map Var (Set CheckedName)
 
 -- Features.Check.Elaborate
-covDomain ∷ ∀ a. Set Var → Elaborating a → Set Var  -- Recon first
+covDomain
+  ∷ ∀ a. Set Var → Elaborating a → Either InternalFault (Set Var)
 
 data Elaboration a
   = Elaborated a
@@ -251,8 +353,7 @@ data Elaboration a
 elaborate
   ∷ ∀ a. Set Var                  -- Recon (empty until G-Recon)
   → Elaborating a
-  → RecordedProblem               -- the problem `decide` judged
-  → Solution
+  → Judged                        -- from `decide` (§6.2)
   → Elaboration a
 ```
 
@@ -261,13 +362,24 @@ elaborate
 Task 3.2's `generate ∷ … → RecordedProblem` becomes `problem <<<
 generate` and keeps its tests.
 
-`elaborate` is the only production caller of `build`, in this order:
-the problem-equality check (§6.2); `NoWitness r` gives `NotCompiled r`;
-a `Named` binding gives `NotCompiled (AdapterUnsupported …)` (§8.3);
-Task 4.4's `coverage`, revised to take `covDomain` (§7), refusing with
-`NotCompiled`; then `build`, whose `Left` is `Broken (BrokenInvariant
-…)` (§8). The driver maps `NotCompiled r` to T-R0a's `AtS
-(NoCompilation r)` and `Broken f` to `Faulted problem f`.
+`elaborate` is the only caller of `build` (rule E1). Its steps, in
+order, each a named arm:
+
+1. `untracked e` non-empty: `Broken (BrokenInvariant …)` (§5);
+2. `judged.problem ≠ problem e`: `Broken (BrokenInvariant
+   "elaboration: problem mismatch")` (§6.2);
+3. `NoWitness r`: `NotCompiled r`;
+4. a `Named` binding: `NotCompiled (AdapterUnsupported NameMarker)`
+   (§8.3);
+5. `covDomain` failing (`recon ∩ requests ≠ ∅`): `Broken` (§7);
+6. Task 4.4's `coverage` over that domain refusing: `NotCompiled`;
+7. `build`: `Right d` is `Elaborated d`; `Left f` is `Broken
+   (BrokenInvariant (render f))` (§8).
+
+The driver maps `NotCompiled r` to T-R0a's `AtS (NoCompilation r)` and
+`Broken f` to `Faulted problem f`. The driver also runs step 1 right
+after `generate`, before `decide` (§5); step 1 inside `elaborate` makes
+that a property of `elaborate`, not a convention of its callers.
 
 ## 4. Invariants
 
@@ -276,36 +388,48 @@ Each is stated so a test can falsify it; §10 names the test.
 - **St (static requests).** `requests e` is computed from `e` alone;
   its type takes no `Witness`. (By type.)
 - **Tr (tracking).** For every `e ∷ Elab s a` built with the public
-  API and all `w₁`, `w₂` whose bindings agree on `vars(uses e)`:
-  `run e w₁ = run e w₂`. Equivalently, `run` reads no binding outside
-  `uses`. Argued by induction on construction: `readType`/`readRow`
-  read exactly the variable they record; `pure` reads none; `map` and
-  `orFault` keep uses and reads; `apply` unions both. (Check: T4.)
-- **Def (definedness).** If every `v ∈ requests e` has a binding of
-  its recorded sort (a record image for `RecordSort`), then `run e w`
-  is never `Left (Unbound _)` or `Left (SortMismatch _)`. (Check: T4.)
+  API (§3.2's last paragraph) and all `w₁`, `w₂` whose bindings agree
+  on `vars(uses e)`: `run e w₁ = run e w₂`. Equivalently, `run` reads
+  no binding outside `uses`. Argued by induction on construction:
+  `readType`/`readRow` read exactly the variable they record; `pure`
+  reads none; `map` and `orFault` keep uses and reads; `apply` unions
+  both; `nodeType` and `slots` are built from these. (Check: T4a.)
+- **Def (definedness of reads).** If every `v ∈ requests e` has a
+  binding that is `Inline` or `Free`, with a `RecordSort` use bound to
+  `Free`, a `TRecord` or a `TVar`, then `readType` and `readRow` never
+  produce `Unbound`, `SortMismatch` or `NamedUnread`. (Check: T4b,
+  which counts the faults by origin; `DuplicateLabel` is excluded from
+  Def and covered by §8.1.)
 - **Mint (declared handles).** Every handle in scope `s` came from
   `fresh` in the same `Gen s`, which wrote its `VarInfo` with `quant =
   Exists`. Hence `requests (seal g) ⊆ flex(problem (seal g))` for code
-  that does not import an Internal module. (By hidden constructors and
-  `seal`'s rank-2 type; checks T3b, T3c.)
+  that obeys rules E1-E5 and does not use Runtime FFI on these values
+  (§11.2 S10). (By hidden constructors, nominal roles and `seal`'s
+  rank-2 type; checks T3b, T3c.)
 - **Sc (seal check).** `untracked (seal g) = []` iff every use `u`
-  has `u.var ∈ flex(problem)` and `u.sort = sort(vars u.var)`.
+  has `u.var ∈ flex(problem)`, `u.sort` equal to the variable's sort
+  (`TypeSort` for T-R0b's `Type`, `RecordSort` for `Row`; no variable
+  has `EffectRowSort` before §12.1 is settled), and `u.site ≠
+  Auxiliary`; and `fresh` was called at most once per `Var`.
   (Check: T3a.)
 - **Id (problem identity).** A handle minted by one `seal` is not
-  usable in another (rank-2, check T3c); `elaborate` refuses a
-  `RecordedProblem` other than its own (§6.2, check T11).
-- **Dom (Cov's domain).** `covDomain recon e = requests e ∪ (flex(P)
-  ∖ recon)`. With `recon = ∅` it is `flex(P)`. (Check: T6.)
-- **EL1.** For every `Witness w` with `Cov(w)` over `covDomain`,
-  Adapt-N's conclusion (W §4) and R1 (W §4), `build e w = Right d`,
-  and `d` is the checked declaration whose every type position is
-  `elabTy` of its generator type under `w` (§9 for holes). (Check:
-  T1, T2.)
+  usable in another (rank-2 and roles, check T3c); `elaborate` builds
+  only from a solution `decide` paired with this problem (§6.2,
+  checks T11, T11b).
+- **Dom (Cov's domain).** `covDomain recon e = Right (flex(P) ∖
+  recon)` when `recon ∩ requests e = ∅`, and `Left (BrokenInvariant
+  …)` otherwise. With `recon = ∅` it is `flex(P)`. (Check: T6.)
+- **EL1.** For every `Judged` whose solution is `Witnessed w`, with
+  `untracked e = []`, no `Named` binding in `w`, `Cov(w)` over
+  `covDomain` (including Cov-S, §8.1), Adapt-N's conclusion (W §4) and
+  R1 (W §4): `elaborate` gives `Elaborated d`, and `d` is the checked
+  declaration whose every type position is `elabTy` of its generator
+  type under `w` (§9 for holes). (Check: T1, T2.)
 - **Pos (derived positions).** `positionsOf e ! v` is the set of sites
-  at which `build` reads `v`; `v` is auxiliary iff `v ∉ requests e`.
-  T-R0b's stored `position` is a second source until Task 4.6 and must
-  agree (§10 T5; known disagreements §12.2).
+  at which `build` reads `v`, and those sites are where `v`'s value
+  actually lands in `build`'s IR; `v` is auxiliary iff `v ∉ requests
+  e`. T-R0b's stored `position` is a second source until Task 4.6 and
+  must agree (§10 T5, T5b; known disagreements §12.2).
 - **AI-IR (structure is static).** The checked IR's node structure
   (constructors, arities, spans, ids) is a function of the resolved
   declaration and the tables; only its `Ty Open` positions come from
@@ -319,26 +443,34 @@ Each is stated so a test can falsify it; §10 names the test.
 ## 5. Rejecting a read outside the tracked set
 
 "Outside the tracked set" can mean three things; each is rejected
-before any witness exists, by a different layer.
+before any witness is read, by a different layer.
 
 1. **A read that `uses` does not record.** Not representable without
    an Internal module: the witness reaches only `Elab`'s `run`, and
-   `run` is built only by the combinators of §3.2, each of which
+   `run` is built only by the combinators of §3.2-§3.3, each of which
    records what it reads (Tr). No `Bind` means no read can be chosen
    from a value read earlier. Enforcement: hidden constructors of
-   `Elab`, `Handle` and `Elaborating`; the two new structure rules.
-   scripts/structure.mjs already rejects `unsafe*` and `Partial`
-   (:23, :85) and FFI outside Runtime (:103-105). This layer cannot be
-   checked by running `seal` (an under-declared `run` looks the same
-   from outside); it is checked by the Tr property over the public
-   API (T4) and by the import rules (T3b).
+   `Elab`, `Handle` and `Elaborating`; nominal roles; explicit export
+   lists with no Internal re-export; rules E1-E5 (§3.1), which also
+   stop a non-Generate module from mapping solver state into an `Elab`
+   (adversarial finding 1). scripts/structure.mjs already rejects
+   `unsafe*` and `Partial` (:23, :85) and FFI outside Runtime
+   (:103-105). This layer cannot be checked by running `seal` (an
+   under-declared `run` looks the same from outside); it is checked by
+   the Tr property over the public API (T4a), the import rules (T3b,
+   T10) and the compile fixtures (T3c).
 2. **A read of a variable that is not a flexible variable of this
-   problem, or at the wrong sort.** `untracked` compares `uses` with
-   `problem.vars` (Sc). Mint makes `UntrackedRead` unreachable from
-   public code; `SortClash` is reachable (a handle minted as a
-   `TypeSort` variable placed in a record tail, where `elabTy` reads
-   it with `readRow`). **Placement:** the driver (and Task 7.1's shadow
-   harness) runs `untracked` immediately after `generate` and before
+   problem, at the wrong sort, at an `Auxiliary` site, or of a `Var`
+   minted twice.** `untracked` compares `uses` and the `fresh` counts
+   with `problem.vars` (Sc). Mint makes `UntrackedRead` unreachable
+   from code obeying the rules. The others are reachable from a
+   faulty generator: `SortClash` (a handle minted for a `Type`
+   variable placed in a record tail, or any handle in an effect-row
+   tail), `AuxiliarySite` (a caller passing `Auxiliary` as a site),
+   `DuplicateFresh` (two rules minting one ⟨p, role⟩, which would
+   merge two intended variables). **Placement:** `untracked` is
+   `elaborate`'s first step (§3.5), and the driver (and Task 7.1's
+   shadow harness) also runs it immediately after `generate`, before
    `decide`. A non-empty result is `Faulted problem (BrokenInvariant
    …)` and stops the run (§18.69 Q13: generation is trusted code, R1's
    owner), so neither `decide` nor `build` runs. Why not inside
@@ -347,11 +479,13 @@ before any witness exists, by a different layer.
 3. **A read of another problem's variable.** `Var = ⟨p, role⟩` is
    path-relative (T-R0b §6: paths start at `f.body`), so `f` and `g`
    can have equal `Var`s and layer 2 cannot tell them apart. The rank-2
-   scope rejects it at compile time (§6.1).
+   scope with nominal roles rejects it at compile time (§6.1). Within
+   one `seal`, a generator that generated two declarations would mint
+   colliding `Var`s, which `DuplicateFresh` reports.
 
 ## 6. Problem identity
 
-### 6.1 Handles: adopted, rank-2
+### 6.1 Handles: adopted, rank-2 with nominal roles
 
 D1 left scoped handles optional. **Adopted**, because of layer 3
 above: without a scope, a handle from `g`'s generation used in `f`'s
@@ -359,43 +493,75 @@ above: without a scope, a handle from `g`'s generation used in `f`'s
 and `build` would silently read `f`'s binding for it. A value tag (the
 `FunctionId` in each handle, checked by `seal`) would also work; rank-2
 is chosen because it costs nothing at run time, needs no new check,
-and is the pattern PureScript's `ST` already uses. Its cost: a handle
-cannot be cached across declarations, which nothing needs (generation
-is per declaration, T-R0a §2 property 3).
+and is the pattern PureScript's `ST` uses, including its nominal role
+annotations (§2). Its cost: a handle cannot be cached across
+declarations, which nothing needs (generation is per declaration,
+T-R0a §2 property 3).
 
-### 6.2 Witnesses: an equality check in `elaborate`
+### 6.2 Solutions: `Judged`, minted by `decide`
 
 Handles guard the `build` side only. A `Witness` is keyed by the same
-path-relative `Var`s, so a witness for `g` handed to `f`'s `build`
-could pass Cov when the two variable sets coincide. `elaborate` takes
-the `RecordedProblem` that `decide` judged and requires it to equal
-`problem e` (structural equality; atoms carry `AtomId.decl`, T-R0b §6,
-so problems of different declarations differ). Inequality is `Broken
-(BrokenInvariant "elaboration: problem mismatch")`. W's `Witness` is
-unchanged. The check relies on a problem identifying its declaration;
-if Task 3.1's `RecordedProblem` can have no atom, it should carry its
-`FunctionId` as a field.
+path-relative `Var`s, and T-R0a §3.3's `Solution` carries no problem
+(its `Valid` is a bare token). Comparing a separately passed
+`RecordedProblem` with `problem e` would not tie the solution to it:
+`elaborate ∅ e_f P_f sol_g` would pass (adversarial finding 2).
+
+**Chosen:** `decide`, which alone has both, returns with each Solved
+verdict a hidden-constructor pair
+
+```purescript
+-- Domain.Verdict; constructor in Domain.Verdict.Internal (rule E5)
+newtype Judged = Judged { problem ∷ RecordedProblem
+                        , solution ∷ Solution }
+judgedProblem  ∷ Judged → RecordedProblem
+judgedSolution ∷ Judged → Solution
+```
+
+and `elaborate` takes the `Judged` and requires `judgedProblem j ==
+problem e` (structural equality). Why this option rather than a
+`FunctionId` or digest inside `Witness` or `Valid`: it ties the pair at
+the one place both exist, follows the hidden-token pattern T-R0a
+already uses for `Valid`, and changes neither W's `Witness` nor the
+meaning of `Valid`. The cost is one more hidden constructor and a
+`decide` output (T-R0a §3.2, listed in §12.3).
+
+Equality must distinguish declarations even when their variable sets
+coincide, so `RecordedProblem` carries its declaration's `FunctionId`
+as a field, unconditionally (a request to Task 3.1's shape, §12.3).
+Atoms also carry `AtomId.decl` (T-R0b §6), but a problem's equality
+should not depend on it having an atom.
 
 ## 7. Cov's domain
 
 W §4 states Cov's domain as `Req` plus every other flexible variable
-not in `Recon`. Under this mechanism `Req = requests e`, so:
+not in `Recon`, and that members of `Recon` have no binding. Under this
+mechanism `Req = requests e`. Requiring both "every requested variable
+is bound" and "no `Recon` member is bound" is consistent only when
+`Recon ∩ requests = ∅`, which W §1.6's definition of `Recon` (outside
+`Req`) promises. **Chosen** (adversarial finding 13): `covDomain`
+checks the promise and does not repair it.
 
 ```text
-covDomain recon e = requests e ∪ (flex(P) ∖ recon)
+covDomain recon e
+  | recon ∩ requests e ≠ ∅ = Left (BrokenInvariant "recon read")
+  | otherwise             = Right (flex(P) ∖ recon)
 ```
 
-- By Mint, `requests e ⊆ flex(P)`. With `Recon = ∅` (§18.69 Q6; Task
-  4.4) the domain is `flex(P)`: every flexible variable, requested or
-  not, has a binding. This is Task 4.4's domain, so Task 7.1 changes
-  no Cov outcome while `Recon` is empty.
-- The union, rather than `flex(P) ∖ recon` alone, keeps a requested
-  variable in the domain even if a later `Recon` contains it. W §1.6
-  defines `Recon` outside `Req`; the union makes that a property of
-  the formula, not a promise of `Recon`'s author. The case is real:
-  E28's `⟨p, rest⟩` is listed by T-R0b §5.3 as reconstructable, yet
-  the removal node's checked type is `{ ...⟨p, rest⟩ }` (E28's result,
-  T-R0b §3.3), so `build` requests it (§12.2).
+On the right branch this equals `requests e ∪ (flex(P) ∖ recon)`,
+since `requests e ⊆ flex(P)` (Mint) and is disjoint from `recon`. Why
+a fault rather than redefining the effective `Recon` as `recon ∖
+requests`: W §4's clause stays as written, and a `Recon` author who
+includes a variable `build` reads has broken a premise the gate
+should see, not one this mechanism should absorb silently.
+
+- With `Recon = ∅` (§18.69 Q6; Task 4.4) the domain is `flex(P)`:
+  every flexible variable, requested or not, has a binding. This is
+  Task 4.4's domain, so Task 7.1 changes no Cov outcome while `Recon`
+  is empty.
+- The case is real: E28's `⟨p, rest⟩` is listed by T-R0b §5.3 as
+  reconstructable, yet the removal node's checked type is `{ ...⟨p,
+  rest⟩ }` (E28's result, T-R0b §3.3), so `build` requests it
+  (§12.2). A `Recon` containing it gives the fault.
 - Task 4.4's `coverage ∷ RecordedProblem → Witness → Either
   NoWitnessReason Unit` takes the domain as an argument from Task 7.1:
   `coverage ∷ Set Var → RecordedProblem → Witness → Either
@@ -408,20 +574,24 @@ covDomain recon e = requests e ∪ (flex(P) ∖ recon)
 ```purescript
 data ElabFault
   = Unbound Var              -- a requested variable has no binding
-  | SortMismatch Var         -- a RecordSort variable bound Inline
-                             -- to a non-record type
+  | SortMismatch Var         -- a RecordSort use bound Inline to a
+                             -- type that is neither TRecord nor TVar
+  | NamedUnread Var          -- a read of a Named binding
   | DuplicateLabel Var String  -- a spliced row image repeats a label
 ```
 
 | Constructor | Excluded by | Whose premise |
 |---|---|---|
 | `Unbound v` | Cov over `covDomain` ⊇ `requests` (§7) | Cov's validator (Task 4.4) |
-| `SortMismatch v` | Cov-S: a binding's sort agrees with `vars` (W §5.2 "sorts are preserved"; proposed as an explicit Cov clause, §12.3) | Cov's validator |
-| `DuplicateLabel v l` | Adapt-N's conclusion: every recorded atom is defined at every key, and R1: the recorder emits the definedness of every record type it builds | the adapter's owner; the recorder's |
+| `SortMismatch v` | Sc (each use's sort is the variable's, `untracked`, step 1) together with Cov-S: a `Row` variable's binding is `Free`, `Inline (TRecord _)` or `Inline (TVar _)` of a record-sorted variable (W §5.2 "sorts are preserved"; proposed as an explicit Cov clause, §12.3). Cov-S compares against `vars`, Sc ties `vars` to the use, so neither alone suffices | `seal`'s check; Cov's validator |
+| `NamedUnread v` | `elaborate`'s step 4 (§3.5) | `elaborate` itself |
+| `DuplicateLabel v l` | Adapt-N's conclusion: every recorded atom is defined at every key; and R1: the recorder emits the definedness of every record type it builds, which covers every type `build` splices because `nodeType` records each elaborated type (§3.3) | the adapter's owner; the recorder's |
 
 With `Recon` empty, Cov's domain is every flexible variable, so
-`Unbound` is impossible outright; the other two rest on trusted
-premises. None rests on an untrusted search.
+`Unbound` is impossible outright; the others rest on trusted premises
+or on `elaborate`'s own steps. None rests on an untrusted search. No
+public combinator raises an `ElabFault` other than these, in these
+circumstances (`orFault` is Internal, N6).
 
 ### 8.2 Classification: a broken invariant that stops the run
 
@@ -446,6 +616,8 @@ changed, and nothing is lowered.
   the shadow tranches (Task 4.4 gives `names: empty`).
 - Cov refusing (`HoleContract v`, a missing auxiliary): `NotCompiled`,
   as Task 4.4 decides; `build` never runs on such a witness.
+- A `SealFault` or a problem mismatch: `Broken`, before `build`
+  (§3.5 steps 1-2).
 
 ## 9. `Free` bindings: today's hole
 
@@ -459,8 +631,9 @@ inside `Inline` types as they are.
 
 `build` therefore:
 
-1. elaborates `Free i` as `TVar (Hole i)` in a type position and as
-   the tail `Hole i` in a record row (§3.2);
+1. elaborates `Free i` as `TVar (Hole i)`, in a type position, in an
+   instantiation slot, and (renamed by `imageOf`) as the tail
+   `Hole i` in a record row (§3.2);
 2. leaves holes inside `Inline` types unchanged;
 3. applies `holes` to the finished body, exactly as `checkFunction`
    does.
@@ -474,32 +647,44 @@ representative, or `{}` for a row, src/Features/Specialize/Lower.purs:
 52, :62) are unchanged, and W §1.5's hole contract, checked by Cov,
 decides whether `Free` is allowed at all.
 
+One numbering covers type, record and effect-row metas ("Type, record
+and row metas share one numbering", Scheme.purs `foldHoles`), and an
+unsolved lambda effect row is a hole today. So while effect positions
+are outside the witness (§12.1), `build`'s numbering of type holes can
+differ from today's wherever an effect hole comes first. T8 and T2
+therefore compare effect-erased projections, renumbered by `holes`
+after erasure on both sides.
+
 `holes` lives in Features.Check.Scheme beside the checker's `State`.
 Task 7.1 moves `holes` and `foldHoles` to their own module (a
-behaviour-preserving refactor) so that the generator imports no
-checker state (the plan's Task 7.1 import test).
+behaviour-preserving refactor) so that the generator reaches no
+checker state (T10).
 
 ## 10. Acceptance tests for Task 7.1
 
 Fixtures follow docs/engineering.md. Property tests use a seeded
 generator whose grammar is fixed in the test file before it is run.
-Corpus-wide tests are `*.serial.test.mjs` (ruling R11).
+Corpus-wide tests are `*.serial.test.mjs` (ruling R11). The canonical
+serialization is test/r0-canonical.mjs, which Task 3.3 step 1 creates
+(ruling R9); it does not exist yet.
 
 | Id | Statement | Backs | Oracle and fixtures |
 |---|---|---|---|
 | T1 | EL1: for every corpus declaration the online strategy accepts with a `Witnessed w` that passes Cov, `elaborate` gives `Elaborated` | EL1 | the R0 corpus (test/r0-corpus.mjs); Task 4.3's online certificate |
-| T2 | Same checked IR as read-back: `build w` equals the certificate's `checked` (canonical serialization, test/r0-canonical.mjs). Exact for declarations with no variable in `Amb`; otherwise at every site whose type and slots mention no `Amb` variable, up to one hole bijection per declaration. `Amb` is the set of flexible variables occurring in a record of some `types(p)` with two or more flexible tails (T-R0b §5.3's ambiguity criterion). The test prints the excluded-site count | EL1, AI-IR, Hole | corpus; effect rows per §12.1 |
-| T3a | `untracked` rejects, before any witness: an `Elab` forged through the Internal module that reads a `Var` absent from `vars`, and a generator that places a `TypeSort` handle in a record tail (`SortClash`). The shadow harness then gives `Faulted … BrokenInvariant`, and an injected stub strategy records that `decide` was never called | Sc, §5 layer 2 | two injected generators |
-| T3b | Import rules: only the listed modules import the two new Internal modules; generator modules import neither `Features.Check.Scheme`'s `State` nor any checker module | Mint, §5 layer 1 | test/structure.test.mjs |
-| T3c | Compile-time rejection: fixture modules that (i) return a handle out of `seal`, (ii) use a handle from one `seal` inside another, (iii) use `bind` on `Elab`, each fail to compile with the expected error class (escaped skolem; no `Bind` instance). The compile reuses existing output as externs and cleans its copy up; the fixtures obey the style rules, which scripts/structure.mjs applies to every .purs under test/ | Id, Tr | `test/fixtures/r0/elab-scope/*.purs`; real `purs` |
-| T4 | Tr and Def as properties: random `Elab` terms over the public API (`readType`, `readRow`, `orFault`, `elabTy`, `pure`, `map`, `apply`, `traverse`) inside one `seal`; (a) bindings changed outside `requests` never change the result; (b) witnesses binding exactly `requests` at their sorts never give `Unbound` or `SortMismatch` | Tr, Def | seeded generator |
-| T5 | Positions derived: for every corpus declaration, `v ∉ requests` iff T-R0b's stored `position v = Auxiliary`, and a stored non-auxiliary position lies in `positionsOf e ! v`; disagreements fail except the rows §12.2 lists, each asserted by name | Pos | corpus; Task 3.2's `vars` |
-| T6 | Cov's domain: `covDomain ∅ e = flex(P)`; with an injected `recon` containing a requested variable, that variable stays in the domain | Dom | unit |
-| T7 | Each `ElabFault` constructor injected into `elaborate` gives `Broken (BrokenInvariant …)` and the driver stops; `NoWitness` and a `Named` binding give `NotCompiled` and `build` is not run | §8 | injected `Elaborating` values |
-| T8 | `Free`: a witness binding two variables `Free 5` and one `Free 2` yields two holes numbered as `holes` numbers them, and equals today's IR on hole-bearing corpus declarations | Hole | unit; corpus subset of T2 |
+| T2 | Same checked IR as read-back: `build w` equals the certificate's `checked` (canonical serialization), both sides effect-erased and renumbered by `holes` after erasure until §12.1 is settled (the test's name says so). Instantiation slots compared as stored, with no `slotType` normalisation (§3.2). Exact for declarations with no variable in `Amb`; otherwise at every site whose type and slots mention no `Amb` variable, up to one hole bijection per declaration. `Amb` is the set of flexible variables occurring in a record of some `types(p)` with two or more flexible tails (T-R0b §5.3's ambiguity criterion). The test prints the excluded-site count | EL1, AI-IR, Hole | corpus; effect rows per §12.1 |
+| T3a | `untracked` rejects, before any witness, one case per `SealFault`: an `Elab` forged through the Internal module that reads a `Var` absent from `vars` (`UntrackedRead`); a `Type` handle in a record tail, and any handle in an effect-row tail (`SortClash`); a use with site `Auxiliary` (`AuxiliarySite`); two `fresh` calls for one ⟨p, role⟩ (`DuplicateFresh`). The shadow harness then gives `Faulted … BrokenInvariant`, an injected stub strategy records that `decide` was never called, and `elaborate` given the same value returns `Broken` without calling `build` | Sc, §5 layer 2 | injected generators |
+| T3b | Import rules E1-E5: only the listed modules import each restricted module; one case per rule in which a module outside the regex (for example `Features.Check.Function` importing `Features.Check.Generate.Elab`, and `Features.Check.GenerateX` importing it) is a finding | Mint, §5 layer 1 | test/structure.test.mjs |
+| T3c | Compile-time rejection: fixture modules that (i) return a handle out of `seal`, (ii) use a handle from one `seal` inside another, (iii) use `bind` on `Elab`, (iv) `coerce` a `Handle s` to `Handle t` or an `Elab s a` to `Elab t a`, (v) import only `Generate.Elab` and pattern-match `Elab { … }` or `Handle _`, each fail to compile with the expected error class (escaped skolem; no `Bind` instance; type mismatch from the nominal role; unknown constructor). The compile reuses existing output as externs and cleans its copy up; the fixtures obey the style rules, which scripts/structure.mjs applies to every .purs under test/ | Id, Tr, Mint | `test/fixtures/r0/elab-scope/*.purs`; real `purs` |
+| T4 | Tr and Def as properties: random `Elab` terms over the public API (`readType`, `readRow`, `pure`, `map`, `apply`, `traverse`, `nodeType`, `slots`) inside one `seal`; (a) bindings changed outside `requests` never change the result; (b) witnesses binding exactly `requests` with `Inline`/`Free` values of the right sort never give `Unbound`, `SortMismatch` or `NamedUnread` | Tr, Def | seeded generator |
+| T5 | Positions against T-R0b: for every corpus declaration, `v ∉ requests` iff T-R0b's stored `position v = Auxiliary`, and a stored non-auxiliary position lies in `positionsOf e ! v`; disagreements fail except the rows §12.2 lists, each asserted by name | Pos | corpus; Task 3.2's `vars` |
+| T5b | Positions against the IR: bind each requested variable to a distinct marker type (a fresh rigid `Rigid (VarId k)` outside the signature, or a distinct `TData`), run `build`, walk the IR, and check that the set of sites where each marker occurs equals `positionsOf e ! v` | Pos | corpus |
+| T6 | Cov's domain: `covDomain ∅ e = Right flex(P)`; with an injected `recon` disjoint from `requests`, `Right (flex(P) ∖ recon)`; with one containing a requested variable, `Left (BrokenInvariant …)` and `elaborate` returns `Broken` | Dom | unit |
+| T7 | Each `ElabFault` constructor injected into `elaborate` gives `Broken (BrokenInvariant …)` and the driver stops; a non-empty `untracked` gives `Broken` before `build`; `NoWitness` and a `Named` binding give `NotCompiled` and `build` is not run | §3.5, §8 | injected `Elaborating` values |
+| T8 | `Free`: a witness binding two variables `Free 5` and one `Free 2` yields two holes numbered as `holes` numbers them; on hole-bearing corpus declarations the effect-erased projection, renumbered after erasure, equals today's | Hole | unit; corpus subset of T2 |
 | T9 | Applicative laws for `Elab` (identity, composition, homomorphism, interchange) on both `uses` and `run` | §3.2 | seeded generator |
-| T10 | T-R0b §4's invariant: `Features.Check.Generate*` imports no checker state and no `Witness` accessor outside `Generate.Elab` | AI-IR | import graph |
-| T11 | `elaborate` with a `RecordedProblem` of another declaration gives `Broken (BrokenInvariant "elaboration: problem mismatch")` | Id | two declarations with equal `Var` sets |
+| T10 | T-R0b §4's invariant, transitively: the import closure of every `Features.Check.Generate*` module reaches no `Features.Check.*` module outside an explicit allowlist (the moved `holes` module and named pure helpers, listed in the test), hence no checker `State` and no `Witness` accessor outside `Generate.Elab` | AI-IR, Mint | import graph (`purs graph`) |
+| T11 | `elaborate` with a `Judged` for another declaration's problem gives `Broken (BrokenInvariant "elaboration: problem mismatch")` | Id | two declarations with equal `Var` sets |
+| T11b | No public way to pair a problem with another declaration's solution: `Judged`'s constructor is reachable only from `Features.Check.Decide` (rule E5, T3b), and a test-built `Judged` (through the Internal module, in JS) holding `f`'s problem and `g`'s solution, given to `g`'s `Elaborating`, gives `Broken` | Id | two declarations with equal `Var` sets |
 
 **Regression rows** (scripts/regression-r0.mjs, probes in
 test/regression-r0.mjs; each shown failing with its defect restored):
@@ -512,13 +697,17 @@ test/regression-r0.mjs; each shown failing with its defect restored):
   record; T7's probe must fail.
 - `r0-elab-wrong-problem`: the problem-equality check removed; T11's
   probe must fail.
+- `r0-elab-phantom-role`: the `type role` annotations removed; T3c
+  (iv)'s probe must fail.
 
 ## 11. Adversarial review (procedure: docs/engineering.md)
 
 This section is the author-side half of the review: the restrictions
 table and the two passes. The independent reviewer, told to find a
-read that escapes tracking, is dispatched separately and is not part
-of this document.
+read that escapes tracking, reported findings 1-19
+(.superpowers/sdd/2026-10-22-r0-implementation-plan/
+gate-D1-adversarial.md); fix round 1 applied all of them, and the rows
+below cite them where they changed.
 
 ### 11.1 Restrictions table
 
@@ -529,9 +718,11 @@ of this document.
 | R3 | `requests` over-approximates reads | `run` reads at most `requests` (Tr); a larger domain only binds more, which Cov already does with `Recon = ∅` | a `pure`-only `Elab` (a literal): no requests, no reads |
 | R4 | Handles cannot leave one `seal` | generation is per declaration (T-R0a §2 property 3) | caching a callee's instantiated signature with handles across declarations: not done; signatures are instantiated per occurrence (G-fresh) |
 | R5 | `build` reads `bindings` only, never `names` or terms | `Named n` is copied into the IR as a marker; lowering evaluates terms per key (W §1.3) | a `Named` binding before `Open.Named` exists: refused with `NotCompiled` (§8.3) |
-| R6 | Each use carries a sort fixed by its position (`TVar` vs tail) | `Ty` gives each variable one sort by construction (src/Domain/Type/Core.purs:54-55) | a generator bug placing a type handle as a tail: `SortClash` (T3a) |
-| R7 | `Elaborating`'s constructor is hidden | the brief's fields stay readable through accessors | a record literal with an arbitrary `build`: does not compile outside Generate* |
+| R6 | Each use carries a sort fixed by its position (`TVar`, record tail, effect-row tail; slots by declared sort) | `Ty` itself does not separate them: a record tail is a type-sorted `v` (`substituteRecord` uses `substitution.types`, Core.purs:186-191), and Core.purs:54-55's "one sort, type or row" means type versus effect row. The position rule (N7) and Sc supply the separation | a generator bug placing a `Type` handle as a tail, or any handle in an effect-row tail: `SortClash` (T3a) |
+| R7 | `Elaborating`'s constructor is hidden; `build` is reachable only from `Elaborate` | the brief's fields stay readable through accessors; production elaboration goes through `elaborate` | a record literal with an arbitrary `build`, or a direct `build` call skipping Cov: does not compile outside the allowed modules (rules E1-E2) |
 | R8 | Effect rows are not problem variables, so `build` cannot read them | none yet: this is open | §12.1 |
+| R9 | `Gen`, `Elab` and `generateIn` are importable only by Generate* modules | the driver needs only `generate` and `elaborate` | a checker module mapping its own IR into `generateIn`'s `Elab`: rule E3 (finding 1; T3b) |
+| R10 | A solution reaches `elaborate` only inside `Judged` | `decide` is where problem and solution meet | an `elaborate` call with `f`'s problem and `g`'s solution: unrepresentable outside `Decide` (finding 2; T11b) |
 
 ### 11.2 Soundness pass: making `build` read outside tracking, or
 succeed wrongly
@@ -541,71 +732,100 @@ succeed wrongly
 - S2. An `Elaborating` whose `build` reads freely: requires the hidden
   constructor (R7); the brief's record alias would have allowed it.
 - S3. An `Elab` forged through Internal with a `run` reading more than
-  `uses`: not detectable by `seal` (§5 layer 1). Confined by the
-  import rule to two modules (T3b) and by Tr over the public API
-  (T4). This is the residual trust: the two Internal-importing modules
-  must be correct, and they are small.
-- S4. A witness for another declaration: `elaborate`'s problem check
-  (§6.2; T11). Without it, path-relative `Var`s could make Cov pass.
-- S5. A requested variable later placed in `Recon` and left unbound:
-  kept in the domain by the union (§7; T6).
+  `uses`: not detectable by `seal` (§5 layer 1). Confined by rule E4
+  to two modules (T3b) and by Tr over the public API (T4a). This is
+  the residual trust: the two Internal-importing modules must be
+  correct, and they are small.
+- S4. A solution for another declaration: `Judged` (§6.2; T11, T11b).
+  The first version compared a separately passed problem, which did
+  not tie the solution to it (finding 2).
+- S5. A requested variable placed in `Recon`: `covDomain` faults
+  (§7; T6).
 - S6. A witness with extra bindings outside the domain: ignored by
   `build` (Tr); harmless.
 - S7. A `RecordSort` variable bound `Inline Int`: `SortMismatch`, a
-  broken invariant (Cov-S should have refused it, §12.3).
+  broken invariant (Sc plus Cov-S should have refused it, §8.1).
 - S8. A read whose value is not in the witness: effect rows (§12.1),
-  the one case found. Its candidate escape route, reading today's
-  checker state for them in `build`, is excluded by T10's import test,
-  so until §12.1 is decided `build` cannot produce them at all.
+  the one case found (the reviewer confirmed it and found no other:
+  marks are stripped after Check, instantiations exclude `RowSort`
+  slots, `fail` clause payloads and declared rows are static). Its
+  candidate escape route, reading today's checker state in `build`, is
+  excluded by rule E3 and T10, so until §12.1 is decided `build`
+  cannot produce them at all.
 - S9. Two strategies' different witnesses for one problem: `build`
   elaborates whichever witness was accepted; choosing between them is
   G3's and forcedness's (W §1.7), not this mechanism's.
+- S10. Runtime FFI: allowed in Runtime (scripts/structure.mjs:
+  103-105), and foreign code can break any hidden constructor.
+  Trusted premise, stated: no Runtime FFI touches `Generate*` or
+  `Elaborating` values. Today no Runtime module imports them; Task 7.1
+  adds a structure rule that Runtime modules import neither
+  `Domain.Elaborating*` nor `Features.Check.Generate*` (T3b).
+- S11. `coerce` changing a phantom scope (finding 3): nominal roles
+  (§3.2; T3c (iv); row `r0-elab-phantom-role`).
+- S12. Constructors leaked by a re-export (finding 16): explicit
+  export lists, no Internal re-export, T3c (v).
+- S13. Solver state mapped into a real generator's `Elab` by a
+  non-Generate module (finding 1): rule E3, T3b, T10.
 
 ### 11.3 Completeness pass: making a valid construction fail
 
 - C1. A declaration the online strategy accepts with a covered
-  witness, and `build` returns `Left`: by §8.1 only if Cov-S, Adapt-N
-  or R1 fails, each a broken invariant. T1 runs the corpus.
-- C2. A valid read rejected by `untracked`: only if a variable is used
-  at two sorts, which `Ty` forbids (R6), or a handle's `VarInfo` is
-  missing, which `fresh` forbids (Mint).
+  witness, and `build` returns `Left`: by §8.1 only if Sc, Cov-S,
+  Adapt-N or R1 fails, each a broken invariant. T1 runs the corpus.
+- C2. A valid read rejected by `untracked`: only if the position rule
+  (N7) and the variable's recorded sort disagree, which on a correct
+  generator they do not (the rule fixes the sort from where the
+  generator placed the handle, and `fresh` records the sort of the
+  role that minted it), or if a handle's `VarInfo` is missing, which
+  `fresh` forbids (Mint). (Corrected after finding 10: `Ty` does not
+  forbid two sorts for one variable.)
 - C3. Valid witnesses with `Named` bindings: refused until T1 lands
   (§8.3). A stated limitation, not a verdict change.
 - C4. An ambiguous site (several flexible tails): `build` gives the
   witness's choice, which may differ from today's solver; T2 excludes
   such sites and reports their count rather than failing.
-- C5. Effect-bearing declarations: `build` cannot fill their effect
-  positions (§12.1).
+- C5. Effect-bearing declarations: `build` cannot fill their inferred
+  effect positions (§12.1).
 - C6. Hole numbering: equal up to renaming suffices (§9); T8 and T2
-  check it.
+  check it on effect-erased projections.
+- C7. An adapter emitting `Inline (TVar x)` for a record variable:
+  accepted by `readRow` and renamed as Core does (§3.2; finding 8).
+  The first version faulted on it.
 
 ## 12. Points for the gate
 
-### 12.1 Effect rows are outside the witness (open; blocks Task 4.6)
+### 12.1 Effect rows are outside the witness (routed to Task 0.7)
 
-The checked IR carries effect rows: every `TFun a row b`, a
-declaration's `row ∷ TyRow Open`, the rows of `TData` and `THandler`,
-and a `fail` payload, which is a `FailEffect` label's argument
-(src/Domain/Checked/Internal.purs:45-54;
-src/Features/Check/Failure.purs:43-47). Today they are inferred: a
-lambda's row starts as a fresh meta (src/Features/Check/Lambda.purs:
-37). The recorder erases effect rows (T-R0b §2.2, `TFun` row and
-`RowSort` variables), so no problem variable stands for them, no
-witness binds them, and no `Elab` read can produce them. A `build`
-that took them from the online solver would read solver state outside
-tracking, the escape D1 exists to prevent.
+**Routing (controller's ruling, fix round 1):** this gap is routed to
+Task 0.7 (erased effect rows, gate G-erased). G-D1 cannot close until
+it is settled there. The options below are this document's input to
+that task.
+
+The checked IR carries effect rows: every `TFun a row b`, the rows of
+`TData` and `THandler`, and a `fail` payload, which is a `FailEffect`
+label's argument (src/Domain/Checked/Internal.purs:45-54;
+src/Features/Check/Failure.purs:43-47). Inferred ones are the issue:
+a lambda's row starts as a fresh meta (src/Features/Check/Lambda.purs:
+37). A declaration's own `row` is declared, rigid and static, and
+needs no read. The recorder erases effect rows (T-R0b §2.2, `TFun` row
+and `RowSort` variables), so no problem variable stands for an
+inferred one, no witness binds it, and no `Elab` read can produce it.
+A `build` that took them from the online solver would read solver
+state outside tracking, the escape D1 exists to prevent.
 
 Options, for the author with T-R0b's owner:
 
 - E-a (recommended): effect-row metas become flexible problem
-  variables of a third sort with canonical names (for example
-  `⟨p, effect⟩` for a lambda, `⟨p, inst i⟩` for a callee's `RowSort`
-  variable), with **no atoms**: their obligations stay erased, and
-  G-erased is unchanged. The witness binds them; the online adapter
-  reads them back like any slot; `elabTy` reads them through a third
-  primitive. Cost: T-R0b's `vars` and §2.2 change, Cov's domain grows,
-  and a strategy that does not model effects cannot elaborate an
-  effectful declaration (`NotCompiled`).
+  variables of a third sort (`EffectRowSort`, N8) with canonical names
+  (for example `⟨p, effect⟩` for a lambda, `⟨p, inst i⟩` for a
+  callee's `RowSort` variable), with **no atoms**: their obligations
+  stay erased, and G-erased is unchanged. The witness binds them; the
+  online adapter reads them back like any slot; `elabTy` already
+  records effect-row tails with that sort (N7), so Sc starts accepting
+  them. Cost: T-R0b's `vars` and §2.2 change, Cov's domain grows, and
+  a strategy that does not model effects cannot elaborate an effectful
+  declaration (`NotCompiled`).
 - E-b: `build` takes a second, injected effect elaboration beside the
   witness. Changes the brief's `build` type and leaves that input
   untracked.
@@ -613,10 +833,12 @@ Options, for the author with T-R0b's owner:
   an audit of specialization keys, which carry an effect component.
 
 Until this is decided, Task 7.1 may land the type-sorted and
-record-sorted parts: its `build` fills effect positions with the
-closed empty row, T2 compares the effect-erased projection of both
-sides, and Task 4.6 stays blocked. The scope of T2 is then narrower
-than the brief's "same checked IR", and says so in its name.
+record-sorted parts: its `build` fills **inferred** effect positions
+(those that are metas today) with the closed empty row and keeps
+declared ones, T2 and T8 compare effect-erased projections renumbered
+after erasure (§9), and Task 4.6 stays blocked. The scope of T2 is
+then narrower than the brief's "same checked IR", and says so in its
+name.
 
 ### 12.2 T-R0b amendments the derived positions predict
 
@@ -635,29 +857,47 @@ predicted from T-R0b's own rules (argued, not run):
   set `positionsOf` reports (`PatternType p`), and `Slot` is reserved
   for nodes that carry an `Instantiation`.
 
-T5 asserts both by name; any other disagreement fails it.
+One labelling gap: `CheckedName` (T-R0b §5.2) has no constructor for
+a handler clause's parameter types (E20: "clause bodies generated with
+parameters at θ"; the checked `HandlerClause` has `parameters ∷ Array
+Param`). Proposed: `ClauseParamType Path Int Int` (handler path,
+clause index, parameter index), so those reads get an exact site.
+
+T5 asserts the two disagreements by name; any other disagreement
+fails it. T5b checks `positionsOf` against the IR itself, so the
+derived view does not rest on generator-written claims alone.
 
 ### 12.3 Changes this implies for the owning documents
 
 Listed for their owners; this task edits none of them.
 
-- T-R0a §4.2 "Read-back and D1": `generate`'s type (§3.5),
-  `Elaborating` (§3.4), `elaborate` and its outcomes (§3.5, §8).
-- T-R0b §5.3 and §11 item 17: the mechanism is §3-§6; `position`
-  becomes a check against `positionsOf` (§12.2).
-- W §1.6 and §4 Cov: `Req = requests e`; the domain formula (§7);
-  Cov-S, binding sorts agree with `vars`, as an explicit clause;
-  `NameMarker` as a `Feature` (§8.3).
+- T-R0a §3.2-§3.3 and §4.2 "Read-back and D1": `generate`'s type
+  (§3.5), `Elaborating` (§3.4), `elaborate` and its outcomes (§3.5,
+  §8), and `decide` returning `Judged` with each Solved verdict
+  (§6.2).
+- T-R0b §5.2, §5.3 and §11 item 17: the mechanism is §3-§6; `position`
+  becomes a check against `positionsOf` (§12.2); `ClauseParamType`;
+  the two amendments of §12.2.
+- Task 3.1's `RecordedProblem`: a `FunctionId` field, unconditionally
+  (§6.2).
+- W §1.6 and §4 Cov: `Req = requests e`; the domain and its fault
+  (§7); Cov-S, a `Row` variable's binding is `Free`, `Inline
+  (TRecord _)` or `Inline (TVar _)` of a record-sorted variable, as an
+  explicit clause; `NameMarker` as a `Feature` (§8.3).
 - The plan's Task 4.4: `coverage` takes the domain (§7). Task 7.1:
   the tests of §10 replace its acceptance list.
 
 ### 12.4 What the gate is asked to accept
 
-1. Rank-2 handles plus the `elaborate` problem check as the identity
+1. Rank-2 handles with nominal roles, and `Judged`, as the identity
    mechanism (§6).
-2. The placement of `untracked` after `generate`, keeping `generate`
-   total (§5 layer 2).
-3. The newtype for `Elaborating` instead of a record alias (§3.4).
-4. N1-N5 as local machinery (§2).
-5. §12.1's routing: E-a recommended; Task 7.1 may land the rest first,
-   with T2 effect-erased and Task 4.6 blocked until decided.
+2. `untracked` as `elaborate`'s first step, also run by the driver
+   after `generate`, keeping `generate` total (§3.5, §5 layer 2).
+3. The newtype for `Elaborating` instead of a record alias, with
+   `build` reachable only from `Elaborate` (§3.4).
+4. Import rules E1-E5 (§3.1).
+5. `covDomain` faulting on `Recon ∩ requests` (§7).
+6. N1-N8 as local machinery (§2).
+7. §12.1's routing to Task 0.7: E-a recommended; Task 7.1 may land the
+   rest first, with T2 and T8 effect-erased and Task 4.6 blocked; G-D1
+   does not close before Task 0.7 settles it.

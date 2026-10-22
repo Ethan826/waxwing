@@ -60,8 +60,18 @@ today's renumbered hole, and Task 7.1's tests T1-T11 with four
 regression rows. Open for the gate: effect rows are erased by the
 recorder yet present in the checked IR, so no witness read can produce
 them (§12.1; E-a recommended; blocks Task 4.6); T-R0b position
-amendments for E28's `rest` and P4's `inst i` (§12.2). G-D1 waits on
-the controller's adversarial review.
+amendments for E28's `rest` and P4's `inst i` (§12.2). Fix round 1
+applied the task review and the G-D1 adversarial review (findings
+1-19): import rules E1-E5 (no smuggling via `map` from checker
+modules), `Judged` pairing problem and solution from `decide`, nominal
+type roles against `coerce`, `untracked` as `elaborate`'s first step,
+`build` reachable only from `Elaborate`, Internal `orFault`, sorts by
+position (slots by declared sort; effect-row tails rejected), slot
+images as today's `TVar` form, `DuplicateFresh` and `AuxiliarySite`,
+`covDomain` faulting on `Recon ∩ requests`, `nodeType` recording every
+elaborated type, T5b and T11b, row `r0-elab-phantom-role`. The
+effect-row gap is routed to Task 0.7; G-D1 cannot close until it is
+settled there.
 
 ## Language direction recorded (2026-10-08)
 
