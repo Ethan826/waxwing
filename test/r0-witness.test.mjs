@@ -122,14 +122,15 @@ test('a BQ atom failing at the default breaks the contract', () => {
   assert.equal(w.reason(w.witnessOf(problem, sigma))[0], 'HoleContract');
 });
 
-// The `lacks` and `disjoint` arms: W §1.5's check wants an equation, so
-// such an atom mentioning a hole breaks it even where the default `{}`
-// would do (G0 accepts σ at the default): the check is sufficient, not
-// complete. Every equation here has equal sides. σ is the production
-// read-back's (R022 fixed: the row slot's hole is a row tail).
+// The `lacks` and `disjoint` arms: W §1.5's literal check broke such an
+// atom mentioning a hole even where `{}` would do (Task 4.4); amended
+// (docs/plans/r0-hole-contract-amendment.md), it holds at the default
+// and the witness stands, as G0 accepts σ at the default. Every
+// equation here has equal sides. σ is the production read-back's
+// (R022 fixed: the row slot's hole is a row tail).
 const at = steps => ({ root: 'body', steps: ['Block', 'items', 0, 'Let',
   'value', ...steps] });
-test('a lacks or disjoint atom mentioning a hole breaks the contract',
+test('a lacks or disjoint atom holding at the default keeps the witness',
   () => {
     for (const { kind, source } of r022Probes) {
       const { problem, certificate } = candidateOf(source, 'g');
@@ -142,7 +143,7 @@ test('a lacks or disjoint atom mentioning a hole breaks the contract',
       assert.deepEqual(online.sigmaOf(certificate.unsettled),
         online.sigmaOf(expected), kind);
       assert.deepEqual(w.reason(w.witnessOf(problem,
-        certificate.unsettled)), ['HoleContract', w.key(param)], kind);
+        certificate.unsettled)), ['Witnessed'], kind);
       assert.equal(online.check(problem, certificate.substitution)
         .constructor.name, 'Right', kind);
       assert.ok(problem.b.some(entry => entry.value.constructor.name

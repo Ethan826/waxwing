@@ -34,8 +34,9 @@ for (const { kind, source } of r022Probes) {
       stableStringify(decodeType(w.holeRow(0))));
   });
 
-  // Under the literal W §1.5 rule (Task 4.4), a `lacks`/`disjoint` atom
-  // mentioning a hole breaks the contract: Solved with no witness.
+  // Under the literal W §1.5 rule this was Solved with `NoWitness
+  // HoleContract` (Stage A, docs/findings.md); under the amendment
+  // (docs/plans/r0-hole-contract-amendment.md) the atom holds at `{}`.
   test(`R022 (${kind}): shadowDecisions accepts the read-back σ`, () => {
     const program = online.programOf(source);
     const decision = online.decisionOf(program, 'g');
@@ -43,7 +44,6 @@ for (const { kind, source } of r022Probes) {
     const [attempt] = decision.value0.attempts;
     assert.equal(named(attempt), 'Accepted',
       named(attempt) === 'CheckFailed' ? named(attempt.value2) : '');
-    assert.equal(named(attempt.value2), 'NoWitness');
-    assert.equal(named(attempt.value2.value0), 'HoleContract');
+    assert.equal(named(attempt.value2), 'Witnessed');
   });
 }

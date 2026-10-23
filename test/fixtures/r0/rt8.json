@@ -26,8 +26,7 @@
   "(a) blocked: Unresolved Unsupported Outside HandlerType": 97,
   "(b) declined by g0Guard, today refuses": 1,
   "(b) declined by g0Guard": 3,
-  "Solved with a bound hole (pending the author's ambiguity ruling)": 3,
-  "Solved, no witness: HoleContract (W §1.5's check refuses a default)": 3,
+  "Solved with a bound hole (pending the author's ambiguity ruling)": 6,
   "agree: Solved": 1989,
   "agree: no candidate (Exhausted)": 233,
   "agree: no candidate (OutOfBudget)": 1,
@@ -49,7 +48,7 @@
   "test/fx008-probes/rev9/set1.wxw#main: (a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily",
   "test/fixtures/r0/audit/fail-needs-concrete-check.pinned.json#k: (a) blocked: Unresolved Unsupported Outside FailFamily",
   "test/fixtures/r0/erased/form.show-reference.json#g: Solved with a bound hole (pending the author's ambiguity ruling)",
-  "test/fixtures/r005b/render-quiet-annotated.json#main: Solved, no witness: HoleContract (W §1.5's check refuses a default)",
+  "test/fixtures/r005b/render-quiet-annotated.json#main: Solved with a bound hole (pending the author's ambiguity ruling)",
   "test/fn-programs.mjs:programs#2#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/fn-programs.mjs:programs#7#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/fn-programs.mjs:programs#9#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
@@ -154,16 +153,11 @@
   "test/poly-programs.mjs:programs#58#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/poly-programs.mjs:programs#59#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/poly-programs.mjs:programs#60#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
-  "inline:r022-disjoint#g: Solved, no witness: HoleContract (W §1.5's check refuses a default)",
-  "inline:r022-lacks#g: Solved, no witness: HoleContract (W §1.5's check refuses a default)"
+  "inline:r022-disjoint#g: Solved with a bound hole (pending the author's ambiguity ruling)",
+  "inline:r022-lacks#g: Solved with a bound hole (pending the author's ambiguity ruling)"
  ],
  "witnesses": {
-  "NoWitness HoleContract": 3,
-  "Witnessed": 2773
+  "Witnessed": 2776
  },
- "noWitness": [
-  "test/fixtures/r005b/render-quiet-annotated.json#main: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[]},\"role\":{\"inst\":1}}}",
-  "inline:r022-disjoint#g: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[\"Block\",\"items\",0,\"Let\",\"value\"]},\"role\":{\"param\":0}}}",
-  "inline:r022-lacks#g: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[\"Block\",\"items\",0,\"Let\",\"value\"]},\"role\":{\"param\":0}}}"
- ]
+ "noWitness": []
 }

@@ -4,9 +4,13 @@
 -- `settled`), only if, with the bindings applied, every `B` atom that
 -- mentions it is an equation with syntactically equal canonical sides
 -- and every `BQ` atom that mentions it holds by the ground rule at the
--- defaults. A `lacks` or `disjoint` atom that mentions a hole fails the
--- check, as W words it: the check is sufficient, not complete, and may
--- refuse a default that would do.
+-- defaults. A `lacks` or `disjoint` atom that mentions a hole passes
+-- only if G0's atom check (Strategy.Atoms `atomUnder`, against D's
+-- listed facts, definedness included) establishes it with every hole
+-- at its default: the author's amendment of W §1.5 (2026-10-23;
+-- docs/plans/r0-hole-contract-amendment.md). The check is sufficient,
+-- not complete, and may refuse a default that would do: a refusal is
+-- `NoWitness`, never a claim about the program.
 --
 -- The holes judged are a `Free` binding's and those inside an `Inline`
 -- one, which W §1.3 and Adapt-N default alike. The variable named is the
@@ -20,7 +24,7 @@ module Features.Check.Strategy.HoleContract (holeContract) where
 
 import Prelude
 import Data.Array (any, concatMap, find, mapMaybe)
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
@@ -41,6 +45,7 @@ import Domain.Recorded.Origin (Entry)
 import Domain.Verdict (NoWitnessReason(..))
 import Domain.Verdict.Witness (Binding(..), Witness)
 import Features.Check.GroundRule (Judgement(..), atomType, judge)
+import Features.Check.Strategy.Atoms (Facts, atomUnder, facts)
 import Features.Check.Strategy.Candidate (under)
 import Features.Check.Strategy.ReadBack.Type (holeVar, holesIn, settled)
 
@@ -52,7 +57,9 @@ holeContract problem witness =
   view = fields problem
   images = imagesOf view.vars witness
   broken = Set.fromFoldable
-    (concatMap (equational images) view.b <> concatMap atDefault view.bq)
+    ( concatMap (equational (facts problem) images) view.b
+        <> concatMap atDefault view.bq
+    )
   breaks (Tuple _ bound) = any (flip Set.member broken) (holesIn bound)
   atDefault = requirement view.holders images
 
@@ -74,18 +81,21 @@ image sort = case _ of
     SortType → TVar (holeVar hole)
     SortRow → Record [] [ holeVar hole ]
 
--- The holes a `B` atom breaks: none unless it mentions one and is not an
--- equation with equal sides.
-equational ∷ Map Var RTExpr → Entry Atom → Array Int
-equational images entry = case entry.value of
+-- The holes a `B` atom breaks: none unless it mentions one and is
+-- neither an equation with equal sides nor a `lacks`/`disjoint` atom
+-- established at the defaults (`atomUnder known (settled <$> images)`).
+equational ∷ Facts → Map Var RTExpr → Entry Atom → Array Int
+equational known images entry = case entry.value of
   Equal one other
     | under images one == under images other → []
     | otherwise → holesIn (under images one) <> holesIn (under images other)
-  Lacks row _ → rowHoles row
-  Disjoint one other → rowHoles one <> rowHoles other
+  Lacks row _ → unlessEstablished (rowHoles row)
+  Disjoint one other → unlessEstablished (rowHoles one <> rowHoles other)
   Ff → []
   where
   rowHoles row = holesIn (under images (Record [] [ row ]))
+  unlessEstablished holes = either (const holes) (const [])
+    (atomUnder known (map settled images) entry)
 
 -- The holes a `BQ` atom breaks: those it mentions, unless it holds with
 -- every hole at its default.

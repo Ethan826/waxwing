@@ -598,6 +598,22 @@ contract's rigid-as-`Unjudged` claim labelled argued, amendment 6's
 count. No corpus re-pin. Evidence in findings, "R022: the read-back
 respects a variable's sort".
 
+## R0 shadow tranche: the hole contract's lacks/disjoint amendment (2026-10-23)
+
+Shadow only, no acceptance change; the author's ruling, as the reviewed
+note docs/plans/r0-hole-contract-amendment.md states it. A `lacks` or
+`disjoint` atom mentioning a hole is admitted when G0's atom check
+(Strategy.Atoms `atomUnder`, D's listed facts, definedness) establishes
+it at the defaults; otherwise `NoWitness (HoleContract v)`, never a
+contradiction. Equations and `BQ` unchanged. The note's E1-E19 are
+tests (11 seen failing first); seven mutants fail as expected; rows
+`r0-hole-equation-defaulted` and `r0-hole-arm-defaults-skipped`. RT8
+re-pinned: render-quiet-annotated main and R022's probes are now
+witnessed (bound-hole class 3 → 6), and no RT8 witness is refused.
+Follow-ups R023 (an obligation for Task 6's lowering) and R024 (Cov
+has no genericity check). Evidence in findings, "The hole contract's
+lacks/disjoint amendment".
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted

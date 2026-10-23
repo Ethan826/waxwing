@@ -65,5 +65,17 @@ export const r0WitnessProbes = {
           + `${attempt.constructor.name} ${attempt.value2.constructor.name}`);
     }
     passed(context);
+  },
+  // The amendment: R022's probes hold their atoms at `{}`.
+  'r0-hole-arm-defaults-skipped': async context => {
+    const w = await loaded(context);
+    for (const { origin, source } of r022Probes) {
+      const program = w.online.programOf(source);
+      const [attempt] = w.online.decisionOf(program, 'g').value0.attempts;
+      const found = w.reasonName(attempt.value2);
+      if (found !== 'Witnessed')
+        fail(`${origin}: no witness at the default: ${found}`);
+    }
+    passed(context);
   }
 };

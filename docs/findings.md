@@ -3752,3 +3752,66 @@ its restored defect fails.
 **`r0-cov-skipped` narrowed (review minor 5, checked).** Its
 replacement now disables only the `traverse_ covered` line, the hole
 contract left on; re-proved by the run above.
+
+## The hole contract's lacks/disjoint amendment (2026-10-23)
+
+The author's ruling of 2026-10-23, as stated in
+docs/plans/r0-hole-contract-amendment.md (corrected after its review,
+957f35a). Shadow only: nothing reachable from compile changed; no
+corpus re-pin. Strategy.HoleContract: a `lacks` or `disjoint` atom
+mentioning a hole breaks the check unless `atomUnder (facts problem)
+(settled <$> images) entry` is `Right unit` (Strategy.Atoms, reused
+unchanged); equations, `BQ` and Cov unchanged. This supersedes Task
+4.4's reading 4 (literal) for these atoms; the R022 section above
+records what the literal rule gave.
+
+**TDD (checked).** test/r0-hole-arm.test.mjs: the note's E1-E19 (25
+tests) on problems built directly (test/r0-hole-arm-support.mjs),
+through `substitutionWitness`, plus render-quiet-annotated through
+`shadowDecisions` and route's E9. RED against the literal rule, `node
+--test --test-reporter=spec test/r0-hole-arm.test.mjs`: 14 pass, 11
+fail, each failure `['HoleContract', 'x']` where `['Witnessed']` was
+expected: E1, E2, E4, E8, E12 (bare), E13, E14 (with `r disjoint s`),
+E15 (with `r lacks b`), E16, E19 and render-quiet-annotated main
+(`NoWitness HoleContract`). Every refusal case and the unchanged ones
+(E3, E5-E7, E9, E10, E11, E12 rigid, E14, E15, E17, E18) passed before
+and after. Also RED: test/r0-readback-sort.test.mjs's two
+"shadowDecisions accepts the read-back σ" tests, now expecting
+`Witnessed` (Stage A pinned `NoWitness HoleContract` there), and
+test/r0-witness.test.mjs's lacks/disjoint test, now expecting
+`Witnessed`. GREEN: 25/25, 4/4, 7/7; covering run 117/117.
+
+**Mutants (checked, scratch copy, each built, the three test files
+run; scripts in scratchpad hole-arm/mutants*.py):**
+
+| Mutant | Patch (HoleContract.purs) | Failing tests |
+|---|---|---|
+| A accept every atom | `either (const holes)` → `either (const (const [] holes))` | E3, E5, E6, E7, E12 rigid, E14, E15, E17 |
+| B no defaults | `(map settled images)` → `images` in the arm | E1, E2, E4, E8, E12, E13, E14 apart, E15 defined, E19; witness lacks/disjoint; both R022 production tests |
+| C empty facts | `facts problem` → `const {lacks: ∅, disjoint: ∅} (…)` | E4, E14 apart, E15 defined |
+| D1 literal lacks arm | `Lacks row _ → rowHoles row` | E1, E13, E14 apart, E15 defined, E16, E19; witness; R022 Lacks |
+| D2 literal disjoint arm | `Disjoint … → rowHoles one <> rowHoles other` | E2, E4, E8, E12, render-quiet-annotated; witness; R022 Disjoint |
+| E equation at defaults (B3 a) | guard `under … == under …` → `atomUnder known (map settled images) entry` succeeds | E9, route (r0-witness), E10 undefined-sides |
+| F hole-free atom breaks all (B3 b) | refused atom with no hole breaks every witness hole | E11 |
+
+Restoring both literal arms at once does not compile (the helper goes
+unused), so D is one arm at a time. B3 (b) as literally stated
+(judging hole-free atoms) is equivalent (argued in the note); F is its
+killable form. Regression rows (checked, `node scripts/regression.mjs
+r0-hole-equation-defaulted r0-hole-arm-defaults-skipped
+r0-hole-contract-skipped r0-readback-sort-blind`, each fixed compiler
+passes and its restored defect fails): `r0-hole-equation-defaulted`
+(mutant E; probe route's defaulted `u`) and
+`r0-hole-arm-defaults-skipped` (mutant B; probe: R022's probes must be
+`Witnessed`), in scripts/regression-r0-witness.mjs, spread into r0Rows.
+
+**RT8 (checked, `node scripts/r0-rt8-pin.mjs`, re-pinned).** Witnessed
+2,773 → 2,776, `NoWitness HoleContract` 3 → 0; class `Solved, no
+witness: HoleContract` 3 → 0 (gone); `Solved with a bound hole` 3 → 6:
+render-quiet-annotated main and R022's two probes, each now witnessed
+with a `Free` hole. Nothing else moved. route is not in RT8's Solved
+set; its `u` stays `NoWitness` (E9, checked). The note's B2 claim
+("the arm never refuses an online witness", argued by monotonicity) is
+checked over RT8: test/r0-rt8.serial.test.mjs asserts `witnesses` has
+only `Witnessed` and `noWitness` is empty, so no witness is refused by
+a lacks/disjoint atom.

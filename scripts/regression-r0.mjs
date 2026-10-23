@@ -1,6 +1,8 @@
 // R0 shadow tranche regression rows, imported by scripts/regression.mjs;
 // their probes are in test/regression-r0.mjs. Each restores one defect in
 // a whole, compiling form.
+import { r0WitnessRows } from './regression-r0-witness.mjs';
+
 export const r0Rows = [
   {
     // Task 1.2: the driver stops at the first failing body, as `traverse`
@@ -225,5 +227,6 @@ export const r0Rows = [
     probe: 'r0-readback-sort-blind',
     message:
       /r022-disjoint: the read-back σ was refused: CheckFailed NotGeneric/
-  }
+  },
+  ...r0WitnessRows
 ];
