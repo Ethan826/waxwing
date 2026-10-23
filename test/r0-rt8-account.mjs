@@ -12,6 +12,10 @@ import { describe } from './r0-decide-support.mjs';
 // Review I-1: a Solved whose candidate bound a hole (ReadBack step 4).
 export const boundHoleClass =
   'Solved with a bound hole (pending the author\'s ambiguity ruling)';
+// Task 4.4: a Solved whose witness W §1.5's syntactic check refuses, so
+// it has no compilation (a reason of Cov's own, never missing coverage).
+export const holeContractClass =
+  'Solved, no witness: HoleContract (W §1.5\'s check refuses a default)';
 
 const named = value => value.constructor.name;
 
@@ -20,13 +24,39 @@ const onlineAttempt = decision => decision.attempts[0];
 
 const refusal = attempt => named(attempt.value2);
 
+// A Solved's compilation (Task 4.4): `null` when witnessed. The online
+// adapter binds every flexible variable, so `Uncovered` is its defect,
+// and so is the placeholder it replaced.
+const unwitnessed = compilation => {
+  if (named(compilation) === 'Witnessed') return null;
+  const reason = named(compilation.value0);
+  if (reason === 'HoleContract') return holeContractClass;
+  return `DEFECT: Solved, no witness: ${reason}`;
+};
+
+// Every accepted candidate's compilation, blocked or not, for RT8's
+// `witnesses` tally (Task 4.4): its class, and the variable a missing
+// witness names; `null` where no candidate was accepted.
+export const witnessFor = result => {
+  if (named(result) === 'Left') return null;
+  const attempt = onlineAttempt(result.value0);
+  if (attempt === undefined || named(attempt) !== 'Accepted') return null;
+  const compilation = attempt.value2;
+  if (named(compilation) === 'Witnessed') return { class: 'Witnessed' };
+  const reason = compilation.value0;
+  // NonConstructive names a strategy, the others a variable.
+  return { class: `NoWitness ${named(reason)}`,
+    variable: named(reason) === 'NonConstructive' ? null : reason.value0 };
+};
+
 const accepted = (decision, attempt, holes) => {
   const verdict = describe({ constructor: { name: 'Right' },
     value0: decision }).verdict;
   switch (named(attempt)) {
   case 'Accepted':
     if (verdict !== 'Solved') return `(a) blocked: ${verdict}`;
-    return holes.length > 0 ? boundHoleClass : 'agree: Solved';
+    return unwitnessed(attempt.value2)
+      ?? (holes.length > 0 ? boundHoleClass : 'agree: Solved');
   case 'Declined': return '(b) declined by g0Guard';
   case 'CheckFailed':
     // The backstop first: a defect whatever the claim (review I-2).

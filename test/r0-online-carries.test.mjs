@@ -117,8 +117,10 @@ test('RT8 accounting: RequirementUnjudged is a defect under Heuristic', () => {
 // provisional reading pending the author's ambiguity ruling) is its own
 // class, never merged into `agree: Solved`.
 const solved = new Verdict.Solved({});
+const witnessed = new Verdict.Witnessed({ bindings: null, names: [] });
 test('RT8 accounting: a Solved with a bound hole is its own class', () => {
-  const accepted = decision(new Verdict.Accepted(name, null, null), solved);
+  const accepted = decision(new Verdict.Accepted(name, null, witnessed),
+    solved);
   assert.equal(accountFor(today.accepts, accepted, [3]), boundHoleClass);
   assert.equal(accountFor(today.accepts, accepted, []), 'agree: Solved');
   assert.notEqual(boundHoleClass, 'agree: Solved');

@@ -13,10 +13,11 @@ module Features.Check.Strategy.ReadBack.Type
   , holesIn
   , isHole
   , readType
+  , settled
   ) where
 
 import Prelude
-import Data.Array (concatMap, foldr, mapMaybe, sort, sortWith)
+import Data.Array (concatMap, filter, foldr, mapMaybe, sort, sortWith)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), isJust)
 import Data.Tuple (Tuple(..), fst, snd)
@@ -88,3 +89,20 @@ named ∷ Open → Var
 named = case _ of
   Rigid variable → RigidVar variable
   Hole index → holeVar index
+
+-- ReadBack's step 4, and the hole contract's defaults (W §1.5): a type
+-- hole is `Int`, a row hole is no tail (today's lowering, Lower.purs).
+settled ∷ RTExpr → RTExpr
+settled ty = case ty of
+  Arrow _ _ → Recorded.unspine
+    { parameters: map settled found.parameters, result: settled found.result }
+  Base base → Base base
+  Atom.TVar variable
+    | isHole variable → Base IntBase
+    | otherwise → ty
+  Record entries tails →
+    Record (map field entries) (filter (not <<< isHole) tails)
+  App head arguments → App head (map settled arguments)
+  where
+  found = Recorded.spine ty
+  field (Tuple label value) = Tuple label (settled value)

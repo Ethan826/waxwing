@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pinCommand, pinnedRt8, rt8File, rt8Rows, rt8Table }
   from './r0-rt8-run.mjs';
-import { boundHoleClass } from './r0-rt8-account.mjs';
+import { boundHoleClass, holeContractClass } from './r0-rt8-account.mjs';
 
 // Task 4.3, RT8 (T-R0b §9 item 8) and acceptance criteria 2 and 4, over
 // the pinned corpus: every declaration today's checker accepts or
@@ -30,6 +30,7 @@ test('RT8: the classes equal their pinned counts', () => {
 // §3.2(b); a block or a `RequirementOpen` refusal is §3.2(a); an
 // ambiguous several-tail read-back is G-A-i(g)'s `Heuristic`.
 const expected = [/^agree: Solved$/, /^Solved with a bound hole /,
+  /^Solved, no witness: HoleContract /,
   /^agree: no candidate \(\w+\)$/,
   /^\(a\) blocked: Unresolved Unsupported /, /^\(a\) RequirementOpen$/,
   /^\(b\) declined by g0Guard(, today refuses)?$/,
@@ -49,20 +50,37 @@ test('RT8: every class is an expected one or a defect', () => {
 // the author's ambiguity ruling, so a Solved resting on it is counted
 // apart, and every declaration whose candidate bound a hole is listed
 // (rt8.json `boundHoles`). C001's h1/h2 print a hole but are blocked by
-// DataApplication first; erased/form.show-reference is the Solved one.
+// DataApplication first. Task 4.4: r005b/render-quiet-annotated's
+// witness fails the hole contract, so it is that class, still listed.
 const c001 = 'docs/plans/2026-10-21-c001-explicit/baseline';
+const quiet = 'test/fixtures/r005b/render-quiet-annotated.json#main';
 test('RT8: a Solved resting on a bound hole is its own class', () => {
   const pending = rows.filter(row => row.class === boundHoleClass)
     .map(row => row.at);
   assert.deepEqual(pending, [`${c001}/a1-discard-dictionary.wxw#main`,
     `${c001}/a2-unused-local.wxw#main`,
-    'test/fixtures/r0/erased/form.show-reference.json#g',
-    'test/fixtures/r005b/render-quiet-annotated.json#main']);
+    'test/fixtures/r0/erased/form.show-reference.json#g']);
   const listed = table.boundHoles.map(entry => entry.split(': ')[0]);
   for (const at of [`${c001}/h1-print-empty.wxw#main`,
-    `${c001}/h2-print-chosen.wxw#main`, ...pending])
+    `${c001}/h2-print-chosen.wxw#main`, ...pending, quiet])
     assert.ok(listed.includes(at), at);
   assert.equal(table.classes[boundHoleClass], pending.length);
   assert.ok(rows.filter(row => row.class === 'agree: Solved')
     .every(row => row.holes.length === 0));
 });
+
+// Task 4.4: every accepted candidate's witness, blocked or not, passes
+// Cov's coverage; the one without a witness fails the hole contract, W
+// §1.5's check refusing `{}` at a `disjoint` atom (its own class, listed
+// with the variable named; docs/findings.md).
+test('RT8: every candidate is covered; a hole-contract refusal is listed',
+  () => {
+    const accepted = Object.values(table.witnesses).reduce((a, b) => a + b);
+    assert.ok(accepted > 2700);
+    assert.deepEqual(Object.keys(table.witnesses).sort(),
+      ['NoWitness HoleContract', 'Witnessed']);
+    assert.deepEqual(table.noWitness.map(entry => entry.split(': ')[0]),
+      [quiet]);
+    assert.equal(rows.find(row => row.at === quiet).class,
+      holeContractClass);
+  });

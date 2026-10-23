@@ -10,9 +10,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadCorpus, repoRoot } from './r0-corpus.mjs';
+import { stableStringify } from './r0-canonical.mjs';
+import { decodeVar } from './r0-canonical-decode.mjs';
 import { load } from './r0-generate-support.mjs';
 import { onlineFrom } from './r0-online-support.mjs';
-import { accountFor, isDefect } from './r0-rt8-account.mjs';
+import { accountFor, isDefect, witnessFor } from './r0-rt8-account.mjs';
 
 export const rt8File = 'test/fixtures/r0/rt8.json';
 export const pinCommand = 'node scripts/r0-rt8-pin.mjs';
@@ -49,20 +51,26 @@ const declarationsOf = ({ origin, source }) => {
   return program.functions.map((decl, index) => {
     const facts = candidateFacts(program, decl, today[index].today);
     return { at: `${origin}#${decl.name}`, ...facts,
-      class: accountFor(today[index].today, decided[index], facts.holes) };
+      class: accountFor(today[index].today, decided[index], facts.holes),
+      witness: witnessFor(decided[index]) };
   });
 };
 
 export const rt8Rows = async () => (await loadCorpus())
   .flatMap(declarationsOf);
 
-export const rt8Table = rows => {
-  const classes = {};
-  for (const row of rows) classes[row.class] = (classes[row.class] ?? 0) + 1;
-  const sorted = Object.fromEntries(Object.entries(classes).sort());
-  return {
+const variableText = variable => variable === null ? ''
+  : stableStringify(decodeVar(variable));
+
+const tally = names => {
+  const counts = {};
+  for (const name of names) counts[name] = (counts[name] ?? 0) + 1;
+  return Object.fromEntries(Object.entries(counts).sort());
+};
+
+export const rt8Table = rows => ({
     declarations: rows.length,
-    classes: sorted,
+    classes: tally(rows.map(row => row.class)),
     defects: rows.filter(row => isDefect(row.class))
       .map(row => `${row.at}: ${row.class}`),
     positions: rows.filter(row => row.positions.length > 0)
@@ -70,9 +78,15 @@ export const rt8Table = rows => {
     // Every declaration whose accepted candidate bound a hole, whatever
     // its class, so Task 4.5's window can move them when the author rules.
     boundHoles: rows.filter(row => row.holes.length > 0)
-      .map(row => `${row.at}: ${row.class}`)
-  };
-};
+      .map(row => `${row.at}: ${row.class}`),
+    // Task 4.4: every accepted candidate's compilation (Cov and the hole
+    // contract), and each one without a witness.
+    witnesses: tally(rows.filter(row => row.witness !== null)
+      .map(row => row.witness.class)),
+    noWitness: rows.filter(row => row.witness !== null
+      && row.witness.class !== 'Witnessed').map(row => `${row.at}: `
+      + `${row.witness.class} ${variableText(row.witness.variable)}`)
+});
 
 export const pinnedRt8 = () =>
   JSON.parse(readFileSync(join(repoRoot, rt8File), 'utf8'));

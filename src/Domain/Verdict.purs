@@ -43,6 +43,7 @@ import Prelude (class Eq, Void)
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
 import Domain.Recorded (AtomId, OutsideKind, RecordedProblem)
+import Domain.Recorded.Atom (Var)
 import Domain.Type (Ty)
 import Domain.Verdict.Internal
   ( CX
@@ -61,8 +62,9 @@ import Domain.Verdict.Static (Site, StaticRefusal)
 import Domain.Verdict.Theorem.Internal (TheoremRef) as Exports
 import Domain.Verdict.Theorem.Internal (TheoremRef)
 import Domain.Verdict.Unsound (Unsound)
-import Domain.Verdict.Open (CheckedCX, Question, RefuteRefusal, Witness)
+import Domain.Verdict.Open (CheckedCX, Question, RefuteRefusal)
 import Domain.Verdict.Search (CheckRefusal, SearchHint)
+import Domain.Verdict.Witness (Witness)
 
 -- One per declaration, in declaration order; each keeps its problem.
 data DeclOutcome
@@ -95,9 +97,14 @@ data Assurance = Proved TheoremRef | Pending StatementRef
 data Compilation = Witnessed Witness | NoWitness NoWitnessReason
 
 -- W §1.6's reasons, each with its owner: a non-constructive strategy's
--- (Task 4.1, AT9). `AdapterUnsupported` and `HoleContract` join with
--- their adapters (Tasks 4.4, 6.1).
-data NoWitnessReason = NonConstructive StrategyName
+-- (Task 4.1, AT9); Cov's (W §4; Task 4.4): `HoleContract`, W §1.5, and
+-- `Uncovered`, a variable of Cov's domain with no binding, which W names
+-- no reason for (amendment, Task 4.4). `AdapterUnsupported` joins with
+-- its adapter (Task 6.1).
+data NoWitnessReason
+  = NonConstructive StrategyName
+  | Uncovered Var
+  | HoleContract Var
 
 data Evidence
   = ByRule Derivation -- ground (1)

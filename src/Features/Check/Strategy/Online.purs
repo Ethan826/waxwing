@@ -34,8 +34,7 @@ import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic)
 import Domain.Verdict
   ( Assurance(..)
-  , Compilation(..)
-  , NoWitnessReason(..)
+  , Compilation
   , SearchEnd(..)
   , StrategyName(..)
   , Valid
@@ -51,6 +50,7 @@ import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.Guard (g0Guard)
 import Features.Check.Strategy.Online.Ending (Ending(..), ending)
 import Features.Check.Strategy.ReadBack (readBack)
+import Features.Check.Strategy.Witness (substitutionWitness)
 import Features.Check.Strategy.Substitution
   ( checkSubstitution
   , genericSubstitutionSound
@@ -61,9 +61,11 @@ type OnlineContext = { holders ∷ Functional, program ∷ Resolved.Program }
 
 -- σ, and the checked declaration today's solver built with it: the
 -- baseline Task 7.1 compares `build`'s IR against; and the holes σ bound
--- (ReadBack step 4, provisional, pending the author's ambiguity ruling).
+-- (ReadBack step 4, provisional, pending the author's ambiguity ruling);
+-- and σ before that step, which the witness binds (Task 4.4).
 type Certificate =
   { substitution ∷ Substitution
+  , unsettled ∷ Substitution
   , checked ∷ Checked.FunctionDecl
   , holes ∷ Array Int
   }
@@ -83,7 +85,7 @@ onlineWith search = strategy
   , guard: g0Guard
   , search
   , check: certified
-  , witness: unwitnessed
+  , witness: witnessed
   }
 
 onlineSearch ∷ OnlineContext → Budget → RecordedProblem → Search Certificate
@@ -102,7 +104,11 @@ searched problem = either refused accepted
   accepted found = either broke (offered found.function)
     (readBack problem found.function)
   offered checked made = Candidate
-    { substitution: made.substitution, checked, holes: made.holes }
+    { substitution: made.substitution
+    , unsettled: made.unsettled
+    , checked
+    , holes: made.holes
+    }
     made.claim
     []
   broke why = NoCandidate (Broke ("read-back: " <> why)) []
@@ -141,7 +147,8 @@ certified ∷ RecordedProblem → Certificate → Either CheckRefusal Valid
 certified problem certificate =
   checkSubstitution problem certificate.substitution
 
--- Task 4.4's `substitutionWitness` replaces this; until then the online
--- solver's Solved carries no witness.
-unwitnessed ∷ RecordedProblem → Certificate → Compilation
-unwitnessed _ _ = NoWitness (NonConstructive OnlineSolver)
+-- G0's adapter over σ before the read-back's hole defaults (Task 4.4),
+-- so a defaulted hole is a `Free` binding the hole contract judges.
+witnessed ∷ RecordedProblem → Certificate → Compilation
+witnessed problem certificate =
+  substitutionWitness problem certificate.unsettled

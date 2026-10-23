@@ -44,10 +44,9 @@ import Domain.Checked.Internal as Checked
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom
   ( Atom(..)
-  , Base(..)
   , CheckedName(..)
   , Quant(..)
-  , RTExpr(..)
+  , RTExpr
   , Role(..)
   , Var(..)
   , VarInfo
@@ -59,16 +58,22 @@ import Features.Check.Entailed (fragment)
 import Features.Check.Entailed.Merge (substitute)
 import Features.Check.Entailed.Mgu (mgu)
 import Features.Check.Mentions (mentions)
-import Features.Check.Spine (spine, unspine)
 import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.ReadBack.Position (Slotted, valueAt)
-import Features.Check.Strategy.ReadBack.Type (holesIn, isHole)
+import Features.Check.Strategy.ReadBack.Type (holesIn, settled)
 
 -- `holes`: the holes step 4 bound, by index, ascending. The binding is a
 -- provisional reading pending the author's ambiguity ruling, so its
 -- effect stays visible (RT8 counts a Solved resting on one apart).
+-- `unsettled`: σ before step 4, its holes still `holeVar n`: what the
+-- witness binds (Strategy.Witness; Task 4.4), so a default stays a hole
+-- the hole contract judges instead of a binding G0 alone accepted.
 type ReadBack =
-  { substitution ∷ Substitution, claim ∷ Claim, holes ∷ Array Int }
+  { substitution ∷ Substitution
+  , unsettled ∷ Substitution
+  , claim ∷ Claim
+  , holes ∷ Array Int
+  }
 
 type Equation = Tuple RTExpr RTExpr
 
@@ -104,6 +109,7 @@ completed problem values =
 read ∷ Claim → Array (Tuple Var RTExpr) → ReadBack
 read claim values =
   { substitution: Map.fromFoldable (map settledBinding values)
+  , unsettled: Map.fromFoldable values
   , claim
   , holes: Array.sort (Array.nub (concatMap (holesIn <<< snd) values))
   }
@@ -166,19 +172,3 @@ equation = case _ of
   Lacks _ _ → []
   Disjoint _ _ → []
   Ff → []
-
--- Step 4: a type hole is `Int`, a row hole is no tail.
-settled ∷ RTExpr → RTExpr
-settled ty = case ty of
-  Arrow _ _ → unspine
-    { parameters: map settled found.parameters, result: settled found.result }
-  Base base → Base base
-  TVar variable
-    | isHole variable → Base IntBase
-    | otherwise → ty
-  Record entries tails →
-    Record (map field entries) (filter (not <<< isHole) tails)
-  App head arguments → App head (map settled arguments)
-  where
-  found = spine ty
-  field (Tuple label value) = Tuple label (settled value)

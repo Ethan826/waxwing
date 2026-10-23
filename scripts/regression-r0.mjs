@@ -192,5 +192,27 @@ export const r0Rows = [
     replacement: '  same _ = true\n',
     probe: 'r0-declaration-by-id',
     message: /another program's declaration was searched: Solved/
+  },
+  {
+    // Task 4.4 (W §4 Cov): coverage accepts every witness, so one
+    // missing an auxiliary is offered for compilation.
+    name: 'r0-cov-skipped',
+    file: 'src/Features/Check/Strategy/Witness.purs',
+    needle: '  traverse_ covered (map fst (flexible problem))\n'
+      + '  holeContract problem witness\n',
+    replacement: '  const (pure unit) (traverse_ covered (map fst (flexible'
+      + ' problem)))\n  const (pure unit) (holeContract problem witness)\n',
+    probe: 'r0-cov-skipped',
+    message: /a witness missing an auxiliary passed Cov: Right/
+  },
+  {
+    // Task 4.4 (W §1.5): the hole contract skipped, so a binding alone
+    // lets a default that breaks `B` stand.
+    name: 'r0-hole-contract-skipped',
+    file: 'src/Features/Check/Strategy/Witness.purs',
+    needle: '  holeContract problem witness\n',
+    replacement: '  const (pure unit) (holeContract problem witness)\n',
+    probe: 'r0-hole-contract-skipped',
+    message: /route's defaulted u was witnessed: Witnessed/
   }
 ];

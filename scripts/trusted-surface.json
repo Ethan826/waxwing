@@ -72,6 +72,8 @@
    "ReexaminationSteps",
    "StrategyBudget",
    "NonConstructive",
+   "Uncovered",
+   "HoleContract",
    "NoCounterInstance",
    "CXRefused",
    "RefuterName",

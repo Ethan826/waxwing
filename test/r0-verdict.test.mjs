@@ -14,6 +14,7 @@ const RecordedInternal = await load('Domain.Recorded.Internal');
 const TheoremInternal = await load('Domain.Verdict.Theorem.Internal');
 const Unsound = await load('Domain.Verdict.Unsound');
 const Search = await load('Domain.Verdict.Search');
+const Witness = await load('Domain.Verdict.Witness');
 
 const tokens = ['Valid', 'Refuted', 'Alternatives', 'NonForcedness',
   'ForcednessEvidence'];
@@ -36,7 +37,8 @@ test('public modules export no token or problem constructor', () => {
 // AT16's first half: every constructor, with the arity T-R0a gives it
 // (SearchBroke from G-Q13 as confirmed in dossier §18.71 item 2; Broke
 // from ruling R10; NonConstructive and Domain.Verdict.Search's from
-// Task 4.1). A missing or mis-shaped constructor fails here.
+// Task 4.1; Uncovered, HoleContract and Domain.Verdict.Witness's from
+// Task 4.4). A missing or mis-shaped constructor fails here.
 const shapes = [
   [Verdict, ['Refused', 2], ['Decided', 2], ['Faulted', 2],
     ['StaticRule', 2], ['Policy', 2], ['Solved', 1], ['Contradiction', 1],
@@ -54,7 +56,9 @@ const shapes = [
     ['CheckFailed', 3], ['Accepted', 3], ['RefuterEnded', 2], ['Shadow', 1],
     ['Exhausted', 0], ['OutOfBudget', 1], ['Broke', 1],
     ['ClaimsComplete', 0], ['Heuristic', 0], ['NoCounterInstance', 1],
-    ['CXRefused', 1], ['OnlineSolver', 0], ['NonConstructive', 1]],
+    ['CXRefused', 1], ['OnlineSolver', 0], ['NonConstructive', 1],
+    ['Uncovered', 1], ['HoleContract', 1]],
+  [Witness, ['Inline', 1], ['Free', 1]],
   [Search, ['SearchHint', 1], ['RequirementOpen', 1], ['Unsatisfied', 1],
     ['Undefined', 1], ['NotEntailed', 1], ['RequirementFails', 1],
     ['RequirementUnjudged', 1], ['NotGeneric', 0]],
@@ -116,6 +120,7 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
     };
     visit('Program.Main');
     const r0 = name => /^Domain\.(Verdict|Recorded)(\.|$)/.test(name);
+    // Domain.Verdict.Witness: the type Task 4.4 moved from Open.
     assert.ok(seen.has('Features.Check.Outcomes'));
     assert.ok('Domain.Verdict.Admission' in graph);
     assert.deepEqual([...seen].filter(r0).sort(), ['Domain.Recorded',
@@ -123,7 +128,8 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
       'Domain.Recorded.Origin', 'Domain.Verdict',
       'Domain.Verdict.Internal', 'Domain.Verdict.Open',
       'Domain.Verdict.Search', 'Domain.Verdict.Static',
-      'Domain.Verdict.Theorem.Internal', 'Domain.Verdict.Unsound']);
+      'Domain.Verdict.Theorem.Internal', 'Domain.Verdict.Unsound',
+      'Domain.Verdict.Witness']);
     assert.deepEqual([...seen].filter(name => !r0(name)
       && graph[name].depends.some(r0)), ['Features.Check.Outcomes']);
     assert.deepEqual(graph['Features.Check.Outcomes'].depends.filter(r0)

@@ -26,7 +26,8 @@
   "(a) blocked: Unresolved Unsupported Outside HandlerType": 97,
   "(b) declined by g0Guard, today refuses": 1,
   "(b) declined by g0Guard": 3,
-  "Solved with a bound hole (pending the author's ambiguity ruling)": 4,
+  "Solved with a bound hole (pending the author's ambiguity ruling)": 3,
+  "Solved, no witness: HoleContract (W §1.5's check refuses a default)": 1,
   "agree: Solved": 1985,
   "agree: no candidate (Exhausted)": 233,
   "agree: no candidate (OutOfBudget)": 1,
@@ -48,7 +49,7 @@
   "test/fx008-probes/rev9/set1.wxw#main: (a) blocked: Unresolved Unsupported Outside HandlerType, Outside DataApplication, Outside EffectArgument, Outside FailFamily",
   "test/fixtures/r0/audit/fail-needs-concrete-check.pinned.json#k: (a) blocked: Unresolved Unsupported Outside FailFamily",
   "test/fixtures/r0/erased/form.show-reference.json#g: Solved with a bound hole (pending the author's ambiguity ruling)",
-  "test/fixtures/r005b/render-quiet-annotated.json#main: Solved with a bound hole (pending the author's ambiguity ruling)",
+  "test/fixtures/r005b/render-quiet-annotated.json#main: Solved, no witness: HoleContract (W §1.5's check refuses a default)",
   "test/fn-programs.mjs:programs#2#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/fn-programs.mjs:programs#7#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/fn-programs.mjs:programs#9#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
@@ -153,5 +154,12 @@
   "test/poly-programs.mjs:programs#58#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/poly-programs.mjs:programs#59#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/poly-programs.mjs:programs#60#main: (a) blocked: Unresolved Unsupported Outside DataApplication"
+ ],
+ "witnesses": {
+  "NoWitness HoleContract": 1,
+  "Witnessed": 2769
+ },
+ "noWitness": [
+  "test/fixtures/r005b/render-quiet-annotated.json#main: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[]},\"role\":{\"inst\":1}}}"
  ]
 }

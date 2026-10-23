@@ -32,8 +32,8 @@ import Domain.Verdict.Open
   , ForcednessClaim
   , ForcednessRefusal
   , SplitJudgement
-  , Witness
   )
+import Domain.Verdict.Witness (Witness)
 
 data Admission
   = Admitted
