@@ -3196,6 +3196,27 @@ Task 4.1 review carry; `byStrategy` had defaulted to `true`).
   GroundType`); `checkSubstitution` and `genericSubstitutionSound`
   used from outside compile.
 
+- Fix round 1 (task review I-2; checked). Every earlier candidate was
+  the problem's own unifier, so four arms of `checkSubstitution` were
+  never driven. test/r0-g0-atoms.test.mjs drives each with a candidate
+  that is not, beside a positive control: unequal sides
+  (`Unsatisfied`), `lacks` and `disjoint` that `D` does not list
+  (`NotEntailed`, and `Right` once it does), a rigid binding, a row
+  bound to a non-record and a non-idempotent σ (`NotGeneric`), and
+  `ff`. Mutants patched into the compiled output of a scratch copy
+  (output, test, src and d02 copied; deleted afterwards), each run with
+  `node --test test/r0-g0-atoms.test.mjs test/r0-g0.test.mjs
+  test/r0-g0-check.test.mjs test/r0-entailed.test.mjs` (28 tests):
+
+| Mutant (compiled JS) | Failing tests |
+|---|---|
+| (a) Atoms `equal`'s `Left (Unsatisfied id)` → `Right unit` | an equation whose sides σ makes unequal is Unsatisfied |
+| (b) both `NotEntailed` arms → `Right unit` | the lacks and the disjoint tests |
+| (b1) `lacking`'s arm only | a lacks atom D does not list is NotEntailed; one it lists holds |
+| (b2) `apart`'s arm only | a disjoint atom D does not entail is NotEntailed; one it does holds |
+| (c) Substitution's `generic` test → `false` | a candidate that is not generic is NotGeneric |
+| (d) `Ff`'s `Left (Unsatisfied …)` → `Right unit` | an ff atom is Unsatisfied under any candidate |
+
 Trusted surface re-pinned: Features.Check.Strategy.Substitution is new,
 exporting `checkSubstitution` and `genericSubstitutionSound` (source and
 compiled); neither names a token constructor. Nothing reachable from

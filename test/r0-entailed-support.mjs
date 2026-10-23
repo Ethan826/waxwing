@@ -48,12 +48,13 @@ export const supportFrom = async load => {
   Map.empty);
   const entries = values => values.map((value, index) =>
     ({ origin: origin(index), value }));
-  // `equations` as [left, right] pairs; `bq` as ReqAtoms.
-  const problemOf = ({ equations = [], d = [], bq = [] }) => ({
+  // `equations` as [left, right] pairs, then `b`'s other atoms; `bq`
+  // as ReqAtoms.
+  const problemOf = ({ equations = [], b = [], d = [], bq = [] }) => ({
     decl: 0, rigidTy: [v('p')], rigidRow: [v('q')],
     flexTy: [v('x'), v('y')], flexRow: [v('r'), v('s')],
-    d: entries(d), q: [], b: entries(equations.map(([one, other]) =>
-      new Atom.Equal(one, other))), bq: entries(bq), outside: [],
+    d: entries(d), q: [], b: entries([...equations.map(([one, other]) =>
+      new Atom.Equal(one, other)), ...b]), bq: entries(bq), outside: [],
     adm: [], split: [], vars: varMap, types: Map.empty });
   const pr = ty => new Atom.Printable(ty);
   return { Atom, t, v, vars, problemOf, pr, entries };
