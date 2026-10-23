@@ -1565,3 +1565,67 @@ disallowed module importing a token module's JS is a finding" and the
 real-output test; M-L (only `import { … } from` matched, not `import *
 as`) fails the first.
 
+**Fix round 4 (re-review 3; checked).** Controller ruling ("threat
+model"): allowed importers are trusted, so their export surface is
+pinned and reviewed; other modules are held off by the graph rule, the
+two output checks, the compiler, and a scan of FFI JS. Probes, each
+compiled with `purs compile 'src/Domain/**/*.purs'
+'.spago/p/*/src/**/*.purs' '<probe>/*.purs' -o <probe>/out` (exit 0)
+in a scratch directory, deleted afterwards, kept verbatim with their
+index.js (and foreign.js) in test/fixtures/r0/trusted-surface/
+probes.json. Adaptation, labelled: re-review 3's I, K and J export
+only the alias or `module X`; each here also exports one reviewed type
+(`RuleSpec`, `Spec`) so that a baseline pin exists, because purs
+rejects an empty export list (`module … () where`: "Unable to parse
+module: Unexpected token ')'"). Baselines: Rules `(RuleSpec)` (A's
+Rules without the instance) and Generate `(Spec)`; both emit no
+`export`. I: Rules `(RuleSpec, (~~))` with `infix 4 Refuted as ~~`;
+its client's index.js is `var r2 = function (cx) { return cx; };` with
+no import. K: Generate `(Spec, (##))`; Decide's index.js is `var
+forged = {};`. J: Rules `(RuleSpec, module X)` emits `export { Refuted
+} from "../Domain.Verdict.Internal/index.js"`; its client imports
+nothing. A: Rules `(RuleSpec)` with `instance mintRuleSpec`; it emits
+`export { mintRuleSpec }`, and the client calls
+`Features_Check_Mintable.mint(Features_Check_Refute_Rules.mintRuleSpec)`.
+E: Runtime.Mint's foreign.js imports `Valid` from
+"../Domain.Verdict.Internal/index.js"; Program.Use re-exports it. At
+run time A's `v` and E's `v` are `instanceof` the compiled `Valid`,
+and I's `r2({rho: 1})` returns the record unchanged.
+
+RED: under HEAD f786078's scripts/structure.mjs, a throwaway script
+ran `reexportFindings`, `importFindings` and `graphFindings` (purs
+graph of src/Domain plus the probe, probe paths rewritten to src/)
+over each probe: I, K, A and E gave `[]` from all three; J gave only
+`Features.Check.Refute.Rules re-exports { Refuted } from
+Domain.Verdict.Internal`, nothing for its client. The new
+test/structure-surface.test.mjs failed to load there
+(`ERR_MODULE_NOT_FOUND` for scripts/trusted-surface.mjs). GREEN: it
+passes 7 of 7. With each baseline pinned, `surfaceFindings` reports
+I `source … added (~~)`, K `source … added (##)`, J `source … added
+module X` and `compiled … added Refuted from
+../Domain.Verdict.Internal/index.js`, A `compiled … added
+mintRuleSpec`; `foreignFindings` reports E's foreign.js under
+src/Runtime/Mint.js and output/Runtime.Mint/foreign.js. Ten header
+variants the parser does not accept (block or line comment in the
+header, CR, tab, `(-->)`, `(<--)`, no export list, wrong module name,
+a leading `{- -}`, non-ASCII) each give one fails-closed finding.
+End to end: exporting a new `probe ∷ Int` from Domain.Recorded and
+rebuilding made `checkStructure()` report `Domain.Recorded: source
+exports differ from the pin, added probe` and the same for compiled
+exports; restored and rebuilt, it gave `[]`.
+
+Mutants (patches applied by a scratch script, each restored; `node
+--test test/structure-surface.test.mjs`): M1, compare only `source`:
+"an allowed importer's surface beyond its pin is a finding" fails.
+M2, compare only `compiled`: the same test fails. M3, an unpinned
+importer returns `[]`: "an unpinned allowed importer and a stale pin
+are findings" fails. M4, the `op` containing `--` rejection removed:
+survived at first (`(-->)` is already refused as a comment), so the
+`(<--)` variant was added (amendment, after the run); then "a surface
+the parsers cannot read fails closed" fails. M5, allowed importers not
+exempted from the FFI scan: "FFI naming a token Internal module is a
+finding (probe E)" fails. M6, output/<M>/foreign.js not collected:
+"the real tree matches its pin and its FFI names no token module"
+fails. M7, the FFI pattern matching only `Domain/…/Internal`: the
+probe E test fails.
+

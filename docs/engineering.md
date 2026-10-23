@@ -65,7 +65,20 @@ adding a bypass allowlist.
   module's compiled JS, and no module re-exports from it. purs itself
   accepts both routes, so the checks are needed (docs/findings.md,
   "The verdict token boundary"); test/structure-r0.test.mjs pins each
-  direction.
+  direction. Threat model: the allowed importers are trusted and other
+  modules are not. A module outside them cannot reach a token
+  constructor through source imports, compiled imports or re-exports,
+  or FFI JS that names a token Internal module (`foreignFindings` scans
+  src/**/*.js and output/<M>/foreign.js; a path built at run time
+  evades this textual scan, so FFI stays in Runtime and is reviewed).
+  An allowed importer can build tokens, so everything it exports is
+  trusted surface: scripts/trusted-surface.json pins its source export
+  list (operator aliases, value wrappers) and its compiled `export { … }`
+  names (instance dictionaries, which no export list shows). Any
+  difference, an allowed importer with no entry, or a header outside
+  the small form the parser reads (no comments or CR in the header)
+  fails the check; `node scripts/trusted-surface-pin.mjs` re-pins, and
+  a re-pin is a reviewed change (test/structure-surface.test.mjs).
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

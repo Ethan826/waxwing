@@ -280,6 +280,14 @@ re-export. `importFindings` reads output/ too: only the allowed
 importers (the graph rule's) may import a token Internal module's JS;
 the public re-exporters are allowed. `reexportFindings` stays for
 re-exports with no client yet. Probes and evidence in findings.
+Fix round 4 (re-review 3, ruling "threat model"): allowed importers
+are trusted, so scripts/trusted-surface.json pins each one's source
+export list and compiled export names (Domain.Verdict and
+Domain.Recorded now); a difference, an unpinned importer or an
+unreadable header fails, and `node scripts/trusted-surface-pin.mjs`
+re-pins as a reviewed change. FFI JS naming a token Internal module
+outside the allowed importers is a finding. Probes I, K, J, A, E are
+fixtures (test/fixtures/r0/trusted-surface/); evidence in findings.
 
 ## Language direction recorded (2026-10-08)
 

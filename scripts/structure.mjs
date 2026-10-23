@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { foreignFindings, manifestFile, surfaceFindings }
+  from './trusted-surface.mjs';
 
 export const filesUnder = root =>
   readdirSync(root, { withFileTypes: true }).flatMap(entry =>
@@ -111,6 +113,44 @@ export const importFindings = modules =>
     && !rule.importers.test(name)).map(() =>
     `${name}'s compiled JS imports ${match[1]}`)));
 
+// May `name` import the token Internal module `internal`?
+export const tokenAllowed = (name, internal) => internalModules.some(rule =>
+  rule.module === internal && tokenModules.includes(internal)
+  && rule.importers.test(name));
+
+const trusted = name => tokenModules.some(internal =>
+  tokenAllowed(name, internal));
+
+// Each allowed importer present in src/ (by purs graph) or output/, with
+// its source and compiled index.js; a missing one is left undefined.
+export const trustedImporters = (graph, built) => Object.fromEntries([
+  ...new Set([...Object.keys(graph).filter(name =>
+    graph[name].path.startsWith('src/')), ...Object.keys(built)])]
+  .filter(trusted).map(name => [name, {
+    source: graph[name]?.path.startsWith('src/')
+      ? readFileSync(graph[name].path, 'utf8') : undefined,
+    js: built[name] }]));
+
+// FFI JS in src/ (module named by path) and its copies in output/.
+export const foreignFiles = (sources, root) => Object.fromEntries([
+  ...sources.filter(file => file.startsWith('src/') && file.endsWith('.js'))
+    .map(file => [file, file.slice('src/'.length, -'.js'.length)
+    .split('/').join('.')]),
+  ...readdirSync(root).filter(name =>
+    existsSync(join(root, name, 'foreign.js'))).map(name =>
+    [join(root, name, 'foreign.js'), name])].map(([file, module]) =>
+  [file, { module, js: readFileSync(file, 'utf8') }]));
+
+export const pursGraph = () => {
+  const result =
+    spawnSync('purs', ['graph', 'src/**/*.purs', '.spago/p/*/src/**/*.purs'], {
+    encoding: 'utf8', maxBuffer: graphBufferBytes });
+  if (result.error || result.status !== 0)
+    return { error: `purs graph failed: ${result.error?.message
+    ?? result.stderr}` };
+  return { graph: JSON.parse(result.stdout) };
+};
+
 export const builtModules = root => Object.fromEntries(readdirSync(root,
   { withFileTypes: true }).filter(entry => entry.isDirectory()
   && existsSync(join(root, entry.name, 'index.js'))).map(entry =>
@@ -151,15 +191,15 @@ export const checkStructure = async () => {
   // verify builds before this runs, so output/ is current.
   const built = builtModules('output');
   findings.push(...reexportFindings(built), ...importFindings(built));
+  findings.push(...foreignFindings(foreignFiles(files, 'output'),
+    tokenAllowed));
   findings.push(...files.filter(file =>
     file.startsWith('src/') && !file.startsWith('src/Runtime/')
     && file.endsWith('.js')).map(file => `${file}: FFI outside Runtime`));
-  const result =
-    spawnSync('purs', ['graph', 'src/**/*.purs', '.spago/p/*/src/**/*.purs'], {
-    encoding: 'utf8', maxBuffer: graphBufferBytes });
-  if (result.error || result.status !== 0)
-    findings.push(`purs graph failed: ${result.error?.message
-    ?? result.stderr}`);
-  else findings.push(...graphFindings(JSON.parse(result.stdout)));
+  const { graph, error } = pursGraph();
+  if (error !== undefined) return [...findings, error];
+  findings.push(...graphFindings(graph));
+  findings.push(...surfaceFindings(JSON.parse(readFileSync(manifestFile,
+    'utf8')), trustedImporters(graph, built)));
   return findings;
 };
