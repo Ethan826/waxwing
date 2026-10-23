@@ -1629,3 +1629,36 @@ finding (probe E)" fails. M6, output/<M>/foreign.js not collected:
 fails. M7, the FFI pattern matching only `Domain/…/Internal`: the
 probe E test fails.
 
+**Fix round 5 (re-review 4; checked).** Re-review 4 found two routes
+outside the round-4 model. Repurposed surface (a pinned name whose
+body, type or instance class changes) passes the pin by design
+(controller ruling); docs/engineering.md, AGENTS.md and
+scripts/trusted-surface.mjs now say the pin catches new surface only
+and every diff to an allowed importer needs token review. No check
+covers it (argued). Forgery: probe Runtime.Forge (`foreign import
+forge ∷ CX → Refuted` with foreign.js `export const forge = x => x;`,
+and `forge2 = unsafeCoerce`), compiled with `purs compile
+'src/Domain/**/*.purs' '.spago/p/*/src/**/*.purs' <probe>/Forge.purs`
+(exit 0), and graphed with `purs graph` over the same files (depends
+`["Domain.Verdict","Unsafe.Coerce"]`). At run time both `forge(cx)`
+and `forge2(cx)` return `cx` itself, a `Refuted` once erased. Source,
+graph entry, index.js and foreign.js are under `forge` in
+test/fixtures/r0/trusted-surface/probes.json. RED: under HEAD
+e773573's scripts, a throwaway script gave `[]` from
+`reexportFindings`, `importFindings`, `foreignFindings` (src and
+output paths) and `graphFindings` (path rewritten to src/Runtime/);
+the new test file failed to load (`does not provide an export named
+'forgeryFindings'`). GREEN: `forgeryFindings` reports `Runtime.Forge
+depends on Domain.Verdict and on Unsafe.Coerce (forgery by
+unsafeCoerce)` and `… and has a foreign module (forgery by FFI)`,
+each route alone, none for an allowed importer or a module not
+depending on a public token module; test/structure-surface.test.mjs
+passes 8 of 8. Real tree: `[]`; only Domain.Verdict,
+Domain.Verdict.Admission and Domain.Verdict.Internal depend on a
+public token module, and no src module depends on Unsafe.Coerce.
+Mutants (each restored; the Forge test fails under each): N1, the
+Unsafe.Coerce route dropped; N2, the foreign-module route dropped; N3,
+allowed importers not exempted. Limit (argued): the rule reads direct
+dependencies, so a module that gets the token types through another
+re-exporting module is not covered.
+

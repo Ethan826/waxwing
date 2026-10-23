@@ -5,7 +5,9 @@
 // which no export list shows). scripts/trusted-surface.json pins both for
 // each allowed importer; a difference, an unpinned importer or a header
 // the parser below does not accept is a finding. Re-pinning is a reviewed
-// change: node scripts/trusted-surface-pin.mjs.
+// change: node scripts/trusted-surface-pin.mjs. The pin catches new
+// surface only: a pinned name whose body, type or instance class changes
+// passes, so every diff to an allowed importer needs token review.
 export const manifestFile = 'scripts/trusted-surface.json';
 const repin = `re-pin with \`node scripts/trusted-surface-pin.mjs\`;`
   + ` a re-pin changes the trusted surface and needs review`;

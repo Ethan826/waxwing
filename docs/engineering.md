@@ -71,6 +71,13 @@ adding a bypass allowlist.
   or FFI JS that names a token Internal module (`foreignFindings` scans
   src/**/*.js and output/<M>/foreign.js; a path built at run time
   evades this textual scan, so FFI stays in Runtime and is reviewed).
+  A compiled token is plain JS (a newtype is erased), so such a module
+  could also forge one without its constructor; `forgeryFindings`
+  therefore refuses, in any module outside the allowed importers that
+  depends on Domain.Verdict or Domain.Recorded, a dependency on
+  Unsafe.Coerce or a foreign module (src/<path>.js or
+  output/<M>/foreign.js). A module that reaches the token types only
+  through some other re-exporting module is not covered.
   An allowed importer can build tokens, so everything it exports is
   trusted surface: scripts/trusted-surface.json pins its source export
   list (operator aliases, value wrappers) and its compiled `export { … }`
@@ -78,7 +85,11 @@ adding a bypass allowlist.
   difference, an allowed importer with no entry, or a header outside
   the small form the parser reads (no comments or CR in the header)
   fails the check; `node scripts/trusted-surface-pin.mjs` re-pins, and
-  a re-pin is a reviewed change (test/structure-surface.test.mjs).
+  a re-pin is a reviewed change (test/structure-surface.test.mjs). The
+  pin catches new surface only: a pinned name whose body, type or
+  instance class changes (a repurposed value, a swapped instance under
+  the same dictionary name) passes it. So every diff to an allowed
+  importer needs token review, whether or not the pin moves.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

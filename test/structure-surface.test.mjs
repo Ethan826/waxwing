@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { builtModules, filesUnder, foreignFiles, importFindings, pursGraph,
-  reexportFindings, tokenAllowed, trustedImporters }
+import { builtModules, filesUnder, foreignFiles, forgeryFindings,
+  graphFindings, hasForeign, importFindings, pursGraph, reexportFindings,
+  tokenAllowed, trustedImporters }
   from '../scripts/structure.mjs';
 import { compiledExports, foreignFindings, manifestFile, sourceExports,
   surfaceFindings, surfaceOf } from '../scripts/trusted-surface.mjs';
@@ -14,7 +15,7 @@ import { compiledExports, foreignFindings, manifestFile, sourceExports,
 // 3's (I, K, J, A, E), given one reviewed export so that a baseline exists
 // (purs rejects an empty export list), compiled by purs 0.15.16 and copied
 // verbatim with its emitted index.js (docs/findings.md).
-const { baselines, probes } = JSON.parse(readFileSync(
+const { baselines, probes, forge } = JSON.parse(readFileSync(
   'test/fixtures/r0/trusted-surface/probes.json', 'utf8'));
 const probe = name => probes.find(entry => entry.name === name);
 const js = modules => Object.fromEntries(modules.map(module =>
@@ -132,4 +133,37 @@ test('the real tree matches its pin and its FFI names no token module',
     assert.ok('src/Runtime/Node.js' in files);
     assert.ok('output/Runtime.Node/foreign.js' in files);
     assert.deepEqual(foreignFindings(files, tokenAllowed), []);
+    assert.deepEqual(forgeryFindings(graph, hasForeign('output')), []);
   });
+
+// Re-review 4's Runtime.Forge: `foreign import forge ∷ CX → Refuted` (JS
+// `x => x`) and `forge2 = unsafeCoerce` return the CX, which is a Refuted
+// once the newtype is erased. Its graph entry and output are verbatim; the
+// scratch path is rewritten to where the module would live.
+test('FFI or unsafeCoerce beside a token module is a finding (Forge)', () => {
+  const path = 'src/Runtime/Forge.purs';
+  const node = { ...forge.graph, path };
+  const beside = (name, file) => file === path;
+  const named = 'Runtime.Forge depends on Domain.Verdict and';
+  assert.deepEqual([reexportFindings({ [forge.module]: forge.js }),
+    importFindings({ [forge.module]: forge.js }),
+    foreignFindings({ 'src/Runtime/Forge.js': { module: forge.module,
+      js: forge.foreign }, 'output/Runtime.Forge/foreign.js': {
+      module: forge.module, js: forge.outputForeign } }, tokenAllowed),
+    graphFindings({ [forge.module]: node })], [[], [], [], []]);
+  assert.deepEqual(forgeryFindings({ [forge.module]: node }, beside), [
+    `${named} on Unsafe.Coerce (forgery by unsafeCoerce)`,
+    `${named} has a foreign module (forgery by FFI)`]);
+  assert.deepEqual(forgeryFindings({ [forge.module]: node }, () => false),
+    [`${named} on Unsafe.Coerce (forgery by unsafeCoerce)`]);
+  assert.deepEqual(forgeryFindings({ [forge.module]: { path,
+    depends: ['Domain.Recorded'] } }, beside), ['Runtime.Forge depends on'
+    + ' Domain.Recorded and has a foreign module (forgery by FFI)']);
+  for (const [name, depends] of [['Features.Check.Refute.Rules',
+    forge.graph.depends], ['Runtime.Forge', ['Unsafe.Coerce']]])
+    assert.deepEqual(forgeryFindings({ [name]: { path, depends } }, beside),
+      [], name);
+  const real = hasForeign('output');
+  assert.ok(real('Runtime.Node', 'src/Runtime/Node.purs'));
+  assert.ok(!real('Domain.Verdict', 'src/Domain/Verdict.purs'));
+});

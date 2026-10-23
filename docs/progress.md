@@ -288,6 +288,12 @@ unreadable header fails, and `node scripts/trusted-surface-pin.mjs`
 re-pins as a reviewed change. FFI JS naming a token Internal module
 outside the allowed importers is a finding. Probes I, K, J, A, E are
 fixtures (test/fixtures/r0/trusted-surface/); evidence in findings.
+Fix round 5 (re-review 4): docs and scripts/trusted-surface.mjs say
+the pin catches new surface only, so every diff to an allowed importer
+needs token review (ruling; no check). New `forgeryFindings`: outside
+the allowed importers, a module depending on Domain.Verdict or
+Domain.Recorded may not depend on Unsafe.Coerce or have a foreign
+module. Probe Runtime.Forge is a fixture; the real tree passes.
 
 ## Language direction recorded (2026-10-08)
 
