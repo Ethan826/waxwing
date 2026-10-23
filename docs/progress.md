@@ -274,6 +274,12 @@ emits every re-exported constructor as `export { … } from`, and types
 not at all. It runs in `checkStructure`, after verify's build. Probe
 sources and their emitted JS are in test/fixtures/r0/reexport/;
 evidence in findings.
+Fix round 3 (re-review 2): purs inlines constructors, so an operator
+alias in an allowed importer lets a client build a token with no
+re-export. `importFindings` reads output/ too: only the allowed
+importers (the graph rule's) may import a token Internal module's JS;
+the public re-exporters are allowed. `reexportFindings` stays for
+re-exports with no client yet. Probes and evidence in findings.
 
 ## Language direction recorded (2026-10-08)
 

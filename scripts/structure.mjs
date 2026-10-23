@@ -95,6 +95,22 @@ export const reexportFindings = modules =>
     tokenModules.includes(match[3])).map(match =>
     `${name} re-exports ${match[1].replace(/\s+/g, ' ')} from ${match[3]}`));
 
+// purs inlines constructors: a client of an operator alias for a
+// constructor (`infix 4 Valid as <!>`), or of a re-export, imports the
+// Internal module's JS directly though its source never names it (fix
+// round 3). So a token Internal module's compiled JS may be imported only
+// by its allowed importers, the same rule as the graph check; the public
+// re-exporter is one of them.
+const imported =
+  /^import\s+(?:[^"';]*?\s+from\s*)?"\.\.\/([^/"]+)\/index\.js"/gm;
+
+export const importFindings = modules =>
+  Object.entries(modules).flatMap(([name, js]) =>
+  [...js.matchAll(imported)].flatMap(match => internalModules.filter(rule =>
+    rule.module === match[1] && tokenModules.includes(rule.module)
+    && !rule.importers.test(name)).map(() =>
+    `${name}'s compiled JS imports ${match[1]}`)));
+
 export const builtModules = root => Object.fromEntries(readdirSync(root,
   { withFileTypes: true }).filter(entry => entry.isDirectory()
   && existsSync(join(root, entry.name, 'index.js'))).map(entry =>
@@ -133,7 +149,8 @@ export const checkStructure = async () => {
   findings.push(...files.filter(file => file.endsWith('.purs')).flatMap(file =>
     check(readFileSync(file, 'utf8')).map(message => `${file}: ${message}`)));
   // verify builds before this runs, so output/ is current.
-  findings.push(...reexportFindings(builtModules('output')));
+  const built = builtModules('output');
+  findings.push(...reexportFindings(built), ...importFindings(built));
   findings.push(...files.filter(file =>
     file.startsWith('src/') && !file.startsWith('src/Runtime/')
     && file.endsWith('.js')).map(file => `${file}: FFI outside Runtime`));

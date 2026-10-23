@@ -1537,3 +1537,31 @@ modules exempted by name) fails "type-only re-exports and other
 modules pass; export * does not"; M-J (matching a wrong target) fails
 both fixture tests.
 
+**Fix round 3 (re-review 2; checked).** Re-review 2 found a route with
+no re-export: in an allowed importer, `infix 4 Valid as <!>` exported
+as `((<!>))`. Probe (purs 0.15.16, as before, exit 0): Rules declares
+`infix 4 Valid as <!>` and `infix 4 NonForcedness as ~~` and exports
+both; a client builds `v = (<!>)` and `n e = (~~) e`. Rules' index.js
+has no import and no export at all; the client's has `import * as
+Domain_Verdict_Internal from "../Domain.Verdict.Internal/index.js"`,
+`Domain_Verdict_Internal.Valid.value` and `new
+Domain_Verdict_Internal.NonForcedness(e)`. A second probe compiled a
+client of P0's plain re-export (`import Features.Check.Refute.Rules
+(Valid(..))`, `v = Valid`): it too imports Domain.Verdict.Internal's
+JS directly, not the re-exporter's. So the import check alone would
+catch any client of a re-export, but not a re-export nobody uses yet;
+`reexportFindings` stays, to report the re-exporter itself. The three
+emitted files are in probes.json under `inlined`. RED: under the
+round-2 scripts/structure.mjs, `reexportFindings` gives 0 for all
+three, there is no import check, and the new test file fails to load
+(`does not provide an export named 'importFindings'`); re-review 2
+recorded `graphFindings` giving `[]` (the client's source names only
+Domain.Verdict, Domain.Verdict.Open and Rules). `importFindings`
+gives one finding for each client, none for the same JS under an
+allowed importer's name, and none over the real output/, where only
+Domain.Verdict and Domain.Recorded import a token module. Mutants,
+each restored: M-K (allowed importers not exempted) fails "a
+disallowed module importing a token module's JS is a finding" and the
+real-output test; M-L (only `import { … } from` matched, not `import *
+as`) fails the first.
+

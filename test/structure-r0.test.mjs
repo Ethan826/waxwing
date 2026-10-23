@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { builtModules, graphFindings, reexportFindings }
+import { builtModules, graphFindings, importFindings, reexportFindings }
   from '../scripts/structure.mjs';
 
 // Task 1.1 (T-R0a §3.1, §4.1, §6): only the trusted checkers mint Valid,
@@ -48,7 +48,7 @@ test('only Generate* and Domain.Recorded import Domain.Recorded.Internal',
 // forms re-review 1 found passing the earlier source check. A client
 // importing the constructor through each probe compiled too
 // (docs/findings.md).
-const { probes } = JSON.parse(readFileSync(
+const { probes, inlined } = JSON.parse(readFileSync(
   'test/fixtures/r0/reexport/probes.json', 'utf8'));
 
 test('a JS re-export of a token constructor is a finding, any source form',
@@ -77,10 +77,41 @@ test('type-only re-exports and other modules pass; export * does not', () => {
   ['Domain.Verdict re-exports * from Domain.Verdict.Internal']);
 });
 
-test('the built output re-exports no token constructor', () => {
+// Fix round 3: purs inlines a constructor into its client. Behind an
+// operator alias (O1) the allowed importer emits nothing at all, and the
+// client imports Domain.Verdict.Internal's JS directly; a client of a
+// re-export (X0) does the same. Only the allowed importers may.
+test('a disallowed module importing a token module\'s JS is a finding',
+  () => {
+    const js = name => inlined.find(probe => probe.name === name);
+    const internal = 'Domain.Verdict.Internal';
+    const rules = js('O1');
+    assert.doesNotMatch(rules.js, /export|import/);
+    assert.deepEqual(reexportFindings({ [rules.module]: rules.js }), []);
+    for (const name of ['O1-client', 'X0-client']) {
+      const client = js(name);
+      assert.deepEqual(reexportFindings({ [client.module]: client.js }), []);
+      assert.deepEqual(importFindings({ [client.module]: client.js }),
+        [`${client.module}'s compiled JS imports ${internal}`], name);
+      // The same JS under an allowed importer's name passes.
+      for (const allowed of ['Domain.Verdict', 'Features.Check.Refute.Rules'])
+        assert.deepEqual(importFindings({ [allowed]: client.js }), [], name);
+    }
+    const recorded =
+      'import * as R from "../Domain.Recorded.Internal/index.js";';
+    assert.equal(importFindings({ 'Features.Check.Decide': recorded }).length,
+      1);
+    assert.deepEqual(importFindings({ 'Features.Check.Generate.Body': recorded,
+      'Domain.Recorded': recorded }), []);
+  });
+
+// The public re-exporters import their Internal module (purs emits the
+// import even for a type-only re-export) and are allowed to.
+test('the built output re-exports and imports no token constructor', () => {
   const modules = builtModules('output');
   assert.ok('Domain.Verdict' in modules && 'Domain.Recorded' in modules);
   assert.match(modules['Domain.Verdict'],
     /from "\.\.\/Domain\.Verdict\.Internal\/index\.js"/);
   assert.deepEqual(reexportFindings(modules), []);
+  assert.deepEqual(importFindings(modules), []);
 });

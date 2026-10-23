@@ -50,15 +50,22 @@ adding a bypass allowlist.
   `^Features\.Check\.Generate(\.|$)`. A public module re-exports its
   Internal module's types alone (`import X.Internal (T, …) as Exports`
   with `module Exports`), and no module re-exports a constructor from
-  either. purs graph does not show re-exports, and source forms vary
-  (comments, layout, aliases, line endings), so this is checked on the
-  compiler's output after the build: purs 0.15.16 emits a re-exported
-  value as `export { … } from "../M/index.js"` and a re-exported type
-  as nothing, so any such statement from a token Internal module, in
-  any module's output/<M>/index.js, is a finding (scripts/structure.mjs
-  `reexportFindings`). purs itself accepts a constructor re-export, so
-  the check is needed (docs/findings.md, "The verdict token
-  boundary"); test/structure-r0.test.mjs pins each direction.
+  either. purs graph sees neither re-exports nor inlined constructors,
+  and source forms vary (comments, layout, aliases, line endings), so
+  two checks read the compiler's output after the build
+  (scripts/structure.mjs). `reexportFindings`: purs 0.15.16 emits a
+  re-exported value as `export { … } from "../M/index.js"` and a type
+  as nothing, so any such statement from a token Internal module is a
+  finding. `importFindings`: purs inlines a constructor into its
+  client, so a module that uses one through an operator alias
+  (`infix 4 Valid as <!>`) or a re-export imports the Internal
+  module's JS though its source does not; only the allowed importers
+  above may import that JS (the public re-exporters are among them).
+  So no module outside the allowed importers imports a token Internal
+  module's compiled JS, and no module re-exports from it. purs itself
+  accepts both routes, so the checks are needed (docs/findings.md,
+  "The verdict token boundary"); test/structure-r0.test.mjs pins each
+  direction.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

@@ -25,8 +25,8 @@ vertical slice before adding language features. Task tracking is local.
   Features.Check.Admit.Forcedness.Check) import Domain.Verdict.Internal,
   and only Domain.Recorded and Features.Check.Generate* import
   Domain.Recorded.Internal; the public modules re-export bare type names
-  only, and no module re-exports a constructor from an Internal module
-  (checked on the compiler's output).
+  only. On the compiler's output, no module outside those importers
+  imports either Internal module's JS, and no module re-exports from it.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their
