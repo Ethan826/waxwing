@@ -5,6 +5,7 @@ import { stableStringify } from './r0-canonical.mjs';
 import { decodeType } from './r0-canonical-decode.mjs';
 import { witnessFrom } from './r0-witness-support.mjs';
 import { r022Probes } from './r0-r022-probes.mjs';
+import { restReadFrom } from './r0-readback-rest.mjs';
 
 // R022 (BACKLOG; follow-up to Tasks 4.3/4.4): the read-back respects a
 // recorded variable's sort. A row-sorted `inst` slot whose checked type
@@ -47,3 +48,14 @@ for (const { kind, source } of r022Probes) {
     assert.equal(named(attempt.value2), 'Witnessed');
   });
 }
+
+// Task 4.4b's carry (Ruling): the sort applies only at an expression's
+// slot; a row-sorted rest's bare hole reads as lowering reads it
+// (test/r0-readback-rest.mjs plants it).
+const restRead = await restReadFrom(load, online);
+test('the sort applies only at an expression slot: a rest reads bare', () => {
+  const read = restRead();
+  assert.equal(named(read), 'Right');
+  assert.equal(stableStringify(decodeType(read.value0)),
+    stableStringify(decodeType(w.holeType(0))));
+});

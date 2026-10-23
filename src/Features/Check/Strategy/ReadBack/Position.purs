@@ -22,28 +22,35 @@ import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (CheckedName(..), RTExpr, VarSort)
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Type (Ty(..))
-import Features.Check.Strategy.ReadBack.Type (readSorted)
+import Features.Check.Strategy.ReadBack.Type (readSorted, readType)
 import Features.Check.Strategy.ReadBack.Walk (Node(..), nodeAt)
 
 -- A slot's index, and its rank among the slots generation records.
 type Slotted = { index ∷ Int, rank ∷ Int }
 
--- Read by the variable's sort (ReadBack.Type `readSorted`, R022).
+-- An expression's instantiation slot is read by the variable's sort
+-- (ReadBack.Type `readSorted`, R022), as specialization reads it
+-- (Specialize/Values.purs `instantiated`, `slotType`); every other
+-- position, a constructor pattern's slot included, plainly, as lowering
+-- reads it there (Specialize/Body.purs `copyPattern`, `copyRest`: a bare
+-- hole is `Int`). Task 4.4b's carry.
 valueAt
   ∷ Checked.Expr
   → (Path → Int → Slotted)
   → VarSort
   → CheckedName
   → Either String RTExpr
-valueAt body ranked sort = map (readSorted sort) <<< case _ of
-  Slot path index → node body path >>= slot (ranked path index)
-  NodeType path → Checked.typeOf <$> expression body path
-  ParamType path index → expression body path >>= parameter index
-  LambdaBody path → expression body path >>= lambdaBody
-  PatternType path → patternType <$> pattern body path
-  RestType path → pattern body path >>= restType
+valueAt body ranked sort = case _ of
+  Slot path index → node body path >>= slot sort (ranked path index)
+  NodeType path → plain (Checked.typeOf <$> expression body path)
+  ParamType path index → plain (expression body path >>= parameter index)
+  LambdaBody path → plain (expression body path >>= lambdaBody)
+  PatternType path → plain (patternType <$> pattern body path)
+  RestType path → plain (pattern body path >>= restType)
   RigidName _ → Left "a flexible variable with a rigid position"
   Auxiliary → Left "an auxiliary variable has no position"
+  where
+  plain = map readType
 
 expression ∷ Checked.Expr → Path → Either String Checked.Expr
 expression body path = node body path >>= case _ of
@@ -68,11 +75,12 @@ node body (Path path) = case path.root of
 
 -- Instantiation slot `index` of the reference or call at the node; an
 -- over-applied call's is its saturated call's (ReadBack.Walk).
-slot ∷ Slotted → Node → Either String (Ty Open)
-slot at = case _ of
-  AtExpr (Checked.Expr found) → instantiation found.node >>= indexed at.index
-  AtPattern (Checked.Pattern found) → ownerArgument found.ty >>= indexed
-    at.rank
+slot ∷ VarSort → Slotted → Node → Either String RTExpr
+slot sort at = case _ of
+  AtExpr (Checked.Expr found) → readSorted sort <$>
+    (instantiation found.node >>= indexed at.index)
+  AtPattern (Checked.Pattern found) → readType <$>
+    (ownerArgument found.ty >>= indexed at.rank)
 
 indexed ∷ Int → Array (Ty Open) → Either String (Ty Open)
 indexed index = note "no such instantiation slot" <<< flip Array.index index

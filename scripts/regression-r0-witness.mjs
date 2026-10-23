@@ -1,5 +1,6 @@
 // The hole contract's lacks/disjoint amendment regression rows
-// (docs/plans/r0-hole-contract-amendment.md), spread into r0Rows
+// (docs/plans/r0-hole-contract-amendment.md) and the read-back's sort
+// carry (Task 4.4b's review), spread into r0Rows
 // (scripts/regression-r0.mjs); probes in test/regression-r0-witness.mjs.
 const file = 'src/Features/Check/Strategy/HoleContract.purs';
 
@@ -24,5 +25,16 @@ export const r0WitnessRows = [
     replacement: '    (atomUnder known images entry)\n',
     probe: 'r0-hole-arm-defaults-skipped',
     message: /r022-disjoint: no witness at the default: HoleContract/
+  },
+  {
+    // Task 4.4b's carry: the sort applied at every position, so a
+    // row-sorted rest's bare hole reads as a row tail, where lowering
+    // reads it as `Int` (Specialize/Body.purs `copyRest`).
+    name: 'r0-readback-sort-everywhere',
+    file: 'src/Features/Check/Strategy/ReadBack/Position.purs',
+    needle: '  plain = map readType\n',
+    replacement: '  plain = map (readSorted sort)\n',
+    probe: 'r0-readback-sort-everywhere',
+    message: /the rest's bare hole read as Record/
   }
 ];

@@ -8,14 +8,16 @@ import { pathToFileURL } from 'node:url';
 import { fieldSource, routeSource, witnessFrom }
   from './r0-witness-support.mjs';
 import { r022Probes } from './r0-r022-probes.mjs';
+import { restReadFrom } from './r0-readback-rest.mjs';
 
 const fail = message => {
   console.error(message);
   process.exit(1);
 };
 
-const loaded = async context => witnessFrom(name => import(pathToFileURL(
-  resolve(dirname(context.compilerPath), '..', name, 'index.js'))));
+const load = context => name => import(pathToFileURL(
+  resolve(dirname(context.compilerPath), '..', name, 'index.js')));
+const loaded = async context => witnessFrom(load(context));
 const passed = context =>
   console.log(`${context.probe} regression detects the defect`);
 const problemOf = (w, source, name) =>
@@ -76,6 +78,15 @@ export const r0WitnessProbes = {
       if (found !== 'Witnessed')
         fail(`${origin}: no witness at the default: ${found}`);
     }
+    passed(context);
+  },
+  // Task 4.4b's carry: a named rest's bare hole reads as lowering reads
+  // it (a type), not as a row tail.
+  'r0-readback-sort-everywhere': async context => {
+    const w = await loaded(context);
+    const read = (await restReadFrom(load(context), w.online))();
+    const found = read.value0.constructor.name;
+    if (found !== 'TVar') fail(`the rest's bare hole read as ${found}`);
     passed(context);
   }
 };

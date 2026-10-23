@@ -614,6 +614,18 @@ Follow-ups R023 (an obligation for Task 6's lowering) and R024 (Cov
 has no genericity check). Evidence in findings, "The hole contract's
 lacks/disjoint amendment".
 
+## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
+
+Shadow only, no acceptance change; Task 4.4b's review carry. The online
+read-back applies a variable's sort (R022's `readSorted`) only at an
+expression's instantiation slot, where specialization applies it
+(`slotType`); a named rest, a pattern's slot and the other kinds read a
+bare hole as a type, as lowering does. One test seen failing first (a
+hole planted at a row-sorted rest); regression row
+`r0-readback-sort-everywhere`. RT8 unchanged. No corpus re-pin.
+Evidence in findings, "The read-back's sort only at an expression
+slot".
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted

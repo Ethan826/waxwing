@@ -3815,3 +3815,42 @@ set; its `u` stays `NoWitness` (E9, checked). The note's B2 claim
 checked over RT8: test/r0-rt8.serial.test.mjs asserts `witnesses` has
 only `Witnessed` and `noWitness` is empty, so no witness is refused by
 a lacks/disjoint atom.
+
+## The read-back's sort only at an expression slot (2026-10-23)
+
+Carry from Task 4.4b's review (Ruling), before Task 4.5; shadow only,
+nothing reachable from compile changed, no corpus re-pin.
+`readSorted` (ReadBack.Type, R022) was applied by ReadBack.Position's
+`valueAt` at every positioned kind, but specialization reads a
+record-sorted bare hole as a row tail only in an expression's
+instantiation slot (cited: Specialize/Values.purs `instantiated`, the
+one caller of `slotType`); a pattern's type and a named rest's go
+through `typed` with no sort (cited: Specialize/Body.purs
+`copyPattern`, `copyRest`), where lowering takes a bare hole as `Int`.
+**Fix.** `valueAt` applies `readSorted` only at `Slot` on an expression
+node (`slot`'s `AtExpr` arm); a constructor pattern's slot and every
+other kind read through `readType`.
+
+**Reachability (argued).** No corpus declaration reaches the
+difference: a named rest's checked type is the matched record without
+its labels (Check/RestBinder.purs `restOf`, `remainder`), a record, not
+a bare hole; RT8 is unchanged (below). The test therefore plants one.
+
+**TDD (checked).** test/r0-readback-sort.test.mjs, "the sort applies
+only at an expression slot: a rest reads bare"
+(test/r0-readback-rest.mjs: the P7 declaration `f(p: { a: Int, ...r })
+= match p { { a: _, ...rest } => rest }`, its checked rest type replaced
+by `TVar (Hole 0)`, `valueAt` at the row-sorted rest variable's
+`RestType`). RED, `node --test test/r0-readback-sort.test.mjs`: 4 pass,
+1 fail, actual `{"record":{"fields":[],"tails":[hole 0]}}`, expected
+`{"tvar": hole 0}`. GREEN: 5/5. RT8 unchanged: `node --test
+test/r0-rt8.serial.test.mjs` 5/5 against the pinned rt8.json (84 s).
+
+**Regression row (checked).** `r0-readback-sort-everywhere`
+(scripts/regression-r0-witness.mjs; patch in Position.purs `plain = map
+readType` → `plain = map (readSorted sort)`; probe
+test/regression-r0-witness.mjs: the planted rest must read as a
+`TVar`). `node scripts/regression.mjs r0-readback-sort-everywhere
+r0-readback-sort-blind`: each fixed compiler passes and its restored
+defect fails.
+
