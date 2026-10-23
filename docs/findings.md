@@ -3383,3 +3383,144 @@ with a `BQ` atom, and every `main` has one.
 Nothing reachable from compile changed; no fixture changed; no corpus
 re-pin (no tracked `.wxw`, fixture source or docs waxwing block added;
 census.json has no `source`).
+
+## The online strategy and its read-back (2026-10-23)
+
+Task 4.3 (plan; T-R0a §4.2, T-R0b §5.3, §9 items 7-8), shadow only:
+nothing reachable from compile changed (r0-verdict's reachability test
+passes with the new modules); no fixture changed; no corpus re-pin (no
+tracked source added; test/fixtures/r0/rt8.json has no `source`).
+
+**What was built.** `online` (Features.Check.Strategy.Online): today's
+`recheck` as the search, `g0Guard` and `checkSubstitution` as guard and
+check, certificate `{ substitution, checked }`, witness
+`NoWitness (NonConstructive OnlineSolver)` until Task 4.4's adapter.
+The read-back (Strategy.ReadBack, with .Walk, .Position, .Type) reads
+each positioned variable at its checked-IR position and completes the
+auxiliaries by unification (Entailed.Mgu) of the equations that still
+mention one. Online.Ending routes a refusal by ruling R3's partition,
+each `InternalKind` named. Decide.Shadow is the one assembly of the
+shadow run's `Checking` (`shadowChecking`, `shadowDecisions`), its
+detector fixed to `Decide.Open.openRequirements`.
+
+**Readings and amendments (labelled).**
+1. *Amendment to T-R0b §3.5's E17 (recorder defect, fixed):* a perform
+   is checked as a named call (Check/Operation.purs `named`, FN001), so
+   E17 takes E5's three cases: the arrow of the unsupplied parameters,
+   or with more arguments `⟨p, res⟩` and `eq θ(result) (τ… → ⟨p, res⟩)`
+   (B1). §3.5 wrote `θ(⟦result⟧)` for every perform. Blame (checked):
+   RT8's position check found the recorded type `Int` at the perform
+   `Add.add(…)` where the checked node's type is `Int → Int`
+   (test/fx-run-programs.mjs:cases#14 `main`, whose candidate G0 then
+   refused, `Unsatisfied`; and test/fixtures/r0/erased/
+   form.partial-perform.json `g`, whose atoms held anyway). Generator
+   and RT1's translator were both amended, by this implementer, from the
+   amended rule: their agreement on it is of algorithm only.
+2. *Amendment to §5.2's `Slot` list (read-back defect, fixed):* P4
+   positions its owner's `inst i` at `Slot p i` of a constructor
+   pattern, which has no instantiation; the read-back reads the pattern
+   type's argument at the slot's rank among the owner's non-effect-row
+   variables (Check/Tables.purs `ownerType`). Observed in a scratch run
+   of the read-back over the corpus before the fix (not re-runnable from
+   the repo): 372 accepted declarations failed with "a pattern where an
+   expression was expected"; in the repo: regression row `r0-ctor-slot`.
+3. *§5.3's several-tail ambiguity arises at completion:* positions are
+   read directly, not by matching `types(p)`, so the read is ambiguous
+   only when an auxiliary's equations leave the one-tail fragment; then
+   σ keeps the positioned values and claims `Heuristic` (G-A-i(g),
+   proposed). None on the corpus after the read-back substitutes the
+   positioned values first; the fixture `two` (`{ a: Int, ...r, ...s }`)
+   pins it (r0-readback.test.mjs).
+4. *Holes (criterion 5, Task 4.2 findings item 8):* the search binds a
+   hole as today's lowering does (a type hole `Int`,
+   Specialize.purs `specialize`; a row hole closed, Lower.purs), so
+   `pr`/`cmp` at a flexible variable today leaves open never reaches
+   G0's `RequirementUnjudged` backstop. Without it (observed in a
+   scratch corpus run with `settled` disabled, script not kept; in the
+   repo, mutant M3 and row `r0-hole-unbound`), three accepted
+   declarations meet the backstop: docs/plans/2026-10-21-c001-explicit/baseline/
+   h1-print-empty and h2-print-chosen `main`, and
+   test/fixtures/r0/erased/form.show-reference `g`. f02's `cmp` never
+   reaches read-back: today's `comparable` refuses the hole first
+   (AmbiguousType), so the attempt is `Searched Exhausted`. This binds
+   the representative today compiles with; it claims nothing about
+   other representatives (C001's h1/h2 question stays open).
+5. *Declaration-not-found (ruling R10 (iii)), strengthened:* the
+   context's declaration must regenerate exactly the problem (compared
+   through `fields`). Checked RED: with lookup by id alone, a problem
+   of `f` (id 0) searched in a program whose id 0 is `main` gave a
+   `Candidate` (r0-online-faults.test.mjs, before the change).
+6. *R3 partition in code:* `LaterWork` (R005B placeholders) is confined
+   per the ruling, so a several-tail placeholder is `SearchBroke` with
+   its place kept as a hint; T-R0a §4.2 lists it among advisory hints.
+7. *Zero fuel, documented (Decide/Refuters.purs, "Fuel"):* strategies
+   skip their search at fuel 0, refuters still search. Skipping would
+   need a refuter `LimitReached`; with `Maybe CX` (T-R0a §5.1) a spent
+   budget still reads `NoCounterInstance Exhausted`. Question for the
+   author and T-R0a's owner.
+8. *`SearchHint`* is `SearchHint String` with `Eq`/`Ord`; `Question`
+   derives `Eq` (r0-online-carries.test.mjs).
+9. *Mgu's `tailOf`* (Task 4.2 minor M-4): several tails now give no
+   unifier instead of the first tail; no caller passes several.
+
+**Evidence.**
+- RT8 RED (checked): `node --test test/r0-rt8.serial.test.mjs` before
+  the E17 fix failed `RT8: no defect and no position finding` with
+  `test/fx-run-programs.mjs:cases#14#main: DEFECT: candidate refused,
+  Unsatisfied` and the two position findings above. The targeted tests
+  written next failed the same way: r0-generate-forms `E17: a partial
+  perform is the arrow of the rest` and `… over-applied perform …`,
+  r0-translator-forms `E17: a partial perform, and an over-applied one
+  (B1)`, r0-readback `every read-back candidate passes G0…` at
+  `partly`. GREEN after the fix; RT1, generation totality, the census
+  and RT3 (r0-injection) still pass.
+- RT8 GREEN (checked, test/fixtures/r0/rt8.json, `node
+  scripts/r0-rt8-pin.mjs`): 3,011 declarations; 0 defects; 0 position
+  findings. Today accepts 2,773: Solved 1,989; §3.2(a) blocked by rule
+  1, 781 (DataApplication 587, HandlerType 170, FailFamily 60, Deferred
+  45, EffectArgument 32, DataOverRecords 3, counted per marker); §3.2(b)
+  declined by `g0Guard`, 3 (examples/records.wxw); `RequirementOpen`
+  0; Heuristic 0. Today refuses 238: no candidate 233 (`Exhausted`) and
+  1 (`OutOfBudget`, h5-type-depth); today's own internal failures 3
+  (`SearchBroke`: fx010-record-payload.pinned, BACKLOG FX010; the two
+  b9 several-tail placeholders); declined 1 (f03-compare-split). No
+  declaration is refuted (no refuter or rule is registered), and no
+  class reads a decline or an Unresolved as a contradiction.
+- RT7 (checked, r0-rt7.test.mjs): over the test/fixtures/r0 sources
+  and a fixture per §5.3 rule, determination reproduces all 48
+  auxiliary read-back values: E25 1, E26 36, E27 2, E28 6, P6 3.
+  G-Recon's evidence; it decides nothing.
+- Criterion 1 (checked, r0-online.test.mjs): `shadowChecking`'s
+  `openRequirements` is `Decide.Open.openRequirements`; `boxed`'s
+  `main` (`pr Fn`, a holder) is `Unresolved Unsupported
+  RequirementAtoms` with G0's candidate accepted, Solved with the
+  detector replaced by `const []`, and blocked with an accepting stub
+  added. purs probes (scratch, deleted): `shadowChecking budget` typed
+  `Resolved.Program → Checking` compiles; passing a detector as a third
+  argument fails (TypesDoNotUnify); `Strategy`'s constructor is
+  unknown outside its module (UnknownName).
+- Mutants (checked; each applied in a scratch copy of the worktree,
+  rebuilt with `purs compile`, the named tests run, then restored):
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| M1 detector | Shadow.purs `openRequirements` → `const []` | r0-online: production detector; no strategy chooses |
+| M2 P4 slot | Position.purs pattern slot → `Left` | r0-readback: every candidate passes |
+| M3 holes | ReadBack.purs `settled value` → `identity value` | r0-online: binds a hole under pr |
+| M4 stop confined | Ending.purs `TableLookup → Confined` | r0-online-faults: R3 routing; ending; stopping kind; generation fault |
+| M5 E17 arity | Effect.purs partial perform → result | r0-generate-forms E17 partial; r0-readback every candidate |
+| M6 id only | Online.purs `same _ = true` | r0-online-faults: declaration the program lacks |
+| M7 no completion | ReadBack.purs auxiliaries dropped | r0-rt7; r0-readback every candidate |
+| M8 over-applied | Walk.purs over-applied args dropped | r0-readback every candidate |
+| M9 confined stops | Ending.purs `LaterWork → Stops` | r0-online-faults: R3 routing; confined kind |
+| M10 too deep | Ending.purs TypeTooDeep → Exhausted | r0-online-faults: ending |
+
+- Regression rows (checked, `node scripts/regression.mjs` with the six
+  names): `r0-shadow-detector`, `r0-ctor-slot`, `r0-hole-unbound`,
+  `r0-stop-confined`, `r0-perform-arity`, `r0-declaration-by-id`; each
+  fixed compiler passes and its restored defect fails.
+- Cost (observed, scratch timing; argued as a G-switch input): RT8's
+  corpus run takes about 85 s,
+  most of it `g0Guard`, `openRequirements` and `checkSubstitution`
+  (on test/poly-programs.mjs:programs#48: 1,459, 710 and 749 ms; the
+  search with read-back 113 ms), BACKLOG R021's unifier among them.

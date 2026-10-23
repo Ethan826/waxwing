@@ -521,6 +521,35 @@ equivalent. Reading in docs/plans/r0-census.md; evidence in findings,
 "The census". No fixture changed; no corpus re-pin. Verify exited 0
 (2721/2721, 100/100 serial, 185 regression proofs).
 
+## R0 shadow tranche, Task 4.3: `onlineSearch`, read-back, RT7 and RT8 (2026-10-23)
+
+Shadow only, no acceptance change. `online` (Features.Check.Strategy.
+Online) runs today's `recheck` as an untrusted search guarded and
+checked by G0; its candidate is read back to problem variables
+(Strategy.ReadBack: positions read directly, auxiliaries completed by
+unification). Decide.Shadow assembles the shadow run's `Checking` with
+the production detector fixed (`shadowChecking`, `shadowDecisions`),
+which the author's required test pins on the real assembly path; a
+substituted detector, or an accepting strategy added, is caught. Ruling
+R3's routing is enforced in Online.Ending, each kind named and
+injected: confined kinds are `SearchBroke` and the next strategy still
+decides; stopping kinds, a generation fault and a problem the program
+does not record stop the run. RT8 over the pinned corpus (3,011
+declarations; test/fixtures/r0/rt8.json, scripts/r0-rt8-pin.mjs): no
+defect and no position finding after two fixes found by its first run,
+a recorder defect (E17 typed a partial perform as its result; amended
+to E5's cases in generator and translator) and a read-back defect (P4's
+constructor-pattern slots); every other disagreement or decline with
+today's checker is an expected class, labelled. RT7: determination
+reproduces all 48 auxiliary read-back values (E25, E26, E27, E28, P6).
+Carries: holes are bound as today's lowering binds them, so the
+`RequirementUnjudged` backstop is not reached; zero fuel documented (a
+question for the author); `SearchHint` and `Question` confirmed; Mgu's
+`tailOf` explicit. Ten mutants and six regression rows fail as
+expected. Readings and evidence in findings, "The online strategy and
+its read-back". No fixture changed; no corpus re-pin; trusted-surface
+pin unchanged.
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted
