@@ -577,5 +577,15 @@
   "compiled": [
    "theorems"
   ]
+ },
+ "Features.Check.Strategy.Substitution": {
+  "source": [
+   "checkSubstitution",
+   "genericSubstitutionSound"
+  ],
+  "compiled": [
+   "checkSubstitution",
+   "genericSubstitutionSound"
+  ]
  }
 }

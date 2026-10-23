@@ -1,0 +1,62 @@
+// Support for Task 4.2's G0 tests: a program's recorded problems and
+// holder set, a test-side candidate search, and a G0 strategy built by
+// the production `strategy` from G0's production guard and check. The
+// search is untrusted test code (as Task 4.3's `onlineSearch` will be):
+// it reads the problem's most general unifier through
+// Features.Check.Entailed's `reduction`, so its candidate maps each
+// flexible variable to its reduced type, and `override` replaces some
+// bindings (a candidate that is not the problem's). Only G0's check
+// judges the candidate.
+export const g0From = async (load, stubs) => {
+  const { parse } = await load('Format.Parse');
+  const { resolve } = await load('Features.Resolve');
+  const { functional } = await load('Features.Check.Functional');
+  const Atom = await load('Domain.Recorded.Atom');
+  const Map = await load('Data.Map.Internal');
+  const Entailed = await load('Features.Check.Entailed');
+  const Strategy = await load('Features.Check.Strategy');
+  const Verdict = await load('Domain.Verdict');
+  const Guard = await load('Features.Check.Strategy.Guard');
+  const Substitution = await load('Features.Check.Strategy.Substitution');
+  const Open = await load('Features.Check.Decide.Open');
+  const { Tuple } = await load('Data.Tuple');
+  const { unfoldableArray } = await load('Data.Unfoldable');
+
+  const holdersOf = source => functional(
+    resolve(parse(source).value0).value0.ctors);
+  const keys = vars => Map.keys(vars);
+  // The flexible variables' reduced types, identities left out.
+  const candidateOf = (problem, override = []) => {
+    const reduce = Entailed.reduction(problem);
+    let made = Map.empty;
+    const flexible = Map.toUnfoldable(unfoldableArray)(problem.vars)
+      .map(pair => [pair.value0, pair.value1]).filter(([, info]) =>
+        info.quant instanceof Atom.Exists);
+    for (const [variable, info] of flexible) {
+      const own = info.sort instanceof Atom.SortRow
+        ? new Atom.Record([], [variable]) : new Atom.TVar(variable);
+      const found = reduce(own);
+      if (found.constructor.name === 'Reduced'
+        && JSON.stringify(found.value0) !== JSON.stringify(own))
+        made = Map.insert(Atom.ordVar)(variable)(found.value0)(made);
+    }
+    for (const [variable, image] of override)
+      made = Map.insert(Atom.ordVar)(variable)(image)(made);
+    return made;
+  };
+  const g0 = (holders, override = []) => Strategy.strategy({
+    name: Verdict.OnlineSolver.value,
+    sound: new Verdict.Pending(Substitution.genericSubstitutionSound),
+    guard: Guard.g0Guard(holders),
+    search: () => problem => new Strategy.Candidate(
+      candidateOf(problem, override), Verdict.ClaimsComplete.value, []),
+    check: Substitution.checkSubstitution(holders),
+    witness: () => () => stubs.nonConstructive });
+  const open = holders => Open.openRequirements(holders);
+  const check = (holders, problem, candidate) =>
+    Substitution.checkSubstitution(holders)(problem)(candidate);
+  // The flexible type variable a `BQ` atom names, for an override.
+  const atomVariable = entry => entry.value.value0.value0;
+  return { holdersOf, candidateOf, g0, open, check, keys, atomVariable,
+    Atom, Map, Tuple, Guard, Open, Entailed };
+};

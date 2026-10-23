@@ -26,8 +26,26 @@ data CheckRefusal
   -- A `BQ` atom whose meaning `ValidR` leaves open under the candidate
   -- (§3.2(a), G-A-i(f)): read as a decline, never a `SearchFault`.
   = RequirementOpen AtomId
-  -- An atom the candidate does not satisfy. Task 4.2 adds G0's others.
+  -- An atom the candidate does not satisfy: an equation whose sides
+  -- differ, or `ff`.
   | Unsatisfied AtomId
+  -- A record in the atom whose composition `D` does not make defined
+  -- under the candidate (a label twice, a tail not entailed to lack a
+  -- field, two tails not entailed disjoint).
+  | Undefined AtomId
+  -- A `lacks` or `disjoint` atom `D` does not entail under the candidate.
+  | NotEntailed AtomId
+  -- A `BQ` atom the ground rule judges false under the candidate: never
+  -- a `Contradiction`, since the binding is the candidate's (AT19).
+  | RequirementFails AtomId
+  -- A `BQ` atom the guard admitted that the check cannot judge (a
+  -- backstop: guard and check disagree, which Task 4.3's RT8 counts as
+  -- a defect).
+  | RequirementUnjudged AtomId
+  -- The candidate is not a generic substitution: it binds a rigid
+  -- variable, binds a row variable to a non-record, or is not
+  -- idempotent.
+  | NotGeneric
 
 derive instance eqSearchHint ∷ Eq SearchHint
 derive instance ordSearchHint ∷ Ord SearchHint

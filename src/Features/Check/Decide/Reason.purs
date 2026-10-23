@@ -15,32 +15,25 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom (ReqAtom, Role(..), Var(..))
-import Domain.Recorded.Origin (Entry, Path(..), PathRoot(..))
+import Domain.Recorded.Origin (Entry)
 import Domain.Verdict
-  ( Attempt(..)
-  , Claim(..)
+  ( Attempt
   , InferenceFailure(..)
-  , LimitAt
-  , LimitReached
-  , RefuterEnd(..)
-  , SearchEnd(..)
-  , SearchFault(..)
-  , StrategyName
+  , SearchFault
   , UnresolvedReason(..)
   , Unsupport(..)
   )
-import Domain.Verdict.Search (CheckRefusal(..))
-
--- What one attempt says to rule 3. A `RequirementOpen` refusal reads
--- as a decline (G-A-i(f), §3.2(a)), not as a refused candidate.
-data Reading
-  = Declines Unsupport
-  | RanOut LimitReached
-  | RefusedComplete
-  | RefusedHeuristic
-  | Searching
-  | RefuterRanOut LimitReached
-  | NotAStrategy
+import Features.Check.Decide.Reading
+  ( Reading
+  , byStrategy
+  , declined
+  , declines
+  , limitAt
+  , reading
+  , refused
+  , refusedComplete
+  , searchFault
+  )
 
 -- Rule 1: every `outside` kind (decided, Q3). Rule 1′: a `spread j`
 -- with j ≥ 2 (decided, Q4). §3.2(a): `open`, the `BQ` atoms whose
@@ -96,102 +89,6 @@ inference ∷ Array Reading → UnresolvedReason
 inference readings
   | any refused readings = Inference NoAcceptedCertificate
   | otherwise = Inference NoCandidate
-
-reading ∷ Attempt → Reading
-reading = case _ of
-  Declined _ why → Declines why
-  Searched _ end → searchEnded end
-  CheckFailed _ claim refusal → refusedWith claim refusal
-  Accepted _ _ _ → Searching
-  RefuterEnded _ end → refuterEnded end
-  Shadow _ → NotAStrategy
-
-searchEnded ∷ SearchEnd → Reading
-searchEnded = case _ of
-  Exhausted → Searching
-  OutOfBudget limit → RanOut limit
-  Broke _ → Searching
-
-refusedWith ∷ Claim → CheckRefusal → Reading
-refusedWith claim = case _ of
-  RequirementOpen _ → Declines RequirementAtoms
-  Unsatisfied _ → claimed claim
-
-claimed ∷ Claim → Reading
-claimed = case _ of
-  ClaimsComplete → RefusedComplete
-  Heuristic → RefusedHeuristic
-
-refuterEnded ∷ RefuterEnd → Reading
-refuterEnded = case _ of
-  NoCounterInstance (OutOfBudget limit) → RefuterRanOut limit
-  NoCounterInstance Exhausted → NotAStrategy
-  NoCounterInstance (Broke _) → NotAStrategy
-  CXRefused _ → NotAStrategy
-
-searchFault ∷ Attempt → Maybe SearchFault
-searchFault = case _ of
-  Declined _ _ → Nothing
-  Searched name end → broke name end
-  CheckFailed name claim refusal → candidate name claim refusal
-  Accepted _ _ _ → Nothing
-  RefuterEnded _ _ → Nothing
-  Shadow _ → Nothing
-
-broke ∷ StrategyName → SearchEnd → Maybe SearchFault
-broke name = case _ of
-  Broke what → Just (SearchBroke name what)
-  Exhausted → Nothing
-  OutOfBudget _ → Nothing
-
-candidate ∷ StrategyName → Claim → CheckRefusal → Maybe SearchFault
-candidate name claim refusal =
-  if refusedComplete (refusedWith claim refusal) then
-    Just (CandidateRefused name refusal)
-  else Nothing
-
--- A budget limit has no node of its own: it is the declaration's,
--- sited at its body's root.
-limitAt ∷ Reading → Maybe LimitAt
-limitAt = case _ of
-  RanOut limit → Just (atBody limit)
-  RefuterRanOut limit → Just (atBody limit)
-  Declines _ → Nothing
-  RefusedComplete → Nothing
-  RefusedHeuristic → Nothing
-  Searching → Nothing
-  NotAStrategy → Nothing
-  where
-  atBody limit = { limit, site: Path { root: InBody, steps: [] } }
-
-declines ∷ Array Reading → Array Unsupport
-declines = mapMaybe declined'
-  where
-  declined' = case _ of
-    Declines why → Just why
-    _ → Nothing
-
-declined ∷ Reading → Boolean
-declined = case _ of
-  Declines _ → true
-  _ → false
-
-refusedComplete ∷ Reading → Boolean
-refusedComplete = case _ of
-  RefusedComplete → true
-  _ → false
-
-refused ∷ Reading → Boolean
-refused = case _ of
-  RefusedComplete → true
-  RefusedHeuristic → true
-  _ → false
-
-byStrategy ∷ Reading → Boolean
-byStrategy = case _ of
-  RefuterRanOut _ → false
-  NotAStrategy → false
-  _ → true
 
 secondSpread ∷ Var → Boolean
 secondSpread = case _ of
