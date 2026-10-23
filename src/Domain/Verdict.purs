@@ -21,7 +21,7 @@ module Domain.Verdict
   , Key
   , LimitAt
   , LimitReached(..)
-  , PolicyCode
+  , PolicyCode(..)
   , RefuterEnd(..)
   , RefuterName(..)
   , RuleName(..)
@@ -31,7 +31,7 @@ module Domain.Verdict
   , Site
   , Solution
   , StatementRef(..)
-  , StaticCode
+  , StaticCode(..)
   , StaticRefusal(..)
   , StrategyName(..)
   , Unresolved
@@ -77,15 +77,28 @@ type Decision =
   }
 
 -- Classes a and b′: a static rule or a policy was broken. Not verdicts.
--- The codes are ADTs over today's `Problem` constructors that Task 2.3
--- classifies; uninhabited until it does (ruling R5 places them here).
+-- The codes are over today's `Problem` constructors (ruling R5); which
+-- raise site gives which is Features.Check.Generate.Static (Task 2.3).
 data StaticRefusal
   = StaticRule StaticCode Site
   | Policy PolicyCode Site
 
+-- Class a: the refusal reads written text and declarations only.
 data StaticCode
+  = StaticArity
+  | StaticEntry
+  | StaticFieldArity
+  | StaticFunctionNeedsCall
+  | StaticTypeArguments
+  | StaticHandlerMissing
+  | StaticHandlerDuplicate
+  | StaticHandlerOperation
+  | StaticFailNeedsConcrete
+  | StaticNofailOnFail
+  | StaticMarkVariable
 
-data PolicyCode
+-- Class b′: a language policy (R005 Tranche B, D8 and D9).
+data PolicyCode = PolicySameDisjoint | PolicyRepeatedTail
 
 -- A node's path (T-R0b §6).
 type Site = Path

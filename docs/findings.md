@@ -1960,3 +1960,98 @@ first full verify failed on the first of them (the clone did not
 compile); after the fix `node scripts/regression.mjs
 deferred-fail-effect fx025-unbound-row r0-classify-catchall` proves all
 three.
+
+## Static rules beside the verdict (2026-10-23)
+
+R0 shadow tranche, Task 2.3 (AT10; rulings R5, R8; plan review S5,
+N5). Features.Check.Generate.Static classifies each raise site of the
+refusals below, where today's code raises it: `Rule StaticCode` (class
+a), `ByPolicy PolicyCode` (class b′) or `Semantic` (left to the
+verdict). `staticRefusal at site` gives the `StaticRefusal` at a node,
+or none for a semantic site. The sites are constructors of
+Features.Check.Generate.Static.Site, grouped by what they read; each
+group's classifier names every constructor, with no wildcard arm. No
+raise site was edited and no check moved. `staticRules ∷ Tables → …`
+is Task 3.2's (`Tables` does not exist yet).
+
+**Ordering rule.** Every check keeps the position where today's code
+raises it, so the first diagnostic is unchanged (checked: the
+first-diagnostic snapshot, test/r0-first-diagnostic.serial.test.mjs,
+passes in the full verify). A separate pass before generation takes
+effect only with Task 4.6. `SameDisjoint` (Resolve/Requirements.purs:72)
+and `RepeatedTail` (Resolve/Apart.purs:88, RecordFields.purs:53) stay
+in Resolve, classified `Policy`; moving them to per-declaration
+refusals is left to a later ruling (plan §8.1).
+
+**Classes.** The site table, with file:line, token and evidence per
+site, is test/r0-static-sites.mjs (48 sites). In summary:
+
+| Sites | Class | Evidence |
+| --- | --- | --- |
+| Arity at Pipe.purs:33 (`fixedResult`), Call.purs:144 | StaticRule | checked (audit) |
+| Arity at Pipe.purs:36, Call.purs:148 (`functionLike`) | Semantic | checked (audit) |
+| Arity at Call.purs:123, Show.purs:27, Operation.purs:64, 104 | StaticRule | argued: a count against declared fields, or one argument, before inference |
+| Arity in Resolve: Handler.purs:102, Qualified.purs:168 | StaticRule | checked (probe) |
+| EntryProblem in Resolve: Entry.purs:30, 43 | StaticRule | checked (probe) |
+| EntryProblem at Check/Outcomes.purs:136 (`printableEntry`) | StaticRule | argued: reads `main`'s resolved result and the declared types' function holders, no `State` |
+| FieldArity (Pattern.purs:90), FunctionNeedsCall (Qualified.purs:97, Name.purs:47), TypeArguments (Row.purs:47, TypeArguments.purs:49, HandlerType.purs:27) | StaticRule | checked (probe) |
+| HandlerMissing, HandlerDuplicate, HandlerOperation (3), FailNeedsConcrete (Resolve/Row.purs:82), NofailOnFail, MarkVariableOutsideSignature | StaticRule | checked (audit) |
+| SameDisjoint, RepeatedTail (2) | Policy | checked (probe) |
+| Every effect refusal raised by check (14 sites), FailNeedsConcrete at Check/Failure.purs:102 | Semantic | checked (audit); RowName.purs:96 argued |
+| RedundantArm, NonExhaustive, AmbiguousType | Semantic | checked (audit) |
+
+No coverage site is a static rule (the audit's recommendation).
+FieldArity, FunctionNeedsCall and TypeArguments, unexamined by the
+audit, were examined by its method for Resolve rows: every raise site
+is in Resolve (the completeness test below finds no other), Resolve
+reaches none of the online solver (r0-audit.test.mjs), and a probe of
+each site's refusal stops in Resolve with today's code and text. The
+probes do not show which of two Resolve sites of one refusal a program
+reaches; the class does not depend on it.
+
+**Tests (checked).** test/r0-static.test.mjs, 8 tests: every site and
+family constructor of the compiled Site module is in the table, once;
+each, injected directly, has its class and refusal (at a stand-in
+site, since `Site` is uninhabited); the classifier's source has no
+wildcard arm; every cited line holds its token; every line of
+src/Features naming a classified refusal is a cited site, a match, or
+the arity helpers, whose callers are pinned (Pipe.purs:33, 36;
+Call.purs:123, 144, 149); every audit fixture's class agrees with its
+site's (structural is a StaticRule, semantic is Semantic); the Resolve
+probes; and AT10: d03 (`r disjoint r`) stops in Resolve with E_TYPE
+and its site gives `Policy PolicySameDisjoint`, a fixed-result arity
+program stops in check with E_ARITY and its site gives `StaticRule
+StaticArity`. `StaticRefusal` is not `Verdict`: a scratch module
+`bad ∷ Site → Verdict; bad at = StaticRule StaticArity at` fails purs
+0.15.16 with `Could not match type StaticRefusal with type Verdict`; a
+positive module using `staticRefusal` compiles (probes deleted).
+
+**RED and mutant runs (recorded).** RED: before the module existed,
+`node --test test/r0-static.test.mjs` failed with ERR_MODULE_NOT_FOUND
+for output/Features.Check.Generate.Static. Mutants ran in one isolated
+copy in the session scratchpad (output/, src/, scripts/, the test, its
+support, the audit fixtures), each restored after its run, the copy
+deleted; unpatched, 8 of 8 pass.
+
+- S1, output/Features.Check.Generate.Static/index.js line 176,
+  `PipeFunctionLike` returns `new Rule(Domain_Verdict.StaticArity.value)`
+  for `Semantic.value`: fails "each site injected directly has its class
+  and refusal".
+- S2, same file line 68, `DisjointSame` gives `PolicyRepeatedTail`:
+  fails that test and "AT10: d03 is a Policy, a fixed-result arity a
+  StaticRule".
+- S3, src/Features/Check/Generate/Static.purs, `settledClass`'s arms
+  replaced by `_ → Semantic` (the same behaviour): fails "the
+  classification has no wildcard arm".
+- S4, src/Features/Check/Operation.purs, a second line `again _ = Left
+  (problemAt Arity span)` after line 64: fails "every raise site of a
+  classified refusal is classified" (and "every cited site holds its
+  token", since line 104 moved).
+- S5, an exported nullary constructor `ExtraSite` appended to
+  output/Features.Check.Generate.Static.Site/index.js: fails "every
+  site and family constructor is injected once". (Its first run read the
+  constructors through Static's re-exports and passed, so the test now
+  reads them from the Site module; S1-S4 were re-run on that version
+  with the same results.) After these runs Static stopped re-exporting
+  the Site types (amendment: callers import Site); the compiled arms
+  S1 and S2 patch are at the same lines, and 8 of 8 still pass.

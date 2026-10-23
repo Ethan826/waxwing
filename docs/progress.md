@@ -355,6 +355,25 @@ constructor (`RowOccurs`). 20 audit fixtures' cited line numbers
 moved; no corpus re-pin. Regression row `r0-classify-catchall`.
 Evidence in findings, "No catch-all at the end of a body".
 
+## R0 shadow tranche, Task 2.3: static rules beside the verdict (2026-10-23)
+
+Features.Check.Generate.Static (AT10; ruling R5) classifies 48 raise
+sites, constructors of Generate.Static.Site, as `StaticRule` (class
+a), `Policy` (class b′: `SameDisjoint`, `RepeatedTail`, staying in
+Resolve) or semantic, with no wildcard arm. Domain.Verdict's
+`StaticCode` and `PolicyCode` now have constructors (trusted surface
+re-pinned, adding the two new modules). Classes follow the closed
+gates: effect refusals raised by check, coverage and `AmbiguousType`
+are semantic; arity is static at `fixedResult` and Call.purs:144 and
+the count sites, semantic at `functionLike`; every Resolve-raised
+refusal is static, FieldArity, FunctionNeedsCall and TypeArguments
+included (examined by probe). Every check keeps its place, so the
+first diagnostic is unchanged; `staticRules` is Task 3.2's. Tests
+(test/r0-static.test.mjs) inject every site, pin each cited line and
+every raise site of a classified refusal, and agree with the audit's
+fixtures. No raise site edited, no fixture changed, no corpus re-pin.
+Evidence in findings, "Static rules beside the verdict".
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/
