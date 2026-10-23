@@ -555,6 +555,30 @@ one as its own class (4 declarations; 118 bound a hole, listed in
 rt8.json); RT8 tests `RequirementUnjudged` before the claim; the E17
 and P4-slot amendments are marked pending the spec owner.
 
+## R0 shadow tranche, Task 4.4: the substitution witness, Cov and the hole contract (2026-10-23)
+
+Shadow only, no acceptance change. `substitutionWitness`
+(Features.Check.Strategy.Witness) turns a checked substitution into W
+§1.6's witness: every flexible variable bound, auxiliaries included,
+each `Inline` (unchanged) or `Free` (a hole left to its default); the
+online strategy witnesses σ before the read-back's hole defaults, so a
+default is judged, not taken as a binding. `coverage` is Cov: a
+missing variable is `NoWitness (Uncovered v)`, then W §1.5's syntactic
+hole contract (Strategy.HoleContract) gives `NoWitness (HoleContract
+v)`; `route`'s `u` defaulted to `{}` is refused, as W's example says.
+Domain.Verdict.Witness holds the types (amendments labelled in
+findings). Seven tests seen failing first against a stub; eight
+mutants and two regression rows (`r0-cov-skipped`,
+`r0-hole-contract-skipped`) fail as expected. RT8 re-pinned: of 2,770
+accepted candidates, 2,769 are witnessed and none misses coverage; one
+Solved, r005b/render-quiet-annotated main, has no witness because the
+check refuses a hole under a `disjoint` atom where `{}` would do (its
+own class, listed). A read-back defect found on the way (row slot hole
+read as a type) is BACKLOG R022, not fixed. Trusted-surface pin:
+Domain.Verdict's compiled exports gain `Uncovered` and `HoleContract`.
+No corpus re-pin. Evidence in findings, "The substitution witness, Cov
+and the hole contract".
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted

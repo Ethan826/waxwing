@@ -3549,3 +3549,117 @@ detector fixed to `Decide.Open.openRequirements`.
   most of it `g0Guard`, `openRequirements` and `checkSubstitution`
   (on test/poly-programs.mjs:programs#48: 1,459, 710 and 749 ms; the
   search with read-back 113 ms), BACKLOG R021's unifier among them.
+
+## The substitution witness, Cov and the hole contract (2026-10-23)
+
+Task 4.4 (plan; W = research/division-campaign/witness/statements.md
+§1.5, §1.6, §4 Cov; the author's criteria of 2026-10-23), shadow only:
+nothing reachable from compile changed (r0-verdict's reachability test
+passes; its pinned set gains Domain.Verdict.Witness, the type's new
+home). No fixture with a `source` changed; no corpus re-pin. RT8's pin
+(test/fixtures/r0/rt8.json) changed, read below.
+
+**What was built.** Domain.Verdict.Witness holds W's `Witness` and
+`Binding` (moved from Domain.Verdict.Open, where it was uninhabited);
+`NoWitnessReason` gains `Uncovered Var` and `HoleContract Var`.
+Features.Check.Strategy.Witness: `substitutionWitness` binds every
+flexible variable (`Recon` empty, §18.69 Q6), each `Inline` or `Free`,
+names none, and offers the witness only if `coverage` accepts it;
+`coverage` is Cov: every flexible variable bound, then the hole
+contract. Strategy.HoleContract is W §1.5's syntactic check. The online
+strategy's witness is `substitutionWitness` over the read-back's σ
+before its hole defaults (`unsettled`, new on ReadBack and
+`Certificate`); its placeholder `NonConstructive OnlineSolver` is gone.
+ReadBack's `settled` moved to ReadBack.Type unchanged, shared with the
+contract's defaults. Default binding remains a labelled shadow
+experiment, not an ambiguity policy.
+
+**Readings and amendments (labelled).**
+1. *Amendment to W §1.6:* `Inline` holds an `RTExpr` (σ's vocabulary),
+   not `Ty Open`, which Domain cannot name; a hole inside is
+   ReadBack.Type's `holeVar n`. No `Named` binding until Task 6.1
+   defines `NameId`; `NameEntry` is uninhabited, so `names` is empty.
+2. *Amendment to W §1.6:* Cov's refusal needs a reason W does not name;
+   `Uncovered v` is it.
+3. *Reading of W §1.5 (cited §1.3, Adapt-N):* the contract judges every
+   hole a binding leaves, inside an `Inline` image as well as a `Free`
+   one, since both are defaulted; the variable named is the first in
+   `Ord Var` order whose binding mentions a broken hole.
+4. *Reading of W §1.5, kept literal:* a `lacks` or `disjoint` atom that
+   mentions a hole breaks the check ("every `B` atom mentioning the
+   hole is an equation"), although W's own argument says `{}` is the
+   weakest choice for disjointness. The check is sufficient, not
+   complete; RT8 meets one case (below). A `BQ` atom holds only if the
+   ground rule gives `Holds` at the defaults with every remaining
+   variable `Unjudged` (no stricter than G0 at the settled σ, argued).
+5. *Labelled choice:* a variable σ leaves out is `Free` at a hole
+   numbered above every hole σ mentions, in `Ord Var` order; no
+   checked-IR hole stands for it.
+6. *Amendment (after the mutant run, not before):* the lacks/disjoint
+   test was added because mutant M5 survived the first five tests.
+
+**TDD (checked).** Tests in test/r0-witness.test.mjs, written against
+a stub (`substitutionWitness` gives an empty `Witnessed`, `coverage`
+accepts) with the `unsettled` plumbing already built. RED, `node --test
+test/r0-witness.test.mjs`: 0 pass, 6 fail: `Cov refuses a witness
+missing one auxiliary` (bindings `[]` against the two flexible
+variables), `route: u defaulted to {} …` (`Witnessed` against
+`HoleContract` at inst 0), `an auxiliary left out of σ …`
+(`Witnessed`), `an unconstrained hole whose default is permitted …`
+(free holes `[]` against `[0]`), `a BQ atom failing …` (`Witnessed`),
+`a required non-default binding …` (TypeError, no bindings). GREEN: 7
+pass, 0 fail, with the lacks/disjoint test (amendment 6). The route
+test also shows the default itself breaks `B`: G0 refuses σ with
+u ↦ `{}`.
+
+**Mutants (checked, scratch copy, `python3 mutants.py`, each built and
+`node --test test/r0-witness.test.mjs` run):**
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| M1 coverage off | Witness.purs `Left (Uncovered variable)` → `const (Right unit) (Uncovered variable)` | Cov refuses a witness missing one auxiliary |
+| M2 contract off | Witness.purs `holeContract problem witness` → `const (pure unit) (…)` | route; auxiliary left out; BQ; lacks or disjoint |
+| M3 BQ arm | HoleContract.purs `Unjudged`/`Open`/`Fails` → `[]` | BQ atom failing at the default |
+| M4 equation arm | `under images one == under images other` → `true` | auxiliary left out of σ |
+| M5a disjoint arm | `Disjoint one other → …` → `Disjoint _ _ → []` | lacks or disjoint |
+| M5b lacks arm | `Lacks row _ → rowHoles row` → `Lacks _ _ → []` | lacks or disjoint |
+| M6 no Free | `bareHole …` → `Nothing <* bareHole …` | unconstrained hole accepted |
+| M7 settled σ | Online.purs `certificate.unsettled` → `certificate.substitution` | unconstrained hole accepted |
+
+M7 is "a binding alone establishes the contract": witnessing the
+settled σ turns every default into an `Inline` binding the contract
+never sees. Regression rows (checked, `node scripts/regression.mjs
+r0-cov-skipped r0-hole-contract-skipped`): `r0-cov-skipped` (coverage
+accepts every witness; probe: a witness missing an auxiliary) and
+`r0-hole-contract-skipped` (probe: route's defaulted `u`); each fixed
+compiler passes and its restored defect fails. The RT8 classifier
+(test/r0-witness-account.test.mjs) is tested with every `Compilation`
+and `NoWitnessReason` constructor injected.
+
+**RT8 under Cov and the hole contract (checked, `node
+scripts/r0-rt8-pin.mjs`, re-pinned).** 2,770 accepted candidates,
+blocked or not: 2,769 `Witnessed`, 1 `NoWitness HoleContract`, none
+`Uncovered` or `NonConstructive`. Solved: 1,985 `agree: Solved` (every
+binding `Inline`), 3 `Solved with a bound hole` (a1-discard-dictionary
+main, a2-unused-local main, erased/form.show-reference g; their `Free`
+holes pass the contract), and 1 new class, `Solved, no witness:
+HoleContract`: test/fixtures/r005b/render-quiet-annotated.json main,
+variable inst 1 of `apply0`'s call (`b ↦ { ...hole 0 }`). Its hole 0 is
+also `pickR`'s `s` in both lambdas, under `where r disjoint s`, so the
+`disjoint` atom mentions it and reading 4 refuses; with the disjoint
+arm disabled in a scratch copy the witness is `Witnessed` (checked), and
+G0 accepted the settled σ, where `s = {}` makes the atom hold. So this
+is the syntactic check's incompleteness, not a wrong default: the
+declaration keeps Solved and has no compilation. It is listed in
+rt8.json `noWitness` and `boundHoles`. Counts moved: bound-hole class
+4 → 3, the new class 1; nothing else.
+
+**Found, not fixed (shadow read-back; BACKLOG R022).** A row-sorted
+`inst` slot whose checked type is a hole is read back as a type
+(`TVar (holeVar n)`), so σ is not generic and G0 refuses
+(`CheckFailed ClaimsComplete NotGeneric`) where today accepts. Probe
+(scratch, today `Right`): `fn d2(whole: { ...u }, left: { ...s }): Int
+where u disjoint s = 0; fn g(y: { ...s }): Int = { let k = fn(x) =>
+d2(x, y); 0 }; fn main(): Int = 0;`, and the same with `where u lacks
+{ a }`. RT8's corpus has no such declaration (no NotGeneric defect).
+The lacks/disjoint test writes σ by hand for this reason.
