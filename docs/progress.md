@@ -214,6 +214,54 @@ E-a slot); P-ii and the reference `inferredRow` now cover bare
 patterns; seven fixtures (34 in all) and mutants M8-M12 recorded.
 Corpus re-pinned.
 
+## R0 shadow tranche, Task 1.1: verdict types and token boundary (2026-10-22)
+
+First PureScript of the tranche; unused by compile (a test checks that
+no module reachable from Program.Main imports them), so acceptance and
+diagnostics cannot move. New: Domain.Verdict (outcomes, verdicts,
+reasons, faults, attempts; T-R0a §3.2-§3.5, §4.1, §5.1),
+Domain.Verdict.Admission (§6), Domain.Verdict.Internal (`Valid`,
+`Refuted`, `NonForced`, `ForcednessEvidence` and `CX`),
+Domain.Verdict.Open, Domain.Recorded and Domain.Recorded.Internal
+(opaque `RecordedProblem`, no fields yet). Two structure rules and a
+source check of re-exports (docs/engineering.md); compile probes,
+RED runs and five mutants in docs/findings.md, "The verdict token
+boundary". Choices, each argued:
+
+- T-R0a at HEAD is followed, plus `SearchFault.SearchBroke` (G-Q13,
+  confirmed by dossier §18.71 item 2; plan §8.1's row still to edit
+  T-R0a) and `SearchEnd.Broke String` (ruling R10).
+- `Derivation.rule` is a `RuleName`, not the `SoundRule`: the registry
+  entry is a Features value Domain cannot name, so `checkDerivation`
+  looks the name up in the injected rules (ruling R7).
+- Types whose representation another task owns are declared without
+  constructors, so none can be built yet: T-R0b's `Path`, `AtomId`,
+  `CallSite`, `OutsideKind` in Domain.Recorded (Task 3.1 moves them);
+  the rest in Domain.Verdict.Open, each naming its owner; `StaticCode`
+  and `PolicyCode` in Domain.Verdict (Task 2.3; ruling R5).
+  `TheoremRef` is one: Domain's `Assurance` names it, so plan Task
+  5.1's placement (type and constructor in
+  Features.Check.Refute.Theorems) cannot stand as written; 5.1 must
+  keep the type in Domain and hide its constructor there.
+- `EmissionFault`'s `Key` is a new Domain synonym of the test-facing
+  key (ruling R11); Features.Specialize is untouched.
+- No `DeclReport` or `Report` here: their shadow-phase slot (ruling
+  R2) holds today's checker state, a Features type, so they are Task
+  1.2's, in Features.Check.Outcomes (plan §1). No
+  Features.Check.Generate stub: with no `emptyProblem` (R2) it would
+  hold nothing.
+- `Judged` (D1 §6.2) is not added: no type here needs it. It gets
+  Domain.Verdict.Judged.Internal in Task 7.1, separate from these
+  tokens.
+- `StrategyName` has only `OnlineSolver`; each strategy adds its own.
+  `ForcednessEvidence` is a nullary token until G-forced gives it a
+  payload.
+
+Tests: test/r0-verdict.test.mjs (compiled exports, each constructor
+at its arity, reachability) and test/structure-r0.test.mjs (both
+rules in both directions, the re-export form). No corpus re-pin: no
+tracked source, fixture or fenced block changed.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

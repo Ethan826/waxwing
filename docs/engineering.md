@@ -37,7 +37,26 @@ adding a bypass allowlist.
   Domain.Checked.Internal, and only Features.Specialize* and Format.Go*
   import Domain.IR.Internal, as does Domain.IR.Parts, its split-off
   helpers (scripts/structure.mjs `internalModules`;
-  test/structure.test.mjs pins both directions).
+  test/structure.test.mjs pins both directions). Since R0 Task 1.1 two
+  token modules follow the same pattern. Domain.Verdict.Internal (the
+  constructors of `Valid`, `Refuted`, `NonForced`,
+  `ForcednessEvidence`) is imported only by Domain.Verdict and the
+  trusted checkers Features.Check.Strategy.Substitution,
+  Features.Check.Refute.Rules and Features.Check.Admit.Forcedness.Check
+  (exact names; `Decide`, `Strategy.Online`, `Strategy.ReadBack` and
+  `Refute.Counter` are refused). Domain.Recorded.Internal (the
+  constructor of `RecordedProblem`) is imported only by
+  Domain.Recorded and modules matching
+  `^Features\.Check\.Generate(\.|$)`. A public module re-exports its
+  Internal module's types alone: every import of the Internal module
+  there lists bare type names (`import X.Internal (T, …) as Exports`
+  with `module Exports` in the export list; no `(..)`, no values, no
+  open or `hiding` import), and no other module re-exports either
+  Internal module. purs graph does not show re-exports, so this part
+  reads source (scripts/structure.mjs `exportFindings`). purs itself
+  accepts a constructor re-export, so the check is needed
+  (docs/findings.md, "The verdict token boundary");
+  test/structure-r0.test.mjs pins each direction.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

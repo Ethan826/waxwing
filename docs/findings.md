@@ -1426,3 +1426,64 @@ fixture has the criterion's answers for g" at that site's fixture:
 - M10, `'Pipe'` removed: form/pipe-meta.
 - M11, partiality ignored (`partial ||` removed): form/partial-call.
 - M12, the constructor-pattern line removed: form/pattern-row.
+
+## The verdict token boundary (2026-10-22)
+
+Task 1.1 of the first R0 shadow tranche: Domain.Verdict (with
+Verdict/Admission, Verdict/Open and Verdict/Internal) and the opaque
+`RecordedProblem` (Domain.Recorded, Recorded/Internal). Nothing in
+the compile path imports them (test/r0-verdict.test.mjs, last test).
+
+**Compile probes (checked; purs 0.15.16).** Each probe module was
+compiled with `purs compile 'src/Domain/**/*.purs'
+'.spago/p/*/src/**/*.purs' <probe> -o <scratch>`, one per run, and
+deleted afterwards. A client importing `Domain.Verdict (Valid,
+Refuted, NonForced, ForcednessEvidence, Solution)` and
+`Domain.Recorded (RecordedProblem)` and naming each type compiled
+(exit 0). So did a trusted module importing `Domain.Verdict.Internal
+(Valid(..), Refuted(..), CX, NonForced(..), ForcednessEvidence(..))`
+and building each. Each of these failed (exit 1):
+
+| Probe | purs error |
+|---|---|
+| `import Domain.Verdict (Valid(..))`, then `Valid` | Unknown data constructor Valid |
+| `import Domain.Verdict as V`, then `V.Valid` | Unknown data constructor V.Valid |
+| `V.ForcednessEvidence` from Domain.Verdict | Unknown data constructor V.ForcednessEvidence |
+| `coerce ∷ CX → Refuted` | No type class instance for `Coercible { body, rho } Refuted` |
+| `coerce ∷ Array CX → Array Refuted` | the same instance |
+| `coerce ∷ {} → RecordedProblem` | No type class instance for `Coercible (Record ()) RecordedProblem`; needs the newtype constructor in scope |
+| `import Domain.Recorded (RecordedProblem(..))`, then `RecordedProblem {}` | Unknown data constructor RecordedProblem |
+| `CheckRefusal` from Domain.Verdict.Open as a value | Unknown data constructor CheckRefusal (uninhabited) |
+
+**purs accepts a leak, so the source rule is needed (checked).** With
+Domain.Verdict's import changed to `Valid(..)` inside `as Exports`,
+`node scripts/build.mjs` succeeded (exit 0). Two gates caught it:
+test/r0-verdict.test.mjs "public modules export no token or problem
+constructor" failed with `Domain.Verdict exports Valid`, and
+`checkStructure()` reported `src/Domain/Verdict.purs: imports
+Domain.Verdict.Internal beyond bare type names`. Source restored and
+rebuilt.
+
+**RED runs (checked).** Before the source existed, `node --test
+test/structure-r0.test.mjs` failed with `SyntaxError: The requested
+module '../scripts/structure.mjs' does not provide an export named
+'exportFindings'`, and `node scripts/build.mjs && node --test
+test/r0-verdict.test.mjs` failed with `ERR_MODULE_NOT_FOUND` for
+output/Domain.Verdict/index.js.
+
+**Mutant runs (checked)** on scripts/structure.mjs, each restored
+afterwards; `node --test test/structure-r0.test.mjs` passes 5 of 5
+unpatched:
+
+- A, the Domain.Verdict.Internal entry deleted from
+  `internalModules`: "only the trusted checkers import
+  Domain.Verdict.Internal" fails.
+- B, the Recorded rule's `Generate(\.|$)` replaced by `Generate`:
+  "only Generate* and Domain.Recorded import Domain.Recorded.Internal"
+  fails (Features.Check.GenerateX admitted).
+- C, the trailing `$` dropped from the Verdict rule: the trusted-checker
+  test fails (Features.Check.Refute.Rules.X admitted).
+- D, `bareTypes` replaced by `/^\(.*\)(\s+as\s+\w+)?$/s`: both
+  re-export-form tests fail.
+- E, other modules' re-exports no longer reported: "no other module
+  re-exports a token Internal module" fails.

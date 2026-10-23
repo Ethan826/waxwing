@@ -20,7 +20,12 @@ vertical slice before adding language features. Task tracking is local.
   Features.Specialize*) may import Domain.Checked.Internal; only
   specialization and lowering (Features.Specialize*, Format.Go*) may import
   Domain.IR.Internal. Keep both IRs' constructors behind those enforced
-  module boundaries.
+  module boundaries. Likewise only Domain.Verdict and the trusted checkers
+  (Features.Check.Strategy.Substitution, Features.Check.Refute.Rules,
+  Features.Check.Admit.Forcedness.Check) import Domain.Verdict.Internal,
+  and only Domain.Recorded and Features.Check.Generate* import
+  Domain.Recorded.Internal; the public modules re-export bare type names
+  only, and no other module re-exports an Internal module.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their

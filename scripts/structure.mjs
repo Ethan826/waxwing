@@ -28,7 +28,25 @@ const internalModules = [
   { module: 'Domain.Checked.Internal',
     importers: /^Features\.(Check|Specialize)(\.|$)/ },
   { module: 'Domain.IR.Internal',
-    importers: /^(Features\.Specialize|Format\.Go|Domain\.IR\.Parts)(\.|$)/ }
+    importers: /^(Features\.Specialize|Format\.Go|Domain\.IR\.Parts)(\.|$)/ },
+  // R0 tokens (T-R0a §3.1): only the trusted checkers mint Valid, Refuted,
+  // NonForced and ForcednessEvidence; Domain.Verdict re-exports the types.
+  { module: 'Domain.Verdict.Internal',
+    importers: new RegExp('^(Domain\\.Verdict|Features\\.Check\\.('
+      + 'Strategy\\.Substitution|Refute\\.Rules'
+      + '|Admit\\.Forcedness\\.Check))$') },
+  // Only generation builds a recorded problem (T-R0a §2 property 2).
+  { module: 'Domain.Recorded.Internal',
+    importers: /^(Domain\.Recorded$|Features\.Check\.Generate(\.|$))/ }
+];
+// Each token Internal module and the one public module that re-exports
+// its types. purs graph does not show re-exports, so exportFindings reads
+// source: the public module imports its Internal module only as bare type
+// names (`import X.Internal (T, …) as Exports`: no `(..)`, no values, no
+// open import), and no other module re-exports an Internal module.
+const reexported = [
+  { internal: 'Domain.Verdict.Internal', public: 'Domain.Verdict' },
+  { internal: 'Domain.Recorded.Internal', public: 'Domain.Recorded' }
 ];
 // Commands run over capability ports only, so tests can pass fake hosts.
 const portCommands = ['Program.Command'];
@@ -68,6 +86,28 @@ export const graphFindings = graph =>
       dependency) : libraryFinding(name, dependency))]);
 });
 
+const bareTypes = /^\(\s*[A-Z][\w']*(\s*,\s*[A-Z][\w']*)*\s*\)(\s+as\s+\w+)?$/;
+const importsOf = (source, internal) => [...source.matchAll(new RegExp(
+  `^import\\s+${internal.replaceAll('.', '\\.')}(?![\\w.])((?:.|\\n[ \\t])*)`,
+  'gm'))].map(match => match[1].trim());
+const exportedModules = source => [...(source.match(
+  /^module\s+[\w.]+\s*\(((?:.|\n)*?)\)\s*where/m)?.[1] ?? '')
+  .matchAll(/\bmodule\s+([\w.]+)/g)].map(match => match[1]);
+
+export const exportFindings = (file, source) => {
+  const name = source.match(/^module\s+([\w.]+)/m)?.[1];
+  const exported = exportedModules(source);
+  return reexported.flatMap(rule => importsOf(source, rule.internal)
+    .flatMap(body => {
+    const alias = body.match(/\bas\s+(\w+)$/)?.[1] ?? rule.internal;
+    if (name === rule.public)
+      return bareTypes.test(body) ? []
+        : [`${file}: imports ${rule.internal} beyond bare type names`];
+    return exported.includes(alias)
+      ? [`${file}: re-exports ${rule.internal}`] : [];
+  }));
+};
+
 const disabledGate = new RegExp('\\.(skip|only|todo)\\s*\\('
   + '|@ts-(ignore|nocheck|expect-error)|eslint[-]disable');
 
@@ -100,6 +140,9 @@ export const checkStructure = async () => {
     files.flatMap(file => textFindings(file, readFileSync(file, 'utf8')));
   findings.push(...files.filter(file => file.endsWith('.purs')).flatMap(file =>
     check(readFileSync(file, 'utf8')).map(message => `${file}: ${message}`)));
+  findings.push(...files.filter(file => file.startsWith('src/')
+    && file.endsWith('.purs')).flatMap(file =>
+    exportFindings(file, readFileSync(file, 'utf8'))));
   findings.push(...files.filter(file =>
     file.startsWith('src/') && !file.startsWith('src/Runtime/')
     && file.endsWith('.js')).map(file => `${file}: FFI outside Runtime`));
