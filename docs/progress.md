@@ -436,6 +436,34 @@ outcomes appended to the first-diagnostic snapshot under `extended`, no
 entry changed; compile unchanged (src/ untouched). Evidence in
 findings, "RT2, RT4, RT9, RT10, AT13 and B9".
 
+## R0 shadow tranche, Task 5.1: rules, `toSig`, `trustedRefuter` (2026-10-23)
+
+`toSig` (Features.Check.Refute.Project, over Refute.Sig's
+`SigProblem`) keeps every `D` and `B` atom with its id, is undefined
+when `D` or `q` leaves `TExpr`, drops `bq`, gives each `app`
+occurrence its own flexible variable, and walks arrow spines by a loop
+(20,000 parameters). `checkDerivation` (Refute.Rules) takes the
+injected rule set (ruling R7) and refuses an unregistered rule, an
+unprojectable problem, a `D` premise, a premise outside the recorded
+`B`, and a rule that does not fire again on `withBody (toSig P)
+premises` with the whole `D`. `registry` and `theorems` are empty;
+`TheoremRef`'s constructor is in Domain.Verdict.Theorem.Internal
+(importers: Domain.Verdict, Refute.Theorems) and `SoundRule`'s in
+Refute.Rules.Internal (importer: Refute.Rules); only Rules imports
+Theorems, naming the type without constructors (a new source scan).
+`trustedRefuter` wraps only what a spec's check accepts. AT5 is checked
+by brute force (sig-oracle bounded.mjs), AT6 per refusal; a corpus test
+shows `toSig` total on 3,011 problems with `D` and `B` ids disjoint.
+Five mutants and regression row `r0-d-premise` fail as expected.
+test/r0-stubs.mjs mints the test tokens. Trusted surface re-pinned
+(Rules, Theorems added). Nothing reachable from compile changed
+behaviour; no fixture changed. Evidence and twelve labelled readings in
+findings, "Rules and the projection". Verify: the first run failed on
+the trusted-surface importer list (fixed) and on the five-thousand-arm
+timing bound (5.66 s; 2.87-3.38 s alone; recorded under BACKLOG T004);
+the final run exited 0 (2656/2656, 83/83 serial, 179 regression
+proofs).
+
 ## R0 shadow tranche, Task 3.3 steps 1-3: RT1's translator (2026-10-23)
 
 RT1's independent translator (T-R0b §9 item 1), written from T-R0b

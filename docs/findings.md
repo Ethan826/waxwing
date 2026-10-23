@@ -2772,3 +2772,138 @@ pass.
 | M4 Deferred's kind | Generate.Control: `ToOutside(…Deferred.value)` → `FailFamily` | RT9 Deferred |
 | M5 E19 origin contract | Generate.Builtin: the E19 `Body.value` → `Contract.value` | 16: RT10 h1, h2, pr-c, pr-cf, peek; every RT2 first test |
 | M6 reads a body | Generate.Inputs: `parameters` empty when the body is a `Block` | AT13 (the first pair), RT4 n10, RT2 walk |
+
+## Rules and the projection (2026-10-23)
+
+R0 shadow tranche, Task 5.1 (T-R0a §5, §5.1, §5.2, AT5, AT6; CX
+refute/statements.md §4.1 conditions 1-5, §5's C1-P, C1-M, C1-D and
+X7). New: Features.Check.Refute.Sig (`SigProblem`), Refute.Project
+(`toSig`, `withBody`), Refute.Rules (`checkDerivation`, the empty
+`registry`, `RefuterSpec`, `Refuter`, `trustedRefuter`),
+Refute.Rules.Internal (`SoundRule`'s constructor), Refute.Theorems (the
+empty `theorems`), Domain.Verdict.Theorem.Internal (`TheoremRef`'s
+constructor) and Domain.Verdict.Unsound. Nothing reachable from
+compile calls any of them: Program.Main now reaches the two new Domain
+modules as types only (test/r0-verdict.test.mjs lists them).
+
+**Readings (labelled; the rulings in the SDD ledger decide the rest).**
+1. `TheoremRef`'s constructor is in Domain.Verdict.Theorem.Internal
+   (Task 1.1's ruling). Refute.Theorems imports and re-exports the type
+   alone, so a test mints a `TheoremRef` through the Domain module's
+   compiled JS, not through Theorems as the brief says. Rules imports
+   the type from Theorems, without `(..)`, which the source scan checks.
+2. `SoundRule` (ruling R7) and `TheoremRef` are `data`, not T-R0a's
+   newtype: no `coerce` reaches them, and the compiled form keeps a
+   constructor for tests to mint through (test/r0-stubs.mjs).
+3. `Unsound` has five constructors: `Unregistered`, `Unprojectable`,
+   `DAtomPremise AtomId`, `NotOriginal AtomId`, `RuleDeclines`. The rule
+   is not repeated: `DerivationRefused RuleName Unsound` carries it.
+4. `Budget` (T-R0a §4.3), needed by `RefuterSpec`'s search, is an
+   uninhabited type in Domain.Verdict.Open until Task 4.1 defines it.
+5. `Refuter` is opaque; `refuterParts` gives its name, theorem, the
+   spec's untouched search and `confirm`, the spec's check with an
+   accepted CX wrapped as `Refuted`. A search's `Nothing` is not read
+   here as `NoCounterInstance Exhausted`: the spec's `Maybe` cannot
+   tell exhaustion from a spent budget, so `decide` (Task 4.1) owns it.
+6. Condition 1: names stay the recorded `Var`s, so the map is injective
+   trivially; a generalized `app` occurrence is `Generalized n`, a name
+   no recorded variable has. As in Lean, a variable not in the rigid
+   lists is flexible.
+7. Condition 3: the only body atoms outside `TExpr` are `bq`'s. Every
+   `b` atom is in Lean's atom language once its `app` occurrences are
+   generalized, so `toSig` keeps every `b` atom with its id.
+8. Condition 2 covers `q` as well as `D`: a non-empty `q` leaves
+   `toSig` undefined (requirement atoms in `D`).
+9. `AtomId` is not unique ("RT1's translator", item 3), so a premise
+   names every `B` atom that carries it, and `withBody` keeps them all
+   (a sublist of `B`, so C1-M still applies). A premise found among
+   `D`'s ids is refused first; that never refuses a `B` atom, since no
+   corpus `D` id is a `B` id (checked below).
+10. `checkDerivation` checks, in order, that the rule is in the
+    injected set, that `toSig` is defined, that each premise is an
+    original `B` atom, and that the rule fires again on `withBody (toSig
+    P) premises`. The evidence is the submitted derivation; what the
+    re-run derives is not compared with it.
+11. AT6's "applied to a `D`-subset": a derivation found on a sub-`D`
+    (the rule fires there), which the re-run on the whole `D` refuses.
+12. T-R0a's AT5 fixtures (`routeUndeclared`, `markNoClause`) are CX
+    certificates, ground (2), Task 5.2's. Here AT5 covers ground (1).
+
+**Checked.** test/r0-rules.test.mjs (12 tests): `toSig` keeps `D` and
+`B` ids in order, the rigid lists, and drops `bq`; `Box(Int) =
+Box(Int)` becomes two distinct generalized variables (bounded: valid);
+an `app` in `D` or a non-empty `q` gives no projection and
+`Unprojectable`. AT5: a test-only head-clash rule (C1-H's shape, not
+claimed sound), registered through the stub, gives `ByRule` evidence
+on `fn f(): Int = true`, on the same with `where r lacks { a }` and on
+`x + true`: every premise is a `B` id and no `D` id, `withBody` keeps
+the whole `D`, and research/composition-assessment/sig-oracle/
+bounded.mjs (default bounds) finds the premises' problem `invalid`.
+AT6: an unregistered rule (empty `registry`, or another rule's name);
+a premise at a non-existent index, of another declaration, or of a
+`bq` atom (`NotOriginal`); a `D` premise (`DAtomPremise`); a
+composition rule run with `D` dropped fires on `{ a: 1, ...p }` under
+`r lacks { a }`, and the re-run on the whole `D` refuses it
+(`RuleDeclines`): bounded finds the problem without `D` `invalid` and
+with it `valid`, X7's lesson on a source program. A non-clashing
+premise beside a clash is refused (the re-run reads the premises
+only). `registry` and `theorems` are empty. `trustedRefuter` wraps only
+what the check accepts and passes a refusal through.
+
+test/r0-project.serial.test.mjs: over the pinned corpus (984 programs
+that resolve, 3,011 problems) `toSig` is defined on every problem,
+keeps every `D` and `B` id in order, and no `D` id is a `B` id.
+
+Stack: the first `toSig` recursed along arrow spines. A probe
+(`fn f(k: (Int, …, Int) -> Int): … = k`, n parameters, scratchpad
+script) printed `1000 ok`, then `5000 toSig threw RangeError: Maximum
+call stack size exceeded` and the same at 20,000. Spines are now
+walked by a loop (as Domain.Type.Core's `stagesThrough`); the same
+probe prints `ok` with spine depth 1000, 5000 and 20000, and a test
+pins 20,000.
+
+Structure (test/structure.test.mjs, test/structure-r0.test.mjs): a
+module other than Refute.Rules importing Refute.Theorems is a graph
+finding; the import scan flags an open import, `as` without a list,
+`hiding`, `TheoremRef(..)` and `TheoremRef (TheoremRef)` on a
+continuation line, and passes Rules' real import; each new Internal
+module's graph, compiled-import and re-export rules, both directions.
+
+purs 0.15.16 probes (a copy-on-write copy of src, .spago and output in
+the scratchpad, one probe module at a time, deleted afterwards):
+
+| Probe | Result |
+|---|---|
+| `TheoremRef "x"` with `Domain.Verdict (TheoremRef)` | does not compile: `Unknown data constructor TheoremRef` |
+| the same through `Refute.Theorems (TheoremRef(..))` | does not compile: `Unknown data constructor TheoremRef` |
+| `SoundRule {…}` through `Refute.Rules (SoundRule(..))` | does not compile: `Unknown data constructor SoundRule` |
+| `Refuter parts` through `Refute.Rules (Refuter(..))` | does not compile: `Unknown data constructor Refuter` |
+| `coerce ∷ String → TheoremRef` (Safe.Coerce) | does not compile: no `Coercible` instance |
+| `Domain.Verdict.Theorem.Internal (TheoremRef(..))` in Features.Check.Probe | compiles; findings: `imports Domain.Verdict.Theorem.Internal` and its compiled JS imports it |
+| `Refute.Rules.Internal (SoundRule(..))` in Features.Check.Probe | compiles; the same two findings |
+| `Refute.Theorems (theorems)` in Features.Check.Probe | compiles; finding `imports Features.Check.Refute.Theorems` |
+| Rules importing `Refute.Theorems (TheoremRef(..))` | compiles (Theorems exports no constructor); the scan's finding |
+
+**Mutants (recorded).** Each patched a copy of output/ (with test/ and
+the sig-oracle) in the scratchpad, deleted afterwards; unpatched, the
+11 tests of r0-rules then present pass.
+
+| Mutant | Patch (compiled module) | Failing |
+|---|---|---|
+| M1 D premise | Rules: `var $37 = any(cites)(sig.d);` → `var $37 = false;` | AT6 D atom |
+| M2 sub-`D` | Project: `withBody`'s `d: problem.d,` → `d: [],` | AT5; AT6 D-subset |
+| M3 shared variable | Project: `accum: next + 1 \| 0` → `accum: next` | app occurrences |
+| M4 whole body | Rules: `rerun(rule)(…withBody(sig)(derivation.premises))` → `rerun(rule)(sig)` | re-run on premises |
+| M5 `q` ignored | Project: `null(view.q)` → `true` | toSig undefined |
+
+Regression row `r0-d-premise` (scripts/regression-r0.mjs, probe in
+test/regression-r0.mjs): premises read from `D` as well as `B`. `node
+scripts/regression.mjs r0-d-premise`: "fixed compiler passes; restored
+defect fails", the probe printing `D atom accepted as a premise:
+Right`.
+
+RED runs: before Project, Rules and Theorems existed and before the
+structure rules, `node --test` over the four touched test files gave
+6 pass, 4 fail (r0-rules and r0-verdict: no
+Domain.Verdict.Theorem.Internal output; structure-r0: Rules allowed to
+import it; structure: no `theoremImportFindings`).

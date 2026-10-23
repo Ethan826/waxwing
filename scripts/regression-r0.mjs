@@ -37,5 +37,16 @@ export const r0Rows = [
       + '  _ → contradiction\n',
     probe: 'r0-classify-catchall',
     message: /Exhausted classed as AsMismatch, not a fault/
+  },
+  {
+    // Task 5.1 (AT6): premises read from `D` as well as `B`, so a `D`
+    // atom is accepted as a premise (F1: premises are `B` atoms only).
+    name: 'r0-d-premise',
+    file: 'src/Features/Check/Refute/Rules.purs',
+    needle: '  if any cites sig.d then Left (DAtomPremise premise)\n'
+      + '  else if any cites sig.b then Right unit\n',
+    replacement: '  if any cites (sig.d <> sig.b) then Right unit\n',
+    probe: 'r0-d-premise',
+    message: /D atom accepted as a premise: Right/
   }
 ];

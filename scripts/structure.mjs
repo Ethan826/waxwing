@@ -41,13 +41,23 @@ const internalModules = [
       + '|Admit\\.Forcedness\\.Check))$') },
   // Only generation builds a recorded problem (T-R0a §2 property 2).
   { module: 'Domain.Recorded.Internal',
-    importers: /^(Domain\.Recorded$|Features\.Check\.Generate(\.|$))/ }
+    importers: /^(Domain\.Recorded$|Features\.Check\.Generate(\.|$))/ },
+  // R0 Task 5.1: TheoremRef's constructor reaches only the hidden registry
+  // Refute.Theorems (Domain.Verdict re-exports the type), SoundRule's only
+  // Refute.Rules, and only Rules imports Theorems.
+  { module: 'Domain.Verdict.Theorem.Internal',
+    importers: /^(Domain\.Verdict|Features\.Check\.Refute\.Theorems)$/ },
+  { module: 'Features.Check.Refute.Rules.Internal',
+    importers: /^Features\.Check\.Refute\.Rules$/ },
+  { module: 'Features.Check.Refute.Theorems',
+    importers: /^Features\.Check\.Refute\.Rules$/ }
 ];
 // A token Internal module's constructors must not leave it by re-export.
 // The public module (Domain.Verdict, Domain.Recorded) re-exports types
 // only, which purs emits no JS for, so any JS re-export from these
 // modules, by any module, forwards a value: a constructor.
-const tokenModules = ['Domain.Verdict.Internal', 'Domain.Recorded.Internal'];
+const tokenModules = ['Domain.Verdict.Internal', 'Domain.Recorded.Internal',
+  'Domain.Verdict.Theorem.Internal', 'Features.Check.Refute.Rules.Internal'];
 // Commands run over capability ports only, so tests can pass fake hosts.
 const portCommands = ['Program.Command'];
 const hostEffects = /^(Effect|Runtime)(\.|$)/;
@@ -114,6 +124,22 @@ export const importFindings = modules =>
     rule.module === match[1] && tokenModules.includes(rule.module)
     && !rule.importers.test(name)).map(() =>
     `${name}'s compiled JS imports ${match[1]}`)));
+
+// Refute.Theorems's importer names TheoremRef without constructors
+// (preflight row 37): an explicit list, no `hiding`, nothing in
+// parentheses after TheoremRef. purs graph sees modules only, so this
+// reads each src module's import of Theorems, continuation lines included.
+const theoremsImport = new RegExp('^import\\s+Features\\.Check\\.Refute'
+  + '\\.Theorems(?![\\w.])([^\\n]*(?:\\n[ \\t]+[^\\n]*)*)', 'gm');
+const constructorNamed = list => !list.startsWith('(')
+  || /\bhiding\b|\bTheoremRef\s*\(|\(\s*\.\.\s*\)/.test(list);
+
+export const theoremImportFindings = sources =>
+  Object.entries(sources).flatMap(([file, source]) =>
+  [...source.matchAll(theoremsImport)].filter(match =>
+    constructorNamed(match[1].replace(/--[^\n]*/g, '').trim())).map(() =>
+    `${file} imports Features.Check.Refute.Theorems without naming`
+    + ' TheoremRef alone'));
 
 // May `name` import the token Internal module `internal`?
 export const tokenAllowed = (name, internal) => internalModules.some(rule =>
@@ -195,6 +221,9 @@ export const checkStructure = async () => {
   findings.push(...reexportFindings(built), ...importFindings(built));
   findings.push(...foreignFindings(foreignFiles(files, 'output'),
     tokenAllowed));
+  findings.push(...theoremImportFindings(Object.fromEntries(files.filter(file =>
+    file.startsWith('src/') && file.endsWith('.purs')).map(file =>
+    [file, readFileSync(file, 'utf8')]))));
   findings.push(...files.filter(file =>
     file.startsWith('src/') && !file.startsWith('src/Runtime/')
     && file.endsWith('.js')).map(file => `${file}: FFI outside Runtime`));

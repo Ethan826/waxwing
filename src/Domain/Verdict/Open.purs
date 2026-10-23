@@ -4,6 +4,7 @@
 -- its owner defines it here or moves it to its home.
 module Domain.Verdict.Open
   ( Alternative
+  , Budget
   , CXSubst
   , CheckRefusal
   , CheckedCX
@@ -17,8 +18,6 @@ module Domain.Verdict.Open
   , RigidAssignment
   , SearchHint
   , SplitJudgement
-  , TheoremRef
-  , Unsound
   , Witness
   ) where
 
@@ -39,12 +38,10 @@ data CheckedCX
 
 data RefuteRefusal
 
--- `checkDerivation`'s refusal (T-R0a §5.2; Task 5.1).
-data Unsound
-
--- A proved theorem's reference. Plan Task 5.1 gives it a constructor that
--- only its hidden registry module can use; until then none can be made.
-data TheoremRef
+-- The injected budget (T-R0a §4.3): fuel per strategy and per refuter,
+-- a depth bound, a key bound. A refuter's search takes one (§5.1); Task
+-- 4.1 gives it its representation.
+data Budget
 
 -- W §1.6 and §1.7, adopted as defined there (Tasks 4.4, 6.1).
 data Witness

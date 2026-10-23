@@ -11,6 +11,8 @@ const Recorded = await load('Domain.Recorded');
 const Open = await load('Domain.Verdict.Open');
 const VerdictInternal = await load('Domain.Verdict.Internal');
 const RecordedInternal = await load('Domain.Recorded.Internal');
+const TheoremInternal = await load('Domain.Verdict.Theorem.Internal');
+const Unsound = await load('Domain.Verdict.Unsound');
 
 const tokens = ['Valid', 'Refuted', 'Alternatives', 'NonForcedness',
   'ForcednessEvidence'];
@@ -21,10 +23,11 @@ const tokens = ['Valid', 'Refuted', 'Alternatives', 'NonForcedness',
 test('public modules export no token or problem constructor', () => {
   for (const name of tokens) assert.ok(name in VerdictInternal, name);
   assert.ok('RecordedProblem' in RecordedInternal);
+  assert.ok('TheoremRef' in TheoremInternal);
   for (const [label, module] of [['Domain.Verdict', Verdict],
     ['Domain.Verdict.Admission', Admission], ['Domain.Recorded', Recorded],
-    ['Domain.Verdict.Open', Open]])
-    for (const name of [...tokens, 'RecordedProblem'])
+    ['Domain.Verdict.Open', Open], ['Domain.Verdict.Unsound', Unsound]])
+    for (const name of [...tokens, 'RecordedProblem', 'TheoremRef'])
       assert.ok(!(name in module), `${label} exports ${name}`);
 });
 
@@ -56,7 +59,10 @@ const shapes = [
     ['NoCompilation', 1], ['AdmissionLimit', 1], ['Forced', 1],
     ['NotForced', 1], ['Checked', 1], ['Undecided', 0]],
   [VerdictInternal, ['Valid', 0], ['Alternatives', 1],
-    ['NonForcedness', 1], ['ForcednessEvidence', 0]]
+    ['NonForcedness', 1], ['ForcednessEvidence', 0]],
+  [TheoremInternal, ['TheoremRef', 1]],
+  [Unsound, ['Unregistered', 0], ['Unprojectable', 0], ['DAtomPremise', 1],
+    ['NotOriginal', 1], ['RuleDeclines', 0]]
 ];
 
 const build = (constructor, arity) => {
@@ -110,7 +116,8 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
       'Domain.Recorded.Atom', 'Domain.Recorded.Internal',
       'Domain.Recorded.Origin', 'Domain.Verdict',
       'Domain.Verdict.Internal', 'Domain.Verdict.Open',
-      'Domain.Verdict.Static']);
+      'Domain.Verdict.Static', 'Domain.Verdict.Theorem.Internal',
+      'Domain.Verdict.Unsound']);
     assert.deepEqual([...seen].filter(name => !r0(name)
       && graph[name].depends.some(r0)), ['Features.Check.Outcomes']);
     assert.deepEqual(graph['Features.Check.Outcomes'].depends.filter(r0)

@@ -542,5 +542,32 @@
    "translate",
    "translateAll"
   ]
+ },
+ "Features.Check.Refute.Rules": {
+  "source": [
+   "module Exports",
+   "Refuter",
+   "RefuterParts",
+   "RefuterSpec",
+   "checkDerivation",
+   "refuterParts",
+   "registry",
+   "trustedRefuter"
+  ],
+  "compiled": [
+   "checkDerivation",
+   "refuterParts",
+   "registry",
+   "trustedRefuter"
+  ]
+ },
+ "Features.Check.Refute.Theorems": {
+  "source": [
+   "module Exports",
+   "theorems"
+  ],
+  "compiled": [
+   "theorems"
+  ]
  }
 }

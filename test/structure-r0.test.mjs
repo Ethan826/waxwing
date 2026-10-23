@@ -42,6 +42,37 @@ test('only Generate* and Domain.Recorded import Domain.Recorded.Internal',
         [`${name} imports ${internal}`], name);
   });
 
+// Task 5.1 (ruling R7, Task 1.1's TheoremRef ruling): TheoremRef's
+// constructor reaches only the hidden registry Refute.Theorems (and
+// Domain.Verdict, for the type); SoundRule's only Refute.Rules. Both are
+// token modules, so their compiled JS has the same two checks.
+test('only the registry and Rules import the Task 5.1 Internal modules',
+  () => {
+    const cases = [['Domain.Verdict.Theorem.Internal',
+      ['Domain.Verdict', 'Features.Check.Refute.Theorems'],
+      ['Features.Check.Refute.Rules', 'Features.Check.Decide',
+        'Features.Check.Refute.TheoremsX', 'Domain.Verdict.Open']],
+    ['Features.Check.Refute.Rules.Internal', ['Features.Check.Refute.Rules'],
+      ['Features.Check.Refute.Theorems', 'Features.Check.Decide',
+        'Features.Check.Refute.Counter', 'Features.Check.Refute.Project']]];
+    for (const [internal, allowed, refused] of cases) {
+      const js = `import * as I from "../${internal}/index.js";`;
+      for (const name of allowed) {
+        assert.deepEqual(importing(name, internal), [], name);
+        assert.deepEqual(importFindings({ [name]: js }), [], name);
+      }
+      for (const name of refused) {
+        assert.deepEqual(importing(name, internal),
+          [`${name} imports ${internal}`], name);
+        assert.deepEqual(importFindings({ [name]: js }),
+          [`${name}'s compiled JS imports ${internal}`], name);
+      }
+      assert.deepEqual(reexportFindings({ 'Features.Check.Refute.Rules':
+        `export {\n    X\n} from "../${internal}/index.js";\n` }),
+      [`Features.Check.Refute.Rules re-exports { X } from ${internal}`]);
+    }
+  });
+
 // The re-export boundary is read from purs's output (fix round 2). Each
 // probe in test/fixtures/r0/reexport/probes.json is a source purs 0.15.16
 // accepted and the index.js it emitted, copied verbatim; P1-P11 are the

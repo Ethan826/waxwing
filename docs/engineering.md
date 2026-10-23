@@ -47,20 +47,32 @@ adding a bypass allowlist.
   `Refute.Counter` are refused). Domain.Recorded.Internal (the
   constructor of `RecordedProblem`) is imported only by
   Domain.Recorded and modules matching
-  `^Features\.Check\.Generate(\.|$)`. A public module re-exports its
-  Internal module's types alone (`import X.Internal (T, …) as Exports`
-  with `module Exports`), and no module re-exports a constructor from
-  either. Domain.Recorded also exports `fields ∷ RecordedProblem →
-  Fields`, the record a constructor-less view returns (R0 Task 3.1,
-  ruling R4): every module reads the problem, only generation builds
-  it. purs graph sees neither re-exports nor inlined constructors,
-  and source forms vary (comments, layout, aliases, line endings), so
-  two checks read the compiler's output after the build
-  (scripts/structure.mjs). `reexportFindings`: purs 0.15.16 emits a
-  re-exported value as `export { … } from "../M/index.js"` and a type
-  as nothing, so any such statement from a token Internal module is a
-  finding. `importFindings`: purs inlines a constructor into its
-  client, so a module that uses one through an operator alias
+  `^Features\.Check\.Generate(\.|$)`. Since R0 Task 5.1 two more
+  token modules follow it: Domain.Verdict.Theorem.Internal (the
+  constructor of `TheoremRef`) is imported only by Domain.Verdict and
+  Features.Check.Refute.Theorems, the hidden registry, and
+  Features.Check.Refute.Rules.Internal (the constructor of `SoundRule`)
+  only by Features.Check.Refute.Rules. Refute.Theorems is itself
+  importable only by Refute.Rules (a graph rule), and Rules' import of
+  it must name `TheoremRef` without constructors: an explicit list, no
+  `hiding`, nothing in parentheses after `TheoremRef`
+  (`theoremImportFindings`, a source scan of every src module's import
+  of Theorems, since purs graph sees modules only;
+  test/structure.test.mjs). Tests mint either token through the
+  Internal module's compiled JS (test/r0-stubs.mjs). A public module
+  re-exports its Internal module's types alone (`import X.Internal (T,
+  …) as Exports` with `module Exports`), and no module re-exports a
+  constructor from any of them. Domain.Recorded also exports `fields ∷
+  RecordedProblem → Fields`, the record a constructor-less view
+  returns (R0 Task 3.1, ruling R4): every module reads the problem,
+  only generation builds it. purs graph sees neither re-exports nor
+  inlined constructors, and source forms vary (comments, layout,
+  aliases, line endings), so two checks read the compiler's output
+  after the build (scripts/structure.mjs). `reexportFindings`: purs
+  0.15.16 emits a re-exported value as `export { … } from
+  "../M/index.js"` and a type as nothing, so any such statement from a token
+  Internal module is a finding. `importFindings`: purs inlines a constructor
+  into its client, so a module that uses one through an operator alias
   (`infix 4 Valid as <!>`) or a re-export imports the Internal
   module's JS though its source does not; only the allowed importers
   above may import that JS (the public re-exporters are among them).

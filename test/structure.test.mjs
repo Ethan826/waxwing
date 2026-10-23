@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { graphFindings, textFindings } from '../scripts/structure.mjs';
+import { graphFindings, textFindings, theoremImportFindings }
+  from '../scripts/structure.mjs';
 
 test('layer gate rejects effects, reverse dependencies, and unchecked IR ' +
   'access', () => {
@@ -102,4 +103,30 @@ test('pure layers admit immutable Data.Array modules, not ST arrays', () => {
     'Data.Array.NonEmpty.Internal', 'Data.ArrayX']) {
     assert.equal(pure(dependency).length, 1, dependency);
   }
+});
+
+// R0 Task 5.1: only Refute.Rules imports Refute.Theorems, the hidden
+// registry, and it names TheoremRef without its constructor (preflight
+// row 37, a source scan, since purs graph sees modules only).
+test('only Refute.Rules imports Refute.Theorems, for the type', () => {
+  const theorems = 'Features.Check.Refute.Theorems';
+  const found = name => graphFindings({
+    [name]: { path: 'src/example.purs', depends: [theorems] } });
+  assert.deepEqual(found('Features.Check.Refute.Rules'), []);
+  for (const name of ['Features.Check.Decide', 'Features.Check.Refute.Counter',
+    'Features.Check.Refute.Rules.Internal', 'Features.Check.Refute.RulesX',
+    'Features.Check.Refute.Project', 'Features.Check.Strategy'])
+    assert.deepEqual(found(name), [`${name} imports ${theorems}`], name);
+  const scan = text => theoremImportFindings({ 'src/x.purs': text });
+  for (const text of ['import Features.Check.Refute.Theorems (TheoremRef)\n',
+    'import Features.Check.Refute.Theorems\n  ( TheoremRef\n  , theorems\n'
+      + '  )\n', 'import Prelude\n'])
+    assert.deepEqual(scan(text), [], text);
+  for (const text of ['import Features.Check.Refute.Theorems\n',
+    'import Features.Check.Refute.Theorems (TheoremRef(..))\n',
+    'import Features.Check.Refute.Theorems\n  ( theorems\n'
+      + '  , TheoremRef (TheoremRef)\n  )\n',
+    'import Features.Check.Refute.Theorems as T\n',
+    'import Features.Check.Refute.Theorems hiding (theorems)\n'])
+    assert.equal(scan(text).length, 1, text);
 });
