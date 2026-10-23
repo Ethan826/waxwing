@@ -420,6 +420,32 @@ equations, E16's item path, P4's `Slot` gap, every row and origin
 kind; every Domain.Recorded constructor injected in the canonical
 test; strict record order.
 
+## R0 shadow tranche, Task 3.2: generation rules (2026-10-23)
+
+Features.Check.Generate (new) records each resolved declaration's
+problem, syntax-directed: T-R0b's Sig1-Sig10, E1-E28 and P1-P7 in
+Generate.Signature, .Call, .Expr, .Operator, .Control, .Record,
+.Builtin, .Effect, .Failure and .Pattern, over a builder
+(Generate.Inputs `generationInputs`) of the tables and signatures.
+Test-only: compile does not call it, and today's diagnostics are
+unchanged. Its export list is `generate`, `staticRules`, `Tables`,
+`Signatures` (ruling R2). The applicative invariant holds by
+construction (a rule reads only the context and its children's
+results) and by a tested import rule (no checker state is reachable).
+The shared readings of "RT1's translator" are followed; the path-step
+vocabulary and the choices they leave open are stated in findings.
+`HandlerHead` takes an `EffectRef`, so `Handler(Console)` has a head.
+`staticRules` (Generate.Static.Rules; amendment: it also takes
+`Signatures`) finds the class-a sites check raises and agrees with
+today's checker on each; every `Problem` constructor has a typed
+disposition (Generate.Static.Problem), `StaticCode` gaining four
+Resolve codes after Domain.Verdict's static types moved to
+Domain.Verdict.Static. Trusted surface re-pinned (Domain.Verdict's
+moved exports; 22 new Generate modules). Tests: rule-level fixtures
+for every rule, RT5-RT7 on each, and a serial corpus test (973
+programs, 2,958 declarations). Twelve mutants, each killed. No fixture
+changed, no corpus re-pin. Evidence in findings, "Generation rules".
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

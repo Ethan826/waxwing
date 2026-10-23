@@ -2347,3 +2347,182 @@ origin kinds) are new; reading 7 lists every row. The marker-row
 choice is a table with no default arm, and `outOfOrder` requires
 strictly ascending fields and tails (a repeated label is out of order,
 tested). Focused tests: 40 pass.
+
+## Generation rules (2026-10-23)
+
+R0 shadow tranche, Task 3.2 (T-R0b §2-§6, §10; rulings R2, R6; Task
+2.3 and 3.1 carries). Features.Check.Generate exports `generate ∷
+Tables → Signatures → FunctionDecl → RecordedProblem`, `staticRules`
+and the types `Tables` and `Signatures`, an enumerated list with no
+empty problem (checked: test "exports generate and staticRules only";
+a scratch module importing `emptyProblem` from it fails purs 0.15.16
+with `Cannot import value emptyProblem`). Compile does not call it.
+The builder is Generate.Inputs `generationInputs ∷ Resolved.Program →
+{ tables, signatures }` (named apart from Features.Check.Tables). The
+rules live in Generate.Signature (Sig1-Sig10, with Generate.Rigid and
+Generate.Facts), .Call (E3-E6), .Expr (dispatch, E1, E2), .Operator
+(E7-E11, E14, E15), .Control (E12, E13, E16), .Record (E24-E28),
+.Builtin (E18, E19), .Effect (E17, E20, E21), .Failure (E22, E23) and
+.Pattern (P1-P7); each rule id is in a comment beside its code.
+
+**The applicative invariant (T-R0b §4), and how the code keeps it.**
+Every rule reads only Generate.Context (`decl`, `tables`, `signatures`,
+`locals`) and its children's results; no checker state, substitution,
+meta counter or solved type is in scope. Mechanically (checked: test
+"generation reaches no checker state"), the import closure of
+Features.Check.Generate reaches no Features module but Generate.* and
+seven pure table readers it reuses (Check.Implied `declared`,
+Check.Tables `ownerType`, Check.Functional, and their imports
+Check.Nested, NestedArguments, Components; Resolve.Builtin), and no
+Generate module imports Domain.Checked*. Fresh variables are canonical
+names, so generation needs no counter: it is a pure fold, and each
+rule's index is its own listed order. Records are built by one
+constructor that sorts fields by label and tails by `Ord Var`.
+
+**Readings.** docs/findings.md "RT1's translator" readings 2-21 are
+followed as written. Reading 1 leaves the step vocabulary open; this
+generator's (indices from 0): `Call/args/i`, `Construct/args/i`,
+`Add|Concat|Compare/left|right`, `Interpolate/parts/i`,
+`If/condition|then|else`, `Match/scrutinee`,
+`Match/arms/k/pattern|body`, `Lambda/body`, `Apply/function`,
+`Apply/args/i`, `Pipe/left|right`,
+`Block/items/i/(Let|Defer|Discard)/value`, `Block/result`,
+`(Perform|Print|Show|Crash)/args/i`, `Handler/clauses/k/body`,
+`With/handler|body`, `Handle/body`, `Handle/clauses/k/body`,
+`Fail/value`, `RecordLiteral/fields/i/value`, `FieldAccess/record`,
+`RecordUpdate/record`, `RecordUpdate/fields/i/value`,
+`RecordExtension/items/i/(Given|Spreading)/value`,
+`RecordRemoval/record`; patterns `Ctor/args/k`,
+`Record/fields/k/pattern`. RT1's comparison (Task 3.3 step 4) will
+find where the translator's differs. Choices the readings leave open,
+argued:
+
+- θ(D_g) (E3, E5): written clauses in constraint order (a `lacks`
+  clause's labels in written order), then implied: Sig6's facts over
+  the callee's parameters, result and row arguments, Sig7's pairs,
+  Sig8's facts. One fact's labels are in label order.
+- Markers' pre-order: E3, E5 translate T₁ … Tₙ then R; E4, E6 the
+  fields then the owner; P4 the owner then the fields; E17 T̄ then the
+  result; E20 the clauses' parameter types in order; E22 the clauses'
+  payloads in order.
+- Spans: an entry has its node's span, except Sig4 (the label), E25's
+  spread atom (the item), E26 and E27 (the label). Sig6 and Sig8 use
+  the parameter's span, the declaration's for the result and
+  `rowSpan` (else the declaration's) for the row.
+- E15's `⟨p, res⟩` is positioned at `NodeType p`, as E14's; §5.2's
+  list names E14 but not E15.
+- E20's clause parameters take the clause's `HandlerParameter.ty`,
+  which Resolve copies from the operation's declared parameter
+  (Resolve/Handler.purs:106-112), under θ. A builtin effect's
+  parameters come from Resolve.Builtin (Console none, Fail one).
+- E22 binds a clause's local when its label has exactly one argument
+  (reading 16), translating that argument with `ν_f`.
+- A table lookup that misses (an id the tables lack) reads as an empty
+  entry (no variables or parameters, `Unit`), and an unbound local as
+  `Unit`; generation stays total. Argued unreachable for inputs built
+  from the declaration's own program; generation cannot report a fault
+  (D1's `Elaborating` is Task 7.1's).
+
+Concerns with the shared readings (followed anyway): reading 20 (P4's
+`inst` at `Slot`, a position the checked `Ctor` pattern lacks) is kept
+literal; reading 9 (E6 over-applied gets `⟨p, res⟩`, against E6's
+Fresh column) is kept.
+
+**`Handler(Console)`.** Domain.Recorded.Atom's `HandlerHead` now takes
+a Domain.Row `EffectRef`, so a builtin effect's handler type has a head
+(`HandlerHead ConsoleEffect`); the canonical form writes a declared
+effect by its id and a builtin by name (`{ handler: 'Console' }`).
+Checked: the canonical test decodes both builtins; E21's test pins
+`Handler(Console)`; a scratch module applying `HandlerHead` to an
+`EffectId` fails purs with `Could not match type`.
+
+**Static rules.** `staticRules` is Generate.Static.Rules (not
+Generate/Static.purs, whose syntax-tree test admits only the
+classification's own arms). **Amendment:** its type is `Tables →
+Signatures → FunctionDecl → Array StaticRefusal`, since arity at a
+fixed result reads the callee's declared result, which `Tables` lacks.
+A resolved declaration can break only the class-a rules check raises:
+Pipe.purs:33, Call.purs:123 and :144 (functions and constructors),
+Show.purs:27, Operation.purs:64 and :104, Outcomes.purs:136. Each is
+found syntactically and refused through Task 2.3's `staticRefusal`,
+at the node's path. Checked (test/r0-static-rules.test.mjs): for each
+site a fixture that today's checker stops in check with the same code
+(E_ARITY, E_ENTRY) gets exactly that refusal; Pipe.purs:36's
+instantiated case gets none; an accepted program gets none. Its walk
+(Generate.Static.Walk) visits exactly the expression paths generation
+records, over the whole corpus (checked, serial test).
+
+**Every `Problem` constructor (Task 2.3 carry).**
+Generate.Static.Problem's `disposition ∷ Problem → Disposition` is a
+typed path from a raised problem to its class: Task 2.3's 28 give
+their raise sites (`AtSites`, classed by `staticClass`); the other 36
+name the phases that raise them (`Placed`): before resolution (lexer,
+parser), a Resolve rule with its `StaticCode`, a Resolve body-type
+check that is semantic (`RowMayHaveField`, `NotKnownDisjoint`, decided
+to move into generation), a Resolve support limitation
+(`SecondSpread`), check's semantic refusals, whole-program stages
+(`PolymorphicRecursion`, `NestedDatatype`), lowering, the inferred-type
+limit (`TypeTooDeep`) and faults (`Internal`); `Hinted` takes its
+inner problem's. `StaticCode` gains `StaticUnbound`, `StaticDuplicate`,
+`StaticNotCallable` and `StaticSort` (sort errors: `RowSort`,
+`RecordRowAsEffect`, `EffectRowAsRecord`, `TypeAsRecordRow`, Resolve's
+`ExpectedRecord`). These Resolve refusals never stand beside a
+recorded problem (no resolved declaration exists, T-R0b §8);
+`staticRules` raises none of them. Domain.Verdict was split first
+(its static types are Domain.Verdict.Static, re-exported, behaviour
+unchanged). Checked (test/r0-static-problem.test.mjs): the 64
+constructors (read from the source by Style.Arms) are the 28 sited
+and 36 placed, once; each, injected, has its disposition, the sited
+ones exactly their rows of test/r0-static-sites.mjs; the match has
+no catch-all; each placed one's cited raise line holds it in its
+phase; and every src line naming a placed constructor lies in one of
+its phases (`Internal`, and `RowSort`, `Syntax`, `SecondSpread`, which
+other types also name, exempt).
+
+**Tests (checked).** `node --test test/r0-generate-signature.test.mjs
+test/r0-generate-expr.test.mjs test/r0-generate-forms.test.mjs
+test/r0-generate-pattern.test.mjs test/r0-static-rules.test.mjs
+test/r0-static-problem.test.mjs`: 45 pass. Each rule (Sig1-Sig10,
+E1-E28, P1-P7) has a fixture whose `(AtomId, entry)` list is written
+by hand from §3's tables and the readings, each fixture also passing
+RT6 and RT7. RT5: the Expr, Pattern, Rest and Item constructor lists
+equal those declared in Domain/Resolved.purs and Resolved/Core.purs,
+and each reaches its rule in a fixture (its node's type is recorded).
+RT6: every entry's path resolves, by a resolver written against the
+compiled resolved syntax, to a node of the recorded span (a label's
+or item's span inside it). RT7: every variable an entry, type or site
+mentions is in `vars`; `Forall` ones are exactly Sig1's; a fresh key
+agrees with its origin's path and role, a rigid one has none; every
+auxiliary has exactly one §5.3 defining atom whose operand mentions no
+variable of its node. `node --test
+test/r0-generate-total.serial.test.mjs`: 4 pass; over the pinned corpus
+(973 resolving programs, 2,958 declarations) generation returns, twice
+alike; RT6, RT7 and canonical order hold for every problem; every rule
+with entries and every marker kind but LocalGeneralization occurs;
+`types` holds exactly the expression and pattern nodes.
+
+**RED and mutants (recorded).** In one copy of output/, src/, scripts/
+and test/ in the session scratchpad (deleted afterwards): with the
+generator's compiled modules removed, each of the six files above
+failed with ERR_MODULE_NOT_FOUND for output/Features.Check.Generate.
+Mutants patch the compiled JS, one at a time, restored after each;
+command `node --test` over the six files; unpatched, none fail.
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| M1 | Call: E5/E6 markers before the equations | E6 over-applied |
+| M2 | Translate: DataOverRecords never chosen | Sig6, Sig8 |
+| M3 | Record: `spread j` from 0 | E25 |
+| M4 | Pattern: P6's rest at `RestType` | P5, P6 |
+| M5 | Fresh: effect-row variables given a sort | 28 tests (RT7, every `inst` fixture) |
+| M6 | Generate: `rigidRow` keeps type variables | Sig1; rigid variables |
+| M7 | Effect: EffectArgument unconditional | E17 |
+| M8 | Static.Rules: a variable result counted fixed | static sites |
+| M9 | Static.Problem: TypeMismatch as ProgramWide | dispositions |
+| M10 | Signature: no entry | Sig9, Sig10; static sites |
+| M11 | Operator: `cmp` at the right operand | E7-E11 |
+| M12 | Pattern: field at the record's path | P7 |
+
+M7 and M11 survived a first run; E17 gained an effect without
+parameters and E10 a comparison whose operands' types differ, and both
+were then killed as listed.
