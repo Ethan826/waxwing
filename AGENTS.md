@@ -25,7 +25,8 @@ vertical slice before adding language features. Task tracking is local.
   Features.Check.Admit.Forcedness.Check) import Domain.Verdict.Internal,
   and only Domain.Recorded and Features.Check.Generate* import
   Domain.Recorded.Internal; the public modules re-export bare type names
-  only. On the compiler's output, no module outside those importers
+  only, and Domain.Recorded adds `fields`, a read-only view (ruling R4).
+  On the compiler's output, no module outside those importers
   imports either Internal module's JS, and no module re-exports from it;
   no FFI JS outside them names it. No src module outside a reviewed
   allowlist (empty) uses a module in scripts/forgery.mjs

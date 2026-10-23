@@ -376,6 +376,24 @@ Evidence in findings, "Static rules beside the verdict". Fix round 1:
 the no-catch-all test reads the syntax tree (new Style.Arms), after
 three forms evaded the regex test.
 
+## R0 shadow tranche, Task 3.1: the recorded problem's fields (2026-10-23)
+
+Domain.Recorded.Internal's `RecordedProblem` now wraps T-R0b §10's
+record (`Fields`: `decl`, `rigidTy`, `rigidRow`, `flexTy`, `flexRow`,
+`d`, `q`, `b`, `bq`, `outside`, `adm`, `split`, `vars`, `types`) and
+derives `Eq`, so two declarations' problems differ by `decl` alone (D1
+spec §6.2). The vocabulary is plain data in Domain.Recorded.Atom
+(`Var`, roles, `RTExpr`, atoms, `OutsideKind`, `CallSite`, `VarInfo`,
+`CheckedName`) and Domain.Recorded.Origin (`Path`, `AtomId`, `Origin`,
+`Entry`, rule and row ids). Domain.Recorded exports `fields`, a
+read-only view (ruling R4); construction stays Generate*-only. One
+labelled amendment: a variable's origin `role` is a `Maybe`, since
+§2.3 gives a rigid variable no role. Trusted surface re-pinned
+(Domain.Recorded: `fields` added, the four type names now re-exported
+from the new modules). Nothing builds a problem in production; `problem`
+stays `Nothing`. No fixture changed, no corpus re-pin. Evidence in
+findings, "The recorded problem's fields".
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

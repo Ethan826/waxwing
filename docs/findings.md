@@ -2089,3 +2089,64 @@ classification names every constructor, with no catch-all":
   (const)`).
 - S3-nested, `ArityAt site → arityClass site` replaced by `ArityAt _ →
   Semantic`, `arityClass` deleted.
+
+## The recorded problem's fields (2026-10-23)
+
+R0 shadow tranche, Task 3.1 (ruling R4; T-R0b §2.3, §3.5, §5.2, §6,
+§10; D1 spec §6.2). `RecordedProblem` wraps `Fields`, T-R0b §10's
+record verbatim, and derives `Eq`; `decl ∷ FunctionId` is carried
+unconditionally. Domain.Recorded exports the type names and `fields ∷
+RecordedProblem → Fields`; it imports the constructor to define the
+view, as an allowed importer of Domain.Recorded.Internal.
+
+**Representation choices (argued).** `Var` is `RigidVar VarId |
+FreshVar Path Role`: §2.3 names fresh variables `⟨p, role⟩` and §6
+identifies a rigid one by its `VarId`, while §10's `rigidTy` holds
+`Var`s. `Path` is a newtype over `{ root, steps }`, the root being the
+body or one of §6's four signature fields, each step a name or an
+index. `RuleId` and `SpecRow` are typed (`ExprRule 11`, `SpecRow RowB
+1`), not strings. **Amendment** to §5.2: `VarInfo.origin.role` is
+`Maybe Role`, `Nothing` for a rigid variable, which §2.3 gives no role.
+`CheckedName` keeps T-R0b's eight constructors; the D1 spec's proposed
+`ClauseParamType` (§12.2) is not added.
+
+**Boundary probes (checked; purs 0.15.16, scratch modules compiled
+with src and .spago packages, then deleted).** A module named
+Features.Check.Decide.Probe reading `(fields p).outside` and
+`(fields p).decl` compiles. In the same module, `Recorded.RecordedProblem
+record` fails with `Unknown data constructor Recorded.RecordedProblem`;
+importing `RecordedProblem(..)` from Domain.Recorded and applying it
+fails with `Unknown data constructor RecordedProblem`; `coerce ∷ Fields
+→ RecordedProblem` (Safe.Coerce) fails with `No type class instance
+… Coercible … Solving this instance requires the newtype constructor
+RecordedProblem to be in scope`. Features.Check.Generate.Probe
+importing `RecordedProblem(..)` from the Internal module compiles.
+
+**Tests (checked).** test/r0-recorded.test.mjs, 5 tests: the view has
+exactly the 14 fields and reads them back; two problems built alike
+are equal, and changing any one field makes them unequal; `decl` alone
+tells two atom-free problems apart; every constructor of Atom and
+Origin has its arity; Domain.Recorded exports `fields` and no
+`RecordedProblem`. RED: before the modules existed, `node --test
+test/r0-recorded.test.mjs` failed with ERR_MODULE_NOT_FOUND for
+output/Domain.Recorded.Atom. A first GREEN run failed "problems built
+alike compare equal": the test passed a bare role where `Maybe Role` is
+expected; the test was corrected. test/r0-verdict.test.mjs's
+reachability list gains Domain.Recorded.Atom and .Origin.
+
+**Mutant runs (recorded).** In one copy of output/ and the test in the
+session scratchpad (deleted afterwards); unpatched, 5 of 5 pass.
+
+- M1, output/Domain.Recorded.Internal/index.js, ` && eq6(x.types)
+  (y.types)` deleted from `eqRecordedProblem`: fails "problems built
+  alike compare equal; a change in any field does not".
+- M2, same file, `eq3(x.decl)(y.decl) && ` deleted: fails that test and
+  "decl alone distinguishes two otherwise empty problems".
+- M3, output/Domain.Recorded/index.js, `export { RecordedProblem } from
+  "../Domain.Recorded.Internal/index.js";` appended: fails "Domain.Recorded
+  exports the view, not the constructor".
+
+**Not checked.** Derived `Eq` on `RTExpr` recurses once per arrow, as
+`Ty`'s derived instances did before they were replaced (Type/Core.purs
+:78); generated types follow the syntax, so depth is bounded by nesting
+(argued), but no deep-input test exists.

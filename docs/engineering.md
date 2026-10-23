@@ -50,7 +50,10 @@ adding a bypass allowlist.
   `^Features\.Check\.Generate(\.|$)`. A public module re-exports its
   Internal module's types alone (`import X.Internal (T, …) as Exports`
   with `module Exports`), and no module re-exports a constructor from
-  either. purs graph sees neither re-exports nor inlined constructors,
+  either. Domain.Recorded also exports `fields ∷ RecordedProblem →
+  Fields`, the record a constructor-less view returns (R0 Task 3.1,
+  ruling R4): every module reads the problem, only generation builds
+  it. purs graph sees neither re-exports nor inlined constructors,
   and source forms vary (comments, layout, aliases, line endings), so
   two checks read the compiler's output after the build
   (scripts/structure.mjs). `reexportFindings`: purs 0.15.16 emits a

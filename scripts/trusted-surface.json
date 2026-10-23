@@ -2,12 +2,11 @@
  "Domain.Recorded": {
   "source": [
    "module Exports",
-   "AtomId",
-   "CallSite",
-   "OutsideKind",
-   "Path"
+   "fields"
   ],
-  "compiled": []
+  "compiled": [
+   "fields"
+  ]
  },
  "Domain.Verdict": {
   "source": [

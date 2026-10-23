@@ -83,8 +83,9 @@ test('AT16 first half: each verdict constructor, at its arity', () => {
 // Task 1.2 makes compile reach the R0 types through the collecting driver
 // (DeclReport names FunctionName and RecordedProblem), so the Task 1.1
 // check that nothing reaches them is narrowed: from Program.Main only the
-// public type modules and the Internal modules they re-export types from
-// are reachable, only Features.Check.Outcomes imports them, and no
+// public type modules, the Internal modules they re-export types from and
+// the recorded problem's plain data modules (Task 3.1) are reachable,
+// only Features.Check.Outcomes imports them, and no
 // checking, strategy, refuter, admission or generation module is
 // reachable (ruling R6: no such wiring into Program.Compile in this
 // tranche).
@@ -106,7 +107,8 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
     assert.ok(seen.has('Features.Check.Outcomes'));
     assert.ok('Domain.Verdict.Admission' in graph);
     assert.deepEqual([...seen].filter(r0).sort(), ['Domain.Recorded',
-      'Domain.Recorded.Internal', 'Domain.Verdict',
+      'Domain.Recorded.Atom', 'Domain.Recorded.Internal',
+      'Domain.Recorded.Origin', 'Domain.Verdict',
       'Domain.Verdict.Internal', 'Domain.Verdict.Open']);
     assert.deepEqual([...seen].filter(name => !r0(name)
       && graph[name].depends.some(r0)), ['Features.Check.Outcomes']);
