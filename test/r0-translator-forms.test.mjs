@@ -129,3 +129,25 @@ test('E23: a written family is equated; marked unless record-free', () => {
     ['b', 'body:', 0, 'B1', eq(record, record)],
     ['outside', 'body:', 1, 'O4', 'FailFamily']]);
 });
+
+// Task 4.3 (RT8's first run): E17's perform takes E5's three cases, as
+// checking does (Check/Operation.purs `named`).
+test('E17: a partial perform, and an over-applied one (B1)', () => {
+  const performs = translated(`
+effect Two { fn two(a: Int, b: Int): Unit; };
+effect Make { fn make(n: Int): Int -> Int; };
+fn partly(): Int -> Unit with Two = Two.two(1);
+fn overly(): Int with Make = Make.make(1, 2);
+fn main(): Int = 0;
+`);
+  assert.deepEqual(typeAt(performs.partly, 'body:'), fun([Int], Unit));
+  assert.deepEqual(short(ruleEntries(performs.partly, 'E17')),
+    [['b', 'body:', 0, 'B1', eq(Int, Int)]]);
+  const res = tv(fv('body:', 'res'));
+  assert.deepEqual(typeAt(performs.overly, 'body:'), res);
+  assert.deepEqual(short(ruleEntries(performs.overly, 'E17')), [
+    ['b', 'body:', 0, 'B1', eq(Int, Int)],
+    ['b', 'body:', 1, 'B1', eq(fun([Int], Int), fun([Int], res))]]);
+  assert.deepEqual(varInfo(performs.overly, fv('body:', 'res'))[3],
+    nodeType('body:'));
+});

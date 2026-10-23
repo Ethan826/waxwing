@@ -16,13 +16,15 @@ import Prelude
 import Data.Array as Array
 import Data.Maybe (maybe)
 import Data.Traversable (sequence, traverse)
-import Data.Tuple (fst)
+import Data.Tuple (Tuple, fst)
 import Domain.Ids (EffectId)
 import Domain.Recorded.Atom
   ( Atom(..)
   , Head(..)
   , OutsideKind(..)
   , RTExpr(..)
+  , Var
+  , VarInfo
   )
 import Domain.Recorded.Origin
   ( OriginKind(..)
@@ -58,10 +60,19 @@ import Features.Check.Generate.Out
   , markersAt
   , varsOut
   )
-import Features.Check.Generate.Translate (arrowOf, translate, translateAll)
+import Features.Check.Generate.Translate
+  ( Translations
+  , arrowOf
+  , translate
+  , translateAll
+  )
 
 -- An operation referenced, or performed with these arguments.
 data Use = Referenced | Performed (Array Generated)
+
+-- A use's type, and an over-application's entry and `⟨p, res⟩`.
+type Applied =
+  { ty ∷ RTExpr, over ∷ Array Listed, vars ∷ Array (Tuple Var VarInfo) }
 
 -- E17, a reference: `θ(⟦T̄ → result⟧)`.
 operationRef ∷ Context → Path → Span → EffectId → Int → Gen Generated
@@ -70,7 +81,13 @@ operationRef context path span effect index = operation context path span
   index
   Referenced
 
--- E17, a call: `θ(⟦result⟧)`, `eq τ_{e_k} θ(⟦T_k⟧)` per argument (B1).
+-- E17, a call: `eq τ_{e_k} θ(⟦T_k⟧)` per argument up to the operation's
+-- `n` parameters (B1), typed as E5 types a call (amendment, Task 4.3: a
+-- perform is checked as a named call, Check/Operation.purs `named`, so
+-- the rule takes E5's cases, where §3.5 wrote `θ(⟦result⟧)` alone):
+-- `θ(⟦result⟧)` with `n` arguments, the arrow of the rest with fewer,
+-- and with more `⟨p, res⟩` and `eq θ(⟦result⟧) (τ_{e_{n+1}} → … → ⟨p,
+-- res⟩)` (B1), as RT8's read-back found.
 perform
   ∷ Recur
   → Context
@@ -99,12 +116,15 @@ operation context path span effect index use =
   shaped shape = performed shape
     <$> translateAll context.tables naming shape.parameters
     <*> translate context.tables naming shape.result
-  performed shape parameters result =
-    { ty: typeOf parameters result use
+  performed shape parameters result = typed shape parameters result
+    (applied path span use parameters result.ty)
+  typed shape parameters result found =
+    { ty: found.ty
     , out: concatOut
-        ( [ varsOut (instVars path (ExprRule 17) span shape.sorts)
+        ( [ varsOut (instVars path (ExprRule 17) span shape.sorts <> found.vars)
           , emit (at context path (ExprRule 17))
               ( Array.zipWith equation arguments parameters.tys
+                  <> found.over
                   <> marker (not (Array.null shape.sorts)) EffectArgument 2
                     span
                   <> markersAt InstOrigin span
@@ -118,9 +138,27 @@ operation context path span effect index use =
   arguments = case use of
     Referenced → []
     Performed found → found
-  typeOf parameters result = case _ of
-    Referenced → arrowOf parameters.tys result.ty
-    Performed _ → result.ty
+
+-- E17's type and over-application entries: E5's three cases.
+applied ∷ Path → Span → Use → Translations → RTExpr → Applied
+applied path span use parameters result = case use of
+  Referenced → plain (arrowOf parameters.tys result)
+  Performed found
+    | Array.length found > count →
+        { ty: res
+        , over:
+            [ agree span
+                (Equal result (arrowOf (map _.ty (Array.drop count found)) res))
+            ]
+        , vars: [ resVar ]
+        }
+    | otherwise → plain
+        (arrowOf (Array.drop (Array.length found) parameters.tys) result)
+  where
+  count = Array.length parameters.tys
+  resVar = nodeRes path (ExprRule 17) span
+  res = TVar (fst resVar)
+  plain ty = { ty, over: [], vars: [] }
 
 -- E20: `app (Handler e) [⟨p, inst j⟩ …]`, `Outside HandlerType` (O3),
 -- clause bodies with parameters at θ of their declared types; markers of

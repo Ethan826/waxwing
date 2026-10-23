@@ -89,6 +89,26 @@ test('E17: operation arguments, then EffectArgument (O2, body)', () => {
   [['b', ['body'], 0, eq(B('Int'), B('Int'))]]);
 });
 
+// Task 4.3 (RT8's first run): a perform is checked as a named call
+// (Check/Operation.purs `named`, FN001), so E17 takes E5's three cases:
+// fewer arguments are a partial application, more an over-application.
+const two = 'effect Two { fn two(a: Int, b: Int): Unit; };\n';
+test('E17: a partial perform is the arrow of the rest', () => {
+  const problem = pinned(two + 'fn f(): Int -> Unit with Two = Two.two(1);',
+    'f', 'E17', [['b', ['body'], 0, eq(B('Int'), B('Int'))]]);
+  assert.deepEqual(problem.types[0][1], fun([B('Int')], B('Unit')));
+});
+
+test('E17: an over-applied perform is E5\'s ⟨p, res⟩ (B1)', () => {
+  const make = 'effect Make { fn make(n: Int): Int -> Int; };\n';
+  const problem = pinned(make + 'fn f(): Int with Make = Make.make(1, 2);',
+    'f', 'E17', [['b', ['body'], 0, eq(B('Int'), B('Int'))],
+      ['b', ['body'], 1, eq(fun([B('Int')], B('Int')),
+        fun([B('Int')], at([], 'res')))]]);
+  assert.deepEqual(problem.types[0][1], at([], 'res'));
+  assert.deepEqual(positions(problem), [['res', 'type', { nodeType: node }]]);
+});
+
 test('E18, E19: pr at the parameter or the one argument (C1)', () => {
   const crash = pinned('fn f(): (Bool) -> Int = crash;', 'f', 'E18',
     [['bq', ['body'], 0, { pr: at([], { param: 0 }) }]]);

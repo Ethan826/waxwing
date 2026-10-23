@@ -18,9 +18,11 @@ const effectNaming = (cx, here, effect) => {
   return index => made[index];
 };
 
-// E17: `θ(⟦T̄ → result⟧)` for a reference, `θ(⟦result⟧)` for a perform with
-// `eq τ_{e_k} θ(⟦T_k⟧)` per argument; `Outside EffectArgument` when `e`
-// has parameters.
+// E17: `θ(⟦T̄ → result⟧)` for a reference; a perform has `eq τ_{e_k}
+// θ(⟦T_k⟧)` per argument up to `n` and is typed as E5 types a call
+// (Task 4.3's amendment): `θ(⟦result⟧)`, the arrow of the rest, or with
+// more arguments `⟨p, res⟩` and `eq θ(⟦result⟧) (τ_{e_{n+1}} → … →
+// ⟨p, res⟩)` (B1); `Outside EffectArgument` when `e` has parameters.
 const operation = (cx, e, path, env, args) => {
   const here = site(path, 'E17', e.value0);
   const naming = effectNaming(cx, here, e.value1);
@@ -35,10 +37,21 @@ const operation = (cx, e, path, env, args) => {
     if (index < params.length) emit(cx, here, 'b', 'B1',
       eq(type, params[index]));
   });
+  const type = args ? performed(cx, here, params, result, types)
+    : arrow(params, result);
   if (cx.program.effects[e.value1].parameters.length > 0)
     emit(cx, here, 'outside', 'O2', 'EffectArgument');
   flush(cx, here, marks, 'inst');
-  return args ? result : arrow(params, result);
+  return type;
+};
+
+const performed = (cx, here, params, result, types) => {
+  if (types.length <= params.length)
+    return arrow(params.slice(types.length), result);
+  const res = tvar(fresh(cx, here, 'res', 'type', { nodeType: here.path }));
+  emit(cx, here, 'b', 'B1', eq(result, arrow(types.slice(params.length),
+    res)));
+  return res;
 };
 
 // E18: a builtin reference `π → Unit | Text | ⟨p, res⟩`, `π = ⟨p, param 0⟩`,
