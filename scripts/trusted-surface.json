@@ -399,6 +399,27 @@
    "staticRefusal"
   ]
  },
+ "Features.Check.Generate.Static.Problem": {
+  "source": [
+   "Disposition(..)",
+   "Placement(..)",
+   "disposition"
+  ],
+  "compiled": [
+   "AtSites",
+   "Placed",
+   "BeforeResolution",
+   "ResolveRule",
+   "ResolveSemantic",
+   "ResolveSupport",
+   "CheckSemantic",
+   "ProgramWide",
+   "Lowering",
+   "ResourceLimit",
+   "Fault",
+   "disposition"
+  ]
+ },
  "Features.Check.Generate.Static.Rules": {
   "source": [
    "staticRules"

@@ -131,7 +131,7 @@ test('the real tree matches its pin and its FFI names no token module',
     const generate = ['', '.Builtin', '.Call', '.Context', '.Control',
       '.Effect', '.Expr', '.Facts', '.Failure', '.Fresh', '.Inputs',
       '.Lookup', '.Operator', '.Out', '.Pattern', '.Record', '.Rigid',
-      '.Signature', '.Static', '.Static.Rules',
+      '.Signature', '.Static', '.Static.Problem', '.Static.Rules',
       '.Static.Site', '.Static.Walk', '.Translate']
       .map(name => `Features.Check.Generate${name}`);
     assert.deepEqual(Object.keys(importers).sort(),
