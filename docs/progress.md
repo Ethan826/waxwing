@@ -479,10 +479,12 @@ before G-ValidR. `entailedGround` (Features.Check.Entailed, outside
 Strategy* by ruling) reduces through the most general unifier of the
 original equations, per docs/plans/r0-entailed-ground.md, whose
 argument was written, committed and reviewed first (530e276, review
-corrections f0146ce). The holder set is injected beside the problem
-(a labelled amendment). Reason's classifiers moved to Decide.Reading
-with every constructor named. AT19's three cases, `a G0 limit is local
-to G0`, the detectors' disjointness, `G0 leaves open atoms to
+corrections f0146ce). The holder set is the problem's own field
+(`holders`, ruling K-a, author 2026-10-23, fix round 2), computed by
+generation and independently by RT1's translator. Reason's
+classifiers moved to Decide.Reading with every constructor named.
+AT19's three cases, `a G0 limit is local to G0`, the detectors'
+disjointness, `G0 leaves open atoms to
 §3.2(a)`, d02's definedness, `main`'s printability agreement (984
 corpus programs) and EG-oracle (10,100 problems, no counterexample)
 pass; five mutants and two regression rows (`r0-definedness-dropped`,
