@@ -2582,3 +2582,62 @@ Expr's `localOf` answering `Right Unit` for an unbound local: fails
 compiled Lookup's `calleeOf` reading function 0's signature for any
 id: fails "a missing callee, constructor, type, effect or operation"
 and "the undoctored program generates Right for every declaration".
+
+## RT1's comparison and B13 (2026-10-23)
+
+R0 shadow tranche, Task 3.3 steps 4-5 (T-R0b §9 item 1, §11 item 2).
+The generator (Task 3.2, at ae27ebb) and RT1's translator (8515ab3,
+907c961, written before any Task 3.2 commit) are compared by
+test/r0-rt1.serial.test.mjs over the pinned corpus, which holds the
+fixtures' sources: 973 resolving programs, 2,958 declarations, 160,937
+translator entries.
+
+**Result (checked).** `node --test test/r0-rt1.serial.test.mjs`: 7
+pass, no disagreement.
+
+- `generate` is `Right` on every declaration.
+- RT1 as stated: the multisets of `[list, Origin.atom, value]` agree
+  after recorder-spec §5.3's normalization. The normalization drops
+  `eq t t` unless `t` holds a record of two or more parts (a written
+  label beside a tail counts as two parts); on the translator's side
+  it drops 45,394 of 48,377 such atoms. The `vars` maps agree in full,
+  origins and positions included.
+- Beyond the statement: the whole canonical problems agree. That
+  covers every origin (rule, row, span, kind), `types`, the rigid
+  arrays, and the raw entries before normalization. Entry lists and
+  `flexTy`/`flexRow` are compared sorted, since their order is
+  recorded, not canonical; the two sides do record entries in
+  different orders.
+- Every rule id of T-R0b §3 occurs on both sides (entries or `vars`
+  origins), except Sig2, Sig9, E1, E2, E24, P1 and P2, whose rows give
+  no entry and no variable. Every Outside constructor occurs in some
+  corpus program on both sides, except LocalGeneralization (no
+  resolved construct produces it; exempt, ruling R11).
+
+So the shared reading list ("RT1's translator", readings 1-21) and the
+generator agree. Reading 6's conflict was resolved by Task 3.2's prep
+(5bfe2c0): `HandlerHead` takes an `EffectRef`. The generator takes
+the entry by name (`main`), the translator by `program.entry`; they
+agree on the corpus.
+
+**Mutants (recorded).** Each was run on a copy of output/ and the new
+test modules in the session scratchpad (deleted afterwards). The copy's
+test read the corpus from the worktree's git index and ran from the
+worktree directory; that is harness only. Unpatched: 7 of 7 pass.
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| MG (generator) | output/Features.Check.Generate.Failure/index.js `("Fail")("payload")` → `("Fail")("value")` | RT1 multisets, vars, whole problems (first: editors/vscode/fixtures/effect-namespaces.wxw `failing`) |
+| MT (translator) | test/r0-translator-records.mjs `{ spread: spreads.length + 1 }` → `spreads.length` | RT1 multisets, vars, whole problems (first: examples/records.wxw `promote`) |
+
+**B13 settled (generation side).** T-R0b §3.4 and §11 item 2 propose
+that P5-P7 give each record pattern its own equation against the
+scrutinee, with no `Outside PatternGrowth`, pending RT1. Two
+independent implementations agree on every record-pattern atom of the
+corpus (580 P5, 1,737 P6, 419 P7; the B13 test compares them by
+declaration). Neither emits a growth marker: PatternGrowth is not an
+`OutsideKind`. The proposal stands as implemented. What RT1 cannot
+show is whether today's growth rule (Check/PatternRow.purs:76
+`growable`) accepts exactly the problems P5-P7 make valid. That is a
+question about the online solver against `ValidR` (RT8 or CX), not
+about generation, and it stays open there (recorder-spec Q5).

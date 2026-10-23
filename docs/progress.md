@@ -396,6 +396,22 @@ findings, "The recorded problem's fields". Fix round 1: `Eq RTExpr`
 walks arrow spines by a loop (the derived one overflowed at 20,000
 arrows; tested at 80,000), and `OriginKind`'s `Inst` is `InstOrigin`.
 
+## R0 shadow tranche, Task 3.3 steps 4-5: RT1's comparison (2026-10-23)
+
+test/r0-rt1.serial.test.mjs compares the generator (Task 3.2) and RT1's
+translator over the pinned corpus (973 programs, 2,958 declarations):
+`generate` is Right everywhere; the `(Origin.atom, entry)` multisets
+agree after recorder-spec §5.3's normalization; `vars` agree; the
+whole problems agree, origins and spans included, with recorded-order
+arrays sorted; every rule id occurs on both sides but the seven that
+emit nothing; every marker kind but LocalGeneralization (exempt, R11)
+has a fixture. No disagreement. A generator mutant (one path step)
+and a translator mutant (spread numbering) each fail three tests.
+B13 settled on the generation side: P5-P7 agree on every
+record-pattern atom with no growth marker; whether the online growth
+rule matches `ValidR` stays open (RT8/CX). Evidence in findings, "RT1's
+comparison and B13". No fixture changed, no corpus re-pin.
+
 ## R0 shadow tranche, Task 3.3 steps 1-3: RT1's translator (2026-10-23)
 
 RT1's independent translator (T-R0b §9 item 1), written from T-R0b
