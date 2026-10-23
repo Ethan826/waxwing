@@ -114,6 +114,277 @@
    "StaticRule from ../Domain.Verdict.Static/index.js"
   ]
  },
+ "Features.Check.Generate": {
+  "source": [
+   "module Exports",
+   "generate"
+  ],
+  "compiled": [
+   "generate",
+   "staticRules from ../Features.Check.Generate.Static.Rules/index.js"
+  ]
+ },
+ "Features.Check.Generate.Builtin": {
+  "source": [
+   "Builtin(..)",
+   "builtinCall",
+   "builtinRef"
+  ],
+  "compiled": [
+   "PrintBuiltin",
+   "ShowBuiltin",
+   "CrashBuiltin",
+   "builtinCall",
+   "builtinRef"
+  ]
+ },
+ "Features.Check.Generate.Call": {
+  "source": [
+   "call",
+   "construct",
+   "ctorRef",
+   "functionRef"
+  ],
+  "compiled": [
+   "call",
+   "construct",
+   "ctorRef",
+   "functionRef"
+  ]
+ },
+ "Features.Check.Generate.Context": {
+  "source": [
+   "Context",
+   "Recur",
+   "at",
+   "bindLocal",
+   "localType"
+  ],
+  "compiled": [
+   "at",
+   "bindLocal",
+   "localType"
+  ]
+ },
+ "Features.Check.Generate.Control": {
+  "source": [
+   "block",
+   "lambda",
+   "match"
+  ],
+  "compiled": [
+   "block",
+   "lambda",
+   "match"
+  ]
+ },
+ "Features.Check.Generate.Effect": {
+  "source": [
+   "agree",
+   "handler",
+   "marker",
+   "operationRef",
+   "perform",
+   "with"
+  ],
+  "compiled": [
+   "agree",
+   "handler",
+   "marker",
+   "operationRef",
+   "perform",
+   "$$with as with"
+  ]
+ },
+ "Features.Check.Generate.Expr": {
+  "source": [
+   "expr"
+  ],
+  "compiled": [
+   "expr"
+  ]
+ },
+ "Features.Check.Generate.Facts": {
+  "source": [
+   "Implied",
+   "impliedOf",
+   "signatureTypes"
+  ],
+  "compiled": [
+   "impliedOf",
+   "signatureTypes"
+  ]
+ },
+ "Features.Check.Generate.Failure": {
+  "source": [
+   "fail",
+   "handle"
+  ],
+  "compiled": [
+   "fail",
+   "handle"
+  ]
+ },
+ "Features.Check.Generate.Fresh": {
+  "source": [
+   "FreshAt",
+   "Naming",
+   "auxiliary",
+   "child",
+   "childAt",
+   "childOf",
+   "fresh",
+   "instVars",
+   "instNaming",
+   "nodeRes",
+   "rigidNaming",
+   "sortVar"
+  ],
+  "compiled": [
+   "auxiliary",
+   "child",
+   "childAt",
+   "childOf",
+   "fresh",
+   "instVars",
+   "instNaming",
+   "nodeRes",
+   "rigidNaming",
+   "sortVar"
+  ]
+ },
+ "Features.Check.Generate.Inputs": {
+  "source": [
+   "Inputs",
+   "Signature",
+   "Signatures",
+   "Tables",
+   "generationInputs",
+   "signatureOf",
+   "signatureOfDecl"
+  ],
+  "compiled": [
+   "generationInputs",
+   "signatureOf",
+   "signatureOfDecl"
+  ]
+ },
+ "Features.Check.Generate.Lookup": {
+  "source": [
+   "CtorShape",
+   "OperationShape",
+   "calleeOf",
+   "ctorShape",
+   "effectSorts",
+   "operationShape"
+  ],
+  "compiled": [
+   "calleeOf",
+   "ctorShape",
+   "effectSorts",
+   "operationShape"
+  ]
+ },
+ "Features.Check.Generate.Operator": {
+  "source": [
+   "apply",
+   "arithmetic",
+   "comparison",
+   "conditional",
+   "interpolate",
+   "pipe"
+  ],
+  "compiled": [
+   "apply",
+   "arithmetic",
+   "comparison",
+   "conditional",
+   "interpolate",
+   "pipe"
+  ]
+ },
+ "Features.Check.Generate.Out": {
+  "source": [
+   "At",
+   "Generated",
+   "Item(..)",
+   "Listed",
+   "Out",
+   "TypeMarker(..)",
+   "concatOut",
+   "emit",
+   "listed",
+   "markersAt",
+   "noOut",
+   "typeAt",
+   "varsOut"
+  ],
+  "compiled": [
+   "ToD",
+   "ToB",
+   "ToBQ",
+   "ToOutside",
+   "ToAdm",
+   "ToSplit",
+   "OverRecords",
+   "Application",
+   "HandlerMark",
+   "concatOut",
+   "emit",
+   "listed",
+   "markersAt",
+   "noOut",
+   "typeAt",
+   "varsOut"
+  ]
+ },
+ "Features.Check.Generate.Pattern": {
+  "source": [
+   "Bound",
+   "pattern"
+  ],
+  "compiled": [
+   "pattern"
+  ]
+ },
+ "Features.Check.Generate.Record": {
+  "source": [
+   "extension",
+   "fieldAccess",
+   "literal",
+   "removal",
+   "update"
+  ],
+  "compiled": [
+   "extension",
+   "fieldAccess",
+   "literal",
+   "removal",
+   "update"
+  ]
+ },
+ "Features.Check.Generate.Rigid": {
+  "source": [
+   "rigidVariables"
+  ],
+  "compiled": [
+   "rigidVariables"
+  ]
+ },
+ "Features.Check.Generate.Signature": {
+  "source": [
+   "calleeClauses",
+   "declaration",
+   "isEntry",
+   "parameterLocals"
+  ],
+  "compiled": [
+   "calleeClauses",
+   "declaration",
+   "isEntry",
+   "parameterLocals"
+  ]
+ },
  "Features.Check.Generate.Static": {
   "source": [
    "StaticClass(..)",
@@ -126,6 +397,14 @@
    "Semantic",
    "staticClass",
    "staticRefusal"
+  ]
+ },
+ "Features.Check.Generate.Static.Rules": {
+  "source": [
+   "staticRules"
+  ],
+  "compiled": [
+   "staticRules"
   ]
  },
  "Features.Check.Generate.Static.Site": {
@@ -197,6 +476,29 @@
    "FailPayloadWritten",
    "NofailLabel",
    "MarkVariableWritten"
+  ]
+ },
+ "Features.Check.Generate.Static.Walk": {
+  "source": [
+   "expressions"
+  ],
+  "compiled": [
+   "expressions"
+  ]
+ },
+ "Features.Check.Generate.Translate": {
+  "source": [
+   "Translated",
+   "arrowOf",
+   "record",
+   "translate",
+   "translateAll"
+  ],
+  "compiled": [
+   "arrowOf",
+   "record",
+   "translate",
+   "translateAll"
   ]
  }
 }
