@@ -12,6 +12,7 @@ module Features.Check.Entailed
   ( GroundType
   , Reduction(..)
   , entailedGround
+  , fragment
   , groundType
   , reduction
   ) where
@@ -79,7 +80,8 @@ equation = case _ of
   Disjoint _ _ → []
   Ff → []
 
--- At most one tail and no repeated label, at every depth.
+-- At most one tail and no repeated label, at every depth: where `mgu`
+-- is complete (note §2). Task 4.3's read-back reads it too.
 fragment ∷ RTExpr → Boolean
 fragment ty = case ty of
   Arrow _ _ → all fragment found.parameters && fragment found.result

@@ -76,10 +76,20 @@ rows left right state =
 -- A record's tail in the fragment: none, or one row variable.
 data Tail = Closed | Tailed Var
 
+-- Several tails are outside the fragment, so no unifier is claimed
+-- (Task 4.2 minor M-4: the first tail was taken silently).
+tailOf ∷ Array Var → Maybe Tail
+tailOf = case _ of
+  [] → Just Closed
+  [ tail ] → Just (Tailed tail)
+  _ → Nothing
+
 tailed
   ∷ Fields → Fields → Array Var → Array Var → State → Maybe State
-tailed onlyLeft onlyRight leftTails rightTails state =
-  case tailOf leftTails, tailOf rightTails of
+tailed onlyLeft onlyRight leftTails rightTails state = do
+  left ← tailOf leftTails
+  right ← tailOf rightTails
+  case left, right of
     Closed, Closed → when' (none onlyLeft && none onlyRight) state
     Closed, Tailed tail → whenFlexible tail (none onlyRight)
       (binding tail (closed onlyLeft) state)
@@ -89,7 +99,6 @@ tailed onlyLeft onlyRight leftTails rightTails state =
       | tail == tail' → when' (none onlyLeft && none onlyRight) state
       | otherwise → apart onlyLeft onlyRight tail tail' state
   where
-  tailOf tails = maybe Closed Tailed (Array.head tails)
   closed added = Record added.fields []
   whenFlexible tail holds bound =
     if holds && not (isRigid tail) then bound else Nothing

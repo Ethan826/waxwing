@@ -14,6 +14,13 @@
 -- exhausted search from a spent budget, so `Nothing` on every run is
 -- `NoCounterInstance Exhausted`. A refuter therefore never contributes
 -- `Limit` to rule 3; T-R0a §5.1 fixes the search's type.
+--
+-- Fuel (Task 4.3, documented, not changed). A strategy with no fuel is
+-- not searched (Features.Check.Strategy); a refuter's search still runs
+-- and is given the budget to respect. Skipping it would need a refuter
+-- `LimitReached` that Domain.Verdict does not have, and its end could
+-- still not say "spent" through `Maybe CX`: an open question for the
+-- author and T-R0a's owner (test/r0-online-carries.test.mjs).
 module Features.Check.Decide.Refuters
   ( ShadowRefuter
   , canonical

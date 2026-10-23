@@ -155,3 +155,7 @@ export const canonicalOf = problem => {
       holding: idsOf(found.holders.holding) }
   };
 };
+
+// One recorded type, variable or path in canonical form (Task 4.3's
+// read-back tests decode a candidate's bindings with them).
+export { rtexpr as decodeType, variable as decodeVar, path as decodePath };

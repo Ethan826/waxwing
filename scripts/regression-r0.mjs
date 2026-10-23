@@ -128,5 +128,69 @@ export const r0Rows = [
     replacement: '  Printable _ → rigidOpen\n',
     probe: 'r0-g0-limit-global',
     message: /G0's limit blocked every strategy: Unresolved Unsupported/
+  },
+  {
+    // Task 4.3, criterion 1: the shadow assembly's detector replaced, so
+    // an atom open until G-ValidR no longer blocks G0's Solved.
+    name: 'r0-shadow-detector',
+    file: 'src/Features/Check/Decide/Shadow.purs',
+    needle: '  , openRequirements\n',
+    replacement: '  , openRequirements: const []\n',
+    probe: 'r0-shadow-detector',
+    message: /the shadow detector let Solved through: Solved/
+  },
+  {
+    // Task 4.3 (RT8's first run): a constructor pattern's slot read as
+    // an expression's, so P4's `inst` variables have no value.
+    name: 'r0-ctor-slot',
+    file: 'src/Features/Check/Strategy/ReadBack/Position.purs',
+    needle: '  AtPattern (Checked.Pattern found) → ownerArgument found.ty'
+      + ' >>= indexed\n    at.rank\n',
+    replacement: '  AtPattern _ → Left "a pattern where an expression was'
+      + ' expected"\n',
+    probe: 'r0-ctor-slot',
+    message: /a constructor pattern's slot was not read: Searched Broke/
+  },
+  {
+    // Task 4.3, criterion 5: the read-back leaves holes unbound, so `pr`
+    // at an open flexible variable meets G0's backstop.
+    name: 'r0-hole-unbound',
+    file: 'src/Features/Check/Strategy/ReadBack.purs',
+    needle: '  settledBinding (Tuple variable value) = Tuple variable'
+      + ' (settled value)\n',
+    replacement: '  settledBinding (Tuple variable value) = Tuple variable'
+      + ' (identity value)\n',
+    probe: 'r0-hole-unbound',
+    message: /a hole was left unbound: CheckFailed \w+ RequirementUnjudged/
+  },
+  {
+    // Task 4.3, criterion 3 (ruling R3): a stopping kind routed as
+    // confined, so doubt about shared input lets the run go on.
+    name: 'r0-stop-confined',
+    file: 'src/Features/Check/Strategy/Online/Ending.purs',
+    needle: '  TableLookup → Stops\n',
+    replacement: '  TableLookup → Confined\n',
+    probe: 'r0-stop-confined',
+    message: /a TableLookup failure was confined: Solved/
+  },
+  {
+    // Task 4.3 (RT8's recorder defect): E17 types a partial perform as
+    // the operation's result, which today's solver does not.
+    name: 'r0-perform-arity',
+    file: 'src/Features/Check/Generate/Effect.purs',
+    needle: '    | otherwise → plain\n',
+    replacement: '    | otherwise → const (plain result)\n',
+    probe: 'r0-perform-arity',
+    message: /a partial perform was recorded as its result: CheckFailed/
+  },
+  {
+    // Task 4.3 (ruling R10 (iii)): the declaration found by id alone, so
+    // another program's declaration is searched for the problem.
+    name: 'r0-declaration-by-id',
+    file: 'src/Features/Check/Strategy/Online.purs',
+    needle: '  same regenerated = fields regenerated == fields problem\n',
+    replacement: '  same _ = true\n',
+    probe: 'r0-declaration-by-id',
+    message: /another program's declaration was searched: Solved/
   }
 ];
