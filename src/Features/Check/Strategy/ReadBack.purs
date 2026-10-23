@@ -3,7 +3,8 @@
 -- plumbing: G0's check judges what it reads.
 --
 -- 1. Every positioned flexible variable takes the settled type at its
---    checked-IR position (ReadBack.Position), read directly.
+--    checked-IR position (ReadBack.Position), read directly, by its
+--    sort: a row variable's bare hole is a row tail (R022).
 -- 2. The auxiliaries have no position (§5.2). They are completed by
 --    Robinson unification (Features.Check.Entailed.Mgu) of the problem's
 --    equations that still mention one once the positioned values are
@@ -124,22 +125,22 @@ solved problem theta = filter ours (Map.toUnfoldable theta)
   ours (Tuple variable _) = maybe false isFlexible
     (Map.lookup variable (fields problem).vars)
 
-flexible ∷ RecordedProblem → Array (Tuple Var CheckedName)
+flexible ∷ RecordedProblem → Array (Tuple Var VarInfo)
 flexible problem = mapMaybe placed (Map.toUnfoldable (fields problem).vars)
   where
-  placed (Tuple variable info) = case info.position of
+  placed entry@(Tuple _ info) = case info.position of
     Auxiliary → Nothing
-    position
-      | isFlexible info → Just (Tuple variable position)
+    _
+      | isFlexible info → Just entry
       | otherwise → Nothing
 
 positioned
   ∷ Checked.Expr
   → (Path → Int → Slotted)
-  → Tuple Var CheckedName
+  → Tuple Var VarInfo
   → Either String (Tuple Var RTExpr)
-positioned body ranked (Tuple variable position) =
-  Tuple variable <$> valueAt body ranked position
+positioned body ranked (Tuple variable info) =
+  Tuple variable <$> valueAt body ranked info.sort info.position
 
 -- Slot `index` at `path`, ranked among the `inst` variables generation
 -- recorded there (ReadBack.Position, P4). Partially applied to a

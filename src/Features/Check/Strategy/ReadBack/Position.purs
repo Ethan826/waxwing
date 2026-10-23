@@ -19,18 +19,23 @@ import Data.Array as Array
 import Data.Either (Either(..), note)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Atom (CheckedName(..), RTExpr)
+import Domain.Recorded.Atom (CheckedName(..), RTExpr, VarSort)
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Type (Ty(..))
-import Features.Check.Strategy.ReadBack.Type (readType)
+import Features.Check.Strategy.ReadBack.Type (readSorted)
 import Features.Check.Strategy.ReadBack.Walk (Node(..), nodeAt)
 
 -- A slot's index, and its rank among the slots generation records.
 type Slotted = { index ∷ Int, rank ∷ Int }
 
+-- Read by the variable's sort (ReadBack.Type `readSorted`, R022).
 valueAt
-  ∷ Checked.Expr → (Path → Int → Slotted) → CheckedName → Either String RTExpr
-valueAt body ranked = map readType <<< case _ of
+  ∷ Checked.Expr
+  → (Path → Int → Slotted)
+  → VarSort
+  → CheckedName
+  → Either String RTExpr
+valueAt body ranked sort = map (readSorted sort) <<< case _ of
   Slot path index → node body path >>= slot (ranked path index)
   NodeType path → Checked.typeOf <$> expression body path
   ParamType path index → expression body path >>= parameter index

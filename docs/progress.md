@@ -579,6 +579,25 @@ Domain.Verdict's compiled exports gain `Uncovered` and `HoleContract`.
 No corpus re-pin. Evidence in findings, "The substitution witness, Cov
 and the hole contract".
 
+## R0 shadow tranche, R022: the read-back respects a variable's sort (2026-10-23)
+
+Shadow only, no acceptance change; follow-up to Tasks 4.3/4.4 on the
+author's ruling. The online read-back reads a row-sorted variable's
+bare hole as a row tail, `{ ...hole n }`, as specialization reads an
+unsolved record-sorted argument (Specialize/Values.purs `slotType`), so
+R022's probes (`disjoint` and `lacks`, inline in test/r0-r022-probes.mjs)
+are no longer refused NotGeneric. Four production-path tests seen
+failing first; the lacks/disjoint witness test now uses the read-back's
+σ. Under W §1.5's literal check both probes are Solved with `NoWitness
+HoleContract`. RT8 gains the probes as inline rows (3,017
+declarations), re-pinned; no corpus row changed. Mutant and regression
+row `r0-readback-sort-blind` fail as expected; `r0-cov-skipped` now
+disables coverage alone. Review notes recorded: the author's W §1.5
+question (ruled), the `Free`-numbering risk (BACKLOG R023, open), the
+contract's rigid-as-`Unjudged` claim labelled argued, amendment 6's
+count. No corpus re-pin. Evidence in findings, "R022: the read-back
+respects a variable's sort".
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted

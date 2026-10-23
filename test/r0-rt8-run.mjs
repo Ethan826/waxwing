@@ -15,6 +15,7 @@ import { decodeVar } from './r0-canonical-decode.mjs';
 import { load } from './r0-generate-support.mjs';
 import { onlineFrom } from './r0-online-support.mjs';
 import { accountFor, isDefect, witnessFor } from './r0-rt8-account.mjs';
+import { r022Probes } from './r0-r022-probes.mjs';
 
 export const rt8File = 'test/fixtures/r0/rt8.json';
 export const pinCommand = 'node scripts/r0-rt8-pin.mjs';
@@ -56,7 +57,9 @@ const declarationsOf = ({ origin, source }) => {
   });
 };
 
-export const rt8Rows = async () => (await loadCorpus())
+// The pinned corpus, then inline probes kept out of it (R022), so the
+// corpus manifest and the first-diagnostic snapshot stay as they are.
+export const rt8Rows = async () => [...await loadCorpus(), ...r022Probes]
   .flatMap(declarationsOf);
 
 const variableText = variable => variable === null ? ''

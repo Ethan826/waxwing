@@ -13,6 +13,7 @@ module Features.Check.Strategy.ReadBack.Type
   , holesIn
   , isHole
   , readType
+  , readSorted
   , settled
   ) where
 
@@ -28,6 +29,7 @@ import Domain.Recorded.Atom
   , RTExpr(App, Arrow, Base, Record)
   , Role(..)
   , Var(..)
+  , VarSort(..)
   )
 import Domain.Recorded.Atom as Atom
 import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
@@ -84,6 +86,17 @@ readType = case _ of
   field (Tuple label value) = Tuple label (readType value)
   arrowed found = foldr Arrow (readType found.result)
     (map readType found.parameters)
+
+-- A value read for a variable of the given sort (R022). A row-sorted
+-- variable whose checked type is a bare hole takes the hole as a row
+-- tail, `{ ...hole n }`, as specialization takes an unsolved
+-- record-sorted argument (Specialize/Values.purs `slotType`: `RecordSort,
+-- TVar hole@(Hole _) → TRecord (recordRow [] [ hole ])`); read as a type,
+-- σ would not be generic. Any other value is as `readType` reads it.
+readSorted ∷ VarSort → Ty Open → RTExpr
+readSorted sort ty = case sort, ty of
+  SortRow, TVar (Hole index) → Record [] [ holeVar index ]
+  _, _ → readType ty
 
 named ∷ Open → Var
 named = case _ of

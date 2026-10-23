@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { pinCommand, pinnedRt8, rt8File, rt8Rows, rt8Table }
   from './r0-rt8-run.mjs';
 import { boundHoleClass, holeContractClass } from './r0-rt8-account.mjs';
+import { r022Probes } from './r0-r022-probes.mjs';
 
 // Task 4.3, RT8 (T-R0b §9 item 8) and acceptance criteria 2 and 4, over
 // the pinned corpus: every declaration today's checker accepts or
@@ -70,9 +71,11 @@ test('RT8: a Solved resting on a bound hole is its own class', () => {
 });
 
 // Task 4.4: every accepted candidate's witness, blocked or not, passes
-// Cov's coverage; the one without a witness fails the hole contract, W
-// §1.5's check refusing `{}` at a `disjoint` atom (its own class, listed
-// with the variable named; docs/findings.md).
+// Cov's coverage; those without a witness fail the hole contract, W
+// §1.5's check refusing `{}` at a `disjoint` or `lacks` atom (their own
+// class, listed with the variable named; docs/findings.md): the corpus's
+// render-quiet-annotated, and R022's inline probes once read back.
+const probes = r022Probes.map(({ origin }) => `${origin}#g`);
 test('RT8: every candidate is covered; a hole-contract refusal is listed',
   () => {
     const accepted = Object.values(table.witnesses).reduce((a, b) => a + b);
@@ -80,7 +83,8 @@ test('RT8: every candidate is covered; a hole-contract refusal is listed',
     assert.deepEqual(Object.keys(table.witnesses).sort(),
       ['NoWitness HoleContract', 'Witnessed']);
     assert.deepEqual(table.noWitness.map(entry => entry.split(': ')[0]),
-      [quiet]);
-    assert.equal(rows.find(row => row.at === quiet).class,
-      holeContractClass);
+      [quiet, ...probes]);
+    for (const at of [quiet, ...probes])
+      assert.equal(rows.find(row => row.at === at).class,
+        holeContractClass, at);
   });

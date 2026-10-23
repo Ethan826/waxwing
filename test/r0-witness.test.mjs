@@ -4,6 +4,7 @@ import { load } from './r0-generate-support.mjs';
 import { stableStringify } from './r0-canonical.mjs';
 import { fieldSource, routeSource, witnessFrom }
   from './r0-witness-support.mjs';
+import { r022Probes } from './r0-r022-probes.mjs';
 
 // Task 4.4 (author's criteria, 2026-10-23): a checked substitution as a
 // compilation witness (W §1.6), Cov (W §4) and the hole contract's
@@ -124,32 +125,26 @@ test('a BQ atom failing at the default breaks the contract', () => {
 // The `lacks` and `disjoint` arms: W §1.5's check wants an equation, so
 // such an atom mentioning a hole breaks it even where the default `{}`
 // would do (G0 accepts σ at the default): the check is sufficient, not
-// complete. Every equation here has equal sides. σ is written by hand:
-// the read-back reads these row slots as type holes (NotGeneric; Task
-// 4.4 finding, BACKLOG).
-const viaLambda = callee => `${callee}\n`
-  + 'fn g(y: { ...s }): Int = { let k = fn(x) => call(x, y); 0 };\n'
-  + 'fn main(): Int = 0;\n';
-const callees = [['Disjoint', 'fn call(whole: { ...u }, left: { ...s }): '
-  + 'Int where u disjoint s = 0;'], ['Lacks', 'fn call(whole: { ...u }, '
-  + 'left: { ...s }): Int where u lacks { a } = 0;']];
+// complete. Every equation here has equal sides. σ is the production
+// read-back's (R022 fixed: the row slot's hole is a row tail).
 const at = steps => ({ root: 'body', steps: ['Block', 'items', 0, 'Let',
   'value', ...steps] });
 test('a lacks or disjoint atom mentioning a hole breaks the contract',
   () => {
-    for (const [kind, callee] of callees) {
-      const problem = online.problemOf(online.programOf(viaLambda(callee)),
-        'g');
+    for (const { kind, source } of r022Probes) {
+      const { problem, certificate } = candidateOf(source, 'g');
       const param = w.variableAt(problem, { fresh: { path: at([]),
         role: { param: 0 } } });
       const slot = index => w.variableAt(problem, { fresh: { path:
         at(['Lambda', 'body']), role: { inst: index } } });
-      const sigmaWith = row => w.substitution([[param, row], [slot(0), row],
-        [slot(1), w.rigidRow(0)]]);
+      const expected = w.substitution([[param, w.holeRow(0)],
+        [slot(0), w.holeRow(0)], [slot(1), w.rigidRow(0)]]);
+      assert.deepEqual(online.sigmaOf(certificate.unsettled),
+        online.sigmaOf(expected), kind);
       assert.deepEqual(w.reason(w.witnessOf(problem,
-        sigmaWith(w.holeRow(0)))), ['HoleContract', w.key(param)], kind);
-      assert.equal(online.check(problem, sigmaWith(new w.Atom.Record([],
-        []))).constructor.name, 'Right', kind);
+        certificate.unsettled)), ['HoleContract', w.key(param)], kind);
+      assert.equal(online.check(problem, certificate.substitution)
+        .constructor.name, 'Right', kind);
       assert.ok(problem.b.some(entry => entry.value.constructor.name
         === kind), kind);
     }

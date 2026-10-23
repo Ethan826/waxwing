@@ -14,7 +14,8 @@
 -- broken hole; a hole no binding mentions is never broken, since atoms
 -- reach holes only through bindings. A remaining variable reads as
 -- `Unjudged` under `BQ`, so a requirement holds only when the ground
--- rule settles it without one.
+-- rule settles it without one (no stricter than G0 at the settled σ:
+-- argued, no fixture with a rigid holder; docs/findings.md reading 4).
 module Features.Check.Strategy.HoleContract (holeContract) where
 
 import Prelude

@@ -1,5 +1,5 @@
 {
- "declarations": 3011,
+ "declarations": 3017,
  "classes": {
   "(a) blocked: Unresolved Unsupported Outside DataApplication, Outside HandlerType": 2,
   "(a) blocked: Unresolved Unsupported Outside DataApplication": 563,
@@ -27,8 +27,8 @@
   "(b) declined by g0Guard, today refuses": 1,
   "(b) declined by g0Guard": 3,
   "Solved with a bound hole (pending the author's ambiguity ruling)": 3,
-  "Solved, no witness: HoleContract (W §1.5's check refuses a default)": 1,
-  "agree: Solved": 1985,
+  "Solved, no witness: HoleContract (W §1.5's check refuses a default)": 3,
+  "agree: Solved": 1989,
   "agree: no candidate (Exhausted)": 233,
   "agree: no candidate (OutOfBudget)": 1,
   "today's own internal failure (SearchBroke)": 3
@@ -153,13 +153,17 @@
   "test/poly-programs.mjs:programs#57#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/poly-programs.mjs:programs#58#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
   "test/poly-programs.mjs:programs#59#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
-  "test/poly-programs.mjs:programs#60#main: (a) blocked: Unresolved Unsupported Outside DataApplication"
+  "test/poly-programs.mjs:programs#60#main: (a) blocked: Unresolved Unsupported Outside DataApplication",
+  "inline:r022-disjoint#g: Solved, no witness: HoleContract (W §1.5's check refuses a default)",
+  "inline:r022-lacks#g: Solved, no witness: HoleContract (W §1.5's check refuses a default)"
  ],
  "witnesses": {
-  "NoWitness HoleContract": 1,
-  "Witnessed": 2769
+  "NoWitness HoleContract": 3,
+  "Witnessed": 2773
  },
  "noWitness": [
-  "test/fixtures/r005b/render-quiet-annotated.json#main: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[]},\"role\":{\"inst\":1}}}"
+  "test/fixtures/r005b/render-quiet-annotated.json#main: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[]},\"role\":{\"inst\":1}}}",
+  "inline:r022-disjoint#g: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[\"Block\",\"items\",0,\"Let\",\"value\"]},\"role\":{\"param\":0}}}",
+  "inline:r022-lacks#g: NoWitness HoleContract {\"fresh\":{\"path\":{\"root\":\"body\",\"steps\":[\"Block\",\"items\",0,\"Let\",\"value\"]},\"role\":{\"param\":0}}}"
  ]
 }

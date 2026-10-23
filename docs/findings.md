@@ -3591,12 +3591,23 @@ experiment, not an ambiguity policy.
    weakest choice for disjointness. The check is sufficient, not
    complete; RT8 meets one case (below). A `BQ` atom holds only if the
    ground rule gives `Holds` at the defaults with every remaining
-   variable `Unjudged` (no stricter than G0 at the settled σ, argued).
+   variable `Unjudged` (no stricter than G0 at the settled σ, argued
+   only: no fixture has a rigid holder under a `BQ` atom with a hole;
+   RT8 has no `BQ` refusal).
 5. *Labelled choice:* a variable σ leaves out is `Free` at a hole
    numbered above every hole σ mentions, in `Ord Var` order; no
-   checked-IR hole stands for it.
+   checked-IR hole stands for it. *Open risk (review, 2026-10-23;
+   BACKLOG R023):* that number can equal a hole of the checked
+   declaration that σ does not mention, since the numbering sees σ's
+   holes only. Harmless to the contract, which judges bindings alone;
+   it matters once lowering reads `Free n` (Task 6+), where two
+   variables would share one hole. Next check: a fixture whose σ omits
+   a variable while the checked IR holds a hole σ does not mention,
+   showing the numbers apart (or number above the checked IR's holes).
+   Recording it does not close it.
 6. *Amendment (after the mutant run, not before):* the lacks/disjoint
-   test was added because mutant M5 survived the first five tests.
+   test was added because mutant M5 survived the first six tests
+   (corrected 2026-10-23 from "five": RED lists six).
 
 **TDD (checked).** Tests in test/r0-witness.test.mjs, written against
 a stub (`substitutionWitness` gives an empty `Witnessed`, `coverage`
@@ -3662,4 +3673,74 @@ rt8.json `noWitness` and `boundHoles`. Counts moved: bound-hole class
 where u disjoint s = 0; fn g(y: { ...s }): Int = { let k = fn(x) =>
 d2(x, y); 0 }; fn main(): Int = 0;`, and the same with `where u lacks
 { a }`. RT8's corpus has no such declaration (no NotGeneric defect).
-The lacks/disjoint test writes σ by hand for this reason.
+The lacks/disjoint test writes σ by hand for this reason. (Fixed
+2026-10-23; see "R022: the read-back respects a variable's sort".)
+
+**Question to the author (review, 2026-10-23; ruled the same day).**
+Keep W §1.5's literal check, which refuses any `lacks` or `disjoint`
+atom that mentions a hole, or admit such atoms when they hold at the
+default? Ruling: amend the check to admit them when they are
+established at the default by the existing atom checks under the
+declared hypotheses, else keep `NoWitness`; equations unchanged; no
+split selection or ambiguity policy follows. The narrow rule is
+docs/plans/r0-hole-contract-amendment.md, pending its review.
+
+## R022: the read-back respects a variable's sort (2026-10-23)
+
+Follow-up to Tasks 4.3/4.4 (author's ruling of 2026-10-23), shadow
+only: nothing reachable from compile changed; no corpus re-pin (the
+probes are inline, test/r0-r022-probes.mjs).
+
+**Fix.** ReadBack.Type `readSorted`: a row-sorted variable whose
+checked type is a bare hole reads as `{ ...hole n }`; anything else as
+`readType` reads it. This matches specialization, which takes an
+unsolved record-sorted argument as the empty-fields row with the hole
+as its tail (cited: src/Features/Specialize/Values.purs `slotType`,
+`RecordSort, TVar hole@(Hole _) → TRecord (recordRow [] [ hole ])`) and
+then closes it (Specialize/Lower.purs `tail`, `Hole _ → pure Nothing`).
+ReadBack.Position's `valueAt` takes the variable's recorded sort.
+Checked: a solved row slot is already a `TRecord` in the checked IR
+(the probes' inst 1 reads `{ ...rigid 0 }`), so only the bare hole
+needed the sort.
+
+**TDD (checked).** test/r0-readback-sort.test.mjs, through the online
+search and `shadowDecisions`, for both probes (`where u disjoint s`,
+`where u lacks { a }`). RED, `node --test --test-reporter=spec
+test/r0-readback-sort.test.mjs`: 0 pass, 4 fail: "the row slot's hole
+is read as a row tail" (actual `{"tvar": hole 0}`, expected `{"record":
+{fields [], tails [hole 0]}}`) and "shadowDecisions accepts the
+read-back σ" (`CheckFailed`, message `NotGeneric`), each for Disjoint
+and Lacks. test/r0-witness.test.mjs's lacks/disjoint test, switched to
+the production σ (`certificate.unsettled`, asserted equal to the old
+hand-written σ; G0 judged on `certificate.substitution`), failed
+before the fix (σ differs at inst 0). RT8 with the probes added, before
+the fix: defects `inline:r022-disjoint#g` and `inline:r022-lacks#g`,
+`DEFECT: candidate refused, NotGeneric`. GREEN: 4/4, 7/7, RT8 5/5.
+
+**Under the literal W §1.5 rule (checked).** Both probes are now
+`Accepted` with `NoWitness (HoleContract v)`, `v` the lambda's
+parameter 0 (`x ↦ { ...hole 0 }`): the `disjoint`/`lacks` atom mentions
+hole 0. G0 accepts the settled σ (`x = {}`). RT8 class `Solved, no
+witness: HoleContract`.
+
+**RT8 (checked, `node scripts/r0-rt8-pin.mjs`, re-pinned).** 3,011 →
+3,017 declarations: the six of the two inline probes (`d2`, `g`,
+`main` each). `agree: Solved` 1,985 → 1,989 (`d2`, `main`), HoleContract
+class 1 → 3, `Witnessed` 2,769 → 2,773, `NoWitness HoleContract` 1 → 3;
+no corpus row changed. test/r0-rt8.serial.test.mjs pins `noWitness` to
+render-quiet-annotated and the two probes.
+
+**Mutant and regression row (checked).** Patch (ReadBack/Type.purs):
+`SortRow, TVar (Hole index) → Record [] [ holeVar index ]` →
+`SortRow, TVar (Hole index) → readType (TVar (Hole index))`. In a
+scratch copy, built: test/r0-readback-sort.test.mjs 0 pass 4 fail (all
+four above), test/r0-witness.test.mjs 6 pass 1 fail (lacks or
+disjoint). RT8 needs `git ls-files`, so it was not run in the git-less
+copy. Row `r0-readback-sort-blind` (same patch; probe: each R022 probe's
+online attempt must be `Accepted`): `node scripts/regression.mjs
+r0-readback-sort-blind r0-cov-skipped`: each fixed compiler passes and
+its restored defect fails.
+
+**`r0-cov-skipped` narrowed (review minor 5, checked).** Its
+replacement now disables only the `traverse_ covered` line, the hole
+contract left on; re-proved by the run above.

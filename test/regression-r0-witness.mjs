@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fieldSource, routeSource, witnessFrom }
   from './r0-witness-support.mjs';
+import { r022Probes } from './r0-r022-probes.mjs';
 
 const fail = message => {
   console.error(message);
@@ -50,6 +51,19 @@ export const r0WitnessProbes = {
     const found = w.reasonName(w.witnessOf(problem, sigma));
     if (found !== 'HoleContract')
       fail(`route's defaulted u was witnessed: ${found}`);
+    passed(context);
+  },
+  // R022: a row slot's bare hole read as a type makes σ not generic, so
+  // G0 refuses what today accepts.
+  'r0-readback-sort-blind': async context => {
+    const w = await loaded(context);
+    for (const { origin, source } of r022Probes) {
+      const program = w.online.programOf(source);
+      const [attempt] = w.online.decisionOf(program, 'g').value0.attempts;
+      if (attempt.constructor.name !== 'Accepted')
+        fail(`${origin}: the read-back σ was refused: `
+          + `${attempt.constructor.name} ${attempt.value2.constructor.name}`);
+    }
     passed(context);
   }
 };

@@ -198,10 +198,9 @@ export const r0Rows = [
     // missing an auxiliary is offered for compilation.
     name: 'r0-cov-skipped',
     file: 'src/Features/Check/Strategy/Witness.purs',
-    needle: '  traverse_ covered (map fst (flexible problem))\n'
-      + '  holeContract problem witness\n',
+    needle: '  traverse_ covered (map fst (flexible problem))\n',
     replacement: '  const (pure unit) (traverse_ covered (map fst (flexible'
-      + ' problem)))\n  const (pure unit) (holeContract problem witness)\n',
+      + ' problem)))\n',
     probe: 'r0-cov-skipped',
     message: /a witness missing an auxiliary passed Cov: Right/
   },
@@ -214,5 +213,17 @@ export const r0Rows = [
     replacement: '  const (pure unit) (holeContract problem witness)\n',
     probe: 'r0-hole-contract-skipped',
     message: /route's defaulted u was witnessed: Witnessed/
+  },
+  {
+    // R022: the read-back blind to a variable's sort, so a row slot's
+    // bare hole is the type `hole n` and G0 refuses σ as not generic.
+    name: 'r0-readback-sort-blind',
+    file: 'src/Features/Check/Strategy/ReadBack/Type.purs',
+    needle: '  SortRow, TVar (Hole index) → Record [] [ holeVar index ]\n',
+    replacement: '  SortRow, TVar (Hole index) →'
+      + ' readType (TVar (Hole index))\n',
+    probe: 'r0-readback-sort-blind',
+    message:
+      /r022-disjoint: the read-back σ was refused: CheckFailed NotGeneric/
   }
 ];
