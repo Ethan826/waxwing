@@ -51,17 +51,18 @@ rejected env state origin failure = case failure of
   FromMerge cause inner → mergedAt env state.subst span cause inner
     (rejected env state origin)
   Exhausted what → Left (problemAt (Internal BoundPassed what) span)
-  -- No text for these yet: a limit, an infinite type or row (BACKLOG
-  -- FX010 reaches `RowOccurs`) and H's refusal (made only inside
-  -- `FromMerge`) are reported as a consumption that failed.
-  TooDeep → unrendered
-  Occurs _ _ → unrendered
-  RowOccurs _ _ → unrendered
-  Homeless _ → unrendered
+  -- No text for these yet: a limit and an infinite type or row (BACKLOG
+  -- FX010 reaches `RowOccurs`) are reported as a consumption that
+  -- failed; so is H's refusal, made only inside `FromMerge`, so bare it
+  -- is a broken invariant.
+  TooDeep → unrendered Unrendered
+  Occurs _ _ → unrendered Unrendered
+  RowOccurs _ _ → unrendered Unrendered
+  Homeless _ → unrendered RuleBroken
   where
   span = origin.span
-  unrendered = Left
-    (problemAt (Internal Unrendered "Effect row consumption failed") span)
+  unrendered kind = Left
+    (problemAt (Internal kind "Effect row consumption failed") span)
   mismatch expected found = do
     Tuple expectedName foundName ← typeNames env span (opened expected)
       (opened found)

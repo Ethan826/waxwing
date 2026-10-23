@@ -1,7 +1,7 @@
 {
   "name": "effect-not-allowed/pinned",
   "refusal": "EffectNotAllowed",
-  "site": "src/Features/Check/Reject.purs:77",
+  "site": "src/Features/Check/Reject.purs:78",
   "token": "EffectNotAllowed",
   "class": "semantic",
   "evidence": "checked",

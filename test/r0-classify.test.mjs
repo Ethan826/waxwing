@@ -39,7 +39,8 @@ const injected = [
   ['Unexpected', new failures.Unexpected('broken'), 'AsFault'],
   ['FromMerge', new failures.FromMerge(cause, mismatch), 'AsHint'],
   ['Exhausted', new failures.Exhausted('bound'), 'AsFault'],
-  ['Homeless', new failures.Homeless(new LabelAtom('x')), 'AsMismatch']
+  // Made only inside `FromMerge`, so bare it is a broken invariant.
+  ['Homeless', new failures.Homeless(new LabelAtom('x')), 'AsFault']
 ];
 
 test('every Failure constructor is injected once', () => {
@@ -73,6 +74,9 @@ test('the payloads: the depth limit, the fault text, the placeholder',
 // T-R0a §10: a predicate's contradiction (D6) becomes a hint; what a
 // predicate caused keeps its inner failure's class when that is a stop.
 test('a predicate\'s failure: a hint, or its inner stop', () => {
+  const bare = classify(new failures.Homeless(new LabelAtom('x'))).value0;
+  assert.equal(bare.constructor.name, 'BrokenInvariant');
+  assert.equal(bare.value0, 'H\'s refusal outside a predicate');
   const hint = classify(new failures.FromMerge(cause, mismatch)).value0;
   assert.equal(hint.cause, cause);
   assert.equal(hint.found, mismatch);
@@ -80,7 +84,8 @@ test('a predicate\'s failure: a hint, or its inner stop', () => {
     [new failures.Unexpected('broken'), 'AsFault'],
     [new failures.Exhausted('bound'), 'AsFault'],
     [new failures.Placeholder('later'), 'AsPlaceholder'],
-    [new failures.FromMerge(cause, mismatch), 'AsHint']]) {
+    [new failures.FromMerge(cause, mismatch), 'AsHint'],
+    [new failures.Homeless(new LabelAtom('x')), 'AsHint']]) {
     const found = classify(new failures.FromMerge(cause, inner));
     assert.equal(found.constructor.name, wanted, inner.constructor.name);
   }
@@ -138,11 +143,12 @@ test('the renderers\' stops: a rule broken, a bound passed, no text', () => {
   assert.deepEqual(reject(new failures.Exhausted('bound')),
     ['BoundPassed', 'bound']);
   for (const failure of [failures.TooDeep.value,
-    new failures.Occurs(1, TInt.value), new failures.RowOccurs(1, TInt.value),
-    new failures.Homeless(new LabelAtom('x'))])
+    new failures.Occurs(1, TInt.value), new failures.RowOccurs(1, TInt.value)])
     assert.deepEqual(reject(failure),
       ['Unrendered', 'Effect row consumption failed'],
       failure.constructor.name);
+  assert.deepEqual(reject(new failures.Homeless(new LabelAtom('x'))),
+    ['RuleBroken', 'Effect row consumption failed']);
 });
 
 test('later work, body state, a table, input shape, a pass', () => {

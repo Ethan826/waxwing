@@ -1872,12 +1872,11 @@ from the 82 places that now name one (each call of Specialize's
 - `LaterWork`: Check/Placeholder.purs and Specialize/Record.purs's
   several-tail placeholder.
 - `RuleBroken`: the four renderers' `Unexpected`, EndReport's failure
-  outside its predicates, Require's bare `Homeless`.
+  outside its predicates, a bare `Homeless` in Require and Reject.
 - `BoundPassed`: the four renderers' `Exhausted`.
 - `BodyState`: Settle (two), Filing, TailPass, MarkReport, Removal.
 - `Unrendered`: Reject's consumption fallback (`TooDeep`, `Occurs`,
-  `RowOccurs`, `Homeless`) and EndReport's unexplained predicate
-  refusal.
+  `RowOccurs`) and EndReport's unexplained predicate refusal.
 - `TableLookup`: every lookup of an id or index in a table an earlier
   phase built (Resolve, Check and Specialize; the "Invalid … id",
   "Invalid resolved …", "No such function", "Unnamed type variable",
@@ -1889,6 +1888,16 @@ from the 82 places that now name one (each call of Specialize's
 - `PassInvariant`: a whole-program pass's own computation (Matrix's
   vector length, Missing (two), Coverage, Expand (two), Components,
   Go's families).
+Routing for Task 4.3 (fixed now, while the assignment is fresh):
+`LaterWork`, `RuleBroken`, `BoundPassed`, `BodyState` and `Unrendered`
+are confined to one body's checking (`SearchBroke`, the run goes on);
+`TableLookup`, `InputShape` and `PassInvariant` stop it. R3's context
+mismatch (input an earlier phase built that does not fit) is
+`InputShape`, or `TableLookup` when it is a missed lookup; 4.3's own
+declaration-not-found is made by 4.3, not by a site here. Ambiguous:
+`PassInvariant`'s coverage faults. Coverage runs per match but today
+outside the body check (Features.Check.Outcomes, after every body), so
+they stop; if a search ever runs coverage itself, they are confined.
 Checked per kind at one site each, the failure injected directly
 (Reject for `RuleBroken`, `BoundPassed`, `Unrendered`; placeholderAt,
 Filing.missing, Tables.typeInfo, Signature.fieldTypes, Matrix.column).
@@ -1931,6 +1940,18 @@ consumption fallback with `RowOccurs`.
 their `site` line number moved to follow the edited files (MarkReport,
 Reject, Resolve/Handler); source, code and text are unchanged, so no
 corpus re-pin. No diagnostic fixture changed.
+
+**Fix round 1 (review of Task 2.1).** A bare `Homeless` was a
+contradiction in `classified`, so `classify` called it a mismatch,
+while Require and EndReport report it as a broken invariant (it is
+made only inside `FromMerge`). Now a bare `Homeless` is the `Internal`
+stop (`AsFault (BrokenInvariant "H's refusal outside a predicate")`),
+and inside `FromMerge` it stays a contradiction (`AsHint`): the
+`FromMerge` arm decides a `Homeless` inner itself and sends anything
+else back to `classified`. Reject's bare `Homeless` now has kind
+`RuleBroken` (was `Unrendered`); kinds are unrendered, so its text is
+unchanged. Checked in test/r0-classify.test.mjs. The regression row's
+needle follows the edited lines.
 
 **Regression rows.** Two older rows restore a defect that builds an
 `Internal` (`deferred-fail-effect`, `fx025-unbound-row`); their

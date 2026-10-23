@@ -90,15 +90,22 @@ classified failure = case failure of
   -- B3: what a predicate caused is what its own failure establishes,
   -- kept with its cause for the renderers.
   FromMerge cause found →
-    const (failure' { caused = Just { cause, found } }) <$> classified found
+    const (failure' { caused = Just { cause, found } }) <$> inside found
   -- B3: the rescan's bound, which rules §5's theorem says is never
   -- passed, so passing it is a broken invariant, not a limit (R0 Task
   -- 0.2; docs/findings.md "`Exhausted` is not a budget").
   Exhausted what → Left (Internal what)
-  -- B4: H's refusal, established by H's argument (rules §7).
-  Homeless _ → contradiction
+  -- B4: H's refusal is made only inside its predicate's `FromMerge`
+  -- (rules §7); bare, it is a broken invariant, as the renderers say.
+  Homeless _ → Left (Internal "H's refusal outside a predicate")
   where
   contradiction = Right failure'
+  -- Inside a predicate's failure, H's refusal is a contradiction,
+  -- established by H's argument (rules §7); any other failure there is
+  -- classified by the match above, so it stays the one decision.
+  inside = case _ of
+    Homeless _ → contradiction
+    other → classified other
   failure' = { failure, because: reasonOf failure, caused: Nothing }
 
 -- The reason of the fact a failure broke, if it broke one.

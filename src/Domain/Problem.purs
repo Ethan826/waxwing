@@ -88,7 +88,13 @@ data AbortCause
 -- does not hold. `InputShape`: an earlier phase's output not of the
 -- shape that phase guarantees. `PassInvariant`: an invariant of a
 -- whole-program pass's own computation (coverage, expansion, components,
--- Go families) broken.
+-- Go families) broken. Routing for R0 Task 4.3: `LaterWork`,
+-- `RuleBroken`, `BoundPassed`, `BodyState` and `Unrendered` are confined
+-- to one body's checking (a search's own failure, `SearchBroke`, the run
+-- goes on); `TableLookup`, `InputShape` and `PassInvariant` stop it
+-- (shared input, R3's context mismatch included under `InputShape`, or
+-- a pass outside the body). `PassInvariant` is the ambiguous one: if a
+-- search ever runs coverage per match, its coverage faults are confined.
 data InternalKind
   = LaterWork
   | RuleBroken

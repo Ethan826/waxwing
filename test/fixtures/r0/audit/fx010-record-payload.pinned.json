@@ -1,7 +1,7 @@
 {
   "name": "fx010-record-payload/pinned",
   "refusal": "Internal",
-  "site": "src/Features/Check/Reject.purs:64",
+  "site": "src/Features/Check/Reject.purs:65",
   "token": "Internal",
   "class": "defect",
   "evidence": "defect",

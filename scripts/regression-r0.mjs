@@ -26,11 +26,14 @@ export const r0Rows = [
     name: 'r0-classify-catchall',
     file: 'src/Features/Check/RowOutcome.purs',
     needle: '  Exhausted what → Left (Internal what)\n'
-      + '  -- B4: H\'s refusal, established by H\'s argument (rules §7).\n'
-      + '  Homeless _ → contradiction\n',
-    replacement: '  -- B4: H\'s refusal, established by H\'s argument'
-      + ' (rules §7).\n'
-      + '  Homeless _ → contradiction\n'
+      + '  -- B4: H\'s refusal is made only inside its predicate\'s'
+      + ' `FromMerge`\n'
+      + '  -- (rules §7); bare, it is a broken invariant, as the renderers'
+      + ' say.\n'
+      + '  Homeless _ → Left (Internal "H\'s refusal outside a'
+      + ' predicate")\n',
+    replacement: '  Homeless _ → Left (Internal "H\'s refusal outside a'
+      + ' predicate")\n'
       + '  _ → contradiction\n',
     probe: 'r0-classify-catchall',
     message: /Exhausted classed as AsMismatch, not a fault/
