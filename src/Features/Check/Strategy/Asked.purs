@@ -14,25 +14,24 @@ module Features.Check.Strategy.Asked (requirementUnder) where
 
 import Prelude
 import Data.Either (Either(..))
-import Domain.Recorded (AtomId, RecordedProblem)
+import Domain.Recorded (AtomId, RecordedProblem, fields)
 import Domain.Recorded.Atom (ReqAtom(..), Var)
 import Domain.Recorded.Origin (Entry)
 import Domain.Verdict.Search (CheckRefusal(..))
 import Features.Check.Decide.Open (openAtom)
-import Features.Check.Functional (Functional)
 import Features.Check.GroundRule (Judgement(..), View, atomType, judge)
 import Features.Check.Mentions (isRigid)
 import Features.Check.Strategy.Candidate (Substitution, under)
 
 requirementUnder
-  ∷ Functional
-  → RecordedProblem
+  ∷ RecordedProblem
   → Substitution
   → Entry ReqAtom
   → Either CheckRefusal Unit
-requirementUnder holders problem candidate = judged
+requirementUnder problem candidate = judged
   where
-  isOpen = openAtom holders problem
+  holders = (fields problem).holders
+  isOpen = openAtom problem
   judged entry
     | isOpen entry.value = Right unit
     | otherwise = refusal entry.origin.atom

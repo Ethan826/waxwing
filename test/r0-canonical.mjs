@@ -26,7 +26,9 @@
 //   position { rigidName: i } | { slot: [path, i] } | { nodeType: path }
 //            | { paramType: [path, k] } | { lambdaBody: path }
 //            | { patternType: path } | { restType: path } | 'auxiliary'
-//   problem  §10's fields; `vars` and `types` as [key, value] pairs.
+//   problem  §10's fields; `vars` and `types` as [key, value] pairs;
+//            `holders` { declared: [t], holding: [t] }, ascending
+//            (ruling K-a).
 //
 // Canonical order (stated here, checked by `outOfOrder`): a record's
 // fields ascend by label (code units, PureScript's Ord String) and its

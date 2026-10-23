@@ -48,6 +48,7 @@ import { expr } from './r0-translator-exprs.mjs';
 import { pattern } from './r0-translator-records.mjs';
 import { flush } from './r0-translator-calls.mjs';
 import { R, sortName, translate } from './r0-translator-types.mjs';
+import { holdersOf } from './r0-translator-holders.mjs';
 import { sigKinds, sigRows, signatureD, typeSpan }
   from './r0-translator-signature.mjs';
 
@@ -84,7 +85,7 @@ export const translateDecl = (program, decl) => {
   if (program.entry === decl.id) emit(cx,
     signatureSite(resultPath, 10, resultSpan, 'contract'), 'bq', 'C5',
     { pr: result });
-  return finish(cx);
+  return { ...finish(cx), holders: holdersOf(program) };
 };
 
 export const translateProgram = program =>

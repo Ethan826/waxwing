@@ -28,9 +28,6 @@ export const d02From = stubs => {
 };
 
 export const g0From = async (load, stubs) => {
-  const { parse } = await load('Format.Parse');
-  const { resolve } = await load('Features.Resolve');
-  const { functional } = await load('Features.Check.Functional');
   const Atom = await load('Domain.Recorded.Atom');
   const Map = await load('Data.Map.Internal');
   const Entailed = await load('Features.Check.Entailed');
@@ -42,8 +39,6 @@ export const g0From = async (load, stubs) => {
   const { Tuple } = await load('Data.Tuple');
   const { unfoldableArray } = await load('Data.Unfoldable');
 
-  const holdersOf = source => functional(
-    resolve(parse(source).value0).value0.ctors);
   const keys = vars => Map.keys(vars);
   // The flexible variables' reduced types, identities left out.
   const candidateOf = (problem, override = []) => {
@@ -64,19 +59,19 @@ export const g0From = async (load, stubs) => {
       made = Map.insert(Atom.ordVar)(variable)(image)(made);
     return made;
   };
-  const g0 = (holders, override = []) => Strategy.strategy({
+  const g0 = (override = []) => Strategy.strategy({
     name: Verdict.OnlineSolver.value,
     sound: new Verdict.Pending(Substitution.genericSubstitutionSound),
-    guard: Guard.g0Guard(holders),
+    guard: Guard.g0Guard,
     search: () => problem => new Strategy.Candidate(
       candidateOf(problem, override), Verdict.ClaimsComplete.value, []),
-    check: Substitution.checkSubstitution(holders),
+    check: Substitution.checkSubstitution,
     witness: () => () => stubs.nonConstructive });
-  const open = holders => Open.openRequirements(holders);
-  const check = (holders, problem, candidate) =>
-    Substitution.checkSubstitution(holders)(problem)(candidate);
+  const open = Open.openRequirements;
+  const check = (problem, candidate) =>
+    Substitution.checkSubstitution(problem)(candidate);
   // The flexible type variable a `BQ` atom names, for an override.
   const atomVariable = entry => entry.value.value0.value0;
-  return { holdersOf, candidateOf, g0, open, check, keys, atomVariable,
+  return { candidateOf, g0, open, check, keys, atomVariable,
     Atom, Map, Tuple, Guard, Open, Entailed };
 };

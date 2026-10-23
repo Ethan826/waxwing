@@ -18,19 +18,18 @@ import Domain.Recorded.Atom (RTExpr, ReqAtom)
 import Domain.Verdict (Unsupport(..))
 import Features.Check.Decide.Open (openAtom)
 import Features.Check.Entailed (Reduction(..), reduction)
-import Features.Check.Functional (Functional)
 import Features.Check.GroundRule (atomType)
 import Features.Check.Mentions (isGround, isRigid, mentions)
 import Features.Check.Strategy (Guarded(..))
 
-g0Guard ∷ Functional → RecordedProblem → Guarded
-g0Guard holders problem =
+g0Guard ∷ RecordedProblem → Guarded
+g0Guard problem =
   if any beyond (map _.value (fields problem).bq) then
     OutOfScope RequirementAtoms
   else InScope
   where
   reduce = reduction problem
-  isOpen = openAtom holders problem
+  isOpen = openAtom problem
   beyond atom = not (isOpen atom) && unjudgeable reduce atom
 
 unjudgeable ∷ (RTExpr → Reduction) → ReqAtom → Boolean

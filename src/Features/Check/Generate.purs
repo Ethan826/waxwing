@@ -19,10 +19,13 @@ import Data.Either (Either)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Domain.Recorded.Atom (Quant(..), Var, VarInfo, VarSort(..))
+import Data.Set as Set
+import Domain.Recorded.Atom (Holders, Quant(..), Var, VarInfo, VarSort(..))
 import Domain.Recorded.Internal (RecordedProblem(..))
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Resolved (FunctionDecl, exprSpan)
+import Domain.Type (TypeId(..))
+import Features.Check.Functional (functional)
 import Features.Check.Generate.Expr (expr)
 import Features.Check.Generate.Inputs (Signatures, Tables)
 import Features.Check.Generate.Inputs (Signatures, Tables) as Exports
@@ -46,12 +49,12 @@ generate tables signatures function = do
   body ← expr (context locals) (Path { root: InBody, steps: [] })
     function.body
   signature ← declaration tables function body.ty (exprSpan function.body)
-  pure (problemOf function (concatOut [ signature, body.out ]))
+  pure (problemOf tables function (concatOut [ signature, body.out ]))
   where
   context locals = { decl: function.id, tables, signatures, locals }
 
-problemOf ∷ FunctionDecl → Out → RecordedProblem
-problemOf function out = RecordedProblem
+problemOf ∷ Tables → FunctionDecl → Out → RecordedProblem
+problemOf tables function out = RecordedProblem
   { decl: function.id
   , rigidTy: keys rigidType
   , rigidRow: keys rigidRow
@@ -66,6 +69,7 @@ problemOf function out = RecordedProblem
   , split: out.split
   , vars
   , types: Map.fromFoldable out.types
+  , holders: holdersOf tables
   }
   where
   vars = Map.fromFoldable out.vars
@@ -80,3 +84,17 @@ problemOf function out = RecordedProblem
   rigid info = case info.quant of
     Forall _ → true
     Exists → false
+
+-- Ruling K-a: every declared type of the program, and the complete set
+-- of those whose constructors hold a function (Features.Check.Functional,
+-- the set today's printability and comparability checks read). The
+-- source-to-problem obligation is that this is the program's own set:
+-- test/r0-holders.test.mjs checks direct and transitive containment,
+-- and RT1's translator computes it independently.
+holdersOf ∷ Tables → Holders
+holdersOf tables =
+  { declared: Set.fromFoldable (Array.mapWithIndex declared tables.types)
+  , holding: functional tables.ctors
+  }
+  where
+  declared index _ = TypeId index

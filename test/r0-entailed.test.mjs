@@ -12,7 +12,6 @@ import { evaluate, solutions, variablesOf } from './r0-entailed-eval.mjs';
 const { t, problemOf, pr } = await supportFrom(load);
 const Entailed = await load('Features.Check.Entailed');
 const Guard = await load('Features.Check.Strategy.Guard');
-const Set = await load('Data.Set');
 const int = t.base('Int');
 const bool = t.base('Bool');
 const rowOf = name => t.record([], [name]);
@@ -82,7 +81,7 @@ test('entailedGround: Nothing with two tail variables in one record', () => {
 test('g0Guard: {...r} = {...q} with pr {...r} declines', () => {
   const problem = problemOf({ equations: [[rowOf('r'), rowOf('q')]],
     bq: [pr(rowOf('r'))] });
-  const guarded = Guard.g0Guard(Set.empty)(problem);
+  const guarded = Guard.g0Guard(problem);
   assert.equal(guarded.constructor.name, 'OutOfScope');
   assert.equal(guarded.value0.constructor.name, 'RequirementAtoms');
 });

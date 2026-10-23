@@ -13,6 +13,10 @@ const Maps = await load('Data.Map.Internal');
 const Foldable = await load('Data.Foldable');
 const Tuple = await load('Data.Tuple');
 const Maybe = await load('Data.Maybe');
+const Sets = await load('Data.Set');
+const { ordInt } = await load('Data.Ord');
+const setOf = items => items.reduce((made, item) =>
+  Sets.insert(ordInt)(item)(made), Sets.empty);
 
 const mapOf = (ord, pairs) => Maps.fromFoldable(ord)(Foldable.foldableArray)(
   pairs.map(([key, value]) => Tuple.Tuple.create(key)(value)));
@@ -51,7 +55,8 @@ const fieldsOf = () => ({
       rule: Origin.ExprRule.create(11), span },
     position: Atom.NodeType.create(body) }]]),
   types: mapOf(Origin.ordPath, [[body, Atom.TVar.create(res)],
-    [argument, intType]])
+    [argument, intType]]),
+  holders: { declared: setOf([0]), holding: setOf([]) }
 });
 
 const problem = changes => Internal.RecordedProblem({ ...fieldsOf(),
@@ -59,7 +64,7 @@ const problem = changes => Internal.RecordedProblem({ ...fieldsOf(),
 const equal = (a, b) => Internal.eqRecordedProblem.eq(a)(b);
 
 const names = ['decl', 'rigidTy', 'rigidRow', 'flexTy', 'flexRow', 'd',
-  'q', 'b', 'bq', 'outside', 'adm', 'split', 'vars', 'types'];
+  'q', 'b', 'bq', 'outside', 'adm', 'split', 'vars', 'types', 'holders'];
 
 test('the view has exactly T-R0b §10 fields, read back unchanged', () => {
   const view = Recorded.fields(problem({}));
@@ -80,7 +85,8 @@ test('problems built alike compare equal; a change in any field does not',
       value: Atom.Lacks.create(Atom.RigidVar.create(1))('a') }],
     q: fieldsOf().bq, b: [], bq: [], outside: [],
     adm: [], split: fieldsOf().adm,
-    vars: mapOf(Atom.ordVar, []), types: mapOf(Origin.ordPath, [])
+    vars: mapOf(Atom.ordVar, []), types: mapOf(Origin.ordPath, []),
+    holders: { declared: setOf([0]), holding: setOf([0]) }
   };
   assert.deepEqual(Object.keys(changed).sort(), [...names].sort());
   for (const name of names)

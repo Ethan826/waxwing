@@ -18,9 +18,7 @@
 -- reduction through entailed equalities, or as recorded when there is
 -- none.
 --
--- The holder set is injected: the recorded problem does not carry it
--- (r0-validr-draft.md §3.5, K-a or K-b, open). Reading: K-b's, the
--- program's tables beside the problem, as Task 4.3's `OnlineContext`.
+-- The holder set is the problem's own (ruling K-a, author 2026-10-23).
 module Features.Check.Decide.Open
   ( openAtom
   , openRequirements
@@ -32,21 +30,21 @@ import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom (ReqAtom(..), Var)
 import Domain.Recorded.Origin (Entry)
 import Features.Check.Entailed (Reduction(..), reduction)
-import Features.Check.Functional (Functional)
 import Features.Check.GroundRule (Judgement(..), View, atomType, judge)
 import Features.Check.Mentions (isRigid)
 
-openRequirements ∷ Functional → RecordedProblem → Array (Entry ReqAtom)
-openRequirements holders problem =
+openRequirements ∷ RecordedProblem → Array (Entry ReqAtom)
+openRequirements problem =
   filter (isOpen <<< _.value) (fields problem).bq
   where
-  isOpen = openAtom holders problem
+  isOpen = openAtom problem
 
 -- Partially applied to a problem, it solves the problem's equations
 -- once for all its atoms.
-openAtom ∷ Functional → RecordedProblem → ReqAtom → Boolean
-openAtom holders problem = isOpen
+openAtom ∷ RecordedProblem → ReqAtom → Boolean
+openAtom problem = isOpen
   where
+  holders = (fields problem).holders
   reduce = reduction problem
   isOpen atom = judge holders (openView atom) (reducedOr (atomType atom))
     == Open

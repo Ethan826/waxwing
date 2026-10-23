@@ -3106,15 +3106,37 @@ Task 4.1 review carry; `byStrategy` had defaulted to `true`).
 1. *Amendment to the brief's location (controller ruling Q1):*
    `entailedGround` is in src/Features/Check/Entailed.purs, not
    Strategy/Entailed.purs, so §3.2(a)'s detector can read it.
-2. *Amendment to the brief's signatures (reading):* `checkSubstitution`,
-   `g0Guard` and `openRequirements` take the holder set
-   (`Functional`) first. The ground rule needs it (findings above,
-   "The ground rule needs the holder set"), and the recorded problem
-   does not carry it (r0-validr-draft.md §3.5, K-a or K-b open). This
-   reads K-b: the program's tables beside the problem, as Task 4.3's
-   `OnlineContext` already carries `holders`. A strategy's `check` is
-   then `checkSubstitution holders`; `Checking.openRequirements` is
-   `openRequirements holders`.
+2. *The holder set: K-a (author, 2026-10-23), replacing this task's
+   first K-b reading.* The first implementation injected the holder
+   set (`Functional`) as a first argument of `checkSubstitution`,
+   `g0Guard` and `openRequirements` (r0-validr-draft.md §3.5's K-b).
+   The author ruled K-a in fix round 2: the recorded problem carries
+   it, as `holders ∷ Holders = { declared, holding }`
+   (Domain.Recorded.Atom), read through `fields`; construction stays
+   Generate*-only (R4), `Eq` covers it, the canonical form encodes it
+   (`holders`, ascending ids), and the three consumers read the
+   problem's own set and take no injected one.
+   - *Obligation (source to problem):* storing the set stops a caller
+     from swapping it, not the generator from computing a wrong one.
+     Generation must record the program's complete set: every declared
+     type, and every one whose constructors hold a function directly
+     or through another declared type, a record field or a type
+     argument (Features.Check.Functional, today's set). Checked by
+     test/r0-holders.test.mjs (direct, through another type, a
+     parameterized holder, its application, a recursive holder, a
+     recursive non-holder, a record field, a phantom parameter) and by
+     RT1: test/r0-translator-holders.mjs computes the set apart, by
+     rounds to a fixed point over the constructors, and RT1's
+     whole-problem comparison agrees on the corpus. Independence is of
+     algorithm only: one implementer wrote both, after reading
+     Functional.purs.
+   - *Coverage:* the set is the program's complete one, not the heads
+     the atoms mention, so a head a candidate introduces is judged from
+     it (σ binding `y` of `pr y` to a holder gives `RequirementOpen`,
+     §3.2(a) and the brief; to an arrow, or to `T(Int → Int)` with a
+     phantom parameter, `RequirementFails`). A head outside `declared`
+     is `Unjudged` (`RequirementUnjudged`), never printable: missing
+     metadata is no evidence.
 3. *Controller reading, pending the author's G-ValidR ruling (Q2):*
    no recorded atom names a fresh base. The open set before G-ValidR
    is a declared type whose constructors hold a function (wherever the
@@ -3216,6 +3238,16 @@ Task 4.1 review carry; `byStrategy` had defaulted to `true`).
 | (b2) `apart`'s arm only | a disjoint atom D does not entail is NotEntailed; one it does holds |
 | (c) Substitution's `generic` test → `false` | a candidate that is not generic is NotGeneric |
 | (d) `Ff`'s `Left (Unsatisfied …)` → `Right unit` | an ff atom is Unsatisfied under any candidate |
+
+- Fix round 2 (K-a; checked). The same scratch-copy method, with
+  test/r0-holders.test.mjs added to the run (31 tests). The I-2
+  mutants (a), (b1), (b2), (c), (d) each still fail their test. New:
+
+| Mutant (compiled JS) | Failing tests |
+|---|---|
+| (h1) GroundRule's holder lookup → never `Open` | G0 leaves open atoms to §3.2(a); a holder a candidate introduces is judged from the problem's set; the ground rule, every constructor |
+| (h2) GroundRule's undeclared-head arm removed | a head the program does not declare is never printable |
+| (h3) generation records `holding: empty` | G0 leaves open atoms; a holder a candidate introduces…; generation records the program's complete holder set |
 
 Trusted surface re-pinned: Features.Check.Strategy.Substitution is new,
 exporting `checkSubstitution` and `genericSubstitutionSound` (source and

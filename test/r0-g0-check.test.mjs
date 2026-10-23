@@ -27,11 +27,10 @@ test('definedness: d02\'s lambda annotation is refused under any σ', () => {
   assert.deepEqual(withLacks.d.map(entry => [entry.value.constructor.name,
     entry.origin.rule.value0]), [['Lacks', 4]]);
   const recorded = d02Problem;
-  const holders = g0.holdersOf(lacking);
-  assert.equal(g0.check(holders, withLacks, g0.candidateOf(withLacks))
+  assert.equal(g0.check(withLacks, g0.candidateOf(withLacks))
     .constructor.name, 'Right');
   for (const candidate of [g0.candidateOf(recorded), Map.empty]) {
-    const found = g0.check(holders, recorded, candidate);
+    const found = g0.check(recorded, candidate);
     assert.equal(found.constructor.name, 'Left');
     assert.equal(found.value0.constructor.name, 'Undefined');
     const refused = recorded.b.filter(entry => JSON.stringify(
@@ -67,7 +66,9 @@ test('each CheckRefusal constructor, injected, is read by rule 3', () => {
 });
 
 test('the ground rule, every constructor', () => {
-  const holders = Set.insert(ordInt)(1)(Set.empty);
+  const holders = { declared: Set.insert(ordInt)(2)(
+    Set.insert(ordInt)(1)(Set.empty)), holding: Set.insert(ordInt)(1)(
+    Set.empty) };
   const judge = (ty, view = () => GroundRule.Holds.value) =>
     GroundRule.judge(holders)(view)(ty).constructor.name;
   const base = name => new Atom.Base(Atom[name].value);

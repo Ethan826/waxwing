@@ -3,8 +3,10 @@
 -- §4.1, read before G-ValidR). A function type is neither printable nor
 -- comparable, at any depth through record fields and `app` arguments;
 -- a handler type neither. A declared type whose constructors hold a
--- function (the holder set, Features.Check.Functional) is `Open`:
--- `ValidR` leaves its value unfixed until G-ValidR (§3.2(a)). What a
+-- function (the problem's holder set, ruling K-a) is `Open`: `ValidR`
+-- leaves its value unfixed until G-ValidR (§3.2(a)). A head the
+-- program does not declare is `Unjudged`, never printable: missing
+-- metadata is no evidence. What a
 -- variable contributes is the caller's `view`: §3.2(a)'s detector, G0's
 -- guard and G0's check each read variables differently.
 module Features.Check.GroundRule
@@ -19,9 +21,15 @@ import Prelude
 import Data.Array (cons, foldl)
 import Data.Set as Set
 import Data.Tuple (snd)
-import Domain.Recorded.Atom (Base(..), Head(..), RTExpr(..), ReqAtom(..), Var)
+import Domain.Recorded.Atom
+  ( Base(..)
+  , Head(..)
+  , Holders
+  , RTExpr(..)
+  , ReqAtom(..)
+  , Var
+  )
 import Domain.Type (TypeId)
-import Features.Check.Functional (Functional)
 
 -- Ordered by what a conjunction keeps: a definite failure wins, then an
 -- open point, then a part the caller cannot judge.
@@ -34,7 +42,7 @@ atomType = case _ of
   Printable ty → ty
   Comparable ty → ty
 
-judge ∷ Functional → View → RTExpr → Judgement
+judge ∷ Holders → View → RTExpr → Judgement
 judge holders view = case _ of
   Base base → based holders base
   Arrow _ _ → Fails
@@ -53,7 +61,7 @@ both = max
 every ∷ Array Judgement → Judgement
 every = foldl both Holds
 
-based ∷ Functional → Base → Judgement
+based ∷ Holders → Base → Judgement
 based holders = case _ of
   IntBase → Holds
   BoolBase → Holds
@@ -61,8 +69,11 @@ based holders = case _ of
   UnitBase → Holds
   DataBase id → declared holders id
 
-declared ∷ Functional → TypeId → Judgement
-declared holders id = if Set.member id holders then Open else Holds
+declared ∷ Holders → TypeId → Judgement
+declared holders id
+  | not (Set.member id holders.declared) = Unjudged
+  | Set.member id holders.holding = Open
+  | otherwise = Holds
 
 derive instance eqJudgement ∷ Eq Judgement
 derive instance ordJudgement ∷ Ord Judgement

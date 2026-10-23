@@ -8,6 +8,7 @@ module Domain.Recorded.Atom
   , Callee(..)
   , CheckedName(..)
   , Head(..)
+  , Holders
   , OutsideKind(..)
   , Quant(..)
   , RTExpr(..)
@@ -21,6 +22,7 @@ module Domain.Recorded.Atom
 
 import Prelude
 import Data.Maybe (Maybe)
+import Data.Set (Set)
 import Data.Tuple (Tuple)
 import Domain.Recorded.Origin (Path, RuleId)
 import Domain.Resolved (CtorId, FunctionId)
@@ -76,6 +78,14 @@ sameSpine left right = case left, right of
   TVar _, _ → false
   Record _ _, _ → false
   App _ _, _ → false
+
+-- The program's declared types and, among them, every one whose
+-- constructors hold a function, directly or through another declared
+-- type, a record field or a type argument (Features.Check.Functional's
+-- set). Ruling K-a (author, 2026-10-23): the recorded problem carries
+-- the complete set, so the ground rule reads the problem alone; a head
+-- outside `declared` is never judged printable.
+type Holders = { declared ∷ Set TypeId, holding ∷ Set TypeId }
 
 -- `base`: a builtin, or a declared type of no parameters (§2.2).
 data Base = IntBase | BoolBase | TextBase | UnitBase | DataBase TypeId

@@ -22,7 +22,6 @@ import Domain.Recorded (RecordedProblem, fields)
 import Domain.Verdict (StatementRef(..))
 import Domain.Verdict.Internal (Valid(..))
 import Domain.Verdict.Search (CheckRefusal(..))
-import Features.Check.Functional (Functional)
 import Features.Check.Strategy.Asked (requirementUnder)
 import Features.Check.Strategy.Atoms (atomUnder, facts)
 import Features.Check.Strategy.Candidate (Substitution, generic)
@@ -31,13 +30,13 @@ genericSubstitutionSound ∷ StatementRef
 genericSubstitutionSound = StatementRef "genericSubstitutionSound"
 
 checkSubstitution
-  ∷ Functional → RecordedProblem → Substitution → Either CheckRefusal Valid
-checkSubstitution holders problem candidate
+  ∷ RecordedProblem → Substitution → Either CheckRefusal Valid
+checkSubstitution problem candidate
   | not (generic problem candidate) = Left NotGeneric
   | otherwise =
       do
         traverse_ (atomUnder (facts problem) candidate) view.b
-        traverse_ (requirementUnder holders problem candidate) view.bq
+        traverse_ (requirementUnder problem candidate) view.bq
         Right Valid
       where
       view = fields problem

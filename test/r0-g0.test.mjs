@@ -25,10 +25,9 @@ const sources = {
 };
 const problem = (name, decl = 'f') => stubs.recorded.problem(sources[name],
   decl);
-const holders = name => g0.holdersOf(sources[name]);
 const run = (name, decl, options) => describe(decide(checking({
-  open: g0.open(holders(name)), ...options }), problem(name, decl)));
-const online = (name, override) => g0.g0(holders(name), override);
+  open: g0.open, ...options }), problem(name, decl)));
+const online = (name, override) => g0.g0(override);
 const Atom = g0.Atom;
 
 test('AT19: an original equation fixes the variable, so Solved', () => {
@@ -78,10 +77,10 @@ test('openRequirements and g0Guard are disjoint on the fixtures', () => {
   let both = 0;
   for (const [name, decl] of cases) {
     const recorded = problem(name, decl);
-    const open = g0.open(holders(name))(recorded);
+    const open = g0.open(recorded);
     for (const entry of recorded.bq) {
       const alone = { ...recorded, bq: [entry] };
-      const declined = g0.Guard.g0Guard(holders(name))(alone)
+      const declined = g0.Guard.g0Guard(alone)
         .constructor.name === 'OutOfScope';
       if (declined && open.includes(entry)) both += 1;
     }
@@ -89,12 +88,12 @@ test('openRequirements and g0Guard are disjoint on the fixtures', () => {
   assert.equal(both, 0);
   // `cmp` at a rigid row is open, so it is not the guard's.
   const compared = problem('compare', 'same');
-  assert.equal(g0.open(holders('compare'))(compared).length, 1);
+  assert.equal(g0.open(compared).length, 1);
 });
 
 test('openRequirements is unchanged when G0 is replaced by a stub', () => {
   const recorded = problem('boxed', 'main');
-  const open = g0.open(holders('boxed'));
+  const open = g0.open;
   const before = open(recorded);
   const withG0 = run('boxed', 'main', { strategies: [online('boxed')] });
   const withStub = run('boxed', 'main', { strategies: [accepting()] });
@@ -106,8 +105,8 @@ test('openRequirements is unchanged when G0 is replaced by a stub', () => {
 
 test('G0 leaves open atoms to §3.2(a)', () => {
   const recorded = problem('boxed', 'main');
-  assert.equal(g0.open(holders('boxed'))(recorded).length, 1);
-  const found = g0.check(holders('boxed'), recorded,
+  assert.equal(g0.open(recorded).length, 1);
+  const found = g0.check(recorded,
     g0.candidateOf(recorded));
   assert.equal(found.constructor.name, 'Right');
   assert.deepEqual(run('boxed', 'main', { strategies: [online('boxed')] }), {

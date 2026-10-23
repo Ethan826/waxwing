@@ -11,9 +11,12 @@ const Maps = await load('Data.Map.Internal');
 const Unfoldable = await load('Data.Unfoldable');
 const Maybe = await load('Data.Maybe');
 const Row = await load('Domain.Row');
+const Sets = await load('Data.Set');
 
 const pairsOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => [pair.value0, pair.value1]);
+// A set of type ids, ascending (a `TypeId` is a newtype of Int).
+const idsOf = set => Sets.toUnfoldable(Unfoldable.unfoldableArray)(set);
 
 // [class, decode] pairs, tried in order; `kind` names the type for the
 // error.
@@ -147,6 +150,8 @@ export const canonicalOf = problem => {
     vars: pairsOf(found.vars).map(([key, value]) =>
       [variable(key), info(value)]),
     types: pairsOf(found.types).map(([key, value]) =>
-      [path(key), rtexpr(value)])
+      [path(key), rtexpr(value)]),
+    holders: { declared: idsOf(found.holders.declared),
+      holding: idsOf(found.holders.holding) }
   };
 };

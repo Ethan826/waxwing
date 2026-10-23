@@ -9,6 +9,7 @@ import Data.Map (Map)
 import Domain.Recorded.Atom
   ( Atom
   , CallSite
+  , Holders
   , OutsideKind
   , RTExpr
   , ReqAtom
@@ -35,6 +36,7 @@ type Fields =
   , split ∷ Array (Entry CallSite) -- RecordSort slots
   , vars ∷ Map Var VarInfo -- §5.2, site table
   , types ∷ Map Path RTExpr -- §5.2, site table
+  , holders ∷ Holders -- ruling K-a: the program's holder set
   }
 
 newtype RecordedProblem = RecordedProblem Fields

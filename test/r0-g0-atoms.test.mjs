@@ -11,14 +11,13 @@ const { Atom, t, v, problemOf } = await supportFrom(load);
 const { checkSubstitution } =
   await load('Features.Check.Strategy.Substitution');
 const Map = await load('Data.Map.Internal');
-const Set = await load('Data.Set');
 const int = t.base('Int');
 
 const candidate = bindings => bindings.reduce((made, [name, image]) =>
   Map.insert(Atom.ordVar)(v(name))(image)(made), Map.empty);
 // The refusal's constructor name, or 'Right'.
 const checked = (options, bindings = []) => {
-  const found = checkSubstitution(Set.empty)(problemOf(options))(
+  const found = checkSubstitution(problemOf(options))(
     candidate(bindings));
   return found.constructor.name === 'Right' ? 'Right'
     : found.value0.constructor.name;

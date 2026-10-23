@@ -13,7 +13,6 @@ import { loadCorpus } from './r0-corpus.mjs';
 const { parse } = await load('Format.Parse');
 const { resolve } = await load('Features.Resolve');
 const { checkProgram } = await load('Features.Check.Outcomes');
-const { functional } = await load('Features.Check.Functional');
 const { generationInputs } = await load('Features.Check.Generate.Inputs');
 const { generate } = await load('Features.Check.Generate');
 const GroundRule = await load('Features.Check.GroundRule');
@@ -31,15 +30,14 @@ const judged = source => {
   const program = resolve(parsed.value0);
   if (named(program) !== 'Right') return null;
   const resolved = program.value0;
-  const holders = functional(resolved.ctors);
   const main = resolved.functions[resolved.entry];
   const { tables, signatures } = generationInputs(resolved);
   const generated = generate(tables)(signatures)(main);
   if (named(generated) !== 'Right') return null;
   const atoms = generated.value0.bq.filter(sig10);
   assert.equal(atoms.length, 1, 'Sig10 records one atom');
-  const ground = GroundRule.judge(holders)(() => GroundRule.Unjudged.value)(
-    GroundRule.atomType(atoms[0].value));
+  const ground = GroundRule.judge(generated.value0.holders)(
+    () => GroundRule.Unjudged.value)(GroundRule.atomType(atoms[0].value));
   return { today: named(checkProgram(resolved).entry), ground: named(ground) };
 };
 

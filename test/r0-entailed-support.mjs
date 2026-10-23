@@ -1,6 +1,7 @@
 // Support for Task 4.2's `entailedGround` tests
 // (docs/plans/r0-entailed-ground.md §6): recorded types and problems
-// built directly, the grammar G-EG with its pinned sampler, and a
+// built directly (one declared type, `Box`, id 7, holding no function),
+// the grammar G-EG with its pinned sampler, and a
 // ground evaluator over the note's bounded value domain. A problem is
 // a `RecordedProblem` newtype, so its compiled form is its fields.
 // `supportFrom` takes a loader, so a regression probe can load the
@@ -11,6 +12,8 @@ export const supportFrom = async load => {
   const Map = await load('Data.Map.Internal');
   const { Tuple } = await load('Data.Tuple');
   const { Just } = await load('Data.Maybe');
+  const Set = await load('Data.Set');
+  const { ordInt } = await load('Data.Ord');
   const at = index => ({ root: Origin.InBody.value,
     steps: [new Origin.Index(index)] });
   const flexible = (index, sort) => ({ sort,
@@ -55,7 +58,9 @@ export const supportFrom = async load => {
     flexTy: [v('x'), v('y')], flexRow: [v('r'), v('s')],
     d: entries(d), q: [], b: entries([...equations.map(([one, other]) =>
       new Atom.Equal(one, other)), ...b]), bq: entries(bq), outside: [],
-    adm: [], split: [], vars: varMap, types: Map.empty });
+    adm: [], split: [], vars: varMap, types: Map.empty,
+    holders: { declared: Set.insert(ordInt)(7)(Set.empty),
+      holding: Set.empty } });
   const pr = ty => new Atom.Printable(ty);
   return { Atom, t, v, vars, problemOf, pr, entries };
 };

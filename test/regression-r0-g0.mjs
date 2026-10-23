@@ -6,7 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { stubsFrom } from './r0-stubs.mjs';
 import { describe } from './r0-decide-support.mjs';
-import { d02From, d02Lacking, g0From } from './r0-g0-support.mjs';
+import { d02From, g0From } from './r0-g0-support.mjs';
 
 const fail = message => {
   console.error(message);
@@ -28,7 +28,7 @@ export const r0G0Probes = {
   'r0-definedness-dropped': async context => {
     const { stubs, g0 } = await loaded(context);
     const { problem } = d02From(stubs);
-    const found = g0.check(g0.holdersOf(d02Lacking), problem,
+    const found = g0.check(problem,
       g0.candidateOf(problem));
     if (found.constructor.name !== 'Left'
       || found.value0.constructor.name !== 'Undefined')
@@ -39,10 +39,9 @@ export const r0G0Probes = {
   'r0-g0-limit-global': async context => {
     const { stubs, g0 } = await loaded(context);
     const source = 'fn p(item: a): Text = show(item);\nfn main(): Int = 0;\n';
-    const holders = g0.holdersOf(source);
     const found = describe(stubs.decide(stubs.checking({
-      open: g0.open(holders),
-      strategies: [g0.g0(holders), stubs.behaviours.accepting()] }),
+      open: g0.open,
+      strategies: [g0.g0(), stubs.behaviours.accepting()] }),
     stubs.recorded.problem(source, 'p')));
     if (found.verdict !== 'Solved')
       fail(`G0's limit blocked every strategy: ${found.verdict}`);

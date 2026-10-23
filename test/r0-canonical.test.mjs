@@ -15,6 +15,10 @@ const Foldable = await load('Data.Foldable');
 const Tuple = await load('Data.Tuple');
 const Maybe = await load('Data.Maybe');
 const Row = await load('Domain.Row');
+const Sets = await load('Data.Set');
+const { ordInt } = await load('Data.Ord');
+const setOf = items => items.reduce((made, item) =>
+  Sets.insert(ordInt)(item)(made), Sets.empty);
 
 const mapOf = (ord, pairs) => Maps.fromFoldable(ord)(Foldable.foldableArray)(
   pairs.map(([key, value]) => Tuple.Tuple.create(key)(value)));
@@ -83,11 +87,13 @@ const problem = changes => Internal.RecordedProblem({
     ...positions.slice(1).map((position, at) =>
       [fresh(deep, roles[at]), roles[at], position])]),
   types: mapOf(O.ordPath, roots.map(at => [at, bases[0]])),
+  holders: { declared: setOf([3, 1, 2]), holding: setOf([2]) },
   ...changes
 });
 
 test('every constructor decodes to its canonical form', () => {
   const found = canonicalOf(problem({}));
+  assert.deepEqual(found.holders, { declared: [1, 2, 3], holding: [2] });
   const call = { root: 'body', steps: ['Call', 'args', 2] };
   assert.deepEqual(found.b[0].value, { eq: [
     { fun: { params: [{ base: 'Int' }, { base: 'Bool' }],
