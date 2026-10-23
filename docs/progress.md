@@ -464,6 +464,33 @@ timing bound (5.66 s; 2.87-3.38 s alone; recorded under BACKLOG T004);
 the final run exited 0 (2656/2656, 83/83 serial, 179 regression
 proofs).
 
+## R0 shadow tranche, Task 4.2: G0 and the ground requirement rule (2026-10-23)
+
+`checkSubstitution` (Features.Check.Strategy.Substitution, trusted)
+checks every `B` atom under a generic substitution against `D`
+(equations up to record equality, definedness of every composition,
+`lacks`/`disjoint` entailed by `D`) and every `BQ` atom outside
+§3.2(a)'s open set by the three-valued ground rule
+(Features.Check.GroundRule). `g0Guard` declines, as
+`OutOfScope RequirementAtoms`, the atoms G0 cannot judge (a rigid
+variable after reduction, or outside the one-tail fragment);
+`openRequirements` (Decide.Open, no Strategy* import) is the open set
+before G-ValidR. `entailedGround` (Features.Check.Entailed, outside
+Strategy* by ruling) reduces through the most general unifier of the
+original equations, per docs/plans/r0-entailed-ground.md, whose
+argument was written, committed and reviewed first (530e276, review
+corrections f0146ce). The holder set is injected beside the problem
+(a labelled amendment). Reason's classifiers moved to Decide.Reading
+with every constructor named. AT19's three cases, `a G0 limit is local
+to G0`, the detectors' disjointness, `G0 leaves open atoms to
+§3.2(a)`, d02's definedness, `main`'s printability agreement (984
+corpus programs) and EG-oracle (10,100 problems, no counterexample)
+pass; five mutants and two regression rows (`r0-definedness-dropped`,
+`r0-g0-limit-global`) fail as expected. Trusted surface re-pinned
+(Strategy.Substitution added). Nothing reachable from compile changed
+behaviour; no fixture changed; no corpus re-pin. Evidence and readings
+in findings, "G0, `entailedGround` and the two detectors".
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted
