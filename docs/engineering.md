@@ -588,9 +588,10 @@ have an explicit export boundary. No language semantics or gate was relaxed.
 Numeric limits in maintained checking/mutation scripts are named constants.
 
 The 30-line/3-decision/8-branch/8-binding budgets are review targets. The
-flat exhaustive mappings in Format.Diagnostic (codeName: twelve ErrorCode arms;
-code and message: fifteen Problem arms each) are retained together for
-readability; E003 records this specific target exception and its next review.
+flat exhaustive mappings in Format.Diagnostic (codeName: seventeen
+ErrorCode arms, one unrendered; code and message: fifteen Problem arms
+each) are retained together for readability;
+E003 records this specific target exception and its next review.
 All maintained code remains below 250 lines; automatic counts do not prove
 full naming/complexity compliance. No new source behavior or unification is
 claimed. Existing executable/snapshot/diagnostic tests validate this refactor.

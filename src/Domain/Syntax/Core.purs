@@ -221,5 +221,8 @@ data ErrorCode
   | SpecializationError
   | EffectError
   | HandlerError
+  -- Unrendered: no Problem maps here and no diagnostic is emitted with
+  -- it until a later authorized step (proposed name, author to confirm).
+  | Unresolved
 
 derive instance eqErrorCode ∷ Eq ErrorCode

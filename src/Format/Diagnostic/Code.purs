@@ -89,3 +89,4 @@ codeName = case _ of
   Code.SpecializationError → "E_SPECIALIZATION"
   Code.EffectError → "E_EFFECT"
   Code.HandlerError → "E_HANDLER"
+  Code.Unresolved → "E_UNRESOLVED"

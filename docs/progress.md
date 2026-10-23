@@ -326,6 +326,16 @@ corpus re-pin (no tracked program added). Task 1.1's reachability
 test is narrowed to the driver. Regression row `r0-first-left-hides`.
 Evidence in findings, "The collecting driver".
 
+## R0 shadow tranche, Task 1.3: the Unresolved error code (2026-10-22)
+
+`Unresolved` joins the ErrorCode ADT (Domain.Syntax.Core) with wire name
+`E_UNRESOLVED` (proposed; the author confirms it). It is unrendered: no
+Problem maps to it and nothing emits it, since Task 2.2 is held back
+(§18.71). docs/language.md's list of codes is unchanged because it names
+emitted codes. test/r0-codes.test.mjs checks the wire string only.
+Acceptance, codes, texts and first diagnostics are unchanged (the
+first-diagnostic snapshot stays green). No corpus re-pin.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/
