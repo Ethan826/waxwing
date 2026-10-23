@@ -4,8 +4,9 @@
 // the shadow run's decision (`shadowDecisions`), its class
 // (test/r0-rt8-account.mjs) and, where today accepts, the read-back's
 // position findings (criterion 2: σ(types(p)) is the checked node's
-// type at every body path). `rt8Table` is what test/fixtures/r0/rt8.json
-// pins: the count of declarations per class, and each defect.
+// type at every body path) and the holes its candidate bound.
+// `rt8Table` is what test/fixtures/r0/rt8.json pins: the count of
+// declarations per class, each defect and each bound hole.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadCorpus, repoRoot } from './r0-corpus.mjs';
@@ -28,13 +29,16 @@ const programOf = source => {
   return named.constructor.name === 'Right' ? named.value0 : null;
 };
 
-// Where today accepts: the read-back's candidate and its findings.
-const positionFindings = (program, decl, today) => {
-  if (today.constructor.name !== 'Right') return [];
+// Where today accepts: the read-back's candidate, its position findings
+// and the holes it bound (ReadBack step 4, provisional).
+const candidateFacts = (program, decl, today) => {
+  const none = { positions: [], holes: [] };
+  if (today.constructor.name !== 'Right') return none;
   const problem = online.problemOf(program, decl.name);
   const found = online.search(program, problem);
-  if (found.constructor.name !== 'Candidate') return [];
-  return online.typeFindings(problem, found.value0);
+  if (found.constructor.name !== 'Candidate') return none;
+  return { positions: online.typeFindings(problem, found.value0),
+    holes: found.value0.holes };
 };
 
 const declarationsOf = ({ origin, source }) => {
@@ -42,11 +46,11 @@ const declarationsOf = ({ origin, source }) => {
   if (program === null) return [];
   const today = checkProgram(program).outcomes;
   const decided = online.decisions(program);
-  return program.functions.map((decl, index) => ({
-    at: `${origin}#${decl.name}`,
-    class: accountFor(today[index].today, decided[index]),
-    positions: positionFindings(program, decl, today[index].today)
-  }));
+  return program.functions.map((decl, index) => {
+    const facts = candidateFacts(program, decl, today[index].today);
+    return { at: `${origin}#${decl.name}`, ...facts,
+      class: accountFor(today[index].today, decided[index], facts.holes) };
+  });
 };
 
 export const rt8Rows = async () => (await loadCorpus())
@@ -62,7 +66,11 @@ export const rt8Table = rows => {
     defects: rows.filter(row => isDefect(row.class))
       .map(row => `${row.at}: ${row.class}`),
     positions: rows.filter(row => row.positions.length > 0)
-      .map(row => `${row.at}: ${row.positions[0]}`)
+      .map(row => `${row.at}: ${row.positions[0]}`),
+    // Every declaration whose accepted candidate bound a hole, whatever
+    // its class, so Task 4.5's window can move them when the author rules.
+    boundHoles: rows.filter(row => row.holes.length > 0)
+      .map(row => `${row.at}: ${row.class}`)
   };
 };
 

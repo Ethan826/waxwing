@@ -10,14 +10,16 @@
 -- Arrow spines are walked by a loop (Domain.Type.Parts `spine`).
 module Features.Check.Strategy.ReadBack.Type
   ( holeVar
+  , holesIn
   , isHole
   , readType
   ) where
 
 import Prelude
-import Data.Array (foldr, sort, sortWith)
+import Data.Array (concatMap, foldr, mapMaybe, sort, sortWith)
 import Data.Array as Array
-import Data.Tuple (Tuple(..), fst)
+import Data.Maybe (Maybe(..), isJust)
+import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Recorded.Atom
   ( Base(..)
@@ -31,6 +33,7 @@ import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
 import Domain.Row (Label(..))
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (spine)
+import Features.Check.Spine as Recorded
 
 -- At a path generation never writes (`hole` is no constructor field),
 -- as Features.Check.Entailed.Mgu's made rows are at `entailed`.
@@ -40,11 +43,26 @@ holeVar index = FreshVar
   Res
 
 isHole ∷ Var → Boolean
-isHole = case _ of
-  FreshVar (Path { root: InBody, steps: [ Named "hole", Index _ ] }) Res →
-    true
-  FreshVar _ _ → false
-  RigidVar _ → false
+isHole = isJust <<< holeIndex
+
+-- The holes a recorded type mentions, by index, with repeats.
+holesIn ∷ RTExpr → Array Int
+holesIn ty = case ty of
+  Arrow _ _ → concatMap holesIn found.parameters <> holesIn found.result
+  Base _ → []
+  Atom.TVar variable → mapMaybe holeIndex [ variable ]
+  Record fields tails → concatMap (holesIn <<< snd) fields
+    <> mapMaybe holeIndex tails
+  App _ arguments → concatMap holesIn arguments
+  where
+  found = Recorded.spine ty
+
+holeIndex ∷ Var → Maybe Int
+holeIndex = case _ of
+  FreshVar (Path { root: InBody, steps: [ Named "hole", Index index ] }) Res →
+    Just index
+  FreshVar _ _ → Nothing
+  RigidVar _ → Nothing
 
 readType ∷ Ty Open → RTExpr
 readType = case _ of

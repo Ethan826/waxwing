@@ -60,9 +60,13 @@ import Features.Check.Strategy.Substitution
 type OnlineContext = { holders ∷ Functional, program ∷ Resolved.Program }
 
 -- σ, and the checked declaration today's solver built with it: the
--- baseline Task 7.1 compares `build`'s IR against.
+-- baseline Task 7.1 compares `build`'s IR against; and the holes σ bound
+-- (ReadBack step 4, provisional, pending the author's ambiguity ruling).
 type Certificate =
-  { substitution ∷ Substitution, checked ∷ Checked.FunctionDecl }
+  { substitution ∷ Substitution
+  , checked ∷ Checked.FunctionDecl
+  , holes ∷ Array Int
+  }
 
 type Today =
   Either Diagnostic { function ∷ Checked.FunctionDecl, state ∷ State }
@@ -97,7 +101,8 @@ searched problem = either refused accepted
   where
   accepted found = either broke (offered found.function)
     (readBack problem found.function)
-  offered checked made = Candidate { substitution: made.substitution, checked }
+  offered checked made = Candidate
+    { substitution: made.substitution, checked, holes: made.holes }
     made.claim
     []
   broke why = NoCandidate (Broke ("read-back: " <> why)) []

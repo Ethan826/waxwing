@@ -118,3 +118,13 @@ test('a read-back failure is the search\'s own: Broke', () => {
   assert.equal(found.value0.constructor.name, 'Broke');
   assert.match(found.value0.value0, /^read-back: /);
 });
+
+// Review I-1: the certificate says which holes σ bound (ReadBack step
+// 4), so the binding's effect stays visible to RT8 and Task 4.5.
+test('the certificate lists the holes the read-back bound', () => {
+  const free = online.programOf('fn f(): Int = { let g = fn(y) => show(y);'
+    + ' 0 };\nfn main(): Int = 0;\n');
+  const found = online.search(free, online.problemOf(free, 'f'));
+  assert.equal(found.value0.holes.length, 1);
+  assert.deepEqual(candidateOf('field').certificate.holes, []);
+});

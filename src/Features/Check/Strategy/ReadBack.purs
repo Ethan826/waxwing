@@ -39,7 +39,7 @@ import Data.Either (Either)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple(..), snd)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom
@@ -62,9 +62,13 @@ import Features.Check.Mentions (mentions)
 import Features.Check.Spine (spine, unspine)
 import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.ReadBack.Position (Slotted, valueAt)
-import Features.Check.Strategy.ReadBack.Type (isHole)
+import Features.Check.Strategy.ReadBack.Type (holesIn, isHole)
 
-type ReadBack = { substitution ∷ Substitution, claim ∷ Claim }
+-- `holes`: the holes step 4 bound, by index, ascending. The binding is a
+-- provisional reading pending the author's ambiguity ruling, so its
+-- effect stays visible (RT8 counts a Solved resting on one apart).
+type ReadBack =
+  { substitution ∷ Substitution, claim ∷ Claim, holes ∷ Array Int }
 
 type Equation = Tuple RTExpr RTExpr
 
@@ -99,7 +103,10 @@ completed problem values =
 
 read ∷ Claim → Array (Tuple Var RTExpr) → ReadBack
 read claim values =
-  { substitution: Map.fromFoldable (map settledBinding values), claim }
+  { substitution: Map.fromFoldable (map settledBinding values)
+  , claim
+  , holes: Array.sort (Array.nub (concatMap (holesIn <<< snd) values))
+  }
   where
   settledBinding (Tuple variable value) = Tuple variable (settled value)
 

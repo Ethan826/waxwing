@@ -9,6 +9,10 @@
 // defect of the strategy (guard and check disagree), counted, not hidden.
 import { describe } from './r0-decide-support.mjs';
 
+// Review I-1: a Solved whose candidate bound a hole (ReadBack step 4).
+export const boundHoleClass =
+  'Solved with a bound hole (pending the author\'s ambiguity ruling)';
+
 const named = value => value.constructor.name;
 
 // The online attempt is the first: `shadowChecking` has one strategy.
@@ -16,15 +20,18 @@ const onlineAttempt = decision => decision.attempts[0];
 
 const refusal = attempt => named(attempt.value2);
 
-const accepted = (decision, attempt) => {
+const accepted = (decision, attempt, holes) => {
   const verdict = describe({ constructor: { name: 'Right' },
     value0: decision }).verdict;
   switch (named(attempt)) {
   case 'Accepted':
-    return verdict === 'Solved' ? 'agree: Solved'
-      : `(a) blocked: ${verdict}`;
+    if (verdict !== 'Solved') return `(a) blocked: ${verdict}`;
+    return holes.length > 0 ? boundHoleClass : 'agree: Solved';
   case 'Declined': return '(b) declined by g0Guard';
   case 'CheckFailed':
+    // The backstop first: a defect whatever the claim (review I-2).
+    if (refusal(attempt) === 'RequirementUnjudged')
+      return 'DEFECT: candidate refused, RequirementUnjudged';
     if (named(attempt.value1) === 'Heuristic')
       return 'ambiguous several-tail read-back (Heuristic)';
     if (refusal(attempt) === 'RequirementOpen')
@@ -49,15 +56,18 @@ const rejected = attempt => {
   return `DEFECT: ${named(attempt)} where today refuses`;
 };
 
-// One declaration's class.
-export const accountFor = (today, result) => {
+// One declaration's class. `holes`: the holes the online candidate
+// bound (its certificate's `holes`; ReadBack step 4, a provisional
+// reading pending the author's ambiguity ruling), so a Solved resting on
+// one is its own class.
+export const accountFor = (today, result, holes = []) => {
   if (named(result) === 'Left')
     return `DEFECT: Faulted ${named(result.value0)}`;
   const decision = result.value0;
   if (named(decision.verdict) === 'Contradiction')
     return 'DEFECT: a contradiction with no refuter or rule';
   const attempt = onlineAttempt(decision);
-  return named(today) === 'Right' ? accepted(decision, attempt)
+  return named(today) === 'Right' ? accepted(decision, attempt, holes)
     : rejected(attempt);
 };
 

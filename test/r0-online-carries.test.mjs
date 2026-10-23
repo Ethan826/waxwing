@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
 import { stubsFrom } from './r0-stubs.mjs';
 import { describe, sources } from './r0-decide-support.mjs';
-import { accountFor, isDefect } from './r0-rt8-account.mjs';
+import { accountFor, boundHoleClass, isDefect }
+  from './r0-rt8-account.mjs';
 
 // Task 4.3's carried items (acceptance criterion 5) other than the
 // comparison carry (test/r0-online.test.mjs), and criterion 4's
@@ -101,4 +102,24 @@ test('RT8 accounting: each class from an injected result', () => {
   for (const [before, result, expected] of cases)
     assert.equal(accountFor(before, result), expected, expected);
   assert.ok(isDefect('DEFECT: candidate refused, RequirementUnjudged'));
+});
+
+// Review I-2: the backstop is a defect whatever the claim, so a
+// Heuristic candidate refused with `RequirementUnjudged` is not the
+// expected ambiguous read-back.
+test('RT8 accounting: RequirementUnjudged is a defect under Heuristic', () => {
+  assert.equal(accountFor(today.accepts, decision(refused(
+    Verdict.Heuristic.value, new Search.RequirementUnjudged(atom)),
+  unresolved)), 'DEFECT: candidate refused, RequirementUnjudged');
+});
+
+// Review I-1: a Solved whose candidate bound a hole (ReadBack step 4, a
+// provisional reading pending the author's ambiguity ruling) is its own
+// class, never merged into `agree: Solved`.
+const solved = new Verdict.Solved({});
+test('RT8 accounting: a Solved with a bound hole is its own class', () => {
+  const accepted = decision(new Verdict.Accepted(name, null, null), solved);
+  assert.equal(accountFor(today.accepts, accepted, [3]), boundHoleClass);
+  assert.equal(accountFor(today.accepts, accepted, []), 'agree: Solved');
+  assert.notEqual(boundHoleClass, 'agree: Solved');
 });
