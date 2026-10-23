@@ -3604,7 +3604,15 @@ experiment, not an ambiguity policy.
    variables would share one hole. Next check: a fixture whose σ omits
    a variable while the checked IR holds a hole σ does not mention,
    showing the numbers apart (or number above the checked IR's holes).
-   Recording it does not close it.
+   Recording it does not close it. *Open obligation (rule review of
+   docs/plans/r0-hole-contract-amendment.md, 2026-10-23):* such a hole
+   has no checked-IR hole, so its default (`{}`/`Int`) is the
+   contract's convention, which Task 6's lowering must adopt; sharing
+   a number does no harm to the contract (same sort-positional
+   default). *Follow-up (same review, not fixed):* Cov has no sort or
+   genericity check for hand-built witnesses (a row variable bound to
+   `Inline (TVar hole)` hides its hole from the contract); reusing
+   `generic` on the settled images would fit (BACKLOG R024).
 6. *Amendment (after the mutant run, not before):* the lacks/disjoint
    test was added because mutant M5 survived the first six tests
    (corrected 2026-10-23 from "five": RED lists six).

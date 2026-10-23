@@ -1,111 +1,118 @@
 # The hole contract: `lacks` and `disjoint` at the default
 
-Status: proposed rule, for review before implementation (author's
-ruling of 2026-10-23). Shadow only. Amends W §1.5's syntactic check
-(research/division-campaign/witness/statements.md, §1.5), as
-implemented by Features.Check.Strategy.HoleContract (Task 4.4).
+Status: corrected after review (2026-10-23), on the author's ruling of
+that day. Shadow only. Amends W §1.5's syntactic check (research/
+division-campaign/witness/statements.md), Strategy.HoleContract.
 
-## What changes
+## The rule
 
 Today (cited, HoleContract.purs `equational`): with the bindings
-applied, a `B` atom that mentions a hole breaks the check unless it is
-an equation with syntactically equal canonical sides. Every `lacks`
-and `disjoint` atom that mentions a hole breaks it.
+applied, a `B` atom mentioning a hole breaks the check unless it is an
+equation with syntactically equal sides, so every `lacks`/`disjoint`
+atom mentioning a hole breaks it. Amended: such an atom breaks the
+check unless it is established at the defaults, that is unless
+`atomUnder (facts problem) (settled <$> images) entry` is `Right unit`
+(cited: Strategy.Atoms `atomUnder`, `facts`; ReadBack.Type `settled`:
+a type hole `Int`, a row hole no tail; `images` as today, a `Free`
+binding its hole in its sort's position). `atomUnder` applies the
+substitution itself and checks both rows' definedness (no label twice,
+each tail lacking each field, tails pairwise apart) from D's listed
+facts only. Its refusals for these atoms are `Undefined` or
+`NotEntailed` (`Unsatisfied` arises only for equations and `Ff`). On a
+refusal every hole the atom mentions is broken: `NoWitness
+(HoleContract v)`, `v` chosen as today (first in `Ord Var` order).
 
-Amended rule. A `lacks` or `disjoint` atom of `B` that mentions a hole
-breaks the check unless it is established at the defaults:
+Unchanged: the equation arm (syntactic, holes not defaulted, and it
+checks no definedness), the `BQ` arm, Cov's order. Atoms mentioning no
+hole are not judged. D holds facts about rigid rows only (cited,
+Generate/Signature.purs; Atoms.purs header), so no fact about a hole
+exists, and `settled` removes hole tails before facts are consulted.
+The verdicts here do not depend on the type default: field types need
+only be defined, and `Base` and `TVar` both are (argued). Not implied:
+split selection, a non-default hole binding, an ambiguity policy.
+No contradiction (cited): `holeContract` returns `Either
+NoWitnessReason Unit`, its only `Left` is `HoleContract v`, and
+HoleContract.purs imports no `Contradiction`; Solved stays (W §1.6).
 
-1. Apply the witness's bindings (a `Free` binding is its hole in its
-   sort's position, as today), then every hole's default: a type hole
-   is `Int`, a row hole is `{}` (cited: ReadBack.Type `settled`, the
-   defaults W §1.5 and today's lowering use).
-2. Judge the atom with G0's existing atom check, Strategy.Atoms
-   `atomUnder`, against `facts problem`: only what `D` lists (`lacks`
-   and `disjoint` on rigid rows), with both rows' definedness checked
-   (no label twice, each tail lacking each field, tails pairwise
-   apart).
-3. `Right unit` establishes the atom. Any refusal (`Undefined`,
-   `NotEntailed`, `Unsatisfied`) leaves it unestablished: every hole
-   the atom mentions is broken, and the witness is `NoWitness
-   (HoleContract v)`, `v` chosen as today.
-
-Unchanged: the equation arm (still syntactic, holes not defaulted), the
-`BQ` arm, the variable named, and Cov's order (coverage first). No new
-procedure: steps 1 and 2 reuse `settled` and `atomUnder` as they are.
-
-Not authorized and not implied: choosing a split, binding a hole to
-anything but its default, or any general ambiguity policy.
-
-## Why it is sound (argued)
+## Soundness (argued) and its limit
 
 Atoms states its judgement sound for every rigid assignment satisfying
-`D` (cited, Atoms.purs header; argued there). Lowering fills each hole
-with exactly the default of step 1, at every key. So an atom
-established at the defaults holds at every key under the declared
-hypotheses, which is what W §1.5's contract asks of the default
-("the default satisfies the recorded atoms that mention it"). The
-check stays sufficient, not complete: `atomUnder` entails only what
-`D` lists, so a fact `D` implies without listing is not established
-and the answer is `NoWitness`, never a refusal of the program.
+D (cited, Atoms.purs header; argued there, for generic candidates).
+For a hole of the checked IR, lowering fills it with these defaults at
+every key (cited: Specialize.purs:47 `specialize = specializeWith
+TInt`, the injected representative; Lower.purs:53 `TVar (Hole _)` to
+the representative, :63 `tail`, `Hole _ → pure Nothing`; Values.purs:99
+`slotType`). So an atom established at the defaults holds at every key,
+as W §1.5 asks. Limit: a `Free n` that Witness.purs makes for a
+variable σ omits (BACKLOG R023) has no checked-IR hole; lowering does
+not read witnesses yet, so its default is the contract's convention, an
+open obligation Task 6's lowering must adopt (R023). Sharing a number
+with a checked-IR hole does no harm here: both get the same
+sort-positional default.
 
-## No contradiction, ever (argued, by construction)
+## The arm never refuses an online witness (argued; checked by RT8)
 
-The contract returns `Either NoWitnessReason Unit`. Its only failure is
-`HoleContract v`, which is a compilation refusal: the verdict stays
-Solved (W §1.6), and nothing in the contract builds a `Contradiction`,
-a refuter or a diagnostic. An atom that fails at the default, even one
-that fails at every value, is `NoWitness`.
+For σ's own keys, a binding's image equals σ's value, and
+`ReadBack.read` sets `substitution = settled <$> unsettled`, so the
+arm's substitution is the one G0 accepted. For a variable σ omits, G0
+judged it as a tail with no facts; the arm puts `{}` or `Int` there,
+and in `rowDefined`, `rowLacks` and `rowsApart` a tail only adds
+conjuncts. So G0's acceptance implies the arm's (monotonicity), and a
+witness is built only on acceptance (Strategy.purs `checked`). Check:
+after the re-pin, no RT8 `HoleContract` arises from a lacks/disjoint
+atom. The arm still matters: it removes today's three refusals, and it
+is the real check for hand-built witnesses, other adapters, Adapt-N,
+and any drift between G0's and the contract's defaults.
 
 ## Boundary examples
 
-Rigid `r`, `s`; `h`, `k` holes; `x`, `y` flexible variables.
+Rigid `r`, `s`; holes `h`, `k`; flexible `x`, `y`. Atom; D; result.
 
-Each case: the atom after bindings; what D lists; the result.
-
-- E1. `x lacks a`, `x ↦ { ...h }`; D none. Admit: `{}` lacks `a`.
-- E2. `x disjoint y`, `x ↦ { ...h }`, `y ↦ { ...r }`; D none. Admit.
-- E3. As E2 with `y ↦ { b: Int, ...r }`; D none. NoWitness: `y`'s
-  row is undefined (`r lacks b` not listed).
-- E4. `x disjoint y`, `x ↦ { a: Int, ...h }`, `y ↦ { ...r }`; D
+- E1. `x lacks a`, `x ↦ { ...h }`; none. Admit.
+- E2. `x disjoint y`, `x ↦ { ...h }`, `y ↦ { ...r }`; none. Admit.
+- E3. As E2, `y ↦ { b: Int, ...r }`; none. NoWitness (undefined).
+- E4. `x disjoint y`, `x ↦ { a: Int, ...h }`, `y ↦ { ...r }`;
   `r lacks a`. Admit.
-- E5. As E4; D none. NoWitness: `r lacks a` not entailed.
-- E6. `x lacks b`, `x ↦ { a: Int, ...r, ...h }`; D none. NoWitness:
-  undefined at the default (`r lacks a` not listed).
-- E7. `x lacks a`, `x ↦ { a: Int, ...h }`; D none. NoWitness: fails
-  at every value; the verdict stays Solved, no contradiction.
-- E8. `x disjoint y`, `x ↦ { ...h }`, `y ↦ { ...k }`; D none. Admit:
-  both are `{}`.
-- E9. route's `{ ...r } = { ...h, ...r }` (`u ↦ { ...h }`); D
-  `s disjoint t`. NoWitness, unchanged: an equation, unequal sides.
-- E10. `{ a: Int, ...h } = { a: Int, ...h }`; D none. Passes,
-  unchanged: equal sides, holes not defaulted.
-- E11. `x lacks a`, `x ↦ { ...s }`, no hole; D none. Not judged by
-  the contract, unchanged.
+- E5. As E4; none. NoWitness (`r lacks a` not entailed).
+- E6. `x lacks b`, `x ↦ { a: Int, ...r, ...h }`; none. NoWitness.
+- E7. `x lacks a`, `x ↦ { a: Int, ...h }`; none. NoWitness (any value).
+- E8. `x disjoint y`, `x ↦ { ...h }`, `y ↦ { ...k }`; none. Admit.
+- E9. route's `{ ...r } = { ...h, ...r }`; `s disjoint t`. NoWitness.
+- E10. `{ a: Int, ...h } = { a: Int, ...h }`; none. Passes, unchanged.
+  So does `{ a: Int, ...r, ...h }` on both sides, undefined at every
+  value: the equation arm checks no definedness (unchanged).
+- E11. `x lacks a`, `x ↦ { ...s }`, no hole; none. Not judged.
+- E12. `x disjoint x`, `x ↦ { ...h }`; none. Admit: true only at `{}`.
+  With `x ↦ { ...r, ...h }`: NoWitness (not entailed).
+- E13. `x lacks b`, `x ↦ { a: Int, ...h }`; none. Admit.
+- E14. `x lacks a`, `x ↦ { ...r, ...s, ...h }`; `r lacks a`, `s lacks
+  a`. NoWitness (tails not apart); adding `r disjoint s`: Admit.
+- E15. `x lacks c`, `x ↦ { a: { b: Int, ...r, ...h } }`; none.
+  NoWitness (undefined at depth); with `r lacks b`: Admit.
+- E16. `x lacks b`, `x ↦ { a: hole }` (a type hole); none. Admit.
+- E17. `x disjoint y`, `x ↦ { a: Int, ...h }`, `y ↦ { a: Int, ...k }`;
+  none. NoWitness, both holes broken, `x` (first in `Ord Var`) named.
+- E18. A hole admitted by E1's atom that also sits in an unequal
+  equation, or fails a `BQ` atom: NoWitness (the arms combine).
+- E19. Hand-built σ omitting `x`, B `x lacks a`: `x` is `Free`, so
+  `{}`: Admit (NoWitness under the literal rule; R023's hole).
 
-E7 is a witness G0 would not accept as a candidate (G0 judges the
-settled σ, the same defaults); a hand-built or other adapter's witness
-can still reach the contract, and gets `NoWitness`.
+## Expected outcomes, tests and mutants
 
-## Expected outcomes (argued; to be checked by the implementation)
+Expected (argued; checked by the implementation): r005b/
+render-quiet-annotated main and R022's probes move from `NoWitness
+HoleContract` to `Witnessed`; route's `u` stays `NoWitness` (E9).
 
-The online strategy's witness binds σ before its hole defaults, and G0
-accepted the settled σ, which applies the same defaults. So for the
-online strategy every `lacks`/`disjoint` atom it meets is established
-at the defaults, except where the witness has a `Free` binding for a
-variable σ omits (G0 leaves it an unbound tail with no facts; the
-contract defaults it to `{}`). Expected moves, `NoWitness HoleContract`
-to `Witnessed`: test/fixtures/r005b/render-quiet-annotated.json main
-(`r disjoint s` with `s` at `{}`) and R022's two probes
-(test/r0-r022-probes.mjs). route's `u` stays `NoWitness`.
+Tests for E1-E19 through the production `substitutionWitness`,
+written first; RED for the admitted ones that change. Production path
+and RT8 re-pin. Mutants, each with its killing examples: the arm
+accepts every atom (E3, E5-E7); judges without defaults (E1, E2, E4,
+E8, E12); empty facts (E4); the literal arm restored (E1); the equation
+arm judged at the defaults by `atomUnder` (E9; regression row); the
+arm judging hole-free atoms: equivalent (argued), since a refused
+atom breaks only the holes it mentions; its killable form, a refused
+hole-free atom breaking every hole, fails E11 (a `Free` hole beside).
 
-## Tests and mutants planned
-
-- One test per row E1-E11 on hand-built witnesses through the
-  production `substitutionWitness`, written first and seen failing
-  where the outcome changes (E1, E2, E4, E8).
-- Production path: R022's probes and render-quiet-annotated become
-  `Witnessed` through `shadowDecisions`; RT8 re-pinned.
-- Mutants: the new arm accepting every atom (E3, E5, E6, E7 fail); the
-  arm judging without defaults (E1, E2, E4, E8 fail); `facts` replaced
-  by empty facts (E4 fails); the old literal arm restored (E1 fails).
-  A regression row for the defaults-skipped mutant.
+Follow-up (not here; BACKLOG): Cov has no sort or genericity check for
+hand-built witnesses (a row variable bound to `Inline (TVar hole)`
+hides its hole); reusing `generic` on the settled images would fit.
