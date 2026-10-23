@@ -47,12 +47,20 @@ mapBoth name, if provided, must expose the same generic operation/evidence
 rather than a Result-only substitute. Result-specific mapError can remain
 a convenience derived from the corresponding bifunctor operation.
 
-Optional values and Result with a fixed error type should share generic
-Functor/Applicative/Monad operations. Result as a two-argument constructor
-also admits Bifunctor; Option is unary, not a Bifunctor merely because it
-has two constructors. K001 must support the required constructor kinds and
-partial type application; C001 must specify lawful instance/evidence
-selection and coherence among shared operations. Their designs must
+Eventually, optional values and Result with a fixed error type should share
+generic Functor/Applicative/Monad operations. The first Prelude is smaller
+(2026-10-23, [C001 README](2026-10-21-c001-explicit/README.md)): ordinary
+and class-free, with `Maybe`/`Nothing`/`Just`, `List`/`Nil`/`Cons`,
+`Ordering`/`Less`/`Equal`/`Greater` and the structural operation interfaces
+`Eq`, `Ord`, `Semigroup`, `Show`. Shared higher-kinded APIs wait on K001,
+and laws are separate contracts. Below, "Option" means the
+same optional type as `Maybe`; there is no second optional type.
+
+Result as a two-argument constructor also admits Bifunctor; Option is
+unary, not a Bifunctor merely because it has two constructors. K001 must
+support the required constructor kinds and partial type application;
+C001's first core specifies no instance or evidence selection, and any
+lawful selection among shared operations is later work. Their designs must
 resolve how generic operations are represented under the rank-1 scope and
 specialization, rather than silently requiring polymorphic record fields.
 
@@ -108,6 +116,8 @@ equivalent or a documented reason/dependency for deferral. This is broad
 coverage, not a promise to clone all packages or every specialized API.
 
 ## Candidate names and distinctions
+
+This table is a proposal, not a ruling.
 
 | Operation | Candidate Waxwing name | Familiar equivalent |
 |---|---|---|

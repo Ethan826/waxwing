@@ -64,8 +64,10 @@ Distinguish providing operations from selecting an implementation. Compare
 explicit evidence with optional implicit defaults; any implicit selection
 must have predictable ambiguity, overlap, scope and termination rules.
 Assistant recommendation: make explicit named evidence a supported
-foundation, and assess implicit convenience separately. Ordinary record
-representation versus dedicated class evidence remains a C001/R001 decision.
+foundation, and assess implicit convenience separately. Decided
+2026-10-21 as option A: ordinary record representation, with dedicated
+class evidence deferred (see
+[C001 rulings](2026-10-21-c001-explicit/README.md)).
 
 ## Coherence, ownership and instance identity
 
@@ -78,7 +80,11 @@ that selection ambiguity but do not remove all consistency obligations.
 
 A sorted set built with one ordering must not be searched or merged using
 an incompatible ordering. Assess retaining the dictionary, type-level
-identity/witnesses, or abstract module types. Retention alone does not make
+identity/witnesses, or abstract module types. (Ruled 2026-10-21: retain the
+dictionary and rebuild explicitly; structural reuse waits for a
+compatibility witness; see
+[C001 rulings](2026-10-21-c001-explicit/README.md).)
+Retention alone does not make
 merging collections with different policies safe. Define compatibility and
 cross-module behavior without assuming pointer identity or newtypes are
 mandatory. Coordinate these decisions with map/set APIs and specialization.
@@ -122,7 +128,8 @@ Before implementation plans, specify examples that demonstrate:
   collection merges, including across modules.
 - Useful ambiguity diagnostics if implicit defaults are supported.
 
-Resolve dictionary representation/selection jointly in C001/R001, module
+Dictionary representation is decided (C001 option A, 2026-10-21). Resolve
+selection in C001, module
 and type identity in M001/PKG001, and laws in STD001/concurrency planning.
 No syntax, functor system, global-instance policy or law-proof mechanism is
 approved by this note.

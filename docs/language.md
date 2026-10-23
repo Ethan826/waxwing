@@ -637,9 +637,12 @@ block opening (here an error, as no line break follows).
 `print`, not a type class and not reserved. It takes one printable value
 (everything except functions and handlers, else `Expected a printable
 value, found <t>`), is pure, and returns as Text exactly what `Console.print(x)`
-writes, without the final LF. `show(t)` of a Text is `t` itself. Until
-type classes exist (BACKLOG C001) its output format is fixed and cannot be
-customised. A Text printed alone (`Console.print(t)`, a `main` returning
+writes, without the final LF. `show(t)` of a Text is `t` itself. Built-in
+`show` stays structural and its output format is fixed. Customization uses
+explicitly supplied renderers (dictionary-based operations); no type classes
+arrive in the first C001 core (see
+[C001 rulings](plans/2026-10-21-c001-explicit/README.md)).
+A Text printed alone (`Console.print(t)`, a `main` returning
 Text) is written raw; a Text nested in data is written quoted with the canonical
 escaping: `\"`, `\\`, `\n`, `\t` and `\r` by name, `\$` before `{`, and
 `\u{…}` in lowercase hex for the controls U+0000 to U+001F and U+007F to

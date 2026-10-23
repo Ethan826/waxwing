@@ -5435,6 +5435,10 @@ Delivered:
 - Unbound bare operation names keep their error with a hint; the
   multi-candidate wording (R18) was approved 2026-10-14. `Console.print`
   and `show` remain compiler-provided until C001.
+  Note (2026-10-23): the approved C001 design keeps built-in `show`
+  structural; customization uses explicitly supplied renderers, and no
+  type classes arrive in the first core. See
+  [C001 rulings](plans/2026-10-21-c001-explicit/README.md).
 - Final review (R19): a qualifier's `.` touches both names (`Log . log(1)`
   and `Log\n.log(1)` give the stray-`.` `Expected ';'` at the `.`;
   test/fx020-qualified.test.mjs), at no parser stack cost (depth probe,

@@ -59,7 +59,10 @@ records/classes, modules/FFI and PBT001. Select its v1 subset in a design.
 - Rank-1 polymorphism and parameterized ADTs (P001).
 - First-class function types, lambdas, closures and Go lowering (FN001),
   after P001 and before C001, R001 and FX001.
-- HKTs and kind checking (K001), classes and dictionary elaboration (C001).
+- HKTs and kind checking (K001), classes and dictionary elaboration (C001;
+  the approved first core uses explicit dictionary records, not classes,
+  and waits on K001 only for higher-kinded abstractions; see
+  [C001 rulings](2026-10-21-c001-explicit/README.md)).
 - Row-polymorphic records (R001), structural service composition, and an
   explicit monadic effect design (FX001).
 - Useful diagnostics, predictable semantics, ordinary platform integration.
@@ -100,9 +103,12 @@ instance identity are preserved. They may become one design; do not assume
 two independent selection/representation systems. This does not commit to
 Scala implicits or OCaml modular implicits.
 
-C001's existing direction remains: a Prelude, Eq/Ord as ordinary classes,
-derive, and several selectable instances per type without mandatory
-newtypes. Instance identity and safe use of instance-sensitive collections
+C001's direction (superseded in part by the 2026-10-21 and 2026-10-23
+rulings in [the C001 README](2026-10-21-c001-explicit/README.md)): a
+Prelude, Eq/Ord/Show as ordinary records of functions (option A), and
+several selectable instances per type without mandatory newtypes. Derive
+is out of the first implementation, and dedicated class evidence (B) is
+deferred. Instance identity and safe use of instance-sensitive collections
 remain design questions. No new class syntax is decided here.
 
 2026-10-10 elaboration: [modules and instance
