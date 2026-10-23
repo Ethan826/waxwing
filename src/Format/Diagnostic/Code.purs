@@ -30,7 +30,7 @@ code = case _ of
   SpecializationLimit _ → Code.SpecializationError
   RedundantArm → Code.Redundant
   NonExhaustive _ → Code.NonExhaustive
-  Internal _ → Code.InternalError
+  Internal _ _ → Code.InternalError
   Hinted problem _ → code problem
   EffectNotAllowed _ _ → Code.EffectError
   CallbackRowLacks _ _ _ _ _ → Code.EffectError

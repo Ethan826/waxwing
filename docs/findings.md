@@ -1820,3 +1820,122 @@ expected. GREEN: 28 structure tests pass; the real tree gives `[]`.
 Mutants (each restored): MC1, Data.Array.NonEmpty.Internal dropped:
 the routes and survey tests fail; MC2, the .purs hash not compared:
 the signature and whole-module tests fail.
+
+## No catch-all at the end of a body (2026-10-23)
+
+R0 shadow tranche, Task 2.1 (AT16's first half; rulings R3, R11).
+
+**`classify`.** Features.Check.Classify maps each `Failure` to
+`AsHint | AsLimit | AsPlaceholder | AsFault | AsMismatch`. It is built
+on RowOutcome's `classified`, the one match over `Failure` by name
+(no catch-all), whose stops give the limit, fault and placeholder
+classes. Its contradictions are refined by a fact `classified` now
+keeps, `caused` (the cause and inner failure of a `FromMerge`): a
+predicate's contradiction is a hint (T-R0a §10, D6 → a hint), the rest
+a mismatch. `Stop`'s `Limit` now carries its `LimitReached`.
+`Exhausted` is a fault (`Internal` stop, `AsFault (BrokenInvariant …)`)
+by Task 0.2's result. Checked: test/r0-classify.test.mjs injects all
+15 constructors directly, the payloads, a predicate's failure around
+each stop, and agreement with `classified` on every arm. RED: before
+the module existed, `node --test test/r0-classify.test.mjs` failed
+with ERR_MODULE_NOT_FOUND for output/Features.Check.Classify. Regression
+row `r0-classify-catchall` (deletes `classified`'s `Exhausted` arm, adds
+`_ → contradiction`): `node scripts/regression.mjs
+r0-classify-catchall` proves it (the fixed compiler passes; the
+restored defect's probe fails with `Exhausted classed as AsMismatch,
+not a fault`).
+
+**`Exhausted` and compile.** RowOutcome is reached only through
+Features.Check.RowEntry, the labels-only test driver; compile's
+renderers already reported `Exhausted` as E_INTERNAL with its text. So
+the mapping changes no compile output (argued from the import graph;
+the corpus snapshot test/r0-first-diagnostic.serial.test.mjs is green,
+checked). One test expectation moved: test/r005b-outcome.test.mjs's
+injected `Exhausted` is now the `Internal` stop, not `Limit`.
+
+**Today's renderers are not routed through `Classified`.** The plan
+said EndReport, Require, Record and Reject render from `Classified`.
+They still match `Failure` by name, now with one arm per constructor
+and no catch-all, for two reasons (argued). They read payloads no
+class keeps (a mismatch's types, a refusal's reason). And a
+`FromMerge` around a stop goes to the predicate's renderer today
+(`mergedAt`), where `classify` gives the stop's class, so routing
+through it could change a text, which ruling R11 forbids. Nothing
+makes such a `FromMerge` today (`located` and `attributed` never wrap
+a stop), but that is an argument, not a check.
+
+**`Internal`'s kinds (ruling R3).** `Internal InternalKind String`,
+the kind never rendered: every kind renders as its text with
+E_INTERNAL (checked, test/r0-classify.test.mjs). The kinds, derived
+from the 82 places that now name one (each call of Specialize's
+`internal` helper counted), each reviewed:
+- `LaterWork`: Check/Placeholder.purs and Specialize/Record.purs's
+  several-tail placeholder.
+- `RuleBroken`: the four renderers' `Unexpected`, EndReport's failure
+  outside its predicates, Require's bare `Homeless`.
+- `BoundPassed`: the four renderers' `Exhausted`.
+- `BodyState`: Settle (two), Filing, TailPass, MarkReport, Removal.
+- `Unrendered`: Reject's consumption fallback (`TooDeep`, `Occurs`,
+  `RowOccurs`, `Homeless`) and EndReport's unexplained predicate
+  refusal.
+- `TableLookup`: every lookup of an id or index in a table an earlier
+  phase built (Resolve, Check and Specialize; the "Invalid … id",
+  "Invalid resolved …", "No such function", "Unnamed type variable",
+  "Inhabitation index out of range", "Invalid type argument" sites).
+- `InputShape`: an earlier phase's output of a shape it excludes
+  (Arms, Extension, Handle, Signature (two), Matrix's field count,
+  Match's arity, Nested's and Lower's syntax mismatches, Resolve's
+  handler effect, Specialize's family and duplicate label).
+- `PassInvariant`: a whole-program pass's own computation (Matrix's
+  vector length, Missing (two), Coverage, Expand (two), Components,
+  Go's families).
+Checked per kind at one site each, the failure injected directly
+(Reject for `RuleBroken`, `BoundPassed`, `Unrendered`; placeholderAt,
+Filing.missing, Tables.typeInfo, Signature.fieldTypes, Matrix.column).
+Mutant: Reject's `Unexpected` kind set to `BoundPassed`; `node --test
+test/r0-classify.test.mjs` failed "the renderers' stops: a rule
+broken, a bound passed, no text" (7 pass, 1 fail); restored.
+
+**`_` arms reviewed.** EndReport:43, Reject:54 and Record:166 became
+named arms with the same results. UnifyRecord's `open` blames an open
+failure on a predicate, a semantic claim, so its `_ → true` became
+named arms (same booleans). RowMerge/End's `stop` sends a non-stop to
+`Unexpected`, a fault, not a semantic claim: unchanged. Seen but
+outside the task's files, not changed: RowMerge/Improve's `located`
+(`_ → caused failure`, the same blame shape as `open`), Merged's
+`mergedAt`, Contradicted's `rendered` and RowOutcome's `reasonOf`.
+
+**A live defect (BACKLOG R020), recorded, not fixed.** Record.purs's
+former catch-all sent every contradiction to `notSelected`, which
+reports a missing field. With `fn pair(a: { ...r }, b: { ...s }): Int
+where r disjoint s = 0;`, the body `let f = fn(p, q) => { let v = q.x;
+let u = pair(p, q); p.x };` gives E_TYPE `x is not a field of { ..._
+}` at `p.x`: `p`'s row is open, and what rules `x` out is the
+disjointness with `q`, which the text does not name. A call that
+breaks the same fact, `first({ x: 1 }, { x: 2 })` with `first`
+returning its first argument under `r disjoint s`, gets D2's `Field x
+is in both records: r disjoint s`. The failure is `Refused (Overlap
+…)`: checked by adding `console.error('SELECT-FAILURE',
+v.constructor.name, v.value0.constructor.name)` at the top of
+`failed` in output/Features.Check.Record/index.js, compiling the
+program (`Refused Overlap`), then restoring the file. Pinned by
+test/r0-classify.test.mjs ("pinned R020"); the named arm `Refused _ →
+unselected unit` keeps it.
+
+**FX010's constructor.** The same instrumentation at
+output/Features.Check.Reject/index.js `rejected` shows the pinned
+test/fixtures/r0/audit/fx010-record-payload.pinned.json reaches the
+consumption fallback with `RowOccurs`.
+
+**Fixtures.** 20 audit fixtures under test/fixtures/r0/audit/ had
+their `site` line number moved to follow the edited files (MarkReport,
+Reject, Resolve/Handler); source, code and text are unchanged, so no
+corpus re-pin. No diagnostic fixture changed.
+
+**Regression rows.** Two older rows restore a defect that builds an
+`Internal` (`deferred-fail-effect`, `fx025-unbound-row`); their
+replacements now name a kind and import it (a second edit each). The
+first full verify failed on the first of them (the clone did not
+compile); after the fix `node scripts/regression.mjs
+deferred-fail-effect fx025-unbound-row r0-classify-catchall` proves all
+three.

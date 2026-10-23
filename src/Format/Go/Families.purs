@@ -25,7 +25,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Ids (TypeId(..))
 import Domain.IR.Internal as IR
 import Domain.IR.Parts as Parts
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Row (TypeHead(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Format.Go.Context (children)
@@ -58,7 +58,8 @@ keyed program = maybe (Right program) judged (Map.findMax records)
   -- Reported at the first site of the label set numbered last.
   judged last =
     if familiesFit (Map.size records) highest then Right program
-    else Left (problemAt (Internal "Fail without a family") last.value)
+    else Left
+      (problemAt (Internal PassInvariant "Fail without a family") last.value)
 
 recordKeys ∷ IR.Program → RecordKeys
 recordKeys program = Map.fromFoldable

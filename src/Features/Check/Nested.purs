@@ -9,7 +9,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), snd)
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (CtorId(..), EffectInfo)
 import Domain.Row (EffectRef(..), Label(..))
 import Domain.Syntax
@@ -60,7 +60,8 @@ nestedTypes (Checked.Program program) = do
   typeNamed info entries = { name: info.name, entries }
   ctorAt span (CtorId index) = maybe' (invalid span) (Right <<< ctorEntry)
     (Array.index program.ctors index)
-  invalid span _ = Left (problemAt (Internal "Invalid constructor id") span)
+  invalid span _ = Left
+    (problemAt (Internal TableLookup "Invalid constructor id") span)
   ctorEntry ctor =
     { span: ctor.span, types: ctor.fields, syntax: ctor.fieldSyntax }
   nodeName node = node.name
@@ -164,7 +165,8 @@ judgeField graph inside ty syntax = case ty, syntax of
         maybe' (missing span) (nested span) (Array.index graph.names index)
     | otherwise = Right unit
   nested span name = Left (problemAt (NestedDatatype name) span)
-  missing span _ = Left (problemAt (Internal "Invalid type id") span)
+  missing span _ = Left
+    (problemAt (Internal TableLookup "Invalid type id") span)
 
 -- The written field types in label order, as the resolved row keeps them.
 writtenTypes ∷ Array FieldRef → Array TypeRef
@@ -191,7 +193,7 @@ spineParts ∷ RefSpine → Array TypeRef
 spineParts found = Array.snoc found.parameters found.result
 
 mismatch ∷ Span → Diagnostic
-mismatch = problemAt (Internal "Field syntax mismatch")
+mismatch = problemAt (Internal InputShape "Field syntax mismatch")
 
 -- An arrow is a constructor of two arguments to the reference graph: the
 -- types its parameters and result mention are referenced.

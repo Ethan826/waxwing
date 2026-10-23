@@ -10,7 +10,7 @@ import Data.Either (Either(..), either)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..), TypeName)
+import Domain.Problem (InternalKind(..), Problem(..), TypeName)
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, FieldName, Span, problemAt)
 import Domain.Type (Ty(..))
@@ -158,13 +158,25 @@ select env state record label = do
     -- A receiver of several tails is not yet told apart from a missing
     -- field (Features.Check.Placeholder).
     Placeholder what → Left (placeholderAt (Checked.spanOf record) what)
-    Unexpected what → Left (problemAt (Internal what) (Checked.spanOf record))
+    Unexpected what → Left
+      (problemAt (Internal RuleBroken what) (Checked.spanOf record))
     FromMerge cause inner → mergedAt env state.subst (Checked.spanOf record)
       cause
       inner
       failed
-    Exhausted what → Left (problemAt (Internal what) (Checked.spanOf record))
-    _ → notSelected env state record label
+    Exhausted what → Left
+      (problemAt (Internal BoundPassed what) (Checked.spanOf record))
+    Mismatch _ _ → unselected unit
+    Occurs _ _ → unselected unit
+    RowMissing _ _ _ → unselected unit
+    RowExtra _ _ _ → unselected unit
+    RowPayload _ _ _ → unselected unit
+    RowSharedTail _ _ → unselected unit
+    RowMismatch _ _ → unselected unit
+    RowOccurs _ _ → unselected unit
+    Refused _ → unselected unit
+    Homeless _ → unselected unit
+  unselected _ = notSelected env state record label
 
 notSelected
   ∷ ∀ r. CheckEnv r → State → Checked.Expr → FieldName → Checked (Ty Open)

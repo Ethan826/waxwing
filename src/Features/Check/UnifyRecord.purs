@@ -91,13 +91,24 @@ attributed subst left right = either caused Right
   byPredicate failure predicate = FromMerge
     { predicate, at: Nothing, within: Just subst }
     failure
+  -- By name (R0 Task 2.1): an open failure is blamed on a predicate,
+  -- a semantic claim, so a new constructor must be placed here.
   open = case _ of
     TooDeep → false
     Unexpected _ → false
     Placeholder _ → false
     Exhausted _ → false
     FromMerge _ _ → false
-    _ → true
+    Mismatch _ _ → true
+    Occurs _ _ → true
+    RowMissing _ _ _ → true
+    RowExtra _ _ _ → true
+    RowPayload _ _ _ → true
+    RowSharedTail _ _ → true
+    RowMismatch _ _ → true
+    RowOccurs _ _ → true
+    Refused _ → true
+    Homeless _ → true
 
 -- Whether unifying the shared fields bound one of the row's own tail
 -- metas, as in `{ a: { ...r }, ...r }`. The rows are then flattened again

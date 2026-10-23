@@ -42,7 +42,9 @@ export const r005bEndRows = [
   },
   {
     // A rescan that counts a pass where no case fired as a change: quiet
-    // predicates keep it going to its bound (`Exhausted`, a limit).
+    // predicates keep it going to its bound (`Exhausted`, a broken
+    // invariant, since rules §5 says the bound is never passed; R0 Task
+    // 0.2).
     name: 'r005b-quiet', file: 'src/Features/Check/RowMerge/Improve.purs',
     needle: '        | reached.changed = Loop found\n',
     replacement: '        | reached.changed || true = Loop found\n',

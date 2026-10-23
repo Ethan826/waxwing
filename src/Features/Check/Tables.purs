@@ -3,7 +3,7 @@ module Features.Check.Tables (Lookup, typeInfo, ctorInfo, ownerType) where
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe')
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved
   ( CtorId(..)
   , CtorInfo
@@ -25,13 +25,13 @@ typeInfo ∷ Array TypeInfo → TypeId → Lookup TypeInfo
 typeInfo types (TypeId index) = maybe' missing Right
   (Array.index types index)
   where
-  missing _ = Left (Internal "Invalid type id")
+  missing _ = Left (Internal TableLookup "Invalid type id")
 
 ctorInfo ∷ Array CtorInfo → CtorId → Lookup CtorInfo
 ctorInfo ctors (CtorId index) = maybe' missing Right
   (Array.index ctors index)
   where
-  missing _ = Left (Internal "Invalid constructor id")
+  missing _ = Left (Internal TableLookup "Invalid constructor id")
 
 -- A constructor's owner applied to its own variables: a type argument per
 -- type parameter and a row argument per row parameter, in declaration

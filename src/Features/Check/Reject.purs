@@ -12,7 +12,7 @@ import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Maybe (maybe, maybe')
 import Data.Tuple (Tuple(..))
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Syntax (Diagnostic, Note, NoteReason(..), Span, problemAt)
 import Features.Check.Callback (callbackLacks)
 import Features.Check.Context (CheckEnv)
@@ -47,13 +47,21 @@ rejected env state origin failure = case failure of
   RowPayload found expected occurrence → payload found expected occurrence
   Refused refusal → Left (refusedAt env state.subst span refusal)
   Placeholder what → Left (placeholderAt span what)
-  Unexpected what → Left (problemAt (Internal what) span)
+  Unexpected what → Left (problemAt (Internal RuleBroken what) span)
   FromMerge cause inner → mergedAt env state.subst span cause inner
     (rejected env state origin)
-  Exhausted what → Left (problemAt (Internal what) span)
-  _ → Left (problemAt (Internal "Effect row consumption failed") span)
+  Exhausted what → Left (problemAt (Internal BoundPassed what) span)
+  -- No text for these yet: a limit, an infinite type or row (BACKLOG
+  -- FX010 reaches `RowOccurs`) and H's refusal (made only inside
+  -- `FromMerge`) are reported as a consumption that failed.
+  TooDeep → unrendered
+  Occurs _ _ → unrendered
+  RowOccurs _ _ → unrendered
+  Homeless _ → unrendered
   where
   span = origin.span
+  unrendered = Left
+    (problemAt (Internal Unrendered "Effect row consumption failed") span)
   mismatch expected found = do
     Tuple expectedName foundName ← typeNames env span (opened expected)
       (opened found)

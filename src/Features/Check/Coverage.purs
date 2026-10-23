@@ -8,7 +8,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Set as Set
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (Ty(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Matrix (simplifyRow)
@@ -110,7 +110,7 @@ exhaustiveness signature span ty arms = do
   report witnesses = Left (problemAt (single witnesses) span)
   single = case _ of
     [ witness ] → NonExhaustive witness
-    _ → Internal "Expected one missing pattern"
+    _ → Internal PassInvariant "Expected one missing pattern"
 
 -- Places a table failure, which is a compiler bug, at the span being judged.
 located ∷ ∀ a. Span → Lookup a → Either Diagnostic a

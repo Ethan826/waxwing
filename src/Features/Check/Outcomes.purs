@@ -14,7 +14,7 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..), either, hush)
 import Data.Maybe (Maybe(..), maybe')
 import Domain.Checked.Internal as Checked
-import Domain.Problem (EntryKind(..), Problem(..))
+import Domain.Problem (InternalKind(..), EntryKind(..), Problem(..))
 import Domain.Recorded (RecordedProblem)
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, origin, problemAt)
@@ -129,7 +129,7 @@ printableEntry holders program =
   maybe' missing judged (Array.index program.functions (index program.entry))
   where
   index (Resolved.FunctionId entry) = entry
-  missing _ = Left (problemAt (Internal "Invalid entry") nowhere)
+  missing _ = Left (problemAt (Internal TableLookup "Invalid entry") nowhere)
   nowhere = { start: origin, end: origin }
   judged main =
     if containsFunction holders main.result then Left

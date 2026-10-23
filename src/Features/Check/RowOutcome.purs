@@ -2,10 +2,12 @@ module Features.Check.RowOutcome
   ( RowOutcome(..)
   , Stop(..)
   , Contradiction
+  , Caused
   , Settled
   , settledSubst
   , concluded
   , stepped
+  , classified
   , reasonOf
   ) where
 
@@ -13,11 +15,13 @@ import Prelude
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
+import Domain.Verdict (LimitReached(..))
+import Features.Check.Binding (inferredTypeLimit)
 import Features.Check.RowMerge.End (Ended, ended)
 import Features.Check.RowMerge.Merge (Merge)
 import Features.Check.RowStore (Because(..))
 import Features.Check.Subst (Subst)
-import Features.Check.UnifyFailure (Failure(..), Refusal(..))
+import Features.Check.UnifyFailure (Cause, Failure(..), Refusal(..))
 
 -- How row solving ends (R005 Tranche B plan, "An explicit three-way
 -- result"; docs/engineering.md, "Evidence for solvers and diagnostics").
@@ -35,7 +39,12 @@ data RowOutcome
   | Contradiction Contradiction
   | Unresolved Settled (NonEmptyArray Merge)
 
-type Contradiction = { failure ∷ Failure, because ∷ Maybe Because }
+-- `caused`: when a predicate caused it (`FromMerge`), the predicate's
+-- cause and the failure inside, the fact R0's `classify` refines with.
+type Contradiction =
+  { failure ∷ Failure, because ∷ Maybe Because, caused ∷ Maybe Caused }
+
+type Caused = { cause ∷ Cause, found ∷ Failure }
 
 -- A substitution at the end of a body; its constructor is not exported.
 newtype Settled = Settled Subst
@@ -47,7 +56,7 @@ settledSubst (Settled subst) = subst
 -- type grew past `inferredTypeLimit`), an invariant the rules' arguments
 -- establish found broken (a checker defect), or work a later task does
 -- (a placeholder). None of them says anything about the solutions.
-data Stop = Limit | Internal String | Unfinished String
+data Stop = Limit LimitReached | Internal String | Unfinished String
 
 -- The end of a body classified (Features.Check.RowMerge.End `endOfBody`).
 concluded ∷ Either Failure Ended → Either Stop RowOutcome
@@ -75,19 +84,22 @@ classified failure = case failure of
   RowMismatch _ _ → contradiction
   RowOccurs _ _ → contradiction
   Refused _ → contradiction
-  TooDeep → Left Limit
+  TooDeep → Left (Limit (InferredTypeDepth inferredTypeLimit))
   Unexpected what → Left (Internal what)
   Placeholder what → Left (Unfinished what)
   -- B3: what a predicate caused is what its own failure establishes,
   -- kept with its cause for the renderers.
-  FromMerge _ found → const failure' <$> classified found
-  -- B3: the rescan's bound (rules §5), a safeguard: a limit.
-  Exhausted _ → Left Limit
+  FromMerge cause found →
+    const (failure' { caused = Just { cause, found } }) <$> classified found
+  -- B3: the rescan's bound, which rules §5's theorem says is never
+  -- passed, so passing it is a broken invariant, not a limit (R0 Task
+  -- 0.2; docs/findings.md "`Exhausted` is not a budget").
+  Exhausted what → Left (Internal what)
   -- B4: H's refusal, established by H's argument (rules §7).
   Homeless _ → contradiction
   where
   contradiction = Right failure'
-  failure' = { failure, because: reasonOf failure }
+  failure' = { failure, because: reasonOf failure, caused: Nothing }
 
 -- The reason of the fact a failure broke, if it broke one.
 reasonOf ∷ Failure → Maybe Because

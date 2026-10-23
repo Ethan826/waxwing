@@ -73,6 +73,32 @@ data AbortCause
   = ClauseFails String TypeName
   | ClauseMayPerform String String
 
+-- What an internal error is, never rendered: the text alone is (R0
+-- ruling R3), so that a later consumer (R0 Task 4.3) can tell a failure
+-- confined to one body's checking from doubt about input an earlier phase
+-- built, without reading the text. `LaterWork`: a placeholder for work a
+-- later task does (Features.Check.Placeholder). `RuleBroken`: an
+-- invariant of the row solver broken (the unifier's `Unexpected`, or a
+-- failure where the solver's code makes none). `BoundPassed`: the
+-- re-examination's bound passed (`Exhausted`, which rules §5 argues
+-- never happens). `BodyState`: an invariant of a body's own checking
+-- state (its substitution, installed clauses, marks) broken.
+-- `Unrendered`: a failure that reached a renderer with no text for it.
+-- `TableLookup`: an id or index that a table an earlier phase built
+-- does not hold. `InputShape`: an earlier phase's output not of the
+-- shape that phase guarantees. `PassInvariant`: an invariant of a
+-- whole-program pass's own computation (coverage, expansion, components,
+-- Go families) broken.
+data InternalKind
+  = LaterWork
+  | RuleBroken
+  | BoundPassed
+  | BodyState
+  | Unrendered
+  | TableLookup
+  | InputShape
+  | PassInvariant
+
 -- The lexer and parser are Format, so their payloads may be text.
 data Problem
   = Lexical
@@ -99,7 +125,7 @@ data Problem
   | SpecializationLimit Int
   | RedundantArm
   | NonExhaustive Witness
-  | Internal String
+  | Internal InternalKind String
   -- Rendered as its problem, with the hint after; code and span unchanged.
   | Hinted Problem Hint
   | EffectNotAllowed String String

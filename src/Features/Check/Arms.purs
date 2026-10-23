@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Data.Maybe (maybe')
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty)
@@ -40,7 +40,7 @@ checkMatch infer env state span scrutinee arms = do
   head ← infer env state scrutinee
   maybe' empty (checkArms infer env span head) (Array.uncons arms)
   where
-  empty _ = Left (problemAt (Internal "Empty resolved match") span)
+  empty _ = Left (problemAt (Internal InputShape "Empty resolved match") span)
 
 checkArms
   ∷ ∀ r

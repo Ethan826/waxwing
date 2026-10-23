@@ -1,7 +1,7 @@
 {
   "name": "effect-not-allowed/inferred",
   "refusal": "EffectNotAllowed",
-  "site": "src/Features/Check/Reject.purs:69",
+  "site": "src/Features/Check/Reject.purs:77",
   "token": "EffectNotAllowed",
   "class": "semantic",
   "evidence": "checked",

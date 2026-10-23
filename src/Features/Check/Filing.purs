@@ -12,7 +12,7 @@ import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Domain.Checked.Internal (Open(..))
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Row (Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (TyRow)
@@ -140,7 +140,7 @@ remainder state entry =
 
 missing ∷ ∀ a. ClauseEntry → Either Diagnostic a
 missing entry = Left
-  (problemAt (Internal "Clause without a group") entry.handler)
+  (problemAt (Internal BodyState "Clause without a group") entry.handler)
 
 grownSince ∷ ClauseSignature → ClauseEntry → Boolean
 grownSince now entry = maybe false (flip grew now) entry.signature

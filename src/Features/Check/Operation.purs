@@ -14,7 +14,7 @@ import Data.Maybe (Maybe(..), maybe')
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), openRow)
 import Domain.Syntax (Diagnostic, Span, Sort(..), problemAt)
@@ -147,7 +147,7 @@ operationUse
 operationUse env state span effect@(EffectId owner) index =
   maybe' missing owned (Array.index env.effects owner)
   where
-  missing _ = Left (problemAt (Internal "Invalid operation") span)
+  missing _ = Left (problemAt (Internal TableLookup "Invalid operation") span)
   owned info = maybe' missing (used info)
     (Array.index info.operations index)
   used info operation = Right

@@ -1,7 +1,7 @@
 {
   "name": "handler-operation-clause/resolve",
   "refusal": "HandlerOperation",
-  "site": "src/Features/Resolve/Handler.purs:90",
+  "site": "src/Features/Resolve/Handler.purs:91",
   "token": "HandlerOperation",
   "class": "structural",
   "evidence": "checked",

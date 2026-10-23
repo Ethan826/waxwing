@@ -7,6 +7,7 @@ import Data.Maybe (maybe')
 import Data.Tuple (Tuple(..))
 import Domain.IR.Internal as IR
 import Domain.Ids (EffectId(..))
+import Domain.Problem (InternalKind(..))
 import Domain.Row (EffectRef(..))
 import Domain.Syntax (Span)
 import Features.Specialize.Copy (get, modify)
@@ -68,7 +69,8 @@ newEffect env span key@(Tuple effect arguments) _ = do
 
 nameOf ∷ Env → Span → EffectRef → Specializing String
 nameOf env span = case _ of
-  UserEffect (EffectId index) → maybe' (internal "Invalid effect id" span)
+  UserEffect (EffectId index) → maybe'
+    (internal TableLookup "Invalid effect id" span)
     (pure <<< effectName)
     (Array.index env.effects index)
   ConsoleEffect → pure "Console"

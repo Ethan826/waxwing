@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Row (Row(..))
-import Domain.Problem (Problem(Internal))
+import Domain.Problem (InternalKind(..), Problem(Internal))
 import Domain.Syntax (Diagnostic, problemAt)
 import Domain.Type (TyRow, VarId)
 import Features.Check.Consume (closeTail, consumeIgnoring)
@@ -70,7 +70,10 @@ installed _ (Tuple changed state) found =
   agreed variable = case endOf state.subst found.current of
     Fixed same | same == variable → Right (Tuple changed state)
     _ → Left
-      ( problemAt (Internal "Installation row does not end in its clause row")
+      ( problemAt
+          ( Internal BodyState
+              "Installation row does not end in its clause row"
+          )
           found.span
       )
 

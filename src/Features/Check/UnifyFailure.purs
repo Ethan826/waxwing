@@ -38,10 +38,10 @@ import Features.Check.Subst (Subst)
 -- and where the metas of its rows were bound;
 -- docs/plans/2026-10-19-row-merge-locations.md); `Exhausted`, the
 -- re-examination's step bound passed, which rules §5 argues cannot
--- happen (a limit, never a verdict). B4: `Homeless`, H's refusal at the
--- end of a body (rules §7): an atom left on one side of a waiting
--- predicate that no unknown of the other side can hold; it is made only
--- inside its predicate's `FromMerge`.
+-- happen (a broken invariant, never a verdict; R0 Task 0.2). B4:
+-- `Homeless`, H's refusal at the end of a body (rules §7): an atom left
+-- on one side of a waiting predicate that no unknown of the other side
+-- can hold; it is made only inside its predicate's `FromMerge`.
 data Failure
   = Mismatch (Ty Flex) (Ty Flex)
   | Occurs Int (Ty Flex)

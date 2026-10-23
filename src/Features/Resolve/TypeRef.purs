@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..), isJust, maybe')
 import Data.Traversable (traverse)
 import Data.Foldable (traverse_)
 import Data.Tuple (Tuple(..))
-import Domain.Problem (Problem(..), UnboundKind(..))
+import Domain.Problem (InternalKind(..), Problem(..), UnboundKind(..))
 import Domain.Syntax as Syntax
 import Domain.Resolved as Resolved
 import Domain.Row (uniformRows)
@@ -100,7 +100,8 @@ resolveTypeWith known effects variables ambient = resolved
     (Array.index known.types index)
   names = { types: known.types, effects, variables }
   declared name = isJust (indexOf known.typeIndices name)
-  invalid _ = Left (Syntax.problemAt (Internal "Invalid type id") nowhere)
+  invalid _ = Left
+    (Syntax.problemAt (Internal TableLookup "Invalid type id") nowhere)
   nowhere = { start: Syntax.origin, end: Syntax.origin }
   unbound kind span name _ = Left
     (Syntax.problemAt (Unbound kind name) span)

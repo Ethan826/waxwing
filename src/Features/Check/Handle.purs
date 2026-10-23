@@ -8,7 +8,7 @@ import Data.Map as Map
 import Data.Maybe (maybe')
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Row (Label(..), Row(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
@@ -68,7 +68,8 @@ failureClause infer env expected state clause = do
     , state: reached
     }
   where
-  invalid _ = Left (problemAt (Internal "Missing fail binder") clause.span)
+  invalid _ = Left
+    (problemAt (Internal InputShape "Missing fail binder") clause.span)
 
 payloadType ∷ Label (Ty Resolved.VarId) → Ty Resolved.VarId
 payloadType (Label _ arguments _) = maybe' noPayload identity

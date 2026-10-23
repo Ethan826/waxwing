@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Row (Label(..), closedRow, uniformRows)
 import Domain.Type (Ty(..), VarId(..), spliceRecord)
 import Domain.Type.Parts (arrows, spine)
@@ -36,7 +36,7 @@ substitute arguments = case _ of
   rowless id inner = TData id inner []
   handler effect mark inner = THandler (Label effect inner mark)
     (uniformRows closedRow)
-  missing _ = Left (Internal "Invalid type argument")
+  missing _ = Left (Internal TableLookup "Invalid type argument")
   substituteSpine found = arrows
     <$> traverse (substitute arguments) found.parameters
     <*> substitute arguments found.result

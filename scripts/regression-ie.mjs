@@ -35,12 +35,22 @@ export const ieRows = [
   {
     // The unbound row variable lost its place: an internal error at 0.
     name: 'fx025-unbound-row',
-    file: 'src/Features/Resolve/Row.purs',
-    needle: '  missing span name _ = Left\n'
-      + '    (Syntax.problemAt (Unbound UnboundTypeVariable name) span)\n',
-    replacement: '  missing _ _ _ = Left (Syntax.problemAt '
-      + '(Internal "Missing row variable")\n'
-      + '    { start: Syntax.origin, end: Syntax.origin })\n',
+    edits: [
+      {
+        file: 'src/Features/Resolve/Row.purs',
+        needle: '  missing span name _ = Left\n'
+          + '    (Syntax.problemAt (Unbound UnboundTypeVariable name) span)\n',
+        replacement: '  missing _ _ _ = Left (Syntax.problemAt '
+          + '(Internal TableLookup "Missing row variable")\n'
+          + '    { start: Syntax.origin, end: Syntax.origin })\n'
+      },
+      {
+        file: 'src/Features/Resolve/Row.purs',
+        needle: 'import Domain.Problem (Problem(..), UnboundKind(..))\n',
+        replacement: 'import Domain.Problem (InternalKind(..), Problem(..),'
+          + ' UnboundKind(..))\n'
+      }
+    ],
     probe: 'fx025-unbound-row',
     message: /unbound row: E_INTERNAL Missing row variable/
   },

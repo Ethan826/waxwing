@@ -12,7 +12,7 @@ import Domain.Checked.Internal as Checked
 import Domain.Checked.Internal (Open)
 import Domain.Row (Label, Row(..))
 import Domain.Type (Ty)
-import Domain.Problem (Problem(Internal))
+import Domain.Problem (InternalKind(..), Problem(Internal))
 import Domain.Syntax (Diagnostic, problemAt)
 import Features.Check.Consume (consumeBare, consumeIgnoring, consumeLabels)
 import Features.Check.Context (CheckEnv, Locals)
@@ -207,12 +207,13 @@ paired state entry donor began = maybe' again marked (meeting began)
   -- A directional pairing of marks cannot fail (`pairMarks`); a failure
   -- would otherwise lose an edge silently.
   unpaired _ = Left
-    ( problemAt (Internal "Installed clause marks could not be paired")
+    ( problemAt
+        (Internal BodyState "Installed clause marks could not be paired")
         entry.origin.span
     )
   -- Unreachable (invariant below): reaching it is a checker defect, so it
   -- is reported, never consumed past.
   unpartnered _ = Left
-    ( problemAt (Internal "Installed clause label without a partner")
+    ( problemAt (Internal BodyState "Installed clause label without a partner")
         entry.origin.span
     )

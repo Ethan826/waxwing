@@ -4,7 +4,7 @@ import Prelude
 import Data.Either (Either(..))
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, FieldName, Span, problemAt)
 import Domain.Type (Ty(..))
@@ -53,4 +53,4 @@ checkRemoval infer env state span record labels = do
 remainder ∷ Span → Ty Open → Array String → Either Diagnostic (Ty Open)
 remainder span ty names = case ty of
   TRecord row → Right (TRecord (withoutLabels names row))
-  _ → Left (problemAt (Internal "Removal from a non-record") span)
+  _ → Left (problemAt (Internal BodyState "Removal from a non-record") span)

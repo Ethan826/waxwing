@@ -12,6 +12,7 @@ import Data.Traversable (traverse)
 import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
 import Domain.Ids (EffectId)
+import Domain.Problem (InternalKind(..))
 import Domain.Row (EffectRef(..), TypeHead)
 import Domain.Syntax (Span)
 import Domain.Type (Ty)
@@ -109,5 +110,7 @@ layoutOf scope span effect instantiation =
 -- Checking settled every family (Features.Check.Failure): a payload whose
 -- head is still unknown was rejected there, so here it is a compiler bug.
 familyOf ∷ ∀ v. Span → Ty v → Specializing TypeHead
-familyOf span payload = maybe' (internal "Fail without a family" span) pure
+familyOf span payload = maybe'
+  (internal InputShape "Fail without a family" span)
+  pure
   (typeHead payload)

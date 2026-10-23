@@ -1,7 +1,7 @@
 {
   "name": "defer-handler-variable/selected",
   "refusal": "DeferHandlerVariable",
-  "site": "src/Features/Check/MarkReport.purs:48",
+  "site": "src/Features/Check/MarkReport.purs:49",
   "token": "DeferHandlerVariable",
   "class": "semantic",
   "evidence": "checked",

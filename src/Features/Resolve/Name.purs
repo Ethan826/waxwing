@@ -7,7 +7,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe, maybe')
 import Data.String as String
 import Data.Traversable (traverse)
-import Domain.Problem (Problem(..), UnboundKind(..))
+import Domain.Problem (InternalKind(..), Problem(..), UnboundKind(..))
 import Domain.Syntax as Syntax
 import Domain.Resolved (Global)
 import Domain.Resolved as Resolved
@@ -127,5 +127,5 @@ fieldCount scope span (Resolved.CtorId index) =
   maybe' missing count (Array.index scope.ctors index)
   where
   missing _ = Left
-    (Syntax.problemAt (Internal "Invalid constructor id") span)
+    (Syntax.problemAt (Internal TableLookup "Invalid constructor id") span)
   count info = Right (Array.length info.fields)

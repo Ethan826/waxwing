@@ -1,7 +1,7 @@
 {
   "name": "fx010-record-payload/inferred",
   "refusal": "Internal",
-  "site": "src/Features/Check/Reject.purs:54",
+  "site": "src/Features/Check/Reject.purs:64",
   "token": "Internal",
   "class": "defect",
   "evidence": "defect",

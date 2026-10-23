@@ -14,6 +14,7 @@ import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
+import Domain.Problem (InternalKind(..))
 import Domain.Resolved (CtorId(..), FunctionId(..), sortOf)
 import Domain.Syntax (Sort(..), Span)
 import Domain.Type (Ty(..), TypeId(..), VarId(..))
@@ -64,7 +65,7 @@ ownerCtor
   → Checked.Instantiation
   → Specializing CtorId
 ownerCtor scope span id@(CtorId index) instantiation = do
-  ctor ← maybe' (internal "Invalid constructor id" span) pure
+  ctor ← maybe' (internal TableLookup "Invalid constructor id" span) pure
     (Array.index scope.env.ctors index)
   arguments ← instantiated scope span (ownerSorts ctor.owner) instantiation
   owner ← applied scope.env span ctor.owner arguments

@@ -17,5 +17,22 @@ export const r0Rows = [
       + ' declaration.report.today\n',
     probe: 'r0-first-left-hides',
     message: /second broken declaration hidden: E_TYPE Expected Int, found/
+  },
+  {
+    // Task 2.1 (AT16): a catch-all in the one classifier. With the
+    // `Exhausted` arm gone, `_` takes it, and a broken invariant would be
+    // classed as a mismatch, a semantic claim. (A `_` beside all fifteen
+    // arms changes nothing, so the arm is deleted.)
+    name: 'r0-classify-catchall',
+    file: 'src/Features/Check/RowOutcome.purs',
+    needle: '  Exhausted what → Left (Internal what)\n'
+      + '  -- B4: H\'s refusal, established by H\'s argument (rules §7).\n'
+      + '  Homeless _ → contradiction\n',
+    replacement: '  -- B4: H\'s refusal, established by H\'s argument'
+      + ' (rules §7).\n'
+      + '  Homeless _ → contradiction\n'
+      + '  _ → contradiction\n',
+    probe: 'r0-classify-catchall',
+    message: /Exhausted classed as AsMismatch, not a fault/
   }
 ];

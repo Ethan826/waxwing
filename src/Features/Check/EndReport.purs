@@ -3,7 +3,7 @@ module Features.Check.EndReport (endReport) where
 import Prelude
 import Data.Either (Either(..), either)
 import Data.Maybe (maybe, maybe')
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Binding (inferredTypeLimit)
 import Features.Check.Contradicted (contradicted)
@@ -38,10 +38,21 @@ endReport env fallback subst = either failed (ended accepted undecided)
       (contradicted env subst site cause inner)
     Placeholder what → Left (placeholderAt site what)
     TooDeep → Left (problemAt (TypeTooDeep inferredTypeLimit) site)
-    Unexpected what → Left (problemAt (Internal what) site)
-    Exhausted what → Left (problemAt (Internal what) site)
-    _ → Left (problemAt (Internal ended') site)
+    Unexpected what → Left (problemAt (Internal RuleBroken what) site)
+    Exhausted what → Left (problemAt (Internal BoundPassed what) site)
+    -- `endOfBody` fails only with a stop or a predicate's failure.
+    Mismatch _ _ → outside
+    Occurs _ _ → outside
+    RowMissing _ _ _ → outside
+    RowExtra _ _ _ → outside
+    RowPayload _ _ _ → outside
+    RowSharedTail _ _ → outside
+    RowMismatch _ _ → outside
+    RowOccurs _ _ → outside
+    Refused _ → outside
+    Homeless _ → outside
+  outside = Left (problemAt (Internal RuleBroken ended') site)
   ended' = "the end of a body failed outside its predicates"
-  unexplained cause _ = problemAt (Internal unexplained')
+  unexplained cause _ = problemAt (Internal Unrendered unexplained')
     (maybe site identity cause.at)
   unexplained' = "a predicate's refusal at the end of a body names no part"

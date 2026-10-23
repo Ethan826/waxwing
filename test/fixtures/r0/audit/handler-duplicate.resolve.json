@@ -1,7 +1,7 @@
 {
   "name": "handler-duplicate/resolve",
   "refusal": "HandlerDuplicate",
-  "site": "src/Features/Resolve/Handler.purs:142",
+  "site": "src/Features/Resolve/Handler.purs:143",
   "token": "HandlerDuplicate",
   "class": "structural",
   "evidence": "checked",

@@ -8,7 +8,7 @@ import Data.Either (Either(..))
 import Data.Foldable (and, traverse_)
 import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (CtorId(..), CtorInfo, Ty(..), TypeId(..), TypeInfo)
 import Features.Check.Tables (Lookup, ctorInfo, typeInfo)
 
@@ -145,4 +145,4 @@ marked indices flags =
 at ∷ ∀ a. Array a → Int → Lookup a
 at items index = maybe' missing Right (Array.index items index)
   where
-  missing _ = Left (Internal "Inhabitation index out of range")
+  missing _ = Left (Internal TableLookup "Inhabitation index out of range")

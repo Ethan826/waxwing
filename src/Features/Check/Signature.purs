@@ -15,7 +15,7 @@ import Data.Either (Either(..))
 import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (fst, snd)
-import Domain.Problem (Problem(..), Witness(..))
+import Domain.Problem (InternalKind(..), Problem(..), Witness(..))
 import Domain.Checked.Internal (Open)
 import Domain.Resolved (CtorId(..), CtorInfo, Ty(..), TypeId, TypeInfo)
 import Domain.Type.Record (RecordRow, labels)
@@ -91,13 +91,19 @@ fieldTypes tables ty = case _ of
   substituted ctor values = traverse (substitute values) ctor.fields
   arguments = case ty of
     TData _ values _ → Right values
-    _ → Left (Internal "Constructor head on a type that is not data")
+    _ → Left
+      ( Internal InputShape
+          "Constructor head on a type that is not data"
+      )
 
 -- The field types of a record column, in label order.
 recordFields ∷ Ty Open → Lookup (Array (Ty Open))
 recordFields = case _ of
   TRecord row → Right (map snd row.fields)
-  _ → Left (Internal "Record head on a type that is not a record")
+  _ → Left
+    ( Internal InputShape
+        "Record head on a type that is not a record"
+    )
 
 arity ∷ Signature → Head → Lookup Int
 arity tables = case _ of
@@ -128,4 +134,4 @@ flag ∷ Array Boolean → CtorId → Lookup Boolean
 flag inhabited (CtorId index) = maybe' missing Right
   (Array.index inhabited index)
   where
-  missing _ = Left (Internal "Invalid constructor id")
+  missing _ = Left (Internal TableLookup "Invalid constructor id")

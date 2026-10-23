@@ -16,7 +16,7 @@ import Data.Tuple (fst, snd)
 import Domain.Row (closedRow)
 import Features.Check.Stages (arrowType)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (CtorId(..), FunctionId(..), TypeId(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Context (CheckEnv)
@@ -38,7 +38,8 @@ functionUse env state using (FunctionId index) =
   maybe' missing found (Array.index env.functions index)
   where
   span = using.span
-  missing _ = Left (problemAt (Internal "Invalid resolved function") span)
+  missing _ = Left
+    (problemAt (Internal TableLookup "Invalid resolved function") span)
   found function = Right $ lacksStated span function.constraints
     (desugaredUse (made function) (used function))
   made function =
@@ -105,9 +106,10 @@ ctorUse env state using (CtorId index) =
   where
   span = using.span
   missing _ = Left
-    (problemAt (Internal "Invalid resolved constructor") span)
+    (problemAt (Internal TableLookup "Invalid resolved constructor") span)
   found ctor = maybe' missingType (owned ctor) (ownerOf ctor.owner)
-  missingType _ = Left (problemAt (Internal "Invalid resolved type") span)
+  missingType _ = Left
+    (problemAt (Internal TableLookup "Invalid resolved type") span)
   ownerOf (TypeId owner) = Array.index env.types owner
   made ctor info =
     { site: span

@@ -12,7 +12,7 @@ import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Traversable (traverse)
 import Domain.Ids (EffectId(..))
-import Domain.Problem (DuplicateKind(..), Problem(..))
+import Domain.Problem (InternalKind(..), DuplicateKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Row (EffectRef(..), Label(..))
 import Domain.Syntax as Syntax
@@ -63,7 +63,7 @@ resolveHandler known effects summaries variables span reference clauses = do
 effectIdOf ∷ Label (Ty VarId) → Either Syntax.Diagnostic EffectId
 effectIdOf (Label (UserEffect id) _ _) = Right id
 effectIdOf _ = Left
-  (Syntax.problemAt (Internal "Invalid handler effect") originSpan)
+  (Syntax.problemAt (Internal InputShape "Invalid handler effect") originSpan)
   where
   originSpan = { start: Syntax.origin, end: Syntax.origin }
 
@@ -75,7 +75,8 @@ atEffect
 atEffect effects (EffectId index) span = maybe' missing Right
   (Array.index effects index)
   where
-  missing _ = Left (Syntax.problemAt (Internal "Invalid effect id") span)
+  missing _ = Left
+    (Syntax.problemAt (Internal TableLookup "Invalid effect id") span)
 
 resolveClause
   ∷ Resolved.EffectInfo
@@ -93,7 +94,7 @@ resolveClause effect clause = maybe' unknown found
   found index = maybe' invalid resolved (Array.index effect.operations index)
     where
     invalid _ = Left
-      ( Syntax.problemAt (Internal "Invalid operation index")
+      ( Syntax.problemAt (Internal TableLookup "Invalid operation index")
           clause.span
       )
     resolved operation

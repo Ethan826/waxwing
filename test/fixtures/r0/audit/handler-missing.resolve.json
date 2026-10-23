@@ -1,7 +1,7 @@
 {
   "name": "handler-missing/resolve",
   "refusal": "HandlerMissing",
-  "site": "src/Features/Resolve/Handler.purs:161",
+  "site": "src/Features/Resolve/Handler.purs:162",
   "token": "HandlerMissing",
   "class": "structural",
   "evidence": "checked",

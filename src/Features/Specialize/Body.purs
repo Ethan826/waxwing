@@ -7,6 +7,7 @@ import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
+import Domain.Problem (InternalKind(..))
 import Domain.Resolved (FunctionId(..))
 import Domain.Syntax (Span)
 import Features.Specialize.Copy (modify)
@@ -29,7 +30,7 @@ import Features.Specialize.Values
 -- parameters before its body; a block's items in order, then its value.
 fillFunction ∷ Env → Work → Specializing Unit
 fillFunction env work = maybe'
-  (internal "Invalid function id" work.span)
+  (internal TableLookup "Invalid function id" work.span)
   copied
   (Array.index env.functions work.declaration)
   where

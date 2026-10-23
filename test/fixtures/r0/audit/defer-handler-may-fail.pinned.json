@@ -1,7 +1,7 @@
 {
   "name": "defer-handler-may-fail/pinned",
   "refusal": "DeferHandlerMayFail",
-  "site": "src/Features/Check/MarkReport.purs:49",
+  "site": "src/Features/Check/MarkReport.purs:50",
   "token": "DeferHandlerMayFail",
   "class": "semantic",
   "evidence": "checked",

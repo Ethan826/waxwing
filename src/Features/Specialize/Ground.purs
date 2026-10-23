@@ -14,7 +14,7 @@ import Data.Maybe (maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.IR.Internal as IR
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Row (Label(..), Mark(..), closedRow, uniformRows)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..), TypeId(..))
@@ -73,11 +73,12 @@ groundType grounds span = case _ of
   IR.TRecord (IR.LayoutId output) → maybe' missing groundRecord
     (Array.index grounds.records output)
   where
-  missing _ = Left (problemAt (Internal "Invalid type id") span)
+  missing _ = Left (problemAt (Internal TableLookup "Invalid type id") span)
   groundRecord info = TRecord <<< closed <$> traverse field info.fields
   closed fields = { fields, tails: [] }
   field (Tuple label ty) = Tuple label <$> recur ty
-  missingEffect _ = Left (problemAt (Internal "Invalid effect key") span)
+  missingEffect _ = Left
+    (problemAt (Internal TableLookup "Invalid effect key") span)
   groundHandler info = handlerOf info <$> traverse recur info.arguments
   handlerOf info arguments = THandler (Label info.effect arguments Unmarked)
     (uniformRows closedRow)

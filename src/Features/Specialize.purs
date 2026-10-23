@@ -17,7 +17,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple, snd)
 import Domain.Checked.Internal as Checked
 import Domain.IR.Internal as IR
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (FunctionId(..))
 import Domain.Syntax (Diagnostic, origin, problemAt)
 import Domain.Type (Ty(..))
@@ -97,7 +97,9 @@ specialized representative checked@(Checked.Program program) = do
   where
   env = environment representative checked
   missingEntry _ = Left
-    (problemAt (Internal "Invalid entry") { start: origin, end: origin })
+    ( problemAt (Internal TableLookup "Invalid entry")
+        { start: origin, end: origin }
+    )
 
 -- The worklist (design §6): work items are filled in creation order, so
 -- the loop is first-in first-out; filling one may create later items.

@@ -6,7 +6,7 @@ import Data.Map as Map
 import Data.Maybe (maybe')
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (Ty(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Operator, Span, problemAt)
@@ -203,5 +203,6 @@ checkLocal ∷ Env → State → Span → Resolved.LocalId → Inferred
 checkLocal env state span id = maybe' missing found
   (Map.lookup id env.locals)
   where
-  missing _ = Left (problemAt (Internal "Invalid resolved local") span)
+  missing _ = Left
+    (problemAt (Internal TableLookup "Invalid resolved local") span)
   found ty = typed state span ty (Checked.Local id)

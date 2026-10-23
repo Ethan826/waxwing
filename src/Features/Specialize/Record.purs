@@ -7,6 +7,7 @@ import Data.Traversable (traverse)
 import Data.Set as Set
 import Data.Tuple (Tuple(..), fst)
 import Domain.IR.Internal as IR
+import Domain.Problem (InternalKind(..))
 import Domain.Syntax (FieldRef, Span)
 import Domain.Type.Record (RecordRow)
 import Features.Specialize.Copy (get, modify)
@@ -36,7 +37,7 @@ recordType
   → RecordRow a v
   → Specializing IR.Ty
 recordType field tail span row
-  | Array.length row.tails > 1 = internal severalTails span unit
+  | Array.length row.tails > 1 = internal LaterWork severalTails span unit
   | otherwise = singleTail field tail span row
 
 severalTails ∷ String
@@ -55,7 +56,8 @@ singleTail field tail span row = do
   rests ← traverse tail row.tails
   state ← get
   let spliced = fields <> Array.concatMap (restOf state) rests
-  if repeated spliced then internal "Duplicate record label" span unit
+  if repeated spliced then internal InputShape "Duplicate record label" span
+    unit
   else interned (internLayout spliced state.layouts)
   where
   lowered (Tuple label ty) = Tuple label <$> field label ty

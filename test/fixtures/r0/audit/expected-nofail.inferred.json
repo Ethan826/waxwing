@@ -1,7 +1,7 @@
 {
   "name": "expected-nofail/inferred",
   "refusal": "ExpectedNofail",
-  "site": "src/Features/Check/MarkReport.purs:74",
+  "site": "src/Features/Check/MarkReport.purs:75",
   "token": "ExpectedNofail",
   "class": "semantic",
   "evidence": "checked",

@@ -5,7 +5,12 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (maybe, maybe')
 import Data.Traversable (traverse)
-import Domain.Problem (DuplicateKind(..), Problem(..), UnboundKind(..))
+import Domain.Problem
+  ( InternalKind(..)
+  , DuplicateKind(..)
+  , Problem(..)
+  , UnboundKind(..)
+  )
 import Domain.Syntax as Syntax
 import Domain.Resolved
   ( CtorId(..)
@@ -79,7 +84,7 @@ arity ctors span (CtorId index) fields = maybe' missing counted
   (Array.index ctors index)
   where
   missing _ = Left
-    (Syntax.problemAt (Internal "Invalid constructor id") span)
+    (Syntax.problemAt (Internal TableLookup "Invalid constructor id") span)
   counted info =
     when (Array.length info.fields /= Array.length fields)
       (Left (Syntax.problemAt FieldArity span))

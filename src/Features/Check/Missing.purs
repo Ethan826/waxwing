@@ -8,7 +8,7 @@ import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..), Witness(..))
+import Domain.Problem (InternalKind(..), Problem(..), Witness(..))
 import Domain.Resolved (Ty(..))
 import Features.Check.Matrix (Vector, complete, defaults, headsOf, simplifyRow)
 import Features.Check.Matrix (specialize) as Matrix
@@ -126,7 +126,7 @@ absent signature ty heads =
   choices = case _ of
     TInt → Right [ HInt (freeInteger heads 0) ]
     other → candidates signature other
-  unfound _ = Left (Internal "Incomplete column lacks no head")
+  unfound _ = Left (Internal PassInvariant "Incomplete column lacks no head")
 
 freeInteger ∷ Array Head → Int → Int
 freeInteger heads value =
@@ -142,6 +142,6 @@ rebuild ∷ Signature → Head → Array Witness → Lookup (Array Witness)
 rebuild signature head witnesses = do
   count ← arity signature head
   when (Array.length witnesses < count)
-    (Left (Internal "Witness vector too short"))
+    (Left (Internal PassInvariant "Witness vector too short"))
   first ← witnessOf signature head (Array.take count witnesses)
   pure (Array.cons first (Array.drop count witnesses))

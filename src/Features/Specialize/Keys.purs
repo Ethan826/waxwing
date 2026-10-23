@@ -14,7 +14,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (Tuple(..))
 import Domain.IR.Internal as IR
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (CtorId(..), FunctionId(..))
 import Domain.Syntax (Span, problemAt)
 import Domain.Type (TypeId(..))
@@ -36,7 +36,7 @@ import Features.Specialize.State
 -- first reference at `span`.
 applied ∷ Env → Span → TypeId → Array IR.Ty → Specializing IR.Ty
 applied env span (TypeId declaration) arguments
-  | Array.null arguments = maybe' (internal "Invalid type id" span)
+  | Array.null arguments = maybe' (internal TableLookup "Invalid type id" span)
       (pure <<< dataType)
       (join (Array.index env.monoTypes declaration))
   | otherwise = get >>= remembered
@@ -59,7 +59,8 @@ arrowOf parameters result = do
 -- The output function for a call at ground arguments.
 called ∷ Env → Span → FunctionId → Array IR.Ty → Specializing FunctionId
 called env span (FunctionId declaration) arguments
-  | Array.null arguments = maybe' (internal "Invalid function id" span)
+  | Array.null arguments = maybe'
+      (internal TableLookup "Invalid function id" span)
       (pure <<< FunctionId)
       (join (Array.index env.monoFunctions declaration))
   | otherwise = get >>= remembered
@@ -73,11 +74,11 @@ called env span (FunctionId declaration) arguments
 ctorAt ∷ Env → Span → IR.Ty → CtorId → Specializing CtorId
 ctorAt env span owner (CtorId id) = do
   state ← get
-  maybe' (internal "Invalid constructor id" span) pure
+  maybe' (internal TableLookup "Invalid constructor id" span) pure
     (outputCtor state owner =<< join (Array.index env.positions id))
 
-internal ∷ ∀ a b. String → Span → a → Specializing b
-internal text span _ = failWith (problemAt (Internal text) span)
+internal ∷ ∀ a b. InternalKind → String → Span → a → Specializing b
+internal kind text span _ = failWith (problemAt (Internal kind text) span)
 
 outputCtor ∷ State → IR.Ty → Int → Maybe CtorId
 outputCtor state owner position = case owner of
@@ -92,7 +93,7 @@ outputCtor state owner position = case owner of
 newType ∷ Env → Span → Key → Unit → Specializing IR.Ty
 newType env span key@(Tuple declaration arguments) _ = do
   claim span
-  info ← maybe' (internal "Invalid type id" span) pure
+  info ← maybe' (internal TableLookup "Invalid type id" span) pure
     (Array.index env.types declaration)
   modify (created info)
   state ← get

@@ -162,10 +162,22 @@ export const coreRows = [
     message: /duplicate operation parameter: program was accepted/
   },
   {
-    name: 'deferred-fail-effect', file: 'src/Features/Check/Failure.purs',
-    needle: '_ → rejected env state origin failure',
-    replacement: '_ → Left (problemAt (Internal'
-      + ' "Failure row settlement failed") span)',
+    // The restored text's kind is immaterial: kinds are not rendered.
+    name: 'deferred-fail-effect',
+    edits: [
+      {
+        file: 'src/Features/Check/Failure.purs',
+        needle: '_ → rejected env state origin failure',
+        replacement: '_ → Left (problemAt (Internal Unrendered'
+          + ' "Failure row settlement failed") span)'
+      },
+      {
+        file: 'src/Features/Check/Failure.purs',
+        needle: 'import Domain.Problem (Problem(..))\n',
+        replacement: 'import Domain.Problem (InternalKind(..), '
+          + 'Problem(..))\n'
+      }
+    ],
     probe: 'deferred-fail-effect',
     message: /deferred Fail capability: wrong diagnostic code/
   },

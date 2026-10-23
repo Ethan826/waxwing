@@ -15,7 +15,7 @@ import Data.Maybe (Maybe(..), isJust, maybe')
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open)
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (CtorId(..), CtorInfo, TypeId(..), TypeInfo)
 import Domain.Type (Ty(..), VarId)
 import Domain.Type.Parts (ground)
@@ -111,7 +111,7 @@ discover types ctors state =
 unfold ∷ Array TypeInfo → Array CtorInfo → Key → Lookup Unfolded
 unfold types ctors = case _ of
   TData id arguments _ → typeInfo types id >>= unfoldInfo ctors arguments
-  _ → Left (Internal "Expanded a type that is not data")
+  _ → Left (Internal PassInvariant "Expanded a type that is not data")
 
 unfoldInfo ∷ Array CtorInfo → Array Key → TypeInfo → Lookup Unfolded
 unfoldInfo ctors arguments info = do
@@ -164,4 +164,4 @@ field numbers = case _ of
   applied number = [ TData (TypeId number) [] [] ]
 
 unexpanded ∷ ∀ a. Unit → Lookup a
-unexpanded _ = Left (Internal "Unexpanded type application")
+unexpanded _ = Left (Internal PassInvariant "Unexpanded type application")

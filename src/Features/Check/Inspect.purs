@@ -5,7 +5,7 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (maybe')
 import Data.Traversable (traverse)
-import Domain.Problem (Problem(Internal))
+import Domain.Problem (InternalKind(..), Problem(Internal))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, origin, problemAt)
 import Features.Check.Function (environment, recheck)
@@ -37,7 +37,7 @@ settledAgain program name change = maybe' missing settled
   (Array.find named program.functions)
   where
   named definition = definition.name == name
-  missing _ = Left (problemAt (Internal "No such function") nowhere)
+  missing _ = Left (problemAt (Internal TableLookup "No such function") nowhere)
   nowhere = { start: origin, end: origin }
   settled definition = do
     result ← recheck (functional program.ctors) program definition

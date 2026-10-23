@@ -17,7 +17,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Ids (EffectId(..))
-import Domain.Problem (LabelName, Problem(..), TypeName(..))
+import Domain.Problem (InternalKind(..), LabelName, Problem(..), TypeName(..))
 import Domain.Resolved (EffectInfo, TypeInfo)
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), clauseRow)
 import Domain.Syntax (Diagnostic, Span, problemAt)
@@ -85,9 +85,12 @@ typeNameIn shown env span = case _ of
     Rigid (VarId index) → maybe' unnamedTail Right
       (Array.index env.variables index)
     Hole _ → Right "_"
-  missing _ = Left (problemAt (Internal "Invalid resolved type") span)
-  unnamed _ = Left (problemAt (Internal "Unnamed type variable") span)
-  unnamedTail _ = Left (problemAt (Internal "Unnamed type variable") span)
+  missing _ = Left
+    (problemAt (Internal TableLookup "Invalid resolved type") span)
+  unnamed _ = Left
+    (problemAt (Internal TableLookup "Unnamed type variable") span)
+  unnamedTail _ = Left
+    (problemAt (Internal TableLookup "Unnamed type variable") span)
   named arguments info
     | Array.null arguments = Right (DataName info.name)
     | otherwise = AppliedName info.name <$> traverse (typeNameIn shown env span)
@@ -212,4 +215,5 @@ effectName env span = case _ of
   UserEffect (EffectId index) → maybe' invalid (Right <<< _.name)
     (Array.index env.effects index)
   where
-  invalid _ = Left (problemAt (Internal "Invalid handler effect") span)
+  invalid _ = Left
+    (problemAt (Internal TableLookup "Invalid handler effect") span)

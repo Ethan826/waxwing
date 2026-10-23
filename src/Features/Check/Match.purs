@@ -11,7 +11,7 @@ import Data.Either (Either(..))
 import Data.Maybe (maybe')
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Resolved
   ( CtorId(..)
@@ -103,13 +103,15 @@ checkCtor env state expected span id@(CtorId index) fields = maybe' missing
   (Array.index env.ctors index)
   where
   missing _ = Left
-    (problemAt (Internal "Invalid resolved constructor") span)
+    (problemAt (Internal TableLookup "Invalid resolved constructor") span)
   found ctor = do
     when (Array.length ctor.fields /= Array.length fields) (Left arityBug)
     owner ← ownerOf env span ctor.owner
     matchCtor env (instantiate owner.parameters state) owner expected span id
       { ctor, fields }
-  arityBug = problemAt (Internal "Resolved constructor arity mismatch") span
+  arityBug = problemAt
+    (Internal InputShape "Resolved constructor arity mismatch")
+    span
 
 matchCtor
   ∷ ∀ r
@@ -165,4 +167,5 @@ ownerOf
 ownerOf env span (TypeId index) = maybe' missing Right
   (Array.index env.types index)
   where
-  missing _ = Left (problemAt (Internal "Invalid resolved type") span)
+  missing _ = Left
+    (problemAt (Internal TableLookup "Invalid resolved type") span)

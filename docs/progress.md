@@ -336,6 +336,25 @@ emitted codes. test/r0-codes.test.mjs checks the wire string only.
 Acceptance, codes, texts and first diagnostics are unchanged (the
 first-diagnostic snapshot stays green). No corpus re-pin.
 
+## R0 shadow tranche, Task 2.1: no catch-all at the end of a body (2026-10-23)
+
+Features.Check.Classify's `classify` (AT16's first half), built on
+RowOutcome's `classified`, the one match over `Failure` by name, with
+no catch-all; each of the 15 constructors is injected directly in
+test/r0-classify.test.mjs. `Exhausted` is now a fault (Task 0.2).
+`Internal` carries an unrendered kind (ruling R3: `LaterWork`,
+`RuleBroken`, `BoundPassed`, `BodyState`, `Unrendered`, `TableLookup`,
+`InputShape`, `PassInvariant`), assigned at every site and tested per
+kind. The catch-alls in EndReport, Reject and Record and UnifyRecord's
+`open` became named arms with the same results; today's renderers are
+not routed through `Classified` (findings say why). Texts, codes,
+acceptance and first diagnostics are unchanged (the first-diagnostic
+snapshot stays green). The review found R020 (a broken disjointness at
+a selection reads as a missing field; pinned, not fixed) and FX010's
+constructor (`RowOccurs`). 20 audit fixtures' cited line numbers
+moved; no corpus re-pin. Regression row `r0-classify-catchall`.
+Evidence in findings, "No catch-all at the end of a body".
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

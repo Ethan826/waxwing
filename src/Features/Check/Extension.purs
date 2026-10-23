@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..), maybe')
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty(..))
@@ -71,7 +71,7 @@ baseOf added = case added.item of
 
 noSpread ∷ ∀ a. Span → Unit → Either Diagnostic a
 noSpread span _ = Left
-  (problemAt (Internal "Record extension without a spread") span)
+  (problemAt (Internal InputShape "Record extension without a spread") span)
 
 -- A record base is judged; a hole base becomes `{ ...ρ }`, ρ lacking the
 -- fields, and is judged as that; anything else is no record.

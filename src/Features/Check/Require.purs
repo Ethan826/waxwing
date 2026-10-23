@@ -14,7 +14,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..), thisFunction)
+import Domain.Problem (InternalKind(..), Problem(..), thisFunction)
 import Domain.Resolved (EffectInfo)
 import Domain.Row (Row(..), isPure)
 import Features.Check.Provenance (trail)
@@ -103,12 +103,12 @@ expectType env state expected actual span = do
     RowOccurs _ _ → mismatched unit
     Refused refusal → Left (refusedAt env state.subst span refusal)
     Placeholder what → Left (placeholderAt span what)
-    Unexpected what → Left (problemAt (Internal what) span)
+    Unexpected what → Left (problemAt (Internal RuleBroken what) span)
     FromMerge cause inner → mergedAt env state.subst span cause inner failed
-    Exhausted what → Left (problemAt (Internal what) span)
+    Exhausted what → Left (problemAt (Internal BoundPassed what) span)
     -- Made only inside `FromMerge`, at the end of a body (B4).
     Homeless _ → Left
-      (problemAt (Internal "H's refusal outside a predicate") span)
+      (problemAt (Internal RuleBroken "H's refusal outside a predicate") span)
   -- The label's trail is where it arose, as far as the state knows it.
   rowFailure label row occurrence = do
     name ← labelName env span label

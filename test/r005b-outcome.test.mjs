@@ -75,12 +75,15 @@ test('a placeholder is no verdict: the Unfinished stop, a skipped run', () => {
 });
 
 // B3 (plan §3.5): the re-examination's own failures. `Exhausted` (the
-// rescan's bound, rules §5) is a limit; `FromMerge` is what its inner
-// failure establishes, kept with its cause.
-test('the rescan\'s bound is a limit; a predicate\'s failure keeps its class',
+// rescan's bound, rules §5) is a broken invariant, since the theorem
+// says it is never passed (R0 Task 0.2; docs/findings.md "`Exhausted`
+// is not a budget"); `FromMerge` is what its inner failure establishes,
+// kept with its cause.
+test('the rescan\'s bound is a fault; a predicate\'s failure keeps its class',
   () => {
     const limit = outcomeOf(new Left(new failures.Exhausted('bound')));
-    assert.equal(limit.value0.constructor.name, 'Limit');
+    assert.equal(limit.value0.constructor.name, 'Internal');
+    assert.equal(limit.value0.value0, 'bound');
     const cause = { predicate: 0, at: Nothing.value };
     const mismatch = new failures.Mismatch(TInt.value, TBool.value);
     const caused = outcomeOf(new Left(new failures.FromMerge(cause,

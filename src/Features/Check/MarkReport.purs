@@ -5,7 +5,7 @@ import Prim hiding (Row)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe)
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Row (Label, Mark(..), withMark)
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Domain.Type (Ty)
@@ -27,7 +27,8 @@ reportViolation env state found = do
   notes ← pathNotes env state found
   Right headline { related = notes }
   where
-  unreachable = Left (problemAt (Internal "Empty mark path") env.functionSpan)
+  unreachable = Left
+    (problemAt (Internal BodyState "Empty mark path") env.functionSpan)
   headlined edge = case edge.reason of
     DeferDemand span → deferHeadline env state found span edge
     OwnAbort site → abortHeadline env state edge.label site

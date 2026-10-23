@@ -20,7 +20,7 @@ import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Tuple (fst)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (Ty(..))
 import Features.Check.Signature
   ( Head(..)
@@ -46,7 +46,7 @@ column tys q = maybe' noTypes withTypes (Array.uncons tys)
   noTypes _ = if Array.null q then Right Nothing else mismatch
   withTypes types = maybe mismatch (Right <<< Just <<< split types)
     (Array.uncons q)
-  mismatch = Left (Internal "Coverage vector length mismatch")
+  mismatch = Left (Internal PassInvariant "Coverage vector length mismatch")
   split types patterns =
     { ty: types.head, tys: types.tail, pat: patterns.head, rest: patterns.tail }
 
@@ -83,7 +83,7 @@ specialize ∷ Signature → Head → Array Vector → Lookup (Array Vector)
 specialize signature head rows = do
   count ← arity signature head
   when (Array.any (malformed count) rows)
-    (Left (Internal "Coverage field count mismatch"))
+    (Left (Internal InputShape "Coverage field count mismatch"))
   pure (Array.mapMaybe (specializeRow count) rows)
   where
   malformed count row = maybe false (mismatched count) (Array.head row)

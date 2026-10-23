@@ -8,7 +8,7 @@ import Data.Maybe (maybe')
 import Data.Set as Set
 import Domain.Checked.Internal (Instantiation, Open(..))
 import Domain.Checked.Internal as Checked
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Resolved (FunctionId(..))
 import Domain.Syntax (Diagnostic, Span, problemAt)
 import Features.Check.Components (components)
@@ -68,7 +68,7 @@ judgeCall context earlier span (FunctionId callee) instantiation =
   judgedBy function
     | Array.all (admissibleSlot rigid) (slots function) = Right unit
     | otherwise = Left (problemAt (PolymorphicRecursion function.name) span)
-  missing _ = Left (problemAt (Internal "Invalid function id") span)
+  missing _ = Left (problemAt (Internal TableLookup "Invalid function id") span)
   -- The type and record row slots, by the callee's sorts.
   slots function = judged function.sorts instantiation
 

@@ -63,7 +63,7 @@ message = case _ of
   SpecializationLimit limit → "More than " <> show limit <> " specializations"
   RedundantArm → "Redundant match arm"
   NonExhaustive witness → "Missing pattern: " <> pattern witness
-  Internal text → text
+  Internal _ text → text
   Hinted problem hint → message problem <> hintMessage hint
   EffectNotAllowed name label → name <> " performs " <> shortLabel label
     <> ", which its signature does not allow"

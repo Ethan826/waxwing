@@ -36,7 +36,8 @@ import Features.Check.UnifyFailure (Failure(..))
 -- the passes by P · (|Λ| + 1) + 1, with P the predicates waiting and Λ
 -- the labels in the substitution's bindings and the predicates' rows at
 -- the start; it is computed only once the passes exceed a cheap count,
--- and passing it is `Exhausted`, a limit the argument says never comes.
+-- and passing it is `Exhausted`, a broken invariant, since the argument
+-- says it never comes (R0 Task 0.2).
 -- A failure is the predicate's (`FromMerge`), located by the L2 rule.
 improve ∷ Unifier → Subst → Either Failure Subst
 improve unify subst

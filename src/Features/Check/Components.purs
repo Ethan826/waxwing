@@ -9,7 +9,7 @@ import Data.Maybe (Maybe(..), isJust, maybe')
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Traversable (sequence)
-import Domain.Problem (Problem(..))
+import Domain.Problem (InternalKind(..), Problem(..))
 import Domain.Syntax (Diagnostic, origin, problemAt)
 
 -- Tarjan's strongly connected components, iterative: the recursion of the
@@ -147,4 +147,4 @@ failed text state = state { fault = Just text }
 
 internal ∷ ∀ a. String → Either Diagnostic a
 internal text = Left
-  (problemAt (Internal text) { start: origin, end: origin })
+  (problemAt (Internal PassInvariant text) { start: origin, end: origin })

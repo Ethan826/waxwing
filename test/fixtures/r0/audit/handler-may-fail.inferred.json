@@ -1,7 +1,7 @@
 {
   "name": "handler-may-fail/inferred",
   "refusal": "HandlerMayFail",
-  "site": "src/Features/Check/MarkReport.purs:61",
+  "site": "src/Features/Check/MarkReport.purs:62",
   "token": "HandlerMayFail",
   "class": "semantic",
   "evidence": "checked",

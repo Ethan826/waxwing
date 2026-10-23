@@ -8,6 +8,7 @@ import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.IR.Internal as IR
+import Domain.Problem (InternalKind(..))
 import Domain.Resolved (CtorId(..), CtorInfo, OperationInfo)
 import Domain.Row (Label(..))
 import Domain.Syntax
@@ -82,7 +83,7 @@ fillType env work = do
   void (sequence (Array.zipWith fill info.ctors declared.ctors))
   where
   fill output (CtorId original) =
-    maybe' (internal "Invalid constructor id" work.span)
+    maybe' (internal TableLookup "Invalid constructor id" work.span)
       (fillCtor env work output)
       (Array.index env.ctors original)
 
@@ -125,7 +126,7 @@ layout env work operation = do
     (Array.snoc (map parameterType operation.parameters) operation.result)
     operation.syntax
     (lowerField env work.arguments)
-  maybe' (internal "Operation syntax mismatch" operation.span) pure
+  maybe' (internal InputShape "Operation syntax mismatch" operation.span) pure
     (made <$> Array.unsnoc types)
   where
   parameterType parameter = parameter.ty
@@ -187,7 +188,8 @@ lowerField env arguments ty syntax = case ty, syntax of
     label
   fieldType reference = reference.ty
   variable (VarId index) = argument (typeRefSpan syntax) arguments index
-  mismatch = internal "Field syntax mismatch" (typeRefSpan syntax) unit
+  mismatch = internal InputShape "Field syntax mismatch" (typeRefSpan syntax)
+    unit
   recur = lowerField env arguments
   -- Each parameter and the final result beside its written source, as
   -- Check.Nested pairs them.
@@ -197,14 +199,14 @@ lowerField env arguments ty syntax = case ty, syntax of
     arrowOf parameters result
 
 missingType ∷ ∀ a b. Work → a → Specializing b
-missingType work = internal "Invalid type id" work.span
+missingType work = internal TableLookup "Invalid type id" work.span
 
 missingEffect ∷ ∀ a b. Work → a → Specializing b
-missingEffect work = internal "Invalid effect id" work.span
+missingEffect work = internal TableLookup "Invalid effect id" work.span
 
 argument ∷ Span → Array IR.Ty → Int → Specializing IR.Ty
 argument span arguments index =
-  maybe' (internal "Invalid type variable" span) pure
+  maybe' (internal TableLookup "Invalid type variable" span) pure
     (Array.index arguments index)
 
 -- Resolution keeps each field's source beside it, argument for argument;
@@ -219,4 +221,4 @@ paired
 paired span left right lower
   | Array.length left == Array.length right = sequence
       (Array.zipWith lower left right)
-  | otherwise = internal "Field syntax mismatch" span unit
+  | otherwise = internal InputShape "Field syntax mismatch" span unit

@@ -109,7 +109,8 @@ test('Format renders type names and witnesses from problem data', async () => {
     'Missing pattern: Pair(-1, true)');
   const span = { start: position(0), end: position(1) };
   assert.deepEqual(wire({
-    problem: problem.Internal.create('Broken'), span, related: [] }),
+    problem: problem.Internal.create(problem.RuleBroken.value)('Broken'),
+    span, related: [] }),
     { code: 'E_INTERNAL', message: 'Broken', span, related: [] });
 });
 
@@ -159,12 +160,13 @@ test('a constructor field-count mismatch is E_INTERNAL', async () => {
   const covered = coverage({ types, ctors, entry: 0,
     functions: [{ id: 0, parameters: [], result: TInt.value, body, span }] });
   assert.equal(covered.constructor.name, 'Left', 'over-long row was accepted');
+  const problems = await load('Domain.Problem');
   assert.deepEqual(covered.value0.problem,
-    (await load('Domain.Problem')).Internal.create('Coverage field count ' +
-      'mismatch'));
+    problems.Internal.create(problems.InputShape.value)('Coverage field '
+      + 'count mismatch'));
   const short = resolved.Ctor.create(span)(0)([]);
   const pattern = checkPattern({ types, ctors })(box)(short);
   assert.equal(pattern.constructor.name, 'Left', 'short pattern was truncated');
-  assert.equal(pattern.value0.problem.value0,
+  assert.equal(pattern.value0.problem.value1,
     'Resolved constructor arity mismatch');
 });
