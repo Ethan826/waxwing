@@ -372,7 +372,9 @@ first diagnostic is unchanged; `staticRules` is Task 3.2's. Tests
 (test/r0-static.test.mjs) inject every site, pin each cited line and
 every raise site of a classified refusal, and agree with the audit's
 fixtures. No raise site edited, no fixture changed, no corpus re-pin.
-Evidence in findings, "Static rules beside the verdict".
+Evidence in findings, "Static rules beside the verdict". Fix round 1:
+the no-catch-all test reads the syntax tree (new Style.Arms), after
+three forms evaded the regex test.
 
 ## Language direction recorded (2026-10-08)
 

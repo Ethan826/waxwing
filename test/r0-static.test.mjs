@@ -23,6 +23,7 @@ const sites = await load('Features.Check.Generate.Static');
 // The site constructors, read where they are defined.
 const defined = await load('Features.Check.Generate.Static.Site');
 const { Just, Nothing } = await load('Data.Maybe');
+const { Right } = await load('Data.Either');
 
 const byName = new Map(table.map(row => [row.name, row]));
 
@@ -65,18 +66,33 @@ test('each site injected directly has its class and refusal', () => {
   }
 });
 
-// No catch-all (ruling R5): a wildcard arm would class a new site
-// silently, and behaves the same as the arms it replaces, so the source
-// is read. Every case arm in the module names a constructor.
-test('the classification has no wildcard arm', () => {
-  const source = readFileSync(join(root,
-    'src/Features/Check/Generate/Static.purs'), 'utf8');
-  const arms = source.split('\n').filter(text => / → /.test(text)
-    && !/^\s*--/.test(text) && !/∷/.test(text));
-  assert.ok(arms.length >= table.length, 'every site has its arm');
-  assert.deepEqual(arms.filter(text => /^\s*(_|[a-z]\w*)\s*→/
-    .test(text)), []);
-});
+// No catch-all (ruling R5): a wildcard, a variable arm or `const`
+// would class a new site silently and behave the same as the arms it
+// replaces, so the source is read, by its syntax tree (Style.Arms,
+// fails closed on a parse error). Every case arm starts with a
+// constructor, and the arms name each declared constructor exactly
+// once: the 56 of Site (48 sites, 8 families) and StaticClass's 3,
+// matched by staticRefusal. Only staticRefusal binds arguments. An
+// unused binder or helper is a strict-build error (purs warnings).
+const { arms } = await load('Style.Arms');
+const read = file => {
+  const found = arms(readFileSync(join(root,
+    `src/Features/Check/Generate/${file}`), 'utf8'));
+  assert.ok(found instanceof Right, `${file}: ${found.value0}`);
+  return found.value0;
+};
+test('the classification names every constructor, with no catch-all',
+  () => {
+    const classifier = read('Static.purs');
+    const declared = [...read('Static/Site.purs').declared,
+      ...classifier.declared];
+    assert.equal(declared.length, table.length + 8 + 3);
+    assert.equal(classifier.wildcards, 0);
+    assert.equal(classifier.armOthers, 0);
+    assert.deepEqual(classifier.armConstructors.sort(), declared.sort());
+    assert.deepEqual(classifier.binding, ['staticRefusal']);
+    assert.ok(!classifier.identifiers.includes('const'));
+  });
 
 test('every cited site holds its token', () => {
   for (const row of table) {

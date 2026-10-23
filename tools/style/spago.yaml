@@ -2,8 +2,10 @@ package:
   name: waxwing-style
   dependencies:
     - arrays
+    - either
     - foldable-traversable
     - language-cst-parser
+    - maybe
     - prelude
     - tuples
   build:

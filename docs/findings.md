@@ -2055,3 +2055,37 @@ deleted; unpatched, 8 of 8 pass.
   with the same results.) After these runs Static stopped re-exporting
   the Site types (amendment: callers import Site); the compiled arms
   S1 and S2 patch are at the same lines, and 8 of 8 still pass.
+
+**Fix round 1 (review Important 1; amendment).** The first wildcard
+test read lines with a regex, and three forms passed it while behaving
+the same: `settledClass _ = Semantic`, `markClass = const Semantic`,
+and `ArityAt _ → Semantic` with `arityClass` deleted. It is replaced
+by "the classification names every constructor, with no catch-all",
+which reads the syntax tree: a new tools/style/src/Style/Arms.purs
+parses a module with language-cst-parser (as Style.Check does; a parse
+error is refused) and reports its `_` binders, the constructor each
+case-arm pattern starts with, arm patterns that start with none, the
+constructors its data types declare, the declarations whose equations
+bind arguments, and the identifiers it uses. The test requires no `_`
+binder and no arm without a constructor in Static.purs; its arm
+constructors equal, once each, the 56 Site declares (48 sites, 8
+families) and StaticClass's 3 (staticRefusal's match); only
+staticRefusal binds arguments; no `const`. An arm that binds a family's
+site and ignores it (`ArityAt site → Semantic`, helper kept) passes
+this test, but purs warns UnusedName (Static.purs:61) and
+UnusedDeclaration (`arityClass`), which the build's `spago build
+--strict` makes errors (scripts/build.mjs; checked by running `purs
+compile` on the mutant, warnings shown).
+
+Mutant runs (recorded): one isolated copy in the session scratchpad
+(output/, src/, tools/, scripts/, the test and its support, the audit
+fixtures), Static.purs patched and restored for each, the copy deleted;
+unpatched, 8 of 8 pass. Command each time: `node --test
+test/r0-static.test.mjs`. Each of the four fails exactly "the
+classification names every constructor, with no catch-all":
+- S3, `settledClass`'s four arms replaced by `_ → Semantic`.
+- S3-equation, `settledClass` defined as `settledClass _ = Semantic`.
+- S3-const, `markClass = const Semantic` (with `import Prelude
+  (const)`).
+- S3-nested, `ArityAt site → arityClass site` replaced by `ArityAt _ →
+  Semantic`, `arityClass` deleted.
