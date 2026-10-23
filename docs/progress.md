@@ -392,7 +392,9 @@ labelled amendment: a variable's origin `role` is a `Maybe`, since
 (Domain.Recorded: `fields` added, the four type names now re-exported
 from the new modules). Nothing builds a problem in production; `problem`
 stays `Nothing`. No fixture changed, no corpus re-pin. Evidence in
-findings, "The recorded problem's fields".
+findings, "The recorded problem's fields". Fix round 1: `Eq RTExpr`
+walks arrow spines by a loop (the derived one overflowed at 20,000
+arrows; tested at 80,000), and `OriginKind`'s `Inst` is `InstOrigin`.
 
 ## Language direction recorded (2026-10-08)
 

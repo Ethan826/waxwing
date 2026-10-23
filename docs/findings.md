@@ -2146,7 +2146,25 @@ session scratchpad (deleted afterwards); unpatched, 5 of 5 pass.
   "../Domain.Recorded.Internal/index.js";` appended: fails "Domain.Recorded
   exports the view, not the constructor".
 
-**Not checked.** Derived `Eq` on `RTExpr` recurses once per arrow, as
-`Ty`'s derived instances did before they were replaced (Type/Core.purs
-:78); generated types follow the syntax, so depth is bounded by nesting
-(argued), but no deep-input test exists.
+**Fix round 1: equality on long spines (checked).** The paragraph
+first here argued that derived `Eq` on `RTExpr`, recursing once per
+arrow, was safe because depth is bounded by nesting. That was wrong:
+an arrow spine is as long as a declaration's parameter list
+(Type/Core.purs:46-48), the repo compiles 80,000-parameter forms
+(test/fn-linear.serial.test.mjs, value reference `g(f)`), and D1's
+`elaborate` compares problems. The reviewer's run: derived `eqRTExpr`
+true at 5,000 arrows, `RangeError` at 20,000. `Eq RTExpr` is now hand
+written: `sameSpine` walks the spine by a self tail call, which purs
+compiles to a loop (`$copy_left` in output/Domain.Recorded.Atom), and
+recurses only into parameters and record or application arguments; no
+wildcard arm. No other new instance walks a spine (`Var`, `Role`,
+`Path` and the rest hold no `RTExpr` chain; `Atom`'s and `Fields`'
+derived `Eq` call `eqRTExpr`). Test "RTExpr equality walks an
+80,000-arrow spine without overflow": equal spines, spines unequal at
+the end, and two problems holding one in `types`. RED: in a scratch
+copy of src/ and output/ with `derive instance eqRTExpr ∷ Eq RTExpr`
+restored and recompiled (purs 0.15.16), that test failed with
+`RangeError: Maximum call stack size exceeded`; the other 5 passed
+(copy deleted). Also in this round: `OriginKind`'s `Inst` is now
+`InstOrigin`, so a module importing `Atom(..)` and `Origin(..)`
+unqualified meets no ambiguity with the role `Inst`.

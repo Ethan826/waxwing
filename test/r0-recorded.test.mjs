@@ -97,6 +97,28 @@ test('decl alone distinguishes two otherwise empty problems', () => {
     problem({ ...empty, decl: 1 })));
 });
 
+// An 80,000-parameter declaration (test/fn-linear.serial.test.mjs) has a
+// spine as long, and D1's `elaborate` compares problems (Task 3.1 fix
+// round 1): the derived instance overflowed the stack at 20,000.
+const arrows = 80000;
+const spine = result => {
+  let type = result;
+  for (let index = 0; index < arrows; index += 1)
+    type = Atom.Arrow.create(intType)(type);
+  return type;
+};
+
+test('RTExpr equality walks an 80,000-arrow spine without overflow', () => {
+  const textType = Atom.Base.create(Atom.TextBase.value);
+  assert.ok(Atom.eqRTExpr.eq(spine(intType))(spine(intType)));
+  assert.ok(!Atom.eqRTExpr.eq(spine(intType))(spine(textType)));
+  assert.ok(!Atom.eqRTExpr.eq(spine(intType))(textType));
+  const deep = problem({ types: mapOf(Origin.ordPath,
+    [[body, spine(intType)]]) });
+  assert.ok(equal(deep, problem({ types: mapOf(Origin.ordPath,
+    [[body, spine(intType)]]) })));
+});
+
 // Every constructor T-R0b names, with its arity: §3.5's markers, §2.3's
 // roles, §5.2's positions, §2.1's atoms and type nodes, §6's origins.
 const shapes = [
@@ -115,7 +137,7 @@ const shapes = [
     ['BoolBase', 0], ['TextBase', 0], ['UnitBase', 0], ['DataBase', 1],
     ['DataHead', 1], ['HandlerHead', 1], ['CalleeFunction', 1],
     ['CalleeCtor', 1]],
-  [Origin, ['Contract', 0], ['Types', 0], ['Body', 0], ['Inst', 0],
+  [Origin, ['Contract', 0], ['Types', 0], ['Body', 0], ['InstOrigin', 0],
     ['InBody', 0], ['InConstraints', 0], ['InParameters', 0],
     ['InResult', 0], ['InJoined', 0], ['Named', 1], ['Index', 1],
     ['SigRule', 1], ['ExprRule', 1], ['PatternRule', 1], ['SpecRow', 2],

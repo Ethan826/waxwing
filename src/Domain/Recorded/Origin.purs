@@ -44,8 +44,9 @@ type Origin =
   , kind ∷ OriginKind
   }
 
--- Recorder-spec §1.1's origin kinds.
-data OriginKind = Contract | Types | Body | Inst
+-- Recorder-spec §1.1's origin kinds. `InstOrigin` is "inst", named apart
+-- from the role `Inst` (Domain.Recorded.Atom), so both import unqualified.
+data OriginKind = Contract | Types | Body | InstOrigin
 
 -- T-R0b §3's rule ids: Sig1-Sig10, E1-E28, P1-P7.
 data RuleId = SigRule Int | ExprRule Int | PatternRule Int

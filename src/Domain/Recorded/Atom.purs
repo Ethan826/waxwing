@@ -53,6 +53,30 @@ data RTExpr
   | Record (Array (Tuple String RTExpr)) (Array Var)
   | App Head (Array RTExpr)
 
+-- A declaration of thousands of parameters has an arrow spine as long
+-- (Domain.Type.Core's `Ty`), so equality walks a spine by a loop: purs
+-- compiles `sameSpine`'s self tail call to one. It recurses only into
+-- parameters and record or application arguments, which nesting bounds.
+-- No wildcard arm: a new constructor fails to compile here.
+instance eqRTExpr ∷ Eq RTExpr where
+  eq = sameSpine
+
+sameSpine ∷ RTExpr → RTExpr → Boolean
+sameSpine left right = case left, right of
+  Arrow one rest, Arrow other more →
+    if one == other then sameSpine rest more else false
+  Base one, Base other → one == other
+  TVar one, TVar other → one == other
+  Record one oneTails, Record other otherTails →
+    one == other && oneTails == otherTails
+  App one oneArguments, App other otherArguments →
+    one == other && oneArguments == otherArguments
+  Arrow _ _, _ → false
+  Base _, _ → false
+  TVar _, _ → false
+  Record _ _, _ → false
+  App _ _, _ → false
+
 -- `base`: a builtin, or a declared type of no parameters (§2.2).
 data Base = IntBase | BoolBase | TextBase | UnitBase | DataBase TypeId
 
@@ -117,7 +141,6 @@ derive instance eqVar ∷ Eq Var
 derive instance ordVar ∷ Ord Var
 derive instance eqRole ∷ Eq Role
 derive instance ordRole ∷ Ord Role
-derive instance eqRTExpr ∷ Eq RTExpr
 derive instance eqBase ∷ Eq Base
 derive instance eqHead ∷ Eq Head
 derive instance eqAtom ∷ Eq Atom
