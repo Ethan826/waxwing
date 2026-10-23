@@ -3368,10 +3368,11 @@ R021).** `openRequirements` on `main`'s problem of fn-scale-programs'
 
 gave `250 468 1 211`, `500 925 1 982`, `1000 1843 1 5574` (n, `B`
 atoms, `BQ` atoms, ms): about ×4.6 and ×5.7 per doubling. `g0Guard`
-solves twice (its own reduction and `openAtom`'s), about twice as
-long. Cause (argued from Entailed/Mgu.purs:122-137): each binding is
-applied to every remaining equation and to every image of θ, so n
-bindings cost at least n² substitutions over growing terms. Generation
+solves twice (its own reduction and `openAtom`'s), so it is argued,
+not run, to take about twice as long. Cause (argued from
+Entailed/Mgu.purs:122-137): each binding is applied to every
+remaining equation and to every image of θ, so n bindings cost at
+least n² substitutions over growing terms. Generation
 itself stays linear (above). The census avoids the largest case only
 because the 5,000-parameter program is built by a function, not
 exported as a string, so it is not in the corpus. Not fixed here (a
