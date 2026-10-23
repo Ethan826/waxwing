@@ -414,7 +414,11 @@ canonical order, rule coverage and marker kinds (LocalGeneralization
 exempt, R11). Ten mutants, each killed. The comparison (steps 4-5)
 and B13 wait for Task 3.2. T-R0b's open choices are fixed as stated
 readings and recorded as findings, "RT1's translator". No fixture
-changed, no corpus re-pin.
+changed, no corpus re-pin. Fix round 1: the reading list (the shared spec
+reading for Task 3.2) now matches the code: E5/E6 markers after their
+equations, E16's item path, P4's `Slot` gap, every row and origin
+kind; every Domain.Recorded constructor injected in the canonical
+test; strict record order.
 
 ## Language direction recorded (2026-10-08)
 

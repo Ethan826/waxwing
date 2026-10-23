@@ -2181,7 +2181,9 @@ canonical serialization, test/r0-canonical.mjs (decoder in
 r0-canonical-decode.mjs), is ruling R9's single one: plain JSON with
 sorted object keys, arrow spines flattened (`{ fun: { params, result
 } }`, a loop for long spines), entry arrays in recorded order, `vars`
-and `types` as pairs in Data.Map's key order. Canonical order, stated
+and `types` as pairs in Data.Map's key order. `canonicalOf` keeps
+`flexTy`/`flexRow` in recorded order; the translator emits them by
+`compareVar`, so a comparison sorts both. Canonical order, stated
 there: record fields by label (code units, PureScript's `Ord String`),
 tails by the derived `Ord Var` (`compareVar`; RigidVar before
 FreshVar, then path root, steps with `Named` before `Index`, then role
@@ -2208,7 +2210,12 @@ most literal reading and states it in test/r0-translator.mjs.
    multiset.
 4. Index order: a rule's listed entries in order, then §2.2's markers
    in pre-order of the types translated. §3 does not place markers in
-   the order.
+   the order. The rule is uniform: E5's and E6's listed entries
+   include E3's or E4's block and then the argument equations and the
+   over-application atom, so their markers come after all of these
+   (E6 over-applied: F1 at index 0, B1 at 1, the marker at 2). Sig8's
+   markers follow Sig8's `lacks` at the same path; E20's follow its
+   HandlerType; E17's follow its equations and EffectArgument.
 5. Marker granularity: one marker per `app` built. DataOverRecords
    when the declared type has a record-row parameter, else
    DataApplication. A `TData` whose only arguments are effect rows is
@@ -2221,11 +2228,21 @@ most literal reading and states it in test/r0-translator.mjs.
    test/fx-task7-programs.mjs:checkedRuns#3). The translator writes
    `{ handler: 'Console' }` (or `'Fail'`); Task 3.2 must extend `Head`
    or state another form.
-7. Rows (§6 "Row") where a rule lists several: the row the text ties
-   to the entry (F2 written and F3 implied clauses of θ(D_g), F5 for
-   θ(Q_g), F7 `adm`, H2 `split`, F1 argument equations, O5/F8/O3
-   markers, B14 for E13), else the first listed (C6 for E10's `cmp`,
-   C1 for E18 and E19's `pr`, F8 for E4's joined pairs).
+7. Rows (§6 "Row"). Rows are not part of RT1's multiset; the
+   translator's choices, exactly: Sig3 B1, Sig4 A1, Sig5 A2, Sig6 A3,
+   Sig7 A4, Sig8's `lacks` A5, Sig10 C5. E3/E5: written clauses of
+   θ(D_g) F2, implied F3, `adm` F7, `split` H2; E5/E6 argument
+   equations F1, the over-application atom B1; E4/E6 joined pairs F8.
+   E7-E9, E11, E12, E14, E15 and E10's `eq` B1, E10's `cmp` C6; E13
+   B14; E16 `eq` B1 and Deferred O6; E17 equations B1 and
+   EffectArgument O2; E18, E19 `pr` C1; E20, E21 HandlerType O3; E22
+   and E23 equations B1 and FailFamily O4; E25 B2, E26 B4, E27 B7, E28
+   B8; P3, P4 B1, P5 B12, P6 B11, P7 B10. §2.2's markers, under every
+   rule: DataOverRecords O5, DataApplication F8, HandlerType O3. Where
+   these differ from the rule's rows column (B1 for E6, E17, E22, E23;
+   F1 for E6; F8 outside E4/E6/P4), the text ties the entry to the
+   row: B1 is recorder-spec's "every typed agreement the body states",
+   F1 its argument row, F8 its row for `app` with arguments (§7).
 8. E4's "implied of c.joined" read as `disjoint` per joined pair only;
    the constructor's fields' implied `lacks` are not added.
 9. E6 with more arguments than fields: τ, `⟨p, res⟩` and the
@@ -2255,6 +2272,25 @@ most literal reading and states it in test/r0-translator.mjs.
 18. RT1's "§5.3 normalization" is recorder-spec §5.3's
     definedness-preserving one (T-R0b §5.3 is the site table). It
     belongs to the comparison, so steps 1-3 do not apply it.
+19. E16's `defer` entries (`eq τ_e Unit`, then Outside Deferred) sit at
+    the item's path, `Block/items/i`, with the item's span, not at the
+    Block node's path; the deferred expression is at
+    `Block/items/i/Defer/value`.
+20. **T-R0b gap:** §5.2 assigns every `inst i` to `Slot p i`, and the
+    translator does so for P4's too, but `Slot` lists only Call,
+    FunctionRef, Construct, CtorRef, OperationRef, Perform and Handler:
+    a checked `Ctor` pattern (Checked/Internal.purs:129) has no
+    Instantiation, so P4's `Slot` names no checked-IR position. Task
+    3.2 should decide between this literal reading and `Auxiliary`
+    (which would then need a defining atom, §5.3).
+21. Origin kinds: Sig4, Sig5, Sig10 contract; Sig6-Sig8 types; Sig3
+    body. θ(D_g), `adm` and `split` (E3, E5) and E4/E6's joined pairs
+    inst; E13's definedness atom types; every other atom body. Markers
+    of §2.2 take the translating rule's kind: types for f's own types
+    (Sig8) and written types in the body (E13, E22, E23), inst for
+    θ-instantiated ones (E3-E6, E17, E20, P4). Explicit markers
+    (Deferred, EffectArgument, E20's and E21's HandlerType, FailFamily)
+    are body.
 
 B13 is not settled here: its evidence is RT1's comparison (step 4).
 LocalGeneralization is produced by no resolved construct (§3.5), so it
@@ -2267,7 +2303,9 @@ test/r0-translator-forms.test.mjs test/r0-translator-records.test.mjs`:
 tables. G-total: the translator's constructor lists equal those parsed
 from src/Domain/Resolved.purs (36 Expr) and Resolved/Core.purs (6
 Pattern). r0-canonical decodes every constructor of Domain.Recorded's
-vocabulary, sorts as the compiled `ordVar` does, and decodes an
+vocabulary, each injected in its fixture (fix round 1 added SortType,
+RowGroups A, B, C, D, H, O and kinds Contract, Types, InstOrigin),
+sorts as the compiled `ordVar` does, and decodes an
 80,000-arrow spine. `node --test
 test/r0-translator-total.serial.test.mjs`: 5 pass. Over the pinned
 corpus (973 resolving programs, 2,958 declarations) it checks that
@@ -2298,3 +2336,14 @@ over the five rule-level files; the copy was then deleted. Unpatched:
 
 M4 and M10 survived a first run. The Sig6 test gained an arrow's
 effect row and E23 a record family, and both then failed as listed.
+
+**Fix round 1 (task review, 2026-10-23).** The reading list above is
+the shared spec reading Task 3.2 receives, so it now states what the
+code does. E5/E6 emitted their markers before the argument equations,
+against reading 4; the code now emits them last (one uniform rule
+rather than a per-rule exception), and the E6 test pins F1 at 0, B1 at
+1, the marker at 2. Readings 19-21 (E16's path, P4's `Slot` gap,
+origin kinds) are new; reading 7 lists every row. The marker-row
+choice is a table with no default arm, and `outOfOrder` requires
+strictly ascending fields and tails (a repeated label is out of order,
+tested). Focused tests: 40 pass.

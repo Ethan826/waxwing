@@ -31,8 +31,12 @@
 // fields ascend by label (code units, PureScript's Ord String) and its
 // tails by `compareVar`, the derived Ord Var; `vars` ascends by
 // `compareVar` and `types` by `comparePath`, as Data.Map yields them.
-// Entry arrays and `flexTy`/`flexRow` keep recorded order here (RT3
-// compares bytes); `entryMultiset` sorts entries for RT1's multisets.
+// `canonicalOf` keeps the entry arrays and `flexTy`/`flexRow` in
+// recorded order (RT3 compares bytes); RT1's translator emits
+// `flexTy`/`flexRow` ascending by `compareVar`, so a comparison of them
+// sorts both (`sortedVars`), and `entryMultiset` sorts entries for RT1's
+// multisets. Record fields and tails must be strictly ascending: a
+// repeated label or tail is out of order.
 // `encodeProblem` is JSON with object keys sorted.
 import { canonicalOf } from './r0-canonical-decode.mjs';
 
@@ -99,8 +103,9 @@ export const entryMultiset = problem => entryLists.flatMap(list =>
     stableStringify([list, entry.origin.atom, entry.value]))).sort();
 
 const sortedBy = (compare, items) => [...items].sort(compare);
-const inOrder = (compare, items) =>
-  items.every((item, at) => at === 0 || compare(items[at - 1], item) <= 0);
+const inOrder = (compare, items, strict = false) =>
+  items.every((item, at) => at === 0
+    || compare(items[at - 1], item) < (strict ? 0 : 1));
 const fieldOrder = ([a], [b]) => compareStrings(a, b);
 
 // Every record of a canonical value whose fields or tails are out of
@@ -110,8 +115,8 @@ export const outOfOrder = problem => {
   const visit = value => {
     if (Array.isArray(value)) { value.forEach(visit); return; }
     if (!value || typeof value !== 'object') return;
-    if (value.record && !(inOrder(fieldOrder, value.record.fields)
-      && inOrder(compareVar, value.record.tails)))
+    if (value.record && !(inOrder(fieldOrder, value.record.fields, true)
+      && inOrder(compareVar, value.record.tails, true)))
       found.push(stableStringify(value));
     Object.values(value).forEach(visit);
   };

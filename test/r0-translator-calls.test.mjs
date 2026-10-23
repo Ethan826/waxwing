@@ -83,13 +83,13 @@ test('E5: argument equations; partial and over-application', () => {
     ['type', 'exists', 'E5', nodeType(over)]);
 });
 
-test('E6: a construction as E4, then E5\'s equations', () => {
+test('E6: E4\'s atoms, E5\'s equations, then the markers', () => {
   const at = item(2, 'Discard');
   const owner = app(0, [inst(at, 0)]);
   assert.deepEqual(ruleEntries(program.calls, 'E6'), [
-    ['b', at, 1, 'F1', 'body', eq(Int, inst(at, 0))],
-    ['b', at, 2, 'B1', 'body', eq(owner, fun([Int], tv(fv(at, 'res'))))],
-    ['outside', at, 0, 'F8', 'inst', 'DataApplication']]);
+    ['b', at, 0, 'F1', 'body', eq(Int, inst(at, 0))],
+    ['b', at, 1, 'B1', 'body', eq(owner, fun([Int], tv(fv(at, 'res'))))],
+    ['outside', at, 2, 'F8', 'inst', 'DataApplication']]);
 });
 
 test('E7-E11: operators, interpolation, comparison and `if`', () => {

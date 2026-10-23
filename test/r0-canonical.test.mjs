@@ -35,12 +35,19 @@ const bases = [A.IntBase.value, A.BoolBase.value, A.TextBase.value,
 const arrow = (from, to) => A.Arrow.create(from)(to);
 const origin = (rule, row, kind, index) => ({ atom: { decl: 7, path: deep,
   index }, rule, row, span, kind });
-const entry = (value, rule = O.ExprRule.create(5), index = 0) => ({
-  origin: origin(rule, O.SpecRow.create(O.RowF.value)(1), O.Body.value,
-    index), value });
+const entry = (value, rule = O.ExprRule.create(5), index = 0,
+  group = O.RowF.value, kind = O.Body.value) => ({
+  origin: origin(rule, O.SpecRow.create(group)(1), kind, index), value });
 
-const varsOf = pairs => mapOf(A.ordVar, pairs.map(([key, role, position]) =>
-  [key, { sort: A.SortRow.value, quant: role ? A.Exists.value
+// Every RowGroup and OriginKind, injected one per `outside` entry.
+const groups = ['A', 'B', 'C', 'D', 'F', 'H', 'O']
+  .map(letter => O[`Row${letter}`].value);
+const kinds = [O.Contract, O.Types, O.Body, O.InstOrigin]
+  .map(kind => kind.value);
+const sorts = [A.SortType.value, A.SortRow.value];
+
+const varsOf = pairs => mapOf(A.ordVar, pairs.map(([key, role, position],
+  at) => [key, { sort: sorts[at % 2], quant: role ? A.Exists.value
     : A.Forall.create(0), origin: { path: body, rule: O.SigRule.create(1),
     role: role ? Maybe.Just.create(role) : Maybe.Nothing.value, span },
   position }]));
@@ -66,7 +73,8 @@ const problem = changes => Internal.RecordedProblem({
     entry(A.Comparable.create(bases[1]))],
   outside: ['EffectArgument', 'DataOverRecords', 'DataApplication',
     'HandlerType', 'FailFamily', 'Deferred', 'LocalGeneralization']
-    .map(name => entry(A[name].value)),
+    .map((name, at) => entry(A[name].value, O.ExprRule.create(16), at,
+      groups[at], kinds[at % 4])),
   adm: [entry({ callee: A.CalleeFunction.create(1), slots: [rigid(0)] })],
   split: [entry({ callee: A.CalleeCtor.create(2), slots: [] })],
   vars: varsOf([[rigid(0), null, positions[0]],
@@ -94,7 +102,13 @@ test('every constructor decodes to its canonical form', () => {
     index: 0 }, rule: 'Sig4', row: 'F1', span, kind: 'body' });
   assert.deepEqual(found.bq.map(item => item.value),
     [{ pr: { base: 'Int' } }, { cmp: { base: 'Bool' } }]);
-  assert.equal(found.outside.length, 7);
+  assert.deepEqual(found.outside.map(item => [item.value, item.origin.row,
+    item.origin.kind]), [['EffectArgument', 'A1', 'contract'],
+    ['DataOverRecords', 'B1', 'types'], ['DataApplication', 'C1', 'body'],
+    ['HandlerType', 'D1', 'inst'], ['FailFamily', 'F1', 'contract'],
+    ['Deferred', 'H1', 'types'], ['LocalGeneralization', 'O1', 'body']]);
+  assert.deepEqual(found.vars.map(([, info]) => info.sort).slice(0, 2),
+    ['type', 'row']);
   assert.deepEqual([found.adm[0].value, found.split[0].value], [
     { callee: { function: 1 }, slots: [{ rigid: 0 }] },
     { callee: { ctor: 2 }, slots: [] }]);
@@ -148,6 +162,10 @@ test('outOfOrder finds unsorted fields and tails; multisets ignore order',
     { record: { fields: [['b', 1], ['a', 1]], tails: [] } },
     { record: { fields: [], tails: [{ fresh: {} }, { rigid: 0 }] } }] } }] };
   assert.equal(outOfOrder(unsorted).length, 2);
+  const repeated = { ...canonical, b: [{ ...canonical.b[0], value: { eq: [
+    { record: { fields: [['a', 1], ['a', 1]], tails: [] } },
+    { record: { fields: [], tails: [] } }] } }] };
+  assert.equal(outOfOrder(repeated).length, 1);
   const reversed = { ...canonical, b: [...canonical.b].reverse() };
   assert.deepEqual(entryMultiset(reversed), entryMultiset(canonical));
 });

@@ -14,7 +14,8 @@
 //   Interpolate/parts/i, Compare/left|right, If/condition|then|else,
 //   Match/scrutinee, Match/arms/i/pattern|body, Lambda/body,
 //   Apply/function, Apply/args/i, Pipe/left|right,
-//   Block/items/i/Let|Defer|Discard/value, Block/result,
+//   Block/items/i/Let|Defer|Discard/value, Block/result (a defer's
+//   own entries at Block/items/i),
 //   Perform/args/i, Print|Show|Crash/args/i, Handler/clauses/i/body,
 //   With/handler|body, Handle/body, Handle/clauses/i/body,
 //   Fail/payload, RecordLiteral/fields/i/value, FieldAccess/record,
@@ -29,15 +30,18 @@
 //   origin path is parameters/[variables, i] (§6 gives Sig1 no path).
 // - AtomId.index counts the entries one rule emits at one path, over
 //   every list, in the rule's listed order; §2.2's markers come after
-//   the listed entries, in pre-order of the types translated.
+//   all the listed entries (E5/E6: after the argument equations), in
+//   pre-order of the types translated.
 // - One marker per `app` built: DataOverRecords when the declared type
 //   has a record-row parameter, else DataApplication; HandlerType for
 //   a handler type. f's own parameter and result types emit theirs
 //   under Sig8.
 // - `adm` slots: every `inst` variable; `split` slots: the record-row
 //   ones. `spread j` counts from 1.
-// - Rows (§6 "Row") where a rule lists several: the one the text ties
-//   the entry to, else the first listed (test files name each).
+// - P4's `inst` variables at `Slot p i`, as §5.2 assigns every `inst`,
+//   though a checked Ctor pattern has no Instantiation (a T-R0b gap).
+// - Rows and origin kinds: as docs/findings.md "RT1's translator"
+//   readings 7 and 21 list them.
 import { bodyPath, contextOf, emit, eq, finish, rigid }
   from './r0-translator-context.mjs';
 import { expr } from './r0-translator-exprs.mjs';

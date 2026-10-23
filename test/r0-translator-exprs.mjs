@@ -3,9 +3,8 @@
 // records it in `types` at the node's path (§5.2).
 import { arrow, at, base, emit, eq, fresh, tvar, typed }
   from './r0-translator-context.mjs';
-import { call, construct, ctorRef, functionRef }
+import { call, construct, ctorRef, flush, functionRef }
   from './r0-translator-calls.mjs';
-import { flush } from './r0-translator-calls.mjs';
 import { Maybe, R, translate } from './r0-translator-types.mjs';
 import { effectRules } from './r0-translator-effects.mjs';
 import { recordRules } from './r0-translator-records.mjs';

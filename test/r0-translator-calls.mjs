@@ -2,7 +2,7 @@
 // (T-R0b §3.2: E3-E6) and their instantiations (§2.3 `inst i`).
 import { arrow, emit, eq, fresh, tvar } from './r0-translator-context.mjs';
 import { ownerType, sortName, translate } from './r0-translator-types.mjs';
-import { renamed, sigRows, signatureD } from './r0-translator-signature.mjs';
+import { renamed, signatureD } from './r0-translator-signature.mjs';
 
 // `⟨p, inst i⟩` per non-effect-row variable, positioned at `Slot p i`
 // (§5.2); returns the naming θ and the variables in VarId order.
@@ -21,13 +21,20 @@ export const instantiate = (cx, site, sorts) => {
   return { naming, made };
 };
 
-export const flush = (cx, site, marks, kind) => marks.forEach(mark =>
-  emit(cx, site, 'outside', mark === 'DataOverRecords' ? 'O5'
-    : mark === 'HandlerType' ? 'O3' : 'F8', mark, { kind }));
+// §2.2's markers' rows, one per kind a translation builds (O5, recorder-
+// spec F8's `DataApplication`, O3), under every rule; no default arm.
+const markerRows = { DataOverRecords: 'O5', DataApplication: 'F8',
+  HandlerType: 'O3' };
+
+export const flush = (cx, site, marks, kind) => marks.forEach(mark => {
+  if (!(mark in markerRows))
+    throw new Error(`r0-translator: not a type marker: ${mark}`);
+  emit(cx, site, 'outside', markerRows[mark], mark, { kind });
+});
 
 // E3/E5's shared entries: θ(D_g) (written F2, implied F3), θ(Q_g) (empty,
 // Sig9), the `adm` site, the `split` site if `g` has a record-row
-// variable, then the markers of θ(⟦g⟧).
+// variable; the markers of θ(⟦g⟧) are returned, emitted last (reading 4).
 const reference = (cx, site, id) => {
   const callee = cx.program.functions[id];
   const { naming, made } = instantiate(cx, site, callee.sorts);
@@ -45,11 +52,10 @@ const reference = (cx, site, id) => {
     sortName(callee.sorts[index]) === 'row').map(([, found]) => found);
   if (rows.length > 0) emit(cx, site, 'split', 'H2',
     { callee: { function: id }, slots: rows }, { kind: 'inst' });
-  flush(cx, site, marks, 'inst');
-  return { params, result };
+  return { params, result, marks };
 };
 
-// E4/E6's shared entries: θ(c.joined), then θ(⟦c⟧)'s markers.
+// E4/E6's shared entries: θ(c.joined); θ(⟦c⟧)'s markers returned.
 const construction = (cx, site, id) => {
   const ctor = cx.program.ctors[id];
   const { naming } = instantiate(cx, site,
@@ -61,8 +67,7 @@ const construction = (cx, site, id) => {
   ctor.joined.forEach(pair => emit(cx, site, 'b', 'F8', { disjoint:
     [naming(pair.variables.value0), naming(pair.variables.value1)] },
     { kind: 'inst' }));
-  flush(cx, site, marks, 'inst');
-  return { params, result };
+  return { params, result, marks };
 };
 
 // E5/E6's argument equations (F1), then over-application: `⟨p, res⟩` and
@@ -80,18 +85,26 @@ const applied = (cx, site, typeOf, args) => {
   return res;
 };
 
-export const functionRef = (cx, site, id) => {
-  const found = reference(cx, site, id);
+// Markers after every listed entry, the argument equations included.
+const referenced = (cx, site, found) => {
+  flush(cx, site, found.marks, 'inst');
   return arrow(found.params, found.result);
 };
+
+const called = (cx, site, found, args) => {
+  const type = applied(cx, site, found, args);
+  flush(cx, site, found.marks, 'inst');
+  return type;
+};
+
+export const functionRef = (cx, site, id) =>
+  referenced(cx, site, reference(cx, site, id));
 
 export const call = (cx, site, id, args) =>
-  applied(cx, site, reference(cx, site, id), args);
+  called(cx, site, reference(cx, site, id), args);
 
-export const ctorRef = (cx, site, id) => {
-  const found = construction(cx, site, id);
-  return arrow(found.params, found.result);
-};
+export const ctorRef = (cx, site, id) =>
+  referenced(cx, site, construction(cx, site, id));
 
 export const construct = (cx, site, id, args) =>
-  applied(cx, site, construction(cx, site, id), args);
+  called(cx, site, construction(cx, site, id), args);
