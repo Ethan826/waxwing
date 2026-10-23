@@ -445,9 +445,10 @@ G-erased (policy), in the author's terms:
    stay supported. A separate compatibility fix, outside the
    acceptance-preserving shadow tranche.
 
-**Counterexample behind item 2 (the author's; argued from §7's P-ii
-text; a fixture is scheduled with Task 3.5; not run). A plain fence
-keeps it out of the pinned corpus until that fixture lands.**
+**Counterexample behind item 2 (the author's; checked by
+test/r0-erased-challenge.test.mjs, Task 3.5). The test holds the
+program inline and this block is a plain fence, so neither joins the
+pinned corpus.**
 
 ```text
 effect Log { fn log(n: Int): Unit; };
@@ -457,10 +458,11 @@ fn g(): Unit with pure = Log.log(1);
 fn main(): Int = 0;
 ```
 
-Today's compiler rejects `g` (correct). Neither detector (C-erased,
-P-ii) fires, and the recorder retains only `Unit = Unit` and
-`Int = Int`, so a records-only strategy could satisfy those without
-establishing the purity promise.
+Today's compiler rejects `g` (correct; E_EFFECT `g performs Log,
+which its signature does not allow` at `Log.log(1)`). Neither detector
+(C-erased, P-ii) fires, and the recorder retains only `Unit = Unit`
+(Sig3) and `Int = Int` (E17), so a records-only strategy could satisfy
+those without establishing the purity promise.
 
 ## 8. The census categories (Task 3.5)
 
@@ -526,5 +528,6 @@ measures its cost.
 | (b-joint) narrows nothing | argued |
 | Rows inside witness images are unchecked by G0 | argued from D1 §3.2 and §9 |
 
-Not covered: the census numbers wait for Task 3.5; the reason name
-and the trusted checker of (b-trusted) are left to their owners.
+Not covered: the reason name and the trusted checker of (b-trusted)
+are left to their owners. The census numbers are in
+docs/plans/r0-census.md (Task 3.5).

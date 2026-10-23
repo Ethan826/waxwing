@@ -493,6 +493,34 @@ pass; five mutants and two regression rows (`r0-definedness-dropped`,
 behaviour; no fixture changed; no corpus re-pin. Evidence and readings
 in findings, "G0, `entailedGround` and the two detectors".
 
+## R0 shadow tranche, Task 3.5: the census of what the switch would block (2026-10-23)
+
+G-switch evidence, no acceptance change, exemption or policy. Over the
+pinned corpus (1,128 programs; 743 compile; 2,773 declarations whose
+body checks today), each declaration is classified by the landed
+detectors (`outside` kinds, second spreads, `openRequirements`,
+`g0Guard`) and a test-only erased-row detector for C-erased (ruling
+R11; an explicit walk of resolved syntax, written apart from Task
+0.7's reference reading). 251 of the 743 programs that compile today
+would be rejected (245 without ErasedRow; 251 of 343 without the 400
+generated record programs, none of which is blocked). Largest:
+DataApplication (587 declarations, 138 programs, 115 blocked by it
+alone), HandlerType (170, 102, 35). BQPendingValidR, SecondSpread,
+LocalGeneralization: 0; BQAtTypeVariable, §3.2(b): 3 declarations, one
+program (examples/records.wxw). P-ii, informational: 591 declarations,
+192 programs. Counts pinned in test/fixtures/r0/census.json
+(scripts/r0-census-pin.mjs), asserted by r0-census.serial.test.mjs,
+which also checks the detector against the reference reading on all
+3,011 declarations and times generation on ten scale programs within
+their suites' bounds. Detector checks against existing fixtures (the
+34 erased ones and one per category); the author's `g`
+counterexample pinned inline (test/r0-erased-challenge.test.mjs;
+r0-erased-rows.md §7.1 now "checked"). Found: the `BQ` detectors'
+unifier is super-quadratic (BACKLOG R021). Seven mutants, one
+equivalent. Reading in docs/plans/r0-census.md; evidence in findings,
+"The census". No fixture changed; no corpus re-pin. Verify exited 0
+(2721/2721, 100/100 serial, 185 regression proofs).
+
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
 `strategy` (Features.Check.Strategy) composes a spec's guard, untrusted

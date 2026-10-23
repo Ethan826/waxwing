@@ -3254,3 +3254,131 @@ exporting `checkSubstitution` and `genericSubstitutionSound` (source and
 compiled); neither names a token constructor. Nothing reachable from
 compile changed; no fixture changed; no corpus re-pin (no tracked .wxw,
 fixture source or docs waxwing block added).
+
+## The census (2026-10-23)
+
+Task 3.5; the counts and their reading are docs/plans/r0-census.md,
+pinned in test/fixtures/r0/census.json. Labels as above.
+
+**Method (checked).** test/r0-census-classify.mjs classifies each
+pinned corpus program: `compile` for the program, the collecting
+driver's `today` slot per declaration, the generated problem, and the
+detectors as landed (`outside`, a `spread j ≥ 2` variable,
+`openRequirements`, `g0Guard`) plus Task 3.5's test-only erased-row
+detector (test/r0-census-erased.mjs over an explicit walk of resolved
+syntax, test/r0-census-walk.mjs; ruling R11). test/r0-census-tally.mjs
+counts; scripts/r0-census-pin.mjs writes census.json;
+test/r0-census.serial.test.mjs asserts it (about 55 s).
+
+**Readings.**
+
+1. *Declarations that compile today* are those whose body checks
+   (`today` is `Right`), in any resolving program; a category's
+   programs are only those `compile` accepts. 2,773 declarations are
+   counted, 2,397 of them in accepted programs.
+2. *The marginal order* is fixed: SecondSpread, the seven `outside`
+   kinds in Domain.Recorded.Atom's order, BQPendingValidR, ErasedRow,
+   BQAtTypeVariable. Decided blocks come first and §3.2(b) last,
+   since only (b) can be lifted by a strategy. The marginals sum to
+   the union (251).
+3. *BQAtTypeVariable is `g0Guard`'s decline*, so it also holds an atom
+   outside the one-tail fragment that is not ground. The census splits
+   the two: among compiling declarations, 3 rigid and 0 fragment; the
+   one fragment decline in the corpus (f03-compare-split's `main`) is
+   in a refused program.
+4. *SecondSpread is labelled §3.2(a)*: rule 1′ blocks Solved for every
+   strategy, so adding a strategy cannot lift it.
+5. *Skipping the unifier.* Both `BQ` detectors read only `bq`, so a
+   problem with no `BQ` atom is classified without calling them (no
+   open atom, in G0's scope). A cost choice, not a reading of either
+   detector. When `g0Guard` declines, the census rereads each atom to
+   name the reason and throws if none explains the decline.
+6. *P-ii's wording.* r0-erased-rows.md §7 says "a label with a
+   variable argument"; the reference reading (r0-erased-criterion.mjs)
+   and this detector count a label argument holding a record or a
+   variable, so a closed record argument also counts. A scratch run of
+   the literal reading (a variable, or a record with a tail) over all
+   3,011 corpus declarations gave the same answer on every one, and
+   the 34 fixtures agree under both. Informational only (§7.1); listed
+   for the criterion's owner.
+
+**Detector checks (checked).** test/r0-census-detectors.test.mjs: the
+34 erased fixtures' `sources`, `marked` and `inferredRow`; one fixture
+per category (`compiles` and categories asserted); G0's two decline
+reasons; a second spread stopping at Resolve. Corpus-wide, the
+erased-row detector equals the reference reading on 3,011
+declarations. The first run of the fixture comparison agreed on all
+34 before any adjustment (the detector was written from §4 and §7, then
+run).
+
+**Mutants (checked).** Each patch applied to the test module, the run,
+then the file restored (scratch script; git status clean of tracked
+changes after each).
+
+| Mutant | Command | Failing tests |
+|---|---|---|
+| M1 erased: `callee: false && …` | `node --test test/r0-census-detectors.test.mjs` | the erased-row detector gives every fixture its answers |
+| M2 P-ii: drop `given < declared \|\|` (partial uses) | same | the same |
+| M3 walk: `[R.Handler, none]` (clause bodies unread) | same | none (survives) |
+| M3 | `node --test --test-name-pattern='pinned counts\|reference reading' test/r0-census.serial.test.mjs` | the census equals its pinned counts; the erased-row detector agrees with the reference reading |
+| M4 classify: BQPendingValidR never added | detectors test | each blocking category is detected on its fixture |
+| M5 tally: marginal counted for every category | census test, `pinned counts` | the census equals its pinned counts |
+| M6 tally: `blockedBy` reads refused declarations too | same | none: equivalent, every declaration of an accepted program compiles |
+| M6b tally: declaration counts read refused declarations | same | the census equals its pinned counts |
+
+**The author's counterexample (checked).**
+test/r0-erased-challenge.test.mjs pins: today's first diagnostic for
+`g` (check, E_EFFECT, `g performs Log, which its signature does not
+allow`, at `Log.log(1)`, note at `with pure`); `erasedSources`,
+`inferredRows` and the reference reading all silent on `g`, and the
+classifier gives it no category; `g`'s problem has empty `d`, `q`,
+`bq`, `outside`, `adm`, `split` and `vars`, and `b` is exactly Sig3's
+`eq Unit Unit` and E17's `eq Int Int`. r0-erased-rows.md §7.1 now
+says "checked".
+
+**Timing (checked).** Generation of each scale program, after a
+warm-up, against its serial suite's bound (3 × a measured median,
+cited): 6 ms of 225 (1,000 partial applications), 8 of 225 (1,000-long
+arrow), 212 of 1,650 (5,000 parameters through generics), 0 of 423
+(1 MB literal), 192 of 1,563 (10,000 interpolation parts), 0 of 426
+(100,000 escapes), 9 of 729 (200 shapes), 111 of 3,003 (8,000
+defers), 44 of 1,458 (1,000 installations), 36 of 933 (1,000
+forwarding installations). One run, 2026-10-23.
+
+**The `BQ` detectors' unifier is super-quadratic (checked; BACKLOG
+R021).** `openRequirements` on `main`'s problem of fn-scale-programs'
+`generic(n)` (one `BQ` atom, Sig10):
+
+    node --input-type=module -e "
+    import { generic } from './test/fn-scale-programs.mjs';
+    import { load, resolved } from './test/r0-generate-support.mjs';
+    const { generationInputs: inputs } =
+      await load('Features.Check.Generate.Inputs');
+    const { generate } = await load('Features.Check.Generate');
+    const { openRequirements } = await load('Features.Check.Decide.Open');
+    for (const n of [250, 500, 1000]) {
+      const p = resolved(generic(n).source);
+      const main = p.functions.find(f => f.name === 'main');
+      const { tables, signatures } = inputs(p);
+      const problem = generate(tables)(signatures)(main).value0;
+      const t = performance.now(); openRequirements(problem);
+      console.log(n, problem.b.length, problem.bq.length,
+        Math.round(performance.now() - t));
+    }"
+
+gave `250 468 1 211`, `500 925 1 982`, `1000 1843 1 5574` (n, `B`
+atoms, `BQ` atoms, ms): about ×4.6 and ×5.7 per doubling. `g0Guard`
+solves twice (its own reduction and `openAtom`'s), about twice as
+long. Cause (argued from Entailed/Mgu.purs:122-137): each binding is
+applied to every remaining equation and to every image of θ, so n
+bindings cost at least n² substitutions over growing terms. Generation
+itself stays linear (above). The census avoids the largest case only
+because the 5,000-parameter program is built by a function, not
+exported as a string, so it is not in the corpus. Not fixed here (a
+Task 4.2 module, and no acceptance depends on it); a G-switch (timing)
+input, since the switch would run both detectors on every declaration
+with a `BQ` atom, and every `main` has one.
+
+Nothing reachable from compile changed; no fixture changed; no corpus
+re-pin (no tracked `.wxw`, fixture source or docs waxwing block added;
+census.json has no `source`).
