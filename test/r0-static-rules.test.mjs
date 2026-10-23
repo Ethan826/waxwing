@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { phaseOf } from './r0-probe-support.mjs';
-import { load, resolved } from './r0-generate-support.mjs';
+import { generatedOrThrow, load, resolved }
+  from './r0-generate-support.mjs';
 
 // R0 Task 3.2: `staticRules` (T-R0a §3.2; T-R0b §1, §10), the
 // per-declaration static refusals a resolved declaration can break,
@@ -21,7 +22,8 @@ const rules = source => {
   const program = resolved(source);
   const { tables, signatures } = Inputs.generationInputs(program);
   return program.functions.flatMap(decl =>
-    Generate.staticRules(tables)(signatures)(decl).map(refusal =>
+    generatedOrThrow(Generate.staticRules(tables)(signatures)(decl),
+      decl.name).map(refusal =>
       [decl.name, refusal.constructor.name, refusal.value0.constructor.name,
         refusal.value1.root.constructor.name, stepsOf(refusal.value1)]));
 };

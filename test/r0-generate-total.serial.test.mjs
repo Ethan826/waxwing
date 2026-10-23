@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeProblem, outOfOrder } from './r0-canonical.mjs';
 import { loadCorpus } from './r0-corpus.mjs';
-import { entryLists, load, problemsOf, resolved }
+import { entryLists, generatedOrThrow, load, problemsOf, resolved }
   from './r0-generate-support.mjs';
 import { problemFindings } from './r0-generate-checks.mjs';
 import { nameOf, nodesOf } from './r0-generate-paths.mjs';
@@ -26,7 +26,7 @@ const programs = corpus.flatMap(({ origin, source }) => {
 const generatedAll = programs.map(({ origin, program }) =>
   ({ origin, problems: problemsOf(program) }));
 
-test('generation returns for every corpus declaration, deterministically',
+test('generation is Right for every corpus declaration, deterministically',
   () => {
     const declarations = generatedAll.reduce((count, found) =>
       count + found.problems.length, 0);
@@ -35,9 +35,10 @@ test('generation returns for every corpus declaration, deterministically',
     for (const { program } of programs) {
       const { tables, signatures } = Inputs.generationInputs(program);
       for (const decl of program.functions) {
-        const once = Generate.generate(tables)(signatures)(decl);
-        assert.equal(encodeProblem(once),
-          encodeProblem(Generate.generate(tables)(signatures)(decl)));
+        // Right on every declaration: no generation fault is taken.
+        const run = () => generatedOrThrow(
+          Generate.generate(tables)(signatures)(decl), decl.name);
+        assert.equal(encodeProblem(run()), encodeProblem(run()));
       }
     }
   });

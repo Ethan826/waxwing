@@ -6,8 +6,8 @@
 module Features.Check.Generate.Pattern (Bound, pattern) where
 
 import Prelude
+import Data.Array (foldM)
 import Data.Array as Array
-import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..), fst)
 import Domain.Recorded.Atom
   ( Atom(..)
@@ -27,6 +27,7 @@ import Domain.Recorded.Origin
 import Domain.Resolved (CtorId, FieldPattern, Pattern(..), Rest(..))
 import Domain.Syntax (Span)
 import Features.Check.Generate.Context (Context, at, bindLocal)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Fresh
   ( child
   , childAt
@@ -51,17 +52,18 @@ import Features.Check.Generate.Translate (record, translate, translateAll)
 -- The environment after the pattern, and what it contributed.
 type Bound = { context ∷ Context, out ∷ Out }
 
-pattern ∷ Context → Path → RTExpr → Pattern → Bound
-pattern context path scrutinee found = withType (rule found)
+pattern ∷ Context → Path → RTExpr → Pattern → Gen Bound
+pattern context path scrutinee found = withType <$> rule found
   where
   withType bound = bound
     { out = concatOut [ typeAt path scrutinee, bound.out ] }
   -- P1 binds nothing; P2 binds `x ↦ τ_s`.
   rule = case _ of
-    Wildcard _ → { context, out: noOut }
-    Bind _ local → { context: bindLocal local scrutinee context, out: noOut }
-    IntLit span _ → literal context path span scrutinee IntBase -- P3
-    BoolLit span _ → literal context path span scrutinee BoolBase -- P3
+    Wildcard _ → pure { context, out: noOut }
+    Bind _ local → pure
+      { context: bindLocal local scrutinee context, out: noOut }
+    IntLit span _ → pure (literal context path span scrutinee IntBase)
+    BoolLit span _ → pure (literal context path span scrutinee BoolBase)
     Ctor span ctor parts → ctorPattern context path span scrutinee ctor
       parts
     Record span fields rest → recordPattern context path span scrutinee
@@ -79,25 +81,26 @@ literal context path span scrutinee base =
 -- P4: `eq τ_s θ(owner(args))` (B1), sub-pattern `k` against
 -- `θ(⟦field_k⟧)`; markers of the owner, then the fields (origin inst).
 ctorPattern
-  ∷ Context → Path → Span → RTExpr → CtorId → Array Pattern → Bound
-ctorPattern context path span scrutinee ctor parts =
-  { context: inner.context
-  , out: concatOut
-      [ varsOut (instVars path (PatternRule 4) span shape.sorts)
-      , emit (at context path (PatternRule 4))
-          ( [ listed (ToB (Equal scrutinee owner.ty)) RowB 1 Body span ]
-              <> markersAt InstOrigin span (owner.marks <> fields.marks)
-          )
-      , inner.out
-      ]
-  }
-  where
-  shape = ctorShape context.tables ctor
-  naming = instNaming path
-  owner = translate context.tables naming shape.owner
-  fields = translateAll context.tables naming shape.fields
-  inner = subPatterns context
+  ∷ Context → Path → Span → RTExpr → CtorId → Array Pattern → Gen Bound
+ctorPattern context path span scrutinee ctor parts = do
+  shape ← ctorShape context.tables ctor
+  owner ← translate context.tables naming shape.owner
+  fields ← translateAll context.tables naming shape.fields
+  inner ← subPatterns context
     (Array.mapWithIndex sub (Array.zip parts fields.tys))
+  pure
+    { context: inner.context
+    , out: concatOut
+        [ varsOut (instVars path (PatternRule 4) span shape.sorts)
+        , emit (at context path (PatternRule 4))
+            ( [ listed (ToB (Equal scrutinee owner.ty)) RowB 1 Body span ]
+                <> markersAt InstOrigin span (owner.marks <> fields.marks)
+            )
+        , inner.out
+        ]
+    }
+  where
+  naming = instNaming path
   sub index (Tuple part ty) =
     { path: childAt path "Ctor" "args" index, ty, pattern: part }
 
@@ -106,17 +109,21 @@ ctorPattern context path span scrutinee ctor parts =
 -- `⟨p, field l⟩`, positioned at the sub-pattern; P7 binds `x` to
 -- `{ ...⟨p, rest⟩ }`, its rest at `RestType p`, P6's an auxiliary.
 recordPattern
-  ∷ Context → Path → Span → RTExpr → Array FieldPattern → Rest → Bound
-recordPattern context path span scrutinee fields rest =
-  { context: named rest inner.context
-  , out: concatOut
-      [ varsOut (map fst fieldVars <> restVars)
-      , emit (at context path (PatternRule shape.rule))
-          [ listed (ToB (Equal scrutinee written)) RowB shape.row Body span ]
-      , inner.out
-      ]
-  }
+  ∷ Context → Path → Span → RTExpr → Array FieldPattern → Rest → Gen Bound
+recordPattern context path span scrutinee fields rest = bound
+  <$> subPatterns context (map subOf fieldVars)
   where
+  bound inner =
+    { context: named rest inner.context
+    , out: concatOut
+        [ varsOut (map fst fieldVars <> restVars)
+        , emit (at context path (PatternRule shape.rule))
+            [ listed (ToB (Equal scrutinee written)) RowB shape.row Body
+                span
+            ]
+        , inner.out
+        ]
+    }
   shape = restShape path rest
   fieldVars = Array.mapWithIndex fieldVar fields
   fieldVar index field = Tuple
@@ -144,7 +151,6 @@ recordPattern context path span scrutinee fields rest =
   tails = map fst restVars
   written = record (map labelled fieldVars) tails
   labelled (Tuple var field) = Tuple field.label (TVar (fst var))
-  inner = subPatterns context (map subOf fieldVars)
   subOf (Tuple var field) =
     { path: field.path, ty: TVar (fst var), pattern: field.pattern }
   named = case _ of
@@ -165,10 +171,12 @@ restShape path = case _ of
 subPatterns
   ∷ Context
   → Array { path ∷ Path, ty ∷ RTExpr, pattern ∷ Pattern }
-  → Bound
-subPatterns context parts = { context: done.accum, out: concatOut done.value }
+  → Gen Bound
+subPatterns context parts = finish
+  <$> foldM step { context, outs: [] } parts
   where
-  done = mapAccumL step context parts
-  step current part = boundStep
-    (pattern current part.path part.ty part.pattern)
-  boundStep bound = { accum: bound.context, value: bound.out }
+  step done part = add done <$> pattern done.context part.path part.ty
+    part.pattern
+  add done bound =
+    { context: bound.context, outs: Array.snoc done.outs bound.out }
+  finish done = { context: done.context, out: concatOut done.outs }

@@ -9,6 +9,8 @@
 // Domain/Resolved.purs's declaration order) independently of Task 3.2's
 // code.
 
+const { typeRefSpan } = await import('../output/Domain.Syntax/index.js');
+
 // [constructor, field] → the constructor's argument holding it.
 const fieldsOf = {
   Call: { args: 2 }, Construct: { args: 2 }, Add: { left: 1, right: 2 },
@@ -20,7 +22,7 @@ const fieldsOf = {
   Block: { items: 1, result: 2 }, Perform: { args: 3 },
   Print: { args: 1 }, Show: { args: 1 }, Crash: { args: 1 },
   Handler: { clauses: 2 }, With: { handler: 1, body: 2 },
-  Handle: { body: 1, clauses: 2 }, Fail: { value: 2 },
+  Handle: { body: 1, clauses: 2 }, Fail: { payload: 2 },
   RecordLiteral: { fields: 1 }, FieldAccess: { record: 1 },
   RecordUpdate: { record: 1, fields: 2 }, RecordExtension: { items: 1 },
   RecordRemoval: { record: 1 },
@@ -77,8 +79,11 @@ export const spanAt = (decl, path) => {
   if (root === 'parameters')
     return steps[0] === 'variables' ? decl.span
       : decl.parameters[steps[0]].span;
+  // The written result type's span, from the resolved syntax: `syntax`
+  // holds the parameters' types, then the result's (Resolved.purs).
   if (root === 'result')
-    return steps[0] === 'row' ? maybeSpan(decl.rowSpan, decl.span) : decl.span;
+    return steps[0] === 'row' ? maybeSpan(decl.rowSpan, decl.span)
+      : typeRefSpan(decl.syntax[decl.parameters.length]);
   throw new Error(`unknown root ${root}`);
 };
 

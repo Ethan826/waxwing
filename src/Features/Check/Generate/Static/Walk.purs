@@ -69,7 +69,7 @@ children path = case _ of
     [ named "With" "handler" installed, named "With" "body" body ]
   Handle _ body clauses → Array.cons (named "Handle" "body" body)
     (Array.mapWithIndex failAt clauses)
-  Fail _ _ value → [ named "Fail" "value" value ]
+  Fail _ _ value → [ named "Fail" "payload" value ]
   TextLiteral _ _ → []
   RecordLiteral _ fields → Array.mapWithIndex literalAt fields
   FieldAccess _ value _ → [ named "FieldAccess" "record" value ]

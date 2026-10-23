@@ -6,7 +6,8 @@
 -- import rule in test/r0-generate-signature.test.mjs keeps every
 -- checker module out of reach). Test-only in this tranche: compile does
 -- not call it (ruling R6). The export list is an enumerated allowlist
--- with no production empty problem (ruling R2; Task 0.3 NB3).
+-- with no production empty problem (ruling R2; Task 0.3 NB3), plus the
+-- generation fault and its `Problem`.
 module Features.Check.Generate
   ( module Exports
   , generate
@@ -14,6 +15,7 @@ module Features.Check.Generate
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
@@ -24,12 +26,32 @@ import Domain.Resolved (FunctionDecl, exprSpan)
 import Features.Check.Generate.Expr (expr)
 import Features.Check.Generate.Inputs (Signatures, Tables)
 import Features.Check.Generate.Inputs (Signatures, Tables) as Exports
-import Features.Check.Generate.Out (concatOut)
+import Features.Check.Generate.Fault
+  ( GenerationFault
+  , generationProblem
+  ) as Exports
+import Features.Check.Generate.Fault (GenerationFault)
+import Features.Check.Generate.Out (Out, concatOut)
 import Features.Check.Generate.Signature (declaration, parameterLocals)
 import Features.Check.Generate.Static.Rules (staticRules) as Exports
 
-generate ∷ Tables → Signatures → FunctionDecl → RecordedProblem
-generate tables signatures function = RecordedProblem
+-- Amendment (Task 3.2 fix round 1, controller ruling): the result is
+-- `Either GenerationFault`: an id the inputs lack, or input not of the
+-- shape Resolve guarantees, stops generation (Generate.Fault), mapped by
+-- `generationProblem` to `Internal TableLookup` or `InputShape`.
+generate
+  ∷ Tables → Signatures → FunctionDecl → Either GenerationFault RecordedProblem
+generate tables signatures function = do
+  locals ← parameterLocals tables function
+  body ← expr (context locals) (Path { root: InBody, steps: [] })
+    function.body
+  signature ← declaration tables function body.ty (exprSpan function.body)
+  pure (problemOf function (concatOut [ signature, body.out ]))
+  where
+  context locals = { decl: function.id, tables, signatures, locals }
+
+problemOf ∷ FunctionDecl → Out → RecordedProblem
+problemOf function out = RecordedProblem
   { decl: function.id
   , rigidTy: keys rigidType
   , rigidRow: keys rigidRow
@@ -46,17 +68,6 @@ generate tables signatures function = RecordedProblem
   , types: Map.fromFoldable out.types
   }
   where
-  context =
-    { decl: function.id
-    , tables
-    , signatures
-    , locals: parameterLocals tables function
-    }
-  body = expr context (Path { root: InBody, steps: [] }) function.body
-  out = concatOut
-    [ declaration tables function body.ty (exprSpan function.body)
-    , body.out
-    ]
   vars = Map.fromFoldable out.vars
   keys wanted = Array.mapMaybe (keyOf wanted)
     (Map.toUnfoldable vars ∷ Array (Tuple Var VarInfo))

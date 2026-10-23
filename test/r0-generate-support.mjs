@@ -24,11 +24,20 @@ const right = (result, phase) => {
 export const resolved = source =>
   right(resolve(right(parse(source), 'parse')), 'resolve');
 
+// A generation result's problem; a generation fault fails the caller.
+export const generatedOrThrow = (result, name) => {
+  if (result.constructor.name !== 'Right')
+    throw new Error(`${name}: generation fault`
+      + ` ${result.value0.constructor.name}`);
+  return result.value0;
+};
+
 // Every declaration of a resolved program with its canonical problem.
 export const problemsOf = program => {
   const { tables, signatures } = Inputs.generationInputs(program);
   return program.functions.map(decl => ({ decl,
-    problem: canonicalOf(Generate.generate(tables)(signatures)(decl)) }));
+    problem: canonicalOf(generatedOrThrow(
+      Generate.generate(tables)(signatures)(decl), decl.name)) }));
 };
 
 // The named declaration's problem (and the declaration) of a source.

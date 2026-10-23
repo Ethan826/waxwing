@@ -5,6 +5,7 @@
 -- only parameters, fields and arguments, which nesting bounds.
 module Features.Check.Generate.Translate
   ( Translated
+  , Translations
   , arrowOf
   , record
   , translate
@@ -13,8 +14,10 @@ module Features.Check.Generate.Translate
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Maybe (maybe)
-import Data.Tuple (Tuple(..), fst)
+import Data.Traversable (traverse)
+import Data.Tuple (Tuple, fst, snd)
 import Domain.Ids (TypeId(..))
 import Domain.Recorded.Atom
   ( Base(..)
@@ -27,47 +30,45 @@ import Domain.Row (Label(..))
 import Domain.Syntax (Sort(..))
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (spine)
-import Domain.Resolved (VarId)
+import Domain.Resolved (TypeInfo, VarId)
+import Features.Check.Generate.Fault (Gen, GenerationFault(..))
 import Features.Check.Generate.Fresh (Naming)
 import Features.Check.Generate.Inputs (Tables)
 import Features.Check.Generate.Out (TypeMarker(..))
 
 type Translated = { ty ∷ RTExpr, marks ∷ Array TypeMarker }
 
-translate ∷ Tables → Naming → Ty VarId → Translated
+type Translations = { tys ∷ Array RTExpr, marks ∷ Array TypeMarker }
+
+-- A declared type the tables lack is a fault (`UnknownType`).
+translate ∷ Tables → Naming → Ty VarId → Gen Translated
 translate tables naming = case _ of
   TInt → plain (Base IntBase)
   TBool → plain (Base BoolBase)
   TText → plain (Base TextBase)
   TUnit → plain (Base UnitBase)
   TVar variable → plain (Atom.TVar (naming variable))
-  TRecord row → recordOf (translateAll tables naming (map snd' row.fields))
-    (map fst row.fields)
-    (map naming row.tails)
-  TData owner arguments rows → dataOf tables owner
-    (Array.null rows)
-    (translateAll tables naming arguments)
-  THandler (Label effect arguments _) _ → headed (HandlerHead effect)
-    HandlerMark
-    (translateAll tables naming arguments)
+  TRecord row → recordOf (map fst row.fields) (map naming row.tails)
+    <$> translateAll tables naming (map snd row.fields)
+  TData owner arguments rows → dataOf (Array.null rows)
+    <$> typeInfo tables owner
+    <*> translateAll tables naming arguments
+  THandler (Label effect arguments _) _ →
+    headed (HandlerHead effect)
+      HandlerMark <$> translateAll tables naming arguments
   arrow@(TFun _ _ _) → spineOf (spine arrow)
   where
-  plain ty = { ty, marks: [] }
-  snd' (Tuple _ ty) = ty
-  spineOf found = arrowed (translateAll tables naming found.parameters)
-    (translate tables naming found.result)
+  plain ty = pure { ty, marks: [] }
+  spineOf found = arrowed <$> translateAll tables naming found.parameters
+    <*> translate tables naming found.result
 
 -- Several types in order: their expressions and their markers, each
 -- type's in pre-order after the one before.
-translateAll
-  ∷ Tables
-  → Naming
-  → Array (Ty VarId)
-  → { tys ∷ Array RTExpr, marks ∷ Array TypeMarker }
-translateAll tables naming types =
-  { tys: map _.ty found, marks: Array.concatMap _.marks found }
+translateAll ∷ Tables → Naming → Array (Ty VarId) → Gen Translations
+translateAll tables naming types = gathered
+  <$> traverse (translate tables naming) types
   where
-  found = map (translate tables naming) types
+  gathered found = { tys: map _.ty found, marks: Array.concatMap _.marks found }
 
 -- `σ₁ → … → σₙ → τ`, by Array.foldr (a loop).
 arrowOf ∷ Array RTExpr → RTExpr → RTExpr
@@ -78,47 +79,36 @@ arrowOf parameters result = Array.foldr Arrow result parameters
 record ∷ Array (Tuple String RTExpr) → Array Var → RTExpr
 record fields tails = Record (Array.sortWith fst fields) (Array.sort tails)
 
-arrowed
-  ∷ { tys ∷ Array RTExpr, marks ∷ Array TypeMarker } → Translated → Translated
+arrowed ∷ Translations → Translated → Translated
 arrowed parameters result =
   { ty: arrowOf parameters.tys result.ty
   , marks: parameters.marks <> result.marks
   }
 
-recordOf
-  ∷ { tys ∷ Array RTExpr, marks ∷ Array TypeMarker }
-  → Array String
-  → Array Var
-  → Translated
-recordOf fields labels tails =
+recordOf ∷ Array String → Array Var → Translations → Translated
+recordOf labels tails fields =
   { ty: record (Array.zip labels fields.tys) tails, marks: fields.marks }
 
--- `TData t [] []` is `base t`; any other is `app t [args]`, marked.
-dataOf
-  ∷ Tables
-  → TypeId
-  → Boolean
-  → { tys ∷ Array RTExpr, marks ∷ Array TypeMarker }
-  → Translated
-dataOf tables owner noRows arguments
-  | noRows && Array.null arguments.tys =
-      { ty: Base (DataBase owner), marks: [] }
-  | otherwise = headed (DataHead owner) (dataMarker tables owner) arguments
-
-headed
-  ∷ Head
-  → TypeMarker
-  → { tys ∷ Array RTExpr, marks ∷ Array TypeMarker }
-  → Translated
-headed head marker arguments =
-  { ty: App head arguments.tys, marks: Array.cons marker arguments.marks }
-
+-- `TData t [] []` is `base t`; any other is `app t [args]`, marked
 -- DataOverRecords when the declared type has a record-row parameter,
 -- DataApplication otherwise (docs/findings.md "RT1's translator",
 -- reading 5).
-dataMarker ∷ Tables → TypeId → TypeMarker
-dataMarker tables (TypeId index) =
-  maybe Application overRecords (Array.index tables.types index)
+dataOf ∷ Boolean → { id ∷ TypeId, info ∷ TypeInfo } → Translations → Translated
+dataOf noRows owner arguments
+  | noRows && Array.null arguments.tys =
+      { ty: Base (DataBase owner.id), marks: [] }
+  | otherwise = headed (DataHead owner.id) marker arguments
+      where
+      marker =
+        if Array.elem RecordSort owner.info.sorts then OverRecords
+        else Application
+
+headed ∷ Head → TypeMarker → Translations → Translated
+headed head marker arguments =
+  { ty: App head arguments.tys, marks: Array.cons marker arguments.marks }
+
+typeInfo ∷ Tables → TypeId → Gen { id ∷ TypeId, info ∷ TypeInfo }
+typeInfo tables id@(TypeId index) = maybe (Left (UnknownType id)) found
+  (Array.index tables.types index)
   where
-  overRecords info =
-    if Array.elem RecordSort info.sorts then OverRecords else Application
+  found info = Right { id, info }

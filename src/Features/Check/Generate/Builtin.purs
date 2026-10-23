@@ -12,6 +12,7 @@ module Features.Check.Generate.Builtin
   ) where
 
 import Prelude
+import Data.Traversable (sequence)
 import Data.Array as Array
 import Data.Tuple (fst)
 import Domain.Recorded.Atom
@@ -26,6 +27,7 @@ import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr)
 import Domain.Syntax (Span)
 import Features.Check.Generate.Context (Context, Recur, at)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Fresh (childAt, fresh, nodeRes)
 import Features.Check.Generate.Out
   ( Generated
@@ -75,20 +77,23 @@ builtinRef context path span builtin =
 -- E19: `Unit`, `Text`, `⟨p, res⟩`; `pr τ_e` when there is one argument.
 -- Arguments at `Print/args/i` (`Show/…`, `Crash/…`).
 builtinCall
-  ∷ Recur → Context → Path → Span → Builtin → Array Expr → Generated
-builtinCall recur context path span builtin arguments =
-  { ty: result.ty
-  , out: concatOut
-      ( [ varsOut result.vars
-        , emit (at context path (ExprRule 19)) (map printable single)
-        ]
-          <> map _.out generated
-      )
-  }
+  ∷ Recur → Context → Path → Span → Builtin → Array Expr → Gen Generated
+builtinCall recur context path span builtin arguments = called
+  <$> sequence (Array.mapWithIndex argument arguments)
   where
-  generated = Array.mapWithIndex argument arguments
+  called generated =
+    { ty: result.ty
+    , out: concatOut
+        ( [ varsOut result.vars
+          , emit (at context path (ExprRule 19))
+              (map printable (single generated))
+          ]
+            <> map _.out generated
+        )
+    }
   argument index = recur context (childAt path (label builtin) "args" index)
-  single = if Array.length generated == 1 then generated else []
+  single generated =
+    if Array.length generated == 1 then generated else []
   printable found = listed (ToBQ (Printable found.ty)) RowC 1 Body span
   result = case builtin of
     PrintBuiltin → { ty: Base UnitBase, vars: [] }

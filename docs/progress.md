@@ -445,6 +445,12 @@ moved exports; 22 new Generate modules). Tests: rule-level fixtures
 for every rule, RT5-RT7 on each, and a serial corpus test (973
 programs, 2,958 declarations). Twelve mutants, each killed. No fixture
 changed, no corpus re-pin. Evidence in findings, "Generation rules".
+Fix round 1: the `fail` payload's step is `Fail/payload`; a missing
+lookup, unbound local, payload-less clause or result syntax is a
+`GenerationFault` (`generate` and `staticRules` return `Either`,
+mapped to `Internal TableLookup`/`InputShape`; amendment); entries at
+`result` carry the written result type's span; the import-invariant
+sentence corrected. Trusted surface re-pinned (Generate.Fault).
 
 ## Language direction recorded (2026-10-08)
 

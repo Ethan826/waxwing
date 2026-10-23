@@ -129,7 +129,7 @@ test('the real tree matches its pin and its FFI names no token module',
     // Task 2.3 added the static-rule classification, Generate.Static*;
     // Task 3.2 the generator and its static rules.
     const generate = ['', '.Builtin', '.Call', '.Context', '.Control',
-      '.Effect', '.Expr', '.Facts', '.Failure', '.Fresh', '.Inputs',
+      '.Effect', '.Expr', '.Facts', '.Failure', '.Fault', '.Fresh', '.Inputs',
       '.Lookup', '.Operator', '.Out', '.Pattern', '.Record', '.Rigid',
       '.Signature', '.Static', '.Static.Problem', '.Static.Rules',
       '.Static.Site', '.Static.Walk', '.Translate']

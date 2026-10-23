@@ -11,17 +11,20 @@
 --
 -- Amendment (Task 3.2): T-R0b §10 types this `Tables → FunctionDecl`,
 -- but the arity at a fixed result reads the callee's declared result, a
--- signature, which `Tables` does not hold; `Signatures` is added.
+-- signature, which `Tables` does not hold; `Signatures` is added. A
+-- lookup that misses is a generation fault, as in `generate`.
 module Features.Check.Generate.Static.Rules (staticRules) where
 
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Resolved (Expr(..), FunctionDecl, Ty(..), VarId)
 import Domain.Verdict (StaticRefusal)
 import Features.Check.Functional (containsFunction, functional)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Inputs (Signatures, Tables)
 import Features.Check.Generate.Lookup (calleeOf, ctorShape)
 import Features.Check.Generate.Signature (isEntry)
@@ -33,10 +36,12 @@ import Features.Check.Generate.Static.Site
   )
 import Features.Check.Generate.Static.Walk (expressions)
 
-staticRules ∷ Tables → Signatures → FunctionDecl → Array StaticRefusal
-staticRules tables signatures function = Array.mapMaybe refusal
-  (entry <> Array.concatMap (sitesAt tables signatures) nodes)
+staticRules
+  ∷ Tables → Signatures → FunctionDecl → Gen (Array StaticRefusal)
+staticRules tables signatures function = refusals
+  <$> traverse (sitesAt tables signatures) nodes
   where
+  refusals found = Array.mapMaybe refusal (entry <> Array.concat found)
   nodes = expressions (Path { root: InBody, steps: [] }) function.body
   refusal (Tuple at site) = staticRefusal at site
   -- Outcomes.purs:136 `printableEntry`: `main`'s result holds no
@@ -50,56 +55,58 @@ staticRules tables signatures function = Array.mapMaybe refusal
 -- The static raise sites at one node; every constructor is named, so a
 -- new one must be classified here.
 sitesAt
-  ∷ Tables → Signatures → Tuple Path Expr → Array (Tuple Path RaiseSite)
-sitesAt tables signatures (Tuple at found) = map (Tuple at) case found of
-  Call _ function arguments → named (function' function) arguments
-  Construct _ ctor arguments → named (ctor' ctor) arguments
-  Pipe _ _ right → pipeSites (saturated right)
-  Print _ arguments → counted PrintArguments arguments
-  Show _ arguments → counted ShowArguments arguments
-  Crash _ arguments → counted CrashArguments arguments
-  Integer _ _ → []
-  Boolean _ _ → []
-  Local _ _ → []
-  FunctionRef _ _ → []
-  CtorRef _ _ → []
-  Add _ _ _ → []
-  Concat _ _ _ → []
-  Interpolate _ _ → []
-  Compare _ _ _ _ → []
-  If _ _ _ _ → []
-  Match _ _ _ → []
-  Lambda _ _ _ → []
-  Apply _ _ _ → []
-  UnitValue _ → []
-  Block _ _ _ → []
-  OperationRef _ _ _ → []
-  Perform _ _ _ _ → []
-  PrintRef _ → []
-  ShowRef _ → []
-  CrashRef _ → []
-  Handler _ _ _ → []
-  With _ _ _ → []
-  Handle _ _ _ → []
-  Fail _ _ _ → []
-  TextLiteral _ _ → []
-  RecordLiteral _ _ → []
-  FieldAccess _ _ _ → []
-  RecordUpdate _ _ _ → []
-  RecordExtension _ _ → []
-  RecordRemoval _ _ _ → []
+  ∷ Tables → Signatures → Tuple Path Expr → Gen (Array (Tuple Path RaiseSite))
+sitesAt tables signatures (Tuple at found) = map (Tuple at) <$> case found of
+  Call _ function arguments → (named <@> arguments) <$> function' function
+  Construct _ ctor arguments → (named <@> arguments) <$> ctor' ctor
+  Pipe _ _ right → pipeSites <$> saturated right
+  Print _ arguments → pure (counted PrintArguments arguments)
+  Show _ arguments → pure (counted ShowArguments arguments)
+  Crash _ arguments → pure (counted CrashArguments arguments)
+  Integer _ _ → pure []
+  Boolean _ _ → pure []
+  Local _ _ → pure []
+  FunctionRef _ _ → pure []
+  CtorRef _ _ → pure []
+  Add _ _ _ → pure []
+  Concat _ _ _ → pure []
+  Interpolate _ _ → pure []
+  Compare _ _ _ _ → pure []
+  If _ _ _ _ → pure []
+  Match _ _ _ → pure []
+  Lambda _ _ _ → pure []
+  Apply _ _ _ → pure []
+  UnitValue _ → pure []
+  Block _ _ _ → pure []
+  OperationRef _ _ _ → pure []
+  Perform _ _ _ _ → pure []
+  PrintRef _ → pure []
+  ShowRef _ → pure []
+  CrashRef _ → pure []
+  Handler _ _ _ → pure []
+  With _ _ _ → pure []
+  Handle _ _ _ → pure []
+  Fail _ _ _ → pure []
+  TextLiteral _ _ → pure []
+  RecordLiteral _ _ → pure []
+  FieldAccess _ _ _ → pure []
+  RecordUpdate _ _ _ → pure []
+  RecordExtension _ _ → pure []
+  RecordRemoval _ _ _ → pure []
   where
-  function' function = declaredOf (calleeOf signatures function)
-  ctor' ctor = constructed (ctorShape tables ctor)
+  function' function = declaredOf <$> calleeOf signatures function
+  ctor' ctor = constructed <$> ctorShape tables ctor
   -- A pipe into a saturated named call whose declared result is never a
   -- function (Pipe.purs:33); its instantiated case (:36) is semantic.
   pipeSites = maybe [] pipeFixed
   pipeFixed callee = if callee.fixed then [ ArityAt PipeFixedResult ] else []
   saturated = case _ of
-    Call _ function arguments → saturation (function' function) arguments
+    Call _ function arguments → (saturation <@> arguments)
+      <$> function' function
     Construct _ ctor arguments
-      | not (Array.null arguments) → saturation (ctor' ctor) arguments
-    _ → Nothing
+      | not (Array.null arguments) → (saturation <@> arguments)
+          <$> ctor' ctor
+    _ → pure Nothing
 
 -- What an arity rule reads of a named callee: its declared count and
 -- whether its declared result can never be a function (Call.purs

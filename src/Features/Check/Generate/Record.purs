@@ -15,6 +15,7 @@ module Features.Check.Generate.Record
   ) where
 
 import Prelude
+import Data.Traversable (sequence)
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..), fst)
@@ -37,6 +38,7 @@ import Domain.Recorded.Origin
 import Domain.Resolved (Expr, FieldValue, LiteralItem(..))
 import Domain.Syntax (FieldName, Label, Span)
 import Features.Check.Generate.Context (Context, Recur, at)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Fresh
   ( auxiliary
   , child
@@ -57,13 +59,14 @@ import Features.Check.Generate.Out
 import Features.Check.Generate.Translate (record)
 
 -- E24: `{ l̄: τ̄ }`, no entry (labels are distinct, so it is defined).
-literal ∷ Recur → Context → Path → Array FieldValue → Generated
-literal recur context path fields =
-  { ty: record (Array.zip (map _.name fields) (map _.ty generated)) []
-  , out: concatOut (map _.out generated)
-  }
+literal ∷ Recur → Context → Path → Array FieldValue → Gen Generated
+literal recur context path fields = built <$> sequence
+  (Array.mapWithIndex value fields)
   where
-  generated = Array.mapWithIndex value fields
+  built generated =
+    { ty: record (Array.zip (map _.name fields) (map _.ty generated)) []
+    , out: concatOut (map _.out generated)
+    }
   value index field = recur context
     (child (childAt path "RecordLiteral" "fields" index) [ Named "value" ])
     field.value
@@ -71,8 +74,20 @@ literal recur context path fields =
 -- E25: per spread `j` (from 1), `eq τ_{s_j} { ...⟨p, spread j⟩ }`, then
 -- `eq ⟨p, res⟩ { l̄: τ̄, ...⟨p, spread 1⟩ … }` (B2). Several spreads are
 -- in the model with no marker (S1 reads their roles).
-extension ∷ Recur → Context → Path → Span → Array LiteralItem → Generated
-extension recur context path span items =
+extension
+  ∷ Recur → Context → Path → Span → Array LiteralItem → Gen Generated
+extension recur context path span items = extended context path span items
+  <$> sequence (Array.mapWithIndex item items)
+  where
+  item index = case _ of
+    Given field → recur context (itemPath index "Given") field.value
+    Spreading _ value → recur context (itemPath index "Spreading") value
+  itemPath index form = child (childAt path "RecordExtension" "items" index)
+    [ Named form, Named "value" ]
+
+extended
+  ∷ Context → Path → Span → Array LiteralItem → Array Generated → Generated
+extended context path span items generated =
   { ty: res
   , out: concatOut
       ( [ varsOut (Array.snoc (map _.var spreads) resVar)
@@ -85,12 +100,6 @@ extension recur context path span items =
       )
   }
   where
-  generated = Array.mapWithIndex item items
-  item index = case _ of
-    Given field → recur context (itemPath index "Given") field.value
-    Spreading _ value → recur context (itemPath index "Spreading") value
-  itemPath index form = child (childAt path "RecordExtension" "items" index)
-    [ Named form, Named "value" ]
   pairs = Array.zip items generated
   given = Array.mapMaybe givenField pairs
   givenField (Tuple found result) = case found of
@@ -113,8 +122,15 @@ extension recur context path span items =
 
 -- E26: `eq τ_e { l: ⟨p, field l⟩, ...⟨p, rest⟩ }` (B4); the field is
 -- positioned at the node, the rest an auxiliary.
-fieldAccess ∷ Recur → Context → Path → Span → Expr → FieldName → Generated
-fieldAccess recur context path span value label =
+fieldAccess
+  ∷ Recur → Context → Path → Span → Expr → FieldName → Gen Generated
+fieldAccess recur context path span value label = selection
+  <$> recur context (childOf path "FieldAccess" "record") value
+  where
+  selection operand = selectedFrom context path span label operand
+
+selectedFrom ∷ Context → Path → Span → FieldName → Generated → Generated
+selectedFrom context path span label operand =
   { ty: TVar (fst field)
   , out: concatOut
       [ varsOut [ field, rest ]
@@ -124,7 +140,6 @@ fieldAccess recur context path span value label =
       ]
   }
   where
-  operand = recur context (childOf path "FieldAccess" "record") value
   field = fresh
     { path
     , role: Field label.name
@@ -138,8 +153,24 @@ fieldAccess recur context path span value label =
 
 -- E27: per field, `eq τ_e { l: ⟨p, upd l⟩, ...⟨p, updrest l⟩ }` and
 -- `eq τ_{e_l} ⟨p, upd l⟩` (B7); the result is `τ_e`.
-update ∷ Recur → Context → Path → Expr → Array FieldValue → Generated
-update recur context path value fields =
+update
+  ∷ Recur → Context → Path → Expr → Array FieldValue → Gen Generated
+update recur context path value fields = updatedWith context path fields
+  <$> recur context (childOf path "RecordUpdate" "record") value
+  <*> sequence (Array.mapWithIndex given fields)
+  where
+  given index field = recur context
+    (child (childAt path "RecordUpdate" "fields" index) [ Named "value" ])
+    field.value
+
+updatedWith
+  ∷ Context
+  → Path
+  → Array FieldValue
+  → Generated
+  → Array Generated
+  → Generated
+updatedWith context path fields operand generated =
   { ty: operand.ty
   , out: concatOut
       ( [ varsOut (Array.concatMap _.vars updated)
@@ -151,11 +182,6 @@ update recur context path value fields =
       )
   }
   where
-  operand = recur context (childOf path "RecordUpdate" "record") value
-  generated = Array.mapWithIndex given fields
-  given index field = recur context
-    (child (childAt path "RecordUpdate" "fields" index) [ Named "value" ])
-    field.value
   updated = Array.zipWith updateOf fields generated
   updateOf field result = fieldUpdate path operand.ty field result.ty
 
@@ -180,8 +206,14 @@ fieldUpdate path operand field given =
 
 -- E28: `eq τ_e { l̄: ⟨p, field l⟩, ...⟨p, rest⟩ }` (B8); the result is
 -- `{ ...⟨p, rest⟩ }`. Every variable is an auxiliary.
-removal ∷ Recur → Context → Path → Span → Expr → Array Label → Generated
+removal
+  ∷ Recur → Context → Path → Span → Expr → Array Label → Gen Generated
 removal recur context path span value labels =
+  removedFrom context path span
+    labels <$> recur context (childOf path "RecordRemoval" "record") value
+
+removedFrom ∷ Context → Path → Span → Array Label → Generated → Generated
+removedFrom context path span labels operand =
   { ty: record [] [ fst rest ]
   , out: concatOut
       [ varsOut (Array.snoc (map fieldVar labels) rest)
@@ -193,7 +225,6 @@ removal recur context path span value labels =
       ]
   }
   where
-  operand = recur context (childOf path "RecordRemoval" "record") value
   fieldVar label = auxiliary path (ExprRule 28) (Field label.name) SortType
     label.span
   removed label = Tuple label.name (TVar (fst (fieldVar label)))

@@ -121,6 +121,7 @@
   ],
   "compiled": [
    "generate",
+   "generationProblem from ../Features.Check.Generate.Fault/index.js",
    "staticRules from ../Features.Check.Generate.Static.Rules/index.js"
   ]
  },
@@ -225,6 +226,25 @@
    "handle"
   ]
  },
+ "Features.Check.Generate.Fault": {
+  "source": [
+   "Gen",
+   "GenerationFault(..)",
+   "generationProblem"
+  ],
+  "compiled": [
+   "UnknownFunction",
+   "UnknownCtor",
+   "UnknownType",
+   "UnknownEffect",
+   "UnknownBuiltinEffect",
+   "UnknownOperation",
+   "UnboundLocal",
+   "PayloadShape",
+   "ResultShape",
+   "generationProblem"
+  ]
+ },
  "Features.Check.Generate.Fresh": {
   "source": [
    "FreshAt",
@@ -287,7 +307,7 @@
  },
  "Features.Check.Generate.Operator": {
   "source": [
-   "apply",
+   "application",
    "arithmetic",
    "comparison",
    "conditional",
@@ -295,7 +315,7 @@
    "pipe"
   ],
   "compiled": [
-   "apply",
+   "application",
    "arithmetic",
    "comparison",
    "conditional",
@@ -510,6 +530,7 @@
  "Features.Check.Generate.Translate": {
   "source": [
    "Translated",
+   "Translations",
    "arrowOf",
    "record",
    "translate",

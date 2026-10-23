@@ -2352,9 +2352,10 @@ tested). Focused tests: 40 pass.
 
 R0 shadow tranche, Task 3.2 (T-R0b §2-§6, §10; rulings R2, R6; Task
 2.3 and 3.1 carries). Features.Check.Generate exports `generate ∷
-Tables → Signatures → FunctionDecl → RecordedProblem`, `staticRules`
-and the types `Tables` and `Signatures`, an enumerated list with no
-empty problem (checked: test "exports generate and staticRules only";
+Tables → Signatures → FunctionDecl → RecordedProblem` (an `Either`
+since fix round 1, below), `staticRules` and the types `Tables` and
+`Signatures`, an enumerated list with no empty problem (checked: the
+export test;
 a scratch module importing `emptyProblem` from it fails purs 0.15.16
 with `Cannot import value emptyProblem`). Compile does not call it.
 The builder is Generate.Inputs `generationInputs ∷ Resolved.Program →
@@ -2374,7 +2375,12 @@ Features.Check.Generate reaches no Features module but Generate.* and
 seven pure table readers it reuses (Check.Implied `declared`,
 Check.Tables `ownerType`, Check.Functional, and their imports
 Check.Nested, NestedArguments, Components; Resolve.Builtin), and no
-Generate module imports Domain.Checked*. Fresh variables are canonical
+Generate module imports Domain.Checked* directly. (Corrected, fix round
+1: the closure does reach Domain.Checked.Internal, through
+Check.Functional's import of Check.Nested; the test bans only direct
+imports. That is harmless: generation is handed no checked value and
+builds none, so the reachable checked-IR types are never inhabited
+here.) Fresh variables are canonical
 names, so generation needs no counter: it is a pure fold, and each
 rule's index is its own listed order. Records are built by one
 constructor that sorts fields by label and tails by `Ord Var`.
@@ -2389,7 +2395,7 @@ generator's (indices from 0): `Call/args/i`, `Construct/args/i`,
 `Block/items/i/(Let|Defer|Discard)/value`, `Block/result`,
 `(Perform|Print|Show|Crash)/args/i`, `Handler/clauses/k/body`,
 `With/handler|body`, `Handle/body`, `Handle/clauses/k/body`,
-`Fail/value`, `RecordLiteral/fields/i/value`, `FieldAccess/record`,
+`Fail/payload`, `RecordLiteral/fields/i/value`, `FieldAccess/record`,
 `RecordUpdate/record`, `RecordUpdate/fields/i/value`,
 `RecordExtension/items/i/(Given|Spreading)/value`,
 `RecordRemoval/record`; patterns `Ctor/args/k`,
@@ -2407,8 +2413,8 @@ argued:
   payloads in order.
 - Spans: an entry has its node's span, except Sig4 (the label), E25's
   spread atom (the item), E26 and E27 (the label). Sig6 and Sig8 use
-  the parameter's span, the declaration's for the result and
-  `rowSpan` (else the declaration's) for the row.
+  the parameter's span, the written result type's for the result
+  (Sig10 too) and `rowSpan` (else the declaration's) for the row.
 - E15's `⟨p, res⟩` is positioned at `NodeType p`, as E14's; §5.2's
   list names E14 but not E15.
 - E20's clause parameters take the clause's `HandlerParameter.ty`,
@@ -2417,11 +2423,8 @@ argued:
   parameters come from Resolve.Builtin (Console none, Fail one).
 - E22 binds a clause's local when its label has exactly one argument
   (reading 16), translating that argument with `ν_f`.
-- A table lookup that misses (an id the tables lack) reads as an empty
-  entry (no variables or parameters, `Unit`), and an unbound local as
-  `Unit`; generation stays total. Argued unreachable for inputs built
-  from the declaration's own program; generation cannot report a fault
-  (D1's `Elaborating` is Task 7.1's).
+- (Superseded in fix round 1, below: a lookup that misses is a fault,
+  not an empty entry.)
 
 Concerns with the shared readings (followed anyway): reading 20 (P4's
 `inst` at `Slot`, a position the checked `Ctor` pattern lacks) is kept
@@ -2439,7 +2442,8 @@ Checked: the canonical test decodes both builtins; E21's test pins
 **Static rules.** `staticRules` is Generate.Static.Rules (not
 Generate/Static.purs, whose syntax-tree test admits only the
 classification's own arms). **Amendment:** its type is `Tables →
-Signatures → FunctionDecl → Array StaticRefusal`, since arity at a
+Signatures → FunctionDecl → Array StaticRefusal` (in `Either` since
+fix round 1), since arity at a
 fixed result reads the callee's declared result, which `Tables` lacks.
 A resolved declaration can break only the class-a rules check raises:
 Pipe.purs:33, Call.purs:123 and :144 (functions and constructors),
@@ -2526,3 +2530,55 @@ command `node --test` over the six files; unpatched, none fail.
 M7 and M11 survived a first run; E17 gained an effect without
 parameters and E10 a comparison whose operands' types differ, and both
 were then killed as listed.
+
+**Fix round 1 (task review, 2026-10-23).** RT1's comparison by the
+reviewer (all 2,958 corpus declarations, generator against the
+independent translator) agreed on every `(Origin.atom, entry)` but one
+path step; the controller's rulings (progress ledger, "Task 3.2:
+Ruling") settle four points.
+
+1. The `fail` payload's step is `Fail/payload` (the translator's, the
+   shared reading), in Generate.Failure, Generate.Static.Walk and the
+   RT6 resolver.
+2. **Amendment** to the brief's signature: `generate ∷ Tables →
+   Signatures → FunctionDecl → Either GenerationFault RecordedProblem`,
+   and `staticRules` likewise returns `Either GenerationFault`. The
+   earlier fallbacks (an empty callee or constructor, no effect
+   parameters, `Unit` for an unbound local or a payload-less clause, a
+   DataApplication marker for an unknown type) dropped obligations
+   silently; each lookup now returns `Gen = Either GenerationFault`
+   (Generate.Fault): `UnknownFunction`, `UnknownCtor`, `UnknownType`,
+   `UnknownEffect`, `UnknownBuiltinEffect`, `UnknownOperation`
+   (`generationProblem` gives `Internal TableLookup`), `UnboundLocal`,
+   `PayloadShape`, `ResultShape` (`Internal InputShape`), both kinds
+   that stop a run under ruling R3. The rules stay applicative: they
+   combine children by `<$>`, `<*>`, `traverse` and `ado`; a bind
+   appears only where a rule reads a child's generated result or a
+   table entry another names (the scrutinee's type for E12's arms, a
+   constructor's owner, `Γ` along a block), never a solved shape.
+   Check.Implied's `declared` still walks other declarations' fields
+   with its own `maybe []`; those ids are the tables' own, and the
+   owner it starts from is checked first.
+3. Entries at `result` (Sig6, Sig8, Sig10) carry the written result
+   type's span (T-R0b §6, "the node's"): `syntax` at the parameter
+   count, its absence a `ResultShape` fault. No diagnostic changes:
+   the generator renders none. The RT6 resolver now reads that span
+   from the resolved syntax (`typeRefSpan`), not from the generator's
+   own choice.
+4. The import-invariant sentence above is corrected.
+
+Checked: test/r0-generate-faults.test.mjs (3 tests) injects each fault
+by doctoring the inputs or the declaration (a callee id 99, no
+constructors, no types, no effects, an effect without operations, a
+local 99, a clause label with no payload, no result syntax) and checks
+the `Left`, its constructor and its `Internal` kind; `staticRules`
+faults on the unknown callee too. The serial corpus test now requires
+`Right` on every corpus declaration (no fault taken), and the focused
+generator tests pass (67). Regression runs (recorded) in a scratch
+copy of output/ and test/, deleted afterwards, command `node --test
+test/r0-generate-faults.test.mjs`; unpatched, none fail. F1, compiled
+Expr's `localOf` answering `Right Unit` for an unbound local: fails
+"an unbound local, a payload-less clause, no result syntax". F2,
+compiled Lookup's `calleeOf` reading function 0's signature for any
+id: fails "a missing callee, constructor, type, effect or operation"
+and "the undoctored program generates Right for every declaration".

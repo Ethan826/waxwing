@@ -13,6 +13,7 @@ module Features.Check.Generate.Call
   ) where
 
 import Prelude
+import Data.Traversable (sequence)
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..), fst)
@@ -28,6 +29,7 @@ import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (CtorId, Expr, FunctionId)
 import Domain.Syntax (Span)
 import Features.Check.Generate.Context (Context, Recur, at)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Fresh (childAt, instNaming, instVars, nodeRes)
 import Features.Check.Generate.Lookup (calleeOf, ctorShape)
 import Features.Check.Generate.Out
@@ -54,30 +56,38 @@ type Instance =
   , markers ∷ Array Listed
   }
 
-type Node = { path ∷ Path, span ∷ Span, rule ∷ RuleId, label ∷ String }
+type Node = { path ∷ Path, span ∷ Span, rule ∷ RuleId }
 
 -- E3: `θ(⟦T₁ → … → R⟧)`.
-functionRef ∷ Context → Path → Span → FunctionId → Generated
-functionRef context path span function = referenced context path
-  (ExprRule 3)
-  (functionInstance context path span function (ExprRule 3))
+functionRef ∷ Context → Path → Span → FunctionId → Gen Generated
+functionRef context path span function =
+  referenced context path
+    (ExprRule 3) <$> functionInstance context path span function (ExprRule 3)
 
 -- E4: `θ(⟦fields → owner(args)⟧)`.
-ctorRef ∷ Context → Path → Span → CtorId → Generated
+ctorRef ∷ Context → Path → Span → CtorId → Gen Generated
 ctorRef context path span ctor = referenced context path (ExprRule 4)
-  (ctorInstance context path span ctor (ExprRule 4))
+  <$> ctorInstance context path span ctor (ExprRule 4)
 
 -- E5: `g(e₁ … e_k)` against `g`'s `n` parameters.
-call ∷ Recur → Context → Path → Span → FunctionId → Array Expr → Generated
-call recur context path span function = applied recur context
-  { path, span, rule: ExprRule 5, label: "Call" }
-  (functionInstance context path span function (ExprRule 5))
+call
+  ∷ Recur → Context → Path → Span → FunctionId → Array Expr → Gen Generated
+call recur context path span function arguments =
+  applied context
+    { path, span, rule: ExprRule 5 }
+    <$> functionInstance context path span function (ExprRule 5)
+    <*> sequence
+      (Array.mapWithIndex (argument recur context path "Call") arguments)
 
 -- E6: as E5, with the constructor's fields and owner.
-construct ∷ Recur → Context → Path → Span → CtorId → Array Expr → Generated
-construct recur context path span ctor = applied recur context
-  { path, span, rule: ExprRule 6, label: "Construct" }
-  (ctorInstance context path span ctor (ExprRule 6))
+construct
+  ∷ Recur → Context → Path → Span → CtorId → Array Expr → Gen Generated
+construct recur context path span ctor arguments =
+  applied context
+    { path, span, rule: ExprRule 6 }
+    <$> ctorInstance context path span ctor (ExprRule 6)
+    <*> sequence
+      (Array.mapWithIndex (argument recur context path "Construct") arguments)
 
 referenced ∷ Context → Path → RuleId → Instance → Generated
 referenced context path rule found =
@@ -88,12 +98,17 @@ referenced context path rule found =
       ]
   }
 
--- E5/E6's arguments, each at `Call/args/i` (`Construct/args/i`):
--- `eq τ_{e_i} θ(T_i)` for `i ≤ min(k, n)` (F1); with `k > n`, `⟨p, res⟩`
--- and `eq θ(R) (τ_{e_{n+1}} → … → ⟨p, res⟩)` (B1). Every argument is
+-- An argument at `Call/args/i` (`Construct/args/i`). Every argument is
 -- generated, whatever the count (G-dead).
-applied ∷ Recur → Context → Node → Instance → Array Expr → Generated
-applied recur context node found arguments =
+argument
+  ∷ Recur → Context → Path → String → Int → Expr → Gen Generated
+argument recur context path label index = recur context
+  (childAt path label "args" index)
+
+-- E5/E6's arguments: `eq τ_{e_i} θ(T_i)` for `i ≤ min(k, n)` (F1); with
+-- `k > n`, `⟨p, res⟩` and `eq θ(R) (τ_{e_{n+1}} → … → ⟨p, res⟩)` (B1).
+applied ∷ Context → Node → Instance → Array Generated → Generated
+applied context node found generated =
   { ty: if overApplied then res else partial
   , out: concatOut
       ( [ varsOut (found.vars <> if overApplied then [ resVar ] else [])
@@ -104,13 +119,11 @@ applied recur context node found arguments =
       )
   }
   where
-  generated = Array.mapWithIndex argument arguments
-  argument index = recur context (childAt node.path node.label "args" index)
   count = Array.length found.parameters
-  overApplied = Array.length arguments > count
+  overApplied = Array.length generated > count
   resVar = nodeRes node.path node.rule node.span
   res = TVar (fst resVar)
-  partial = arrowOf (Array.drop (Array.length arguments) found.parameters)
+  partial = arrowOf (Array.drop (Array.length generated) found.parameters)
     found.result
   equations = Array.zipWith equation generated found.parameters
   equation given declared = body RowF 1 (Equal given.ty declared)
@@ -123,50 +136,53 @@ applied recur context node found arguments =
 
 -- E3's entries (origin inst): θ(D_g) written (F2) and implied (F3), the
 -- `adm` site of every reference (F7, every `inst` slot) and a `split`
--- site when `g` has a record-row variable (H2, those slots).
+-- site when `g` has a record-row variable (H2, those slots). The
+-- signature is read first, then the types it holds.
 functionInstance
-  ∷ Context → Path → Span → FunctionId → RuleId → Instance
+  ∷ Context → Path → Span → FunctionId → RuleId → Gen Instance
 functionInstance context path span function rule =
-  { parameters: parameters.tys
-  , result: result.ty
-  , entries: map (inst RowF 2 <<< ToB) clauses.written
-      <> map (inst RowF 3 <<< ToB) clauses.implied
-      <> [ inst RowF 7 (ToAdm { callee, slots: map fst vars }) ]
-      <> splitSite
-  , vars
-  , markers: markersAt InstOrigin span (parameters.marks <> result.marks)
-  }
+  calleeOf context.signatures function >>= instanceOf
   where
   callee = CalleeFunction function
-  signature = calleeOf context.signatures function
   naming = instNaming path
-  vars = instVars path rule span signature.sorts
-  parameters = translateAll context.tables naming signature.parameters
-  result = translate context.tables naming signature.result
-  clauses = calleeClauses context.tables naming signature
-  rows = Array.mapMaybe rowSlot vars
+  instanceOf signature = made (instVars path rule span signature.sorts)
+    <$> translateAll context.tables naming signature.parameters
+    <*> translate context.tables naming signature.result
+    <*> calleeClauses context.tables naming signature
+  made vars parameters result clauses =
+    { parameters: parameters.tys
+    , result: result.ty
+    , entries: map (inst RowF 2 <<< ToB) clauses.written
+        <> map (inst RowF 3 <<< ToB) clauses.implied
+        <> [ inst RowF 7 (ToAdm { callee, slots: map fst vars }) ]
+        <> splitSite (Array.mapMaybe rowSlot vars)
+    , vars
+    , markers: markersAt InstOrigin span (parameters.marks <> result.marks)
+    }
   rowSlot (Tuple var info) =
     if info.sort == SortRow then Just var else Nothing
-  splitSite =
+  splitSite rows =
     if Array.null rows then []
     else [ inst RowH 2 (ToSplit { callee, slots: rows }) ]
   inst group number item = listed item group number InstOrigin span
 
 -- E4's entries (origin inst): `disjoint` per joined pair of the
 -- constructor (F8; reading 8: not the fields' implied `lacks`).
-ctorInstance ∷ Context → Path → Span → CtorId → RuleId → Instance
+ctorInstance ∷ Context → Path → Span → CtorId → RuleId → Gen Instance
 ctorInstance context path span ctor rule =
-  { parameters: fields.tys
-  , result: owner.ty
-  , entries: map joinedPair shape.joined
-  , vars: instVars path rule span shape.sorts
-  , markers: markersAt InstOrigin span (fields.marks <> owner.marks)
-  }
+  ctorShape context.tables ctor >>= instanceOf
   where
-  shape = ctorShape context.tables ctor
   naming = instNaming path
-  fields = translateAll context.tables naming shape.fields
-  owner = translate context.tables naming shape.owner
+  instanceOf shape = made shape
+    <$> translateAll context.tables naming shape.fields
+    <*> translate context.tables naming shape.owner
+  made shape fields owner =
+    { parameters: fields.tys
+    , result: owner.ty
+    , entries: map joinedPair shape.joined
+    , vars: instVars path rule span shape.sorts
+    , markers: markersAt InstOrigin span (fields.marks <> owner.marks)
+    }
   joinedPair { variables: Tuple one other } = listed
     (ToB (Disjoint (naming one) (naming other)))
     RowF

@@ -13,7 +13,9 @@ module Features.Check.Generate.Facts
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe)
+import Data.Traversable (traverse)
 import Data.Set as Set
 import Data.Tuple (fst)
 import Domain.Ids (TypeId(..))
@@ -21,6 +23,7 @@ import Domain.Recorded.Atom (Atom(..))
 import Domain.Resolved (Ty(..), TyRow, VarId)
 import Domain.Syntax (Sort(..))
 import Domain.Type.Parts (children, rowArguments, rowsOf)
+import Features.Check.Generate.Fault (Gen, GenerationFault(..))
 import Features.Check.Generate.Fresh (Naming)
 import Features.Check.Generate.Inputs (Tables)
 import Features.Check.Implied (declared)
@@ -33,13 +36,14 @@ data Fact = Beside VarId (Array String) | Passed TypeId Int VarId
 -- Facts of the type and of every type within it, in Implied's order:
 -- its own, its children's, then its rows' arguments'. Recursion is over
 -- written structure (`children` takes a spine's parts by a loop).
-impliedOf ∷ Tables → Naming → Ty VarId → Implied
-impliedOf tables naming ty =
-  { beside: Array.concatMap besideAtoms found
-  , passed: Array.concatMap passedAtoms found
-  }
+-- A declared type the tables lack is a fault (`UnknownType`).
+impliedOf ∷ Tables → Naming → Ty VarId → Gen Implied
+impliedOf tables naming ty = split <$> facts tables ty
   where
-  found = facts tables ty
+  split found =
+    { beside: Array.concatMap besideAtoms found
+    , passed: Array.concatMap passedAtoms found
+    }
   besideAtoms = case _ of
     Beside tail labels → map (Lacks (naming tail)) labels
     Passed _ _ _ → []
@@ -63,29 +67,31 @@ signatureTypes
 signatureTypes found = Array.snoc found.parameters found.result
   <> rowArguments found.row
 
-facts ∷ Tables → Ty VarId → Array Fact
-facts tables ty = own <> Array.concatMap inner (children ty)
-  <> Array.concatMap (Array.concatMap inner <<< rowArguments) (rowsOf ty)
+facts ∷ Tables → Ty VarId → Gen (Array Fact)
+facts tables ty = joined <$> own <*> traverse inner (children ty)
+  <*> traverse inner (Array.concatMap rowArguments (rowsOf ty))
   where
+  joined mine parts rows = mine <> Array.concat parts <> Array.concat rows
   inner part = facts tables part
   own = case ty of
-    TRecord row → map (Beside <@> labelsOf row.fields) row.tails
+    TRecord row → pure (map (Beside <@> labelsOf row.fields) row.tails)
     TData owner arguments _ → passed tables owner arguments
-    _ → []
+    _ → pure []
   labelsOf fields = Set.toUnfoldable (Set.fromFoldable (map fst fields))
 
 -- A type argument that is a record's tails, at its parameter's position
 -- among the declaration's non-effect-row parameters (Implied's `slots`).
-passed ∷ Tables → TypeId → Array (Ty VarId) → Array Fact
-passed tables owner arguments = Array.concat
-  (Array.zipWith argument (slots tables owner) arguments)
+passed ∷ Tables → TypeId → Array (Ty VarId) → Gen (Array Fact)
+passed tables owner arguments = among <$> slots tables owner
   where
+  among positions = Array.concat (Array.zipWith argument positions arguments)
   argument position = case _ of
     TRecord row → map (Passed owner position) row.tails
     _ → []
 
-slots ∷ Tables → TypeId → Array Int
-slots tables (TypeId owner) = maybe [] positions
+slots ∷ Tables → TypeId → Gen (Array Int)
+slots tables id@(TypeId owner) = maybe (Left (UnknownType id))
+  (Right <<< positions)
   (Array.index tables.types owner)
   where
   positions info = Array.catMaybes (Array.mapWithIndex slot info.sorts)

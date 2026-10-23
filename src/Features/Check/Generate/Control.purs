@@ -13,7 +13,7 @@ module Features.Check.Generate.Control
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe, maybe, maybe')
-import Data.Traversable (mapAccumL)
+import Data.Traversable (mapAccumL, sequence)
 import Data.Tuple (Tuple(..), fst)
 import Domain.Recorded.Atom
   ( Atom(..)
@@ -31,12 +31,13 @@ import Domain.Recorded.Origin
   , Path
   , RowGroup(..)
   , RuleId(..)
-  , Step(..)
+  , Step(Named)
   )
 import Domain.Resolved (Arm, Expr, LocalId, Param)
 import Domain.Resolved as Resolved
 import Domain.Syntax (Span)
 import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Fresh
   ( child
   , childAt
@@ -47,7 +48,7 @@ import Features.Check.Generate.Fresh
   )
 import Features.Check.Generate.Out
   ( Generated
-  , Item(..)
+  , Item(ToB, ToOutside)
   , Listed
   , Out
   , TypeMarker
@@ -61,32 +62,34 @@ import Features.Check.Generate.Pattern (pattern)
 import Features.Check.Generate.Translate (arrowOf, translate)
 
 -- E12: arm `k`'s pattern against `τ_s` gives `Γ_k`; its body under
--- `Γ_k`; `eq τ_{body_k} ⟨p, res⟩` (B1).
-match ∷ Recur → Context → Path → Span → Expr → Array Arm → Generated
-match recur context path span scrutinee arms =
-  { ty: res
-  , out: concatOut
-      ( [ varsOut [ resVar ]
-        , emit (at context path (ExprRule 12)) (map armAtom found)
-        , tested.out
-        ]
-          <> map _.out found
-      )
-  }
+-- `Γ_k`; `eq τ_{body_k} ⟨p, res⟩` (B1). The arms read the scrutinee's
+-- generated type, a child's result (G-local), never a solved one.
+match ∷ Recur → Context → Path → Span → Expr → Array Arm → Gen Generated
+match recur context path span scrutinee arms = do
+  tested ← recur context (childOf path "Match" "scrutinee") scrutinee
+  found ← sequence (Array.mapWithIndex (armOf tested.ty) arms)
+  pure
+    { ty: res
+    , out: concatOut
+        ( [ varsOut [ resVar ]
+          , emit (at context path (ExprRule 12)) (map armAtom found)
+          , tested.out
+          ]
+            <> map _.out found
+        )
+    }
   where
   resVar = nodeRes path (ExprRule 12) span
   res = TVar (fst resVar)
-  tested = recur context (childOf path "Match" "scrutinee") scrutinee
-  found = Array.mapWithIndex armOf arms
-  armOf index arm = armWith (childAt path "Match" "arms" index) arm
-  armWith armPath arm = armResult
-    ( pattern context (child armPath [ Named "pattern" ]) tested.ty
-        arm.pattern
-    )
-    armPath
+  armOf scrutineeType index arm = armWith scrutineeType
+    (childAt path "Match" "arms" index)
     arm
-  armResult bound armPath arm = armBody bound.out
-    (recur bound.context (child armPath [ Named "body" ]) arm.body)
+  armWith scrutineeType armPath arm =
+    pattern context (child armPath [ Named "pattern" ]) scrutineeType
+      arm.pattern
+      >>= armResult armPath arm
+  armResult armPath arm bound = armBody bound.out
+    <$> recur bound.context (child armPath [ Named "body" ]) arm.body
   armBody patternOut body =
     { ty: body.ty, out: concatOut [ patternOut, body.out ] }
   armAtom arm = listed (ToB (Equal arm.ty res)) RowB 1 Body span
@@ -95,25 +98,29 @@ match recur context path span scrutinee arms =
 -- with its definedness atom `eq σ_k σ_k` (B14, origin types), an
 -- unannotated one `⟨p, param k⟩` at `ParamType p k`; markers of the
 -- annotations follow, origin types.
-lambda ∷ Recur → Context → Path → Span → Array Param → Expr → Generated
-lambda recur context path span parameters body =
-  { ty: arrowOf (map _.ty typed) inner.ty
-  , out: concatOut
-      [ varsOut (Array.concatMap _.vars typed)
-      , emit (at context path (ExprRule 13))
-          ( Array.concatMap _.defined typed
-              <> markersAt Types span (Array.concatMap _.marks typed)
-          )
-      , inner.out
-      ]
-  }
+lambda
+  ∷ Recur → Context → Path → Span → Array Param → Expr → Gen Generated
+lambda recur context path span parameters body = do
+  typed ← sequence
+    (Array.mapWithIndex (parameterOf context path span) parameters)
+  inner ← recur (Array.foldl bindParameter context typed)
+    (childOf path "Lambda" "body")
+    body
+  pure
+    { ty: arrowOf (map _.ty typed) inner.ty
+    , out: concatOut
+        [ varsOut (Array.concatMap _.vars typed)
+        , emit (at context path (ExprRule 13))
+            ( Array.concatMap _.defined typed
+                <> markersAt Types span (Array.concatMap _.marks typed)
+            )
+        , inner.out
+        ]
+    }
   where
-  typed = Array.mapWithIndex (parameterOf context path span) parameters
-  bound = Array.foldl bindParameter context typed
   bindParameter current found = maybe current
     (bindLocal <@> found.ty <@> current)
     found.local
-  inner = recur bound (childOf path "Lambda" "body") body
 
 type Typed =
   { local ∷ Maybe LocalId
@@ -123,12 +130,12 @@ type Typed =
   , marks ∷ Array TypeMarker
   }
 
-parameterOf ∷ Context → Path → Span → Int → Param → Typed
+parameterOf ∷ Context → Path → Span → Int → Param → Gen Typed
 parameterOf context path span index parameter =
   maybe' unannotated annotated parameter.ty
   where
   annotated written = annotation
-    (translate context.tables rigidNaming written)
+    <$> translate context.tables rigidNaming written
   annotation found =
     { local: parameter.local
     , ty: found.ty
@@ -136,7 +143,7 @@ parameterOf context path span index parameter =
     , defined: [ listed (ToB (Equal found.ty found.ty)) RowB 14 Types span ]
     , marks: found.marks
     }
-  unannotated _ =
+  unannotated _ = pure
     { local: parameter.local
     , ty: TVar (fst var)
     , vars: [ var ]
@@ -155,38 +162,44 @@ parameterOf context path span index parameter =
 -- E16: items in order, each `let` extending `Γ` for the items after it;
 -- `defer e` gives `eq τ_e Unit` (B1) and `Outside Deferred` (O6) at the
 -- item's path with its span (reading 19). The block's type is the
--- result's.
-block ∷ Recur → Context → Path → Array Resolved.Item → Expr → Generated
-block recur context path items result =
-  { ty: final.ty, out: concatOut (Array.snoc done.value final.out) }
+-- result's. One pass (`mapAccumL`, a loop) carries the environment, a
+-- fault included, so a block of thousands of items costs no stack.
+block ∷ Recur → Context → Path → Array Resolved.Item → Expr → Gen Generated
+block recur context path items result = do
+  outs ← sequence done.value
+  inner ← done.accum
+  final ← recur inner (childOf path "Block" "result") result
+  pure { ty: final.ty, out: concatOut (Array.snoc outs final.out) }
   where
-  done = mapAccumL step context (Array.mapWithIndex Tuple items)
-  step current (Tuple index found) = itemOf recur current
+  done = mapAccumL step (pure context) (Array.mapWithIndex Tuple items)
+  step current (Tuple index found) = split
+    (current >>= visitAt index found)
+  visitAt index found walked = itemOf recur walked
     (childAt path "Block" "items" index)
     found
-  final = recur done.accum (childOf path "Block" "result") result
+  split visited = { accum: _.accum <$> visited, value: _.value <$> visited }
 
-itemOf
-  ∷ Recur → Context → Path → Resolved.Item → { accum ∷ Context, value ∷ Out }
+type Visited = { accum ∷ Context, value ∷ Out }
+
+itemOf ∷ Recur → Context → Path → Resolved.Item → Gen Visited
 itemOf recur context path = case _ of
   Resolved.Let _ local value → letItem context local
-    (recur context (childOf path "Let" "value") value)
+    <$> recur context (childOf path "Let" "value") value
   Resolved.Defer span value → deferred context path span
-    (recur context (childOf path "Defer" "value") value)
-  Resolved.Discard value →
-    { accum: context
-    , value: (recur context (childOf path "Discard" "value") value).out
-    }
+    <$> recur context (childOf path "Defer" "value") value
+  Resolved.Discard value → discarded context
+    <$> recur context (childOf path "Discard" "value") value
 
-letItem
-  ∷ Context → Maybe LocalId → Generated → { accum ∷ Context, value ∷ Out }
+discarded ∷ Context → Generated → Visited
+discarded context found = { accum: context, value: found.out }
+
+letItem ∷ Context → Maybe LocalId → Generated → Visited
 letItem context local found =
   { accum: maybe context (bindLocal <@> found.ty <@> context) local
   , value: found.out
   }
 
-deferred
-  ∷ Context → Path → Span → Generated → { accum ∷ Context, value ∷ Out }
+deferred ∷ Context → Path → Span → Generated → Visited
 deferred context path span found =
   { accum: context
   , value: concatOut

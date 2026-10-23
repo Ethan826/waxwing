@@ -5,18 +5,21 @@
 -- by their group, given this function to generate children.
 module Features.Check.Generate.Expr (expr) where
 
-import Data.Maybe (fromMaybe)
-import Domain.Recorded.Atom (Base(..), RTExpr(..))
+import Prelude (pure, (<$>))
+import Data.Either (Either(..))
+import Data.Maybe (maybe)
+import Domain.Recorded.Atom (Base(..), RTExpr(Base))
 import Domain.Recorded.Origin (Path)
 import Domain.Resolved (Expr(..), LocalId)
 import Features.Check.Generate.Builtin (Builtin(..), builtinCall, builtinRef)
 import Features.Check.Generate.Call (call, construct, ctorRef, functionRef)
+import Features.Check.Generate.Fault (Gen, GenerationFault(..))
 import Features.Check.Generate.Context (Context, localType)
 import Features.Check.Generate.Control (block, lambda, match)
 import Features.Check.Generate.Effect (handler, operationRef, perform, with)
 import Features.Check.Generate.Failure (fail, handle)
 import Features.Check.Generate.Operator
-  ( apply
+  ( application
   , arithmetic
   , comparison
   , conditional
@@ -32,18 +35,18 @@ import Features.Check.Generate.Record
   , update
   )
 
-expr ∷ Context → Path → Expr → Generated
-expr context path found = typed (rule found)
+expr ∷ Context → Path → Expr → Gen Generated
+expr context path found = typed <$> rule found
   where
   typed generated = generated
     { out = concatOut [ typeAt path generated.ty, generated.out ] }
-  leaf base = { ty: Base base, out: noOut } -- E1
+  leaf base = pure { ty: Base base, out: noOut } -- E1
   rule = case _ of
     Integer _ _ → leaf IntBase
     Boolean _ _ → leaf BoolBase
     TextLiteral _ _ → leaf TextBase
     UnitValue _ → leaf UnitBase
-    Local _ local → { ty: localOf context local, out: noOut } -- E2
+    Local _ local → localOf context local -- E2
     FunctionRef span function → functionRef context path span function
     CtorRef span ctor → ctorRef context path span ctor
     Call span function arguments → call expr context path span function
@@ -66,7 +69,7 @@ expr context path found = typed (rule found)
     Match span scrutinee arms → match expr context path span scrutinee arms
     Lambda span parameters body → lambda expr context path span parameters
       body
-    Apply span function arguments → apply expr context path span function
+    Apply span function arguments → application expr context path span function
       arguments
     Pipe span left right → pipe expr context path span left right
     Block _ items result → block expr context path items result
@@ -76,13 +79,13 @@ expr context path found = typed (rule found)
       effect
       index
       arguments
-    PrintRef span → builtinRef context path span PrintBuiltin
+    PrintRef span → pure (builtinRef context path span PrintBuiltin)
     Print span arguments → builtinCall expr context path span PrintBuiltin
       arguments
-    ShowRef span → builtinRef context path span ShowBuiltin
+    ShowRef span → pure (builtinRef context path span ShowBuiltin)
     Show span arguments → builtinCall expr context path span ShowBuiltin
       arguments
-    CrashRef span → builtinRef context path span CrashBuiltin
+    CrashRef span → pure (builtinRef context path span CrashBuiltin)
     Crash span arguments → builtinCall expr context path span CrashBuiltin
       arguments
     Handler span label clauses → handler expr context path span label
@@ -98,8 +101,10 @@ expr context path found = typed (rule found)
     RecordRemoval span value labels → removal expr context path span value
       labels
 
--- E2: `Γ(id)`. Every resolved local is bound by Sig2, E13, E16, E20, E22,
--- P2 or P7 before its use, so the fallback (`Unit`) is argued
--- unreachable; generation stays total (G-total) without stopping.
-localOf ∷ Context → LocalId → RTExpr
-localOf context local = fromMaybe (Base UnitBase) (localType context local)
+-- E2: `Γ(id)`. Every resolved local is bound by Sig2, E13, E16, E20,
+-- E22, P2 or P7 before its use; one that is not is a fault.
+localOf ∷ Context → LocalId → Gen Generated
+localOf context local = maybe (Left (UnboundLocal local)) found
+  (localType context local)
+  where
+  found ty = Right { ty, out: noOut }

@@ -18,6 +18,7 @@ import Data.Maybe (Maybe)
 import Domain.Recorded.Atom (RTExpr)
 import Domain.Recorded.Origin (Path, RuleId)
 import Domain.Resolved (Expr, FunctionId, LocalId)
+import Features.Check.Generate.Fault (Gen)
 import Features.Check.Generate.Inputs (Signatures, Tables)
 import Features.Check.Generate.Out (At, Generated)
 
@@ -28,7 +29,7 @@ type Context =
   , locals ∷ Map LocalId RTExpr
   }
 
-type Recur = Context → Path → Expr → Generated
+type Recur = Context → Path → Expr → Gen Generated
 
 at ∷ Context → Path → RuleId → At
 at context path rule = { decl: context.decl, path, rule }
