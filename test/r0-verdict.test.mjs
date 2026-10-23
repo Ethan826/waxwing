@@ -80,24 +80,39 @@ test('AT16 first half: each verdict constructor, at its arity', () => {
     }
 });
 
-// Ruling R2 and the task: nothing in today's compile path uses these
-// types yet, so acceptance and diagnostics cannot have moved. Task 1.2
-// narrows this when its driver starts to carry the problem slot.
-test('the R0 modules are unreachable from the CLI (Task 1.1)', () => {
-  const result = spawnSync('purs',
-    ['graph', 'src/**/*.purs', '.spago/p/*/src/**/*.purs'],
-    { encoding: 'utf8', maxBuffer: 4 * 1024 ** 2 });
-  assert.equal(result.status, 0, result.stderr);
-  const graph = JSON.parse(result.stdout);
-  const seen = new Set();
-  const visit = name => {
-    if (seen.has(name)) return;
-    seen.add(name);
-    graph[name].depends.forEach(visit);
-  };
-  visit('Program.Main');
-  assert.ok(seen.has('Features.Check'));
-  assert.ok('Domain.Verdict' in graph && 'Domain.Recorded' in graph);
-  assert.deepEqual([...seen].filter(name =>
-    /^Domain\.(Verdict|Recorded)(\.|$)/.test(name)), []);
-});
+// Task 1.2 makes compile reach the R0 types through the collecting driver
+// (DeclReport names FunctionName and RecordedProblem), so the Task 1.1
+// check that nothing reaches them is narrowed: from Program.Main only the
+// public type modules and the Internal modules they re-export types from
+// are reachable, only Features.Check.Outcomes imports them, and no
+// checking, strategy, refuter, admission or generation module is
+// reachable (ruling R6: no such wiring into Program.Compile in this
+// tranche).
+test('the CLI reaches the R0 types only through the driver (Task 1.2)',
+  () => {
+    const result = spawnSync('purs',
+      ['graph', 'src/**/*.purs', '.spago/p/*/src/**/*.purs'],
+      { encoding: 'utf8', maxBuffer: 4 * 1024 ** 2 });
+    assert.equal(result.status, 0, result.stderr);
+    const graph = JSON.parse(result.stdout);
+    const seen = new Set();
+    const visit = name => {
+      if (seen.has(name)) return;
+      seen.add(name);
+      graph[name].depends.forEach(visit);
+    };
+    visit('Program.Main');
+    const r0 = name => /^Domain\.(Verdict|Recorded)(\.|$)/.test(name);
+    assert.ok(seen.has('Features.Check.Outcomes'));
+    assert.ok('Domain.Verdict.Admission' in graph);
+    assert.deepEqual([...seen].filter(r0).sort(), ['Domain.Recorded',
+      'Domain.Recorded.Internal', 'Domain.Verdict',
+      'Domain.Verdict.Internal', 'Domain.Verdict.Open']);
+    assert.deepEqual([...seen].filter(name => !r0(name)
+      && graph[name].depends.some(r0)), ['Features.Check.Outcomes']);
+    assert.deepEqual(graph['Features.Check.Outcomes'].depends.filter(r0)
+      .sort(), ['Domain.Recorded', 'Domain.Verdict']);
+    assert.deepEqual([...seen].filter(name => new RegExp('^Features\\.Check'
+      + '\\.(Strategy|Refute|Admit|Decide|Generate|Checking)(\\.|$)')
+      .test(name)), []);
+  });

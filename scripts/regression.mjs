@@ -16,6 +16,7 @@ import { r005bRows } from './regression-r005b.mjs';
 import { r005bEndRows } from './regression-r005b-end.mjs';
 import { r005bRenderRows } from './regression-r005b-render.mjs';
 import { r012Rows } from './regression-r012.mjs';
+import { r0Rows } from './regression-r0.mjs';
 import { ieRows } from './regression-ie.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
 // One plain-purs baseline is compiled per run; each row clones it (APFS
@@ -27,7 +28,8 @@ import { ieRows } from './regression-ie.mjs';
 const chosen = process.argv.slice(2);
 const proved = [...coreRows, ...fnRows, ...fx008Rows, ...fxRows,
   ...textRows, ...fx020Rows, ...r001Rows, ...r004Rows, ...r005Rows,
-  ...r005bRows, ...r005bEndRows, ...r005bRenderRows, ...r012Rows, ...ieRows]
+  ...r005bRows, ...r005bEndRows, ...r005bRenderRows, ...r012Rows, ...ieRows,
+  ...r0Rows]
   .filter(row => chosen.length === 0 || chosen.includes(row.name));
 const base = '.build/regression';
 const failures = '.build/regression-failed';

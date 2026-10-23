@@ -303,6 +303,24 @@ surveyed set), and FFI exists only in modules pinned with their
 `foreign import` signatures in scripts/foreign-surface.json
 (Runtime.Node). The four routes are fixtures; evidence in findings.
 
+## R0 shadow tranche, Task 1.2: the collecting driver (2026-10-22)
+
+First commit: Task 1.1's breaker ruling (forgery rule on the
+primitives; see Task 1.1 above). Then `checkProgram` and the `Report`
+and `DeclReport` types in Features.Check.Outcomes: every body is
+checked whatever happened to the others, in today's order (entry,
+bodies by declaration, then the instantiation rule and coverage only
+when all passed). `DeclReport` holds today's checker result and an
+empty `problem` slot (ruling R2); nothing adapts a diagnostic into a
+verdict. `check` and `compile` are the first of `checkProgram` and the
+new `compileReport`. The CLI, README, Command.purs and Main.purs are
+unchanged (Step 6 held back, §18.71); no Checking or strategy wiring
+(R6). A corpus-wide snapshot taken at the parent commit shows no
+change in acceptance, Go or first diagnostic; no fixture changed; no
+corpus re-pin (no tracked program added). Task 1.1's reachability
+test is narrowed to the driver. Regression row `r0-first-left-hides`.
+Evidence in findings, "The collecting driver".
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/

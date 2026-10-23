@@ -1728,3 +1728,55 @@ Forge tests). Limits (argued): the JS body behind a pinned signature,
 and a type synonym the signature names, are left to review, as is a
 repurposed body in an allowed importer.
 
+
+## The collecting driver (2026-10-22)
+
+R0 Task 1.2 (T-R0a §7, G-hide). `checkProgram` (Features.Check.Outcomes)
+checks every body whatever happened to the others and returns a
+`Report`: the entry judgement, one `DeclReport` per declaration in
+declaration order (`name`, `today`, the shadow phase's legacy slot
+holding today's `recheck` result, and `problem`, `Nothing` until
+generation exists; ruling R2), and `program`, every diagnostic in
+order or the checked program. The order is today's: `main`'s
+printability, then bodies in declaration order, then the program-wide
+stages (instantiation rule, then coverage), which still run only when
+the entry and every body passed. `check` and `compile` are now the
+first of `checkProgram` and `compileReport`; relocation through a
+callee (`explained`) reads the callee's report instead of re-checking
+it. The CLI is unchanged (its step is held back, §18.71).
+
+Snapshot (checked): test/fixtures/r0/first-diagnostic.json is
+`compile`'s output over the pinned corpus (1117 programs, 374
+rejected), written at the parent commit 5d6b1cb from a fresh build
+before any source change, by a scratch script equal to the test's
+`outcome` (SHA-256 of the Go text, or the wired diagnostic).
+test/r0-first-diagnostic.serial.test.mjs compares both `compile` and
+the first of `compileReport` with it: no program moved, so acceptance,
+emitted Go, codes, texts, spans and notes are unchanged. No fixture
+changed. RED: test/r0-driver.test.mjs failed to load (`Cannot find
+module … Features.Check.Outcomes`), the snapshot test with `does not
+provide an export named 'compileReport'`. GREEN: both pass (5 tests).
+Corpus compile time 5.1 s before, 5.4 s after (one run each): every
+body is now checked when one fails.
+
+Mutants (each applied to Features/Check/Outcomes.purs by a scratch
+script, rebuilt, then restored; `node --test test/r0-driver.test.mjs
+test/r0-first-diagnostic.serial.test.mjs`): D1, bodies after the first
+failing one dropped (today's `traverse`): the three driver tests that
+see two diagnostics fail. D2, the entry's diagnostic after the bodies':
+the order test fails (no corpus program fails both, so the snapshot
+does not see it). D3, the callee's report not found by `explained`:
+the snapshot test fails on three programs (p10-neg.wxw,
+p9-neg-alone.wxw, fx-services-programs.mjs:dropped#1), whose notes are
+relocated through a callee. D4, coverage before the instantiation
+rule: the order test fails. Regression row `r0-first-left-hides`
+(scripts/regression-r0.mjs, D1 in a clone): the healthy compiler
+passes its probe, the restored defect fails with `second broken
+declaration hidden: E_TYPE Expected Int, found Bool`.
+
+Task 1.1's check that compile reaches no R0 module is narrowed
+(test/r0-verdict.test.mjs): from Program.Main exactly Domain.Verdict,
+Domain.Recorded, their Internal modules and Domain.Verdict.Open are
+reachable; only Features.Check.Outcomes imports them, and only the two
+public modules; no Features.Check Strategy, Refute, Admit, Decide,
+Generate or Checking module is reachable (ruling R6).

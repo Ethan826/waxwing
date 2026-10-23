@@ -3,9 +3,11 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { compile } from '../output/Program.Compile/index.js';
+import * as compiler from '../output/Program.Compile/index.js';
 import { Left, Right } from '../output/Data.Either/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
+
+const { compile } = compiler;
 
 export const checked = source => {
   const result = compile(source);
@@ -20,6 +22,14 @@ export const rejected = (source, code) => {
   assert.equal(diagnostic.code, code);
   assert.ok(diagnostic.message.length > 0);
   return diagnostic;
+};
+
+// Every diagnostic of a rejected program, wired, in the driver's order
+// (Features.Check.Outcomes): entry, bodies, then the program-wide stages.
+export const rejectedAll = source => {
+  const result = compiler.compileReport(source);
+  assert.ok(result instanceof Left, 'invalid program compiled');
+  return result.value0.map(wire);
 };
 
 export const command = (name, args, options = {}) => {
