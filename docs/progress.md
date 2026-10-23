@@ -464,6 +464,31 @@ timing bound (5.66 s; 2.87-3.38 s alone; recorded under BACKLOG T004);
 the final run exited 0 (2656/2656, 83/83 serial, 179 regression
 proofs).
 
+## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
+
+`strategy` (Features.Check.Strategy) composes a spec's guard, untrusted
+search, trusted check and witness in that order; `decide`
+(Features.Check.Decide, with Decide.Reason and Decide.Refuters) applies
+T-R0a §5.3: rules 1 and 1′ (markers, a second spread, an injected
+§3.2(a) detector) block Solved and make everything run; rules, then
+strategies, then trusted refuters seeded with each hint alone, then
+shadows; rule 3's reason in the proposed order; `BothVerdicts` in
+production under a block; rule 5's test-only `Checking` differs by its
+injected `ends`. A refused candidate, a `RequirementOpen` refusal and a
+search's own broken invariant never stop the run; a refused derivation,
+two rules of one name and an `Inconsistent` search do (ruling R10).
+Blame is derived from the premises' paths. `Budget`, `SearchHint` and
+`CheckRefusal` are defined (Domain.Verdict.Search), and
+`NoWitnessReason = NonConstructive …`. AT7 holds over a fixed grammar
+of 400 random worlds per property (its first run found a generator bug,
+corrected); AT8, AT9, AT11, AT12, AT16 and AT17 pass; RT3 holds over
+the corpus. Six mutants and four regression rows (`r0-refused-stops`,
+`r0-limit-hidden`, `r0-marker-ignored`, `r0-shadow-decides`) fail as
+expected. Trusted surface re-pinned (Domain.Verdict, Refute.Rules).
+Nothing reachable from compile changed behaviour; no fixture changed;
+no corpus re-pin. Evidence and fourteen labelled readings in findings,
+"Strategies and `decide`".
+
 ## R0 shadow tranche, Task 3.3 steps 1-3: RT1's translator (2026-10-23)
 
 RT1's independent translator (T-R0b §9 item 1), written from T-R0b

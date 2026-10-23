@@ -48,5 +48,62 @@ export const r0Rows = [
     replacement: '  if any cites (sig.d <> sig.b) then Right unit\n',
     probe: 'r0-d-premise',
     message: /D atom accepted as a premise: Right/
+  },
+  {
+    // Task 4.1 (AT8; Q13 option A-i): a refused candidate stops the run
+    // as a fault instead of being one attempt among others.
+    name: 'r0-refused-stops',
+    file: 'src/Features/Check/Strategy.purs',
+    needle: '  Candidate cert claim hints → Right (checked spec problem cert'
+      + ' claim hints)\n',
+    replacement: '  Candidate cert claim hints → either (const (Left'
+      + ' (BrokenInvariant "refused"))) (const (Right (checked spec problem'
+      + ' cert claim hints))) (spec.check problem cert)\n',
+    probe: 'r0-refused-stops',
+    message: /a refused candidate stopped the run: Faulted/
+  },
+  {
+    // Task 4.1 (rule 3, G-A-i(b)): any refused candidate, Heuristic too,
+    // outranks Limit, so an expected refusal hides a budget limit.
+    name: 'r0-limit-hidden',
+    file: 'src/Features/Check/Decide/Reason.purs',
+    needle: '    if any refusedComplete readings then Nothing\n',
+    replacement: '    if any refused readings then Nothing\n',
+    probe: 'r0-limit-hidden',
+    message: /Limit hidden by a Heuristic refusal: Unresolved Inference/
+  },
+  {
+    // Task 4.1 (AT11, rule 1): the outside markers no longer block.
+    name: 'r0-marker-ignored',
+    file: 'src/Features/Check/Decide/Reason.purs',
+    needle: '  nubEq (map outside view.outside) <> spread <> requirements\n',
+    replacement: '  nubEq (map outside []) <> spread <> requirements\n',
+    probe: 'r0-marker-ignored',
+    message: /a marker did not block Solved: Solved/
+  },
+  {
+    // Task 4.1 (AT17, Q10): a shadow refuter's checked counter-instance
+    // changes the verdict, though it is never evidence.
+    name: 'r0-shadow-decides',
+    edits: [
+      { file: 'src/Features/Check/Decide.purs',
+        needle: 'import Data.Foldable (foldM)\n',
+        replacement: 'import Data.Foldable (any, foldM)\n' },
+      { file: 'src/Features/Check/Decide.purs',
+        needle: '  map (decision ran) (verdictOf blocked ran)\n',
+        replacement: '  map (decision ran) (if any found (map'
+          + ' (shadowRecord checking.budget ran.hints problem)'
+          + ' checking.shadows) then Right (Unresolved { reason: reason'
+          + ' blocked ran.attempts, hints: [] }) else verdictOf blocked'
+          + ' ran)\n' },
+      { file: 'src/Features/Check/Decide.purs',
+        needle: '  blocked = blocks (checking.openRequirements problem)'
+          + ' problem\n',
+        replacement: '  blocked = blocks (checking.openRequirements problem)'
+          + ' problem\n  found record = either (const false) (const true)'
+          + ' record.result\n' }
+    ],
+    probe: 'r0-shadow-decides',
+    message: /a shadow refuter changed the verdict: Unresolved/
   }
 ];

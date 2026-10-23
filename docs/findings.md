@@ -2907,3 +2907,174 @@ structure rules, `node --test` over the four touched test files gave
 6 pass, 4 fail (r0-rules and r0-verdict: no
 Domain.Verdict.Theorem.Internal output; structure-r0: Rules allowed to
 import it; structure: no `theoremImportFindings`).
+
+## Strategies and `decide` (2026-10-23)
+
+R0 shadow tranche, Task 4.1 with Task 3.6 (T-R0a §4.1, §4.3, §5.1,
+§5.3; AT7, AT8, AT9, AT11, AT12, AT16, AT17; T-R0b RT3). New:
+Domain.Verdict.Search (`Budget`, `SearchHint`, `CheckRefusal`),
+Features.Check.Strategy (`StrategySpec`, `Strategy`, `strategy`),
+Features.Check.Decide (`Checking`, `decide`, `untilVerdict`),
+Decide.Reason (rules 1, 1′, 3) and Decide.Refuters (seeding,
+`shadowRefuter`). Changed: Domain.Verdict (`NoWitnessReason =
+NonConstructive StrategyName`, moved from Open; `Eq` for `StrategyName`
+and `Unsupport`), Domain.Verdict.Open (four placeholders moved out; `Eq
+Question`), Refute.Rules (`ruleName`, `ruleDerivation`). Nothing
+reachable from compile builds a `Checking` (ruling R6): Program.Main
+reaches Domain.Verdict.Search as types only and no Strategy or Decide
+module (test/r0-verdict.test.mjs).
+
+**Readings (labelled; the SDD ledger's rulings decide the rest).**
+1. `Checking` has T-R0a's five fields and two injected implementations:
+   `openRequirements`, §3.2(a)'s detector (Task 4.2's; a stub until it
+   lands, ruling R11), and `ends ∷ Progress → Boolean`, when the run
+   stops early. Production's is `untilVerdict`; rule 5's test-only
+   value never ends early. That is the "different injected value" of
+   rule 5 (ruling R7), not a flag.
+2. A strategy's run gives `Ran = { attempt, hints, solution }`, not
+   T-R0a's bare `Attempt`: rule 2 seeds refuters with the hints, and
+   Solved carries the strategy's assurance.
+3. `Search` gains `Inconsistent String` (ruling R10 (iii)): the state a
+   search reads beside the problem (its injected context) disagrees
+   with it, which stops the run as `BrokenInvariant`. A search's own
+   broken invariant is `NoCandidate (Broke …)`, a `SearchBroke` record
+   that never stops the run (G-Q13, dossier §18.71 item 2). Task 4.3
+   routes `InternalKind` by ruling R3's partition: the confined kinds
+   to `Broke`, the stop kinds and `GenerationFault` to `Inconsistent`.
+4. Zero fuel: once the guard admits, `strategy` does not call a search
+   given `fuel ≤ 0`; the attempt is `Searched (OutOfBudget
+   (StrategyBudget name))`.
+5. A refuter search's `Nothing` is `NoCounterInstance Exhausted` (the
+   choice Task 5.1 left here): a `Maybe` cannot tell exhaustion from a
+   spent budget, so a refuter never contributes `Limit` to rule 3.
+6. Seeding: each refuter (and shadow) searches once with no hint and
+   once with each hint alone, in canonical order (sorted, duplicates
+   removed), each on the whole budget; the first counter-instance its
+   check accepts wins, else the first refusal is reported. Adding a
+   hint adds a run and removes none, so the search is monotone in its
+   hints whatever it does with several.
+7. Blame (carry from Task 5.1's review): `decide` derives a
+   derivation's `blame` from its premises' paths, whatever the rule
+   wrote, rather than refusing a foreign blame site. The premises are
+   what `checkDerivation` checked, so the culprit named is the
+   evidence; no `Unsound` constructor or trusted check changes.
+8. Stopping: production stops at the first Solved or contradiction
+   (rules first), unless rule 1 or 1′ blocks Solved, when every rule,
+   strategy and refuter runs; an `Accepted` beside a contradiction is
+   then `BothVerdicts` (rule 4 in production). Shadows always run, after
+   the rest, seeded with the hints gathered.
+9. Rule 3: a `RequirementOpen` refusal reads as a decline
+   (`RequirementAtoms`) and so never as a refused `ClaimsComplete`
+   candidate; "every strategy declined" counts strategy attempts only;
+   with no strategy at all the reason is `Inference NoStrategyApplies`
+   (T-R0a §3.5 glosses it "every guard declined", which rule 3 gives
+   to `Unsupported`; rule 3 is followed). A budget limit has no node,
+   so its site is the body's root. `Unsupported` lists each reason
+   once.
+10. Ruling R10 (ii), an orchestration invariant: `checkDerivation`
+    finds a rule by name, so two rules of one name in `Checking.rules`
+    stop the run as `BrokenInvariant`.
+11. `CheckRefusal = RequirementOpen AtomId | Unsatisfied AtomId`; Task
+    4.2 adds G0's own. `SearchHint = SearchHint String`, ordered (T-R0a
+    §3.5's advisory text). `Budget = { fuel, depth, keys }` (§4.3).
+12. No `StrategyName` constructor was added: every stub is
+    `OnlineSolver`, and no test needed two names.
+13. RT3 is test/r0-injection.serial.test.mjs (corpus-wide, ruling R11).
+    Task 4.3's `onlineSearch` does not exist yet, so "the online search"
+    is today's per-declaration search, `checkProgram`'s `recheck`.
+14. No `ErasedRow` marker and no `EffectsUnchecked` reason: the
+    2026-10-23 ruling defers them to the task that builds the marker
+    (docs/plans/r0-erased-rows.md §7.1); `decide`'s comment says so.
+
+**Checked.** test/r0-decide.test.mjs (17 tests), r0-decide-faults (6)
+and r0-order (4), all through the production `decide` with stubs from
+test/r0-stubs.mjs, which mints `Valid`, `TheoremRef` and `SoundRule`
+through the compiled Internal modules. AT8: a refused `Heuristic`
+candidate is `Unresolved (Inference NoAcceptedCertificate)` with no
+`SearchFault`; a refused `ClaimsComplete` one, then an accepting stub,
+is Solved with both attempts and a `CandidateRefused`; alone, the same
+Unresolved, never Faulted; `DerivationRefused` and `BrokenInvariant`
+are `Left`. AT9: `NoWitness (NonConstructive OnlineSolver)` is Solved.
+AT11: the `DataApplication` fixture with an accepting stub is
+`Unsupported [Outside DataApplication]`; with a trusted stub refuter,
+Contradiction. AT12: fuel 0 gives `Limit [StrategyBudget]`, the search
+is not called and `encodeProblem` is unchanged. Rule 3's two ordering
+probes; rule 4's `BothVerdicts` under a marker by refuter and by
+registered rule; rule 5's only through `ends`; AT17 for Solved,
+Unresolved and no strategy; `RequirementOpen` as `Unsupported
+[RequirementAtoms]`; an injected open atom and a second spread (a test
+`vars` key, since Resolve refuses one) each block two accepting stubs,
+both run; a decline is local; blame is the premises' paths; seeds are
+`[]`, `['a']`, `['b']` for hints `b, a, a`. G-Q13 without "proposed",
+and the three stops of ruling R10. AT16: each `InferenceFailure`,
+reason family, the `Unsupport`s rule 1 and guards give, both `Limit`
+kinds, each `InternalFault` and each `SearchFault` by one injection.
+
+test/r0-injection.serial.test.mjs (RT3): over the pinned corpus (more
+than 900 programs and 2,500 declarations, the test's floors) each
+declaration's `encodeProblem` is the same alone, after `checkProgram`
+on the program and after `decide` with a stub refusing at once; and the
+compiled import closure of Features.Check.Generate holds no Strategy,
+Decide or Refute module.
+
+AT7. The grammar is in test/r0-order.test.mjs, fixed before the first
+run. First run, `node --test test/r0-order.test.mjs`: two properties
+failed, `AssertionError: {"Solved":13,"Contradiction":76,
+"Unresolved":195,"Faulted":116}` and `a refused candidate never gives
+Faulted: world 1`. Cause: the generator called each rule kind with the
+random source as its index, so every rule was named alike and the
+distinct-names invariant stopped the run; the grammar says "named
+apart". Correction to the generator, not an amendment of the grammar:
+rule kinds take `(next, index)`. Second run: 4 pass. A scratch copy
+printing its counters gave classes Solved 25, Contradiction 96,
+Unresolved 279 (400 worlds), 169 worlds with a refused candidate, and
+25 monotonicity worlds where seeding with the whole hint set would
+lose the counter-instance.
+
+**Mutants (recorded).** Each patched one compiled module in a scratch
+copy of output/ and test/ (deleted afterwards), running r0-order,
+r0-decide and r0-decide-faults; unpatched, all pass.
+
+| Mutant | Patch (compiled module) | Failing |
+|---|---|---|
+| M1 whole-set seeding | Refuters: `var seeds = …cons([])(…)` → `var seeds = [canonical(hints)];` | monotone in hints; seeds |
+| M2 hints unsorted | Refuters: `return sort(nub(hints));` → `return hints;` | seeds |
+| M3 block ignored for running | Decide: `!progress.blocked && (…)` → `(…)` | incomplete problem; rule 1′; rule 4; AT16 |
+| M4 rule's own blame | Decide: `blame: nub1(map1(…))` → `blame: v.value0.blame` | blame |
+| M5 `RequirementOpen` as refusal | Reason: `new Declines(RequirementAtoms)` → `claimed(claim)` | RequirementOpen |
+| M6 zero fuel searches | Strategy: `if (budget.fuel <= 0)` → `if (false)` | AT12; AT16 |
+
+M2 leaves AT7 green: with per-hint seeding the order of the seeds
+cannot change whether a counter-instance is found.
+
+Regression rows (scripts/regression-r0.mjs; probes in
+test/regression-r0.mjs): `r0-refused-stops` (a refusal becomes
+`BrokenInvariant`; AT8's probe expects Solved), `r0-limit-hidden` (any
+refusal outranks `Limit`; the `Heuristic` probe expects `Limit`),
+`r0-marker-ignored` (rule 1 reads no marker; AT11's probe expects no
+Solved), `r0-shadow-decides` (a shadow's checked CX turns the verdict
+Unresolved; AT17's probe expects Solved). `node scripts/regression.mjs
+r0-refused-stops r0-limit-hidden r0-marker-ignored r0-shadow-decides`:
+each "fixed compiler passes; restored defect fails".
+
+purs 0.15.16 probes (a copy-on-write copy of src, .spago and output in
+the scratchpad, deleted afterwards):
+
+| Probe | Result |
+|---|---|
+| `Strategy` through `Features.Check.Strategy (Strategy(..))` | does not compile: `Unknown data constructor Strategy` |
+| `ShadowRefuter` through `Decide.Refuters (ShadowRefuter(..))` | does not compile: `Unknown data constructor ShadowRefuter` |
+| `coerce` from a run function to `Strategy` | does not compile: no `Coercible` instance |
+| `Valid` through `Domain.Verdict (Valid(..))` | does not compile: `Unknown data constructor Valid` |
+| `strategy` and `shadowRefuter` (control) | compiles |
+
+Trusted surface re-pinned: Domain.Verdict adds `NoWitnessReason(..)`
+(source), `NonConstructive`, `eqStrategyName`, `eqUnsupport` (compiled);
+Refute.Rules adds `ruleDerivation` and `ruleName` (both). None names a
+token constructor; `ruleDerivation` returns a plain `Derivation`, which
+is evidence only through `checkDerivation`.
+
+RED: before Domain.Verdict.Search, Strategy and Decide existed, `node
+--test test/r0-decide.test.mjs test/r0-decide-faults.test.mjs
+test/r0-order.test.mjs` failed all three files with
+`ERR_MODULE_NOT_FOUND` for output/Domain.Verdict.Search.

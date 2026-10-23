@@ -23,6 +23,7 @@ module Domain.Verdict
   , Key
   , LimitAt
   , LimitReached(..)
+  , NoWitnessReason(..)
   , RefuterEnd(..)
   , RefuterName(..)
   , RuleName(..)
@@ -38,7 +39,7 @@ module Domain.Verdict
   , Verdict(..)
   ) where
 
-import Prelude (Void)
+import Prelude (class Eq, Void)
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
 import Domain.Recorded (AtomId, OutsideKind, RecordedProblem)
@@ -60,15 +61,8 @@ import Domain.Verdict.Static (Site, StaticRefusal)
 import Domain.Verdict.Theorem.Internal (TheoremRef) as Exports
 import Domain.Verdict.Theorem.Internal (TheoremRef)
 import Domain.Verdict.Unsound (Unsound)
-import Domain.Verdict.Open
-  ( CheckRefusal
-  , CheckedCX
-  , NoWitnessReason
-  , Question
-  , RefuteRefusal
-  , SearchHint
-  , Witness
-  )
+import Domain.Verdict.Open (CheckedCX, Question, RefuteRefusal, Witness)
+import Domain.Verdict.Search (CheckRefusal, SearchHint)
 
 -- One per declaration, in declaration order; each keeps its problem.
 data DeclOutcome
@@ -99,6 +93,11 @@ data Assurance = Proved TheoremRef | Pending StatementRef
 
 -- W §1.6, adopted as defined.
 data Compilation = Witnessed Witness | NoWitness NoWitnessReason
+
+-- W §1.6's reasons, each with its owner: a non-constructive strategy's
+-- (Task 4.1, AT9). `AdapterUnsupported` and `HoleContract` join with
+-- their adapters (Tasks 4.4, 6.1).
+data NoWitnessReason = NonConstructive StrategyName
 
 data Evidence
   = ByRule Derivation -- ground (1)
@@ -211,3 +210,8 @@ newtype RefuterName = RefuterName String
 newtype StatementRef = StatementRef String
 
 newtype FunctionName = FunctionName String
+
+derive instance eqStrategyName ∷ Eq StrategyName
+
+-- `decide` lists each reason once (§5.3 rule 3).
+derive instance eqUnsupport ∷ Eq Unsupport

@@ -26,6 +26,7 @@
    "Key",
    "LimitAt",
    "LimitReached(..)",
+   "NoWitnessReason(..)",
    "RefuterEnd(..)",
    "RefuterName(..)",
    "RuleName(..)",
@@ -70,6 +71,7 @@
    "SpecializationKeys",
    "ReexaminationSteps",
    "StrategyBudget",
+   "NonConstructive",
    "NoCounterInstance",
    "CXRefused",
    "RefuterName",
@@ -93,6 +95,8 @@
    "Solved",
    "Contradiction",
    "Unresolved",
+   "eqStrategyName",
+   "eqUnsupport",
    "PolicyRepeatedTail from ../Domain.Verdict.Static/index.js",
    "PolicySameDisjoint from ../Domain.Verdict.Static/index.js",
    "StaticArity from ../Domain.Verdict.Static/index.js",
@@ -552,12 +556,16 @@
    "checkDerivation",
    "refuterParts",
    "registry",
+   "ruleDerivation",
+   "ruleName",
    "trustedRefuter"
   ],
   "compiled": [
    "checkDerivation",
    "refuterParts",
    "registry",
+   "ruleDerivation",
+   "ruleName",
    "trustedRefuter"
   ]
  },

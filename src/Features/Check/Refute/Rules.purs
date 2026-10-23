@@ -12,6 +12,8 @@ module Features.Check.Refute.Rules
   , checkDerivation
   , refuterParts
   , registry
+  , ruleDerivation
+  , ruleName
   , trustedRefuter
   ) where
 
@@ -29,7 +31,8 @@ import Domain.Verdict
   , RuleName(..)
   )
 import Domain.Verdict.Internal (Refuted(..))
-import Domain.Verdict.Open (Budget, CheckedCX, RefuteRefusal, SearchHint)
+import Domain.Verdict.Open (CheckedCX, RefuteRefusal)
+import Domain.Verdict.Search (Budget, SearchHint)
 import Domain.Verdict.Unsound (Unsound(..))
 import Features.Check.Refute.Project (toSig, withBody)
 import Features.Check.Refute.Rules.Internal (SoundRule) as Exports
@@ -73,6 +76,15 @@ checkDerivation rules problem derivation = do
   traverse_ (original sig) derivation.premises
   rerun rule (withBody sig derivation.premises)
   pure (ByRule derivation)
+
+-- What `decide` reads of a rule (§5.3 rule 2; Task 4.1): its name, and
+-- the derivation it gives on `toSig P`, if any. Neither mints anything:
+-- a derivation is evidence only once `checkDerivation` accepts it.
+ruleName ∷ SoundRule → RuleName
+ruleName (SoundRule rule) = rule.name
+
+ruleDerivation ∷ RecordedProblem → SoundRule → Maybe Derivation
+ruleDerivation problem (SoundRule rule) = rule.apply =<< toSig problem
 
 refuterParts ∷ Refuter → RefuterParts
 refuterParts (Refuter parts) = parts

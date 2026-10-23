@@ -22,6 +22,7 @@ import Domain.Verdict
   ( ForcednessEvidence
   , FunctionName
   , LimitAt
+  , NoWitnessReason
   , NonForced
   , Site
   , Solution
@@ -30,7 +31,6 @@ import Domain.Verdict.Open
   ( Construct
   , ForcednessClaim
   , ForcednessRefusal
-  , NoWitnessReason
   , SplitJudgement
   , Witness
   )

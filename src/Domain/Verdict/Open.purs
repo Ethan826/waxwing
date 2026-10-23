@@ -1,33 +1,28 @@
 -- Types that T-R0a names but whose representation another task or
 -- document owns. Each is declared without constructors, so it is
 -- uninhabited: no code can build one, nor invent a representation, before
--- its owner defines it here or moves it to its home.
+-- its owner defines it here or moves it to its home. Task 4.1 moved
+-- `Budget`, `CheckRefusal` and `SearchHint` to Domain.Verdict.Search and
+-- `NoWitnessReason` to Domain.Verdict.
 module Domain.Verdict.Open
   ( Alternative
-  , Budget
   , CXSubst
-  , CheckRefusal
   , CheckedCX
   , Construct
   , ForcednessClaim
   , ForcednessRefusal
-  , NoWitnessReason
   , NonForcednessEvidence
   , Question
   , RefuteRefusal
   , RigidAssignment
-  , SearchHint
   , SplitJudgement
   , Witness
   ) where
 
--- A strategy check's refusal of a candidate (T-R0a §4.1; Tasks 4.1, 4.2).
-data CheckRefusal
-
--- Advisory text a search leaves, never a reason (T-R0a §4.2; Task 4.3).
-data SearchHint
+import Prelude (class Eq)
 
 -- Which Q3 sub-question a class-f construct falls under (T-R0a §3.5).
+-- Equality lets `decide` list each `Unsupport` once (Task 4.1).
 data Question
 
 -- CX's `Subst (B ⊕ Nat)`, its checked certificate and its refusal
@@ -38,15 +33,8 @@ data CheckedCX
 
 data RefuteRefusal
 
--- The injected budget (T-R0a §4.3): fuel per strategy and per refuter,
--- a depth bound, a key bound. A refuter's search takes one (§5.1); Task
--- 4.1 gives it its representation.
-data Budget
-
 -- W §1.6 and §1.7, adopted as defined there (Tasks 4.4, 6.1).
 data Witness
-
-data NoWitnessReason
 
 data SplitJudgement
 
@@ -63,3 +51,5 @@ data NonForcednessEvidence
 data ForcednessClaim
 
 data ForcednessRefusal
+
+derive instance eqQuestion ∷ Eq Question
