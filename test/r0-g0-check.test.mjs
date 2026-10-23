@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { load } from './r0-generate-support.mjs';
 import { stubsFrom } from './r0-stubs.mjs';
 import { describe } from './r0-decide-support.mjs';
-import { g0From } from './r0-g0-support.mjs';
+import { d02From, d02Lacking, d02Source, g0From }
+  from './r0-g0-support.mjs';
 
 // Task 4.2: G0's definedness check on d02 (Task 6.5 relies on it), each
 // `CheckRefusal` constructor injected into the production `decide`, and
@@ -18,18 +18,9 @@ const Origin = await load('Domain.Recorded.Origin');
 const Set = await load('Data.Set');
 const { ordInt } = await load('Data.Ord');
 const { Atom, Map } = g0;
-// d02 is refused at Resolve today (`r may already have field a`), so
-// generation cannot record it; Task 6.5 lifts that refusal. Its problem
-// is built from the same program with `where r lacks { a }`, which
-// resolves, with that clause's one `D` atom (Sig4) removed: the clause
-// adds nothing else (checked below), so this is d02's problem as
-// generation would record it (argued).
-const d02 = readFileSync(
-  'research/division-campaign/r0/probes/d02-body-type-lacking.wxw', 'utf8');
-const lacking = d02.replace('fn f(p: { ...r }): Int =',
-  'fn f(p: { ...r }): Int where r lacks { a } =');
-const withLacks = stubs.recorded.problem(lacking);
-const d02Problem = { ...withLacks, d: [] };
+const d02 = d02Source;
+const lacking = d02Lacking;
+const { withLacks, problem: d02Problem } = d02From(stubs);
 
 test('definedness: d02\'s lambda annotation is refused under any σ', () => {
   assert.notEqual(lacking, d02);

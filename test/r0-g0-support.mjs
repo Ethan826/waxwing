@@ -7,6 +7,26 @@
 // flexible variable to its reduced type, and `override` replaces some
 // bindings (a candidate that is not the problem's). Only G0's check
 // judges the candidate.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+export const d02Source = readFileSync(join(root,
+  'research/division-campaign/r0/probes/d02-body-type-lacking.wxw'), 'utf8');
+// d02 is refused at Resolve today (`r may already have field a`), so
+// generation cannot record it; Task 6.5 lifts that refusal. Its problem
+// is built from the same program with `where r lacks { a }`, which
+// resolves, with that clause's one `D` atom (Sig4) removed; the clause
+// adds nothing else (r0-g0-check.test.mjs checks it), so this is d02's
+// problem as generation would record it (argued).
+export const d02Lacking = d02Source.replace('fn f(p: { ...r }): Int =',
+  'fn f(p: { ...r }): Int where r lacks { a } =');
+export const d02From = stubs => {
+  const withLacks = stubs.recorded.problem(d02Lacking);
+  return { withLacks, problem: { ...withLacks, d: [] } };
+};
+
 export const g0From = async (load, stubs) => {
   const { parse } = await load('Format.Parse');
   const { resolve } = await load('Features.Resolve');

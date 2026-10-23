@@ -105,5 +105,28 @@ export const r0Rows = [
     ],
     probe: 'r0-shadow-decides',
     message: /a shadow refuter changed the verdict: Unresolved/
+  },
+  {
+    // Task 4.2 (Task 6.5 relies on it): G0 drops the definedness check
+    // of an equation's sides, so d02's annotation `{ a: Int, ...r }`
+    // with no `r lacks a` in `D` is accepted.
+    name: 'r0-definedness-dropped',
+    file: 'src/Features/Check/Strategy/Atoms.purs',
+    needle: '  | not (defined known one && defined known other) ='
+      + ' Left (Undefined id)\n  | one == other = Right unit\n',
+    replacement: '  | one == other = Right unit\n',
+    probe: 'r0-definedness-dropped',
+    message: /d02's annotation accepted: Right/
+  },
+  {
+    // Task 4.2 (§3.2(b), §18.70): G0's limit made global. `pr` at a
+    // rigid variable joins §3.2(a)'s open set, so rule 1 blocks on the
+    // atoms G0's guard declines, for every strategy.
+    name: 'r0-g0-limit-global',
+    file: 'src/Features/Check/Decide/Open.purs',
+    needle: '  Printable _ → const Holds\n',
+    replacement: '  Printable _ → rigidOpen\n',
+    probe: 'r0-g0-limit-global',
+    message: /G0's limit blocked every strategy: Unresolved Unsupported/
   }
 ];

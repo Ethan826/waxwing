@@ -3078,3 +3078,126 @@ RED: before Domain.Verdict.Search, Strategy and Decide existed, `node
 --test test/r0-decide.test.mjs test/r0-decide-faults.test.mjs
 test/r0-order.test.mjs` failed all three files with
 `ERR_MODULE_NOT_FOUND` for output/Domain.Verdict.Search.
+
+## G0, `entailedGround` and the two detectors (2026-10-23)
+
+Task 4.2. Labels as above: **checked** (a run recorded here or in a
+test), **cited**, **argued**, **reading** (a choice the brief or
+rulings leave open, listed for review).
+
+**Modules.** G0's check is `checkSubstitution`
+(Features.Check.Strategy.Substitution, trusted, the only Strategy*
+importer of Domain.Verdict.Internal), over Strategy.Candidate (the
+`Substitution` type, `generic`, `under`), Strategy.Atoms (`B` atoms
+against `D`) and Strategy.Asked (`BQ` atoms by the ground rule).
+`g0Guard` is Strategy.Guard. §3.2(a)'s `openRequirements` is
+Decide.Open and imports no Strategy* (ruling R11). The ground rule is
+Features.Check.GroundRule, three-valued (`Holds`, `Unjudged`, `Open`,
+`Fails`; a conjunction keeps the later). Reduction through entailed
+equalities is Features.Check.Entailed with Entailed.Mgu and
+Entailed.Merge, per docs/plans/r0-entailed-ground.md (reviewed,
+"sound with corrections"; corrections in f0146ce before the
+implementation). Decide/Reason.purs's classifiers moved to
+Decide/Reading.purs, each naming every `Reading` constructor (the
+Task 4.1 review carry; `byStrategy` had defaulted to `true`).
+
+**Readings and amendments.**
+
+1. *Amendment to the brief's location (controller ruling Q1):*
+   `entailedGround` is in src/Features/Check/Entailed.purs, not
+   Strategy/Entailed.purs, so §3.2(a)'s detector can read it.
+2. *Amendment to the brief's signatures (reading):* `checkSubstitution`,
+   `g0Guard` and `openRequirements` take the holder set
+   (`Functional`) first. The ground rule needs it (findings above,
+   "The ground rule needs the holder set"), and the recorded problem
+   does not carry it (r0-validr-draft.md §3.5, K-a or K-b open). This
+   reads K-b: the program's tables beside the problem, as Task 4.3's
+   `OnlineContext` already carries `holders`. A strategy's `check` is
+   then `checkSubstitution holders`; `Checking.openRequirements` is
+   `openRequirements holders`.
+3. *Controller reading, pending the author's G-ValidR ruling (Q2):*
+   no recorded atom names a fresh base. The open set before G-ValidR
+   is a declared type whose constructors hold a function (wherever the
+   ground rule meets it before a definite failure) and `cmp` at a
+   rigid variable (κ policy, F-a…F-d, open); `pr` at a rigid variable
+   is settled by Pr-1 and is G0's guard decline, §3.2(b). Pinned:
+   `cmp` at a rigid row is open (r0-g0.test.mjs, disjointness test),
+   `pr` at a rigid variable declines (AT19 third case, `a G0 limit is
+   local to G0`), a holder type is open (`G0 leaves open atoms`).
+4. *G0's refusals* (Domain.Verdict.Search): `Undefined`, `NotEntailed`,
+   `RequirementFails`, `RequirementUnjudged`, `NotGeneric` beside
+   `Unsatisfied` and `RequirementOpen`. Rule 3 reads `RequirementOpen`
+   as a decline and every other as a refused candidate, so a
+   `ClaimsComplete` one is a `CandidateRefused` fault (checked: each
+   constructor injected, r0-g0-check.test.mjs). A failing ground
+   judgement under σ is `RequirementFails`, never Contradiction (AT19).
+5. *What D entails (argued):* `D` holds only `Lacks` and `Disjoint` on
+   rigid rows, so G0 treats as entailed exactly the listed facts; a
+   tail σ leaves unbound has none.
+6. *d02's problem (argued):* d02 is refused at Resolve today, so its
+   problem is generated from the same program with `where r lacks
+   { a }` and that clause's one `D` atom (Sig4) removed; the test
+   checks the clause adds only that atom.
+7. *Unifier variables:* R5's fresh rows are `FreshVar` at the path
+   `[Named "entailed", Index n]`, skipping any the problem names.
+8. *AmbiguousType (f02) now:* `cmp` at a flexible variable the
+   candidate leaves unbound is `Unjudged`, so the `RequirementUnjudged`
+   backstop, as the earlier finding predicted; not tested here (Task
+   4.3 has the real candidate).
+
+**Evidence.**
+
+- RED (checked): with `reduction` and `entailedGround` stubbed (always
+  `OutsideFragment`, `Nothing`) and Entailed/ moved aside, `node --test
+  test/r0-entailed.test.mjs test/r0-g0.test.mjs
+  test/r0-g0-check.test.mjs` gave 15 failures, 8 passes: every hand
+  row, the several-tails test, the structural test (files missing),
+  AT19's first two cases, `G0 leaves open atoms`, definedness. GREEN:
+  23 of 23.
+- EG-oracle (checked, test/r0-entailed-oracle.serial.test.mjs, grammar
+  G-EG as fixed in the note before the run): 10,100 problems, 750
+  `Just` answers, 718 non-vacuous, no counterexample. `agreeing`, the
+  in-fragment `Nothing` answers whose solutions all agree (reported,
+  not asserted): 229, each a bound artefact on the cases inspected,
+  e.g. `x = Int → y` forces `y = Int` only because the domain's one
+  arrow value is `Int → Int`.
+- Hand list (checked, r0-entailed.test.mjs): each R5 row and R4 gives
+  its exact non-vacuous `Just`; both cycles terminate with `Nothing`;
+  several tails give `Nothing` except an already-ground atom; the
+  guard fixture `{...r} = {...q}` declines.
+- Mutants (checked; each patch applied to Entailed/Mgu.purs in place,
+  built, then `node --test test/r0-entailed.test.mjs
+  test/r0-entailed-oracle.serial.test.mjs`, file restored):
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| M1 R2 swap | `[ Tuple left right', Tuple right left' ]` | EG-oracle |
+| M2 none-row wrong side | `closed onlyLeft` → `closed onlyRight` | EG-oracle; hand "none, ρ′" |
+| M3 one-side row wrong side | `binding tail' (Record onlyLeft.fields …)` → `onlyRight.fields` | hand "A ≠ ∅ = B" |
+| M4 fresh row swapped | `onlyRight`/`onlyLeft` exchanged in the two bindings | hand "fresh ρ″" |
+| M5 rigid bound | `\| not (isRigid tail) → binding tail …` → `\| true → binding tail' (Record [] [ tail ])` | guard fixture |
+
+- `main`'s printability (checked, r0-g0-entry.serial.test.mjs): over
+  the pinned corpus, Sig10's atom judged by the ground rule agrees
+  with `printableEntry` (through `checkProgram`'s `entry`) on 984
+  programs; 144 do not reach generation; none has a holder-type
+  `main` (the fixture test covers that case).
+- Regression rows (checked): `r0-definedness-dropped` (the equation's
+  definedness guard deleted; d02's probe expects `Undefined`) and
+  `r0-g0-limit-global` (`pr` at a rigid variable joins the open set,
+  so rule 1 blocks on G0's limit; the probe expects the stub's
+  Solved). `node scripts/regression.mjs r0-definedness-dropped
+  r0-g0-limit-global`: each "fixed compiler passes; restored defect
+  fails".
+- purs 0.15.16 probes (scratch copy of output, deleted): `Valid`
+  through `Domain.Verdict (Valid(..))` does not compile (`Unknown data
+  constructor Valid`); `GroundType` through `Features.Check.Entailed
+  (GroundType(..))` does not compile (`Unknown data constructor
+  GroundType`); `checkSubstitution` and `genericSubstitutionSound`
+  used from outside compile.
+
+Trusted surface re-pinned: Features.Check.Strategy.Substitution is new,
+exporting `checkSubstitution` and `genericSubstitutionSound` (source and
+compiled); neither names a token constructor. Nothing reachable from
+compile changed; no fixture changed; no corpus re-pin (no tracked .wxw,
+fixture source or docs waxwing block added).
