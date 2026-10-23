@@ -22,9 +22,9 @@ module Domain.Recorded.Atom
 import Prelude
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
-import Domain.Ids (EffectId)
 import Domain.Recorded.Origin (Path, RuleId)
 import Domain.Resolved (CtorId, FunctionId)
+import Domain.Row (EffectRef)
 import Domain.Syntax (Span)
 import Domain.Type (TypeId, VarId)
 
@@ -80,7 +80,10 @@ sameSpine left right = case left, right of
 -- `base`: a builtin, or a declared type of no parameters (§2.2).
 data Base = IntBase | BoolBase | TextBase | UnitBase | DataBase TypeId
 
-data Head = DataHead TypeId | HandlerHead EffectId
+-- A handler's head names its effect by reference, so the builtin effects
+-- have one too: `Handler(Console)` is `HandlerHead ConsoleEffect` (Task
+-- 3.2; §2.2's `Handler e` covers every effect a handler type names).
+data Head = DataHead TypeId | HandlerHead EffectRef
 
 -- Lean's atoms (Composition/Syntax.lean): `eq t u`, `lacks ρ l`,
 -- `disjoint ρ σ`, `ff`.

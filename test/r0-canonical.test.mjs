@@ -14,6 +14,7 @@ const Maps = await load('Data.Map.Internal');
 const Foldable = await load('Data.Foldable');
 const Tuple = await load('Data.Tuple');
 const Maybe = await load('Data.Maybe');
+const Row = await load('Domain.Row');
 
 const mapOf = (ord, pairs) => Maps.fromFoldable(ord)(Foldable.foldableArray)(
   pairs.map(([key, value]) => Tuple.Tuple.create(key)(value)));
@@ -68,7 +69,8 @@ const problem = changes => Internal.RecordedProblem({
   entry(A.Disjoint.create(rigid(0))(rigid(1)), O.PatternRule.create(6), 1),
   entry(A.Ff.value, O.SigRule.create(3), 2),
   entry(A.Equal.create(A.App.create(A.DataHead.create(2))([bases[3]]))(
-    A.App.create(A.HandlerHead.create(0))([A.TVar.create(rigid(1))])))],
+    A.App.create(A.HandlerHead.create(Row.UserEffect.create(0)))(
+      [A.TVar.create(rigid(1))])))],
   bq: [entry(A.Printable.create(bases[0])),
     entry(A.Comparable.create(bases[1]))],
   outside: ['EffectArgument', 'DataOverRecords', 'DataApplication',
@@ -121,6 +123,16 @@ test('every constructor decodes to its canonical form', () => {
     { upd: 'b' }, { updrest: 'b' }]);
   assert.deepEqual(found.types.map(([at]) => at.root),
     ['body', 'constraints', 'parameters', 'result', 'joined']);
+});
+
+// Task 3.2: a handler head names its effect by reference, so a builtin
+// effect's handler type (`Handler(Console)`) has one, decoded by name.
+test('builtin effects head a handler type by name', () => {
+  const headed = ref => canonicalOf(problem({ types: mapOf(O.ordPath,
+    [[body, A.App.create(A.HandlerHead.create(ref))([])]]) })).types[0][1];
+  assert.deepEqual([Row.ConsoleEffect.value, Row.FailEffect.value]
+    .map(headed), [{ app: { head: { handler: 'Console' }, args: [] } },
+    { app: { head: { handler: 'Fail' }, args: [] } }]);
 });
 
 test('compareVar is the compiled Ord Var', () => {

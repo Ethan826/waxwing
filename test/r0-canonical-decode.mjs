@@ -10,6 +10,7 @@ const O = await load('Domain.Recorded.Origin');
 const Maps = await load('Data.Map.Internal');
 const Unfoldable = await load('Data.Unfoldable');
 const Maybe = await load('Data.Maybe');
+const Row = await load('Domain.Row');
 
 const pairsOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => [pair.value0, pair.value1]);
@@ -49,8 +50,12 @@ const variable = by('Var', [
 const base = by('Base', [[A.IntBase, constant('Int')],
   [A.BoolBase, constant('Bool')], [A.TextBase, constant('Text')],
   [A.UnitBase, constant('Unit')], [A.DataBase, b => ({ data: b.value0 })]]);
+// A handler head's effect: a declared one by its id, a builtin by name.
+const effect = by('EffectRef', [[Row.UserEffect, e => e.value0],
+  [Row.ConsoleEffect, constant('Console')],
+  [Row.FailEffect, constant('Fail')]]);
 const head = by('Head', [[A.DataHead, h => ({ data: h.value0 })],
-  [A.HandlerHead, h => ({ handler: h.value0 })]]);
+  [A.HandlerHead, h => ({ handler: effect(h.value0) })]]);
 
 // An arrow spine by a loop: an 80,000-parameter spine must not recurse.
 const spine = arrow => {

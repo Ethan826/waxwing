@@ -15,6 +15,7 @@
 //              long spine is a loop, not nesting
 //            | { tvar: Var } | { record: { fields: [[l, RTExpr]], tails } }
 //            | { app: { head: { data: t } | { handler: e }, args } }
+//              e: a declared effect's id, or 'Console' | 'Fail'
 //   Atom     { eq: [t, u] } | { lacks: [Var, l] } | { disjoint: [Var, Var] }
 //            | 'ff';  ReqAtom { pr: t } | { cmp: t };  Outside: its name
 //   CallSite { callee: { function: n } | { ctor: n }, slots: [Var] }

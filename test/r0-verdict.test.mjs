@@ -109,7 +109,8 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
     assert.deepEqual([...seen].filter(r0).sort(), ['Domain.Recorded',
       'Domain.Recorded.Atom', 'Domain.Recorded.Internal',
       'Domain.Recorded.Origin', 'Domain.Verdict',
-      'Domain.Verdict.Internal', 'Domain.Verdict.Open']);
+      'Domain.Verdict.Internal', 'Domain.Verdict.Open',
+      'Domain.Verdict.Static']);
     assert.deepEqual([...seen].filter(name => !r0(name)
       && graph[name].depends.some(r0)), ['Features.Check.Outcomes']);
     assert.deepEqual(graph['Features.Check.Outcomes'].depends.filter(r0)

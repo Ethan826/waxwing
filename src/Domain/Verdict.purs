@@ -1,7 +1,8 @@
 -- One declaration's outcome under generate-then-decide (T-R0a §3.2-§3.5,
 -- §4.1, §5.1). Data only: Features decide it, Format renders it. The
 -- tokens Valid and Refuted are re-exported as types without constructors
--- (scripts/structure.mjs). Admission's types are in Domain.Verdict.Admission;
+-- (scripts/structure.mjs). Admission's types are in Domain.Verdict.Admission,
+-- the static refusals (re-exported here) in Domain.Verdict.Static;
 -- `DeclReport` and `Report` (§7) are Task 1.2's, in Features, because their
 -- shadow-phase slot holds today's checker state (ruling R2).
 module Domain.Verdict
@@ -21,18 +22,14 @@ module Domain.Verdict
   , Key
   , LimitAt
   , LimitReached(..)
-  , PolicyCode(..)
   , RefuterEnd(..)
   , RefuterName(..)
   , RuleName(..)
   , SearchEnd(..)
   , SearchFault(..)
   , ShadowRecord
-  , Site
   , Solution
   , StatementRef(..)
-  , StaticCode(..)
-  , StaticRefusal(..)
   , StrategyName(..)
   , Unresolved
   , UnresolvedReason(..)
@@ -43,7 +40,7 @@ module Domain.Verdict
 import Prelude (Void)
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
-import Domain.Recorded (AtomId, OutsideKind, Path, RecordedProblem)
+import Domain.Recorded (AtomId, OutsideKind, RecordedProblem)
 import Domain.Type (Ty)
 import Domain.Verdict.Internal
   ( CX
@@ -52,6 +49,13 @@ import Domain.Verdict.Internal
   , Refuted
   , Valid
   ) as Exports
+import Domain.Verdict.Static
+  ( PolicyCode(..)
+  , Site
+  , StaticCode(..)
+  , StaticRefusal(..)
+  ) as Exports
+import Domain.Verdict.Static (Site, StaticRefusal)
 import Domain.Verdict.Open
   ( CheckRefusal
   , CheckedCX
@@ -75,33 +79,6 @@ type Decision =
   , attempts ∷ Array Attempt
   , searchFaults ∷ Array SearchFault
   }
-
--- Classes a and b′: a static rule or a policy was broken. Not verdicts.
--- The codes are over today's `Problem` constructors (ruling R5); which
--- raise site gives which is Features.Check.Generate.Static (Task 2.3).
-data StaticRefusal
-  = StaticRule StaticCode Site
-  | Policy PolicyCode Site
-
--- Class a: the refusal reads written text and declarations only.
-data StaticCode
-  = StaticArity
-  | StaticEntry
-  | StaticFieldArity
-  | StaticFunctionNeedsCall
-  | StaticTypeArguments
-  | StaticHandlerMissing
-  | StaticHandlerDuplicate
-  | StaticHandlerOperation
-  | StaticFailNeedsConcrete
-  | StaticNofailOnFail
-  | StaticMarkVariable
-
--- Class b′: a language policy (R005 Tranche B, D8 and D9).
-data PolicyCode = PolicySameDisjoint | PolicyRepeatedTail
-
--- A node's path (T-R0b §6).
-type Site = Path
 
 data Verdict
   = Solved Solution
