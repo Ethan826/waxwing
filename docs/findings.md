@@ -1658,7 +1658,73 @@ Domain.Verdict.Admission and Domain.Verdict.Internal depend on a
 public token module, and no src module depends on Unsafe.Coerce.
 Mutants (each restored; the Forge test fails under each): N1, the
 Unsafe.Coerce route dropped; N2, the foreign-module route dropped; N3,
-allowed importers not exempted. Limit (argued): the rule reads direct
-dependencies, so a module that gets the token types through another
-re-exporting module is not covered.
+allowed importers not exempted. That rule was bypassed (re-review 5)
+and is replaced by the rule on the primitives below.
+
+**Forgery by the primitives (Task 1.1 breaker ruling, carried into
+Task 1.2's first commit; checked).** Re-review 5 found the round-5
+rule keyed on a direct dependency on Domain.Verdict or
+Domain.Recorded, so three routes pass it: a type re-export or synonym
+(Runtime.Types and Runtime.ForgeA; Runtime.Syn and Runtime.ForgeB), a
+polymorphic helper (Runtime.Cast, `cast = unsafeCoerce`, used by
+Program.UseC, which imports Domain.Verdict but no unsafe module), and
+Record.Unsafe (Program.UseD, `unsafeGet "x" { x: cx }`). Reproduced:
+the seven probes compiled with `purs compile -o <scratch>/out
+'src/Domain/**/*.purs' '.spago/p/*/src/**/*.purs' '<probe>/*.purs'`
+(purs 0.15.16, exit 0) and graphed with `purs graph` over the same
+files; at run time `forgeA`, `forgeA2`, `forgeB`, `forgeC` and
+`forgeD` each return their argument (`=== cx`). Source, graph entry,
+index.js and foreign.js are in
+test/fixtures/r0/trusted-surface/forgery.json. RED: under HEAD
+f170e91's scripts, `forgeryFindings` (paths rewritten to src/,
+ForgeA given a foreign module) and `graphFindings` both returned `[]`
+on the probe graph; test/structure-forgery.test.mjs failed to load
+(`Cannot find module … scripts/forgery.mjs`). The textual
+partial-escape rule (`textFindings`) does flag the four probe
+sources that name `unsafe…`, but it is a word scan, not a dependency
+check, and misses an FFI-only forger.
+
+Survey (checked by reading the export lists of the installed
+packages, listed in
+test/fixtures/r0/trusted-surface/surveyed-packages.json): the library
+modules using `unsafeCoerce` are Data.Array.NonEmpty, Data.Exists,
+Control.Monad.Free, Data.Functor.App, Partial.Unsafe, Data.Reflectable,
+Data.Symbol, Safe.Coerce, Control.Monad.ST.Global,
+Data.String.NonEmpty.CodeUnits, Data.String.NonEmpty.Internal and
+PureScript.CST. Free, Data.Symbol and Data.Reflectable do not export
+their `unsafeCoerce*` helpers; the others export only parametric types
+(`mkExists`, `runExists`, `hoistLiftApp`, `coerce` under `Coercible`,
+`toEffect`, `toRecovered`) or keep the coercion local. Of the
+polymorphic foreign imports, only Unsafe.Coerce's `unsafeCoerce ∷ ∀ a
+b. a → b` and Record.Unsafe's `unsafeGet`, `unsafeSet` and
+`unsafeDelete` return an unconstrained type; Partial's `_crashWith`
+and Partial.Unsafe's `_unsafePartial` are unexported, and `crash`,
+`crashWith`, `unsafeCrashWith`, `unsafePerformEffect` and
+`unsafeIndex` give bottom or a value of the type they are given. So
+the set is exactly Unsafe.Coerce and Record.Unsafe.
+
+GREEN (scripts/forgery.mjs): `coercionFindings` reports Runtime.ForgeA,
+Runtime.ForgeB and Runtime.Cast (`depends on Unsafe.Coerce, which can
+produce a value of any type`) and Program.UseD (Record.Unsafe);
+`foreignSurfaceFindings` reports Runtime.ForgeA's unpinned foreign
+module. Runtime.Types, Runtime.Syn and Program.UseC pass: each forges
+nothing without one of those. The real tree gives `[]`; the pin holds
+Runtime.Node's nine signatures. End to end: adding `import
+Record.Unsafe (unsafeGet)` and `foreign import cast ∷ ∀ a b. a → b` to
+src/Runtime/Node.purs made `checkStructure()` report `Runtime.Node
+depends on Record.Unsafe, …` and `Runtime.Node: foreign imports differ
+from the pin, added foreign import cast ∷ ∀ a b. a → b; …` (and the
+partial-escape finding); restored, `[]`. Mutants (each applied to
+scripts/forgery.mjs by a scratch script and restored; `node --test
+test/structure-forgery.test.mjs test/structure-surface.test.mjs`): M1
+Record.Unsafe dropped from the set, M2 allowlist ignored, M3 src filter
+dropped, M4 foreign JS without a foreign import ignored, M5 comments
+inside a declaration accepted, M6 a `foreign` not at column 0 ignored,
+M7 signatures not compared, M8 stale pin ignored, M9 unpinned module
+passes: each killed (M1 the routes and survey tests; M2 the routes
+test; M3 the routes and real-tree tests; M4, M7 and M8 the signature
+test; M5 and M6 the fails-closed test; M9 the routes, signature and
+Forge tests). Limits (argued): the JS body behind a pinned signature,
+and a type synonym the signature names, are left to review, as is a
+repurposed body in an allowed importer.
 

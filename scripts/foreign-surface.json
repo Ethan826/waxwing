@@ -1,0 +1,13 @@
+{
+ "Runtime.Node": [
+  "foreign import commandArguments ∷ Effect (Array String)",
+  "foreign import writeOutput ∷ String → Effect Unit",
+  "foreign import writeError ∷ String → Effect Unit",
+  "foreign import setExitCode ∷ Int → Effect Unit",
+  "foreign import json ∷ ∀ fields. Record fields → String",
+  "foreign import readSourceWith ∷ ReadResults → String → ReadAttempt",
+  "foreign import writeTextWith ∷ Results → String → String → Attempt",
+  "foreign import buildWith ∷ Results → String → String → Attempt",
+  "foreign import runWith ∷ Results → String → Attempt"
+ ]
+}

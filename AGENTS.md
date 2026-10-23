@@ -27,9 +27,11 @@ vertical slice before adding language features. Task tracking is local.
   Domain.Recorded.Internal; the public modules re-export bare type names
   only. On the compiler's output, no module outside those importers
   imports either Internal module's JS, and no module re-exports from it;
-  no FFI JS outside them names it, and no module outside them that
-  imports Domain.Verdict or Domain.Recorded uses Unsafe.Coerce or has a
-  foreign module. Those importers are trusted: their source and compiled
+  no FFI JS outside them names it. No src module outside a reviewed
+  allowlist (empty) uses Unsafe.Coerce or Record.Unsafe, and only the
+  modules pinned with their signatures in scripts/foreign-surface.json
+  have FFI (re-pin: `node scripts/foreign-surface-pin.mjs`, a reviewed
+  change). The allowed importers are trusted: their source and compiled
   exports are pinned in scripts/trusted-surface.json, and changing the
   pin (`node scripts/trusted-surface-pin.mjs`) is a reviewed change. The
   pin catches new surface, not a repurposed body, type or instance

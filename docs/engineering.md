@@ -71,13 +71,24 @@ adding a bypass allowlist.
   or FFI JS that names a token Internal module (`foreignFindings` scans
   src/**/*.js and output/<M>/foreign.js; a path built at run time
   evades this textual scan, so FFI stays in Runtime and is reviewed).
-  A compiled token is plain JS (a newtype is erased), so such a module
-  could also forge one without its constructor; `forgeryFindings`
-  therefore refuses, in any module outside the allowed importers that
-  depends on Domain.Verdict or Domain.Recorded, a dependency on
-  Unsafe.Coerce or a foreign module (src/<path>.js or
-  output/<M>/foreign.js). A module that reaches the token types only
-  through some other re-exporting module is not covered.
+  A compiled token is plain JS (a newtype is erased), so any value of
+  an arbitrary type forges one without its constructor, whichever way
+  the module reaches the token types (a re-export, a synonym, a
+  polymorphic helper). The rule is therefore on the primitives that
+  make such values (scripts/forgery.mjs). `coercionFindings`: no src
+  module outside a reviewed allowlist (empty) depends on Unsafe.Coerce
+  or Record.Unsafe, the only modules of the installed packages whose
+  exports produce a value of any type (surveyed; a new or upgraded
+  package fails test/structure-forgery.test.mjs until the survey is
+  redone). `foreignSurfaceFindings`: a src module may have a foreign
+  module (src/<path>.js or output/<M>/foreign.js) or a `foreign
+  import` only if scripts/foreign-surface.json pins it with its
+  signatures (Runtime.Node today); a new FFI module, a new or changed
+  signature, a stale pin, or a `foreign` the reader cannot delimit (not
+  at column 0, or a comment inside the declaration) fails, and `node
+  scripts/foreign-surface-pin.mjs` re-pins as a reviewed change. The
+  JS body behind a pinned signature, and a type synonym it names, are
+  left to review.
   An allowed importer can build tokens, so everything it exports is
   trusted surface: scripts/trusted-surface.json pins its source export
   list (operator aliases, value wrappers) and its compiled `export { … }`

@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { foreignFindings, manifestFile, surfaceFindings }
   from './trusted-surface.mjs';
+import { coercionFindings, foreignModules, foreignPinFile,
+  foreignSurfaceFindings } from './forgery.mjs';
 
 export const filesUnder = root =>
   readdirSync(root, { withFileTypes: true }).flatMap(entry =>
@@ -141,30 +143,6 @@ export const foreignFiles = (sources, root) => Object.fromEntries([
     [join(root, name, 'foreign.js'), name])].map(([file, module]) =>
   [file, { module, js: readFileSync(file, 'utf8') }]));
 
-// A token is plain JS once compiled (a newtype is erased), so FFI or
-// unsafeCoerce forges one without its constructor (Task 1.1 ruling,
-// re-review 4). A module outside the allowed importers that depends on
-// a public token module may use neither.
-const tokenPublic = ['Domain.Verdict', 'Domain.Recorded'];
-
-export const forgeryFindings = (graph, hasForeign) =>
-  Object.entries(graph).flatMap(([name, module]) => {
-  const named = module.depends.filter(dependency =>
-    tokenPublic.includes(dependency));
-  if (trusted(name) || named.length === 0) return [];
-  const prefix = `${name} depends on ${named.join(' and ')} and`;
-  return [
-    ...(module.depends.includes('Unsafe.Coerce')
-      ? [`${prefix} on Unsafe.Coerce (forgery by unsafeCoerce)`] : []),
-    ...(hasForeign(name, module.path)
-      ? [`${prefix} has a foreign module (forgery by FFI)`] : [])];
-});
-
-// A foreign module beside the source, or its copy in the build output.
-export const hasForeign = root => (name, path) =>
-  existsSync(path.replace(/\.purs$/, '.js'))
-  || existsSync(join(root, name, 'foreign.js'));
-
 export const pursGraph = () => {
   const result =
     spawnSync('purs', ['graph', 'src/**/*.purs', '.spago/p/*/src/**/*.purs'], {
@@ -222,8 +200,9 @@ export const checkStructure = async () => {
     && file.endsWith('.js')).map(file => `${file}: FFI outside Runtime`));
   const { graph, error } = pursGraph();
   if (error !== undefined) return [...findings, error];
-  findings.push(...graphFindings(graph),
-    ...forgeryFindings(graph, hasForeign('output')));
+  findings.push(...graphFindings(graph), ...coercionFindings(graph),
+    ...foreignSurfaceFindings(JSON.parse(readFileSync(foreignPinFile,
+      'utf8')), foreignModules(graph)));
   findings.push(...surfaceFindings(JSON.parse(readFileSync(manifestFile,
     'utf8')), trustedImporters(graph, built)));
   return findings;

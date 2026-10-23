@@ -294,6 +294,14 @@ needs token review (ruling; no check). New `forgeryFindings`: outside
 the allowed importers, a module depending on Domain.Verdict or
 Domain.Recorded may not depend on Unsafe.Coerce or have a foreign
 module. Probe Runtime.Forge is a fixture; the real tree passes.
+Breaker ruling (carried into Task 1.2's first commit): that rule was
+bypassed through a re-export, a synonym, a cast helper and
+Record.Unsafe (re-review 5), so it is replaced by rules on the
+primitives (scripts/forgery.mjs): no src module outside an empty
+reviewed allowlist depends on Unsafe.Coerce or Record.Unsafe (the
+surveyed set), and FFI exists only in modules pinned with their
+`foreign import` signatures in scripts/foreign-surface.json
+(Runtime.Node). The four routes are fixtures; evidence in findings.
 
 ## Language direction recorded (2026-10-08)
 
