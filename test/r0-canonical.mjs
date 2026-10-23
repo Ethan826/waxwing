@@ -131,5 +131,14 @@ export const outOfOrder = problem => {
 
 export const sortedVars = items => sortedBy(compareVar, items);
 
+// A whole canonical problem as one string, with every array whose order
+// is recorded rather than canonical sorted: the entry lists and the
+// flexible variables (RT1's whole-problem comparison; RT2 reuses it).
+export const wholeProblem = problem => stableStringify({ ...problem,
+  ...Object.fromEntries(entryLists.map(list =>
+    [list, problem[list].map(stableStringify).sort()])),
+  flexTy: sortedVars(problem.flexTy), flexRow: sortedVars(problem.flexRow)
+});
+
 // A generated problem (Domain.Recorded's opaque type), encoded.
 export const encodeProblem = problem => stableStringify(canonicalOf(problem));

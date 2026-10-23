@@ -2641,3 +2641,127 @@ show is whether today's growth rule (Check/PatternRow.purs:76
 `growable`) accepts exactly the problems P5-P7 make valid. That is a
 question about the online solver against `ValidR` (RT8 or CX), not
 about generation, and it stays open there (recorder-spec Q5).
+
+## RT2, RT4, RT9, RT10, AT13 and B9 (2026-10-23)
+
+R0 shadow tranche, Task 3.4 (T-R0b §9 items 2, 4, 9, 10; T-R0a AT1,
+AT4, AT13; T-R0b §11 item 1). The generator at 0c703e1, unchanged: no
+run named a generator defect, so no generator code changed. First runs
+failed only on the tests' own expectations, each corrected against the
+rule text: RT4's normalization (the amendment below); RT9's E23 and
+E16 spans; RT10's `bq` order (recorded, not canonical) and `main`'s
+`crash` (E19 too); AT13's spans, moved when `f` preceded `g`. RT7's
+determination check moved to Task 4.3 (plan re-review S2); the brief
+lists no RT8 step, so none is here.
+
+**RT2 = AT1, with AT4 (checked).** test/r0-refusal-independence.test.mjs
+over test/fixtures/r0/rt2 (11 programs, T-R0b §9 item 2's minimum set:
+D4 at `walk` W1, p10, c21; D6 at p11 and `submit`; b04, b03; E26's
+several-tail receiver; B9's removal and rest binder; H5's depth). Each
+adds, after the refusing expression, `let shown = show(1 + 2); if shown
+== "3" then 1 else 2`, a later declaration and an over-applied call
+(E_ARITY). Per fixture: the collecting driver's legacy slot holds the
+fixture's exact diagnostic; every declaration's whole problem equals
+RT1's translator's (not a prefix); the entries whose node starts after
+the refused span are non-empty and the translator's; the `bq` sites are
+exactly the fixture's (`pr`/`cmp`, by covered text, origin body),
+including those before the refusal that today's end-of-body walks never
+reach (`n == 0` in `walk`); the later declaration has its problem; the
+static one has `StaticArity` and its problem. `node --test
+test/r0-refusal-independence.test.mjs`: 25 pass.
+
+Two findings from building the set (checked, the fixtures pin both):
+- `submit` (requirements.md §7, "predicted D6") is refused today by D4,
+  not rule H: `Cannot tell how file's u, t and q split { ...r }; no
+  annotation can decide u, t and q, which belong to this call of file`.
+- E26's `Placeholder` at a several-tail receiver (Record.purs:160, cited
+  by T-R0c §3.6) is unreachable: no compiled module constructs
+  `UnifyFailure.Placeholder` (`grep -rn "UnifyFailure.Placeholder"
+  output/*/index.js | grep -v instanceof` prints nothing; only its own
+  module's `create`). A field access at a receiver of two flexible
+  tails is refused by D4 instead (`Cannot tell whether ext's s or t has
+  field a; annotate this lambda's parameters`), and that program is the
+  E26 fixture.
+
+The corpus is re-pinned (11 added, 1,128 programs), and the 11 outcomes
+are appended to test/fixtures/r0/first-diagnostic.json under
+`extended` (computed by `compile` at 0c703e1, src/ unchanged); no
+existing entry changed. `node --test --test-concurrency=1` over the five
+corpus-wide suites: 23 pass (RT1 included, so RT1 covers the fixtures).
+
+**B9 settled (generation side; checked).** RT1 (corpus-wide, now with
+both B9 fixtures) and RT2 agree on E28 and P7 over several tails: each
+records `eq { a: Int, ...r, ...s } { a: ⟨field a⟩, ...⟨rest⟩ }` with no
+marker, where today's checker stops at its R005B placeholder
+(`withinOneTail`). As with B13, what generation cannot show is the
+verdict side: B9's reason (`Unsupported (GuardOutsideFragment …)` while
+no guard covers several tails) is decision's (Task 4.x).
+
+**RT4 (checked; one labelled amendment).** test/r0-hand.test.mjs:
+translation.md §5's 44 example files. Nine write a second spread or a
+two-tail annotation without a clause and are refused at Resolve, so
+they have no problem (T-R0b §8; S1 and the body-type move are not
+implemented); the test pins each refusal. For the other 35, one
+declaration's `D` and `B` equal the hand translation after eliminating
+defining equations on both sides, as sets, up to a bijective renaming
+of flexible variables (test/r0-hand-support.mjs and
+test/r0-hand-match.mjs state the rules). Hand translations: §5.1's,
+quoted (§17's from sig-oracle/source-boundary.mjs where a row cites
+§17); for §5.2, which gives none, written here by §2.3's rules and
+labelled so in the test (n02 is §17's `missingField`). `BQ`, `adm` and
+`split` are outside §5's notation. 46 pass, including a control that
+wrong translations and renamings fail.
+Amendment, after the first run: p14 and p15 failed because elimination
+was order-dependent (the generator's Sig3 atom bound the rest row first,
+leaving `{ a: Int, ...r } = { a: β, ...r }`). A rule was added: two
+records of the same labels and tails equal field by field (cancellative
+composition), keeping the record's definedness. Then 46 pass. No hand
+translation was changed to fit.
+
+**RT9 (checked).** test/r0-markers.test.mjs: one fixture per `Outside`
+constructor (HandlerType and FailFamily once per rule), each beside
+`1 + true`; the marker is in `outside` with its rule, kind and node span,
+and `eq Bool Int` (E7) is in `b`, which today's checker also refuses.
+LocalGeneralization has no construct (R11). E17 and E20 at `State(s)`:
+`inst 0` is in `vars`, type, exists, `Slot` at the node. The verdict
+half (no Solved; Contradiction still found) waits for Tasks 4.1 and
+5.1. E23's span is `Fail.fail(1`: Resolve spans `fail` through the
+payload's end on purpose (Qualified.purs:154).
+
+**RT10 (checked; two points for the author).** test/r0-origin-kinds.test.mjs:
+the review's probes kept no files, so h1-h4, cmp-c, cmp-cf, pr-c,
+pr-cf, eq-c, eq-d and `peek` (pk-crash-c) are rebuilt from its text,
+and each meets today's checker as recorded (phase and text). Every `bq`
+atom has T-R0b §6's kind (E10/E19 body, Sig10 contract), every `q` is
+empty, and `divide`'s problem is the same under each written split.
+- recorder-spec T10 expects `divide`'s `peek` site with origin
+  contract; T-R0b §6 makes E19 body and §3.1's Sig9 leaves `Q` empty
+  [VOR]. The test follows T-R0b.
+- RT10's "cmp-c and cmp-cf record the same atom" holds for the origin
+  (same AtomId and rule), not the value: by E13, E2 and E10 the operand
+  is the lambda's written annotation, `{ c: Int }` against `{ c: Int, f:
+  Int -> Int }`, and the pair writes the split exactly there. The
+  statement (recorder-spec T8b: the atom mentions a flexible variable)
+  fits only an unannotated lambda (cmp-open). Decided here by the rule
+  text; the test pins both values.
+
+**AT13 (checked).** test/r0-independence.test.mjs: four pairs change
+only `f`'s body (no calls; a call to `g`, so `f` and `g` form one
+recursive component; a body today's checker refuses; a call to a callee
+`g` also calls). `g`'s canonical problem bytes and static refusals are
+equal in each pair, and `g` keeps its two `adm` sites; a control that
+changes `g` changes them. The verdict half waits for decision.
+
+**Mutants (recorded).** Each was applied to a copy of output/ in the
+session scratchpad (with test/, the examples and the corpus module;
+deleted afterwards) and run with the five new test files; unpatched, 101
+pass.
+
+| Mutant | Patch (compiled module) | Failing |
+|---|---|---|
+| M1 prefix | Generate.Control: `concatOut(Data_Array.snoc(outs)($$final.out))` → `concatOut(outs.slice(0, 1))` | 30: every RT2 test, RT4 p09 and c23, the RT9 fixtures |
+| M2 `cmp` not in BQ | Generate.Operator: `ToBQ(new …Comparable(` → `ToB(…` | 32: RT10 h3, h4, cmp-c, cmp-cf, eq-c, eq-d and the split pair; every RT2 test |
+| M3 no implied callee clauses | Generate.Signature: `implied: append(` → `implied: [], unusedImplied: append(` | 16: RT4 p10, p11, p12, p19, c21, n04, n09, n13 and the control; seven RT2 |
+| M4 Deferred's kind | Generate.Control: `ToOutside(…Deferred.value)` → `FailFamily` | RT9 Deferred |
+| M5 E19 origin contract | Generate.Builtin: the E19 `Body.value` → `Contract.value` | 16: RT10 h1, h2, pr-c, pr-cf, peek; every RT2 first test |
+| M6 reads a body | Generate.Inputs: `parameters` empty when the body is a `Block` | AT13 (the first pair), RT4 n10, RT2 walk |

@@ -1,0 +1,31 @@
+{
+  "name": "b04-share-meta-only",
+  "about": "a `lacks` refusal after `shareTails` (T-R0b §9 item 2; T-R0c b04, class e): probes/b04, the call bound and a show/compare added inside the lambda, then the common tail",
+  "class": "e",
+  "source": "fn g(a: { ...r }, b: { ...s }): Int where r disjoint s = 0;\n\nfn use(z: { ...s }): Int where s lacks { a } = {\n  let f = fn(x, y) => {\n    let one = x.a;\n    let two = y.b;\n    let both = if true then x else y;\n    let called = g(x, z);\n    let shown = show(called + 1);\n    shown == \"1\"\n  };\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n\n",
+  "refused": "use",
+  "today": {
+    "code": "E_TYPE",
+    "text": "s may already have field b"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(called + 1)"
+    ],
+    [
+      "cmp",
+      "shown == \"1\""
+    ],
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}

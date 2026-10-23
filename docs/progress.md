@@ -412,6 +412,30 @@ record-pattern atom with no growth marker; whether the online growth
 rule matches `ValidR` stays open (RT8/CX). Evidence in findings, "RT1's
 comparison and B13". No fixture changed, no corpus re-pin.
 
+## R0 shadow tranche, Task 3.4: RT2, RT4, RT9, RT10, AT13 and B9 (2026-10-23)
+
+Characterization tests of the generator, all green with no generator
+change: RT2 = AT1 with AT4 (11 refusing fixtures in
+test/fixtures/r0/rt2: each refused declaration's whole problem equals
+RT1's translation, entries after the refusal and the `pr`/`cmp` sites
+are present, a later and a statically refused declaration have their
+problems); RT4 (35 of translation.md §5's examples equal their hand
+translations after eliminating defining equations; nine stop at
+Resolve); RT9 (one fixture per `Outside` kind, a refutable atom
+beside it, `Slot` positions for E17/E20); RT10 (the review's probes
+rebuilt, each meeting today's checker as recorded; `bq` kinds per
+T-R0b §6); AT13 (four body-change pairs leave `g`'s problem
+byte-equal). B9 settled on the generation side (RT1 and RT2 agree on
+E28/P7 over several tails, no marker). Author-facing: `submit` is
+refused by D4, not rule H; E26's Placeholder is unreachable today;
+RT10's "same atom" for cmp-c/cmp-cf holds for the origin only, and
+recorder-spec T10's contract kind for `peek` yields to T-R0b §6. RT7's
+determination is Task 4.3's; the brief has no RT8 step. Six generator
+mutants each fail the new tests. Corpus re-pinned (11 added); their
+outcomes appended to the first-diagnostic snapshot under `extended`, no
+entry changed; compile unchanged (src/ untouched). Evidence in
+findings, "RT2, RT4, RT9, RT10, AT13 and B9".
+
 ## R0 shadow tranche, Task 3.3 steps 1-3: RT1's translator (2026-10-23)
 
 RT1's independent translator (T-R0b §9 item 1), written from T-R0b

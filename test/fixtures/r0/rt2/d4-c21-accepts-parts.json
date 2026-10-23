@@ -1,0 +1,23 @@
+{
+  "name": "d4-c21-accepts-parts",
+  "about": "D4 \"Cannot tell\" at a forced split (T-R0b §9 item 2; T-R0c §3.8): translation.md §5.1 c21, the call moved out of main and the common tail added",
+  "class": "e",
+  "source": "fn acceptsParts(p: { ...r, ...s }): Bool\n  where s lacks { admin } =\n  true;\n\nfn use(): Int = {\n  let accepted = acceptsParts({ admin: false });\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n\n",
+  "refused": "use",
+  "today": {
+    "code": "E_TYPE",
+    "text": "Cannot tell how acceptsParts's r and s split { admin: Bool }; no annotation can decide r and s, which belong to this call of acceptsParts"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}

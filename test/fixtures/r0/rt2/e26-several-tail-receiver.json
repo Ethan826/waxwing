@@ -1,0 +1,23 @@
+{
+  "name": "e26-several-tail-receiver",
+  "about": "field access at a several-tail receiver (T-R0b §9 item 2, E26). Today's checker no longer reaches the Placeholder of Record.purs:160 (nothing constructs UnifyFailure.Placeholder); the receiver is refused by D4 instead",
+  "class": "e",
+  "source": "fn ext(p: { ...s }, q: { ...t }): { ...s, ...t } where s disjoint t =\n  ext(p, q);\n\nfn use(): Int = {\n  let f = fn(x, y) => ext(x, y).a;\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n\n",
+  "refused": "use",
+  "today": {
+    "code": "E_TYPE",
+    "text": "Cannot tell whether ext's s or t has field a; annotate this lambda's parameters"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}

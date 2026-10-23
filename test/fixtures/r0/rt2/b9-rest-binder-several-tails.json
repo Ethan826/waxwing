@@ -1,0 +1,23 @@
+{
+  "name": "b9-rest-binder-several-tails",
+  "about": "a named rest binder over several tails (T-R0b §9 item 2 and §11 item 1, B9; P7; Check/SeveralTails.purs withinOneTail)",
+  "class": "e",
+  "source": "fn drop(p: { a: Int, ...r, ...s }): Int where r disjoint s = {\n  let rest = match p { { a, ...others } => others };\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n\n",
+  "refused": "drop",
+  "today": {
+    "code": "E_INTERNAL",
+    "text": "R005B placeholder: rest binders and removal over several tails are typed in Task 7"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}

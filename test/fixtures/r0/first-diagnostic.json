@@ -1,5 +1,23 @@
 {
  "commit": "5d6b1cb",
+ "extended": [
+  {
+   "commit": "0c703e1",
+   "origins": [
+    "test/fixtures/r0/rt2/b03-mayhold-share.json",
+    "test/fixtures/r0/rt2/b04-share-meta-only.json",
+    "test/fixtures/r0/rt2/b9-removal-several-tails.json",
+    "test/fixtures/r0/rt2/b9-rest-binder-several-tails.json",
+    "test/fixtures/r0/rt2/d4-c21-accepts-parts.json",
+    "test/fixtures/r0/rt2/d4-p10-wrap-accepts.json",
+    "test/fixtures/r0/rt2/d4-walk-w1.json",
+    "test/fixtures/r0/rt2/d6-p11-route.json",
+    "test/fixtures/r0/rt2/d6-submit.json",
+    "test/fixtures/r0/rt2/e26-several-tail-receiver.json",
+    "test/fixtures/r0/rt2/h5-type-depth.json"
+   ]
+  }
+ ],
  "outcomes": {
   "docs/plans/2026-10-21-c001-explicit/baseline/a1-discard-dictionary.wxw": {
    "go": "5bf96c038b6b1c3744993245a6fdf7928ca9d5c9de8cab58f3883d69741c94ab"
@@ -12422,6 +12440,371 @@
   },
   "generated:fx-gen-record-patterns.mjs@200": {
    "go": "05d497e4e76750df4027ecb213f7807f6accf292827f8328eb8006c3adee4caf"
+  },
+  "test/fixtures/r0/rt2/b03-mayhold-share.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "ext's { ...s, ...t } must be { b: _, ..._ }, so s cannot hold r",
+    "span": {
+     "start": {
+      "line": 5,
+      "offset": 132,
+      "column": 20
+     },
+     "end": {
+      "line": 5,
+      "offset": 141,
+      "column": 29
+     }
+    },
+    "related": []
+   }
+  },
+  "test/fixtures/r0/rt2/b04-share-meta-only.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "s may already have field b",
+    "span": {
+     "start": {
+      "line": 8,
+      "offset": 232,
+      "column": 23
+     },
+     "end": {
+      "line": 8,
+      "offset": 233,
+      "column": 24
+     }
+    },
+    "related": [
+     {
+      "span": {
+       "start": {
+        "line": 3,
+        "offset": 73,
+        "column": 13
+       },
+       "end": {
+        "line": 3,
+        "offset": 77,
+        "column": 17
+       }
+      },
+      "message": "s is introduced here"
+     },
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 42,
+        "column": 43
+       },
+       "end": {
+        "line": 1,
+        "offset": 54,
+        "column": 55
+       }
+      },
+      "message": "required here"
+     }
+    ]
+   }
+  },
+  "test/fixtures/r0/rt2/b9-removal-several-tails.json": {
+   "diagnostic": {
+    "code": "E_INTERNAL",
+    "message": "R005B placeholder: rest binders and removal over several tails are typed in Task 7",
+    "span": {
+     "start": {
+      "line": 2,
+      "offset": 76,
+      "column": 14
+     },
+     "end": {
+      "line": 2,
+      "offset": 77,
+      "column": 15
+     }
+    },
+    "related": []
+   }
+  },
+  "test/fixtures/r0/rt2/b9-rest-binder-several-tails.json": {
+   "diagnostic": {
+    "code": "E_INTERNAL",
+    "message": "R005B placeholder: rest binders and removal over several tails are typed in Task 7",
+    "span": {
+     "start": {
+      "line": 2,
+      "offset": 86,
+      "column": 24
+     },
+     "end": {
+      "line": 2,
+      "offset": 102,
+      "column": 40
+     }
+    },
+    "related": []
+   }
+  },
+  "test/fixtures/r0/rt2/d4-c21-accepts-parts.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "Cannot tell how acceptsParts's r and s split { admin: Bool }; no annotation can decide r and s, which belong to this call of acceptsParts",
+    "span": {
+     "start": {
+      "line": 6,
+      "offset": 126,
+      "column": 31
+     },
+     "end": {
+      "line": 6,
+      "offset": 142,
+      "column": 47
+     }
+    },
+    "related": [
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 19,
+        "column": 20
+       },
+       "end": {
+        "line": 1,
+        "offset": 33,
+        "column": 34
+       }
+      },
+      "message": "r and s are written here"
+     }
+    ]
+   }
+  },
+  "test/fixtures/r0/rt2/d4-p10-wrap-accepts.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "Cannot tell how acceptsParts's a and b split { ...r }; no annotation can decide a and b, which belong to this call of acceptsParts",
+    "span": {
+     "start": {
+      "line": 6,
+      "offset": 145,
+      "column": 31
+     },
+     "end": {
+      "line": 6,
+      "offset": 146,
+      "column": 32
+     }
+    },
+    "related": [
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 19,
+        "column": 20
+       },
+       "end": {
+        "line": 1,
+        "offset": 33,
+        "column": 34
+       }
+      },
+      "message": "a and b are written here"
+     },
+     {
+      "span": {
+       "start": {
+        "line": 5,
+        "offset": 96,
+        "column": 19
+       },
+       "end": {
+        "line": 5,
+        "offset": 104,
+        "column": 27
+       }
+      },
+      "message": "{ ...r } is required here"
+     }
+    ]
+   }
+  },
+  "test/fixtures/r0/rt2/d4-walk-w1.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "Cannot tell whether walk's u or v holds walk's u; no annotation can decide u and v, which belong to this call of walk",
+    "span": {
+     "start": {
+      "line": 3,
+      "offset": 125,
+      "column": 41
+     },
+     "end": {
+      "line": 3,
+      "offset": 130,
+      "column": 46
+     }
+    },
+    "related": [
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 15,
+        "column": 16
+       },
+       "end": {
+        "line": 1,
+        "offset": 29,
+        "column": 30
+       }
+      },
+      "message": "u and v are written here"
+     },
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 15,
+        "column": 16
+       },
+       "end": {
+        "line": 1,
+        "offset": 29,
+        "column": 30
+       }
+      },
+      "message": "{ ...u, ...v } is required here"
+     }
+    ]
+   }
+  },
+  "test/fixtures/r0/rt2/d6-p11-route.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "divide's { ...u, ...v } must be { ...r }, but neither u nor v can hold r",
+    "span": {
+     "start": {
+      "line": 7,
+      "offset": 215,
+      "column": 24
+     },
+     "end": {
+      "line": 7,
+      "offset": 216,
+      "column": 25
+     }
+    },
+    "related": []
+   }
+  },
+  "test/fixtures/r0/rt2/d6-submit.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "Cannot tell how file's u, t and q split { ...r }; no annotation can decide u, t and q, which belong to this call of file",
+    "span": {
+     "start": {
+      "line": 7,
+      "offset": 249,
+      "column": 20
+     },
+     "end": {
+      "line": 7,
+      "offset": 252,
+      "column": 23
+     }
+    },
+    "related": [
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 13,
+        "column": 14
+       },
+       "end": {
+        "line": 1,
+        "offset": 33,
+        "column": 34
+       }
+      },
+      "message": "u, t and q are written here"
+     },
+     {
+      "span": {
+       "start": {
+        "line": 5,
+        "offset": 152,
+        "column": 16
+       },
+       "end": {
+        "line": 5,
+        "offset": 160,
+        "column": 24
+       }
+      },
+      "message": "{ ...r } is required here"
+     }
+    ]
+   }
+  },
+  "test/fixtures/r0/rt2/e26-several-tail-receiver.json": {
+   "diagnostic": {
+    "code": "E_TYPE",
+    "message": "Cannot tell whether ext's s or t has field a; annotate this lambda's parameters",
+    "span": {
+     "start": {
+      "line": 5,
+      "offset": 124,
+      "column": 23
+     },
+     "end": {
+      "line": 5,
+      "offset": 133,
+      "column": 32
+     }
+    },
+    "related": [
+     {
+      "span": {
+       "start": {
+        "line": 1,
+        "offset": 34,
+        "column": 35
+       },
+       "end": {
+        "line": 1,
+        "offset": 48,
+        "column": 49
+       }
+      },
+      "message": "s and t are written here"
+     }
+    ]
+   }
+  },
+  "test/fixtures/r0/rt2/h5-type-depth.json": {
+   "diagnostic": {
+    "code": "E_NESTING",
+    "message": "Inferred type nesting exceeds 1000 levels",
+    "span": {
+     "start": {
+      "line": 8,
+      "offset": 498,
+      "column": 19
+     },
+     "end": {
+      "line": 8,
+      "offset": 547,
+      "column": 68
+     }
+    },
+    "related": []
+   }
   }
  }
 }

@@ -1,0 +1,23 @@
+{
+  "name": "b03-mayhold-share",
+  "about": "rule H after `shareTails` (T-R0b §9 item 2; T-R0c b03, class d): probes/b03 with the common tail",
+  "class": "d",
+  "source": "fn ext(p: { ...s }, q: { ...t }): { ...s, ...t } where s disjoint t =\n  ext(p, q);\n\nfn use(p: { ...r }): Int = {\n  let f = fn(y) => ext(p, y).b;\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n\n",
+  "refused": "use",
+  "today": {
+    "code": "E_TYPE",
+    "text": "ext's { ...s, ...t } must be { b: _, ..._ }, so s cannot hold r"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}

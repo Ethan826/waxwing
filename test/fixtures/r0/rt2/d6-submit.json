@@ -1,0 +1,23 @@
+{
+  "name": "d6-submit",
+  "about": "`submit` (T-R0b §9 item 2, rule H predicted; requirements.md §7): today D4 refuses it, not rule H, and the common tail is added",
+  "class": "e",
+  "source": "fn file(doc: { ...u, ...t, ...q }, inbox: { ...s }, archive: { ...s2 }): Int\n  where u disjoint s, t disjoint s2, q lacks { id } =\n  0;\n\nfn submit(doc: { ...r }, inbox: { ...s }, archive: { ...s2 }): Int\n  where s disjoint s2 = {\n  let filed = file(doc, inbox, archive);\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n\n",
+  "refused": "submit",
+  "today": {
+    "code": "E_TYPE",
+    "text": "Cannot tell how file's u, t and q split { ...r }; no annotation can decide u, t and q, which belong to this call of file"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}

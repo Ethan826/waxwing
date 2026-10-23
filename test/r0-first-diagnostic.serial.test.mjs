@@ -15,7 +15,10 @@ import { wire } from '../output/Format.Diagnostic/index.js';
 // SHA-256 of the Go text of each accepted program, the wired diagnostic
 // of each rejected one. Comparing `compile` with `compileReport` would be
 // a tautology once one is derived from the other, so both are compared
-// with the snapshot. Corpus-wide, so serial.
+// with the snapshot. A program added to the corpus later is appended,
+// with the commit its outcome was computed at (`extended`, at a parent
+// whose src/ is unchanged); no existing entry changes. Corpus-wide, so
+// serial.
 const snapshot = JSON.parse(readFileSync(
   'test/fixtures/r0/first-diagnostic.json', 'utf8'));
 

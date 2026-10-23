@@ -1,0 +1,23 @@
+{
+  "name": "h5-type-depth",
+  "about": "a type-depth refusal (T-R0b §9 item 2, H5; test/poly-depth.test.mjs's program, width 125, eight calls) with the common tail",
+  "class": "e",
+  "source": "type L(a) = N | C(a, L(a));\n\nfn sink(x: a): Int = 0;\n\nfn deep(x: a): L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(L(a))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) = deep(x);\n\nfn deepest(): Int = {\n  let sunk = sink(deep(deep(deep(deep(deep(deep(deep(deep(1)))))))));\n  let shown = show(1 + 2);\n  if shown == \"3\" then 1 else 2\n};\n\nfn later(n: Int): Int = n + 1;\n\nfn bad(): Int = {\n  let x = later(1, 2);\n  x + 1\n};\n\nfn main(): Int = 0;\n",
+  "refused": "deepest",
+  "today": {
+    "code": "E_NESTING",
+    "text": "Inferred type nesting exceeds 1000 levels"
+  },
+  "bq": [
+    [
+      "pr",
+      "show(1 + 2)"
+    ],
+    [
+      "cmp",
+      "shown == \"3\""
+    ]
+  ],
+  "later": "later",
+  "static": "bad"
+}
