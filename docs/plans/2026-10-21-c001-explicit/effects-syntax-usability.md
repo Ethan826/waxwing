@@ -45,3 +45,15 @@ For review after this tranche: whether documentation, examples and mismatch
 diagnostics make this per-stage contract clear enough. Any syntax revision
 or compiler diagnostic work needs its own approved scope. Nothing here
 authorizes either, and no shared tracking file was edited.
+
+## Follow-ups (2026-10-23)
+
+The author recorded the current syntax as unfinished UX, with semantics
+unchanged for the first C001 tranche (see [README](README.md), first-core
+decisions, item 5). Two follow-ups, each needing its own approved scope:
+
+1. Diagnostics display the effect-row difference instead of identical-looking
+   expected and found types.
+2. A small syntax design compares clearer ways to write uniformly pure
+   multi-stage functions while keeping different effects at different stages
+   expressible. No silent arrow-default change within C001.

@@ -128,6 +128,71 @@ record-research file belongs to this change.
    preference, not a prerequisite. The concrete open hold remains the
    unknown-type and ambiguity policy (2026-10-21 decision 2).
 
+### First-core decisions (2026-10-23)
+
+Corrections. The 13 compiling baseline sources do not establish that the
+core needs no checker change. The unknown-type and ambiguity hold and
+ValidR's F-a are related but distinct. F-a asks what every permitted
+instantiation of a generic type must support; a hole asks what type the
+compiler may choose at a use. One ruling cannot settle both.
+
+1. Interface names: bring forward a small transparent type-alias feature
+   (the BACKLOG R008 slice). Aliases are parameterized, transparent
+   abbreviations for existing types, with terminating expansion and no new
+   type identity. No associated types, type-level computation or implicit
+   selection. This keeps the ordinary-record representation; a wrapping
+   constructor would introduce the deferred distinction. The first useful
+   delivery may include a small R008 tranche alongside C001. Prototype
+   fixtures keep expanded record signatures until aliases land. Alias
+   substitution and expansion go into the assurance argument.
+2. Collections: include demonstrations and acceptance contracts (retained
+   ordering and equality, lookup, update, rebuilding under an explicit
+   destination policy). Cross-module examples are kept as requirements.
+   Production invariant-sensitive maps and sets wait for representation
+   hiding; that does not block dictionaries, instance constructors or
+   generic clients. Exposed raw trees are no substitute.
+3. Integration boundary: start with a library-and-tests tranche using
+   ordinary records, functions, captures and dictionary arguments, with no
+   class-specific search or evidence machinery. A complete gap inventory
+   comes first, classifying the baseline into intended positives already
+   supported; positives needing corrected signatures; positives needing
+   aliases or another separately approved feature; intentional negative
+   controls; and interpreter or backend gaps. It then names exactly which
+   compiler changes, if any, remain. The shared-specialization fixture and
+   the deliberately baked-in first dictionary are priority tests.
+4. Prelude names for the first tranche: `Maybe`/`Nothing`/`Just`;
+   `List`/`Nil`/`Cons`; `Ordering`/`Less`/`Equal`/`Greater`; and the
+   structural operation interfaces `Eq`, `Ord`, `Semigroup`, `Show`. Logical
+   homes are documented before module syntax exists; a later Prelude can
+   re-export them. There is no second optional type named `Option`; a
+   later rename would be a deliberate migration. Importing the Prelude
+   registers no instance choices. Structural printing and comparison stay
+   separate from explicitly supplied `Show` and `Eq`.
+5. Pure-stage ergonomics: keep current semantics for this tranche.
+   Acceptance fixtures use correct per-stage annotations. The syntax is
+   recorded as unfinished UX with two follow-ups: diagnostics must display
+   the effect-row difference instead of identical-looking expected and
+   found types; and a small syntax design compares clearer ways to express
+   uniformly pure multi-stage functions while keeping different effects at
+   different stages expressible. No silent arrow-default change within
+   C001.
+
+Parameterized data (`List(a)`, `Maybe(a)`, collections) stays in the
+acceptance suite. It is an R0 switch prerequisite: R0 must earn its
+`DataApplication` support before switching those programs. It is not a
+reason to weaken library goals. Shadow operation keeps today's acceptance
+meanwhile.
+
+The ambiguity question stays separate and open. Adopt neither "every hole
+must be solved" nor "any stand-in is harmless". A follow-up specifies which
+unresolved variables may be defaulted, how their remaining obligations are
+checked, and whether the choice affects selected operations or observable
+behaviour.
+
+Authorized: documentation corrections now; after the boundary is pinned,
+the three focused assurance arguments of assurance.md. No new Lean campaign
+follows.
+
 ## Future compatibility
 
 K001 may add constructor variables later; this fragment uses only fixed
