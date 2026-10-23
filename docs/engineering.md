@@ -48,17 +48,17 @@ adding a bypass allowlist.
   constructor of `RecordedProblem`) is imported only by
   Domain.Recorded and modules matching
   `^Features\.Check\.Generate(\.|$)`. A public module re-exports its
-  Internal module's types alone: every import of the Internal module
-  there lists bare type names (`import X.Internal (T, …) as Exports`
-  with `module Exports` in the export list; no `(..)`, no values, no
-  open or `hiding` import). Elsewhere an import of either Internal
-  module takes no `as` alias, exported or not, and no export list names
-  the Internal module itself. purs graph does not show re-exports, so
-  this part reads source, with `--` and `{- -}` comments removed first
-  (scripts/structure.mjs `exportFindings`). purs itself
-  accepts a constructor re-export, so the check is needed
-  (docs/findings.md, "The verdict token boundary");
-  test/structure-r0.test.mjs pins each direction.
+  Internal module's types alone (`import X.Internal (T, …) as Exports`
+  with `module Exports`), and no module re-exports a constructor from
+  either. purs graph does not show re-exports, and source forms vary
+  (comments, layout, aliases, line endings), so this is checked on the
+  compiler's output after the build: purs 0.15.16 emits a re-exported
+  value as `export { … } from "../M/index.js"` and a re-exported type
+  as nothing, so any such statement from a token Internal module, in
+  any module's output/<M>/index.js, is a finding (scripts/structure.mjs
+  `reexportFindings`). purs itself accepts a constructor re-export, so
+  the check is needed (docs/findings.md, "The verdict token
+  boundary"); test/structure-r0.test.mjs pins each direction.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

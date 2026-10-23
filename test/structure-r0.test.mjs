@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { graphFindings, exportFindings } from '../scripts/structure.mjs';
+import { readFileSync } from 'node:fs';
+import { builtModules, graphFindings, reexportFindings }
+  from '../scripts/structure.mjs';
 
 // Task 1.1 (T-R0a §3.1, §4.1, §6): only the trusted checkers mint Valid,
 // Refuted, NonForced and ForcednessEvidence. Domain.Verdict imports the
@@ -40,80 +42,45 @@ test('only Generate* and Domain.Recorded import Domain.Recorded.Internal',
         [`${name} imports ${internal}`], name);
   });
 
-const verdict = 'src/Domain/Verdict.purs';
-const header = (name, exports) => `module ${name} (${exports}) where\n\n`;
-const publicWith = imports =>
-  header('Domain.Verdict', 'module Exports, Solution')
-  + `import Prelude\n${imports}\n\ntype Solution = Int\n`;
+// The re-export boundary is read from purs's output (fix round 2). Each
+// probe in test/fixtures/r0/reexport/probes.json is a source purs 0.15.16
+// accepted and the index.js it emitted, copied verbatim; P1-P11 are the
+// forms re-review 1 found passing the earlier source check. A client
+// importing the constructor through each probe compiled too
+// (docs/findings.md).
+const { probes } = JSON.parse(readFileSync(
+  'test/fixtures/r0/reexport/probes.json', 'utf8'));
 
-test('Domain.Verdict re-exports bare token types, no constructor', () => {
-  assert.deepEqual(exportFindings(verdict, publicWith(
-    'import Domain.Verdict.Internal (Valid, Refuted) as Exports')), []);
-  assert.deepEqual(exportFindings(verdict, publicWith(
-    'import Domain.Verdict.Internal\n  ( Valid\n  , Refuted\n  ) as Exports')),
-  []);
-  for (const imports of [
-    'import Domain.Verdict.Internal (Valid(..), Refuted) as Exports',
-    'import Domain.Verdict.Internal\n  ( Valid\n  , Refuted(Refuted)\n  )'
-      + ' as Exports',
-    'import Domain.Verdict.Internal (Valid, mint) as Exports',
-    'import Domain.Verdict.Internal as Exports',
-    'import Domain.Verdict.Internal hiding (mint) as Exports',
-    // not re-exported, but a wrapper could still leak the constructor
-    'import Domain.Verdict.Internal (Valid(..))'
-  ]) assert.equal(exportFindings(verdict, publicWith(imports)).length, 1,
-    imports);
-});
-
-test('Domain.Recorded re-exports RecordedProblem without its constructor',
+test('a JS re-export of a token constructor is a finding, any source form',
   () => {
-    const source = imports => header('Domain.Recorded', 'module Exports')
-      + `${imports}\n`;
-    const file = 'src/Domain/Recorded.purs';
-    assert.deepEqual(exportFindings(file, source(
-      'import Domain.Recorded.Internal (RecordedProblem) as Exports')), []);
-    assert.equal(exportFindings(file, source(
-      'import Domain.Recorded.Internal (RecordedProblem(..)) as Exports'))
-      .length, 1);
+    for (const probe of probes.filter(probe => probe.name !== 'T0')) {
+      const internal = probe.name === 'P11' ? 'Domain.Recorded.Internal'
+        : 'Domain.Verdict.Internal';
+      const constructor = probe.name === 'P11' ? 'RecordedProblem'
+        : probe.name === 'N0' ? 'Refuted' : 'Valid';
+      assert.deepEqual(reexportFindings({ [probe.module]: probe.js }),
+        [`${probe.module} re-exports { ${constructor} } from ${internal}`],
+        probe.name);
+    }
   });
 
-// A trusted checker may use the constructors but never re-export them.
-test('no other module re-exports a token Internal module', () => {
-  const rules = 'src/Features/Check/Refute/Rules.purs';
-  const name = 'Features.Check.Refute.Rules';
-  const own = 'import Domain.Verdict.Internal (Refuted(..))';
-  assert.deepEqual(exportFindings(rules,
-    header(name, 'checkDerivation') + own + '\n'), []);
-  for (const source of [
-    header(name, 'module X') + own + ' as X\n',
-    header(name, 'module X')
-      + 'import Domain.Verdict.Internal (Refuted) as X\n',
-    header(name, 'module Domain.Verdict.Internal') + own + '\n',
-    header('Features.Check.Generate', 'module R')
-      + 'import Domain.Recorded.Internal (RecordedProblem) as R\n',
-    // Fix round 1 (review I1): shapes purs accepts that the first check
-    // missed, and the simpler rule that any alias outside the public
-    // module is a finding, re-exported or not.
-    header(name, 'module T.I') + own + ' as T.I\n',
-    header(name, 'module X') + own + ' as X -- note\n',
-    `module ${name}\n  ( checkDerivation -- see ) where\n  , module X\n`
-      + `  ) where\n\n${own} as X\n`,
-    `module ${name}\n  ( checkDerivation {- ) where -}\n  , module X\n`
-      + `  ) where\n\n${own} as X\n`,
-    `module ${name}\n  ( checkDerivation -- ) where\n`
-      + `  , module Domain.Verdict.Internal\n  ) where\n\n${own}\n`,
-    header(name, 'checkDerivation') + own + ' as I\n'
-  ]) assert.equal(exportFindings(rules, source).length, 1, source);
+// A type-only re-export emits no JS and leaks nothing; the public modules
+// re-export that way. Any JS forward from a token module is a finding,
+// whoever makes it, including `export *`.
+test('type-only re-exports and other modules pass; export * does not', () => {
+  const typeOnly = probes.find(probe => probe.name === 'T0');
+  assert.deepEqual(reexportFindings({ [typeOnly.module]: typeOnly.js }), []);
+  assert.deepEqual(reexportFindings({ 'Features.Check.X':
+    'export {\n    left\n} from "../Data.Either/index.js";\n' }), []);
+  assert.deepEqual(reexportFindings({ 'Domain.Verdict':
+    'export * from "../Domain.Verdict.Internal/index.js";\n' }),
+  ['Domain.Verdict re-exports * from Domain.Verdict.Internal']);
 });
 
-test('comments do not hide or invent a public-module finding', () => {
-  assert.deepEqual(exportFindings(verdict, publicWith(
-    'import Domain.Verdict.Internal (Valid, Refuted) as Exports -- tokens')),
-  []);
-  assert.deepEqual(exportFindings(verdict, publicWith(
-    'import Domain.Verdict.Internal {- (Valid(..)) -} (Valid) as Exports')),
-  []);
-  assert.equal(exportFindings(verdict, publicWith(
-    'import Domain.Verdict.Internal (Valid(..)) as T.I -- (Valid)')).length,
-  1);
+test('the built output re-exports no token constructor', () => {
+  const modules = builtModules('output');
+  assert.ok('Domain.Verdict' in modules && 'Domain.Recorded' in modules);
+  assert.match(modules['Domain.Verdict'],
+    /from "\.\.\/Domain\.Verdict\.Internal\/index\.js"/);
+  assert.deepEqual(reexportFindings(modules), []);
 });

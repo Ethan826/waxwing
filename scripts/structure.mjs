@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -39,15 +39,11 @@ const internalModules = [
   { module: 'Domain.Recorded.Internal',
     importers: /^(Domain\.Recorded$|Features\.Check\.Generate(\.|$))/ }
 ];
-// Each token Internal module and the one public module that re-exports
-// its types. purs graph does not show re-exports, so exportFindings reads
-// source: the public module imports its Internal module only as bare type
-// names (`import X.Internal (T, …) as Exports`: no `(..)`, no values, no
-// open import), and no other module re-exports an Internal module.
-const reexported = [
-  { internal: 'Domain.Verdict.Internal', public: 'Domain.Verdict' },
-  { internal: 'Domain.Recorded.Internal', public: 'Domain.Recorded' }
-];
+// A token Internal module's constructors must not leave it by re-export.
+// The public module (Domain.Verdict, Domain.Recorded) re-exports types
+// only, which purs emits no JS for, so any JS re-export from these
+// modules, by any module, forwards a value: a constructor.
+const tokenModules = ['Domain.Verdict.Internal', 'Domain.Recorded.Internal'];
 // Commands run over capability ports only, so tests can pass fake hosts.
 const portCommands = ['Program.Command'];
 const hostEffects = /^(Effect|Runtime)(\.|$)/;
@@ -86,42 +82,23 @@ export const graphFindings = graph =>
       dependency) : libraryFinding(name, dependency))]);
 });
 
-// Comments are removed first, so none can hide an import, end the export
-// list early (`-- ) where`) or break an anchor. A `--` followed by a
-// symbol character is an operator, not a comment.
-const commentless = source => source.replace(/\{-[^]*?-\}/g, ' ')
-  .replace(/--+(?![!#$%&*+./<=>?@\\^|~:])[^\n]*/g, '');
-const aliasName = "[A-Z][\\w']*(\\.[A-Z][\\w']*)*";
-const typeName = "[A-Z][\\w']*";
-const bareTypes = new RegExp(`^\\(\\s*${typeName}(\\s*,\\s*${typeName})*\\s*\\)`
-  + `(\\s+as\\s+${aliasName})?$`);
-const aliased = /(^|\s)as\s/;
-const importsOf = (source, internal) => [...source.matchAll(new RegExp(
-  `^import\\s+${internal.replaceAll('.', '\\.')}(?![\\w.])((?:.|\\n[ \\t])*)`,
-  'gm'))].map(match => match[1].trim());
-const exportedModules = source => [...(source.match(
-  /^module\s+[\w.]+\s*\(((?:.|\n)*?)\)\s*where/m)?.[1] ?? '')
-  .matchAll(/\bmodule\s+([\w.]+)/g)].map(match => match[1]);
+// Read from the compiler's output rather than from source: purs 0.15.16
+// emits every `module X` re-export of a value as `export { … } from
+// "../M/index.js"`, whatever the source's comments, layout or aliases
+// (docs/findings.md, "The verdict token boundary", fix round 2).
+const forwarded = new RegExp('export\\s*(\\{[^}]*\\}|\\*(\\s+as\\s+\\w+)?)'
+  + '\\s*from\\s*"\\.\\./([^/"]+)/index\\.js"', 'g');
 
-// In the public module every import of its Internal module lists bare
-// type names. Elsewhere any alias on such an import is a finding, whether
-// or not the alias is exported (review I1: purs accepts dotted aliases),
-// and so is exporting the Internal module under its own name.
-export const exportFindings = (file, text) => {
-  const source = commentless(text);
-  const name = source.match(/^module\s+([\w.]+)/m)?.[1];
-  const exported = exportedModules(source);
-  return reexported.flatMap(rule => {
-    const imports = importsOf(source, rule.internal);
-    if (name === rule.public) return imports.filter(body =>
-      !bareTypes.test(body)).map(() =>
-      `${file}: imports ${rule.internal} beyond bare type names`);
-    return [...imports.filter(body => aliased.test(body)).map(() =>
-      `${file}: imports ${rule.internal} under an alias`),
-    ...exported.filter(module => module === rule.internal).map(() =>
-      `${file}: re-exports ${rule.internal}`)];
-  });
-};
+export const reexportFindings = modules =>
+  Object.entries(modules).flatMap(([name, js]) =>
+  [...js.matchAll(forwarded)].filter(match =>
+    tokenModules.includes(match[3])).map(match =>
+    `${name} re-exports ${match[1].replace(/\s+/g, ' ')} from ${match[3]}`));
+
+export const builtModules = root => Object.fromEntries(readdirSync(root,
+  { withFileTypes: true }).filter(entry => entry.isDirectory()
+  && existsSync(join(root, entry.name, 'index.js'))).map(entry =>
+  [entry.name, readFileSync(join(root, entry.name, 'index.js'), 'utf8')]));
 
 const disabledGate = new RegExp('\\.(skip|only|todo)\\s*\\('
   + '|@ts-(ignore|nocheck|expect-error)|eslint[-]disable');
@@ -155,9 +132,8 @@ export const checkStructure = async () => {
     files.flatMap(file => textFindings(file, readFileSync(file, 'utf8')));
   findings.push(...files.filter(file => file.endsWith('.purs')).flatMap(file =>
     check(readFileSync(file, 'utf8')).map(message => `${file}: ${message}`)));
-  findings.push(...files.filter(file => file.startsWith('src/')
-    && file.endsWith('.purs')).flatMap(file =>
-    exportFindings(file, readFileSync(file, 'utf8'))));
+  // verify builds before this runs, so output/ is current.
+  findings.push(...reexportFindings(builtModules('output')));
   findings.push(...files.filter(file =>
     file.startsWith('src/') && !file.startsWith('src/Runtime/')
     && file.endsWith('.js')).map(file => `${file}: FFI outside Runtime`));

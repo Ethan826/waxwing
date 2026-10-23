@@ -1509,3 +1509,31 @@ for each of (a)-(d) and 0 for the commented public import, and the
 file passes 6 of 6. Mutants, each restored: M-F (comments not
 removed) fails both tests above; M-G (aliases never reported) fails
 "no other module re-exports a token Internal module".
+
+**Fix round 2 (re-review 1, I1; checked).** Re-review 1 compiled eight
+more forms that purs 0.15.16 accepts and the round-1 source check
+passed: P1 and P7 (a `{-` inside a line comment, which the stripper
+read as a block comment), P9 and P10 (`-->` and `--|`, which purs reads
+as comments), P2 and P11 (an indented top-level block), P3 (an
+indented module header) and P4 (CRLF). Ruling: check the compiler's
+output instead of source. Probes, each compiled with `purs compile
+'src/Domain/**/*.purs' '.spago/p/*/src/**/*.purs' <probe> -o
+<scratch>/out` (exit 0) together with a client module that imports the
+constructor through the probe module and builds it (exit 0 for P0-P11):
+every one of P0 (a plain alias), P1, P2, P3, P4, P7, P9, P10, P11 and
+N0 (an alias named `Exports` outside the public module) emitted the
+same statement, `export { Valid } from
+"../Domain.Verdict.Internal/index.js"` (`RecordedProblem` from
+Domain.Recorded.Internal for P11, `Refuted` for N0). T0, a type-only
+`module X` re-export, emitted no export at all, as does the real
+Domain.Verdict. The sources and emitted index.js files are kept
+verbatim in test/fixtures/r0/reexport/probes.json. Against them the
+round-1 `exportFindings` gave 1 finding for P0 and N0, 0 for P1-P11,
+and 1 for the harmless T0. `reexportFindings` gives exactly one
+finding for each of P0-P11 and N0, none for T0 and none over the real
+output/. Mutants, each restored: M-H (`export *` not matched, which
+also shifts the capture group) fails both fixture tests; M-I (public
+modules exempted by name) fails "type-only re-exports and other
+modules pass; export * does not"; M-J (matching a wrong target) fails
+both fixture tests.
+

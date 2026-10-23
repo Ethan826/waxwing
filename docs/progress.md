@@ -267,6 +267,13 @@ any alias on an import of a restricted Internal module and any export
 of it by name. Nine new cases cover the reviewer's three shapes and
 their variants; the RED run and two mutants are in findings. The
 Generate stub stays out (controller ruling: Task 3.2 creates it).
+Fix round 2 (re-review 1, I1): the source check still missed forms
+purs accepts (comments, layout, CRLF), so it is replaced by
+`reexportFindings`, which reads the built output/<M>/index.js: purs
+emits every re-exported constructor as `export { … } from`, and types
+not at all. It runs in `checkStructure`, after verify's build. Probe
+sources and their emitted JS are in test/fixtures/r0/reexport/;
+evidence in findings.
 
 ## Language direction recorded (2026-10-08)
 
