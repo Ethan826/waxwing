@@ -28,13 +28,17 @@ vertical slice before adding language features. Task tracking is local.
   only. On the compiler's output, no module outside those importers
   imports either Internal module's JS, and no module re-exports from it;
   no FFI JS outside them names it. No src module outside a reviewed
-  allowlist (empty) uses Unsafe.Coerce or Record.Unsafe, and only the
-  modules pinned with their signatures in scripts/foreign-surface.json
-  have FFI (re-pin: `node scripts/foreign-surface-pin.mjs`, a reviewed
-  change). The allowed importers are trusted: their source and compiled
-  exports are pinned in scripts/trusted-surface.json, and changing the
-  pin (`node scripts/trusted-surface-pin.mjs`) is a reviewed change. The
-  pin catches new surface, not a repurposed body, type or instance
+  allowlist (empty) uses a module in scripts/forgery.mjs
+  `forgingModules` (Unsafe.Coerce, Record.Unsafe, invariant-breaking
+  library Internal modules), and only the modules pinned with their
+  signatures and file hashes in scripts/foreign-surface.json have FFI
+  (re-pin: `node scripts/foreign-surface-pin.mjs`, a reviewed change).
+  These stop accidental construction; deliberate use of library
+  partiality (`undefined` at any type) is left to review. The allowed
+  importers are trusted: their source and compiled exports are pinned
+  in scripts/trusted-surface.json, and changing the pin (`node
+  scripts/trusted-surface-pin.mjs`) is a reviewed change. The pin
+  catches new surface, not a repurposed body, type or instance
   behind a pinned name, so every diff to an allowed importer needs
   token review.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an

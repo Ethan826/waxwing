@@ -1686,8 +1686,9 @@ check, and misses an FFI-only forger.
 
 Survey (checked by reading the export lists of the installed
 packages, listed in
-test/fixtures/r0/trusted-surface/surveyed-packages.json): the library
-modules using `unsafeCoerce` are Data.Array.NonEmpty, Data.Exists,
+test/fixtures/r0/trusted-surface/surveyed-packages.json; corrected
+after the carry review, see below): the library modules using
+`unsafeCoerce` are Data.Array.NonEmpty, Data.Exists,
 Control.Monad.Free, Data.Functor.App, Partial.Unsafe, Data.Reflectable,
 Data.Symbol, Safe.Coerce, Control.Monad.ST.Global,
 Data.String.NonEmpty.CodeUnits, Data.String.NonEmpty.Internal and
@@ -1695,13 +1696,11 @@ PureScript.CST. Free, Data.Symbol and Data.Reflectable do not export
 their `unsafeCoerce*` helpers; the others export only parametric types
 (`mkExists`, `runExists`, `hoistLiftApp`, `coerce` under `Coercible`,
 `toEffect`, `toRecovered`) or keep the coercion local. Of the
-polymorphic foreign imports, only Unsafe.Coerce's `unsafeCoerce ∷ ∀ a
-b. a → b` and Record.Unsafe's `unsafeGet`, `unsafeSet` and
-`unsafeDelete` return an unconstrained type; Partial's `_crashWith`
-and Partial.Unsafe's `_unsafePartial` are unexported, and `crash`,
-`crashWith`, `unsafeCrashWith`, `unsafePerformEffect` and
-`unsafeIndex` give bottom or a value of the type they are given. So
-the set is exactly Unsafe.Coerce and Record.Unsafe.
+polymorphic foreign imports, Unsafe.Coerce's `unsafeCoerce ∷ ∀ a b. a
+→ b` and Record.Unsafe's `unsafeGet`, `unsafeSet` and `unsafeDelete`
+return an unconstrained type; Partial's `_crashWith` and
+Partial.Unsafe's `_unsafePartial` are unexported, and `crash`,
+`crashWith` and `unsafeCrashWith` throw.
 
 GREEN (scripts/forgery.mjs): `coercionFindings` reports Runtime.ForgeA,
 Runtime.ForgeB and Runtime.Cast (`depends on Unsafe.Coerce, which can
@@ -1724,9 +1723,10 @@ M7 signatures not compared, M8 stale pin ignored, M9 unpinned module
 passes: each killed (M1 the routes and survey tests; M2 the routes
 test; M3 the routes and real-tree tests; M4, M7 and M8 the signature
 test; M5 and M6 the fails-closed test; M9 the routes, signature and
-Forge tests). Limits (argued): the JS body behind a pinned signature,
-and a type synonym the signature names, are left to review, as is a
-repurposed body in an allowed importer.
+Forge tests). Limits (argued, superseded below): the JS body behind a
+pinned signature and a type synonym it names were left to review; the
+carry review's fix pins both files' hashes. A repurposed body in an
+allowed importer stays with review.
 
 
 ## The collecting driver (2026-10-22)
@@ -1780,3 +1780,43 @@ Domain.Recorded, their Internal modules and Domain.Verdict.Open are
 reachable; only Features.Check.Outcomes imports them, and only the two
 public modules; no Features.Check Strategy, Refute, Admit, Decide,
 Generate or Checking module is reachable (ruling R6).
+
+**Carry review of the forgery rule (final ruling; checked).** Threat
+model, now stated in docs/engineering.md and AGENTS.md: the rules stop
+accidental construction of a trusted verdict outside the trusted
+modules; deliberate use of library partiality is out of scope and left
+to review. Two corrections. The earlier survey sentence ("the only
+modules whose exports produce a value of any type") was false, and
+`unsafeIndex` does not give bottom: out of bounds it returns
+`undefined` without throwing, as does `Data.Array.NonEmpty.foldl1` on
+an empty array. C1: Program.UseE (`forgeE ∷ Valid; forgeE = foldl1
+const (NonEmptyArray [])`, the same for `Refuted`), compiled with
+`purs compile -o <scratch>/out 'src/Domain/**/*.purs'
+'.spago/p/*/src/**/*.purs' '<probe>/*.purs'` (exit 0); both values are
+`undefined` at run time; depends on Prelude, Data.Array.NonEmpty,
+Data.Array.NonEmpty.Internal and Domain.Verdict; added verbatim to
+test/fixtures/r0/trusted-surface/forgery.json. Survey of the library
+`*.Internal` modules: Data.Array.NonEmpty.Internal exports
+`NonEmptyArray(..)` (an empty one), Data.String.NonEmpty.Internal
+exports `NonEmptyString`'s constructor (an empty one) and
+Data.Map.Internal exports `Map(..)` (an unordered or unbalanced tree):
+each added to `forgingModules`. Data.List.Internal exports `Set`
+abstractly, Control.Monad.ST.Internal exports `ST`, `STRef` and
+`Region` without constructors, and Data.Traversable.Accum.Internal's
+`StateL`/`StateR` wrap functions with no invariant: not added. No src
+module imports any of the five. C2: Runtime.Node's pinned signatures
+name local synonyms, so `type ReadAttempt = ∀ a. Effect (Either
+ReadFailure a)` retargeted `readSourceWith` with the signature text
+unchanged. scripts/foreign-surface.json now pins, in addition to the
+signatures, the SHA-256 of each pinned module's whole .purs and .js;
+any edit fails until a reviewed re-pin. The probe test now also checks
+the JS-only route (ForgeA's source with its foreign import removed,
+its JS kept); the fixture's `foreign` key was present, so ForgeA had
+been flagged, but only through its `foreign import` line. RED (old
+scripts/forgery.mjs plus a stub `foreignPin`; `node --test
+test/structure-forgery.test.mjs`): UseE not reported, the forging set
+test failed, and the synonym edit gave `[]` where a SHA-256 finding was
+expected. GREEN: 28 structure tests pass; the real tree gives `[]`.
+Mutants (each restored): MC1, Data.Array.NonEmpty.Internal dropped:
+the routes and survey tests fail; MC2, the .purs hash not compared:
+the signature and whole-module tests fail.

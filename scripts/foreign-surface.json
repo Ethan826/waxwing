@@ -1,13 +1,17 @@
 {
- "Runtime.Node": [
-  "foreign import commandArguments ∷ Effect (Array String)",
-  "foreign import writeOutput ∷ String → Effect Unit",
-  "foreign import writeError ∷ String → Effect Unit",
-  "foreign import setExitCode ∷ Int → Effect Unit",
-  "foreign import json ∷ ∀ fields. Record fields → String",
-  "foreign import readSourceWith ∷ ReadResults → String → ReadAttempt",
-  "foreign import writeTextWith ∷ Results → String → String → Attempt",
-  "foreign import buildWith ∷ Results → String → String → Attempt",
-  "foreign import runWith ∷ Results → String → Attempt"
- ]
+ "Runtime.Node": {
+  "imports": [
+   "foreign import commandArguments ∷ Effect (Array String)",
+   "foreign import writeOutput ∷ String → Effect Unit",
+   "foreign import writeError ∷ String → Effect Unit",
+   "foreign import setExitCode ∷ Int → Effect Unit",
+   "foreign import json ∷ ∀ fields. Record fields → String",
+   "foreign import readSourceWith ∷ ReadResults → String → ReadAttempt",
+   "foreign import writeTextWith ∷ Results → String → String → Attempt",
+   "foreign import buildWith ∷ Results → String → String → Attempt",
+   "foreign import runWith ∷ Results → String → Attempt"
+  ],
+  "purs": "f9f14cc6804a2224dc234b2937396150e7745cc5ab45c42001469a5088b222f5",
+  "js": "345d908e0a866a4adf103ab0edf78caa85b6909bc192c88c4b368424a1acda22"
+ }
 }

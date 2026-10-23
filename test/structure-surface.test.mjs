@@ -153,7 +153,7 @@ test('FFI or unsafeCoerce forging a token is a finding (Forge)', () => {
     graphFindings(graph)], [[], [], [], []]);
   assert.deepEqual(coercionFindings(graph), ['Runtime.Forge depends on'
     + ' Unsafe.Coerce, which can produce a value of any type']);
-  const modules = foreignModules(graph, () => forge.purs, () => true);
+  const modules = foreignModules(graph, () => forge.purs, () => forge.foreign);
   assert.deepEqual(Object.keys(modules), ['Runtime.Forge']);
   assert.equal(foreignSurfaceFindings({}, modules).length, 1);
 });

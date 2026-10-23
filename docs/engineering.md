@@ -74,21 +74,29 @@ adding a bypass allowlist.
   A compiled token is plain JS (a newtype is erased), so any value of
   an arbitrary type forges one without its constructor, whichever way
   the module reaches the token types (a re-export, a synonym, a
-  polymorphic helper). The rule is therefore on the primitives that
-  make such values (scripts/forgery.mjs). `coercionFindings`: no src
-  module outside a reviewed allowlist (empty) depends on Unsafe.Coerce
-  or Record.Unsafe, the only modules of the installed packages whose
-  exports produce a value of any type (surveyed; a new or upgraded
-  package fails test/structure-forgery.test.mjs until the survey is
-  redone). `foreignSurfaceFindings`: a src module may have a foreign
-  module (src/<path>.js or output/<M>/foreign.js) or a `foreign
-  import` only if scripts/foreign-surface.json pins it with its
-  signatures (Runtime.Node today); a new FFI module, a new or changed
-  signature, a stale pin, or a `foreign` the reader cannot delimit (not
-  at column 0, or a comment inside the declaration) fails, and `node
-  scripts/foreign-surface-pin.mjs` re-pins as a reviewed change. The
-  JS body behind a pinned signature, and a type synonym it names, are
-  left to review.
+  polymorphic helper). Threat model: these rules stop accidental
+  construction of a trusted verdict outside the trusted modules.
+  Deliberate use of library partiality (a function that returns
+  `undefined` at any type without throwing, such as `Data.Array`'s
+  `unsafeIndex` out of bounds) is out of scope and left to review. The
+  rules are on the primitives (scripts/forgery.mjs).
+  `coercionFindings`: no src module outside a reviewed allowlist
+  (empty) depends on a module in `forgingModules`: Unsafe.Coerce and
+  Record.Unsafe, which coerce, and the library `*.Internal` modules
+  whose exported constructors bypass an invariant
+  (Data.Array.NonEmpty.Internal, where `foldl1` on an empty array
+  returns `undefined`; Data.String.NonEmpty.Internal;
+  Data.Map.Internal). The set is surveyed over the installed packages;
+  a new or upgraded package fails test/structure-forgery.test.mjs until
+  the survey is redone. `foreignSurfaceFindings`: a src module may have
+  a foreign module (src/<path>.js or output/<M>/foreign.js) or a
+  `foreign import` only if scripts/foreign-surface.json pins it
+  (Runtime.Node today) with its signatures and the SHA-256 of its whole
+  .purs and .js, so neither a synonym a signature names nor the JS body
+  can change unnoticed. A new FFI module, a changed signature or file,
+  a stale pin, or a `foreign` the reader cannot delimit (not at column
+  0, or a comment inside the declaration) fails; `node
+  scripts/foreign-surface-pin.mjs` re-pins as a reviewed change.
   An allowed importer can build tokens, so everything it exports is
   trusted surface: scripts/trusted-surface.json pins its source export
   list (operator aliases, value wrappers) and its compiled `export { … }`

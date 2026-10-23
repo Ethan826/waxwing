@@ -302,6 +302,11 @@ reviewed allowlist depends on Unsafe.Coerce or Record.Unsafe (the
 surveyed set), and FFI exists only in modules pinned with their
 `foreign import` signatures in scripts/foreign-surface.json
 (Runtime.Node). The four routes are fixtures; evidence in findings.
+Carry review, final ruling: the threat model (accidental construction
+only; library partiality left to review) is stated in the docs;
+`forgingModules` adds Data.Array.NonEmpty.Internal,
+Data.String.NonEmpty.Internal and Data.Map.Internal (probe
+Program.UseE); the FFI pin adds each module's .purs and .js SHA-256.
 
 ## R0 shadow tranche, Task 1.2: the collecting driver (2026-10-22)
 
