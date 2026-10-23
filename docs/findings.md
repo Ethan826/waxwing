@@ -3854,3 +3854,31 @@ test/regression-r0-witness.mjs: the planted rest must read as a
 r0-readback-sort-blind`: each fixed compiler passes and its restored
 defect fails.
 
+
+## The census walk reversed a program's arguments (2026-10-23)
+
+Found by Task 4.5 while joining the census's classification to RT8's
+run; a defect of Task 3.5's test-only code, fixed (shadow machinery).
+test/r0-census-walk.mjs `expressionsOf` pushed
+`childrenOf(next).reverse()`, and for `Call`, `Construct`, `Interpolate`,
+`Perform`, `Print`, `Show` and `Crash` the child list is the node's own
+array, so each walk reversed those arguments in the resolved program.
+`classifyProgram` walks each declaration three or four times
+(`erasedSources`, `inferredRows`, `patternsOf`); after an odd number, a
+later `checkProgram` of the same program object refused what today
+accepts (checked: a3-fixed-carriers `main`, `Right` before
+`classifyProgram`, `Left E_TYPE "Expected Pair(Bool, Text), found
+Pair(Text, Bool)"` after; a scratch dump of the corpus read 2,580
+compiling declarations instead of the census's 2,773 that way).
+
+**Effect on pinned results (checked).** None: the census computes each
+declaration's `compiles`, generation and `compile` before walking it,
+and the walk's readings do not depend on argument order;
+`node --test test/r0-census.serial.test.mjs` passes against the
+unchanged census.json after the fix (13/13).
+
+**TDD (checked).** test/r0-census-detectors.test.mjs, "walking a body
+leaves the program unchanged" (`Pair(1, true)` walked once, then
+checked). RED, `node --test test/r0-census-detectors.test.mjs`: 4 pass,
+1 fail (`['Left']` against `['Right']`). Fix: the walk reverses a copy.
+GREEN: 5/5.

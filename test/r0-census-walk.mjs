@@ -68,7 +68,8 @@ export const expressionsOf = body => {
   while (pending.length > 0) {
     const next = pending.pop();
     found.push(next);
-    pending.push(...childrenOf(next).reverse());
+    // A copy: a child list may be the node's own array (Task 4.5).
+    pending.push(...[...childrenOf(next)].reverse());
   }
   return found;
 };

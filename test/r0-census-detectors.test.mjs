@@ -87,3 +87,20 @@ test('a second spread is refused at Resolve, so it has no problem', () => {
   assert.equal(found.secondSpread, true);
   assert.deepEqual(found.declarations, []);
 });
+
+// Found by Task 4.5: the walk reversed a node's own child array in place
+// (`childrenOf(next).reverse()`), so each walk of a body reversed its
+// calls' and constructions' arguments; after an odd number of walks a
+// later check of the same program refused what today accepts
+// (a3-fixed-carriers `main` after `classifyProgram`). The census read
+// each declaration before walking it; Task 4.5's window reads after.
+test('walking a body leaves the program unchanged', async () => {
+  const { load } = await import('./r0-generate-support.mjs');
+  const { checkProgram } = await load('Features.Check.Outcomes');
+  const { expressionsOf } = await import('./r0-census-walk.mjs');
+  const program = resolved('type Pair(a, b) = Pair(a, b);\n'
+    + 'fn main(): Pair(Int, Bool) = Pair(1, true);\n');
+  expressionsOf(program.functions[0].body);
+  assert.deepEqual(checkProgram(program).outcomes.map(outcome =>
+    outcome.today.constructor.name), ['Right']);
+});
