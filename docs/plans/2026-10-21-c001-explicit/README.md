@@ -1,10 +1,11 @@
 # C001: explicit instances and dictionary passing
 
 Status: author-approved design direction with the unknown-type rule held
-open, 2026-10-21. The author agreed to the rulings below in this chat and
-asked that they be recorded. Examples remain proposed syntax; the
-executable baseline is labelled separately. Implementation and new proof
-work require separate authorization.
+open, 2026-10-21, extended by the 2026-10-23 rulings below. The author
+agreed to the rulings in this chat and asked that they be recorded.
+Examples remain proposed syntax; the executable baseline is labelled
+separately. Implementation and new proof work require separate
+authorization.
 
 A client should accept a chosen implementation as a value. Two clients at
 `Int` can use sum and product in the same program. A constructor can combine
@@ -73,6 +74,59 @@ No approval is requested for implicit instance search, automatic derivation,
 higher-kinded classes, law-dependent optimization, or full modules. Those
 remain outside this tranche. No shared backlog, progress, direction, ADR or
 record-research file belongs to this change.
+
+## Author rulings, 2026-10-23
+
+1. Resume and reconcile the existing explicit core. Implicit search,
+   dedicated class evidence, superclasses and automatic derivation stay
+   outside the first implementation. This is an initial tranche;
+   higher-kinded abstractions (Functor, Monad) still need K001 and further
+   design.
+2. Modules: the first core is permitted within one program; modules remain
+   a v1 goal. An explicit-only core needs no cross-module instance search
+   or coherence, because the selected dictionary travels as a value.
+   Production invariant-sensitive collections need representation hiding
+   (M001) before claiming users cannot forge malformed maps or sets. That
+   dependency is explicit and does not block other dictionary work.
+3. Prelude: yes, ordinary and small. It holds the canonical homes for
+   optional values, lists and the basic operation interfaces, and may
+   re-export common definitions. Importing it registers no instance choices
+   and does not change the meaning of generic code. Its file organization
+   does not block the dictionary core, and existing names are not renamed
+   incidentally.
+4. ADR 005: separate structural diagnostics from customizable operations.
+   Eventually Eq and Ord are ordinary interfaces with explicit alternatives
+   (and derivation where supported). The first explicit core keeps the
+   existing operators and structural printing and adds dictionary-based
+   operations; operator and default-selection sugar are decided
+   separately. The compiler's structural, expression-like diagnostic
+   printer is distinct from a user-selected renderer, and an arbitrary
+   renderer need not print parseable text.
+5. R0 relation (Pr-1): R0's `pr τ` and `cmp τ` atoms describe today's
+   structural printing and comparison during the shadow migration. They are
+   not renamed `Show τ` and `Eq τ`, because a supplied renderer can print a
+   value that structural printing refuses; the contracts differ. The ValidR
+   holder set is metadata for existing structural behaviour, not the
+   meaning of future classes. A generic function using a selected renderer
+   receives it explicitly; ordinary dictionary calls carry their
+   requirement through ordinary parameter types.
+6. Assurance follows [assurance.md](assurance.md): reviewed arguments for
+   typing, evaluation order, preservation of explicit choices and finite
+   specialization, plus adversarial tests for default substitution, lost
+   captures and conflation of same-typed dictionaries. Dictionary selection
+   is deliberately observable: sum and product dictionaries for Int stay
+   different values, and specialization must never collapse them because
+   their types coincide. The record-constraint proofs (record composition
+   dossier) do not establish dictionary elaboration, selection or
+   compilation correctness. Lean work is for a small distinctive claim if
+   review exposes one. Algebraic laws stay separate: a well-typed semigroup
+   dictionary does not establish associativity. The published basis is
+   Jones's qualified types (evidence passing); the work is a precise
+   correspondence and an audit of Waxwing's adaptations.
+7. Sequencing: design reconciliation now, with implementation against a
+   stable integration boundary. Finishing R0's switch first is a practical
+   preference, not a prerequisite. The concrete open hold remains the
+   unknown-type and ambiguity policy (2026-10-21 decision 2).
 
 ## Future compatibility
 
