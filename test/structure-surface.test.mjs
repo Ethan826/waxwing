@@ -128,7 +128,7 @@ test('the real tree matches its pin and its FFI names no token module',
     const importers = trustedImporters(graph, builtModules('output'));
     // Task 2.3 added the static-rule classification, Generate.Static*;
     // Task 3.2 the generator and its static rules; Task 5.1 Refute.Rules
-    // and Refute.Theorems.
+    // and Refute.Theorems; Task 4.2 Strategy.Substitution.
     const generate = ['', '.Builtin', '.Call', '.Context', '.Control',
       '.Effect', '.Expr', '.Facts', '.Failure', '.Fault', '.Fresh', '.Inputs',
       '.Lookup', '.Operator', '.Out', '.Pattern', '.Record', '.Rigid',
@@ -137,8 +137,8 @@ test('the real tree matches its pin and its FFI names no token module',
       .map(name => `Features.Check.Generate${name}`);
     assert.deepEqual(Object.keys(importers).sort(),
       ['Domain.Recorded', 'Domain.Verdict', ...generate,
-        'Features.Check.Refute.Rules', 'Features.Check.Refute.Theorems']
-        .sort());
+        'Features.Check.Refute.Rules', 'Features.Check.Refute.Theorems',
+        'Features.Check.Strategy.Substitution'].sort());
     assert.deepEqual(surfaceFindings(JSON.parse(readFileSync(manifestFile,
       'utf8')), importers), []);
     const files = foreignFiles(filesUnder('src'), 'output');
