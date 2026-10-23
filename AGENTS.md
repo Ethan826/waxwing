@@ -25,7 +25,7 @@ vertical slice before adding language features. Task tracking is local.
   Features.Check.Admit.Forcedness.Check) import Domain.Verdict.Internal,
   and only Domain.Recorded and Features.Check.Generate* import
   Domain.Recorded.Internal; the public modules re-export bare type names
-  only, and no other module re-exports an Internal module.
+  only, and no other module aliases or re-exports an Internal module.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their

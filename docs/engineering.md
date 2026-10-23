@@ -51,9 +51,11 @@ adding a bypass allowlist.
   Internal module's types alone: every import of the Internal module
   there lists bare type names (`import X.Internal (T, …) as Exports`
   with `module Exports` in the export list; no `(..)`, no values, no
-  open or `hiding` import), and no other module re-exports either
-  Internal module. purs graph does not show re-exports, so this part
-  reads source (scripts/structure.mjs `exportFindings`). purs itself
+  open or `hiding` import). Elsewhere an import of either Internal
+  module takes no `as` alias, exported or not, and no export list names
+  the Internal module itself. purs graph does not show re-exports, so
+  this part reads source, with `--` and `{- -}` comments removed first
+  (scripts/structure.mjs `exportFindings`). purs itself
   accepts a constructor re-export, so the check is needed
   (docs/findings.md, "The verdict token boundary");
   test/structure-r0.test.mjs pins each direction.

@@ -261,6 +261,12 @@ Tests: test/r0-verdict.test.mjs (compiled exports, each constructor
 at its arity, reachability) and test/structure-r0.test.mjs (both
 rules in both directions, the re-export form). No corpus re-pin: no
 tracked source, fixture or fenced block changed.
+Fix round 1 (review I1): `exportFindings` now removes comments before
+matching, accepts dotted aliases, and outside the public module reports
+any alias on an import of a restricted Internal module and any export
+of it by name. Nine new cases cover the reviewer's three shapes and
+their variants; the RED run and two mutants are in findings. The
+Generate stub stays out (controller ruling: Task 3.2 creates it).
 
 ## Language direction recorded (2026-10-08)
 

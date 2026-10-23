@@ -86,7 +86,16 @@ export const graphFindings = graph =>
       dependency) : libraryFinding(name, dependency))]);
 });
 
-const bareTypes = /^\(\s*[A-Z][\w']*(\s*,\s*[A-Z][\w']*)*\s*\)(\s+as\s+\w+)?$/;
+// Comments are removed first, so none can hide an import, end the export
+// list early (`-- ) where`) or break an anchor. A `--` followed by a
+// symbol character is an operator, not a comment.
+const commentless = source => source.replace(/\{-[^]*?-\}/g, ' ')
+  .replace(/--+(?![!#$%&*+./<=>?@\\^|~:])[^\n]*/g, '');
+const aliasName = "[A-Z][\\w']*(\\.[A-Z][\\w']*)*";
+const typeName = "[A-Z][\\w']*";
+const bareTypes = new RegExp(`^\\(\\s*${typeName}(\\s*,\\s*${typeName})*\\s*\\)`
+  + `(\\s+as\\s+${aliasName})?$`);
+const aliased = /(^|\s)as\s/;
 const importsOf = (source, internal) => [...source.matchAll(new RegExp(
   `^import\\s+${internal.replaceAll('.', '\\.')}(?![\\w.])((?:.|\\n[ \\t])*)`,
   'gm'))].map(match => match[1].trim());
@@ -94,18 +103,24 @@ const exportedModules = source => [...(source.match(
   /^module\s+[\w.]+\s*\(((?:.|\n)*?)\)\s*where/m)?.[1] ?? '')
   .matchAll(/\bmodule\s+([\w.]+)/g)].map(match => match[1]);
 
-export const exportFindings = (file, source) => {
+// In the public module every import of its Internal module lists bare
+// type names. Elsewhere any alias on such an import is a finding, whether
+// or not the alias is exported (review I1: purs accepts dotted aliases),
+// and so is exporting the Internal module under its own name.
+export const exportFindings = (file, text) => {
+  const source = commentless(text);
   const name = source.match(/^module\s+([\w.]+)/m)?.[1];
   const exported = exportedModules(source);
-  return reexported.flatMap(rule => importsOf(source, rule.internal)
-    .flatMap(body => {
-    const alias = body.match(/\bas\s+(\w+)$/)?.[1] ?? rule.internal;
-    if (name === rule.public)
-      return bareTypes.test(body) ? []
-        : [`${file}: imports ${rule.internal} beyond bare type names`];
-    return exported.includes(alias)
-      ? [`${file}: re-exports ${rule.internal}`] : [];
-  }));
+  return reexported.flatMap(rule => {
+    const imports = importsOf(source, rule.internal);
+    if (name === rule.public) return imports.filter(body =>
+      !bareTypes.test(body)).map(() =>
+      `${file}: imports ${rule.internal} beyond bare type names`);
+    return [...imports.filter(body => aliased.test(body)).map(() =>
+      `${file}: imports ${rule.internal} under an alias`),
+    ...exported.filter(module => module === rule.internal).map(() =>
+      `${file}: re-exports ${rule.internal}`)];
+  });
 };
 
 const disabledGate = new RegExp('\\.(skip|only|todo)\\s*\\('

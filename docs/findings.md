@@ -1487,3 +1487,25 @@ unpatched:
   re-export-form tests fail.
 - E, other modules' re-exports no longer reported: "no other module
   re-exports a token Internal module" fails.
+
+**Fix round 1 (review I1; checked).** The review compiled three shapes
+that purs 0.15.16 accepts, that re-export a token constructor, and that
+the first `exportFindings` passed: a dotted alias (`as T.I`, `module
+T.I`), a trailing `-- comment` on the import, and a comment containing
+`) where` inside the export list. Against the old check, a throwaway
+script gave 0 findings for each of these six: (a) the dotted alias,
+(b) the trailing comment, (c) a line comment in the export list, (c2)
+a block comment `{- ) where -}` there, (c3) a comment before `module
+Domain.Verdict.Internal` in the export list, and (d) an aliased import
+that is not re-exported. It also gave 1, a false positive, for a
+public module whose bare-types import ends in a comment. `node --test
+test/structure-r0.test.mjs` failed "no other module re-exports a
+token Internal module" (first at `module T.I`) and "comments do not
+hide or invent a public-module finding". The new check removes
+comments first, and outside the public module it reports any alias on
+an import of a restricted Internal module and any export of the
+Internal module by its own name. After the change the script gave 1
+for each of (a)-(d) and 0 for the commented public import, and the
+file passes 6 of 6. Mutants, each restored: M-F (comments not
+removed) fails both tests above; M-G (aliases never reported) fails
+"no other module re-exports a token Internal module".

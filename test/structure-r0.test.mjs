@@ -90,6 +90,30 @@ test('no other module re-exports a token Internal module', () => {
       + 'import Domain.Verdict.Internal (Refuted) as X\n',
     header(name, 'module Domain.Verdict.Internal') + own + '\n',
     header('Features.Check.Generate', 'module R')
-      + 'import Domain.Recorded.Internal (RecordedProblem) as R\n'
+      + 'import Domain.Recorded.Internal (RecordedProblem) as R\n',
+    // Fix round 1 (review I1): shapes purs accepts that the first check
+    // missed, and the simpler rule that any alias outside the public
+    // module is a finding, re-exported or not.
+    header(name, 'module T.I') + own + ' as T.I\n',
+    header(name, 'module X') + own + ' as X -- note\n',
+    `module ${name}\n  ( checkDerivation -- see ) where\n  , module X\n`
+      + `  ) where\n\n${own} as X\n`,
+    `module ${name}\n  ( checkDerivation {- ) where -}\n  , module X\n`
+      + `  ) where\n\n${own} as X\n`,
+    `module ${name}\n  ( checkDerivation -- ) where\n`
+      + `  , module Domain.Verdict.Internal\n  ) where\n\n${own}\n`,
+    header(name, 'checkDerivation') + own + ' as I\n'
   ]) assert.equal(exportFindings(rules, source).length, 1, source);
+});
+
+test('comments do not hide or invent a public-module finding', () => {
+  assert.deepEqual(exportFindings(verdict, publicWith(
+    'import Domain.Verdict.Internal (Valid, Refuted) as Exports -- tokens')),
+  []);
+  assert.deepEqual(exportFindings(verdict, publicWith(
+    'import Domain.Verdict.Internal {- (Valid(..)) -} (Valid) as Exports')),
+  []);
+  assert.equal(exportFindings(verdict, publicWith(
+    'import Domain.Verdict.Internal (Valid(..)) as T.I -- (Valid)')).length,
+  1);
 });
