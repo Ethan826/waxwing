@@ -17,8 +17,9 @@ import { wire } from '../output/Format.Diagnostic/index.js';
 // a tautology once one is derived from the other, so both are compared
 // with the snapshot. A program added to the corpus later is appended,
 // with the commit its outcome was computed at (`extended`, at a parent
-// whose src/ is unchanged); no existing entry changes. Corpus-wide, so
-// serial.
+// whose src/ is unchanged) and the baseline commit at which the same
+// outcome was confirmed byte-equal (`confirmed`); no existing entry
+// changes. Corpus-wide, so serial.
 const snapshot = JSON.parse(readFileSync(
   'test/fixtures/r0/first-diagnostic.json', 'utf8'));
 

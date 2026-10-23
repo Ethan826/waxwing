@@ -2686,7 +2686,14 @@ Two findings from building the set (checked, the fixtures pin both):
 The corpus is re-pinned (11 added, 1,128 programs), and the 11 outcomes
 are appended to test/fixtures/r0/first-diagnostic.json under
 `extended` (computed by `compile` at 0c703e1, src/ unchanged); no
-existing entry changed. `node --test --test-concurrency=1` over the five
+existing entry changed. They are confirmed at the snapshot's baseline
+too (fix round 1; `confirmed: "5d6b1cb"`), since src/ changed between
+5d6b1cb and 0c703e1 (88 files): a detached worktree at 5d6b1cb, built
+by `node scripts/build.mjs` only, compiled the 11 programs (sources
+from the corpus loader) with its own `compile` and `wire`, and a
+script compared each outcome's JSON with the snapshot's: `11 of 11
+byte-equal`. The worktree was removed afterwards.
+`node --test --test-concurrency=1` over the five
 corpus-wide suites: 23 pass (RT1 included, so RT1 covers the fixtures).
 
 **B9 settled (generation side; checked).** RT1 (corpus-wide, now with

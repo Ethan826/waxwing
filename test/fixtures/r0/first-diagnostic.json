@@ -3,6 +3,7 @@
  "extended": [
   {
    "commit": "0c703e1",
+   "confirmed": "5d6b1cb",
    "origins": [
     "test/fixtures/r0/rt2/b03-mayhold-share.json",
     "test/fixtures/r0/rt2/b04-share-meta-only.json",
