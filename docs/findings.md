@@ -2168,3 +2168,133 @@ restored and recompiled (purs 0.15.16), that test failed with
 (copy deleted). Also in this round: `OriginKind`'s `Inst` is now
 `InstOrigin`, so a module importing `Atom(..)` and `Origin(..)`
 unqualified meets no ambiguity with the role `Inst`.
+
+## RT1's translator (2026-10-23)
+
+R0 shadow tranche, Task 3.3 steps 1-3 (T-R0b §9 item 1; ruling R9).
+A second implementation of T-R0b §3, written from
+research/division-campaign/r0/recorder-rules.md and Task 3.1's types
+before any generator code exists (Task 3.2 has no commit). It is
+test-only: test/r0-translator.mjs and six helper modules read resolved
+syntax from the compiled output and return canonical problems. The
+canonical serialization, test/r0-canonical.mjs (decoder in
+r0-canonical-decode.mjs), is ruling R9's single one: plain JSON with
+sorted object keys, arrow spines flattened (`{ fun: { params, result
+} }`, a loop for long spines), entry arrays in recorded order, `vars`
+and `types` as pairs in Data.Map's key order. Canonical order, stated
+there: record fields by label (code units, PureScript's `Ord String`),
+tails by the derived `Ord Var` (`compareVar`; RigidVar before
+FreshVar, then path root, steps with `Named` before `Index`, then role
+in constructor order). `entryMultiset` gives RT1's multiset of `[list,
+Origin.atom, value]`; the comparison itself (steps 4-5) waits for Task
+3.2.
+
+**Readings T-R0b leaves open (argued; each a finding for RT1's
+comparison to settle by T-R0b's text).** The translator implements the
+most literal reading and states it in test/r0-translator.mjs.
+
+1. Path steps (§6) are examples only (`Call/args/2`). Read as
+   constructor, field, index; the field names are this translator's
+   (listed in the module header). Task 3.1's report already left the
+   vocabulary to Task 3.2, so the two will differ unless one adopts the
+   other's.
+2. §6 gives no path to Sig1 (rigid variables) or to `f.row`. Rigid
+   variables: `parameters/[variables, i]`; effect-row label arguments:
+   `result/[row]`. Sig3's atom sits at ε, "at path ε" in its row.
+3. `AtomId` is not unique. Several rules emit at one path (Sig3 and the
+   body's root rule at ε; Sig6, Sig8 and Sig8's markers at a
+   parameter), and the index counts per rule. `Origin.rule` tells them
+   apart. RT1's pair `(Origin.atom, entry)` still compares as a
+   multiset.
+4. Index order: a rule's listed entries in order, then §2.2's markers
+   in pre-order of the types translated. §3 does not place markers in
+   the order.
+5. Marker granularity: one marker per `app` built. DataOverRecords
+   when the declared type has a record-row parameter, else
+   DataApplication. A `TData` whose only arguments are effect rows is
+   `app t []`, marked DataApplication. Markers of f's own parameter and
+   result types are Sig8's, whatever the kind.
+6. **Conflict with Task 3.1's types:** `Handler(Console)` (a builtin
+   effect's handler type, §2.2) has no `Head`: `HandlerHead` takes an
+   `EffectId`. Three corpus programs write one
+   (test/fx008-probes/rev6/con2.wxw, test/fx-run-programs.mjs:cases#17,
+   test/fx-task7-programs.mjs:checkedRuns#3). The translator writes
+   `{ handler: 'Console' }` (or `'Fail'`); Task 3.2 must extend `Head`
+   or state another form.
+7. Rows (§6 "Row") where a rule lists several: the row the text ties
+   to the entry (F2 written and F3 implied clauses of θ(D_g), F5 for
+   θ(Q_g), F7 `adm`, H2 `split`, F1 argument equations, O5/F8/O3
+   markers, B14 for E13), else the first listed (C6 for E10's `cmp`,
+   C1 for E18 and E19's `pr`, F8 for E4's joined pairs).
+8. E4's "implied of c.joined" read as `disjoint` per joined pair only;
+   the constructor's fields' implied `lacks` are not added.
+9. E6 with more arguments than fields: τ, `⟨p, res⟩` and the
+   over-application atom as E5, although E6's Fresh column says "as
+   E4".
+10. E20 types the handler by fresh `inst` variables only, as written;
+    the label's written arguments (`State(Int)`) are not equated;
+    HandlerType marks the gap.
+11. E23's "translates to a type with no record and no variable" is read
+    on the translation: a declared family (`Err`) is `base`, so no
+    marker even when its constructors hold records; a written record
+    family is marked.
+12. `spread j` counts from 1 (E25 writes `spread 1 … spread k`).
+13. `adm` slots: every `inst` variable; `split` slots: the record-row
+    ones (§10 "RecordSort slots").
+14. A variable's origin span: the label's for `field l`, `upd l`,
+    `updrest l`; the spread item's for `spread j`; the parameter's for
+    E13's `param k`; the node's otherwise; the declaration's for a
+    rigid one.
+15. Effect parameters are taken as types: resolved `EffectInfo` has no
+    sorts, and BACKLOG R009 says effects take type parameters only.
+16. E22's clause local is bound at the label's single argument; a
+    clause label with another count binds nothing (none in the corpus).
+17. Sig6 and Sig8 split Implied.purs's facts: a record's own labels are
+    Sig6, a declared type's record argument Sig8, its labels by
+    `declared` (reimplemented, not imported).
+18. RT1's "§5.3 normalization" is recorder-spec §5.3's
+    definedness-preserving one (T-R0b §5.3 is the site table). It
+    belongs to the comparison, so steps 1-3 do not apply it.
+
+B13 is not settled here: its evidence is RT1's comparison (step 4).
+LocalGeneralization is produced by no resolved construct (§3.5), so it
+is exempt from the per-kind check (ruling R11).
+
+**Tests (checked).** `node --test test/r0-canonical.test.mjs
+test/r0-translator-signature.test.mjs test/r0-translator-calls.test.mjs
+test/r0-translator-forms.test.mjs test/r0-translator-records.test.mjs`:
+40 pass. Each rule's expected entries are written by hand from §3's
+tables. G-total: the translator's constructor lists equal those parsed
+from src/Domain/Resolved.purs (36 Expr) and Resolved/Core.purs (6
+Pattern). r0-canonical decodes every constructor of Domain.Recorded's
+vocabulary, sorts as the compiled `ordVar` does, and decodes an
+80,000-arrow spine. `node --test
+test/r0-translator-total.serial.test.mjs`: 5 pass. Over the pinned
+corpus (973 resolving programs, 2,958 declarations) it checks that
+translation returns, that every variable an entry or type mentions is
+in `vars`, that canonical order holds, that every rule but the
+entry-free ones (Sig1, Sig2, Sig9, E1, E2, E24, P1, P2) emits, and
+that every marker kind but LocalGeneralization occurs. No RED run
+exists: the modules were written before their tests. The mutants
+below stand in for it.
+
+**Mutant runs (recorded).** Each mutant was run on a copy of the new
+test modules in the session scratchpad, with output/ and src/ linked,
+over the five rule-level files; the copy was then deleted. Unpatched:
+40 of 40 pass.
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| M1 | calls.mjs `arrow(args.slice(n), res)` → `slice(n + 1)` | E5, E6 |
+| M2 | records.mjs `{ spread: spreads.length + 1 }` → `spreads.length` | E25 |
+| M3 | records.mjs P6's rest positioned `restType` (`rule !== 'P5'`) | P5-P7 |
+| M4 | types.mjs `rowsOf(type).forEach(row` → `[].forEach(row` | Sig6 depth |
+| M5 | canonical.mjs `compareVar` puts FreshVar first | compareVar, outOfOrder |
+| M6 | exprs.mjs E10's `cmp` of `Bool` instead of the left operand | E7-E11 |
+| M7 | context.mjs index counter keyed by path only | Sig3, Sig6/7, Sig8 |
+| M8 | calls.mjs `split` only when `rows.length > 1` | E3 |
+| M9 | effects.mjs `pr` when `types.length >= 1` | E19 |
+| M10 | effects.mjs FailFamily only when no family is written | E23 |
+
+M4 and M10 survived a first run. The Sig6 test gained an arrow's
+effect row and E23 a record family, and both then failed as listed.

@@ -396,6 +396,26 @@ findings, "The recorded problem's fields". Fix round 1: `Eq RTExpr`
 walks arrow spines by a loop (the derived one overflowed at 20,000
 arrows; tested at 80,000), and `OriginKind`'s `Inst` is `InstOrigin`.
 
+## R0 shadow tranche, Task 3.3 steps 1-3: RT1's translator (2026-10-23)
+
+RT1's independent translator (T-R0b §9 item 1), written from T-R0b
+alone before the generator (Task 3.2) exists: test/r0-translator.mjs
+and its modules (-context, -types, -signature, -calls, -exprs,
+-effects, -records) read resolved syntax from the compiled output and
+return each declaration's problem in canonical form. Test-only code;
+the compiler is unchanged. Ruling R9: test/r0-canonical.mjs (with
+-decode) is the one canonical serialization (`canonicalOf`,
+`encodeProblem`, `entryMultiset`, `compareVar`, `outOfOrder`), with
+the canonical order of record fields and tails, `vars` and `types`
+stated in it. Rule-level tests (r0-translator-signature, -calls,
+-forms, -records, r0-canonical: 40 tests) cover Sig1-Sig10, E1-E28 and
+P1-P7; a serial corpus test checks totality, `vars` closure,
+canonical order, rule coverage and marker kinds (LocalGeneralization
+exempt, R11). Ten mutants, each killed. The comparison (steps 4-5)
+and B13 wait for Task 3.2. T-R0b's open choices are fixed as stated
+readings and recorded as findings, "RT1's translator". No fixture
+changed, no corpus re-pin.
+
 ## Language direction recorded (2026-10-08)
 
 User review revisions: FN001 is scheduled after P001 before C001/R001/
