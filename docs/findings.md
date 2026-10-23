@@ -3404,7 +3404,8 @@ shadow run's `Checking` (`shadowChecking`, `shadowDecisions`), its
 detector fixed to `Decide.Open.openRequirements`.
 
 **Readings and amendments (labelled).**
-1. *Amendment to T-R0b §3.5's E17 (recorder defect, fixed):* a perform
+1. *Amendment to T-R0b §3.5's E17 (recorder defect, fixed; pending
+   the spec owner's acceptance):* a perform
    is checked as a named call (Check/Operation.purs `named`, FN001), so
    E17 takes E5's three cases: the arrow of the unsupplied parameters,
    or with more arguments `⟨p, res⟩` and `eq θ(result) (τ… → ⟨p, res⟩)`
@@ -3416,7 +3417,8 @@ detector fixed to `Decide.Open.openRequirements`.
    form.partial-perform.json `g`, whose atoms held anyway). Generator
    and RT1's translator were both amended, by this implementer, from the
    amended rule: their agreement on it is of algorithm only.
-2. *Amendment to §5.2's `Slot` list (read-back defect, fixed):* P4
+2. *Amendment to §5.2's `Slot` list (read-back defect, fixed; pending
+   the spec owner's acceptance):* P4
    positions its owner's `inst i` at `Slot p i` of a constructor
    pattern, which has no instantiation; the read-back reads the pattern
    type's argument at the slot's rank among the owner's non-effect-row
@@ -3431,7 +3433,9 @@ detector fixed to `Decide.Open.openRequirements`.
    proposed). None on the corpus after the read-back substitutes the
    positioned values first; the fixture `two` (`{ a: Int, ...r, ...s }`)
    pins it (r0-readback.test.mjs).
-4. *Holes (criterion 5, Task 4.2 findings item 8):* the search binds a
+4. *Holes (criterion 5, Task 4.2 findings item 8; a provisional
+   reading the controller accepted, pending the author's ambiguity
+   ruling, not a decision):* the search binds a
    hole as today's lowering does (a type hole `Int`,
    Specialize.purs `specialize`; a row hole closed, Lower.purs), so
    `pr`/`cmp` at a flexible variable today leaves open never reaches
@@ -3444,7 +3448,17 @@ detector fixed to `Decide.Open.openRequirements`.
    reaches read-back: today's `comparable` refuses the hole first
    (AmbiguousType), so the attempt is `Searched Exhausted`. This binds
    the representative today compiles with; it claims nothing about
-   other representatives (C001's h1/h2 question stays open).
+   other representatives (C001's h1/h2 question stays open). Its effect
+   stays visible (review fix round 1, I-1): the certificate's `holes`
+   lists the holes bound, RT8 counts a Solved resting on one as its own
+   class, "Solved with a bound hole (pending the author's ambiguity
+   ruling)", and rt8.json's `boundHoles` lists every declaration whose
+   candidate bound one, with its class (118: 4 Solved, 114 blocked by
+   markers first, h1 and h2 among them by DataApplication). The four
+   Solved: C001 baseline a1-discard-dictionary and a2-unused-local
+   `main`, erased/form.show-reference `g`, r005b
+   render-quiet-annotated `main`. Correction to the review's premise:
+   h1/h2 are not shadow Solved; DataApplication blocks them.
 5. *Declaration-not-found (ruling R10 (iii)), strengthened:* the
    context's declaration must regenerate exactly the problem (compared
    through `fields`). Checked RED: with lookup by id alone, a problem
@@ -3476,7 +3490,8 @@ detector fixed to `Decide.Open.openRequirements`.
   and RT3 (r0-injection) still pass.
 - RT8 GREEN (checked, test/fixtures/r0/rt8.json, `node
   scripts/r0-rt8-pin.mjs`): 3,011 declarations; 0 defects; 0 position
-  findings. Today accepts 2,773: Solved 1,989; §3.2(a) blocked by rule
+  findings. Today accepts 2,773: Solved 1,985 with no bound hole and 4
+  with one (fix round 1; 1,989 together); §3.2(a) blocked by rule
   1, 781 (DataApplication 587, HandlerType 170, FailFamily 60, Deferred
   45, EffectArgument 32, DataOverRecords 3, counted per marker); §3.2(b)
   declined by `g0Guard`, 3 (examples/records.wxw); `RequirementOpen`
@@ -3515,6 +3530,16 @@ detector fixed to `Decide.Open.openRequirements`.
 | M9 confined stops | Ending.purs `LaterWork → Stops` | r0-online-faults: R3 routing; confined kind |
 | M10 too deep | Ending.purs TypeTooDeep → Exhausted | r0-online-faults: ending |
 
+- Fix round 1 (review I-1, I-2; checked). RED first: r0-online-carries
+  `RT8 accounting: RequirementUnjudged is a defect under Heuristic` gave
+  `ambiguous several-tail read-back (Heuristic)` with the old order
+  (Heuristic tested before the refusal kind); `… a Solved with a bound
+  hole is its own class` and r0-readback `the certificate lists the
+  holes the read-back bound` failed (no class, no field). GREEN after:
+  the backstop is tested first, whatever the claim. Mutant (holes
+  recorded as `[]` in ReadBack.purs): r0-readback `the certificate
+  lists…`, r0-rt8 `a Solved resting on a bound hole…` and `the classes
+  equal their pinned counts` fail.
 - Regression rows (checked, `node scripts/regression.mjs` with the six
   names): `r0-shadow-detector`, `r0-ctor-slot`, `r0-hole-unbound`,
   `r0-stop-confined`, `r0-perform-arity`, `r0-declaration-by-id`; each

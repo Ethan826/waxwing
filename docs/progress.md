@@ -548,7 +548,12 @@ question for the author); `SearchHint` and `Question` confirmed; Mgu's
 `tailOf` explicit. Ten mutants and six regression rows fail as
 expected. Readings and evidence in findings, "The online strategy and
 its read-back". No fixture changed; no corpus re-pin; trusted-surface
-pin unchanged.
+pin unchanged. Fix round 1 (review I-1, I-2): the hole binding is
+labelled provisional, pending the author's ambiguity ruling; the
+certificate lists the holes it bound and RT8 counts a Solved resting on
+one as its own class (4 declarations; 118 bound a hole, listed in
+rt8.json); RT8 tests `RequirementUnjudged` before the claim; the E17
+and P4-slot amendments are marked pending the spec owner.
 
 ## R0 shadow tranche, Task 4.1 with 3.6: strategies and `decide` (2026-10-23)
 
