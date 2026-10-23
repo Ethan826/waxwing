@@ -290,7 +290,8 @@ Two realizations:
 - **(b-joint)** The check is today's checker solving records and
   effects together, as it does now. It exists only inside the online
   search, so it covers only the online witness, and its effect part
-  is untrusted. No new code.
+  is untrusted. No new code. Kept provisionally; its trigger is
+  superseded by the ruling (§7.1).
 - **(b-trusted)** A new checker of the erased obligations over the
   built IR, for any strategy's witness. **New machinery, flagged
   (ADR 014):** its parts are published (Leijen's scoped-label
@@ -317,7 +318,7 @@ Two realizations:
   a slot `⟨p, effect⟩ ↦ Free m` only through the online adapter's
   shared numbering. **E-a is therefore sufficient only together with
   (b-joint)**, which makes every other strategy's Solved non-lowerable
-  (§7); without (b-joint), E-a must also require effect-row metas
+  (§7, §7.1); without (b-joint), E-a must also require effect-row metas
   inside images to be named variables. Under E-a, D1 §9's
   effect-erased scope for T2 and T8 (§10) should be revisited: the
   effect positions are then in the witness, so the comparison can
@@ -355,7 +356,11 @@ it.
 1. **Part (i): option (a).** `ErasedRow` by C-erased, joining T-R0a
    §5.3 rule 1 (plan Task 4.1: "After G-erased, its ruled marker or
    check joins here"). No new machinery; Task 3.5 counts its cost.
-2. **Part (ii): (b-joint).** A Solved on a declaration for which P-ii
+2. **Part (ii): (b-joint).** *Superseded by §7.1 (2026-10-23): P-ii
+   no longer decides whether effect validation is needed; every
+   lowered declaration needs it. P-ii survives only as a detector
+   of where inferred rows exist, i.e. E-a's slots and the census's
+   informational count (§8).* A Solved on a declaration for which P-ii
    holds is lowered only with rows and an effect verdict from a joint
    solve at the same witness. Today only the online strategy provides
    that. Another strategy's Solved on such a declaration is
@@ -384,13 +389,14 @@ and adds no code beyond syntactic detectors.
 
 | Choice | Narrowing at the switch | Trust in effects | New machinery | Other strategies |
 |---|---|---|---|---|
-| Recommended: (a) + (b-joint) + E-a | declarations marked `ErasedRow` and no other marker (census) | untrusted joint solve, Pending assurance | none | no lowerable Solved where P-ii holds |
+| Recommended: (a) + (b-joint) + E-a | declarations marked `ErasedRow` and no other marker (census) | untrusted joint solve, Pending assurance | none | no lowerable Solved without equivalent effect validation (§7.1) |
 | (b-joint) alone + E-a | none expected (argued: online accepts exactly today's programs) | as recommended, and record obligations hidden in rows are also checked only by untrusted code | none | as above |
 | (a) + (b-trusted) + E-a | as recommended, until exemptions | trusted | trusted effect checker | any |
 | (a) alone | as recommended | none: K1e, K2, K3 unaccounted | none | rejected: obligation-ground and obligation-rowvar are unmarked and their obligations false |
 | Call such declarations Solved anyway | none | none | none | rejected (§18.70, option D) |
 
 **Points the author rules (G-erased (policy); from the gate review).**
+**Ruled 2026-10-23; see §7.1.** The list is kept for the record.
 
 1. `ErasedRow` as a new `Outside` kind under C-erased as revised here.
 2. Whether a Solved may rest on the untrusted online joint solve for
@@ -403,6 +409,58 @@ and adds no code beyond syntactic detectors.
    so that G-D1 can close.
 5. Whether an operation's ignored `with` row (gate P6; BACKLOG FX032)
    is a live-checker defect.
+
+### 7.1 The author's ruling (2026-10-23)
+
+G-erased (policy), in the author's terms:
+
+1. `ErasedRow` is adopted as a temporary support boundary for shadow
+   recording and the census. It means "the record model discarded
+   information that might matter to this declaration's record
+   types", not that the program is invalid. The narrowing it causes
+   is **not approved**; it is decided after the census and review.
+   Option E remains the destination.
+2. Joint record-and-effect checking stays provisionally, under a
+   broader invariant: *every declaration that reaches lowering has
+   its effect obligations validated against the same record/type
+   witness used to build its checked representation.* Today's joint
+   checker supplies that validation. Another strategy needs
+   equivalent validation, or a reviewed exemption showing no erased
+   obligations remain; the absence of inferred rows is insufficient.
+   Assurance is stated separately: record witness checked; effect
+   assurance pending; never presented as formally verified.
+3. A distinct Unresolved reason, working name `EffectsUnchecked`,
+   covers omitted effect obligations generally, not only missing
+   inferred-row values. "This strategy hasn't checked your effects"
+   is an implementation limitation and stays Unresolved.
+4. E-a is adopted conditionally, tied to item 2: recording an answer
+   does not validate it. Adapter tests must check consistent
+   bindings at the named slots and inside nested types. This settles
+   G-D1's policy dependency, not the implementation's correctness.
+5. Silently ignored operation-level `with` clauses (BACKLOG FX032)
+   are a defect. Recommended: reject unsupported ones for now rather
+   than invent a meaning, distinguishing an operation requiring an
+   effect whenever invoked from a handler using an effect to
+   implement it; effects on callbacks inside operation parameters
+   stay supported. A separate compatibility fix, outside the
+   acceptance-preserving shadow tranche.
+
+**Counterexample behind item 2 (the author's; argued from §7's P-ii
+text; a fixture is scheduled with Task 3.5; not run). A plain fence
+keeps it out of the pinned corpus until that fixture lands.**
+
+```text
+effect Log { fn log(n: Int): Unit; };
+
+fn g(): Unit with pure = Log.log(1);
+
+fn main(): Int = 0;
+```
+
+Today's compiler rejects `g` (correct). Neither detector (C-erased,
+P-ii) fires, and the recorder retains only `Unit = Unit` and
+`Int = Int`, so a records-only strategy could satisfy those without
+establishing the purity promise.
 
 ## 8. The census categories (Task 3.5)
 
@@ -422,8 +480,9 @@ signatures, constructors, effects). Recorded:
 **Inferred effect rows (part (ii)), informational.** Among the
 declarations that compile today, those for which P-ii holds, and the
 programs containing one. Not narrowing while the online strategy is
-the only one; read as what a non-online strategy could not lower
-under (b-joint), and as the reach of the Pending-assurance label.
+the only one; read as where inferred rows exist (§7.1 supersedes
+P-ii as the validation trigger) and as the reach of the
+Pending-assurance label.
 
 The fixtures' `sources`, `marked` and `inferredRow` fields are the
 detectors' expected answers: Task 3.5 asserts them, and a
