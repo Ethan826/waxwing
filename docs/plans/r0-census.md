@@ -81,6 +81,16 @@ programs this category alone blocks.
 rejected** (245 without ErasedRow). The origins are listed in
 census.json (`union.origins`).
 
+Three scenarios, kept apart (the author's ruling R-a, 2026-10-23; the
+window table, test/fixtures/r0/window.json `summary.stops`, counts them
+from R0's shadow decisions and reconciles with this census): (1) 245
+programs stop under the implemented shadow decisions; (2) 6 more if the
+erased-row boundary were adopted (its narrowing is not approved); (3)
+3 more (5 with R022's two inline probes) if a future ambiguity policy
+rejected the bound-hole cases, which are Solved now (hypothetical, not
+approved). The census counts (1) and (2); (3) is
+the window's.
+
 - Second spreads: Resolve refuses them today, so none has a problem;
   71 corpus programs stop there (counted for completeness, not as
   narrowing).

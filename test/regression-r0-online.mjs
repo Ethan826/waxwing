@@ -1,4 +1,4 @@
-// Task 4.3's regression probes, imported through
+// Task 4.3's regression probes (and Task 4.5's hint row), imported through
 // test/regression-probes.mjs; the rows are in scripts/regression-r0.mjs.
 // Each loads modules from the compiler under test only, through
 // `context.compilerPath`.
@@ -62,9 +62,10 @@ export const r0OnlineProbes = {
     const { Left } = await load('Data.Either');
     const program = online.programOf(`fn f(): Int = 1;\n${main}`);
     const problem = online.problemOf(program, 'f');
-    const search = online.Online.searched(problem)(new Left({ problem:
-      new Problem.Internal(Problem.TableLookup.value, 'x'), related: [],
-    span: { start: { line: 1, column: 1 }, end: {} } }));
+    const search = online.Online.searched(online.legacyText)(problem)(
+      new Left({ problem: new Problem.Internal(Problem.TableLookup.value,
+        'x'), related: [], span: { start: { line: 1, column: 1 },
+        end: {} } }));
     const found = describe(stubs.decide(stubs.checking({ strategies: [
       online.Online.onlineWith(() => () => search),
       stubs.behaviours.accepting()] }), problem));
@@ -92,6 +93,16 @@ export const r0OnlineProbes = {
       online.Online.online(online.contextOf(other))] }), problem));
     if (found.fault !== 'BrokenInvariant')
       fail(`another program's declaration was searched: ${found.verdict}`);
+    passed(context);
+  },
+  // Task 4.5 fix round (ruling R-b3): a no-candidate hint carries today's
+  // text, as the legacy solver's untrusted reason for stopping.
+  'r0-hint-text-dropped': async context => {
+    const { online } = await loaded(context);
+    const program = online.programOf(`fn f(): Int = 1 + true;\n${main}`);
+    const [hint] = online.decisionOf(program, 'f').value0.verdict.value0
+      .hints.map(found => found.value0);
+    if (!/reporting "[^"]+"/.test(hint)) fail(`no legacy text: ${hint}`);
     passed(context);
   }
 };

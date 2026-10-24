@@ -4,7 +4,7 @@ import { pinCommand, pinnedWindow, windowFile, windowPrograms, windowTable }
   from './r0-shadow-run.mjs';
 import { summaryOf } from './r0-shadow-summary.mjs';
 import { windowClasses } from './r0-shadow-classes.mjs';
-import { defectProbes, defects, falseContradictions }
+import { defectProbes, defects, falseContradictions, knownValid }
   from './r0-shadow-known.mjs';
 import { pinnedCensus } from './r0-census-run.mjs';
 import { pinnedRt8 } from './r0-rt8-run.mjs';
@@ -31,6 +31,7 @@ test('every row has a known class, its label, and no source', () => {
   for (const row of rows) {
     const known = windowClasses[row.class];
     assert.ok(known !== undefined, row.class);
+    assert.deepEqual(table.summary.classes[row.class].target, known.target);
     assert.equal(row.section, known.section, row.at);
     assert.equal(row.section === null, row.class === 'defect', row.at);
     assert.equal(row.source, undefined, row.at);
@@ -45,21 +46,29 @@ test('each hand-labelled declaration is in the run as listed', () => {
       'false contradiction (D6) becomes Unresolved', at);
     assert.equal(textOf(rowAt(at)), text, at);
   }
+  for (const [at, { text, evidence }] of Object.entries(knownValid)) {
+    assert.equal(rowAt(at)?.class,
+      'known-valid program; current solver cannot decide', at);
+    assert.equal(textOf(rowAt(at)), text, at);
+    assert.equal(rowAt(at).evidence, evidence, at);
+  }
   for (const [at, { today }] of Object.entries(defects)) {
     assert.equal(rowAt(at)?.class, 'defect', at);
     assert.equal(textOf(rowAt(at)), today, at);
   }
 });
 
-// §3.1 option C: listed, not adopted. Each listed row is refused both
-// today and under R0 (acceptance unchanged), with no blocker.
+// §3.1 option C: listed, not adopted. Each listed row is a D6 or
+// known-valid refusal, refused both today and under R0 (acceptance
+// unchanged), with no blocker.
 test('option C lists only rows refused both ways, with no blocker', () => {
   assert.deepEqual([...table.summary.optionC].sort(),
-    Object.keys(falseContradictions).sort());
+    [...Object.keys(falseContradictions), ...Object.keys(knownValid)]
+      .sort());
   for (const at of table.summary.optionC) {
     const row = rowAt(at);
     assert.equal(row.programCompiles, false, at);
-    assert.equal(row.r0.verdict, 'Unresolved Inference NoCandidate', at);
+    assert.match(row.r0.verdict, /^Unresolved /, at);
     assert.deepEqual(row.blockers, [], at);
   }
 });
@@ -79,9 +88,10 @@ test('the window reconciles with the census', () => {
     assert.deepEqual(found.blockers[name], {
       declarations: census.categories[name].declarations,
       compilingPrograms: census.categories[name].programs }, name);
-  assert.equal(found.stopped.withErasedRow, census.union.programs);
-  assert.equal(found.stopped.asDecided,
+  assert.equal(found.stops.underShadowDecisions,
     census.union.programsWithoutErasedRow);
+  assert.equal(found.stops.underShadowDecisions
+    + found.stops.additionalIfErasedRowAdopted, census.union.programs);
   const classes = found.classes;
   assert.equal(classes['erased row: compiles today, census detector fires']
     .declarations, census.erased.markedWithoutOutsideKind);

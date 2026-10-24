@@ -1,7 +1,8 @@
 // The hole contract's lacks/disjoint amendment regression rows
-// (docs/plans/r0-hole-contract-amendment.md) and the read-back's sort
-// carry (Task 4.4b's review), spread into r0Rows
-// (scripts/regression-r0.mjs); probes in test/regression-r0-witness.mjs.
+// (docs/plans/r0-hole-contract-amendment.md), the read-back's sort
+// carry (Task 4.4b's review) and Task 4.5's hint row, spread into r0Rows
+// (scripts/regression-r0.mjs); probes in test/regression-r0-witness.mjs
+// and, for the hint row, test/regression-r0-online.mjs.
 const file = 'src/Features/Check/Strategy/HoleContract.purs';
 
 export const r0WitnessRows = [
@@ -36,5 +37,26 @@ export const r0WitnessRows = [
     replacement: '  plain = map (readSorted sort)\n',
     probe: 'r0-readback-sort-everywhere',
     message: /the rest's bare hole read as Record/
+  },
+  {
+    // Task 4.5 fix round (review minor 2): only the constructor
+    // pattern's slot arm reads by sort, where lowering reads the
+    // pattern's type plainly (Specialize/Body.purs `copyPattern`).
+    name: 'r0-readback-pattern-slot-sorted',
+    file: 'src/Features/Check/Strategy/ReadBack/Position.purs',
+    needle: '  AtPattern (Checked.Pattern found) → readType <$>\n',
+    replacement: '  AtPattern (Checked.Pattern found) → readSorted sort <$>\n',
+    probe: 'r0-readback-pattern-slot-sorted',
+    message: /the pattern slot's bare hole read as Record/
+  },
+  {
+    // Task 4.5 fix round (ruling R-b3): the online search's hint drops
+    // today's text, keeping only the place.
+    name: 'r0-hint-text-dropped',
+    file: 'src/Features/Check/Strategy/Online.purs',
+    needle: '      <> legacyText diagnostic\n',
+    replacement: '      <> const "" (legacyText diagnostic)\n',
+    probe: 'r0-hint-text-dropped',
+    message: /no legacy text: untrusted search hint/
   }
 ];

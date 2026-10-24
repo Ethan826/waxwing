@@ -73,7 +73,7 @@ test('ending reads every Problem constructor', () => {
 const program = online.programOf('fn f(): Int = 1;\nfn main(): Int = 0;\n');
 const problem = online.problemOf(program, 'f');
 const injected = found => Online.onlineWith(() => () => found);
-const searchedLeft = made => Online.searched(problem)(
+const searchedLeft = made => Online.searched(online.legacyText)(problem)(
   new Left(diagnostic(made)));
 const decided = strategies => describe(Decide.decide(stubs.checking(
   { strategies }))(problem));
@@ -84,7 +84,9 @@ test('a confined kind is SearchBroke and the next strategy decides', () => {
     assert.equal(search.value0.constructor.name, 'Broke', kind);
     assert.equal(search.value0.value0, kind);
     assert.deepEqual(search.value1.map(hint => hint.value0),
-      ['the current solver stopped here: 3:7']);
+      [`untrusted search hint: the legacy solver stopped at 3:7, reporting`
+        + ` "${online.legacyText(diagnostic(internal(kind)))}" (its reason`
+        + ' for stopping, never evidence of a contradiction)']);
     assert.deepEqual(decided([injected(search),
       stubs.behaviours.accepting()]), { verdict: 'Solved',
       attempts: ['Searched Broke', 'Accepted'],

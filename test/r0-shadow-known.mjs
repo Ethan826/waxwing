@@ -16,6 +16,8 @@ const c01Text = "divide's { ...u, ...v } must be { x: Int }, but neither u"
   + ' nor v can have field x';
 const b03Text = "ext's { ...s, ...t } must be { b: _, ..._ }, so s cannot"
   + ' hold r';
+export const falseEvidence = 'cited: research/division-campaign/r0/'
+  + 'refusal-audit.md:46-49 (checked there in the bounded model)';
 export const falseContradictions = {
   'research/division-campaign/source/examples/p11-route.wxw#route': p11Text,
   'test/fixtures/r0/rt2/d6-p11-route.json#route': p11Text,
@@ -23,6 +25,63 @@ export const falseContradictions = {
   'research/division-campaign/r0/probes/c01-h-label.wxw#route': c01Text,
   'research/division-campaign/r0/probes/b03-mayhold-share.wxw#use': b03Text,
   'test/fixtures/r0/rt2/b03-mayhold-share.json#use': b03Text
+};
+
+// Known-valid programs the current solver cannot decide (the author's
+// ruling R-b1, 2026-10-23): D4 "Cannot tell" refusals whose validity is
+// recorded elsewhere, each with its evidence. Today's text does not
+// assert impossibility, so these are not false contradictions. Copies
+// carry the same call (argued: equal text but for unrelated lets or a
+// result type). `submit` (rt2/d6-submit) is left out: its validity
+// rests on "a reviewer's unrecorded bounded evaluation"
+// (research/division-campaign/remedy/requirements.md:429-431).
+const audit = 'research/division-campaign/r0/refusal-audit.md';
+const translation = 'research/division-campaign/source/translation.md';
+const c21 = `cited: ${audit}:353-358 (c21, checked there: the oracle`
+  + ` finds it valid, split forced); ${translation}:492 (S c21`
+  + ' solvable, forced)';
+const p10 = `cited: ${translation}:480 (Lean wrapAccepts_validFin)`;
+const walk = 'argued: research/division-campaign/remedy/requirements.md:'
+  + '83-86 (W1, valid with the identity split); validity only, recursive'
+  + ' admissibility is separate (W2, R010, BACKLOG R019)';
+const cannotTell = (callee, parts, split) => `Cannot tell how ${callee}'s`
+  + ` ${parts} split ${split}; no annotation can decide ${parts}, which`
+  + ` belong to this call of ${callee}`;
+const c21Text = cannotTell('acceptsParts', 'r and s', '{ admin: Bool }');
+const p10Text = cannotTell('acceptsParts', 'a and b', '{ ...r }');
+const walkText = 'Cannot tell whether walk\'s u or v holds walk\'s u; no'
+  + ' annotation can decide u and v, which belong to this call of walk';
+const r019 = 'test/fixtures/r0/r019/walk-as-written';
+const examples = 'research/division-campaign/source/examples';
+export const knownValid = {
+  // Byte-identical to source/examples/c21-accepts-parts.wxw (checked,
+  // `cmp`), which the corpus keeps under this first origin.
+  'research/composition-assessment/programs/p4.wxw#main':
+    { text: c21Text, evidence: c21 },
+  'test/fixtures/r0/rt2/d4-c21-accepts-parts.json#use':
+    { text: c21Text, evidence: c21 },
+  [`${examples}/p10-wrap-accepts.wxw#wrapAccepts`]:
+    { text: p10Text, evidence: p10 },
+  'test/fixtures/r0/rt2/d4-p10-wrap-accepts.json#wrapAccepts':
+    { text: p10Text, evidence: p10 },
+  [`${examples}/p12-route-narrowed.wxw#route`]: {
+    text: cannotTell('divide', 'u and v', '{ ...r }'),
+    evidence: `cited: ${translation}:482 (Lean routeNarrowed_validFin)` },
+  [`${examples}/c22s-compose-requirements-stub.wxw#main`]: {
+    text: 'Cannot tell how join\'s r and s split { x: Int, y: Int };'
+      + ' pass a lambda with annotated parameters in place of join',
+    evidence: 'cited,'
+      + ` witness: ${translation}:493 (S c22s solvable, forced: r' = {x},`
+      + " s' = {y})" },
+  'research/division-campaign/r0/probes/f03-compare-split.wxw#main': {
+    text: 'Cannot tell whether left\'s u or v has field a; no annotation'
+      + ' can decide u and v, which belong to this call of left',
+    evidence: `cited: ${audit}:353-360 ("Also f03" among the valid`
+      + ' programs D4 rejects)' },
+  'test/fixtures/r0/rt2/d4-walk-w1.json#walk':
+    { text: walkText, evidence: walk },
+  [`${r019}.caller.json#walk`]: { text: walkText, evidence: walk },
+  [`${r019}.no-caller.json#walk`]: { text: walkText, evidence: walk }
 };
 
 // Today's defects in `checkFunction`, recorded, not fixed in the
@@ -62,7 +121,12 @@ export const defects = {
   today: 'x is not a field of { ..._ }' },
   'inline:fx032#g': { id: 'FX032', findings: 'BACKLOG FX032; findings'
     + ' "Erased effect rows" (gate probe P6); the author\'s G-erased'
-    + ' ruling item 5 makes it a defect', today: null }
+    + ' ruling item 5 makes it a defect', today: null,
+  // The author's ruling R-b4: disclosed, not fixed here.
+  blindSpot: 'the C-erased detector reads resolved syntax, from which'
+    + ' Resolve already discarded the operation row'
+    + ' (Resolve/Effect.purs:47-58), so its silence here and today\'s'
+    + ' agreement with R0 do not validate this declaration' }
 };
 
 // R020 and FX032 have no corpus program; their sources, inline as

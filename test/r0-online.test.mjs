@@ -25,7 +25,8 @@ const boxed = 'type Fn = Fn(Int -> Int);\n'
   + 'fn main(): Fn = Fn(fn(n: Int) => n);\n';
 const program = online.programOf(boxed);
 const problem = online.problemOf(program, 'main');
-const assembled = () => Shadow.shadowChecking(budget)(program);
+const assembled = () =>
+  Shadow.shadowChecking(online.legacyText)(budget)(program);
 const decided = checking => describe(Decide.decide(checking)(problem));
 const blocked = { verdict: 'Unresolved Unsupported RequirementAtoms',
   attempts: ['Accepted'], searchFaults: [] };
@@ -53,11 +54,12 @@ test('a substituted detector would give Solved, which the above refuses',
   });
 
 test('no strategy chooses the detector', () => {
-  // The assembly takes a budget and a program only; a strategy is a
-  // function of (Budget, RecordedProblem), so even one whose check
-  // accepts everything is blocked by the assembled detector.
+  // The assembly takes a renderer, a budget and a program only; a
+  // strategy is a function of (Budget, RecordedProblem), so even one
+  // whose check accepts everything is blocked by the assembled detector.
   assert.equal(Shadow.shadowChecking.length, 1);
-  assert.equal(Shadow.shadowChecking(budget).length, 1);
+  assert.equal(Shadow.shadowChecking(online.legacyText).length, 1);
+  assert.equal(Shadow.shadowChecking(online.legacyText)(budget).length, 1);
   const checking = assembled();
   const hostile = { ...checking, strategies: [stubs.behaviours.accepting()
     .strategy, ...checking.strategies] };

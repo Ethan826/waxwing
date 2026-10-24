@@ -10,6 +10,8 @@
 -- caller or budget can choose another detector. The strategies are
 -- `online` alone, the refuters and shadows none (Task 5.2 adds CX), the
 -- rules Task 5.1's registry, and the run ends at its first verdict.
+-- `legacyText` renders today's diagnostic for the online search's
+-- untrusted hint; the caller injects it (Format renders, Task 4.5).
 --
 -- `shadowDecisions` runs every declaration: generation, then `decide`.
 -- A generation fault is a trusted component's failure (Task 3.2 ruling
@@ -25,6 +27,7 @@ import Prelude
 import Data.Either (Either(..), either)
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
+import Domain.Syntax (Diagnostic)
 import Domain.Verdict (Decision, InternalFault(..))
 import Domain.Verdict.Search (Budget)
 import Features.Check.Decide (Checking, decide, untilVerdict)
@@ -36,9 +39,11 @@ import Features.Check.Generate.Inputs (generationInputs)
 import Features.Check.Refute.Rules (registry)
 import Features.Check.Strategy.Online (online)
 
-shadowChecking ∷ Budget → Resolved.Program → Checking
-shadowChecking budget program =
-  { strategies: [ online { holders: functional program.ctors, program } ]
+shadowChecking
+  ∷ (Diagnostic → String) → Budget → Resolved.Program → Checking
+shadowChecking legacyText budget program =
+  { strategies:
+      [ online { holders: functional program.ctors, program, legacyText } ]
   , refuters: []
   , shadows: []
   , rules: registry
@@ -48,10 +53,13 @@ shadowChecking budget program =
   }
 
 shadowDecisions
-  ∷ Budget → Resolved.Program → Array (Either InternalFault Decision)
-shadowDecisions budget program = map decided program.functions
+  ∷ (Diagnostic → String)
+  → Budget
+  → Resolved.Program
+  → Array (Either InternalFault Decision)
+shadowDecisions legacyText budget program = map decided program.functions
   where
-  checking = shadowChecking budget program
+  checking = shadowChecking legacyText budget program
   inputs = generationInputs program
   decided declaration = either (Left <<< generationStop)
     (decide checking)

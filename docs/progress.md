@@ -629,7 +629,16 @@ experiment). It reconciles with census.json and rt8.json exactly
 FX031, FX010, R005B placeholders, R020, FX032 (two inline probes).
 Found on the way and fixed (test-only): the census walk reversed a
 program's arguments in place. No corpus re-pin (window.json has no
-`source`). Evidence in findings, "The window table".
+`source`). Evidence in findings, "The window table". Fix round 1 (the
+author's rulings R-a, R-b1-4 and the task review): three stop
+scenarios kept apart (245; +6 with the erased-row boundary; +5 if bound
+holes were rejected); no refusal targets Contradiction by default
+(undetermined pending classification); a known-valid class with cited
+evidence (10 rows, c21, p10, p12, c22s, f03, walk W1); option C lists
+16 rows; section sources and readings flagged; the online search's
+no-candidate hint carries today's text as an untrusted hint (injected
+renderer); the pattern-slot arm tested; FX032's blind spot disclosed;
+BACKLOG R025 (double corpus run).
 
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 

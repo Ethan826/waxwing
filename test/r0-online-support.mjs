@@ -27,6 +27,10 @@ export const onlineFrom = async load => {
   const { fields } = await load('Domain.Recorded');
   const Map = await load('Data.Map.Internal');
   const { unfoldableArray } = await load('Data.Unfoldable');
+  const { wire } = await load('Format.Diagnostic');
+  // The renderer the shadow assembly is given for the online search's
+  // untrusted hint (Task 4.5 fix round): today's message, as wired.
+  const legacyText = diagnostic => wire(diagnostic).message;
 
   const right = (result, phase) => {
     if (result.constructor.name !== 'Right')
@@ -46,7 +50,7 @@ export const onlineFrom = async load => {
       declOf(program, name)), `generation of ${name}`);
   };
   const contextOf = program => ({ holders: functional(program.ctors),
-    program });
+    program, legacyText });
   const search = (program, problem) =>
     Online.onlineSearch(contextOf(program))(budget)(problem);
   const todayOf = (program, name) => checkProgram(program).outcomes[
@@ -58,7 +62,8 @@ export const onlineFrom = async load => {
     .map(([variable, ty]) => [decodeVar(variable), decodeType(ty)]);
   const check = (problem, substitution) =>
     Substitution.checkSubstitution(problem)(substitution);
-  const decisions = program => Shadow.shadowDecisions(budget)(program);
+  const decisions = program =>
+    Shadow.shadowDecisions(legacyText)(budget)(program);
   const decisionOf = (program, name) =>
     decisions(program)[program.functions.indexOf(declOf(program, name))];
   // Criterion 2's position check: at every body path `types` records,
@@ -83,6 +88,7 @@ export const onlineFrom = async load => {
     });
   };
   return { programOf, declOf, problemOf, contextOf, search, todayOf,
+    legacyText,
     sigmaOf, check, decisions, decisionOf, canonicalOf, pairs, Online,
     Shadow, Map, typeFindings };
 };

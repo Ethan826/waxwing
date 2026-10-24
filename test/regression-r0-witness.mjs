@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { fieldSource, routeSource, witnessFrom }
   from './r0-witness-support.mjs';
 import { r022Probes } from './r0-r022-probes.mjs';
-import { restReadFrom } from './r0-readback-rest.mjs';
+import { restReadFrom, slotReadFrom } from './r0-readback-rest.mjs';
 
 const fail = message => {
   console.error(message);
@@ -87,6 +87,15 @@ export const r0WitnessProbes = {
     const read = (await restReadFrom(load(context), w.online))();
     const found = read.value0.constructor.name;
     if (found !== 'TVar') fail(`the rest's bare hole read as ${found}`);
+    passed(context);
+  },
+  // Review minor 2: a constructor pattern's slot reads plainly too.
+  'r0-readback-pattern-slot-sorted': async context => {
+    const w = await loaded(context);
+    const read = (await slotReadFrom(load(context), w.online))();
+    const found = read.value0.constructor.name;
+    if (found !== 'TVar')
+      fail(`the pattern slot's bare hole read as ${found}`);
     passed(context);
   }
 };

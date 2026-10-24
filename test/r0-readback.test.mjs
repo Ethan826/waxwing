@@ -112,8 +112,8 @@ test('a several-tail read-back is Heuristic, not a search fault', () => {
 test('a read-back failure is the search\'s own: Broke', () => {
   const problem = online.problemOf(program, 'head');
   const checked = candidateOf('id').certificate.checked;
-  const found = Online.searched(problem)(new Right({ function: checked,
-    state: null }));
+  const found = Online.searched(online.legacyText)(problem)(new Right({
+    function: checked, state: null }));
   assert.equal(found.constructor.name, 'NoCandidate');
   assert.equal(found.value0.constructor.name, 'Broke');
   assert.match(found.value0.value0, /^read-back: /);

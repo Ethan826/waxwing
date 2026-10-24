@@ -6,8 +6,11 @@
 --
 -- On an accepted body the search gives `Candidate`, claiming what the
 -- read-back claims. A refusal gives `NoCandidate`, ended as
--- Online.Ending routes it, with the diagnostic's place as an advisory
--- hint ("the current solver stopped here", never the program's error).
+-- Online.Ending routes it, with today's text and place as an untrusted
+-- search hint: the legacy solver's reason for stopping, never evidence
+-- of a contradiction (Task 4.5 fix round, the author's ruling R-b3).
+-- The text is rendered by the injected `legacyText` (Format renders;
+-- Features does not import it).
 -- A problem the program does not record (no declaration of its id, or
 -- one from which generation records another problem) is `Inconsistent`:
 -- the injected context disagrees with the problem, which stops the run
@@ -56,8 +59,13 @@ import Features.Check.Strategy.Substitution
   , genericSubstitutionSound
   )
 
--- What `checkFunction` needs that a recorded problem does not carry.
-type OnlineContext = { holders ∷ Functional, program ∷ Resolved.Program }
+-- What `checkFunction` needs that a recorded problem does not carry,
+-- and the renderer of today's diagnostic text for the hint.
+type OnlineContext =
+  { holders ∷ Functional
+  , program ∷ Resolved.Program
+  , legacyText ∷ Diagnostic → String
+  }
 
 -- σ, and the checked declaration today's solver built with it: the
 -- baseline Task 7.1 compares `build`'s IR against; and the holes σ bound
@@ -93,13 +101,16 @@ onlineSearch context = search
   where
   inputs = generationInputs context.program
   search _ problem = maybe' missing
-    (searched problem <<< recheck context.holders context.program)
+    ( searched context.legacyText problem
+        <<< recheck context.holders context.program
+    )
     (declaration inputs context.program problem)
   missing _ = Inconsistent "the program does not record the problem"
 
 -- Today's result for the problem's declaration, as a search's.
-searched ∷ RecordedProblem → Today → Search Certificate
-searched problem = either refused accepted
+searched
+  ∷ (Diagnostic → String) → RecordedProblem → Today → Search Certificate
+searched legacyText problem = either (refused legacyText) accepted
   where
   accepted found = either broke (offered found.function)
     (readBack problem found.function)
@@ -113,15 +124,20 @@ searched problem = either refused accepted
     []
   broke why = NoCandidate (Broke ("read-back: " <> why)) []
 
-refused ∷ ∀ cert. Diagnostic → Search cert
-refused diagnostic = case ending diagnostic.problem of
-  Ended end → NoCandidate end [ stoppedHere diagnostic ]
+refused ∷ ∀ cert. (Diagnostic → String) → Diagnostic → Search cert
+refused legacyText diagnostic = case ending diagnostic.problem of
+  Ended end → NoCandidate end [ stoppedHere legacyText diagnostic ]
   Stopped what → Inconsistent what
 
-stoppedHere ∷ Diagnostic → SearchHint
-stoppedHere diagnostic = SearchHint
-  ( "the current solver stopped here: " <> show start.line <> ":"
+stoppedHere ∷ (Diagnostic → String) → Diagnostic → SearchHint
+stoppedHere legacyText diagnostic = SearchHint
+  ( "untrusted search hint: the legacy solver stopped at "
+      <> show start.line
+      <> ":"
       <> show start.column
+      <> ", reporting \""
+      <> legacyText diagnostic
+      <> "\" (its reason for stopping, never evidence of a contradiction)"
   )
   where
   start = diagnostic.span.start

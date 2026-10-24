@@ -5,7 +5,7 @@ import { stableStringify } from './r0-canonical.mjs';
 import { decodeType } from './r0-canonical-decode.mjs';
 import { witnessFrom } from './r0-witness-support.mjs';
 import { r022Probes } from './r0-r022-probes.mjs';
-import { restReadFrom } from './r0-readback-rest.mjs';
+import { restReadFrom, slotReadFrom } from './r0-readback-rest.mjs';
 
 // R022 (BACKLOG; follow-up to Tasks 4.3/4.4): the read-back respects a
 // recorded variable's sort. A row-sorted `inst` slot whose checked type
@@ -59,3 +59,15 @@ test('the sort applies only at an expression slot: a rest reads bare', () => {
   assert.equal(stableStringify(decodeType(read.value0)),
     stableStringify(decodeType(w.holeType(0))));
 });
+
+// Task 4.5 fix round (review minor 2): a constructor pattern's slot is
+// read as lowering reads the pattern's type, so its bare row hole is a
+// type, not a row tail.
+const slotRead = await slotReadFrom(load, online);
+test('a constructor pattern\'s row slot reads bare', () => {
+  const read = slotRead();
+  assert.equal(named(read), 'Right');
+  assert.equal(stableStringify(decodeType(read.value0)),
+    stableStringify(decodeType(w.holeType(0))));
+});
+

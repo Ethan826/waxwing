@@ -1,10 +1,12 @@
 // Task 4.5: the window table's summary block (plan §3.1's "numbers
 // from the window table"): rows per class in declarations and in
 // programs, since one Unresolved declaration fails its whole program.
-// `compilingPrograms` are programs `compile` accepts today with a row
-// of the class: those it would stop if R0's verdict were live. `only`
-// counts those whose rows are all of this class.
-import { falseContradictions } from './r0-shadow-known.mjs';
+// Per class: `compilingProgramsInClass`, programs `compile` accepts today
+// with a row of the class (whether or not R0 would stop them);
+// `stoppedUnderShadow`, those with such a row whose R0 verdict is not
+// Solved; `only`, compiling programs whose rows are all of this class.
+// `stops` keeps the three scenarios of the author's ruling R-a apart.
+import { falseContradictions, knownValid } from './r0-shadow-known.mjs';
 import { windowClasses } from './r0-shadow-classes.mjs';
 import { outsideKinds } from './r0-census-classify.mjs';
 
@@ -15,14 +17,17 @@ const has = test => program => rowsOf(program).some(test);
 const compiling = programs => programs.filter(program => program.compiles);
 
 const classTable = programs => Object.fromEntries(
-  Object.entries(windowClasses).map(([name, { section }]) => {
+  Object.keys(windowClasses).map(name => {
     const ofClass = row => row.class === name;
     const only = program => rowsOf(program).length > 0
       && rowsOf(program).every(ofClass);
-    return [name, { section,
+    const stops = row => ofClass(row) && row.r0.verdict !== 'Solved';
+    return [name, { ...windowClasses[name],
       declarations: programs.flatMap(rowsOf).filter(ofClass).length,
       programs: countWhere(programs, has(ofClass)),
-      compilingPrograms: countWhere(compiling(programs), has(ofClass)),
+      compilingProgramsInClass: countWhere(compiling(programs),
+        has(ofClass)),
+      stoppedUnderShadow: countWhere(compiling(programs), has(stops)),
       only: countWhere(compiling(programs), only) }];
   }));
 
@@ -47,18 +52,21 @@ const agreements = programs => {
   return counts;
 };
 
-// Programs compiling today that R0 would stop: as decided (a row whose
-// verdict is not Solved), then with the census's erased-row boundary,
-// then with the Solved rows resting on a bound hole as well.
+// The author's ruling R-a: programs compiling today that R0 would stop,
+// (1) under the implemented shadow decisions (a row whose verdict is not
+// Solved); (2) in addition, if the erased-row boundary were adopted (its
+// narrowing is not approved); (3) in addition, if a future ambiguity
+// policy rejected the bound-hole cases (they are Solved now; the
+// scenario is hypothetical, not approved).
 const stopped = programs => {
   const decided = row => row.r0.verdict !== 'Solved';
   const erased = row => decided(row) || row.blockers.includes('ErasedRow');
   const pending = row => erased(row) || row.class.startsWith('Solved with');
-  const origins = test => compiling(programs).filter(has(test))
-    .map(program => program.origin);
-  return { asDecided: origins(decided).length,
-    withErasedRow: origins(erased).length,
-    withBoundHoles: origins(pending).length };
+  const count = test => compiling(programs).filter(has(test)).length;
+  return { underShadowDecisions: count(decided),
+    additionalIfErasedRowAdopted: count(erased) - count(decided),
+    additionalIfBoundHolesRejected: count(pending) - count(erased),
+    allThree: count(pending) };
 };
 
 export const summaryOf = programs => ({
@@ -78,12 +86,15 @@ export const summaryOf = programs => ({
   },
   classes: classTable(programs),
   blockers: blockerTable(programs),
-  stopped: stopped(programs),
+  stops: stopped(programs),
   // §3.1 option C's list: rows where R0's class improves on today's
   // without changing acceptance (both refuse; R0 drops a false
-  // contradiction). Listed, not adopted.
+  // contradiction, or a refusal of a known-valid program), with no
+  // blocker. Listed, not adopted.
   optionC: programs.flatMap(rowsOf).filter(row =>
-    row.at in falseContradictions).map(row => row.at),
+    (row.at in falseContradictions || row.at in knownValid)
+    && row.blockers.length === 0 && !row.programCompiles)
+    .map(row => row.at),
   defects: programs.flatMap(rowsOf).filter(row => row.class === 'defect')
     .map(row => `${row.at}: ${row.defect.id}`)
 });

@@ -16,7 +16,8 @@ import { describe } from './r0-decide-support.mjs';
 import { declarationsOf, rt8Sources } from './r0-rt8-run.mjs';
 import { erasedSources } from './r0-census-erased.mjs';
 import { requirementsOf } from './r0-census-classify.mjs';
-import { defectProbes, defects } from './r0-shadow-known.mjs';
+import { defectProbes, defects, falseContradictions, falseEvidence,
+  knownValid } from './r0-shadow-known.mjs';
 import { windowClassOf, windowClasses } from './r0-shadow-classes.mjs';
 import { summaryOf } from './r0-shadow-summary.mjs';
 
@@ -62,7 +63,12 @@ const factsOf = (row, inputs) => {
 const kindsOf = verdict => (verdict.match(/Outside \w+/g) ?? [])
   .map(kind => kind.slice('Outside '.length)).sort();
 
-// One window row, or `null` where today's class and R0's agree.
+const evidenceOf = at => (at in falseContradictions
+  ? { evidence: falseEvidence } : at in knownValid
+    ? { evidence: knownValid[at].evidence } : {});
+
+// One window row, or `null` where today's class and R0's agree. The
+// class's focus, target and dependency are in the summary's class table.
 const windowRow = (facts, hash, compiles) => {
   const name = windowClassOf(facts);
   if (name === null) return { agreement: facts, row: null };
@@ -71,8 +77,8 @@ const windowRow = (facts, hash, compiles) => {
     : [])];
   return { agreement: null, row: { at: facts.at, hash,
     today: facts.today ?? 'compiles', r0: facts.r0, rt8: facts.rt8,
-    class: name,
-    ...windowClasses[name], blockers, programCompiles: compiles,
+    class: name, section: windowClasses[name].section, blockers,
+    programCompiles: compiles, ...evidenceOf(facts.at),
     ...(name === 'defect' ? { defect: defects[facts.at] } : {}) } };
 };
 

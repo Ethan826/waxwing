@@ -3909,50 +3909,97 @@ the window class with its §3.2 label (none for defects), Review Focus 1
 class, target and named dependency, its blockers and whether its
 program compiles today.
 
-**Summary (checked, the pinned table; 3,021 declarations, 1,132
-programs, 746 compiling).** Agreements, no row: Solved 1,980; a static
-refusal with today's code 17 (`StaticArity`, E_ARITY). Rows, 1,024
-(declarations; programs; programs compiling today, which a live R0
-verdict would stop):
+**Summary (checked, the pinned table after fix round 1; 3,021
+declarations, 1,132 programs, 746 compiling).** Agreements, no row:
+Solved 1,980; a static refusal with today's code 17 (`StaticArity`,
+E_ARITY). Rows, 1,024. Columns: declarations; programs; *compiling
+programs in this class* (programs `compile` accepts today with a row of
+the class, whether or not R0 would stop them); of those, programs
+*stopped under the shadow decisions* (a row of the class whose R0
+verdict is not Solved). Amended in fix round 1 (the author's ruling
+R-a): the first version called the third column "programs a live R0
+verdict would stop", which it is not (the FX032 row compiles and is
+Solved; bound-hole rows are Solved).
 
-| Window class | § | Decls | Programs | Compiling | Target (dependency) |
-|---|---|---|---|---|---|
-| markers: compiles today, R0 Unsupported Outside | (a) | 781 | 282 | 244 | Solved (G-exempt; for data kinds also the free-constructor model) |
-| erased row: compiles today, census detector fires | (a) | 11 | 8 | 6 | per the G-erased ruling (narrowing not approved) |
-| BQ at a rigid variable: online declines | (b) | 3 | 3 | 1 | Solved (a strategy whose Sound_F covers it, e.g. contracts carrying Q) |
-| outside the unitary fragment: online declines | (b) | 0 | 0 | 0 | Solved (a strategy covering several tails) |
-| BQ pending G-ValidR: compiles today | (a) | 0 | 0 | 0 | per G-ValidR |
-| RequirementOpen: compiles today | (a) | 0 | 0 | 0 | per G-ValidR |
-| ambiguous several-tail read-back (Heuristic) | (b) | 0 | 0 | 0 | Solved (a strategy certifying the split) |
-| Solved with a bound hole | (a) | 6 | 6 | 5 | per the author's ambiguity ruling |
-| today refuses, R0 Unsupported Outside | (a) | 92 | 91 | 0 | Contradiction (G-exempt, then P-C1/P-CX) |
-| today refuses, BQ pending G-ValidR | (a) | 2 | 2 | 0 | per G-ValidR (κ) |
-| today refuses, outside the unitary fragment | (b) | 1 | 1 | 0 | Contradiction (P-CX) |
-| false contradiction (D6) becomes Unresolved | (b) | 6 | 6 | 0 | Solved (a strategy that certifies it) |
-| today's refusal becomes Unresolved (no candidate) | (b) | 113 | 108 | 0 | Contradiction (P-C1; P-CX for row atoms) |
-| defect | none | 9 | 9 | 1 | its separately authorized fix |
+| Window class | § (source) | Decls | Programs | Compiling in class | Stopped under shadow | Target (dependency) |
+|---|---|---|---|---|---|---|
+| markers: compiles today, R0 Unsupported Outside | (a) (plan) | 781 | 282 | 244 | 244 | Solved (G-exempt; for data kinds also the free-constructor model) |
+| erased row: compiles today, census detector fires | (a) (plan) | 11 | 8 | 6 | 0 | per the G-erased ruling (narrowing not approved) |
+| BQ at a rigid variable: online declines | (b) (plan) | 3 | 3 | 1 | 1 | Solved (a strategy whose Sound_F covers it, e.g. contracts carrying Q) |
+| outside the unitary fragment: online declines | (b) (plan) | 0 | 0 | 0 | 0 | Solved (a strategy covering several tails) |
+| BQ pending G-ValidR / RequirementOpen: compiles today | (a) (plan) | 0 | 0 | 0 | 0 | per G-ValidR |
+| ambiguous several-tail read-back (Heuristic) | (b) (reading) | 0 | 0 | 0 | 0 | Solved (a strategy certifying the split) |
+| Solved with a bound hole | (a), pending policy (ruling R-b2) | 6 | 6 | 5 | 0 | per the author's ambiguity ruling (Solved now) |
+| today refuses, R0 Unsupported Outside | (a) (plan) | 92 | 91 | 0 | 0 | undetermined pending classification (G-exempt, then classification) |
+| today refuses, BQ pending G-ValidR | (a) (reading: Task 4.2's Q2) | 2 | 2 | 0 | 0 | per G-ValidR (κ) |
+| today refuses, BQ at a rigid variable / outside the fragment | (b) (plan) | 0 | 0 | 0 | 0 | undetermined pending classification |
+| false contradiction (D6) becomes Unresolved | (b) (ruling R-b2) | 6 | 6 | 0 | 0 | Solved (a strategy that certifies it) |
+| known-valid program; current solver cannot decide | (b) (ruling R-b2) | 10 | 10 | 0 | 0 | Solved (validity; admissibility separate where it applies) |
+| today's refusal becomes Unresolved (no candidate) | (b) (ruling R-b2) | 104 | 100 | 0 | 0 | undetermined pending classification |
+| defect | none | 9 | 9 | 1 | 0 | its separately authorized fix |
 
-Programs compiling today that R0 would stop: 245 as decided; 251 with
-the census's erased-row boundary; 256 counting the Solved rows resting
-on a bound hole too (R022's two probes among them). Per blocker
-(overlapping, compiling declarations; compiling programs):
-DataApplication 587; 138, HandlerType 170; 102, FailFamily 60; 41,
-Deferred 45; 41, EffectArgument 32; 31, DataOverRecords 3; 0,
-ErasedRow 91; 72. Programs Resolve refuses for a second spread: 71
-(not run in shadow, no resolved program; Task 6.5's row).
+The section's source is in window.json's class table (`sectionSource`,
+`sectionReading`); each row keeps its `section`, and the class table
+holds focus, target and dependency once (window.json 673 KB → 478 KB,
+the pinned comparison unchanged in strictness: the whole table is
+deep-equal).
+
+**Three scenarios (checked, `summary.stops`; the author's ruling
+R-a).** Programs compiling today that R0 would stop: (1) under the
+implemented shadow decisions, 245; (2) in addition, if the erased-row
+boundary were adopted (narrowing not approved), 6; (3) in addition, if
+a future ambiguity policy rejected the bound-hole cases (Solved now;
+hypothetical, not approved), 5, of which 2 are R022's inline probes
+(3 over the corpus). Per blocker (overlapping, compiling declarations;
+compiling programs): DataApplication 587; 138, HandlerType 170; 102,
+FailFamily 60; 41, Deferred 45; 41, EffectArgument 32; 31,
+DataOverRecords 3; 0, ErasedRow 91; 72. Programs Resolve refuses for a
+second spread: 71 (not run in shadow, no resolved program; Task 6.5's
+row).
 
 **§3.1's numbers (checked, the table).** Option A keeps all of D6's
-false contradictions: 6 declarations in 6 programs (copies of the
-three the refusal audit checked). Option B would also turn today's
-semantic refusals Unresolved: 113 with no candidate, 92 behind markers,
-3 behind requirement atoms. Option C keeps those of blocked declarations
-only: none (all six D6 rows are unblocked).
+false contradictions: 6 declarations in 6 programs (copies of the three
+the refusal audit checked), and refuses the 10 known-valid programs.
+Option B would also turn today's refusals of undetermined status
+Unresolved: 104 with no candidate, 92 behind markers. Option C keeps
+those of blocked declarations only: none of the D6 or known-valid rows
+is blocked.
 
-**Option C's list (§3.1; listed, not adopted).** The six D6 rows, each
-refused today and under R0 (no acceptance change) with no blocker:
-p11-route.wxw, rt2/d6-p11-route.json and integration/recon.md#1
+**Option C's list (§3.1; listed, not adopted).** 16 rows, each refused
+today and under R0 (no acceptance change), with no blocker: the six D6
+rows (p11-route.wxw, rt2/d6-p11-route.json and integration/recon.md#1
 `route`; c01-h-label.wxw `route`; b03-mayhold-share.wxw and
-rt2/b03-mayhold-share.json `use`.
+rt2/b03-mayhold-share.json `use`) and the ten known-valid rows (below).
+
+**Known-valid programs (fix round 1, the author's ruling R-b1; each
+with its evidence in test/r0-shadow-known.mjs and the row's
+`evidence`).** D4 "Cannot tell" refusals whose validity is recorded
+elsewhere; today's text does not assert impossibility, so they are not
+false contradictions:
+- c21: composition-assessment/programs/p4.wxw `main` (byte-identical to
+  source/examples/c21-accepts-parts.wxw, checked with `cmp`; the corpus
+  keeps the first origin) and rt2/d4-c21-accepts-parts.json `use`.
+  Cited: refusal-audit.md:353-358 (checked there, oracle, split forced);
+  translation.md:492.
+- p10 `wrapAccepts` (source/examples and rt2/d4-p10-wrap-accepts.json):
+  translation.md:480, Lean `wrapAccepts_validFin` (cited).
+- p12-route-narrowed `route`: translation.md:482, Lean
+  `routeNarrowed_validFin` (cited).
+- c22s-compose-requirements-stub `main`: translation.md:493, recorded
+  witness `r' = {x}`, `s' = {y}` (cited).
+- f03-compare-split `main`: refusal-audit.md:353-360, "Also f03" among
+  the valid programs D4 rejects (cited). R0 declines it (outside the
+  unitary fragment); it moved from "today refuses, outside the unitary
+  fragment" to this class.
+- `walk` W1 (rt2/d4-walk-w1.json, r019 walk-as-written.caller and
+  .no-caller `walk`): requirements.md:83-86, valid with the identity
+  split (argued there). Validity only: recursive admissibility (W2,
+  R010, BACKLOG R019) is a separate question.
+
+Left undetermined: rt2/d6-submit `submit` (its validity rests on "a
+reviewer's unrecorded bounded evaluation", requirements.md:429-431),
+the call site `main` of walk-as-written.caller, the other "Cannot tell"
+refusals, and the 8 identical-sides C001 rows ("Expected X, found X").
 
 **Defect rows (recorded, not fixed).** FX030: audit
 must-be-pure.clock-row and effect-not-allowed-require.written `k`.
@@ -3978,29 +4025,31 @@ src); the 17 static refusals are RT8 `agree: no candidate`.
 
 **Readings (labelled).**
 1. *D6, hand-labelled (cited):* refusal-audit.md:46-49 checked three
-   refusals of valid programs (p11 `route`, c01, b03); copies of the
-   same declarations count (argued, equal text up to layout). The
-   other D4 "Cannot tell" refusals, including c21's forced split
-   (refusal-audit.md:49-50, class e), are not labelled false: they stay
-   "today's refusal becomes Unresolved" (question for the author).
+   refusals of valid programs whose text wrongly asserts impossibility
+   (p11 `route`, c01, b03); copies of the same declarations count
+   (argued, equal text up to layout). Amended in fix round 1: the known
+   valid D4 refusals are their own class (above), and no other refusal
+   gets a Contradiction target.
 2. *Static refusals (argued):* a declaration whose `staticRules` gives
    a refusal with today's code is refused by R0 beside the verdict
    (T-R0a §3.2; Task 4.6 runs the rules before generation), so it is
    an agreement, not a row; the shadow decision still says no
    candidate.
-3. *Labels (argued):* (a) where the block is the support boundary
-   (markers, open atoms, the erased-row boundary, the hole binding,
-   whose open point is the specification's ambiguity policy); (b) where
-   the problem is complete and the limit is the injected strategies' or
-   refuters' (declines, no candidate). The plan names the labels of
-   compiling classes; those of today's refusals and of the bound-hole
-   class are this reading.
+3. *Labels:* the plan's §3.2 gives the compiling classes' labels;
+   the author's ruling R-b2 gives (b) to strategy limitations (no
+   candidate; a strategy declining a complete problem) and "(a),
+   pending policy" to the bound-hole class (planning only, not an
+   approval of rejecting them). Readings, flagged `sectionReading` in
+   window.json: Heuristic (b), and the 2 cmp-at-rigid refusals (a)
+   (Task 4.2's Q2 ruling).
 4. *Primary class:* markers first (decided), then the erased-row
    detector, then the bound hole; every row lists all its blockers.
-5. *Hint (observed, deviation):* R0's no-candidate hint keeps only the
-   location (`the current solver stopped here: 1:15` for a01), not
-   today's text (Task 4.3's deferred minor); the row keeps today's
-   text beside it.
+5. *Hint (amended in fix round 1, the author's ruling R-b3):* the
+   no-candidate hint now carries today's text and place as an
+   untrusted search hint (a01: `untrusted search hint: the legacy
+   solver stopped at 1:15, reporting "Expected Int, found Bool" (its
+   reason for stopping, never evidence of a contradiction)`). The first
+   version kept only the place.
 6. *AT17 hook:* the run's one `Checking` is `shadowChecking`
    (Decide/Shadow.purs), through r0-online-support's `decisions`; rows
    pin the online attempt (`attempts[0]`), not the attempt list, so
@@ -4016,4 +4065,67 @@ fails "anything else throws". M1 against the serial test fails "the
 window equals its pinned table" only. Cost (observed): the serial test
 takes 93 s (RT8's run 84 s of it; `compile` per program and the
 detectors the rest); RT8's and the census's serial tests stay
-separate, so verify decides the corpus twice (BACKLOG R021).
+separate, so verify decides the corpus twice (BACKLOG R025).
+
+**Fix round 1 (the task review and the author's ruling of
+2026-10-23).** Shadow only: Online.purs and Shadow.purs are reachable
+from no compile path (ruling R6; r0-verdict's reachability test passes
+in verify); no CLI text changed.
+- *Hint (R-b3; checked).* `OnlineContext` and `shadowChecking` take
+  `legacyText ∷ Diagnostic → String`, injected by the caller (the test
+  support passes Format.Diagnostic's `wire(d).message`; Features
+  imports no Format module), and `stoppedHere` words today's text as
+  the legacy solver's untrusted reason for stopping. RED, `node --test
+  test/r0-online-hint.test.mjs`: 0 pass, 1 fail (actual `the current
+  solver stopped here: 1:15`). GREEN 1/1; the online, faults,
+  read-back, carries, hole-arm and witness suites 60/60. Row
+  `r0-hint-text-dropped` (patch `<> legacyText diagnostic` →
+  `<> const "" (legacyText diagnostic)`; probe: the hint must report a
+  non-empty text): `node scripts/regression.mjs r0-hint-text-dropped`,
+  the fixed compiler passes and the restored defect fails.
+- *Pattern-slot arm (review minor 2; checked).* test/r0-readback-sort
+  "a constructor pattern's row slot reads bare" plants a bare hole as
+  the row argument of `Box(...s)` in a real P4 declaration
+  (test/r0-readback-rest.mjs `slotReadFrom`). Mutant, Position.purs
+  `AtPattern (Checked.Pattern found) → readType <$>` →
+  `… → readSorted sort <$>` (built in place, restored, rebuilt): 5
+  pass, 1 fail, that test. Row `r0-readback-pattern-slot-sorted` (same
+  patch): proved.
+- *Classifier mutants, exact patches (checked; each applied to the
+  test module, `node --test test/r0-shadow-classes.test.mjs` run,
+  restored).* M1 `? 'erased row: …' : boundHoleClass;` → `… : null;`;
+  M2 `facts.at in falseContradictions` → `false`; M3 the `fail(facts,
+  'no window class where today compiles')` return → `return 'markers:
+  compiles today, R0 Unsupported Outside'`; M4 `return erased.length >
+  0` → `return false` (agreeing Solved branch). Fix round: M5 `return
+  facts.at in knownValid ? valid` → `return false ? valid`; M6 the
+  decline's `if (refused && facts.at in knownValid) return valid;`
+  removed; M7 (r0-shadow-table.mjs) `undetermined =` the
+  "undetermined pending classification" text → `'Contradiction (today\'s
+  refusal)'`; M8 the bound-hole entry's `${a}, pending policy` → `a`.
+  M1, M2, M4, M5, M6 fail "each window class is assigned on its
+  injected facts"; M3 fails "anything else throws"; M7 and M8 fail "no
+  class of today's refusals targets Contradiction". The class changes
+  were written before these tests (not test-first); the re-pin's diff
+  (10 rows to the known-valid class, every refused class's target)
+  and the mutants are the evidence.
+- *FX032 (R-b4; argued).* The C-erased detector reads resolved syntax,
+  from which Resolve already discarded the operation's row
+  (Resolve/Effect.purs:47-58), so its silence on FX032's `g` and
+  today's agreement with R0 (Solved) do not validate that declaration;
+  the row's `defect.blindSpot` says so. Not fixed here (the separately
+  authorized compatibility fix; the detector is updated then if
+  needed).
+- *History (G; checked).* 244a1c1 alone fails verify: it moved the line
+  `r0-ctor-slot`'s needle targets ("mutation must have exactly one
+  target"), fixed in 4561964. 4561964 also carries this section's
+  first version (a staging slip: docs/findings.md was staged whole);
+  per the author's ruling, history is left as it is.
+- *Double corpus run:* BACKLOG R025.
+- *Verify (observed).* One `npm run verify` after the other worktree's
+  regression runs ended: gates pass, parallel 2,792/2,792, serial
+  110/111: fn-linear-timing `partialFirst` 942 ms against its 930 ms
+  bound (Specialize, untouched here; BACKLOG T007 updated); alone it
+  took 852-874 ms. Verify stopped before its regression stage, which
+  was then run on its own: `node scripts/regression.mjs`, EXIT 0, 199
+  proofs.

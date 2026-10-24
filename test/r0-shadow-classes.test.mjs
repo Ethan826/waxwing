@@ -61,6 +61,14 @@ const cases = [
   ['refused, fragment decline', facts('(b) declined by g0Guard, today'
     + ' refuses', { today: refused, guard: ['fragment'] }),
   'today refuses, outside the unitary fragment: online declines'],
+  ['known-valid, no candidate', noCandidate('Unresolved Inference'
+    + ' NoCandidate', { at:
+    'research/composition-assessment/programs/p4.wxw#main' }),
+  'known-valid program; current solver cannot decide'],
+  ['known-valid, declined', facts('(b) declined by g0Guard, today'
+    + ' refuses', { today: refused, guard: ['fragment'], at:
+    'research/division-campaign/r0/probes/f03-compare-split.wxw#main' }),
+  'known-valid program; current solver cannot decide'],
   ['defect', facts('today\'s own internal failure (SearchBroke)', { at:
     'test/fixtures/r0/audit/fx010-record-payload.pinned.json#k',
   today: refused }), 'defect']
@@ -100,3 +108,21 @@ test('anything else throws', () => {
   for (const [name, input] of unknown)
     assert.throws(() => windowClassOf(input), /r0-shadow-classes/, name);
 });
+
+// The author's ruling R-b1: no refusal today gets Contradiction as its
+// target by default; R-b2: strategy limitations stay (b); every label
+// says where it comes from.
+test('no class of today\'s refusals targets Contradiction', () => {
+  for (const [name, found] of Object.entries(windowClasses)) {
+    assert.doesNotMatch(found.target, /^Contradiction/, name);
+    assert.equal(found.sectionReading,
+      found.sectionSource.startsWith('reading'), name);
+  }
+  for (const name of ['false contradiction (D6) becomes Unresolved',
+    'known-valid program; current solver cannot decide',
+    'today\'s refusal becomes Unresolved (no candidate)'])
+    assert.equal(windowClasses[name].section, '§3.2(b)', name);
+  assert.equal(windowClasses[boundHoleClass].section,
+    '§3.2(a), pending policy');
+});
+
