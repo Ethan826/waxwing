@@ -9,7 +9,8 @@ import { recheck } from './r0-cx-support.mjs';
 
 // Task 5.2: CX's check, `CXChecked (withBody (toSig P) body) rho`
 // (refute/statements.md §4), conjunct by conjunct: every refusal is
-// reached by a certificate that breaks exactly that conjunct, and each
+// reached by a certificate that breaks exactly that conjunct (the key
+// and groundness conjuncts on both types and rows), and each
 // constructor of `RefuteRefusal` has a case here (read from the source,
 // so a new constructor fails this test until it has one).
 const Check = await load('Features.Check.Refute.Counter.Check');
@@ -111,6 +112,31 @@ const cases = {
   }
 };
 
+// The key and groundness conjuncts have a type half and a row half;
+// `cases` breaks one half of each, these the other (review item 1).
+const otherHalves = {
+  'DuplicateKey (row keys)': () => {
+    const problem = recorded(lacking);
+    return [problem, cxOf(problem, { row: [[0, []], [0, []]] })];
+  },
+  // `r` is a rigid row variable, bound here as a type.
+  'NotRigid (type keys)': () => {
+    const problem = recorded(lacking);
+    const cx = cxOf(problem, { row: [[0, []]] });
+    cx.rho.ty = [new Tuple(sigOf(problem).rigidRow[0], ground.int)];
+    return [problem, cx];
+  },
+  'RigidUnbound (rigid rows)': () => {
+    const problem = recorded(lacking);
+    return [problem, cxOf(problem)];
+  },
+  'IllFormed (row bindings)': () => {
+    const problem = recorded(lacking);
+    return [problem, cxOf(problem, { row: [[0, [['x', ground.int],
+      ['x', ground.bool]]]] })];
+  }
+};
+
 const declared = () => {
   const source = readFileSync(
     join(repoRoot, 'src/Domain/Verdict/Counter.purs'), 'utf8');
@@ -123,6 +149,11 @@ test('each refusal is reached by breaking its conjunct', () => {
   assert.deepEqual(Object.keys(cases).sort(), declared().sort());
   for (const [name, make] of Object.entries(cases))
     assert.equal(refusal(...make()), name, name);
+});
+
+test('each key conjunct is checked on types and on rows', () => {
+  for (const [label, make] of Object.entries(otherHalves))
+    assert.equal(refusal(...make()), label.split(' ')[0], label);
 });
 
 // The brute force is not vacuous: it finds a solution where the body is

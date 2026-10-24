@@ -6,6 +6,9 @@
 -- `tyVarsOf` (Reduction.lean) and `wfT` (Unify/Wf.lean). Recursion
 -- follows the term, so a term's depth is the stack it needs; the search
 -- (Counter/Search.purs) hands the check only small sub-bodies.
+-- `labelsOf` and `rowVarsOf` use `nub`, which keeps first occurrences
+-- where Lean's `dedup` keeps last: the same sets in another order
+-- (Counter/Decide.purs says what that changes).
 module Features.Check.Refute.Counter.Term
   ( Atomic(..)
   , Fields

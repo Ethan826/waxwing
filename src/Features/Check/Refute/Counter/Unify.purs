@@ -69,6 +69,8 @@ sameHead ∷ Term → Term → Array Equation → Unifying
 sameHead left right rest = case left of
   TBase one → clashUnless (map (agree one) (baseOf right))
   TArrow a c → clashUnless (map (arrows a c) (arrowOf right))
+  -- Unreachable: `step` takes every equation with a variable side
+  -- first (Lean's `_ => false` covers the same case).
   TVar _ → Done false
   TRecord fields tails →
     clashUnless (map (records fields tails) (recordOf right))

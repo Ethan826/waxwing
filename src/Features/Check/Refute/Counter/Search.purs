@@ -7,7 +7,8 @@
 -- only where Lemma SL's hypotheses hold (no `x lacks l` with `x` in `R`;
 -- no `x disjoint y` with both in `R`), so the instance satisfies `D`.
 -- Labels are those written in the problem's small atom groups and in
--- `D`, then one unwritten label; a hint's labels come first (seeding).
+-- `D`, then one unwritten label; a label a hint names in backticks,
+-- as today's diagnostics write labels, comes first (seeding).
 --
 -- For each instance it looks for a refuted sub-body: each small group
 -- of atoms sharing an id (`withBody` reads every atom of an id), then
@@ -165,7 +166,7 @@ affordable left pairs = pairs <= widestPairs && power pairs <= left
 hinted ∷ Array SearchHint → String → Boolean
 hinted hints label = any mentions hints
   where
-  mentions (SearchHint text) = contains (Pattern label) text
+  mentions (SearchHint text) = contains (Pattern ("`" <> label <> "`")) text
 
 pairsOf ∷ Array Var → Array (Array Var)
 pairsOf vars = maybe [] split (uncons vars)

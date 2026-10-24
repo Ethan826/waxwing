@@ -138,9 +138,10 @@ test('a certificate body names recorded B atoms', () => {
   }
 });
 
-// Seeding (T-R0a §5.1): labels a hint names are tried first. Here every
-// one-label instance of `r` refutes `{ ...r } = {}`; unseeded, the first
-// written label is taken, seeded with a hint naming `b`, `b` is.
+// Seeding (T-R0a §5.1): labels a hint names in backticks are tried
+// first. Here every one-label instance of `r` refutes `{ ...r } = {}`;
+// unseeded, the first written label is taken, seeded with a hint
+// naming `b`, `b` is.
 test('a hint seeds the search with its labels', () => {
   const program = online.programOf('fn f(p: { ...r }, q: { a: Int, b: Int'
     + ' }): {} = { let x = q.a; p };\nfn main(): Int = 0;\n');
@@ -153,4 +154,6 @@ test('a hint seeds the search with its labels', () => {
   };
   assert.deepEqual(labelOf([]), ['a']);
   assert.deepEqual(labelOf([new SearchHint('field `b`')]), ['b']);
+  // Only the backticked form seeds: a bare `b` in the text does not.
+  assert.deepEqual(labelOf([new SearchHint('b, but not quoted')]), ['a']);
 });

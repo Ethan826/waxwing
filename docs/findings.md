@@ -4205,7 +4205,8 @@ patterns one search run enumerates; `fuel` and `depth` are not read
 variables and `τ` are distinct fresh base atoms (`Sum.inr`); `R` has
 at most two rows; labels are those written in `D` and in groups of at
 most 200 nodes, then one unwritten (`z`, `z1`, …). (3) Seeding: a
-written label a hint's text contains comes first (a substring test).
+written label a hint's text names in backticks comes first (the
+review's fix round: first a bare substring test).
 (4) A sub-body is every atom of an id (`withBody`; ids are not
 unique). (5) Name clash avoided: `NoProjection`, `RigidUnbound`
 (`Unprojectable` and `Unbound` exist elsewhere).
@@ -4310,6 +4311,23 @@ test/r0-cx-check.test.mjs test/r0-cx-decide.test.mjs`:
 | M10 Term: `distinct … \|\| true` in `wfT` | the decider test; each probe certificate …; each refusal … |
 | M11 Decide: `successor` always `Nothing` | a refuted problem tries all 2^pairs patterns; the decider test; each probe certificate …; no certificate where the bounded oracle finds the probe valid |
 | M12 Search: hint order ignored | a hint seeds the search with its labels |
+| N1 Check: `distinctKeys (map fst bindings.row)` skipped | each key conjunct is checked on types and on rows |
+| N2 Check: type keys' `rigidIn whole.rigidTy` skipped | each key conjunct … |
+| N3 Check: row `boundIn … whole.rigidRow` skipped | each key conjunct … |
+| N4 Check: `traverse_ groundRow` skipped | each key conjunct … |
+
+Fix round (the task review, item 1): M1-M8 covered one case per
+refusal constructor, not per conjunct; the first version of this
+section overstated that. Each key and groundness conjunct has a type
+half and a row half, and N1-N4 (the other halves) survived every test
+(checked: in a scratch copy with the earlier test/r0-cx-check.test.mjs,
+each N exits 0 with no failing test). Four cases were added (a
+duplicated row key, a rigid row bound as a type, an unbound rigid row,
+a row binding with a repeated label); with them each N fails as shown
+(scratch copy, `node scripts/build.mjs` then the three test files; the
+restored copy passes). M12 was re-run after seeding became a
+backticked match: it still fails the seeding test, whose new case
+shows a bare `b` in a hint does not seed.
 
 Regression row `r0-cx-hypothesis-skipped` (M6's defect;
 scripts/regression-r0-cx.mjs, probe test/regression-r0-cx.mjs):

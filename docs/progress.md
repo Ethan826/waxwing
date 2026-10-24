@@ -657,7 +657,8 @@ or c01 (valid in §7.2). AT17: the window test re-run with the shadow,
 declarations, 444 with `D`). Question 3: a check enumerates 2^pairs
 patterns; probes 0-3 pairs, under 0.2 ms; the corpus's widest 13
 pairs, about 220 ms. Corpus: 72 certificates, none on a declaration
-today accepts. Mutants M1-M12 caught; regression row
+today accepts. Mutants M1-M12 and (review fix round: both halves of
+each key conjunct, backticked hint seeding) N1-N4 caught; regression row
 `r0-cx-hypothesis-skipped`. refute/statements.md §8.1 holds the
 evidence as a proposal pending its owner. No corpus re-pin. Evidence
 in findings, "The CX refuter in shadow".

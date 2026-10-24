@@ -9,7 +9,10 @@
 -- satisfiable); this port is checked against a brute-force oracle
 -- (test/r0-cx.test.mjs). An unsatisfiable problem enumerates all
 -- 2^|pairs| patterns, which is CX question 3's cost; `patterns` reports
--- how many were tried.
+-- how many were tried. Lean's `dedup` keeps last occurrences, `nub`
+-- (Counter/Term.purs) first ones: only the order of the pairs, so the
+-- fresh numbering and field order, differs; the fresh variables stay
+-- distinct and past every type variable (`FreshFor` still holds).
 module Features.Check.Refute.Counter.Decide
   ( Decided
   , decideCall
