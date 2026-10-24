@@ -4774,3 +4774,176 @@ its non-ground atoms. The read-back's completion (ReadBack
 - test/r0-shadow.serial.test.mjs: the guard fires on none of the 3,017
   generated problems of RT8's run (asserted). RT8 and window pins are
   unchanged (13/13); the census is unchanged in verify.
+
+## D1's generation continuation, part b (2026-10-24)
+
+R0 Task 7.1b: Task 3.2's generator ported onto D1's `Gen` and `Elab`
+(S6), and the corpus-wide tests (S8). Shadow only, ruling R6: nothing
+reachable from compile calls the new code, and `build` runs only in
+tests. S7 (E-a) is not here; it waits for the author's representation
+decision (docs/plans/r0-ea-representation.md). The spec is
+docs/plans/r0-generation-continuation.md ("D1").
+
+**What landed.** `generate ∷ Tables → Signatures → FunctionDecl →
+Either GenerationFault (Elaborating Checked.FunctionDecl)` is `seal` of
+`generateIn` (Generate.Body). Every rule runs in `Gen s` over `GenTy s`
+and returns its type, its checked node as an `Elab` and its entries.
+New modules: Generate.Block, .Body, .Callee, .Node, .Update;
+Generate.Rigid folded into .Signature. The recorded problem is `problem
+<<< generate`. Callers changed with it: Decide.Shadow and
+Strategy.Online (trusted surface; token review: both only take
+`problem` of the result, and Shadow adds the seal check below), and
+the JS tests through `generatedOrThrow` (which now takes `problem`) or
+`rightOrThrow` (for `staticRules`).
+
+**Entry order (checked).** Variables and sites are keyed maps, but the
+entry arrays keep their recorded order (canonical bytes, RT3). Task
+3.2 wrote a parent's entries before its children's, though they
+mention the children's types. So each rule returns its entries as a
+`Gen s Unit` not yet bound, and the parent sequences its own before its
+children's; the declaration's are bound before the body's. This uses
+only the existing primitives, so it is no amendment. Check:
+test/r0-problem-pin.serial.test.mjs pins a digest of every corpus
+problem's canonical bytes, taken from Task 3.2's generator before the
+port (commit 4decfe6). RED: the first port run failed it, "161
+programs' problems moved": E17 shared E5's typing, and its argument
+equations were written at row F1, where Task 3.2 writes B1. Fixed by
+giving `applied` the row; GREEN: 0 of 3,011 problems differ from a
+full dump of the old generator's problems (scratch diff, deleted).
+RT1, RT8 (rt8.json), the window (window.json) and the census
+(census.json) pass as pinned in the verify below. No pin moved.
+
+**Labelled amendments and choices (each in its module's header).**
+1. `ClauseParamType p c k` joins `CheckedName` (spec §12.2's proposal;
+   7.1a amendment 10's deferral): a site of `build`'s reads, the stored
+   position of no variable; its seal arms give no fault, the read-back
+   refuses it as a position, the canonical decoder reads it.
+2. Two generation faults, both input Resolve never gives
+   (`InputShape`): `BinderShape`, a fail clause with no binder (the
+   checked clause needs one; Resolve/HandlerExpression.purs:116-121
+   always writes it), and `VariableSort`, an occurrence's naming with
+   no handle for an effect-row variable in a type or tail position.
+   Task 3.2's generator wrote a variable no `fresh` declared there.
+3. §12.1's fallback, exactly: under `θ` every effect row is the closed
+   empty row (a row's count is kept, so `app` stays `app`), so no
+   handle stands in an effect row; arrows generation builds, `show`'s
+   and `crash`'s rows and `main`'s open tail are closed; written rows
+   under `ν_f` and `print`'s `Console` are kept. T2 and T8 compare
+   effect-erased projections.
+4. An over-applied call's saturated node `Apply (Call g θ a₁…aₙ) […]`
+   has no site; its type is B1's `τ_{e_{n+1}} → … → ⟨p, res⟩`, built
+   from values already read (the arguments' and the node's), which the
+   witness makes equal to `θ(R)`. A rule's node takes its own read type
+   for this (`Ruled.node ∷ Elab s (Ty Open → Node)`).
+5. A builtin call of other than one argument (refused by today's
+   checker and the static rule, so no witness exists) builds `Apply` of
+   the unit value to its arguments, only so `generate` stays total.
+6. `shadowDecision` (Decide.Shadow): generation, the seal check, then
+   `decide`, with the generator injected; `shadowDecisions` uses it
+   (T3a's harness half; spec §3.5's "the driver also runs step 1 right
+   after `generate`").
+7. Instantiation slots: the checked instantiation holds no effect-row
+   slot (Check/DeclarationUse.purs `typeArgument`), so slot `i` is the
+   `i`th non-row variable; it is the `VarId` only when effect rows come
+   last. Checked: 0 of 3,011 corpus functions and 0 declared types put a
+   row variable before another; a probe writing `e` before `a` still
+   resolves to `a`, then `e`. T5 checks every slot position.
+
+**Tests (checked: each passes in the verify below).**
+- T1 (EL1), test/r0-elab-corpus.serial.test.mjs: 1,989 declarations
+  `decide` (the shadow `Checking`, its search observed, no shadow
+  refuter) judges Solved; all 1,989 are `Witnessed` and `elaborate`
+  gives `Elaborated`. Sc on the corpus: 0 seal faults in 3,011.
+- T2, effect-erased (named so), same file: at all 1,989 Solved
+  verdicts `elaborate`'s IR equals the certificate's `checked`, 1,944
+  exactly and 45 by site (153 sites compared, 159 excluded as `Amb`);
+  beyond EL1, at 781 more certificates whose witness Cov accepts though
+  a marker blocks the verdict, `build`'s IR equals it, all exactly.
+  test/r0-elab-build.test.mjs runs the same comparison on eight small
+  programs, one rule group each, with every named declaration
+  compared. The projection (test/r0-elab-erase.mjs) keeps structure,
+  drops effect rows and handler marks, sorts record fields, and
+  renumbers holes by first occurrence: canonical under renaming, the
+  equivalence `holes` gives (argued).
+- T8's corpus half: 118 hole-bearing declarations project equal; and,
+  since the projection cannot see it, `build`'s body is a fixed point of
+  `holes` in each.
+- `ImageVariable` (7.1a's carry): 14,775 `Inline` images of the judged
+  witnesses mention only rigid and hole variables (count of others: 0).
+- T5, test/r0-elab-positions.serial.test.mjs: 52,357 flexible
+  variables; disagreements only §12.2's two, by name: E28's `⟨p, rest⟩`
+  (666, stored `Auxiliary`, read at `NodeType p`) and P4's `⟨p, inst
+  i⟩` (1,843, stored `Slot p i`, read only in sub-pattern types).
+- T5b: 47,156 requested variables each bound to a marker of its own;
+  each lands exactly at the sites `positionsOf` names (an over-applied
+  saturated node and the static types are not sites; labelled).
+- T12: site-table entries ParamType 764, ClauseParamType 240, RestType
+  420, LambdaBody 1 (the corpus has no bare `crash`; one inline probe
+  outside the pinned corpus adds it), RigidName 0; each of §3.3's
+  shape.
+- T3a's harness half, test/r0-elab-driver.test.mjs: one value per
+  `SealFault`, injected as the generator: `shadowDecision` is
+  `BrokenInvariant` and a stub strategy is never searched; `elaborate`
+  is `Broken` and `build`'s `run` never called. A clean control reaches
+  `decide` once.
+- T3c (vi): `CheatBody` (`generateIn` from Features.Check.Generate
+  alone) fails with UnknownName; control `Reached` (through
+  Generate.Body, which only rule E3 forbids) compiles.
+- Faults: test/r0-generate-faults.test.mjs injects `BinderShape` and
+  `VariableSort`; test/r0-online-faults.test.mjs routes both to a stop.
+- 7.1a's carry: test/r0-generate-signature.test.mjs no longer asserts
+  that no Generate* module imports Domain.Checked; it pins the
+  generator's closure (now with Holes, Spine and Walk), and T10 checks
+  the same allowlist from every Generate* module.
+
+**TDD (checked).** The tests were written against the port, so their
+RED is the restored defects below, except the problem pin (RED above).
+`shadowDecision`, the two faults and `ClauseParamType` did not exist
+before their tests (`not a function`, no such constructor).
+
+**Mutants (checked, an isolated scratch copy; each patch alone, purs
+build, then the named tests).**
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| N1 | every node typed `Int` (Expr) | build test, several groups |
+| N2 | an over-applied call's saturated node typed as the result | build test, E3-E6 |
+| N3 | the body's holes not renumbered | corpus T8 |
+| N4 | clause parameters read at `ParamType` | T5b, T12 |
+| N5 | `crash`'s body type not read | build test E18; T12 |
+| N6 | every slot read as a type | build test E3-E6 |
+| N7 | the harness skips the seal check | T3a harness |
+| N8 | E7 writes its children's entries first | problem pin |
+| N9 | E28 typed as its operand's record | build test E24-E28 |
+| N10 | a record sub-pattern typed by the scrutinee | build test P1-P7; problem pin |
+| N11 | Generate re-exports `generateIn` | T3c; E6 and the pinned lists |
+| N12 | a binderless clause gets binder 0 | faults test |
+| N13 | a row variable in a type read as rigid | faults test |
+| N15 | E26's field variable stored `Auxiliary` | T5 |
+| N16 | a lambda parameter's site holds an arrow | T12; build test E13 |
+| N19 | a function reference reads no slot | T5; build test E3-E6 |
+| N20 | a record variable bound to a renaming faults | survived: no corpus witness binds one (C7's path; 7.1a's unit tests own it) |
+| N21 | a `Free` binding read as unbound | T1 |
+
+N14, N17 and N18 were not used. N2 first survived (no probe
+over-applied a named call), and N3 survived T2 by design (the
+projection renumbers holes); the build test gained `id(add, 1, 2)` and
+T8 the fixed-point check, and both were then caught.
+
+**Regression rows (checked: `node scripts/regression.mjs` with the
+names).** `r0-port-seal-unchecked`, `r0-port-over-applied`,
+`r0-port-holes-unnumbered` (scripts/regression-r0-port.mjs, probes in
+test/regression-r0-port.mjs). Two rows follow the port: `r0-perform-
+arity` now patches Generate.Call's shared `applied` (so the restored
+defect types every partial use as its result), and
+`r0-declaration-by-id`'s needle reads `problem` of the regenerated
+value. Both pass.
+
+**Trusted surface.** Re-pinned (scripts/trusted-surface.json, 47
+importers): the new Generate modules, the changed Generate exports, the
+two faults. Every diff to Generate*, Decide.Shadow and Strategy.Online
+needs token review.
+
+**Carries.** S7 (E-a) after the author's decision; T2's effect-erased
+scope is revisited then (spec §12.1). The Cov question for images
+naming a problem variable stands, now with the corpus count above (0).

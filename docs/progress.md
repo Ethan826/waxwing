@@ -736,6 +736,26 @@ pin scripts reproduce their files byte for byte. Serial time for the
 pair 105-107 s before, 57-62 s after. Evidence in findings, "R025: RT8
 and the window share one run".
 
+## R0 shadow tranche 2, Task 7.1b: D1's generator port and corpus tests (2026-10-24)
+
+Shadow only, no acceptance change (ruling R6). Task 3.2's generator
+runs over D1's `Gen` and `GenTy` and builds today's checked
+declaration in each rule: `generate` is `seal` of `generateIn`
+(Generate.Body), and the recorded problem, `problem` of it, is
+byte-identical on every corpus declaration (a digest pin taken before
+the port). The shadow harness runs the seal check before `decide`
+(`shadowDecision`). `ClauseParamType` joins `CheckedName`; two
+generation faults (`BinderShape`, `VariableSort`). Effect positions
+follow §12.1's fallback; Task 4.6 and S7 (E-a) wait for the author.
+T1: 1,989 Solved declarations elaborate. T2, effect-erased: `build`'s
+IR equals the online certificate's at all 1,989 and at 781 more
+witnessed certificates (45 compared by site, 159 `Amb` sites
+excluded). T5 (only §12.2's two rows), T5b, T8 (118 hole-bearing),
+T12, T3a's harness half, T3c (vi). 18 mutants run, one survivor
+(recorded); three regression rows. No pin moved (RT1, RT8, window,
+census); trusted surface re-pinned. Evidence in findings, "D1's
+generation continuation, part b".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online
