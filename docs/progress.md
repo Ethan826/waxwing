@@ -756,6 +756,19 @@ T12, T3a's harness half, T3c (vi). 18 mutants run, one survivor
 census); trusted surface re-pinned. Evidence in findings, "D1's
 generation continuation, part b".
 
+## R0 shadow tranche 2, Task 7.1b integration: rebase and the review's minors (2026-10-24)
+
+Task 7.1b rebased onto the shadow hardening (r0-t2-hard): the docs
+sections kept in date order; r0-shadow-run.mjs merged cleanly (hard's
+one decision pass with 7.1b's `problem` in `guardOf`); hard's guard and
+scale tests read `generate`'s `Elaborating`. The review's seven minors:
+the problem pin covers RT8's and the window's inline probes (corpus
+digests unchanged), N20 is killed by T4b, a builtin of another arity is
+refused and never elaborated, T2's by-site mode compares the signature,
+the site walk fails closed, a rows-last property over Resolve, D1's
+families in the shadow-only check, and Shadow's header. Evidence in
+findings, "D1 part b: the 7.1b review's minors".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

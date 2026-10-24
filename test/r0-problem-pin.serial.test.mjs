@@ -8,7 +8,8 @@ import { pinCommand, pinnedProblems, problemTable, problemsFile }
 // bytes, entry arrays in recorded order). The pin was taken from Task
 // 3.2's generator before D1's port, so the port changed no problem, and
 // RT1, RT8, the window and the census read what they read before.
-// Corpus-wide, hence serial.
+// The pin also covers RT8's and the window's inline probes (added after
+// the port, corpus digests unchanged). Corpus-wide, hence serial.
 const pinned = pinnedProblems();
 const found = await problemTable();
 

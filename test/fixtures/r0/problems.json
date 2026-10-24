@@ -1,6 +1,6 @@
 {
- "programs": 984,
- "declarations": 3011,
+ "programs": 988,
+ "declarations": 3021,
  "digests": {
   "docs/plans/2026-10-21-c001-explicit/baseline/a1-discard-dictionary.wxw": "87b072e6af1d599b98e68cb6695f1d0acfba9745f615584827daa12b413a30ff",
   "docs/plans/2026-10-21-c001-explicit/baseline/a2-unused-local.wxw": "c48fefa0e5875929817b547b16c4760835cbc12e3c1d6d02f854f40eb86d8285",
@@ -985,6 +985,10 @@
   "generated:fx-gen-record-patterns.mjs@197": "6c53b2d018e6d4b21f1a5ac5594417301d3306194a2c8c41a3c0422df0e2db87",
   "generated:fx-gen-record-patterns.mjs@198": "6b79dc9919ea98396b78d8c478ce1cebe5545ce1675218181e6f930c61d8f355",
   "generated:fx-gen-record-patterns.mjs@199": "9635dee56b0b8e9e82ecb52046384de46d8fdb84798fde032c287de974ecd75d",
-  "generated:fx-gen-record-patterns.mjs@200": "0b78ac1d6323ea7362d13d02bd1be98bb0152929827e660a234e82daede625a4"
+  "generated:fx-gen-record-patterns.mjs@200": "0b78ac1d6323ea7362d13d02bd1be98bb0152929827e660a234e82daede625a4",
+  "inline:r022-disjoint": "0b7f03a1d6203d5d979447ca08b59651b23aeef13c4ecef01119825fc364b92d",
+  "inline:r022-lacks": "4185ef2c980f981e651433993d079cd7dda159d63ffba3c0f66b5ab7cb39d92f",
+  "inline:r020": "c2a754cfe9eb3a7bf2688aaecba4421c6955fff1a785be728969cbf1241ba530",
+  "inline:fx032": "225aa1fe22b4bc0f0b819a0e3c3208bcc80f1e719fe7f5d4450d1b7ec6517b4d"
  }
 }

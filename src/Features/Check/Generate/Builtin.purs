@@ -112,7 +112,9 @@ builtinCall recur context path span builtin arguments = do
 -- The builtin applied to its one argument (Check/Operation.purs
 -- `printCall`). Another count is refused today (E_ARITY) and by the
 -- static rule, so no witness exists for it; its node only keeps `build`
--- total: the builtin applied, as a call of its reference would be.
+-- total: a placeholder, the unit value applied to the arguments, which
+-- is ill-typed. test/r0-elab-builtin-arity.test.mjs checks that such a
+-- call has its static refusal and reaches no `Elaborated`.
 called ∷ Span → Builtin → Array Checked.Expr → Checked.Node
 called span builtin arguments = maybe' (const placeholder) single
   (Array.uncons arguments)

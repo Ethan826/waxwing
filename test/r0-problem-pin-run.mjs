@@ -6,14 +6,19 @@
 // `encodeProblem`, entry arrays in recorded order), or of its
 // generation fault's name. Shared by the serial test and the pin script
 // (scripts/r0-problem-pin.mjs); the pin was taken from Task 3.2's
-// generator before the port.
+// generator before the port. Since the 7.1b review (Minor 1) the pin
+// also covers RT8's inline probes (`rt8Sources`, R022) and the window's
+// defect probes (R020, FX032), which carry no corpus origin; those were
+// added after the port, with the corpus digests unchanged.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { encodeProblem } from './r0-canonical.mjs';
-import { loadCorpus, repoRoot } from './r0-corpus.mjs';
+import { repoRoot } from './r0-corpus.mjs';
 import { generatedOrThrow, load, resolved }
   from './r0-generate-support.mjs';
+import { rt8Sources } from './r0-rt8-run.mjs';
+import { defectProbes } from './r0-shadow-known.mjs';
 
 export const problemsFile = 'test/fixtures/r0/problems.json';
 export const pinCommand = 'node scripts/r0-problem-pin.mjs';
@@ -43,7 +48,8 @@ const programOf = source => {
 export const problemTable = async () => {
   const digests = {};
   let declarations = 0;
-  for (const { origin, source } of await loadCorpus()) {
+  for (const { origin, source } of [...await rt8Sources(),
+    ...defectProbes]) {
     const program = programOf(source);
     if (program === null) continue;
     declarations += program.functions.length;

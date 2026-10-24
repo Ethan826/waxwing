@@ -138,7 +138,13 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
       .sort(), ['Domain.Recorded', 'Domain.Verdict']);
     // Final review, Minor 1: every module the tranche added, by family,
     // against an explicit allowlist, so a new reachable module fails.
-    const added = name => r0(name) || new RegExp('^Features\\.Check\\.'
+    // D1's families (7.1b review, Minor 6): Domain.Elaborating*,
+    // Features.Check.Elaborate* and Domain.Verdict.Judged* (the last is
+    // inside `r0` too; named so it stays listed if `r0` narrows).
+    const d1 = new RegExp('^(Domain\\.Elaborating|Features\\.Check\\.'
+      + 'Elaborate|Domain\\.Verdict\\.Judged)(\\.|$)');
+    const added = name => r0(name) || d1.test(name)
+      || new RegExp('^Features\\.Check\\.'
       + '(Classify|Decide|Entailed|Generate|GroundRule|Mentions|Outcomes'
       + '|Refute|Spine|Strategy|Admit|Checking)(\\.|$)').test(name);
     const allowed = ['Domain.Recorded', 'Domain.Recorded.Atom',

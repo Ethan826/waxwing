@@ -57,6 +57,12 @@ const recordedAt = (row, problem) => {
   };
 };
 
+// The declaration's parameter and result types, which the skeleton
+// leaves out: rigid copies of its signature on both sides, so compared
+// in by-site mode too (7.1b review, Minor 4).
+const signatureOf = decl => JSON.stringify(
+  [...decl.parameters, decl.result].map(ty => erasedType(ty)));
+
 // T2 for one judged row: its comparison, exact or by site, the sites
 // excluded, and the holes today's IR holds (T8).
 export const compareRow = (row, built) => {
@@ -73,6 +79,7 @@ export const compareRow = (row, built) => {
   let excluded = 0;
   let sites = 0;
   const same = skeletonOf(built) === skeletonOf(today)
+    && signatureOf(built) === signatureOf(today)
     && mine.length === theirs.length && mine.every((site, at) => {
       if (site.key !== theirs[at].key) return false;
       if (recorded(site).some(variable => amb.has(key(variable)))) {

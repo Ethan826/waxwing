@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { named, sourceRows } from './r0-elab-corpus-run.mjs';
 import { compareRow } from './r0-elab-compare.mjs';
+import { sitesOf } from './r0-elab-walk.mjs';
 import { load } from './r0-generate-support.mjs';
 
 // R0 Task 7.1b, D1 spec §10 T1 and T2 on small programs, one group of
@@ -94,3 +95,15 @@ for (const [name, [source, expected]] of Object.entries(groups))
     for (const row of compared)
       assert.ok(compareRow(row, builtOf(row)).same, row.decl.name);
   });
+
+// The site walk fails closed (7.1b review, Minor 4): a leaf adds its
+// node's type only; a constructor it has no arm for throws rather than
+// skip its children.
+test('the site walk throws on a constructor it does not know', () => {
+  const checked = { body: { value0: { ty: 'τ', node: null } } };
+  const Local = class Local {};
+  const Unknown = class Unknown {};
+  assert.equal(sitesOf({ body: new Local() }, checked).length, 1);
+  assert.throws(() => sitesOf({ body: new Unknown() }, checked),
+    /no arm for Unknown/);
+});

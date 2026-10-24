@@ -19,8 +19,9 @@
 -- `shadowDecisions` runs every declaration: generation, the seal check
 -- (Task 7.1b), then `decide`.
 -- A generation fault is a trusted component's failure (Task 3.2 ruling
--- (2): `TableLookup` or `InputShape`, both stopping under ruling R3), so
--- it is `BrokenInvariant`, never a strategy's failure.
+-- (2): `TableLookup` or `InputShape`, both stopping under ruling R3;
+-- Task 7.1b's `BinderShape` and `VariableSort` are `InputShape`), so it
+-- is `BrokenInvariant`, never a strategy's failure.
 module Features.Check.Decide.Shadow
   ( generationStop
   , shadowChecking

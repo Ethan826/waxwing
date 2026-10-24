@@ -20,6 +20,17 @@ const key = (form, path, ...rest) => JSON.stringify([form,
 const at = (path, ...more) => ({ root: path.root,
   steps: [...path.steps, ...more] });
 
+// The resolved leaves: no child expression (`Boolean` compiles to
+// `$$Boolean`, a JS global's name). Any other constructor reaching the
+// end of the walk is unknown to it, so the walk fails closed rather
+// than skip its children (7.1b review, Minor 4).
+const leaves = new Set(['Integer', '$$Boolean', 'Local', 'UnitValue',
+  'TextLiteral']);
+const leaf = resolved => {
+  if (!leaves.has(name(resolved)))
+    throw new Error(`r0-elab-walk: no arm for ${name(resolved)}`);
+};
+
 const walker = sites => {
   const add = (form, path, ty, ...rest) =>
     sites.push({ key: key(form, path, ...rest), ty });
@@ -187,7 +198,7 @@ const walker = sites => {
       case 'RecordRemoval':
         expr(r.value1, node.value0, at(path, 'RecordRemoval', 'record'));
         return;
-      default: return;
+      default: return leaf(r);
     }
   };
   const expr = (resolved, checked, path) => {

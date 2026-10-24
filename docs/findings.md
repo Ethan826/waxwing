@@ -4922,7 +4922,7 @@ build, then the named tests).**
 | N15 | E26's field variable stored `Auxiliary` | T5 |
 | N16 | a lambda parameter's site holds an arrow | T12; build test E13 |
 | N19 | a function reference reads no slot | T5; build test E3-E6 |
-| N20 | a record variable bound to a renaming faults | survived: no corpus witness binds one (C7's path; 7.1a's unit tests own it) |
+| N20 | a record variable bound to a renaming faults | survived the 7.1b tests: no corpus witness binds one (C7's path); killed by test/r0-elab-props.test.mjs T4b (seed 7107, `SortMismatch`), run after review |
 | N21 | a `Free` binding read as unbound | T1 |
 
 N14, N17 and N18 were not used. N2 first survived (no probe
@@ -4947,3 +4947,56 @@ needs token review.
 **Carries.** S7 (E-a) after the author's decision; T2's effect-erased
 scope is revisited then (spec §12.1). The Cov question for images
 naming a problem variable stands, now with the corpus count above (0).
+
+## D1 part b: the 7.1b review's minors (2026-10-24)
+
+Seven minor items from the Task 7.1b review, landed with the rebase onto
+the shadow hardening (r0-t2-hard). Test and comment changes only; no
+generator behaviour changed.
+
+1. **The problem pin covers the inline probes (checked).**
+   test/r0-problem-pin-run.mjs now hashes RT8's sources (`rt8Sources`:
+   the corpus and R022's two probes) and the window's defect probes
+   (R020, FX032). Re-pinned with `node scripts/r0-problem-pin.mjs`:
+   3,021 problems of 988 programs, up from 3,011 of 984. A script
+   compared the old file with the new: none of the 984 corpus digests
+   changed, and the four added origins are `inline:r022-disjoint`,
+   `inline:r022-lacks`, `inline:r020` and `inline:fx032`. Their digests
+   were taken after the port, so they guard later changes, not the port.
+2. **N20 (checked).** In a scratch copy, `readAs`'s `RecordSort, TVar _
+   → Right ty` became `Left (SortMismatch variable)`; after `node
+   scripts/build.mjs`, `node --test test/r0-elab-props.test.mjs` failed
+   T4b ("seed 7107: SortMismatch"); T4a and T9 passed. The mutant table
+   row records it.
+3. **A builtin of another arity (checked).** Generate/Builtin.purs `called`'s
+   comment now says what the placeholder is: the unit value applied to the
+   arguments, ill-typed. A new test, test/r0-elab-builtin-arity.test.mjs, takes
+   `show`, `Console.print` and `crash` with zero and two arguments: each has
+   exactly the `StaticArity` refusal, and the corpus run's pipeline (`decide`,
+   then `elaborate`) reaches no `Elaborated` (today `decide` judges none of them
+   Solved); the one-argument control elaborates. With `PrintArguments` made
+   `Semantic` in Static.purs (a scratch copy), the test failed on
+   `Console.print(1, 2)`.
+4. **T2's by-site mode and the walk (checked).** test/r0-elab-compare.mjs
+   compares the declaration's `parameters` and `result` (effect-erased) in
+   by-site mode too; the corpus counts are unchanged (1,989 compared, 45 by
+   site, 153 sites, 159 excluded). The site walk (test/r0-elab-walk.mjs) throws
+   for a constructor outside the five leaves (`Integer`, `Boolean`, `Local`,
+   `UnitValue`, `TextLiteral`); the build test checks a leaf and an unknown
+   constructor. Its first corpus run (T5b, the positions suite) threw on
+   `$$Boolean`, the compiled name of `Boolean`, which the leaf set now lists.
+5. **Rows last (checked).** test/r0-rows-last.serial.test.mjs: in
+   every resolved function's and declared type's `sorts`, nothing but
+   `RowSort` follows a `RowSort`, over 300 seeded programs whose type
+   and function parameters are written in shuffled order (more than
+   half mix both sorts) and over every resolving corpus program. With
+   Resolve/Signature.purs's `Array.sortWith sort` removed (a scratch
+   copy), the seeded half failed at seed 1. The corpus half could not
+   run in the copy (no git checkout for the corpus loader).
+6. **The shadow-only family regex (checked).** test/r0-verdict.test.mjs
+   counts Domain.Elaborating*, Features.Check.Elaborate* and
+   Domain.Verdict.Judged* as added families; the allowlist is
+   unchanged and the test passes, so compile reaches none of them.
+7. **Decide/Shadow.purs's header** names `BinderShape` and
+   `VariableSort` as `InputShape` faults (comment only; trusted
+   surface, so it needs token review; the line-1 marker stays).
