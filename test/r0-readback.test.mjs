@@ -104,7 +104,8 @@ test('a several-tail read-back is Heuristic, not a search fault', () => {
   assert.equal(found.value1.constructor.name, 'Heuristic');
   assert.deepEqual(describe(online.decisionOf(two, 'two')), {
     verdict: 'Unresolved Inference NoAcceptedCertificate',
-    attempts: ['CheckFailed Heuristic Undefined'], searchFaults: [] });
+    attempts: ['CheckFailed Heuristic Undefined', 'Shadow Left'],
+    searchFaults: [] });
 });
 
 // A checked declaration that is not the problem's: its positions are

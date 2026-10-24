@@ -641,6 +641,27 @@ text as an untrusted hint (injected renderer); the pattern-slot arm
 tested; FX032's blind spot disclosed; BACKLOG R025 (double corpus
 run).
 
+## R0 shadow tranche, Task 5.2: the CX refuter, in shadow (2026-10-23)
+
+Shadow only, no acceptance change; second shadow tranche. `cxSpec`
+(Features.Check.Refute.Counter): an untrusted search over T-R0c §2's
+single-label instances, seeded by hints, shrinking a refuted sub-body
+by one-at-a-time deletion; a check deciding `CXChecked (withBody (toSig
+P) body) rho` through a port of Lean's `decideCall`, minting nothing.
+Registered as `shadowRefuter cxStatement cxSpec` in `shadowChecking`
+(the controller's ruling: not Program.Compile, R6). CX's types in the
+new Domain.Verdict.Counter. On T-R0c's probes, 12 certificates, each
+re-evaluated true by an independent bounded brute force; none on b03
+or c01 (valid in §7.2). AT17: the window test re-run with the shadow,
+7/7, no class moved. CX question 2: every corpus `D` is scoped (3,011
+declarations, 444 with `D`). Question 3: a check enumerates 2^pairs
+patterns; probes 0-3 pairs, under 0.2 ms; the corpus's widest 13
+pairs, about 220 ms. Corpus: 72 certificates, none on a declaration
+today accepts. Mutants M1-M12 caught; regression row
+`r0-cx-hypothesis-skipped`. refute/statements.md §8.1 holds the
+evidence as a proposal pending its owner. No corpus re-pin. Evidence
+in findings, "The CX refuter in shadow".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

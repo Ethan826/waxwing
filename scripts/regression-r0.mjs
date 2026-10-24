@@ -2,6 +2,7 @@
 // their probes are in test/regression-r0.mjs. Each restores one defect in
 // a whole, compiling form.
 import { r0WitnessRows } from './regression-r0-witness.mjs';
+import { r0CxRows } from './regression-r0-cx.mjs';
 
 export const r0Rows = [
   {
@@ -228,5 +229,6 @@ export const r0Rows = [
     message:
       /r022-disjoint: the read-back σ was refused: CheckFailed NotGeneric/
   },
-  ...r0WitnessRows
+  ...r0WitnessRows,
+  ...r0CxRows
 ];

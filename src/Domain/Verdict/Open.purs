@@ -4,34 +4,28 @@
 -- its owner defines it here or moves it to its home. Task 4.1 moved
 -- `Budget`, `CheckRefusal` and `SearchHint` to Domain.Verdict.Search and
 -- `NoWitnessReason` to Domain.Verdict; Task 4.4 moved `Witness` to
--- Domain.Verdict.Witness.
+-- Domain.Verdict.Witness; Task 5.2 defined `CXSubst`, `CheckedCX` and
+-- `RefuteRefusal` in Domain.Verdict.Counter, re-exported here, so
+-- their importers (the token module Domain.Verdict.Internal among them)
+-- are unchanged.
 module Domain.Verdict.Open
   ( Alternative
-  , CXSubst
-  , CheckedCX
+  , module Exports
   , Construct
   , ForcednessClaim
   , ForcednessRefusal
   , NonForcednessEvidence
   , Question
-  , RefuteRefusal
   , RigidAssignment
   , SplitJudgement
   ) where
 
 import Prelude (class Eq)
+import Domain.Verdict.Counter (CXSubst, CheckedCX, RefuteRefusal) as Exports
 
 -- Which Q3 sub-question a class-f construct falls under (T-R0a §3.5).
 -- Equality lets `decide` list each `Unsupport` once (Task 4.1).
 data Question
-
--- CX's `Subst (B ⊕ Nat)`, its checked certificate and its refusal
--- (refute/statements.md §4; Task 5.2).
-data CXSubst
-
-data CheckedCX
-
-data RefuteRefusal
 
 -- W §1.7, adopted as defined there (Task 6.1).
 data SplitJudgement

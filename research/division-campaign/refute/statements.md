@@ -497,6 +497,20 @@ The author's decisions (§18.69 Q10, Q11) settle questions 4 (in part),
    consumes it. T-R0b's sketch argues conditions 4 and 5 (VR-CX); a
    check or proof is still owed, so CX-PR stays unsure.
 
+### 8.1 Evidence for questions 2 and 3 (proposed, pending the owner)
+
+Added by plan Task 5.2 (2026-10-23) as a proposal; it changes no
+statement or status above, and stays only with the owner's agreement.
+Evidence (checked; docs/findings.md, "The CX refuter in shadow"):
+
+- Question 2: every corpus `D` is scoped (3,011 declarations project;
+  444 have a non-empty `D`, 1,393 atoms; none mentions a variable
+  outside its sort's rigid list).
+- Question 3: the check enumerates exactly 2^pairs patterns for a
+  refuted sub-body. T-R0c's probe certificates have 0-3 pairs and
+  check in under 0.2 ms; the corpus's widest has 13 pairs (8,192
+  patterns, about 220 ms).
+
 ## 9. Revision log (reviews of 88c052d)
 
 Two reviews of 88c052d (an interface reconciliation and an

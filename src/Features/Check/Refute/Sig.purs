@@ -9,6 +9,7 @@ module Features.Check.Refute.Sig
   , SigVar(..)
   ) where
 
+import Prelude
 import Data.Tuple (Tuple)
 import Domain.Recorded (AtomId)
 import Domain.Recorded.Atom (Base, Var)
@@ -16,6 +17,10 @@ import Domain.Recorded.Atom (Base, Var)
 -- A type variable of the projection: a recorded one, or the fresh
 -- flexible variable standing for the `n`th `app` occurrence of the body.
 data SigVar = Named Var | Generalized Int
+
+-- Ordered, so CX's check can number variables (Task 5.2).
+derive instance eqSigVar ∷ Eq SigVar
+derive instance ordSigVar ∷ Ord SigVar
 
 -- Lean's `TExpr` (Composition/Syntax.lean): base, arrow, type variable,
 -- record with row-variable tails.

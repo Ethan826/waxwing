@@ -9,8 +9,10 @@
 -- check passes over those atoms (Strategy.Substitution), so its `Valid`
 -- is sound only where `decide` blocks Solved on them, and no strategy,
 -- caller or budget can choose another detector. The strategies are
--- `online` alone, the refuters and shadows none (Task 5.2 adds CX), the
--- rules Task 5.1's registry, and the run ends at its first verdict.
+-- `online` alone, no trusted refuter, the one shadow refuter CX (Task
+-- 5.2: `shadowRefuter cxStatement cxSpec`, whose records never change a
+-- verdict, AT17), the rules Task 5.1's registry, and the run ends at its
+-- first verdict.
 -- `legacyText` renders today's diagnostic for the online search's
 -- untrusted hint; the caller injects it (Format renders, Task 4.5).
 --
@@ -33,10 +35,12 @@ import Domain.Verdict (Decision, InternalFault(..))
 import Domain.Verdict.Search (Budget)
 import Features.Check.Decide (Checking, decide, untilVerdict)
 import Features.Check.Decide.Open (openRequirements)
+import Features.Check.Decide.Refuters (shadowRefuter)
 import Features.Check.Functional (functional)
 import Features.Check.Generate (generate)
 import Features.Check.Generate.Fault (GenerationFault, generationProblem)
 import Features.Check.Generate.Inputs (generationInputs)
+import Features.Check.Refute.Counter (cxSpec, cxStatement)
 import Features.Check.Refute.Rules (registry)
 import Features.Check.Strategy.Online (online)
 
@@ -46,7 +50,7 @@ shadowChecking legacyText budget program =
   { strategies:
       [ online { holders: functional program.ctors, program, legacyText } ]
   , refuters: []
-  , shadows: []
+  , shadows: [ shadowRefuter cxStatement cxSpec ]
   , rules: registry
   , budget
   , openRequirements

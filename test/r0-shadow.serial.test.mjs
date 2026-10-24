@@ -13,9 +13,11 @@ import { outsideKinds } from './r0-census-classify.mjs';
 // Task 4.5: the shadow run and the window table (G-switch evidence;
 // plan §3.1, §3.2, Review Focus 1). Every declaration's class today and
 // under R0 as decided in shadow (`shadowChecking`: `online` alone, no
-// refuter, rule or shadow), and a row for each difference, pinned in
-// test/fixtures/r0/window.json, so a class that moves fails here. It
-// decides nothing and changes no acceptance. Corpus-wide, so serial.
+// trusted refuter or rule; since Task 5.2 the CX shadow refuter, which
+// cannot change a verdict, so this table is AT17's re-run), and a row
+// for each difference, pinned in test/fixtures/r0/window.json, so a
+// class that moves fails here. It decides nothing and changes no
+// acceptance. Corpus-wide, so serial.
 const programs = await windowPrograms();
 const table = windowTable(programs);
 const rows = table.rows;

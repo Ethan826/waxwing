@@ -4165,3 +4165,158 @@ counts only).
   accepts indented imports (defence in depth, not a guarantee); the
   reachability test uses an explicit allowlist; RT1 asserts that no
   generated variable has a `hole` path step.
+
+## The CX refuter in shadow (2026-10-23)
+
+Task 5.2 (T-R0a §5.1; AT17; CX questions 2 and 3), shadow only: no
+acceptance change, nothing new reachable from compile but data
+(below). `cxSpec` (src/Features/Check/Refute/Counter.purs) pairs an
+untrusted search with the check of `CXChecked (withBody (toSig P)
+body) rho` (refute/statements.md §4). Its obligation, `cxStatement` =
+"CX-KP + CX-PR", is stated and unproved, so no `TheoremRef` exists,
+`trustedRefuter` stays unused and the check mints nothing: the
+Counter modules import no token module (checked: adding `import
+Domain.Verdict.Internal (Refuted(..))` to Counter/Check.purs makes
+`checkStructure()` return `["Features.Check.Refute.Counter.Check
+imports Domain.Verdict.Internal"]`; clean, `[]`). Per the controller's
+ruling it is registered as `shadowRefuter cxStatement cxSpec` in
+Features.Check.Decide.Shadow's `shadowChecking` (the test-side shadow
+assembly of Task 4.5), not in Program.Compile (R6; Task 4.6 wires).
+
+**Components and sources (cited).** The check is a port, definition
+by definition, of Lean's `substProblem` (Subst.lean), `decideCall`
+with `pairsOf`, `patternSubst` and `freshAlloc` (Reduction.lean,
+Unify/Decider.lean) and `decideClosed`/`unify` (Unify/Algo.lean:
+Robinson with occurs check, Martelli-Montanari form); Lean proves
+`decideCall_correct` for its definition, not for this port, which is
+tested against a brute force (below). The search uses T-R0c §2's
+single-label instances (Lemma SL), then shrinks a refuted sub-body by
+one-at-a-time deletion (the final step of Zeller and Hildebrandt's
+ddmin, 2002). New types: Domain.Verdict.Counter (`CXGround`,
+`CXSubst`, `CheckedCX` with the body decision's pattern count,
+`RefuteRefusal`, one constructor per conjunct), re-exported by
+Domain.Verdict.Open so Domain.Verdict.Internal is unchanged; none is
+a token. Program.Main now reaches Domain.Verdict.Counter (data only,
+through Open), so test/r0-verdict.test.mjs's pinned list gained it.
+
+**Readings (labelled).** (1) Budget: `keys` bounds the presence
+patterns one search run enumerates; `fuel` and `depth` are not read
+(Task 4.1's zero-fuel asymmetry unchanged). (2) Instances: rigid type
+variables and `τ` are distinct fresh base atoms (`Sum.inr`); `R` has
+at most two rows; labels are those written in `D` and in groups of at
+most 200 nodes, then one unwritten (`z`, `z1`, …). (3) Seeding: a
+written label a hint's text contains comes first (a substring test).
+(4) A sub-body is every atom of an id (`withBody`; ids are not
+unique). (5) Name clash avoided: `NoProjection`, `RigidUnbound`
+(`Unprojectable` and `Unbound` exist elsewhere).
+
+**Amendments after first runs (labelled).** (a) The search's whole-body
+try first used only the groups touching `R`; b02 `use` and b04 `use`
+(T-R0c §7.2: invalid) got no certificate, so each instance now also
+tries all small groups. (b) b04's certificate (9 atoms) was beyond the
+brute force's domain, so the search gained the ddmin shrink (6 atoms,
+3 pairs). (c) The decider's oracle test first missed four satisfiable
+problems in the brute force (a nested record no row field could hold;
+a forceable variable enumerated first), so the brute force gained the
+sub-body's closed values and a variable order; then 0 misses.
+
+**TDD (checked).** RED, before the registration in `shadowChecking`
+(the Counter modules built): `node --test test/r0-cx.test.mjs`, 0/5,
+every test failing on the missing shadow record ("Cannot read
+properties of undefined (reading 'result')", AT17's attempt count
+"1 !== 2"). GREEN after it: 5/5 (6/6 with the seeding test, added
+later and shown by mutant M12). The check's and the decider's tests
+were written after their code; their evidence is the mutants below.
+
+**Probes (checked; test/r0-cx.test.mjs).** Every probe declaration
+that resolves (d02, d03 are Resolve refusals) gets exactly one CX
+shadow record. Twelve carry a certificate, each re-evaluated by the
+independent bounded brute force (test/r0-cx-support.mjs: `D` exactly
+under `ρ`; no flexible solution of the sub-body within the bound):
+
+| Declaration | `ρ` | Atoms | Pairs | Patterns |
+|---|---|---|---|---|
+| a01-clash-ground#f | none | 1 | 0 | 1 |
+| a02-clash-rigid#f | `a ↦ #1` | 1 | 0 | 1 |
+| a03-occurs-type#main | none | 1 | 0 | 1 |
+| a04-occurs-row#main | none | 4 | 1 | 2 |
+| a05-record-homeless#f | `r ↦ {}` | 1 | 0 | 1 |
+| b01-overlap-pair#main | none | 3 | 2 | 4 |
+| b02-mayhold-forced#use | `r ↦ { b: #0 }` | 3 | 2 | 4 |
+| b04-share-meta-only#use | `s ↦ { b: #0 }` | 6 | 3 | 8 |
+| d01-extend-duplicate#f | `r ↦ {}` | 2 | 1 | 2 |
+| e01-pattern-rigid-field#f | `r ↦ {}` | 1 | 2 | 4 |
+| e02-pattern-order-ab#main | none | 2 | 2 | 4 |
+| e03-pattern-order-ba#main | none | 2 | 2 | 4 |
+
+These are §7.2's invalid probes plus a01, a03 and the flexible-only
+pattern probes; the rows agree with §7.2's counter-instances (b02,
+b04: `0 ↦ { b: … }`). b03 `use` and c01 `route`, valid in §7.2's
+bounded model, get `NoCounterInstance` (asserted). f01-f05 get none:
+their refusals are `cmp`/`pr` atoms, which `toSig` drops. AT17 on the
+probes: verdict, the other attempts and search faults equal the run
+with `shadows: []` (asserted).
+
+**CX question 2 (checked; test/r0-cx-corpus.serial.test.mjs).** Every
+corpus `D` is scoped: of 3,011 declarations that generate (no
+generation fault), all 3,011 project, 444 have a non-empty `D` (1,393
+atoms), and none mentions a variable outside its sort's rigid list.
+So `CXChecked` needs no values for flexible variables on this corpus.
+
+**CX question 3 (checked; test/r0-cx-cost.serial.test.mjs).** Deciding
+the body false enumerates all 2^pairs patterns (asserted: patterns =
+2^pairs for each certificate). Probe checks: 0-3 pairs, 1-8 patterns,
+medians 0.017-0.162 ms (21 runs). The corpus's widest certificate,
+finite-base-followup/generic.wxw `route`: 13 pairs, 8,192 patterns,
+about 220 ms. Corpus scratch run (observed, not pinned): the
+unseeded search over all 3,011 declarations took 5.0 s in all (max
+255 ms), the 72 checks 0.49 s. Argued: with the shrink, a check's cost
+is that of its certificate's own sub-body, and on this corpus that
+stays at 13 pairs or fewer; whether a certificate should carry more
+(question 3's alternative) is not forced by this evidence.
+
+**Corpus certificates (checked; same serial test).** 72 declarations
+get a certificate the check accepts; none is a declaration today's
+checker accepts. 65 re-evaluate true by the brute force at 200,000
+assignments; 7 pass that bound (listed in the test; no claim either
+way).
+
+**AT17 window re-run (checked).** `node --test
+test/r0-shadow.serial.test.mjs` with `shadows: [cx]`: 7/7, window.json
+unchanged (no class moved), 103 s.
+
+**Decider against the brute force (checked;
+test/r0-cx-decide.test.mjs).** 600 seeded problems (seed 20261023;
+two labels, three type and two row variables, the grammar fixed in
+the test): 212 solved by both, 388 refuted by both, 0 where only
+`decideCall` says satisfiable (after amendment (c)); asserted, so a
+change fails.
+
+**Mutants (checked; each restored).** Patched in place, `node
+scripts/build.mjs`, then `node --test test/r0-cx.test.mjs
+test/r0-cx-check.test.mjs test/r0-cx-decide.test.mjs`:
+
+| Mutant (file: patch) | Failing tests |
+|---|---|
+| M1 Check: `scoped whole` → `const (pure unit) (…)` | each refusal is reached by breaking its conjunct |
+| M2 Check: `distinctKeys (map fst bindings.ty)` skipped | each refusal … |
+| M3 Check: row keys' `rigidIn` skipped | each refusal … |
+| M4 Check: type keys' `boundIn` skipped | each refusal … |
+| M5 Check: `traverse_ groundTy` skipped | each refusal … |
+| M6 Check: `hypothesis rho whole` skipped | each refusal … |
+| M7 Check: `if not decided.satisfiable` | a certificate meeting every conjunct is accepted; each probe certificate re-evaluates true; each refusal … |
+| M8 Check: `traverse_ (inBody sig)` skipped | each refusal … |
+| M9 Unify: occurs test `&& false` | decideCall says satisfiable wherever the brute force solves; each probe certificate re-evaluates true |
+| M10 Term: `distinct … \|\| true` in `wfT` | the decider test; each probe certificate …; each refusal … |
+| M11 Decide: `successor` always `Nothing` | a refuted problem tries all 2^pairs patterns; the decider test; each probe certificate …; no certificate where the bounded oracle finds the probe valid |
+| M12 Search: hint order ignored | a hint seeds the search with its labels |
+
+Regression row `r0-cx-hypothesis-skipped` (M6's defect;
+scripts/regression-r0-cx.mjs, probe test/regression-r0-cx.mjs):
+`node scripts/regression.mjs r0-cx-hypothesis-skipped`, "fixed
+compiler passes; restored defect fails".
+
+**Changed expectations.** The assembly's decisions now end with one
+`Shadow` attempt: test/r0-online.test.mjs (four expectations) and
+test/r0-readback.test.mjs (one) gained `'Shadow Left'`; no verdict
+changed. No fixture or diagnostic changed; no corpus re-pin.

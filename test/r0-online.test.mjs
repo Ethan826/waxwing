@@ -28,8 +28,10 @@ const problem = online.problemOf(program, 'main');
 const assembled = () =>
   Shadow.shadowChecking(online.legacyText)(budget)(program);
 const decided = checking => describe(Decide.decide(checking)(problem));
+// Task 5.2: the assembly's one shadow refuter, CX, adds its record last
+// and changes nothing else (AT17).
 const blocked = { verdict: 'Unresolved Unsupported RequirementAtoms',
-  attempts: ['Accepted'], searchFaults: [] };
+  attempts: ['Accepted', 'Shadow Left'], searchFaults: [] };
 
 test('the shadow assembly supplies the production detector', () => {
   assert.equal(online.todayOf(program, 'main').constructor.name, 'Right');
@@ -38,7 +40,9 @@ test('the shadow assembly supplies the production detector', () => {
   assert.equal(checking.openRequirements, Open.openRequirements);
   assert.equal(checking.ends, Decide.untilVerdict);
   assert.equal(checking.rules, Rules.registry);
-  assert.deepEqual([checking.refuters, checking.shadows], [[], []]);
+  assert.deepEqual(checking.refuters, []);
+  assert.deepEqual(checking.shadows.map(shadow => [shadow.awaits,
+    shadow.spec.name]), [['CX-KP + CX-PR', 'CX']]);
   assert.equal(checking.strategies.length, 1);
   // G0 accepts the online candidate (it passes over the open atom), so
   // only the detector keeps Solved off.
@@ -64,7 +68,7 @@ test('no strategy chooses the detector', () => {
   const hostile = { ...checking, strategies: [stubs.behaviours.accepting()
     .strategy, ...checking.strategies] };
   assert.deepEqual(decided(hostile), { verdict: blocked.verdict,
-    attempts: ['Accepted', 'Accepted'], searchFaults: [] });
+    attempts: ['Accepted', 'Accepted', 'Shadow Left'], searchFaults: [] });
 });
 
 // Criterion 5, the comparison carry (Task 4.2 findings item 8): a
@@ -78,7 +82,8 @@ test('the search binds a hole under pr, so no RequirementUnjudged', () => {
   const freeProgram = online.programOf(free);
   const freeProblem = online.problemOf(freeProgram, 'f');
   assert.deepEqual(describe(online.decisionOf(freeProgram, 'f')), {
-    verdict: 'Solved', attempts: ['Accepted'], searchFaults: [] });
+    verdict: 'Solved', attempts: ['Accepted', 'Shadow Left'],
+    searchFaults: [] });
   const found = online.search(freeProgram, freeProblem);
   const y = freeProblem.bq[0].value.value0.value0;
   assert.deepEqual(online.sigmaOf(found.value0.substitution).find(
@@ -98,5 +103,5 @@ test('cmp at an ambiguous variable ends the search, no backstop', () => {
     'research/division-campaign/r0/probes/f02-compare-ambiguous.wxw', 'utf8');
   const found = describe(online.decisionOf(online.programOf(f02), 'main'));
   assert.deepEqual(found, { verdict: 'Unresolved Inference NoCandidate',
-    attempts: ['Searched Exhausted'], searchFaults: [] });
+    attempts: ['Searched Exhausted', 'Shadow Left'], searchFaults: [] });
 });

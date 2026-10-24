@@ -120,14 +120,16 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
     };
     visit('Program.Main');
     const r0 = name => /^Domain\.(Verdict|Recorded)(\.|$)/.test(name);
-    // Domain.Verdict.Witness: the type Task 4.4 moved from Open.
+    // Domain.Verdict.Witness: the type Task 4.4 moved from Open;
+    // Domain.Verdict.Counter: CX's types, which Open re-exports (Task
+    // 5.2), data only.
     assert.ok(seen.has('Features.Check.Outcomes'));
     assert.ok('Domain.Verdict.Admission' in graph);
     assert.deepEqual([...seen].filter(r0).sort(), ['Domain.Recorded',
       'Domain.Recorded.Atom', 'Domain.Recorded.Internal',
       'Domain.Recorded.Origin', 'Domain.Verdict',
-      'Domain.Verdict.Internal', 'Domain.Verdict.Open',
-      'Domain.Verdict.Search', 'Domain.Verdict.Static',
+      'Domain.Verdict.Counter', 'Domain.Verdict.Internal',
+      'Domain.Verdict.Open', 'Domain.Verdict.Search', 'Domain.Verdict.Static',
       'Domain.Verdict.Theorem.Internal', 'Domain.Verdict.Unsound',
       'Domain.Verdict.Witness']);
     assert.deepEqual([...seen].filter(name => !r0(name)
