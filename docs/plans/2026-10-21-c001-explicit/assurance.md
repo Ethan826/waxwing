@@ -4,7 +4,8 @@ Status: statements and evidence plan for review. No new Lean work or
 compiler implementation is authorized. No preservation theorem is claimed
 proved. Primary-source correspondence is in [sources](sources.md).
 Acceptance programs are proposed; reading them is not execution evidence.
-The three focused arguments, for review, are in [arguments](arguments.md).
+The three focused arguments, for review, are in [arguments](arguments.md);
+the fixtures and mutants that check them are in [evidence](evidence.md).
 
 ## Separate claims and required arguments
 

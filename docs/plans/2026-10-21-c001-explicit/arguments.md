@@ -1,15 +1,18 @@
 # C001 assurance arguments for representation A
 
-Status: arguments for review, 2026-10-23, authorized by the README's
-first-core decisions, for the typing, simulation and graph-edge rows of
-[assurance](assurance.md). Nothing was built or run: no claim is
-*checked*. *Cited*: file:line at 81bf5f8 (cited src equals r0-tranche
-HEAD). *Argued*: reasoning here. *Reported*: recorded baseline evidence.
-Paths: src/Features/Specialize.purs; Body, Keys, Lower, State, Values in
-src/Features/Specialize/; Components, Instantiation, NestedArguments,
-Outcomes, Strip in src/Features/Check/; src/Domain/Checked/Internal.purs.
-Holes stay open: each argument holds under today's Int representative and
-says where it depends on it.
+Status: arguments for review, 2026-10-23, for the typing, simulation and
+graph-edge rows of [assurance](assurance.md), corrected the same day after
+an independent review (F1, F2, A3, B1-B3, N1-N5). No Lean work and no
+language-semantics change follow. *Cited*: file:line at r0-tranche
+83279ed; the cited src files are identical at this branch's base 0710fa6,
+where docs/language.md runs three lines later. *Argued*: reasoning here.
+*Reported*: recorded baseline evidence. *Checked*: a run recorded in
+[evidence](evidence.md); none yet. *Open*: not argued. Paths: Body, Keys,
+Lower, State, Values in src/Features/Specialize/; Components,
+Instantiation, NestedArguments, Outcomes, Strip in src/Features/Check/;
+Internal is src/Domain/Checked/Internal.purs. Each argument covers today's
+hole representatives only: type-sorted holes become Int, record-sorted
+holes the empty rest.
 
 ## 1. Typing preservation
 
@@ -17,31 +20,38 @@ says where it depends on it.
 closed record of FN001 function values passed as an ordinary parameter
 (README:49-52; core.md:99-112). The elaboration of assurance.md:12 is the
 identity, `E = e` and `|T| = T` after alias expansion. What remains
-(argued): each first-core program is ordinary, typed by today's P001,
-FN001, FX001 and R001 rules (the tranche uses only records, functions,
-captures and dictionary arguments, README:154-157), and each non-plain
-dependency below has a cited rule or stated assumption.
+(argued): each first-core program is typed by today's P001, FN001, FX001
+and R001 rules (records, functions, captures and dictionary arguments
+only, README:154-157), and each non-plain dependency below has a cited
+rule or stated assumption.
 
-**(a) Aliases, assumptions about the planned R008 slice** (transparent,
-parameterized, terminating, no new identity; README:139-147):
+**(a) Aliases** (planned R008: transparent, parameterized, terminating,
+no new identity; README:139-147). Decided: an arrow in an alias body has
+a fixed definition-site meaning, pure in the initial core. Assumptions:
 
-- A1. The alias graph is acyclic and each body's free variables are its
-  parameters; expansion recurses on types under alias rank, so it ends.
-- A2. Expansion precedes checking: checked IR, unification and the key
-  `Tuple Int (Array IR.Ty)` (State.purs:47) never see an alias name.
-- A3. Parameters are type-sorted, substituted like a declared type's
-  (NestedArguments.purs:51-58); record-sorted parameters are not assumed.
-- A4 (to show). `exp(T[σ]) = exp(T)[exp∘σ]`.
+- A1. The alias graph is acyclic; a body's free variables are its
+  parameters.
+- A2. Expansion runs before Resolve and yields row-explicit types: each
+  alias arrow carries its definition-site row (closed and empty in the
+  initial core), never the using signature's ambient row, which textual
+  expansion would give it. R008 needs a rule stating this. Checked IR,
+  unification and the key (State.purs:47) never see an alias name.
+- A3. Parameters are type-sorted and substituted as types are
+  (src/Domain/Type/Core.purs:150-152); record-sorted ones are not assumed.
+- Definition. `exp` is homomorphic on variables, constructors, arrows
+  (rows kept) and records, and `exp(N(T̄)) = exp(B)[p̄ := exp(T̄)]` for an
+  alias `N(p̄) = B`. It terminates by (highest alias rank, then size): `B`
+  has a lower top rank (A1); each `Tᵢ` is smaller, with no higher rank.
+- A4 (to show). `exp(T[σ]) = exp(T)[exp∘σ]` for type substitutions `σ`.
 
-Induction for A4 (argued), on alias rank, then on `T`. Variables are
-immediate; constructors, arrows and records follow componentwise. For
-`N(T̄)` with body `B` over `p̄`: `exp(N(T̄)[σ]) = exp(B[p̄ := exp(T̄[σ])])`,
-which by hypothesis on the arguments is `exp(B)[p̄ := exp(T̄)[exp∘σ]]`;
-since `B` mentions only `p̄` and has lower rank, that is
-`exp(N(T̄))[exp∘σ]`. So scheme instantiation (core.md:68-73) commutes
-with expansion, and a source derivation maps step for step onto the
-expanded program's. Open: the ambient row of an unannotated arrow inside
-an alias body (§5).
+Proof of A4 (argued), by induction on that measure. Variables are
+immediate; constructors, arrows and records go componentwise, and a fixed
+alias row is closed while `σ` substitutes types only. For `N(T̄)`:
+`exp(N(T̄)[σ]) = exp(B)[p̄ := exp(T̄[σ])] = exp(B)[p̄ := exp(T̄)[exp∘σ]]` by
+hypothesis on each `Tᵢ`. The free variables of `exp(B)` are among `p̄`
+(A1; `exp` adds none), so this is `exp(N(T̄))[exp∘σ]`. Scheme
+instantiation (core.md:68-73) commutes with expansion, and a source
+derivation maps step for step onto the expanded program's.
 
 **(b) Per-stage pure arrows.** An arrow without `with` shares its
 signature's rigid ambient row; `with` binds the nearest arrow
@@ -49,31 +59,38 @@ signature's rigid ambient row; `with` binds the nearest arrow
 `{ combine: a -> a with pure -> a with pure }` has closed empty rows and
 is one type in producer and consumer signatures (argued). This fits the
 reported split: c7-c9 compile; p3, c1, c3 fail with `Expected a -> a ->
-a, found a -> a -> a` (effects-syntax-usability.md:12-31). p1 and p4 mark
-only the final stage and compile (reported), so §1 needs only that each
-fixture types under today's FX001 rules (kept: README:171-178). Rows are
-not in keys (effects-design.md:484; Values.purs:92-93). c7 keeps an
-ambient first stage (baseline/README.md:71-73; §5).
+a, found a -> a -> a` (effects-syntax-usability.md:12-31). Rows are not in
+keys (effects-design.md:484; Values.purs:92-93). Decided: canonical
+positive fixtures make every method stage `with pure`; c7, whose Stats
+result keeps an ambient first stage (baseline/README.md:71-73), stays as
+a separate characterization test. p1 and p4 mark only the final stage
+and compile (reported); their all-pure rewrites must be baselined before
+they serve as §2 evidence.
 
-**(c) Closures capturing dictionaries** (cited). Lambdas are
-monomorphic, typed from the expected arrow, and capture the values of the
-locals they read (language.md:265-266, 298-299); their bodies are checked
-in the enclosing function (functions-design.md:265-267). In `configured`
-and `reverse` the captured `d` keeps its monotype over the caller's rigid
-`a` (programs.md:147-150; core.md:74-78). Nothing new is shown.
+**(c) Closures capturing dictionaries** (cited). Lambdas are monomorphic,
+typed from the expected arrow, and capture the values of the locals they
+read (language.md:265-266, 298-299), checked in the enclosing function
+(functions-design.md:265-267). In `configured` and `reverse` the captured
+`d` keeps its monotype over the caller's rigid `a` (programs.md:147-150;
+core.md:74-78).
 
-**(d) Method use** (cited). `d.combine(x, y)` is a field access, then
-application of a value, which creates no edge or key
-(functions-design.md:259).
+**(d) Method use** (cited). `d.combine(x, y)` is a field access, then an
+application: no edge or key. functions-design.md:259 covers applying a
+local; `foldCalls` recurses through FieldAccess and Apply without `step`
+(Instantiation.purs:101-102, 118).
 
 **(e) Holes.** An unsolved meta becomes a hole with no typing default
-(polymorphism-design.md:115-118; language.md:210-215); specialization
-sets every hole to Int (Specialize.purs:46-47; Lower.purs:53). A has no
-constraints, so P001's "no constraint mentions a hole"
-(polymorphism-design.md:238-241) holds vacuously, and ground substitution
-is the ordinary substitution lemma: the specialized program is well typed
-at any representative (argued). This uses today's hole behaviour, not the
-open reject-all-metas boundary (core.md:157-176).
+(polymorphism-design.md:115-118; language.md:210-215). Specialization sets
+type-sorted holes to Int and record-sorted ones to the empty rest
+(Specialize.purs:46-47; Lower.purs:53; Values.purs:78-82, 97-100). A adds
+no class constraints, but record, printing (Printable, rechecked at
+specialization) and comparison obligations remain, and h1/h2 show that the
+representative changes acceptance (README:234-242). The claim is limited
+to today's representatives: with every applicable obligation discharged
+there, the ordinary substitution lemma makes the specialized program well
+typed (argued). Representative independence is not established. Hole
+defaulting is conditional and separate (README, 2026-10-23); the
+reject-all-metas boundary stays open (core.md:157-176).
 
 **Jones correspondence** (argued; sources.md:10-30, 64-72). Evidence
 abstraction and application are ordinary abstraction and application over
@@ -85,74 +102,83 @@ ADR 014 composition that §2 argues; holes. No new solver or calculus.
 
 ## 2. Dynamic preservation (simulation)
 
+**Fragment.** Source: the unspecialized checked IR of a whole program with
+a monomorphic entry, evaluated call by value, big step, children once and
+left to right. Target: its specialized IR under the same evaluator, with
+the same primitives. Nodes (Internal.purs:64-101): Integer, Boolean, Text,
+UnitValue, Local, FunctionRef, CtorRef, Call, Construct, Add, Concat,
+Compare, If, Match, Apply, Lambda, Pipe, Block and the five record nodes.
+Excluded: Print, Show, Interpolate and Crash, which render or emit, and
+OperationRef, Perform, Handler, With, Handle and Fail; an output-trace
+observation for them is open. Observation: the entry's result, up to the
+relation below. The IR→Go gap is open; Go outputs are evidence only.
+
 **Facts used (cited).** A function key is the declaration and its ground
 argument vector only (State.purs:43-47; Keys.purs:59-71;
 polymorphism-design.md:226-228), created only at `Call` and `FunctionRef`
-(Body.purs:69-71, 84-85; Values.purs:45-52). `copyNode` rebuilds each
-node with children in source order, maps `Local id` to itself and keeps
-record fields in written order (Body.purs:63-135, lines 68, 121-122);
-lambdas keep their locals (Values.purs:104-116). There is no mutable
-state (language.md:538).
+(Body.purs:69-71, 84-85; Values.purs:45-52). `fillFunction` builds a key's
+body (Body.purs:31-53) when the worklist reaches it
+(Specialize.purs:104-118). `copyNode` keeps children in source order,
+maps `Local id` to itself and keeps record fields in written order
+(Body.purs:63-135, lines 68, 121-122). No mutable state (language.md:538).
 
-**Relation (argued).** Fix a key substitution θ (variables to the key's
-ground types, holes to Int). `v ~ w` relates source values (unspecialized
-checked IR, CBV) to target values: equal scalars; constructors under
-`C ↦ ctorAt(C, owner θ)` and records with equal labels, fieldwise; a named
-value `f` at `ι` with the output of key `(f, ground(ιθ))`, partials with
-related arguments; and a closure `(λp. e, ρ)` made under θ with
-`(λp. copyθ(e), ρ')` when `ρ ~ ρ'`.
+**Relation (argued), indexed by creation key.** For a key κ, θκ sends its
+function's variables to κ's ground types and holes to today's
+representatives. `v ~ w`: equal scalars; a constructor value made under κ
+with `ctorAt(C, owner θκ)`, fieldwise; records with equal labels,
+fieldwise; a named value or partial `f` at `ι` made under κ with key
+`(f, ground(ιθκ))`'s output and related arguments; a closure `(λp. e, ρ)`
+made under κ with `(λp. copyθκ(e), ρ')` when `ρ ~ ρ'`. A value keeps its
+creation key wherever it flows, so a closure made in one copy and called
+from another stays related.
 
-**Claim (argued).** If `ρ ~ ρ'`, evaluating `e` under `ρ` and `copyθ(e)`
-under `ρ'` both return related values, both diverge, or both stop with
-the same crash or abort, after the same sequence of stage executions, so
-method invocation order agrees. Induction on the source big-step
-derivation (coinduction or step indexing for divergence). Cases:
+**Claim (argued for terminating runs).** If `ρ ~ ρ'` and `e`, in a body of
+key κ, returns `v` under `ρ`, then `copyθκ(e)` returns some `w ~ v` under
+`ρ'`, after the same sequence of stage executions, so method invocation
+order agrees. Induction on the source derivation. Open: divergence and
+abort are not argued (a coinductive big-step or step-indexed relation).
 
 - Local: `ρ(x) ~ ρ'(x)`. A dictionary parameter is a local, so the copy
   reads the caller's value: explicit choices are preserved.
-- Call, FunctionRef: the target enters key `(f, ground(ιθ))`, whose body
-  is `copyθ'(body)` (Values.purs:51-52), binding related arguments.
-- Lambda: the closure takes the current, related environment, so
-  captures are preserved (functions-design.md:262-267).
-- Apply, Pipe, FieldAccess, RecordLiteral, Match, If, Block: children
-  evaluate once in the order of language.md:292-304, 826-829, which the
-  copy keeps; stages run at the same applications
+- Parameter binding: argument `i` binds `LocalId i` in both. Resolve
+  numbers parameters by position (Resolve.purs:146-148); the copy keeps
+  parameter order and local ids (Body.purs:39, 68).
+- Call, FunctionRef: the target enters key `(f, ground(ιθκ))` and binds
+  the related arguments, evaluated left to right in both.
+- Field selection: FieldAccess keeps its label (Body.purs:123-124) and
+  related records relate by label. Update, extension and removal keep
+  labels too (125-130). Go's sorted-label layout is in the IR→Go gap.
+- Lambda, captures: the copy keeps parameter and body local ids
+  (Values.purs:104-116); the closure takes the current related
+  environment (functions-design.md:262-267). In Go a lambda or block is
+  lifted to a top-level function receiving its free locals as parameters
+  (src/Format/Go/Lambda.purs:1-9, Block.purs:1-13), and a local is
+  declared only as a parameter or one typed `var` (Block.purs:88-94;
+  Handle.purs:160-165); absence of reassignment is read, not checked.
+- Apply, Pipe, Construct, record literals, Add, Compare, Match, If, Block:
+  children evaluate once in the order of language.md:292-304, 823-826,
+  which the copy keeps; stages run at the same applications
   (effects-design.md:269-277).
-- Holes: θ sets them to Int; lowering is uniform in types
+- Holes: θκ uses today's representatives; lowering is uniform in types
   (polymorphism-design.md:244-248; functions-design.md:268-271) and a
   method is chosen by value, so no hole selects a dictionary. Acceptance
-  can still vary: h1/h2 reject a function stand-in (README:234-242).
+  varies (h1/h2, README:234-242); independence is open.
 
-**No conflation (argued).** Calls with sum and product at Int share one
-output function because the key holds only types, but each call evaluates
-its own arguments and binds its own parameters. The shared copy is code
-with no state where a first value could persist. Two same-typed
+**No conflation within this copy relation (argued).** Calls with sum and
+product at Int share one output function because the key holds only
+types, but each call evaluates its own arguments and binds its own
+parameters; the shared copy has no state where a first value could
+persist. Within this relation, and only there, two same-typed
 dictionaries can be identified only by adding state or replacing an
-argument expression; M1 adds state.
+argument expression.
 
 **Evidence** (reported). p4 has one Int copy of `both`, c8/c9 one each
-of client, configured and reverse (baseline/README.md:75-79); outputs are
-the healthy column below (59-65). Only p4 also agrees with the
-independent interpreter, which cannot parse c8/c9 (32, 84).
-
-**Mutant M1, baked-in first dictionary (to be built).** In an isolated
-copy, the Go emitted for each specialized generic function gives each
-dictionary parameter (a closed record whose fields all have function
-type) a package-level cell keyed by (output function, parameter index).
-On entry an empty cell stores the incoming value; the parameter is then
-rebound to the cell's value. Expected kills:
-
-| Fixture | Healthy | Under M1 |
-|---|---|---|
-| p1 | `Results(9, 24, 4, 2)` | `Results(9, 9, 9, 2)` |
-| p4 | `Pair(Pair(5, 6), Pair(6, 5))` | `Pair(Pair(5, 6), Pair(5, 6))` |
-| c8 | `Results(Pair(5, 3), Pair(6, 3), 2)` | `Results(Pair(5, 5), Pair(5, 5), 5)` |
-| c9 | `Results(Pair(6, 3), Pair(5, 3), 2)` | `Results(Pair(6, 6), Pair(6, 6), 6)` |
-
-Variant M1′ (assurance.md:69-71, "first Int dictionary for all calls")
-keys the cell by the dictionary's IR type alone. Each must make the gate
-exit 1 on these cases; a1 and a3 (at most one dictionary per key) are
-controls and should be unaffected.
+of client, configured and reverse (baseline/README.md:75-79), with the
+outputs at 59-65. Of p1, p4, c8 and c9, only p1 and p4 agree with the
+interpreter, which cannot parse c8/c9 (30-32, 84). Mutants M1 and M1′
+add that state; their definitions, expected outputs and controls, and the
+dedupe and drop-capture defects (assurance.md:70-72), are in
+[evidence](evidence.md) (to be built).
 
 ## 3. Graph-edge audit, resolving N7
 
@@ -168,9 +194,9 @@ a judged edge.
 mark-stripped checked program that specialization receives
 (Outcomes.purs:82-95; Strip.purs:8-11). Edges come from `callees`, a
 `foldCalls` over each body (Instantiation.purs:25-29, 39-43); Tarjan
-numbers components (Components.purs:15-17, 45-48); `judgeCall` judges
-each intra-component reference (Instantiation.purs:60-73). `foldCalls`
-calls `step` at `Call` and `FunctionRef` (90-92, 104-105), recurses into
+numbers components (Components.purs:15-17, 45-48); `judgeCall` judges each
+intra-component reference (Instantiation.purs:60-73). `foldCalls` calls
+`step` at `Call` and `FunctionRef` (90-92, 104-105), recurses into
 `Lambda` bodies (106), `RecordLiteral` field values (117;
 Internal.purs:158-161) and every other node with expression children
 (93-123). The catch-all (124) covers only `Integer`, `Boolean`, `Local`,
@@ -181,69 +207,44 @@ expression (Internal.purs:64-101).
 at `Call` and `FunctionRef` (Body.purs:69-71, 84-85), exactly where
 `foldCalls` calls `step`, on the same IR; so §4.2 applies unchanged.
 
-**N7.** A self-reference inside a record-field closure has the path
-`RecordLiteral` → field value → `Lambda` → body → `Call f` or
-`FunctionRef f`. A `FunctionRef` stored directly in a field has the path
-`RecordLiteral` → `FunctionRef f`. Each reaches `step`. With a
-`List(a)` instantiation, `admissibleSlot` rejects the reference
-(NestedArguments.purs:26-29, 45-49), and the diagnostic is
-`PolymorphicRecursion` at the reference (Instantiation.purs:68-70).
-**Verdict (i), cited and argued, not checked: edges are created; N7 is
-refused as required; no compiler change is needed.**
+**N7.** A self-reference in a record-field closure has the path
+`RecordLiteral` → field → `Lambda` → body → `Call f`; a `FunctionRef`
+stored in a field has `RecordLiteral` → `FunctionRef f`. Each reaches
+`step`. At a `List(a)` instantiation `admissibleSlot` rejects the
+reference (NestedArguments.purs:26-29, 45-49) with `PolymorphicRecursion`
+(Instantiation.purs:68-70). **Verdict (i), cited and argued, not
+checked: edges are created; N7 is refused as required; no compiler
+change is needed.**
 
-**Fixtures that would make it checked (to be built).** Add both to
-cases.json as compiler `rejected`, E_SPECIALIZATION, problem
-`PolymorphicRecursion`, `Recursive call to f changes its type arguments`
-at the inner reference (the fixture task confirms syntax and span; the
-second shares the first's `List` declaration):
-
-```text
-type List(a) = Nil | Cons(a, List(a));
-fn f(x: a): { run: Int -> Int with pure } =
-  { run: fn(n) => f(Cons(x, Nil)).run(n) };
-fn main(): Int = f(1).run(2);
-```
-
-```text
-fn f(x: a): Int = {
-  let box = { step: f };
-  box.step(Cons(x, Nil))
-};
-fn main(): Int = f(1);
-```
-
-Run `node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs
-docs/plans/2026-10-21-c001-explicit/baseline/evidence/results.json`. Assert
-the problem, not just the code: under mutant M2 (delete the `RecordLiteral`
-arm, Instantiation.purs:117) the checker should accept both and
-specialization should stop at `SpecializationLimit`, also E_SPECIALIZATION.
-A control closure recurring at the bare `a` should stay accepted.
+**Fixtures (to be built).** Two self-contained sources, a lambda in a
+record field and a `FunctionRef` stored in a record, each recorded as
+compiler `rejected`, E_SPECIALIZATION, `PolymorphicRecursion`, and a
+control recurring at the bare `a`. Their sources and mutants M2
+(`RecordLiteral` arm, Instantiation.purs:117) and the Lambda-arm deletion
+(106) are in [evidence](evidence.md).
 
 ## 4. Claims and closure
 
 | Claim | Label | Closed by |
 |---|---|---|
 | A adds no typing rule; elaboration is the identity | argued, rules cited | review of §1 |
-| Alias expansion terminates and commutes with substitution | argued under assumptions A1-A4 | R008 slice design review; alias fixtures when it lands |
+| Alias expansion terminates and commutes with substitution | argued under A1-A3 and the fixed-row decision | R008 rule for definition-site rows; alias fixtures when it lands |
 | Per-stage `with pure` dictionaries type in both signatures | cited rule; reported c7-c9 | review; CB002 diagnostics follow-up |
-| Holes do not affect typing or chosen methods | argued; depends on today's Int representative | representative-independence runs (recorded h1/h2 limit) |
-| Specialized program simulates source | argued | review of §2; fixtures p4, c8, c9; M1/M1′ kill |
-| Same-typed dictionaries never conflated | argued; key cited | p4 and c8/c9 under M1 |
-| Captures preserved | argued; FN001 cited | c8 reverse case; drop-capture mutant (assurance.md:70-71) |
-| Every key-creating reference is a judged edge | cited, argued | review of §3; M2 |
+| Holes do not affect typing or chosen methods | Int representative only (empty rest for records); independence open | conditional hole-defaulting follow-up, separate |
+| Specialized program simulates source | argued for terminating runs in the §2 fragment; divergence, aborts, effects and IR→Go open | review of §2; p4, c8, c9; M1/M1′ kill |
+| Same-typed dictionaries never conflated | argued within this copy relation; key cited | p4 and c8/c9 under M1 and M1′ |
+| Captures preserved | argued; FN001 cited; Go side read only | c8 reverse case; drop-capture mutant (not built: open) |
+| Equal-typed operands not deduplicated | specified only | dedupe mutant (not built: open) |
+| Every key-creating reference is a judged edge | cited, argued | review of §3; M2 and Lambda-arm mutants |
 | N7 refused without compiler change | cited, argued (verdict i) | n7 lambda and FunctionRef fixtures in the live gate |
 
-## 5. Open points for the author
+## 5. Open points and decisions
 
-- R008 must decide whether an unannotated arrow in an alias body takes
-  the using signature's ambient row (textual expansion) or a fixed row;
-  the meanings differ. §1 holds for either if expansion precedes Resolve.
-- Lean candidate, only if review finds §2 insufficient and with separate
-  authorization: no conflation under type-only keys with runtime
-  dictionary arguments, the small distinctive composition here.
-- Hole dependence is in §1(e) and §2's hole case; a future ambiguity
-  policy that defaults differently must recheck P001 §6 condition 4.
-- c8/c9 have no independent interpreter result (parser gap), so their
-  simulation evidence is weaker than p4's.
-- Should first-core fixtures make every method stage `with pure` (c7)?
-- Suggested build order: n7 fixtures, M2, then M1 and M1′.
+- Decided: alias arrows keep their definition-site row, pure in the
+  initial core; R008 needs the rule and a fixture placing an alias in an
+  effectful signature (§1(a)).
+- Decided: no Lean work now; all-pure canonical fixtures, c7 kept (§1(b)).
+- Hole defaulting is a conditional, separate follow-up; a policy that
+  defaults differently must recheck P001 §6 condition 4.
+- c8/c9 lack an interpreter result (parser gap); their backend tests
+  stay, joined by interpreter-supported controls ([evidence](evidence.md)).
