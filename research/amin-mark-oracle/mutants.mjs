@@ -1,15 +1,21 @@
-// The oracle's detection power, reproducible: three wrong
+// The oracle's detection power, reproducible: five wrong
 // implementations are constructed and injected into the same families
-// run.mjs uses; each must produce at least one disagreement.
+// and cases run.mjs uses; each must produce at least one disagreement.
 //   ground       `holds` reading every rigid mark as N (one valuation);
 //   unnormalized `holds` without `norm` (J ∅ not identified with N);
 //   perPosition  least terms per position, ignoring equality classes
-//                (review 3's T1-a).
+//                (review 3's T1-a);
+//   noClauseEq   `handlerEquality` without C ≡ C (§R5 F1);
+//   rMarksIgnored `handlerEquality` ignoring R's marks when neither type
+//                owns a C (revision 3.2's E1 on that branch).
 import { classesOf, constantOf, holds, leastTerms, leastVerdictWith,
   reaching, atoms } from './oracle.mjs';
 import { oneFamily, pairsFamily, randomFamily, twoFamily }
   from './families.mjs';
 import { runCases } from './cases.mjs';
+import { derivedC, markEquality, sameHead, structural }
+  from './handlers.mjs';
+import { rowEquality } from './rows.mjs';
 
 const ground = (x, y) => {
   const g = t => (t === 'M' ? 'M' : 'N');
@@ -34,6 +40,17 @@ const perPosition = (size, edges, equalities) => {
   return { find: own, term };
 };
 
+// handlerEquality's two branches, rebuilt with one part wrong each.
+const heads = (l, r) => [structural(sameHead(l, r)),
+  markEquality(l.mark, r.mark)];
+const rows = (l, r, marks) => rowEquality({ left: l.inference,
+  right: r.inference, marks, args: true });
+const ownsNone = (l, r) => l.clauses === null && r.clauses === null;
+const noClauseEq = (l, r) => [...heads(l, r), rows(l, r, ownsNone(l, r))];
+const rMarksIgnored = (l, r) => [...heads(l, r), rows(l, r, false),
+  ...(ownsNone(l, r) ? [] : [rowEquality({ left: l.clauses ?? l.inference,
+    right: r.clauses ?? r.inference, marks: true, args: false })])];
+
 const mutants = [
   { name: 'ground', runs: () => [pairsFamily(ground),
     oneFamily(leastVerdictWith(leastTerms, ground))],
@@ -41,16 +58,21 @@ const mutants = [
   { name: 'unnormalized', runs: () => [pairsFamily(unnormalized)] },
   { name: 'perPosition', runs: () => [
     twoFamily(leastVerdictWith(perPosition, holds)),
-    randomFamily(leastVerdictWith(perPosition, holds), 50000)] }
+    randomFamily(leastVerdictWith(perPosition, holds), 50000)] },
+  { name: 'noClauseEq', runs: () => [], cases: holds,
+    deps: { handlerEquality: noClauseEq, derivedC } },
+  { name: 'rMarksIgnored', runs: () => [], cases: holds,
+    deps: { handlerEquality: rMarksIgnored, derivedC } }
 ];
 let undetected = 0;
 for (const mutant of mutants) {
   const results = mutant.runs();
   const total = results.reduce((n, r) => n + r.found.length, 0);
-  const caseFailures = mutant.cases ? runCases(mutant.cases) : 0;
-  console.log(`${mutant.name}: ${results.map(r =>
-    `${r.name} ${r.found.length}`).join(', ')}`
-    + (mutant.cases ? `, cases ${caseFailures}` : '')
+  const caseFailures = mutant.cases ? runCases(mutant.cases, mutant.deps)
+    : 0;
+  const parts = [...results.map(r => `${r.name} ${r.found.length}`),
+    ...(mutant.cases ? [`cases ${caseFailures}`] : [])];
+  console.log(`${mutant.name}: ${parts.join(', ')}`
     + (total + caseFailures > 0 ? ' (detected)' : ' UNDETECTED'));
   if (total + caseFailures === 0) undetected += 1;
 }
