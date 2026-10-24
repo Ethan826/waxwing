@@ -1,199 +1,284 @@
-# a-min: statements for review (G-effect-rows, 2026-10-24)
+# a-min: statements for review (G-effect-rows), revision 2 (2026-10-24)
 
-Status: **statements only, for adversarial review.** No code. The author
-approved a-min for statements and adversarial review first, with
-answers to the audit's seven questions (dossier §18.74); implementation
-follows the review. Sources: docs/plans/r0-effect-rows-audit.md (the
-audit and the a-min sketch), r0-ea-representation.md (options a-c),
-r0-erased-rows.md §7.1 (E-a and the effect-validation invariant),
-r0-certify-argument.md (R026's coupling, C1-C3). Labels: **decided**
-(the author's), **proposed** (this note), **open** (for the author).
-Task 4.6 and G-D1 stay open.
+Status: **statements only, for a second adversarial review.** No code.
+Revision 1 was reviewed and found not ready (§8, F1-F17); this revision
+applies the author's rulings on that review (dossier §18.76) and answers
+every finding (§9). The author approved a-min for statements and review
+first (§18.74); implementation follows a review that finds no S1 or S2.
+Sources: docs/plans/r0-effect-rows-audit.md, r0-ea-representation.md,
+r0-erased-rows.md §2 and §7.1, r0-certify-argument.md, findings.md
+"Effect and coverage audit". Labels: **decided** (the author's),
+**proposed** (this note), **open**. Task 4.6 and G-D1 stay blocked.
 
-## 1. Goal and non-goals
+## 1. Goal, non-goals, threat model
 
 Goal: the witness and `build` carry faithful effect information to the
-checking boundary, the post-Strip program (decided, Q1), and every piece
-of it that reaches compilation has been judged by trusted code over the
-same witness `build` reads. Non-goals: carrying marks or clause rows
-through lowering (decided, Q2); proving effect soundness (assurance
-stays Pending); changing what today's compiler accepts.
+post-Strip program (decided, Q1), and every effect fact that reaches
+compilation has been judged by trusted code over the binding package
+`build` reads, pre-Strip obligations included (decided, Q1, §18.76
+ruling 1). Non-goals: carrying marks or clause rows through lowering
+(Q2); proving effect soundness (assurance stays Pending); changing
+today's live acceptance.
+
+**Threat model (decided, §18.76 ruling 4).** The search is untrusted.
+Soundness must hold for any candidate any strategy supplies: online or
+not, inconsistent, malformed or deliberately forged. This is a
+correctness boundary, not a claim about hostile programmers. An
+`Outside` marker that prevents live exposure today does not excuse an
+interface contract or theorem that would fail once the marker is
+removed. §6 lists the independently forged inputs each invariant must
+withstand.
 
 ## 2. Definitions (proposed)
 
-**D1. Image types.** `ImageTy = Ty Var` (Domain.Type.Core) restricted to
-the *stripped* form: every `Label e args m` has `m = Unmarked` and every
-handler's `HandlerRows` has `clauses = Nothing`. A row tail is a rigid
-variable, a hole variable (`holeVar n`) or an effect-row problem
-variable (D3). Precedent: Check/Strip.purs and Type/Marks.purs
-`stripMarks`, which produce this form for today's program.
+**D1. Image types.** `ImageTy = Ty Var` (Domain.Type.Core) in stripped
+form: every `Label e args m` has `m = Unmarked`, every handler's
+`clauses = Nothing`. Its variables are restricted (decided, §18.76
+ruling 2, a solved-substitution form):
+- a rigid variable is allowed only if the declaration declares it, at
+  the sort of its position (type, record row or effect row);
+- a hole (`holeVar n`) is allowed, under the hole contract (types and
+  record rows) or effect validation (effect rows, I5);
+- no flexible problem variable appears, at any sort, effect-row
+  variables included. The search resolves such references before it
+  submits; trusted code checks the restriction (I3) and does not rely
+  on the read-back. Precedent: Pottier 2014's solved forms, and today's
+  `ImageVariable` fault (Image.purs), which this turns from a fault in
+  `build` into a refusal in `certify`. If a required program cannot be
+  represented this way, it comes back as a demonstrated example with a
+  separately sourced extension.
+- a data type carries exactly the declared number of row arguments.
 
-**D2. Bindings.** `Binding = Inline ImageTy | InlineRow (TyRow Var) |
-Free Int`. `Inline` binds a type- or record-sorted variable, `InlineRow`
-an effect-row variable, `Free n` any sort, meaning hole n at its
-variable's sort (W §1.6, extended to effect rows: an effect-row hole).
+**D2. Bindings.** `Inline ImageTy` for type- and record-sorted
+variables, `InlineRow (TyRow Var)` for effect-row variables (same
+variable restrictions), `Free n` for any sort, meaning hole n at its
+variable's sort. One hole number has one sort across the whole package
+(I3). The binding constructor agrees with the variable's sort (I3).
 
-**D3. Sorts.** `VarSort` gains `SortEffectRow`. The generator mints an
-effect-row variable at every slot of §5 (I6), named as r0-erased-rows
-§6 (`⟨p, effect⟩`, `⟨p, stage k⟩`, `⟨p, handler⟩`, `⟨p, apply⟩`,
-`⟨p, inst i⟩`, `⟨p, opened⟩`) plus the new slots of I6. Recorded atoms
-(RTExpr) still mention no effect-row variable.
+**D3. Pre-Strip evidence** (decided, ruling 1). The search also
+proposes, beside the bindings: a mark for every mark variable the
+problem records (`NoFail`, `Plain`, or a written mark variable in
+scope; never `MarkMeta` or `Unmarked`), and a row for every handler
+literal's clause row (`⟨p, clauses⟩`, same restrictions as D2). The
+bindings and the evidence form one **binding package**; trusted code
+judges the evidence against the recorded obligations (D7) and then the
+package's evidence is discarded: `build` never reads it, and the
+post-Strip IR has none. FX008's existing rules are the specification of
+the mark obligations; reusing them makes the validator a checker, not
+an inference engine.
 
-**D4. Trusted erasure.** One function `erase : ImageTy → RTExpr` (and
-`eraseRow` for record rows), T-R0b §2.2's translation: effect rows,
-data row arguments and handler rows dropped, a declared type of no
-arguments and no rows a base, record fields by label and tails in
-`Ord Var` order. It is the only projection certification uses
-(decided, Q4), and it is trusted surface.
+**D4. Sorts, roles, positions.** `VarSort` gains `SortEffectRow` and
+`SortMark`; `Role` and `CheckedName` (Domain.Recorded.Atom, trusted)
+gain constructors for the new slots, and an effect-row variable's
+position is a new `CheckedName` form, distinct from checked
+`Slot p i`, so its index never collides with a checked instantiation
+slot (F17). Effect-row instances stay out of checked `Instantiation`
+slots (T5's positions unchanged).
 
-**D5. Reference projection.** An independently written projection of
-the same meaning, test-only and untrusted, used for differential tests
-against D4 (decided, Q4: not collapsed into D4). Candidate: today's
-ReadBack.Type `readType` route generalised from `Open` to `Var`, or a
-fresh test implementation; the existing independence of `readType` and
-Generate.Elab.Recorded, which RT8 relies on, is kept.
+**D5. Slot rule** (F5). A written label translates under θ: its type
+arguments are ordinary type-sorted images, so a label lives in one
+place. Handles sit only at row tails: an effect-row type parameter of
+an instantiated callee, constructor or operation (`⟨p, inst i⟩`), the
+opened tail (`⟨p, opened⟩`), a lambda's row (`⟨p, effect⟩`, which the
+annotation's ambient tail reuses, as `annotationRow` does), each
+over-application stage (`⟨p, stage k⟩`, shared by the atom and the IR
+stage), the handler literal's inference-row tail (`⟨p, handler⟩`), the
+clause row (`⟨p, clauses⟩`, evidence), `show`'s and `crash`'s rows, and
+`main`'s tail (decided, Q3).
 
-**D6. Effect validation (open in algorithm, proposed in contract).** A
-trusted function `validateEffects` that, given the declaration's
-generated effect obligations (D7) and the witness's effect bindings,
-either accepts, giving a token `EffectsChecked`, or refuses with a
-reason. It reads the witness itself, not a copy.
+**D6. Trusted erasure.** `erase : ImageTy → RTExpr` and `eraseRow :
+TyRow Var → RTExpr` (a record row to a record term), T-R0b §2.2's
+translation, **sort-aware**: a record-sorted bare hole erases to
+`Record [] [hole]` (R022). It is the only projection certification
+uses (decided, Q4) and lives in a trusted Strategy-side module, since
+Strategy modules may not import Generate.*.
 
-**D7. Effect obligations.** Generation records, beside the recorded
-problem, the effect obligations of the body: for every call, perform,
-handler, lambda and stage, the row inclusions or equalities today's
-checker enforces (r0-erased-rows §2.1's sites), over effect-row
-variables, rigid tails and written labels. Proposed as a separate
-structure because RTExpr atoms stay row-free (D3). Its exact form is
-open (§7, O1).
+**D7. Reference projections, for tests only.** A fresh, independently
+written projection (not ReadBack.Type, which is trusted and serves the
+read-back), compared with D6 on images; and Generate.Elab.Recorded, the
+translator the atoms are built with, compared with D6 on generator
+types (I4).
 
-**D8. Acceptance.** A strategy's acceptance remains `Certified`
-(R026). Compilation needs a second token over the same witness:
-`Compilable = Compilable Certified EffectsChecked`, minted only where
-both checks ran over the identical witness value (proposed; §4).
+**D8. Effect obligations.** Part of `RecordedProblem` (in
+Domain.Recorded.Internal; generated with the atoms), so `elaborate`'s
+problem identity covers them. Inventory, to be complete for today's
+effect checks (I10): every class-f effect refusal of findings.md's
+audit table (EffectNotAllowed at Reject.purs:69 and Require.purs:123,
+MustBePure, RowEquality at Argument.purs:70 and RowName.purs:96,
+CallbackRowLacks, UnhandledEffect, DeferMayFail, DeferMayPerform,
+DeferHandlerMayFail, DeferHandlerVariable, ExpectedNofail,
+HandlerMayFail, ExpectedHandler, FailNeedsConcrete at Failure.purs:102);
+r0-erased-rows §2's K1, K1e and **K2**: every `Equal` atom re-read at
+full types, its row parts equal up to scoped-label order (F2); and
+§7.1's counterexample `fn g(): Unit with pure = Log.log(1)`. Forms:
+row inclusion, row equality, absence (no rigid tail in a deferred row;
+no `Fail` label; `main` within `Console`), and FX008's mark constraints.
+Generation threads an ambient row through its context (the lambda's
+`⟨p, effect⟩` in a lambda body, the declared row in a declaration
+body).
+
+**D9. Effect validation.** A trusted checker `validateEffects` over D8
+with every row, mark and clause row known from the package. Three
+outcomes (decided, ruling 3): `EffectsChecked`; `ObligationFailed
+reason`, a check failure of this candidate (not evidence that the
+source is invalid: an untrusted candidate may simply be wrong);
+`EffectsUnchecked reason`, validation absent or not supported for an
+obligation kind.
+
+**D10. Placement** (F4). `certify` builds the package from the
+search's σ₀ and evidence, checks I3, runs G0 on `erase`, then runs
+`validateEffects` on the same package against the same problem, and
+the result is part of the `Certified` it mints: `Certified Valid
+Compilation EffectStanding`. Only `EffectsChecked` lets `elaborate`
+build; otherwise the declaration is not compiled, with the standing as
+the reason. No separate token is paired later, so "the same witness"
+means the value `certify` constructed, not an identity PureScript
+cannot express.
 
 ## 3. Invariants (proposed)
 
-**I1. R026's coupling, unchanged.** G0 judges exactly `erase` of the
-witness's type- and record-sorted bindings (settled), and the witness
-offered is the one built from the same pre-default σ₀. `certify` keeps
-building the witness itself; no strategy supplies images separately.
+**I1. R026's coupling.** G0 judges exactly `erase` of the package's
+type- and record-sorted bindings, settled; the compilation is built
+from the same σ₀; no strategy supplies images, evidence or obligations
+separately.
 
-**I2. Effect coupling.** Every effect row `build` writes into the IR
-comes from a witness binding (`InlineRow` or `Free`) or from the
-declaration's written signature (rigid), and `validateEffects` judges
-exactly those bindings. No row reaches `build` that the validator did
-not read, and vice versa.
+**I2. Every row is accounted for** (F10). Each row in `build`'s IR is
+either a written row translated by a named rule (declaration signature;
+callee, constructor or operation signature under θ; builtin signature;
+body annotation; Fail payload), mentioning only the declaration's
+rigids, or a witness row (`InlineRow`, `Free`, or nested in an
+`Inline` image). Every witness row, including those that appear only in
+atoms (Operator.purs's Apply and Pipe arrows, Call.purs:161's
+over-application arrow), and every evidence item is read by
+`validateEffects`.
 
-**I3. Stripped images.** A witness whose image holds a mark other than
-`Unmarked` or a clause row is refused by trusted code before G0 runs
-(a `CheckRefusal`, not a fault: the search offered a malformed
-candidate).
+**I3. Package well-formedness, checked in `certify` before G0.** A
+package is refused (a `CheckRefusal`) if an image holds a mark or a
+clause row; a variable violates D1 (out-of-scope or wrong-sort rigid,
+any flexible reference); a data type's row count differs from its
+declaration's; a hole number is used at two sorts; a binding
+constructor disagrees with its variable's sort; or evidence holds a
+mark outside D3's set. The read-back (untrusted) strips marks and
+resolves references; I3 only checks (F6).
 
-**I4. Projection agreement, by test.** `erase` and the reference
-projection agree on every image the corpus produces, and on generated
-images (a property test). Agreement is evidence that `erase` means
-T-R0b §2.2's translation; it is not made true by construction.
+**I4. Projection agreement, by test.** `erase` agrees with the fresh
+reference on every corpus image and on generated images, and with
+Generate.Elab.Recorded on every generator type. Evidence that `erase`
+means T-R0b §2.2's translation; not made true by construction.
 
-**I5. `Free` effect-row bindings.** Cov's coverage alone never makes a
-witness compilable (decided, Q5). A `Free n` at an effect-row variable
-is judged by `validateEffects`: its interpretation (hole n; lowering
-gives it no row) must satisfy the obligations that mention it.
-Otherwise the declaration is not compiled, with reason
-`EffectsUnchecked` (r0-erased-rows §7.1 item 3).
+**I5. `Free` effect rows.** A `Free n` at an effect-row variable means
+the closed empty row (the default, argued as W §1.5: obligations are
+judged at that default). If an obligation fails there, the standing is
+`ObligationFailed`, not `EffectsUnchecked` (F12). Coverage alone never
+makes a package compilable (decided, Q5).
 
-**I6. Slot inventory follows reads.** Every generator site that writes
-an effect row today writes a handle instead: Translate `rowOf
-Instantiated` (A6), `arrowOf` (A7), over-application stages (A8),
-`show` and `crash` (A9), the handler literal's inference row (A10),
-the lambda annotation's ambient tail (A11), `main`'s tail (A12); plus
-nested rows inside images (D1) and data row arguments at the declared
-count. A structural test lists every generator write of `closedRow` or
-a literal row and requires each to be a named exception with a reason
-(decided, Q3: a test per site).
+**I6. Slot inventory follows reads.** One fixture per site of D5, plus
+the sites the review added: `translate … Rigidly` in body contexts
+(Control.purs:151, Failure.purs:82 and :115), Fresh.purs's
+`RowSort → Nothing` (to mint effect-row instances), constructor
+patterns (Match.purs:110), function and constructor references
+(Call.purs:112), atom-only arrows. A structural test lists every
+generator write of `closedRow`, a literal row, or a body-context
+`Rigidly` translation, each a named exception with a reason (F11).
 
-**I7. Shared hole numbering.** `build`'s IR numbers type holes, row-tail
-holes and row-label-argument holes jointly as Check/Holes.purs `holes`
-does, so after Strip it equals today's numbering up to renaming.
+**I7. Exact hole numbering.** `build` applies `holes` (Body.purs), so
+its post-Strip IR numbers type, row-tail and row-label-argument holes
+exactly as today's (S3-d). The fresh-hole numbering for absent
+variables (Witness.purs) counts holes inside rows (F9).
 
 **I8. Fidelity target.** T2 compares `strip (build …)` with today's
 post-Strip declaration, rows included, exact where no variable is in
-`Amb` and site by site otherwise (decided, Q1). Marks and clause rows
-are compared only through validation (I5), not through T2.
+`Amb`, by site otherwise.
 
 **I9. Correspondence is not soundness.** T2 equality shows `build`
-reproduces today's checker. Effect validation (D6) is what judges the
-rows; a passing T2 with a failing or absent validator does not make a
-declaration compilable.
+reproduces today's checker; only `EffectsChecked` makes a package
+compilable.
+
+**I10. Obligations complete** (F3). D8 holds an obligation for every
+check of today's that refuses effects; shown by one forged-package
+fixture per refusal kind (through the harness where an `Outside`
+marker blocks the program) and a mutation test per obligation kind
+that drops it and shows its fixture flip.
+
+**I11. Coupling** (F4). Obligations live in the recorded problem;
+validation runs inside `certify` over the package it built; its result
+is inside `Certified`; `elaborate`'s problem identity covers both.
+
+**I12. Evidence lifecycle.** Evidence is read by `validateEffects`
+alone, never by `build`, and is absent from the IR.
 
 ## 4. Trust boundaries (proposed)
 
 | Component | Trust | Reason |
 |---|---|---|
-| `erase` (D4) | trusted, review-required list | G0's verdict rests on it |
-| `validateEffects` (D6) | trusted, review-required list | compilation's effect claim rests on it |
-| `certify` | trusted (unchanged role) | I1 |
-| image well-formedness (I3) | trusted, inside `certify` | a malformed image must not reach G0 |
-| `Compilable` minting | trusted, one module | D8: both tokens over one witness |
-| D7's generation | lowering boundary (Generate family) | obligations are generated, as the recorded problem is |
-| `build` with handles | lowering boundary | I2 |
-| reference projection (D5) | test-only, untrusted | differential only |
-| the online search's rows | untrusted | today's checker proposes; D6 judges |
+| `certify` (gains I3, `erase`, `validateEffects`) | trusted | I1, I3, I11 |
+| `erase` (D6) | trusted, review-required list | G0's verdict rests on it |
+| `validateEffects` (D9) | trusted, review-required list | compilation's effect claim |
+| Strategy.Witness `bindingsOf`, Cov | trusted (listed) | the package's bindings |
+| Strategy.HoleContract | trusted (listed) | judges `erase` of images; not effect rows (I5) |
+| Domain.Recorded.Atom | trusted (listed); `VarSort`, `Role`, `CheckedName` change | D4 |
+| D8's generation | lowering boundary (Generate family) | obligations are generated |
+| `build` with handles; Features.Check.Elaborate | lowering boundary | I2, D10 |
+| the read-back, the online search | untrusted | they propose; I3 and D9 judge |
+| reference projections (D7) | test-only | differential only |
 
-## 5. Distinguishing tests (proposed; each fails under the nearest weaker variant)
+## 5. Interim (decided, ruling 3)
+
+Until `validateEffects` exists, option c stays a shadow comparison path:
+provisional output is built and inspected only in explicitly labelled
+shadow tests; no compilation result is effect-approved; every Solved
+declaration's standing is `EffectsUnchecked`; Task 4.6 and G-D1 stay
+blocked; today's live acceptance is preserved.
+
+## 6. Distinguishing tests (proposed)
+
+Each fixture separates its claim from the nearest weaker variant (and,
+where marked, the stronger one). Programs are proposed, not yet run.
 
 | Claim | Fixture | Fails under |
 |---|---|---|
-| I1 | R026's forged-`id2` probe with full images | erase-only check of a separately supplied image |
-| I2 | a witness whose `InlineRow` adds `Console` to a pure lambda's row; G0 passes (erased equal) | checking only the erased projection |
-| I3 | an image with `Plain` or a clause row | trusting the search's stripping |
-| I4 | a mutant `erase` that keeps a data row argument as a type argument | collapsing D4 and D5 |
-| I5 | `Free` on a lambda's effect row whose body performs `Console`, in a declaration written `with pure` | coverage alone (Cov) approving compilation |
-| I5 | `Free` on a row no obligation constrains | rejecting all `Free` effect rows (too strong) |
-| I6 | one fixture per site: nested arrow (a lambda returning a lambda), data row argument (R031 (2)), handler literal through `id`, annotated lambda (R031 (1)), `main` performing `Console`, an over-application, `show` and `crash` | a slot list taken from §2.1 alone |
+| I1 | R026's forged `id2`, full images | an erase-only check of separately supplied images |
+| I2, D8 (K2) | `effect Log { fn log(n: Int): Unit; }; fn f(h: Unit -> Unit with Log): Unit with pure = { let k = h; k(()) }` with the Apply arrow's row handle forged to `pure` | judging only the erased atoms |
+| I2 | `fn run(f: Unit -> Unit with pure): Unit = f(()); fn g(): Unit = run(fn(u: Unit) => ())` with the lambda's `⟨p, effect⟩` forged to `Console`: refused | rows read only where the IR writes them |
+| I2 control | `fn g(): Int = { let k = fn(u: Unit) => (); 0 }`, same forgery: validation accepts, T2 differs | (fidelity is T2's, not validation's) |
+| D3, I12 (marks) | test/fixtures/r0/audit/expected-nofail.inferred (refused today) against .selected (compiles): rows equal up to marks | a rows-only validator |
+| I3 | an image with `Plain` or a clause row; an out-of-scope rigid (R031 (1)'s program with rigid 7); a flexible reference in an image; `type Box(a, ...e) = Box(a, Unit -> Unit with ...e)` passed through `id` with the image forged to `TData Box [Int] []`; one hole number at two sorts; an `Inline` at an effect-row variable | trusting the search's form |
+| I3 stronger | written signature marks (`fn g(h: Unit -> Unit with nofail Log): Unit with nofail Log = h(())`) pass; an online package holding a handler type passes once the read-back strips | refusing every marked or handler-typed candidate |
+| I4 | a mutant `erase` keeping a data row argument as a type argument; a mutant blind to record-sorted holes | collapsing `erase` into one reference |
+| I5 | a `Free` lambda row whose body performs `Console`, passed to a `pure` parameter: `ObligationFailed` | coverage alone approving |
+| I5 stronger | `fn run(f: Unit -> Unit with pure): Unit = f(()); fn g(): Unit = { let k = fn(u: Unit) => (); run(k) }` with the lambda's row `Free`: accepted | refusing every `Free` effect row |
+| I6 | one fixture per site of D5 and I6's list, including R031 (1) and (2), `main` performing `Console`, an over-application, `show`, `crash`, a constructor pattern | a slot list from r0-erased-rows §2.1 alone |
 | I7 | a body with a row-tail hole before a type hole | numbering type holes alone |
-| I8 | a declaration whose only difference from today is a row label | effect-erased T2 |
-| I9 | a declaration T2 accepts whose obligations fail | treating T2 as validation |
+| I8 | a declaration differing from today only in a row label | effect-erased T2 |
+| I8 stronger | output differing from today only in a mark or clause row passes T2 | comparing pre-Strip |
+| I9 | a package equal to today's post-Strip IR whose mark evidence fails (built through the harness; today's checker refuses such programs) | treating T2 as validation |
+| I10 | one forged package per refusal kind of D8's inventory; a mutation dropping each obligation kind flips its fixture | an obligation list without completeness |
+| I11 | obligations or evidence from another declaration's problem paired with this package | validation outside `certify` |
+| D5 | a callee `apply(f: Unit -> Unit with State(a), x: a)`: a package whose tail binding repeats `State` at a different argument is refused or judged, never silently duplicated | a whole-row handle holding written labels |
 
-R031's two pins flip to assert today's form when I6 lands. RT8 and
-window moves are accepted when each is explained and reviewed; the
-current pins are kept as a comparison cohort (decided, Q6).
+R031's two pins flip to today's form when D5 and I3 land. RT8 and
+window moves are accepted when explained and reviewed; current pins
+stay as a comparison cohort (decided, Q6).
 
-## 6. What a-min does not change
+## 7. What a-min does not change
 
-RTExpr, G0's atoms and judgements, the Lean vocabulary, the hole
-contract's type- and record-sorted judgements (it judges `erase` of
-images), lowering, and today's checker.
+RTExpr's grammar and G0's atom judgements; the Lean vocabulary; lowering;
+today's checker. It does change Domain.Recorded.Atom's `VarSort`, `Role`
+and `CheckedName` (D4), the recorded problem (D8), the witness and the
+`Certified` token (D2, D3, D10), and the read-back (I3).
 
-## 7. Open for the author or the review
+## 8a. Open after revision 2
 
-- **O1. The validator's algorithm and source.** Proposed: checking,
-  not inference, of D7's obligations with every row known from the
-  witness: row inclusion and equality over labels with scoped
-  duplicates and one tail (Leijen, TFP 2005), as a checker over an
-  elaborated term (precedent: GHC's Core Lint over explicitly typed
-  Core; translation validation, Pnueli, Siegel and Singerman 1998).
-  Novel parts, if any, are flagged at design time.
-- **O2. Where `EffectsUnchecked` sits.** As an Unresolved reason
-  (verdict level, r0-erased-rows §7.1 item 3) or as a `NoWitness`
-  reason (compilation level) when the verdict is Solved but effects
-  are not validated. The two differ in what the census counts.
-- **O3. Pre-Strip evidence.** Q1 asks that evidence effect validation
-  needs before stripping be kept separately. Proposed: D7's
-  obligations and `validateEffects`' result are that evidence; marks
-  and clause rows are judged by D6 (handler clauses) before Strip, and
-  only then dropped.
-- **O4. Clause rows.** Q2 lets clause rows disappear at Strip "after
-  their checking obligations are discharged": D7 must therefore hold
-  the clause-row obligations of every handler literal, and D6 judge
-  them; whether the witness needs a binding for a clause row's tail is
-  open.
-- **O5. `main`.** Whether today's `main` row carries inferred labels
-  (unknown in the audit) decides whether its slot is a handle or a
-  closed row by rule.
-- **O6. Cost.** The canonical encoding, Cov's domain, RT8 and window
-  pins and T2's harness all change (audit §5); the old pins stay as a
-  cohort.
+- **The validator's algorithm.** Checking, not inference: row inclusion
+  and equality with scoped labels and one tail (Leijen, TFP 2005), as a
+  checker over an elaborated term (precedents: GHC's Core Lint;
+  translation validation, Pnueli, Siegel and Singerman 1998). Its mark
+  part reuses FX008's rules, a project design with no published
+  source: flagged for explicit approval (ADR 014).
+- **The new well-formedness check (I3)** and **the ∅ default for effect
+  rows (I5)**: small, new, flagged.
+- **Cost.** The canonical encoding, Cov's domain, the recorded problem's
+  pins, RT8 and window, and T2's harness all change.
 
 ## 8. Adversarial review 1 (2026-10-24): not ready
 
@@ -283,3 +368,26 @@ ambient-row field in generation's `Context`.
 Reviewer's rulings to confirm: forged and non-online witnesses count
 as a soundness threat (R026's model); gaps behind `Outside` markers
 were kept at S1 where the statements claim coverage.
+
+## 9. Revision 2's answers to review 1
+
+| Finding | Resolution in revision 2 |
+|---|---|
+| F1 marks | D3 pre-Strip evidence (marks, clause rows) in the package; D8 holds FX008's mark obligations; I12; the nofail fixture pair in §6 |
+| F2 K2, nested rows | D8 re-reads every `Equal` atom at full types; I2 covers nested and atom-only rows; §6's K2 fixture |
+| F3 inventory, completeness | D8 cites the audit table, K1, K1e, K2 and §7.1; absence forms; I10 with fixtures and mutations |
+| F4 coupling | D8 inside the recorded problem; D10 validation inside `certify`, result in `Certified`; I11 |
+| F5 two places | D5: labels under θ, handles only at tails; A11 reuses `⟨p, effect⟩`; stages shared |
+| F6 pre-Strip read-back | I3: the read-back strips, `certify` checks; §6 stronger-side fixture |
+| F7 I3 incomplete | I3's six conditions |
+| F8 flexible references | D1 forbids them (ruling 2) |
+| F9 hole numbering | I3 one sort per hole; I7 fresh numbering counts row holes |
+| F10 I2's sources | I2 restated |
+| F11 structural test | I6's added sites and scan |
+| F12 `Free` reason, default | I5: closed empty row; `ObligationFailed` |
+| F13 erase | D6 sort-aware, located; I4 against Generate.Elab.Recorded |
+| F14 interim | §5 (ruling 3) |
+| F15 I2 fixture | §6's replacement and control |
+| F16 O4/O5 | `⟨p, clauses⟩` is evidence (D3); `main`'s slot decided (D5) |
+| F17 positions | D4 |
+| S3 (a)-(i) | references fixed; `⟨p, clauses⟩` restored; §7 lists the Atom.purs changes; I7 exact; D7 fresh reference; trust table extended; D10 replaces "identical value"; the `effectErased` case stays until validation exists, then compilation requires `EffectsChecked`; D8 threads the ambient row |

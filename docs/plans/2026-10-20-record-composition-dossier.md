@@ -5760,3 +5760,41 @@ Housekeeping: census figures are the current cohort's (after the C001
 additions), status is item by item, a-min's review 1 appears under A1
 and A2, and `Fresh`'s limitation is kept while noting that the
 option-B bridge addresses it.
+
+### 18.76 Rulings on a-min's review 1 (2026-10-24)
+
+1. **Marks: separate pre-Strip evidence.** The search proposes mark
+   assignments and handler clause-row information; trusted code checks
+   them against the recorded obligations, then checking-only
+   information is discarded at Strip. The validator stays a checker,
+   reusing FX008's rules and accounting for every relevant refusal. The
+   evidence belongs to the same recorded problem and the same checked
+   binding package used to build code. Post-Strip IR stays the fidelity
+   target and does not remove the need to validate pre-Strip
+   obligations.
+2. **No unresolved flexible references in images, this tranche.** A
+   solved-substitution form: declared rigids within their scope and
+   sort; holes under the explicit hole contract; no reference to another
+   unresolved flexible problem variable, effect-row variables included.
+   The search resolves them; trusted code checks the restriction. A
+   required program this cannot represent comes back as a demonstrated
+   example with a separately sourced extension.
+3. **Interim: option c as a shadow comparison path only.** Provisional
+   output is built and inspected only in labelled shadow tests; no
+   effect-approved compilation result; Task 4.6 and G-D1 blocked; live
+   acceptance preserved. Validation absent or unsupported:
+   `EffectsUnchecked`. Validation performed and failed: reported as
+   that check failure, not as proof the source is invalid.
+4. **Forged witnesses are in scope.** Soundness holds for any candidate
+   any strategy supplies, including inconsistent, malformed and forged
+   ones. Independently forged effect rows (nested in images included),
+   marks and clause rows, scope, sorts and hole identities, type
+   arguments duplicated across representations, and obligations or
+   evidence paired with another problem are tested. An `Outside` marker
+   does not justify a contract that would fail once it is removed.
+
+Next: revise the statements under these rulings, address every review
+finding, and obtain a fresh adversarial review before implementation.
+Checklist correction: the live-path cost (A11) is measured on the
+candidate pipeline before it is enabled, and that measurement is a
+prerequisite of the switch (A12), removing the cycle.
