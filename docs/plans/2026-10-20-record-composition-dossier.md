@@ -5798,3 +5798,41 @@ finding, and obtain a fresh adversarial review before implementation.
 Checklist correction: the live-path cost (A11) is measured on the
 candidate pipeline before it is enabled, and that measurement is a
 prerequisite of the switch (A12), removing the cycle.
+
+### 18.77 a-min revision 3 scoped; no automatic review (2026-10-24)
+
+After review 2 (r0-amin-statements.md §10), the author asked for a
+coherent replacement rather than local patches, returned before any
+further review agent starts:
+
+- **One authoritative marked pre-Strip package**, with `build`
+  receiving its checked stripped projection; no two independently
+  supplied copies whose agreement needs another checker. The package
+  includes handler clause information and nested occurrences, not
+  only marks at named variables. Either N1 representation satisfies
+  "separate evidence"; this one is preferred.
+- **Rigid-mark quantification (N14).** FX008's criterion checks
+  satisfiability for every assignment of declared rigid mark
+  variables; one ground assignment does not establish that (an
+  obligation `k ≤ N` holds at `k = N` and fails at `k = M`). Revision 3
+  states which mark variables are rigid and which flexible, what
+  evidence represents dependence on rigid marks, how trusted checking
+  keeps the universal quantification, and the exact relationship to
+  FX008's path criterion, which stays the reference until an
+  equivalence is justified. A least-solution citation is a foundation,
+  not that correspondence. The least solution in FX008's argument is
+  distinct from the later closing of remaining metas for display and
+  erasure.
+- **Scope:** read FX008 first and map each constraint-generating rule
+  to its recorded obligation and evidence; one complete pipeline
+  (source rule, recorded obligation, candidate evidence, trusted
+  check, stripped output); R026's coupling throughout; failed effect
+  candidates let later strategies run, missing validation stays
+  Unresolved; the hole contract through nested rows and label
+  arguments, with sort consistency and defaults; the twelve separating
+  examples plus the rigid-mark example; soundness and
+  acceptance-preservation obligations stated separately, with the
+  cases still unsupported.
+- Return the revised interfaces, obligation inventory and unresolved
+  claims before another review. Implementation unauthorized; Task 4.6
+  blocked. These findings do not undo the row proofs.
