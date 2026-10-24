@@ -62,5 +62,6 @@ export const expectedRejections = {
   'Test.ElabScope.Unwrap': ['UnknownName', 'Unknown data constructor Elab'],
   'Test.ElabScope.UnwrapHandle': ['UnknownName',
     'Unknown data constructor Handle'],
-  'Test.ElabScope.Cheat': ['UnknownName', 'Unknown value seal']
+  'Test.ElabScope.Cheat': ['UnknownName', 'Unknown value seal'],
+  'Test.ElabScope.CheatBody': ['UnknownName', 'Unknown value generateIn']
 };

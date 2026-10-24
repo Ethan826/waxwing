@@ -1,0 +1,8 @@
+-- T3c (vi): the public generator module exports no `generateIn`, so a
+-- module outside Generate* cannot seal the real generator's reads after
+-- mapping its own state into them (adversarial finding 1).
+module Test.ElabScope.CheatBody (cheat) where
+
+import Features.Check.Generate
+
+cheat = generateIn

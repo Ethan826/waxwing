@@ -1,0 +1,23 @@
+-- T3c (vi)'s control: `generateIn` exists with the type D1 gives it, and
+-- its explicit `∀ s.` lets `seal` take it. Only Features.Check.Generate's
+-- export list keeps it from a module that imports that module alone;
+-- rule E3, which T3b checks, keeps Generate.Body's importers to Generate*.
+module Test.ElabScope.Reached (reached) where
+
+import Data.Either (Either)
+import Domain.Checked.Internal as Checked
+import Domain.Elaborating (Elaborating)
+import Domain.Resolved (FunctionDecl)
+import Features.Check.Generate (Signatures, Tables)
+import Features.Check.Generate.Body (generateIn)
+import Features.Check.Generate.Elab (seal)
+import Features.Check.Generate.Fault (GenerationFault)
+import Test.ElabScope.Common (header)
+
+reached
+  ∷ Tables
+  → Signatures
+  → FunctionDecl
+  → Either GenerationFault (Elaborating Checked.FunctionDecl)
+reached tables signatures function =
+  seal header (generateIn tables signatures function)

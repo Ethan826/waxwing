@@ -22,6 +22,7 @@ import { r0OnlineProbes } from './regression-r0-online.mjs';
 import { r0WitnessProbes } from './regression-r0-witness.mjs';
 import { r0CxProbes } from './regression-r0-cx.mjs';
 import { r0ElabProbes } from './regression-r0-elab.mjs';
+import { r0PortProbes } from './regression-r0-port.mjs';
 import { ieProbes } from './regression-ie.mjs';
 
 export const externalProbes = {
@@ -30,6 +31,6 @@ export const externalProbes = {
   ...r001BodyProbes, ...r004Probes, ...r005Probes, ...r005bProbes,
   ...r005bEndProbes, ...r005bRenderProbes,
   ...r012Probes, ...r0Probes, ...r0G0Probes, ...r0OnlineProbes,
-  ...r0WitnessProbes, ...r0CxProbes, ...r0ElabProbes,
+  ...r0WitnessProbes, ...r0CxProbes, ...r0ElabProbes, ...r0PortProbes,
   ...ieProbes, ...diagProbes
 };
