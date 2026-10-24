@@ -144,7 +144,8 @@ adding a bypass allowlist.
   Review-required trusted surface, since `Valid` carries no payload and
   its soundness rests on all of these (test/structure-trusted.test.mjs
   pins this list and the header marker in each module):
-  - `Features.Check.Strategy.Substitution`: mints `Valid`; G0's check.
+  - `Features.Check.Strategy.Substitution`: mints `Valid` and
+    `Certified`; G0's check, and `certify`, the online strategy's.
   - `Features.Check.Strategy.Candidate`: `generic` and `under` define the
     candidate every judgement is taken under.
   - `Features.Check.Strategy.Atoms`: judges each `B` atom against `D`; an
@@ -168,11 +169,13 @@ adding a bypass allowlist.
   - `Features.Check.Decide`: rule 1 blocks `Solved` while an atom is open.
   - `Features.Check.Decide.Shadow`: assembles the one detector `decide`
     uses.
-  - `Features.Check.Strategy`: `checked` pairs the token with
-    `spec.witness`.
-  - `Features.Check.Strategy.Online`: `certified` and `witnessed` check the
-    settled sigma but witness the unsettled one; the two must agree up to
-    the hole defaults.
+  - `Features.Check.Strategy`: `checked` takes the verdict's `Valid` and
+    compilation from the check's `Certified` alone; a spec has no
+    separate witness adapter (BACKLOG R026).
+  - `Features.Check.Strategy.Online`: `certified` hands the certificate's
+    pre-default sigma to `certify`, which settles and judges it and
+    builds the witness from the same sigma; no other certificate field
+    reaches the verdict or the witness.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

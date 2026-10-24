@@ -58,5 +58,37 @@ export const r0WitnessRows = [
     replacement: '      <> const "" (legacyText diagnostic)\n',
     probe: 'r0-hint-text-dropped',
     message: /no legacy text: untrusted search hint/
+  },
+  {
+    // BACKLOG R026: the check judges a σ read back again from today's
+    // checked declaration while the witness binds the certificate's own
+    // pre-default σ, as before the fix, so forged bindings that the check
+    // never sees reach `build`.
+    name: 'r0-certified-split',
+    edits: [
+      { file: 'src/Features/Check/Strategy/Substitution.purs',
+        needle: 'certify ∷ RecordedProblem → Substitution → Either',
+        replacement: 'certify ∷ RecordedProblem → Substitution'
+          + ' → Substitution → Either' },
+      { file: 'src/Features/Check/Strategy/Substitution.purs',
+        needle: 'certify problem unsettled = map witnessed\n'
+          + '  (checkSubstitution problem (map settled unsettled))\n',
+        replacement: 'certify problem judged unsettled = map witnessed\n'
+          + '  (checkSubstitution problem (map settled judged))\n' },
+      { file: 'src/Features/Check/Strategy/Online.purs',
+        needle: 'import Data.Either (Either, either)\n',
+        replacement: 'import Data.Either (Either(..), either)\n' },
+      { file: 'src/Features/Check/Strategy/Online.purs',
+        needle: 'certified problem certificate = certify problem'
+          + ' certificate.unsettled\n',
+        replacement: 'certified problem certificate =\n'
+          + '  case readBack problem certificate.checked of\n'
+          + '    Left _ → certify problem certificate.unsettled'
+          + ' certificate.unsettled\n'
+          + '    Right made → certify problem made.unsettled'
+          + ' certificate.unsettled\n' }
+    ],
+    probe: 'r0-certified-split',
+    message: /id2 forged to Bool was Solved/
   }
 ];

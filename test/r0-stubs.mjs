@@ -12,11 +12,14 @@
 // stub spec (each behaviour below names what its search and check do),
 // trusted refuters made by the production `trustedRefuter` with a
 // test-minted theorem, shadow refuters by `shadowRefuter`, rules by
-// the minted `SoundRule`, and recorded problems from source.
+// the minted `SoundRule`, and recorded problems from source. A stub
+// check's acceptance is a test-minted `Certified` (BACKLOG R026) holding
+// the minted `Valid` and a `NonConstructive` compilation.
 export const stubsFrom = async load => {
   const Theorem = await load('Domain.Verdict.Theorem.Internal');
   const Rule = await load('Features.Check.Refute.Rules.Internal');
   const Internal = await load('Domain.Verdict.Internal');
+  const CertifiedInternal = await load('Domain.Verdict.Certified.Internal');
   const Verdict = await load('Domain.Verdict');
   const Search = await load('Domain.Verdict.Search');
   const Strategy = await load('Features.Check.Strategy');
@@ -45,8 +48,7 @@ export const stubsFrom = async load => {
         made.calls += 1;
         return search(budget, problem);
       },
-      check: () => cert => cert,
-      witness: () => () => nonConstructive });
+      check: () => cert => cert });
     return made;
   };
   // The certificate is the check's answer, so the stub check returns it.
@@ -54,7 +56,8 @@ export const stubsFrom = async load => {
     new Strategy.Candidate(answer, claim, hints) });
   const behaviours = {
     accepting: (hints = []) => offering(Verdict.ClaimsComplete.value,
-      new Right(valid), hints),
+      new Right(new CertifiedInternal.Certified(valid, nonConstructive)),
+      hints),
     refusing: (claim, refusal, hints = []) => offering(claim,
       new Left(refusal), hints),
     ending: (end, hints = []) => strategyOf({ search: () =>

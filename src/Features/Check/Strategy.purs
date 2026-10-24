@@ -1,10 +1,14 @@
 -- trusted surface: every diff needs token review; see docs/engineering.md
 -- The strategy value (T-R0a §4.1; Task 4.1). A spec gives a guard, an
--- untrusted search, a trusted check and a witness adapter; `strategy`
--- composes them in that fixed order and is the only way to make a
--- `Strategy`. The certificate type is closed over, so `decide` holds
--- strategies of different formats in one array. Only `check` yields a
--- `Valid`; a wrong search costs completeness, never soundness.
+-- untrusted search and a trusted check; `strategy` composes them in that
+-- fixed order and is the only way to make a `Strategy`. The certificate
+-- type is closed over, so `decide` holds strategies of different formats
+-- in one array. Only `check` yields a `Certified`: its `Valid` and the
+-- compilation witness the same check built from what it judged. T-R0a's
+-- separate witness adapter, applied to the certificate after the check,
+-- would let a witness rest on certificate fields the check never read
+-- (BACKLOG R026), so the adapter is the check's own. A wrong search
+-- costs completeness, never soundness.
 module Features.Check.Strategy
   ( Guarded(..)
   , Ran
@@ -23,14 +27,17 @@ import Domain.Verdict
   ( Assurance
   , Attempt(..)
   , Claim
-  , Compilation
   , InternalFault(..)
   , LimitReached(..)
   , SearchEnd(..)
   , Solution
   , StrategyName
   , Unsupport
-  , Valid
+  )
+import Domain.Verdict.Certified
+  ( Certified
+  , certifiedCompilation
+  , certifiedValidity
   )
 import Domain.Verdict.Search (Budget, CheckRefusal, SearchHint)
 
@@ -39,8 +46,7 @@ type StrategySpec cert =
   , sound ∷ Assurance
   , guard ∷ RecordedProblem → Guarded
   , search ∷ Budget → RecordedProblem → Search cert
-  , check ∷ RecordedProblem → cert → Either CheckRefusal Valid
-  , witness ∷ RecordedProblem → cert → Compilation
+  , check ∷ RecordedProblem → cert → Either CheckRefusal Certified
   }
 
 data Guarded = InScope | OutOfScope Unsupport
@@ -115,7 +121,7 @@ checked spec problem cert claim hints =
   either refused accepted (spec.check problem cert)
   where
   refused refusal = unsolved (CheckFailed spec.name claim refusal) hints
-  accepted validity =
+  accepted certified =
     { attempt: Accepted spec.name validity compilation
     , hints
     , solution: Just
@@ -125,7 +131,9 @@ checked spec problem cert claim hints =
         , compilation
         }
     }
-  compilation = spec.witness problem cert
+    where
+    validity = certifiedValidity certified
+    compilation = certifiedCompilation certified
 
 unsolved ∷ Attempt → Array SearchHint → Ran
 unsolved made hints = { attempt: made, hints, solution: Nothing }

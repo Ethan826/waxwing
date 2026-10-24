@@ -37,13 +37,8 @@ import Domain.Recorded (RecordedProblem, fields)
 import Domain.Resolved (FunctionId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic)
-import Domain.Verdict
-  ( Assurance(..)
-  , Compilation
-  , SearchEnd(..)
-  , StrategyName(..)
-  , Valid
-  )
+import Domain.Verdict (Assurance(..), SearchEnd(..), StrategyName(..))
+import Domain.Verdict.Certified (Certified)
 import Domain.Verdict.Search (Budget, CheckRefusal, SearchHint(..))
 import Features.Check.Functional (Functional)
 import Features.Check.Generate (Inputs, generate, generationInputs)
@@ -54,9 +49,8 @@ import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.Guard (g0Guard)
 import Features.Check.Strategy.Online.Ending (Ending(..), ending)
 import Features.Check.Strategy.ReadBack (readBack)
-import Features.Check.Strategy.Witness (substitutionWitness)
 import Features.Check.Strategy.Substitution
-  ( checkSubstitution
+  ( certify
   , genericSubstitutionSound
   )
 
@@ -68,13 +62,14 @@ type OnlineContext =
   , legacyText ∷ Diagnostic → String
   }
 
--- σ, and the checked declaration today's solver built with it: the
--- baseline Task 7.1 compares `build`'s IR against; and the holes σ bound
--- (ReadBack step 4, provisional, pending the author's ambiguity ruling);
--- and σ before that step, which the witness binds (Task 4.4).
+-- σ before ReadBack's step 4 (its holes still `holeVar n`), which the
+-- check settles and judges and the witness binds (`certify`; BACKLOG
+-- R026: the certificate carries no separately settled σ); the checked
+-- declaration today's solver built, the baseline Task 7.1 compares
+-- `build`'s IR against; and the holes step 4 binds (provisional,
+-- pending the author's ambiguity ruling), reported for RT8 only.
 type Certificate =
-  { substitution ∷ Substitution
-  , unsettled ∷ Substitution
+  { unsettled ∷ Substitution
   , checked ∷ Checked.FunctionDecl
   , holes ∷ Array Int
   }
@@ -94,7 +89,6 @@ onlineWith search = strategy
   , guard: g0Guard
   , search
   , check: certified
-  , witness: witnessed
   }
 
 onlineSearch ∷ OnlineContext → Budget → RecordedProblem → Search Certificate
@@ -116,8 +110,7 @@ searched legacyText problem = either (refused legacyText) accepted
   accepted found = either broke (offered found.function)
     (readBack problem found.function)
   offered checked made = Candidate
-    { substitution: made.substitution
-    , unsettled: made.unsettled
+    { unsettled: made.unsettled
     , checked
     , holes: made.holes
     }
@@ -160,12 +153,5 @@ declaration inputs program problem =
   same regenerated = fields (Elaborating.problem regenerated) == fields problem
   generated = generate inputs.tables inputs.signatures
 
-certified ∷ RecordedProblem → Certificate → Either CheckRefusal Valid
-certified problem certificate =
-  checkSubstitution problem certificate.substitution
-
--- G0's adapter over σ before the read-back's hole defaults (Task 4.4),
--- so a defaulted hole is a `Free` binding the hole contract judges.
-witnessed ∷ RecordedProblem → Certificate → Compilation
-witnessed problem certificate =
-  substitutionWitness problem certificate.unsettled
+certified ∷ RecordedProblem → Certificate → Either CheckRefusal Certified
+certified problem certificate = certify problem certificate.unsettled

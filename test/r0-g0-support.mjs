@@ -65,8 +65,7 @@ export const g0From = async (load, stubs) => {
     guard: Guard.g0Guard,
     search: () => problem => new Strategy.Candidate(
       candidateOf(problem, override), Verdict.ClaimsComplete.value, []),
-    check: Substitution.checkSubstitution,
-    witness: () => () => stubs.nonConstructive });
+    check: Substitution.certify });
   const open = Open.openRequirements;
   const check = (problem, candidate) =>
     Substitution.checkSubstitution(problem)(candidate);

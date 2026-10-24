@@ -144,6 +144,17 @@
    "StaticRule from ../Domain.Verdict.Static/index.js"
   ]
  },
+ "Domain.Verdict.Certified": {
+  "source": [
+   "module Exports",
+   "certifiedCompilation",
+   "certifiedValidity"
+  ],
+  "compiled": [
+   "certifiedCompilation",
+   "certifiedValidity"
+  ]
+ },
  "Domain.Verdict.Judged": {
   "source": [
    "module Exports",
@@ -829,10 +840,12 @@
  },
  "Features.Check.Strategy.Substitution": {
   "source": [
+   "certify",
    "checkSubstitution",
    "genericSubstitutionSound"
   ],
   "compiled": [
+   "certify",
    "checkSubstitution",
    "genericSubstitutionSound"
   ]

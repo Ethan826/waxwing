@@ -74,7 +74,7 @@ const comparisons = (program, name) => {
   const recorded = online.problemOf(program, name);
   const found = online.search(program, recorded);
   if (found.constructor.name !== 'Candidate') return [];
-  const sigma = sigmaMap(online.sigmaOf(found.value0.substitution));
+  const sigma = sigmaMap(online.sigmaOf(online.settledOf(found.value0)));
   const problem = online.canonicalOf(recorded);
   return problem.vars.filter(([, info]) => info.position === 'auxiliary')
     .flatMap(([variable, info]) => {

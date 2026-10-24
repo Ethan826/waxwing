@@ -26,6 +26,27 @@ test('only the trusted checkers import Domain.Verdict.Internal', () => {
       [`${name} imports ${internal}`], name);
 });
 
+// BACKLOG R026: a strategy's acceptance, `Certified`, pairs the check's
+// `Valid` with the witness the same check built. Only G0's check mints
+// it and only its public module reads it; `strategy`, every search, the
+// online adapter and `decide` are refused, so no strategy can pair a
+// `Valid` with a witness built elsewhere.
+test('only G0\'s check and its public module import Certified.Internal',
+  () => {
+    const internal = 'Domain.Verdict.Certified.Internal';
+    for (const name of ['Domain.Verdict.Certified',
+      'Features.Check.Strategy.Substitution'])
+      assert.deepEqual(importing(name, internal), [], name);
+    for (const name of ['Features.Check.Strategy',
+      'Features.Check.Strategy.Online', 'Features.Check.Strategy.Witness',
+      'Features.Check.Strategy.ReadBack', 'Features.Check.Decide',
+      'Features.Check.Elaborate', 'Features.Check.Refute.Rules',
+      'Domain.Verdict', 'Domain.Verdict.CertifiedX',
+      'Features.Check.Strategy.SubstitutionX'])
+      assert.deepEqual(importing(name, internal),
+        [`${name} imports ${internal}`], name);
+  });
+
 // Only generation builds a recorded problem (T-R0a §2 property 2); the
 // public Domain.Recorded imports the type to re-export it. Anchored, so
 // Features.Check.GenerateX is outside.

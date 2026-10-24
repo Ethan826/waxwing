@@ -48,6 +48,12 @@ export const internalModules = [
     importers: /^Features\.Check\.Generate\.(Elab|Gen)$/ },
   { module: 'Domain.Verdict.Judged.Internal',
     importers: /^(Domain\.Verdict\.Judged|Features\.Check\.Decide)$/ },
+  // BACKLOG R026: a strategy's acceptance pairs `Valid` with the witness
+  // the same check built; only G0's check mints it, and its public module
+  // re-exports the type with read-only accessors.
+  { module: 'Domain.Verdict.Certified.Internal',
+    importers: new RegExp('^(Domain\\.Verdict\\.Certified'
+      + '|Features\\.Check\\.Strategy\\.Substitution)$') },
   { module: /^(Domain\.Elaborating|Features\.Check\.Generate)(\.|$)/,
     importers: /^(?!Runtime\.)/ }
 ];
@@ -65,4 +71,4 @@ export const restricts = (rule, dependency) => (typeof rule.module
 export const tokenModules = ['Domain.Verdict.Internal',
   'Domain.Recorded.Internal', 'Domain.Verdict.Theorem.Internal',
   'Features.Check.Refute.Rules.Internal', 'Domain.Elaborating.Internal',
-  'Domain.Verdict.Judged.Internal'];
+  'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Certified.Internal'];

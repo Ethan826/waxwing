@@ -132,7 +132,9 @@ test('the real tree matches its pin and its FFI names no token module',
     // D1's Assemble, Elab, Elab.* and Gen, and the importers of its two
     // token modules: Domain.Elaborating(.Build), Domain.Verdict.Judged
     // and Features.Check.Decide (rules E2 and E5); Task 7.1b the port's
-    // Block, Body, Callee, Node and Update, folding Rigid into Signature.
+    // Block, Body, Callee, Node and Update, folding Rigid into Signature;
+    // BACKLOG R026 Domain.Verdict.Certified, the public module of the
+    // `Certified` token (Strategy.Substitution, already listed, mints it).
     const generate = ['', '.Assemble', '.Block', '.Body', '.Builtin',
       '.Call', '.Callee', '.Context', '.Control', '.Effect', '.Elab',
       '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
@@ -144,7 +146,8 @@ test('the real tree matches its pin and its FFI names no token module',
       .map(name => `Features.Check.Generate${name}`);
     assert.deepEqual(Object.keys(importers).sort(),
       ['Domain.Elaborating', 'Domain.Elaborating.Build', 'Domain.Recorded',
-        'Domain.Verdict', 'Domain.Verdict.Judged', 'Features.Check.Decide',
+        'Domain.Verdict', 'Domain.Verdict.Certified', 'Domain.Verdict.Judged',
+        'Features.Check.Decide',
         ...generate, 'Features.Check.Refute.Rules',
         'Features.Check.Refute.Theorems',
         'Features.Check.Strategy.Substitution'].sort());

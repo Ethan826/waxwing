@@ -777,6 +777,29 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## R026: the check builds the witness it judged (2026-10-24)
+
+Option A, ratified by the author. The whole-stack review showed the
+online strategy's check judged the certificate's settled σ while the
+witness was built from its pre-default σ, paired only by the untrusted
+read-back; a forged pre-default σ for `id2` was Solved and `build` gave
+a `Bool` body under an `Int` result (.build/evidence/r026-before.log).
+Now G0's `certify` settles the pre-default σ, judges it and builds the
+witness from the same σ, minting `Certified` (new token module
+Domain.Verdict.Certified.Internal, importers: Domain.Verdict.Certified
+and Strategy.Substitution). `StrategySpec` loses `witness`; `check`
+returns `Certified`, so no strategy can pair a `Valid` with a witness
+built elsewhere. The read-back and certificate no longer carry a
+settled σ; tests derive it with the production `settled`
+(r0-online-support.mjs `settledOf`). Holes stay `Free`.
+New: test/r0-forged-witness.test.mjs (5 tests; the two forged-refusal
+tests failed against the unfixed build, 2 of 4 at the time), a
+`Certified` importer test in test/structure-r0.test.mjs, regression row
+`r0-certified-split` (restored split detected: "id2 forged to Bool was
+Solved"). Trusted-surface pin re-pinned: Domain.Verdict.Certified added,
+Strategy.Substitution exports `certify` (reviewed here). Focused run:
+all R0, structure and regression-runner unit tests pass.
+
 ## Regression runner: a reason-less rejection is a failure (2026-10-24)
 
 An external review found that scripts/regression-pool.mjs marked success

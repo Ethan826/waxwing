@@ -26,10 +26,11 @@
 --    so the check's refusal is a `SearchFault` RT8 counts as a defect.
 -- 4. A hole (a type checking left open) becomes what today's lowering
 --    makes of it (Specialize.purs `specialize`: a type hole is `Int`, a
---    row hole closes, Lower.purs), so σ is the instance today compiles:
---    the search binds it, and a requirement atom at an unbound flexible
---    variable never reaches G0's `RequirementUnjudged` backstop (Task 4.2
---    findings item 8). The check, not this choice, decides.
+--    row hole closes, Lower.purs), so the judged σ is the instance today
+--    compiles, and a requirement atom at an unbound flexible variable
+--    never reaches G0's `RequirementUnjudged` backstop (Task 4.2 findings
+--    item 8). The read-back leaves holes as `holeVar n` and reports
+--    them; the trusted check applies this step (BACKLOG R026).
 module Features.Check.Strategy.ReadBack
   ( ReadBack
   , readBack
@@ -63,17 +64,17 @@ import Features.Check.Entailed.Mgu (mgu)
 import Features.Check.Mentions (mentions)
 import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.ReadBack.Position (Slotted, valueAt)
-import Features.Check.Strategy.ReadBack.Type (holesIn, settled)
+import Features.Check.Strategy.ReadBack.Type (holesIn)
 
--- `holes`: the holes step 4 bound, by index, ascending. The binding is a
+-- `holes`: the holes step 4 binds, by index, ascending. The binding is a
 -- provisional reading pending the author's ambiguity ruling, so its
 -- effect stays visible (RT8 counts a Solved resting on one apart).
--- `unsettled`: σ before step 4, its holes still `holeVar n`: what the
--- witness binds (Strategy.Witness; Task 4.4), so a default stays a hole
--- the hole contract judges instead of a binding G0 alone accepted.
+-- `unsettled`: σ before step 4, its holes still `holeVar n`. Step 4
+-- itself is the trusted check's (Strategy.Substitution `certify`,
+-- BACKLOG R026), which settles σ to judge it and binds the witness to
+-- the unsettled σ, so a default stays a hole the hole contract judges.
 type ReadBack =
-  { substitution ∷ Substitution
-  , unsettled ∷ Substitution
+  { unsettled ∷ Substitution
   , claim ∷ Claim
   , holes ∷ Array Int
   }
@@ -111,13 +112,10 @@ completed problem values =
 
 read ∷ Claim → Array (Tuple Var RTExpr) → ReadBack
 read claim values =
-  { substitution: Map.fromFoldable (map settledBinding values)
-  , unsettled: Map.fromFoldable values
+  { unsettled: Map.fromFoldable values
   , claim
   , holes: Array.sort (Array.nub (concatMap (holesIn <<< snd) values))
   }
-  where
-  settledBinding (Tuple variable value) = Tuple variable (settled value)
 
 -- The unifier's bindings of the problem's flexible variables; made rows
 -- and holes it bound are not the problem's.

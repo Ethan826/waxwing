@@ -86,11 +86,11 @@ test('the search binds a hole under pr, so no RequirementUnjudged', () => {
     searchFaults: [] });
   const found = online.search(freeProgram, freeProblem);
   const y = freeProblem.bq[0].value.value0.value0;
-  assert.deepEqual(online.sigmaOf(found.value0.substitution).find(
+  assert.deepEqual(online.sigmaOf(online.settledOf(found.value0)).find(
     ([variable]) => variable.fresh?.role?.param === 0)[1], { base: 'Int' });
   // Left unbound, the same candidate meets the backstop.
-  const unbound = online.Map.delete(Atom.ordVar)(y)(found.value0
-    .substitution);
+  const unbound = online.Map.delete(Atom.ordVar)(y)(
+    online.settledOf(found.value0));
   const refused = online.check(freeProblem, unbound);
   assert.equal(refused.value0.constructor.name, 'RequirementUnjudged');
 });

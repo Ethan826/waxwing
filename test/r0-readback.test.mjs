@@ -52,7 +52,7 @@ test('every read-back candidate passes G0 at generation\'s positions', () => {
       name);
     const { problem, certificate, claim } = candidateOf(name);
     assert.equal(claim.constructor.name, 'ClaimsComplete', name);
-    assert.equal(online.check(problem, certificate.substitution)
+    assert.equal(online.check(problem, online.settledOf(certificate))
       .constructor.name, 'Right', name);
     assert.deepEqual(online.typeFindings(problem, certificate), [], name);
   }

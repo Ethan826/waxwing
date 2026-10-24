@@ -144,7 +144,7 @@ test('a lacks or disjoint atom holding at the default keeps the witness',
         online.sigmaOf(expected), kind);
       assert.deepEqual(w.reason(w.witnessOf(problem,
         certificate.unsettled)), ['Witnessed'], kind);
-      assert.equal(online.check(problem, certificate.substitution)
+      assert.equal(online.check(problem, online.settledOf(certificate))
         .constructor.name, 'Right', kind);
       assert.ok(problem.b.some(entry => entry.value.constructor.name
         === kind), kind);

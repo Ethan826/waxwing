@@ -23,7 +23,8 @@ export const onlineFrom = async load => {
   const Shadow = await load('Features.Check.Decide.Shadow');
   const Substitution = await load('Features.Check.Strategy.Substitution');
   const Walk = await load('Features.Check.Strategy.ReadBack.Walk');
-  const { readType } = await load('Features.Check.Strategy.ReadBack.Type');
+  const { readType, settled } =
+    await load('Features.Check.Strategy.ReadBack.Type');
   const { typeOf } = await load('Domain.Checked.Internal');
   const { fields } = await load('Domain.Recorded');
   const Map = await load('Data.Map.Internal');
@@ -61,6 +62,10 @@ export const onlineFrom = async load => {
   // σ as canonical [variable, type] pairs, ordered as Data.Map yields.
   const sigmaOf = substitution => pairs(substitution)
     .map(([variable, ty]) => [decodeVar(variable), decodeType(ty)]);
+  // σ as the check judges it: the certificate's pre-default σ with each
+  // hole at its default (Substitution `certify`; BACKLOG R026).
+  const settledOf = certificate =>
+    Map.functorMap.map(settled)(certificate.unsettled);
   const check = (problem, substitution) =>
     Substitution.checkSubstitution(problem)(substitution);
   const decisions = program =>
@@ -72,7 +77,7 @@ export const onlineFrom = async load => {
   // settled type, read back (holes as the read-back settles them). A
   // finding names the path and what differs.
   const typeFindings = (problem, certificate) => {
-    const sigma = sigmaMap(sigmaOf(certificate.substitution));
+    const sigma = sigmaMap(sigmaOf(settledOf(certificate)));
     const body = new Walk.AtExpr(certificate.checked.body);
     return pairs(fields(problem).types).flatMap(([path, ty]) => {
       if (path.root.constructor.name !== 'InBody') return [];
@@ -90,7 +95,8 @@ export const onlineFrom = async load => {
   };
   return { programOf, declOf, problemOf, contextOf, search, todayOf,
     legacyText,
-    sigmaOf, check, decisions, decisionOf, canonicalOf, pairs, Online,
+    sigmaOf, settledOf, check, decisions, decisionOf, canonicalOf, pairs,
+    Online,
     Shadow, Map, typeFindings };
 };
 

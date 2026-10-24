@@ -11,8 +11,17 @@
 -- accepts nor refuses on them. Assurance: `Pending
 -- genericSubstitutionSound`, argued as the standard check of a proposed
 -- unifier, not proved.
+--
+-- `certify` is the online strategy's check (BACKLOG R026): given σ
+-- before the hole defaults, it checks σ with each hole at its default
+-- (ReadBack.Type `settled`, the defaults lowering and the hole contract
+-- use) and builds the witness from the same σ, so a hole stays `Free`
+-- for the contract to judge. The `Certified` it mints is the only
+-- acceptance a strategy can offer, so the witness is always built from
+-- what this check judged.
 module Features.Check.Strategy.Substitution
-  ( checkSubstitution
+  ( certify
+  , checkSubstitution
   , genericSubstitutionSound
   ) where
 
@@ -21,14 +30,24 @@ import Data.Either (Either(..))
 import Data.Traversable (traverse_)
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Verdict (StatementRef(..))
+import Domain.Verdict.Certified.Internal (Certified(..))
 import Domain.Verdict.Internal (Valid(..))
 import Domain.Verdict.Search (CheckRefusal(..))
 import Features.Check.Strategy.Asked (requirementUnder)
 import Features.Check.Strategy.Atoms (atomUnder, facts)
 import Features.Check.Strategy.Candidate (Substitution, generic)
+import Features.Check.Strategy.ReadBack.Type (settled)
+import Features.Check.Strategy.Witness (substitutionWitness)
 
 genericSubstitutionSound ∷ StatementRef
 genericSubstitutionSound = StatementRef "genericSubstitutionSound"
+
+certify ∷ RecordedProblem → Substitution → Either CheckRefusal Certified
+certify problem unsettled = map witnessed
+  (checkSubstitution problem (map settled unsettled))
+  where
+  witnessed validity =
+    Certified validity (substitutionWitness problem unsettled)
 
 checkSubstitution
   ∷ RecordedProblem → Substitution → Either CheckRefusal Valid
