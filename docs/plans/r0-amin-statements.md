@@ -194,3 +194,92 @@ images), lowering, and today's checker.
 - **O6. Cost.** The canonical encoding, Cov's domain, RT8 and window
   pins and T2's harness all change (audit §5); the old pins stay as a
   cohort.
+
+## 8. Adversarial review 1 (2026-10-24): not ready
+
+An independent reviewer (Opus, read-only; nothing run) reviewed these
+statements at d7f30b0. The controller re-read F1's and F2's evidence
+(the mark refusals `ExpectedNofail`, `HandlerMayFail` in
+Domain/Problem.purs and the fixture pair
+test/fixtures/r0/audit/expected-nofail.{inferred,selected}.json;
+Generate/Operator.purs's Apply arrow with its row handle appearing only
+inside a `GenEqual` atom) and they hold. The statements need revision
+before approval. Findings, by severity:
+
+**S1.**
+- **F1. Marks cannot be judged.** Today's effect refusals include mark
+  obligations (ExpectedNofail, HandlerMayFail, DeferHandlerMayFail,
+  DeferHandlerVariable); D1/I3 forbid marks in images, D2 has no mark
+  binding and D7's vocabulary has none, so O3's "marks judged by D6
+  before Strip" has no data. The nofail fixture pair differs only by a
+  mark: a rows-only D6 accepts both. Contradicts Q1's pre-Strip
+  evidence. Fix: separate pre-Strip evidence (mark-variable and
+  ⟨p, clauses⟩ bindings outside images, dropped after D6), or D6 infers
+  marks (FX008's design as source; novelty).
+- **F2. K2 is missing; nested rows unjudged.** A type equation between
+  arrows, data or handler types also equates their rows
+  (r0-erased-rows §2, K2). G0 judges erased atoms, so the row parts of
+  every `Equal` atom and the rows nested in `Inline` images are judged
+  by no one. Example: `fn f(h: Unit -> Unit with Log): Unit with pure =
+  { let k = h; k(()) }` with the Apply arrow's row forged to `pure`.
+  Fix: D7 re-reads every `Equal` atom at full types (row equality up to
+  scoped-label order); I2 covers every row in any binding.
+- **F3. D7 cites the wrong inventory and claims no completeness.**
+  §2.1 lists where rows are made, not checked. The checking inventory
+  is findings.md "Effect and coverage audit" (13 effect refusals),
+  r0-erased-rows §2's K1, K1e, K2 and §7.1's counterexample; some are
+  absence constraints (no rigid tail in a deferred row, no Fail label,
+  `main` ⊆ Console). A dropped obligation makes D6 accept vacuously.
+  Fix: I10, D7 complete for today's effect checks, with one forged-
+  witness fixture per refusal kind and a mutation test per obligation
+  kind; widen D7's form.
+- **F4. The coupling is not tied down.** D7 "beside the recorded
+  problem" is tied to neither the problem nor the witness (R026's
+  shape); D8's "identical witness value" has no meaning in PureScript.
+  Fix: D7 inside `RecordedProblem` (Domain.Recorded.Internal), so
+  `elaborate`'s problem identity covers it; name where
+  `validateEffects` runs (inside `certify` on the witness it builds, or
+  in `elaborate` just before `build` on the same binding);
+  `EffectsChecked` minted by one private function.
+- **F5. One piece of information in two places.** A whole-row handle at
+  Translate `rowOf Instantiated` would hold written labels (e.g.
+  `State(a)`) that also live in ⟨p, inst a⟩'s `Inline`, unrelated by
+  any check; likewise a new A11 slot and the over-application stage.
+  Fix: written labels translate under θ; handles only at RowSort tails
+  and the opened tail; A11's tail is the lambda's ⟨p, effect⟩; atom and
+  IR stage rows share handles.
+
+**S2.** F6 the online read-back is pre-Strip, so I3 refuses legitimate
+witnesses unless the read-back strips (it must, untrusted; I3 checks).
+F7 I3 must also refuse a wrong data row count, an out-of-scope or
+wrong-sort rigid, one hole number at two sorts, a binding constructor
+disagreeing with the variable's sort, and images naming problem
+variables. F8 images naming effect-row problem variables is new
+resolution machinery (occurs check), unflagged: forbid, or specify with
+a source. F9 the fresh-hole numbering (Witness.purs) must count holes
+inside rows; one hole number, one sort. F10 I2's source list is false
+(instantiated signatures, builtins, body annotations, Fail payloads) and
+"vice versa" is false (atom-only handles, clause rows). F11 I6's
+structural test misses `translate … Rigidly` body sites (A11 itself),
+Fresh.purs's `RowSort → Nothing`, constructor patterns and references.
+F12 a `Free` that fails its obligations is checked-and-failed, not
+`EffectsUnchecked`; its default is the closed empty row, argued as in
+W §1.5. F13 `erase` must be sort-aware (R022) and must agree with
+Generate.Elab.Recorded, the translator the atoms use: add that
+differential. F14 the interim before D6 exists is unstated. F15 the I2
+fixture does not separate (use a lambda passed to a `pure` parameter
+with its row forged to Console; control: an unconstrained lambda). F16
+O5 reopens Q3; O4 conflicts with O1. F17 positions for effect-row
+variables are unspecified.
+
+**S3.** A §-reference typo; ⟨p, clauses⟩ dropped silently; §6
+understates changes to Atom.purs (`VarSort`, `Role`, `CheckedName`);
+I7 can claim exact numbering (build already applies `holes`);
+ReadBack.Type is trusted and serves the read-back, so D5 cannot simply
+be it; the trust table lacks the read-back, Atom.purs, `bindingsOf`,
+HoleContract and Elaborate, and `certify` is not "unchanged"; no
+ambient-row field in generation's `Context`.
+
+Reviewer's rulings to confirm: forged and non-online witnesses count
+as a soundness threat (R026's model); gaps behind `Outside` markers
+were kept at S1 where the statements claim coverage.
