@@ -1,286 +1,382 @@
-# a-min: statements for review (G-effect-rows), revision 2 (2026-10-24)
+# a-min: statements, revision 3 (G-effect-rows, 2026-10-24)
 
-Status: **statements only, for a second adversarial review.** No code.
-Revision 1 was reviewed and found not ready (§8, F1-F17); this revision
-applies the author's rulings on that review (dossier §18.76) and answers
-every finding (§9). The author approved a-min for statements and review
-first (§18.74); implementation follows a review that finds no S1 or S2.
-Sources: docs/plans/r0-effect-rows-audit.md, r0-ea-representation.md,
-r0-erased-rows.md §2 and §7.1, r0-certify-argument.md, findings.md
-"Effect and coverage audit". Labels: **decided** (the author's),
-**proposed** (this note), **open**. Task 4.6 and G-D1 stay blocked.
+Status: **statements only, returned to the author before any further
+review** (dossier §18.77). No code; implementation unauthorized; Task
+4.6 and G-D1 blocked. Revisions 1 and 2 were reviewed and found not
+ready (§§R1-R2, kept at the end with revision 2's answer table). This
+revision replaces §§1-8a of revision 2 as one design, not patches. §0
+summarizes what changed. Labels: **decided** (the author's),
+**derived** (argued here, not proved), **proposed**, **open**.
 
-## 1. Goal, non-goals, threat model
+Sources: FX008's design (docs/plans/2026-10-10-abort-tracking-design.md
+§3.3-§3.5, the mark rules this revision maps one by one); FX001's
+consumption (spec §2, "Consumption and opening"); the audit
+(r0-effect-rows-audit.md); r0-erased-rows.md §2, §7.1;
+r0-certify-argument.md; findings.md "Effect and coverage audit".
 
-Goal: the witness and `build` carry faithful effect information to the
-post-Strip program (decided, Q1), and every effect fact that reaches
-compilation has been judged by trusted code over the binding package
-`build` reads, pre-Strip obligations included (decided, Q1, §18.76
-ruling 1). Non-goals: carrying marks or clause rows through lowering
-(Q2); proving effect soundness (assurance stays Pending); changing
-today's live acceptance.
+## 0. What changed from revision 2
 
-**Threat model (decided, §18.76 ruling 4).** The search is untrusted.
-Soundness must hold for any candidate any strategy supplies: online or
-not, inconsistent, malformed or deliberately forged. This is a
-correctness boundary, not a claim about hostile programmers. An
-`Outside` marker that prevents live exposure today does not excuse an
-interface contract or theorem that would fail once the marker is
-removed. §6 lists the independently forged inputs each invariant must
-withstand.
+1. **One authoritative marked package** (decided, §18.77). The search
+   proposes a single package holding full pre-Strip types: every label
+   occurrence carries its mark, every handler type its own-abort mark
+   and both rows, nested occurrences included, plus the per-site facts
+   FX008 introduces (frame marks, clause rows, deferred rows). `build`
+   receives the stripped projection that trusted code computes from it.
+   There is no second copy (replaces revision 2's D1-D3).
+2. **Marks are positions, not problem variables.** No `SortMark`; marks
+   never enter Cov's domain (N8). Rigid mark variables are the
+   declaration's `nofail(k)` variables; every other mark is a flexible
+   position the package must fill.
+3. **Mark evidence is a term over rigid mark variables**, not a ground
+   mark, and trusted checking quantifies over every rigid valuation
+   (§5; N14 and the author's qualification). FX008's path criterion
+   stays the reference.
+4. **Obligations mapped rule by rule from FX008 and FX001** (§4), with
+   the refusal each produces; recorded in the problem (R026's coupling).
+5. **Outcome routing corrected** (N2): a failed effect check is a
+   `CheckRefusal` (later strategies run); missing or unsupported
+   validation is Unresolved `EffectsUnchecked`; `Witnessed` implies
+   effects checked.
+6. **The hole contract extends through rows and label arguments**, one
+   sort per hole, defaults stated (N3).
+7. **Soundness and acceptance preservation stated apart** (§8), with
+   the unsupported cases (§9) and the unresolved claims (§11).
 
-## 2. Definitions (proposed)
+## 1. Goal, threat model, scope
 
-**D1. Image types.** `ImageTy = Ty Var` (Domain.Type.Core) in stripped
-form: every `Label e args m` has `m = Unmarked`, every handler's
-`clauses = Nothing`. Its variables are restricted (decided, §18.76
-ruling 2, a solved-substitution form):
-- a rigid variable is allowed only if the declaration declares it, at
-  the sort of its position (type, record row or effect row);
-- a hole (`holeVar n`) is allowed, under the hole contract (types and
-  record rows) or effect validation (effect rows, I5);
-- no flexible problem variable appears, at any sort, effect-row
-  variables included. The search resolves such references before it
-  submits; trusted code checks the restriction (I3) and does not rely
-  on the read-back. Precedent: Pottier 2014's solved forms, and today's
-  `ImageVariable` fault (Image.purs), which this turns from a fault in
-  `build` into a refusal in `certify`. If a required program cannot be
-  represented this way, it comes back as a demonstrated example with a
-  separately sourced extension.
-- a data type carries exactly the declared number of row arguments.
+Goal: replacing today's checker means carrying its complete effect-and-
+mark contract. Every effect, mark and clause fact that reaches
+compilation is judged by trusted code over the one package `build`
+reads, pre-Strip obligations included; the fidelity target is the
+post-Strip program, rows included (decided, Q1).
 
-**D2. Bindings.** `Inline ImageTy` for type- and record-sorted
-variables, `InlineRow (TyRow Var)` for effect-row variables (same
-variable restrictions), `Free n` for any sort, meaning hole n at its
-variable's sort. One hole number has one sort across the whole package
-(I3). The binding constructor agrees with the variable's sort (I3).
+Threat model (decided, §18.76 ruling 4): soundness holds for any
+candidate from any strategy, including inconsistent, malformed and
+forged ones. An `Outside` marker does not excuse a contract that would
+fail once removed.
 
-**D3. Pre-Strip evidence** (decided, ruling 1). The search also
-proposes, beside the bindings: a mark for every mark variable the
-problem records (`NoFail`, `Plain`, or a written mark variable in
-scope; never `MarkMeta` or `Unmarked`), and a row for every handler
-literal's clause row (`⟨p, clauses⟩`, same restrictions as D2). The
-bindings and the evidence form one **binding package**; trusted code
-judges the evidence against the recorded obligations (D7) and then the
-package's evidence is discarded: `build` never reads it, and the
-post-Strip IR has none. FX008's existing rules are the specification of
-the mark obligations; reusing them makes the validator a checker, not
-an inference engine.
+Out of scope: lowering (unchanged), today's checker (unchanged), proof
+of effect soundness (assurance Pending).
 
-**D4. Sorts, roles, positions.** `VarSort` gains `SortEffectRow` and
-`SortMark`; `Role` and `CheckedName` (Domain.Recorded.Atom, trusted)
-gain constructors for the new slots, and an effect-row variable's
-position is a new `CheckedName` form, distinct from checked
-`Slot p i`, so its index never collides with a checked instantiation
-slot (F17). Effect-row instances stay out of checked `Instantiation`
-slots (T5's positions unchanged).
+## 2. The package (proposed)
 
-**D5. Slot rule** (F5). A written label translates under θ: its type
-arguments are ordinary type-sorted images, so a label lives in one
-place. Handles sit only at row tails: an effect-row type parameter of
-an instantiated callee, constructor or operation (`⟨p, inst i⟩`), the
-opened tail (`⟨p, opened⟩`), a lambda's row (`⟨p, effect⟩`, which the
-annotation's ambient tail reuses, as `annotationRow` does), each
-over-application stage (`⟨p, stage k⟩`, shared by the atom and the IR
-stage), the handler literal's inference-row tail (`⟨p, handler⟩`), the
-clause row (`⟨p, clauses⟩`, evidence), `show`'s and `crash`'s rows, and
-`main`'s tail (decided, Q3).
+**Marked types.** `MTy = Ty Var` with marks: every `Label e args m` has
+`m : MarkTerm`, and every handler type `THandler (Label e args m)
+{ inference: R, clauses: Just C }` holds its own-abort mark m, its
+inference row R and its clause row C (FX008 §3.4). Nested occurrences
+are ordinary parts of `MTy`.
 
-**D6. Trusted erasure.** `erase : ImageTy → RTExpr` and `eraseRow :
-TyRow Var → RTExpr` (a record row to a record term), T-R0b §2.2's
-translation, **sort-aware**: a record-sorted bare hole erases to
-`Record [] [hole]` (R022). It is the only projection certification
-uses (decided, Q4) and lives in a trusted Strategy-side module, since
-Strategy modules may not import Generate.*.
+**Mark terms.** `MarkTerm = N | M | J (Set RigidMark)`: the strong mark
+N, the weak mark M, or the join of a set of the declaration's rigid
+mark variables. `J ∅` is N; a single `nofail(k)` is `J {k}`. Console is
+always N; `Fail` labels carry the fixed placeholder (FX008 §3.3) and are
+never compared.
 
-**D7. Reference projections, for tests only.** A fresh, independently
-written projection (not ReadBack.Type, which is trusted and serves the
-read-back), compared with D6 on images; and Generate.Elab.Recorded, the
-translator the atoms are built with, compared with D6 on generator
-types (I4).
+**Variables in images** (decided, §18.76 ruling 2): a rigid type, record
+row or effect row variable only if the declaration declares it, at its
+sort (the implicit ambient row variable counts as declared, N9); holes;
+no flexible problem variable of any sort. A data type has exactly its
+declared number of row arguments.
 
-**D8. Effect obligations.** Part of `RecordedProblem` (in
-Domain.Recorded.Internal; generated with the atoms), so `elaborate`'s
-problem identity covers them. Inventory, to be complete for today's
-effect checks (I10): every class-f effect refusal of findings.md's
-audit table (EffectNotAllowed at Reject.purs:69 and Require.purs:123,
-MustBePure, RowEquality at Argument.purs:70 and RowName.purs:96,
-CallbackRowLacks, UnhandledEffect, DeferMayFail, DeferMayPerform,
-DeferHandlerMayFail, DeferHandlerVariable, ExpectedNofail,
-HandlerMayFail, ExpectedHandler, FailNeedsConcrete at Failure.purs:102);
-r0-erased-rows §2's K1, K1e and **K2**: every `Equal` atom re-read at
-full types, its row parts equal up to scoped-label order (F2); and
-§7.1's counterexample `fn g(): Unit with pure = Log.log(1)`. Forms:
-row inclusion, row equality, absence (no rigid tail in a deferred row;
-no `Fail` label; `main` within `Console`), and FX008's mark constraints.
-Generation threads an ambient row through its context (the lambda's
-`⟨p, effect⟩` in a lambda body, the declared row in a declaration
-body).
+**The package.**
 
-**D9. Effect validation.** A trusted checker `validateEffects` over D8
-with every row, mark and clause row known from the package. Three
-outcomes (decided, ruling 3): `EffectsChecked`; `ObligationFailed
-reason`, a check failure of this candidate (not evidence that the
-source is invalid: an untrusted candidate may simply be wrong);
-`EffectsUnchecked reason`, validation absent or not supported for an
-obligation kind.
+```text
+Package =
+  { bindings ∷ Map Var MBinding        -- every flexible variable
+  , sites    ∷ Map SiteKey SiteFact    -- per-site FX008 facts
+  }
+MBinding = Inline MTy                  -- type or record sort
+         | InlineRow (TyRow Var)'      -- effect-row sort, marked labels
+         | Free Int                    -- hole n at the variable's sort
+SiteFact = HandlerLit { m ∷ MarkTerm, clauses ∷ Array MRow }
+         | Installation { frame ∷ MarkTerm }
+         | Deferred { row ∷ MRow }
+         | Opened { mark ∷ MarkTerm }  -- handler opening at a use
+         | Copy { marks ∷ Array MarkTerm }  -- consumption copies
+```
 
-**D10. Placement** (F4). `certify` builds the package from the
-search's σ₀ and evidence, checks I3, runs G0 on `erase`, then runs
-`validateEffects` on the same package against the same problem, and
-the result is part of the `Certified` it mints: `Certified Valid
-Compilation EffectStanding`. Only `EffectsChecked` lets `elaborate`
-build; otherwise the declaration is not compiled, with the standing as
-the reason. No separate token is paired later, so "the same witness"
-means the value `certify` constructed, not an identity PureScript
-cannot express.
+Every flexible mark position FX008 creates has exactly one place in the
+package (§3), and the package's domain equals the recorded positions
+exactly: nothing missing, nothing extra (N10).
 
-## 3. Invariants (proposed)
+**The stripped projection.** `strip : Package → Witness` replaces every
+mark by `Unmarked`, every `clauses` by `Nothing`, drops `sites`, and
+maps `InlineRow` to its stripped row; it is Check/Strip.purs's rule
+applied to the package. `build` reads `strip P` and nothing else;
+trusted code computes it (§7).
 
-**I1. R026's coupling.** G0 judges exactly `erase` of the package's
-type- and record-sorted bindings, settled; the compilation is built
-from the same σ₀; no strategy supplies images, evidence or obligations
-separately.
+## 3. Rigid and flexible marks, and where each lives (FX008 §3.3-3.4)
 
-**I2. Every row is accounted for** (F10). Each row in `build`'s IR is
-either a written row translated by a named rule (declaration signature;
-callee, constructor or operation signature under θ; builtin signature;
-body annotation; Fail payload), mentioning only the declaration's
-rigids, or a witness row (`InlineRow`, `Free`, or nested in an
-`Inline` image). Every witness row, including those that appear only in
-atoms (Operator.purs's Apply and Pipe arrows, Call.purs:161's
-over-application arrow), and every evidence item is read by
-`validateEffects`.
-
-**I3. Package well-formedness, checked in `certify` before G0.** A
-package is refused (a `CheckRefusal`) if an image holds a mark or a
-clause row; a variable violates D1 (out-of-scope or wrong-sort rigid,
-any flexible reference); a data type's row count differs from its
-declaration's; a hole number is used at two sorts; a binding
-constructor disagrees with its variable's sort; or evidence holds a
-mark outside D3's set. The read-back (untrusted) strips marks and
-resolves references; I3 only checks (F6).
-
-**I4. Projection agreement, by test.** `erase` agrees with the fresh
-reference on every corpus image and on generated images, and with
-Generate.Elab.Recorded on every generator type. Evidence that `erase`
-means T-R0b §2.2's translation; not made true by construction.
-
-**I5. `Free` effect rows.** A `Free n` at an effect-row variable means
-the closed empty row (the default, argued as W §1.5: obligations are
-judged at that default). If an obligation fails there, the standing is
-`ObligationFailed`, not `EffectsUnchecked` (F12). Coverage alone never
-makes a package compilable (decided, Q5).
-
-**I6. Slot inventory follows reads.** One fixture per site of D5, plus
-the sites the review added: `translate … Rigidly` in body contexts
-(Control.purs:151, Failure.purs:82 and :115), Fresh.purs's
-`RowSort → Nothing` (to mint effect-row instances), constructor
-patterns (Match.purs:110), function and constructor references
-(Call.purs:112), atom-only arrows. A structural test lists every
-generator write of `closedRow`, a literal row, or a body-context
-`Rigidly` translation, each a named exception with a reason (F11).
-
-**I7. Exact hole numbering.** `build` applies `holes` (Body.purs), so
-its post-Strip IR numbers type, row-tail and row-label-argument holes
-exactly as today's (S3-d). The fresh-hole numbering for absent
-variables (Witness.purs) counts holes inside rows (F9).
-
-**I8. Fidelity target.** T2 compares `strip (build …)` with today's
-post-Strip declaration, rows included, exact where no variable is in
-`Amb`, by site otherwise.
-
-**I9. Correspondence is not soundness.** T2 equality shows `build`
-reproduces today's checker; only `EffectsChecked` makes a package
-compilable.
-
-**I10. Obligations complete** (F3). D8 holds an obligation for every
-check of today's that refuses effects; shown by one forged-package
-fixture per refusal kind (through the harness where an `Outside`
-marker blocks the program) and a mutation test per obligation kind
-that drops it and shows its fixture flip.
-
-**I11. Coupling** (F4). Obligations live in the recorded problem;
-validation runs inside `certify` over the package it built; its result
-is inside `Certified`; `elaborate`'s problem identity covers both.
-
-**I12. Evidence lifecycle.** Evidence is read by `validateEffects`
-alone, never by `build`, and is absent from the IR.
-
-## 4. Trust boundaries (proposed)
-
-| Component | Trust | Reason |
+| FX008 source | Rigid or flexible | Package position |
 |---|---|---|
-| `certify` (gains I3, `erase`, `validateEffects`) | trusted | I1, I3, I11 |
-| `erase` (D6) | trusted, review-required list | G0's verdict rests on it |
-| `validateEffects` (D9) | trusted, review-required list | compilation's effect claim |
-| Strategy.Witness `bindingsOf`, Cov | trusted (listed) | the package's bindings |
-| Strategy.HoleContract | trusted (listed) | judges `erase` of images; not effect rows (I5) |
-| Domain.Recorded.Atom | trusted (listed); `VarSort`, `Role`, `CheckedName` change | D4 |
-| D8's generation | lowering boundary (Generate family) | obligations are generated |
-| `build` with handles; Features.Check.Elaborate | lowering boundary | I2, D10 |
-| the read-back, the online search | untrusted | they propose; I3 and D9 judge |
-| reference projections (D7) | test-only | differential only |
+| `nofail(k)` in the declaration's own signature | rigid (declared) | none: recorded in the problem as a declared mark variable |
+| written `nofail` / plain label in a signature | fixed (N or M) | none: recorded with the written type |
+| a callee's `nofail(k)` at a declaration use (one fresh meta per k, shared across its signature) | flexible | the instance's images: the label occurrences that carry it, which must agree (one term per callee k, checked by I3) |
+| unmarked label in a local annotation | flexible | the annotation's image occurrences |
+| handler literal's own-abort mark m | flexible | `HandlerLit.m` |
+| each clause's own row c | flexible marks | `HandlerLit.clauses` |
+| an installation's frame mark f | flexible | `Installation.frame` |
+| consumption copies of ρ's remaining prefix | flexible | `Copy.marks`, keyed by the consumption site |
+| target extension label t | flexible | the extended row's image occurrence |
+| opening of a handler type at a use (M handled label in a parameter, N in the result) | flexible | `Opened.mark` |
+| labels R ≡ ρ adds by extension | flexible, dead (never compared) | none: R's marks are dead (FX008 §3.4) |
 
-## 5. Interim (decided, ruling 3)
+## 4. Obligations, rule by rule (recorded in the problem)
 
-Until `validateEffects` exists, option c stays a shadow comparison path:
-provisional output is built and inspected only in explicitly labelled
-shadow tests; no compilation result is effect-approved; every Solved
-declaration's standing is `EffectsUnchecked`; Task 4.6 and G-D1 stay
-blocked; today's live acceptance is preserved.
+Obligations are generated with the atoms and stored in
+`RecordedProblem` (Domain.Recorded.Internal), so `elaborate`'s problem
+identity, which compares the whole `Fields`, covers them (R026's
+coupling; review 2 confirmed `fields` is the whole record). Each row
+gives the source rule, the obligation, the package facts it reads and
+today's refusal when it fails.
 
-## 6. Distinguishing tests (proposed)
+| # | Source rule | Obligation | Reads | Today's refusal |
+|---|---|---|---|---|
+| E1 | type equation (K2): every `Equal` atom | sides equal at full types, rows up to scoped-label order, marks equal, except handler inference rows (R ≡ ρ, R ≡ R ignore marks) | images, instances | TypeMismatch, InfiniteType via rows |
+| E2 | consumption of a stage row s into ρ (FX001; FX008 D7) at call, perform, apply, pipe, stage, callback | labels matched by first occurrence per key; payloads equal; unmatched labels of s are in ρ or extend its tail; each matched pair ρmark ⊑ smark; copies c with ρmark ⊑ c; an extension t with t ⊑ smark | rows, `Copy` sites | EffectNotAllowed, MustBePure, CallbackRowLacks, RowEquality (shared tail), LabelMismatch, InfiniteType (`RowOccurs`) |
+| E3 | opening at declaration use (handler types only) | the opened mark is fresh; nothing else | `Opened` | none |
+| E4 | handler literal `handler L { … }` | each c consumed into C with marks (C ⊑ c, "requirement marks") and into R ignoring marks; a `Fail` label or rigid tail in any c gives M ⊑ m | `HandlerLit` | via E2's refusals; HandlerMayFail through E5 |
+| E5 | installation `with h { body }` | R ≡ ρ ignoring marks; C restricted into ρ: ρ's matched mark ⊑ C's; m ⊑ f; each C label's matched ρ mark ⊑ f; a rigid C tail ϱ gives M ⊑ f and ρ ends in ϱ; the body's row is f L + ρ | `HandlerLit`, `Installation`, rows | HandlerMayFail, the missing-capability error, ExpectedHandler (head not a handler) |
+| E6 | `defer e` | no `Fail` label and no rigid tail in d (absence); each non-`Fail` label's mark ⊑ N | `Deferred` | DeferMayFail, DeferMayPerform, DeferHandlerMayFail, DeferHandlerVariable |
+| E7 | a call's `nofail` assumption | the frame's mark ⊑ the assumption (an instance of E2) | rows | ExpectedNofail |
+| E8 | entry | `main`'s row within Console | `main`'s tail binding | UnhandledEffect |
+| E9 | Fail payloads | each payload's head is concrete after settling (type-sorted) | images | FailNeedsConcrete (Failure.purs:102) |
+| E10 | restricted rows settled (FX008 §3.5 steps 1-4) | every restricted row (clause rows into R and C, installed C into ρ, deferred rows into their row) is contained in its target in the package's final rows; per key, counts are consistent (the side-condition) | final rows | RowEquality (`both end in`) |
+| E11 | the declaration's written row | the body's row, under the package, within the declared row | rows | EffectNotAllowed, MustBePure |
+| E12 | marks (FX008 §3.5 step 5) | every ⊑ edge E2-E7 generate holds for every valuation of the declaration's rigid mark variables (§5) | mark terms | the step-5 refusals above |
 
-Each fixture separates its claim from the nearest weaker variant (and,
-where marked, the stronger one). Programs are proposed, not yet run.
+Resolve-time refusals (FailNeedsConcrete at Resolve/Row.purs:82,
+NofailOnFail, MarkVariableOutsideSignature, HandlerMissing) are not
+obligations: they precede generation.
+
+**Completeness (I10).** The inventory is complete for today's effect
+and mark checks when every refusal kind above has a forged-package
+fixture that the validator refuses, and a mutation that drops each
+generator rule E1-E12 (not each form) flips at least one fixture. The
+oracle is today's checker on FX008's probes, the regression-fx008 rows,
+test/fx-gen-failing.mjs and the audit fixtures (N7).
+
+## 5. Mark checking and the universal quantification (derived)
+
+**The check.** For an edge x ⊑ y between mark terms, define
+`holds(x, y)`: `x = N` or `y = M` or (`x = J S`, `y = J T`, `S ⊆ T`).
+`validateEffects` requires `holds` on every edge E2-E7 generate, read
+on the package's terms. Equalities (E1) require equal terms.
+
+**It preserves the quantification (derived).** Over the two-point
+lattice N ⊑ M, a valuation v maps each rigid k to N or M, and
+`J S` denotes the join of v(S). Then `J S ⊑ J T` holds for every v
+exactly when S ⊆ T: if some k ∈ S \ T, the valuation with v(k) = M and
+every other variable N breaks it; if S ⊆ T it holds pointwise. M on the
+left holds only against M; N on the left always holds. So `holds` is
+true exactly when the edge holds for every rigid valuation. The
+author's example: an obligation `J {k} ⊑ N` is `{k} ⊆ ∅`, false, so it
+is refused, though it holds at k = N.
+
+**Relation to FX008's path criterion (derived; the criterion stays the
+reference).** FX008 accepts exactly when no path in the edge graph runs
+from atom a to atom b with a ≠ b, a ≠ N, b ≠ M (forbidden: M→N, M→k,
+k→N, k→k′). Claim: a package passing `holds` on every edge exists
+exactly when FX008 accepts the same graph.
+- If a package passes, every edge holds for every valuation, so for
+  each valuation the metas have a solution; FX008's criterion is
+  satisfiability for every valuation, so it accepts.
+- If FX008 accepts, let each meta x take the least term: M if M reaches
+  x, otherwise `J` of the rigid atoms reaching x (N if none). A
+  meta-to-meta edge holds because reachability is transitive. An edge
+  into atom N, M or k holds because the corresponding forbidden paths
+  are absent. So this assignment passes.
+
+This is the standard least solution of atomic inequalities over a
+distributive lattice (the free join-semilattice on the rigid variables,
+with top M), cited as a foundation only: Rehof and Mogensen, "Tractable
+Constraints in Finite Semilattices", SCP 1999. The correspondence above
+is derived here, not cited, and is unproved. Checks before it is relied
+on: a bounded oracle that enumerates small graphs and every valuation
+and compares `holds`-satisfiability with the path criterion; and a
+corpus differential: today's mark graph's verdict (MarkReport) against
+the validator's verdict on the read-back's least package.
+
+**Two different "solutions".** The least term assignment above is what
+an honest online read-back supplies as evidence and what the argument
+uses. FX008's step 6, closing every remaining meta to M, is for display
+and erasure only; it is never evidence, and the package does not
+contain its result.
+
+## 6. Holes
+
+Every hole occurrence in the package, at a type position, a record
+tail, an effect tail, a label argument or nested in any of them, has one
+sort, and one hole number has one sort across the package (I3). Its
+default is lowering's: a type hole Int, a record tail none, an effect
+tail none (the closed empty row). Settling replaces each hole by its
+default; G0 judges `erase` of the settled type and record bindings (the
+hole contract judges those, as today, through `erase`); every
+obligation E1-E12 is judged on the settled package, so a hole in a
+label argument or an effect tail is judged at its default (N3). This
+extends r0-certify-argument.md C1-C2 from type and record holes to
+effect rows and label arguments (§11, U4).
+
+## 7. The pipeline, end to end
+
+1. **Source rule.** A construct of the body (call, perform, handler,
+   `with`, `defer`, annotation, entry).
+2. **Recorded obligation.** Generation records its atoms (type-sorted,
+   row-free, unchanged) and its effect obligations E1-E12 with their
+   site keys, the declared rigid mark variables, the declaration
+   arities and the effect rigids, all in `Fields` (a labelled amendment
+   of the recorded problem's shape; N9). Generation threads an ambient
+   row through its context: the declared row, a lambda's
+   `⟨p, effect⟩`, `f L + ρ` in a `with` body, the clause row in a
+   clause, `d` in a deferred expression (N5).
+3. **Candidate evidence.** The search proposes one package. The online
+   read-back builds it from today's checked declaration and mark
+   graph: images and rows unstripped, the least mark terms of §5,
+   clause rows, frame marks, copies (N12).
+4. **Trusted check (`certify`).** In order, each failure a
+   `CheckRefusal`:
+   (a) well-formedness (I3): variable restrictions, arities, one sort
+   per hole, binding constructor matching sort, callee mark variables
+   consistent, the package's domain equal to the recorded positions,
+   mark terms over declared rigid mark variables only;
+   (b) settle holes; G0 on `erase` of the type and record bindings;
+   (c) `validateEffects`: E1-E12 on the settled package.
+   An obligation kind the validator does not support gives
+   `EffectsUnchecked kinds` (§9).
+5. **Outcome routing** (N2). A refusal in (a)-(c) is a `CheckRefusal`:
+   the attempt is `CheckFailed` and later strategies run; it is not
+   evidence that the source is invalid. `EffectsUnchecked` is a
+   refusal whose Unresolved reason is `EffectsUnchecked`
+   (r0-erased-rows §7.1 item 3), never Solved. Acceptance mints
+   `Certified Valid (Witnessed (strip P))`: `Witnessed` therefore
+   implies that effects were checked; there is no separate standing.
+6. **Stripped output.** `elaborate` checks problem identity (covering
+   the obligations), seal and Cov, then `build (strip P)`. The marks,
+   clause rows and sites end at `strip`.
+
+## 8. Obligations, kept apart
+
+**Soundness** (what a compilable result guarantees):
+- S1. G0 is sound on `erase` (P-G0, Pending).
+- S2. Settling, `erase` and `strip` agree with lowering's defaults and
+  Strip (certify argument C1-C2, extended; Pending).
+- S3. `validateEffects` accepts only packages on which every recorded
+  obligation holds for every rigid mark valuation (§5's `holds`; the
+  checker is direct, its correctness reviewable by reading).
+- S4. The obligations are complete for today's effect and mark checks
+  (I10).
+- S5. Coupling: obligations in the problem, one package, the checked
+  stripped projection is what `build` reads.
+
+**Acceptance preservation** (that today's accepted programs stay
+accepted when R0 is live):
+- A1. For every declaration today accepts and the online search
+  solves, the read-back produces a package that passes (a)-(c).
+- A2. The solved-form restriction rejects no such package (shown on the
+  corpus, or a demonstrated counterexample comes back with a sourced
+  extension, ruling 2).
+- A3. §5's correspondence with the path criterion (derived; oracle
+  and differential until justified).
+- A4. RT8 and window moves explained and reviewed, old pins kept as a
+  cohort (Q6).
+
+## 9. Unsupported, stated
+
+- **FX032** (operation `with` clauses, which today's checker silently
+  ignores; the author ruled it a defect, §7.1 item 5): no obligation is
+  generated; a declaration that uses such an operation gets
+  `EffectsUnchecked` rather than mirroring the defect. This narrows R0
+  relative to today; the author decides (open, O1).
+- **Constructs behind `Outside` markers** (handler types, `defer`, Fail
+  families) still block G0's Solved today; their obligations (E4-E6,
+  E9) are specified so the contract holds when the markers go.
+- **Mark variables in `type` and `effect` declarations** are not part of
+  the language (FX008 L6); none are recorded.
+
+## 10. Interfaces (proposed)
+
+```text
+-- Domain.Recorded (Fields amendment)
+Fields += { obligations  ∷ Array Obligation   -- E1-E12, with site keys
+          , rigidMarks   ∷ Set RigidMark      -- declared nofail(k)
+          , arities      ∷ Map TypeId { types ∷ Int, rows ∷ Int }
+          , effectRigids ∷ Set VarId }
+VarSort += SortEffectRow                    -- no SortMark
+Role, CheckedName += effect-row slot forms  -- distinct from Slot p i
+
+-- Domain.Verdict.Witness
+MarkTerm = N | M | J (Set RigidMark)
+MBinding = Inline MTy | InlineRow MRow | Free Int
+Package  = { bindings ∷ Map Var MBinding, sites ∷ Map SiteKey SiteFact }
+
+-- Features.Check.Strategy.Substitution (trusted)
+certify ∷ RecordedProblem → Package → Either CheckRefusal Certified
+strip   ∷ Package → Witness
+erase   ∷ MTy → RTExpr                     -- sort-aware, R022
+
+-- Features.Check.Strategy.Effects (new, trusted)
+validateEffects ∷ RecordedProblem → Package → Either CheckRefusal Unit
+
+-- Domain.Verdict.Search
+CheckRefusal += Malformed Reason | ObligationFailed Obligation
+             |  EffectsUnchecked (Array ObligationKind)
+```
+
+Change surface (N11): Strategy.purs `checked` (unchanged shape:
+`Certified` still carries `Valid` and `Compilation`); Decide.Reason
+(maps `EffectsUnchecked` to its Unresolved reason); Witness.purs
+`bindingsOf`, `sameSort`, `bareHole`; HoleContract.purs `image`;
+Candidate.purs `generic`; the read-back; Generate's context and every
+row-writing site (§3, review 2's N6 list: `⟨p, apply⟩`, a lambda's inner
+stage rows, partial-application stages, plus review 1's I6 list); the
+certify argument and `certifySound`'s statement.
+
+## 11. Unresolved claims (for the next review)
+
+- U1. §5's correspondence with FX008's path criterion (derived; oracle
+  and corpus differential named).
+- U2. A1, the read-back's honest package for every accepted
+  declaration, including least mark terms from today's mark graph.
+- U3. A2, sufficiency of the solved-form restriction on the corpus.
+- U4. Extension of certify-argument C1-C2 to effect rows, marks and
+  label-argument holes.
+- U5. E10: checking containment of the final restricted rows equals
+  FX008's settling loop's acceptance ("accepts exactly when the
+  containments and equalities have a finite solution", FX008 §3.5
+  property 4), taken from FX008's stated property, not re-argued.
+- U6. I10's completeness against the named oracle.
+- Novel, for approval (ADR 014): the I3 well-formedness check; the ∅
+  default for effect-row holes; consumption-based inclusion is FX001's
+  and FX008's design (project precedent, no published source); the
+  mark-term evidence and §5's correspondence.
+
+Open for the author: O1 FX032 handling (§9).
+
+## 12. Separating examples
+
+Programs are proposed, not run; refusal predictions are plausible.
 
 | Claim | Fixture | Fails under |
 |---|---|---|
-| I1 | R026's forged `id2`, full images | an erase-only check of separately supplied images |
-| I2, D8 (K2) | `effect Log { fn log(n: Int): Unit; }; fn f(h: Unit -> Unit with Log): Unit with pure = { let k = h; k(()) }` with the Apply arrow's row handle forged to `pure` | judging only the erased atoms |
-| I2 | `fn run(f: Unit -> Unit with pure): Unit = f(()); fn g(): Unit = run(fn(u: Unit) => ())` with the lambda's `⟨p, effect⟩` forged to `Console`: refused | rows read only where the IR writes them |
-| I2 control | `fn g(): Int = { let k = fn(u: Unit) => (); 0 }`, same forgery: validation accepts, T2 differs | (fidelity is T2's, not validation's) |
-| D3, I12 (marks) | test/fixtures/r0/audit/expected-nofail.inferred (refused today) against .selected (compiles): rows equal up to marks | a rows-only validator |
-| I3 | an image with `Plain` or a clause row; an out-of-scope rigid (R031 (1)'s program with rigid 7); a flexible reference in an image; `type Box(a, ...e) = Box(a, Unit -> Unit with ...e)` passed through `id` with the image forged to `TData Box [Int] []`; one hole number at two sorts; an `Inline` at an effect-row variable | trusting the search's form |
-| I3 stronger | written signature marks (`fn g(h: Unit -> Unit with nofail Log): Unit with nofail Log = h(())`) pass; an online package holding a handler type passes once the read-back strips | refusing every marked or handler-typed candidate |
-| I4 | a mutant `erase` keeping a data row argument as a type argument; a mutant blind to record-sorted holes | collapsing `erase` into one reference |
-| I5 | a `Free` lambda row whose body performs `Console`, passed to a `pure` parameter: `ObligationFailed` | coverage alone approving |
-| I5 stronger | `fn run(f: Unit -> Unit with pure): Unit = f(()); fn g(): Unit = { let k = fn(u: Unit) => (); run(k) }` with the lambda's row `Free`: accepted | refusing every `Free` effect row |
-| I6 | one fixture per site of D5 and I6's list, including R031 (1) and (2), `main` performing `Console`, an over-application, `show`, `crash`, a constructor pattern | a slot list from r0-erased-rows §2.1 alone |
-| I7 | a body with a row-tail hole before a type hole | numbering type holes alone |
-| I8 | a declaration differing from today only in a row label | effect-erased T2 |
-| I8 stronger | output differing from today only in a mark or clause row passes T2 | comparing pre-Strip |
-| I9 | a package equal to today's post-Strip IR whose mark evidence fails (built through the harness; today's checker refuses such programs) | treating T2 as validation |
-| I10 | one forged package per refusal kind of D8's inventory; a mutation dropping each obligation kind flips its fixture | an obligation list without completeness |
-| I11 | obligations or evidence from another declaration's problem paired with this package | validation outside `certify` |
-| D5 | a callee `apply(f: Unit -> Unit with State(a), x: a)`: a package whose tail binding repeats `State` at a different argument is refused or judged, never silently duplicated | a whole-row handle holding written labels |
+| R026 | forged `id2`, full images | erase-only check of separate images |
+| E1 (K2) | `effect Log { fn log(n: Int): Unit; }; fn f(h: Unit -> Unit with Log): Unit with pure = { let k = h; k(()) }`, the Apply row forged to `pure` | judging erased atoms only |
+| E1 marks | test/fixtures/r0/audit/expected-nofail.inferred.json with honest bindings and every flexible mark chosen freely: refused; control .selected.json accepted | marks only at named variables |
+| E4, E5 | handler-may-fail.inferred.json refused; its clause row forged to `pure`: refused by C ⊑ c | clause rows outside the package |
+| routing | two strategies on `fn run(f: Unit -> Unit with pure): Unit = f(()); fn g(): Unit = { let k = fn(u: Unit) => (); run(k) }`, the first forging the lambda's row to `Console`, the second honest: the second is used | a standing inside an accepted `Certified` |
+| E2 payloads | `effect State(s) { fn get(): s; fn put(value: s): Unit; }; fn g(h: Unit -> Unit with State(Int)): Unit with State(Bool) = h(());` refused (LabelMismatch) | inclusion by key only |
+| E1 order | `fn f(h: Unit -> Unit with State(Int) + State(Bool)): Unit -> Unit with State(Bool) + State(Int) = h;` refused | multiset row equality |
+| E2 Fail | `Fail(Error(Int))` against `Fail(Error(Bool))` refused | comparing keys only |
+| holes in labels | `fn id(x: a): a = x; fn g(h: Unit -> Unit with State(Bool)): Unit with State(Bool) = { let k = id(h); k(()) }`, `id`'s instance forged to `State(_h)`: refused at the default | holes unjudged in label arguments |
+| nested tail | the same with `h: … with Log` and the image `Unit -> Unit with ...h4`: refused (∅ ≠ Log) | effect tails nested in images unjudged |
+| hole identity | `fn g(): Unit = { let k = fn(u: Unit) => (); k(()) }`, the lambda row `Free 3`, the Apply row `Free 4`: both default to ∅, so accepted (pinned) | comparing holes syntactically |
+| no Cov for marks | `let k = fn(h: Unit -> Unit with Log) => h(())` (a local-annotation mark): not `Uncovered` | marks as problem variables |
+| domain exact | an extra mark for a nonexistent site; a missing frame mark: both `Malformed` | an open evidence domain |
+| sites | an inner stage row of a two-parameter lambda; an Apply and a Pipe arrow; a partial call: one fixture each | review 1's site list alone |
+| rigid marks (§5) | `fn h(g: Unit -> Unit with nofail(k) Log): Unit with nofail(k) Log = { let r = fn(u: Unit) => g(u); r(()) }` with the lambda's flexible label mark forged to N: refused, since the edge `J {k} ⊑ N` is `{k} ⊆ ∅`, false, though it holds at k = N | checking one ground valuation |
+| rigid marks, stronger | the same program with the lambda's mark `J {k}` (the least term): accepted; and `fn h(g: Unit -> Unit with nofail Log): Unit with nofail(k) Log = g(())`, a written edge `J {k} ⊑ N`, refused as FX008 refuses it (path k → N) | refusing every rigid-dependent package; accepting a contract valid only at k = N |
+| R031 | both pins flip to today's form | — |
 
-R031's two pins flip to today's form when D5 and I3 land. RT8 and
-window moves are accepted when explained and reviewed; current pins
-stay as a comparison cohort (decided, Q6).
-
-## 7. What a-min does not change
-
-RTExpr's grammar and G0's atom judgements; the Lean vocabulary; lowering;
-today's checker. It does change Domain.Recorded.Atom's `VarSort`, `Role`
-and `CheckedName` (D4), the recorded problem (D8), the witness and the
-`Certified` token (D2, D3, D10), and the read-back (I3).
-
-## 8a. Open after revision 2
-
-- **The validator's algorithm.** Checking, not inference: row inclusion
-  and equality with scoped labels and one tail (Leijen, TFP 2005), as a
-  checker over an elaborated term (precedents: GHC's Core Lint;
-  translation validation, Pnueli, Siegel and Singerman 1998). Its mark
-  part reuses FX008's rules, a project design with no published
-  source: flagged for explicit approval (ADR 014).
-- **The new well-formedness check (I3)** and **the ∅ default for effect
-  rows (I5)**: small, new, flagged.
-- **Cost.** The canonical encoding, Cov's domain, the recorded problem's
-  pins, RT8 and window, and T2's harness all change.
-
-## 8. Adversarial review 1 (2026-10-24): not ready
+## R1. Adversarial review 1 (2026-10-24): not ready
 
 An independent reviewer (Opus, read-only; nothing run) reviewed these
 statements at d7f30b0. The controller re-read F1's and F2's evidence
@@ -369,7 +465,7 @@ Reviewer's rulings to confirm: forged and non-online witnesses count
 as a soundness threat (R026's model); gaps behind `Outside` markers
 were kept at S1 where the statements claim coverage.
 
-## 9. Revision 2's answers to review 1
+## R1a. Revision 2's answers to review 1
 
 | Finding | Resolution in revision 2 |
 |---|---|
@@ -392,7 +488,7 @@ were kept at S1 where the statements claim coverage.
 | F17 positions | D4 |
 | S3 (a)-(i) | references fixed; `⟨p, clauses⟩` restored; §7 lists the Atom.purs changes; I7 exact; D7 fresh reference; trust table extended; D10 replaces "identical value"; the `effectErased` case stays until validation exists, then compilation requires `EffectsChecked`; D8 threads the ambient row |
 
-## 10. Adversarial review 2 (2026-10-24): not ready
+## R2. Adversarial review 2 (2026-10-24): not ready
 
 A fresh independent reviewer (Opus, read-only; nothing run) reviewed
 revision 2 at 3daf6f9. The controller re-read N1's and N2's evidence
