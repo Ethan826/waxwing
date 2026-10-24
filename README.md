@@ -15,13 +15,13 @@ primary production target, followed by LLVM for native code. The compiler
 is written in PureScript and is not yet self-hosted.
 
 This is an early prototype: there are no modules, comments or standard
-library yet. Int is signed 32-bit, and `+` is the only arithmetic operator.
+library yet. `Int` is signed 32-bit, and `+` is the only arithmetic operator.
 
 ## Why dependencies and errors should compose
 
-A route calls Database, BalanceApi and Logger. Each service has its own
+A route calls `Database`, `BalanceApi` and `Logger`. Each service has its own
 error types. A small error type is precise but awkward to combine with
-others; an application-wide AppError can claim failures a particular route
+others; an application-wide `AppError` can claim failures a particular route
 cannot produce. Matt Parsons describes this problem in
 [The Trouble with Typed Errors][errors].
 
@@ -32,7 +32,7 @@ row. Today that row is handwritten:
 with Database + BalanceApi + Logger + Fail(DbError) + Fail(NetworkError)
 ```
 
-A handler can supply Database or handle DbError while preserving the
+A handler can supply `Database` or handle `DbError` while preserving the
 other requirements. Planned inference would collect the row from the
 operations a function calls, including failures from constructing services.
 Adding a service or error family would no longer require copying its name
@@ -72,10 +72,10 @@ fn main(): Unit with Console =
 ```
 
 This prints `40`. Replacing `fixedPrices(20)` changes the implementation used by
-`total`. The Prices requirement is in its signature; supplying the handler at
+`total`. The `Prices` requirement is in its signature; supplying the handler at
 the call site avoids passing it through `total`'s arguments.
 
-`main` may leave only Console unhandled. Removing `with fixedPrices(20)` and
+`main` may leave only `Console` unhandled. Removing `with fixedPrices(20)` and
 leaving its body produces `Unhandled Prices in main`, with source locations
 tracing the requirement back to `Prices.price`.
 
@@ -89,8 +89,8 @@ The [services example](examples/services.wxw) combines a database, clock, and
 logger, with fakes installed by the tests. Those handlers return fixed values.
 Connecting them to external services needs planned typed FFI bindings.
 The intended adapter model lets a Waxwing service contract be fulfilled by
-host libraries or fakes. A Logger could use Pino, Winston, or a browser
-implementation without changing application code that uses Logger. The
+host libraries or fakes. A `Logger` could use Pino, Winston, or a browser
+implementation without changing application code that uses `Logger`. The
 binding and service-assembly rules still need design.
 
 ## Records
@@ -116,7 +116,7 @@ Ada!
 ```
 
 `...r` is the [row-polymorphic][rows] part of the type: `r` stands for the other
-fields, whatever they are. `older` accepts any record with an Int `age`. Since
+fields, whatever they are. `older` accepts any record with an `Int` `age`. Since
 its result contains the same `...r`, it preserves those other fields and their
 types. `label` needs only `name`, so both functions can accept `ada` without
 converting it to a different record type.
@@ -186,11 +186,11 @@ fn main(): Unit with Console = {
 };
 ```
 
-This prints `203`, then `-1`. `handle` catches the Error family, so callers of
+This prints `203`, then `-1`. `handle` catches the `Error` family, so callers of
 this handled computation no longer need to account for `Fail(Error)`. It narrows
 the remaining error requirements: other families stay in the row, along with
 effects and failures introduced by recovery code. The `Error` data type itself
-is unchanged. If recovery raises Error again, `Fail(Error)` remains a
+is unchanged. If recovery raises `Error` again, `Fail(Error)` remains a
 requirement.
 
 `defer` registers cleanup on normal return, typed failure, and recoverable
@@ -200,7 +200,7 @@ failures: `defer Log.log(id)` requires `nofail Log` in the signature.
 on stderr and exiting 1. Diverging cleanup and Go fatal errors can prevent
 unwinding from completing.
 
-## Data, functions, and Text
+## Data, functions, and `Text`
 
 [Algebraic data types][adts] (ADTs) define alternatives such as `Nothing`
 or `Just(value)`. Matches must cover every alternative, and patterns can nest.
@@ -236,7 +236,7 @@ fn main(): Int =
 Function application order is specified in
 [ADR 008](docs/adr/008-functions.md).
 
-Text supports Unicode literals, interpolation, concatenation with `++`, raw
+`Text` supports Unicode literals, interpolation, concatenation with `++`, raw
 delimiters, and multiline blocks:
 
 ```rust
@@ -259,9 +259,9 @@ Dear Ada,
 C:\users\${name}\notes
 ```
 
-Interpolation accepts Text; `show` formats other printable values as Text.
-`show` adds no newline. Console.print adds one. Text prints raw on its own and
-quoted and escaped inside an ADT or record. The full
+Interpolation accepts `Text`; `show` formats other printable values as `Text`.
+`show` adds no newline. `Console.print` adds one. `Text` prints raw on its
+own and quoted and escaped inside an ADT or record. The full
 [text example](examples/text.wxw) also shows concatenation and comparison.
 
 ### Equality, ordering, and printing
@@ -277,17 +277,17 @@ Waxwing currently provides these operations in the compiler. There are no
   ADTs compare constructor positions first, then fields from left to
   right. Records compare field values in sorted label order. The first
   unequal component decides the result. Labels are ASCII identifiers and
-  sort lexicographically by ASCII value. Text compares lexicographically
+  sort lexicographically by ASCII value. `Text` compares lexicographically
   by Unicode code point.
 - **Printing (`Console.print`, `show`)** formats each field using its
   type's printer. A record is printable only if every field is printable;
-  ADTs follow the same rule. Nested Text is quoted and escaped.
+  ADTs follow the same rule. Nested `Text` is quoted and escaped.
 
-For example, comparing two `{ age: Int, name: Text }` records uses the Int
-comparison for `age`; if those values are equal, it uses the Text comparison for
-`name`. Nested records and ADTs compose in the same way. Functions and handlers
-are not comparable or printable. Comparison also requires a ground type: one
-with no remaining type or row variables.
+For example, comparing two `{ age: Int, name: Text }` records uses the `Int`
+comparison for `age`; if those values are equal, it uses the `Text` comparison
+for `name`. Nested records and ADTs compose in the same way. Functions and
+handlers are not comparable or printable. Comparison also requires a ground
+type: one with no remaining type or row variables.
 
 The planned [first dictionary core][c001] keeps structural printing and
 comparison separate from explicitly supplied `Show`, `Eq` and `Ord`
@@ -296,8 +296,8 @@ printing refuses. An explicit dictionary argument supplies that operation;
 it does not register an implicit instance or change the existing operators.
 Automatic derivation and operator-selection sugar remain later work.
 
-Int is signed 32-bit, addition wraps, and `+` is the only arithmetic operator so
-far.
+`Int` is signed 32-bit, addition wraps, and `+` is the only arithmetic
+operator so far.
 
 ## Type system at a glance
 
@@ -328,19 +328,19 @@ correspondence has been established.
 | Transparent type aliases | ML/Haskell type synonyms with terminating expansion. | Implementation needs parameter substitution, terminating expansion and explicit effect-variable scope. Aliases add no type identity. |
 | Higher-kinded types (HKTs) | Haskell/PureScript constructor polymorphism and [kind inference][kind-inference]. | Constructor variables, partial type application, kinds and kind-preserving substitution remain to implement. The intended fragment needs no type families or higher-order unification. |
 | Explicit dictionaries | [Jones's qualified types and evidence passing][qualified-types]; ordinary records of functions, as in `fp-ts`. | The [first dictionary core][c001] selects implementations explicitly. It adds no instance search; its library definitions, aliases and assurance checks remain to deliver. |
-| Generic Functor, Applicative, Monad and Bifunctor APIs | [Jones's constructor classes][constructor-classes] and Haskell/PureScript abstractions. | HKTs plus a representation for generic methods. Generic methods need their own quantification over element types; today's monomorphic dictionary fields do not provide it. |
+| Generic `Functor`, `Applicative`, `Monad` and `Bifunctor` APIs | [Jones's constructor classes][constructor-classes] and Haskell/PureScript abstractions. | HKTs plus a representation for generic methods. Generic methods need their own quantification over element types; today's monomorphic dictionary fields do not provide it. |
 | Modules and abstract types | ML signatures, exports and representation hiding. | The module design must settle type identity and exported schemes. Collections governed by a chosen equality or ordering need hidden representations and rules for combining policies. |
 | Local polymorphism | ML generalization disciplines; Koka supplies an effect-aware alternative. | Decide which local bindings generalize, which constraints they retain, and how effects and future state remain scoped. |
 | Inferred service and error contracts | [HM(X)][hmx] (Odersky, Sulzmann and Wehr), presented by [Pottier and Rémy][emlti], separates constraint generation from solving. | Inference must retain callback, service and error relationships in exported types. The [correspondence with Waxwing's row model][o24] is proposed, not proved. |
 | Automatic selection and derivation | Haskell/PureScript class resolution and deriving mechanisms. | Deferred beyond explicit dictionaries. Scope, ambiguity, overlap, coherence and termination need a selected design before implementation. |
 
 Two dictionaries at the same type can intentionally behave differently,
-such as addition and multiplication for Int. Specialization must retain
+such as addition and multiplication for `Int`. Specialization must retain
 them as distinct runtime values. A well-typed dictionary does not prove
 associativity, ordering laws or any other algebraic law; those are separate
 contracts and test obligations.
 
-HKTs let a function abstract over a constructor such as List. They do not
+HKTs let a function abstract over a constructor such as `List`. They do not
 by themselves let a record field contain a function polymorphic in its own
 arguments. The generic-library design must choose an established encoding,
 constructor-class machinery or explicitly polymorphic methods. Higher-rank
@@ -461,20 +461,20 @@ for this design: providing services changes the dependencies and errors
 that remain. Waxwing aims to express that composition through rows and
 handlers, without a separate layer abstraction. The proposed behavior is:
 
-- A route calls Database, BalanceApi, and Logger. The compiler infers all
+- A route calls `Database`, `BalanceApi`, and `Logger`. The compiler infers all
   three dependencies and the error families raised by those calls. Errors
   raised in the route's own branches or helper functions join the result.
-- Installing a BalanceApi implementation that calls HttpClient replaces
-  the BalanceApi requirement with HttpClient. Installing a fake that
-  returns fixed results introduces no HttpClient requirement. The route
+- Installing a `BalanceApi` implementation that calls `HttpClient` replaces
+  the `BalanceApi` requirement with `HttpClient`. Installing a fake that
+  returns fixed results introduces no `HttpClient` requirement. The route
   stays unchanged.
-- Constructing Database can raise ConnectionError; constructing BalanceApi
-  can raise ConfigurationError. Calling them later can raise DbError or
-  NetworkError. Construction errors belong to the construction step, not
+- Constructing `Database` can raise `ConnectionError`; constructing `BalanceApi`
+  can raise `ConfigurationError`. Calling them later can raise `DbError` or
+  `NetworkError`. Construction errors belong to the construction step, not
   to every operation on an already constructed service. Assembly must
   account for both setup and execution failures without a hand-written
   combined error type.
-- Handling NetworkError narrows the computation's outstanding error
+- Handling `NetworkError` narrows the computation's outstanding error
   requirements. Callers no longer need to handle it unless recovery raises
   it again. Recovery's own service requirements and error families join
   the result. Handling setup failures separately leaves execution failures
@@ -489,13 +489,14 @@ each caller. Programmers would still choose implementations, resource lifetimes,
 and recovery behavior.
 
 Waxwing addresses this at the level of failure families. A computation with
-`Fail(DbError) + Fail(ParseError)` can handle DbError and leave only ParseError
-for its caller, provided recovery introduces no new requirements. It does not
-need to wrap both payloads in a new combined ADT. Inference would also assemble
-these rows automatically. A handler handles a whole family, not one constructor
-of an error ADT; handling NotFound alone does not narrow `Error = NotFound(Int)
-| Forbidden` to Forbidden. First-class extensible error values and incompatible
-payloads within one family need separate design.
+`Fail(DbError) + Fail(ParseError)` can handle `DbError` and leave only
+`ParseError` for its caller, provided recovery introduces no new requirements.
+It does not need to wrap both payloads in a new combined ADT. Inference would
+also assemble these rows automatically. A handler handles a whole family,
+not one constructor
+of an error ADT; handling `NotFound` alone does not narrow
+`Error = NotFound(Int) | Forbidden` to `Forbidden`. First-class extensible
+error values and incompatible payloads within one family need separate design.
 
 The [inference requirements][inf001] have been reviewed; syntax and type rules
 are still to be designed. The design must explain recursive inference, exported
@@ -517,7 +518,7 @@ track the remaining work. The remaining type-system tasks are:
    programs.
 2. Deliver aliases and explicit dictionary libraries, then kinds/HKTs and
    modules. Resolve the generic-method representation before claiming
-   generic Functor or Monad support; automatic selection and derivation
+   generic `Functor` or `Monad` support; automatic selection and derivation
    follow the explicit core.
 3. Design public requirement/error inference and local generalization,
    including exported constraints, ambiguity and unknown-type policy.
@@ -579,8 +580,8 @@ previous build. Commands and test coverage are in
 
 ## Build and run
 
-Install Node >=22.5.0, PureScript 0.15.16, Spago 1.0.4, purs-tidy 0.11.1, and Go
-on PATH. The tested Go version is 1.26.4.
+Install Node >=22.5.0, PureScript 0.15.16, Spago 1.0.4, `purs-tidy` 0.11.1,
+and Go on `PATH`. The tested Go version is 1.26.4.
 
 ```sh
 npm install -g purescript@0.15.16 spago@1.0.4 purs-tidy@0.11.1
@@ -601,7 +602,7 @@ npm run verify
 ```
 
 The answer example prints `42`. `main` must return a concrete, printable type. A
-Unit result is silent; other results are printed with a newline.
+`Unit` result is silent; other results are printed with a newline.
 
 To write Go source or build a binary at an explicit destination:
 
@@ -615,7 +616,7 @@ An existing file at the destination is overwritten. The compiler runs on
 Node; Go builds the
 emitted source. Diagnostics are JSON on stderr with error codes, spans, and
 related locations. Source rejection exits 1; incorrect CLI usage exits 2. File
-and tool errors use E_IO and E_TOOL.
+and tool errors use `E_IO` and `E_TOOL`.
 
 ## Documentation
 
