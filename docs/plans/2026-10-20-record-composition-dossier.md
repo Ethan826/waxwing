@@ -5726,3 +5726,37 @@ to the retained witness, `Free` bindings included; keep the
 independent reference projection and R026's checked-witness coupling;
 have them adversarially reviewed before implementation; add the two
 R031 fixtures. Task 4.6 and G-D1 stay open. No live switch, no push.
+
+### 18.75 The closure checklist adopted, with corrections (2026-10-24)
+
+The author reviewed a draft completion checklist and asked for it to be
+kept in the repository with an owner, dependencies, current evidence
+and a closure criterion per row: docs/plans/r0-closure-checklist.md.
+Corrections, dated 2026-10-24:
+
+1. A differential test cannot upgrade a claim to Proved. Model
+   soundness, implementation correspondence, typed-IR construction and
+   lowering preservation are separate guarantees; proving
+   `certifySound` does not prove backend compilation correct.
+2. A refuter's claim is quantified: a checked counter-instance
+   establishes that the universally quantified signature is invalid (a
+   signature can have many successful instances and still be invalid);
+   for a concrete call, contradiction means no permitted solution. The
+   distinction holds in diagnostics and proofs.
+3. A comprehensive compiler proof is optional; justified preservation
+   for the transformations this epic introduces is mandatory to close
+   it (certified bindings to typed code, split selection,
+   specialization of dictionary values and captures, effect erasure
+   only after its obligations are checked).
+4. Certificate expressiveness and compilation policy close together:
+   `divide5` and `route` close with a representative source program
+   compiled and run, with the split-selection justification.
+5. The checklist is scoped to the R0 / composed-record epic, not the
+   whole type system; O24, principal inference, local generalization,
+   higher-kinded types and generic method dictionaries are their own
+   milestones.
+
+Housekeeping: census figures are the current cohort's (after the C001
+additions), status is item by item, a-min's review 1 appears under A1
+and A2, and `Fresh`'s limitation is kept while noting that the
+option-B bridge addresses it.

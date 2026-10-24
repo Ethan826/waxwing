@@ -595,6 +595,10 @@ stub gives `Unsupported`. Regression row `r0-g0-limit-global` (Task
 4.2) turns G0's decline back into a rule-1 block, and the probe
 expects the stub's Solved.
 
+Completion is tracked in docs/plans/r0-closure-checklist.md (dossier
+§18.75): ready to switch live, and epic complete, each row with its
+owner, dependencies, evidence and closure criterion.
+
 ## 4. Proof dependencies (not tasks)
 
 | Id | Statements | Unlocks | Until then |
