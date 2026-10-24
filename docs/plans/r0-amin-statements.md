@@ -476,7 +476,8 @@ holds is a label of the completed s, matched by the rule above:
   is withdrawn** (dossier §18.84), whatever replaces it; until a
   replacement is adopted, E2 has no stated condition for a rigid-tailed
   source and a-min claims nothing there. That condition was unsound
-  (K1, §13b, investigated after 3.4: honest packages, no forgery, let a typed abort escape cleanup and a payload
+  (K1, §13b, investigated after 3.4: honest packages, no forgery, let a
+  typed abort escape cleanup and a payload
   reach the wrong instance's frame). Proposed replacement, for the
   author: ρ ends in ϱ and has, for every key, exactly as many
   occurrences as s, so ρ is the matched labels followed by ϱ and s ≡ ρ
@@ -1197,7 +1198,8 @@ author; none is resolved here.
   erased before Go generation (so the accepted twin's Go with handlers
   swapped is that program's Go). The unsoundness claim rests on the
   simulations plus that erasure premise, not on a compiled program.
-  An independent agent (Opus) traced it; the controller reran the key evidence. Programs, outputs and simulations
+  An independent agent (Opus) traced it; the controller reran the key
+  evidence. Programs, outputs and simulations
   are kept in research/amin-k1-probes/ (README there).
   - Semantics (read). Dispatch is by effect key alone, innermost frame
     first (Format/Go/Context.purs `waxwingFind`); instances of one
