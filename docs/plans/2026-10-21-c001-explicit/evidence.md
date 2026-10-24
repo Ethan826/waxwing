@@ -63,7 +63,9 @@ no listed outcome.
 | c8 | `Results(Pair(5, 3), Pair(6, 3), 2)` | `Results(Pair(5, 5), Pair(5, 5), 5)` | as M1 |
 | c9 | `Results(Pair(6, 3), Pair(5, 3), 2)` | `Results(Pair(6, 6), Pair(6, 6), 6)` | as M1 |
 
-Each must make the gate exit 1 on these cases. a1 (discard's parameter
+Detection is each listed case's output change. The gate's exit 1 alone
+does not discriminate: any mutant changes a pinned src hash, and M1
+changes every Go hash. a1 (discard's parameter
 lowers to a function record, called once) is an unaffected control. a3
 is not one, as no function in it takes a dictionary parameter; a new
 control replaces it: a generic function with one dictionary parameter
@@ -171,8 +173,9 @@ Lambda arm, line 106 deleted:
   Checked.Lambda _ body → recur found body
 ```
 
-The live gate exits 1 under both. The case differences, apart from the
-expected source and build drift of that one module:
+The live gate exits 1 under both, but that alone does not discriminate:
+any mutant changes the pinned hashes of the module it edits. Detection is
+the per-case difference, confined to n7a and n7b:
 
 | Mutant | Case | Observed compiler outcome |
 |---|---|---|
@@ -192,14 +195,18 @@ after comparison with the table above. One expectation failed first and
 the source was amended before pinning: r1 and r2 as first written gave
 `configured` the result `a -> a with pure`, and the compiler rejected the
 returned lambda with E_TYPE `Expected a -> a, found a -> a` (line 17), the
-per-stage row mismatch of CB002, since `client` applies a dictionary whose
-first stage keeps an ambient row. The result is now the ambient `a -> a`;
+per-stage row mismatch of CB002. Hypothesis, not isolated: `client`
+applies a dictionary whose first stage keeps an ambient row. The result
+is now the ambient `a -> a`;
 every other line is unchanged, and the amended sources met every
 expectation: the listed outputs for all five stand-ins, the same output
 in the interpreter for a5, r1, r2 and s1, and parse errors there for q1,
 q4 and q7 (`expected } at token 95`, `token 78`, `expected ) at token
 74`). s1's function keys hold one `client` copy at `[TInt]`, used with
-sum and with product: the shared-copy check. The live gate, check-runner
+sum and with product: the shared-copy check. q1, q4 and q7 emit Go
+byte-identical to p1, p4 and c7 (equal `defaultGoSha256` in cases.json),
+which checks that effect rows are erased; it also means their M1 kills
+below add no detection independent of p1 and p4. The live gate, check-runner
 and replay exit 0 with 34 cases; `--require-uniform` exits 1 (h1, h2).
 
 ### M1 and M1′ (checked)
@@ -217,8 +224,10 @@ if waxwingM1v, waxwingM1ok := waxwingM1Cells["waxwingFn5/0"]; waxwingM1ok {
 ```
 
 (one line in the output, wrapped here). M1′ keys the cell by the Go
-record type (`"waxwingRec0"`) instead. The live gate exits 1 under each.
-Every case whose output changed, the same for all five stand-ins:
+record type (`"waxwingRec0"`) instead. The live gate exits 1 under each,
+which alone does not discriminate (the patch changes every Go hash).
+Detection is the per-case output change. Every case whose output
+changed, the same for all five stand-ins:
 
 | Case | Healthy | M1 | M1′ |
 |---|---|---|---|
@@ -232,13 +241,15 @@ Every case whose output changed, the same for all five stand-ins:
 | q1 | as p1 | as p1 under M1 | as p1 under M1′ |
 | q4 | as p4 | as p4 under M1 | as p4 under M1′ |
 
-Each matches the expectation fixed above and in
-[arguments](arguments.md). Every other case keeps its output: a1, a5,
-c7 and q7 run with a cell in place (their Go contains the cell line) and
-still print `7`, `15` and `Results(5, 20, 6, 2)`, so the controls are
-live, not vacuous. Their gate rows differ only in the Go hash, which
-the added package variable changes in every program. Rejections are
-unchanged.
+Each matches the expectation fixed above and in [arguments](arguments.md).
+Every other case keeps its output: a1, a5, c7 and q7 run with a cell in
+place (their Go contains the cell line); a1 still prints `7`, a5 `15`, and
+c7 and q7 `Results(5, 20, 6, 2)`, so the controls are live, not vacuous.
+Their gate rows differ only in the Go hash, which the added package
+variable changes in every program. Rejections are unchanged.
+
+Mutant-run results are recorded here in prose with the patches; no
+results JSON is kept for them.
 
 What this shows and does not: the baseline detects a backend that bakes
 in the first dictionary per function or per type, including through

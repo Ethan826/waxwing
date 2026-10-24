@@ -27,11 +27,11 @@ cover the original sources.
 sources (24 original, plus the 2026-10-23 additions). It checks source hashes,
 exact compiler diagnostic codes, problem constructors, messages, spans and
 related notes. Interpreter outcomes and representative-specific
-compilation/runtime outcomes are checked separately. The original eleven default
-Go hashes and their recorded function keys are also checked. A missing or
-additional case or representative fails the comparison. Private compiler
-source/output hashes and the zero-warning build record are checked during live
-runs.
+compilation/runtime outcomes are checked separately. The original eleven
+default Go hashes and their recorded function keys are also checked, as are
+those of each source added on 2026-10-23 that compiles. A missing or additional
+case or representative fails the comparison. Private compiler source/output
+hashes and the zero-warning build record are checked during live runs.
 
 | Recorded outcome | Cases | Meaning of a match |
 |---|---|---|
