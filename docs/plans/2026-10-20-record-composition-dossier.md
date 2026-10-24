@@ -5677,3 +5677,52 @@ restored-defect runs. Decisions, dated 2026-10-24:
    them.
 
 No live switch and no push.
+
+### 18.74 a-min approved for statements and adversarial review (2026-10-24)
+
+The author checked Strip, its placement in Outcomes and the lambda
+annotation substitution, which support the audit's distinction
+(docs/plans/r0-effect-rows-audit.md): marks and clause rows are removed
+at an established boundary; other effect information must stay
+accurate. Decisions, dated 2026-10-24:
+
+- **a-min is approved for statements and adversarial review first;**
+  implementation follows that review.
+- Q1. The fidelity target is the post-Strip IR, rows included. Whatever
+  evidence effect validation needs before stripping is kept
+  separately; matching post-Strip output does not establish that those
+  checks happened.
+- Q2. The `Mark` may be stripped. The handler's effect identity, type
+  arguments and inference row are preserved. Clause rows may disappear
+  at Strip, after their checking obligations are discharged.
+- Q3. Slots cover `main`'s tail, over-application stages and lambda
+  ambient rows; the slot inventory follows actual reads, with a test
+  for each site.
+- Q4. One designated trusted erasure is used by certification; an
+  independently implemented reference projection is kept for
+  differential tests. The two are not collapsed to make them agree.
+- Q5. Effect-row `Free` bindings may be proposed, but coverage alone
+  does not approve them for compilation: the separately specified
+  effect validation judges their interpretation, or the result is
+  `EffectsUnchecked`.
+- Q6. Justified RT8 and window changes are accepted, each movement
+  explained and reviewed; the old results are kept as a comparison
+  cohort; no assertion is weakened.
+- Q7. R031's two defects are pinned with tests now and fixed within the
+  representation work, without a second temporary repair unless that
+  work is delayed.
+- **R026's repair is preserved.** With full types in witnesses, the
+  trusted path must establish both that the erased interpretation is
+  exactly what G0 checked and that the retained effect information
+  satisfies the required effect checks and corresponds to what `build`
+  consumes. Reproducing today's rows shows correspondence with today's
+  checker, not effect soundness.
+
+**Authorized tranche:** write the a-min definitions, invariants, trust
+boundaries and distinguishing tests, covering nested arrow rows, data
+row arguments, handler inference rows, lambda ambient substitution,
+`main` and shared hole numbering; state how effect validation relates
+to the retained witness, `Free` bindings included; keep the
+independent reference projection and R026's checked-witness coupling;
+have them adversarially reviewed before implementation; add the two
+R031 fixtures. Task 4.6 and G-D1 stay open. No live switch, no push.
