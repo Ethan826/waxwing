@@ -37,32 +37,39 @@ import Features.Check.Mentions (mentioned)
 -- places only.
 type Bound = { place ∷ Int, image ∷ RTExpr }
 
-newtype Triangular = Triangular (Map Var Bound)
+-- `next`: the next binding's place. It counts every binding made, so a
+-- variable bound again (a variable both a type and a tail, which
+-- `fragment` does not rule out) takes a later place than any before it
+-- (review I-1: `Map.size` repeated a place, and θ lost idempotence).
+newtype Triangular = Triangular { bound ∷ Map Var Bound, next ∷ Int }
 
 -- `resolved`: the solved form's image of every bound variable the read
 -- types reach, so `substitute resolved` applies the whole θ to them.
 type Reading = { resolved ∷ Map Var RTExpr, theta ∷ Triangular }
 
 empty ∷ Triangular
-empty = Triangular Map.empty
+empty = Triangular { bound: Map.empty, next: 0 }
 
 -- The caller's obligation (Mgu's `binding`): `image` is read through
 -- θ and does not mention `variable`, so the binding takes the last
--- place.
+-- place, replacing any earlier binding of `variable` as the eager
+-- algorithm's `Map.insert` did.
 extend ∷ Var → RTExpr → Triangular → Triangular
-extend variable image (Triangular theta) =
-  Triangular (Map.insert variable { place: Map.size theta, image } theta)
+extend variable image (Triangular theta) = Triangular
+  { bound: Map.insert variable { place: theta.next, image } theta.bound
+  , next: theta.next + 1
+  }
 
 read ∷ Triangular → Array RTExpr → Maybe Reading
 read (Triangular theta) types = map reading
-  (resolved theta (concatMap mentioned types))
+  (resolved theta.bound (concatMap mentioned types))
   where
   reading found = { resolved: found, theta: compressed found theta }
 
 -- The back-substitution: every bound variable's solved-form image.
 solved ∷ Triangular → Maybe (Map Var RTExpr)
 solved (Triangular theta) =
-  resolved theta (Array.fromFoldable (Map.keys theta))
+  resolved theta.bound (Array.fromFoldable (Map.keys theta.bound))
 
 -- The solved-form image of every bound variable reachable from `roots`,
 -- latest place first, so each image's bound variables are already
@@ -98,8 +105,11 @@ reachable theta roots = tailRec layer { frontier: roots, seen: Map.empty }
         (Map.lookup variable theta)
   inserted found variable entry = Map.insert variable entry found
 
-compressed ∷ Map Var RTExpr → Map Var Bound → Triangular
-compressed found theta =
-  Triangular (Map.union (Map.intersectionWith imaged found theta) theta)
+compressed
+  ∷ Map Var RTExpr → { bound ∷ Map Var Bound, next ∷ Int } → Triangular
+compressed found theta = Triangular theta
+  { bound = Map.union (Map.intersectionWith imaged found theta.bound)
+      theta.bound
+  }
   where
   imaged image entry = entry { image = image }

@@ -111,6 +111,26 @@ turns `{K | ρ}` into `{K ∪ M | T″}`, still one tail; if `K` and `M`
 share a label, the step fails. A fresh `ρ″` is a flexible variable
 the problem's `vars` does not hold.
 
+*Amendment (2026-10-24, BACKLOG R021; written after the code changed,
+on the token review's finding I-3).* The implementation no longer
+applies a binding to the remaining equations and to `θ`'s images when
+it is made. That cost was quadratic. Features.Check.Entailed.Triangular
+keeps `θ` in triangular form (Baader and Snyder's dag solved form). An
+equation, or a binding's image, is read through `θ` when it is taken,
+read images are compressed, and the answer is the back-substitution
+into an idempotent `θ`. R2 also takes a whole arrow spine at once.
+Each binding takes a fresh, later place, even for a variable bound
+before. The rules above, and the occurs check against the image under
+the current `θ`, are unchanged. Equivalence holds under a precondition
+this note did not need before: the problem is well-sorted, meaning no
+variable is both a type and a record tail. `fragment` does not check
+this; generation keeps sorts apart. On an ill-sorted problem the eager
+reading substitutes a variable's first binding where it occurs as a
+type, and the triangular reading uses its later one, so the answers
+can differ. The argument is in docs/findings.md, "R021: a triangular
+unifier for the `BQ` detectors". The check is test/r0-mgu-eager.test.mjs,
+a seeded differential against a port of the eager algorithm.
+
 **Answer.** If `τ` is already ground (no variable, no tail, no
 repeated label), `Just τ` without unifying **(choice)**. Else, if the
 rules end without failure, apply `θ` to `τ`; `Just` the result if it

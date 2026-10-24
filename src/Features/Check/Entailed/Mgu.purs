@@ -8,9 +8,12 @@
 --
 -- θ is triangular (Features.Check.Entailed.Triangular; BACKLOG R021):
 -- an equation is read through θ when it is taken, not rewritten at
--- every binding, and the answer is the back-substitution. On the
--- fragment (both callers check it), the answers are those of the
--- eager algorithm this replaced (docs/findings.md, "R021").
+-- every binding, and the answer is the back-substitution. The callers,
+-- Features.Check.Entailed (for `openRequirements` and `g0Guard`) and
+-- Features.Check.Strategy.ReadBack, pass fragment problems only. On a
+-- well-sorted one (no variable both a type and a tail; generation's
+-- problems are), the answer is the eager algorithm's: argued in
+-- docs/findings.md "R021", checked by test/r0-mgu-eager.test.mjs.
 module Features.Check.Entailed.Mgu
   ( Theta
   , mgu

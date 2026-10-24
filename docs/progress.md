@@ -680,6 +680,19 @@ and five regression rows fail as expected. No pin changed (RT1, RT8,
 window, census). 7.1b: the generator port and T1, T2, T5, T5b, T8,
 T12. Evidence in findings, "D1's generation continuation, part a".
 
+## R0 shadow hardening, R021 fix round 1 (2026-10-24)
+
+Shadow only; touches the trusted surface (Triangular, Mgu's header).
+After the token review: Triangular keeps a monotone place counter, so
+a variable bound twice gets a later place (review I-1, test seen
+failing first). The equivalence claim now carries its precondition
+(well-sorted problems) in Mgu's header, findings and an amendment to
+docs/plans/r0-entailed-ground.md "Binding". It is checked by the
+committed differential test/r0-mgu-eager.test.mjs against a port of
+the eager unifier: 35,104 well-sorted fragment problems, 0
+differences. The scale bound is 2,500 ms; a spine-arity test was
+added. Evidence in findings, "R021 fix round 1".
+
 ## R0 shadow hardening, R021: a triangular unifier (2026-10-24)
 
 Shadow only, no acceptance change. Features.Check.Entailed.Mgu keeps θ

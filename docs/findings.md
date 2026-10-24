@@ -4535,12 +4535,14 @@ trusted surface; it is not Domain.Recorded.Vars. The composition of
 the dag solved form, compression on read and spine-wide R2 is this
 task's; each part is published.
 
-**Same answers (argued, then checked).** Argued: the inputs are in
-the fragment (both callers check `fragment` first), so every record
-has at most one tail and no repeated label, and every image `binding`
-makes keeps that. For such terms, applying the bindings one at a time
-gives the same term, field order included, as applying their
-composition once. A `substitute` of a term that mentions no bound
+**Same answers (argued, then checked).** *Amended 2026-10-24 by fix
+round 1 (token review I-1, I-2): the claim needs well-sortedness, and
+the check is now committed; see "R021 fix round 1" below.* Argued: the
+inputs are in the fragment (both callers check `fragment` first), so
+every record has at most one tail and no repeated label, and every
+image `binding` makes keeps that. For such terms, applying the
+bindings one at a time gives the same term, field order included, as
+applying their composition once. A `substitute` of a term that mentions no bound
 variable returns it unchanged. Checked: a differential run against
 be4df16's compiled Mgu (copied into output/ as a scratch module,
 removed afterwards; script in the session scratchpad): every G-EG
@@ -4656,6 +4658,70 @@ A first after-run gave 54.7 s. The task 4.5 figures (about 84 s and
 93 s) predate R021's fix.
 
 **Verify for the three hardening items (checked).** `npm run verify`
-at aeec4f2 (R021, the census walk and R025), one run under the
+at aeec4f2, the pre-amend commit of 422d80b (the amend added only
+this paragraph; R021, the census walk and R025), one run under the
 cross-worktree lock: EXIT 0 in 988 s; parallel tests 2,849/2,849,
 serial 122/122, regression proofs 205 of 205 (jobs 6).
+
+## R021 fix round 1: well-sortedness and a committed oracle (2026-10-24)
+
+The token review of the R021 change raised three items. Each fix
+touches the trusted surface (Triangular, and Mgu's header).
+
+**I-1 (checked).** `extend` took `Map.size θ` as the new binding's
+place. If a variable is bound again, `Map.insert` overwrites it and
+the size does not grow, so the next binding repeats a place.
+`solved` then breaks the tie by key order, and the answer loses
+idempotence. The review's case shows it:
+`[ρ = Int, x = y, {|ρ} = {a: z | σ}, z = Bool]`, where `ρ` is both a
+type and a tail, which `fragment` does not rule out. The old answer
+was `ρ ↦ {a: Bool | σ}`; the new one was `ρ ↦ {a: z | σ}`. Triangular
+now keeps a monotone `next` place, and the case gives the eager
+answer. RED: test/r0-mgu.test.mjs "a variable bound again takes a
+later place" failed (falsy image assertion) before the counter and
+passes after.
+
+**Precondition (checked).** The counter does not make the two
+algorithms agree on every ill-sorted problem. A variable bound as a
+type (say `v = Bool`) and later again as a tail is read at its later
+binding wherever it occurs as a type. The eager algorithm had already
+substituted `Bool` there. One differing problem:
+`[{|s} = {b: w | u}, v = Bool, {|v} = {a: Box(Int) | s}, u = v]`.
+Eager answers `Just`; triangular answers `Nothing` by the occurs
+check. Equality is therefore claimed for well-sorted problems (no
+variable both a type and a tail) and for the review's case. Both
+callers' problems come from generation, which keeps sorts apart
+(Generate/Assemble.purs); this is cited from the review, not
+re-checked here. The claim is stated in Mgu's header and amended into
+docs/plans/r0-entailed-ground.md "Binding" (I-3).
+
+**I-2 (checked).** test/r0-mgu-eager.mjs ports be4df16's eager
+unifier line for line onto the compiled `substitute`, `mentions` and
+`isRigid`. test/r0-mgu-eager.test.mjs compares it with `mgu`, using
+constructor-tagged serialization of θ, over:
+- the review's case;
+- every G-EG one-equation problem and the pinned two-equation sample;
+- 40,000 problems from a seeded generator (mulberry32, seed 2026):
+  2-6 equations each; arrow spines of 1-4 parameters; `Box`; records
+  with labels a/b/c and an optional tail; 30% chained-row equations
+  `{|ρ} = {l: T | ρ′}`; four more type variables and three more row
+  variables; rigid variables; and about 5% ill-sorted uses.
+
+Result: 35,104 well-sorted fragment problems, 6,385 with a unifier, 0
+differences (asserted). 12,368 ill-sorted problems, of which 10
+differ (counted, not asserted). 2,629 problems were outside the
+fragment and skipped. Run time is about 1.8 s, in the parallel phase.
+
+Mutants against the differential: with `place` from `Map.size` again,
+1 well-sorted-set difference (the review's case) plus the I-1 test;
+with `reachable` stopping after one layer, 51 differences plus the
+chain test.
+
+**Minors.**
+- The scale test's bound is raised to 2,500 ms. That is about 12
+  times the new time and under half the old times (5,505 and
+  10,970 ms).
+- r0-mgu.test.mjs gains a spine-arity test: `a→b→c = Int→d`,
+  `d = Bool→a`, and a variable at a spine's tail.
+- The verify paragraph above now names its commit correctly.
+- Mgu's header names its callers.

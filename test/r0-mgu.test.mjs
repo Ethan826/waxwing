@@ -4,15 +4,18 @@ import { load } from './r0-generate-support.mjs';
 import { grammarTerms, sampled, supportFrom } from './r0-entailed-support.mjs';
 
 // The unifier itself (Features.Check.Entailed.Mgu; BACKLOG R021): the
-// occurs check, bindings read back through a chain, and, over G-EG's
+// occurs check, bindings read back through a chain, spines of different
+// arity, a variable bound twice (review I-1), and, over G-EG's
 // one-equation problems and its pinned two-equation sample, that every
-// answer is an idempotent unifier of its equations.
+// answer is an idempotent unifier of its equations. Equality with the
+// eager answer: test/r0-mgu-eager.test.mjs.
 const { t, problemOf } = await supportFrom(load);
 const { mgu } = await load('Features.Check.Entailed.Mgu');
 const { fragment } = await load('Features.Check.Entailed');
 const { substitute } = await load('Features.Check.Entailed.Merge');
 const { mentions } = await load('Features.Check.Mentions');
 const Atom = await load('Domain.Recorded.Atom');
+const Origin = await load('Domain.Recorded.Origin');
 const Map = await load('Data.Map.Internal');
 const { unfoldableArray } = await load('Data.Unfoldable');
 const { Tuple } = await load('Data.Tuple');
@@ -79,6 +82,34 @@ const canonical = ty => {
     sorted(ty.value1, JSON.stringify));
 };
 const rowEqual = (one, other) => same(canonical(one), canonical(other));
+
+// A flexible variable of the problem's naming beyond the support's.
+const fresh = index => new Atom.FreshVar({ root: Origin.InBody.value,
+  steps: [new Origin.Index(index)] }, new Atom.Param(index));
+const tvar = index => new Atom.TVar(fresh(index));
+const arrows = (...types) => types.reduceRight((rest, ty) =>
+  t.arrow(ty, rest));
+
+test('mgu: spines of different arity, and a variable at a tail', () => {
+  binds([[arrows(tvar(20), tvar(21), tvar(22)), arrows(int, tvar(23))],
+    [tvar(23), arrows(bool, tvar(20))]],
+  [[fresh(20), int], [fresh(23), arrows(bool, int)], [fresh(21), bool],
+    [fresh(22), int]]);
+  binds([[arrows(int, bool, t.tvar('x')), arrows(int, t.tvar('y'))]],
+    [[v(t.tvar('y')), arrows(bool, t.tvar('x'))]]);
+});
+
+// Review I-1 (2026-10-24): a variable both a type and a tail (`fragment`
+// does not check sorts) is bound twice; the second binding takes a
+// fresh, later place, so θ stays idempotent and is the eager answer.
+test('mgu: a variable bound again takes a later place', () => {
+  const [rho, sigma, z] = [fresh(10), fresh(11), fresh(30)];
+  binds([[new Atom.TVar(rho), int], [t.tvar('x'), t.tvar('y')],
+    [new Atom.Record([], [rho]), new Atom.Record([new Tuple('a',
+      new Atom.TVar(z))], [sigma])], [new Atom.TVar(z), bool]],
+  [[rho, new Atom.Record([new Tuple('a', bool)], [sigma])],
+    [v(t.tvar('x')), t.tvar('y')], [z, bool]]);
+});
 
 // Every answer: no image mentions a bound variable, and both sides of
 // every equation are equal under θ.
