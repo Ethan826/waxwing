@@ -33,15 +33,18 @@ const fresh = variable => 'fresh' in variable;
 // BACKLOG R028: the counts are pinned exactly, exclusions included, so
 // a change in what is compared, or more sites excluded for `Amb`, fails
 // here instead of passing under a lower bound. They move only with the
-// owner's approval, recorded in docs/progress.md. Taken 2026-10-24 at
-// R027's commit (7a9fcc0), unchanged from Task 7.1b's figures.
+// owner's approval, recorded in docs/progress.md. First taken
+// 2026-10-24 at R027's commit (7a9fcc0); re-taken the same day for the
+// ten C001 corpus additions the author authorized (dossier §18.73): +50
+// generated, +41 judged and compared exactly, +92 images, +9 beyond
+// Solved, by-site, excluded and hole-bearing counts unchanged.
 const pinned = {
-  generated: 3011,
-  judged: 1989,
-  images: 14775,
-  solved: { compared: 1989, exact: 1944, bySite: 45, sites: 153,
+  generated: 3061,
+  judged: 2030,
+  images: 14867,
+  solved: { compared: 2030, exact: 1985, bySite: 45, sites: 153,
     excluded: 159 },
-  beyond: { compared: 781, exact: 781, bySite: 0, sites: 0, excluded: 0 },
+  beyond: { compared: 790, exact: 790, bySite: 0, sites: 0, excluded: 0 },
   holed: 118
 };
 const isHole = variable => fresh(variable)

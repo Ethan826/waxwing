@@ -779,6 +779,34 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## C001 corpus additions: ten sources join R0's corpus (2026-10-24)
+
+Authorized in dossier §18.73. The eight C001 commits of branch
+c001-rulings-2026-10-23 (9da5fc7..391cb81, base 0710fa6) were
+cherry-picked onto r0-t2-d1 in order (d78d442..52f92d8; no conflicts,
+no merge commit); they bring the C001 rulings, arguments and the ten
+new baseline sources (a5, n7a, n7b, n7c, q1, q4, q7, r1, r2, s1) with
+their corpus-manifest and first-diagnostic entries. The existing 24
+C001 sources stay. Every pin re-taken, each change only an addition
+from the ten (no existing program's problem digest, window row, census
+entry or first diagnostic moved):
+
+| Pin | Before | After |
+|---|---|---|
+| corpus programs (problems.json) | 988 programs, 3,021 problems | 998, 3,071 |
+| census (census.json) | 1,128 programs, 984 resolved, 743 accepted, 3,011 declarations, 2,773 compiling | 1,138, 994, 751, 3,061, 2,823 |
+| census: blocked accepted programs | 251 (245 without ErasedRow) | 256 (250) |
+| RT8 (rt8.json) | 3,017 declarations; agree Solved 1,989; Outside DataApplication 563; Witnessed 2,776 | 3,067; 2,030; 572; 2,826 |
+| window (window.json) | 3,021 declarations, 1,024 rows; agree Solved 1,980 | 3,071, 1,033, 2,021 |
+| CX corpus (r0-cx-corpus) | 3,011 declarations projected | 3,061 (withD 444 and 1,393 D atoms unchanged) |
+| T1/T2 (R028) | 3,011 generated; 1,989 judged; 14,775 images; Solved 1,989 compared, 1,944 exact; beyond 781 | 3,061; 2,030; 14,867; 2,030, 1,985; 790 |
+
+Unchanged: T2's by-site comparisons (45 declarations, 153 sites, 159
+excluded), 118 hole-bearing declarations, and the corpus C2 check (5
+`Free` bindings). The new window rows: n7a and n7b `f` blocked by
+`DataApplication` markers; q1, q4, r1, r2 and s1 rows listed by the
+window. All corpus comparisons stay effect-erased (G-effect-rows).
+
 ## R030: the trusted closure examined; `certify`'s argument (2026-10-24)
 
 Authorized in dossier §18.73. The nine helpers the generator reads

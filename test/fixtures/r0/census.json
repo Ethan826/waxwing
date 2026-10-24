@@ -1,11 +1,11 @@
 {
  "corpus": {
-  "programs": 1128,
-  "resolved": 984,
-  "accepted": 743,
-  "declarations": 3011,
-  "compilingDeclarations": 2773,
-  "inAcceptedPrograms": 2397
+  "programs": 1138,
+  "resolved": 994,
+  "accepted": 751,
+  "declarations": 3061,
+  "compilingDeclarations": 2823,
+  "inAcceptedPrograms": 2443
  },
  "order": [
   "SecondSpread",
@@ -44,10 +44,10 @@
   },
   "DataApplication": {
    "section": "§3.2(a)",
-   "declarations": 587,
-   "programs": 138,
-   "only": 115,
-   "marginal": 122
+   "declarations": 596,
+   "programs": 143,
+   "only": 120,
+   "marginal": 127
   },
   "HandlerType": {
    "section": "§3.2(a)",
@@ -100,8 +100,8 @@
   }
  },
  "union": {
-  "programs": 251,
-  "programsWithoutErasedRow": 245,
+  "programs": 256,
+  "programsWithoutErasedRow": 250,
   "origins": [
    "docs/plans/2026-10-21-c001-explicit/baseline/a3-fixed-carriers.wxw",
    "docs/plans/2026-10-21-c001-explicit/baseline/a4-phantom.wxw",
@@ -111,6 +111,11 @@
    "docs/plans/2026-10-21-c001-explicit/baseline/h2-print-chosen.wxw",
    "docs/plans/2026-10-21-c001-explicit/baseline/p1-choices.wxw",
    "docs/plans/2026-10-21-c001-explicit/baseline/p4-two-operands.wxw",
+   "docs/plans/2026-10-21-c001-explicit/baseline/q1-pure-choices.wxw",
+   "docs/plans/2026-10-21-c001-explicit/baseline/q4-pure-two-operands.wxw",
+   "docs/plans/2026-10-21-c001-explicit/baseline/r1-returned-captures.wxw",
+   "docs/plans/2026-10-21-c001-explicit/baseline/r2-source-order-captures.wxw",
+   "docs/plans/2026-10-21-c001-explicit/baseline/s1-shared-copy.wxw",
    "editors/vscode/fixtures/effect-namespaces.wxw",
    "examples/functions.wxw",
    "examples/lists.wxw",
@@ -369,8 +374,8 @@
    "fail": 47
   },
   "inferredRows": {
-   "declarations": 591,
-   "programs": 192
+   "declarations": 624,
+   "programs": 200
   }
  },
  "guard": {
@@ -379,9 +384,9 @@
  },
  "families": {
   "wxw": {
-   "programs": 231,
-   "accepted": 98,
-   "blocked": 71
+   "programs": 241,
+   "accepted": 106,
+   "blocked": 76
   },
   "fixture": {
    "programs": 235,

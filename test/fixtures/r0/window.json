@@ -1,15 +1,15 @@
 {
  "summary": {
   "programs": {
-   "all": 1132,
-   "withDeclarations": 988,
-   "compiling": 746,
+   "all": 1142,
+   "withDeclarations": 998,
+   "compiling": 754,
    "secondSpreadAtResolve": 71
   },
   "declarations": {
-   "all": 3021,
-   "rows": 1024,
-   "agree: Solved": 1980,
+   "all": 3071,
+   "rows": 1033,
+   "agree: Solved": 2021,
    "agree: static refusal": 17
   },
   "classes": {
@@ -20,11 +20,11 @@
     "focus": "outside markers of every kind",
     "target": "Solved (compiling again)",
     "dependency": "G-exempt (per-kind slice arguments; for DataApplication and DataOverRecords also the free-constructor model)",
-    "declarations": 781,
-    "programs": 282,
-    "compilingProgramsInClass": 244,
-    "stoppedUnderShadow": 244,
-    "only": 244
+    "declarations": 790,
+    "programs": 289,
+    "compilingProgramsInClass": 249,
+    "stoppedUnderShadow": 249,
+    "only": 249
    },
    "erased row: compiles today, census detector fires": {
     "section": "§3.2(a)",
@@ -232,8 +232,8 @@
     "compilingPrograms": 0
    },
    "DataApplication": {
-    "declarations": 587,
-    "compilingPrograms": 138
+    "declarations": 596,
+    "compilingPrograms": 143
    },
    "HandlerType": {
     "declarations": 170,
@@ -257,10 +257,10 @@
    }
   },
   "stops": {
-   "underShadowDecisions": 245,
+   "underShadowDecisions": 250,
    "additionalIfErasedRowAdopted": 6,
    "additionalIfBoundHolesRejected": 5,
-   "allThree": 256
+   "allThree": 261
   },
   "optionC": [
    "research/composition-assessment/programs/p4.wxw#main",
@@ -315,6 +315,8 @@
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/n1-rigid-comparison.wxw#same","hash":"41ffe468fc4e3badfee6e9723c9335770282a44e85f47448e79d04a5969aa3de","today":{"code":"E_TYPE","text":"Type a is not comparable"},"r0":{"verdict":"Unresolved Unsupported RequirementAtoms","attempt":"Searched Exhausted"},"rt8":"agree: no candidate (Exhausted)","class":"today refuses, BQ pending G-ValidR","section":"§3.2(a)","blockers":[],"programCompiles":false},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/n2-hole-comparison.wxw#main","hash":"b77305730db38f8fcd3aefe18db0d4952e8ff10c5cc86470f2aff611a9c5f6cb","today":{"code":"E_TYPE","text":"Ambiguous type List(_) in comparison"},"r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Searched Exhausted"},"rt8":"agree: no candidate (Exhausted)","class":"today refuses, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":false},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/n3-function-print.wxw#main","hash":"fb7dae70b1c519d464e2494329c70e00b0d095cd264342e62b51c5f58ec534d4","today":{"code":"E_TYPE","text":"Expected a printable value, found { combine: _ -> _ -> _ }"},"r0":{"verdict":"Unresolved Inference NoCandidate","attempt":"Searched Exhausted"},"rt8":"agree: no candidate (Exhausted)","class":"today's refusal becomes Unresolved (no candidate)","section":"§3.2(b)","blockers":[],"programCompiles":false},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/n7a-record-closure.wxw#f","hash":"b1a97abf382a08baccb2c383b5ba2b4d4c80355dd43d5f7a54e1361593830220","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":false},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/n7b-record-reference.wxw#f","hash":"2b1a5f45c78073f594e4d5045fd9e33193eb3cdbd4af42818c7b64cc9a6c76db","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":false},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/p1-choices.wxw#foldFrom","hash":"7ed8b3df1070f77de4af8fe7d6940469ded56af45bfa4d04c2d58d1ea412d000","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/p1-choices.wxw#main","hash":"7ed8b3df1070f77de4af8fe7d6940469ded56af45bfa4d04c2d58d1ea412d000","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/p2-construction.wxw#reverse","hash":"b42a5f46787b170d93e699586de124261f2ffbaeeb6890961ecfd89001bad2c4","today":{"code":"E_TYPE","text":"Expected { combine: a -> a -> a }, found { combine: a -> a -> a }"},"r0":{"verdict":"Unresolved Inference NoCandidate","attempt":"Searched Exhausted"},"rt8":"agree: no candidate (Exhausted)","class":"today's refusal becomes Unresolved (no candidate)","section":"§3.2(b)","blockers":[],"programCompiles":false},
@@ -325,6 +327,13 @@
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/p3-runtime.wxw#main","hash":"a46ddf10e073b465d5a609f403ab0c14e1938b6c032ebebbdfb2b7c5cc7f6105","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":false},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/p4-two-operands.wxw#both","hash":"d03b64b181c05c41043fa6026b4ccd1e8a933bf0bef3bc3c6cdef3629ba38bfb","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
   {"at":"docs/plans/2026-10-21-c001-explicit/baseline/p4-two-operands.wxw#main","hash":"d03b64b181c05c41043fa6026b4ccd1e8a933bf0bef3bc3c6cdef3629ba38bfb","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/q1-pure-choices.wxw#foldFrom","hash":"58be619b330a3f8238c15f5d44e22267a2c81b71522b8cb780bfa7a6e0919a14","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/q1-pure-choices.wxw#main","hash":"58be619b330a3f8238c15f5d44e22267a2c81b71522b8cb780bfa7a6e0919a14","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/q4-pure-two-operands.wxw#both","hash":"23787b1b78529d40ef19cc07207164aa8edf7a93141d5e935e2822a8833e11d3","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/q4-pure-two-operands.wxw#main","hash":"23787b1b78529d40ef19cc07207164aa8edf7a93141d5e935e2822a8833e11d3","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/r1-returned-captures.wxw#main","hash":"af6ffdd446323e9f73419ca8c47807083099a344be035c0d7594c227b6447c1b","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/r2-source-order-captures.wxw#main","hash":"11eb28ec317c586fbcda70eb855d557d3f429300df10e34789f1c6a0fd3bbb80","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
+  {"at":"docs/plans/2026-10-21-c001-explicit/baseline/s1-shared-copy.wxw#main","hash":"b9bc321bc5dab342a267a1bb1922f6c4379b7985b77a1b5e48825f686158661a","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside DataApplication","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside DataApplication","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["DataApplication"],"programCompiles":true},
   {"at":"editors/vscode/fixtures/effect-namespaces.wxw#database","hash":"3d4a908135c1882a0f4d6a781e1ce9abdb1daecb16534c7da3ddb5e29c730843","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside HandlerType","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside HandlerType","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["HandlerType"],"programCompiles":true},
   {"at":"editors/vscode/fixtures/effect-namespaces.wxw#logger","hash":"3d4a908135c1882a0f4d6a781e1ce9abdb1daecb16534c7da3ddb5e29c730843","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside HandlerType","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside HandlerType","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["HandlerType"],"programCompiles":true},
   {"at":"editors/vscode/fixtures/effect-namespaces.wxw#main","hash":"3d4a908135c1882a0f4d6a781e1ce9abdb1daecb16534c7da3ddb5e29c730843","today":"compiles","r0":{"verdict":"Unresolved Unsupported Outside HandlerType","attempt":"Accepted"},"rt8":"(a) blocked: Unresolved Unsupported Outside HandlerType","class":"markers: compiles today, R0 Unsupported Outside","section":"§3.2(a)","blockers":["HandlerType"],"programCompiles":true},

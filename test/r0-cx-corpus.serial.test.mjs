@@ -34,7 +34,8 @@ test('CX question 2: every corpus D is scoped', () => {
     projected: projected.length,
     withD: projected.filter(sig => sig.d.length > 0).length,
     dAtoms: projected.reduce((sum, sig) => sum + sig.d.length, 0) },
-  { declarations: 3011, generationFaults: 0, projected: 3011, withD: 444,
+  // 3,011 until the ten C001 additions (2026-10-24, dossier §18.73).
+  { declarations: 3061, generationFaults: 0, projected: 3061, withD: 444,
     dAtoms: 1393 });
 });
 

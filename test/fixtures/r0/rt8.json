@@ -1,8 +1,8 @@
 {
- "declarations": 3017,
+ "declarations": 3067,
  "classes": {
   "(a) blocked: Unresolved Unsupported Outside DataApplication, Outside HandlerType": 2,
-  "(a) blocked: Unresolved Unsupported Outside DataApplication": 563,
+  "(a) blocked: Unresolved Unsupported Outside DataApplication": 572,
   "(a) blocked: Unresolved Unsupported Outside DataOverRecords": 3,
   "(a) blocked: Unresolved Unsupported Outside Deferred": 15,
   "(a) blocked: Unresolved Unsupported Outside EffectArgument, Outside DataApplication": 1,
@@ -27,7 +27,7 @@
   "(b) declined by g0Guard, today refuses": 1,
   "(b) declined by g0Guard": 3,
   "Solved with a bound hole (pending the author's ambiguity ruling)": 6,
-  "agree: Solved": 1989,
+  "agree: Solved": 2030,
   "agree: no candidate (Exhausted)": 233,
   "agree: no candidate (OutOfBudget)": 1,
   "today's own internal failure (SearchBroke)": 3
@@ -157,7 +157,7 @@
   "inline:r022-lacks#g: Solved with a bound hole (pending the author's ambiguity ruling)"
  ],
  "witnesses": {
-  "Witnessed": 2776
+  "Witnessed": 2826
  },
  "noWitness": []
 }
