@@ -104,3 +104,22 @@ test('walking a body leaves the program unchanged', async () => {
   assert.deepEqual(checkProgram(program).outcomes.map(outcome =>
     outcome.today.constructor.name), ['Right']);
 });
+
+// The type walk fails closed, as the expression walk does: each leaf
+// constructor is listed and has no parts; anything else throws rather
+// than reading as a type with no record and no variable.
+test('the census type walk lists its leaves and throws on others', async () => {
+  const { T, shapeOf, recordOrVariable } =
+    await import('./r0-census-walk.mjs');
+  for (const leaf of [T.TInt.value, T.TBool.value, T.TUnit.value,
+    T.TText.value]) {
+    assert.deepEqual(shapeOf(leaf), { labels: [], rows: [] });
+    assert.equal(recordOrVariable(leaf), false);
+  }
+  assert.deepEqual(shapeOf(new T.TVar(0)), { labels: [], rows: [] });
+  class TUnknown {}
+  assert.throws(() => shapeOf(new TUnknown()), /not a Ty/);
+  assert.throws(() => recordOrVariable(new TUnknown()), /not a Ty/);
+  assert.throws(() => recordOrVariable(new T.TData(0, [new TUnknown()],
+    [])), /not a Ty/);
+});

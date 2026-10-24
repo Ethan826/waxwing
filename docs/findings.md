@@ -4601,3 +4601,18 @@ test/r0-mgu.test.mjs passes on be4df16's compiled Mgu too, so it
 specifies the unifier rather than the new code. Its property compares
 the sides up to field and tail order, because a unifier makes two
 records equal as rows, and filters G-EG to the fragment.
+
+## The census type walk fails closed (2026-10-24)
+
+From the final whole-tranche review. test/r0-census-walk.mjs `parts`
+returned "no parts" for any `Ty` it did not handle, so a new type
+constructor would read as holding no record, variable or row, and the
+erased-row detector and the census would undercount without a sign.
+The leaves `TInt`, `TBool`, `TVar`, `TUnit` and `TText` are now listed
+(Domain.Type.Core's `Ty`); anything else throws `not a Ty`, as the
+expression and pattern walks do. RED (checked): the new test in
+test/r0-census-detectors.test.mjs failed with `Missing expected
+exception` before the change; it passes after, with every leaf injected
+directly. Census pin unchanged (test/r0-census.serial.test.mjs, 13/13,
+"the census equals its pinned counts" included). Test-only; no source
+changed.

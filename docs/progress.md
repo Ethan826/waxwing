@@ -695,6 +695,13 @@ failing on the old unifier; test/r0-mgu.test.mjs catches mutants
 M1-M5. No pin changed; no corpus re-pin. Evidence in findings, "R021:
 a triangular unifier for the `BQ` detectors".
 
+## R0 shadow hardening: the census type walk fails closed (2026-10-24)
+
+Test-only. test/r0-census-walk.mjs lists `Ty`'s leaf constructors and
+throws on any other, as its expression walk does; a test seen failing
+first injects every leaf and an unknown constructor. Census pin
+unchanged. Evidence in findings, "The census type walk fails closed".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

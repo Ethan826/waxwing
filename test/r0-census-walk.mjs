@@ -100,6 +100,10 @@ const rowLabels = row => row.value0;
 const handlerRows = rows => [rows.inference,
   ...(rows.clauses instanceof Just ? [rows.clauses.value0] : [])];
 
+// Ty's constructors with no types, rows or labels inside; any other
+// constructor not handled below throws (fail closed).
+const leaves = [T.TInt, T.TBool, T.TVar, T.TUnit, T.TText];
+
 // The types and rows directly inside a type (an arrow's spine walked by
 // a loop), and the labels written there.
 const parts = ty => {
@@ -120,7 +124,9 @@ const parts = ty => {
   if (ty instanceof T.TRecord)
     return { types: ty.value0.fields.map(pair => pair.value1), rows: [],
       labels: [] };
-  return { types: [], rows: [], labels: [] };
+  if (leaves.some(ctor => ty instanceof ctor))
+    return { types: [], rows: [], labels: [] };
+  throw new Error(`r0-census-walk: not a Ty: ${String(ty)}`);
 };
 
 // Every label of `ty` at any depth, and every row there.
