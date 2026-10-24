@@ -5030,3 +5030,11 @@ Three minor items from the second re-review of the shadow hardening
 - **m-6.** The sentence under "Precondition" that cited
   Generate/Assemble.purs for well-sortedness is reworded to point at
   the corpus check.
+
+**After the rebase (checked).** The Task 7.1b review asked for T1, T2
+and T8's numbers to be re-taken once the hardening's `wellSorted`
+change to ReadBack was in. One `npm run verify` on the rebased branch
+(EXIT 0) printed the same counts as part b: 1,989 Solved declarations
+compared (1,944 exactly, 45 by site: 153 sites compared, 159 excluded
+for `Amb`) and 781 more witnessed certificates (all exact). No number
+in part b moves. The RT1, RT8, window and census pins are unchanged.
