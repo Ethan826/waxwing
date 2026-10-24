@@ -1,0 +1,7 @@
+effect Log { fn log(n: Int): Unit; };
+fn a(q: Int -> Int with Log + ...e, x: Int): Int with Log + ...e =
+  { Log.log(x); q(x) };
+fn main(): Unit with Console =
+  with handler Log { log(n) => Console.print(n) } {
+    Console.print(a(fn(y) => y + 1, 1))
+  };

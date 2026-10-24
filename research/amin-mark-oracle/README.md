@@ -34,7 +34,20 @@ FX008's graph (U6).
 - `derived.mjs`: cases whose obligations are built from recorded inputs
   by `handlerEquality` and `derivedC` (§R5 F1 and S3): attempts A and
   B with controls, E2's rigid-tail rule, and N4 rebuilt from rows.
+- `equations.mjs`: the E1s revision 3.4 adds (statements §4, O1 and
+  O2 of §13a): a clause body against the operation's result, and a
+  `with` node against its body, each judged with and without the
+  equation, beside a control.
 - `run.mjs`: the real implementations; must show no disagreement.
+- `u7.mjs`: U7's own correspondence check (statements §11), run on its
+  own (`node u7.mjs`, about 7 s): the as-built alias of a written
+  handler type against FX008's structural-copy C, over a grammar fixed
+  before the first run (in the file's header), with O4's rule K as a
+  variant and two mutants. Result (2026-10-24): rule J agrees with the
+  design on all 4,327,668 pair-package evaluations of 197,676 pairs;
+  rule K is wider on 12,024 evaluations (3,741 pairs, none with E4′'s
+  recorded C shape); both mutants detected. Bounded; the agreement is
+  close to definitional, so the mutants carry its power.
 - `mutants.mjs`: five wrong implementations injected into the same
   families and cases; each must be detected.
 
@@ -74,6 +87,12 @@ case attempt B control (no rigid tail): {"honest":true,
   "honestEarlier":true}
 case rigid tail into a lambda row (E2): {"honest":true,
   "honestEarlier":true,"forged":false,"forgedEarlier":true}
+case O1 clause body against the operation result: {"honest":false,
+  "honestEarlier":true,"forged":false,"forgedEarlier":false}
+case O1 control (clause prints): {"honest":true,"honestEarlier":true}
+case O2 with node against its body: {"honest":false,
+  "honestEarlier":false,"forged":false,"forgedEarlier":true}
+case O2 control (clause prints): {"honest":true,"honestEarlier":true}
 no disagreement
 ```
 
@@ -81,8 +100,9 @@ no disagreement
 In a case line, `honest` and `forged` are the packages' verdicts under
 the current obligations, and the `Earlier` keys their verdicts under
 the earlier set: revision 3 or 3.1 for the first cases, revision 3.2's
-E1 (marks ignored on every R, no C ≡ C) for attempts A and B, and the
-keys-only inclusion for the rigid-tail case.
+E1 (marks ignored on every R, no C ≡ C) for attempts A and B, the
+keys-only inclusion for the rigid-tail case, and revision 3.3's
+obligations (no O1 or O2 equation) for the O1 and O2 cases.
 
 Derived cases (each obligation built from recorded inputs):
 - attempt A: `f(h: Handler(nofail Ask with Log))` called with
@@ -106,6 +126,18 @@ Derived cases (each obligation built from recorded inputs):
   inclusion.
 - N4 now consumes R into `Log + ...` through E5's rows (the old set
   test never read a tail).
+- O1: `with handler Get(Handler(Log with Console)) { get() => handler
+  Log { log(n) => Fail.fail(E) } } { with Get.get() { Log.log(1) } }`
+  in `main`. The literal's R and C hold `Fail(E)` (E4); the new E1
+  equates its type with `Handler(Log with Console)`, rows closed, which
+  the installation reads. The honest package is refused with the
+  equation and accepted without it; a package hiding `Fail(E)` from R
+  is refused by E4 either way. Control: the clause prints.
+- O2: `let h = with h0 { handler Log { log(n) => Fail.fail(E) } }; with
+  h { Log.log(1) }` in `main`. The image of the `with` node (shared by
+  h) forged with R and C closed and m N passes without the new E1 and
+  is refused with it; the honest image is refused either way (R's
+  `Fail(E)` is not in main's row). Control: the clause prints.
 - `owned C, m Opened`: the N1 graph with the handled mark as the
   `Opened` position o (E3) instead of the constant N; same verdicts.
   The N1 graph keeps its hard-coded derived C, as the author asked
@@ -157,6 +189,8 @@ obligations, not compiler output: which obligations a program records
 is our reading of the cited compiler files, and only the obligations
 touching the marks and tails in question are translated. `derivedC`
 and `handlerEquality` are translations of the compiler's code, checked
-here only on these few cases. E2 is judged on fully resolved rows: the
-equation binding a source's tail variable to the target's remainder is
-not checked apart. Bounded evidence about these graphs and cases only.
+here only on these few cases. E2 is judged on fully resolved rows, as
+the statements' §4 now states it (revision 3.4, K4): a binding of a
+source's tail variable contributes labels of the completed source,
+matched like the rest; no remainder equation is checked. Bounded
+evidence about these graphs and cases only.

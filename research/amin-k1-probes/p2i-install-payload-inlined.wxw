@@ -1,0 +1,10 @@
+effect Out(t) { fn out(x: t): Unit; };
+effect State(s) { fn get(): s; fn put(value: s): Unit; };
+fn main(): Unit with Console = {
+  let h = handler State(Int) { get() => { Out.out("hi"); 1 }, put(v) => () };
+  with handler Out(Text) { out(x) => Console.print(x) } {
+    with handler Out(Int) { out(x) => Console.print(x + 1) } {
+      Console.print(with h { State.get() })
+    }
+  }
+};

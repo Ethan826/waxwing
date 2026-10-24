@@ -1,0 +1,7 @@
+effect Log { fn log(n: Int): Unit; };
+effect State(s) { fn get(): s; fn put(value: s): Unit; };
+fn run(k: Int -> Int with ...e): Int with Log + ...e = {
+  let h = handler State(Int) { get() => k(0), put(v) => Log.log(v) };
+  with h { State.put(State.get()); 1 }
+};
+fn main(): Int = 1;

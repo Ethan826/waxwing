@@ -1,0 +1,9 @@
+effect Out(t) { fn out(x: t): Unit; };
+fn main(): Unit with Console = {
+  let q = fn(y) => { Out.out("hi"); y };
+  with handler Out(Text) { out(s) => Console.print(s) } {
+    with handler Out(Int) { out(n) => Console.print(n + 1) } {
+      Console.print(q(1))
+    }
+  }
+};

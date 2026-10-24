@@ -1,0 +1,5 @@
+effect Out(t) { fn out(x: t): Unit; };
+effect State(s) { fn get(): s; fn put(value: s): Unit; };
+fn st(h: Handler(State(Int) with Out(Text) + Console)): Int
+  with Out(Int) + Out(Text) + Console = with h { State.get() };
+fn main(): Int = 1;

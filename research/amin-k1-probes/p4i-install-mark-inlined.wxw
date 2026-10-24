@@ -1,0 +1,12 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect State(s) { fn get(): s; fn put(value: s): Unit; };
+fn main(): Unit with Console = handle {
+  let h = handler State(Int) { get() => { defer Log.log(7); 1 },
+    put(v) => () };
+  with handler Log { log(n) => Console.print(n) } {
+    with handler Log { log(n) => Fail.fail(E) } {
+      Console.print(with h { State.get() })
+    }
+  }
+} { fail(error: E) => Console.print(99) };

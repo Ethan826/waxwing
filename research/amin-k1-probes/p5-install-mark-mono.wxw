@@ -1,0 +1,6 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect State(s) { fn get(): s; fn put(value: s): Unit; };
+fn st(h: Handler(State(Int) with nofail Log + Fail(E) + Console)): Int
+  with Log + nofail Log + Fail(E) + Console = with h { State.get() };
+fn main(): Int = 1;

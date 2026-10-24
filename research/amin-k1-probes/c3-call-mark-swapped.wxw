@@ -1,0 +1,11 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+fn a(q: Int -> Int with nofail Log + ...e, x: Int): Int
+  with nofail Log + ...e = q(x);
+fn main(): Unit with Console = handle {
+  with handler Log { log(n) => Fail.fail(E) } {
+    with handler Log { log(n) => Console.print(n) } {
+      Console.print(a(fn(y) => { defer Log.log(7); y }, 1))
+    }
+  }
+} { fail(error: E) => Console.print(99) };
