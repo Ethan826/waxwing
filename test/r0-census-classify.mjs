@@ -65,7 +65,7 @@ const reasonUnder = reduce => atom => {
   return Mentions.isGround(recorded) ? null : 'fragment';
 };
 
-const requirementsOf = problem => {
+export const requirementsOf = problem => {
   const atoms = fields(problem).bq.map(entry => entry.value);
   if (atoms.length === 0) return { open: 0, declined: false, reasons: [] };
   const open = new Set(openRequirements(problem).map(entry => entry.value));

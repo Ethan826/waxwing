@@ -1,0 +1,107 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { pinCommand, pinnedWindow, windowFile, windowPrograms, windowTable }
+  from './r0-shadow-run.mjs';
+import { summaryOf } from './r0-shadow-summary.mjs';
+import { windowClasses } from './r0-shadow-classes.mjs';
+import { defectProbes, defects, falseContradictions }
+  from './r0-shadow-known.mjs';
+import { pinnedCensus } from './r0-census-run.mjs';
+import { pinnedRt8 } from './r0-rt8-run.mjs';
+import { outsideKinds } from './r0-census-classify.mjs';
+
+// Task 4.5: the shadow run and the window table (G-switch evidence;
+// plan §3.1, §3.2, Review Focus 1). Every declaration's class today and
+// under R0 as decided in shadow (`shadowChecking`: `online` alone, no
+// refuter, rule or shadow), and a row for each difference, pinned in
+// test/fixtures/r0/window.json, so a class that moves fails here. It
+// decides nothing and changes no acceptance. Corpus-wide, so serial.
+const programs = await windowPrograms();
+const table = windowTable(programs);
+const rows = table.rows;
+const rowAt = at => rows.find(row => row.at === at);
+
+test('the window equals its pinned table', () => {
+  assert.deepEqual(table, pinnedWindow(),
+    `${windowFile} is stale; re-pin with \`${pinCommand}\` and review`);
+});
+
+test('every row has a known class, its label, and no source', () => {
+  assert.ok(rows.length > 1000);
+  for (const row of rows) {
+    const known = windowClasses[row.class];
+    assert.ok(known !== undefined, row.class);
+    assert.equal(row.section, known.section, row.at);
+    assert.equal(row.section === null, row.class === 'defect', row.at);
+    assert.equal(row.source, undefined, row.at);
+    assert.match(row.hash, /^[0-9a-f]{64}$/);
+  }
+});
+
+const textOf = row => (row.today === 'compiles' ? null : row.today.text);
+test('each hand-labelled declaration is in the run as listed', () => {
+  for (const [at, text] of Object.entries(falseContradictions)) {
+    assert.equal(rowAt(at)?.class,
+      'false contradiction (D6) becomes Unresolved', at);
+    assert.equal(textOf(rowAt(at)), text, at);
+  }
+  for (const [at, { today }] of Object.entries(defects)) {
+    assert.equal(rowAt(at)?.class, 'defect', at);
+    assert.equal(textOf(rowAt(at)), today, at);
+  }
+});
+
+// §3.1 option C: listed, not adopted. Each listed row is refused both
+// today and under R0 (acceptance unchanged), with no blocker.
+test('option C lists only rows refused both ways, with no blocker', () => {
+  assert.deepEqual([...table.summary.optionC].sort(),
+    Object.keys(falseContradictions).sort());
+  for (const at of table.summary.optionC) {
+    const row = rowAt(at);
+    assert.equal(row.programCompiles, false, at);
+    assert.equal(row.r0.verdict, 'Unresolved Inference NoCandidate', at);
+    assert.deepEqual(row.blockers, [], at);
+  }
+});
+
+// Reconciliation with the census (test/fixtures/r0/census.json), over
+// the pinned corpus alone: the inline probes are not in it.
+const corpus = programs.filter(program =>
+  !program.origin.startsWith('inline:'));
+const census = pinnedCensus();
+test('the window reconciles with the census', () => {
+  const found = summaryOf(corpus);
+  assert.equal(found.programs.all, census.corpus.programs);
+  assert.equal(found.programs.compiling, census.corpus.accepted);
+  assert.equal(found.programs.secondSpreadAtResolve,
+    census.secondSpreadAtResolve);
+  for (const name of [...outsideKinds, 'ErasedRow'])
+    assert.deepEqual(found.blockers[name], {
+      declarations: census.categories[name].declarations,
+      compilingPrograms: census.categories[name].programs }, name);
+  assert.equal(found.stopped.withErasedRow, census.union.programs);
+  assert.equal(found.stopped.asDecided,
+    census.union.programsWithoutErasedRow);
+  const classes = found.classes;
+  assert.equal(classes['erased row: compiles today, census detector fires']
+    .declarations, census.erased.markedWithoutOutsideKind);
+  assert.equal(classes['BQ at a rigid variable: online declines']
+    .declarations, census.guard.rigid);
+  assert.equal(classes['BQ pending G-ValidR: compiles today'].declarations,
+    census.categories.BQPendingValidR.declarations);
+});
+
+// Reconciliation with RT8 (test/fixtures/r0/rt8.json), whose run this
+// reads: each RT8 class's count is its rows plus its agreements, over
+// RT8's sources (the corpus and R022's probes, not the defect probes).
+const defectOrigins = new Set(defectProbes.map(probe => probe.origin));
+test('the window reconciles with RT8', () => {
+  const counts = {};
+  for (const program of programs.filter(found =>
+    !defectOrigins.has(found.origin)))
+    for (const result of program.results) {
+      const rt8 = (result.row ?? result.agreement).rt8;
+      counts[rt8] = (counts[rt8] ?? 0) + 1;
+    }
+  assert.deepEqual(counts, pinnedRt8().classes);
+});

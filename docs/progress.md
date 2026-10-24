@@ -614,6 +614,23 @@ Follow-ups R023 (an obligation for Task 6's lowering) and R024 (Cov
 has no genericity check). Evidence in findings, "The hole contract's
 lacks/disjoint amendment".
 
+## R0 shadow tranche, Task 4.5: the shadow run and the window table (2026-10-23)
+
+Shadow only, no acceptance change; G-switch evidence that decides
+nothing. test/r0-shadow.serial.test.mjs reads RT8's run and pins, in
+test/fixtures/r0/window.json, a row for each declaration whose class
+today differs from R0's as decided in shadow (1,024 of 3,021), with
+today's code and text, R0's verdict, the window class, its §3.2 label,
+Review Focus 1 class, target and dependency, and a summary in
+declarations and programs: 245 compiling programs a live R0 verdict
+would stop (251 with the erased-row boundary, 256 with the bound-hole
+experiment). It reconciles with census.json and rt8.json exactly
+(asserted). Option C's list: the six D6 rows. Defect rows: FX030,
+FX031, FX010, R005B placeholders, R020, FX032 (two inline probes).
+Found on the way and fixed (test-only): the census walk reversed a
+program's arguments in place. No corpus re-pin (window.json has no
+`source`). Evidence in findings, "The window table".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

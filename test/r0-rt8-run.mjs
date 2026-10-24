@@ -44,7 +44,10 @@ const candidateFacts = (program, decl, today) => {
     holes: found.value0.holes };
 };
 
-const declarationsOf = ({ origin, source }) => {
+// A row also keeps its program, today's result and the decision, for
+// Task 4.5's window (test/r0-shadow-run.mjs), which reads this run rather
+// than deciding again.
+export const declarationsOf = ({ origin, source }) => {
   const program = programOf(source);
   if (program === null) return [];
   const today = checkProgram(program).outcomes;
@@ -53,13 +56,15 @@ const declarationsOf = ({ origin, source }) => {
     const facts = candidateFacts(program, decl, today[index].today);
     return { at: `${origin}#${decl.name}`, ...facts,
       class: accountFor(today[index].today, decided[index], facts.holes),
-      witness: witnessFor(decided[index]) };
+      witness: witnessFor(decided[index]), origin, source, program, decl,
+      today: today[index].today, decision: decided[index] };
   });
 };
 
 // The pinned corpus, then inline probes kept out of it (R022), so the
 // corpus manifest and the first-diagnostic snapshot stay as they are.
-export const rt8Rows = async () => [...await loadCorpus(), ...r022Probes]
+export const rt8Sources = async () => [...await loadCorpus(), ...r022Probes];
+export const rt8Rows = async () => (await rt8Sources())
   .flatMap(declarationsOf);
 
 const variableText = variable => variable === null ? ''
