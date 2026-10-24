@@ -209,19 +209,19 @@ occurring in a parameter or the own row), else its own effect-row
 variable, which grows only through recorded E1 `C ≡ C` equations and,
 if unbound, defaults to the closed row (the tail pass's closing).
 
-**E5, installation `with h { body }`.** m and C are read from h's
-marked type, wherever it comes from (an image, an instance, a literal;
-T3-c); C is the owned C if h's type owns one, else R's bare alias
-(Install `clausesOf`; T2-d; owned per E4′ or E4). Conditions: R is
-consumed into ρ ignoring marks (Consume `consumeIgnoring`: E2 with marks
-ignored, so inclusion, and ρ may hold more effects; N4); C is paired
-with ρ by key and position (Lend `partners`), recording only mark edges
-(no consumption, no arguments; T2-e); unless the frame is N (Console, unreachable today, FX011):
-`m ⊑ f`, each paired ρ label's mark `⊑ f`, and a rigid C tail gives
-`M ⊑ f` and ρ ending in ϱ (Frames `framed`); the body's ambient row is
-`f L + ρ`. Refusals: HandlerMayFail, ExpectedHandler (h's head not a
-handler); the rigid-tail mismatch is unreachable today (`Internal
-BodyState`, TailPass `installed`).
+**E5, installation `with h { body }`.** m and C are read from h's marked
+type, wherever it comes from (an image, an instance, a literal; T3-c); C
+is the owned C if h's type owns one, else R's bare alias (Install
+`clausesOf`; T2-d; owned per E4′ or E4). Conditions: R is consumed into
+ρ ignoring marks (Consume `consumeIgnoring`: E2 with marks ignored, so
+inclusion, and ρ may hold more effects; N4); C is paired with ρ by key
+and position (Lend `partners`), recording only mark edges (no
+consumption, no arguments; T2-e); unless the frame is N (Console,
+unreachable today, FX011): `m ⊑ f`, each paired ρ label's mark `⊑ f`,
+and a rigid C tail gives `M ⊑ f` and ρ ending in ϱ (Frames `framed`);
+the body's ambient row is `f L + ρ`. Refusals: HandlerMayFail,
+ExpectedHandler (h's head not a handler); the rigid-tail mismatch is
+unreachable today (`Internal BodyState`, TailPass `installed`).
 
 **E6, `defer e`** with row d (binding): no `Fail` label and no rigid
 tail in d (DeferMayFail, DeferMayPerform); each non-`Fail` label's
