@@ -792,7 +792,8 @@ removed when the hole defaults moved into `certify`, so its needle had
 no target. The row now restores the same defect in `certify` (holes
 judged unbound); it and `r0-certified-split` prove. R026's own check
 ran only the new row, not the whole suite, which is how this was
-missed.
+missed. Third run at d6ac71c (.build/verify-d6ac71c.log): EXIT 0;
+2,885/2,885 parallel, 135/135 serial, 209/209 regression proofs.
 
 ## R028: T1/T2's counts pinned exactly (2026-10-24)
 
