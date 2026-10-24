@@ -31,10 +31,18 @@ export const erasedType = (ty, hole = open) => {
       case 'TRecord': return { record: [found.value0.fields.map(field =>
         [field.value0, go(field.value1)]), found.value0.tails.map(tail =>
         (name(tail) === 'Rigid' ? { rigid: tail.value0 } : hole(tail)))] };
-      default: return bases[name(found)];
+      default: return base(found);
     }
   };
   return go(ty);
+};
+
+// Fails closed (BACKLOG R027): `undefined` for an unknown constructor
+// would equal any other unknown one and hide a difference.
+const base = found => {
+  if (!(name(found) in bases))
+    throw new Error(`erasedType: unknown type constructor ${name(found)}`);
+  return bases[name(found)];
 };
 
 // Any compiled value as JSON, each type through `typeOf` (`null`: as

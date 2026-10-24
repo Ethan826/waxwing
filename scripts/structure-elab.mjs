@@ -32,18 +32,24 @@ const paired = {
 
 // Each import declaration: its module, the text in parentheses (null
 // for an open import), `hiding`, and its alias. A declaration runs from
-// a line starting `import` over its indented continuation lines.
+// a line starting `import` over its indented continuation lines. Block
+// and line comments are removed first; a declaration the form still
+// cannot read is `unread`, which is a finding (BACKLOG R027).
 const importForm = new RegExp('^import\\s+([A-Z][\\w.]*)(\\s+hiding)?\\s*'
   + '(\\(([^()]|\\([^()]*\\))*\\))?\\s*(?:as\\s+([A-Z][\\w.]*))?\\s*$');
 export const importsOf = source => source.split(/\n(?=\S)/)
   .filter(block => block.startsWith('import ')).map(block => {
-    const text = block.replace(/--[^\n]*/g, '').replace(/\s+/g, ' ').trim();
+    const text = withoutComments(block).replace(/\s+/g, ' ').trim();
     const match = importForm.exec(text);
     return match === null ? { text, unread: true } : { text,
       module: match[1], hiding: match[2] !== undefined,
       list: match[3] === undefined ? null : match[3].slice(1, -1).trim(),
       alias: match[5] ?? null };
   });
+
+// PureScript block comments do not nest, so the first `-}` ends one.
+const withoutComments = text => text.replace(/\{-[\s\S]*?-\}/g, ' ')
+  .replace(/--[^\n]*/g, '');
 
 const bareTypes = (list, exceptions) => list !== null && list !== ''
   && list.split(',').map(item => item.trim()).every(item =>
@@ -68,7 +74,7 @@ const aliasFindings = (file, name, alias, bound) => {
 export const declarationOf = source => {
   const start = /^module\s/m.exec(source);
   if (start === null) return null;
-  const header = source.slice(start.index).replace(/--[^\n]*/g, '');
+  const header = withoutComments(source.slice(start.index));
   return /^module\s+[A-Z][\w.]*[\s\S]*?\bwhere\b/.exec(header)?.[0] ?? null;
 };
 
@@ -80,10 +86,12 @@ export const reexportSourceFindings = (sources = srcSources()) =>
     const list = declaration.includes('(')
       ? declaration.slice(declaration.indexOf('(')) : '';
     const imports = importsOf(source);
-    return [...list.matchAll(/\bmodule\s+([A-Z][\w.]*)/g)]
+    const unread = imports.filter(found => found.unread).map(found =>
+      `${file}: an import E6 cannot read: ${found.text}`);
+    return unread.concat([...list.matchAll(/\bmodule\s+([A-Z][\w.]*)/g)]
       .flatMap(([, alias]) => aliasFindings(file, name, alias,
         imports.filter(found => found.alias === alias
-          || (found.alias === null && found.module === alias))));
+          || (found.alias === null && found.module === alias)))));
   });
 
 const srcSources = () => Object.fromEntries(readdirSync('src',

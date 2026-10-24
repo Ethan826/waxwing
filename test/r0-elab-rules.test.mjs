@@ -140,6 +140,27 @@ test('E6 reads past a header comment that says where', () => {
     comment + widened }).length, 1);
 });
 
+// BACKLOG R027 (a): block comments are read past, and an import the
+// scan still cannot read is a finding, never skipped (the review hid a
+// constructor re-export behind `{- x -}`).
+test('E6 reads past block comments; an unread import is a finding', () => {
+  const widened = (imports, exports = ['module Exports']) => e6(
+    'Domain.Elaborating', exports, imports).length;
+  const constructor = '(Elaborating(..))';
+  assert.equal(widened([`import Domain.Elaborating.Internal {- x -}`
+    + ` ${constructor} as Exports`]), 1);
+  assert.equal(widened([`import Domain.Elaborating.Internal ${constructor}`
+    + ' {- x -} as Exports']), 1);
+  assert.equal(widened(['import Domain.Elaborating.Internal (Elaborating)'
+    + ' as Exports', `import Domain.Elaborating.Internal {- (a) -}`
+    + ` ${constructor} as Exports`]), 1);
+  assert.equal(widened(['import Domain.Elaborating.Internal {- x -}'
+    + ' (Elaborating) as Exports']), 0);
+  // Unreadable even without a re-export: still a finding.
+  assert.equal(widened(['import Domain.Elaborating.Internal ((x) as Exports'],
+    ['problem']), 1);
+});
+
 test('the real tree has no E6 finding; every declaration is read', () => {
   assert.deepEqual(reexportSourceFindings(), []);
   const sources = Object.fromEntries(readdirSync('src', { recursive: true })

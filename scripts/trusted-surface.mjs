@@ -8,6 +8,8 @@
 // change: node scripts/trusted-surface-pin.mjs. The pin catches new
 // surface only: a pinned name whose body, type or instance class changes
 // passes, so every diff to an allowed importer needs token review.
+import { tokenModules } from './structure-modules.mjs';
+
 export const manifestFile = 'scripts/trusted-surface.json';
 const repin = `re-pin with \`node scripts/trusted-surface-pin.mjs\`;`
   + ` a re-pin changes the trusted surface and needs review`;
@@ -177,12 +179,16 @@ export const surfaceFindings = (manifest, importers) => [
 
 // FFI JavaScript (src/**/*.js and output/<M>/foreign.js) naming a token
 // Internal module, from a module not allowed to import it. A textual scan:
-// a path built at run time evades it (docs/engineering.md).
-const internalPath = /Domain[./\\](Verdict|Recorded)[./\\]Internal/g;
+// a path built at run time evades it (docs/engineering.md). Every token
+// module, by dotted or path form (BACKLOG R027: it named two of six).
+const pathOf = name => name.split('.').join('[./\\\\]');
+const internalPath = new RegExp(`(${[...tokenModules]
+  .sort((one, other) => other.length - one.length).map(pathOf)
+  .join('|')})`, 'g');
 
 export const foreignFindings = (files, allowed) =>
   Object.entries(files).flatMap(([file, { module, js }]) =>
   [...new Set([...js.matchAll(internalPath)].map(match =>
-    `Domain.${match[1]}.Internal`))].filter(internal =>
+    match[1].replace(/[/\\]/g, '.')))].filter(internal =>
     !allowed(module, internal)).map(internal =>
     `${file} (FFI of ${module}) names ${internal}`));

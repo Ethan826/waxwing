@@ -8,6 +8,7 @@ import { coercionFindings, foreignModules, foreignSurfaceFindings }
   from '../scripts/forgery.mjs';
 import { compiledExports, foreignFindings, manifestFile, sourceExports,
   surfaceFindings, surfaceOf } from '../scripts/trusted-surface.mjs';
+import { tokenModules } from '../scripts/structure-modules.mjs';
 
 // Task 1.1 ruling (threat model): an allowed importer of a token Internal
 // module is trusted, so its export surface is pinned and reviewed, and FFI
@@ -119,6 +120,17 @@ test('FFI naming a token Internal module is a finding (probe E)', () => {
   assert.deepEqual(foreignFindings({ x: { module: 'Features.Check.Decide',
     js: 'import "../Domain.Recorded.Internal/index.js";' } }, tokenAllowed),
   ['x (FFI of Features.Check.Decide) names Domain.Recorded.Internal']);
+});
+
+// BACKLOG R027 (b): the scan covers every token module, not only the
+// first two: an FFI file naming any of them, by dotted or path form, from
+// a module that may not import it is a finding.
+test('FFI naming any token Internal module is a finding', () => {
+  for (const internal of tokenModules)
+    for (const form of [internal, internal.split('.').join('/')])
+      assert.deepEqual(foreignFindings({ x: { module: 'Runtime.Node',
+        js: `import "../${form}/index.js";` } }, tokenAllowed),
+      [`x (FFI of Runtime.Node) names ${internal}`], form);
 });
 
 test('the real tree matches its pin and its FFI names no token module',

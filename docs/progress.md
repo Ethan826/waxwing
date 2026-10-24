@@ -777,6 +777,18 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## R027: three boundary checks fail closed (2026-10-24)
+
+E6's re-export scan (scripts/structure-elab.mjs) removes block comments
+before parsing imports and module headers, and reports any import it
+still cannot read instead of skipping it; the real tree has none. The
+FFI token scan (scripts/trusted-surface.mjs) builds its pattern from
+`tokenModules`, so it covers all seven token modules, not two. The
+effect-erased projection (test/r0-elab-erase.mjs) throws on an unknown
+type constructor. Each part's new test failed before its fix (E6: one
+test, four near misses; FFI: Theorem.Internal unreported; erase:
+`undefined` returned). structure*, r0-elab-* tests: 86 pass.
+
 ## R029: the lowering boundary listed; `Elaboration` sealed (2026-10-24)
 
 The review-required list now also names what `certify` rests on
