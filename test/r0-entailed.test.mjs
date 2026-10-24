@@ -134,4 +134,10 @@ test('wellSorted: a variable as a type or as a tail, not both', () => {
   assert.equal(sorted([[t.tvar('x'), int], [xTail, rowOf('r')]]), false);
   assert.equal(sorted([[t.arrow(int, t.box(t.record([['a',
     t.tvar('r')]]))), rowOf('r')]]), false);
+  // Hardening re-review 2, m-5: an atom's type joined as `ty = ty` (the
+  // corpus check in test/r0-shadow.serial.test.mjs) shows the clash the
+  // equations alone do not: `{| r} = {a: Int}` with the atom `pr r`.
+  const tailOnly = [[rowOf('r'), t.record([['a', int]])]];
+  assert.equal(sorted(tailOnly), true);
+  assert.equal(sorted([...tailOnly, [t.tvar('r'), t.tvar('r')]]), false);
 });

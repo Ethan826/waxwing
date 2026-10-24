@@ -769,6 +769,14 @@ the site walk fails closed, a rows-last property over Resolve, D1's
 families in the shadow-only check, and Shadow's header. Evidence in
 findings, "D1 part b: the 7.1b review's minors".
 
+## R0 shadow hardening, R021 follow-ups: re-review 2's minors (2026-10-24)
+
+A fixture for the read-back's own well-sortedness guard (m-4, seen
+failing with the guard deleted); the corpus assertion covers `BQ` atom
+types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
+Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
+follow-ups: hardening re-review 2's minors".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

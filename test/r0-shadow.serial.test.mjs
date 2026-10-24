@@ -25,10 +25,17 @@ const { Tuple } = await load('Data.Tuple');
 const equationsOf = problem => [...problem.d, ...problem.b]
   .map(entry => entry.value).filter(atom => atom.constructor.name === 'Equal')
   .map(atom => new Tuple(atom.value0, atom.value1));
+// Hardening re-review 2, m-5: `wellSorted` reads equations only, so a
+// `BQ` atom's type (`Printable` or `Comparable`) joins them as `ty = ty`,
+// which adds its variables' uses and no constraint: a variable a tail in
+// the equations and a type in an atom is caught too.
+const atomsOf = problem => problem.bq
+  .map(entry => new Tuple(entry.value.value0, entry.value.value0));
 
 test('the well-sortedness guard fires on no generated problem', () => {
   const seen = new Set();
   let checked = 0;
+  let atoms = 0;
   const illSorted = [];
   for (const row of rt8Rows) {
     if (seen.has(row.program)) continue;
@@ -41,10 +48,14 @@ test('the well-sortedness guard fires on no generated problem', () => {
       const problem = generatedOrThrow(generated, decl.name);
       if (!wellSorted(equationsOf(problem)))
         illSorted.push(`${row.origin}#${decl.name}`);
+      else if (!wellSorted([...equationsOf(problem), ...atomsOf(problem)]))
+        illSorted.push(`${row.origin}#${decl.name} (an atom)`);
+      atoms += problem.bq.length;
     }
   }
   assert.deepEqual(illSorted, []);
   assert.ok(checked > 3000, `only ${checked} problems`);
-  console.log(`R021 guard: ${checked} generated problems, `
-    + `${illSorted.length} ill-sorted`);
+  assert.ok(atoms > 0, 'no BQ atom checked');
+  console.log(`R021 guard: ${checked} generated problems, ${atoms} BQ`
+    + ` atoms, ${illSorted.length} ill-sorted`);
 });

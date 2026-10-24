@@ -4,6 +4,7 @@ import { load } from './r0-generate-support.mjs';
 import { describe } from './r0-decide-support.mjs';
 import { stableStringify } from './r0-canonical.mjs';
 import { onlineFrom } from './r0-online-support.mjs';
+import { supportFrom } from './r0-entailed-support.mjs';
 
 // Task 4.3, acceptance criterion 2: the online search's read-back
 // (Features.Check.Strategy.ReadBack) recovers a σ that passes
@@ -128,4 +129,27 @@ test('the certificate lists the holes the read-back bound', () => {
   const found = online.search(free, online.problemOf(free, 'f'));
   assert.equal(found.value0.holes.length, 1);
   assert.deepEqual(candidateOf('field').certificate.holes, []);
+});
+
+// Hardening re-review 2, m-4: the read-back's own `wellSorted` guard
+// (ReadBack.purs `completing`, over the equations left once positioned
+// values are substituted). `field`'s problem plus one equation reading
+// its auxiliary row `rest` as a type: still one tail, but ill-sorted,
+// so the read claims `Heuristic` (with the guard deleted it claimed
+// `ClaimsComplete`; docs/findings.md, "R021 follow-ups").
+const { t } = await supportFrom(load);
+const Atom = await load('Domain.Recorded.Atom');
+test('an ill-sorted auxiliary equation makes the read Heuristic', () => {
+  const { problem, certificate } = candidateOf('field');
+  const read = given => Online.searched(online.legacyText)(given)(
+    new Right({ function: certificate.checked, state: null })).value1;
+  const [rest] = online.pairs(problem.vars).filter(([, info]) =>
+    info.position.constructor.name === 'Auxiliary'
+    && info.sort.constructor.name === 'SortRow')
+    .map(([variable]) => variable);
+  assert.ok(rest !== undefined, 'field has an auxiliary row');
+  const illSorted = { ...problem, b: [...problem.b, { ...problem.b[0],
+    value: new Atom.Equal(new Atom.TVar(rest), t.base('Int')) }] };
+  assert.equal(read(problem).constructor.name, 'ClaimsComplete');
+  assert.equal(read(illSorted).constructor.name, 'Heuristic');
 });

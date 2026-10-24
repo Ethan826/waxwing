@@ -4694,9 +4694,11 @@ variable both a type and a tail) and for the review's case.
 (re-review cases A1 and A2 below), and the citation of
 Generate/Assemble.purs does not establish well-sortedness; a guard now
 enforces it. Both
-callers' problems come from generation, which keeps sorts apart
-(Generate/Assemble.purs); this is cited from the review, not
-re-checked here. The claim is stated in Mgu's header and amended into
+callers' problems come from generation. That generation keeps sorts
+apart is no longer argued from Generate/Assemble.purs; it is checked
+on the corpus (test/r0-shadow.serial.test.mjs: no generated problem is
+ill-sorted, equations and `BQ` atoms; reworded after hardening
+re-review 2, m-6). The claim is stated in Mgu's header and amended into
 docs/plans/r0-entailed-ground.md "Binding" (I-3).
 
 **I-2 (checked).** test/r0-mgu-eager.mjs ports be4df16's eager
@@ -5000,3 +5002,31 @@ generator behaviour changed.
 7. **Decide/Shadow.purs's header** names `BinderShape` and
    `VariableSort` as `InputShape` faults (comment only; trusted
    surface, so it needs token review; the line-1 marker stays).
+
+## R021 follow-ups: hardening re-review 2's minors (2026-10-24)
+
+Three minor items from the second re-review of the shadow hardening
+(R021), landed with the Task 7.1b rebase. Test and docs only.
+
+- **m-4 (checked).** The read-back's own guard (ReadBack.purs
+  `completing`: `wellSorted remaining`) has a fixture in
+  test/r0-readback.test.mjs: `field`'s generated problem plus one
+  equation reading its auxiliary row variable as a type (`rest = Int`)
+  is still one-tail but ill-sorted, and the read claims `Heuristic`;
+  the unmodified problem claims `ClaimsComplete`. With `&& wellSorted
+  remaining` deleted (and the then-unused import) in a scratch copy and
+  rebuilt, the fixture failed: `actual: 'ClaimsComplete'`, expected
+  `'Heuristic'`.
+- **m-5 (checked).** The corpus assertion in
+  test/r0-shadow.serial.test.mjs also joins each `BQ` atom's type to
+  the equations as `ty = ty`, which adds its variables' uses and no
+  constraint: 3,017 generated problems, 7,607 `BQ` atoms, 0 ill-sorted.
+  test/r0-entailed.test.mjs checks the encoding on the re-review's
+  probe (`{| r} = {a: Int}` is well-sorted; with `pr r` joined it is
+  not). Production `wellSorted` still reads equations only; the probe's
+  readings (Reduced, InScope) agree with the eager unifier's, so this
+  is a recorded gap in the guard, not an R021 difference, and no
+  generated problem has it.
+- **m-6.** The sentence under "Precondition" that cited
+  Generate/Assemble.purs for well-sortedness is reworded to point at
+  the corpus check.
