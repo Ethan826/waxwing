@@ -391,3 +391,83 @@ were kept at S1 where the statements claim coverage.
 | F16 O4/O5 | `⟨p, clauses⟩` is evidence (D3); `main`'s slot decided (D5) |
 | F17 positions | D4 |
 | S3 (a)-(i) | references fixed; `⟨p, clauses⟩` restored; §7 lists the Atom.purs changes; I7 exact; D7 fresh reference; trust table extended; D10 replaces "identical value"; the `effectErased` case stays until validation exists, then compilation requires `EffectsChecked`; D8 threads the ambient row |
+
+## 10. Adversarial review 2 (2026-10-24): not ready
+
+A fresh independent reviewer (Opus, read-only; nothing run) reviewed
+revision 2 at 3daf6f9. The controller re-read N1's and N2's evidence
+(expected-nofail.inferred.json's note: "work's nofail Log reaches
+caller's plain Log through r's record meta"; r0-erased-rows §7.1 item
+3: `EffectsUnchecked` "stays Unresolved"; Strategy.purs `checked` turns
+any `Certified` into an accepted Solution) and they hold. Review-1
+status: F5, F8, F9, F11, F13, F16, F17 resolved; F1-F4, F6, F10, F12,
+F14 partly (via the findings below); F7 resolved as text but not
+checkable from the problem alone (N9).
+
+**S1.**
+- **N1. Marks carried by bindings have no evidence slot.** Marks are
+  constrained through type equalities (FX008 §3.3-3.4); in the cited
+  fixtures the `nofail` mark travels through stripped bindings (a
+  record image, a lambda row, a stage row). Evidence only at recorded
+  mark variables leaves the validator to infer the rest, or to treat
+  every program whose marks pass through a binding as unsupported. Fix:
+  evidence holds a mark for every label occurrence in every witness row
+  and image (keyed by variable and label path), plus m and C for every
+  handler type in an image; K2 compares marks except on inference rows;
+  equivalently, a marked pre-Strip package of which `build` reads only
+  the stripped projection.
+- **N2. An effect failure would be a Solved verdict.** D10 puts
+  `ObligationFailed` and `EffectsUnchecked` inside an accepted
+  `Certified`, which `checked` turns into a Solution; rule 2 stops at
+  the first acceptance. §7.1 item 3 (the author's) keeps
+  `EffectsUnchecked` Unresolved, and ruling 3's "check failure" is a
+  `CheckRefusal` in the code. Fix: `ObligationFailed` is a
+  `CheckRefusal` (the run continues to other strategies);
+  `EffectsUnchecked` is an Unresolved reason; or fold the standing into
+  `Compilation` so that `Witnessed` implies `EffectsChecked`.
+- **N3. Holes nested in rows have no explicit contract.** I5 covers
+  `Free` at effect-row variables only; a type or record hole sitting
+  only in an effect label argument is erased from the atoms and judged
+  by no one. Fix: the validator judges every hole in a row at
+  lowering's default (effect tail none, type Int, record tail dropped);
+  say whether K2 compares holes syntactically or at defaults; extend
+  r0-certify-argument C1-C2 to effect rows.
+
+**S2.** N4 generation records no mark variables today; D3 and D8 must
+enumerate FX008's mark sites (local annotations, the handler's m, each
+installation's frame mark, opening at a use, consumption copies). N5
+no slot for each clause's row, the deferred row, or the ambient rows of
+`with`, `handle` and clause bodies; generation's context has no row
+field. N6 D5 omits `⟨p, apply⟩`, a lambda's inner stage rows and
+partial-application stages. N7 refusal kinds missing from D8:
+LabelMismatch, row-driven TypeMismatch and InfiniteType, FX032; the
+mutation granularity cannot detect a dropped FX008 constraint class;
+use FX008's constraint generators as obligation kinds and its probes as
+the oracle. N8 `SortMark` variables would enter Cov's domain with no
+binding form, so every marked program would be `Uncovered`; the
+exhaustive matches to change are unlisted. N9 I3 needs declaration
+arities and effect rigids the recorded problem does not hold (an
+amendment to `Fields`); the implicit ambient row variable counts as
+declared. N10 the evidence domain must equal the recorded sites
+exactly. N11 D10's change surface (Strategy.purs `checked`, `Solution`,
+`Attempt`, `NoWitnessReason`, `certifySound`, the certify argument) is
+unlisted. N12 the online read-back must compute a mark assignment (for
+example the least solution of the mark graph) or honest packages fail.
+N13 §6 lacks forged clause-row and mark evidence on programs accepted
+today, rows nested in `Inline` images, missing or extra evidence; the
+D5 fixture's expectation is indeterminate. N14 completeness of a
+ground mark assignment relative to FX008's path criterion is a derived
+claim needing an argument and a source (least solutions in a finite
+lattice, e.g. Rehof and Mogensen 1999) and an oracle.
+
+**S3.** Reject.purs's raise is at :78, not :69; fixture paths lack
+`.json`; "Pottier 2014's solved forms" is unspecific; D10's "only
+`EffectsChecked` builds" must be labelled post-interim; row inclusion
+by consumption is FX001's design, not Leijen's (novelty flag).
+
+Separating examples proposed by the reviewer (twelve, including the two
+FX008 fixtures with free mark choices, two strategies where the first
+fails effects, LabelMismatch, scoped order, Fail payloads, holes in
+label arguments and nested tails, hole identity, a local-annotation
+mark, missing and extra evidence, and the stage and Apply sites) are
+to be added in revision 3.
