@@ -65,7 +65,7 @@ export const runRegression = async (rows, names = [],
   try {
     if (proved.length > 0) buildBase(`${base}/baseline`);
     const results = await runPool(proved, jobs, proveRow);
-    const failed = results.filter(result => result.error !== undefined)
+    const failed = results.filter(result => !result.ok)
       .map(result => result.item.name);
     console.log(`Regression proofs: ${proved.length - failed.length} of `
       + `${proved.length} passed (jobs ${jobs}).`);

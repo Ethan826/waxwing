@@ -777,6 +777,20 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## Regression runner: a reason-less rejection is a failure (2026-10-24)
+
+An external review found that scripts/regression-pool.mjs marked success
+as `error: undefined`, so a row whose prover rejected with no reason
+(`Promise.reject()`, `throw undefined`) was counted as passed by
+scripts/regression-run.mjs. Results now carry `ok`; the runner filters on
+it. New tests: every kind of rejection (none, undefined, null, Error)
+with a success before and after (test/regression-pool.test.mjs), and a
+runner test where one row rejects without a reason
+(test/regression-run.test.mjs). Both, and the updated order test,
+failed against the old pool (3 of 9), and pass after the fix (9 of 9).
+The real prover throws assertion errors, which carry a reason, so this
+does not show that any earlier regression proof failed unnoticed.
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

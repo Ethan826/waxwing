@@ -33,6 +33,19 @@ test('one row whose defect does not fail is the only failure', async t => {
     lines.join('\n'));
   assert.equal(exitCodeFor(result), 1);
 });
+test('a row rejecting without a reason is counted as failed',
+  async t => {
+    const prove = async row => {
+      await pause();
+      if (row.name === 'delta') return Promise.reject();
+    };
+    const { result, lines } = await captured(t, () => runRegression(rows,
+      [], 4, options(prove)));
+    assert.deepEqual(result, ['delta']);
+    assert.ok(lines.includes('Regression proofs: 4 of 5 passed (jobs 4).'),
+      lines.join('\n'));
+    assert.equal(exitCodeFor(result), 1);
+  });
 test('all rows passing gives no failures and exit code 0', async t => {
   const { result, lines } = await captured(t, () => runRegression(rows, [],
     4, options(passingProver)));

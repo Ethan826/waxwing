@@ -270,8 +270,10 @@ adding a bypass allowlist.
   baseline removed at the end; rows run in a bounded async pool
   (scripts/regression-pool.mjs: min(6, cores - 2) at once, or
   WAXWING_REGRESSION_JOBS=<n>, 1 being sequential), every row runs even if
-  one fails, and failing rows are named with exit status 1; the pool is
-  tested in test/regression-pool.test.mjs.
+  one fails, and failing rows are named with exit status 1; a row fails
+  when its prover rejects, with or without a reason (the pool's `ok`
+  field, not the error value, marks failure); the pool is tested in
+  test/regression-pool.test.mjs.
   test/regression-incremental.test.mjs, run by
   verify, keeps this honest: it mutates Domain.Ids (TypeId newtype to
   data), asserts that modules other than the edited one change, and

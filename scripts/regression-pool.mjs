@@ -18,8 +18,10 @@ export const regressionJobs = (env = process.env) => {
   return jobs;
 };
 // Runs `task(item)` for every item with at most `jobs` in flight. Never
-// stops early: resolves, in item order, with { item, error } where error is
-// undefined for a task that resolved.
+// stops early: resolves, in item order, with { item, ok: true } for a task
+// that resolved and { item, ok: false, error } for one that rejected. The
+// flag, not the error, marks failure: a rejection's reason may be
+// undefined (`Promise.reject()`, `throw undefined`).
 export const runPool = async (items, jobs, task) => {
   if (!Number.isInteger(jobs) || jobs < 1) {
     throw new Error(`jobs must be a positive integer: ${jobs}`);
@@ -29,9 +31,9 @@ export const runPool = async (items, jobs, task) => {
   const attempt = async item => {
     try {
       await task(item);
-      return { item, error: undefined };
+      return { item, ok: true };
     } catch (error) {
-      return { item, error };
+      return { item, ok: false, error };
     }
   };
   const worker = async () => {
