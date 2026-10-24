@@ -146,8 +146,8 @@ export const r0Rows = [
     // an expression's, so P4's `inst` variables have no value.
     name: 'r0-ctor-slot',
     file: 'src/Features/Check/Strategy/ReadBack/Position.purs',
-    needle: '  AtPattern (Checked.Pattern found) → ownerArgument found.ty'
-      + ' >>= indexed\n    at.rank\n',
+    needle: '  AtPattern (Checked.Pattern found) → readType <$>\n'
+      + '    (ownerArgument found.ty >>= indexed at.rank)\n',
     replacement: '  AtPattern _ → Left "a pattern where an expression was'
       + ' expected"\n',
     probe: 'r0-ctor-slot',
