@@ -5959,3 +5959,41 @@ derivation, equality, copying, installation) as well as F1-F7. The
 effect-kinds research stays separate: this tranche concerns faithful,
 sound validation of the existing contract, not a stronger meaning of
 `pure`.
+
+### 18.83 Revision 3.3's findings: repairs authorized, review held (2026-10-24)
+
+The author ratified, on the report alone (not an inspection of the
+changes):
+
+1. **O1, O2** (r0-amin-statements.md §13a): add both equations to §4
+   now, each with a forged refusal case and an honest control. The
+   earlier completeness claim about recorded equalities was false;
+   correct every occurrence.
+2. **K1** (§13b): a potential soundness blocker. "Empty remainder" is
+   not adopted because today's compiler refuses the example. Construct
+   the rigid-row instantiation, trace which `Log` handler receives the
+   operation, distinguish unsafe accidental handling from deliberate
+   dynamic dispatch; if the analysis supports it, propose the stronger
+   premise with its completeness cost.
+3. **O4**: the predicted checker bug was disproved; the specification
+   question remains. Write the two candidate rules precisely and
+   compare them against Definition 4.1's safety argument. No ruling yet.
+4. **Instances and annotations**: approved as a specification of the
+   recorded inputs validation needs; statements only.
+5. **U7**: its own correspondence check; an alias is not assumed to
+   preserve equality.
+6. **K2**: replace the source examples, keeping the abstract graphs
+   with accurate labels. **K3, K4**: resolved before review.
+7. Then the targeted review over the complete recording-to-installation
+   path, these additions included, **held until K1 is investigated**.
+8. **Effect research**: preserved on branch `research/effect-kinds`
+   under research/effect-kinds/, with an index linking the research
+   note; E06a, E15 and E16's near miss run with the existing compiler,
+   predictions, sources, commands and outputs kept, disagreements
+   included; no toolchain installed. Qualifications: main-result
+   printing and fatal reporting need an explicit observation boundary,
+   and their existence does not show ordinary effect checking unsound;
+   "no directly applicable theorem found in this survey", with each
+   author's definition of purity attributed.
+
+Implementation, Task 4.6 and G-D1 stay blocked. No push.
