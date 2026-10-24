@@ -137,7 +137,8 @@ test('a declaration the program lacks stops the run (ruling R10)', () => {
 // and the shadow run reports it as a broken invariant.
 const generationFaults = ['UnknownFunction', 'UnknownCtor', 'UnknownType',
   'UnknownEffect', 'UnknownBuiltinEffect', 'UnknownOperation',
-  'UnboundLocal', 'PayloadShape', 'ResultShape'];
+  'UnboundLocal', 'PayloadShape', 'BinderShape', 'ResultShape',
+  'VariableSort'];
 
 test('a generation fault stops the run', () => {
   const declared = readFileSync('src/Features/Check/Generate/Fault.purs',

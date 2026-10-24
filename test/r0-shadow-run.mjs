@@ -30,6 +30,7 @@ const { resolve } = await load('Features.Resolve');
 const { wire } = await load('Format.Diagnostic');
 const { generationInputs } = await load('Features.Check.Generate.Inputs');
 const { generate, staticRules } = await load('Features.Check.Generate');
+const { problem } = await load('Domain.Elaborating');
 const Problem = await load('Domain.Problem');
 
 const named = value => value.constructor.name;
@@ -45,8 +46,8 @@ const todayOf = today => (named(today) === 'Right' ? null
 
 // `g0Guard`'s reasons, read only where RT8 says it declined.
 const guardOf = (row, inputs) => (!row.class.includes('declined by g0Guard')
-  ? [] : requirementsOf(right(generate(inputs.tables)(inputs.signatures)(
-    row.decl), `generation of ${row.at}`)).reasons);
+  ? [] : requirementsOf(problem(right(generate(inputs.tables)(
+    inputs.signatures)(row.decl), `generation of ${row.at}`))).reasons);
 
 const factsOf = (row, inputs) => {
   const described = describe(row.decision);

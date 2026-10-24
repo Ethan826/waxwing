@@ -13,6 +13,7 @@ const { parse } = await load('Format.Parse');
 const { resolve } = await load('Features.Resolve');
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
+const Elaborating = await load('Domain.Elaborating');
 
 const right = (result, phase) => {
   if (result.constructor.name !== 'Right')
@@ -24,13 +25,19 @@ const right = (result, phase) => {
 export const resolved = source =>
   right(resolve(right(parse(source), 'parse')), 'resolve');
 
-// A generation result's problem; a generation fault fails the caller.
-export const generatedOrThrow = (result, name) => {
+// A generation result's value (`staticRules`' refusals, or D1's
+// `Elaborating`); a generation fault fails the caller.
+export const rightOrThrow = (result, name) => {
   if (result.constructor.name !== 'Right')
     throw new Error(`${name}: generation fault`
       + ` ${result.value0.constructor.name}`);
   return result.value0;
 };
+
+// A generation result's problem. Since Task 7.1b `generate` gives D1's
+// `Elaborating`, whose `problem` is Task 3.2's recorded problem.
+export const generatedOrThrow = (result, name) =>
+  Elaborating.problem(rightOrThrow(result, name));
 
 // Every declaration of a resolved program with its canonical problem.
 export const problemsOf = program => {

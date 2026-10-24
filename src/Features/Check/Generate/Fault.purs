@@ -4,6 +4,11 @@
 -- callee, `Unit` or a marker, which would drop obligations silently.
 -- `Gen` is `Either`, an applicative, so the rules stay applicative
 -- (T-R0b §4): a fault is a result, never a branch on a solved shape.
+-- Since R0 Task 7.1b, generation builds checked IR: `BinderShape` is a
+-- fail clause with no binder, which the checked clause needs and
+-- Resolve always writes; `VariableSort` is an occurrence's naming with
+-- no handle for an effect-row variable, which Resolve keeps out of type
+-- and tail positions. The generator stops rather than invent either.
 -- Each maps to today's `Internal` kind, both of which stop a run under
 -- ruling R3's partition: `TableLookup` for an id, `InputShape` for a
 -- shape.
@@ -16,7 +21,7 @@ module Features.Check.Generate.Fault
 import Data.Either (Either)
 import Domain.Ids (EffectId, TypeId)
 import Domain.Problem (InternalKind(..), Problem(..))
-import Domain.Resolved (CtorId, FunctionId, LocalId)
+import Domain.Resolved (CtorId, FunctionId, LocalId, VarId)
 
 data GenerationFault
   = UnknownFunction FunctionId
@@ -27,7 +32,9 @@ data GenerationFault
   | UnknownOperation EffectId Int
   | UnboundLocal LocalId
   | PayloadShape
+  | BinderShape
   | ResultShape
+  | VariableSort VarId
 
 type Gen a = Either GenerationFault a
 
@@ -44,5 +51,9 @@ generationProblem = case _ of
   UnboundLocal _ → Internal InputShape "Generation: unbound local"
   PayloadShape → Internal InputShape
     "Generation: a fail clause without one payload"
+  BinderShape → Internal InputShape
+    "Generation: a fail clause without its binder"
   ResultShape → Internal InputShape
     "Generation: no written result type"
+  VariableSort _ → Internal InputShape
+    "Generation: an effect-row variable in a type position"

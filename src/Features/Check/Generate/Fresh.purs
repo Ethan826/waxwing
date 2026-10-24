@@ -1,84 +1,76 @@
--- Problem variables (T-R0b §2.3, §5.2): a fresh one by its canonical name
--- `⟨p, role⟩` with its site-table entry, a callee's or owner's variables
--- named at an occurrence (`θ`), the declaration's own (`ν_f`), and the
--- paths that name nodes (§6).
+-- Problem variables (T-R0b §2.3, §5.2) as D1's handles (spec §3.3; R0
+-- Task 7.1b): a fresh one by its canonical name `⟨p, role⟩` with its
+-- site-table entry, minted by `Generate.Gen.fresh`; a callee's or
+-- owner's variables named at an occurrence (`θ`); and the paths that
+-- name nodes (§6).
 module Features.Check.Generate.Fresh
-  ( FreshAt
-  , Naming
+  ( Instance
   , auxiliary
   , child
   , childAt
   , childOf
-  , fresh
-  , instVars
-  , instNaming
+  , instances
   , nodeRes
-  , rigidNaming
   , sortVar
   ) where
 
 import Prelude
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Domain.Recorded.Atom
-  ( CheckedName(..)
-  , Quant(..)
-  , Role(..)
-  , Var(..)
-  , VarInfo
-  , VarSort(..)
-  )
+import Domain.Elaborating.Types (UseSort)
+import Domain.Elaborating.Types as Use
+import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
 import Domain.Recorded.Origin (Path(..), RuleId, Step(..))
 import Domain.Resolved (VarId(..))
 import Domain.Syntax (Sort(..), Span)
+import Features.Check.Generate.Elab (GenTy, Handle, Ref(..))
+import Features.Check.Generate.Gen (Gen, fresh)
+import Features.Check.Generate.Node (flex)
+import Features.Check.Generate.Translate (Naming(..))
 
--- How a declaration's `VarId`s read at one place: `ν_f` or `θ` (§2.2).
-type Naming = VarId → Var
-
--- Where a fresh variable is introduced and what it is.
-type FreshAt =
-  { path ∷ Path
-  , role ∷ Role
-  , rule ∷ RuleId
-  , span ∷ Span
-  , sort ∷ VarSort
-  , position ∷ CheckedName
+-- An occurrence's variables: the naming `θ`, the instantiation's slots
+-- in the callee's order, with the sort each is read by, the `adm`
+-- site's handles and the `split` site's (the record-row ones).
+type Instance s =
+  { naming ∷ Naming s
+  , slots ∷ Array (Tuple UseSort (GenTy s))
+  , all ∷ Array (Ref s)
+  , rows ∷ Array (Ref s)
   }
 
--- Inside the declaration: its rigid variable `i` (Sig1).
-rigidNaming ∷ Naming
-rigidNaming = RigidVar
-
--- At an occurrence at `path`: the fresh `⟨path, inst i⟩` (§2.2).
-instNaming ∷ Path → Naming
-instNaming path = FreshVar path <<< Inst
-
--- A fresh, flexible variable with its entry; the key agrees with the
--- origin's path and role by construction (Task 3.1 carry).
-fresh ∷ FreshAt → Tuple Var VarInfo
-fresh at = Tuple (FreshVar at.path at.role)
-  { sort: at.sort
-  , quant: Exists
-  , origin: { path: at.path, role: Just at.role, rule: at.rule, span: at.span }
-  , position: at.position
-  }
-
--- `⟨p, inst i⟩` for each variable of a callee, owner or effect that is not
--- an effect row, at its instantiation slot `Slot p i` (§5.2).
-instVars ∷ Path → RuleId → Span → Array Sort → Array (Tuple Var VarInfo)
-instVars path rule span sorts = Array.catMaybes
-  (Array.mapWithIndex instVar sorts)
+-- `⟨p, inst i⟩` for each variable of a callee, owner or effect that is
+-- not an effect row, at its instantiation slot `Slot p i` (§5.2). The
+-- checked instantiation holds no effect-row slot (Check/
+-- DeclarationUse.purs `typeArgument`), so slot `i` is the `i`th one
+-- here when, as Resolve numbers them, effect rows come last (checked on
+-- the corpus by T5's slot positions).
+instances
+  ∷ ∀ s. Path → RuleId → Span → Array Sort → Gen s (Instance s)
+instances path rule span sorts = made
+  <$> traverse minted (Array.mapWithIndex Tuple sorts)
   where
-  instVar index sort = map (made index) (sortVar sort)
-  made index sort = fresh
+  minted (Tuple index sort) = maybe (pure Nothing) (mint index)
+    (sortVar sort)
+  mint index varSort = Just <<< Tuple varSort <$> fresh
     { path
     , role: Inst (VarId index)
     , rule
     , span
-    , sort
+    , sort: varSort
     , position: Slot path index
     }
+  made found =
+    { naming: Instantiated (map (map handleOf) found)
+    , slots: map slotOf (Array.catMaybes found)
+    , all: map (FlexRef <<< handleOf) (Array.catMaybes found)
+    , rows: map (FlexRef <<< handleOf)
+        (Array.filter isRow (Array.catMaybes found))
+    }
+  handleOf (Tuple _ handle) = handle
+  slotOf (Tuple varSort handle) = Tuple (useOf varSort) (flex handle)
+  isRow (Tuple varSort _) = varSort == SortRow
 
 -- A child's path: the parent's with these steps after it.
 child ∷ Path → Array Step → Path
@@ -96,12 +88,13 @@ steps ∷ String → String → Array Step
 steps constructor field = [ Named constructor, Named field ]
 
 -- A fresh variable with no checked-IR position (§5.2, §5.3).
-auxiliary ∷ Path → RuleId → Role → VarSort → Span → Tuple Var VarInfo
+auxiliary
+  ∷ ∀ s. Path → RuleId → Role → VarSort → Span → Gen s (Handle s)
 auxiliary path rule role sort span = fresh
   { path, role, rule, span, sort, position: Auxiliary }
 
 -- `⟨p, res⟩`: the node's own type, positioned at `NodeType p` (§5.2).
-nodeRes ∷ Path → RuleId → Span → Tuple Var VarInfo
+nodeRes ∷ ∀ s. Path → RuleId → Span → Gen s (Handle s)
 nodeRes path rule span = fresh
   { path, role: Res, rule, span, sort: SortType, position: NodeType path }
 
@@ -111,3 +104,8 @@ sortVar = case _ of
   TypeSort → Just SortType
   RecordSort → Just SortRow
   RowSort → Nothing
+
+useOf ∷ VarSort → UseSort
+useOf = case _ of
+  SortType → Use.TypeSort
+  SortRow → Use.RecordSort

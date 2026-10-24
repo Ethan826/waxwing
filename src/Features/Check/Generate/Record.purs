@@ -4,30 +4,24 @@
 -- variables carry the label's span (§6; docs/findings.md "RT1's
 -- translator", reading 14). Children: `RecordLiteral/fields/i/value`,
 -- `RecordExtension/items/i/Given/value` (or `…/Spreading/value`),
--- `FieldAccess/record`, `RecordUpdate/record`,
--- `RecordUpdate/fields/i/value`, `RecordRemoval/record`.
+-- `FieldAccess/record`; E27 and E28 are Generate.Update. Checked nodes
+-- as today's (Check/Record.purs, Extension.purs; D1 spec §3.5, R0 Task
+-- 7.1b).
 module Features.Check.Generate.Record
   ( extension
   , fieldAccess
   , literal
-  , removal
-  , update
+  , shape
   ) where
 
 import Prelude
-import Data.Traversable (sequence)
 import Data.Array as Array
+import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..), fst)
-import Domain.Recorded.Atom
-  ( Atom(..)
-  , CheckedName(..)
-  , RTExpr(..)
-  , Role(..)
-  , Var
-  , VarInfo
-  , VarSort(..)
-  )
+import Data.Traversable (sequence, traverse)
+import Data.Tuple (Tuple(..))
+import Domain.Checked.Internal as Checked
+import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
 import Domain.Recorded.Origin
   ( OriginKind(..)
   , Path
@@ -36,111 +30,122 @@ import Domain.Recorded.Origin
   , Step(..)
   )
 import Domain.Resolved (Expr, FieldValue, LiteralItem(..))
-import Domain.Syntax (FieldName, Label, Span)
+import Domain.Syntax (FieldName, Span)
 import Features.Check.Generate.Context (Context, Recur, at)
-import Features.Check.Generate.Fault (Gen)
+import Features.Check.Generate.Elab (Ref(..))
 import Features.Check.Generate.Fresh
   ( auxiliary
   , child
   , childAt
   , childOf
-  , fresh
   , nodeRes
   )
-import Features.Check.Generate.Out
-  ( Generated
-  , Item(..)
-  , Listed
-  , concatOut
+import Features.Check.Generate.Gen
+  ( Gen
+  , GenAtom(..)
+  , GenEntry(..)
+  , Tagged
   , emit
-  , listed
-  , varsOut
+  , fresh
   )
-import Features.Check.Generate.Translate (record)
+import Features.Check.Generate.Node
+  ( Ruled
+  , fixed
+  , flex
+  , recordOf
+  , tagged
+  )
 
 -- E24: `{ l̄: τ̄ }`, no entry (labels are distinct, so it is defined).
-literal ∷ Recur → Context → Path → Array FieldValue → Gen Generated
+literal
+  ∷ ∀ s. Recur s → Context s → Path → Array FieldValue → Gen s (Ruled s)
 literal recur context path fields = built <$> sequence
   (Array.mapWithIndex value fields)
   where
   built generated =
-    { ty: record (Array.zip (map _.name fields) (map _.ty generated)) []
-    , out: concatOut (map _.out generated)
+    { ty: recordOf (Array.zip (map _.name fields) (map _.ty generated)) []
+    , node: fixed
+        ( Checked.RecordLiteral <$> traverse field
+            (Array.zip fields generated)
+        )
+    , emits: traverse_ _.emits generated
     }
-  value index field = recur context
+  value index found = recur context
     (child (childAt path "RecordLiteral" "fields" index) [ Named "value" ])
-    field.value
+    found.value
+  field (Tuple found generated) = { label: found.name, value: _ }
+    <$> generated.expr
 
 -- E25: per spread `j` (from 1), `eq τ_{s_j} { ...⟨p, spread j⟩ }`, then
 -- `eq ⟨p, res⟩ { l̄: τ̄, ...⟨p, spread 1⟩ … }` (B2). Several spreads are
 -- in the model with no marker (S1 reads their roles).
 extension
-  ∷ Recur → Context → Path → Span → Array LiteralItem → Gen Generated
-extension recur context path span items = extended context path span items
-  <$> sequence (Array.mapWithIndex item items)
+  ∷ ∀ s
+  . Recur s
+  → Context s
+  → Path
+  → Span
+  → Array LiteralItem
+  → Gen s (Ruled s)
+extension recur context path span items = do
+  generated ← sequence (Array.mapWithIndex item items)
+  let pairs = Array.zip items generated
+  spreads ← traverse spreadVar
+    (Array.mapWithIndex Tuple (Array.mapMaybe spreading pairs))
+  res ← flex <$> nodeRes path (ExprRule 25) span
+  pure
+    { ty: res
+    , node: fixed (Checked.RecordExtension <$> traverse checkedItem pairs)
+    , emits: do
+        emit (at context path (ExprRule 25))
+          ( map spreadAtom spreads
+              <>
+                [ shape RowB 2 span
+                    ( GenEqual res
+                        ( recordOf (Array.mapMaybe given pairs)
+                            (map tailOf spreads)
+                        )
+                    )
+                ]
+          )
+        traverse_ _.emits generated
+    }
   where
   item index = case _ of
-    Given field → recur context (itemPath index "Given") field.value
+    Given found → recur context (itemPath index "Given") found.value
     Spreading _ value → recur context (itemPath index "Spreading") value
   itemPath index form = child (childAt path "RecordExtension" "items" index)
     [ Named form, Named "value" ]
-
-extended
-  ∷ Context → Path → Span → Array LiteralItem → Array Generated → Generated
-extended context path span items generated =
-  { ty: res
-  , out: concatOut
-      ( [ varsOut (Array.snoc (map _.var spreads) resVar)
-        , emit (at context path (ExprRule 25))
-            ( map spreadAtom spreads
-                <> [ shape RowB 2 span (Equal res (record given tails)) ]
-            )
-        ]
-          <> map _.out generated
-      )
-  }
-  where
-  pairs = Array.zip items generated
-  given = Array.mapMaybe givenField pairs
-  givenField (Tuple found result) = case found of
+  given (Tuple found result) = case found of
     Given field → Just (Tuple field.name result.ty)
     Spreading _ _ → Nothing
-  spreads = Array.mapWithIndex spreadVar (Array.mapMaybe spreading pairs)
   spreading (Tuple found result) = case found of
     Given _ → Nothing
     Spreading itemSpan _ → Just { span: itemSpan, ty: result.ty }
-  spreadVar index found =
-    { var: auxiliary path (ExprRule 25) (Spread (index + 1)) SortRow
-        found.span
-    , found
-    }
-  tails = map (fst <<< _.var) spreads
+  spreadVar (Tuple index found) = { found, handle: _ }
+    <$> auxiliary path (ExprRule 25) (Spread (index + 1)) SortRow found.span
+  tailOf spread = FlexRef spread.handle
   spreadAtom spread = shape RowB 2 spread.found.span
-    (Equal spread.found.ty (record [] [ fst spread.var ]))
-  resVar = nodeRes path (ExprRule 25) span
-  res = TVar (fst resVar)
+    (GenEqual spread.found.ty (recordOf [] [ tailOf spread ]))
+  checkedItem (Tuple found result) = case found of
+    Given field → Checked.Given <<< { label: field.name, value: _ }
+      <$> result.expr
+    Spreading _ _ → Checked.Spreading <$> result.expr
 
 -- E26: `eq τ_e { l: ⟨p, field l⟩, ...⟨p, rest⟩ }` (B4); the field is
 -- positioned at the node, the rest an auxiliary.
 fieldAccess
-  ∷ Recur → Context → Path → Span → Expr → FieldName → Gen Generated
-fieldAccess recur context path span value label = selection
-  <$> recur context (childOf path "FieldAccess" "record") value
-  where
-  selection operand = selectedFrom context path span label operand
-
-selectedFrom ∷ Context → Path → Span → FieldName → Generated → Generated
-selectedFrom context path span label operand =
-  { ty: TVar (fst field)
-  , out: concatOut
-      [ varsOut [ field, rest ]
-      , emit (at context path (ExprRule 26))
-          [ shape RowB 4 label.span (Equal operand.ty selected) ]
-      , operand.out
-      ]
-  }
-  where
-  field = fresh
+  ∷ ∀ s
+  . Recur s
+  → Context s
+  → Path
+  → Span
+  → Expr
+  → FieldName
+  → Gen s (Ruled s)
+fieldAccess recur context path span value label = do
+  operand ← recur context (childOf path "FieldAccess" "record") value
+  field ← fresh
     { path
     , role: Field label.name
     , rule: ExprRule 26
@@ -148,88 +153,20 @@ selectedFrom context path span label operand =
     , sort: SortType
     , position: NodeType path
     }
-  rest = auxiliary path (ExprRule 26) Rest SortRow span
-  selected = record [ Tuple label.name (TVar (fst field)) ] [ fst rest ]
-
--- E27: per field, `eq τ_e { l: ⟨p, upd l⟩, ...⟨p, updrest l⟩ }` and
--- `eq τ_{e_l} ⟨p, upd l⟩` (B7); the result is `τ_e`.
-update
-  ∷ Recur → Context → Path → Expr → Array FieldValue → Gen Generated
-update recur context path value fields = updatedWith context path fields
-  <$> recur context (childOf path "RecordUpdate" "record") value
-  <*> sequence (Array.mapWithIndex given fields)
-  where
-  given index field = recur context
-    (child (childAt path "RecordUpdate" "fields" index) [ Named "value" ])
-    field.value
-
-updatedWith
-  ∷ Context
-  → Path
-  → Array FieldValue
-  → Generated
-  → Array Generated
-  → Generated
-updatedWith context path fields operand generated =
-  { ty: operand.ty
-  , out: concatOut
-      ( [ varsOut (Array.concatMap _.vars updated)
-        , emit (at context path (ExprRule 27))
-            (Array.concatMap _.entries updated)
-        , operand.out
-        ]
-          <> map _.out generated
-      )
-  }
-  where
-  updated = Array.zipWith updateOf fields generated
-  updateOf field result = fieldUpdate path operand.ty field result.ty
-
-fieldUpdate
-  ∷ Path
-  → RTExpr
-  → FieldValue
-  → RTExpr
-  → { vars ∷ Array (Tuple Var VarInfo), entries ∷ Array Listed }
-fieldUpdate path operand field given =
-  { vars: [ upd, rest ]
-  , entries:
-      [ shape RowB 7 field.span (Equal operand updated)
-      , shape RowB 7 field.span (Equal given (TVar (fst upd)))
-      ]
-  }
-  where
-  upd = auxiliary path (ExprRule 27) (Upd field.name) SortType field.span
-  rest = auxiliary path (ExprRule 27) (UpdRest field.name) SortRow
-    field.span
-  updated = record [ Tuple field.name (TVar (fst upd)) ] [ fst rest ]
-
--- E28: `eq τ_e { l̄: ⟨p, field l⟩, ...⟨p, rest⟩ }` (B8); the result is
--- `{ ...⟨p, rest⟩ }`. Every variable is an auxiliary.
-removal
-  ∷ Recur → Context → Path → Span → Expr → Array Label → Gen Generated
-removal recur context path span value labels =
-  removedFrom context path span
-    labels <$> recur context (childOf path "RecordRemoval" "record") value
-
-removedFrom ∷ Context → Path → Span → Array Label → Generated → Generated
-removedFrom context path span labels operand =
-  { ty: record [] [ fst rest ]
-  , out: concatOut
-      [ varsOut (Array.snoc (map fieldVar labels) rest)
-      , emit (at context path (ExprRule 28))
-          [ shape RowB 8 span
-              (Equal operand.ty (record (map removed labels) [ fst rest ]))
+  rest ← auxiliary path (ExprRule 26) Rest SortRow span
+  pure
+    { ty: flex field
+    , node: fixed (Checked.FieldAccess <@> label.name <$> operand.expr)
+    , emits: do
+        emit (at context path (ExprRule 26))
+          [ shape RowB 4 label.span
+              ( GenEqual operand.ty
+                  (recordOf [ Tuple label.name (flex field) ] [ FlexRef rest ])
+              )
           ]
-      , operand.out
-      ]
-  }
-  where
-  fieldVar label = auxiliary path (ExprRule 28) (Field label.name) SortType
-    label.span
-  removed label = Tuple label.name (TVar (fst (fieldVar label)))
-  rest = auxiliary path (ExprRule 28) Rest SortRow span
+        operand.emits
+    }
 
 -- A record-shape atom (origin body) at a span.
-shape ∷ RowGroup → Int → Span → Atom → Listed
-shape group number span atom = listed (ToB atom) group number Body span
+shape ∷ ∀ s. RowGroup → Int → Span → GenAtom s → Tagged s
+shape group number span atom = tagged (EmitB atom) group number Body span

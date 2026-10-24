@@ -4,7 +4,10 @@
 -- (§6; docs/findings.md "RT1's translator", reading 2): a constraint at
 -- `constraints/i`, a parameter at `parameters/i`, a rigid variable at
 -- `parameters/variables/i`, the result at `result`, the effect row's
--- label arguments at `result/row`, a joined pair at `joined/i`.
+-- label arguments at `result/row`, a joined pair at `joined/i`. Over
+-- D1's generator types (spec §3.3; R0 Task 7.1b): Sig1 writes the rigid
+-- variables at once, and the entries are returned unwritten, so that
+-- they precede the body's, as in Task 3.2's problem.
 module Features.Check.Generate.Signature
   ( calleeClauses
   , declaration
@@ -14,13 +17,13 @@ module Features.Check.Generate.Signature
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either, note)
+import Data.Foldable (sequence_, traverse_)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Either (Either(..))
-import Data.Maybe (Maybe, fromMaybe, maybe)
+import Data.Maybe (fromMaybe)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
-import Domain.Recorded.Atom (Atom(..), RTExpr, ReqAtom(..))
 import Domain.Recorded.Origin
   ( OriginKind(..)
   , Path(..)
@@ -29,28 +32,32 @@ import Domain.Recorded.Origin
   , RuleId(..)
   , Step(..)
   )
-import Domain.Resolved (FunctionDecl, LocalId(..), Ty, VarId)
+import Domain.Resolved (FunctionDecl, LocalId(..), Ty, VarId(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Span, typeRefSpan)
 import Domain.Type.Parts (rowArguments)
+import Features.Check.Generate.Elab (GenTy, Ref(..))
 import Features.Check.Generate.Facts (impliedOf, signatureTypes)
-import Features.Check.Generate.Fault (Gen, GenerationFault(..))
-import Features.Check.Generate.Fresh (Naming, rigidNaming)
-import Features.Check.Generate.Inputs (Signature, Tables)
-import Features.Check.Generate.Out
-  ( Item(..)
-  , Listed
-  , Out
-  , concatOut
+import Features.Check.Generate.Fault (GenerationFault(..))
+import Features.Check.Generate.Fresh (sortVar)
+import Features.Check.Generate.Gen
+  ( Gen
+  , GenAtom(..)
+  , GenEntry(..)
+  , GenReq(..)
+  , Tagged
   , emit
-  , listed
-  , markersAt
+  , lifted
+  , rigid
   )
-import Features.Check.Generate.Rigid (rigidVariables)
-import Features.Check.Generate.Translate (translate)
+import Features.Check.Generate.Inputs (Signature, Tables)
+import Features.Check.Generate.Node (markersAt, tagged)
+import Features.Check.Generate.Translate (Naming(..), named, translate)
 
 -- Where a signature rule emits: the declaration and a path.
 type Place = { decl ∷ Resolved.FunctionId, path ∷ Path }
+
+type Fallible = Either GenerationFault
 
 -- `main` is the entry, as Resolve decides it (Resolve/Entry.purs
 -- `isEntry`): the one function of that name.
@@ -58,22 +65,28 @@ isEntry ∷ FunctionDecl → Boolean
 isEntry function = function.name == "main"
 
 -- Sig2: `Γ₀(LocalId i) = ⟦T_i⟧ν_f` (Check/Function.purs `parameterLocal`).
-parameterLocals ∷ Tables → FunctionDecl → Gen (Map LocalId RTExpr)
+parameterLocals ∷ ∀ s. Tables → FunctionDecl → Fallible (Map LocalId (GenTy s))
 parameterLocals tables function = Map.fromFoldable
   <$> sequence (Array.mapWithIndex local function.parameters)
   where
   local index parameter = Tuple (LocalId index) <<< _.ty
-    <$> translate tables rigidNaming parameter.ty
+    <$> translate tables Rigidly parameter.ty
 
--- Sig1, Sig3-Sig10, given the body's type `τ_b` and span (Sig3). An
--- entry at `result` has the written result type's span (T-R0b §6, "the
--- node's"): `syntax` holds the parameters' types, then the result's.
-declaration ∷ Tables → FunctionDecl → RTExpr → Span → Gen Out
-declaration tables function body bodySpan =
-  note ResultShape
-    ( typeRefSpan <$> Array.index function.syntax
-        (Array.length function.parameters)
-    ) >>= declared
+-- Sig1, written now; Sig3-Sig10, returned, given the body's type `τ_b`
+-- and span (Sig3). An entry at `result` has the written result type's
+-- span (T-R0b §6, "the node's"): `syntax` holds the parameters' types,
+-- then the result's.
+declaration
+  ∷ ∀ s. Tables → FunctionDecl → GenTy s → Span → Gen s (Gen s Unit)
+declaration tables function body bodySpan = do
+  resultSpan ← lifted
+    ( note ResultShape
+        ( typeRefSpan <$> Array.index function.syntax
+            (Array.length function.parameters)
+        )
+    )
+  traverse_ rigid (Array.catMaybes (Array.mapWithIndex rigidAt function.sorts))
+  lifted (declared resultSpan)
   where
   declared resultSpan = ado
     parameters ← sequence (Array.mapWithIndex parameterAt function.parameters)
@@ -81,71 +94,76 @@ declaration tables function body bodySpan =
     row ← rowFacts tables (place InResult [ Named "row" ])
       (fromMaybe function.span function.rowSpan)
       (rowArguments function.row)
-    written ← translate tables rigidNaming function.result
+    written ← translate tables Rigidly function.result
     in
-      concatOut
-        ( [ rigidVariables function ]
-            <> Array.mapWithIndex constraintAt function.constraints
+      sequence_
+        ( Array.mapWithIndex constraintAt function.constraints
             <> parameters
             <> [ result, row ]
             <> Array.mapWithIndex joinedAt function.joined
             <> [ entryAt resultSpan written.ty, bodyAt written.ty ]
         )
   place root more = { decl: function.id, path: Path { root, steps: more } }
+  rigidAt index sort = map (rigidOf index) (sortVar sort)
+  rigidOf index sort =
+    { variable: VarId index
+    , sort
+    , path: Path
+        { root: InParameters, steps: [ Named "variables", Index index ] }
+    , rule: SigRule 1
+    , span: function.span
+    }
   constraintAt index = constraint (place InConstraints [ Index index ])
   parameterAt index parameter = ownType tables
     (place InParameters [ Index index ])
     parameter.span
     parameter.ty
   joinedAt index pair = sigAt (place InJoined [ Index index ]) 7
-    [ listed (ToD (pairAtom rigidNaming pair)) RowA 4 Types pair.span ]
+    [ tagged (EmitD (pairAtom RigidRef pair)) RowA 4 Types pair.span ]
   entryAt span written
     | isEntry function = sigAt (place InResult []) 10
-        [ listed (ToBQ (Printable written)) RowC 5 Contract span ]
-    | otherwise = concatOut []
+        [ tagged (EmitBQ (GenPrintable written)) RowC 5 Contract span ]
+    | otherwise = pure unit
   bodyAt written = sigAt (place InBody []) 3
-    [ listed (ToB (Equal body written)) RowB 1 Body bodySpan ]
+    [ tagged (EmitB (GenEqual body written)) RowB 1 Body bodySpan ]
 
 -- θ(D_g) for E3 and E5: a callee's clauses under the occurrence's
 -- naming, written (constraints in order) then implied (Sig6's facts,
 -- Sig7's pairs, Sig8's facts).
 calleeClauses
-  ∷ Tables
-  → Naming
+  ∷ ∀ s
+  . Tables
+  → Naming s
   → Signature
-  → Gen { written ∷ Array Atom, implied ∷ Array Atom }
+  → Fallible { written ∷ Array (GenAtom s), implied ∷ Array (GenAtom s) }
 calleeClauses tables naming callee = clauses
   <$> traverse (impliedOf tables naming) (signatureTypes callee)
+  <*> traverse (requirementAtoms naming) callee.constraints
+  <*> traverse (namedPair naming) callee.joined
   where
-  clauses found =
-    { written: Array.concatMap (requirementAtoms naming) callee.constraints
+  clauses found written pairs =
+    { written: Array.concat written
     , implied: Array.concatMap _.beside found
-        <> map (pairAtom naming) callee.joined
+        <> pairs
         <> Array.concatMap _.passed found
     }
 
-sigAt ∷ Place → Int → Array Listed → Out
+sigAt ∷ ∀ s. Place → Int → Array (Tagged s) → Gen s Unit
 sigAt place rule = emit
   { decl: place.decl, path: place.path, rule: SigRule rule }
 
 -- Sig4 per label (the label's span), Sig5 per pair (contract).
-constraint ∷ Place → Resolved.Requirement → Out
+constraint ∷ ∀ s. Place → Resolved.Requirement → Gen s Unit
 constraint place = case _ of
   Resolved.Lacks clause → sigAt place 4
-    ( map (lacked clause.variable)
-        clause.labels
-    )
+    (map (lacked clause.variable) clause.labels)
   Resolved.Disjoint clause → sigAt place 5
-    [ listed (ToD (pairAtom rigidNaming clause)) RowA 2 Contract
+    [ tagged (EmitD (pairAtom RigidRef clause)) RowA 2 Contract
         clause.span
     ]
   where
-  lacked variable label = listed
-    ( ToD
-        ( Lacks (rigidNaming variable)
-            label.name
-        )
-    )
+  lacked variable label = tagged
+    (EmitD (GenLacks (RigidRef variable) label.name))
     RowA
     1
     Contract
@@ -153,49 +171,51 @@ constraint place = case _ of
 
 -- Sig6 (record labels, A3), then Sig8 (declared types' clauses, A5, and
 -- §2.2's markers) for one of `f`'s parameter or result types.
-ownType ∷ Tables → Place → Span → Ty VarId → Gen Out
-ownType tables place span ty = owned <$> impliedOf tables rigidNaming ty
-  <*> translate tables rigidNaming ty
+ownType ∷ ∀ s. Tables → Place → Span → Ty VarId → Fallible (Gen s Unit)
+ownType tables place span ty = owned <$> impliedOf tables Rigidly ty
+  <*> translate tables Rigidly ty
   where
-  owned found translated = concatOut
-    [ sigAt place 6 (map (lacksEntry RowA 3 span) found.beside)
-    , sigAt place 8
-        ( map (lacksEntry RowA 5 span) found.passed
-            <> markersAt Types span translated.marks
-        )
-    ]
+  owned found translated = do
+    sigAt place 6 (map (lacksEntry span) found.beside)
+    sigAt place 8
+      ( map (passedEntry span) found.passed
+          <> markersAt Types span translated.marks
+      )
 
 -- Sig6 and Sig8 over the effect row's label arguments (no markers: the
 -- row is erased, so nothing there is translated).
-rowFacts ∷ Tables → Place → Span → Array (Ty VarId) → Gen Out
+rowFacts
+  ∷ ∀ s. Tables → Place → Span → Array (Ty VarId) → Fallible (Gen s Unit)
 rowFacts tables place span types = rowOut
-  <$> traverse (impliedOf tables rigidNaming) types
+  <$> traverse (impliedOf tables Rigidly) types
   where
-  rowOut found = concatOut
-    [ sigAt place 6
-        ( map (lacksEntry RowA 3 span)
-            (Array.concatMap _.beside found)
-        )
-    , sigAt place 8
-        ( map (lacksEntry RowA 5 span)
-            (Array.concatMap _.passed found)
-        )
-    ]
+  rowOut found = do
+    sigAt place 6 (map (lacksEntry span) (Array.concatMap _.beside found))
+    sigAt place 8 (map (passedEntry span) (Array.concatMap _.passed found))
 
-lacksEntry ∷ RowGroup → Int → Span → Atom → Listed
-lacksEntry group number span atom = listed (ToD atom) group number Types
-  span
+lacksEntry ∷ ∀ s. Span → GenAtom s → Tagged s
+lacksEntry span atom = tagged (EmitD atom) RowA 3 Types span
 
-requirementAtoms ∷ Naming → Resolved.Requirement → Array Atom
+passedEntry ∷ ∀ s. Span → GenAtom s → Tagged s
+passedEntry span atom = tagged (EmitD atom) RowA 5 Types span
+
+requirementAtoms
+  ∷ ∀ s. Naming s → Resolved.Requirement → Fallible (Array (GenAtom s))
 requirementAtoms naming = case _ of
-  Resolved.Lacks clause → map (lacking clause.variable) clause.labels
-  Resolved.Disjoint clause → [ pairAtom naming clause ]
+  Resolved.Lacks clause → lacking clause.labels <$> named naming clause.variable
+  Resolved.Disjoint clause → pure <$> namedPair naming clause
   where
-  lacking variable label = Lacks (naming variable) label.name
+  lacking labels ref = map (GenLacks ref <<< _.name) labels
 
-pairAtom ∷ ∀ r. Naming → { variables ∷ Tuple VarId VarId | r } → Atom
+namedPair
+  ∷ ∀ s r
+  . Naming s
+  → { variables ∷ Tuple VarId VarId | r }
+  → Fallible (GenAtom s)
+namedPair naming { variables: Tuple one other } =
+  GenDisjoint <$> named naming one <*> named naming other
+
+pairAtom
+  ∷ ∀ s r. (VarId → Ref s) → { variables ∷ Tuple VarId VarId | r } → GenAtom s
 pairAtom naming { variables: Tuple one other } =
-  Disjoint (naming one) (naming other)
-
-note ∷ ∀ a. GenerationFault → Maybe a → Gen a
-note fault = maybe (Left fault) Right
+  GenDisjoint (naming one) (naming other)

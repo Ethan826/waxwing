@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { phaseOf } from './r0-probe-support.mjs';
-import { generatedOrThrow, load, resolved }
+import { rightOrThrow, load, resolved }
   from './r0-generate-support.mjs';
 
 // R0 Task 3.2: `staticRules` (T-R0a §3.2; T-R0b §1, §10), the
@@ -22,7 +22,7 @@ const rules = source => {
   const program = resolved(source);
   const { tables, signatures } = Inputs.generationInputs(program);
   return program.functions.flatMap(decl =>
-    generatedOrThrow(Generate.staticRules(tables)(signatures)(decl),
+    rightOrThrow(Generate.staticRules(tables)(signatures)(decl),
       decl.name).map(refusal =>
       [decl.name, refusal.constructor.name, refusal.value0.constructor.name,
         refusal.value1.root.constructor.name, stepsOf(refusal.value1)]));

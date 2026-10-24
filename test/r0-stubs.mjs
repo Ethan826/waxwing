@@ -111,6 +111,7 @@ const recordedFrom = async load => {
   const { resolve } = await load('Features.Resolve');
   const { generationInputs } = await load('Features.Check.Generate.Inputs');
   const { generate } = await load('Features.Check.Generate');
+  const Elaborating = await load('Domain.Elaborating');
   const Atom = await load('Domain.Recorded.Atom');
   const Origin = await load('Domain.Recorded.Origin');
   const Map = await load('Data.Map.Internal');
@@ -118,8 +119,8 @@ const recordedFrom = async load => {
   const problem = (source, name = 'f') => {
     const program = resolve(parse(source).value0).value0;
     const decl = program.functions.find(item => item.name === name);
-    return generate(generationInputs(program).tables)(
-      generationInputs(program).signatures)(decl).value0;
+    return Elaborating.problem(generate(generationInputs(program).tables)(
+      generationInputs(program).signatures)(decl).value0);
   };
   // E25's auxiliary row variable `⟨p, spread j⟩`, at the first B atom.
   const withSpread = (recorded, spread) => {

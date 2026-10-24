@@ -4,27 +4,22 @@
 -- listed order (§6 "Index"), so the index is fixed by the rule alone.
 module Features.Check.Generate.Out
   ( At
-  , Generated
   , Item(..)
   , Listed
   , Out
   , TypeMarker(..)
   , concatOut
   , emit
-  , listed
-  , markersAt
   , noOut
-  , typeAt
   , varsOut
   ) where
 
-import Prelude
 import Data.Array as Array
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple)
 import Domain.Recorded.Atom
   ( Atom
   , CallSite
-  , OutsideKind(..)
+  , OutsideKind
   , RTExpr
   , ReqAtom
   , Var
@@ -35,9 +30,8 @@ import Domain.Recorded.Origin
   , Origin
   , OriginKind
   , Path
-  , RowGroup(..)
   , RuleId
-  , SpecRow(..)
+  , SpecRow
   )
 import Domain.Resolved (FunctionId)
 import Domain.Syntax (Span)
@@ -52,9 +46,6 @@ type Out =
   , vars ∷ Array (Tuple Var VarInfo)
   , types ∷ Array (Tuple Path RTExpr)
   }
-
--- An expression's or pattern's result: its type and what it contributes.
-type Generated = { ty ∷ RTExpr, out ∷ Out }
 
 -- Which part of the problem an entry joins.
 data Item
@@ -93,10 +84,6 @@ concatOut outs =
   , types: Array.concatMap _.types outs
   }
 
-listed ∷ Item → RowGroup → Int → OriginKind → Span → Listed
-listed item group number kind span =
-  { item, row: SpecRow group number, kind, span }
-
 -- The rule's entries at its path, indexed in listed order.
 emit ∷ At → Array Listed → Out
 emit at items = concatOut (Array.mapWithIndex entryOut items)
@@ -109,19 +96,6 @@ emit at items = concatOut (Array.mapWithIndex entryOut items)
     , span: found.span
     , kind: found.kind
     }
-
--- The rows T-R0b gives §2.2's markers under every rule (O5, F8, O3;
--- docs/findings.md "RT1's translator", reading 7).
-markersAt ∷ OriginKind → Span → Array TypeMarker → Array Listed
-markersAt kind span = map marked
-  where
-  marked = case _ of
-    OverRecords → listed (ToOutside DataOverRecords) RowO 5 kind span
-    Application → listed (ToOutside DataApplication) RowF 8 kind span
-    HandlerMark → listed (ToOutside HandlerType) RowO 3 kind span
-
-typeAt ∷ Path → RTExpr → Out
-typeAt path ty = noOut { types = [ Tuple path ty ] }
 
 varsOut ∷ Array (Tuple Var VarInfo) → Out
 varsOut vars = noOut { vars = vars }

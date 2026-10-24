@@ -193,6 +193,22 @@
    "assemble"
   ]
  },
+ "Features.Check.Generate.Block": {
+  "source": [
+   "block"
+  ],
+  "compiled": [
+   "block"
+  ]
+ },
+ "Features.Check.Generate.Body": {
+  "source": [
+   "generateIn"
+  ],
+  "compiled": [
+   "generateIn"
+  ]
+ },
  "Features.Check.Generate.Builtin": {
   "source": [
    "Builtin(..)",
@@ -209,16 +225,29 @@
  },
  "Features.Check.Generate.Call": {
   "source": [
+   "applied",
    "call",
    "construct",
    "ctorRef",
    "functionRef"
   ],
   "compiled": [
+   "applied",
    "call",
    "construct",
    "ctorRef",
    "functionRef"
+  ]
+ },
+ "Features.Check.Generate.Callee": {
+  "source": [
+   "Called",
+   "ctorInstance",
+   "functionInstance"
+  ],
+  "compiled": [
+   "ctorInstance",
+   "functionInstance"
   ]
  },
  "Features.Check.Generate.Context": {
@@ -237,12 +266,10 @@
  },
  "Features.Check.Generate.Control": {
   "source": [
-   "block",
    "lambda",
    "match"
   ],
   "compiled": [
-   "block",
    "lambda",
    "match"
   ]
@@ -418,23 +445,21 @@
    "UnknownOperation",
    "UnboundLocal",
    "PayloadShape",
+   "BinderShape",
    "ResultShape",
+   "VariableSort",
    "generationProblem"
   ]
  },
  "Features.Check.Generate.Fresh": {
   "source": [
-   "FreshAt",
-   "Naming",
+   "Instance",
    "auxiliary",
    "child",
    "childAt",
    "childOf",
-   "fresh",
-   "instVars",
-   "instNaming",
+   "instances",
    "nodeRes",
-   "rigidNaming",
    "sortVar"
   ],
   "compiled": [
@@ -442,11 +467,8 @@
    "child",
    "childAt",
    "childOf",
-   "fresh",
-   "instVars",
-   "instNaming",
+   "instances",
    "nodeRes",
-   "rigidNaming",
    "sortVar"
   ]
  },
@@ -520,6 +542,28 @@
    "operationShape"
   ]
  },
+ "Features.Check.Generate.Node": {
+  "source": [
+   "Generated",
+   "Ruled",
+   "arrowOf",
+   "fixed",
+   "flex",
+   "markersAt",
+   "none",
+   "recordOf",
+   "tagged"
+  ],
+  "compiled": [
+   "arrowOf",
+   "fixed",
+   "flex",
+   "markersAt",
+   "none",
+   "recordOf",
+   "tagged"
+  ]
+ },
  "Features.Check.Generate.Operator": {
   "source": [
    "application",
@@ -541,17 +585,13 @@
  "Features.Check.Generate.Out": {
   "source": [
    "At",
-   "Generated",
    "Item(..)",
    "Listed",
    "Out",
    "TypeMarker(..)",
    "concatOut",
    "emit",
-   "listed",
-   "markersAt",
    "noOut",
-   "typeAt",
    "varsOut"
   ],
   "compiled": [
@@ -566,10 +606,7 @@
    "HandlerMark",
    "concatOut",
    "emit",
-   "listed",
-   "markersAt",
    "noOut",
-   "typeAt",
    "varsOut"
   ]
  },
@@ -587,23 +624,13 @@
    "extension",
    "fieldAccess",
    "literal",
-   "removal",
-   "update"
+   "shape"
   ],
   "compiled": [
    "extension",
    "fieldAccess",
    "literal",
-   "removal",
-   "update"
-  ]
- },
- "Features.Check.Generate.Rigid": {
-  "source": [
-   "rigidVariables"
-  ],
-  "compiled": [
-   "rigidVariables"
+   "shape"
   ]
  },
  "Features.Check.Generate.Signature": {
@@ -744,18 +771,29 @@
  },
  "Features.Check.Generate.Translate": {
   "source": [
+   "Naming(..)",
    "Translated",
    "Translations",
-   "arrowOf",
-   "record",
+   "named",
    "translate",
    "translateAll"
   ],
   "compiled": [
-   "arrowOf",
-   "record",
+   "Rigidly",
+   "Instantiated",
+   "named",
    "translate",
    "translateAll"
+  ]
+ },
+ "Features.Check.Generate.Update": {
+  "source": [
+   "removal",
+   "update"
+  ],
+  "compiled": [
+   "removal",
+   "update"
   ]
  },
  "Features.Check.Refute.Rules": {

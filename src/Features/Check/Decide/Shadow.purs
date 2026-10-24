@@ -16,18 +16,22 @@
 -- `legacyText` renders today's diagnostic for the online search's
 -- untrusted hint; the caller injects it (Format renders, Task 4.5).
 --
--- `shadowDecisions` runs every declaration: generation, then `decide`.
+-- `shadowDecisions` runs every declaration: generation, the seal check
+-- (Task 7.1b), then `decide`.
 -- A generation fault is a trusted component's failure (Task 3.2 ruling
 -- (2): `TableLookup` or `InputShape`, both stopping under ruling R3), so
 -- it is `BrokenInvariant`, never a strategy's failure.
 module Features.Check.Decide.Shadow
   ( generationStop
   , shadowChecking
+  , shadowDecision
   , shadowDecisions
   ) where
 
 import Prelude
+import Data.Array (null)
 import Data.Either (Either(..), either)
+import Domain.Elaborating (Elaborating, problem, untracked)
 import Domain.Problem (Problem(..))
 import Domain.Resolved as Resolved
 import Domain.Syntax (Diagnostic)
@@ -65,13 +69,30 @@ shadowDecisions
   → Budget
   → Resolved.Program
   → Array (Either InternalFault Decision)
-shadowDecisions legacyText budget program = map decided program.functions
+shadowDecisions legacyText budget program = map
+  (shadowDecision checking (generate inputs.tables inputs.signatures))
+  program.functions
   where
   checking = shadowChecking legacyText budget program
   inputs = generationInputs program
-  decided declaration = either (Left <<< generationStop)
-    (decide checking)
-    (generate inputs.tables inputs.signatures declaration)
+
+-- One declaration: generation, D1's seal check right after it, then
+-- `decide` (D1 spec §3.5, §5 layer 2; R0 Task 7.1b). A seal fault is
+-- generation's, trusted code's, so it stops the run before `decide`.
+-- The generator is injected, so a test can give one that reads outside
+-- tracking.
+shadowDecision
+  ∷ ∀ a
+  . Checking
+  → (Resolved.FunctionDecl → Either GenerationFault (Elaborating a))
+  → Resolved.FunctionDecl
+  → Either InternalFault Decision
+shadowDecision checking generated declaration =
+  either (Left <<< generationStop) sealed (generated declaration)
+  where
+  sealed elaborating =
+    if null (untracked elaborating) then decide checking (problem elaborating)
+    else Left (BrokenInvariant "elaboration: the seal check failed")
 
 generationStop ∷ GenerationFault → InternalFault
 generationStop fault = BrokenInvariant case generationProblem fault of

@@ -32,6 +32,7 @@ import Data.Array as Array
 import Data.Either (Either, either)
 import Data.Maybe (Maybe(..), maybe')
 import Domain.Checked.Internal as Checked
+import Domain.Elaborating as Elaborating
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Resolved (FunctionId(..))
 import Domain.Resolved as Resolved
@@ -156,7 +157,7 @@ declaration inputs program problem =
     else Nothing
   -- By the read-only view: the problem's own `Eq` is in
   -- Domain.Recorded.Internal, which no strategy imports.
-  same regenerated = fields regenerated == fields problem
+  same regenerated = fields (Elaborating.problem regenerated) == fields problem
   generated = generate inputs.tables inputs.signatures
 
 certified ∷ RecordedProblem → Certificate → Either CheckRefusal Valid

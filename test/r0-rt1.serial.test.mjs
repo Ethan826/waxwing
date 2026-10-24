@@ -5,6 +5,7 @@ import { resolve } from '../output/Features.Resolve/index.js';
 import { Right } from '../output/Data.Either/index.js';
 import * as Generate from '../output/Features.Check.Generate/index.js';
 import * as Inputs from '../output/Features.Check.Generate.Inputs/index.js';
+import { problem } from '../output/Domain.Elaborating/index.js';
 import { loadCorpus } from './r0-corpus.mjs';
 import { translateProgram } from './r0-translator.mjs';
 import { canonicalOf, entryLists, entryMultiset, stableStringify,
@@ -34,7 +35,8 @@ const pairs = programs.flatMap(({ origin, program }) => {
   return program.functions.map(decl => {
     const run = Generate.generate(tables)(signatures)(decl);
     return { origin, name: decl.name, translated: translated[decl.id],
-      generated: run instanceof Right ? canonicalOf(run.value0) : null };
+      generated: run instanceof Right ? canonicalOf(problem(run.value0))
+        : null };
   });
 });
 

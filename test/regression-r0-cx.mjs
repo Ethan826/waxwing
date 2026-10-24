@@ -28,7 +28,9 @@ export const r0CxProbes = {
     const program = resolveProgram(parse('fn f(p: { ...r }): Int'
       + ' where r lacks { a } = true; fn main(): Int = 0;').value0).value0;
     const { tables, signatures } = generationInputs(program);
-    const problem = generate(tables)(signatures)(program.functions[0]).value0;
+    const { problem: problemOf } = await load('Domain.Elaborating');
+    const problem = problemOf(
+      generate(tables)(signatures)(program.functions[0]).value0);
     const sig = toSig(problem).value0;
     const field = new Tuple('a', new Counter.GroundBase(IntBase.value));
     const cx = { rho: { ty: [], row: [new Tuple(sig.rigidRow[0], [field])] },

@@ -16,6 +16,7 @@ export const onlineFrom = async load => {
   const { resolve } = await load('Features.Resolve');
   const { generationInputs } = await load('Features.Check.Generate.Inputs');
   const { generate } = await load('Features.Check.Generate');
+  const Elaborating = await load('Domain.Elaborating');
   const { functional } = await load('Features.Check.Functional');
   const { checkProgram } = await load('Features.Check.Outcomes');
   const Online = await load('Features.Check.Strategy.Online');
@@ -46,8 +47,8 @@ export const onlineFrom = async load => {
   };
   const problemOf = (program, name) => {
     const inputs = generationInputs(program);
-    return right(generate(inputs.tables)(inputs.signatures)(
-      declOf(program, name)), `generation of ${name}`);
+    return Elaborating.problem(right(generate(inputs.tables)(
+      inputs.signatures)(declOf(program, name)), `generation of ${name}`));
   };
   const contextOf = program => ({ holders: functional(program.ctors),
     program, legacyText });

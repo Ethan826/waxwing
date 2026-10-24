@@ -109,11 +109,18 @@ test('Features.Check.Generate exports its enumerated values only',
   });
 
 // T-R0b §4's applicative invariant, by the import graph: generation
-// reaches no checker module but the pure table readers it reuses, so no
-// checker state, substitution or solved type can be read by any rule.
+// reaches no checker module but the pure table readers it reuses and,
+// since Task 7.1b builds checked IR, the moved `holes` with the walk it
+// renumbers by and the spine reader, so no checker state, substitution
+// or solved type can be read by any rule. The closure is pinned exactly
+// here; the earlier assertion that no Generate* module imports
+// Domain.Checked is retired with the port (Task 7.1a's carry), and T10
+// (test/r0-elab-rules.test.mjs) checks the same allowlist from every
+// Generate* module, transitively.
 const reused = ['Features.Check.Components', 'Features.Check.Functional',
-  'Features.Check.Implied', 'Features.Check.Nested',
-  'Features.Check.NestedArguments', 'Features.Check.Tables',
+  'Features.Check.Holes', 'Features.Check.Implied', 'Features.Check.Nested',
+  'Features.Check.NestedArguments', 'Features.Check.Spine',
+  'Features.Check.Tables', 'Features.Check.Walk',
   'Features.Resolve.Builtin'];
 test('generation reaches no checker state (applicative invariant)', () => {
   const result = spawnSync('purs',
@@ -132,8 +139,4 @@ test('generation reaches no checker state (applicative invariant)', () => {
   const features = [...seen].filter(name => outside.test(name)
     && !/^Features\.Check\.Generate(\.|$)/.test(name)).sort();
   assert.deepEqual(features, reused);
-  for (const name of seen)
-    if (/^Features\.Check\.Generate(\.|$)/.test(name))
-      assert.ok(!graph[name].depends.some(dep => /^Domain\.Checked/
-        .test(dep)), name);
 });

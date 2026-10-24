@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fixturesIn } from './r0-probe-support.mjs';
-import { generatedOrThrow, load, problemsOf, resolved }
+import { rightOrThrow, load, problemsOf, resolved }
   from './r0-generate-support.mjs';
 import { entryLists, stableStringify, wholeProblem }
   from './r0-canonical.mjs';
@@ -93,7 +93,7 @@ for (const fixture of fixtures) {
       // 4. A statically refused declaration has its problem too.
       const bad = named(fixture.static);
       const { tables, signatures } = Inputs.generationInputs(program);
-      const rules = generatedOrThrow(
+      const rules = rightOrThrow(
         Generate.staticRules(tables)(signatures)(bad.decl), 'bad');
       assert.deepEqual(rules.map(rule => rule.value0.constructor.name),
         ['StaticArity']);

@@ -11,6 +11,7 @@ const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const Resolved = await load('Domain.Resolved');
 const Row = await load('Domain.Row');
+const Syntax = await load('Domain.Syntax');
 
 const source = `type Box(a) = Box(a);
 effect Log { fn log(n: Int): Unit; };
@@ -70,4 +71,26 @@ test('an unbound local, a payload-less clause, no result syntax', () => {
   fault(run({ ...handles, body: Resolved.Handle.create(handles.body.value0)(
     handles.body.value1)(clauses) }), 'PayloadShape', 'InputShape');
   fault(run({ ...reads, syntax: [] }), 'ResultShape', 'InputShape');
+});
+
+// Task 7.1b: generation builds checked IR, so input it cannot build from
+// is a fault too: a fail clause with no binder (Resolve always writes
+// one), and an effect-row variable where a callee's signature needs a
+// type, which has no `⟨p, inst i⟩` handle (Resolve keeps it out).
+const { Nothing } = await load('Data.Maybe');
+test('a binderless fail clause, a row variable in a type position', () => {
+  const handles = decl('handles');
+  const clauses = handles.body.value2.map(clause =>
+    ({ ...clause, local: Nothing.value }));
+  fault(run({ ...handles, body: Resolved.Handle.create(handles.body.value0)(
+    handles.body.value1)(clauses) }), 'BinderShape', 'InputShape');
+  const g = decl('g');
+  const rowG = { ...g, sorts: [Syntax.RowSort.value], parameters:
+    g.parameters.map(parameter => ({ ...parameter,
+      ty: Resolved.TVar.create(0) })) };
+  const doctored = Inputs.generationInputs({ ...program,
+    functions: program.functions.map(found =>
+      (found.name === 'g' ? rowG : found)) });
+  fault(run(decl('calls'), doctored.tables, doctored.signatures),
+    'VariableSort', 'InputShape');
 });

@@ -13,6 +13,7 @@ const { resolve } = await load('Features.Resolve');
 const { checkProgram } = await load('Features.Check.Outcomes');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const Generate = await load('Features.Check.Generate');
+const Elaborating = await load('Domain.Elaborating');
 const Search = await load('Features.Check.Refute.Counter.Search');
 
 const named = value => value.constructor.name;
@@ -29,7 +30,7 @@ const declarationsOf = ({ origin, source }) => {
     const generated = Generate.generate(tables)(signatures)(decl);
     if (named(generated) !== 'Right') return [{ at: `${origin}#${decl.name}`,
       problem: null }];
-    const problem = generated.value0;
+    const problem = Elaborating.problem(generated.value0);
     return [{ at: `${origin}#${decl.name}`, problem,
       todayAccepts: named(today[index].today) === 'Right',
       found: Search.searchCX(budget)([])(problem) }];

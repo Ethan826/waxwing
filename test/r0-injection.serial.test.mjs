@@ -46,7 +46,8 @@ test('RT3: generation is byte-identical beside either search', () => {
     const { tables, signatures } = Inputs.generationInputs(program);
     for (const decl of program.functions)
       stubs.decide(stubs.checking({ strategies: [refusesAtOnce()] }),
-        Generate.generate(tables)(signatures)(decl).value0);
+        generatedOrThrow(Generate.generate(tables)(signatures)(decl),
+          decl.name));
     const afterStub = encodedAll(program);
     assert.deepEqual(afterOnline, alone, `${origin}: online search`);
     assert.deepEqual(afterStub, alone, `${origin}: refusing stub`);

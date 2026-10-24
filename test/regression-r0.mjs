@@ -78,7 +78,9 @@ export const r0Probes = {
     const program = resolveProgram(parse('fn f(p: { ...r }): Int'
       + ' where r lacks { a } = 1; fn main(): Int = 0;').value0).value0;
     const { tables, signatures } = generationInputs(program);
-    const problem = generate(tables)(signatures)(program.functions[0]).value0;
+    const { problem: problemOf } = await load('Domain.Elaborating');
+    const problem = problemOf(
+      generate(tables)(signatures)(program.functions[0]).value0);
     const premise = fields(problem).d[0].origin.atom;
     const derivation = { rule: 'any', premises: [premise], blame: [] };
     const any = soundRule('any', theoremRef('Test.any'),

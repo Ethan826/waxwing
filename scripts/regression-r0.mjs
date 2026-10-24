@@ -179,11 +179,14 @@ export const r0Rows = [
   },
   {
     // Task 4.3 (RT8's recorder defect): E17 types a partial perform as
-    // the operation's result, which today's solver does not.
+    // the operation's result, which today's solver does not. Since Task
+    // 7.1b E17 shares E5's typing (Generate.Call `applied`), so the
+    // restored defect types every partial use so.
     name: 'r0-perform-arity',
-    file: 'src/Features/Check/Generate/Effect.purs',
-    needle: '    | otherwise → plain\n',
-    replacement: '    | otherwise → const (plain result)\n',
+    file: 'src/Features/Check/Generate/Call.purs',
+    needle: '    { ty: arrowOf (Array.drop (Array.length generated)'
+      + ' found.parameters)\n        found.result\n',
+    replacement: '    { ty: found.result\n',
     probe: 'r0-perform-arity',
     message: /a partial perform was recorded as its result: CheckFailed/
   },
@@ -192,7 +195,8 @@ export const r0Rows = [
     // another program's declaration is searched for the problem.
     name: 'r0-declaration-by-id',
     file: 'src/Features/Check/Strategy/Online.purs',
-    needle: '  same regenerated = fields regenerated == fields problem\n',
+    needle: '  same regenerated = fields (Elaborating.problem regenerated)'
+      + ' == fields problem\n',
     replacement: '  same _ = true\n',
     probe: 'r0-declaration-by-id',
     message: /another program's declaration was searched: Solved/

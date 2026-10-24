@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { generatedOrThrow, load, problemsOf, resolved }
+import { rightOrThrow, load, problemsOf, resolved }
   from './r0-generate-support.mjs';
 import { stableStringify } from './r0-canonical.mjs';
 
@@ -33,7 +33,7 @@ const gOf = source => {
   const program = resolved(source);
   const { tables, signatures } = Inputs.generationInputs(program);
   const found = problemsOf(program).find(item => item.decl.name === 'g');
-  const statics = generatedOrThrow(
+  const statics = rightOrThrow(
     Generate.staticRules(tables)(signatures)(found.decl), 'g');
   return [stableStringify(found.problem),
     statics.map(item => item.constructor.name)];

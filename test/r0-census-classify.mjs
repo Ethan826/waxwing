@@ -15,6 +15,7 @@ const { compile } = await load('Program.Compile');
 const { checkProgram } = await load('Features.Check.Outcomes');
 const { generationInputs } = await load('Features.Check.Generate.Inputs');
 const { generate } = await load('Features.Check.Generate');
+const { problem } = await load('Domain.Elaborating');
 const { fields } = await load('Domain.Recorded');
 const { openRequirements } = await load('Features.Check.Decide.Open');
 const { g0Guard } = await load('Features.Check.Strategy.Guard');
@@ -100,7 +101,7 @@ const problemOf = (inputs, decl) => {
   const result = generate(inputs.tables)(inputs.signatures)(decl);
   if (!(result instanceof Right))
     throw new Error(`${decl.name}: generation fault`);
-  return result.value0;
+  return problem(result.value0);
 };
 
 // A program's classification: whether it compiles today, whether

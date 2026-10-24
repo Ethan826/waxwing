@@ -15,6 +15,7 @@ const { resolve } = await load('Features.Resolve');
 const { checkProgram } = await load('Features.Check.Outcomes');
 const { generationInputs } = await load('Features.Check.Generate.Inputs');
 const { generate } = await load('Features.Check.Generate');
+const { problem } = await load('Domain.Elaborating');
 const GroundRule = await load('Features.Check.GroundRule');
 const Origin = await load('Domain.Recorded.Origin');
 
@@ -34,9 +35,10 @@ const judged = source => {
   const { tables, signatures } = generationInputs(resolved);
   const generated = generate(tables)(signatures)(main);
   if (named(generated) !== 'Right') return null;
-  const atoms = generated.value0.bq.filter(sig10);
+  const recorded = problem(generated.value0);
+  const atoms = recorded.bq.filter(sig10);
   assert.equal(atoms.length, 1, 'Sig10 records one atom');
-  const ground = GroundRule.judge(generated.value0.holders)(
+  const ground = GroundRule.judge(recorded.holders)(
     () => GroundRule.Unjudged.value)(GroundRule.atomType(atoms[0].value));
   return { today: named(checkProgram(resolved).entry), ground: named(ground) };
 };

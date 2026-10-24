@@ -131,14 +131,16 @@ test('the real tree matches its pin and its FFI names no token module',
     // and Refute.Theorems; Task 4.2 Strategy.Substitution; Task 7.1a
     // D1's Assemble, Elab, Elab.* and Gen, and the importers of its two
     // token modules: Domain.Elaborating(.Build), Domain.Verdict.Judged
-    // and Features.Check.Decide (rules E2 and E5).
-    const generate = ['', '.Assemble', '.Builtin', '.Call', '.Context',
-      '.Control', '.Effect', '.Elab', '.Elab.Image', '.Elab.Internal',
-      '.Elab.Labels', '.Elab.Log', '.Elab.Recorded', '.Elab.Stages', '.Expr',
-      '.Facts', '.Failure', '.Fault', '.Fresh', '.Gen', '.Inputs',
-      '.Lookup', '.Operator', '.Out', '.Pattern', '.Record', '.Rigid',
-      '.Signature', '.Static', '.Static.Problem', '.Static.Rules',
-      '.Static.Site', '.Static.Walk', '.Translate']
+    // and Features.Check.Decide (rules E2 and E5); Task 7.1b the port's
+    // Block, Body, Callee, Node and Update, folding Rigid into Signature.
+    const generate = ['', '.Assemble', '.Block', '.Body', '.Builtin',
+      '.Call', '.Callee', '.Context', '.Control', '.Effect', '.Elab',
+      '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
+      '.Elab.Recorded', '.Elab.Stages', '.Expr', '.Facts', '.Failure',
+      '.Fault', '.Fresh', '.Gen', '.Inputs', '.Lookup', '.Node', '.Operator',
+      '.Out', '.Pattern', '.Record', '.Signature', '.Static',
+      '.Static.Problem', '.Static.Rules', '.Static.Site', '.Static.Walk',
+      '.Translate', '.Update']
       .map(name => `Features.Check.Generate${name}`);
     assert.deepEqual(Object.keys(importers).sort(),
       ['Domain.Elaborating', 'Domain.Elaborating.Build', 'Domain.Recorded',
