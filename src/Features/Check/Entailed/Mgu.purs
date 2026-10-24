@@ -5,6 +5,12 @@
 -- form, with Rémy's row rule. Rigid variables are constants. A failure
 -- is `Nothing`, which every reader takes as "no reduction". The rule
 -- names (R1-R5) are the note's.
+--
+-- θ is triangular (Features.Check.Entailed.Triangular; BACKLOG R021):
+-- an equation is read through θ when it is taken, not rewritten at
+-- every binding, and the answer is the back-substitution. On the
+-- fragment (both callers check it), the answers are those of the
+-- eager algorithm this replaced (docs/findings.md, "R021").
 module Features.Check.Entailed.Mgu
   ( Theta
   , mgu
@@ -16,13 +22,15 @@ import Data.Array (elem, filter, length, mapMaybe, nub)
 import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe)
-import Data.Traversable (traverse)
+import Data.Maybe (Maybe(..), maybe, maybe')
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Recorded.Atom (RTExpr(..), Role(..), Var(..))
 import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..)) as Origin
 import Features.Check.Entailed.Merge (Fields, substitute)
+import Features.Check.Entailed.Triangular (Triangular, extend, read, solved)
+import Features.Check.Entailed.Triangular as Triangular
 import Features.Check.Mentions (isRigid, mentions)
+import Features.Check.Spine (spine, unspine)
 
 type Theta = Map Var RTExpr
 
@@ -32,22 +40,32 @@ type Equation = Tuple RTExpr RTExpr
 -- variable the problem names, so a made one is never one of them.
 type State =
   { equations ∷ Array Equation
-  , theta ∷ Theta
+  , theta ∷ Triangular
   , fresh ∷ Int
   , taken ∷ Map Var Unit
   }
 
 mgu ∷ Map Var Unit → Array Equation → Maybe Theta
 mgu taken equations =
-  tailRec step (Just { equations, theta: Map.empty, fresh: 0, taken })
+  tailRec step
+    (Just { equations, theta: Triangular.empty, fresh: 0, taken })
 
 step ∷ Maybe State → Step (Maybe State) (Maybe Theta)
 step = maybe (Done Nothing) next
   where
-  next state = maybe (Done (Just state.theta)) (popped state)
+  next state = maybe' (finished state) (popped state)
     (Array.uncons state.equations)
-  popped state { head: Tuple one other, tail } =
-    Loop (solve one other state { equations = tail })
+  finished state _ = Done (solved state.theta)
+  popped state { head, tail } =
+    Loop (current head state { equations = tail })
+
+-- The equation under the current θ, then solved.
+current ∷ Equation → State → Maybe State
+current (Tuple one other) state = do
+  found ← read state.theta [ one, other ]
+  one' ← substitute found.resolved one
+  other' ← substitute found.resolved other
+  solve one' other' state { theta = found.theta }
 
 -- One equation against the rest. R3 and R4″ are every failing arm.
 solve ∷ RTExpr → RTExpr → State → Maybe State
@@ -56,8 +74,7 @@ solve one other state
   | otherwise = case one, other of
       TVar variable, _ | not (isRigid variable) → binding variable other state
       _, TVar variable | not (isRigid variable) → binding variable one state
-      Arrow left right, Arrow left' right' →
-        Just (pushed [ Tuple left left', Tuple right right' ] state) -- R2
+      Arrow _ _, Arrow _ _ → Just (pushed (arrows one other) state) -- R2
       App head arguments, App head' arguments'
         | head == head' && length arguments == length arguments' →
             Just (pushed (Array.zip arguments arguments') state) -- R2′
@@ -127,25 +144,27 @@ apart onlyLeft onlyRight tail tail' state =
   made = state { fresh = index + 1 }
 
 -- R4 and every R5 binding: the current θ applied to the image first,
--- the occurs check over fields and tails, then the binding applied to
--- the remaining equations and to θ's images (θ stays idempotent).
+-- the occurs check over fields and tails, then the binding, last in
+-- θ's order.
 binding ∷ Var → RTExpr → State → Maybe State
-binding variable image state =
-  substitute state.theta image >>= checked
-  where
-  checked found =
-    if mentions (eq variable) found then Nothing
-    else eliminated variable found state
+binding variable image state = do
+  found ← read state.theta [ image ]
+  image' ← substitute found.resolved image
+  if mentions (eq variable) image' then Nothing
+  else Just state { theta = extend variable image' found.theta }
 
-eliminated ∷ Var → RTExpr → State → Maybe State
-eliminated variable found state = do
-  equations ← traverse both state.equations
-  theta ← traverse (substitute single) state.theta
-  pure state { equations = equations, theta = Map.insert variable found theta }
+-- R2 over a whole spine: each common parameter, then what remains.
+-- Taking the shared prefix at once poses the equations R2's binary
+-- steps pose, in their order, without re-reading each step's rest.
+arrows ∷ RTExpr → RTExpr → Array Equation
+arrows one other = Array.zip (taken left) (taken right)
+  <> [ Tuple (rest left) (rest right) ]
   where
-  single = Map.singleton variable found
-  both (Tuple one other) =
-    Tuple <$> substitute single one <*> substitute single other
+  left = spine one
+  right = spine other
+  common = min (length left.parameters) (length right.parameters)
+  taken found = Array.take common found.parameters
+  rest found = unspine found { parameters = Array.drop common found.parameters }
 
 pushed ∷ Array Equation → State → State
 pushed added state = state { equations = added <> state.equations }

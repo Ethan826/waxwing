@@ -4,11 +4,12 @@
 module Features.Check.Mentions
   ( isGround
   , isRigid
+  , mentioned
   , mentions
   ) where
 
 import Prelude
-import Data.Array (any)
+import Data.Array (any, concatMap)
 import Data.Tuple (snd)
 import Domain.Recorded.Atom (RTExpr(..), Var(..))
 import Features.Check.Spine (spine)
@@ -22,6 +23,18 @@ mentions wanted ty = case ty of
   Record fields tails →
     any (mentions wanted <<< snd) fields || any wanted tails
   App _ arguments → any (mentions wanted) arguments
+  where
+  found = spine ty
+
+-- The variables `mentions` asks about, with repeats, left to right
+-- (BACKLOG R021: the triangular unifier follows them).
+mentioned ∷ RTExpr → Array Var
+mentioned ty = case ty of
+  Arrow _ _ → concatMap mentioned found.parameters <> mentioned found.result
+  Base _ → []
+  TVar variable → [ variable ]
+  Record fields tails → concatMap (mentioned <<< snd) fields <> tails
+  App _ arguments → concatMap mentioned arguments
   where
   found = spine ty
 

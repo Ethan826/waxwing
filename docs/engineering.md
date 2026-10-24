@@ -161,6 +161,8 @@ adding a bypass allowlist.
   - `Features.Check.Entailed`: reduces a `BQ` atom through the entailed
     equalities.
   - `Features.Check.Entailed.Mgu`: the unifier that reduction uses.
+  - `Features.Check.Entailed.Triangular`: the unifier's substitution
+    in triangular form, read and back-substituted (BACKLOG R021).
   - `Features.Check.Entailed.Merge`: applies the unifier's substitution to a
     recorded type.
   - `Features.Check.Decide`: rule 1 blocks `Solved` while an atom is open.

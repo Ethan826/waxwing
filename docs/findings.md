@@ -4504,3 +4504,100 @@ builds checked IR. A `where`-bound helper without a signature is not
 generalized, so passing `map read (fresh m)` to `seal` fails with
 EscapedSkolem (seen while writing T3c's control); rule helpers need
 `∀ s.` signatures.
+
+## R021: a triangular unifier for the `BQ` detectors (2026-10-24)
+
+Shadow only: Features.Check.Entailed.Mgu is read by `openRequirements`,
+`g0Guard` and the online read-back, none reachable from compile. No
+fixture, pin or diagnostic changed; no corpus re-pin.
+
+**Cause (checked).** The eager unifier applied each binding to every
+remaining equation and to every image of θ (Mgu.purs, `eliminated`).
+Two further costs showed up once that was gone, each seen in a scratch
+build: R2 took an arrow apart one parameter at a time, so an
+n-parameter spine posed n rest equations of falling size, each read
+again; and `maybe (Done (solved …))` evaluated the back-substitution
+on every step, since PureScript is strict (now `maybe'`).
+
+**What changed.** θ is kept in triangular form, Baader and Snyder's
+dag solved form ("Unification Theory", Handbook of Automated Reasoning,
+2001): bindings in order, none mentioning its own or an earlier
+variable. The new trusted module Features.Check.Entailed.Triangular
+reads a type through θ when the unifier takes it (`read`), and returns
+the back-substitution as the answer (`solved`). Every image a read
+resolves is replaced by its resolved form, path compression as in
+union-find (Tarjan 1975). R2 on two arrows poses every shared
+parameter's equation, then the two remaining tails, at once
+(Martelli-Montanari's decomposition of an n-ary symbol); the order of
+the equations posed is the binary steps' order. `mentioned` (Mentions)
+lists the variables `mentions` tests, so the reads stay inside the
+trusted surface; it is not Domain.Recorded.Vars. The composition of
+the dag solved form, compression on read and spine-wide R2 is this
+task's; each part is published.
+
+**Same answers (argued, then checked).** Argued: the inputs are in
+the fragment (both callers check `fragment` first), so every record
+has at most one tail and no repeated label, and every image `binding`
+makes keeps that. For such terms, applying the bindings one at a time
+gives the same term, field order included, as applying their
+composition once. A `substitute` of a term that mentions no bound
+variable returns it unchanged. Checked: a differential run against
+be4df16's compiled Mgu (copied into output/ as a scratch module,
+removed afterwards; script in the session scratchpad): every G-EG
+one-equation problem, the pinned 2,000 two-equation sample and 20,000
+four-equation problems (seed 7), then every declaration of the pinned
+corpus (984 of 1,128 programs reach generation; 3,011 declarations)
+and `main` of `generic(50/250/1000)`. 17,585 fragment problems, 4,404
+of them with a unifier: 0 differ (`Map` entries compared by
+constructor-tagged serialization). The 15,529 sampled problems outside
+the fragment also agreed (0 differ), though no caller passes them.
+
+**Timing (checked).** `openRequirements` on `main`'s problem of
+`generic(n)`, ms, under the cross-worktree lock (load average 2.5
+before, 1.7 after). Command: the script of "The census" above with
+`n` in 250, 500, 1000, 2000, run as `node timing.mjs <worktree> 250
+500 1000 2000`:
+
+| n | `B` atoms | before (be4df16) | after |
+| --- | --- | --- | --- |
+| 250 | 468 | 208 | 25 |
+| 500 | 925 | 984 | 31 |
+| 1,000 | 1,843 | 5,648 | 75 |
+| 2,000 | 3,675 | 33,602 | 211 |
+
+A second after-run gave 25, 31, 73 and 213. The remaining growth,
+about ×2.8 from 1,000 to 2,000, is argued to be Features.Check.Spine's
+`snoc` loop, quadratic in an arrow's length (not changed here).
+
+**Scaling test, RED then GREEN (checked).**
+test/r0-mgu-scale.serial.test.mjs bounds `openRequirements` and
+`g0Guard` on `generic(1000)` at 1,000 ms each. Before the change:
+`took 5505 ms` and `took 10970 ms` (fail); again with be4df16's
+compiled Mgu restored in place: `took 5625 ms`, `took 11129 ms`. This
+confirms that `g0Guard` takes about twice as long. After: 191 ms and
+204 ms (pass).
+
+**Mutants (checked).** Each was applied to the source and built
+(build success confirmed), then run against test/r0-entailed,
+r0-g0, r0-g0-atoms, r0-g0-check, r0-readback, r0-rt7, the EG-oracle
+and the new test/r0-mgu.test.mjs:
+
+- M1, occurs check dropped (`mentions … && false`): caught only by the
+  new r0-mgu tests (the occurs test and the idempotent-unifier
+  property). No earlier test caught it: `entailedGround` answers
+  `Nothing` for a non-ground image either way.
+- M2, a lost binding (`extend` returns θ unchanged): 18 failures,
+  among them EG-oracle, the hand list, AT19 and r0-mgu.
+- M3, `reachable` stops after one layer: caught by r0-mgu's
+  three-deep chain (`r ↦ {a: x | s}`, `s ↦ {b: y}`, `y = Int`, then a
+  contradiction through `r`). It was not caught before that test was
+  added.
+- M4, back-substitution earliest place first: 7 failures (hand list,
+  r0-mgu).
+- M5, the spine-wide R2 drops the remaining tails' equation: caught by
+  r0-mgu's idempotent-unifier property.
+
+test/r0-mgu.test.mjs passes on be4df16's compiled Mgu too, so it
+specifies the unifier rather than the new code. Its property compares
+the sides up to field and tail order, because a unifier makes two
+records equal as rows, and filters G-EG to the fragment.

@@ -680,6 +680,21 @@ and five regression rows fail as expected. No pin changed (RT1, RT8,
 window, census). 7.1b: the generator port and T1, T2, T5, T5b, T8,
 T12. Evidence in findings, "D1's generation continuation, part a".
 
+## R0 shadow hardening, R021: a triangular unifier (2026-10-24)
+
+Shadow only, no acceptance change. Features.Check.Entailed.Mgu keeps θ
+in triangular form (Baader and Snyder's dag solved form), reads each
+equation through it when taken, compresses read images (as union-find
+does) and takes R2 over a whole arrow spine. The new trusted module
+Features.Check.Entailed.Triangular is listed in AGENTS.md,
+docs/engineering.md and test/structure-trusted.test.mjs; Mentions gains
+`mentioned`. `openRequirements` on generic(1000) 5,648 → 75 ms. The
+answers are identical to the old unifier's on 17,585 fragment problems
+(scratch differential). test/r0-mgu-scale.serial.test.mjs was seen
+failing on the old unifier; test/r0-mgu.test.mjs catches mutants
+M1-M5. No pin changed; no corpus re-pin. Evidence in findings, "R021:
+a triangular unifier for the `BQ` detectors".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

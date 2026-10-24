@@ -66,6 +66,7 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Mentions`, `Features.Check.Spine`,
   `Features.Check.Decide.Open`, `Features.Check.Entailed`,
   `Features.Check.Entailed.Mgu`, `Features.Check.Entailed.Merge`,
+  `Features.Check.Entailed.Triangular`,
   `Features.Check.Decide`, `Features.Check.Decide.Shadow`,
   `Features.Check.Strategy`, `Features.Check.Strategy.Online`.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an

@@ -9,7 +9,8 @@ import { readFileSync } from 'node:fs';
 const trusted = [
   'Strategy.Substitution', 'Strategy.Candidate', 'Strategy.Atoms',
   'Strategy.Asked', 'GroundRule', 'Mentions', 'Spine', 'Decide.Open',
-  'Entailed', 'Entailed.Mgu', 'Entailed.Merge', 'Decide', 'Decide.Shadow',
+  'Entailed', 'Entailed.Mgu', 'Entailed.Merge', 'Entailed.Triangular',
+  'Decide', 'Decide.Shadow',
   'Strategy', 'Strategy.Online'].map(name => `Features.Check.${name}`);
 const marker = '-- trusted surface: every diff needs token review;'
   + ' see docs/engineering.md';
