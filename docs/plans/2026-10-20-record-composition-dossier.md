@@ -5918,3 +5918,15 @@ requirement. Conditions:
   suppressed afterwards); that behaviour does not change here.
 - "Local fixes" describes edit size, not confidence that the remaining
   soundness work is small.
+
+### 18.81 The compiler is the compatibility baseline, not the specification (2026-10-24)
+
+The author's rule: treat the existing compiler as the compatibility
+baseline, not the correctness specification. For every validator
+obligation, name its intended semantic property and the independent
+argument supporting it. Mark rules supported only by existing behaviour
+as compatibility obligations. When compatibility and soundness appear
+to conflict, preserve the separating example and bring the conflict for
+a decision; do not automatically reproduce the old behaviour. Applied
+to a-min in docs/plans/r0-amin-obligation-semantics.md (to be folded
+into the statements after the targeted re-review of revision 3.2).
