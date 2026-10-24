@@ -739,8 +739,10 @@ and the window share one run".
 ## R0 shadow tranche 2, Task 7.1b: D1's generator port and corpus tests (2026-10-24)
 
 Shadow only, no acceptance change (ruling R6). Task 3.2's generator
-runs over D1's `Gen` and `GenTy` and builds today's checked
-declaration in each rule: `generate` is `seal` of `generateIn`
+runs over D1's `Gen` and `GenTy` and builds, in each rule, a checked
+declaration equal to today's on the effect-erased projection only
+(option c; corrected 2026-10-24, review P3-4: not effect-correct
+checked IR): `generate` is `seal` of `generateIn`
 (Generate.Body), and the recorded problem, `problem` of it, is
 byte-identical on every corpus declaration (a digest pin taken before
 the port). The shadow harness runs the seal check before `decide`

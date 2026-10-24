@@ -411,7 +411,7 @@ none.
 | G-codes | Codes for compilation refusals after Solved, other than `ComponentBlocked` (item 1, Q1(c)). T-R0e §3.1 proposes the Unresolved code plus the reason family, own code for `SplitUnforced` | Task 6.2's list of refusals and the fixtures each would move | the new texts in 6.2; until then today's code and text are kept where today has a counterpart. `AtS (NoCompilation …)` (`HoleContract`, `NonConstructive`) has no code today, so those rows wait for the ruling; this plan proposes no provisional code |
 | G-6b | Split D4 at P: a language change (forced splits admitted, acceptance widens; T-R0e §6 step 6b) | Task 6.3's before/after fixture table (O4, c21, cmp-open) | Task 6.3's last step |
 | G-Q13 (reading; formerly G-A-i(e)) | A reading of §18.69 Q13 for the author to confirm. Q13 says "A trusted-checker failure or a broken invariant still stops." This plan reads "a broken invariant" as one in trusted code or in `decide` itself, and not one inside an untrusted search's own code (today's `Unexpected`, and `Exhausted` if Task 0.2 maps it to a fault). The proposed form: such a failure is the untrusted search's failure, which never stops the run (T-R0a §5.3 rule 4's last sentence), recorded as a new `SearchFault` constructor `SearchBroke StrategyName String` and rendered as a suspected-defect note; on today's path (Task 2.1) it stays `AsFault (BrokenInvariant …)`. The other reading: it stops the run | Tasks 4.1 and 4.3's tests, built on the proposed reading and labelled proposed | none in the tranche: Tasks 1.1, 4.1 and 4.3 build the proposed form, and the other reading reworks `SearchBroke` and 4.3's mapping before Task 4.6 |
-| G-effect-rows (representation) | How the new checked IR keeps written effect rows and how the witness binds effect-row variables (docs/plans/r0-ea-representation.md, options a-c). Task 7.1a-b landed option c: images carry closed, empty rows and T2/T8 compare effect-erased projections, so those comparisons do not establish effect-correct checked IR. Recorded 2026-10-24 after an external review | an audit of which effect-row information lowering reads, with fixtures; no inference from generated Go layouts that empty rows are safe | Task 4.6 |
+| G-effect-rows (representation) | How the new checked IR keeps written effect rows and how the witness binds effect-row variables (docs/plans/r0-ea-representation.md, options a-c). Task 7.1a-b landed option c: images carry closed, empty effect rows, data types lose their row arguments (`TData owner arguments []`) and handler labels are `Unmarked` with no clauses, and T2/T8 compare projections erasing all three, so those comparisons do not establish effect-correct checked IR. Recorded 2026-10-24 after an external review | an audit of which effect-row information lowering reads, with fixtures; no inference from generated Go layouts that empty rows are safe | Task 4.6; Task 7.2's removal of the read-back bridge |
 
 ### 3.B Technical gates (closed by evidence and a reviewed proposal)
 
@@ -2241,7 +2241,15 @@ come from that specification: EL1; the same checked IR from `build`
 as the online certificate's `checked` at every unambiguous site
 (corpus-wide); a read outside the tracked set rejected when the value
 is built; Cov's domain equal to `requests` plus the flexible
-variables outside `Recon`. Until Task 4.6, `build` runs only in
+variables outside `Recon`. **Qualification (2026-10-24, after the
+whole-stack review):** as landed under option c
+(docs/plans/r0-ea-representation.md), the equality is effect-erased:
+`build`'s images carry closed, empty effect rows, data types without
+their row arguments and handler labels unmarked, and T2 compares the
+projection that erases all three. Passing T2 therefore meets this
+criterion only for the effect-erased projection; full equality, and
+so Task 7.1's acceptance for Task 4.6 and Task 7.2, waits on gate
+G-effect-rows. Until Task 4.6, `build` runs only in
 tests; Task 4.6 makes it the source of lowered IR and removes
 `checked`. The read-back of σ (online's adapter) stays: what D1
 retires is the read-back route for checked IR. T-R0b §4's applicative
@@ -2252,7 +2260,8 @@ checker state.
 
 **When it applies.** Only if the author rules the switch's timing
 (G-switch) while Task 7.1 has not landed (G-D1 still open, or 7.1's
-corpus-wide equality failing). The author is told, with the ruling's
+corpus-wide equality failing, effect rows included: the effect-erased
+T2 does not count). The author is told, with the ruling's
 evidence, that the switch would go live on the bridge.
 
 **The bridge (justified as temporary).** Task 4.6 lowers the online
@@ -2266,7 +2275,9 @@ The justification: it is the IR today's path lowers, so it narrows
 nothing, and G0 has accepted the σ it was built with.
 
 **Removal task and condition.** The bridge is removed as soon as Task
-7.1's acceptance tests pass, and before Task 6.4 lands, so that the
+7.1's acceptance tests pass with full, not effect-erased, equality
+(gate G-effect-rows decided and its checks passing), and before Task
+6.4 lands, so that the
 re-check is never built on it. Removal: `DeclReport` carries
 `build`'s declaration; the certificate's `checked` field and the
 no-checked-IR reason are deleted; row `r0-ir-not-read-back` is
@@ -2330,7 +2341,7 @@ AT5 is split by the Task 5.1 ruling (docs/findings.md, Task 5.1 item
 | 4.6 | **Narrowing** of a class the author has not accepted; genuine contradictions Unresolved until P-C1; a Solved resting on erased rows if G-erased is skipped; lowering an IR other than `build`'s from the accepted witness. | Not in the first tranche. Lands only on the G-switch (timing) ruling (option B is rejected, so no broad narrowing), after Task 7.1 (or under Task 7.2's bridge, removed before 6.4), and with G-erased closed or its class explicitly accepted. One commit: reverting it restores today's path exactly until a Phase 6 task lands; after that, the Phase 6 tasks are reverted first, newest first. test/r0-lowered-ir.test.mjs pins the IR route. |
 | 5 | A shadow result leaks into a verdict; certificate checking is too slow (CX question 3). | `shadowRefuter` cannot mint `Refuted` by type, regression row `r0-shadow-decides` guards it, and cost is measured in 5.2. |
 | 6 | The re-check fails on programs accepted today (E_INTERNAL), or costs too much; removing Resolve's refusals lets an invalid lambda reach Solved; a `NoCompilation` refusal gets a code by accident. | Every Phase 6 task waits on G-switch and Task 4.6. The corpus run in 6.4 must be clean before landing, and its cost is measured. 6.5 waits on 4.2's definedness test. 6.2's `NoCompilation` rendering waits on G-codes. Each task is one revertible commit. |
-| 7 | The continuation changes the checked IR at some site; G-D1 stays open when the author wants to switch. | 7.1 runs in shadow, so reverting it changes nothing a user sees; Task 4.6 waits for its corpus-wide equality. If the author rules the switch first, Task 7.2's bridge applies, with its removal condition. |
+| 7 | The continuation changes the checked IR at some site; G-D1 stays open when the author wants to switch. | 7.1 runs in shadow, so reverting it changes nothing a user sees; Task 4.6 waits for its corpus-wide equality, effect rows included (the effect-erased T2 does not meet it; G-effect-rows). If the author rules the switch first, Task 7.2's bridge applies, with its removal condition. |
 
 ## 8. Problems in the R0 documents found while planning
 

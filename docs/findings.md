@@ -5084,3 +5084,18 @@ Program.Main; Task 4.6, Task 2.2, Phase 6 and the Command change did
 not land. Not reviewed: CX refuter internals, the R021 unifier, the
 census and window tables, the T3c fixtures, and which row information
 lowering reads.
+
+**Status after the repair sequence (2026-10-24).** R026 (f97dbde),
+R029 (62b965a), R027 (7a9fcc0) and R028 (655fef9) are fixed, each with
+tests that failed before the fix; see BACKLOG. P2-3: the plan's Task
+7.1 acceptance, Task 7.2's two conditions and risk row 7 now say the
+equality must include effect rows, and G-effect-rows blocks Task 7.2's
+bridge removal as well as Task 4.6. P2-4: r0-ea-representation.md and
+the gate row state all three of option c's departures. P2-6: dossier
+§18.72 records the authorization history as the repository shows it:
+no recorded author authorization of the second shadow tranche or of
+option c, and G-D1 not closed. P3-4: the Task 7.1b progress sentence
+is corrected. P3-1 (T1/T2 run a test-assembled pipeline) and P3-5
+(intermediate commits) are unchanged and stand as notes. The
+regression-runner defect reported separately (a rejection without a
+reason counted as success) was fixed earlier at 98b9b99.

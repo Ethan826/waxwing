@@ -5601,3 +5601,46 @@ The author authorized pushing the documentation and research
 checkpoint to `origin/main`; it publishes proposed statements as
 proposed, not as proved. Later implementation pushes need their own
 authorization.
+
+### 18.72 Authorization history after §18.71, recorded after the fact (2026-10-24)
+
+Written on 2026-10-24 at the author's request, after a whole-stack
+review (docs/findings.md, "Whole-stack review of the R0 shadow
+stack") found these gaps. It records what the repository shows; it
+supplies no approval and backdates none.
+
+1. **The second shadow tranche.** §18.71 authorized only the first
+   tranche and listed "D1's implementation in the later tranche" as
+   still unauthorized. The plan proposed Task 5.2 and Task 7.1 for a
+   second shadow tranche. Task 7.1a (from 4af7a0d, 2026-10-23), Task
+   5.2 (a43250b, 2026-10-24) and Task 7.1b, with the R021 hardening,
+   then landed on branches r0-t2-cx, r0-t2-hard and r0-t2-d1. No
+   dossier entry, progress entry or findings entry records the
+   author authorizing that tranche. Whether it was authorized in
+   conversation is not recorded here and is not assumed.
+2. **Option c.** The author adopted E-a conditionally on 2026-10-23
+   (r0-erased-rows.md §7.1 item 4). Task 7.1a landed §12.1's fallback,
+   option c, on a provisional controller (agent) ruling
+   (r0-ea-representation.md, 23c9e4f, 2026-10-23). No author approval
+   of that departure was recorded when it landed. Option c also drops
+   data-type row arguments and handler marks, which that note did not
+   say until the 2026-10-24 correction.
+3. **G-D1.** No record closes it. The plan calls it a technical gate
+   "closed by Task 0.3's reviewed specification" (how it closes, not
+   that it did); progress.md (Task 0.3) says it cannot close until
+   the effect-row gap is settled; findings.md (Task 7.1a) says its
+   policy point is settled and its representation open. As the record
+   stands: Task 0.3's specification went through four review rounds;
+   the policy dependency was settled by the author on 2026-10-23
+   (§7.1 item 4); the representation is open as gate G-effect-rows.
+   G-D1 is therefore not closed.
+4. **What the author decided on 2026-10-24.** The author ratified the
+   review's recommendations: keep Task 4.6 blocked pending the
+   effect-row decision; fix R026 by option A (the trusted check
+   builds the witness it judged) and R027-R029; pin T1/T2's counts;
+   keep the effect-erasure qualification in the plan, progress and
+   acceptance criteria; record this history; run focused tests,
+   restored-defect regressions and a full verify, then an independent
+   review of the repaired stack. No live switch and no push are
+   authorized. This ratification does not retroactively approve the
+   second tranche or option c; those remain for the author.

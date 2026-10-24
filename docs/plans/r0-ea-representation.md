@@ -26,6 +26,18 @@ back with closed, empty rows (Generate.Elab.Image). A handle in an
 effect-row tail fails the seal check (`SortClash`). Task 7.1b's T2 and
 T8 will compare effect-erased projections. Task 4.6 stays blocked.
 
+**Correction (2026-10-24, whole-stack review P2-4).** Option c drops
+more than effect rows. Generate.Elab.Image builds a data type as
+`TData owner arguments []`, so its row arguments are gone and their
+count no longer matches the declaration; it writes handler labels
+`Unmarked` with `clauses: Nothing`. test/r0-elab-erase.mjs erases all
+three, so T2 and T8 cannot see them. The ruling is the controller's
+(an agent's), not the author's: the author adopted E-a conditionally
+(r0-erased-rows.md §7.1 item 4), and no author approval of this
+departure was recorded when it landed (dossier §18.72). Gate
+G-effect-rows (plan §3.A) holds the decision and blocks Task 4.6 and
+Task 7.2's bridge removal.
+
 | | (a) row-carrying images | (b) effect-row binding only | (c) §12.1 fallback |
 |---|---|---|---|
 | Witness | `Inline` holds a `Ty` over `Var` with rows; G0 reads its `RTExpr` projection; a binding form for effect-row variables | `RTExpr` images kept; a new `InlineRow` for `EffectRowSort` variables | unchanged |
