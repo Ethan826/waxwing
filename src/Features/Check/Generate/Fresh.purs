@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Problem variables (T-R0b §2.3, §5.2) as D1's handles (spec §3.3; R0
 -- Task 7.1b): a fresh one by its canonical name `⟨p, role⟩` with its
 -- site-table entry, minted by `Generate.Gen.fresh`; a callee's or

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.2, E3-E6: references to and calls of functions and
 -- constructors. Each occurrence instantiates the callee's or owner's
 -- variables as `⟨p, inst i⟩` (θ), so two occurrences share none

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's read-only view of an `Elaborating` (docs/plans/
 -- r0-generation-continuation.md §3.4-§3.5, §5; R0 Task 7.1): the
 -- problem, the variables `build` may read, where it reads them, and the

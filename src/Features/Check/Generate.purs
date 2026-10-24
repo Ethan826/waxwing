@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- R0 generation (T-R0b §1, §10; D1 spec §3.5): one declaration's
 -- recorded problem and its checked IR, built syntax-directed from the
 -- resolved declaration, the tables and the signatures it references.

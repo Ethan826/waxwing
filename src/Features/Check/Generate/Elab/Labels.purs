@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- `elabTy`'s label check (D1 spec §3.2, §8.1; R0 Task 7.1a): splicing a
 -- record's tail images must not repeat a label, whether one the record
 -- writes or one an earlier tail's image brought. The first repeat, with

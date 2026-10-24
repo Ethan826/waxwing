@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's `elaborate` (docs/plans/r0-generation-continuation.md §3.5, §7,
 -- §8; R0 Task 7.1a): the only caller of `build` (rule E1). Its steps run
 -- in order, each a named arm:
@@ -18,10 +19,14 @@
 --    `build` is inside the lowering trust boundary, so a fault stops
 --    the run; one arm per constructor, no catch-all).
 -- Shadow only: nothing reachable from compile calls it (ruling R6).
+-- `Elaboration`'s constructors are hidden (BACKLOG R029), so only
+-- `elaborate` makes an `Elaborated`; `foldElaboration` is the only read.
 module Features.Check.Elaborate
-  ( Elaboration(..)
+  ( Elaboration
+  , ElaborationCases
   , covDomain
   , elaborate
+  , foldElaboration
   ) where
 
 import Prelude
@@ -51,6 +56,18 @@ data Elaboration a
   | NotCompiled NoWitnessReason
   | Broken InternalFault
 
+-- The success case is named `effectErased`: under option c `build`'s
+-- images carry closed, empty effect rows, data types without their row
+-- arguments and handler labels unmarked (docs/plans/
+-- r0-ea-representation.md), so the IR equals today's only on the
+-- effect-erased projection and is not effect-correct checked IR. Every
+-- reader names that; gate G-effect-rows decides what replaces it.
+type ElaborationCases a r =
+  { effectErased ∷ a → r
+  , notCompiled ∷ NoWitnessReason → r
+  , broken ∷ InternalFault → r
+  }
+
 -- W §4's domain: every flexible variable outside `Recon` (empty until
 -- G-Recon), which holds every requested one, since `requests e ⊆
 -- flex(P)` (Mint). A `Recon` that holds a requested variable breaks W
@@ -70,6 +87,12 @@ elaborate recon elaborating judged
       Broken (BrokenInvariant "elaboration: problem mismatch")
   | otherwise = either Broken (witnessed elaborating judged)
       (covDomain recon elaborating)
+
+foldElaboration ∷ ∀ a r. ElaborationCases a r → Elaboration a → r
+foldElaboration cases = case _ of
+  Elaborated made → cases.effectErased made
+  NotCompiled reason → cases.notCompiled reason
+  Broken fault → cases.broken fault
 
 witnessed ∷ ∀ a. Elaborating a → Judged → Set Var → Elaboration a
 witnessed elaborating judged domain =

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.4: a pattern matched against the scrutinee's type `τ_s`,
 -- giving the extended environment `Γ'`. Each pattern contributes its own
 -- equation against `τ_s` (P3-P7), closed or open by its syntax alone; no

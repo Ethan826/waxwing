@@ -157,3 +157,22 @@ test('T11, T11b: another declaration\'s problem or solution is Broken',
     assert.equal(elaborated([], g, judged(g, witnessed(covered)))
       .constructor.name, 'Elaborated');
   });
+
+// BACKLOG R029: only `elaborate` makes an `Elaborated` (the module
+// exports no constructor), and the fold names the success case
+// `effectErased` (option c's IR is not effect-correct checked IR).
+test('Elaboration is read only by its fold, its success effectErased',
+  () => {
+    for (const name of ['Elaborated', 'NotCompiled', 'Broken'])
+      assert.equal(name in Elaborate, false, name);
+    const cases = { effectErased: made => ['effectErased', made],
+      notCompiled: reason => ['notCompiled', reason.constructor.name],
+      broken: fault => ['broken', fault.constructor.name] };
+    const fold = result => Elaborate.foldElaboration(cases)(result);
+    const built = elaborated([], e, judged(e, witnessed(covered)));
+    assert.deepEqual(fold(built), ['effectErased', built.value0]);
+    assert.deepEqual(fold(elaborated([], e, judged(e, noWitness))),
+      ['notCompiled', 'NonConstructive']);
+    assert.deepEqual(fold(elaborated([a], e, judged(e, noWitness))),
+      ['broken', 'BrokenInvariant']);
+  });

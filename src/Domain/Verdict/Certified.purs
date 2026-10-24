@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The type `Certified` without its constructor, and its two read-only
 -- accessors (BACKLOG R026), as Domain.Verdict.Judged does for `Judged`.
 module Domain.Verdict.Certified

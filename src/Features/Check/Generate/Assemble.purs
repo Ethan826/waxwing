@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- A recorded problem from what generation wrote (T-R0b §10; moved from
 -- Features.Check.Generate unchanged in R0 Task 7.1a, so that D1's `seal`
 -- assembles its problem the same way): the variables by quantifier and

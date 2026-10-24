@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.3, E27 and E28: record update and removal, each operand
 -- equated with a record of this node's auxiliaries (§4). Children:
 -- `RecordUpdate/record`, `RecordUpdate/fields/i/value`,

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Every expression of a declaration's body with its path, in the
 -- vocabulary generation uses (Generate.Fresh `childOf`, `childAt`; T-R0b
 -- §6), for the static rules. test/r0-static-rules.test.mjs checks that

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's request constructors and `seal` (docs/plans/
 -- r0-generation-continuation.md §3.2, §3.4; R0 Task 7.1a). `readType`
 -- and `readRow` are the only public primitives that read the witness;

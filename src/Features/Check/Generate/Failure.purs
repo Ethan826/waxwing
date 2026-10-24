@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.5, E22 and E23: `handle` and `fail`. `Outside FailFamily`
 -- is decided from the written family alone (§3.5, §4), never from a
 -- solved payload. Children: `Handle/body`, `Handle/clauses/k/body`,

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's plain data (docs/plans/r0-generation-continuation.md §3.2, §3.4,
 -- §8.1; R0 Task 7.1): a tracked read, its sort, and the two kinds of
 -- failure, a seal check's and `build`'s. No hidden constructor, so any

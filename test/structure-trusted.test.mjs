@@ -1,38 +1,67 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 // Final review, Important 1: `Valid` carries no payload, so its soundness
-// rests on the modules below. Each must carry the header marker, and
-// docs/engineering.md and AGENTS.md must list exactly these modules, so the
-// designation cannot drift silently.
+// rests on the modules below. BACKLOG R026 adds what `certify` builds the
+// witness with; R029 adds the lowering boundary (D1 spec §8.2), which
+// turns a `Judged` solution into checked IR, the generator family by
+// pattern. Each module must carry the header marker, and
+// docs/engineering.md and AGENTS.md must list exactly these modules, so
+// the designation cannot drift silently.
 const trusted = [
   'Strategy.Substitution', 'Strategy.Candidate', 'Strategy.Atoms',
   'Strategy.Asked', 'GroundRule', 'Mentions', 'Spine', 'Decide.Open',
   'Entailed', 'Entailed.Mgu', 'Entailed.Merge', 'Entailed.Triangular',
   'Decide', 'Decide.Shadow',
-  'Strategy', 'Strategy.Online'].map(name => `Features.Check.${name}`);
+  'Strategy', 'Strategy.Online', 'Strategy.Witness', 'Strategy.HoleContract',
+  'Strategy.ReadBack.Type'].map(name => `Features.Check.${name}`)
+  .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal']);
+const generate = 'Features.Check.Generate';
+const lowering = ['Features.Check.Elaborate', 'Domain.Elaborating',
+  'Domain.Elaborating.Internal', 'Domain.Elaborating.Build',
+  'Domain.Elaborating.Types', 'Domain.Verdict.Judged',
+  'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Witness', generate];
 const marker = '-- trusted surface: every diff needs token review;'
   + ' see docs/engineering.md';
 const path = name => `src/${name.replace(/\./g, '/')}.purs`;
-const named = text => [...text.matchAll(/`(Features\.Check\.[\w.]+)`/g)]
+// Every module of the generator family, from the source tree.
+const family = (dir = 'src/Features/Check/Generate') =>
+  readdirSync(dir, { withFileTypes: true }).flatMap(entry =>
+    entry.isDirectory() ? family(join(dir, entry.name))
+      : entry.name.endsWith('.purs') ? [join(dir, entry.name)] : []);
+const named = text => [...text.matchAll(/`((?:Features|Domain)\.[\w.]+)`/g)]
   .map(match => match[1]);
 const read = file => readFileSync(file, 'utf8');
-const listed = (file, start) => {
+// The names between `start` and `end` (the next top-level bullet when
+// `end` is absent).
+const listed = (file, start, end) => {
   const text = read(file);
   const from = text.indexOf(start);
   assert.ok(from >= 0, `${file} lacks "${start}"`);
-  return named(text.slice(from, text.indexOf('\n- ', from)));
+  const to = end === undefined ? text.indexOf('\n- ', from)
+    : text.indexOf(end, from);
+  assert.ok(to > from, `${file} lacks the end of "${start}"`);
+  return named(text.slice(from, to));
 };
+const same = (found, expected) => assert.deepEqual([...found].sort(),
+  [...expected].sort());
 
 test('every trusted-surface module carries the header marker', () => {
-  for (const name of trusted)
-    assert.equal(read(path(name)).split('\n')[0], marker, name);
+  const files = [...trusted, ...lowering].map(path).concat(family());
+  assert.ok(family().length >= 37, `${family().length} generator modules`);
+  for (const file of files)
+    assert.equal(read(file).split('\n')[0], marker, file);
 });
 
 test('the docs list exactly the trusted-surface modules', () => {
-  const same = found => assert.deepEqual([...found].sort(),
-    [...trusted].sort());
-  same(listed('docs/engineering.md', 'Review-required trusted surface'));
-  same(listed('AGENTS.md', 'Review-required trusted surface'));
+  const lower = 'Review-required lowering boundary';
+  same(listed('docs/engineering.md', 'Review-required trusted surface',
+    lower), trusted);
+  same(listed('AGENTS.md', 'Review-required trusted surface', lower),
+    trusted);
+  same(listed('docs/engineering.md', lower, 'The core allowlist'),
+    lowering);
+  same(listed('AGENTS.md', lower), lowering);
 });

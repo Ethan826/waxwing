@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- A witness image as a checked type (D1 spec §3.2; R0 Task 7.1a). Task
 -- 4.4's witness holds recorded types (`Inline RTExpr`, a labelled
 -- amendment of W §1.6), so `build` turns an image back into the form

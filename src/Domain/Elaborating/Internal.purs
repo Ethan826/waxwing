@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's `Elaborating` (docs/plans/r0-generation-continuation.md §3.4;
 -- R0 Task 7.1), with its constructor. A record alias could be built
 -- anywhere with any `build`, a read that escapes tracking (§11.2 S2), so

@@ -59,8 +59,9 @@ vertical slice before adding language features. Task tracking is local.
   catches new surface, not a repurposed body, type or instance
   behind a pinned name, so every diff to an allowed importer needs
   token review.
-  Review-required trusted surface (`Valid`'s soundness rests on all of them;
-  reasons in docs/engineering.md): `Features.Check.Strategy.Substitution`,
+  Review-required trusted surface (`Valid`'s soundness and its witness's
+  rest on all of them; reasons in docs/engineering.md):
+  `Features.Check.Strategy.Substitution`,
   `Features.Check.Strategy.Candidate`, `Features.Check.Strategy.Atoms`,
   `Features.Check.Strategy.Asked`, `Features.Check.GroundRule`,
   `Features.Check.Mentions`, `Features.Check.Spine`,
@@ -68,7 +69,17 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Entailed.Mgu`, `Features.Check.Entailed.Merge`,
   `Features.Check.Entailed.Triangular`,
   `Features.Check.Decide`, `Features.Check.Decide.Shadow`,
-  `Features.Check.Strategy`, `Features.Check.Strategy.Online`.
+  `Features.Check.Strategy`, `Features.Check.Strategy.Online`,
+  `Features.Check.Strategy.Witness`, `Features.Check.Strategy.HoleContract`,
+  `Features.Check.Strategy.ReadBack.Type`, `Domain.Verdict.Certified`,
+  `Domain.Verdict.Certified.Internal`.
+  Review-required lowering boundary (turns a `Judged` solution into checked
+  IR; reasons in docs/engineering.md): `Features.Check.Elaborate`,
+  `Domain.Elaborating`, `Domain.Elaborating.Internal`,
+  `Domain.Elaborating.Build`, `Domain.Elaborating.Types`,
+  `Domain.Verdict.Judged`, `Domain.Verdict.Judged.Internal`,
+  `Domain.Verdict.Witness`, and `Features.Check.Generate` with every module
+  under it.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their

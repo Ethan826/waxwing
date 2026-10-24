@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.5, E17, E20 and E21: operations, handlers and `with` (E22
 -- and E23 are Generate.Failure). Each marker's condition is syntactic
 -- (§3.5): decided from the node and the tables, never a solved type.

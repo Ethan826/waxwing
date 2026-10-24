@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's generation primitives (docs/plans/r0-generation-continuation.md
 -- §3.3; R0 Task 7.1a). They partition `Gen`'s parts: only `fresh` and
 -- `rigid` write variables, only `positioned` and `slots` write sites

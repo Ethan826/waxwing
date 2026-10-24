@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- What every expression rule reads (T-R0b §2.4, G-local): the
 -- declaration's id, the tables, the signatures and the local
 -- environment `Γ`, each local at its generator type (D1 spec §3.2; R0

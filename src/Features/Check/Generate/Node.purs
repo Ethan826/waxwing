@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- What a generation rule gives (D1 spec §3.3-§3.5; R0 Task 7.1b): a
 -- node's generator type, its checked IR as an `Elab` (read only through
 -- `positioned`, `slots` and the request constructors, so `build` reads

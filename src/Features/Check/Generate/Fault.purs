@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Generation's own fault (R0 Task 3.2 fix round 1): an id the tables or
 -- signatures do not hold, or input not of the shape Resolve guarantees.
 -- Generation stops with it rather than reading the gap as an empty

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- What generation reads besides the declaration (T-R0b §1, §10): the
 -- type, constructor and effect tables and every function's written
 -- signature, built from one resolved program. No call graph and no

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Where today's code raises the refusals R0 Task 2.3 classifies: one
 -- constructor per raise site, grouped by what the site reads, each
 -- cited by file:line in test/r0-static.test.mjs (which checks the line).

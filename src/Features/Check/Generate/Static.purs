@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Static rules beside the verdict (R0 Task 2.3, AT10; T-R0a §3.2). Each
 -- constructor of Static.Site is one place where today's code raises a
 -- refusal, named after the `Problem` it raises and cited by file:line in

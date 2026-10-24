@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.2, E16: a block's items, each `let` extending `Γ` for the
 -- items after it, monomorphically (§5.1). Children:
 -- `Block/items/i/Let/value` (`…/Defer/value`, `…/Discard/value`),

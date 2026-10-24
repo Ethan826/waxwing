@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- G0's adapter (W §1.6; Task 4.4): a checked substitution as a
 -- compilation witness, and Cov (W §4), the validator of any adapter's
 -- witness. Shadow-only (ruling R6). `Recon` is empty (§18.69 Q6), so

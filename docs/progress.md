@@ -777,6 +777,22 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## R029: the lowering boundary listed; `Elaboration` sealed (2026-10-24)
+
+The review-required list now also names what `certify` rests on
+(Strategy.Witness, Strategy.HoleContract, Strategy.ReadBack.Type,
+Domain.Verdict.Certified and its Internal). A second list, the lowering
+boundary, names the code that turns a `Judged` solution into checked
+IR: Features.Check.Elaborate, Domain.Elaborating and its Internal,
+Build and Types, Domain.Verdict.Judged and its Internal,
+Domain.Verdict.Witness, and every Features.Check.Generate module. The
+50 modules this adds carry the header marker; the pin test reads both
+lists from AGENTS.md and docs/engineering.md and checks the marker in
+every generator module from the source tree (a removed marker fails
+it). `Elaboration` exports no constructor, so only `elaborate` makes an
+`Elaborated`; `foldElaboration` reads it, its success case named
+`effectErased`. Build clean; all 2,881 parallel tests pass.
+
 ## R026: the check builds the witness it judged (2026-10-24)
 
 Option A, ratified by the author. The whole-stack review showed the

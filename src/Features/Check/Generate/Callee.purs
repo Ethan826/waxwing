@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- An occurrence's callee, constructor owner or operation instantiated
 -- (T-R0b §3.2, E3-E6; D1 spec §3.3, R0 Task 7.1b): its `⟨p, inst i⟩`
 -- minted, its types under θ, the entries the reference itself records

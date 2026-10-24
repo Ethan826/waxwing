@@ -176,6 +176,34 @@ adding a bypass allowlist.
     pre-default sigma to `certify`, which settles and judges it and
     builds the witness from the same sigma; no other certificate field
     reaches the verdict or the witness.
+  - `Features.Check.Strategy.Witness`: G0's adapter and Cov; `certify`
+    builds the witness here, so a wrong binding is a wrong compilation.
+  - `Features.Check.Strategy.HoleContract`: decides which holes may stay
+    to be defaulted; a wrong judgement admits a default that breaks an
+    atom.
+  - `Features.Check.Strategy.ReadBack.Type`: `settled` gives the hole
+    defaults the check judges and `holesIn` the holes; they must be the
+    defaults lowering applies.
+  - `Domain.Verdict.Certified` and `Domain.Verdict.Certified.Internal`:
+    the token that pairs `Valid` with its witness (BACKLOG R026).
+  Review-required lowering boundary (BACKLOG R029; D1 spec §8.2 puts
+  `build` and the witness adapter inside it): the code that turns a
+  `Judged` solution into checked IR. A wrong step here lowers ill-typed
+  IR from a correct verdict. test/structure-trusted.test.mjs pins this
+  list and the marker, including every module of the generator family.
+  - `Features.Check.Elaborate`: `elaborate`'s steps before `build`, and
+    the only constructor of a successful `Elaboration`.
+  - `Domain.Elaborating`, `Domain.Elaborating.Internal`,
+    `Domain.Elaborating.Build` and `Domain.Elaborating.Types`: the sealed
+    generator result, its read-only view, `build`'s one accessor and its
+    faults.
+  - `Domain.Verdict.Judged` and `Domain.Verdict.Judged.Internal`: the
+    pairing of a problem with its solution (minted only by `decide`).
+  - `Domain.Verdict.Witness`: what each binding means to `build`.
+  - `Features.Check.Generate` and every module under it: generation
+    builds both the recorded problem and the `build` closure, so its
+    reads, images (Generate.Elab.Image) and label checks are lowering
+    code.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

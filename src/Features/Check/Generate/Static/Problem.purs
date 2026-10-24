@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Where each `Problem` is raised and what it is there (R0 Task 3.2;
 -- Task 2.3 carry): a typed path from a raised problem to its class. A
 -- refusal Task 2.3 classified gives its raise sites, each classed by

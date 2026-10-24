@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The clauses a signature's types imply (T-R0b Sig6, Sig8; Check/
 -- Implied.purs's `implied`, whose walk this follows): a record's own
 -- labels for each of its tails (Sig6), and, where a tail is a declared

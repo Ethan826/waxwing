@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The type `Judged` without its constructor (§3.1's allowed form) and
 -- its two read-only accessors (D1 spec §6.2; R0 Task 7.1).
 module Domain.Verdict.Judged

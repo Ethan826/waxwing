@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- An arrow spine's stages, each parameter with its effect row, and its
 -- result (R0 Task 7.1a, for `elabTy`): taken apart by a loop and put
 -- back by Array.foldr, so a declaration of thousands of parameters does

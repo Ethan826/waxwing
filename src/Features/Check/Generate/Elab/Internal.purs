@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's generation and elaboration types with their constructors
 -- (docs/plans/r0-generation-continuation.md §3.2-§3.3; R0 Task 7.1a).
 -- Only Features.Check.Generate.Elab and Features.Check.Generate.Gen

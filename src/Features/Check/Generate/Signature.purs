@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.1: the declaration's rules. `D` (Sig4-Sig8) is computed from
 -- the signature, never from the body; Sig3 relates the body's type to
 -- the written result; Sig10 records `main`'s printability [VOR]. Paths

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.2-§3.3: operators, conditionals and application (E7-E11,
 -- E14, E15). Each relates its children's types by `eq` atoms (B1); none
 -- reads a solved shape: application is `eq τ_e (τ̄ → ⟨p, res⟩)` whatever

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §2.2's ⟦·⟧ on a generator type (D1 spec §3.3; R0 Task 7.1a):
 -- the recorded form `positioned` logs and `emit` writes, each handle
 -- forgotten to its variable by the caller's `forget`. Effect rows are

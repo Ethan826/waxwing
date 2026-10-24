@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The tables as the rules read them. Ids come from the resolved program
 -- the tables and signatures were built from (Generate.Inputs); an id
 -- they lack is a generation fault (Generate.Fault), never an empty

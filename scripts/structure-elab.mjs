@@ -99,8 +99,9 @@ export const pinnedExports = {
   'Domain.Elaborating.Build': { exports: ['build'], aliases: {} },
   'Domain.Verdict.Judged': { exports: ['module Exports', 'judgedProblem',
     'judgedSolution'], aliases: { Exports: ['Judged'] } },
-  'Features.Check.Elaborate': { exports: ['Elaboration(..)', 'covDomain',
-    'elaborate'], aliases: {} },
+  // BACKLOG R029: `Elaboration`'s constructors hidden, read by its fold.
+  'Features.Check.Elaborate': { exports: ['Elaboration', 'ElaborationCases',
+    'covDomain', 'elaborate', 'foldElaboration'], aliases: {} },
   'Features.Check.Decide': { exports: ['Checking', 'Progress', 'decide',
     'judgedDecision', 'untilVerdict'], aliases: {} },
   'Features.Check.Generate': { exports: ['module Exports', 'generate',

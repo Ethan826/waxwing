@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- D1's `generateIn` (docs/plans/r0-generation-continuation.md §3.5; R0
 -- Task 7.1b): Task 3.2's generator over `Gen` and `Elab`. One walk of
 -- the declaration writes its recorded problem through `fresh`, `rigid`,

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- What a generation rule contributes (T-R0b §2.4): entries with their
 -- origins (§6), fresh variables with their site-table entries (§5.2) and
 -- each node's type. A rule's entries at one path are indexed in its

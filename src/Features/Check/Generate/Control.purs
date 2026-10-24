@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.2-§3.3: matches and lambdas, which extend `Γ` (E12, E13;
 -- E16 is Generate.Block). Lambdas are monomorphic: a binding is the
 -- bound expression's type, never generalized (§5.1). Children:

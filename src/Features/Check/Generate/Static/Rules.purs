@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0a §3.2, T-R0b §1: the per-declaration static refusals, judged
 -- beside the recorded problem. A resolved declaration can break only the
 -- class-a rules today's check raises (every Resolve refusal stops before

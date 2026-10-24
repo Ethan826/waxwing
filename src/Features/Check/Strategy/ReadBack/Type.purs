@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- A settled checked type read as a recorded type (T-R0b §5.3, "Reading
 -- back a candidate"; Task 4.3): `Rigid i` reads as the rigid variable
 -- `i`, and a remaining `Hole n` as a variable the strategy must still

@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- An append-only log with constant-time append: a join list, the reified
 -- form of Hughes's difference lists (A Novel Representation of Lists,
 -- IPL 1986). D1's `Gen` (R0 Task 7.1) appends its parts at every bind,

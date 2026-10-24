@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- W §1.6's compilation witness (research/division-campaign/witness/
 -- statements.md; Task 4.4), adopted with three labelled amendments:
 -- - `Inline` holds a recorded type, `RTExpr` over the problem's

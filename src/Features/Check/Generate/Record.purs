@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.3, E24-E28: record literals, extension, selection, update and
 -- removal. Each operand is equated with a record of fresh variables of
 -- this node (§4), whatever its solved shape; per-label entries and

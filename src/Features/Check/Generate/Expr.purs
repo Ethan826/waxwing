@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3: the expression judgement `Γ ⊢_p e ⇝ τ ; C`, one rule per
 -- constructor of `Resolved.Expr` (G-total, RT5: the match below names
 -- all 36 with no wildcard). Every node's type is positioned at

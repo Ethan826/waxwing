@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- T-R0b §3.5, E18 and E19: `print`, `show` and `crash`, as references
 -- and as calls. A reference is a checked `Lambda` (Check/Show.purs,
 -- Operation.purs `crashRef`), so its parameter `π = ⟨p, param 0⟩` is at

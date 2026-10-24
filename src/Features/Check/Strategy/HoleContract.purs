@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- W §1.5's hole contract, by its syntactic sufficient check (Task 4.4):
 -- a hole the witness leaves may stay, to be defaulted as lowering
 -- defaults it (`Int` for a type, `{}` for a row; ReadBack.Type
