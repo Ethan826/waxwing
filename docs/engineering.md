@@ -58,7 +58,9 @@ adding a bypass allowlist.
   `hiding`, nothing in parentheses after `TheoremRef`
   (`theoremImportFindings`, a source scan of every src module's import
   of Theorems, since purs graph sees modules only;
-  test/structure.test.mjs). Tests mint either token through the
+  test/structure.test.mjs). The scan is defence in depth with the
+  compiled re-export check, not a guarantee: it reads source text only.
+  Tests mint either token through the
   Internal module's compiled JS (test/r0-stubs.mjs). A public module
   re-exports its Internal module's types alone (`import X.Internal (T,
   …) as Exports` with `module Exports`), and no module re-exports a
@@ -124,6 +126,36 @@ adding a bypass allowlist.
   instance class changes (a repurposed value, a swapped instance under
   the same dictionary name) passes it. So every diff to an allowed
   importer needs token review, whether or not the pin moves.
+  Review-required trusted surface, since `Valid` carries no payload and
+  its soundness rests on all of these (test/structure-trusted.test.mjs
+  pins this list and the header marker in each module):
+  - `Features.Check.Strategy.Substitution`: mints `Valid`; G0's check.
+  - `Features.Check.Strategy.Candidate`: `generic` and `under` define the
+    candidate every judgement is taken under.
+  - `Features.Check.Strategy.Atoms`: judges each `B` atom against `D`; an
+    error here accepts a bad candidate.
+  - `Features.Check.Strategy.Asked`: judges each `BQ` atom by the ground
+    rule.
+  - `Features.Check.GroundRule`: the three-valued ground requirement rule
+    `Asked` applies.
+  - `Features.Check.Mentions`: decides which variables a type mentions, so
+    which atoms are ground.
+  - `Features.Check.Spine`: the arrow spine every atom judgement reads.
+  - `Features.Check.Decide.Open`: `openAtom` picks the atoms the check
+    skips; a wrong pick skips a real obligation.
+  - `Features.Check.Entailed`: reduces a `BQ` atom through the entailed
+    equalities.
+  - `Features.Check.Entailed.Mgu`: the unifier that reduction uses.
+  - `Features.Check.Entailed.Merge`: applies the unifier's substitution to a
+    recorded type.
+  - `Features.Check.Decide`: rule 1 blocks `Solved` while an atom is open.
+  - `Features.Check.Decide.Shadow`: assembles the one detector `decide`
+    uses.
+  - `Features.Check.Strategy`: `checked` pairs the token with
+    `spec.witness`.
+  - `Features.Check.Strategy.Online`: `certified` and `witnessed` check the
+    settled sigma but witness the unsettled one; the two must agree up to
+    the hole defaults.
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

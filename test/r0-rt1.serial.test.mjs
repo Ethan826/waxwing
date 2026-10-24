@@ -83,6 +83,22 @@ test('RT1: the vars maps agree', () => {
   assert.deepEqual(disagreements(varsOf), []);
 });
 
+// Final review, Minor 4: ReadBack.Type's `holeVar` is a fresh variable at
+// the reserved path [Named "hole", Index n]; a generated variable on it
+// would be defaulted as a hole. The corpus shows generation never writes
+// one, and the check itself sees a planted one.
+const holeStep = key => key.fresh !== undefined
+  && key.fresh.path.steps.includes('hole');
+const holeVars = problem => problem.vars.map(([key]) => key)
+  .filter(holeStep).map(stableStringify);
+
+test('no generated variable has a Named "hole" path step', () => {
+  const planted = { fresh: { path: { root: 'body', steps: ['hole', 0] } } };
+  assert.equal(holeStep(planted), true);
+  assert.deepEqual(pairs.flatMap(pair => holeVars(pair.generated)
+    .map(found => `${where(pair)} ${found}`)), []);
+});
+
 // Beyond RT1's statement: the whole problems agree, origins (rule, row,
 // span, kind), `types` and the rigid arrays, with every array whose order
 // is recorded, not canonical, sorted: entry lists and the flexible

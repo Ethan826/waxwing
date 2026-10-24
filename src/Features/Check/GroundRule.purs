@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The ground requirement rule, three-valued over a type that may still
 -- mention variables (Task 4.2; T-R0b §5.4, docs/plans/r0-validr-draft.md
 -- §4.1, read before G-ValidR). A function type is neither printable nor

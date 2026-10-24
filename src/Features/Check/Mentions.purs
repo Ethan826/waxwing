@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Which variables a recorded type mentions, as a type variable or a
 -- record tail (Task 4.2), and whether it mentions none.
 module Features.Check.Mentions

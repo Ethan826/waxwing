@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The online solver as one search strategy (T-R0a §4.2; Task 4.3):
 -- today's checker (`recheck`, Features.Check.Function) is the search,
 -- G0's guard and check (Task 4.2) judge, and the search's candidate is

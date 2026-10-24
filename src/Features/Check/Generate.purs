@@ -90,7 +90,7 @@ problemOf tables function out = RecordedProblem
 -- the set today's printability and comparability checks read). The
 -- source-to-problem obligation is that this is the program's own set:
 -- test/r0-holders.test.mjs checks direct and transitive containment,
--- and RT1's translator computes it independently.
+-- and RT1's translator is a separate algorithm by the same author.
 holdersOf ∷ Tables → Holders
 holdersOf tables =
   { declared: Set.fromFoldable (Array.mapWithIndex declared tables.types)

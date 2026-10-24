@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- G0's candidate (T-R0a §4.2; Task 4.2): a generic substitution, which
 -- maps flexible variables of the problem to terms over rigid variables,
 -- and its application. Untrusted plumbing: only

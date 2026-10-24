@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- G0's judgement of one `BQ` atom under a candidate (Task 4.2), by the
 -- ground rule (Features.Check.GroundRule). The atoms of §3.2(a)'s open
 -- set are passed over: rule 1 blocks on them already. Under the

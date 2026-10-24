@@ -129,7 +129,7 @@ export const importFindings = modules =>
 // (preflight row 37): an explicit list, no `hiding`, nothing in
 // parentheses after TheoremRef. purs graph sees modules only, so this
 // reads each src module's import of Theorems, continuation lines included.
-const theoremsImport = new RegExp('^import\\s+Features\\.Check\\.Refute'
+const theoremsImport = new RegExp('^[ \\t]*import\\s+Features\\.Check\\.Refute'
   + '\\.Theorems(?![\\w.])([^\\n]*(?:\\n[ \\t]+[^\\n]*)*)', 'gm');
 const constructorNamed = list => !list.startsWith('(')
   || /\bhiding\b|\bTheoremRef\s*\(|\(\s*\.\.\s*\)/.test(list);

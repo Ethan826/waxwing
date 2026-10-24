@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The most general unifier of a problem's original equations, in the
 -- one-tail fragment (Task 4.2; docs/plans/r0-entailed-ground.md §2):
 -- Robinson's unification in Martelli and Montanari's transformation

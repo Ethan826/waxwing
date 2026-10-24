@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Applying a substitution to a recorded type (Task 4.2,
 -- docs/plans/r0-entailed-ground.md §2 "Binding"): a bound tail's row is
 -- merged into the record it closes, `{K | ρ}` under `ρ := {M | T}`

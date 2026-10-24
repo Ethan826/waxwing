@@ -29,7 +29,9 @@ vertical slice before adding language features. Task tracking is local.
   Only Domain.Verdict and Features.Check.Refute.Theorems import
   Domain.Verdict.Theorem.Internal (`TheoremRef`), and only
   Features.Check.Refute.Rules imports Refute.Rules.Internal (`SoundRule`)
-  and Refute.Theorems, naming `TheoremRef` there without constructors.
+  and Refute.Theorems, naming `TheoremRef` there without constructors (a
+  source scan, defence in depth with the compiled re-export check, not a
+  guarantee).
   On the compiler's output, no module outside those importers imports a
   token Internal module's JS, and no module re-exports from one; no FFI
   JS outside them names one. No src module outside a reviewed
@@ -46,6 +48,15 @@ vertical slice before adding language features. Task tracking is local.
   catches new surface, not a repurposed body, type or instance
   behind a pinned name, so every diff to an allowed importer needs
   token review.
+  Review-required trusted surface (`Valid`'s soundness rests on all of them;
+  reasons in docs/engineering.md): `Features.Check.Strategy.Substitution`,
+  `Features.Check.Strategy.Candidate`, `Features.Check.Strategy.Atoms`,
+  `Features.Check.Strategy.Asked`, `Features.Check.GroundRule`,
+  `Features.Check.Mentions`, `Features.Check.Spine`,
+  `Features.Check.Decide.Open`, `Features.Check.Entailed`,
+  `Features.Check.Entailed.Mgu`, `Features.Check.Entailed.Merge`,
+  `Features.Check.Decide`, `Features.Check.Decide.Shadow`,
+  `Features.Check.Strategy`, `Features.Check.Strategy.Online`.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their

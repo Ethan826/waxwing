@@ -127,6 +127,10 @@ test('only Refute.Rules imports Refute.Theorems, for the type', () => {
     'import Features.Check.Refute.Theorems\n  ( theorems\n'
       + '  , TheoremRef (TheoremRef)\n  )\n',
     'import Features.Check.Refute.Theorems as T\n',
-    'import Features.Check.Refute.Theorems hiding (theorems)\n'])
+    'import Features.Check.Refute.Theorems hiding (theorems)\n',
+    '  import Features.Check.Refute.Theorems\n',
+    '\timport Features.Check.Refute.Theorems (TheoremRef(..))\n'])
     assert.equal(scan(text).length, 1, text);
+  assert.deepEqual(scan('  import Features.Check.Refute.Theorems'
+    + ' (TheoremRef)\n'), []);
 });

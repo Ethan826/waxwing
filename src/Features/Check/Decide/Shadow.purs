@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The shadow run's `Checking` (T-R0a §5.3; plan Task 4.5 Step 1; Task
 -- 4.3): the one assembly of `decide`'s inputs the shadow harness uses,
 -- built once per program. Ruling R6: nothing reachable from compile

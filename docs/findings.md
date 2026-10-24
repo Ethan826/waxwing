@@ -4144,3 +4144,24 @@ in test/r0-shadow.serial.test.mjs, as is f03's class. Checked: `node
 `node scripts/r0-shadow-pin.mjs` (window.json: f03's row and the class
 counts only).
 
+
+## Final review of the first R0 shadow tranche: recorded items
+
+- FX032: the author's G-erased ruling, item 5 (2026-10-23), classifies
+  FX032 as a defect (reject an unsupported operation-level `with` for now;
+  a separate compatibility fix). BACKLOG.md's FX032 row still reads "Open,
+  observation" and is pending correction, with C001, AS001, M001, STD001
+  and D001. Check: the row's status text changes to "Defect".
+- Argued-unreachable live inconsistency (BACKLOG entry pending, not
+  fixed in this tranche): Features.Check.Record's `select` renders a bare
+  `Homeless` as "x is not a field" (`unselected`), while Require and
+  Reject treat it as a broken invariant. `Homeless` is made only inside
+  `FromMerge`, so no live program reaches the arm; R020 covers only
+  `Refused`. Check: when fixed, a test injects a bare `Homeless` into
+  `select`, Require and Reject and asserts one agreed treatment.
+- Final-review fixes: the trusted surface `Valid` depends on is listed in
+  docs/engineering.md and AGENTS.md, each module carries a header marker,
+  and test/structure-trusted.test.mjs pins both; the Theorems import scan
+  accepts indented imports (defence in depth, not a guarantee); the
+  reachability test uses an explicit allowlist; RT1 asserts that no
+  generated variable has a `hole` path step.

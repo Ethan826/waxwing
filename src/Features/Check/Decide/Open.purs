@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- §3.2(a)'s detector (Task 4.2; plan G-A-i(f), revised for §18.70): the
 -- `BQ` atoms whose meaning `ValidR` leaves open, which block Solved for
 -- every strategy through `decide`'s rule 1. Keyed on G-ValidR's open

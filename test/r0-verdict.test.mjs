@@ -134,7 +134,16 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
       && graph[name].depends.some(r0)), ['Features.Check.Outcomes']);
     assert.deepEqual(graph['Features.Check.Outcomes'].depends.filter(r0)
       .sort(), ['Domain.Recorded', 'Domain.Verdict']);
-    assert.deepEqual([...seen].filter(name => new RegExp('^Features\\.Check'
-      + '\\.(Strategy|Refute|Admit|Decide|Generate|Checking)(\\.|$)')
-      .test(name)), []);
+    // Final review, Minor 1: every module the tranche added, by family,
+    // against an explicit allowlist, so a new reachable module fails.
+    const added = name => r0(name) || new RegExp('^Features\\.Check\\.'
+      + '(Classify|Decide|Entailed|Generate|GroundRule|Mentions|Outcomes'
+      + '|Refute|Spine|Strategy|Admit|Checking)(\\.|$)').test(name);
+    const allowed = ['Domain.Recorded', 'Domain.Recorded.Atom',
+      'Domain.Recorded.Internal', 'Domain.Recorded.Origin', 'Domain.Verdict',
+      'Domain.Verdict.Internal', 'Domain.Verdict.Open',
+      'Domain.Verdict.Search', 'Domain.Verdict.Static',
+      'Domain.Verdict.Theorem.Internal', 'Domain.Verdict.Unsound',
+      'Domain.Verdict.Witness', 'Features.Check.Outcomes'];
+    assert.deepEqual([...seen].filter(added).sort(), allowed.sort());
   });

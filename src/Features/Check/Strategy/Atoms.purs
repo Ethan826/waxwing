@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- G0's judgement of one `B` atom under a candidate, against `D` (T-R0a
 -- §4.2; Task 4.2). `D` holds `lacks` and `disjoint` atoms on rigid rows
 -- only (Generate/Signature.purs), so what it entails about a rigid row

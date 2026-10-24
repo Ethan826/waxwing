@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- G0, the generic-substitution check (T-R0a §4.2; Task 4.2): trusted,
 -- and the only module of Features.Check.Strategy* that mints `Valid`
 -- (scripts/structure.mjs). Every diff here needs token review

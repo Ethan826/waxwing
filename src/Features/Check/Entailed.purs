@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- Reduction through entailed equalities (Task 4.2; T-R0a §3.5, §18.69
 -- Q2): a `BQ` atom's type under the most general unifier of the
 -- problem's original equations (`D`'s and `B`'s `Equal` atoms), never a

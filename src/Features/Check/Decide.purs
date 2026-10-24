@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- `decide` (T-R0a §5.3; Task 4.1): one declaration's verdict from its
 -- recorded problem and the injected `Checking`. It runs beside today's
 -- path in tests only: nothing reachable from compile builds a `Checking`

@@ -2294,7 +2294,8 @@ its failing test is `r0-lowered-ir`'s `build` assertion.
 | AT2 | 4.5 (classes), 4.6 (through `compile`) |
 | AT3 | 1.2 |
 | AT4 | 3.4 |
-| AT5, AT6 | 5.1 |
+| AT5 (ground (1)), AT6 | 5.1 |
+| AT5 (ground (2): `routeUndeclared`, `markNoClause`, CX certificates) | 5.2 |
 | AT7, AT8, AT11, AT12, AT16, AT17 | 4.1 (AT16 also 1.1, 2.1; AT17 also 5.2) |
 | AT9 | 4.1, 4.4, 6.2 |
 | AT10 | 2.3 |
@@ -2312,6 +2313,9 @@ its failing test is `r0-lowered-ir`'s `build` assertion.
 | RC1-RC6 | 6.4 |
 | T-R0e 6a, 6b, 6c, 6f | 6.1, 6.3, 6.4, 6.5 |
 | T-R0e 6d (Task 8), 6e (G3) | outside this plan |
+
+AT5 is split by the Task 5.1 ruling (docs/findings.md, Task 5.1 item
+12): its ground (2) fixtures are CX certificates, Task 5.2's.
 
 ## 7. Risks and rollback, by phase
 

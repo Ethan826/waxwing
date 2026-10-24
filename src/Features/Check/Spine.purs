@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- An arrow spine as an array (Task 4.2). A declaration of thousands of
 -- parameters has a spine as long (Domain.Recorded.Atom's `Eq RTExpr`),
 -- so a walk over a recorded type takes the spine apart by a loop and

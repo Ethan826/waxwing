@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The strategy value (T-R0a §4.1; Task 4.1). A spec gives a guard, an
 -- untrusted search, a trusted check and a witness adapter; `strategy`
 -- composes them in that fixed order and is the only way to make a
