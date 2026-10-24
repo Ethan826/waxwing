@@ -777,6 +777,18 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## R028: T1/T2's counts pinned exactly (2026-10-24)
+
+test/r0-elab-corpus.serial.test.mjs replaces its lower bounds with exact
+pins, exclusions included: 3,011 generated declarations; 1,989 judged
+Solved; 14,775 Inline images; Solved comparisons 1,989 (1,944 exact, 45
+by site: 153 sites compared, 159 excluded for `Amb`); beyond Solved 781,
+all exact; 118 hole-bearing. Every by-site declaration must compare at
+least one site. The figures are unchanged by R026 and R029 (the run at
+7a9fcc0 printed them). A re-pin needs the owner's approval. These are
+effect-erased comparisons: they do not establish effect-correct
+checked IR (G-effect-rows).
+
 ## R027: three boundary checks fail closed (2026-10-24)
 
 E6's re-export scan (scripts/structure-elab.mjs) removes block comments

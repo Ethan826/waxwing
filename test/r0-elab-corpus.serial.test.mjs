@@ -27,12 +27,27 @@ const judged = rows.filter(row => row.judged !== null);
 const pairs = map => Map.toUnfoldable(unfoldableArray)(map)
   .map(pair => [pair.value0, pair.value1]);
 const fresh = variable => 'fresh' in variable;
+
+// BACKLOG R028: the counts are pinned exactly, exclusions included, so
+// a change in what is compared, or more sites excluded for `Amb`, fails
+// here instead of passing under a lower bound. They move only with the
+// owner's approval, recorded in docs/progress.md. Taken 2026-10-24 at
+// R027's commit (7a9fcc0), unchanged from Task 7.1b's figures.
+const pinned = {
+  generated: 3011,
+  judged: 1989,
+  images: 14775,
+  solved: { compared: 1989, exact: 1944, bySite: 45, sites: 153,
+    excluded: 159 },
+  beyond: { compared: 781, exact: 781, bySite: 0, sites: 0, excluded: 0 },
+  holed: 118
+};
 const isHole = variable => fresh(variable)
   && variable.fresh.path.steps[0] === 'hole';
 
 test('Sc on the corpus: no declaration has a seal fault', () => {
   const generated = rows.filter(row => row.fault === undefined);
-  assert.ok(generated.length > 2500, `${generated.length} declarations`);
+  assert.equal(generated.length, pinned.generated);
   assert.deepEqual(generated.filter(row =>
     Elaborating.untracked(row.elaborating).length > 0).map(row => row.at),
   []);
@@ -40,7 +55,7 @@ test('Sc on the corpus: no declaration has a seal fault', () => {
 
 test('T1 (EL1): every judged witness elaborates', t => {
   t.diagnostic(`${judged.length} declarations judged Solved`);
-  assert.ok(judged.length > 1900, `${judged.length} judged`);
+  assert.equal(judged.length, pinned.judged);
   assert.deepEqual(judged.filter(row => named(row.compilation)
     !== 'Witnessed').map(row => row.at), []);
   assert.deepEqual(judged.filter(row => named(row.elaborated)
@@ -55,7 +70,7 @@ test('ImageVariable: every witness image names rigid and hole variables only',
         .map(([, binding]) => ({ at: row.at,
           ty: decodeType(binding.value0) })));
     t.diagnostic(`${images.length} Inline images`);
-    assert.ok(images.length > 1000, `${images.length} images`);
+    assert.equal(images.length, pinned.images);
     assert.deepEqual(images.filter(image => mentioned(image.ty)
       .some(variable => fresh(variable) && !isHole(variable)))
       .map(image => image.at), []);
@@ -79,22 +94,23 @@ const t2 = (t, found) => {
     + ` ${excluded} excluded (Amb)`);
   assert.deepEqual(found.filter(item => !item.same)
     .map(item => item.row.at), []);
-  return { exact, ambiguous, sites };
+  // A declaration compared by site compares at least one site.
+  assert.deepEqual(ambiguous.filter(item => item.sites === 0)
+    .map(item => item.row.at), []);
+  return { compared: found.length, exact: exact.length,
+    bySite: ambiguous.length, sites, excluded };
 };
 
 test('T2 (effect-erased): build gives the certificate\'s checked IR', t => {
   assert.equal(compared.length, judged.length);
-  const { exact, sites } = t2(t, compared);
-  assert.ok(exact.length > 1900, `${exact.length} compared exactly`);
-  assert.ok(sites > 0, 'no site compared by site');
+  assert.deepEqual(t2(t, compared), pinned.solved);
 });
 
 test('T2 (effect-erased) beyond Solved: every witnessed certificate', t => {
   const built = rows.filter(row => row.judged === null && row.built);
   assert.deepEqual(built.filter(row => named(row.built) !== 'Right')
     .map(row => `${row.at}: ${named(row.built.value0)}`), []);
-  const { exact } = t2(t, beyond);
-  assert.ok(exact.length > 500, `${exact.length} compared exactly`);
+  assert.deepEqual(t2(t, beyond), pinned.beyond);
 });
 
 // T8's corpus half. The projection renumbers holes, so it cannot see
@@ -103,7 +119,7 @@ test('T2 (effect-erased) beyond Solved: every witnessed certificate', t => {
 test('T8 (corpus half): hole-bearing declarations project equal', t => {
   const holed = [...compared, ...beyond].filter(found => found.holes > 0);
   t.diagnostic(`${holed.length} hole-bearing declarations`);
-  assert.ok(holed.length > 0, 'no hole-bearing declaration');
+  assert.equal(holed.length, pinned.holed);
   assert.deepEqual(holed.filter(found => !found.same)
     .map(found => found.row.at), []);
   const unnumbered = holed.filter(({ built }) => JSON.stringify(plain(
