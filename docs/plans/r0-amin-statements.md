@@ -602,3 +602,78 @@ fails effects, LabelMismatch, scoped order, Fail payloads, holes in
 label arguments and nested tails, hole identity, a local-annotation
 mark, missing and extra evidence, and the stage and Apply sites) are
 to be added in revision 3.
+
+## R3. Adversarial review 3 (2026-10-24): not ready; fixes local
+
+A bounded independent review (Opus, read-only; nothing run) of revision
+3 at 3bf8708, under §18.78's brief. The controller re-read T2-a's and
+T5-a's evidence (Defer.purs consumes d into the current row with
+`ignoreMarks: false`; `UnresolvedReason` has only the Inference,
+Unsupported and Limit families) and they hold. The reviewer judged the
+structure sound and the fixes local, and expects revision 3 to be
+approvable once the nine findings marked below are resolved, pending
+U1's and U6's oracle and written argument.
+
+**Checked clean.** `holds` is sound and exact on normal forms,
+including M on the left (universal argument). Per-valuation
+satisfiability matches FX008's path criterion, and Mark.purs
+`violation` agrees with the design's criterion. Cycles, constants,
+several rigid variables, joins on flexible positions, and equalities
+with constants all behave the same on both sides. Forged holes in label
+arguments, at two sorts and in nested tails are refused (given U4).
+Forged extra or missing sites are refused. "Fresh" means a fresh
+position everywhere. Routing: a failed check lets later strategies
+run; `Certified` is minted only through `certify`, so no strategy
+reaches Solved without effect validation; an unsupported obligation is
+refused alike by every strategy.
+
+**S1.**
+- **T2-a.** The edge ρ ⊑ d from consuming a deferred row into the
+  enclosing row is missing: `defer` is not among E2's sites, E6 holds
+  only absence and d ⊑ N, E10 checks containment only, and E12 collects
+  edges from E2-E7. A forged package can mark d's Log N and pass, so
+  `defer log(1)` under a failing handler would be accepted. Fix:
+  `defer` joins E2's sites, and E12 collects the directional edges of
+  E10's settling consumptions (deferred rows into their row, clause rows
+  into C, installed C into ρ).
+
+**S2 (several S1 risks if built literally).**
+- T3-b one FX008 meta in two places: clause rows, deferred rows and
+  copies would be both effect-row bindings and site facts; forging
+  `HandlerLit.clauses` to `pure` could drop the own-abort constraint.
+  Pick one home each; I3 forbids the other.
+- T3-a E1's `Obligation` is undefined; recorded atoms are row-free, so
+  nothing records the written side's rows, fixed marks or annotation
+  mark positions, and a forged N nested in an image equated with a
+  written M label would pass. Define E1's obligation with rowed and
+  marked sides.
+- T2-b the tail pass (a clause row ending in rigid ϱ needs R and C to
+  end in ϱ) is unstated for clauses; consumption and containment are
+  worded as procedure steps, not conditions on final rows.
+- T2-d Task 9's as-built rule: a top-level result handler type at a
+  use gets its own bare C; every other written handler type has C
+  aliased to R; I3 must enforce the alias.
+- T1-a the least-term construction must be stated over equality classes
+  (union-find over E1 and callee-k sharing), a class holding a fixed
+  term taking it; as written, a position equated with an unreached
+  rigid k gets N and breaks the equality.
+- T2-c callee mark variables at a use have no package position (they
+  belong to the signature, not an image): add an `Instantiated` site.
+- T2-e C rows are bare (no label arguments) and installation pairs C
+  with ρ by key and position, recording mark edges only, not consuming.
+- T5-a `EffectsUnchecked` is not reachable as an Unresolved reason as
+  specified; add it as an `Unsupport` constructor read as a decline
+  (like `RequirementOpen`), never as a `CandidateRefused` search fault;
+  reconcile with r0-erased-rows §7.1 item 2's rule-1 placement.
+- T1-b U1's premises (the package's graph is exactly FX008's, every
+  meta has a position). T2-f `handle`'s ambient `Fail(E…) + ρ`. T2-g
+  F1′, correction S and termination T need explicit exclusions
+  (inference only; R0 may then accept programs today rejects, as gain1).
+
+**S3.** T1-c the 36-pair check has no recorded location; T2-h smaller
+mismatches (installation's unreachable case, Console frames, E1's
+refusal list, nested marks in payloads); T3-c E5 must name the head's
+marked type as the source of m and C; T3-d `Fail`'s placeholder is not
+a `MarkTerm`; T3-e a fixture that `nofail(k) Console` is recorded as N;
+T5-b an unsupported construct gives `NoCandidate`, not `Inconsistent`;
+T5-c FX032's scope covers every perform site; two §12 wording items.
