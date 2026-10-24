@@ -26,6 +26,17 @@ vertical slice before adding language features. Task tracking is local.
   and only Domain.Recorded and Features.Check.Generate* import
   Domain.Recorded.Internal; the public modules re-export bare type names
   only, and Domain.Recorded adds `fields`, a read-only view (ruling R4).
+  For D1 (R0 Task 7.1, docs/plans/r0-generation-continuation.md §3.1):
+  only Features.Check.Elaborate imports Domain.Elaborating.Build; only
+  Domain.Elaborating, its .Build and Features.Check.Generate.Elab
+  import Domain.Elaborating.Internal; a Features.Check.Generate.*
+  module is imported by Features.Check.Generate* only; only
+  Generate.Elab and Generate.Gen import Generate.Elab.Internal; only
+  Domain.Verdict.Judged and Features.Check.Decide import
+  Domain.Verdict.Judged.Internal; no Runtime module imports
+  Domain.Elaborating* or Features.Check.Generate*. Their re-exports
+  keep the allowed form, and scripts/structure-elab.mjs pins their
+  export lists (rule E6).
   Only Domain.Verdict and Features.Check.Refute.Theorems import
   Domain.Verdict.Theorem.Internal (`TheoremRef`), and only
   Features.Check.Refute.Rules imports Refute.Rules.Internal (`SoundRule`)

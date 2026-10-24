@@ -663,6 +663,23 @@ each key conjunct, backticked hint seeding) N1-N4 caught; regression row
 evidence as a proposal pending its owner. No corpus re-pin. Evidence
 in findings, "The CX refuter in shadow".
 
+## R0 shadow tranche 2, Task 7.1a: D1's types, seal and elaborate (2026-10-23)
+
+Shadow only, no acceptance change (ruling R6). D1's mechanism without
+the generator port: `Elab` (applicative, no `Bind`) and `Gen` with
+hidden constructors and nominal roles, `seal`, the `Elaborating`
+newtype with `requests`, `positionsOf` and the seal check, `Judged`
+minted by `judgedDecision`, and `elaborate` with `covDomain`; Task
+4.4's `coverage` takes its domain. Rules E1-E6 and S10 in
+scripts/structure-modules.mjs and scripts/structure-elab.mjs, with
+pinned export lists; `holes` moved to Features.Check.Holes. Effect rows
+follow §12.1's fallback (provisional controller ruling; options in
+docs/plans/r0-ea-representation.md); Task 4.6 stays blocked. Tests
+T3a, T3b, T3c (real purs), T4, T6, T7, T9, T10, T11, T11b; ten mutants
+and five regression rows fail as expected. No pin changed (RT1, RT8,
+window, census). 7.1b: the generator port and T1, T2, T5, T5b, T8,
+T12. Evidence in findings, "D1's generation continuation, part a".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

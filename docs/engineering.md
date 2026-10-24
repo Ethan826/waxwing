@@ -82,7 +82,22 @@ adding a bypass allowlist.
   module's compiled JS, and no module re-exports from it. purs itself
   accepts both routes, so the checks are needed (docs/findings.md,
   "The verdict token boundary"); test/structure-r0.test.mjs pins each
-  direction. Threat model: the allowed importers are trusted and other
+  direction. Since R0 Task 7.1a, D1's rules E1-E6
+  (docs/plans/r0-generation-continuation.md §3.1) are in the same
+  tables (scripts/structure-modules.mjs): E1 Domain.Elaborating.Build,
+  E2 Domain.Elaborating.Internal, E3 every Features.Check.Generate.*
+  module by pattern, E4 Features.Check.Generate.Elab.Internal, E5
+  Domain.Verdict.Judged.Internal, and S10 (no Runtime module imports
+  Domain.Elaborating* or Features.Check.Generate*). Elaborating's and
+  Judged's Internal modules are token modules; Generate.Elab.Internal is
+  not, since every client of `Elab` or `Gen` imports its instance
+  dictionaries' JS. E6 is read from the source (scripts/structure-elab.mjs):
+  a `module X` export that reaches a restricted module must bind only
+  `import P (T₁, …) as X` of bare types from the paired Internal module
+  (or a stated exception), and the export lists of the D1 modules are
+  pinned; test/r0-elab-rules.test.mjs has a case per rule and T10's
+  import-closure check. Automated: all of these. Review convention: a
+  change to a pin. Threat model: the allowed importers are trusted and other
   modules are not. A module outside them cannot reach a token
   constructor through source imports, compiled imports or re-exports,
   or FFI JS that names a token Internal module (`foreignFindings` scans

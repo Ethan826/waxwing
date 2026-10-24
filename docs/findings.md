@@ -4338,3 +4338,128 @@ compiler passes; restored defect fails".
 `Shadow` attempt: test/r0-online.test.mjs (four expectations) and
 test/r0-readback.test.mjs (one) gained `'Shadow Left'`; no verdict
 changed. No fixture or diagnostic changed; no corpus re-pin.
+
+## D1's generation continuation, part a (2026-10-23)
+
+R0 Task 7.1a (the controller split Task 7.1 on 2026-10-23: 7.1a is
+D1's types, `seal`, `elaborate`, the import rules and the hole move;
+7.1b ports the generator and runs the corpus-wide tests). Shadow only,
+ruling R6: nothing reachable from compile calls the new code, and
+`generate` still returns the recorded problem as before. The spec is
+docs/plans/r0-generation-continuation.md ("D1").
+
+**Effect rows: §12.1's fallback, not E-a (controller ruling,
+provisional).** Task 4.4's witness holds `Inline RTExpr`, and `RTExpr`
+erases every effect row, so E-a's values have no binding form and rows
+nested in images cannot be written. Task 7.1a lands the fallback:
+images come back with closed, empty rows (Generate.Elab.Image), a
+handle in an effect-row tail fails the seal check (`SortClash`), and
+7.1b's T2 and T8 will compare effect-erased projections. The options
+for the author are in docs/plans/r0-ea-representation.md. G-D1's
+policy point is settled; its representation is open, and Task 4.6
+stays blocked.
+
+**Labelled amendments to the spec (each in its module's header).**
+1. Generation fault (ruling on Q3): `Gen` carries Task 3.2's
+   `GenerationFault`; `seal` returns `Either GenerationFault
+   (Elaborating a)`; `lifted` lifts a rule's fault.
+2. `seal` takes a header (the declaration's id and the program's holder
+   set), which the recorded problem carries and the parts do not.
+3. `fresh` takes the variable's sort and its T-R0b stored position;
+   `rigid` writes a signature variable; `emit` takes the rule's `At`
+   and each entry's row, kind and span (Task 3.2's origins), with
+   generator-side entry types `GenAtom`, `GenReq`, `GenSite`.
+4. `ElabFault` has a fifth constructor, `ImageVariable v w`: an
+   `RTExpr` image may name a problem variable, which W's `Ty Open`
+   could not. No Cov clause excludes it (an owner question in the
+   representation note).
+5. Step 5 of `elaborate` (a `Named` binding) has no arm: Task 4.4's
+   witness has no `Named` constructor and an uninhabited `NameEntry`.
+6. `judgedDecision` beside `decide` mints the `Judged`; `decide`'s type
+   is unchanged, so Task 4.5's harness and tests stay as they are.
+7. Rule E3 closes Generate.Inputs and Generate.Fault to the driver, so
+   Features.Check.Generate defines `generationInputs`,
+   `generationProblem` and `staticRules` and re-exports `Inputs` and
+   `GenerationFault` by name (E6's stated exception, widened);
+   Domain.Recorded re-exports its Internal types under their own alias.
+8. Generate.Elab.Internal is not a token module: every client of `Elab`
+   or `Gen` imports its instance dictionaries' JS. E4 and E6 guard it.
+9. The problem-identity step compares `fields`, since the problem's
+   `Eq` instance lives in Domain.Recorded.Internal, a token module.
+10. `ClauseParamType` (spec §12.2) is deferred to 7.1b, where a rule
+    first writes that site.
+
+**Tests (checked: each file passes in the verify recorded below).**
+test/r0-elab-seal.test.mjs (T3a, one case per `SealFault`; St; Mint;
+`positionsOf`), test/r0-elab-props.test.mjs (T4a Tr, T4b Def, T9 laws,
+300 and 100 seeds; grammar fixed in test/r0-elab-terms.mjs before the
+first run), test/r0-elaborate.test.mjs (T6, T7, T11, T11b),
+test/r0-judged.test.mjs, test/r0-elab-rules.test.mjs (E1-E6, S10,
+the pinned export lists, T10), test/r0-elab-scope.serial.test.mjs
+(T3c: eight fixtures each fail with a pinned error class and phrase,
+two controls compile; one purs run against a copy of output/). The
+fixtures are kept as `*.purs.txt` and copied in as `.purs` for the run:
+spago builds every `test/**/*.purs`, and the first verify of this task
+failed at the build on exactly these modules (labelled deviation from
+the spec's `*.purs`; the serial test applies the style check itself).
+Not yet: T1, T2, T5, T5b, T8's corpus half, T12 (7.1b), and T3a's
+harness half (the driver has no `Elaborating` until 7.1b). T3c (vi)
+covers `seal`; `generateIn` exists from 7.1b.
+
+**TDD (checked).** RED runs:
+- test/r0-elab-seal.test.mjs against a stub `untracked = const []`:
+  6 of 9 fail (UntrackedRead, SortClash, AuxiliarySite, RigidSiteRead,
+  DuplicateFresh, DuplicateSite). Produced after the implementation
+  against the stub, labelled as such.
+- test/r0-elaborate.test.mjs and test/r0-elab-rules.test.mjs before
+  their modules existed: ERR_MODULE_NOT_FOUND; and before the tables
+  changed, `graphFindings` gave `[]` for E1 (Decide → Build), E3
+  (Function → Generate.Elab), E5 (Recorded → Judged.Internal) and S10.
+- test/r0-judged.test.mjs: `Decide.judgedDecision is not a function`.
+- One defect caught before commit: `elaborate` first passed `const
+  (built …)` to `either`, which PureScript evaluates eagerly, so
+  `build` ran on a witness Cov refused; mutant M1 restores it.
+
+**Mutants (checked, an isolated copy in the session scratchpad; each
+patch applied alone, purs compile, then the named tests).**
+
+| Mutant | Patch | Failing tests |
+|---|---|---|
+| M1 | `either NotCompiled (const (built elaborating witness unit))` | T7: seal faults, NoWitness and Cov stop before build |
+| M2 | `Apply (Elab s)` keeps `left.uses` | T4a, T4b, T9, and four seal tests |
+| M4 | `sameSort`'s last arm `true` | SortClash |
+| M5 | E3's entry deleted from structure-modules.mjs | E3 |
+| M6 | `bareTypes` always true | E6 |
+| M7 | Generate.Elab.Labels imports Features.Check.Scheme (State) | T10 |
+| M8 | `covDomain`'s guard `true` | T6 |
+| M9 | `repeatedLabel` always `Nothing` | T7: build faults arise from real reads too |
+| M10 | `positioned` at `RigidName` reads through `elabTy` | RigidSiteRead |
+| M11 | `judgedDecision` gives `Nothing` for Solved | the Solved pairing |
+
+**Regression rows (checked: `node scripts/regression.mjs` with the
+five names and r0-cov-skipped, 6 of 6, jobs 6).** r0-elab-untracked-read
+(readRow records no use), r0-elab-free-not-hole (`Free` read as
+`TInt`), r0-elab-fault-continues (a build fault becomes `NotCompiled`),
+r0-elab-wrong-problem (the identity guard `false`),
+r0-elab-phantom-role (both role annotations removed; the coerce
+fixtures compile). r0-cov-skipped's needle follows `coverage`'s new
+domain argument.
+
+**Unchanged (checked by verify, no re-pin).** No pin under
+test/fixtures/r0 changed: RT1, RT8 (rt8.json), the window
+(window.json), census.json, the corpus manifest and the canonical
+generator tests all pass as pinned. Cov's domain is unchanged while
+`Recon` is empty (`flexDomain`, the same set in the same order).
+
+**Verify (checked).** `npm run verify` at the task's last code
+commit, one run under the cross-worktree lock: EXIT 0; parallel tests
+2,825/2,825, serial 114/114, regression proofs 204 of 204 (jobs 6).
+`git diff --stat 83279ed HEAD -- test/fixtures/r0/*.json` is empty.
+
+**Carries to 7.1b.** test/r0-generate-signature.test.mjs asserts that
+no module in the closure of Features.Check.Generate depends on
+Domain.Checked; the port must replace that with T10 once `generate`
+builds checked IR. A `where`-bound helper without a signature is not
+generalized, so passing `map read (fresh m)` to `seal` fails with
+EscapedSkolem (seen while writing T3c's control); rule helpers need
+`∀ s.` signatures.
