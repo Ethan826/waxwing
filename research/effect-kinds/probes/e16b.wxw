@@ -1,0 +1,3 @@
+fn bracket(release: Unit -> Unit with pure,
+  body: Unit -> Int with pure): Int = { defer release(()); body(()) };
+fn main(): Int = 0;

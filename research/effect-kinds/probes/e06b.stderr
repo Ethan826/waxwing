@@ -1,0 +1,1 @@
+{"code":"E_EFFECT","message":"Console + Console + ... and Console + ... cannot be made equal: both end in ...","span":{"start":{"line":2,"offset":127,"column":53},"end":{"line":2,"offset":132,"column":58}},"file":"research/effect-kinds/probes/e06b.wxw","related":[]}
