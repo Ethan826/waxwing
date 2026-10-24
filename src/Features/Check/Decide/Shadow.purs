@@ -37,9 +37,12 @@ import Features.Check.Decide (Checking, decide, untilVerdict)
 import Features.Check.Decide.Open (openRequirements)
 import Features.Check.Decide.Refuters (shadowRefuter)
 import Features.Check.Functional (functional)
-import Features.Check.Generate (generate)
-import Features.Check.Generate.Fault (GenerationFault, generationProblem)
-import Features.Check.Generate.Inputs (generationInputs)
+import Features.Check.Generate
+  ( GenerationFault
+  , generate
+  , generationInputs
+  , generationProblem
+  )
 import Features.Check.Refute.Counter (cxSpec, cxStatement)
 import Features.Check.Refute.Rules (registry)
 import Features.Check.Strategy.Online (online)

@@ -1,7 +1,31 @@
 {
+ "Domain.Elaborating": {
+  "source": [
+   "module Exports",
+   "positionsOf",
+   "problem",
+   "requests",
+   "untracked"
+  ],
+  "compiled": [
+   "positionsOf",
+   "problem",
+   "requests",
+   "untracked"
+  ]
+ },
+ "Domain.Elaborating.Build": {
+  "source": [
+   "build"
+  ],
+  "compiled": [
+   "build"
+  ]
+ },
  "Domain.Recorded": {
   "source": [
    "module Exports",
+   "module Vocabulary",
    "fields"
   ],
   "compiled": [
@@ -120,15 +144,44 @@
    "StaticRule from ../Domain.Verdict.Static/index.js"
   ]
  },
+ "Domain.Verdict.Judged": {
+  "source": [
+   "module Exports",
+   "judgedProblem",
+   "judgedSolution"
+  ],
+  "compiled": [
+   "judgedProblem",
+   "judgedSolution"
+  ]
+ },
+ "Features.Check.Decide": {
+  "source": [
+   "Checking",
+   "Progress",
+   "decide",
+   "judgedDecision",
+   "untilVerdict"
+  ],
+  "compiled": [
+   "decide",
+   "judgedDecision",
+   "untilVerdict"
+  ]
+ },
  "Features.Check.Generate": {
   "source": [
    "module Exports",
-   "generate"
+   "generate",
+   "generationInputs",
+   "generationProblem",
+   "staticRules"
   ],
   "compiled": [
    "generate",
-   "generationProblem from ../Features.Check.Generate.Fault/index.js",
-   "staticRules from ../Features.Check.Generate.Static.Rules/index.js"
+   "generationInputs",
+   "generationProblem",
+   "staticRules"
   ]
  },
  "Features.Check.Generate.Assemble": {

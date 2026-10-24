@@ -98,12 +98,14 @@ test('Sig9, Sig10: q is empty; main\'s result is printable (C5)', () => {
 // The export list is an enumerated allowlist (ruling R2; Task 0.3 NB3):
 // `generate`, `staticRules`, the fault's `generationProblem` and the
 // types `Tables`, `Signatures`, `GenerationFault`; no production empty
-// problem.
+// problem. Task 7.1a adds `generationInputs` and the type `Inputs`: rule
+// E3 closes Generate.Inputs to the driver (scripts/structure-elab.mjs
+// pins the source list).
 test('Features.Check.Generate exports its enumerated values only',
   async () => {
     const Generate = await load('Features.Check.Generate');
     assert.deepEqual(Object.keys(Generate).sort(),
-      ['generate', 'generationProblem', 'staticRules']);
+      ['generate', 'generationInputs', 'generationProblem', 'staticRules']);
   });
 
 // T-R0b §4's applicative invariant, by the import graph: generation

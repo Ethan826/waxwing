@@ -28,12 +28,41 @@ export const internalModules = [
   { module: 'Features.Check.Refute.Rules.Internal',
     importers: /^Features\.Check\.Refute\.Rules$/ },
   { module: 'Features.Check.Refute.Theorems',
-    importers: /^Features\.Check\.Refute\.Rules$/ }
+    importers: /^Features\.Check\.Refute\.Rules$/ },
+  // R0 Task 7.1a, D1 spec §3.1. E1: only `elaborate` calls `build`. E2:
+  // Elaborating's constructor reaches its two Domain modules and `seal`.
+  // E3: every Generate.* module, by pattern, is importable by Generate*
+  // only; the public Features.Check.Generate exports an allowlist. E4:
+  // Elab, Gen and Handle's constructors reach Generate.Elab and .Gen.
+  // E5: Judged's constructor reaches its public module and `decide`.
+  // S10: no Runtime module (whose FFI could break a hidden constructor)
+  // imports Elaborating or Generate*.
+  { module: 'Domain.Elaborating.Build',
+    importers: /^Features\.Check\.Elaborate$/ },
+  { module: 'Domain.Elaborating.Internal',
+    importers: new RegExp('^(Domain\\.Elaborating(\\.Build)?'
+      + '|Features\\.Check\\.Generate\\.Elab)$') },
+  { module: /^Features\.Check\.Generate\./,
+    importers: /^Features\.Check\.Generate(\.|$)/ },
+  { module: 'Features.Check.Generate.Elab.Internal',
+    importers: /^Features\.Check\.Generate\.(Elab|Gen)$/ },
+  { module: 'Domain.Verdict.Judged.Internal',
+    importers: /^(Domain\.Verdict\.Judged|Features\.Check\.Decide)$/ },
+  { module: /^(Domain\.Elaborating|Features\.Check\.Generate)(\.|$)/,
+    importers: /^(?!Runtime\.)/ }
 ];
+// A rule names its module exactly, or by a pattern (E3, S10).
+export const restricts = (rule, dependency) => (typeof rule.module
+  === 'string' ? rule.module === dependency : rule.module.test(dependency));
 // A token Internal module's constructors must not leave it by re-export.
 // The public module (Domain.Verdict, Domain.Recorded) re-exports types
 // only, which purs emits no JS for, so any JS re-export from these
 // modules, by any module, forwards a value: a constructor.
+// Task 7.1a adds Elaborating's and Judged's: neither has an instance, so
+// no client's compiled JS needs theirs. Generate.Elab.Internal is not
+// one: its Functor, Apply and Bind dictionaries are JS any client of
+// `Elab` or `Gen` imports; E4 and E6 guard it from the source.
 export const tokenModules = ['Domain.Verdict.Internal',
   'Domain.Recorded.Internal', 'Domain.Verdict.Theorem.Internal',
-  'Features.Check.Refute.Rules.Internal'];
+  'Features.Check.Refute.Rules.Internal', 'Domain.Elaborating.Internal',
+  'Domain.Verdict.Judged.Internal'];

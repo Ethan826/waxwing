@@ -129,7 +129,9 @@ test('the real tree matches its pin and its FFI names no token module',
     // Task 2.3 added the static-rule classification, Generate.Static*;
     // Task 3.2 the generator and its static rules; Task 5.1 Refute.Rules
     // and Refute.Theorems; Task 4.2 Strategy.Substitution; Task 7.1a
-    // D1's Assemble, Elab, Elab.* and Gen.
+    // D1's Assemble, Elab, Elab.* and Gen, and the importers of its two
+    // token modules: Domain.Elaborating(.Build), Domain.Verdict.Judged
+    // and Features.Check.Decide (rules E2 and E5).
     const generate = ['', '.Assemble', '.Builtin', '.Call', '.Context',
       '.Control', '.Effect', '.Elab', '.Elab.Image', '.Elab.Internal',
       '.Elab.Labels', '.Elab.Log', '.Elab.Recorded', '.Elab.Stages', '.Expr',
@@ -139,8 +141,10 @@ test('the real tree matches its pin and its FFI names no token module',
       '.Static.Site', '.Static.Walk', '.Translate']
       .map(name => `Features.Check.Generate${name}`);
     assert.deepEqual(Object.keys(importers).sort(),
-      ['Domain.Recorded', 'Domain.Verdict', ...generate,
-        'Features.Check.Refute.Rules', 'Features.Check.Refute.Theorems',
+      ['Domain.Elaborating', 'Domain.Elaborating.Build', 'Domain.Recorded',
+        'Domain.Verdict', 'Domain.Verdict.Judged', 'Features.Check.Decide',
+        ...generate, 'Features.Check.Refute.Rules',
+        'Features.Check.Refute.Theorems',
         'Features.Check.Strategy.Substitution'].sort());
     assert.deepEqual(surfaceFindings(JSON.parse(readFileSync(manifestFile,
       'utf8')), importers), []);

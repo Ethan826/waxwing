@@ -5,7 +5,9 @@ import { foreignFindings, manifestFile, surfaceFindings }
   from './trusted-surface.mjs';
 import { coercionFindings, foreignModules, foreignPinFile,
   foreignSurfaceFindings } from './forgery.mjs';
-import { internalModules, tokenModules } from './structure-modules.mjs';
+import { internalModules, restricts, tokenModules }
+  from './structure-modules.mjs';
+import { elabFindings } from './structure-elab.mjs';
 
 export const filesUnder = root =>
   readdirSync(root, { withFileTypes: true }).flatMap(entry =>
@@ -38,9 +40,10 @@ const projectFinding = (name, dependency) => {
   if (target > own)
     return [`${name} (${layerOf(name)}) imports ${dependency}`
       + ` (${layerOf(dependency)})`];
-  return internalModules.filter(rule => rule.module === dependency
-    && !rule.importers.test(name))
-    .map(() => `${name} imports ${dependency}`);
+  // One finding however many rules refuse the import (a Generate.*
+  // Internal module is under both E3 and its own rule).
+  return internalModules.some(rule => restricts(rule, dependency)
+    && !rule.importers.test(name)) ? [`${name} imports ${dependency}`] : [];
 };
 
 const libraryFinding = (name, dependency) => {
@@ -189,6 +192,7 @@ export const checkStructure = async () => {
   findings.push(...reexportFindings(built), ...importFindings(built));
   findings.push(...foreignFindings(foreignFiles(files, 'output'),
     tokenAllowed));
+  findings.push(...elabFindings());
   findings.push(...theoremImportFindings(Object.fromEntries(files.filter(file =>
     file.startsWith('src/') && file.endsWith('.purs')).map(file =>
     [file, readFileSync(file, 'utf8')]))));

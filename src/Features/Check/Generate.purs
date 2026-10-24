@@ -7,10 +7,17 @@
 -- checker module out of reach). Test-only in this tranche: compile does
 -- not call it (ruling R6). The export list is an enumerated allowlist
 -- with no production empty problem (ruling R2; Task 0.3 NB3), plus the
--- generation fault and its `Problem`.
+-- generation fault and its `Problem`. Since Task 7.1a every other
+-- Generate.* module is importable by Generate* only (D1 spec §3.1 rule
+-- E3), so the inputs, the fault's `Problem` and the static rules are
+-- definitions here, not re-exports (rule E6), and the types are
+-- re-exported by name; scripts/structure-elab.mjs pins the list.
 module Features.Check.Generate
   ( module Exports
   , generate
+  , generationInputs
+  , generationProblem
+  , staticRules
   ) where
 
 import Prelude
@@ -25,16 +32,22 @@ import Domain.Type (TypeId(..))
 import Features.Check.Functional (functional)
 import Features.Check.Generate.Assemble (assemble)
 import Features.Check.Generate.Expr (expr)
-import Features.Check.Generate.Inputs (Signatures, Tables)
-import Features.Check.Generate.Inputs (Signatures, Tables) as Exports
-import Features.Check.Generate.Fault
-  ( GenerationFault
-  , generationProblem
+import Domain.Problem (Problem)
+import Domain.Resolved as Resolved
+import Domain.Verdict.Static (StaticRefusal)
+import Features.Check.Generate.Inputs (Inputs, Signatures, Tables)
+import Features.Check.Generate.Inputs
+  ( Inputs
+  , Signatures
+  , Tables
   ) as Exports
+import Features.Check.Generate.Inputs as Inputs
+import Features.Check.Generate.Fault (GenerationFault) as Exports
 import Features.Check.Generate.Fault (GenerationFault)
+import Features.Check.Generate.Fault as Fault
 import Features.Check.Generate.Out (Out, concatOut)
 import Features.Check.Generate.Signature (declaration, parameterLocals)
-import Features.Check.Generate.Static.Rules (staticRules) as Exports
+import Features.Check.Generate.Static.Rules as Static
 
 -- Amendment (Task 3.2 fix round 1, controller ruling): the result is
 -- `Either GenerationFault`: an id the inputs lack, or input not of the
@@ -50,6 +63,19 @@ generate tables signatures function = do
   pure (problemOf tables function (concatOut [ signature, body.out ]))
   where
   context locals = { decl: function.id, tables, signatures, locals }
+
+generationInputs ∷ Resolved.Program → Inputs
+generationInputs = Inputs.generationInputs
+
+generationProblem ∷ GenerationFault → Problem
+generationProblem = Fault.generationProblem
+
+staticRules
+  ∷ Tables
+  → Signatures
+  → FunctionDecl
+  → Either GenerationFault (Array StaticRefusal)
+staticRules = Static.staticRules
 
 problemOf ∷ Tables → FunctionDecl → Out → RecordedProblem
 problemOf tables function =
