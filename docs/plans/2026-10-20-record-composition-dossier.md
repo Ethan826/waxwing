@@ -5836,3 +5836,38 @@ further review agent starts:
 - Return the revised interfaces, obligation inventory and unresolved
   claims before another review. Implementation unauthorized; Task 4.6
   blocked. These findings do not undo the row proofs.
+
+### 18.78 a-min revision 3: two corrections, FX032, third review (2026-10-24)
+
+The author found revision 3 coherent enough for a third adversarial
+review after two corrections, and not yet ready for implementation:
+
+1. **Mark normalization.** `J ∅` denotes N, but the written `holds`
+   rejected `J ∅ ⊑ N`, which is true; the author checked all 36 term
+   pairs over two rigid marks against all four valuations and found
+   that single mismatch. Normalize `J ∅` to N before every inequality
+   and equality check, with a control showing both spellings compare
+   equally. A representation gap, not a counterexample to the join-set
+   approach.
+2. **Inventory completeness.** Fixtures and detecting mutants are
+   evidence, not completeness: an omitted rule can be absent from the
+   inventory and its tests alike. Require a rule-by-rule argument over
+   the claimed fragment's effect and mark checks, fixtures and mutants
+   that test that mapping, and explicit exclusions. Coverage of
+   generated obligations stays separate from correct checking of
+   supplied ones.
+3. **FX032.** Recorded as unsupported in shadow, not reproducing the
+   silent omission; live acceptance unchanged in this tranche; the
+   eventual rejection or implementation of operation-level `with` is a
+   separate compatibility change. The statements specify how the
+   marker survives resolution, which currently drops the information.
+4. **Third review authorized**, bounded: refute the normalized
+   mark-term/path equivalence (equalities, cycles, constants, several
+   rigid variables); check the obligation inventory against FX008's
+   rules and code; trace forged nested marks, clause rows and holes
+   through certification to stripped output; check that "fresh" means a
+   fresh evidence position, not a distinct mark value; verify that
+   missing effect validation cannot produce acceptance or stop a later
+   honest strategy; separate universal arguments from bounded tests and
+   unrun predictions. Settled representation choices are not reopened.
+   Task 4.6 and G-D1 stay blocked.

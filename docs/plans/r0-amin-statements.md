@@ -67,10 +67,13 @@ inference row R and its clause row C (FX008 §3.4). Nested occurrences
 are ordinary parts of `MTy`.
 
 **Mark terms.** `MarkTerm = N | M | J (Set RigidMark)`: the strong mark
-N, the weak mark M, or the join of a set of the declaration's rigid
-mark variables. `J ∅` is N; a single `nofail(k)` is `J {k}`. Console is
-always N; `Fail` labels carry the fixed placeholder (FX008 §3.3) and are
-never compared.
+N, the weak mark M, or the join of a non-empty set of the declaration's
+rigid mark variables; a single `nofail(k)` is `J {k}`. **Normalization**
+(the author's correction, §18.78): `norm (J ∅) = N`, every other term
+is its own normal form, and every comparison, inequality and equality
+alike, is made on normal forms; the read-back and I3 accept `J ∅` only
+as a spelling of N. Console is always N; `Fail` labels carry the fixed
+placeholder (FX008 §3.3) and are never compared.
 
 **Variables in images** (decided, §18.76 ruling 2): a rigid type, record
 row or effect row variable only if the declaration declares it, at its
@@ -149,25 +152,45 @@ Resolve-time refusals (FailNeedsConcrete at Resolve/Row.purs:82,
 NofailOnFail, MarkVariableOutsideSignature, HandlerMissing) are not
 obligations: they precede generation.
 
-**Completeness (I10).** The inventory is complete for today's effect
-and mark checks when every refusal kind above has a forged-package
-fixture that the validator refuses, and a mutation that drops each
-generator rule E1-E12 (not each form) flips at least one fixture. The
-oracle is today's checker on FX008's probes, the regression-fx008 rows,
-test/fx-gen-failing.mjs and the audit fixtures (N7).
+**Completeness (I10; corrected by the author, §18.78).** Two separate
+claims:
+- *Coverage of generated obligations:* generation records every effect
+  and mark requirement of the claimed fragment. This is established by
+  a **rule-by-rule argument**: for every checker rule of today that can
+  refuse an effect or a mark (each raise site of the audit table, every
+  constraint FX008 §3.4-3.5 generates, the row-unification refusals of
+  E1 and E2), the row of E1-E12 that records it, or an explicit
+  exclusion with its reason (§9). Fixtures and mutants test that
+  mapping; they do not establish it, since a rule absent from the
+  inventory can be absent from its tests too.
+- *Correct checking of supplied obligations:* `validateEffects`
+  accepts only packages that satisfy the obligations it is given (S3).
+  A perfect validator still accepts vacuously if generation omits a
+  requirement, so this claim never substitutes for the first.
+
+Tests of the mapping: one forged-package fixture per refusal kind that
+the validator refuses, and a mutation dropping each generator rule
+E1-E12 that flips at least one fixture, against today's checker on
+FX008's probes, the regression-fx008 rows, test/fx-gen-failing.mjs and
+the audit fixtures (N7). The rule-by-rule argument is unwritten (U6).
 
 ## 5. Mark checking and the universal quantification (derived)
 
-**The check.** For an edge x ⊑ y between mark terms, define
+**The check.** On normal forms (§2), for an edge x ⊑ y define
 `holds(x, y)`: `x = N` or `y = M` or (`x = J S`, `y = J T`, `S ⊆ T`).
-`validateEffects` requires `holds` on every edge E2-E7 generate, read
-on the package's terms. Equalities (E1) require equal terms.
+`validateEffects` requires `holds (norm x) (norm y)` on every edge E2-E7
+generate, read on the package's terms; equalities (E1) require
+`norm x = norm y`. Without normalization `holds (J ∅) N` would be
+false although `J ∅ ⊑ N` is true: the author checked all 36 term pairs
+over two rigid marks against all four valuations and found that one
+mismatch, a representation gap fixed by `norm`, not a counterexample to
+the join-set approach.
 
 **It preserves the quantification (derived).** Over the two-point
 lattice N ⊑ M, a valuation v maps each rigid k to N or M, and
-`J S` denotes the join of v(S). Then `J S ⊑ J T` holds for every v
-exactly when S ⊆ T: if some k ∈ S \ T, the valuation with v(k) = M and
-every other variable N breaks it; if S ⊆ T it holds pointwise. M on the
+`J S` (S non-empty, after `norm`) denotes the join of v(S). Then
+`J S ⊑ J T` holds for every v exactly when S ⊆ T: if some k ∈ S \ T,
+the valuation with v(k) = M and every other variable N breaks it; if S ⊆ T it holds pointwise. M on the
 left holds only against M; N on the left always holds. So `holds` is
 true exactly when the edge holds for every rigid valuation. The
 author's example: an obligation `J {k} ⊑ N` is `{k} ⊆ ∅`, false, so it
@@ -282,11 +305,19 @@ accepted when R0 is live):
 
 ## 9. Unsupported, stated
 
-- **FX032** (operation `with` clauses, which today's checker silently
-  ignores; the author ruled it a defect, §7.1 item 5): no obligation is
-  generated; a declaration that uses such an operation gets
-  `EffectsUnchecked` rather than mirroring the defect. This narrows R0
-  relative to today; the author decides (open, O1).
+- **FX032** (decided, §18.78): an operation's own `with` row, which
+  today's checker parses, mark-checks and then drops
+  (Resolve/Effect.purs:47-58 builds `OperationInfo` without it), is
+  recorded as **unsupported in shadow**: a declaration that performs
+  such an operation gets `EffectsUnchecked` in R0's shadow verdict,
+  rather than reproducing the silent omission. Live acceptance does not
+  change in this tranche; rejecting or implementing operation-level
+  `with` is a separate compatibility change. For the marker to survive
+  resolution, `OperationInfo` gains a field recording that the
+  operation was written with a `with` row (the row itself, or a flag),
+  which generation reads to record an `Unsupported OperationWith`
+  obligation; today's live checker does not read the field, so its
+  behaviour is unchanged.
 - **Constructs behind `Outside` markers** (handler types, `defer`, Fail
   families) still block G0's Solved today; their obligations (E4-E6,
   E9) are specified so the contract holds when the markers go.
@@ -344,13 +375,14 @@ certify argument and `certifySound`'s statement.
   FX008's settling loop's acceptance ("accepts exactly when the
   containments and equalities have a finite solution", FX008 §3.5
   property 4), taken from FX008's stated property, not re-argued.
-- U6. I10's completeness against the named oracle.
+- U6. I10's rule-by-rule coverage argument (unwritten), tested by the
+  named fixtures and mutants.
 - Novel, for approval (ADR 014): the I3 well-formedness check; the ∅
   default for effect-row holes; consumption-based inclusion is FX001's
   and FX008's design (project precedent, no published source); the
   mark-term evidence and §5's correspondence.
 
-Open for the author: O1 FX032 handling (§9).
+O1 (FX032) decided, §18.78.
 
 ## 12. Separating examples
 
@@ -374,6 +406,8 @@ Programs are proposed, not run; refusal predictions are plausible.
 | sites | an inner stage row of a two-parameter lambda; an Apply and a Pipe arrow; a partial call: one fixture each | review 1's site list alone |
 | rigid marks (§5) | `fn h(g: Unit -> Unit with nofail(k) Log): Unit with nofail(k) Log = { let r = fn(u: Unit) => g(u); r(()) }` with the lambda's flexible label mark forged to N: refused, since the edge `J {k} ⊑ N` is `{k} ⊆ ∅`, false, though it holds at k = N | checking one ground valuation |
 | rigid marks, stronger | the same program with the lambda's mark `J {k}` (the least term): accepted; and `fn h(g: Unit -> Unit with nofail Log): Unit with nofail(k) Log = g(())`, a written edge `J {k} ⊑ N`, refused as FX008 refuses it (path k → N) | refusing every rigid-dependent package; accepting a contract valid only at k = N |
+| normalization | the same edge with the context's mark spelled `J ∅` and spelled N: identical verdicts, and `J ∅ ⊑ N` holds | comparing un-normalized terms |
+| FX032 | `effect Op { fn op(): Int with Log; }; fn g(): Int with Op = Op.op(); fn main(): Int = 0;`: R0 shadow verdict `EffectsUnchecked`, today's live outcome unchanged | dropping the `with` row at resolution |
 | R031 | both pins flip to today's form | — |
 
 ## R1. Adversarial review 1 (2026-10-24): not ready
