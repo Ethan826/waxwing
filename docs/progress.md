@@ -779,6 +779,19 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## a-min tranche: R031 pinned, statements written, review 1 (2026-10-24)
+
+Authorized in dossier §18.74. R031's two defects pinned as they stand
+(test/r0-r031.test.mjs). a-min statements written
+(docs/plans/r0-amin-statements.md) and adversarially reviewed: not
+ready (F1-F17, recorded in its §8; S1: marks unjudgeable, K2 row
+equations unjudged, no completeness claim for the effect obligations,
+coupling not tied to the problem or witness). Revision waits on the
+author's rulings. No implementation. Verify at 2a94b33 (after the
+C001 pins): EXIT 0, 2,891/136/209. Verify at d7f30b0 (with R031's
+pins; .build/verify-d7f30b0.log): EXIT 0; 2,893/2,893 parallel,
+136/136 serial, 209/209 regression proofs.
+
 ## C001 corpus additions: ten sources join R0's corpus (2026-10-24)
 
 Authorized in dossier §18.73. The eight C001 commits of branch
