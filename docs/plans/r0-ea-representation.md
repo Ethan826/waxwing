@@ -38,7 +38,11 @@ departure was recorded when it landed (dossier §18.72). Gate
 G-effect-rows (plan §3.A) holds the decision and blocks Task 4.6 and
 Task 7.2's bridge removal. On 2026-10-24 (dossier §18.73) the author
 ratified option c only as a temporary experimental fallback for shadow
-work; it does not replace E-a's requirement for live use.
+work; it does not replace E-a's requirement for live use. The audit the
+author asked for, with a recommended representation ("a-min", a pinned
+form of option (a)) and seven questions, is
+docs/plans/r0-effect-rows-audit.md; it also found a fourth departure
+(an annotated lambda's ambient row tail left rigid, BACKLOG R031).
 
 | | (a) row-carrying images | (b) effect-row binding only | (c) §12.1 fallback |
 |---|---|---|---|
