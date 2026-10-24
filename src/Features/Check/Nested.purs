@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 module Features.Check.Nested (nestedTypes, referenced) where
 
 import Prelude

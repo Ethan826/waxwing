@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- A finished body's holes (R0 Task 7.1, moved from Features.Check.Scheme
 -- unchanged, a behaviour-preserving refactor): `holes` renumbers the
 -- metas still unsolved, and `foldHoles` visits a type's metas in the

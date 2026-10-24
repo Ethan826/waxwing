@@ -5,6 +5,7 @@ import { load, mentioned } from './r0-generate-support.mjs';
 import { elabRows, named } from './r0-elab-corpus-run.mjs';
 import { compareRow } from './r0-elab-compare.mjs';
 import { plain } from './r0-elab-erase.mjs';
+import { certifyFrom } from './r0-certify-support.mjs';
 
 // R0 Task 7.1b, D1 spec §10 over the pinned corpus. T1 (EL1): every
 // declaration `decide` judges Solved with a witness Cov accepted
@@ -23,6 +24,7 @@ const { unfoldableArray } = await load('Data.Unfoldable');
 const Elaborating = await load('Domain.Elaborating');
 const { holes } = await load('Features.Check.Holes');
 const rows = await elabRows();
+const { agreementFindings, sortOf } = await certifyFrom(load);
 const judged = rows.filter(row => row.judged !== null);
 const pairs = map => Map.toUnfoldable(unfoldableArray)(map)
   .map(pair => [pair.value0, pair.value1]);
@@ -125,4 +127,22 @@ test('T8 (corpus half): hole-bearing declarations project equal', t => {
   const unnumbered = holed.filter(({ built }) => JSON.stringify(plain(
     holes(built.body), null)) !== JSON.stringify(plain(built.body, null)));
   assert.deepEqual(unnumbered.map(found => found.row.at), []);
+});
+
+// BACKLOG R030, C2 corpus-wide (docs/plans/r0-certify-argument.md): at
+// every Solved verdict, the witness read with lowering's hole defaults
+// is the σ the check judged, and a variable σ₀ leaves out is `Free`
+// above σ₀'s holes. Counts are reported, not pinned (R028 pins T1/T2).
+test('C2: every Solved witness, defaulted, is the judged σ', t => {
+  const findings = judged.flatMap(row => agreementFindings(row.problem,
+    row.certificate.unsettled, row.compilation.value0)
+    .map(found => `${row.at}: ${found}`));
+  const free = judged.flatMap(row => pairs(row.compilation.value0.bindings)
+    .filter(([, binding]) => named(binding) === 'Free')
+    .map(([variable]) => named(sortOf(row.problem, variable))));
+  const rowFree = free.filter(sort => sort === 'SortRow');
+  t.diagnostic(`${judged.length} witnesses; ${free.length} Free bindings,`
+    + ` ${rowFree.length} of them row-sorted`);
+  assert.deepEqual(findings, []);
+  assert.ok(free.length > 0 && rowFree.length > 0);
 });

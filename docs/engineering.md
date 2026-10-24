@@ -213,6 +213,16 @@ adding a bypass allowlist.
     builds both the recorded problem and the `build` closure, so its
     reads, images (Generate.Elab.Image) and label checks are lowering
     code.
+  - Shared checker helpers generation reads (BACKLOG R030; each has
+    hand-written logic a check or `build` rests on, and today's live
+    checker uses them too): `Features.Check.Holes` and
+    `Features.Check.Walk` (hole numbering in `build`'s output),
+    `Features.Check.Implied` (the declared facts G0 judges against),
+    `Features.Check.Tables` and `Features.Resolve.Builtin` (the
+    signatures the recorded problem is built from), and
+    `Features.Check.Functional`, `Features.Check.Nested`,
+    `Features.Check.NestedArguments` and `Features.Check.Components`
+    (which types hold functions, read by the static rules).
   The core allowlist (scripts/structure.mjs `coreLibraries`) is Prelude and
   Data.{Either, Maybe, Int, String, Foldable, Traversable} modules, plus
   exactly Data.Array and Data.Array.NonEmpty (F007: Data.Array.ST and its

@@ -68,7 +68,7 @@ export const g0From = async (load, stubs) => {
     check: Substitution.certify });
   const open = Open.openRequirements;
   const check = (problem, candidate) =>
-    Substitution.checkSubstitution(problem)(candidate);
+    Substitution.certify(problem)(candidate);
   // The flexible type variable a `BQ` atom names, for an override.
   const atomVariable = entry => entry.value.value0.value0;
   return { candidateOf, g0, open, check, keys, atomVariable,

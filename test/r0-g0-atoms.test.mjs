@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { load } from './r0-generate-support.mjs';
 import { supportFrom } from './r0-entailed-support.mjs';
 
-// Task 4.2 fix round 1 (review I-2): `checkSubstitution`'s equality,
-// entailment, genericity and `ff` arms, each driven by a candidate that
-// is not the problem's own unifier, with a positive control beside each
-// refusal. Problems are built directly (test/r0-entailed-support.mjs).
+// Task 4.2 fix round 1 (review I-2): G0's equality, entailment,
+// genericity and `ff` arms, each driven by a candidate that is not the
+// problem's own unifier, with a positive control beside each refusal.
+// Problems are built directly (test/r0-entailed-support.mjs). Through
+// `certify` since BACKLOG R030 (`checkSubstitution` is private); these
+// candidates hold no holes, so settling leaves them unchanged.
 const { Atom, t, v, problemOf } = await supportFrom(load);
-const { checkSubstitution } =
+const { certify: checkSubstitution } =
   await load('Features.Check.Strategy.Substitution');
 const Map = await load('Data.Map.Internal');
 const int = t.base('Int');

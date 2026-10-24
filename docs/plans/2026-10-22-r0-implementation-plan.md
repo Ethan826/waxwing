@@ -600,6 +600,7 @@ expects the stub's Solved.
 | Id | Statements | Unlocks | Until then |
 |---|---|---|---|
 | P-G0 | `genericSubstitutionSound` (G0's `Sound_F`; bounded by C1-E) | `Proved` assurance on Solved | `Pending` assurance, labelled (§18.69 Q9) |
+| P-certify | `certifySound`: P-G0 plus settling, hole defaulting and witness construction agreeing with lowering (C1-C3 of docs/plans/r0-certify-argument.md; BACKLOG R030, 2026-10-24); the online strategy's assurance since R026 | `Proved` assurance on the online strategy's Solved | `Pending certifySound`, labelled; C1-C3 argued with checks |
 | P-C1 | C1-U, C1-H, C1-O (CX §5), plus C1-M, C1-T | registering `ClashRule`, `OccursRule` (Task 5.3) | empty registry; head clashes and occurs failures are hints |
 | P-CX | CX-K, CX-KP, CX-R, CX-PR; a formal `ValidR` (VR-sub, VR-agree, VR-CX) | `trustedRefuter` (Task 5.3) | the CX refuter runs as `shadowRefuter` only |
 | P-FK | FK-0; FK-W with P1, P2, T1-a; FK-U | FK-W's and FK-U's rows of `Adm_W` | today's R010 code decides admission; FK-W and FK-U rows inactive |

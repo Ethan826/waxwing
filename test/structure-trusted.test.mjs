@@ -23,7 +23,11 @@ const generate = 'Features.Check.Generate';
 const lowering = ['Features.Check.Elaborate', 'Domain.Elaborating',
   'Domain.Elaborating.Internal', 'Domain.Elaborating.Build',
   'Domain.Elaborating.Types', 'Domain.Verdict.Judged',
-  'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Witness', generate];
+  'Domain.Verdict.Judged.Internal', 'Domain.Verdict.Witness', generate,
+  // BACKLOG R030: the shared helpers generation reads.
+  ...['Holes', 'Walk', 'Implied', 'Tables', 'Functional', 'Nested',
+    'NestedArguments', 'Components'].map(name => `Features.Check.${name}`),
+  'Features.Resolve.Builtin'];
 const marker = '-- trusted surface: every diff needs token review;'
   + ' see docs/engineering.md';
 const path = name => `src/${name.replace(/\./g, '/')}.purs`;

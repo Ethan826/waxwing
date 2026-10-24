@@ -779,6 +779,25 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## R030: the trusted closure examined; `certify`'s argument (2026-10-24)
+
+Authorized in dossier §18.73. The nine helpers the generator reads
+(Features.Check.Holes, Walk, Implied, Tables, Functional, Nested,
+NestedArguments, Components and Features.Resolve.Builtin) each have
+hand-written logic a check or `build` rests on; they carry the marker
+and join the lowering-boundary list. `checkSubstitution` is no longer
+exported, so `certify` is the only way to a `Valid`; the online
+strategy's assurance is `Pending certifySound`, defined in
+docs/plans/r0-certify-argument.md: C1 settle's defaults are lowering's
+(Int; no tail), C2 the witness read with those defaults is the judged
+σ, C3 unbound variables are the hole contract's. New checks:
+test/r0-certify.test.mjs (4) and a corpus C2 test (1,989 Solved
+witnesses agree; 5 `Free` bindings, 2 row-sorted, so thin). The corpus
+check's first version read every `Free n` as a type hole and reported
+the two row-sorted bindings; W §1.6 reads `Free n` at its variable's
+sort, and the helper now does. Trusted-surface pin moved
+(`checkSubstitution` out, `certifySound` in), reviewed here.
+
 ## Verify after the repair sequence (2026-10-24)
 
 First full verify at baa0f91 (.build/verify-baa0f91.log): 2,885/2,885

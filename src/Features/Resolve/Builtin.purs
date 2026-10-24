@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 module Features.Resolve.Builtin
   ( BuiltinEffect
   , Declared

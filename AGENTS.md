@@ -81,8 +81,12 @@ vertical slice before adding language features. Task tracking is local.
   `Domain.Elaborating`, `Domain.Elaborating.Internal`,
   `Domain.Elaborating.Build`, `Domain.Elaborating.Types`,
   `Domain.Verdict.Judged`, `Domain.Verdict.Judged.Internal`,
-  `Domain.Verdict.Witness`, and `Features.Check.Generate` with every module
-  under it.
+  `Domain.Verdict.Witness`, `Features.Check.Generate` with every module
+  under it, and the helpers generation reads: `Features.Check.Holes`,
+  `Features.Check.Walk`, `Features.Check.Implied`, `Features.Check.Tables`,
+  `Features.Resolve.Builtin`, `Features.Check.Functional`,
+  `Features.Check.Nested`, `Features.Check.NestedArguments`,
+  `Features.Check.Components`.
 - Prefer `where`, never `let … in`. A `let` inside `do` may depend on an
   earlier bound value. Name transformations passed to map/traverse/eliminators
   in `where`; no anonymous lambdas. Use `maybe`/`maybe'`/`either` for their

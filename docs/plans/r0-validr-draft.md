@@ -68,7 +68,7 @@ value.
 ### 2.1 The rule today
 
 One predicate serves all three judgements (cited):
-`containsFunction holders ty` (Check/Functional.purs:45-52) is true at
+`containsFunction holders ty` (Check/Functional.purs:46-53) is true at
 an arrow, at a handler type, at a record with such a field, and at
 `TData t args` when `t ∈ holders` **or** some argument contains one.
 `holders = functional ctors` (Functional.purs:36) is the least fixed

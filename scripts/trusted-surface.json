@@ -841,12 +841,12 @@
  "Features.Check.Strategy.Substitution": {
   "source": [
    "certify",
-   "checkSubstitution",
+   "certifySound",
    "genericSubstitutionSound"
   ],
   "compiled": [
    "certify",
-   "checkSubstitution",
+   "certifySound",
    "genericSubstitutionSound"
   ]
  }
