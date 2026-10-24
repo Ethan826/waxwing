@@ -157,14 +157,14 @@ export const r0Rows = [
     message: /a constructor pattern's slot was not read: Searched Broke/
   },
   {
-    // Task 4.3, criterion 5: the read-back leaves holes unbound, so `pr`
-    // at an open flexible variable meets G0's backstop.
+    // Task 4.3, criterion 5: holes left unbound, so `pr` at an open
+    // flexible variable meets G0's backstop. Step 4 (the hole defaults)
+    // moved from the read-back into G0's `certify` (BACKLOG R026), so the
+    // defect is restored there.
     name: 'r0-hole-unbound',
-    file: 'src/Features/Check/Strategy/ReadBack.purs',
-    needle: '  settledBinding (Tuple variable value) = Tuple variable'
-      + ' (settled value)\n',
-    replacement: '  settledBinding (Tuple variable value) = Tuple variable'
-      + ' (identity value)\n',
+    file: 'src/Features/Check/Strategy/Substitution.purs',
+    needle: '  (checkSubstitution problem (map settled unsettled))\n',
+    replacement: '  (checkSubstitution problem (map identity unsettled))\n',
     probe: 'r0-hole-unbound',
     message: /a hole was left unbound: CheckFailed \w+ RequirementUnjudged/
   },

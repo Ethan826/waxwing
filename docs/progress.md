@@ -779,6 +779,21 @@ types too (m-5: 3,017 problems, 7,607 atoms, 0 ill-sorted); the stale
 Assemble.purs sentence reworded (m-6). Evidence in findings, "R021
 follow-ups: hardening re-review 2's minors".
 
+## Verify after the repair sequence (2026-10-24)
+
+First full verify at baa0f91 (.build/verify-baa0f91.log): 2,885/2,885
+parallel; serial 134/135, the T003 timing test `partialFirst` at 937 ms
+against 930 ms under external load (three quiet re-runs passed: 806,
+871, 886 ms); verify stopped before the regression proofs. Second run
+(.build/verify-baa0f91-2.log): 2,885/2,885 parallel, 135/135 serial,
+208 of 209 regression proofs. The failure was R026's: row
+`r0-hole-unbound` mutated ReadBack's `settledBinding`, which R026
+removed when the hole defaults moved into `certify`, so its needle had
+no target. The row now restores the same defect in `certify` (holes
+judged unbound); it and `r0-certified-split` prove. R026's own check
+ran only the new row, not the whole suite, which is how this was
+missed.
+
 ## R028: T1/T2's counts pinned exactly (2026-10-24)
 
 test/r0-elab-corpus.serial.test.mjs replaces its lower bounds with exact
