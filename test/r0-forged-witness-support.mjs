@@ -32,6 +32,7 @@ export const forgedFrom = async load => {
   const Atom = await load('Domain.Recorded.Atom');
   const Map = await load('Data.Map.Internal');
   const Set = await load('Data.Set');
+  const { holeVar } = await load('Domain.Recorded.Hole');
   const bool = Atom.Base.create(Atom.BoolBase.value);
   const int = Atom.Base.create(Atom.IntBase.value);
   const intToInt = new Atom.Arrow(int, int);
@@ -40,6 +41,7 @@ export const forgedFrom = async load => {
     unsettled: Map.functorMap.map(() => image)(certificate.unsettled) });
   const toBool = everyTo(bool);
   const toFunction = everyTo(intToInt);
+  const toHole = everyTo(Atom.TVar.create(holeVar(0)));
   const offering = (search, forge) => given => asked => {
     const found = search(given)(asked);
     return named(found) === 'Candidate'
@@ -70,5 +72,5 @@ export const forgedFrom = async load => {
       elaborated: Elaborate.elaborate(Set.empty)(elaborating)(
         judged.value0) };
   };
-  return { outcomeOf, toBool, toFunction, named };
+  return { outcomeOf, toBool, toFunction, toHole, named };
 };

@@ -186,6 +186,15 @@ adding a bypass allowlist.
     defaults lowering applies.
   - `Domain.Verdict.Certified` and `Domain.Verdict.Certified.Internal`:
     the token that pairs `Valid` with its witness (BACKLOG R026).
+  - `Domain.Recorded.Atom`: its hand-written `Eq RTExpr` (`sameSpine`) is
+    the equality G0's equation judgements, the hole contract and
+    `elaborate`'s problem identity rest on.
+  - `Domain.Recorded.Hole`: `holeVar`, `isHole` and `holeIndex` decide
+    which variables are holes, for `settled` and for `build`'s images
+    alike; a disagreement makes the judged sigma and the built IR differ.
+  Modules of plain data whose instances are all derived are out of
+  scope for this list (the review's ruling, 2026-10-24); a hand-written
+  instance or function that a check rests on brings its module in.
   Review-required lowering boundary (BACKLOG R029; D1 spec §8.2 puts
   `build` and the witness adapter inside it): the code that turns a
   `Judged` solution into checked IR. A wrong step here lowers ill-typed

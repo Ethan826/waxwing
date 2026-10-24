@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- The recorded problem's vocabulary (T-R0b §2, §3.5, §5.2, §10):
 -- variables, type expressions, atoms, markers, sites and the site table's
 -- entries. Plain data; only the problem itself is opaque.

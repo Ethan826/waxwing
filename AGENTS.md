@@ -33,7 +33,9 @@ vertical slice before adding language features. Task tracking is local.
   module is imported by Features.Check.Generate* only; only
   Generate.Elab and Generate.Gen import Generate.Elab.Internal; only
   Domain.Verdict.Judged and Features.Check.Decide import
-  Domain.Verdict.Judged.Internal; no Runtime module imports
+  Domain.Verdict.Judged.Internal; only Domain.Verdict.Certified and
+  Features.Check.Strategy.Substitution import
+  Domain.Verdict.Certified.Internal (BACKLOG R026); no Runtime module imports
   Domain.Elaborating* or Features.Check.Generate*. Their re-exports
   keep the allowed form, and scripts/structure-elab.mjs pins their
   export lists (rule E6).
@@ -72,7 +74,8 @@ vertical slice before adding language features. Task tracking is local.
   `Features.Check.Strategy`, `Features.Check.Strategy.Online`,
   `Features.Check.Strategy.Witness`, `Features.Check.Strategy.HoleContract`,
   `Features.Check.Strategy.ReadBack.Type`, `Domain.Verdict.Certified`,
-  `Domain.Verdict.Certified.Internal`.
+  `Domain.Verdict.Certified.Internal`, `Domain.Recorded.Atom`,
+  `Domain.Recorded.Hole`.
   Review-required lowering boundary (turns a `Judged` solution into checked
   IR; reasons in docs/engineering.md): `Features.Check.Elaborate`,
   `Domain.Elaborating`, `Domain.Elaborating.Internal`,

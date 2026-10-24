@@ -1,3 +1,4 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
 -- A checked-IR hole as a recorded variable (Task 4.3's read-back; moved
 -- here unchanged in R0 Task 7.1 so that D1's elaboration, which may not
 -- import a strategy module, reads the same encoding): hole `n` is a

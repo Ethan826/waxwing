@@ -9,7 +9,8 @@ import { load } from './r0-generate-support.mjs';
 import { forgedFrom, id2Source, unusedShow }
   from './r0-forged-witness-support.mjs';
 
-const { outcomeOf, toBool, toFunction, named } = await forgedFrom(load);
+const { outcomeOf, toBool, toFunction, toHole, named } =
+  await forgedFrom(load);
 const tyName = ty => named(ty);
 const Map = await load('Data.Map.Internal');
 const { unfoldableArray } = await load('Data.Unfoldable');
@@ -57,4 +58,16 @@ test('a hole forged to a function type is refused by the check', () => {
   const found = outcomeOf(unusedShow, 'f', toFunction);
   assert.notEqual(found.verdict, 'Solved');
   assert.deepEqual(found.attempts, ['CheckFailed']);
+});
+
+// Review of the repairs (P3-8): every binding forged to one hole. The
+// check judges the defaults and accepts, but the hole contract refuses
+// to leave the hole, so the Solved verdict carries no witness and
+// nothing elaborates: a wrong search costs a compilation, never
+// soundness (holes stay `Free` for the contract, option A).
+test('id2 forged to one hole is Solved without a witness, not built', () => {
+  const found = outcomeOf(id2Source, 'id2', toHole);
+  assert.equal(named(found.compilation), 'NoWitness');
+  assert.equal(named(found.compilation.value0), 'HoleContract');
+  assert.equal(named(found.elaborated), 'NotCompiled');
 });

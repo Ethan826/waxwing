@@ -161,6 +161,21 @@ test('E6 reads past block comments; an unread import is a finding', () => {
     ['problem']), 1);
 });
 
+// Review of the repairs (P3-1, P3-9): `Certified`'s constructor cannot
+// leave by re-export, and a header E6 cannot read is a finding.
+test('E6 covers Certified.Internal; an unreadable header is a finding',
+  () => {
+    const certified = imports => e6('Domain.Verdict.Certified',
+      ['module Exports'], imports).length;
+    assert.equal(certified(['import Domain.Verdict.Certified.Internal'
+      + ' (Certified) as Exports']), 0);
+    assert.equal(certified(['import Domain.Verdict.Certified.Internal'
+      + ' (Certified(..)) as Exports']), 1);
+    assert.deepEqual(reexportSourceFindings({ 'src/X.purs':
+      'module X (module Exports)\nimport Y as Exports\n' }),
+    ['src/X.purs: a module header E6 cannot read']);
+  });
+
 test('the real tree has no E6 finding; every declaration is read', () => {
   assert.deepEqual(reexportSourceFindings(), []);
   const sources = Object.fromEntries(readdirSync('src', { recursive: true })

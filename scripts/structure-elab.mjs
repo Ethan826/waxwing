@@ -11,7 +11,8 @@ import { join } from 'node:path';
 import { sourceExports } from './trusted-surface.mjs';
 
 const restricted = new RegExp('^(Domain\\.Elaborating\\.(Build|Internal)'
-  + '|Domain\\.Verdict\\.Judged\\.Internal|Domain\\.Recorded\\.Internal'
+  + '|Domain\\.Verdict\\.(Judged|Certified)\\.Internal'
+  + '|Domain\\.Recorded\\.Internal'
   + '|Features\\.Check\\.Generate\\..+)$');
 // The Internal module each public module re-exports from, with the
 // stated exceptions: Generate.Elab's `Ref(..)` (§3.1); Generate's input
@@ -21,6 +22,7 @@ const restricted = new RegExp('^(Domain\\.Elaborating\\.(Build|Internal)'
 const paired = {
   'Domain.Elaborating': { 'Domain.Elaborating.Internal': [] },
   'Domain.Verdict.Judged': { 'Domain.Verdict.Judged.Internal': [] },
+  'Domain.Verdict.Certified': { 'Domain.Verdict.Certified.Internal': [] },
   'Domain.Recorded': { 'Domain.Recorded.Internal': [] },
   'Features.Check.Generate.Elab': {
     'Features.Check.Generate.Elab.Internal': ['Ref(..)'] },
@@ -82,7 +84,11 @@ export const declarationOf = source => {
 export const reexportSourceFindings = (sources = srcSources()) =>
   Object.entries(sources).flatMap(([file, source]) => {
     const name = moduleName(source);
-    const declaration = declarationOf(source) ?? '';
+    const declaration = declarationOf(source);
+    // An unreadable header is a finding, never "no re-exports" (review
+    // of the repairs, P3-9).
+    if (declaration === null)
+      return [`${file}: a module header E6 cannot read`];
     const list = declaration.includes('(')
       ? declaration.slice(declaration.indexOf('(')) : '';
     const imports = importsOf(source);
@@ -107,6 +113,10 @@ export const pinnedExports = {
   'Domain.Elaborating.Build': { exports: ['build'], aliases: {} },
   'Domain.Verdict.Judged': { exports: ['module Exports', 'judgedProblem',
     'judgedSolution'], aliases: { Exports: ['Judged'] } },
+  // BACKLOG R026's token, pinned like Judged (review of the repairs).
+  'Domain.Verdict.Certified': { exports: ['module Exports',
+    'certifiedCompilation', 'certifiedValidity'],
+  aliases: { Exports: ['Certified'] } },
   // BACKLOG R029: `Elaboration`'s constructors hidden, read by its fold.
   'Features.Check.Elaborate': { exports: ['Elaboration', 'ElaborationCases',
     'covDomain', 'elaborate', 'foldElaboration'], aliases: {} },

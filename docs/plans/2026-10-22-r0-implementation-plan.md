@@ -790,7 +790,8 @@ a limit").
     one `checkFunction` makes from a meta still unsolved at the end
     (Function.purs:68-71);
   - the acceptance tests: EL1, the same checked IR as read-back at
-    every unambiguous site, a rejected untracked read, `position`
+    every unambiguous site (as landed, effect-erased only; see Task
+    7.1's qualification), a rejected untracked read, `position`
     derived from `requests`.
   Name each component's published source (Pottier 2014 §4.3, ADR 014)
   and flag any machinery that is new.
@@ -1721,6 +1722,17 @@ Tasks 4.1-4.5 run `decide` beside today's path, in tests only. Task
   against. It is not the IR Task 4.6 lowers: D1 comes first (§5
   Phase 7), and `checked` is used for lowering only under Task 7.2's
   fallback bridge.
+  **Labelled amendment (BACKLOG R026, 2026-10-24, ratified by the
+  author as option A).** T-R0a §4.1's `StrategySpec` gave `check ∷
+  RecordedProblem → cert → Either CheckRefusal Valid` and a separate
+  `witness ∷ RecordedProblem → cert → Compilation`
+  (research/division-campaign/r0/generation-interface.md, unchanged).
+  As implemented, `check` returns `Certified`, the `Valid` together
+  with the witness the same check built, and `witness` is gone, so no
+  strategy can pair a `Valid` with a witness from fields its check did
+  not read. The online certificate is `{ unsettled, checked, holes }`:
+  σ before the hole defaults, which G0's `certify` settles, judges and
+  witnesses; it carries no separately settled σ.
 - Read-back of a record with several flexible tails is ambiguous
   (T-R0b §5.3, which leaves it to "the strategy's adapter
   (argued)"). Proposed (G-A-i(g)): such a read returns `Heuristic`,

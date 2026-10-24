@@ -4864,7 +4864,9 @@ RT1, RT8 (rt8.json), the window (window.json) and the census
   test/r0-elab-build.test.mjs runs the same comparison on eight small
   programs, one rule group each, with every named declaration
   compared. The projection (test/r0-elab-erase.mjs) keeps structure,
-  drops effect rows and handler marks, sorts record fields, and
+  drops effect rows, data-type row arguments, handler marks and handler
+  `clauses` (row arguments and `clauses` named 2026-10-24, review
+  P2-4), sorts record fields, and
   renumbers holes by first occurrence: canonical under renaming, the
   equivalence `holes` gives (argued).
 - T8's corpus half: 118 hole-bearing declarations project equal; and,
@@ -5099,3 +5101,37 @@ is corrected. P3-1 (T1/T2 run a test-assembled pipeline) and P3-5
 (intermediate commits) are unchanged and stand as notes. The
 regression-runner defect reported separately (a rejection without a
 reason counted as success) was fixed earlier at 98b9b99.
+
+## Review of the repair sequence (2026-10-24)
+
+An independent reviewer (Opus, read-only) reviewed 9130e75..59da938
+with the author's decisions given as settled. Verdict: no P0 or P1;
+R026's fix holds on every path traced (every `StrategySpec`
+construction, `Certified`'s importers, `Valid` reaching a `Judged`
+only through `checked`, `settled` against lowering's defaults, holes
+kept `Free`, the certificate's untrusted fields reaching nothing
+trusted, the restored-defect row faithful). Findings and their
+disposition:
+
+- **P2-A (fixed).** Domain.Recorded.Atom (hand-written `Eq RTExpr`)
+  and Domain.Recorded.Hole (`holeIndex`, read by `settled` and by
+  `build`'s images) were in neither list; both are now marked and
+  listed, with the out-of-scope rule for derived-instance data
+  modules stated. The rest of the closure is BACKLOG R030.
+- **P3-1, P3-9 (fixed).** E6 now restricts Certified.Internal, pairs
+  and pins Domain.Verdict.Certified, and reports a module header it
+  cannot read (test failed against the previous script).
+- **P3-2, P3-4, P3-6, P3-7 (fixed).** AGENTS.md names
+  Certified.Internal's importers; the plan records R026's change to
+  T-R0a §4.1 as a labelled amendment; two stale effect-erasure spots
+  corrected.
+- **P3-8 (control added).** A certificate forged to one hole is Solved
+  with `NoWitness HoleContract` and is not built; now a test.
+- **P3-3, P3-5 (open, BACKLOG R030).** `checkSubstitution`'s bare
+  `Valid`; the assurance not naming the settle and witness steps.
+- **P3-10 (note).** `foldElaboration` is the only read in PureScript;
+  JS tests still read constructor names and fields.
+
+Not reviewed: the effect-row audit, the unexamined helpers (R030), the
+CX refuter, the R021 unifier, the census and window tables, and any
+conversation-level authorization.

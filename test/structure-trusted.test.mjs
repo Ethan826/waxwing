@@ -17,7 +17,8 @@ const trusted = [
   'Decide', 'Decide.Shadow',
   'Strategy', 'Strategy.Online', 'Strategy.Witness', 'Strategy.HoleContract',
   'Strategy.ReadBack.Type'].map(name => `Features.Check.${name}`)
-  .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal']);
+  .concat(['Domain.Verdict.Certified', 'Domain.Verdict.Certified.Internal',
+    'Domain.Recorded.Atom', 'Domain.Recorded.Hole']);
 const generate = 'Features.Check.Generate';
 const lowering = ['Features.Check.Elaborate', 'Domain.Elaborating',
   'Domain.Elaborating.Internal', 'Domain.Elaborating.Build',
