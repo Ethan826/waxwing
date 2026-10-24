@@ -1,3 +1,5 @@
+<!-- {% raw %} -->
+
 # R0 refusal audit with bounded evidence (T-R0c)
 
 Design stream T-R0c of the tranche authorized in dossier §18.66, written
@@ -902,3 +904,5 @@ was rerun.
   a `trustedRefuter` once its obligation is discharged.
 - §6 item 4: T-R0e now names the second spread (boundaries §1.5).
   §6 item 5: T-R0a §3.5 records D4's refusal of forced splits.
+
+<!-- {% endraw %} -->
