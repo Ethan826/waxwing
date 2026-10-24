@@ -190,8 +190,9 @@ the join-set approach.
 lattice N ⊑ M, a valuation v maps each rigid k to N or M, and
 `J S` (S non-empty, after `norm`) denotes the join of v(S). Then
 `J S ⊑ J T` holds for every v exactly when S ⊆ T: if some k ∈ S \ T,
-the valuation with v(k) = M and every other variable N breaks it; if S ⊆ T it holds pointwise. M on the
-left holds only against M; N on the left always holds. So `holds` is
+the valuation with v(k) = M and every other variable N breaks it; if
+S ⊆ T it holds pointwise. M on the left holds only against M; N on the
+left always holds. So `holds` is
 true exactly when the edge holds for every rigid valuation. The
 author's example: an obligation `J {k} ⊑ N` is `{k} ⊆ ∅`, false, so it
 is refused, though it holds at k = N.
