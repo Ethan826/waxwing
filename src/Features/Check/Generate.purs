@@ -16,16 +16,14 @@ module Features.Check.Generate
 import Prelude
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Map as Map
-import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Data.Set as Set
-import Domain.Recorded.Atom (Holders, Quant(..), Var, VarInfo, VarSort(..))
-import Domain.Recorded.Internal (RecordedProblem(..))
+import Domain.Recorded.Atom (Holders)
+import Domain.Recorded.Internal (RecordedProblem)
 import Domain.Recorded.Origin (Path(..), PathRoot(..))
 import Domain.Resolved (FunctionDecl, exprSpan)
 import Domain.Type (TypeId(..))
 import Features.Check.Functional (functional)
+import Features.Check.Generate.Assemble (assemble)
 import Features.Check.Generate.Expr (expr)
 import Features.Check.Generate.Inputs (Signatures, Tables)
 import Features.Check.Generate.Inputs (Signatures, Tables) as Exports
@@ -54,36 +52,8 @@ generate tables signatures function = do
   context locals = { decl: function.id, tables, signatures, locals }
 
 problemOf ∷ Tables → FunctionDecl → Out → RecordedProblem
-problemOf tables function out = RecordedProblem
-  { decl: function.id
-  , rigidTy: keys rigidType
-  , rigidRow: keys rigidRow
-  , flexTy: keys flexType
-  , flexRow: keys flexRow
-  , d: out.d
-  , q: []
-  , b: out.b
-  , bq: out.bq
-  , outside: out.outside
-  , adm: out.adm
-  , split: out.split
-  , vars
-  , types: Map.fromFoldable out.types
-  , holders: holdersOf tables
-  }
-  where
-  vars = Map.fromFoldable out.vars
-  keys wanted = Array.mapMaybe (keyOf wanted)
-    (Map.toUnfoldable vars ∷ Array (Tuple Var VarInfo))
-  keyOf wanted (Tuple var info) =
-    if wanted info then Just var else Nothing
-  rigidType info = rigid info && info.sort == SortType
-  rigidRow info = rigid info && info.sort == SortRow
-  flexType info = not (rigid info) && info.sort == SortType
-  flexRow info = not (rigid info) && info.sort == SortRow
-  rigid info = case info.quant of
-    Forall _ → true
-    Exists → false
+problemOf tables function =
+  assemble { decl: function.id, holders: holdersOf tables }
 
 -- Ruling K-a: every declared type of the program, and the complete set
 -- of those whose constructors hold a function (Features.Check.Functional,

@@ -15,6 +15,7 @@
 -- reason is the compilation's.
 module Features.Check.Strategy.Witness
   ( coverage
+  , flexDomain
   , substitutionWitness
   ) where
 
@@ -25,6 +26,8 @@ import Data.Either (Either(..), either)
 import Data.Foldable (maximum)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Traversable (traverse_)
 import Data.Tuple (Tuple(..), fst)
 import Domain.Recorded (RecordedProblem, fields)
@@ -37,14 +40,19 @@ import Features.Check.Strategy.ReadBack.Type (holesIn)
 
 substitutionWitness ∷ RecordedProblem → Substitution → Compilation
 substitutionWitness problem candidate =
-  either NoWitness (const (Witnessed made)) (coverage problem made)
+  either NoWitness (const (Witnessed made))
+    (coverage (flexDomain problem) problem made)
   where
   made = { bindings: bindingsOf problem candidate, names: [] }
 
 -- Every variable of the domain has its binding, then the hole contract.
-coverage ∷ RecordedProblem → Witness → Either NoWitnessReason Unit
-coverage problem witness = do
-  traverse_ covered (map fst (flexible problem))
+-- The domain is an argument (D1 spec §7; Task 7.1a): `flexDomain` while
+-- `Recon` is empty, `Features.Check.Elaborate.covDomain` under D1. A
+-- `Set`, so variables are judged in `Ord Var` order, as before.
+coverage
+  ∷ Set Var → RecordedProblem → Witness → Either NoWitnessReason Unit
+coverage domain problem witness = do
+  traverse_ covered (Set.toUnfoldable domain ∷ Array Var)
   holeContract problem witness
   where
   covered variable
@@ -87,6 +95,10 @@ sameSort one other = case one, other of
   SortRow, SortRow → true
   SortType, SortRow → false
   SortRow, SortType → false
+
+-- Every flexible variable: Cov's domain while `Recon` is empty.
+flexDomain ∷ RecordedProblem → Set Var
+flexDomain = Set.fromFoldable <<< map fst <<< flexible
 
 flexible ∷ RecordedProblem → Array (Tuple Var VarInfo)
 flexible problem = filter isFlexible (Map.toUnfoldable (fields problem).vars)

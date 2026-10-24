@@ -9,9 +9,8 @@
 -- disagreement between the two shows in RT8 instead of cancelling out.
 -- Arrow spines are walked by a loop (Domain.Type.Parts `spine`).
 module Features.Check.Strategy.ReadBack.Type
-  ( holeVar
+  ( module Exports
   , holesIn
-  , isHole
   , readType
   , readSorted
   , settled
@@ -20,33 +19,22 @@ module Features.Check.Strategy.ReadBack.Type
 import Prelude
 import Data.Array (concatMap, filter, foldr, mapMaybe, sort, sortWith)
 import Data.Array as Array
-import Data.Maybe (Maybe(..), isJust)
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Checked.Internal (Open(..))
 import Domain.Recorded.Atom
   ( Base(..)
   , Head(..)
   , RTExpr(App, Arrow, Base, Record)
-  , Role(..)
   , Var(..)
   , VarSort(..)
   )
 import Domain.Recorded.Atom as Atom
-import Domain.Recorded.Origin (Path(..), PathRoot(..), Step(..))
+import Domain.Recorded.Hole (holeVar, isHole) as Exports
+import Domain.Recorded.Hole (holeIndex, holeVar, isHole)
 import Domain.Row (Label(..))
 import Domain.Type (Ty(..))
 import Domain.Type.Parts (spine)
 import Features.Check.Spine as Recorded
-
--- At a path generation never writes (`hole` is no constructor field),
--- as Features.Check.Entailed.Mgu's made rows are at `entailed`.
-holeVar ∷ Int → Var
-holeVar index = FreshVar
-  (Path { root: InBody, steps: [ Named "hole", Index index ] })
-  Res
-
-isHole ∷ Var → Boolean
-isHole = isJust <<< holeIndex
 
 -- The holes a recorded type mentions, by index, with repeats.
 holesIn ∷ RTExpr → Array Int
@@ -59,13 +47,6 @@ holesIn ty = case ty of
   App _ arguments → concatMap holesIn arguments
   where
   found = Recorded.spine ty
-
-holeIndex ∷ Var → Maybe Int
-holeIndex = case _ of
-  FreshVar (Path { root: InBody, steps: [ Named "hole", Index index ] }) Res →
-    Just index
-  FreshVar _ _ → Nothing
-  RigidVar _ → Nothing
 
 readType ∷ Ty Open → RTExpr
 readType = case _ of

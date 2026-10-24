@@ -163,3 +163,6 @@ derive instance eqCallee ∷ Eq Callee
 derive instance eqVarSort ∷ Eq VarSort
 derive instance eqQuant ∷ Eq Quant
 derive instance eqCheckedName ∷ Eq CheckedName
+
+-- D1's site table and positions are keyed by site (Task 7.1).
+derive instance ordCheckedName ∷ Ord CheckedName

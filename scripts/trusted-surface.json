@@ -131,6 +131,15 @@
    "staticRules from ../Features.Check.Generate.Static.Rules/index.js"
   ]
  },
+ "Features.Check.Generate.Assemble": {
+  "source": [
+   "Header",
+   "assemble"
+  ],
+  "compiled": [
+   "assemble"
+  ]
+ },
  "Features.Check.Generate.Builtin": {
   "source": [
    "Builtin(..)",
@@ -201,6 +210,115 @@
    "operationRef",
    "perform",
    "$$with as with"
+  ]
+ },
+ "Features.Check.Generate.Elab": {
+  "source": [
+   "module Exports",
+   "readRow",
+   "readType",
+   "seal"
+  ],
+  "compiled": [
+   "readRow",
+   "readType",
+   "seal",
+   "FlexRef from ../Features.Check.Generate.Elab.Internal/index.js",
+   "RigidRef from ../Features.Check.Generate.Elab.Internal/index.js"
+  ]
+ },
+ "Features.Check.Generate.Elab.Image": {
+  "source": [
+   "imageType"
+  ],
+  "compiled": [
+   "imageType"
+  ]
+ },
+ "Features.Check.Generate.Elab.Internal": {
+  "source": [
+   "Elab(..)",
+   "Gen(..)",
+   "GenTy",
+   "Handle(..)",
+   "Piece(..)",
+   "Ref(..)",
+   "elabSlots",
+   "elabTy",
+   "forget",
+   "orFault",
+   "readAs",
+   "readEffect",
+   "recorded"
+  ],
+  "compiled": [
+   "Elab",
+   "Gen",
+   "Handle",
+   "Wrote",
+   "Sited",
+   "RigidRef",
+   "FlexRef",
+   "elabSlots",
+   "elabTy",
+   "forget",
+   "orFault",
+   "readAs",
+   "readEffect",
+   "recorded",
+   "eqHandle",
+   "ordHandle",
+   "eqRef",
+   "ordRef",
+   "functorElab",
+   "applyElab",
+   "applicativeElab",
+   "functorGen",
+   "applyGen",
+   "applicativeGen",
+   "bindGen",
+   "monadGen"
+  ]
+ },
+ "Features.Check.Generate.Elab.Labels": {
+  "source": [
+   "repeatedLabel"
+  ],
+  "compiled": [
+   "repeatedLabel"
+  ]
+ },
+ "Features.Check.Generate.Elab.Log": {
+  "source": [
+   "Log",
+   "entries",
+   "none",
+   "one"
+  ],
+  "compiled": [
+   "entries",
+   "none",
+   "one",
+   "semigroupLog"
+  ]
+ },
+ "Features.Check.Generate.Elab.Recorded": {
+  "source": [
+   "recordedWith"
+  ],
+  "compiled": [
+   "recordedWith"
+  ]
+ },
+ "Features.Check.Generate.Elab.Stages": {
+  "source": [
+   "Stages",
+   "arrowed",
+   "stagesOf"
+  ],
+  "compiled": [
+   "arrowed",
+   "stagesOf"
   ]
  },
  "Features.Check.Generate.Expr": {
@@ -277,6 +395,44 @@
    "nodeRes",
    "rigidNaming",
    "sortVar"
+  ]
+ },
+ "Features.Check.Generate.Gen": {
+  "source": [
+   "module Exports",
+   "GenAtom(..)",
+   "GenEntry(..)",
+   "GenReq(..)",
+   "GenSite",
+   "Minted",
+   "Rigid",
+   "Tagged",
+   "emit",
+   "fresh",
+   "lifted",
+   "positioned",
+   "rigid",
+   "slots"
+  ],
+  "compiled": [
+   "GenEqual",
+   "GenLacks",
+   "GenDisjoint",
+   "GenFf",
+   "EmitD",
+   "EmitB",
+   "EmitBQ",
+   "EmitOutside",
+   "EmitAdm",
+   "EmitSplit",
+   "GenPrintable",
+   "GenComparable",
+   "emit",
+   "fresh",
+   "lifted",
+   "positioned",
+   "rigid",
+   "slots"
   ]
  },
  "Features.Check.Generate.Inputs": {

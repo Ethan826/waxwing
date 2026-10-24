@@ -26,6 +26,7 @@ module Features.Check.Decide
   ( Checking
   , Progress
   , decide
+  , judgedDecision
   , untilVerdict
   ) where
 
@@ -48,6 +49,7 @@ import Domain.Verdict
   , Unsupport
   , Verdict(..)
   )
+import Domain.Verdict.Judged.Internal (Judged(..))
 import Domain.Verdict.Search (Budget, SearchHint)
 import Features.Check.Decide.Reason (blocks, reason, searchFaults)
 import Features.Check.Decide.Refuters
@@ -112,6 +114,21 @@ decide checking problem = do
     , searchFaults: searchFaults ran.attempts
     }
   shadowed ran = Shadow <<< shadowRecord checking.budget ran.hints problem
+
+-- D1 spec §6.2: a Solved verdict paired with the problem decided, minted
+-- here, where both exist (rule E5), so `elaborate` builds only from a
+-- solution found for its own problem. `decide`'s type is unchanged.
+judgedDecision
+  ∷ Checking
+  → RecordedProblem
+  → Either InternalFault { decision ∷ Decision, judged ∷ Maybe Judged }
+judgedDecision checking problem = map paired (decide checking problem)
+  where
+  paired decision = { decision, judged: judgedOf decision.verdict }
+  judgedOf = case _ of
+    Solved solution → Just (Judged { problem, solution })
+    Contradiction _ → Nothing
+    Unresolved _ → Nothing
 
 type Step = Run → Either InternalFault Run
 

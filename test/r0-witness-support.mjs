@@ -49,7 +49,8 @@ export const witnessFrom = async load => {
   const int = new Atom.Base(Atom.IntBase.value);
   const witnessOf = (problem, sigma) =>
     Witness.substitutionWitness(problem)(sigma);
-  const coverage = (problem, witness) => Witness.coverage(problem)(witness);
+  const coverage = (problem, witness) => Witness.coverage(
+    Witness.flexDomain(problem))(problem)(witness);
   // A binding as data: ['inline', canonical type] or ['free', hole].
   const bindingOf = binding => binding instanceof Bound.Free
     ? ['free', binding.value0] : ['inline', decodeType(binding.value0)];

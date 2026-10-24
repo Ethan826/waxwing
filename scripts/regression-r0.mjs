@@ -201,9 +201,9 @@ export const r0Rows = [
     // missing an auxiliary is offered for compilation.
     name: 'r0-cov-skipped',
     file: 'src/Features/Check/Strategy/Witness.purs',
-    needle: '  traverse_ covered (map fst (flexible problem))\n',
-    replacement: '  const (pure unit) (traverse_ covered (map fst (flexible'
-      + ' problem)))\n',
+    needle: '  traverse_ covered (Set.toUnfoldable domain ∷ Array Var)\n',
+    replacement: '  const (pure unit) (traverse_ covered'
+      + ' (Set.toUnfoldable domain ∷ Array Var))\n',
     probe: 'r0-cov-skipped',
     message: /a witness missing an auxiliary passed Cov: Right/
   },
