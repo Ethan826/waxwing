@@ -1921,3 +1921,117 @@ research/amin-mark-oracle/ (both exit 0, 2026-10-24).
 | K1 (potential soundness blocker) | investigated (§13b): E2's rigid clause is unsound with honest packages (abort escapes cleanup, p7/sim7; payload misdirected, p6/sim6; same at installation and clause rows); stronger premise proposed with its completeness cost, not adopted; E2 "Tails" marked; probes in research/amin-k1-probes/ |
 | O4 (specification) | two candidate rules J and K written as conditions on completed rows (§13a), compared against Definition 4.1's argument; no separating program; wording finding on "with R's tail"; no ruling |
 | U7 | own correspondence check, research/amin-mark-oracle/u7.mjs (§11): rule J agrees with the design on the fixed grammar; both mutants detected; K wider |
+
+## R6. Targeted review of revision 3.4 (2026-10-24): ready for K1's ruling
+
+An independent targeted review (Opus, read-only) at b34bbc0, under
+dossier §18.82-18.84, with the author's two added questions (does the
+premise close the failure; can it travel through another path). Runs
+by the reviewer: run.mjs (exit 0, no disagreement), u7.mjs (exit 0),
+the compiler on p1, p8, p9 (refused) and on K2's N1 program and its
+control (refused; accepted). Not run by it: mutants.mjs, the Go
+simulations (diffed only: sim7 differs from c3.go in the two handler
+literals, sim6 from c1.go in the perform). The controller re-read S2-1
+(Clauses.purs `file`: `consumeBare` into `setup.clauses`, labels only)
+and it holds.
+
+**Verdict.** Ready for the author's decision on K1; not ready for
+implementation. With the premise adopted, no S1 found; without it, K1
+is the S1 (§13b). The premise closes every demonstrated failure (p6,
+p7 at the call stage; p2, p4 at E5; p8, p9 at c_k into R), per
+declaration, so callers elsewhere are unaffected; the honest read-back
+satisfies it wherever today accepts (today's rigid-stage consumption
+fails on leftover target entries, UnifyRow.purs:180-194; reasoned,
+matches every probe). Other paths with the premise in place: the
+installed-C site, Definition 4.1's equalities, E1 copies, O2, O6,
+settling's labels-only sites (but see S2-1), data-type row arguments,
+handlers in data fields or effect arguments: closed (reasoned). The F1′
+hook: closed for a-min, but see S3-5. Not examined: a ResultC's own
+tail (open decision 3), E10 (S3-3). The sufficiency argument checks each
+site separately; it is not a substitution lemma for the whole judgment.
+
+**S2.**
+- **S2-1. Clause rows into C are defined two ways.** E2's labels-only
+  paragraph lists clause rows into C (throwaway tail, no tail
+  condition, as Clauses.purs and TailPass `ensure` do); E4 says c_k into
+  C uses "E2's conditions", and the premise lists "c_k into R and into
+  C". With the premise at c_k into R, E5 and the installed-C count,
+  both readings seem to refuse the same programs (reasoned), but built
+  literally they are two validators. The K1 ruling should name one.
+- **S2-2. The premise removes the only passing inclusion example
+  §18.80 requires.** `inclusionN4` uses R ending in the rigid ambient;
+  under the premise inclusion survives only for a closed R, which is not
+  writable today. A passing case needs a literal whose closed R the
+  package chooses, e.g. `with handler State(Int) { get() => 1, put(v)
+  => () } { Log.log(1); State.get() }` under `Log + ϱ`, R := ∅ (unrun).
+  If adopted: state that inclusion holds only for closed R and add that
+  case.
+
+**S3.**
+- S3-1 U7's wording: "3,741 pairs" counts pairs whose satisfiability
+  differs; 1,944 package evaluations with the annotation shape do
+  differ; the ResultC shape (C's tail R's own variable) is outside the
+  grammar.
+- S3-2 K1's necessity and cost claims are overstated for §14's two
+  guarantees: an argument-free X that is N for every valuation (or
+  Console only) misroutes harmlessly; the carve-out's rejection rests
+  on FX008's positional invariant, so scope necessity to the invariant.
+- S3-3 the premise's site list omits `callback` (presumably a call
+  site) and E10 (not examined).
+- S3-4 "the installed-C site rests on R ≡ ρ" lacks a step: an owned C
+  ends in a rigid ϱ its clauses reach only if some clause row ends in ϱ,
+  which under the premise forces R to be that row.
+- S3-5 §13's exclusion of the F1′ hook as "safe for soundness" depends
+  on K1: today TailPass `ensure` constrains only R's end variable, so
+  what refuses p8 and p9 today is plausibly the hook closing φ
+  (Filing.purs:87; O7); restate the exclusion with the premise as its
+  support.
+- S3-6 O4's caveat list: in the occurs case a ResultC's tail is R's
+  variable, which occurs outside the C-class by definition (harmless:
+  counts then equal R's).
+- S3-7 stale labels: attempts A and B now run (derived.mjs; today
+  refuses them), but §12.2, §14 and §0b item 1 still say "reasoned, not
+  run".
+- S3-8 O1's wording: "row variables of the operation's declared
+  result"; argument rows are closed at resolution (reviewer's probe:
+  refused "This function must be pure, but it performs Ask").
+
+**O4 (the author's question).** No separating example, agreeing with
+the O4 analysis: in a component of owned Cs Definition 4.1 (d) makes
+all R equal; every reader of an owned C's occurrences beyond R's count
+is monotone (E5's frame edges, the installed-C count and `assume`,
+other Cs, E4's c into C pairing first occurrences); E4′ records C with
+R's labels; so truncating a K package gives a J package. Weakest step:
+the solved form (§18.76 item 2) must cover bindings as well as images,
+so a C binding references no other flexible variable; §2 states it for
+image variables only. Semantic difference: under J an installation of
+a value typed without C reads C = R_W, which J makes equal to the C of
+every owned type the value met; under K, an owned C may hold later-rank
+occurrences absent from R_W, constraining only installations that read
+that owned type. Since E4 bounds the clauses by R, those occurrences
+correspond to no operation any clause performs: K differs from J only
+by phantom occurrences (wider on packages, equal on problems). Both
+rules read R_W's marks through the alias for every frame a clause
+reaches.
+
+**Ledger.** F1 resolved (S3-7 labels); F2 resolved; F3 resolved as
+specification; F5 partly (O4 open; Refute/, Strategy/, Decide*,
+Entailed* excluded from the audit); F6 resolved by the text; F7
+resolved. O1 resolved (S3-8); O2 resolved; O3 resolved; O4 not resolved
+(no separating example; author decides); O5, O7 not resolved
+(correspondence); O6 partly (reasoned sound and necessary; no case). K1
+argument correct, premise closes the demonstrated failures, open on the
+ruling with S2-1, S2-2; K2 resolved; K3 partly (S2-1); K4 resolved
+(copies are matched occurrences, universal for today's remainder
+construction). U7 partly (S3-1).
+
+Checked clean: Definition 4.1 (a)-(d) against the code; E2's argument
+and bare-C rules; `Unmarked` only on `Fail` labels; the O1 and O2
+encodings; Install `clausesOf` against E5's alias; ResultClauses' tail
+rule against §2; the sim diffs; §5's oracle.
+
+Reviewer's rulings: Go simulations not run (not on its list); "unsafe"
+read as §14's two guarantees (basis of S3-2); the solved form assumed
+to cover bindings (O4 rests on it); S2-1 and S2-2 rated S2, since both
+readings seem sound (S2-1 would be S1 if some construct reached c into
+C labels-only without c into R).
