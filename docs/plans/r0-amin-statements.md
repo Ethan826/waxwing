@@ -774,3 +774,63 @@ T5-c FX032's scope covers every perform site; two §12 wording items.
 | T5-b NoCandidate | §7 routing |
 | T5-c FX032 scope | §7 step 2 (every perform site's construct) and §9 |
 | §12 wording | the E4/E5 row and "pinned" corrected |
+
+## R4. Targeted confirmation review of revision 3.1 (2026-10-24)
+
+An independent targeted review (Opus, read-only; one run of the
+oracle, matching its README) at af588f6, under §18.79. The controller
+re-read N2's and N3's evidence (Lambda.purs calls MarkUse `localMarks`,
+whose `handlerRows` gives an annotation's outermost handler type its
+own C; Decide.purs `untilVerdict` is `not blocked && (solved ||
+refuted)`, so a blocked declaration still runs every strategy and
+refuter, Solved being suppressed afterwards by `solvedUnlessBlocked`)
+and they hold. No scope expansion found: every repair stays within the
+representation and theorem scope.
+
+**Confirmed sound.** `holds`, §5's argument (written constants are only
+N, M or one rigid, which should become a stated premise), the `defer`
+edges, §7a's trace (honest and forged packages refused; forged d = ∅
+refused by the per-key count), failed-candidate routing, U6's refusal
+coverage against every effect and mark `Problem` constructor, and the
+exclusions' reasons. Ledger: T2-a, T3-a, T2-b, T1-a, T2-c, T2-e, T2-f,
+T2-g, T2-h, T5-b and the §12 wording resolved; T3-b, T2-d, T5-a, T1-b,
+T3-e, T5-c partly (below); T1-c resolved as disclosure; T3-d resolved
+with wording off.
+
+**Required before implementation approval.**
+- **N1 (S1, plausible).** An owned C that does not come from a literal
+  (`ResultC` from ResultClauses `ownClauses`; a lambda annotation's C
+  from MarkUse `handlerRows`) is constrained by nothing: forged to the
+  closed empty row it drops every FrameOuter and FrameRigid edge. Fix:
+  an obligation that such a C holds bare(R) per key count, its tail as
+  `ownClauses`' occurs rule gives (or the annotation's fresh tail); a
+  §12 fixture (a handler returned as `Handler(nofail Ask with Log)` and
+  installed under a plain `Log` row around a `defer`).
+- **N2 (S2).** Lambda-annotation handler types own a C; §0 item 4's
+  "every other C is R's bare alias" is false. Give that C a home.
+- **N3 (S2).** "No strategy runs" under a rule-1 block is false (see
+  above); the outcome, never Solved, holds.
+- **N4 (S2).** Today R is consumed into ρ ignoring marks (Consume
+  `consumeIgnoring`; a closed R gets a throwaway tail), so it is
+  R ⊆ ρ, not R ≡ ρ; E5 as written would refuse programs today accepts
+  (unrun example `fn st(h: Handler(State(Int))): Int with Log = with h
+  { State.get() }`). A completeness loss. Fix: E5 is E2 with marks
+  ignored.
+- **N5 (S2).** State that a handler literal's recorded type names
+  `HandlerLit.m`, `HandlerLit.c` and R's variable; that generation
+  records an E1 wherever an image can copy a site position; restate P2
+  per class (a meta shared between a site and an image is two positions
+  joined by E1); fixture: a let-bound failing handler installed around
+  a `defer`, its image mark forged to N.
+
+**S3.** N6 §2's "site facts hold variable names, never rows"
+contradicts `HandlerLit.c` and `ResultC` as rows. N7 §5 over-claims:
+2,351 of the 200,000 random assignments passed `holds` (in a family
+without equalities); the `two` family has at most one equality; the
+mutants and the author's 36-pair check are not reproducible from the
+repository (an injected-mutant module would make them so). N8 E2's
+"installed C into ρ" and E5's "no consumption": say the site gives
+E2's per-key count and Lend `assume`'s edge `mark(ρ partner) ⊑
+mark(C label)`. N9-N12 the `Fail` placeholder wording; the Console
+fixture; FX032's "every perform form"; §7a's probe citation
+(test/fx008-probes/…) and label (bounded, not universal).
