@@ -16,14 +16,15 @@ module Features.Check.Entailed
   , fragment
   , groundType
   , reduction
+  , wellSorted
   ) where
 
 import Prelude
-import Data.Array (all, concatMap, length, nub, sort, sortWith)
+import Data.Array (all, any, concatMap, elem, length, nub, sort, sortWith)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..), fst, snd)
 import Domain.Recorded (RecordedProblem, fields)
-import Domain.Recorded.Atom (Atom(..), RTExpr(..), ReqAtom)
+import Domain.Recorded.Atom (Atom(..), RTExpr(..), ReqAtom, Var)
 import Domain.Recorded.Origin (Entry)
 import Features.Check.Entailed.Merge (substitute)
 import Features.Check.Entailed.Mgu (mgu)
@@ -38,7 +39,8 @@ newtype GroundType = GroundType RTExpr
 -- The reduced type; no unifier (a failure: the equations have no
 -- solution, a rigid variable would be bound, or the type is undefined
 -- under the unifier); or a record with several tails, or a repeated
--- label, among the equations (the whole-problem fragment, note §2).
+-- label, among the equations (the whole-problem fragment, note §2), or
+-- a variable both a type and a tail among them (`wellSorted`).
 data Reduction = Reduced RTExpr | NoUnifier | OutsideFragment
 
 reduction ∷ RecordedProblem → RTExpr → Reduction
@@ -46,7 +48,7 @@ reduction problem = reduce
   where
   view = fields problem
   equations = concatMap equation (map _.value view.d <> map _.value view.b)
-  inFragment = all sides equations
+  inFragment = all sides equations && wellSorted equations
   sides (Tuple one other) = fragment one && fragment other
   solved = if inFragment then mgu (void view.vars) equations else Nothing
   reduce ty
@@ -92,6 +94,42 @@ fragment ty = case ty of
     && length (nub (map fst entries)) == length entries
     && all (fragment <<< snd) entries
   App _ arguments → all fragment arguments
+  where
+  found = spine ty
+
+-- No variable is both a type variable and a record tail across the
+-- equations (BACKLOG R021, token re-review B-1). The triangular unifier
+-- equals the eager one only on such problems, and on others neither
+-- answer is a safe reading (findings, "R021 fix round 2"), so both
+-- callers treat an ill-sorted problem as outside the fragment. It is a
+-- problem-level check: one type alone cannot show the conflict.
+wellSorted ∷ Array (Tuple RTExpr RTExpr) → Boolean
+wellSorted equations = not (any (elem <@> tails) types)
+  where
+  sides = concatMap both equations
+  both (Tuple one other) = [ one, other ]
+  types = nub (concatMap typeVariables sides)
+  tails = nub (concatMap tailVariables sides)
+
+typeVariables ∷ RTExpr → Array Var
+typeVariables ty = case ty of
+  Arrow _ _ → concatMap typeVariables found.parameters
+    <> typeVariables found.result
+  Base _ → []
+  TVar variable → [ variable ]
+  Record entries _ → concatMap (typeVariables <<< snd) entries
+  App _ arguments → concatMap typeVariables arguments
+  where
+  found = spine ty
+
+tailVariables ∷ RTExpr → Array Var
+tailVariables ty = case ty of
+  Arrow _ _ → concatMap tailVariables found.parameters
+    <> tailVariables found.result
+  Base _ → []
+  TVar _ → []
+  Record entries tails → concatMap (tailVariables <<< snd) entries <> tails
+  App _ arguments → concatMap tailVariables arguments
   where
   found = spine ty
 

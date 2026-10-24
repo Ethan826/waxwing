@@ -19,6 +19,8 @@
 --    refusal is a failed attempt, not a `SearchFault`. Amendment to
 --    §5.3's wording: the ambiguity arises at completion, since
 --    positions are read directly, not by matching `types(p)`.
+--    A problem with a variable both a type and a tail (Entailed
+--    `wellSorted`) is read the same way (BACKLOG R021, review B-1).
 --    Inside the fragment, no unifier means the positioned values
 --    contradict the equations; the read still claims `ClaimsComplete`,
 --    so the check's refusal is a `SearchFault` RT8 counts as a defect.
@@ -55,7 +57,7 @@ import Domain.Recorded.Atom
 import Domain.Recorded.Origin (Path)
 import Domain.Type (VarId(..))
 import Domain.Verdict (Claim(..))
-import Features.Check.Entailed (fragment)
+import Features.Check.Entailed (fragment, wellSorted)
 import Features.Check.Entailed.Merge (substitute)
 import Features.Check.Entailed.Mgu (mgu)
 import Features.Check.Mentions (mentions)
@@ -98,7 +100,7 @@ completed problem values =
   unknown variable = not (Map.member variable known)
     && maybe false isFlexible (Map.lookup variable view.vars)
   completing remaining =
-    if all inFragment remaining then
+    if all inFragment remaining && wellSorted remaining then
       maybe (read ClaimsComplete values) (read ClaimsComplete <<< joined)
         (mgu (void view.vars) remaining)
     else read Heuristic values

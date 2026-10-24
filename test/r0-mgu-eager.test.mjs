@@ -12,16 +12,22 @@ import { eagerFrom } from './r0-mgu-eager.mjs';
 // and of a seeded generator with multi-parameter spines, chained rows,
 // more variables and ill-sorted uses (a row variable as a type, a type
 // variable as a tail: `fragment` does not check sorts). Equality is
-// claimed for well-sorted problems, which generation alone makes
-// (Generate/Assemble.purs keeps sorts apart), and for review I-1's
-// case. An ill-sorted problem can differ: a variable bound as a type
-// and then again as a row is read at its later binding where the eager
-// algorithm had already substituted the earlier one; those are counted,
-// not asserted. A bounded check: it proves nothing beyond these problems.
+// asserted on well-sorted problems. An ill-sorted problem can differ (a
+// variable bound as a type, then again as a tail, is read at its later
+// binding where the eager algorithm had substituted the earlier one),
+// and neither answer is a safe reading (token re-review B-1), so every
+// ill-sorted fragment problem must be refused: `reduction` answers
+// OutsideFragment, and production `wellSorted` agrees with this file's
+// predicate. Review I-1's case is ill-sorted: it is refused, and its
+// unifier answer is asserted equal on its own (the place counter it
+// tests matters only off the precondition, since a well-sorted problem
+// never binds a variable twice). Differing ill-sorted problems are
+// counted. A bounded check: it proves nothing beyond these problems.
 const { t, problemOf } = await supportFrom(load);
 const eager = await eagerFrom(load);
 const { mgu } = await load('Features.Check.Entailed.Mgu');
-const { fragment } = await load('Features.Check.Entailed');
+const Entailed = await load('Features.Check.Entailed');
+const { fragment } = Entailed;
 const Atom = await load('Domain.Recorded.Atom');
 const Origin = await load('Domain.Recorded.Origin');
 const Map = await load('Data.Map.Internal');
@@ -96,6 +102,10 @@ const wellSorted = equations => {
   return [...asType].every(variable => !asTail.has(variable));
 };
 
+// The problem's reduction of a type it does not mention.
+const refusal = equations => Entailed.reduction(problemOf({ equations }))(
+  t.base('Int')).constructor.name;
+
 // Review I-1: ρ both a type and a tail, bound twice.
 const [rho, sigma, z] = [fresh(10), fresh(11), fresh(30)];
 const reviewCase = [[new Atom.TVar(rho), t.base('Int')],
@@ -103,7 +113,7 @@ const reviewCase = [[new Atom.TVar(rho), t.base('Int')],
     new Atom.Record([new Tuple('a', new Atom.TVar(z))], [sigma])],
   [new Atom.TVar(z), t.base('Bool')]];
 
-test('the triangular unifier gives the eager answer (R021, I-2)', () => {
+test('the triangular unifier gives the eager answer (R021, I-2, B-1)', () => {
   const terms = grammarTerms(t);
   const random = generator(2026);
   const problems = [reviewCase,
@@ -112,6 +122,7 @@ test('the triangular unifier gives the eager answer (R021, I-2)', () => {
   const counted = { wellSorted: 0, answered: 0, illSorted: 0,
     illSortedDiffering: 0, outside: 0 };
   const differing = [];
+  const admitted = [];
   for (const equations of problems) {
     if (!equations.flat().every(fragment)) {
       counted.outside += 1;
@@ -119,9 +130,14 @@ test('the triangular unifier gives the eager answer (R021, I-2)', () => {
     }
     const found = shown(triangular(equations));
     const agrees = found === shown(eager(taken, equations));
-    if (equations !== reviewCase && !wellSorted(equations)) {
+    const sorted = wellSorted(equations);
+    assert.equal(Entailed.wellSorted(equations.map(([one, other]) =>
+      new Tuple(one, other))), sorted);
+    if (!sorted) {
       counted.illSorted += 1;
       if (!agrees) counted.illSortedDiffering += 1;
+      if (refusal(equations) !== 'OutsideFragment') admitted.push(equations);
+      if (equations === reviewCase) assert.ok(agrees, 'review I-1 case');
       continue;
     }
     counted.wellSorted += 1;
@@ -129,7 +145,8 @@ test('the triangular unifier gives the eager answer (R021, I-2)', () => {
     if (!agrees) differing.push(equations);
   }
   assert.equal(differing.length, 0, `${differing.length} differ`);
-  assert.ok(counted.wellSorted > 30000 && counted.answered > 5000,
-    JSON.stringify(counted));
+  assert.equal(admitted.length, 0, `${admitted.length} ill-sorted admitted`);
+  assert.ok(counted.wellSorted > 30000 && counted.answered > 5000
+    && counted.illSorted > 10000, JSON.stringify(counted));
   console.log(`R021 differential: ${JSON.stringify(counted)}`);
 });

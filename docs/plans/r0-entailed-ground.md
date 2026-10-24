@@ -124,12 +124,18 @@ before. The rules above, and the occurs check against the image under
 the current `θ`, are unchanged. Equivalence holds under a precondition
 this note did not need before: the problem is well-sorted, meaning no
 variable is both a type and a record tail. `fragment` does not check
-this; generation keeps sorts apart. On an ill-sorted problem the eager
-reading substitutes a variable's first binding where it occurs as a
-type, and the triangular reading uses its later one, so the answers
-can differ. The argument is in docs/findings.md, "R021: a triangular
-unifier for the `BQ` detectors". The check is test/r0-mgu-eager.test.mjs,
-a seeded differential against a port of the eager algorithm.
+this. On an ill-sorted problem the eager reading substitutes a
+variable's first binding where it occurs as a type, and the triangular
+reading uses its later one, so the answers can differ. Neither answer
+is then a safe reading, so a guard enforces the precondition (token
+re-review B-1): Entailed's `wellSorted`, a problem-level check. Both
+`reduction` and the read-back's completion treat an ill-sorted problem
+as outside the fragment, so `g0Guard` declines its non-ground atoms.
+The guard fires on none of the 3,017 generated problems of RT8's run.
+The argument is in docs/findings.md, "R021: a triangular unifier for
+the `BQ` detectors" and its fix rounds 1 and 2. The check is
+test/r0-mgu-eager.test.mjs, a seeded differential against a port of
+the eager algorithm.
 
 **Answer.** If `τ` is already ground (no variable, no tail, no
 repeated label), `Just τ` without unifying **(choice)**. Else, if the

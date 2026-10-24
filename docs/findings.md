@@ -4689,7 +4689,11 @@ substituted `Bool` there. One differing problem:
 `[{|s} = {b: w | u}, v = Bool, {|v} = {a: Box(Int) | s}, u = v]`.
 Eager answers `Just`; triangular answers `Nothing` by the occurs
 check. Equality is therefore claimed for well-sorted problems (no
-variable both a type and a tail) and for the review's case. Both
+variable both a type and a tail) and for the review's case.
+*Amended by fix round 2:* ill-sorted answers are NOT safe-direction
+(re-review cases A1 and A2 below), and the citation of
+Generate/Assemble.purs does not establish well-sortedness; a guard now
+enforces it. Both
 callers' problems come from generation, which keeps sorts apart
 (Generate/Assemble.purs); this is cited from the review, not
 re-checked here. The claim is stated in Mgu's header and amended into
@@ -4725,3 +4729,48 @@ chain test.
   `d = Bool→a`, and a variable at a spine's tail.
 - The verify paragraph above now names its commit correctly.
 - Mgu's header names its callers.
+
+## R021 fix round 2: the well-sortedness guard (2026-10-24)
+
+The token re-review (B-1) put the 10 differing ill-sorted problems
+through the production detectors. Three gave unsafe readings, so an
+ill-sorted problem's answer is not safe-direction from either
+unifier, and NoUnifier is not safe either (Open and Guard read the
+recorded type). Minimal cases:
+- A1, `[x = y, y = {c: Bool | s}, {|x} = {c: z | r}]` with atom
+  `pr z`: triangular `entailedGround` gave Just Bool, eager Nothing.
+- A2, `[y = Box(x), x = p, {|x} = {a: Int | r}]` with atom `cmp y`:
+  eager reduced `y` to `Box(p)` (Open), triangular to
+  `Box({a: Int | r})` (Holds), so `openRequirements` under-reported and
+  `g0Guard` admitted.
+
+Assemble.purs:47-50 only splits `vars` by declared sort, so it does
+not establish the precondition.
+
+**Fix (trusted surface: Features.Check.Entailed).** `wellSorted`
+(exported beside `fragment`) is false when a variable is both a `TVar`
+and a tail across the equations. `reduction`'s `inFragment` requires
+it, so an ill-sorted problem is OutsideFragment and `g0Guard` declines
+its non-ground atoms. The read-back's completion (ReadBack
+`completing`) requires it too and reads such a problem as `Heuristic`.
+
+**Checked.**
+- test/r0-entailed.test.mjs: fixtures A1 and A2 expect `wellSorted`
+  false, OutsideFragment, `entailedGround` Nothing and `g0Guard`
+  OutOfScope, plus a `wellSorted` unit test. RED: written after the
+  guard in the same session, then shown failing with the guard
+  disabled (`|| true`, rebuilt): both fixtures failed. GREEN with the
+  guard.
+- test/r0-mgu-eager.test.mjs now asserts that every ill-sorted
+  fragment problem is refused (`reduction` gives OutsideFragment;
+  0 admitted), that production `wellSorted` agrees with the test's own
+  predicate on every problem, and 0 differences on well-sorted ones.
+  The review's I-1 case is ill-sorted, so it is refused, and its
+  unifier answer is asserted equal separately. The place counter it
+  tests matters only off the precondition, since a well-sorted problem
+  never binds a variable twice, so the place mutant is caught only by
+  that case. Counts: well-sorted 35,103 (6,384 answered), ill-sorted
+  12,369 (10 differ, all refused), outside 2,629.
+- test/r0-shadow.serial.test.mjs: the guard fires on none of the 3,017
+  generated problems of RT8's run (asserted). RT8 and window pins are
+  unchanged (13/13); the census is unchanged in verify.

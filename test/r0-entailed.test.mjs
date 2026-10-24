@@ -94,3 +94,44 @@ test('entailedGround never reads a candidate', () => {
   assert.match(source, new RegExp('entailedGround ∷ RecordedProblem'
     + ' → Entry ReqAtom → Maybe GroundType'));
 });
+
+// BACKLOG R021, token re-review B-1: a variable both a type and a tail
+// makes the problem ill-sorted, where neither unifier's answer is a
+// safe reading, so it is outside the fragment and G0 declines. A1: the
+// triangular unifier read `z` as Bool where the eager one had no
+// answer. A2: it read `y` as `Box({a: Int | r})`, hiding the rigid `p`
+// the eager reading kept.
+const Atom = await load('Domain.Recorded.Atom');
+const Origin = await load('Domain.Recorded.Origin');
+const { Tuple } = await load('Data.Tuple');
+const z = new Atom.TVar(new Atom.FreshVar({ root: Origin.InBody.value,
+  steps: [new Origin.Index(30)] }, new Atom.Param(30)));
+const xTail = new Atom.Record([], [t.tvar('x').value0]);
+const illSorted = {
+  A1: { atom: pr(z), equations: [[t.tvar('x'), t.tvar('y')],
+    [t.tvar('y'), t.record([['c', bool]], ['s'])],
+    [xTail, t.record([['c', z]], ['r'])]] },
+  A2: { atom: new Atom.Comparable(t.tvar('y')), equations: [
+    [t.tvar('y'), t.box(t.tvar('x'))], [t.tvar('x'), t.tvar('p')],
+    [xTail, t.record([['a', int]], ['r'])]] }
+};
+for (const [name, { atom, equations }] of Object.entries(illSorted))
+  test(`ill-sorted ${name}: outside the fragment, and G0 declines`, () => {
+    const problem = problemOf({ equations, bq: [atom] });
+    assert.equal(Entailed.wellSorted(equations.map(([one, other]) =>
+      new Tuple(one, other))), false);
+    assert.equal(Entailed.reduction(problem)(atom.value0).constructor.name,
+      'OutsideFragment');
+    assert.equal(Entailed.entailedGround(problem)({ value: atom })
+      .constructor.name, 'Nothing');
+    assert.equal(Guard.g0Guard(problem).constructor.name, 'OutOfScope');
+  });
+
+test('wellSorted: a variable as a type or as a tail, not both', () => {
+  const sorted = equations => Entailed.wellSorted(equations.map(
+    ([one, other]) => new Tuple(one, other)));
+  assert.equal(sorted(hand.flatMap(([, equations]) => equations)), true);
+  assert.equal(sorted([[t.tvar('x'), int], [xTail, rowOf('r')]]), false);
+  assert.equal(sorted([[t.arrow(int, t.box(t.record([['a',
+    t.tvar('r')]]))), rowOf('r')]]), false);
+});

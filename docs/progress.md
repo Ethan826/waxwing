@@ -680,6 +680,17 @@ and five regression rows fail as expected. No pin changed (RT1, RT8,
 window, census). 7.1b: the generator port and T1, T2, T5, T5b, T8,
 T12. Evidence in findings, "D1's generation continuation, part a".
 
+## R0 shadow hardening, R021 fix round 2: the guard (2026-10-24)
+
+Shadow only; touches the trusted surface (Features.Check.Entailed).
+Ill-sorted problems gave unsafe readings (re-review B-1, cases A1 and
+A2), so Entailed exports `wellSorted`. `reduction` and the read-back's
+completion treat an ill-sorted problem as outside the fragment.
+Fixtures A1 and A2 failed with the guard disabled. The differential
+asserts every ill-sorted problem is refused. The guard fires on none
+of 3,017 generated problems. Pins unchanged. Evidence in findings,
+"R021 fix round 2".
+
 ## R0 shadow hardening, R021 fix round 1 (2026-10-24)
 
 Shadow only; touches the trusted surface (Triangular, Mgu's header).
