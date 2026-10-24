@@ -143,7 +143,8 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
       + '|Refute|Spine|Strategy|Admit|Checking)(\\.|$)').test(name);
     const allowed = ['Domain.Recorded', 'Domain.Recorded.Atom',
       'Domain.Recorded.Internal', 'Domain.Recorded.Origin', 'Domain.Verdict',
-      'Domain.Verdict.Internal', 'Domain.Verdict.Open',
+      'Domain.Verdict.Counter', 'Domain.Verdict.Internal',
+      'Domain.Verdict.Open',
       'Domain.Verdict.Search', 'Domain.Verdict.Static',
       'Domain.Verdict.Theorem.Internal', 'Domain.Verdict.Unsound',
       'Domain.Verdict.Witness', 'Features.Check.Outcomes'];
