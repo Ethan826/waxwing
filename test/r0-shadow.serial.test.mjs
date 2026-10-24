@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { load } from './r0-generate-support.mjs';
+import { generatedOrThrow, load } from './r0-generate-support.mjs';
 import { shadowRun } from './r0-shadow-run.mjs';
 import { rt8Checks } from './r0-rt8-checks.mjs';
 import { windowChecks } from './r0-shadow-checks.mjs';
@@ -38,7 +38,8 @@ test('the well-sortedness guard fires on no generated problem', () => {
       const generated = generate(tables)(signatures)(decl);
       if (generated.constructor.name !== 'Right') continue;
       checked += 1;
-      if (!wellSorted(equationsOf(generated.value0)))
+      const problem = generatedOrThrow(generated, decl.name);
+      if (!wellSorted(equationsOf(problem)))
         illSorted.push(`${row.origin}#${decl.name}`);
     }
   }

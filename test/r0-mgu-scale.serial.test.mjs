@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generic } from './fn-scale-programs.mjs';
-import { load, resolved } from './r0-generate-support.mjs';
+import { generatedOrThrow, load, resolved }
+  from './r0-generate-support.mjs';
 
 // BACKLOG R021: the shadow `BQ` detectors' unifier
 // (Features.Check.Entailed.Mgu) on `main`'s problem of fn-scale's
@@ -22,7 +23,7 @@ const problemOf = n => {
   const program = resolved(generic(n).source);
   const main = program.functions.find(found => found.name === 'main');
   const { tables, signatures } = generationInputs(program);
-  return generate(tables)(signatures)(main).value0;
+  return generatedOrThrow(generate(tables)(signatures)(main), 'main');
 };
 
 const timed = run => {
