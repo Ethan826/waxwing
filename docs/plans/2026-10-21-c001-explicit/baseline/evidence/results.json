@@ -6,7 +6,7 @@
     "warnings": [],
     "errors": []
   },
-  "scope": "27 fixed sources. Matches current behavior, not the proposed C001 acceptance boundary. Original intended outcomes remain in evidence/design-candidates.json.",
+  "scope": "34 fixed sources. Matches current behavior, not the proposed C001 acceptance boundary. Original intended outcomes remain in evidence/design-candidates.json.",
   "infrastructureErrors": [],
   "results": [
     {
@@ -1488,6 +1488,585 @@
         },
         {
           "name": "f",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "a5-one-dictionary",
+      "sourceSha256": "677716d56509611b6cfbe77fe5356ec816fc2fadfe3ab0cf90d0834847fe32eb",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "15\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "85d5808c68f3ed4338f7947e858e97dc880120bf68463218e1e89396a86f57f0"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "15\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "85d5808c68f3ed4338f7947e858e97dc880120bf68463218e1e89396a86f57f0"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "15\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "85d5808c68f3ed4338f7947e858e97dc880120bf68463218e1e89396a86f57f0"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "15\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "85d5808c68f3ed4338f7947e858e97dc880120bf68463218e1e89396a86f57f0"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "15\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "85d5808c68f3ed4338f7947e858e97dc880120bf68463218e1e89396a86f57f0"
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "15\n",
+        "stderr": "",
+        "status": 0
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "twice",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "r1-returned-captures",
+      "sourceSha256": "af6ffdd446323e9f73419ca8c47807083099a344be035c0d7594c227b6447c1b",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "1186fe3a36e0085ce2d180433a5ca7f8f8c71dfb4c11e7de4521a0b8e7820f89"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "1186fe3a36e0085ce2d180433a5ca7f8f8c71dfb4c11e7de4521a0b8e7820f89"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "1186fe3a36e0085ce2d180433a5ca7f8f8c71dfb4c11e7de4521a0b8e7820f89"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "1186fe3a36e0085ce2d180433a5ca7f8f8c71dfb4c11e7de4521a0b8e7820f89"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "1186fe3a36e0085ce2d180433a5ca7f8f8c71dfb4c11e7de4521a0b8e7820f89"
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Pair(5, 6)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "configured",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "client",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "r2-source-order-captures",
+      "sourceSha256": "11eb28ec317c586fbcda70eb855d557d3f429300df10e34789f1c6a0fd3bbb80",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "e8004ea88205378aa038fc454b0aea348f5a7ffb1684b8181a57c553d7e664b3"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "e8004ea88205378aa038fc454b0aea348f5a7ffb1684b8181a57c553d7e664b3"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "e8004ea88205378aa038fc454b0aea348f5a7ffb1684b8181a57c553d7e664b3"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "e8004ea88205378aa038fc454b0aea348f5a7ffb1684b8181a57c553d7e664b3"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "e8004ea88205378aa038fc454b0aea348f5a7ffb1684b8181a57c553d7e664b3"
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Pair(5, 6)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "configured",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "client",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "s1-shared-copy",
+      "sourceSha256": "b9bc321bc5dab342a267a1bb1922f6c4379b7985b77a1b5e48825f686158661a",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "38acdc4cdcb157bfb8e0fe8dd69b5a8d42525484dd2e20aa77e2b1e22d555431"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "38acdc4cdcb157bfb8e0fe8dd69b5a8d42525484dd2e20aa77e2b1e22d555431"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "38acdc4cdcb157bfb8e0fe8dd69b5a8d42525484dd2e20aa77e2b1e22d555431"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "38acdc4cdcb157bfb8e0fe8dd69b5a8d42525484dd2e20aa77e2b1e22d555431"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Pair(5, 6)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "38acdc4cdcb157bfb8e0fe8dd69b5a8d42525484dd2e20aa77e2b1e22d555431"
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "Pair(5, 6)\n",
+        "stderr": "",
+        "status": 0
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "client",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "q1-pure-choices",
+      "sourceSha256": "58be619b330a3f8238c15f5d44e22267a2c81b71522b8cb780bfa7a6e0919a14",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Results(9, 24, 4, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "13e5601b34687586573d9fa1fd336d555d7e04b55d355cfeb12659170bbbfcaa"
+        }
+      },
+      "interpreter": {
+        "kind": "error",
+        "message": "oracle: expected } at token 95"
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "foldFrom",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "q4-pure-two-operands",
+      "sourceSha256": "23787b1b78529d40ef19cc07207164aa8edf7a93141d5e935e2822a8833e11d3",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Pair(Pair(5, 6), Pair(6, 5))\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "3b5a8a4ea36f8c1edddaaee9f20a2f65c07f51b50a1b0a1a0a9bedbb280aa65e"
+        }
+      },
+      "interpreter": {
+        "kind": "error",
+        "message": "oracle: expected } at token 78"
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "sum",
+          "arguments": []
+        },
+        {
+          "name": "product",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "both",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "q7-pure-construction",
+      "sourceSha256": "efbf54975c6279cb7f18165235b8dddd459ead85755182c9f6891018223ba22d",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "bc05cf39d7cfec507406e9c09de546bf82e6d71cc55eb9a7e7fbfb33a692112d"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "bc05cf39d7cfec507406e9c09de546bf82e6d71cc55eb9a7e7fbfb33a692112d"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "bc05cf39d7cfec507406e9c09de546bf82e6d71cc55eb9a7e7fbfb33a692112d"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "bc05cf39d7cfec507406e9c09de546bf82e6d71cc55eb9a7e7fbfb33a692112d"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "Results(5, 20, 6, 2)\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "bc05cf39d7cfec507406e9c09de546bf82e6d71cc55eb9a7e7fbfb33a692112d"
+        }
+      },
+      "interpreter": {
+        "kind": "error",
+        "message": "oracle: expected ) at token 74"
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "add",
+          "arguments": []
+        },
+        {
+          "name": "smallProduct",
+          "arguments": []
+        },
+        {
+          "name": "statsEvidence",
+          "arguments": []
+        },
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "fromCombine",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "lastFor",
+          "arguments": [
+            "TInt"
+          ]
+        },
+        {
+          "name": "reverse",
           "arguments": [
             "TInt"
           ]

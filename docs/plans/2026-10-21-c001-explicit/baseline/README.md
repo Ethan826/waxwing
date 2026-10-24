@@ -15,9 +15,11 @@ observations are consistent with existing hole handling and do not settle
 the proposed all-meta restriction.
 
 Added 2026-10-23, with the same pinned compiler: the N7 graph-edge cases
-n7a-n7c. Their results and the mutants they detect are in the
-[assurance evidence](../evidence.md); the counts below cover the
-original sources.
+n7a-n7c; the dictionary controls a5, r1, r2 and s1, which the
+interpreter also runs; and q1, q4 and q7, all-stages-pure rewrites of
+p1, p4 and c7 (c7 is unchanged). Their results and the mutants they
+detect are in the [assurance evidence](../evidence.md); the counts below
+cover the original sources.
 
 ## A baseline gate that detects changes
 

@@ -64,8 +64,8 @@ keys (effects-design.md:484; Values.purs:92-93). Decided: canonical
 positive fixtures make every method stage `with pure`; c7, whose Stats
 result keeps an ambient first stage (baseline/README.md:71-73), stays as
 a separate characterization test. p1 and p4 mark only the final stage
-and compile (reported); their all-pure rewrites must be baselined before
-they serve as §2 evidence.
+and compile (reported); their all-pure rewrites q1 and q4, with q7 for
+c7, compile and print the same outputs (checked, [evidence](evidence.md)).
 
 **(c) Closures capturing dictionaries** (cited). Lambdas are monomorphic,
 typed from the expected arrow, and capture the values of the locals they
@@ -172,13 +172,14 @@ persist. Within this relation, and only there, two same-typed
 dictionaries can be identified only by adding state or replacing an
 argument expression.
 
-**Evidence** (reported). p4 has one Int copy of `both`, c8/c9 one each
-of client, configured and reverse (baseline/README.md:75-79), with the
-outputs at 59-65. Of p1, p4, c8 and c9, only p1 and p4 agree with the
-interpreter, which cannot parse c8/c9 (30-32, 84). Mutants M1 and M1′
-add that state; their definitions, expected outputs and controls, and the
-dedupe and drop-capture defects (assurance.md:70-72), are in
-[evidence](evidence.md) (to be built).
+**Evidence.** Reported: p4 has one Int copy of `both`, c8/c9 one each of
+client, configured and reverse (baseline/README.md:75-79). Checked
+([evidence](evidence.md), c341109 compiler): s1 gives `Pair(5, 6)` from
+one Int `client` copy; r1/r2 return closures over sum and product, and
+agree with the interpreter, which cannot parse c8/c9. Mutants M1 and M1′
+add exactly that state and are killed by p1, p4, c8, c9, r1, r2, s1, q1
+and q4, with the expected outputs; a1, a5 and q7 keep theirs. The dedupe
+and drop-capture defects (assurance.md:70-72) are specified, not built.
 
 ## 3. Graph-edge audit, resolving N7
 
@@ -229,11 +230,11 @@ The live gate exits 1 under each mutant, through these cases alone.
 |---|---|---|
 | A adds no typing rule; elaboration is the identity | argued, rules cited | review of §1 |
 | Alias expansion terminates and commutes with substitution | argued under A1-A3 and the fixed-row decision | R008 rule for definition-site rows; alias fixtures when it lands |
-| Per-stage `with pure` dictionaries type in both signatures | cited rule; reported c7-c9 | review; CB002 diagnostics follow-up |
+| Per-stage `with pure` dictionaries type in both signatures | cited rule; reported c7-c9; checked q1, q4, q7 | review; CB002 diagnostics follow-up |
 | Holes do not affect typing or chosen methods | Int representative only (empty rest for records); independence open | conditional hole-defaulting follow-up, separate |
-| Specialized program simulates source | argued for terminating runs in the §2 fragment; divergence, aborts, effects and IR→Go open | review of §2; p4, c8, c9; M1/M1′ kill |
-| Same-typed dictionaries never conflated | argued within this copy relation; key cited | p4 and c8/c9 under M1 and M1′ |
-| Captures preserved | argued; FN001 cited; Go side read only | c8 reverse case; drop-capture mutant (not built: open) |
+| Specialized program simulates source | argued for terminating runs in the §2 fragment; divergence, aborts, effects and IR→Go open | review of §2; p4, c8, c9, r1, r2, s1; M1/M1′ killed (checked) |
+| Same-typed dictionaries never conflated | argued within this copy relation; key cited; M1/M1′ killed (checked) | review of §2 |
+| Captures preserved | argued; FN001 cited; Go side read only; r1/r2 checked with interpreter agreement | drop-capture mutant (not built: open) |
 | Equal-typed operands not deduplicated | specified only | dedupe mutant (not built: open) |
 | Every key-creating reference is a judged edge | cited, argued; two arms checked by mutants | review of §3; M2 and Lambda-arm mutants killed |
 | N7 refused without compiler change | checked (verdict i), c341109 compiler | n7a, n7b, n7c in the live gate |
@@ -246,5 +247,4 @@ The live gate exits 1 under each mutant, through these cases alone.
 - Decided: no Lean work now; all-pure canonical fixtures, c7 kept (§1(b)).
 - Hole defaulting is a conditional, separate follow-up; a policy that
   defaults differently must recheck P001 §6 condition 4.
-- c8/c9 lack an interpreter result (parser gap); their backend tests
-  stay, joined by interpreter-supported controls ([evidence](evidence.md)).
+- c8/c9 keep their backend tests; r1/r2 add interpreter-checked controls.

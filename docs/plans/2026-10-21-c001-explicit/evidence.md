@@ -1,11 +1,12 @@
 # C001 assurance evidence: fixtures and mutants
 
 Status: specifications and results, 2026-10-23, for the checks that
-[arguments](arguments.md) names. Results are under "Runs" below.
-Mutants are built only in scratch copies of the compiler and never
-committed. Authorized by the author on 2026-10-23: the N7 fixtures and
-M2 first, then M1, M1′, a shared-copy check and capture controls. No Lean
-work and no language-semantics change.
+[arguments](arguments.md) names. Results are under "Runs" below; the
+dedupe and drop-capture defects remain unbuilt. Mutant patches are kept in
+baseline/evidence/ and applied only to scratch copies of the compiler.
+Authorized by the author on 2026-10-23: the N7 fixtures and M2 first, then
+M1, M1′, a shared-copy check and capture controls. No Lean work and no
+language-semantics change.
 
 ## N7 fixtures and graph-edge mutants
 
@@ -126,6 +127,14 @@ graph-edge functions touched by the mutants are identical at c341109 and
 at this branch apart from an import and an error-kind argument. Before
 any change the 24-case live gate exited 0 against that build.
 
+Every tracked `.wxw` file joins the R0 corpus (test/r0-corpus.mjs), so
+each new source was re-pinned in test/fixtures/r0/corpus-manifest.json
+and appended to test/fixtures/r0/first-diagnostic.json by that file's
+extension rule: outcomes computed with this branch's compiler (src as at
+0710fa6) and confirmed byte-equal with a scratch build of 5d6b1cb. The
+seven corpus tests (r0-corpus, r0-hand and the five corpus-wide serial
+tests) pass after each extension.
+
 ### N7 fixtures (checked)
 
 n7a-n7c were added to cases.json from the live observations after
@@ -151,7 +160,9 @@ with `--require-uniform` exits 1 (h1, h2), as before.
 
 Each mutant is one deleted line of
 src/Features/Check/Instantiation.purs in its own scratch copy, rebuilt
-with the same command (0 errors, 0 warnings):
+with the same command (0 errors, 0 warnings). The patches, which apply
+with `patch -p1` to c341109's src, are baseline/evidence/m2.patch and
+lambda-arm.patch:
 
 ```text
 M2, line 117 deleted:
@@ -173,3 +184,65 @@ expected source and build drift of that one module:
 No other case differs under either mutant, n7c included, so only the
 N7 fixtures detect these defects, and only because the gate compares
 the problem and message: the error code alone is unchanged.
+
+### New controls and canonical fixtures (checked)
+
+a5, r1, r2, s1, q1, q4 and q7 were added to cases.json from a live run
+after comparison with the table above. One expectation failed first and
+the source was amended before pinning: r1 and r2 as first written gave
+`configured` the result `a -> a with pure`, and the compiler rejected the
+returned lambda with E_TYPE `Expected a -> a, found a -> a` (line 17), the
+per-stage row mismatch of CB002, since `client` applies a dictionary whose
+first stage keeps an ambient row. The result is now the ambient `a -> a`;
+every other line is unchanged, and the amended sources met every
+expectation: the listed outputs for all five stand-ins, the same output
+in the interpreter for a5, r1, r2 and s1, and parse errors there for q1,
+q4 and q7 (`expected } at token 95`, `token 78`, `expected ) at token
+74`). s1's function keys hold one `client` copy at `[TInt]`, used with
+sum and with product: the shared-copy check. The live gate, check-runner
+and replay exit 0 with 34 cases; `--require-uniform` exits 1 (h1, h2).
+
+### M1 and M1′ (checked)
+
+Scratch copies of the c341109 compiler with baseline/evidence/m1.patch
+or m1-prime.patch applied to src/Format/Go.purs (0 errors, 0 warnings).
+Each emits `var waxwingM1Cells = map[string]any{}` and, at the top of
+every emitted function, one line per dictionary parameter, for example
+in p4's `both`:
+
+```text
+if waxwingM1v, waxwingM1ok := waxwingM1Cells["waxwingFn5/0"]; waxwingM1ok {
+  waxwingLocal0 = waxwingM1v.(waxwingRec0) } else {
+  waxwingM1Cells["waxwingFn5/0"] = waxwingLocal0 }
+```
+
+(one line in the output, wrapped here). M1′ keys the cell by the Go
+record type (`"waxwingRec0"`) instead. The live gate exits 1 under each.
+Every case whose output changed, the same for all five stand-ins:
+
+| Case | Healthy | M1 | M1′ |
+|---|---|---|---|
+| p1 | `Results(9, 24, 4, 2)` | `Results(9, 9, 9, 2)` | `Results(9, 9, 9, 2)` |
+| p4 | `Pair(Pair(5, 6), Pair(6, 5))` | `Pair(Pair(5, 6), Pair(5, 6))` | `Pair(Pair(5, 5), Pair(5, 5))` |
+| c8 | `Results(Pair(5, 3), Pair(6, 3), 2)` | `Results(Pair(5, 5), Pair(5, 5), 5)` | same as M1 |
+| c9 | `Results(Pair(6, 3), Pair(5, 3), 2)` | `Results(Pair(6, 6), Pair(6, 6), 6)` | same as M1 |
+| r1 | `Pair(5, 6)` | `Pair(5, 5)` | `Pair(5, 5)` |
+| r2 | `Pair(5, 6)` | `Pair(6, 6)` | `Pair(6, 6)` |
+| s1 | `Pair(5, 6)` | `Pair(5, 5)` | `Pair(5, 5)` |
+| q1 | as p1 | as p1 under M1 | as p1 under M1′ |
+| q4 | as p4 | as p4 under M1 | as p4 under M1′ |
+
+Each matches the expectation fixed above and in
+[arguments](arguments.md). Every other case keeps its output: a1, a5,
+c7 and q7 run with a cell in place (their Go contains the cell line) and
+still print `7`, `15` and `Results(5, 20, 6, 2)`, so the controls are
+live, not vacuous. Their gate rows differ only in the Go hash, which
+the added package variable changes in every program. Rejections are
+unchanged.
+
+What this shows and does not: the baseline detects a backend that bakes
+in the first dictionary per function or per type, including through
+returned captures and across source order, and r1, r2 and s1 detect it
+with an interpreter result alongside. It says nothing about the dedupe
+and drop-capture defects, which remain unbuilt, or about defects that
+keep no state.

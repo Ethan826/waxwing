@@ -1,0 +1,23 @@
+type Pair(a, b) = Pair(a, b);
+
+fn add(x: Int, y: Int): Int = x + y;
+
+fn smallProduct(x: Int, y: Int): Int =
+  if y == 0 then 0 else x + smallProduct(x, y + -1);
+
+fn sum(): { combine: (Int, Int) -> Int with pure } = { combine: add };
+
+fn product(): { combine: (Int, Int) -> Int with pure } =
+  { combine: smallProduct };
+
+fn client(d: { combine: (a, a) -> a with pure }, x: a, y: a): a =
+  d.combine(x, y);
+
+fn configured(d: { combine: (a, a) -> a with pure }, y: a): a -> a =
+  fn(x) => client(d, x, y);
+
+fn main(): Pair(Int, Int) = {
+  let p = configured(product(), 3);
+  let s = configured(sum(), 3);
+  Pair(s(2), p(2))
+};

@@ -1,0 +1,74 @@
+--- a/src/Format/Go.purs
++++ b/src/Format/Go.purs
+@@ -3,6 +3,8 @@
+ import Prelude
+ import Data.Array as Array
+ import Data.String.Common (joinWith)
++import Data.Maybe (maybe)
++import Data.Tuple (Tuple(..))
+ import Domain.IR.Internal as IR
+ import Format.Go.Cleanup (cleanupRuntime, guardedMain)
+ import Format.Go.Compare (boolHelper, compareHelpers)
+@@ -23,7 +25,7 @@
+ import Format.Go.TextShow (holdsText, quoteHelper)
+ import Format.Go.Stage (staged)
+ import Format.Go.Usage (needsBoolHelper, needsPrint)
+-import Domain.IR.Internal (Ty(..))
++import Domain.IR.Internal (Ty(..), LayoutId(..))
+ import Domain.Resolved (FunctionId, LocalId(..))
+ 
+ -- One function's Go, its lifted functions included, and the staged
+@@ -40,6 +42,7 @@
+     <> "package main\n\n"
+     <> imports usesFmt shape.defects
+     <> "func waxwingAdd(a int32, b int32) int32 { return a + b }\n\n"
++    <> "var waxwingM1Cells = map[string]any{}\n\n"
+     <> (if needsBoolHelper program' || records.bool then boolHelper else "")
+     <>
+       ( if shape.context then runtime <> effectDeclarations program.effects
+@@ -64,7 +67,7 @@
+   tables = layout { types: program.types, ctors: program.ctors }
+   records = recordHelpers program'
+   shape = shapeOf program'
+-  functions = map (function tables shape) program.functions
++  functions = map (function program.records tables shape) program.functions
+   stages = staged shape (Array.concatMap wrappersOf functions)
+   usesFmt = needsPrint program'
+     || shape.defects
+@@ -111,13 +114,15 @@
+ 
+ -- Each function is followed by the functions its matches, lambdas, pipes
+ -- and application helpers were lifted to, in number order.
+-function ∷ Layout → Shape → IR.FunctionDecl → Emitted
+-function tables shape definition =
++function ∷ Array IR.RecordInfo → Layout → Shape → IR.FunctionDecl → Emitted
++function records tables shape definition =
+   { code: "func " <> functionName definition.id <> "("
+       <> joinWith ", " (declared shape.context parameters)
+       <> ") "
+       <> goType definition.result
+-      <> " {\nreturn "
++      <> " {\n"
++      <> joinWith "" (Array.mapWithIndex cell definition.parameters)
++      <> "return "
+       <> body.code
+       <> "\n}\n"
+       <> joinWith "" (map separated body.lifted)
+@@ -128,3 +133,17 @@
+   parameters = Array.mapWithIndex parameter definition.parameters
+   parameter index ty = localName (LocalId index) <> " " <> goType ty
+   separated lifted = "\n" <> lifted
++  -- MUTANT m1p: a package-level cell per dictionary parameter.
++  cell index ty = if dictionary ty then cellCode ("\"" <> goType ty <> "\"")
++    (localName (LocalId index)) (goType ty) else ""
++  cellCode k name t = "if waxwingM1v, waxwingM1ok := waxwingM1Cells[" <> k
++    <> "]; waxwingM1ok { " <> name <> " = waxwingM1v.(" <> t
++    <> ") } else { waxwingM1Cells[" <> k <> "] = " <> name <> " }\n"
++  dictionary = case _ of
++    TRecord (LayoutId layout) → maybe false allFunctions
++      (Array.index records layout)
++    _ → false
++  allFunctions info = not (Array.null info.fields)
++    && Array.all isFunction info.fields
++  isFunction (Tuple _ (TFun _)) = true
++  isFunction _ = false

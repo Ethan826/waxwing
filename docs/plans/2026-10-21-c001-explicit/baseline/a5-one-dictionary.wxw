@@ -1,0 +1,11 @@
+fn add(x: Int, y: Int): Int = x + y;
+
+fn sum(): { combine: (Int, Int) -> Int with pure } = { combine: add };
+
+fn twice(d: { combine: (a, a) -> a with pure }, x: a): a =
+  d.combine(d.combine(x, x), x);
+
+fn main(): Int = {
+  let s = sum();
+  twice(s, 2) + twice(s, 3)
+};
