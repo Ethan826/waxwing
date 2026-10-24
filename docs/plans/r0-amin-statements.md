@@ -472,14 +472,20 @@ flexible variable, and every label that s's tail variable's binding
 holds is a label of the completed s, matched by the rule above:
 - if the completed s is closed, there is no tail condition: ρ's further
   labels and its tail are unconstrained (F7);
-- if s ends in a rigid ϱ, ρ ends in ϱ (the tail pass, T2-b). **As
-  written this is unsound** (K1, §13b, investigated after 3.4: honest
-  packages, no forgery, let a typed abort escape cleanup and a payload
+- if s ends in a rigid ϱ: **revision 3.4's condition "ρ ends in ϱ"
+  is withdrawn** (dossier §18.84), whatever replaces it; until a
+  replacement is adopted, E2 has no stated condition for a rigid-tailed
+  source and a-min claims nothing there. That condition was unsound
+  (K1, §13b, investigated after 3.4: honest packages, no forgery, let a typed abort escape cleanup and a payload
   reach the wrong instance's frame). Proposed replacement, for the
   author: ρ ends in ϱ and has, for every key, exactly as many
   occurrences as s, so ρ is the matched labels followed by ϱ and s ≡ ρ
   up to scoped order [L05]; matched pairs keep the argument equality and
-  the directional edges above. Not adopted until the author rules.
+  the directional edges above. Provisionally favoured by the author as
+  the conservative validator rule, to be adopted only once the review
+  confirms it blocks the demonstrated failure; if adopted, the programs
+  it refuses are validator limitations, not invalid programs or final
+  language policy.
 
 Revision 3.3's remainder clause ("s's tail variable's binding is ρ's
 labels after the matched ones followed by ρ's tail") described how
@@ -833,8 +839,12 @@ derived C), generation's lambda-parameter rule (records
   (keys A, B, nullary labels; label multisets of size 0-2; marks N, M
   or a flexible position; tails closed, one rigid, or a flexible
   variable; written and owned sides; packages over N, M and four tail
-  bindings). Over 197,676 pairs and 4,327,668 pair-package evaluations,
-  the as-built alias (rule J) agrees with the design everywhere;
+  bindings). Standing, as the author worded it: correspondence of the
+  as-built encoding with FX008's structural-copy encoding over this
+  grammar, supported by two detected mutants; not independent
+  confirmation that the underlying rule is sound. Over 197,676 pairs and
+  4,327,668 pair-package evaluations, the as-built alias (rule J) agrees
+  with the design everywhere;
   mutants (the alias ignoring marks; the alias dropping R's tail
   binding) are detected (bounded; 6.6 s, rerun by the controller). The
   agreement is close to definitional (the design's copy shares R's mark
@@ -1177,8 +1187,17 @@ author; none is resolved here.
   so still reports accepted.
 
   **Investigated after 3.4 (author's ruling, dossier §18.83 item 2): E2
-  as written is unsound.** An independent agent (Opus) traced it; the
-  controller reran the key evidence. Programs, outputs and simulations
+  as written is unsound; the condition is withdrawn (§18.84).** Two
+  kinds of evidence, kept apart: **observed** (the Waxwing compiler's
+  verdicts on p1-p9, c1-c4, s1, s1h, and the controls' runs) shows only
+  what today's checker accepts and refuses, all probes refused; it
+  shows no unsafe run, since none of these programs compiles today.
+  **Simulated** (patched Go, sim4, sim6, sim7) shows what the run would
+  be if a validator accepted them, which rests on rows and marks being
+  erased before Go generation (so the accepted twin's Go with handlers
+  swapped is that program's Go). The unsoundness claim rests on the
+  simulations plus that erasure premise, not on a compiled program.
+  An independent agent (Opus) traced it; the controller reran the key evidence. Programs, outputs and simulations
   are kept in research/amin-k1-probes/ (README there).
   - Semantics (read). Dispatch is by effect key alone, innermost frame
     first (Format/Go/Context.purs `waxwingFind`); instances of one

@@ -5997,3 +5997,31 @@ changes):
    author's definition of purity attributed.
 
 Implementation, Task 4.6 and G-D1 stay blocked. No push.
+
+### 18.84 K1: the old E2 claim withdrawn; review to finish first (2026-10-24)
+
+The author, on the report: implementation stays blocked and the
+targeted review finishes first.
+
+1. **K1's honest-package counterexample is substantive: revision 3.4's
+   E2 condition for a rigid-tailed source ("ρ ends in ϱ") is withdrawn**,
+   whatever replaces it.
+2. **The stronger premise** (ρ = matched labels + ϱ) is provisionally
+   favoured as the conservative validator rule, to be adopted only after
+   the review confirms it blocks the demonstrated failure. Its lost
+   acceptances are recorded as validator limitations, not invalid
+   programs or final language policy. N4 and §14 are updated if it is
+   adopted.
+3. **O4**: no choice from the rules' names. Wanted: the exact rules,
+   their semantic difference and one separating example; the choice
+   must preserve handler identity and mark obligations, not merely
+   match today's compiler.
+4. **U7** keeps the narrow label: correspondence with the chosen
+   encoding, supported by two detected mutants; not independent
+   confirmation that the rule is sound.
+5. **K1's evidence** distinguishes what the Waxwing probes observed from
+   what the Go simulations demonstrate about the proposed semantics.
+6. The review reports whether the strengthened rule closes the
+   counterexample and whether the same failure can travel through
+   another recording or copying path. No further design approval is
+   implied.

@@ -30,6 +30,12 @@ cache.
 | sim7/main.go | c3.go with the two `Log` handler literals swapped (the diff is those two lines): the Go for p7 | stderr `fail(E): E`, exit 1; the `handle` never runs (controller rerun) |
 | sim4/main.go | c4.go swapped the same way: the Go for p4 | `fail(E): E`, exit 1 |
 
+Observed vs simulated. The compiler runs (the "Today" column for the
+`.wxw` files) show only today's verdicts: every probe is refused, so no
+unsafe Waxwing program was compiled or run. The `sim*` runs are patched
+Go; they show what the run would be if a validator accepted the
+program. That inference rests on the premise below.
+
 Why a simulation stands for the program: rows and marks are erased
 before Go is generated (docs/language.md), so a program the type
 checker refuses compiles to the same Go as its accepted twin, apart from
