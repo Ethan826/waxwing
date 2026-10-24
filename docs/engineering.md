@@ -36,7 +36,7 @@ adding a bypass allowlist.
   Task 1): only Features.Check* and Features.Specialize* import
   Domain.Checked.Internal, and only Features.Specialize* and Format.Go*
   import Domain.IR.Internal, as does Domain.IR.Parts, its split-off
-  helpers (scripts/structure.mjs `internalModules`;
+  helpers (scripts/structure-modules.mjs `internalModules`;
   test/structure.test.mjs pins both directions). Since R0 Task 1.1 two
   token modules follow the same pattern. Domain.Verdict.Internal (the
   constructors of `Valid`, `Refuted`, `NonForced`,
