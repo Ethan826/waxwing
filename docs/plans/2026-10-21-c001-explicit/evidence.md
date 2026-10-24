@@ -1,7 +1,7 @@
 # C001 assurance evidence: fixtures and mutants
 
-Status: specifications, 2026-10-23, for the checks that
-[arguments](arguments.md) names; nothing here has been built or run yet.
+Status: specifications and results, 2026-10-23, for the checks that
+[arguments](arguments.md) names. Results are under "Runs" below.
 Mutants are built only in scratch copies of the compiler and never
 committed. Authorized by the author on 2026-10-23: the N7 fixtures and
 M2 first, then M1, M1′, a shared-copy check and capture controls. No Lean
@@ -84,3 +84,92 @@ Specified, not built; their rows in arguments.md §4 stay open.
 - Drop capture: a lifted lambda receives each dictionary-typed captured
   local as its Go zero value. c8's first `configured` call should panic
   on a nil function.
+
+## Expected outcomes, fixed before the runs
+
+New baseline sources, 2026-10-23. "Default" is the Int-representative Go
+output; "interp." the independent interpreter. Under M1 and M1′ the
+default output is compared; the gate also flags changed Go hashes, so
+an unaffected control is judged by its output, not by the gate's exit.
+
+| Case | Compiler | Default | Interp. | M1 | M1′ | M2 | Lambda arm |
+|---|---|---|---|---|---|---|---|
+| n7a-record-closure | PolymorphicRecursion | none | not run | | | SpecializationLimit | SpecializationLimit |
+| n7b-record-reference | PolymorphicRecursion | none | not run | | | SpecializationLimit | unchanged |
+| n7c-bare-recursion | accepted | `0` | `0` | | | unchanged | unchanged |
+| a5-one-dictionary | accepted | `15` | `15` | `15` | `15` | | |
+| r1-returned-captures | accepted | `Pair(5, 6)` | same | `Pair(5, 5)` | `Pair(5, 5)` | | |
+| r2-source-order-captures | accepted | `Pair(5, 6)` | same | `Pair(6, 6)` | `Pair(6, 6)` | | |
+| s1-shared-copy | accepted, one Int `client` key | `Pair(5, 6)` | same | `Pair(5, 5)` | `Pair(5, 5)` | | |
+| q1-pure-choices | accepted | as p1 | parse error | as p1 | as p1 | | |
+| q4-pure-two-operands | accepted | as p4 | parse error | as p4 | as p4 | | |
+| q7-pure-construction | accepted | `Results(5, 20, 6, 2)` | parse error | unchanged | unchanged | | |
+
+r1 and r2 return closures that capture two different same-typed
+dictionaries and call them after both exist; r2 creates them in the
+reverse source order. They use the `(a, a) -> a with pure` spelling that
+p1 and p4 use, which the interpreter parses. q1, q4 and q7 are the
+canonical all-stages-pure rewrites of p1, p4 and c7; c7 is unchanged.
+q7's dictionaries reach `reverse` once and `statsEvidence` takes a record
+of records, so M1 should not change it. Every existing case should keep
+its output under M1 and M1′ except p1, p4, c8 and c9.
+
+## Runs
+
+Setup, reproducible from this branch. The baseline pins compiler sources
+at c341109 (evidence/compiler-manifest.json), which differ from this
+branch's src in 54 files, so the gate ran in a scratch tree:
+`git archive c341109 src scripts test package.json` plus this branch's
+C001 directory, built with the baseline README's `purs compile` command
+(purs 0.15.16, 0 errors, 0 warnings; Go 1.26.4, Node 26.6.0). The two
+graph-edge functions touched by the mutants are identical at c341109 and
+at this branch apart from an import and an error-kind argument. Before
+any change the 24-case live gate exited 0 against that build.
+
+### N7 fixtures (checked)
+
+n7a-n7c were added to cases.json from the live observations after
+comparison with the table above; every expectation held. n7a is
+rejected at `f(Cons(x, Nil))` (line 4, columns 19-34), n7b at the bare
+`f` in `{ step: f }` (line 4, columns 21-22), both E_SPECIALIZATION,
+`PolymorphicRecursion`, `Recursive call to f changes its type
+arguments`. n7c prints `0` for all five stand-ins and in the
+interpreter. Commands, from the scratch tree:
+
+```text
+node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs \
+  docs/plans/2026-10-21-c001-explicit/baseline/evidence/results.json
+node docs/plans/2026-10-21-c001-explicit/baseline/check-runner.mjs
+node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs \
+  --replay docs/plans/2026-10-21-c001-explicit/baseline/evidence/results.json
+```
+
+Exits 0, 0 and 0 with 27 cases (`Baseline differences: 0`); replay
+with `--require-uniform` exits 1 (h1, h2), as before.
+
+### M2 and the Lambda-arm deletion (checked)
+
+Each mutant is one deleted line of
+src/Features/Check/Instantiation.purs in its own scratch copy, rebuilt
+with the same command (0 errors, 0 warnings):
+
+```text
+M2, line 117 deleted:
+  Checked.RecordLiteral fields → foldl recur found (Checked.fieldValues fields)
+Lambda arm, line 106 deleted:
+  Checked.Lambda _ body → recur found body
+```
+
+The live gate exits 1 under both. The case differences, apart from the
+expected source and build drift of that one module:
+
+| Mutant | Case | Observed compiler outcome |
+|---|---|---|
+| M2 | n7a | E_SPECIALIZATION `SpecializationLimit`, `More than 10000 specializations` |
+| M2 | n7b | E_SPECIALIZATION `SpecializationLimit`, same message |
+| Lambda arm | n7a | E_SPECIALIZATION `SpecializationLimit`, same message |
+| Lambda arm | n7b | unchanged: `PolymorphicRecursion` |
+
+No other case differs under either mutant, n7c included, so only the
+N7 fixtures detect these defects, and only because the gate compares
+the problem and message: the error code alone is unchanged.

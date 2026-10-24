@@ -1,0 +1,4 @@
+fn f(x: a): { run: Int -> Int with pure } =
+  { run: fn(n) => if n == 0 then 0 else f(x).run(n + -1) };
+
+fn main(): Int = f(1).run(2);

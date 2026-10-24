@@ -17,6 +17,15 @@
     "test/fixtures/r0/rt2/e26-several-tail-receiver.json",
     "test/fixtures/r0/rt2/h5-type-depth.json"
    ]
+  },
+  {
+   "commit": "eb175a3",
+   "confirmed": "5d6b1cb",
+   "origins": [
+    "docs/plans/2026-10-21-c001-explicit/baseline/n7a-record-closure.wxw",
+    "docs/plans/2026-10-21-c001-explicit/baseline/n7b-record-reference.wxw",
+    "docs/plans/2026-10-21-c001-explicit/baseline/n7c-bare-recursion.wxw"
+   ]
   }
  ],
  "outcomes": {
@@ -12806,6 +12815,47 @@
     },
     "related": []
    }
+  },
+  "docs/plans/2026-10-21-c001-explicit/baseline/n7a-record-closure.wxw": {
+   "diagnostic": {
+    "code": "E_SPECIALIZATION",
+    "message": "Recursive call to f changes its type arguments",
+    "span": {
+     "start": {
+      "line": 4,
+      "offset": 102,
+      "column": 19
+     },
+     "end": {
+      "line": 4,
+      "offset": 117,
+      "column": 34
+     }
+    },
+    "related": []
+   }
+  },
+  "docs/plans/2026-10-21-c001-explicit/baseline/n7b-record-reference.wxw": {
+   "diagnostic": {
+    "code": "E_SPECIALIZATION",
+    "message": "Recursive call to f changes its type arguments",
+    "span": {
+     "start": {
+      "line": 4,
+      "offset": 80,
+      "column": 21
+     },
+     "end": {
+      "line": 4,
+      "offset": 81,
+      "column": 22
+     }
+    },
+    "related": []
+   }
+  },
+  "docs/plans/2026-10-21-c001-explicit/baseline/n7c-bare-recursion.wxw": {
+   "go": "d9f98028c8adbfdc0734ce0b5b3cd32766363d92002a6daff92373111039ce16"
   }
  }
 }

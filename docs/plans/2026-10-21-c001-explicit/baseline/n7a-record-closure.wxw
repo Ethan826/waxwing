@@ -1,0 +1,6 @@
+type List(a) = Nil | Cons(a, List(a));
+
+fn f(x: a): { run: Int -> Int with pure } =
+  { run: fn(n) => f(Cons(x, Nil)).run(n) };
+
+fn main(): Int = f(1).run(2);

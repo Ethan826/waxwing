@@ -7,7 +7,7 @@ language-semantics change follow. *Cited*: file:line at r0-tranche
 83279ed; the cited src files are identical at this branch's base 0710fa6,
 where docs/language.md runs three lines later. *Argued*: reasoning here.
 *Reported*: recorded baseline evidence. *Checked*: a run recorded in
-[evidence](evidence.md); none yet. *Open*: not argued. Paths: Body, Keys,
+[evidence](evidence.md). *Open*: not argued. Paths: Body, Keys,
 Lower, State, Values in src/Features/Specialize/; Components,
 Instantiation, NestedArguments, Outcomes, Strip in src/Features/Check/;
 Internal is src/Domain/Checked/Internal.purs. Each argument covers today's
@@ -212,16 +212,16 @@ at `Call` and `FunctionRef` (Body.purs:69-71, 84-85), exactly where
 stored in a field has `RecordLiteral` → `FunctionRef f`. Each reaches
 `step`. At a `List(a)` instantiation `admissibleSlot` rejects the
 reference (NestedArguments.purs:26-29, 45-49) with `PolymorphicRecursion`
-(Instantiation.purs:68-70). **Verdict (i), cited and argued, not
-checked: edges are created; N7 is refused as required; no compiler
-change is needed.**
+(Instantiation.purs:68-70). **Verdict (i): edges are created; N7 is
+refused as required; no compiler change is needed.**
 
-**Fixtures (to be built).** Two self-contained sources, a lambda in a
-record field and a `FunctionRef` stored in a record, each recorded as
-compiler `rejected`, E_SPECIALIZATION, `PolymorphicRecursion`, and a
-control recurring at the bare `a`. Their sources and mutants M2
-(`RecordLiteral` arm, Instantiation.purs:117) and the Lambda-arm deletion
-(106) are in [evidence](evidence.md).
+**Checked** ([evidence](evidence.md), c341109 compiler). Baseline cases
+n7a (a lambda in a record field) and n7b (a `FunctionRef` stored in a
+record) are rejected with E_SPECIALIZATION `PolymorphicRecursion`; the
+control n7c, recurring at the bare `a`, prints `0`. Deleting the
+`RecordLiteral` arm (M2, Instantiation.purs:117) turns both rejections
+into `SpecializationLimit`; deleting the Lambda arm (106) turns n7a's.
+The live gate exits 1 under each mutant, through these cases alone.
 
 ## 4. Claims and closure
 
@@ -235,8 +235,8 @@ control recurring at the bare `a`. Their sources and mutants M2
 | Same-typed dictionaries never conflated | argued within this copy relation; key cited | p4 and c8/c9 under M1 and M1′ |
 | Captures preserved | argued; FN001 cited; Go side read only | c8 reverse case; drop-capture mutant (not built: open) |
 | Equal-typed operands not deduplicated | specified only | dedupe mutant (not built: open) |
-| Every key-creating reference is a judged edge | cited, argued | review of §3; M2 and Lambda-arm mutants |
-| N7 refused without compiler change | cited, argued (verdict i) | n7 lambda and FunctionRef fixtures in the live gate |
+| Every key-creating reference is a judged edge | cited, argued; two arms checked by mutants | review of §3; M2 and Lambda-arm mutants killed |
+| N7 refused without compiler change | checked (verdict i), c341109 compiler | n7a, n7b, n7c in the live gate |
 
 ## 5. Open points and decisions
 

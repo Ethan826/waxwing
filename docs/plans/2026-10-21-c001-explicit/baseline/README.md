@@ -14,16 +14,22 @@ discarded-value cases establish acceptance, not harmless substitution. Those
 observations are consistent with existing hole handling and do not settle
 the proposed all-meta restriction.
 
+Added 2026-10-23, with the same pinned compiler: the N7 graph-edge cases
+n7a-n7c. Their results and the mutants they detect are in the
+[assurance evidence](../evidence.md); the counts below cover the
+original sources.
+
 ## A baseline gate that detects changes
 
-[cases.json](cases.json) pins the expected current outcome for each of
-24 sources. It checks source hashes, exact compiler diagnostic codes,
-problem constructors, messages, spans and related notes. Interpreter
-outcomes and representative-specific compilation/runtime outcomes are
-checked separately. The original eleven default Go hashes and their recorded
-function keys are also checked. A missing or additional case or
-representative fails the comparison. Private compiler source/output hashes
-and the zero-warning build record are checked during live runs.
+[cases.json](cases.json) pins the expected current outcome for each of its
+sources (24 original, plus the 2026-10-23 additions). It checks source hashes,
+exact compiler diagnostic codes, problem constructors, messages, spans and
+related notes. Interpreter outcomes and representative-specific
+compilation/runtime outcomes are checked separately. The original eleven default
+Go hashes and their recorded function keys are also checked. A missing or
+additional case or representative fails the comparison. Private compiler
+source/output hashes and the zero-warning build record are checked during live
+runs.
 
 | Recorded outcome | Cases | Meaning of a match |
 |---|---|---|
@@ -162,7 +168,8 @@ node docs/plans/2026-10-21-c001-explicit/baseline/run.mjs \
 
 All three commands should exit 0 for this baseline. Adding
 `--require-uniform` to replay should exit 1. A live run executes 63 Go
-programs serially in a private cache; replay invokes no compiler or Go. Each
+programs for the original sources and five per added accepted source,
+serially in a private cache; replay invokes no compiler or Go. Each
 runtime observation includes exit status, stderr and generated hash.
 
 To recreate the private compiler output, first create

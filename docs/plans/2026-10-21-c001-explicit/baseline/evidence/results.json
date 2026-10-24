@@ -6,7 +6,7 @@
     "warnings": [],
     "errors": []
   },
-  "scope": "24 fixed sources. Matches current behavior, not the proposed C001 acceptance boundary. Original intended outcomes remain in evidence/design-candidates.json.",
+  "scope": "27 fixed sources. Matches current behavior, not the proposed C001 acceptance boundary. Original intended outcomes remain in evidence/design-candidates.json.",
   "infrastructureErrors": [],
   "results": [
     {
@@ -1370,6 +1370,129 @@
           "related": []
         }
       }
+    },
+    {
+      "name": "n7a-record-closure",
+      "sourceSha256": "b1a97abf382a08baccb2c383b5ba2b4d4c80355dd43d5f7a54e1361593830220",
+      "representatives": {},
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "compiler": {
+        "kind": "rejected",
+        "problem": "PolymorphicRecursion",
+        "diagnostic": {
+          "code": "E_SPECIALIZATION",
+          "message": "Recursive call to f changes its type arguments",
+          "span": {
+            "start": {
+              "line": 4,
+              "offset": 102,
+              "column": 19
+            },
+            "end": {
+              "line": 4,
+              "offset": 117,
+              "column": 34
+            }
+          },
+          "related": []
+        }
+      }
+    },
+    {
+      "name": "n7b-record-reference",
+      "sourceSha256": "2b1a5f45c78073f594e4d5045fd9e33193eb3cdbd4af42818c7b64cc9a6c76db",
+      "representatives": {},
+      "interpreter": {
+        "kind": "not-run"
+      },
+      "compiler": {
+        "kind": "rejected",
+        "problem": "PolymorphicRecursion",
+        "diagnostic": {
+          "code": "E_SPECIALIZATION",
+          "message": "Recursive call to f changes its type arguments",
+          "span": {
+            "start": {
+              "line": 4,
+              "offset": 80,
+              "column": 21
+            },
+            "end": {
+              "line": 4,
+              "offset": 81,
+              "column": 22
+            }
+          },
+          "related": []
+        }
+      }
+    },
+    {
+      "name": "n7c-bare-recursion",
+      "sourceSha256": "7dbb259528900f4e3ba188f39f54d5939b3d8d7a6937f89c7e9c4452ea3f8ca2",
+      "representatives": {
+        "Int": {
+          "kind": "executed",
+          "stdout": "0\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "d9f98028c8adbfdc0734ce0b5b3cd32766363d92002a6daff92373111039ce16"
+        },
+        "Bool": {
+          "kind": "executed",
+          "stdout": "0\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "d9f98028c8adbfdc0734ce0b5b3cd32766363d92002a6daff92373111039ce16"
+        },
+        "Text": {
+          "kind": "executed",
+          "stdout": "0\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "d9f98028c8adbfdc0734ce0b5b3cd32766363d92002a6daff92373111039ce16"
+        },
+        "Record": {
+          "kind": "executed",
+          "stdout": "0\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "d9f98028c8adbfdc0734ce0b5b3cd32766363d92002a6daff92373111039ce16"
+        },
+        "Function": {
+          "kind": "executed",
+          "stdout": "0\n",
+          "stderr": "",
+          "exit": 0,
+          "goSha256": "d9f98028c8adbfdc0734ce0b5b3cd32766363d92002a6daff92373111039ce16"
+        }
+      },
+      "interpreter": {
+        "kind": "executed",
+        "stdout": "0\n",
+        "stderr": "",
+        "status": 0
+      },
+      "compiler": {
+        "kind": "accepted"
+      },
+      "checkedTypes": {
+        "typeHoleOccurrences": 0
+      },
+      "functionKeys": [
+        {
+          "name": "main",
+          "arguments": []
+        },
+        {
+          "name": "f",
+          "arguments": [
+            "TInt"
+          ]
+        }
+      ]
     }
   ],
   "baselineDifferences": [],

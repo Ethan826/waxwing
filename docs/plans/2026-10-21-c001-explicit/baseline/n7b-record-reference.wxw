@@ -1,0 +1,8 @@
+type List(a) = Nil | Cons(a, List(a));
+
+fn f(x: a): Int = {
+  let box = { step: f };
+  box.step(Cons(x, Nil))
+};
+
+fn main(): Int = f(1);
