@@ -8,7 +8,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open(..))
 import Domain.Row (Row(..))
 import Domain.Type (Ty(..), TyRow)
-import Features.Check.Scheme (foldHoles)
+import Features.Check.Holes (foldHoles)
 import Features.Check.Subst (empty)
 import Features.Check.Walked (bareLabel)
 

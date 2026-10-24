@@ -14,35 +14,29 @@ module Features.Check.Scheme
   , headOf
   , tooDeep
   , firstTooDeep
-  , holes
-  , foldHoles
   ) where
 
 import Prelude
 import Prim hiding (Row)
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (foldl)
-import Data.Map (Map)
-import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe, maybe')
+import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (traverse)
 import Domain.Checked.Internal (Open(..))
 import Domain.Checked.Internal as Checked
 import Domain.Syntax (Diagnostic, Span)
 import Domain.Type (Ty(..), TyRow, VarId(..), rename)
-import Domain.Row (Row(..), isPure, openRow)
-import Domain.Type.Parts (children, rowArguments, rowsOf)
+import Domain.Row (openRow)
 import Features.Check.Provenance (Origins, noOrigins)
 import Features.Check.Restricted (Restricted, emptyRestricted)
 import Features.Check.Site (Site)
 import Features.Check.Unify (Flex, Subst, exceedsLimit, resolve, walk)
 import Features.Check.Unify as Unify
-import Features.Check.Walk (foldTypes, retype)
+import Features.Check.Walk (foldTypes)
 
 -- One function's checking state: its substitution and next fresh meta.
 -- While a function is checked, a checked-IR type's `Hole m` is the meta m;
--- `holes` renumbers the ones still unsolved once the function is done.
+-- Features.Check.Holes renumbers the ones still unsolved once it is done.
 -- `deferrals` are the rows of the `defer`ed expressions, for
 -- Features.Check.Defer to judge once the function's keys are settled.
 -- `origins`: where each label occurrence entered a row (design §6), read
@@ -183,46 +177,3 @@ firstTooDeep subst = foldTypes judged Nothing
   where
   judged found span ty = maybe' (fresh span ty) Just found
   fresh span ty _ = if tooDeep subst ty then Just span else Nothing
-
--- Renumbers a finished body's unsolved metas as holes 0, 1, …, in the
--- order `foldTypes` first meets them. A body with no hole is kept rather
--- than rebuilt unchanged (T003).
-holes ∷ Checked.Expr → Checked.Expr
-holes body =
-  if Map.isEmpty numbering then body else retype renamed body
-  where
-  numbering = (foldTypes number { next: 0, seen: Map.empty } body).seen
-  number found _ ty = foldHoles numberHole found ty
-  renamed ty = rename renumber ty
-  renumber = case _ of
-    Hole meta → Hole (maybe meta identity (Map.lookup meta numbering))
-    rigid → rigid
-
-type Numbering = { next ∷ Int, seen ∷ Map Int Int }
-
-numberHole ∷ Numbering → Int → Numbering
-numberHole found meta =
-  if Map.member meta found.seen then found
-  else { next: found.next + 1, seen: Map.insert meta found.next found.seen }
-
--- A type's holes: its parts', then a record's tail, then its rows' (each
--- row's tail, then its label arguments). Type, record and row metas share
--- one numbering, so no two of them ever meet under one number.
-foldHoles ∷ ∀ b. (b → Int → b) → b → Ty Open → b
-foldHoles step found = case _ of
-  TVar (Hole meta) → step found meta
-  ty → foldl foldRow
-    (recordTail (foldl (foldHoles step) found (children ty)) ty)
-    (rowsOf ty)
-  where
-  recordTail reached = case _ of
-    TRecord row → foldl tailHole reached row.tails
-    _ → reached
-  foldRow reached row@(Row _ tail)
-    | isPure row = reached
-    | otherwise = foldl (foldHoles step)
-        (maybe reached (tailHole reached) tail)
-        (rowArguments row)
-  tailHole reached = case _ of
-    Hole meta → step reached meta
-    Checked.Rigid _ → reached
