@@ -99,9 +99,14 @@ const leastTerms = (size, edges, equalities) => {
   };
   return { find, term };
 };
-const leastVerdict = (size, edges, equalities) => {
-  const made = leastTerms(size, edges, equalities);
+// The least-term verdict over an injected construction and `holds`, so
+// mutants.mjs can run the same families against wrong ones.
+const leastVerdictWith = (termsOf, check) => (size, edges, equalities) => {
+  const made = termsOf(size, edges, equalities);
   return made !== null && edges.every(([l, h]) =>
-    holds(made.term(made.find(l)), made.term(made.find(h))));
+    check(made.term(made.find(l)), made.term(made.find(h))));
 };
-export { holds, norm, pathVerdict, semVerdict, leastVerdict, atoms };
+const leastVerdict = leastVerdictWith(leastTerms, holds);
+export { holds, norm, pathVerdict, semVerdict, leastVerdict,
+  leastVerdictWith, leastTerms, classesOf, constantOf, reaching, atoms,
+  valueOf };
