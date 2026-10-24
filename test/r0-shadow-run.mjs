@@ -92,8 +92,8 @@ const secondSpread = source => {
 
 // Each program: its declarations' facts and rows, and whether it
 // compiles today (whole-program `compile`, as the census reads it).
-const programOf = entry => {
-  const rows = declarationsOf(entry);
+// `rows` is RT8's run of the program, when the caller already has it.
+const programOf = (entry, rows = declarationsOf(entry)) => {
   const compiles = named(compile(entry.source)) === 'Right';
   if (rows.length === 0) return { origin: entry.origin, compiles,
     secondSpread: secondSpread(entry.source), results: [] };
@@ -104,8 +104,18 @@ const programOf = entry => {
       compiles)) };
 };
 
-export const windowPrograms = async () =>
-  [...await rt8Sources(), ...defectProbes].map(programOf);
+export const windowPrograms = async () => (await shadowRun()).programs;
+
+// BACKLOG R025: one run for RT8 and the window. RT8's rows (its
+// sources: the corpus and R022's probes) and the window's programs
+// (those sources, then the defect probes), each program decided once.
+export const shadowRun = async () => {
+  const decided = (await rt8Sources()).map(entry =>
+    ({ entry, rows: declarationsOf(entry) }));
+  return { rt8Rows: decided.flatMap(found => found.rows),
+    programs: [...decided.map(found => programOf(found.entry, found.rows)),
+      ...defectProbes.map(entry => programOf(entry))] };
+};
 
 export const windowTable = programs => ({
   summary: summaryOf(programs),

@@ -702,6 +702,16 @@ throws on any other, as its expression walk does; a test seen failing
 first injects every leaf and an unknown constructor. Census pin
 unchanged. Evidence in findings, "The census type walk fails closed".
 
+## R0 shadow hardening, R025: RT8 and the window share one run (2026-10-24)
+
+Test-only. test/r0-shadow.serial.test.mjs decides the corpus once
+(`shadowRun`) and registers RT8's and the window's assertions on it
+from test/r0-rt8-checks.mjs and test/r0-shadow-checks.mjs; the RT8
+serial file is removed. Pins, test names and messages unchanged; both
+pin scripts reproduce their files byte for byte. Serial time for the
+pair 105-107 s before, 57-62 s after. Evidence in findings, "R025: RT8
+and the window share one run".
+
 ## R0 shadow tranche: the read-back's sort only at an expression slot (2026-10-23)
 
 Shadow only, no acceptance change; Task 4.4b's review carry. The online

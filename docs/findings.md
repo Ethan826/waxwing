@@ -4616,3 +4616,46 @@ exception` before the change; it passes after, with every leaf injected
 directly. Census pin unchanged (test/r0-census.serial.test.mjs, 13/13,
 "the census equals its pinned counts" included). Test-only; no source
 changed.
+
+## R025: RT8 and the window share one run (2026-10-24)
+
+Test-only. test/r0-rt8.serial.test.mjs and test/r0-shadow.serial.test.mjs
+each decided the whole corpus in their own `node --test` process.
+test/r0-shadow.serial.test.mjs is now the one serial file: `shadowRun`
+(test/r0-shadow-run.mjs) runs `declarationsOf` once per program of
+RT8's sources, keeps those rows for RT8 and builds the window's
+programs from the same rows (then the defect probes, as before). The
+assertions moved unchanged into registration modules,
+test/r0-rt8-checks.mjs (`rt8Checks`) and test/r0-shadow-checks.mjs
+(`windowChecks`), with their test names and failure messages; the old
+RT8 file is removed. The pin scripts are unchanged. `windowPrograms`
+reads `shadowRun`.
+
+**Checked.**
+- All 12 tests pass in one process.
+- With rt8.json's `declarations` and one window row's
+  `programCompiles` altered, exactly "RT8: the classes equal their
+  pinned counts" and "the window equals its pinned table" failed, each
+  with its own "is stale; re-pin with …" message. The fixtures were
+  restored afterwards.
+- `node scripts/r0-shadow-pin.mjs` and `node scripts/r0-rt8-pin.mjs`
+  rewrite both pins byte for byte (3,021 window declarations, 1,024
+  rows; 3,017 RT8 declarations, 0 defects).
+
+**Serial time (checked).** Measured under the cross-worktree lock,
+after R021's unifier (commit 4030fc5), alternating the two layouts.
+"Before" means the two old files run together with
+`--test-concurrency=1`, restored temporarily from 07c65fd:
+
+| run | before (two files) | after (one file) |
+| --- | --- | --- |
+| 1 | 105.2 s | 61.6 s |
+| 2 | 107.3 s | 57.3 s |
+
+A first after-run gave 54.7 s. The task 4.5 figures (about 84 s and
+93 s) predate R021's fix.
+
+**Verify for the three hardening items (checked).** `npm run verify`
+at aeec4f2 (R021, the census walk and R025), one run under the
+cross-worktree lock: EXIT 0 in 988 s; parallel tests 2,849/2,849,
+serial 122/122, regression proofs 205 of 205 (jobs 6).
