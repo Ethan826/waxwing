@@ -5893,3 +5893,28 @@ evidence ownership, full-type equalities, deferred consumption and mark
 checking, includes the smaller findings in the resolution ledger, and
 stops and reports if a repair changes the representation or theorem
 scope.
+
+### 18.80 a-min revision 3.2, reproducible oracle additions, re-review (2026-10-24)
+
+Authorized: revision 3.2, the oracle additions and a targeted re-review;
+implementation, Task 4.6 and G-D1 stay blocked. N1 and N5 matter most:
+they describe ways forged evidence could erase a real effect
+requirement. Conditions:
+
+- Every independently owned C (ResultC and lambda annotations included)
+  has one recorded home, with its label-count and tail obligations
+  stated.
+- How handler-site positions reach copied images through equations is
+  recorded; mark assignments are checked per equality class.
+- Mark-ignoring consumption stays inclusion, not equality, with a
+  passing example whose receiving row has extra effects.
+- Each new forgery is reproducible, beside an honest control, the
+  let-bound handler and forged-empty-C cases included.
+- The oracle's equality coverage expands, and it reports assignments
+  tried and assignments satisfying `holds` separately.
+- The reviewer checks the revised obligations together, especially
+  ownership, copying and consumption.
+- N3 is a documentation correction (strategies run, acceptance is
+  suppressed afterwards); that behaviour does not change here.
+- "Local fixes" describes edit size, not confidence that the remaining
+  soundness work is small.
