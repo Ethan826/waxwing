@@ -803,9 +803,10 @@ entry or first diagnostic moved):
 
 Unchanged: T2's by-site comparisons (45 declarations, 153 sites, 159
 excluded), 118 hole-bearing declarations, and the corpus C2 check (5
-`Free` bindings). The new window rows: n7a and n7b `f` blocked by
-`DataApplication` markers; q1, q4, r1, r2 and s1 rows listed by the
-window. All corpus comparisons stay effect-erased (G-effect-rows).
+`Free` bindings). All nine new window rows (n7a `f`, n7b `f`, q1
+`foldFrom` and `main`, q4 `both` and `main`, r1, r2 and s1 `main`) are
+one class: compiles today, R0 `Unsupported Outside DataApplication`.
+All corpus comparisons stay effect-erased (G-effect-rows).
 
 ## R030: the trusted closure examined; `certify`'s argument (2026-10-24)
 
