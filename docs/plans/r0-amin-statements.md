@@ -934,3 +934,70 @@ fixture; FX032's "every perform form"; §7a's probe citation
 | N10 Console fixture | §12 Console row |
 | N11 FX032 perform forms | §9 lists every perform form |
 | N12 §7a citation, label | §7a: bounded, the three named probes; cases.mjs |
+
+## R5. Targeted re-review of revision 3.2 (2026-10-24): not ready
+
+An independent targeted review (Opus, read-only; one run each of
+run.mjs and mutants.mjs, both matching the README) at e26d76f, under
+§18.80. The controller re-read F1's and F2's evidence (Unify.purs
+`unifyInference`: "When neither type has a C of its own, C is R and its
+marks are compared with it", marks ignored on R only when a side owns a
+C, and `unifyClauses` comparing C rows separately; §10 still declaring
+`ResultC { c ∷ MRow }`) and they hold. No scope expansion: every repair
+stays within the representation and theorem scope.
+
+Ledger: N3, N4, N7-N12 resolved; N2 resolved with wording off; N1, N5,
+N6 partly (below).
+
+**S1.**
+- **F1. E1 omits C ≡ C, and ignores R's marks even when neither type
+  owns a C.** E1 says marks are ignored on inference rows; today's
+  checker compares R's marks when neither side owns a C, and compares C
+  rows (marks, tails, `Fail` heads, no other arguments) whenever either
+  side owns one. §13 has no `unifyClauses` row and its R ≡ R row is
+  wrong. Attempt A (unrun; accepted under E1 as written with an honest
+  package): `fn f(h: Handler(nofail Ask with Log)): Unit with Log = with
+  h { Ask.ask() }; fn g(h2: Handler(nofail Ask with nofail Log)): Unit
+  with Log = f(h2);`, today refused (N against M on R), lets a caller
+  install a handler whose clause defers `Log.log` under a failing `Log`.
+  Attempt B (unrun): `let h = if b then mk() else g` with
+  `mk(): Handler(nofail Ask with ...s)` and `g: Handler(nofail Ask with
+  ...r)`, the ResultC tail forged ∅, drops FrameRigid. Fix: E1 on
+  handler types compares handled marks by equality, R ≡ R ignoring
+  marks, and clauseRow ≡ clauseRow with marks, tails and `Fail` heads,
+  a side without its own C contributing R's bare alias with R's
+  positions; §13 rows; attempts A and B in cases.mjs with controls; a
+  mutant dropping C ≡ C.
+- **F2.** §10's `SiteFact += … ResultC { c ∷ MRow }` makes the ResultC a
+  package-side row again, contradicting §2 and §18.80's single home.
+  Remove it and name where the derived C is recorded.
+
+**S2.** F3 the recorded problem cannot yet supply what E4′ derives
+from: handler forms are `Outside HandlerType` markers today and
+`Fields` holds no callee signature; record, at each use with a
+top-level handler result, the derived C (R's labels bare with `Fail`
+heads; each mark N, M or a reference to the `Instantiated` k; the tail
+as R's variable, the use's own variable, or closed when R is closed),
+and at each annotation the MTy with its C (own `Annotation` positions,
+a fresh tail). F5 "every image copy arises from a recorded unification"
+is unchecked against all unifier entry points (Merge `improve`,
+Argument, ArgumentRow, Consume, RowEntry, EndReport): enumerate each in
+§13.
+
+**S3.** F6 an annotation C's tail is always fresh (E4′'s single rule
+reads otherwise), and `freshType` gives a C to every handler type not
+inside another's rows, not only the outermost. F7 E2's remainder lacks
+a closed source; R's extension marks are read by the alias's `assume`
+edge (harmless). Cases: m in the owned-C case is an `Opened` meta, not
+the constant N (verdict unchanged); the owned-C case hard-codes the
+derived C, so it shows unsatisfiability, not derivation; the inclusion
+case is a set tautology that does not exercise E2's rigid-tail rule;
+§12's "reproduced" rows sit under an "all unrun" header. Labels: §2's
+copies claim and §0a's "cannot supply or forge" are unlabelled
+universal or design claims.
+
+Clean by reading: inclusion with C pairing (both take the r-th
+occurrence of a key from the front); the per-key count against
+`partners`; copies during consumption (fresh, with edges) and during
+equality (same meta); monomorphic `let` (h shares the literal node's
+variable).
