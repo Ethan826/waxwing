@@ -13,7 +13,7 @@ import { r005bRenderRows } from './regression-r005b-render.mjs';
 import { r012Rows } from './regression-r012.mjs';
 import { r0Rows } from './regression-r0.mjs';
 import { ieRows } from './regression-ie.mjs';
-import { runRegression } from './regression-run.mjs';
+import { exitCodeFor, runRegression } from './regression-run.mjs';
 // Each row restores one defect in its own isolated copy of the sources.
 // One plain-purs baseline is compiled per run; each row clones it (APFS
 // copy-on-write, else an ordinary copy), edits the clone's sources, and
@@ -24,10 +24,11 @@ import { runRegression } from './regression-run.mjs';
 // min(6, cores - 2) at once, or WAXWING_REGRESSION_JOBS=<n> (1 is
 // sequential). Every row runs even when one fails; failing rows are named
 // at the end and the exit status is 1.
-// `node scripts/regression.mjs [name…]` proves only the named rows.
+// `node scripts/regression.mjs [name…]` proves only the named rows; an
+// unknown name is an error (exit 1).
 const allRows = [...coreRows, ...fnRows, ...fx008Rows, ...fxRows,
   ...textRows, ...fx020Rows, ...r001Rows, ...r004Rows, ...r005Rows,
   ...r005bRows, ...r005bEndRows, ...r005bRenderRows, ...r012Rows, ...ieRows,
   ...r0Rows];
 const failed = await runRegression(allRows, process.argv.slice(2));
-process.exitCode = failed.length === 0 ? 0 : 1;
+process.exitCode = exitCodeFor(failed);

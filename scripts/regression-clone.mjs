@@ -58,6 +58,7 @@ export const cloneTree = (from, to, { useClone = true } = {}) => {
 export const cloneTreeAsync = async (from, to) => {
   const cloned = await spawnAsync('cp', ['-cR', from, to]);
   if (cloned.status === 0) return 'clone';
+  rmSync(to, { recursive: true, force: true });
   return cloneTree(from, to, { useClone: false });
 };
 // A row restores one defect in one place, or in several (`edits`).

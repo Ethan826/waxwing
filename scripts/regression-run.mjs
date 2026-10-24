@@ -41,19 +41,30 @@ const proveAndClean = async row => {
     rmSync(`${base}/${row.name}`, { recursive: true, force: true });
   }
 };
+export const exitCodeFor = failed => failed.length === 0 ? 0 : 1;
+const requireKnown = (rows, names) => {
+  const known = new Set(rows.map(row => row.name));
+  const unknown = names.filter(name => !known.has(name));
+  if (unknown.length > 0) {
+    throw new Error(`Unknown regression row: ${unknown.join(', ')}`);
+  }
+};
 // Proves the rows (all, or those named) in a bounded pool. A failing row
 // does not stop the others: every row runs, and the failing names come
 // back in row order. Rows print as they finish; the summary is
-// deterministic.
+// deterministic. The row prover and baseline builder are injected; the
+// defaults are the real ones. An unknown name throws before anything runs.
 export const runRegression = async (rows, names = [],
-  jobs = regressionJobs()) => {
+  jobs = regressionJobs(),
+  { prove: proveRow = proveAndClean, buildBase = buildBaseline } = {}) => {
+  requireKnown(rows, names);
   const proved = rows.filter(row => names.length === 0
     || names.includes(row.name));
   rmSync(base, { recursive: true, force: true });
   rmSync(failures, { recursive: true, force: true });
   try {
-    if (proved.length > 0) buildBaseline(`${base}/baseline`);
-    const results = await runPool(proved, jobs, proveAndClean);
+    if (proved.length > 0) buildBase(`${base}/baseline`);
+    const results = await runPool(proved, jobs, proveRow);
     const failed = results.filter(result => result.error !== undefined)
       .map(result => result.item.name);
     console.log(`Regression proofs: ${proved.length - failed.length} of `

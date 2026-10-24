@@ -21,6 +21,9 @@ export const regressionJobs = (env = process.env) => {
 // stops early: resolves, in item order, with { item, error } where error is
 // undefined for a task that resolved.
 export const runPool = async (items, jobs, task) => {
+  if (!Number.isInteger(jobs) || jobs < 1) {
+    throw new Error(`jobs must be a positive integer: ${jobs}`);
+  }
   const results = new Array(items.length);
   let next = 0;
   const attempt = async item => {
