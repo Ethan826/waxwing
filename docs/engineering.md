@@ -218,7 +218,12 @@ adding a bypass allowlist.
   the clone's sources and compiled incrementally with relative globs so
   source paths match; row directories removed in `finally`, a failing row's
   error saved to .build/regression-failed/<row>.log first, the
-  baseline removed at the end. test/regression-incremental.test.mjs, run by
+  baseline removed at the end; rows run in a bounded async pool
+  (scripts/regression-pool.mjs: min(6, cores - 2) at once, or
+  WAXWING_REGRESSION_JOBS=<n>, 1 being sequential), every row runs even if
+  one fails, and failing rows are named with exit status 1; the pool is
+  tested in test/regression-pool.test.mjs.
+  test/regression-incremental.test.mjs, run by
   verify, keeps this honest: it mutates Domain.Ids (TypeId newtype to
   data), asserts that modules other than the edited one change, and
   compares an incremental compile with a clean one over every output file

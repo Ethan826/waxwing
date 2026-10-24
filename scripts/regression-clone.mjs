@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync,
   writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 // Support for scripts/regression.mjs: one plain-purs baseline per run, and
 // an independent copy of it per row, so purs recompiles only what a row's
@@ -12,9 +12,26 @@ export const compileTimeoutMs = 180_000;
 const sourceGlobs = ['src/**/*.purs', '.spago/p/*/src/**/*.purs'];
 // Plain purs, not spago or scripts/build.mjs: their output carries source
 // maps and corefn, so its bytes differ from a plain compile's.
-export const compileTree = root => spawnSync('purs',
-  ['compile', ...sourceGlobs, '--output', 'output'],
+const compileArgs = ['compile', ...sourceGlobs, '--output', 'output'];
+export const compileTree = root => spawnSync('purs', compileArgs,
   { encoding: 'utf8', timeout: compileTimeoutMs, cwd: root });
+// Async twin of spawnSync for the row pool: resolves (never rejects) with
+// the same { status, stdout, stderr, error } shape.
+export const spawnAsync = (command, args, options = {}) =>
+  new Promise(resolve => {
+    const child = spawn(command, args,
+      { timeout: compileTimeoutMs, ...options });
+    const out = [], err = [];
+    child.stdout.on('data', chunk => out.push(chunk));
+    child.stderr.on('data', chunk => err.push(chunk));
+    child.on('error', error => resolve({ error, status: null,
+      stdout: '', stderr: '' }));
+    child.on('close', status => resolve({ status,
+      stdout: Buffer.concat(out).toString(),
+      stderr: Buffer.concat(err).toString() }));
+  });
+export const compileTreeAsync = root =>
+  spawnAsync('purs', compileArgs, { cwd: root });
 export const buildBaseline = baseline => {
   mkdirSync(baseline, { recursive: true });
   cpSync('src', join(baseline, 'src'), { recursive: true });
@@ -35,6 +52,13 @@ export const cloneTree = (from, to, { useClone = true } = {}) => {
   }
   cpSync(from, to, { recursive: true, preserveTimestamps: true });
   return 'copy';
+};
+// cloneTree without blocking the event loop on the `cp -cR`; the rare
+// fallback copy stays synchronous.
+export const cloneTreeAsync = async (from, to) => {
+  const cloned = await spawnAsync('cp', ['-cR', from, to]);
+  if (cloned.status === 0) return 'clone';
+  return cloneTree(from, to, { useClone: false });
 };
 // A row restores one defect in one place, or in several (`edits`).
 export const applyEdits = (root, row) => {
