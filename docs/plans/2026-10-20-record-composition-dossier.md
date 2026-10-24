@@ -5930,3 +5930,32 @@ to conflict, preserve the separating example and bring the conflict for
 a decision; do not automatically reproduce the old behaviour. Applied
 to a-min in docs/plans/r0-amin-obligation-semantics.md (to be folded
 into the statements after the targeted re-review of revision 3.2).
+
+### 18.82 a-min revision 3.3 authorized; whole handler path to be checked (2026-10-24)
+
+Authorized: revision 3.3 and its targeted re-check; implementation,
+Task 4.6 and G-D1 stay blocked. F1 (r0-amin-statements.md §R5) is
+significant: the validator could lose a safety requirement even with
+honest evidence. C equality is retained on FX008 §5's safety argument,
+with today's behaviour as supporting evidence; attempt A is a reasoned
+counterexample, not an executed one. Conditions:
+
+1. State handler-type equality once (handled marks, R, C, the R alias
+   when no C is owned); every inventory and oracle description refers
+   to that definition.
+2. Remove the duplicate ResultC fact everywhere.
+3. Specify the recorded inputs derivation needs, without unrecorded
+   checker state: closed tails, instantiated mark references,
+   independently owned annotation positions.
+4. Finish F5's entry-point audit before re-review (improvement,
+   argument checking, consumption and every other unifier path);
+   anything unexamined is labelled an open obligation.
+5. Exercise derivation itself: keep the hard-coded graph test, and add
+   cases that construct obligations from recorded inputs, with both
+   attempts, passing controls and a C-equality mutant.
+
+The reviewer checks the whole handler-type path (recording,
+derivation, equality, copying, installation) as well as F1-F7. The
+effect-kinds research stays separate: this tranche concerns faithful,
+sound validation of the existing contract, not a stronger meaning of
+`pure`.
