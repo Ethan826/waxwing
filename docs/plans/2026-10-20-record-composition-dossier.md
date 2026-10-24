@@ -5644,3 +5644,36 @@ supplies no approval and backdates none.
    review of the repaired stack. No live switch and no push are
    authorized. This ratification does not retroactively approve the
    second tranche or option c; those remain for the author.
+
+### 18.73 Repair checkpoint accepted; second tranche ratified as shadow-only (2026-10-24)
+
+The author reviewed the repaired path (the trusted check settles one
+proposed substitution, checks it and builds its witness from that same
+input; the generic strategy interface accepts no separate witness),
+reran 28 focused tests, all passing (forged `id2`, legitimate and
+defaulted-hole controls, rejection without an error value, the trusted
+boundary checks), and did not repeat the full verify or the
+restored-defect runs. Decisions, dated 2026-10-24:
+
+1. **The repair checkpoint is accepted** (r0-t2-d1 at 7dd0065), with
+   the remaining assurance qualifications kept.
+2. **Tasks 5.2 and 7.1 are ratified retrospectively as shadow-only
+   work.** The approval is dated today; §18.72's statement that no
+   approval was recorded when they landed stands.
+3. **Option c is ratified only as a temporary experimental fallback.**
+   It does not replace E-a's requirement (r0-erased-rows.md §7.1 item
+   4) for live use.
+4. **G-D1 stays open and Task 4.6 stays blocked.** Effect-erased
+   correspondence does not establish full typed-code correspondence.
+5. **Next, authorized:** BACKLOG R030, including an explicit argument
+   and coverage for settling, defaulting and witness construction,
+   which now sit inside the trusted boundary; the ten C001 corpus
+   additions, keeping the existing 24 and recording each count
+   change; and for G-effect-rows, first an audit of what the builder,
+   the checker and lowering actually read, then a proposal for the
+   smallest representation that keeps the required information,
+   nested rows, data-type row arguments and handler marks included.
+   Empty rows are not to be chosen merely because lowering may erase
+   them.
+
+No live switch and no push.

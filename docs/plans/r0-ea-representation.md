@@ -36,7 +36,9 @@ three, so T2 and T8 cannot see them. The ruling is the controller's
 (r0-erased-rows.md §7.1 item 4), and no author approval of this
 departure was recorded when it landed (dossier §18.72). Gate
 G-effect-rows (plan §3.A) holds the decision and blocks Task 4.6 and
-Task 7.2's bridge removal.
+Task 7.2's bridge removal. On 2026-10-24 (dossier §18.73) the author
+ratified option c only as a temporary experimental fallback for shadow
+work; it does not replace E-a's requirement for live use.
 
 | | (a) row-carrying images | (b) effect-row binding only | (c) §12.1 fallback |
 |---|---|---|---|
