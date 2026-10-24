@@ -1,0 +1,7 @@
+-- T3c (vi): the public generator module exports no `seal`, so a module
+-- outside Generate* cannot seal its own reads (adversarial finding 1).
+module Test.ElabScope.Cheat (cheat) where
+
+import Features.Check.Generate
+
+cheat = seal

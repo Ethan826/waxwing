@@ -1,0 +1,9 @@
+-- T3c (iv): the nominal role stops `coerce` from changing a handle's
+-- scope.
+module Test.ElabScope.CoerceHandle (moved) where
+
+import Features.Check.Generate.Elab (Handle)
+import Safe.Coerce (coerce)
+
+moved ∷ ∀ s t. Handle s → Handle t
+moved = coerce

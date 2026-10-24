@@ -1,0 +1,11 @@
+-- T3c (ii): a handle from one `seal` read inside another.
+module Test.ElabScope.Cross (crossed) where
+
+import Prelude
+import Features.Check.Generate.Elab (readType, seal)
+import Features.Check.Generate.Gen (fresh)
+import Test.ElabScope.Common (header, minted, site)
+
+crossed = seal header (map outer (fresh minted))
+  where
+  outer handle = pure (seal header (pure (readType site handle)))

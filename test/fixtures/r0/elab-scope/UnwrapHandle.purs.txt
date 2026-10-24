@@ -1,0 +1,9 @@
+-- T3c (v): importing only Generate.Elab gives no constructor of
+-- `Handle`.
+module Test.ElabScope.UnwrapHandle (unwrapped) where
+
+import Prelude
+import Features.Check.Generate.Elab (Handle)
+
+unwrapped ∷ ∀ s. Handle s → Unit
+unwrapped (Handle _) = unit

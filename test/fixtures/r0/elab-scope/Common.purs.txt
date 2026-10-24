@@ -1,0 +1,39 @@
+-- T3c's shared values (R0 Task 7.1a, D1 spec §10): a header and a
+-- minted variable, so each rejected fixture is one small declaration.
+-- This module and Accepted.purs must compile.
+module Test.ElabScope.Common
+  ( header
+  , minted
+  , site
+  ) where
+
+import Data.Set as Set
+import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
+import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
+import Domain.Resolved (FunctionId(..))
+import Features.Check.Generate.Assemble (Header)
+import Features.Check.Generate.Gen (Minted)
+
+header ∷ Header
+header =
+  { decl: FunctionId 0
+  , holders: { declared: Set.empty, holding: Set.empty }
+  }
+
+site ∷ CheckedName
+site = NodeType body
+
+minted ∷ Minted
+minted =
+  { path: body
+  , role: Res
+  , sort: SortType
+  , position: site
+  , rule: ExprRule 1
+  , span: { start: origin, end: origin }
+  }
+  where
+  origin = { line: 1, column: 1, offset: 0 }
+
+body ∷ Path
+body = Path { root: InBody, steps: [] }

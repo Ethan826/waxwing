@@ -1,0 +1,7 @@
+-- T3c (v): importing only Generate.Elab gives no constructor of `Elab`.
+module Test.ElabScope.Unwrap (unwrapped) where
+
+import Features.Check.Generate.Elab (Elab(..))
+
+unwrapped ∷ ∀ s a. Elab s a → Elab s a
+unwrapped (Elab elab) = Elab elab

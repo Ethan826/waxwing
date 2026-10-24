@@ -1,0 +1,12 @@
+-- T3c (iii): `Elab` has no `Bind`, so no read is chosen from a value.
+module Test.ElabScope.Bound (bound) where
+
+import Prelude
+import Features.Check.Generate.Elab (readType, seal)
+import Features.Check.Generate.Gen (fresh)
+import Test.ElabScope.Common (header, minted, site)
+
+bound = seal header (map chained (fresh minted))
+  where
+  chained handle = readType site handle >>= again handle
+  again handle _ = readType site handle

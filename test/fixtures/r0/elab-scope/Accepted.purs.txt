@@ -1,0 +1,15 @@
+-- T3c's control: a handle used inside the generation that minted it.
+module Test.ElabScope.Accepted (accepted) where
+
+import Prelude
+import Data.Either (Either)
+import Domain.Elaborating (Elaborating)
+import Domain.Type (Ty)
+import Domain.Checked.Internal (Open)
+import Features.Check.Generate.Elab (readType, seal)
+import Features.Check.Generate.Fault (GenerationFault)
+import Features.Check.Generate.Gen (fresh)
+import Test.ElabScope.Common (header, minted, site)
+
+accepted ∷ Either GenerationFault (Elaborating (Ty Open))
+accepted = seal header (readType site <$> fresh minted)

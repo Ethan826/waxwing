@@ -1,0 +1,9 @@
+-- T3c (i): a handle returned out of `seal` is an escaped skolem.
+module Test.ElabScope.Escape (escaped) where
+
+import Prelude
+import Features.Check.Generate.Elab (seal)
+import Features.Check.Generate.Gen (fresh)
+import Test.ElabScope.Common (header, minted)
+
+escaped = seal header (map pure (fresh minted))

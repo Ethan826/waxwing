@@ -3,6 +3,7 @@
 // a whole, compiling form.
 import { r0WitnessRows } from './regression-r0-witness.mjs';
 import { r0CxRows } from './regression-r0-cx.mjs';
+import { r0ElabRows } from './regression-r0-elab.mjs';
 
 export const r0Rows = [
   {
@@ -230,5 +231,6 @@ export const r0Rows = [
       /r022-disjoint: the read-back σ was refused: CheckFailed NotGeneric/
   },
   ...r0WitnessRows,
-  ...r0CxRows
+  ...r0CxRows,
+  ...r0ElabRows
 ];
