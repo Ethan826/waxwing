@@ -119,6 +119,7 @@ nodeType (Tuple site ty) = case site of
   ParamType _ _ → Nothing
   LambdaBody _ → Nothing
   RestType _ → Nothing
+  ClauseParamType _ _ _ → Nothing
   Auxiliary → Nothing
 
 counted ∷ ∀ k. Ord k ⇒ Array k → Map k Int

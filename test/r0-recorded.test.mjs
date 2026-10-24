@@ -136,6 +136,7 @@ const shapes = [
     ['RigidVar', 1], ['FreshVar', 2],
     ['RigidName', 1], ['Slot', 2], ['NodeType', 1], ['ParamType', 2],
     ['LambdaBody', 1], ['PatternType', 1], ['RestType', 1],
+    ['ClauseParamType', 3],
     ['Auxiliary', 0], ['SortType', 0], ['SortRow', 0], ['Forall', 1],
     ['Exists', 0], ['Equal', 2], ['Lacks', 2], ['Disjoint', 2], ['Ff', 0],
     ['Printable', 1], ['Comparable', 1], ['Base', 1], ['Arrow', 2],

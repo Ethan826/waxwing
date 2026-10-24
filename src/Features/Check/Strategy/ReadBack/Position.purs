@@ -47,6 +47,8 @@ valueAt body ranked sort = case _ of
   LambdaBody path → plain (expression body path >>= lambdaBody)
   PatternType path → plain (patternType <$> pattern body path)
   RestType path → plain (pattern body path >>= restType)
+  ClauseParamType _ _ _ → Left
+    "a clause parameter type is a site, not a position"
   RigidName _ → Left "a flexible variable with a rigid position"
   Auxiliary → Left "an auxiliary variable has no position"
   where

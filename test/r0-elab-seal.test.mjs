@@ -143,3 +143,16 @@ test('T8 (unit): Free i is Hole i; equal numbers share a hole', () => {
   assert.deepEqual(row.tails.map(tail => [tail.constructor.name,
     tail.value0]), [['Hole', 7]]);
 });
+
+// D1 spec §12.2's `ClauseParamType` (Task 7.1b): a handler clause's
+// parameter type is a site like `ParamType`, with no seal fault, and
+// its reads show in `positionsOf`.
+test('ClauseParamType: a site with no seal fault, read where logged', () => {
+  const at = new t.m.Atom.ClauseParamType(t.path('Handler'), 0, 1);
+  const e = sealed(gen.seq([() => gen.fresh(['a'])], a =>
+    gen.positioned(at, ty.flex(a))));
+  assert.deepEqual(faults(e), []);
+  const positions = t.m.Elaborating.positionsOf(e);
+  const sites = t.m.Map.lookup(t.m.Atom.ordVar)(t.fresh(['a']))(positions);
+  assert.deepEqual(t.arrayOf(sites.value0), [at]);
+});

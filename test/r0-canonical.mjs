@@ -26,6 +26,7 @@
 //   position { rigidName: i } | { slot: [path, i] } | { nodeType: path }
 //            | { paramType: [path, k] } | { lambdaBody: path }
 //            | { patternType: path } | { restType: path } | 'auxiliary'
+//            | { clauseParamType: [path, c, k] }  a site only (D1)
 //   problem  §10's fields; `vars` and `types` as [key, value] pairs;
 //            `holders` { declared: [t], holding: [t] }, ascending
 //            (ruling K-a).

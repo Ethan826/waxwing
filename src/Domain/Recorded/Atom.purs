@@ -140,6 +140,9 @@ data VarSort = SortType | SortRow
 
 data Quant = Forall VarId | Exists
 
+-- `ClauseParamType p c k`, a handler clause's parameter type (handler
+-- path, clause, parameter), is D1's proposed site (spec §12.2; R0 Task
+-- 7.1b): a site of `build`'s reads, the stored position of no variable.
 data CheckedName
   = RigidName VarId
   | Slot Path Int
@@ -148,6 +151,7 @@ data CheckedName
   | LambdaBody Path
   | PatternType Path
   | RestType Path
+  | ClauseParamType Path Int Int
   | Auxiliary
 
 derive instance eqVar ∷ Eq Var

@@ -133,6 +133,16 @@ test('every constructor decodes to its canonical form', () => {
 
 // Task 3.2: a handler head names its effect by reference, so a builtin
 // effect's handler type (`Handler(Console)`) has one, decoded by name.
+// D1's site for a handler clause's parameter type (Task 7.1b) decodes
+// like every other position, though no generated variable stores it.
+test('ClauseParamType decodes to its canonical form', () => {
+  const site = A.ClauseParamType.create(deep)(0)(1);
+  const found = canonicalOf(problem(
+    { vars: varsOf([[rigid(0), null, site]]) }));
+  assert.deepEqual(found.vars[0][1].position, { clauseParamType: [
+    { root: 'body', steps: ['Call', 'args', 2] }, 0, 1] });
+});
+
 test('builtin effects head a handler type by name', () => {
   const headed = ref => canonicalOf(problem({ types: mapOf(O.ordPath,
     [[body, A.App.create(A.HandlerHead.create(ref))([])]]) })).types[0][1];

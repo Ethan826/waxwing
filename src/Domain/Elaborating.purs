@@ -83,6 +83,7 @@ siteFaults use = case use.site of
   LambdaBody _ → []
   PatternType _ → []
   RestType _ → []
+  ClauseParamType _ _ _ → []
 
 -- The site log: an `Auxiliary` entry, and every handle (a fresh
 -- variable) in a `RigidName` site's type.
@@ -96,6 +97,7 @@ logFaults (Tuple site ty) = case site of
   LambdaBody _ → []
   PatternType _ → []
   RestType _ → []
+  ClauseParamType _ _ _ → []
   where
   isFresh = case _ of
     FreshVar _ _ → true

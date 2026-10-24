@@ -124,6 +124,8 @@ const position = by('CheckedName', [
   [A.LambdaBody, p => ({ lambdaBody: path(p.value0) })],
   [A.PatternType, p => ({ patternType: path(p.value0) })],
   [A.RestType, p => ({ restType: path(p.value0) })],
+  [A.ClauseParamType, p =>
+    ({ clauseParamType: [path(p.value0), p.value1, p.value2] })],
   [A.Auxiliary, constant('auxiliary')]]);
 const sort = by('VarSort', [[A.SortType, constant('type')],
   [A.SortRow, constant('row')]]);
