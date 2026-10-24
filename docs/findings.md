@@ -4489,6 +4489,13 @@ generator tests all pass as pinned. Cov's domain is unchanged while
 commit, one run under the cross-worktree lock: EXIT 0; parallel tests
 2,825/2,825, serial 114/114, regression proofs 204 of 204 (jobs 6).
 `git diff --stat 83279ed HEAD -- test/fixtures/r0/*.json` is empty.
+After fix round 1 and the rebase onto r0-t2-cx (f21282c, which holds
+the tranche tip 8752aa5), one more run under the lock at 3bcc765:
+EXIT 0; parallel 2,845/2,845, serial 120/120, regression proofs 205 of
+205 (jobs 6). The rebase's conflicts (Decide/Shadow.purs imports, the
+regression row and probe lists, findings and progress) were resolved
+as a union; test/r0-verdict.test.mjs needed no allowlist entry, and
+the trusted-surface re-pin was unchanged.
 
 **Carries to 7.1b.** test/r0-generate-signature.test.mjs asserts that
 no module in the closure of Features.Check.Generate depends on
