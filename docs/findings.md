@@ -5038,3 +5038,49 @@ change to ReadBack was in. One `npm run verify` on the rebased branch
 compared (1,944 exactly, 45 by site: 153 sites compared, 159 excluded
 for `Amb`) and 781 more witnessed certificates (all exact). No number
 in part b moves. The RT1, RT8, window and census pins are unchanged.
+
+## Whole-stack review of the R0 shadow stack (2026-10-24)
+
+An independent reviewer (Opus, read-only) reviewed a00f90c..e37e22c,
+focused on the trust boundary, effect fidelity, assembly paths and
+carried gates. It ran two probes through the compiled output and did
+not run the test suites. The controller re-read P1-1, P2-7, P3-2 and
+P3-3 at the cited lines and confirms them. Defects are backlog items
+R026 (P1: the witness is built from a substitution the trusted check
+did not see), R027 (fail-open boundary checks), R028 (T1/T2 counts
+are lower bounds) and R029 (the lowering boundary is unlisted, and
+`Elaboration` can be minted anywhere). Open documentation findings:
+
+- **P2-3.** Task 7.1's acceptance, Task 7.2's removal condition and
+  §7 risk row 7 of the implementation plan say "corpus-wide equality"
+  with no effect-erased qualifier, so the passing T2 reads as meeting
+  them. G-effect-rows blocks Task 4.6 but not Task 7.2's removal.
+- **P2-4.** Option c drops more than effect rows: Generate/Elab/Image
+  builds `TData owner arguments []` (row arguments dropped), handler
+  labels `Unmarked` and `clauses: Nothing`; r0-elab-erase.mjs erases
+  all three. r0-ea-representation.md and the gate row say only
+  "closed, empty rows".
+- **P2-6.** No record closes G-D1 (progress, findings and the plan
+  disagree on its state), authorizes the second shadow tranche (Tasks
+  5.2 and 7.1), or dates the controller's option-c departure from the
+  author's E-a ruling (r0-erased-rows.md §7.1 item 4).
+- **P3-1.** T1/T2 run a pipeline the test assembles (no seal check
+  before `decide`; `elaborate` called from the test); no production
+  function composes generate, seal, decide and elaborate, so Task
+  4.6's assembly is not covered by T1/T2 automatically.
+- **P3-4.** progress.md's Task 7.1b entry says the generator "builds
+  today's checked declaration"; it matches only on the effect-erased
+  projection.
+- **P3-5 (plausible, not run).** 9195489, 98c3014 and 2c0ef09 likely
+  fail verify: two serial tests read `generate(...).value0` as the
+  problem until 8d46e88. The reviewed tip, not each commit, is the
+  unit being landed.
+
+Found clean, as checked by the reviewer: the importer rules match
+AGENTS.md; `Judged` is minted only in Decide; `elaborate` runs seal,
+problem identity and Cov before `build`; the CLI reaches only
+`checkProgram` and no new family module is reachable from
+Program.Main; Task 4.6, Task 2.2, Phase 6 and the Command change did
+not land. Not reviewed: CX refuter internals, the R021 unifier, the
+census and window tables, the T3c fixtures, and which row information
+lowering reads.
