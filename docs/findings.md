@@ -3932,9 +3932,10 @@ Solved; bound-hole rows are Solved).
 | Solved with a bound hole | (a), pending policy (ruling R-b2) | 6 | 6 | 5 | 0 | per the author's ambiguity ruling (Solved now) |
 | today refuses, R0 Unsupported Outside | (a) (plan) | 92 | 91 | 0 | 0 | undetermined pending classification (G-exempt, then classification) |
 | today refuses, BQ pending G-ValidR | (a) (reading: Task 4.2's Q2) | 2 | 2 | 0 | 0 | per G-ValidR (κ) |
-| today refuses, BQ at a rigid variable / outside the fragment | (b) (plan) | 0 | 0 | 0 | 0 | undetermined pending classification |
+| today refuses, BQ at a rigid variable | (b) (plan) | 0 | 0 | 0 | 0 | undetermined pending classification |
+| today refuses, outside the unitary fragment (f03) | (b) (plan) | 1 | 1 | 0 | 0 | undetermined pending classification |
 | false contradiction (D6) becomes Unresolved | (b) (ruling R-b2) | 6 | 6 | 0 | 0 | Solved (a strategy that certifies it) |
-| known-valid program; current solver cannot decide | (b) (ruling R-b2) | 10 | 10 | 0 | 0 | Solved (validity; admissibility separate where it applies) |
+| known-valid program; current solver cannot decide | (b) (ruling R-b2) | 9 | 9 | 0 | 0 | Solved (validity; admissibility separate where it applies) |
 | today's refusal becomes Unresolved (no candidate) | (b) (ruling R-b2) | 104 | 100 | 0 | 0 | undetermined pending classification |
 | defect | none | 9 | 9 | 1 | 0 | its separately authorized fix |
 
@@ -3959,17 +3960,17 @@ row).
 
 **§3.1's numbers (checked, the table).** Option A keeps all of D6's
 false contradictions: 6 declarations in 6 programs (copies of the three
-the refusal audit checked), and refuses the 10 known-valid programs.
+the refusal audit checked), and refuses the 9 known-valid programs.
 Option B would also turn today's refusals of undetermined status
 Unresolved: 104 with no candidate, 92 behind markers. Option C keeps
 those of blocked declarations only: none of the D6 or known-valid rows
 is blocked.
 
-**Option C's list (§3.1; listed, not adopted).** 16 rows, each refused
+**Option C's list (§3.1; listed, not adopted).** 15 rows, each refused
 today and under R0 (no acceptance change), with no blocker: the six D6
 rows (p11-route.wxw, rt2/d6-p11-route.json and integration/recon.md#1
 `route`; c01-h-label.wxw `route`; b03-mayhold-share.wxw and
-rt2/b03-mayhold-share.json `use`) and the ten known-valid rows (below).
+rt2/b03-mayhold-share.json `use`) and the nine known-valid rows (below).
 
 **Known-valid programs (fix round 1, the author's ruling R-b1; each
 with its evidence in test/r0-shadow-known.mjs and the row's
@@ -3987,16 +3988,13 @@ false contradictions:
   `routeNarrowed_validFin` (cited).
 - c22s-compose-requirements-stub `main`: translation.md:493, recorded
   witness `r' = {x}`, `s' = {y}` (cited).
-- f03-compare-split `main`: refusal-audit.md:353-360, "Also f03" among
-  the valid programs D4 rejects (cited). R0 declines it (outside the
-  unitary fragment); it moved from "today refuses, outside the unitary
-  fragment" to this class.
 - `walk` W1 (rt2/d4-walk-w1.json, r019 walk-as-written.caller and
   .no-caller `walk`): requirements.md:83-86, valid with the identity
   split (argued there). Validity only: recursive admissibility (W2,
   R010, BACKLOG R019) is a separate question.
 
-Left undetermined: rt2/d6-submit `submit` (its validity rests on "a
+Left undetermined: f03-compare-split `main` (fix round 2, below),
+rt2/d6-submit `submit` (its validity rests on "a
 reviewer's unrecorded bounded evaluation", requirements.md:429-431),
 the call site `main` of walk-as-written.caller, the other "Cannot tell"
 refusals, and the 8 identical-sides C001 rows ("Expected X, found X").
@@ -4129,3 +4127,20 @@ in verify); no CLI text changed.
   took 852-874 ms. Verify stopped before its regression stage, which
   was then run on its own: `node scripts/regression.mjs`, EXIT 0, 199
   proofs.
+
+**Fix round 2 (the scoped re-review and the controller's ruling under
+R-b1).** f03-compare-split `main` moves back from "known-valid" to
+"today refuses, outside the unitary fragment: online declines", target
+"undetermined pending classification". "Also f03"
+(refusal-audit.md:360) records no witness, argument or oracle result,
+and §3.10 (refusal-audit.md:411-415; r0/boundaries.md:772) makes f03
+the example of class d, whose validity depends on the open
+comparability policy. Known-valid: 9 rows; option C: 15. walk W1 stays
+known-valid with its "argued" evidence. The corpus-only scenario 3
+(+3; the pinned summary's +5 counts R022's two probes) is now asserted
+in test/r0-shadow.serial.test.mjs, as is f03's class. Checked: `node
+--test test/r0-shadow-classes.test.mjs test/r0-readback-sort.test.mjs`
+9/9; `node --test test/r0-shadow.serial.test.mjs` 7/7 after
+`node scripts/r0-shadow-pin.mjs` (window.json: f03's row and the class
+counts only).
+

@@ -61,6 +61,17 @@ test('each hand-labelled declaration is in the run as listed', () => {
 // §3.1 option C: listed, not adopted. Each listed row is a D6 or
 // known-valid refusal, refused both today and under R0 (acceptance
 // unchanged), with no blocker.
+// Fix round 2: f03's validity depends on the open comparability policy
+// (refusal-audit.md:411-415), so it is not known-valid.
+test('f03 stays undetermined', () => {
+  const row = rowAt(
+    'research/division-campaign/r0/probes/f03-compare-split.wxw#main');
+  assert.equal(row.class,
+    'today refuses, outside the unitary fragment: online declines');
+  assert.equal(table.summary.classes[row.class].target,
+    'undetermined pending classification');
+});
+
 test('option C lists only rows refused both ways, with no blocker', () => {
   assert.deepEqual([...table.summary.optionC].sort(),
     [...Object.keys(falseContradictions), ...Object.keys(knownValid)]
@@ -92,6 +103,12 @@ test('the window reconciles with the census', () => {
     census.union.programsWithoutErasedRow);
   assert.equal(found.stops.underShadowDecisions
     + found.stops.additionalIfErasedRowAdopted, census.union.programs);
+  // Scenario 3 has no census counterpart: the corpus's three compiling
+  // bound-hole programs (C001 a1 and a2, erased/form.show-reference) add
+  // to it; the pinned summary's two more are R022's inline probes.
+  assert.equal(found.stops.additionalIfBoundHolesRejected, 3);
+  assert.equal(table.summary.stops.additionalIfBoundHolesRejected
+    - found.stops.additionalIfBoundHolesRejected, 2);
   const classes = found.classes;
   assert.equal(classes['erased row: compiles today, census detector fires']
     .declarations, census.erased.markedWithoutOutsideKind);

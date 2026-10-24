@@ -34,7 +34,12 @@ export const falseContradictions = {
 // carry the same call (argued: equal text but for unrelated lets or a
 // result type). `submit` (rt2/d6-submit) is left out: its validity
 // rests on "a reviewer's unrecorded bounded evaluation"
-// (research/division-campaign/remedy/requirements.md:429-431).
+// (research/division-campaign/remedy/requirements.md:429-431). f03
+// (r0/probes/f03-compare-split) is left out too (fix round 2): "Also f03"
+// (refusal-audit.md:360) records no witness, argument or oracle result,
+// and §3.10 (refusal-audit.md:411-415; r0/boundaries.md:772) makes it
+// the example of class d, whose validity depends on the open
+// comparability policy.
 const audit = 'research/division-campaign/r0/refusal-audit.md';
 const translation = 'research/division-campaign/source/translation.md';
 const c21 = `cited: ${audit}:353-358 (c21, checked there: the oracle`
@@ -73,11 +78,6 @@ export const knownValid = {
     evidence: 'cited,'
       + ` witness: ${translation}:493 (S c22s solvable, forced: r' = {x},`
       + " s' = {y})" },
-  'research/division-campaign/r0/probes/f03-compare-split.wxw#main': {
-    text: 'Cannot tell whether left\'s u or v has field a; no annotation'
-      + ' can decide u and v, which belong to this call of left',
-    evidence: `cited: ${audit}:353-360 ("Also f03" among the valid`
-      + ' programs D4 rejects)' },
   'test/fixtures/r0/rt2/d4-walk-w1.json#walk':
     { text: walkText, evidence: walk },
   [`${r019}.caller.json#walk`]: { text: walkText, evidence: walk },

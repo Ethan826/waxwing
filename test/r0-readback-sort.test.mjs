@@ -70,4 +70,3 @@ test('a constructor pattern\'s row slot reads bare', () => {
   assert.equal(stableStringify(decodeType(read.value0)),
     stableStringify(decodeType(w.holeType(0))));
 });
-

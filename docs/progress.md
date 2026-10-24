@@ -634,8 +634,8 @@ author's rulings R-a, R-b1-4 and the task review): three stop
 scenarios kept apart (245; +6 with the erased-row boundary; +5 if bound
 holes were rejected); no refusal targets Contradiction by default
 (undetermined pending classification); a known-valid class with cited
-evidence (10 rows, c21, p10, p12, c22s, f03, walk W1); option C lists
-16 rows; section sources and readings flagged; the online search's
+evidence (9 rows after fix round 2, c21, p10, p12, c22s, walk W1; f03
+back to undetermined); option C lists 15 rows; section sources and readings flagged; the online search's
 no-candidate hint carries today's text as an untrusted hint (injected
 renderer); the pattern-slot arm tested; FX032's blind spot disclosed;
 BACKLOG R025 (double corpus run).

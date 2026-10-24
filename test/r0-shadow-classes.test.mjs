@@ -65,9 +65,10 @@ const cases = [
     + ' NoCandidate', { at:
     'research/composition-assessment/programs/p4.wxw#main' }),
   'known-valid program; current solver cannot decide'],
+  // Injected: no listed known-valid program is declined on the corpus.
   ['known-valid, declined', facts('(b) declined by g0Guard, today'
     + ' refuses', { today: refused, guard: ['fragment'], at:
-    'research/division-campaign/r0/probes/f03-compare-split.wxw#main' }),
+    'research/composition-assessment/programs/p4.wxw#main' }),
   'known-valid program; current solver cannot decide'],
   ['defect', facts('today\'s own internal failure (SearchBroke)', { at:
     'test/fixtures/r0/audit/fx010-record-payload.pinned.json#k',
