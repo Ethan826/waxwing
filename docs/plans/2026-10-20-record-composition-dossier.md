@@ -5871,3 +5871,25 @@ review after two corrections, and not yet ready for implementation:
    honest strategy; separate universal arguments from bounded tests and
    unrun predictions. Settled representation choices are not reopened.
    Task 4.6 and G-D1 stay blocked.
+
+### 18.79 a-min revision 3.1 and a targeted confirmation review (2026-10-24)
+
+The author agreed to revision 3.1 followed by a targeted confirmation
+review (50-80k tokens) rather than another full review; implementation
+stays unauthorized. The missing `defer` edge is not editorial: it would
+reopen the cleanup failure FX008 exists to prevent. Revision 3.1 must
+give one home for each fact; concrete obligation definitions (full
+marked types for E1, final-row conditions for consumption, clause tails
+and installation, no replayed inference instructions); complete edge
+collection, with FX008's failing-cleanup example traced from source to
+the refusal of a forged package; least terms over equality classes,
+keeping fixed rigid terms apart from flexible positions; and the actual
+outcome routing pinned. U1 (the correspondence argument with explicit
+premises and its bounded oracle) and U6 (the source-rule-to-obligation
+coverage argument with exclusions and their reasons) are deliverables
+before implementation approval. The targeted reviewer checks each
+finding against its replacement and traces the interactions among
+evidence ownership, full-type equalities, deferred consumption and mark
+checking, includes the smaller findings in the resolution ledger, and
+stops and reports if a repair changes the representation or theorem
+scope.
