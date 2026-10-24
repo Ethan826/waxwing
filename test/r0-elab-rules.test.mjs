@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { graphFindings, pursGraph } from '../scripts/structure.mjs';
-import { pinnedExports, pinnedFindings, reexportSourceFindings }
-  from '../scripts/structure-elab.mjs';
+import { declarationOf, pinnedExports, pinnedFindings,
+  reexportSourceFindings } from '../scripts/structure-elab.mjs';
 
 // R0 Task 7.1a, D1 spec §3.1 rules E1-E6 and T3b: one finding per rule.
 // Imports are read from purs's graph; re-exports (E6) from the source,
@@ -130,8 +130,24 @@ test('the pinned export lists match the tree; an added export fails', () => {
     entry => entry === 'emptyProblem'), []);
 });
 
-test('the real tree has no E6 finding', () => {
+// Review of 7.1a (Important 1): a header comment saying " where" must
+// not hide the declaration from E6.
+test('E6 reads past a header comment that says where', () => {
+  const comment = '-- what build may read, where it reads them\n';
+  const widened = header('Domain.Elaborating', ['module Exports'],
+    ['import Domain.Elaborating.Internal (Elaborating(..)) as Exports']);
+  assert.equal(reexportSourceFindings({ 'src/Domain/Elaborating.purs':
+    comment + widened }).length, 1);
+});
+
+test('the real tree has no E6 finding; every declaration is read', () => {
   assert.deepEqual(reexportSourceFindings(), []);
+  const sources = Object.fromEntries(readdirSync('src', { recursive: true })
+    .filter(file => file.endsWith('.purs')).map(file =>
+      [file, readFileSync(`src/${file}`, 'utf8')]));
+  assert.ok(Object.keys(sources).length > 400);
+  for (const [file, source] of Object.entries(sources))
+    assert.notEqual(declarationOf(source), null, file);
 });
 
 // T10, T-R0b §4's applicative invariant, transitively: the import
@@ -142,7 +158,8 @@ test('the real tree has no E6 finding', () => {
 const helpers = ['Features.Check.Components', 'Features.Check.Functional',
   'Features.Check.Holes', 'Features.Check.Implied', 'Features.Check.Nested',
   'Features.Check.NestedArguments', 'Features.Check.Spine',
-  'Features.Check.Tables', 'Features.Resolve.Builtin'];
+  'Features.Check.Tables', 'Features.Check.Walk',
+  'Features.Resolve.Builtin'];
 test('T10: no Generate* module reaches checker state', () => {
   const { graph, error } = pursGraph();
   assert.equal(error, undefined);

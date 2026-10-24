@@ -4402,7 +4402,8 @@ fixtures are kept as `*.purs.txt` and copied in as `.purs` for the run:
 spago builds every `test/**/*.purs`, and the first verify of this task
 failed at the build on exactly these modules (labelled deviation from
 the spec's `*.purs`; the serial test applies the style check itself).
-Not yet: T1, T2, T5, T5b, T8's corpus half, T12 (7.1b), and T3a's
+Not yet: T1, T2, T5, T5b, T8's corpus half (renumbering a body by
+`holes`), T12 (7.1b), and T3a's
 harness half (the driver has no `Elaborating` until 7.1b). T3c (vi)
 covers `seal`; `generateIn` exists from 7.1b.
 
@@ -4436,6 +4437,8 @@ patch applied alone, purs compile, then the named tests).**
 | M10 | `positioned` at `RigidName` reads through `elabTy` | RigidSiteRead |
 | M11 | `judgedDecision` gives `Nothing` for Solved | the Solved pairing |
 
+Numbering: M3 is not used (the stub RED run above stood in for it).
+
 **Regression rows (checked: `node scripts/regression.mjs` with the
 five names and r0-cov-skipped, 6 of 6, jobs 6).** r0-elab-untracked-read
 (readRow records no use), r0-elab-free-not-hole (`Free` read as
@@ -4450,6 +4453,37 @@ test/fixtures/r0 changed: RT1, RT8 (rt8.json), the window
 (window.json), census.json, the corpus manifest and the canonical
 generator tests all pass as pinned. Cov's domain is unchanged while
 `Recon` is empty (`flexDomain`, the same set in the same order).
+
+**Fix round 1 (the 7.1a review: three Important, minors).**
+- *E6 skipped modules whose header comment says " where" (checked).*
+  `reexportSourceFindings` cut the head at the first " where" and then
+  dropped the first `module` match, so nine src modules, among them
+  Domain.Elaborating and Refute.Theorems, were never examined. Now
+  `declarationOf` takes the declaration from `module` to its own
+  `where`, and only the export list is searched. RED: with a stub
+  `declarationOf`, "E6 reads past a header comment that says where"
+  failed; GREEN 11/11. A test asserts the declaration is found in every
+  src file; mutant M15 (the old cut) fails that case.
+- *T7's seal-fault case was vacuous (checked).* The spied value now has
+  the seal fault itself (`a` minted twice: DuplicateFresh) and its
+  `build` count is asserted 0. Mutants: M1 (eager build) fails the
+  test, through its Cov case; M12 (the seal guard skipped) fails it,
+  and with the spy the seal-fault case now fails on the call count too.
+- *T8's unit half (checked).* test/r0-elab-seal.test.mjs: `Free i`
+  reads as `Hole i` at a type position and as a record tail; two
+  bindings `Free 5` give one hole, `Free 2` another. M13 (`Free` read as
+  `TInt`) and M14 (every `Free` as `Hole 0`) fail it.
+- Minors: DuplicateSite counts by site, not path (argued: pattern
+  paths never equal expression paths), commented in Generate.Elab;
+  Features.Check.Walk joins T10's helper list; the T3c file says why it
+  is serial; M3's gap noted.
+- *Controller ruling:* amendment 7 (E6's widened exceptions and the
+  widened Generate and Generate.Gen pins) is acknowledged.
+- *Carry to 7.1b:* an `ImageVariable` check, a property that the
+  images `substitutionWitness` produces mention only hole and rigid
+  variables (or T1's corpus count of 0), since no Cov clause excludes
+  them and §8.1's "none rests on an untrusted search" does not yet hold
+  for that fault.
 
 **Verify (checked).** `npm run verify` at the task's last code
 commit, one run under the cross-worktree lock: EXIT 0; parallel tests

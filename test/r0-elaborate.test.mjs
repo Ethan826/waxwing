@@ -46,15 +46,17 @@ const shape = result => [result.constructor.name,
 
 // An Elab whose run counts its calls and gives `answer`, reading what a
 // real read of `a` at the body records (so Sc and Cov see a use).
-const spied = answer => {
+// `mintedTwice` mints `a` a second time: a DuplicateFresh seal fault.
+const spied = (answer, mintedTwice = false) => {
   const spy = { calls: 0 };
   const read = t.m.Elab.readType(site.node([]))(a);
   const forged = { uses: read.uses, run: () => {
     spy.calls += 1;
     return answer;
   } };
-  spy.e = t.sealed(gen.seq([() => gen.fresh(['a'])],
-    () => gen.pure(forged)));
+  const mints = mintedTwice ? [() => gen.fresh(['a']), () => gen.fresh(['a'])]
+    : [() => gen.fresh(['a'])];
+  spy.e = t.sealed(gen.seq(mints, () => gen.pure(forged)));
   return spy;
 };
 
@@ -116,11 +118,11 @@ test('T7: build faults arise from real reads too', () => {
 test('T7: seal faults, NoWitness and Cov stop before build', () => {
   const answer = new Right(ty.int);
   const w = t.witness([[a, t.inline(t.base.int)]]);
-  const sealFault = spied(answer);
-  const forged = t.sealed(gen.seq([() => gen.fresh(['a']),
-    () => gen.fresh(['a'])], () => gen.pure(t.m.Elab.readType(
-    site.node([]))(a))));
-  assert.deepEqual(shape(elaborated([], forged, judged(forged,
+  // Review of 7.1a (Important 2): the spied value itself has the seal
+  // fault, so its call count shows `build` did not run.
+  const sealFault = spied(answer, true);
+  assert.deepEqual(t.faults(sealFault.e), [['DuplicateFresh', a]]);
+  assert.deepEqual(shape(elaborated([], sealFault.e, judged(sealFault.e,
     witnessed(w)))), ['Broken', 'BrokenInvariant',
     'elaboration: the seal check failed']);
   const declined = spied(answer);

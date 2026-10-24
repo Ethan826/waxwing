@@ -105,7 +105,11 @@ sitedPair = case _ of
   Sited site ty → Just (Tuple site ty)
 
 -- A node's or pattern's site is T-R0b's `types(p)`; the others form the
--- site table only (§3.3).
+-- site table only (§3.3). `DuplicateSite` counts by site, not by path:
+-- a `NodeType p` and a `PatternType p` at one path would both land at
+-- `types(p)`, the last kept. Argued not to arise: T-R0b §6 gives
+-- pattern nodes their own steps (`…/pattern`), so a pattern's path is
+-- never an expression's; nothing checks it (review of 7.1a).
 nodeType ∷ Tuple CheckedName RTExpr → Maybe (Tuple Path RTExpr)
 nodeType (Tuple site ty) = case site of
   NodeType path → Just (Tuple path ty)

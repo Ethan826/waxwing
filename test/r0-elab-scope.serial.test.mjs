@@ -14,7 +14,9 @@ import { check } from '../output/Style.Check/index.js';
 // or call `seal` with only Features.Check.Generate imported (vi), each
 // fail to compile with its error class; the shared module and a control
 // that uses a handle inside its own generation compile. Real purs, the
-// tree's own output as externs (one compiler run).
+// tree's own output as externs (one compiler run). Serial because it is
+// heavy: purs reads every source of the tree and the package set (about
+// 1.5 s, several cores), which would load the parallel phase.
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('T3c: each scope escape fails to compile, the controls compile', () => {

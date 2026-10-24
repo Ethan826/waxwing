@@ -118,3 +118,28 @@ test('a generation fault stops seal with the fault, no Elaborating', () => {
   assert.ok(stopped instanceof t.m.Either.Left);
   assert.equal(stopped.value0, 'fault');
 });
+
+// T8's unit half (D1 spec §9; review of 7.1a, Important 3): `Free i` is
+// the hole `i` in a type position and as a record tail, and two bindings
+// `Free 5` share one hole while `Free 2` has another. Renumbering a
+// finished body with `holes` needs a body: 7.1b.
+test('T8 (unit): Free i is Hole i; equal numbers share a hole', () => {
+  const e = sealed(gen.seq([() => gen.fresh(['a']), () => gen.fresh(['b']),
+    () => gen.fresh(['c']), () => gen.fresh(['r'], sort.row)],
+  (ha, hb, hc, hr) => gen.positioned(site.node([]), ty.record(
+    [['x', ty.flex(ha)], ['y', ty.flex(hb)], ['z', ty.flex(hc)]],
+    [ty.flexRef(hr)]))));
+  const found = t.build(e, t.witness([[t.fresh(['a']), t.free(5)],
+    [t.fresh(['b']), t.free(5)], [t.fresh(['c']), t.free(2)],
+    [t.fresh(['r']), t.free(7)]]));
+  assert.ok(found instanceof t.m.Either.Right);
+  const row = found.value0.value0;
+  const hole = field => [field.value1.constructor.name,
+    field.value1.value0.constructor.name, field.value1.value0.value0];
+  assert.deepEqual(row.fields.map(hole), [['TVar', 'Hole', 5],
+    ['TVar', 'Hole', 5], ['TVar', 'Hole', 2]]);
+  assert.deepStrictEqual(row.fields[0].value1, row.fields[1].value1);
+  assert.notDeepStrictEqual(row.fields[0].value1, row.fields[2].value1);
+  assert.deepEqual(row.tails.map(tail => [tail.constructor.name,
+    tail.value0]), [['Hole', 7]]);
+});

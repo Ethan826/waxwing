@@ -62,13 +62,25 @@ const aliasFindings = (file, name, alias, bound) => {
     + ` ${bad.map(found => found.text).join('; ')} outside the allowed form`];
 };
 
+// The module declaration, from `module` at the start of a line to its
+// own `where`, line comments removed; `null` if there is none. A comment
+// above the declaration may say "where" (review of 7.1a, Important 1).
+export const declarationOf = source => {
+  const start = /^module\s/m.exec(source);
+  if (start === null) return null;
+  const header = source.slice(start.index).replace(/--[^\n]*/g, '');
+  return /^module\s+[A-Z][\w.]*[\s\S]*?\bwhere\b/.exec(header)?.[0] ?? null;
+};
+
 // Every `module X` export of every src module (or of `sources`).
 export const reexportSourceFindings = (sources = srcSources()) =>
   Object.entries(sources).flatMap(([file, source]) => {
     const name = moduleName(source);
-    const head = source.slice(0, source.indexOf(' where'));
+    const declaration = declarationOf(source) ?? '';
+    const list = declaration.includes('(')
+      ? declaration.slice(declaration.indexOf('(')) : '';
     const imports = importsOf(source);
-    return [...head.matchAll(/\bmodule\s+([A-Z][\w.]*)/g)].slice(1)
+    return [...list.matchAll(/\bmodule\s+([A-Z][\w.]*)/g)]
       .flatMap(([, alias]) => aliasFindings(file, name, alias,
         imports.filter(found => found.alias === alias
           || (found.alias === null && found.module === alias))));
