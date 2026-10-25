@@ -6025,3 +6025,34 @@ targeted review finishes first.
    counterexample and whether the same failure can travel through
    another recording or copying path. No further design approval is
    implied.
+
+### 18.85 K1 adopted as a conservative validator restriction; J chosen (2026-10-24)
+
+The author's rulings on r0-amin-statements.md §R6, ratified 2026-10-24.
+Implementation stays blocked; no implementation authorization is
+implied.
+
+1. **K1 adopted** as a conservative validator restriction: when a
+   consumed row s ends in a rigid ϱ, the target is exactly s's matched
+   labels followed by ϱ. A refusal means the validator cannot certify
+   the candidate, not that the program is invalid or that this is final
+   language policy.
+2. **S2-1:** clause rows entering C use the full strengthened condition,
+   tail condition included; one definition, referenced everywhere; the
+   departure from today's label-by-label procedure (Clauses.purs
+   `consumeBare`, throwaway tail) recorded explicitly.
+3. **O4: rule J** for the reference specification (a handler type
+   without an owned C uses R as C). K is kept as an alternative whose
+   equivalence remains unestablished; the choice does not need it.
+4. **The solved form for bindings is not confirmed by extending prose.**
+   Inspect whether production read-back and validation enforce it; then
+   state and check the invariant, or record the gap.
+5. Apply §R6's S3 fixes; update N4 and §14; add the closed-R inclusion
+   control, exercised through the recorded-input obligation builder,
+   not a hand-supplied completed graph.
+6. Qualifications kept visible: "no additional refusal found" rests on
+   the probes and reasoning, not a general compatibility result; a
+   ResultC's own tail and E10 remain unexamined, and adopting K1 does
+   not close them or establish the whole judgment's soundness.
+7. Then bring back the remaining open obligations and the targeted
+   check results.
