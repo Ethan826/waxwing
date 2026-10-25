@@ -1,12 +1,19 @@
-# Approved charter: README alignment next (2026-10-24)
+# Charter and README approved for publication (2026-10-24)
 
-The author approved [the charter](waxwing-charter.md) and asked for a local
-`main` commit, then a prominent README update consistent with it. The
-[adoption record](plans/2026-10-24-charter-adoption.md) names active guidance
-and open mechanisms. Contributor/engineering instructions and direction
-links are in place. Latest explicit author answers govern within scope.
-Existing R0/a-min gates remain unchanged; no feature or proof work follows
-from charter approval. No push was requested.
+The approved [charter](waxwing-charter.md) and its guidance are committed
+on `main` as `19f49c7`. The author also approved the README update and
+explicitly requested committing and pushing only charter-related work and
+the README. Effect's first mention links to its website. The
+[prose record][readme-charter-review] contains the independent review and
+final documentation checks; all 14 original code blocks are unchanged.
+No npm task, compiler test or new proof was needed for these prose changes.
+
+The [adoption record](plans/2026-10-24-charter-adoption.md) lists active
+contributor guidance and the deferred design pilot. Existing R0/a-min gates
+remain unchanged. Preserve the separate local effect research and Claude
+handoff files below; they are not part of the requested push.
+
+[readme-charter-review]: plans/2026-10-24-readme-charter-prose-review.md
 
 # C001 design: committed branch awaiting integration (2026-10-21)
 

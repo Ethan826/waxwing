@@ -78,9 +78,10 @@ candidate proves unsuitable.
 2. Done: `AGENTS.md` points to the charter for substantive design and
    review. `CLAUDE.md` retains its delegation to that single source of
    engineering instructions. Principle identifiers avoid duplicated text.
-3. Queued in this documentation task: add a prominent README summary and
-   charter link, preserving the distinction between existing behavior,
-   plans and proved model results.
+3. Done: the author approved the README update and requested its commit
+   and push with the charter. The mission and structural bridge lead;
+   platform/lineage direction follows the first service example. Existing
+   behavior, plans and proved model results remain distinct.
 4. Done: language, tooling and schema direction notes link to the charter.
    Historical implementation snapshots remain dated records, not current
    evidence. Reconcile any substantive conflict in its own decision.
@@ -133,7 +134,7 @@ No semantic compliance gate or package approval system is proposed.
 | [ADR 015][backends] | Adopted backend priorities and direct FFI. | Preserve; no backend amendment proposed. |
 | Saga and durable-workflow support | Interview research direction. | Candidate; investigate library composition and published calculi before proposing integration. |
 | `wxw --audit` | Interview example of inspectable trust. | Candidate; reporting scope and reachability evidence need a separate design. |
-| Adoption steps above | How the charter becomes discoverable and routinely consulted. | Contributor guidance and direction links added; README follows in the next commit. The design pilot remains deferred. |
+| Adoption steps above | How the charter becomes discoverable and routinely consulted. | Contributor guidance and direction links committed in `19f49c7`; README alignment approved for commit and push. The design pilot remains deferred. |
 
 The prose loop and its limitations are recorded in the
 [editorial record][review]. No compiler, Lean or runtime behavior changed.

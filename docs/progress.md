@@ -1,5 +1,23 @@
 # Bootstrap evidence and current checkpoint
 
+## README aligned with the approved charter (2026-10-24)
+
+Charter and contributor guidance are committed locally on `main` as
+`19f49c7`. The README update puts the mission and structural bridge first,
+then covers the effect-language lineage, platform composition, schemas,
+instrumentation and inspectable trust after the first service example.
+It corrects the provider-construction example and keeps typed FFI, HKTs,
+stronger effect contracts and other future facilities labelled as plans.
+
+The [writing-loop record](plans/2026-10-24-readme-charter-prose-review.md)
+includes the independent review, which found no substantive issue and
+requested line wrapping. Those repairs are applied. All 14 README code
+blocks are unchanged; local links, whitespace and width checks pass.
+No npm task or compiler test was run. The author approved the README,
+including the linked first mention of Effect, and requested committing and
+pushing the charter-related work and README. Separate local effect research
+and the Claude handoff remain outside the publication scope.
+
 ## Waxwing charter approved (2026-10-24)
 
 The author approved the [charter](waxwing-charter.md) and requested its

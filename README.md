@@ -10,12 +10,25 @@
 # Waxwing
 
 Waxwing is an experimental functional language for composing services and
-typed failures. It currently compiles to Go; JavaScript is the intended
-primary production target, followed by LLVM for native code. The compiler
-is written in PureScript and is not yet self-hosted.
+typed failures. Its aim is [Effect][effect-library]'s practical approach to
+business programming with the expressive abstractions of Haskell and
+PureScript, supported by the language itself.
 
-This is an early prototype: there are no modules, comments or standard
-library yet. `Int` is signed 32-bit, and `+` is the only arithmetic operator.
+Row polymorphism is the intended bridge to TypeScript's structural
+flexibility: functions can require part of a record while preserving the
+rest, and service requirements should compose without a new environment
+type for every combination. The goal is to write the business operation
+directly, without generator ceremony or assembling a different layer of
+wrappers for each combination of dependencies.
+An experienced TypeScript/Effect programmer should be able to become
+productive while learning deeper FP abstractions as they become useful.
+The [charter][charter] records this direction and the principles behind it.
+
+Today the compiler targets Go, is written in PureScript and is not yet
+self-hosted. JavaScript is the first-priority production target to develop,
+followed by LLVM for native code. This is an early prototype: there are no
+modules, comments or standard library yet. `Int` is signed 32-bit, and `+`
+is the only arithmetic operator.
 
 ## Why dependencies and errors should compose
 
@@ -34,10 +47,10 @@ with Database + BalanceApi + Logger + Fail(DbError) + Fail(NetworkError)
 
 A handler can supply `Database` or handle `DbError` while preserving the
 other requirements. Planned inference would collect the row from the
-operations a function calls, including failures from constructing services.
-Adding a service or error family would no longer require copying its name
-through every caller. Explicit signatures would still limit what a
-function is allowed to do.
+operations a function calls. Construction requirements and failures would
+be accounted for where a service is constructed. Adding a service or error
+family would no longer require copying its name through every caller.
+Explicit signatures would still limit what a function is allowed to do.
 
 Two features support this approach:
 
@@ -88,10 +101,59 @@ binding when the inner one has an incompatible type.
 The [services example](examples/services.wxw) combines a database, clock, and
 logger, with fakes installed by the tests. Those handlers return fixed values.
 Connecting them to external services needs planned typed FFI bindings.
-The intended adapter model lets a Waxwing service contract be fulfilled by
-host libraries or fakes. A `Logger` could use Pino, Winston, or a browser
-implementation without changing application code that uses `Logger`. The
-binding and service-assembly rules still need design.
+
+## Language and platform direction
+
+[Effect][effect-library] is the practical reference for services, failure
+handling and an integrated application platform. Haskell, PureScript and
+`fp-ts` inform the abstractions: functions, ADTs, `traverse`, `Reader` and
+constructor polymorphism. Waxwing aims to support those ideas natively.
+HKTs and generic dictionary methods remain planned work, as the type-system
+inventory below explains.
+
+[Koka][effects], [Unison][unison] and [Effekt][effekt] inform the effect
+system's lineage. Dependencies, expected failures, external interaction,
+state and divergence deserve precise descriptions instead of one catch-all
+`IO`. Their effect systems make different promises. Waxwing's stronger
+purity and effect-kind contracts still need design; their guarantees do not
+follow from its existing effect rows or from another language's proofs.
+
+An officially supported platform will define capability interfaces and
+composition conventions, following [Effect Platform][effect-platform] and
+OpenTelemetry's [API/SDK separation][otel]. A `Logger` could use a Pino,
+Winston or browser adapter, or a test fake. Application composition chooses
+the provider. Typed FFI is planned; the design also permits direct foreign
+library use. Implementing an interface does not certify a foreign
+library's behavior.
+
+Construction dependencies should stay with construction. Building
+`DatabaseLive` may need `Config` and `Logger`; business code using the
+acquired `Database` should not inherit those private requirements. They
+compose upward to the code that constructs and supplies the provider.
+The binding and service-assembly mechanisms still need design.
+
+The platform direction also includes:
+
+- Schemas that parse boundary data into domain values and support other
+  interpretations, such as valid test data. The Schemable approach in
+  `schemata-ts` is an influence; the [schema design
+  direction][schema-direction] leaves representation open. Wire, domain and
+  storage formats can differ.
+- Runtime instrumentation under language-defined scope and execution
+  semantics, with replaceable logging, tracing and metrics providers.
+  OpenTelemetry is a candidate default. Context visibility in effect rows
+  is an open design question.
+- Inspectable trust boundaries for foreign and other unchecked code,
+  drawing on Rust's safe interfaces over unchecked implementations. The
+  marking mechanism and future audit tooling remain to be designed;
+  behavioral laws need evidence beyond interface conformance.
+
+Keep the core small and libraries capable. Prefer published foundations
+and ordinary library composition; deeper compiler or plugin integration
+needs a demonstrated limitation and justified guarantees. Sagas and durable
+workflows are research candidates under that rule; no built-in workflow
+feature is selected. Theory should help solve recurring programming problems
+without making application authors build their own effect framework.
 
 ## Records
 
@@ -458,16 +520,19 @@ justification and approval for departures from published mechanisms.
 
 [Effect (the TypeScript library)][effect-library] and `ZIO` are references
 for this design: providing services changes the dependencies and errors
-that remain. Waxwing aims to express that composition through rows and
-handlers, without a separate layer abstraction. The proposed behavior is:
+that remain. Waxwing aims to express that composition through native rows
+and handlers, with library conventions for constructing and supplying
+providers. The proposed behavior is:
 
 - A route calls `Database`, `BalanceApi`, and `Logger`. The compiler infers all
   three dependencies and the error families raised by those calls. Errors
   raised in the route's own branches or helper functions join the result.
-- Installing a `BalanceApi` implementation that calls `HttpClient` replaces
-  the `BalanceApi` requirement with `HttpClient`. Installing a fake that
-  returns fixed results introduces no `HttpClient` requirement. The route
-  stays unchanged.
+- Constructing a `BalanceApi` provider may require `HttpClient`. The
+  composition code supplies it, so the acquired provider captures that
+  dependency. The route keeps its public `BalanceApi` requirement without
+  acquiring `HttpClient`; its other requirements remain. A fake may need no
+  `HttpClient`. The design must distinguish these acquired services
+  from a scoped handler that introduces additional outstanding effects.
 - Constructing `Database` can raise `ConnectionError`; constructing `BalanceApi`
   can raise `ConfigurationError`. Calling them later can raise `DbError` or
   `NetworkError`. Construction errors belong to the construction step, not
@@ -620,6 +685,7 @@ and tool errors use `E_IO` and `E_TOOL`.
 
 ## Documentation
 
+- [Charter][charter] and [decision guidance][charter-guidance]
 - [Language specification](docs/language.md)
 - [Language direction][direction] and [backlog](BACKLOG.md)
 - [Architecture](docs/architecture.md) and [decisions](docs/adr/)
@@ -673,3 +739,11 @@ and tool errors use `E_IO` and `E_TOOL`.
 [open-characterization]:research/composition-proofs/Composition/Typed/Bridge/ProofInstantiateSound.lean
 [cell-soundness]:research/composition-proofs/Composition/Typed/Cell/Proofs/Main.lean
 [cell-limitation]:research/composition-proofs/Composition/Typed/Cell/Proofs/W7/Divide5.lean
+
+[charter]: docs/waxwing-charter.md
+[charter-guidance]: docs/plans/2026-10-24-charter-adoption.md
+[effect-platform]: https://effect.website/docs/v4/platform/introduction
+[unison]: https://www.unison-lang.org/docs/fundamentals/abilities/
+[effekt]: https://se.cs.uni-tuebingen.de/publications/brachthaeuser20effekt.pdf
+[otel]: https://opentelemetry.io/docs/concepts/components/
+[schema-direction]: docs/plans/2026-10-10-schema-direction.md
