@@ -8,56 +8,17 @@ explicit answer governs within scope (record what it supersedes). The
 charter authorizes no implementation or proof and settles no
 effect-policy question. Dossier §18.72-§18.89 records every ruling.
 
-**Agents running when this was written** (their reports arrive in this
-session as messages; check each claim before committing anything):
-1. **Arithmetic task 1, option (b)** (branch d001-arith, worktree
-   .claude/worktrees/d001-arith; authorized §18.87 item 1). On return:
-   check that each changed representation test still asserts the exact
-   operator, operand order and grouping (no `Add` projection); verify
-   before/after green; generated Go byte-identical; the two oracle
-   overclaims corrected (independent code can share a conceptual
-   defect; numeric results cannot establish grouping; Codex's check was
-   model-only). Commit explicit paths, then bring task 1 to the author
-   for review. Tasks 3-7 stay held. Recommend a charter decision-note
-   pass (C3, C8) on the arithmetic design when 3-7 come up.
-2. **Bounded ResultC adversarial review: returned PARTIAL.** A safety
-   classifier stopped it after the reproduction (recorded in
-   docs/plans/r0-amin-resultc-tail.md "Review 1"; FX033 reproduces on
-   main too). Tasks 2-5 not done; whether to relaunch, and how, is the
-   author's call (do not re-dispatch around the stop). Original brief:
-   (read-only;
-   brief = dossier §18.89). It reproduces x1 and controls on the main
-   build (worktree effect-kinds, src = main 2af6e40) and this branch's
-   build, reviews H′'s occurrence criterion and every caller-supplied
-   value source, challenges O-SUB, answers four questions separately
-   (H′ blocks x1? another path defeats it? accepted programs rejected?
-   what remains unestablished?), and returns a narrow test-first FX033
-   repair proposal. On return: rerun its key reproductions; record the
-   review in docs/plans/r0-amin-resultc-tail.md (a review section) and
-   the dossier; present the four answers and the proposal. FX033's
-   implementation needs separate authorization.
-3. **Charter example probes (item 2 of the type-system planning)**
-   (worktree .claude/worktrees/charter-scoping, branch
-   research/charter-scoping from origin/main a82d064). The agent writes
-   predictions first, then runs the adoption record's two examples
-   (open-record `email` plus two combined service computations;
-   `checkout`/`Database`/`DatabaseLive` with `Config` and `Logger`)
-   on the main build, and returns text. On return: store programs as
-   `research/charter-scoping/*.wxw.txt` with predictions, commands and
-   outputs; commit on research/charter-scoping.
-
-**Next, once agent 3 reports (author approved 2026-10-24):** launch
-item 1, a charter scoping map for the type-system milestones (INF001,
-K001, C001, R001/R005B, M001, I001, FX006, SCH001): per milestone the
-programmer problem, charter principles, published foundations (ADR
-014), open decisions as concrete alternatives, dependencies, and which
-adoption example exercises it, grounded in agent 3's observations;
-then a sequencing table. Docs only, on research/charter-scoping. Item 3
-(assurance-register refresh: U8, FX033, Definition 4.2, ResultC) is a
-cheap optional follow-on. Not authorized: the SCH001 decision-note
-pilot, the five effect decisions, division, any milestone design or
-implementation, provider-machinery alternatives (item 4) without a
-scope go-ahead.
+**Update 2026-10-25: no agents running.** All three reported:
+1. Arithmetic task 1 committed on d001-arith (0633480): verify green,
+   differential 0 differences (emitted Go identical), oracle overclaims
+   corrected. Awaiting the author's review; tasks 3-7 held. Gap noted:
+   no test pins an unparenthesized `+` chain's grouping structurally.
+2. ResultC Review 2 complete (4fca437; dossier §18.90). Awaiting the
+   author: authorize the FX033 repair as proposed, and accept or not the
+   loss of c1 and x1z.
+3. Charter probes (cf03706) and scoping map (46392b4) on
+   research/charter-scoping. Awaiting the author: file F1-F4 and fix
+   the stale records the map lists (item 3), sequencing comments.
 
 **Where things stand** (nothing pushed; no merge; no live switch):
 a-min statements revision 3.5; U8 implemented (7476097, 9f547d7); ResultC
