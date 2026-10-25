@@ -1,0 +1,3 @@
+effect Log { fn log(n: Int): Unit; };
+fn id2(m: { h: Handler(Log with Console + ...e), ...r, ...s }): { h: Handler(Log with Console + ...e), ...r } where r disjoint s = m;
+fn main(): Unit with Console = Console.print(1);

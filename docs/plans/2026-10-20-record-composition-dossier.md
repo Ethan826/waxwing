@@ -6200,3 +6200,20 @@ a-min implementation, Task 4.6, G-D1. (3) Scoping records closed on
 research/charter-scoping (4d29d11): F1-F4 filed as FX034, E021, E022,
 DOC002; stale summaries corrected with dated history; the map revised
 for Codex's S1-S7 and kept a planning proposal. No merge, no push.
+
+### 18.92 a-min revision 3.6 and its approval review (2026-10-25)
+
+The author authorized one revision and one review (closure checklist,
+critical path 1), with three clarifications: open RC′ is a substantive
+limitation, the review separates representation from soundness and
+names what depends on RC′; the effect-contract independence claim is
+reviewed; a firm stop. Revision 3.6 (ffb2b33) recorded H′, U8, the
+oracle reruns, O6 and a carried-obligations table. The review (§R7 in
+the statements) found no S1 and four S2: the overruled Console guard
+still in §4 E5 and §13; O6 testable for rigid tails; O-SUB and A1 are
+whole-judgment obligations, only P4 fresh-tail-specific; the table's
+mislabels and missing rows. It recommends not certifying fresh-tail
+ResultC uses until P4 is argued and reviewed. Stopped there: no
+revision 3.7. Decisions for the author: the text fixes or a waiver,
+the fresh-tail ruling, and representation approval. Implementation,
+Task 4.6 and G-D1 stay blocked.

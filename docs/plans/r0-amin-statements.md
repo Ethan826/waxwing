@@ -2464,3 +2464,60 @@ into C departure at this worktree (src unchanged since 0c2ad60).
 | §18.85 item 5 (S3 fixes, N4, §14, closed-R control) | S3 rows above; §12.1 N4 row flipped and closed-R row added (no result claimed); §14 rows replaced or updated |
 | §18.85 item 6 (qualifications) | §0d item 7 and §13b's "Qualifications": compatibility rests on probes and reasoning; a ResultC's own tail unexamined; E10 settled by reading only; K1 does not establish the whole judgment's soundness |
 | §18.85 item 7 (bring back open obligations and check results) | for the controller: U8's inspection, the closed-R control's result, the oracle's N4 case under Definition 4.2; open still: O5, O7, O6 (no case), U2-U5, open decisions 1, 3, 4 (§14) |
+
+## R7. Approval review of revision 3.6 (2026-10-25): ready with conditions
+
+One independent read-only review (Opus), the tranche's stopping point
+(closure checklist, critical path 1f); no revision 3.7 follows
+automatically. Probes: research/amin-o6-probes/o6g-o6k and
+research/amin-resultc-probes/review36/ (`.wxw.txt`); the controller
+reran o6g (accepted), o6i (refused), aroundBothE (refused, "Expected
+nofail(k) Log, found Log") and r1E (accepted) on this branch's build.
+
+**Verdict.** No S1. The representation is approvable with conditions:
+(a) S2-1; (b) S2-2; (c) S2-3 and S2-4; (d) the author's ruling on
+fresh-tail ResultC uses. By 1f's criterion, (a)-(c) need a text fix or
+the author's waiver before approval.
+
+- **S2-1.** §4 E5 ("unless the frame is N (Console, …)") and §13's
+  exclusions still state the Console frame guard that §18.86 overruled;
+  §14 decision 1's heading says "open" and the compatibility-only list
+  keeps the guard. Unreachable today (FX011); reachable when FX011
+  lifts. With the guard gone, "Console labels N" refuses every failing
+  user Console handler once FX011 lifts: revisit with that row.
+- **S2-2.** O6's "no case constructible today" (§0e item 5) is false:
+  two-rigid-tail record equalities are constructible (o6g, o6h
+  accepted; o6i missing tail, o6j field mark, refused; observed). Only
+  flexible-tail unfolding through calls is not (o6d-o6f, o6k).
+- **S2-3.** O-SUB and A1 are obligations of the whole judgment (every
+  polymorphic use, H′'s occurs case via P3, E5's installed-C step,
+  Definition 4.2), not of the fresh-tail case. Only P4 is specific to
+  the fresh-tail case; refusing fresh-tail uses removes only P4.
+- **S2-4.** In §0e's table U4 is a soundness obligation (§8 S2), not
+  completeness; O5 and O7 widen acceptance and need their exclusion
+  arguments (bare-C; Definition 4.2 standing in for the F1′ hook);
+  rows missing: O-SUB, U6/P1 (coverage, fixtures and mutants never
+  run, including generation computing H′), U7 (correspondence only),
+  P2 with the §13a audit's scope (Refute/, Strategy/, Decide*,
+  Entailed* outside it).
+- **S3.** "Always R's tail" emulated: aroundBoth refused, r1, r2, r9
+  accepted (observed), replacing §0e item 2's "unestablished";
+  `node k1.mjs` prints nothing, the closed-R line comes from run.mjs
+  (§12.1's reruns paragraph is wrong on this; controller's error);
+  §11 U8's heading and §2/§5's "rests on U8" need "extension to effect
+  rows" wording; §14 decision 3 still asks for an example x1 now
+  provides; the rule-J ResultC tail row should cite resultc-tail P9;
+  E10's reading is itself a coverage claim; H′/RC′ missing from
+  "Novel, for approval"; "probe r1" ambiguous with Review 2's r1;
+  §0e item 7 should say "intended guarantees" (FX032 still open).
+
+**Recommendation on fresh-tail uses (reasoned).** Do not certify them
+until P4 is argued and reviewed: the cheapest restriction is a
+validator-only "always R's tail", losing aroundBoth (pinned corpus
+program) and k2f, keeping r1, r2, r9; it affects shadow certification
+and A6 only, not live behaviour. No corpus-wide count exists.
+
+**Effect-contract independence.** No §14 row settles one of the five
+decisions (reasoned). Coupling points that would need amendment: E8
+and "Console labels N" (decisions 2-4); E4's own-abort rule and E6,
+which treat `Fail` as the only typed abort (decisions 1-2).

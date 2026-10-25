@@ -43,7 +43,7 @@ author approves (row A1). Revision 3.5 has had no review.
 | 1c | E4′ / decision 3 (ResultC tail) stated as H′ with RC′ open | E4′ and §14 decision 3 updated (d99ec45); Review 2's channel search; nine shapes refused by the compiler (observed) | author rules whether the statements may be approved with RC′ (P4, O-SUB, A1) carried as a labelled open obligation, or must wait for an argument | author |
 | 1d | O6, records with several tails | defined in 3.4, "proposed, no case" (read) | one separating case, or a recorded reason none is constructible yet | controller |
 | 1e | carried obligations listed once | O5, O7 (correspondence, today stricter); U2-U5; E10 settled by reading only; a ResultC's own tail unexamined; [FX008-5] argued, not proved (read) | one consolidated table in the statements, each labelled "carried, not blocking approval" or "blocking" | controller |
-| 1f | targeted review of the revision carrying 1a-1e | none since 3.5 | one independent review; criterion: no S1/S2 | controller (dispatch), author (acceptance) |
+| 1f | targeted review of the revision carrying 1a-1e | done 2026-10-25: §R7, no S1, four S2 (Console guard text, O6 testable, O-SUB/A1 whole-judgment, table mislabels) | author: text fixes or waiver | controller (dispatch), author (acceptance) |
 | 1g | approval | — | approve, or hold with the findings | author |
 
 ### 2. Before implementation can start (A1, second half; A2)
