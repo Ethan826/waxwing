@@ -1,5 +1,34 @@
 # Bootstrap evidence and current checkpoint
 
+## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
+
+The author authorized only this repair. On branch fx033-resultc-tail
+(from origin/main a82d064), ResultClauses `occurs` gains a third
+disjunct: a `foldHoles` over the result handler with its inference
+row's tail dropped. A function's result clause row now takes R's tail
+whenever that variable occurs in the result type outside R's own tail.
+The comment above `ownClauses` states H′ as an argued candidate and
+cites docs/plans/r0-amin-resultc-tail.md (on r0-t2-d1). RC′, O-SUB and
+effect soundness are not established. Blocking nine shapes is not
+soundness.
+
+Test first: test/fx033-result-tail.test.mjs, programs in
+test/fx033-probes/ as `.wxw.txt`. On the unrepaired build 11 of 12
+tests failed, because all nine channel programs and c1 and x1z compiled
+(.build/evidence/fx033-test-before.log). After the change all 12 pass.
+CLI runs on the repaired build refuse the nine with the pinned E_EFFECT
+text. The controls k2f, x1d and x1n still print `1`, `99` and `7`. The
+ten refused controls keep their exact text. c1 and x1z are now refused.
+That is a temporary conservative precision limitation the author
+accepted, not final policy. Regression row `fx033-result-type` was
+proved together with the three `fx008-result-*` rows, and the
+`fx008-result-own-row` needle was updated. BACKLOG FX033 has been added
+with the dated history. a-min's E4′ text lives on r0-t2-d1 and was not
+edited.
+`npm run verify` exited 0 (.build/evidence/fx033-verify.log in the
+worktree): 2378 of 2378 parallel tests and 59 of 59 serial tests
+passed, and 177 regression proofs ran, including the four rows above.
+
 ## README aligned with the approved charter (2026-10-24)
 
 Charter and contributor guidance are committed locally on `main` as
