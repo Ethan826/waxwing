@@ -17,6 +17,101 @@ higher-kinded types and generic method dictionaries need their own
 scoped milestones; they are listed in part C so they neither inflate
 this epic nor drop off the roadmap.
 
+## Critical path (2026-10-25)
+
+Written at the author's request (priority: finish the row-checker
+integration and its effect guarantees; arithmetic parked). It answers
+four questions from the rows below; each step names its obligation,
+the evidence that exists, the next action and the owner. Labels:
+*observed* (run), *read* (code or records), *reasoned* (argued only).
+
+**H′ is not RC′.** The FX033 repair (rule H′, on main since 6b4be77 and
+on this branch since 094adbf) refuses the nine demonstrated programs.
+It discharges neither the ResultC parametricity step (P4) nor the
+substitution property (O-SUB) nor A1 of RC′'s argument
+(r0-amin-resultc-tail.md §6, Review 2). Those stay open below.
+
+### 1. Before a-min's statements can be approved (A1, first half)
+
+A1 closes its first half when a further review finds no S1/S2 and the
+author approves (row A1). Revision 3.5 has had no review.
+
+| Step | Obligation | Existing evidence | Next action | Owner |
+|---|---|---|---|---|
+| 1a | §18.85 item 7's controller checks | closed-R control and N4 under Definition 4.2: rerun 2026-10-25, `node run.mjs` and `node k1.mjs` in research/amin-mark-oracle, exit 0, "no disagreement"; closed-R honest accepted, near miss refused; N4 honest refused (observed) | record the reruns in statements §12 (its "not yet rerun" note is stale) | controller |
+| 1b | U8 recorded as implemented | §11 U8 says "not enforced"; the trusted solved-form check landed later (7476097, pin 9f547d7; §18.86-§18.87) (read) | update §11 U8 and the places citing it (§2, §5, §13a) | controller |
+| 1c | E4′ / decision 3 (ResultC tail) stated as H′ with RC′ open | E4′ and §14 decision 3 updated (d99ec45); Review 2's channel search; nine shapes refused by the compiler (observed) | author rules whether the statements may be approved with RC′ (P4, O-SUB, A1) carried as a labelled open obligation, or must wait for an argument | author |
+| 1d | O6, records with several tails | defined in 3.4, "proposed, no case" (read) | one separating case, or a recorded reason none is constructible yet | controller |
+| 1e | carried obligations listed once | O5, O7 (correspondence, today stricter); U2-U5; E10 settled by reading only; a ResultC's own tail unexamined; [FX008-5] argued, not proved (read) | one consolidated table in the statements, each labelled "carried, not blocking approval" or "blocking" | controller |
+| 1f | targeted review of the revision carrying 1a-1e | none since 3.5 | one independent review; criterion: no S1/S2 | controller (dispatch), author (acceptance) |
+| 1g | approval | — | approve, or hold with the findings | author |
+
+### 2. Before implementation can start (A1, second half; A2)
+
+| Step | Obligation | Existing evidence | Next action | Owner |
+|---|---|---|---|---|
+| 2a | statements approved | path 1 | — | author |
+| 2b | implementation authorized, scoped to A1's representation | §18.74 onward: statements only | an explicit authorization with its tranche | author |
+| 2c | A2's validator algorithm chosen with its published source, and the interim `EffectsUnchecked` policy (F14) | none beyond the design (row A2) | a short decision note: algorithm, source, fidelity | controller (note), author (choice) |
+| 2d | R031's two option-c defects fixed within the a-min work | pinned (BACKLOG R031) | part of the first implementation tranche | controller |
+
+### 3. What closes G-D1 and permits Task 4.6
+
+G-D1 (row A4): the policy is settled (r0-erased-rows §7.1 item 4); the
+representation is open as G-effect-rows (§18.72 item 3). Evidence that
+closes it: the approved a-min statements as the representation, then a
+closure record citing Task 0.3's specification, the policy ruling and
+the approval, reviewed and accepted by the author. Approval alone does
+not close it; the record does.
+
+Task 4.6 (row A12) needs every part-A row: A1 implemented, with each
+distinguishing test passing and a restored-defect row per invariant;
+A2; A3 at post-Strip with rows; A4; A5 (G-erased argument and ruling);
+A6 (acceptance preservation: 256 of 751 accepted programs blocked
+today); A7 (G-ValidR); A8 (switch timing); A9 (diagnostics); A10 (R023,
+R024); A11 (cost budget). A13 and A14 are done. Most of these are
+independent of a-min and can run in parallel once authorized; A5, A6
+and A7 are the largest (read).
+
+### 4. Which effect-contract decisions block these steps
+
+The five decisions (research/effect-kinds, decision-memo.md §7:
+`pure` and crash, `Crash` catchable, the observation boundary, external
+root classes, extension rule) block **none** of paths 1-3 (reasoned):
+a-min's guarantees are effect safety and abort safety over today's
+labels, marks and rows (statements §14), and none of the five changes
+a label, row form or mark the validator reads. They proceed
+separately. Couplings to watch: a crash label under decision 1 would
+add obligations to A2 after the switch; a catchable `Crash` (decision
+2) would meet the Console frame accounting ruled in §18.86 only if it
+were handled like an effect. Division's typing waits on decision 1;
+I001's root bindings wait on decision 4.
+
+### Next tranche (proposed, bounded)
+
+**a-min revision 3.6 and its approval review** (path 1).
+
+1. Revision 3.6, docs only: steps 1a, 1b, 1d, 1e; E4′ already
+   updated. Controller, inline.
+2. Step 1f: one independent read-only Opus review of 3.6, returning
+   findings as text.
+3. A one-page decision packet for steps 1c and 1g.
+
+Cost: about 0.2-0.3M tokens of controller work and one review agent of
+about 0.15-0.25M tokens; 2-3 hours wall clock. No full verify (docs
+and oracle scripts that run in seconds; any O6 probe uses the existing
+build).
+
+Acceptance: §12 carries the reruns with commands and outputs; §11 U8
+says implemented, with commits; O6 has a case or a recorded reason; one
+table lists every carried obligation with its label and whether it
+blocks approval; the review reports S1/S2/S3 findings with evidence;
+the packet asks the author exactly 1c and 1g. If the review finds an
+S1, the tranche ends with the findings: no automatic revision 3.7.
+
+Not in this tranche: implementation, G-D1's closure record (after
+approval), A2-A11, the five effect decisions, proofs.
+
 ## Terms
 
 **Blocks:** S soundness (a wrong program could be accepted or
@@ -73,10 +168,10 @@ G0 is the proved checker (guarantee 2).
 
 | # | Item | Blocks | Status | Owner | Depends on | Current evidence | Closes when |
 |---|---|---|---|---|---|---|---|
-| A1 | G-effect-rows: the a-min representation | S | in progress: review 1 not ready (F1-F17), rulings (§18.76), revision 2; review 2 not ready (N1-N3); revision 3 (§18.77, §18.78); review 3 not ready, fixes local; revision 3.2 (§18.80); targeted re-review not ready (F1 S1: E1 omits C ≡ C and R's marks without an owned C; F2 S1: ResultC still a package row; F3, F5 S2) | author (acceptance), controller | review 2 | docs/plans/r0-effect-rows-audit.md; r0-amin-statements.md and its §8 | statements revised and a further review finds no S1/S2; the author approves; implemented with every distinguishing test passing and a restored-defect row per invariant; R031's pins flip to today's form |
+| A1 | G-effect-rows: the a-min representation | S | in progress: review 1 not ready (F1-F17), rulings (§18.76), revision 2; review 2 not ready (N1-N3); revision 3 (§18.77, §18.78); review 3 not ready, fixes local; revision 3.2 (§18.80); targeted re-review not ready (F1 S1: E1 omits C ≡ C and R's marks without an owned C; F2 S1: ResultC still a package row; F3, F5 S2); revisions 3.3-3.5 (§18.82-§18.85: K1 adopted, rule J); 3.5 not yet reviewed; E4′ updated for H′ (2026-10-25); see Critical path, path 1 | author (acceptance), controller | review 2 | docs/plans/r0-effect-rows-audit.md; r0-amin-statements.md and its §8 | statements revised and a further review finds no S1/S2; the author approves; implemented with every distinguishing test passing and a restored-defect row per invariant; R031's pins flip to today's form |
 | A2 | Trusted effect validator (a-min D6) with `EffectsUnchecked` | S (guarantee 4: effects checked before erasure; §7.1 item 2) | open | author (algorithm, interim F14), controller | A1 | none beyond the design | algorithm chosen with its source; obligations complete for today's effect checks (one forged-witness fixture per refusal kind, a mutation test per obligation kind); mark evidence judged; obligations inside the recorded problem; one minting site |
 | A3 | Task 7.1's full equality, rows included, at post-Strip; or a ruling on Task 7.2's bridge | S (guarantee 3) | evidenced effect-erased only: T2 exact 1,985 and by site 45 of 2,030 Solved, pinned | controller | A1 | test/r0-elab-corpus.serial.test.mjs | T2 at post-Strip with rows, pinned, every RT8/window move explained, old pins kept as a cohort |
-| A4 | G-D1 closed | S | open | author | A1 | Task 0.3 specification, four review rounds; policy settled (r0-erased-rows §7.1 item 4); representation open | a closure record with its review |
+| A4 | G-D1 closed | S | open (closing evidence stated in Critical path, path 3) | author | A1 | Task 0.3 specification, four review rounds; policy settled (r0-erased-rows §7.1 item 4); representation open | a closure record with its review |
 | A5 | G-erased: criterion argument and policy | S | open (marker `ErasedRow` in shadow) | author (policy), controller (argument) | none | census `ErasedRow`: 91 declarations, 72 programs | argument with one fixture per effect operation and handler form; adversarial review; ruling |
 | A6 | Acceptance preservation | C | open: 256 of 751 accepted programs blocked by at least one category (250 without `ErasedRow`); by family .wxw 76, fixtures 29, inline test data 151 (census.json, after the C001 additions; earlier cohorts' figures are not comparable) | author | A5, A7, B4 | test/fixtures/r0/census.json | exemptions bring unapproved blocks to zero, or the author approves the narrowing with its list |
 | A7 | G-ValidR policy and checks | C (generic `show`, `==`), S (VR rules) | open; requirement atoms Unresolved | author, controller | none | r0-validr-draft.md; probe tests | rulings; VR-sub, VR-agree, VR-CX tests; T-R0b §5.4 edit reviewed |
