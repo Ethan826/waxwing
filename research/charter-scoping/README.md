@@ -33,9 +33,17 @@ a design decision or authorizes work.
 
 ## Results
 
-25 frozen probes: 19 confirmed, 3 refuted (R3b, C2a, C2f), 5 unknowns
-settled. Amendments C2a-A1, C2a-A2 and C2f-A1 were added after the C2a
-refusal, R9 after the first run; each was predicted before it ran.
+30 programs, in two cohorts (counted from the files and the frozen
+table, corrected 2026-10-25; the probe agent's summary of 25 frozen,
+19 + 3 + 5, and the first commit message's 29 programs were wrong):
+- 26 frozen before any run (R1-R8c, C2a-C2g): 18 confirmed, 3 refuted
+  (R3b, C2a, C2f), 5 unknowns settled (R1b, R2, R7b, R7c, R8b).
+- 4 added after the first run, each predicted before it ran: C2a-A1
+  confirmed, C2a-A2 unknown settled, C2f-A1 headline confirmed with
+  misleading notes (F2), R9 confirmed.
+
+Over all 30 rows: 20 confirmed, 6 unknowns settled, 3 refuted, 1
+headline confirmed.
 
 | Probe | Observed | Grade |
 |---|---|---|
@@ -96,7 +104,9 @@ match the table.
 | What leaks into the consumer's row | nothing for captured providers; field rows for service records, by design | C2b-C2e, C2g | none |
 | Fake replaces provider by injection | works for stateless fakes | C2b, C2c, C2d | FX003 |
 | Missing provider dependency diagnosed | headline right with open spelling; notes blame wrong code | C2f, C2f-A1 | F2, F1 |
-| Assembly named or selected automatically | not expressible; hand-nested `with` | structural | provider design, M001, C001/K001 |
+| Assembly named in one file | works: a function can build and return providers (`fn assemble` in C2b) | C2b | none |
+| Assembly packaged across modules | not expressible: no modules | structural | M001 |
+| Providers selected automatically | not expressible; selection machinery undecided (charter) | structural | provider design, C001/K001 if providers become dictionaries |
 
 ## Findings for triage (not yet filed)
 

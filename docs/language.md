@@ -843,11 +843,14 @@ signature's first `...r`; through a declared type, `fn(h: Holder(...r))`
 with `type Holder(...r) = Holder({ x: Int, ...r })`, it is `r may already
 have field x` at that `...r` (r001-body-types). Writing the label in the
 signature, `p: { a: Int, ...r }`, makes the annotation valid. Lacks
-constraints cannot be written yet (BACKLOG R005). Two open rows that meet
-share one remainder, so what one use fixes the other sees. Mismatches use
-the existing texts: `Expected { a: Int, b: Bool }, found { a: Int }` for
-shapes and `Expected Int, found Text` for fields. Fields cannot be
-polymorphic (R006).
+constraints can also be written with `where r lacks { … }` (R005 Tranche
+A, below). Two open rows that meet share one remainder, so what one use
+fixes the other sees. Mismatches use the existing texts:
+`Expected { a: Int, b: Bool }, found { a: Int }` for shapes. A field
+whose type is wrong at a call is also reported as a shape, as in
+`Expected { email: Text, ..._ }, found { email: Int }` (observed
+2026-10-24; whether the text or this description should change is
+BACKLOG E022). Fields cannot be polymorphic (R006).
 
 Comparison and printing (r001-compare, r001-go). `== != < <= > >=` compare
 records field by field in sorted label order, the first difference

@@ -99,8 +99,10 @@ imports; imports shadow global functions. Resolution does not try an outer
 binding when the inner one has an incompatible type.
 
 The [services example](examples/services.wxw) combines a database, clock, and
-logger, with fakes installed by the tests. Those handlers return fixed values.
-Connecting them to external services needs planned typed FFI bindings.
+logger, with fakes installed by the tests. Handlers compute from their
+arguments and from values captured when they are built; reaching services
+outside the program (network, files, the host's clock) needs the planned
+typed FFI bindings.
 
 ## Language and platform direction
 
@@ -186,10 +188,12 @@ converting it to a different record type.
 That gives a function a narrow requirement while letting callers supply wider
 records. It does not discard fields or cast a value to a smaller type. An update
 cannot add fields or change their types. Extension uses a spread such as
-`{ ...p, reviewed: true }`, with `where r lacks { reviewed }` when `p`
-has type `{ ...r }`. Removal uses `p without { name, age }`; record patterns
-can bind the remainder with `{ name, ...rest }`. These operations and
-written lacks constraints are implemented. Overlapping fields are errors.
+`{ ...p, reviewed: true }`. When `p` has type `{ ...r }`, `r` must lack
+`reviewed`: writing `reviewed` beside `...r` in the result type says so,
+or the signature can state `where r lacks { reviewed }`. Removal uses
+`p without { name, age }`; record patterns can bind the remainder with
+`{ name, ...rest }`. These operations and written lacks constraints are
+implemented. Overlapping fields are errors.
 
 Merging several open rows is under active foundation work. The current
 implementation is incomplete; the [acceptance programs][composition-programs]

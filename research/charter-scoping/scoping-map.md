@@ -1,4 +1,15 @@
-# Charter scoping map: type-system milestones (2026-10-24)
+# Charter scoping map: type-system milestones (2026-10-24, revised 2026-10-25)
+
+Revision 2 (2026-10-25), at the author's direction, answers Codex's review
+findings S1-S7 (worktree integrate,
+docs/plans/2026-10-25-claude-checkpoint-review.md): named in-file assembly is
+separated from modules and automatic selection (S1); handler computation is
+separated from missing FFI (S2); dependencies are marked hard, encoding- or
+scope-specific, or coordination (S3); FX006 semantics design is separated from
+its implementation (S4); probe counts are reconciled in the probe README (S5);
+K001's established mechanism is separated from its unchecked adaptation (S6);
+R0's status follows the latest rulings (S7). The map remains a planning
+proposal: it schedules and authorizes nothing.
 
 Planning item 1, approved by the author 2026-10-24. An independent read-only
 agent wrote this map from the charter, the adoption record, the probe results in
@@ -126,6 +137,11 @@ Branch notes:
    (row sorts).
 7. **State: planned, no design document.** BACKLOG:29; register row 46 "source
    correspondence still to write".
+8. **Established versus adapted (S6).** Established: Jones's kind-preserving
+   unification (FPCA 1993 Thm 1) and Haskell 2010 kind inference, for one kind
+   of rows. Not established: that Thm 1's hypotheses hold with two row sorts and
+   the shipped row-sort default; that needs the K001 correspondence note (O59's
+   next action). "Standard rules suffice" applies to the first part only.
 
 ## C001: explicit instances and dictionaries
 
@@ -191,9 +207,15 @@ Branch notes:
    - R005B gates (BACKLOG:35): L1, termination for cyclic predicate graphs
      (blocks B3); L2, solving-time diagnostics (needs a stable-location
      proposal). B2 onward not authorized.
-   - R0 (dossier §18.69-18.71; docs/plans/2026-10-22-r0-implementation-plan.md
-     §3): G-switch decided as A now (shadow), E as the destination; live switch,
-     live refutation, Phase 6 and D1 implementation unauthorized. G3 split: A,
+   - R0 (dossier §18.69-§18.90, of which §18.72-§18.90 are on branch r0-t2-d1
+     only; docs/plans/2026-10-22-r0-implementation-plan.md §3): G-switch decided
+     as A now (shadow), E as the destination. Later rulings: Tasks 5.2 and 7.1
+     (D1's shadow work) ratified retrospectively as shadow-only, and option c
+     only as a temporary experimental fallback (§18.73); a-min statements under
+     adversarial review (§18.74 onward); K1 adopted as a conservative validator
+     restriction (§18.85); U8 repaired (§18.86-§18.87); FX033 repair authorized
+     2026-10-25. Still unauthorized: live switch, live refutation, a-min
+     implementation; Task 4.6 blocked and G-D1 open. G3 split: A,
      forcedness only (current); B, a restricted C8-J selection after interfaces
      stabilize (D3). Guards deferred (D4). IF4 scheme language L0, L1 or L2 open
      (extension §10 D2).
@@ -208,17 +230,22 @@ Branch notes:
    accepted on the main build), though BACKLOG:33 says "not merged". R005
    Tranche A: done (fedb8ff). R005B: QT-strict + Sym + H adopted 2026-10-19;
    only B1 authorized (BACKLOG:35). R0 pipeline: plan 2026-10-22; first shadow
-   tranche authorized in dossier §18.71 (lines 5568-5600); work on unmerged
-   branches `r0-shadow-tranche-1` (8752aa5, 77 commits ahead of main) and
-   `r0-t2-*` (tips only examined).
+   tranche authorized in §18.71; the second tranche ratified as shadow-only in
+   §18.73; later shadow repairs (U8) implemented on r0-t2-d1; see the open
+   decisions above and BACKLOG row R0 (added 2026-10-25). Work sits on unmerged
+   branches `r0-shadow-tranche-1` and `r0-t2-*`. Do not use this map to reset
+   any authorization: the dossier's latest explicit ruling governs.
 
 ## M001: modules and abstract types
 
 1. **Programmer problem.** No modules, imports or exports: "Every program is one
-   file" (docs/plans/2026-10-08-polymorphism-design.md lines 27-28). Assembly
-   cannot be named or selected; it is hand-nested `with` (probe README).
-   Invariant-sensitive collections cannot hide their representation (README,
-   "Planned capabilities").
+   file" (docs/plans/2026-10-08-polymorphism-design.md lines 27-28). Three
+   things are distinct here. Named assembly inside one file already works: C2b
+   defines and calls `fn assemble`, which builds providers and returns them.
+   Packaging that assembly across modules needs M001. Automatic provider
+   selection is separate machinery the charter leaves undecided; M001 does not
+   supply it. Invariant-sensitive collections cannot hide their representation
+   (README, "Planned capabilities").
 2. **Charter.** C2: lower-level components cannot name the higher-level ones
    that assemble them (lines 78-80). C4: assembly chooses providers. C5: imports
    must not silently install providers (modules direction line 35, "imports with
@@ -248,9 +275,11 @@ Branch notes:
 
 ## I001: foreign-function interface (JavaScript first, then Go)
 
-1. **Programmer problem.** Handlers can only return fixed values: "Connecting
-   them to external services needs planned typed FFI bindings" (README,
-   "Dependencies as effects"). Foreign values are not validated
+1. **Programmer problem.** A program cannot reach services outside itself
+   (network, files, host clock): there is no FFI (README, "Dependencies as
+   effects", corrected 2026-10-25). Handlers themselves are not limited to fixed
+   values; they compute from arguments and captured values
+   (examples/services.wxw, C2b, C2g). Foreign values are not validated
    (docs/language.md lines 178-182). No probe touches FFI.
 2. **Charter.** C4: a foreign wrapper fulfils a platform contract; distinguish
    targets from host capabilities (lines 110-115). C7: a foreign parser that can
@@ -303,6 +332,12 @@ Branch notes:
    (adoption line 64) is adjacent. No probe rows.
 7. **State: planned, blocked on that design note.** BACKLOG:117; ADR 010 lines
    137-139, 193-195.
+8. **Semantics early, implementation late (S4).** Continuation semantics (resume
+   multiplicity, `defer` and cleanup under resumption, the foreign-frame
+   boundary) constrains control flow, cleanup and I001's boundary, so its
+   statement and design can run early as a coordinated track even though the
+   implementation (CPS confinement) comes last. Neither is authorized by this
+   map.
 
 ## SCH001: schemas and boundary parsing
 
@@ -323,26 +358,41 @@ Branch notes:
    Wire formats: A, derived from ADTs/records; B, explicitly authored (lines
    111-112). Errors: A, accumulate; B, fail fast (line 117). The SCH001
    decision-note pilot is deferred and not authorized (adoption lines 91-96).
-5. **Dependencies.** C001, K001, M001, I001, R001 (schema direction lines
-   149-152; BACKLOG:63).
+5. **Dependencies** (schema direction lines 149-152 and BACKLOG:63 list C001,
+   K001, M001, I001, R001; revision 2 separates them, reasoned from the open
+   representation decision). Hard: R001's records and today's ADTs, both
+   shipped, suffice for a first-order schema-AST library (alternative A).
+   Encoding-specific: K001 only if a Schemable/tagless-final encoding (B) is
+   chosen; C001 for dictionary-based codec selection. Scope-specific: I001 for
+   host ingress adapters; M001 for opaque domain types that hide their
+   constructors. Coordination: none required to start statement work.
 6. **Adoption examples.** "A parser builds a domain value from JSON" (adoption
    line 62); neither probed example. No probe rows.
 7. **State: design needed, no implementation authorized.** BACKLOG:63.
 
 ## Sequencing (proposal, not a decision)
 
+Dependency kinds (revision 2): **hard** means the milestone cannot be delivered
+without it; **encoding** means needed only if a particular open alternative is
+chosen; **scope** means needed only for part of the milestone; **coordination**
+means the designs should agree but neither blocks the other.
+
 | Milestone | Depends on (in this list) | Unblocks | Suggested order and reason |
 |---|---|---|---|
-| R005B / R0 | none | INF001 scheme claims; C001 parameterized-data acceptance; SCH001 | 1. Already authorized and in progress (§18.71); INF001's principality wording waits on IF4/O24. |
-| C001 (explicit core) | K001 for HKTs only; M001 for production collections only | K001 interfaces; SCH001; libraries | 2, in parallel with R0. Designed, and independent of record-solver internals (handoff line 101). |
-| K001 | none | C001 Functor/Monad; SCH001; FX006 alternatives | 3. Standard rules suffice (register, "Proof priorities"); C001 HKT work needs it. |
-| M001 | C001, R001 (coordinate) | INF001 B1; C001 collections; SCH001; the C2 assembly story | 4. Several milestones need it, and only direction exists. |
-| INF001 | R005B/R0, M001, C001 (coordinate) | probe gaps R5, R7a, R9 and the C2 workaround | 5 for implementation. Design could start earlier: the backlog says "design next", and it addresses the largest share of probe gaps (inferred). |
-| I001 | none (J001, PKG001 outside the list) | SCH001 ingress; FX006 constraint | Parallel track; backend-led, not type-system-led (ADR 015). |
-| SCH001 | C001, K001, M001, I001, R001 | none in this list | 6. Prerequisites first; the pilot is deferred. |
-| FX006 | I001; CF001/FX002/FX003 (outside the list) | user schedulers and async | Last. Blocked on the multiplicity design note and the CF001 §10 list. |
+| R005B / R0 | none | INF001 scheme claims (hard for its record principality wording); C001 parameterized-data acceptance under R0 (scope) | 1. In progress within its gates (BACKLOG R0, latest rulings in the dossier). |
+| FX033 repair | none | soundness of shipped `defer`/ResultC programs | Now: authorized 2026-10-25, narrow. |
+| C001 (explicit core) | K001 (encoding: HKT interfaces only); M001 (scope: production invariant collections); R0 (coordination; "a practical preference, not a prerequisite") | K001 interfaces; SCH001 (encoding); libraries | 2, in parallel with R0. Designed, independent of record-solver internals (handoff line 101). |
+| K001 | none | C001 Functor/Monad (encoding); SCH001 (encoding); FX006 monad alternative (encoding) | 3. Established mechanism for one row kind; the two-row-sort adaptation needs its correspondence note first. |
+| M001 | C001, R001 (coordination) | INF001 B1 (scope); C001 collections (scope); SCH001 opaque types (scope); cross-module assembly | 4. Several milestones need it for part of their scope; only direction exists. In-file assembly does not need it. |
+| INF001 | R005B/R0 (hard for record principality claims); M001 (scope: public inferred interfaces); C001 (coordination) | probe gaps R5, R7a, R9 and the C2 workaround | Statement and design can start now; implementation after R0's scheme language settles (inferred). |
+| FX006 semantics | I001 (coordination: foreign frames); CF001 (coordination) | FX006 implementation; I001 boundary rules | Early, as a statement/design track (S4). |
+| I001 | none (J001, PKG001 outside the list) | SCH001 ingress (scope); FX006 boundary (coordination) | Parallel track; backend-led (ADR 015). |
+| SCH001 | R001 (hard, shipped); K001, C001 (encoding); I001, M001 (scope) | none in this list | First-order schema-AST statement work can start once its representation is chosen; the decision-note pilot stays deferred. |
+| FX006 implementation | FX006 semantics (hard); CF001 §10, FX002, FX003 (outside the list) | user schedulers and async | Last. |
 
 ## Where F1-F4 belong
+
+Filed 2026-10-25: F1 FX034, F2 E021, F3 E022, F4 DOC002.
 
 | Finding | Placement | Basis |
 |---|---|---|
@@ -401,3 +451,18 @@ Branch notes:
     `design/c001-explicit-evidence`, which does not exist locally; only
     `origin/checkpoint/design-c001-explicit-evidence` does, with identical C001
     files.
+
+## Filed and corrected (2026-10-25)
+
+Findings filed in BACKLOG.md on this branch: F1 as FX034, F2 as E021, F3
+as E022, F4 as DOC002 (README fixed). Filing authorizes no compiler fix
+and settles no cause.
+
+Current summaries corrected, dated history kept: BACKLOG header note and
+rows R001, C001, INF001 (prerequisite met), R008 (alias ruling pointer);
+a new BACKLOG row R0 with its authorization status from the latest
+rulings (item 4 above); docs/language.md's written-lacks and
+field-mismatch sentences (items 5 and 6; the latter points at E022);
+README's lacks wording (F4) and its handler sentence (S2); the probe
+README's counts (S5) and its assembly row (S1). Items 9-12 above are
+left as recorded for the author.
