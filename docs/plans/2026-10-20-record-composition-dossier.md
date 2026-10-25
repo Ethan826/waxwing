@@ -6250,3 +6250,21 @@ representation stays acceptable with the named obligations open;
 approval waits for the author; no implementation starts on this
 packet. Status reports drop percentage estimates: the records give
 gates and dependencies, not a defensible percentage.
+
+### 18.95 a-min approved as a representation; tranche 1 proposed (2026-10-25)
+
+The author approved revision 3.6 with the §R7 corrections and §R7b at
+535b780 as a representation: E4′ consistently forces the recorded
+fresh tail to R's tail and checks; it certifies the forced typing and
+claims no correspondence with the live compiler's H′ typing; the
+stand-in evidence and acceptance losses are qualified. The author's
+review conditions are closed. O-SUB, A1 and the other named
+obligations stay open; approval establishes no soundness claim.
+Implementation, A2's algorithm choice, G-D1's closure and Task 4.6
+stay unauthorized. The next unit, the first implementation tranche's
+document, is docs/plans/2026-10-25-amin-tranche-1-proposal.md:
+generation records the effect problem (types, `instances`,
+`annotations`, E1-E12, FX032 `Unsupported`), rule 1's
+`EffectsUnchecked`, R031's fixes, a bounded coverage test and a census
+rerun; shadow only; no validator; `Outside` markers kept. Awaiting the
+author's authorization.

@@ -1,8 +1,11 @@
 # a-min: statements, revision 3.6 with the §R7 corrections and §R7b (G-effect-rows, 2026-10-25)
 
-Status: **statements only; implementation unauthorized; Task 4.6 and
-G-D1 blocked.** Revision 3.6 (§0e) records the FX033 repair (rule H′ as
-E4′'s ResultC tail; RC′ still open), U8 as implemented, the oracle
+Status: **approved as a representation by the author at 535b780
+(2026-10-25; §R7b, dossier §18.95); named obligations open (O-SUB, A1
+and §0e's carried table), no soundness claim; implementation, A2's
+algorithm, G-D1's closure and Task 4.6 unauthorized.** Revision 3.6
+(§0e) records the FX033 repair (rule H′ as E4′'s ResultC tail; RC′
+still open), U8 as implemented, the oracle
 reruns, O6's standing, and one table of carried obligations, for one
 approval review (closure checklist, critical path 1). Revision 3.5
 applies the author's rulings on §R6 (dossier §18.85; §0d, §R6a): K1

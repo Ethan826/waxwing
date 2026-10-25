@@ -26,6 +26,11 @@ specify forcing, with blanket refusal labelled a stricter, unruled,
 unmeasured alternative. Percent estimates dropped from reporting.
 Width 0 over 80. Approval still pending; no implementation.
 
+Approved as a representation by the author at 535b780 (dossier
+§18.95); recorded in the statements' status, checklist 1g, 2a and A1.
+Tranche 1 proposal written (docs/plans/2026-10-25-amin-tranche-1-
+proposal.md), awaiting authorization. Docs only.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

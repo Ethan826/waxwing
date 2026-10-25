@@ -14,21 +14,20 @@ gates and dependencies, not percentages: the records do not support a
 defensible one (author, 2026-10-25). Priority: R0 and its effect
 guarantees; arithmetic is parked.
 
-**Where milestone 1 stands.** a-min statements, "revision 3.6 with the
-§R7 corrections" (docs/plans/r0-amin-statements.md at bc665cd): one
-approval review (§R7: no S1, four S2), all four corrected in the fix
-pass (§R7a, cade64f), and the two consistency repairs the author asked
-for after inspecting it (bc665cd), and §R7b: E4′'s restriction forces
-R's tail and checks, rather than refusing every recorded fresh tail
-(which would also lose r1, r2, r9). **Awaiting the author's approval**,
-which would cover the representation with the named obligations open
-and authorize neither implementation nor soundness claims. Ruled
-2026-10-25: "always R's tail" as a provisional shadow-validator
-restriction (removes reliance on P4 only; O-SUB and A1 remain; losses
-aroundBoth, k2f visible under A6); the live compiler keeps H′.
-After approval: propose the first implementation tranche toward
-milestone 2, in plain terms; it needs its own authorization, as do
-A2's algorithm and source, G-D1's closure record and Task 4.6.
+**Where milestone 1 stands.** The a-min statements (revision 3.6 with
+the §R7 corrections and §R7b, docs/plans/r0-amin-statements.md) were
+**approved as a representation at 535b780** (2026-10-25, dossier
+§18.95). Named obligations stay open (O-SUB, A1 of RC′, the carried
+table); no soundness claim. E4′'s provisional "always R's tail" forces
+R's tail and checks (shadow validator only); the live compiler keeps H′.
+Milestone 1's checking half needs the validator (A2).
+
+**Next: authorize or amend tranche 1** toward milestone 2
+(docs/plans/2026-10-25-amin-tranche-1-proposal.md): generation records
+the effect problem, rule 1's `EffectsUnchecked`, R031's fixes, a
+coverage test, a census rerun; shadow only; no validator. Also asked:
+whether to draft A2's decision note alongside. A2's algorithm, G-D1's
+closure record and Task 4.6 stay unauthorized.
 The critical path and part A/B status: docs/plans/r0-closure-checklist.md.
 
 **Landed and pushed.** origin/main = 6b4be77: FX033 repair (H′),
