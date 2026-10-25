@@ -130,8 +130,20 @@ export const fx008MarkRows = [
     name: 'fx008-result-own-row', file: 'src/Features/Check/ResultClauses.purs',
     needle: 'occurs meta = foldHoles (found meta) false (TFun TUnit row ' +
       'TUnit)\n'
-      + '    || Array.any',
-    replacement: 'occurs meta = Array.any',
+      + '    || Array.any (foldHoles (found meta) false) parameters\n'
+      + '    || foldHoles (found meta) false (untailed result)\n',
+    replacement: 'occurs meta = Array.any (foldHoles (found meta) false) '
+      + 'parameters\n'
+      + '    || foldHoles (found meta) false (untailed result)\n',
     probe: 'fx008-result-own-row', message: /result own row: accepted/
+  },
+  {
+    // FX033, rule H′: the tail may also occur in the result type outside
+    // R's own tail (x1: the handled label's argument). Without this
+    // disjunct x1 is accepted and its run ends a `defer` in a typed abort.
+    name: 'fx033-result-type', file: 'src/Features/Check/ResultClauses.purs',
+    needle: '    || foldHoles (found meta) false (untailed result)\n',
+    replacement: '',
+    probe: 'fx033-result-type', message: /result type: accepted/
   }
 ];

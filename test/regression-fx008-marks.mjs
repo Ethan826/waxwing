@@ -9,9 +9,14 @@ import {
     rigidVariable
 } from './fx008-defer-programs.mjs';
 import { compileWithin } from './regression-fx008.mjs';
+import { readFileSync } from 'node:fs';
 
 const timeoutMs = 20_000;
 const deferText = /^defer must not fail, but it performs /;
+const deferLog =
+  /^defer must not fail, but it performs Log, whose handler may fail$/;
+const fx033Probe = name =>
+  readFileSync(`test/fx033-probes/${name}.wxw.txt`, 'utf8');
 
 const fail = message => {
   console.error(message);
@@ -60,5 +65,6 @@ export const markProbes = {
   'fx008-rigid-n': rejects(rigidVariable, 'rigid', deferText),
   'fx008-result-clauses': accepts(aroundBoth, 'result clauses', '101\n9\n'),
   'fx008-result-fresh': accepts(r1, 'result fresh', ''),
-  'fx008-result-own-row': rejects(ownRow, 'result own row', deferText)
+  'fx008-result-own-row': rejects(ownRow, 'result own row', deferText),
+  'fx033-result-type': rejects(fx033Probe('x1'), 'result type', deferLog)
 };
