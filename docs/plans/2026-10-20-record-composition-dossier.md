@@ -6144,3 +6144,23 @@ The author's rulings, ratified 2026-10-24. No merge, no push.
    x1c as expected). Filed as BACKLOG FX033 with the author's choice of
    E4′ rule as its next action. The draft's bounded adversarial review
    (§18.87 item 3) has not started.
+
+### 18.89 Orientation accepted; ResultC review resumed, FX033 first (2026-10-24)
+
+The author accepted the charter orientation and resumed the bounded
+ResultC adversarial review (§18.87 item 3), prioritizing FX033. H′ (a
+fresh ResultC tail only when the variable occurs nowhere else in the
+signature, handled-effect arguments and nested types included;
+otherwise R's tail, the existing conservative path; `k2f` kept if that
+precision is justified) is the preferred candidate for review, not an
+adopted rule or established theorem. The review reproduces `x1` and its
+controls against an identified build, keeping observation apart from
+explanation; examines the exact occurrence criterion and every source
+of caller-supplied values; and challenges the argument's reliance on
+O-SUB. It reports separately whether H′ blocks the demonstrated
+failure, whether another path defeats it, which accepted programs it
+would reject, and what remains unestablished; blocking one reproducer
+does not establish soundness. Then a narrow, test-first FX033 repair
+proposal, whose implementation needs separate authorization. a-min
+implementation, Task 4.6 and G-D1 stay blocked; division and the five
+effect-contract decisions stay open; nothing merged or pushed.
