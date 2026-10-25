@@ -39,5 +39,11 @@ Two qualifications from the author (2026-10-24) apply to every file:
   the rules. Each definition of purity is attributed to its author and
   source.
 
+The author's ruling on the decision memo (2026-10-24, dossier §18.86 on
+branch r0-t2-d1): preserved, **not adopted**. `pure`, `Crash` and the
+classification of external roots are unsettled. Only source research
+that does not depend on those choices continues; "no published
+precedent found" is a search result, not grounds to invent a rule.
+
 Not done: no other language toolchain was installed and no other
 language's program was run. The rest of E01-E16 waits for that.
