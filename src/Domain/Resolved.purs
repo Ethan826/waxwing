@@ -6,6 +6,7 @@ module Domain.Resolved
 
 import Data.Map (Map)
 import Data.Maybe (Maybe)
+import Domain.Arithmetic (Arithmetic)
 import Domain.Resolved.Core
 import Domain.Syntax (FieldName, Operator, Sort, Span)
 import Domain.Syntax as Syntax
@@ -23,7 +24,7 @@ data Expr
   | CtorRef Span CtorId
   | Call Span FunctionId (Array Expr)
   | Construct Span CtorId (Array Expr)
-  | Add Span Expr Expr
+  | Arith Span (Arithmetic Expr)
   | Concat Span Expr Expr
   | Interpolate Span (Array Expr)
   | Compare Span Operator Expr Expr
@@ -131,7 +132,7 @@ exprSpan expression = case expression of
   CtorRef span _ → span
   Call span _ _ → span
   Construct span _ _ → span
-  Add span _ _ → span
+  Arith span _ → span
   Concat span _ _ → span
   Interpolate span _ → span
   Compare span _ _ _ → span

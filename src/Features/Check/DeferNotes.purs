@@ -3,6 +3,7 @@ module Features.Check.DeferNotes (failureNotes, tailNotes) where
 import Prelude
 import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Domain.Arithmetic (operands)
 import Domain.Checked.Internal (Open(..))
 import Domain.Resolved (LocalId)
 import Domain.Checked.Internal as Checked
@@ -130,7 +131,7 @@ parts ∷ Checked.Expr → Array Checked.Expr
 parts (Checked.Expr expression) = case expression.node of
   Checked.Call _ _ arguments → arguments
   Checked.Construct _ _ arguments → arguments
-  Checked.Add left right → [ left, right ]
+  Checked.Arith arith → operands arith
   Checked.Concat left right → [ left, right ]
   Checked.Interpolate holes → holes
   Checked.Compare _ left right → [ left, right ]

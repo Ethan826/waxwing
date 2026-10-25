@@ -68,7 +68,7 @@ exprSpan = case _ of
   Call span _ _ → span
   Qualified span _ _ → span
   QualifiedCall span _ _ _ → span
-  Add span _ _ → span
+  Arith span _ → span
   Concat span _ _ → span
   Interpolate span _ → span
   Compare span _ _ _ → span

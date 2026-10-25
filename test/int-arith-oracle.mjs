@@ -3,7 +3,9 @@
 // Values are exact BigInts reduced with BigInt.asIntN(32, ·) at every node,
 // the ECMAScript form of int32 two's-complement wrap. Nothing here imports
 // the compiler or its tooling: trees, the printer and the random stream are
-// this file's own, so the oracle cannot share a defect with what it checks.
+// this file's own, so it shares no code with what it checks. It can still
+// share a conceptual defect, such as a misreading of the design's wrap
+// rule, that both were written from (dossier §18.87).
 
 const int32Bits = 32;
 const smallestPower = 1;

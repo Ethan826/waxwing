@@ -91,7 +91,7 @@ foldCalls step found (Checked.Expr expression) = case expression.node of
     (step found expression.span id instantiation)
     arguments
   Checked.Construct _ _ arguments → foldl recur found arguments
-  Checked.Add left right → foldl recur found [ left, right ]
+  Checked.Arith arith → foldl recur found arith
   Checked.Concat left right → foldl recur found [ left, right ]
   Checked.Interpolate parts → foldl recur found parts
   Checked.Compare _ left right → foldl recur found [ left, right ]

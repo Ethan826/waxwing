@@ -71,7 +71,7 @@ copyNode scope span = case _ of
   Checked.Construct id instantiation arguments → IR.Construct
     <$> ownerCtor scope span id instantiation
     <*> each arguments
-  Checked.Add left right → IR.Add <$> recur left <*> recur right
+  Checked.Arith arith → IR.Arith <$> traverse recur arith
   Checked.Concat left right → IR.Concat <$> recur left <*> recur right
   Checked.Interpolate parts → IR.Interpolate <$> each parts
   Checked.Compare operator left right → IR.Compare operator <$> recur left

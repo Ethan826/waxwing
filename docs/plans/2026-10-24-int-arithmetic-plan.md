@@ -4,8 +4,8 @@
 > (recommended) or inline-plan-execution to implement this plan
 > task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-Status: Tasks 1 and 2 authorized, 2026-10-24; Tasks 3-7 wait for the
-author's review of them.
+Status: Tasks 1 and 2 authorized and done, 2026-10-24; Tasks 3-7 wait
+for the author's review of them.
 
 **Rulings (2026-10-24; design section 9).** `-`, `*` and unary minus
 proceed in isolation; division is deferred and zero-on-divide is
@@ -133,21 +133,15 @@ these operators.
 
 ### Task 1: `Arith` refactor of `+`, behaviour preserved
 
-**Blocked (found 2026-10-24, on d001-arith; for the author).** The file
-list below misses existing tests that pin the `Add` constructor itself,
-not behaviour (checked: `git grep -nwE Add -- test`):
-test/properties.test.mjs:4,14 (imports `Add` from Domain.Syntax and
-matches `instanceof Add`), and expected shape strings printed by
-test/fn-shape.mjs in test/fn-check.test.mjs:48,64,
-test/fn-syntax.test.mjs:86, test/r001-parse.test.mjs:41,51,82 and
-test/r005-parse.test.mjs:90. Any `Arith` node breaks them, and the
-execution brief forbids editing existing tests to pass. Options: (a) a
-projection in test/fn-shape.mjs and properties.test.mjs that renders
-`Arith(Binary(Plus, l, r))` as `Add(l, r)`, as fn-shape.mjs already
-erases rows for legacy FN001 shapes; (b) rewrite the nine expected
-strings and the import to the new shape. Either is a reviewed change
-to existing tests and needs the author's approval. Task 2 does not
-depend on Task 1 and was done first.
+**Done 2026-10-24 (on d001-arith; the blocker below resolved by option
+(b)).** Found first: existing tests pinned the `Add` constructor itself
+(test/properties.test.mjs:4,14 and fn-shape strings in
+test/fn-check.test.mjs:48,64, test/fn-syntax.test.mjs:86,
+test/r001-parse.test.mjs:41,51,82, test/r005-parse.test.mjs:90). They
+were rewritten to the new shape `Arith(Binary(Plus, l, r))`, with
+properties.test.mjs asserting each Arith is a `Binary Plus`; no
+expected value or structure other than the node name changed. Evidence
+in docs/progress.md.
 
 **Files:**
 - Create: `src/Domain/Arithmetic.purs`, `test/arithmetic.test.mjs`

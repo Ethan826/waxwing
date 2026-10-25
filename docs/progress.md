@@ -73,9 +73,27 @@ Baseline `npm run verify` at 7ca2a07 (under the verify lock) exited 0:
 2366 parallel tests and 59 serial tests passed, 0 failed, 0 skipped;
 176 regression proofs "fixed compiler passes; restored defect fails".
 
-Task 1 (`Arith` refactor) is blocked, not started: existing tests pin
-the `Add` constructor (plan, Task 1, "Blocked"). Nothing in src
-changed.
+Task 1 (`Arith` refactor of `+`), done after Task 2. `Add` became
+`Arith (Arithmetic e)` in Syntax, Resolved, Checked and IR, with
+`data Arithmetic e = Binary BinaryOp e e` and `BinaryOp = Plus` in the
+new src/Domain/Arithmetic.purs (derived Functor, Foldable, Traversable;
+`operands`). Each walk has one case over the operands; the checker's
+`checkArithmetic` keeps `checkAddition`'s order (infer left, right,
+then require Int left, right); Go still emits `waxwingAdd` everywhere.
+New test/arithmetic.test.mjs (operands and derived foldr are left then
+right) failed first with module not found, then passed. Existing tests
+that pinned the `Add` constructor (plan, Task 1) were rewritten to the
+`Arith(Binary(Plus, …))` shape. scripts/differential-project.mjs gained
+`withoutArith` (the candidate's `Arith (Binary Plus l r)` hashed as the
+baseline's `Add`).
+
+Differential against a `git archive` build of 3672c77 (the commit before
+Task 1): `node scripts/differential.mjs --baseline <copy> --corpus all
+--regenerate` exited 0 in 17.5 min. Harvest test runs exited 0, 0.
+harvested 9139 sources, fuzz 1029, isName 1085 probes, matches 1000,
+mutations 1000: 0 differences in each. Phases reached (harvested): lex
+9139, parse 9058, resolve 8860, check 8309, specialize 5781, emit 5738,
+compile 5738. The copy was deleted afterwards.
 
 Task 2: test/int-arith-oracle.mjs (BigInt model with
 `BigInt.asIntN(32, ·)` at every node, printer with full or minimal
@@ -93,6 +111,14 @@ changed to `return a - b`, `node scripts/build.mjs`, then the same
 command: 3 passed, 2 failed, first failures `full 0` (expected
 -877450654, printed -307606134) and `parameter 0` (expected 151000832,
 printed -16776192). The copy was deleted.
+Corrected 2026-10-24 (dossier §18.87): independent code can still share
+a conceptual defect with the compiler, and with only `+` the printed
+values cannot establish parser grouping (addition is associative).
+No test pins an unparenthesized `+` chain's grouping structurally: the
+parse-shape tests cover `+` beside `|>`, access and comparison, and
+test/properties.test.mjs prints fully parenthesized trees. Codex's
+earlier review read the source and ran a model-only sanity check, not
+Go or a full verify.
 
 `npm run verify` with Task 2 and these docs (under the lock) exited 0:
 2371 parallel tests (the baseline's 2366 plus the oracle's 5) and 59

@@ -19,6 +19,7 @@ module Format.Go.Context
 import Prelude
 import Data.Array as Array
 import Data.String.Common (joinWith)
+import Domain.Arithmetic (operands)
 import Domain.Ids (EffectId(..))
 import Domain.IR.Internal as IR
 import Domain.IR.Parts as Parts
@@ -46,7 +47,7 @@ children ∷ IR.Node → Array IR.Expr
 children node = case node of
   IR.Call _ arguments → arguments
   IR.Construct _ arguments → arguments
-  IR.Add left right → [ left, right ]
+  IR.Arith arith → operands arith
   IR.Concat left right → [ left, right ]
   IR.Interpolate parts → parts
   IR.Compare _ left right → [ left, right ]

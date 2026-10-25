@@ -4,6 +4,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Maybe (maybe')
+import Domain.Arithmetic (Arithmetic(..))
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Problem (Problem(..))
@@ -70,7 +71,7 @@ inferNode env state expression = case expression of
   Resolved.Construct span id arguments → checkConstruct infer env state span
     id
     arguments
-  Resolved.Add span left right → checkAddition env state span left right
+  Resolved.Arith span arith → checkArithmetic env state span arith
   Resolved.Concat span left right → checkConcat env state span left right
   Resolved.Interpolate span parts → checkInterpolate env state span parts
   Resolved.Compare span operator left right → checkComparison env state
@@ -136,14 +137,18 @@ typed ∷ State → Span → Ty Open → Checked.Node → Inferred
 typed state span ty node = pure
   { value: Checked.Expr { ty, span, node }, state }
 
-checkAddition
-  ∷ Env → State → Span → Resolved.Expr → Resolved.Expr → Inferred
-checkAddition env state span left right = do
+-- Both operands are inferred, left then right, before either is required
+-- to be Int (in the same order), so an error inside the right operand is
+-- reported before a non-Int left operand, as for `+` before D001.
+checkArithmetic
+  ∷ Env → State → Span → Arithmetic Resolved.Expr → Inferred
+checkArithmetic env state span (Binary operator left right) = do
   first ← infer env state left
   second ← infer env first.state right
   added ← require env second.state TInt first.value
   checked ← require env added TInt second.value
-  typed checked span TInt (Checked.Add first.value second.value)
+  typed checked span TInt
+    (Checked.Arith (Binary operator first.value second.value))
 
 checkConcat
   ∷ Env → State → Span → Resolved.Expr → Resolved.Expr → Inferred

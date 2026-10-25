@@ -2,6 +2,7 @@ module Format.Go.Usage (needsBoolHelper, needsPrint) where
 
 import Prelude
 import Data.Array as Array
+import Domain.Arithmetic (operands)
 import Domain.IR.Internal as IR
 import Domain.IR.Parts as Parts
 import Domain.IR.Internal (Ty(..))
@@ -26,7 +27,7 @@ usesBoolOrdering (IR.Expr expression) = case expression.node of
   IR.Local _ → false
   IR.Call _ arguments → anyOf arguments
   IR.Construct _ arguments → anyOf arguments
-  IR.Add left right → anyOf [ left, right ]
+  IR.Arith arith → anyOf (operands arith)
   IR.Concat left right → anyOf [ left, right ]
   IR.Interpolate parts → anyOf parts
   IR.Compare operator left right →
@@ -90,7 +91,7 @@ prints (IR.Expr expression) = case expression.node of
   IR.UnitValue → false
   IR.Call _ arguments → anyOf arguments
   IR.Construct _ arguments → anyOf arguments
-  IR.Add left right → anyOf [ left, right ]
+  IR.Arith arith → anyOf (operands arith)
   IR.Concat left right → anyOf [ left, right ]
   IR.Interpolate parts → anyOf parts
   IR.Compare _ left right → anyOf [ left, right ]

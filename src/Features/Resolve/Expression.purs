@@ -40,8 +40,7 @@ expression scope = case _ of
     member
     arguments
     (traverse nested arguments)
-  Syntax.Add span left right → Resolved.Add span <$> nested left
-    <*> nested right
+  Syntax.Arith span arith → Resolved.Arith span <$> traverse nested arith
   Syntax.Concat span left right → Resolved.Concat span <$> nested left
     <*> nested right
   Syntax.Interpolate span parts → Resolved.Interpolate span

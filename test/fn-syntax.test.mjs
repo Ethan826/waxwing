@@ -83,7 +83,7 @@ test('a lambda extends right; |> is looser than comparison, left first',
     assert.equal(bodyShape('a |> g |> h(1)'),
       'Pipe(Pipe(Variable(a), Variable(g)), Call(h, [Integer(1)]))');
     assert.equal(bodyShape('a + 1 |> g'),
-      'Pipe(Add(Variable(a), Integer(1)), Variable(g))');
+      'Pipe(Arith(Binary(Plus, Variable(a), Integer(1))), Variable(g))');
     assert.equal(bodyShape('if a then b else c |> g'),
       'If(Variable(a), Variable(b), Pipe(Variable(c), Variable(g)))');
     assert.equal(bodyShape('g(fn(y) => y)'),

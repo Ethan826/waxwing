@@ -3,6 +3,7 @@ module Domain.Syntax.Core where
 import Prelude
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
+import Domain.Arithmetic (Arithmetic)
 import Domain.Note (NoteReason)
 import Domain.Problem (Problem)
 
@@ -25,7 +26,7 @@ data Expr
   -- `Effect.op` and `Effect.op(args)`: qualifier, then member (FX020).
   | Qualified Span String String
   | QualifiedCall Span String String (Array Expr)
-  | Add Span Expr Expr
+  | Arith Span (Arithmetic Expr)
   | Concat Span Expr Expr
   | Interpolate Span (Array Expr)
   | Compare Span Operator Expr Expr

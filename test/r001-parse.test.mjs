@@ -38,8 +38,8 @@ test('{} is still Unit and { x } is still a block', () => {
 });
 
 test('a literal is an operand', () => {
-  assert.equal(bodyShape('1 + { a: 2 }.a'), 'Add(Integer(1), '
-    + `${field(`RecordLiteral([${value('a', 'Integer(2)')}])`, 'a')})`);
+  assert.equal(bodyShape('1 + { a: 2 }.a'), 'Arith(Binary(Plus, Integer(1), '
+    + `${field(`RecordLiteral([${value('a', 'Integer(2)')}])`, 'a')}))`);
 });
 
 test('access reads left to right, after any receiver', () => {
@@ -48,7 +48,7 @@ test('access reads left to right, after any receiver', () => {
   assert.equal(bodyShape('f(x).a'), field('Call(f, [Variable(x)])', 'a'));
   assert.equal(bodyShape('(g).a'), field(v('g'), 'a'));
   assert.equal(bodyShape('(1 + x).a'),
-    field('Add(Integer(1), Variable(x))', 'a'));
+    field('Arith(Binary(Plus, Integer(1), Variable(x)))', 'a'));
   assert.equal(bodyShape('g(1)(2).a'),
     field('Apply(Call(g, [Integer(1)]), [Integer(2)])', 'a'));
 });
@@ -79,7 +79,7 @@ test('postfix binds tighter than |>, + and comparisons', () => {
   assert.equal(bodyShape('r { a = 1 } |> g'),
     `Pipe(${update(v('r'), value('a', 'Integer(1)'))}, Variable(g))`);
   assert.equal(bodyShape('r.a + s.b'),
-    `Add(${field(v('r'), 'a')}, ${field(v('s'), 'b')})`);
+    `Arith(Binary(Plus, ${field(v('r'), 'a')}, ${field(v('s'), 'b')}))`);
   assert.equal(bodyShape('r.a == 1'),
     `Compare(Equal, ${field(v('r'), 'a')}, Integer(1))`);
 });

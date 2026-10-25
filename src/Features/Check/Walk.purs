@@ -25,7 +25,7 @@ foldTypes step found (Checked.Expr expression) = case expression.node of
   Checked.Lambda parameters body → recur (foldl parameter own parameters)
     body
   Checked.Pipe left right → foldl recur own [ left, right ]
-  Checked.Add left right → foldl recur own [ left, right ]
+  Checked.Arith arith → foldl recur own arith
   Checked.Concat left right → foldl recur own [ left, right ]
   Checked.Interpolate parts → foldl recur own parts
   Checked.Compare _ left right → foldl recur own [ left, right ]
@@ -84,7 +84,7 @@ retype change (Checked.Expr expression) = Checked.Expr
     Checked.Construct id instantiation arguments → Checked.Construct id
       (map change instantiation)
       (map recur arguments)
-    Checked.Add left right → Checked.Add (recur left) (recur right)
+    Checked.Arith arith → Checked.Arith (map recur arith)
     Checked.Concat left right → Checked.Concat (recur left) (recur right)
     Checked.Interpolate parts → Checked.Interpolate (map recur parts)
     Checked.Compare operator left right → Checked.Compare operator

@@ -118,6 +118,24 @@ const refAsBefore = item => {
     { value2: tail });
 };
 
+// D001 Task 1: `Add l r` became `Arith (Binary Plus l r)` in the syntax,
+// resolved, checked and monomorphic trees. The candidate's node is hashed
+// as the baseline's `Add`: the fields before the Binary (a span in the
+// first two trees), then the two operands. Any other Arith is left as it
+// is and differs, as it should.
+class Add {}
+const withoutArith = item => {
+  if (item?.constructor?.name !== 'Arith') return item;
+  const keys = Object.keys(item).sort();
+  const arith = item[keys.at(-1)];
+  if (arith?.constructor?.name !== 'Binary'
+    || arith.value0?.constructor?.name !== 'Plus') return item;
+  const fields = [...keys.slice(0, -1).map(key => item[key]), arith.value1,
+    arith.value2];
+  return Object.assign(new Add(), Object.fromEntries(
+    fields.map((field, index) => [`value${index}`, field])));
+};
+
 // Iterative, so a deeply nested IR cannot overflow the JS stack. With
 // `monomorphic` the IR's records are hashed as they were before R005.
 export const digest = (value, monomorphic = false) => {
@@ -125,8 +143,9 @@ export const digest = (value, monomorphic = false) => {
   const pending = [value];
   while (pending.length > 0) {
     const popped = pending.pop();
-    const item = tailAsBefore(refAsBefore(
-      popped?.constructor?.name === 'PRecord' ? restAsBefore(popped) : popped));
+    const item = withoutArith(tailAsBefore(refAsBefore(
+      popped?.constructor?.name === 'PRecord'
+        ? restAsBefore(popped) : popped)));
     if (item?.constructor?.name in booleanRests) {
       hash.update(`boolean:${booleanRests[item.constructor.name]};`);
     } else if (item === null || typeof item !== 'object') {

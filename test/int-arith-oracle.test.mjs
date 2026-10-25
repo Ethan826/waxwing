@@ -1,9 +1,11 @@
 // Int arithmetic against the independent BigInt model of
 // test/int-arith-oracle.mjs, through the Go backend (D001 plan, Task 2).
 // Each tree is compiled twice, fully parenthesized and with minimal
-// parentheses, so the printed value checks both the operation and the
-// parser's grouping; parameter cases keep the operands out of Go's
-// constant folding.
+// parentheses; parameter cases keep the operands out of Go's constant
+// folding. The printed value checks the operation. It cannot establish
+// the parser's grouping: int32 addition is associative, so every
+// grouping prints the same value (dossier §18.87). No test yet pins the
+// grouping of an unparenthesized `+` chain structurally.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { runGoBatch } from './go-batch.mjs';

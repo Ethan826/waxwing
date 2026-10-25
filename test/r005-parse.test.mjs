@@ -87,7 +87,8 @@ test('without binds tighter than |>, + and comparison', () => {
   assert.equal(bodyShape('p without { a } |> g'),
     `Pipe(${removal(v('p'), 'a')}, Variable(g))`);
   assert.equal(bodyShape('1 + p without { a }.b'),
-    `Add(Integer(1), FieldAccess(${removal(v('p'), 'a')}, {name: b}))`);
+    `Arith(Binary(Plus, Integer(1), `
+    + `FieldAccess(${removal(v('p'), 'a')}, {name: b})))`);
   assert.equal(bodyShape('p without { a } == q'),
     `Compare(Equal, ${removal(v('p'), 'a')}, Variable(q))`);
 });

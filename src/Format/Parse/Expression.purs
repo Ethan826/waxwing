@@ -2,6 +2,7 @@ module Format.Parse.Expression (expression) where
 
 import Prelude
 import Data.Either (Either(..))
+import Domain.Arithmetic (Arithmetic(..), BinaryOp(..))
 import Domain.Problem (Problem(..))
 import Domain.Syntax
   ( Diagnostic
@@ -114,8 +115,9 @@ spanBetween first second =
 additive ∷ Parser Expr → Parser Expr
 additive inner = chainLeftAny [ "+", "++" ] operation (atom inner)
   where
-  operation operator = if operator == "+" then add Add else add Concat
-  add build left right = build (spanBetween left right) left right
+  operation operator = if operator == "+" then plus else concatenation
+  plus left right = Arith (spanBetween left right) (Binary Plus left right)
+  concatenation left right = Concat (spanBetween left right) left right
 
 conditional ∷ Parser Expr → Parser Expr
 conditional inner = ifOf <$> expect "if" <*> inner <* expect "then" <*> inner
