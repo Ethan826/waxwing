@@ -9,7 +9,9 @@
 -- fail clause with no binder, which the checked clause needs and
 -- Resolve always writes; `VariableSort` is an occurrence's naming with
 -- no handle for an effect-row variable, which Resolve keeps out of type
--- and tail positions. The generator stops rather than invent either.
+-- and tail positions; `MarkShape` is an `Unmarked` or `MarkMeta` mark in
+-- a written type, which Resolve never leaves outside an annotation. The
+-- generator stops rather than invent any.
 -- Each maps to today's `Internal` kind, both of which stop a run under
 -- ruling R3's partition: `TableLookup` for an id, `InputShape` for a
 -- shape.
@@ -36,6 +38,7 @@ data GenerationFault
   | BinderShape
   | ResultShape
   | VariableSort VarId
+  | MarkShape
 
 type Gen a = Either GenerationFault a
 
@@ -58,3 +61,5 @@ generationProblem = case _ of
     "Generation: no written result type"
   VariableSort _ → Internal InputShape
     "Generation: an effect-row variable in a type position"
+  MarkShape → Internal InputShape
+    "Generation: an unresolved effect mark in a written type"

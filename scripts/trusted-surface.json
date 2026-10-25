@@ -461,6 +461,7 @@
    "BinderShape",
    "ResultShape",
    "VariableSort",
+   "MarkShape",
    "generationProblem"
   ]
  },
@@ -553,6 +554,18 @@
    "ctorShape",
    "effectSorts",
    "operationShape"
+  ]
+ },
+ "Features.Check.Generate.Marked": {
+  "source": [
+   "MarkNaming(..)",
+   "marked"
+  ],
+  "compiled": [
+   "Declared",
+   "AtUse",
+   "InAnnotation",
+   "marked"
   ]
  },
  "Features.Check.Generate.Node": {
