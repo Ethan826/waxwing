@@ -6234,3 +6234,19 @@ the representation with the named obligations open, and authorize
 neither implementation nor soundness claims; A2's algorithm and
 source, G-D1 and Task 4.6 stay pending. Reporting from now on leads
 with the three milestones (next-session.md).
+
+### 18.94 E4′'s restriction procedure clarified (2026-10-25)
+
+The author inspected bc665cd and ratified an external note: E4′ had
+come to reject every ResultC recorded with a fresh tail under H′,
+while the stand-in forced the R-tail choice and checked the resulting
+constraints. Because r1, r2 and r9 exercise H′'s fresh path and survive
+the stand-in, their survival was no evidence for blanket refusal.
+Statements §R7b: E4′ specifies forcing (bind the recorded fresh tail
+to R's tail variable, check, refuse only when the constraints fail),
+which is the ruled "always R's tail"; blanket refusal is recorded as a
+stricter alternative, not ruled, with unmeasured losses. The
+representation stays acceptable with the named obligations open;
+approval waits for the author; no implementation starts on this
+packet. Status reports drop percentage estimates: the records give
+gates and dependencies, not a defensible percentage.

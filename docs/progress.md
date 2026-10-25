@@ -19,6 +19,13 @@ S1, four S2), the fix pass (cade64f) and two consistency repairs
 exit 0, "no disagreement" (k1.mjs prints nothing; it is a case
 module). Docs only; no verify needed. Approval pending.
 
+§R7b (dossier §18.94): the author's inspection of bc665cd found E4′
+specifying blanket refusal of recorded fresh tails while the stand-in
+forced R's tail and checked; E4′, §0e item 2 and two table rows now
+specify forcing, with blanket refusal labelled a stricter, unruled,
+unmeasured alternative. Percent estimates dropped from reporting.
+Width 0 over 80. Approval still pending; no implementation.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

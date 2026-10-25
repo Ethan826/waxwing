@@ -9,16 +9,18 @@ the next one; gate and obligation IDs go underneath as references
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-Then the epic's remaining assurance obligations. Rough position (a
-guess, ±15 points): about 60% through the composed-record epic, a bit
-under half of the way to replacing the old checker. Priority: R0 and
-its effect guarantees; arithmetic is parked.
+Then the epic's remaining assurance obligations. Report position as
+gates and dependencies, not percentages: the records do not support a
+defensible one (author, 2026-10-25). Priority: R0 and its effect
+guarantees; arithmetic is parked.
 
 **Where milestone 1 stands.** a-min statements, "revision 3.6 with the
 §R7 corrections" (docs/plans/r0-amin-statements.md at bc665cd): one
 approval review (§R7: no S1, four S2), all four corrected in the fix
 pass (§R7a, cade64f), and the two consistency repairs the author asked
-for after inspecting it (bc665cd). **Awaiting the author's approval**,
+for after inspecting it (bc665cd), and §R7b: E4′'s restriction forces
+R's tail and checks, rather than refusing every recorded fresh tail
+(which would also lose r1, r2, r9). **Awaiting the author's approval**,
 which would cover the representation with the named obligations open
 and authorize neither implementation nor soundness claims. Ruled
 2026-10-25: "always R's tail" as a provisional shadow-validator

@@ -1,4 +1,4 @@
-# a-min: statements, revision 3.6 with the §R7 corrections (G-effect-rows, 2026-10-25)
+# a-min: statements, revision 3.6 with the §R7 corrections and §R7b (G-effect-rows, 2026-10-25)
 
 Status: **statements only; implementation unauthorized; Task 4.6 and
 G-D1 blocked.** Revision 3.6 (§0e) records the FX033 repair (rule H′ as
@@ -272,6 +272,9 @@ here is newly proved.
    other whole-judgment obligations. The stand-in's differences are evidence for
    the restriction, not checks of a validator, which needs its own. Losing
    aroundBoth and k2f stays visible under A6. The live compiler keeps H′.
+   The procedure is the stand-in's (§R7b): force R's tail, then check
+   the constraints (E4′). It does not refuse every use recorded with a
+   fresh tail, which would also lose r1, r2 and r9.
 3. **U8 implemented** (7476097, pin 9f547d7; §11 U8): today's type
    and record-row bindings are in solved form or refused
    (`UnsolvedImage`). a-min's effect-row and mark bindings must extend
@@ -299,7 +302,7 @@ here is newly proved.
 
 | Obligation | Where | Standing | Blocks representation approval? | Blocks a soundness claim? |
 |---|---|---|---|---|
-| P4 (RC′'s parametricity step), fresh-tail ResultC uses only | §0e item 2; resultc-tail §6 | argued, unproved; refutation history (RC false through nine channels) | no: the shadow validator refuses fresh tails ("always R's tail", ruled 2026-10-25) | yes: abort safety for fresh-tail uses (effect safety goes through R, not C); not needed while the restriction holds |
+| P4 (RC′'s parametricity step), fresh-tail ResultC uses only | §0e item 2; resultc-tail §6 | argued, unproved; refutation history (RC false through nine channels) | no: the shadow validator forces R's tail and checks ("always R's tail", ruled 2026-10-25; §R7b) | yes: abort safety for fresh-tail uses (effect safety goes through R, not C); not needed while the restriction holds |
 | O-SUB, with A1 under [FX008-5] | §0e item 2; resultc-tail §6; §4 E5 installed-C step; §13b | presupposed by the compiler, unproved | no | yes: every polymorphic use, both ResultC cases, Definition 4.2, E5's step |
 | [FX008-5] points 1-4 | §14 | argued, reviewed against probes, unproved | no | yes: every S row citing it |
 | Definition 4.2's sufficiency | §4, §13b | per site, reasoned; no substitution lemma | no | yes, for rigid-tailed consumption |
@@ -781,15 +784,25 @@ package-supplied C, label or fixed mark at that site (design).
   closed. That is what generation records, matching the live
   compiler's H′ (ResultClauses.purs).
   **Provisional restriction for shadow certification** (author,
-  2026-10-25; §0e item 2): the validator certifies a ResultC only when
-  its recorded tail is R's tail variable or closed with R ("always R's
-  tail"). A ResultC recorded with the use's own fresh tail (H′'s
-  fresh case) is not certified: the validator refuses it as
+  2026-10-25; §0e item 2; procedure fixed in §R7b): "always R's tail"
+  forces the R-tail choice and then checks. A ResultC recorded with
+  R's tail variable, or closed with R, is checked as recorded. For a
+  ResultC recorded with the use's own `⟨p, result clauses⟩` (H′'s
+  fresh case), the validator binds that variable to R's tail variable,
+  both read from the record, and checks the resulting problem
+  (Definition 4.1, E5) as for a recorded R tail. It certifies the use
+  only when those constraints hold; otherwise it refuses the use as
   unsupported, which means it cannot certify the candidate, not that
-  the program is invalid (known losses: aroundBoth's `prefix()`, k2f;
-  closure checklist A6). This removes reliance on P4; O-SUB and A1
-  remain dependencies. The live compiler keeps H′ until a separate
-  ruling.
+  the program is invalid. A recorded fresh tail is therefore not
+  refused by itself: r1, r2 and r9 have one and are kept (stand-in
+  evidence, §0e item 2). Known losses: aroundBoth's `prefix()` and
+  k2f (closure checklist A6); losses elsewhere in the corpus are
+  unmeasured. What is certified is the forced typing; no claim
+  relates it to the live compiler's H′ typing of the same use. This
+  removes reliance on P4; O-SUB and A1 remain dependencies. The live
+  compiler keeps H′ until a separate ruling. Refusing every recorded
+  fresh tail would be a stricter restriction (it also loses r1, r2
+  and r9, with further losses unmeasured); it is not the ruled one.
 - An annotation C: labels exactly R's, bare; marks written or its own
   `Annotation` positions, distinct from R's; tail always its own
   `⟨p, annotation clauses i⟩`, whatever R's tail is (F6).
@@ -1821,7 +1834,7 @@ typed abort; hence no deferred expression ends in a typed abort).
 | E3 opening at use (an M handled label in a parameter, an N one in the result, made fresh) | accepts handler values at weakening positions | [FX008-3.4] D3; callback rows never opened ("would be unsound") (argued) | P (sound by argument) |
 | E4 c into C with marks (C ⊑ c); c into R ignoring marks | C over-approximates what the clauses perform, with their assumptions | [FX008-5] point 1 (argued) | S |
 | E4 own abort: `Fail` or rigid tail in a clause gives M ⊑ m | a handler whose clause may abort by itself is not N | [FX008-5] point 1 (argued) | S |
-| E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail recorded by `ownClauses`' occurs rule (H′, the live compiler's behaviour), certified by the shadow validator only when it is R's tail or closed with R ("always R's tail", provisional, 2026-10-25; a fresh tail is refused as unsupported); an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail under the restriction: R's tail, so P4 is not relied on; O-SUB and A1 remain (resultc-tail §6, unproved); H′'s fresh case is not certified; the earlier parametricity comment was refuted by FX033's x1; annotation tail: FX008 §3.4, review M5 (argued) | S; O-SUB and A1 open; fresh-tail ResultCs unsupported until P4 is argued and reviewed (decision 3) |
+| E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail recorded by `ownClauses`' occurs rule (H′, the live compiler's behaviour), certified by the shadow validator under R's tail ("always R's tail", provisional, 2026-10-25, §R7b: a recorded fresh tail is bound to R's tail and the constraints are checked; refused as unsupported only when they fail); an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail under the restriction: R's tail, so P4 is not relied on; O-SUB and A1 remain (resultc-tail §6, unproved); H′'s fresh-tail typing is not certified, only the forced one; the earlier parametricity comment was refuted by FX033's x1; annotation tail: FX008 §3.4, review M5 (argued) | S; O-SUB and A1 open; fresh-tail typings uncertified until P4 is argued and reviewed (decision 3) |
 | C rows bare (no label arguments) | marks attach to effect keys; dispatch is by key | Task 7 ruling; [FX008-5] point 1 reads C only for keys and marks (argued) | S by argument; C for the ruling |
 | E5 R into ρ ignoring marks: inclusion for a closed R only; Definition 4.2 for a rigid-tailed R (3.5) | effect safety of the handler's inference row in its context | [L17] (published, adapted); marks dead (argued); Definition 4.2's row for a rigid-tailed R | S; separating example p1 (refused); closed-R inclusion control added in 3.5 (oracle agent; no result claimed here) |
 | E5 frame edges m ⊑ f, paired ρ marks ⊑ f, rigid C tail gives M ⊑ f | frames are honest | [FX008-5] point 1 (argued) | S |
@@ -2601,3 +2614,21 @@ design.
 | S3 "probe r1" | names test/fx008-defer-programs.mjs |
 | S3 "today's guarantees" | "intended guarantees"; coupling points E8, Console-N, E4 own-abort, E6 named in §0e item 7 |
 | Ruling: always R's tail | §0e item 2 and §14 decision 3; qualifications kept: removes P4 only where it prevents freshening, discharges no whole-judgment obligation, stand-in evidence only, losses visible under A6 (closure checklist) |
+
+## R7b. E4′'s restriction procedure clarified (2026-10-25)
+
+The author ratified one focused clarification, not a review cycle.
+§R7a's E4′ wording rejected every ResultC recorded with a fresh tail
+under H′. The stand-in that produced the evidence instead forces the
+R-tail choice and then checks the resulting constraints. The two
+procedures differ: r1, r2 and r9 exercise H′'s fresh path and survive
+the stand-in, so their survival was no evidence for blanket refusal.
+
+The ruled restriction is forcing: E4′ now binds a recorded fresh tail
+to R's tail variable and checks; it refuses only when the constraints
+fail. Blanket refusal is recorded as a stricter alternative that is
+not the ruled one; its losses (r1, r2, r9 and more) are unmeasured.
+Corrected: E4′, §0e item 2, the carried-obligations table's P4 row and
+§13's E4′ row. The stand-in claims and A6 already describe forcing.
+The representation stays acceptable with the named obligations open;
+approval still waits for the author. No implementation is authorized.
