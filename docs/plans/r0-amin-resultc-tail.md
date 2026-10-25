@@ -501,3 +501,42 @@ For the author (none decided here):
 3. Whether O-SUB is to be stated in a-min, since P3 and P4 need it and
    Definition 4.2's per-site argument does too.
 4. x2's E_INTERNAL: file under FX010 or as its own item.
+
+## Review 1 (bounded adversarial review, 2026-10-24): partial
+
+Brief: dossier §18.89. An independent agent (Opus) completed only the
+reproduction; a safety classifier then stopped its response mid-way
+through the occurrence-criterion reading, and it stopped there without
+regenerating or routing around the stop. Tasks 2-5 (occurrence
+criterion and caller-supplied sources, O-SUB, the four answers, the
+repair proposal) are **not done**.
+
+Reproduction (observed). Two builds, both fresher than every src file:
+the main build (worktree effect-kinds, src equal to main 2af6e40 and
+origin/main a82d064 by `git diff --quiet`) and this branch's build (src
+at 7476097). Both behave identically on all eight programs:
+
+| Program | emit | run |
+|---|---|---|
+| x1 | exit 0 | exit 1, `fail(E): E` (E_TOOL) |
+| x1d | exit 0 | exit 0, prints `99` |
+| x1c | refused | E_EFFECT "defer must not fail, but it performs Log, whose handler may fail" |
+| x1i | refused | same E_EFFECT |
+| x1p | refused | same E_EFFECT |
+| x1l | exit 0 | exit 1, `fail(E): E` |
+| k2f | exit 0 | exit 0, prints `1` |
+| k2o | refused | E_EFFECT "defer must not fail, but it performs Ask, whose handler may fail" |
+
+So FX033 is a defect of shipped main, not of the R0 stack. Code read
+before the stop (read, not tested): `occurs` folds over the function's
+own row and the parameters only (ResultClauses.purs:43-44); `foldHoles`
+(Holes.purs:50-67, Domain/Type/Parts.purs:84-113) already visits data
+arguments and rows, handler label arguments and both handler rows,
+record fields and tails, arrow parts, and label arguments in rows (not
+marks, not pure rows), so a fold over the result minus R's own tail
+position would reach every position H′ names (reasoned); a result
+handler written without `with` ends in the implicit ambient row
+variable (Resolve/Signature.purs:45-49, Resolve/Row.purs:24-30); bare
+function references go through the same `openedUse` (Use.purs:136-144),
+constructors do not. Whether H′ blocks x1, other paths, the programs it
+would reject, and O-SUB remain unexamined.

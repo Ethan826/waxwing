@@ -20,7 +20,12 @@ session as messages; check each claim before committing anything):
    model-only). Commit explicit paths, then bring task 1 to the author
    for review. Tasks 3-7 stay held. Recommend a charter decision-note
    pass (C3, C8) on the arithmetic design when 3-7 come up.
-2. **Bounded ResultC adversarial review, FX033 first** (read-only;
+2. **Bounded ResultC adversarial review: returned PARTIAL.** A safety
+   classifier stopped it after the reproduction (recorded in
+   docs/plans/r0-amin-resultc-tail.md "Review 1"; FX033 reproduces on
+   main too). Tasks 2-5 not done; whether to relaunch, and how, is the
+   author's call (do not re-dispatch around the stop). Original brief:
+   (read-only;
    brief = dossier §18.89). It reproduces x1 and controls on the main
    build (worktree effect-kinds, src = main 2af6e40) and this branch's
    build, reviews H′'s occurrence criterion and every caller-supplied
