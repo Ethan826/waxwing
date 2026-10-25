@@ -63,7 +63,7 @@ const handled = row([fail, console], rigid('main'));
 const deferLog = (lambda, rule) => deferral({ deferred: row([], flex('d')),
   current: lambda, rule });
 
-// p7 (research/amin-k1-probes/p7-call-mark.wxw): Q empty, A = plain Log;
+// p7 (research/amin-k1-probes/p7-call-mark.wxw.txt): Q empty, A = plain Log;
 // outer printing Log, inner failing Log; the lambda defers Log.log(7).
 // The callee's apply consumes `...e` into `Log + ...e`: K1 refuses it
 // whatever the package (rows rigid, no positions). Under the withdrawn

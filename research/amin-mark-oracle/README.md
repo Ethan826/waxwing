@@ -147,7 +147,7 @@ Derived cases (each obligation built from recorded inputs):
   ambient row, so the lambda's row must too: honest accepted, a lambda
   row bound to the closed row refused, and accepted by the keys-only
   inclusion.
-- N4 (research/amin-k1-probes/p1-k1.wxw) consumes R, st's rigid
+- N4 (research/amin-k1-probes/p1-k1.wxw.txt) consumes R, st's rigid
   ambient alone, into `Log + ` that ambient through E5's rows. Its
   verdict is now refused, because the author adopted K1 (dossier
   §18.85) and ρ holds a `Log` beyond R's matched labels. The flip is a

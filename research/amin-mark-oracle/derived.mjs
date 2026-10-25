@@ -96,7 +96,7 @@ const rigidTail = deps => {
 };
 
 // N4 (replacing the set tautology): `fn st(h: Handler(State(Int))): Int
-// with Log = with h { State.get() }` (research/amin-k1-probes/p1-k1.wxw,
+// with Log = with h { State.get() }` (research/amin-k1-probes/p1-k1.wxw.txt,
 // refused today: E_EFFECT "st performs Log, which its signature does
 // not allow"). R (st's rigid ambient alone) consumed into ρ = Log + the
 // ambient, ignoring marks (E5). A RULED SPECIFICATION CHANGE, not a

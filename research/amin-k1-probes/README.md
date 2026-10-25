@@ -6,6 +6,12 @@ copied here by the controller. The controller reran p7, p7h, c3 and the
 sim6 and sim7 simulations and got the outputs quoted below. The other
 verdicts are the agent's runs.
 
+The Waxwing programs are stored as `*.wxw.txt` so the pinned R0 corpus
+(test/r0-corpus.mjs counts every tracked `*.wxw`) does not change; they
+were committed as `.wxw` at b34bbc0, which put the corpus out of step
+with its manifest until this rename. Run one by copying it to a `.wxw`
+name outside the repository.
+
 Compiler: this worktree's build (`node scripts/waxwing.mjs emit IN OUT`
 or `run IN`), src unchanged since 0c2ad60. Simulations: `go run
 main.go` in each `sim*` directory, with `GOCACHE` set to a scratch
@@ -13,25 +19,25 @@ cache.
 
 | File | What it is | Today |
 |---|---|---|
-| p1-k1.wxw | K1's program: R ending in rigid ϱ installed under `Log + ϱ` | refused, E_EFFECT "st performs Log, which its signature does not allow" |
-| p2-install-payload.wxw | installation; `Out(Text)` outside `Out(Int)`; the clause performs `Out.out("hi")` | refused (same rule) |
+| p1-k1.wxw.txt | K1's program: R ending in rigid ϱ installed under `Log + ϱ` | refused, E_EFFECT "st performs Log, which its signature does not allow" |
+| p2-install-payload.wxw.txt | installation; `Out(Text)` outside `Out(Int)`; the clause performs `Out.out("hi")` | refused (same rule) |
 | p3, p2i | the instance written monomorphically, or inlined | refused, E_TYPE "Expected Out(Int), found Out(Text)" |
-| p4-install-mark.wxw | installation; failing `Log` inside printing `Log`; the clause defers `Log.log(7)` | refused (same rule) |
+| p4-install-mark.wxw.txt | installation; failing `Log` inside printing `Log`; the clause defers `Log.log(7)` | refused (same rule) |
 | p4i | inlined instance | refused, "defer must not fail, but it performs Log, whose handler may fail" |
 | p5 | written handler type; refused by the K1 rule again, so not clean instance evidence | refused |
-| p6-call-payload.wxw | call stage `a(q: … with ...e)` with `Out(Int) + ...e` | refused, the FX017 diagnostic |
+| p6-call-payload.wxw.txt | call stage `a(q: … with ...e)` with `Out(Int) + ...e` | refused, the FX017 diagnostic |
 | p6i | inlined | refused, E_TYPE |
-| p7-call-mark.wxw | call stage with `Log + ...e`; the lambda defers `Log.log(7)` | refused, FX017 (controller rerun) |
+| p7-call-mark.wxw.txt | call stage with `Log + ...e`; the lambda defers `Log.log(7)` | refused, FX017 (controller rerun) |
 | p7i, p7h | inlined; FX017's hinted row | refused, the `defer` rule (p7h: controller rerun) |
 | p8, p9 | a rigid clause row into a larger R | refused |
-| c1-c4 (.wxw, .go) | accepted controls: equal-row payload, equal-row dispatch, `nofail Log` callee with the failing handler outer, its installation version | accepted; c3 prints `7`, `1` (controller rerun) |
+| c1-c4 (.wxw.txt, .go) | accepted controls: equal-row payload, equal-row dispatch, `nofail Log` callee with the failing handler outer, its installation version | accepted; c3 prints `7`, `1` (controller rerun) |
 | s1, s1h | a safe callback the proposed premise refuses; its hinted twin | s1 refused (FX017); s1h prints `1`, `2` |
 | sim6/main.go | c1.go with the lambda's perform changed to the `Out(Text)` operation: the Go a-min would compile for p6 | `panic: interface conversion: interface {} is *main.waxwingEff1, not *main.waxwingEff0`, exit 2 (controller rerun) |
 | sim7/main.go | c3.go with the two `Log` handler literals swapped (the diff is those two lines): the Go for p7 | stderr `fail(E): E`, exit 1; the `handle` never runs (controller rerun) |
 | sim4/main.go | c4.go swapped the same way: the Go for p4 | `fail(E): E`, exit 1 |
 
 Observed vs simulated. The compiler runs (the "Today" column for the
-`.wxw` files) show only today's verdicts: every probe is refused, so no
+`.wxw.txt` files) show only today's verdicts: every probe is refused, so no
 unsafe Waxwing program was compiled or run. The `sim*` runs are patched
 Go; they show what the run would be if a validator accepted the
 program. That inference rests on the premise below.
