@@ -306,8 +306,10 @@ read the callee's signature to translate it under θ
   `instantiateMarks`; `openHandlers` opens only the handled label).
   Tail (`copied`, `kept`): R's tail variable (the instance slot of the
   callee's effect-row variable that R ends in) when it occurs in a
-  parameter or in the callee's own row (`occurs` folds over `TFun
-  TUnit row TUnit` and the parameters); otherwise the use's own
+  parameter, in the callee's own row, or in the result handler with its
+  inference row's tail dropped (`occurs` folds over `TFun TUnit row
+  TUnit`, the parameters and `untailed result`; rule H′, the FX033
+  repair of 2026-10-25 on branch fx033-resultc-tail); otherwise the use's own
   effect-row variable `⟨p, result clauses⟩` (`kept`: `Hole meta | not
   (occurs meta) → Just (Hole next)`); closed when R is closed (`kept
   =<< tail` with no tail); any other tail as it stands (`other → Just
@@ -665,8 +667,11 @@ records") and derives nothing from checker state; I3 refuses a
 package-supplied C, label or fixed mark at that site (design).
 - A ResultC: labels exactly R's at the use, bare (`Fail` heads kept),
   in order and count; marks N, M or the use's `Instantiated` k; tail as
-  recorded: R's tail variable (occurring in a parameter or the callee's
-  own row), the use's own `⟨p, result clauses⟩`, or closed when R is
+  recorded: R's tail variable (occurring in a parameter, in the
+  callee's own row, or in the result type outside R's own tail
+  position: L's arguments, Ls's label arguments and everything nested
+  in them; rule H′, FX033), the use's own `⟨p, result clauses⟩` only
+  when the variable occurs as R's tail alone, or closed when R is
   closed.
 - An annotation C: labels exactly R's, bare; marks written or its own
   `Annotation` positions, distinct from R's; tail always its own
@@ -677,10 +682,11 @@ wherever its type meets another; a `Free` binding defaults to the
 closed row (§6, the tail pass's closing). Reasoned: a larger C or a
 rigid tail only adds E5's pairing, frame and per-key count constraints
 and Definition 4.1's equalities, so no binding of such a tail is weaker
-than the closed row. The ResultC tail rule's soundness rests on the
-parametricity claim in ResultClauses.purs's comment ("by parametricity
-its clauses reach nothing else through R's tail"): open decision 3
-(§14). The annotation tail follows FX008 §3.4 (a local annotation's C
+than the closed row. The ResultC tail rule is H′
+(docs/plans/r0-amin-resultc-tail.md §5; implemented in the compiler as
+the narrow FX033 repair, 2026-10-25). Whether H′ suffices rests on
+RC′'s informal, unproved argument (§6 there: P4, O-SUB, A1): open
+decision 3 (§14). The annotation tail follows FX008 §3.4 (a local annotation's C
 "has a fresh tail meta", review M5).
 
 **E5, installation `with h { body }`.** m and C are read from h's marked
@@ -1167,7 +1173,7 @@ followed by the rows revision 3.1 adds and then those 3.3 adds:
 | recorded ResultC (F2, F3) | `mk()` as in the owned-C row, a package carrying a C for the use's site: `Malformed` (no package slot; the C is in `instances`) | a package-side ResultC |
 | annotation C below the top (F6) | `let k = fn(f: Unit -> Handler(nofail Ask with Log)) => with f(()) { defer Ask.ask() }`: the handler type in the arrow's result owns a recorded C; a package dropping its `Log` label: `Malformed` | C only for the outermost handler type |
 | closed source (F7) | `fn g(h: Unit -> Unit with Log): Unit with Log + Ask = h(())`: accepted; no remainder condition, no copy edge for `Ask` | a remainder rule applied to closed sources |
-| recording, generation side (F3) | one generation fixture per `ownClauses` tail case (occurs in a parameter; occurs in the callee's row; occurs only in the result; R closed): the recorded tail is R's variable, R's variable, `⟨p, result clauses⟩`, closed | derivation reading checker state |
+| recording, generation side (F3) | one generation fixture per `ownClauses` tail case (occurs in a parameter; occurs in the callee's row; occurs in the result outside R's tail, as in FX033's x1 (H′, 2026-10-25); occurs only as R's tail; R closed): the recorded tail is R's variable, R's variable, R's variable, `⟨p, result clauses⟩`, closed | derivation reading checker state |
 
 ## 13. U6: coverage of generated obligations (argument)
 
@@ -1665,7 +1671,7 @@ typed abort; hence no deferred expression ends in a typed abort).
 | E3 opening at use (an M handled label in a parameter, an N one in the result, made fresh) | accepts handler values at weakening positions | [FX008-3.4] D3; callback rows never opened ("would be unsound") (argued) | P (sound by argument) |
 | E4 c into C with marks (C ⊑ c); c into R ignoring marks | C over-approximates what the clauses perform, with their assumptions | [FX008-5] point 1 (argued) | S |
 | E4 own abort: `Fail` or rigid tail in a clause gives M ⊑ m | a handler whose clause may abort by itself is not N | [FX008-5] point 1 (argued) | S |
-| E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail by `ownClauses`' occurs rule; an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail: ResultClauses.purs's comment, by parametricity clauses reach nothing else through a tail the caller cannot fill (argued in a code comment only); annotation tail: FX008 §3.4, review M5 (argued) | S; **argument needed** for the ResultC tail (decision 3) |
+| E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail by `ownClauses`' occurs rule; an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail: rule H′ (FX033 repair, 2026-10-25), argued informally in r0-amin-resultc-tail.md §6 (RC′; P4, O-SUB and A1 unproved); the earlier parametricity comment was refuted by FX033's x1; annotation tail: FX008 §3.4, review M5 (argued) | S; **argument needed** for the ResultC tail (decision 3) |
 | C rows bare (no label arguments) | marks attach to effect keys; dispatch is by key | Task 7 ruling; [FX008-5] point 1 reads C only for keys and marks (argued) | S by argument; C for the ruling |
 | E5 R into ρ ignoring marks: inclusion for a closed R only; Definition 4.2 for a rigid-tailed R (3.5) | effect safety of the handler's inference row in its context | [L17] (published, adapted); marks dead (argued); Definition 4.2's row for a rigid-tailed R | S; separating example p1 (refused); closed-R inclusion control added in 3.5 (oracle agent; no result claimed here) |
 | E5 frame edges m ⊑ f, paired ρ marks ⊑ f, rigid C tail gives M ⊑ f | frames are honest | [FX008-5] point 1 (argued) | S |
@@ -1719,7 +1725,11 @@ decided and listed as the precedent.
    own `with` row, which accepts unsound programs; a-min records it as
    unsupported. Listed as the precedent for this rule.
 3. **E4′'s ResultC tail rule rests on a parametricity claim in a code
-   comment** (ResultClauses.purs; open). It is soundness-relevant (a
+   comment** (ResultClauses.purs; open). Update 2026-10-25: the claim
+   was refuted by FX033's x1; the compiler now implements H′ as a
+   narrow repair (branch fx033-resultc-tail), refusing c1 and x1z as a
+   temporary precision limitation. Whether H′ suffices is still open:
+   RC′ is argued, not proved. It is soundness-relevant (a
    ResultC's tail decides which outer frames its clauses can reach) and
    has no independent argument. Separating example to construct: a
    callee returning a handler whose clauses call a callback through a

@@ -6180,3 +6180,23 @@ x1z; the RC′ argument needs more than O-SUB provides. A test-first
 FX033 repair proposal is recorded. Its implementation, and acceptance
 of the c1/x1z losses, need the author's decision. Nothing else changes
 status.
+
+### 18.91 FX033 repair authorized and implemented; closures (2026-10-25)
+
+The author ratified three bounded closures. (1) Arithmetic Task 1
+accepted subject to a closure, done on d001-arith (4b14d8a): a
+structural `a + b + c` grouping test with a parenthesized control,
+shown failing against a re-associating mutant, and Task 1's
+verification recorded with retained and reported evidence kept apart.
+Tasks 3-7 stay held. (2) The narrow, test-first H′ repair of FX033,
+with c1 and x1z accepted as temporary conservative refusals, a
+precision limitation and not language policy. Implemented on branch
+fx033-resultc-tail from main a82d064 (3980562, b192f8e): the nine
+shapes refused with the pinned diagnostic, controls unchanged,
+restored-defect row `fx033-result-type`, full verify exit 0. E4′ and
+the related statements text updated here (r0-amin-statements.md).
+Not established: RC′, O-SUB, effect soundness. Not authorized: broader
+a-min implementation, Task 4.6, G-D1. (3) Scoping records closed on
+research/charter-scoping (4d29d11): F1-F4 filed as FX034, E021, E022,
+DOC002; stale summaries corrected with dated history; the map revised
+for Codex's S1-S7 and kept a planning proposal. No merge, no push.
