@@ -1,0 +1,148 @@
+-- The effect problem recorded beside the type problem (a-min statements,
+-- docs/plans/r0-amin-statements.md §2, §4, §10): marked types, effect
+-- variables, positions and the obligations a checker will discharge.
+-- Plain data; generation fills it and nothing here reaches checking.
+module Domain.Recorded.Effect
+  ( ERole(..)
+  , EVar(..)
+  , EffectProblem
+  , Fixed(..)
+  , MLabel
+  , MRow
+  , MTy(..)
+  , MarkRef(..)
+  , Obligation(..)
+  , Position(..)
+  , SiteKind(..)
+  , UnsupportedKind(..)
+  , emptyEffects
+  ) where
+
+import Prelude
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe)
+import Data.Tuple (Tuple)
+import Domain.Ids (EffectId)
+import Domain.Recorded.Atom (Base, Var)
+import Domain.Recorded.Origin (Entry, Path)
+import Domain.Row (EffectRef)
+import Domain.Type (TypeId, VarId)
+
+-- An effect variable: a rigid one by its `VarId`, a fresh one by the path
+-- of the node that minted it and its role there.
+data EVar = EffRigid VarId | EffFresh Path ERole
+
+-- `AnnotationClauses j k`: parameter j's annotation, k-th eligible
+-- handler occurrence in it (pre-order).
+data ERole
+  = EffInst VarId
+  | EffectOf
+  | ResultClauses
+  | HandlerInference
+  | HandlerClauses
+  | Clauses Int
+  | AnnotationClauses Int Int
+  | Stage Int
+
+data Fixed = FixedN | FixedM | FixedRigid String
+
+-- `Annotation p j n`: parameter j's annotation, n-th unwritten mark in it
+-- (pre-order, R's and every C's marks counted once each).
+data Position
+  = Frame Path
+  | Literal Path
+  | Opened Path
+  | Annotation Path Int Int
+  | Instantiated Path String
+
+data MarkRef = Written Fixed | At Position
+
+type MLabel = { effect ∷ EffectRef, args ∷ Array MTy, mark ∷ MarkRef }
+
+type MRow = { labels ∷ Array MLabel, tail ∷ Maybe EVar }
+
+data MTy
+  = MBase Base
+  | MVar Var
+  | MArrow MTy MRow MTy
+  | MRecord (Array (Tuple String MTy)) (Array Var)
+  | MData TypeId (Array MTy) (Array MRow)
+  | MHandler MLabel { inference ∷ MRow, clauses ∷ Maybe MRow }
+
+data SiteKind
+  = AtCall
+  | AtPerform
+  | AtApply
+  | AtPipe
+  | AtStage Int
+  | AtCallback
+  | AtDefer
+  | AtInstalledC
+  | AtDeferredRow
+  | ClauseIntoR Int
+  | ClauseIntoC Int
+  | InstallR
+
+data UnsupportedKind = OperationWithRow EffectId Int
+
+data Obligation
+  = Equal MTy MTy
+  | Consume
+      { site ∷ SiteKind
+      , source ∷ MRow
+      , target ∷ MRow
+      , marks ∷ Boolean
+      , bare ∷ Boolean
+      }
+  | HandlerLit
+      { m ∷ Position
+      , inference ∷ EVar
+      , clauses ∷ EVar
+      , clauseRows ∷ Array EVar
+      }
+  | Install { frame ∷ Position, handler ∷ MTy, ambient ∷ MRow }
+  | Defer { row ∷ EVar, enclosing ∷ MRow }
+  | Entry MRow
+  | FailConcrete MTy
+  | Unsupported UnsupportedKind
+
+type EffectProblem =
+  { obligations ∷ Array (Entry Obligation)
+  , nodes ∷ Map Path MTy -- each node's marked type (beside `types`)
+  , instances ∷ Map Path MTy
+  , annotations ∷ Map Path MTy
+  , rigidMarks ∷ Array String
+  , effectRigids ∷ Array VarId
+  , arities ∷ Map Path Int
+  , ambient ∷ Map Path MRow
+  , flexEff ∷ Array EVar
+  , positions ∷ Array Position
+  }
+
+emptyEffects ∷ EffectProblem
+emptyEffects =
+  { obligations: []
+  , nodes: Map.empty
+  , instances: Map.empty
+  , annotations: Map.empty
+  , rigidMarks: []
+  , effectRigids: []
+  , arities: Map.empty
+  , ambient: Map.empty
+  , flexEff: []
+  , positions: []
+  }
+
+derive instance eqEVar ∷ Eq EVar
+derive instance ordEVar ∷ Ord EVar
+derive instance eqERole ∷ Eq ERole
+derive instance ordERole ∷ Ord ERole
+derive instance eqFixed ∷ Eq Fixed
+derive instance eqPosition ∷ Eq Position
+derive instance ordPosition ∷ Ord Position
+derive instance eqMarkRef ∷ Eq MarkRef
+derive instance eqMTy ∷ Eq MTy
+derive instance eqSiteKind ∷ Eq SiteKind
+derive instance eqUnsupportedKind ∷ Eq UnsupportedKind
+derive instance eqObligation ∷ Eq Obligation

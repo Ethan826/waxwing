@@ -9,6 +9,7 @@ const Recorded = await load('Domain.Recorded');
 const Internal = await load('Domain.Recorded.Internal');
 const Atom = await load('Domain.Recorded.Atom');
 const Origin = await load('Domain.Recorded.Origin');
+const Effect = await load('Domain.Recorded.Effect');
 const Maps = await load('Data.Map.Internal');
 const Foldable = await load('Data.Foldable');
 const Tuple = await load('Data.Tuple');
@@ -56,7 +57,8 @@ const fieldsOf = () => ({
     position: Atom.NodeType.create(body) }]]),
   types: mapOf(Origin.ordPath, [[body, Atom.TVar.create(res)],
     [argument, intType]]),
-  holders: { declared: setOf([0]), holding: setOf([]) }
+  holders: { declared: setOf([0]), holding: setOf([]) },
+  effects: Effect.emptyEffects
 });
 
 const problem = changes => Internal.RecordedProblem({ ...fieldsOf(),
@@ -64,7 +66,8 @@ const problem = changes => Internal.RecordedProblem({ ...fieldsOf(),
 const equal = (a, b) => Internal.eqRecordedProblem.eq(a)(b);
 
 const names = ['decl', 'rigidTy', 'rigidRow', 'flexTy', 'flexRow', 'd',
-  'q', 'b', 'bq', 'outside', 'adm', 'split', 'vars', 'types', 'holders'];
+  'q', 'b', 'bq', 'outside', 'adm', 'split', 'vars', 'types', 'holders',
+  'effects'];
 
 test('the view has exactly T-R0b §10 fields, read back unchanged', () => {
   const view = Recorded.fields(problem({}));
@@ -86,7 +89,8 @@ test('problems built alike compare equal; a change in any field does not',
     q: fieldsOf().bq, b: [], bq: [], outside: [],
     adm: [], split: fieldsOf().adm,
     vars: mapOf(Atom.ordVar, []), types: mapOf(Origin.ordPath, []),
-    holders: { declared: setOf([0]), holding: setOf([0]) }
+    holders: { declared: setOf([0]), holding: setOf([0]) },
+    effects: { ...Effect.emptyEffects, rigidMarks: ['a'] }
   };
   assert.deepEqual(Object.keys(changed).sort(), [...names].sort());
   for (const name of names)

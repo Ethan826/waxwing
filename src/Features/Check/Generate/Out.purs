@@ -5,6 +5,7 @@
 -- listed order (§6 "Index"), so the index is fixed by the rule alone.
 module Features.Check.Generate.Out
   ( At
+  , EffectItem(..)
   , Item(..)
   , Listed
   , Out
@@ -26,6 +27,13 @@ import Domain.Recorded.Atom
   , Var
   , VarInfo
   )
+import Domain.Recorded.Effect
+  ( EVar
+  , MRow
+  , MTy
+  , Obligation
+  , Position
+  )
 import Domain.Recorded.Origin
   ( Entry
   , Origin
@@ -36,6 +44,7 @@ import Domain.Recorded.Origin
   )
 import Domain.Resolved (FunctionId)
 import Domain.Syntax (Span)
+import Domain.Type (VarId)
 
 type Out =
   { d ∷ Array (Entry Atom)
@@ -46,7 +55,21 @@ type Out =
   , split ∷ Array (Entry CallSite)
   , vars ∷ Array (Tuple Var VarInfo)
   , types ∷ Array (Tuple Path RTExpr)
+  , effects ∷ Array EffectItem
   }
+
+-- What a rule adds to the effect problem (a-min §10), in emission order.
+data EffectItem
+  = Obliged (Entry Obligation)
+  | NodeAt Path MTy
+  | InstanceAt Path MTy
+  | AnnotationAt Path MTy
+  | RigidMark String
+  | EffectRigid VarId
+  | ArityAt Path Int
+  | AmbientAt Path MRow
+  | MintedVar EVar
+  | MintedPosition Position
 
 -- Which part of the problem an entry joins.
 data Item
@@ -69,7 +92,16 @@ data TypeMarker = OverRecords | Application | HandlerMark
 
 noOut ∷ Out
 noOut =
-  { d: [], b: [], bq: [], outside: [], adm: [], split: [], vars: [], types: [] }
+  { d: []
+  , b: []
+  , bq: []
+  , outside: []
+  , adm: []
+  , split: []
+  , vars: []
+  , types: []
+  , effects: []
+  }
 
 -- One pass per field over every part, so a node of many children costs
 -- linear time (never an append per child).
@@ -83,6 +115,7 @@ concatOut outs =
   , split: Array.concatMap _.split outs
   , vars: Array.concatMap _.vars outs
   , types: Array.concatMap _.types outs
+  , effects: Array.concatMap _.effects outs
   }
 
 -- The rule's entries at its path, indexed in listed order.

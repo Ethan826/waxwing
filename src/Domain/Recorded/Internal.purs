@@ -17,6 +17,7 @@ import Domain.Recorded.Atom
   , VarInfo
   )
 import Domain.Recorded.Origin (Entry, Path)
+import Domain.Recorded.Effect (EffectProblem)
 import Domain.Resolved (FunctionId)
 
 -- T-R0b §10's shape, verbatim. `decl` is carried unconditionally, so
@@ -37,6 +38,7 @@ type Fields =
   , vars ∷ Map Var VarInfo -- §5.2, site table
   , types ∷ Map Path RTExpr -- §5.2, site table
   , holders ∷ Holders -- ruling K-a: the program's holder set
+  , effects ∷ EffectProblem -- a-min §10; empty until rules emit
   }
 
 newtype RecordedProblem = RecordedProblem Fields

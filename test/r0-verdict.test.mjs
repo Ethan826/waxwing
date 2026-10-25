@@ -126,7 +126,8 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
     assert.ok(seen.has('Features.Check.Outcomes'));
     assert.ok('Domain.Verdict.Admission' in graph);
     assert.deepEqual([...seen].filter(r0).sort(), ['Domain.Recorded',
-      'Domain.Recorded.Atom', 'Domain.Recorded.Internal',
+      'Domain.Recorded.Atom', 'Domain.Recorded.Effect',
+      'Domain.Recorded.Internal',
       'Domain.Recorded.Origin', 'Domain.Verdict',
       'Domain.Verdict.Counter', 'Domain.Verdict.Internal',
       'Domain.Verdict.Open', 'Domain.Verdict.Search', 'Domain.Verdict.Static',
@@ -148,11 +149,18 @@ test('the CLI reaches the R0 types only through the driver (Task 1.2)',
       + '(Classify|Decide|Entailed|Generate|GroundRule|Mentions|Outcomes'
       + '|Refute|Spine|Strategy|Admit|Checking)(\\.|$)').test(name);
     const allowed = ['Domain.Recorded', 'Domain.Recorded.Atom',
-      'Domain.Recorded.Internal', 'Domain.Recorded.Origin', 'Domain.Verdict',
+      'Domain.Recorded.Effect', 'Domain.Recorded.Internal',
+      'Domain.Recorded.Origin', 'Domain.Verdict',
       'Domain.Verdict.Counter', 'Domain.Verdict.Internal',
       'Domain.Verdict.Open',
       'Domain.Verdict.Search', 'Domain.Verdict.Static',
       'Domain.Verdict.Theorem.Internal', 'Domain.Verdict.Unsound',
       'Domain.Verdict.Witness', 'Features.Check.Outcomes'];
     assert.deepEqual([...seen].filter(added).sort(), allowed.sort());
+    // Domain.Recorded.Effect is allowed on condition that it grants no
+    // generation or checking reachability (dossier §18.97): plain data
+    // that imports Prelude, Data.* and Domain.* only.
+    const plain = /^(Prelude|Data\..*|Domain\..*)$/;
+    assert.deepEqual(graph['Domain.Recorded.Effect'].depends
+      .filter(name => !plain.test(name)), []);
   });

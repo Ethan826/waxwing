@@ -119,6 +119,7 @@
    "SeveralTailSubtraction",
    "SecondSpread",
    "ClassF",
+   "EffectsUnchecked",
    "Solved",
    "Contradiction",
    "Unresolved",
@@ -597,6 +598,7 @@
  "Features.Check.Generate.Out": {
   "source": [
    "At",
+   "EffectItem(..)",
    "Item(..)",
    "Listed",
    "Out",
@@ -607,6 +609,16 @@
    "varsOut"
   ],
   "compiled": [
+   "Obliged",
+   "NodeAt",
+   "InstanceAt",
+   "AnnotationAt",
+   "RigidMark",
+   "EffectRigid",
+   "ArityAt",
+   "AmbientAt",
+   "MintedVar",
+   "MintedPosition",
    "ToD",
    "ToB",
    "ToBQ",

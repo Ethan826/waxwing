@@ -51,7 +51,7 @@ import Features.Check.Generate.Elab.Internal
   )
 import Features.Check.Generate.Elab.Log (Log, entries)
 import Features.Check.Generate.Fault (GenerationFault)
-import Features.Check.Generate.Out (Out, concatOut)
+import Features.Check.Generate.Out (Out, concatOut, noOut)
 
 readType ∷ ∀ s. CheckedName → Handle s → Elab s (Ty Open)
 readType = readAs TypeSort
@@ -83,16 +83,7 @@ sealed header { value: Elab elab, parts } = Elaborating
   pieces = entries parts
   outs = mapMaybe wroteOut pieces
   sites = mapMaybe sitedPair pieces
-  typed =
-    { d: []
-    , b: []
-    , bq: []
-    , outside: []
-    , adm: []
-    , split: []
-    , vars: []
-    , types: mapMaybe nodeType sites
-    }
+  typed = noOut { types = mapMaybe nodeType sites }
   build witness = elab.run (witness ∷ Witness).bindings
 
 wroteOut ∷ Piece → Maybe Out

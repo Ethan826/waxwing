@@ -44,6 +44,7 @@ import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
 import Domain.Recorded (AtomId, OutsideKind, RecordedProblem)
 import Domain.Recorded.Atom (Var)
+import Domain.Recorded.Effect (UnsupportedKind)
 import Domain.Type (Ty)
 import Domain.Verdict.Internal
   ( CX
@@ -145,6 +146,7 @@ data Unsupport
   | SeveralTailSubtraction
   | SecondSpread
   | ClassF Question
+  | EffectsUnchecked (Array UnsupportedKind)
 
 type LimitAt = { limit ∷ LimitReached, site ∷ Site }
 

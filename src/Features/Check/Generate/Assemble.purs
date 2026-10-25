@@ -13,11 +13,13 @@ import Prelude
 import Data.Array as Array
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Foldable (foldl)
 import Data.Tuple (Tuple(..))
 import Domain.Recorded.Atom (Holders, Quant(..), Var, VarInfo, VarSort(..))
+import Domain.Recorded.Effect (EffectProblem, emptyEffects)
 import Domain.Recorded.Internal (RecordedProblem(..))
 import Domain.Resolved (FunctionId)
-import Features.Check.Generate.Out (Out)
+import Features.Check.Generate.Out (EffectItem(..), Out)
 
 type Header = { decl ∷ FunctionId, holders ∷ Holders }
 
@@ -38,6 +40,7 @@ assemble header out = RecordedProblem
   , vars
   , types: Map.fromFoldable out.types
   , holders: header.holders
+  , effects: foldl addItem emptyEffects out.effects
   }
   where
   vars = Map.fromFoldable out.vars
@@ -52,3 +55,20 @@ assemble header out = RecordedProblem
   rigid info = case info.quant of
     Forall _ → true
     Exists → false
+
+-- One emitted effect item joins its part of the problem: lists append in
+-- emission order, maps key by path (a later item replaces an earlier one).
+addItem ∷ EffectProblem → EffectItem → EffectProblem
+addItem problem = case _ of
+  Obliged entry → problem { obligations = problem.obligations <> [ entry ] }
+  NodeAt path ty → problem { nodes = Map.insert path ty problem.nodes }
+  InstanceAt path ty →
+    problem { instances = Map.insert path ty problem.instances }
+  AnnotationAt path ty →
+    problem { annotations = Map.insert path ty problem.annotations }
+  RigidMark name → problem { rigidMarks = problem.rigidMarks <> [ name ] }
+  EffectRigid var → problem { effectRigids = problem.effectRigids <> [ var ] }
+  ArityAt path n → problem { arities = Map.insert path n problem.arities }
+  AmbientAt path row → problem { ambient = Map.insert path row problem.ambient }
+  MintedVar var → problem { flexEff = problem.flexEff <> [ var ] }
+  MintedPosition at → problem { positions = problem.positions <> [ at ] }
