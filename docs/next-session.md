@@ -22,11 +22,11 @@ table); no soundness claim. E4′'s provisional "always R's tail" forces
 R's tail and checks (shadow validator only); the live compiler keeps H′.
 Milestone 1's checking half needs the validator (A2).
 
-**Next: the author reviews the tranche 1 plan and the A2 note**
-(docs/plans/2026-10-25-amin-tranche-1-plan.md,
-docs/plans/2026-10-25-amin-a2-options.md; scope accepted, §18.96).
-Execution needs the author's yes and execution mode; A2's inputs 1-4
-should be decided before Task 1 is final. Checkpoint A after Task 5.
+**In progress: tranche 1, Checkpoint A** (Tasks 1-6 of
+docs/plans/2026-10-25-amin-tranche-1-plan.md), subagent execution,
+budget 1.6-2.4M tokens with a stop and report before 2.4M (§18.97).
+Stop after Task 6 for the author. A2 note:
+docs/plans/2026-10-25-amin-a2-options.md (questions 1-3 open).
 A2's algorithm, G-D1's closure record and Task 4.6 stay unauthorized.
 The critical path and part A/B status: docs/plans/r0-closure-checklist.md.
 

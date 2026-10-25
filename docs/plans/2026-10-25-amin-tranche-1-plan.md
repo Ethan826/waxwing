@@ -5,7 +5,8 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status: **for review; implementation not authorized.** The author
+Status: **corrected per the author's review (§18.97); Tasks 1-6
+(Checkpoint A) authorized for subagent execution; Tasks 7-14 not.** The author
 accepted the scope (dossier §18.96) and asked for this plan and the A2
 options note (docs/plans/2026-10-25-amin-a2-options.md) for review.
 
@@ -79,9 +80,9 @@ the author's conditions in dossier §18.96.
 2. An annotation C's tail is fresh even when R is closed or rigid (F6).
    Task 4.
 3. O1 and O2 are recorded; with either removed, §12.1's programs lose
-   their equation. Task 6.
+   their equation. Task 7.
 4. A handler declaration is never Solved, with or without recorded
-   obligations. Task 11.
+   obligations. Tasks 5 and 12.
 5. Marked and erased layers agree: erasing every node's `MTy` gives the
    type its atoms use, corpus-wide. Task 4.
 
@@ -91,7 +92,7 @@ the author's conditions in dossier §18.96.
 |---|---|---|
 | test/r0-first-diagnostic.serial.test.mjs | every pinned-corpus program: SHA-256 of accepted Go text, wired first diagnostic of rejected | programs outside the pinned corpus |
 | test/r0-verdict.test.mjs, "the CLI reaches the R0 types only through the driver" | from Program.Main, no generation, checking or strategy module reachable; only listed data modules | behaviour of the reachable data modules |
-| test/r0-problem-pin.serial.test.mjs | every corpus declaration's atoms, byte for byte (G0 sees the same problem) | the new `effects` record (Task 13 pins it separately) |
+| test/r0-problem-pin.serial.test.mjs | every corpus declaration's atoms, byte for byte (G0 sees the same problem) | the new `effects` record (Task 14 pins it separately) |
 | test/compiler.test.mjs | examples/ run through the CLI and Go | — |
 
 The verified boundary statement: generation is **unreachable from live
@@ -132,10 +133,14 @@ test/r0-effects-canonical.mjs.
 ```purescript
 data EVar = EffRigid VarId | EffFresh Path ERole
 data ERole = EffInst VarId | Effect | ResultClauses | HandlerInference
-  | HandlerClauses | Clauses Int | AnnotationClauses Int | Stage Int
+  | HandlerClauses | Clauses Int | AnnotationClauses Int Int | Stage Int
 data Fixed = FixedN | FixedM | FixedRigid String
 data Position = Frame Path | Literal Path | Opened Path
   | Annotation Path Int Int | Instantiated Path String
+-- AnnotationClauses j k: parameter j's annotation, k-th eligible
+-- handler occurrence in it (pre-order). Annotation p j n: parameter
+-- j's annotation, n-th unwritten mark in it (pre-order, R's and every
+-- C's marks counted once each).
 data MarkRef = Written Fixed | At Position
 type MLabel = { effect ∷ EffectRef, args ∷ Array MTy, mark ∷ MarkRef }
 type MRow = { labels ∷ Array MLabel, tail ∷ Maybe EVar }
@@ -175,13 +180,14 @@ emptyEffects ∷ EffectProblem
 and `positions` are A2 inputs 3-4, `SiteKind` input 1. If the author
 rules an input out, drop its field here.
 
-- [ ] **Step 1: failing test** `test/r0-effects-types.test.mjs`,
-  "every declaration records an effects record, empty in Task 1": for
-  each declaration of `examples/services.wxw`,
-  `fields(problem).effects` encodes (r0-effects-canonical) to
-  `{obligations: [], instances: [], annotations: [], rigidMarks: [],
-  effectRigids: [], arities: [], ambient: [], flexEff: [],
-  positions: []}`.
+- [ ] **Step 1: failing tests** `test/r0-effects-types.test.mjs`:
+  "emptyEffects is empty" (`emptyEffects` encodes, through
+  r0-effects-canonical, to `{obligations: [], instances: [],
+  annotations: [], rigidMarks: [], effectRigids: [], arities: [],
+  ambient: [], flexEff: [], positions: []}`); "every generated
+  declaration carries an effects record" (for each declaration of
+  `examples/services.wxw`, `fields(problem).effects` has exactly those
+  nine keys; contents not asserted, so later tasks never weaken it).
 - [ ] **Step 2:** run `node --test test/r0-effects-types.test.mjs`;
   expected FAIL (`effects` undefined).
 - [ ] **Step 3:** add the types; `Fields.effects`; `Out.effects ∷
@@ -189,8 +195,11 @@ rules an input out, drop its field here.
   `assemble` folds items into `EffectProblem` (empty while no rule
   emits). `Unsupport += EffectsUnchecked (Array UnsupportedKind)`.
 - [ ] **Step 4:** the allowlist in test/r0-verdict.test.mjs gains
-  `Domain.Recorded.Effect` (plain data, as Domain.Recorded.Atom; named
-  for the author's approval in the commit message); re-pin the trusted
+  `Domain.Recorded.Effect` (plain data, as Domain.Recorded.Atom;
+  approved by the author, §18.97, on condition that it grants no
+  generation or checking reachability), and a new assertion that its
+  imports are Prelude, Data.* and Domain.* only (so a later import of a
+  Features.* module fails the gate); re-pin the trusted
   surface; `npm run build`; the new test and test/r0-verdict.test.mjs
   pass; test/r0-problem-pin.serial.test.mjs passes unchanged.
 - [ ] **Step 5: commit** the listed files.
@@ -204,7 +213,7 @@ test/r0-marked.test.mjs.
 ```purescript
 data MarkNaming s = Declared
   | AtUse Path (Array (Maybe (Handle s)))   -- type handles as Translate
-  | InAnnotation Path Int                   -- annotation index i
+  | InAnnotation Path Int                   -- parameter index j
 marked ∷ ∀ s. Tables → MarkNaming s → Ty VarId → Either GenerationFault MTy
 ```
 Rules (statements §2, §3): `Declared` keeps a declared effect-row
@@ -212,7 +221,7 @@ variable as `EffRigid`, written marks `Written` (`nofail` N, plain M,
 `nofail(k)` `FixedRigid k`); `AtUse p` makes each effect-row variable
 `EffFresh p (EffInst v)` and each `nofail(k)` `At (Instantiated p k)`,
 one position per k across the whole signature (T2-c); an unwritten
-annotation mark is `At (Annotation p i j)`, j its occurrence index; a
+annotation mark is `At (Annotation p j n)` (Task 1's comment); a
 Console label is always `Written FixedN` (T3-e). C is absent here
 (Task 4 adds owned Cs).
 
@@ -268,7 +277,7 @@ test/r0-owned-clauses.test.mjs.
 **Interfaces:** produces
 ```purescript
 resultClauses ∷ Path → MTy → MTy   -- instance type, ResultC added (H′)
-annotationClauses ∷ Path → Int → MTy → MTy  -- owned C, fresh tail (F6)
+annotationClauses ∷ Path → Int → MTy → MTy  -- param j; owned Cs (F6)
 ```
 `resultClauses`: when the instantiated result is a top-level
 `MHandler`, C = R's labels bare (no arguments; `Fail` keeps its
@@ -276,8 +285,10 @@ payload head), R's marks, tail R's tail variable when it occurs in a
 parameter, in the callee's own row, or in the result with R's tail
 dropped; else `EffFresh p ResultClauses`; closed when R is closed.
 `annotationClauses`: every handler type not inside another's rows gets
-C with R's labels bare, marks `At (Annotation p i j)` distinct from
-R's, tail `EffFresh p (AnnotationClauses i)`. The lambda's effect row
+C with R's labels bare, marks `At (Annotation p j n)` distinct from
+R's, tail `EffFresh p (AnnotationClauses j k)`, k the occurrence's
+pre-order index among the annotation's eligible handler types, so two
+sibling handler types never share a tail. The lambda's effect row
 is `EffFresh p Effect`; instances go to `effects.instances` at the
 use's path, annotations to `effects.annotations`. `assemble` collects
 every `EffFresh` minted into `flexEff`.
@@ -288,18 +299,33 @@ every `EffFresh` minted into `flexEff`.
   tails R's, R's, R's, `EffFresh p ResultClauses`, closed; "annotation
   C below the top" (`fn(f: Unit -> Handler(nofail Ask with Log))`: the
   arrow result's handler type owns C with label `Log` bare, tail
-  `AnnotationClauses 0`); "annotation C tail fresh with closed R".
+  `AnnotationClauses 0 0`); "annotation C tail fresh with closed R";
+  "sibling handler types get distinct C tails" (`fn(f:
+  Handler(nofail Ask with Log) -> Handler(nofail Tick with Log))`:
+  tails `AnnotationClauses 0 0` and `AnnotationClauses 0 1`, distinct);
+  "no position or effect variable minted twice" (the minted lists'
+  lengths equal their set sizes, checked before any set comparison).
   Corpus test extended to lambda, handler, `with`, `handle` nodes.
 - [ ] **Step 2:** run; FAIL.
 - [ ] **Step 3:** implement; markers untouched.
 - [ ] **Step 4:** run; PASS; markers unchanged (problem pin).
 - [ ] **Step 5: commit.**
 
-**Checkpoint A (author review):** Tasks 1-4 and 5 are the
-representation's recorded form. Stop after Task 5 for the author's
-review before obligations (Tasks 6-9).
+### Task 5: the blocking boundary (Checkpoint A)
 
-### Task 5: R031's two repairs
+**Files:** create test/r0-effects-boundary.test.mjs.
+
+- [ ] **Step 1: test** "no handler declaration is Solved": for every
+  corpus declaration whose recorded effects hold a handler-typed
+  instance or annotation, or whose source has a handler literal, `with`
+  or `handle`, the shadow verdict is not Solved and its `outside` list
+  holds `HandlerType` (or `FailFamily` for `handle`).
+- [ ] **Step 2:** passes on the tree as built (it pins a boundary).
+- [ ] **Step 3: regression proof:** in an isolated copy, suppress the
+  `HandlerType` marker in Node.purs `markersAt`; the test fails.
+- [ ] **Step 4: commit.** Task 12 extends it to obligations.
+
+### Task 6: R031's two repairs
 
 **Files:** Control.purs:149-151 (annotated parameter), Translate.purs
 `rowOf`, Generate/Elab/Image.purs; rewrite test/r0-r031.test.mjs;
@@ -308,7 +334,8 @@ BACKLOG.md R031.
 - [ ] **Step 1:** rewrite both tests to today's form: the annotation's
   ambient tail in `build`'s body is a `Hole`, not `Rigid` (defect 1);
   `Thunk` has one row at the constructor and one at the image
-  (defect 2). Keep the old assertions in the commit message.
+  (defect 2). The old assertions go verbatim into the commit message
+  and the BACKLOG closure.
 - [ ] **Step 2:** run; FAIL on both (the defects stand).
 - [ ] **Step 3:** translate the annotation with the lambda's own
   effect row in place of the declaration's ambient variable (a hole in
@@ -316,10 +343,17 @@ BACKLOG.md R031.
   closed rows.
 - [ ] **Step 4:** run; PASS. test/r0-elab-corpus.serial.test.mjs's T2
   pins unchanged (prediction: T2 erases these rows); any move listed.
-- [ ] **Step 5:** regression proof per defect (restore each, see its
-  test fail); BACKLOG R031 → closed with commits; **commit.**
+- [ ] **Step 5:** regression proof per defect (restore each in an
+  isolated copy, see its rewritten test fail; record both outputs in
+  progress.md); BACKLOG R031 closed with commits; **commit.**
 
-### Task 6: E1 equations, O1 and O2 included
+**Checkpoint A (author review):** Tasks 1-6 are the representation's
+recorded form with the boundary pinned. Stop after Task 6, run
+`npm run verify` under the lock, report, and wait for the author before
+Task 7. Budget: 1.6-2.4M tokens; stop and report before exceeding
+2.4M.
+
+### Task 7: E1 equations, O1 and O2 included
 
 **Files:** create Generate/Obligation.purs (`equalAt ∷ At → MTy → MTy
 → Tagged s`); every rule that emits `GenEqual`; Effect.purs
@@ -336,7 +370,7 @@ test/r0-obligations-equal.test.mjs.
 - [ ] **Step 2:** FAIL. **Step 3:** implement. **Step 4:** PASS.
 - [ ] **Step 5:** regression proofs (drop O1; drop O2); **commit.**
 
-### Task 7: consumptions and ambient rows (E2, E10, E11)
+### Task 8: consumptions and ambient rows (E2, E10, E11)
 
 **Files:** Obligation.purs (`consumeAt`, `ambientAt`); Call.purs,
 Operator.purs (pipe), Builtin.purs, Effect.purs (perform), Body.purs
@@ -355,9 +389,9 @@ each use's callee arity at its path.
   = f()`: target is g's declared row); "ambient rows recorded" (body,
   lambda, `with` body `f L + ρ` with `Frame p`, `handle` body
   `Fail(E…) + ρ`, clause, deferred expression).
-- [ ] **Steps 2-5** as Task 6; regression proof: drop the stage site.
+- [ ] **Steps 2-5** as Task 7; regression proof: drop the stage site.
 
-### Task 8: handler family (E3, E4, E5)
+### Task 9: handler family (E3, E4, E5)
 
 **Files:** Effect.purs, Callee.purs (opened label → `At (Opened p)`),
 Obligation.purs; create test/r0-obligations-handler.test.mjs.
@@ -370,11 +404,12 @@ Obligation.purs; create test/r0-obligations-handler.test.mjs.
 - [ ] **Step 1: failing tests** (§12.1 rows recorded, not judged):
   the let-bound failing handler records `HandlerLit` and the E1 joining
   h's image to `Literal p`; the owned-C program records `instances`
-  with the ResultC; "positions are exactly those minted" (a set
-  comparison over the obligations' positions).
-- [ ] **Steps 2-5** as Task 6; regression proof: drop the literal E1.
+  with the ResultC; "no position minted twice" (list length equals
+  set size), then "positions are exactly those minted" (set equality
+  with the positions the obligations, instances and annotations name).
+- [ ] **Steps 2-5** as Task 7; regression proof: drop the literal E1.
 
-### Task 9: defer, Fail, entry, FX032
+### Task 10: defer, Fail, entry, FX032
 
 **Files:** Block.purs or the `defer` rule, Failure.purs, Body.purs
 (`Entry` for `main` only), Domain/Resolved/Core.purs and
@@ -391,7 +426,7 @@ create test/r0-obligations-misc.test.mjs.
   test/r0-first-diagnostic.serial.test.mjs unchanged (Resolve touched).
 - [ ] **Step 5:** regression proof; **commit.**
 
-### Task 10: rule 1, `EffectsUnchecked`
+### Task 11: rule 1, `EffectsUnchecked`
 
 **Files:** Decide/Reason.purs `blocks`; Decide/Reason or Decide's
 reason mapping; extend test/r0-decide.test.mjs.
@@ -400,43 +435,43 @@ reason mapping; extend test/r0-decide.test.mjs.
   → Unresolved `Unsupported [EffectsUnchecked [OperationWithRow …]]`,
   never Solved, although `online` accepts; a program with no
   `Unsupported` keeps its verdict.
-- [ ] **Steps 2-5** as Task 6; regression proof: drop the new block.
+- [ ] **Steps 2-5** as Task 7; regression proof: drop the new block.
 
-### Task 11: the blocking boundary
+### Task 12: the blocking boundary, extended to obligations
 
-**Files:** create test/r0-effects-boundary.test.mjs.
+**Files:** extend test/r0-effects-boundary.test.mjs.
 
-- [ ] **Step 1: test** "no handler declaration is Solved": for every
-  corpus declaration with a recorded `HandlerLit`, `Install`, or a
-  handler-typed instance or annotation, the shadow verdict is not
-  Solved and its `outside` list holds `HandlerType`.
-- [ ] **Step 2:** passes on the tree as built (it pins a boundary,
-  not a new behaviour).
-- [ ] **Step 3: regression proof:** in an isolated copy, suppress the
-  `HandlerType` marker in Node.purs `markersAt`; the test fails.
-- [ ] **Step 4: commit.**
+- [ ] **Step 1:** add "recorded obligations never make a handler
+  declaration Solved": every declaration with a recorded `HandlerLit`
+  or `Install` is not Solved and keeps its `HandlerType` marker.
+- [ ] **Step 2:** passes; **Step 3:** the Task 5 regression proof
+  rerun against the extended test; **Step 4: commit.**
 
-### Task 12: coverage accounting (U6, bounded)
+### Task 13: coverage accounting (U6, bounded)
 
 **Files:** create test/r0-effects-coverage.test.mjs,
 test/fixtures/r0/effects-coverage.json.
 
 The fixture lists every row of statements §13 with one of:
-`{ fixture, obligation, site }` (constructible, tested),
-`{ unavailable: reason }` (not constructible today, e.g. an `Outside`
-construct G0 never reaches, with the blocking marker), or
+`{ fixture, obligation, site, verdict }` (a constructible source
+program, tested for its recorded obligation; `verdict` says whether
+the shadow verdict is blocked, which does not remove it from
+coverage: a blocked program still records obligations),
+`{ unconstructible: reason }` (no source program reaches the rule
+today, e.g. a resolve-time refusal that precedes generation), or
 `{ unfinished: reason }` (constructible, no fixture yet).
 
 - [ ] **Step 1: test:** every §13 row appears exactly once; every
   `fixture` row's program records the named obligation kind at the
   named site; the test prints the counts per class. `unfinished` rows
-  are reported as open coverage, never counted as covered.
+  are reported as open coverage, never counted as covered; an
+  `Outside` marker alone never justifies `unconstructible`.
 - [ ] **Step 2:** run; PASS for the rows it claims.
 - [ ] **Step 3:** regression proof: drop one obligation kind from
   generation; its rows fail.
 - [ ] **Step 4: commit.**
 
-### Task 13: effect pin, census, window, records
+### Task 14: effect pin, census, window, records
 
 **Files:** test/r0-effects-pin.serial.test.mjs (create),
 test/fixtures/r0/effects.json, census and window fixtures as rerun;
@@ -451,15 +486,15 @@ statements status, closure checklist (A1, 2d), progress, dossier.
 
 ## Self-review notes
 
-Spec coverage: §2's recordings (Tasks 2-4), §4's E1 (6), E2/E10/E11
-(7), E3-E5 (8), E6/E8/E9 (9), E7 and E12 are validator-side (edges
-of E2; judged in tranche 2), §9 FX032 (9, 10), §10 interfaces (1),
-§12.2 generation rows (2-10), §13 (12). Not here: I3, read-back,
+Spec coverage: §2's recordings (Tasks 2-4), §4's E1 (7), E2/E10/E11
+(8), E3-E5 (9), E6/E8/E9 (10), E7 and E12 are validator-side (edges
+of E2; judged in tranche 2), §9 FX032 (10, 11), §10 interfaces (1),
+§12.2 generation rows (2-11), §13 (13). Not here: I3, read-back,
 validator, Definition 4.1/4.2 evaluation, U8's extension.
 
 ## Execution and cost
 
-Rough, from the task list (13 tasks, three trusted-surface re-pins,
+Rough, from the task list (14 tasks, three trusted-surface re-pins,
 two corpus-wide serial tests, at least two full verifies):
 
 - **Subagent:** about 40 dispatches; 4-6M tokens; several days of
@@ -469,4 +504,8 @@ two corpus-wide serial tests, at least two full verifies):
 Recommended: **subagent**, because the tasks change trusted surface in
 many rule modules, and a per-task reviewer catches a wrong marked type
 before later tasks build on it. Checkpoint A splits the spend: Tasks
-1-5 are roughly 40% of it.
+1-6 are roughly 40% of it.
+
+**Authorized (author, 2026-10-25, §18.97):** subagent execution through
+Checkpoint A only, budget 1.6-2.4M tokens with a stop and report
+before 2.4M. Tasks 7-14 need a separate authorization.

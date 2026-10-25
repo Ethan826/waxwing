@@ -6288,3 +6288,30 @@ Delivered for review: docs/plans/2026-10-25-amin-tranche-1-plan.md (13
 tasks, Checkpoint A after Task 5) and docs/plans/2026-10-25-amin-a2-
 options.md. No implementation, live switch or soundness claim is
 authorized.
+
+### 18.97 Plan corrected; Checkpoint A authorized (2026-10-25)
+
+The author ratified a review of the plan and note: scope right, five
+corrections, then subagent execution through Checkpoint A only.
+Corrections: (1) annotation C tails are per handler occurrence
+(`AnnotationClauses j k`), with a sibling-handler fixture asserting
+distinct tails; (2) the A2 note now states E4′'s forcing as a
+deterministic step (read, settle, force to σs(R's tail), solved form,
+obligations), the certified witness and `build` using the forced
+substitution σf; (3) Task 1 tests `emptyEffects` directly and the
+record's presence separately, so no later task weakens it; (4) the
+blocking-boundary test moves into Checkpoint A (Task 5), extended in
+Task 12; (5) coverage separates unconstructible sources from
+constructible programs whose verdict is blocked, and position and
+variable minting is checked for duplicates before set comparison.
+Decisions: the plan captures the goal with these corrections;
+subagents through Checkpoint A (Tasks 1-6), not all 14 tasks; budget
+1.6-2.4M tokens, stop and report before exceeding 2.4M; the
+`Domain.Recorded.Effect` allowlist entry accepted if it grants no
+generation or checking reachability, with the gate kept able to detect
+forbidden dependencies; A2 inputs 1-4 all included. For A2, M-A gated,
+M-B as an independent oracle and R-A remain the direction; the
+differential separates graph satisfiability from an assignment's
+satisfaction; source-fidelity claims to be checked before final
+approval; the interim policy is shadow assurance only, every blocker
+kept.

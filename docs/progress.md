@@ -36,6 +36,11 @@ Tranche 1 scope accepted with conditions (dossier §18.96). Plan
 (docs/plans/2026-10-25-amin-a2-options.md) written for review; the
 proposal's import claim corrected. Docs only; width 0 over 80.
 
+Plan and A2 note corrected per the author's review (§18.97: per-
+occurrence annotation tails, E4′ forcing order, Task 1 test, boundary
+test in Checkpoint A, coverage classes, duplicate-minting checks).
+Checkpoint A (Tasks 1-6) authorized: subagents, 1.6-2.4M tokens.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

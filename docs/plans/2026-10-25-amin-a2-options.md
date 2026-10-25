@@ -24,10 +24,12 @@ The statements fix the split (§1, §8 S3; decided §18.76): soundness
 holds for any candidate from any strategy, forged ones included. So:
 
 - **Trusted:** `validateEffects` judges one completed package. It
-  solves nothing: every binding and every mark term is given, and each
-  obligation is a condition evaluated on them (§4: "none is an
-  instruction to extend, bind or merge"). A defect here can certify a
-  wrong program.
+  searches for nothing: every binding and every mark term is given,
+  and each obligation is a condition evaluated on them (§4: "none is
+  an instruction to extend, bind or merge"). The one exception is a
+  deterministic rewrite fixed by the record, E4′'s forcing (below),
+  which adds bindings the record determines and chooses nothing. A
+  defect here can certify a wrong program.
 - **Untrusted:** the search that proposes the package, including the
   least mark terms (§5, "Two solutions, kept apart"). A defect there
   can only lose acceptances: the validator refuses a bad package.
@@ -36,11 +38,36 @@ This is the certifying-algorithm pattern: an untrusted producer, a
 witness, and a small trusted checker [MMNS11]. Every option below keeps
 it; they differ in what the trusted side recomputes.
 
+## E4′'s forcing step, and the substitution that is certified
+
+E4′ (§R7b) binds a ResultC's recorded fresh tail to R's tail. The
+validator does this as one deterministic step, in this order:
+
+1. **Read** the package's substitution σ (bindings and mark terms). A
+   package binding for any `⟨p, result clauses⟩` variable is refused
+   as `Malformed` (I3: the variable is the record's to fix, not the
+   package's).
+2. **Settle** σ: holes to lowering's defaults (§6), giving σs.
+3. **Force:** for each recorded ResultC whose tail is `⟨p, result
+   clauses⟩`, add the binding `⟨p, result clauses⟩ ↦ σs(t)`, t being
+   R's tail variable in the same recorded instance type (input 2), so
+   the forced binding is an image under σs, never a bare variable
+   reference. The result is σf. Forcing reads only the record and σs.
+4. **Solved form** (V2) over σf, including the forced bindings.
+5. **Obligations** E1-E12 evaluated under σf.
+
+σf is the substitution checked, and it is the one certified: the
+witness `Certified Valid (Witnessed (strip P))` carries σf, and
+`build` reads σf, so the built typing is the forced typing (E4′: no
+correspondence with the live compiler's H′ typing is claimed). A
+ResultC recorded with R's tail or closed is untouched by step 3.
+
 ## Components and their sources
 
 | Part | What it checks | Source | Fidelity |
 |---|---|---|---|
 | V0 architecture | witness plus independent checker | [MMNS11] | faithful |
+| V1a forcing | E4′'s step 3 above | E4′ (§R7b) | Waxwing-specific; deterministic |
 | V1 settling | holes to lowering's defaults before every obligation (§6) | certify argument C1-C2, extended (U4) | Waxwing rule; the ∅ default is flagged novel (§11) |
 | V2 solved form | bindings for effect rows and marks are in solved form (U8's extension) | solved forms of unification problems [BS01] | faithful; extends the existing `solvedForm` (Strategy/Witness.purs) |
 | V3 row equality | rows equal up to scoped-label order (E1) | [L05] | faithful |
@@ -72,9 +99,19 @@ evidence model, so it would need a ruling.
 
 **M-C. M-A as the gate, M-B as a test-only differential.** The gate is
 M-A; a test runs M-B (independent code, not today's Mark.purs
-`violation`) on the corpus and requires the two verdicts to agree on
-every honest package. Keeps the trusted base at M-A's size and gives
-corpus-wide evidence for §5's claim beyond the oracle's grammar.
+`violation`) on the corpus. The two answer different questions: M-B
+says whether the graph is satisfiable at all; M-A says whether one
+proposed assignment satisfies it. So the differential checks two
+separate claims, each on its own:
+- **soundness direction:** for every package M-A accepts, M-B finds
+  the graph satisfiable (an accepted assignment implies satisfiability;
+  checked on honest and forged packages);
+- **completeness direction:** for every graph M-B finds satisfiable,
+  the least-term assignment (§5) passes M-A (satisfiability implies the
+  honest read-back's package is accepted).
+Agreement on honest packages alone would test neither claim fully. It
+keeps the trusted base at M-A's size and gives corpus-wide evidence
+for §5's claim beyond the oracle's grammar.
 
 Recommendation (for the author to accept or reject): **M-C**. It keeps
 the approved evidence model and the smallest trusted base, and the
@@ -106,7 +143,10 @@ that reaches lowering has its effect obligations validated against the
 witness used to build its checked representation; today's joint
 checker supplies that validation for the strategy that runs it.
 Shadow runs one strategy, `online`, which is that joint checker
-(Decide/Shadow.purs). Proposed interim, stated explicitly:
+(Decide/Shadow.purs). Proposed interim, stated explicitly and limited
+to shadow assurance (nothing live changes, and every existing blocker,
+rule 1's `Outside` kinds, rule 1′ and the open-requirements block,
+stays):
 
 1. While `online` is the only strategy, its acceptance stands, with
    effect assurance labelled "joint checker, untrusted" as §7.1 item 2
@@ -132,9 +172,11 @@ Each item is either already in the statements or added by this note
    exactly at §4's listed sites and treats labels-only sites (`defer`,
    deferred rows) as closed sources.
 2. **New:** each ResultC's tail variable identifiable as the use's own
-   `⟨p, result clauses⟩` (its `VarInfo` origin), with R's tail variable
-   in the same recorded instance type, so E4′'s forcing (§R7b) binds
-   one to the other from the record alone.
+   `⟨p, result clauses⟩` (its role), with R's tail variable in the same
+   recorded instance type, so E4′'s forcing (above) binds one to the
+   other's image from the record alone. Annotation C tails are
+   identified per handler occurrence (parameter j, occurrence k), so
+   two sibling handler types never share one.
 3. **New:** a `flexEff` list of flexible effect-row variables beside
    `flexTy` and `flexRow`, so V2 and I3's domain check (N10) know every
    recorded effect-row position and its sort.
@@ -156,13 +198,19 @@ author rules any of them out, the plan's Task 1 shrinks with it.
 1. Mark check: M-A, M-B or M-C.
 2. Rows: R-A (R-B is listed as rejected).
 3. Interim policy items 1-3 as stated, or amended.
-4. Inputs 1-4 recorded in tranche 1.
+4. Inputs 1-4 recorded in tranche 1. **Answered (§18.97): all four,
+   with annotation identities per handler occurrence and complete
+   position and domain accounting.** Questions 1-3 stay open; the
+   author's stated direction is M-A gated, M-B as an independent test
+   oracle, and R-A.
 
 ## References
 
 Citations come from the repository's existing references and the
 statements' reviews; they were not re-read against the sources for
-this draft.
+this draft. Each source-fidelity claim in the components table must
+be checked against its source before the author's final algorithm
+approval (author, §18.97).
 
 - [BS01] F. Baader, W. Snyder. Unification theory. Handbook of
   Automated Reasoning, ch. 8, 2001 (solved forms).
