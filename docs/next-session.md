@@ -1,39 +1,76 @@
-# RESUME HERE (2026-10-24, after the charter's approval)
+# RESUME HERE (2026-10-24, checkpoint for a context reset)
 
-**Direction.** The Waxwing charter and its adoption record are approved
-and on `origin/main` (19f49c7; README a82d064). This branch predates
-them: read them with `git show origin/main:docs/waxwing-charter.md` and
-`git show origin/main:docs/plans/2026-10-24-charter-adoption.md`. The
-author's latest explicit answer governs within its scope. Charter
-approval authorizes no implementation or proof and settles none of the
-effect-policy questions.
+**Direction.** The Waxwing charter and adoption record are approved, on
+`origin/main` (19f49c7; README a82d064). Branches cut earlier lack them:
+read with `git show origin/main:docs/waxwing-charter.md` and
+`...:docs/plans/2026-10-24-charter-adoption.md`. The author's latest
+explicit answer governs within scope (record what it supersedes). The
+charter authorizes no implementation or proof and settles no
+effect-policy question. Dossier §18.72-§18.89 records every ruling.
+
+**Agents running when this was written** (their reports arrive in this
+session as messages; check each claim before committing anything):
+1. **Arithmetic task 1, option (b)** (branch d001-arith, worktree
+   .claude/worktrees/d001-arith; authorized §18.87 item 1). On return:
+   check that each changed representation test still asserts the exact
+   operator, operand order and grouping (no `Add` projection); verify
+   before/after green; generated Go byte-identical; the two oracle
+   overclaims corrected (independent code can share a conceptual
+   defect; numeric results cannot establish grouping; Codex's check was
+   model-only). Commit explicit paths, then bring task 1 to the author
+   for review. Tasks 3-7 stay held. Recommend a charter decision-note
+   pass (C3, C8) on the arithmetic design when 3-7 come up.
+2. **Bounded ResultC adversarial review, FX033 first** (read-only;
+   brief = dossier §18.89). It reproduces x1 and controls on the main
+   build (worktree effect-kinds, src = main 2af6e40) and this branch's
+   build, reviews H′'s occurrence criterion and every caller-supplied
+   value source, challenges O-SUB, answers four questions separately
+   (H′ blocks x1? another path defeats it? accepted programs rejected?
+   what remains unestablished?), and returns a narrow test-first FX033
+   repair proposal. On return: rerun its key reproductions; record the
+   review in docs/plans/r0-amin-resultc-tail.md (a review section) and
+   the dossier; present the four answers and the proposal. FX033's
+   implementation needs separate authorization.
+3. **Charter example probes (item 2 of the type-system planning)**
+   (worktree .claude/worktrees/charter-scoping, branch
+   research/charter-scoping from origin/main a82d064). The agent writes
+   predictions first, then runs the adoption record's two examples
+   (open-record `email` plus two combined service computations;
+   `checkout`/`Database`/`DatabaseLive` with `Config` and `Logger`)
+   on the main build, and returns text. On return: store programs as
+   `research/charter-scoping/*.wxw.txt` with predictions, commands and
+   outputs; commit on research/charter-scoping.
+
+**Next, once agent 3 reports (author approved 2026-10-24):** launch
+item 1, a charter scoping map for the type-system milestones (INF001,
+K001, C001, R001/R005B, M001, I001, FX006, SCH001): per milestone the
+programmer problem, charter principles, published foundations (ADR
+014), open decisions as concrete alternatives, dependencies, and which
+adoption example exercises it, grounded in agent 3's observations;
+then a sequencing table. Docs only, on research/charter-scoping. Item 3
+(assurance-register refresh: U8, FX033, Definition 4.2, ResultC) is a
+cheap optional follow-on. Not authorized: the SCH001 decision-note
+pilot, the five effect decisions, division, any milestone design or
+implementation, provider-machinery alternatives (item 4) without a
+scope go-ahead.
 
 **Where things stand** (nothing pushed; no merge; no live switch):
-- a-min: statements revision 3.5 (docs/plans/r0-amin-statements.md),
-  dossier §18.72-§18.88. Implementation, Task 4.6 and G-D1 blocked.
-- U8 solved-form check implemented as a separate repair (7476097; pin
-  accepted, inventory row 9f547d7).
-- ResultC tail parametricity: draft claim and argument in
-  docs/plans/r0-amin-resultc-tail.md (5b12ed4). It finds the code
-  comment's claim false; the counterexample x1 compiles and runs unsafely
-  today, filed as BACKLOG FX033. Next, authorized by §18.87 item 3: a
-  bounded adversarial review of the draft (held while the charter
-  orientation ran). The author chooses E4′'s rule (the draft's H′,
-  unsupported, or R's tail). E10 and the other obligations stay open.
-- Arithmetic (branch d001-arith): task 2's oracle committed (3672c77);
-  task 1 (option (b)) in progress; tasks 3-7 await review of task 1.
-  Division deferred (memo on branch d001-int-arith).
-- Effect contracts (branch research/effect-kinds): decision memo
-  preserved, not adopted; the five decisions open; probes stored as
-  `.wxw.txt` (0cd4267).
+a-min statements revision 3.5; U8 implemented (7476097, 9f547d7); ResultC
+draft and FX033 (5b12ed4); arithmetic task 2 oracle (3672c77), division
+deferred (memo on d001-int-arith); effect contracts memo preserved, not
+adopted, five decisions open (research/effect-kinds, probes `.wxw.txt`
+0cd4267). a-min implementation, Task 4.6 and G-D1 blocked.
 
 **Rules worth keeping in view:** research probes are `.wxw.txt` (the
 pinned R0 corpus counts every tracked `.wxw`); one verify at a time via
-the shared mkdir lock; stage explicit paths; commit only after
-`node scripts/width.mjs` reports 0 lines over 80.
+`mkdir /Users/ethan/.claude/jobs/5835604b/tmp/verify.lock` (anchored
+`pgrep -f "^node scripts/verify.mjs"`; clear .build/go-cache after);
+stage explicit paths; commit only after `node scripts/width.mjs` reports
+0 lines over 80; agents return findings as text.
 
-**Do not touch.** The main checkout's uncommitted work, docs/writing/,
-and the integrate worktree's uncommitted effect-kinds and handoff files.
+**Do not touch.** The main checkout's uncommitted work (branch
+r005b-replan), docs/writing/, and the integrate worktree's uncommitted
+effect-kinds and handoff files.
 
 ---
 
