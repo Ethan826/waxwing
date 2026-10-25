@@ -1,0 +1,10 @@
+effect Log { fn log(n: Int): Unit; };
+
+fn pick(m: { h: Handler(Log with Console), ...r, ...s }): Handler(Log with Console)
+    where r disjoint s =
+  m.h;
+
+fn main(): Unit with Console =
+  with pick({ h: handler Log { log(n) => Console.print(n) }, k: 1 }) {
+    Log.log(2)
+  };

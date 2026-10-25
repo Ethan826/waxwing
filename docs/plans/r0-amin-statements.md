@@ -1,11 +1,14 @@
-# a-min: statements, revision 3.5 (G-effect-rows, 2026-10-24)
+# a-min: statements, revision 3.6 (G-effect-rows, 2026-10-25)
 
 Status: **statements only; implementation unauthorized; Task 4.6 and
-G-D1 blocked.** Revision 3.5 applies the author's rulings on §R6
-(dossier §18.85; §0d, §R6a): K1 adopted as a conservative validator
-restriction (Definition 4.2, §4), rule J chosen for O4 (Definition
-4.1(d)), §R6's S3 fixes applied; the solved form for bindings (U8, §11)
-awaits code inspection. No code.
+G-D1 blocked.** Revision 3.6 (§0e) records the FX033 repair (rule H′ as
+E4′'s ResultC tail; RC′ still open), U8 as implemented, the oracle
+reruns, O6's standing, and one table of carried obligations, for one
+approval review (closure checklist, critical path 1). Revision 3.5
+applies the author's rulings on §R6 (dossier §18.85; §0d, §R6a): K1
+adopted as a conservative validator restriction (Definition 4.2, §4),
+rule J chosen for O4 (Definition 4.1(d)), §R6's S3 fixes applied; the
+solved form for bindings (U8, §11) awaits code inspection. No code.
 Revision 3 (one design, §18.77-18.78) was reviewed a third time (§R3);
 revision 3.1 applied those fixes and delivered U1 and U6; a targeted
 review of 3.1 (§R4) found one plausible S1 (N1) and four S2; revision
@@ -227,6 +230,80 @@ finding and each §18.85 item has a §R6a row.
    close a ResultC's tail, and it does not establish the soundness of
    the whole judgment: Definition 4.2's sufficiency is argued site by
    site, not by a substitution lemma (§R6).
+
+## 0e. What changed in revision 3.6 (2026-10-25)
+
+Scope: the closure checklist's critical path 1 (author's ratification,
+2026-10-25): one revision, then one approval review. No code; nothing
+here is newly proved.
+
+1. **E4′'s ResultC tail is H′** (FX033 repair; on main at 6b4be77, on
+   this branch at 094adbf): C's tail is R's whenever R's tail variable
+   occurs in a parameter, in the callee's own row, or in the result
+   outside R's own tail position; otherwise the use's own fresh tail
+   (§2, §4 E4′, §12.2's generation-side fixture row, §14). H′ refuses the nine
+   demonstrated programs (observed, docs/plans/r0-amin-resultc-tail.md
+   Review 2) and refuses c1 and x1z as a temporary precision
+   limitation. **It does not discharge RC′**: P4 (behavioural
+   parametricity under dynamic handler scoping), O-SUB (substitution
+   through the whole judgment) and A1 (static rows to dynamic frames)
+   remain unproved. Decision 3 (§14) stays open.
+2. **Claims that depend on RC′.** Only the fresh-tail case of E4′
+   depends on it: a use whose ResultC tail variable occurs as R's tail
+   alone (k2f; aroundBoth's `prefix()`; the regression probe r1). For
+   those uses the installed-C edges (E2 installed-C site, E5's frame edges read
+   through C) rest on RC′; abort safety for programs installing such a
+   handler is therefore argued, not established. Where the tail is R's
+   (every H′-occurs case) no claim rests on RC′ beyond what the rest of
+   the judgment already rests on ([FX008-5]). The alternative that
+   makes no claim rest on RC′ is "always R's tail" (§14 decision 3's
+   fallback): it also refuses k2f, and its effect on aroundBoth, r1,
+   r2 and r9 is unestablished (Review 2, Task 4 risks).
+3. **U8 implemented** (7476097, pin 9f547d7; §11 U8): today's type
+   and record-row bindings are in solved form or refused
+   (`UnsolvedImage`). a-min's effect-row and mark bindings must extend
+   the same check; that extension is part of any implementation, not
+   of these statements.
+4. **§18.85 item 7's checks run** (§12.1, "Reruns"): N4 refused under
+   Definition 4.2; the closed-R control accepted, its near miss
+   refused (observed, bounded).
+5. **O6 (records with several tails): no case constructible today**
+   (observed, research/amin-o6-probes/, this branch's build): a record
+   literal with two spreads is E_TYPE "A record literal accepts at
+   most one spread" (o6a); a call into a two-tailed parameter is
+   E_TYPE "Cannot tell whether pick's r or s has field k; no annotation
+   can decide r and s, ..." (o6d), likewise with no extra fields (o6e)
+   and through a two-tailed caller (o6f); with a closed clause row the
+   program meets FX034 instead (o6c). O6's definition stays proposed;
+   it becomes testable when R005B's forced splits (closure checklist
+   B7) or merges land, and must get a case then.
+6. **Carried obligations, one table** (below). "Carried" means the
+   statements can be judged as a representation with the obligation
+   open and labelled; "blocking" means approval should wait for it.
+
+| Obligation | Where | Standing | Blocks representation approval? | Blocks a soundness claim? |
+|---|---|---|---|---|
+| RC′ (P4, O-SUB, A1) for E4′'s fresh-tail case | §0e item 2; resultc-tail §6 | argued, unproved | no, if the fresh-tail case is labelled argued (or made unsupported) | yes: abort safety for fresh-tail ResultC uses |
+| [FX008-5] points 1-4 | §14 | argued, reviewed against probes, unproved | no | yes: every S row citing it |
+| Definition 4.2's sufficiency | §4, §13b | per site, reasoned; no substitution lemma | no | yes, for rigid-tailed consumption |
+| E10 | §4 E10 | settled by reading only | no | no further claim beyond E2's |
+| a ResultC's own tail under rule J | §13a O4, §0d item 7 | unexamined | no | possibly; for the reviewer |
+| O5, O7 | §13a | correspondence notes (today stricter) | no | no (a-min may accept more; reported by the differential) |
+| O6 | §0e item 5 | defined, no constructible case | no | no case today; must be tested when constructible |
+| U2-U5 | §11 | unresolved claims | no | U2, U4: yes for completeness of read-back and certify (guarantee 3); U3: sufficiency on the corpus; U5: equivalence with FX008's settling |
+| U8 extension to effect rows and marks | §11 U8 | not built (no effect bindings yet) | no | yes, once a-min's bindings exist |
+| effect-safety theorem for the consumption variant | §14, "Not covered" | [L17] is the model, not a proof | no | yes |
+
+7. **The five effect-contract decisions** (research/effect-kinds,
+   decision-memo.md §7) are not settled here. a-min's obligations
+   preserve today's guarantees (effect safety, abort safety; §14)
+   over today's labels, rows and marks; no row of §14 encodes a
+   choice about `pure` and crash, a catchable `Crash`, the
+   observation boundary, external root classes or the extension rule
+   (reasoned, for the reviewer to check). One rule touches nearby
+   ground: uniform Console frame accounting (§14 decision 1, §18.86)
+   is chosen so that lifting FX011 or a future catchable channel does
+   not inherit today's guard; it adds edges and settles no policy.
 
 ## 1. Goal, threat model, scope (unchanged from revision 3)
 
@@ -1102,7 +1179,8 @@ N4 row flips to refused under Definition 4.2 (p1 separating); the
 oracle's `inclusionN4` case followed E2 as written in 3.4, and no result
 of its update is claimed here. The closed-R inclusion control is being
 added by the oracle agent through the recorded-input builder (§18.85
-item 5); its row below claims no result.
+item 5); its row below claims no result. (3.6: both reruns done, see
+the paragraph after §12.1's limits.)
 
 ### 12.1 Reproduced in cases.mjs (bounded)
 
@@ -1129,6 +1207,16 @@ that C. The inclusion case is a set comparison that does not exercise
 E2's rigid-tail rule. (3.5: the oracle's README says `inclusionN4` now
 consumes R through E5's rows; under Definition 4.2 its verdict is the
 N4 row's, not yet rerun.)
+
+**Reruns (3.6, controller, 2026-10-25; observed).** In
+research/amin-mark-oracle at this branch: `node run.mjs` exit 0, "no
+disagreement", printing `case inclusion with extra effects (N4):
+{"honest":false,"honestEarlier":true}` (refused under Definition 4.2,
+accepted under the withdrawn rule, as the N4 row says) and `case
+closed-R inclusion (S2-2): {"honest":true,"honestEarlier":true,
+"forged":false,"forgedEarlier":true}` (as the closed-R row says);
+`node k1.mjs` exit 0 with the same closed-R line. §18.85 item 7's two
+check results are therefore in.
 
 ### 12.2 Unrun predictions
 
@@ -1372,7 +1460,9 @@ The table keeps the audit's findings as found at 0c2ad60.)
     S3-6). Standing (3.5): this equivalence is **unestablished**. Its
     weakest step is the solved form for bindings: shrinking needs a C
     binding to reference no other flexible variable, which §2 states for
-    image variables only (§R6; U8, §11: not enforced today, a gap).
+    image variables only (§R6; U8, §11: enforced since 7476097 for
+    today's type and record-row bindings, not for effect rows or
+    marks, which a-min must add).
   - **Ruling (3.5; decided, §18.85 item 3): rule J** for the reference
     specification (Definition 4.1(d)). Rule K is kept as an alternative
     whose equivalence with J on recorded problems remains unestablished;

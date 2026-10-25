@@ -1,0 +1,10 @@
+effect Log { fn log(n: Int): Unit; };
+
+fn both(p: { ...r }, q: { ...s }): { ...r, ...s } where r disjoint s =
+  { ...p, ...q };
+
+fn main(): Unit with Console = {
+  let h = handler Log { log(n) => Console.print(n) };
+  let m = both({ h: h }, { k: 1 });
+  with m.h { Log.log(m.k) }
+};
