@@ -1,5 +1,10 @@
 # Waxwing language direction and planning handoff
 
+The [approved charter](../waxwing-charter.md) states the current purpose
+and design principles. Read dated implementation snapshots below as
+historical records. The latest explicit author direction governs within
+scope; subsystem designs and implementation approvals remain separate.
+
 Recorded 2026-10-08 at the user's request to commit the current discussion.
 Status: durable direction and hypotheses, not an implementation spec.
 Each subsystem needs its own reviewed design and implementation plan.

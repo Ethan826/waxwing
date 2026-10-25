@@ -1,5 +1,10 @@
 # Developer tooling and executable documentation direction
 
+The [approved charter](../waxwing-charter.md) states the current purpose
+and design principles. Read dated implementation snapshots below as
+historical records. The latest explicit author direction governs within
+scope; subsystem designs and implementation approvals remain separate.
+
 Recorded 2026-10-08 from the user's requested feature directions.
 Status: planning requirements, not implementation designs or authorization.
 Keep FN001's approved delivery fixed. Each subsystem needs a focused design,

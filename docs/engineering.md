@@ -654,6 +654,24 @@ or a claim about one is approved for proof or implementation:
 
 Review convention; no gate checks it.
 
+## Charter guidance in design and review
+
+The approved [Waxwing charter](waxwing-charter.md) guides substantive
+language, library, runtime and tooling decisions. Name the relevant
+principles and explain material tradeoffs in the design's existing
+rationale and assurance sections. The [decision note][charter-adoption]
+asks about the programmer's problem, library alternatives, guarantees,
+evidence and any departure. Use those questions where they help; a new
+form is unnecessary when the design already answers them.
+
+This is a review convention. Neither a link check nor an automated prose
+check can establish semantic compliance. Latest explicit author decisions
+govern within scope; record supersession and raise substantially disruptive
+consequences before applying them. Charter approval does not authorize a
+feature, proof or implementation plan.
+
+[charter-adoption]: plans/2026-10-24-charter-adoption.md
+
 ## Prose review for READMEs and explanatory docs
 
 Review convention (not automated), adopted 2026-10-19 at the user's

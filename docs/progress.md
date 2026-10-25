@@ -1,5 +1,21 @@
 # Bootstrap evidence and current checkpoint
 
+## Waxwing charter approved (2026-10-24)
+
+The author approved the [charter](waxwing-charter.md) and requested its
+commitment to `main`, followed by a prominent README update. The charter
+records Effect's business practicality and functional foundations,
+Haskell/PureScript abstraction, rows as the structural bridge, and the
+Koka/Unison/Effekt lineage. Claude's review and all 17 dispositions are in
+the [prose record](plans/2026-10-24-charter-prose-review.md).
+
+Contributor and engineering guidance now require consulting the charter
+for substantive designs, with links from language/tooling/schema direction.
+The [adoption record](plans/2026-10-24-charter-adoption.md) tracks status.
+README alignment follows in the next commit. No compiler rules, proofs or
+R0/a-min gates changed. Documentation checks only; no npm task was run.
+No push was requested.
+
 ## T013: incremental regression proofs (2026-10-17)
 
 Branch t013-incremental, commit f5a06bf (docs in the commit after it).

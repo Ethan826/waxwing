@@ -1,3 +1,13 @@
+# Approved charter: README alignment next (2026-10-24)
+
+The author approved [the charter](waxwing-charter.md) and asked for a local
+`main` commit, then a prominent README update consistent with it. The
+[adoption record](plans/2026-10-24-charter-adoption.md) names active guidance
+and open mechanisms. Contributor/engineering instructions and direction
+links are in place. Latest explicit author answers govern within scope.
+Existing R0/a-min gates remain unchanged; no feature or proof work follows
+from charter approval. No push was requested.
+
 # C001 design: committed branch awaiting integration (2026-10-21)
 
 The author asked that this completed design work be discoverable for future
