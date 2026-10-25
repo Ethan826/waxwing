@@ -1,0 +1,6 @@
+effect Log { fn log(n: Int): Unit; };
+effect Box(a) { fn put(x: a): Unit; };
+fn mk(d: Unit -> Unit with ...s): Handler(Box(Unit -> Unit with ...s) with ...s) with pure =
+  handler Box(Unit -> Unit with ...s) { put(x) => x(()) };
+fn use(): Unit with nofail Log = with mk(fn(u: Unit) => ()) { Box.put(fn(u: Unit) => { defer Log.log(7); () }) };
+fn main(): Unit with Console = with handler Log { log(n) => Console.print(n) } { use() };

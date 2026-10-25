@@ -1,0 +1,6 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Box(a) { fn put(x: a): Unit; };
+fn mk(run: (a) -> Unit with ...e): Handler(Box(a) with ...s) with pure =
+  handler Box(a) { put(x) => run(x) };
+fn main(): Unit with Console = Console.print(1);

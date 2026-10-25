@@ -540,3 +540,93 @@ variable (Resolve/Signature.purs:45-49, Resolve/Row.purs:24-30); bare
 function references go through the same `openedUse` (Use.purs:136-144),
 constructors do not. Whether H′ blocks x1, other paths, the programs it
 would reject, and O-SUB remain unexamined.
+
+## Review 2 (bounded review, remaining tasks, 2026-10-24): complete
+
+Brief: Review 1's open tasks (dossier §18.89, §18.90). Same two builds
+as Review 1; every probe gave the same verdict and text on both, so
+everything here holds for shipped main. Programs are in
+research/amin-resultc-probes/review2/ as `.wxw.txt`. "Emulated H′"
+means forcing today's R's-tail path with an unused parameter
+`d: Unit -> Unit with ...s`: the same tail decision H′ would make, but
+not an H′ build. The controller reran d1, h1, gen1, ref3, c1, x1z and
+the emulations d1e, h1e, gen1e, c1e, x1ze on the main build with the
+verdicts below.
+
+**Occurrence criterion (read).** H′ must count R's tail meta as
+occurring if it appears in the opened parameters, in the use's row
+(today's check), or in the result with only R's own tail position
+removed: L's arguments, Ls's label arguments, and everything nested in
+them. `foldHoles` over the result handler with its inference row's
+tail dropped visits exactly that. Marks need no visit: a mark shared
+between L's arguments and R's labels is carried by C (mk1, mk2 refused
+today, observed). Label arguments resolve without an ambient row
+(FX024), so the ambient variable never occurs there implicitly.
+
+**Channels (observed unless marked).** Accepted today with run
+`fail(E): E`, exit 1, on both builds: x1 (L's argument), x1l (let or
+if-merge), d1 (data type in L's argument), r1 (record field), h1
+(handler type), gen1 (through `id`), nest1 (two-level ResultC), ref2
+(bare reference), ref3 (reference passed to `app`). Each emulated one
+is refused once the tail is R's (d1e, r1e, h1e, gen1e, nest1e, ref2e;
+x1 via x1c); x1l and ref3 reasoned only. The Ls channel (x2 family,
+x2d) is masked today by E_INTERNAL "Effect row consumption failed" or
+E_TYPE "Expected a handler"; H′ reaches it by reading, not observed.
+
+**The four answers.**
+- (a) H′ blocks x1: reasoned from the fold (Parts.purs:86), with an
+  observed emulation (x1c). No H′ build has run.
+- (b) Another path past H′: none found among the shapes above. That
+  is a search result, not soundness.
+- (c) Correct programs accepted today that H′ rejects: c1 (k2f with an
+  unused `Ask(Unit -> Unit with ...s)`; prints `1` today; c1e refused
+  "defer must not fail, but it performs Ask(Unit -> Unit), whose
+  handler may fail") and x1z (x1 whose clause never calls `x`; exit 0
+  today; x1ze refused). Correctness of c1 and x1z is reasoned. Kept:
+  k2f (reasoned), x1n (x1ne prints `7`, observed). A one-line grep of
+  tracked tests and examples found 11 fresh-path signatures, of which
+  only the research probes x1 and x2m1/x2 change (heuristic, not a
+  parse).
+- (d) Unestablished: any H′ build run; soundness of RC′ (P4,
+  O-SUB, a substitution lemma for the whole judgment, A1/[FX008-5],
+  P2/P9); completeness of the channel list; the Ls channel once FX010's
+  E_INTERNAL is gone; compatibility cost beyond the grep.
+
+**O-SUB (reasoned).** O-SUB carries typing conditions through
+instantiation. The argument needs more: P4 is a claim about run-time
+behaviour and needs a substitution lemma for the whole judgment plus a
+static-to-dynamic soundness link (A1, unproved); "inert" is defined
+only for functions, but h1 shows handler values are a channel, and
+records, data and partial applications need covering; the induction
+over the call tree is not well-founded with recursion and should be
+over evaluation or derivations. The reviewer cited, from background
+knowledge and not read here, Zhang and Myers 2019 on accidental
+handling breaking parametricity under dynamic scoping. The compiler
+never states or checks O-SUB; it presupposes it (Function.purs:67-80,
+DeclarationUse.purs:24). None of the nine failures needs a
+substitution failure: x1 refutes the parametricity claim behind
+`ownClauses`, not O-SUB. Whether O-SUB holds is unestablished.
+
+**Repair proposal (not authorized).** Tests first: the nine failing
+programs as `.wxw.txt` fixtures (rename r1 to avoid the existing
+regression's r1), expected refused with E_EFFECT "defer must not fail,
+but it performs Log, whose handler may fail", plus a regression row in
+scripts/regression-fx008-marks.mjs that reverts the change and expects
+x1 accepted. Change: a third disjunct in `occurs`
+(ResultClauses.purs:43-44), `foldHoles (found meta) false (untailed
+result)`, where `untailed` drops the result handler's inference-row
+tail; rewrite the comment at :15-25 to state H′ as an argued
+candidate; update the `fx008-result-own-row` needle (:130-135) and E4′
+and the U6 fixtures. Controls staying accepted: x1d, x1n, k2f,
+`fx008-result-clauses`, `fx008-result-fresh`, r2, r9. Staying refused
+with the same text: x1c, x1i, x1p, k2o, `fx008-result-own-row`, eg1,
+mk1, mk2, fres, rres, merge1. Flipping to refused, for the author's
+approval: c1, x1z. Risks: those lost acceptances; the needle drift;
+the Ls-channel tests stay masked until FX010; soundness rests on
+unproved RC′. A rule based on whether clauses use ϱ-typed values would
+keep c1 and x1z but is invented machinery needing review.
+
+**Side observations, not diagnosed.** tv1 reports E_TYPE "Expected
+Handler(Box(a)), found Handler(Box(a))", identical types; x2h and x2h2
+refuse `with` on a handler obtained from `Get.get()` with "Expected a
+handler", possibly a completeness defect.

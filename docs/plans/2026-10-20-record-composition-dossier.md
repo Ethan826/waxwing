@@ -6164,3 +6164,19 @@ does not establish soundness. Then a narrow, test-first FX033 repair
 proposal, whose implementation needs separate authorization. a-min
 implementation, Task 4.6 and G-D1 stay blocked; division and the five
 effect-contract decisions stay open; nothing merged or pushed.
+
+### 18.90 ResultC review relaunched and completed (2026-10-24)
+
+Review 1 (§18.89 brief) stopped after the reproduction when a safety
+classifier halted the agent's output; it did not route around the
+stop. The author approved a relaunch. Review 2 covered the remaining
+tasks with a narrower brief, worded as a correctness review, and was
+not stopped. Record: docs/plans/r0-amin-resultc-tail.md "Review 2";
+programs in research/amin-resultc-probes/review2/. Findings: nine
+accepted-but-failing programs on shipped main, all through the fresh
+ResultC tail; H′ blocks each one emulated (no H′ build); no path past
+H′ found (search, not soundness); H′ loses two correct programs, c1 and
+x1z; the RC′ argument needs more than O-SUB provides. A test-first
+FX033 repair proposal is recorded. Its implementation, and acceptance
+of the c1/x1z losses, need the author's decision. Nothing else changes
+status.

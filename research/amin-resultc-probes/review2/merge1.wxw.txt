@@ -1,0 +1,11 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Ask { fn ask(): Unit; };
+fn mk(): Handler(nofail Ask with ...s) with pure = handler Ask { ask() => () };
+fn use(): Unit with Log = {
+  let h = if false then mk() else handler Ask { ask() => Log.log(1) };
+  with h { defer Ask.ask(); () }
+};
+fn main(): Unit with Console = handle {
+  with handler Log { log(n) => Fail.fail(E) } { use() }
+} { fail(error: E) => Console.print(99) };
