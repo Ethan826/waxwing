@@ -132,7 +132,7 @@ test/r0-effects-canonical.mjs.
 **Interfaces (produces):**
 ```purescript
 data EVar = EffRigid VarId | EffFresh Path ERole
-data ERole = EffInst VarId | Effect | ResultClauses | HandlerInference
+data ERole = EffInst VarId | EffectOf | ResultClauses | HandlerInference
   | HandlerClauses | Clauses Int | AnnotationClauses Int Int | Stage Int
 data Fixed = FixedN | FixedM | FixedRigid String
 data Position = Frame Path | Literal Path | Opened Path
@@ -165,6 +165,7 @@ data Obligation
   | Unsupported UnsupportedKind
 type EffectProblem =
   { obligations ∷ Array (Entry Obligation)
+  , nodes ∷ Map Path MTy   -- each node's marked type (beside `types`)
   , instances ∷ Map Path MTy
   , annotations ∷ Map Path MTy
   , rigidMarks ∷ Array String
@@ -183,15 +184,20 @@ rules an input out, drop its field here.
 - [ ] **Step 1: failing tests** `test/r0-effects-types.test.mjs`:
   "emptyEffects is empty" (`emptyEffects` encodes, through
   r0-effects-canonical, to `{obligations: [], instances: [],
-  annotations: [], rigidMarks: [], effectRigids: [], arities: [],
-  ambient: [], flexEff: [], positions: []}`); "every generated
-  declaration carries an effects record" (for each declaration of
-  `examples/services.wxw`, `fields(problem).effects` has exactly those
-  nine keys; contents not asserted, so later tasks never weaken it).
+  annotations: [], nodes: [], rigidMarks: [], effectRigids: [],
+  arities: [], ambient: [], flexEff: [], positions: []}`); "every
+  generated declaration carries an effects record" (for each
+  declaration of `examples/services.wxw`, `fields(problem).effects` has
+  exactly those ten keys; contents not asserted, so later tasks never
+  weaken it).
 - [ ] **Step 2:** run `node --test test/r0-effects-types.test.mjs`;
   expected FAIL (`effects` undefined).
 - [ ] **Step 3:** add the types; `Fields.effects`; `Out.effects ∷
-  Array (Entry EffectItem)` with `concatOut` and `noOut` extended;
+  Array EffectItem` (Generate/Out.purs: `data EffectItem = Obliged
+  (Entry Obligation) | NodeAt Path MTy | InstanceAt Path MTy |
+  AnnotationAt Path MTy | RigidMark String | EffectRigid VarId |
+  ArityAt Path Int | AmbientAt Path MRow | MintedVar EVar |
+  MintedPosition Position`) with `concatOut` and `noOut` extended;
   `assemble` folds items into `EffectProblem` (empty while no rule
   emits). `Unsupport += EffectsUnchecked (Array UnsupportedKind)`.
 - [ ] **Step 4:** the allowlist in test/r0-verdict.test.mjs gains
@@ -211,14 +217,17 @@ test/r0-marked.test.mjs.
 
 **Interfaces:** produces
 ```purescript
-data MarkNaming s = Declared
-  | AtUse Path (Array (Maybe (Handle s)))   -- type handles as Translate
+data MarkNaming = Declared
+  | AtUse Path                              -- instance at path p
   | InAnnotation Path Int                   -- parameter index j
-marked ∷ ∀ s. Tables → MarkNaming s → Ty VarId → Either GenerationFault MTy
+marked ∷ Tables → MarkNaming → Ty VarId → Either GenerationFault MTy
 ```
 Rules (statements §2, §3): `Declared` keeps a declared effect-row
 variable as `EffRigid`, written marks `Written` (`nofail` N, plain M,
-`nofail(k)` `FixedRigid k`); `AtUse p` makes each effect-row variable
+`nofail(k)` `FixedRigid k`); `AtUse p` names type and record-row
+variables `FreshVar p (Inst v)`, as Fresh.purs `instances` names them
+(the recorded atoms' names, so Task 3's erasure test can compare), and
+makes each effect-row variable
 `EffFresh p (EffInst v)` and each `nofail(k)` `At (Instantiated p k)`,
 one position per k across the whole signature (T2-c); an unwritten
 annotation mark is `At (Annotation p j n)` (Task 1's comment); a
@@ -264,6 +273,9 @@ names) and `effectRigids` (its effect-row variables).
 - [ ] **Step 2:** run; FAIL (`marked` absent).
 - [ ] **Step 3:** thread `marked` through the listed rules.
 - [ ] **Step 4:** run; PASS; problem pin unchanged; T10 green.
+  Node marked types are recorded in `effects.nodes` (`NodeAt`), which
+  the test reads; a node's type variables are named as
+  Generate/Elab/Recorded.purs names them in `types`.
 - [ ] **Step 5: commit.**
 
 ### Task 4: lambdas, handler constructs, instances and annotations
@@ -289,7 +301,7 @@ C with R's labels bare, marks `At (Annotation p j n)` distinct from
 R's, tail `EffFresh p (AnnotationClauses j k)`, k the occurrence's
 pre-order index among the annotation's eligible handler types, so two
 sibling handler types never share a tail. The lambda's effect row
-is `EffFresh p Effect`; instances go to `effects.instances` at the
+is `EffFresh p EffectOf`; instances go to `effects.instances` at the
 use's path, annotations to `effects.annotations`. `assemble` collects
 every `EffFresh` minted into `flexEff`.
 
@@ -375,7 +387,7 @@ test/r0-obligations-equal.test.mjs.
 **Files:** Obligation.purs (`consumeAt`, `ambientAt`); Call.purs,
 Operator.purs (pipe), Builtin.purs, Effect.purs (perform), Body.purs
 (declared row as the body's ambient row), Control.purs (lambda's
-`Effect` row); create test/r0-obligations-consume.test.mjs.
+`EffectOf` row); create test/r0-obligations-consume.test.mjs.
 
 Each stage records `Consume { site, source: stage row, target:
 ambient, marks: true, bare: false }`; partial and over-application
