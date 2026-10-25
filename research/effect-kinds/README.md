@@ -19,6 +19,7 @@ below.
 | [glossary-draft.md](glossary-draft.md) | candidate definitions of the promises, with the author's decisions | P1 draft |
 | [correspondence.md](correspondence.md) | each promise mapped to published rules, owners and Waxwing departures | P2 |
 | [predictions-e01-e16.md](predictions-e01-e16.md) | frozen fragments and predicted outcomes for Koka, Effekt, Unison, `effectful` and Waxwing | P3, before any run |
+| [decision-memo.md](decision-memo.md) | concrete alternatives with separating examples, recommendations and five author decisions (what `pure` excludes; observations, commands and the boundary; library extension vs core enforcement; later milestones) | P1-P4 synthesis |
 | [probes/](probes/) | the three Waxwing cases the author authorized (E06a, E15, E16's near miss): programs, commands, outputs | P3, partial |
 
 How these were made. Four read-only agents wrote the reports. The
