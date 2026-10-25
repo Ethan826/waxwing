@@ -1,0 +1,1 @@
+{"code":"E_EFFECT","message":"Logger + Config + Config + Logger + … 1 more + ... and Logger + Config + Console + ... cannot be made equal: both end in ...","span":{"start":{"line":24,"offset":634,"column":7},"end":{"line":26,"offset":698,"column":8}},"file":"/Users/ethan/.claude/jobs/5835604b/tmp/charter-probes/C2a-clause-row-provider.wxw.txt","related":[]}

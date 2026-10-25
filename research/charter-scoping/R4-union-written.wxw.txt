@@ -1,0 +1,27 @@
+effect Database { fn query(id: Int): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn lookup(id: Int): Int with Database = Database.query(id);
+
+fn note(n: Int): Unit with Logger = Logger.log(n);
+
+fn both(id: Int): Int with Database + Logger = {
+  let row = lookup(id);
+  note(row);
+  row
+};
+
+fn swapped(id: Int): Int with Logger + Database = both(id) + 1;
+
+fn fakeDatabase(): Handler(Database with pure) =
+  handler Database { query(id) => id + 10 };
+
+fn consoleLogger(): Handler(Logger with Console + ...e) =
+  handler Logger { log(n) => Console.print(n) };
+
+fn main(): Unit with Console =
+  with fakeDatabase() {
+    with consoleLogger() {
+      Console.print(swapped(5))
+    }
+  };

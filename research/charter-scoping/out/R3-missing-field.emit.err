@@ -1,0 +1,1 @@
+{"code":"E_TYPE","message":"Expected { email: Text, ..._ }, found { name: Text }","span":{"start":{"line":3,"offset":115,"column":54},"end":{"line":3,"offset":130,"column":69}},"file":"/Users/ethan/.claude/jobs/5835604b/tmp/charter-probes/R3-missing-field.wxw.txt","related":[]}

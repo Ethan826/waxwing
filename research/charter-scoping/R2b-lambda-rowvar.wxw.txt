@@ -1,0 +1,4 @@
+fn main(): Unit with Console = {
+  let get = fn(u: { email: Text, ...r }) => u.email;
+  Console.print(get({ email: "ada@x", name: "Ada" }))
+};

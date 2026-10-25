@@ -1,0 +1,3 @@
+fn contact(u): Text = u.email;
+
+fn main(): Unit with Console = Console.print(contact({ email: "a@x" }));

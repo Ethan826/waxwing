@@ -1,0 +1,6 @@
+fn verified(u: { email: Text, ...r }): { email: Text, verified: Bool, ...r }
+    where r lacks { verified } =
+  { ...u, verified: true };
+
+fn main(): Unit with Console =
+  Console.print(verified({ email: "a@x", verified: false }));

@@ -1,0 +1,34 @@
+effect Database { fn query(id: Int): Int; };
+effect Config { fn port(): Int; };
+effect Logger { fn log(n: Int): Unit; };
+
+type ConfigError = BadPort(Int);
+
+fn checkout(id: Int): Int with Database = Database.query(id) + 1;
+
+fn databaseLive(): Handler(Database with pure)
+    with Config + Logger + Fail(ConfigError) = {
+  let port = Config.port();
+  Logger.log(port);
+  let live = handler Database { query(id) => id + port };
+  if port < 0 then Fail.fail(BadPort(port)) else live
+};
+
+fn fakeDatabase(): Handler(Database with pure) =
+  handler Database { query(id) => 42 };
+
+fn assemble(): Handler(Database with pure) with Config + Logger =
+  handle databaseLive() { fail(error: ConfigError) => fakeDatabase() };
+
+fn fixedConfig(p: Int): Handler(Config with pure) =
+  handler Config { port() => p };
+
+fn consoleLogger(): Handler(Logger with Console + ...e) =
+  handler Logger { log(n) => Console.print(n) };
+
+fn main(): Unit with Console = {
+  let good = with consoleLogger() { with fixedConfig(1000) { assemble() } };
+  let bad = with consoleLogger() { with fixedConfig(-1) { assemble() } };
+  with good { Console.print(checkout(5)) };
+  with bad { Console.print(checkout(5)) }
+};

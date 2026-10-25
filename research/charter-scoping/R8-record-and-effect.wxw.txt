@@ -1,0 +1,22 @@
+effect Mailer { fn send(to: Text): Unit; };
+effect Logger { fn log(n: Int): Unit; };
+
+fn welcome(u: { email: Text, ...r }): { email: Text, ...r }
+    with Mailer + Logger = {
+  Mailer.send(u.email);
+  Logger.log(1);
+  u
+};
+
+fn printMailer(): Handler(Mailer with Console + ...e) =
+  handler Mailer { send(to) => Console.print("mail ${to}") };
+
+fn consoleLogger(): Handler(Logger with Console + ...e) =
+  handler Logger { log(n) => Console.print(n) };
+
+fn main(): Unit with Console =
+  with printMailer() {
+    with consoleLogger() {
+      Console.print(welcome({ email: "ada@x", id: 7 }))
+    }
+  };

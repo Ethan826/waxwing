@@ -1,0 +1,1 @@
+{"code":"E_EFFECT","message":"Config + Logger + Logger + Console + ... and Logger + Console + ... cannot be made equal: both end in ...","span":{"start":{"line":20,"offset":516,"column":5},"end":{"line":22,"offset":576,"column":6}},"file":"/Users/ethan/.claude/jobs/5835604b/tmp/charter-probes/C2f-provider-dep-missing.wxw.txt","related":[]}

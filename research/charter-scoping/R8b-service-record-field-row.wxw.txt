@@ -1,0 +1,13 @@
+effect Mailer { fn send(to: Text): Unit; };
+
+fn notify(svc: { send: Text -> Unit with Mailer, ...s }, u: { email: Text, ...r }): Unit
+    with Mailer =
+  svc.send(u.email);
+
+fn printMailer(): Handler(Mailer with Console + ...e) =
+  handler Mailer { send(to) => Console.print("mail ${to}") };
+
+fn main(): Unit with Console =
+  with printMailer() {
+    notify({ send: fn(t) => Mailer.send(t), tag: 1 }, { email: "a@x", id: 7 })
+  };

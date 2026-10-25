@@ -1,0 +1,16 @@
+fn contact(u: { email: Text, ...r }): Text = "<${u.email}>";
+
+fn touch(u: { email: Text, ...r }): { email: Text, ...r } =
+  u { email = u.email ++ "!" };
+
+fn verified(u: { email: Text, ...r }): { email: Text, verified: Bool, ...r }
+    where r lacks { verified } =
+  { ...u, verified: true };
+
+fn main(): Unit with Console = {
+  let ada = { email: "ada@x", name: "Ada", id: 7 };
+  Console.print(contact(ada));
+  Console.print(touch(ada));
+  Console.print(verified(ada));
+  Console.print(contact({ email: "bo@x" }))
+};
