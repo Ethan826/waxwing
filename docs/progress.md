@@ -63,6 +63,42 @@ README alignment follows in the next commit. No compiler rules, proofs or
 R0/a-min gates changed. Documentation checks only; no npm task was run.
 No push was requested.
 
+## D001 Int arithmetic, plan Tasks 1-2 (2026-10-24)
+
+Branch d001-arith (main 2af6e40 plus the design and plan, 7ca2a07).
+Authorized: plan Tasks 1 and 2 only. Rulings recorded in design
+section 9 and the plan header.
+
+Baseline `npm run verify` at 7ca2a07 (under the verify lock) exited 0:
+2366 parallel tests and 59 serial tests passed, 0 failed, 0 skipped;
+176 regression proofs "fixed compiler passes; restored defect fails".
+
+Task 1 (`Arith` refactor) is blocked, not started: existing tests pin
+the `Add` constructor (plan, Task 1, "Blocked"). Nothing in src
+changed.
+
+Task 2: test/int-arith-oracle.mjs (BigInt model with
+`BigInt.asIntN(32, ·)` at every node, printer with full or minimal
+parentheses from an operator table, boundary values 0, ±1, ±2147483647,
+-2147483648, 2147483646, ±2^k for k = 1..30, and a seeded LCG) and
+test/int-arith-oracle.test.mjs. Seed 1 gives 200 literal trees of
+depth at most 6 (3390 leaves; 144 trees wrap at some node), each built
+fully parenthesized and minimally parenthesized; seed 2 gives 50 trees
+over parameters `a`, `b`, `c` of `fn g` called with boundary
+arguments. All 450 programs are built once by runGoBatch and every
+printed value equals the model's: `node --test
+test/int-arith-oracle.test.mjs`, 5 tests passed (20.8 s).
+Shown failing: in an rsync copy without .build, src/Format/Go.purs:42
+changed to `return a - b`, `node scripts/build.mjs`, then the same
+command: 3 passed, 2 failed, first failures `full 0` (expected
+-877450654, printed -307606134) and `parameter 0` (expected 151000832,
+printed -16776192). The copy was deleted.
+
+`npm run verify` with Task 2 and these docs (under the lock) exited 0:
+2371 parallel tests (the baseline's 2366 plus the oracle's 5) and 59
+serial tests passed, 0 failed, 0 skipped; 176 regression proofs as
+before.
+
 ## T013: incremental regression proofs (2026-10-17)
 
 Branch t013-incremental, commit f5a06bf (docs in the commit after it).

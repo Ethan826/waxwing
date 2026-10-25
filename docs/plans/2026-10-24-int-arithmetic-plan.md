@@ -4,9 +4,24 @@
 > (recommended) or inline-plan-execution to implement this plan
 > task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-Status: for review, 2026-10-24. Nothing here is authorized to start;
-three questions below are the author's (Open decisions 2-4 of the
-design, and the branch base).
+Status: Tasks 1 and 2 authorized, 2026-10-24; Tasks 3-7 wait for the
+author's review of them.
+
+**Rulings (2026-10-24; design section 9).** `-`, `*` and unary minus
+proceed in isolation; division is deferred and zero-on-divide is
+excluded. Branch base: option A below, branch d001-arith from main
+2af6e40 carrying only the design and this plan. Sequencing: implement
+during the R0 shadow tranche, land into neither the R0 stack nor main;
+landing requires a review of recorder coverage, pinned evidence and
+corpus baselines. The `with h -1` break is accepted (Task 3 adds a
+migration example and an ADR); literal folding keeps `-2147483648` a
+literal. Unary-minus constraints follow the existing integer
+arithmetic pattern, with their own generation case and tests (Task 5's
+R0 step). Helpers are emitted only on use. Only Tasks 1 and 2 are
+authorized now. On main the R0 recorder, translator and corpus sites
+do not exist (Branch base, below), so on this branch Tasks 1 and 2
+touch only the live pipeline and skip their "R0 stack" steps; the R0
+work happens when landing is reviewed.
 
 **Goal:** add binary `-`, `*` and unary minus on Int with int32 wrap
 semantics, after a behaviour-preserving refactor of `+` into a shared
@@ -58,11 +73,12 @@ Node test runner, Go 1.26.4 (package.json `toolchain`).
   current in the same commit as the change they describe.
 - Examples in Markdown use `text` fences; a `waxwing` fence or a new
   tracked .wxw file enters the pinned R0 corpus.
-- **Sequencing constraint (design section 6, OPEN for the author):** do
-  not land during the R0 shadow tranche unless the author rules
-  otherwise. Work may proceed on a branch; landing waits.
+- **Sequencing (ruled 2026-10-24, design section 6):** implement
+  during the R0 shadow tranche; do not land into the R0 stack or main
+  until recorder coverage, pinned evidence and corpus baselines are
+  reviewed.
 
-### Branch base (the author chooses; this plan does not)
+### Branch base (ruled 2026-10-24: option A)
 
 d001-int-arith sits on the R0 lineage: it forks r0-shadow-tranche-1 at
 0710fa6 (2 ahead of that commit's line, 35 behind the tranche's tip)
@@ -116,6 +132,22 @@ these operators.
 ---
 
 ### Task 1: `Arith` refactor of `+`, behaviour preserved
+
+**Blocked (found 2026-10-24, on d001-arith; for the author).** The file
+list below misses existing tests that pin the `Add` constructor itself,
+not behaviour (checked: `git grep -nwE Add -- test`):
+test/properties.test.mjs:4,14 (imports `Add` from Domain.Syntax and
+matches `instanceof Add`), and expected shape strings printed by
+test/fn-shape.mjs in test/fn-check.test.mjs:48,64,
+test/fn-syntax.test.mjs:86, test/r001-parse.test.mjs:41,51,82 and
+test/r005-parse.test.mjs:90. Any `Arith` node breaks them, and the
+execution brief forbids editing existing tests to pass. Options: (a) a
+projection in test/fn-shape.mjs and properties.test.mjs that renders
+`Arith(Binary(Plus, l, r))` as `Add(l, r)`, as fn-shape.mjs already
+erases rows for legacy FN001 shapes; (b) rewrite the nine expected
+strings and the import to the new shape. Either is a reviewed change
+to existing tests and needs the author's approval. Task 2 does not
+depend on Task 1 and was done first.
 
 **Files:**
 - Create: `src/Domain/Arithmetic.purs`, `test/arithmetic.test.mjs`
