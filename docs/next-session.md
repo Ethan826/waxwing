@@ -8,16 +8,18 @@ explicit answer governs within scope (record what it supersedes). The
 charter authorizes no implementation or proof and settles no
 effect-policy question. Dossier §18.72-§18.89 records every ruling.
 
-**Update 2026-10-25 (after §18.91): no agents running.**
-1. Arithmetic Task 1 accepted with closure (d001-arith 4b14d8a). Tasks
-   3-7 held pending a scoped authorization.
-2. FX033 repaired narrowly on fx033-resultc-tail (3980562, b192f8e,
-   from main a82d064; worktree .claude/worktrees/fx033). Not merged.
-   E4′ updated here (d99ec45). Integration into main or the R0 stack
-   needs the author.
-3. Scoping records closed on research/charter-scoping (4d29d11).
-Open for the author: landing any of these branches; FX030-FX032 are
-absent from main's BACKLOG (they live on r0-t2-d1).
+**Update 2026-10-25 (local landing done): no agents running.**
+Local main fast-forwarded to landing-2026-10-25 (6b4be77): FX033 repair,
+arithmetic Tasks 1-2 with design/plan (Tasks 3-7 held), the charter
+scoping records, FX030-FX032 backlog rows. Combined-tree verify exit 0
+(2385 + 59 tests, 177 regression proofs; landing worktree
+.build/evidence/landing-verify.log). The integrate worktree's two
+uncommitted edits were stashed, restored and checked line for line.
+Not pushed: pushing main needs the author. FX033 also carried onto this
+branch (356acc9, 094adbf); verify exit 0 (2912 + 136 tests, 210
+regression proofs, fx033-result-type included;
+.build/evidence/fx033-carry-verify.log). Not established: RC′, O-SUB,
+effect soundness; Task 4.6 and G-D1 unchanged.
 
 **Where things stand** (nothing pushed; no merge; no live switch):
 a-min statements revision 3.5; U8 implemented (7476097, 9f547d7); ResultC
