@@ -93,7 +93,34 @@ Task 1): `node scripts/differential.mjs --baseline <copy> --corpus all
 harvested 9139 sources, fuzz 1029, isName 1085 probes, matches 1000,
 mutations 1000: 0 differences in each. Phases reached (harvested): lex
 9139, parse 9058, resolve 8860, check 8309, specialize 5781, emit 5738,
-compile 5738. The copy was deleted afterwards.
+compile 5738. The copy was deleted afterwards. Emitted-Go equality
+covers only the sources that reached emit (harvested 5738, fuzz 8,
+matches 305, mutations 43), not every source or isName probe.
+
+Task 1 verification, recorded 2026-10-25 (author's closure). Command:
+`npm run verify`, run by the implementing agent on the working tree at
+3672c77 plus the uncommitted Task 1 changes, before the comment-only
+oracle corrections that were then committed with it as 0633480.
+Totals: 2372 parallel tests and 59 serial tests passed, 0 failed, 0
+skipped; 176 regression proofs "restored defect fails"; exit 0. The
+log and the differential's summary were retained by copying them from
+job scratch to .build/evidence/d001-task1-verify.log and
+.build/evidence/d001-task1-differential.log in this worktree (ignored
+by git, local only); the baseline verify at 7ca2a07 is
+.build/evidence/d001-task1-verify-baseline.log. Reported, not
+retained: the agent's red run of test/arithmetic.test.mjs (module not
+found). Not rerun since: the full verify and the differential.
+
+Closure (author, 2026-10-25): test/fn-syntax.test.mjs gains "+ chains
+group left; parentheses group right", asserting `a + b + c` is
+`(a + b) + c` on the tree, with `a + (b + c)` as the parenthesized
+control; printed values cannot distinguish the groupings. Passes at
+this commit. Shown failing: in an rsync copy without .build, the
+parser's `plus` in src/Format/Parse/Expression.purs re-associated a
+left `+` operand to the right; after `node scripts/build.mjs` the test
+failed with actual `Arith(Binary(Plus, Variable(a), Arith(Binary(Plus,
+Variable(b), Variable(c)))))`. The copy was deleted. Tasks 3-7 stay
+held pending a scoped authorization.
 
 Task 2: test/int-arith-oracle.mjs (BigInt model with
 `BigInt.asIntN(32, ·)` at every node, printer with full or minimal

@@ -4,8 +4,10 @@
 > (recommended) or inline-plan-execution to implement this plan
 > task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-Status: Tasks 1 and 2 authorized and done, 2026-10-24; Tasks 3-7 wait
-for the author's review of them.
+Status: Tasks 1 and 2 authorized and done, 2026-10-24. Task 1 accepted
+by the author 2026-10-25, subject to a closure (an unparenthesized `+`
+chain grouping test with detection, and recorded verification; see
+docs/progress.md). Tasks 3-7 stay held pending a scoped authorization.
 
 **Rulings (2026-10-24; design section 9).** `-`, `*` and unary minus
 proceed in isolation; division is deferred and zero-on-divide is

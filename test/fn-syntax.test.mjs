@@ -90,6 +90,16 @@ test('a lambda extends right; |> is looser than comparison, left first',
       'Call(g, [Lambda([{name: Just(y), ty: Nothing}], Variable(y))])');
   });
 
+// Printed values cannot tell `(a + b) + c` from `a + (b + c)` (int32
+// addition is associative), so the grouping is pinned on the tree.
+test('+ chains group left; parentheses group right', () => {
+  const plus = (left, right) => `Arith(Binary(Plus, ${left}, ${right}))`;
+  assert.equal(bodyShape('a + b + c'),
+    plus(plus('Variable(a)', 'Variable(b)'), 'Variable(c)'));
+  assert.equal(bodyShape('a + (b + c)'),
+    plus('Variable(a)', plus('Variable(b)', 'Variable(c)')));
+});
+
 // A postfix chain is one Apply of every group's arguments in order: by
 // design §5 `e(a)(b)` is `e(a, b)`, with the same order and boundaries.
 test('postfix application repeats on any primary; a name call stays Call',
