@@ -1,5 +1,24 @@
 # Bootstrap evidence and current checkpoint
 
+## a-min approval review and corrections; local landing; push (2026-10-25)
+
+Landing: branch landing-2026-10-25 (FX033, arithmetic Tasks 1-2, the
+charter scoping records, FX030-FX032 rows) verified as one tree,
+`npm run verify` exit 0 (2385 + 59 tests, 177 regression proofs; log
+.build/evidence/2026-10-25-landed/landing/landing-verify.log in the
+main checkout); local main fast-forwarded; the integrate worktree's
+two uncommitted files stashed, restored and checked line for line;
+pushed to origin/main at 6b4be77 on the author's yes. FX033 carried
+here: verify exit 0 (2912 + 136, 210 proofs;
+.build/evidence/fx033-carry-verify.log).
+
+R0 closure checklist: critical path and a bounded tranche (f6b2289).
+a-min revision 3.6 (ffb2b33), one approval review (§R7, 9b7f54d: no
+S1, four S2), the fix pass (cade64f) and two consistency repairs
+(bc665cd). Oracle reruns: `node run.mjs` in research/amin-mark-oracle
+exit 0, "no disagreement" (k1.mjs prints nothing; it is a case
+module). Docs only; no verify needed. Approval pending.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

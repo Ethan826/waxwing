@@ -6217,3 +6217,20 @@ ResultC uses until P4 is argued and reviewed. Stopped there: no
 revision 3.7. Decisions for the author: the text fixes or a waiver,
 the fresh-tail ruling, and representation approval. Implementation,
 Task 4.6 and G-D1 stay blocked.
+
+### 18.93 The §R7 fix pass; approval pending (2026-10-25)
+
+The author ratified correcting all four S2 findings rather than waiving
+them, with the S3 items, and "always R's tail" as a provisional
+shadow-validator restriction: it removes reliance on P4 only where it
+prevents freshening; O-SUB, A1 and the other whole-judgment
+obligations stay open; the stand-in's acceptance differences are
+evidence, not checks; aroundBoth and k2f stay visible under A6. Fix
+pass cade64f (statements §R7a). The author inspected it and asked for
+two consistency repairs (§0e item 2's wording; E4′ and its §14 row to
+state the restriction, H′ kept as live behaviour), made in bc665cd.
+The revision keeps the 3.6 label. Approval is pending; it would cover
+the representation with the named obligations open, and authorize
+neither implementation nor soundness claims; A2's algorithm and
+source, G-D1 and Task 4.6 stay pending. Reporting from now on leads
+with the three milestones (next-session.md).

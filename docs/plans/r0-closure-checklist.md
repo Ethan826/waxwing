@@ -44,7 +44,7 @@ author approves (row A1). Revision 3.5 has had no review.
 | 1d | O6, records with several tails | defined in 3.4, "proposed, no case" (read) | one separating case, or a recorded reason none is constructible yet | controller |
 | 1e | carried obligations listed once | O5, O7 (correspondence, today stricter); U2-U5; E10 settled by reading only; a ResultC's own tail unexamined; [FX008-5] argued, not proved (read) | one consolidated table in the statements, each labelled "carried, not blocking approval" or "blocking" | controller |
 | 1f | targeted review of the revision carrying 1a-1e | done 2026-10-25: §R7, no S1, four S2 (Console guard text, O6 testable, O-SUB/A1 whole-judgment, table mislabels) | author: text fixes or waiver | controller (dispatch), author (acceptance) |
-| 1g | approval | §R7 fix pass done (statements §R7a) | the author inspects the corrected diff against §R7's conditions; approval covers the representation with the named obligations open, and authorizes neither implementation nor soundness claims | author |
+| 1g | approval | §R7 fix pass done (statements §R7a, cade64f); two consistency repairs after the author's inspection (bc665cd); approval pending | the author inspects the corrected diff against §R7's conditions; approval covers the representation with the named obligations open, and authorizes neither implementation nor soundness claims | author |
 
 ### 2. Before implementation can start (A1, second half; A2)
 

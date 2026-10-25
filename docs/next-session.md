@@ -1,43 +1,59 @@
-# RESUME HERE (2026-10-24, checkpoint for a context reset)
+# RESUME HERE (2026-10-25, session end)
 
-**Direction.** The Waxwing charter and adoption record are approved, on
-`origin/main` (19f49c7; README a82d064). Branches cut earlier lack them:
-read with `git show origin/main:docs/waxwing-charter.md` and
-`...:docs/plans/2026-10-24-charter-adoption.md`. The author's latest
-explicit answer governs within scope (record what it supersedes). The
-charter authorizes no implementation or proof and settles no
-effect-policy question. Dossier §18.72-§18.89 records every ruling.
+**Report in milestones first.** Every update opens with which of three
+milestones moved, what became demonstrably possible, and what blocks
+the next one; gate and obligation IDs go underneath as references
+(author, 2026-10-25). The milestones:
+1. An approved way to preserve and check effects in the new checker.
+2. The new checker builds complete typed programs, and the
+   compatibility boundary is resolved.
+3. Representative composed-record programs compile and run, and the
+   new path can be enabled safely.
+Then the epic's remaining assurance obligations. Rough position (a
+guess, ±15 points): about 60% through the composed-record epic, a bit
+under half of the way to replacing the old checker. Priority: R0 and
+its effect guarantees; arithmetic is parked.
 
-**Update 2026-10-25 (local landing done): no agents running.**
-Local main fast-forwarded to landing-2026-10-25 (6b4be77): FX033 repair,
-arithmetic Tasks 1-2 with design/plan (Tasks 3-7 held), the charter
-scoping records, FX030-FX032 backlog rows. Combined-tree verify exit 0
-(2385 + 59 tests, 177 regression proofs; landing worktree
-.build/evidence/landing-verify.log). The integrate worktree's two
-uncommitted edits were stashed, restored and checked line for line.
-Not pushed: pushing main needs the author. FX033 also carried onto this
-branch (356acc9, 094adbf); verify exit 0 (2912 + 136 tests, 210
-regression proofs, fx033-result-type included;
-.build/evidence/fx033-carry-verify.log). Not established: RC′, O-SUB,
-effect soundness; Task 4.6 and G-D1 unchanged.
+**Where milestone 1 stands.** a-min statements, "revision 3.6 with the
+§R7 corrections" (docs/plans/r0-amin-statements.md at bc665cd): one
+approval review (§R7: no S1, four S2), all four corrected in the fix
+pass (§R7a, cade64f), and the two consistency repairs the author asked
+for after inspecting it (bc665cd). **Awaiting the author's approval**,
+which would cover the representation with the named obligations open
+and authorize neither implementation nor soundness claims. Ruled
+2026-10-25: "always R's tail" as a provisional shadow-validator
+restriction (removes reliance on P4 only; O-SUB and A1 remain; losses
+aroundBoth, k2f visible under A6); the live compiler keeps H′.
+After approval: propose the first implementation tranche toward
+milestone 2, in plain terms; it needs its own authorization, as do
+A2's algorithm and source, G-D1's closure record and Task 4.6.
+The critical path and part A/B status: docs/plans/r0-closure-checklist.md.
 
-**Where things stand** (nothing pushed; no merge; no live switch):
-a-min statements revision 3.5; U8 implemented (7476097, 9f547d7); ResultC
-draft and FX033 (5b12ed4); arithmetic task 2 oracle (3672c77), division
-deferred (memo on d001-int-arith); effect contracts memo preserved, not
-adopted, five decisions open (research/effect-kinds, probes `.wxw.txt`
-0cd4267). a-min implementation, Task 4.6 and G-D1 blocked.
+**Landed and pushed.** origin/main = 6b4be77: FX033 repair (H′),
+arithmetic Tasks 1-2 (Tasks 3-7 held, parked), charter scoping records
+(map revision 2, F1-F4 filed as FX034, E021, E022, DOC002),
+FX030-FX032 backlog rows. FX033 is also on this branch (094adbf;
+verify exit 0, 2912 + 136 tests, 210 regression proofs).
 
-**Rules worth keeping in view:** research probes are `.wxw.txt` (the
-pinned R0 corpus counts every tracked `.wxw`); one verify at a time via
-`mkdir /Users/ethan/.claude/jobs/5835604b/tmp/verify.lock` (anchored
+**Branches and worktrees.** Worktrees left: integrate (main; holds
+uncommitted docs/next-session.md, docs/progress.md edits and four
+untracked plan files that are not ours: do not touch), r0-t2-d1 (this
+branch, unpushed by the author's direction), effect-kinds. Every other
+worktree was removed 2026-10-25 after checking for uncommitted files;
+all branch refs kept. Evidence logs copied to the main checkout's
+.build/evidence/2026-10-25-landed/ and worktrees-2026-10-25/.
+
+**Open, not authorized.** a-min implementation, Task 4.6, G-D1, the
+five effect-contract decisions (research/effect-kinds, none blocks
+milestone 1), FX010 (masks one FX033 channel), E022's choice,
+FX034/E021 mechanisms, arithmetic Tasks 3-7, any push of r0-t2-d1.
+
+**Rules worth keeping in view:** research probes are `.wxw.txt`; one
+verify at a time via `mkdir $CLAUDE_JOB_DIR/tmp/verify.lock` (anchored
 `pgrep -f "^node scripts/verify.mjs"`; clear .build/go-cache after);
-stage explicit paths; commit only after `node scripts/width.mjs` reports
-0 lines over 80; agents return findings as text.
-
-**Do not touch.** The main checkout's uncommitted work (branch
-r005b-replan), docs/writing/, and the integrate worktree's uncommitted
-effect-kinds and handoff files.
+stage explicit paths; `node scripts/width.mjs` must report 0 lines
+over 80 before a commit; agents return findings as text; no merge
+commits; no push without the author's explicit yes.
 
 ---
 
