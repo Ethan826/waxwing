@@ -259,8 +259,9 @@ here is newly proved.
    the installed-C edges (E2 installed-C site, E5's frame edges read through C)
    rest on RC′; abort safety for programs installing such a handler is therefore
    argued, not established. Where the tail is R's no claim rests on P4; it still
-   rests on O-SUB and A1, as every use does. The alternative that makes no claim
-   rest on RC′ is "always R's tail" (§14 decision 3's fallback): emulated with
+   rests on O-SUB and A1, as every use does. The alternative that removes
+   reliance on P4 is "always R's tail" (§14 decision 3's fallback); O-SUB and
+   A1 remain dependencies under it. Emulated with
    an unused parameter that forces the occurs path, it refuses aroundBoth
    ("Expected nofail(k) Log, found Log") and k2f, and keeps r1, r2 and r9
    (observed through the stand-in, research/amin-resultc-probes/review36/; §R7).
@@ -777,7 +778,18 @@ package-supplied C, label or fixed mark at that site (design).
   position: L's arguments, Ls's label arguments and everything nested
   in them; rule H′, FX033), the use's own `⟨p, result clauses⟩` only
   when the variable occurs as R's tail alone, or closed when R is
-  closed.
+  closed. That is what generation records, matching the live
+  compiler's H′ (ResultClauses.purs).
+  **Provisional restriction for shadow certification** (author,
+  2026-10-25; §0e item 2): the validator certifies a ResultC only when
+  its recorded tail is R's tail variable or closed with R ("always R's
+  tail"). A ResultC recorded with the use's own fresh tail (H′'s
+  fresh case) is not certified: the validator refuses it as
+  unsupported, which means it cannot certify the candidate, not that
+  the program is invalid (known losses: aroundBoth's `prefix()`, k2f;
+  closure checklist A6). This removes reliance on P4; O-SUB and A1
+  remain dependencies. The live compiler keeps H′ until a separate
+  ruling.
 - An annotation C: labels exactly R's, bare; marks written or its own
   `Annotation` positions, distinct from R's; tail always its own
   `⟨p, annotation clauses i⟩`, whatever R's tail is (F6).
@@ -1809,7 +1821,7 @@ typed abort; hence no deferred expression ends in a typed abort).
 | E3 opening at use (an M handled label in a parameter, an N one in the result, made fresh) | accepts handler values at weakening positions | [FX008-3.4] D3; callback rows never opened ("would be unsound") (argued) | P (sound by argument) |
 | E4 c into C with marks (C ⊑ c); c into R ignoring marks | C over-approximates what the clauses perform, with their assumptions | [FX008-5] point 1 (argued) | S |
 | E4 own abort: `Fail` or rigid tail in a clause gives M ⊑ m | a handler whose clause may abort by itself is not N | [FX008-5] point 1 (argued) | S |
-| E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail by `ownClauses`' occurs rule; an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail: rule H′ (FX033 repair, 2026-10-25), argued informally in r0-amin-resultc-tail.md §6 (RC′; P4, O-SUB and A1 unproved); the earlier parametricity comment was refuted by FX033's x1; annotation tail: FX008 §3.4, review M5 (argued) | S; **argument needed** for the ResultC tail (decision 3) |
+| E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail recorded by `ownClauses`' occurs rule (H′, the live compiler's behaviour), certified by the shadow validator only when it is R's tail or closed with R ("always R's tail", provisional, 2026-10-25; a fresh tail is refused as unsupported); an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail under the restriction: R's tail, so P4 is not relied on; O-SUB and A1 remain (resultc-tail §6, unproved); H′'s fresh case is not certified; the earlier parametricity comment was refuted by FX033's x1; annotation tail: FX008 §3.4, review M5 (argued) | S; O-SUB and A1 open; fresh-tail ResultCs unsupported until P4 is argued and reviewed (decision 3) |
 | C rows bare (no label arguments) | marks attach to effect keys; dispatch is by key | Task 7 ruling; [FX008-5] point 1 reads C only for keys and marks (argued) | S by argument; C for the ruling |
 | E5 R into ρ ignoring marks: inclusion for a closed R only; Definition 4.2 for a rigid-tailed R (3.5) | effect safety of the handler's inference row in its context | [L17] (published, adapted); marks dead (argued); Definition 4.2's row for a rigid-tailed R | S; separating example p1 (refused); closed-R inclusion control added in 3.5 (oracle agent; no result claimed here) |
 | E5 frame edges m ⊑ f, paired ρ marks ⊑ f, rigid C tail gives M ⊑ f | frames are honest | [FX008-5] point 1 (argued) | S |
