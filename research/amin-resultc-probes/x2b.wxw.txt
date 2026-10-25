@@ -1,0 +1,16 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Ask { fn ask(): Unit; };
+effect Get(a) { fn get(): a; };
+fn call(k: Unit -> Unit with ...e): Unit with ...e = k(());
+fn mk(): Handler(Ask with Get(Unit -> Unit with ...s) + ...s) with pure =
+  handler Ask { ask() => call(Get.get()) };
+fn use(): Unit with Get(Unit -> Unit with Log + ...e) + Log + ...e =
+  with mk() { Ask.ask() };
+fn main(): Unit with Console = handle {
+  with handler Log { log(n) => Fail.fail(E) } {
+    with handler Get(Unit -> Unit with Log + Fail(E) + Console) {
+      get() => fn(u: Unit) => { defer Log.log(7); () }
+    } { use() }
+  }
+} { fail(error: E) => Console.print(99) };

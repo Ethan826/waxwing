@@ -1,0 +1,3 @@
+effect Get(a) { fn get(): a; };
+fn g(): Unit with Get(Unit -> Unit with ...s) + ...s = { let k = Get.get(); k(()) };
+fn main(): Unit with Console = Console.print(1);

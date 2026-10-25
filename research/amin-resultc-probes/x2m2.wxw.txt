@@ -1,0 +1,5 @@
+effect Ask { fn ask(): Unit; };
+effect Get(a) { fn get(): a; };
+fn mk(): Handler(Ask with Get(Unit -> Unit with ...t) + ...s) with pure =
+  handler Ask { ask() => { let k = Get.get(); k(()) } };
+fn main(): Unit with Console = Console.print(1);

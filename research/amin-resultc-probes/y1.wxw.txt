@@ -1,0 +1,9 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Box { fn put(x: Unit -> Unit with ...e): Unit; };
+fn use(): Unit with Log = with handler Box { put(x) => x(()) } {
+  Box.put(fn(u: Unit) => { defer Log.log(7); () })
+};
+fn main(): Unit with Console = handle {
+  with handler Log { log(n) => Fail.fail(E) } { use() }
+} { fail(error: E) => Console.print(99) };
