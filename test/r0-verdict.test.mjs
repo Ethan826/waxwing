@@ -57,7 +57,7 @@ const shapes = [
     ['Exhausted', 0], ['OutOfBudget', 1], ['Broke', 1],
     ['ClaimsComplete', 0], ['Heuristic', 0], ['NoCounterInstance', 1],
     ['CXRefused', 1], ['OnlineSolver', 0], ['NonConstructive', 1],
-    ['Uncovered', 1], ['HoleContract', 1]],
+    ['Uncovered', 1], ['HoleContract', 1], ['UnsolvedImage', 1]],
   [Witness, ['Inline', 1], ['Free', 1]],
   [Search, ['SearchHint', 1], ['RequirementOpen', 1], ['Unsatisfied', 1],
     ['Undefined', 1], ['NotEntailed', 1], ['RequirementFails', 1],

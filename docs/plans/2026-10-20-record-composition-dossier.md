@@ -6093,3 +6093,36 @@ blocked; no push.
    differences are reported by the shadow differential as separate,
    explained categories, not suppressed, with no existing comparison
    weakened.
+
+### 18.87 Arithmetic task 1 by option (b); U8 pin accepted; ResultC claim to draft (2026-10-24)
+
+The author's rulings, ratified 2026-10-24. No merge, no push.
+
+1. **Arithmetic task 1, option (b):** the expected AST strings and
+   imports are updated to the shared node, keeping exact operator and
+   operand-order assertions; updating representation tests is
+   authorized, weakening behavioural assertions is not. **Task 2's
+   oracle** stays, with two overclaims corrected: independent code can
+   still share a conceptual defect, and addition's associativity means
+   numeric results cannot establish parser grouping (structural grouping
+   assertions are kept). Codex reviewed the source and ran a model-only
+   sanity check, not Go or full verification. Task 1 is reviewed before
+   tasks 3-7 are authorized. Division stays deferred.
+2. **U8:** the pin addition `UnsolvedImage` (scripts/trusted-surface.json)
+   is accepted as matching the exported constructor; this is acceptance
+   of that pin, not a whole-stack review. `['UnsolvedImage', 1]` joins
+   the constructor inventory in test/r0-verdict.test.mjs; the
+   must-refuse fixtures and positive controls stay.
+3. **ResultC tail parametricity** (§14 decision 3): draft the exact
+   claim and argument, with explicit assumptions and quantifiers, then a
+   bounded adversarial review; E10 and the other unresolved obligations
+   stay separately visible. No new proof or implementation authorized.
+4. a-min implementation, Task 4.6 and G-D1 stay blocked. The five
+   effect-contract decisions stay open; the charter does not settle
+   them; no broader research campaign. Charter fixes were applied in the
+   integrate worktree (all 17 findings dispositioned); activation awaits
+   approval.
+5. **Effect-kinds probes** (branch research/effect-kinds) are renamed to
+   `.wxw.txt`, references updated, contents preserved, runnable without
+   entering the pinned R0 corpus; the corpus is not re-pinned to absorb
+   research files.
