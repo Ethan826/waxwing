@@ -8,17 +8,16 @@ explicit answer governs within scope (record what it supersedes). The
 charter authorizes no implementation or proof and settles no
 effect-policy question. Dossier §18.72-§18.89 records every ruling.
 
-**Update 2026-10-25: no agents running.** All three reported:
-1. Arithmetic task 1 committed on d001-arith (0633480): verify green,
-   differential 0 differences (emitted Go identical), oracle overclaims
-   corrected. Awaiting the author's review; tasks 3-7 held. Gap noted:
-   no test pins an unparenthesized `+` chain's grouping structurally.
-2. ResultC Review 2 complete (4fca437; dossier §18.90). Awaiting the
-   author: authorize the FX033 repair as proposed, and accept or not the
-   loss of c1 and x1z.
-3. Charter probes (cf03706) and scoping map (46392b4) on
-   research/charter-scoping. Awaiting the author: file F1-F4 and fix
-   the stale records the map lists (item 3), sequencing comments.
+**Update 2026-10-25 (after §18.91): no agents running.**
+1. Arithmetic Task 1 accepted with closure (d001-arith 4b14d8a). Tasks
+   3-7 held pending a scoped authorization.
+2. FX033 repaired narrowly on fx033-resultc-tail (3980562, b192f8e,
+   from main a82d064; worktree .claude/worktrees/fx033). Not merged.
+   E4′ updated here (d99ec45). Integration into main or the R0 stack
+   needs the author.
+3. Scoping records closed on research/charter-scoping (4d29d11).
+Open for the author: landing any of these branches; FX030-FX032 are
+absent from main's BACKLOG (they live on r0-t2-d1).
 
 **Where things stand** (nothing pushed; no merge; no live switch):
 a-min statements revision 3.5; U8 implemented (7476097, 9f547d7); ResultC
