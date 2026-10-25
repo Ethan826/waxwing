@@ -22,12 +22,12 @@ table); no soundness claim. E4′'s provisional "always R's tail" forces
 R's tail and checks (shadow validator only); the live compiler keeps H′.
 Milestone 1's checking half needs the validator (A2).
 
-**Next: authorize or amend tranche 1** toward milestone 2
-(docs/plans/2026-10-25-amin-tranche-1-proposal.md): generation records
-the effect problem, rule 1's `EffectsUnchecked`, R031's fixes, a
-coverage test, a census rerun; shadow only; no validator. Also asked:
-whether to draft A2's decision note alongside. A2's algorithm, G-D1's
-closure record and Task 4.6 stay unauthorized.
+**Next: the author reviews the tranche 1 plan and the A2 note**
+(docs/plans/2026-10-25-amin-tranche-1-plan.md,
+docs/plans/2026-10-25-amin-a2-options.md; scope accepted, §18.96).
+Execution needs the author's yes and execution mode; A2's inputs 1-4
+should be decided before Task 1 is final. Checkpoint A after Task 5.
+A2's algorithm, G-D1's closure record and Task 4.6 stay unauthorized.
 The critical path and part A/B status: docs/plans/r0-closure-checklist.md.
 
 **Landed and pushed.** origin/main = 6b4be77: FX033 repair (H′),

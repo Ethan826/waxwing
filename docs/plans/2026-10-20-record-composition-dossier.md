@@ -6268,3 +6268,23 @@ generation records the effect problem (types, `instances`,
 `EffectsUnchecked`, R031's fixes, a bounded coverage test and a census
 rerun; shadow only; no validator; `Outside` markers kept. Awaiting the
 author's authorization.
+
+### 18.96 Tranche 1 scope accepted; plan and A2 note for review (2026-10-25)
+
+The author ratified proceeding with tranche 1 and drafting A2's note
+alongside the plan, with conditions: keep `Outside HandlerType` and
+test that recording obligations cannot make an unchecked handler
+declaration Solved; T6's missing-fixture list records unfinished
+coverage, never completed coverage, separating constructible from
+unavailable cases; name the checks that compare live acceptance, first
+diagnostics and generated Go, since a passing verify supports only what
+its checks exercise; correct the import claim (Strategy/Online.purs
+also imports Generate) to "unreachable from live compilation"; keep
+R031's corrected assertions and restored-defect evidence explicit. The
+A2 note is docs only, drafted early enough to find inputs T1-T3 must
+record, separating trusted validation from untrusted mark search and
+published parts from Waxwing-specific rules; drafting chooses nothing.
+Delivered for review: docs/plans/2026-10-25-amin-tranche-1-plan.md (13
+tasks, Checkpoint A after Task 5) and docs/plans/2026-10-25-amin-a2-
+options.md. No implementation, live switch or soundness claim is
+authorized.

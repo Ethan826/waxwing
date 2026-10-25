@@ -31,6 +31,11 @@ Approved as a representation by the author at 535b780 (dossier
 Tranche 1 proposal written (docs/plans/2026-10-25-amin-tranche-1-
 proposal.md), awaiting authorization. Docs only.
 
+Tranche 1 scope accepted with conditions (dossier §18.96). Plan
+(docs/plans/2026-10-25-amin-tranche-1-plan.md) and A2 options note
+(docs/plans/2026-10-25-amin-a2-options.md) written for review; the
+proposal's import claim corrected. Docs only; width 0 over 80.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

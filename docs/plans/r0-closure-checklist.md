@@ -51,8 +51,8 @@ author approves (row A1). Revision 3.5 has had no review.
 | Step | Obligation | Existing evidence | Next action | Owner |
 |---|---|---|---|---|
 | 2a | statements approved | done 2026-10-25 at 535b780 (§18.95) | — | author |
-| 2b | implementation authorized, scoped to A1's representation | tranche 1 proposed (docs/plans/2026-10-25-amin-tranche-1-proposal.md: generation records the effect problem, shadow only, no validator) | the author authorizes or amends tranche 1 | author |
-| 2c | A2's validator algorithm chosen with its published source, and the interim `EffectsUnchecked` policy (F14) | none beyond the design (row A2) | a short decision note: algorithm, source, fidelity | controller (note), author (choice) |
+| 2b | implementation authorized, scoped to A1's representation | tranche 1 scope accepted (§18.96); plan docs/plans/2026-10-25-amin-tranche-1-plan.md for review | the author reviews the plan and authorizes execution (Checkpoint A after Task 5) | author |
+| 2c | A2's validator algorithm chosen with its published source, and the interim `EffectsUnchecked` policy (F14) | options note drafted (docs/plans/2026-10-25-amin-a2-options.md: M-A/M-B/M-C, R-A, interim items 1-3, recorded inputs 1-4) | the author chooses; inputs 1-4 decided before T1 is final | controller (note), author (choice) |
 | 2d | R031's two option-c defects fixed within the a-min work | pinned (BACKLOG R031) | part of the first implementation tranche | controller |
 
 ### 3. What closes G-D1 and permits Task 4.6

@@ -1,6 +1,8 @@
 # a-min implementation, tranche 1: generation records the effect problem (proposal, 2026-10-25)
 
-Status: **proposed for authorization; nothing here is authorized.**
+Status: **scope accepted by the author (dossier §18.96) with
+conditions carried into docs/plans/2026-10-25-amin-tranche-1-plan.md;
+implementation not authorized.**
 Written after the author approved the a-min statements as a
 representation (revision 3.6 with §R7 corrections and §R7b, 535b780;
 dossier §18.95). Closure checklist rows: A1 (implementation half),
@@ -27,11 +29,15 @@ proposes marks and sites, I3's package checks, and the solved-form
 check extended to effect rows (U8's extension). Then A3's full
 equality at post-Strip with rows.
 
-**What a user sees:** nothing. Every change is in shadow code that
-`compile` does not reach (the generator is imported only through
-Features/Check/Decide/Shadow.purs; read 2026-10-25). Live acceptance,
-diagnostics and generated Go are unchanged, and the full verify
-checks that.
+**What a user sees:** nothing. Generation is unreachable from live
+compilation: test/r0-verdict.test.mjs walks the module graph from
+Program.Main and finds no generation, checking or strategy module
+(corrected 2026-10-25 after the author's review: the generator is
+imported by Decide/Shadow.purs and Strategy/Online.purs, both shadow;
+an earlier wording said "only through Decide/Shadow"). The recorded
+problem's data types are reachable as types. The plan names which
+checks compare live acceptance, first diagnostics and generated Go,
+and what each leaves out.
 
 ## In the tranche, exactly these tasks
 
