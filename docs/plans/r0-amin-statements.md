@@ -1655,7 +1655,7 @@ typed abort; hence no deferred expression ends in a typed abort).
 | C rows bare (no label arguments) | marks attach to effect keys; dispatch is by key | Task 7 ruling; [FX008-5] point 1 reads C only for keys and marks (argued) | S by argument; C for the ruling |
 | E5 R into ρ ignoring marks: inclusion for a closed R only; Definition 4.2 for a rigid-tailed R (3.5) | effect safety of the handler's inference row in its context | [L17] (published, adapted); marks dead (argued); Definition 4.2's row for a rigid-tailed R | S; separating example p1 (refused); closed-R inclusion control added in 3.5 (oracle agent; no result claimed here) |
 | E5 frame edges m ⊑ f, paired ρ marks ⊑ f, rigid C tail gives M ⊑ f | frames are honest | [FX008-5] point 1 (argued) | S |
-| E5 Console frame edges skipped (Frames `framed` guard) | none: a Console frame is N by definition | sound only while no `Handler(Console …)` value can be built (FX011); the code says it "drops real demands" | **C, conflict candidate** (decision 1) |
+| E5 frame edges for Console frames too (uniform accounting; ruled §18.86, decision 1) | frames are honest, Console included | [FX008-5] point 1 (argued); today's Frames `framed` guard skips them, sound only while FX011 holds; no edge omitted without an argument that it is redundant | S; departure from today recorded |
 | E6 no `Fail` and no rigid tail in d | cleanup neither fails nor performs an unknown effect | [FX008-5] point 4; spec's `defer` rule (argued) | S |
 | E6 d's labels ⊑ N | cleanup's operations reach frames that cannot abort | [FX008-5] point 4 (argued) | S |
 | E7 a call's `nofail` assumption | as E2's edge | [FX008-5] point 2 (argued) | S |
@@ -1681,8 +1681,9 @@ on FX008 §5's argument, and today's agreement with it is supporting
 evidence (§18.82).
 
 **Conflicts and decisions for the author.** Each keeps its separating
-example; none is resolved by copying today's behaviour. Decisions 1, 3
-and 4 are **open**; 2 is decided and listed as the precedent.
+example; none is resolved by copying today's behaviour. The author
+ruled on 1 and 4 and kept 3 open (dossier §18.86, 2026-10-24); 2 is
+decided and listed as the precedent.
 
 1. **Console frame guard** (E5; open). Frames `framed` adds no edge for
    a frame marked N, which today means only a Console frame; the code
@@ -1692,6 +1693,14 @@ and 4 are **open**; 2 is decided and listed as the precedent.
    fails, installed around `defer print(1)`. Proposed: the validator
    generates the frame edges for Console frames too; that costs nothing
    today (unreachable) and stays sound if FX011 is lifted.
+   **Ruled (§18.86): uniform accounting.** The validator generates the
+   frame edges for Console frames as for any other frame. An edge may be
+   omitted only with an explicit argument that it is redundant under the
+   current typed-abort semantics; none is given here, so none is
+   omitted. This departs from Frames `framed`'s guard; the shadow
+   differential cannot show the difference today (FX011 makes the case
+   unconstructible), and the departure is recorded so that lifting FX011
+   does not silently inherit the guard.
 2. **FX032** (decided, §18.78): today's checker drops an operation's
    own `with` row, which accepts unsound programs; a-min records it as
    unsupported. Listed as the precedent for this rule.
@@ -1703,13 +1712,20 @@ and 4 are **open**; 2 is decided and listed as the precedent.
    row variable that occurs only in the result. Proposed: write the
    argument before implementation, or treat such ResultCs as
    unsupported. (The annotation C's always-fresh tail does not rest on
-   this claim.)
+   this claim.) **Kept open (§18.86)** until its exact claim and
+   supporting argument are written and reviewed; it is not settled by
+   analogy with other tails (the annotation C's, R's, or Definition
+   4.2's).
 4. **Divergence, not a soundness conflict** (open): with F1′, S and T
    excluded, R0 may accept a program today's checker rejects (FX008's
    gain1.wxw is such a program for FX008 revision 10 itself). FX008
    argues these gains are sound. The shadow differential reports each
    such program for review rather than counting it as agreement or
-   refusing it to match today.
+   refusing it to match today. **Ruled (§18.86):** the differential
+   reports F1′, S and T differences as separate, explained categories
+   (one per excluded mechanism, each with the program, both verdicts and
+   the mechanism's role); none is suppressed, and no existing comparison
+   is weakened to absorb them.
 
 Not covered here: proofs of any [FX008-5] point, which remain a proof
 obligation; the effect-safety theorem for Waxwing's consumption

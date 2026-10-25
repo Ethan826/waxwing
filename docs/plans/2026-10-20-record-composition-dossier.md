@@ -6056,3 +6056,40 @@ implied.
    not close them or establish the whole judgment's soundness.
 7. Then bring back the remaining open obligations and the targeted
    check results.
+
+### 18.86 Arithmetic slice authorized in isolation; U8 repair; §14 rulings (2026-10-24)
+
+The author's rulings, ratified 2026-10-24. Task 4.6 and G-D1 stay
+blocked; no push.
+
+1. **Effect contracts.** The decision memo (branch research/effect-kinds,
+   eb0d8a0) is preserved; its five proposals are not adopted. `pure`,
+   `Crash` and external-root classification are unsettled. Only source
+   research that does not depend on those choices continues. "No
+   published precedent found" is a search result, not grounds to invent
+   a rule.
+2. **Arithmetic** (D001 slice; recorded in full in the design on branch
+   d001-arith): `-`, `*` and unary minus proceed in isolation; division
+   deferred; no zero-on-divide. Fresh branch from main carrying only the
+   design and plan; the `with h -1` break accepted with a migration
+   example and an ADR; negative literals preserved; unary-minus
+   constraints by the same semantic pattern as integer arithmetic, with
+   their own generation case and tests; helpers conditional on use.
+   Implemented during the shadow tranche but not landed into the R0 stack
+   or main; landing requires a review of recorder coverage, pinned
+   evidence and corpus baselines. Authorized now: plan tasks 1-2 (the
+   shared-node refactor and the independent oracle), reviewed before
+   the remaining execution cost is authorized; the 1-3M estimate is not
+   blanket authorization.
+3. **U8**: implement the trusted solved-form check against a precise
+   contract covering every binding, with honest controls and
+   must-refuse fixtures. A separate repair; it does not authorize the
+   validator's broader implementation or the live switch.
+4. **§14 decisions** (r0-amin-statements.md): Console frames get uniform
+   accounting, any omitted edge needing an explicit argument that it is
+   redundant under the current typed-abort semantics; a ResultC tail's
+   parametricity stays open until its exact claim and argument are
+   reviewed, not settled by analogy with other tails; F1′, S and T
+   differences are reported by the shadow differential as separate,
+   explained categories, not suppressed, with no existing comparison
+   weakened.
