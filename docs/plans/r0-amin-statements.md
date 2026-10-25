@@ -1,4 +1,4 @@
-# a-min: statements, revision 3.6 (G-effect-rows, 2026-10-25)
+# a-min: statements, revision 3.6 with the §R7 corrections (G-effect-rows, 2026-10-25)
 
 Status: **statements only; implementation unauthorized; Task 4.6 and
 G-D1 blocked.** Revision 3.6 (§0e) records the FX033 repair (rule H′ as
@@ -248,17 +248,29 @@ here is newly proved.
    parametricity under dynamic handler scoping), O-SUB (substitution
    through the whole judgment) and A1 (static rows to dynamic frames)
    remain unproved. Decision 3 (§14) stays open.
-2. **Claims that depend on RC′.** Only the fresh-tail case of E4′
-   depends on it: a use whose ResultC tail variable occurs as R's tail
-   alone (k2f; aroundBoth's `prefix()`; the regression probe r1). For
-   those uses the installed-C edges (E2 installed-C site, E5's frame edges read
-   through C) rest on RC′; abort safety for programs installing such a
-   handler is therefore argued, not established. Where the tail is R's
-   (every H′-occurs case) no claim rests on RC′ beyond what the rest of
-   the judgment already rests on ([FX008-5]). The alternative that
-   makes no claim rest on RC′ is "always R's tail" (§14 decision 3's
-   fallback): it also refuses k2f, and its effect on aroundBoth, r1,
-   r2 and r9 is unestablished (Review 2, Task 4 risks).
+2. **Claims that depend on RC′** (corrected, §R7 S2-3). RC′'s parts are not all
+   fresh-tail obligations: only **P4** (behavioural parametricity) is specific
+   to the fresh-tail case. **O-SUB** and **A1** are obligations of the whole
+   judgment: every polymorphic use, H′'s occurs case (via P3), E5's installed-C
+   step and Definition 4.2's argument rest on them. P4 is what depends on the
+   fresh-tail case: a use whose ResultC tail variable occurs as R's tail alone
+   (k2f; aroundBoth's `prefix()`; the FX008 regression probe r1 in
+   test/fx008-defer-programs.mjs, not Review 2's record channel). For those uses
+   the installed-C edges (E2 installed-C site, E5's frame edges read through C)
+   rest on RC′; abort safety for programs installing such a handler is therefore
+   argued, not established. Where the tail is R's no claim rests on P4; it still
+   rests on O-SUB and A1, as every use does. The alternative that makes no claim
+   rest on RC′ is "always R's tail" (§14 decision 3's fallback): emulated with
+   an unused parameter that forces the occurs path, it refuses aroundBoth
+   ("Expected nofail(k) Log, found Log") and k2f, and keeps r1, r2 and r9
+   (observed through the stand-in, research/amin-resultc-probes/review36/; §R7).
+   So r1, r2 and r9 exercise the ResultC fresh path today but do not require a
+   fresh tail; aroundBoth's `prefix()` and k2f do. **Ruled (author, 2026-10-25):
+   "always R's tail" as a provisional shadow-validator restriction.** It removes
+   P4 only where it prevents freshening; it does not discharge O-SUB, A1 or the
+   other whole-judgment obligations. The stand-in's differences are evidence for
+   the restriction, not checks of a validator, which needs its own. Losing
+   aroundBoth and k2f stays visible under A6. The live compiler keeps H′.
 3. **U8 implemented** (7476097, pin 9f547d7; §11 U8): today's type
    and record-row bindings are in solved form or refused
    (`UnsolvedImage`). a-min's effect-row and mark bindings must extend
@@ -267,36 +279,46 @@ here is newly proved.
 4. **§18.85 item 7's checks run** (§12.1, "Reruns"): N4 refused under
    Definition 4.2; the closed-R control accepted, its near miss
    refused (observed, bounded).
-5. **O6 (records with several tails): no case constructible today**
-   (observed, research/amin-o6-probes/, this branch's build): a record
+5. **O6 (records with several tails).** Corrected (§R7 S2-2): rigid
+   two-tail equalities are constructible (o6g, o6h accepted; o6i, o6j
+   refused; observed) and O6 is testable for them; oracle cases owed.
+   What is not constructible (observed, research/amin-o6-probes/, this
+   branch's build): a record
    literal with two spreads is E_TYPE "A record literal accepts at
    most one spread" (o6a); a call into a two-tailed parameter is
    E_TYPE "Cannot tell whether pick's r or s has field k; no annotation
    can decide r and s, ..." (o6d), likewise with no extra fields (o6e)
    and through a two-tailed caller (o6f); with a closed clause row the
-   program meets FX034 instead (o6c). O6's definition stays proposed;
-   it becomes testable when R005B's forced splits (closure checklist
-   B7) or merges land, and must get a case then.
+   program meets FX034 instead (o6c; FX034 is filed on main, not on
+   this branch's BACKLOG). Flexible-tail unfolding becomes testable
+   when R005B's forced splits (closure checklist B7) or merges land.
 6. **Carried obligations, one table** (below). "Carried" means the
    statements can be judged as a representation with the obligation
    open and labelled; "blocking" means approval should wait for it.
 
 | Obligation | Where | Standing | Blocks representation approval? | Blocks a soundness claim? |
 |---|---|---|---|---|
-| RC′ (P4, O-SUB, A1) for E4′'s fresh-tail case | §0e item 2; resultc-tail §6 | argued, unproved | no, if the fresh-tail case is labelled argued (or made unsupported) | yes: abort safety for fresh-tail ResultC uses |
+| P4 (RC′'s parametricity step), fresh-tail ResultC uses only | §0e item 2; resultc-tail §6 | argued, unproved; refutation history (RC false through nine channels) | no: the shadow validator refuses fresh tails ("always R's tail", ruled 2026-10-25) | yes: abort safety for fresh-tail uses (effect safety goes through R, not C); not needed while the restriction holds |
+| O-SUB, with A1 under [FX008-5] | §0e item 2; resultc-tail §6; §4 E5 installed-C step; §13b | presupposed by the compiler, unproved | no | yes: every polymorphic use, both ResultC cases, Definition 4.2, E5's step |
 | [FX008-5] points 1-4 | §14 | argued, reviewed against probes, unproved | no | yes: every S row citing it |
 | Definition 4.2's sufficiency | §4, §13b | per site, reasoned; no substitution lemma | no | yes, for rigid-tailed consumption |
-| E10 | §4 E10 | settled by reading only | no | no further claim beyond E2's |
-| a ResultC's own tail under rule J | §13a O4, §0d item 7 | unexamined | no | possibly; for the reviewer |
-| O5, O7 | §13a | correspondence notes (today stricter) | no | no (a-min may accept more; reported by the differential) |
-| O6 | §0e item 5 | defined, no constructible case | no | no case today; must be tested when constructible |
-| U2-U5 | §11 | unresolved claims | no | U2, U4: yes for completeness of read-back and certify (guarantee 3); U3: sufficiency on the corpus; U5: equivalence with FX008's settling |
-| U8 extension to effect rows and marks | §11 U8 | not built (no effect bindings yet) | no | yes, once a-min's bindings exist |
+| E10 | §4 E10 | settled by reading only | no | yes if the reading is incomplete: it is a coverage claim (a rigid source missed would escape Definition 4.2) |
+| a ResultC's own tail under rule J | §13a O4; resultc-tail P9 | reasoned in P9 (a rule J merge links γ to the alias's tail; r1, r2 observed accordingly) | no | yes: rests on P4 for fresh tails and on U8's extension |
+| O5, O7 | §13a | correspondence: a-min may accept more than today | no | yes (argued): each widening needs its exclusion argument, bare-C for O5, Definition 4.2 standing in for the F1′ hook's closing for O7 (§13) |
+| O6 | §0e item 5; §13a O6 | testable for rigid tails (o6g-o6j); flexible-tail unfolding not constructible | no | yes: handler types copied through several-tailed records (P2); oracle cases owed |
+| U2, U3, U5 | §11 | unresolved claims | no | U2: completeness of read-back; U3: sufficiency of the solved form on the corpus; U5: equivalence with FX008's settling |
+| U4 | §11; §8 S2 | unresolved | no | yes: soundness of certify (C1-C2) for effect rows, marks and label-argument holes; effect-hole defaults rest on it |
+| U6 / P1, coverage | §11; §13; §8 S4 | argued; fixtures and mutants never run | no | yes: the validator covers today's refusal rules, and generation computes H′'s tail correctly (trusted under E4′) |
+| U7 | §11 | correspondence over a fixed grammar; the ResultC occurs shape is outside it | no | no claim beyond correspondence with rule J's encoding |
+| P2 and the §13a audit's scope | §5; §13a | reasoned; Refute/, Strategy/, Decide* and Entailed* outside the audit | no | yes: a unifier path outside the audit could copy a handler type unrecorded |
+| U8 extension to effect rows and marks | §11 U8 | not built (no effect bindings yet) | no | yes, once a-min's bindings exist (P2 in O4's case, P9, rule J) |
 | effect-safety theorem for the consumption variant | §14, "Not covered" | [L17] is the model, not a proof | no | yes |
 
 7. **The five effect-contract decisions** (research/effect-kinds,
    decision-memo.md §7) are not settled here. a-min's obligations
-   preserve today's guarantees (effect safety, abort safety; §14)
+   preserve the intended guarantees (effect safety, abort safety; §14;
+   today's checker violated abort safety before FX033's repair and
+   still has FX032)
    over today's labels, rows and marks; no row of §14 encodes a
    choice about `pure` and crash, a catchable `Crash`, the
    observation boundary, external root classes or the extension rule
@@ -304,6 +326,11 @@ here is newly proved.
    ground: uniform Console frame accounting (§14 decision 1, §18.86)
    is chosen so that lifting FX011 or a future catchable channel does
    not inherit today's guard; it adds edges and settles no policy.
+   Coupling points (§R7, reasoned): E8 and the "Console labels N" row
+   hardcode Console as the only, non-aborting root (decisions 2-4
+   would amend them); E4's own-abort rule and E6 treat `Fail` as the
+   only typed abort (decisions 1-2 would amend them). These rows would
+   need amendment, not reinterpretation, if those decisions change.
 
 ## 1. Goal, threat model, scope (unchanged from revision 3)
 
@@ -451,7 +478,8 @@ claim is open for that case; decision pending, §13a); **O5** and **O7**
 (§13b) for E2's rigid case. (3.5: O4 decided as rule J, so an own-C
 label beyond R's joins R's tail binding and Definition 4.1(d) equates
 it with the other side's R; the claim for that case is reasoned on
-this reading, not re-audited, and rests on U8, §11. K1 decided as
+this reading, not re-audited, and rests on U8's extension to effect
+rows and marks (§11; not built). K1 decided as
 Definition 4.2, §4.) Any unifier path the audit did not reach
 (it excluded Refute/, Strategy/, Decide* and Entailed*, the G0 path) is
 outside the claim.
@@ -775,9 +803,11 @@ N4), under Definition 4.2 when R ends in a rigid ϱ, so inclusion (ρ
 holding more effects than R) holds only for a closed R (3.5); C is
 paired with ρ by key
 and position (Lend `partners`), recording only mark edges (no
-consumption, no arguments; T2-e); unless the frame is N (Console,
-unreachable today, FX011): `m ⊑ f`, each paired ρ label's mark `⊑ f`,
-and a rigid C tail gives `M ⊑ f` and ρ ending in ϱ (Frames `framed`);
+consumption, no arguments; T2-e); for every frame, Console included
+(uniform accounting, §14 decision 1, ruled §18.86; today's Frames
+`framed` skips an N frame, unreachable while FX011 holds): `m ⊑ f`,
+each paired ρ label's mark `⊑ f`, and a rigid C tail gives `M ⊑ f`
+and ρ ending in ϱ;
 the body's ambient row is `f L + ρ`. Refusals: HandlerMayFail,
 ExpectedHandler (h's head not a handler); the rigid-tail mismatch is
 unreachable today (`Internal BodyState`, TailPass `installed`).
@@ -1073,7 +1103,8 @@ derived C), generation's lambda-parameter rule (records
   O7 (correspondence: today stricter), K1 (§13b); P1 and P2 (§5) rest
   on these, and P2 is reasoned outside O4's case. (3.5: O4 and K1
   decided, rule J and Definition 4.2; O5 and O7 stay correspondence
-  notes; P2 in O4's case rests on U8.)
+  notes; P2 in O4's case rests on U8's extension to effect rows and
+  marks, not built.)
 - U7. Definition 4.1(c) as built (a written type's C is R, compared
   with marks) against FX008's design (a structural copy of R as C).
   **Own check after 3.4** (author's ruling §18.83 item 5):
@@ -1101,8 +1132,11 @@ derived C), generation's lambda-parameter rule (records
   variable) is outside the grammar. The label stays as narrow as
   §18.84 item 4 set it: correspondence with the chosen encoding (rule
   J, §18.85), supported by two detected mutants.
-- U8. Solved form for bindings (§18.85 item 4). **Not enforced: a
-  gap in today's R0 certification, not only in a-min's plans.** An
+- U8. Solved form for bindings (§18.85 item 4). **Enforced since
+  7476097 for today's type and record-row bindings; not yet for effect
+  rows or marks, which a-min must add.** History (3.5): found not
+  enforced, a gap in today's R0 certification, not only in a-min's
+  plans. An
   independent read-only inspection (Opus, 2026-10-24) and one
   controller run. In the code an image is a binding's right-hand side
   (Domain/Verdict/Witness.purs: `Binding = Inline RTExpr | Free Int`;
@@ -1160,7 +1194,9 @@ derived C), generation's lambda-parameter rule (records
     made row, each with a positive control.
 - Novel, for approval (ADR 014): I3; the ∅ default for effect-row
   holes; consumption-based inclusion (FX001/FX008's design, no
-  published source); the mark-term evidence and §5's correspondence.
+  published source); the mark-term evidence and §5's correspondence;
+  H′ and its argument RC′ (derived, no published source; resultc-tail
+  §5-§6).
 
 ## 12. Separating examples
 
@@ -1215,8 +1251,10 @@ disagreement", printing `case inclusion with extra effects (N4):
 accepted under the withdrawn rule, as the N4 row says) and `case
 closed-R inclusion (S2-2): {"honest":true,"honestEarlier":true,
 "forged":false,"forgedEarlier":true}` (as the closed-R row says);
-`node k1.mjs` exit 0 with the same closed-R line. §18.85 item 7's two
-check results are therefore in.
+`node k1.mjs` exits 0 but prints nothing: k1.mjs is a case module, and
+both lines above come from run.mjs (corrected, §R7 S3; the earlier
+attribution was the controller's error). §18.85 item 7's two check
+results are therefore in.
 
 ### 12.2 Unrun predictions
 
@@ -1335,10 +1373,14 @@ Exclusions, each with why it is safe or what it limits:
   atoms, not an effect rule.
 - **FX032** (operation `with` rows): unsupported, so it limits support
   (rule-1 `EffectsUnchecked`), never soundness.
-- **Console frames** (Frames `framed`'s guard): no edges for a Console
-  frame; unreachable while FX011 stands (no `Handler(Console …)` value
-  can be built); D001 must revisit it, as the code says. A
-  compatibility rule with a conflict candidate: §14 decision 1, open.
+- **Console frames**: not excluded (§R7 fix pass, S2-1). The validator
+  generates frame edges for Console frames as for any frame (§14
+  decision 1, ruled §18.86); today's Frames `framed` guard is a
+  departure the validator does not reproduce. Unreachable while FX011
+  stands. With the guard gone, the "Console labels N" row makes a
+  Console frame's f equal to N, so once FX011 is lifted every failing
+  user Console handler would be refused: conservative, and that row
+  must be revisited with FX011.
 
 Tests of this mapping (unrun; listed in §12 and revision 3's I10): one
 forged-package fixture per refusal kind; one mutation per row of this
@@ -1491,7 +1533,13 @@ The table keeps the audit's findings as found at 0c2ad60.)
   terms, handler types included, into result records by reference; E1
   covers them only once §4 defines equality for several-tailed records
   (disjoint union of images). **Defined in 3.4** (§4, "Records with
-  several tails"; proposed, no case).
+  several tails"; proposed). Standing corrected (§R7 S2-2): testable
+  for rigid tails, where E1 between two-rigid-tail records is
+  constructible today (research/amin-o6-probes: o6g, o6h accepted;
+  o6i, a missing tail, and o6j, a field's handled mark, refused;
+  observed, supporting evidence only); flexible-tail unfolding through
+  calls is not constructible (o6d-o6f, o6k: "Cannot tell whether …").
+  Oracle cases for o6g-o6j are owed, not built.
 - **O7 (correspondence).** Today's c-into-R stage is `labels(c) + φ`
   and settling stages use throwaway tails; E4/E2 with s = c_k would ask
   c_k's tail to equal R's remainder, which the checker never imposes.
@@ -1780,56 +1828,52 @@ typed abort; hence no deferred expression ends in a typed abort).
 | FX008's F1′ hook, correction S, termination T (excluded) | reproduce today's type solutions and acceptance order | FX008 §3.4's compatibility argument (argued) | C (excluded from the validator) |
 | side-condition texts, diagnostic headlines | which message a refusal prints | today's behaviour only | C |
 
-**Compatibility-only obligations.** The rules above supported only by
-existing behaviour: the Console frame guard (E5), the bare-C ruling as
-a ruling (its soundness has an argument), FX008's F1′, S and T
-(already excluded from the validator), and diagnostic texts and
-headlines. None is a soundness obligation of the validator; each is
-kept only to match today's acceptance or output and is listed so it is
-not mistaken for one. Definition 4.1 is not on this list: it is class S
-on FX008 §5's argument, and today's agreement with it is supporting
-evidence (§18.82).
+**Compatibility-only obligations.** The rules above supported only by existing
+behaviour: the bare-C ruling as a ruling (its soundness has an argument),
+FX008's F1′, S and T (already excluded from the validator), and diagnostic texts
+and headlines. None is a soundness obligation of the validator; each is kept
+only to match today's acceptance or output and is listed so it is not mistaken
+for one. Definition 4.1 is not on this list: it is class S on FX008 §5's
+argument, and today's agreement with it is supporting evidence (§18.82).
 
 **Conflicts and decisions for the author.** Each keeps its separating
 example; none is resolved by copying today's behaviour. The author
 ruled on 1 and 4 and kept 3 open (dossier §18.86, 2026-10-24); 2 is
 decided and listed as the precedent.
 
-1. **Console frame guard** (E5; open). Frames `framed` adds no edge for
-   a frame marked N, which today means only a Console frame; the code
-   says this "drops real demands" and that user Console handlers
-   (D001) must revisit it. Separating example (unrun, not constructible
-   today because of FX011): a user `Handler(Console …)` whose clause
-   fails, installed around `defer print(1)`. Proposed: the validator
-   generates the frame edges for Console frames too; that costs nothing
-   today (unreachable) and stays sound if FX011 is lifted.
-   **Ruled (§18.86): uniform accounting.** The validator generates the
-   frame edges for Console frames as for any other frame. An edge may be
-   omitted only with an explicit argument that it is redundant under the
-   current typed-abort semantics; none is given here, so none is
-   omitted. This departs from Frames `framed`'s guard; the shadow
+1. **Console frame guard** (E5; ruled §18.86, uniform accounting). Frames
+   `framed` adds no edge for a frame marked N, which today means only a Console
+   frame; the code says this "drops real demands" and that user Console handlers
+   (D001) must revisit it. Separating example (unrun, not constructible today
+   because of FX011): a user `Handler(Console …)` whose clause fails, installed
+   around `defer print(1)`. Proposed: the validator generates the frame edges
+   for Console frames too; that costs nothing today (unreachable) and stays
+   sound if FX011 is lifted. **Ruled (§18.86): uniform accounting.** The
+   validator generates the frame edges for Console frames as for any other
+   frame. An edge may be omitted only with an explicit argument that it is
+   redundant under the current typed-abort semantics; none is given here, so
+   none is omitted. This departs from Frames `framed`'s guard; the shadow
    differential cannot show the difference today (FX011 makes the case
-   unconstructible), and the departure is recorded so that lifting FX011
-   does not silently inherit the guard.
+   unconstructible), and the departure is recorded so that lifting FX011 does
+   not silently inherit the guard.
 2. **FX032** (decided, §18.78): today's checker drops an operation's
    own `with` row, which accepts unsound programs; a-min records it as
    unsupported. Listed as the precedent for this rule.
-3. **E4′'s ResultC tail rule rests on a parametricity claim in a code
-   comment** (ResultClauses.purs; open). Update 2026-10-25: the claim
-   was refuted by FX033's x1; the compiler now implements H′ as a
-   narrow repair (branch fx033-resultc-tail), refusing c1 and x1z as a
-   temporary precision limitation. Whether H′ suffices is still open:
-   RC′ is argued, not proved. It is soundness-relevant (a
-   ResultC's tail decides which outer frames its clauses can reach) and
-   has no independent argument. Separating example to construct: a
-   callee returning a handler whose clauses call a callback through a
-   row variable that occurs only in the result. Proposed: write the
-   argument before implementation, or treat such ResultCs as
-   unsupported. (The annotation C's always-fresh tail does not rest on
-   this claim.) **Kept open (§18.86)** until its exact claim and
-   supporting argument are written and reviewed; it is not settled by
-   analogy with other tails (the annotation C's, R's, or Definition
-   4.2's).
+3. **E4′'s ResultC tail rule rests on a parametricity claim in a code comment**
+   (ResultClauses.purs; open). Update 2026-10-25: the claim was refuted by
+   FX033's x1; the compiler now implements H′ as a narrow repair (branch
+   fx033-resultc-tail), refusing c1 and x1z as a temporary precision limitation.
+   Whether H′ suffices is still open: RC′ is argued, not proved. It is
+   soundness-relevant (a ResultC's tail decides which outer frames its clauses
+   can reach) and has no independent argument. The separating example now exists
+   (FX033's x1, and Review 2's eight further channels), and the argument is
+   written as RC′ (resultc-tail §6). **§R7 fix pass:** the shadow validator uses
+   "always R's tail" provisionally (author, 2026-10-25; §0e item 2), so P4 is
+   not relied on; RC′'s O-SUB and A1 remain whole-judgment obligations. (The
+   annotation C's always-fresh tail does not rest on this claim.) **Kept open
+   (§18.86)** until its exact claim and supporting argument are written and
+   reviewed; it is not settled by analogy with other tails (the annotation C's,
+   R's, or Definition 4.2's).
 4. **Divergence, not a soundness conflict** (open): with F1′, S and T
    excluded, R0 may accept a program today's checker rejects (FX008's
    gain1.wxw is such a program for FX008 revision 10 itself). FX008
@@ -2521,3 +2565,27 @@ and A6 only, not live behaviour. No corpus-wide count exists.
 decisions (reasoned). Coupling points that would need amendment: E8
 and "Console labels N" (decisions 2-4); E4's own-abort rule and E6,
 which treat `Fail` as the only typed abort (decisions 1-2).
+
+## R7a. The §R7 fix pass (2026-10-25)
+
+The author ratified correcting all four S2 findings rather than waiving
+them, with the S3 items, and "always R's tail" as a provisional
+shadow-validator restriction. Text only; no design change intended.
+Approval follows the author's inspection of this diff against §R7's
+conditions; no further review cycle unless the correction changes the
+design.
+
+| Finding | Resolution |
+|---|---|
+| S2-1 Console guard text | §4 E5 states frame edges for every frame, Console included; §13 no longer excludes Console frames and notes the "Console labels N" consequence once FX011 lifts; the compatibility-only list drops the guard; §14 decision 1's heading says ruled |
+| S2-2 O6 | §0e item 5 and §13a O6: testable for rigid tails (o6g-o6j), flexible-tail unfolding not constructible; oracle cases owed; FX034's location noted |
+| S2-3 O-SUB and A1 | §0e item 2: only P4 is fresh-tail-specific; O-SUB and A1 are whole-judgment; table splits the rows |
+| S2-4 table | U4 relabelled soundness; O5 and O7 "yes (argued)" with their exclusion arguments; rows added for O-SUB, U6/P1, U7, P2 and the audit scope; E10 as a coverage claim; rule J ResultC tail cites P9 |
+| S3 stand-in results | §0e item 2: aroundBoth and k2f refused, r1, r2, r9 kept (stand-in); r1, r2, r9 exercise the fresh path but do not require a fresh tail |
+| S3 k1.mjs attribution | §12.1 reruns paragraph corrected |
+| S3 U8 wording | §11 U8 heading; §13a and §11 U6 cite U8's extension to effect rows |
+| S3 decision 3 | example exists (x1); argument written as RC′; provisional restriction recorded |
+| S3 Novel list | H′ and RC′ added |
+| S3 "probe r1" | names test/fx008-defer-programs.mjs |
+| S3 "today's guarantees" | "intended guarantees"; coupling points E8, Console-N, E4 own-abort, E6 named in §0e item 7 |
+| Ruling: always R's tail | §0e item 2 and §14 decision 3; qualifications kept: removes P4 only where it prevents freshening, discharges no whole-judgment obligation, stand-in evidence only, losses visible under A6 (closure checklist) |
