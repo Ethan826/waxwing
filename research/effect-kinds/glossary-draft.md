@@ -31,8 +31,8 @@ definition of purity is attributed to its source; a definition marked
 
 **P1, no outstanding request.** Under O1, run with no caller-installed
 handlers, no performed operation goes unhandled. This is Brachthäuser,
-Schuster and Ostermann's contextual purity (Effekt TR 2020, §1.2,
-§1.5): "A contextually pure function can still have effects, it merely
+Schuster and Ostermann's contextual purity (Effekt TR 2020 and OOPSLA
+2020, §1.5; section corrected in source-checks.md): "A contextually pure function can still have effects, it merely
 places no requirements on its caller." It separates from P2 through an
 FFI root such as a host `now()`: no request, but O2 sees an
 observation (E03, E06). Waxwing's `Console` is both a request in the

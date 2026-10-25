@@ -38,7 +38,7 @@ Published meanings. Koka's `pure` is the alias for `<exn,div>`: it
 allows exceptions and divergence (Leijen 2014 §2.2; std/core: "may not
 terminate or raise an exception"); Koka's empty row is `total`.
 Effekt's contextual purity (Brachthäuser, Schuster and Ostermann, TR
-2020 §1.2): "A contextually pure function can still have effects, it
+and OOPSLA 2020 §1.5): "A contextually pure function can still have effects, it
 merely places no requirements on its caller." Unison's `{}` admits
 `bug`. Today's `with pure` is closer to Koka's `total` and to contextual
 purity than to Koka's `pure`. [P] E01: Koka's `impossible` under
@@ -188,8 +188,8 @@ Alternatives.
   read-only) and the compiler believes the tag.
 - **3C, library encoding.** Effects as free or freer monads in libraries
   (Kiselyov, Sabry and Swords 2013; "Freer Monads, More Extensible
-  Effects" 2015, cited by the framing note; the memo's attribution of
-  the latter to Kiselyov and Ishii was not re-checked).
+  Effects", Kiselyov and Ishii 2015, authorship confirmed in
+  source-checks.md).
 
 3A against 3B: E10 (clause illustrative; [P] accepted, prints `99` then
 `1`):
