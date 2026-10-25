@@ -1,0 +1,7 @@
+effect Log { fn log(n: Int): Unit; };
+effect Ask { fn ask(): Unit; };
+fn mk(): Handler(nofail Ask with Log + ...s) with pure =
+  handler Ask { ask() => Log.log(1) };
+fn use(): Unit with nofail Log = with mk() { defer Ask.ask(); () };
+fn main(): Unit with Console =
+  with handler Log { log(n) => Console.print(n) } { use() };

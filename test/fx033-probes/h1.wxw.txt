@@ -1,0 +1,12 @@
+type E = E;
+effect Log { fn log(n: Int): Unit; };
+effect Q { fn q(): Unit; };
+effect Box(a) { fn put(x: a): Unit; };
+fn mk(): Handler(Box(Handler(Q with ...s)) with ...s) with pure =
+  handler Box(Handler(Q with ...s)) { put(x) => with x { Q.q() } };
+fn use(): Unit with Log = with mk() {
+  Box.put(handler Q { q() => { defer Log.log(7); () } })
+};
+fn main(): Unit with Console = handle {
+  with handler Log { log(n) => Fail.fail(E) } { use() }
+} { fail(error: E) => Console.print(99) };
