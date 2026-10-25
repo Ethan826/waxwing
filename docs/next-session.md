@@ -1,73 +1,39 @@
-# RESUME HERE (2026-10-24): a-min revision 3.3
+# RESUME HERE (2026-10-24, after the charter's approval)
 
-**Where.** Worktree `.claude/worktrees/r0-t2-d1`, branch `r0-t2-d1`
-(main is a00f90c; nothing pushed; no live switch). Read, in order:
-dossier §18.72-§18.82 (docs/plans/2026-10-20-record-composition-
-dossier.md); docs/plans/r0-closure-checklist.md (row A1);
-docs/plans/r0-amin-statements.md (revision 3.2, §§0-13, reviews §R1-R5,
-ledgers §R1a, §R3a, §R4a); docs/plans/r0-amin-obligation-semantics.md
-(§18.81); research/amin-mark-oracle/README.md.
+**Direction.** The Waxwing charter and its adoption record are approved
+and on `origin/main` (19f49c7; README a82d064). This branch predates
+them: read them with `git show origin/main:docs/waxwing-charter.md` and
+`git show origin/main:docs/plans/2026-10-24-charter-adoption.md`. The
+author's latest explicit answer governs within its scope. Charter
+approval authorizes no implementation or proof and settles none of the
+effect-policy questions.
 
-**Next task (authorized, §18.82): revision 3.3 of the a-min
-statements, then a targeted re-check (about 50-80k tokens).** Fix §R5's
-findings under §18.82's five conditions:
-1. One definition of handler-type equality (handled marks by equality;
-   R ≡ R ignoring marks when either side owns a C; R compared with marks
-   when neither does, R standing in as C; clauseRow ≡ clauseRow with
-   marks, tails and `Fail` heads, no other arguments; a side without its
-   own C contributes R's bare alias with R's positions). Source:
-   Unify.purs `unifyInference`, `unifyClauses`; justification FX008 §5
-   point 1. E1, §13 and the oracle refer to it. Attempt A (§R5) is
-   reasoned, not run.
-2. Remove `ResultC { c ∷ MRow }` from §10's `SiteFact` and anywhere
-   else; the derived C is recorded by generation, not supplied.
-3. Recorded inputs for derivation (F3): at each use with a top-level
-   handler result, the derived C (R's labels bare with `Fail` heads;
-   marks N, M or a reference to the `Instantiated` k; tail = R's tail
-   variable, the use's own variable, or closed when R is closed, per
-   ResultClauses `ownClauses` `kept`); at each annotation, the MTy with
-   its own C (every handler type not inside another's rows, MarkUse
-   `freshType`/`handlerRows`: own `Annotation` positions, a fresh tail).
-   Handler forms are `Outside HandlerType` markers in generation today.
-4. F5 audit, BEFORE the re-review: enumerate every unifier entry point
-   that can copy a handler type into an image (Unify `unify` incl. the
-   Merge `improve unifyPlain` path, Argument, ArgumentRow, Consume,
-   RowEntry, EndReport, Handler, Install, let/if typing) and map each to
-   an E1 or E2 or an open obligation. Not started.
-5. Oracle (research/amin-mark-oracle/cases.mjs, mutants.mjs): keep the
-   hard-coded owned-C graph; add derivation cases that build
-   obligations from recorded inputs (a `handlerEquality` and a
-   `derivedC` function, injected so mutants can replace them); attempts
-   A and B with passing controls; a mutant dropping C ≡ C (must be
-   detected); replace the inclusion tautology with a case exercising
-   E2's rigid-tail rule. Also §R5's S3 items (F6 annotation tail always
-   fresh; F7 closed source in E2's remainder; m as an `Opened` meta;
-   §12's bounded "reproduced" rows apart from the unrun ones; labels on
-   §2's copies claim and §0a's design claims).
-   Fold r0-amin-obligation-semantics.md into the statements (add the
-   handler-equality row as S with attempt A as its separating example)
-   and leave the companion file as a pointer.
-Then launch the targeted re-check: F1-F7 plus the whole handler-type
-path (recording, derivation, equality, copying, installation), with
-the stop rule (report, don't broaden, if a repair changes the
-representation or theorem scope).
+**Where things stand** (nothing pushed; no merge; no live switch):
+- a-min: statements revision 3.5 (docs/plans/r0-amin-statements.md),
+  dossier §18.72-§18.88. Implementation, Task 4.6 and G-D1 blocked.
+- U8 solved-form check implemented as a separate repair (7476097; pin
+  accepted, inventory row 9f547d7).
+- ResultC tail parametricity: draft claim and argument in
+  docs/plans/r0-amin-resultc-tail.md (5b12ed4). It finds the code
+  comment's claim false; the counterexample x1 compiles and runs unsafely
+  today, filed as BACKLOG FX033. Next, authorized by §18.87 item 3: a
+  bounded adversarial review of the draft (held while the charter
+  orientation ran). The author chooses E4′'s rule (the draft's H′,
+  unsupported, or R's tail). E10 and the other obligations stay open.
+- Arithmetic (branch d001-arith): task 2's oracle committed (3672c77);
+  task 1 (option (b)) in progress; tasks 3-7 await review of task 1.
+  Division deferred (memo on branch d001-int-arith).
+- Effect contracts (branch research/effect-kinds): decision memo
+  preserved, not adopted; the five decisions open; probes stored as
+  `.wxw.txt` (0cd4267).
 
-**Open for the author** (r0-amin-obligation-semantics.md): (1) Console
-frame guard: proposed to generate the edges anyway; (2) E4′'s tail rule
-rests on a parametricity claim in a code comment: argue it or treat
-such ResultCs as unsupported; (3) divergences from F1′/S/T reported by
-the shadow differential, not counted as agreement.
+**Rules worth keeping in view:** research probes are `.wxw.txt` (the
+pinned R0 corpus counts every tracked `.wxw`); one verify at a time via
+the shared mkdir lock; stage explicit paths; commit only after
+`node scripts/width.mjs` reports 0 lines over 80.
 
-**State of evidence.** Last full verify: d7f30b0, EXIT 0, 2,893/136/209
-(commits since are docs and research/ only; run `npm run verify` before
-reporting any code change; one verify at a time, lock in the worktree's
-.build/verify.lock; clear .build/go-cache after). Oracle: `node
-research/amin-mark-oracle/run.mjs` (~85 s, no disagreement) and
-`mutants.mjs` (~75 s, all detected).
-
-**Do not touch.** The main checkout's uncommitted README draft (the
-author reviews it separately) and docs/writing/. Stage explicit paths.
-No push, no merge commits. Effect-kinds research is separate.
+**Do not touch.** The main checkout's uncommitted work, docs/writing/,
+and the integrate worktree's uncommitted effect-kinds and handoff files.
 
 ---
 

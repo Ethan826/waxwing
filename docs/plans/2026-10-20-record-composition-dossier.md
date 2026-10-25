@@ -6126,3 +6126,21 @@ The author's rulings, ratified 2026-10-24. No merge, no push.
    `.wxw.txt`, references updated, contents preserved, runnable without
    entering the pinned R0 corpus; the corpus is not re-pinned to absorb
    research files.
+
+### 18.88 The charter approved; FX033 found; this record's standing (2026-10-24)
+
+1. **Charter.** The author approved the Waxwing charter and its adoption
+   record, committed and pushed to `origin/main` (19f49c7, README
+   a82d064). §18.87 item 4's "activation awaits approval" is superseded.
+   The charter authorizes no implementation or proof here and settles
+   none of the open effect-policy questions; a-min implementation, Task
+   4.6, G-D1 and the live switch stay blocked. Its precedence rule (the
+   author's latest explicit answer governs within scope) applies to the
+   rulings recorded in §18.72-§18.87; no ruling here conflicts with it.
+2. **FX033 (live checker).** The ResultC tail draft
+   (docs/plans/r0-amin-resultc-tail.md) found today's compiler accepting
+   a program whose run lets a deferred expression end in a typed abort
+   (x1; rerun by the controller: `fail(E): E`, exit 1; controls x1d and
+   x1c as expected). Filed as BACKLOG FX033 with the author's choice of
+   E4′ rule as its next action. The draft's bounded adversarial review
+   (§18.87 item 3) has not started.
