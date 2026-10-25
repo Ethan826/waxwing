@@ -1,4 +1,4 @@
-// The oracle's detection power, reproducible: five wrong
+// The oracle's detection power, reproducible: six wrong
 // implementations are constructed and injected into the same families
 // and cases run.mjs uses; each must produce at least one disagreement.
 //   ground       `holds` reading every rigid mark as N (one valuation);
@@ -7,15 +7,16 @@
 //                (review 3's T1-a);
 //   noClauseEq   `handlerEquality` without C ≡ C (§R5 F1);
 //   rMarksIgnored `handlerEquality` ignoring R's marks when neither type
-//                owns a C (revision 3.2's E1 on that branch).
+//                owns a C (revision 3.2's E1 on that branch);
+//   withdrawnRigid E2's rigid case as revision 3.4 wrote it ("ρ ends in
+//                ϱ"), withdrawn by §18.84 and replaced by K1 (§18.85).
 import { classesOf, constantOf, holds, leastTerms, leastVerdictWith,
   reaching, atoms } from './oracle.mjs';
 import { oneFamily, pairsFamily, randomFamily, twoFamily }
   from './families.mjs';
-import { runCases } from './cases.mjs';
-import { derivedC, markEquality, sameHead, structural }
-  from './handlers.mjs';
-import { rowEquality } from './rows.mjs';
+import { real, runCases } from './cases.mjs';
+import { markEquality, sameHead, structural } from './handlers.mjs';
+import { rowEquality, withdrawnRigid } from './rows.mjs';
 
 const ground = (x, y) => {
   const g = t => (t === 'M' ? 'M' : 'N');
@@ -60,9 +61,11 @@ const mutants = [
     twoFamily(leastVerdictWith(perPosition, holds)),
     randomFamily(leastVerdictWith(perPosition, holds), 50000)] },
   { name: 'noClauseEq', runs: () => [], cases: holds,
-    deps: { handlerEquality: noClauseEq, derivedC } },
+    deps: { ...real, handlerEquality: noClauseEq } },
   { name: 'rMarksIgnored', runs: () => [], cases: holds,
-    deps: { handlerEquality: rMarksIgnored, derivedC } }
+    deps: { ...real, handlerEquality: rMarksIgnored } },
+  { name: 'withdrawnRigid', runs: () => [], cases: holds,
+    deps: { ...real, rigidRule: withdrawnRigid } }
 ];
 let undetected = 0;
 for (const mutant of mutants) {

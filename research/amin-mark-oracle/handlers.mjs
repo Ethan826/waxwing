@@ -2,8 +2,11 @@
 // constructions a-min injects: `derivedC` (the ResultC, E4′) and
 // `handlerEquality` (E1 on two handler types, §18.82 condition 1). Both
 // are hand translations of the compiler's code named at each function;
-// mutants.mjs replaces them. A handler type is { eff, args, mark,
-// inference: R, clauses: C or null } (Domain/Row.purs `HandlerRows`).
+// mutants.mjs replaces them. Also the obligation builders (E4's
+// `literalE4`, E5's `installation`, E6's `deferral`), each passing the
+// case's injected E2 rigid rule to every consumption. A handler type is
+// { eff, args, mark, inference: R, clauses: C or null } (Domain/Row.purs
+// `HandlerRows`).
 import { combine, consumption, empty, flex, isRigid, pairing, resolve, row,
   rowEquality } from './rows.mjs';
 
@@ -49,14 +52,16 @@ export const revision32Equality = (left, right) => [
 // row variables become the use's flexible variables (`use.rows`), each
 // `{ k }` mark the use's Instantiated position (`use.marks`), and
 // MarkUse.purs `openHandlers` opens a top-level parameter's handled label
-// written M and the top-level result's written N (`use.opened`).
+// written M and the top-level result's written N (`use.opened`). A
+// function parameter `{ arrow: row }` gets its row instantiated (k1.mjs).
 export const instantiate = (sig, use) => {
   const tail = t => (isRigid(t) && use.rows[t.rigid] ? flex(use.rows[t.rigid])
     : t);
   const mark = m => (typeof m === 'object' ? use.marks[m.k] : m);
   const rowOf = r => r && row(r.labels.map(l => ({ ...l, mark: mark(l.mark) })),
     tail(r.tail));
-  const type = (t, written, opened) => (t.inference === undefined ? t
+  const type = (t, written, opened) => (t.arrow !== undefined
+    ? { arrow: rowOf(t.arrow) } : t.inference === undefined ? t
     : { ...t, mark: t.mark === written && opened ? opened : mark(t.mark),
       inference: rowOf(t.inference), clauses: rowOf(t.clauses) });
   const opened = use.opened ?? {};
@@ -92,9 +97,11 @@ const occursIn = (sig, name) => [...sig.params.flatMap(tailsOf),
 // consumed into ρ ignoring marks; C (owned, else R's bare alias, Install
 // `clausesOf`) paired with ρ by key (Lend `partners`) for mark edges
 // only: m ⊑ f, each non-Fail partner's mark ⊑ f, a rigid C tail M ⊑ f.
-// No case installs a Console handler, so the frame is never N.
-export const installation = ({ handler: h, current, frame }) => [
-  consumption({ source: h.inference, target: current, marks: false }),
+// No case installs a Console handler, so the frame is never N. `rule`
+// is E2's rigid case (rows.mjs), injected by the case.
+export const installation = ({ handler: h, current, frame, rule }) => [
+  consumption({ source: h.inference, target: current, marks: false,
+    rule }),
   edge(h.mark, frame),
   pkg => {
     const [c, rho] = [resolve(clauseRow(h), pkg), resolve(current, pkg)];
@@ -112,12 +119,29 @@ export const withFrame = (h, frame, current) => row(
 // E6 and E2 at `defer e` (Defer.purs, Frames.purs `demanded`): the
 // completed d holds no Fail and no rigid tail; each label's mark ⊑ N; d
 // consumed into the enclosing row.
-export const deferral = ({ deferred, current }) => [
-  consumption({ source: deferred, target: current, marks: true }),
+export const deferral = ({ deferred, current, rule }) => [
+  consumption({ source: deferred, target: current, marks: true, rule }),
   pkg => {
     const d = resolve(deferred, pkg);
     return { ...empty, edges: d.labels.map(l => [l.mark, 'N']),
       structural: [d.tail === null && d.labels.every(l => l.eff !== 'Fail')] };
   }
 ];
+
+// E4 for a literal with clause rows (Clauses.purs `consumeBare`, Frames
+// `aborting`): each c consumed into R ignoring marks and into C with
+// marks, both by E2 with the injected rigid rule. Into C this is the
+// full condition, tail included (§18.85 ruling 2, S2-1), a departure
+// from Clauses.purs's labels-only consumption with a throwaway tail. A
+// c holding Fail or ending in rigid ϱ gives M ⊑ m. Arguments are
+// compared on C as on R; no case has a C label whose arguments differ.
+export const literalE4 = (lit, clauses, rule) => clauses.flatMap(c => [
+  consumption({ source: c, target: lit.inference, marks: false, rule }),
+  consumption({ source: c, target: lit.clauses, marks: true, rule }),
+  pkg => {
+    const done = resolve(c, pkg);
+    return { ...empty, edges: done.labels.some(l => l.eff === 'Fail')
+      || isRigid(done.tail) ? [['M', lit.mark]] : [] };
+  }
+]);
 export { combine };

@@ -1,8 +1,11 @@
-# a-min: statements, revision 3.4 (G-effect-rows, 2026-10-24)
+# a-min: statements, revision 3.5 (G-effect-rows, 2026-10-24)
 
-Status: **statements only; K1 investigated (§13b: E2's rigid clause
-unsound as written, a premise proposed for the author).** No code;
-implementation unauthorized; Task 4.6 and G-D1 blocked.
+Status: **statements only; implementation unauthorized; Task 4.6 and
+G-D1 blocked.** Revision 3.5 applies the author's rulings on §R6
+(dossier §18.85; §0d, §R6a): K1 adopted as a conservative validator
+restriction (Definition 4.2, §4), rule J chosen for O4 (Definition
+4.1(d)), §R6's S3 fixes applied; the solved form for bindings (U8, §11)
+awaits code inspection. No code.
 Revision 3 (one design, §18.77-18.78) was reviewed a third time (§R3);
 revision 3.1 applied those fixes and delivered U1 and U6; a targeted
 review of 3.1 (§R4) found one plausible S1 (N1) and four S2; revision
@@ -13,8 +16,8 @@ in the obligation semantics of §18.81 (§14). F5's unifier entry-point
 audit is in §13a; it found two unrecorded paths (O1, O2). Revision 3.4
 applies the author's rulings of 2026-10-24 on §13a and §13b (§0c): O1
 and O2 are recorded, the false copies claim is corrected, O3 and O6 are
-stated, K2-K4 resolved; K1 and O4 stay open. §R3a, §R4a, §R5a and §R5b
-are the resolution ledgers. "Local fixes" describes edit size, not
+stated, K2-K4 resolved; K1 and O4 stay open. §R3a, §R4a, §R5a, §R5b
+and §R6a are the resolution ledgers. "Local fixes" describes edit size, not
 confidence that the remaining soundness work is small (§18.80). Labels
 on every claim: **decided** (the author's), **universal** (an argument
 for all inputs), **bounded** (a check over finite inputs, named),
@@ -90,6 +93,8 @@ r0-erased-rows.md §2, §7.1; r0-certify-argument.md; findings.md
    audit, except where O4 is open (§2, "Copies through equations").
 3. **Inclusion, not equality** (N4): R is consumed into ρ ignoring marks
    (E2 with marks ignored), so ρ may hold more effects (§4 E5, §12).
+   (3.5: only for a closed R; a rigid-tailed R is under Definition 4.2,
+   §4, §0d.)
 4. **Routing described as built** (N3): a rule-1 block still runs every
    strategy and refuter; Solved is suppressed afterwards (§7).
 5. **Reproducible evidence**: the forgery cases (cleanup, owned C
@@ -106,7 +111,8 @@ r0-erased-rows.md §2, §7.1; r0-certify-argument.md; findings.md
    C ≡ C; E1, §12, §13 and §14 now refer to Definition 4.1. Its
    justification is FX008 §5 point 1 (class S); today's behaviour is
    supporting evidence. Attempt A is its separating example (reasoned,
-   not run).
+   not run). (3.5, §R6 S3-7: attempts A and B now run in derived.mjs,
+   bounded, and today refuses both, run; §12.2.)
 2. **No package-side ResultC** (F2, condition 2): `ResultC { c ∷ MRow
    }` is removed from §10's `SiteFact`. Generation records the derived
    C in the use's recorded instance type (`Fields.instances`; §2, §10).
@@ -172,6 +178,55 @@ dossier §18.83 by the controller). Each item has a §R5b row.
    not adopted); O4's two candidate rules and their comparison (§13a;
    no ruling); U7's own check (§11, u7.mjs). The targeted review was
    held until K1 was investigated.
+
+## 0d. What changed in revision 3.5 (§18.85)
+
+The author ruled on §R6 on 2026-10-24 (dossier §18.85). Implementation
+stays blocked; no implementation authorization is implied. Each §R6
+finding and each §18.85 item has a §R6a row.
+
+1. **K1 adopted** (decided, §18.85 items 1, 2): Definition 4.2
+   (rigid-tailed consumption, §4), one condition on completed rows,
+   stated once and referenced from every site it applies to (call,
+   perform, apply, pipe, over- and partial-application stages, callback,
+   E4's c_k into R and into C, E5's R into ρ, and E10's stage sites).
+   E2's "Tails" text for a rigid source now refers to it; clause rows
+   into C left E2's labels-only list (S2-1). The departure from today's
+   label-by-label c into C is recorded with its reason (§4, Definition
+   4.2). A refusal by Definition 4.2 means the validator cannot certify
+   the candidate, not that the program is invalid or that this is final
+   language policy; the known lost acceptances are listed there.
+2. **E10 settled by reading** (reasoned): it has no source of its own;
+   a function body's ambient row is its declared row, so E10 is E2 at
+   the stage sites that target it (§4 E10).
+3. **O4: rule J** (decided, §18.85 item 3): Definition 4.1(d)'s alias is
+   R itself, its own tail variable included (§4). Rule K stays in §13a
+   as an alternative whose equivalence with J on recorded problems is
+   unestablished; its weakest step is the solved form for bindings (U8).
+4. **§R6's S3 fixes**: U7's counts (S3-1, §11); K1's necessity scoped to
+   FX008's positional invariant (S3-2, §13b); callback and E10 (S3-3);
+   the installed-C step (S3-4, §4 E5); the F1′-hook exclusion restated
+   on Definition 4.2 (S3-5, §13); O4's caveat (S3-6, §13a); attempts A
+   and B relabelled as run (S3-7, §0b, §12.2, §14); O1's wording (S3-8,
+   §4).
+5. **U8, the solved form for bindings** (§18.85 item 4): inspected
+   (§11 U8): not enforced by trusted certification; confirmed by a run
+   (an unbound flexible reference is certified with a witness). Recorded
+   as a gap with a proposed invariant and fixtures; not implemented.
+6. **N4 and §14** (§18.85 item 5): §12.1's N4 row flips to refused (p1
+   separating); inclusion holds only for a closed R (§0a item 3, E5,
+   §14); a closed-R inclusion control row is added to §12.1 for the
+   oracle agent's case, no result claimed here; §14 replaces the
+   rigid-remainder row with Definition 4.2 and adds the c-into-C
+   departure.
+7. **Qualifications kept visible** (§18.85 item 6): "no additional
+   refusal found" against today rests on the K1 probes and reasoning
+   (§13b), not on a general compatibility result. A ResultC's own tail
+   remains unexamined (open decision 3, §14). E10 is settled only by
+   the reading in §4 (reasoned, nothing run). Adopting K1 does not
+   close a ResultC's tail, and it does not establish the soundness of
+   the whole judgment: Definition 4.2's sufficiency is argued site by
+   site, not by a substitution lemma (§R6).
 
 ## 1. Goal, threat model, scope (unchanged from revision 3)
 
@@ -314,7 +369,11 @@ may join R; Definition 4.1(d) does not yet say whether they do, so the
 claim is open for that case; decision pending, §13a); **O5** and **O7**
 (today imposes more than a-min there: correspondence, not copies; P1,
 §5); **O6**'s definition is proposed, unchecked by any case; and K1
-(§13b) for E2's rigid case. Any unifier path the audit did not reach
+(§13b) for E2's rigid case. (3.5: O4 decided as rule J, so an own-C
+label beyond R's joins R's tail binding and Definition 4.1(d) equates
+it with the other side's R; the claim for that case is reasoned on
+this reading, not re-audited, and rests on U8, §11. K1 decided as
+Definition 4.2, §4.) Any unifier path the audit did not reach
 (it excluded Refute/, Strategy/, Decide* and Entailed*, the G0 path) is
 outside the claim.
 
@@ -362,11 +421,15 @@ a `GenEqual` (§13a, first row); a handler literal's node (§2); the
 equations, read at full marked types); and, new in 3.4:
 - **O1, clause body.** For each handler clause, `Equal` between the
   clause body's type and the operation's declared result type with the
-  handled label's arguments substituted and every row variable in it
-  replaced by the closed row (ClauseBody.purs:52, `require` against
-  `instantiateType label clause.result`, whose substitution is `rows:
-  closed`). The right side is a written marked type: its written marks
-  fixed, a handler type in it owning no C (R is its alias). Today
+  handled label's arguments substituted and every row variable of the
+  operation's declared result replaced by the closed row
+  (ClauseBody.purs:52, `require` against `instantiateType label
+  clause.result`, whose substitution is `rows: closed`). The label's
+  argument rows are not substituted there: they are closed already at
+  resolution (worded in 3.5, §R6 S3-8; the reviewer's probe was refused
+  "This function must be pure, but it performs Ask"). The right side
+  is a written marked type: its written marks fixed, a handler type in
+  it owning no C (R is its alias). Today
   generation records nothing there (Generate/Effect.purs
   `handlerClause` recurs into the body only).
 - **O2, `with` node.** For each `with h { body }`, `Equal` between the
@@ -431,9 +494,15 @@ when all of the following hold:
   label holds the placeholder N, §2, as today's `normalMark` leaves it
   unmarked, so it never clashes), tails equal, no label argument
   compared beyond the `Fail` head (UnifyRow `ignoringArguments`: "C's
-  arguments are never unified; R carries and checks them"). A side
-  without its own C contributes R as its bare alias: R's labels read
-  bare, with R's mark positions and R's tail.
+  arguments are never unified; R carries and checks them"). **Rule J**
+  (decided, §18.85 item 3; O4): a side without its own C uses R itself
+  as its clauseRow, as Domain/Row.purs `clauseRow` does. The alias is
+  R, not a copy: the same labels read bare (keys and marks only), the
+  same mark positions, and R's own tail variable, not a separate
+  variable ending where R ends. So a C label beyond R's written labels
+  must be in the package's binding of R's flexible tail, and is then
+  equated with the other side's R by R ≡ R′ above (wording finding of
+  §13a resolved).
 
 Conditions are on completed rows (after settling, §6), where E9 makes
 every `Fail` head concrete; today's postponement of a pair whose `Fail`
@@ -451,13 +520,17 @@ compares R with marks instead. Comparing R with marks and arguments in
 one pass asks what (d) asks of two structural copies plus R ≡ R′
 ignoring marks, so the alias implements the design's C ≡ C for those
 types (U7, §11; unchecked). Separating examples: attempt A for (c) and
-attempt B for (d)'s tails (§12.2; reasoned, not run).
+attempt B for (d)'s tails (§12.2; bounded, derived.mjs; today refuses
+both, run; relabelled in 3.5, §R6 S3-7).
 
 **E2, consumption of a row s into a target ρ.** Sites: call, perform,
 apply, pipe, over- and partial-application stages, callback, **`defer`
-(d into the enclosing row)**, and settling's consumptions: **clause rows
-into C, installed C into ρ, deferred rows into their row** (FX008 §3.5
-step (d)); the installed-C site contributes only E2's per-key count and
+(d into the enclosing row)**, and settling's consumptions: **installed C
+into ρ, deferred rows into their row** (FX008 §3.5 step (d)). Clause
+rows into C, which today consumes at the literal and again at settling,
+are E4's site with the full condition, Definition 4.2 included (3.5,
+§R6 S2-1); E4's c_k into R and E5's R into ρ are E2 with marks
+ignored. The installed-C site contributes only E2's per-key count and
 Lend `assume`'s edge `mark(ρ partner) ⊑ mark(C label)` (no remainder;
 N8). With s and ρ completed, the condition is: for each key κ, the r-th
 occurrence of κ in s is matched with the r-th occurrence of κ in ρ, and
@@ -466,27 +539,18 @@ key); matched labels' arguments are equal (nested marks and nested
 handler types included), except that C rows are bare and compare keys
 only (T2-e).
 
-Tails (restated in 3.4, K3 and K4). On a completed package s's tail is
-closed (a hole settles to the closed row, §6) or a rigid ϱ, never a
-flexible variable, and every label that s's tail variable's binding
-holds is a label of the completed s, matched by the rule above:
+Tails (restated in 3.4, K3 and K4; rigid case in 3.5). On a completed
+package s's tail is closed (a hole settles to the closed row, §6) or a
+rigid ϱ, never a flexible variable, and every label that s's tail
+variable's binding holds is a label of the completed s, matched by the
+rule above:
 - if the completed s is closed, there is no tail condition: ρ's further
   labels and its tail are unconstrained (F7);
-- if s ends in a rigid ϱ: **revision 3.4's condition "ρ ends in ϱ"
-  is withdrawn** (dossier §18.84), whatever replaces it; until a
-  replacement is adopted, E2 has no stated condition for a rigid-tailed
-  source and a-min claims nothing there. That condition was unsound
-  (K1, §13b, investigated after 3.4: honest packages, no forgery, let a
-  typed abort escape cleanup and a payload
-  reach the wrong instance's frame). Proposed replacement, for the
-  author: ρ ends in ϱ and has, for every key, exactly as many
-  occurrences as s, so ρ is the matched labels followed by ϱ and s ≡ ρ
-  up to scoped order [L05]; matched pairs keep the argument equality and
-  the directional edges above. Provisionally favoured by the author as
-  the conservative validator rule, to be adopted only once the review
-  confirms it blocks the demonstrated failure; if adopted, the programs
-  it refuses are validator limitations, not invalid programs or final
-  language policy.
+- if s ends in a rigid ϱ: **Definition 4.2** below (decided, §18.85).
+  Revision 3.4's condition "ρ ends in ϱ" alone was withdrawn (§18.84)
+  as unsound: with honest packages and no forgery it let a typed abort
+  escape cleanup and a payload reach the wrong instance's frame (K1,
+  §13b; simulated runs).
 
 Revision 3.3's remainder clause ("s's tail variable's binding is ρ's
 labels after the matched ones followed by ρ's tail") described how
@@ -499,15 +563,19 @@ package that binds s's tail variable to fewer labels makes s smaller;
 every other obligation that reads that variable judges the binding
 (reasoned).
 
-Labels-only sites (K3). `defer` (Defer.purs `checkDefer`) and every
-settling consumption other than the installed-C site (Settle.purs
-entries with a `Fresh` tail, through `consumeLabels` or `consumeBare`;
-the installed-C site records marks only, `installed`, N8) consume a
-row's labels with one fresh throwaway tail that is never joined to the
-target (Consume.purs `consumeLabelsWith`: `Row spec.labels (Just (Hole
-state.next))`, "the tail is never read, so no copy lands on it";
-UnifyMark `stageLabel` records no copy edge on the throwaway). At these
-sites s is the source row's labels, closed: no tail condition, no copy.
+Labels-only sites (K3; clause rows into C removed in 3.5, S2-1).
+`defer` (Defer.purs `checkDefer`) and settling's deferred-row
+consumptions (SettleEntry.purs `deferralEntries`: a `Fresh` tail,
+through Settle.purs `consume` and `consumeLabels`; the installed-C site
+records marks only, `installed`, N8) consume a row's labels with one
+fresh throwaway tail that is never joined to the target (Consume.purs
+`consumeLabelsWith`: `Row spec.labels (Just (Hole state.next))`, "the
+tail is never read, so no copy lands on it"; UnifyMark `stageLabel`
+records no copy edge on the throwaway). At these sites s is the source
+row's labels, closed: no tail condition, no copy. Today consumes clause
+rows into C the same way (Clauses.purs `file` and SettleEntry
+`clauseEntries` `toClauses`, through `consumeBare`), but a-min does not:
+E4 applies Definition 4.2 there (the departure is recorded with it).
 A closed source at an ordinary site is the same (Consume.purs `consume`
 gives it a throwaway tail, "the one nobody reads"). Settling's
 `Remainder` entries, which consume `labels + φ` as they stand, belong to
@@ -527,15 +595,69 @@ target's tail is an occurrence of the completed ρ (`targetLabel`:
 CallbackRowLacks, RowEquality (shared tail, `both end in`),
 LabelMismatch, InfiniteType (RowOccurs).
 
+**Definition 4.2 (rigid-tailed consumption; K1, adopted as a
+conservative validator restriction, dossier §18.85 items 1, 2).** A
+condition on completed rows at a consumption of s into ρ. When the
+completed s ends in a rigid ϱ: ρ ends in ϱ, and for every key κ, ρ has
+exactly as many occurrences of κ as s. So ρ is s's matched labels
+followed by ϱ, and s ≡ ρ up to scoped order [L05] and top-level marks.
+Each matched pair (the r-th κ of s with the r-th κ of ρ) keeps E2's
+argument equality (nested marks and nested handler types included; at
+a C row, bare, keys only, T2-e) and, unless the site ignores marks,
+E2's directional edge mark(ρ occurrence) ⊑ mark(s occurrence). A closed
+s is not constrained by this definition (E2's closed case, F7).
+
+Sites (the list is kept here; each site refers to it): call, perform,
+apply, pipe, over- and partial-application stages; callback (a call or
+apply stage whose leftover target label Reject `rejected` reports
+through Callback `callbackLacks` with CallbackParts' texts, FX017 and
+FX018; §R6 S3-3); E4's c_k into R (marks ignored) and c_k into C (with
+marks, bare; §R6 S2-1); E5's R into ρ (marks ignored); and E10, which
+is these stage sites (§4 E10). Not at: `defer` and settling's deferred
+rows (labels only, so s is closed); the installed-C site (no
+consumption; its step is under E5, §R6 S3-4).
+
+Standing: **decided** as a validator restriction. Its sufficiency is
+**reasoned** site by site (§13b; §R6 found it closes p2, p4, p6, p7, p8
+and p9 per declaration), not a substitution lemma for the whole
+judgment; its necessity is scoped to FX008's positional invariant
+(§13b, §R6 S3-2).
+
+What a refusal means (§18.85 item 1). A candidate refused by Definition
+4.2 is one the validator cannot certify. It does not mean the program
+is invalid, and the restriction is not final language policy. Known
+lost acceptances against E2 as written in 3.4, recorded as validator
+limitations: s1 (research/amin-k1-probes/; safe in every run of its
+hinted twin, which prints `1`, `2`); K1's `st` (p1); FX027's program
+(BACKLOG FX027); p9 (a rigid clause row into a larger R; refused today,
+its runs not examined). Against today: no additional refusal found on
+those probes (observed) and by reasoning (§13b); this is not a general
+compatibility result (§0d item 7).
+
+Departure from today at c_k into C (recorded, §18.85 item 2). Today
+consumes a clause row into C label by label: Clauses.purs `file` calls
+Consume `consumeBare` with a fresh throwaway tail (`consumeLabelsWith`),
+and settling repeats it (SettleEntry `clauseEntries` `toClauses`,
+`Fresh`, `bare: true`). A rigid tail reaches C only through the tail
+pass: TailPass `both` calls `ensure` on C, which binds C's end variable
+to ϱ alone (`Loose meta → bind (Row [] (Just (Hole meta)))`) and asks
+nothing of C's labels. Definition 4.2 instead asks C to be exactly
+c_k's matched labels followed by ϱ. Reason: one definition of
+rigid-tailed consumption, referenced at every site (§18.85 item 2).
+With Definition 4.2 also at c_k into R and at E5, the two readings
+seem to refuse the same programs (§R6 S2-1; reasoned, unrun).
+
 **E3, opening at use** (handler types only; MarkUse `openHandlers`):
 the opened handled label's mark is the `Opened` position; no
 condition beyond E1's use of it.
 
 **E4, handler literal** with clause rows c_k (bindings) and own-abort
 mark m: each c_k is consumed into R ignoring marks and into C with
-marks (E2's conditions; C bare); for each c_k holding a `Fail` label or
-ending in a rigid ϱ, `M ⊑ m` (Frames `aborting`); a c_k ending in rigid
-ϱ needs R and C to end in ϱ (the tail pass, TailPass.purs).
+marks (E2's conditions; C bare); a c_k ending in a rigid ϱ is consumed
+into R and into C under Definition 4.2, tail condition included (3.5,
+§R6 S2-1); for each c_k holding a `Fail` label or ending in a rigid ϱ,
+`M ⊑ m` (Frames `aborting`). Today's tail pass (TailPass `both`: R and
+C end in ϱ) is implied by Definition 4.2 at these two sites.
 
 **E4′, an owned C not from a literal** (N1; F3, F6 in 3.3). The
 validator reads the C generation recorded (§2, "What generation
@@ -565,8 +687,10 @@ its clauses reach nothing else through R's tail"): open decision 3
 type, wherever it comes from (an image, an instance, a literal; T3-c); C
 is the owned C if h's type owns one, else R's bare alias (Install
 `clausesOf`; T2-d; owned per E4′ or E4). Conditions: R is consumed into
-ρ ignoring marks (Consume `consumeIgnoring`: E2 with marks ignored, so
-inclusion, and ρ may hold more effects; N4); C is paired with ρ by key
+ρ ignoring marks (Consume `consumeIgnoring`: E2 with marks ignored;
+N4), under Definition 4.2 when R ends in a rigid ϱ, so inclusion (ρ
+holding more effects than R) holds only for a closed R (3.5); C is
+paired with ρ by key
 and position (Lend `partners`), recording only mark edges (no
 consumption, no arguments; T2-e); unless the frame is N (Console,
 unreachable today, FX011): `m ⊑ f`, each paired ρ label's mark `⊑ f`,
@@ -574,6 +698,22 @@ and a rigid C tail gives `M ⊑ f` and ρ ending in ϱ (Frames `framed`);
 the body's ambient row is `f L + ρ`. Refusals: HandlerMayFail,
 ExpectedHandler (h's head not a handler); the rigid-tail mismatch is
 unreachable today (`Internal BodyState`, TailPass `installed`).
+
+Installed C under Definition 4.2 (3.5, §R6 S3-4; reasoned). The
+installed-C site has no tail condition of its own; its soundness rests
+on R ≡ ρ, by this step. An owned C ends in a rigid ϱ that its clauses
+reach only if some clause row c_k ends in ϱ (E4 consumes every c_k into
+C). Definition 4.2 at c_k into R then makes R exactly c_k's matched
+labels followed by ϱ, and at R into ρ makes ρ exactly R's matched
+labels followed by ϱ: R ≡ ρ up to scoped order and top-level marks,
+and the installed C, equal to c_k by Definition 4.2 at c_k into C, has
+a partner in ρ for each occurrence. For a C not from a literal,
+Definition 4.1(d) equates it, tail included, with the C of each owned
+type it met, and R ≡ R′ ignoring marks carries the literal's R to the
+installed one. An owned C whose tail a package sets to ϱ with no clause
+row ending in ϱ (an annotation C's free tail, for one) only adds
+FrameRigid's `M ⊑ f` and the condition that ρ end in ϱ: more refusal,
+never more acceptance.
 
 **E6, `defer e`** with row d (binding): no `Fail` label and no rigid
 tail in d (DeferMayFail, DeferMayPerform); each non-`Fail` label's
@@ -590,7 +730,21 @@ edge (ExpectedNofail).
 (FailNeedsConcrete, Failure.purs:102).
 
 **E10, the body's row within the declared row** (E2 with the declared
-row as target; EffectNotAllowed, MustBePure).
+row as target; EffectNotAllowed, MustBePure). Settled by reading in 3.5
+(§R6 S3-3; reasoned, at 0c2ad60, nothing run): E10 has no source of its
+own, so it cannot have a rigid-tailed source distinct from its target
+other than a stage's. A function body's ambient row is its declared row
+(Function.purs `environment`, `current: row`, with `current` reading
+the signature's row; `main`'s tail made flexible, `mainRow`), and every
+stage in the body consumes directly into it, or into a row extending it
+(Install.purs: `f L + ρ`; Handle.purs `withFailures`: `Fail(E…) + ρ`).
+The other writers of the ambient row (Lambda.purs `checkLambda`, a
+fresh row; Defer.purs, d; ClauseBody.purs `handlerClause`, the clause
+row) give E11's other rows, consumed by E2, E4 or E6. EffectNotAllowed
+and MustBePure come from those consumptions (Reject `rejected`) or from
+an E1 row failure (Require `expectType`). So E10 is E2 at the stage
+sites whose target is the declared row, and a rigid-tailed stage source
+there is under Definition 4.2 at its own site.
 
 **E11, ambient rows.** Generation records each body's ambient row: the
 declared row; a lambda's `⟨p, effect⟩`; `f L + ρ` in a `with` body;
@@ -631,7 +785,9 @@ today imposes more than a-min at O5 (a postponed C pair retried with
 argument unification) and O7 (today's c-into-R stage and the F1′
 hook's closing), so on such programs a-min's graph is weaker than
 today's and the shadow differential must report the difference; O4
-and K1 (§13b) are open decisions that change the graph. The claim
+and K1 (§13b) are open decisions that change the graph (3.5: decided,
+rule J and Definition 4.2, §0d; P2 for O4's case is reasoned and rests
+on U8, §11). The claim
 below relates a package to the path criterion on one graph, the one
 a-min records; that this graph is FX008's is P1.
 
@@ -832,7 +988,9 @@ derived C), generation's lambda-parameter rule (records
   reading audit) and refuted §2's copies claim as written; 3.4 records
   O1 and O2 and states O6 (§4). Open within it: O4 (a decision), O5 and
   O7 (correspondence: today stricter), K1 (§13b); P1 and P2 (§5) rest
-  on these, and P2 is reasoned outside O4's case.
+  on these, and P2 is reasoned outside O4's case. (3.5: O4 and K1
+  decided, rule J and Definition 4.2; O5 and O7 stay correspondence
+  notes; P2 in O4's case rests on U8.)
 - U7. Definition 4.1(c) as built (a written type's C is R, compared
   with marks) against FX008's design (a structural copy of R as C).
   **Own check after 3.4** (author's ruling §18.83 item 5):
@@ -852,7 +1010,57 @@ derived C), generation's lambda-parameter rule (records
   terms and tail), so the mutants carry the check's power; outside the
   grammar, label arguments with nested marks and `Fail` heads are
   unexamined. Rule K (O4) is wider than the design on 12,024 package
-  evaluations (3,741 pairs), none with E4′'s recorded C shape.
+  evaluations, and 3,741 pairs differ in satisfiability, none of them
+  with the annotation C's shape (C's keys R's, C's tail its own
+  variable); 1,944 package evaluations with that shape do differ
+  (corrected in 3.5, §R6 S3-1; `node u7.mjs` rerun 2026-10-24, exit 0,
+  6.5 s). The ResultC shape in the occurs case (C's tail R's own
+  variable) is outside the grammar. The label stays as narrow as
+  §18.84 item 4 set it: correspondence with the chosen encoding (rule
+  J, §18.85), supported by two detected mutants.
+- U8. Solved form for bindings (§18.85 item 4). **Not enforced: a
+  gap in today's R0 certification, not only in a-min's plans.** An
+  independent read-only inspection (Opus, 2026-10-24) and one
+  controller run. In the code an image is a binding's right-hand side
+  (Domain/Verdict/Witness.purs: `Binding = Inline RTExpr | Free Int`;
+  only `SortType` and `SortRow` exist, Domain/Recorded/Atom.purs).
+  - Trusted certification does not check §18.76 item 2's restriction.
+    Strategy/Candidate.purs `generic` refuses only an image that
+    mentions a key of σ (`fits` checks the key's quantifier and sort);
+    Witness `coverage` checks that every variable is bound, then the
+    hole contract, which judges holes only (read; the controller
+    re-read `generic`). So a binding may name a flexible variable σ
+    leaves out, a made row (`entailed i`, Entailed/Mgu.purs R5), a rigid
+    outside the declaration or at the wrong sort, or a hole at two
+    sorts, and be certified.
+  - The only detector is build's `ImageVariable`
+    (Generate/Elab/Image.purs `imageType`): after the decision, a
+    `Broken` fault, not a refusal, and only for variables `build` reads
+    at a site, never auxiliaries; rigids pass unchecked.
+  - Production read-back can plausibly produce such references through
+    `mgu` completion (an auxiliary bound to an unbound auxiliary; a
+    hole bound to an auxiliary and substituted back; R5's made rows)
+    (inferred, not observed). A corpus count finds 0 of 14,867 `Inline`
+    images naming a non-hole fresh variable, over Solved rows only
+    (test/r0-elab-corpus.serial.test.mjs).
+  - Run (controller, a scratch probe through `certify`, not committed):
+    σ = {x ↦ y}, y unbound, gives Certified Valid, compilation
+    Witnessed (the gap); with the equation x = y added, NoWitness
+    HoleContract (an incidental refusal); control σ = {x ↦ Int},
+    Witnessed. No existing test refuses such a binding.
+  - Consequence for a-min: O4's K ⇒ J argument (§13a) has no
+    enforcement point; rule J is chosen without it (§18.85 item 3).
+    a-min's planned effect-row bindings would need the restriction for
+    effect-row tails, rows nested in label arguments and arrows,
+    data-type row arguments, `J S` marks (only `rigidMarks`), rigids at
+    their sort, one sort per hole, every binding auxiliaries included.
+  - Proposed invariant (not implemented; implementation unauthorized):
+    for every v in `bindings`, every variable of image(v) is a declared
+    rigid (`rigidTy`/`rigidRow`) at the sort of its position, or
+    `holeVar n` with n at one sort across the witness; must-refuse
+    fixtures for an unbound flexible reference, a record tail naming
+    one, a nested reference, an out-of-scope or wrong-sort rigid, and a
+    made row, each with a positive control.
 - Novel, for approval (ADR 014): I3; the ∅ default for effect-row
   holes; consumption-based inclusion (FX001/FX008's design, no
   published source); the mark-term evidence and §5's correspondence.
@@ -869,9 +1077,12 @@ an oracle case computes is meant to implement Definition 4.1 exactly;
 attempts A and B, the derivation cases from recorded inputs, the
 C-equality mutant and the rigid-tail replacement for the inclusion case
 are in derived.mjs, handlers.mjs and mutants.mjs (§18.82 condition 5;
-results in the oracle's README, rerun by the controller). The N4 case
-still follows E2 as written, which K1 (§13b) found unsound; it flips
-only if the author adopts the proposed premise.
+results in the oracle's README, rerun by the controller). In 3.5 the
+N4 row flips to refused under Definition 4.2 (p1 separating); the
+oracle's `inclusionN4` case followed E2 as written in 3.4, and no result
+of its update is claimed here. The closed-R inclusion control is being
+added by the oracle agent through the recorded-input builder (§18.85
+item 5); its row below claims no result.
 
 ### 12.1 Reproduced in cases.mjs (bounded)
 
@@ -880,7 +1091,8 @@ only if the author adopts the proposed premise.
 | E2 at `defer` (T2-a; cases.mjs "cleanup (§7a)") | FX008 §1's `work`, its deferred mark forged to N: refused by `M ⊑ N`; control (declared row `nofail Log`) accepted; the forgery passed under revision 3's obligations | E2 without `defer`'s site |
 | owned C forged empty (N1; "owned C forged empty"; a graph) | graph: a handler with handled mark N and derived C [Log] installed under a plain `Log` row around `defer Ask.ask()`: honest refused (f = M), forged ResultC = ∅ with f = y = N refused because C's labels are derived ([Log]); control: the caller's row `nofail Log`, accepted; under revision 3.1's package-supplied C the forgery passed. Source (3.4, K2): `fn mk(): Handler(nofail Ask with Log + ...s) with pure = handler Ask { ask() => Log.log(1) }; fn use(): Unit with Log = with mk() { defer Ask.ask(); () };` (s occurs only in the result, so the ResultC's tail is the use's own, not the caller's rigid row); today: refused, "defer must not fail, but it performs Ask, whose handler may fail", related "this handler's clauses perform Log, whose handler may fail"; control `fn use(): Unit with nofail Log`: accepted (run, §R5b) | C supplied by the package |
 | let-bound handler (N5; "let-bound failing handler") | `let h = handler Log { log(n) => fail(E) }; … with h { defer Log.log(1) }`: honest refused; h's image mark forged to N refused by the E1 joining it to `HandlerLit.m`; control: a clause that does not fail, accepted; without the E1 the forgery passed | images unlinked to site positions |
-| inclusion (N4; "inclusion with extra effects") | `fn st(h: Handler(State(Int))): Int with Log = with h { State.get() }`: R ⊆ ρ with ρ holding the extra `Log`: accepted; revision 3.1's equality refused it | R ≡ ρ |
+| inclusion with a rigid-tailed R (N4; "inclusion with extra effects"; flipped in 3.5) | `fn st(h: Handler(State(Int))): Int with Log = with h { State.get() }` (research/amin-k1-probes/p1-k1.wxw): R ends in st's rigid ambient ϱ and ρ = `Log + ϱ` holds a `Log` R lacks, so Definition 4.2 at E5 refuses it (unrun as an oracle case under 3.5: the case followed 3.4's E2 and reported accepted); today refuses it, E_EFFECT "st performs Log, which its signature does not allow" (run, §13b). p1 is the separating example | E2's rigid case as written in 3.4 ("ρ ends in ϱ") |
+| inclusion with a closed R (N4, §R6 S2-2; added in 3.5 (oracle agent)) | a handler literal whose closed R the package chooses, installed under a row with an extra label (e.g. §R6 S2-2's `with handler State(Int) { get() => 1, put(v) => () } { Log.log(1); State.get() }` under `Log + ϱ`, R := ∅), built through the recorded-input obligation builder, not a hand-supplied completed graph (§18.85 item 5). Result (k1.mjs "closed-R inclusion (S2-2)", rerun by the controller): honest package (R, C, clause rows closed) accepted under Definition 4.2 and under the withdrawn rule; near miss R := `[] + ϱ` refused under Definition 4.2, accepted under the withdrawn rule (bounded). Today's compiler accepts the program and, run, prints `1`, `1`. Limit: the oracle compares C labels' arguments rather than keys only (no case depends on it) | R ≡ ρ (revision 3.1's equality) |
 | O1 recorded (3.4; equations.mjs "O1 clause body against the operation result") | `effect Get(a) { fn get(): a; }; fn main(): Unit with Console = with handler Get(Handler(Log with Console)) { get() => handler Log { log(n) => Fail.fail(E) } } { with Get.get() { Log.log(1) } };`: the honest package (the literal's R and C hold `Fail(E)`, m = M) refused by the O1 equation (R ≡ `Console` closed) and accepted without it; a package hiding `Fail(E)` from R refused by E4 under both; control (`log(n) => Console.print(n)`) accepted. Today: refused, E_EFFECT "This function must be pure, but it performs Fail(E)"; control accepted (run) | no E1 at the clause body (revision 3.3) |
 | O2 recorded (3.4; equations.mjs "O2 with node against its body") | `fn main(): Unit with Console = { let h0 = handler Tick { tick() => () }; let h = with h0 { handler Log { log(n) => Fail.fail(E) } }; with h { Log.log(1) } };`: honest refused (R's `Fail(E)` not in main's row), under both; the forged image (R and C closed, m N) refused by the O2 equation, accepted without it; control (`log(n) => Console.print(n)`) accepted. Today: refused, E_EFFECT "Unhandled Fail(E) in main"; control accepted (run) | no E1 at the `with` node (revision 3.3) |
 
@@ -894,7 +1106,9 @@ handled label in the result), not the constant N the case encodes; §R5
 found the verdict unchanged. The owned-C case hard-codes the derived C,
 so it shows the forged package unsatisfiable, not that derivation yields
 that C. The inclusion case is a set comparison that does not exercise
-E2's rigid-tail rule.
+E2's rigid-tail rule. (3.5: the oracle's README says `inclusionN4` now
+consumes R through E5's rows; under Definition 4.2 its verdict is the
+N4 row's, not yet rerun.)
 
 ### 12.2 Unrun predictions
 
@@ -934,8 +1148,8 @@ followed by the rows revision 3.1 adds and then those 3.3 adds:
 | `handle` ambient (T2-f) | a `fail(E)` in a `handle` body whose ambient row omits `Fail(E)`: refused | E11 without `handle` |
 | routing | FX032's `Op.op()` call: rule-1 `Unsupported EffectsUnchecked`; strategies run, an acceptance is suppressed, never Solved | candidate-level `EffectsUnchecked` |
 | routing | a failing first strategy and an honest second: Solved by the second | stopping at the first refusal |
-| Definition 4.1(c), R with marks (F1; attempt A) | `fn f(h: Handler(nofail Ask with Log)): Unit with Log = with h { Ask.ask() }; fn g(h2: Handler(nofail Ask with nofail Log)): Unit with Log = f(h2);` with an honest package: refused (N against M on R, neither type owning a C); today's checker refuses it too (§R5's reading, not run); accepting it lets a caller of `g` install a handler whose clause defers `Log.log` under a failing `Log`. Reasoned, not run | E1 ignoring R's marks on every handler type (revision 3.2) |
-| Definition 4.1(d), C ≡ C tails (F1; attempt B) | `let h = if b then mk() else g` with `mk(): Handler(nofail Ask with ...s)` and `g: Handler(nofail Ask with ...r)`, r rigid: the ResultC tail `⟨p, result clauses⟩` forged to ∅ is refused (∅ against g's alias tail r), so FrameRigid's `M ⊑ f` is kept. Reasoned, not run | no C ≡ C |
+| Definition 4.1(c), R with marks (F1; attempt A) | `fn f(h: Handler(nofail Ask with Log)): Unit with Log = with h { Ask.ask() }; fn g(h2: Handler(nofail Ask with nofail Log)): Unit with Log = f(h2);` with an honest package: refused (N against M on R, neither type owning a C); today's checker refuses it too (§R5's reading, not run); accepting it lets a caller of `g` install a handler whose clause defers `Log.log` under a failing `Log`. Bounded: derived.mjs "attempt A", honest refused, control accepted; today refuses it, E_TYPE (run, §13b) (relabelled in 3.5, §R6 S3-7) | E1 ignoring R's marks on every handler type (revision 3.2) |
+| Definition 4.1(d), C ≡ C tails (F1; attempt B) | `let h = if b then mk() else g` with `mk(): Handler(nofail Ask with ...s)` and `g: Handler(nofail Ask with ...r)`, r rigid: the ResultC tail `⟨p, result clauses⟩` forged to ∅ is refused (∅ against g's alias tail r), so FrameRigid's `M ⊑ f` is kept. Bounded: derived.mjs "attempt B", the unbound ResultC tail refused, control accepted; today refuses it, DeferHandlerMayFail (run, §13b) (relabelled in 3.5, §R6 S3-7) | no C ≡ C |
 | recorded ResultC (F2, F3) | `mk()` as in the owned-C row, a package carrying a C for the use's site: `Malformed` (no package slot; the C is in `instances`) | a package-side ResultC |
 | annotation C below the top (F6) | `let k = fn(f: Unit -> Handler(nofail Ask with Log)) => with f(()) { defer Ask.ask() }`: the handler type in the arrow's result owns a recorded C; a package dropping its `Log` label: `Malformed` | C only for the outermost handler type |
 | closed source (F7) | `fn g(h: Unit -> Unit with Log): Unit with Log + Ask = h(())`: accepted; no remainder condition, no copy edge for `Ask` | a remainder rule applied to closed sources |
@@ -956,7 +1170,7 @@ audit (done, a reading audit; O1 and O2 recorded in 3.4, §4).
 | Rule (code) | Obligation |
 |---|---|
 | type unification of marked types (UnifyMark `equateMarks`, EqualMarks) | E1 |
-| R into ρ ignoring marks (Consume `consumeIgnoring`: inclusion; a closed R gets a throwaway tail) | E2 with marks ignored; E5 (N4) |
+| R into ρ ignoring marks (Consume `consumeIgnoring`: inclusion; a closed R gets a throwaway tail) | E2 with marks ignored; E5 (N4); Definition 4.2 when R ends in a rigid ϱ (3.5) |
 | two handler types: effect and arguments (Unify `unifyHeads`, `THandler` case, `unifyPair`) | E1, Definition 4.1(a) |
 | handled marks by equality (UnifyParts `handledMarks`, UnifyMark `equateMarks`) | Definition 4.1(b) |
 | R ≡ R: with marks when neither side owns a C, else ignoring marks (Unify `unifyInference`, UnifyRow `unifyRows`, `unifyRowsIgnoring`) | Definition 4.1(c), (d) |
@@ -964,14 +1178,14 @@ audit (done, a reading audit; O1 and O2 recorded in 3.4, §4).
 | installation's edge ρ partner ⊑ C label (Lend `assume`) | E2 (installed-C site; N8) |
 | consumption: first occurrence, payloads, ρ ⊑ s, copies, extension t (UnifyMark `pairMarks`, `stageLabel`, `targetLabel`) | E2 |
 | `defer` consumes d into the current row (Defer `checkDefer`, `ignoreMarks: false`) | E2 (site `defer`) |
-| settling step (d): clause rows into C, installed C into ρ, deferred rows (Settle) | E2 (settling sites) |
+| settling step (d): clause rows into C, installed C into ρ, deferred rows (Settle) | clause rows into C: E4, Definition 4.2 for a rigid c (3.5, S2-1); the others: E2 (settling sites) |
 | side-condition per-key cycle test (§3.5 (c), SyncCycle, F2) | E2's per-key count on final rows |
 | opening at use (MarkUse `openHandlers`) | E3 |
 | local-annotation fresh marks and C for every handler type not inside another's rows (MarkUse `freshType`, `handlerRows`) | E1 with `Annotation` positions; the annotation C recorded by generation (`annotations`), read by E4′ (N1, N2, F6) |
-| a handler literal's type copied into images (unification) | E1 at the literal's node and at each recorded unification (N5), including O1 (clause body, ClauseBody.purs:52) and O2 (`with` node, Install.purs:73), added in 3.4 (§4); records with several tails by O6's proposed definition; reasoned from §13a, open for O4's case (§2) |
-| handler literal: c into R and C, C ⊑ c (Clauses `consumeBare`) | E4 |
+| a handler literal's type copied into images (unification) | E1 at the literal's node and at each recorded unification (N5), including O1 (clause body, ClauseBody.purs:52) and O2 (`with` node, Install.purs:73), added in 3.4 (§4); records with several tails by O6's proposed definition; reasoned from §13a, open for O4's case (§2; 3.5: O4 decided as rule J, its case reasoned, resting on U8) |
+| handler literal: c into R and C, C ⊑ c (Clauses `consumeBare`) | E4; Definition 4.2 for a rigid c, a departure from today's label-by-label c into C (3.5) |
 | own abort (Frames `aborting`) | E4 |
-| clause tail pass (TailPass) | E4 |
+| clause tail pass (TailPass) | E4 (implied by Definition 4.2 at c into R and C, 3.5) |
 | owned C at a use (ResultClauses `ownClauses`); C = R's alias elsewhere (Install `clausesOf`) | §2 (recorded by generation in `instances`), E4′, E5, I3 |
 | frame marks (Frames `framed`: FrameOwn, FrameOuter, FrameRigid) | E5 |
 | installation pairing (Lend `partners`) | E5 |
@@ -980,8 +1194,8 @@ audit (done, a reading audit; O1 and O2 recorded in 3.4, §4).
 | ExpectedNofail (MarkReport) | E7 |
 | UnhandledEffect (Entry) | E8 |
 | FailNeedsConcrete (Failure.purs:102) | E9 |
-| EffectNotAllowed, MustBePure (Reject, Require) | E2, E10 |
-| CallbackRowLacks (CallbackParts) | E2 |
+| EffectNotAllowed, MustBePure (Reject, Require) | E2, E10 (E10 is E2 at the stage sites targeting the declared row, §4) |
+| CallbackRowLacks (CallbackParts) | E2; Definition 4.2 for a rigid-tailed stage (3.5, S3-3) |
 | RowEquality (Argument, RowName) | E2 |
 | LabelMismatch (Reject `RowPayload`), RowOccurs | E1, E2 |
 | `handle` ambient (Handle `withFailures`) | E11 |
@@ -994,7 +1208,15 @@ Exclusions, each with why it is safe or what it limits:
   for soundness, since a package is judged on its completed rows;
   limits correspondence: R0 may accept a program today rejects (FX008's
   gain1.wxw is such a case for revision 10 itself), which the shadow
-  differential must report rather than count as agreement.
+  differential must report rather than count as agreement. Restated in
+  3.5 (§R6 S3-5): for the hook, "safe for soundness" rests on
+  Definition 4.2 at c_k into R and C. Today TailPass `ensure`
+  constrains only R's and C's end variables, so what refuses p8 and p9
+  today is plausibly the hook closing φ (Filing.purs:87, `closeTail`;
+  O7), which carried the obligation that E2 as written in 3.4 lacked
+  (reasoned from reading, not instrumented). With Definition 4.2 in
+  the validator, excluding the hook loses no soundness obligation found
+  so far (reasoned).
 - **Step 6, closing metas to M**: display and erasure only (§5).
 - **Resolve-time refusals** (FailNeedsConcrete at Resolve/Row.purs:82,
   NofailOnFail, MarkVariableOutsideSignature, HandlerMissing,
@@ -1114,7 +1336,8 @@ The table keeps the audit's findings as found at 0c2ad60.)
     marks equal; C ends at τ; C's further labels are free and do not
     enter R_W. If the copy shared R_W's tail *variable*, K would equal J
     on completed rows; Definition 4.1 (d)'s "with R's tail" must say
-    which is meant (wording finding).
+    which is meant (wording finding; resolved in 3.5: (d) says R's own
+    tail variable, rule J).
   - Relation (reasoned): J implies K for every package. K implies J for
     satisfiability on recorded problems: shrinking every owned C in a
     connected component to its first count_R(κ) occurrences per key
@@ -1123,14 +1346,26 @@ The table keeps the audit's findings as found at 0c2ad60.)
     a C with exactly R's labels. Caveat: assumes C's own tail variable
     occurs in no row outside its C-class (true for `⟨p, result
     clauses⟩` and `⟨p, annotation clauses i⟩`; unchecked for a
-    literal's C binding).
+    literal's C binding). In the occurs case a ResultC's tail is R's
+    own variable, which occurs outside the C-class by definition;
+    harmless, since that C's counts then equal R's (added in 3.5, §R6
+    S3-6). Standing (3.5): this equivalence is **unestablished**. Its
+    weakest step is the solved form for bindings: shrinking needs a C
+    binding to reference no other flexible variable, which §2 states for
+    image variables only (§R6; U8, §11: not enforced today, a gap).
+  - **Ruling (3.5; decided, §18.85 item 3): rule J** for the reference
+    specification (Definition 4.1(d)). Rule K is kept as an alternative
+    whose equivalence with J on recorded problems remains unestablished;
+    the choice does not rest on it.
   - Against Definition 4.1's argument (FX008 §5 point 1): J is direct
     (installation's alias equals the C of every owned type the value
     met, so it over-approximates what the clauses perform); K is safe
     too, but only through E4's c-into-R per-key count with R ≡ R. R's
     marks are dead under both; both read R_W's marks through the alias.
-  - No separating program found. Bounded: u7.mjs (§11 U7) finds K wider
-    than the design on 3,741 pairs, none with E4′'s recorded shape. One
+  - No separating program found. Bounded: u7.mjs (§11 U7) finds 3,741
+    pairs whose satisfiability differs between K and the design, none
+    with the annotation C's shape, though 1,944 package evaluations with
+    that shape differ (worded in 3.5, §R6 S3-1). One
     program run, neutral between J and K: a ResultC stored in a written
     data field and installed around a `defer` under a failing `Log` is
     refused today (E_EFFECT "Expected nofail Log, found Log"), its
@@ -1159,7 +1394,8 @@ are additions of E1 sites and definitions within the representation,
 not changes to it (the stop rule does not apply). In 3.4 they are
 written into §4 (O1, O2 decided; O6 proposed; O3 worded); O4 stays
 open (§13b's K1 likewise), O5 and O7 stay correspondence notes, and
-§2's claim and P1, P2 carry the standing §2 and §5 now state.
+§2's claim and P1, P2 carry the standing §2 and §5 now state. In 3.5,
+O4 is decided (rule J) and K1 adopted (Definition 4.2), §0d.
 
 ## 13b. Conflicts found while building 3.3's oracle cases
 
@@ -1246,7 +1482,19 @@ author; none is resolved here.
     Necessity: without lacks constraints or masking, any non-empty X
     gives a counterexample like p2, p4, p6, p7. No carve-out for
     argument-free, N-marked X is proposed (it would be invented and
-    breaks FX008's positional invariant).
+    breaks FX008's positional invariant). (3.5: the site list gains
+    callback, a call or apply stage, and E10, which is the stage sites,
+    §R6 S3-3; the installed-C step is written under E5, §4, §R6 S3-4.)
+  - Necessity, scoped in 3.5 (§R6 S3-2). The claim is necessity for
+    FX008's positional invariant (the k-th κ occurrence of a row is the
+    k-th κ frame, §3.1), which any non-empty X breaks under some
+    instantiation of ϱ. It is not claimed for §14's two guarantees
+    alone: an X that is argument-free and N for every valuation, or
+    Console only, misroutes harmlessly for effect and abort safety (no
+    payload layout to mismatch, no typed abort to escape). The carve-out
+    for such X is rejected because it breaks the invariant that
+    [FX008-5] point 2 relies on and would be invented machinery (ADR
+    014), not because the guarantees fail.
   - Relation to today: the premise matches today's verdict on every
     probe (observed, not proved). FX017, FX018 (a) and FX027 are
     diagnostics of this one rule (BACKLOG FX017: "diagnostic only").
@@ -1264,6 +1512,27 @@ author; none is resolved here.
     (p1 separating), §14's rigid-remainder row is restated, and p2, p4,
     p6, p7 with their simulations become separating examples. None of
     this is done before the author rules.
+
+  **Adopted in 3.5 (decided, §18.85 items 1, 2)** as a conservative
+  validator restriction: Definition 4.2 (§4), one definition referenced
+  from every site, clause rows into C included with the tail condition
+  (S2-1). Done: §12.1's N4 row flipped (p1 separating; the oracle's
+  case is not rerun here); §14's rigid-remainder row replaced by
+  Definition 4.2, citing p2, p4, p6, p7 and their simulations as its
+  separating examples (no oracle case built for them). A refusal means
+  the validator cannot certify the candidate, not that the program is
+  invalid or that this is final language policy; s1, `st` (p1), FX027's
+  program and p9 are validator limitations (§4).
+
+  Qualifications (§18.85 item 6). "No additional refusal found" against
+  today rests on these probes (observed) and on reasoning (§R6:
+  today's rigid-stage consumption fails on leftover target entries,
+  UnifyRow.purs:180-194), not on a general compatibility result. A
+  ResultC's own tail remains unexamined (open decision 3, §14). E10 is
+  settled only by reading (§4 E10; reasoned, nothing run). Adopting K1
+  closes neither a ResultC's tail nor the question of the whole
+  judgment's soundness: the sufficiency argument checks each site
+  separately and is not a substitution lemma (§R6).
 - **K2 (example repair). The N1 program texts are refused today for a
   reason unrelated to C.** `fn mk(): Handler(nofail Ask with Log)` has
   R = `Log + ϱ_mk`, ϱ_mk occurring in mk's own row, so by `ownClauses`
@@ -1366,24 +1635,25 @@ typed abort; hence no deferred expression ends in a typed abort).
 | E1 at a clause body against the instantiated operation result, rows closed (O1), and at a `with` node against its body (O2) (3.4) | a handler value produced by a clause, or by a `with` expression, carries the m, R and C of the type its consumers read | [FX008-5] point 1 (handler values reach installations only by type equality) (argued); the checker's own unifications at ClauseBody.purs:52 and Install.purs:73 as supporting evidence | S; separating examples equations.mjs O1, O2 (§12.1; bounded, graphs) |
 | E1 on records with several tails: fields plus the disjoint union of the tails' images (O6; 3.4) | a field's type, handler types included, is the same wherever a record merge copies it | RowMerge copies field terms by reference (supporting evidence only); the composition's result `θ(r) ⊎ θ(s)` (dossier §3.2, C7b) | S, **proposed**; no separating example |
 | E1 marks equal inside types (function types invariant) | a handler or callback passed by type carries the mark facts its type promises | [FX008-5] point 1 (handler values reach installations only by type equality, marks included) (argued); invariance is the conservative choice | S |
-| Definition 4.1, handler-type equality (handled marks by equality; R with marks when neither side owns a C, R standing in as C; otherwise R ignoring marks and clauseRow ≡ clauseRow) | a handler value carries, wherever it is installed, the m and C its type promises | [FX008-5] point 1, "Handler values reach installations only by type equality (C ≡ C, marks included)"; FX008 §3.4, "Two handler types unify C with C, marks included" (argued); Unify.purs and UnifyParts.purs as supporting evidence only | S; separating example attempt A (§12.2; reasoned, not run) |
-| C ≡ C with marks, tails and `Fail` heads, no other arguments (Definition 4.1(c), (d)) | an owned C's labels, assumption marks and tail survive every type equality, so no frame edge it implies is lost | [FX008-5] point 1 (argued); E5's FrameOuter and FrameRigid edges read C's labels and tail | S; separating example attempt B (§12.2; reasoned, not run) |
+| Definition 4.1, handler-type equality (handled marks by equality; R with marks when neither side owns a C, R standing in as C; otherwise R ignoring marks and clauseRow ≡ clauseRow; a side without its own C uses R itself as C, rule J, decided §18.85) | a handler value carries, wherever it is installed, the m and C its type promises | [FX008-5] point 1, "Handler values reach installations only by type equality (C ≡ C, marks included)"; FX008 §3.4, "Two handler types unify C with C, marks included" (argued); Unify.purs and UnifyParts.purs as supporting evidence only | S; separating example attempt A (§12.2; bounded, derived.mjs; today refuses it, run; relabelled in 3.5) |
+| C ≡ C with marks, tails and `Fail` heads, no other arguments (Definition 4.1(c), (d)) | an owned C's labels, assumption marks and tail survive every type equality, so no frame edge it implies is lost | [FX008-5] point 1 (argued); E5's FrameOuter and FrameRigid edges read C's labels and tail | S; separating example attempt B (§12.2; bounded, derived.mjs; today refuses it, run; relabelled in 3.5) |
 | E1 exception: R ≡ ρ (E5) ignores marks; R ≡ R ignores marks only when either side owns a C (Definition 4.1(d)) | where a C carries the marks, R's marks are never read, so ignoring them loses nothing | [FX008-3.4] "R's marks are dead", [FX008-5] point 1 (argued) | P (sound by argument) |
-| E2 labels matched by first occurrence per key; ρ holds at least as many | effect safety: each label the stage may perform has a handler occurrence in the target, the innermost first | scoped-label dispatch [L17] (published, adapted); per-key counts give finite rows (FX008 §3.5 (c)) | S |
+| E2 labels matched by first occurrence per key; ρ holds at least as many (exactly as many for a rigid-tailed s: Definition 4.2) | effect safety: each label the stage may perform has a handler occurrence in the target, the innermost first | scoped-label dispatch [L17] (published, adapted); per-key counts give finite rows (FX008 §3.5 (c)) | S |
 | E2 payloads equal | the handler that receives the operation is the one for its effect instance | [L17], [L05] (published) | S |
-| E2 remainder: rigid ϱ needs ρ to end in ϱ (tail pass) | a computation that may perform anything in ϱ runs where ϱ is present | FX008 §3.5's tail pass: "without the pass, the base effect system is unsound" (argued, with the rigid.wxw probe) | S |
+| Definition 4.2, rigid-tailed consumption (§4; replaces 3.4's "rigid ϱ needs ρ to end in ϱ", withdrawn, §18.84), at every site §4 lists | a computation that may perform anything in ϱ reaches, for every instantiation of ϱ, the frames ϱ's own occurrences name: the k-th κ occurrence of s is the k-th κ frame of ρ (FX008 §3.1's positional invariant) | K1's argument (§13b): with an extra κ in ρ, an instantiation of ϱ holding κ sends ϱ's operation to ρ's extra κ by scoped-label dispatch ([L05], [L17] adapted: Leijen's shadowing) (reasoned); sufficiency per site, not a substitution lemma (§R6; reasoned); necessity scoped to the positional invariant (§R6 S3-2); "ends in ϱ" from FX008 §3.5's tail pass (argued, rigid.wxw); separating examples p1 (refused today, run) and p2, p4, p6, p7 with sim4, sim6, sim7 (simulated) | S (reasoned); a conservative validator restriction (decided, §18.85); its lost acceptances (s1, p1, FX027's program, p9) are validator limitations |
+| Departure: c_k into C under Definition 4.2 (today: label by label with a throwaway tail, Clauses.purs `file`, Consume `consumeBare`; TailPass `ensure` binds only C's end variable) | one definition of rigid-tailed consumption at every site, so a clause row and its C agree as R and ρ do | §18.85 item 2 (decided); with Definition 4.2 at c_k into R and E5, both readings seem to refuse the same programs (§R6 S2-1; reasoned, unrun) | S by Definition 4.2; not today's procedure |
 | E2 remainder: none for a closed source (F7) | a closed stage performs only its labels, all matched | effect safety needs only the matched labels [L17] (published, adapted) | S |
 | E2 edge mark(ρ) ⊑ mark(s) on matched pairs | assumptions are met: a computation assuming N runs under an N frame | [FX008-5] point 2 (argued) | S |
 | E2 copies: fresh positions with mark(ρ) ⊑ mark(copy) | the copy inherits the assumption edge (soundness); fresh positions avoid merging unrelated handlers (precision) | [FX008-5] point 2 for the edge; [FX008-3.4] review I1 for freshness (argued) | S (edge), P (freshness) |
 | E2 target extension t ⊑ mark(s) | a label added to a target's tail inherits the stage's assumption | [FX008-3.4] review rev6 I2 (argued) | S |
 | E2 at `defer` (d into the enclosing row) | cleanup's assumptions are met by its registration context | [FX008-5] point 2, "cleanup runs in its registration context" (argued) | S |
-| E2 installed-C site (per-key count; Lend `assume` edge) | the frame's clauses reach outer frames at least as strong as they assume | [FX008-5] point 1 (argued) | S |
+| E2 installed-C site (per-key count; Lend `assume` edge) | the frame's clauses reach outer frames at least as strong as they assume | [FX008-5] point 1 (argued); for a rigid-tailed C, R ≡ ρ by §4 E5's step under Definition 4.2 (3.5; reasoned) | S |
 | E3 opening at use (an M handled label in a parameter, an N one in the result, made fresh) | accepts handler values at weakening positions | [FX008-3.4] D3; callback rows never opened ("would be unsound") (argued) | P (sound by argument) |
 | E4 c into C with marks (C ⊑ c); c into R ignoring marks | C over-approximates what the clauses perform, with their assumptions | [FX008-5] point 1 (argued) | S |
 | E4 own abort: `Fail` or rigid tail in a clause gives M ⊑ m | a handler whose clause may abort by itself is not N | [FX008-5] point 1 (argued) | S |
 | E4′ owned C not from a literal, recorded by generation: R's labels, bare; a ResultC's tail by `ownClauses`' occurs rule; an annotation C's tail always fresh | the C a caller installs covers what the callee's or the argument's clauses may perform | ResultC tail: ResultClauses.purs's comment, by parametricity clauses reach nothing else through a tail the caller cannot fill (argued in a code comment only); annotation tail: FX008 §3.4, review M5 (argued) | S; **argument needed** for the ResultC tail (decision 3) |
 | C rows bare (no label arguments) | marks attach to effect keys; dispatch is by key | Task 7 ruling; [FX008-5] point 1 reads C only for keys and marks (argued) | S by argument; C for the ruling |
-| E5 R into ρ ignoring marks (inclusion) | effect safety of the handler's inference row in its context | [L17] (published, adapted); marks dead (argued) | S |
+| E5 R into ρ ignoring marks: inclusion for a closed R only; Definition 4.2 for a rigid-tailed R (3.5) | effect safety of the handler's inference row in its context | [L17] (published, adapted); marks dead (argued); Definition 4.2's row for a rigid-tailed R | S; separating example p1 (refused); closed-R inclusion control added in 3.5 (oracle agent; no result claimed here) |
 | E5 frame edges m ⊑ f, paired ρ marks ⊑ f, rigid C tail gives M ⊑ f | frames are honest | [FX008-5] point 1 (argued) | S |
 | E5 Console frame edges skipped (Frames `framed` guard) | none: a Console frame is N by definition | sound only while no `Handler(Console …)` value can be built (FX011); the code says it "drops real demands" | **C, conflict candidate** (decision 1) |
 | E6 no `Fail` and no rigid tail in d | cleanup neither fails nor performs an unknown effect | [FX008-5] point 4; spec's `defer` rule (argued) | S |
@@ -2035,3 +2305,32 @@ read as §14's two guarantees (basis of S3-2); the solved form assumed
 to cover bindings (O4 rests on it); S2-1 and S2-2 rated S2, since both
 readings seem sound (S2-1 would be S1 if some construct reached c into
 C labels-only without c into R).
+
+## R6a. Revision 3.5's resolution ledger (2026-10-24)
+
+Rulings on §R6, dossier §18.85. Statements only; nothing built. Runs in
+this revision: `node u7.mjs` in research/amin-mark-oracle/ (exit 0,
+6.5 s, counts as §11 U7 states); the code reading for E10 and the c
+into C departure at this worktree (src unchanged since 0c2ad60).
+
+| Finding or item | Resolution in revision 3.5 |
+|---|---|
+| S2-1 clause rows into C defined two ways | one definition: E4's c_k into C is under Definition 4.2 with the tail condition (§4 E4); clause rows into C removed from E2's sites and "Labels-only sites"; the departure from today (Clauses.purs `file`, Consume `consumeBare`, throwaway tail; SettleEntry `toClauses`; TailPass `both`/`ensure` binding only C's end variable) recorded with its reason under Definition 4.2; §13 rows; §14 departure row |
+| S2-2 inclusion example lost | inclusion holds only for a closed R (§0a item 3, §4 E5, §14 E5 row); §12.1 closed-R row "added in 3.5 (oracle agent)", built through the recorded-input builder, result filled in §12.1 (honest accepted, near miss refused) |
+| S3-1 U7 wording | §11 U7: 12,024 package evaluations differ; 3,741 pairs differ in satisfiability, none with the annotation C's shape; 1,944 annotation-shaped package evaluations differ; the ResultC occurs shape outside the grammar; narrow label of §18.84 item 4 kept; §13a's O4 bullet likewise |
+| S3-2 K1's necessity overstated | §13b: necessity scoped to FX008's positional invariant; an argument-free X, N for every valuation, or Console only, misroutes harmlessly for the two guarantees; the carve-out rejected because it breaks the invariant and would be invented |
+| S3-3 callback and E10 missing | callback in Definition 4.2's site list (a call or apply stage, Reject `rejected` → Callback `callbackLacks`); E10 settled by reading: no source of its own, a body's ambient row is its declared row (Function.purs `environment`), so E10 is the stage sites (§4 E10; reasoned) |
+| S3-4 installed-C step missing | §4 E5 "Installed C under Definition 4.2": a rigid ϱ in an owned C that clauses reach needs a clause row ending in ϱ, which forces R to that row and ρ to R; an owned C's tail set to ϱ otherwise only adds FrameRigid (reasoned); §14 installed-C row |
+| S3-5 F1′-hook exclusion depends on K1 | §13 exclusion restated: supported by Definition 4.2 at c_k into R and C; today the hook's closing of φ (Filing.purs:87) plausibly carried the obligation E2 as written lacked (reasoned, not instrumented) |
+| S3-6 O4's caveat list | §13a: in the occurs case a ResultC's tail is R's own variable, occurring outside the C-class; harmless, since counts then equal R's |
+| S3-7 stale labels on attempts A and B | §0b item 1 (a parenthetical), Definition 4.1's justification, §12.2's two rows, §14's Definition 4.1 and C ≡ C rows: bounded (derived.mjs), today refuses both (run) |
+| S3-8 O1's wording | §4 "Where E1 is recorded": row variables of the operation's declared result replaced by the closed row; the label's argument rows closed at resolution (the reviewer's probe) |
+| O4 (the author's question) | rule J (decided): Definition 4.1(d) says the alias is R itself, its own tail variable (wording finding resolved); rule K kept in §13a, its equivalence unestablished, weakest step the solved form for bindings (U8); §2, §5, §11 U6, §13 copy row note the decision |
+| K1 | adopted as Definition 4.2 (§4); E2 "Tails" refers to it; §13b records the adoption and qualifications; §12.1 N4 flipped; §14 row replaced |
+| §18.85 item 1 (K1 adopted) | Definition 4.2; "What a refusal means" paragraph; lost acceptances s1, p1, FX027's program, p9 as validator limitations |
+| §18.85 item 2 (S2-1, departure) | as S2-1 above |
+| §18.85 item 3 (rule J) | as O4 above |
+| §18.85 item 4 (solved form for bindings) | not extended in prose; inspected: not enforced today, confirmed by a run (§11 U8: gap, proposed invariant and fixtures, unimplemented); referenced from §13a's weakest step, §2 and §5 |
+| §18.85 item 5 (S3 fixes, N4, §14, closed-R control) | S3 rows above; §12.1 N4 row flipped and closed-R row added (no result claimed); §14 rows replaced or updated |
+| §18.85 item 6 (qualifications) | §0d item 7 and §13b's "Qualifications": compatibility rests on probes and reasoning; a ResultC's own tail unexamined; E10 settled by reading only; K1 does not establish the whole judgment's soundness |
+| §18.85 item 7 (bring back open obligations and check results) | for the controller: U8's inspection, the closed-R control's result, the oracle's N4 case under Definition 4.2; open still: O5, O7, O6 (no case), U2-U5, open decisions 1, 3, 4 (§14) |

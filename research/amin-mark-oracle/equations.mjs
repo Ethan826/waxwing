@@ -8,20 +8,11 @@
 // are left out). A handler image's shape is fixed by the translation;
 // its rows (flexible tails the package binds) and mark come from the
 // package. Console labels are N (§2).
-import { combine, consumption, empty, flex, label, resolve, rigid, row }
-  from './rows.mjs';
-import { handler, installation } from './handlers.mjs';
+import { combine, flex, label, rigid, row } from './rows.mjs';
+import { handler, installation, literalE4 } from './handlers.mjs';
 
-// E4 for a literal with one clause row c (Clauses.purs `consumeBare`,
-// Frames `aborting`): c into R ignoring marks, into C with marks (C bare;
-// these labels carry no arguments beyond a Fail head); a c holding Fail
-// gives M ⊑ m. No clause here ends in a rigid row.
-const literalE4 = (lit, clause) => [
-  consumption({ source: clause, target: lit.inference, marks: false }),
-  consumption({ source: clause, target: lit.clauses, marks: true }),
-  pkg => ({ ...empty, edges: resolve(clause, pkg).labels
-    .some(l => l.eff === 'Fail') ? [['M', lit.mark]] : [] })
-];
+// E4 is handlers.mjs `literalE4` (one clause row here, not ending in a
+// rigid row).
 const literal = handler('Log', 'm', row([], flex('r')), row([], flex('c')));
 const clause = row([], flex('c1'));
 const main = row([label('Console', 'N')], rigid('amb'));
@@ -41,11 +32,13 @@ const console = label('Console', 'N');
 // `log(n) => Console.print(n)`.
 const written = handler('Log', 'M', row([console]));
 const clauseResult = deps => ({
-  current: combine([...literalE4(literal, clause),
+  current: combine([...literalE4(literal, [clause], deps.rigidRule),
     ...deps.handlerEquality(literal, written),
-    ...installation({ handler: written, current: main, frame: 'f' })]),
-  earlier: combine([...literalE4(literal, clause),
-    ...installation({ handler: written, current: main, frame: 'f' })])
+    ...installation({ handler: written, current: main, frame: 'f',
+      rule: deps.rigidRule })]),
+  earlier: combine([...literalE4(literal, [clause], deps.rigidRule),
+    ...installation({ handler: written, current: main, frame: 'f',
+      rule: deps.rigidRule })])
 });
 const literalRows = labels => ({ c1: row(labels), r: row(labels),
   c: row(labels) });
@@ -60,11 +53,13 @@ const literalRows = labels => ({ c1: row(labels), r: row(labels),
 // installation reads I. Control: `log(n) => Console.print(n)`.
 const image = handler('Log', 'mi', row([], flex('ri')), row([], flex('ci')));
 const withNode = deps => ({
-  current: combine([...literalE4(literal, clause),
+  current: combine([...literalE4(literal, [clause], deps.rigidRule),
     ...deps.handlerEquality(image, literal),
-    ...installation({ handler: image, current: main, frame: 'f' })]),
-  earlier: combine([...literalE4(literal, clause),
-    ...installation({ handler: image, current: main, frame: 'f' })])
+    ...installation({ handler: image, current: main, frame: 'f',
+      rule: deps.rigidRule })]),
+  earlier: combine([...literalE4(literal, [clause], deps.rigidRule),
+    ...installation({ handler: image, current: main, frame: 'f',
+      rule: deps.rigidRule })])
 });
 const imageRows = labels => ({ ...literalRows(labels), ri: row(labels),
   ci: row(labels) });

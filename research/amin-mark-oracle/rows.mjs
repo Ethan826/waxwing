@@ -70,22 +70,38 @@ export const rowEquality = ({ left, right, marks, args }) => pkg => {
     eqs: marks ? pairs.map(([a, b]) => [a.mark, b.mark]) : [] };
 };
 
+// E2's rigid case, two rules; `consumption` calls the one it is given
+// on a source ending in rigid ϱ, with `rest` the target labels left
+// unmatched. `exactRigid` is K1 as adopted (dossier §18.85; statements
+// §4 E2): ρ ends in ϱ and has, per key, exactly as many occurrences as
+// s, so ρ is s's matched labels followed by ϱ. `withdrawnRigid` is
+// revision 3.4's "ρ ends in ϱ" (§18.84), unsound (§13b K1, p7 and sim7
+// in research/amin-k1-probes/); kept for the Earlier column and the
+// mutant, never as a selectable mode of the real validator.
+const endsIn = (s, t) => isRigid(t.tail) && s.tail.rigid === t.tail.rigid;
+export const exactRigid = (s, t, rest) => endsIn(s, t) && rest.length === 0;
+export const withdrawnRigid = (s, t) => endsIn(s, t);
+
 // E2, s consumed into ρ, on the completed rows: each label of s has its
 // partner in ρ (the per-key count), arguments equal; a source ending in
-// rigid ϱ needs ρ to end in ϱ; a closed source (a hole defaulted, or a
-// `defer` row, whose tail Defer.purs never joins to ρ) needs nothing
-// more. Unless marks are ignored (consumption into R), each matched pair
-// gives mark(ρ occurrence) ⊑ mark(s occurrence); copies a binding of s's
-// tail holds are labels of the completed s, so they get the same edge.
-export const consumption = ({ source, target, marks }) => pkg => {
-  const [s, t] = [resolve(source, pkg), resolve(target, pkg)];
-  const { pairs, missing } = pairing(s.labels, t.labels);
-  const tailOk = s.tail === null
-    || (isRigid(s.tail) && isRigid(t.tail) && s.tail.rigid === t.tail.rigid);
-  const ok = missing === 0 && tailOk
-    && pairs.every(([a, b]) => sameArgs(a, b));
-  return { ...empty, structural: [ok],
-    edges: marks ? pairs.map(([sl, tl]) => [tl.mark, sl.mark]) : [] };
+// rigid ϱ is judged by the injected `rule` (required: every builder
+// passes the one its case was given, so a mutant reaches every site); a
+// closed source (a hole defaulted, or a `defer` row, whose tail
+// Defer.purs never joins to ρ) needs nothing more. Unless marks are
+// ignored (consumption into R), each matched pair gives mark(ρ
+// occurrence) ⊑ mark(s occurrence); copies a binding of s's tail holds
+// are labels of the completed s, so they get the same edge.
+export const consumption = ({ source, target, marks, rule }) => {
+  if (typeof rule !== 'function') throw new Error('consumption: no rule');
+  return pkg => {
+    const [s, t] = [resolve(source, pkg), resolve(target, pkg)];
+    const { pairs, missing, rest } = pairing(s.labels, t.labels);
+    const tailOk = s.tail === null || (isRigid(s.tail) && rule(s, t, rest));
+    const ok = missing === 0 && tailOk
+      && pairs.every(([a, b]) => sameArgs(a, b));
+    return { ...empty, structural: [ok],
+      edges: marks ? pairs.map(([sl, tl]) => [tl.mark, sl.mark]) : [] };
+  };
 };
 
 // The keys-only inclusion the earlier N4 translation checked (no tails):
