@@ -70,7 +70,10 @@ refusal, R9 after the first run; each was predicted before it ran.
 | C2f-A1-open-clause-row | E_EFFECT `Unhandled Config in main`; notes misleading | headline confirmed |
 | C2g-logger-value-injected | accepted; `1006` | confirmed |
 
-Exact messages and spans are in `out/<probe>.emit.out`.
+Exact messages and spans are in `out/<probe>.emit.out`. The probe
+agent kept no outputs for C2a-A1, C2a-A2, C2f-A1 and R9; the
+coordinating session captured them later on the same build, and they
+match the table.
 
 ## Classification against the charter questions
 
