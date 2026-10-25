@@ -10,8 +10,8 @@ const Unfoldable = await import('../output/Data.Unfoldable/index.js');
 
 const pairsOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => [pair.value0, pair.value1]);
-const isMap = value => value instanceof Object
-  && ['Leaf', 'Node'].includes(value.constructor.name);
+const isMap = value => value instanceof Maps.Leaf
+  || value instanceof Maps.Node;
 
 const shape = value => {
   if (Array.isArray(value)) return value.map(shape);
