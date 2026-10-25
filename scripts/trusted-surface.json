@@ -98,6 +98,7 @@
    "NonConstructive",
    "Uncovered",
    "HoleContract",
+   "UnsolvedImage",
    "NoCounterInstance",
    "CXRefused",
    "RefuterName",

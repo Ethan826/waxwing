@@ -12,8 +12,8 @@
 -- above every hole the substitution mentions, in `Ord Var` order (a
 -- labelled choice: no checked-IR hole stands for it). A binding alone
 -- establishes nothing: the witness is offered only if Cov accepts it,
--- the hole contract included (Strategy.HoleContract), and otherwise the
--- reason is the compilation's.
+-- the solved form and the hole contract included (Strategy.HoleContract),
+-- and otherwise the reason is the compilation's.
 module Features.Check.Strategy.Witness
   ( coverage
   , flexDomain
@@ -21,7 +21,18 @@ module Features.Check.Strategy.Witness
   ) where
 
 import Prelude
-import Data.Array (concatMap, filter, head, length, mapWithIndex, null)
+import Data.Array
+  ( any
+  , concatMap
+  , elem
+  , filter
+  , find
+  , head
+  , length
+  , mapMaybe
+  , mapWithIndex
+  , null
+  )
 import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Foldable (maximum)
@@ -30,13 +41,15 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Traversable (traverse_)
-import Data.Tuple (Tuple(..), fst)
-import Domain.Recorded (RecordedProblem, fields)
+import Data.Tuple (Tuple(..), fst, snd)
+import Domain.Recorded (Fields, RecordedProblem, fields)
 import Domain.Recorded.Atom (Quant(..), RTExpr(..), Var, VarInfo, VarSort(..))
+import Domain.Recorded.Hole (holeIndex, holeVar)
 import Domain.Verdict (Compilation(..), NoWitnessReason(..))
 import Domain.Verdict.Witness (Binding(..), Witness)
 import Features.Check.Strategy.Candidate (Substitution)
 import Features.Check.Strategy.HoleContract (holeContract)
+import Features.Check.Spine (spine)
 import Features.Check.Strategy.ReadBack.Type (holesIn)
 
 substitutionWitness ∷ RecordedProblem → Substitution → Compilation
@@ -46,19 +59,80 @@ substitutionWitness problem candidate =
   where
   made = { bindings: bindingsOf problem candidate, names: [] }
 
--- Every variable of the domain has its binding, then the hole contract.
--- The domain is an argument (D1 spec §7; Task 7.1a): `flexDomain` while
--- `Recon` is empty, `Features.Check.Elaborate.covDomain` under D1. A
--- `Set`, so variables are judged in `Ord Var` order, as before.
+-- Every variable of the domain has its binding, every binding is in
+-- solved form (`solvedForm`), then the hole contract. The domain is an
+-- argument (D1 spec §7; Task 7.1a): `flexDomain` while `Recon` is
+-- empty, `Features.Check.Elaborate.covDomain` under D1. A `Set`, so
+-- variables are judged in `Ord Var` order, as before. The solved form
+-- runs here, not beside `coverage`, so neither `substitutionWitness`
+-- nor Elaborate's re-check can offer a witness without it.
 coverage
   ∷ Set Var → RecordedProblem → Witness → Either NoWitnessReason Unit
 coverage domain problem witness = do
   traverse_ covered (Set.toUnfoldable domain ∷ Array Var)
+  solvedForm problem witness
   holeContract problem witness
   where
   covered variable
     | Map.member variable witness.bindings = Right unit
     | otherwise = Left (Uncovered variable)
+
+-- §18.76 item 2's solved form, U8's check (docs/plans/
+-- r0-u8-solved-form.md §2): every variable in every binding's image, at
+-- any depth, auxiliaries' bindings included, is a declared rigid at its
+-- position's sort or a hole with one sort across the witness. A `Free n`
+-- binding is hole `n` at its key's recorded sort. The variable named is
+-- the first key, in `Ord Var` order, whose image breaks it.
+solvedForm ∷ RecordedProblem → Witness → Either NoWitnessReason Unit
+solvedForm problem witness =
+  maybe (Right unit) (Left <<< UnsolvedImage <<< fst)
+    (find breaks found)
+  where
+  view = fields problem
+  found = map occurring (Map.toUnfoldable witness.bindings)
+  occurring (Tuple variable bound) =
+    Tuple variable (occurrencesOf view variable bound)
+  twoSorts = Set.intersection (holesAt SortType) (holesAt SortRow)
+  holesAt sort =
+    Set.fromFoldable (concatMap (holesOfSort sort <<< snd) found)
+  breaks (Tuple _ seen) = any (outside view twoSorts) seen
+
+-- Each variable occurrence of a binding's image with its position's sort.
+occurrencesOf ∷ Fields → Var → Binding → Array (Tuple VarSort Var)
+occurrencesOf view variable = case _ of
+  Inline image → occurrences image
+  Free hole → maybe [] (freed hole) (Map.lookup variable view.vars)
+  where
+  freed hole info = [ Tuple info.sort (holeVar hole) ]
+
+occurrences ∷ RTExpr → Array (Tuple VarSort Var)
+occurrences ty = case ty of
+  Arrow _ _ → concatMap occurrences parts.parameters
+    <> occurrences parts.result
+  Base _ → []
+  TVar variable → [ Tuple SortType variable ]
+  Record entries tails → concatMap (occurrences <<< snd) entries
+    <> map (Tuple SortRow) tails
+  App _ arguments → concatMap occurrences arguments
+  where
+  parts = spine ty
+
+holesOfSort ∷ VarSort → Array (Tuple VarSort Var) → Array Int
+holesOfSort wanted = mapMaybe atSort
+  where
+  atSort (Tuple sort variable)
+    | sameSort wanted sort = holeIndex variable
+    | otherwise = Nothing
+
+-- Neither a declared rigid at its sort nor a hole of one sort.
+outside ∷ Fields → Set Int → Tuple VarSort Var → Boolean
+outside view twoSorts (Tuple sort variable) =
+  maybe (not (elem variable declared)) (flip Set.member twoSorts)
+    (holeIndex variable)
+  where
+  declared = case sort of
+    SortType → view.rigidTy
+    SortRow → view.rigidRow
 
 bindingsOf ∷ RecordedProblem → Substitution → Map.Map Var Binding
 bindingsOf problem candidate =

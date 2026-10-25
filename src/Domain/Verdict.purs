@@ -99,12 +99,15 @@ data Compilation = Witnessed Witness | NoWitness NoWitnessReason
 -- W §1.6's reasons, each with its owner: a non-constructive strategy's
 -- (Task 4.1, AT9); Cov's (W §4; Task 4.4): `HoleContract`, W §1.5, and
 -- `Uncovered`, a variable of Cov's domain with no binding, which W names
--- no reason for (amendment, Task 4.4). `AdapterUnsupported` joins with
--- its adapter (Task 6.1).
+-- no reason for (amendment, Task 4.4); and `UnsolvedImage`, a binding
+-- whose image is not in §18.76 item 2's solved form (U8; docs/plans/
+-- r0-u8-solved-form.md). `AdapterUnsupported` joins with its adapter
+-- (Task 6.1).
 data NoWitnessReason
   = NonConstructive StrategyName
   | Uncovered Var
   | HoleContract Var
+  | UnsolvedImage Var
 
 data Evidence
   = ByRule Derivation -- ground (1)

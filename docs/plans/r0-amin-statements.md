@@ -1054,7 +1054,21 @@ derived C), generation's lambda-parameter rule (records
     effect-row tails, rows nested in label arguments and arrows,
     data-type row arguments, `J S` marks (only `rigidMarks`), rigids at
     their sort, one sort per hole, every binding auxiliaries included.
-  - Proposed invariant (not implemented; implementation unauthorized):
+  - **Implemented as a separate repair (dossier §18.86 item 3,
+    2026-10-24)**: contract docs/plans/r0-u8-solved-form.md; check
+    Strategy/Witness.purs `solvedForm`, inside `coverage` (so neither
+    `substitutionWitness` nor Elaborate's re-check can offer a witness
+    without it); refusal `NoWitness (UnsolvedImage v)`, Valid untouched;
+    test/r0-u8-solved-form.test.mjs (every must-refuse fixture was
+    Witnessed before and is refused now; honest controls stay
+    Witnessed); the pinned corpus's witness counts unchanged (scratch
+    probe); one reviewed pin line (`UnsolvedImage`,
+    scripts/trusted-surface.json); full verify exit 0 (2900/2900
+    parallel, 136/136 serial, 209/209 regression proofs). It does not
+    cover effect rows or marks (absent today): a-min must extend it. It
+    does not authorize a-min's broader implementation or the live
+    switch.
+  - The invariant as proposed before implementation:
     for every v in `bindings`, every variable of image(v) is a declared
     rigid (`rigidTy`/`rigidRow`) at the sort of its position, or
     `holeVar n` with n at one sort across the witness; must-refuse
