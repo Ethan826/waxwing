@@ -104,15 +104,48 @@ report.md; that ledger is git-ignored, local evidence only.
   its instance's stages, `three(1)` (Tasks 3, 4).
 - r0-amin-node-erasure: a node's marked type erases to its recorded
   type (Task 3).
-- r0-amin-handler-marker: every handler construct carries Outside
-  HandlerType; this is Task 17's proof edit and covers its
-  source-derived boundary scope (Tasks 5, 17).
+- r0-amin-handler-marker: a written handler type carries Outside
+  HandlerType (Task 17's proof edit); its probe checks that invariant
+  on one program and does not exercise the boundary test's
+  source-derived scope, which the boundary test itself owns (Tasks 5,
+  17; corrected after the checkpoint review).
 - r0-amin-duplicate-effect: a second write at one path is a generation
   fault (Task 15; registered then).
 Task 1's effect-problem types (Task 1 report) stay with their unit
 tests; no row was added for them. Task 17's review also raised the
 boundary test's source floors to about 80% of observed and added a
 floor of 13 for the signature-only subset (observed 17).
+
+## a-min tranche 1, Checkpoint B: checks completed, R031 deferred (2026-10-27)
+
+Task 15 (DuplicateEffect, 3da2198, style fix e6868b8), Task 17
+(source-derived boundary scope, af980fa), Task 16 (ten regression rows,
+f20725e). Task 6 (R031) not done: deferred to the effect-row-binding
+tranche (§18.100). `npm run verify` at e6868b8 exit 0: 2953/2953
+parallel, 144/144 serial, 221/221 regression proofs (log and the plan
+ledger's demonstration logs in .build/evidence/2026-10-27-checkpointB/
+in the main checkout). An earlier run at f20725e failed the style gate
+on Assemble.purs (case on Maybe); fixed in e6868b8.
+
+Controller rulings in the boundary test, for the author: `fail`-only
+declarations (19 observed, 3 Solved) are treated as outside the
+handler boundary (a perform, under the interim policy); this narrows
+plan Task 17's "none is Solved" and is open for the author. A handler
+type written only in a declaration's own signature (17 observed) is
+checked by its HandlerType marker and verdict alone, because that
+signature is not recorded in `effects` (BACKLOG R032).
+
+Whole-checkpoint review (Opus, fresh): no Critical; ready for the
+author's Task 7 decision with conditions. Important: I1, instance and
+reference last-stage rows are recorded as written where the live
+checker opens a closed callee row with a fresh tail (DeclarationUse
+`openedRow`); I2, the `fail`-only ruling above; I3, the missing
+signature record (R032); I4, handled labels at function uses are
+recorded fixed where the live checker opens them (`openHandlers`),
+and `Opened Path` has one position per use where live opens one per
+handler-typed parameter plus the result (R033); I5, the handler-marker
+row's description (corrected above). I1 and I4 change what Task 7's E1
+equations would record and need rulings before Task 7.
 
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 

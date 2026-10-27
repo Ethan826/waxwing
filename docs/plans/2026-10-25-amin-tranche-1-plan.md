@@ -350,7 +350,7 @@ their defect-pinning tests; Task 6 is not done and full typed-output
 correspondence is not established. It moves to the tranche adding
 effect-row bindings and table-aware reconstruction.
 
-**Files:** Control.purs:149-151 (annotated parameter), Translate.purs
+**Files:** Control.purs:181 (was 149-151) (annotated parameter), Translate.purs
 `rowOf`, Generate/Elab/Image.purs; rewrite test/r0-r031.test.mjs;
 BACKLOG.md R031.
 

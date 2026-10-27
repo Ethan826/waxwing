@@ -6369,3 +6369,14 @@ review, corrections within this scope and records. Tasks 7-14,
 effect-row bindings, broader boundary changes and pushing stay
 unauthorized. Report as "Checkpoint B's checks completed, with R031
 explicitly deferred" only if the evidence supports it.
+
+### 18.101 Checkpoint B: checks completed, R031 deferred (2026-10-27)
+
+Tasks 15, 17, 16 done; verify at e6868b8 exit 0 (2953 + 144 tests, 221
+regression proofs); R031 not done (§18.100). The fresh checkpoint
+review found no Critical and five Important items (docs/progress.md):
+I1 and I4 (rows and handled labels the live checker opens, BACKLOG
+R033) and I2 (the controller's `fail`-only boundary ruling) need the
+author before Task 7; I3 filed as R032; I5's overstated record
+corrected. Code corrections were not made: the remaining budget under
+the 2.9M ceiling did not cover them.

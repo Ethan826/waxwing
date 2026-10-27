@@ -25,10 +25,10 @@ Milestone 1's checking half needs the validator (A2).
 **Checkpoint A reached (2026-10-26, §18.98):** tranche 1 Tasks 1-5 of
 docs/plans/2026-10-25-amin-tranche-1-plan.md done at 87420d8, verify
 exit 0; ledger in .superpowers/sdd/2026-10-25-amin-tranche-1-plan/.
-**In progress: Checkpoint B (§18.99):** Task 15 (duplicate writes),
-Task 6 (R031), Task 17 (boundary scope from source), Task 16
-(regression rows), verify, one review; within the 2.4M ceiling. Tasks
-7-14 held. A2 note:
+**Checkpoint B: checks completed, R031 deferred (§18.101).** Verify
+at e6868b8 exit 0. For the author before Task 7: BACKLOG R033 (I1, I4:
+opened rows and handled labels), the `fail`-only boundary ruling (I2),
+R032 (signature record). Tasks 7-14 held; the 2.9M ceiling is spent. A2 note:
 docs/plans/2026-10-25-amin-a2-options.md (questions 1-3 open).
 A2's algorithm, G-D1's closure record and Task 4.6 stay unauthorized.
 The critical path and part A/B status: docs/plans/r0-closure-checklist.md.
