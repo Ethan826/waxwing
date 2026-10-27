@@ -117,6 +117,18 @@ test('an unwritten annotation mark is numbered in pre-order', () => {
     [at(0), written('FixedN'), at(1), at(2)]);
 });
 
+test('Plain in an annotation is a position', () => {
+  const plain = logged(Row.Plain.value);
+  const ty = Type.TFun.create(unit)(rowOf(plain, logged(Row.NoFail.value),
+    logged(new Row.MarkVariable('k')), plain))(unit);
+  assert.deepEqual(labelsOf(rightOf(run(annotated, ty))),
+    [at(0), written('FixedN'), { Written: [{ FixedRigid: ['k'] }] },
+      at(1)]);
+  for (const naming of [Marked.Declared.value, Marked.AtUse.create(p)])
+    assert.deepEqual(labelsOf(rightOf(run(naming,
+      Type.TFun.create(unit)(rowOf(plain))(unit)))), [written('FixedM')]);
+});
+
 test('a 5,000-parameter annotation numbers without recursion', () => {
   const count = 5000;
   let ty = unit;

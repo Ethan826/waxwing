@@ -115,12 +115,15 @@ labelOf naming again (Label effect arguments mark) =
     <*> markOf naming effect mark
 
 -- An unwritten annotation mark carries the placeholder index 0 until
--- `numbered` counts it.
+-- `numbered` counts it. In an annotation Resolve writes an unwritten
+-- mark `Plain` (a fresh meta there, Domain/Row.purs), so it is a
+-- position, as `Unmarked` is.
 markOf ∷ MarkNaming → EffectRef → Mark → Either GenerationFault MarkRef
 markOf naming effect mark
   | effect == ConsoleEffect || effect == FailEffect = Right (Written FixedN)
   | otherwise = case mark, naming of
       NoFail, _ → Right (Written FixedN)
+      Plain, InAnnotation path j → Right (At (Annotation path j 0))
       Plain, _ → Right (Written FixedM)
       MarkVariable k, AtUse path → Right (At (Instantiated path k))
       MarkVariable k, _ → Right (Written (FixedRigid k))
