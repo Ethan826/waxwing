@@ -340,6 +340,16 @@ every `EffFresh` minted into `flexEff`.
 
 ### Task 6: R031's two repairs
 
+**Deferred (author, 2026-10-27, §18.100):** neither target form is
+representable today. The witness has only `Inline RTExpr | Free Int`
+and effect-row reads are unsupported, so (1)'s hole has no binding
+form; image reconstruction drops data-type row arguments and has no
+tables, so (2)'s count is unavailable. No invented hole indices,
+closed-tail substitutes or padding pass. Both defects stay open with
+their defect-pinning tests; Task 6 is not done and full typed-output
+correspondence is not established. It moves to the tranche adding
+effect-row bindings and table-aware reconstruction.
+
 **Files:** Control.purs:149-151 (annotated parameter), Translate.purs
 `rowOf`, Generate/Elab/Image.purs; rewrite test/r0-r031.test.mjs;
 BACKLOG.md R031.

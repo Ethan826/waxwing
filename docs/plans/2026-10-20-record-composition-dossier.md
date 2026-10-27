@@ -6350,3 +6350,22 @@ resolved source. One fresh whole-checkpoint review after the repairs
 and before Task 7, all within the 2.4M ceiling. Checkpoint numbering in
 the plan and RESUME corrected: Checkpoint A was Tasks 1-5; the new unit
 is Checkpoint B (plan Tasks 15, 6, 17, 16). Tasks 7+ held.
+
+### 18.100 R031 deferred; ceiling raised to 2.9M (2026-10-27)
+
+Task 15 (duplicate effect writes) landed at 3da2198, review clean.
+Task 6 stopped: R031 (1)'s hole and (2)'s declared row count are not
+representable (the witness has `Inline RTExpr | Free Int` only;
+effect-row reads are unsupported; images drop data-type row arguments
+and see no tables). The author's ruling: defer both repairs to the
+effect-row-binding tranche; no invented hole indices, closed-tail
+substitutes or padding pass; both defects open with their pinning
+tests; deferral neither completes Task 6 nor establishes typed-output
+correspondence. The earlier authorization assumed the forms were
+representable; that assumption was wrong. Ceiling raised to 2.9M
+total, authorizing only Task 17, Task 16 (rows including duplicate
+detection and the boundary), full verify, one fresh whole-checkpoint
+review, corrections within this scope and records. Tasks 7-14,
+effect-row bindings, broader boundary changes and pushing stay
+unauthorized. Report as "Checkpoint B's checks completed, with R031
+explicitly deferred" only if the evidence supports it.
