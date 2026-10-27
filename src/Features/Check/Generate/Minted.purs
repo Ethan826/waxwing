@@ -5,8 +5,8 @@
 -- those named at path p into `MintedVar` and `MintedPosition` items,
 -- each once, in `Ord` order (a variable or position named at several
 -- places in one owner's types is minted by that owner alone): an owner
--- mints what carries its own path, never another node's. `mentions` is the syntactic occurrence
--- fold H′ reads (Generate.Owned).
+-- mints what carries its own path, never another node's. `mentions` is
+-- the syntactic occurrence fold H′ reads (Generate.Owned).
 module Features.Check.Generate.Minted
   ( Part(..)
   , mentions
