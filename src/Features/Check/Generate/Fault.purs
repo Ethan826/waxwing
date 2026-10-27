@@ -21,9 +21,11 @@ module Features.Check.Generate.Fault
   , generationProblem
   ) where
 
+import Prelude ((<>))
 import Data.Either (Either)
 import Domain.Ids (EffectId, TypeId)
 import Domain.Problem (InternalKind(..), Problem(..))
+import Domain.Recorded.Origin (Path)
 import Domain.Resolved (CtorId, FunctionId, LocalId, VarId)
 
 data GenerationFault
@@ -39,6 +41,7 @@ data GenerationFault
   | ResultShape
   | VariableSort VarId
   | MarkShape
+  | DuplicateEffect String Path
 
 type Gen a = Either GenerationFault a
 
@@ -63,3 +66,5 @@ generationProblem = case _ of
     "Generation: an effect-row variable in a type position"
   MarkShape → Internal InputShape
     "Generation: an unresolved effect mark in a written type"
+  DuplicateEffect kind _ → Internal InputShape
+    ("Generation: a second " <> kind <> " write at one path")

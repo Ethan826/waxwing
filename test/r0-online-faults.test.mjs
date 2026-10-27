@@ -138,7 +138,7 @@ test('a declaration the program lacks stops the run (ruling R10)', () => {
 const generationFaults = ['UnknownFunction', 'UnknownCtor', 'UnknownType',
   'UnknownEffect', 'UnknownBuiltinEffect', 'UnknownOperation',
   'UnboundLocal', 'PayloadShape', 'BinderShape', 'ResultShape',
-  'VariableSort', 'MarkShape'];
+  'VariableSort', 'MarkShape', 'DuplicateEffect'];
 
 test('a generation fault stops the run', () => {
   const declared = readFileSync('src/Features/Check/Generate/Fault.purs',

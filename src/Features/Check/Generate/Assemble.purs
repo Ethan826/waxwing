@@ -11,20 +11,54 @@ module Features.Check.Generate.Assemble
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Foldable (foldl)
+import Data.Set as Set
 import Data.Tuple (Tuple(..))
 import Domain.Recorded.Atom (Holders, Quant(..), Var, VarInfo, VarSort(..))
 import Domain.Recorded.Effect (EffectProblem, emptyEffects)
 import Domain.Recorded.Internal (RecordedProblem(..))
+import Domain.Recorded.Origin (Path)
 import Domain.Resolved (FunctionId)
+import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Out (EffectItem(..), Out)
 
 type Header = { decl ∷ FunctionId, holders ∷ Holders }
 
-assemble ∷ Header → Out → RecordedProblem
-assemble header out = RecordedProblem
+-- A second write of one keyed kind at one path is a generation fault,
+-- found on the item list before any map is built (equal values too).
+assemble ∷ Header → Out → Either GenerationFault RecordedProblem
+assemble header out = map (assembled header out) (checked out.effects)
+
+checked ∷ Array EffectItem → Either GenerationFault (Array EffectItem)
+checked items = case duplicate items of
+  Just (Tuple kind path) → Left (DuplicateEffect kind path)
+  Nothing → Right items
+
+duplicate ∷ Array EffectItem → Maybe (Tuple String Path)
+duplicate items = _.found (foldl seen start (Array.mapMaybe keyed items))
+  where
+  start = { found: Nothing, written: Set.empty }
+  seen state key
+    | Set.member key state.written = state { found = orFirst state key }
+    | otherwise = state { written = Set.insert key state.written }
+  orFirst state key = case state.found of
+    Nothing → Just key
+    kept → kept
+
+keyed ∷ EffectItem → Maybe (Tuple String Path)
+keyed = case _ of
+  NodeAt path _ → Just (Tuple "NodeAt" path)
+  InstanceAt path _ → Just (Tuple "InstanceAt" path)
+  AnnotationAt path _ → Just (Tuple "AnnotationAt" path)
+  ArityAt path _ → Just (Tuple "ArityAt" path)
+  AmbientAt path _ → Just (Tuple "AmbientAt" path)
+  _ → Nothing
+
+assembled ∷ Header → Out → Array EffectItem → RecordedProblem
+assembled header out items = RecordedProblem
   { decl: header.decl
   , rigidTy: keys rigidType
   , rigidRow: keys rigidRow
@@ -40,7 +74,7 @@ assemble header out = RecordedProblem
   , vars
   , types: Map.fromFoldable out.types
   , holders: header.holders
-  , effects: foldl addItem emptyEffects out.effects
+  , effects: foldl addItem emptyEffects items
   }
   where
   vars = Map.fromFoldable out.vars
@@ -57,7 +91,7 @@ assemble header out = RecordedProblem
     Exists → false
 
 -- One emitted effect item joins its part of the problem: lists append in
--- emission order, maps key by path (a later item replaces an earlier one).
+-- emission order, maps key by path (`checked` has ruled out a repeat).
 addItem ∷ EffectProblem → EffectItem → EffectProblem
 addItem problem = case _ of
   Obliged entry → problem { obligations = problem.obligations <> [ entry ] }

@@ -65,22 +65,24 @@ seal
   . Header
   → (∀ s. Gen s (Elab s a))
   → Either GenerationFault (Elaborating a)
-seal header (Gen result) = map (sealed header) result
+seal header (Gen result) = result >>= sealed header
 
 sealed
   ∷ ∀ s a
   . Header
   → { value ∷ Elab s a, parts ∷ Log Piece }
-  → Elaborating a
-sealed header { value: Elab elab, parts } = Elaborating
-  { problem: assemble header (concatOut (outs <> [ typed ]))
-  , uses: elab.uses
-  , fresh: counted (map fst (concatMap _.vars outs))
-  , sites: Map.fromFoldable sites
-  , siteCounts: counted (map fst sites)
-  , build
-  }
+  → Either GenerationFault (Elaborating a)
+sealed header { value: Elab elab, parts } =
+  map elaborating (assemble header (concatOut (outs <> [ typed ])))
   where
+  elaborating problem = Elaborating
+    { problem
+    , uses: elab.uses
+    , fresh: counted (map fst (concatMap _.vars outs))
+    , sites: Map.fromFoldable sites
+    , siteCounts: counted (map fst sites)
+    , build
+    }
   pieces = entries parts
   outs = mapMaybe wroteOut pieces
   sites = mapMaybe sitedPair pieces
