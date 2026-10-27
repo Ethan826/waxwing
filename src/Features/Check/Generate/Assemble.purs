@@ -13,7 +13,7 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Map as Map
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Foldable (foldl)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
@@ -33,9 +33,9 @@ assemble ∷ Header → Out → Either GenerationFault RecordedProblem
 assemble header out = map (assembled header out) (checked out.effects)
 
 checked ∷ Array EffectItem → Either GenerationFault (Array EffectItem)
-checked items = case duplicate items of
-  Just (Tuple kind path) → Left (DuplicateEffect kind path)
-  Nothing → Right items
+checked items = maybe (Right items) refused (duplicate items)
+  where
+  refused (Tuple kind path) = Left (DuplicateEffect kind path)
 
 duplicate ∷ Array EffectItem → Maybe (Tuple String Path)
 duplicate items = _.found (foldl seen start (Array.mapMaybe keyed items))
@@ -44,9 +44,7 @@ duplicate items = _.found (foldl seen start (Array.mapMaybe keyed items))
   seen state key
     | Set.member key state.written = state { found = orFirst state key }
     | otherwise = state { written = Set.insert key state.written }
-  orFirst state key = case state.found of
-    Nothing → Just key
-    kept → kept
+  orFirst state key = Just (fromMaybe key state.found)
 
 keyed ∷ EffectItem → Maybe (Tuple String Path)
 keyed = case _ of

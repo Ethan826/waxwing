@@ -132,9 +132,9 @@ export const r0AminRows = [
     // one path is folded by `Map.insert` and overwrites the first.
     name: 'r0-amin-duplicate-effect',
     file: 'src/Features/Check/Generate/Assemble.purs',
-    needle: 'checked items = case duplicate items of\n',
-    replacement: 'checked items = case (Nothing ∷ Maybe (Tuple String Path))'
-      + ' of\n',
+    needle: 'checked items = maybe (Right items) refused'
+      + ' (duplicate items)\n',
+    replacement: 'checked items = maybe (Right items) refused Nothing\n',
     probe: 'r0-amin-duplicate-effect',
     message: /a duplicate NodeAt write went undetected/
   }
