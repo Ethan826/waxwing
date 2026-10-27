@@ -124,10 +124,11 @@ const sourceBreaches = ({ at, kinds, source, solved, handler }) => {
     ...(marked ? [] : [`${where}: no marker`])];
 };
 
-// About 80% of the observed counts (declarations per construct, and in
-// all); printed on every run.
-const sourceFloors = { all: 250, literal: 150, with: 150, handle: 45,
-  fail: 55, type: 55 };
+// About 80% of the observed counts (279 in all; literal 201, with 187,
+// handle 70, fail 91, type 79; signature-only 17); printed on every run.
+const sourceFloors = { all: 223, literal: 160, with: 150, handle: 56,
+  fail: 73, type: 63 };
+const signatureFloor = 13;
 
 const refusals = ({ at, kinds, solved, handler }) => {
   const marked = kinds.includes('HandlerType')
@@ -174,6 +175,8 @@ test('every handler construct in resolved source is blocked', () => {
   console.log(`fail-only (unasserted): ${failOnly.length}, of which `
     + `${failOnly.filter(fact => fact.solved).length} Solved; `
     + `signature-only handler type: ${signatureOnly.length}`);
+  assert.ok(signatureOnly.length >= signatureFloor,
+    `only ${signatureOnly.length} signature-only handler types`);
   const breaches = cases.flatMap(sourceBreaches);
   assert.deepEqual(breaches.slice(0, 10), [],
     `${breaches.length} source-derived breaches`);

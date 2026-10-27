@@ -78,6 +78,42 @@ registered as scripts/regression rows (question for the author).
 Parked: duplicate keyed effect items at one path are not detected
 (NodeAt and AnnotationAt are covered indirectly by DuplicateSite).
 
+Registered regression rows (Checkpoint B): the author ruled that the
+isolated demonstrations above become rows before Task 7, one per
+invariant or defect (scripts/regression-r0-amin.mjs; probes in
+test/regression-r0-amin*.mjs; `node scripts/regression.mjs <name>`).
+Each restores the defect in a compiling form; its probe runs a small
+program through the compiled output and shows it. The original logs are
+the plan ledger's task reports,
+.superpowers/sdd/2026-10-25-amin-tranche-1-plan/task-{1,2,3,4,5,15,17}-
+report.md; that ledger is git-ignored, local evidence only.
+- r0-amin-fail-is-n: a Fail label is N under every naming (Tasks 2, 3).
+- r0-amin-plain-annotation-position: Plain in an annotation is a
+  position, elsewhere M (Task 3 fix).
+- r0-amin-atuse-names-as-instances: AtUse names type variables as
+  instances, not rigid (Task 2).
+- r0-amin-resultc-occurs-result: H′'s occurs check includes the result
+  outside R's tail, FX033 x1 (Task 4).
+- r0-amin-resultc-closed-stays-closed: a closed R gives a closed C
+  (Task 4).
+- r0-amin-sibling-annotation-tails: two sibling handler types in one
+  annotation get distinct C tails (Task 4).
+- r0-amin-minted-once-where-named: a variable is minted once and only
+  where a recorded type names it (Task 4).
+- r0-amin-partial-reuses-stages: a partial application's rest reuses
+  its instance's stages, `three(1)` (Tasks 3, 4).
+- r0-amin-node-erasure: a node's marked type erases to its recorded
+  type (Task 3).
+- r0-amin-handler-marker: every handler construct carries Outside
+  HandlerType; this is Task 17's proof edit and covers its
+  source-derived boundary scope (Tasks 5, 17).
+- r0-amin-duplicate-effect: a second write at one path is a generation
+  fault (Task 15; registered then).
+Task 1's effect-problem types (Task 1 report) stay with their unit
+tests; no row was added for them. Task 17's review also raised the
+boundary test's source floors to about 80% of observed and added a
+floor of 13 for the signature-only subset (observed 17).
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail
