@@ -85,6 +85,9 @@ failClause recur context path clause = do
   written ← lifted
     (maybe (Left PayloadShape) Right (singleArgument clause.label))
   payload ← lifted (translate context.tables Rigidly written)
+  -- Declared: a payload is written in the body but is not a local
+  -- annotation (statements §2); Resolve writes its unwritten marks
+  -- Plain, which Declared reads as written M.
   markedPayload ← lifted (marked context.tables Declared written)
   generated ← recur
     ( maybe context

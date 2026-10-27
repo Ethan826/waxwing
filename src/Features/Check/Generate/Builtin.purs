@@ -165,8 +165,9 @@ rowOf = case _ of
   ShowBuiltin → closedRow
   CrashBuiltin → closedRow
 
--- The same rows marked: `print`'s `Console` (always N), and in place of
--- the closed fallback the fresh `⟨p, stage 0⟩` (amin tranche 1, Task 3).
+-- The same rows marked (amin tranche 1, Task 3): show and crash: a
+-- fresh stage row `⟨p, stage 0⟩`, as the live checker's fresh row; print:
+-- its actual Console row, mark N (author ruling).
 markedRowOf ∷ Path → Builtin → MRow
 markedRowOf path = case _ of
   PrintBuiltin →
