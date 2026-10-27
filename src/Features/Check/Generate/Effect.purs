@@ -69,6 +69,7 @@ import Features.Check.Generate.Node
   , markedFlex
   , markedRef
   , markersAt
+  , mintedStages
   , tagged
   )
 import Features.Check.Generate.Translate (translate, translateAll)
@@ -77,9 +78,10 @@ import Features.Check.Generate.Translate (translate, translateAll)
 operationRef
   ∷ ∀ s. Context s → Path → Span → EffectId → Int → Gen s (Ruled s)
 operationRef context path span effect index = referenced
-  <$> operation context path span effect index
+  =<< operation context path span effect index
   where
-  referenced found =
+  referenced found = ruled found <$ mintedStages path 0 found.instance
+  ruled found =
     { ty: arrowOf found.parameters found.result
     , marked: instanceArrow path 0 found.instance
     , node: fixed (Checked.OperationRef effect index <$> found.slots)
@@ -133,7 +135,7 @@ operation context path span effect index = do
         (operationRow effect shape.sorts)
         shape.result
     )
-  recordInstance path shape.sorts markedTypes
+  recordInstance path markedTypes
   pure
     { parameters: parameters.tys
     , result: result.ty

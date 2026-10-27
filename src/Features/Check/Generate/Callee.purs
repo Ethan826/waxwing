@@ -20,21 +20,20 @@ module Features.Check.Generate.Callee
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either)
-import Data.Maybe (Maybe(..))
+import Data.Either (Either(..))
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Instantiation)
 import Domain.Recorded.Atom (Callee(..))
-import Domain.Recorded.Effect (ERole(..), EVar(..), InstanceSig, MTy(..))
+import Domain.Recorded.Effect (InstanceSig, MTy(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId)
-import Domain.Resolved (CtorId, FunctionId, Ty, TyRow, VarId(..))
+import Domain.Resolved (CtorId, FunctionId, Ty, TyRow, VarId)
 import Domain.Row (closedRow)
-import Domain.Syntax (Sort(..), Span)
+import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
 import Features.Check.Generate.Context (Context)
 import Features.Check.Generate.Elab (Elab, GenTy)
-import Features.Check.Generate.Fault (GenerationFault)
+import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Fresh (instances)
 import Features.Check.Generate.Gen
   ( Gen
@@ -89,7 +88,7 @@ functionInstance context path span function rule = do
   markedTypes ← lifted
     (atUse context path signature.parameters signature.row signature.result)
   let owned = resultClauses path markedTypes
-  recordInstance path signature.sorts owned
+  recordInstance path owned
   pure
     { parameters: parameters.tys
     , result: result.ty
@@ -121,7 +120,7 @@ ctorInstance context path span ctor rule = do
   read ← slots path inst.slots
   markedTypes ← lifted
     (atUse context path shape.fields closedRow shape.owner)
-  recordInstance path shape.sorts markedTypes
+  recordInstance path markedTypes
   pure
     { parameters: fields.tys
     , result: owner.ty
@@ -138,7 +137,9 @@ ctorInstance context path span ctor rule = do
 -- Parameter (or field) types, the callee's row and the result, marked
 -- at the use `p`; read after their erased translations, so a fault those
 -- raise comes first. The row is marked as the one stage of `Unit → Unit`
--- (Check/DeclarationUse.purs reads a signature's row the same way).
+-- (Check/DeclarationUse.purs reads a signature's row the same way); a
+-- marked arrow is always an arrow, so any other result is `MarkShape`,
+-- the marked translation's shape fault (controller ruling, Task 4 fix 1).
 atUse
   ∷ ∀ s
   . Context s
@@ -149,29 +150,22 @@ atUse
   → Either GenerationFault InstanceSig
 atUse context path parameters row result =
   { parameters: _, row: _, result: _ } <$> traverse markedAt parameters
-    <*> (rowOf <$> markedAt (Type.TFun Type.TUnit row Type.TUnit))
+    <*> (rowOf =<< markedAt (Type.TFun Type.TUnit row Type.TUnit))
     <*> markedAt result
   where
   markedAt = marked context.tables (AtUse path)
   rowOf = case _ of
-    MArrow _ found _ → found
-    _ → { labels: [], tail: Nothing }
+    MArrow _ found _ → Right found
+    _ → Left MarkShape
 
--- The use's instance at `p` and what it mints there: `⟨p, inst v⟩` for
--- each effect-row variable v of the callee, `⟨p, stage k⟩` for each stage
--- before the last (Check/Stages.purs's fresh rows), and every variable
--- and position the instance names at p (its `nofail(k)` positions, its
--- ResultC tail).
-recordInstance ∷ ∀ s. Path → Array Sort → InstanceSig → Gen s Unit
-recordInstance path sorts sig = effected
-  ( [ InstanceAt path sig ] <> mintedAt path (rowVars <> stageVars)
+-- The use's instance at `p` and what it mints there: every variable and
+-- position the instance names at p (`⟨p, inst v⟩` for each effect-row
+-- variable it names, its `nofail(k)` positions, its ResultC tail). The
+-- stage variables before the last are minted where a node's type names
+-- them (Generate.Node `mintedStages`). A constructor pattern records one
+-- too: it is a use of the constructor's signature.
+recordInstance ∷ ∀ s. Path → InstanceSig → Gen s Unit
+recordInstance path sig = effected
+  ( [ InstanceAt path sig ] <> mintedAt path []
       (map PartTy sig.parameters <> [ PartRow sig.row, PartTy sig.result ])
   )
-  where
-  rowVars = Array.catMaybes (Array.mapWithIndex rowVar sorts)
-  rowVar index = case _ of
-    RowSort → Just (EffFresh path (EffInst (VarId index)))
-    _ → Nothing
-  -- One per parameter after the first: indices 0 … n − 2.
-  stageVars = Array.mapWithIndex stageVar (Array.drop 1 sig.parameters)
-  stageVar index _ = EffFresh path (Stage index)

@@ -39,7 +39,8 @@ const effectsOf = (source, name = 'use') => {
 const rest = 'type E = E; type Job(a) = Job(a); '
   + 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Tick { fn tick(): Unit; }; effect Ask { fn ask(): Unit; }; '
-  + 'effect Box(a) { fn put(x: a): Unit; }; effect Get(a) { fn get(): a; }; ';
+  + 'effect Box(a) { fn put(x: a): Unit; }; effect Get(a) { fn get(): a; }; '
+  + 'effect Mk { fn mk(): Handler(Log); }; ';
 const using = call => `fn use(): Unit = { let h = ${call}; () }; `
   + 'fn main(): Unit = ();';
 const letPath = { root: { InBody: [] }, steps: [{ Named: ['Block'] },
@@ -110,6 +111,16 @@ test('the use\'s node carries the ResultC result', () => {
   assert.deepEqual(node[1], sig.result);
 });
 
+// Controller ruling Q3: the live checker owns clauses at function uses
+// only (Check/Use.purs `openedUse`), so an operation's instance keeps
+// C = R even when its result is a handler type.
+test('an operation returning a handler type keeps clauses Nothing', () => {
+  const effects = effectsOf(rest + using('Mk.mk()'));
+  const [[, sig]] = effects.instances;
+  assert.ok(sig.result.MHandler, JSON.stringify(sig.result));
+  assert.deepEqual(sig.result.MHandler[1].clauses, nothing);
+});
+
 // A lambda's annotation at `Lambda/params/j`, and its handler types'
 // rows in pre-order.
 const lambdaPath = letPath;
@@ -122,6 +133,8 @@ const annotationOf = annotation => {
   const walk = t => {
     if (t.MHandler) handlers.push(t.MHandler[1]);
     if (t.MArrow) { walk(t.MArrow[0]); walk(t.MArrow[2]); }
+    if (t.MRecord) t.MRecord[0].forEach(field => walk(field.Tuple[1]));
+    if (t.MData) t.MData[1].forEach(walk);
   };
   walk(mty);
   return { effects, handlers };
@@ -173,4 +186,14 @@ test('annotation positions are numbered label, R, then C, and minted', () => {
     [[0, 1], [0, 2]]);
   assert.deepEqual(effects.positions.filter(p => p.Annotation)
     .map(p => p.Annotation.slice(1)), [[0, 0], [0, 1], [0, 2]]);
+});
+
+test('a handler type in a record field or a data argument owns a C', () => {
+  for (const annotation of ['{ h: Handler(nofail Ask with Log) }',
+    'Job(Handler(nofail Ask with Log))']) {
+    const { handlers } = annotationOf(annotation);
+    assert.equal(handlers.length, 1, annotation);
+    assert.deepEqual(handlers[0].clauses.Just[0].tail, clausesTail(0, 0),
+      annotation);
+  }
 });

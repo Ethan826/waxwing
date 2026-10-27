@@ -44,6 +44,7 @@ import Features.Check.Generate.Node
   , flex
   , instanceArrow
   , markedFlex
+  , mintedStages
   , tagged
   )
 
@@ -59,13 +60,13 @@ type Made = Instantiation → Array Checked.Expr → Checked.Node
 functionRef ∷ ∀ s. Context s → Path → Span → FunctionId → Gen s (Ruled s)
 functionRef context path span function =
   referenced context path (ExprRule 3) (Checked.FunctionRef function)
-    <$> functionInstance context path span function (ExprRule 3)
+    =<< functionInstance context path span function (ExprRule 3)
 
 -- E4: `θ(⟦fields → owner(args)⟧)`.
 ctorRef ∷ ∀ s. Context s → Path → Span → CtorId → Gen s (Ruled s)
 ctorRef context path span ctor =
   referenced context path (ExprRule 4)
-    (Checked.CtorRef ctor) <$> ctorInstance context path span ctor (ExprRule 4)
+    (Checked.CtorRef ctor) =<< ctorInstance context path span ctor (ExprRule 4)
 
 -- E5: `g(e₁ … e_k)` against `g`'s `n` parameters.
 call
@@ -112,13 +113,15 @@ referenced
   → RuleId
   → (Instantiation → Checked.Node)
   → Called s
-  → Ruled s
-referenced context path rule made found =
-  { ty: arrowOf found.parameters found.result
-  , marked: instanceArrow path 0 found.instance
-  , node: fixed (made <$> found.slots)
-  , emits: emit (at context path rule) (found.entries <> found.markers)
-  }
+  → Gen s (Ruled s)
+referenced context path rule made found = do
+  mintedStages path 0 found.instance
+  pure
+    { ty: arrowOf found.parameters found.result
+    , marked: instanceArrow path 0 found.instance
+    , node: fixed (made <$> found.slots)
+    , emits: emit (at context path rule) (found.entries <> found.markers)
+    }
 
 -- An argument at `Call/args/i` (`Construct/args/i`). Every argument is
 -- generated, whatever the count (G-dead).
@@ -148,14 +151,16 @@ applied
 applied context node made found generated =
   if Array.length generated > count then
     overApplied <$> nodeRes node.path node.rule node.span
-  else pure
+  else partial <$ mintedStages node.path supplied found.instance
+  where
+  supplied = Array.length generated
+  partial =
     { ty: arrowOf (Array.drop (Array.length generated) found.parameters)
         found.result
     , marked: instanceArrow node.path (Array.length generated) found.instance
     , node: fixed (made <$> found.slots <*> sequence (map _.expr generated))
     , emits: written []
     }
-  where
   count = Array.length found.parameters
   rest = Array.drop count generated
   overApplied res =

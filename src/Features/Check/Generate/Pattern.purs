@@ -117,7 +117,9 @@ ctorPattern context path span scrutinee ctor parts = do
   fields ← lifted (translateAll context.tables inst.naming shape.fields)
   markedTypes ← lifted
     (atUse context path shape.fields closedRow shape.owner)
-  recordInstance path shape.sorts markedTypes
+  -- A constructor pattern is a use of the constructor's signature, so
+  -- it records that instance (controller ruling, Task 4 fix 1).
+  recordInstance path markedTypes
   inner ← subPatterns context
     ( Array.mapWithIndex sub
         (Array.zip parts (Array.zip fields.tys markedTypes.parameters))

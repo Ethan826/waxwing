@@ -98,6 +98,36 @@ const repeatsOf = (at, effects) => ['flexEff', 'positions'].flatMap(name => {
     : [`${at} ${name}: ${items.length} minted, ${distinct} distinct`];
 });
 
+// Every `EffFresh` variable and `At` position a recorded type names (in
+// `nodes`, `instances` and `annotations`), by an explicit stack.
+const valuesOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
+  .map(pair => shape(pair.value1));
+const namedIn = effects => {
+  const named = { flexEff: new Set(), positions: new Set() };
+  const pending = ['nodes', 'instances', 'annotations']
+    .flatMap(name => valuesOf(effects[name]));
+  while (pending.length > 0) {
+    const value = pending.pop();
+    if (value === null || typeof value !== 'object') continue;
+    if (value.EffFresh) named.flexEff.add(key(value));
+    if (value.At) named.positions.add(key(value.At[0]));
+    pending.push(...Object.values(value));
+  }
+  return named;
+};
+
+// What is minted but named by no recorded type, and the reverse.
+const unmatchedOf = (at, effects) => {
+  const named = namedIn(effects);
+  return ['flexEff', 'positions'].flatMap(name => {
+    const minted = new Set(effects[name].map(item => key(shape(item))));
+    return [...[...minted].filter(item => !named[name].has(item))
+      .map(item => `${at} ${name} minted, unnamed: ${item}`),
+    ...[...named[name]].filter(item => !minted.has(item))
+      .map(item => `${at} ${name} named, unminted: ${item}`)];
+  });
+};
+
 const keyed = pairs => new Map(pairs.map(([path, value]) =>
   [stableStringify(path), value]));
 
@@ -123,6 +153,7 @@ const survey = async () => {
   const mismatches = [];
   const constructs = { kinds: {}, rows: [] };
   const repeats = [];
+  const unmatched = [];
   const minted = { flexEff: 0, positions: 0 };
   for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
     const program = programOf(source);
@@ -139,11 +170,13 @@ const survey = async () => {
       const { effects } = Recorded.fields(problem);
       constructsOf(at, effects, constructs);
       repeats.push(...repeatsOf(at, effects));
+      unmatched.push(...unmatchedOf(at, effects));
       minted.flexEff += effects.flexEff.length;
       minted.positions += effects.positions.length;
     }
   }
-  return { declarations, paths, mismatches, constructs, repeats, minted };
+  return { declarations, paths, mismatches, constructs, repeats, minted,
+    unmatched };
 };
 
 const found = await survey();
@@ -167,4 +200,12 @@ test('no position or effect variable minted twice', () => {
   assert.ok(flexEff > 10000 && positions > 100, `${flexEff}, ${positions}`);
   assert.deepEqual(found.repeats.slice(0, 10), [],
     `${found.repeats.length} declarations repeat`);
+});
+
+test('every minted effect variable and position is named by a recorded '
+  + 'type, and every named one is minted', () => {
+  const { flexEff, positions } = found.minted;
+  assert.ok(flexEff > 10000 && positions > 100, `${flexEff}, ${positions}`);
+  assert.deepEqual(found.unmatched.slice(0, 10), [],
+    `${found.unmatched.length} unmatched`);
 });

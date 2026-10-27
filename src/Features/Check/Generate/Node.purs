@@ -18,6 +18,7 @@ module Features.Check.Generate.Node
   , markedRecord
   , markedRef
   , markersAt
+  , mintedStages
   , none
   , recordOf
   , stagedArrow
@@ -49,8 +50,14 @@ import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (recordRow)
 import Features.Check.Generate.Elab (Elab, GenTy, Handle, Ref(..))
-import Features.Check.Generate.Gen (Gen, GenEntry(..), Tagged, refVar)
-import Features.Check.Generate.Out (TypeMarker(..))
+import Features.Check.Generate.Gen
+  ( Gen
+  , GenEntry(..)
+  , Tagged
+  , effected
+  , refVar
+  )
+import Features.Check.Generate.Out (EffectItem(..), TypeMarker(..))
 
 -- An expression's result: its type, its marked type (a-min §2, recorded
 -- at `NodeAt`), its checked node, its entries.
@@ -112,6 +119,18 @@ stagedArrow path found =
 instanceArrow ∷ Path → Int → InstanceSig → MTy
 instanceArrow path supplied sig = stagedArrow path
   { supplied, parameters: sig.parameters, last: sig.row, result: sig.result }
+
+-- Mints the stage variables `instanceArrow path supplied sig` names:
+-- `⟨p, stage k⟩` for supplied ≤ k < n − 1, the instance's stages before
+-- its last that the node's type still has. A saturated or over-applied
+-- use names none.
+mintedStages ∷ ∀ s. Path → Int → InstanceSig → Gen s Unit
+mintedStages path supplied sig =
+  effected (map (MintedVar <<< EffFresh path <<< Stage) indices)
+  where
+  indices = Array.filter (_ >= supplied)
+    (Array.mapWithIndex index (Array.drop 1 sig.parameters))
+  index k _ = k
 
 -- A reference's or handle's marked type: its problem variable, named as
 -- the recorded atoms name it (`refVar`).
