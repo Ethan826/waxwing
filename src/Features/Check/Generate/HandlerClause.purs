@@ -18,6 +18,7 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
 import Domain.Recorded.Atom (CheckedName(..))
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin (Path, Step(..))
 import Domain.Resolved (HandlerClause)
 import Domain.Row (EffectRef(..))
@@ -36,9 +37,12 @@ effectId = case _ of
   ConsoleEffect → EffectId (-1)
   FailEffect → EffectId (-1)
 
+-- `marked`: the parameters' marked types, whose variables and positions
+-- the handler literal mints (they carry its path).
 type Clause s =
   { clause ∷ Elab s Checked.HandlerClause
   , marks ∷ Array TypeMarker
+  , marked ∷ Array MTy
   , emits ∷ Gen s Unit
   }
 
@@ -66,6 +70,7 @@ handlerClause recur context site naming clause = do
           <$> sequence read
           <*> body.expr
     , marks: Array.concatMap _.marks typed
+    , marked: map _.marked typed
     , emits: body.emits
     }
   where

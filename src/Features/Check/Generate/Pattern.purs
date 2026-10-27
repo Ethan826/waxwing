@@ -27,9 +27,10 @@ import Domain.Recorded.Origin
   , Step(..)
   )
 import Domain.Resolved (CtorId, FieldPattern, Pattern(..), Rest(..))
+import Domain.Row (closedRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
-import Features.Check.Generate.Callee (atUse)
+import Features.Check.Generate.Callee (atUse, recordInstance)
 import Features.Check.Generate.Context (Context, Local, at, bindLocal)
 import Features.Check.Generate.Elab (Elab, GenTy, Ref(..))
 import Features.Check.Generate.Fresh (child, childAt, instances)
@@ -114,7 +115,9 @@ ctorPattern context path span scrutinee ctor parts = do
   inst ← instances path (PatternRule 4) span shape.sorts
   owner ← lifted (translate context.tables inst.naming shape.owner)
   fields ← lifted (translateAll context.tables inst.naming shape.fields)
-  markedTypes ← lifted (atUse context path shape.fields shape.owner)
+  markedTypes ← lifted
+    (atUse context path shape.fields closedRow shape.owner)
+  recordInstance path shape.sorts markedTypes
   inner ← subPatterns context
     ( Array.mapWithIndex sub
         (Array.zip parts (Array.zip fields.tys markedTypes.parameters))

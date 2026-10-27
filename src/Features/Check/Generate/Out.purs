@@ -29,6 +29,7 @@ import Domain.Recorded.Atom
   )
 import Domain.Recorded.Effect
   ( EVar
+  , InstanceSig
   , MRow
   , MTy
   , Obligation
@@ -62,7 +63,7 @@ type Out =
 data EffectItem
   = Obliged (Entry Obligation)
   | NodeAt Path MTy
-  | InstanceAt Path MTy
+  | InstanceAt Path InstanceSig
   | AnnotationAt Path MTy
   | RigidMark String
   | EffectRigid VarId

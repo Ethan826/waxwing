@@ -11,17 +11,16 @@ module Features.Check.Generate.Node
   ( Generated
   , Ruled
   , arrowOf
-  , closedPlaceholder
   , fixed
   , flex
-  , markedArrow
+  , instanceArrow
   , markedFlex
   , markedRecord
   , markedRef
   , markersAt
   , none
-  , placeholderArrow
   , recordOf
+  , stagedArrow
   , tagged
   ) where
 
@@ -32,7 +31,13 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (OutsideKind(..))
-import Domain.Recorded.Effect (ERole(..), EVar(..), MRow, MTy(..))
+import Domain.Recorded.Effect
+  ( ERole(..)
+  , EVar(..)
+  , InstanceSig
+  , MRow
+  , MTy(..)
+  )
 import Domain.Recorded.Origin
   ( OriginKind
   , Path
@@ -84,24 +89,29 @@ arrowOf parameters result = Array.foldr stage result parameters
   where
   stage parameter rest = TFun parameter closedRow rest
 
--- The marked arrow a rule builds where `arrowOf` puts the closed row:
--- stage k's row is the fresh effect variable `⟨p, stage k⟩`.
-markedArrow ∷ Path → Array MTy → MTy → MTy
-markedArrow path parameters result =
-  Array.foldr stage result (Array.mapWithIndex Tuple parameters)
+-- The marked arrow over parameters from `supplied` on (Check/Stages.purs
+-- `stages`): stage k's row is the fresh `⟨p, stage k⟩`, the last stage's
+-- is `last`, the signature's own row (a callee's, a lambda's).
+stagedArrow
+  ∷ Path
+  → { supplied ∷ Int, parameters ∷ Array MTy, last ∷ MRow, result ∷ MTy }
+  → MTy
+stagedArrow path found =
+  Array.foldr stage found.result (Array.mapWithIndex Tuple rest)
   where
+  rest = Array.drop found.supplied found.parameters
+  final = Array.length found.parameters - 1
   stage (Tuple index parameter) =
-    MArrow parameter { labels: [], tail: Just (EffFresh path (Stage index)) }
+    MArrow parameter (rowAt (found.supplied + index))
+  rowAt k
+    | k == final = found.last
+    | otherwise = { labels: [], tail: Just (EffFresh path (Stage k)) }
 
--- A lambda's, handler's, `with`'s, `handle`'s or `fail`'s rows until
--- their own rules record them (amin tranche 1, Task 4): closed, empty.
-closedPlaceholder ∷ MRow
-closedPlaceholder = { labels: [], tail: Nothing }
-
-placeholderArrow ∷ Array MTy → MTy → MTy
-placeholderArrow parameters result = Array.foldr stage result parameters
-  where
-  stage parameter = MArrow parameter closedPlaceholder
+-- A use's type after `supplied` arguments, from its instance at p: the
+-- rest of its stages are the instance's own (a reference supplies none).
+instanceArrow ∷ Path → Int → InstanceSig → MTy
+instanceArrow path supplied sig = stagedArrow path
+  { supplied, parameters: sig.parameters, last: sig.row, result: sig.result }
 
 -- A reference's or handle's marked type: its problem variable, named as
 -- the recorded atoms name it (`refVar`).

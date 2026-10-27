@@ -6,9 +6,14 @@
 -- `Lambda/body`. Checked nodes as today's (Check/Arms.purs, Lambda.purs;
 -- D1 spec §3.5, R0 Task 7.1b); a lambda's parameter is read at
 -- `ParamType p k`, annotated or not. Marked types (amin tranche 1, Task
--- 3): a match is its `⟨p, res⟩`; a lambda's rows are closed placeholders
--- until Task 4 records them, an annotated parameter marked as
--- Generate.Marked `InAnnotation p k` reads it.
+-- 3, Task 4): a match is its `⟨p, res⟩`; a lambda's stages before the
+-- last have the fresh rows `⟨p, stage k⟩` and its last stage the
+-- lambda's own row `⟨p, effect⟩` (Check/Lambda.purs: `row` is the body's
+-- row and the last stage's, Check/Stages.purs `stages` the others'); an
+-- annotated parameter k is marked as Generate.Marked `InAnnotation p k`
+-- reads it, with its owned clause rows (Generate.Owned), and recorded in
+-- `annotations` at `Lambda/params/k`, a key of its own (a parameter is
+-- not a node, so no node path takes that step).
 module Features.Check.Generate.Control
   ( lambda
   , match
@@ -17,11 +22,11 @@ module Features.Check.Generate.Control
 import Prelude
 import Data.Array as Array
 import Data.Foldable (traverse_)
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
-import Domain.Recorded.Effect (MTy)
+import Domain.Recorded.Effect (ERole(..), EVar(..), MTy)
 import Domain.Recorded.Origin
   ( OriginKind(..)
   , Path
@@ -39,6 +44,7 @@ import Features.Check.Generate.Gen
   , GenAtom(..)
   , GenEntry(..)
   , Tagged
+  , effected
   , emit
   , fresh
   , lifted
@@ -51,11 +57,13 @@ import Features.Check.Generate.Node
   , flex
   , markedFlex
   , markersAt
-  , placeholderArrow
+  , stagedArrow
   , tagged
   )
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
-import Features.Check.Generate.Out (TypeMarker)
+import Features.Check.Generate.Minted (Part(..), mintedAt)
+import Features.Check.Generate.Out (EffectItem(..), TypeMarker)
+import Features.Check.Generate.Owned (annotationClauses)
 import Features.Check.Generate.Pattern (pattern)
 import Features.Check.Generate.Translate (Naming(..), translate)
 
@@ -116,13 +124,19 @@ lambda
   → Expr
   → Gen s (Ruled s)
 lambda recur context path span parameters body = do
+  effected (mintedAt path ([ effect ] <> stages) [])
   typed ← sequence (Array.mapWithIndex (parameterOf path) parameters)
   inner ← recur (Array.foldl bindParameter context typed)
     (childOf path "Lambda" "body")
     body
   pure
     { ty: arrowOf (map _.ty typed) inner.ty
-    , marked: placeholderArrow (map _.marked typed) inner.marked
+    , marked: stagedArrow path
+        { supplied: 0
+        , parameters: map _.marked typed
+        , last: { labels: [], tail: Just effect }
+        , result: inner.marked
+        }
     , node: fixed (Checked.Lambda <$> traverse _.param typed <*> inner.expr)
     , emits: do
         emit (at context path (ExprRule 13))
@@ -132,6 +146,9 @@ lambda recur context path span parameters body = do
         inner.emits
     }
   where
+  effect = EffFresh path EffectOf
+  stages = Array.mapWithIndex stage (Array.drop 1 parameters)
+  stage index _ = EffFresh path (Stage index)
   parameterOf = parameterAt context
   bindParameter current found = maybe current
     (bindLocal <@> { ty: found.ty, marked: found.marked } <@> current)
@@ -160,9 +177,16 @@ parameterAt context path index parameter = do
     , marks: made.marks
     }
   where
-  annotated written = annotation
-    <$> lifted (translate context.tables Rigidly written)
-    <*> lifted (marked context.tables (InAnnotation path index) written)
+  annotated written = do
+    found ← lifted (translate context.tables Rigidly written)
+    markedType ← lifted
+      (marked context.tables (InAnnotation path index) written)
+    let owned = annotationClauses path index markedType
+    effected
+      ( [ AnnotationAt (childAt path "Lambda" "params" index) owned ]
+          <> mintedAt path [] [ PartTy owned ]
+      )
+    pure (annotation found owned)
   annotation found markedType =
     { ty: found.ty
     , marked: markedType

@@ -8,8 +8,9 @@
 -- is a named call (Generate.Call `applied`), and a clause's parameter
 -- types are read at `ClauseParamType p c k` (spec §12.2; the clauses are
 -- in Generate.HandlerClause). A handler literal's marked type keeps its
--- label with the mark at `Literal p` and closed placeholder rows until
--- Task 4 records them; `with`'s is its `⟨p, res⟩`.
+-- label with the mark at `Literal p`, its R `⟨p, handler inference⟩` and
+-- its C `⟨p, handler clauses⟩` (statements §2, "Copies through
+-- equations"); `with`'s is its `⟨p, res⟩` (amin tranche 1, Task 4).
 module Features.Check.Generate.Effect
   ( agree
   , handler
@@ -28,34 +29,43 @@ import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId)
 import Domain.Recorded.Atom (OutsideKind(..))
-import Domain.Recorded.Effect (MTy(..), MarkRef(..), Position(..))
+import Domain.Recorded.Effect
+  ( ERole(..)
+  , EVar(..)
+  , MRow
+  , MTy(..)
+  , MarkRef(..)
+  , Position(..)
+  )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
-import Domain.Resolved (Expr, HandlerClause, Ty, VarId)
-import Domain.Row (Label(..), closedRow)
+import Domain.Resolved (Expr, HandlerClause, Ty, TyRow, VarId(..))
+import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), closedRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
 import Features.Check.Generate.Call (applied)
-import Features.Check.Generate.Callee (Called, atUse)
+import Features.Check.Generate.Callee (Called, atUse, recordInstance)
 import Features.Check.Generate.Context (Context, Recur, at)
+import Features.Check.Generate.Elab (Ref)
 import Features.Check.Generate.Fresh (childAt, childOf, instances, nodeRes)
 import Features.Check.Generate.Gen
   ( Gen
   , GenAtom
   , GenEntry(..)
   , Tagged
+  , effected
   , emit
   , lifted
   , slots
   )
 import Features.Check.Generate.HandlerClause (effectId, handlerClause)
 import Features.Check.Generate.Lookup (effectSorts, operationShape)
+import Features.Check.Generate.Minted (Part(..), mintedAt)
 import Features.Check.Generate.Node
   ( Ruled
   , arrowOf
-  , closedPlaceholder
   , fixed
   , flex
-  , markedArrow
+  , instanceArrow
   , markedFlex
   , markedRef
   , markersAt
@@ -71,7 +81,7 @@ operationRef context path span effect index = referenced
   where
   referenced found =
     { ty: arrowOf found.parameters found.result
-    , marked: markedArrow path found.markedParameters found.markedResult
+    , marked: instanceArrow path 0 found.instance
     , node: fixed (Checked.OperationRef effect index <$> found.slots)
     , emits: emit (at context path (ExprRule 17))
         (found.entries <> found.markers)
@@ -118,7 +128,12 @@ operation context path span effect index = do
   parameters ← lifted (translateAll context.tables inst.naming shape.parameters)
   result ← lifted (translate context.tables inst.naming shape.result)
   read ← slots path inst.slots
-  markedTypes ← lifted (atUse context path shape.parameters shape.result)
+  markedTypes ← lifted
+    ( atUse context path shape.parameters
+        (operationRow effect shape.sorts)
+        shape.result
+    )
+  recordInstance path shape.sorts markedTypes
   pure
     { parameters: parameters.tys
     , result: result.ty
@@ -126,9 +141,19 @@ operation context path span effect index = do
     , markers: marker (not (Array.null shape.sorts)) EffectArgument 2 span
         <> markersAt InstOrigin span (parameters.marks <> result.marks)
     , slots: read
-    , markedParameters: markedTypes.parameters
-    , markedResult: markedTypes.result
+    , instance: markedTypes
     }
+
+-- An operation's row, as Check/Operation.purs `operationUse` writes it:
+-- its own effect over the effect's parameters, plain, closed.
+operationRow ∷ ∀ a. EffectId → Array a → TyRow VarId
+operationRow effect parameters = Row
+  [ Label (UserEffect effect) (Array.mapWithIndex parameter parameters)
+      Plain
+  ]
+  Nothing
+  where
+  parameter index _ = Type.TVar (VarId index)
 
 -- E20: `app (Handler e) [⟨p, inst j⟩ …]`, `Outside HandlerType` (O3),
 -- clause bodies with parameters at θ of their declared types; markers of
@@ -149,12 +174,15 @@ handler recur context path span (Label effect _ mark) clauses = do
   inst ← instances path (ExprRule 20) span sorts
   found ← sequence (Array.mapWithIndex (clauseOf inst.naming) clauses)
   read ← slots path inst.slots
+  let markedType = literalType path effect inst.all
+  effected
+    ( mintedAt path (literalVars path)
+        (map PartTy ([ markedType ] <> Array.concatMap _.marked found))
+    )
   pure
     { ty: Type.THandler (Label effect (map snd inst.slots) mark)
         { inference: closedRow, clauses: Nothing }
-    , marked: MHandler
-        { effect, args: map markedRef inst.all, mark: At (Literal path) }
-        { inference: closedPlaceholder, clauses: Nothing }
+    , marked: markedType
     , node: fixed
         ( Checked.Handler (effectId effect) <$> read
             <*> traverse _.clause found
@@ -198,3 +226,19 @@ marker holds kind row span =
 
 agree ∷ ∀ s. Span → GenAtom s → Tagged s
 agree span atom = tagged (EmitB atom) RowB 1 Body span
+
+-- A handler literal's marked type, R and C its own variables.
+literalType ∷ ∀ s. Path → EffectRef → Array (Ref s) → MTy
+literalType path effect arguments = MHandler
+  { effect, args: map markedRef arguments, mark: At (Literal path) }
+  { inference: tailOnly inference, clauses: Just (tailOnly clauses) }
+  where
+  inference = EffFresh path HandlerInference
+  clauses = EffFresh path HandlerClauses
+
+literalVars ∷ Path → Array EVar
+literalVars path =
+  [ EffFresh path HandlerInference, EffFresh path HandlerClauses ]
+
+tailOnly ∷ EVar → MRow
+tailOnly variable = { labels: [], tail: Just variable }

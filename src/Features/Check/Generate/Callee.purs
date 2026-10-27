@@ -4,25 +4,34 @@
 -- minted, its types under θ, the entries the reference itself records
 -- and its instantiation read at `Slot p i`. The signature is read
 -- first, then the types it holds, then their marked translations at
--- the use (Generate.Marked `AtUse p`, amin tranche 1 Task 3).
+-- the use (Generate.Marked `AtUse p`, amin tranche 1 Task 3), recorded
+-- as the use's instance (`InstanceAt`, Task 4) with what it mints: a
+-- function use's result carries its ResultC (Generate.Owned
+-- `resultClauses`), a constructor's or an operation's never, as the live
+-- checker opens and owns clauses at function uses only (Check/Use.purs
+-- `openedUse`; controller ruling, Task 4).
 module Features.Check.Generate.Callee
   ( Called
   , atUse
   , ctorInstance
   , functionInstance
+  , recordInstance
   ) where
 
 import Prelude
 import Data.Array as Array
 import Data.Either (Either)
+import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Instantiation)
 import Domain.Recorded.Atom (Callee(..))
-import Domain.Recorded.Effect (MTy)
+import Domain.Recorded.Effect (ERole(..), EVar(..), InstanceSig, MTy(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId)
-import Domain.Resolved (CtorId, FunctionId, Ty, VarId)
-import Domain.Syntax (Span)
+import Domain.Resolved (CtorId, FunctionId, Ty, TyRow, VarId(..))
+import Domain.Row (closedRow)
+import Domain.Syntax (Sort(..), Span)
+import Domain.Type (Ty(..)) as Type
 import Features.Check.Generate.Context (Context)
 import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fault (GenerationFault)
@@ -32,12 +41,16 @@ import Features.Check.Generate.Gen
   , GenAtom(..)
   , GenEntry(..)
   , Tagged
+  , effected
   , lifted
   , slots
   )
 import Features.Check.Generate.Lookup (calleeOf, ctorShape)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
+import Features.Check.Generate.Minted (Part(..), mintedAt)
 import Features.Check.Generate.Node (markersAt, tagged)
+import Features.Check.Generate.Out (EffectItem(..))
+import Features.Check.Generate.Owned (resultClauses)
 import Features.Check.Generate.Signature (calleeClauses)
 import Features.Check.Generate.Translate (named, translate, translateAll)
 
@@ -50,8 +63,7 @@ type Called s =
   , entries ∷ Array (Tagged s)
   , markers ∷ Array (Tagged s)
   , slots ∷ Elab s Instantiation
-  , markedParameters ∷ Array MTy
-  , markedResult ∷ MTy
+  , instance ∷ InstanceSig
   }
 
 -- E3's entries (origin inst): θ(D_g) written (F2) and implied (F3), the
@@ -75,7 +87,9 @@ functionInstance context path span function rule = do
   clauses ← lifted (calleeClauses context.tables inst.naming signature)
   read ← slots path inst.slots
   markedTypes ← lifted
-    (atUse context path signature.parameters signature.result)
+    (atUse context path signature.parameters signature.row signature.result)
+  let owned = resultClauses path markedTypes
+  recordInstance path signature.sorts owned
   pure
     { parameters: parameters.tys
     , result: result.ty
@@ -85,8 +99,7 @@ functionInstance context path span function rule = do
         <> splitSite inst.rows
     , markers: markersAt InstOrigin span (parameters.marks <> result.marks)
     , slots: read
-    , markedParameters: markedTypes.parameters
-    , markedResult: markedTypes.result
+    , instance: owned
     }
   where
   callee = CalleeFunction function
@@ -106,32 +119,59 @@ ctorInstance context path span ctor rule = do
   owner ← lifted (translate context.tables inst.naming shape.owner)
   pairs ← lifted (traverse (pairOf inst.naming) shape.joined)
   read ← slots path inst.slots
-  markedTypes ← lifted (atUse context path shape.fields shape.owner)
+  markedTypes ← lifted
+    (atUse context path shape.fields closedRow shape.owner)
+  recordInstance path shape.sorts markedTypes
   pure
     { parameters: fields.tys
     , result: owner.ty
     , entries: map joinedPair pairs
     , markers: markersAt InstOrigin span (fields.marks <> owner.marks)
     , slots: read
-    , markedParameters: markedTypes.parameters
-    , markedResult: markedTypes.result
+    , instance: markedTypes
     }
   where
   pairOf naming { variables: Tuple one other } =
     GenDisjoint <$> named naming one <*> named naming other
   joinedPair atom = tagged (EmitB atom) RowF 8 InstOrigin span
 
--- Parameter (or field) types and result, marked at the use `p`; read
--- after their erased translations, so a fault those raise comes first.
+-- Parameter (or field) types, the callee's row and the result, marked
+-- at the use `p`; read after their erased translations, so a fault those
+-- raise comes first. The row is marked as the one stage of `Unit → Unit`
+-- (Check/DeclarationUse.purs reads a signature's row the same way).
 atUse
   ∷ ∀ s
   . Context s
   → Path
   → Array (Ty VarId)
+  → TyRow VarId
   → Ty VarId
-  → Either GenerationFault { parameters ∷ Array MTy, result ∷ MTy }
-atUse context path parameters result =
-  { parameters: _, result: _ } <$> traverse markedAt parameters
+  → Either GenerationFault InstanceSig
+atUse context path parameters row result =
+  { parameters: _, row: _, result: _ } <$> traverse markedAt parameters
+    <*> (rowOf <$> markedAt (Type.TFun Type.TUnit row Type.TUnit))
     <*> markedAt result
   where
   markedAt = marked context.tables (AtUse path)
+  rowOf = case _ of
+    MArrow _ found _ → found
+    _ → { labels: [], tail: Nothing }
+
+-- The use's instance at `p` and what it mints there: `⟨p, inst v⟩` for
+-- each effect-row variable v of the callee, `⟨p, stage k⟩` for each stage
+-- before the last (Check/Stages.purs's fresh rows), and every variable
+-- and position the instance names at p (its `nofail(k)` positions, its
+-- ResultC tail).
+recordInstance ∷ ∀ s. Path → Array Sort → InstanceSig → Gen s Unit
+recordInstance path sorts sig = effected
+  ( [ InstanceAt path sig ] <> mintedAt path (rowVars <> stageVars)
+      (map PartTy sig.parameters <> [ PartRow sig.row, PartTy sig.result ])
+  )
+  where
+  rowVars = Array.catMaybes (Array.mapWithIndex rowVar sorts)
+  rowVar index = case _ of
+    RowSort → Just (EffFresh path (EffInst (VarId index)))
+    _ → Nothing
+  -- One per parameter after the first: indices 0 … n − 2.
+  stageVars = Array.mapWithIndex stageVar (Array.drop 1 sig.parameters)
+  stageVar index _ = EffFresh path (Stage index)

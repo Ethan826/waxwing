@@ -257,12 +257,14 @@
    "Called",
    "atUse",
    "ctorInstance",
-   "functionInstance"
+   "functionInstance",
+   "recordInstance"
   ],
   "compiled": [
    "atUse",
    "ctorInstance",
-   "functionInstance"
+   "functionInstance",
+   "recordInstance"
   ]
  },
  "Features.Check.Generate.Context": {
@@ -577,13 +579,29 @@
  "Features.Check.Generate.Marked": {
   "source": [
    "MarkNaming(..)",
-   "marked"
+   "marked",
+   "renumbered"
   ],
   "compiled": [
    "Declared",
    "AtUse",
    "InAnnotation",
-   "marked"
+   "marked",
+   "renumbered"
+  ]
+ },
+ "Features.Check.Generate.Minted": {
+  "source": [
+   "Part(..)",
+   "mentions",
+   "mintedAt"
+  ],
+  "compiled": [
+   "PartTy",
+   "PartRow",
+   "PartLabel",
+   "mentions",
+   "mintedAt"
   ]
  },
  "Features.Check.Generate.Node": {
@@ -591,32 +609,30 @@
    "Generated",
    "Ruled",
    "arrowOf",
-   "closedPlaceholder",
    "fixed",
    "flex",
-   "markedArrow",
+   "instanceArrow",
    "markedFlex",
    "markedRecord",
    "markedRef",
    "markersAt",
    "none",
-   "placeholderArrow",
    "recordOf",
+   "stagedArrow",
    "tagged"
   ],
   "compiled": [
    "arrowOf",
-   "closedPlaceholder",
    "fixed",
    "flex",
-   "markedArrow",
+   "instanceArrow",
    "markedFlex",
    "markedRecord",
    "markedRef",
    "markersAt",
    "none",
-   "placeholderArrow",
    "recordOf",
+   "stagedArrow",
    "tagged"
   ]
  },
@@ -675,6 +691,16 @@
    "emit",
    "noOut",
    "varsOut"
+  ]
+ },
+ "Features.Check.Generate.Owned": {
+  "source": [
+   "annotationClauses",
+   "resultClauses"
+  ],
+  "compiled": [
+   "annotationClauses",
+   "resultClauses"
   ]
  },
  "Features.Check.Generate.Pattern": {

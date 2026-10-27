@@ -7,6 +7,7 @@ module Domain.Recorded.Effect
   , EVar(..)
   , EffectProblem
   , Fixed(..)
+  , InstanceSig
   , MLabel
   , MRow
   , MTy(..)
@@ -70,6 +71,13 @@ data MTy
   | MData TypeId (Array MTy) (Array MRow)
   | MHandler MLabel { inference ∷ MRow, clauses ∷ Maybe MRow }
 
+-- A use's instantiated marked signature (statements §10): its parameters,
+-- its own row and its result, the result carrying a ResultC at a function
+-- use (E4′). A record, since a zero-parameter signature's row has no
+-- arrow stage to sit on. The rows of the stages before the last are the
+-- use's fresh `EffFresh p (Stage k)`, not recorded here.
+type InstanceSig = { parameters ∷ Array MTy, row ∷ MRow, result ∷ MTy }
+
 data SiteKind
   = AtCall
   | AtPerform
@@ -110,7 +118,7 @@ data Obligation
 type EffectProblem =
   { obligations ∷ Array (Entry Obligation)
   , nodes ∷ Map Path MTy -- each node's marked type (beside `types`)
-  , instances ∷ Map Path MTy
+  , instances ∷ Map Path InstanceSig
   , annotations ∷ Map Path MTy
   , rigidMarks ∷ Array String
   , effectRigids ∷ Array VarId

@@ -10,6 +10,9 @@
 -- Call.purs): the instantiation read at `Slot p i`, and an over-applied
 -- call `Apply (Call g θ a₁…aₙ) [aₙ₊₁…]`, whose saturated node's type is
 -- B1's `τ_{e_{n+1}} → … → ⟨p, res⟩` read from the values already read.
+-- A node's marked type is its instance's (Generate.Callee): a partial
+-- application's rest keeps the instance's own stage rows (Task 4, a
+-- correction of Task 3's rest numbered from stage 0; controller ruling).
 module Features.Check.Generate.Call
   ( applied
   , call
@@ -39,7 +42,7 @@ import Features.Check.Generate.Node
   , arrowOf
   , fixed
   , flex
-  , markedArrow
+  , instanceArrow
   , markedFlex
   , tagged
   )
@@ -112,7 +115,7 @@ referenced
   → Ruled s
 referenced context path rule made found =
   { ty: arrowOf found.parameters found.result
-  , marked: markedArrow path found.markedParameters found.markedResult
+  , marked: instanceArrow path 0 found.instance
   , node: fixed (made <$> found.slots)
   , emits: emit (at context path rule) (found.entries <> found.markers)
   }
@@ -148,9 +151,7 @@ applied context node made found generated =
   else pure
     { ty: arrowOf (Array.drop (Array.length generated) found.parameters)
         found.result
-    , marked: markedArrow node.path
-        (Array.drop (Array.length generated) found.markedParameters)
-        found.markedResult
+    , marked: instanceArrow node.path (Array.length generated) found.instance
     , node: fixed (made <$> found.slots <*> sequence (map _.expr generated))
     , emits: written []
     }

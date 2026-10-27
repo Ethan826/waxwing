@@ -42,10 +42,12 @@ import Features.Check.Generate.Gen
   ( Gen
   , GenEntry(..)
   , GenReq(..)
+  , effected
   , emit
   , fresh
   , positioned
   )
+import Features.Check.Generate.Minted (Part(..), mintedAt)
 import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, tagged)
 
 data Builtin = PrintBuiltin | ShowBuiltin | CrashBuiltin
@@ -63,6 +65,7 @@ builtinRef context path span builtin = do
     }
   result ← resultOf
   read ← positioned (ParamType path 0) (flex parameter)
+  effected (mintedAt path [] [ PartRow (markedRowOf path builtin) ])
   pure
     { ty: TFun (flex parameter) (rowOf builtin) result.ty
     , marked: MArrow (markedFlex parameter) (markedRowOf path builtin)

@@ -11,7 +11,10 @@ import { defectProbes } from './r0-shadow-known.mjs';
 // problem pin covers (test/r0-problem-pin-run.mjs): `nodes` has exactly
 // the paths of `types`, and at each `erase(nodes(p))` (test/
 // r0-marked-erase.mjs) equals `types(p)` in canonical form. The first
-// ten mismatches are reported. Corpus-wide, hence serial.
+// ten mismatches are reported. Corpus-wide, hence serial. Task 4 adds
+// the rows erasure cannot see at lambda, handler literal, `with` and
+// `handle` nodes, and that no declaration mints a position or an effect
+// variable twice (`flexEff`, `positions`).
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
 const Recorded = await load('Domain.Recorded');
@@ -20,6 +23,80 @@ const Elaborating = await load('Domain.Elaborating');
 const programOf = source => {
   try { return resolved(source); } catch { return null; }
 };
+
+const Maps = await load('Data.Map.Internal');
+const Unfoldable = await load('Data.Unfoldable');
+const shape = value => {
+  if (Array.isArray(value)) return value.map(shape);
+  if (value === null || typeof value !== 'object') return value;
+  return value.constructor === Object
+    ? Object.fromEntries(Object.keys(value).map(n => [n, shape(value[n])]))
+    : { [value.constructor.name]: Object.keys(value)
+      .map(n => shape(value[n])) };
+};
+const key = JSON.stringify;
+const fresh = (path, role) => ({ Just: [{ EffFresh: [path, role] }] });
+const tailRow = (path, role) => ({ labels: [], tail: fresh(path, role) });
+const childKey = (path, constructor, field) => key({ ...path,
+  steps: [...path.steps, { Named: [constructor] }, { Named: [field] }] });
+
+// A node's rows by its kind; null when the node is none of these kinds.
+const kindOf = (nodes, path, mty) => {
+  if (nodes.has(childKey(path, 'Lambda', 'body'))) return 'lambda';
+  if (nodes.has(childKey(path, 'With', 'body'))) return 'with';
+  if (nodes.has(childKey(path, 'Handle', 'body'))) return 'handle';
+  return key(mty.MHandler?.[0].mark) === key({ At: [{ Literal: [path] }] })
+    ? 'handler' : null;
+};
+// A lambda's own stages: those before its body's type (a body may itself
+// be an arrow, which continues the spine).
+const ownStages = (nodes, path, mty) => {
+  const body = key(nodes.get(childKey(path, 'Lambda', 'body')));
+  const rows = [];
+  for (let rest = mty; rest.MArrow && key(rest) !== body;
+    rest = rest.MArrow[2]) rows.push(rest.MArrow[1]);
+  return rows;
+};
+const expectedRows = (kind, path, mty, own) => {
+  if (kind === 'handler') return key({ inference: tailRow(path,
+    { HandlerInference: [] }), clauses: { Just: [tailRow(path,
+    { HandlerClauses: [] })] } });
+  if (kind !== 'lambda')
+    return key({ MVar: [{ FreshVar: [path, { Res: [] }] }] });
+  const rows = own.map((_, k) => tailRow(path, k === own.length - 1
+    ? { EffectOf: [] } : { Stage: [k] }));
+  return key(rows);
+};
+const actualRows = (kind, mty, own) => {
+  if (kind === 'handler') return key(mty.MHandler[1]);
+  return key(kind === 'lambda' ? own : mty);
+};
+
+const constructsOf = (at, effects, found) => {
+  const nodes = new Map(Maps.toUnfoldable(Unfoldable.unfoldableArray)(
+    effects.nodes).map(pair => [key(shape(pair.value0)),
+    shape(pair.value1)]));
+  for (const [pathKey, mty] of nodes) {
+    const path = JSON.parse(pathKey);
+    const kind = kindOf(nodes, path, mty);
+    if (kind === null) continue;
+    found.kinds[kind] = (found.kinds[kind] ?? 0) + 1;
+    const own = kind === 'lambda' ? ownStages(nodes, path, mty) : [];
+    const actual = actualRows(kind, mty, own);
+    if (kind === 'lambda' && own.length === 0)
+      found.rows.push(`${at} ${pathKey} lambda: no stage`);
+    else if (actual !== expectedRows(kind, path, mty, own))
+      found.rows.push(`${at} ${pathKey} ${kind}: ${actual}`);
+  }
+};
+
+// Each minted list's repeated entries.
+const repeatsOf = (at, effects) => ['flexEff', 'positions'].flatMap(name => {
+  const items = effects[name].map(item => key(shape(item)));
+  const distinct = new Set(items).size;
+  return items.length === distinct ? []
+    : [`${at} ${name}: ${items.length} minted, ${distinct} distinct`];
+});
 
 const keyed = pairs => new Map(pairs.map(([path, value]) =>
   [stableStringify(path), value]));
@@ -44,6 +121,9 @@ const survey = async () => {
   let declarations = 0;
   let paths = 0;
   const mismatches = [];
+  const constructs = { kinds: {}, rows: [] };
+  const repeats = [];
+  const minted = { flexEff: 0, positions: 0 };
   for (const { origin, source } of [...await rt8Sources(), ...defectProbes]) {
     const program = programOf(source);
     if (program === null) continue;
@@ -54,10 +134,16 @@ const survey = async () => {
       const problem = Elaborating.problem(result.value0);
       declarations += 1;
       paths += canonicalOf(problem).types.length;
-      mismatches.push(...mismatchesOf(`${origin}#${decl.name}`, problem));
+      const at = `${origin}#${decl.name}`;
+      mismatches.push(...mismatchesOf(at, problem));
+      const { effects } = Recorded.fields(problem);
+      constructsOf(at, effects, constructs);
+      repeats.push(...repeatsOf(at, effects));
+      minted.flexEff += effects.flexEff.length;
+      minted.positions += effects.positions.length;
     }
   }
-  return { declarations, paths, mismatches };
+  return { declarations, paths, mismatches, constructs, repeats, minted };
 };
 
 const found = await survey();
@@ -67,4 +153,18 @@ test('erasing every node\'s marked type gives its recorded type', () => {
   assert.ok(found.paths > 100000, `${found.paths} paths`);
   assert.deepEqual(found.mismatches.slice(0, 10), [],
     `${found.mismatches.length} mismatches`);
+});
+
+test('lambda, handler, with and handle nodes carry their own rows', () => {
+  const { kinds, rows } = found.constructs;
+  for (const kind of ['lambda', 'handler', 'with', 'handle'])
+    assert.ok((kinds[kind] ?? 0) > 50, `${kind}: ${kinds[kind]}`);
+  assert.deepEqual(rows.slice(0, 10), [], `${rows.length} mismatches`);
+});
+
+test('no position or effect variable minted twice', () => {
+  const { flexEff, positions } = found.minted;
+  assert.ok(flexEff > 10000 && positions > 100, `${flexEff}, ${positions}`);
+  assert.deepEqual(found.repeats.slice(0, 10), [],
+    `${found.repeats.length} declarations repeat`);
 });

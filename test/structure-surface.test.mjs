@@ -152,7 +152,7 @@ test('the real tree matches its pin and its FFI names no token module',
       '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
       '.Elab.Recorded', '.Elab.Stages', '.Expr', '.Facts', '.Failure',
       '.Fault', '.Fresh', '.Gen', '.HandlerClause', '.Inputs', '.Lookup',
-      '.Marked', '.Node', '.Operator',
+      '.Marked', '.Minted', '.Node', '.Operator', '.Owned',
       '.Out', '.Pattern', '.PatternLeaf', '.Record', '.Signature', '.Static',
       '.Static.Problem', '.Static.Rules', '.Static.Site', '.Static.Walk',
       '.Translate', '.Update']

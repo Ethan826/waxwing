@@ -18,6 +18,7 @@
 module Features.Check.Generate.Marked
   ( MarkNaming(..)
   , marked
+  , renumbered
   ) where
 
 import Prelude
@@ -56,6 +57,12 @@ data MarkNaming
 -- outside an annotation, or a `MarkMeta`, is `MarkShape`.
 marked ∷ Tables → MarkNaming → Ty VarId → Either GenerationFault MTy
 marked tables naming ty = numbered naming <$> mtyOf tables naming ty
+
+-- Parameter j's annotation numbered afresh: each `Annotation` mark, R's
+-- and every owned C's (Generate.Owned), takes the next index in
+-- pre-order, a handler type's label, then R, then C.
+renumbered ∷ Path → Int → MTy → MTy
+renumbered path parameter ty = _.value (numTy { path, parameter } 0 ty)
 
 mtyOf ∷ Tables → MarkNaming → Ty VarId → Either GenerationFault MTy
 mtyOf tables naming ty = case ty of
@@ -135,7 +142,7 @@ type Place = { path ∷ Path, parameter ∷ Int }
 
 numbered ∷ MarkNaming → MTy → MTy
 numbered naming ty = case naming of
-  InAnnotation path parameter → _.value (numTy { path, parameter } 0 ty)
+  InAnnotation path parameter → renumbered path parameter ty
   _ → ty
 
 -- The count after the first step feeds the second; their values join.
