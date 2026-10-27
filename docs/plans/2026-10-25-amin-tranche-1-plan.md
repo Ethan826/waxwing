@@ -5,8 +5,8 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status: **corrected per the author's review (§18.97); Tasks 1-6
-(Checkpoint A) authorized for subagent execution; Tasks 7-14 not.** The author
+Status: **Tasks 1-5 done (Checkpoint A, §18.98; stop after Task 5 by
+the author's instruction); Task 6 and Tasks 7-14 not authorized.** The author
 accepted the scope (dossier §18.96) and asked for this plan and the A2
 options note (docs/plans/2026-10-25-amin-a2-options.md) for review.
 

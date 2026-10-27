@@ -53,7 +53,7 @@ author approves (row A1). Revision 3.5 has had no review.
 | 2a | statements approved | done 2026-10-25 at 535b780 (§18.95) | — | author |
 | 2b | implementation authorized, scoped to A1's representation | tranche 1 scope accepted (§18.96); plan docs/plans/2026-10-25-amin-tranche-1-plan.md for review | Checkpoint A (Tasks 1-6) authorized for subagent execution (§18.97), budget 1.6-2.4M tokens; Tasks 7-14 need their own authorization | author |
 | 2c | A2's validator algorithm chosen with its published source, and the interim `EffectsUnchecked` policy (F14) | options note drafted (docs/plans/2026-10-25-amin-a2-options.md: M-A/M-B/M-C, R-A, interim items 1-3, recorded inputs 1-4) | the author chooses; inputs 1-4 decided before T1 is final | controller (note), author (choice) |
-| 2d | R031's two option-c defects fixed within the a-min work | pinned (BACKLOG R031) | part of the first implementation tranche | controller |
+| 2d | R031's two option-c defects fixed within the a-min work | pinned (BACKLOG R031); tranche 1 Task 6, held at Checkpoint A (§18.98) | the author authorizes Task 6 | controller |
 
 ### 3. What closes G-D1 and permits Task 4.6
 

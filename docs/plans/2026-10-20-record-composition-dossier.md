@@ -6315,3 +6315,18 @@ differential separates graph satisfiability from an assignment's
 satisfaction; source-fidelity claims to be checked before final
 approval; the interim policy is shadow assurance only, every blocker
 kept.
+
+### 18.98 Checkpoint A reached: tranche 1 Tasks 1-5 (2026-10-26)
+
+The author approved the Gen exports `effected` (effect items only)
+and `refVar` (a reference's name; no handle construction) as a named
+gate change, the two Task 3 rulings (Effect and Failure produce nodes;
+builtins keep their actual Console row, mark N), and ordered a stop
+after Task 5, superseding the plan's stop after Task 6. Tasks 1-5 are
+done at 87420d8; verify exit 0 (docs/progress.md). Representation
+work only: nothing checks effects, every handler declaration stays
+blocked (Task 5's test), live compilation unchanged. Open for the
+author: Task 6 (R031); whether regression proofs must be registered as
+verify rows; the parked duplicate-key detection; whether a recorded
+handler type with only a FailFamily marker counts as a breach (Task
+12).

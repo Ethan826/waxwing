@@ -41,6 +41,43 @@ occurrence annotation tails, E4′ forcing order, Task 1 test, boundary
 test in Checkpoint A, coverage classes, duplicate-minting checks).
 Checkpoint A (Tasks 1-6) authorized: subagents, 1.6-2.4M tokens.
 
+## a-min tranche 1, Checkpoint A: Tasks 1-5 (2026-10-26)
+
+Stopped after Task 5 at the author's instruction (it supersedes the
+plan's stop after Task 6); Task 6 (R031) waits. Commits c94e20d to
+87420d8 on r0-t2-d1, unpushed. `npm run verify` at 87420d8 exit 0:
+2948/2948 parallel, 142/142 serial, 210/210 regression proofs (log
+.build/evidence/2026-10-26-checkpointA/ in the main checkout). The
+problem pin is unchanged throughout: G0's atoms are byte-identical.
+
+Delivered: `effects` record (Task 1); marked translation (Task 2);
+every node's marked type, checked corpus-wide against `types` by
+erasure and by a fixture of what erasure drops (Task 3); instances
+with H′'s ResultC, annotation Cs per handler occurrence, lambda and
+handler-literal rows, minting checked both ways corpus-wide (Task 4);
+the blocking boundary: 276 handler declarations, none Solved, all
+marked (Task 5).
+
+Gate changes, each named in its commit: `Domain.Recorded.Effect` joins
+r0-verdict's allowlist with an imports-only-Data/Domain assertion
+(author); Gen exports `effected` and `refVar`, structure-elab pin
+(author); new Generate modules join structure-surface's trusted list
+(Marked, HandlerClause, PatternLeaf, Owned, Minted); trusted-surface
+re-pins. Test adaptations to type changes: r0-recorded's Fields
+fixture, r0-online-faults's fault list (MarkShape), r0-marked's
+vehicles (Fail to Log). Defects found and fixed in later tasks: Fail
+labels are N, Plain in an annotation is a position (Task 2's); a
+partial application reuses its instance's stages (Task 3's); an
+undeclared `lists` dependency and an over-long comment (caught by
+verify).
+
+Regression proofs: every new test was shown failing with its defect
+restored, in isolated copies, deleted afterwards; outcomes are in the
+plan ledger (.superpowers/sdd/2026-10-25-amin-tranche-1-plan/), not
+registered as scripts/regression rows (question for the author).
+Parked: duplicate keyed effect items at one path are not detected
+(NodeAt and AnnotationAt are covered indirectly by DuplicateSite).
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail
