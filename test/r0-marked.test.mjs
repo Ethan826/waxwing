@@ -102,16 +102,17 @@ test('AtUse names type variables as instances does', () => {
   assert.deepEqual(shape(rigid), { MVar: [{ RigidVar: [3] }] });
 });
 
-const fail = mark => label(Row.FailEffect.value, mark);
+// The source's `Log` (EffectId 0): a user label, whose marks are kept.
+const logged = mark => label(new Row.UserEffect(0), mark);
 const unit = Type.TUnit.value;
 const annotated = Marked.InAnnotation.create(p)(2);
 const at = n => ({ At: [{ Annotation: [shape(p), 2, n] }] });
 const written = fixed => ({ Written: [{ [fixed]: [] }] });
 
 test('an unwritten annotation mark is numbered in pre-order', () => {
-  const ty = Type.TFun.create(unit)(rowOf(fail(Row.Unmarked.value),
-    fail(Row.NoFail.value), fail(Row.Unmarked.value)))(
-    Type.TFun.create(unit)(rowOf(fail(Row.Unmarked.value)))(unit));
+  const ty = Type.TFun.create(unit)(rowOf(logged(Row.Unmarked.value),
+    logged(Row.NoFail.value), logged(Row.Unmarked.value)))(
+    Type.TFun.create(unit)(rowOf(logged(Row.Unmarked.value)))(unit));
   assert.deepEqual(labelsOf(rightOf(run(annotated, ty))),
     [at(0), written('FixedN'), at(1), at(2)]);
 });
@@ -120,7 +121,7 @@ test('a 5,000-parameter annotation numbers without recursion', () => {
   const count = 5000;
   let ty = unit;
   for (let i = 0; i < count; i += 1)
-    ty = Type.TFun.create(unit)(rowOf(fail(Row.Unmarked.value)))(ty);
+    ty = Type.TFun.create(unit)(rowOf(logged(Row.Unmarked.value)))(ty);
   const marks = [];
   for (let t = rightOf(run(annotated, ty)); t.constructor.name === 'MArrow';
     t = t.value2) marks.push(shape(t.value1.labels[0].mark));
@@ -132,13 +133,27 @@ test('a 5,000-parameter annotation numbers without recursion', () => {
 test('Unmarked outside an annotation and MarkMeta are MarkShape', () => {
   for (const mark of [Row.Unmarked.value, new Row.MarkMeta(1)])
     for (const naming of [Marked.Declared.value, Marked.AtUse.create(p)]) {
-      const ty = Type.TFun.create(unit)(rowOf(fail(mark)))(unit);
+      const ty = Type.TFun.create(unit)(rowOf(logged(mark)))(unit);
       const result = run(naming, ty);
       assert.equal(result.constructor.name, 'Left');
       assert.equal(result.value0.constructor.name, 'MarkShape');
     }
-  const meta = Type.TFun.create(unit)(rowOf(fail(new Row.MarkMeta(1))))(unit);
+  const meta = Type.TFun.create(unit)(rowOf(logged(new Row.MarkMeta(1))))(
+    unit);
   assert.equal(run(annotated, meta).value0.constructor.name, 'MarkShape');
+});
+
+test('Fail is N under every naming and takes no annotation index', () => {
+  const failing = label(Row.FailEffect.value, Row.Unmarked.value);
+  const ty = Type.TFun.create(unit)(rowOf(failing,
+    logged(Row.Unmarked.value)))(unit);
+  for (const naming of [Marked.Declared.value, Marked.AtUse.create(p)]) {
+    const marks = labelsOf(rightOf(run(naming,
+      Type.TFun.create(unit)(rowOf(failing))(unit))));
+    assert.deepEqual(marks, [written('FixedN')]);
+  }
+  assert.deepEqual(labelsOf(rightOf(run(annotated, ty))),
+    [written('FixedN'), at(0)]);
 });
 
 test('an unknown declared type is UnknownType', () => {

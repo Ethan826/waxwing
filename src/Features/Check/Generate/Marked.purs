@@ -10,9 +10,11 @@
 -- position `Annotation p j n`, n counting unwritten marks in pre-order:
 -- a label's mark before its arguments', an arrow's parameter, row, then
 -- result, data's arguments then rows). A Console label is always `N`
--- (statements T3-e). Arrow spines are walked by loops (Generate.Elab.
--- Stages), in numbering too; recursion enters only parameters, fields
--- and arguments, which nesting bounds.
+-- (statements T3-e), and so is a `Fail` label, whose mark is a
+-- placeholder (statements §2): never a position, so it takes no index.
+-- Arrow spines are walked by loops (Generate.Elab.Stages), in numbering
+-- too; recursion enters only parameters, fields and arguments, which
+-- nesting bounds.
 module Features.Check.Generate.Marked
   ( MarkNaming(..)
   , marked
@@ -116,7 +118,7 @@ labelOf naming again (Label effect arguments mark) =
 -- `numbered` counts it.
 markOf ∷ MarkNaming → EffectRef → Mark → Either GenerationFault MarkRef
 markOf naming effect mark
-  | effect == ConsoleEffect = Right (Written FixedN)
+  | effect == ConsoleEffect || effect == FailEffect = Right (Written FixedN)
   | otherwise = case mark, naming of
       NoFail, _ → Right (Written FixedN)
       Plain, _ → Right (Written FixedM)
