@@ -6330,3 +6330,23 @@ author: Task 6 (R031); whether regression proofs must be registered as
 verify rows; the parked duplicate-key detection; whether a recorded
 handler type with only a FailFamily marker counts as a breach (Task
 12).
+
+### 18.99 Checkpoint B authorized (2026-10-27)
+
+The author's rulings on §18.98: (1) register the regression proofs
+before Task 7, one row per invariant or defect, keeping the original
+demonstration logs; (2) proceed with Task 6's two R031 repairs, one
+registered restored-defect proof each, effect-erased correspondence
+checks kept, any pin movement reported rather than approved; (3) close
+the duplicate-write gap now: detect duplicate (kind, path) writes
+before map construction, identical values included, different kinds at
+one path allowed, the variable-free callee case covered; a narrowly
+scoped generation fault and its boundary and pin updates approved, no
+broader Elaborating change; (4) a recorded handler type requires
+`HandlerType`; a lone `FailFamily` does not satisfy it; plain
+`handle`/`fail` with no recorded handler type may use `FailFamily`.
+Also: the boundary test's scope must be derived independently from
+resolved source. One fresh whole-checkpoint review after the repairs
+and before Task 7, all within the 2.4M ceiling. Checkpoint numbering in
+the plan and RESUME corrected: Checkpoint A was Tasks 1-5; the new unit
+is Checkpoint B (plan Tasks 15, 6, 17, 16). Tasks 7+ held.

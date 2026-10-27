@@ -5,8 +5,9 @@
 > implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax
 > for tracking.
 
-Status: **Tasks 1-5 done (Checkpoint A, §18.98; stop after Task 5 by
-the author's instruction); Task 6 and Tasks 7-14 not authorized.** The author
+Status: **Checkpoint A (Tasks 1-5) done, §18.98. Checkpoint B
+(Tasks 15, 6, 17, 16, verify, one review) authorized, §18.99. Tasks
+7-14 held.** The author
 accepted the scope (dossier §18.96) and asked for this plan and the A2
 options note (docs/plans/2026-10-25-amin-a2-options.md) for review.
 
@@ -359,11 +360,72 @@ BACKLOG.md R031.
   isolated copy, see its rewritten test fail; record both outputs in
   progress.md); BACKLOG R031 closed with commits; **commit.**
 
-**Checkpoint A (author review):** Tasks 1-6 are the representation's
-recorded form with the boundary pinned. Stop after Task 6, run
-`npm run verify` under the lock, report, and wait for the author before
-Task 7. Budget: 1.6-2.4M tokens; stop and report before exceeding
-2.4M.
+**Checkpoint A (reached 2026-10-26, §18.98):** Tasks 1-5, by the
+author's instruction (it superseded "stop after Task 6").
+
+**Checkpoint B (authorized 2026-10-27, §18.99):** Task 15 (duplicate
+writes), Task 6 (R031), Task 17 (boundary scope from source), Task 16
+(regression rows), in that order; then `npm run verify` under the lock
+and one fresh whole-checkpoint review; then stop for the author. Tasks
+7-14 stay held. Budget: the existing 2.4M ceiling for all of Tasks
+1-17's Checkpoint A and B work; stop and report before exceeding it.
+Task 6's restored-defect proofs are registered rows (one per repair);
+report any pin movement for the author rather than re-pinning it.
+
+### Task 15: duplicate effect writes are a generation fault
+
+**Files:** Generate/Fault.purs (one constructor), Generate/Assemble.purs
+(and Elab.purs `sealed` only if the fault must surface there), pins;
+test/r0-effects-duplicates.test.mjs (create).
+
+Detect a second write of the same keyed item kind at the same path
+(NodeAt, InstanceAt, AnnotationAt, ArityAt, AmbientAt) before the map
+is built, identical values included; different kinds at one path are
+allowed. The fault (`DuplicateEffect` with the kind and path) maps to
+`Internal InputShape` like the others. Scope (author): this fault and
+its boundary and pin updates only; no other Elaborating change.
+
+- [ ] **Step 1: failing tests:** two items of one kind at one path
+  (equal values) give the fault; two different kinds at one path do
+  not; a variable-free callee use (a callee with no type or row
+  variables) recorded twice gives the fault; the corpus generates
+  with no such fault.
+- [ ] **Steps 2-5:** FAIL; implement; PASS (problem pin unchanged);
+  commit, naming the fault and pin diff.
+
+### Task 16: regression rows for Tasks 1-5, 15 and 17
+
+**Files:** scripts/regression-r0-amin.mjs, test/regression-r0-amin.mjs
+(create, in the form of scripts/regression-r0-elab.mjs and its probe
+file), scripts/regression-r0.mjs (spread the rows), docs/progress.md.
+
+One row per invariant or defect, not per assertion: at least Fail is N;
+Plain in an annotation is a position; AtUse names as instances; H′'s
+occurs check (result part); closed R stays closed; sibling annotation
+tails distinct; minted once and only where named; partial application
+reuses its instance's stages; erasure agreement of node types; the
+blocking marker; duplicate effect writes; the source-derived boundary
+scope. Each row restores the defect in compiling form and its probe
+shows the failure. Keep the original demonstration logs (the plan
+ledger's task reports) and cite them in progress.md.
+
+### Task 17: the boundary's expected cases from resolved source
+
+**Files:** test/r0-effects-boundary.serial.test.mjs.
+
+Derive the expected handler cases independently of generation: walk
+the resolved declaration (handler literals, `with`, `handle`, `fail`,
+and handler types written in signatures and annotations). For each,
+inspect recorded types, markers and verdicts: a recorded handler type
+requires `HandlerType` (a lone `FailFamily` does not satisfy it); a
+declaration whose only constructs are `handle`/`fail` with no recorded
+handler type may use `FailFamily`; none is Solved. A source case with
+no recorded handler type and no marker is a breach.
+
+- [ ] **Step 1:** extend the test; floors on the source-derived count.
+- [ ] **Step 2:** restored-defect proof: generation drops both the
+  marked handler type and the marker for one construct; the test fails.
+- [ ] **Step 3: commit.**
 
 ### Task 7: E1 equations, O1 and O2 included
 
@@ -520,4 +582,5 @@ before later tasks build on it. Checkpoint A splits the spend: Tasks
 
 **Authorized (author, 2026-10-25, §18.97):** subagent execution through
 Checkpoint A only, budget 1.6-2.4M tokens with a stop and report
-before 2.4M. Tasks 7-14 need a separate authorization.
+before 2.4M. **Extended (2026-10-27, §18.99):** Checkpoint B within the
+same 2.4M ceiling. Tasks 7-14 need a separate authorization.
