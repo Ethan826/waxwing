@@ -22,7 +22,7 @@ import Data.Either (Either, note)
 import Data.Foldable (sequence_, traverse_)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Recorded.Origin
@@ -35,7 +35,7 @@ import Domain.Recorded.Origin
   )
 import Domain.Resolved (FunctionDecl, LocalId(..), Ty, VarId(..))
 import Domain.Resolved as Resolved
-import Domain.Syntax (Span, typeRefSpan)
+import Domain.Syntax (Sort(..), Span, typeRefSpan)
 import Domain.Type.Parts (rowArguments)
 import Features.Check.Generate.Elab (GenTy, Ref(..))
 import Features.Check.Generate.Facts (impliedOf, signatureTypes)
@@ -47,12 +47,16 @@ import Features.Check.Generate.Gen
   , GenEntry(..)
   , GenReq(..)
   , Tagged
+  , effected
   , emit
   , lifted
   , rigid
   )
+import Features.Check.Generate.Context (Local)
 import Features.Check.Generate.Inputs (Signature, Tables)
+import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Node (markersAt, tagged)
+import Features.Check.Generate.Out (EffectItem(..))
 import Features.Check.Generate.Translate (Naming(..), named, translate)
 
 -- Where a signature rule emits: the declaration and a path.
@@ -65,13 +69,18 @@ type Fallible = Either GenerationFault
 isEntry ∷ FunctionDecl → Boolean
 isEntry function = function.name == "main"
 
--- Sig2: `Γ₀(LocalId i) = ⟦T_i⟧ν_f` (Check/Function.purs `parameterLocal`).
-parameterLocals ∷ ∀ s. Tables → FunctionDecl → Fallible (Map LocalId (GenTy s))
+-- Sig2: `Γ₀(LocalId i) = ⟦T_i⟧ν_f` (Check/Function.purs `parameterLocal`),
+-- with its marked type as declared (Generate.Marked `Declared`).
+parameterLocals ∷ ∀ s. Tables → FunctionDecl → Fallible (Map LocalId (Local s))
 parameterLocals tables function = Map.fromFoldable
   <$> sequence (Array.mapWithIndex local function.parameters)
   where
-  local index parameter = Tuple (LocalId index) <<< _.ty
-    <$> translate tables Rigidly parameter.ty
+  local index parameter = Tuple (LocalId index)
+    <$>
+      ( paired <$> translate tables Rigidly parameter.ty
+          <*> marked tables Declared parameter.ty
+      )
+  paired translated markedType = { ty: translated.ty, marked: markedType }
 
 -- Sig1, written now; Sig3-Sig10, returned, given the body's type `τ_b`
 -- and span (Sig3). An entry at `result` has the written result type's
@@ -87,6 +96,7 @@ declaration tables function body bodySpan = do
         )
     )
   traverse_ rigid (Array.catMaybes (Array.mapWithIndex rigidAt function.sorts))
+  effected (rigidEffects function)
   lifted (declared resultSpan)
   where
   declared resultSpan = ado
@@ -127,6 +137,16 @@ declaration tables function body bodySpan = do
     | otherwise = pure unit
   bodyAt written = sigAt (place InBody []) 3
     [ tagged (EmitB (GenEqual body written)) RowB 1 Body bodySpan ]
+
+-- The declaration's rigid marks (its `nofail(k)` names) and effect-row
+-- variables, once each (a-min §10 `rigidMarks`, `effectRigids`).
+rigidEffects ∷ FunctionDecl → Array EffectItem
+rigidEffects function = map RigidMark (Array.nub function.markVariables)
+  <> Array.catMaybes (Array.mapWithIndex effectRow function.sorts)
+  where
+  effectRow index = case _ of
+    RowSort → Just (EffectRigid (VarId index))
+    _ → Nothing
 
 -- θ(D_g) for E3 and E5: a callee's clauses under the occurrence's
 -- naming, written (constraints in order) then implied (Sig6's facts,

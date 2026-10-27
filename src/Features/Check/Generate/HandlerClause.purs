@@ -1,0 +1,84 @@
+-- trusted surface: every diff needs token review; see docs/engineering.md
+-- E20's clauses (T-R0b §3.5; split from Generate.Effect, amin tranche 1
+-- Task 3, for the line budget): a clause's body under its parameters,
+-- each at θ of its declared type, read at `ClauseParamType p c k` (spec
+-- §12.2), with its marked type at the handler's use (Generate.Marked
+-- `AtUse p`); and a clause's id for the checked node.
+module Features.Check.Generate.HandlerClause
+  ( Clause
+  , effectId
+  , handlerClause
+  ) where
+
+import Prelude
+import Data.Array as Array
+import Data.Maybe (maybe)
+import Data.Traversable (sequence, traverse)
+import Data.Tuple (Tuple(..))
+import Domain.Checked.Internal as Checked
+import Domain.Ids (EffectId(..))
+import Domain.Recorded.Atom (CheckedName(..))
+import Domain.Recorded.Origin (Path, Step(..))
+import Domain.Resolved (HandlerClause)
+import Domain.Row (EffectRef(..))
+import Features.Check.Generate.Context (Context, Recur, bindLocal)
+import Features.Check.Generate.Elab (Elab)
+import Features.Check.Generate.Fresh (child, childAt)
+import Features.Check.Generate.Gen (Gen, lifted, positioned)
+import Features.Check.Generate.Marked (MarkNaming(..), marked)
+import Features.Check.Generate.Out (TypeMarker)
+import Features.Check.Generate.Translate (Naming, translate)
+
+-- A clause's id for the checked node, as Check/Handler.purs `effectId`.
+effectId ∷ EffectRef → EffectId
+effectId = case _ of
+  UserEffect id → id
+  ConsoleEffect → EffectId (-1)
+  FailEffect → EffectId (-1)
+
+type Clause s =
+  { clause ∷ Elab s Checked.HandlerClause
+  , marks ∷ Array TypeMarker
+  , emits ∷ Gen s Unit
+  }
+
+handlerClause
+  ∷ ∀ s
+  . Recur s
+  → Context s
+  → { handler ∷ Path, clause ∷ Int }
+  → Naming s
+  → HandlerClause
+  → Gen s (Clause s)
+handlerClause recur context site naming clause = do
+  typed ← traverse typedParameter clause.parameters
+  read ← traverse sited (Array.mapWithIndex Tuple typed)
+  body ← recur (Array.foldl bindParameter context typed)
+    (child path [ Named "body" ])
+    clause.body
+  pure
+    { clause:
+        { operation: clause.operation
+        , parameters: _
+        , body: _
+        , span: clause.span
+        }
+          <$> sequence read
+          <*> body.expr
+    , marks: Array.concatMap _.marks typed
+    , emits: body.emits
+    }
+  where
+  path = childAt site.handler "Handler" "clauses" site.clause
+  typedParameter parameter = withLocal parameter.local
+    <$> lifted (translate context.tables naming parameter.ty)
+    <*> lifted (marked context.tables (AtUse site.handler) parameter.ty)
+  withLocal local found markedType =
+    { local, ty: found.ty, marked: markedType, marks: found.marks }
+  sited (Tuple index parameter) = map ({ local: parameter.local, ty: _ })
+    <$> positioned (ClauseParamType site.handler site.clause index) parameter.ty
+  bindParameter current parameter = maybe current (bindAt current parameter)
+    parameter.local
+  bindAt current parameter local = bindLocal local
+    { ty: parameter.ty, marked: parameter.marked }
+    current

@@ -4,15 +4,18 @@
 -- all 36 with no wildcard). Every node's type is positioned at
 -- `NodeType p` (§5.2): it joins `types` and is read there for the
 -- checked node (D1 spec §3.3; R0 Task 7.1b), whose span is the resolved
--- node's. E1 and E2 are here; the other rules are in the modules named
--- by their group, given this function to generate children.
+-- node's; its marked type joins `effects.nodes` at p (`NodeAt`, amin
+-- tranche 1 Task 3), whose erasure is the recorded type. E1 and E2 are
+-- here; the other rules are in the modules named by their group, given
+-- this function to generate children.
 module Features.Check.Generate.Expr (expr) where
 
 import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (maybe)
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Atom (CheckedName(..))
+import Domain.Recorded.Atom (Base(..), CheckedName(..))
+import Domain.Recorded.Effect (MTy(..))
 import Domain.Recorded.Origin (Path)
 import Domain.Resolved (Expr(..), LocalId, exprSpan)
 import Domain.Type (Ty(..))
@@ -24,8 +27,9 @@ import Features.Check.Generate.Control (lambda, match)
 import Features.Check.Generate.Effect (handler, operationRef, perform, with)
 import Features.Check.Generate.Failure (fail, handle)
 import Features.Check.Generate.Fault (GenerationFault(..))
-import Features.Check.Generate.Gen (Gen, lifted, positioned)
+import Features.Check.Generate.Gen (Gen, effected, lifted, positioned)
 import Features.Check.Generate.Node (Generated, Ruled, fixed, none)
+import Features.Check.Generate.Out (EffectItem(..))
 import Features.Check.Generate.Operator
   ( application
   , arithmetic
@@ -41,20 +45,23 @@ expr ∷ ∀ s. Context s → Path → Expr → Gen s (Generated s)
 expr context path found = do
   ruled ← rule found
   read ← positioned (NodeType path) ruled.ty
+  effected [ NodeAt path ruled.marked ]
   pure
     { ty: ruled.ty
+    , marked: ruled.marked
     , expr: checked <$> read <*> ruled.node
     , emits: ruled.emits
     }
   where
   checked ty node = Checked.Expr { ty, span: exprSpan found, node: node ty }
-  leaf ty node = pure { ty, node: fixed (pure node), emits: none } -- E1
+  leaf ty base node = pure -- E1
+    { ty, marked: MBase base, node: fixed (pure node), emits: none }
   recur = expr
   rule = case _ of
-    Integer _ value → leaf TInt (Checked.Integer value)
-    Boolean _ value → leaf TBool (Checked.Boolean value)
-    TextLiteral _ value → leaf TText (Checked.Text value)
-    UnitValue _ → leaf TUnit Checked.UnitValue
+    Integer _ value → leaf TInt IntBase (Checked.Integer value)
+    Boolean _ value → leaf TBool BoolBase (Checked.Boolean value)
+    TextLiteral _ value → leaf TText TextBase (Checked.Text value)
+    UnitValue _ → leaf TUnit UnitBase Checked.UnitValue
     Local _ local → localOf context local -- E2
     FunctionRef span function → functionRef context path span function
     CtorRef span ctor → ctorRef context path span ctor
@@ -63,11 +70,16 @@ expr context path found = do
     Construct span ctor arguments → construct recur context path span ctor
       arguments
     Add span left right → arithmetic recur context path span
-      { rule: 7, label: "Add", base: TInt, made: Checked.Add }
+      { rule: 7, label: "Add", base: TInt, made: Checked.Add, marked: IntBase }
       left
       right
     Concat span left right → arithmetic recur context path span
-      { rule: 8, label: "Concat", base: TText, made: Checked.Concat }
+      { rule: 8
+      , label: "Concat"
+      , base: TText
+      , made: Checked.Concat
+      , marked: TextBase
+      }
       left
       right
     Interpolate span parts → interpolate recur context path span parts
@@ -122,4 +134,9 @@ localOf context local = lifted
       (localType context local)
   )
   where
-  found ty = Right { ty, node: fixed (pure (Checked.Local local)), emits: none }
+  found typed = Right
+    { ty: typed.ty
+    , marked: typed.marked
+    , node: fixed (pure (Checked.Local local))
+    , emits: none
+    }

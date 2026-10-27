@@ -151,9 +151,9 @@ test('the real tree matches its pin and its FFI names no token module',
       '.Call', '.Callee', '.Context', '.Control', '.Effect', '.Elab',
       '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
       '.Elab.Recorded', '.Elab.Stages', '.Expr', '.Facts', '.Failure',
-      '.Fault', '.Fresh', '.Gen', '.Inputs', '.Lookup', '.Marked', '.Node',
-      '.Operator',
-      '.Out', '.Pattern', '.Record', '.Signature', '.Static',
+      '.Fault', '.Fresh', '.Gen', '.HandlerClause', '.Inputs', '.Lookup',
+      '.Marked', '.Node', '.Operator',
+      '.Out', '.Pattern', '.PatternLeaf', '.Record', '.Signature', '.Static',
       '.Static.Problem', '.Static.Rules', '.Static.Site', '.Static.Walk',
       '.Translate', '.Update']
       .map(name => `Features.Check.Generate${name}`);

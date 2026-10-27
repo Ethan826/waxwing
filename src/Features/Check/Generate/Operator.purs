@@ -18,6 +18,8 @@ import Data.Array as Array
 import Data.Foldable (traverse_)
 import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal as Checked
+import Domain.Recorded.Atom (Base(..))
+import Domain.Recorded.Effect (MTy(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr)
 import Domain.Syntax (Operator, Span)
@@ -39,6 +41,7 @@ import Features.Check.Generate.Node
   , arrowOf
   , fixed
   , flex
+  , markedFlex
   , tagged
   )
 
@@ -51,7 +54,12 @@ arithmetic
   → Context s
   → Path
   → Span
-  → { rule ∷ Int, label ∷ String, base ∷ GenTy s, made ∷ Binary }
+  → { rule ∷ Int
+    , label ∷ String
+    , base ∷ GenTy s
+    , made ∷ Binary
+    , marked ∷ Base
+    }
   → Expr
   → Expr
   → Gen s (Ruled s)
@@ -60,6 +68,7 @@ arithmetic recur context path span operator left right = do
   other ← recur context (childOf path operator.label "right") right
   pure
     { ty: operator.base
+    , marked: MBase operator.marked
     , node: fixed (operator.made <$> one.expr <*> other.expr)
     , emits: do
         emit (at context path (ExprRule operator.rule))
@@ -80,6 +89,7 @@ interpolate recur context path span parts = textual
   textPart found = agree span (GenEqual found.ty TText)
   textual generated =
     { ty: TText
+    , marked: MBase TextBase
     , node: fixed (Checked.Interpolate <$> traverse _.expr generated)
     , emits: do
         emit (at context path (ExprRule 9)) (map textPart generated)
@@ -102,6 +112,7 @@ comparison recur context path span operator left right = do
   other ← recur context (childOf path "Compare" "right") right
   pure
     { ty: TBool
+    , marked: MBase BoolBase
     , node: fixed (Checked.Compare operator <$> one.expr <*> other.expr)
     , emits: do
         emit (at context path (ExprRule 10))
@@ -127,9 +138,11 @@ conditional recur context path span condition yes no = do
   tested ← recur context (childOf path "If" "condition") condition
   taken ← recur context (childOf path "If" "then") yes
   other ← recur context (childOf path "If" "else") no
-  res ← flex <$> nodeRes path (ExprRule 11) span
+  handle ← nodeRes path (ExprRule 11) span
+  let res = flex handle
   pure
     { ty: res
+    , marked: markedFlex handle
     , node: fixed (Checked.If <$> tested.expr <*> taken.expr <*> other.expr)
     , emits: do
         emit (at context path (ExprRule 11))
@@ -187,6 +200,7 @@ applied context path span rule function arguments node = made
   where
   made handle =
     { ty: flex handle
+    , marked: markedFlex handle
     , node: fixed node
     , emits: do
         emit (at context path (ExprRule rule))

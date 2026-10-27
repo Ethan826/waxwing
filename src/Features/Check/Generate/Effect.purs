@@ -6,7 +6,10 @@
 -- `With/body`. Checked nodes as today's (Check/Operation.purs,
 -- Handler.purs, ClauseBody.purs; D1 spec §3.5, R0 Task 7.1b): a perform
 -- is a named call (Generate.Call `applied`), and a clause's parameter
--- types are read at `ClauseParamType p c k` (spec §12.2).
+-- types are read at `ClauseParamType p c k` (spec §12.2; the clauses are
+-- in Generate.HandlerClause). A handler literal's marked type keeps its
+-- label with the mark at `Literal p` and closed placeholder rows until
+-- Task 4 records them; `with`'s is its `⟨p, res⟩`.
 module Features.Check.Generate.Effect
   ( agree
   , handler
@@ -19,34 +22,22 @@ module Features.Check.Generate.Effect
 import Prelude
 import Data.Array as Array
 import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
-import Domain.Ids (EffectId(..))
-import Domain.Recorded.Atom (CheckedName(..), OutsideKind(..))
-import Domain.Recorded.Origin
-  ( OriginKind(..)
-  , Path
-  , RowGroup(..)
-  , RuleId(..)
-  , Step(..)
-  )
+import Domain.Ids (EffectId)
+import Domain.Recorded.Atom (OutsideKind(..))
+import Domain.Recorded.Effect (MTy(..), MarkRef(..), Position(..))
+import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, HandlerClause, Ty, VarId)
-import Domain.Row (EffectRef(..), Label(..), closedRow)
+import Domain.Row (Label(..), closedRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
 import Features.Check.Generate.Call (applied)
-import Features.Check.Generate.Callee (Called)
-import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
-import Features.Check.Generate.Elab (Elab)
-import Features.Check.Generate.Fresh
-  ( child
-  , childAt
-  , childOf
-  , instances
-  , nodeRes
-  )
+import Features.Check.Generate.Callee (Called, atUse)
+import Features.Check.Generate.Context (Context, Recur, at)
+import Features.Check.Generate.Fresh (childAt, childOf, instances, nodeRes)
 import Features.Check.Generate.Gen
   ( Gen
   , GenAtom
@@ -54,20 +45,23 @@ import Features.Check.Generate.Gen
   , Tagged
   , emit
   , lifted
-  , positioned
   , slots
   )
+import Features.Check.Generate.HandlerClause (effectId, handlerClause)
 import Features.Check.Generate.Lookup (effectSorts, operationShape)
 import Features.Check.Generate.Node
   ( Ruled
   , arrowOf
+  , closedPlaceholder
   , fixed
   , flex
+  , markedArrow
+  , markedFlex
+  , markedRef
   , markersAt
   , tagged
   )
-import Features.Check.Generate.Out (TypeMarker)
-import Features.Check.Generate.Translate (Naming, translate, translateAll)
+import Features.Check.Generate.Translate (translate, translateAll)
 
 -- E17, a reference: `θ(⟦T̄ → result⟧)`.
 operationRef
@@ -77,6 +71,7 @@ operationRef context path span effect index = referenced
   where
   referenced found =
     { ty: arrowOf found.parameters found.result
+    , marked: markedArrow path found.markedParameters found.markedResult
     , node: fixed (Checked.OperationRef effect index <$> found.slots)
     , emits: emit (at context path (ExprRule 17))
         (found.entries <> found.markers)
@@ -123,6 +118,7 @@ operation context path span effect index = do
   parameters ← lifted (translateAll context.tables inst.naming shape.parameters)
   result ← lifted (translate context.tables inst.naming shape.result)
   read ← slots path inst.slots
+  markedTypes ← lifted (atUse context path shape.parameters shape.result)
   pure
     { parameters: parameters.tys
     , result: result.ty
@@ -130,6 +126,8 @@ operation context path span effect index = do
     , markers: marker (not (Array.null shape.sorts)) EffectArgument 2 span
         <> markersAt InstOrigin span (parameters.marks <> result.marks)
     , slots: read
+    , markedParameters: markedTypes.parameters
+    , markedResult: markedTypes.result
     }
 
 -- E20: `app (Handler e) [⟨p, inst j⟩ …]`, `Outside HandlerType` (O3),
@@ -154,6 +152,9 @@ handler recur context path span (Label effect _ mark) clauses = do
   pure
     { ty: Type.THandler (Label effect (map snd inst.slots) mark)
         { inference: closedRow, clauses: Nothing }
+    , marked: MHandler
+        { effect, args: map markedRef inst.all, mark: At (Literal path) }
+        { inference: closedPlaceholder, clauses: Nothing }
     , node: fixed
         ( Checked.Handler (effectId effect) <$> read
             <*> traverse _.clause found
@@ -171,56 +172,6 @@ handler recur context path span (Label effect _ mark) clauses = do
     { handler: path, clause: place }
     naming
 
--- A clause's id for the checked node, as Check/Handler.purs `effectId`.
-effectId ∷ EffectRef → EffectId
-effectId = case _ of
-  UserEffect id → id
-  ConsoleEffect → EffectId (-1)
-  FailEffect → EffectId (-1)
-
-type Clause s =
-  { clause ∷ Elab s Checked.HandlerClause
-  , marks ∷ Array TypeMarker
-  , emits ∷ Gen s Unit
-  }
-
-handlerClause
-  ∷ ∀ s
-  . Recur s
-  → Context s
-  → { handler ∷ Path, clause ∷ Int }
-  → Naming s
-  → HandlerClause
-  → Gen s (Clause s)
-handlerClause recur context site naming clause = do
-  typed ← traverse typedParameter clause.parameters
-  read ← traverse sited (Array.mapWithIndex Tuple typed)
-  body ← recur (Array.foldl bindParameter context typed)
-    (child path [ Named "body" ])
-    clause.body
-  pure
-    { clause:
-        { operation: clause.operation
-        , parameters: _
-        , body: _
-        , span: clause.span
-        }
-          <$> sequence read
-          <*> body.expr
-    , marks: Array.concatMap _.marks typed
-    , emits: body.emits
-    }
-  where
-  path = childAt site.handler "Handler" "clauses" site.clause
-  typedParameter parameter = withLocal parameter.local
-    <$> lifted (translate context.tables naming parameter.ty)
-  withLocal local found = { local, ty: found.ty, marks: found.marks }
-  sited (Tuple index parameter) = map ({ local: parameter.local, ty: _ })
-    <$> positioned (ClauseParamType site.handler site.clause index) parameter.ty
-  bindParameter current parameter = maybe current (bindAt current parameter)
-    parameter.local
-  bindAt current parameter local = bindLocal local parameter.ty current
-
 -- E21: `⟨p, res⟩`, `Outside HandlerType`; no equation through the
 -- handler.
 with
@@ -231,6 +182,7 @@ with recur context path span installed body = do
   res ← nodeRes path (ExprRule 21) span
   pure
     { ty: flex res
+    , marked: markedFlex res
     , node: fixed (Checked.With <$> handlerPart.expr <*> bodyPart.expr)
     , emits: do
         emit (at context path (ExprRule 21)) (marker true HandlerType 3 span)

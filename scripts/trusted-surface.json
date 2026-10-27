@@ -255,10 +255,12 @@
  "Features.Check.Generate.Callee": {
   "source": [
    "Called",
+   "atUse",
    "ctorInstance",
    "functionInstance"
   ],
   "compiled": [
+   "atUse",
    "ctorInstance",
    "functionInstance"
   ]
@@ -266,6 +268,7 @@
  "Features.Check.Generate.Context": {
   "source": [
    "Context",
+   "Local",
    "Recur",
    "at",
    "bindLocal",
@@ -528,6 +531,17 @@
    "slots"
   ]
  },
+ "Features.Check.Generate.HandlerClause": {
+  "source": [
+   "Clause",
+   "effectId",
+   "handlerClause"
+  ],
+  "compiled": [
+   "effectId",
+   "handlerClause"
+  ]
+ },
  "Features.Check.Generate.Inputs": {
   "source": [
    "Inputs",
@@ -577,19 +591,31 @@
    "Generated",
    "Ruled",
    "arrowOf",
+   "closedPlaceholder",
    "fixed",
    "flex",
+   "markedArrow",
+   "markedFlex",
+   "markedRecord",
+   "markedRef",
    "markersAt",
    "none",
+   "placeholderArrow",
    "recordOf",
    "tagged"
   ],
   "compiled": [
    "arrowOf",
+   "closedPlaceholder",
    "fixed",
    "flex",
+   "markedArrow",
+   "markedFlex",
+   "markedRecord",
+   "markedRef",
    "markersAt",
    "none",
+   "placeholderArrow",
    "recordOf",
    "tagged"
   ]
@@ -658,6 +684,19 @@
   ],
   "compiled": [
    "pattern"
+  ]
+ },
+ "Features.Check.Generate.PatternLeaf": {
+  "source": [
+   "Shaped",
+   "literal",
+   "restShape",
+   "spanOf"
+  ],
+  "compiled": [
+   "literal",
+   "restShape",
+   "spanOf"
   ]
  },
  "Features.Check.Generate.Record": {

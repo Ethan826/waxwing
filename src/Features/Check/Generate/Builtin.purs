@@ -21,7 +21,15 @@ import Data.Maybe (Maybe(..), maybe')
 import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
+import Domain.Recorded.Atom (Base(..), CheckedName(..), Role(..), VarSort(..))
+import Domain.Recorded.Effect
+  ( ERole(..)
+  , EVar(..)
+  , Fixed(..)
+  , MRow
+  , MTy(..)
+  , MarkRef(..)
+  )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, LocalId(..))
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..), closedRow)
@@ -38,7 +46,7 @@ import Features.Check.Generate.Gen
   , fresh
   , positioned
   )
-import Features.Check.Generate.Node (Ruled, fixed, flex, tagged)
+import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, tagged)
 
 data Builtin = PrintBuiltin | ShowBuiltin | CrashBuiltin
 
@@ -57,14 +65,18 @@ builtinRef context path span builtin = do
   read ← positioned (ParamType path 0) (flex parameter)
   pure
     { ty: TFun (flex parameter) (rowOf builtin) result.ty
+    , marked: MArrow (markedFlex parameter) (markedRowOf path builtin)
+        result.marked
     , node: fixed (lambda span builtin <$> read <*> result.read)
     , emits: emit (at context path (ExprRule 18))
         [ tagged (EmitBQ (GenPrintable (flex parameter))) RowC 1 Body span ]
     }
   where
   resultOf = case builtin of
-    PrintBuiltin → pure { ty: TUnit, read: pure TUnit }
-    ShowBuiltin → pure { ty: TText, read: pure TText }
+    PrintBuiltin → pure
+      { ty: TUnit, marked: MBase UnitBase, read: pure TUnit }
+    ShowBuiltin → pure
+      { ty: TText, marked: MBase TextBase, read: pure TText }
     CrashBuiltin → crashResult
   crashResult = do
     crashed ← fresh
@@ -76,7 +88,7 @@ builtinRef context path span builtin = do
       , position: LambdaBody path
       }
     read ← positioned (LambdaBody path) (flex crashed)
-    pure { ty: flex crashed, read }
+    pure { ty: flex crashed, marked: markedFlex crashed, read }
 
 -- E19: `Unit`, `Text`, `⟨p, res⟩`; `pr τ_e` when there is one argument.
 -- Arguments at `Print/args/i` (`Show/…`, `Crash/…`).
@@ -91,9 +103,10 @@ builtinCall
   → Gen s (Ruled s)
 builtinCall recur context path span builtin arguments = do
   generated ← sequence (Array.mapWithIndex argument arguments)
-  ty ← resultOf
+  result ← resultOf
   pure
-    { ty
+    { ty: result.ty
+    , marked: result.marked
     , node: fixed (called span builtin <$> traverse _.expr generated)
     , emits: do
         emit (at context path (ExprRule 19))
@@ -106,9 +119,10 @@ builtinCall recur context path span builtin arguments = do
     if Array.length generated == 1 then generated else []
   printable found = tagged (EmitBQ (GenPrintable found.ty)) RowC 1 Body span
   resultOf = case builtin of
-    PrintBuiltin → pure TUnit
-    ShowBuiltin → pure TText
-    CrashBuiltin → flex <$> nodeRes path (ExprRule 19) span
+    PrintBuiltin → pure { ty: TUnit, marked: MBase UnitBase }
+    ShowBuiltin → pure { ty: TText, marked: MBase TextBase }
+    CrashBuiltin → crashed <$> nodeRes path (ExprRule 19) span
+  crashed handle = { ty: flex handle, marked: markedFlex handle }
 
 -- The builtin applied to its one argument (Check/Operation.purs
 -- `printCall`). Another count is refused today (E_ARITY) and by the
@@ -150,6 +164,19 @@ rowOf = case _ of
   PrintBuiltin → Row [ Label ConsoleEffect [] NoFail ] Nothing
   ShowBuiltin → closedRow
   CrashBuiltin → closedRow
+
+-- The same rows marked: `print`'s `Console` (always N), and in place of
+-- the closed fallback the fresh `⟨p, stage 0⟩` (amin tranche 1, Task 3).
+markedRowOf ∷ Path → Builtin → MRow
+markedRowOf path = case _ of
+  PrintBuiltin →
+    { labels: [ { effect: ConsoleEffect, args: [], mark: Written FixedN } ]
+    , tail: Nothing
+    }
+  ShowBuiltin → staged
+  CrashBuiltin → staged
+  where
+  staged = { labels: [], tail: Just (EffFresh path (Stage 0)) }
 
 label ∷ Builtin → String
 label = case _ of

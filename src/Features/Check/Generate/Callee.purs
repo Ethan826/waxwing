@@ -3,24 +3,29 @@
 -- (T-R0b §3.2, E3-E6; D1 spec §3.3, R0 Task 7.1b): its `⟨p, inst i⟩`
 -- minted, its types under θ, the entries the reference itself records
 -- and its instantiation read at `Slot p i`. The signature is read
--- first, then the types it holds.
+-- first, then the types it holds, then their marked translations at
+-- the use (Generate.Marked `AtUse p`, amin tranche 1 Task 3).
 module Features.Check.Generate.Callee
   ( Called
+  , atUse
   , ctorInstance
   , functionInstance
   ) where
 
 import Prelude
 import Data.Array as Array
+import Data.Either (Either)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Instantiation)
 import Domain.Recorded.Atom (Callee(..))
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId)
-import Domain.Resolved (CtorId, FunctionId)
+import Domain.Resolved (CtorId, FunctionId, Ty, VarId)
 import Domain.Syntax (Span)
 import Features.Check.Generate.Context (Context)
 import Features.Check.Generate.Elab (Elab, GenTy)
+import Features.Check.Generate.Fault (GenerationFault)
 import Features.Check.Generate.Fresh (instances)
 import Features.Check.Generate.Gen
   ( Gen
@@ -31,6 +36,7 @@ import Features.Check.Generate.Gen
   , slots
   )
 import Features.Check.Generate.Lookup (calleeOf, ctorShape)
+import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Node (markersAt, tagged)
 import Features.Check.Generate.Signature (calleeClauses)
 import Features.Check.Generate.Translate (named, translate, translateAll)
@@ -44,6 +50,8 @@ type Called s =
   , entries ∷ Array (Tagged s)
   , markers ∷ Array (Tagged s)
   , slots ∷ Elab s Instantiation
+  , markedParameters ∷ Array MTy
+  , markedResult ∷ MTy
   }
 
 -- E3's entries (origin inst): θ(D_g) written (F2) and implied (F3), the
@@ -66,6 +74,8 @@ functionInstance context path span function rule = do
   result ← lifted (translate context.tables inst.naming signature.result)
   clauses ← lifted (calleeClauses context.tables inst.naming signature)
   read ← slots path inst.slots
+  markedTypes ← lifted
+    (atUse context path signature.parameters signature.result)
   pure
     { parameters: parameters.tys
     , result: result.ty
@@ -75,6 +85,8 @@ functionInstance context path span function rule = do
         <> splitSite inst.rows
     , markers: markersAt InstOrigin span (parameters.marks <> result.marks)
     , slots: read
+    , markedParameters: markedTypes.parameters
+    , markedResult: markedTypes.result
     }
   where
   callee = CalleeFunction function
@@ -94,14 +106,32 @@ ctorInstance context path span ctor rule = do
   owner ← lifted (translate context.tables inst.naming shape.owner)
   pairs ← lifted (traverse (pairOf inst.naming) shape.joined)
   read ← slots path inst.slots
+  markedTypes ← lifted (atUse context path shape.fields shape.owner)
   pure
     { parameters: fields.tys
     , result: owner.ty
     , entries: map joinedPair pairs
     , markers: markersAt InstOrigin span (fields.marks <> owner.marks)
     , slots: read
+    , markedParameters: markedTypes.parameters
+    , markedResult: markedTypes.result
     }
   where
   pairOf naming { variables: Tuple one other } =
     GenDisjoint <$> named naming one <*> named naming other
   joinedPair atom = tagged (EmitB atom) RowF 8 InstOrigin span
+
+-- Parameter (or field) types and result, marked at the use `p`; read
+-- after their erased translations, so a fault those raise comes first.
+atUse
+  ∷ ∀ s
+  . Context s
+  → Path
+  → Array (Ty VarId)
+  → Ty VarId
+  → Either GenerationFault { parameters ∷ Array MTy, result ∷ MTy }
+atUse context path parameters result =
+  { parameters: _, result: _ } <$> traverse markedAt parameters
+    <*> markedAt result
+  where
+  markedAt = marked context.tables (AtUse path)

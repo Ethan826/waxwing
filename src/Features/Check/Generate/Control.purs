@@ -5,7 +5,10 @@
 -- `Match/scrutinee`, `Match/arms/k/pattern`, `Match/arms/k/body`,
 -- `Lambda/body`. Checked nodes as today's (Check/Arms.purs, Lambda.purs;
 -- D1 spec §3.5, R0 Task 7.1b); a lambda's parameter is read at
--- `ParamType p k`, annotated or not.
+-- `ParamType p k`, annotated or not. Marked types (amin tranche 1, Task
+-- 3): a match is its `⟨p, res⟩`; a lambda's rows are closed placeholders
+-- until Task 4 records them, an annotated parameter marked as
+-- Generate.Marked `InAnnotation p k` reads it.
 module Features.Check.Generate.Control
   ( lambda
   , match
@@ -18,6 +21,7 @@ import Data.Maybe (Maybe, maybe)
 import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin
   ( OriginKind(..)
   , Path
@@ -45,9 +49,12 @@ import Features.Check.Generate.Node
   , arrowOf
   , fixed
   , flex
+  , markedFlex
   , markersAt
+  , placeholderArrow
   , tagged
   )
+import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Out (TypeMarker)
 import Features.Check.Generate.Pattern (pattern)
 import Features.Check.Generate.Translate (Naming(..), translate)
@@ -66,10 +73,12 @@ match
   → Gen s (Ruled s)
 match recur context path span scrutinee arms = do
   tested ← recur context (childOf path "Match" "scrutinee") scrutinee
-  found ← sequence (Array.mapWithIndex (armOf tested.ty) arms)
-  res ← flex <$> nodeRes path (ExprRule 12) span
+  found ← sequence (Array.mapWithIndex (armOf (scrutineeOf tested)) arms)
+  handle ← nodeRes path (ExprRule 12) span
+  let res = flex handle
   pure
     { ty: res
+    , marked: markedFlex handle
     , node: fixed (Checked.Match <$> tested.expr <*> traverse _.arm found)
     , emits: do
         emit (at context path (ExprRule 12)) (map (armAtom res) found)
@@ -91,6 +100,7 @@ match recur context path span scrutinee arms = do
       , emits: bound.emits *> body.emits
       }
   armAtom res arm = tagged (EmitB (GenEqual arm.ty res)) RowB 1 Body span
+  scrutineeOf tested = { ty: tested.ty, marked: tested.marked }
 
 -- E13: `σ₁ → … → σ_m → τ_body`; an annotated parameter `k` is `⟦A_k⟧ν_f`
 -- with its definedness atom `eq σ_k σ_k` (B14, origin types), an
@@ -112,6 +122,7 @@ lambda recur context path span parameters body = do
     body
   pure
     { ty: arrowOf (map _.ty typed) inner.ty
+    , marked: placeholderArrow (map _.marked typed) inner.marked
     , node: fixed (Checked.Lambda <$> traverse _.param typed <*> inner.expr)
     , emits: do
         emit (at context path (ExprRule 13))
@@ -123,12 +134,13 @@ lambda recur context path span parameters body = do
   where
   parameterOf = parameterAt context
   bindParameter current found = maybe current
-    (bindLocal <@> found.ty <@> current)
+    (bindLocal <@> { ty: found.ty, marked: found.marked } <@> current)
     found.local
 
 type Typed s =
   { local ∷ Maybe LocalId
   , ty ∷ GenTy s
+  , marked ∷ MTy
   , param ∷ Elab s Checked.Param
   , defined ∷ Span → Array (Tagged s)
   , marks ∷ Array TypeMarker
@@ -142,6 +154,7 @@ parameterAt context path index parameter = do
   pure
     { local: parameter.local
     , ty: made.ty
+    , marked: made.marked
     , param: { local: parameter.local, ty: _ } <$> read
     , defined: made.defined
     , marks: made.marks
@@ -149,8 +162,13 @@ parameterAt context path index parameter = do
   where
   annotated written = annotation
     <$> lifted (translate context.tables Rigidly written)
-  annotation found =
-    { ty: found.ty, defined: definedness found.ty, marks: found.marks }
+    <*> lifted (marked context.tables (InAnnotation path index) written)
+  annotation found markedType =
+    { ty: found.ty
+    , marked: markedType
+    , defined: definedness found.ty
+    , marks: found.marks
+    }
   definedness ty span =
     [ tagged (EmitB (GenEqual ty ty)) RowB 14 Types span ]
   unannotated = unwritten <$> fresh
@@ -161,4 +179,5 @@ parameterAt context path index parameter = do
     , sort: SortType
     , position: ParamType path index
     }
-  unwritten handle = { ty: flex handle, defined: const [], marks: [] }
+  unwritten handle =
+    { ty: flex handle, marked: markedFlex handle, defined: const [], marks: [] }

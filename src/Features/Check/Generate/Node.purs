@@ -11,38 +11,57 @@ module Features.Check.Generate.Node
   ( Generated
   , Ruled
   , arrowOf
+  , closedPlaceholder
   , fixed
   , flex
+  , markedArrow
+  , markedFlex
+  , markedRecord
+  , markedRef
   , markersAt
   , none
+  , placeholderArrow
   , recordOf
   , tagged
   ) where
 
 import Prelude
 import Data.Array as Array
-import Data.Tuple (Tuple)
+import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Open)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (OutsideKind(..))
-import Domain.Recorded.Origin (OriginKind, RowGroup(..), SpecRow(..))
+import Domain.Recorded.Effect (ERole(..), EVar(..), MRow, MTy(..))
+import Domain.Recorded.Origin
+  ( OriginKind
+  , Path
+  , RowGroup(..)
+  , SpecRow(..)
+  )
 import Domain.Row (closedRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
 import Domain.Type.Record (recordRow)
 import Features.Check.Generate.Elab (Elab, GenTy, Handle, Ref(..))
-import Features.Check.Generate.Gen (Gen, GenEntry(..), Tagged)
+import Features.Check.Generate.Gen (Gen, GenEntry(..), Tagged, refVar)
 import Features.Check.Generate.Out (TypeMarker(..))
 
--- An expression's result: its type, its checked node, its entries.
+-- An expression's result: its type, its marked type (a-min §2, recorded
+-- at `NodeAt`), its checked node, its entries.
 type Generated s =
-  { ty ∷ GenTy s, expr ∷ Elab s Checked.Expr, emits ∷ Gen s Unit }
+  { ty ∷ GenTy s
+  , marked ∷ MTy
+  , expr ∷ Elab s Checked.Expr
+  , emits ∷ Gen s Unit
+  }
 
 -- What a rule gives `expr`: the node given its own checked type, which
 -- `expr` reads at `NodeType p` (an over-applied call's saturated node
 -- is typed from it, Generate.Call).
 type Ruled s =
   { ty ∷ GenTy s
+  , marked ∷ MTy
   , node ∷ Elab s (Ty Open → Checked.Node)
   , emits ∷ Gen s Unit
   }
@@ -64,6 +83,36 @@ arrowOf ∷ ∀ s. Array (GenTy s) → GenTy s → GenTy s
 arrowOf parameters result = Array.foldr stage result parameters
   where
   stage parameter rest = TFun parameter closedRow rest
+
+-- The marked arrow a rule builds where `arrowOf` puts the closed row:
+-- stage k's row is the fresh effect variable `⟨p, stage k⟩`.
+markedArrow ∷ Path → Array MTy → MTy → MTy
+markedArrow path parameters result =
+  Array.foldr stage result (Array.mapWithIndex Tuple parameters)
+  where
+  stage (Tuple index parameter) =
+    MArrow parameter { labels: [], tail: Just (EffFresh path (Stage index)) }
+
+-- A lambda's, handler's, `with`'s, `handle`'s or `fail`'s rows until
+-- their own rules record them (amin tranche 1, Task 4): closed, empty.
+closedPlaceholder ∷ MRow
+closedPlaceholder = { labels: [], tail: Nothing }
+
+placeholderArrow ∷ Array MTy → MTy → MTy
+placeholderArrow parameters result = Array.foldr stage result parameters
+  where
+  stage parameter = MArrow parameter closedPlaceholder
+
+-- A reference's or handle's marked type: its problem variable, named as
+-- the recorded atoms name it (`refVar`).
+markedRef ∷ ∀ s. Ref s → MTy
+markedRef = MVar <<< refVar
+
+markedFlex ∷ ∀ s. Handle s → MTy
+markedFlex = markedRef <<< FlexRef
+
+markedRecord ∷ ∀ s. Array (Tuple String MTy) → Array (Ref s) → MTy
+markedRecord fields tails = MRecord fields (map refVar tails)
 
 -- A record, its fields by label and its tails in order (Domain.Type.Record).
 recordOf ∷ ∀ s. Array (Tuple String (GenTy s)) → Array (Ref s) → GenTy s

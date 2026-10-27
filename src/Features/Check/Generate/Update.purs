@@ -22,7 +22,14 @@ import Features.Check.Generate.Context (Context, Recur, at)
 import Features.Check.Generate.Elab (Ref(..))
 import Features.Check.Generate.Fresh (auxiliary, child, childAt, childOf)
 import Features.Check.Generate.Gen (Gen, GenAtom(..), Tagged, emit)
-import Features.Check.Generate.Node (Generated, Ruled, fixed, flex, recordOf)
+import Features.Check.Generate.Node
+  ( Generated
+  , Ruled
+  , fixed
+  , flex
+  , markedRecord
+  , recordOf
+  )
 import Features.Check.Generate.Record (shape)
 
 -- E27: per field, `eq τ_e { l: ⟨p, upd l⟩, ...⟨p, updrest l⟩ }` and
@@ -42,6 +49,7 @@ update recur context path value fields = do
     (Array.zip fields generated)
   pure
     { ty: operand.ty
+    , marked: operand.marked
     , node: fixed
         ( Checked.RecordUpdate <$> operand.expr
             <*> traverse replaced (Array.zip fields generated)
@@ -93,6 +101,7 @@ removal recur context path span value labels = do
   rest ← FlexRef <$> auxiliary path (ExprRule 28) Rest SortRow span
   pure
     { ty: recordOf [] [ rest ]
+    , marked: markedRecord [] [ rest ]
     , node: fixed (Checked.RecordRemoval <@> map _.name labels <$> operand.expr)
     , emits: do
         emit (at context path (ExprRule 28))

@@ -53,6 +53,8 @@ import Features.Check.Generate.Node
   ( Ruled
   , fixed
   , flex
+  , markedFlex
+  , markedRecord
   , recordOf
   , tagged
   )
@@ -65,6 +67,9 @@ literal recur context path fields = built <$> sequence
   where
   built generated =
     { ty: recordOf (Array.zip (map _.name fields) (map _.ty generated)) []
+    , marked: markedRecord
+        (Array.zip (map _.name fields) (map _.marked generated))
+        []
     , node: fixed
         ( Checked.RecordLiteral <$> traverse field
             (Array.zip fields generated)
@@ -93,9 +98,11 @@ extension recur context path span items = do
   let pairs = Array.zip items generated
   spreads ← traverse spreadVar
     (Array.mapWithIndex Tuple (Array.mapMaybe spreading pairs))
-  res ← flex <$> nodeRes path (ExprRule 25) span
+  handle ← nodeRes path (ExprRule 25) span
+  let res = flex handle
   pure
     { ty: res
+    , marked: markedFlex handle
     , node: fixed (Checked.RecordExtension <$> traverse checkedItem pairs)
     , emits: do
         emit (at context path (ExprRule 25))
@@ -157,6 +164,7 @@ fieldAccess recur context path span value label = do
   rest ← auxiliary path (ExprRule 26) Rest SortRow span
   pure
     { ty: flex field
+    , marked: markedFlex field
     , node: fixed (Checked.FieldAccess <@> label.name <$> operand.expr)
     , emits: do
         emit (at context path (ExprRule 26))

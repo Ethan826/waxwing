@@ -39,6 +39,8 @@ import Features.Check.Generate.Node
   , arrowOf
   , fixed
   , flex
+  , markedArrow
+  , markedFlex
   , tagged
   )
 
@@ -110,6 +112,7 @@ referenced
   → Ruled s
 referenced context path rule made found =
   { ty: arrowOf found.parameters found.result
+  , marked: markedArrow path found.markedParameters found.markedResult
   , node: fixed (made <$> found.slots)
   , emits: emit (at context path rule) (found.entries <> found.markers)
   }
@@ -145,6 +148,9 @@ applied context node made found generated =
   else pure
     { ty: arrowOf (Array.drop (Array.length generated) found.parameters)
         found.result
+    , marked: markedArrow node.path
+        (Array.drop (Array.length generated) found.markedParameters)
+        found.markedResult
     , node: fixed (made <$> found.slots <*> sequence (map _.expr generated))
     , emits: written []
     }
@@ -153,6 +159,7 @@ applied context node made found generated =
   rest = Array.drop count generated
   overApplied res =
     { ty: flex res
+    , marked: markedFlex res
     , node: saturated node.span made <$> found.slots
         <*> sequence (map _.expr (Array.take count generated))
         <*> sequence (map _.expr rest)

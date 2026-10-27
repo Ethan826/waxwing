@@ -5,6 +5,8 @@
 -- `Fail/payload`. Checked nodes as today's (Check/Handle.purs,
 -- Failure.purs; D1 spec §3.5, R0 Task 7.1b): a clause's payload type is
 -- its written label's argument, rigid and static, so nothing reads it.
+-- Marked types (amin tranche 1, Task 3): `handle` and `fail` are their
+-- `⟨p, res⟩`; a clause's local is its payload marked as declared.
 module Features.Check.Generate.Failure (fail, handle) where
 
 import Prelude
@@ -27,7 +29,8 @@ import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Fresh (child, childAt, childOf, nodeRes)
 import Features.Check.Generate.Gen (Gen, GenAtom(..), emit, lifted)
-import Features.Check.Generate.Node (Ruled, fixed, flex, markersAt)
+import Features.Check.Generate.Marked (MarkNaming(..), marked)
+import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, markersAt)
 import Features.Check.Generate.Out (TypeMarker)
 import Features.Check.Generate.Translate (Naming(..), translate)
 
@@ -48,9 +51,11 @@ handle
 handle recur context path span body clauses = do
   handled ← recur context (childOf path "Handle" "body") body
   found ← sequence (Array.mapWithIndex clauseOf clauses)
-  res ← flex <$> nodeRes path (ExprRule 22) span
+  minted ← nodeRes path (ExprRule 22) span
+  let res = flex minted
   pure
     { ty: res
+    , marked: markedFlex minted
     , node: fixed (Checked.Handle <$> handled.expr <*> traverse _.clause found)
     , emits: do
         emit (at context path (ExprRule 22))
@@ -80,8 +85,10 @@ failClause recur context path clause = do
   written ← lifted
     (maybe (Left PayloadShape) Right (singleArgument clause.label))
   payload ← lifted (translate context.tables Rigidly written)
+  markedPayload ← lifted (marked context.tables Declared written)
   generated ← recur
-    ( maybe context (bindLocal <@> payload.ty <@> context)
+    ( maybe context
+        (bindLocal <@> { ty: payload.ty, marked: markedPayload } <@> context)
         clause.local
     )
     path
@@ -116,6 +123,7 @@ fail recur context path span family value = do
   res ← nodeRes path (ExprRule 23) span
   pure
     { ty: flex res
+    , marked: markedFlex res
     , node: fixed (Checked.Fail <$> paid.expr)
     , emits: do
         emit (at context path (ExprRule 23))

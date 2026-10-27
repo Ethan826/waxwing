@@ -53,6 +53,7 @@ block recur context path items result = do
   let visited = Log.entries done.items
   pure
     { ty: final.ty
+    , marked: final.marked
     , node: fixed (Checked.Block <$> traverse _.item visited <*> final.expr)
     , emits: traverse_ _.emits visited *> final.emits
     }
@@ -85,7 +86,9 @@ discarded context found =
 
 letItem ∷ ∀ s. Context s → Maybe LocalId → Generated s → Visited s
 letItem context local found =
-  { context: maybe context (bindLocal <@> found.ty <@> context) local
+  { context: maybe context
+      (bindLocal <@> { ty: found.ty, marked: found.marked } <@> context)
+      local
   , item: Checked.Let local <$> found.expr
   , emits: found.emits
   }
