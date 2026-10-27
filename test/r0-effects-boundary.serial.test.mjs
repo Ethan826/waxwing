@@ -13,6 +13,12 @@ import { declarationsOf, rt8Sources } from './r0-rt8-run.mjs';
 // FailFamily. Each in-scope declaration's shadow verdict is not Solved
 // and its `outside` holds HandlerType (FailFamily alone only where no
 // handler type is recorded). Task 12 extends this to obligations.
+// Task 17: the expected cases are also derived from resolved source,
+// independently of generation: a generic walk of each resolved
+// declaration counts handler literals, `with`, `handle`, `fail` and
+// written handler types. A literal, `with` or written handler type needs
+// a recorded MHandler and `HandlerType`; only `handle`/`fail` may use
+// `FailFamily`; a source case with neither is a breach.
 // Corpus-wide (every program decided), hence serial.
 const Generate = await load('Features.Check.Generate');
 const Inputs = await load('Features.Check.Generate.Inputs');
@@ -42,19 +48,42 @@ const holdsHandler = values => {
   return false;
 };
 
+const constructs = { Handler: 'literal', With: 'with', Handle: 'handle',
+  Fail: 'fail', THandler: 'type' };
+const sourceKinds = Object.values(constructs);
+
+// Which handler constructs occur in a resolved declaration, by an
+// explicit stack over the value, matching constructor names.
+const constructsOf = decl => {
+  const found = new Set();
+  const seen = new Set();
+  const pending = [decl];
+  while (pending.length > 0) {
+    const value = pending.pop();
+    if (value === null || typeof value !== 'object' || seen.has(value))
+      continue;
+    seen.add(value);
+    const construct = constructs[named(value)];
+    if (construct !== undefined) found.add(construct);
+    pending.push(...Object.values(value));
+  }
+  return [...found].sort();
+};
+
 const kindsOf = entries => entries.map(entry => named(entry.value));
 
 const factsOf = row => {
   const { tables, signatures } = Inputs.generationInputs(row.program);
   const generated = Generate.generate(tables)(signatures)(row.decl);
   if (named(generated) !== 'Right') return { at: row.at, refused: true };
+  const source = constructsOf(row.decl);
   const fields = Recorded.fields(Elaborating.problem(generated.value0));
   const { effects } = fields;
   const kinds = kindsOf(fields.outside);
   const sites = { nodes: holdsHandler(valuesOf(effects.nodes)),
     instances: holdsHandler(valuesOf(effects.instances)),
     annotations: holdsHandler(valuesOf(effects.annotations)) };
-  return { at: row.at, kinds, solved: describe(row.decision).verdict
+  return { at: row.at, kinds, source, solved: describe(row.decision).verdict
     === 'Solved', handler: Object.values(sites).some(Boolean), sites };
 };
 
@@ -70,6 +99,35 @@ const survey = async () => {
 };
 
 const found = await survey();
+
+// Controller ruling (Task 17): `fail` alone performs the Fail effect and
+// is not a handler construct (Failure.purs, E23: a written family that
+// translates is not marked), so a `fail`-only declaration is outside the
+// boundary: counted and printed, never asserted. `fail` plus another
+// construct is judged by that construct. A literal or `with` records a
+// node type, so it needs MHandler; a handler type written only in the
+// declaration's own signature is not recorded in `effects` (no signature
+// field yet), so it needs HandlerType and not Solved only. `handle`
+// alone may use FailFamily instead of HandlerType.
+const gated = source => source.some(kind => kind !== 'fail');
+const recorded = source => ['literal', 'with'].some(k => source.includes(k));
+const typed = source => ['literal', 'with', 'type']
+  .some(kind => source.includes(kind));
+const sourceBreaches = ({ at, kinds, source, solved, handler }) => {
+  if (!gated(source)) return [];
+  const marked = kinds.includes('HandlerType')
+    || (!typed(source) && kinds.includes('FailFamily'));
+  const where = `${at} (constructs: ${source.join(', ')}; outside: `
+    + `${kinds.join(', ')}; MHandler recorded: ${handler})`;
+  return [...(solved ? [`${where}: Solved`] : []),
+    ...(recorded(source) && !handler ? [`${where}: no MHandler`] : []),
+    ...(marked ? [] : [`${where}: no marker`])];
+};
+
+// About 80% of the observed counts (declarations per construct, and in
+// all); printed on every run.
+const sourceFloors = { all: 250, literal: 150, with: 150, handle: 45,
+  fail: 55, type: 55 };
 
 const refusals = ({ at, kinds, solved, handler }) => {
   const marked = kinds.includes('HandlerType')
@@ -98,6 +156,27 @@ test('no handler declaration is Solved and each is marked', () => {
   const failures = found.scoped.flatMap(refusals);
   assert.deepEqual(failures.slice(0, 10), [],
     `${failures.length} breaches`);
+});
+
+test('every handler construct in resolved source is blocked', () => {
+  const cases = found.facts.filter(fact => fact.source.length > 0);
+  const count = kind => cases.filter(f => f.source.includes(kind)).length;
+  console.log(`source-derived: ${cases.length} declarations; `
+    + sourceKinds.map(kind => `${kind} ${count(kind)}`).join(', '));
+  assert.ok(cases.length >= sourceFloors.all,
+    `only ${cases.length} source-derived declarations`);
+  for (const kind of sourceKinds)
+    assert.ok(count(kind) >= sourceFloors[kind],
+      `only ${count(kind)} declarations hold a ${kind} construct`);
+  const failOnly = cases.filter(fact => !gated(fact.source));
+  const signatureOnly = cases.filter(fact => gated(fact.source)
+    && !recorded(fact.source) && fact.source.includes('type'));
+  console.log(`fail-only (unasserted): ${failOnly.length}, of which `
+    + `${failOnly.filter(fact => fact.solved).length} Solved; `
+    + `signature-only handler type: ${signatureOnly.length}`);
+  const breaches = cases.flatMap(sourceBreaches);
+  assert.deepEqual(breaches.slice(0, 10), [],
+    `${breaches.length} source-derived breaches`);
 });
 
 test('the harness can return Solved outside the boundary', () => {
