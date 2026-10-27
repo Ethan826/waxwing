@@ -210,6 +210,15 @@ fails the test until it is reviewed and the pinned list updated; in
 the last two, an export such as `mkGen ∷ a → Parts → Gen s a` would
 reopen S14 and Mint for every other Generate* module.
 
+Amendment (amin tranche 1, Task 3, approved by the author as a named
+gate change): `Generate.Gen` also exports `effected ∷ Array EffectItem
+→ Gen s Unit`, which writes effect items only (no atom, variable, site
+or read), and `refVar ∷ Ref s → Var`, which is `forget`. A raw variable
+name can now leave the phantom scope through `refVar`; a handle still
+cannot be made outside `fresh`, since no export turns a `Var` into a
+`Ref` or a `Handle`. `refVar` does not establish that a recorded effect
+item names a registered variable of the right sort.
+
 `Elaborating` lives in Domain because `DeclReport` (Domain.Verdict,
 ruling R2) will carry it from Task 4.6; it has no Features type in it.
 No module cycle: `Domain.Elaborating.Types` imports neither Internal
@@ -509,7 +518,9 @@ matters only when `untracked` already reports the duplicate), and
 wraps its `run` as `build w = run w.bindings`. Because the argument is `∀ s.`, a
 handle cannot leave the generation that minted it: `a` is bound
 outside `s`'s scope, so `a = Handle s` is a skolem escape and does not
-typecheck. The nominal roles stop `coerce` from changing `s`.
+typecheck. The nominal roles stop `coerce` from changing `s`. (Since
+amin tranche 1 Task 3 a handle's raw `Var` can leave through
+`Generate.Gen.refVar`; the handle itself cannot, see §3.1's amendment.)
 
 ### 3.5 `generate`, `positionsOf`, `elaborate`
 

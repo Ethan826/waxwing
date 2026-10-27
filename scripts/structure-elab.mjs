@@ -128,9 +128,12 @@ export const pinnedExports = {
   'Features.Check.Generate.Elab': { exports: ['module Exports', 'readRow',
     'readType', 'seal'], aliases: { Exports: ['Elab', 'GenTy', 'Handle',
     'Ref(..)'] } },
+  // `effected` and `refVar`: amin tranche 1 Task 3, approved by the
+  // author (effect items only; a reference's name, never a handle).
   'Features.Check.Generate.Gen': { exports: ['module Exports', 'GenAtom(..)',
     'GenEntry(..)', 'GenReq(..)', 'GenSite', 'Minted', 'Rigid', 'Tagged',
-    'emit', 'fresh', 'lifted', 'positioned', 'rigid', 'slots'],
+    'effected', 'emit', 'fresh', 'lifted', 'positioned', 'refVar', 'rigid',
+    'slots'],
   aliases: { Exports: ['Gen'] } }
 };
 

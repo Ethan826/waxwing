@@ -8,7 +8,8 @@
 -- counts and the site table with its write counts. Its argument is
 -- `∀ s.`, so a handle cannot leave the generation that minted it
 -- (`a = Handle s` is a skolem escape), and the nominal roles stop
--- `coerce` from changing `s`.
+-- `coerce` from changing `s`. A handle's raw `Var` can leave through
+-- `Generate.Gen.refVar` (amin tranche 1, Task 3); the handle cannot.
 --
 -- Labelled amendments: `seal` takes the declaration and the program's
 -- holder set, which the recorded problem carries (§6.2, ruling K-a) and

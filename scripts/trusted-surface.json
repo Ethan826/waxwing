@@ -496,10 +496,12 @@
    "Minted",
    "Rigid",
    "Tagged",
+   "effected",
    "emit",
    "fresh",
    "lifted",
    "positioned",
+   "refVar",
    "rigid",
    "slots"
   ],
@@ -516,10 +518,12 @@
    "EmitSplit",
    "GenPrintable",
    "GenComparable",
+   "effected",
    "emit",
    "fresh",
    "lifted",
    "positioned",
+   "refVar",
    "rigid",
    "slots"
   ]

@@ -2,10 +2,11 @@
 -- D1's generation primitives (docs/plans/r0-generation-continuation.md
 -- §3.3; R0 Task 7.1a). They partition `Gen`'s parts: only `fresh` and
 -- `rigid` write variables, only `positioned` and `slots` write sites
--- (and so `types`), only `emit` writes entries; `lifted` stops
--- generation with Task 3.2's fault. A rule module builds its whole
--- recorded problem through them, and a type's recorded and checked forms
--- come from one call. `Gen` never sees a witness, so it may be monadic.
+-- (and so `types`), only `emit` writes entries, only `effected` writes
+-- effect items; `lifted` stops generation with Task 3.2's fault. A rule
+-- module builds its whole recorded problem through them, and a type's
+-- recorded and checked forms come from one call. `Gen` never sees a
+-- witness, so it may be monadic.
 --
 -- Labelled amendments to §3.3's sketch: `fresh` takes the variable's
 -- sort and its T-R0b stored position, which `VarInfo` holds and the role
@@ -13,7 +14,10 @@
 -- a signature variable (Sig1), which §3.3 left unassigned; `emit` takes
 -- the rule's `At` and each entry's spec row, kind and span, so entries
 -- carry Task 3.2's origins; `lifted` is the fault channel (ruling on
--- Q3).
+-- Q3). Approved gate change (amin tranche 1, Task 3): `effected` and
+-- `refVar`. Raw variable names can leave the phantom scope through
+-- `refVar`; handles are still made only by `fresh`. Neither checks that
+-- an effect item's variables are registered or correctly sorted.
 module Features.Check.Generate.Gen
   ( module Exports
   , GenAtom(..)
@@ -23,10 +27,12 @@ module Features.Check.Generate.Gen
   , Minted
   , Rigid
   , Tagged
+  , effected
   , emit
   , fresh
   , lifted
   , positioned
+  , refVar
   , rigid
   , slots
   ) where
@@ -68,7 +74,15 @@ import Features.Check.Generate.Elab.Internal
   )
 import Features.Check.Generate.Elab.Log as Log
 import Features.Check.Generate.Fault (GenerationFault)
-import Features.Check.Generate.Out (At, Item(..), Out, emit, varsOut) as Out
+import Features.Check.Generate.Out (EffectItem)
+import Features.Check.Generate.Out
+  ( At
+  , Item(..)
+  , Out
+  , emit
+  , noOut
+  , varsOut
+  ) as Out
 
 -- A fresh variable ⟨path, role⟩ with its site-table entry (§5.2).
 type Minted =
@@ -173,6 +187,19 @@ emit at entries = wrote (Out.emit at (map listed entries))
     , kind: tagged.kind
     , span: tagged.span
     }
+
+-- The only way to write the effect problem (a-min §10): effect items
+-- alone, so no atom, variable, site or read changes with it (approved
+-- gate change, amin tranche 1 Task 3). It does not check that a
+-- variable an item names was minted or has the right sort.
+effected ∷ ∀ s. Array EffectItem → Gen s Unit
+effected items = wrote (Out.noOut { effects = items })
+
+-- A reference's problem variable, as `emit` and `positioned` record it,
+-- so a marked type names what the recorded atoms name. It reads a name
+-- and makes no handle: a `Var` never becomes a `Ref`.
+refVar ∷ ∀ s. Ref s → Var
+refVar = forget
 
 lifted ∷ ∀ s a. Either GenerationFault a → Gen s a
 lifted = either (Gen <<< Left) pure
