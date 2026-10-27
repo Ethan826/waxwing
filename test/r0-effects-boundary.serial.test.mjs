@@ -23,6 +23,9 @@ const Unfoldable = await load('Data.Unfoldable');
 
 // About 80% of the 276 observed.
 const minimum = 220;
+// About 80% of the 235 observed.
+const handlerFloor = 188;
+const siteFloor = 1;
 const named = value => value.constructor.name;
 const valuesOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => pair.value1);
@@ -44,22 +47,26 @@ const kindsOf = entries => entries.map(entry => named(entry.value));
 const factsOf = row => {
   const { tables, signatures } = Inputs.generationInputs(row.program);
   const generated = Generate.generate(tables)(signatures)(row.decl);
-  if (named(generated) !== 'Right') return null;
+  if (named(generated) !== 'Right') return { at: row.at, refused: true };
   const fields = Recorded.fields(Elaborating.problem(generated.value0));
   const { effects } = fields;
   const kinds = kindsOf(fields.outside);
+  const sites = { nodes: holdsHandler(valuesOf(effects.nodes)),
+    instances: holdsHandler(valuesOf(effects.instances)),
+    annotations: holdsHandler(valuesOf(effects.annotations)) };
   return { at: row.at, kinds, solved: describe(row.decision).verdict
-    === 'Solved', handler: holdsHandler([...valuesOf(effects.nodes),
-      ...valuesOf(effects.instances), ...valuesOf(effects.annotations)]) };
+    === 'Solved', handler: Object.values(sites).some(Boolean), sites };
 };
 
 const survey = async () => {
   const rows = (await rt8Sources()).flatMap(declarationsOf);
-  const facts = rows.map(factsOf).filter(found => found !== null);
-  const scoped = facts.filter(found => found.handler
-    || found.kinds.includes('HandlerType')
-    || found.kinds.includes('FailFamily'));
-  return { facts, scoped };
+  const all = rows.map(factsOf);
+  const refused = all.filter(fact => fact.refused).map(fact => fact.at);
+  const facts = all.filter(fact => !fact.refused);
+  const scoped = facts.filter(fact => fact.handler
+    || fact.kinds.includes('HandlerType')
+    || fact.kinds.includes('FailFamily'));
+  return { facts, scoped, refused };
 };
 
 const found = await survey();
@@ -75,6 +82,17 @@ const refusals = ({ at, kinds, solved, handler }) => {
 test('no handler declaration is Solved and each is marked', () => {
   console.log(`effects boundary: ${found.scoped.length} in-scope of `
     + `${found.facts.length} declarations`);
+  assert.deepEqual(found.refused.slice(0, 10), [],
+    `${found.refused.length} declarations refused by generation`);
+  const holding = found.facts.filter(fact => fact.handler);
+  const through = site => holding.filter(fact => fact.sites[site]).length;
+  console.log(`MHandler recorded in ${holding.length} declarations: `
+    + `${through('nodes')} nodes, ${through('instances')} instances, `
+    + `${through('annotations')} annotations`);
+  assert.ok(holding.length > handlerFloor,
+    `only ${holding.length} declarations record an MHandler`);
+  for (const site of ['instances', 'annotations'])
+    assert.ok(through(site) >= siteFloor, `no MHandler through ${site}`);
   assert.ok(found.scoped.length > minimum,
     `only ${found.scoped.length} in-scope declarations`);
   const failures = found.scoped.flatMap(refusals);
