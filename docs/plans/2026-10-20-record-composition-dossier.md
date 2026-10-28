@@ -6442,3 +6442,22 @@ placeholder-comparison defect because deleting the write is not
 observable; the `effectRigids` ambient exception rests on statements
 §2 and a corpus assertion. Task 7 held; R031 deferred; nothing pushed.
 Spend about 3.8M against the 3.95M ceiling.
+
+### 18.106 Unit D accepted, one registration follow-up (2026-10-28)
+
+The author accepted unit D with one follow-up before Task 7. Task 22's
+proof is registered as an isolated behavioural row, not an import gate:
+the harness is extended only far enough to mutate and run the real
+comparison code (test/r0-fail-only-compare.mjs). With
+`WXW_PIN_FAIL_ONLY=1` a moved cohort must fail and leave the fixture
+unchanged, and restoring the in-test writer must make that probe fail.
+An import restriction alone would not establish this. The two
+MissingSignature rows are accepted as a pair and labelled separately:
+the direct assembly row (`r0-amin-signature-missing`) shows omission is
+rejected; the end-to-end row (`r0-amin-signature-missing-real`) shows a
+legitimate placeholder-shaped signature is accepted, and claims nothing
+about omission. Self-hosting confirmed: all four final text fixes are
+in main at 7093c79. Task 7 held, R031 deferred; the other completed
+corrections are not reopened. The author asked for a bounded estimate
+for the follow-up, then a separate scope and cap for Task 7. This
+supersedes §18.105's open gate choice.

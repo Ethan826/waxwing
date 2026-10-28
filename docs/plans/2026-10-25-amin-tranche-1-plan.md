@@ -461,6 +461,12 @@ mark the recorded signature names, nested handler types included, is in
 `effectRigids` and `rigidMarks` respectively (and, if the spec requires,
 the converse). Registered row: drop one rigid from the recording.
 
+**Unit D accepted (2026-10-28, §18.106):** Task 22's proof is
+registered by a narrow harness extension that mutates and runs the real
+comparison (not an import gate); the two Task 21 rows are labelled
+separately (direct: omission rejected; end-to-end: a placeholder-shaped
+signature accepted). Awaiting the author's cap; Task 7 held.
+
 ### Task 15: duplicate effect writes are a generation fault
 
 **Files:** Generate/Fault.purs (one constructor), Generate/Assemble.purs

@@ -33,18 +33,18 @@ docs/progress.md's tranche-1 entries.
   authorization. Spend so far about 3.8M against a 3.95M running
   ceiling; any new unit needs a new cap (the author asks for a bounded
   estimate first).
-- Task 22's proof is not a registered row: the regression harness
-  clones only src and .spago. Options: a parsed-import gate (only the
-  pin script writes the cohort fixture) or cloning test/ in the harness
-  (broader gate change).
-- Unit D's end-to-end row targets the placeholder-comparison defect;
-  deleting the signature write is unobservable from outside (no item
-  list exposed). The `effectRigids` ambient-variable exception is
-  asserted from the corpus (statements §2), not from a definition.
+- Unit D accepted (§18.106). Follow-up before Task 7, awaiting the
+  author's cap: register Task 22's proof as a behavioural row by a
+  narrow harness extension (mutate and run test/r0-fail-only-compare.mjs;
+  a moved cohort fails under `WXW_PIN_FAIL_ONLY=1` and the fixture is
+  unchanged; restoring the writer fails the probe), and label the two
+  MissingSignature rows separately (direct: omission rejected;
+  end-to-end: placeholder-shaped signature accepted).
+- The `effectRigids` ambient-variable exception is asserted from the
+  corpus (statements §2), not from a definition.
 - R031 deferred to an effect-row-binding tranche (§18.100).
-- Self-hosting docs: pushed to origin/main at 7093c79 (author's
-  commit); whether it includes the last four review fixes (SH01 ID,
-  C001 status sentence, stray "while", inventory root) is unchecked.
+- Self-hosting docs: confirmed in origin/main at 7093c79, all four
+  final text fixes included.
 
 **How work runs here:** a pasted review plus "Ratified" is the
 author's ruling (record it in the dossier and plan, then act; caps are
