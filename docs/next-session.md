@@ -1,66 +1,60 @@
-# RESUME HERE (2026-10-25, session end)
+# RESUME HERE (2026-10-27, context reset)
 
-**Report in milestones first.** Every update opens with which of three
-milestones moved, what became demonstrably possible, and what blocks
-the next one; gate and obligation IDs go underneath as references
-(author, 2026-10-25). The milestones:
+**Report in milestones first** (author, 2026-10-25): which of three
+milestones moved, what became possible, what blocks the next; IDs
+underneath; position as gates and dependencies, never percentages.
 1. An approved way to preserve and check effects in the new checker.
 2. The new checker builds complete typed programs, and the
    compatibility boundary is resolved.
 3. Representative composed-record programs compile and run, and the
    new path can be enabled safely.
-Then the epic's remaining assurance obligations. Report position as
-gates and dependencies, not percentages: the records do not support a
-defensible one (author, 2026-10-25). Priority: R0 and its effect
-guarantees; arithmetic is parked.
+Priority: R0 and its effect guarantees; arithmetic parked.
 
-**Where milestone 1 stands.** The a-min statements (revision 3.6 with
-the §R7 corrections and §R7b, docs/plans/r0-amin-statements.md) were
-**approved as a representation at 535b780** (2026-10-25, dossier
-§18.95). Named obligations stay open (O-SUB, A1 of RC′, the carried
-table); no soundness claim. E4′'s provisional "always R's tail" forces
-R's tail and checks (shadow validator only); the live compiler keeps H′.
-Milestone 1's checking half needs the validator (A2).
+**Where things stand.** Milestone 1's representation is approved
+(a-min statements, docs/plans/r0-amin-statements.md, 535b780); its
+checking half needs the validator (A2, options note
+docs/plans/2026-10-25-amin-a2-options.md, questions 1-3 open). Tranche 1
+(docs/plans/2026-10-25-amin-tranche-1-plan.md, toward milestone 2) has
+recorded the effect problem in shadow generation: Checkpoint A (Tasks
+1-5), Checkpoint B (Tasks 15-17), correction units C (Tasks 18-20:
+R033 opened rows/handled labels, R032 signature record, I2 fail-only
+amendment) and D (Tasks 21-23: MissingSignature fault, cohort pin only
+by scripts/r0-fail-only-pin.mjs, signature rigids vs
+effectRigids/rigidMarks). Head 7d1d668 on r0-t2-d1, unpushed; verify
+exit 0 there (2961 + 146 tests, 231 regression proofs; logs in the main
+checkout's .build/evidence/2026-10-27-checkpointB/). Nothing checks
+effects yet; live compilation unchanged; G0's atoms byte-identical.
+History and rulings: dossier
+docs/plans/2026-10-20-record-composition-dossier.md §18.95-§18.105;
+docs/progress.md's tranche-1 entries.
 
-**Checkpoint A reached (2026-10-26, §18.98):** tranche 1 Tasks 1-5 of
-docs/plans/2026-10-25-amin-tranche-1-plan.md done at 87420d8, verify
-exit 0; ledger in .superpowers/sdd/2026-10-25-amin-tranche-1-plan/.
-**Checkpoint B: checks completed, R031 deferred (§18.101).** Verify
-at e6868b8 exit 0. For the author before Task 7: BACKLOG R033 (I1, I4:
-opened rows and handled labels), the `fail`-only boundary ruling (I2),
-R032 (signature record).
-**Correction unit C done (§18.103):** R033, R032, I2 at 2643df3,
-verify exit 0. Open for the author: three check gaps from the targeted
-review (progress.md). Task 7 held; R031 deferred. A2 note:
-docs/plans/2026-10-25-amin-a2-options.md (questions 1-3 open).
-A2's algorithm, G-D1's closure record and Task 4.6 stay unauthorized.
-The critical path and part A/B status: docs/plans/r0-closure-checklist.md.
+**Held for the author (nothing authorized):**
+- Task 7 (E1 obligations) and Tasks 8-14: each needs its own
+  authorization. Spend so far about 3.8M against a 3.95M running
+  ceiling; any new unit needs a new cap (the author asks for a bounded
+  estimate first).
+- Task 22's proof is not a registered row: the regression harness
+  clones only src and .spago. Options: a parsed-import gate (only the
+  pin script writes the cohort fixture) or cloning test/ in the harness
+  (broader gate change).
+- Unit D's end-to-end row targets the placeholder-comparison defect;
+  deleting the signature write is unobservable from outside (no item
+  list exposed). The `effectRigids` ambient-variable exception is
+  asserted from the corpus (statements §2), not from a definition.
+- R031 deferred to an effect-row-binding tranche (§18.100).
+- Self-hosting docs: pushed to origin/main at 7093c79 (author's
+  commit); whether it includes the last four review fixes (SH01 ID,
+  C001 status sentence, stray "while", inventory root) is unchecked.
 
-**Landed and pushed.** origin/main = 6b4be77: FX033 repair (H′),
-arithmetic Tasks 1-2 (Tasks 3-7 held, parked), charter scoping records
-(map revision 2, F1-F4 filed as FX034, E021, E022, DOC002),
-FX030-FX032 backlog rows. FX033 is also on this branch (094adbf;
-verify exit 0, 2912 + 136 tests, 210 regression proofs).
-
-**Branches and worktrees.** Worktrees left: integrate (main; holds
-uncommitted docs/next-session.md, docs/progress.md edits and four
-untracked plan files that are not ours: do not touch), r0-t2-d1 (this
-branch, unpushed by the author's direction), effect-kinds. Every other
-worktree was removed 2026-10-25 after checking for uncommitted files;
-all branch refs kept. Evidence logs copied to the main checkout's
-.build/evidence/2026-10-25-landed/ and worktrees-2026-10-25/.
-
-**Open, not authorized.** a-min implementation, Task 4.6, G-D1, the
-five effect-contract decisions (research/effect-kinds, none blocks
-milestone 1), FX010 (masks one FX033 channel), E022's choice,
-FX034/E021 mechanisms, arithmetic Tasks 3-7, any push of r0-t2-d1.
-
-**Rules worth keeping in view:** research probes are `.wxw.txt`; one
-verify at a time via `mkdir $CLAUDE_JOB_DIR/tmp/verify.lock` (anchored
-`pgrep -f "^node scripts/verify.mjs"`; clear .build/go-cache after);
-stage explicit paths; `node scripts/width.mjs` must report 0 lines
-over 80 before a commit; agents return findings as text; no merge
-commits; no push without the author's explicit yes.
+**How work runs here:** a pasted review plus "Ratified" is the
+author's ruling (record it in the dossier and plan, then act; caps are
+caps). Subagent per task, focused tests by implementers, controller
+runs `npm run verify` between tasks under the lock (mkdir
+<scratchpad>/verify.lock; anchored `pgrep -f "^node scripts/verify.mjs"`;
+clear .build/go-cache after); research probes `.wxw.txt`; width 0 over
+80 before commits; stage explicit paths; no merge commits; no push
+without the author's explicit yes. Plan ledger (git-ignored):
+.superpowers/sdd/2026-10-25-amin-tranche-1-plan/progress.md.
 
 ---
 

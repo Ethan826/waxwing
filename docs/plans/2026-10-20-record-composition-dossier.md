@@ -6428,3 +6428,17 @@ A newly exposed recording defect is fixed within scope and cap;
 broader design or gate changes need a ruling. Cap 0.45M (running
 ceiling 3.95M), with one targeted review and one fix round. Task 7
 needs its own authorization afterwards; R031 stays deferred.
+
+### 18.105 Correction unit D done (2026-10-27)
+
+Tasks 21-23 landed (0a4bbd8, 69b0180, 3265fbd) with the fix round
+7d1d668; verify at 7d1d668 exit 0 (2961 + 146 tests, 231 regression
+proofs). The targeted review's Critical findings (seal-based tests and
+a dead regression needle broken by Task 21) were fixed in the one
+authorized round. For the author: Task 22's proof needs a gate choice
+to be registered (a parsed-import gate, or cloning test/ in the
+harness); the end-to-end MissingSignature row restores the
+placeholder-comparison defect because deleting the write is not
+observable; the `effectRigids` ambient exception rests on statements
+§2 and a corpus assertion. Task 7 held; R031 deferred; nothing pushed.
+Spend about 3.8M against the 3.95M ceiling.

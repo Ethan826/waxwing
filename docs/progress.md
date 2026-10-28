@@ -172,6 +172,29 @@ constructor-pattern/field separating tests, cohort "preserved" rests on
 counts. Not fixed: the 3.5M ceiling is spent. This establishes no
 effect soundness.
 
+## a-min tranche 1, correction unit D (2026-10-27)
+
+Task 21 (0a4bbd8): assembly rejects a missing `SignatureAt` with the
+new fault `MissingSignature`, never comparing against the placeholder.
+Task 22 (69b0180): the fail-only cohort pin is written only by
+scripts/r0-fail-only-pin.mjs (refuses to pin when generation refused
+any declaration); the test compares through test/r0-fail-only-compare.mjs
+whatever the environment. Task 23 (3265fbd): every rigid the recorded
+signature names, nested handler types included, is in `effectRigids`
+and `rigidMarks`; `rigidMarks` matches exactly; `effectRigids` may also
+list the declaration's implicit ambient row variable (53 declarations;
+statements §2), asserted as the only allowed gap. The targeted review
+(Opus) found two Critical regressions the implementer's test list missed
+(hand-built `seal` users without a signature; the duplicate-effect
+row's dead needle) and a false premise (a `with pure` row is closed, so
+`fn g(): Unit with pure = ()` records exactly the placeholder); fixed in
+7d1d668 with an end-to-end row and a handler-nested rigid case; scoped
+re-review: all addressed. `npm run verify` at 7d1d668 exit 0: 2961/2961
+parallel, 146/146 serial, 231/231 regression proofs. Open: Task 22's
+proof is not a registered row (the harness clones only src and
+.spago); the end-to-end row restores the placeholder-comparison defect,
+since deleting the write is not observable from outside.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail
