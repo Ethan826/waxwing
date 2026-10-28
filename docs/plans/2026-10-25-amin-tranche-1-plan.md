@@ -382,6 +382,56 @@ and one fresh whole-checkpoint review; then stop for the author. Tasks
 Task 6's restored-defect proofs are registered rows (one per repair);
 report any pin movement for the author rather than re-pinning it.
 
+**Correction unit C (authorized 2026-10-27, §18.102):** Task 18 (R033),
+Task 19 (R032), Task 20 (I2 amendment and rows), then verify and one
+targeted review of the corrections; total ceiling 3.5M (a cap, not a
+prediction); stop and report before exceeding it. Task 7 held; R031
+deferred; no push.
+
+### Task 18: opened rows and indexed Opened positions (R033)
+
+**Files:** Domain/Recorded/Effect.purs (an `Opened` role/position with
+an index), Generate/Callee.purs, Node.purs, Effect.purs, Marked.purs or
+Owned.purs as needed; tests; regression rows.
+
+Match the live checker exactly (DeclarationUse `openedRow`, Stages,
+MarkUse `openHandlers`): a callee's closed own row is opened at each
+use with a fresh tail (functions, constructors, operations, as live);
+at function uses, the handled label of each eligible top-level
+handler-typed parameter written M, and of the result written N, gets
+its own indexed `Opened` position; Console, Fail and deeper labels stay
+as written. Each opened identity is reused consistently across the
+instance, the reference node and partial-application stages, and is
+minted once. Separating tests: several eligible handler parameters
+plus a result (distinct positions); labels that must stay unopened
+(Console, Fail, deeper, wrong written mark); a closed callee row opened
+at a reference, a partial application and a call. Registered
+restored-defect rows.
+
+### Task 19: the declaration's own marked signature (R032)
+
+**Files:** Domain/Recorded/Effect.purs (a `signature` field),
+Generate/Signature.purs, Out.purs/Assemble.purs (its item kind in
+duplicate detection), minting/domain tests, the boundary test.
+
+Record the declaration's `Declared` marked signature (parameters, row,
+result). It joins duplicate-write detection and the two-way minting
+and domain accounting; the boundary test's signature-only cases check
+the recorded signature's MHandler (representation), not only the
+marker. Separating test: a signature-only handler declaration. A
+registered restored-defect row.
+
+### Task 20: the `fail`-only amendment (I2) and the rows
+
+**Files:** test/r0-effects-boundary.serial.test.mjs, docs.
+
+Formally amend the boundary scope: a declaration containing only
+`fail`, with no other handler-bearing construct or recorded handler
+type, need not acquire a new blocker for this test; pin the current
+verdicts of that cohort (no verdict change), stating that this grants
+no assurance that its effects were independently validated. Keep I5's
+corrected account of the handler-marker row.
+
 ### Task 15: duplicate effect writes are a generation fault
 
 **Files:** Generate/Fault.purs (one constructor), Generate/Assemble.purs

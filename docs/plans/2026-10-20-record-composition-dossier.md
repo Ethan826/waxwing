@@ -6380,3 +6380,25 @@ R033) and I2 (the controller's `fail`-only boundary ruling) need the
 author before Task 7; I3 filed as R032; I5's overstated record
 corrected. Code corrections were not made: the remaining budget under
 the 2.9M ceiling did not cover them.
+
+### 18.102 Correction unit C authorized (2026-10-27)
+
+The author's rulings: fix R033 and R032 before Task 7 (declaring them
+restrictions would introduce avoidable acceptance losses). R033: an
+opened-row role and indexed `Opened` positions matching the live
+checker's opening rules exactly (eligible top-level parameter labels
+written M and result labels written N; Console, Fail and deeper labels
+preserved), each opened identity reused across instance, reference and
+partial-application stages. R032: record the declaration's own marked
+signature, in duplicate detection, minting and domain accounting and
+the boundary checks, with representation checks for signature-only
+cases. I2: formally amend the boundary scope: a `fail`-only declaration
+with no other handler-bearing construct or recorded handler type need
+not acquire a new blocker; its existing verdicts are preserved; no
+assurance that its effects were independently validated. I5's
+corrected account kept. Separating tests and registered rows required.
+Qualification: the review's "completeness, not soundness" reading is an
+argument, not a check; correcting the mismatches does not establish
+effect soundness. Ceiling 3.5M total, a cap: these fixes, their checks,
+verify, records and one targeted review. Task 7 held; R031 deferred;
+no push. The green verify at e6868b8 is evidence for that commit only.
