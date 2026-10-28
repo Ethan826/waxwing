@@ -8,13 +8,18 @@ const source = 'effect Log { fn log(n: Int): Unit; }; '
   + 'fn use(h: Handler(Log with Fail(Job(Int)))): Int = 0; '
   + 'fn main(): Unit = ();';
 
-// `plain`'s one effect rigid is its row's tail; `marks` names two marks.
+// `plain`'s one effect rigid is its row's tail; `hand`'s only rigid, `e`,
+// occurs inside a handler type's inference row (its closed own row leaves
+// the implicit ambient variable unnamed); `marks` names two marks.
 const rigidSource = 'effect Log { fn log(n: Int): Unit; }; '
   + 'effect Ask { fn ask(): Int; }; '
   + 'fn plain(): Unit = (); '
+  + 'fn hand(h: Handler(Log with ...e)): Unit with pure = (); '
   + 'fn marks(g: Unit -> Unit with nofail(k) Log, '
   + 'h: Unit -> Unit with nofail(j) Ask): Unit = (); '
   + 'fn main(): Unit = ();';
+
+const unitSource = 'fn g(): Unit with pure = (); fn main(): Unit = ();';
 
 export const signatureProbes = {
   // Task 19: a signature-only handler declaration records no MHandler,
@@ -85,10 +90,12 @@ export const signatureProbes = {
   // `effectRigids` omits (the recording drops its last entry).
   'r0-amin-signature-rigids': async context => {
     const { fieldsOf } = await toolkit(context);
-    const { effects } = fieldsOf(rigidSource, 'plain');
-    const { unlistedRigids } = rigidFindings('plain', shape(effects));
-    if (unlistedRigids.length > 0)
-      fail(`the signature names an effect rigid: ${unlistedRigids[0]}`);
+    for (const name of ['hand', 'plain']) {
+      const { effects } = fieldsOf(rigidSource, name);
+      const { unlistedRigids } = rigidFindings(name, shape(effects));
+      if (unlistedRigids.length > 0)
+        fail(`the signature names an effect rigid: ${unlistedRigids[0]}`);
+    }
     passed(context);
   },
   // Task 23: a rigid mark the signature names but `rigidMarks` omits.
@@ -98,6 +105,17 @@ export const signatureProbes = {
     const { unlistedMarks } = rigidFindings('marks', shape(effects));
     if (unlistedMarks.length > 0)
       fail(`the signature names a rigid mark: ${unlistedMarks[0]}`);
+    passed(context);
+  },
+  // Task 21: a real `with pure` unit declaration records exactly the
+  // placeholder, so a written signature must not be read as missing.
+  'r0-amin-signature-missing-real': async context => {
+    const { fieldsOf, load } = await toolkit(context);
+    const { signature } = fieldsOf(unitSource, 'g').effects;
+    const Effect = await load('Domain.Recorded.Effect');
+    if (JSON.stringify(shape(signature))
+      !== JSON.stringify(shape(Effect.emptyEffects.signature)))
+      fail('the unit declaration no longer matches the placeholder');
     passed(context);
   }
 };

@@ -32,7 +32,7 @@ const signed = new Out.SignatureAt(
 
 test('two NodeAt at one path, equal values, are a fault', () => {
   const fault = faultOf(assemble([new Out.NodeAt(path, int),
-    new Out.NodeAt(path, int)]));
+    new Out.NodeAt(path, int), signed]));
   assert.ok(fault instanceof Fault.DuplicateEffect);
   assert.equal(fault.value0, 'NodeAt');
   assert.equal(fault.value1, path);
@@ -55,7 +55,7 @@ test('two NodeAt at different paths are no fault', () => {
 
 test('a variable-free callee use recorded twice is a fault', () => {
   const fault = faultOf(assemble([new Out.InstanceAt(path, sig),
-    new Out.InstanceAt(path, sig)]));
+    new Out.InstanceAt(path, sig), signed]));
   assert.ok(fault instanceof Fault.DuplicateEffect);
   assert.equal(fault.value0, 'InstanceAt');
 });
@@ -68,7 +68,7 @@ test('each other keyed kind is checked', () => {
     SignatureAt: p => new Out.SignatureAt(p, sig)
   };
   for (const [kind, make] of Object.entries(kinds)) {
-    const fault = faultOf(assemble([make(path), make(path)]));
+    const fault = faultOf(assemble([make(path), make(path), signed]));
     assert.equal(fault?.value0, kind);
   }
 });

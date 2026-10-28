@@ -12,7 +12,12 @@ import { repoRoot } from '../test/r0-corpus.mjs';
 import { cohortOf, survey } from '../test/r0-effects-boundary-run.mjs';
 import { pinFile } from '../test/r0-fail-only-compare.mjs';
 
-const { facts } = await survey();
+const { facts, refused } = await survey();
+if (refused.length > 0) {
+  console.error(`Not pinning: generation refused ${refused.length} `
+    + `declarations, the first at ${refused[0]}.`);
+  process.exit(1);
+}
 const cohort = cohortOf(facts);
 writeFileSync(join(repoRoot, pinFile), `${JSON.stringify({
   amendment: 'dossier 18.102',

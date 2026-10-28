@@ -19,7 +19,9 @@ export const elabFrom = async load => {
     Maybe: 'Data.Maybe', Tuple: 'Data.Tuple', Foldable: 'Data.Foldable',
     Unfoldable: 'Data.Unfoldable', Functor: 'Data.Functor',
     Apply: 'Control.Apply', Applicative: 'Control.Applicative',
-    Bind: 'Control.Bind', Traversable: 'Data.Traversable' }))
+    Bind: 'Control.Bind', Traversable: 'Data.Traversable',
+    Out: 'Features.Check.Generate.Out',
+    Effect: 'Domain.Recorded.Effect' }))
     m[key] = await load(name);
   const { Atom, Origin, Core, Row, Internal, Tuple, Maybe } = m;
   const span = { start: { line: 1, column: 1, offset: 0 },
@@ -78,8 +80,16 @@ export const elabFrom = async load => {
   };
   const header = decl => ({ decl, holders: { declared: m.Set.empty,
     holding: m.Set.empty } });
+  // Assembly requires one SignatureAt per declaration, so a hand-built
+  // generator is followed by the unit signature's write.
+  const signature = { parameters: [], row: { labels: [],
+    tail: Maybe.Nothing.value }, result: new m.Effect.MBase(Atom.UnitBase
+    .value) };
+  const signed = generator => gen.bind(generator, value => gen.bind(
+    m.Gen.effected([new m.Out.SignatureAt(path(), signature)]),
+    () => gen.pure(value)));
   const sealed = (generator, decl = 0) => {
-    const result = m.Elab.seal(header(decl))(generator);
+    const result = m.Elab.seal(header(decl))(signed(generator));
     if (!(result instanceof m.Either.Right))
       throw new Error(`seal: ${result.value0.constructor.name}`);
     return result.value0;

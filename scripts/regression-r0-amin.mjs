@@ -4,10 +4,12 @@
 // demonstrations are in the plan ledger's task reports
 // (.superpowers/sdd/2026-10-25-amin-tranche-1-plan/task-N-report.md,
 // local and git-ignored); docs/progress.md lists the rows.
+import { signatureRows } from './regression-r0-amin-signature.mjs';
 const generate = 'src/Features/Check/Generate/';
 const marked = `${generate}Marked.purs`;
 const owned = `${generate}Owned.purs`;
 export const r0AminRows = [
+  ...signatureRows,
   {
     // Tasks 2, 3: a Fail label translated as written (the Console-only
     // guard), so its mark is M or a position, not N.
@@ -132,9 +134,9 @@ export const r0AminRows = [
     // one path is folded by `Map.insert` and overwrites the first.
     name: 'r0-amin-duplicate-effect',
     file: 'src/Features/Check/Generate/Assemble.purs',
-    needle: 'checked items = maybe (Right items) refused'
+    needle: 'checked items = maybe (signed items) refused'
       + ' (duplicate items)\n',
-    replacement: 'checked items = maybe (Right items) refused Nothing\n',
+    replacement: 'checked items = maybe (signed items) refused Nothing\n',
     probe: 'r0-amin-duplicate-effect',
     message: /a duplicate NodeAt write went undetected/
   },
@@ -194,40 +196,6 @@ export const r0AminRows = [
     replacement: '',
     probe: 'r0-amin-signature-duplicate',
     message: /a duplicate SignatureAt write went undetected/
-  },
-  {
-    // Task 21: assembly accepts a declaration with no SignatureAt, so a
-    // unit-valued one (equal to the fold's placeholder) goes unnoticed.
-    name: 'r0-amin-signature-missing',
-    file: 'src/Features/Check/Generate/Assemble.purs',
-    needle: '  | otherwise = Left MissingSignature\n',
-    replacement: '  | otherwise = Right items\n',
-    probe: 'r0-amin-signature-missing',
-    message: /a missing SignatureAt write went undetected/
-  },
-  {
-    // Task 23: effectRigids drops its last entry, so a rigid effect-row
-    // variable the signature names is not listed.
-    name: 'r0-amin-signature-rigids',
-    file: `${generate}Declared.purs`,
-    needle: '  <> Array.catMaybes (Array.mapWithIndex effectRow'
-      + ' function.sorts)\n',
-    replacement: '  <> Array.dropEnd 1 (Array.catMaybes'
-      + ' (Array.mapWithIndex effectRow function.sorts))\n',
-    probe: 'r0-amin-signature-rigids',
-    message: /the signature names an effect rigid: .*not in effectRigids/
-  },
-  {
-    // Task 23: rigidMarks drops its last entry, so a rigid mark the
-    // signature names is not listed.
-    name: 'r0-amin-signature-rigid-marks',
-    file: `${generate}Declared.purs`,
-    needle: 'rigidEffects function = map RigidMark'
-      + ' (Array.nub function.markVariables)\n',
-    replacement: 'rigidEffects function = map RigidMark'
-      + ' (Array.dropEnd 1 (Array.nub function.markVariables))\n',
-    probe: 'r0-amin-signature-rigid-marks',
-    message: /the signature names a rigid mark: .*not in rigidMarks/
   },
   {
     // Task 20 (I2, dossier 18.102): E23 always emits `Outside

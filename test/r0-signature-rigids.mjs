@@ -20,8 +20,12 @@ export const namedRigids = signature => {
 };
 
 // What is named but not listed (the required direction) and what is
-// listed but not named (the converse), on shaped effects.
-export const rigidFindings = (at, effects) => {
+// listed but not named (the converse), on shaped effects. `ambient` is
+// the declaration's implicit ambient row variable (its last row-sorted
+// variable), which `effectRigids` lists even where the signature writes
+// its own row tail instead; it is counted in `ambientUnnamed`, and every
+// other listed rigid the signature does not name is a finding.
+export const rigidFindings = (at, effects, ambient = null) => {
   const named = namedRigids(effects.signature);
   const rigids = new Set(effects.effectRigids);
   const marks = new Set(effects.rigidMarks);
@@ -31,8 +35,10 @@ export const rigidFindings = (at, effects) => {
       .map(v => `${at}: EffRigid ${v} is not in effectRigids`),
     unlistedMarks: absent(named.marks, marks)
       .map(k => `${at}: FixedRigid ${k} is not in rigidMarks`),
-    unnamedRigids: absent(rigids, named.rigids)
+    unnamedRigids: absent(rigids, named.rigids).filter(v => v !== ambient)
       .map(v => `${at}: effectRigids lists ${v}, the signature does not`),
+    ambientUnnamed: absent(rigids, named.rigids).filter(v => v === ambient)
+      .map(() => at),
     unnamedMarks: absent(marks, named.marks)
       .map(k => `${at}: rigidMarks lists ${k}, the signature does not`)
   };

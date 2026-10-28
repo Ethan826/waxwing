@@ -56,9 +56,14 @@ export const r0AminProbes = {
     const Origin = await load('Domain.Recorded.Origin');
     const Atom = await load('Domain.Recorded.Atom');
     const Set = await load('Data.Set');
+    const { Nothing } = await load('Data.Maybe');
     const path = Origin.Path({ root: Origin.InBody.value, steps: [] });
     const int = new Effect.MBase(Atom.IntBase.value);
-    const effects = [new Out.NodeAt(path, int), new Out.NodeAt(path, int)];
+    const closed = { labels: [], tail: Nothing.value };
+    const signature = { parameters: [], row: closed, result: int };
+    const effects = [new Out.NodeAt(path, int), new Out.NodeAt(path, int),
+      new Out.SignatureAt(Origin.Path({ root: Origin.InResult.value,
+        steps: [] }), signature)];
     const holders = { declared: Set.empty, holding: Set.empty };
     const result = Assemble.assemble({ decl: 0, holders })(
       { ...Out.noOut, effects });
