@@ -432,6 +432,35 @@ verdicts of that cohort (no verdict change), stating that this grants
 no assurance that its effects were independently validated. Keep I5's
 corrected account of the handler-marker row.
 
+**Correction unit D (authorized 2026-10-27, §18.104):** Tasks 21-23, one
+targeted review with one fix round, full verify; cap 0.45M (running
+ceiling 3.95M); stop and report before exceeding it. Task 7 held; R031
+deferred. A newly exposed recording defect is reported and fixed within
+this scope and cap; broader design or gate changes need a ruling.
+
+### Task 21: a missing signature write is a generation fault
+
+Assembly rejects a declaration with no `SignatureAt` (new narrow fault,
+e.g. `MissingSignature`, mapped like the others); the placeholder is
+never compared against, since a legitimate unit signature equals it.
+Tests: a missing write faults; a present one does not. Registered row:
+omit the signature write of a declaration whose legitimate signature
+equals the placeholder (`fn f(): Unit` shape); the row's probe fails.
+
+### Task 22: the cohort pin is written only by a separate script
+
+Move the writer to `scripts/r0-fail-only-pin.mjs`; the test only
+compares, whatever the environment. Registered row: a moved cohort
+fails even with `WXW_PIN_FAIL_ONLY=1` set, and the pin file is not
+modified (restored defect: the in-test writer).
+
+### Task 23: signature rigids match effectRigids and rigidMarks
+
+A consistency check: every rigid effect-row variable and every rigid
+mark the recorded signature names, nested handler types included, is in
+`effectRigids` and `rigidMarks` respectively (and, if the spec requires,
+the converse). Registered row: drop one rigid from the recording.
+
 ### Task 15: duplicate effect writes are a generation fault
 
 **Files:** Generate/Fault.purs (one constructor), Generate/Assemble.purs

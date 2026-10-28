@@ -6413,3 +6413,18 @@ Important check gaps open (docs/progress.md): an undetectable missing
 signature write, the in-test re-pin mode of the cohort pin, and no
 domain check of the signature's rigids. They were not fixed within the
 3.5M ceiling. Task 7 stays held; R031 deferred; nothing pushed.
+
+### 18.104 Correction unit D authorized (2026-10-27)
+
+The author ruled to close all three review gaps before Task 7: assembly
+rejects a missing signature write (not a placeholder comparison); the
+cohort pin is written only by a separate script and the test only
+compares; the recorded signature's rigid references, nested handler
+types included, are checked against `effectRigids` and `rigidMarks`.
+Each needs a registered regression proof, including omission of a
+signature whose legitimate value equals the placeholder, and a moved
+cohort failing with `WXW_PIN_FAIL_ONLY=1` set without the pin changing.
+A newly exposed recording defect is fixed within scope and cap;
+broader design or gate changes need a ruling. Cap 0.45M (running
+ceiling 3.95M), with one targeted review and one fix round. Task 7
+needs its own authorization afterwards; R031 stays deferred.
