@@ -42,6 +42,7 @@ data GenerationFault
   | VariableSort VarId
   | MarkShape
   | DuplicateEffect String Path
+  | MissingSignature
 
 type Gen a = Either GenerationFault a
 
@@ -68,3 +69,5 @@ generationProblem = case _ of
     "Generation: an unresolved effect mark in a written type"
   DuplicateEffect kind _ → Internal InputShape
     ("Generation: a second " <> kind <> " write at one path")
+  MissingSignature → Internal InputShape
+    "Generation: a declaration with no recorded signature"

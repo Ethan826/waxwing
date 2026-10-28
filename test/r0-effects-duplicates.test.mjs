@@ -27,6 +27,8 @@ const faultOf = result => (result.constructor.name === 'Left'
   ? result.value0 : null);
 // A callee use with no type or row variables.
 const sig = { parameters: [int], row: closed, result: int };
+const signed = new Out.SignatureAt(
+  Origin.Path({ root: Origin.InResult.value, steps: [] }), sig);
 
 test('two NodeAt at one path, equal values, are a fault', () => {
   const fault = faultOf(assemble([new Out.NodeAt(path, int),
@@ -41,13 +43,13 @@ test('two NodeAt at one path, equal values, are a fault', () => {
 
 test('a NodeAt and an InstanceAt at one path are no fault', () => {
   const result = assemble([new Out.NodeAt(path, int),
-    new Out.InstanceAt(path, sig)]);
+    new Out.InstanceAt(path, sig), signed]);
   assert.equal(result.constructor.name, 'Right');
 });
 
 test('two NodeAt at different paths are no fault', () => {
   const result = assemble([new Out.NodeAt(path, int),
-    new Out.NodeAt(other, int)]);
+    new Out.NodeAt(other, int), signed]);
   assert.equal(result.constructor.name, 'Right');
 });
 

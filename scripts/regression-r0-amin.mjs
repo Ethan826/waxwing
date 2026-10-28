@@ -196,6 +196,16 @@ export const r0AminRows = [
     message: /a duplicate SignatureAt write went undetected/
   },
   {
+    // Task 21: assembly accepts a declaration with no SignatureAt, so a
+    // unit-valued one (equal to the fold's placeholder) goes unnoticed.
+    name: 'r0-amin-signature-missing',
+    file: 'src/Features/Check/Generate/Assemble.purs',
+    needle: '  | otherwise = Left MissingSignature\n',
+    replacement: '  | otherwise = Right items\n',
+    probe: 'r0-amin-signature-missing',
+    message: /a missing SignatureAt write went undetected/
+  },
+  {
     // Task 20 (I2, dossier 18.102): E23 always emits `Outside
     // FailFamily`, so a `fail`-only declaration acquires a blocker and
     // the pinned cohort (test/fixtures/r0/effects-fail-only.json) moves.

@@ -43,15 +43,17 @@ test('generation is Right for every corpus declaration, deterministically',
     }
   });
 
-test('no corpus declaration takes a DuplicateEffect fault', () => {
+const recordingFaults = ['DuplicateEffect', 'MissingSignature'];
+test('no corpus declaration takes a recording fault', () => {
   const faults = [];
   for (const { origin, program } of programs) {
     const { tables, signatures } = Inputs.generationInputs(program);
     for (const decl of program.functions) {
       const result = Generate.generate(tables)(signatures)(decl);
-      if (result.constructor.name === 'Left'
-        && result.value0.constructor.name === 'DuplicateEffect')
-        faults.push(`${origin} ${decl.name}: ${result.value0.value0}`);
+      const fault = result.constructor.name === 'Left'
+        ? result.value0.constructor.name : null;
+      if (recordingFaults.includes(fault))
+        faults.push(`${origin} ${decl.name}: ${fault}`);
     }
   }
   assert.deepEqual(faults, []);

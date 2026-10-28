@@ -28,14 +28,27 @@ import Features.Check.Generate.Out (EffectItem(..), Out)
 type Header = { decl ∷ FunctionId, holders ∷ Holders }
 
 -- A second write of one keyed kind at one path is a generation fault,
--- found on the item list before any map is built (equal values too).
+-- found on the item list before any map is built (equal values too); so
+-- is a declaration with no `SignatureAt` at all, read off the item list,
+-- never by comparing the signature with `emptyEffects`' (a legitimate
+-- unit signature equals it).
 assemble ∷ Header → Out → Either GenerationFault RecordedProblem
 assemble header out = map (assembled header out) (checked out.effects)
 
 checked ∷ Array EffectItem → Either GenerationFault (Array EffectItem)
-checked items = maybe (Right items) refused (duplicate items)
+checked items = maybe (signed items) refused (duplicate items)
   where
   refused (Tuple kind path) = Left (DuplicateEffect kind path)
+
+signed ∷ Array EffectItem → Either GenerationFault (Array EffectItem)
+signed items
+  | Array.any isSignature items = Right items
+  | otherwise = Left MissingSignature
+
+isSignature ∷ EffectItem → Boolean
+isSignature = case _ of
+  SignatureAt _ _ → true
+  _ → false
 
 duplicate ∷ Array EffectItem → Maybe (Tuple String Path)
 duplicate items = _.found (foldl seen start (Array.mapMaybe keyed items))

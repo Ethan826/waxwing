@@ -480,6 +480,7 @@
    "VariableSort",
    "MarkShape",
    "DuplicateEffect",
+   "MissingSignature",
    "generationProblem"
   ]
  },
