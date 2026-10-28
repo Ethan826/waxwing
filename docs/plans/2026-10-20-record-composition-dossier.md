@@ -6461,3 +6461,22 @@ in main at 7093c79. Task 7 held, R031 deferred; the other completed
 corrections are not reopened. The author asked for a bounded estimate
 for the follow-up, then a separate scope and cap for Task 7. This
 supersedes §18.105's open gate choice.
+
+### 18.107 Task 24 authorized; Task 7 authorized conditionally (2026-10-28)
+
+The author approved two units in sequence, each with its own cap, one
+review and one fix round. Task 24 (Task 22's registration): cap 0.18M,
+running ceiling 4.0M. Test-file rows run entirely from their isolated
+copy; source rows keep their compilation and proof behaviour; the row
+shows that restoring the writer gives the named failure and that the
+real fixture stays byte-identical. Stop on a dependency outside `test/`
+or on scope growth. Task 7 is authorized only once Task 24 has passed
+its targeted review and full verify with no unresolved blocking
+finding: 0.65M more, running ceiling 4.65M. Scope exactly as proposed
+(Equal recording, O1 and O2, the planned tests and regression rows);
+the corpus check compares each recorded obligation with its
+originating equality, not merely a nonzero count; G0's problem pin is
+unchanged. Stop for an unresolved reading of §4, a required change at
+a pinned boundary, or R031 work; R031 stays deferred. Unused budget
+does not widen either unit. Actual spend and verification are reported
+at the transition.

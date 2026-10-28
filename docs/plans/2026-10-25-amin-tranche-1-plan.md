@@ -467,6 +467,32 @@ comparison (not an import gate); the two Task 21 rows are labelled
 separately (direct: omission rejected; end-to-end: a placeholder-shaped
 signature accepted). Awaiting the author's cap; Task 7 held.
 
+**Task 24 and Task 7 (authorized 2026-10-28, §18.107):** Task 24 cap
+0.18M (ceiling 4.0M); Task 7 only after Task 24's targeted review and
+full verify pass with no unresolved blocking finding, 0.65M more
+(ceiling 4.65M). One review and one fix round each; report actual spend
+and verification at the transition.
+
+### Task 24: register Task 22's proof as a behavioural row
+
+**Files:** scripts/regression-run.mjs (and regression-clone.mjs if
+needed), scripts/regression-r0-amin.mjs or a sibling row file,
+test/regression-run.test.mjs, scripts/regression-r0-amin-signature.mjs
+(comments only).
+
+A row may edit a file under `test/`. Such a row copies `test/` into
+its own row directory, skips the purs compile, applies its edit there
+and runs the probe from that copy (healthy run from the real tree must
+pass; the copy's run must fail with the row's message). Source rows
+are unchanged. Row: restore the in-test writer inside `assertCohort`
+(write the pin under `WXW_PIN_FAIL_ONLY=1`, then compare); the probe
+fails with "a moved cohort passed". Harness tests: a missing needle is
+an error; an edit in the copy never reaches the real `test/` (bytes
+before and after, the real fixture included); existing harness tests
+pass. Label the two MissingSignature rows (direct: omission rejected;
+end-to-end: a placeholder-shaped signature accepted). Stop on a probe
+dependency outside `test/` or scope growth.
+
 ### Task 15: duplicate effect writes are a generation fault
 
 **Files:** Generate/Fault.purs (one constructor), Generate/Assemble.purs
