@@ -206,6 +206,30 @@ export const r0AminRows = [
     message: /a missing SignatureAt write went undetected/
   },
   {
+    // Task 23: effectRigids drops its last entry, so a rigid effect-row
+    // variable the signature names is not listed.
+    name: 'r0-amin-signature-rigids',
+    file: `${generate}Declared.purs`,
+    needle: '  <> Array.catMaybes (Array.mapWithIndex effectRow'
+      + ' function.sorts)\n',
+    replacement: '  <> Array.dropEnd 1 (Array.catMaybes'
+      + ' (Array.mapWithIndex effectRow function.sorts))\n',
+    probe: 'r0-amin-signature-rigids',
+    message: /the signature names an effect rigid: .*not in effectRigids/
+  },
+  {
+    // Task 23: rigidMarks drops its last entry, so a rigid mark the
+    // signature names is not listed.
+    name: 'r0-amin-signature-rigid-marks',
+    file: `${generate}Declared.purs`,
+    needle: 'rigidEffects function = map RigidMark'
+      + ' (Array.nub function.markVariables)\n',
+    replacement: 'rigidEffects function = map RigidMark'
+      + ' (Array.dropEnd 1 (Array.nub function.markVariables))\n',
+    probe: 'r0-amin-signature-rigid-marks',
+    message: /the signature names a rigid mark: .*not in rigidMarks/
+  },
+  {
     // Task 20 (I2, dossier 18.102): E23 always emits `Outside
     // FailFamily`, so a `fail`-only declaration acquires a blocker and
     // the pinned cohort (test/fixtures/r0/effects-fail-only.json) moves.

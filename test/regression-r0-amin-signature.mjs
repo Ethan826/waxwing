@@ -1,10 +1,19 @@
 // R0 a-min tranche 1 regression probes for the declaration's own marked
 // signature (Task 19, R032), spread into test/regression-r0-amin.mjs.
+import { rigidFindings } from './r0-signature-rigids.mjs';
 import { fail, passed, shape, toolkit } from './regression-r0-amin-support.mjs';
 
 const source = 'effect Log { fn log(n: Int): Unit; }; '
   + 'type Job(a) = Job(a); '
   + 'fn use(h: Handler(Log with Fail(Job(Int)))): Int = 0; '
+  + 'fn main(): Unit = ();';
+
+// `plain`'s one effect rigid is its row's tail; `marks` names two marks.
+const rigidSource = 'effect Log { fn log(n: Int): Unit; }; '
+  + 'effect Ask { fn ask(): Int; }; '
+  + 'fn plain(): Unit = (); '
+  + 'fn marks(g: Unit -> Unit with nofail(k) Log, '
+  + 'h: Unit -> Unit with nofail(j) Ask): Unit = (); '
   + 'fn main(): Unit = ();';
 
 export const signatureProbes = {
@@ -70,6 +79,25 @@ export const signatureProbes = {
       fail('a missing SignatureAt write went undetected');
     if (omitted.constructor.name !== 'Left')
       fail('a missing SignatureAt write was accepted');
+    passed(context);
+  },
+  // Task 23: a rigid effect-row variable the signature names but
+  // `effectRigids` omits (the recording drops its last entry).
+  'r0-amin-signature-rigids': async context => {
+    const { fieldsOf } = await toolkit(context);
+    const { effects } = fieldsOf(rigidSource, 'plain');
+    const { unlistedRigids } = rigidFindings('plain', shape(effects));
+    if (unlistedRigids.length > 0)
+      fail(`the signature names an effect rigid: ${unlistedRigids[0]}`);
+    passed(context);
+  },
+  // Task 23: a rigid mark the signature names but `rigidMarks` omits.
+  'r0-amin-signature-rigid-marks': async context => {
+    const { fieldsOf } = await toolkit(context);
+    const { effects } = fieldsOf(rigidSource, 'marks');
+    const { unlistedMarks } = rigidFindings('marks', shape(effects));
+    if (unlistedMarks.length > 0)
+      fail(`the signature names a rigid mark: ${unlistedMarks[0]}`);
     passed(context);
   }
 };
