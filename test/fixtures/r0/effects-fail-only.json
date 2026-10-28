@@ -1,0 +1,82 @@
+{
+ "amendment": "dossier 18.102",
+ "command": "WXW_PIN_FAIL_ONLY=1 node --test test/r0-effects-boundary.serial.test.mjs",
+ "cohort": [
+  {
+   "at": "editors/vscode/fixtures/effect-namespaces.wxw#failing",
+   "verdict": "Solved"
+  },
+  {
+   "at": "editors/vscode/fixtures/effect-namespaces.wxw#spaced",
+   "verdict": "Solved"
+  },
+  {
+   "at": "research/composition-assessment/programs/p10-b.wxw#authorize",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "research/composition-assessment/programs/p10-b.wxw#lookup",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "research/composition-assessment/programs/p10-neg.wxw#authorize",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "research/composition-assessment/programs/p10-neg.wxw#lookup",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "research/composition-assessment/programs/p10.wxw#authorize",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "research/composition-assessment/programs/p10.wxw#lookup",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/defer-may-fail.inferred.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/defer-may-fail.pinned.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/fail-needs-concrete-check.applied.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/fail-needs-concrete-check.inferred.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/fail-needs-concrete-check.pinned.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/fx010-record-payload.inferred.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/audit/fx010-record-payload.pinned.json#k",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/erased/form.fail-written-record.json#g",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fixtures/r0/erased/form.fail-written.json#g",
+   "verdict": "Solved"
+  },
+  {
+   "at": "test/fx-run-programs.mjs:cases#4#boom",
+   "verdict": "Unresolved"
+  },
+  {
+   "at": "test/fx008-probes/facts/pending.wxw#work",
+   "verdict": "Unresolved"
+  }
+ ]
+}

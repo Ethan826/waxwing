@@ -194,5 +194,18 @@ export const r0AminRows = [
     replacement: '',
     probe: 'r0-amin-signature-duplicate',
     message: /a duplicate SignatureAt write went undetected/
+  },
+  {
+    // Task 20 (I2, dossier 18.102): E23 always emits `Outside
+    // FailFamily`, so a `fail`-only declaration acquires a blocker and
+    // the pinned cohort (test/fixtures/r0/effects-fail-only.json) moves.
+    name: 'r0-amin-fail-only-unmarked',
+    file: `${generate}Failure.purs`,
+    needle: '              <> marker (maybe true (not <<< plain <<< _.ty)'
+      + ' written)\n',
+    replacement: '              <> marker (maybe true (not <<< plain <<< _.ty)'
+      + ' written || true)\n',
+    probe: 'r0-amin-fail-only-unmarked',
+    message: /a fail-only declaration gained Outside: FailFamily/
   }
 ];

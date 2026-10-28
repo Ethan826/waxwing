@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { load } from './r0-generate-support.mjs';
 import { describe } from './r0-decide-support.mjs';
 import { declarationsOf, rt8Sources } from './r0-rt8-run.mjs';
@@ -29,6 +30,7 @@ const Unfoldable = await load('Data.Unfoldable');
 
 // About 80% of the 276 observed.
 const minimum = 220;
+const pinFile = 'test/fixtures/r0/effects-fail-only.json';
 // About 80% of the 235 observed.
 const handlerFloor = 188;
 const siteFloor = 1;
@@ -85,8 +87,9 @@ const factsOf = row => {
   const sites = { nodes: holdsHandler(valuesOf(effects.nodes)),
     instances: holdsHandler(valuesOf(effects.instances)),
     annotations: holdsHandler(valuesOf(effects.annotations)) };
-  return { at: row.at, kinds, source, solved: describe(row.decision).verdict
-    === 'Solved', handler: Object.values(sites).some(Boolean), sites,
+  const verdict = describe(row.decision).verdict.split(' ')[0];
+  return { at: row.at, kinds, source, verdict, solved: verdict === 'Solved',
+    handler: Object.values(sites).some(Boolean), sites,
   signed: written.includes('type'), recordedSignature:
     holdsHandler([effects.signature]) };
 };
@@ -104,16 +107,21 @@ const survey = async () => {
 
 const found = await survey();
 
-// Controller ruling (Task 17): `fail` alone performs the Fail effect and
-// is not a handler construct (Failure.purs, E23: a written family that
-// translates is not marked), so a `fail`-only declaration is outside the
-// boundary: counted and printed, never asserted. `fail` plus another
-// construct is judged by that construct. A literal or `with` records a
-// node type, so it needs MHandler; a handler type written only in the
-// declaration's own signature is recorded in `effects.signature` (Task
-// 19, R032), so it needs an MHandler there (a representation check),
-// HandlerType and not Solved. `handle` alone may use FailFamily instead
-// of HandlerType.
+// Scope amendment (dossier section 18.102, by the author): `fail` alone
+// performs the Fail effect and is not a handler construct (Failure.purs,
+// E23: a written family that translates is not marked), so a `fail`-only
+// declaration need not acquire a new blocker to satisfy this test. Its
+// existing verdicts are preserved and pinned in
+// test/fixtures/r0/effects-fail-only.json (a new author-ordered pin;
+// regenerate only on the author's word: WXW_PIN_FAIL_ONLY=1 node --test
+// test/r0-effects-boundary.serial.test.mjs). This grants NO assurance that
+// those declarations' effects were independently validated. `fail` plus
+// another construct is judged by that construct. A literal or `with`
+// records a node type, so it needs MHandler; a handler type written only
+// in the declaration's own signature is recorded in `effects.signature`
+// (Task 19, R032), so it needs an MHandler there (a representation
+// check), HandlerType and not Solved. `handle` alone may use FailFamily
+// instead of HandlerType.
 const gated = source => source.some(kind => kind !== 'fail');
 const recorded = source => ['literal', 'with'].some(k => source.includes(k));
 const typed = source => ['literal', 'with', 'type']
@@ -186,9 +194,18 @@ test('every handler construct in resolved source is blocked', () => {
     + `${signed.filter(fact => fact.recordedSignature).length} record it`);
   assert.ok(signed.length >= signedFloor,
     `only ${signed.length} declarations write a handler type in a signature`);
-  console.log(`fail-only (unasserted): ${failOnly.length}, of which `
+  console.log(`fail-only (pinned): ${failOnly.length}, of which `
     + `${failOnly.filter(fact => fact.solved).length} Solved; `
     + `signature-only handler type: ${signatureOnly.length}`);
+  const cohort = failOnly.map(({ at, verdict }) => ({ at, verdict }))
+    .sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
+  if (process.env.WXW_PIN_FAIL_ONLY === '1')
+    writeFileSync(pinFile, `${JSON.stringify({ amendment: 'dossier 18.102',
+      command: 'WXW_PIN_FAIL_ONLY=1 node --test '
+        + 'test/r0-effects-boundary.serial.test.mjs', cohort }, null, 1)}\n`);
+  assert.deepEqual(cohort, JSON.parse(readFileSync(pinFile, 'utf8')).cohort,
+    'the fail-only cohort of the section 18.102 amendment moved (members '
+    + 'or verdicts); this needs the author, do not re-pin');
   assert.ok(signatureOnly.length >= signatureFloor,
     `only ${signatureOnly.length} signature-only handler types`);
   const breaches = cases.flatMap(sourceBreaches);
