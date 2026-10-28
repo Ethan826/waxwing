@@ -63,7 +63,7 @@ positionPath ∷ Position → Path
 positionPath = case _ of
   Frame at → at
   Literal at → at
-  Opened at → at
+  Opened at _ → at
   Annotation at _ _ → at
   Instantiated at _ → at
 

@@ -639,6 +639,16 @@
    "tagged"
   ]
  },
+ "Features.Check.Generate.Opening": {
+  "source": [
+   "openedHandlers",
+   "openedRow"
+  ],
+  "compiled": [
+   "openedHandlers",
+   "openedRow"
+  ]
+ },
  "Features.Check.Generate.Operator": {
   "source": [
    "application",

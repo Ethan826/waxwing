@@ -48,6 +48,7 @@ import Features.Check.Generate.Lookup (calleeOf, ctorShape)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Minted (Part(..), mintedAt)
 import Features.Check.Generate.Node (markersAt, tagged)
+import Features.Check.Generate.Opening (openedHandlers, openedRow)
 import Features.Check.Generate.Out (EffectItem(..))
 import Features.Check.Generate.Owned (resultClauses)
 import Features.Check.Generate.Signature (calleeClauses)
@@ -87,7 +88,9 @@ functionInstance context path span function rule = do
   read ← slots path inst.slots
   markedTypes ← lifted
     (atUse context path signature.parameters signature.row signature.result)
-  let owned = resultClauses path markedTypes
+  let
+    owned = resultClauses path
+      (openedHandlers path (openedRow path markedTypes))
   recordInstance path owned
   pure
     { parameters: parameters.tys
@@ -118,16 +121,16 @@ ctorInstance context path span ctor rule = do
   owner ← lifted (translate context.tables inst.naming shape.owner)
   pairs ← lifted (traverse (pairOf inst.naming) shape.joined)
   read ← slots path inst.slots
-  markedTypes ← lifted
-    (atUse context path shape.fields closedRow shape.owner)
-  recordInstance path markedTypes
+  found ← lifted (atUse context path shape.fields closedRow shape.owner)
+  let opened = openedRow path found
+  recordInstance path opened
   pure
     { parameters: fields.tys
     , result: owner.ty
     , entries: map joinedPair pairs
     , markers: markersAt InstOrigin span (fields.marks <> owner.marks)
     , slots: read
-    , instance: markedTypes
+    , instance: opened
     }
   where
   pairOf naming { variables: Tuple one other } =

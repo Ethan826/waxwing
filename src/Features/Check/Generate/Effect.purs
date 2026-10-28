@@ -72,6 +72,7 @@ import Features.Check.Generate.Node
   , mintedStages
   , tagged
   )
+import Features.Check.Generate.Opening (openedRow)
 import Features.Check.Generate.Translate (translate, translateAll)
 
 -- E17, a reference: `θ(⟦T̄ → result⟧)`.
@@ -130,11 +131,12 @@ operation context path span effect index = do
   parameters ← lifted (translateAll context.tables inst.naming shape.parameters)
   result ← lifted (translate context.tables inst.naming shape.result)
   read ← slots path inst.slots
-  markedTypes ← lifted
+  found ← lifted
     ( atUse context path shape.parameters
         (operationRow effect shape.sorts)
         shape.result
     )
+  let markedTypes = openedRow path found
   recordInstance path markedTypes
   pure
     { parameters: parameters.tys

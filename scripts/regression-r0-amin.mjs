@@ -137,5 +137,41 @@ export const r0AminRows = [
     replacement: 'checked items = maybe (Right items) refused Nothing\n',
     probe: 'r0-amin-duplicate-effect',
     message: /a duplicate NodeAt write went undetected/
+  },
+  {
+    // Task 18 (R033): a closed own row stays closed at a use, where the
+    // live checker's `openedRow` gives it a fresh tail.
+    name: 'r0-amin-opened-row',
+    file: `${generate}Opening.purs`,
+    needle: '  opened row = row { tail = Just (maybe fresh identity'
+      + ' row.tail) }\n',
+    replacement: '  opened row = row { tail = maybe (const Nothing fresh)'
+      + ' Just row.tail }\n',
+    probe: 'r0-amin-opened-row',
+    message: /a closed callee row stays .* at a use/
+  },
+  {
+    // Task 18 (R033): every opened handled label takes one position
+    // (index 0), where `openHandlers` opens one per parameter and the
+    // result.
+    name: 'r0-amin-opened-indexed',
+    file: `${generate}Opening.purs`,
+    needle: 'At (Opened path index)',
+    replacement: 'At (Opened path (index * 0))',
+    probe: 'r0-amin-opened-indexed',
+    message: /three handled labels share Opened positions/
+  },
+  {
+    // Task 18 (R033): an instance's last stage is a fresh variable at a
+    // reference, not the instance's opened row.
+    name: 'r0-amin-opened-reused-across-stages',
+    file: `${generate}Node.purs`,
+    needle: '  { supplied, parameters: sig.parameters, last: sig.row, '
+      + 'result: sig.result }\n',
+    replacement: '  { supplied\n  , parameters: sig.parameters\n'
+      + '  , last: sig.row { tail = Just (EffFresh path (Stage supplied)) }'
+      + '\n  , result: sig.result\n  }\n',
+    probe: 'r0-amin-opened-reused-across-stages',
+    message: /last stage is not the instance's row/
   }
 ];

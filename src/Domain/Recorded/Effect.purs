@@ -45,15 +45,20 @@ data ERole
   | Clauses Int
   | AnnotationClauses Int Int
   | Stage Int
+  | OpenedRow
 
 data Fixed = FixedN | FixedM | FixedRigid String
 
 -- `Annotation p j n`: parameter j's annotation, n-th unwritten mark in it
--- (pre-order, R's and every C's marks counted once each).
+-- (pre-order, R's and every C's marks counted once each). `Opened p i`:
+-- the handled label a function use opens at p (Check/MarkUse.purs
+-- `openHandlers`); i is the parameter's index, and the callee's parameter
+-- count for the result, so each opened label is its own position. The
+-- opened row tail is the variable `⟨p, opened⟩`, `EffFresh p OpenedRow`.
 data Position
   = Frame Path
   | Literal Path
-  | Opened Path
+  | Opened Path Int
   | Annotation Path Int Int
   | Instantiated Path String
 
