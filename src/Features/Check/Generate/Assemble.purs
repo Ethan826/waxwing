@@ -53,6 +53,7 @@ keyed = case _ of
   AnnotationAt path _ → Just (Tuple "AnnotationAt" path)
   ArityAt path _ → Just (Tuple "ArityAt" path)
   AmbientAt path _ → Just (Tuple "AmbientAt" path)
+  SignatureAt path _ → Just (Tuple "SignatureAt" path)
   _ → Nothing
 
 assembled ∷ Header → Out → Array EffectItem → RecordedProblem
@@ -102,5 +103,6 @@ addItem problem = case _ of
   EffectRigid var → problem { effectRigids = problem.effectRigids <> [ var ] }
   ArityAt path n → problem { arities = Map.insert path n problem.arities }
   AmbientAt path row → problem { ambient = Map.insert path row problem.ambient }
+  SignatureAt _ sig → problem { signature = sig }
   MintedVar var → problem { flexEff = problem.flexEff <> [ var ] }
   MintedPosition at → problem { positions = problem.positions <> [ at ] }

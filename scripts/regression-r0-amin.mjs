@@ -173,5 +173,26 @@ export const r0AminRows = [
       + '\n  , result: sig.result\n  }\n',
     probe: 'r0-amin-opened-reused-across-stages',
     message: /last stage is not the instance's row/
+  },
+  {
+    // Task 19 (R032): the declaration's signature is recorded without
+    // its parameters, so a handler type written only there has no
+    // recorded MHandler.
+    name: 'r0-amin-signature-recorded',
+    file: `${generate}Declared.purs`,
+    needle: '  <$> declaredSignature tables function\n  where\n',
+    replacement: '  <$> (blank <$> declaredSignature tables function)\n'
+      + '  where\n  blank found = found { parameters = [] }\n',
+    probe: 'r0-amin-signature-recorded',
+    message: /lacks a recorded MHandler/
+  },
+  {
+    // Task 19 (R032): SignatureAt left out of the duplicate-write keys.
+    name: 'r0-amin-signature-duplicate',
+    file: 'src/Features/Check/Generate/Assemble.purs',
+    needle: '  SignatureAt path _ → Just (Tuple "SignatureAt" path)\n',
+    replacement: '',
+    probe: 'r0-amin-signature-duplicate',
+    message: /a duplicate SignatureAt write went undetected/
   }
 ];

@@ -8,6 +8,7 @@ import { markedProbes } from './regression-r0-amin-marked.mjs';
 import { nodeProbes } from './regression-r0-amin-nodes.mjs';
 import { openedProbes } from './regression-r0-amin-opened.mjs';
 import { ownedProbes } from './regression-r0-amin-owned.mjs';
+import { signatureProbes } from './regression-r0-amin-signature.mjs';
 
 const fail = message => {
   console.error(message);
@@ -23,6 +24,7 @@ export const r0AminProbes = {
   ...ownedProbes,
   ...nodeProbes,
   ...openedProbes,
+  ...signatureProbes,
   // Task 15: two NodeAt at one path are a DuplicateEffect, not an overwrite.
   'r0-amin-duplicate-effect': async context => {
     const load = loader(context);

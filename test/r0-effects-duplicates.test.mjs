@@ -62,7 +62,8 @@ test('each other keyed kind is checked', () => {
   const kinds = {
     AnnotationAt: p => new Out.AnnotationAt(p, int),
     ArityAt: p => new Out.ArityAt(p, 1),
-    AmbientAt: p => new Out.AmbientAt(p, closed)
+    AmbientAt: p => new Out.AmbientAt(p, closed),
+    SignatureAt: p => new Out.SignatureAt(p, sig)
   };
   for (const [kind, make] of Object.entries(kinds)) {
     const fault = faultOf(assemble([make(path), make(path)]));

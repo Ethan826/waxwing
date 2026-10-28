@@ -148,8 +148,8 @@ test('the real tree matches its pin and its FFI names no token module',
     // BACKLOG R026 Domain.Verdict.Certified, the public module of the
     // `Certified` token (Strategy.Substitution, already listed, mints it).
     const generate = ['', '.Assemble', '.Block', '.Body', '.Builtin',
-      '.Call', '.Callee', '.Context', '.Control', '.Effect', '.Elab',
-      '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
+      '.Call', '.Callee', '.Context', '.Control', '.Declared', '.Effect',
+      '.Elab', '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
       '.Elab.Recorded', '.Elab.Stages', '.Expr', '.Facts', '.Failure',
       '.Fault', '.Fresh', '.Gen', '.HandlerClause', '.Inputs', '.Lookup',
       '.Marked', '.Minted', '.Node', '.Opening', '.Operator', '.Owned',

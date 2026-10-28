@@ -292,6 +292,18 @@
    "match"
   ]
  },
+ "Features.Check.Generate.Declared": {
+  "source": [
+   "declaredSignature",
+   "rigidEffects",
+   "signatureItems"
+  ],
+  "compiled": [
+   "declaredSignature",
+   "rigidEffects",
+   "signatureItems"
+  ]
+ },
  "Features.Check.Generate.Effect": {
   "source": [
    "agree",
@@ -689,6 +701,7 @@
    "EffectRigid",
    "ArityAt",
    "AmbientAt",
+   "SignatureAt",
    "MintedVar",
    "MintedPosition",
    "ToD",

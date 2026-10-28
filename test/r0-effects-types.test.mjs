@@ -5,7 +5,8 @@ import { load, resolved } from './r0-generate-support.mjs';
 import { effectsOf } from './r0-effects-canonical.mjs';
 
 // R0 amin tranche 1, Task 1: the effect problem's types, recorded
-// empty. Contents are not asserted for generated problems, so a later
+// empty (Task 19 adds `signature`: eleven keys). Contents are not
+// asserted for generated problems, so a later
 // task that fills `effects` never weakens these tests.
 const Recorded = await load('Domain.Recorded');
 const Effect = await load('Domain.Recorded.Effect');
@@ -15,13 +16,15 @@ const Elaborating = await load('Domain.Elaborating');
 
 const keys = ['ambient', 'annotations', 'arities', 'effectRigids',
   'flexEff', 'instances', 'nodes', 'obligations', 'positions',
-  'rigidMarks'];
+  'rigidMarks', 'signature'];
 
 test('emptyEffects is empty', () => {
   assert.deepEqual(effectsOf(Effect.emptyEffects), {
     obligations: [], instances: [], annotations: [], nodes: [],
     rigidMarks: [], effectRigids: [], arities: [], ambient: [],
-    flexEff: [], positions: [] });
+    flexEff: [], positions: [],
+    signature: { parameters: [], row: { labels: [], tail: { Nothing: [] } },
+      result: { MBase: [{ UnitBase: [] }] } } });
 });
 
 test('every generated declaration carries an effects record', () => {

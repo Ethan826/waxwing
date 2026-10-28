@@ -99,13 +99,15 @@ const repeatsOf = (at, effects) => ['flexEff', 'positions'].flatMap(name => {
 });
 
 // Every `EffFresh` variable and `At` position a recorded type names (in
-// `nodes`, `instances` and `annotations`), by an explicit stack.
+// `nodes`, `instances`, `annotations` and the declaration's `signature`),
+// by an explicit stack.
 const valuesOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => shape(pair.value1));
 const namedIn = effects => {
   const named = { flexEff: new Set(), positions: new Set() };
   const pending = ['nodes', 'instances', 'annotations']
     .flatMap(name => valuesOf(effects[name]));
+  pending.push(shape(effects.signature));
   while (pending.length > 0) {
     const value = pending.pop();
     if (value === null || typeof value !== 'object') continue;
@@ -116,16 +118,34 @@ const namedIn = effects => {
   return named;
 };
 
+// A Declared signature names rigids and written marks, never a minted
+// variable or position.
+const signatureNames = (at, effects) => {
+  const found = [];
+  const pending = [shape(effects.signature)];
+  while (pending.length > 0) {
+    const value = pending.pop();
+    if (value === null || typeof value !== 'object') continue;
+    if (value.EffFresh || value.At) found.push(`${at} signature names ${
+      key(value)}`);
+    pending.push(...Object.values(value));
+  }
+  return found;
+};
+
+const unmatchedKind = (at, effects, named, name) => {
+  const minted = new Set(effects[name].map(item => key(shape(item))));
+  return [...[...minted].filter(item => !named[name].has(item))
+    .map(item => `${at} ${name} minted, unnamed: ${item}`),
+  ...[...named[name]].filter(item => !minted.has(item))
+    .map(item => `${at} ${name} named, unminted: ${item}`)];
+};
+
 // What is minted but named by no recorded type, and the reverse.
 const unmatchedOf = (at, effects) => {
   const named = namedIn(effects);
-  return ['flexEff', 'positions'].flatMap(name => {
-    const minted = new Set(effects[name].map(item => key(shape(item))));
-    return [...[...minted].filter(item => !named[name].has(item))
-      .map(item => `${at} ${name} minted, unnamed: ${item}`),
-    ...[...named[name]].filter(item => !minted.has(item))
-      .map(item => `${at} ${name} named, unminted: ${item}`)];
-  });
+  return [...signatureNames(at, effects), ...['flexEff', 'positions']
+    .flatMap(name => unmatchedKind(at, effects, named, name))];
 };
 
 const keyed = pairs => new Map(pairs.map(([path, value]) =>

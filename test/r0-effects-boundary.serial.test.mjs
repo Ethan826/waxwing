@@ -80,11 +80,15 @@ const factsOf = row => {
   const fields = Recorded.fields(Elaborating.problem(generated.value0));
   const { effects } = fields;
   const kinds = kindsOf(fields.outside);
+  const written = constructsOf({ parameters: row.decl.parameters,
+    result: row.decl.result, row: row.decl.row });
   const sites = { nodes: holdsHandler(valuesOf(effects.nodes)),
     instances: holdsHandler(valuesOf(effects.instances)),
     annotations: holdsHandler(valuesOf(effects.annotations)) };
   return { at: row.at, kinds, source, solved: describe(row.decision).verdict
-    === 'Solved', handler: Object.values(sites).some(Boolean), sites };
+    === 'Solved', handler: Object.values(sites).some(Boolean), sites,
+  signed: written.includes('type'), recordedSignature:
+    holdsHandler([effects.signature]) };
 };
 
 const survey = async () => {
@@ -106,14 +110,16 @@ const found = await survey();
 // boundary: counted and printed, never asserted. `fail` plus another
 // construct is judged by that construct. A literal or `with` records a
 // node type, so it needs MHandler; a handler type written only in the
-// declaration's own signature is not recorded in `effects` (no signature
-// field yet), so it needs HandlerType and not Solved only. `handle`
-// alone may use FailFamily instead of HandlerType.
+// declaration's own signature is recorded in `effects.signature` (Task
+// 19, R032), so it needs an MHandler there (a representation check),
+// HandlerType and not Solved. `handle` alone may use FailFamily instead
+// of HandlerType.
 const gated = source => source.some(kind => kind !== 'fail');
 const recorded = source => ['literal', 'with'].some(k => source.includes(k));
 const typed = source => ['literal', 'with', 'type']
   .some(kind => source.includes(kind));
-const sourceBreaches = ({ at, kinds, source, solved, handler }) => {
+const sourceBreaches = ({ at, kinds, source, solved, handler, signed,
+  recordedSignature }) => {
   if (!gated(source)) return [];
   const marked = kinds.includes('HandlerType')
     || (!typed(source) && kinds.includes('FailFamily'));
@@ -121,6 +127,8 @@ const sourceBreaches = ({ at, kinds, source, solved, handler }) => {
     + `${kinds.join(', ')}; MHandler recorded: ${handler})`;
   return [...(solved ? [`${where}: Solved`] : []),
     ...(recorded(source) && !handler ? [`${where}: no MHandler`] : []),
+    ...(signed && !recordedSignature ? [`${where}: no signature MHandler`]
+      : []),
     ...(marked ? [] : [`${where}: no marker`])];
 };
 
@@ -129,6 +137,7 @@ const sourceBreaches = ({ at, kinds, source, solved, handler }) => {
 const sourceFloors = { all: 223, literal: 160, with: 150, handle: 56,
   fail: 73, type: 63 };
 const signatureFloor = 13;
+const signedFloor = 44;
 
 const refusals = ({ at, kinds, solved, handler }) => {
   const marked = kinds.includes('HandlerType')
@@ -172,6 +181,11 @@ test('every handler construct in resolved source is blocked', () => {
   const failOnly = cases.filter(fact => !gated(fact.source));
   const signatureOnly = cases.filter(fact => gated(fact.source)
     && !recorded(fact.source) && fact.source.includes('type'));
+  const signed = cases.filter(fact => fact.signed);
+  console.log(`handler type in the signature: ${signed.length}, of which `
+    + `${signed.filter(fact => fact.recordedSignature).length} record it`);
+  assert.ok(signed.length >= signedFloor,
+    `only ${signed.length} declarations write a handler type in a signature`);
   console.log(`fail-only (unasserted): ${failOnly.length}, of which `
     + `${failOnly.filter(fact => fact.solved).length} Solved; `
     + `signature-only handler type: ${signatureOnly.length}`);

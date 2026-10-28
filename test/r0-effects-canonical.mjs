@@ -27,7 +27,7 @@ const shape = value => {
 
 const names = ['obligations', 'instances', 'annotations', 'nodes',
   'rigidMarks', 'effectRigids', 'arities', 'ambient', 'flexEff',
-  'positions'];
+  'positions', 'signature'];
 
 export const effectsOf = effects =>
   Object.fromEntries(names.map(name => [name, shape(effects[name])]));

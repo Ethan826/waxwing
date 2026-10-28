@@ -69,6 +69,7 @@ data EffectItem
   | EffectRigid VarId
   | ArityAt Path Int
   | AmbientAt Path MRow
+  | SignatureAt Path InstanceSig
   | MintedVar EVar
   | MintedPosition Position
 

@@ -22,10 +22,10 @@ module Domain.Recorded.Effect
 import Prelude
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
 import Domain.Ids (EffectId)
-import Domain.Recorded.Atom (Base, Var)
+import Domain.Recorded.Atom (Base(..), Var)
 import Domain.Recorded.Origin (Entry, Path)
 import Domain.Row (EffectRef)
 import Domain.Type (TypeId, VarId)
@@ -131,8 +131,11 @@ type EffectProblem =
   , ambient ∷ Map Path MRow
   , flexEff ∷ Array EVar
   , positions ∷ Array Position
+  , signature ∷ InstanceSig -- the declaration's own, marked as declared
   }
 
+-- `signature` is the fold's start: every generated declaration records its
+-- own (Generate.Declared), so this unit signature never survives assembly.
 emptyEffects ∷ EffectProblem
 emptyEffects =
   { obligations: []
@@ -145,6 +148,11 @@ emptyEffects =
   , ambient: Map.empty
   , flexEff: []
   , positions: []
+  , signature:
+      { parameters: []
+      , row: { labels: [], tail: Nothing }
+      , result: MBase UnitBase
+      }
   }
 
 derive instance eqEVar ∷ Eq EVar
