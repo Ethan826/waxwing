@@ -29,9 +29,9 @@ exit 0; ledger in .superpowers/sdd/2026-10-25-amin-tranche-1-plan/.
 at e6868b8 exit 0. For the author before Task 7: BACKLOG R033 (I1, I4:
 opened rows and handled labels), the `fail`-only boundary ruling (I2),
 R032 (signature record).
-**In progress: correction unit C (§18.102):** plan Tasks 18 (R033),
-19 (R032), 20 (I2 amendment); verify; one targeted review; ceiling
-3.5M total. Task 7 held. A2 note:
+**Correction unit C done (§18.103):** R033, R032, I2 at 2643df3,
+verify exit 0. Open for the author: three check gaps from the targeted
+review (progress.md). Task 7 held; R031 deferred. A2 note:
 docs/plans/2026-10-25-amin-a2-options.md (questions 1-3 open).
 A2's algorithm, G-D1's closure record and Task 4.6 stay unauthorized.
 The critical path and part A/B status: docs/plans/r0-closure-checklist.md.

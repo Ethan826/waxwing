@@ -147,6 +147,31 @@ handler-typed parameter plus the result (R033); I5, the handler-marker
 row's description (corrected above). I1 and I4 change what Task 7's E1
 equations would record and need rulings before Task 7.
 
+## a-min tranche 1, correction unit C (2026-10-27)
+
+R033 fixed (42181ee: opened rows `⟨p, opened⟩` at function, constructor
+and operation uses, not constructor patterns; indexed `Opened p i` for
+handled labels written M in top-level parameters and N in the result;
+identities reused across instance, reference and partial stages). R032
+fixed (c9fbc31: the declaration's own Declared signature recorded as
+`SignatureAt`, in duplicate detection and minting accounting; the
+boundary checks the recorded signature's MHandler). I2 amended
+(2643df3: the `fail`-only cohort, 19 declarations, 3 Solved and 16
+Unresolved, pinned in test/fixtures/r0/effects-fail-only.json; no
+assurance that their effects were validated). Six regression rows
+added. `npm run verify` at 2643df3 exit 0: 2959/2959 parallel, 144/144
+serial, 227/227 regression proofs. One targeted review (Opus): the
+corrections are sound, R033 matches the live checker; open Important
+items: a missing signature write is undetectable (the "main" test is
+vacuous), the cohort pin has an in-test re-pin mode
+(`WXW_PIN_FAIL_ONLY=1`) where the repository's convention is a separate
+pin script, and the signature's rigids are not checked against
+`effectRigids`/`rigidMarks`. Minor: existence-only representation check,
+cohort filtered by source only, no row for the cohort pin itself, no
+constructor-pattern/field separating tests, cohort "preserved" rests on
+counts. Not fixed: the 3.5M ceiling is spent. This establishes no
+effect soundness.
+
 ## FX033: rule H′ in ResultClauses, narrow repair (2026-10-25)
 
 The author authorized only this repair. On branch fx033-resultc-tail

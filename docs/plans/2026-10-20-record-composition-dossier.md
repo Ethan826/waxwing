@@ -6402,3 +6402,14 @@ argument, not a check; correcting the mismatches does not establish
 effect soundness. Ceiling 3.5M total, a cap: these fixes, their checks,
 verify, records and one targeted review. Task 7 held; R031 deferred;
 no push. The green verify at e6868b8 is evidence for that commit only.
+
+### 18.103 Correction unit C done; review items open (2026-10-27)
+
+R033 (42181ee), R032 (c9fbc31) and the I2 amendment (2643df3) landed
+with six regression rows; verify at 2643df3 exit 0 (2959 + 144 tests,
+227 regression proofs). The targeted review judged the corrections
+sound and R033 exact against the live checker, and left three
+Important check gaps open (docs/progress.md): an undetectable missing
+signature write, the in-test re-pin mode of the cohort pin, and no
+domain check of the signature's rigids. They were not fixed within the
+3.5M ceiling. Task 7 stays held; R031 deferred; nothing pushed.
