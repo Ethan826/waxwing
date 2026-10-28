@@ -1,6 +1,6 @@
 {
  "amendment": "dossier 18.102",
- "command": "WXW_PIN_FAIL_ONLY=1 node --test test/r0-effects-boundary.serial.test.mjs",
+ "command": "node scripts/r0-fail-only-pin.mjs",
  "cohort": [
   {
    "at": "editors/vscode/fixtures/effect-namespaces.wxw#failing",
