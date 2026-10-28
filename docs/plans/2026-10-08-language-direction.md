@@ -448,3 +448,38 @@ No reference source code is copied or licensed for reuse by this record.
 - [Go WASM](https://go.dev/wiki/WebAssembly) and
   [LLVM GC](https://llvm.org/docs/GarbageCollection.html): target/runtime
   distinctions.
+
+## Self-hosting parity survey (draft, 2026-10-27)
+
+[The self-hosting roadmap](../bootstrap.md) is the entry point for the
+[PureScript usage inventory](2026-10-27-self-hosting-readiness.md).
+The source survey identifies a rank-2 argument to the generation seal
+and nominal scope roles that the current rank-1 language cannot directly
+express. It also identifies polymorphic methods needed by generic
+interfaces. These are concrete inputs to K001/C001, R006 and M001.
+
+Annotated higher-rank polymorphism is proposed for evaluation, with
+explicit scope/escape checks and a lowering strategy. This reopens the
+self-hosting requirement question; it does not adopt Rank-N syntax,
+change the rank-1 language today, or authorize unrestricted inference or
+impredicative instantiation. Preserving the protected interface is the
+acceptance criterion for any alternative.
+
+Proper tail calls are a requested direction for recursion-based iteration.
+A design must specify tail contexts, mutual and indirect calls, effects
+and cleanup, and backend conformance. Go and JavaScript host behavior
+cannot supply a portable guarantee: Waxwing must provide the necessary
+lowering, for example loops or trampolines, and measure its cost. ADR 015
+item 5 keeps the language contract independent of backend behavior. Non-tail
+folds and tree walks retain
+separate stack-safety obligations. Iterator performance is also a separate
+library/backend contract; higher rank and HKTs do not establish fusion.
+
+A final call with pending defer work or an installed handler frame
+requires an account of that frame before claiming tail-call space bounds.
+The design must preserve, transfer or discharge it; the source position
+alone cannot justify deleting it.
+
+These findings guide future designs under charter C3, C4, C5, C7 and C8.
+Existing
+feature approvals, backend priorities and R0 closure gates remain in force.

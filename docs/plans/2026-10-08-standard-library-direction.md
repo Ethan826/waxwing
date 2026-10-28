@@ -161,3 +161,38 @@ No concurrency follows automatically from collection or traversal names.
 - [PureScript Bifunctor](https://pursuit.purescript.org/packages/purescript-bifunctors/6.0.0/docs/Data.Bifunctor).
 
 These are conceptual/API references. No implementation is copied.
+
+## Persistent collections and traversal (draft, 2026-10-27)
+
+The [self-hosting inventory](2026-10-27-self-hosting-readiness.md) supplies
+compiler workloads for D001/STD001. Evaluate established persistent
+vectors, hash tries and balanced trees against those workloads. Clojure's
+structural sharing and transient builders are precedents; Rust supplies
+practical collection APIs and efficient iterator-adapter precedents.
+These are candidates, not selected implementations or adopted ownership
+rules. Cite the chosen algorithms and state adaptations under ADR 014.
+
+Specify the following contracts separately:
+
+- Persistence and aliasing: which earlier versions remain valid after
+  an operation, and what storage may be shared.
+- Equality, hashing and ordering: explicit policies and deterministic
+  traversal where compiler output or diagnostics depend on it.
+- Traversal: eager collection operations versus deferred iterator
+  operations, callback order, short-circuiting and effects.
+- Builders: mutation scope, aliases, freezing and use after freezing.
+  Rank-2 non-escape alone does not establish a safe builder lifecycle.
+- Cost: complexity, allocation, stack use and retained memory, including
+  bulk construction and long adapter pipelines.
+
+Use published library mechanisms first. Compiler fusion or special syntax
+requires a demonstrated limitation, a preservation argument and approval
+under charter C3/C8. Test representative pipelines against direct loops
+on each supported backend; report overhead rather than assume it vanishes.
+A persistent collection may support efficient single-pass traversal.
+
+Require stack-safe library implementations for long sequences and deep
+compiler workloads. Proper tail calls do not make every map, foldr or
+recursive tree walk tail-recursive, and constant stack does not imply
+constant output or cleanup storage. Law tests and effect-order tests
+remain distinct from performance measurements.

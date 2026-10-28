@@ -703,3 +703,33 @@ readers (not to plans, logs or progress records).
 Review conventions only: the layer names describe reasons to change, which no
 gate checks; the gate checks import direction, purity and IR access.
 F005: the nil-guard probe's temp-directory cleanup is not asserted.
+
+## Porting compiler guarantees (draft, 2026-10-27)
+
+The [self-hosting roadmap](bootstrap.md) and its
+[source inventory](plans/2026-10-27-self-hosting-readiness.md) identify
+parity obligations. This section is proposed review guidance; it adds no
+automated gate and authorizes no implementation or gate exception.
+
+For each ported subsystem, record the existing static invariant, its
+Waxwing counterpart, the language/library assumptions, and the check or
+argument supporting it. Include negative cases for hidden constructors,
+scoped handles, variable sorts, witness coupling and read tracking where
+those properties apply. Preserve the independent boundary between
+untrusted proposals and trusted certification.
+
+Adapt import/export and trusted-surface checks to Waxwing's parsed module
+information. Keep executable, rejection and oracle fixtures; replace
+white-box adapters that depend on compiled PureScript's JavaScript shapes.
+Repeated self-compilation is convergence evidence, separate from a proof
+of model-to-implementation correspondence.
+
+Before claiming a tail-call or iterator-cost guarantee, name the source
+forms and backends covered. Test self, mutual and indirect tail calls,
+short-circuiting, callback order, failures and pending cleanup as applicable.
+On Go and JavaScript, specify Waxwing lowering that supplies the promised
+space bound rather than relying on host tail-call optimization. Account
+for pending cleanup and installed handler frames. Measure compiler-scale
+time, allocation and stack use. Keep the reference
+loop and size-dependent measurements; a small example passing is not a
+stack-safety or zero-overhead guarantee.
