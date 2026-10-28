@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync,
-  statSync } from 'node:fs';
+  statSync, writeFileSync } from 'node:fs';
 import { exitCodeFor, prove, rowTree, runRegression }
   from '../scripts/regression-run.mjs';
 import { r0AminRows } from '../scripts/regression-r0-amin.mjs';
@@ -82,10 +82,15 @@ const compare = 'test/r0-fail-only-compare.mjs';
 const rowRoot = '.build/regression/unit-test-tree';
 const links = dir => readdirSync(dir, { recursive: true })
   .filter(name => lstatSync(`${dir}/${name}`).isSymbolicLink());
-// A stand-in baseline: the harness clones it, as it does the real one.
+const pin = 'test/fixtures/r0/effects-fail-only.json';
+const marker = 'output/marker.js';
+// A stand-in baseline with one output file: the harness clones it, as it
+// does the real one. Running this file while scripts/regression.mjs runs
+// would remove that run's baseline (verify runs them in turn).
 const withBaseline = async run => {
   rmSync('.build/regression', { recursive: true, force: true });
   mkdirSync('.build/regression/baseline/output', { recursive: true });
+  writeFileSync(`.build/regression/baseline/${marker}`, 'baseline\n');
   try {
     await run();
   } finally {
@@ -97,13 +102,45 @@ test('a test-tree row whose needle is missing is an error, and its '
 async () => withBaseline(async () => {
   const row = testRow([{ file: compare, needle: 'no such needle',
     replacement: 'x' }]);
-  const pin = 'test/fixtures/r0/effects-fail-only.json';
   const before = [sha(compare), sha(pin)];
   await assert.rejects(() => prove(row), /exactly one target/);
   assert.deepEqual(links(rowRoot), []);
   assert.equal(statSync(`${rowRoot}/${compare}`).nlink, 1);
   assert.deepEqual([sha(compare), sha(pin)], before);
 }));
+// The edit applies; the unknown probe then fails the healthy run, so the
+// row stops with its copy edited and in place to inspect.
+test('a test-tree row edits only its own independent copy',
+  async () => withBaseline(async () => {
+    const needle = "import { readFileSync } from 'node:fs';\n";
+    const row = testRow([{ file: compare, needle,
+      replacement: `${needle}// edited in the copy\n` }],
+    { probe: 'no-such-probe' });
+    const before = [sha(compare), sha(pin)];
+    await assert.rejects(() => prove(row));
+    assert.match(readFileSync(`${rowRoot}/${compare}`, 'utf8'),
+      /edited in the copy/);
+    assert.deepEqual([sha(compare), sha(pin)], before);
+    assert.deepEqual(links(rowRoot), []);
+    for (const file of [compare, marker]) {
+      assert.equal(statSync(`${rowRoot}/${file}`).nlink, 1, file);
+    }
+    writeFileSync(`${rowRoot}/${marker}`, 'clone\n');
+    assert.equal(readFileSync(`.build/regression/baseline/${marker}`,
+      'utf8'), 'baseline\n');
+  }));
+test('a row whose edit path leaves its root is rejected', async () => {
+  for (const file of ['test/../src/Main.purs', '/tmp/x', './test/a.mjs',
+    'test//a.mjs']) {
+    await assert.rejects(() => prove(testRow([{ file, needle: 'a',
+      replacement: 'b' }])), /relative and normalized/, file);
+  }
+});
+test('a row needs exactly one form of edit', async () => {
+  await assert.rejects(() => prove(testRow([])), /needs an edit/);
+  await assert.rejects(() => prove(testRow([{ file: compare, needle: 'a',
+    replacement: 'b' }], { file: compare })), /either edits or a file/);
+});
 test('a row mixing src and test edits is rejected', async () => {
   const edits = [{ file: compare, needle: 'a', replacement: 'b' },
     { file: 'src/Main.purs', needle: 'a', replacement: 'b' }];

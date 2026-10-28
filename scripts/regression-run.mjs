@@ -1,24 +1,34 @@
 import assert from 'node:assert/strict';
 import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, posix } from 'node:path';
 import { applyEdits, buildBaseline, cloneTreeAsync, compileTreeAsync,
   spawnAsync } from './regression-clone.mjs';
-import { dirname } from 'node:path';
 import { regressionJobs, runPool } from './regression-pool.mjs';
 const base = '.build/regression';
 const failures = '.build/regression-failed';
 const probe = (...args) =>
   spawnAsync('node', ['test/regression.mjs', ...args]);
-// A row edits either the compiler (default) or the test helpers
+// A row edits either the compiler (no `tree`) or the test helpers
 // (`tree: 'test'`, every edit under test/); one row never mixes the two.
+// Edit paths are normalized and relative, so no edit leaves the row root.
 export const rowTree = row => {
+  assert.ok(row.edits === undefined || row.file === undefined,
+    `${row.name}: a row gives either edits or a file, not both`);
   const files = (row.edits ?? [row]).map(edit => edit.file);
+  assert.ok(files.length > 0, `${row.name}: a row needs an edit`);
+  for (const file of files) {
+    assert.ok(typeof file === 'string' && posix.normalize(file) === file
+      && !file.startsWith('/') && !file.split('/').includes('..'),
+    `${row.name}: edit path must be relative and normalized: ${file}`);
+  }
   const underTest = files.map(file => file.startsWith('test/'));
   if (row.tree === 'test') {
     assert.ok(underTest.every(Boolean),
       `${row.name}: a test-tree row edits only files under test/`);
     return 'test';
   }
-  assert.equal(row.tree, undefined, `${row.name}: unknown tree ${row.tree}`);
+  assert.equal(row.tree, undefined, `${row.name}: unknown tree `
+    + `${row.tree} (omit tree for a compiler row)`);
   assert.ok(!underTest.some(Boolean),
     `${row.name}: edits under test/ need tree: 'test' and no src edits`);
   return 'src';
