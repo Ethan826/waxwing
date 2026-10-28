@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { exitCodeFor, runRegression } from '../scripts/regression-run.mjs';
+import { createHash } from 'node:crypto';
+import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync,
+  statSync } from 'node:fs';
+import { exitCodeFor, prove, rowTree, runRegression }
+  from '../scripts/regression-run.mjs';
+import { r0AminRows } from '../scripts/regression-r0-amin.mjs';
 import { runPool } from '../scripts/regression-pool.mjs';
 const names = ['alpha', 'bravo', 'charlie', 'delta', 'echo'];
 const rows = names.map(name => ({ name }));
@@ -67,4 +72,48 @@ test('fewer than one job is refused', async () => {
   await assert.rejects(() => runRegression(rows, [], 0, options(passingProver)),
     /jobs/);
   await assert.rejects(() => runPool([1], 0, async () => {}), /jobs/);
+});
+const sha = file => createHash('sha256').update(readFileSync(file))
+  .digest('hex');
+const testRow = (edits, extra = {}) => ({ name: 'unit-test-tree',
+  tree: 'test', edits, probe: 'r0-amin-cohort-pin-readonly',
+  message: /a moved cohort passed/, ...extra });
+const compare = 'test/r0-fail-only-compare.mjs';
+const rowRoot = '.build/regression/unit-test-tree';
+const links = dir => readdirSync(dir, { recursive: true })
+  .filter(name => lstatSync(`${dir}/${name}`).isSymbolicLink());
+// A stand-in baseline: the harness clones it, as it does the real one.
+const withBaseline = async run => {
+  rmSync('.build/regression', { recursive: true, force: true });
+  mkdirSync('.build/regression/baseline/output', { recursive: true });
+  try {
+    await run();
+  } finally {
+    rmSync('.build/regression', { recursive: true, force: true });
+  }
+};
+test('a test-tree row whose needle is missing is an error, and its '
+  + 'isolated copy has no links and leaves the real test/ alone',
+async () => withBaseline(async () => {
+  const row = testRow([{ file: compare, needle: 'no such needle',
+    replacement: 'x' }]);
+  const pin = 'test/fixtures/r0/effects-fail-only.json';
+  const before = [sha(compare), sha(pin)];
+  await assert.rejects(() => prove(row), /exactly one target/);
+  assert.deepEqual(links(rowRoot), []);
+  assert.equal(statSync(`${rowRoot}/${compare}`).nlink, 1);
+  assert.deepEqual([sha(compare), sha(pin)], before);
+}));
+test('a row mixing src and test edits is rejected', async () => {
+  const edits = [{ file: compare, needle: 'a', replacement: 'b' },
+    { file: 'src/Main.purs', needle: 'a', replacement: 'b' }];
+  await assert.rejects(() => prove(testRow(edits)), /only files under test/);
+  await assert.rejects(() => prove(testRow(edits, { tree: undefined })),
+    /need tree: 'test'/);
+  await assert.rejects(() => prove(testRow(edits, { tree: 'src' })),
+    /unknown tree/);
+});
+test('the real pin row is a test-tree row', () => {
+  const row = r0AminRows.find(r => r.name === 'r0-amin-cohort-pin-readonly');
+  assert.equal(rowTree(row), 'test');
 });

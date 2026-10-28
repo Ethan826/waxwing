@@ -6480,3 +6480,36 @@ unchanged. Stop for an unresolved reading of §4, a required change at
 a pinned boundary, or R031 work; R031 stays deferred. Unused budget
 does not widen either unit. Actual spend and verification are reported
 at the transition.
+
+### 18.108 Task 24: the isolated baseline's output allowed (2026-10-28)
+
+Task 24 stopped on its stop condition: probe helpers (test/support.mjs
+among them) import the compiler from `../output/`, so a bare copy of
+`test/` cannot run. The author authorized option 1, narrowly amending
+the stop condition to permit the isolated baseline's build output: a
+test-file row clones the regression baseline (no writable or hard link
+to the real tree), copies `test/` into that clone and still skips the
+compile. The restored writer must give "a moved cohort passed", not an
+import failure. Isolation checks, the targeted review and full verify
+are all still required. The 4.0M ceiling is unchanged; stop and report
+before exceeding it. Task 7 stays gated behind Task 24.
+
+### 18.109 Task 24: three read-only inputs copied; ceiling 4.10M (2026-10-28)
+
+The second attempt stopped when test/r0-g0-support.mjs read a research
+probe at module load. The author authorized copying the three named
+files (research/division-campaign/r0/probes/d02-body-type-lacking.wxw,
+research/division-campaign/source/examples/p11-route.wxw,
+examples/answer.wxw) into the isolated clone at their original paths,
+as independent copies with no writable link to the real repository,
+and raised Task 24's running ceiling to 4.10M with inline completion;
+the targeted review, one fix round and full verify stay. The healthy
+probe must pass and the restored writer fail with "a moved cohort
+passed"; the real comparison file, the fixture and the copied inputs'
+originals stay byte-identical. The real runner is exercised before
+review (the literal-path scan is supporting evidence, not an
+inventory). Stop for any further dependency outside this scope or
+before exceeding the cap. No change to shared probe helpers or fixture
+contents. Task 7 stays gated with its 0.65M allowance; if Task 24 uses
+the revised ceiling the combined maximum is 4.75M, superseding 4.65M.
+Task 24's actual spend is reported before Task 7 starts.

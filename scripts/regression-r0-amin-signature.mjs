@@ -4,8 +4,10 @@
 const generate = 'src/Features/Check/Generate/';
 export const signatureRows = [
   {
-    // Task 21: assembly accepts a declaration with no SignatureAt, so a
-    // unit-valued one (equal to the fold's placeholder) goes unnoticed.
+    // Task 21, the direct assembly row: it shows that omitting a
+    // SignatureAt write is rejected. Assembly accepts a declaration with
+    // no SignatureAt, so a unit-valued one (equal to the fold's
+    // placeholder) goes unnoticed.
     name: 'r0-amin-signature-missing',
     file: 'src/Features/Check/Generate/Assemble.purs',
     needle: '  | otherwise = Left MissingSignature\n',
@@ -38,10 +40,13 @@ export const signatureRows = [
     message: /the signature names a rigid mark: .*not in rigidMarks/
   },
   {
-    // Task 21: a missing write read off the placeholder: a SignatureAt
-    // counts as written only when it differs from `emptyEffects`'
-    // signature, so a real `with pure` unit declaration (which records
-    // exactly the placeholder) is refused as missing.
+    // Task 21, the end-to-end row: it shows that a legitimate
+    // placeholder-shaped (`with pure` unit) signature is accepted; it does
+    // not prove omission detection (the row above does). A missing write
+    // read off the placeholder: a SignatureAt counts as written only when
+    // it differs from `emptyEffects`' signature, so a real `with pure`
+    // unit declaration (which records exactly the placeholder) is refused
+    // as missing.
     name: 'r0-amin-signature-missing-real',
     file: `${generate}Assemble.purs`,
     needle: '  SignatureAt _ _ → true\n',

@@ -1,30 +1,80 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { applyEdits, buildBaseline, cloneTreeAsync, compileTreeAsync,
   spawnAsync } from './regression-clone.mjs';
+import { dirname } from 'node:path';
 import { regressionJobs, runPool } from './regression-pool.mjs';
 const base = '.build/regression';
 const failures = '.build/regression-failed';
 const probe = (...args) =>
   spawnAsync('node', ['test/regression.mjs', ...args]);
-const prove = async row => {
+// A row edits either the compiler (default) or the test helpers
+// (`tree: 'test'`, every edit under test/); one row never mixes the two.
+export const rowTree = row => {
+  const files = (row.edits ?? [row]).map(edit => edit.file);
+  const underTest = files.map(file => file.startsWith('test/'));
+  if (row.tree === 'test') {
+    assert.ok(underTest.every(Boolean),
+      `${row.name}: a test-tree row edits only files under test/`);
+    return 'test';
+  }
+  assert.equal(row.tree, undefined, `${row.name}: unknown tree ${row.tree}`);
+  assert.ok(!underTest.some(Boolean),
+    `${row.name}: edits under test/ need tree: 'test' and no src edits`);
+  return 'src';
+};
+const healthyRun = async row => {
+  const healthy = await probe('output/Program.Compile/index.js', 'output',
+    row.probe);
+  assert.ifError(healthy.error);
+  assert.equal(healthy.status, 0, healthy.stderr);
+};
+const assertBroken = (row, broken) => {
+  assert.ifError(broken.error);
+  assert.equal(broken.status, 1, broken.stdout + broken.stderr);
+  assert.match(broken.stderr, row.message);
+  console.log(`Regression proof (${row.name}): fixed compiler passes; `
+    + 'restored defect fails.');
+};
+const proveSource = async row => {
   const root = `${base}/${row.name}`;
   await cloneTreeAsync(`${base}/baseline`, root);
   applyEdits(root, row);
   const built = await compileTreeAsync(root);
   assert.ifError(built.error);
   assert.equal(built.status, 0, built.stderr);
-  const healthy = await probe('output/Program.Compile/index.js', 'output',
-    row.probe);
-  assert.ifError(healthy.error);
-  assert.equal(healthy.status, 0, healthy.stderr);
-  const broken = await probe(`${root}/output/Program.Compile/index.js`,
-    `${root}/output`, row.probe);
-  assert.ifError(broken.error);
-  assert.equal(broken.status, 1, broken.stdout + broken.stderr);
-  assert.match(broken.stderr, row.message);
-  console.log(`Regression proof (${row.name}): fixed compiler passes; `
-    + 'restored defect fails.');
+  await healthyRun(row);
+  assertBroken(row, await probe(`${root}/output/Program.Compile/index.js`,
+    `${root}/output`, row.probe));
+};
+// Files outside test/ that the probe set reads from its cwd (dossier
+// 18.109): test/r0-g0-support.mjs and test/r0-witness-support.mjs at
+// load, test/regression.mjs for its own probe.
+export const testTreeInputs = [
+  'research/division-campaign/r0/probes/d02-body-type-lacking.wxw',
+  'research/division-campaign/source/examples/p11-route.wxw',
+  'examples/answer.wxw'
+];
+// A test-tree row runs its broken probe wholly from its own clone of the
+// baseline (src, .spago and the plain-purs output/) holding real copies of
+// test/ (the helpers import ../output) and of testTreeInputs. Nothing is
+// compiled, and the real test/ is never edited.
+const proveTest = async row => {
+  const root = `${base}/${row.name}`;
+  await cloneTreeAsync(`${base}/baseline`, root);
+  cpSync('test', `${root}/test`, { recursive: true });
+  for (const input of testTreeInputs) {
+    mkdirSync(dirname(`${root}/${input}`), { recursive: true });
+    cpSync(input, `${root}/${input}`);
+  }
+  applyEdits(root, row);
+  await healthyRun(row);
+  assertBroken(row, await spawnAsync('node', ['test/regression.mjs',
+    'output/Program.Compile/index.js', 'output', row.probe],
+  { cwd: root }));
+};
+export const prove = async row => {
+  await (rowTree(row) === 'test' ? proveTest : proveSource)(row);
 };
 // The row directory goes in `finally`; a failure first saves what is needed
 // to debug it (the assertion messages carry the compiler and probe output).
