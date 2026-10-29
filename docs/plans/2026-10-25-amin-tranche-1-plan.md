@@ -550,6 +550,17 @@ no recorded handler type and no marker is a breach.
 
 ### Task 7: E1 equations, O1 and O2 included
 
+**Amended 2026-10-29 (§18.119):** no E1 at the handler literal's node
+(deferred to Task 9; statements §4 amendment). The trusted-surface
+re-pin for Generate.Obligation and the Gen/Out export changes is
+authorized, its diff named in the commit; G0's problem pin, the gates
+and live compilation stay unchanged. Origins use explicit tagged
+provenance: an E1 tied to an existing atom references its unchanged
+AtomId; an effect-only site has a deterministic site-local identity. No
+negative indices or offsets. The identity and uniqueness rules are
+written here before coding. The corpus comparison checks the marked
+sides, not only the identity.
+
 **Files:** create Generate/Obligation.purs (`equalAt ∷ At → MTy → MTy
 → Tagged s`); every rule that emits `GenEqual`; Effect.purs
 (literal node, O1 in `handlerClause`, O2 in `with`); Failure.purs
@@ -587,6 +598,11 @@ each use's callee arity at its path.
 - [ ] **Steps 2-5** as Task 7; regression proof: drop the stage site.
 
 ### Task 9: handler family (E3, E4, E5)
+
+**Added 2026-10-29 (§18.119):** Task 9 also records the literal E1
+deferred from Task 7: the connection between a handler literal's
+marked type and its image or use, named explicitly in its test and in
+its restored-defect proof.
 
 **Files:** Effect.purs, Callee.purs (opened label → `At (Opened p)`),
 Obligation.purs; create test/r0-obligations-handler.test.mjs.

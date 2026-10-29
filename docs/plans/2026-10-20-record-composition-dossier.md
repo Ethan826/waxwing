@@ -6686,3 +6686,24 @@ at a pinned boundary, or R031 work. R031 stays deferred. The
 partialFirst measurement protocol stays held; a future timing failure
 is investigated, not retried and not met by raising a bound. No
 milestone moves from closing Task 24.
+
+### 18.119 Task 7 resumes: re-pin, literal E1 deferred, tagged origins (2026-10-29)
+
+Task 7's first attempt stopped with no changes: the new
+Generate.Obligation module and the Gen/Out export changes need a
+trusted-surface re-pin, which the brief had listed as a stop, and the
+literal-node E1 would be reflexive because today's literal has no node
+variable. The author authorized the trusted-surface re-pin for
+Generate.Obligation and the necessary Gen/Out export changes, its diff
+named in the same commit, without moving G0's problem pin, weakening a
+gate or changing live compilation. Approved amendment (statements §4
+and §2, plan Tasks 7 and 9): no E1 at the literal's node in Task 7; no
+invented node variable or reflexive equation; Task 9 owns the literal's
+connection to its image or use, named in its test and restored-defect
+proof; literal-E1 coverage is deferred, not satisfied or unnecessary.
+Origins: explicit tagged provenance, an atom-associated obligation
+referencing its unchanged AtomId and an effect-only site with a
+deterministic site-local identity; no negative indices or offsets; the
+identity and uniqueness rules documented before coding and reviewed;
+the corpus comparison requires the correct marked sides. No new budget:
+about 0.51M remains under 5.29M. R031 deferred.

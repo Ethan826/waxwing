@@ -453,6 +453,7 @@ A handler literal's recorded type is
 `THandler (Label e args (HandlerLit.m)) { inference: ⟨p, handler
 inference⟩, clauses: Just ⟨p, handler clauses⟩ }`, and generation
 records `Equal (TVar node) (that type)` at the literal's node (design).
+(Deferred to Task 9 by the §4 amendment of 2026-10-29, §18.119.)
 Revision 3.2 claimed that an image can hold a copy of a site position
 only where today's checker unifies two types, each such unification
 recorded as an E1. **That claim was false**: §13a's audit found two
@@ -533,6 +534,14 @@ use's instance type or a local annotation refers to its `instances` or
 a `GenEqual` (§13a, first row); a handler literal's node (§2); the
 `handle`, `if` and `match` node types and record unification (G0's
 equations, read at full marked types); and, new in 3.4:
+- **Amendment (author, 2026-10-29, dossier §18.119): the literal-node
+  E1 is deferred to tranche-1 Task 9.** Today's literal returns its
+  handler type directly (Generate/Effect.purs `handler`), with no node
+  variable, so `Equal (TVar node) (that type)` would be reflexive. No
+  node variable is invented and no reflexive equation is recorded.
+  Task 9 records the connection between the literal's marked type and
+  its image or use. Literal-E1 coverage is deferred: neither satisfied
+  nor unnecessary.
 - **O1, clause body.** For each handler clause, `Equal` between the
   clause body's type and the operation's declared result type with the
   handled label's arguments substituted and every row variable of the
