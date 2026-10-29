@@ -6632,3 +6632,25 @@ stays held, corrected to resample whole blocks across commits. Stops:
 an unapproved exemption, a workload that cannot move unchanged, a
 required bound change, the cap; a further timing failure is reported,
 not retried. Task 24 verification-blocked; Task 7 held.
+
+### 18.116 Runner change: completion allowance; ceiling 4.75M (2026-10-29)
+
+The targeted review of 1a-1c (fffc055..988754e) found it NOT READY:
+file-wide shadowing hid clock roots (shown on a real parallel file), a
+stored `new Date()` was missed, and the conditions line named HEAD on a
+dirty tree, with minors. The controller stopped the fix round before
+it changed anything, since it would have exceeded the 4.60M cap. The
+author approved 0.15M to complete (one fix round, focused confirmation
+of the findings, one full verify), running ceiling 4.75M, separate from
+Task 7's allowance. Labeled amendment accepted: every zero-argument
+`new Date()` is a clock read, stored values included; constructors with
+arguments stay outside the rule. regression-task5's existing bound is
+documented beside r005b-quiet, unchanged, with no exemption. Bindings
+are tracked by lexical scope; every exemption is validated against its
+real file, reachable or not; the conditions line reports commit identity
+and working-tree state, untracked files that could affect execution
+included; diagnostic subprocesses get timeouts; the helper reference,
+acorn import count and blind spots are corrected; scan floors stay.
+Stops: broader analysis machinery, or the cap. A failed full verify is
+preserved and reported, not retried. Task 24 verification-blocked;
+Task 7 held.
