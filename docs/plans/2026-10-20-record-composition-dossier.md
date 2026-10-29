@@ -6654,3 +6654,20 @@ acorn import count and blind spots are corrected; scan floors stay.
 Stops: broader analysis machinery, or the cap. A failed full verify is
 preserved and reported, not retried. Task 24 verification-blocked;
 Task 7 held.
+
+### 18.117 Runner change complete; full verify passed at a557782 (2026-10-29)
+
+The fix round (a557782) resolved the review's findings; the controller
+confirmed each Important finding against the reviewer's failing cases
+(scoped shadowing on the real fx008-syntax file, stored `new Date()`,
+`global.`, a stale out-of-scope exemption) and the real tree's empty
+result. Three existing assertions changed because the ruling required
+it (two near-miss fixtures to `new Date(0)`, one form string, one
+unavailable count); no bound or workload changed. One full verify at
+a557782 on a clean tree passed: 2941 parallel, 201 serial, 232
+regression proofs, every gate, exit 0, with conditions logged before
+each phase (AC power; load 5.54, 3.56, 3.76). Log: main checkout's
+.build/evidence/2026-10-29-runner-verify/. This is the first full
+verify to pass since 7d1d668; it is one run, and the earlier failures
+are not erased. Whether Task 24's verification gate is now satisfied
+is the author's decision. Task 7 held. Spend about 4.64M against 4.75M.
