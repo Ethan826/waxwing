@@ -463,7 +463,7 @@ the converse). Registered row: drop one rigid from the recording.
 
 **Unit D accepted (2026-10-28, §18.106):** Task 22's proof is
 registered by a narrow harness extension that mutates and runs the real
-comparison (not an import gate); the two Task 21 rows are labelled
+comparison (not an import gate); the two Task 21 rows are labeled
 separately (direct: omission rejected; end-to-end: a placeholder-shaped
 signature accepted). Awaiting the author's cap; Task 7 held.
 
@@ -473,7 +473,7 @@ full verify pass with no unresolved blocking finding, 0.65M more
 (ceiling 4.65M). One review and one fix round each; report actual spend
 and verification at the transition.
 
-### Task 24: register Task 22's proof as a behavioural row
+### Task 24: register Task 22's proof as a behavioral row
 
 **Files:** scripts/regression-run.mjs (and regression-clone.mjs if
 needed), scripts/regression-r0-amin.mjs or a sibling row file,

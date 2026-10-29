@@ -6446,13 +6446,13 @@ Spend about 3.8M against the 3.95M ceiling.
 ### 18.106 Unit D accepted, one registration follow-up (2026-10-28)
 
 The author accepted unit D with one follow-up before Task 7. Task 22's
-proof is registered as an isolated behavioural row, not an import gate:
+proof is registered as an isolated behavioral row, not an import gate:
 the harness is extended only far enough to mutate and run the real
 comparison code (test/r0-fail-only-compare.mjs). With
 `WXW_PIN_FAIL_ONLY=1` a moved cohort must fail and leave the fixture
 unchanged, and restoring the in-test writer must make that probe fail.
 An import restriction alone would not establish this. The two
-MissingSignature rows are accepted as a pair and labelled separately:
+MissingSignature rows are accepted as a pair and labeled separately:
 the direct assembly row (`r0-amin-signature-missing`) shows omission is
 rejected; the end-to-end row (`r0-amin-signature-missing-real`) shows a
 legitimate placeholder-shaped signature is accepted, and claims nothing
@@ -6467,7 +6467,7 @@ supersedes §18.105's open gate choice.
 The author approved two units in sequence, each with its own cap, one
 review and one fix round. Task 24 (Task 22's registration): cap 0.18M,
 running ceiling 4.0M. Test-file rows run entirely from their isolated
-copy; source rows keep their compilation and proof behaviour; the row
+copy; source rows keep their compilation and proof behavior; the row
 shows that restoring the writer gives the named failure and that the
 real fixture stays byte-identical. Stop on a dependency outside `test/`
 or on scope growth. Task 7 is authorized only once Task 24 has passed
@@ -6558,3 +6558,17 @@ bound. It needs a bounded estimate and its own authorization; the
 remaining 0.01M does not cover it. No implementation change, bound
 increase or further verify attempt is authorized. Logs: main
 checkout's .build/evidence/2026-10-29-task24/ (MANIFEST.sha256).
+
+### 18.112 Verification-reliability investigation authorized (2026-10-29)
+
+The author approved the investigation with a 0.08M cap (running
+ceiling 4.18M), staged: one ABBA cycle (7d1d668 against b107049) with
+system observations first, then the three timing files run
+individually; a second cycle and the reduced-concurrency comparison
+only if they settle a remaining question. Coverage and bounds stay;
+any permanent runner change is a separate proposal. The author's
+unusual machine use (an offsite, meetings, sleep and wake) makes
+environmental interference plausible without establishing it, and is
+recorded alongside the measurements. Task 24 incomplete, Task 7 held,
+pending the findings. Spelling: new prose uses American spelling (this
+session's additions corrected); older text and commit messages stay.
