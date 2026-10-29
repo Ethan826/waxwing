@@ -1,7 +1,7 @@
 # Verify timing reliability: runner proposal (2026-10-29)
 
-Status: proposal for the author, revision 2 (dossier §18.113-§18.114).
-Nothing here is authorized or implemented. Task 24 is implementation
+Status: revision 3 (dossier §18.113-§18.115). 1a-1c authorized
+(§18.115); the measurement protocol is held. Task 24 is implementation
 complete, verification blocked; Task 7 is held. No bound changes are
 proposed.
 
@@ -93,11 +93,21 @@ Detected clock reads:
 - imports of the timing helpers test/timing.mjs (new, the one way to
   assert elapsed time) and test/go-timed.mjs.
 
-Existing clock reads that are not bounds and need an allowlist decision
-by the author: test/fx-shrink.mjs uses `Date.now` for a shrink deadline,
-so under load it may stop shrinking earlier (the result can differ, but
-nothing fails on time); test/go-timed.mjs writes `Date.now()` into a
-cache nonce; test/regression-r005b-end.mjs waits for a quiet period.
+Exemptions (author, §18.115), each naming exact uses, never a whole
+file or its importers, and counted by the gate:
+
+- test/fx-shrink.mjs, the two `Date.now()` reads of the shrink deadline
+  (`deadline = Date.now() + limitMs` and `Date.now() > deadline`). Load
+  can change how far shrinking proceeds; nothing fails on time.
+- test/go-timed.mjs, the one `Date.now()` in the cache nonce only. Its
+  two `performance.now()` reads time a Go build and get no exemption;
+  any parallel file that uses them must satisfy the serialization rule.
+
+Not an exemption: test/regression-r005b-end.mjs's `r005b-quiet` probe
+reads `Date.now()` around its work and exits 1 at `QUIET_MS` (2000 ms)
+or more. It is a timing bound. It stays as it is, and the inventory
+records that it runs in the regression phase, where scripts/regression.mjs
+proves up to six rows at once.
 
 How it decides: on a parsed syntax tree, not matched text. The
 repository has no JavaScript parser today (package.json has no
@@ -108,8 +118,9 @@ dependencies), so this needs either:
 - (ii) a lexical scan of tokens with comments and strings removed,
   which is weaker and must list more blind spots.
 
-Proposal: (i). Option (ii) is the fallback if the author declines a
-dependency.
+Decision (§18.115): (i), subject to Acorn passing intake; if it does
+not, stop and report. The gate stays bounded to the syntax and import
+scope above; no general JavaScript analysis framework.
 
 Blind spots, either way: a clock reached through a module outside
 test/ (scripts/, compiled output, a child process); computed property
@@ -163,8 +174,10 @@ test/fn-linear-timing.serial.test.mjs, with 1c's conditions recorded.
 
 **Primary statistic.** For `partialFirst`, the ratio of medians of raw
 elapsed time, head over 95458e3, with a 95% percentile bootstrap
-interval: 10,000 resamples, each drawing 20 runs with replacement within
-each commit, with a fixed seed. Raw times are the primary evidence.
+interval: 10,000 resamples with a fixed seed, each drawing 20 whole
+blocks with replacement and keeping every block's runs of all commits
+together, so the paired collection design is preserved. Raw times are
+the primary evidence.
 
 **Outcomes, stated before running.**
 

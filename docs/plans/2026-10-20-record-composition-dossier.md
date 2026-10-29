@@ -6614,3 +6614,21 @@ Standing rule (author, 2026-10-29): a pasted ChatGPT review that
 clearly responds to the latest report is the author's ruling without the
 word "Ratified", unless the author qualifies it; a re-pasted earlier
 message is flagged, not acted on.
+
+### 18.115 Runner change 1a-1c authorized; ceiling 4.60M (2026-10-29)
+
+The author authorized 1a-1c with a 0.43M cap (up to 0.03M for
+dependency intake, then 0.40M for implementation, one review, one fix
+round and a full verify), running ceiling 4.60M, using the parsed gate
+if Acorn passes intake and stopping if it does not. Correction to
+revision 2: `r005b-quiet` (test/regression-r005b-end.mjs) is a timing
+bound, not a quiet wait; it is kept and recorded as running in the
+regression phase. Exemptions approved: fx-shrink's two deadline reads,
+narrowly scoped and counted, with the load effect documented, and
+go-timed's cache-nonce read only (its `performance.now()` timing gets
+none). Exemptions name exact uses, never whole files or importers. The
+gate stays within its documented syntax and import scope. The protocol
+stays held, corrected to resample whole blocks across commits. Stops:
+an unapproved exemption, a workload that cannot move unchanged, a
+required bound change, the cap; a further timing failure is reported,
+not retried. Task 24 verification-blocked; Task 7 held.
