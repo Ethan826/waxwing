@@ -6513,3 +6513,22 @@ before exceeding the cap. No change to shared probe helpers or fixture
 contents. Task 7 stays gated with its 0.65M allowance; if Task 24 uses
 the revised ceiling the combined maximum is 4.75M, superseding 4.65M.
 Task 24's actual spend is reported before Task 7 starts.
+
+### 18.110 Task 24: verify timing failures; measurement only (2026-10-29)
+
+Task 24's targeted review found it READY (Important 1 and the minors
+fixed in b107049, the one fix round), but three full verifies each
+failed a timing bound: coverage-scale at cd36b7e and on the b107049
+rerun (about 5.5 s; 0.59 s alone), fn-linear-timing "over" at b107049
+(2357 ms against 1620 ms; 1347 ms alone). The regression phase never
+ran in full. The author authorized measurement only, controller-only,
+up to 0.01M within the 4.10M ceiling, with no fix round and no blind
+verify retry: the regression phase run on its own at b107049 (reported
+separately; it cannot establish a clean verify), and four sequential
+diagnostic runs (harness tests included, excluded, excluded, included)
+at the same commit and settings, recording the coverage-scale and
+fn-linear timings, phase durations and load. The exclusions apply only
+to the experiment; the verify command and every timing bound stay. A
+passing timing run does not erase the three failures. Task 24 stays
+incomplete and Task 7 held until the author decides what the evidence
+supports.
