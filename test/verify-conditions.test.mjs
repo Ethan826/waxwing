@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { commitOf, conditionsLine, hostFacts, loadOf, powerOf }
-  from '../scripts/verify-conditions.mjs';
+import { commitOf, commandTimeoutMs, conditionsLine, hostFacts, loadOf,
+  makeRunner, powerOf, untrackedOf } from '../scripts/verify-conditions.mjs';
 
 const fixedTime = new Date('2026-10-29T12:00:00.000Z');
 const ok = stdout => ({ status: 0, stdout });
@@ -82,11 +82,57 @@ test('other platforms have no power reader', () => {
     /^unavailable \(no power source reader for win32\)$/);
   const line = conditionsLine('serial', host({ platform: 'win32',
     loadavg: () => [0, 0, 0], run: () => ({ error: 'no git' }) }));
-  assert.equal(line.match(/unavailable/g).length, 3);
+  assert.equal(line.match(/unavailable/g).length, 4);
   assert.ok(line.includes('2026-10-29T12:00:00.000Z'));
 });
 
 test('the real host gives a line with all four fields', () => {
   assert.match(conditionsLine('regression', hostFacts),
     /^conditions \[regression\] commit \S+ time \S+ load1 \S+ power /);
+});
+
+const git = table => host({ run: (command, args) => command !== 'git'
+  ? ok("Now drawing from 'AC Power'") : ok(table[args[0]]) });
+
+test('commit identity carries tracked-change state', () => {
+  assert.equal(commitOf(git({ describe: 'abc1234\n' })), 'abc1234');
+  assert.equal(commitOf(git({ describe: 'abc1234-dirty\n' })),
+    'abc1234-dirty');
+});
+
+test('untracked files are counted, with executable paths named', () => {
+  const clean = git({ status: '' });
+  assert.equal(untrackedOf(clean), '');
+  assert.equal(untrackedOf(git({ status: ' M src/a.purs\n' })), '');
+  const some = git({ status: '?? docs/x.md\n?? test/a.mjs\n'
+    + '?? scripts/b.mjs\n?? tools/c.mjs\n?? src/d.purs\n M src/e.purs\n' });
+  assert.equal(untrackedOf(some), ' untracked 5 (test/a.mjs, scripts/b.mjs,'
+    + ' tools/c.mjs)');
+  assert.equal(untrackedOf(git({ status: '?? notes.txt\n' })),
+    ' untracked 1');
+  assert.match(conditionsLine('p', git({ describe: 'abc1234\n',
+    status: '?? test/a.mjs\n' })),
+    / power AC Power untracked 1 \(test\/a\.mjs\)$/);
+});
+
+test('a failing status call is reported, not read as clean', () => {
+  assert.equal(untrackedOf(host({ run: () => ({ error: 'timed out' }) })),
+    ' untracked unavailable (timed out)');
+  assert.match(untrackedOf(host({ run: () => ({ status: 128, stdout: '' }) })),
+    /unavailable \(git exited 128\)/);
+});
+
+test('a timed-out command is reported as such by injection', () => {
+  const seen = [];
+  const run = makeRunner((command, args, options) => {
+    seen.push(options.timeout);
+    return { error: Object.assign(new Error('spawnSync git ETIMEDOUT'),
+      { code: 'ETIMEDOUT' }) };
+  });
+  assert.deepEqual(run('git', []), { error: 'timed out' });
+  assert.deepEqual(seen, [commandTimeoutMs]);
+  assert.match(commitOf(host({ run })), /^unavailable \(timed out\)$/);
+  assert.match(powerOf(host({ run })), /^unavailable \(timed out\)$/);
+  const failed = makeRunner(() => ({ error: new Error('spawn git ENOENT') }));
+  assert.deepEqual(failed('git', []), { error: 'spawn git ENOENT' });
 });

@@ -35,32 +35,46 @@ adding a bypass allowlist.
   timing bounds run only in verify's serial phase. Decided on acorn's
   parsed tree (`parse` only; docs/dependencies.md): `performance.now`,
   `.timeOrigin`, `.mark`, `.measure`, `globalThis.performance`, imports of
-  `node:perf_hooks`/`perf_hooks`, `Date.now`, `new Date()` in arithmetic or
-  comparison, `process.hrtime`(`.bigint`), `console.time`/`timeEnd`/
-  `timeLog`, imports of test/go-timed.mjs or test/timing.mjs, and aliases
-  by destructuring, assignment of the object or `.bind` followed in source
-  order. Exemptions (author, dossier 18.115) name a file, form and exact
-  source line and are counted, so a stale or widened one fails: the two
-  `Date.now()` reads of test/fx-shrink.mjs's shrink deadline (load can
-  change how far shrinking proceeds; nothing fails on time) and the cache
-  nonce `Date.now()` in test/go-timed.mjs (dormant unless a parallel file
-  reaches go-timed, which is itself a finding; its `performance.now()`
-  reads have none). Floors on the files scanned stop an empty scan from
-  passing; test/clock-gate.test.mjs holds the must-fail, must-pass and
-  near-miss fixtures. Blind spots: clocks reached through modules outside
-  test/ (scripts/, compiled output, child processes); computed property
-  access with a non-literal key, and eval; `new Date()` read by method or
-  with arguments; elapsed time asserted through a runner timeout
-  (`{ timeout }`, spawnSync's `timeout`); dynamic imports when building the
-  scope; a clock read in one file and compared in another; aliases made in
-  nested scopes that source order does not follow. Known timing bound
-  outside the gate: the `r005b-quiet` probe in
-  test/regression-r005b-end.mjs reads `Date.now()` and exits 1 at
-  QUIET_MS (2000 ms); it is not a test file and no parallel test imports
-  it, so it runs in the regression phase, where scripts/regression.mjs
-  proves up to six rows at once. verify also prints one conditions line
-  (commit, time, 1-minute load, power source; `unavailable (reason)` for
-  any value the host cannot give) before each test phase
+  `node:perf_hooks`/`perf_hooks`, `Date.now`, every zero-argument
+  `new Date()` (stored values included; a labeled amendment; `new Date(x)`
+  with arguments reads no clock and is outside the rule),
+  `process.hrtime`(`.bigint`), `console.time`/`timeEnd`/`timeLog`, imports
+  of test/go-timed.mjs or test/timing.mjs, and aliases by destructuring,
+  assignment of the object or `.bind` followed in source order. `global.`
+  reads as `globalThis.`. Bindings are tracked by lexical scope (Program,
+  function and parameters, block, catch clause, loop head; `var` hoists to
+  its function), so a local `console` hides that root only in its own
+  scope. Exemptions (author, dossier 18.115) name a file, form and exact
+  source line and are counted. Each is checked against its own file
+  whether or not a parallel test reaches it, so a stale or widened one
+  fails: the two `Date.now()` reads of test/fx-shrink.mjs's shrink
+  deadline (load can change how far shrinking proceeds; nothing fails on
+  time) and the cache nonce `Date.now()` in test/go-timed.mjs (it exempts
+  nothing unless a parallel file reaches go-timed, which is itself a
+  finding; its `performance.now()` reads have none). Floors on the files
+  scanned stop an empty scan from passing; test/clock-gate.test.mjs and
+  test/clock-scope.test.mjs hold the must-fail, must-pass and near-miss
+  fixtures. Blind spots: clocks reached through modules outside test/
+  (scripts/, compiled output, child processes); computed property access
+  with a non-literal key, and eval; a clock root passed as a value
+  (`f(performance)`, `{ c: performance }`, `[performance]`); elapsed time
+  asserted through a runner timeout (`{ timeout }`, spawnSync's
+  `timeout`); dynamic imports when building the scope; `require` or
+  `createRequire` of perf_hooks; a clock read in one file and compared in
+  another; an alias made at top level and used in a function declared
+  earlier; non-.mjs modules under test/ (skipped; none exist today).
+  test/timing.mjs does not exist yet; its import would be detected if it
+  were created. Known timing bounds outside the gate: the `r005b-quiet`
+  probe in test/regression-r005b-end.mjs reads `Date.now()` and exits 1
+  at QUIET_MS (2000 ms); and test/regression-task5.mjs:12-19 asserts
+  `seconds < 5` over three 20,000-type compiles, reached via
+  test/regression-probes.mjs. Neither is a test file that a parallel test
+  imports, so both run in the regression phase, where
+  scripts/regression.mjs proves up to six rows at once. verify also prints
+  one conditions line (commit from `git describe --always --dirty`, time,
+  1-minute load, power source, and untracked non-ignored files when there
+  are any; `unavailable (reason)` for any value the host cannot give)
+  before each test phase
   (scripts/verify-conditions.mjs);
 - purs graph parses imports; the five-layer gate (Domain, Features, Format,
   Runtime, Program; docs/plans/2026-10-07-five-layers-design.md) rejects
@@ -528,11 +542,10 @@ adding a bypass allowlist.
   builds group-kill because their timeout is an assertion. Self-tests:
   test/go-batch.test.mjs (the concurrency one spawns
   test/go-batch-child.mjs). Not batched: depth-timing.serial.test.mjs's
-  timing builds,
-  scripts/regression.mjs probes, `goTest`, and the slow accepted probes of
-  test/fx008-probes.test.mjs (the batch compiles in-process, which would
-  escape their child-process timeout); `runGo` remains as the
-  self-tests' standalone reference;
+  timing builds, scripts/regression.mjs probes, `goTest`, and the slow
+  accepted probes of test/fx008-probes.test.mjs (the batch compiles
+  in-process, which would escape their child-process timeout); `runGo`
+  remains as the self-tests' standalone reference;
 - scripts/strict-rebuild.mjs (run by verify after the build) copies the
   workspace to .build/strict-rebuild, checks the unmodified copy builds, adds
   a shadowed name to one module and requires two consecutive builds to fail

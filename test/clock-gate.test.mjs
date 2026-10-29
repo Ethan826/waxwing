@@ -1,17 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { parse } from 'acorn';
 import { clockFindings, exemptions, floors }
   from '../scripts/structure-clocks.mjs';
 import { scanSource } from '../scripts/clock-scan.mjs';
 
 const small = { parallelTests: 1, scanned: 1 };
-const gate = (sources, limits = small) =>
-  clockFindings(sources, parse, limits);
+const gate = (sources, limits = small, listed = []) =>
+  clockFindings(sources, parse, limits, listed);
+const only = file => exemptions.filter(entry => entry.file === file);
 const parallel = body => gate({ 'test/a.test.mjs': body });
 const formsOf = body => scanSource('test/a.test.mjs', body, parse)
   .findings.map(found => found.form);
-const arithmetic = 'new Date in arithmetic or comparison';
+const arithmetic = 'new Date()';
 
 const detected = [
   ['performance.now()', 'performance.now'],
@@ -100,11 +102,11 @@ test('near misses are not clock reads', () => {
     '// Date.now() performance.now()\nconst x = 1;',
     '/* process.hrtime */ const y = `performance.now`;',
     'const d = new Date(0) - new Date(1);',
-    'const e = new Date(); const t = e.valueOf;',
+    'const e = new Date(0); const t = e.valueOf;',
     'const o = { performance: 1 }; o.performance;',
     'const a = other.performance.now;',
     'const n = foo.Date.now();',
-    'const t = new Date() instanceof Date;',
+    'const t = new Date(0) instanceof Date;',
     "import { readFileSync } from 'node:fs';"
   ]) assert.deepEqual(formsOf(code), [], code);
 });
@@ -120,30 +122,48 @@ const approved = {
 };
 
 test('the approved fx-shrink exemptions pass, and only exactly', () => {
-  assert.deepEqual(gate(approved), []);
+  assert.deepEqual(gate(approved, small, only(shrink)), []);
   const wider = { ...approved,
     [shrink]: `${approved[shrink]}const x = Date.now();\n` };
-  assert.deepEqual(gate(wider).map(text => text.slice(0, 24)),
+  assert.deepEqual(gate(wider, small, only(shrink))
+    .map(text => text.slice(0, 24)),
     ['test/fx-shrink.mjs:7: cl']);
 });
 
 test('an exemption matching a different count fails', () => {
   const fewer = { ...approved,
     [shrink]: approved[shrink].replace('Date.now() > deadline', 'false') };
-  assert.ok(gate(fewer).some(text => text.includes('matches 0 uses')));
+  assert.ok(gate(fewer, small, only(shrink))
+    .some(text => text.includes('matches 0 uses')));
   const twice = { ...approved, [shrink]: `${approved[shrink]}${approved[
     shrink].split('\n')[1]}\n` };
-  assert.ok(gate(twice).some(text => text.includes('matches 2 uses')));
+  assert.ok(gate(twice, small, only(shrink))
+    .some(text => text.includes('matches 2 uses')));
 });
 
+const real = file => readFileSync(new URL(`../${file}`, import.meta.url),
+  'utf8');
+const goTimed = 'test/go-timed.mjs';
+
 test('the go-timed nonce is exempt, its performance.now is not', () => {
-  const nonce = exemptions.find(entry => entry.file === 'test/go-timed.mjs');
-  const found = gate({
-    'test/go-timed.mjs': `${nonce.line}\nperformance.now();\n`,
-    'test/a.test.mjs': "import { fx } from './go-timed.mjs';\n" });
-  assert.equal(found.length, 2);
-  assert.ok(found.some(text => text.includes('test/go-timed.mjs:2:')));
+  const found = gate({ [goTimed]: real(goTimed),
+    'test/a.test.mjs': "import { fx } from './go-timed.mjs';\n" },
+  small, only(goTimed));
+  assert.ok(found.some(text => text.includes('(performance.now)')));
   assert.ok(found.some(text => text.includes('import test/go-timed.mjs')));
+  assert.ok(!found.some(text => text.includes('(Date.now)')));
+  assert.ok(!found.some(text => text.includes('exemption')));
+});
+
+test('an exemption is checked against its file even when unreached', () => {
+  const text = real(goTimed);
+  assert.deepEqual(gate({ [goTimed]: text, 'test/a.test.mjs': '' },
+    small, only(goTimed)), []);
+  const stale = gate({ [goTimed]: text.replace('Date.now()', 'Date.zzz()'),
+    'test/a.test.mjs': '' }, small, only(goTimed));
+  assert.ok(stale.some(item => item.includes('matches 0 uses')));
+  assert.ok(gate({ 'test/a.test.mjs': '' }, small, only(goTimed))
+    .some(item => item.includes('missing file')));
 });
 
 test('modules reached by relative import are scanned, others are not', () => {

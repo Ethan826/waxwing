@@ -22,7 +22,8 @@ lock does not.
 - Footprint: one package, no transitive dependencies, 568 KB unpacked.
   A devDependency used only by verify's structure checks; never loaded
   by the compiler or its output.
-- Fit: imported by one module, the clock gate in scripts/. It uses
+- Fit: imported by the clock gate module in scripts/ and by its test,
+  test/clock-gate.test.mjs (and test/clock-scope.test.mjs). It uses
   `parse` only (`ecmaVersion: 'latest'`, `sourceType: 'module'`); the
   tree walk is a small local function, so acorn-walk is not taken.
 - Release cycle and maintenance: 8.19.0, released 2026-10-05; 8.x has
