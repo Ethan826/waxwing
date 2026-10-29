@@ -10,9 +10,10 @@ Evidence: main checkout's .build/evidence/2026-10-29-task24/ and
 .build/evidence/2026-10-29-reliability/ (each with MANIFEST.sha256).
 
 - Six full or parallel-phase runs failed one or two timing bounds, and
-  one isolated fn-linear-timing run failed one, across seven tests: coverage-scale (10,000-type chain; 5,000-field
-  pattern), large-source (3,000-constructor match; 5,000-arm match) and
-  fn-linear-timing (`over`, `partialFirst`, `parenthesized`).
+  one isolated fn-linear-timing run failed one, across seven tests:
+  coverage-scale (10,000-type chain; 5,000-field pattern), large-source
+  (3,000-constructor match; 5,000-arm match) and fn-linear-timing
+  (`over`, `partialFirst`, `parenthesized`).
 - Under matched, interleaved conditions (ABBA, A = 7d1d668, B = b107049),
   A failed once in the parallel phase and B passed both runs. No `src/`
   file differs between the two commits.
