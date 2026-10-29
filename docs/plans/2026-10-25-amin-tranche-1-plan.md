@@ -567,12 +567,16 @@ span, value }` (Domain.Recorded.Effect; `Origin` and `AtomId` are
 untouched, so atoms and the problem pin cannot move). `provenance` is
 one of two tagged forms:
 - `BesideAtom AtomId`: the E1 recorded next to a `GenEqual`; it holds
-  that atom's own, unchanged AtomId. Generation lists the E1 directly
-  after its atom (`EmitEqual`) and `Out.emit` numbers only atoms, so
-  every existing AtomId is byte for byte what it was. Deterministic:
-  the id is a function of the rule's listed order alone. Unique: an
-  AtomId names one atom, and each atom has at most one E1, so no two
-  `BesideAtom` values are equal.
+  that atom's own, unchanged AtomId. The E1 rides on its atom's own
+  entry (`EmitEqual`, one entry that joins `b` as the `GenEqual` and
+  records the obligation), so no index moves and every existing AtomId
+  is byte for byte what it was. Deterministic: the id is a function of
+  the rule's listed order alone. Unique: an AtomId is rule-local (its
+  `index` is the position in its rule's listed order, and the root
+  body path is shared by Sig3 and the body's own rule), so the
+  identity of a `BesideAtom` obligation is its AtomId together with its
+  `rule` field, exactly as an atom's is `origin.atom` with
+  `origin.rule`. Each atom has at most one E1, so no two are equal.
 - `AtSite { decl, path, rule, role }`, role `ClauseBody` (O1) or
   `WithNode` (O2): an E1 with no atom. Deterministic: the rule's own
   path, rule id and role. Unique: O1 is emitted once per handler clause
