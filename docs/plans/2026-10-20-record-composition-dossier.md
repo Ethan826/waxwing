@@ -6590,3 +6590,27 @@ failed once alone on b107049, which does not show an isolated failure on
 treats parallel-phase interference and the `partialFirst` measurement
 protocol separately, with costs and tests, and proposes no bound
 change. The outstanding gate is not described as passed.
+
+### 18.114 Runner proposal revised before any authorization (2026-10-29)
+
+The author asked for revisions before authorizing either part. 1b's
+gate now names the clock APIs, aliases and helper imports it detects,
+bans clock reads in parallel files outright (with an allowlist the
+author decides), states its blind spots, and needs either a pinned
+JavaScript parser through dependency intake or a weaker lexical scan.
+1a compares test inventories as multisets of (suite path, test name,
+marker) and preserves workloads, timing boundaries and bound values.
+1c reports unavailable observations explicitly and stays portable. The
+protocol keeps raw times primary and the `partialFirst`/`value` ratio
+supporting, treats a slowdown that is not detected as inconclusive (not
+equivalence), names the primary comparison (head against 95458e3), the
+statistic (ratio of medians, 95% percentile bootstrap, fixed seed), the
+balanced seeded order and the three pre-stated outcomes, uses no second
+decision test, and claims only differences between commits under
+today's conditions. A bounded estimate for 1a-1c is requested. Task 24
+verification-blocked, Task 7 held; no runs or implementation.
+
+Standing rule (author, 2026-10-29): a pasted ChatGPT review that
+clearly responds to the latest report is the author's ruling without the
+word "Ratified", unless the author qualifies it; a re-pasted earlier
+message is flagged, not acted on.
