@@ -12,21 +12,27 @@ module Features.Check.Generate.HandlerClause
 
 import Prelude
 import Data.Array as Array
-import Data.Maybe (maybe)
+import Data.Either (Either)
+import Data.Maybe (fromMaybe, maybe)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId(..))
 import Domain.Recorded.Atom (CheckedName(..))
-import Domain.Recorded.Effect (MTy)
-import Domain.Recorded.Origin (Path, Step(..))
-import Domain.Resolved (HandlerClause)
-import Domain.Row (EffectRef(..))
-import Features.Check.Generate.Context (Context, Recur, bindLocal)
+import Domain.Recorded.Effect (MTy, SiteRole(..))
+import Domain.Recorded.Origin (Path, RuleId(..), Step(..))
+import Domain.Resolved (HandlerClause, Ty, VarId(..))
+import Domain.Row (EffectRef(..), Label(..), closedRow)
+import Domain.Type (Ty(..)) as Type
+import Domain.Type (substitute)
+import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
 import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Fresh (child, childAt)
 import Features.Check.Generate.Gen (Gen, lifted, positioned)
+import Features.Check.Generate.Fault (GenerationFault)
+import Features.Check.Generate.Inputs (Tables)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
+import Features.Check.Generate.Obligation (equalAt)
 import Features.Check.Generate.Out (TypeMarker)
 import Features.Check.Generate.Translate (Naming, translate)
 
@@ -50,7 +56,7 @@ handlerClause
   ∷ ∀ s
   . Recur s
   → Context s
-  → { handler ∷ Path, clause ∷ Int }
+  → { handler ∷ Path, clause ∷ Int, label ∷ Label (Ty VarId) }
   → Naming s
   → HandlerClause
   → Gen s (Clause s)
@@ -60,6 +66,7 @@ handlerClause recur context site naming clause = do
   body ← recur (Array.foldl bindParameter context typed)
     (child path [ Named "body" ])
     clause.body
+  result ← lifted (declaredResult context.tables site.label clause.result)
   pure
     { clause:
         { operation: clause.operation
@@ -71,7 +78,11 @@ handlerClause recur context site naming clause = do
           <*> body.expr
     , marks: Array.concatMap _.marks typed
     , marked: map _.marked typed
-    , emits: body.emits
+    , emits: do
+        equalAt (at context path (ExprRule 20)) ClauseBody clause.span
+          body.marked
+          result
+        body.emits
     }
   where
   path = childAt site.handler "Handler" "clauses" site.clause
@@ -87,3 +98,17 @@ handlerClause recur context site naming clause = do
   bindAt current parameter local = bindLocal local
     { ty: parameter.ty, marked: parameter.marked }
     current
+
+-- O1's right side (ClauseBody.purs `instantiateType`): the operation's
+-- declared result with the handled label's arguments in place of the
+-- effect's parameters and every row variable replaced by the closed row;
+-- a written marked type (marks as written, a handler type in it owning no
+-- C).
+declaredResult
+  ∷ Tables → Label (Ty VarId) → Ty VarId → Either GenerationFault MTy
+declaredResult tables (Label _ arguments _) result =
+  marked tables Declared (substitute substitution result)
+  where
+  substitution = { types: argument, rows: const closedRow }
+  argument (VarId index) = fromMaybe (Type.TVar (VarId index))
+    (Array.index arguments index)

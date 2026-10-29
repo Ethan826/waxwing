@@ -18,19 +18,21 @@ import Data.Traversable (sequence, traverse)
 import Domain.Checked.Internal (rigid)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (OutsideKind(..))
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin (OriginKind(..), Path, RuleId(..), Step(..))
 import Domain.Resolved (Expr, FailClause, Ty, VarId)
 import Domain.Row (Label(..))
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..)) as Type
 import Features.Check.Generate.Context (Context, Recur, at, bindLocal)
-import Features.Check.Generate.Effect (agree, marker)
+import Features.Check.Generate.Effect (marker)
 import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fault (GenerationFault(..))
 import Features.Check.Generate.Fresh (child, childAt, childOf, nodeRes)
-import Features.Check.Generate.Gen (Gen, GenAtom(..), emit, lifted)
+import Features.Check.Generate.Gen (Gen, emit, lifted)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, markersAt)
+import Features.Check.Generate.Obligation (agreeEqual)
 import Features.Check.Generate.Out (TypeMarker)
 import Features.Check.Generate.Translate (Naming(..), translate)
 
@@ -53,6 +55,7 @@ handle recur context path span body clauses = do
   found ← sequence (Array.mapWithIndex clauseOf clauses)
   minted ← nodeRes path (ExprRule 22) span
   let res = flex minted
+  let markedRes = markedFlex minted
   pure
     { ty: res
     , marked: markedFlex minted
@@ -60,20 +63,23 @@ handle recur context path span body clauses = do
     , emits: do
         emit (at context path (ExprRule 22))
           ( marker true FailFamily 4 span
-              <> [ agree span (GenEqual handled.ty res) ]
-              <> map (agree span <<< (GenEqual <@> res) <<< _.ty) found
+              <> [ agreeEqual span handled.ty res handled.marked markedRes ]
+              <> map (clauseEqual res markedRes) found
               <> markersAt Types span (Array.concatMap _.marks found)
           )
         handled.emits
         traverse_ _.emits found
     }
   where
+  clauseEqual res markedRes found =
+    agreeEqual span found.ty res found.marked markedRes
   clauseOf place clause = failClause recur context
     (child (childAt path "Handle" "clauses" place) [ Named "body" ])
     clause
 
 type Clause s =
   { ty ∷ GenTy s
+  , marked ∷ MTy
   , clause ∷ Elab s Checked.FailClause
   , marks ∷ Array TypeMarker
   , emits ∷ Gen s Unit
@@ -99,6 +105,7 @@ failClause recur context path clause = do
   local ← lifted (maybe (Left BinderShape) Right clause.local)
   pure
     { ty: generated.ty
+    , marked: generated.marked
     , clause: { payload: rigid written, local, body: _, span: clause.span }
         <$> generated.expr
     , marks: payload.marks
@@ -122,7 +129,9 @@ fail
   → Gen s (Ruled s)
 fail recur context path span family value = do
   paid ← recur context (childOf path "Fail" "payload") value
-  written ← lifted (traverse (translate context.tables Rigidly) family)
+  translated ← lifted (traverse (translate context.tables Rigidly) family)
+  markedFamily ← lifted (traverse (marked context.tables Declared) family)
+  let written = familyOf <$> translated <*> markedFamily
   res ← nodeRes path (ExprRule 23) span
   pure
     { ty: flex res
@@ -130,7 +139,7 @@ fail recur context path span family value = do
     , node: fixed (Checked.Fail <$> paid.expr)
     , emits: do
         emit (at context path (ExprRule 23))
-          ( map (payloadAtom paid.ty) (Array.fromFoldable written)
+          ( map (payloadAtom paid) (Array.fromFoldable written)
               <> marker (maybe true (not <<< plain <<< _.ty) written)
                 FailFamily
                 4
@@ -140,7 +149,10 @@ fail recur context path span family value = do
         paid.emits
     }
   where
-  payloadAtom paid found = agree span (GenEqual paid found.ty)
+  payloadAtom paid found =
+    agreeEqual span paid.ty found.ty paid.marked found.marked
+  familyOf found markedType =
+    { ty: found.ty, marks: found.marks, marked: markedType }
 
 singleArgument ∷ ∀ t. Label t → Maybe t
 singleArgument (Label _ arguments _) =

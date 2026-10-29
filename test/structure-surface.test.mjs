@@ -152,10 +152,10 @@ test('the real tree matches its pin and its FFI names no token module',
       '.Elab', '.Elab.Image', '.Elab.Internal', '.Elab.Labels', '.Elab.Log',
       '.Elab.Recorded', '.Elab.Stages', '.Expr', '.Facts', '.Failure',
       '.Fault', '.Fresh', '.Gen', '.HandlerClause', '.Inputs', '.Lookup',
-      '.Marked', '.Minted', '.Node', '.Opening', '.Operator', '.Owned',
-      '.Out', '.Pattern', '.PatternLeaf', '.Record', '.Signature', '.Static',
-      '.Static.Problem', '.Static.Rules', '.Static.Site', '.Static.Walk',
-      '.Translate', '.Update']
+      '.Marked', '.Minted', '.Node', '.Obligation', '.Opening',
+      '.Operator', '.Owned', '.Out', '.Pattern', '.PatternLeaf', '.Record',
+      '.Signature', '.Static', '.Static.Problem', '.Static.Rules',
+      '.Static.Site', '.Static.Walk', '.Translate', '.Update']
       .map(name => `Features.Check.Generate${name}`);
     assert.deepEqual(Object.keys(importers).sort(),
       ['Domain.Elaborating', 'Domain.Elaborating.Build', 'Domain.Recorded',

@@ -43,7 +43,8 @@ generateIn tables signatures function = do
   body ← expr { decl: function.id, tables, signatures, locals }
     (Path { root: InBody, steps: [] })
     function.body
-  signature ← declaration tables function body.ty (exprSpan function.body)
+  signature ← declaration tables function body.ty body.marked
+    (exprSpan function.body)
   signature
   body.emits
   pure (checkedOf function <$> body.expr)

@@ -18,7 +18,13 @@ import Data.Array as Array
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Atom (CheckedName(..), Role(..), VarSort(..))
+import Domain.Recorded.Atom
+  ( Base(..)
+  , CheckedName(..)
+  , Role(..)
+  , VarSort(..)
+  )
+import Domain.Recorded.Effect (MTy(..))
 import Domain.Recorded.Origin
   ( OriginKind(..)
   , Path
@@ -32,12 +38,10 @@ import Domain.Syntax (Span)
 import Domain.Type (Ty(..))
 import Features.Check.Generate.Callee (atUse, recordInstance)
 import Features.Check.Generate.Context (Context, Local, at, bindLocal)
-import Features.Check.Generate.Elab (Elab, GenTy, Ref(..))
+import Features.Check.Generate.Elab (Elab, Ref(..))
 import Features.Check.Generate.Fresh (child, childAt, instances)
 import Features.Check.Generate.Gen
   ( Gen
-  , GenAtom(..)
-  , GenEntry(..)
   , emit
   , fresh
   , effected
@@ -52,8 +56,8 @@ import Features.Check.Generate.Node
   , markersAt
   , none
   , recordOf
-  , tagged
   )
+import Features.Check.Generate.Obligation (agreeEqual, equalTagged)
 import Features.Check.Generate.Out (EffectItem(..))
 import Features.Check.Generate.PatternLeaf
   ( Shaped
@@ -90,13 +94,15 @@ pattern context path typed found = do
       , emits: none
       }
     IntLit span value → pure
-      (literal context path span scrutinee TInt (Checked.IntLit value))
+      ( literal context path span typed TInt (MBase IntBase)
+          (Checked.IntLit value)
+      )
     BoolLit span value → pure
-      (literal context path span scrutinee TBool (Checked.BoolLit value))
-    Ctor span ctor parts → ctorPattern context path span scrutinee ctor
-      parts
-    Record span fields rest → recordPattern context path span scrutinee
-      fields
+      ( literal context path span typed TBool (MBase BoolBase)
+          (Checked.BoolLit value)
+      )
+    Ctor span ctor parts → ctorPattern context path span typed ctor parts
+    Record span fields rest → recordPattern context path span typed fields
       rest
 
 -- P4: `eq τ_s θ(owner(args))` (B1), sub-pattern `k` against
@@ -106,11 +112,11 @@ ctorPattern
   . Context s
   → Path
   → Span
-  → GenTy s
+  → Local s
   → CtorId
   → Array Pattern
   → Gen s (Shaped s)
-ctorPattern context path span scrutinee ctor parts = do
+ctorPattern context path span typed ctor parts = do
   shape ← lifted (ctorShape context.tables ctor)
   inst ← instances path (PatternRule 4) span shape.sorts
   owner ← lifted (translate context.tables inst.naming shape.owner)
@@ -129,7 +135,9 @@ ctorPattern context path span scrutinee ctor parts = do
     , shape: Checked.Ctor ctor <$> sequence inner.patterns
     , emits: do
         emit (at context path (PatternRule 4))
-          ( [ tagged (EmitB (GenEqual scrutinee owner.ty)) RowB 1 Body span ]
+          ( [ agreeEqual span typed.ty owner.ty typed.marked
+                markedTypes.result
+            ]
               <> markersAt InstOrigin span (owner.marks <> fields.marks)
           )
         inner.emits
@@ -150,11 +158,11 @@ recordPattern
   . Context s
   → Path
   → Span
-  → GenTy s
+  → Local s
   → Array FieldPattern
   → Rest
   → Gen s (Shaped s)
-recordPattern context path span scrutinee fields rest = do
+recordPattern context path span typed fields rest = do
   minted ← traverse fieldVar (Array.mapWithIndex Tuple fields)
   rests ← traverse restVar shape.rest
   inner ← subPatterns context (map subOf minted)
@@ -166,10 +174,10 @@ recordPattern context path span scrutinee fields rest = do
         <*> restRead
     , emits: do
         emit (at context path (PatternRule shape.rule))
-          [ tagged (EmitB (GenEqual scrutinee (written minted rests))) RowB
-              shape.row
-              Body
-              span
+          [ equalTagged RowB shape.row Body span typed.ty
+              (written minted rests)
+              typed.marked
+              (markedWritten minted rests)
           ]
         inner.emits
     }
@@ -195,6 +203,9 @@ recordPattern context path span scrutinee fields rest = do
     , position
     }
   written minted rests = recordOf (map fieldType minted) (map FlexRef rests)
+  markedWritten minted rests = markedRecord (map markedField minted)
+    (map FlexRef rests)
+  markedField found = Tuple found.field.label (markedFlex found.handle)
   fieldType found = Tuple found.field.label (flex found.handle)
   subOf found =
     { path: found.path

@@ -25,6 +25,7 @@ import Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin
   ( OriginKind(..)
   , Path(..)
@@ -53,10 +54,15 @@ import Features.Check.Generate.Gen
   , rigid
   )
 import Features.Check.Generate.Context (Local)
-import Features.Check.Generate.Declared (rigidEffects, signatureItems)
+import Features.Check.Generate.Declared
+  ( declaredSignature
+  , rigidEffects
+  , signatureItems
+  )
 import Features.Check.Generate.Inputs (Signature, Tables)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Node (markersAt, tagged)
+import Features.Check.Generate.Obligation (agreeEqual)
 import Features.Check.Generate.Translate (Naming(..), named, translate)
 
 -- Where a signature rule emits: the declaration and a path.
@@ -87,8 +93,8 @@ parameterLocals tables function = Map.fromFoldable
 -- span (T-R0b §6, "the node's"): `syntax` holds the parameters' types,
 -- then the result's.
 declaration
-  ∷ ∀ s. Tables → FunctionDecl → GenTy s → Span → Gen s (Gen s Unit)
-declaration tables function body bodySpan = do
+  ∷ ∀ s. Tables → FunctionDecl → GenTy s → MTy → Span → Gen s (Gen s Unit)
+declaration tables function body markedBody bodySpan = do
   resultSpan ← lifted
     ( note ResultShape
         ( typeRefSpan <$> Array.index function.syntax
@@ -97,11 +103,12 @@ declaration tables function body bodySpan = do
     )
   traverse_ rigid (Array.catMaybes (Array.mapWithIndex rigidAt function.sorts))
   effected (rigidEffects function)
-  entries ← lifted (declared resultSpan)
+  sig ← lifted (declaredSignature tables function)
+  entries ← lifted (declared sig resultSpan)
   effected =<< lifted (signatureItems tables function)
   pure entries
   where
-  declared resultSpan = ado
+  declared sig resultSpan = ado
     parameters ← sequence (Array.mapWithIndex parameterAt function.parameters)
     result ← ownType tables (place InResult []) resultSpan function.result
     row ← rowFacts tables (place InResult [ Named "row" ])
@@ -114,7 +121,7 @@ declaration tables function body bodySpan = do
             <> parameters
             <> [ result, row ]
             <> Array.mapWithIndex joinedAt function.joined
-            <> [ entryAt resultSpan written.ty, bodyAt written.ty ]
+            <> [ entryAt resultSpan written.ty, bodyAt sig written.ty ]
         )
   place root more = { decl: function.id, path: Path { root, steps: more } }
   rigidAt index sort = map (rigidOf index) (sortVar sort)
@@ -137,8 +144,8 @@ declaration tables function body bodySpan = do
     | isEntry function = sigAt (place InResult []) 10
         [ tagged (EmitBQ (GenPrintable written)) RowC 5 Contract span ]
     | otherwise = pure unit
-  bodyAt written = sigAt (place InBody []) 3
-    [ tagged (EmitB (GenEqual body written)) RowB 1 Body bodySpan ]
+  bodyAt sig written = sigAt (place InBody []) 3
+    [ agreeEqual bodySpan body written markedBody sig.result ]
 
 -- θ(D_g) for E3 and E5: a callee's clauses under the occurrence's
 -- naming, written (constraints in order) then implied (Sig6's facts,

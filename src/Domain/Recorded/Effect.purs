@@ -13,7 +13,10 @@ module Domain.Recorded.Effect
   , MTy(..)
   , MarkRef(..)
   , Obligation(..)
+  , Placed
   , Position(..)
+  , Provenance(..)
+  , SiteRole(..)
   , SiteKind(..)
   , UnsupportedKind(..)
   , emptyEffects
@@ -26,8 +29,10 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
 import Domain.Ids (EffectId)
 import Domain.Recorded.Atom (Base(..), Var)
-import Domain.Recorded.Origin (Entry, Path)
+import Domain.Recorded.Origin (AtomId, Path, RuleId)
+import Domain.Resolved (FunctionId)
 import Domain.Row (EffectRef)
+import Domain.Syntax (Span)
 import Domain.Type (TypeId, VarId)
 
 -- An effect variable: a rigid one by its `VarId`, a fresh one by the path
@@ -120,8 +125,22 @@ data Obligation
   | FailConcrete MTy
   | Unsupported UnsupportedKind
 
+-- Where an obligation comes from (plan Task 7, "Provenance rules"):
+-- `BesideAtom` an E1 recorded with the `GenEqual` atom of that AtomId
+-- (rule-local, so the `rule` of the `Placed` completes the identity);
+-- `AtSite` an effect-only E1, one per (declaration, path, rule, role).
+data Provenance
+  = BesideAtom AtomId
+  | AtSite { decl ∷ FunctionId, path ∷ Path, rule ∷ RuleId, role ∷ SiteRole }
+
+-- `ClauseBody` is O1 (a handler clause), `WithNode` O2 (a `with` node).
+data SiteRole = ClauseBody | WithNode
+
+type Placed a =
+  { provenance ∷ Provenance, rule ∷ RuleId, span ∷ Span, value ∷ a }
+
 type EffectProblem =
-  { obligations ∷ Array (Entry Obligation)
+  { obligations ∷ Array (Placed Obligation)
   , nodes ∷ Map Path MTy -- each node's marked type (beside `types`)
   , instances ∷ Map Path InstanceSig
   , annotations ∷ Map Path MTy
@@ -166,4 +185,6 @@ derive instance eqMarkRef ∷ Eq MarkRef
 derive instance eqMTy ∷ Eq MTy
 derive instance eqSiteKind ∷ Eq SiteKind
 derive instance eqUnsupportedKind ∷ Eq UnsupportedKind
+derive instance eqSiteRole ∷ Eq SiteRole
+derive instance eqProvenance ∷ Eq Provenance
 derive instance eqObligation ∷ Eq Obligation

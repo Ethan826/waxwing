@@ -13,18 +13,17 @@ module Features.Check.Generate.PatternLeaf
 import Prelude
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (CheckedName(..))
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin
-  ( OriginKind(..)
-  , Path
-  , RowGroup(..)
+  ( Path
   , RuleId(..)
   )
 import Domain.Resolved (Pattern(..), Rest(..))
 import Domain.Syntax (Span)
-import Features.Check.Generate.Context (Context, at)
+import Features.Check.Generate.Context (Context, Local, at)
 import Features.Check.Generate.Elab (Elab, GenTy)
-import Features.Check.Generate.Gen (Gen, GenAtom(..), GenEntry(..), emit)
-import Features.Check.Generate.Node (tagged)
+import Features.Check.Generate.Gen (Gen, emit)
+import Features.Check.Generate.Obligation (agreeEqual)
 
 type Shaped s =
   { context ∷ Context s, shape ∷ Elab s Checked.Shape, emits ∷ Gen s Unit }
@@ -35,15 +34,16 @@ literal
   . Context s
   → Path
   → Span
+  → Local s
   → GenTy s
-  → GenTy s
+  → MTy
   → Checked.Shape
   → Shaped s
-literal context path span scrutinee base shape =
+literal context path span typed base markedBase shape =
   { context
   , shape: pure shape
   , emits: emit (at context path (PatternRule 3))
-      [ tagged (EmitB (GenEqual scrutinee base)) RowB 1 Body span ]
+      [ agreeEqual span typed.ty base typed.marked markedBase ]
   }
 
 -- Each rest form's rule, spec row and rest variable's position.

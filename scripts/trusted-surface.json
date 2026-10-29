@@ -306,7 +306,6 @@
  },
  "Features.Check.Generate.Effect": {
   "source": [
-   "agree",
    "handler",
    "marker",
    "operationRef",
@@ -314,7 +313,6 @@
    "with"
   ],
   "compiled": [
-   "agree",
    "handler",
    "marker",
    "operationRef",
@@ -531,6 +529,7 @@
    "GenFf",
    "EmitD",
    "EmitB",
+   "EmitEqual",
    "EmitBQ",
    "EmitOutside",
    "EmitAdm",
@@ -652,6 +651,20 @@
    "tagged"
   ]
  },
+ "Features.Check.Generate.Obligation": {
+  "source": [
+   "agreeEqual",
+   "builtArrow",
+   "equalAt",
+   "equalTagged"
+  ],
+  "compiled": [
+   "agreeEqual",
+   "builtArrow",
+   "equalAt",
+   "equalTagged"
+  ]
+ },
  "Features.Check.Generate.Opening": {
   "source": [
    "openedHandlers",
@@ -707,6 +720,7 @@
    "MintedPosition",
    "ToD",
    "ToB",
+   "ToBEqual",
    "ToBQ",
    "ToOutside",
    "ToAdm",

@@ -29,12 +29,11 @@ import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fresh (childAt, childOf, nodeRes)
 import Features.Check.Generate.Gen
   ( Gen
-  , GenAtom(..)
   , GenEntry(..)
   , GenReq(..)
-  , Tagged
   , emit
   )
+import Features.Check.Generate.Obligation (agreeEqual, builtArrow)
 import Features.Check.Generate.Node
   ( Generated
   , Ruled
@@ -72,8 +71,10 @@ arithmetic recur context path span operator left right = do
     , node: fixed (operator.made <$> one.expr <*> other.expr)
     , emits: do
         emit (at context path (ExprRule operator.rule))
-          [ agree span (GenEqual one.ty operator.base)
-          , agree span (GenEqual other.ty operator.base)
+          [ agreeEqual span one.ty operator.base one.marked
+              (MBase operator.marked)
+          , agreeEqual span other.ty operator.base other.marked
+              (MBase operator.marked)
           ]
         one.emits
         other.emits
@@ -86,7 +87,8 @@ interpolate recur context path span parts = textual
   <$> sequence (Array.mapWithIndex part parts)
   where
   part index = recur context (childAt path "Interpolate" "parts" index)
-  textPart found = agree span (GenEqual found.ty TText)
+  textPart found =
+    agreeEqual span found.ty TText found.marked (MBase TextBase)
   textual generated =
     { ty: TText
     , marked: MBase TextBase
@@ -116,7 +118,7 @@ comparison recur context path span operator left right = do
     , node: fixed (Checked.Compare operator <$> one.expr <*> other.expr)
     , emits: do
         emit (at context path (ExprRule 10))
-          [ agree span (GenEqual one.ty other.ty)
+          [ agreeEqual span one.ty other.ty one.marked other.marked
           , tagged (EmitBQ (GenComparable one.ty)) RowC 6 Body span
           ]
         one.emits
@@ -140,15 +142,16 @@ conditional recur context path span condition yes no = do
   other ← recur context (childOf path "If" "else") no
   handle ← nodeRes path (ExprRule 11) span
   let res = flex handle
+  let markedRes = markedFlex handle
   pure
     { ty: res
-    , marked: markedFlex handle
+    , marked: markedRes
     , node: fixed (Checked.If <$> tested.expr <*> taken.expr <*> other.expr)
     , emits: do
         emit (at context path (ExprRule 11))
-          [ agree span (GenEqual tested.ty TBool)
-          , agree span (GenEqual taken.ty res)
-          , agree span (GenEqual other.ty res)
+          [ agreeEqual span tested.ty TBool tested.marked (MBase BoolBase)
+          , agreeEqual span taken.ty res taken.marked markedRes
+          , agreeEqual span other.ty res other.marked markedRes
           ]
         tested.emits
         taken.emits
@@ -195,24 +198,22 @@ applied
   → Array (Generated s)
   → Elab s Checked.Node
   → Gen s (Ruled s)
-applied context path span rule function arguments node = made
-  <$> nodeRes path (ExprRule rule) span
+applied context path span rule function arguments node = do
+  handle ← nodeRes path (ExprRule rule) span
+  built ← builtArrow path (map _.marked arguments) (markedFlex handle)
+  pure (made handle built)
   where
-  made handle =
+  made handle built =
     { ty: flex handle
     , marked: markedFlex handle
     , node: fixed node
     , emits: do
         emit (at context path (ExprRule rule))
-          [ agree span
-              ( GenEqual function.ty
-                  (arrowOf (map _.ty arguments) (flex handle))
-              )
+          [ agreeEqual span function.ty
+              (arrowOf (map _.ty arguments) (flex handle))
+              function.marked
+              built
           ]
         function.emits
         traverse_ _.emits arguments
     }
-
--- A body agreement (B1, origin body) at the node's span.
-agree ∷ ∀ s. Span → GenAtom s → Tagged s
-agree span atom = tagged (EmitB atom) RowB 1 Body span

@@ -15,22 +15,29 @@ import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (Role(..), VarSort(..))
-import Domain.Recorded.Origin (Path, RowGroup(..), RuleId(..), Step(..))
+import Domain.Recorded.Origin
+  ( OriginKind(..)
+  , Path
+  , RowGroup(..)
+  , RuleId(..)
+  , Step(..)
+  )
 import Domain.Resolved (Expr, FieldValue)
 import Domain.Syntax (Label, Span)
 import Features.Check.Generate.Context (Context, Recur, at)
 import Features.Check.Generate.Elab (Ref(..))
 import Features.Check.Generate.Fresh (auxiliary, child, childAt, childOf)
-import Features.Check.Generate.Gen (Gen, GenAtom(..), Tagged, emit)
+import Features.Check.Generate.Gen (Gen, Tagged, emit)
 import Features.Check.Generate.Node
   ( Generated
   , Ruled
   , fixed
   , flex
+  , markedFlex
   , markedRecord
   , recordOf
   )
-import Features.Check.Generate.Record (shape)
+import Features.Check.Generate.Obligation (equalTagged)
 
 -- E27: per field, `eq τ_e { l: ⟨p, upd l⟩, ...⟨p, updrest l⟩ }` and
 -- `eq τ_{e_l} ⟨p, upd l⟩` (B7); the result is `τ_e`.
@@ -76,12 +83,13 @@ fieldUpdate path operand (Tuple field given) = entries
   <$> auxiliary path (ExprRule 27) (Upd field.name) SortType field.span
   <*> auxiliary path (ExprRule 27) (UpdRest field.name) SortRow field.span
   where
+  equalAt7 = equalTagged RowB 7 Body field.span
   entries upd rest =
-    [ shape RowB 7 field.span
-        ( GenEqual operand.ty
-            (recordOf [ Tuple field.name (flex upd) ] [ FlexRef rest ])
-        )
-    , shape RowB 7 field.span (GenEqual given.ty (flex upd))
+    [ equalAt7 operand.ty
+        (recordOf [ Tuple field.name (flex upd) ] [ FlexRef rest ])
+        operand.marked
+        (markedRecord [ Tuple field.name (markedFlex upd) ] [ FlexRef rest ])
+    , equalAt7 given.ty (flex upd) given.marked (markedFlex upd)
     ]
 
 -- E28: `eq τ_e { l̄: ⟨p, field l⟩, ...⟨p, rest⟩ }` (B8); the result is
@@ -97,7 +105,7 @@ removal
   → Gen s (Ruled s)
 removal recur context path span value labels = do
   operand ← recur context (childOf path "RecordRemoval" "record") value
-  fields ← traverse fieldVar labels
+  handles ← traverse fieldVar labels
   rest ← FlexRef <$> auxiliary path (ExprRule 28) Rest SortRow span
   pure
     { ty: recordOf [] [ rest ]
@@ -105,10 +113,14 @@ removal recur context path span value labels = do
     , node: fixed (Checked.RecordRemoval <@> map _.name labels <$> operand.expr)
     , emits: do
         emit (at context path (ExprRule 28))
-          [ shape RowB 8 span (GenEqual operand.ty (recordOf fields [ rest ])) ]
+          [ equalTagged RowB 8 Body span operand.ty
+              (recordOf (map (map flex) handles) [ rest ])
+              operand.marked
+              (markedRecord (map (map markedFlex) handles) [ rest ])
+          ]
         operand.emits
     }
   where
-  fieldVar label = Tuple label.name <<< flex
+  fieldVar label = Tuple label.name
     <$> auxiliary path (ExprRule 28) (Field label.name) SortType label.span
 

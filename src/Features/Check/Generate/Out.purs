@@ -32,8 +32,10 @@ import Domain.Recorded.Effect
   , InstanceSig
   , MRow
   , MTy
-  , Obligation
+  , Obligation(..)
+  , Placed
   , Position
+  , Provenance(..)
   )
 import Domain.Recorded.Origin
   ( Entry
@@ -61,7 +63,7 @@ type Out =
 
 -- What a rule adds to the effect problem (a-min §10), in emission order.
 data EffectItem
-  = Obliged (Entry Obligation)
+  = Obliged (Placed Obligation)
   | NodeAt Path MTy
   | InstanceAt Path InstanceSig
   | AnnotationAt Path MTy
@@ -77,6 +79,7 @@ data EffectItem
 data Item
   = ToD Atom
   | ToB Atom
+  | ToBEqual Atom MTy MTy
   | ToBQ ReqAtom
   | ToOutside OutsideKind
   | ToAdm CallSite
@@ -140,7 +143,20 @@ placed ∷ Origin → Item → Out
 placed origin = case _ of
   ToD value → noOut { d = [ { origin, value } ] }
   ToB value → noOut { b = [ { origin, value } ] }
+  ToBEqual value left right → noOut
+    { b = [ { origin, value } ]
+    , effects = [ Obliged (besideAtom origin (Equal left right)) ]
+    }
   ToBQ value → noOut { bq = [ { origin, value } ] }
   ToOutside value → noOut { outside = [ { origin, value } ] }
   ToAdm value → noOut { adm = [ { origin, value } ] }
   ToSplit value → noOut { split = [ { origin, value } ] }
+
+-- E1 beside the atom it was listed with: that atom's own AtomId.
+besideAtom ∷ Origin → Obligation → Placed Obligation
+besideAtom origin value =
+  { provenance: BesideAtom origin.atom
+  , rule: origin.rule
+  , span: origin.span
+  , value
+  }

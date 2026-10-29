@@ -4,6 +4,7 @@
 // `context.compilerPath`.
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { equalProbes } from './regression-r0-amin-equal.mjs';
 import { markedProbes } from './regression-r0-amin-marked.mjs';
 import { nodeProbes } from './regression-r0-amin-nodes.mjs';
 import { openedProbes } from './regression-r0-amin-opened.mjs';
@@ -33,6 +34,7 @@ export const r0AminProbes = {
   ...nodeProbes,
   ...openedProbes,
   ...signatureProbes,
+  ...equalProbes,
   ...pinProbes,
   // Task 20 (I2, dossier 18.102): a `fail`-only declaration keeps the
   // marking that lets the pinned cohort stay Solved: E23 emits no

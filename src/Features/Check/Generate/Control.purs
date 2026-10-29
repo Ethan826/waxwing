@@ -41,8 +41,6 @@ import Features.Check.Generate.Elab (Elab, GenTy)
 import Features.Check.Generate.Fresh (child, childAt, childOf, nodeRes)
 import Features.Check.Generate.Gen
   ( Gen
-  , GenAtom(..)
-  , GenEntry(..)
   , Tagged
   , effected
   , emit
@@ -58,10 +56,10 @@ import Features.Check.Generate.Node
   , markedFlex
   , markersAt
   , stagedArrow
-  , tagged
   )
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Minted (Part(..), mintedAt)
+import Features.Check.Generate.Obligation (agreeEqual, equalTagged)
 import Features.Check.Generate.Out (EffectItem(..), TypeMarker)
 import Features.Check.Generate.Owned (annotationClauses)
 import Features.Check.Generate.Pattern (pattern)
@@ -89,7 +87,8 @@ match recur context path span scrutinee arms = do
     , marked: markedFlex handle
     , node: fixed (Checked.Match <$> tested.expr <*> traverse _.arm found)
     , emits: do
-        emit (at context path (ExprRule 12)) (map (armAtom res) found)
+        emit (at context path (ExprRule 12))
+          (map (armAtom res (markedFlex handle)) found)
         tested.emits
         traverse_ _.emits found
     }
@@ -103,11 +102,13 @@ match recur context path span scrutinee arms = do
     body ← recur bound.context (child armPath [ Named "body" ]) arm.body
     pure
       { ty: body.ty
+      , marked: body.marked
       , arm: { pattern: _, body: _, span: arm.span } <$> bound.pattern
           <*> body.expr
       , emits: bound.emits *> body.emits
       }
-  armAtom res arm = tagged (EmitB (GenEqual arm.ty res)) RowB 1 Body span
+  armAtom res markedRes arm =
+    agreeEqual span arm.ty res arm.marked markedRes
   scrutineeOf tested = { ty: tested.ty, marked: tested.marked }
 
 -- E13: `σ₁ → … → σ_m → τ_body`; an annotated parameter `k` is `⟦A_k⟧ν_f`
@@ -190,11 +191,11 @@ parameterAt context path index parameter = do
   annotation found markedType =
     { ty: found.ty
     , marked: markedType
-    , defined: definedness found.ty
+    , defined: definedness found.ty markedType
     , marks: found.marks
     }
-  definedness ty span =
-    [ tagged (EmitB (GenEqual ty ty)) RowB 14 Types span ]
+  definedness ty markedType span =
+    [ equalTagged RowB 14 Types span ty ty markedType markedType ]
   unannotated = unwritten <$> fresh
     { path
     , role: Param index

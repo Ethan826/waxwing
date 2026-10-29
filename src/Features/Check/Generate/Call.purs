@@ -25,6 +25,7 @@ import Prelude
 import Data.Array as Array
 import Data.Foldable (traverse_)
 import Data.Traversable (sequence, traverse)
+import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal (Instantiation, Open)
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
@@ -35,7 +36,12 @@ import Domain.Type (Ty(..))
 import Features.Check.Generate.Callee (Called, ctorInstance, functionInstance)
 import Features.Check.Generate.Context (Context, Recur, at)
 import Features.Check.Generate.Fresh (childAt, nodeRes)
-import Features.Check.Generate.Gen (Gen, GenAtom(..), GenEntry(..), emit)
+import Features.Check.Generate.Gen (Gen, emit)
+import Features.Check.Generate.Obligation
+  ( agreeEqual
+  , builtArrow
+  , equalTagged
+  )
 import Features.Check.Generate.Node
   ( Generated
   , Ruled
@@ -45,7 +51,6 @@ import Features.Check.Generate.Node
   , instanceArrow
   , markedFlex
   , mintedStages
-  , tagged
   )
 
 -- The node's place and rule, and the spec row of its argument
@@ -149,8 +154,8 @@ applied
   → Array (Generated s)
   → Gen s (Ruled s)
 applied context node made found generated =
-  if Array.length generated > count then
-    overApplied <$> nodeRes node.path node.rule node.span
+  if Array.length generated > count then overApplied
+    =<< nodeRes node.path node.rule node.span
   else partial <$ mintedStages node.path supplied found.instance
   where
   supplied = Array.length generated
@@ -163,24 +168,33 @@ applied context node made found generated =
     }
   count = Array.length found.parameters
   rest = Array.drop count generated
-  overApplied res =
+  overApplied res = made' res
+    <$> builtArrow node.path (map _.marked rest) (markedFlex res)
+  made' res built =
     { ty: flex res
     , marked: markedFlex res
     , node: saturated node.span made <$> found.slots
         <*> sequence (map _.expr (Array.take count generated))
         <*> sequence (map _.expr rest)
     , emits: written
-        [ body RowB 1
-            (GenEqual found.result (arrowOf (map _.ty rest) (flex res)))
+        [ agreeEqual node.span found.result
+            (arrowOf (map _.ty rest) (flex res))
+            found.instance.result
+            built
         ]
     }
   written more = do
     emit (at context node.path node.rule)
       (found.entries <> equations <> more <> found.markers)
     traverse_ _.emits generated
-  equations = Array.zipWith equation generated found.parameters
-  equation given declared = body node.row 1 (GenEqual given.ty declared)
-  body group number atom = tagged (EmitB atom) group number Body node.span
+  equations = Array.zipWith equation generated
+    (Array.zip found.parameters found.instance.parameters)
+  equation given (Tuple declared markedDeclared) = equalTagged node.row 1 Body
+    node.span
+    given.ty
+    declared
+    given.marked
+    markedDeclared
 
 -- `Apply (g θ a₁…aₙ) [aₙ₊₁…]` (Check/Call.purs `overApplied`), the
 -- saturated node typed `τ_{e_{n+1}} → … → τ`, `τ` the node's own type.

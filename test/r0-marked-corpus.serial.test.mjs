@@ -99,7 +99,8 @@ const repeatsOf = (at, effects) => ['flexEff', 'positions'].flatMap(name => {
 });
 
 // Every `EffFresh` variable and `At` position a recorded type names (in
-// `nodes`, `instances`, `annotations` and the declaration's `signature`),
+// `nodes`, `instances`, `annotations`, the declaration's `signature` and
+// the types inside `obligations`),
 // by an explicit stack.
 const valuesOf = map => Maps.toUnfoldable(Unfoldable.unfoldableArray)(map)
   .map(pair => shape(pair.value1));
@@ -108,6 +109,9 @@ const namedIn = effects => {
   const pending = ['nodes', 'instances', 'annotations']
     .flatMap(name => valuesOf(effects[name]));
   pending.push(shape(effects.signature));
+  // E1's built right sides (Task 7, Generate.Obligation `builtArrow`)
+  // name stage variables no node's type does.
+  pending.push(...effects.obligations.map(item => shape(item.value)));
   while (pending.length > 0) {
     const value = pending.pop();
     if (value === null || typeof value !== 'object') continue;

@@ -43,7 +43,7 @@ import Features.Check.Generate.Fresh
   )
 import Features.Check.Generate.Gen
   ( Gen
-  , GenAtom(..)
+  , GenAtom
   , GenEntry(..)
   , Tagged
   , emit
@@ -58,6 +58,7 @@ import Features.Check.Generate.Node
   , recordOf
   , tagged
   )
+import Features.Check.Generate.Obligation (equalTagged)
 
 -- E24: `{ l̄: τ̄ }`, no entry (labels are distinct, so it is defined).
 literal
@@ -108,11 +109,13 @@ extension recur context path span items = do
         emit (at context path (ExprRule 25))
           ( map spreadAtom spreads
               <>
-                [ shape RowB 2 span
-                    ( GenEqual res
-                        ( recordOf (Array.mapMaybe given pairs)
-                            (map tailOf spreads)
-                        )
+                [ equalTagged RowB 2 Body span res
+                    ( recordOf (Array.mapMaybe given pairs)
+                        (map tailOf spreads)
+                    )
+                    (markedFlex handle)
+                    ( markedRecord (Array.mapMaybe givenMarked pairs)
+                        (map tailOf spreads)
                     )
                 ]
           )
@@ -127,14 +130,21 @@ extension recur context path span items = do
   given (Tuple found result) = case found of
     Given field → Just (Tuple field.name result.ty)
     Spreading _ _ → Nothing
+  givenMarked (Tuple found result) = case found of
+    Given field → Just (Tuple field.name result.marked)
+    Spreading _ _ → Nothing
   spreading (Tuple found result) = case found of
     Given _ → Nothing
-    Spreading itemSpan _ → Just { span: itemSpan, ty: result.ty }
+    Spreading itemSpan _ →
+      Just { span: itemSpan, ty: result.ty, marked: result.marked }
   spreadVar (Tuple index found) = { found, handle: _ }
     <$> auxiliary path (ExprRule 25) (Spread (index + 1)) SortRow found.span
   tailOf spread = FlexRef spread.handle
-  spreadAtom spread = shape RowB 2 spread.found.span
-    (GenEqual spread.found.ty (recordOf [] [ tailOf spread ]))
+  spreadAtom spread = equalTagged RowB 2 Body spread.found.span
+    spread.found.ty
+    (recordOf [] [ tailOf spread ])
+    spread.found.marked
+    (markedRecord [] [ tailOf spread ])
   checkedItem (Tuple found result) = case found of
     Given field → Checked.Given <<< { label: field.name, value: _ }
       <$> result.expr
@@ -168,9 +178,11 @@ fieldAccess recur context path span value label = do
     , node: fixed (Checked.FieldAccess <@> label.name <$> operand.expr)
     , emits: do
         emit (at context path (ExprRule 26))
-          [ shape RowB 4 label.span
-              ( GenEqual operand.ty
-                  (recordOf [ Tuple label.name (flex field) ] [ FlexRef rest ])
+          [ equalTagged RowB 4 Body label.span operand.ty
+              (recordOf [ Tuple label.name (flex field) ] [ FlexRef rest ])
+              operand.marked
+              ( markedRecord [ Tuple label.name (markedFlex field) ]
+                  [ FlexRef rest ]
               )
           ]
         operand.emits

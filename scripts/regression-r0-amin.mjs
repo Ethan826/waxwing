@@ -4,6 +4,7 @@
 // demonstrations are in the plan ledger's task reports
 // (.superpowers/sdd/2026-10-25-amin-tranche-1-plan/task-N-report.md,
 // local and git-ignored); docs/progress.md lists the rows.
+import { equalRows } from './regression-r0-amin-equal.mjs';
 import { pinRows } from './regression-r0-amin-pin.mjs';
 import { signatureRows } from './regression-r0-amin-signature.mjs';
 const generate = 'src/Features/Check/Generate/';
@@ -11,6 +12,7 @@ const marked = `${generate}Marked.purs`;
 const owned = `${generate}Owned.purs`;
 export const r0AminRows = [
   ...signatureRows,
+  ...equalRows,
   ...pinRows,
   {
     // Tasks 2, 3: a Fail label translated as written (the Console-only

@@ -13,7 +13,8 @@ import Data.Maybe (Maybe, maybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Atom (OutsideKind(..))
+import Domain.Recorded.Atom (Base(..), OutsideKind(..))
+import Domain.Recorded.Effect (MTy(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, LocalId)
 import Domain.Resolved as Resolved
@@ -24,8 +25,9 @@ import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Elab.Log (Log)
 import Features.Check.Generate.Elab.Log as Log
 import Features.Check.Generate.Fresh (childAt, childOf)
-import Features.Check.Generate.Gen (Gen, GenAtom(..), GenEntry(..), emit)
+import Features.Check.Generate.Gen (Gen, GenEntry(..), emit)
 import Features.Check.Generate.Node (Generated, Ruled, fixed, tagged)
+import Features.Check.Generate.Obligation (agreeEqual)
 
 -- What one item contributes: the environment after it, its checked
 -- item and its entries.
@@ -99,7 +101,7 @@ deferred context path span found =
   , item: Checked.Defer <$> found.expr
   , emits: do
       emit (at context path (ExprRule 16))
-        [ tagged (EmitB (GenEqual found.ty TUnit)) RowB 1 Body span
+        [ agreeEqual span found.ty TUnit found.marked (MBase UnitBase)
         , tagged (EmitOutside Deferred) RowO 6 Body span
         ]
       found.emits

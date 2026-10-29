@@ -12,8 +12,7 @@
 -- its C `⟨p, handler clauses⟩` (statements §2, "Copies through
 -- equations"); `with`'s is its `⟨p, res⟩` (amin tranche 1, Task 4).
 module Features.Check.Generate.Effect
-  ( agree
-  , handler
+  ( handler
   , marker
   , operationRef
   , perform
@@ -36,6 +35,7 @@ import Domain.Recorded.Effect
   , MTy(..)
   , MarkRef(..)
   , Position(..)
+  , SiteRole(..)
   )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, HandlerClause, Ty, TyRow, VarId(..))
@@ -49,7 +49,6 @@ import Features.Check.Generate.Elab (Ref)
 import Features.Check.Generate.Fresh (childAt, childOf, instances, nodeRes)
 import Features.Check.Generate.Gen
   ( Gen
-  , GenAtom
   , GenEntry(..)
   , Tagged
   , effected
@@ -72,6 +71,7 @@ import Features.Check.Generate.Node
   , mintedStages
   , tagged
   )
+import Features.Check.Generate.Obligation (equalAt)
 import Features.Check.Generate.Opening (openedRow)
 import Features.Check.Generate.Translate (translate, translateAll)
 
@@ -173,7 +173,7 @@ handler
   → Label (Ty VarId)
   → Array HandlerClause
   → Gen s (Ruled s)
-handler recur context path span (Label effect _ mark) clauses = do
+handler recur context path span label@(Label effect _ mark) clauses = do
   sorts ← lifted (effectSorts context.tables effect)
   inst ← instances path (ExprRule 20) span sorts
   found ← sequence (Array.mapWithIndex (clauseOf inst.naming) clauses)
@@ -201,7 +201,7 @@ handler recur context path span (Label effect _ mark) clauses = do
   where
   snd (Tuple _ ty) = ty
   clauseOf naming place = handlerClause recur context
-    { handler: path, clause: place }
+    { handler: path, clause: place, label }
     naming
 
 -- E21: `⟨p, res⟩`, `Outside HandlerType`; no equation through the
@@ -218,6 +218,8 @@ with recur context path span installed body = do
     , node: fixed (Checked.With <$> handlerPart.expr <*> bodyPart.expr)
     , emits: do
         emit (at context path (ExprRule 21)) (marker true HandlerType 3 span)
+        equalAt (at context path (ExprRule 21)) WithNode span (markedFlex res)
+          bodyPart.marked
         handlerPart.emits
         bodyPart.emits
     }
@@ -227,9 +229,6 @@ with recur context path span installed body = do
 marker ∷ ∀ s. Boolean → OutsideKind → Int → Span → Array (Tagged s)
 marker holds kind row span =
   if holds then [ tagged (EmitOutside kind) RowO row Body span ] else []
-
-agree ∷ ∀ s. Span → GenAtom s → Tagged s
-agree span atom = tagged (EmitB atom) RowB 1 Body span
 
 -- A handler literal's marked type, R and C its own variables.
 literalType ∷ ∀ s. Path → EffectRef → Array (Ref s) → MTy

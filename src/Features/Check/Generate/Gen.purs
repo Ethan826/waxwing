@@ -56,6 +56,7 @@ import Domain.Recorded.Atom
   , Var(..)
   , VarSort
   )
+import Domain.Recorded.Effect (MTy)
 import Domain.Recorded.Origin (OriginKind, Path, RuleId, SpecRow)
 import Domain.Syntax (Span)
 import Domain.Type (Ty(..), VarId)
@@ -113,6 +114,7 @@ type GenSite s = { callee ∷ Callee, slots ∷ Array (Ref s) }
 data GenEntry s
   = EmitD (GenAtom s)
   | EmitB (GenAtom s)
+  | EmitEqual (GenTy s) (GenTy s) MTy MTy
   | EmitBQ (GenReq s)
   | EmitOutside OutsideKind
   | EmitAdm (GenSite s)
@@ -208,6 +210,8 @@ item ∷ ∀ s. GenEntry s → Out.Item
 item = case _ of
   EmitD atom → Out.ToD (atomOf atom)
   EmitB atom → Out.ToB (atomOf atom)
+  EmitEqual left right markedLeft markedRight →
+    Out.ToBEqual (atomOf (GenEqual left right)) markedLeft markedRight
   EmitBQ requirement → Out.ToBQ (requirementOf requirement)
   EmitOutside kind → Out.ToOutside kind
   EmitAdm site → Out.ToAdm (siteOf site)
