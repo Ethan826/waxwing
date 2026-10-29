@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { checkStructure } from './structure.mjs';
+import { conditionsLine } from './verify-conditions.mjs';
 mkdirSync('.build', { recursive: true });
 const run = (command, args) => {
   const result = spawnSync(command, args, { stdio: 'inherit' });
@@ -37,10 +38,13 @@ const testFiles = readdirSync('test').filter(name => name.endsWith('.test.mjs'))
 const tests = testFiles.filter(name => !name.endsWith(serialSuffix));
 const serialTests = testFiles.filter(name => name.endsWith(serialSuffix));
 assert.ok(tests.length > 0, 'no test files found');
+console.log(conditionsLine('parallel'));
 run('node', ['--test', ...tests]);
 if (serialTests.length > 0) {
+  console.log(conditionsLine('serial'));
   run('node', ['--test', '--test-concurrency=1', ...serialTests]);
 }
+console.log(conditionsLine('regression'));
 run('node', ['scripts/regression.mjs']);
 console.log('Verified compiler, gates, executable programs, rejection ' +
   'diagnostics, properties, and regression proofs.');
