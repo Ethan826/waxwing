@@ -6572,3 +6572,21 @@ environmental interference plausible without establishing it, and is
 recorded alongside the measurements. Task 24 incomplete, Task 7 held,
 pending the findings. Spelling: new prose uses American spelling (this
 session's additions corrected); older text and commit messages stay.
+
+### 18.113 Runner proposal first; Task 24 verification blocked (2026-10-29)
+
+Reliability stages 1-2 (§18.112): in one ABBA cycle, 7d1d668 failed a
+parallel-phase timing bound once and b107049 passed both runs; alone,
+coverage-scale and large-source passed 4 of 4 and fn-linear-timing 3 of
+4 (b107049 once, `partialFirst` 969 ms against 930). The author accepted
+Task 24's implementation and regression evidence with the status
+"implementation complete; verification blocked", Task 7 held, and asked
+for the runner proposal before anything else, with no further runs or
+implementation and no second cycle. Wording the author narrowed:
+parallel contention is a plausible contributor that these measurements
+do not show to be required; `partialFirst` has little headroom and
+failed once alone on b107049, which does not show an isolated failure on
+7d1d668. The proposal (docs/plans/2026-10-29-verify-timing-proposal.md)
+treats parallel-phase interference and the `partialFirst` measurement
+protocol separately, with costs and tests, and proposes no bound
+change. The outstanding gate is not described as passed.
