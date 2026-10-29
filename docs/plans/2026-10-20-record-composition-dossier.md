@@ -6532,3 +6532,29 @@ to the experiment; the verify command and every timing bound stay. A
 passing timing run does not erase the three failures. Task 24 stays
 incomplete and Task 7 held until the author decides what the evidence
 supports.
+
+### 18.111 Task 24 evidence accepted; full verify an open blocker (2026-10-29)
+
+The author accepted Task 24's implementation (cd36b7e, b107049), its
+targeted review and the regression phase run alone at b107049 (232 of
+232 rows) as evidence, and kept the full-verify requirement open:
+Task 24 is incomplete and Task 7 held. The measurements (§18.110; four
+runs: included failed, excluded passed, excluded failed, included
+passed) show Task 24's tests are not necessary for the timing failures.
+They do not show the machine is the sole cause, do not exclude a
+performance regression elsewhere, and do not explain why 7d1d668
+passed. The earlier "five seconds added" explanation is unsupported.
+The author notes the machine ran under unusual conditions over these
+days (meetings, sleep and wake, an offsite); nothing is proved by that.
+
+Open verification blocker: timing bounds fail intermittently under
+`npm run verify` (coverage-scale, large-source, fn-linear-timing; five
+distinct tests across seven runs). Next is a separately scoped
+verification-reliability investigation: compare the failing workloads
+at 7d1d668 and b107049 under matched, interleaved conditions; check
+runner concurrency, competing processes and sustained CPU throttling;
+propose any runner change separately, keeping coverage and every
+bound. It needs a bounded estimate and its own authorization; the
+remaining 0.01M does not cover it. No implementation change, bound
+increase or further verify attempt is authorized. Logs: main
+checkout's .build/evidence/2026-10-29-task24/ (MANIFEST.sha256).

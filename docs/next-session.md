@@ -30,16 +30,18 @@ docs/progress.md's tranche-1 entries.
 
 **Held for the author (nothing authorized):**
 - Task 7 (E1 obligations) and Tasks 8-14: each needs its own
-  authorization. Spend so far about 3.8M against a 3.95M running
+  authorization. Spend so far about 4.09M against a 4.10M running
   ceiling; any new unit needs a new cap (the author asks for a bounded
   estimate first).
-- Unit D accepted (§18.106). Follow-up before Task 7, awaiting the
-  author's cap: register Task 22's proof as a behavioural row by a
-  narrow harness extension (mutate and run test/r0-fail-only-compare.mjs;
-  a moved cohort fails under `WXW_PIN_FAIL_ONLY=1` and the fixture is
-  unchanged; restoring the writer fails the probe), and label the two
-  MissingSignature rows separately (direct: omission rejected;
-  end-to-end: placeholder-shaped signature accepted).
+- Task 24 (Task 22's proof registered as a test-tree row): code
+  cd36b7e and b107049, review READY, regression phase alone 232/232 at
+  b107049, all accepted as evidence (§18.111). Incomplete: full verify
+  is an open blocker (timing bounds fail intermittently; Task 24's
+  tests shown not necessary for it, §18.110). Next is a separately
+  scoped verification-reliability investigation, estimate first.
+  Logs: main checkout's .build/evidence/2026-10-29-task24/.
+- Task 7 held until Task 24 completes (§18.107: 0.65M, combined
+  maximum 4.75M).
 - The `effectRigids` ambient-variable exception is asserted from the
   corpus (statements §2), not from a definition.
 - R031 deferred to an effect-row-binding tranche (§18.100).
