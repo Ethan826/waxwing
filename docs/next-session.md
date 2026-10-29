@@ -30,19 +30,14 @@ docs/progress.md's tranche-1 entries.
 
 **Held for the author (nothing authorized):**
 - Task 7 (E1 obligations) and Tasks 8-14: each needs its own
-  authorization. Spend so far about 4.64M against a 4.75M running
+  authorization. Spend so far about 4.65M against a 5.29M running
   ceiling; any new unit needs a new cap (the author asks for a bounded
   estimate first).
-- Task 24 (Task 22's proof registered as a test-tree row): code
-  cd36b7e and b107049. The verify runner change (timing tests serial,
-  a parsed clock gate on acorn 8.19.0, conditions logging; d622bb7 to
-  a557782) is done, and one full verify passed at a557782 (§18.117).
-  Whether that satisfies Task 24's verification gate is the author's
-  decision. The partialFirst measurement protocol stays held
-  (docs/plans/2026-10-29-verify-timing-proposal.md). Logs: main
-  checkout's .build/evidence/2026-10-29-{task24,reliability,runner-verify}/.
-- Task 7 held until Task 24 completes (§18.107: 0.65M, combined
-  maximum 4.75M).
+- Task 24 closed (§18.118): the clean-tree verify at a557782 satisfied
+  its gate after the verify runner change (d622bb7 to a557782). The
+  partialFirst measurement protocol stays held.
+- Task 7 (E1, O1, O2) started 2026-10-29 under 0.65M, running ceiling
+  5.29M (§18.118, §18.107's scope and stops).
 - The `effectRigids` ambient-variable exception is asserted from the
   corpus (statements §2), not from a definition.
 - R031 deferred to an effect-row-binding tranche (§18.100).

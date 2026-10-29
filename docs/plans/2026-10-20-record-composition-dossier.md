@@ -6671,3 +6671,18 @@ each phase (AC power; load 5.54, 3.56, 3.76). Log: main checkout's
 verify to pass since 7d1d668; it is one run, and the earlier failures
 are not erased. Whether Task 24's verification gate is now satisfied
 is the author's decision. Task 7 held. Spend about 4.64M against 4.75M.
+
+### 18.118 Task 24 closed; Task 7 started; ceiling 5.29M (2026-10-29)
+
+The author closed Task 24: the clean-tree verify at a557782 satisfies
+its gate. The earlier timing failures stay as evidence; the pass does
+not establish timing reliability under every condition. Task 7 starts
+under its §18.107 allowance of 0.65M, running ceiling 5.29M, with
+§18.107's scope, review and stops unchanged: Equal recording, O1 and
+O2, the planned tests and regression rows; the corpus check compares
+recorded obligations with their originating equalities; G0's problem
+pin unchanged; stop for an unresolved reading of §4, a required change
+at a pinned boundary, or R031 work. R031 stays deferred. The
+partialFirst measurement protocol stays held; a future timing failure
+is investigated, not retried and not met by raising a bound. No
+milestone moves from closing Task 24.
