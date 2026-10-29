@@ -106,25 +106,6 @@ test('postfix application repeats on any primary; a name call stays Call',
     assert.equal(bodyShape('1(2)'), 'Apply(Integer(1), [Integer(2)])');
   });
 
-// The callee of a chain is one level deeper however long the chain is, so
-// a long chain (plan Task 8: 1,000 partial applications) is one node.
-const chainLength = 1000;
-const chainSeconds = 5;
-const millisecondsPerSecond = 1000;
-
-test(`a chain of ${chainLength} postfix groups resolves to one Apply`, () => {
-  const groups = Array.from({ length: chainLength }, (_, k) => `(${k})`);
-  const started = performance.now();
-  const program = resolved(`fn g(x: Int): Int = x; fn f(x: Int): Int = `
-    + `g(0)${groups.join('')};${main}`);
-  const seconds = (performance.now() - started) / millisecondsPerSecond;
-  assert.ok(seconds < chainSeconds, `took ${seconds} s`);
-  const body = program.functions[1].body;
-  assert.equal(shape(body.value1), 'Call(0, [Integer(0)])');
-  assert.equal(body.value2.length, chainLength);
-  assert.equal(shape(body.value2.at(-1)), `Integer(${chainLength - 1})`);
-});
-
 test('lambda, application and pipe spans', () => {
   const lambda = 'fn(y: Int, _) => y + 1';
   assert.deepEqual(parsedBody(`(${lambda})`).value0, bodySpan(`(${lambda})`,

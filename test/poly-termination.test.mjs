@@ -11,6 +11,7 @@ import {
   components as generated, edgeKinds, groundArguments, groundTypes, render,
   wrapped
 } from './poly-components.mjs';
+import { components } from './poly-termination-support.mjs';
 
 // P001 Task 5: the instantiation rule (design §4.1), through Parse,
 // Resolve and Check only; the CLI compiles no polymorphic program until
@@ -146,13 +147,6 @@ test('wrapping an intra-component argument is rejected', () => {
   }
 });
 
-// Components succeed on every well-formed graph.
-const components = graph => {
-  const result = tarjan.components(graph);
-  assert.ok(result instanceof Right, JSON.stringify(result));
-  return result.value0;
-};
-
 // A graph that names a node it lacks is a compiler bug: E_INTERNAL, not
 // a partition that silently treats the missing node as a sink.
 test('an edge to a missing node is E_INTERNAL', () => {
@@ -200,23 +194,4 @@ test('components agree with mutual reachability', () => {
       }
     }
   }
-});
-
-const longest = 20000;
-const secondsLimit = 5;
-const timed = work => {
-  const started = performance.now();
-  const result = work();
-  const seconds = (performance.now() - started) / 1000;
-  assert.ok(seconds < secondsLimit, `took ${seconds} s`);
-  return result;
-};
-
-test('components are stack-safe on a 20,000-node chain and cycle', () => {
-  const chain = Array.from({ length: longest }, (_, index) =>
-    index + 1 < longest ? [index + 1] : []);
-  assert.equal(new Set(timed(() => components(chain))).size, longest);
-  const cycle = Array.from({ length: longest }, (_, index) =>
-    [(index + 1) % longest]);
-  assert.equal(new Set(timed(() => components(cycle))).size, 1);
 });

@@ -4,13 +4,11 @@ import { Left } from '../output/Data.Either/index.js';
 import { check } from '../output/Features.Check/index.js';
 import { wire } from '../output/Format.Diagnostic/index.js';
 import { checkRejectedAt, checkedPoly, resolved } from './phases.mjs';
+import { prelude } from './poly-coverage-support.mjs';
 
 // P001 Task 6: coverage over applied types and type variables (design §5),
 // through Parse, Resolve and Check only; the CLI does not compile
 // polymorphic programs until Task 7.
-const prelude = 'type List(a) = Nil | Cons(a, List(a));'
-  + ' type Pair(a, b) = Pair(a, b); type Maybe(a) = Nothing | Just(a);'
-  + ' type Void = Void(Void); ';
 const main = ' fn main(): Int = 0;';
 
 // [name, program after the prelude]
@@ -106,34 +104,4 @@ test('Maybe(Void) follows the monomorphic uninhabited-arm policy', () => {
   }
   assert.equal(verdict(`${prelude}fn f(m: Maybe(Void)): Int = match m {`
     + ` Nothing => 0, Just(_) => 1 };${main}`), null);
-});
-
-// A chain of parameterized types, each applied to the next: expanding
-// `U(Void)` and `U(Int)` numbers 3,000 applications each, and whether
-// `Dead` needs an arm depends on the argument at the chain's far end, so
-// only inhabitation per application settles it.
-const chainLength = 3000;
-const secondsLimit = 5;
-const millisecondsPerSecond = 1000;
-const chain = prelude + Array.from({ length: chainLength }, (_, index) =>
-  `type T${index}(a) = A${index}(T${index + 1}(a));`).join(' ')
-  + ` type T${chainLength}(a) = Z(a); type U(a) = Dead(T0(a)) | Live;`;
-
-const timed = work => {
-  const started = performance.now();
-  const result = work();
-  const seconds = (performance.now() - started) / millisecondsPerSecond;
-  assert.ok(seconds < secondsLimit, `coverage took ${seconds} s`);
-  return result;
-};
-
-test('coverage expands a 3,000-application chain in bounded time', () => {
-  const live = 'match u { Live => 0 }';
-  timed(() => checkedPoly(`${chain} fn f(u: U(Void)): Int = ${live};${main}`));
-  for (const argument of ['Int', 'a']) {
-    const source = `${chain} fn f(u: U(${argument})): Int = ${live};${main}`;
-    const diagnostic = timed(() =>
-      checkRejectedAt(source, 'E_NON_EXHAUSTIVE', live));
-    assert.equal(diagnostic.message, 'Missing pattern: Dead(_)');
-  }
 });

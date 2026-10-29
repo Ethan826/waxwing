@@ -3,20 +3,14 @@
 // no syntax writes an arrow until Task 3.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { member } from '../output/Data.Set/index.js';
-import { ordTypeId } from '../output/Domain.Ids/index.js';
-import { closedRow } from '../output/Domain.Row/index.js';
-import { TData, TFun, TInt, TVar } from '../output/Domain.Type/index.js';
+import { TData, TVar } from '../output/Domain.Type/index.js';
 import { containsFunction,
   functional } from '../output/Features.Check.Functional/index.js';
+import { int, fun, ctor, holds } from './functional-support.mjs';
 
-const int = TInt.value;
-const fun = (parameter, result) => TFun.create(parameter)(closedRow)(result);
 const variable = TVar.create(0);
 // TypeId and VarId are newtypes, so plain numbers at run time.
 const applied = (id, ...args) => TData.create(id)(args)([]);
-const ctor = (owner, fields) =>
-  ({ name: `C${owner}`, owner, fields, fieldSyntax: [], span: null });
 
 const [List, Box, A, B, Phantom, C, E, H, Plain] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 const ctors = [
@@ -32,7 +26,6 @@ const ctors = [
   ctor(H, [variable]),
   ctor(Plain, [int, applied(List, int), applied(H, applied(Plain))])
 ];
-const holds = (found, id) => member(ordTypeId)(id)(found);
 
 test('the functional types are the least fixed point through fields', () => {
   const found = functional(ctors);
@@ -52,20 +45,4 @@ test('a type contains a function directly or through a functional type', () => {
   assert.equal(contains(applied(H, applied(List, int))), false);
   assert.equal(contains(fun(int, int)), true);
   assert.equal(contains(int), false);
-});
-
-const chainLength = 50000;
-const chainBoundMs = 5000;
-
-test('a 50,000-type chain settles without stack failure', () => {
-  // Type i holds type i + 1; only the last holds an arrow.
-  const chain = Array.from({ length: chainLength }, (_, index) =>
-    ctor(index, [index + 1 < chainLength
-      ? applied(index + 1) : fun(int, int)]));
-  const started = performance.now();
-  const found = functional(chain);
-  const elapsed = performance.now() - started;
-  assert.equal(holds(found, 0), true);
-  assert.equal(holds(found, chainLength - 1), true);
-  assert.ok(elapsed < chainBoundMs, `${elapsed} ms`);
 });
