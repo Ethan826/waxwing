@@ -561,6 +561,31 @@ negative indices or offsets. The identity and uniqueness rules are
 written here before coding. The corpus comparison checks the marked
 sides, not only the identity.
 
+**Provenance rules (written before coding).** `EffectProblem.
+obligations` holds `Placed Obligation`, a record `{ provenance, rule,
+span, value }` (Domain.Recorded.Effect; `Origin` and `AtomId` are
+untouched, so atoms and the problem pin cannot move). `provenance` is
+one of two tagged forms:
+- `BesideAtom AtomId`: the E1 recorded next to a `GenEqual`; it holds
+  that atom's own, unchanged AtomId. Generation lists the E1 directly
+  after its atom (`EmitEqual`) and `Out.emit` numbers only atoms, so
+  every existing AtomId is byte for byte what it was. Deterministic:
+  the id is a function of the rule's listed order alone. Unique: an
+  AtomId names one atom, and each atom has at most one E1, so no two
+  `BesideAtom` values are equal.
+- `AtSite { decl, path, rule, role }`, role `ClauseBody` (O1) or
+  `WithNode` (O2): an E1 with no atom. Deterministic: the rule's own
+  path, rule id and role. Unique: O1 is emitted once per handler clause
+  at that clause's path (`Handler/clauses/k`), O2 once per `with` node
+  at its path, and a path names one node, so (decl, path, role) is
+  never repeated. The two forms are different constructors, so they
+  never equal each other.
+No other effect-only E1 site exists: handle, `if`, `match` and records
+all list `GenEqual`s, so their E1s are beside atoms. The corpus test
+checks all provenances are distinct, and that each E1's sides erase to
+its atom's two sides in order. The handler literal's node is deferred
+to Task 9 and listed as such in the test.
+
 **Files:** create Generate/Obligation.purs (`equalAt ∷ At → MTy → MTy
 → Tagged s`); every rule that emits `GenEqual`; Effect.purs
 (literal node, O1 in `handlerClause`, O2 in `with`); Failure.purs
