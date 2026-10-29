@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync }
+  from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { checkStructure } from './structure.mjs';
 import { conditionsLine } from './verify-conditions.mjs';
@@ -23,6 +24,11 @@ assert.ifError(tidy.error);
 assert.equal(tidy.status, 0);
 assert.equal((tidy.stdout + tidy.stderr).trim(), 'v0.11.1',
   'use the pinned formatter');
+// The clock gate parses test sources with acorn (docs/dependencies.md).
+const acornManifest = 'node_modules/acorn/package.json';
+assert.ok(existsSync(acornManifest), 'acorn is not installed; run `npm ci`');
+assert.equal(JSON.parse(readFileSync(acornManifest, 'utf8')).version,
+  '8.19.0', 'use the pinned acorn; run `npm ci`');
 run('purs-tidy', ['check', 'src', 'tools/style/src']);
 run('node', ['scripts/build.mjs']);
 run('node', ['scripts/strict-rebuild.mjs']);

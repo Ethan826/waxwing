@@ -535,7 +535,8 @@ on PATH. The tested Go version is 1.26.4.
 npm install -g purescript@0.15.16 spago@1.0.4 purs-tidy@0.11.1
 ```
 
-Install Go separately. There are no local npm dependencies; the first build
+Install Go separately. The one local npm dependency is acorn, a dev-only JS
+parser for verify's clock gate; install it with `npm ci`. The first build
 needs network access to download the pinned PureScript packages. Fresh online
 prerequisite installation and cross-platform builds remain unverified; see
 [F001](BACKLOG.md). Cache setup for offline builds is in

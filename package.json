@@ -16,5 +16,8 @@
     "spago": "1.0.4",
     "purs-tidy": "0.11.1",
     "go": "1.26.4"
+  },
+  "devDependencies": {
+    "acorn": "8.19.0"
   }
 }
