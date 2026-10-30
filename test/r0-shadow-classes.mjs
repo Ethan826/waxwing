@@ -43,8 +43,12 @@ const compiles = facts => {
   if (rt8 === 'ambiguous several-tail read-back (Heuristic)') return rt8;
   if (rt8 === '(a) blocked: Unresolved Unsupported RequirementAtoms')
     return 'BQ pending G-ValidR: compiles today';
-  if (/^\(a\) blocked: Unresolved Unsupported Outside \w+(, Outside \w+)*$/
-    .test(rt8)) return 'markers: compiles today, R0 Unsupported Outside';
+  // A trailing `EffectsUnchecked [UnframedInstall]` (§18.124, §18.126)
+  // keeps the class: the row was already blocked by its markers.
+  const outside = '^\\(a\\) blocked: Unresolved Unsupported Outside \\w+'
+    + '(, Outside \\w+)*(, EffectsUnchecked \\[UnframedInstall\\])?$';
+  if (new RegExp(outside).test(rt8))
+    return 'markers: compiles today, R0 Unsupported Outside';
   return fail(facts, 'no window class where today compiles');
 };
 

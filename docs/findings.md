@@ -5165,3 +5165,26 @@ The message also omits its edit to test/r0-obligations-equal.test.mjs
 (the effect-only E1 survey skips atom-free obligations that are not
 `Equal`). Found by the batch's reviewer 3 (dossier §18.123); history
 is not rewritten (§18.124).
+
+## Window re-pin: the UnframedInstall restriction (2026-10-30)
+
+§18.124 restricts a `with` whose installed handler's marked type is
+not a handler type (`Unsupported UnframedInstall`, role
+`UnframedWith`). Re-pinned with `node scripts/r0-shadow-pin.mjs`
+(§18.126; the author ruled on all 20 moved rows): each moved row's r0
+verdict gains `, EffectsUnchecked [UnframedInstall]` and nothing else
+changes in class, attempt or today's result. Nine compile today (class
+"markers: compiles today, R0 Unsupported Outside", rt8 gaining the same
+suffix; the classifier now accepts it): f3, rev7/late1, rev7/late2,
+rev8/one3, rev8/two3, rigid, expected-handler.pinned-selection#k,
+fx008-defer r2#run, r9#main. Eleven are refused today (class "today
+refuses, R0 Unsupported Outside", rt8 unchanged): design-review c2, c3,
+p3, fx008-defer a8#main, a9#main, r5#g, rev7/late1ctl, rev8/one3ctl,
+rev8/two3ctl, rigid-ok, expected-handler.inferred#k. No summary count
+moved; every row was already blocked.
+The RT8 pin (test/fixtures/r0/rt8.json, `node scripts/r0-rt8-pin.mjs`,
+ruled by the author with the window) moves the same nine compile-today
+declarations between reason buckets: "Outside FailFamily, Outside
+HandlerType" 9 to 7 (+2 with the suffix), "Outside HandlerType, Outside
+EffectArgument" 11 to 7 (+4), "Outside HandlerType" 97 to 94 (+3);
+totals unchanged, 0 defects, 0 position findings.
