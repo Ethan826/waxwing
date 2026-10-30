@@ -6748,3 +6748,26 @@ corpus test detects the Sig3 defect through erasure; it does not show
 the marked-side check detects anything. An instrumented run to count
 all 1675 by kind hung and was abandoned. Evidence: main checkout's
 .build/evidence/2026-10-29-task7-verify/. Task 7 acceptance open.
+
+### 18.121 One costed parallel batch proposed (2026-10-30)
+
+The author moved the remaining tranche work to one batch with one budget
+decision before dispatch and one acceptance report after: four lanes
+(A, Task 7's remaining evidence; B, Task 8; C, Tasks 10-11; D, Tasks
+12-13's boundary and coverage accounting, unfinished rows explicit), a
+document-only Task 9 design, isolated worktrees with fresh
+implementers, one controller owning shared files, pins, integration and
+records; focused tests per lane and one full verify after integration
+and review, superseding the between-task verify rule for this batch;
+timing checks never beside agent builds; mechanical conflicts, stale
+needles (defect and expected failure unchanged) and listed re-pins
+within the controller's authority; stops only for semantic ambiguity
+affecting acceptance or guarantees, unlisted boundary changes, weakened
+checks, denied commands, scope growth or the cap. Task 9's
+implementation, A2's algorithm and R031 stay outside. The proposal,
+with lane ownership, step 0 (Effect.purs at 247 lines is split before
+B and C), integration order, listed re-pins (trusted surface; census
+and window for Task 11's FX032 rows) and a 1.60M all-in cap, is
+docs/plans/2026-10-30-tranche-1-parallel-batch.md. Earlier: the
+r0-amin-partial-reuses-stages needle was fixed (8f8eac8) and the row
+proves directly.
