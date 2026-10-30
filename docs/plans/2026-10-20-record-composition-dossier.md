@@ -6986,3 +6986,24 @@ test/structure-surface.test.mjs's inventory gains Generate.Ambient and
 Generate.Consume and, by a further ruling once the test named it,
 Generate.Perform: step 0's module, which step 0 should have added
 there. No other assertion changed. Both tests pass, 14 of 14.
+
+### 18.129 Second verify failed on one timing bound; stopped (2026-10-30)
+
+One full verify at dde534a, alone under the lock, clean tree, exit 1
+(log: .build/evidence/2026-10-30-batch-verify-2/verify.log). Parallel
+2973 of 2973 (load1 7.86); serial 201 of 202 (load1 4.40 at its start);
+regression proofs did not run. The failure: test/fn-linear-timing
+.serial.test.mjs "partialFirst at 20000 parameters is linear through
+Specialize", 950.3 ms against its bound 930 ms (3 × 310 ms measured
+2026-10-09), about 2% over: the test whose measurement protocol §18.118
+keeps held. The batch changed nothing under src/Features/Specialize*,
+src/Format, the top-level Features.Check modules, Program or Runtime;
+generation is unreachable from the live path; the one live-path change
+is Resolve's two data-only `OperationInfo` fields. That is evidence
+about where the batch could act, not a proof that it did not slow this
+path. Not retried and no bound touched (§18.118, §18.128): the author
+decides whether to investigate it (an alternating base-versus-head
+timing of this form, as for the census bounds in 2720177) before any
+further verify. Both stale-pin corrections held: the two tests passed
+in the parallel phase. Spend this allowance: about 0.04M of 0.06M.
+Task 7 acceptance open. Nothing pushed.
