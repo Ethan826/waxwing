@@ -7103,3 +7103,43 @@ acceptance verify are included; no quiet-machine attempt. Prior
 failures and the absolute budgets are preserved. Task 7 stays blocked
 until this contract is implemented, reviewed and routine verify
 passes. Protected compiler pins unchanged; no push.
+
+### 18.133 Verification contract implemented and reviewed (2026-10-30)
+
+Branch contract/verify (3570e52..43c0320). Absolute budgets moved
+unchanged to 26 `*.perf.test.mjs` files run by `npm run perf` (all
+files, every failure reported, exit 1, no retry, a 600 s per-file
+termination safeguard, skipped tests a failure), plus one perf-side
+regression proof, duplicate-scan-timing (author's ruling: moved out of
+the routine registry, kept executable). Routine verify skips perf files
+by name and ends by stating that performance qualification was not run,
+with the counted number. Coverage compared before and after
+(.build/evidence/2026-10-30-contract/{before,after,diff}.txt, local):
+every removed routine assertion is a time bound now in a perf file;
+the review found 22 of 26 perf files byte-identical and the other four
+faithful. r005b-quiet keeps its proof without its time check (its
+defect is also caught functionally). poly-termination-timing is a
+budget; only fx008-install has a real ratio check (the proposal's five
+was wrong); r005b-predicates' missed budget moved too.
+
+Growth check, protocol fixed first (two warm-ups, then S L L S S L L S
+S L; median ratio): base b71a472 2.284, head 2.263, a constructed,
+semantics-preserving quadratic mutant in Specialize/Body.purs
+`fillFunction` 3.425, failing the ratio assertion itself; strict build
+clean. No historical defect was found. Selection effect, disclosed: the
+mutant's form was chosen after two scratch trials (3.078, 3.444); its
+margin is 14% over 3.0. The 3.0 threshold is adopted in routine verify
+(fn-linear-growth.serial), its regression row run alone after the
+pooled rows. It shows sensitivity to this constructed slowdown, not
+protection against a historical bug; load was 6 to 8 throughout.
+
+Clock gate: an inventory of specific uses
+(test/fixtures/timing-inventory.json); the regression phase is now a
+gated scope; growth-check reads only through test/growth.mjs; perf
+count pinned at 26 and each perf file must reach a budget or ratio use;
+more clock forms detected (Temporal.Now, process.uptime, cpuUsage,
+resourceUsage, `Date()`, os.uptime); limits stated (syntax not intent,
+timeout margins, child-reported durations, helper misuse, dynamic
+imports, other time sources). Review (Opus): no P0; three P1s and the
+P2s fixed in 43c0320; the evidence above is local and summarized here.
+Spend about 0.58M of 0.70M. Next: integration and one routine verify.
