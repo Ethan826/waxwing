@@ -26,7 +26,7 @@ const placed = [
   ['NestingTooDeep', ['BeforeResolution'], [`${F}Lex/Scan.purs:110`]],
   ['TypeTooDeep', ['ResourceLimit'], [`${C}Require.purs:140`]],
   ['Duplicate', ['ResolveRule StaticDuplicate', 'CheckSemantic'],
-    [`${R}Effect.purs:105`, `${C}Overlap.purs:67`]],
+    [`${R}Effect.purs:118`, `${C}Overlap.purs:67`]],
   ['Unbound', ['ResolveRule StaticUnbound'], [`${R}Pattern.purs:102`]],
   ['NotCallable', ['ResolveRule StaticNotCallable'], [`${R}Name.purs:74`]],
   ['CtorNotCallable', ['ResolveRule StaticNotCallable'],

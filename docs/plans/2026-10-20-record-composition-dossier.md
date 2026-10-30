@@ -6975,3 +6975,14 @@ defect; both are fixtures that name the tree's layout. Fixing them is
 a pin update the author must authorize, then one more verify. Spend
 this allowance: about 0.03M of 0.06M. Task 7 awaits the author's
 assessment. Nothing pushed.
+
+### 18.128 Stale pins corrected; one new verify authorized (2026-10-30)
+
+The author authorized both corrections of §18.127 and one new full
+verify (a repair-backed rerun, not a blind one). The `Duplicate` cite
+in test/r0-static-problem.test.mjs is now Resolve/Effect.purs:118,
+confirmed as the same `DuplicateEffect` raise that 8e9ddf7 had at 105.
+test/structure-surface.test.mjs's inventory gains Generate.Ambient and
+Generate.Consume and, by a further ruling once the test named it,
+Generate.Perform: step 0's module, which step 0 should have added
+there. No other assertion changed. Both tests pass, 14 of 14.
