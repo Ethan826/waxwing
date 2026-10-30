@@ -14,7 +14,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Domain.Checked.Internal as Checked
 import Domain.Recorded.Atom (Base(..), OutsideKind(..))
-import Domain.Recorded.Effect (ERole(..), MTy(..))
+import Domain.Recorded.Effect (ERole(..), EVar(..), MTy(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, LocalId)
 import Domain.Resolved as Resolved
@@ -26,9 +26,10 @@ import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Elab.Log (Log)
 import Features.Check.Generate.Elab.Log as Log
 import Features.Check.Generate.Fresh (childAt, childOf)
-import Features.Check.Generate.Gen (Gen, GenEntry(..), emit)
+import Features.Check.Generate.Gen (Gen, GenEntry(..), effected, emit)
+import Features.Check.Generate.Minted (mintedAt)
 import Features.Check.Generate.Node (Generated, Ruled, fixed, tagged)
-import Features.Check.Generate.Obligation (agreeEqual)
+import Features.Check.Generate.Obligation (agreeEqual, deferAt)
 
 -- What one item contributes: the environment after it, its checked
 -- item and its entries.
@@ -111,6 +112,13 @@ letItem context local found =
   , emits: found.emits
   }
 
+-- The deferred row d, `⟨p, effect⟩` at the `defer` item (statements §2,
+-- ownership table), is the ambient row of the deferred expression (E11).
+deferredRow ∷ Path → EVar
+deferredRow path = EffFresh path EffectOf
+
+-- E6 and its E2 (Defer, then the consumption of d into the enclosing
+-- row) are recorded beside E16's atoms; d is minted here, its owner.
 deferred ∷ ∀ s. Context s → Path → Span → Generated s → Visited s
 deferred context path span found =
   { context
@@ -120,5 +128,8 @@ deferred context path span found =
         [ agreeEqual span found.ty TUnit found.marked (MBase UnitBase)
         , tagged (EmitOutside Deferred) RowO 6 Body span
         ]
+      effected (mintedAt path [ deferredRow path ] [])
+      deferAt (at context path (ExprRule 16)) span (deferredRow path)
+        context.ambient
       found.emits
   }

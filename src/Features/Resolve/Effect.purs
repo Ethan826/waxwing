@@ -5,7 +5,7 @@ module Features.Resolve.Effect
 
 import Prelude
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either(..), hush)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
@@ -23,6 +23,7 @@ import Features.Resolve.Occurrences (Declared)
 import Features.Resolve.TypeIndices (Indexed)
 import Features.Resolve.Types (resolveTypeWith)
 import Features.Resolve.Repeated (laterRepeat)
+import Features.Resolve.Row (resolveRow)
 
 summaries ∷ Array Syntax.EffectDecl → Array { name ∷ String, arity ∷ Int }
 summaries = map summary
@@ -47,7 +48,7 @@ effects declared known declarations = do
   parameterName entry = entry.name
   operation variables declaration = refusedIn declaration
     *>
-      ( withSignature declaration
+      ( withSignature declaration (writtenRow variables declaration)
           <$> traverse (parameter variables) declaration.parameters
           <*> resolveTypeWith known (summaries declarations) variables
             Nothing
@@ -58,10 +59,21 @@ effects declared known declarations = do
       declaration.ty
   withType declaration ty =
     { name: declaration.name, ty, span: declaration.span, rowSpan: Nothing }
-  withSignature declaration parameters result =
+  -- The operation's written `with` row, data only (FX032): a row that
+  -- does not resolve stays unrecorded rather than becoming a new
+  -- refusal, since compilation has always ignored the row.
+  writtenRow variables declaration = declaration.row
+    >>= resolvedRow variables
+  resolvedRow variables written = hush
+    ( resolveRow (summaries declarations) variables Nothing
+        (resolveTypeWith known (summaries declarations) variables Nothing)
+        (Just written)
+    )
+  withSignature declaration written parameters result =
     { name: declaration.name
     , parameters
     , result
+    , effects: written
     , syntax: Array.snoc (map parameterSyntax declaration.parameters)
         declaration.result
     , span: declaration.span

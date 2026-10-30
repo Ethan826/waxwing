@@ -136,8 +136,21 @@ data Provenance
 -- `ClauseBody` is O1 (a handler clause), `WithNode` O2 (a `with` node).
 -- `Consumed site n` is an E2 consumption (Task 8): its site kind and its
 -- ordinal among that kind's stages at the path, so two stages of one
--- application never share an identity.
-data SiteRole = ClauseBody | WithNode | Consumed SiteKind Int
+-- application never share an identity. The others identify the
+-- obligations that have no atom (plan Task 10): `DeferRegistration` the
+-- `Defer` and `DeferInto` its consumption, both at the `defer` item's
+-- path; `EntryRow` `main`'s; `PayloadHead` a `fail` or a fail clause's
+-- payload; `UnsupportedOperation` a perform form of an operation that
+-- writes a `with` row (FX032).
+data SiteRole
+  = ClauseBody
+  | WithNode
+  | Consumed SiteKind Int
+  | DeferRegistration
+  | DeferInto
+  | EntryRow
+  | PayloadHead
+  | UnsupportedOperation
 
 type Placed a =
   { provenance ∷ Provenance, rule ∷ RuleId, span ∷ Span, value ∷ a }

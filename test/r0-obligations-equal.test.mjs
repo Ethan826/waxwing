@@ -83,6 +83,8 @@ const compare = (at, problem, found) => {
         ruleName(item.provenance.value0))
       : null;
     if (id === null) {
+      // Task 10's atom-free obligations (Defer, Entry, ...) are not E1.
+      if (item.value.constructor.name !== 'Equal') continue;
       const site = shape(item.provenance);
       if (here.has(key(site))) found.repeats.push(`${at}: ${key(site)}`);
       here.add(key(site));

@@ -685,9 +685,13 @@
    "arityAt",
    "builtArrow",
    "consumeAt",
+   "deferAt",
+   "entryAt",
    "equalAt",
    "equalTagged",
-   "stageRow"
+   "payloadAt",
+   "stageRow",
+   "unsupportedAt"
   ],
   "compiled": [
    "agreeEqual",
@@ -695,9 +699,13 @@
    "arityAt",
    "builtArrow",
    "consumeAt",
+   "deferAt",
+   "entryAt",
    "equalAt",
    "equalTagged",
-   "stageRow"
+   "payloadAt",
+   "stageRow",
+   "unsupportedAt"
   ]
  },
  "Features.Check.Generate.Opening": {

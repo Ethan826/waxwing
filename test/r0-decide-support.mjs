@@ -11,13 +11,26 @@ export const sources = {
   boxed: `type Box(a) = Box(a);\nfn f(): Int = { let b = Box(1);`
     + ` 1 + true };\n${main}`,
   // `D` holds `lacks r a`.
-  lacking: `fn f(p: { ...r }): Int where r lacks { a } = 1;\n${main}`
+  lacking: `fn f(p: { ...r }): Int where r lacks { a } = 1;\n${main}`,
+  // FX032 (findings' gate probe P6): `Op.op`'s own `with` row is kept as
+  // data, so `g`'s problem records an `Unsupported` operation.
+  fx032: 'effect State(s) { fn get(): s; fn put(value: s): Unit; };\n'
+    + 'effect Op { fn op(): Int with State({ x: Int }); };\n'
+    + `fn g(): Int with Op = Op.op();\n${main}`
 };
 
 const named = value => value.constructor.name;
 
-const unsupport = value => named(value) === 'Outside'
-  ? `Outside ${named(value.value0)}` : named(value);
+const operation = kind => `${named(kind)} ${kind.value0} ${kind.value1}`;
+
+const unsupport = value => {
+  switch (named(value)) {
+  case 'Outside': return `Outside ${named(value.value0)}`;
+  case 'EffectsUnchecked':
+    return `EffectsUnchecked [${value.value0.map(operation).join(', ')}]`;
+  default: return named(value);
+  }
+};
 
 const limit = at => `${named(at.limit)}@${({ InBody: 'body' })[
   named(at.site.root)] ?? named(at.site.root)}`;

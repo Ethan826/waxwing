@@ -19,7 +19,8 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Domain.Checked.Internal (rigid)
 import Domain.Checked.Internal as Checked
-import Domain.Recorded.Origin (Path(..), PathRoot(..))
+import Domain.Recorded.Effect (InstanceSig)
+import Domain.Recorded.Origin (Path(..), PathRoot(..), RuleId(..))
 import Domain.Resolved (FunctionDecl, exprSpan)
 import Domain.Row (Row(..))
 import Domain.Type (Ty(..), TyRow)
@@ -29,7 +30,7 @@ import Features.Check.Generate.Elab (Elab)
 import Features.Check.Generate.Expr (expr)
 import Features.Check.Generate.Gen (Gen, lifted)
 import Features.Check.Generate.Inputs (Signatures, Tables)
-import Features.Check.Generate.Obligation (ambientAt)
+import Features.Check.Generate.Obligation (ambientAt, entryAt)
 import Features.Check.Generate.Signature
   ( declaration
   , isEntry
@@ -61,9 +62,23 @@ generateIn tables signatures function = do
     (exprSpan function.body)
   signature
   body.emits
+  entered function declared
   pure (checkedOf function <$> body.expr)
   where
   root = Path { root: InBody, steps: [] }
+
+-- E8: `main`, and only `main`, records its declared row for the entry
+-- check (Sig10's rule, at the result root where it records its atom).
+entered ∷ ∀ s. FunctionDecl → InstanceSig → Gen s Unit
+entered function declared = when (isEntry function)
+  ( entryAt
+      { decl: function.id
+      , path: Path { root: InResult, steps: [] }
+      , rule: SigRule 10
+      }
+      function.span
+      declared.row
+  )
 
 checkedOf ∷ FunctionDecl → Checked.Expr → Checked.FunctionDecl
 checkedOf function body =

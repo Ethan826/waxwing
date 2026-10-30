@@ -6,6 +6,7 @@
 // local and git-ignored); docs/progress.md lists the rows.
 import { consumeRows } from './regression-r0-amin-consume.mjs';
 import { equalRows } from './regression-r0-amin-equal.mjs';
+import { miscRows } from './regression-r0-amin-misc.mjs';
 import { pinRows } from './regression-r0-amin-pin.mjs';
 import { signatureRows } from './regression-r0-amin-signature.mjs';
 const generate = 'src/Features/Check/Generate/';
@@ -15,6 +16,7 @@ export const r0AminRows = [
   ...signatureRows,
   ...equalRows,
   ...consumeRows,
+  ...miscRows,
   ...pinRows,
   {
     // Tasks 2, 3: a Fail label translated as written (the Console-only

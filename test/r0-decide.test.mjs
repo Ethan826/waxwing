@@ -4,6 +4,7 @@ import { load } from './r0-generate-support.mjs';
 import { encodeProblem } from './r0-canonical.mjs';
 import { stubsFrom } from './r0-stubs.mjs';
 import { describe, sources } from './r0-decide-support.mjs';
+import { onlineFrom } from './r0-online-support.mjs';
 
 // Task 4.1 (T-R0a §5.3 rules 1-5; AT8, AT9, AT11, AT12, AT17): the
 // production `decide` over test-built `Checking` values (ruling R11),
@@ -186,4 +187,32 @@ test('refuters and shadows receive the hints sorted, each on its own', () => {
     [hint('b'), hint('a')]), ending(Verdict.Exhausted.value,
     [hint('a')])], shadows: [spy] });
   assert.deepEqual(seen, [[], ['a'], ['b']]);
+});
+
+// Task 11 (statements §7 "Routing", §12.2 FX032 rows): an `Unsupported`
+// obligation is known from the problem, so rule 1 blocks the declaration
+// with `EffectsUnchecked`, whatever a strategy accepts.
+const unchecked = 'Unresolved Unsupported EffectsUnchecked'
+  + ' [OperationWithRow 1 0]';
+
+test('FX032: an accepting strategy is suppressed, never Solved', () => {
+  const problem = stubs.recorded.problem(sources.fx032, 'g');
+  assert.deepEqual(run({ strategies: [accepting()] }, problem),
+    { verdict: unchecked, attempts: ['Accepted'], searchFaults: [] });
+});
+
+test('FX032: the production online strategy accepts and is suppressed',
+  async () => {
+    const online = await onlineFrom(load);
+    const program = online.programOf(sources.fx032);
+    const found = describe(online.decisionOf(program, 'g'));
+    assert.deepEqual(found.attempts, ['Accepted', 'Shadow Left']);
+    assert.equal(found.verdict, 'Unresolved Unsupported EffectsUnchecked'
+      + ' [OperationWithRow 1 0]');
+  });
+
+test('no Unsupported obligation: the verdict is what it was', () => {
+  const problem = stubs.recorded.problem(sources.fx032, 'main');
+  assert.deepEqual(run({ strategies: [accepting()] }, problem),
+    { verdict: 'Solved', attempts: ['Accepted'], searchFaults: [] });
 });

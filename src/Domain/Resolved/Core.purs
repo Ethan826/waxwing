@@ -5,7 +5,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe, fromMaybe)
 import Data.Tuple (Tuple)
 import Domain.Syntax (Label, Sort(..), Span, TypeRef)
-import Domain.Type (Ty, TypeId, VarId(..))
+import Domain.Type (Ty, TyRow, TypeId, VarId(..))
 
 -- The declared names and patterns of resolved syntax: ids, the type and
 -- effect tables, parameters and patterns, none of which mention an
@@ -90,10 +90,13 @@ type Parameter =
 
 -- `syntax` keeps the parameter types', then the result's, source
 -- references, as `fieldSyntax` does for constructors (FX001 Task 6).
+-- `effects` is the operation's written `with` row, kept as data for the
+-- shadow generator (FX032, a-min statements §9); compilation reads none.
 type OperationInfo =
   { name ∷ String
   , parameters ∷ Array Parameter
   , result ∷ Ty VarId
+  , effects ∷ Maybe (TyRow VarId)
   , syntax ∷ Array TypeRef
   , span ∷ Span
   }

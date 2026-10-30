@@ -34,8 +34,8 @@ import Features.Check.Generate.Fresh (child, childAt, childOf, nodeRes)
 import Features.Check.Generate.Gen (Gen, emit, lifted)
 import Features.Check.Generate.Marked (MarkNaming(..), marked)
 import Features.Check.Generate.Node (Ruled, fixed, flex, markedFlex, markersAt)
-import Features.Check.Generate.Obligation (agreeEqual)
-import Features.Check.Generate.Out (TypeMarker)
+import Features.Check.Generate.Obligation (agreeEqual, payloadAt)
+import Features.Check.Generate.Out (At, TypeMarker)
 import Features.Check.Generate.Translate (Naming(..), translate)
 
 -- E22: `Outside FailFamily` (O4), `eq τ_body ⟨p, res⟩` and `eq τ_clause
@@ -79,7 +79,7 @@ handle recur context path span body clauses = do
   clauseEqual res markedRes found =
     agreeEqual span found.ty res found.marked markedRes
   clauseOf place clause = failClause recur context
-    (child (childAt path "Handle" "clauses" place) [ Named "body" ])
+    (at context (childAt path "Handle" "clauses" place) (ExprRule 22))
     clause
 
 type Clause s =
@@ -90,9 +90,11 @@ type Clause s =
   , emits ∷ Gen s Unit
   }
 
+-- E9 at the clause: its payload's head must be concrete. `site` is the
+-- clause's own path under E22; the body is its `body` child.
 failClause
-  ∷ ∀ s. Recur s → Context s → Path → FailClause → Gen s (Clause s)
-failClause recur context path clause = do
+  ∷ ∀ s. Recur s → Context s → At → FailClause → Gen s (Clause s)
+failClause recur context site clause = do
   written ← lifted
     (maybe (Left PayloadShape) Right (singleArgument clause.label))
   payload ← lifted (translate context.tables Rigidly written)
@@ -105,7 +107,7 @@ failClause recur context path clause = do
         (bindLocal <@> { ty: payload.ty, marked: markedPayload } <@> context)
         clause.local
     )
-    path
+    (child site.path [ Named "body" ])
     clause.body
   local ← lifted (maybe (Left BinderShape) Right clause.local)
   pure
@@ -114,7 +116,7 @@ failClause recur context path clause = do
     , clause: { payload: rigid written, local, body: _, span: clause.span }
         <$> generated.expr
     , marks: payload.marks
-    , emits: generated.emits
+    , emits: payloadAt site clause.span markedPayload *> generated.emits
     }
 
 -- E23: `⟨p, res⟩`; if the family is written, `eq τ_e ⟦family⟧` (B1);
@@ -151,6 +153,7 @@ fail recur context path span family value = do
                 span
               <> markersAt Types span (maybe [] _.marks written)
           )
+        payloadAt (at context path (ExprRule 23)) span paid.marked
         paid.emits
     }
   where

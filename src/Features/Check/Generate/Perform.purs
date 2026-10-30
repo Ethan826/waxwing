@@ -14,12 +14,13 @@ module Features.Check.Generate.Perform
 
 import Prelude
 import Data.Array as Array
+import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (sequence)
 import Domain.Checked.Internal as Checked
 import Domain.Ids (EffectId)
 import Domain.Recorded.Atom (OutsideKind(..))
-import Domain.Recorded.Effect (SiteKind(..))
+import Domain.Recorded.Effect (SiteKind(..), UnsupportedKind(..))
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..), RuleId(..))
 import Domain.Resolved (Expr, TyRow, VarId(..))
 import Domain.Row (EffectRef(..), Label(..), Mark(..), Row(..))
@@ -40,7 +41,7 @@ import Features.Check.Generate.Node
   , markersAt
   , mintedStages
   )
-import Features.Check.Generate.Obligation (arityAt)
+import Features.Check.Generate.Obligation (arityAt, unsupportedAt)
 import Features.Check.Generate.Opening (openedRow)
 import Features.Check.Generate.Translate (translate, translateAll)
 
@@ -89,7 +90,12 @@ perform recur context path span effect index arguments = do
   where
   argument place = recur context (childAt path "Perform" "args" place)
 
--- The operation instantiated. When the effect has parameters, `Outside
+-- The operation instantiated. An operation that writes a `with` row
+-- records `Unsupported (OperationWithRow …)` at every form that reaches
+-- it (call, pipe, partial application and value all pass through here,
+-- nested lambdas and clauses included), since Resolve keeps the row as
+-- data but the validator reads none (FX032, statements §9). When the
+-- effect has parameters, `Outside
 -- EffectArgument` (O2, origin body): their link to the handler's
 -- instantiation runs through the erased row and is not recorded. Then
 -- the markers of `T̄` and the result (origin inst). Both follow the
@@ -98,6 +104,7 @@ operation
   ∷ ∀ s. Context s → Path → Span → EffectId → Int → Gen s (Called s)
 operation context path span effect index = do
   shape ← lifted (operationShape context.tables effect index)
+  unsupported context path span effect index shape.written
   inst ← instances path (ExprRule 17) span shape.sorts
   parameters ← lifted (translateAll context.tables inst.naming shape.parameters)
   result ← lifted (translate context.tables inst.naming shape.result)
@@ -118,6 +125,20 @@ operation context path span effect index = do
     , slots: read
     , instance: markedTypes
     }
+
+unsupported
+  ∷ ∀ s
+  . Context s
+  → Path
+  → Span
+  → EffectId
+  → Int
+  → Maybe (TyRow VarId)
+  → Gen s Unit
+unsupported context path span effect index = traverse_ recorded
+  where
+  recorded _ = unsupportedAt (at context path (ExprRule 17)) span
+    (OperationWithRow effect index)
 
 -- An operation's row, as Check/Operation.purs `operationUse` writes it:
 -- its own effect over the effect's parameters, plain, closed.

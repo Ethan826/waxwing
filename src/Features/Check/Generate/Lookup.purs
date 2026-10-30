@@ -17,7 +17,7 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe)
 import Domain.Ids (EffectId(..), TypeId(..))
-import Domain.Resolved (CtorId(..), FunctionId, Joined, Ty, VarId)
+import Domain.Resolved (CtorId(..), FunctionId, Joined, Ty, TyRow, VarId)
 import Domain.Row (EffectRef(..))
 import Domain.Syntax (Sort(..))
 import Features.Check.Generate.Fault (Gen, GenerationFault(..))
@@ -41,9 +41,14 @@ type CtorShape =
   , joined ∷ Array Joined
   }
 
--- An operation of a declared effect, for E17.
+-- An operation of a declared effect, for E17. `written` is its own `with`
+-- row when it writes one (FX032: the validator does not support it).
 type OperationShape =
-  { sorts ∷ Array Sort, parameters ∷ Array (Ty VarId), result ∷ Ty VarId }
+  { sorts ∷ Array Sort
+  , parameters ∷ Array (Ty VarId)
+  , result ∷ Ty VarId
+  , written ∷ Maybe (TyRow VarId)
+  }
 
 calleeOf ∷ Signatures → FunctionId → Gen Signature
 calleeOf signatures function = note (UnknownFunction function)
@@ -87,6 +92,7 @@ operationShape tables effect@(EffectId index) operation = do
     { sorts: map (const TypeSort) info.parameters
     , parameters: map typeOf found.parameters
     , result: found.result
+    , written: found.effects
     }
   where
   typeOf parameter = parameter.ty

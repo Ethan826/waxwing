@@ -8,6 +8,9 @@
 -- E2 consumptions (`consumeAt`, one per stage at a site; role `Consumed
 -- site ordinal`), the ambient row of a body (`ambientAt`, E11) and a
 -- use's callee arity (`arityAt`).
+-- Task 10 adds the other atom-free obligations, each identified the
+-- same way (plan Task 10): `deferAt` (E6 with its E2), `entryAt` (E8),
+-- `payloadAt` (E9) and `unsupportedAt` (FX032).
 module Features.Check.Generate.Obligation
   ( StageSite
   , agreeEqual
@@ -15,9 +18,13 @@ module Features.Check.Generate.Obligation
   , arityAt
   , builtArrow
   , consumeAt
+  , deferAt
+  , entryAt
   , equalAt
   , equalTagged
+  , payloadAt
   , stageRow
+  , unsupportedAt
   ) where
 
 import Prelude
@@ -31,8 +38,9 @@ import Domain.Recorded.Effect
   , MTy(..)
   , Obligation(..)
   , Provenance(..)
-  , SiteKind
+  , SiteKind(..)
   , SiteRole(..)
+  , UnsupportedKind
   )
 import Domain.Recorded.Origin (OriginKind(..), Path, RowGroup(..))
 import Domain.Syntax (Span)
@@ -126,3 +134,48 @@ ambientAt path row = effected [ AmbientAt path row ]
 -- A use's callee arity at the use's path.
 arityAt ∷ ∀ s. Path → Int → Gen s Unit
 arityAt path count = effected [ ArityAt path count ]
+
+-- E6 at a `defer`: the deferred row d (the `defer`'s `⟨p, effect⟩`) and
+-- the enclosing ambient row, and E2's consumption of d into it. `defer`
+-- consumes labels with marks respected (Defer.purs `checkDefer`,
+-- `ignoreMarks: false`; statements §4 K3), so `marks` holds and the
+-- source is d's own row, `bare` does not.
+deferAt ∷ ∀ s. At → Span → EVar → MRow → Gen s Unit
+deferAt site span row enclosing =
+  siteAt site DeferRegistration span (Defer { row, enclosing })
+    *> siteAt site DeferInto span
+      ( Consume
+          { site: AtDefer
+          , source: { labels: [], tail: Just row }
+          , target: enclosing
+          , marks: true
+          , bare: false
+          }
+      )
+
+-- E8: `main`'s declared row, which must lie within `Console`.
+entryAt ∷ ∀ s. At → Span → MRow → Gen s Unit
+entryAt site span row = siteAt site EntryRow span (Entry row)
+
+-- E9: a `fail` or a fail clause's payload type, whose head must be
+-- concrete after settling.
+payloadAt ∷ ∀ s. At → Span → MTy → Gen s Unit
+payloadAt site span payload =
+  siteAt site PayloadHead span (FailConcrete payload)
+
+-- FX032: a perform form of an operation that writes a `with` row, which
+-- the validator does not support.
+unsupportedAt ∷ ∀ s. At → Span → UnsupportedKind → Gen s Unit
+unsupportedAt site span kind =
+  siteAt site UnsupportedOperation span (Unsupported kind)
+
+siteAt ∷ ∀ s. At → SiteRole → Span → Obligation → Gen s Unit
+siteAt site role span value = effected
+  [ Obliged
+      { provenance: AtSite
+          { decl: site.decl, path: site.path, rule: site.rule, role }
+      , rule: site.rule
+      , span
+      , value
+      }
+  ]

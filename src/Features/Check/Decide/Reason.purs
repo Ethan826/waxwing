@@ -15,6 +15,8 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
 import Domain.Recorded (RecordedProblem, fields)
 import Domain.Recorded.Atom (ReqAtom, Role(..), Var(..))
+import Domain.Recorded.Effect (Obligation, Placed, UnsupportedKind)
+import Domain.Recorded.Effect as Recorded
 import Domain.Recorded.Origin (Entry)
 import Domain.Verdict
   ( Attempt
@@ -35,11 +37,15 @@ import Features.Check.Decide.Reading
   , searchFault
   )
 
+-- Rule 1 and 1′ and §3.2(a), then the unchecked effects below.
+blocks ∷ Array (Entry ReqAtom) → RecordedProblem → Array Unsupport
+blocks open problem = ordinary open problem <> unchecked problem
+
 -- Rule 1: every `outside` kind (decided, Q3). Rule 1′: a `spread j`
 -- with j ≥ 2 (decided, Q4). §3.2(a): `open`, the `BQ` atoms whose
 -- meaning `ValidR` leaves open, from the injected detector.
-blocks ∷ Array (Entry ReqAtom) → RecordedProblem → Array Unsupport
-blocks open problem =
+ordinary ∷ Array (Entry ReqAtom) → RecordedProblem → Array Unsupport
+ordinary open problem =
   nubEq (map outside view.outside) <> spread <> requirements
   where
   view = fields problem
@@ -48,6 +54,20 @@ blocks open problem =
     if any secondSpread (Map.keys view.vars) then [ SecondSpread ]
     else []
   requirements = if null open then [] else [ RequirementAtoms ]
+
+-- Rule 1 also blocks a problem that records an `Unsupported` obligation
+-- (FX032: an operation's `with` row), known from the problem before any
+-- search (a-min statements §7, "Routing"): `EffectsUnchecked` names each
+-- unsupported kind once.
+unchecked ∷ RecordedProblem → Array Unsupport
+unchecked problem = if null kinds then [] else [ EffectsUnchecked kinds ]
+  where
+  kinds = nubEq (mapMaybe unsupported (fields problem).effects.obligations)
+
+unsupported ∷ Placed Obligation → Maybe UnsupportedKind
+unsupported placed = case placed.value of
+  Recorded.Unsupported kind → Just kind
+  _ → Nothing
 
 -- Rule 3. Blocked: the blocks and every decline. Otherwise, in T-R0a's
 -- proposed order (G-A-i(b)): `Limit` unless a `ClaimsComplete`
