@@ -7007,3 +7007,48 @@ timing of this form, as for the census bounds in 2720177) before any
 further verify. Both stale-pin corrections held: the two tests passed
 in the parallel phase. Spend this allowance: about 0.04M of 0.06M.
 Task 7 acceptance open. Nothing pushed.
+
+### 18.130 Timing investigation: the bound fails before the batch too (2026-10-30)
+
+Authorized by the author (measurement only, no bound change, no full
+verify). Both failed acceptance runs are kept (.build/evidence/
+2026-10-30-batch-verify{,-2}/verify.log). Task 7: implementation
+complete; acceptance verification blocked.
+
+Regression phase, run alone under the lock at the tip (35211c7, whose
+src, test and scripts equal dde534a's): 255 of 255 proofs passed
+(.build/evidence/2026-10-30-batch-verify-2/regression.log). Reported
+separately; it does not substitute for a full verify.
+
+partialFirst at 20000 parameters through Specialize, the test's own
+workload (`throughSpecialize(forms.partialFirst(20000))`), run count
+fixed before starting at 6 per tree, interleaved ABBA ABBA ABBA, base
+b71a472 (before the batch) against head dde534a, load1 6.40-7.05
+(raw: .build/evidence/2026-10-30-batch-verify-2/
+partialFirst-interleaved.txt). Base 979.4, 941.8, 991.2, 1102.4,
+1476.6, 961.3 ms (median 985.3); head 1052.7, 1001.7, 988.0, 1052.0,
+1178.4, 974.2 ms (median 1026.9). Every run of both trees exceeds the
+930 ms bound. Per pair the head is slower in three, faster in two and
+split in one; not consistently slower, so no profile. Reading: the
+bound fails on the pre-batch tree under today's conditions, so the
+failure is not attributable to the batch on this evidence; a gap of a
+few percent is within this noise and is not excluded.
+
+Proposal for the timing gate (needs the author; no change made). The
+test claims linearity, but gates an absolute time: 3 × 310 ms measured
+on 2026-10-09. On this machine that now fails before the batch (load1
+4-8 throughout the day from other processes). Proposed: gate the
+claim itself with a doubling experiment (Sedgewick and Wayne,
+Algorithms 4th ed., §1.4, the doubling hypothesis; a published
+method): time the same form at 10000 and 20000 parameters,
+interleaved, median of 3 each, in one process, and require
+t(20000)/t(10000) ≤ 3.0. Linear time gives about 2, quadratic about 4,
+so 3.0 separates them with margin, and the ratio cancels most of the
+machine's speed and load. Keep the raw times as diagnostics. Keep an
+absolute ceiling only as a gross-regression guard, re-measured on a
+quiet machine under a written protocol (load1 below 2, no agent
+builds, median of 5) rather than raised to pass. Justification owed
+with it: a run showing the ratio near 2 on base and head, and a
+restored quadratic defect (e.g. FN001's earlier quadratic
+partial-application path) failing the ratio gate. Until a decision,
+any full verify on this machine is expected to fail on this test.
