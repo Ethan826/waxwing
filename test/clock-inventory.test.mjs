@@ -1,0 +1,133 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { parse } from 'acorn';
+import { clockFindings, emptyInventory, floors }
+  from '../scripts/structure-clocks.mjs';
+
+// The clock gate's inventory policy (scripts/structure-clocks.mjs): must-fail
+// fixtures for each way a timing use can leave its category, and a check
+// that the real tree matches the real inventory.
+const small = { parallelTests: 0, scanned: 0, perfFiles: 0 };
+const gate = (sources, inventory = {}, limits = small, outside) =>
+  clockFindings(sources, parse, limits, { ...emptyInventory, ...inventory },
+    outside);
+const use = (file, form, line, category, count = 1) =>
+  ({ file, form, line, category, count });
+const bound = 'const t = performance.now();\nwork();\n'
+  + 'assert.ok(performance.now() - t < 5);\n';
+const started = use('test/s.serial.test.mjs', 'performance.now',
+  'const t = performance.now();', 'absolute budget');
+const finished = use('test/s.serial.test.mjs', 'performance.now',
+  'assert.ok(performance.now() - t < 5);', 'absolute budget');
+
+test('an absolute bound in a serial file fails, listed or not', () => {
+  const sources = { 'test/s.serial.test.mjs': bound };
+  const unlisted = gate(sources);
+  assert.equal(unlisted.length, 2);
+  assert.ok(unlisted.every(text => text.includes('serial test')));
+  const listed = gate(sources, { uses: [started, finished] });
+  assert.equal(listed.length, 2);
+  assert.ok(listed.every(text => text.includes('absolute budget use in a '
+    + 'serial test')));
+});
+
+test('a termination safeguard, listed, passes in a serial file', () => {
+  const as = category => ({ uses: [started, finished].map(entry =>
+    ({ ...entry, category })) });
+  const sources = { 'test/s.serial.test.mjs': bound };
+  assert.deepEqual(gate(sources, as('termination safeguard')), []);
+  assert.deepEqual(gate(sources, as('growth check')), []);
+});
+
+test('a clock read in a parallel file fails whatever its category', () => {
+  const sources = { 'test/p.test.mjs': 'const n = Date.now();\n' };
+  assert.equal(gate(sources).length, 1);
+  const listed = category => gate(sources, { uses: [use('test/p.test.mjs',
+    'Date.now', 'const n = Date.now();', category)] });
+  assert.equal(listed('termination safeguard').length, 1);
+  assert.equal(listed('absolute budget').length, 1);
+  assert.deepEqual(listed('functional clock use'), []);
+});
+
+const perfSource = { 'test/x.perf.test.mjs': 'const u = performance.now();\n'
+  + 'work();\nassert.ok(performance.now() - u < 5);\n' };
+
+test('a perf file missing from the inventory fails', () => {
+  const found = gate(perfSource, { uses: [] });
+  assert.ok(found.some(text => text.includes('perf file missing')));
+  const listed = { perfFiles: ['test/x.perf.test.mjs'], uses: [
+    use('test/x.perf.test.mjs', 'performance.now',
+      'const u = performance.now();', 'absolute budget'),
+    use('test/x.perf.test.mjs', 'performance.now',
+      'assert.ok(performance.now() - u < 5);', 'absolute budget')] };
+  assert.deepEqual(gate(perfSource, listed), []);
+  assert.ok(gate(perfSource, { ...listed, perfFiles: [] })
+    .some(text => text.includes('perf file missing')));
+});
+
+test('a perf clock read the inventory does not list fails', () => {
+  const found = gate(perfSource, { perfFiles: ['test/x.perf.test.mjs'] });
+  assert.equal(found.length, 2);
+  assert.ok(found.every(text => text.includes('perf file or helper')));
+});
+
+const growthImport = "import { assertGrowth } from './growth.mjs';\n";
+
+test('a growth-helper import from an unlisted file fails', () => {
+  const sources = { 'test/g.serial.test.mjs': growthImport,
+    'test/growth.mjs': 'export const assertGrowth = () => {};\n' };
+  const found = gate(sources);
+  assert.equal(found.length, 1);
+  assert.ok(found[0].includes('import test/growth.mjs'));
+  const listed = use('test/g.serial.test.mjs', 'import test/growth.mjs',
+    growthImport.trim(), 'growth check');
+  assert.deepEqual(gate(sources, { uses: [listed] }), []);
+  const parallel = { 'test/g.test.mjs': growthImport,
+    'test/growth.mjs': sources['test/growth.mjs'] };
+  assert.equal(gate(parallel, { uses: [{ ...listed,
+    file: 'test/g.test.mjs' }] }).length, 1);
+});
+
+test('a stale inventory entry fails', () => {
+  const sources = { 'test/s.serial.test.mjs': bound };
+  const every = category => [started, finished].map(entry =>
+    ({ ...entry, category }));
+  const stale = (uses, extra = {}, outside) =>
+    gate(sources, { uses, ...extra }, small, outside);
+  assert.ok(stale([{ ...every('growth check')[0], count: 2 },
+    every('growth check')[1]]).some(text => text.includes('matches 1 uses, '
+    + 'listed 2')));
+  assert.ok(stale(every('growth check').map(entry => ({ ...entry,
+    line: `${entry.line} // changed` }))).some(text =>
+    text.includes('serial test')));
+  assert.ok(stale([...every('growth check'), use('test/gone.mjs',
+    'Date.now', 'x', 'growth check')]).some(text =>
+    text.includes('missing file test/gone.mjs')));
+  assert.ok(stale(every('growth check'), { perfFiles: ['test/y.perf.test.mjs']
+  }).some(text => text.includes('missing perf file')));
+  assert.ok(stale(every('growth check'), { timeouts: [{ file:
+    'test/s.serial.test.mjs', line: 'gone();', category:
+    'termination safeguard' }] }).some(text => text.includes('is gone')));
+  assert.ok(stale(every('growth check'), { outOfScope: [{ file:
+    'scripts/gone.mjs' }] }, new Set()).some(text =>
+    text.includes('missing file scripts/gone.mjs')));
+});
+
+test('the real tree matches the real inventory', () => {
+  const sources = Object.fromEntries(readdirSync('test').filter(name =>
+    name.endsWith('.mjs')).map(name => [`test/${name}`,
+    readFileSync(`test/${name}`, 'utf8')]));
+  const inventory = JSON.parse(readFileSync(
+    'test/fixtures/timing-inventory.json', 'utf8'));
+  const outside = new Set(readdirSync('scripts').map(name =>
+    `scripts/${name}`));
+  assert.deepEqual(clockFindings(sources, parse, floors, inventory, outside),
+    []);
+  const budgets = inventory.uses.filter(entry =>
+    entry.category === 'absolute budget' || entry.category
+    === 'existing ratio check');
+  for (const entry of budgets)
+    assert.ok(entry.file.endsWith('.perf.test.mjs')
+      || !entry.file.endsWith('.serial.test.mjs'), entry.file);
+});

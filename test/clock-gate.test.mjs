@@ -2,14 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parse } from 'acorn';
-import { clockFindings, exemptions, floors }
+import { clockFindings, emptyInventory, floors }
   from '../scripts/structure-clocks.mjs';
 import { scanSource } from '../scripts/clock-scan.mjs';
 
-const small = { parallelTests: 1, scanned: 1 };
-const gate = (sources, limits = small, listed = []) =>
-  clockFindings(sources, parse, limits, listed);
-const only = file => exemptions.filter(entry => entry.file === file);
+const small = { parallelTests: 1, scanned: 1, perfFiles: 0 };
+const inventory = JSON.parse(readFileSync(new URL(
+  '../test/fixtures/timing-inventory.json', import.meta.url), 'utf8'));
+const gate = (sources, limits = small, uses = []) =>
+  clockFindings(sources, parse, limits, { ...emptyInventory, uses });
+const only = file => inventory.uses.filter(entry => entry.file === file);
 const parallel = body => gate({ 'test/a.test.mjs': body });
 const formsOf = body => scanSource('test/a.test.mjs', body, parse)
   .findings.map(found => found.form);
@@ -86,10 +88,16 @@ test('aliases by destructuring, assignment and bind are followed', () => {
     assert.deepEqual(formsOf(code), [form], code);
 });
 
-test('the same code passes in a serial file', () => {
-  for (const [code] of [...detected, ...aliased, ...imports.slice(0, 5)])
-    assert.deepEqual(gate({ 'test/a.serial.test.mjs': code,
-      'test/b.test.mjs': 'export {};\n' }), [], code);
+// A serial file may read a clock only through a use the inventory lists
+// (test/clock-inventory.test.mjs has the categories); unlisted, every one of
+// these is a finding there too.
+test('the same code is a finding in an unlisted serial file', () => {
+  for (const [code] of [...detected, ...aliased, ...imports.slice(0, 5)]) {
+    const found = gate({ 'test/a.serial.test.mjs': code,
+      'test/b.test.mjs': 'export {};\n' });
+    assert.ok(found.length >= 1, code);
+    assert.ok(found.every(text => text.includes('serial test')), code);
+  }
 });
 
 test('near misses are not clock reads', () => {
@@ -174,8 +182,11 @@ test('modules reached by relative import are scanned, others are not', () => {
     'test/orphan.mjs': 'export const z = performance.now();\n',
     'test/serial-only.mjs': 'export const w = Date.now();\n',
     'test/b.serial.test.mjs': "import './serial-only.mjs';\n" });
-  assert.equal(found.length, 1);
-  assert.ok(found[0].startsWith('test/deep.mjs:1:'));
+  assert.equal(found.length, 2);
+  assert.ok(found.some(text => text.startsWith('test/deep.mjs:1:')
+    && text.includes('parallel-phase')));
+  assert.ok(found.some(text => text.startsWith('test/serial-only.mjs:1:')
+    && text.includes('serial test')));
 });
 
 test('a file that cannot be parsed is a finding', () => {
@@ -186,6 +197,10 @@ test('a file that cannot be parsed is a finding', () => {
 test('an empty or small scan cannot pass', () => {
   assert.ok(gate({}).some(text => text.includes('floor')));
   assert.ok(gate({ 'test/a.test.mjs': '' }, { parallelTests: 2,
-    scanned: 1 }).some(text => text.includes('parallel test files')));
-  assert.ok(floors.parallelTests >= 250 && floors.scanned >= 380);
+    scanned: 1, perfFiles: 0 }).some(text =>
+    text.includes('parallel test files')));
+  assert.ok(gate({ 'test/a.test.mjs': '' }, { ...small, perfFiles: 1 })
+    .some(text => text.includes('perf files')));
+  assert.ok(floors.parallelTests >= 250 && floors.scanned >= 380
+    && floors.perfFiles >= 26);
 });

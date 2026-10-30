@@ -10,7 +10,11 @@ vertical slice before adding language features. Task tracking is local.
   to obtain green results. Demonstrate regression tests failing with the
   corresponding defect restored, in an isolated copy.
 - Run `npm run verify` before reporting completion. Report what actually ran
-  and distinguish verified behavior from proposed behavior.
+  and distinguish verified behavior from proposed behavior. Report
+  functional acceptance (routine `npm run verify`) and performance
+  qualification (`npm run perf`: run or not run, its result and conditions)
+  separately; never describe a perf check that did not run as passing
+  (docs/engineering.md, "Verification contract").
 - Keep Domain.*, Features.* and Format.* pure. Effects and foreign imports
   belong in Runtime.* and Program.*. Imports run only to the same or an
   earlier layer (Domain, Features, Format, Runtime, Program). Expected

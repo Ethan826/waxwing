@@ -14,7 +14,8 @@ const clockPaths = new Set(['performance.now', 'performance.timeOrigin',
 const clockRoots = new Set(['performance', 'Date', 'process', 'console',
   'globalThis', 'global']);
 const clockModules = new Set(['node:perf_hooks', 'perf_hooks']);
-const timingHelpers = new Set(['test/go-timed.mjs', 'test/timing.mjs']);
+const timingHelpers = new Set(['test/go-timed.mjs', 'test/growth.mjs',
+  'test/timing.mjs']);
 
 const isNode = value => typeof value?.type === 'string';
 const childrenOf = node => Object.values(node).flatMap(value =>

@@ -29,53 +29,31 @@ adding a bypass allowlist.
   final newlines, textual escape/suppression checks (conservative, includes
   text inside comments/strings; checker fixture strings are assembled);
 - clock gate (scripts/structure-clocks.mjs, clock-scan.mjs, in
-  checkStructure; docs/plans/2026-10-29-verify-timing-proposal.md 1b): no
-  test/*.test.mjs that is not `*.serial.test.mjs`, and no test/ module it
-  imports by relative static import (transitively), reads a clock, so
-  timing bounds run only in verify's serial phase. Decided on acorn's
-  parsed tree (`parse` only; docs/dependencies.md): `performance.now`,
+  checkStructure; policy in "Verification contract" below). Decided on
+  acorn's parsed tree (`parse` only; docs/dependencies.md): `performance.now`,
   `.timeOrigin`, `.mark`, `.measure`, `globalThis.performance`, imports of
   `node:perf_hooks`/`perf_hooks`, `Date.now`, every zero-argument
   `new Date()` (stored values included; a labeled amendment; `new Date(x)`
   with arguments reads no clock and is outside the rule),
   `process.hrtime`(`.bigint`), `console.time`/`timeEnd`/`timeLog`, imports
-  of test/go-timed.mjs or test/timing.mjs, and aliases by destructuring,
-  assignment of the object or `.bind` followed in source order. `global.`
-  reads as `globalThis.`. Bindings are tracked by lexical scope (Program,
-  function and parameters, block, catch clause, loop head; `var` hoists to
-  its function), so a local `console` hides that root only in its own
-  scope. Exemptions (author, dossier 18.115) name a file, form and exact
-  source line and are counted. Each is checked against its own file
-  whether or not a parallel test reaches it, so a stale or widened one
-  fails: the two `Date.now()` reads of test/fx-shrink.mjs's shrink
-  deadline (load can change how far shrinking proceeds; nothing fails on
-  time) and the cache nonce `Date.now()` in test/go-timed.mjs (it exempts
-  nothing unless a parallel file reaches go-timed, which is itself a
-  finding; its `performance.now()` reads have none). Floors on the files
-  scanned stop an empty scan from passing; test/clock-gate.test.mjs and
-  test/clock-scope.test.mjs hold the must-fail, must-pass and near-miss
-  fixtures. Blind spots: clocks reached through modules outside test/
-  (scripts/, compiled output, child processes); computed property access
-  with a non-literal key, and eval; a clock root passed as a value
-  (`f(performance)`, `{ c: performance }`, `[performance]`); elapsed time
-  asserted through a runner timeout (`{ timeout }`, spawnSync's
-  `timeout`); dynamic imports when building the scope; `require` or
-  `createRequire` of perf_hooks; a clock read in one file and compared in
-  another; an alias made at top level and used in a function declared
-  earlier; non-.mjs modules under test/ (skipped; none exist today).
-  test/timing.mjs does not exist yet; its import would be detected if it
-  were created. Known timing bounds outside the gate: the `r005b-quiet`
-  probe in test/regression-r005b-end.mjs reads `Date.now()` and exits 1
-  at QUIET_MS (2000 ms); and test/regression-task5.mjs:12-19 asserts
-  `seconds < 5` over three 20,000-type compiles, reached via
-  test/regression-probes.mjs. Neither is a test file that a parallel test
-  imports, so both run in the regression phase, where
-  scripts/regression.mjs proves up to six rows at once. verify also prints
-  one conditions line (commit from `git describe --always --dirty`, time,
-  1-minute load, power source, and untracked non-ignored files when there
-  are any; `unavailable (reason)` for any value the host cannot give)
-  before each test phase
-  (scripts/verify-conditions.mjs);
+  of test/go-timed.mjs, test/growth.mjs or test/timing.mjs, and aliases by
+  destructuring, assignment of the object or `.bind` followed in source
+  order. `global.` reads as `globalThis.`. Bindings are tracked by lexical
+  scope (Program, function and parameters, block, catch clause, loop head;
+  `var` hoists to its function), so a local `console` hides that root only
+  in its own scope. Every read must match a use in
+  test/fixtures/timing-inventory.json (file, form, exact source line,
+  count) whose category the file's scope allows, and each entry is checked
+  against its own file whether or not a scope reaches it, so a stale or
+  widened one fails. Floors on the files scanned stop an empty scan from
+  passing; test/clock-gate.test.mjs, test/clock-scope.test.mjs and
+  test/clock-inventory.test.mjs hold the must-fail, must-pass and near-miss
+  fixtures. Blind spots are listed under the policy below. verify also
+  prints one conditions line (commit from `git describe --always --dirty`,
+  time, 1-minute load, power source, and untracked non-ignored files when
+  there are any; `unavailable (reason)` for any value the host cannot give)
+  before each test phase (scripts/verify-conditions.mjs); `npm run perf`
+  prints the same line first;
 - purs graph parses imports; the five-layer gate (Domain, Features, Format,
   Runtime, Program; docs/plans/2026-10-07-five-layers-design.md) rejects
   unlayered modules and imports of a later layer, restricts Domain, Features
@@ -325,15 +303,16 @@ adding a bypass allowlist.
   P001 Task 9, no skips; the list is read from the directory, never
   hand-kept) in one parallel `node --test` run, except the
   `test/*.serial.test.mjs` files, which it runs afterwards in a second
-  run with `--test-concurrency=1` (scale tests that time `go build` or
-  long Waxwing phases against fixed bounds, so the parallel runner's own
-  load cannot fail them; user decision 2026-10-09, FN001 Task 8). A new
-  test that builds large Go programs against a time bound takes the
-  `.serial.test.mjs` suffix (review convention; the split by suffix is
-  automated in scripts/verify.mjs). The FX001 Task 11 timing tests
-  (test/fx-scale.serial.test.mjs) follow one convention, a review
-  convention, not an enforced rule: time the whole process after a warm-up
-  run (which also checks the output), take the median of five runs on a
+  run with `--test-concurrency=1` (scale tests that build `go` or run long
+  Waxwing phases, so the parallel runner's own load cannot fail them; user
+  decision 2026-10-09, FN001 Task 8). A new test that builds large Go
+  programs takes the `.serial.test.mjs` suffix (review convention; the
+  split by suffix is automated in scripts/verify.mjs). Since the
+  verification contract (below), the time bounds those tests once held are
+  in `*.perf.test.mjs` files, which verify excludes. The FX001 Task 11
+  timing tests (now test/fx-scale.perf.test.mjs) follow one convention, a
+  review convention, not an enforced rule: time the whole process after a
+  warm-up run (which also checks the output), take the median of five runs on a
   quiet host to choose the bound, and set the bound to 3x that median; the
   `go build` test assumes the warm `.build/go-cache` that verify provides.
   test/text-scale.serial.test.mjs (Text v1) refines the `go build` timing:
@@ -538,11 +517,12 @@ adding a bypass allowlist.
   removed when the process exits or gets SIGINT/SIGTERM. A SIGKILLed run
   can leave one behind; `rm -rf .build/go-batches` reclaims them.
   The `go build` timeout (300 s) kills only the go command, not its compile
-  children (spawnSync cannot kill a process group); depth-timing's timed
-  builds group-kill because their timeout is an assertion. Self-tests:
+  children (spawnSync cannot kill a process group); depth-build's
+  builds group-kill with a termination timeout (the 10 s budget is in
+  depth-timing.perf.test.mjs). Self-tests:
   test/go-batch.test.mjs (the concurrency one spawns
-  test/go-batch-child.mjs). Not batched: depth-timing.serial.test.mjs's
-  timing builds, scripts/regression.mjs probes, `goTest`, and the slow
+  test/go-batch-child.mjs). Not batched: depth-build.serial.test.mjs's
+  builds, scripts/regression.mjs probes, `goTest`, and the slow
   accepted probes of test/fx008-probes.test.mjs (the batch compiles
   in-process, which would escape their child-process timeout); `runGo`
   remains as the self-tests' standalone reference;
@@ -555,6 +535,100 @@ The CST ban on all anonymous lambdas is deliberately stronger than MileAhead's
 manual 'name what you pass' rule. The Maybe/Either rule is stronger than its
 pass-through-only automated eliminator gate, following explicit user steering.
 Named where helpers and maybe' preserve laziness for computed fallbacks.
+
+## Verification contract
+
+(Dossier 18.132; docs/plans/2026-10-30-verification-contract-proposal.md.)
+Two questions are kept apart. Functional acceptance is `npm run verify`:
+every functional test, the structural gates, the regression proofs, the
+stack-safety checks and generous timeouts that catch hangs. Performance
+qualification is `npm run perf` (scripts/perf.mjs): the absolute
+elapsed-time budgets. The shared machine's load can fail a budget without any
+compiler change (dossier 18.130), so a budget is not a condition of
+routine acceptance. File names decide the command: `test/*.perf.test.mjs`
+files run only under `npm run perf`, one at a time, after a conditions
+line, every file even after a failure, exit 1 if any failed, no retry;
+verify skips them by name and ends with the dynamically counted line
+"Performance qualification was not run: N files under npm run perf." Perf
+does not build; run `npm run build` first. Neither command is run by the
+other.
+
+Where a file mixed a budget with functional or stack-safety assertions, the
+routine file keeps the workload and every outcome assertion, without the
+time bound, and the `.perf.test.mjs` file keeps the budget with the same
+workload and constants. The split was checked by a before/after inventory
+of test names and assertion counts per file (scripts/test-inventory.mjs).
+Growth checks (doubling ratios) may run in routine verify only through
+test/growth.mjs and only after a demonstration against a healthy base, the
+healthy head and a quadratic mutant. test/growth.mjs fixes the protocol: two
+untimed warm-ups (small, then large), then exactly ten timed invocations in
+the order S L L S S L L S S L, the statistic median(L) / median(S), the
+caller's threshold, every sample printed with its position, size and load1.
+It bounds growth between two sizes; it does not prove linearity, and a ratio
+reduces but does not remove interference. The one adopted check is
+partialFirst at 10,000 and 20,000 parameters, threshold 3.0
+(test/fn-linear-growth.serial.test.mjs; regression row `partialfirst-growth`
+shows the ratio assertion failing on a constructed quadratic, not a
+historical one). The existing ratio check (fx008-install's doubling) stays
+in perf until it has its own demonstration. Thresholds are reviewed, not
+machine-checked.
+
+Inventory categories (test/fixtures/timing-inventory.json). Each clock use
+is classified by its actual assertion, not by the file name:
+- absolute budget: an elapsed-time bound on a workload; perf files only;
+- existing ratio check: a ratio of two timings; perf only until
+  demonstrated;
+- termination safeguard: a timeout or kill that ends a hung child
+  (go-timed.mjs's group kill, `spawnSync` timeouts, `go build` kills). It is
+  not a budget, but it can also fail on a computation that is merely slow.
+  A margin of about ten times the measured time is a review guideline, not
+  a guarantee and not a calibration prerequisite;
+- functional clock use: a read the program needs (the cache nonce in
+  go-timed.mjs, the shrink time limit in fx-shrink.mjs); a named exception
+  by use, never a whole-file exemption;
+- diagnostics only: a duration returned or printed and never compared in a
+  routine file (go-timed.mjs's `buildMs`);
+- growth check: test/growth.mjs and its listed callers.
+A limit that proves to be a budget is reclassified, not loosened. An
+assertion on elapsed time inside a file that looks like a termination test
+(poly-termination-timing) is a budget.
+
+Clock gate policy. Parallel phase: no clock reads except listed functional
+exceptions. Serial phase: reads only through listed uses of a category the
+scope allows (growth helper, termination helpers, diagnostics). Perf files
+and the helpers only they reach: free to read clocks, but every
+`*.perf.test.mjs` file and every read must be in the inventory. An unlisted
+read, an import of go-timed.mjs or growth.mjs from an unlisted file, and a
+listed use that no longer matches are findings. Limits: the gate sees
+syntax, not intent. It cannot tell a generous timeout from a tight one (the
+ten-times margin is a review rule; timeouts are listed but read no clock, so
+the gate only checks that the listed line exists). It cannot see a duration
+a child process reports in its output. It cannot stop misuse of a listed
+helper, such as comparing go-timed's `buildMs` in a routine file or calling
+the growth helper with a lax threshold. It does not judge thresholds.
+It also has the older blind spots: clocks reached through modules outside
+test/ (scripts/, compiled output, child processes); computed property access
+with a non-literal key, and eval; a clock root passed as a value
+(`f(performance)`, `{ c: performance }`, `[performance]`); elapsed time
+asserted through a runner timeout; dynamic imports when building the scope;
+`require` or `createRequire` of perf_hooks; a clock read in one file and
+compared in another; an alias made at top level and used in a function
+declared earlier; non-.mjs modules under test/ (skipped; none exist today).
+
+Known absolute budgets not moved. Two regression probes, reached through
+test/regression-probes.mjs and run in verify's regression phase, still
+carry absolute bounds: `r005b-quiet` in test/regression-r005b-end.mjs
+(`Date.now()`, exits 1 at 2000 ms) and `duplicate-scan-timing` in
+test/regression-task5.mjs (`seconds < 5` over three 20,000-type compiles).
+They are rows of the regression registry, whose proofs run a healthy and a
+broken compiler; moving them needs a perf form of the registry, outside the
+approved scope. They are listed in the inventory as absolute budgets
+outside the gate's scope and are open for the author.
+
+Completion reports state functional acceptance (routine verify) and
+performance qualification (`npm run perf`: run or not run, result,
+conditions) separately. A perf check that did not run is never described as
+passing.
 
 ## Review conventions, not full automated lint yet
 
@@ -723,6 +797,8 @@ of the 120 witnessed escapes are accepted, every shape except value-returned
 
 ## Definition of done and handoff
 
+Report functional acceptance (`npm run verify`) and performance
+qualification (`npm run perf`) separately; see "Verification contract".
 Acceptance criteria must run through the actual CLI/backend, with typed
 rejections and regression sensitivity. Check new instructions from a clean
 output directory, because incremental zero warnings do not prove a rebuild.

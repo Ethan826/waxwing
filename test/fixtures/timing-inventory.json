@@ -1,0 +1,773 @@
+{
+ "note": "Checked by scripts/structure-clocks.mjs; docs/engineering.md, \"Verification contract\". Classification follows the assertion, not the file name.",
+ "categories": {
+  "absolute budget": "an elapsed-time bound on a workload; perf files only",
+  "existing ratio check": "a ratio of two timings; perf files only until demonstrated",
+  "termination safeguard": "a timeout or kill that ends a hung child; it can also fail on a slow computation; margin about ten times the measured time (review guideline)",
+  "functional clock use": "a clock read the program needs to work; a named exception, never a whole-file exemption",
+  "diagnostics only": "a duration that is returned or printed and never compared in a routine file",
+  "growth check": "the doubling helper test/growth.mjs and its listed callers"
+ },
+ "perfFiles": [
+  "test/coverage-scale.perf.test.mjs",
+  "test/depth-timing.perf.test.mjs",
+  "test/fn-linear-timing.perf.test.mjs",
+  "test/fn-scale.perf.test.mjs",
+  "test/fn-specialize-timing.perf.test.mjs",
+  "test/fn-syntax-timing.perf.test.mjs",
+  "test/functional-timing.perf.test.mjs",
+  "test/fx-block.perf.test.mjs",
+  "test/fx-scale.perf.test.mjs",
+  "test/fx008-install.perf.test.mjs",
+  "test/fx008-nesting.perf.test.mjs",
+  "test/fx008-scale.perf.test.mjs",
+  "test/fx008-settle.perf.test.mjs",
+  "test/grammar-timing.perf.test.mjs",
+  "test/large-source-timing.perf.test.mjs",
+  "test/match-lift-timing.perf.test.mjs",
+  "test/poly-coverage-timing.perf.test.mjs",
+  "test/poly-depth-timing.perf.test.mjs",
+  "test/poly-termination-timing.perf.test.mjs",
+  "test/r0-census.perf.test.mjs",
+  "test/r0-cx-cost.perf.test.mjs",
+  "test/r0-mgu-scale.perf.test.mjs",
+  "test/r001-scale.perf.test.mjs",
+  "test/r005b-predicates.perf.test.mjs",
+  "test/r013-scale.perf.test.mjs",
+  "test/text-scale.perf.test.mjs"
+ ],
+ "uses": [
+  {
+   "file": "test/coverage-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/coverage-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "return (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/depth-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/depth-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "buildBudgetMs - (performance.now() - started));",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/depth-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-linear-growth.serial.test.mjs",
+   "form": "import test/growth.mjs",
+   "line": "import { assertGrowth } from './growth.mjs';",
+   "count": 1,
+   "category": "growth check",
+   "note": "partialFirst growth check"
+  },
+  {
+   "file": "test/fn-linear-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-linear-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsedMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-scale.perf.test.mjs",
+   "form": "import test/go-timed.mjs",
+   "line": "import { timedBuild } from './go-timed.mjs';",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const phaseMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-scale.serial.test.mjs",
+   "form": "import test/go-timed.mjs",
+   "line": "import { timedBuild } from './go-timed.mjs';",
+   "count": 1,
+   "category": "termination safeguard",
+   "note": "uses the process-group kill; its buildMs is not compared here"
+  },
+  {
+   "file": "test/fn-specialize-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-specialize-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / 1000;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-syntax-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fn-syntax-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/functional-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/functional-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx-block.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx-block.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsedMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx-scale-timed.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "perf-only helper for fx-scale.perf.test.mjs"
+  },
+  {
+   "file": "test/fx-scale-timed.mjs",
+   "form": "performance.now",
+   "line": "const buildMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "perf-only helper for fx-scale.perf.test.mjs"
+  },
+  {
+   "file": "test/fx-scale-timed.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "perf-only helper for fx-scale.perf.test.mjs"
+  },
+  {
+   "file": "test/fx-scale-timed.mjs",
+   "form": "performance.now",
+   "line": "const elapsedMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "perf-only helper for fx-scale.perf.test.mjs"
+  },
+  {
+   "file": "test/fx-shrink.mjs",
+   "form": "Date.now",
+   "line": "const deadline = Date.now() + limitMs;",
+   "count": 1,
+   "category": "functional clock use",
+   "note": "wall-time limit on shrinking; load changes how far it gets, nothing fails on time (dossier 18.115)"
+  },
+  {
+   "file": "test/fx-shrink.mjs",
+   "form": "Date.now",
+   "line": "if (++calls > budget || Date.now() > deadline) return current;",
+   "count": 1,
+   "category": "functional clock use",
+   "note": "wall-time limit on shrinking; load changes how far it gets, nothing fails on time (dossier 18.115)"
+  },
+  {
+   "file": "test/fx008-install.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-install.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-install.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "existing ratio check",
+   "note": "time(2,000) / time(1,000) <= 3.2, best of 3"
+  },
+  {
+   "file": "test/fx008-install.perf.test.mjs",
+   "form": "performance.now",
+   "line": "best = Math.min(best, performance.now() - started);",
+   "count": 1,
+   "category": "existing ratio check",
+   "note": "time(2,000) / time(1,000) <= 3.2, best of 3"
+  },
+  {
+   "file": "test/fx008-nesting.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-nesting.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-nesting.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-nesting.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsedMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-settle.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/fx008-settle.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/go-timed.mjs",
+   "form": "Date.now",
+   "line": "appendFileSync(go, `// cache nonce ${process.pid} ${Date.now()}\\n`);",
+   "count": 1,
+   "category": "functional clock use",
+   "note": "cache-busting nonce; nothing compares it"
+  },
+  {
+   "file": "test/go-timed.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "diagnostics only",
+   "note": "buildMs is returned; only perf files compare it"
+  },
+  {
+   "file": "test/go-timed.mjs",
+   "form": "performance.now",
+   "line": "const buildMs = performance.now() - started;",
+   "count": 1,
+   "category": "diagnostics only",
+   "note": "buildMs is returned; only perf files compare it"
+  },
+  {
+   "file": "test/grammar-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/grammar-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "return (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/growth.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "growth check",
+   "note": "the doubling helper"
+  },
+  {
+   "file": "test/growth.mjs",
+   "form": "performance.now",
+   "line": "const ms = performance.now() - started;",
+   "count": 1,
+   "category": "growth check",
+   "note": "the doubling helper"
+  },
+  {
+   "file": "test/large-source-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/large-source-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "return (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/large-source-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/large-source-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/match-lift-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/match-lift-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsed = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/poly-coverage-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/poly-coverage-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/poly-depth-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/poly-depth-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/poly-termination-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "asserts seconds < 5 on the computation; a budget, not a kill"
+  },
+  {
+   "file": "test/poly-termination-timing.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / 1000;",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "asserts seconds < 5 on the computation; a budget, not a kill"
+  },
+  {
+   "file": "test/r0-census.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r0-census.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const elapsedMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r0-cx-cost.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const start = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r0-cx-cost.perf.test.mjs",
+   "form": "performance.now",
+   "line": "elapsed.push(performance.now() - start);",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r0-mgu-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const start = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r0-mgu-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "return { value, ms: performance.now() - start };",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r001-scale.perf.test.mjs",
+   "form": "import test/go-timed.mjs",
+   "line": "import { timedBuild } from './go-timed.mjs';",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r001-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r001-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const compileMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r001-scale.serial.test.mjs",
+   "form": "import test/go-timed.mjs",
+   "line": "import { timedBuild } from './go-timed.mjs';",
+   "count": 1,
+   "category": "termination safeguard",
+   "note": "uses the process-group kill; its buildMs is not compared here"
+  },
+  {
+   "file": "test/r005b-predicates.perf.test.mjs",
+   "form": "Date.now",
+   "line": "const started = Date.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r005b-predicates.perf.test.mjs",
+   "form": "Date.now",
+   "line": "assert.ok(Date.now() - started < BOUND_MS, 'over the time bound');",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r013-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/r013-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / millisecondsPerSecond;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/regression-growth.mjs",
+   "form": "import test/growth.mjs",
+   "line": "import { assertGrowth } from './growth.mjs';",
+   "count": 1,
+   "category": "growth check",
+   "note": "regression probe for the growth mutant row"
+  },
+  {
+   "file": "test/regression-r005b-end.mjs",
+   "form": "Date.now",
+   "line": "const started = Date.now();",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
+  },
+  {
+   "file": "test/regression-r005b-end.mjs",
+   "form": "Date.now",
+   "line": "if (Date.now() - started >= QUIET_MS) {",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
+  },
+  {
+   "file": "test/regression-task5.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
+  },
+  {
+   "file": "test/regression-task5.mjs",
+   "form": "performance.now",
+   "line": "const seconds = (performance.now() - started) / 1000;",
+   "count": 1,
+   "category": "absolute budget",
+   "note": "regression probe; not moved to perf (deferred, see docs/engineering.md)"
+  },
+  {
+   "file": "test/text-scale.perf.test.mjs",
+   "form": "import test/go-timed.mjs",
+   "line": "import { timedBuild } from './go-timed.mjs';",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/text-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const started = performance.now();",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/text-scale.perf.test.mjs",
+   "form": "performance.now",
+   "line": "const compileMs = performance.now() - started;",
+   "count": 1,
+   "category": "absolute budget"
+  },
+  {
+   "file": "test/text-scale.serial.test.mjs",
+   "form": "import test/go-timed.mjs",
+   "line": "import { timedBuild } from './go-timed.mjs';",
+   "count": 1,
+   "category": "termination safeguard",
+   "note": "uses the process-group kill; its buildMs is not compared here"
+  }
+ ],
+ "timeouts": [
+  {
+   "file": "test/depth-support.mjs",
+   "line": "{ encoding: 'utf8', timeout,",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx-diff-support.mjs",
+   "line": "{ encoding: 'utf8', timeout: 120000, env });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx-diff-support.mjs",
+   "line": "{ encoding: 'utf8', timeout: 60000, env });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx-differential.serial.test.mjs",
+   "line": "const shrinkMs = 180_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx008-hook.test.mjs",
+   "line": "const timeoutMs = 20_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx008-probes.test.mjs",
+   "line": "const childTimeoutMs = 20_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx008-probes.test.mjs",
+   "line": "{ encoding: 'utf8', timeout: 120_000, env });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx008-probes.test.mjs",
+   "line": "{ encoding: 'utf8', timeout: 60_000 });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx008-settle.test.mjs",
+   "line": "const timeoutMs = 20_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/go-batch.mjs",
+   "line": "const buildTimeoutMs = 300_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/go-batch.mjs",
+   "line": "return spawnSync(binary, [ident], { encoding: 'utf8', timeout: 60000 });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/go-timed.mjs",
+   "line": "}, timeoutMs);",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/go-timed.mjs",
+   "line": "const ran = spawnSync(binary, [], { encoding: 'utf8', timeout: 60000 });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/r0-elab-scope-support.mjs",
+   "line": "const timeoutMs = 300_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/support.mjs",
+   "line": "encoding: 'utf8', timeout: 60000,",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/support.mjs",
+   "line": "encoding: 'utf8', timeout: 120000, cwd: work,",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/text-utf8.test.mjs",
+   "line": "{ encoding: 'utf8', timeout: 60000 });",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/unify-row.test.mjs",
+   "line": "const sideConditionTimeout = 20000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fn-scale.serial.test.mjs",
+   "line": "const buildTimeoutMs = 120_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/r001-scale.serial.test.mjs",
+   "line": "const buildTimeoutMs = 120_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/text-scale.serial.test.mjs",
+   "line": "const buildTimeoutMs = 120_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/depth-build.serial.test.mjs",
+   "line": "const terminationMs = 100_000;",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/depth-build.serial.test.mjs",
+   "line": "const timer = setTimeout(kill, Math.max(0, timeoutMs));",
+   "category": "termination safeguard"
+  },
+  {
+   "file": "test/fx008-nesting.serial.test.mjs",
+   "line": "compileWithin(context, clauseLiteralProgram(1), 20_000);",
+   "category": "termination safeguard"
+  }
+ ],
+ "outOfScope": [
+  {
+   "file": "scripts/effect-probe.mjs",
+   "note": "probe or profiling script run by hand; not part of verify or perf"
+  },
+  {
+   "file": "scripts/stage-probe.mjs",
+   "note": "probe or profiling script run by hand; not part of verify or perf"
+  },
+  {
+   "file": "scripts/fn-milestone.mjs",
+   "note": "probe or profiling script run by hand; not part of verify or perf"
+  },
+  {
+   "file": "scripts/ladder-profile.mjs",
+   "note": "probe or profiling script run by hand; not part of verify or perf"
+  },
+  {
+   "file": "scripts/row-merge-exhaustive.mjs",
+   "note": "probe or profiling script run by hand; not part of verify or perf"
+  },
+  {
+   "file": "scripts/verify-conditions.mjs",
+   "note": "prints the run time in the conditions line; diagnostics only"
+  }
+ ]
+}
