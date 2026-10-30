@@ -92,8 +92,8 @@ export const miscRows = [
     // Task 10: Entry in every function, not main alone.
     name: 'r0-amin-misc-entry-everywhere',
     file: body,
-    needle: 'entered function declared = when (isEntry function)\n',
-    replacement: 'entered function declared = when (isEntry function'
+    needle: 'entered function row = when (isEntry function)\n',
+    replacement: 'entered function row = when (isEntry function'
       + ' || true)\n',
     probe: 'r0-amin-misc-entry-everywhere',
     message: /a function other than main records an Entry/
@@ -102,8 +102,8 @@ export const miscRows = [
     // Task 10: main records no Entry.
     name: 'r0-amin-misc-entry-missing',
     file: body,
-    needle: 'entered function declared = when (isEntry function)\n',
-    replacement: 'entered function declared = when (isEntry function'
+    needle: 'entered function row = when (isEntry function)\n',
+    replacement: 'entered function row = when (isEntry function'
       + ' && false)\n',
     probe: 'r0-amin-misc-entry-missing',
     message: /main records no Entry/

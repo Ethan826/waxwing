@@ -83,11 +83,13 @@ export const miscProbes = {
     passed(context);
   },
   'r0-amin-misc-operation-row': async context => {
-    const { fieldsOf } = await toolkit(context);
-    const effects = fieldsOf(performs, 'call').effects;
-    expect(effects.obligations.some(item =>
-      item.value.constructor.name === 'Unsupported'),
-    'Resolve keeps no row for an operation that writes one');
+    // §18.124 ruling 3: Unsupported no longer depends on the row
+    // resolving, so the data itself is read (the tables' operation).
+    const { tablesOf } = await toolkit(context);
+    const operations = tablesOf(performs).effects.flatMap(info =>
+      info.operations);
+    expect(operations.some(item => item.effects.constructor.name === 'Just'),
+      'Resolve keeps no row for an operation that writes one');
     passed(context);
   },
   'r0-amin-misc-unchecked-block': async context => {
