@@ -6771,3 +6771,24 @@ and window for Task 11's FX032 rows) and a 1.60M all-in cap, is
 docs/plans/2026-10-30-tranche-1-parallel-batch.md. Earlier: the
 r0-amin-partial-reuses-stages needle was fixed (8f8eac8) and the row
 proves directly.
+
+### 18.122 Parallel batch authorized: 1.60M, ceiling 6.82M (2026-10-30)
+
+The author authorized the batch of §18.121 as proposed: lanes A-D, R9,
+step 0, three targeted reviewers, a 0.20M fix allowance and one
+acceptance verify; 1.60M more and a 6.82M running ceiling, both limits
+binding. Clarifications: Task 7's acceptance waits for the combined
+review and full verify (lane A is reported ready for acceptance
+meanwhile); step 0 is a mechanical extraction preserving the moved
+declarations apart from module and import changes, checked before
+dispatch; trusted-surface re-pins cover only the exports and
+constructors these recorders and the extraction need (no Gen, Elab or
+seal redesign, no new validation semantics), each named in its commit;
+census and window re-pins cover only the predicted FX032 routing, each
+moved declaration checked for its recorded unsupported operation and
+expected `EffectsUnchecked` reason first, any other movement a stop;
+coverage is evidence-based, Task 9's implementation explicitly
+unfinished; lane A's proof preserves erasure and fails through the
+marked-side check's own diagnostic. A failed acceptance verify is
+reported, not retried. Out of scope: Task 9's implementation, Task 14
+beyond the named fixture maintenance, A2's algorithm, R031. No push.
