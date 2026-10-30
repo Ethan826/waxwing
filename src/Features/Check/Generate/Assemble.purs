@@ -86,7 +86,7 @@ assembled header out items = RecordedProblem
   , vars
   , types: Map.fromFoldable out.types
   , holders: header.holders
-  , effects: foldl addItem emptyEffects items
+  , effects: listed items (foldl addItem emptyEffects items)
   }
   where
   vars = Map.fromFoldable out.vars
@@ -102,20 +102,49 @@ assembled header out items = RecordedProblem
     Forall _ → true
     Exists → false
 
--- One emitted effect item joins its part of the problem: lists append in
--- emission order, maps key by path (`checked` has ruled out a repeat).
+-- One emitted effect item joins its part of the problem: maps key by
+-- path (`checked` has ruled out a repeat); the lists are `listed`'s.
 addItem ∷ EffectProblem → EffectItem → EffectProblem
 addItem problem = case _ of
-  Obliged entry → problem { obligations = problem.obligations <> [ entry ] }
+  Obliged _ → problem
   NodeAt path ty → problem { nodes = Map.insert path ty problem.nodes }
   InstanceAt path ty →
     problem { instances = Map.insert path ty problem.instances }
   AnnotationAt path ty →
     problem { annotations = Map.insert path ty problem.annotations }
-  RigidMark name → problem { rigidMarks = problem.rigidMarks <> [ name ] }
-  EffectRigid var → problem { effectRigids = problem.effectRigids <> [ var ] }
+  RigidMark _ → problem
+  EffectRigid _ → problem
   ArityAt path n → problem { arities = Map.insert path n problem.arities }
   AmbientAt path row → problem { ambient = Map.insert path row problem.ambient }
   SignatureAt _ sig → problem { signature = sig }
-  MintedVar var → problem { flexEff = problem.flexEff <> [ var ] }
-  MintedPosition at → problem { positions = problem.positions <> [ at ] }
+  MintedVar _ → problem
+  MintedPosition _ → problem
+
+-- The lists, each in emission order, by one pass over the items per
+-- list: appending one item at a time in the fold copied the list each
+-- time, quadratic in the item count (Task 8's consumptions doubled the
+-- time in the scale bounds of test/r0-census.serial.test.mjs).
+listed ∷ Array EffectItem → EffectProblem → EffectProblem
+listed items problem = problem
+  { obligations = Array.mapMaybe obliged items
+  , rigidMarks = Array.mapMaybe rigidMark items
+  , effectRigids = Array.mapMaybe effectRigid items
+  , flexEff = Array.mapMaybe mintedVar items
+  , positions = Array.mapMaybe mintedPosition items
+  }
+  where
+  obliged = case _ of
+    Obliged entry → Just entry
+    _ → Nothing
+  rigidMark = case _ of
+    RigidMark name → Just name
+    _ → Nothing
+  effectRigid = case _ of
+    EffectRigid var → Just var
+    _ → Nothing
+  mintedVar = case _ of
+    MintedVar var → Just var
+    _ → Nothing
+  mintedPosition = case _ of
+    MintedPosition at → Just at
+    _ → Nothing
