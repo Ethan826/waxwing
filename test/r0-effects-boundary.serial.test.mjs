@@ -132,13 +132,24 @@ test('the harness can return Solved outside the boundary', () => {
   assert.ok(solved.length > 0, 'no declaration is Solved at all');
 });
 
-// Task 12: the boundary extended to recorded obligations. Today only
-// `Equal` is recorded (Tasks 1-7); `HandlerLit` and `Install` arrive with
-// Task 9, so the first assertion below ranges over zero declarations
-// until then and is vacuous for those two kinds: the test prints its
-// range so a change shows. The second assertion is not vacuous today:
-// every in-scope handler declaration that records any obligation is
-// still not Solved and still marked. Floor: 80% of the 276 observed.
+// Task 12: the boundary extended to recorded obligations (§18.124
+// corrects this comment). Every obligation kind is recorded now (Tasks
+// 7, 8 and 10: Equal, Consume, Defer, Entry, FailConcrete, Unsupported);
+// `HandlerLit` and `Install` arrive with Task 9, so the HandlerLit/Install
+// check below ranges over zero declarations until then and is vacuous:
+// the test prints its range so a change shows. The last assertion, that
+// an in-scope declaration with recorded obligations is still not Solved
+// and still marked, is implied by Task 5's check over all in-scope
+// declarations (above); it adds no new reach. What is new is the join:
+// every corpus declaration has an obligation record to be read. Floor:
+// 80% of the 276 observed when the floor was set.
+// Plan Task 12 Step 3 (Task 5's restored-defect proof against this
+// extended test), run by hand in an isolated scratch copy outside the
+// repository (deleted after; §18.124): Node.purs `markersAt` made to
+// emit nothing for `HandlerMark`. Observed: 3 of the 4 tests in this
+// file fail, this one among them ("17 breaches among obliged handler
+// declarations", each "Solved" and "no HandlerType marker"). A
+// registered row would need this 2-minute corpus test as its probe.
 const obligedFloor = 220;
 const handlerKinds = ['HandlerLit', 'Install'];
 
