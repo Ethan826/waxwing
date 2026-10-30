@@ -5,6 +5,7 @@
 // (.superpowers/sdd/2026-10-25-amin-tranche-1-plan/task-N-report.md,
 // local and git-ignored); docs/progress.md lists the rows.
 import { consumeRows } from './regression-r0-amin-consume.mjs';
+import { coverageRows } from './regression-r0-amin-coverage.mjs';
 import { equalRows } from './regression-r0-amin-equal.mjs';
 import { miscRows } from './regression-r0-amin-misc.mjs';
 import { pinRows } from './regression-r0-amin-pin.mjs';
@@ -14,6 +15,7 @@ const marked = `${generate}Marked.purs`;
 const owned = `${generate}Owned.purs`;
 export const r0AminRows = [
   ...signatureRows,
+  ...coverageRows,
   ...equalRows,
   ...consumeRows,
   ...miscRows,

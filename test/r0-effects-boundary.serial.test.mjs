@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { cohortOf, gated, sourceKinds, survey }
   from './r0-effects-boundary-run.mjs';
 import { assertCohort } from './r0-fail-only-compare.mjs';
+import { obligationKinds } from './r0-effects-obligations-run.mjs';
 
 // R0 amin tranche 1, Task 5 (Checkpoint A): the blocking boundary. No
 // effect checker exists yet, so a handler declaration must never be
@@ -130,3 +131,45 @@ test('the harness can return Solved outside the boundary', () => {
     && !found.scoped.includes(fact));
   assert.ok(solved.length > 0, 'no declaration is Solved at all');
 });
+
+// Task 12: the boundary extended to recorded obligations. Today only
+// `Equal` is recorded (Tasks 1-7); `HandlerLit` and `Install` arrive with
+// Task 9, so the first assertion below ranges over zero declarations
+// until then and is vacuous for those two kinds: the test prints its
+// range so a change shows. The second assertion is not vacuous today:
+// every in-scope handler declaration that records any obligation is
+// still not Solved and still marked. Floor: 80% of the 276 observed.
+const obligedFloor = 220;
+const handlerKinds = ['HandlerLit', 'Install'];
+
+test('recorded obligations never make a handler declaration Solved',
+  async () => {
+    const kinds = await obligationKinds();
+    const recordedAt = fact => kinds.get(fact.at) ?? [];
+    const unjoined = found.facts.filter(fact => !kinds.has(fact.at));
+    assert.deepEqual(unjoined.map(fact => fact.at).slice(0, 10), [],
+      `${unjoined.length} declarations have no obligation record`);
+    const tally = {};
+    for (const fact of found.facts)
+      for (const kind of recordedAt(fact))
+        tally[kind] = (tally[kind] ?? 0) + 1;
+    const literal = found.facts.filter(fact =>
+      recordedAt(fact).some(kind => handlerKinds.includes(kind)));
+    const obliged = found.scoped.filter(fact => recordedAt(fact).length > 0);
+    console.log(`obligations recorded (all declarations): `
+      + `${JSON.stringify(tally)}`);
+    console.log(`HandlerLit/Install declarations: ${literal.length} `
+      + `(vacuous while 0); in-scope declarations with any recorded `
+      + `obligation: ${obliged.length} of ${found.scoped.length}`);
+    const breaches = literal.flatMap(fact => [
+      ...(fact.solved ? [`${fact.at}: Solved`] : []),
+      ...(fact.kinds.includes('HandlerType') ? []
+        : [`${fact.at}: no HandlerType marker`])]);
+    assert.deepEqual(breaches.slice(0, 10), [],
+      `${breaches.length} HandlerLit/Install breaches`);
+    assert.ok(obliged.length > obligedFloor,
+      `only ${obliged.length} in-scope declarations record obligations`);
+    const failures = obliged.flatMap(refusals);
+    assert.deepEqual(failures.slice(0, 10), [],
+      `${failures.length} breaches among obliged handler declarations`);
+  });

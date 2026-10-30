@@ -5,6 +5,7 @@
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { consumeProbes } from './regression-r0-amin-consume.mjs';
+import { coverageProbes } from './regression-r0-amin-coverage.mjs';
 import { equalProbes } from './regression-r0-amin-equal.mjs';
 import { markedProbes } from './regression-r0-amin-marked.mjs';
 import { miscProbes } from './regression-r0-amin-misc.mjs';
@@ -36,6 +37,7 @@ export const r0AminProbes = {
   ...nodeProbes,
   ...openedProbes,
   ...signatureProbes,
+  ...coverageProbes,
   ...equalProbes,
   ...consumeProbes,
   ...miscProbes,

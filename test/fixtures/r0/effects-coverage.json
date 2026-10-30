@@ -1,0 +1,147 @@
+[
+  {
+    "rule": "type unification of marked types (UnifyMark",
+    "fixture": "fn main(): Int = 1 + 2;",
+    "obligation": "Equal",
+    "site": "main:E7",
+    "verdict": "solved"
+  },
+  {
+    "rule": "R into ρ ignoring marks (Consume `consumeIgn",
+    "unfinished": "Consume (E2) is recorded by Task 8; E5 by Task 9, outside this batch"
+  },
+  {
+    "rule": "two handler types: effect and arguments (Uni",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn pick(c: Bool, a: Handler(Log with Console), b: Handler(Log with Console)): Handler(Log with Console) = if c then a else b; fn main(): Unit = ();",
+    "obligation": "Equal[MHandler]",
+    "site": "pick:E11",
+    "verdict": "blocked"
+  },
+  {
+    "rule": "handled marks by equality (UnifyParts `handl",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn pick(c: Bool, a: Handler(Log with Console), b: Handler(Log with Console)): Handler(Log with Console) = if c then a else b; fn main(): Unit = ();",
+    "obligation": "Equal[MHandler]",
+    "site": "pick:E11",
+    "verdict": "blocked"
+  },
+  {
+    "rule": "R ≡ R: with marks when neither side owns a C",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn pick(c: Bool, a: Handler(Log with Console), b: Handler(Log with Console)): Handler(Log with Console) = if c then a else b; fn main(): Unit = ();",
+    "obligation": "Equal[MHandler]",
+    "site": "pick:E11",
+    "verdict": "blocked"
+  },
+  {
+    "rule": "C ≡ C when either side owns a C, R standing",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn mk(): Handler(nofail Ask with ...s) with pure = handler Ask { ask() => 1 }; fn g(c: Bool, h: Handler(nofail Ask with ...r)): Unit = { let k = if c then mk() else h; () }; fn main(): Unit = ();",
+    "obligation": "Equal[MHandler,OwnedC]",
+    "site": "g:E11",
+    "verdict": "blocked"
+  },
+  {
+    "rule": "installation's edge ρ partner ⊑ C label (Len",
+    "unfinished": "Task 9 implementation outside this batch: Install's installed-C consumption"
+  },
+  {
+    "rule": "consumption: first occurrence, payloads, ρ ⊑",
+    "unfinished": "Consume (E2) at call, perform, apply, pipe and stage sites; recorded by Task 8"
+  },
+  {
+    "rule": "`defer` consumes d into the current row (Def",
+    "unfinished": "Consume at the defer site; Defer is Task 10"
+  },
+  {
+    "rule": "settling step (d): clause rows into C, insta",
+    "unfinished": "clause rows into C are E4 (HandlerLit, Task 9, outside this batch); installed C and deferred rows are Consume (Tasks 8, 10)"
+  },
+  {
+    "rule": "side-condition per-key cycle test (§3.5 (c),",
+    "unfinished": "the per-key count is a condition on recorded Consume (E2); recorded by Task 8"
+  },
+  {
+    "rule": "opening at use (MarkUse `openHandlers`)",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn mk(): Handler(nofail Ask with ...s) with pure = handler Ask { ask() => 1 }; fn g(c: Bool, h: Handler(nofail Ask with ...r)): Unit = { let k = if c then mk() else h; () }; fn main(): Unit = ();",
+    "obligation": "Equal[MHandler,Opened]",
+    "site": "g:E11",
+    "verdict": "blocked"
+  },
+  {
+    "rule": "local-annotation fresh marks and C for every",
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect Ask { fn ask(): Int; }; type E = E; fn run(c: Bool): Unit = { let k = fn(h: Handler(nofail Ask with Log)) => if c then h else h; () }; fn main(): Unit = ();",
+    "obligation": "Equal[MHandler,Annotation,OwnedC]",
+    "site": "run:E11",
+    "verdict": "blocked"
+  },
+  {
+    "rule": "a handler literal's type copied into images",
+    "unfinished": "the literal-node E1 is deferred to Task 9 (outside this batch); O1 and O2 are recorded (test/r0-obligations-equal.test.mjs)"
+  },
+  {
+    "rule": "handler literal: c into R and C, C ⊑ c (Clau",
+    "unfinished": "Task 9 implementation outside this batch: HandlerLit and its clause consumptions"
+  },
+  {
+    "rule": "own abort (Frames `aborting`)",
+    "unfinished": "Task 9 implementation outside this batch: HandlerLit (own abort)"
+  },
+  {
+    "rule": "clause tail pass (TailPass)",
+    "unfinished": "Task 9 implementation outside this batch: HandlerLit (tail pass)"
+  },
+  {
+    "rule": "owned C at a use (ResultClauses `ownClauses`",
+    "unfinished": "E5's Install is Task 9, outside this batch; the ResultC in instances is recorded (Task 4)"
+  },
+  {
+    "rule": "frame marks (Frames `framed`: FrameOwn, Fram",
+    "unfinished": "Task 9 implementation outside this batch: Install (frame marks)"
+  },
+  {
+    "rule": "installation pairing (Lend `partners`)",
+    "unfinished": "Task 9 implementation outside this batch: Install (pairing)"
+  },
+  {
+    "rule": "ExpectedHandler (Handler `withHandler`)",
+    "unfinished": "Task 9 implementation outside this batch: Install (ExpectedHandler)"
+  },
+  {
+    "rule": "defer absence and demand (Defer `judge`, Fra",
+    "unfinished": "Defer (E6) is Task 10"
+  },
+  {
+    "rule": "ExpectedNofail (MarkReport)",
+    "unfinished": "E7 is an instance of E2's matched-pair edge (Consume); recorded by Task 8"
+  },
+  {
+    "rule": "UnhandledEffect (Entry)",
+    "unfinished": "Entry (E8) is Task 10"
+  },
+  {
+    "rule": "FailNeedsConcrete (Failure.purs:102)",
+    "unfinished": "FailConcrete (E9) is Task 10"
+  },
+  {
+    "rule": "EffectNotAllowed, MustBePure (Reject, Requir",
+    "unfinished": "Consume (E2) with the declared row as target (E10); recorded by Task 8"
+  },
+  {
+    "rule": "CallbackRowLacks (CallbackParts)",
+    "unfinished": "Consume at AtCallback (E2); recorded by Task 8"
+  },
+  {
+    "rule": "RowEquality (Argument, RowName)",
+    "unfinished": "Consume (E2) on row arguments; recorded by Task 8"
+  },
+  {
+    "rule": "LabelMismatch (Reject `RowPayload`), RowOccu",
+    "unfinished": "E2 is Consume (Task 8); only the E1 part is recorded today"
+  },
+  {
+    "rule": "`handle` ambient (Handle `withFailures`)",
+    "unfinished": "the ambient row (E11) is recorded by Task 8"
+  },
+  {
+    "rule": "step-5 mark check (Mark `violation`)",
+    "unfinished": "E12 collects the edges of E2-E6, with no obligation of its own; it is covered only when Tasks 8-10 are"
+  }
+]
