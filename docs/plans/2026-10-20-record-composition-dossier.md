@@ -6929,3 +6929,20 @@ about 0.352M of 0.35M (implementer 0.232, reviewer 0.086, controller
 about 0.034): the cap is reached, so the window re-pin, the P2/P3
 fixes, integration and the verify wait for authorization. No verify
 ran; Task 7 acceptance open.
+
+### 18.126 Finishing allowance: 0.06M, ceiling 7.23M (2026-10-30)
+
+The completion pass's 0.002M overrun (0.352M of 0.35M) is actual
+spend, not absorbed. The author authorized up to 0.06M more, ceiling
+7.23M: the window classifier change and nine-row re-pin, each reason
+and unchanged verdict checked; main's explicit `...r` (statement and
+comments say any open top-level tail, as the approved wording and the
+live checker; a test added; other signature occurrences stay rigid);
+the P3 corrections (UnframedInstall's own provenance role, Defer and
+Unsupported in the uniqueness inventory, both sides of the coverage
+row checked); focused checks, fast-forward into r0-t2-d1 and the one
+acceptance verify alone under the lock. Pin updates for these named
+corrections are covered; G0's problem pin and timing bounds stay
+protected. No reopened repair, no broad review; stop for a substantive
+new finding, the cap or a failed verify. Task 7 awaits the result. No
+push.
