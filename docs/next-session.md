@@ -20,6 +20,16 @@ text only) dispatched from 8e9ddf7 in worktrees
 .claude/worktrees/batch-{a,b,c,d,r9}, branches batch/lane-*. If this
 session reset, the lanes' reports are lost: inspect each branch's
 commits against 8e9ddf7 before redispatching anything.
+Integrated on r0-t2-d1 (A f3a061a, B 82b7969, C a628bd5, D fa50174),
+plus controller fixes f020475 (literal mints `Clauses k`, `with` mints
+`Frame p`: 521 named-unminted on the merge), 2720177 (Assemble lists in
+one pass: Task 8 broke two census scale bounds through a pre-existing
+quadratic append; measured, fixed, bounds untouched) and ade8206
+(window re-pin, FX032's `g` only). R9's note:
+docs/plans/2026-10-30-task-9-literal-design.md (Q1-Q7 for the author).
+Lane A's mutant, run against the corpus test: 242 problems, all the
+marked-side diagnostic at Sig3, none erasure. Next: D's recheck of its
+unfinished rows, full regression run, three reviewers, verify.
 1. Step 0 (done, 8e9ddf7): move `operationRef`, `perform`, `operation` and
    `operationRow` (Generate/Effect.purs lines 78-160, with their
    comments) verbatim into a new Generate/Perform.purs; Expr.purs
