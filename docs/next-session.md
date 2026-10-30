@@ -14,8 +14,13 @@ No milestone has moved since 2026-10-25.
 §18.122; proposal docs/plans/2026-10-30-tranche-1-parallel-batch.md,
 read it in full). Authorized: 1.60M more, running ceiling 6.82M, both
 binding; spend so far about 5.22M (subagent tokens, approximate).
-1. Step 0 (controller, not yet started; tree clean at b71a472 plus this
-   note): move `operationRef`, `perform`, `operation` and
+**Progress (2026-10-30):** step 0 done at 8e9ddf7 (checks passed,
+re-pin named in the commit). Lanes A, B, C, D (Sonnet) and R9 (Opus,
+text only) dispatched from 8e9ddf7 in worktrees
+.claude/worktrees/batch-{a,b,c,d,r9}, branches batch/lane-*. If this
+session reset, the lanes' reports are lost: inspect each branch's
+commits against 8e9ddf7 before redispatching anything.
+1. Step 0 (done, 8e9ddf7): move `operationRef`, `perform`, `operation` and
    `operationRow` (Generate/Effect.purs lines 78-160, with their
    comments) verbatim into a new Generate/Perform.purs; Expr.purs
    imports `operationRef`, `perform` from it; Effect keeps `handler`,
