@@ -18,5 +18,16 @@ export const coverageRows = [
       + '          else []\n',
     probe: 'r0-amin-coverage-equal',
     message: /coverage fixture rows lost their Equal obligation/
+  },
+  {
+    // Task 13: `consumeAt` records nothing, so every fixture row naming
+    // `Consume` at a stage site (call, callback) loses its obligation.
+    // The `defer` consumption goes through `deferAt` and stays.
+    name: 'r0-amin-coverage-consume',
+    file: 'src/Features/Check/Generate/Obligation.purs',
+    needle: 'consumeAt place span stage target = effected\n',
+    replacement: 'consumeAt place span stage target = when false $ effected\n',
+    probe: 'r0-amin-coverage-consume',
+    message: /coverage fixture rows lost their Consume obligation/
   }
 ];

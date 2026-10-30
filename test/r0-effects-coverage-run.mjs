@@ -4,7 +4,7 @@ import { repoRoot } from './r0-corpus.mjs';
 import { describe } from './r0-decide-support.mjs';
 import { declarationsOf } from './r0-rt8-run.mjs';
 import { effectsOf } from './r0-effects-obligations-run.mjs';
-import { recordedProblems } from './r0-effects-coverage-sites.mjs';
+import { rowProblems } from './r0-effects-coverage-sites.mjs';
 
 // Support for the coverage test (test/r0-effects-coverage.test.mjs):
 // statements section 13's rule table, the fixture rows, and what a
@@ -43,10 +43,11 @@ export const checkFixture = (row, index) => {
   const found = declarationsOf({ origin, source: row.fixture })
     .find(item => item.decl.name === decl);
   if (found === undefined) return [`no declaration ${decl}`];
-  const { obligations } = effectsOf(found.program, found.decl);
+  const effectsAt = name => effectsOf(found.program,
+    found.program.functions.find(item => item.name === name));
   const verdict = describe(found.decision).verdict.split(' ')[0] === 'Solved'
     ? 'solved' : 'blocked';
-  return [...recordedProblems(obligations, row),
+  return [...rowProblems(effectsAt, row),
     ...(verdict === row.verdict ? []
       : [`verdict ${verdict}, not ${row.verdict}`])];
 };

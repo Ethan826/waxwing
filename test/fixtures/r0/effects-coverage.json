@@ -44,11 +44,17 @@
   },
   {
     "rule": "consumption: first occurrence, payloads, ρ ⊑",
-    "unfinished": "Consume (E2) at call, perform, apply, pipe and stage sites; recorded by Task 8"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(): Int with Log = 1; fn g(): Int with Log = f(); fn main(): Unit = ();",
+    "obligation": "Consume",
+    "site": "g:E5:Consumed:AtCall",
+    "verdict": "solved"
   },
   {
     "rule": "`defer` consumes d into the current row (Def",
-    "unfinished": "Consume at the defer site; Defer is Task 10"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn g(): Unit with Log = { defer Log.log(1); () }; fn main(): Unit = ();",
+    "obligation": "Consume[AtDefer]",
+    "site": "g:E16:DeferInto",
+    "verdict": "blocked"
   },
   {
     "rule": "settling step (d): clause rows into C, insta",
@@ -56,7 +62,7 @@
   },
   {
     "rule": "side-condition per-key cycle test (§3.5 (c),",
-    "unfinished": "the per-key count is a condition on recorded Consume (E2); recorded by Task 8"
+    "unfinished": "a validator-side count over recorded Consume (Task 8 records them); it has no recording of its own, and the validator (A2) is not in tranche 1"
   },
   {
     "rule": "opening at use (MarkUse `openHandlers`)",
@@ -106,42 +112,75 @@
   },
   {
     "rule": "defer absence and demand (Defer `judge`, Fra",
-    "unfinished": "Defer (E6) is Task 10"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn g(): Unit with Log = { defer Log.log(1); () }; fn main(): Unit = ();",
+    "obligation": "Defer",
+    "site": "g:E16:DeferRegistration",
+    "verdict": "blocked"
   },
   {
     "rule": "ExpectedNofail (MarkReport)",
-    "unfinished": "E7 is an instance of E2's matched-pair edge (Consume); recorded by Task 8"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(): Int with nofail Log = 1; fn g(): Int with nofail Log = f(); fn main(): Unit = ();",
+    "obligation": "Consume[FixedN]",
+    "site": "g:E5:Consumed:AtCall",
+    "verdict": "solved"
   },
   {
     "rule": "UnhandledEffect (Entry)",
-    "unfinished": "Entry (E8) is Task 10"
+    "fixture": "fn main(): Unit with Console = Console.print(1);",
+    "obligation": "Entry",
+    "site": "main:Sig10:EntryRow",
+    "verdict": "solved"
   },
   {
     "rule": "FailNeedsConcrete (Failure.purs:102)",
-    "unfinished": "FailConcrete (E9) is Task 10"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn a(): Int with Fail(Err) { fail } = fail(Oops); fn main(): Unit = ();",
+    "obligation": "FailConcrete",
+    "site": "a:E23:PayloadHead",
+    "verdict": "solved"
   },
   {
     "rule": "EffectNotAllowed, MustBePure (Reject, Requir",
-    "unfinished": "Consume (E2) with the declared row as target (E10); recorded by Task 8"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn f(): Int with Log = 1; fn g(): Int with Log = f(); fn main(): Unit = ();",
+    "obligation": "Consume[ToDeclared]",
+    "site": "g:E5:Consumed:AtCall",
+    "verdict": "solved"
   },
   {
     "rule": "CallbackRowLacks (CallbackParts)",
-    "unfinished": "Consume at AtCallback (E2); recorded by Task 8"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn run(h: Unit -> Unit with Log): Unit with Log = h(()); fn main(): Unit = ();",
+    "obligation": "Consume",
+    "site": "run:E14:Consumed:AtCallback",
+    "verdict": "solved"
   },
   {
     "rule": "RowEquality (Argument, RowName)",
-    "unfinished": "Consume (E2) on row arguments; recorded by Task 8"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn g(h: Unit -> Unit with State(Int)): Unit with State(Bool) = h(()); fn main(): Unit = ();",
+    "obligation": "Consume[BoolBase]",
+    "site": "g:E14:Consumed:AtCallback",
+    "verdict": "blocked"
   },
   {
     "rule": "LabelMismatch (Reject `RowPayload`), RowOccu",
-    "unfinished": "E2 is Consume (Task 8); only the E1 part is recorded today"
+    "fixture": "effect Log { fn log(n: Int): Unit; }; effect State(s) { fn get(): s; fn put(v: s): Unit; }; type Err = Oops; fn g(h: Unit -> Unit with State(Int)): Unit with State(Bool) = h(()); fn f(h: Unit -> Unit with State(Int) + State(Bool)): Unit -> Unit with State(Bool) + State(Int) = h; fn main(): Unit = ();",
+    "obligation": "Equal[MArrow,IntBase]",
+    "site": "f:Sig3",
+    "verdict": "blocked",
+    "also": [
+      {
+        "obligation": "Consume[BoolBase]",
+        "site": "g:E14:Consumed:AtCallback"
+      }
+    ]
   },
   {
     "rule": "`handle` ambient (Handle `withFailures`)",
-    "unfinished": "the ambient row (E11) is recorded by Task 8"
+    "fixture": "type E = E; fn main(): Unit with Console = handle { Fail.fail(E) } { fail(error: E) => () };",
+    "obligation": "Ambient[FailEffect]",
+    "site": "main:Ambient",
+    "verdict": "blocked"
   },
   {
     "rule": "step-5 mark check (Mark `violation`)",
-    "unfinished": "E12 collects the edges of E2-E6, with no obligation of its own; it is covered only when Tasks 8-10 are"
+    "unfinished": "E12 collects the edges of E2-E6 and has no obligation of its own; E4 and E5 are Task 9 (outside this batch)"
   }
 ]
