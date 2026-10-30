@@ -5149,3 +5149,19 @@ records the `Unsupported (OperationWithRow 1 0)` obligation, the
 predicted FX032 routing. Summary: FX032 `stoppedUnderShadow` 0 to 1,
 `allThree` 261 to 262, `underShadowDecisions` 250 to 251. No other row
 moved; census.json did not move (r0-census.serial passes).
+
+## Correction: commit a628bd5's message (2026-10-30)
+
+Commit a628bd5 (Tasks 10-11, lane C rebased onto Task 8) carries a
+"Trusted-surface pin diff:" paragraph from lane C's pre-rebase commit
+that is inaccurate on the integrated tree: the new `SiteRole`
+constructors are not in the pin (Domain.Recorded.Effect is not an
+allowed importer, and `sourceExports` normalizes `T(..)`, so no
+constructor addition there reaches any gate), and "Context gains
+ambient" is Task 8's change (82b7969); Context.purs is not in
+a628bd5's diff. Its actual pin change is Generate.Obligation gaining
+deferAt, entryAt, payloadAt and unsupportedAt (source and compiled).
+The message also omits its edit to test/r0-obligations-equal.test.mjs
+(the effect-only E1 survey skips atom-free obligations that are not
+`Equal`). Found by the batch's reviewer 3 (dossier §18.123); history
+is not rewritten (§18.124).

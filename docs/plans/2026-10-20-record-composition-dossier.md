@@ -6860,3 +6860,46 @@ skip, AtDefer, ambient as naming) except as R1 P2 says; Assemble's
 order; live preservation (generation unreachable from Program.Main,
 first-diagnostic passes); the minting fix; most lane rulings.
 No milestone moved. Task 7 acceptance still open.
+
+### 18.124 Completion pass authorized: 0.35M, ceiling 7.17M (2026-10-30)
+
+The author authorized one completion pass of up to 0.35M (controller
+and reviewer spend included), cumulative ceiling 7.17M, both binding:
+repairs, a focused review of the changed semantics, regression proofs
+and the one acceptance verify. Rulings: (1) `fail` joins E2's sites:
+its `Fail(payload)` label is consumed into the current ambient row,
+beside E9; statements, coverage ledger and plan updated together; the
+pure-callback separating example and a registered proof that dropping
+the consumption is detected. This repairs a future certification gap
+and establishes no effect-soundness claim. (2) main's top-level
+ambient tail is inferable, not universally rigid: written labels and
+closed rows kept; where main has an open top-level tail, one minted
+flexible effect variable shared by its ambient row and `Entry`; E8
+judges the completed row against the Console allowance. Its relation
+to the recorded signature and rigid accounting documented; not only
+`Entry`'s tail, no other signature variable made flexible; the checked
+IR's closed tail unchanged and not E8's specification. (3) The in-scope
+findings fixed together: whether an operation row was written is kept
+apart from resolving it (failure never erases FX032's Unsupported);
+the Sig3 row's original precise label restored (the author's blanket
+"erasure only" ruling conflated the corpus mutation with the targeted
+probe); uniqueness gated across all obligation kinds by tagged
+provenance; the coverage over-claims and Task 12's inaccuracies
+corrected (recording a relevant token does not demonstrate validator
+behavior); a durable correction record for a628bd5's message, no
+history rewrite. (4) R9's direction approved: Q1 identity plus the
+existing E1s, no literal-node E1, coverage satisfied only after the
+proposed evidence passes; Q2 the corpus-wide let/local identity check
+included; Q3 the statement and plan amendments, evidence qualifications
+kept; Q4 distinct `LiteralSite` and `InstallSite` roles, in the
+uniqueness gate; Q5 literal-owned `Clauses k` minting confirmed, once
+per identity, shared with clause ambient rows; Q6 package-based
+extraction of R through `Install` accepted in principle, which does not
+solve the missing installed label in the body's ambient row; Q7 the
+scoped N5 note, no validator result. A `with` whose handler is not an
+`MHandler` gets an explicit Unsupported restriction now, documented and
+tested never Solved; symbolic framing stays Task 9 design. The rest of
+Task 9's implementation (its tests and regression rows) is not
+authorized. Batch the repairs, review and verify once; stop for scope
+growth, an unresolved semantic conflict or the cap. Task 7 acceptance
+open; R031, A2 deferred.

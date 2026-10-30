@@ -607,6 +607,16 @@ test/r0-obligations-equal.test.mjs.
 
 ### Task 8: consumptions and ambient rows (E2, E10, E11)
 
+**Amended 2026-10-30 (§18.124):** `fail` is also an E2 site: its
+closed `Fail(payload)` row consumed into the current ambient row,
+beside E9, with the pure-callback separating example (live refuses a
+`fail` in a `with pure` callback; the recorded Consume is what a
+validator would refuse) and a registered proof that dropping it is
+detected. No effect-soundness claim. A `with` whose installed handler's
+marked type is not an `MHandler` records an explicit `Unsupported`
+restriction (never Solved, tested) instead of an ambient row without
+`f L`; symbolic framing stays Task 9 design.
+
 **Files:** Obligation.purs (`consumeAt`, `ambientAt`); Call.purs,
 Operator.purs (pipe), Builtin.purs, Effect.purs (perform), Body.purs
 (declared row as the body's ambient row), Control.purs (lambda's
@@ -627,6 +637,19 @@ each use's callee arity at its path.
 - [ ] **Steps 2-5** as Task 7; regression proof: drop the stage site.
 
 ### Task 9: handler family (E3, E4, E5)
+
+**Amended 2026-10-30 (§18.124; design note
+docs/plans/2026-10-30-task-9-literal-design.md approved in direction):**
+no literal-node E1 (Q1). Step 1 now records `HandlerLit`, h's uses
+carrying `Literal p` (A2, and A5 corpus-wide over let/local, Q2) and
+the argument E1 (A1); the regression row is the note's
+`r0-amin-literal-reaches-use`, replacing "drop the literal E1". Roles
+`LiteralSite` and `InstallSite` (Q4), inside the uniqueness gate;
+`Clauses k` minted by the literal, once per identity, shared with the
+clause ambient rows (Q5, done at f020475); R through `Install` from the
+package (Q6, in principle; it does not supply the body's installed
+label). Coverage of the literal connection is satisfied only when this
+evidence passes. Implementation not yet authorized.
 
 **Added 2026-10-29 (§18.119):** Task 9 also records the literal E1
 deferred from Task 7: the connection between a handler literal's
@@ -650,6 +673,13 @@ Obligation.purs; create test/r0-obligations-handler.test.mjs.
 - [ ] **Steps 2-5** as Task 7; regression proof: drop the literal E1.
 
 ### Task 10: defer, Fail, entry, FX032
+
+**Amended 2026-10-30 (§18.124):** FX032's `Unsupported` depends on
+whether the operation's row was written, kept apart from resolving it
+(a row that fails to resolve still blocks). main's open top-level tail
+is one minted flexible effect variable shared by its body ambient row
+and `Entry` (statements E8 amendment); the recorded signature keeps its
+rigid variable; the checked IR is unchanged.
 
 **Files:** Block.purs or the `defer` rule, Failure.purs, Body.purs
 (`Entry` for `main` only), Domain/Resolved/Core.purs and

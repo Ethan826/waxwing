@@ -452,8 +452,17 @@ read the callee's signature to translate it under θ
 A handler literal's recorded type is
 `THandler (Label e args (HandlerLit.m)) { inference: ⟨p, handler
 inference⟩, clauses: Just ⟨p, handler clauses⟩ }`, and generation
-records `Equal (TVar node) (that type)` at the literal's node (design).
-(Deferred to Task 9 by the §4 amendment of 2026-10-29, §18.119.)
+~~records `Equal (TVar node) (that type)` at the literal's node~~.
+**Amended (author, 2026-10-30, dossier §18.124; Task 9 design note
+docs/plans/2026-10-30-task-9-literal-design.md, R9 Q1 and Q3):** that
+type is the literal's node type itself (Generate/Effect.purs
+`handler`): it reaches each use unchanged (`let`, locals, a `with`'s
+handler, a record literal) or through the E1 of the rule that moves it,
+so no equation is recorded at the literal's node. Coverage of this
+connection counts as satisfied only once Task 9's proposed evidence
+(the design note's A1-A5, A5 corpus-wide, and its restored-defect row)
+passes; until then it is open. (Earlier: deferred to Task 9 by the §4
+amendment of 2026-10-29, §18.119.)
 Revision 3.2 claimed that an image can hold a copy of a site position
 only where today's checker unifies two types, each such unification
 recorded as an E1. **That claim was false**: §13a's audit found two
@@ -464,12 +473,13 @@ honest package (§12.1, equations.mjs; bounded).
 
 What is recorded in 3.4: every path §13a's table lists as copying a
 handler type into an image is one of (i) an E1 site (§4, "Where E1 is
-recorded": each rule where G0 records a `GenEqual`, the literal's node,
-O1, O2, records with several tails under O6's definition, and the
-`handle`, `if` and `match` node types); (ii) an E2 consumption, whose
+recorded": each rule where G0 records a `GenEqual`, O1, O2, records
+with several tails under O6's definition, and the `handle`, `if` and
+`match` node types); (ii) an E2 consumption, whose
 copies are labels of the completed source with a fresh top-level mark,
 arguments shared (O3, §4); (iii) the same variable (`let`, locals,
-binders); or (iv) construction of positions (§2's table, E3, E4′, E5).
+binders, a handler literal's node: the same marked type, §18.124); or
+(iv) construction of positions (§2's table, E3, E4′, E5).
 Where these hold, a site position and every image copy of it are
 joined by recorded equations into one class; P2 holds per class (§5),
 and `validateEffects` checks mark assignments per class (`norm`
@@ -531,17 +541,21 @@ use's instance type or a local annotation refers to its `instances` or
 
 **Where E1 is recorded (3.4; O1 and O2 decided by the author,
 2026-10-24).** Generation records an E1 at: each rule where G0 records
-a `GenEqual` (§13a, first row); a handler literal's node (§2); the
-`handle`, `if` and `match` node types and record unification (G0's
-equations, read at full marked types); and, new in 3.4:
+a `GenEqual` (§13a, first row); the `handle`, `if` and `match` node
+types and record unification (G0's equations, read at full marked
+types); and, new in 3.4:
 - **Amendment (author, 2026-10-29, dossier §18.119): the literal-node
   E1 is deferred to tranche-1 Task 9.** Today's literal returns its
   handler type directly (Generate/Effect.purs `handler`), with no node
   variable, so `Equal (TVar node) (that type)` would be reflexive. No
   node variable is invented and no reflexive equation is recorded.
-  Task 9 records the connection between the literal's marked type and
-  its image or use. Literal-E1 coverage is deferred: neither satisfied
-  nor unnecessary.
+  ~~Task 9 records the connection between the literal's marked type
+  and its image or use. Literal-E1 coverage is deferred: neither
+  satisfied nor unnecessary.~~ **Amended (author, 2026-10-30,
+  §18.124, R9 Q1 and Q3):** the connection is the literal's own type,
+  carried by identity or by the E1s listed here; Task 9's test names it
+  (the design note's A1-A5) and its restored-defect row breaks it.
+  Satisfied only once that evidence passes.
 - **O1, clause body.** For each handler clause, `Equal` between the
   clause body's type and the operation's declared result type with the
   handled label's arguments substituted and every row variable of the
@@ -648,7 +662,11 @@ both, run; relabelled in 3.5, §R6 S3-7).
 
 **E2, consumption of a row s into a target ρ.** Sites: call, perform,
 apply, pipe, over- and partial-application stages, callback, **`defer`
-(d into the enclosing row)**, and settling's consumptions: **installed C
+(d into the enclosing row)**, **`fail` (its closed `Fail(payload)` row
+into the current ambient row, beside E9; amendment, author 2026-10-30,
+dossier §18.124: today's checker consumes it, Check/Failure.purs
+`consumeAt … FailOf`; this repairs a future certification gap and
+claims no effect soundness)**, and settling's consumptions: **installed C
 into ρ, deferred rows into their row** (FX008 §3.5 step (d)). Clause
 rows into C, which today consumes at the literal and again at settling,
 are E4's site with the full condition, Definition 4.2 included (3.5,
@@ -875,6 +893,18 @@ edge (ExpectedNofail).
 
 **E8, entry**: `main`'s completed row within `Console`
 (UnhandledEffect).
+**Amendment (author, 2026-10-30, dossier §18.124): main's top-level
+ambient tail is inferable, not rigid.** Written labels and a closed
+row are kept. Where `main` has an open top-level tail (the implicit
+row variable of its declared signature), generation records one minted
+flexible effect variable in its place, shared by main's body ambient
+row (E11) and `Entry`; E8 judges that completed row against Console's
+allowance. The recorded declaration signature is unchanged: it keeps
+the rigid variable, which rigid accounting still counts, and only the
+ambient row and `Entry` read the flexible one. No other signature
+variable becomes flexible. The checked IR's closed tail for `main`
+(Generate/Body.purs `rowOf`) is unchanged and is a provisional
+representation, not E8's specification.
 
 **E9, Fail payloads**: each payload's head concrete after settling
 (FailNeedsConcrete, Failure.purs:102).
@@ -1272,6 +1302,12 @@ the paragraph after §12.1's limits.)
 | O1 recorded (3.4; equations.mjs "O1 clause body against the operation result") | `effect Get(a) { fn get(): a; }; fn main(): Unit with Console = with handler Get(Handler(Log with Console)) { get() => handler Log { log(n) => Fail.fail(E) } } { with Get.get() { Log.log(1) } };`: the honest package (the literal's R and C hold `Fail(E)`, m = M) refused by the O1 equation (R ≡ `Console` closed) and accepted without it; a package hiding `Fail(E)` from R refused by E4 under both; control (`log(n) => Console.print(n)`) accepted. Today: refused, E_EFFECT "This function must be pure, but it performs Fail(E)"; control accepted (run) | no E1 at the clause body (revision 3.3) |
 | O2 recorded (3.4; equations.mjs "O2 with node against its body") | `fn main(): Unit with Console = { let h0 = handler Tick { tick() => () }; let h = with h0 { handler Log { log(n) => Fail.fail(E) } }; with h { Log.log(1) } };`: honest refused (R's `Fail(E)` not in main's row), under both; the forged image (R and C closed, m N) refused by the O2 equation, accepted without it; control (`log(n) => Console.print(n)`) accepted. Today: refused, E_EFFECT "Unhandled Fail(E) in main"; control accepted (run) | no E1 at the `with` node (revision 3.3) |
 
+N5 row note (author, 2026-10-30, §18.124, R9 Q7; scoped): the oracle
+graph keeps h's image; in the generator's record a handler literal's
+uses carry the literal's own marked type, so h has no image slot and
+that forgery cannot be expressed there. Forging `Literal p` itself is
+E4's (`M ⊑ m`). This note establishes no validator result.
+
 Limits of these rows (§R5 S3): the N1 row is a graph; its 3.4 source
 program is checked only by today's compiler, not translated from
 `derivedC`. The O1 and O2 rows translate only the handler's rows and
@@ -1370,7 +1406,7 @@ audit (done, a reading audit; O1 and O2 recorded in 3.4, §4).
 | side-condition per-key cycle test (§3.5 (c), SyncCycle, F2) | E2's per-key count on final rows |
 | opening at use (MarkUse `openHandlers`) | E3 |
 | local-annotation fresh marks and C for every handler type not inside another's rows (MarkUse `freshType`, `handlerRows`) | E1 with `Annotation` positions; the annotation C recorded by generation (`annotations`), read by E4′ (N1, N2, F6) |
-| a handler literal's type copied into images (unification) | E1 at the literal's node and at each recorded unification (N5), including O1 (clause body, ClauseBody.purs:52) and O2 (`with` node, Install.purs:73), added in 3.4 (§4); records with several tails by O6's proposed definition; reasoned from §13a, open for O4's case (§2; 3.5: O4 decided as rule J, its case reasoned, resting on U8) |
+| a handler literal's type copied into images (unification) | the literal's type itself at its node and its identity copies, and E1 at each recorded unification (N5; amended 2026-10-30, §18.124, satisfied only once Task 9's A1-A5 evidence passes), including O1 (clause body, ClauseBody.purs:52) and O2 (`with` node, Install.purs:73), added in 3.4 (§4); records with several tails by O6's proposed definition; reasoned from §13a, open for O4's case (§2; 3.5: O4 decided as rule J, its case reasoned, resting on U8) |
 | handler literal: c into R and C, C ⊑ c (Clauses `consumeBare`) | E4; Definition 4.2 for a rigid c, a departure from today's label-by-label c into C (3.5) |
 | own abort (Frames `aborting`) | E4 |
 | clause tail pass (TailPass) | E4 (implied by Definition 4.2 at c into R and C, 3.5) |
@@ -1382,7 +1418,7 @@ audit (done, a reading audit; O1 and O2 recorded in 3.4, §4).
 | ExpectedNofail (MarkReport) | E7 |
 | UnhandledEffect (Entry) | E8 |
 | FailNeedsConcrete (Failure.purs:102) | E9 |
-| EffectNotAllowed, MustBePure (Reject, Require) | E2, E10 (E10 is E2 at the stage sites targeting the declared row, §4) |
+| EffectNotAllowed, MustBePure (Reject, Require) | E2, E10 (E10 is E2 at the stage sites targeting the declared row, §4); E2 at `fail`'s site (amendment 2026-10-30, §18.124) |
 | CallbackRowLacks (CallbackParts) | E2; Definition 4.2 for a rigid-tailed stage (3.5, S3-3) |
 | RowEquality (Argument, RowName) | E2 |
 | LabelMismatch (Reject `RowPayload`), RowOccurs | E1, E2 |
